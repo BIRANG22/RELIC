@@ -29,6 +29,19 @@ public class ButtonAnimationCoroutine :
     [Tooltip("버튼 위치/크기가 목표 값으로 변경되는 속도입니다.")]
     [SerializeField] private float hoverDuration = 0.2f;
 
+    [Header("Hover - Z Rotation")]
+    [Tooltip("마우스 오버 시 지정한 이미지의 Z 회전 효과를 사용합니다.")]
+    [SerializeField] private bool useHoverZRotation = false;
+
+    [Tooltip("마우스 오버 시 Z축으로 회전시킬 이미지 또는 UI 오브젝트입니다.")]
+    [SerializeField] private RectTransform hoverRotationTarget;
+
+    [Tooltip("마우스 오버 시 원래 Z 회전값에 더할 각도입니다.")]
+    [SerializeField] private float hoverZRotationAngle = 5f;
+
+    [Tooltip("호버 회전 및 원래 회전으로 복귀하는 시간입니다.")]
+    [SerializeField] private float hoverRotationDuration = 0.2f;
+
     [Header("Hover Sound")]
     [Tooltip("마우스가 버튼 영역에 들어왔을 때 호버 사운드를 재생합니다.")]
     [SerializeField] private bool playHoverSound = false;
@@ -76,10 +89,12 @@ public class ButtonAnimationCoroutine :
 
     private Vector3 originButtonPosition;
     private Vector3 originButtonScale;
+    private Quaternion originHoverRotation;
 
     private bool isPointerInside;
     private bool isClicked;
     private bool hasCachedOriginValues;
+    private bool hasCachedHoverRotation;
     private bool wasBlocked;
     private bool interactionEnabled = true;
 
@@ -93,6 +108,7 @@ public class ButtonAnimationCoroutine :
     {
         ResolveHoverHitArea();
         CacheOriginValuesIfNeeded();
+        CacheHoverRotationOriginIfNeeded();
 
         wasBlocked = IsInteractionBlocked();
         ForceClearState(false);
@@ -102,6 +118,7 @@ public class ButtonAnimationCoroutine :
     {
         ResolveHoverHitArea();
         CacheOriginValuesIfNeeded();
+        CacheHoverRotationOriginIfNeeded();
 
         wasBlocked = IsInteractionBlocked();
         ForceClearState(false);
@@ -110,6 +127,7 @@ public class ButtonAnimationCoroutine :
     private void Update()
     {
         CacheOriginValuesIfNeeded();
+        CacheHoverRotationOriginIfNeeded();
 
         bool isBlocked = IsInteractionBlocked();
 
@@ -510,6 +528,19 @@ public class ButtonAnimationCoroutine :
         originButtonScale = buttonContent.localScale;
     }
 
+    private void CacheHoverRotationOriginIfNeeded()
+    {
+        if (hasCachedHoverRotation ||
+            !useHoverZRotation ||
+            hoverRotationTarget == null)
+        {
+            return;
+        }
+
+        originHoverRotation = hoverRotationTarget.localRotation;
+        hasCachedHoverRotation = true;
+    }
+
     private void StartVisualAnimationIfNeeded()
     {
         if (IsInteractionBlocked())
@@ -585,6 +616,17 @@ public class ButtonAnimationCoroutine :
                     );
             }
 
+            if (UsesHoverZRotation())
+            {
+                float rotationT = GetFrameT(hoverRotationDuration);
+                hoverRotationTarget.localRotation =
+                    Quaternion.Slerp(
+                        hoverRotationTarget.localRotation,
+                        GetTargetHoverRotation(),
+                        rotationT
+                    );
+            }
+
             if (HasReachedCurrentTarget())
             {
                 ApplyVisualStateImmediately();
@@ -634,32 +676,39 @@ public class ButtonAnimationCoroutine :
             }
         }
 
+        if (UsesHoverZRotation() &&
+            Quaternion.Angle(
+                hoverRotationTarget.localRotation,
+                GetTargetHoverRotation()) > 0.05f)
+        {
+            return false;
+        }
+
         return true;
     }
 
     private void ApplyVisualStateImmediately()
     {
-        if (buttonContent == null)
-        {
-            return;
-        }
-
         CacheOriginValuesIfNeeded();
-        if (!hasCachedOriginValues)
+        CacheHoverRotationOriginIfNeeded();
+
+        if (buttonContent != null && hasCachedOriginValues)
         {
-            // 등장 애니메이션이 실제 Scale을 만든 뒤 Update에서 원본값을 캐시합니다.
-            // 그 전에는 현재 RectTransform 값을 건드리지 않습니다.
-            return;
+            if (UsesButtonPositionAnimation())
+            {
+                buttonContent.anchoredPosition =
+                    GetTargetButtonPosition();
+            }
+
+            buttonContent.localScale =
+                GetTargetButtonScale();
         }
 
-        if (UsesButtonPositionAnimation())
+        if (UsesHoverZRotation())
         {
-            buttonContent.anchoredPosition =
-                GetTargetButtonPosition();
+            hoverRotationTarget.localRotation =
+                GetTargetHoverRotation();
         }
-
-        buttonContent.localScale =
-            GetTargetButtonScale();
     }
 
     /// <summary>
@@ -669,6 +718,25 @@ public class ButtonAnimationCoroutine :
     {
         return hoverButtonMoveOffset.sqrMagnitude >
                0.000001f;
+    }
+
+    private bool UsesHoverZRotation()
+    {
+        CacheHoverRotationOriginIfNeeded();
+        return useHoverZRotation &&
+               hoverRotationTarget != null &&
+               hasCachedHoverRotation;
+    }
+
+    private Quaternion GetTargetHoverRotation()
+    {
+        if (isPointerInside)
+        {
+            return originHoverRotation *
+                   Quaternion.Euler(0f, 0f, hoverZRotationAngle);
+        }
+
+        return originHoverRotation;
     }
 
     private Vector3 GetTargetButtonPosition()

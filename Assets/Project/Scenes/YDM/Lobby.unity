@@ -401,6 +401,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -7318,6 +7322,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.05, y: 1.05, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -11674,6 +11682,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -11868,7 +11880,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0.003921569}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -12551,6 +12563,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.move.hover
   hoverSoundVolume: 1
@@ -15382,6 +15398,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -15451,6 +15471,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: -5, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -16371,6 +16395,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.05, y: 1.05, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -22187,7 +22215,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0.003921569}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -26102,6 +26130,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: -5, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -47060,6 +47092,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -48278,7 +48314,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0.003921569}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -49690,6 +49726,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -61017,7 +61057,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 989167601}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -61187,6 +61227,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 1
+  hoverRotationTarget: {fileID: 1267997972}
+  hoverZRotationAngle: 45
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -62062,6 +62106,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.move.hover
   hoverSoundVolume: 1
@@ -72755,7 +72803,6 @@ MonoBehaviour:
   nextButton: {fileID: 1339705162}
   nextButtonIndicator: {fileID: 0}
   speakerName: "\uC5F0\uAD6C\uC6D0 \uC5D8\uB9AD"
-  tutorialStartBeforeTransitionEnd: 0.15
   charactersPerSecond: 30
   indicatorMoveDistance: 6
   indicatorMoveSpeed: 0.5
@@ -73090,6 +73137,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: -5, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -75966,6 +76017,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: -5, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -76182,6 +76237,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.05, y: 1.05, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -76254,6 +76313,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -92485,6 +92548,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -99622,6 +99689,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -103160,6 +103231,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.02, y: 1.02, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -126554,6 +126629,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.05, y: 1.05, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -129260,7 +129339,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: blurredUiRoots.Array.size
-      value: 3
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: includeLobbyQuestMessenger
@@ -129277,7 +129356,15 @@ PrefabInstance:
     - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: 'blurredUiRoots.Array.data[2]'
       value: 
+      objectReference: {fileID: 397856608}
+    - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
+      propertyPath: 'blurredUiRoots.Array.data[3]'
+      value: 
       objectReference: {fileID: 230010000}
+    - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
+      propertyPath: 'blurredUiRoots.Array.data[4]'
+      value: 
+      objectReference: {fileID: 821549304}
     - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: lobbyQuestMessengerObjectName
       value: LobbyQuestManager

@@ -1,14 +1,16 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.SceneManagement;
 
 public sealed class GameBrightnessManager : MonoBehaviour
 {
     private static GameBrightnessManager instance;
 
-    [SerializeField] private Volume volume;
+    [Header("Runtime Brightness Override")]
+    [SerializeField] private float runtimeVolumePriority = 10000f;
 
+    private Volume runtimeVolume;
+    private VolumeProfile runtimeProfile;
     private ColorAdjustments colorAdjustments;
 
     private void Awake()
@@ -21,16 +23,22 @@ public sealed class GameBrightnessManager : MonoBehaviour
 
         instance = this;
         DontDestroyOnLoad(gameObject);
-        SceneManager.sceneLoaded += OnSceneLoaded;
+
+        EnsureRuntimeVolumeOverride();
         ApplySavedBrightness();
     }
 
     private void OnDestroy()
     {
-        if (instance == this)
+        if (instance != this)
+            return;
+
+        instance = null;
+
+        if (runtimeProfile != null)
         {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
-            instance = null;
+            Destroy(runtimeProfile);
+            runtimeProfile = null;
         }
     }
 
@@ -65,6 +73,7 @@ public sealed class GameBrightnessManager : MonoBehaviour
         if (existing != null)
         {
             instance = existing;
+            instance.EnsureRuntimeVolumeOverride();
             return;
         }
 
@@ -72,33 +81,43 @@ public sealed class GameBrightnessManager : MonoBehaviour
         instance = gameObject.AddComponent<GameBrightnessManager>();
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        volume = null;
-        colorAdjustments = null;
-        ApplySavedBrightness();
-    }
-
     private void Apply(float brightness)
     {
-        if (!TryResolveColorAdjustments())
+        EnsureRuntimeVolumeOverride();
+
+        if (colorAdjustments == null)
             return;
 
         colorAdjustments.postExposure.overrideState = true;
         colorAdjustments.postExposure.value = BrightnessToPostExposure(brightness);
     }
 
-    private bool TryResolveColorAdjustments()
+    private void EnsureRuntimeVolumeOverride()
     {
-        if (colorAdjustments != null)
-            return true;
+        if (runtimeVolume == null)
+        {
+            runtimeVolume = GetComponent<Volume>();
+            if (runtimeVolume == null)
+                runtimeVolume = gameObject.AddComponent<Volume>();
+        }
 
-        if (volume == null)
-            volume = FindFirstObjectByType<Volume>(FindObjectsInactive.Exclude);
+        runtimeVolume.isGlobal = true;
+        runtimeVolume.weight = 1f;
+        runtimeVolume.priority = runtimeVolumePriority;
 
-        if (volume == null || volume.profile == null)
-            return false;
+        if (runtimeProfile == null)
+        {
+            runtimeProfile = ScriptableObject.CreateInstance<VolumeProfile>();
+            runtimeProfile.name = "RuntimeBrightnessProfile";
+        }
 
-        return volume.profile.TryGet(out colorAdjustments);
+        if (runtimeVolume.sharedProfile != runtimeProfile)
+            runtimeVolume.sharedProfile = runtimeProfile;
+
+        if (!runtimeProfile.TryGet(out colorAdjustments) || colorAdjustments == null)
+            colorAdjustments = runtimeProfile.Add<ColorAdjustments>(true);
+
+        colorAdjustments.active = true;
+        colorAdjustments.postExposure.overrideState = true;
     }
 }
