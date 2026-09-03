@@ -103,10 +103,17 @@ public class BattleSceneController : MonoBehaviour
 
     private void HideSharedNextButtonOnSceneStart()
     {
-        Transform nextButtonTransform = FindSceneTransformByName("NextButton");
+        HideSceneObjectOnStart("NextButton");
+        HideSceneObjectOnStart("NextStageButton");
+        HideSceneObjectOnStart("ReturnButton");
+    }
 
-        if (nextButtonTransform != null)
-            nextButtonTransform.gameObject.SetActive(false);
+    private static void HideSceneObjectOnStart(string objectName)
+    {
+        Transform target = FindSceneTransformByName(objectName);
+
+        if (target != null)
+            target.gameObject.SetActive(false);
     }
 
     private void Start()
@@ -669,7 +676,12 @@ public class BattleSceneController : MonoBehaviour
         Debug.LogWarning($"[BattleSceneController] Map node not found: {nodeIndex}");
     }
 
-    public async void ReturnToMap()
+    public void ReturnToMap()
+    {
+        ReturnToMap(null);
+    }
+
+    public async void ReturnToMap(System.Action onCovered)
     {
         if (isChangingRoom)
             return;
@@ -678,6 +690,8 @@ public class BattleSceneController : MonoBehaviour
 
         await PlayRoomToMapTransitionAsync(() =>
         {
+            // 전환 화면이 방을 완전히 가린 시점에만 외부 UI 정리를 허용합니다.
+            onCovered?.Invoke();
             PrepareRoomForMapSelection(roomToKeepVisible);
             OpenMapPanelImmediate();
         });

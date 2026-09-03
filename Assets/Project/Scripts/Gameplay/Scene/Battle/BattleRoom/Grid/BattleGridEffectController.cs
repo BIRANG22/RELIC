@@ -122,6 +122,123 @@ public class BattleGridEffectController : MonoBehaviour
         return true;
     }
 
+
+    /// <summary>
+    /// 실제 상태에는 등록하지 않고 지정한 칸에 GridEffect의 반투명 배치 미리보기를 생성합니다.
+    /// </summary>
+    public bool TryCreatePlacementPreview(
+        int gridIndex,
+        string gridEffectId,
+        float alpha,
+        out GameObject preview)
+    {
+        preview = null;
+
+        if (!EnsureDependencies() ||
+            gridManager.GetCellByIndex(gridIndex) == null ||
+            string.IsNullOrWhiteSpace(gridEffectId) ||
+            prefabDatabase == null ||
+            !prefabDatabase.TryGetPrefab(gridEffectId, out GameObject prefab) ||
+            prefab == null)
+        {
+            return false;
+        }
+
+        Transform parent = effectRoot != null ? effectRoot : transform;
+        preview = Instantiate(prefab, parent);
+        preview.name = $"GridEffectPreview_{gridEffectId}_{gridIndex}";
+        preview.transform.position = gridManager.GetWorldPositionByIndex(gridIndex) + worldOffset;
+        preview.transform.localRotation = prefab.transform.localRotation;
+        preview.transform.localScale = prefab.transform.localScale * Mathf.Max(0.01f, viewScale);
+
+        DisablePreviewInteraction(preview);
+        ApplyRendererSorting(preview);
+        ApplyPreviewAlpha(preview, Mathf.Clamp01(alpha));
+        preview.SetActive(true);
+        return true;
+    }
+
+    private static void DisablePreviewInteraction(GameObject preview)
+    {
+        if (preview == null)
+            return;
+
+        Collider[] colliders = preview.GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            if (colliders[i] != null)
+                colliders[i].enabled = false;
+        }
+
+        Collider2D[] colliders2D = preview.GetComponentsInChildren<Collider2D>(true);
+        for (int i = 0; i < colliders2D.Length; i++)
+        {
+            if (colliders2D[i] != null)
+                colliders2D[i].enabled = false;
+        }
+    }
+
+    private static void ApplyPreviewAlpha(GameObject preview, float alpha)
+    {
+        if (preview == null)
+            return;
+
+        SpriteRenderer[] spriteRenderers = preview.GetComponentsInChildren<SpriteRenderer>(true);
+        for (int i = 0; i < spriteRenderers.Length; i++)
+        {
+            SpriteRenderer renderer = spriteRenderers[i];
+            if (renderer == null)
+                continue;
+
+            Color color = renderer.color;
+            color.a *= alpha;
+            renderer.color = color;
+        }
+
+        CanvasGroup[] canvasGroups = preview.GetComponentsInChildren<CanvasGroup>(true);
+        for (int i = 0; i < canvasGroups.Length; i++)
+        {
+            CanvasGroup group = canvasGroups[i];
+            if (group == null)
+                continue;
+
+            group.alpha *= alpha;
+            group.interactable = false;
+            group.blocksRaycasts = false;
+        }
+
+        ParticleSystem[] particleSystems = preview.GetComponentsInChildren<ParticleSystem>(true);
+        for (int i = 0; i < particleSystems.Length; i++)
+        {
+            ParticleSystem particleSystem = particleSystems[i];
+            if (particleSystem == null)
+                continue;
+
+            ParticleSystem.MainModule main = particleSystem.main;
+            ParticleSystem.MinMaxGradient startColor = main.startColor;
+
+            switch (startColor.mode)
+            {
+                case ParticleSystemGradientMode.Color:
+                    {
+                        Color color = startColor.color;
+                        color.a *= alpha;
+                        main.startColor = color;
+                        break;
+                    }
+                case ParticleSystemGradientMode.TwoColors:
+                    {
+                        Color minColor = startColor.colorMin;
+                        Color maxColor = startColor.colorMax;
+                        minColor.a *= alpha;
+                        maxColor.a *= alpha;
+                        main.startColor = new ParticleSystem.MinMaxGradient(minColor, maxColor);
+                        break;
+                    }
+            }
+        }
+    }
+
     public bool TryRemoveEffect(int gridIndex)
     {
         if (!EnsureDependencies())

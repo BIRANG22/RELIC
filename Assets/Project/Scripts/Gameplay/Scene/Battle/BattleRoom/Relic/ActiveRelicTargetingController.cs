@@ -9,6 +9,7 @@ public class ActiveRelicTargetingController : MonoBehaviour
     [SerializeField] private GridManager gridManager;
     [SerializeField] private BattleGridEffectController gridEffectController;
     [SerializeField] private Color targetPreviewColor = new(0.2f, 0.9f, 1f, 1f);
+    [SerializeField, Range(0.05f, 1f)] private float gridEffectPreviewAlpha = 0.45f;
 
     private ActiveRelicService service;
     private SkillListPanel owner;
@@ -17,6 +18,9 @@ public class ActiveRelicTargetingController : MonoBehaviour
     private ActiveRelicAvailability pendingAvailability;
     private bool isTargeting;
     private bool previousGridVisible;
+    private string pendingGridEffectId;
+    private GameObject gridEffectPreview;
+    private int gridEffectPreviewIndex = -1;
 
     public bool IsTargeting => isTargeting;
 
@@ -81,6 +85,14 @@ public class ActiveRelicTargetingController : MonoBehaviour
 
         gridManager.SetGridVisible(true);
         gridManager.OnCellClicked += HandleCellClicked;
+
+        pendingGridEffectId = ActiveRelicEffectResolver.ResolveGridEffectId(availability.RelicData);
+        if (!string.IsNullOrWhiteSpace(pendingGridEffectId))
+        {
+            gridManager.OnCellHovered += HandleCellHovered;
+            gridManager.OnCellHoverExited += HandleCellHoverExited;
+        }
+
         gridManager.ShowExecutionRange(BuildPreviewCells(), targetPreviewColor);
         MonsterUnit.SetAllReservationVisualState(true);
         return true;
@@ -96,11 +108,15 @@ public class ActiveRelicTargetingController : MonoBehaviour
         if (gridManager != null)
         {
             gridManager.OnCellClicked -= HandleCellClicked;
+            gridManager.OnCellHovered -= HandleCellHovered;
+            gridManager.OnCellHoverExited -= HandleCellHoverExited;
             gridManager.ClearExecutionRange();
 
             if (isTargeting)
                 gridManager.SetGridVisible(previousGridVisible);
         }
+
+        ClearGridEffectPreview();
 
         if (wasTargeting)
             MonsterUnit.SetAllReservationVisualState(false);
@@ -111,6 +127,59 @@ public class ActiveRelicTargetingController : MonoBehaviour
         service = null;
         pendingRuntime = null;
         pendingAvailability = null;
+        pendingGridEffectId = null;
+    }
+
+    private void HandleCellHovered(GridCell cell)
+    {
+        ClearGridEffectPreview();
+
+        if (!isTargeting ||
+            cell == null ||
+            string.IsNullOrWhiteSpace(pendingGridEffectId) ||
+            gridEffectController == null)
+        {
+            return;
+        }
+
+        int gridIndex = cell.Index;
+
+        if (BattleOccupancyService.IsOccupiedByAnyUnit(gridIndex) ||
+            gridEffectController.HasEffect(gridIndex) ||
+            gridEffectController.IsBlocked(gridIndex))
+        {
+            return;
+        }
+
+        if (gridEffectController.TryCreatePlacementPreview(
+                gridIndex,
+                pendingGridEffectId,
+                gridEffectPreviewAlpha,
+                out gridEffectPreview))
+        {
+            gridEffectPreviewIndex = gridIndex;
+        }
+    }
+
+    private void HandleCellHoverExited(GridCell cell)
+    {
+        if (cell == null || cell.Index == gridEffectPreviewIndex)
+            ClearGridEffectPreview();
+    }
+
+    private void ClearGridEffectPreview()
+    {
+        gridEffectPreviewIndex = -1;
+
+        if (gridEffectPreview == null)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(gridEffectPreview);
+        else
+            DestroyImmediate(gridEffectPreview);
+
+        gridEffectPreview = null;
     }
 
     private void HandleCellClicked(GridCell cell)
