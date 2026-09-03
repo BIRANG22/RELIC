@@ -29,7 +29,6 @@ public class BattleActionRunner
 
     private const float ActionDelay = 0.03f;
     private const float GroupedActionBeatDelay = 0.12f;
-    private const float MultiHitAnimationSpeed = 1.35f;
     private const float BatchEndDelay = 0.03f;
     private const float NoInteractionPostDelay = 0.12f;
 
@@ -718,11 +717,30 @@ public class BattleActionRunner
 
     private bool ShouldPlayExternalImpactForHit(int hitIndex, int hitCount)
     {
-        if (!activeActionInfo.IsGrouped)
-            return true;
+        int safeHitCount = Mathf.Max(1, hitCount);
+        bool isLastHit = hitIndex >= safeHitCount - 1;
 
-        return activeActionInfo.ShouldPlayExternalImpact &&
-               hitIndex >= Mathf.Max(1, hitCount) - 1;
+        // 연타 공격은 단독/연속행동 여부와 관계없이 마지막 타에서만
+        // 카메라/히트 피드백을 재생합니다. 중간 타는 연타 간격만 사용합니다.
+        if (safeHitCount > 1)
+        {
+            if (!activeActionInfo.IsGrouped)
+                return isLastHit;
+
+            return activeActionInfo.ShouldPlayExternalImpact && isLastHit;
+        }
+
+        // 단타는 기존 연속행동 피드백 정책을 유지합니다.
+        return !activeActionInfo.IsGrouped || activeActionInfo.ShouldPlayExternalImpact;
+    }
+
+    private static float GetMultiHitAnimationSpeed(int hitCount)
+    {
+        if (hitCount <= 1)
+            return 1f;
+
+        // 2타=1.25, 3타=1.5, 4타=1.75, 5타 이상=2.0
+        return Mathf.Min(2f, 1f + ((hitCount - 1) * 0.25f));
     }
 
     private bool ShouldReturnCameraForActiveAction()
@@ -2242,10 +2260,10 @@ public class BattleActionRunner
     }
 
     private static void PlayTargetUnitVfxOnMonsterTargets(
-     BattleUnitAnimator attackerAnimator,
-     PlayerReservedCommand command,
-     IReadOnlyList<MonsterUnit> targets,
-     bool allowPlayOncePerActionCues)
+        BattleUnitAnimator attackerAnimator,
+        PlayerReservedCommand command,
+        IReadOnlyList<MonsterUnit> targets,
+        bool allowPlayOncePerActionCues)
     {
         if (attackerAnimator == null ||
             command == null ||
@@ -2314,11 +2332,12 @@ public class BattleActionRunner
     {
         int hitCount = Mathf.Max(1, count);
         bool isMultiHit = hitCount > 1;
+        float multiHitAnimationSpeed = GetMultiHitAnimationSpeed(hitCount);
 
-        // 다단 공격은 타격 횟수만큼 서로 다른 공격 모션을 빠르게 이어서 재생한다.
-        // 1회 공격보다 각 모션의 재생 속도를 높여 전체 행동 시간이 과도하게 길어지지 않도록 한다.
+        // 연타 횟수가 많을수록 공격 모션을 더 빠르게 재생해 전체 행동 시간이 과도하게 길어지지 않도록 합니다.
+        // 2타=1.25, 3타=1.5, 4타=1.75, 5타 이상=2.0
         if (isMultiHit && attackerAnimator != null)
-            attackerAnimator.SetPlaybackSpeed(MultiHitAnimationSpeed);
+            attackerAnimator.SetPlaybackSpeed(multiHitAnimationSpeed);
 
         for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
         {
@@ -2350,7 +2369,7 @@ public class BattleActionRunner
             // 연타 내부 타격 간격은 일반 ActionDelay와 분리합니다.
             // 연속행동 배율은 이 값에 적용되지 않고, 연타 배율만 적용됩니다.
             float hitActionDelay = isMultiHit
-                ? multiHitActionInterval / MultiHitAnimationSpeed
+                ? multiHitActionInterval / multiHitAnimationSpeed
                 : ActionDelay;
             yield return new WaitForSeconds(
                 GetActiveActionBeatDelay(hitActionDelay));
