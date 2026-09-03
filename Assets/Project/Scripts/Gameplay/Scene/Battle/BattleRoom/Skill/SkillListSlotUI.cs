@@ -74,6 +74,9 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private bool originalOverrideSorting;
     private int originalSortingOrder;
 
+    private bool hasCachedAffordability;
+    private bool cachedCanAfford = true;
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -104,10 +107,18 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void Update()
     {
-        // 예약 비용과 고유 자원 예약량은 슬롯 생성 이후에도 계속 변할 수 있으므로
-        // 매 프레임 현재 사용 가능 여부를 다시 반영합니다.
-        ApplyVisualState();
-        ApplyScale(false);
+        // 예약 비용과 고유 자원 예약량은 슬롯 생성 이후에도 변할 수 있습니다.
+        // 매 프레임 UI 전체를 다시 칠하지 않고, 실제 사용 가능 여부가 바뀐 순간만 갱신합니다.
+        bool canAfford = CanAffordDisplayedCost();
+        if (!hasCachedAffordability || canAfford != cachedCanAfford)
+        {
+            cachedCanAfford = canAfford;
+            hasCachedAffordability = true;
+            ApplyVisualState();
+        }
+
+        if (NeedsScaleAnimation())
+            ApplyScale(false);
     }
 
     private void OnDisable()
@@ -360,7 +371,10 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private void ApplyVisualState()
     {
         bool hasSkill = skillData != null;
-        bool isResourceInsufficient = hasSkill && !CanAffordDisplayedCost();
+        bool canAfford = CanAffordDisplayedCost();
+        bool isResourceInsufficient = hasSkill && !canAfford;
+        cachedCanAfford = canAfford;
+        hasCachedAffordability = true;
 
         if (backgroundImage != null)
         {
@@ -452,6 +466,20 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         float t = 1f - Mathf.Exp(-scaleLerpSpeed * Time.unscaledDeltaTime);
         scaleTarget.localScale = Vector3.Lerp(scaleTarget.localScale, targetScale, t);
+    }
+
+    private bool NeedsScaleAnimation()
+    {
+        if (scaleTarget == null)
+            return false;
+
+        if (useHoverBreathEffect && isPointerOver && skillData != null && !isSelected)
+            return true;
+
+        CaptureBaseScaleOnce();
+        float multiplier = useSelectedScale && isSelected && skillData != null ? selectedScale : 1f;
+        Vector3 targetScale = baseScale * multiplier;
+        return (scaleTarget.localScale - targetScale).sqrMagnitude > 0.000001f;
     }
 
     private void ResetScale()

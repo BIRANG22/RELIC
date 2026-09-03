@@ -16,7 +16,8 @@ public sealed class InventoryRuntimeContextProvider : MonoBehaviour, IRuntimeSav
 
     [SerializeField] private RuntimeSource source = RuntimeSource.Auto;
     private readonly Dictionary<EquippedRelicSlotUI, int> relicDisplayRows = new();
-    private string lastInventorySignature;
+    private ulong lastInventorySignature;
+    private bool hasInventorySignature;
 
     private static readonly FieldInfo RelicPartySlotIndexField =
         typeof(EquippedRelicSlotUI).GetField(
@@ -78,11 +79,12 @@ public sealed class InventoryRuntimeContextProvider : MonoBehaviour, IRuntimeSav
 
         PartyRuntimeStore party = DataManager.Instance.PartyRuntimeStore;
         CharacterRuntimeStore characters = DataManager.Instance.CharacterRuntimeStore;
-        string signature = BuildInventorySignature(party, characters);
-        if (!force && string.Equals(signature, lastInventorySignature, StringComparison.Ordinal))
+        ulong signature = BuildInventorySignature(party, characters);
+        if (!force && hasInventorySignature && signature == lastInventorySignature)
             return;
 
         lastInventorySignature = signature;
+        hasInventorySignature = true;
         PartyInventoryCharacterEntry[] order = PartyInventoryCharacterOrder.Build(party, 3);
 
         PartyCharacterSlotListUI[] characterLists =
@@ -149,42 +151,73 @@ public sealed class InventoryRuntimeContextProvider : MonoBehaviour, IRuntimeSav
         }
     }
 
-    private static string BuildInventorySignature(
+    private static ulong BuildInventorySignature(
         PartyRuntimeStore party,
         CharacterRuntimeStore characters)
     {
         if (party == null)
-            return string.Empty;
+            return 0UL;
 
-        PartyInventoryCharacterEntry[] order =
-            PartyInventoryCharacterOrder.Build(party, party.MaxPartyCountValue);
-        var parts = new string[order.Length];
+        // FNV-1a 기반의 무할당 해시입니다.
+        // 기존 구현처럼 파티/장착 스킬 변화를 매 프레임 즉시 감지하되,
+        // string[], string.Join, 보간 문자열 생성을 없애 GC 할당을 방지합니다.
+        const ulong offsetBasis = 14695981039346656037UL;
+        ulong hash = offsetBasis;
 
-        for (int i = 0; i < order.Length; i++)
+        for (int partySlotIndex = 0; partySlotIndex < party.MaxPartyCountValue; partySlotIndex++)
         {
-            PartyInventoryCharacterEntry entry = order[i];
-            string characterId = entry.CharacterId ?? string.Empty;
-            string skillSignature = string.Empty;
+            string characterId = party.GetCharacterId(partySlotIndex) ?? string.Empty;
+            AddHash(ref hash, partySlotIndex);
+            AddHash(ref hash, characterId);
 
-            if (!string.IsNullOrWhiteSpace(characterId) &&
-                characters != null &&
-                characters.TryGet(characterId, out CharacterRuntimeData character) &&
-                character != null)
+            if (string.IsNullOrWhiteSpace(characterId) ||
+                characters == null ||
+                !characters.TryGet(characterId, out CharacterRuntimeData character) ||
+                character == null)
             {
-                skillSignature = string.Join(",", new[]
-                {
-                    character.PassiveSkillId ?? string.Empty,
-                    character.UniqueSkillId ?? string.Empty,
-                    character.AbilitySkillId ?? string.Empty,
-                    GetEquippedSkillId(character, 2),
-                    GetEquippedSkillId(character, 3)
-                });
+                continue;
             }
 
-            parts[i] = $"{entry.PartySlotIndex}:{characterId}:{skillSignature}";
+            AddHash(ref hash, character.PassiveSkillId);
+            AddHash(ref hash, character.UniqueSkillId);
+            AddHash(ref hash, character.AbilitySkillId);
+            AddHash(ref hash, GetEquippedSkillId(character, 2));
+            AddHash(ref hash, GetEquippedSkillId(character, 3));
         }
 
-        return string.Join("\u001f", parts);
+        return hash;
+    }
+
+    private static void AddHash(ref ulong hash, int value)
+    {
+        unchecked
+        {
+            hash ^= (uint)value;
+            hash *= 1099511628211UL;
+        }
+    }
+
+    private static void AddHash(ref ulong hash, string value)
+    {
+        unchecked
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                hash ^= 0xFF;
+                hash *= 1099511628211UL;
+                return;
+            }
+
+            for (int i = 0; i < value.Length; i++)
+            {
+                hash ^= value[i];
+                hash *= 1099511628211UL;
+            }
+
+            // 문자열 경계를 구분합니다.
+            hash ^= 0xFF;
+            hash *= 1099511628211UL;
+        }
     }
 
     private static string GetEquippedSkillId(CharacterRuntimeData character, int index)
