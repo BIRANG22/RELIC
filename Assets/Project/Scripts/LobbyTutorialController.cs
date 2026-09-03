@@ -25,11 +25,6 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [SerializeField] private RectTransform nextButtonIndicator;
     [SerializeField] private string speakerName = "엘릭";
 
-    [Header("Scene Transition Timing")]
-    [Tooltip("로비 열림 전환이 끝나기 몇 초 전에 최초 튜토리얼 대화를 시작할지 설정합니다.")]
-    [Min(0f)]
-    [SerializeField] private float tutorialStartBeforeTransitionEnd = 0.15f;
-
     [Header("Text Typewriter")]
     [Tooltip("1초에 표시할 글자 수입니다.")]
     [Min(1f)]
@@ -162,43 +157,9 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
         if (lobby.TutorialProgress == LobbyTutorialProgress.NotStarted)
         {
-            // 로비 씬 전환의 열림 연출이 완전히 끝난 뒤 최초 튜토리얼 대화를 시작합니다.
-            yield return WaitForLobbySceneTransitionComplete();
+            // 최초 튜토리얼은 씬 전환이 화면을 가리고 있는 동안 미리 준비합니다.
+            // 일반 로비 화면이 먼저 노출된 뒤 패널이 켜지는 깜빡임을 방지합니다.
             BeginIntroDialogue();
-        }
-    }
-
-    private IEnumerator WaitForLobbySceneTransitionComplete()
-    {
-        // 로비 씬이 활성화된 직후에는 열림 전환이 아직 시작되지 않았을 수 있으므로
-        // 한 프레임 기다린 뒤 전환의 마지막 구간을 감시합니다.
-        yield return null;
-
-        float safeLeadTime = Mathf.Max(0f, tutorialStartBeforeTransitionEnd);
-
-        while (true)
-        {
-            SceneFlowManager sceneFlow = SceneFlowManager.Instance;
-            CanvasMaterialSceneTransition transition = CanvasMaterialSceneTransition.Instance;
-
-            if (transition != null && transition.IsOpening)
-            {
-                // 전환이 완전히 사라진 뒤가 아니라 마지막 구간에 대화 UI를 미리 준비합니다.
-                // 전환 그래픽이 위를 덮고 있으므로 플레이어에게는 자연스럽게 함께 드러납니다.
-                if (transition.OpenRemainingTime <= safeLeadTime)
-                    break;
-            }
-            else
-            {
-                bool sceneFlowLoading = sceneFlow != null && sceneFlow.IsLoading;
-                bool transitionPlaying = transition != null && transition.IsPlaying;
-
-                // 전환을 사용하지 않는 경로에서는 씬 로드가 끝나는 즉시 시작합니다.
-                if (!sceneFlowLoading && !transitionPlaying)
-                    break;
-            }
-
-            yield return null;
         }
     }
 
