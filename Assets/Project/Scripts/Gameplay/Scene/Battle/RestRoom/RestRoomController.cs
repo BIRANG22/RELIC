@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -10,7 +12,7 @@ public class RestRoomController : MonoBehaviour
     [SerializeField] private float allySpawnScale = 0.7f;
 
     [Header("Upgrade")]
-    [SerializeField] private SkillUpgradePanel upgradePanel;
+    [SerializeField] private EventSkillAwakenSelectionPanelUI skillAwakenSelectionPanel;
     [SerializeField] private GameObject upgradeButtonRoot;
     [SerializeField] private Image upgradeButtonBackImage;
     [SerializeField] private TMP_Text upgradeButtonText;
@@ -18,8 +20,11 @@ public class RestRoomController : MonoBehaviour
 
     [Header("Heal")]
     [SerializeField, Range(0f, 1f)] private float healHpRatio = 0.3f;
-    [SerializeField] private string healCompleteMessage = "모든 캐릭터의 체력을 30% 회복했습니다.";
     [SerializeField] private GameObject healButtonRoot;
+    [SerializeField] private GameObject healTextRoot;
+    [SerializeField] private CanvasGroup healTextCanvasGroup;
+    [SerializeField, Min(0f)] private float healTextFadeDuration = 0.25f;
+    [SerializeField, Min(0f)] private float healTextHoldDuration = 1f;
     [SerializeField] private Image healButtonBackImage;
     [SerializeField] private TMP_Text healButtonText;
     [SerializeField] private Color disabledHealButtonColor = new Color32(0x7E, 0x7E, 0x7E, 0xFF);
@@ -47,6 +52,12 @@ public class RestRoomController : MonoBehaviour
     private Color healButtonTextDefaultColor = Color.white;
     private bool hasHealButtonDefaultColors;
 
+    private readonly List<EventSkillAwakenSelectionPanelEntry> skillAwakenOptions = new();
+    private EventChoiceSkillAwakenTarget pendingSkillAwakenResultTarget;
+    private bool hasPendingSkillAwakenResult;
+    private Coroutine skillAwakenResultRoutine;
+    private Coroutine healTextRoutine;
+
     private bool IsRestActionLocked => isRestUsed;
 
     private void Awake()
@@ -55,19 +66,24 @@ public class RestRoomController : MonoBehaviour
         EnsureNextButtonRoot();
         EnsureUpgradeButtonReferences();
         EnsureHealButtonReferences();
+        EnsureHealTextReferences();
+        EnsureSkillAwakenSelectionPanel();
     }
 
     private void OnEnable()
     {
         isRestUsed = false;
-        if (upgradePanel != null)
-            upgradePanel.ResetRestRoomUpgradeLimit();
+        hasPendingSkillAwakenResult = false;
+        pendingSkillAwakenResultTarget = default;
 
         EnsureShopPanelSpawner();
         EnsureNextButtonRoot();
         EnsureUpgradeButtonReferences();
         EnsureHealButtonReferences();
+        EnsureHealTextReferences();
+        EnsureSkillAwakenSelectionPanel();
         EnsurePlayerHudReferences();
+        SetHealTextVisibleImmediate(false);
         SetNextButtonVisible(false);
         SetRestActionButtonsVisible(true);
         SetUpgradeButtonDisabledFeedback(false);
@@ -79,6 +95,26 @@ public class RestRoomController : MonoBehaviour
     private void OnDisable()
     {
         SetNextButtonVisible(false);
+
+        if (skillAwakenResultRoutine != null)
+        {
+            StopCoroutine(skillAwakenResultRoutine);
+            skillAwakenResultRoutine = null;
+        }
+
+        if (skillAwakenSelectionPanel != null)
+            skillAwakenSelectionPanel.Close();
+
+        if (healTextRoutine != null)
+        {
+            StopCoroutine(healTextRoutine);
+            healTextRoutine = null;
+        }
+
+        SetHealTextVisibleImmediate(false);
+        skillAwakenOptions.Clear();
+        hasPendingSkillAwakenResult = false;
+        pendingSkillAwakenResultTarget = default;
         ClearPlayerHUDs();
     }
 
@@ -94,13 +130,13 @@ public class RestRoomController : MonoBehaviour
             return;
 
         isRestUsed = true;
-        if (upgradePanel != null)
-            upgradePanel.Close();
+        if (skillAwakenSelectionPanel != null)
+            skillAwakenSelectionPanel.Close();
 
         RecoverAllPartyHPByRatio(healHpRatio);
         RefreshPlayerHUDs();
         PlayHealVfxOnSpawnedAllies();
-        BattleWarningUI.ShowMessage(healCompleteMessage);
+        StartHealTextFeedback();
         SetHealButtonDisabledFeedback(true);
         SetUpgradeButtonDisabledFeedback(true);
         SetRestActionButtonsVisible(false);
@@ -112,56 +148,61 @@ public class RestRoomController : MonoBehaviour
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
-        if (IsRestActionLocked)
-            return;
-
-        if (upgradePanel == null)
-        {
-            Debug.LogWarning("[RestRoomController] SkillUpgradePanel 없음");
-            return;
-        }
-
-        upgradePanel.Open();
-        SetRestActionButtonsVisible(false);
-    }
-
-    public void OnUpgradeCancelButtonClicked()
-    {
-        if (upgradePanel != null)
-            upgradePanel.Close();
-
-        if (!isRestUsed)
-            SetRestActionButtonsVisible(true);
-    }
-
-    public void OnTuningButtonClicked()
-    {
-        if (UIPanelButton.IsMenuPanelOpen)
-            return;
-
         if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
             return;
 
         if (IsRestActionLocked)
             return;
 
-        if (upgradePanel == null)
+        EnsureSkillAwakenSelectionPanel();
+        RefreshSkillAwakenOptions();
+
+        if (skillAwakenOptions.Count == 0)
         {
-            Debug.LogWarning("[RestRoomController] SkillUpgradePanel 없음");
+            BattleWarningUI.ShowMessage("강화 가능한 장착 기억이 없습니다.");
             return;
         }
 
-        bool upgraded = upgradePanel.TuneSelectedSkill();
-
-        if (!upgraded)
+        if (skillAwakenSelectionPanel == null)
+        {
+            Debug.LogWarning("[RestRoomController] EventSkillAwakenSelectionPanelUI 없음");
             return;
+        }
 
-        isRestUsed = true;
-        RefreshPlayerHUDs();
-        SetHealButtonDisabledFeedback(true);
-        SetUpgradeButtonDisabledFeedback(true);
         SetRestActionButtonsVisible(false);
-        SetNextButtonVisible(true);
+        SetNextButtonVisible(false);
+
+        bool opened = skillAwakenSelectionPanel.Open(
+            skillAwakenOptions,
+            OnSkillAwakenSelected,
+            OnUpgradeCancelButtonClicked,
+            OnSkillAwakenPanelClosed);
+
+        if (!opened)
+        {
+            BattleWarningUI.ShowMessage("기억 강화 선택 패널을 열 수 없습니다.");
+            if (!isRestUsed)
+                SetRestActionButtonsVisible(true);
+        }
+    }
+
+    public void OnUpgradeCancelButtonClicked()
+    {
+        skillAwakenOptions.Clear();
+        hasPendingSkillAwakenResult = false;
+        pendingSkillAwakenResultTarget = default;
+
+        if (!isRestUsed)
+        {
+            SetRestActionButtonsVisible(true);
+            SetNextButtonVisible(false);
+        }
+    }
+
+    // 기존 씬/프리팹에 남아 있는 버튼 이벤트가 깨지지 않도록 유지합니다.
+    public void OnTuningButtonClicked()
+    {
+        OnUpgradeButtonClicked();
     }
 
     public void OnNextButtonClicked()
@@ -173,6 +214,10 @@ public class RestRoomController : MonoBehaviour
             return;
 
         if (!isRestUsed)
+            return;
+
+        EnsureNextButtonRoot();
+        if (nextButtonRoot == null || !nextButtonRoot.activeInHierarchy)
             return;
 
         CompleteCurrentNode();
@@ -753,6 +798,527 @@ public class RestRoomController : MonoBehaviour
                 behaviour.enabled = !disabled;
             }
         }
+    }
+
+
+    private void EnsureHealTextReferences()
+    {
+        if (healTextRoot == null)
+        {
+            Transform healTextTransform = FindSceneTransformByName("Heal_Text");
+
+            if (healTextTransform != null && healTextTransform.IsChildOf(transform))
+                healTextRoot = healTextTransform.gameObject;
+        }
+
+        if (healTextRoot == null)
+            return;
+
+        if (healTextCanvasGroup == null)
+            healTextCanvasGroup = healTextRoot.GetComponent<CanvasGroup>();
+
+        if (healTextCanvasGroup == null)
+            healTextCanvasGroup = healTextRoot.AddComponent<CanvasGroup>();
+
+        healTextCanvasGroup.interactable = false;
+        healTextCanvasGroup.blocksRaycasts = false;
+    }
+
+    private void StartHealTextFeedback()
+    {
+        EnsureHealTextReferences();
+
+        if (healTextRoot == null || healTextCanvasGroup == null)
+            return;
+
+        if (healTextRoutine != null)
+            StopCoroutine(healTextRoutine);
+
+        healTextRoutine = StartCoroutine(PlayHealTextFeedbackRoutine());
+    }
+
+    private IEnumerator PlayHealTextFeedbackRoutine()
+    {
+        EnsureHealTextReferences();
+
+        if (healTextRoot == null || healTextCanvasGroup == null)
+        {
+            healTextRoutine = null;
+            yield break;
+        }
+
+        healTextRoot.SetActive(true);
+        healTextCanvasGroup.alpha = 0f;
+
+        float fadeDuration = Mathf.Max(0f, healTextFadeDuration);
+        if (fadeDuration <= 0f)
+        {
+            healTextCanvasGroup.alpha = 1f;
+        }
+        else
+        {
+            float elapsed = 0f;
+            while (elapsed < fadeDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                healTextCanvasGroup.alpha = Mathf.Clamp01(elapsed / fadeDuration);
+                yield return null;
+            }
+
+            healTextCanvasGroup.alpha = 1f;
+        }
+
+        if (healTextHoldDuration > 0f)
+            yield return new WaitForSecondsRealtime(healTextHoldDuration);
+
+        if (fadeDuration <= 0f)
+        {
+            healTextCanvasGroup.alpha = 0f;
+        }
+        else
+        {
+            float elapsed = 0f;
+            while (elapsed < fadeDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                healTextCanvasGroup.alpha = 1f - Mathf.Clamp01(elapsed / fadeDuration);
+                yield return null;
+            }
+
+            healTextCanvasGroup.alpha = 0f;
+        }
+
+        healTextRoot.SetActive(false);
+        healTextRoutine = null;
+    }
+
+    private void SetHealTextVisibleImmediate(bool visible)
+    {
+        EnsureHealTextReferences();
+
+        if (healTextCanvasGroup != null)
+        {
+            healTextCanvasGroup.alpha = visible ? 1f : 0f;
+            healTextCanvasGroup.interactable = false;
+            healTextCanvasGroup.blocksRaycasts = false;
+        }
+
+        if (healTextRoot != null)
+            healTextRoot.SetActive(visible);
+    }
+
+    private void EnsureSkillAwakenSelectionPanel()
+    {
+        if (skillAwakenSelectionPanel != null)
+            return;
+
+        skillAwakenSelectionPanel = GetComponentInChildren<EventSkillAwakenSelectionPanelUI>(true);
+
+        if (skillAwakenSelectionPanel != null)
+            return;
+
+        Transform panelTransform = FindSceneTransformByName("SkillAwakenSelectionPanel");
+        if (panelTransform != null && panelTransform.IsChildOf(transform))
+            skillAwakenSelectionPanel = panelTransform.GetComponent<EventSkillAwakenSelectionPanelUI>();
+    }
+
+    private void RefreshSkillAwakenOptions()
+    {
+        skillAwakenOptions.Clear();
+
+        foreach (CharacterRuntimeData character in EnumeratePartyCharacters())
+        {
+            if (character == null || string.IsNullOrWhiteSpace(character.CharacterId))
+                continue;
+
+            SkillInventoryEquipService.EnsureEquippedSkillArray(character);
+            AddSkillAwakenOption(character, EventChoiceSkillSlotKind.Passive, -1, character.PassiveSkillId);
+            AddSkillAwakenOption(character, EventChoiceSkillSlotKind.Unique, 0, character.UniqueSkillId);
+            AddSkillAwakenOption(character, EventChoiceSkillSlotKind.Ability, 1, character.AbilitySkillId);
+
+            if (character.EquippedSkillIds == null)
+                continue;
+
+            for (int slotIndex = 2; slotIndex < character.EquippedSkillIds.Length; slotIndex++)
+            {
+                AddSkillAwakenOption(
+                    character,
+                    EventChoiceSkillSlotKind.Equipped,
+                    slotIndex,
+                    character.EquippedSkillIds[slotIndex]);
+            }
+        }
+    }
+
+    private void AddSkillAwakenOption(
+        CharacterRuntimeData character,
+        EventChoiceSkillSlotKind slotKind,
+        int slotIndex,
+        string skillId)
+    {
+        if (character == null || string.IsNullOrWhiteSpace(character.CharacterId) || string.IsNullOrWhiteSpace(skillId))
+            return;
+
+        if (!TryGetUpgradeableSkill(skillId, out string normalizedSkillId, out string upgradeSkillId))
+            return;
+
+        EventChoiceSkillAwakenTarget target = new(
+            character.CharacterId,
+            slotKind,
+            slotIndex,
+            normalizedSkillId,
+            upgradeSkillId);
+
+        DataManager.Instance.SkillDatabase.TryGet(normalizedSkillId, out SkillMasterData currentSkill);
+
+        skillAwakenOptions.Add(new EventSkillAwakenSelectionPanelEntry(
+            target,
+            GetCharacterDisplayName(character.CharacterId),
+            GetSkillSlotDisplayName(slotKind, slotIndex),
+            GetSkillDisplayName(normalizedSkillId),
+            GetSkillDisplayName(upgradeSkillId),
+            GetSkillSprite(normalizedSkillId, currentSkill)));
+    }
+
+    private bool OnSkillAwakenSelected(EventChoiceSkillAwakenTarget target)
+    {
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return false;
+
+        if (IsRestActionLocked)
+            return false;
+
+        if (!TryUpgradeSelectedSkill(target, out string resultMessage))
+        {
+            if (!string.IsNullOrWhiteSpace(resultMessage))
+                BattleWarningUI.ShowMessage(resultMessage);
+            return false;
+        }
+
+        isRestUsed = true;
+        hasPendingSkillAwakenResult = true;
+        pendingSkillAwakenResultTarget = target;
+        skillAwakenOptions.Clear();
+
+        RefreshPlayerHUDs();
+        SetHealButtonDisabledFeedback(true);
+        SetUpgradeButtonDisabledFeedback(true);
+        SetRestActionButtonsVisible(false);
+        SetNextButtonVisible(false);
+        return true;
+    }
+
+    private void OnSkillAwakenPanelClosed()
+    {
+        if (!hasPendingSkillAwakenResult)
+        {
+            if (!isRestUsed)
+                SetRestActionButtonsVisible(true);
+            return;
+        }
+
+        if (!isActiveAndEnabled)
+            return;
+
+        if (skillAwakenResultRoutine != null)
+            StopCoroutine(skillAwakenResultRoutine);
+
+        skillAwakenResultRoutine = StartCoroutine(PlaySkillAwakenResultRoutine());
+    }
+
+    private IEnumerator PlaySkillAwakenResultRoutine()
+    {
+        EventChoiceSkillAwakenTarget target = pendingSkillAwakenResultTarget;
+
+        if (skillAwakenSelectionPanel != null && target.IsValid)
+            yield return skillAwakenSelectionPanel.PlayResultSkill(target, true);
+
+        hasPendingSkillAwakenResult = false;
+        pendingSkillAwakenResultTarget = default;
+        skillAwakenResultRoutine = null;
+        SetRestActionButtonsVisible(false);
+        SetNextButtonVisible(true);
+    }
+
+    private bool TryUpgradeSelectedSkill(
+        EventChoiceSkillAwakenTarget target,
+        out string resultMessage)
+    {
+        resultMessage = string.Empty;
+
+        if (!target.IsValid)
+        {
+            resultMessage = "강화할 기억을 선택해야 합니다.";
+            return false;
+        }
+
+        CharacterRuntimeStore characterStore = DataManager.Instance?.CharacterRuntimeStore;
+        if (characterStore == null ||
+            !characterStore.TryGet(target.CharacterId, out CharacterRuntimeData character) ||
+            character == null)
+        {
+            resultMessage = "선택한 캐릭터를 찾을 수 없습니다.";
+            return false;
+        }
+
+        SkillInventoryEquipService.EnsureEquippedSkillArray(character);
+
+        if (!TryReadSkillFromAwakenTarget(character, target, out string currentSkillId) ||
+            !IsSameId(currentSkillId, target.SkillId))
+        {
+            resultMessage = "선택한 기억 장착 상태가 변경되었습니다.";
+            return false;
+        }
+
+        if (!TryGetUpgradeableSkill(currentSkillId, out _, out string upgradeSkillId) ||
+            !IsSameId(upgradeSkillId, target.UpgradeSkillId))
+        {
+            resultMessage = "선택한 기억은 강화할 수 없습니다.";
+            return false;
+        }
+
+        if (!TryApplySelectedSkillUpgrade(character, target, upgradeSkillId))
+        {
+            resultMessage = "선택한 기억을 강화하지 못했습니다.";
+            return false;
+        }
+
+        characterStore.AddOrUpdate(character);
+        EquippedSkillPanelUI.RefreshAll();
+        SkillInventoryPanelUI.RefreshAll();
+        resultMessage = $"기억 강화: {GetSkillDisplayName(upgradeSkillId)}";
+        return true;
+    }
+
+    private bool TryApplySelectedSkillUpgrade(
+        CharacterRuntimeData character,
+        EventChoiceSkillAwakenTarget target,
+        string upgradeSkillId)
+    {
+        switch (target.SlotKind)
+        {
+            case EventChoiceSkillSlotKind.Passive:
+                if (!IsSameId(character.PassiveSkillId, target.SkillId))
+                    return false;
+
+                character.PassiveSkillId = upgradeSkillId;
+                return true;
+
+            case EventChoiceSkillSlotKind.Unique:
+                if (!IsSameId(character.UniqueSkillId, target.SkillId))
+                    return false;
+
+                character.UniqueSkillId = upgradeSkillId;
+                ReplaceMirroredEquippedSkill(character, 0, target.SkillId, upgradeSkillId);
+                return true;
+
+            case EventChoiceSkillSlotKind.Ability:
+                if (!IsSameId(character.AbilitySkillId, target.SkillId))
+                    return false;
+
+                character.AbilitySkillId = upgradeSkillId;
+                ReplaceMirroredEquippedSkill(character, 1, target.SkillId, upgradeSkillId);
+                return true;
+
+            case EventChoiceSkillSlotKind.Equipped:
+                if (character.EquippedSkillIds == null ||
+                    target.SlotIndex < 0 ||
+                    target.SlotIndex >= character.EquippedSkillIds.Length ||
+                    !IsSameId(character.EquippedSkillIds[target.SlotIndex], target.SkillId))
+                {
+                    return false;
+                }
+
+                character.EquippedSkillIds[target.SlotIndex] = upgradeSkillId;
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    private static void ReplaceMirroredEquippedSkill(
+        CharacterRuntimeData character,
+        int slotIndex,
+        string currentSkillId,
+        string upgradeSkillId)
+    {
+        if (character?.EquippedSkillIds == null ||
+            slotIndex < 0 ||
+            slotIndex >= character.EquippedSkillIds.Length ||
+            !IsSameId(character.EquippedSkillIds[slotIndex], currentSkillId))
+        {
+            return;
+        }
+
+        character.EquippedSkillIds[slotIndex] = upgradeSkillId;
+    }
+
+    private static bool TryReadSkillFromAwakenTarget(
+        CharacterRuntimeData character,
+        EventChoiceSkillAwakenTarget target,
+        out string skillId)
+    {
+        skillId = string.Empty;
+
+        if (character == null)
+            return false;
+
+        switch (target.SlotKind)
+        {
+            case EventChoiceSkillSlotKind.Passive:
+                skillId = character.PassiveSkillId;
+                return true;
+
+            case EventChoiceSkillSlotKind.Unique:
+                skillId = character.UniqueSkillId;
+                return true;
+
+            case EventChoiceSkillSlotKind.Ability:
+                skillId = character.AbilitySkillId;
+                return true;
+
+            case EventChoiceSkillSlotKind.Equipped:
+                if (character.EquippedSkillIds == null ||
+                    target.SlotIndex < 0 ||
+                    target.SlotIndex >= character.EquippedSkillIds.Length)
+                {
+                    return false;
+                }
+
+                skillId = character.EquippedSkillIds[target.SlotIndex];
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    private bool TryGetUpgradeableSkill(
+        string skillId,
+        out string normalizedSkillId,
+        out string upgradeSkillId)
+    {
+        normalizedSkillId = string.IsNullOrWhiteSpace(skillId) ? string.Empty : skillId.Trim();
+        upgradeSkillId = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(normalizedSkillId) ||
+            SkillRarityUtility.IsUpgradeSkillVariant(normalizedSkillId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.SkillDatabase == null ||
+            !DataManager.Instance.SkillDatabase.TryGet(normalizedSkillId, out SkillMasterData skill) ||
+            !SkillRarityUtility.CanUpgrade(skill) ||
+            !SkillRarityUtility.TryGetPairedVariantId(normalizedSkillId, out upgradeSkillId) ||
+            string.IsNullOrWhiteSpace(upgradeSkillId) ||
+            !DataManager.Instance.SkillDatabase.TryGet(upgradeSkillId, out _))
+        {
+            normalizedSkillId = string.Empty;
+            upgradeSkillId = string.Empty;
+            return false;
+        }
+
+        upgradeSkillId = upgradeSkillId.Trim();
+        return true;
+    }
+
+    private IEnumerable<CharacterRuntimeData> EnumeratePartyCharacters()
+    {
+        if (DataManager.Instance == null || DataManager.Instance.CharacterRuntimeStore == null)
+            yield break;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        CharacterRuntimeStore characterStore = DataManager.Instance.CharacterRuntimeStore;
+        HashSet<string> yielded = new();
+
+        if (partyStore == null)
+            yield break;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            characterId = characterId.Trim();
+            if (!yielded.Add(characterId))
+                continue;
+
+            if (characterStore.TryGet(characterId, out CharacterRuntimeData character) && character != null)
+                yield return character;
+        }
+    }
+
+    private string GetCharacterDisplayName(string characterId)
+    {
+        if (string.IsNullOrWhiteSpace(characterId))
+            return "캐릭터";
+
+        string normalizedId = characterId.Trim();
+        if (DataManager.Instance?.CharacterDatabase != null &&
+            DataManager.Instance.CharacterDatabase.TryGet(normalizedId, out CharacterMasterData character) &&
+            character != null)
+        {
+            string displayName = GameDataLocalization.CharacterName(character);
+            if (!string.IsNullOrWhiteSpace(displayName))
+                return displayName;
+        }
+
+        return normalizedId;
+    }
+
+    private string GetSkillDisplayName(string skillId)
+    {
+        if (string.IsNullOrWhiteSpace(skillId))
+            return "기억";
+
+        string normalizedId = skillId.Trim();
+        if (DataManager.Instance?.SkillDatabase != null &&
+            DataManager.Instance.SkillDatabase.TryGet(normalizedId, out SkillMasterData skill) &&
+            skill != null)
+        {
+            string displayName = GameDataLocalization.SkillName(skill);
+            if (!string.IsNullOrWhiteSpace(displayName))
+                return displayName;
+        }
+
+        return normalizedId;
+    }
+
+    private static string GetSkillSlotDisplayName(EventChoiceSkillSlotKind slotKind, int slotIndex)
+    {
+        return slotKind switch
+        {
+            EventChoiceSkillSlotKind.Passive => "본능 기억",
+            EventChoiceSkillSlotKind.Unique => "발현 기억",
+            EventChoiceSkillSlotKind.Ability => "구현 기억",
+            EventChoiceSkillSlotKind.Equipped => $"장착 기억 {slotIndex + 1}",
+            _ => "장착 기억"
+        };
+    }
+
+    private Sprite GetSkillSprite(string skillId, SkillMasterData skill)
+    {
+        if (skill != null && skill.Icon != null)
+            return skill.Icon;
+
+        if (string.IsNullOrWhiteSpace(skillId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.SkillIconDatabase == null)
+        {
+            return null;
+        }
+
+        return DataManager.Instance.SkillIconDatabase.TryGetIcon(skillId.Trim(), out Sprite icon)
+            ? icon
+            : null;
+    }
+
+    private static bool IsSameId(string left, string right)
+    {
+        return string.Equals(
+            left?.Trim(),
+            right?.Trim(),
+            System.StringComparison.Ordinal);
     }
 
     private Transform FindChildRecursive(Transform root, string targetName)
