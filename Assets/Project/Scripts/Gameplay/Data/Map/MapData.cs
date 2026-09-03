@@ -15,5 +15,8 @@ namespace Relic.Gameplay.Data
         public string Stage;
 
         public int SpawnWeight;
+
+        // Common: Weak / Normal / Hard, Elite: 1 / 2 / 3
+        public string BattleGroup;
     }
 }

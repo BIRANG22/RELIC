@@ -1,4 +1,4 @@
-using System;
+癤퓎sing System;
 using System.Collections.Generic;
 using System.Globalization;
 using Relic.Gameplay.Battle;
@@ -313,6 +313,7 @@ namespace Relic.Gameplay.Data
                     MapId = mapId,
                     Type = type,
                     EventId = eventId,
+                    IsMapIdOverride = !string.IsNullOrWhiteSpace(definition.MapIdOverride),
                     Position = ResolvePosition(definition),
                     NextNodeIndices = CopyValidConnections(definition, definedNodeIndices)
                 });
@@ -552,8 +553,8 @@ namespace Relic.Gameplay.Data
                 {
                     int nextNodeIndex = definition.NextNodeIndices[j];
 
-                    // 비활성화된 슬롯을 가리키는 이전 연결 정보는 템플릿 전체를 무효화하지 않는다.
-                    // 실제 생성 시 CopyValidConnections에서 현재 활성 노드만 남긴다.
+                    // 활화  키    첩 체 효화 苛쨈.
+                    //    CopyValidConnections  활 躍� .
                     if (!definedNodeIndices.Contains(nextNodeIndex))
                         continue;
 
@@ -636,9 +637,9 @@ namespace Relic.Gameplay.Data
             {
                 string overrideId = definition.MapIdOverride.Trim();
 
-                // MapIdOverride는 DB의 고정 맵을 직접 지정하는 값이므로
-                // 템플릿에 직렬화되어 남아 있는 Type 값과 일치할 필요가 없다.
-                // 실제 방 타입은 DB MapData.Type을 그대로 사용한다.
+                // MapIdOverride DB    求 譴퓐
+                // 첩 화퓸  獵 Type  치 却娥� .
+                //   타 DB MapData.Type 榴 磯.
                 if (TryFindMapById(mapPool, overrideId, stage, out MapData overrideMap))
                 {
                     mapId = overrideMap.MapId;
@@ -720,9 +721,12 @@ namespace Relic.Gameplay.Data
                     continue;
                 }
 
-                // Layer 7 고정 상점용 Map_22는 MapIdOverride로만 사용하고
-                // 일반 이벤트방의 랜덤 후보에는 포함하지 않는다.
+                // Layer 7   Map_22 MapIdOverride罐 構
+                // 球 遣트  캤  苛쨈.
                 if (Same(candidate.MapId, FixedShopMapId))
+                    continue;
+
+                if (Same(type, "Special") && !MapRoomSelectionResolver.IsNormalRandomEventMap(candidate))
                     continue;
 
                 if (!IsRandomCandidateAllowed(candidate, randomExclusionSettings))

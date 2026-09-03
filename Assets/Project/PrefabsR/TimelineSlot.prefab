@@ -2060,7 +2060,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -500, y: 0}
-  m_SizeDelta: {x: 240, y: 200}
+  m_SizeDelta: {x: 70, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &3180521238971374297
 CanvasGroup:
@@ -2156,6 +2156,7 @@ MonoBehaviour:
   useSkillValueTexts: []
   playerReservedColor: {r: 0.039215688, g: 0.27450982, b: 0.61960787, a: 1}
   enemyReservedColor: {r: 0.8745098, g: 0.3019608, b: 0.3372549, a: 1}
+  deadReservationColor: {r: 0.46666667, g: 0.46666667, b: 0.46666667, a: 1}
   emptyUseSkillColor: {r: 1, g: 1, b: 1, a: 0.019607844}
   turnMarkTransform: {fileID: 0}
   turnMarkImage: {fileID: 0}
@@ -2165,6 +2166,8 @@ MonoBehaviour:
   selectedTurnMarkBreathScale: 0.06
   selectedTurnMarkBreathSpeed: 3
   selectedTurnMarkColorSpeed: 4
+  ownerIconHoverScaleMultiplier: 1.1
+  ownerIconHoverScaleDuration: 0.12
 --- !u!1 &7648303202245137288
 GameObject:
   m_ObjectHideFlags: 0

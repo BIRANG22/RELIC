@@ -713,6 +713,11 @@ namespace Relic.Gameplay.Data
                 if (data.Type != type)
                     continue;
 
+                // 일반 Special 노드에는 실제 랜덤 이벤트 풀만 사용합니다.
+                // Map_19(Event_03), Map_22(Event_06 상점), Map_25(Event_09 시작방)는 제외됩니다.
+                if (type == "Special" && !MapRoomSelectionResolver.IsNormalRandomEventMap(data))
+                    continue;
+
                 if (!IsRandomCandidateAllowed(data, randomExclusionSettings))
                     continue;
 
