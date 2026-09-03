@@ -323,8 +323,7 @@ public class EventRoomController : MonoBehaviour
                 HideDiceRollPresenterImmediate();
                 SetEventTitleVisible(false);
                 CompleteCurrentNode();
-                SetNextButtonVisible(false);
-                ReturnToMap();
+                ReturnToMap(() => SetNextButtonVisible(false));
                 return;
             }
 
@@ -352,8 +351,7 @@ public class EventRoomController : MonoBehaviour
             SetEventTitleVisible(false);
 
             CompleteCurrentNode();
-            SetNextButtonVisible(false);
-            ReturnToMap();
+            ReturnToMap(() => SetNextButtonVisible(false));
             return;
         }
 
@@ -366,8 +364,7 @@ public class EventRoomController : MonoBehaviour
         CompleteCurrentNode();
 
         HideDiceRollPresenterImmediate();
-        SetNextButtonVisible(false);
-        ReturnToMap();
+        ReturnToMap(() => SetNextButtonVisible(false));
     }
 
     public void ShowRelicHoverInfo(string relicId)
@@ -1857,6 +1854,10 @@ public class EventRoomController : MonoBehaviour
 
             for (int slotIndex = 0; slotIndex < character.EquippedRelicIds.Length; slotIndex++)
             {
+                // 연성제 슬롯은 일반 유물 교환 대상이 아닙니다.
+                if (slotIndex == ActiveRelicRuntimeUtility.ActiveRelicSlotIndex)
+                    continue;
+
                 string relicId = character.EquippedRelicIds[slotIndex]?.Trim();
                 if (string.IsNullOrWhiteSpace(relicId))
                     continue;
@@ -5392,11 +5393,16 @@ public class EventRoomController : MonoBehaviour
 
     private void ReturnToMap()
     {
+        ReturnToMap(null);
+    }
+
+    private void ReturnToMap(System.Action onCovered)
+    {
         BattleSceneController sceneController =
             Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
 
         if (sceneController != null)
-            sceneController.ReturnToMap();
+            sceneController.ReturnToMap(onCovered);
         else
             Debug.LogWarning("[EventRoomController] BattleSceneController not found");
     }

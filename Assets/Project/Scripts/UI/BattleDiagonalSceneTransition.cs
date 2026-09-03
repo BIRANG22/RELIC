@@ -140,6 +140,11 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
 
         SetProgress(coveredProgress);
 
+        // coveredProgress가 적용된 화면을 최소 한 프레임 실제로 렌더링한 뒤
+        // 방/버튼/UI를 정리합니다. 같은 프레임에 onCovered를 호출하면
+        // 전환이 완전히 덮이기 전에 UI가 먼저 사라져 보일 수 있습니다.
+        await Task.Yield();
+
         onCovered?.Invoke();
 
         SetDirection(uncoverDirection);
