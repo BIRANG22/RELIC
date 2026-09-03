@@ -14,6 +14,8 @@ using UnityEngine.EventSystems;
 /// </summary>
 public class BattleCharacterPanelUI : MonoBehaviour
 {
+    private const float DefaultSkillCostFontSize = 40f;
+    private const float MoveSkillCostFontSize = 25f;
     private static readonly Color32 ManaResourceColor = new Color32(0x33, 0x6F, 0xC5, 0xFF);
     private static readonly Color32 HpResourceColor = new Color32(0xD0, 0x36, 0x36, 0xFF);
 
@@ -1463,7 +1465,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         return boundRuntime.EquippedRuneIds[slotIndex] ?? string.Empty;
     }
 
-    private static void RefreshRuneSlot(Image runeImage, string runeId)
+    private void RefreshRuneSlot(Image runeImage, string runeId)
     {
         if (runeImage == null)
             return;
@@ -1483,6 +1485,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
         runeImage.enabled = showImage;
         runeImage.gameObject.SetActive(showImage);
         runeImage.preserveAspect = true;
+        runeImage.raycastTarget = showImage;
+
+        SetEquipmentSlotEmptyTextVisible(runeImage, !hasRune);
+        EnsureEquipmentIconHoverTarget(
+            runeImage,
+            showImage ? () => ShowRuneHoverInfo(runeId) : null);
     }
 
     private void ClearRuneList()
@@ -1520,7 +1528,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         return boundRuntime.EquippedRelicIds[equippedRelicIndex] ?? string.Empty;
     }
 
-    private static void RefreshPassiveRelicSlot(Image relicImage, string relicId)
+    private void RefreshPassiveRelicSlot(Image relicImage, string relicId)
     {
         if (relicImage == null)
             return;
@@ -1540,6 +1548,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
         relicImage.enabled = showImage;
         relicImage.gameObject.SetActive(showImage);
         relicImage.preserveAspect = true;
+        relicImage.raycastTarget = showImage;
+
+        SetEquipmentSlotEmptyTextVisible(relicImage, !hasRelic);
+        EnsureEquipmentIconHoverTarget(
+            relicImage,
+            showImage ? () => ShowRelicHoverInfo(relicId) : null);
     }
 
     private void ClearPassiveRelicList()
@@ -1550,6 +1564,91 @@ public class BattleCharacterPanelUI : MonoBehaviour
         RefreshPassiveRelicSlot(relic04Image, string.Empty);
         RefreshPassiveRelicSlot(relic05Image, string.Empty);
         RefreshPassiveRelicSlot(relic06Image, string.Empty);
+    }
+
+    private void EnsureEquipmentIconHoverTarget(Image iconImage, Action onPointerEnter)
+    {
+        if (iconImage == null)
+            return;
+
+        BattleEquipmentIconHoverTarget hoverTarget =
+            iconImage.GetComponent<BattleEquipmentIconHoverTarget>();
+
+        if (hoverTarget == null)
+            hoverTarget = iconImage.gameObject.AddComponent<BattleEquipmentIconHoverTarget>();
+
+        hoverTarget.Configure(
+            onPointerEnter,
+            HidePassiveHoverInfo,
+            iconImage.transform.parent,
+            onPointerEnter != null);
+    }
+
+    private static void SetEquipmentSlotEmptyTextVisible(Image iconImage, bool visible)
+    {
+        if (iconImage == null || iconImage.transform.parent == null)
+            return;
+
+        Transform textTransform = iconImage.transform.parent.Find("Text (TMP)");
+        if (textTransform == null)
+            return;
+
+        textTransform.gameObject.SetActive(visible);
+    }
+
+    private void ShowRuneHoverInfo(string runeId)
+    {
+        ResolveSelectionContentReferences();
+
+        if (passiveBack == null || passiveText == null ||
+            string.IsNullOrWhiteSpace(runeId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.RuneDatabase == null ||
+            !DataManager.Instance.RuneDatabase.TryGet(runeId, out RuneData runeData) ||
+            runeData == null)
+        {
+            HidePassiveHoverInfo();
+            return;
+        }
+
+        string name = NormalizeHoverInfoLine(GameDataLocalization.RuneName(runeData));
+        string localizedDescription = GameDataLocalization.RuneDescription(runeData);
+        string details = NormalizeHoverInfoLine(
+            SkillDescriptionFormatter.Format(localizedDescription, runeData.ValueRate, runeData.CountRate));
+
+        passiveText.text = name + "\n" + details;
+        ShowPassiveHoverInfoWithFade();
+    }
+
+    private void ShowRelicHoverInfo(string relicId)
+    {
+        ResolveSelectionContentReferences();
+
+        if (passiveBack == null || passiveText == null ||
+            string.IsNullOrWhiteSpace(relicId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.RelicDatabase == null ||
+            !DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relicData) ||
+            relicData == null)
+        {
+            HidePassiveHoverInfo();
+            return;
+        }
+
+        string name = NormalizeHoverInfoLine(GameDataLocalization.RelicName(relicData));
+        string details = NormalizeHoverInfoLine(GameDataLocalization.RelicEffectDescription(relicData));
+
+        passiveText.text = name + "\n" + details;
+        ShowPassiveHoverInfoWithFade();
+    }
+
+    private static string NormalizeHoverInfoLine(string value)
+    {
+        return (value ?? string.Empty)
+            .Replace("\r\n", " ")
+            .Replace('\r', ' ')
+            .Replace('\n', ' ')
+            .Trim();
     }
 
     private void RefreshMoveButton()
@@ -1612,7 +1711,28 @@ public class BattleCharacterPanelUI : MonoBehaviour
             itemValueText.text = $"{remaining}/{maxUses}";
         }
 
+        ApplyItemButtonEquippedVisual(hasRelic);
         ConfigureButtonHover(itemButton, "Background", "Background2", null);
+    }
+
+    private void ApplyItemButtonEquippedVisual(bool hasActiveRelic)
+    {
+        Image backgroundImage = itemButton != null
+            ? FindChildImage(itemButton.transform, "Background")
+            : null;
+
+        CaptureSkillSlotOriginalColor(backgroundImage);
+        CaptureSkillSlotOriginalColor(itemValueText);
+
+        if (!hasActiveRelic)
+        {
+            SetImageRgbPreserveAlpha(backgroundImage, 0x77, 0x77, 0x77);
+            SetTextRgbPreserveAlpha(itemValueText, 0x77, 0x77, 0x77);
+            return;
+        }
+
+        RestoreSkillSlotOriginalRgb(backgroundImage);
+        RestoreSkillSlotOriginalRgb(itemValueText);
     }
 
     private ActiveRelicAvailability GetActiveRelicAvailability()
@@ -2141,8 +2261,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (valueText != null)
         {
             valueText.text = hasSkill
-                ? Mathf.Max(0, skillData.ResourceCostValue).ToString()
+                ? GetSkillCostDisplayText(skillData)
                 : string.Empty;
+            valueText.fontSize = hasSkill && skillData.Category == Category.Move
+                ? MoveSkillCostFontSize
+                : DefaultSkillCostFontSize;
             valueText.gameObject.SetActive(hasSkill);
         }
 
@@ -2344,6 +2467,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (itemValueText != null)
             itemValueText.text = "0/0";
+
+        ApplyItemButtonEquippedVisual(false);
     }
 
     private void ShowSkillInfo(SkillMasterData skillData)
@@ -2443,7 +2568,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
             skillInfoCostNameText.text = GetResourceDisplayName(skillData.ReferenceResource);
 
         if (skillInfoCostValueText != null)
-            skillInfoCostValueText.text = Mathf.Max(0, skillData.ResourceCostValue).ToString();
+        {
+            skillInfoCostValueText.text = GetSkillCostDisplayText(skillData);
+            skillInfoCostValueText.fontSize = skillData.Category == Category.Move
+                ? MoveSkillCostFontSize
+                : DefaultSkillCostFontSize;
+        }
 
         SetSkillInfoImage(
             skillInfoCostIconImage,
@@ -2456,6 +2586,17 @@ public class BattleCharacterPanelUI : MonoBehaviour
             skillInfoCostValueText,
             skillData,
             isResourceUnavailable);
+    }
+
+    private static string GetSkillCostDisplayText(SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return string.Empty;
+
+        if (skillData.Category == Category.Move)
+            return "이동 거리";
+
+        return Mathf.Max(0, skillData.ResourceCostValue).ToString();
     }
 
     private void RefreshSkillInfoEffects(SkillMasterData skillData)
@@ -3121,5 +3262,62 @@ public sealed class BattlePassiveIconHoverTarget : MonoBehaviour, IPointerEnterH
     private void OnDisable()
     {
         onPointerExit?.Invoke();
+    }
+}
+
+public sealed class BattleEquipmentIconHoverTarget : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    private const float EquipmentHoverScale = 1.1f;
+
+    private Action onPointerEnter;
+    private Action onPointerExit;
+    private Transform scaleTarget;
+    private bool hoverEnabled;
+
+    public void Configure(
+        Action pointerEnter,
+        Action pointerExit,
+        Transform target,
+        bool enableHover)
+    {
+        if (scaleTarget != null && scaleTarget != target)
+            scaleTarget.localScale = Vector3.one;
+
+        onPointerEnter = pointerEnter;
+        onPointerExit = pointerExit;
+        scaleTarget = target;
+        hoverEnabled = enableHover;
+
+        if (!hoverEnabled)
+            ResetScale();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (!hoverEnabled)
+            return;
+
+        if (scaleTarget != null)
+            scaleTarget.localScale = Vector3.one * EquipmentHoverScale;
+
+        onPointerEnter?.Invoke();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        ResetScale();
+        onPointerExit?.Invoke();
+    }
+
+    private void OnDisable()
+    {
+        ResetScale();
+        onPointerExit?.Invoke();
+    }
+
+    private void ResetScale()
+    {
+        if (scaleTarget != null)
+            scaleTarget.localScale = Vector3.one;
     }
 }
