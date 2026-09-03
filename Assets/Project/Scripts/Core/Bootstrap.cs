@@ -12,6 +12,7 @@ public class Bootstrap : MonoBehaviour
     {
         // 1. Settings Load
         Settings.Instance.Load();
+        GameBrightnessManager.ApplySavedBrightness();
 
         // 2. SaveSystem Init
         SaveSystem.Instance.Initialize();

@@ -5,12 +5,14 @@ public class Settings : Singleton<Settings>
     public float MasterVolume = 1f;
     public float BGMVolume = 1f;
     public float SFXVolume = 1f;
+    public float Brightness = 0.5f;
 
     public void Load()
     {
         MasterVolume = PlayerPrefs.GetFloat("MasterVolume", 1f);
         BGMVolume = PlayerPrefs.GetFloat("BGMVolume", 1f);
         SFXVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+        Brightness = Mathf.Clamp01(PlayerPrefs.GetFloat("Brightness", 0.5f));
     }
 
     public void Save()
@@ -18,6 +20,7 @@ public class Settings : Singleton<Settings>
         PlayerPrefs.SetFloat("MasterVolume", MasterVolume);
         PlayerPrefs.SetFloat("BGMVolume", BGMVolume);
         PlayerPrefs.SetFloat("SFXVolume", SFXVolume);
+        PlayerPrefs.SetFloat("Brightness", Mathf.Clamp01(Brightness));
         PlayerPrefs.Save();
     }
 }
