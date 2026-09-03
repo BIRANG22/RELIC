@@ -633,6 +633,12 @@ public class BattleSceneController : MonoBehaviour
             return;
         }
 
+        // 방 내용은 실제로 이 노드를 선택한 순간 확정합니다.
+        // 지도에 생성만 되고 지나가지 않은 방은 중복 방지 이력에 포함되지 않습니다.
+        List<MapData> mapPool = DataManager.Instance.MapDatabase.GetAll();
+        MapData resolvedMap = MapRoomSelectionResolver.ResolveForVisit(nodeData, mapRuntime, mapPool);
+        MapRoomSelectionResolver.ApplyToNode(nodeData, resolvedMap);
+
         mapRuntime.CurrentMapId = nodeData.MapId;
         mapRuntime.CurrentNodeIndex = nodeData.NodeIndex;
 

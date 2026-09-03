@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class BattleMapPanel : MonoBehaviour
 {
-    private const string MapDataResolutionVersion = "MapDataV2";
+    private const string MapDataResolutionVersion = "MapDataV3";
 
     [Header("View")]
     [SerializeField] private MapViewSpawner mapViewSpawner;

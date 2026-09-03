@@ -449,34 +449,34 @@ AR_SpawnExplosiveDollGridEffect,호문쿨루스 브룸,Neutral,0,선택한 빈 �
 
 
 # Map
-맵ID,이름,타입,전투맵ID,이벤트ID,스테이지 맵,등장가중치
-MapId,Name,Type,BattleMapId,EventId,Stage,SpawnWeight
-Map_01,Common_Battle1,Common,Battlemap_01,0,Stage1,1
-Map_02,Common_Battle2,Common,Battlemap_02,0,Stage1,1
-Map_03,Common_Battle3,Common,Battlemap_03,0,Stage1,1
-Map_04,Common_Battle4,Common,Battlemap_04,0,Stage1,1
-Map_05,Common_Battle5,Common,Battlemap_05,0,Stage1,1
-Map_06,Common_Battle6,Common,Battlemap_06,0,Stage1,1
-Map_07,Common_Battle7,Common,Battlemap_07,0,Stage1,1
-Map_08,Common_Battle8,Common,Battlemap_08,0,Stage1,1
-Map_09,Common_Battle9,Common,Battlemap_09,0,Stage1,1
-Map_10,Common_Battle10,Common,Battlemap_10,0,Stage1,1
-Map_11,Elite_Battle1,Elite,Battlemap_11,0,Stage1,1
-Map_12,Elite_Battle2,Elite,Battlemap_12,0,Stage1,1
-Map_13,Elite_Battle3,Elite,Battlemap_13,0,Stage1,1
-Map_14,Elite_Battle4,Elite,Battlemap_14,0,Stage1,1
-Map_15,Elite_Battle5,Elite,Battlemap_15,0,Stage1,1
-Map_16,Boss_Battle,Boss,Battlemap_16,0,Stage1,1
-Map_17,Special1,Special,0,Event_01,Stage1,1
-Map_18,Special2,Special,0,Event_02,Stage1,1
-Map_19,Special3,Special,0,Event_03,Stage1,1
-Map_20,Special4,Special,0,Event_04,Stage1,1
-Map_21,Special5,Special,0,Event_05,Stage1,1
-Map_22,Special6,Special,0,Event_06,Stage1,1
-Map_23,Special7,Special,0,Event_07,Stage1,1
-Map_24,Special8,Special,0,Event_08,Stage1,1
-Map_25,Special9,Start,0,Event_09,Stage1,1
-Map_26,Rest,Rest,0,0,Stage1,1
+맵ID,이름,타입,전투맵ID,이벤트ID,스테이지 맵,등장가중치,전투난이도
+MapId,Name,Type,BattleMapId,EventId,Stage,SpawnWeight,BattleGroup
+Map_01,Common_Battle1,Common,Battlemap_01,0,Stage1,1,Weak
+Map_02,Common_Battle2,Common,Battlemap_02,0,Stage1,1,Weak
+Map_03,Common_Battle3,Common,Battlemap_03,0,Stage1,1,Hard
+Map_04,Common_Battle4,Common,Battlemap_04,0,Stage1,1,Hard
+Map_05,Common_Battle5,Common,Battlemap_05,0,Stage1,1,Normal
+Map_06,Common_Battle6,Common,Battlemap_06,0,Stage1,1,Normal
+Map_07,Common_Battle7,Common,Battlemap_07,0,Stage1,1,Normal
+Map_08,Common_Battle8,Common,Battlemap_08,0,Stage1,1,Normal
+Map_09,Common_Battle9,Common,Battlemap_09,0,Stage1,1,Hard
+Map_10,Common_Battle10,Common,Battlemap_10,0,Stage1,1,Hard
+Map_11,Elite_Battle1,Elite,Battlemap_11,0,Stage1,1,1
+Map_12,Elite_Battle2,Elite,Battlemap_12,0,Stage1,1,1
+Map_13,Elite_Battle3,Elite,Battlemap_13,0,Stage1,1,2
+Map_14,Elite_Battle4,Elite,Battlemap_14,0,Stage1,1,3
+Map_15,Elite_Battle5,Elite,Battlemap_15,0,Stage1,1,3
+Map_16,Boss_Battle,Boss,Battlemap_16,0,Stage1,1,0
+Map_17,Special1,Special,0,Event_01,Stage1,1,0
+Map_18,Special2,Special,0,Event_02,Stage1,1,0
+Map_19,Special3,Special,0,Event_03,Stage1,1,0
+Map_20,Special4,Special,0,Event_04,Stage1,1,0
+Map_21,Special5,Special,0,Event_05,Stage1,1,0
+Map_22,Special6,Special,0,Event_06,Stage1,1,0
+Map_23,Special7,Special,0,Event_07,Stage1,1,0
+Map_24,Special8,Special,0,Event_08,Stage1,1,0
+Map_25,Special9,Start,0,Event_09,Stage1,1,0
+Map_26,Rest,Rest,0,0,Stage1,1,0
 
 ,,,
 

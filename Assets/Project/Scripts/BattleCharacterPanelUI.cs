@@ -2789,7 +2789,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
     }
 
-    private Sprite GetResourceIcon(ReferenceResource resource)
+    public Sprite GetResourceIcon(ReferenceResource resource)
     {
         switch (resource)
         {

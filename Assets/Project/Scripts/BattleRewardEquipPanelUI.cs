@@ -4,6 +4,7 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public sealed class BattleRewardEquipPanelUI : MonoBehaviour
@@ -23,6 +24,15 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text itemNameText;
     [SerializeField] private TMP_Text itemRarityText;
     [SerializeField] private TMP_Text itemEffectText;
+    [SerializeField] private Image itemCostIconImage;
+    [SerializeField] private TMP_Text itemCostValueText;
+    [SerializeField] private Image itemRangeImage;
+
+    [Header("Character Hover")]
+    [SerializeField] private GameObject characterTextRoot;
+    [SerializeField] private GameObject character1SelectRoot;
+    [SerializeField] private GameObject character2SelectRoot;
+    [SerializeField] private GameObject character3SelectRoot;
 
     [Header("Buttons")]
     [SerializeField] private Button confirmButton;
@@ -74,6 +84,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
     {
         ResolveReferencesIfNeeded();
         RegisterButtonEvents();
+        RefreshCharacterHoverVisuals();
         RefreshSelectionVisuals();
         RefreshConfirmButton();
     }
@@ -82,6 +93,11 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
     {
         if (currentReward == null && gameObject.activeSelf)
             gameObject.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        HideAllCharacterHoverSelections();
     }
 
     private void OnDestroy()
@@ -363,6 +379,13 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
                 view.CharacterButton.onClick.AddListener(view.CharacterClickAction);
             }
 
+            if (view.HoverRelay != null)
+            {
+                view.HoverEnterAction ??= () => SetCharacterHoverSelection(characterIndex, true);
+                view.HoverExitAction ??= () => SetCharacterHoverSelection(characterIndex, false);
+                view.HoverRelay.Configure(view.HoverEnterAction, view.HoverExitAction);
+            }
+
             for (int skillIndex = 0; skillIndex < view.SkillSlots.Length; skillIndex++)
             {
                 SkillSlotView skillSlot = view.SkillSlots[skillIndex];
@@ -384,6 +407,35 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
         if (deleteButton != null)
             deleteButton.onClick.RemoveListener(OnClickDelete);
+    }
+
+    private void RefreshCharacterHoverVisuals()
+    {
+        if (characterTextRoot != null)
+            characterTextRoot.SetActive(true);
+
+        HideAllCharacterHoverSelections();
+    }
+
+    private void HideAllCharacterHoverSelections()
+    {
+        SetCharacterHoverSelection(0, false);
+        SetCharacterHoverSelection(1, false);
+        SetCharacterHoverSelection(2, false);
+    }
+
+    private void SetCharacterHoverSelection(int characterIndex, bool visible)
+    {
+        GameObject target = characterIndex switch
+        {
+            0 => character1SelectRoot,
+            1 => character2SelectRoot,
+            2 => character3SelectRoot,
+            _ => null
+        };
+
+        if (target != null)
+            target.SetActive(visible);
     }
 
     private void SelectCharacter(int characterIndex)
@@ -694,6 +746,8 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
             if (itemEffectText != null)
                 itemEffectText.text = GetSkillDescription(skill, currentReward.Description);
+
+            RefreshItemSkillDetails(skill);
         }
         else
         {
@@ -710,7 +764,61 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
                 itemEffectText.text = !string.IsNullOrWhiteSpace(relic?.EffectDesc)
                     ? GameDataLocalization.RelicEffectDescription(relic)
                     : currentReward.Description ?? string.Empty;
+
+            SetItemSkillDetailVisibility(false);
         }
+    }
+
+    private void RefreshItemSkillDetails(SkillMasterData skill)
+    {
+        SetItemSkillDetailVisibility(true);
+
+        if (skill == null)
+        {
+            ApplyImage(itemCostIconImage, null);
+            ApplyImage(itemRangeImage, null);
+            if (itemCostValueText != null)
+                itemCostValueText.text = string.Empty;
+            return;
+        }
+
+        Sprite resourceIcon = ResolveItemResourceIcon(skill.ReferenceResource);
+        ApplyImage(itemCostIconImage, resourceIcon);
+
+        if (itemCostValueText != null)
+            itemCostValueText.text = skill.ResourceCostValue.ToString();
+
+        Sprite rangeIcon = null;
+        if (!string.IsNullOrWhiteSpace(skill.RangeId) &&
+            DataManager.Instance != null &&
+            DataManager.Instance.SkillRangeIconDatabase != null)
+        {
+            DataManager.Instance.SkillRangeIconDatabase.TryGetIcon(skill.RangeId.Trim(), out rangeIcon);
+        }
+
+        ApplyImage(itemRangeImage, rangeIcon);
+    }
+
+    private Sprite ResolveItemResourceIcon(ReferenceResource resource)
+    {
+        BattleCharacterPanelUI battleCharacterPanel = UnityEngine.Object.FindFirstObjectByType<BattleCharacterPanelUI>(FindObjectsInactive.Include);
+        if (battleCharacterPanel != null)
+            return battleCharacterPanel.GetResourceIcon(resource);
+
+        // 배틀 캐릭터 패널을 찾지 못한 경우 Cost_Icon에 미리 지정된 기본 스프라이트를 사용합니다.
+        return itemCostIconImage != null ? itemCostIconImage.sprite : null;
+    }
+
+    private void SetItemSkillDetailVisibility(bool visible)
+    {
+        if (itemCostIconImage != null)
+            itemCostIconImage.gameObject.SetActive(visible);
+
+        if (itemCostValueText != null)
+            itemCostValueText.gameObject.SetActive(visible);
+
+        if (itemRangeImage != null)
+            itemRangeImage.gameObject.SetActive(visible);
     }
 
 
@@ -1220,6 +1328,14 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         itemNameText ??= item != null ? FindText(item, "Name") : null;
         itemRarityText ??= item != null ? FindText(item, "Rarity") : null;
         itemEffectText ??= item != null ? FindText(item, "Effect") : null;
+        itemCostIconImage ??= item != null ? FindImage(item, "Cost_Icon") : null;
+        itemCostValueText ??= item != null ? FindText(item, "Cost_Value") : null;
+        itemRangeImage ??= item != null ? FindImage(item, "Range") : null;
+
+        characterTextRoot ??= FindChildRecursive(transform, "Character_Text")?.gameObject;
+        character1SelectRoot ??= FindChildRecursive(transform, "Character1_Select")?.gameObject;
+        character2SelectRoot ??= FindChildRecursive(transform, "Character2_Select")?.gameObject;
+        character3SelectRoot ??= FindChildRecursive(transform, "Character3_Select")?.gameObject;
 
         confirmButton ??= FindButtonByNames(transform, "Comfirm_Button", "Confirm_Button", "ConfirmButton", "Confirm", "OK_Button", "OKButton");
         deleteButton ??= FindButtonByNames(transform, "Delete_Button", "DeleteButton", "Delete");
@@ -1254,11 +1370,16 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             characterButton = root.gameObject.AddComponent<Button>();
         characterButton.targetGraphic = backImage;
 
+        BattleRewardCharacterHoverRelay hoverRelay = root.GetComponent<BattleRewardCharacterHoverRelay>();
+        if (hoverRelay == null)
+            hoverRelay = root.gameObject.AddComponent<BattleRewardCharacterHoverRelay>();
+
         CharacterView view = new CharacterView
         {
             Root = root,
             BackImage = backImage,
             CharacterButton = characterButton,
+            HoverRelay = hoverRelay,
             NameText = FindTextByNames(root, "Name"),
             Mark1Image = FindImageByNames(root, "mark1", "Mark1"),
             Mark2Image = FindImageByNames(root, "mark2", "Mark2")
@@ -1422,6 +1543,9 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         public Transform Root;
         public Image BackImage;
         public Button CharacterButton;
+        public BattleRewardCharacterHoverRelay HoverRelay;
+        public Action HoverEnterAction;
+        public Action HoverExitAction;
         public TMP_Text NameText;
         public Image Mark1Image;
         public Image Mark2Image;
@@ -1445,5 +1569,27 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         public Button Button;
         public UnityAction ClickAction;
         public Color DefaultBackColor;
+    }
+}
+
+public sealed class BattleRewardCharacterHoverRelay : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    private Action onPointerEnter;
+    private Action onPointerExit;
+
+    public void Configure(Action pointerEnter, Action pointerExit)
+    {
+        onPointerEnter = pointerEnter;
+        onPointerExit = pointerExit;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        onPointerEnter?.Invoke();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        onPointerExit?.Invoke();
     }
 }
