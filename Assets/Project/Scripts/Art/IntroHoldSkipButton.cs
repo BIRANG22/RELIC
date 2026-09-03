@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
@@ -28,7 +29,8 @@ public class IntroHoldSkipButton : MonoBehaviour, IPointerDownHandler, IPointerU
 
     private RectTransform cachedRectTransform;
     private Canvas cachedCanvas;
-    private bool isHolding;
+    private bool isPointerHolding;
+    private bool isSpaceHolding;
     private bool skipTriggered;
     private float holdElapsed;
 
@@ -53,7 +55,9 @@ public class IntroHoldSkipButton : MonoBehaviour, IPointerDownHandler, IPointerU
 
     private void Update()
     {
-        if (!isHolding || skipTriggered)
+        UpdateSpaceHoldState();
+
+        if ((!isPointerHolding && !isSpaceHolding) || skipTriggered)
             return;
 
         IntroSequenceController controller = ResolveController();
@@ -72,7 +76,8 @@ public class IntroHoldSkipButton : MonoBehaviour, IPointerDownHandler, IPointerU
             return;
 
         skipTriggered = true;
-        isHolding = false;
+        isPointerHolding = false;
+        isSpaceHolding = false;
         SetProgress(1f);
         controller.SkipIntro();
     }
@@ -84,26 +89,55 @@ public class IntroHoldSkipButton : MonoBehaviour, IPointerDownHandler, IPointerU
             return;
 
         skipTriggered = false;
-        isHolding = true;
-        holdElapsed = 0f;
-        SetProgress(0f);
+        if (!isSpaceHolding)
+        {
+            holdElapsed = 0f;
+            SetProgress(0f);
+        }
+
+        isPointerHolding = true;
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (!skipTriggered)
-            CancelHold();
+        isPointerHolding = false;
+        CancelHoldIfNoInput();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (!skipTriggered)
-            CancelHold();
+        isPointerHolding = false;
+        CancelHoldIfNoInput();
     }
 
-    private void CancelHold()
+    private void UpdateSpaceHoldState()
     {
-        isHolding = false;
+        bool spacePressed = Keyboard.current != null && Keyboard.current.spaceKey.isPressed;
+
+        if (spacePressed == isSpaceHolding)
+            return;
+
+        isSpaceHolding = spacePressed;
+
+        if (isSpaceHolding)
+        {
+            if (!isPointerHolding && !skipTriggered)
+            {
+                holdElapsed = 0f;
+                SetProgress(0f);
+            }
+
+            return;
+        }
+
+        CancelHoldIfNoInput();
+    }
+
+    private void CancelHoldIfNoInput()
+    {
+        if (skipTriggered || isPointerHolding || isSpaceHolding)
+            return;
+
         holdElapsed = 0f;
 
         if (resetProgressOnCancel)
@@ -112,7 +146,8 @@ public class IntroHoldSkipButton : MonoBehaviour, IPointerDownHandler, IPointerU
 
     private void ResetHold()
     {
-        isHolding = false;
+        isPointerHolding = false;
+        isSpaceHolding = false;
         skipTriggered = false;
         holdElapsed = 0f;
         SetProgress(0f);

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
@@ -7,10 +8,6 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class LobbyTutorialController : MonoBehaviour
 {
-    private const string AnchorVfxRootObjectName = "Vfx_root_anchor";
-    private const string AnchorVfxProxyObjectName = "AnchorVfxProxy";
-    private const string AnchorVfxRendererRootName = "__LobbyTutorialAnchorVfxRenderer";
-    private const int AnchorVfxRenderLayer = 9;
 
     private enum DialogueMode
     {
@@ -49,33 +46,37 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     [Header("Tutorial Display")]
     [SerializeField] private GameObject tutorialDisplay;
-    [SerializeField] private GameObject anchorImage;
     [SerializeField] private GameObject fragmentGroup;
     [SerializeField] private Image[] fragmentImages = new Image[3];
 
-    [Header("Anchor VFX RenderTexture")]
-    [SerializeField] private GameObject anchorVfxRoot;
+    [Header("Fragment Transfer Animation")]
+    [Tooltip("튜토리얼 종료 후 Fragment01~03이 날아갈 SettingButton 위치입니다. 비워두면 이름이 SettingButton인 오브젝트를 자동으로 찾습니다.")]
+    [SerializeField] private RectTransform fragmentTransferTarget;
+    [Tooltip("유물 구매 이동 연출과 동일하게 사용할 RelicPurchaseTransferEffect Texture2D입니다. Texture Type은 Default를 사용할 수 있습니다.")]
+    [SerializeField] private Texture2D fragmentTransferEffectTexture;
+    [Tooltip("생성되는 RelicPurchaseTransferEffect의 크기입니다.")]
+    [SerializeField] private Vector2 fragmentTransferEffectSize = new Vector2(96f, 96f);
+    [Tooltip("파편이 처음 오른쪽 위로 튀어 오르는 UI 이동량입니다.")]
+    [SerializeField] private Vector2 fragmentTransferBounceOffset = new Vector2(180f, 120f);
+    [Tooltip("파편이 처음 튀어 오르는 시간입니다.")]
+    [SerializeField, Min(0.01f)] private float fragmentTransferBounceDuration = 0.18f;
+    [Tooltip("튀어 오른 뒤 SettingButton까지 이동하는 시간입니다.")]
+    [SerializeField, Min(0.01f)] private float fragmentTransferFlyDuration = 0.32f;
+    [Tooltip("Fragment01~03이 RelicPurchaseTransferEffect로 촤라락 교체되는 간격입니다.")]
+    [SerializeField, Min(0f)] private float fragmentTransferSwapInterval = 0.08f;
+    [Tooltip("각 RelicPurchaseTransferEffect가 SettingButton으로 출발하는 간격입니다. 앞 효과가 이동 중이어도 다음 효과가 출발합니다.")]
+    [SerializeField, Min(0f)] private float fragmentTransferLaunchInterval = 0.12f;
+    [Tooltip("RelicPurchaseTransferEffect가 생성될 때의 크기 배율입니다.")]
+    [SerializeField, Min(0.05f)] private float fragmentTransferStartScale = 1f;
+    [Tooltip("SettingButton에 도착할 때 RelicPurchaseTransferEffect의 최종 크기 배율입니다.")]
+    [SerializeField, Min(0.05f)] private float fragmentTransferEndScale = 0.35f;
 
-    [Tooltip("RenderTexture width for the tutorial anchor VFX.")]
-    [SerializeField, Min(1)] private int anchorVfxRenderTextureWidth = 512;
-
-    [Tooltip("RenderTexture height for the tutorial anchor VFX.")]
-    [SerializeField, Min(1)] private int anchorVfxRenderTextureHeight = 512;
-
-    [Tooltip("Orthographic size of the private tutorial anchor VFX camera.")]
-    [SerializeField, Min(0.01f)] private float anchorVfxRenderCameraOrthographicSize = 3f;
-
-    [Tooltip("UI size of the tutorial anchor VFX RawImage proxy.")]
-    [SerializeField] private Vector2 anchorVfxProxySize = new(400f, 400f);
-
-    [Tooltip("Anchored position offset of the tutorial anchor VFX RawImage proxy.")]
-    [SerializeField] private Vector2 anchorVfxProxyAnchoredPosition = Vector2.zero;
-
-    [Tooltip("Local position of the cloned VFX inside the private render space.")]
-    [SerializeField] private Vector3 anchorVfxRenderVfxLocalPosition = Vector3.zero;
-
-    [Tooltip("Optional RawImage material template. Empty uses the scene VFXImage material when present.")]
-    [SerializeField] private Material anchorVfxProxyMaterialTemplate;
+    [Header("Fragment Transfer Trail")]
+    [SerializeField, Min(0.005f)] private float fragmentTrailSpawnInterval = 0.025f;
+    [SerializeField, Min(0.01f)] private float fragmentTrailLifetime = 0.18f;
+    [SerializeField, Range(0.05f, 1f)] private float fragmentTrailStartScale = 0.78f;
+    [SerializeField, Range(0f, 1f)] private float fragmentTrailEndScale = 0.2f;
+    [SerializeField, Range(0f, 1f)] private float fragmentTrailStartAlpha = 0.48f;
 
     [Header("Tutorial Dialogue Text")]
     [Tooltip("최초 로비 진입 시 엘릭이 말하는 대사입니다. 위에서부터 순서대로 재생됩니다.")]
@@ -92,21 +93,9 @@ public sealed class LobbyTutorialController : MonoBehaviour
         "준비가 끝나면 다시 저에게 말을 걸어 주세요."
     };
 
-    [Tooltip("AnchorImage를 표시하기 시작할 최초 대사 번호입니다. 0부터 시작합니다.")]
-    [Min(0)]
-    [SerializeField] private int anchorShowStartIndex = 1;
-
-    [Tooltip("AnchorImage를 마지막으로 표시할 대사 번호입니다. 0부터 시작합니다.")]
-    [Min(0)]
-    [SerializeField] private int anchorShowEndIndex = 3;
-
     [Tooltip("FragmentGroup을 표시하기 시작할 최초 대사 번호입니다. 0부터 시작합니다.")]
     [Min(0)]
     [SerializeField] private int fragmentShowStartIndex = 4;
-
-    [Tooltip("FragmentGroup을 마지막으로 표시할 대사 번호입니다. 0부터 시작합니다.")]
-    [Min(0)]
-    [SerializeField] private int fragmentShowEndIndex = 5;
 
     [Header("First Expedition Dialogue Text")]
     [Tooltip("최초 튜토리얼 이후 엘릭에게 다시 말을 걸었을 때 나오는 대사입니다.")]
@@ -132,7 +121,23 @@ public sealed class LobbyTutorialController : MonoBehaviour
     private Vector2 nextButtonIndicatorBasePosition;
     private bool hasNextButtonIndicatorBasePosition;
     private bool cameraPauseActive;
-    private LobbyUiVfxRenderTextureProxy anchorVfxProxy;
+    private Coroutine fragmentTransferCoroutine;
+
+    private sealed class FragmentTransferSnapshot
+    {
+        public Image SourceImage;
+        public Color Color;
+        public Vector2 ScreenPosition;
+    }
+
+    private sealed class FragmentTransferTrailGhost
+    {
+        public RectTransform Rect;
+        public RawImage Image;
+        public Vector3 StartScale;
+        public Color StartColor;
+        public float Age;
+    }
 
     public bool IsDialogueOpen => dialogueMode != DialogueMode.None;
 
@@ -141,7 +146,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
         AutoBindHierarchy();
         BindNextButton();
         SetDialogueVisible(false);
-        SetTutorialDisplay(false, false);
+        SetTutorialDisplay(false);
         CacheNextButtonIndicatorPosition();
         SetNextButtonReady(false);
     }
@@ -209,7 +214,6 @@ public sealed class LobbyTutorialController : MonoBehaviour
     private void OnDisable()
     {
         StopTypewriter();
-        HideAnchorVfxProxy();
         ReleaseCameraPause();
     }
 
@@ -217,9 +221,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
     {
         if (nextButton != null)
             nextButton.onClick.RemoveListener(AdvanceDialogue);
-
-        HideAnchorVfxProxy();
         ReleaseCameraPause();
+
     }
 
     public void TryInteractWithElric()
@@ -259,7 +262,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
         dialogueMode = DialogueMode.FirstExpedition;
         dialogueIndex = 0;
         SetDialogueVisible(true);
-        SetTutorialDisplay(false, false);
+        SetTutorialDisplay(false);
         RefreshDialogueStep();
     }
 
@@ -306,7 +309,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
         else if (dialogueMode == DialogueMode.FirstExpedition)
         {
             line = GetDialogueLine(firstExpeditionDialogue, dialogueIndex);
-            SetTutorialDisplay(false, false);
+            SetTutorialDisplay(false);
         }
 
         StartTypewriter(line);
@@ -324,13 +327,6 @@ public sealed class LobbyTutorialController : MonoBehaviour
             return string.Empty;
 
         return lines[Mathf.Clamp(index, 0, lines.Length - 1)] ?? string.Empty;
-    }
-
-    private static bool IsIndexInRange(int index, int startIndex, int endIndex)
-    {
-        int min = Mathf.Min(startIndex, endIndex);
-        int max = Mathf.Max(startIndex, endIndex);
-        return index >= min && index <= max;
     }
 
     private void StartTypewriter(string line)
@@ -426,10 +422,10 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     private void ApplyIntroDisplay(int index)
     {
-        bool showAnchor = IsIndexInRange(index, anchorShowStartIndex, anchorShowEndIndex);
-        bool showFragments = IsIndexInRange(index, fragmentShowStartIndex, fragmentShowEndIndex);
+        // 파편이 처음 표시된 뒤에는 마지막 대사가 끝나 패널이 닫힐 때까지 계속 유지합니다.
+        bool showFragments = index >= fragmentShowStartIndex;
 
-        SetTutorialDisplay(showAnchor, showFragments);
+        SetTutorialDisplay(showFragments);
 
         if (showFragments)
         {
@@ -449,11 +445,20 @@ public sealed class LobbyTutorialController : MonoBehaviour
         SetNextButtonReady(false);
 
         DialogueMode finishedMode = dialogueMode;
+        List<FragmentTransferSnapshot> fragmentTransferSnapshots = finishedMode == DialogueMode.Intro
+            ? CaptureFragmentTransferSnapshots()
+            : null;
+
         dialogueMode = DialogueMode.None;
         dialogueIndex = 0;
 
+        // 마지막 문장까지 원본 Fragment를 유지한 뒤, 패널이 닫힌 다음 순차 이동 연출을 시작합니다.
         SetDialogueVisible(false);
-        SetTutorialDisplay(false, false);
+
+        if (finishedMode == DialogueMode.Intro)
+            StartFragmentTransfer(fragmentTransferSnapshots);
+        else
+            SetTutorialDisplay(false);
 
         if (DataManager.Instance == null || DataManager.Instance.LobbyRuntimeStore == null)
             return;
@@ -475,6 +480,467 @@ public sealed class LobbyTutorialController : MonoBehaviour
         }
 
         LobbyQuestManager.Instance?.Refresh();
+    }
+
+    private List<FragmentTransferSnapshot> CaptureFragmentTransferSnapshots()
+    {
+        var snapshots = new List<FragmentTransferSnapshot>();
+        if (fragmentImages == null)
+            return snapshots;
+
+        for (int i = 0; i < fragmentImages.Length; i++)
+        {
+            Image source = fragmentImages[i];
+            if (source == null || source.sprite == null)
+                continue;
+
+            RectTransform sourceRect = source.rectTransform;
+            Camera sourceCamera = ResolveUiCamera(sourceRect);
+            snapshots.Add(new FragmentTransferSnapshot
+            {
+                SourceImage = source,
+                Color = source.color,
+                ScreenPosition = GetRectScreenCenter(sourceRect, sourceCamera)
+            });
+        }
+
+        return snapshots;
+    }
+
+    private void StartFragmentTransfer(List<FragmentTransferSnapshot> snapshots)
+    {
+        if (snapshots == null || snapshots.Count == 0)
+        {
+            SetTutorialDisplay(false);
+            return;
+        }
+
+        if (fragmentTransferCoroutine != null)
+            StopCoroutine(fragmentTransferCoroutine);
+
+        fragmentTransferCoroutine = StartCoroutine(PlayFragmentTransferRoutine(snapshots));
+    }
+
+    private IEnumerator PlayFragmentTransferRoutine(List<FragmentTransferSnapshot> snapshots)
+    {
+        ResolveFragmentTransferTarget();
+        Canvas transferCanvas = ResolveFragmentTransferCanvas();
+
+        if (fragmentTransferTarget == null || transferCanvas == null || fragmentTransferEffectTexture == null)
+        {
+            if (fragmentTransferTarget == null)
+                Debug.LogWarning("[LobbyTutorialController] Fragment 이동 효과의 SettingButton 목표를 찾지 못했습니다.", this);
+
+            if (fragmentTransferEffectTexture == null)
+                Debug.LogWarning("[LobbyTutorialController] Fragment Transfer Effect Texture가 지정되지 않았습니다.", this);
+
+            SetTutorialDisplay(false);
+            fragmentTransferCoroutine = null;
+            yield break;
+        }
+
+        RectTransform transferParent = ResolveTransferEffectParent(transferCanvas);
+        Camera targetCamera = ResolveUiCamera(fragmentTransferTarget);
+        Vector2 targetScreenPosition = GetRectScreenCenter(fragmentTransferTarget, targetCamera);
+
+        var preparedEffects = new List<(RawImage EffectImage, FragmentTransferSnapshot Snapshot)>();
+
+        // 먼저 Fragment01 -> 02 -> 03 순서로 촤라락 Effect로 교체합니다.
+        // 이 단계에서는 아직 SettingButton으로 출발하지 않습니다.
+        for (int i = 0; i < snapshots.Count; i++)
+        {
+            FragmentTransferSnapshot snapshot = snapshots[i];
+            if (snapshot == null || snapshot.SourceImage == null)
+                continue;
+
+            RawImage effectImage = CreateFragmentTransferEffect(transferCanvas, transferParent, snapshot);
+            if (effectImage == null)
+                continue;
+
+            snapshot.SourceImage.gameObject.SetActive(false);
+            preparedEffects.Add((effectImage, snapshot));
+
+            if (i < snapshots.Count - 1 && fragmentTransferSwapInterval > 0f)
+                yield return new WaitForSecondsRealtime(fragmentTransferSwapInterval);
+        }
+
+        // 원본 Fragment는 모두 Effect로 교체되었으므로 TutorialDisplay는 정리합니다.
+        // Effect는 별도의 Canvas에 생성되어 있으므로 계속 화면에 남아 이동합니다.
+        SetTutorialDisplay(false);
+
+        // Effect01이 이동 중일 때 Effect02, Effect03도 순차적으로 출발하도록 겹쳐 재생합니다.
+        var runningTransfers = new List<Coroutine>();
+        for (int i = 0; i < preparedEffects.Count; i++)
+        {
+            RawImage effectImage = preparedEffects[i].EffectImage;
+            FragmentTransferSnapshot snapshot = preparedEffects[i].Snapshot;
+            if (effectImage == null || snapshot == null)
+                continue;
+
+            Coroutine transfer = StartCoroutine(AnimateAndDestroyFragmentTransfer(
+                effectImage,
+                transferCanvas,
+                transferParent,
+                snapshot,
+                targetScreenPosition));
+            runningTransfers.Add(transfer);
+
+            if (i < preparedEffects.Count - 1 && fragmentTransferLaunchInterval > 0f)
+                yield return new WaitForSecondsRealtime(fragmentTransferLaunchInterval);
+        }
+
+        // 이미 동시에 진행 중인 이동들이 모두 끝날 때까지만 기다립니다.
+        for (int i = 0; i < runningTransfers.Count; i++)
+        {
+            if (runningTransfers[i] != null)
+                yield return runningTransfers[i];
+        }
+
+        fragmentTransferCoroutine = null;
+    }
+
+
+    private IEnumerator AnimateAndDestroyFragmentTransfer(
+        RawImage effectImage,
+        Canvas transferCanvas,
+        RectTransform transferParent,
+        FragmentTransferSnapshot snapshot,
+        Vector2 targetScreenPosition)
+    {
+        if (effectImage == null)
+            yield break;
+
+        yield return AnimateSingleFragmentTransfer(
+            effectImage.rectTransform,
+            transferCanvas,
+            transferParent,
+            snapshot,
+            targetScreenPosition);
+
+        if (effectImage != null)
+            Destroy(effectImage.gameObject);
+    }
+
+    private RawImage CreateFragmentTransferEffect(
+        Canvas transferCanvas,
+        RectTransform transferParent,
+        FragmentTransferSnapshot snapshot)
+    {
+        if (transferCanvas == null || snapshot == null || fragmentTransferEffectTexture == null)
+            return null;
+
+        GameObject effectObject = new GameObject(
+            "RelicPurchaseTransferEffect",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(RawImage));
+
+        RectTransform rect = effectObject.GetComponent<RectTransform>();
+        rect.SetParent(transferParent != null ? transferParent : transferCanvas.transform, false);
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = fragmentTransferEffectSize;
+        rect.localScale = Vector3.one * fragmentTransferStartScale;
+        rect.anchoredPosition = ScreenToUiLocalPosition(
+            transferCanvas,
+            transferParent,
+            snapshot.ScreenPosition);
+        rect.SetAsLastSibling();
+
+        RawImage image = effectObject.GetComponent<RawImage>();
+        image.texture = fragmentTransferEffectTexture;
+        image.color = snapshot.Color;
+        image.raycastTarget = false;
+        return image;
+    }
+
+    private IEnumerator AnimateSingleFragmentTransfer(
+        RectTransform effect,
+        Canvas transferCanvas,
+        RectTransform transferParent,
+        FragmentTransferSnapshot snapshot,
+        Vector2 targetScreenPosition)
+    {
+        if (effect == null || snapshot == null)
+            yield break;
+
+        Vector2 targetPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, targetScreenPosition);
+        Vector2 startPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, snapshot.ScreenPosition);
+        Vector2 bouncePosition = startPosition + fragmentTransferBounceOffset;
+        Vector3 startScale = effect.localScale;
+        Vector3 endScale = Vector3.one * fragmentTransferEndScale;
+        float totalDuration = Mathf.Max(0.02f, fragmentTransferBounceDuration + fragmentTransferFlyDuration);
+        float bounceRatio = Mathf.Clamp01(fragmentTransferBounceDuration / totalDuration);
+        Vector3 bounceScale = Vector3.LerpUnclamped(startScale, endScale, bounceRatio);
+        RawImage sourceImage = effect.GetComponent<RawImage>();
+        var trailGhosts = new List<FragmentTransferTrailGhost>();
+        float trailTimer = 0f;
+
+        float elapsed = 0f;
+        float safeBounceDuration = Mathf.Max(0.01f, fragmentTransferBounceDuration);
+        while (elapsed < safeBounceDuration)
+        {
+            float deltaTime = Time.unscaledDeltaTime;
+            elapsed += deltaTime;
+            float eased = EaseInCubic(Mathf.Clamp01(elapsed / safeBounceDuration));
+
+            effect.anchoredPosition = Vector2.LerpUnclamped(startPosition, bouncePosition, eased);
+            effect.localScale = Vector3.LerpUnclamped(startScale, bounceScale, eased);
+            trailTimer += deltaTime;
+            SpawnFragmentTrailGhostsIfNeeded(
+                effect, sourceImage, transferCanvas, transferParent, trailGhosts, ref trailTimer);
+            UpdateFragmentTrailGhosts(trailGhosts, deltaTime);
+
+            yield return null;
+        }
+
+        elapsed = 0f;
+        float safeFlyDuration = Mathf.Max(0.01f, fragmentTransferFlyDuration);
+        while (elapsed < safeFlyDuration)
+        {
+            float deltaTime = Time.unscaledDeltaTime;
+            elapsed += deltaTime;
+            float eased = EaseInQuint(Mathf.Clamp01(elapsed / safeFlyDuration));
+
+            effect.anchoredPosition = Vector2.LerpUnclamped(bouncePosition, targetPosition, eased);
+            effect.localScale = Vector3.LerpUnclamped(bounceScale, endScale, eased);
+            trailTimer += deltaTime;
+            SpawnFragmentTrailGhostsIfNeeded(
+                effect, sourceImage, transferCanvas, transferParent, trailGhosts, ref trailTimer);
+            UpdateFragmentTrailGhosts(trailGhosts, deltaTime);
+
+            yield return null;
+        }
+
+        effect.anchoredPosition = targetPosition;
+        effect.localScale = endScale;
+
+        while (trailGhosts.Count > 0)
+        {
+            UpdateFragmentTrailGhosts(trailGhosts, Time.unscaledDeltaTime);
+            yield return null;
+        }
+    }
+
+    private void SpawnFragmentTrailGhostsIfNeeded(
+        RectTransform sourceRect,
+        RawImage sourceImage,
+        Canvas transferCanvas,
+        RectTransform transferParent,
+        List<FragmentTransferTrailGhost> trailGhosts,
+        ref float trailTimer)
+    {
+        if (sourceRect == null || sourceImage == null || sourceImage.texture == null ||
+            transferCanvas == null || trailGhosts == null)
+        {
+            return;
+        }
+
+        float safeInterval = Mathf.Max(0.005f, fragmentTrailSpawnInterval);
+        while (trailTimer >= safeInterval)
+        {
+            trailTimer -= safeInterval;
+            FragmentTransferTrailGhost ghost = CreateFragmentTrailGhost(
+                sourceRect, sourceImage, transferCanvas, transferParent);
+            if (ghost != null)
+                trailGhosts.Add(ghost);
+        }
+    }
+
+    private FragmentTransferTrailGhost CreateFragmentTrailGhost(
+        RectTransform sourceRect,
+        RawImage sourceImage,
+        Canvas transferCanvas,
+        RectTransform transferParent)
+    {
+        GameObject ghostObject = new GameObject(
+            "FragmentTransferTrail",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(RawImage));
+
+        RectTransform ghostRect = ghostObject.GetComponent<RectTransform>();
+        ghostRect.SetParent(transferParent != null ? transferParent : transferCanvas.transform, false);
+        ghostRect.anchorMin = sourceRect.anchorMin;
+        ghostRect.anchorMax = sourceRect.anchorMax;
+        ghostRect.pivot = sourceRect.pivot;
+        ghostRect.sizeDelta = sourceRect.sizeDelta;
+        ghostRect.anchoredPosition = sourceRect.anchoredPosition;
+        ghostRect.localRotation = sourceRect.localRotation;
+        ghostRect.localScale = sourceRect.localScale * fragmentTrailStartScale;
+
+        int sourceSiblingIndex = sourceRect.GetSiblingIndex();
+        ghostRect.SetSiblingIndex(Mathf.Max(0, sourceSiblingIndex));
+        sourceRect.SetAsLastSibling();
+
+        RawImage ghostImage = ghostObject.GetComponent<RawImage>();
+        ghostImage.texture = sourceImage.texture;
+        ghostImage.uvRect = sourceImage.uvRect;
+        Color ghostColor = sourceImage.color;
+        ghostColor.a *= fragmentTrailStartAlpha;
+        ghostImage.color = ghostColor;
+        ghostImage.raycastTarget = false;
+
+        return new FragmentTransferTrailGhost
+        {
+            Rect = ghostRect,
+            Image = ghostImage,
+            StartScale = ghostRect.localScale,
+            StartColor = ghostColor,
+            Age = 0f
+        };
+    }
+
+    private void UpdateFragmentTrailGhosts(List<FragmentTransferTrailGhost> trailGhosts, float deltaTime)
+    {
+        if (trailGhosts == null)
+            return;
+
+        float safeLifetime = Mathf.Max(0.01f, fragmentTrailLifetime);
+        for (int i = trailGhosts.Count - 1; i >= 0; i--)
+        {
+            FragmentTransferTrailGhost ghost = trailGhosts[i];
+            if (ghost == null || ghost.Rect == null || ghost.Image == null)
+            {
+                trailGhosts.RemoveAt(i);
+                continue;
+            }
+
+            ghost.Age += deltaTime;
+            float t = Mathf.Clamp01(ghost.Age / safeLifetime);
+            Color color = ghost.StartColor;
+            color.a = ghost.StartColor.a * (1f - t);
+            ghost.Image.color = color;
+
+            float scaleMultiplier = Mathf.Lerp(fragmentTrailStartScale, fragmentTrailEndScale, t) /
+                                    Mathf.Max(0.0001f, fragmentTrailStartScale);
+            ghost.Rect.localScale = ghost.StartScale * scaleMultiplier;
+
+            if (t < 1f)
+                continue;
+
+            Destroy(ghost.Rect.gameObject);
+            trailGhosts.RemoveAt(i);
+        }
+    }
+
+    private void ResolveFragmentTransferTarget()
+    {
+        if (fragmentTransferTarget != null)
+            return;
+
+        GameObject target = FindSceneObject("SettingButton");
+        if (target != null)
+            fragmentTransferTarget = target.transform as RectTransform;
+    }
+
+    private Canvas ResolveFragmentTransferCanvas()
+    {
+        Canvas canvas = GetComponentInParent<Canvas>();
+        if (canvas != null)
+            return canvas;
+
+        if (fragmentTransferTarget != null)
+            return fragmentTransferTarget.GetComponentInParent<Canvas>();
+
+        return null;
+    }
+
+    private static RectTransform ResolveTransferEffectParent(Canvas transferCanvas)
+    {
+        if (transferCanvas == null)
+            return null;
+
+        RectTransform contentRoot =
+            ResolutionCanvasViewportFitter.ResolveContentRoot(transferCanvas.transform);
+        return contentRoot != null ? contentRoot : transferCanvas.transform as RectTransform;
+    }
+
+    private static Camera ResolveUiCamera(RectTransform targetRect)
+    {
+        if (targetRect == null)
+            return null;
+
+        Canvas targetCanvas = targetRect.GetComponentInParent<Canvas>();
+        if (targetCanvas == null || targetCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
+            return null;
+
+        return targetCanvas.worldCamera != null ? targetCanvas.worldCamera : Camera.main;
+    }
+
+    private static Vector2 GetRectScreenCenter(RectTransform targetRect, Camera fallbackCamera)
+    {
+        if (targetRect == null)
+            return Vector2.zero;
+
+        Canvas targetCanvas = targetRect.GetComponentInParent<Canvas>();
+        Camera uiCamera = targetCanvas != null && targetCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? (targetCanvas.worldCamera != null ? targetCanvas.worldCamera : fallbackCamera)
+            : null;
+
+        Vector3[] corners = new Vector3[4];
+        targetRect.GetWorldCorners(corners);
+        Vector3 worldCenter = (corners[0] + corners[2]) * 0.5f;
+        return RectTransformUtility.WorldToScreenPoint(uiCamera, worldCenter);
+    }
+
+    private static Vector2 ScreenToUiLocalPosition(
+        Canvas canvas,
+        RectTransform coordinateRoot,
+        Vector2 screenPosition)
+    {
+        if (canvas == null)
+            return Vector2.zero;
+
+        RectTransform targetRect = coordinateRoot != null
+            ? coordinateRoot
+            : canvas.transform as RectTransform;
+        if (targetRect == null)
+            return Vector2.zero;
+
+        Camera uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay
+            ? null
+            : canvas.worldCamera;
+
+        return RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            targetRect, screenPosition, uiCamera, out Vector2 localPoint)
+            ? localPoint
+            : Vector2.zero;
+    }
+
+    private static float EaseInCubic(float t)
+    {
+        t = Mathf.Clamp01(t);
+        return t * t * t;
+    }
+
+    private static float EaseInQuint(float t)
+    {
+        t = Mathf.Clamp01(t);
+        return t * t * t * t * t;
+    }
+
+    private static GameObject FindSceneObject(string objectName)
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        Transform[] all = Resources.FindObjectsOfTypeAll<Transform>();
+        for (int i = 0; i < all.Length; i++)
+        {
+            Transform candidate = all[i];
+            if (candidate == null || candidate.name != objectName)
+                continue;
+
+            GameObject gameObject = candidate.gameObject;
+            if (!gameObject.scene.IsValid())
+                continue;
+
+            return gameObject;
+        }
+
+        return null;
     }
 
     private void SaveTutorialProgressImmediately()
@@ -636,81 +1102,13 @@ public sealed class LobbyTutorialController : MonoBehaviour
             npcImage.gameObject.SetActive(visible);
     }
 
-    private void SetTutorialDisplay(bool showAnchor, bool showFragments)
+    private void SetTutorialDisplay(bool showFragments)
     {
-        bool showRoot = showAnchor || showFragments;
-
         if (tutorialDisplay != null)
-            tutorialDisplay.SetActive(showRoot);
-
-        if (showAnchor)
-        {
-            if (anchorImage != null)
-                anchorImage.SetActive(true);
-
-            ShowAnchorVfxProxy();
-        }
-        else
-        {
-            HideAnchorVfxProxy();
-
-            if (anchorImage != null)
-                anchorImage.SetActive(false);
-        }
+            tutorialDisplay.SetActive(showFragments);
 
         if (fragmentGroup != null)
             fragmentGroup.SetActive(showFragments);
-    }
-
-    private void ShowAnchorVfxProxy()
-    {
-        LobbyUiVfxRenderTextureProxy proxy = EnsureAnchorVfxProxy();
-        if (proxy != null)
-            proxy.Show();
-    }
-
-    private void HideAnchorVfxProxy()
-    {
-        if (anchorVfxProxy == null && anchorImage != null)
-            anchorVfxProxy = anchorImage.GetComponent<LobbyUiVfxRenderTextureProxy>();
-
-        if (anchorVfxProxy != null)
-            anchorVfxProxy.Hide();
-
-        if (anchorVfxRoot != null)
-            anchorVfxRoot.SetActive(false);
-    }
-
-    private LobbyUiVfxRenderTextureProxy EnsureAnchorVfxProxy()
-    {
-        if (anchorImage == null)
-            return null;
-
-        if (anchorVfxRoot == null)
-            anchorVfxRoot = FindChildGameObject(anchorImage.transform, AnchorVfxRootObjectName);
-
-        if (anchorVfxRoot == null)
-            return null;
-
-        if (anchorVfxProxy == null)
-            anchorVfxProxy = anchorImage.GetComponent<LobbyUiVfxRenderTextureProxy>();
-
-        if (anchorVfxProxy == null)
-            anchorVfxProxy = anchorImage.AddComponent<LobbyUiVfxRenderTextureProxy>();
-
-        anchorVfxProxy.Configure(
-            anchorVfxRoot,
-            AnchorVfxProxyObjectName,
-            AnchorVfxRendererRootName,
-            anchorVfxRenderTextureWidth,
-            anchorVfxRenderTextureHeight,
-            anchorVfxRenderCameraOrthographicSize,
-            anchorVfxProxySize,
-            anchorVfxProxyAnchoredPosition,
-            anchorVfxRenderVfxLocalPosition,
-            anchorVfxProxyMaterialTemplate,
-            AnchorVfxRenderLayer);
-        return anchorVfxProxy;
     }
 
     private void AutoBindHierarchy()
@@ -749,17 +1147,12 @@ public sealed class LobbyTutorialController : MonoBehaviour
         {
             Transform displayRoot = tutorialDisplay.transform;
 
-            if (anchorImage == null)
-                anchorImage = FindChildGameObject(displayRoot, "AnchorImage");
-
-            if (anchorVfxRoot == null && anchorImage != null)
-                anchorVfxRoot = FindChildGameObject(anchorImage.transform, AnchorVfxRootObjectName);
-
             if (fragmentGroup == null)
                 fragmentGroup = FindChildGameObject(displayRoot, "FragmentGroup");
         }
 
         AutoBindFragmentImages();
+        ResolveFragmentTransferTarget();
     }
 
     private void AutoBindFragmentImages()
