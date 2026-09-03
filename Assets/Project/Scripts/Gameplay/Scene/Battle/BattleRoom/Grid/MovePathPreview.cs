@@ -42,6 +42,7 @@ public class MovePathPreview : MonoBehaviour
     [SerializeField] private float ySortMultiplier = 100f;
 
     private readonly List<MovePathTileView> spawnedTiles = new();
+    private readonly List<MovePathTileView> pooledTiles = new();
     private int shownStartGridIndex = -1;
     private readonly List<Vector2Int> shownSteps = new();
     private bool reportedMissingTilePrefab;
@@ -98,7 +99,7 @@ public class MovePathPreview : MonoBehaviour
             MovePathTileConnection connection = GetTileConnection(kind, currentCoord, i, moveSteps);
             float scale = Mathf.Max(0f, tileScale);
 
-            MovePathTileView tile = Instantiate(tilePrefab, spawnRoot);
+            MovePathTileView tile = GetOrCreateTile();
             tile.name = $"Move Path Tile {gridIndex}";
             tile.gameObject.SetActive(true);
             tile.transform.position = worldPosition + tileOffset;
@@ -127,19 +128,36 @@ public class MovePathPreview : MonoBehaviour
         for (int i = spawnedTiles.Count - 1; i >= 0; i--)
         {
             MovePathTileView tile = spawnedTiles[i];
-
             if (tile == null)
                 continue;
 
-            if (Application.isPlaying)
-                Destroy(tile.gameObject);
-            else
-                DestroyImmediate(tile.gameObject);
+            tile.gameObject.SetActive(false);
+            pooledTiles.Add(tile);
         }
 
         spawnedTiles.Clear();
         shownStartGridIndex = -1;
         shownSteps.Clear();
+    }
+
+    private MovePathTileView GetOrCreateTile()
+    {
+        while (pooledTiles.Count > 0)
+        {
+            int lastIndex = pooledTiles.Count - 1;
+            MovePathTileView pooled = pooledTiles[lastIndex];
+            pooledTiles.RemoveAt(lastIndex);
+
+            if (pooled == null)
+                continue;
+
+            if (pooled.transform.parent != spawnRoot)
+                pooled.transform.SetParent(spawnRoot, false);
+
+            return pooled;
+        }
+
+        return Instantiate(tilePrefab, spawnRoot);
     }
 
     public void ConfigureForTest(

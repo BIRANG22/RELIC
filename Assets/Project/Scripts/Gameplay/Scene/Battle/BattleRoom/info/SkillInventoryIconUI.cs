@@ -42,7 +42,8 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
 
     private void Update()
     {
-        ApplyScale(false);
+        if (NeedsScaleAnimation())
+            ApplyScale(false);
     }
 
     private void OnDisable()
@@ -164,6 +165,20 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
 
         float t = 1f - Mathf.Exp(-scaleLerpSpeed * Time.unscaledDeltaTime);
         scaleTarget.localScale = Vector3.Lerp(scaleTarget.localScale, targetScale, t);
+    }
+
+    private bool NeedsScaleAnimation()
+    {
+        if (scaleTarget == null)
+            return false;
+
+        if (isPointerOver && !string.IsNullOrWhiteSpace(skillId) && !isSelected)
+            return true;
+
+        CaptureBaseScaleOnce();
+        float multiplier = isSelected && !string.IsNullOrWhiteSpace(skillId) ? selectedScale : 1f;
+        Vector3 targetScale = baseScale * multiplier;
+        return (scaleTarget.localScale - targetScale).sqrMagnitude > 0.000001f;
     }
 
     private void CaptureBaseScaleOnce()

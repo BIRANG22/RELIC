@@ -83,8 +83,10 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
 
     private void Update()
     {
-        ApplyScale(false);
+        if (NeedsScaleAnimation())
+            ApplyScale(false);
 
+        // 장착 가능 강조는 숨쉬기 색상이라 강조 중일 때만 프레임 갱신이 필요합니다.
         if (isEquipAvailableHighlighted)
             ApplyBorderState();
     }
@@ -375,6 +377,17 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
 
         float t = 1f - Mathf.Exp(-scaleLerpSpeed * Time.unscaledDeltaTime);
         scaleTarget.localScale = Vector3.Lerp(scaleTarget.localScale, targetScale, t);
+    }
+
+    private bool NeedsScaleAnimation()
+    {
+        if (scaleTarget == null)
+            return false;
+
+        CaptureBaseScaleOnce();
+        float multiplier = useSelectedScale && isSelected && !string.IsNullOrWhiteSpace(GetCharacterId()) ? selectedScale : 1f;
+        Vector3 targetScale = baseScale * multiplier;
+        return (scaleTarget.localScale - targetScale).sqrMagnitude > 0.000001f;
     }
 
     private void ResetScale()

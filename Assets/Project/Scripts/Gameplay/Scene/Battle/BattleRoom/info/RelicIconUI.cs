@@ -58,7 +58,8 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
 
     private void Update()
     {
-        ApplyScale(false);
+        if (NeedsScaleAnimation())
+            ApplyScale(false);
     }
 
     private void OnDisable()
@@ -224,6 +225,20 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
 
         if (scaleTarget != null)
             scaleTarget.localScale = baseScale;
+    }
+
+    private bool NeedsScaleAnimation()
+    {
+        if (scaleTarget == null)
+            return false;
+
+        if (useHoverBreathEffect && isPointerOver && !string.IsNullOrWhiteSpace(relicId) && !isSelected)
+            return true;
+
+        CaptureBaseScaleOnce();
+        float multiplier = useSelectedScale && isSelected && !string.IsNullOrWhiteSpace(relicId) ? selectedScale : 1f;
+        Vector3 targetScale = baseScale * multiplier;
+        return (scaleTarget.localScale - targetScale).sqrMagnitude > 0.000001f;
     }
 
     private void CaptureBaseScaleOnce()
