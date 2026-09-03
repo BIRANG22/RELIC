@@ -388,23 +388,23 @@ public static class BattleConsecutiveActionPresentationContext
             EndGroup();
     }
 
+    // 연속 행동 배율은 행동 내부 애니메이션/VFX/타격 간격에는 적용하지 않습니다.
+    // 같은 행동과 다음 행동 사이의 전환 지연만 BattleActionRunner에서 별도로 줄입니다.
     public static float ScaleDuration(float duration)
     {
-        return Mathf.Max(0f, duration) / Mathf.Max(1f, SpeedMultiplier);
+        return Mathf.Max(0f, duration);
     }
 
     public static float ScaleActionBeatDuration(float duration, float minimumGroupedDuration)
     {
-        float scaledDuration = ScaleDuration(duration);
-
-        return CurrentInfo.IsGrouped
-            ? Mathf.Max(scaledDuration, Mathf.Max(0f, minimumGroupedDuration))
-            : scaledDuration;
+        // 행동 내부 beat는 연속 행동 여부와 무관하게 원래 시간을 유지합니다.
+        // minimumGroupedDuration도 더 이상 행동 내부 타이밍에 개입하지 않습니다.
+        return Mathf.Max(0f, duration);
     }
 
     public static float ScaleDeltaTime(float deltaTime)
     {
-        return Mathf.Max(0f, deltaTime) * Mathf.Max(1f, SpeedMultiplier);
+        return Mathf.Max(0f, deltaTime);
     }
 
     public static void ApplyAnimatorSpeed(Animator animator, float localMultiplier = 1f)
@@ -412,54 +412,28 @@ public static class BattleConsecutiveActionPresentationContext
         if (animator == null)
             return;
 
+        float safeLocalMultiplier = Mathf.Max(0.01f, localMultiplier);
+
         if (!CurrentInfo.IsGrouped)
         {
-            animator.speed = Mathf.Max(0.01f, localMultiplier);
+            animator.speed = safeLocalMultiplier;
             return;
         }
 
         if (!ManagedAnimators.ContainsKey(animator))
             ManagedAnimators[animator] = animator.speed;
 
+        // 연속 행동 배율과 연타 배율을 곱하지 않습니다.
+        // 여기서는 BattleUnitAnimator가 요청한 로컬 배율(예: 연타 1.35)만 적용합니다.
         animator.speed = Mathf.Max(
             0.01f,
-            ManagedAnimators[animator] * SpeedMultiplier * Mathf.Max(0.01f, localMultiplier));
+            ManagedAnimators[animator] * safeLocalMultiplier);
     }
 
     public static void ApplyVfxSpeed(GameObject root)
     {
-        if (root == null || !CurrentInfo.IsGrouped)
-            return;
-
-        float speed = SpeedMultiplier;
-        ParticleSystem[] particles = root.GetComponentsInChildren<ParticleSystem>(true);
-
-        for (int i = 0; i < particles.Length; i++)
-        {
-            ParticleSystem particle = particles[i];
-
-            if (particle == null)
-                continue;
-
-            ParticleSystem.MainModule main = particle.main;
-            main.simulationSpeed *= speed;
-        }
-
-        Animator[] animators = root.GetComponentsInChildren<Animator>(true);
-
-        for (int i = 0; i < animators.Length; i++)
-        {
-            if (animators[i] != null)
-                animators[i].speed *= speed;
-        }
-
-        VisualEffect[] visualEffects = root.GetComponentsInChildren<VisualEffect>(true);
-
-        for (int i = 0; i < visualEffects.Length; i++)
-        {
-            if (visualEffects[i] != null)
-                visualEffects[i].playRate *= speed;
-        }
+        // 연속 행동 배율은 VFX 자체의 재생 속도를 바꾸지 않습니다.
+        // d -> 다음 a 같은 행동 경계 시간만 BattleActionRunner에서 단축합니다.
     }
 
     public static void EndGroup()

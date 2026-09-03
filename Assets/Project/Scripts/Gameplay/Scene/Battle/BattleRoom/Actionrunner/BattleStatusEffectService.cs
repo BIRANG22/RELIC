@@ -163,13 +163,8 @@ public class BattleStatusEffectService
 
         BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
 
-        if (animator != null)
-        {
-            if (character.RuntimeData.CurrentHP <= 0)
-                animator.PlayDead();
-            else
-                animator.PlayHit();
-        }
+        if (animator != null && character.RuntimeData.CurrentHP <= 0)
+            animator.PlayDead();
     }
 
     public void ApplyBleedDamageToMonsterOnMove(MonsterUnit monster)
