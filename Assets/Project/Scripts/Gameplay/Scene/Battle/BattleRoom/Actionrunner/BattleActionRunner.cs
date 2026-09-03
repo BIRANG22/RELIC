@@ -22,6 +22,7 @@ public class BattleActionRunner
     private readonly float actionRoutineTimeout;
     private readonly Action<PlayerReservedCommand, int> onPlayerCommandExecuted;
     private readonly BattleConsecutiveActionPlan consecutiveActionPlan;
+    private readonly float multiHitActionInterval;
     private BattleConsecutiveActionInfo activeActionInfo = BattleConsecutiveActionInfo.Single;
     private BattleGridEffectController gridEffectController;
     private readonly HashSet<string> nocturnPortalFailedRuntimeIds = new();
@@ -108,13 +109,15 @@ public class BattleActionRunner
       bool useSafeSequentialExecution,
       float actionRoutineTimeout,
       Action<PlayerReservedCommand, int> onPlayerCommandExecuted = null,
-      BattleConsecutiveActionPlan consecutiveActionPlan = null)
+      BattleConsecutiveActionPlan consecutiveActionPlan = null,
+      float multiHitActionInterval = 0.12f)
     {
         this.gridManager = gridManager;
         this.useSafeSequentialExecution = useSafeSequentialExecution;
         this.actionRoutineTimeout = Mathf.Max(0.1f, actionRoutineTimeout);
         this.onPlayerCommandExecuted = onPlayerCommandExecuted;
         this.consecutiveActionPlan = consecutiveActionPlan;
+        this.multiHitActionInterval = Mathf.Max(0f, multiHitActionInterval);
 
         unitFinder = new BattleUnitFinder();
         hudService = new BattleHUDService();
@@ -729,7 +732,9 @@ public class BattleActionRunner
 
     private float GetActivePresentationSpeed()
     {
-        return activeActionInfo.IsGrouped
+        // 연속 행동 배율은 현재 행동 내부가 아니라
+        // 현재 행동의 마지막 연출 -> 다음 같은 행동 시작 경계에만 적용합니다.
+        return activeActionInfo.IsGrouped && !activeActionInfo.IsGroupEnd
             ? Mathf.Max(1f, activeActionInfo.SpeedMultiplier)
             : 1f;
     }
@@ -2238,11 +2243,21 @@ public class BattleActionRunner
             if (attackerAnimator != null)
             {
                 attackerAnimator.PlaySkillAction(command, hitIndex);
+
+                // 각 행동의 첫 타에 Prepare가 있으면 Runner도 그 시간을 실제 행동 시간으로 보장합니다.
+                // 그래야 연속 행동에서도 a -> b / a -> b처럼 다음 행동의 Prepare가 Action에 덮이지 않습니다.
+                float prepareWaitDuration = attackerAnimator.LastScheduledPrepareWaitDuration;
+                if (prepareWaitDuration > 0f)
+                    yield return new WaitForSeconds(prepareWaitDuration);
+
+                // Target VFX도 Prepare가 끝난 뒤 Action 시점에 재생합니다.
                 yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
             }
 
+            // 연타 내부 타격 간격은 일반 ActionDelay와 분리합니다.
+            // 연속행동 배율은 이 값에 적용되지 않고, 연타 배율만 적용됩니다.
             float hitActionDelay = isMultiHit
-                ? ActionDelay / MultiHitAnimationSpeed
+                ? multiHitActionInterval / MultiHitAnimationSpeed
                 : ActionDelay;
             yield return new WaitForSeconds(
                 GetActiveActionBeatDelay(hitActionDelay));
