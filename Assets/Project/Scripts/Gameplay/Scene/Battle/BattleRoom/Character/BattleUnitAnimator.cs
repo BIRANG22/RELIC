@@ -461,6 +461,38 @@ public class BattleUnitAnimator : MonoBehaviour
         yield return PlayProjectileVfx(entry.ProjectileVfx, targetWorldPosition);
     }
 
+    /// <summary>
+    /// SkillVfxDatabase의 TargetUnitVfx를 실제 효과 대상 유닛 위치에 생성합니다.
+    /// TargetUnitVfx가 비어 있거나 targetUnit이 없으면 아무 동작도 하지 않습니다.
+    /// </summary>
+    public bool PlaySkillTargetUnitVfx(
+        SkillMasterData skillData,
+        Transform targetUnit,
+        bool allowPlayOncePerActionCues = true)
+    {
+        if (skillData == null || targetUnit == null)
+            return false;
+
+        if (!TryResolveSkillVfxEntry(skillData, out SkillVfxEntry entry) ||
+            entry == null ||
+            !HasVfx(entry.TargetUnitVfx))
+        {
+            return false;
+        }
+
+        Vector3 targetWorldPosition = ResolveTargetUnitVfxAnchorPosition(targetUnit);
+
+        SpawnDetachedVfx(
+            entry.TargetUnitVfx,
+            targetWorldPosition,
+            vfxLifeTime,
+            applyFacingFlip: false,
+            stabilizeVisualEffects: false,
+            allowPlayOncePerActionCues: allowPlayOncePerActionCues);
+
+        return true;
+    }
+
     public void PlayMonsterSkillAction(MonsterSkillData skillData)
     {
         if (skillData == null)
@@ -1227,6 +1259,25 @@ public class BattleUnitAnimator : MonoBehaviour
             BattleConsecutiveActionPresentationContext.ScaleDuration(vfxLifeTime));
     }
 
+    private Vector3 ResolveTargetUnitVfxAnchorPosition(Transform targetUnit)
+    {
+        if (targetUnit == null)
+            return Vector3.zero;
+
+        BattleUnitAnimator targetAnimator = targetUnit.GetComponent<BattleUnitAnimator>();
+        if (targetAnimator == null)
+            targetAnimator = targetUnit.GetComponentInChildren<BattleUnitAnimator>(true);
+
+        if (targetAnimator != null)
+        {
+            Transform targetSpawn = targetAnimator.GetVfxSpawnTransform();
+            if (targetSpawn != null)
+                return targetSpawn.position;
+        }
+
+        return targetUnit.position;
+    }
+
     private bool TryResolveSelectedGridWorldPosition(
         PlayerReservedCommand command,
         out Vector3 targetWorldPosition)
@@ -1279,7 +1330,8 @@ public class BattleUnitAnimator : MonoBehaviour
         Vector3 anchorWorldPosition,
         float lifeTime,
         bool applyFacingFlip,
-        bool stabilizeVisualEffects = false)
+        bool stabilizeVisualEffects = false,
+        bool allowPlayOncePerActionCues = true)
     {
         if (TrySpawnDetachedWorldVfx(
                 entry,
@@ -1288,17 +1340,30 @@ public class BattleUnitAnimator : MonoBehaviour
                 useUnitSortingTarget: false,
                 applyFacingFlip: applyFacingFlip,
                 stabilizeVisualEffects: stabilizeVisualEffects,
-                out _))
+                out _,
+                allowPlayOncePerActionCues))
         {
             return;
         }
 
-        if (TrySpawnDetachedDirectWorldVfx(entry, anchorWorldPosition, lifeTime, applyFacingFlip, stabilizeVisualEffects))
+        if (TrySpawnDetachedDirectWorldVfx(
+                entry,
+                anchorWorldPosition,
+                lifeTime,
+                applyFacingFlip,
+                stabilizeVisualEffects,
+                allowPlayOncePerActionCues))
         {
             return;
         }
 
-        SpawnDetachedPrefabVfx(entry, anchorWorldPosition, lifeTime, applyFacingFlip, stabilizeVisualEffects);
+        SpawnDetachedPrefabVfx(
+            entry,
+            anchorWorldPosition,
+            lifeTime,
+            applyFacingFlip,
+            stabilizeVisualEffects,
+            allowPlayOncePerActionCues);
     }
 
     private bool TrySpawnDetachedDirectWorldVfx(
@@ -1306,7 +1371,8 @@ public class BattleUnitAnimator : MonoBehaviour
         Vector3 anchorWorldPosition,
         float lifeTime,
         bool applyFacingFlip,
-        bool stabilizeVisualEffects)
+        bool stabilizeVisualEffects,
+        bool allowPlayOncePerActionCues = true)
     {
         if (entry.renderMode != BattleVfxRenderMode.DirectWorldRenderer)
             return false;
@@ -1314,7 +1380,12 @@ public class BattleUnitAnimator : MonoBehaviour
         GameObject anchor = CreateDetachedVfxAnchor(entry, anchorWorldPosition);
         GameObject vfx = Instantiate(entry.prefab, anchor.transform, false);
 
-        ConfigureDirectWorldVfxInstance(vfx, entry, anchor.transform.position.y, applyFacingFlip);
+        ConfigureDirectWorldVfxInstance(
+            vfx,
+            entry,
+            anchor.transform.position.y,
+            applyFacingFlip,
+            allowPlayOncePerActionCues);
 
         if (stabilizeVisualEffects)
             StabilizeVisualEffectPlayback(vfx);
@@ -1332,12 +1403,18 @@ public class BattleUnitAnimator : MonoBehaviour
         Vector3 anchorWorldPosition,
         float lifeTime,
         bool applyFacingFlip,
-        bool stabilizeVisualEffects)
+        bool stabilizeVisualEffects,
+        bool allowPlayOncePerActionCues = true)
     {
         GameObject anchor = CreateDetachedVfxAnchor(entry, anchorWorldPosition);
         GameObject vfx = Instantiate(entry.prefab, anchor.transform, false);
 
-        ConfigureDirectWorldVfxInstance(vfx, entry, anchor.transform.position.y, applyFacingFlip);
+        ConfigureDirectWorldVfxInstance(
+            vfx,
+            entry,
+            anchor.transform.position.y,
+            applyFacingFlip,
+            allowPlayOncePerActionCues);
 
         if (stabilizeVisualEffects)
             StabilizeVisualEffectPlayback(vfx);
@@ -1725,7 +1802,8 @@ public class BattleUnitAnimator : MonoBehaviour
         bool useUnitSortingTarget,
         bool applyFacingFlip,
         bool stabilizeVisualEffects,
-        out BattleWorldVfxHandle handle)
+        out BattleWorldVfxHandle handle,
+        bool allowPlayOncePerActionCues = true)
     {
         Transform spawn = GetVfxSpawnTransform();
         int visibleLayer = spawn != null ? spawn.gameObject.layer : 0;
@@ -1740,7 +1818,7 @@ public class BattleUnitAnimator : MonoBehaviour
                 BattleConsecutiveActionPresentationContext.ScaleDuration(lifeTime)),
             vfx =>
             {
-                ConfigureVfxInstance(vfx, entry, applyFacingFlip);
+                ConfigureVfxInstance(vfx, entry, applyFacingFlip, allowPlayOncePerActionCues);
 
                 if (stabilizeVisualEffects)
                     StabilizeVisualEffectPlayback(vfx);

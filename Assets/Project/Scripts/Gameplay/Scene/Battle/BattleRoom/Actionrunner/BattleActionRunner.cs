@@ -1817,8 +1817,13 @@ public class BattleActionRunner
                     yield return BattleCameraController.Instance.ZoomForRangedSkill();
 
                 if (attackerAnimator != null)
+                {
                     attackerAnimator.PlaySkillAction(command);
 
+                    float prepareWaitDuration = attackerAnimator.LastScheduledPrepareWaitDuration;
+                    if (prepareWaitDuration > 0f)
+                        yield return new WaitForSeconds(prepareWaitDuration);
+                }
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
                 {
@@ -1834,6 +1839,8 @@ public class BattleActionRunner
                     FindObjectsSortMode.None
                 );
 
+                bool allowTargetUnitPlayOnceCue = true;
+
                 for (int i = 0; i < characters.Length; i++)
                 {
                     BattleCharacter target = characters[i];
@@ -1846,6 +1853,15 @@ public class BattleActionRunner
 
                     if (!command.RangeGridIndices.Contains(target.CurrentGridIndex))
                         continue;
+
+                    bool spawnedTargetUnitVfx = PlayTargetUnitVfxOnPlayerTarget(
+                        attackerAnimator,
+                        command,
+                        target,
+                        allowPlayOncePerActionCues: allowTargetUnitPlayOnceCue);
+
+                    if (spawnedTargetUnitVfx)
+                        allowTargetUnitPlayOnceCue = false;
 
                     ExecutePlayerSkillEffectsToPlayer(attacker, target, command);
                 }
@@ -1866,8 +1882,13 @@ public class BattleActionRunner
                     yield return BattleCameraController.Instance.ZoomForRangedSkill();
 
                 if (attackerAnimator != null)
+                {
                     attackerAnimator.PlaySkillAction(command);
 
+                    float prepareWaitDuration = attackerAnimator.LastScheduledPrepareWaitDuration;
+                    if (prepareWaitDuration > 0f)
+                        yield return new WaitForSeconds(prepareWaitDuration);
+                }
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
                 {
@@ -1877,6 +1898,12 @@ public class BattleActionRunner
 
                     yield break;
                 }
+
+                PlayTargetUnitVfxOnPlayerTarget(
+                    attackerAnimator,
+                    command,
+                    attacker,
+                    allowPlayOncePerActionCues: true);
 
                 ExecutePlayerSkillEffectsToPlayer(attacker, attacker, command);
 
@@ -2146,6 +2173,12 @@ public class BattleActionRunner
 
                 playedActionForNonDamage = true;
                 yield return new WaitForSeconds(GetActiveActionBeatDelay());
+
+                PlayTargetUnitVfxOnMonsterTargets(
+                    attackerAnimator,
+                    command,
+                    monsterTargets,
+                    allowPlayOncePerActionCues: true);
             }
 
             ExecutePlayerNonDamageEffectToMonsters(
@@ -2183,6 +2216,66 @@ public class BattleActionRunner
             }
 
             yield return new WaitForSeconds(GetActiveActionBeatDelay());
+        }
+    }
+
+    private static bool PlayTargetUnitVfxOnPlayerTarget(
+        BattleUnitAnimator attackerAnimator,
+        PlayerReservedCommand command,
+        BattleCharacter target,
+        bool allowPlayOncePerActionCues)
+    {
+        if (attackerAnimator == null ||
+            command == null ||
+            command.SkillData == null ||
+            target == null ||
+            target.RuntimeData == null ||
+            target.RuntimeData.IsDead)
+        {
+            return false;
+        }
+
+        return attackerAnimator.PlaySkillTargetUnitVfx(
+            command.SkillData,
+            target.transform,
+            allowPlayOncePerActionCues);
+    }
+
+    private static void PlayTargetUnitVfxOnMonsterTargets(
+     BattleUnitAnimator attackerAnimator,
+     PlayerReservedCommand command,
+     IReadOnlyList<MonsterUnit> targets,
+     bool allowPlayOncePerActionCues)
+    {
+        if (attackerAnimator == null ||
+            command == null ||
+            command.SkillData == null ||
+            targets == null ||
+            targets.Count <= 0)
+        {
+            return;
+        }
+
+        bool allowPlayOnceCueForNextSpawn = allowPlayOncePerActionCues;
+
+        for (int i = 0; i < targets.Count; i++)
+        {
+            MonsterUnit target = targets[i];
+
+            if (target == null ||
+                target.RuntimeData == null ||
+                target.RuntimeData.IsDead)
+            {
+                continue;
+            }
+
+            bool spawned = attackerAnimator.PlaySkillTargetUnitVfx(
+                command.SkillData,
+                target.transform,
+                allowPlayOnceCueForNextSpawn);
+
+            if (spawned)
+                allowPlayOnceCueForNextSpawn = false;
         }
     }
 
@@ -2261,6 +2354,12 @@ public class BattleActionRunner
                 : ActionDelay;
             yield return new WaitForSeconds(
                 GetActiveActionBeatDelay(hitActionDelay));
+
+            PlayTargetUnitVfxOnMonsterTargets(
+                attackerAnimator,
+                command,
+                monsterTargets,
+                allowPlayOncePerActionCues: hitIndex <= 0);
 
             List<Transform> feedbackTargets = new();
             bool appliedAnyHit = false;
