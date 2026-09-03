@@ -802,6 +802,132 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 0.7
       randomPitchMax: 1.3
+  - displayName: S_Unique_01
+    vfxPrefab: {fileID: 396270323009959054, guid: eab634f3ffd2e4441ab6c90624f5b2be, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 188ab83b8bea94aa39e1c4676fda9d0d, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Unique_02
+    vfxPrefab: {fileID: 5372841363813152920, guid: efbd15a5c1bcbcb4dab256d631f18d60, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Unique_03
+    vfxPrefab: {fileID: 6453203898449280538, guid: d2549dd471998d54d97cc0c61d413305, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Unique_04
+    vfxPrefab: {fileID: 306457477009657887, guid: 8c7cc4a40f6dea04f89f2f807cdb8472, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Unique_05
+    vfxPrefab: {fileID: 3857453107072273608, guid: e63bdec7a44d8e74ca2b1e69d61d3e7e, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Unique_06
+    vfxPrefab: {fileID: 3657311369840355751, guid: a2bb111defe50ed44aba0c62d3eac585, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
   - displayName: S_Ability_01,02
     vfxPrefab: {fileID: 9032009973510874767, guid: cd098c4abf4c0094b9c18e2d5c90dfe0, type: 3}
     cues:

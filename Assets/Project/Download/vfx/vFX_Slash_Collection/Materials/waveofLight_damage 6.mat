@@ -135,7 +135,8 @@ Material:
     - _Color: {r: 0.27212527, g: 0.49176028, b: 0.7924528, a: 1}
     - _DistortionSpeedXYPowerZ: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _SpeedMainTexUVNoiseZW: {r: 0.7, g: 0, b: 0.5, a: 0}
+    - _SpeedMainTexUVNoiseZW: {r: 2, g: 0, b: 0.5, a: 0}
     - _TintColor: {r: 0.4290657, g: 0.6720798, b: 0.9117647, a: 0.89411765}
     - _glowcolor: {r: 0.52984434, g: 0.649815, b: 1, a: 1}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1
