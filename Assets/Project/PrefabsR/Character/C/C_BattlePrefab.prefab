@@ -287,13 +287,13 @@ MonoBehaviour:
     prefab: {fileID: 8802234492492066749, guid: 0beedeb423fa0d84585fcbbb3397e1d8, type: 3}
     flipType: 0
     renderMode: 0
-    proxyBlendMode: 0
+    proxyBlendMode: 1
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
     renderCameraOrthographicSize: 5
     proxyWorldHeight: 10
-    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxyWorldOffset: {x: 0, y: 0.3, z: 0}
     proxySortingLayerName: Unit
     proxySortingOrderOffset: 0
     proxySortingWorldYOffset: 0
@@ -302,13 +302,13 @@ MonoBehaviour:
     prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
     flipType: 0
     renderMode: 0
-    proxyBlendMode: 0
+    proxyBlendMode: 1
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
     renderCameraOrthographicSize: 5
     proxyWorldHeight: 10
-    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxyWorldOffset: {x: 0, y: 0.3, z: 0}
     proxySortingLayerName: Unit
     proxySortingOrderOffset: 0
     proxySortingWorldYOffset: 0
