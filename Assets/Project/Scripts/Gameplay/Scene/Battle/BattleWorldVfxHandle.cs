@@ -146,6 +146,9 @@ public sealed class BattleWorldVfxHandle : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (followTarget == null && sortingTarget == null)
+            return;
+
         RefreshTransformAndSorting();
     }
 

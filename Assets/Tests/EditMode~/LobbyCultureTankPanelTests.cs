@@ -45,6 +45,16 @@ public sealed class LobbyCultureTankPanelTests
     }
 
     [Test]
+    public void Update_ThrottlesPassiveRefreshInsteadOfRefreshingEveryFrame()
+    {
+        string source = File.ReadAllText(PresenterSourcePath);
+
+        Assert.That(source, Does.Contain("PassiveRefreshInterval = 0.25f"));
+        Assert.That(source, Does.Contain("Time.unscaledTime < nextPassiveRefreshTime"));
+        Assert.That(source, Does.Not.Contain("private void Update() { if (IsOpen) RefreshAll(); }"));
+    }
+
+    [Test]
     public void CombineButton_UsesInspectorReferenceAndSurvivesHierarchyRename()
     {
         Scene scene = EditorSceneManager.OpenPreviewScene(LobbyScenePath);

@@ -113,6 +113,43 @@ public class BattleWorldVfxRendererTests
     }
 
     [Test]
+    public void VfxHandle_StaticHandleSkipsLateUpdateSortingRefresh()
+    {
+        GameObject proxy = new("Proxy");
+        MeshRenderer proxyRenderer = proxy.AddComponent<MeshRenderer>();
+        BattleWorldVfxHandle handle = proxy.AddComponent<BattleWorldVfxHandle>();
+
+        try
+        {
+            proxy.transform.position = new Vector3(0f, 1f, 0f);
+
+            handle.Initialize(
+                followTarget: null,
+                followWorldOffset: Vector3.zero,
+                proxyRenderer: proxyRenderer,
+                sortingOrderOffset: 0,
+                sortingWorldYOffset: 0f,
+                yMultiplier: 100f,
+                renderGroup: null,
+                renderTexture: null,
+                runtimeMaterial: null);
+
+            proxyRenderer.sortingOrder = 777;
+
+            MethodInfo lateUpdate = typeof(BattleWorldVfxHandle).GetMethod(
+                "LateUpdate",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            lateUpdate.Invoke(handle, null);
+
+            Assert.That(proxyRenderer.sortingOrder, Is.EqualTo(777));
+        }
+        finally
+        {
+            DestroyObject(proxy);
+        }
+    }
+
+    [Test]
     public void AudioSourcePlaybackSettings_CopiesEmbeddedVfxAudioSourcePlaybackProperties()
     {
         GameObject sourceObject = new("EmbeddedAudioSource");
