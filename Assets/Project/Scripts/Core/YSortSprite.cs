@@ -15,6 +15,13 @@ public class YSortSprite : MonoBehaviour
     private Renderer targetRenderer;
     private Renderer spriteRootRenderer;
     private YSortSprite spriteRootSorter;
+    private float lastPositionY;
+    private float lastVirtualYOffset;
+    private float lastYMultiplier;
+    private int lastSortingOrderOffset;
+    private int lastCalculatedSortingOrder;
+    private bool lastUseVirtualYOffset;
+    private bool hasAppliedSortingOrder;
 
     public int sortingOrderOffset = 0;
     public float yMultiplier = 100f;
@@ -33,7 +40,7 @@ public class YSortSprite : MonoBehaviour
         if (ApplyIdleBackSorting())
             return;
 
-        targetRenderer.sortingOrder = CalculateSortingOrder();
+        ApplySortingIfChanged();
     }
 
     private int CalculateSortingOrder()
@@ -46,6 +53,32 @@ public class YSortSprite : MonoBehaviour
         return (int)(-y * yMultiplier) + sortingOrderOffset;
     }
 
+    private void ApplySortingIfChanged()
+    {
+        float positionY = transform.position.y;
+        if (hasAppliedSortingOrder &&
+            Mathf.Approximately(lastPositionY, positionY) &&
+            Mathf.Approximately(lastVirtualYOffset, virtualYOffset) &&
+            Mathf.Approximately(lastYMultiplier, yMultiplier) &&
+            lastSortingOrderOffset == sortingOrderOffset &&
+            lastUseVirtualYOffset == useVirtualYOffset)
+        {
+            return;
+        }
+
+        int sortingOrder = CalculateSortingOrder();
+        if (!hasAppliedSortingOrder || targetRenderer.sortingOrder != sortingOrder)
+            targetRenderer.sortingOrder = sortingOrder;
+
+        lastPositionY = positionY;
+        lastVirtualYOffset = virtualYOffset;
+        lastYMultiplier = yMultiplier;
+        lastSortingOrderOffset = sortingOrderOffset;
+        lastUseVirtualYOffset = useVirtualYOffset;
+        lastCalculatedSortingOrder = sortingOrder;
+        hasAppliedSortingOrder = true;
+    }
+
     private bool ApplyIdleBackSorting()
     {
         if (spriteRootSorter == null || targetRenderer == null)
@@ -54,7 +87,16 @@ public class YSortSprite : MonoBehaviour
         if (spriteRootRenderer != null)
             targetRenderer.sortingLayerID = spriteRootRenderer.sortingLayerID;
 
-        targetRenderer.sortingOrder = spriteRootSorter.CalculateSortingOrder() - 1;
+        int sortingOrder = spriteRootSorter.CalculateSortingOrder() - 1;
+        if (!hasAppliedSortingOrder ||
+            targetRenderer.sortingOrder != sortingOrder ||
+            lastCalculatedSortingOrder != sortingOrder)
+        {
+            targetRenderer.sortingOrder = sortingOrder;
+            lastCalculatedSortingOrder = sortingOrder;
+            hasAppliedSortingOrder = true;
+        }
+
         return true;
     }
 

@@ -48,6 +48,7 @@ public class MonsterHUDSlot : MonoBehaviour
     private int targetShield;
     private bool hasDisplayedValues;
     private bool isVisible;
+    private Camera cachedMainCamera;
 
     private void Awake()
     {
@@ -101,7 +102,7 @@ public class MonsterHUDSlot : MonoBehaviour
         if (!useFollowPosition || followTarget == null || rectTransform == null)
             return;
 
-        Camera cam = Camera.main;
+        Camera cam = GetMainCamera();
         if (cam == null)
             return;
 
@@ -126,6 +127,14 @@ public class MonsterHUDSlot : MonoBehaviour
         }
 
         return followTarget.position + worldOffset;
+    }
+
+    private Camera GetMainCamera()
+    {
+        if (cachedMainCamera == null)
+            cachedMainCamera = Camera.main;
+
+        return cachedMainCamera;
     }
 
     public void Bind(MonsterRuntimeData runtimeData)

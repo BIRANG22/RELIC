@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 {
     private const int StorageMinimumSlotCount = 36;
+    private const float PassiveRefreshInterval = 0.25f;
 
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private Button backButton;
@@ -27,11 +28,18 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     private readonly List<BattleBagItemSlotUI> storageSlots = new();
     private readonly List<string> storageItemOrder = new();
     private int selectedSlotIndex = -1;
+    private float nextPassiveRefreshTime;
 
     public bool IsOpen => panelRoot != null && panelRoot.activeSelf;
     private void Awake() { BindSceneObjects(); BindButtons(); EnsureStorageSlots(); }
     private void OnEnable() { BindSceneObjects(); BindButtons(); EnsureStorageSlots(); RefreshAll(); RefreshPanelText(); }
-    private void Update() { if (IsOpen) RefreshAll(); }
+    private void Update()
+    {
+        if (!IsOpen || Time.unscaledTime < nextPassiveRefreshTime)
+            return;
+
+        RefreshAll();
+    }
 
     public void Open()
     {
@@ -55,7 +63,13 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     private void OnDisable() => LobbyPositionModalInputBlocker.Unblock(this);
     private void OnDestroy() => LobbyPositionModalInputBlocker.Unblock(this);
 
-    private void RefreshAll() { RefreshRows(); RefreshInventory(); RefreshCompletion(); }
+    private void RefreshAll()
+    {
+        nextPassiveRefreshTime = Time.unscaledTime + PassiveRefreshInterval;
+        RefreshRows();
+        RefreshInventory();
+        RefreshCompletion();
+    }
 
     private void RefreshRows()
     {

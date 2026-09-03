@@ -3,6 +3,7 @@ using UnityEngine;
 public class InputManager : Singleton<InputManager>
 {
     public Vector3 MouseWorldPosition { get; private set; }
+    private Camera cachedMainCamera;
 
     public void Initialize()
     {
@@ -14,14 +15,23 @@ public class InputManager : Singleton<InputManager>
 
     private void HandleMouse()
     {
-        if (Camera.main == null) return;
+        Camera mainCamera = GetMainCamera();
+        if (mainCamera == null) return;
 
-        MouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        MouseWorldPosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
         MouseWorldPosition = new Vector3(MouseWorldPosition.x, MouseWorldPosition.y, 0);
 
         if (Input.GetMouseButtonDown(0))
         {
             EventBus.Instance.Publish(new MouseLeftClickEvent(MouseWorldPosition));
         }
+    }
+
+    private Camera GetMainCamera()
+    {
+        if (cachedMainCamera == null)
+            cachedMainCamera = Camera.main;
+
+        return cachedMainCamera;
     }
 }
