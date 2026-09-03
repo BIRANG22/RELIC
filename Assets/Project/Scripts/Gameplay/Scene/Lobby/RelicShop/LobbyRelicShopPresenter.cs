@@ -27,8 +27,8 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     [Tooltip("튀어 오른 위치에서 Equip 버튼까지 돌진하는 시간입니다. 처음에는 느리고 끝으로 갈수록 빠르게 가속합니다.")]
     [SerializeField, Min(0.01f)] private float ringFlyDuration = 0.32f;
     [SerializeField, Min(0.1f)] private float ringEndScale = 0.72f;
-    [Tooltip("유물 구매 후 Equip 버튼으로 날아갈 원형 효과 스프라이트입니다.")]
-    [SerializeField] private Sprite purchaseTransferEffectSprite;
+    [Tooltip("유물 구매 후 Equip 버튼으로 날아갈 원형 효과 Texture2D입니다. Texture Type은 Default를 사용할 수 있습니다.")]
+    [SerializeField] private Texture2D purchaseTransferEffectTexture;
     [Tooltip("원형 효과의 UI 크기입니다.")]
     [SerializeField] private Vector2 purchaseTransferEffectSize = new Vector2(96f, 96f);
     [Tooltip("원형 효과가 최종적으로 들어갈 Equip 버튼 위치입니다. Equip 버튼 또는 버튼 아래의 빈 RectTransform을 직접 지정할 수 있습니다.")]
@@ -125,6 +125,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     private void OnDestroy()
     {
         LobbyPositionModalInputBlocker.Unblock(this);
+
     }
 
     public void RefreshOffers()
@@ -330,7 +331,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
         Canvas transferCanvas = ResolveTransferEffectCanvas();
         RectTransform transferParent = ResolveTransferEffectParent(transferCanvas);
-        Image transferEffect = CreateTransferEffectImage(
+        RawImage transferEffect = CreateTransferEffectImage(
             transferCanvas,
             transferParent,
             startScreenPosition,
@@ -741,10 +742,10 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private Canvas ResolveTransferEffectCanvas()
     {
-        if (purchaseTransferEffectSprite == null)
+        if (purchaseTransferEffectTexture == null)
         {
             Debug.LogWarning(
-                "[LobbyRelicShopPresenter] Purchase Transfer Effect Sprite가 지정되지 않았습니다.",
+                "[LobbyRelicShopPresenter] Purchase Transfer Effect Texture가 지정되지 않았습니다.",
                 this);
             return null;
         }
@@ -763,20 +764,20 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         return ownerCanvas;
     }
 
-    private Image CreateTransferEffectImage(
+    private RawImage CreateTransferEffectImage(
         Canvas transferCanvas,
         RectTransform transferParent,
         Vector2 screenPosition,
         Color rarityColor)
     {
-        if (transferCanvas == null || purchaseTransferEffectSprite == null)
+        if (transferCanvas == null || purchaseTransferEffectTexture == null)
             return null;
 
         GameObject effectObject = new GameObject(
             "RelicPurchaseTransferEffect",
             typeof(RectTransform),
             typeof(CanvasRenderer),
-            typeof(Image));
+            typeof(RawImage));
 
         RectTransform rect = effectObject.GetComponent<RectTransform>();
         rect.SetParent(transferParent != null ? transferParent : transferCanvas.transform, false);
@@ -788,10 +789,9 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         rect.anchoredPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, screenPosition);
         rect.SetAsLastSibling();
 
-        Image image = effectObject.GetComponent<Image>();
-        image.sprite = purchaseTransferEffectSprite;
+        RawImage image = effectObject.GetComponent<RawImage>();
+        image.texture = purchaseTransferEffectTexture;
         image.color = rarityColor;
-        image.preserveAspect = true;
         image.raycastTarget = false;
         return image;
     }
@@ -799,7 +799,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     private sealed class PurchaseTrailGhost
     {
         public RectTransform Rect;
-        public Image Image;
+        public RawImage Image;
         public Vector3 StartScale;
         public Color StartColor;
         public float Age;
@@ -815,7 +815,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         if (target == null || transferCanvas == null)
             yield break;
 
-        Image sourceImage = target.GetComponent<Image>();
+        RawImage sourceImage = target.GetComponent<RawImage>();
         Vector2 fromPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, fromScreenPosition);
         Vector2 toPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, toScreenPosition);
         Vector2 bouncePosition = fromPosition + purchaseBounceOffset;
@@ -896,7 +896,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private void SpawnTrailGhostsIfNeeded(
         RectTransform sourceRect,
-        Image sourceImage,
+        RawImage sourceImage,
         Canvas transferCanvas,
         RectTransform transferParent,
         List<PurchaseTrailGhost> trailGhosts,
@@ -904,7 +904,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     {
         if (sourceRect == null ||
             sourceImage == null ||
-            sourceImage.sprite == null ||
+            sourceImage.texture == null ||
             transferCanvas == null ||
             trailGhosts == null)
         {
@@ -923,7 +923,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private PurchaseTrailGhost CreateTrailGhost(
         RectTransform sourceRect,
-        Image sourceImage,
+        RawImage sourceImage,
         Canvas transferCanvas,
         RectTransform transferParent)
     {
@@ -931,7 +931,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             "RelicPurchaseTrail",
             typeof(RectTransform),
             typeof(CanvasRenderer),
-            typeof(Image));
+            typeof(RawImage));
 
         RectTransform ghostRect = ghostObject.GetComponent<RectTransform>();
         ghostRect.SetParent(transferParent != null ? transferParent : transferCanvas.transform, false);
@@ -948,12 +948,12 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         ghostRect.SetSiblingIndex(Mathf.Max(0, sourceSiblingIndex));
         sourceRect.SetAsLastSibling();
 
-        Image ghostImage = ghostObject.GetComponent<Image>();
-        ghostImage.sprite = sourceImage.sprite;
+        RawImage ghostImage = ghostObject.GetComponent<RawImage>();
+        ghostImage.texture = sourceImage.texture;
+        ghostImage.uvRect = sourceImage.uvRect;
         Color ghostColor = sourceImage.color;
         ghostColor.a *= trailStartAlpha;
         ghostImage.color = ghostColor;
-        ghostImage.preserveAspect = sourceImage.preserveAspect;
         ghostImage.raycastTarget = false;
 
         return new PurchaseTrailGhost

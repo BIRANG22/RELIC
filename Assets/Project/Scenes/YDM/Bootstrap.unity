@@ -9736,7 +9736,7 @@ GameObject:
   - component: {fileID: 1966123488}
   - component: {fileID: 1966123487}
   m_Layer: 0
-  m_Name: Button
+  m_Name: SkipButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9778,7 +9778,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   introSequenceController: {fileID: 0}
-  holdDuration: 1.5
+  holdDuration: 1
   fillImage: {fileID: 813913949}
   resetProgressOnCancel: 1
 --- !u!114 &1966123488
