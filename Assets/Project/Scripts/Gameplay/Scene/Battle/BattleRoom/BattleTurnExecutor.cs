@@ -55,7 +55,10 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private float actionRoutineTimeout = 8f;
 
     [Header("Consecutive Action Presentation")]
-    [SerializeField, Min(1f)] private float consecutiveActionSpeedMultiplier = 1.5f;
+    [SerializeField, Min(1f)] private float consecutiveActionSpeedMultiplier = 1.2f;
+
+    [Header("Multi Hit Presentation")]
+    [SerializeField, Min(0f)] private float multiHitActionInterval = 0.12f;
 
     [Header("Intro Text")]
     [SerializeField] private string battleProgressMessage = "전투 진행";
@@ -450,7 +453,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 useSafeSequentialExecution,
                 actionRoutineTimeout,
                 uniqueResourceService.OnPlayerCommandExecuted,
-                consecutiveActionPlan
+                consecutiveActionPlan,
+                multiHitActionInterval
             );
             SteamBattleStateSynchronizer.TryBroadcastBattleExecution(batches);
 
@@ -688,7 +692,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 useSafeSequentialExecution,
                 actionRoutineTimeout,
                 uniqueResourceService != null ? uniqueResourceService.OnPlayerCommandExecuted : null,
-                consecutiveActionPlan
+                consecutiveActionPlan,
+                multiHitActionInterval
             );
 
             yield return ShowBattleProgressIntroTextRoutineSafe();

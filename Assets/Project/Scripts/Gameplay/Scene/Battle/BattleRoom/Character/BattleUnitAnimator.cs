@@ -84,8 +84,10 @@ public class BattleUnitAnimator : MonoBehaviour
     private int currentAttackIndex;
     private SkillAttackSlot previousSkillAttackOverrideSlot = SkillAttackSlot.None;
     private Transform vfxSortingReference;
+    private float playbackSpeedMultiplier = 1f;
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
+    public float LastScheduledPrepareWaitDuration { get; private set; }
 
     private void Awake()
     {
@@ -143,18 +145,26 @@ public class BattleUnitAnimator : MonoBehaviour
     /// </summary>
     public void SetPlaybackSpeed(float speed)
     {
+        playbackSpeedMultiplier = Mathf.Max(0.01f, speed);
+
         if (EnsureAnimator())
         {
             BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(
                 animator,
-                Mathf.Max(0.01f, speed));
+                playbackSpeedMultiplier);
         }
     }
 
     public void RestorePlaybackSpeed()
     {
+        playbackSpeedMultiplier = 1f;
+
         if (EnsureAnimator())
-            BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(animator);
+        {
+            BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(
+                animator,
+                playbackSpeedMultiplier);
+        }
     }
 
     public void PlayGuard()
@@ -275,6 +285,8 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlaySkillAction(PlayerReservedCommand command, int hitIndex)
     {
+        LastScheduledPrepareWaitDuration = 0f;
+
         if (command == null)
         {
             PlayIdle();
@@ -733,6 +745,8 @@ public class BattleUnitAnimator : MonoBehaviour
         System.Action onActionStart,
         bool playPrepare = true)
     {
+        LastScheduledPrepareWaitDuration = 0f;
+
         if (presentation == null)
         {
             onActionStart?.Invoke();
@@ -750,16 +764,20 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
         }
 
+        LastScheduledPrepareWaitDuration = GetPrepareWaitDuration(presentation.prepareDuration);
+
         StartCoroutine(PlayPresentationSequence(
             presentation,
             command,
-            onActionStart));
+            onActionStart,
+            LastScheduledPrepareWaitDuration));
     }
 
     private IEnumerator PlayPresentationSequence(
         BattleUnitActionPresentation presentation,
         MonsterReservedCommand command,
-        System.Action onActionStart)
+        System.Action onActionStart,
+        float waitDuration)
     {
         if (presentation == null)
         {
@@ -771,7 +789,6 @@ public class BattleUnitAnimator : MonoBehaviour
         // VFX와 그 VFX에 연결된 사운드는 Action 시작 시점까지 재생하지 않습니다.
         PlayOptionalState(presentation.prepareStateName);
 
-        float waitDuration = GetPrepareWaitDuration(presentation.prepareDuration);
         if (waitDuration > 0f)
             yield return new WaitForSeconds(waitDuration);
 
@@ -2073,7 +2090,9 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void PlayAnimatorState(string stateName)
     {
-        BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(animator);
+        BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(
+            animator,
+            playbackSpeedMultiplier);
 
         if (crossFadeDuration > 0f)
             animator.CrossFadeInFixedTime(stateName, crossFadeDuration, animatorLayer, 0f);

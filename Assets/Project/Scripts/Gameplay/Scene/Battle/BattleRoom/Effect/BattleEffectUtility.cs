@@ -502,13 +502,8 @@ public static class BattleEffectUtility
 
         BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
 
-        if (animator != null)
-        {
-            if (target.RuntimeData.IsDead)
-                animator.PlayDead();
-            else
-                animator.PlayHit();
-        }
+        if (animator != null && target.RuntimeData.IsDead)
+            animator.PlayDead();
 
         OnPlayerHudRefreshRequested?.Invoke(target);
     }
@@ -545,13 +540,8 @@ public static class BattleEffectUtility
 
         BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
 
-        if (animator != null)
-        {
-            if (target.RuntimeData.IsDead)
-                animator.PlayDead();
-            else
-                animator.PlayHit();
-        }
+        if (animator != null && target.RuntimeData.IsDead)
+            animator.PlayDead();
 
         target.ShowTemporaryHUDForEffect();
     }
