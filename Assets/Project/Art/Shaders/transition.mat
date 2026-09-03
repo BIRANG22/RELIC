@@ -66,7 +66,7 @@ Material:
     - _UIMaskSoftnessX: 1
     - _UIMaskSoftnessY: 1
     - _ZWrite: 0
-    - _direction: 0
+    - _direction: 1
     - _noise_strength: 3.81
     - _noise_strength2: 3.05
     - _progress: 0.5
