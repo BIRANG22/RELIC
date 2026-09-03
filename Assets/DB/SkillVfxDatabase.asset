@@ -301,7 +301,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3688985328973339552, guid: 29f13300e2979c949905f4b38ac44c24, type: 3}
+      impactPrefab: {fileID: 2841605795099109794, guid: c6af3d6fbc60e0c48a4e68a3718f2d73, type: 3}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -328,7 +328,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3688985328973339552, guid: 29f13300e2979c949905f4b38ac44c24, type: 3}
+      impactPrefab: {fileID: 2841605795099109794, guid: c6af3d6fbc60e0c48a4e68a3718f2d73, type: 3}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
