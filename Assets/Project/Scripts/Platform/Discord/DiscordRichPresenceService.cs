@@ -47,7 +47,9 @@ public sealed class DiscordRichPresenceService : MonoBehaviour
 
     private void Update()
     {
-        if (isShuttingDown || Time.unscaledTime < nextRefreshTime)
+        if (isShuttingDown ||
+            Status == DiscordPresenceStatus.Error ||
+            Time.unscaledTime < nextRefreshTime)
             return;
 
         RefreshPresence();
@@ -148,9 +150,17 @@ public sealed class DiscordRichPresenceService : MonoBehaviour
             return;
         }
 
+        ErrorType errorType = result != null
+            ? result.Type()
+            : ErrorType.ClientNotReady;
+
+        if (DiscordPresencePolicy.IsExpectedClientUnavailable(errorType))
+            return;
+
         string error = result != null ? result.Error() : "No SDK result";
+        Status = DiscordPresenceStatus.Error;
         Debug.LogWarning(
-            $"[DiscordPresence] Discord desktop client unavailable or update failed: {error}");
+            $"[DiscordPresence] Presence update failed. Type:{errorType}, Error:{error}");
     }
 
     private void OnApplicationQuit()

@@ -1,4 +1,5 @@
 using System;
+using Discord.Sdk;
 
 public static class DiscordPresencePolicy
 {
@@ -19,6 +20,14 @@ public static class DiscordPresencePolicy
         return successful
             ? DiscordPresenceStatus.Ready
             : DiscordPresenceStatus.Unavailable;
+    }
+
+    public static bool IsExpectedClientUnavailable(ErrorType errorType)
+    {
+        return errorType == ErrorType.NetworkError ||
+               errorType == ErrorType.ClientNotReady ||
+               errorType == ErrorType.Disabled ||
+               errorType == ErrorType.RPCError;
     }
 
     public static bool ShouldRetry(DiscordPresenceStatus status)
