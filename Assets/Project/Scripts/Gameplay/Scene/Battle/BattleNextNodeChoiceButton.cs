@@ -13,6 +13,7 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
     [SerializeField] private Animator animator;
 
     [SerializeField] private AnimationClip eventClip;
+    [SerializeField] private AnimationClip shopClip;
     [SerializeField] private AnimationClip restClip;
     [SerializeField] private AnimationClip battleClip;
     [SerializeField] private AnimationClip eliteBattleClip;
@@ -134,6 +135,7 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
         return node.Type switch
         {
             "Special" => eventClip,
+            "Shop" => shopClip,
             "Rest" => restClip,
             "Common" => battleClip,
             "Elite" => eliteBattleClip,

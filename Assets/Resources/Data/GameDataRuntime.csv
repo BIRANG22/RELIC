@@ -472,7 +472,7 @@ Map_18,Special2,Special,0,Event_02,Stage1,1,0
 Map_19,Special3,Special,0,Event_03,Stage1,1,0
 Map_20,Special4,Special,0,Event_04,Stage1,1,0
 Map_21,Special5,Special,0,Event_05,Stage1,1,0
-Map_22,Special6,Special,0,Event_06,Stage1,1,0
+Map_22,Special6,Shop,0,Event_06,Stage1,1,0
 Map_23,Special7,Special,0,Event_07,Stage1,1,0
 Map_24,Special8,Special,0,Event_08,Stage1,1,0
 Map_25,Special9,Start,0,Event_09,Stage1,1,0

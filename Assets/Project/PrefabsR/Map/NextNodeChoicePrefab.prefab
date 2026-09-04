@@ -140,6 +140,7 @@ MonoBehaviour:
   iconImage: {fileID: 900000}
   animator: {fileID: 5241099268780994042}
   eventClip: {fileID: 7400000, guid: 68ccd6f3c19c8eb45a89a188f98538b1, type: 2}
+  shopClip: {fileID: 7400000, guid: fcff8156287435d408679491efb3a70b, type: 2}
   restClip: {fileID: 7400000, guid: dea4d3c163967064e87234fe449ceafb, type: 2}
   battleClip: {fileID: 7400000, guid: 41cfe047161da93419e36f557bbba1f5, type: 2}
   eliteBattleClip: {fileID: 7400000, guid: 79adf154d50c42a4fb7cdeed9e6d5dda, type: 2}
@@ -161,6 +162,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1, y: 1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 1
   hoverSoundId: ui.flag.hover
   hoverSoundVolume: 1
