@@ -132,9 +132,6 @@ public class BattleHitImpactFeedback : MonoBehaviour
     int fallbackHorizontalDirection,
     bool includeTargetPush)
     {
-        // 실제 피해 적중 시 BattleEffect의 두 Plane 회전 연출을 실행합니다.
-        BattleEffectPlaneRotation.PlayHitRotationFeedback();
-
         IEnumerator cameraRoutine =
             playDamageCameraImpact && BattleCameraController.Instance != null
                 ? BattleCameraController.Instance.PlayDamageImpact()
