@@ -325,6 +325,11 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseDown()
         {
+            // 턴 실행 중에는 몬스터 클릭 선택과 카메라 포커스를 막습니다.
+            // 호버 HUD/범위/상태 정보는 OnMouseEnter에서 계속 표시합니다.
+            if (IsBattleExecutionActive())
+                return;
+
             if (UIPanelButton.IsMenuPanelOpen)
                 return;
 
@@ -377,6 +382,18 @@ namespace Relic.Gameplay.Monster
             if (IsPointerOverUI())
                 return;
 
+            if (IsBattleExecutionActive())
+            {
+                // 턴 실행 중에는 실제 선택 상태를 만들지 않고 호버 정보만 표시합니다.
+                if (hud != null)
+                    hud.Show();
+
+                ShowAttackRangePreview();
+                isStatusTooltipHovering = true;
+                ShowStatusHoverTooltip();
+                return;
+            }
+
             if (infoSelectedMonster == null || infoSelectedMonster == this)
             {
                 SelectThisMonster();
@@ -402,6 +419,16 @@ namespace Relic.Gameplay.Monster
 
             if (reservationVisualActive)
                 return;
+
+            if (IsBattleExecutionActive())
+            {
+                HideAttackRangePreview();
+
+                if (!isTemporaryHUDVisible && hud != null)
+                    hud.Hide();
+
+                return;
+            }
 
             // 클릭 선택된 몬스터는 호버가 끝나도 HUD와 행동 범위를 유지합니다.
             if (infoSelectedMonster == this)
@@ -492,6 +519,13 @@ namespace Relic.Gameplay.Monster
                 reservationController = UnityEngine.Object.FindFirstObjectByType<PlayerSkillReservationController>(
                     FindObjectsInactive.Include);
             }
+        }
+
+        private static bool IsBattleExecutionActive()
+        {
+            BattleTurnExecutor executor = UnityEngine.Object.FindFirstObjectByType<BattleTurnExecutor>(
+                FindObjectsInactive.Include);
+            return executor != null && executor.IsExecuting;
         }
 
         private bool IsPointerOverUI()

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
@@ -208,6 +209,26 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
 
         skillListPanel.IgnoreOutsideCloseForFrames(keepSkillListOpenIgnoreFrames);
+    }
+
+    private void RestoreHoveredSkillRangeAfterReservation()
+    {
+        EnsureSkillListPanel();
+
+        if (skillListPanel == null)
+            return;
+
+        StartCoroutine(RestoreHoveredSkillRangeAfterReservationRoutine());
+    }
+
+    private IEnumerator RestoreHoveredSkillRangeAfterReservationRoutine()
+    {
+        // 예약 완료 시 기존 범위가 지워진 뒤 UI 클릭 처리가 끝난 다음 프레임에
+        // 마우스가 여전히 같은 스킬 위에 있다면 호버 범위를 다시 표시합니다.
+        yield return null;
+
+        EnsureSkillListPanel();
+        skillListPanel?.RestoreSelectedSkillHoverRangeIfPointerOver();
     }
 
     public void ShowSkillHoverRangePreview(
@@ -1148,7 +1169,30 @@ public class PlayerSkillReservationController : MonoBehaviour
         KeepSkillListOpenForThisClick();
 
         if (!confirmed || !RefreshContinuousGridSelection())
+        {
             ClearPreview();
+            return;
+        }
+
+        StartCoroutine(RestoreSelectionRangeAfterReservation(selectedGridIndex));
+    }
+
+    private IEnumerator RestoreSelectionRangeAfterReservation(int selectedGridIndex)
+    {
+        // 예약 완료 순간 기존 범위를 한 번 지우고, 다음 프레임에 같은 칸의 범위를 다시 표시합니다.
+        // 마우스를 움직이지 않아도 연속 등록 가능한 범위를 바로 확인할 수 있습니다.
+        if (rangePreview != null)
+            rangePreview.ClearRangeOnly();
+
+        yield return null;
+
+        if (!IsGeneralSelectionSkillActive() ||
+            !currentGeneralSelectionSelectableIndices.Contains(selectedGridIndex))
+        {
+            yield break;
+        }
+
+        ShowSelectionRangeAt(selectedGridIndex);
     }
 
     private void ConfirmAllRangeReservation()
@@ -1176,9 +1220,12 @@ public class PlayerSkillReservationController : MonoBehaviour
             );
         }
 
-        ConfirmCommand(command);
+        bool confirmed = ConfirmCommand(command);
         KeepSkillListOpenForThisClick();
         ClearPreview();
+
+        if (confirmed)
+            RestoreHoveredSkillRangeAfterReservation();
     }
 
     private static bool IsAllRangeSkill(
@@ -1213,9 +1260,12 @@ public class PlayerSkillReservationController : MonoBehaviour
         PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
         command.SetDirectionResult(direction, rangeIndices, rangeIndices);
 
-        ConfirmCommand(command);
+        bool confirmed = ConfirmCommand(command);
         KeepSkillListOpenForThisClick();
         ClearPreview();
+
+        if (confirmed)
+            RestoreHoveredSkillRangeAfterReservation();
     }
 
     private int GetDirectionalAttackPreviewOriginGridIndex(
@@ -2647,9 +2697,12 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
 
-        ConfirmCommand(command);
+        bool confirmed = ConfirmCommand(command);
         KeepSkillListOpenForThisClick();
         ClearPreview();
+
+        if (confirmed)
+            RestoreHoveredSkillRangeAfterReservation();
     }
 
 
@@ -2920,6 +2973,12 @@ public class PlayerSkillReservationController : MonoBehaviour
     public bool IsSkillSelectionActive()
     {
         return currentSkillData != null;
+    }
+
+    public bool IsGridSelectionActive()
+    {
+        return currentSkillData != null &&
+               currentSkillData.RangeType == RangeType.Selection;
     }
 
     public bool IsMoveSkillSelectionActive()

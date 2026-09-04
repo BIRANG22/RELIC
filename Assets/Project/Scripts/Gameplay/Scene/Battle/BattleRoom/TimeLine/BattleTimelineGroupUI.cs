@@ -93,6 +93,15 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     private void Update()
     {
+        if (IsBattleEnded())
+        {
+            if (isActive)
+                SetActiveTimelineSlot(false);
+
+            UpdateDeadReservationVisuals();
+            return;
+        }
+
         UpdateTurnMarkSelectedAnimation();
         UpdateDeadReservationVisuals();
     }
@@ -111,6 +120,9 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     public void SetActiveTimelineSlot(bool active)
     {
+        if (IsBattleEnded())
+            active = false;
+
         isActive = active;
         ApplyTurnMarkSelectedVisual(active);
     }
@@ -904,12 +916,18 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (IsBattleEnded())
+            return;
+
         if (owner != null)
             owner.OnTimelineSlotClicked(slotIndex);
     }
 
     public void OnOrderClicked(int orderIndex)
     {
+        if (IsBattleEnded())
+            return;
+
         if (orderIndex < 0)
             return;
 
@@ -1251,8 +1269,16 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     private void OnClickTimelineSlot()
     {
+        if (IsBattleEnded())
+            return;
+
         if (owner != null)
             owner.OnTimelineSlotClicked(slotIndex);
+    }
+
+    private static bool IsBattleEnded()
+    {
+        return BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded;
     }
 
     private void SetupOrderClickTargets()

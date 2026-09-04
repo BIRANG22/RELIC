@@ -149,6 +149,19 @@ public class BattleUnitSpawner : MonoBehaviour
         {
             battleCharacter.Initialize(runtimeData);
             battleCharacter.SetGridIndex(gridIndex);
+
+            // 새 전투방에서는 이전 전투에서 남은 방향 상태를 사용하지 않습니다.
+            // 화면의 바라보는 방향과 RuntimeData.Direction을 항상 오른쪽으로 동기화합니다.
+            BattleUnitFacing facing = unit.GetComponent<BattleUnitFacing>();
+            if (facing != null)
+            {
+                facing.FaceRight(true);
+                runtimeData.Direction = facing.GetBattleDirection();
+            }
+            else
+            {
+                runtimeData.Direction = BattleDirection.Right;
+            }
         }
 
         return unit;

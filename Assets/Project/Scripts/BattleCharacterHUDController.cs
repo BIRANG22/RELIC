@@ -96,6 +96,12 @@ public class BattleCharacterHUDController : MonoBehaviour
 
     private void ShowCharacterHudTemporarily(BattleCharacter character)
     {
+        if (IsBattleEnded())
+        {
+            HideAll();
+            return;
+        }
+
         CharacterRuntimeData runtime = character != null ? character.RuntimeData : null;
         if (runtime == null || runtime.IsDead || string.IsNullOrWhiteSpace(runtime.CharacterId))
             return;
@@ -138,6 +144,13 @@ public class BattleCharacterHUDController : MonoBehaviour
 
     public void ShowTimelineIconCharacterHUD(BattleCharacter character)
     {
+        if (IsBattleEnded())
+        {
+            timelineIconHoveredCharacterId = "";
+            HideAll();
+            return;
+        }
+
         if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
             return;
 
@@ -298,6 +311,16 @@ public class BattleCharacterHUDController : MonoBehaviour
         EnsureTimelineController();
         EnsureTurnExecutor();
 
+        // 전투가 종료되어 보상/결과 UI가 표시되는 동안에는
+        // UI 뒤의 월드 캐릭터 콜라이더가 마우스를 받아도 CharacterHUDSlot을 표시하지 않습니다.
+        if (IsBattleEnded())
+        {
+            timelineIconHoveredCharacterId = "";
+            hitHudVisibleUntilByCharacterId.Clear();
+            HideAll();
+            return;
+        }
+
         Vector3 mouseWorldPosition = GetMouseWorldPosition();
         CharacterRuntimeData selectedRuntime = GetSelectedCharacterRuntime();
         bool monsterInfoSelected = MonsterUnit.CurrentInfoSelectedMonster != null;
@@ -348,6 +371,11 @@ public class BattleCharacterHUDController : MonoBehaviour
                 binding.IsVisible = false;
             }
         }
+    }
+
+    private static bool IsBattleEnded()
+    {
+        return BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded;
     }
 
     private CharacterRuntimeData GetSelectedCharacterRuntime()

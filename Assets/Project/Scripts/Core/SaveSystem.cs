@@ -524,6 +524,7 @@ public class SaveSystem : Singleton<SaveSystem>
 
         snapshot.EquippedSkillIds = NormalizeStringArray(snapshot.EquippedSkillIds, EquippedSkillSlotCount);
         snapshot.EquippedRuneIds = NormalizeStringArray(snapshot.EquippedRuneIds, EquippedRuneSlotCount);
+        snapshot.EquippedRelicIds = NormalizeStringArray(snapshot.EquippedRelicIds, EquippedRelicSlotCount);
     }
 
     private static void NormalizeCharacter(CharacterRuntimeData character)

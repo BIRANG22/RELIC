@@ -58,6 +58,7 @@ public class BattleRoomLoader : MonoBehaviour
 
     [Header("Timeline")]
     [SerializeField] private BattleTimelineController timelineController;
+    [SerializeField] private PlayerSkillReservationController playerSkillReservationController;
 
     [Header("Grid Effects")]
     [SerializeField] private BattleGridEffectController gridEffectController;
@@ -93,6 +94,15 @@ public class BattleRoomLoader : MonoBehaviour
             return;
 
         timelineController = Object.FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+    }
+
+    private void EnsurePlayerSkillReservationController()
+    {
+        if (playerSkillReservationController != null)
+            return;
+
+        playerSkillReservationController = Object.FindFirstObjectByType<PlayerSkillReservationController>(
+            FindObjectsInactive.Include);
     }
 
     private void EnsureFirstBattleTutorialController()
@@ -1075,6 +1085,24 @@ public class BattleRoomLoader : MonoBehaviour
         SelectPlayerHUD(runtimeData);
     }
 
+    /// <summary>
+    /// 전투 필드 위의 캐릭터 오브젝트를 직접 클릭했을 때만 사용하는 진입점입니다.
+    /// 그리드 선택형 스킬의 타겟을 고르는 동안에는 필드 캐릭터 클릭으로 선택을 바꾸지 않습니다.
+    /// HUD 클릭이나 키보드 캐릭터 변경은 OnPlayerCharacterClicked/SelectPlayerHUD 경로를 사용하므로 계속 허용됩니다.
+    /// </summary>
+    public void OnPlayerWorldCharacterClicked(CharacterRuntimeData runtimeData)
+    {
+        EnsurePlayerSkillReservationController();
+
+        if (playerSkillReservationController != null &&
+            playerSkillReservationController.IsGridSelectionActive())
+        {
+            return;
+        }
+
+        SelectPlayerHUD(runtimeData);
+    }
+
     private void OpenSkillListForPlayer(CharacterRuntimeData runtimeData)
     {
         OpenSkillListForPlayer(runtimeData, null);
@@ -1113,12 +1141,16 @@ public class BattleRoomLoader : MonoBehaviour
     {
         EnsureBattleCharacterPanel();
         EnsureTimelineController();
+        EnsurePlayerSkillReservationController();
 
         bool isChangingCharacter =
             selectedPlayerRuntime != null &&
             runtimeData != null &&
             selectedPlayerRuntime.CharacterId != runtimeData.CharacterId;
 
+        // HUD 클릭, 키보드(1/2/3), TurnMark 복원 등 명시적인 캐릭터 변경은
+        // 그리드 선택 중에도 허용합니다. 전투 필드의 캐릭터 직접 클릭만
+        // OnPlayerWorldCharacterClicked에서 별도로 차단합니다.
         if (isChangingCharacter && timelineController != null)
         {
             timelineController.CancelSkillReservationPreviewFromSkillList(selectedPlayerRuntime);
