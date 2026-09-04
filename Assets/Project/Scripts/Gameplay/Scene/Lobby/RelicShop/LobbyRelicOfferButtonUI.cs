@@ -153,6 +153,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
         button.interactable = true;
 
         ShowRarityRing(rarity);
+        UIBlurBackgroundManager.MarkReplicaDirty();
     }
 
     public void ShowSold()
@@ -166,6 +167,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
         button.interactable = false;
 
         FadeOutRarityRing();
+        UIBlurBackgroundManager.MarkReplicaDirty();
     }
 
     public void ShowEmpty()
@@ -186,6 +188,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
         priceText.text = string.Empty;
         button.interactable = false;
+        UIBlurBackgroundManager.MarkReplicaDirty();
     }
 
     public void SetInteractable(bool interactable)
@@ -298,6 +301,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
             iconImage.rectTransform.localScale = iconOriginalScale * hoverIconScale;
 
         ApplyRarityRingProxyLayout();
+        UIBlurBackgroundManager.MarkReplicaDirty();
 
         hoverChanged?.Invoke(relicId, true);
     }
@@ -313,6 +317,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
             iconImage.rectTransform.localScale = iconOriginalScale;
 
         ApplyRarityRingProxyLayout();
+        UIBlurBackgroundManager.MarkReplicaDirty();
 
         if (isHovered && !string.IsNullOrWhiteSpace(relicId))
             hoverChanged?.Invoke(relicId, false);
@@ -755,6 +760,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
         if (rarityRingProxyImage != null)
             rarityRingProxyImage.material = rarityRingRuntimeMaterial;
+        UIBlurBackgroundManager.MarkReplicaDirty();
     }
 
     private void EnsureRarityRingRuntimeMaterial()
@@ -804,6 +810,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
         rectTransform.localRotation = Quaternion.identity;
         rectTransform.localScale =
             Vector3.one * (isHovered ? hoverIconScale : 1f);
+        UIBlurBackgroundManager.MarkReplicaDirty();
     }
 
     private void SetRarityRingProxyVisible(bool visible)
@@ -816,6 +823,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
         if (rarityRingRuntimeVfx != null)
             rarityRingRuntimeVfx.SetActive(visible);
+        UIBlurBackgroundManager.MarkReplicaDirty();
     }
 
     private static void SetLayerRecursively(GameObject root, int layer)

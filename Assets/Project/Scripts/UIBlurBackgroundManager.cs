@@ -9,18 +9,30 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
     private const string RootName = "SharedBlurRoot";
     private const string ShaderName = "UI/DustiumBackgroundBlur";
     private const string SharedCanvasName = "SharedBlurCanvas";
+    private const string BlurReplicaRootName = "BlurReplicaRoot";
+    private const string UIBlurCameraName = "UIBlurCamera";
+    private const string UIBlurTextureName = "_UIBlurUiTexture";
+    private const string SettingUpperName = "Setting_upper";
     private const int SharedBlurSortingOrder = 9000;
+    private const int UIBlurTextureWidth = 1920;
+    private const int UIBlurTextureHeight = 1080;
+    private const int UIBlurLayer = 5;
 
     private static UIBlurBackgroundManager instance;
 
     private readonly List<UIBlurBackground> requesters = new();
+    private readonly Dictionary<GameObject, UIBlurReplicaSource> replicas = new();
 
     private UIBlurBackground activeRequester;
     private Canvas sharedCanvas;
     private RawImage sharedBackground;
+    private Canvas blurReplicaCanvas;
+    private Camera uiBlurCamera;
+    private RenderTexture uiBlurTexture;
     private Material material;
     private bool cameraPauseActive;
     private bool isRefreshing;
+    private bool replicaDirty;
 
     public static UIBlurBackgroundManager Instance
     {
@@ -39,6 +51,12 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
     public int RequesterCount { get { RemoveInvalidRequesters(); return requesters.Count; } }
     public UIBlurBackground TopRequester { get { RemoveInvalidRequesters(); return GetTopValidRequester(); } }
+
+    public static void MarkReplicaDirty()
+    {
+        if (instance != null)
+            instance.replicaDirty = true;
+    }
 
     private void Awake()
     {
@@ -60,6 +78,7 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         if (instance == this) instance = null;
         SceneManager.sceneLoaded -= OnSceneLoaded;
         if (material != null) Destroy(material);
+        ReleaseUiBlurTexture();
     }
 
     public void Request(UIBlurBackground requester)
@@ -99,13 +118,21 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
             if (sharedCanvas != null)
                 sharedCanvas.gameObject.SetActive(hasRequesters);
+            if (blurReplicaCanvas != null)
+                blurReplicaCanvas.gameObject.SetActive(hasRequesters);
+            if (uiBlurCamera != null)
+                uiBlurCamera.enabled = hasRequesters;
 
             if (!hasRequesters)
             {
+                SetReplicaVisibility(null);
                 UpdateCameraPause(false);
                 return;
             }
 
+            EnsureBlurReplicaUI();
+            RebuildReplicas(activeRequester);
+            SyncReplicas();
             Apply(activeRequester);
             UpdateCameraPause(true);
         }
@@ -131,6 +158,9 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         if (activeRequester == null)
             return;
 
+        if (replicaDirty)
+            SyncReplicas();
+
         Apply(activeRequester);
     }
 
@@ -140,6 +170,11 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         activeRequester = null;
         if (sharedCanvas != null)
             sharedCanvas.gameObject.SetActive(false);
+        if (blurReplicaCanvas != null)
+            blurReplicaCanvas.gameObject.SetActive(false);
+        if (uiBlurCamera != null)
+            uiBlurCamera.enabled = false;
+        ClearReplicas();
         RefreshWorldCamera();
         UpdateCameraPause(false);
     }
@@ -180,6 +215,185 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
         canvasObject.SetActive(false);
         RefreshWorldCamera();
+    }
+
+    private void EnsureBlurReplicaUI()
+    {
+        EnsureUiBlurTexture();
+
+        if (uiBlurCamera == null)
+        {
+            GameObject cameraObject = new(UIBlurCameraName, typeof(Camera));
+            cameraObject.transform.SetParent(transform, false);
+            uiBlurCamera = cameraObject.GetComponent<Camera>();
+            uiBlurCamera.clearFlags = CameraClearFlags.SolidColor;
+            uiBlurCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            uiBlurCamera.orthographic = true;
+            uiBlurCamera.orthographicSize = UIBlurTextureHeight * 0.5f;
+            uiBlurCamera.nearClipPlane = 0.01f;
+            uiBlurCamera.farClipPlane = 10f;
+            uiBlurCamera.cullingMask = 1 << UIBlurLayer;
+            uiBlurCamera.targetTexture = uiBlurTexture;
+            uiBlurCamera.allowHDR = false;
+            uiBlurCamera.allowMSAA = false;
+            uiBlurCamera.enabled = false;
+        }
+
+        if (blurReplicaCanvas != null)
+            return;
+
+        GameObject canvasObject = new(BlurReplicaRootName, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+        canvasObject.layer = UIBlurLayer;
+        canvasObject.transform.SetParent(transform, false);
+
+        blurReplicaCanvas = canvasObject.GetComponent<Canvas>();
+        blurReplicaCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+        blurReplicaCanvas.worldCamera = uiBlurCamera;
+        blurReplicaCanvas.planeDistance = 1f;
+        blurReplicaCanvas.overrideSorting = false;
+
+        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(UIBlurTextureWidth, UIBlurTextureHeight);
+
+        RectTransform rect = canvasObject.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        canvasObject.SetActive(false);
+    }
+
+    private void EnsureUiBlurTexture()
+    {
+        if (uiBlurTexture != null)
+            return;
+
+        RenderTextureDescriptor descriptor = new(
+            UIBlurTextureWidth,
+            UIBlurTextureHeight,
+            RenderTextureFormat.ARGB32)
+        {
+            depthBufferBits = 24,
+            msaaSamples = 1,
+            useMipMap = false,
+            autoGenerateMips = false
+        };
+
+        uiBlurTexture = new RenderTexture(descriptor)
+        {
+            name = UIBlurTextureName,
+            filterMode = FilterMode.Bilinear,
+            wrapMode = TextureWrapMode.Clamp
+        };
+        uiBlurTexture.Create();
+        Shader.SetGlobalTexture(UIBlurTextureName, uiBlurTexture);
+    }
+
+    private void ReleaseUiBlurTexture()
+    {
+        if (uiBlurTexture == null)
+            return;
+
+        if (uiBlurCamera != null)
+            uiBlurCamera.targetTexture = null;
+
+        uiBlurTexture.Release();
+        Destroy(uiBlurTexture);
+        uiBlurTexture = null;
+    }
+
+    private void RebuildReplicas(UIBlurBackground topRequester)
+    {
+        if (blurReplicaCanvas == null)
+            return;
+
+        HashSet<GameObject> desiredSources = new();
+        for (int i = 0; i < requesters.Count; i++)
+        {
+            UIBlurBackground requester = requesters[i];
+            if (requester == null)
+                continue;
+
+            foreach (GameObject root in requester.BlurredUiRoots)
+                AddReplicaSource(root, desiredSources);
+
+            if (requester != topRequester)
+                AddReplicaSource(requester.PanelRoot, desiredSources);
+        }
+
+        List<GameObject> existingSources = new(replicas.Keys);
+        for (int i = 0; i < existingSources.Count; i++)
+        {
+            GameObject source = existingSources[i];
+            if (desiredSources.Contains(source))
+                continue;
+
+            replicas[source].Destroy();
+            replicas.Remove(source);
+        }
+
+        foreach (GameObject source in desiredSources)
+        {
+            if (replicas.ContainsKey(source))
+                continue;
+
+            replicas.Add(
+                source,
+                new UIBlurReplicaSource(source.transform, blurReplicaCanvas.transform as RectTransform, uiBlurCamera, UIBlurLayer));
+        }
+
+        SetReplicaVisibility(desiredSources);
+        replicaDirty = true;
+    }
+
+    private static void AddReplicaSource(GameObject source, HashSet<GameObject> desiredSources)
+    {
+        if (source == null || IsSettingUpperOrChild(source.transform))
+            return;
+
+        desiredSources.Add(source);
+    }
+
+    private void SetReplicaVisibility(HashSet<GameObject> visibleSources)
+    {
+        foreach (KeyValuePair<GameObject, UIBlurReplicaSource> pair in replicas)
+            pair.Value.SetVisible(visibleSources != null && visibleSources.Contains(pair.Key));
+    }
+
+    private void SyncReplicas()
+    {
+        foreach (UIBlurReplicaSource replica in replicas.Values)
+            replica.SyncNow();
+
+        Shader.SetGlobalTexture(UIBlurTextureName, uiBlurTexture);
+        if (material != null && uiBlurTexture != null)
+            material.SetTexture(UIBlurTextureName, uiBlurTexture);
+        replicaDirty = false;
+    }
+
+    private void ClearReplicas()
+    {
+        foreach (UIBlurReplicaSource replica in replicas.Values)
+            replica.Destroy();
+
+        replicas.Clear();
+        replicaDirty = false;
+    }
+
+    private static bool IsSettingUpperOrChild(Transform transform)
+    {
+        Transform current = transform;
+        while (current != null)
+        {
+            if (current.name == SettingUpperName)
+                return true;
+
+            current = current.parent;
+        }
+
+        return false;
     }
 
     private bool RemoveInvalidRequesters()
@@ -248,6 +462,8 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         Texture sourceTexture = UIBackgroundBlurRendererFeature.SourceTexture;
         if (sourceTexture != null)
             material.SetTexture("_UIBlurSourceTexture", sourceTexture);
+        if (uiBlurTexture != null)
+            material.SetTexture(UIBlurTextureName, uiBlurTexture);
 
         material.SetFloat("_BlurRadius", requester.BlurRadius);
         material.SetFloat("_Darken", requester.Darken);

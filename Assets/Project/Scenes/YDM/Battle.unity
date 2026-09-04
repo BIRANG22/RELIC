@@ -2945,6 +2945,7 @@ GameObject:
   - component: {fileID: 59838288}
   - component: {fileID: 59838290}
   - component: {fileID: 59838291}
+  - component: {fileID: 59838292}
   m_Layer: 5
   m_Name: MonsterHUD_Root
   m_TagString: Untagged
@@ -3005,6 +3006,19 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &59838292
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59838287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86c33ed51059a434a8a04580426b5f2f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  includeChildren: 1
 --- !u!1 &61522178
 GameObject:
   m_ObjectHideFlags: 0
@@ -9760,6 +9774,7 @@ GameObject:
   - component: {fileID: 214258516}
   - component: {fileID: 214258515}
   - component: {fileID: 214258514}
+  - component: {fileID: 214258517}
   m_Layer: 5
   m_Name: ChoiceCanvas
   m_TagString: Untagged
@@ -9856,6 +9871,19 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!114 &214258517
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 214258512}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86c33ed51059a434a8a04580426b5f2f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  includeChildren: 1
 --- !u!1 &214447362
 GameObject:
   m_ObjectHideFlags: 0
@@ -50434,6 +50462,7 @@ GameObject:
   - component: {fileID: 1104021720}
   - component: {fileID: 1104021721}
   - component: {fileID: 1104021722}
+  - component: {fileID: 1104021723}
   m_Layer: 5
   m_Name: BattleSlot
   m_TagString: Untagged
@@ -50565,6 +50594,19 @@ MonoBehaviour:
   autoFindTotalUsedCostText: 1
   totalUsedCostTextObjectName: useCOST
   totalUsedCostFormat: '{0}'
+--- !u!114 &1104021723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1104021718}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86c33ed51059a434a8a04580426b5f2f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  includeChildren: 1
 --- !u!114 &1104021721
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -76446,6 +76488,7 @@ GameObject:
   - component: {fileID: 1681072101}
   - component: {fileID: 1681072103}
   - component: {fileID: 1681072104}
+  - component: {fileID: 1681072105}
   m_Layer: 5
   m_Name: PlayerHUD_Root
   m_TagString: Untagged
@@ -76500,6 +76543,19 @@ MonoBehaviour:
   turnExecutor: {fileID: 0}
   hudScale: 1
   hitHudVisibleDuration: 1
+--- !u!114 &1681072105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1681072100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86c33ed51059a434a8a04580426b5f2f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  includeChildren: 1
 --- !u!1 &1682351364
 GameObject:
   m_ObjectHideFlags: 0
@@ -100233,32 +100289,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: blurredUiRoots.Array.size
-      value: 6
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
-      propertyPath: 'blurredUiRoots.Array.data[0]'
-      value: 
-      objectReference: {fileID: 1512511009}
-    - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
-      propertyPath: 'blurredUiRoots.Array.data[1]'
-      value: 
-      objectReference: {fileID: 1979314415}
-    - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
-      propertyPath: 'blurredUiRoots.Array.data[2]'
-      value: 
-      objectReference: {fileID: 5441425523409921587}
-    - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
-      propertyPath: 'blurredUiRoots.Array.data[3]'
-      value: 
-      objectReference: {fileID: 778440950}
-    - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
-      propertyPath: 'blurredUiRoots.Array.data[4]'
-      value: 
-      objectReference: {fileID: 1710542867}
-    - target: {fileID: 2654730537144423413, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
-      propertyPath: 'blurredUiRoots.Array.data[5]'
-      value: 
-      objectReference: {fileID: 1138866861}
     - target: {fileID: 8469757017816519769, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: m_SizeDelta.y
       value: 580

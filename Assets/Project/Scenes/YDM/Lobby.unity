@@ -12857,7 +12857,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5faae5ee40a4424e8cb9dee45e42780, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blurRadius: 8
+  blurRadius: 4
   darken: 0.5
   saturation: 1
   contrast: 1
@@ -22484,7 +22484,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5faae5ee40a4424e8cb9dee45e42780, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blurRadius: 8
+  blurRadius: 4
   darken: 0.5
   saturation: 1
   contrast: 1
@@ -48688,7 +48688,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5faae5ee40a4424e8cb9dee45e42780, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blurRadius: 8
+  blurRadius: 4
   darken: 0.5
   saturation: 1
   contrast: 1
