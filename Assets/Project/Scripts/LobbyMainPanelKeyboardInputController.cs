@@ -503,7 +503,11 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         if (menuPanel == null)
             return;
 
-        menuPanel.SetActive(!menuPanel.activeSelf);
+        bool willOpen = !menuPanel.activeSelf;
+        if (willOpen)
+            UIBlurBackground.EnsureForPanel(menuPanel);
+
+        menuPanel.SetActive(willOpen);
     }
 
     private void HandleMenuPanelInput()

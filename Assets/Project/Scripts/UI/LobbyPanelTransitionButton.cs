@@ -254,11 +254,12 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
             viewStateController.ShowCharacterSelection();
 
             if (panelToOpen != null && panelToOpen.name == "CharacterSettingPanel")
-                KeepSettingButtonActive();
+                SetSettingUpperActive(false);
         }
         else if (transitionMode == PanelTransitionMode.CharacterToLobby)
         {
             viewStateController.ShowPosition();
+            SetSettingUpperActive(true);
         }
     }
 
@@ -386,16 +387,12 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     }
 
 
-    /// <summary>
-    /// 캐릭터 설정 화면에서는 SettingButton을 항상 활성 상태로 유지합니다.
-    /// 인스펙터 닫기 목록에 잘못 들어가 있어도 마지막 단계에서 복구합니다.
-    /// </summary>
-    private void KeepSettingButtonActive()
+    private void SetSettingUpperActive(bool active)
     {
-        GameObject settingButton = FindSceneObject("SettingButton");
+        GameObject settingUpper = FindSceneObject("Setting_upper");
 
-        if (settingButton != null)
-            settingButton.SetActive(true);
+        if (settingUpper != null)
+            settingUpper.SetActive(active);
     }
 
     private void ResolveLobbyBackgrounds()

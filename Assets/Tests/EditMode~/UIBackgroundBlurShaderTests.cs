@@ -14,31 +14,51 @@ public sealed class UIBackgroundBlurShaderTests
     }
 
     [Test]
-    public void SharedBlurManager_ReappliesTheActiveRequesterSettingsEveryFrame()
+    public void SharedBlurManager_UsesRendererFeatureSourceTextureOnly()
     {
         string manager = File.ReadAllText("Assets/Project/Scripts/UIBlurBackgroundManager.cs");
 
-        Assert.That(manager, Does.Contain("Apply(activeRequester);"));
+        Assert.That(manager, Does.Contain("UIBackgroundBlurRendererFeature.SourceTexture"));
+        Assert.That(manager, Does.Not.Contain("UIBlurBackgroundCaptureManager"));
+        Assert.That(manager, Does.Not.Contain("CaptureBackgroundNow"));
+        Assert.That(manager, Does.Not.Contain("capturedTexture"));
+        Assert.That(manager, Does.Not.Contain("canvas.enabled = false"));
     }
 
     [Test]
-    public void SharedBlurManager_BlocksInputAndPausesCameraWhileARequesterIsActive()
+    public void SharedBlurManager_DoesNotBlockInputAndPausesCameraWhileARequesterIsActive()
     {
         string manager = File.ReadAllText("Assets/Project/Scripts/UIBlurBackgroundManager.cs");
 
         Assert.That(manager, Does.Contain("public static bool IsInputBlocked"));
         Assert.That(manager, Does.Contain("CameraMouseParallaxController.BeginUiPanelPause();"));
         Assert.That(manager, Does.Contain("CameraMouseParallaxController.EndUiPanelPause();"));
-        Assert.That(manager, Does.Contain("sharedBackground.raycastTarget = true;"));
+        Assert.That(manager, Does.Contain("public static bool IsInputBlocked => false;"));
+        Assert.That(manager, Does.Contain("sharedBackground.raycastTarget = false;"));
+        Assert.That(manager, Does.Not.Contain("FindObjectsByType<Canvas>"));
+        Assert.That(manager, Does.Not.Contain("AddComponent<Canvas>"));
+        Assert.That(manager, Does.Not.Contain("AddComponent<GraphicRaycaster>"));
     }
 
     [Test]
-    public void PanelButton_UsesSharedBlurModalStateForWorldClickBlocking()
+    public void PanelButton_DoesNotUseSharedBlurModalStateForInputBlocking()
     {
         string panelButton = File.ReadAllText("Assets/Project/Scripts/UI/UIPanelButton.cs");
 
-        Assert.That(panelButton, Does.Contain("UIBlurBackgroundManager.IsInputBlocked"));
-        Assert.That(panelButton, Does.Contain("IsRequesterPanelObject"));
+        Assert.That(panelButton, Does.Not.Contain("UIBlurBackgroundManager.IsInputBlocked"));
+    }
+
+    [Test]
+    public void BlurPanelOpeners_DoNotOverridePresentationSortingForConfiguredBlurPanels()
+    {
+        string menu = File.ReadAllText("Assets/Project/Scripts/LobbyMenuController.cs");
+        string erosion = File.ReadAllText("Assets/Project/Scripts/Gameplay/Scene/Lobby/LobbyErosionMirrorButton.cs");
+        string panelButton = File.ReadAllText("Assets/Project/Scripts/UI/UIPanelButton.cs");
+
+        Assert.That(menu, Does.Not.Contain("ApplyCanvasSorting"));
+        Assert.That(menu, Does.Not.Contain("AddComponent<Canvas>"));
+        Assert.That(erosion, Does.Contain("panel.GetComponent<UIBlurBackground>() != null"));
+        Assert.That(panelButton, Does.Contain("openedPanel.GetComponent<UIBlurBackground>() != null"));
     }
 
     [Test]

@@ -90,7 +90,6 @@ public class BattleRewardEquipPanelUIRegressionTests
             Object.DestroyImmediate(secondHudObject);
             Object.DestroyImmediate(inactiveHudObject);
             Object.DestroyImmediate(unrelatedCanvasObject);
-            DestroyBlurCaptureManagers();
         }
     }
 
@@ -199,13 +198,4 @@ public class BattleRewardEquipPanelUIRegressionTests
         method.Invoke(target, null);
     }
 
-    private static void DestroyBlurCaptureManagers()
-    {
-        UIBlurBackgroundCaptureManager[] managers = Object.FindObjectsByType<UIBlurBackgroundCaptureManager>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
-
-        for (int i = 0; i < managers.Length; i++)
-            Object.DestroyImmediate(managers[i].gameObject);
-    }
 }

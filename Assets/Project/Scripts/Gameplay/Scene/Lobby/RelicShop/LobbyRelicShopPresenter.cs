@@ -85,7 +85,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         UIBlurBackground blurBackground = UIBlurBackground.EnsureForPanel(panelRoot);
         LobbyQuestManager.Instance?.ConfigureQuestPanelBlur(blurBackground);
         panelRoot.SetActive(true);
-        panelRoot.transform.SetAsLastSibling();
         RefreshOffers();
     }
 

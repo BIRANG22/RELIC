@@ -8,14 +8,19 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 {
     private const string RootName = "SharedBlurRoot";
     private const string ShaderName = "UI/DustiumBackgroundBlur";
-    private const int SortingOrder = -32000;
+    private const string SharedCanvasName = "SharedBlurCanvas";
+    private const int SharedBlurSortingOrder = 9000;
+
     private static UIBlurBackgroundManager instance;
-    private readonly HashSet<UIBlurBackground> requesters = new();
+
+    private readonly List<UIBlurBackground> requesters = new();
+
     private UIBlurBackground activeRequester;
     private Canvas sharedCanvas;
     private RawImage sharedBackground;
     private Material material;
     private bool cameraPauseActive;
+    private bool isRefreshing;
 
     public static UIBlurBackgroundManager Instance
     {
@@ -30,23 +35,19 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
     public static bool HasInstance => instance != null;
 
-    public static bool IsInputBlocked
-    {
-        get
-        {
-            if (instance == null)
-                return false;
-
-            instance.RemoveInvalidRequesters();
-            return instance.requesters.Count > 0;
-        }
-    }
+    public static bool IsInputBlocked => false;
 
     public int RequesterCount { get { RemoveInvalidRequesters(); return requesters.Count; } }
+    public UIBlurBackground TopRequester { get { RemoveInvalidRequesters(); return GetTopValidRequester(); } }
 
     private void Awake()
     {
-        if (instance != null && instance != this) { Destroy(gameObject); return; }
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         instance = this;
         DontDestroyOnLoad(gameObject);
         EnsureSharedUI();
@@ -63,98 +64,150 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
     public void Request(UIBlurBackground requester)
     {
-        if (requester == null) return;
+        if (requester == null)
+            return;
+
         EnsureSharedUI();
+        requesters.Remove(requester);
         requesters.Add(requester);
         activeRequester = requester;
-        Apply(activeRequester);
-        RefreshVisibility();
+        RefreshPresentation();
     }
 
     public void Release(UIBlurBackground requester)
     {
-        if (requester != null) requesters.Remove(requester);
+        if (requester != null)
+            requesters.Remove(requester);
+
         if (activeRequester == requester)
-            activeRequester = GetAnyValidRequester();
-        RefreshVisibility();
+            activeRequester = GetTopValidRequester();
+
+        RefreshPresentation();
+    }
+
+    public void RefreshPresentation()
+    {
+        if (isRefreshing)
+            return;
+
+        isRefreshing = true;
+        try
+        {
+            RemoveInvalidRequesters();
+            activeRequester = GetTopValidRequester();
+            bool hasRequesters = activeRequester != null;
+
+            if (sharedCanvas != null)
+                sharedCanvas.gameObject.SetActive(hasRequesters);
+
+            if (!hasRequesters)
+            {
+                UpdateCameraPause(false);
+                return;
+            }
+
+            Apply(activeRequester);
+            UpdateCameraPause(true);
+        }
+        finally
+        {
+            isRefreshing = false;
+        }
+    }
+
+    public bool ContainsRequester(UIBlurBackground requester)
+    {
+        RemoveInvalidRequesters();
+        return requester != null && requesters.Contains(requester);
+    }
+
+    private void LateUpdate()
+    {
+        if (RemoveInvalidRequesters())
+            RefreshPresentation();
+
+        if (activeRequester == null)
+            activeRequester = GetTopValidRequester();
+        if (activeRequester == null)
+            return;
+
+        Apply(activeRequester);
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         requesters.Clear();
         activeRequester = null;
-        RefreshVisibility();
+        if (sharedCanvas != null)
+            sharedCanvas.gameObject.SetActive(false);
         RefreshWorldCamera();
-    }
-
-    private void LateUpdate()
-    {
-        RefreshVisibility();
-        if (activeRequester == null)
-            activeRequester = GetAnyValidRequester();
-        if (activeRequester == null)
-            return;
-
-        Apply(activeRequester);
-        if (material != null && UIBackgroundBlurRendererFeature.SourceTexture != null)
-            material.SetTexture("_UIBlurSourceTexture", UIBackgroundBlurRendererFeature.SourceTexture);
+        UpdateCameraPause(false);
     }
 
     private void EnsureSharedUI()
     {
-        if (sharedCanvas != null && sharedBackground != null) return;
-        GameObject canvasObject = new("SharedBlurCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+        if (sharedCanvas != null && sharedBackground != null)
+            return;
+
+        GameObject canvasObject = new(SharedCanvasName, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
         canvasObject.transform.SetParent(transform, false);
         sharedCanvas = canvasObject.GetComponent<Canvas>();
-        sharedCanvas.renderMode = RenderMode.ScreenSpaceOverlay; sharedCanvas.overrideSorting = true; sharedCanvas.sortingOrder = SortingOrder;
-        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1920f, 1080f);
+        sharedCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        sharedCanvas.overrideSorting = true;
+        sharedCanvas.sortingOrder = SharedBlurSortingOrder;
+
+        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+
         GameObject background = new("SharedBlurBackground", typeof(RectTransform), typeof(CanvasRenderer), typeof(RawImage));
         background.transform.SetParent(canvasObject.transform, false);
-        RectTransform rect = background.GetComponent<RectTransform>(); rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one; rect.offsetMin = Vector2.zero; rect.offsetMax = Vector2.zero;
-        sharedBackground = background.GetComponent<RawImage>(); sharedBackground.raycastTarget = true;
+        RectTransform rect = background.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        sharedBackground = background.GetComponent<RawImage>();
+        sharedBackground.raycastTarget = false;
+
         Shader shader = Shader.Find(ShaderName);
-        if (shader != null) { material = new Material(shader) { name = "SharedBlurMaterial" }; sharedBackground.material = material; }
-        canvasObject.SetActive(false); RefreshWorldCamera();
-    }
-
-    private void RefreshWorldCamera() { if (sharedCanvas != null) sharedCanvas.worldCamera = Camera.main; }
-    private void Apply(UIBlurBackground requester)
-    {
-        if (material == null) return;
-        Texture sourceTexture = UIBackgroundBlurRendererFeature.SourceTexture;
-        if (sourceTexture != null)
-            material.SetTexture("_UIBlurSourceTexture", sourceTexture);
-        material.SetFloat("_BlurRadius", requester.BlurRadius); material.SetFloat("_Darken", requester.Darken); material.SetFloat("_Saturation", requester.Saturation); material.SetFloat("_Contrast", requester.Contrast);
-    }
-    public static bool IsRequesterPanelObject(GameObject target)
-    {
-        if (target == null || instance == null)
-            return false;
-
-        instance.RemoveInvalidRequesters();
-
-        foreach (UIBlurBackground requester in instance.requesters)
+        if (shader != null)
         {
-            if (requester == null)
-                continue;
-
-            Transform requesterTransform = requester.transform;
-            Transform targetTransform = target.transform;
-            if (targetTransform.IsChildOf(requesterTransform) || requesterTransform.IsChildOf(targetTransform))
-                return true;
+            material = new Material(shader) { name = "SharedBlurMaterial" };
+            sharedBackground.material = material;
         }
 
-        return false;
+        canvasObject.SetActive(false);
+        RefreshWorldCamera();
     }
 
-    private void RefreshVisibility()
+    private bool RemoveInvalidRequesters()
     {
-        RemoveInvalidRequesters();
-        bool hasRequesters = requesters.Count > 0;
-        if (sharedCanvas != null)
-            sharedCanvas.gameObject.SetActive(hasRequesters);
+        int previousCount = requesters.Count;
+        for (int i = requesters.Count - 1; i >= 0; i--)
+        {
+            UIBlurBackground requester = requesters[i];
+            if (requester == null || !requester.isActiveAndEnabled || requester.PanelRoot == null || !requester.PanelRoot.activeInHierarchy)
+                requesters.RemoveAt(i);
+        }
 
-        UpdateCameraPause(hasRequesters);
+        if (activeRequester == null || !activeRequester.isActiveAndEnabled || !requesters.Contains(activeRequester))
+            activeRequester = GetTopValidRequester();
+
+        return requesters.Count != previousCount;
+    }
+
+    private UIBlurBackground GetTopValidRequester()
+    {
+        for (int i = requesters.Count - 1; i >= 0; i--)
+        {
+            UIBlurBackground requester = requesters[i];
+            if (requester != null && requester.isActiveAndEnabled && requester.PanelRoot != null && requester.PanelRoot.activeInHierarchy)
+                return requester;
+        }
+
+        return null;
     }
 
     private void UpdateCameraPause(bool shouldPause)
@@ -180,18 +233,46 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         CameraMouseParallaxController.EndUiPanelPause();
         cameraPauseActive = false;
     }
-    private void RemoveInvalidRequesters()
+
+    private void RefreshWorldCamera()
     {
-        requesters.RemoveWhere(requester => requester == null || !requester.isActiveAndEnabled);
-        if (activeRequester == null || !activeRequester.isActiveAndEnabled)
-            activeRequester = GetAnyValidRequester();
+        if (sharedCanvas != null)
+            sharedCanvas.worldCamera = Camera.main;
     }
 
-    private UIBlurBackground GetAnyValidRequester()
+    private void Apply(UIBlurBackground requester)
     {
-        foreach (UIBlurBackground requester in requesters)
-            return requester;
+        if (requester == null || material == null)
+            return;
 
-        return null;
+        Texture sourceTexture = UIBackgroundBlurRendererFeature.SourceTexture;
+        if (sourceTexture != null)
+            material.SetTexture("_UIBlurSourceTexture", sourceTexture);
+
+        material.SetFloat("_BlurRadius", requester.BlurRadius);
+        material.SetFloat("_Darken", requester.Darken);
+        material.SetFloat("_Saturation", requester.Saturation);
+        material.SetFloat("_Contrast", requester.Contrast);
+    }
+
+    public static bool IsRequesterPanelObject(GameObject target)
+    {
+        if (target == null || instance == null)
+            return false;
+
+        instance.RemoveInvalidRequesters();
+        Transform targetTransform = target.transform;
+        foreach (UIBlurBackground requester in instance.requesters)
+        {
+            GameObject panelRoot = requester != null ? requester.PanelRoot : null;
+            if (panelRoot == null)
+                continue;
+
+            Transform panelTransform = panelRoot.transform;
+            if (targetTransform.IsChildOf(panelTransform) || panelTransform.IsChildOf(targetTransform))
+                return true;
+        }
+
+        return false;
     }
 }
