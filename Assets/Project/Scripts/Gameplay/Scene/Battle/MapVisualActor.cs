@@ -26,6 +26,8 @@ public class MapVisualActor : MonoBehaviour
 
     private string runtimeVisualObjectId;
     private readonly List<BattleWorldVfxHandle> spawnedWorldVfxHandles = new();
+    private readonly Dictionary<Transform, Coroutine> shakeRoutines = new();
+    private readonly Dictionary<Transform, Vector3> shakeOriginalLocalPositions = new();
 
     public string VisualObjectId
     {
@@ -184,6 +186,63 @@ public class MapVisualActor : MonoBehaviour
     internal void DisableTarget(GameObject target, float delay)
     {
         SetTargetActive(target, false, delay);
+    }
+
+    internal void PlayShake(Transform target, float delay, float duration, float strength, float frequency)
+    {
+        if (target == null || duration <= 0f || strength <= 0f)
+            return;
+
+        if (shakeRoutines.TryGetValue(target, out Coroutine running) && running != null)
+        {
+            StopCoroutine(running);
+
+            if (shakeOriginalLocalPositions.TryGetValue(target, out Vector3 originalPosition))
+                target.localPosition = originalPosition;
+        }
+
+        shakeOriginalLocalPositions[target] = target.localPosition;
+        Coroutine routine = StartCoroutine(ShakeRoutine(
+            target,
+            Mathf.Max(0f, delay),
+            Mathf.Max(0.01f, duration),
+            Mathf.Max(0f, strength),
+            Mathf.Max(0.01f, frequency)));
+        shakeRoutines[target] = routine;
+    }
+
+    private IEnumerator ShakeRoutine(Transform target, float delay, float duration, float strength, float frequency)
+    {
+        if (delay > 0f)
+            yield return new WaitForSeconds(delay);
+
+        if (target == null)
+            yield break;
+
+        if (!shakeOriginalLocalPositions.TryGetValue(target, out Vector3 originalPosition))
+            originalPosition = target.localPosition;
+
+        float elapsed = 0f;
+        float randomX = UnityEngine.Random.value * 1000f;
+        float randomY = UnityEngine.Random.value * 1000f;
+
+        while (elapsed < duration && target != null)
+        {
+            float t = elapsed * frequency;
+            float fade = 1f - Mathf.Clamp01(elapsed / duration);
+            float x = (Mathf.PerlinNoise(randomX + t, 0f) * 2f - 1f) * strength * fade;
+            float y = (Mathf.PerlinNoise(0f, randomY + t) * 2f - 1f) * strength * fade;
+
+            target.localPosition = originalPosition + new Vector3(x, y, 0f);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        if (target != null)
+            target.localPosition = originalPosition;
+
+        shakeRoutines.Remove(target);
+        shakeOriginalLocalPositions.Remove(target);
     }
 
     internal void PlayActivation(MapVisualActivationEntry activation)
@@ -361,6 +420,8 @@ public class MapVisualActor : MonoBehaviour
 
     private void CleanupSpawnedWorldVfxHandles()
     {
+        RestoreAllShakeTargets();
+
         for (int i = spawnedWorldVfxHandles.Count - 1; i >= 0; i--)
         {
             BattleWorldVfxHandle handle = spawnedWorldVfxHandles[i];
@@ -369,6 +430,18 @@ public class MapVisualActor : MonoBehaviour
         }
 
         spawnedWorldVfxHandles.Clear();
+    }
+
+    private void RestoreAllShakeTargets()
+    {
+        foreach (KeyValuePair<Transform, Vector3> pair in shakeOriginalLocalPositions)
+        {
+            if (pair.Key != null)
+                pair.Key.localPosition = pair.Value;
+        }
+
+        shakeRoutines.Clear();
+        shakeOriginalLocalPositions.Clear();
     }
 
     private static void DestroyUnityObject(UnityEngine.Object target)
@@ -422,6 +495,20 @@ public sealed class MapVisualActionEntry
     public bool ApplyLocalScale;
     public Vector3 LocalScale = Vector3.one;
 
+    [Header("Shake")]
+    [Tooltip("이 액션이 실행될 때 흔들 오브젝트입니다.")]
+    public Transform ShakeTarget;
+    [Tooltip("Shake Target 흔들림을 사용할지 설정합니다.")]
+    public bool ApplyShake;
+    [Tooltip("액션 실행 후 흔들림이 시작되기까지 기다릴 시간(초)입니다.")]
+    [Min(0f)] public float ShakeDelay;
+    [Tooltip("흔들림이 유지되는 시간(초)입니다.")]
+    [Min(0.01f)] public float ShakeDuration = 0.35f;
+    [Tooltip("로컬 좌표 기준 흔들림의 최대 거리입니다.")]
+    [Min(0f)] public float ShakeStrength = 0.08f;
+    [Tooltip("흔들림 변화 속도입니다. 값이 클수록 더 빠르게 떨립니다.")]
+    [Min(0.01f)] public float ShakeFrequency = 25f;
+
     [Header("Activation")]
     [Tooltip("이 액션에서 활성화/비활성화할 오브젝트 목록입니다.")]
     public List<MapVisualActivationEntry> Activations = new();
@@ -459,6 +546,7 @@ public sealed class MapVisualActionEntry
         SpawnVfx(owner);
         ApplySpriteTint();
         ApplyTransformScale();
+        ApplyShakeEffect(owner);
         ApplyActivation(owner);
         DisableTargets(owner);
     }
@@ -589,6 +677,19 @@ public sealed class MapVisualActionEntry
             return;
 
         ScaleTarget.localScale = LocalScale;
+    }
+
+    private void ApplyShakeEffect(MapVisualActor owner)
+    {
+        if (!ApplyShake || ShakeTarget == null || owner == null)
+            return;
+
+        owner.PlayShake(
+            ShakeTarget,
+            ShakeDelay,
+            ShakeDuration,
+            ShakeStrength,
+            ShakeFrequency);
     }
 
     private void ApplyActivation(MapVisualActor owner)

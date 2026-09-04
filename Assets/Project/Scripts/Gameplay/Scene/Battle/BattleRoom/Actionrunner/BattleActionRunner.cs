@@ -1815,6 +1815,11 @@ public class BattleActionRunner
 
         ShowExecutionRange(BuildPlayerExecutionRange(command));
 
+        bool shouldControlAttackPlane = ShouldControlAttackPlaneForPlayerSkill(command);
+        PlaneAttackType playerPlaneAttackType = ShouldSkipPlayerSkillCamera(command)
+            ? PlaneAttackType.Ranged
+            : PlaneAttackType.Melee;
+
         try
         {
             ConsumePlayerSkillCost(command, attacker);
@@ -1826,6 +1831,8 @@ public class BattleActionRunner
             }
 
             BattleUnitAnimator attackerAnimator = attacker.GetComponent<BattleUnitAnimator>();
+
+            BeginAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane, playerPlaneAttackType);
 
             if (ShouldPlayerSkillTargetPlayerParty(command))
             {
@@ -2013,6 +2020,7 @@ public class BattleActionRunner
         }
         finally
         {
+            EndAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane);
             BattleEquipmentEffectService.ClearMoveFirstAttackPowerIfAttack(
                 attacker != null ? attacker.RuntimeData : command.UserRuntime,
                 command.SkillData);
@@ -3850,6 +3858,8 @@ public class BattleActionRunner
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
+        BattleEffectPlaneRotation.PlayCollisionRotationFeedback();
+
         new CrashEffect().Execute(new BattleEffectContext
         {
             PlayerTarget = target,
@@ -3864,6 +3874,8 @@ public class BattleActionRunner
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return false;
+
+        BattleEffectPlaneRotation.PlayCollisionRotationFeedback();
 
         bool wasAlive = !target.RuntimeData.IsDead;
 
@@ -3894,6 +3906,11 @@ public class BattleActionRunner
         if (monster == null)
             yield break;
 
+        bool shouldControlAttackPlane = ShouldControlAttackPlaneForMonsterSkill(command);
+        PlaneAttackType monsterPlaneAttackType = ShouldSkipMonsterSkillCamera(command)
+            ? PlaneAttackType.Ranged
+            : PlaneAttackType.Melee;
+
         // 직전 사슬이 점유 또는 이동 불가로 취소됐다면 예약된 사슬 위치를 공격 원점으로 사용하지 않습니다.
         // 몬스터의 실제 현재 위치를 원점으로 바꾸고, 현재 위치에서 실제 대상을 향해 방향을 다시 정합니다.
         if (ConsumeNocturnPortalFailure(command))
@@ -3914,6 +3931,7 @@ public class BattleActionRunner
             }
 
             ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
+            BeginAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane, monsterPlaneAttackType);
 
             try
             {
@@ -3921,6 +3939,7 @@ public class BattleActionRunner
             }
             finally
             {
+                EndAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane);
                 ClearExecutionRange();
             }
 
@@ -3979,6 +3998,7 @@ public class BattleActionRunner
         }
 
         ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
+        BeginAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane, monsterPlaneAttackType);
 
         try
         {
@@ -4038,6 +4058,7 @@ public class BattleActionRunner
         }
         finally
         {
+            EndAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane);
             ClearExecutionRange();
         }
     }
@@ -4421,6 +4442,44 @@ public class BattleActionRunner
         }
 
         return false;
+    }
+
+    private static bool ShouldControlAttackPlaneForPlayerSkill(PlayerReservedCommand command)
+    {
+        return command != null &&
+               command.SkillData != null &&
+               command.SkillData.SkillType == SkillType.Attack;
+    }
+
+    private static bool ShouldControlAttackPlaneForMonsterSkill(MonsterReservedCommand command)
+    {
+        return command != null &&
+               command.SkillData != null &&
+               command.SkillData.TimelineNotation == TimelineActionType.Attack;
+    }
+
+    private void BeginAttackPlaneFeedbackIfNeeded(
+        bool shouldControlAttackPlane,
+        PlaneAttackType attackType)
+    {
+        if (!shouldControlAttackPlane)
+            return;
+
+        if (activeActionInfo.IsGrouped && !activeActionInfo.IsGroupStart)
+            return;
+
+        BattleEffectPlaneRotation.BeginAttackRotationFeedback(attackType);
+    }
+
+    private void EndAttackPlaneFeedbackIfNeeded(bool shouldControlAttackPlane)
+    {
+        if (!shouldControlAttackPlane)
+            return;
+
+        if (activeActionInfo.IsGrouped && !activeActionInfo.IsGroupEnd)
+            return;
+
+        BattleEffectPlaneRotation.EndAttackRotationFeedback();
     }
 
     private static bool ShouldSkipPlayerSkillCamera(PlayerReservedCommand command)

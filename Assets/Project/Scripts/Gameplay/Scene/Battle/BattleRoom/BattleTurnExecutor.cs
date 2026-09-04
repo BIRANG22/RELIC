@@ -461,13 +461,11 @@ public class BattleTurnExecutor : MonoBehaviour
             yield return ShowBattleProgressIntroTextRoutineSafe();
 
             int slidThroughSlotIndex = -1;
-            Dictionary<int, int> nextTimelineOrderAnimationIndexBySlot = new Dictionary<int, int>();
-
             for (int i = 0; i < batches.Count; i++)
             {
                 BattleActionBatch batch = batches[i];
 
-                if (!BatchHasCommands(batch))
+                if (!BatchHasExecutableCommands(batch))
                     continue;
 
                 int currentSlotIndex = GetBatchTimelineSlotIndex(batch, i);
@@ -485,11 +483,11 @@ public class BattleTurnExecutor : MonoBehaviour
                     slidThroughSlotIndex = Mathf.Max(slidThroughSlotIndex, currentSlotIndex);
                 }
 
-                int nextOrderAnimationIndex = 0;
-                if (nextTimelineOrderAnimationIndexBySlot.TryGetValue(currentSlotIndex, out int savedOrderIndex))
-                    nextOrderAnimationIndex = savedOrderIndex;
+                List<int> executableOrderIndices =
+                    GetExecutableTimelineOrderIndices(batch, currentSlotIndex);
 
-                int batchCommandCount = GetBatchCommandCount(batch);
+                if (executableOrderIndices.Count <= 0)
+                    continue;
 
                 bool keepCameraAfterBatch =
                     ShouldKeepCameraAcrossBatchBoundary(
@@ -503,17 +501,14 @@ public class BattleTurnExecutor : MonoBehaviour
 
                 bool hasNextBatchInSameTimelineSlot = HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
 
-                if (timelineController != null && batchCommandCount > 0)
+                if (timelineController != null && executableOrderIndices.Count > 0)
                 {
-                    yield return timelineController.PlayTimelineActionAnimationsRoutine(
+                    yield return timelineController.PlayTimelineActionAnimationsForOrdersRoutine(
                         currentSlotIndex,
-                        nextOrderAnimationIndex,
-                        batchCommandCount,
+                        executableOrderIndices,
                         !hasNextBatchInSameTimelineSlot
                     );
                 }
-
-                nextTimelineOrderAnimationIndexBySlot[currentSlotIndex] = nextOrderAnimationIndex + batchCommandCount;
 
                 if (BattleResultChecker.Instance != null &&
                     BattleResultChecker.Instance.CheckBattleEnd())
@@ -699,13 +694,11 @@ public class BattleTurnExecutor : MonoBehaviour
             yield return ShowBattleProgressIntroTextRoutineSafe();
 
             int slidThroughSlotIndex = -1;
-            Dictionary<int, int> nextTimelineOrderAnimationIndexBySlot = new Dictionary<int, int>();
-
             for (int i = 0; i < batches.Count; i++)
             {
                 BattleActionBatch batch = batches[i];
 
-                if (!BatchHasCommands(batch))
+                if (!BatchHasExecutableCommands(batch))
                     continue;
 
                 int currentSlotIndex = GetBatchTimelineSlotIndex(batch, i);
@@ -721,15 +714,11 @@ public class BattleTurnExecutor : MonoBehaviour
                     slidThroughSlotIndex = Mathf.Max(slidThroughSlotIndex, currentSlotIndex);
                 }
 
-                int nextOrderAnimationIndex = 0;
-                if (nextTimelineOrderAnimationIndexBySlot.TryGetValue(
-                        currentSlotIndex,
-                        out int savedOrderIndex))
-                {
-                    nextOrderAnimationIndex = savedOrderIndex;
-                }
+                List<int> executableOrderIndices =
+                    GetExecutableTimelineOrderIndices(batch, currentSlotIndex);
 
-                int batchCommandCount = GetBatchCommandCount(batch);
+                if (executableOrderIndices.Count <= 0)
+                    continue;
 
                 bool keepCameraAfterBatch =
                     ShouldKeepCameraAcrossBatchBoundary(
@@ -744,17 +733,13 @@ public class BattleTurnExecutor : MonoBehaviour
                 bool hasNextBatchInSameTimelineSlot =
                     HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
 
-                if (timelineController != null && batchCommandCount > 0)
+                if (timelineController != null && executableOrderIndices.Count > 0)
                 {
-                    yield return timelineController.PlayTimelineActionAnimationsRoutine(
+                    yield return timelineController.PlayTimelineActionAnimationsForOrdersRoutine(
                         currentSlotIndex,
-                        nextOrderAnimationIndex,
-                        batchCommandCount,
+                        executableOrderIndices,
                         !hasNextBatchInSameTimelineSlot);
                 }
-
-                nextTimelineOrderAnimationIndexBySlot[currentSlotIndex] =
-                    nextOrderAnimationIndex + batchCommandCount;
 
                 if (hasNextBatchInSameTimelineSlot)
                     continue;
@@ -1354,7 +1339,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
         for (int i = Mathf.Max(0, startIndex); i < batches.Count; i++)
         {
-            if (BatchHasCommands(batches[i]))
+            if (BatchHasExecutableCommands(batches[i]))
                 return i;
         }
 
@@ -1417,20 +1402,171 @@ public class BattleTurnExecutor : MonoBehaviour
     }
 
 
-    private int GetBatchCommandCount(BattleActionBatch batch)
+    private List<int> GetExecutableTimelineOrderIndices(
+        BattleActionBatch batch,
+        int timelineSlotIndex)
     {
-        if (batch == null)
-            return 0;
+        List<int> orderIndices = new();
 
-        int count = 0;
+        if (batch == null || timelineController == null)
+            return orderIndices;
 
         if (batch.PlayerCommands != null)
-            count += batch.PlayerCommands.Count;
+        {
+            for (int i = 0; i < batch.PlayerCommands.Count; i++)
+            {
+                PlayerReservedCommand command = batch.PlayerCommands[i];
+                if (!IsExecutablePlayerCommand(command))
+                    continue;
+
+                int orderIndex = GetTimelineOrderIndex(timelineSlotIndex, command);
+                if (orderIndex >= 0 && !orderIndices.Contains(orderIndex))
+                    orderIndices.Add(orderIndex);
+            }
+        }
 
         if (batch.MonsterCommands != null)
-            count += batch.MonsterCommands.Count;
+        {
+            for (int i = 0; i < batch.MonsterCommands.Count; i++)
+            {
+                MonsterReservedCommand command = batch.MonsterCommands[i];
+                if (!IsExecutableMonsterCommand(command))
+                    continue;
 
-        return count;
+                int orderIndex = GetTimelineOrderIndex(timelineSlotIndex, command);
+                if (orderIndex >= 0 && !orderIndices.Contains(orderIndex))
+                    orderIndices.Add(orderIndex);
+            }
+        }
+
+        orderIndices.Sort();
+        return orderIndices;
+    }
+
+    private int GetTimelineOrderIndex(
+        int timelineSlotIndex,
+        PlayerReservedCommand targetCommand)
+    {
+        if (timelineController == null || targetCommand == null)
+            return -1;
+
+        IReadOnlyList<PlayerReservedCommand> playerCommands =
+            timelineController.GetPlayerCommands(timelineSlotIndex);
+        IReadOnlyList<MonsterReservedCommand> monsterCommands =
+            timelineController.GetMonsterCommands(timelineSlotIndex);
+
+        int orderIndex = 0;
+
+        if (playerCommands != null)
+        {
+            for (int i = 0; i < playerCommands.Count; i++)
+            {
+                PlayerReservedCommand command = playerCommands[i];
+                if (command == null || !BattleActionOrderUtility.HasSwift(command))
+                    continue;
+
+                if (ReferenceEquals(command, targetCommand))
+                    return orderIndex;
+
+                orderIndex++;
+            }
+        }
+
+        if (monsterCommands != null)
+            orderIndex += monsterCommands.Count;
+
+        if (playerCommands != null)
+        {
+            for (int i = 0; i < playerCommands.Count; i++)
+            {
+                PlayerReservedCommand command = playerCommands[i];
+                if (command == null || BattleActionOrderUtility.HasSwift(command))
+                    continue;
+
+                if (ReferenceEquals(command, targetCommand))
+                    return orderIndex;
+
+                orderIndex++;
+            }
+        }
+
+        return -1;
+    }
+
+    private int GetTimelineOrderIndex(
+        int timelineSlotIndex,
+        MonsterReservedCommand targetCommand)
+    {
+        if (timelineController == null || targetCommand == null)
+            return -1;
+
+        IReadOnlyList<PlayerReservedCommand> playerCommands =
+            timelineController.GetPlayerCommands(timelineSlotIndex);
+        IReadOnlyList<MonsterReservedCommand> monsterCommands =
+            timelineController.GetMonsterCommands(timelineSlotIndex);
+
+        int orderIndex = 0;
+
+        if (playerCommands != null)
+        {
+            for (int i = 0; i < playerCommands.Count; i++)
+            {
+                PlayerReservedCommand command = playerCommands[i];
+                if (command != null && BattleActionOrderUtility.HasSwift(command))
+                    orderIndex++;
+            }
+        }
+
+        if (monsterCommands == null)
+            return -1;
+
+        for (int i = 0; i < monsterCommands.Count; i++)
+        {
+            if (ReferenceEquals(monsterCommands[i], targetCommand))
+                return orderIndex + i;
+        }
+
+        return -1;
+    }
+
+    private static bool IsExecutablePlayerCommand(PlayerReservedCommand command)
+    {
+        return command != null &&
+               command.UserRuntime != null &&
+               !command.UserRuntime.IsDead;
+    }
+
+    private static bool IsExecutableMonsterCommand(MonsterReservedCommand command)
+    {
+        return command != null &&
+               command.UserRuntime != null &&
+               !command.UserRuntime.IsDead;
+    }
+
+    private bool BatchHasExecutableCommands(BattleActionBatch batch)
+    {
+        if (batch == null)
+            return false;
+
+        if (batch.PlayerCommands != null)
+        {
+            for (int i = 0; i < batch.PlayerCommands.Count; i++)
+            {
+                if (IsExecutablePlayerCommand(batch.PlayerCommands[i]))
+                    return true;
+            }
+        }
+
+        if (batch.MonsterCommands != null)
+        {
+            for (int i = 0; i < batch.MonsterCommands.Count; i++)
+            {
+                if (IsExecutableMonsterCommand(batch.MonsterCommands[i]))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     private bool ShouldKeepCameraAcrossBatchBoundary(
@@ -1502,21 +1638,6 @@ public class BattleTurnExecutor : MonoBehaviour
         return runner.BatchHasCrossSideHitAction(batches[nextExecutableBatchIndex]);
     }
 
-    private bool BatchHasCommands(BattleActionBatch batch)
-    {
-        if (batch == null)
-            return false;
-
-        bool hasPlayerCommand =
-            batch.PlayerCommands != null &&
-            batch.PlayerCommands.Count > 0;
-
-        bool hasMonsterCommand =
-            batch.MonsterCommands != null &&
-            batch.MonsterCommands.Count > 0;
-
-        return hasPlayerCommand || hasMonsterCommand;
-    }
 
     private void PlaySfx(bool play, string sfxId, float volume)
     {

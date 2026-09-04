@@ -120,6 +120,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4935884387528429793}
+  - {fileID: 7644859704428699711}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &3000000000000000001
@@ -194,6 +195,7 @@ MonoBehaviour:
   vfxRoot: {fileID: 2000000000000000001}
   actions:
   - ActionId: event_choice_01_success
+    Animator: {fileID: 0}
     AnimatorTrigger: 
     AnimatorStateName: toopen
     VfxPrefab: {fileID: 0}
@@ -202,118 +204,26 @@ MonoBehaviour:
     VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
     VfxLocalScale: {x: 1, y: 1, z: 1}
     VfxLifetime: 2
-    TintTarget: {fileID: 0}
+    TintTargets: []
     ApplyTint: 0
     TintColor: {r: 0.33773577, g: 0.590343, b: 1, a: 1}
+    TintTarget: {fileID: 0}
     ScaleTarget: {fileID: 2000000000000000001}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
-    Activations: []
-    DisableTargetsOnPlay: []
-    DisableDelayOnPlay: 0
-    ActiveTarget: {fileID: 0}
-    ApplyActiveState: 0
-    ActiveState: 1
-  - ActionId: event_choice_01_failure
-    AnimatorTrigger: 
-    AnimatorStateName: 
-    VfxPrefab: {fileID: 0}
-    VfxRootOverride: {fileID: 0}
-    VfxLocalPosition: {x: 0, y: 0, z: 0}
-    VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
-    VfxLocalScale: {x: 1, y: 1, z: 1}
-    VfxLifetime: 0
-    TintTarget: {fileID: 0}
-    ApplyTint: 0
-    TintColor: {r: 1, g: 1, b: 1, a: 1}
-    ScaleTarget: {fileID: 0}
-    ApplyLocalScale: 0
-    LocalScale: {x: 1, y: 1, z: 1}
-    Activations: []
-    DisableTargetsOnPlay: []
-    DisableDelayOnPlay: 0
-    ActiveTarget: {fileID: 0}
-    ApplyActiveState: 0
-    ActiveState: 1
-  - ActionId: event_choice_02_success
-    AnimatorTrigger: 
-    AnimatorStateName: 
-    VfxPrefab: {fileID: 0}
-    VfxRootOverride: {fileID: 0}
-    VfxLocalPosition: {x: 0, y: 0, z: -0.1}
-    VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
-    VfxLocalScale: {x: 1, y: 1, z: 1}
-    VfxLifetime: 2
-    TintTarget: {fileID: 0}
-    ApplyTint: 0
-    TintColor: {r: 1, g: 1, b: 1, a: 1}
-    ScaleTarget: {fileID: 0}
-    ApplyLocalScale: 0
-    LocalScale: {x: 1, y: 1, z: 1}
-    Activations: []
-    DisableTargetsOnPlay: []
-    DisableDelayOnPlay: 0
-    ActiveTarget: {fileID: 0}
-    ApplyActiveState: 0
-    ActiveState: 1
-  - ActionId: event_choice_02_failure
-    AnimatorTrigger: 
-    AnimatorStateName: 
-    VfxPrefab: {fileID: 0}
-    VfxRootOverride: {fileID: 0}
-    VfxLocalPosition: {x: 0, y: 0, z: 0}
-    VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
-    VfxLocalScale: {x: 1, y: 1, z: 1}
-    VfxLifetime: 0
-    TintTarget: {fileID: 0}
-    ApplyTint: 0
-    TintColor: {r: 1, g: 1, b: 1, a: 1}
-    ScaleTarget: {fileID: 0}
-    ApplyLocalScale: 0
-    LocalScale: {x: 1, y: 1, z: 1}
-    Activations: []
-    DisableTargetsOnPlay: []
-    DisableDelayOnPlay: 0
-    ActiveTarget: {fileID: 0}
-    ApplyActiveState: 0
-    ActiveState: 1
-  - ActionId: event_choice_03_success
-    AnimatorTrigger: 
-    AnimatorStateName: 
-    VfxPrefab: {fileID: 0}
-    VfxRootOverride: {fileID: 0}
-    VfxLocalPosition: {x: 0, y: 0, z: 0}
-    VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
-    VfxLocalScale: {x: 1, y: 1, z: 1}
-    VfxLifetime: 0
-    TintTarget: {fileID: 0}
-    ApplyTint: 0
-    TintColor: {r: 1, g: 1, b: 1, a: 1}
-    ScaleTarget: {fileID: 0}
-    ApplyLocalScale: 0
-    LocalScale: {x: 1, y: 1, z: 1}
-    Activations: []
-    DisableTargetsOnPlay: []
-    DisableDelayOnPlay: 0
-    ActiveTarget: {fileID: 0}
-    ApplyActiveState: 0
-    ActiveState: 1
-  - ActionId: event_choice_03_failure
-    AnimatorTrigger: 
-    AnimatorStateName: 
-    VfxPrefab: {fileID: 0}
-    VfxRootOverride: {fileID: 0}
-    VfxLocalPosition: {x: 0, y: 0, z: 0}
-    VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
-    VfxLocalScale: {x: 1, y: 1, z: 1}
-    VfxLifetime: 0
-    TintTarget: {fileID: 0}
-    ApplyTint: 0
-    TintColor: {r: 1, g: 1, b: 1, a: 1}
-    ScaleTarget: {fileID: 0}
-    ApplyLocalScale: 0
-    LocalScale: {x: 1, y: 1, z: 1}
-    Activations: []
+    ShakeTarget: {fileID: 0}
+    ApplyShake: 0
+    ShakeDelay: 0
+    ShakeDuration: 0.35
+    ShakeStrength: 0.08
+    ShakeFrequency: 25
+    Activations:
+    - ActiveTarget: {fileID: 5347786856888787370}
+      ApplyActiveState: 1
+      ActiveState: 1
+      ActivationDelay: 0.2
+      DisableAfterDelay: 0
+      DisableDelay: 0
     DisableTargetsOnPlay: []
     DisableDelayOnPlay: 0
     ActiveTarget: {fileID: 0}
@@ -353,3 +263,57 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!1 &5347786856888787370
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7644859704428699711}
+  - component: {fileID: 2329974808831105702}
+  m_Layer: 0
+  m_Name: select
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &7644859704428699711
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5347786856888787370}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2000000000000000001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2329974808831105702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5347786856888787370}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: event.06
+  volume: 1
+  playDelay: 0
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
