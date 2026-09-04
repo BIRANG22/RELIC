@@ -28,6 +28,7 @@ public class BattlePlayButton : MonoBehaviour
     [SerializeField] private string gameManagerMissingMessage = "게임 매니저가 없습니다.";
     [SerializeField] private string networkClientStartBlockedMessage = "Only the host can start in multiplayer lobby.";
     [SerializeField] private string networkBattleStartSyncFailedMessage = "Failed to synchronize battle start.";
+    [SerializeField] private string elricDialogueRequiredMessage = "엘릭과 대화를 마친 뒤 탐사를 시작해 주세요.";
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
@@ -49,6 +50,13 @@ public class BattlePlayButton : MonoBehaviour
             questGate.RequiredProgress = LobbyTutorialProgress.FirstExpeditionAssigned;
         }
 
+        // 탐사 시작 버튼은 잠금 상태에서도 클릭을 받아 안내 문구를 표시해야 합니다.
+        if (questGate != null)
+        {
+            questGate.UpdateButtonInteractable = false;
+            questGate.RequiredProgress = LobbyTutorialProgress.FirstExpeditionAssigned;
+        }
+
         FindWarningUIIfMissing();
     }
 
@@ -63,8 +71,11 @@ public class BattlePlayButton : MonoBehaviour
         if (isProcessing)
             return;
 
-        if (questGate != null && !questGate.TryConsume())
+        if (questGate != null && !questGate.CanExecute())
+        {
+            ShowWarning(elricDialogueRequiredMessage);
             return;
+        }
 
         isProcessing = true;
 

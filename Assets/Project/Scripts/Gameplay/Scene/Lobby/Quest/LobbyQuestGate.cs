@@ -5,7 +5,8 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class LobbyQuestGate : MonoBehaviour
 {
-    [SerializeField] private LobbyTutorialProgress requiredProgress =
+    [SerializeField]
+    private LobbyTutorialProgress requiredProgress =
         LobbyTutorialProgress.WaitingForSetup;
     [SerializeField] private string lockedMessage = "현재 퀘스트를 먼저 완료해야 합니다.";
     [SerializeField] private Button button;
@@ -17,6 +18,24 @@ public sealed class LobbyQuestGate : MonoBehaviour
         set
         {
             requiredProgress = value;
+            Refresh();
+        }
+    }
+
+    public bool UpdateButtonInteractable
+    {
+        get => updateButtonInteractable;
+        set
+        {
+            updateButtonInteractable = value;
+
+            if (!updateButtonInteractable && button != null)
+            {
+                // 잠겨 있어도 클릭 이벤트를 받아 경고 UI를 띄우는 기능에서 사용합니다.
+                button.interactable = true;
+                return;
+            }
+
             Refresh();
         }
     }
