@@ -126,6 +126,12 @@ MonoBehaviour:
     ScaleTarget: {fileID: 2000000000000000001}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
+    ShakeTarget: {fileID: 0}
+    ApplyShake: 0
+    ShakeDelay: 0
+    ShakeDuration: 0.35
+    ShakeStrength: 0.08
+    ShakeFrequency: 25
     Activations:
     - ActiveTarget: {fileID: 5690435245543660839}
       ApplyActiveState: 1
@@ -156,6 +162,12 @@ MonoBehaviour:
     ScaleTarget: {fileID: 2000000000000000001}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
+    ShakeTarget: {fileID: 0}
+    ApplyShake: 0
+    ShakeDelay: 0
+    ShakeDuration: 0.35
+    ShakeStrength: 0.08
+    ShakeFrequency: 25
     Activations:
     - ActiveTarget: {fileID: 6742504869225112066}
       ApplyActiveState: 1
@@ -186,6 +198,12 @@ MonoBehaviour:
     ScaleTarget: {fileID: 2000000000000000001}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
+    ShakeTarget: {fileID: 0}
+    ApplyShake: 0
+    ShakeDelay: 0
+    ShakeDuration: 0.35
+    ShakeStrength: 0.08
+    ShakeFrequency: 25
     Activations:
     - ActiveTarget: {fileID: 5288189496688161236}
       ApplyActiveState: 1
@@ -15113,11 +15131,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2327860269614885838, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2327860269614885838, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2327860269614885838, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
@@ -15137,11 +15155,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4901170352034599053, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4901170352034599053, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4901170352034599053, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
@@ -15149,11 +15167,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5591229765855174420, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5591229765855174420, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5591229765855174420, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
@@ -15165,11 +15183,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6807932978033467242, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6807932978033467242, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6807932978033467242, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
@@ -15177,11 +15195,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7760386515730696691, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7760386515730696691, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7760386515730696691, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
@@ -15189,11 +15207,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8637977821446445842, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8637977821446445842, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8637977821446445842, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
@@ -15202,10 +15220,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 251328193466093032, guid: b0272422f4833704f814090f76f8826a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5482546046163482613}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b0272422f4833704f814090f76f8826a, type: 3}
 --- !u!1 &5288189496688161236 stripped
 GameObject:
@@ -15217,33 +15232,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 78297010620636237, guid: b0272422f4833704f814090f76f8826a, type: 3}
   m_PrefabInstance: {fileID: 5228162999075211147}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &5472664256072534627 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 251328193466093032, guid: b0272422f4833704f814090f76f8826a, type: 3}
-  m_PrefabInstance: {fileID: 5228162999075211147}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &5482546046163482613
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5472664256072534627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  soundId: event.09.Ambience
-  volume: 1
-  playDelay: 0
-  playOnEnable: 1
-  playOnHover: 0
-  hoverSoundId: ui.normal.click
-  hoverVolume: 1
-  playOnClick: 0
-  clickSoundId: ui.normal.click
-  clickVolume: 1
 --- !u!1001 &5698525141576362872
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15321,43 +15309,13 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 9132951360344862770, guid: b0272422f4833704f814090f76f8826a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 984044338317352963}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 251328193466093032, guid: b0272422f4833704f814090f76f8826a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2456459764523064118}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b0272422f4833704f814090f76f8826a, type: 3}
 --- !u!4 &3579227777213930314 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 9132951360344862770, guid: b0272422f4833704f814090f76f8826a, type: 3}
   m_PrefabInstance: {fileID: 5698525141576362872}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &5506178059236861584 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 251328193466093032, guid: b0272422f4833704f814090f76f8826a, type: 3}
-  m_PrefabInstance: {fileID: 5698525141576362872}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &2456459764523064118
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5506178059236861584}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  soundId: event.09.Ambience
-  volume: 1
-  playDelay: 0
-  playOnEnable: 1
-  playOnHover: 0
-  hoverSoundId: ui.normal.click
-  hoverVolume: 1
-  playOnClick: 0
-  clickSoundId: ui.normal.click
-  clickVolume: 1
 --- !u!4 &5621355296804714293 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 78297010620636237, guid: b0272422f4833704f814090f76f8826a, type: 3}
@@ -15427,7 +15385,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 138845059003233887, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 222071580945217855, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
@@ -15451,11 +15409,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2327860269614885838, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0.5529412
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2327860269614885838, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3007808601725880185, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
@@ -15475,11 +15433,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4901170352034599053, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0.5529412
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4901170352034599053, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5591229765855174420, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
@@ -15487,11 +15445,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5591229765855174420, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0.5529412
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5591229765855174420, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6239052011403693735, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: m_LocalPosition.x
@@ -15515,11 +15473,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6807932978033467242, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0.5529412
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6807932978033467242, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7760386515730696691, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
@@ -15527,11 +15485,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7760386515730696691, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0.5529412
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7760386515730696691, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8637977821446445842, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
@@ -15539,11 +15497,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8637977821446445842, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
-      value: 0.5529412
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8637977821446445842, guid: b0272422f4833704f814090f76f8826a, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -15551,10 +15509,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 9132951360344862770, guid: b0272422f4833704f814090f76f8826a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2233708721635649522}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 251328193466093032, guid: b0272422f4833704f814090f76f8826a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6037751150168701571}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b0272422f4833704f814090f76f8826a, type: 3}
 --- !u!4 &2504481275125113967 stripped
 Transform:
@@ -15571,33 +15526,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 138845059003233887, guid: b0272422f4833704f814090f76f8826a, type: 3}
   m_PrefabInstance: {fileID: 6665176458903000157}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &6846477512305007029 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 251328193466093032, guid: b0272422f4833704f814090f76f8826a, type: 3}
-  m_PrefabInstance: {fileID: 6665176458903000157}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &6037751150168701571
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6846477512305007029}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  soundId: event.09.Ambience
-  volume: 1
-  playDelay: 0
-  playOnEnable: 1
-  playOnHover: 0
-  hoverSoundId: ui.normal.click
-  hoverVolume: 1
-  playOnClick: 0
-  clickSoundId: ui.normal.click
-  clickVolume: 1
 --- !u!4 &8120713340091644862 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3228490963647573987, guid: b0272422f4833704f814090f76f8826a, type: 3}

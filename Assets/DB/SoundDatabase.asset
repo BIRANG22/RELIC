@@ -645,11 +645,20 @@ MonoBehaviour:
     randomPitchMin: 1
     randomPitchMax: 1
   eventSfxList:
-  - id: event.09.Ambience
+  - id: sfx_debuff
     aliases: []
     clip: {fileID: 8300000, guid: 602ba08c3a1834cefa18cc796ff63c89, type: 3}
-    volume: 1
-    pitch: 0.7
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: sfx_buff
+    aliases: []
+    clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
+    volume: 0.5
+    pitch: 1
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 0
@@ -794,24 +803,6 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: b1977313535064e1ea47ed263f94a095, type: 3}
     volume: 0.5
     pitch: 0.8
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 0
-    randomPitchMax: 0
-  - id: sfx_debuff
-    aliases: []
-    clip: {fileID: 8300000, guid: 602ba08c3a1834cefa18cc796ff63c89, type: 3}
-    volume: 0.5
-    pitch: 1
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 0
-    randomPitchMax: 0
-  - id: sfx_buff
-    aliases: []
-    clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
-    volume: 0.5
-    pitch: 1
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 0
