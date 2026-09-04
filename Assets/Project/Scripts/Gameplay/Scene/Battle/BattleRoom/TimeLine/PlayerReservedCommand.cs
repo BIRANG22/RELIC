@@ -29,6 +29,7 @@ public class PlayerReservedCommand
     public bool IsFirstSkillInSlot { get; private set; } = true;
     public bool HadEarlierMoveInSlot { get; private set; }
     public int SameSlotMoveCostBeforeCommand { get; private set; }
+    public int EarlierAttackReservationCount { get; private set; }
     public bool AllyBuffChargeApplied { get; private set; }
     public int MoveReservationCostMultiplier { get; private set; } = 1;
 
@@ -220,6 +221,11 @@ public class PlayerReservedCommand
         IsFirstSkillInSlot = isFirstSkillInSlot;
         HadEarlierMoveInSlot = hadEarlierMoveInSlot;
         SameSlotMoveCostBeforeCommand = Mathf.Max(0, sameSlotMoveCostBeforeCommand);
+    }
+
+    public void SetEarlierAttackReservationCount(int count)
+    {
+        EarlierAttackReservationCount = Mathf.Max(0, count);
     }
 
     public bool TryMarkAllyBuffChargeApplied()

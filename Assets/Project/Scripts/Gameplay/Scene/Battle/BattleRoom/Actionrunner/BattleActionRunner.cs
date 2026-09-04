@@ -2811,7 +2811,7 @@ public class BattleActionRunner
                 value,
                 count);
 
-            ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
+            ExecutePlayerNonDamageEffectRepeated(effectId, context, command.SkillData.SkillId);
         }
     }
 
@@ -3060,7 +3060,7 @@ public class BattleActionRunner
             }
             else
             {
-                ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
+                ExecutePlayerNonDamageEffectRepeated(effectId, context, command.SkillData.SkillId);
             }
         }
     }
@@ -3126,8 +3126,37 @@ public class BattleActionRunner
             }
             else
             {
-                ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
+                ExecutePlayerNonDamageEffectRepeated(effectId, context, command.SkillData.SkillId);
             }
+        }
+    }
+
+    private void ExecutePlayerNonDamageEffectRepeated(
+        string effectId,
+        BattleEffectContext context,
+        string skillId)
+    {
+        if (context == null)
+            return;
+
+        int repeatCount = Mathf.Max(1, context.Count);
+        context.Count = 1;
+
+        for (int repeatIndex = 0; repeatIndex < repeatCount; repeatIndex++)
+        {
+            if (context.PlayerTarget != null &&
+                (context.PlayerTarget.RuntimeData == null || context.PlayerTarget.RuntimeData.IsDead))
+            {
+                break;
+            }
+
+            if (context.MonsterTarget != null &&
+                (context.MonsterTarget.RuntimeData == null || context.MonsterTarget.RuntimeData.IsDead))
+            {
+                break;
+            }
+
+            ExecutePlayerEffectSafely(effectId, context, skillId);
         }
     }
 
@@ -3160,14 +3189,14 @@ public class BattleActionRunner
                 command.UserRuntime,
                 command,
                 entry,
-                damageService.GetPlayerDamage(command, entry.ValueAmount));
+                entry.ValueAmount);
 
         if (entry.EffectId == "E_Pierce")
             return BattleEquipmentEffectService.ModifyPlayerEffectValue(
                 command.UserRuntime,
                 command,
                 entry,
-                damageService.GetPlayerDamage(command, entry.ValueAmount));
+                entry.ValueAmount);
 
         if (entry.EffectId == "E_Knockback")
             return BattleEquipmentEffectService.ModifyPlayerKnockbackValue(

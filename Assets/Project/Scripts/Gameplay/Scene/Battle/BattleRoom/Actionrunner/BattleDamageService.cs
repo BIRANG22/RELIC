@@ -26,22 +26,9 @@ public class BattleDamageService
         if (command == null || command.SkillData == null)
             return Mathf.Max(1, baseDamage);
 
-        int value = baseDamage;
-
-        BattleCharacter attacker = unitFinder.FindBattleCharacter(command.CharacterId);
-
-        if (attacker != null && attacker.RuntimeData != null)
-        {
-            value += GetStatusStack(attacker.RuntimeData.StatusEffects, "E_Boost");
-
-            if (command.SkillData.SkillType == SkillType.Attack &&
-                GetStatusStack(attacker.RuntimeData.StatusEffects, "E_Smite") > 0)
-            {
-                value = Mathf.CeilToInt(value * 1.5f);
-            }
-        }
-
-        return Mathf.Max(1, value);
+        // 전투 중 상태 효과는 장비(파편 -> 유물) 보정이 끝난 뒤
+        // BattleDamageModifierUtility에서 부여 순서대로 계산합니다.
+        return Mathf.Max(1, baseDamage);
     }
 
     public int GetMonsterDamage(MonsterReservedCommand command)

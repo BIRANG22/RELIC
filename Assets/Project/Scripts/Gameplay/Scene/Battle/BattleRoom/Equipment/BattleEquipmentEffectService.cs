@@ -1194,43 +1194,30 @@ public static class BattleEquipmentEffectService
         if (runtime == null || command == null || entry == null)
             return value;
 
-        if (entry.EffectId == "E_Poison" &&
-            GetStatusStack(runtime, PoisonApplyDoubleEffectId) > 0)
-        {
-            value *= 2;
-        }
-
-        if (entry.EffectId == "E_Bleed" &&
-            GetStatusStack(runtime, BleedingApplyDoubleEffectId) > 0)
-        {
-            value *= 2;
-        }
-
-        if (ShouldDoubleBuffApplication(runtime, command, entry))
-            value *= 2;
-
         if (entry.EffectId == "E_Heal")
         {
-            value += SumConfiguredEffectValues(runtime, HealValueDeltaEffectId);
+            // 파편 보정을 먼저 확정한 뒤 유물 보정을 적용합니다.
             value += SumConfiguredRuneTargetEffectValues(
                 runtime, RuneTargetHealValueDeltaEffectId, command.SkillId);
+            value += SumConfiguredRelicEffectValues(runtime, HealValueDeltaEffectId);
         }
 
         if (entry.EffectId == "E_Armor")
         {
-            value += SumConfiguredEffectValues(runtime, SkillArmorValueDeltaEffectId);
-
+            // 파편 배율도 유물보다 먼저 계산합니다.
             int armorMultiplier = SumConfiguredRuneTargetEffectValues(
                 runtime, RuneTargetArmorMultiplierEffectId, command.SkillId);
             if (armorMultiplier > 1)
                 value *= armorMultiplier;
+
+            value += SumConfiguredRelicEffectValues(runtime, SkillArmorValueDeltaEffectId);
         }
 
         if (entry.EffectId == "E_Poison")
-            value += SumConfiguredEffectValues(runtime, PoisonValueDeltaEffectId);
+            value += SumConfiguredRelicEffectValues(runtime, PoisonValueDeltaEffectId);
 
         if (entry.EffectId == "E_Bleed")
-            value += SumConfiguredEffectValues(runtime, BleedValueDeltaEffectId);
+            value += SumConfiguredRelicEffectValues(runtime, BleedValueDeltaEffectId);
 
         if (entry.EffectId == "E_Boost")
         {
@@ -1251,7 +1238,7 @@ public static class BattleEquipmentEffectService
         if (command.SkillData != null &&
             command.SkillData.Category == Category.Unique)
         {
-            int uniquePercent = SumConfiguredEffectValues(runtime, UniqueSkillValuePercentEffectId);
+            int uniquePercent = SumConfiguredRelicEffectValues(runtime, UniqueSkillValuePercentEffectId);
 
             if (uniquePercent != 0)
                 value = Mathf.Max(0, Mathf.CeilToInt(value * (1f + uniquePercent / 100f)));
@@ -1275,7 +1262,28 @@ public static class BattleEquipmentEffectService
             value += 1;
         }
 
-        return value;
+        // 전투 중 획득한 적용량 변경 상태는 파편/유물 계산 이후에 반영합니다.
+        // 같은 종류가 여러 개라면 StatusEffects에 기록된 부여 순서를 그대로 따릅니다.
+        if (runtime.StatusEffects != null)
+        {
+            for (int i = 0; i < runtime.StatusEffects.Count; i++)
+            {
+                StatusEffectRuntimeData status = runtime.StatusEffects[i];
+                if (status == null || status.Stack <= 0)
+                    continue;
+
+                if (entry.EffectId == "E_Poison" && status.EffectId == PoisonApplyDoubleEffectId)
+                    value *= 2;
+                else if (entry.EffectId == "E_Bleed" && status.EffectId == BleedingApplyDoubleEffectId)
+                    value *= 2;
+                else if (command.SkillData != null &&
+                         command.SkillData.SkillType == SkillType.Buff &&
+                         status.EffectId == BuffApplyDoubleEffectId)
+                    value *= 2;
+            }
+        }
+
+        return Mathf.Max(0, value);
     }
 
     public static int ModifyPlayerEffectCount(
@@ -1289,30 +1297,37 @@ public static class BattleEquipmentEffectService
         if (runtime == null || command == null || entry == null)
             return count;
 
+        // 횟수 역시 기본값 + 파편 -> 유물 순서로 계산합니다.
+        if (IsDamageEffect(entry.EffectId) &&
+            command.SkillData != null &&
+            command.SkillData.SkillType == SkillType.Attack)
+        {
+            count = Mathf.Max(
+                0,
+                count + SumConfiguredRuneTargetEffectValues(
+                    runtime, RuneTargetAttackCountDeltaEffectId, command.SkillId));
+
+            count = Mathf.Max(
+                0,
+                count + SumConfiguredRelicEffectValues(runtime, AttackCountDeltaEffectId));
+        }
+
         if (command.SkillData != null &&
             command.SkillData.Category == Category.Unique)
         {
             count = Mathf.Max(
                 0,
-                count + SumConfiguredEffectValues(runtime, UniqueSkillCountDeltaEffectId));
+                count + SumConfiguredRelicEffectValues(runtime, UniqueSkillCountDeltaEffectId));
         }
 
-        if (!IsDamageEffect(entry.EffectId))
+        if (!IsDamageEffect(entry.EffectId) ||
+            command.SkillData == null ||
+            command.SkillData.SkillType != SkillType.Attack)
+        {
             return count;
+        }
 
-        if (command.SkillData == null || command.SkillData.SkillType != SkillType.Attack)
-            return count;
-
-        count = Mathf.Max(
-            0,
-            count + SumConfiguredEffectValues(runtime, AttackCountDeltaEffectId));
-
-        count = Mathf.Max(
-            0,
-            count + SumConfiguredRuneTargetEffectValues(
-                runtime, RuneTargetAttackCountDeltaEffectId, command.SkillId));
-
-        int randomAttackCountDelta = SumConfiguredEffectValues(runtime, RandomAttackCountDeltaEffectId);
+        int randomAttackCountDelta = SumConfiguredRelicEffectValues(runtime, RandomAttackCountDeltaEffectId);
         if (randomAttackCountDelta != 0 &&
             IsRelic07SelectedAttackSkill(runtime, command.SkillId))
         {
@@ -1750,39 +1765,39 @@ public static class BattleEquipmentEffectService
             runtime, RuneTargetSkillCostDeltaEffectId, command.SkillId);
 
         if (skillType == SkillType.Attack)
-            delta += SumConfiguredEffectValues(runtime, AttackCostDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, AttackCostDeltaEffectId);
 
         if (skillType == SkillType.Buff)
-            delta += SumConfiguredEffectValues(runtime, BuffCostDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, BuffCostDeltaEffectId);
 
         if (skillType == SkillType.Debuff)
-            delta += SumConfiguredEffectValues(runtime, DebuffCostDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, DebuffCostDeltaEffectId);
 
         if (IsMoveCommand(command))
-            delta += SumConfiguredEffectValues(runtime, MoveCostDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, MoveCostDeltaEffectId);
 
         if (skillType == SkillType.Buff && !hadEarlierMoveInSlot)
-            delta += SumConfiguredEffectValues(runtime, NoMoveInSlotBuffCostDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, NoMoveInSlotBuffCostDeltaEffectId);
 
         if (skillType == SkillType.Debuff && hadEarlierMoveInSlot)
-            delta += SumConfiguredEffectValues(runtime, AfterMoveDebuffCostDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, AfterMoveDebuffCostDeltaEffectId);
 
         if (skillType == SkillType.Buff && ShouldApplyHighHp(runtime))
-            delta += SumConfiguredEffectValues(runtime, HighHpBuffCostDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, HighHpBuffCostDeltaEffectId);
 
         if (IsUniqueResourceFull(runtime))
-            delta += SumConfiguredEffectValues(runtime, UniqueResourceMaxSkillCostDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, UniqueResourceMaxSkillCostDeltaEffectId);
 
         if (slotIndex == 0)
         {
-            delta += SumConfiguredEffectValues(runtime, Slot1SkillCostDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, Slot1SkillCostDeltaEffectId);
 
             if (isFirstSkillInSlot)
-                delta += SumConfiguredEffectValues(runtime, Slot1FirstSkillCostDeltaEffectId);
+                delta += SumConfiguredRelicEffectValues(runtime, Slot1FirstSkillCostDeltaEffectId);
         }
 
         if (slotIndex == LastTimelineSlotIndex)
-            delta += SumConfiguredEffectValues(runtime, Slot5SkillCostDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, Slot5SkillCostDeltaEffectId);
 
         return delta;
     }
@@ -1919,46 +1934,46 @@ public static class BattleEquipmentEffectService
 
         if (skillType == SkillType.Attack && isDamageEffect)
         {
-            delta += SumConfiguredEffectValues(runtime, AttackValueDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, AttackValueDeltaEffectId);
 
             if (command.TimelineSlotIndex == 0)
-                delta += SumConfiguredEffectValues(runtime, Slot1AttackValueDeltaEffectId);
+                delta += SumConfiguredRelicEffectValues(runtime, Slot1AttackValueDeltaEffectId);
 
             if (command.TimelineSlotIndex == LastTimelineSlotIndex)
-                delta += SumConfiguredEffectValues(runtime, Slot5AttackValueDeltaEffectId);
+                delta += SumConfiguredRelicEffectValues(runtime, Slot5AttackValueDeltaEffectId);
 
             if (command.HadEarlierMoveInSlot)
             {
-                int perCost = SumConfiguredEffectValues(runtime, AfterMoveAttackValuePerCostEffectId);
+                int perCost = SumConfiguredRelicEffectValues(runtime, AfterMoveAttackValuePerCostEffectId);
                 delta += Mathf.Max(0, command.SameSlotMoveCostBeforeCommand) * perCost;
             }
 
             if (ShouldApplyLowHp(runtime))
-                delta += SumConfiguredEffectValues(runtime, LowHpAttackValueDeltaEffectId);
+                delta += SumConfiguredRelicEffectValues(runtime, LowHpAttackValueDeltaEffectId);
         }
 
         if (skillType == SkillType.Buff && !isDamageEffect)
         {
-            delta += SumConfiguredEffectValues(runtime, BuffValueDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, BuffValueDeltaEffectId);
 
             if (command.TimelineSlotIndex == 0)
-                delta += SumConfiguredEffectValues(runtime, Slot1BuffValueDeltaEffectId);
+                delta += SumConfiguredRelicEffectValues(runtime, Slot1BuffValueDeltaEffectId);
 
             if (ShouldApplyFullHp(runtime))
-                delta += SumConfiguredEffectValues(runtime, FullHpBuffValueDeltaEffectId);
+                delta += SumConfiguredRelicEffectValues(runtime, FullHpBuffValueDeltaEffectId);
 
-            delta += SumConfiguredEffectValues(runtime, SelfBuffBlockedBuffValueDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, SelfBuffBlockedBuffValueDeltaEffectId);
         }
 
         if (skillType == SkillType.Debuff && !isDamageEffect)
         {
-            delta += SumConfiguredEffectValues(runtime, DebuffValueDeltaEffectId);
+            delta += SumConfiguredRelicEffectValues(runtime, DebuffValueDeltaEffectId);
 
             if (command.TimelineSlotIndex == 0)
-                delta += SumConfiguredEffectValues(runtime, Slot1DebuffValueDeltaEffectId);
+                delta += SumConfiguredRelicEffectValues(runtime, Slot1DebuffValueDeltaEffectId);
 
             if (command.HadEarlierMoveInSlot)
-                delta += SumConfiguredEffectValues(runtime, AfterMoveDebuffValueDeltaEffectId);
+                delta += SumConfiguredRelicEffectValues(runtime, AfterMoveDebuffValueDeltaEffectId);
         }
 
         return delta;
@@ -2023,6 +2038,27 @@ public static class BattleEquipmentEffectService
         }
 
         return false;
+    }
+
+    private static int SumConfiguredRelicEffectValues(
+        CharacterRuntimeData runtime,
+        string effectId)
+    {
+        if (runtime == null || string.IsNullOrWhiteSpace(effectId))
+            return 0;
+
+        int total = 0;
+        List<EquipmentEffectEntry> effects = new();
+        AddConfiguredRelicEffects(effects, runtime);
+
+        for (int i = 0; i < effects.Count; i++)
+        {
+            SkillEffectEntry entry = effects[i].Entry;
+            if (entry != null && entry.EffectId == effectId)
+                total += GetRepeatedEntryValue(entry);
+        }
+
+        return total;
     }
 
     private static int SumConfiguredEffectValues(

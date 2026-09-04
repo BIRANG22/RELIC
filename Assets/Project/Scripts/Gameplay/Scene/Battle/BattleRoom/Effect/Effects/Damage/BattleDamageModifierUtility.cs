@@ -50,13 +50,16 @@ public static class BattleDamageModifierUtility
     {
         float damage = Mathf.Max(0, baseDamage);
 
+        // 플레이어 유물의 대상 조건 보정을 먼저 적용하고,
+        // 그 다음 전투 중 획득한 상태 효과를 부여 순서대로 계산합니다.
         if (context?.PlayerCaster != null)
+        {
+            damage = BattleEquipmentEffectService.ModifyPlayerDamageToMonster(context, damage);
             damage = ApplyPlayerAttackerModifiers(damage, context.PlayerCaster.RuntimeData);
+        }
 
         if (context?.MonsterCaster != null)
             damage = ApplyMonsterAttackerModifiers(damage, context.MonsterCaster.RuntimeData);
-
-        damage = BattleEquipmentEffectService.ModifyPlayerDamageToMonster(context, damage);
 
         if (context?.MonsterTarget != null)
             damage = ApplyTargetModifiers(damage, context.MonsterTarget.RuntimeData.StatusEffects);
@@ -71,12 +74,89 @@ public static class BattleDamageModifierUtility
         if (runtime == null)
             return damage;
 
-        return ApplyAttackerModifiers(
+        return ApplyPlayerAttackerModifiersInStatusOrderFloat(
             damage,
-            runtime.StatusEffects,
-            runtime.CurrentHP,
-            runtime.MaxHP,
-            BattleEquipmentEffectService.IsMoveFirstAttackPowerReady(runtime));
+            runtime,
+            true);
+    }
+
+    public static int ApplyPlayerAttackerModifiersInStatusOrder(
+        int baseValue,
+        CharacterRuntimeData runtime,
+        bool isAttackSkill,
+        int smiteAttacksAlreadyReserved = 0)
+    {
+        float value = ApplyPlayerAttackerModifiersInStatusOrderFloat(
+            Mathf.Max(0, baseValue),
+            runtime,
+            isAttackSkill,
+            smiteAttacksAlreadyReserved);
+        return Mathf.Max(0, Mathf.FloorToInt(value));
+    }
+
+    private static float ApplyPlayerAttackerModifiersInStatusOrderFloat(
+        float damage,
+        CharacterRuntimeData runtime,
+        bool isAttackSkill,
+        int smiteAttacksAlreadyReserved = 0)
+    {
+        if (runtime == null || runtime.StatusEffects == null)
+            return damage;
+
+        float value = damage;
+
+        // StatusEffects 리스트는 효과가 처음 부여된 순서를 유지합니다.
+        // 따라서 전투 중 획득한 버프/디버프는 이 순서 그대로 계산합니다.
+        for (int i = 0; i < runtime.StatusEffects.Count; i++)
+        {
+            StatusEffectRuntimeData status = runtime.StatusEffects[i];
+            if (status == null || status.Stack <= 0)
+                continue;
+
+            switch (status.EffectId)
+            {
+                case "E_Boost":
+                    value += status.Stack;
+                    break;
+
+                case "E_Smite":
+                    if (isAttackSkill && smiteAttacksAlreadyReserved < status.Stack)
+                        value *= 1.5f;
+                    break;
+
+                case WeakenEffectId:
+                    value *= 0.85f;
+                    break;
+
+                case ActiveDamageBoostEffectId:
+                    value *= 2f;
+                    break;
+
+                case TargetOutgoingDamageReductionEffectId:
+                    value *= 0.5f;
+                    break;
+
+                case MoveFirstAttackPowerEffectId:
+                    if (BattleEquipmentEffectService.IsMoveFirstAttackPowerReady(runtime))
+                        value *= 1.2f;
+                    break;
+
+                case LowHpPowerEffectId:
+                    if (runtime.MaxHP > 0)
+                    {
+                        float hpRatio = Mathf.Clamp01(runtime.CurrentHP / (float)runtime.MaxHP);
+                        float missingHpRatio = 1f - hpRatio;
+                        value *= 1f + (missingHpRatio * status.Stack * 0.01f);
+                    }
+                    break;
+
+                case GrudgeEffectId:
+                    value += status.Stack;
+                    break;
+            }
+        }
+
+        return value;
     }
 
     private static float ApplyMonsterAttackerModifiers(
