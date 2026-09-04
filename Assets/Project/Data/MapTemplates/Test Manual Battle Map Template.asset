@@ -202,14 +202,14 @@ MonoBehaviour:
       NextNodeIndices: 
     Slot2:
       Enabled: 1
-      Type: Special
+      Type: Shop
       MapIdOverride: Map_22
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
       NextNodeIndices: 1d0000001f000000
     Slot3:
       Enabled: 1
-      Type: Special
+      Type: Shop
       MapIdOverride: Map_22
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}

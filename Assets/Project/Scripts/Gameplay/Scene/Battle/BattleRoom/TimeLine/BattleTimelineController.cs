@@ -264,7 +264,44 @@ public class BattleTimelineController : MonoBehaviour
         HandleKeyboardSlotMoveInput();
         HandleKeyboardUndoReservationInput();
         HandleEndButtonHoverOutsidePolling();
+        HandleSelectionCancelRightClick();
         HandleCharacterSelectionOutsideGridClick();
+    }
+
+    private void HandleSelectionCancelRightClick()
+    {
+        if (!Input.GetMouseButtonDown(1))
+            return;
+
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
+        if (playerSkillReservationController == null)
+        {
+            playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(
+                FindObjectsInactive.Include);
+        }
+
+        // 같은 우클릭으로 스킬 선택과 캐릭터 선택이 동시에 해제되지 않게 합니다.
+        // 스킬 예약 컨트롤러가 이번 프레임에 우클릭 취소를 처리했다면
+        // 현재 캐릭터/몬스터 선택은 다음 우클릭까지 유지합니다.
+        if (playerSkillReservationController != null)
+        {
+            if (playerSkillReservationController.IsSkillSelectionActive() ||
+                playerSkillReservationController.WasSkillSelectionCancelledByRightClickThisFrame)
+            {
+                return;
+            }
+        }
+
+        bool hasCharacterSelection = selectedCharacter != null;
+        bool hasMonsterSelection = Relic.Gameplay.Monster.MonsterUnit.CurrentInfoSelectedMonster != null;
+
+        if (hasCharacterSelection)
+            ClearCharacterSelection();
+
+        if (hasMonsterSelection)
+            Relic.Gameplay.Monster.MonsterUnit.ClearMonsterInfoSelection();
     }
 
     private void HandleCharacterSelectionOutsideGridClick()
@@ -1374,7 +1411,89 @@ public class BattleTimelineController : MonoBehaviour
         if (slotIndex < 0)
             return true;
 
-        return GetPlayerCommandCount(slotIndex) + GetMonsterCommandCount(slotIndex) <= 0;
+        IReadOnlyList<PlayerReservedCommand> playerCommands = GetPlayerCommands(slotIndex);
+        if (playerCommands != null)
+        {
+            for (int i = 0; i < playerCommands.Count; i++)
+            {
+                PlayerReservedCommand command = playerCommands[i];
+                if (command != null && IsTimelineCommandOwnerAlive(command.UserRuntime))
+                    return false;
+            }
+        }
+
+        IReadOnlyList<MonsterReservedCommand> monsterCommands = GetMonsterCommands(slotIndex);
+        if (monsterCommands != null)
+        {
+            for (int i = 0; i < monsterCommands.Count; i++)
+            {
+                MonsterReservedCommand command = monsterCommands[i];
+                if (command != null && IsTimelineCommandOwnerAlive(command.UserRuntime))
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsTimelineCommandOwnerAlive(CharacterRuntimeData runtimeData)
+    {
+        return runtimeData != null && !runtimeData.IsDead;
+    }
+
+    private static bool IsTimelineCommandOwnerAlive(MonsterRuntimeData runtimeData)
+    {
+        return runtimeData != null && !runtimeData.IsDead;
+    }
+
+    public IEnumerator PlayTimelineActionAnimationsForOrdersRoutine(
+        int slotIndex,
+        IReadOnlyList<int> orderIndices,
+        bool fillRemainingUseSkillLine = false)
+    {
+        AutoFindTimelineSpriteAnimationControllerIfNeeded();
+        ConfigureTimelineSpriteAnimationRootForActiveBar();
+
+        if (orderIndices == null || orderIndices.Count <= 0)
+            yield break;
+
+        int lastAnimatedOrderIndex = -1;
+
+        for (int i = 0; i < orderIndices.Count; i++)
+        {
+            int orderIndex = orderIndices[i];
+
+            if (orderIndex < 0 || orderIndex >= 5)
+                continue;
+
+            float animationDuration = GetUseSkillGrindDuration();
+            float targetX = GetOrderGrindPositionX(slotIndex, orderIndex);
+
+            // 사망한 예약 행동의 Order 위치에는 멈추지 않고,
+            // 실제 실행되는 다음 Order 위치까지 한 번에 이동합니다.
+            yield return MoveTimelineSlotToGrindPositionRoutine(
+                slotIndex,
+                targetX,
+                animationDuration
+            );
+
+            if (timelineSpriteAnimationController != null)
+            {
+                SpawnTimelineGrindVfx();
+                yield return timelineSpriteAnimationController.PlayUseSkillRoutine(slotIndex, orderIndex);
+            }
+
+            lastAnimatedOrderIndex = orderIndex;
+        }
+
+        if (fillRemainingUseSkillLine && lastAnimatedOrderIndex >= 0 && lastAnimatedOrderIndex < 4)
+        {
+            yield return MoveTimelineSlotToGrindPositionRoutine(
+                slotIndex,
+                GetOrderGrindPositionX(slotIndex, 4),
+                GetUseSkillGrindDuration()
+            );
+        }
     }
 
     public IEnumerator PlayTimelineActionAnimationsRoutine(int slotIndex, int startOrderIndex, int count, bool fillRemainingUseSkillLine = false)

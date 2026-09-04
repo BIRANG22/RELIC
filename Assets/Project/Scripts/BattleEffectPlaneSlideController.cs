@@ -8,6 +8,8 @@ using UnityEngine;
 /// </summary>
 public class BattleEffectPlaneSlideController : MonoBehaviour
 {
+    public static BattleEffectPlaneSlideController Instance { get; private set; }
+
     [Header("Target Planes")]
     [SerializeField] private Transform leftPlane;
     [SerializeField] private Transform rightPlane;
@@ -46,6 +48,9 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
     [SerializeField] private float rightYAtZoomZWhenCameraYMinus = 3f;
     [SerializeField] private float rightYAtZoomZWhenCameraYPlus = 4.5f;
 
+    [Header("Foreground Sorting")]
+    [SerializeField, Min(1)] private int foregroundSortingOrderOffset = 100;
+
     [Header("Animation")]
     [SerializeField, Min(0f)] private float moveDuration = 0.35f;
     [SerializeField] private AnimationCurve moveCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
@@ -59,6 +64,8 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
+
         ResolveFollowCamera();
         CaptureReferenceCameraPosition();
 
@@ -92,6 +99,62 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
         ApplyPlanePositions(slide01);
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
+    public bool TryGetForegroundSorting(out int sortingLayerId, out int sortingOrder)
+    {
+        sortingLayerId = 0;
+        sortingOrder = 30000;
+
+        Renderer bestRenderer = null;
+        int bestLayerValue = int.MinValue;
+        int bestOrder = int.MinValue;
+
+        EvaluatePlaneRenderers(leftPlane, ref bestRenderer, ref bestLayerValue, ref bestOrder);
+        EvaluatePlaneRenderers(rightPlane, ref bestRenderer, ref bestLayerValue, ref bestOrder);
+
+        if (bestRenderer == null)
+            return false;
+
+        sortingLayerId = bestRenderer.sortingLayerID;
+        sortingOrder = bestOrder + Mathf.Max(1, foregroundSortingOrderOffset);
+        return true;
+    }
+
+    private static void EvaluatePlaneRenderers(
+        Transform plane,
+        ref Renderer bestRenderer,
+        ref int bestLayerValue,
+        ref int bestOrder)
+    {
+        if (plane == null)
+            return;
+
+        Renderer[] renderers = plane.GetComponentsInChildren<Renderer>(true);
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+            if (renderer == null)
+                continue;
+
+            int layerValue = SortingLayer.GetLayerValueFromID(renderer.sortingLayerID);
+
+            if (bestRenderer == null ||
+                layerValue > bestLayerValue ||
+                (layerValue == bestLayerValue && renderer.sortingOrder > bestOrder))
+            {
+                bestRenderer = renderer;
+                bestLayerValue = layerValue;
+                bestOrder = renderer.sortingOrder;
+            }
+        }
+    }
+
     private void OnEnable()
     {
         BattleTurnExecutor.BattleExecutionStarted -= MoveToBattleCenter;
@@ -105,6 +168,7 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
     {
         BattleTurnExecutor.BattleExecutionStarted -= MoveToBattleCenter;
         BattleTurnExecutor.PlayerTurnReturned -= MoveToReservePosition;
+        BattleActionForegroundRenderer.ClearAll();
     }
 
     public void MoveToBattleCenter()
@@ -120,6 +184,8 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
     public void MoveToReservePosition()
     {
+        BattleActionForegroundRenderer.ClearAll();
+
         if (!isActiveAndEnabled)
             return;
 
@@ -140,6 +206,8 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
     public void ForceResetToReservePositionInstant()
     {
+        BattleActionForegroundRenderer.ClearAll();
+
         if (moveRoutine != null)
         {
             StopCoroutine(moveRoutine);

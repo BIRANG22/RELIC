@@ -143,6 +143,10 @@ public class MapNodeView : MonoBehaviour
         if (data.NodeIndex == 0)
             return "Start";
 
+        // 레이어 7은 고정 상점 구간이므로 실제 이벤트 타입보다 상점 플래그를 우선 표시합니다.
+        if (data.LayerIndex == 7)
+            return "Shop";
+
         if (string.Equals(
             EventIdUtility.Normalize(data.EventId),
             "Event_06",

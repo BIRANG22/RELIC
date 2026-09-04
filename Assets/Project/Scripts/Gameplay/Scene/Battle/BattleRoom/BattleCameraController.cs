@@ -111,6 +111,16 @@ public class BattleCameraController : MonoBehaviour
     private bool hasActiveCombatZoom;
     private bool hasActiveMonsterInfoFocus;
 
+    private enum CombatCameraFocusMode
+    {
+        None,
+        Melee,
+        Ranged
+    }
+
+    private Transform activeCombatFocusOwner;
+    private CombatCameraFocusMode activeCombatFocusMode = CombatCameraFocusMode.None;
+
     private Transform zoomFollowTarget;
     private Vector3 zoomFollowVelocity;
     private const float ZoomFollowSmoothTime = 0.045f;
@@ -188,12 +198,18 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null || attacker == null)
             yield break;
 
-        // 전투 줌은 한 연속 행동 묶음에서 처음 잡은 타격자 기준으로 한 번만 이동한다.
-        // 피격자가 바뀌어도 피격자 위치로 다시 줌 이동하지 않는다.
-        if (hasActiveCombatZoom)
+        // 같은 공격자가 같은 근거리 연출을 연속으로 사용할 때만 현재 줌을 유지합니다.
+        // 공격자가 바뀌거나 원거리 -> 근거리처럼 연출 타입이 바뀌면 새 기준으로 다시 포커스합니다.
+        if (hasActiveCombatZoom &&
+            activeCombatFocusOwner == attacker &&
+            activeCombatFocusMode == CombatCameraFocusMode.Melee)
+        {
             yield break;
+        }
 
         hasActiveCombatZoom = true;
+        activeCombatFocusOwner = attacker;
+        activeCombatFocusMode = CombatCameraFocusMode.Melee;
         ResetDamageImpactRotationSequence();
 
         yield return ZoomToPosition(attacker.position);
@@ -209,15 +225,23 @@ public class BattleCameraController : MonoBehaviour
     /// 원거리 스킬 실행용 카메라 줌입니다.
     /// 공격자 위치를 따라가지 않고 현재 X/Y를 유지한 채 Z만 약하게 확대합니다.
     /// </summary>
-    public IEnumerator ZoomForRangedSkill()
+    public IEnumerator ZoomForRangedSkill(Transform attacker = null)
     {
         if (targetCamera == null)
             yield break;
 
-        if (hasActiveCombatZoom)
+        // 같은 공격자가 같은 원거리 연출을 연속으로 사용할 때만 현재 줌을 유지합니다.
+        // 공격자가 바뀌거나 근거리 -> 원거리처럼 연출 타입이 바뀌면 Z 줌을 다시 갱신합니다.
+        if (hasActiveCombatZoom &&
+            activeCombatFocusOwner == attacker &&
+            activeCombatFocusMode == CombatCameraFocusMode.Ranged)
+        {
             yield break;
+        }
 
         hasActiveCombatZoom = true;
+        activeCombatFocusOwner = attacker;
+        activeCombatFocusMode = CombatCameraFocusMode.Ranged;
         ResetDamageImpactRotationSequence();
         RemoveMouseParallax();
         hasActiveMonsterInfoFocus = false;
@@ -478,6 +502,7 @@ public class BattleCameraController : MonoBehaviour
         targetCamera.transform.rotation = Quaternion.identity;
         targetCamera.orthographicSize = defaultSize;
         hasActiveCombatZoom = false;
+        ResetCombatFocusTracking();
         ResetDamageImpactRotationSequence();
         hasActiveMonsterInfoFocus = false;
     }
@@ -518,6 +543,7 @@ public class BattleCameraController : MonoBehaviour
 
         ApplyCameraRotationZ(0f);
         hasActiveCombatZoom = false;
+        ResetCombatFocusTracking();
         hasActiveMonsterInfoFocus = false;
     }
 
@@ -541,6 +567,7 @@ public class BattleCameraController : MonoBehaviour
         targetCamera.transform.rotation = Quaternion.identity;
         targetCamera.orthographicSize = defaultSize;
         hasActiveCombatZoom = false;
+        ResetCombatFocusTracking();
         ResetDamageImpactRotationSequence();
         hasActiveMonsterInfoFocus = false;
     }
@@ -598,6 +625,7 @@ public class BattleCameraController : MonoBehaviour
         targetCamera.transform.rotation = Quaternion.identity;
         targetCamera.orthographicSize = defaultSize;
         hasActiveCombatZoom = false;
+        ResetCombatFocusTracking();
         ResetDamageImpactRotationSequence();
         hasActiveMonsterInfoFocus = false;
     }
@@ -623,7 +651,14 @@ public class BattleCameraController : MonoBehaviour
 
         ApplyCameraRotationZ(0f);
         hasActiveCombatZoom = false;
+        ResetCombatFocusTracking();
         hasActiveMonsterInfoFocus = false;
+    }
+
+    private void ResetCombatFocusTracking()
+    {
+        activeCombatFocusOwner = null;
+        activeCombatFocusMode = CombatCameraFocusMode.None;
     }
 
     public IEnumerator PlayDamageImpact()
