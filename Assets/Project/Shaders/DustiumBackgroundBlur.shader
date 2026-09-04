@@ -3,6 +3,7 @@ Shader "UI/DustiumBackgroundBlur"
     Properties
     {
         [PerRendererData] _MainTex ("Texture", 2D) = "white" {}
+        [HideInInspector] _UIBlurSourceTexture ("Blur Source", 2D) = "black" {}
         _Color ("Tint", Color) = (1,1,1,1)
         _BlurRadius ("Blur Radius", Range(0,8)) = 4.0
         _Darken ("Darken", Range(0,1)) = 0.75
@@ -78,6 +79,8 @@ Shader "UI/DustiumBackgroundBlur"
 
             sampler2D _MainTex;
             float4 _MainTex_TexelSize;
+            sampler2D _UIBlurSourceTexture;
+            float4 _UIBlurSourceTexture_TexelSize;
             fixed4 _Color;
             float4 _ClipRect;
             float _BlurRadius;
@@ -102,30 +105,33 @@ Shader "UI/DustiumBackgroundBlur"
             {
                 // 중심을 유지하면서 주변 픽셀을 촘촘하게 섞어,
                 // 화면 전체가 번지는 느낌보다 부드럽게 초점이 빠진 배경을 만듭니다.
-                float2 texel = _MainTex_TexelSize.xy;
-                float radius = _BlurRadius * 0.65;
+                float2 texel = _UIBlurSourceTexture_TexelSize.xy;
+                // 이전 캡처 방식은 4배 다운샘플 텍스처를 사용했습니다.
+                // 이제 원본 해상도를 읽으므로 동일한 Inspector Radius 체감을 위해
+                // 샘플 반경만 확대합니다.
+                float radius = _BlurRadius * 3.0;
                 float2 nearOffset = texel * radius * 0.5;
                 float2 farOffset = texel * radius;
 
-                fixed4 col = tex2D(_MainTex, IN.texcoord) * 0.30;
+                fixed4 col = tex2D(_UIBlurSourceTexture, IN.texcoord) * 0.30;
 
                 // 가까운 십자 방향
-                col += tex2D(_MainTex, IN.texcoord + float2( nearOffset.x, 0.0)) * 0.10;
-                col += tex2D(_MainTex, IN.texcoord + float2(-nearOffset.x, 0.0)) * 0.10;
-                col += tex2D(_MainTex, IN.texcoord + float2(0.0,  nearOffset.y)) * 0.10;
-                col += tex2D(_MainTex, IN.texcoord + float2(0.0, -nearOffset.y)) * 0.10;
+                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2( nearOffset.x, 0.0)) * 0.10;
+                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(-nearOffset.x, 0.0)) * 0.10;
+                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(0.0,  nearOffset.y)) * 0.10;
+                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(0.0, -nearOffset.y)) * 0.10;
 
                 // 가까운 대각선 방향
-                col += tex2D(_MainTex, IN.texcoord + float2( nearOffset.x,  nearOffset.y)) * 0.05;
-                col += tex2D(_MainTex, IN.texcoord + float2(-nearOffset.x,  nearOffset.y)) * 0.05;
-                col += tex2D(_MainTex, IN.texcoord + float2( nearOffset.x, -nearOffset.y)) * 0.05;
-                col += tex2D(_MainTex, IN.texcoord + float2(-nearOffset.x, -nearOffset.y)) * 0.05;
+                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2( nearOffset.x,  nearOffset.y)) * 0.05;
+                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(-nearOffset.x,  nearOffset.y)) * 0.05;
+                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2( nearOffset.x, -nearOffset.y)) * 0.05;
+                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(-nearOffset.x, -nearOffset.y)) * 0.05;
 
                 // 바깥쪽은 낮은 가중치만 사용해 과도한 번짐을 억제합니다.
-                col += tex2D(_MainTex, IN.texcoord + float2( farOffset.x, 0.0)) * 0.025;
-                col += tex2D(_MainTex, IN.texcoord + float2(-farOffset.x, 0.0)) * 0.025;
-                col += tex2D(_MainTex, IN.texcoord + float2(0.0,  farOffset.y)) * 0.025;
-                col += tex2D(_MainTex, IN.texcoord + float2(0.0, -farOffset.y)) * 0.025;
+                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2( farOffset.x, 0.0)) * 0.025;
+                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(-farOffset.x, 0.0)) * 0.025;
+                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(0.0,  farOffset.y)) * 0.025;
+                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(0.0, -farOffset.y)) * 0.025;
 
                 // 채도 감소: 0이면 완전 흑백, 1이면 원본 색상입니다.
                 float luminance = dot(col.rgb, float3(0.299, 0.587, 0.114));
