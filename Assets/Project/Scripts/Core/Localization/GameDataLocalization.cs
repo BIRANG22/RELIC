@@ -20,8 +20,22 @@ namespace Relic.Gameplay.Data
         public static string SkillDetails(SkillMasterData data) =>
             SkillDescriptionFormatter.Format(data);
 
-        public static string MonsterSkillName(MonsterSkillData data) =>
-            data == null ? string.Empty : GameLocalization.GetData("MonsterSkill", data.SkillId, "name", data.Name);
+        public static string MonsterSkillName(MonsterSkillData data)
+        {
+            if (data == null)
+                return string.Empty;
+
+            // 한국어에서는 GameData의 몬스터 스킬 이름을 원본으로 사용합니다.
+            // 이름을 수정했을 때 Localization의 오래된 값이 우선되어 이전 이름이 표시되는 것을 방지합니다.
+            string localeCode = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code;
+            if (!string.IsNullOrWhiteSpace(localeCode) &&
+                localeCode.StartsWith("ko", System.StringComparison.OrdinalIgnoreCase))
+            {
+                return string.IsNullOrWhiteSpace(data.Name) ? data.SkillId : data.Name;
+            }
+
+            return GameLocalization.GetData("MonsterSkill", data.SkillId, "name", data.Name);
+        }
 
         public static string MonsterSkillDescription(MonsterSkillData data) =>
             data == null ? string.Empty : GameLocalization.GetData("MonsterSkill", data.SkillId, "effect_description", data.EffectDesc);

@@ -1832,7 +1832,7 @@ public class BattleActionRunner
                 if (ShouldEnterCameraForActiveAction() &&
                     ShouldSkipPlayerSkillCamera(command) &&
                     BattleCameraController.Instance != null)
-                    yield return BattleCameraController.Instance.ZoomForRangedSkill();
+                    yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
 
                 if (attackerAnimator != null)
                 {
@@ -1897,7 +1897,7 @@ public class BattleActionRunner
                 if (ShouldEnterCameraForActiveAction() &&
                     ShouldSkipPlayerSkillCamera(command) &&
                     BattleCameraController.Instance != null)
-                    yield return BattleCameraController.Instance.ZoomForRangedSkill();
+                    yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
 
                 if (attackerAnimator != null)
                 {
@@ -1960,7 +1960,7 @@ public class BattleActionRunner
                 ShouldSkipPlayerSkillCamera(command) &&
                 BattleCameraController.Instance != null)
             {
-                yield return BattleCameraController.Instance.ZoomForRangedSkill();
+                yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
             }
             else if (ShouldEnterCameraForActiveAction() &&
                      hitTargets.Count > 0 &&
@@ -3986,7 +3986,7 @@ public class BattleActionRunner
                 ShouldSkipMonsterSkillCamera(command) &&
                 BattleCameraController.Instance != null)
             {
-                yield return BattleCameraController.Instance.ZoomForRangedSkill();
+                yield return BattleCameraController.Instance.ZoomForRangedSkill(monster.transform);
             }
             else if (ShouldEnterCameraForActiveAction() &&
                      firstPlayerTarget != null &&

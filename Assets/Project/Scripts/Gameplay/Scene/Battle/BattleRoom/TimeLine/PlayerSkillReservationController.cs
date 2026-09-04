@@ -23,7 +23,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     [Header("Reservation SFX")]
     [Tooltip("스킬 또는 이동 행동이 타임라인에 정상 등록되었을 때 재생할 효과음입니다.")]
-    [SerializeField] private string reservationConfirmSfxId = AudioIds.Sfx.SkillReserve;
+    [SerializeField] private string reservationConfirmSfxId = "SkillReserve";
     [Tooltip("행동 등록 효과음의 볼륨 배율입니다.")]
     [Range(0f, 1f)]
     [SerializeField] private float reservationConfirmSfxVolume = 1f;
@@ -121,6 +121,11 @@ public class PlayerSkillReservationController : MonoBehaviour
     private const int MoveHoverPingDefaultSortingOffset = 10;
     private const int MoveHoverPingLegacyFrontSortingOrderThreshold = 1000;
 
+    private int lastRightClickSkillCancelFrame = -1;
+
+    public bool WasSkillSelectionCancelledByRightClickThisFrame =>
+        lastRightClickSkillCancelFrame == Time.frameCount;
+
     private void OnEnable()
     {
         if (gridManager != null)
@@ -163,6 +168,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (!Input.GetMouseButtonDown(1))
             return;
 
+        lastRightClickSkillCancelFrame = Time.frameCount;
         ClearPreview();
     }
 
