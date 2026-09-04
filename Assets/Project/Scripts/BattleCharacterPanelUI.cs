@@ -252,6 +252,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private int lastPreviewCost = int.MinValue;
     private int lastPreviewShield = int.MinValue;
     private int lastPreviewResource = int.MinValue;
+    private int lastPreviewTimelineSlotIndex = int.MinValue;
+    private int lastPreviewReservationVersion = int.MinValue;
+    private SkillMasterData displayedSkillInfoData;
+    private SkillDetailNumericLinkHandler skillDetailsNumericLinkHandler;
+    private string hoveredSkillDetailsLinkId = string.Empty;
     private int lastMaxHp = int.MinValue;
     private int lastMaxCost = int.MinValue;
     private int lastMaxResource = int.MinValue;
@@ -297,6 +302,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         RegisterMoveAndItemButtonListeners();
         EnsureSkillButtonHoverEffects();
         EnsureMoveAndItemButtonHoverEffects();
+        EnsureSkillDetailsNumericInteraction();
     }
 
     private void OnEnable()
@@ -319,6 +325,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         BattleMapIntroText.IntroStarted += HandleBattleMapIntroStarted;
         BattleMapIntroText.IntroCompleted -= HandleBattleMapIntroCompleted;
         BattleMapIntroText.IntroCompleted += HandleBattleMapIntroCompleted;
+        SkillDetailNumericLinkHandler.DetailedModeChanged -= HandleSkillDetailsDetailedModeChanged;
+        SkillDetailNumericLinkHandler.DetailedModeChanged += HandleSkillDetailsDetailedModeChanged;
 
         ApplyCurrentBattlePhasePositionImmediate();
     }
@@ -346,6 +354,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         BattleSceneController.BattleRoomIntroCompleted -= HandleBattleRoomIntroCompleted;
         BattleMapIntroText.IntroStarted -= HandleBattleMapIntroStarted;
         BattleMapIntroText.IntroCompleted -= HandleBattleMapIntroCompleted;
+        SkillDetailNumericLinkHandler.DetailedModeChanged -= HandleSkillDetailsDetailedModeChanged;
 
         StopNumberChangeCoroutine();
         StopPanelMoveCoroutine();
@@ -977,6 +986,23 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (boundRuntime == null)
             return;
 
+        int activeSlotIndex = battleTimelineController != null
+            ? battleTimelineController.ActiveSlotIndex
+            : -1;
+        int reservationVersion = battleTimelineController != null
+            ? battleTimelineController.ReservationVersion
+            : -1;
+        if (activeSlotIndex != lastPreviewTimelineSlotIndex ||
+            reservationVersion != lastPreviewReservationVersion)
+        {
+            lastPreviewTimelineSlotIndex = activeSlotIndex;
+            lastPreviewReservationVersion = reservationVersion;
+            RefreshSkillList();
+
+            if (displayedSkillInfoData != null)
+                ShowSkillInfo(displayedSkillInfoData);
+        }
+
         if (HasRuntimeDisplayChanged())
             Refresh();
     }
@@ -1003,6 +1029,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
         hasDisplayedStats = false;
         boundRuntime = runtimeData;
         boundMaster = null;
+        displayedSkillInfoData = null;
+        lastPreviewTimelineSlotIndex = battleTimelineController != null
+            ? battleTimelineController.ActiveSlotIndex
+            : -1;
+        lastPreviewReservationVersion = battleTimelineController != null
+            ? battleTimelineController.ReservationVersion
+            : -1;
 
         if (boundRuntime != null && DataManager.Instance != null &&
             DataManager.Instance.CharacterDatabase != null)
@@ -1133,6 +1166,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         lastPreviewCost = int.MinValue;
         lastPreviewShield = int.MinValue;
         lastPreviewResource = int.MinValue;
+        lastPreviewReservationVersion = int.MinValue;
         lastMaxHp = int.MinValue;
         lastMaxCost = int.MinValue;
         lastMaxResource = int.MinValue;
@@ -2419,7 +2453,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (boundRuntime == null || skillData == null || boundRuntime.IsDead)
             return false;
 
-        int requiredAmount = Mathf.Max(0, skillData.ResourceCostValue);
+        BattlePlayerSkillPreview preview = GetSkillPreview(skillData);
+        int requiredAmount = preview != null
+            ? preview.PayAmount
+            : Mathf.Max(0, skillData.ResourceCostValue);
 
         switch (skillData.ReferenceResource)
         {
@@ -2490,10 +2527,48 @@ public class BattleCharacterPanelUI : MonoBehaviour
         ApplyItemButtonEquippedVisual(false);
     }
 
+    private void EnsureSkillDetailsNumericInteraction()
+    {
+        if (skillInfoDetailsText == null)
+            return;
+
+        skillInfoDetailsText.richText = true;
+        skillInfoDetailsText.raycastTarget = true;
+
+        skillDetailsNumericLinkHandler = skillInfoDetailsText.GetComponent<SkillDetailNumericLinkHandler>();
+        if (skillDetailsNumericLinkHandler == null)
+            skillDetailsNumericLinkHandler = skillInfoDetailsText.gameObject.AddComponent<SkillDetailNumericLinkHandler>();
+
+        skillDetailsNumericLinkHandler.Configure(
+            skillInfoDetailsText,
+            HandleSkillDetailsHoveredLinkChanged);
+    }
+
+    private void HandleSkillDetailsHoveredLinkChanged(string linkId)
+    {
+        string normalized = linkId ?? string.Empty;
+        if (hoveredSkillDetailsLinkId == normalized)
+            return;
+
+        hoveredSkillDetailsLinkId = normalized;
+        if (displayedSkillInfoData != null)
+            ShowSkillInfo(displayedSkillInfoData);
+    }
+
+    private void HandleSkillDetailsDetailedModeChanged(bool detailedMode)
+    {
+        // 어느 스킬의 숫자를 눌러도 동일한 전역 상세 보기 상태를 사용합니다.
+        if (displayedSkillInfoData != null)
+            ShowSkillInfo(displayedSkillInfoData);
+    }
+
     private void ShowSkillInfo(SkillMasterData skillData)
     {
         if (skillData == null)
             return;
+
+        displayedSkillInfoData = skillData;
+        BattlePlayerSkillPreview preview = GetSkillPreview(skillData);
 
         SetSkillInfoImage(skillInfoIconImage, ResolveSkillIcon(skillData.SkillId, skillData));
         SkillUpgradeMarkStyle.ApplyShared(skillInfoIconImage, skillData);
@@ -2515,7 +2590,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (skillInfoDetailsText != null)
         {
             skillInfoDetailsText.text = !string.IsNullOrWhiteSpace(skillData.Details)
-                ? GameDataLocalization.SkillDetails(skillData)
+                ? BattlePlayerSkillPreviewCalculator.FormatDescription(
+                    skillData,
+                    skillData.Details,
+                    preview,
+                    SkillDetailNumericLinkHandler.DetailedMode,
+                    hoveredSkillDetailsLinkId)
                 : string.Empty;
         }
 
@@ -2607,7 +2687,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             isResourceUnavailable);
     }
 
-    private static string GetSkillCostDisplayText(SkillMasterData skillData)
+    private string GetSkillCostDisplayText(SkillMasterData skillData)
     {
         if (skillData == null)
             return string.Empty;
@@ -2615,7 +2695,24 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (skillData.Category == Category.Move)
             return "이동 거리";
 
-        return Mathf.Max(0, skillData.ResourceCostValue).ToString();
+        BattlePlayerSkillPreview preview = GetSkillPreview(skillData);
+        int cost = preview != null
+            ? preview.PayAmount
+            : Mathf.Max(0, skillData.ResourceCostValue);
+        return cost.ToString();
+    }
+
+    private BattlePlayerSkillPreview GetSkillPreview(SkillMasterData skillData)
+    {
+        int slotIndex = battleTimelineController != null
+            ? battleTimelineController.ActiveSlotIndex
+            : -1;
+
+        return BattlePlayerSkillPreviewCalculator.CreatePreview(
+            boundRuntime,
+            skillData,
+            slotIndex,
+            battleTimelineController);
     }
 
     private void RefreshSkillInfoEffects(SkillMasterData skillData)

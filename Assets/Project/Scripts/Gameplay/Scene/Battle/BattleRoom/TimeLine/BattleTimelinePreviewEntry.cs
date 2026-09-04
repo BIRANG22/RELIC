@@ -127,7 +127,8 @@ public class BattleTimelinePreviewEntry
         get
         {
             if (IsPlayer)
-                return GetPlayerDamageDisplayValueText(PlayerSkillData);
+                return BattlePlayerSkillPreviewCalculator.GetTimelineValueText(
+                    BattlePlayerSkillPreviewCalculator.CreatePreview(PlayerCommand));
 
             if (IsMonster)
                 return GetMonsterDamageDisplayValueText(MonsterCommand);
@@ -365,12 +366,10 @@ public class BattleTimelinePreviewEntry
             ? GetPlayerPayAmount()
             : PlayerSkillData.ResourceCostValue;
 
-        return SkillTooltipFormatter.Format(
+        return BattlePlayerSkillPreviewCalculator.FormatDescription(
             PlayerSkillData,
             description,
-            CharacterRuntime,
-            payAmount
-        );
+            BattlePlayerSkillPreviewCalculator.CreatePreview(PlayerCommand));
     }
 
     private static Sprite GetCharacterTimelineIcon(string characterId)
