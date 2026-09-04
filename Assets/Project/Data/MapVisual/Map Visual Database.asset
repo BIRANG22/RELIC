@@ -90,7 +90,7 @@ MonoBehaviour:
     - Prefab: {fileID: 1000000000000000001, guid: b224834a5547fc441800d6830714760a, type: 3}
       VisualObjectId: event9
       AnchorName: 
-      LocalPosition: {x: 0, y: -2, z: 0}
+      LocalPosition: {x: 2.31, y: 0.65, z: 0}
       LocalEulerAngles: {x: 0, y: 0, z: 0}
-      LocalScale: {x: 1, y: 1, z: 1}
+      LocalScale: {x: 0.5, y: 0.5, z: 0.5}
       Active: 1

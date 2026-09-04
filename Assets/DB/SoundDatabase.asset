@@ -296,7 +296,7 @@ MonoBehaviour:
   - id: battle.map.node.check.animation
     aliases: []
     clip: {fileID: 8300000, guid: 23ffa4d4eed73744eac96aa612ee44d5, type: 3}
-    volume: 0.3
+    volume: 0.1
     pitch: 1
     loop: 0
     useRandomPitch: 0
