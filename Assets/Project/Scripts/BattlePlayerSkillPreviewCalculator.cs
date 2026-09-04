@@ -179,7 +179,7 @@ public static class BattlePlayerSkillPreviewCalculator
                 $"count_{i}",
                 count,
                 breakdown?.Formula,
-                detailedMode,
+                false,
                 hoveredLinkId);
         }
 
@@ -480,6 +480,8 @@ public static class BattlePlayerSkillPreviewCalculator
     {
         switch (effectId)
         {
+            case "E_Strike":
+            case "E_Pierce":
             case "E_Heal":
             case "E_Armor":
             case "E_Boost":

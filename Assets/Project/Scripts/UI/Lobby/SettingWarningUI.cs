@@ -31,6 +31,11 @@ public class SettingWarningUI : MonoBehaviour
     [SerializeField] private Color normalBackgroundColor = new Color(0f, 0f, 0f, 0.75f);
     [SerializeField] private Color warningTextColor = Color.white;
 
+    [Header("Sort Order")]
+    [SerializeField] private bool forceTopSorting = true;
+    [SerializeField] private int topSortingOrder = 9000;
+    [SerializeField] private bool setAsLastSiblingOnShow = true;
+
     [Header("Warning Text - General")]
     [SerializeField] private string dataUnavailableMessage = "데이터를 불러올 수 없습니다.";
     [SerializeField] private string noCharacterSelectedMessage = "선택된 캐릭터가 없습니다.";
@@ -67,6 +72,7 @@ public class SettingWarningUI : MonoBehaviour
     [SerializeField] private string sharedRuneLockedMessage = "아직 잠겨있는 공용 파편입니다.";
     [SerializeField] private string insufficientBlueDustiumMessage = "블루 더스티움이 부족합니다.";
 
+    private Canvas sortingCanvas;
     private Vector2 baseAnchoredPosition;
     private float timer;
     private bool isShowing;
@@ -84,6 +90,7 @@ public class SettingWarningUI : MonoBehaviour
         if (moveTarget != null)
             baseAnchoredPosition = moveTarget.anchoredPosition;
 
+        EnsureTopSorting();
         HideImmediate();
     }
 
@@ -165,6 +172,8 @@ public class SettingWarningUI : MonoBehaviour
 
     private void OnEnable()
     {
+        EnsureTopSorting();
+
         if (moveTarget != null && !isShowing)
             baseAnchoredPosition = moveTarget.anchoredPosition;
     }
@@ -206,6 +215,7 @@ public class SettingWarningUI : MonoBehaviour
             backgroundImage.color = normalBackgroundColor;
 
         gameObject.SetActive(true);
+        BringToFront();
 
         timer = 0f;
         isShowing = true;
@@ -459,6 +469,29 @@ public class SettingWarningUI : MonoBehaviour
         float c3 = c1 + 1f;
 
         return 1f + c3 * Mathf.Pow(t - 1f, 3f) + c1 * Mathf.Pow(t - 1f, 2f);
+    }
+
+    private void BringToFront()
+    {
+        EnsureTopSorting();
+
+        if (setAsLastSiblingOnShow)
+            transform.SetAsLastSibling();
+    }
+
+    private void EnsureTopSorting()
+    {
+        if (!forceTopSorting)
+            return;
+
+        if (sortingCanvas == null)
+            sortingCanvas = GetComponent<Canvas>();
+
+        if (sortingCanvas == null)
+            sortingCanvas = gameObject.AddComponent<Canvas>();
+
+        sortingCanvas.overrideSorting = true;
+        sortingCanvas.sortingOrder = topSortingOrder;
     }
 
     private void SetAlpha(float alpha)
