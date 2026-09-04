@@ -23,6 +23,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     [SerializeField] private RectTransform canvasRect;
     [SerializeField] private Camera worldCamera;
     [SerializeField] private Camera uiCamera;
+    private Canvas battleOverlayCanvas;
 
     [Header("Popup Position")]
     [SerializeField] private Vector3 worldOffset = new Vector3(0f, 1.15f, 0f);
@@ -442,17 +443,60 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     private void UseBattleCanvas()
     {
         Canvas battleCanvas = FindBattleCanvas();
-        if (battleCanvas == null)
+        battleOverlayCanvas = GetOrCreateBattleOverlayCanvas(battleCanvas);
+
+        if (battleOverlayCanvas == null)
         {
             EnsureReferences();
             return;
         }
 
-        targetCanvas = battleCanvas;
+        targetCanvas = battleOverlayCanvas;
         canvasRect = targetCanvas.GetComponent<RectTransform>();
-        uiCamera = targetCanvas.renderMode == RenderMode.ScreenSpaceOverlay
-            ? null
-            : targetCanvas.worldCamera;
+        uiCamera = null;
+    }
+
+    private Canvas GetOrCreateBattleOverlayCanvas(Canvas sourceCanvas)
+    {
+        if (battleOverlayCanvas != null)
+            return battleOverlayCanvas;
+
+        GameObject existing = GameObject.Find("BattleDamageTextOverlayCanvas");
+        if (existing != null)
+        {
+            battleOverlayCanvas = existing.GetComponent<Canvas>();
+            if (battleOverlayCanvas != null)
+                return battleOverlayCanvas;
+        }
+
+        GameObject go = new GameObject("BattleDamageTextOverlayCanvas");
+        Canvas canvas = go.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = 30000;
+
+        CanvasScaler scaler = go.AddComponent<CanvasScaler>();
+        CanvasScaler sourceScaler = sourceCanvas != null
+            ? sourceCanvas.GetComponent<CanvasScaler>()
+            : null;
+
+        if (sourceScaler != null)
+        {
+            scaler.uiScaleMode = sourceScaler.uiScaleMode;
+            scaler.referenceResolution = sourceScaler.referenceResolution;
+            scaler.screenMatchMode = sourceScaler.screenMatchMode;
+            scaler.matchWidthOrHeight = sourceScaler.matchWidthOrHeight;
+            scaler.referencePixelsPerUnit = sourceScaler.referencePixelsPerUnit;
+        }
+        else
+        {
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 0.5f;
+        }
+
+        battleOverlayCanvas = canvas;
+        return battleOverlayCanvas;
     }
 
     private void EnsureReferences()

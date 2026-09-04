@@ -264,7 +264,44 @@ public class BattleTimelineController : MonoBehaviour
         HandleKeyboardSlotMoveInput();
         HandleKeyboardUndoReservationInput();
         HandleEndButtonHoverOutsidePolling();
+        HandleSelectionCancelRightClick();
         HandleCharacterSelectionOutsideGridClick();
+    }
+
+    private void HandleSelectionCancelRightClick()
+    {
+        if (!Input.GetMouseButtonDown(1))
+            return;
+
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
+        if (playerSkillReservationController == null)
+        {
+            playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(
+                FindObjectsInactive.Include);
+        }
+
+        // 같은 우클릭으로 스킬 선택과 캐릭터 선택이 동시에 해제되지 않게 합니다.
+        // 스킬 예약 컨트롤러가 이번 프레임에 우클릭 취소를 처리했다면
+        // 현재 캐릭터/몬스터 선택은 다음 우클릭까지 유지합니다.
+        if (playerSkillReservationController != null)
+        {
+            if (playerSkillReservationController.IsSkillSelectionActive() ||
+                playerSkillReservationController.WasSkillSelectionCancelledByRightClickThisFrame)
+            {
+                return;
+            }
+        }
+
+        bool hasCharacterSelection = selectedCharacter != null;
+        bool hasMonsterSelection = Relic.Gameplay.Monster.MonsterUnit.CurrentInfoSelectedMonster != null;
+
+        if (hasCharacterSelection)
+            ClearCharacterSelection();
+
+        if (hasMonsterSelection)
+            Relic.Gameplay.Monster.MonsterUnit.ClearMonsterInfoSelection();
     }
 
     private void HandleCharacterSelectionOutsideGridClick()
