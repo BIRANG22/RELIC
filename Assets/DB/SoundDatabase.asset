@@ -737,9 +737,18 @@ MonoBehaviour:
     randomPitchMax: 0
   - id: event.01
     aliases: []
-    clip: {fileID: 8300000, guid: e1ea57dfcd48e4141ba7bc8560cfd649, type: 3}
+    clip: {fileID: 8300000, guid: 8769190389def4340b87c3382bbc2898, type: 3}
     volume: 0.2
     pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.01_1
+    aliases: []
+    clip: {fileID: 8300000, guid: d03e7a64efe4d4fa68f50bf30c4272b9, type: 3}
+    volume: 0.5
+    pitch: 0.8
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 0
@@ -773,16 +782,43 @@ MonoBehaviour:
     randomPitchMax: 0
   - id: event.02_4
     aliases: []
-    clip: {fileID: 8300000, guid: be040a2eb57914e5d96391780248a3fd, type: 3}
+    clip: {fileID: 8300000, guid: 7c282863eacd94764aaf292f96c30cbf, type: 3}
     volume: 0.5
-    pitch: 1
+    pitch: 0.8
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 0
     randomPitchMax: 0
   - id: event.02_3
     aliases: []
+    clip: {fileID: 8300000, guid: b1977313535064e1ea47ed263f94a095, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: sfx_debuff
+    aliases: []
+    clip: {fileID: 8300000, guid: 602ba08c3a1834cefa18cc796ff63c89, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: sfx_buff
+    aliases: []
     clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.06
+    aliases: []
+    clip: {fileID: 8300000, guid: 324c6dda82f204f498220f244a65bc44, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
