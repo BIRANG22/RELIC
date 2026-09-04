@@ -33,7 +33,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private bool toggleIfAlreadyOpen = true;
 
     [Header("Opened Panel Front Sorting")]
-    [SerializeField] private bool bringOpenedPanelToFront = true;
     [SerializeField] private bool forceOpenedPanelCanvasSorting = true;
     [SerializeField] private int openedPanelSortingOrder = 1000;
     [SerializeField] private bool addGraphicRaycasterToOpenedPanel = true;
@@ -77,7 +76,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     private static UIPanelButton currentOpenedPanelOwner;
 
     public static bool HasCurrentOpenedPanel => currentOpenedPanelOwner != null;
-    public static bool IsMenuPanelOpen => IsMenuPanelActiveInScene() || UIBlurBackgroundManager.IsInputBlocked;
+    public static bool IsMenuPanelOpen => IsMenuPanelActiveInScene();
 
     public static bool IsMenuPanelActiveInScene()
     {
@@ -502,10 +501,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (IsMenuPanelActiveInScene())
             return !IsMenuPanelButton() && !IsInsideOpenMenuPanel();
 
-        return UIBlurBackgroundManager.IsInputBlocked &&
-               !UIBlurBackgroundManager.IsRequesterPanelObject(gameObject) &&
-               !IsInsideMenuRoot() &&
-               !IsInsideLobbyMenuRoot();
+        return false;
     }
 
     private bool IsMenuPanelButton()
@@ -941,7 +937,8 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (panelToOpen != null)
         {
-            TitleManager.CloseTitleModePanelsExceptInScene(panelToOpen);
+            if (!isMenuPanelTarget)
+                TitleManager.CloseTitleModePanelsExceptInScene(panelToOpen);
 
             panelToOpen.SetActive(true);
 
@@ -953,9 +950,18 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
             RefreshMenuPanelTextIfNeeded(panelToOpen);
 
             ApplyOpenedPanelFrontSorting(panelToOpen);
+            RegisterMenuPanelBlurIfNeeded(panelToOpen);
             currentOpenedPanelOwner = this;
             FadePanelImageTo(openedPanelAlpha);
         }
+    }
+
+    private static void RegisterMenuPanelBlurIfNeeded(GameObject openedPanel)
+    {
+        if (openedPanel == null || openedPanel.name != DefaultMenuPanelObjectName)
+            return;
+
+        UIBlurBackground.EnsureForPanel(openedPanel);
     }
 
     private static void RefreshMenuPanelTextIfNeeded(GameObject openedPanel)
@@ -976,15 +982,15 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (openedPanel == null)
             return;
 
-        if (bringOpenedPanelToFront)
-            openedPanel.transform.SetAsLastSibling();
-
         if (!forceOpenedPanelCanvasSorting)
+            return;
+
+        if (openedPanel.GetComponent<UIBlurBackground>() != null)
             return;
 
         Canvas canvas = openedPanel.GetComponent<Canvas>();
         if (canvas == null)
-            canvas = openedPanel.AddComponent<Canvas>();
+            return;
 
         canvas.overrideSorting = true;
         canvas.sortingOrder = openedPanel.name == DefaultMenuPanelObjectName
@@ -996,7 +1002,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         GraphicRaycaster raycaster = openedPanel.GetComponent<GraphicRaycaster>();
         if (raycaster == null)
-            openedPanel.AddComponent<GraphicRaycaster>();
+            Debug.LogWarning("[UIPanelButton] Opened panel Canvas has no GraphicRaycaster.", openedPanel);
     }
 
     private void ClosePanels()

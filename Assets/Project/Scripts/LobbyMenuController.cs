@@ -5,36 +5,30 @@ using UnityEngine.UI;
 public class LobbyMenuController : MonoBehaviour
 {
     [Header("Menu Panel")]
-    [Tooltip("¿­°í ´ÝÀ» ·Îºñ ¸Þ´º ÆÐ³ÎÀÔ´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½ ï¿½Þ´ï¿½ ï¿½Ð³ï¿½ï¿½Ô´Ï´ï¿½.")]
     [SerializeField] private GameObject menuPanel;
 
     [Header("Menu Button")]
-    [Tooltip("±âÁ¸ MenuButtonÀÔ´Ï´Ù. ESC·Î ¸Þ´º¸¦ ¿­ ¶§ ÀÌ ¹öÆ°À» Å¬¸¯ÇÑ °Í°ú °°Àº Èå¸§À» Å¸°Ô ÇÒ ¼ö ÀÖ½À´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ MenuButtonï¿½Ô´Ï´ï¿½. ESCï¿½ï¿½ ï¿½Þ´ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½å¸§ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½.")]
     [SerializeField] private Button menuButton;
     [SerializeField] private string menuButtonObjectName = "MenuButton";
     [SerializeField] private bool autoFindMenuButton = true;
-    [Tooltip("ÄÑÁ® ÀÖÀ¸¸é ESC·Î ¿­ ¶§ MenuButton Å¬¸¯ ÀÌº¥Æ®¸¦ ½ÇÇàÇÕ´Ï´Ù. ±âÁ¸ UIPanelButton »óÅÂ¿Í °°Àº ¹æ½ÄÀ¸·Î ¿­±â À§ÇØ »ç¿ëÇÕ´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ESCï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ MenuButton Å¬ï¿½ï¿½ ï¿½Ìºï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½. ï¿½ï¿½ï¿½ï¿½ UIPanelButton ï¿½ï¿½ï¿½Â¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
     [SerializeField] private bool openByClickingMenuButton = true;
 
-    [Tooltip("ÄÑÁ® ÀÖÀ¸¸é MenuButtonÀ» Á÷Á¢ ´­·¯ ¸Þ´º¸¦ ¿­¾úÀ» ¶§µµ ·Îºñ ÀÏ½ÃÁ¤Áö »óÅÂ·Î ±â·ÏÇÕ´Ï´Ù.")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ MenuButtonï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Þ´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½ ï¿½Ï½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
     [SerializeField] private bool bindMenuButtonOpenState = true;
 
     [Header("Continue Button")]
-    [Tooltip("¸Þ´º ÆÐ³Î ¾ÈÀÇ Continue ¹öÆ°ÀÔ´Ï´Ù. ÀÌ ¹öÆ°À» ´­·¶À» ¶§µµ CloseMenu¿Í °°Àº ¹æ½ÄÀ¸·Î ´ÝÈ÷°Ô ÇÕ´Ï´Ù.")]
+    [Tooltip("ï¿½Þ´ï¿½ ï¿½Ð³ï¿½ ï¿½ï¿½ï¿½ï¿½ Continue ï¿½ï¿½Æ°ï¿½Ô´Ï´ï¿½. ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ CloseMenuï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Õ´Ï´ï¿½.")]
     [SerializeField] private Button continueButton;
     [SerializeField] private string continueButtonObjectName = "ContinueButton";
     [SerializeField] private bool autoFindContinueButton = true;
     [SerializeField] private bool bindContinueButtonClick = true;
 
     [Header("Open Option")]
-    [Tooltip("¸Þ´º¸¦ ¿­ ¶§ HierarchyÀÇ ¸¶Áö¸· ÀÚ½ÄÀ¸·Î º¸³» °¡Àå ¾Õ¿¡ º¸ÀÌ°Ô ÇÕ´Ï´Ù.")]
-    [SerializeField] private bool bringMenuPanelToFront = true;
-    [Tooltip("¸Þ´º¸¦ ¿­ ¶§ ¸Þ´º ¾ÈÀÇ Ã¹ ¹øÂ° ¼±ÅÃ °¡´ÉÇÑ ¹öÆ°À» EventSystem ¼±ÅÃ ´ë»óÀ¸·Î ÁöÁ¤ÇÕ´Ï´Ù.")]
+    [Tooltip("ï¿½Þ´ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½Þ´ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã¹ ï¿½ï¿½Â° ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ EventSystem ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.")]
     [SerializeField] private bool selectFirstButtonOnOpen = true;
-    [Tooltip("¸Þ´º ÆÐ³Î¿¡ Canvas°¡ ¾øÀ¸¸é Ãß°¡ÇØ¼­ Á¤·Ä ¼ø¼­¸¦ º¸ÀåÇÕ´Ï´Ù.")]
-    [SerializeField] private bool forceCanvasSorting = true;
-    [SerializeField] private int sortingOrder = 1000;
-    [SerializeField] private bool addGraphicRaycaster = true;
 
     public GameObject MenuPanel => menuPanel;
     public bool IsMenuOpen => isMenuOpen && menuPanel != null && menuPanel.activeInHierarchy;
@@ -104,8 +98,8 @@ public class LobbyMenuController : MonoBehaviour
     {
         FindReferencesIfNeeded();
 
-        // ESC·Î ´ÝÀ» ¶§´Â °¡Àå À§¿¡ ¶° ÀÖ´Â ÇÁ¸®ÆÕºÎÅÍ ´Ý½À´Ï´Ù.
-        // È®ÀÎÃ¢/¼³Á¤Ã¢ÀÌ ¶° ÀÖ´Â »óÅÂ¿¡¼­ MenuPanel±îÁö °°ÀÌ ´ÝÈ÷Áö ¾Êµµ·Ï ¼ø¼­¸¦ ºÐ¸®ÇÕ´Ï´Ù.
+        // ESCï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õºï¿½ï¿½ï¿½ ï¿½Ý½ï¿½ï¿½Ï´ï¿½.
+        // È®ï¿½ï¿½Ã¢/ï¿½ï¿½ï¿½ï¿½Ã¢ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½Â¿ï¿½ï¿½ï¿½ MenuPanelï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Êµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¸ï¿½ï¿½Õ´Ï´ï¿½.
         if (UIManager.WasConfirmDialogClosedByEscapeThisFrame || UIManager.WasOptionPanelClosedByEscapeThisFrame)
             return;
 
@@ -144,6 +138,7 @@ public class LobbyMenuController : MonoBehaviour
         if (menuPanel == null)
             return;
 
+        UIBlurBackground.EnsureForPanel(menuPanel);
         menuPanel.SetActive(true);
         isMenuOpen = true;
         ApplyOpenedPanelState();
@@ -154,34 +149,8 @@ public class LobbyMenuController : MonoBehaviour
         if (menuPanel == null)
             return;
 
-        if (bringMenuPanelToFront)
-            menuPanel.transform.SetAsLastSibling();
-
-        if (forceCanvasSorting)
-            ApplyCanvasSorting();
-
         if (selectFirstButtonOnOpen)
             SelectFirstButton();
-    }
-
-    private void ApplyCanvasSorting()
-    {
-        if (menuPanel == null)
-            return;
-
-        Canvas canvas = menuPanel.GetComponent<Canvas>();
-        if (canvas == null)
-            canvas = menuPanel.AddComponent<Canvas>();
-
-        canvas.overrideSorting = true;
-        canvas.sortingOrder = sortingOrder;
-
-        if (!addGraphicRaycaster)
-            return;
-
-        GraphicRaycaster raycaster = menuPanel.GetComponent<GraphicRaycaster>();
-        if (raycaster == null)
-            menuPanel.AddComponent<GraphicRaycaster>();
     }
 
     private void SelectFirstButton()
@@ -237,9 +206,12 @@ public class LobbyMenuController : MonoBehaviour
 
     private void MarkMenuOpenedByMenuButton()
     {
-        // MenuButtonÀ» Á÷Á¢ Å¬¸¯ÇØ UIPanelButtonÀÌ ¸Þ´º¸¦ ¿­ ¶§µµ
-        // ESC·Î ¿¬ °Í°ú °°Àº ÀÏ½ÃÁ¤Áö »óÅÂ·Î ±â·ÏÇÕ´Ï´Ù.
-        isMenuOpen = true;
+        isMenuOpen = menuPanel != null && menuPanel.activeInHierarchy;
+
+        if (isMenuOpen)
+            ApplyOpenedPanelState();
+        else
+            ClearSelectionIfInsideMenu();
     }
 
     private void BindContinueButtonIfNeeded()

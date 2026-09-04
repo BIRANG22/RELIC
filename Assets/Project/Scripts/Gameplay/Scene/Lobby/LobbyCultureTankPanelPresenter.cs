@@ -49,7 +49,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         LobbyPositionModalInputBlocker.Block(this);
         UIBlurBackground blurBackground = UIBlurBackground.EnsureForPanel(panelRoot);
         LobbyQuestManager.Instance?.ConfigureQuestPanelBlur(blurBackground);
-        panelRoot.SetActive(true); panelRoot.transform.SetAsLastSibling(); RefreshAll(); RefreshPanelText();
+        panelRoot.SetActive(true); RefreshAll(); RefreshPanelText();
     }
 
     public void Close()

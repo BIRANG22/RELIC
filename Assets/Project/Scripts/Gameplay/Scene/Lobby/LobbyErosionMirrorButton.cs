@@ -18,7 +18,6 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
     [SerializeField] private bool autoFindCloseButton = true;
 
     [Header("Opened Panel Sorting")]
-    [SerializeField] private bool bringPanelToFront = true;
     [SerializeField] private bool forcePanelCanvasSorting = true;
     [SerializeField] private int panelSortingOrder = 1000;
     [SerializeField] private bool addGraphicRaycasterToPanel = true;
@@ -86,9 +85,6 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
         LobbyQuestManager.Instance?.ConfigureQuestPanelBlur(blurBackground);
         erosionSelectPanel.SetActive(true);
         RefreshPanelText(erosionSelectPanel);
-
-        if (bringPanelToFront)
-            erosionSelectPanel.transform.SetAsLastSibling();
 
         ApplyOpenedPanelSorting(erosionSelectPanel);
         LobbyPositionModalInputBlocker.Block(this);
@@ -194,9 +190,12 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
         if (panel == null || !forcePanelCanvasSorting)
             return;
 
+        if (panel.GetComponent<UIBlurBackground>() != null)
+            return;
+
         Canvas canvas = panel.GetComponent<Canvas>();
         if (canvas == null)
-            canvas = panel.AddComponent<Canvas>();
+            return;
 
         canvas.overrideSorting = true;
         canvas.sortingOrder = panelSortingOrder;
@@ -206,7 +205,7 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
 
         GraphicRaycaster raycaster = panel.GetComponent<GraphicRaycaster>();
         if (raycaster == null)
-            panel.AddComponent<GraphicRaycaster>();
+            Debug.LogWarning("[LobbyErosionMirrorButton] Panel Canvas has no GraphicRaycaster.", panel);
     }
 
     private static void RefreshPanelText(GameObject panel)
