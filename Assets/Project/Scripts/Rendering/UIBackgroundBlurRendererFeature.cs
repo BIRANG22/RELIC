@@ -14,8 +14,14 @@ public sealed class UIBackgroundBlurRendererFeature : ScriptableRendererFeature
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-        if (renderingData.cameraData.cameraType != CameraType.Game)
+        Camera camera = renderingData.cameraData.camera;
+        if (camera == null ||
+            camera.cameraType != CameraType.Game ||
+            camera.targetTexture != null)
+        {
             return;
+        }
+
         renderer.EnqueuePass(pass);
     }
 
@@ -68,7 +74,6 @@ public sealed class UIBackgroundBlurRendererFeature : ScriptableRendererFeature
             if (input.IsValid() && output.IsValid())
             {
                 graph.AddBlitPass(new RenderGraphUtils.BlitMaterialParameters(input, output, Blitter.GetBlitMaterial(TextureDimension.Tex2D), 0), SourceTextureName);
-                resources.cameraColor = output;
                 using IRasterRenderGraphBuilder builder = graph.AddRasterRenderPass<GlobalTexturePassData>("Set UI Blur Source", out _);
                 builder.UseTexture(output, AccessFlags.Read);
                 builder.AllowPassCulling(false);

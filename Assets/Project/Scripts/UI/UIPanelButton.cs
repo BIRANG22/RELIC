@@ -961,7 +961,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (openedPanel == null || openedPanel.name != DefaultMenuPanelObjectName)
             return;
 
-        UIBlurBackground.EnsureForPanel(openedPanel);
+        BattleUIBlurRootCollector.ConfigureForMenuPanel(openedPanel);
     }
 
     private static void RefreshMenuPanelTextIfNeeded(GameObject openedPanel)

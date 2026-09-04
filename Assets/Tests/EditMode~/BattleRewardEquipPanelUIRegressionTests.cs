@@ -40,7 +40,7 @@ public class BattleRewardEquipPanelUIRegressionTests
     }
 
     [Test]
-    public void Open_AssignsRewardPanelAndBattleHudCanvasesToBlurBackground()
+    public void Open_AssignsRewardPanelAndExplicitBlurRootsToBlurBackground()
     {
         GameObject panelObject = new("Equip_panel");
         panelObject.SetActive(false);
@@ -48,9 +48,9 @@ public class BattleRewardEquipPanelUIRegressionTests
         GameObject blurObject = new("Background", typeof(RectTransform), typeof(Image), typeof(UIBlurBackground));
         GameObject deleteObject = new("Delete_Button", typeof(Button));
         GameObject rewardPanelObject = new("BattleRewardPanelUI");
-        GameObject firstHudObject = new("BattleHUDCanvas", typeof(RectTransform), typeof(Canvas));
-        GameObject secondHudObject = new("BattleHUDCanvas", typeof(RectTransform), typeof(Canvas));
-        GameObject inactiveHudObject = new("BattleHUDCanvas", typeof(RectTransform), typeof(Canvas));
+        GameObject firstHudObject = new("BattleHudRoot", typeof(RectTransform), typeof(UIBlurInclude));
+        GameObject secondHudObject = new("EventChoiceRoot", typeof(RectTransform), typeof(UIBlurInclude));
+        GameObject inactiveHudObject = new("InactiveBattleHudRoot", typeof(RectTransform), typeof(UIBlurInclude));
         GameObject unrelatedCanvasObject = new("OtherCanvas", typeof(RectTransform), typeof(Canvas));
 
         try

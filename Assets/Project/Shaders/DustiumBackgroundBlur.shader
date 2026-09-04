@@ -4,6 +4,7 @@ Shader "UI/DustiumBackgroundBlur"
     {
         [PerRendererData] _MainTex ("Texture", 2D) = "white" {}
         [HideInInspector] _UIBlurSourceTexture ("Blur Source", 2D) = "black" {}
+        [HideInInspector] _UIBlurUiTexture ("UI Blur Source", 2D) = "black" {}
         _Color ("Tint", Color) = (1,1,1,1)
         _BlurRadius ("Blur Radius", Range(0,8)) = 4.0
         _Darken ("Darken", Range(0,1)) = 0.75
@@ -81,6 +82,7 @@ Shader "UI/DustiumBackgroundBlur"
             float4 _MainTex_TexelSize;
             sampler2D _UIBlurSourceTexture;
             float4 _UIBlurSourceTexture_TexelSize;
+            sampler2D _UIBlurUiTexture;
             fixed4 _Color;
             float4 _ClipRect;
             float _BlurRadius;
@@ -101,6 +103,20 @@ Shader "UI/DustiumBackgroundBlur"
                 return OUT;
             }
 
+            fixed4 SampleBlurSource(float2 uv)
+            {
+                fixed4 world = tex2D(_UIBlurSourceTexture, uv);
+                fixed4 ui = tex2D(_UIBlurUiTexture, uv);
+                float uiAlpha = saturate(ui.a);
+                float maxUiRgb = max(ui.r, max(ui.g, ui.b));
+                float3 uiRgb = maxUiRgb <= uiAlpha + 0.001
+                    ? ui.rgb / max(uiAlpha, 0.0001)
+                    : ui.rgb;
+                world.rgb = lerp(world.rgb, uiRgb, uiAlpha);
+                world.a = max(world.a, uiAlpha);
+                return world;
+            }
+
             fixed4 frag(v2f IN) : SV_Target
             {
                 // 중심을 유지하면서 주변 픽셀을 촘촘하게 섞어,
@@ -113,25 +129,25 @@ Shader "UI/DustiumBackgroundBlur"
                 float2 nearOffset = texel * radius * 0.5;
                 float2 farOffset = texel * radius;
 
-                fixed4 col = tex2D(_UIBlurSourceTexture, IN.texcoord) * 0.30;
+                fixed4 col = SampleBlurSource(IN.texcoord) * 0.30;
 
                 // 가까운 십자 방향
-                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2( nearOffset.x, 0.0)) * 0.10;
-                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(-nearOffset.x, 0.0)) * 0.10;
-                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(0.0,  nearOffset.y)) * 0.10;
-                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(0.0, -nearOffset.y)) * 0.10;
+                col += SampleBlurSource(IN.texcoord + float2( nearOffset.x, 0.0)) * 0.10;
+                col += SampleBlurSource(IN.texcoord + float2(-nearOffset.x, 0.0)) * 0.10;
+                col += SampleBlurSource(IN.texcoord + float2(0.0,  nearOffset.y)) * 0.10;
+                col += SampleBlurSource(IN.texcoord + float2(0.0, -nearOffset.y)) * 0.10;
 
                 // 가까운 대각선 방향
-                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2( nearOffset.x,  nearOffset.y)) * 0.05;
-                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(-nearOffset.x,  nearOffset.y)) * 0.05;
-                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2( nearOffset.x, -nearOffset.y)) * 0.05;
-                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(-nearOffset.x, -nearOffset.y)) * 0.05;
+                col += SampleBlurSource(IN.texcoord + float2( nearOffset.x,  nearOffset.y)) * 0.05;
+                col += SampleBlurSource(IN.texcoord + float2(-nearOffset.x,  nearOffset.y)) * 0.05;
+                col += SampleBlurSource(IN.texcoord + float2( nearOffset.x, -nearOffset.y)) * 0.05;
+                col += SampleBlurSource(IN.texcoord + float2(-nearOffset.x, -nearOffset.y)) * 0.05;
 
                 // 바깥쪽은 낮은 가중치만 사용해 과도한 번짐을 억제합니다.
-                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2( farOffset.x, 0.0)) * 0.025;
-                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(-farOffset.x, 0.0)) * 0.025;
-                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(0.0,  farOffset.y)) * 0.025;
-                col += tex2D(_UIBlurSourceTexture, IN.texcoord + float2(0.0, -farOffset.y)) * 0.025;
+                col += SampleBlurSource(IN.texcoord + float2( farOffset.x, 0.0)) * 0.025;
+                col += SampleBlurSource(IN.texcoord + float2(-farOffset.x, 0.0)) * 0.025;
+                col += SampleBlurSource(IN.texcoord + float2(0.0,  farOffset.y)) * 0.025;
+                col += SampleBlurSource(IN.texcoord + float2(0.0, -farOffset.y)) * 0.025;
 
                 // 채도 감소: 0이면 완전 흑백, 1이면 원본 색상입니다.
                 float luminance = dot(col.rgb, float3(0.299, 0.587, 0.114));
