@@ -136,6 +136,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Vfx_hit2
       objectReference: {fileID: 0}
+    - target: {fileID: 4977948193729588429, guid: 38657a1b2b8b1234287e21dce188bee5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5949646189593896783, guid: 38657a1b2b8b1234287e21dce188bee5, type: 3}
       propertyPath: InitialModule.startSize.scalar
       value: 1

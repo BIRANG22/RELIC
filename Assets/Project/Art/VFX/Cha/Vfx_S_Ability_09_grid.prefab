@@ -223,7 +223,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.1098435, g: 0.3584906, b: 0, a: 1}
+      maxColor: {r: 0.20453475, g: 0, b: 0.35686275, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -4624,7 +4624,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1.0421288, g: 1.8880861, b: 0, a: 1}
+      maxColor: {r: 0.8870831, g: 0, b: 1.8880861, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -5201,8 +5201,8 @@ ParticleSystem:
     startColor:
       serializedVersion: 2
       minMaxState: 2
-      minColor: {r: 0.5454545, g: 1, b: 0, a: 1}
-      maxColor: {r: 0.74894565, g: 1, b: 0.4481132, a: 1}
+      minColor: {r: 0.67792225, g: 0, b: 1, a: 1}
+      maxColor: {r: 0.83554554, g: 0.4470588, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -10204,7 +10204,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.31229675, g: 0.5660378, b: 0, a: 1}
+      maxColor: {r: 0.35538402, g: 0, b: 0.5647059, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -19895,7 +19895,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.5787828, g: 0.6698113, b: 0, a: 1}
+      maxColor: {r: 0.47719112, g: 0, b: 0.67058825, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -24345,7 +24345,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.54509807, g: 1, b: 0, a: 1}
+      maxColor: {r: 0.47825146, g: 0, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
