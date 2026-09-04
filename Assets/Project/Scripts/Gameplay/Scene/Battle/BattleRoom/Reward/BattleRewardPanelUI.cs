@@ -197,7 +197,11 @@ public class BattleRewardPanelUI : MonoBehaviour
 
                     if (BagItemStackUtility.CanAddItem(runtime.BagItemIds, itemId, MaxBagItemCount))
                     {
-                        runtime.BagItemIds.Add(itemId);
+                        int amount = Mathf.Max(1, reward.Amount);
+
+                        for (int i = 0; i < amount; i++)
+                            runtime.BagItemIds.Add(itemId);
+
                         RecordDiscoveryService.RegisterItem(DataManager.Instance, itemId);
                         BattleBagPanelUI.RefreshAll();
                     }
