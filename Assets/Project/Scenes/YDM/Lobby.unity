@@ -49484,15 +49484,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5faae5ee40a4424e8cb9dee45e42780, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blurRadius: 2
+  blurRadius: 8
   darken: 0.7
   saturation: 0.2
   contrast: 1
-  blurredUiRoots:
-  - {fileID: 1827125532}
-  includeLobbyQuestMessenger: 0
-  lobbyQuestMessengerObjectName: LobbyQuestMessenger
-  lobbyQuestMessengerBootstrapRootName: Bootstrap
 --- !u!114 &837172618
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54530,15 +54525,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5faae5ee40a4424e8cb9dee45e42780, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blurRadius: 2
+  blurRadius: 8
   darken: 0.7
   saturation: 0.2
   contrast: 1
-  blurredUiRoots:
-  - {fileID: 1827125532}
-  includeLobbyQuestMessenger: 0
-  lobbyQuestMessengerObjectName: LobbyQuestMessenger
-  lobbyQuestMessengerBootstrapRootName: Bootstrap
 --- !u!1 &947203492
 GameObject:
   m_ObjectHideFlags: 0
@@ -121126,15 +121116,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5faae5ee40a4424e8cb9dee45e42780, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blurRadius: 2
+  blurRadius: 8
   darken: 0.7
   saturation: 0.2
   contrast: 1
-  blurredUiRoots:
-  - {fileID: 1827125532}
-  includeLobbyQuestMessenger: 0
-  lobbyQuestMessengerObjectName: LobbyQuestMessenger
-  lobbyQuestMessengerBootstrapRootName: Bootstrap
 --- !u!114 &1985912797
 MonoBehaviour:
   m_ObjectHideFlags: 0

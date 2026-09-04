@@ -70,12 +70,14 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     private const string DefaultMenuPanelObjectName = "MenuPanel";
     private const string DefaultMenuButtonObjectName = "MenuButton";
+    private const string DefaultMenuRootObjectName = "MenuRoot";
+    private const string DefaultLobbyMenuRootObjectName = "Setting_upper";
     private const string DefaultBattlePlayerHudRootName = "PlayerHUD_Root";
 
     private static UIPanelButton currentOpenedPanelOwner;
 
     public static bool HasCurrentOpenedPanel => currentOpenedPanelOwner != null;
-    public static bool IsMenuPanelOpen => IsMenuPanelActiveInScene();
+    public static bool IsMenuPanelOpen => IsMenuPanelActiveInScene() || UIBlurBackgroundManager.IsInputBlocked;
 
     public static bool IsMenuPanelActiveInScene()
     {
@@ -497,16 +499,13 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     private bool ShouldBlockInteractionByOpenMenuPanel()
     {
-        if (!IsMenuPanelActiveInScene())
-            return false;
+        if (IsMenuPanelActiveInScene())
+            return !IsMenuPanelButton() && !IsInsideOpenMenuPanel();
 
-        if (IsMenuPanelButton())
-            return false;
-
-        if (IsInsideOpenMenuPanel())
-            return false;
-
-        return true;
+        return UIBlurBackgroundManager.IsInputBlocked &&
+               !UIBlurBackgroundManager.IsRequesterPanelObject(gameObject) &&
+               !IsInsideMenuRoot() &&
+               !IsInsideLobbyMenuRoot();
     }
 
     private bool IsMenuPanelButton()
@@ -523,6 +522,36 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         Transform target = transform;
         return target == menuPanel.transform || target.IsChildOf(menuPanel.transform);
+    }
+
+    private bool IsInsideMenuRoot()
+    {
+        Transform current = transform;
+
+        while (current != null)
+        {
+            if (current.name == DefaultMenuRootObjectName)
+                return true;
+
+            current = current.parent;
+        }
+
+        return false;
+    }
+
+    private bool IsInsideLobbyMenuRoot()
+    {
+        Transform current = transform;
+
+        while (current != null)
+        {
+            if (current.name == DefaultLobbyMenuRootObjectName)
+                return true;
+
+            current = current.parent;
+        }
+
+        return false;
     }
 
     private bool IsMenuPanelTarget()

@@ -10,6 +10,8 @@ public class Bootstrap : MonoBehaviour
 
     private IEnumerator Start()
     {
+        UIBlurBackgroundManager.Instance.name = "SharedBlurRoot";
+
         // 1. Settings Load
         Settings.Instance.Load();
         GameBrightnessManager.ApplySavedBrightness();
