@@ -715,13 +715,22 @@ public class BattleActionRunner
         return activeActionInfo.ShouldEnterCamera;
     }
 
+    private bool ShouldPlayCameraImpactForHit(int hitIndex, int hitCount)
+    {
+        int safeHitCount = Mathf.Max(1, hitCount);
+
+        // 화면 흔들림/히트스톱은 예약 행동 하나당 한 번 재생합니다.
+        // 다단 공격이라면 해당 행동의 마지막 내부 타격에서만 재생합니다.
+        return hitIndex >= safeHitCount - 1;
+    }
+
     private bool ShouldPlayExternalImpactForHit(int hitIndex, int hitCount)
     {
         int safeHitCount = Mathf.Max(1, hitCount);
         bool isLastHit = hitIndex >= safeHitCount - 1;
 
-        // 연타 공격은 단독/연속행동 여부와 관계없이 마지막 타에서만
-        // 카메라/히트 피드백을 재생합니다. 중간 타는 연타 간격만 사용합니다.
+        // 피격 밀림은 기존 정책대로 연속 행동 그룹의 마지막 행동에서만 재생합니다.
+        // 다단 공격이라면 그 마지막 행동의 마지막 내부 타격에서만 적용합니다.
         if (safeHitCount > 1)
         {
             if (!activeActionInfo.IsGrouped)
@@ -730,7 +739,6 @@ public class BattleActionRunner
             return activeActionInfo.ShouldPlayExternalImpact && isLastHit;
         }
 
-        // 단타는 기존 연속행동 피드백 정책을 유지합니다.
         return !activeActionInfo.IsGrouped || activeActionInfo.ShouldPlayExternalImpact;
     }
 
@@ -2462,26 +2470,31 @@ public class BattleActionRunner
                 yield break;
             }
 
-            bool playExternalImpact = ShouldPlayExternalImpactForHit(hitIndex, hitCount);
+            bool playCameraImpact = ShouldPlayCameraImpactForHit(hitIndex, hitCount);
+            bool playPushFeedback = ShouldPlayExternalImpactForHit(hitIndex, hitCount);
 
-            if (playExternalImpact)
+            if (playCameraImpact)
             {
                 if (ShouldSkipPlayerSkillCamera(command))
                 {
                     yield return PlayRangedDamageCameraFeedback();
                 }
-                else
+                else if (playPushFeedback)
                 {
                     yield return PlayDamageHitFeedback(
                         caster != null ? caster.transform : null,
                         feedbackTargets,
                         command.Direction);
                 }
+                else
+                {
+                    yield return PlayDamageCameraFeedback();
+                }
             }
 
             if (hitIndex >= hitCount - 1)
             {
-                float endDelay = playExternalImpact ? HitCameraDelay : ActionDelay;
+                float endDelay = playCameraImpact ? HitCameraDelay : ActionDelay;
                 yield return new WaitForSeconds(endDelay / GetActivePresentationSpeed());
             }
         }
@@ -4099,24 +4112,29 @@ public class BattleActionRunner
 
             monsterSkillEffectService.ApplyMonsterSkillDamageHit(monster, command, hitIndex);
 
-            bool playExternalImpact = ShouldPlayExternalImpactForHit(hitIndex, hitCount);
+            bool playCameraImpact = ShouldPlayCameraImpactForHit(hitIndex, hitCount);
+            bool playPushFeedback = ShouldPlayExternalImpactForHit(hitIndex, hitCount);
 
-            if (feedbackTargets.Count > 0 && playExternalImpact)
+            if (feedbackTargets.Count > 0 && playCameraImpact)
             {
                 if (isRangedPresentation)
                 {
                     yield return PlayRangedDamageCameraFeedback();
                 }
-                else
+                else if (playPushFeedback)
                 {
                     yield return PlayDamageHitFeedback(
                         monster != null ? monster.transform : null,
                         feedbackTargets,
                         GetMonsterImpactFallbackDirection(monster));
                 }
+                else
+                {
+                    yield return PlayDamageCameraFeedback();
+                }
             }
 
-            float hitDelay = playExternalImpact ? HitCameraDelay : ActionDelay;
+            float hitDelay = playCameraImpact ? HitCameraDelay : ActionDelay;
             yield return new WaitForSeconds(hitDelay / GetActivePresentationSpeed());
         }
     }
@@ -4504,6 +4522,12 @@ public class BattleActionRunner
 
         return notation == TimelineActionType.Attack &&
                RangedMonsterAttackSkillIds.Contains(command.SkillData.SkillId);
+    }
+
+    private static IEnumerator PlayDamageCameraFeedback()
+    {
+        if (BattleCameraController.Instance != null)
+            yield return BattleCameraController.Instance.PlayDamageImpact();
     }
 
     private static IEnumerator PlayRangedDamageCameraFeedback()

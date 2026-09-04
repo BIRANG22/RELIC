@@ -258,6 +258,21 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private void ResetBattleEffectPlanesForRoomEnd()
     {
+        // 전투 종료 시 공격 연출로 변경된 Plane 회전/위치를 먼저 기본 상태로 복구합니다.
+        BattleEffectPlaneRotation[] rotationControllers = UnityEngine.Object.FindObjectsByType<BattleEffectPlaneRotation>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < rotationControllers.Length; i++)
+        {
+            if (rotationControllers[i] == null)
+                continue;
+
+            rotationControllers[i].StopHitEffect();
+        }
+
+        // 이후 기존 슬라이드 컨트롤러의 전투 대기 위치를 다시 적용합니다.
         BattleEffectPlaneSlideController[] planeControllers = UnityEngine.Object.FindObjectsByType<BattleEffectPlaneSlideController>(
             FindObjectsInactive.Include,
             FindObjectsSortMode.None
