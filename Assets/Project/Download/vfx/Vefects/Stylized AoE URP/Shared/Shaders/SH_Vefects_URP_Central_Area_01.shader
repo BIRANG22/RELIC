@@ -494,7 +494,7 @@ Shader "Vefects/SH_Vefects_URP_Central_Area_01"
 				float2 texCoord73 = input.ase_texcoord3.xy * float2( 1,1 ) + float2( 0,0 );
 				float Pan_Offset78 = input.ase_texcoord2.y;
 				float2 appendResult77 = (float2(0.0 , Pan_Offset78));
-				float temp_output_50_0 = saturate( ( saturate( dotResult46 ) * saturate( ( saturate( ( saturate( pow( tex2D( _CutoutMask, uv_CutoutMask ).g , _CutoutMaskPower ) ) * _CutoutMaskMultiply ) ) * saturate( ( saturate( pow( tex2D( _PanCutoutMask, ( texCoord73 + appendResult77 ) ).g , _PanCutoutMaskPower ) ) * _PanCutoutMaskMultiply ) ) * 2.0 ) ) ) );
+				float temp_output_50_0 = saturate( ( saturate( dotResult46 ) * saturate( ( saturate( ( saturate( pow( max( tex2D( _CutoutMask, uv_CutoutMask ).g , 0.0 ) , _CutoutMaskPower ) ) * _CutoutMaskMultiply ) ) * saturate( ( saturate( pow( max( tex2D( _PanCutoutMask, ( texCoord73 + appendResult77 ) ).g , 0.0 ) , _PanCutoutMaskPower ) ) * _PanCutoutMaskMultiply ) ) * 2.0 ) ) ) );
 				float smoothstepResult53 = smoothstep( input.ase_texcoord2.x , ( input.ase_texcoord2.x + _LUTErosionSmoothness ) , temp_output_50_0);
 				float2 temp_cast_2 = (( ( saturate( smoothstepResult53 ) * _LUTAmplitude ) + _LUTOffset )).xx;
 				float2 panner42 = ( 1.0 * _Time.y * temp_cast_0 + temp_cast_2);
@@ -821,7 +821,7 @@ Shader "Vefects/SH_Vefects_URP_Central_Area_01"
 				float2 texCoord73 = input.ase_texcoord1.xy * float2( 1,1 ) + float2( 0,0 );
 				float Pan_Offset78 = input.ase_texcoord.y;
 				float2 appendResult77 = (float2(0.0 , Pan_Offset78));
-				float temp_output_50_0 = saturate( ( saturate( dotResult46 ) * saturate( ( saturate( ( saturate( pow( tex2D( _CutoutMask, uv_CutoutMask ).g , _CutoutMaskPower ) ) * _CutoutMaskMultiply ) ) * saturate( ( saturate( pow( tex2D( _PanCutoutMask, ( texCoord73 + appendResult77 ) ).g , _PanCutoutMaskPower ) ) * _PanCutoutMaskMultiply ) ) * 2.0 ) ) ) );
+				float temp_output_50_0 = saturate( ( saturate( dotResult46 ) * saturate( ( saturate( ( saturate( pow( max( tex2D( _CutoutMask, uv_CutoutMask ).g , 0.0 ) , _CutoutMaskPower ) ) * _CutoutMaskMultiply ) ) * saturate( ( saturate( pow( max( tex2D( _PanCutoutMask, ( texCoord73 + appendResult77 ) ).g , 0.0 ) , _PanCutoutMaskPower ) ) * _PanCutoutMaskMultiply ) ) * 2.0 ) ) ) );
 				float smoothstepResult29 = smoothstep( input.ase_texcoord.x , ( input.ase_texcoord.x + _ErosionSmoothness ) , temp_output_50_0);
 				float temp_output_30_0 = saturate( smoothstepResult29 );
 				float screenDepth26 = LinearEyeDepth(SHADERGRAPH_SAMPLE_SCENE_DEPTH( ScreenPosNorm.xy ),_ZBufferParams);
@@ -1103,7 +1103,7 @@ Shader "Vefects/SH_Vefects_URP_Central_Area_01"
 				float2 texCoord73 = input.ase_texcoord1.xy * float2( 1,1 ) + float2( 0,0 );
 				float Pan_Offset78 = input.ase_texcoord.y;
 				float2 appendResult77 = (float2(0.0 , Pan_Offset78));
-				float temp_output_50_0 = saturate( ( saturate( dotResult46 ) * saturate( ( saturate( ( saturate( pow( tex2D( _CutoutMask, uv_CutoutMask ).g , _CutoutMaskPower ) ) * _CutoutMaskMultiply ) ) * saturate( ( saturate( pow( tex2D( _PanCutoutMask, ( texCoord73 + appendResult77 ) ).g , _PanCutoutMaskPower ) ) * _PanCutoutMaskMultiply ) ) * 2.0 ) ) ) );
+				float temp_output_50_0 = saturate( ( saturate( dotResult46 ) * saturate( ( saturate( ( saturate( pow( max( tex2D( _CutoutMask, uv_CutoutMask ).g , 0.0 ) , _CutoutMaskPower ) ) * _CutoutMaskMultiply ) ) * saturate( ( saturate( pow( max( tex2D( _PanCutoutMask, ( texCoord73 + appendResult77 ) ).g , 0.0 ) , _PanCutoutMaskPower ) ) * _PanCutoutMaskMultiply ) ) * 2.0 ) ) ) );
 				float smoothstepResult29 = smoothstep( input.ase_texcoord.x , ( input.ase_texcoord.x + _ErosionSmoothness ) , temp_output_50_0);
 				float temp_output_30_0 = saturate( smoothstepResult29 );
 				float4 screenPos = input.ase_texcoord2;
@@ -1384,7 +1384,7 @@ Shader "Vefects/SH_Vefects_URP_Central_Area_01"
 				float2 texCoord73 = input.ase_texcoord1.xy * float2( 1,1 ) + float2( 0,0 );
 				float Pan_Offset78 = input.ase_texcoord.y;
 				float2 appendResult77 = (float2(0.0 , Pan_Offset78));
-				float temp_output_50_0 = saturate( ( saturate( dotResult46 ) * saturate( ( saturate( ( saturate( pow( tex2D( _CutoutMask, uv_CutoutMask ).g , _CutoutMaskPower ) ) * _CutoutMaskMultiply ) ) * saturate( ( saturate( pow( tex2D( _PanCutoutMask, ( texCoord73 + appendResult77 ) ).g , _PanCutoutMaskPower ) ) * _PanCutoutMaskMultiply ) ) * 2.0 ) ) ) );
+				float temp_output_50_0 = saturate( ( saturate( dotResult46 ) * saturate( ( saturate( ( saturate( pow( max( tex2D( _CutoutMask, uv_CutoutMask ).g , 0.0 ) , _CutoutMaskPower ) ) * _CutoutMaskMultiply ) ) * saturate( ( saturate( pow( max( tex2D( _PanCutoutMask, ( texCoord73 + appendResult77 ) ).g , 0.0 ) , _PanCutoutMaskPower ) ) * _PanCutoutMaskMultiply ) ) * 2.0 ) ) ) );
 				float smoothstepResult29 = smoothstep( input.ase_texcoord.x , ( input.ase_texcoord.x + _ErosionSmoothness ) , temp_output_50_0);
 				float temp_output_30_0 = saturate( smoothstepResult29 );
 				float4 screenPos = input.ase_texcoord2;
@@ -1693,7 +1693,7 @@ Shader "Vefects/SH_Vefects_URP_Central_Area_01"
 				float2 texCoord73 = input.ase_texcoord2.xy * float2( 1,1 ) + float2( 0,0 );
 				float Pan_Offset78 = input.ase_texcoord1.y;
 				float2 appendResult77 = (float2(0.0 , Pan_Offset78));
-				float temp_output_50_0 = saturate( ( saturate( dotResult46 ) * saturate( ( saturate( ( saturate( pow( tex2D( _CutoutMask, uv_CutoutMask ).g , _CutoutMaskPower ) ) * _CutoutMaskMultiply ) ) * saturate( ( saturate( pow( tex2D( _PanCutoutMask, ( texCoord73 + appendResult77 ) ).g , _PanCutoutMaskPower ) ) * _PanCutoutMaskMultiply ) ) * 2.0 ) ) ) );
+				float temp_output_50_0 = saturate( ( saturate( dotResult46 ) * saturate( ( saturate( ( saturate( pow( max( tex2D( _CutoutMask, uv_CutoutMask ).g , 0.0 ) , _CutoutMaskPower ) ) * _CutoutMaskMultiply ) ) * saturate( ( saturate( pow( max( tex2D( _PanCutoutMask, ( texCoord73 + appendResult77 ) ).g , 0.0 ) , _PanCutoutMaskPower ) ) * _PanCutoutMaskMultiply ) ) * 2.0 ) ) ) );
 				float smoothstepResult29 = smoothstep( input.ase_texcoord1.x , ( input.ase_texcoord1.x + _ErosionSmoothness ) , temp_output_50_0);
 				float temp_output_30_0 = saturate( smoothstepResult29 );
 				float screenDepth26 = LinearEyeDepth(SHADERGRAPH_SAMPLE_SCENE_DEPTH( ScreenPosNorm.xy ),_ZBufferParams);

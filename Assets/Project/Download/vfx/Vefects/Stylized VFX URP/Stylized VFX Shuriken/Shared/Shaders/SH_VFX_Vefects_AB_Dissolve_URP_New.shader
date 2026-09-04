@@ -592,7 +592,7 @@ Shader "Vefects/SH_VFX_Vefects_AB_Dissolve_URP_New"
 
 				float2 texCoord109 = input.ase_texcoord7.xy * _NoiseScale + ( _TimeParameters.x * _NoiseSpeed );
 				float2 uv_Texture = input.ase_texcoord7.xy * _Texture_ST.xy + _Texture_ST.zw;
-				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( tex2D( _Noise, texCoord109 ).r , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord8.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
+				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( max( tex2D( _Noise, texCoord109 ).r , 0.0 ) , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord8.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
 				
 
 				float3 BaseColor = ( (input.ase_color).rgb * temp_output_125_0 * input.ase_texcoord8.w );
@@ -1141,7 +1141,7 @@ Shader "Vefects/SH_VFX_Vefects_AB_Dissolve_URP_New"
 
 				float2 texCoord109 = input.ase_texcoord1.xy * _NoiseScale + ( _TimeParameters.x * _NoiseSpeed );
 				float2 uv_Texture = input.ase_texcoord1.xy * _Texture_ST.xy + _Texture_ST.zw;
-				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( tex2D( _Noise, texCoord109 ).r , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord2.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
+				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( max( tex2D( _Noise, texCoord109 ).r , 0.0 ) , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord2.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
 				
 
 				float Alpha = temp_output_125_0;
@@ -1450,7 +1450,7 @@ Shader "Vefects/SH_VFX_Vefects_AB_Dissolve_URP_New"
 
 				float2 texCoord109 = input.ase_texcoord3.xy * _NoiseScale + ( _TimeParameters.x * _NoiseSpeed );
 				float2 uv_Texture = input.ase_texcoord3.xy * _Texture_ST.xy + _Texture_ST.zw;
-				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( tex2D( _Noise, texCoord109 ).r , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord4.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
+				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( max( tex2D( _Noise, texCoord109 ).r , 0.0 ) , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord4.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
 				
 
 				float3 BaseColor = ( (input.ase_color).rgb * temp_output_125_0 * input.ase_texcoord4.w );
@@ -1746,7 +1746,7 @@ Shader "Vefects/SH_VFX_Vefects_AB_Dissolve_URP_New"
 
 				float2 texCoord109 = input.ase_texcoord1.xy * _NoiseScale + ( _TimeParameters.x * _NoiseSpeed );
 				float2 uv_Texture = input.ase_texcoord1.xy * _Texture_ST.xy + _Texture_ST.zw;
-				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( tex2D( _Noise, texCoord109 ).r , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord2.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
+				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( max( tex2D( _Noise, texCoord109 ).r , 0.0 ) , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord2.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
 				
 
 				float3 BaseColor = ( (input.ase_color).rgb * temp_output_125_0 * input.ase_texcoord2.w );
@@ -2089,7 +2089,7 @@ Shader "Vefects/SH_VFX_Vefects_AB_Dissolve_URP_New"
 
 				float2 texCoord109 = input.ase_texcoord3.xy * _NoiseScale + ( _TimeParameters.x * _NoiseSpeed );
 				float2 uv_Texture = input.ase_texcoord3.xy * _Texture_ST.xy + _Texture_ST.zw;
-				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( tex2D( _Noise, texCoord109 ).r , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord4.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
+				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( max( tex2D( _Noise, texCoord109 ).r , 0.0 ) , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord4.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
 				
 
 				float3 Normal = float3(0, 0, 1);
@@ -2545,7 +2545,7 @@ Shader "Vefects/SH_VFX_Vefects_AB_Dissolve_URP_New"
 
 				float2 texCoord109 = input.ase_texcoord7.xy * _NoiseScale + ( _TimeParameters.x * _NoiseSpeed );
 				float2 uv_Texture = input.ase_texcoord7.xy * _Texture_ST.xy + _Texture_ST.zw;
-				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( tex2D( _Noise, texCoord109 ).r , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord8.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
+				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( max( tex2D( _Noise, texCoord109 ).r , 0.0 ) , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord8.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
 				
 
 				float3 BaseColor = ( (input.ase_color).rgb * temp_output_125_0 * input.ase_texcoord8.w );
@@ -2962,7 +2962,7 @@ Shader "Vefects/SH_VFX_Vefects_AB_Dissolve_URP_New"
 
 				float2 texCoord109 = input.ase_texcoord1.xy * _NoiseScale + ( _TimeParameters.x * _NoiseSpeed );
 				float2 uv_Texture = input.ase_texcoord1.xy * _Texture_ST.xy + _Texture_ST.zw;
-				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( tex2D( _Noise, texCoord109 ).r , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord2.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
+				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( max( tex2D( _Noise, texCoord109 ).r , 0.0 ) , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord2.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
 				
 
 				surfaceDescription.Alpha = temp_output_125_0;
@@ -3270,7 +3270,7 @@ Shader "Vefects/SH_VFX_Vefects_AB_Dissolve_URP_New"
 
 				float2 texCoord109 = input.ase_texcoord1.xy * _NoiseScale + ( _TimeParameters.x * _NoiseSpeed );
 				float2 uv_Texture = input.ase_texcoord1.xy * _Texture_ST.xy + _Texture_ST.zw;
-				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( tex2D( _Noise, texCoord109 ).r , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord2.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
+				float temp_output_125_0 = ( input.ase_color.a * saturate( ( saturate( ( saturate( pow( max( tex2D( _Noise, texCoord109 ).r , 0.0 ) , _NoisePower ) ) * tex2D( _Texture, uv_Texture ).r ) ) +  (0.0 + ( ( 1.0 - input.ase_texcoord2.z ) - 0.0 ) * ( 1.0 - 0.0 ) / ( 1.0 - 0.0 ) ) ) ) );
 				
 
 				surfaceDescription.Alpha = temp_output_125_0;
