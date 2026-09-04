@@ -958,6 +958,10 @@ public class BattleSceneController : MonoBehaviour
                 OpenRestEvent(nodeData);
                 break;
 
+            case "Shop":
+                OpenSpecialEvent(nodeData);
+                break;
+
             case "Start":
                 OpenSpecialEvent(nodeData);
                 break;

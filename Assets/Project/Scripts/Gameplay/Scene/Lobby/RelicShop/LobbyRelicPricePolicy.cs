@@ -2,22 +2,9 @@ using Relic.Gameplay.Data;
 
 public static class LobbyRelicPricePolicy
 {
-    public static bool TryGetPrice(string rarityText, out int price)
+    public static bool TryGetPrice(RelicData relic, out int price)
     {
-        price = 0;
-
-        if (!RelicRarityUtility.TryParseChestRarity(rarityText, out RelicRarity rarity))
-            return false;
-
-        price = rarity switch
-        {
-            RelicRarity.Common => 100,
-            RelicRarity.Rare => 200,
-            RelicRarity.Epic => 300,
-            RelicRarity.Unique => 500,
-            _ => 0
-        };
-
+        price = relic != null ? relic.BlueDustiumCost : 0;
         return price > 0;
     }
 }

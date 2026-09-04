@@ -109,6 +109,9 @@ namespace Relic.Gameplay.Data
 
         public string Details;
 
+        // 전투 중 기억 상점에서 사용하는 레드 더스티움 가격
+        public int RedDustiumCost;
+
         // 런타임 사용용
         public List<SkillEffectEntry> EffectEntries = new();
 

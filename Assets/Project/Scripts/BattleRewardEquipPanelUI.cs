@@ -1185,7 +1185,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         if (relic == null)
             return 0;
 
-        if (!LobbyRelicPricePolicy.TryGetPrice(relic.Rarity, out int purchasePrice))
+        if (!LobbyRelicPricePolicy.TryGetPrice(relic, out int purchasePrice))
             return 0;
 
         return Mathf.Max(0, Mathf.FloorToInt(purchasePrice * relicExtractionRate));

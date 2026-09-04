@@ -57,15 +57,6 @@ public static class RestRoomShopService
     public const int DefaultTotalGoodsCount = 4;
     public const int DefaultColumnCount = 4;
 
-    public const int CommonSkillMinPrice = 10;
-    public const int CommonSkillMaxPrice = 20;
-    public const int RareSkillMinPrice = 20;
-    public const int RareSkillMaxPrice = 30;
-    public const int EpicSkillMinPrice = 30;
-    public const int EpicSkillMaxPrice = 40;
-    public const int RelicMinPrice = 80;
-    public const int RelicMaxPrice = 100;
-
     public const float DefaultCommonWeight = 30f;
     public const float DefaultRareWeight = 30f;
     public const float DefaultEpicWeight = 25f;
@@ -132,25 +123,6 @@ public static class RestRoomShopService
         return stock;
     }
 
-    public static int RollSkillPrice(SkillRarity rarity, ISkillRewardRandom random)
-    {
-        random ??= new UnitySkillRewardRandom();
-
-        return rarity switch
-        {
-            SkillRarity.Rare => RollInclusive(random, RareSkillMinPrice, RareSkillMaxPrice),
-            SkillRarity.Epic => RollInclusive(random, EpicSkillMinPrice, EpicSkillMaxPrice),
-            SkillRarity.Unique => RollInclusive(random, EpicSkillMinPrice, EpicSkillMaxPrice),
-            _ => RollInclusive(random, CommonSkillMinPrice, CommonSkillMaxPrice)
-        };
-    }
-
-    public static int RollRelicPrice(ISkillRewardRandom random)
-    {
-        random ??= new UnitySkillRewardRandom();
-        return RollInclusive(random, RelicMinPrice, RelicMaxPrice);
-    }
-
     private static RestRoomShopGoods TryCreateSkillGoods(
         IReadOnlyList<SkillMasterData> allSkills,
         ISet<string> blockedSkillIds,
@@ -191,7 +163,7 @@ public static class RestRoomShopService
             return null;
 
         selectedSkillIds.Add(skill.SkillId.Trim());
-        return CreateSkillGoods(skill, random);
+        return CreateSkillGoods(skill);
     }
 
     private static RestRoomShopGoods TryCreateRelicGoods(
@@ -234,7 +206,7 @@ public static class RestRoomShopService
             return null;
 
         selectedRelicIds.Add(relic.FragmentId.Trim());
-        return CreateRelicGoods(relic, random);
+        return CreateRelicGoods(relic);
     }
 
     private static bool TryRollAvailableSkillRarity(
@@ -390,7 +362,7 @@ public static class RestRoomShopService
             available.Add(shopRarity);
     }
 
-    private static RestRoomShopGoods CreateSkillGoods(SkillMasterData skill, ISkillRewardRandom random)
+    private static RestRoomShopGoods CreateSkillGoods(SkillMasterData skill)
     {
         string description = SkillTooltipFormatter.BuildSkillDescription(skill, null);
 
@@ -399,21 +371,21 @@ public static class RestRoomShopService
             skill.SkillId,
             string.IsNullOrWhiteSpace(skill.Name) ? skill.SkillId : skill.Name,
             description,
-            BattleEquipmentEffectService.ModifyShopPrice(RollSkillPrice(skill.Rarity, random)),
+            BattleEquipmentEffectService.ModifyShopPrice(skill.RedDustiumCost),
             skill.Rarity,
             skill,
             null,
             skill.Icon);
     }
 
-    private static RestRoomShopGoods CreateRelicGoods(RelicData relic, ISkillRewardRandom random)
+    private static RestRoomShopGoods CreateRelicGoods(RelicData relic)
     {
         return new RestRoomShopGoods(
             RestRoomShopGoodsKind.Relic,
             relic.FragmentId,
             string.IsNullOrWhiteSpace(relic.Name) ? relic.FragmentId : relic.Name,
             relic.EffectDesc,
-            BattleEquipmentEffectService.ModifyShopPrice(RollRelicPrice(random)),
+            BattleEquipmentEffectService.ModifyShopPrice(relic.RedDustiumCost),
             SkillRarity.None,
             null,
             relic);
@@ -436,7 +408,7 @@ public static class RestRoomShopService
         {
             SkillMasterData skill = allSkills[i];
 
-            if (!IsShopCoreSkill(skill) || skill.Rarity != rarity)
+            if (!IsShopCoreSkill(skill) || skill.Rarity != rarity || skill.RedDustiumCost <= 0)
                 continue;
 
             string id = skill.SkillId.Trim();
@@ -473,7 +445,7 @@ public static class RestRoomShopService
         {
             RelicData relic = allRelics[i];
 
-            if (relic == null || string.IsNullOrWhiteSpace(relic.FragmentId))
+            if (relic == null || string.IsNullOrWhiteSpace(relic.FragmentId) || relic.RedDustiumCost <= 0)
                 continue;
 
             if (!RelicRarityUtility.TryParseChestRarity(relic.Rarity, out RelicRarity parsedRarity) ||
@@ -536,11 +508,4 @@ public static class RestRoomShopService
         }
     }
 
-    private static int RollInclusive(ISkillRewardRandom random, int minInclusive, int maxInclusive)
-    {
-        if (maxInclusive < minInclusive)
-            (minInclusive, maxInclusive) = (maxInclusive, minInclusive);
-
-        return random.Range(minInclusive, maxInclusive + 1);
-    }
 }

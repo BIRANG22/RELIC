@@ -196,7 +196,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             {
                 string id = runtime.RelicOfferIds[i];
                 if (DataManager.Instance.RelicDatabase.TryGet(id, out RelicData relic) &&
-                    LobbyRelicPricePolicy.TryGetPrice(relic.Rarity, out int price))
+                    LobbyRelicPricePolicy.TryGetPrice(relic, out int price))
                 {
                     restored.Add(new LobbyRelicOffer(id, price));
                 }

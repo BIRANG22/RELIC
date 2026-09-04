@@ -67,7 +67,7 @@ public sealed class LobbyRelicPurchaseService
         if (LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime))
             return Fail(relicId, LobbyRelicPurchaseFailure.PurchaseLimitReached);
 
-        if (!LobbyRelicPricePolicy.TryGetPrice(relic.Rarity, out int price))
+        if (!LobbyRelicPricePolicy.TryGetPrice(relic, out int price))
             return Fail(relicId, LobbyRelicPurchaseFailure.UnknownRarity);
 
         runtime.OwnedRelicIds ??= new List<string>();
