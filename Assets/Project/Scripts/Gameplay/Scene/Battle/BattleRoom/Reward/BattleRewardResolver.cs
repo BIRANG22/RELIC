@@ -48,8 +48,39 @@ public class BattleRewardResolver : MonoBehaviour
         BattleMapData dropSettings = GetCurrentBattleMapDropSettings();
         AddBattleMapRelicReward(rewards, dropSettings);
         AddMemoryReward(rewards, dropSettings);
+        MergeDuplicateItemRewards(rewards);
 
         return rewards;
+    }
+
+    private void MergeDuplicateItemRewards(List<BattleRewardData> rewards)
+    {
+        if (rewards == null || rewards.Count <= 1)
+            return;
+
+        Dictionary<string, BattleRewardData> firstRewardByItemId = new();
+
+        for (int i = 0; i < rewards.Count; i++)
+        {
+            BattleRewardData reward = rewards[i];
+
+            if (reward == null || reward.Type != BattleRewardType.Item || string.IsNullOrWhiteSpace(reward.RewardId))
+                continue;
+
+            string itemId = reward.RewardId.Trim();
+            reward.RewardId = itemId;
+            reward.Amount = Mathf.Max(1, reward.Amount);
+
+            if (!firstRewardByItemId.TryGetValue(itemId, out BattleRewardData existing))
+            {
+                firstRewardByItemId.Add(itemId, reward);
+                continue;
+            }
+
+            existing.Amount += Mathf.Max(1, reward.Amount);
+            rewards.RemoveAt(i);
+            i--;
+        }
     }
 
     private int GetCurrentBattleMonsterUnitCount()

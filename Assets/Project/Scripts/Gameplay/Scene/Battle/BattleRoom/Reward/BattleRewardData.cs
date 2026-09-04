@@ -30,7 +30,12 @@ public class BattleRewardData
             return $"{remnantName} x{Mathf.Max(0, Amount)}";
         }
 
-        return string.IsNullOrWhiteSpace(Name) ? RewardId : Name;
+        string displayName = string.IsNullOrWhiteSpace(Name) ? RewardId : Name;
+
+        if (Type == BattleRewardType.Item && Amount > 1)
+            return $"{displayName} x{Amount}";
+
+        return displayName;
     }
 
     public string GetRemnantAmountDescription()

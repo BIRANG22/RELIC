@@ -264,10 +264,9 @@ public class BattleResultChecker : MonoBehaviour
 
         if (completedCallback != null)
         {
-            BattleRoomCleaner cleaner =
-                Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
-            cleaner?.PrepareForMapSelection();
-
+            // 보스전은 보상 종료 후에도 BattleRoom 위에서 다음 구역 / 거점 귀환 선택 UI를 보여줍니다.
+            // 이 시점에 BattleRoomCleaner를 실행하면 살아있는 캐릭터까지 제거되어 선택 화면에서 보이지 않으므로,
+            // 실제 화면 전환이 시작되기 전까지 전투 유닛을 유지합니다.
             completedCallback.Invoke();
             return;
         }
