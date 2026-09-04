@@ -71,6 +71,7 @@ public class BattleResultChecker : MonoBehaviour
         if (IsAllPlayersDead())
         {
             battleEnded = true;
+            PrepareBattleFinishedPresentation();
             BattleFinished?.Invoke();
             Debug.Log("[BattleResultChecker] Battle Lose");
             OpenDefeatExplorationResultPanel();
@@ -80,6 +81,7 @@ public class BattleResultChecker : MonoBehaviour
         if (IsAllMonstersDead())
         {
             battleEnded = true;
+            PrepareBattleFinishedPresentation();
             BattleFinished?.Invoke();
             Debug.Log("[BattleResultChecker] Battle Win");
             BattleEquipmentEffectService.ApplyBattleEndHealToParty();
@@ -110,6 +112,22 @@ public class BattleResultChecker : MonoBehaviour
         }
 
         return false;
+    }
+
+    private static void PrepareBattleFinishedPresentation()
+    {
+        // 마지막 행동 애니메이션이 남아 있지 않도록 생존 유닛을 즉시 Idle로 복귀시킵니다.
+        BattleHUDService hudService = new BattleHUDService();
+        hudService.PlayAllAliveIdle();
+
+        // 전투 실행 중 숨겨졌던 MenuRoot는 다음 플레이어 턴이 오지 않으면
+        // 기존 복구 조건을 통과하지 못하므로 전투 종료 시 명시적으로 다시 표시합니다.
+        BattleTurnExecutor[] executors = Object.FindObjectsByType<BattleTurnExecutor>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < executors.Length; i++)
+            executors[i]?.RestoreBattleExecutionUiAfterRoomEnd();
     }
 
     private void OpenExplorationResultPanel()

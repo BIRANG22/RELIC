@@ -50,6 +50,7 @@ namespace Relic.Gameplay.Data
 
         public string[] EquippedSkillIds = new string[4];
         public string[] EquippedRuneIds = new string[6];
+        public string[] EquippedRelicIds = new string[7];
 
         public int MaxHP;
         public int MaxCost;
@@ -122,8 +123,6 @@ namespace Relic.Gameplay.Data
                 return;
 
             BattleRuntimeData currentBattleRuntime = dataManager.BattleRuntimeStore?.Get();
-            bool hadActiveBattleRun = currentBattleRuntime != null &&
-                                      currentBattleRuntime.IsBattleRunInitialized;
 
             Dictionary<string, BattleLobbyLoadoutSnapshotData> snapshots =
                 BuildSnapshotMap(currentBattleRuntime);
@@ -134,16 +133,17 @@ namespace Relic.Gameplay.Data
             dataManager.MapRuntimeStore?.Clear();
             dataManager.BattleRuntimeStore?.Clear();
 
-            // 실제 탐사가 존재했던 경우에만 유물 상점의 1회 구매 대기 상태를 해제합니다.
-            // 단순 타이틀 진입이나 새 게임 초기화에서는 상점 상태를 건드리지 않습니다.
-            if (hadActiveBattleRun)
+            // 전투 포기 후에는 로비에 남아 있는 전투용 장비 정보도 반드시 비웁니다.
+            // 캐릭터 런타임만 비우면 로비 재진입 시 CharacterLoadouts가 장비를 다시 복원할 수 있습니다.
+            LobbyRuntimeData lobbyRuntime = dataManager.LobbyRuntimeStore?.GetOrCreate();
+            if (lobbyRuntime != null)
             {
-                LobbyRuntimeData lobbyRuntime = dataManager.LobbyRuntimeStore?.GetOrCreate();
-                if (lobbyRuntime != null)
-                {
-                    global::LobbyRelicShopPurchaseLimit.ResetAfterExploration(lobbyRuntime);
-                    dataManager.LobbyRuntimeStore?.Set(lobbyRuntime);
-                }
+                ClearLobbyEquippedRelics(lobbyRuntime.CharacterLoadouts);
+
+                // 전투 포기는 탐사 종료와 동일하게 취급합니다.
+                // 이전 탐사에서 남은 구매 잠금/리롤/제안 정보를 정리해 유물소환을 다시 사용할 수 있게 합니다.
+                global::LobbyRelicShopPurchaseLimit.ResetAfterExploration(lobbyRuntime);
+                dataManager.LobbyRuntimeStore?.Set(lobbyRuntime);
             }
         }
 
@@ -158,6 +158,7 @@ namespace Relic.Gameplay.Data
                 AbilitySkillId = character.AbilitySkillId,
                 EquippedSkillIds = CopyStringArray(character.EquippedSkillIds, EquippedSkillSlotCount),
                 EquippedRuneIds = CopyStringArray(character.EquippedRuneIds, EquippedRuneSlotCount),
+                EquippedRelicIds = CopyStringArray(character.EquippedRelicIds, EquippedRelicSlotCount),
                 MaxHP = character.MaxHP,
                 MaxCost = character.MaxCost,
                 RunMaxHPBonus = character.RunMaxHPBonus,
@@ -238,6 +239,7 @@ namespace Relic.Gameplay.Data
             character.AbilitySkillId = snapshot.AbilitySkillId;
             character.EquippedSkillIds = CopyStringArray(snapshot.EquippedSkillIds, EquippedSkillSlotCount);
             character.EquippedRuneIds = CopyStringArray(snapshot.EquippedRuneIds, EquippedRuneSlotCount);
+            character.EquippedRelicIds = CopyStringArray(snapshot.EquippedRelicIds, EquippedRelicSlotCount);
 
             character.MaxHP = Mathf.Max(1, snapshot.MaxHP);
             character.MaxCost = Mathf.Max(0, snapshot.MaxCost);
@@ -296,6 +298,22 @@ namespace Relic.Gameplay.Data
 
             character.AppliedBattleEquipmentEffectIds ??= new List<string>();
             character.AppliedBattleEquipmentEffectIds.Clear();
+        }
+
+
+        private static void ClearLobbyEquippedRelics(IReadOnlyList<LobbyCharacterLoadoutData> loadouts)
+        {
+            if (loadouts == null)
+                return;
+
+            for (int i = 0; i < loadouts.Count; i++)
+            {
+                LobbyCharacterLoadoutData loadout = loadouts[i];
+                if (loadout == null)
+                    continue;
+
+                loadout.EquippedRelicIds = new string[EquippedRelicSlotCount];
+            }
         }
 
         private static bool IsCurrentPartyCharacter(PartyRuntimeStore partyStore, string characterId)

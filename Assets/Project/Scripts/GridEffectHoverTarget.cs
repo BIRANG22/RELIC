@@ -74,6 +74,12 @@ public class GridEffectHoverTarget : MonoBehaviour
 
     private void Update()
     {
+        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+        {
+            SetHovered(false);
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(gridEffectId))
         {
             SetHovered(false);

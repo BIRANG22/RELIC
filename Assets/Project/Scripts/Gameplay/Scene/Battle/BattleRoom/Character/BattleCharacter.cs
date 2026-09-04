@@ -58,12 +58,18 @@ public class BattleCharacter : MonoBehaviour
 
     public void SetTimelineHoverHighlight(bool active)
     {
+        if (IsBattleEnded())
+            active = false;
+
         SetTimelineHoverHighlightAlpha(active);
     }
 
 
     public void SetSelectionScaleFeedback(bool selected)
     {
+        if (IsBattleEnded())
+            selected = false;
+
         selectionHighlightVisible = selected;
 
         if (selected)
@@ -76,6 +82,18 @@ public class BattleCharacter : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (IsBattleEnded())
+        {
+            if (timelineHoverHighlightVisible || selectionHighlightVisible)
+            {
+                ForceTimelineHoverHighlightOff();
+                PlaySelectionIdleAnimation();
+                SetLinkedHudHover(false);
+            }
+
+            return;
+        }
+
         SyncTimelineHoverHighlightAnimation();
     }
 
@@ -91,6 +109,9 @@ public class BattleCharacter : MonoBehaviour
 
     private void OnMouseEnter()
     {
+        if (IsBattleEnded())
+            return;
+
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
@@ -147,6 +168,14 @@ public class BattleCharacter : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (IsBattleEnded())
+            return;
+
+        // 턴 실행 중에는 캐릭터를 호버해서 HUD/정보만 확인할 수 있고,
+        // 클릭 선택으로 카메라 포커스가 발생하지 않도록 막습니다.
+        if (IsBattleExecutionActive())
+            return;
+
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
@@ -173,7 +202,18 @@ public class BattleCharacter : MonoBehaviour
             return;
         }
 
-        roomLoader.OnPlayerCharacterClicked(RuntimeData);
+        roomLoader.OnPlayerWorldCharacterClicked(RuntimeData);
+    }
+
+    private static bool IsBattleEnded()
+    {
+        return BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded;
+    }
+
+    private static bool IsBattleExecutionActive()
+    {
+        BattleTurnExecutor executor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+        return executor != null && executor.IsExecuting;
     }
 
     private bool IsPointerOverUI()

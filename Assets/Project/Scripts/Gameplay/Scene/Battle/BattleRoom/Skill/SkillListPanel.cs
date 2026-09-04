@@ -1269,6 +1269,24 @@ public class SkillListPanel : MonoBehaviour
             battleTimelineController.ClearSkillHoverRangePreview();
     }
 
+    public void RestoreSelectedSkillHoverRangeIfPointerOver()
+    {
+        if (selectedSkillSlot == null || selectedSkillSlot.SkillData == null)
+            return;
+
+        // 예약 후 비용 갱신으로 스킬 슬롯 UI가 다시 생성되면, 마우스를 움직이지 않은 경우
+        // 새 슬롯에는 OnPointerEnter가 발생하지 않아 IsPointerOver가 false일 수 있습니다.
+        // 현재 마우스 좌표가 실제로 새 슬롯 Rect 안에 남아 있는지도 직접 확인해서
+        // 예약 직후에도 같은 스킬의 그리드 범위를 즉시 다시 표시합니다.
+        bool isPointerStillOver = selectedSkillSlot.IsPointerOver ||
+            IsScreenPositionInsideRect(selectedSkillSlot.SlotRectTransform, Input.mousePosition);
+
+        if (!isPointerStillOver)
+            return;
+
+        ShowSkillHoverRangePreview(selectedSkillSlot.SkillData);
+    }
+
     public void ShowSkillDetail(string text)
     {
         ShowSkillDetail(text, null);

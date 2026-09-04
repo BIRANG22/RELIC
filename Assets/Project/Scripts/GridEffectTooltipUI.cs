@@ -90,6 +90,17 @@ public class GridEffectTooltipUI : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+        {
+            if (currentOwner != null || (canvasGroup != null && canvasGroup.alpha > 0f))
+            {
+                currentOwner = null;
+                SetVisibleImmediate(false);
+            }
+
+            return;
+        }
+
         if (currentOwner == null)
         {
             if (canvasGroup != null && canvasGroup.alpha > 0f)
@@ -129,6 +140,13 @@ public class GridEffectTooltipUI : MonoBehaviour
 
     public void Show(Object owner, GridEffectData data, Vector2 screenPosition, int? remainingDuration)
     {
+        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+        {
+            currentOwner = null;
+            SetVisibleImmediate(false);
+            return;
+        }
+
         if (owner == null || data == null)
             return;
 

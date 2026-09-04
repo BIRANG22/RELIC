@@ -44,14 +44,11 @@ public class StartModeButton : MonoBehaviour
         if (DataManager.Instance == null)
             return;
 
-        BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
-
-        LobbyRuntimeData lobbyRuntime = DataManager.Instance.LobbyRuntimeStore?.Get();
-        if (lobbyRuntime == null)
-            return;
-
-        LobbyBattleRuntimeTransferService.ClearTransferredLobbyState(lobbyRuntime);
-        DataManager.Instance.LobbyRuntimeStore?.Set(lobbyRuntime);
+        // 타이틀에서 로비로 다시 들어오는 것만으로 저장된 로비 장착 정보를 지우면 안 됩니다.
+        // 실제 탐사 중에 타이틀로 빠져나온 경우에만 탐사 상태를 포기/복구합니다.
+        BattleRuntimeData battleRuntime = DataManager.Instance.BattleRuntimeStore?.Get();
+        if (battleRuntime != null && battleRuntime.IsBattleRunInitialized)
+            BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
     }
 
     private void PlayClickSound()

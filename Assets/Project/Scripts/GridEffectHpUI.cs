@@ -48,6 +48,12 @@ public class GridEffectHpUI : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+        {
+            SetVisible(false);
+            return;
+        }
+
         if (controller == null || targetCollider == null || targetCanvas == null || canvasRect == null)
         {
             Destroy(gameObject);

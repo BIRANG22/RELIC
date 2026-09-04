@@ -267,6 +267,25 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     public CharacterRuntimeData BoundRuntime => boundRuntime;
 
+    /// <summary>
+    /// 캐릭터 행동 예약 패널이 예약 위치까지 완전히 올라온 상태인지 반환합니다.
+    /// 이동 스킬 자동 선택은 이 값이 true가 된 뒤에만 진행합니다.
+    /// </summary>
+    public bool IsAtReservationPosition
+    {
+        get
+        {
+            if (panelRectTransform == null)
+                panelRectTransform = GetComponent<RectTransform>();
+
+            if (panelRectTransform == null)
+                return false;
+
+            return panelMoveCoroutine == null &&
+                   Mathf.Abs(panelRectTransform.anchoredPosition.y - reservationPositionY) <= 0.01f;
+        }
+    }
+
     private void Awake()
     {
         panelRectTransform = GetComponent<RectTransform>();

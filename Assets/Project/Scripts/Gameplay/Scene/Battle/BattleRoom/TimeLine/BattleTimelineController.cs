@@ -27,6 +27,13 @@ public class BattleTimelineController : MonoBehaviour
     [Header("MoveGhostPreview")]
     [SerializeField] private MoveGhostPreview moveGhostPreview;
 
+    [Header("Character Panel Auto Move Selection")]
+    [Tooltip("캐릭터 선택 후 이동 스킬을 자동 선택하기 전에 완전히 열릴 때까지 기다릴 패널입니다.")]
+    [SerializeField] private BattleCharacterPanelUI battleCharacterPanelUI;
+
+    private Coroutine defaultMoveSelectionCoroutine;
+    private int defaultMoveSelectionRequestVersion;
+
     [Header("Grid")]
     [SerializeField] private GridManager gridManager;
 
@@ -159,6 +166,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private int activeSlotIndex = -1;
     private CharacterRuntimeData selectedCharacter;
+    private CharacterRuntimeData lastSelectedCharacter;
     private SkillMasterData selectedSkill;
     private int reservationVersion;
     private Coroutine selectedSlotEffectRoutine;
@@ -177,6 +185,7 @@ public class BattleTimelineController : MonoBehaviour
     private int timelineSlotSlideStepIndex;
     private int activeTimelineBarIndex;
     private string lastCameraFocusedCharacterId;
+    private bool preserveManuallySelectedSlotForNextCharacter;
 
     private readonly List<MonsterReservedCommand>[] monsterCommandsBySlot =
         new List<MonsterReservedCommand>[5];
@@ -544,16 +553,121 @@ public class BattleTimelineController : MonoBehaviour
             (selectedCharacter != null && runtimeData != null &&
              selectedCharacter.CharacterId != runtimeData.CharacterId);
 
+        bool keepCurrentSlotFromManualSelection =
+            runtimeData != null && preserveManuallySelectedSlotForNextCharacter;
+
+        // 사용자가 캐릭터를 고르기 전에 타임라인 슬롯을 직접 선택했다면
+        // 그 슬롯 선택을 이번 캐릭터 선택에서 한 번 우선합니다.
+        if (runtimeData != null)
+            preserveManuallySelectedSlotForNextCharacter = false;
+
         selectedCharacter = runtimeData;
 
-        if (isChangingCharacter)
+        if (runtimeData != null && !runtimeData.IsDead)
+            lastSelectedCharacter = runtimeData;
+
+        if (isChangingCharacter && !keepCurrentSlotFromManualSelection)
             TryAutoSelectSlotForCharacter(runtimeData);
 
         ApplySelectedCharacterScaleFeedback(runtimeData);
         TryFocusCameraOnSelectedCharacter(runtimeData);
 
         if (selectionChanged)
+        {
             CharacterSelectionChanged?.Invoke(selectedCharacter);
+
+            // 캐릭터 선택 자체는 즉시 반영하지만 이동 스킬은 BattleCharacterPanel이
+            // 예약 위치까지 완전히 올라온 뒤에만 자동 선택합니다.
+            RequestDefaultMoveSkillAfterCharacterPanelOpened(runtimeData);
+        }
+    }
+
+    private void RequestDefaultMoveSkillAfterCharacterPanelOpened(CharacterRuntimeData runtimeData)
+    {
+        defaultMoveSelectionRequestVersion++;
+
+        if (defaultMoveSelectionCoroutine != null)
+        {
+            StopCoroutine(defaultMoveSelectionCoroutine);
+            defaultMoveSelectionCoroutine = null;
+        }
+
+        if (runtimeData == null || runtimeData.IsDead)
+            return;
+
+        ResolveBattleCharacterPanelUI();
+
+        // 패널이 이미 완전히 열린 상태에서 캐릭터만 바뀐 경우에는 즉시 선택합니다.
+        if (battleCharacterPanelUI != null && battleCharacterPanelUI.IsAtReservationPosition)
+        {
+            TrySelectDefaultMoveSkill(runtimeData);
+            return;
+        }
+
+        if (!isActiveAndEnabled)
+            return;
+
+        int requestVersion = defaultMoveSelectionRequestVersion;
+        defaultMoveSelectionCoroutine = StartCoroutine(
+            SelectDefaultMoveSkillWhenCharacterPanelOpened(runtimeData, requestVersion));
+    }
+
+    private IEnumerator SelectDefaultMoveSkillWhenCharacterPanelOpened(
+        CharacterRuntimeData runtimeData,
+        int requestVersion)
+    {
+        while (requestVersion == defaultMoveSelectionRequestVersion)
+        {
+            if (runtimeData == null || runtimeData.IsDead ||
+                selectedCharacter == null ||
+                selectedCharacter.CharacterId != runtimeData.CharacterId)
+            {
+                break;
+            }
+
+            ResolveBattleCharacterPanelUI();
+
+            if (battleCharacterPanelUI != null && battleCharacterPanelUI.IsAtReservationPosition)
+            {
+                TrySelectDefaultMoveSkill(runtimeData);
+                break;
+            }
+
+            yield return null;
+        }
+
+        if (requestVersion == defaultMoveSelectionRequestVersion)
+            defaultMoveSelectionCoroutine = null;
+    }
+
+    private void ResolveBattleCharacterPanelUI()
+    {
+        if (battleCharacterPanelUI != null)
+            return;
+
+        battleCharacterPanelUI = FindFirstObjectByType<BattleCharacterPanelUI>(FindObjectsInactive.Include);
+    }
+
+    private void TrySelectDefaultMoveSkill(CharacterRuntimeData runtimeData)
+    {
+        if (runtimeData == null || runtimeData.IsDead)
+            return;
+
+        if (string.IsNullOrWhiteSpace(runtimeData.MoveSkillId))
+            return;
+
+        if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
+            return;
+
+        if (!DataManager.Instance.SkillDatabase.TryGet(
+                runtimeData.MoveSkillId,
+                out SkillMasterData moveSkillData) ||
+            moveSkillData == null)
+        {
+            return;
+        }
+
+        SelectSkill(moveSkillData);
     }
 
     public void ClearCharacterSelectionFromSkillList(CharacterRuntimeData runtimeData)
@@ -747,16 +861,35 @@ public class BattleTimelineController : MonoBehaviour
             return;
         }
 
-        if (SteamBattleStateSynchronizer.TryHandleTimelineSlotClicked(this, slotIndex))
-            return;
-
         if (IsPlayerSlotLocked(slotIndex))
         {
             ShowPlayerLockedSlotWarning();
             return;
         }
 
-        SetActiveTimelineSlot(slotIndex, true);
+        // 사용자가 직접 고른 슬롯은 바로 다음 캐릭터 선택에서 자동 슬롯 선택보다 우선합니다.
+        preserveManuallySelectedSlotForNextCharacter = true;
+
+        if (SteamBattleStateSynchronizer.TryHandleTimelineSlotClicked(this, slotIndex))
+            return;
+
+        if (SetActiveTimelineSlot(slotIndex, true))
+            TryRestoreLastSelectedCharacterForTimelineSlot();
+    }
+
+    private void TryRestoreLastSelectedCharacterForTimelineSlot()
+    {
+        if (selectedCharacter != null)
+            return;
+
+        // 몬스터 정보를 보고 있는 동안에는 TurnMark 클릭이 캐릭터 정보로 강제 전환되지 않게 합니다.
+        if (Relic.Gameplay.Monster.MonsterUnit.CurrentInfoSelectedMonster != null)
+            return;
+
+        if (lastSelectedCharacter == null || lastSelectedCharacter.IsDead)
+            return;
+
+        SelectCharacter(lastSelectedCharacter);
     }
 
     public bool SelectTimelineSlotFromNetwork(int slotIndex, bool tryStartReservation)
@@ -817,7 +950,7 @@ public class BattleTimelineController : MonoBehaviour
 
         TimelineAutoSlotState[] slotStates = BuildAutoSlotStates(runtimeData);
         int targetSlotIndex =
-            TimelineAutoSlotSelectionUtility.FindBestSlot(slotStates, activeSlotIndex);
+            TimelineAutoSlotSelectionUtility.FindBestSlot(slotStates);
 
         if (targetSlotIndex < 0 || targetSlotIndex == activeSlotIndex)
             return false;
@@ -1088,6 +1221,7 @@ public class BattleTimelineController : MonoBehaviour
         int previousSlotIndex = activeSlotIndex;
         activeSlotIndex = slotIndex;
         selectedSkill = null;
+        preserveManuallySelectedSlotForNextCharacter = false;
 
         SetActiveTimelineSlotVisual(activeSlotIndex);
 
@@ -2956,7 +3090,10 @@ public class BattleTimelineController : MonoBehaviour
         if (TryHandleMoveCommandMerge(slot, command, out bool mergeSucceeded))
         {
             if (mergeSucceeded)
+            {
                 selectedSkill = null;
+                preserveManuallySelectedSlotForNextCharacter = false;
+            }
 
             return mergeSucceeded;
         }
@@ -2995,6 +3132,7 @@ public class BattleTimelineController : MonoBehaviour
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
         selectedSkill = null;
+        preserveManuallySelectedSlotForNextCharacter = false;
 
         return true;
     }
@@ -4857,30 +4995,19 @@ public readonly struct TimelineAutoSlotState
 
 public static class TimelineAutoSlotSelectionUtility
 {
-    public static int FindBestSlot(IReadOnlyList<TimelineAutoSlotState> slots, int currentSlotIndex)
+    public static int FindBestSlot(IReadOnlyList<TimelineAutoSlotState> slots)
     {
         if (slots == null || slots.Count <= 0)
             return -1;
 
-        int safeCurrentSlotIndex = currentSlotIndex >= 0 && currentSlotIndex < slots.Count
-            ? currentSlotIndex
-            : -1;
+        // 슬롯을 따로 고르지 않고 캐릭터를 선택한 경우에는
+        // 해당 캐릭터가 이미 예약된 슬롯에 행동을 더 넣을 수 있다면 그 슬롯을 가장 먼저 사용합니다.
+        int selectedCharacterSlot = FindFirstSelectedCharacterSlot(slots);
+        if (selectedCharacterSlot >= 0)
+            return selectedCharacterSlot;
 
-        int beforeCurrent = FindFirstEmptySlot(slots, 0, safeCurrentSlotIndex - 1);
-        if (beforeCurrent >= 0)
-            return beforeCurrent;
-
-        if (safeCurrentSlotIndex >= 0 && slots[safeCurrentSlotIndex].CanUseAsEmptySlot)
-            return safeCurrentSlotIndex;
-
-        int afterCurrentStart = safeCurrentSlotIndex >= 0
-            ? safeCurrentSlotIndex + 1
-            : 0;
-        int afterCurrent = FindFirstEmptySlot(slots, afterCurrentStart, slots.Count - 1);
-        if (afterCurrent >= 0)
-            return afterCurrent;
-
-        return FindFirstSelectedCharacterSlot(slots);
+        // 기존 슬롯을 더 사용할 수 없다면 앞쪽부터 가장 빠른 빈 슬롯을 선택합니다.
+        return FindFirstEmptySlot(slots, 0, slots.Count - 1);
     }
 
     private static int FindFirstEmptySlot(

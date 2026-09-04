@@ -195,6 +195,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     }
 
     public bool CanSelectByKeyboard => canClick && skillData != null;
+    public bool IsPointerOver => isPointerOver;
     public string SkillId => skillId;
     public SkillMasterData SkillData => skillData;
     public string DetailText => detailText;
