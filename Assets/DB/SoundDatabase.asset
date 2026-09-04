@@ -214,13 +214,13 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.skill.reserve
     aliases: []
-    clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
-    volume: 0.3
-    pitch: 1
+    clip: {fileID: 8300000, guid: d73a42d2f4c3449eab261e629916465f, type: 3}
+    volume: 0.5
+    pitch: 0.5
     loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
+    useRandomPitch: 1
+    randomPitchMin: 0.5
+    randomPitchMax: 0.8
   - id: battle.action.reserve.text
     aliases: []
     clip: {fileID: 8300000, guid: 622685aba6ffb47928d0e20ae84be81b, type: 3}
