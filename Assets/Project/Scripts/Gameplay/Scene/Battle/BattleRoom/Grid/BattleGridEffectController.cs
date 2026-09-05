@@ -68,6 +68,41 @@ public class BattleGridEffectController : MonoBehaviour
             SpawnView(placements[i]);
     }
 
+
+    public void RestoreEffects(
+        IReadOnlyList<BattleRoomGridEffectSaveData> savedEffects,
+        GridManager providedGridManager = null)
+    {
+        if (!EnsureDependencies(providedGridManager))
+            return;
+
+        ClearAll();
+
+        if (savedEffects == null)
+            return;
+
+        for (int i = 0; i < savedEffects.Count; i++)
+        {
+            BattleRoomGridEffectSaveData saved = savedEffects[i];
+            if (saved == null || saved.GridIndex < 0 || string.IsNullOrWhiteSpace(saved.GridEffectId))
+                continue;
+
+            if (gridManager.GetCellByIndex(saved.GridIndex) == null)
+                continue;
+
+            if (!state.Place(
+                    saved.GridIndex,
+                    saved.GridEffectId,
+                    Mathf.Max(0, saved.RemainingDuration),
+                    Mathf.Max(0, saved.HitPoints)))
+            {
+                continue;
+            }
+
+            SpawnView(new BattleGridEffectPlacement(saved.GridIndex, saved.GridEffectId));
+        }
+    }
+
     public void ClearAll()
     {
         state.Clear();

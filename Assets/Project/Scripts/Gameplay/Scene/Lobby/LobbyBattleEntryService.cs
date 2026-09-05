@@ -83,6 +83,10 @@ public static class LobbyBattleEntryService
         if (GameManager.Instance == null || GameManager.Instance.StateMachine == null)
             return LobbyBattleEntryResult.Fail("GameManager state machine is missing.");
 
+        // 로비에서 BattleScene으로 들어가는 흐름은 항상 새 탐사 시작입니다.
+        // 이전 이어하기에서 보존한 전투방 1턴 스냅샷을 새 탐사에 가져오지 않습니다.
+        SaveSystem.Instance?.ClearBattleRoomResumeState();
+
         if (command != null)
         {
             if (!ApplyBattleStartMapRuntime(

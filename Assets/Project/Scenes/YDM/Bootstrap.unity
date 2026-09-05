@@ -4582,6 +4582,7 @@ MonoBehaviour:
   allowMouseClick: 1
   allowKeyboardInput: 1
   advanceInputDelay: 0.5
+  autoAdvanceDelay: 2
   lineAdvanceSoundId: ui.normal.click
   lineAdvanceSoundVolume: 0.5
 --- !u!224 &309387456
@@ -4821,7 +4822,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 350}
-  m_SizeDelta: {x: 300, y: 80}
+  m_SizeDelta: {x: 375, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &331457603
 MonoBehaviour:
@@ -5063,7 +5064,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 350}
-  m_SizeDelta: {x: 300, y: 80}
+  m_SizeDelta: {x: 375, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &376976848
 MonoBehaviour:
@@ -5733,7 +5734,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &571174250
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5768,6 +5769,7 @@ GameObject:
   - component: {fileID: 593914959}
   - component: {fileID: 593914958}
   - component: {fileID: 593914960}
+  - component: {fileID: 593914961}
   m_Layer: 5
   m_Name: Left
   m_TagString: Untagged
@@ -5876,6 +5878,40 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &593914961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 593914956}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
+  buttonContent: {fileID: 593914957}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
+  hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
+  playClickSound: 0
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
+  toggleClickState: 1
+  keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
+  clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
+  hoverExitDelay: 0.05
 --- !u!1 &596459990
 GameObject:
   m_ObjectHideFlags: 0
@@ -6263,6 +6299,7 @@ GameObject:
   - component: {fileID: 671100664}
   - component: {fileID: 671100663}
   - component: {fileID: 671100665}
+  - component: {fileID: 671100666}
   m_Layer: 5
   m_Name: Right
   m_TagString: Untagged
@@ -6371,6 +6408,40 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &671100666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 671100661}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
+  buttonContent: {fileID: 671100662}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
+  hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
+  playClickSound: 0
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
+  toggleClickState: 1
+  keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
+  clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
+  hoverExitDelay: 0.05
 --- !u!1 &675309688
 GameObject:
   m_ObjectHideFlags: 0
@@ -6808,9 +6879,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "\uBCC0\uC774\uCCB4\uB97C \uC120\uD0DD\uD558\uAC70\uB098 \uC608\uC57D\uB41C
-    \uD589\uB3D9\uC744 \uC120\uD0DD\uD558\uC5EC\n\uBCC0\uC774\uCCB4\uC758 \uC815\uBCF4\uC640
-    \uD589\uB3D9\uC744 \uD655\uC778\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.\r\n\uD589\uB3D9\uC758
-    \uD53C\uD574\uB7C9\uACFC \uD6A8\uACFC, \uBC94\uC704\uB97C \uBBF8\uB9AC \uD655\uC778\uD558\uC5EC\n\uBCC0\uC774\uCCB4\uAC00
+    \uD589\uB3D9\uC744 \uC120\uD0DD\uD558\uC5EC\n\uBCC0\uC5D0\uCCB4\uC758 \uC815\uBCF4\uB97C
+    \uD655\uC778\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.\r\n\uD53C\uD574\uB7C9\uACFC
+    \uD6A8\uACFC, \uBC94\uC704\uB97C \uBBF8\uB9AC \uD655\uC778\uD558\uC5EC\n\uBCC0\uC774\uCCB4\uAC00
     \uC5B4\uB5A4 \uBC29\uC2DD\uC73C\uB85C \uACF5\uACA9\uD560\uC9C0 \uC608\uCE21\uD558\uC138\uC694."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
@@ -9298,7 +9369,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 350}
-  m_SizeDelta: {x: 220, y: 50}
+  m_SizeDelta: {x: 300, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1326286191
 MonoBehaviour:
@@ -9320,7 +9391,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC804\uD22C \uD29C\uD1A0\uB9AC\uC5BC"
+  m_text: "\uC804\uD22C \uAE30\uBCF8 \uD29C\uD1A0\uB9AC\uC5BC"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
@@ -9749,6 +9820,7 @@ GameObject:
   - component: {fileID: 1397149437}
   - component: {fileID: 1397149436}
   - component: {fileID: 1397149435}
+  - component: {fileID: 1397149439}
   m_Layer: 5
   m_Name: Close
   m_TagString: Untagged
@@ -9857,6 +9929,40 @@ RectTransform:
   m_AnchoredPosition: {x: 550, y: 605}
   m_SizeDelta: {x: 50, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1397149439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1397149434}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa9b19d30445e9c4f952d5b21bbf6629, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startImageObject: {fileID: 0}
+  buttonContent: {fileID: 1397149438}
+  hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
+  hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
+  hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
+  playClickSound: 0
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
+  toggleClickState: 1
+  keepClickedStateWhenPointerExit: 1
+  usePersistentClickedState: 0
+  clearClickedStateWhenAnotherButtonHovered: 1
+  hoverHitArea: {fileID: 0}
+  hoverExitPadding: 4
+  hoverExitDelay: 0.05
 --- !u!1 &1399109887
 GameObject:
   m_ObjectHideFlags: 0
@@ -9914,7 +10020,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "2. \uD589\uB3D9 \uD30C\uC545"
+  m_text: "2. \uBCC0\uC774\uCCB4 \uC815\uBCF4 \uD655\uC778"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
@@ -11860,7 +11966,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "1. \uBCC0\uC774\uCCB4\uC758 \uD589\uB3D9 \uC608\uC57D"
+  m_text: "1. \uBCC0\uC774\uCCB4 \uD589\uB3D9 \uC608\uC57D"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
@@ -13794,7 +13900,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1997208023}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
@@ -13808,7 +13914,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -960, y: -540}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
 --- !u!225 &1997208028
