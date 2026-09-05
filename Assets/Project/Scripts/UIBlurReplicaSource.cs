@@ -136,6 +136,9 @@ public sealed class UIBlurReplicaSource
         for (int i = 0; i < graphics.Count; i++)
             graphics[i].SetOriginalRenderingHidden(hidden);
 
+        for (int i = 0; i < masks.Count; i++)
+            masks[i].SetOriginalRenderingHidden(hidden);
+
         originalRenderingHidden = hidden;
     }
 
@@ -513,6 +516,7 @@ public sealed class UIBlurReplicaSource
     private abstract class MaskSync
     {
         public abstract void Sync();
+        public abstract void SetOriginalRenderingHidden(bool hidden);
     }
 
     private sealed class MaskComponentSync : MaskSync
@@ -531,8 +535,19 @@ public sealed class UIBlurReplicaSource
             if (source == null || replica == null)
                 return;
 
-            replica.enabled = source.enabled;
+            replica.enabled = BehaviourEnabledHideRegistry.GetOriginalOrCurrentEnabled(source);
             replica.showMaskGraphic = source.showMaskGraphic;
+        }
+
+        public override void SetOriginalRenderingHidden(bool hidden)
+        {
+            if (source == null)
+                return;
+
+            if (hidden)
+                BehaviourEnabledHideRegistry.Acquire(source);
+            else
+                BehaviourEnabledHideRegistry.Release(source);
         }
     }
 
@@ -552,9 +567,82 @@ public sealed class UIBlurReplicaSource
             if (source == null || replica == null)
                 return;
 
-            replica.enabled = source.enabled;
+            replica.enabled = BehaviourEnabledHideRegistry.GetOriginalOrCurrentEnabled(source);
             replica.padding = source.padding;
             replica.softness = source.softness;
+        }
+
+        public override void SetOriginalRenderingHidden(bool hidden)
+        {
+            if (source == null)
+                return;
+
+            if (hidden)
+                BehaviourEnabledHideRegistry.Acquire(source);
+            else
+                BehaviourEnabledHideRegistry.Release(source);
+        }
+    }
+
+    private static class BehaviourEnabledHideRegistry
+    {
+        private sealed class Entry
+        {
+            public int Count;
+            public bool OriginalEnabled;
+        }
+
+        private static readonly Dictionary<Behaviour, Entry> entries = new();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void Reset()
+        {
+            entries.Clear();
+        }
+
+        public static void Acquire(Behaviour behaviour)
+        {
+            if (behaviour == null)
+                return;
+
+            if (!entries.TryGetValue(behaviour, out Entry entry))
+            {
+                entry = new Entry
+                {
+                    Count = 0,
+                    OriginalEnabled = behaviour.enabled
+                };
+                entries.Add(behaviour, entry);
+            }
+
+            entry.Count++;
+            behaviour.enabled = false;
+        }
+
+        public static void Release(Behaviour behaviour)
+        {
+            if (behaviour == null || !entries.TryGetValue(behaviour, out Entry entry))
+                return;
+
+            entry.Count--;
+            if (entry.Count > 0)
+            {
+                behaviour.enabled = false;
+                return;
+            }
+
+            behaviour.enabled = entry.OriginalEnabled;
+            entries.Remove(behaviour);
+        }
+
+        public static bool GetOriginalOrCurrentEnabled(Behaviour behaviour)
+        {
+            if (behaviour == null)
+                return false;
+
+            return entries.TryGetValue(behaviour, out Entry entry)
+                ? entry.OriginalEnabled
+                : behaviour.enabled;
         }
     }
 }

@@ -61,6 +61,20 @@ public sealed class UIBlurReplicaSourceTests
     }
 
     [Test]
+    public void ReplicaSource_DisablesOriginalMasksOnlyWhileOriginalRenderingIsHidden()
+    {
+        string source = File.ReadAllText("Assets/Project/Scripts/UIBlurReplicaSource.cs");
+
+        Assert.That(source, Does.Contain("masks[i].SetOriginalRenderingHidden(hidden)"));
+        Assert.That(source, Does.Contain("BehaviourEnabledHideRegistry.Acquire(source)"));
+        Assert.That(source, Does.Contain("BehaviourEnabledHideRegistry.Release(source)"));
+        Assert.That(source, Does.Contain("OriginalEnabled = behaviour.enabled"));
+        Assert.That(source, Does.Contain("behaviour.enabled = entry.OriginalEnabled"));
+        Assert.That(source, Does.Contain("GetOriginalOrCurrentEnabled(source)"));
+        Assert.That(source, Does.Not.Contain("replica.enabled = source.enabled;"));
+    }
+
+    [Test]
     public void ReplicaSource_UsesPivotPositionForRootScreenRectMapping()
     {
         string source = File.ReadAllText("Assets/Project/Scripts/UIBlurReplicaSource.cs");
