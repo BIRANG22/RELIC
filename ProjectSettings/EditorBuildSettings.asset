@@ -5,7 +5,7 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/Project/Scenes/YDM/Bootstrap.unity
     guid: ef74e2dc631a13640b37b83b66059a75
   - enabled: 1
@@ -17,7 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project/Scenes/YDM/Battle.unity
     guid: b90fe3f655162cd4881a8a5fc0a1acd6
-  - enabled: 1
+  - enabled: 0
     path: Assets/Project/Scenes/YDM/DebugBattle.unity
     guid: 039d816485064270955855a0c7a56701
   m_configObjects:

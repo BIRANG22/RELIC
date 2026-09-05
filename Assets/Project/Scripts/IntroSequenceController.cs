@@ -326,7 +326,9 @@ public class IntroSequenceController : MonoBehaviour
         if (isTyping)
         {
             CompleteCurrentLineImmediately();
-            nextAdvanceInputTime = Time.unscaledTime + Mathf.Max(0f, advanceInputDelay);
+            // 문장을 강제로 완성한 직후에는 다음 입력에 딜레이를 걸지 않습니다.
+            // 따라서 바로 이어지는 클릭/Space 입력으로 다음 문장으로 진행할 수 있습니다.
+            nextAdvanceInputTime = 0f;
             return;
         }
 
