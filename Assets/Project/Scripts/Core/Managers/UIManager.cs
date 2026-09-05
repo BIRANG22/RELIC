@@ -107,6 +107,10 @@ public class UIManager : Singleton<UIManager>
         if (!WasEscapePressedThisFrame())
             return;
 
+        // 튜토리얼이 열려 있으면 ESC는 튜토리얼만 닫고 같은 프레임의 다른 UI에는 전달하지 않습니다.
+        if (BattleFirstTutorialController.TryHandleEscapeIfOpen())
+            return;
+
         if (closeConfirmDialogWithEscape && TryHideConfirmDialogIfOpen(true))
             return;
 

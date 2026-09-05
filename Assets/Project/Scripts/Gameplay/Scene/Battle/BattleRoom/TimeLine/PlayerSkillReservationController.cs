@@ -5,6 +5,7 @@ using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 
 public class PlayerSkillReservationController : MonoBehaviour
@@ -153,8 +154,38 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void Update()
     {
+        if (IsGridPointerInteractionBlocked())
+        {
+            HideBlockedGridPointerVisuals();
+            return;
+        }
+
         HandleGridSelectionCancelInput();
         UpdateMoveHoverPingFloatingAnimation();
+    }
+
+    private bool IsGridPointerInteractionBlocked()
+    {
+        if (BattleFirstTutorialController.Instance != null &&
+            BattleFirstTutorialController.Instance.IsRunning)
+        {
+            return true;
+        }
+
+        if (UIPanelButton.IsMenuPanelOpen)
+            return true;
+
+        return EventSystem.current != null &&
+               EventSystem.current.IsPointerOverGameObject();
+    }
+
+    private void HideBlockedGridPointerVisuals()
+    {
+        HideMoveHoverPing();
+        HideMovePathPreview();
+
+        if (IsGeneralSelectionSkillActive() && rangePreview != null)
+            rangePreview.ClearRangeOnly();
     }
 
     private void HandleGridSelectionCancelInput()
@@ -673,6 +704,12 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void HandleCellHovered(GridCell cell)
     {
+        if (IsGridPointerInteractionBlocked())
+        {
+            HideBlockedGridPointerVisuals();
+            return;
+        }
+
         if (cell == null)
             return;
 
@@ -1122,6 +1159,12 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void HandleCellClicked(GridCell cell)
     {
+        if (IsGridPointerInteractionBlocked())
+        {
+            HideBlockedGridPointerVisuals();
+            return;
+        }
+
         if (cell == null || currentSkillData == null)
             return;
 
