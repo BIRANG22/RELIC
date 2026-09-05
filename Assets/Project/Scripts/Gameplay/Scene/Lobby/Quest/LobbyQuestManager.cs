@@ -109,16 +109,16 @@ public sealed class LobbyQuestManager : MonoBehaviour
         bool characterSettingOpen = IsLobbyObjectActive(CharacterSettingPanelObjectName);
         bool dialogueOpen = IsLobbyObjectActive(DialoguePanelObjectName);
 
-        // ÅØ½ºÆ®¿Í Äù½ºÆ® ÁøÇà »óÅÂ´Â ±âÁ¸ LobbyQuestPanel ·ÎÁ÷À» ±×´ë·Î »ç¿ëÇÕ´Ï´Ù.
+        // ï¿½Ø½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â´ï¿½ ï¿½ï¿½ï¿½ï¿½ LobbyQuestPanel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×´ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         questPanel.Apply(state);
 
-        // DialoguePanelÀÌ ¿­¸®°í ´ÝÈú ¶§ 0 <-> 100 »çÀÌ¸¦ ºÎµå·´°Ô ÀÌµ¿ÇÕ´Ï´Ù.
+        // DialoguePanelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ 0 <-> 100 ï¿½ï¿½ï¿½Ì¸ï¿½ ï¿½Îµå·´ï¿½ï¿½ ï¿½Ìµï¿½ï¿½Õ´Ï´ï¿½.
         UpdateDialoguePanelPosition(dialogueOpen);
 
-        // CharacterSettingPanelÀÌ ½ÇÁ¦·Î È°¼ºÈ­µÇ¾î ÀÖ´Â µ¿¾È¿¡¸¸ Äù½ºÆ® ÆÐ³ÎÀ» ¼û±é´Ï´Ù.
-        // ¾À ÀüÈ¯ÀÌ ¸ÕÀú ½ÃÀÛµÇ´õ¶óµµ CharacterSettingPanelÀÌ ÄÑÁö±â Àü¿¡´Â ¹Ì¸® ¼û±âÁö ¾Ê½À´Ï´Ù.
-        // CharacterSettingPanelÀÌ ²¨Áö´Â ¼ø°£¿¡´Â ¾À ÀüÈ¯ ÁßÀÌ¾îµµ Áï½Ã ´Ù½Ã È°¼ºÈ­µÇ¸ç,
-        // ¾À ÀüÈ¯ CanvasÀÇ ³ôÀº sortingOrder ¶§¹®¿¡ ÀüÈ¯ ¿¬Ãâ µÚ¿¡¼­ ´ë±âÇÕ´Ï´Ù.
+        // CharacterSettingPanelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­ï¿½Ç¾ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½È¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ð³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
+        // ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ÛµÇ´ï¿½ï¿½ï¿½ CharacterSettingPanelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.
+        // CharacterSettingPanelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½Ì¾îµµ ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½ È°ï¿½ï¿½È­ï¿½Ç¸ï¿½,
+        // ï¿½ï¿½ ï¿½ï¿½È¯ Canvasï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ sortingOrder ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½ ï¿½Ú¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         questPanel.gameObject.SetActive(state.IsVisible && !characterSettingOpen);
         questCanvas.gameObject.SetActive(state.IsVisible && defaultLobbyStateVisible);
 
@@ -130,10 +130,10 @@ public sealed class LobbyQuestManager : MonoBehaviour
         if (blurBackground == null || questPanel == null)
             return;
 
-        // CultureTank / RelicShop / ErosionSelectÀÇ ºí·¯ Ä¸Ã³¿¡ QuestPanelµµ Æ÷ÇÔÇÕ´Ï´Ù.
-        // ¿øº» QuestPanelÀº ºí·¯°¡ ¿­¸° µ¿¾È UIBlurBackground°¡ ¼û±â¹Ç·Î
-        // ÆÐ³Î À§·Î Á÷Á¢ ·»´õµÇÁö ¾Ê°í, Ä¸Ã³µÈ Èå¸° ¹è°æ¿¡¸¸ º¸ÀÔ´Ï´Ù.
-        blurBackground.SetRuntimeBlurredUiRoots(new[] { questPanel.gameObject });
+        // CultureTank / RelicShop / ErosionSelectï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ä¸Ã³ï¿½ï¿½ QuestPanelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+        // ï¿½ï¿½ï¿½ï¿½ QuestPanelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ UIBlurBackgroundï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç·ï¿½
+        // ï¿½Ð³ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê°ï¿½, Ä¸Ã³ï¿½ï¿½ ï¿½å¸° ï¿½ï¿½æ¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½Ô´Ï´ï¿½.
+        blurBackground.AddRuntimeBlurredUiRoot(questPanel.gameObject);
     }
 
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -238,6 +238,7 @@ public sealed class LobbyQuestManager : MonoBehaviour
         Vector2 anchoredPosition = questPanelRectTransform.anchoredPosition;
         anchoredPosition.y = y;
         questPanelRectTransform.anchoredPosition = anchoredPosition;
+        UIBlurBackgroundManager.MarkReplicaDirty();
     }
 
     private void UpdateQuestCanvasSortingForLobbyPanelTransition()
@@ -260,10 +261,10 @@ public sealed class LobbyQuestManager : MonoBehaviour
 
         CaptureQuestCanvasSorting();
 
-        // LobbyPanelTransitionÀº Lobby ¸ÞÀÎ Canvas ¾È¿¡ ÀÖÀ¸¹Ç·Î ÀüÈ¯ Áß¿¡¸¸
-        // Quest Canvas¸¦ ±× Canvasº¸´Ù ÇÑ ´Ü°è µÚ·Î º¸³À´Ï´Ù.
-        // CharacterSettingPanelÀÌ ´ÝÈ÷¸ç QuestPanelÀÌ ¸ÕÀú È°¼ºÈ­µÇ¾îµµ
-        // ÀüÈ¯ ÀÌ¹ÌÁö µÚ¿¡ ÀÌ¹Ì ¶° ÀÖ´Â »óÅÂ°¡ µË´Ï´Ù.
+        // LobbyPanelTransitionï¿½ï¿½ Lobby ï¿½ï¿½ï¿½ï¿½ Canvas ï¿½È¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½È¯ ï¿½ß¿ï¿½ï¿½ï¿½
+        // Quest Canvasï¿½ï¿½ ï¿½ï¿½ Canvasï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ü°ï¿½ ï¿½Ú·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
+        // CharacterSettingPanelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ QuestPanelï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­ï¿½Ç¾îµµ
+        // ï¿½ï¿½È¯ ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½Ú¿ï¿½ ï¿½Ì¹ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½Â°ï¿½ ï¿½Ë´Ï´ï¿½.
         questCanvas.overrideSorting = true;
         questCanvas.sortingLayerID = lobbyPanelTransitionCanvas.sortingLayerID;
         questCanvas.sortingOrder = lobbyPanelTransitionCanvas.sortingOrder - 1;

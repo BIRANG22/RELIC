@@ -61,6 +61,16 @@ public sealed class UIBlurReplicaSourceTests
     }
 
     [Test]
+    public void ReplicaSource_UsesPivotPositionForRootScreenRectMapping()
+    {
+        string source = File.ReadAllText("Assets/Project/Scripts/UIBlurReplicaSource.cs");
+
+        Assert.That(source, Does.Contain("Vector2 size = max - min"));
+        Assert.That(source, Does.Contain("min + Vector2.Scale(size, source.pivot)"));
+        Assert.That(source, Does.Not.Contain("replica.anchoredPosition = (min + max) * 0.5f"));
+    }
+
+    [Test]
     public void BlurShader_CompositesUiTextureByAlphaWithoutLeakingTransparentBlack()
     {
         string shader = File.ReadAllText("Assets/Project/Shaders/DustiumBackgroundBlur.shader");

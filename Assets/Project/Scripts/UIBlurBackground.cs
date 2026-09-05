@@ -38,20 +38,45 @@ public sealed class UIBlurBackground : MonoBehaviour
 
     public void SetRuntimeBlurredUiRoots(IEnumerable<GameObject> roots)
     {
+        bool hadRoots = runtimeBlurredUiRoots.Count > 0;
         runtimeBlurredUiRoots.Clear();
-        if (roots == null)
-            return;
+        bool changed = AddRuntimeBlurredUiRootsInternal(roots);
 
-        foreach (GameObject root in roots)
-        {
-            if (root == null || blurredUiRoots.Contains(root) || runtimeBlurredUiRoots.Contains(root))
-                continue;
-
-            runtimeBlurredUiRoots.Add(root);
-        }
-
-        if (UIBlurBackgroundManager.HasInstance)
+        if ((hadRoots || changed) && UIBlurBackgroundManager.HasInstance)
             UIBlurBackgroundManager.Instance.RefreshPresentation();
+    }
+
+    public void AddRuntimeBlurredUiRoot(GameObject root)
+    {
+        if (AddRuntimeBlurredUiRootInternal(root) && UIBlurBackgroundManager.HasInstance)
+            UIBlurBackgroundManager.Instance.RefreshPresentation();
+    }
+
+    public void AddRuntimeBlurredUiRoots(IEnumerable<GameObject> roots)
+    {
+        if (AddRuntimeBlurredUiRootsInternal(roots) && UIBlurBackgroundManager.HasInstance)
+            UIBlurBackgroundManager.Instance.RefreshPresentation();
+    }
+
+    private bool AddRuntimeBlurredUiRootsInternal(IEnumerable<GameObject> roots)
+    {
+        if (roots == null)
+            return false;
+
+        bool changed = false;
+        foreach (GameObject root in roots)
+            changed |= AddRuntimeBlurredUiRootInternal(root);
+
+        return changed;
+    }
+
+    private bool AddRuntimeBlurredUiRootInternal(GameObject root)
+    {
+        if (root == null || blurredUiRoots.Contains(root) || runtimeBlurredUiRoots.Contains(root))
+            return false;
+
+        runtimeBlurredUiRoots.Add(root);
+        return true;
     }
 
     private IEnumerable<GameObject> EnumerateBlurredUiRoots()
