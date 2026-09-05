@@ -270,6 +270,17 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
             }
         }
 
+        // 씬 전환 과정에서 다른 UI/런타임 코드가 저장 파일을 다시 생성했더라도
+        // 초기화 결과가 확실히 유지되도록 타이틀 진입 후 한 번 더 삭제합니다.
+        if (SaveSystem.Instance != null)
+        {
+            SaveSystem.Instance.DeleteSaveFile();
+
+            if (SaveSystem.Instance.HasSaveFile())
+                Debug.LogError("[DebugProgressResetHotkey] 초기화 후에도 저장 파일이 남아 있습니다.");
+        }
+
+        await TitleManager.RefreshRunButtonsAfterSceneReadyAsync();
         isResetting = false;
     }
 

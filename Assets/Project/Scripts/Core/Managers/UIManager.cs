@@ -174,7 +174,7 @@ public class UIManager : Singleton<UIManager>
             return;
         }
 
-        optionPanelInstance = CreateInactiveInstance(optionPanelPrefab, mainCanvas.transform);
+        optionPanelInstance = Instantiate(optionPanelPrefab, mainCanvas.transform, false);
         optionPanelTransition = optionPanelInstance.GetComponent<OptionPanelTransition>();
         if (optionPanelTransition == null)
             optionPanelTransition = optionPanelInstance.AddComponent<OptionPanelTransition>();
@@ -182,26 +182,6 @@ public class UIManager : Singleton<UIManager>
         ApplyOptionPanelScale();
         BringOptionPanelToFront();
         optionPanelInstance.SetActive(false);
-    }
-
-    private GameObject CreateInactiveInstance(GameObject prefab, Transform parent)
-    {
-        if (prefab == null || parent == null)
-            return null;
-
-        // 활성 프리팹을 활성 Canvas 아래에 바로 Instantiate하면 OnEnable이 먼저 실행됩니다.
-        // 비활성 임시 부모 아래에서 생성한 뒤 clone 자체를 비활성화하고 실제 부모로 옮겨
-        // 옵션 패널이 ShowOption() 전에 한 프레임 활성화되는 것을 방지합니다.
-        var spawnRoot = new GameObject("__OptionPanelSpawnRoot");
-        spawnRoot.transform.SetParent(parent, false);
-        spawnRoot.SetActive(false);
-
-        GameObject instance = Instantiate(prefab, spawnRoot.transform, false);
-        instance.SetActive(false);
-        instance.transform.SetParent(parent, false);
-
-        Destroy(spawnRoot);
-        return instance;
     }
 
     private void CreateConfirmDialog()
@@ -566,7 +546,13 @@ public class UIManager : Singleton<UIManager>
         if (SaveSystem.Instance != null)
         {
             if (!SaveSystem.Instance.SaveCurrentProgress())
+            {
                 Debug.LogWarning("[UIManager] 현재 진행상황 저장에 실패했습니다. 타이틀로 이동합니다.");
+            }
+            else if (!SaveSystem.Instance.HasBattleContinueSave())
+            {
+                Debug.LogWarning("[UIManager] 저장은 완료됐지만 탐사진행 가능한 전투 저장으로 판정되지 않았습니다.");
+            }
         }
         else
         {
@@ -576,20 +562,20 @@ public class UIManager : Singleton<UIManager>
         if (GameManager.Instance != null && GameManager.Instance.StateMachine != null)
         {
             await GameManager.Instance.StateMachine.ChangeState(GameStateType.Title);
-            TitleManager.RefreshRunButtonsInScene();
+            await TitleManager.RefreshRunButtonsAfterSceneReadyAsync();
             return;
         }
 
         if (SceneFlowManager.Instance != null)
         {
             await SceneFlowManager.Instance.LoadSceneAsync(SceneName.Title);
-            TitleManager.RefreshRunButtonsInScene();
+            await TitleManager.RefreshRunButtonsAfterSceneReadyAsync();
             PlayTitleBgmIfPossible();
             return;
         }
 
         UnityEngine.SceneManagement.SceneManager.LoadScene(SceneName.Title);
-        TitleManager.RefreshRunButtonsInScene();
+        await TitleManager.RefreshRunButtonsAfterSceneReadyAsync();
         PlayTitleBgmIfPossible();
     }
 

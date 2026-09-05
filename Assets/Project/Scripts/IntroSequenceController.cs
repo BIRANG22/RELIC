@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -197,6 +197,11 @@ public class IntroSequenceController : MonoBehaviour
     [Min(0f)]
     [SerializeField] private float advanceInputDelay = 0.2f;
 
+    [Header("자동 진행")]
+    [Tooltip("현재 문장이 모두 표시된 뒤 다음 문장으로 자동 진행하기까지의 대기 시간입니다. 마지막 문장에서는 이 시간이 지난 뒤 자동으로 로비로 이동합니다.")]
+    [Min(0f)]
+    [SerializeField] private float autoAdvanceDelay = 2f;
+
     [Header("문장 넘김 사운드")]
     [Tooltip("다음 문장으로 넘어갈 때 재생할 SFX입니다. AudioManager의 사운드 DB에서 선택합니다.")]
     [SerializeField, SoundId(SoundCategory.Sfx)]
@@ -207,6 +212,7 @@ public class IntroSequenceController : MonoBehaviour
     private float lineAdvanceSoundVolume = 1f;
 
     private Coroutine typewriterCoroutine;
+    private Coroutine autoAdvanceCoroutine;
     private Coroutine forceFinishCoroutine;
     private int currentLineIndex;
     private int currentLineCharacterCount;
@@ -260,6 +266,7 @@ public class IntroSequenceController : MonoBehaviour
     {
         StopAllObjectAnimations();
         CancelForceFinishSequence();
+        CancelAutoAdvance();
         HideOverlayCanvasesForIntro(false);
         HideGameObjectsForIntro(false);
         EndIntroParallaxPause();
@@ -273,9 +280,11 @@ public class IntroSequenceController : MonoBehaviour
         if (isIntroVisible)
             HideOverlayCanvasesForIntro(true);
 
-        if (!isPlaying || isTransitioning || Time.unscaledTime < inputUnlockTime)
+        if (!isPlaying)
             return;
 
+        // 타자 출력 중에는 화면 전환/입력 잠금보다 문장 완성을 우선 처리합니다.
+        // 따라서 인트로가 막 열린 직후에도 클릭/Space/Enter로 현재 문장을 즉시 끝까지 표시할 수 있습니다.
         if (WasAdvanceInputPressed())
             Advance();
     }
@@ -309,16 +318,23 @@ public class IntroSequenceController : MonoBehaviour
     /// </summary>
     public void Advance()
     {
-        if (!isPlaying || isTransitioning || Time.unscaledTime < inputUnlockTime || Time.unscaledTime < nextAdvanceInputTime)
+        if (!isPlaying)
             return;
 
-        nextAdvanceInputTime = Time.unscaledTime + Mathf.Max(0f, advanceInputDelay);
-
+        // 문장이 아직 타이핑 중이면 다른 입력 제한보다 먼저 현재 문장을 완성합니다.
+        // 이 입력으로 다음 문장까지 넘어가지는 않습니다.
         if (isTyping)
         {
             CompleteCurrentLineImmediately();
+            nextAdvanceInputTime = Time.unscaledTime + Mathf.Max(0f, advanceInputDelay);
             return;
         }
+
+        if (isTransitioning || Time.unscaledTime < inputUnlockTime || Time.unscaledTime < nextAdvanceInputTime)
+            return;
+
+        nextAdvanceInputTime = Time.unscaledTime + Mathf.Max(0f, advanceInputDelay);
+        CancelAutoAdvance();
 
         int nextIndex = currentLineIndex + 1;
         if (nextIndex < GetValidLineCount())
@@ -397,6 +413,7 @@ public class IntroSequenceController : MonoBehaviour
 
         StopAllObjectAnimations();
         CancelForceFinishSequence();
+        CancelAutoAdvance();
         ResetActionObjectsToInitialState();
 
         moveToLobbyWhenFinished = goToLobbyAfterFinish;
@@ -423,6 +440,8 @@ public class IntroSequenceController : MonoBehaviour
 
     private void ShowLine(int lineIndex)
     {
+        CancelAutoAdvance();
+
         if (typewriterCoroutine != null)
         {
             StopCoroutine(typewriterCoroutine);
@@ -1141,6 +1160,7 @@ public class IntroSequenceController : MonoBehaviour
         {
             isTyping = false;
             typewriterCoroutine = null;
+            ScheduleAutoAdvance();
             yield break;
         }
 
@@ -1166,6 +1186,7 @@ public class IntroSequenceController : MonoBehaviour
         introText.maxVisibleCharacters = currentLineCharacterCount;
         isTyping = false;
         typewriterCoroutine = null;
+        ScheduleAutoAdvance();
     }
 
     private void CompleteCurrentLineImmediately()
@@ -1178,6 +1199,68 @@ public class IntroSequenceController : MonoBehaviour
 
         introText.maxVisibleCharacters = currentLineCharacterCount;
         isTyping = false;
+        ScheduleAutoAdvance();
+    }
+
+    private void ScheduleAutoAdvance()
+    {
+        CancelAutoAdvance();
+
+        if (!isPlaying)
+            return;
+
+        autoAdvanceCoroutine = StartCoroutine(AutoAdvanceAfterDelay(currentLineIndex));
+    }
+
+    private void CancelAutoAdvance()
+    {
+        if (autoAdvanceCoroutine == null)
+            return;
+
+        StopCoroutine(autoAdvanceCoroutine);
+        autoAdvanceCoroutine = null;
+    }
+
+    private IEnumerator AutoAdvanceAfterDelay(int scheduledLineIndex)
+    {
+        float elapsed = 0f;
+        float delay = Mathf.Max(0f, autoAdvanceDelay);
+
+        while (isPlaying && isTransitioning)
+            yield return null;
+
+        while (elapsed < delay)
+        {
+            if (!isPlaying || isTyping || currentLineIndex != scheduledLineIndex)
+            {
+                autoAdvanceCoroutine = null;
+                yield break;
+            }
+
+            if (isTransitioning)
+            {
+                yield return null;
+                continue;
+            }
+
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        autoAdvanceCoroutine = null;
+
+        if (!isPlaying || isTransitioning || isTyping || currentLineIndex != scheduledLineIndex)
+            yield break;
+
+        int nextIndex = currentLineIndex + 1;
+        if (nextIndex < GetValidLineCount())
+        {
+            PlayLineAdvanceSound();
+            ShowLine(nextIndex);
+            yield break;
+        }
+
+        FinishIntroWithTransition();
     }
 
     private async void FinishIntroWithTransition()
@@ -1186,6 +1269,7 @@ public class IntroSequenceController : MonoBehaviour
             return;
 
         CancelForceFinishSequence();
+        CancelAutoAdvance();
         isTransitioning = true;
 
         if (typewriterCoroutine != null)
