@@ -248,7 +248,7 @@ public sealed class UIBlurReplicaSource
             Replica.raycastTarget = false;
         }
 
-        public void SetOriginalRenderingHidden(bool hidden)
+        public virtual void SetOriginalRenderingHidden(bool hidden)
         {
             if (sourceRenderer != null)
                 sourceRenderer.cull = hidden || originalCull;
@@ -302,6 +302,9 @@ public sealed class UIBlurReplicaSource
 
             replica.texture = source.texture;
             replica.uvRect = source.uvRect;
+            // VFX RenderTexture Additive materials can write opaque black into the UI blur RT.
+            if (source.texture is RenderTexture)
+                replica.material = null;
         }
     }
 
@@ -309,11 +312,13 @@ public sealed class UIBlurReplicaSource
     {
         private readonly TMP_Text source;
         private readonly TMP_Text replica;
+        private readonly List<CanvasRendererCullState> subMeshRenderers = new();
 
         public TmpTextPair(TMP_Text source, TMP_Text replica) : base(source, replica)
         {
             this.source = source;
             this.replica = replica;
+            CacheSubMeshRenderers(source);
         }
 
         public override void Sync()
@@ -333,6 +338,74 @@ public sealed class UIBlurReplicaSource
             replica.fontSizeMax = source.fontSizeMax;
             replica.overflowMode = source.overflowMode;
             replica.textWrappingMode = source.textWrappingMode;
+        }
+
+        public override void SetOriginalRenderingHidden(bool hidden)
+        {
+            base.SetOriginalRenderingHidden(hidden);
+            CacheSubMeshRenderers(source);
+
+            for (int i = subMeshRenderers.Count - 1; i >= 0; i--)
+            {
+                CanvasRendererCullState state = subMeshRenderers[i];
+                if (!state.IsValid)
+                {
+                    subMeshRenderers.RemoveAt(i);
+                    continue;
+                }
+
+                state.SetHidden(hidden);
+            }
+        }
+
+        private void CacheSubMeshRenderers(TMP_Text text)
+        {
+            if (text == null)
+                return;
+
+            TMP_SubMeshUI[] subMeshes = text.GetComponentsInChildren<TMP_SubMeshUI>(true);
+            for (int i = 0; i < subMeshes.Length; i++)
+            {
+                TMP_SubMeshUI subMesh = subMeshes[i];
+                if (subMesh == null)
+                    continue;
+
+                CanvasRenderer renderer = subMesh.canvasRenderer;
+                if (renderer != null && !ContainsSubMeshRenderer(renderer))
+                    subMeshRenderers.Add(new CanvasRendererCullState(renderer));
+            }
+        }
+
+        private bool ContainsSubMeshRenderer(CanvasRenderer renderer)
+        {
+            for (int i = 0; i < subMeshRenderers.Count; i++)
+            {
+                if (subMeshRenderers[i].Renderer == renderer)
+                    return true;
+            }
+
+            return false;
+        }
+    }
+
+    private readonly struct CanvasRendererCullState
+    {
+        private readonly CanvasRenderer renderer;
+        private readonly bool originalCull;
+
+        public CanvasRendererCullState(CanvasRenderer renderer)
+        {
+            this.renderer = renderer;
+            originalCull = renderer != null && renderer.cull;
+        }
+
+        public bool IsValid => renderer != null;
+        public CanvasRenderer Renderer => renderer;
+
+        public void SetHidden(bool hidden)
+        {
+            if (renderer != null)
+                renderer.cull = hidden || originalCull;
         }
     }
 
