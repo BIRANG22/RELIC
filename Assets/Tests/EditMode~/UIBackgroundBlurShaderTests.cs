@@ -91,6 +91,20 @@ public sealed class UIBackgroundBlurShaderTests
     }
 
     [Test]
+    public void BlurReplicaSource_CopiesTmpMeshLayoutProperties()
+    {
+        string replicaSource = File.ReadAllText("Assets/Project/Scripts/UIBlurReplicaSource.cs");
+
+        Assert.That(replicaSource, Does.Contain("replica.margin = source.margin"));
+        Assert.That(replicaSource, Does.Contain("replica.characterSpacing = source.characterSpacing"));
+        Assert.That(replicaSource, Does.Contain("replica.wordSpacing = source.wordSpacing"));
+        Assert.That(replicaSource, Does.Contain("replica.lineSpacing = source.lineSpacing"));
+        Assert.That(replicaSource, Does.Contain("replica.paragraphSpacing = source.paragraphSpacing"));
+        Assert.That(replicaSource, Does.Contain("replica.richText = source.richText"));
+        Assert.That(replicaSource, Does.Contain("replica.ForceMeshUpdate(true, true)"));
+    }
+
+    [Test]
     public void SharedBlurManager_DoesNotBlockInputAndPausesCameraWhileARequesterIsActive()
     {
         string manager = File.ReadAllText("Assets/Project/Scripts/UIBlurBackgroundManager.cs");

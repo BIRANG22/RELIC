@@ -378,6 +378,19 @@ public sealed class UIBlurReplicaSource
             replica.fontSizeMax = source.fontSizeMax;
             replica.overflowMode = source.overflowMode;
             replica.textWrappingMode = source.textWrappingMode;
+            replica.margin = source.margin;
+            replica.characterSpacing = source.characterSpacing;
+            replica.wordSpacing = source.wordSpacing;
+            replica.lineSpacing = source.lineSpacing;
+            replica.paragraphSpacing = source.paragraphSpacing;
+            replica.richText = source.richText;
+            replica.extraPadding = source.extraPadding;
+            replica.parseCtrlCharacters = source.parseCtrlCharacters;
+            replica.isRightToLeftText = source.isRightToLeftText;
+            replica.horizontalMapping = source.horizontalMapping;
+            replica.verticalMapping = source.verticalMapping;
+            replica.geometrySortingOrder = source.geometrySortingOrder;
+            replica.ForceMeshUpdate(true, true);
         }
 
         public override void SetOriginalRenderingHidden(bool hidden)
