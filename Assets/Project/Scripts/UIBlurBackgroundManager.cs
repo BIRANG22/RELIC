@@ -8,6 +8,7 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 {
     private const string RootName = "SharedBlurRoot";
     private const string ShaderName = "UI/DustiumBackgroundBlur";
+    private const string MaterialResourcePath = "UI/DustiumBackgroundBlur";
     private const string SharedCanvasName = "SharedBlurCanvas";
     private const string BlurReplicaRootName = "BlurReplicaRoot";
     private const string UIBlurCameraName = "UIBlurCamera";
@@ -33,6 +34,8 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
     private bool cameraPauseActive;
     private bool isRefreshing;
     private bool replicaDirty;
+    private bool materialDiagnosticsLogged;
+    private bool textureDiagnosticsLogged;
 
     public static UIBlurBackgroundManager Instance
     {
@@ -206,12 +209,9 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         sharedBackground = background.GetComponent<RawImage>();
         sharedBackground.raycastTarget = false;
 
-        Shader shader = Shader.Find(ShaderName);
-        if (shader != null)
-        {
-            material = new Material(shader) { name = "SharedBlurMaterial" };
+        material = CreateBlurMaterial();
+        if (material != null)
             sharedBackground.material = material;
-        }
 
         canvasObject.SetActive(false);
         RefreshWorldCamera();
@@ -465,10 +465,110 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         if (uiBlurTexture != null)
             material.SetTexture(UIBlurTextureName, uiBlurTexture);
 
+        LogTextureDiagnosticsOnce(sourceTexture);
+
         material.SetFloat("_BlurRadius", requester.BlurRadius);
         material.SetFloat("_Darken", requester.Darken);
         material.SetFloat("_Saturation", requester.Saturation);
         material.SetFloat("_Contrast", requester.Contrast);
+    }
+
+    private Material CreateBlurMaterial()
+    {
+        Material template = Resources.Load<Material>(MaterialResourcePath);
+        if (template != null)
+        {
+            Material instanceMaterial = new(template) { name = "SharedBlurMaterial" };
+            LogMaterialDiagnosticsOnce(instanceMaterial, "Resources material");
+            return instanceMaterial;
+        }
+
+        Shader shader = Shader.Find(ShaderName);
+        if (shader == null)
+        {
+            Debug.LogError(
+                "[UIBlurBackgroundManager] UI/DustiumBackgroundBlur shader not found. " +
+                "Possible build shader stripping. Expected Resources material at " +
+                $"Resources/{MaterialResourcePath}.");
+            return null;
+        }
+
+        Material fallbackMaterial = new(shader) { name = "SharedBlurMaterial" };
+        LogMaterialDiagnosticsOnce(fallbackMaterial, "Shader.Find fallback");
+        return fallbackMaterial;
+    }
+
+    private void LogMaterialDiagnosticsOnce(Material targetMaterial, string source)
+    {
+        if (materialDiagnosticsLogged || targetMaterial == null)
+            return;
+
+        materialDiagnosticsLogged = true;
+        Shader shader = targetMaterial.shader;
+        if (shader == null)
+        {
+            Debug.LogError($"[UIBlurBackgroundManager] Blur material has no shader. Source:{source}");
+            return;
+        }
+
+        bool hasAllProperties =
+            targetMaterial.HasProperty("_UIBlurSourceTexture") &&
+            targetMaterial.HasProperty(UIBlurTextureName) &&
+            targetMaterial.HasProperty("_BlurRadius") &&
+            targetMaterial.HasProperty("_Darken") &&
+            targetMaterial.HasProperty("_Saturation") &&
+            targetMaterial.HasProperty("_Contrast");
+
+        if (!shader.isSupported || !hasAllProperties)
+        {
+            Debug.LogError(
+                "[UIBlurBackgroundManager] Blur material is not build-ready. " +
+                $"Source:{source}, Shader:{shader.name}, Supported:{shader.isSupported}, " +
+                $"HasRequiredProperties:{hasAllProperties}");
+        }
+    }
+
+    private void LogTextureDiagnosticsOnce(Texture sourceTexture)
+    {
+        if (textureDiagnosticsLogged)
+            return;
+
+        textureDiagnosticsLogged = true;
+        Debug.Log(
+            "[UIBlurBackgroundManager] Blur texture diagnostics. " +
+            $"Source:{DescribeTexture(sourceTexture)}, " +
+            $"UI:{DescribeRenderTexture(uiBlurTexture)}, " +
+            $"ARGB32Supported:{SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGB32)}");
+
+        if (sourceTexture == null)
+        {
+            Debug.LogError(
+                "[UIBlurBackgroundManager] _UIBlurSourceTexture is null when blur is requested. " +
+                "Check that UIBackgroundBlurRendererFeature is present on the active screen renderer.");
+        }
+
+        if (uiBlurTexture == null || !uiBlurTexture.IsCreated())
+        {
+            Debug.LogError("[UIBlurBackgroundManager] _UIBlurUiTexture is not created when blur is requested.");
+        }
+    }
+
+    private static string DescribeTexture(Texture texture)
+    {
+        if (texture == null)
+            return "null";
+
+        return $"{texture.name} {texture.width}x{texture.height} {texture.dimension}";
+    }
+
+    private static string DescribeRenderTexture(RenderTexture texture)
+    {
+        if (texture == null)
+            return "null";
+
+        return
+            $"{texture.name} {texture.width}x{texture.height} " +
+            $"{texture.graphicsFormat} depth:{texture.depth} created:{texture.IsCreated()}";
     }
 
     public static bool IsRequesterPanelObject(GameObject target)

@@ -26,6 +26,32 @@ public sealed class UIBackgroundBlurShaderTests
     }
 
     [Test]
+    public void SharedBlurManager_UsesBuildIncludedResourcesMaterialBeforeShaderFind()
+    {
+        string manager = File.ReadAllText("Assets/Project/Scripts/UIBlurBackgroundManager.cs");
+        string material = File.ReadAllText("Assets/Project/Resources/UI/DustiumBackgroundBlur.mat");
+
+        Assert.That(manager, Does.Contain("Resources.Load<Material>(MaterialResourcePath)"));
+        Assert.That(manager, Does.Contain("Shader.Find(ShaderName)"));
+        Assert.That(manager.IndexOf("Resources.Load<Material>(MaterialResourcePath)"),
+            Is.LessThan(manager.IndexOf("Shader.Find(ShaderName)")));
+        Assert.That(manager, Does.Contain("Possible build shader stripping"));
+        Assert.That(material, Does.Contain("m_Shader: {fileID: 4800000, guid: ba44f26dad75d30409e27201c722a7e1, type: 3}"));
+    }
+
+    [Test]
+    public void SharedBlurManager_LogsBuildTextureDiagnosticsOnce()
+    {
+        string manager = File.ReadAllText("Assets/Project/Scripts/UIBlurBackgroundManager.cs");
+
+        Assert.That(manager, Does.Contain("textureDiagnosticsLogged"));
+        Assert.That(manager, Does.Contain("_UIBlurSourceTexture is null when blur is requested"));
+        Assert.That(manager, Does.Contain("_UIBlurUiTexture is not created when blur is requested"));
+        Assert.That(manager, Does.Contain("SupportsRenderTextureFormat(RenderTextureFormat.ARGB32)"));
+        Assert.That(manager, Does.Contain("DescribeRenderTexture(uiBlurTexture)"));
+    }
+
+    [Test]
     public void SharedBlurManager_DoesNotBlockInputAndPausesCameraWhileARequesterIsActive()
     {
         string manager = File.ReadAllText("Assets/Project/Scripts/UIBlurBackgroundManager.cs");
