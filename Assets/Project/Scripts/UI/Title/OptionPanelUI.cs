@@ -10,8 +10,9 @@ public class OptionPanelUI : MonoBehaviour
     private const string LanguageContentName = "LanguageContent";
     private const string ResolutionContentName = "ResolutionContent";
     private const string ControlContentName = "ControlContent";
-    private const string TutorialToggleName = "TutorialToggle";
-    private const string IntroToggleName = "IntroToggle";
+    private const string TutorialToggle1Name = "TutorialToggle1";
+    private const string TutorialToggle2Name = "TutorialToggle2";
+    private const string IntroToggleName = "IntroToggle1";
 
     [Header("Contents")]
     [SerializeField] private GameObject soundContent;
@@ -24,6 +25,7 @@ public class OptionPanelUI : MonoBehaviour
 
     [Header("Tutorial")]
     [SerializeField] private Toggle tutorialToggle;
+    [SerializeField] private Toggle tutorialPreviewToggle;
 
     [Header("Intro")]
     [SerializeField] private Toggle introToggle;
@@ -66,6 +68,9 @@ public class OptionPanelUI : MonoBehaviour
         if (tutorialToggle != null)
             tutorialToggle.onValueChanged.RemoveListener(OnTutorialToggleChanged);
 
+        if (tutorialPreviewToggle != null)
+            tutorialPreviewToggle.onValueChanged.RemoveListener(OnTutorialPreviewToggleChanged);
+
         if (introToggle != null)
             introToggle.onValueChanged.RemoveListener(OnIntroToggleChanged);
 
@@ -80,7 +85,7 @@ public class OptionPanelUI : MonoBehaviour
         SetContentActive(controlContent, true);
 
         SyncTutorialToggleFromSettings();
-        ResetIntroToggle();
+        SyncIntroToggleFromSettings();
     }
 
     public void ShowSound()
@@ -105,7 +110,7 @@ public class OptionPanelUI : MonoBehaviour
     {
         ShowSingleContent(controlContent);
         SyncTutorialToggleFromSettings();
-        ResetIntroToggle();
+        SyncIntroToggleFromSettings();
     }
 
     /// <summary>
@@ -211,24 +216,48 @@ public class OptionPanelUI : MonoBehaviour
         if (controlContent == null)
             controlContent = FindChildGameObject(ControlContentName);
 
-        if (tutorialToggle == null && controlContent != null)
+        if (controlContent != null)
         {
-            Transform tutorialToggleTransform = FindChildByName(controlContent.transform, TutorialToggleName);
-            if (tutorialToggleTransform != null)
-                tutorialToggle = tutorialToggleTransform.GetComponent<Toggle>();
+            if (tutorialToggle == null)
+            {
+                Transform tutorialToggleTransform = FindChildByName(controlContent.transform, TutorialToggle1Name);
+                if (tutorialToggleTransform != null)
+                    tutorialToggle = tutorialToggleTransform.GetComponent<Toggle>();
+            }
+
+            if (tutorialPreviewToggle == null)
+            {
+                Transform tutorialPreviewTransform = FindChildByName(controlContent.transform, TutorialToggle2Name);
+                if (tutorialPreviewTransform != null)
+                    tutorialPreviewToggle = tutorialPreviewTransform.GetComponent<Toggle>();
+            }
         }
 
         if (tutorialToggle == null)
         {
             Debug.LogWarning(
-                "[OptionPanelUI] TutorialToggle is not assigned in the Option prefab.",
+                "[OptionPanelUI] TutorialToggle1 is not assigned in the Option prefab.",
                 this);
-            return;
+        }
+        else
+        {
+            tutorialToggle.onValueChanged.RemoveListener(OnTutorialToggleChanged);
+            tutorialToggle.SetIsOnWithoutNotify(TutorialSettings.ShouldShowTutorial);
+            tutorialToggle.onValueChanged.AddListener(OnTutorialToggleChanged);
         }
 
-        tutorialToggle.onValueChanged.RemoveListener(OnTutorialToggleChanged);
-        tutorialToggle.SetIsOnWithoutNotify(TutorialSettings.ShouldShowTutorial);
-        tutorialToggle.onValueChanged.AddListener(OnTutorialToggleChanged);
+        if (tutorialPreviewToggle == null)
+        {
+            Debug.LogWarning(
+                "[OptionPanelUI] TutorialToggle2 is not assigned in the Option prefab.",
+                this);
+        }
+        else
+        {
+            tutorialPreviewToggle.onValueChanged.RemoveListener(OnTutorialPreviewToggleChanged);
+            tutorialPreviewToggle.SetIsOnWithoutNotify(false);
+            tutorialPreviewToggle.onValueChanged.AddListener(OnTutorialPreviewToggleChanged);
+        }
     }
 
 
@@ -253,26 +282,13 @@ public class OptionPanelUI : MonoBehaviour
         }
 
         introToggle.onValueChanged.RemoveListener(OnIntroToggleChanged);
-        introToggle.SetIsOnWithoutNotify(false);
+        introToggle.SetIsOnWithoutNotify(IntroSettings.ShouldPlayIntro);
         introToggle.onValueChanged.AddListener(OnIntroToggleChanged);
     }
 
     private void OnIntroToggleChanged(bool isOn)
     {
-        if (!isOn)
-            return;
-
-        IntroSequenceController introController = IntroSequenceController.Instance;
-        if (introController == null)
-        {
-            Debug.LogWarning(
-                "[OptionPanelUI] IntroSequenceController를 찾을 수 없습니다.",
-                this);
-            ResetIntroToggle();
-            return;
-        }
-
-        introController.ReplayIntro();
+        IntroSettings.SetShouldPlayIntro(isOn);
     }
 
     private void SubscribeIntroFinished()
@@ -296,18 +312,37 @@ public class OptionPanelUI : MonoBehaviour
 
     private void HandleIntroFinished()
     {
-        ResetIntroToggle();
+        SyncIntroToggleFromSettings();
     }
 
-    private void ResetIntroToggle()
+    private void SyncIntroToggleFromSettings()
     {
         if (introToggle != null)
-            introToggle.SetIsOnWithoutNotify(false);
+            introToggle.SetIsOnWithoutNotify(IntroSettings.ShouldPlayIntro);
     }
 
     private void OnTutorialToggleChanged(bool shouldShowTutorial)
     {
         TutorialSettings.SetShouldShowTutorial(shouldShowTutorial);
+    }
+
+    private void OnTutorialPreviewToggleChanged(bool isOn)
+    {
+        if (!isOn)
+            return;
+
+        BattleFirstTutorialController tutorialController = FindFirstObjectByType<BattleFirstTutorialController>(FindObjectsInactive.Include);
+        if (tutorialController == null)
+        {
+            Debug.LogWarning(
+                "[OptionPanelUI] BattleFirstTutorialController를 찾을 수 없습니다.",
+                this);
+            tutorialPreviewToggle?.SetIsOnWithoutNotify(false);
+            return;
+        }
+
+        tutorialController.StartPreviewTutorial();
+        tutorialPreviewToggle.SetIsOnWithoutNotify(false);
     }
 
     private void SyncTutorialToggleFromSettings()

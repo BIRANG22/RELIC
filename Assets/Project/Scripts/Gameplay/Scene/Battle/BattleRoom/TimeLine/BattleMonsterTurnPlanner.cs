@@ -149,7 +149,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (actionReserveMessageDelay > 0f)
             yield return new WaitForSeconds(actionReserveMessageDelay);
 
-        ShowActionReserveIntroText();
+        // 첫 전투 진입 연출에서는 행동 예약 안내까지 이 코루틴이 직접 기다립니다.
+        // BattleRoomLoader가 전역 표시 상태를 폴링하지 않아도 정확한 종료 시점을 알 수 있습니다.
+        if (showBattleStart)
+            yield return ShowIntroTextAndWaitRoutine(actionReserveMessage);
+        else
+            ShowActionReserveIntroText();
+
         planRoutine = null;
     }
 

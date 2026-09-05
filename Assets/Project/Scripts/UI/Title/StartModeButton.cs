@@ -27,6 +27,9 @@ public class StartModeButton : MonoBehaviour
             IntroSequenceController introController = IntroSequenceController.Instance;
             if (introController != null)
             {
+                // IntroToggle1은 다음 게임 시작 시 인트로를 1회 재생하는 예약 토글입니다.
+                // 실제 인트로가 시작되는 시점에 예약을 소비하여 OFF 상태로 저장합니다.
+                IntroSettings.MarkIntroSeen();
                 introController.PlayFirstTimeIntro();
                 return;
             }

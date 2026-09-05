@@ -107,15 +107,16 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void EnsureFirstBattleTutorialController()
     {
-        if (firstBattleTutorialController != null)
-            return;
-
-        firstBattleTutorialController = GetComponent<BattleFirstTutorialController>();
+        // Battle 씬에 남아 있는 예전 SerializeField 참조나 임의 검색 결과를 사용하지 않습니다.
+        // Bootstrap/UIManager 아래에서 정상 UI 참조를 가진 컨트롤러가 등록한 Instance만 사용합니다.
+        firstBattleTutorialController = BattleFirstTutorialController.Instance;
 
         if (firstBattleTutorialController == null)
         {
-            firstBattleTutorialController =
-                Object.FindFirstObjectByType<BattleFirstTutorialController>(FindObjectsInactive.Include);
+            Debug.LogWarning(
+                "[BattleTutorial] Bootstrap BattleFirstTutorialController.Instance가 없습니다. " +
+                "UIManager 아래 Tutorial 오브젝트의 Tutorial Root / Steps 참조를 확인해 주세요.",
+                this);
         }
     }
 
@@ -1405,7 +1406,10 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (monsterTurnPlanner != null)
         {
+            // showBattleStart=true인 초기 예약은 BattleMonsterTurnPlanner 내부에서
+            // "행동 예약" 안내가 완전히 끝날 때까지 직접 기다립니다.
             yield return monsterTurnPlanner.PlanMonsterTurnsAndWait(spawnedMonsterUnits, true);
+            Debug.Log("[BattleTutorial] Initial monster reservation finished", this);
         }
         else
         {
@@ -1429,8 +1433,22 @@ public class BattleRoomLoader : MonoBehaviour
 
         EnsureFirstBattleTutorialController();
 
+        Debug.Log(
+            $"[BattleTutorial] Controller found: {firstBattleTutorialController != null}",
+            this);
+        Debug.Log(
+            $"[BattleTutorial] TutorialToggle1 value: {TutorialSettings.ShouldShowTutorial}",
+            this);
+
+        bool tutorialStarted = false;
         if (firstBattleTutorialController != null)
-            firstBattleTutorialController.TryStartTutorialIfNeeded();
+            tutorialStarted = firstBattleTutorialController.TryStartTutorialIfNeeded();
+
+        Debug.Log($"[BattleTutorial] TryStart result: {tutorialStarted}", this);
+        Debug.Log(
+            $"[BattleTutorial] Tutorial_Panel active: " +
+            $"{(firstBattleTutorialController != null && firstBattleTutorialController.IsTutorialRootActive)}",
+            this);
 
         initialMonsterPlanRoutine = null;
     }

@@ -87,6 +87,10 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     {
         if (enableEscapeInput && WasEscapePressedThisFrame() && !IsTypingInputFieldSelected())
         {
+            // 실행 순서와 상관없이 튜토리얼이 ESC를 최우선으로 소비합니다.
+            if (BattleFirstTutorialController.TryHandleEscapeIfOpen())
+                return;
+
             if (UIManager.WasConfirmDialogClosedByEscapeThisFrame ||
                 UIManager.WasRecordPanelClosedByEscapeThisFrame ||
                 UIManager.WasOptionPanelClosedByEscapeThisFrame)

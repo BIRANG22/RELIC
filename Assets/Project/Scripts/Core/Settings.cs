@@ -32,6 +32,11 @@ public static class TutorialSettings
     private const int ShowTutorialValue = 1;
     private const int HideTutorialValue = 0;
 
+    /// <summary>
+    /// TutorialToggle1 상태입니다.
+    /// ON이면 다음 전투 튜토리얼 자동 표시를 1회 예약하고,
+    /// 실제 자동 튜토리얼이 열리면 OFF로 소비됩니다.
+    /// </summary>
     public static bool ShouldShowTutorial =>
         PlayerPrefs.GetInt(ShowTutorialPrefsKey, ShowTutorialValue) == ShowTutorialValue;
 
@@ -44,6 +49,9 @@ public static class TutorialSettings
         PlayerPrefs.Save();
     }
 
+    /// <summary>
+    /// 기존 호출 호환용입니다. 자동 튜토리얼 예약을 소비합니다.
+    /// </summary>
     public static void MarkTutorialShown()
     {
         SetShouldShowTutorial(false);
@@ -61,6 +69,14 @@ public static class IntroSettings
         PlayerPrefs.GetInt(IntroSeenPrefsKey, NotSeenValue) == SeenValue;
 
     public static bool ShouldPlayIntro => !HasSeenIntro;
+
+    public static void SetShouldPlayIntro(bool shouldPlayIntro)
+    {
+        PlayerPrefs.SetInt(
+            IntroSeenPrefsKey,
+            shouldPlayIntro ? NotSeenValue : SeenValue);
+        PlayerPrefs.Save();
+    }
 
     public static void MarkIntroSeen()
     {
