@@ -28830,7 +28830,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 15, y: -144}
+  m_AnchoredPosition: {x: 15, y: -190}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &516745614
@@ -37044,7 +37044,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 169, y: 62}
+  m_AnchoredPosition: {x: 170, y: 60}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &593605843
@@ -48579,6 +48579,19 @@ MonoBehaviour:
   completionRoot: {fileID: 1915938315}
   completionButton: {fileID: 1915938317}
   completionIcon: {fileID: 2023525550}
+  automaticClaimDelay: 1
+  compoundTransferTarget: {fileID: 546363576}
+  compoundTransferEffectTexture: {fileID: 2800000, guid: f416ed12a9deb6f40ac52e708154fa95, type: 3}
+  compoundTransferEffectSize: {x: 96, y: 96}
+  compoundTransferBounceOffset: {x: 180, y: 120}
+  compoundTransferBounceDuration: 0.18
+  compoundTransferFlyDuration: 0.32
+  compoundTransferEndScale: 0.35
+  compoundTrailSpawnInterval: 0.025
+  compoundTrailLifetime: 0.18
+  compoundTrailStartScale: 0.78
+  compoundTrailEndScale: 0.2
+  compoundTrailStartAlpha: 0.48
 --- !u!114 &821549309
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62799,7 +62812,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -1, y: 88}
+  m_AnchoredPosition: {x: 0, y: 85}
   m_SizeDelta: {x: 300, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1004795395
@@ -117036,7 +117049,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 9, y: -4}
+  m_AnchoredPosition: {x: 15, y: -15}
   m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1915938317
@@ -125360,7 +125373,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -139, y: 62}
+  m_AnchoredPosition: {x: -140, y: 60}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2071041974
