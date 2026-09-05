@@ -170,7 +170,7 @@ public sealed class UIBlurReplicaSource
             if (sourceTransform == null || source == null || replica == null || replicaParent == null)
                 return;
 
-            replica.gameObject.SetActive(sourceTransform.gameObject.activeSelf);
+            replica.gameObject.SetActive(sourceTransform.gameObject.activeInHierarchy);
             if (!isRoot)
             {
                 SyncLocalLayout();
@@ -227,14 +227,13 @@ public sealed class UIBlurReplicaSource
         protected readonly Graphic Source;
         protected readonly Graphic Replica;
         private readonly CanvasRenderer sourceRenderer;
-        private readonly bool originalCull;
+        private bool sourceRendererHidden;
 
         protected GraphicPair(Graphic source, Graphic replica)
         {
             Source = source;
             Replica = replica;
             sourceRenderer = source != null ? source.canvasRenderer : null;
-            originalCull = sourceRenderer != null && sourceRenderer.cull;
         }
 
         public virtual void Sync()
@@ -242,16 +241,55 @@ public sealed class UIBlurReplicaSource
             if (Source == null || Replica == null)
                 return;
 
-            Replica.enabled = Source.enabled;
-            Replica.color = Source.color;
+            Replica.enabled = Source.enabled && Source.gameObject.activeInHierarchy;
+            Color color = Source.color;
+            color.a *= GetEffectiveCanvasGroupAlpha(Source.transform);
+            Replica.color = color;
             Replica.material = Source.material;
             Replica.raycastTarget = false;
         }
 
         public virtual void SetOriginalRenderingHidden(bool hidden)
         {
-            if (sourceRenderer != null)
-                sourceRenderer.cull = hidden || originalCull;
+            if (sourceRenderer == null || sourceRendererHidden == hidden)
+                return;
+
+            if (hidden)
+                CanvasRendererHideRegistry.Acquire(sourceRenderer);
+            else
+                CanvasRendererHideRegistry.Release(sourceRenderer);
+
+            sourceRendererHidden = hidden;
+        }
+
+        private static float GetEffectiveCanvasGroupAlpha(Transform transform)
+        {
+            float alpha = 1f;
+            Transform current = transform;
+
+            while (current != null)
+            {
+                CanvasGroup[] groups = current.GetComponents<CanvasGroup>();
+                bool ignoreParents = false;
+
+                for (int i = 0; i < groups.Length; i++)
+                {
+                    CanvasGroup group = groups[i];
+                    if (group == null || !group.enabled)
+                        continue;
+
+                    alpha *= group.alpha;
+                    if (group.ignoreParentGroups)
+                        ignoreParents = true;
+                }
+
+                if (alpha <= 0f || ignoreParents)
+                    break;
+
+                current = current.parent;
+            }
+
+            return Mathf.Clamp01(alpha);
         }
     }
 
@@ -312,7 +350,9 @@ public sealed class UIBlurReplicaSource
     {
         private readonly TMP_Text source;
         private readonly TMP_Text replica;
-        private readonly List<CanvasRendererCullState> subMeshRenderers = new();
+        private readonly List<CanvasRenderer> subMeshRenderers = new();
+        private readonly List<CanvasRenderer> hiddenSubMeshRenderers = new();
+        private bool subMeshesHidden;
 
         public TmpTextPair(TMP_Text source, TMP_Text replica) : base(source, replica)
         {
@@ -345,23 +385,43 @@ public sealed class UIBlurReplicaSource
             base.SetOriginalRenderingHidden(hidden);
             CacheSubMeshRenderers(source);
 
-            for (int i = subMeshRenderers.Count - 1; i >= 0; i--)
+            if (hidden)
             {
-                CanvasRendererCullState state = subMeshRenderers[i];
-                if (!state.IsValid)
+                for (int i = 0; i < subMeshRenderers.Count; i++)
                 {
-                    subMeshRenderers.RemoveAt(i);
-                    continue;
+                    CanvasRenderer renderer = subMeshRenderers[i];
+                    if (renderer == null || hiddenSubMeshRenderers.Contains(renderer))
+                        continue;
+
+                    CanvasRendererHideRegistry.Acquire(renderer);
+                    hiddenSubMeshRenderers.Add(renderer);
+                }
+            }
+            else
+            {
+                for (int i = hiddenSubMeshRenderers.Count - 1; i >= 0; i--)
+                {
+                    CanvasRenderer renderer = hiddenSubMeshRenderers[i];
+                    if (renderer != null)
+                        CanvasRendererHideRegistry.Release(renderer);
                 }
 
-                state.SetHidden(hidden);
+                hiddenSubMeshRenderers.Clear();
             }
+
+            subMeshesHidden = hidden;
         }
 
         private void CacheSubMeshRenderers(TMP_Text text)
         {
             if (text == null)
                 return;
+
+            for (int i = subMeshRenderers.Count - 1; i >= 0; i--)
+            {
+                if (subMeshRenderers[i] == null)
+                    subMeshRenderers.RemoveAt(i);
+            }
 
             TMP_SubMeshUI[] subMeshes = text.GetComponentsInChildren<TMP_SubMeshUI>(true);
             for (int i = 0; i < subMeshes.Length; i++)
@@ -371,41 +431,68 @@ public sealed class UIBlurReplicaSource
                     continue;
 
                 CanvasRenderer renderer = subMesh.canvasRenderer;
-                if (renderer != null && !ContainsSubMeshRenderer(renderer))
-                    subMeshRenderers.Add(new CanvasRendererCullState(renderer));
-            }
-        }
+                if (renderer == null || subMeshRenderers.Contains(renderer))
+                    continue;
 
-        private bool ContainsSubMeshRenderer(CanvasRenderer renderer)
-        {
-            for (int i = 0; i < subMeshRenderers.Count; i++)
-            {
-                if (subMeshRenderers[i].Renderer == renderer)
-                    return true;
+                subMeshRenderers.Add(renderer);
+                if (subMeshesHidden && !hiddenSubMeshRenderers.Contains(renderer))
+                {
+                    CanvasRendererHideRegistry.Acquire(renderer);
+                    hiddenSubMeshRenderers.Add(renderer);
+                }
             }
-
-            return false;
         }
     }
 
-    private readonly struct CanvasRendererCullState
+    private static class CanvasRendererHideRegistry
     {
-        private readonly CanvasRenderer renderer;
-        private readonly bool originalCull;
-
-        public CanvasRendererCullState(CanvasRenderer renderer)
+        private sealed class Entry
         {
-            this.renderer = renderer;
-            originalCull = renderer != null && renderer.cull;
+            public int Count;
+            public bool OriginalCull;
         }
 
-        public bool IsValid => renderer != null;
-        public CanvasRenderer Renderer => renderer;
+        private static readonly Dictionary<CanvasRenderer, Entry> entries = new();
 
-        public void SetHidden(bool hidden)
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void Reset()
         {
-            if (renderer != null)
-                renderer.cull = hidden || originalCull;
+            entries.Clear();
+        }
+
+        public static void Acquire(CanvasRenderer renderer)
+        {
+            if (renderer == null)
+                return;
+
+            if (!entries.TryGetValue(renderer, out Entry entry))
+            {
+                entry = new Entry
+                {
+                    Count = 0,
+                    OriginalCull = renderer.cull
+                };
+                entries.Add(renderer, entry);
+            }
+
+            entry.Count++;
+            renderer.cull = true;
+        }
+
+        public static void Release(CanvasRenderer renderer)
+        {
+            if (renderer == null || !entries.TryGetValue(renderer, out Entry entry))
+                return;
+
+            entry.Count--;
+            if (entry.Count > 0)
+            {
+                renderer.cull = true;
+                return;
+            }
+
+            renderer.cull = entry.OriginalCull;
+            entries.Remove(renderer);
         }
     }
 
