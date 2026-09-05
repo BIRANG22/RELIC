@@ -129608,12 +129608,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 808157334, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: blurredUiRoots.Array.size
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 808157334, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: 'blurredUiRoots.Array.data[0]'
       value: 
       objectReference: {fileID: 1880677614}
+    - target: {fileID: 808157334, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
+      propertyPath: 'blurredUiRoots.Array.data[1]'
+      value: 
+      objectReference: {fileID: 1225100693}
     - target: {fileID: 1675059426, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: m_Color.a
       value: 0.7058824
