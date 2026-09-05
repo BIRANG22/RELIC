@@ -460,12 +460,42 @@ public sealed class LobbyTutorialController : MonoBehaviour
             snapshots.Add(new FragmentTransferSnapshot
             {
                 SourceImage = source,
-                Color = source.color,
+                Color = ResolveStarterRuneRarityColor(i, source.color),
                 ScreenPosition = GetRectScreenCenter(sourceRect, sourceCamera)
             });
         }
 
         return snapshots;
+    }
+
+    private Color ResolveStarterRuneRarityColor(int index, Color fallbackColor)
+    {
+        if (starterRuneIds == null || index < 0 || index >= starterRuneIds.Length)
+            return fallbackColor;
+
+        string runeId = starterRuneIds[index];
+        if (string.IsNullOrWhiteSpace(runeId) || DataManager.Instance?.RuneDatabase == null)
+            return fallbackColor;
+
+        if (!DataManager.Instance.RuneDatabase.TryGet(runeId.Trim(), out RuneData runeData) ||
+            runeData == null || string.IsNullOrWhiteSpace(runeData.Rarity))
+        {
+            return fallbackColor;
+        }
+
+        Color rarityColor;
+        if (!RecordPanelUI.TryGetCachedRarityDisplayColor(runeData.Rarity, out rarityColor))
+        {
+            RecordPanelUI[] panels = FindObjectsByType<RecordPanelUI>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+            rarityColor = panels.Length > 0
+                ? panels[0].GetRarityDisplayColor(runeData.Rarity)
+                : fallbackColor;
+        }
+
+        rarityColor.a = fallbackColor.a;
+        return rarityColor;
     }
 
     private void StartFragmentTransfer(List<FragmentTransferSnapshot> snapshots)

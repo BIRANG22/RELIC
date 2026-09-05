@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
@@ -25,10 +26,34 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     [SerializeField] private Button completionButton;
     [SerializeField] private Image completionIcon;
 
+    [Header("Automatic Claim")]
+    [Min(0f)][SerializeField] private float automaticClaimDelay = 1f;
+
+    [Header("Compound Transfer Animation")]
+    [Tooltip("딜레이가 끝난 뒤 연성제 획득 이펙트가 도착할 UI 타겟입니다.")]
+    [SerializeField] private RectTransform compoundTransferTarget;
+    [Tooltip("유물/튜토리얼 파편 획득과 같은 방식으로 RawImage에 표시할 Texture2D입니다.")]
+    [SerializeField] private Texture2D compoundTransferEffectTexture;
+    [SerializeField] private Vector2 compoundTransferEffectSize = new Vector2(96f, 96f);
+    [SerializeField] private Vector2 compoundTransferBounceOffset = new Vector2(180f, 120f);
+    [SerializeField, Min(0.01f)] private float compoundTransferBounceDuration = 0.18f;
+    [SerializeField, Min(0.01f)] private float compoundTransferFlyDuration = 0.32f;
+    [SerializeField, Min(0.05f)] private float compoundTransferEndScale = 0.35f;
+
+    [Header("Compound Transfer Trail")]
+    [SerializeField, Min(0.005f)] private float compoundTrailSpawnInterval = 0.025f;
+    [SerializeField, Min(0.01f)] private float compoundTrailLifetime = 0.18f;
+    [SerializeField, Range(0.05f, 1f)] private float compoundTrailStartScale = 0.78f;
+    [SerializeField, Range(0f, 1f)] private float compoundTrailEndScale = 0.2f;
+    [SerializeField, Range(0f, 1f)] private float compoundTrailStartAlpha = 0.48f;
+
     private readonly List<BattleBagItemSlotUI> storageSlots = new();
     private readonly List<string> storageItemOrder = new();
     private int selectedSlotIndex = -1;
     private float nextPassiveRefreshTime;
+    private Coroutine automaticClaimCoroutine;
+    private bool compoundTransferInProgress;
+    private GameObject activeCompoundTransferEffect;
 
     public bool IsOpen => panelRoot != null && panelRoot.activeSelf;
     private void Awake() { BindSceneObjects(); BindButtons(); EnsureStorageSlots(); }
@@ -60,7 +85,23 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         LobbyPositionModalInputBlocker.Unblock(this);
     }
 
-    private void OnDisable() => LobbyPositionModalInputBlocker.Unblock(this);
+    private void OnDisable()
+    {
+        if (automaticClaimCoroutine != null)
+        {
+            StopCoroutine(automaticClaimCoroutine);
+            automaticClaimCoroutine = null;
+        }
+
+        compoundTransferInProgress = false;
+        if (activeCompoundTransferEffect != null)
+        {
+            Destroy(activeCompoundTransferEffect);
+            activeCompoundTransferEffect = null;
+        }
+
+        LobbyPositionModalInputBlocker.Unblock(this);
+    }
     private void OnDestroy() => LobbyPositionModalInputBlocker.Unblock(this);
 
     private void RefreshAll()
@@ -175,10 +216,376 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             if (completed && DataManager.Instance?.RelicIconDatabase != null)
                 DataManager.Instance.RelicIconDatabase.TryGetIcon(recipe.CompoundId, out icon);
             completionIcon.sprite = icon;
-            completionIcon.enabled = completed && icon != null;
+            completionIcon.enabled = completed && icon != null && !compoundTransferInProgress;
             completionIcon.preserveAspect = true;
         }
-        if (completionButton != null) completionButton.interactable = completed && CanMutate();
+        // 완성된 연성제는 클릭으로 즉시 획득하지 않고, 아래 자동 획득 딜레이가 끝난 뒤 수령합니다.
+        if (completionButton != null) completionButton.interactable = false;
+
+        if (completed && CanMutate())
+            StartAutomaticClaimIfNeeded();
+    }
+
+    private void StartAutomaticClaimIfNeeded()
+    {
+        if (automaticClaimCoroutine != null)
+            return;
+
+        LobbyRuntimeData lobby = GetLobby();
+        if (lobby == null || string.IsNullOrWhiteSpace(lobby.CompletedCultureTankCombinationId))
+            return;
+
+        automaticClaimCoroutine = StartCoroutine(AutomaticClaimRoutine());
+    }
+
+    private IEnumerator AutomaticClaimRoutine()
+    {
+        float delay = Mathf.Max(0f, automaticClaimDelay);
+        if (delay > 0f)
+            yield return new WaitForSecondsRealtime(delay);
+        else
+            yield return null;
+
+        LobbyRuntimeData lobby = GetLobby();
+        if (lobby == null || string.IsNullOrWhiteSpace(lobby.CompletedCultureTankCombinationId))
+        {
+            automaticClaimCoroutine = null;
+            yield break;
+        }
+
+        // 딜레이가 끝나면 completion 위치에서 지정한 타겟으로 획득 이펙트를 이동시킵니다.
+        // 이펙트가 도착한 뒤 실제 연성제를 보관함에 넣습니다.
+        yield return PlayCompoundTransferEffectRoutine();
+
+        automaticClaimCoroutine = null;
+
+        lobby = GetLobby();
+        if (lobby == null || string.IsNullOrWhiteSpace(lobby.CompletedCultureTankCombinationId))
+            yield break;
+
+        ClaimCompletion();
+    }
+
+    private IEnumerator PlayCompoundTransferEffectRoutine()
+    {
+        if (completionIcon == null || compoundTransferTarget == null || compoundTransferEffectTexture == null)
+            yield break;
+
+        Canvas transferCanvas = completionIcon.GetComponentInParent<Canvas>();
+        if (transferCanvas == null)
+            yield break;
+
+        RectTransform transferParent = ResolveTransferEffectParent(transferCanvas);
+        RectTransform sourceRect = completionIcon.rectTransform;
+        Camera sourceCamera = ResolveUiCamera(sourceRect);
+        Camera targetCamera = ResolveUiCamera(compoundTransferTarget);
+        Vector2 startScreenPosition = GetRectScreenCenter(sourceRect, sourceCamera);
+        Vector2 targetScreenPosition = GetRectScreenCenter(compoundTransferTarget, targetCamera);
+
+        Color rarityColor = ResolveCompletedCompoundRarityColor();
+        RawImage effectImage = CreateCompoundTransferEffect(
+            transferCanvas,
+            transferParent,
+            startScreenPosition,
+            rarityColor);
+        if (effectImage == null)
+            yield break;
+
+        activeCompoundTransferEffect = effectImage.gameObject;
+        compoundTransferInProgress = true;
+        completionIcon.enabled = false;
+
+        yield return AnimateCompoundTransferEffect(
+            effectImage.rectTransform,
+            transferCanvas,
+            transferParent,
+            startScreenPosition,
+            targetScreenPosition);
+
+        if (effectImage != null)
+            Destroy(effectImage.gameObject);
+
+        activeCompoundTransferEffect = null;
+        compoundTransferInProgress = false;
+    }
+
+    private Color ResolveCompletedCompoundRarityColor()
+    {
+        Color fallbackColor = completionIcon != null ? completionIcon.color : Color.white;
+        LobbyRuntimeData lobby = GetLobby();
+        string compoundId = lobby?.CompletedCultureTankCombinationId;
+
+        if (string.IsNullOrWhiteSpace(compoundId) ||
+            DataManager.Instance?.CompoundDatabase == null ||
+            !DataManager.Instance.CompoundDatabase.TryGet(compoundId, out CompoundData compoundData) ||
+            compoundData == null || string.IsNullOrWhiteSpace(compoundData.Rarity))
+        {
+            return fallbackColor;
+        }
+
+        Color rarityColor;
+        if (!RecordPanelUI.TryGetCachedRarityDisplayColor(compoundData.Rarity, out rarityColor))
+        {
+            RecordPanelUI[] panels = FindObjectsByType<RecordPanelUI>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+            rarityColor = panels.Length > 0
+                ? panels[0].GetRarityDisplayColor(compoundData.Rarity)
+                : fallbackColor;
+        }
+
+        rarityColor.a = fallbackColor.a;
+        return rarityColor;
+    }
+
+    private RawImage CreateCompoundTransferEffect(
+        Canvas transferCanvas,
+        RectTransform transferParent,
+        Vector2 screenPosition,
+        Color rarityColor)
+    {
+        if (transferCanvas == null || compoundTransferEffectTexture == null)
+            return null;
+
+        GameObject effectObject = new GameObject(
+            "CompoundTransferEffect",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(RawImage));
+
+        RectTransform rect = effectObject.GetComponent<RectTransform>();
+        rect.SetParent(transferParent != null ? transferParent : transferCanvas.transform, false);
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = compoundTransferEffectSize;
+        rect.localScale = Vector3.one;
+        rect.anchoredPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, screenPosition);
+        rect.SetAsLastSibling();
+
+        RawImage image = effectObject.GetComponent<RawImage>();
+        image.texture = compoundTransferEffectTexture;
+        image.color = rarityColor;
+        image.raycastTarget = false;
+        return image;
+    }
+
+    private sealed class CompoundTrailGhost
+    {
+        public RectTransform Rect;
+        public RawImage Image;
+        public Vector3 StartScale;
+        public Color StartColor;
+        public float Age;
+    }
+
+    private IEnumerator AnimateCompoundTransferEffect(
+        RectTransform effect,
+        Canvas transferCanvas,
+        RectTransform transferParent,
+        Vector2 fromScreenPosition,
+        Vector2 toScreenPosition)
+    {
+        if (effect == null || transferCanvas == null)
+            yield break;
+
+        RawImage sourceImage = effect.GetComponent<RawImage>();
+        Vector2 fromPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, fromScreenPosition);
+        Vector2 toPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, toScreenPosition);
+        Vector2 bouncePosition = fromPosition + compoundTransferBounceOffset;
+        Vector3 startScale = effect.localScale;
+        Vector3 bounceScale = startScale * 1.08f;
+        Vector3 endScale = Vector3.one * compoundTransferEndScale;
+        var trailGhosts = new List<CompoundTrailGhost>();
+        float trailTimer = 0f;
+
+        effect.SetAsLastSibling();
+
+        float elapsed = 0f;
+        float safeBounceDuration = Mathf.Max(0.01f, compoundTransferBounceDuration);
+        while (elapsed < safeBounceDuration)
+        {
+            float deltaTime = Time.unscaledDeltaTime;
+            elapsed += deltaTime;
+            float t = Mathf.Clamp01(elapsed / safeBounceDuration);
+            float eased = EaseInCubic(t);
+            effect.anchoredPosition = Vector2.LerpUnclamped(fromPosition, bouncePosition, eased);
+            effect.localScale = Vector3.LerpUnclamped(startScale, bounceScale, eased);
+            trailTimer += deltaTime;
+            SpawnCompoundTrailGhosts(effect, sourceImage, transferCanvas, transferParent, trailGhosts, ref trailTimer);
+            UpdateCompoundTrailGhosts(trailGhosts, deltaTime);
+            yield return null;
+        }
+
+        elapsed = 0f;
+        float safeFlyDuration = Mathf.Max(0.01f, compoundTransferFlyDuration);
+        while (elapsed < safeFlyDuration)
+        {
+            float deltaTime = Time.unscaledDeltaTime;
+            elapsed += deltaTime;
+            float t = Mathf.Clamp01(elapsed / safeFlyDuration);
+            float eased = EaseInQuint(t);
+            effect.anchoredPosition = Vector2.LerpUnclamped(bouncePosition, toPosition, eased);
+            effect.localScale = Vector3.LerpUnclamped(bounceScale, endScale, eased);
+            trailTimer += deltaTime;
+            SpawnCompoundTrailGhosts(effect, sourceImage, transferCanvas, transferParent, trailGhosts, ref trailTimer);
+            UpdateCompoundTrailGhosts(trailGhosts, deltaTime);
+            yield return null;
+        }
+
+        effect.anchoredPosition = toPosition;
+        effect.localScale = endScale;
+
+        while (trailGhosts.Count > 0)
+        {
+            UpdateCompoundTrailGhosts(trailGhosts, Time.unscaledDeltaTime);
+            yield return null;
+        }
+    }
+
+    private void SpawnCompoundTrailGhosts(
+        RectTransform sourceRect,
+        RawImage sourceImage,
+        Canvas transferCanvas,
+        RectTransform transferParent,
+        List<CompoundTrailGhost> trailGhosts,
+        ref float trailTimer)
+    {
+        if (sourceRect == null || sourceImage == null || sourceImage.texture == null ||
+            transferCanvas == null || trailGhosts == null)
+            return;
+
+        float interval = Mathf.Max(0.005f, compoundTrailSpawnInterval);
+        while (trailTimer >= interval)
+        {
+            trailTimer -= interval;
+            GameObject ghostObject = new GameObject(
+                "CompoundTransferTrail",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(RawImage));
+
+            RectTransform ghostRect = ghostObject.GetComponent<RectTransform>();
+            ghostRect.SetParent(transferParent != null ? transferParent : transferCanvas.transform, false);
+            ghostRect.anchorMin = sourceRect.anchorMin;
+            ghostRect.anchorMax = sourceRect.anchorMax;
+            ghostRect.pivot = sourceRect.pivot;
+            ghostRect.sizeDelta = sourceRect.sizeDelta;
+            ghostRect.anchoredPosition = sourceRect.anchoredPosition;
+            ghostRect.localRotation = sourceRect.localRotation;
+            ghostRect.localScale = sourceRect.localScale * compoundTrailStartScale;
+            ghostRect.SetSiblingIndex(Mathf.Max(0, sourceRect.GetSiblingIndex()));
+            sourceRect.SetAsLastSibling();
+
+            RawImage ghostImage = ghostObject.GetComponent<RawImage>();
+            ghostImage.texture = sourceImage.texture;
+            ghostImage.uvRect = sourceImage.uvRect;
+            Color ghostColor = sourceImage.color;
+            ghostColor.a *= compoundTrailStartAlpha;
+            ghostImage.color = ghostColor;
+            ghostImage.raycastTarget = false;
+
+            trailGhosts.Add(new CompoundTrailGhost
+            {
+                Rect = ghostRect,
+                Image = ghostImage,
+                StartScale = ghostRect.localScale,
+                StartColor = ghostColor,
+                Age = 0f
+            });
+        }
+    }
+
+    private void UpdateCompoundTrailGhosts(List<CompoundTrailGhost> trailGhosts, float deltaTime)
+    {
+        float lifetime = Mathf.Max(0.01f, compoundTrailLifetime);
+        for (int i = trailGhosts.Count - 1; i >= 0; i--)
+        {
+            CompoundTrailGhost ghost = trailGhosts[i];
+            if (ghost == null || ghost.Rect == null || ghost.Image == null)
+            {
+                trailGhosts.RemoveAt(i);
+                continue;
+            }
+
+            ghost.Age += deltaTime;
+            float t = Mathf.Clamp01(ghost.Age / lifetime);
+            ghost.Rect.localScale = Vector3.LerpUnclamped(
+                ghost.StartScale,
+                ghost.StartScale * compoundTrailEndScale,
+                t);
+            Color color = ghost.StartColor;
+            color.a = Mathf.Lerp(ghost.StartColor.a, 0f, t);
+            ghost.Image.color = color;
+
+            if (t < 1f)
+                continue;
+
+            Destroy(ghost.Rect.gameObject);
+            trailGhosts.RemoveAt(i);
+        }
+    }
+
+    private static float EaseInCubic(float t)
+    {
+        t = Mathf.Clamp01(t);
+        return t * t * t;
+    }
+
+    private static float EaseInQuint(float t)
+    {
+        t = Mathf.Clamp01(t);
+        return t * t * t * t * t;
+    }
+
+    private static Vector2 ScreenToUiLocalPosition(Canvas canvas, RectTransform coordinateRoot, Vector2 screenPosition)
+    {
+        if (canvas == null)
+            return Vector2.zero;
+
+        RectTransform targetRect = coordinateRoot != null ? coordinateRoot : canvas.transform as RectTransform;
+        if (targetRect == null)
+            return Vector2.zero;
+
+        Camera uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+        return RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            targetRect, screenPosition, uiCamera, out Vector2 localPoint)
+            ? localPoint
+            : Vector2.zero;
+    }
+
+    private static RectTransform ResolveTransferEffectParent(Canvas transferCanvas)
+    {
+        if (transferCanvas == null)
+            return null;
+
+        RectTransform resolved = ResolutionCanvasViewportFitter.ResolveContentRoot(transferCanvas.transform);
+        return resolved != null ? resolved : transferCanvas.transform as RectTransform;
+    }
+
+    private static Camera ResolveUiCamera(RectTransform rect)
+    {
+        Canvas canvas = rect != null ? rect.GetComponentInParent<Canvas>() : null;
+        if (canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+            return null;
+
+        return canvas.worldCamera != null ? canvas.worldCamera : Camera.main;
+    }
+
+    private static Vector2 GetRectScreenCenter(RectTransform targetRect, Camera fallbackCamera)
+    {
+        if (targetRect == null)
+            return Vector2.zero;
+
+        Canvas targetCanvas = targetRect.GetComponentInParent<Canvas>();
+        Camera uiCamera = targetCanvas != null && targetCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? (targetCanvas.worldCamera != null ? targetCanvas.worldCamera : fallbackCamera)
+            : null;
+
+        Vector3[] corners = new Vector3[4];
+        targetRect.GetWorldCorners(corners);
+        Vector3 worldCenter = (corners[0] + corners[2]) * 0.5f;
+        return RectTransformUtility.WorldToScreenPoint(uiCamera, worldCenter);
     }
 
     private void RefreshInventory()
@@ -493,7 +900,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     {
         if (backButton != null) { backButton.onClick.RemoveListener(Close); backButton.onClick.AddListener(Close); }
         if (combineButton != null) { combineButton.onClick.RemoveListener(Combine); combineButton.onClick.AddListener(Combine); }
-        if (completionButton != null) { completionButton.onClick.RemoveListener(ClaimCompletion); completionButton.onClick.AddListener(ClaimCompletion); }
+        if (completionButton != null) completionButton.onClick.RemoveListener(ClaimCompletion);
         for (int i = 0; i < rows.Length; i++)
         {
             int index = i;
