@@ -9,6 +9,8 @@ public class Settings : Singleton<Settings>
 
     public void Load()
     {
+        OnboardingToggleDefaults.EnsureInitialized();
+
         MasterVolume = PlayerPrefs.GetFloat("MasterVolume", 1f);
         BGMVolume = PlayerPrefs.GetFloat("BGMVolume", 1f);
         SFXVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
@@ -21,6 +23,29 @@ public class Settings : Singleton<Settings>
         PlayerPrefs.SetFloat("BGMVolume", BGMVolume);
         PlayerPrefs.SetFloat("SFXVolume", SFXVolume);
         PlayerPrefs.SetFloat("Brightness", Mathf.Clamp01(Brightness));
+        PlayerPrefs.Save();
+    }
+}
+
+public static class OnboardingToggleDefaults
+{
+    private const string DefaultsVersionPrefsKey = "Dustium.OnboardingToggleDefaultsVersion";
+    private const int CurrentDefaultsVersion = 1;
+
+    /// <summary>
+    /// 이 버전의 초기 안내 설정을 처음 적용할 때만 튜토리얼/인트로 예약 토글을 ON으로 맞춥니다.
+    /// 이후 실행에서는 사용자가 변경하거나 1회 실행으로 소비된 값을 그대로 유지합니다.
+    /// </summary>
+    public static void EnsureInitialized()
+    {
+        int appliedVersion = PlayerPrefs.GetInt(DefaultsVersionPrefsKey, 0);
+        if (appliedVersion >= CurrentDefaultsVersion)
+            return;
+
+        TutorialSettings.SetShouldShowTutorial(true);
+        IntroSettings.SetShouldPlayIntro(true);
+
+        PlayerPrefs.SetInt(DefaultsVersionPrefsKey, CurrentDefaultsVersion);
         PlayerPrefs.Save();
     }
 }

@@ -1,11 +1,11 @@
-using System.Collections;
+ï»¿using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Ã¹ ÀüÅõ¿¡¼­ ÇÑ ¹ø Ç¥½ÃµÇ´Â ±âº» ÀüÅõ Æ©Åä¸®¾ó ÆĞ³ÎÀ» Á¦¾îÇÕ´Ï´Ù.
-/// BootstrapÀÇ Tutorial_Panel¿¡ ¹èÄ¡ÇÏ°í Left / Right / Close ¹öÆ°À¸·Î ÆäÀÌÁö¸¦ ÀÌµ¿ÇÕ´Ï´Ù.
+/// ì²« ì „íˆ¬ì—ì„œ í•œ ë²ˆ í‘œì‹œë˜ëŠ” ê¸°ë³¸ ì „íˆ¬ íŠœí† ë¦¬ì–¼ íŒ¨ë„ì„ ì œì–´í•©ë‹ˆë‹¤.
+/// Bootstrapì˜ Tutorial_Panelì— ë°°ì¹˜í•˜ê³  Left / Right / Close ë²„íŠ¼ìœ¼ë¡œ í˜ì´ì§€ë¥¼ ì´ë™í•©ë‹ˆë‹¤.
 /// </summary>
 public class BattleFirstTutorialController : MonoBehaviour
 {
@@ -23,9 +23,12 @@ public class BattleFirstTutorialController : MonoBehaviour
 
     [Header("Transition")]
     [SerializeField, Min(0f)] private float fadeDuration = 0.2f;
+    [SerializeField, Min(0f)] private float panelFadeDuration = 0.2f;
 
     private CanvasGroup[] stepCanvasGroups;
+    private CanvasGroup tutorialCanvasGroup;
     private Coroutine transitionRoutine;
+    private Coroutine panelFadeRoutine;
     private int currentStepIndex = -1;
     private bool isRunning;
     private bool isTransitioning;
@@ -43,8 +46,8 @@ public class BattleFirstTutorialController : MonoBehaviour
     {
         RegisterInstanceIfConfigured();
         CacheStepCanvasGroups();
+        CacheTutorialCanvasGroup();
         BindButtons();
-        HideTutorialImmediate();
     }
 
     private void RegisterInstanceIfConfigured()
@@ -52,7 +55,7 @@ public class BattleFirstTutorialController : MonoBehaviour
         if (!IsConfigured)
         {
             Debug.LogWarning(
-                $"[BattleFirstTutorialController] Instance µî·Ï Á¦¿Ü - " +
+                $"[BattleFirstTutorialController] Instance ë“±ë¡ ì œì™¸ - " +
                 $"Root: {(tutorialRoot != null ? tutorialRoot.name : "null")}, StepCount: {StepCount}",
                 this);
             return;
@@ -61,7 +64,7 @@ public class BattleFirstTutorialController : MonoBehaviour
         if (Instance != null && Instance != this)
         {
             Debug.LogWarning(
-                $"[BattleFirstTutorialController] ÀÌ¹Ì Á¤»ó µî·ÏµÈ Instance°¡ ÀÖ¾î ÇöÀç ÄÁÆ®·Ñ·¯´Â »ç¿ëÇÏÁö ¾Ê½À´Ï´Ù. " +
+                $"[BattleFirstTutorialController] ì´ë¯¸ ì •ìƒ ë“±ë¡ëœ Instanceê°€ ìˆì–´ í˜„ì¬ ì»¨íŠ¸ë¡¤ëŸ¬ëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. " +
                 $"Current: {name}, Instance: {Instance.name}",
                 this);
             return;
@@ -85,6 +88,7 @@ public class BattleFirstTutorialController : MonoBehaviour
     private void OnDisable()
     {
         StopTransition();
+        StopPanelFade();
         isRunning = false;
         isTransitioning = false;
         currentStepIndex = -1;
@@ -101,8 +105,8 @@ public class BattleFirstTutorialController : MonoBehaviour
         bool started = StartTutorial();
         if (started)
         {
-            // TutorialToggle1Àº "´ÙÀ½ Å½»çÀÇ Ã¹ ÀüÅõ¿¡¼­ 1È¸ Ç¥½Ã" ¿¹¾à°ªÀÔ´Ï´Ù.
-            // ½ÇÁ¦ ÀÚµ¿ Æ©Åä¸®¾óÀÌ ¿­¸° ¼ø°£ ¿¹¾àÀ» ¼ÒºñÇÏ¿© OFF·Î ÀúÀåÇÕ´Ï´Ù.
+            // TutorialToggle1ì€ "ë‹¤ìŒ íƒì‚¬ì˜ ì²« ì „íˆ¬ì—ì„œ 1íšŒ í‘œì‹œ" ì˜ˆì•½ê°’ì…ë‹ˆë‹¤.
+            // ì‹¤ì œ ìë™ íŠœí† ë¦¬ì–¼ì´ ì—´ë¦° ìˆœê°„ ì˜ˆì•½ì„ ì†Œë¹„í•˜ì—¬ OFFë¡œ ì €ì¥í•©ë‹ˆë‹¤.
             TutorialSettings.SetShouldShowTutorial(false);
         }
 
@@ -115,8 +119,8 @@ public class BattleFirstTutorialController : MonoBehaviour
     }
 
     /// <summary>
-    /// ¿É¼ÇÀÇ TutorialToggle2¿¡¼­ Áï½Ã È®ÀÎÇÒ ¶§ »ç¿ëÇÕ´Ï´Ù.
-    /// ÀÌ °æ·Î·Î ¿¬ Æ©Åä¸®¾óÀº ´İ¾Æµµ Ã¹ ÀüÅõ ÀÚµ¿ Æ©Åä¸®¾ó ¼³Á¤À» º¯°æÇÏÁö ¾Ê½À´Ï´Ù.
+    /// ì˜µì…˜ì˜ TutorialToggle2ì—ì„œ ì¦‰ì‹œ í™•ì¸í•  ë•Œ ì‚¬ìš©í•©ë‹ˆë‹¤.
+    /// ì´ ê²½ë¡œë¡œ ì—° íŠœí† ë¦¬ì–¼ì€ ë‹«ì•„ë„ ì²« ì „íˆ¬ ìë™ íŠœí† ë¦¬ì–¼ ì„¤ì •ì„ ë³€ê²½í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     /// </summary>
     public bool StartPreviewTutorial()
     {
@@ -137,22 +141,37 @@ public class BattleFirstTutorialController : MonoBehaviour
         }
 
         CacheStepCanvasGroups();
+        CacheTutorialCanvasGroup();
+        StopPanelFade();
 
         isRunning = true;
         isTransitioning = false;
         currentStepIndex = 0;
+
+        if (tutorialCanvasGroup != null)
+        {
+            tutorialCanvasGroup.alpha = 0f;
+            tutorialCanvasGroup.interactable = false;
+            tutorialCanvasGroup.blocksRaycasts = false;
+        }
 
         if (tutorialRoot != null)
             tutorialRoot.SetActive(true);
 
         ShowStepImmediate(currentStepIndex);
         RefreshPageUI();
+
+        if (tutorialCanvasGroup != null && panelFadeDuration > 0f)
+            panelFadeRoutine = StartCoroutine(FadeTutorialPanelIn());
+        else
+            ApplyTutorialPanelVisible();
+
         return true;
     }
 
     /// <summary>
-    /// ±âÁ¸ ¿ÜºÎ È£Ãâ È£È¯¿ëÀÔ´Ï´Ù. ´ÙÀ½ ÆäÀÌÁö·Î ÀÌµ¿ÇÕ´Ï´Ù.
-    /// ¸¶Áö¸· ÆäÀÌÁö¿¡¼­´Â ÀÚµ¿ Á¾·áÇÏÁö ¾Ê°í Close ¹öÆ°À¸·Î Á¾·áÇÕ´Ï´Ù.
+    /// ê¸°ì¡´ ì™¸ë¶€ í˜¸ì¶œ í˜¸í™˜ìš©ì…ë‹ˆë‹¤. ë‹¤ìŒ í˜ì´ì§€ë¡œ ì´ë™í•©ë‹ˆë‹¤.
+    /// ë§ˆì§€ë§‰ í˜ì´ì§€ì—ì„œëŠ” ìë™ ì¢…ë£Œí•˜ì§€ ì•Šê³  Close ë²„íŠ¼ìœ¼ë¡œ ì¢…ë£Œí•©ë‹ˆë‹¤.
     /// </summary>
     public void AdvanceStep()
     {
@@ -183,12 +202,15 @@ public class BattleFirstTutorialController : MonoBehaviour
             return;
         }
 
-        CompleteTutorial();
+        if (panelFadeRoutine != null)
+            StopCoroutine(panelFadeRoutine);
+
+        panelFadeRoutine = StartCoroutine(FadeTutorialPanelOutAndHide());
     }
 
     /// <summary>
-    /// ESC ÀÔ·ÂÀ» Æ©Åä¸®¾óÀÌ ÃÖ¿ì¼±À¸·Î ¼ÒºñÇÕ´Ï´Ù.
-    /// °°Àº ÇÁ·¹ÀÓ¿¡ UIManager³ª ¹èÆ² ¸Ş´º°¡ µ¿ÀÏÇÑ ESC¸¦ ´Ù½Ã Ã³¸®ÇÏÁö ¾Êµµ·Ï ±â·ÏÇÕ´Ï´Ù.
+    /// ESC ì…ë ¥ì„ íŠœí† ë¦¬ì–¼ì´ ìµœìš°ì„ ìœ¼ë¡œ ì†Œë¹„í•©ë‹ˆë‹¤.
+    /// ê°™ì€ í”„ë ˆì„ì— UIManagerë‚˜ ë°°í‹€ ë©”ë‰´ê°€ ë™ì¼í•œ ESCë¥¼ ë‹¤ì‹œ ì²˜ë¦¬í•˜ì§€ ì•Šë„ë¡ ê¸°ë¡í•©ë‹ˆë‹¤.
     /// </summary>
     public static bool TryHandleEscapeIfOpen()
     {
@@ -202,6 +224,67 @@ public class BattleFirstTutorialController : MonoBehaviour
         controller.CloseTutorial();
         lastClosedByEscapeFrame = Time.frameCount;
         return true;
+    }
+
+    private IEnumerator FadeTutorialPanelIn()
+    {
+        if (tutorialCanvasGroup == null)
+        {
+            panelFadeRoutine = null;
+            yield break;
+        }
+
+        float elapsed = 0f;
+        float startAlpha = tutorialCanvasGroup.alpha;
+
+        while (elapsed < panelFadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / panelFadeDuration);
+            tutorialCanvasGroup.alpha = Mathf.Lerp(startAlpha, 1f, t);
+            yield return null;
+        }
+
+        ApplyTutorialPanelVisible();
+        panelFadeRoutine = null;
+    }
+
+    private IEnumerator FadeTutorialPanelOutAndHide()
+    {
+        if (tutorialCanvasGroup != null)
+        {
+            tutorialCanvasGroup.interactable = false;
+            tutorialCanvasGroup.blocksRaycasts = false;
+
+            if (panelFadeDuration > 0f)
+            {
+                float elapsed = 0f;
+                float startAlpha = tutorialCanvasGroup.alpha;
+
+                while (elapsed < panelFadeDuration)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    float t = Mathf.Clamp01(elapsed / panelFadeDuration);
+                    tutorialCanvasGroup.alpha = Mathf.Lerp(startAlpha, 0f, t);
+                    yield return null;
+                }
+            }
+
+            tutorialCanvasGroup.alpha = 0f;
+        }
+
+        panelFadeRoutine = null;
+        HideTutorialImmediate();
+    }
+
+    private void ApplyTutorialPanelVisible()
+    {
+        if (tutorialCanvasGroup == null)
+            return;
+
+        tutorialCanvasGroup.alpha = 1f;
+        tutorialCanvasGroup.interactable = true;
+        tutorialCanvasGroup.blocksRaycasts = true;
     }
 
     private void ChangeStep(int nextStepIndex)
@@ -221,7 +304,7 @@ public class BattleFirstTutorialController : MonoBehaviour
         CanvasGroup previousGroup = GetStepCanvasGroup(previousStepIndex);
         CanvasGroup nextGroup = GetStepCanvasGroup(nextStepIndex);
 
-        // 1) ÇöÀç ÆäÀÌÁö°¡ ¿ÏÀüÈ÷ »ç¶óÁø µÚ ºñÈ°¼ºÈ­ÇÕ´Ï´Ù.
+        // 1) í˜„ì¬ í˜ì´ì§€ê°€ ì™„ì „íˆ ì‚¬ë¼ì§„ ë’¤ ë¹„í™œì„±í™”í•©ë‹ˆë‹¤.
         if (fadeDuration > 0f && previousGroup != null)
         {
             float elapsed = 0f;
@@ -238,7 +321,7 @@ public class BattleFirstTutorialController : MonoBehaviour
 
         ApplyStepHidden(previousStepIndex);
 
-        // 2) ÀÌÀü ÆäÀÌÁö ºñÈ°¼ºÈ­°¡ ³¡³­ ´ÙÀ½¿¡¸¸ ´ÙÀ½ ÆäÀÌÁö¸¦ È°¼ºÈ­ÇÕ´Ï´Ù.
+        // 2) ì´ì „ í˜ì´ì§€ ë¹„í™œì„±í™”ê°€ ëë‚œ ë‹¤ìŒì—ë§Œ ë‹¤ìŒ í˜ì´ì§€ë¥¼ í™œì„±í™”í•©ë‹ˆë‹¤.
         GameObject nextStep = GetStep(nextStepIndex);
         if (nextStep != null)
             nextStep.SetActive(true);
@@ -253,7 +336,7 @@ public class BattleFirstTutorialController : MonoBehaviour
         currentStepIndex = nextStepIndex;
         RefreshPageText();
 
-        // 3) »õ ÆäÀÌÁö¸¦ 0 -> 1·Î ¼øÂ÷ ÆäÀÌµå ÀÎÇÕ´Ï´Ù.
+        // 3) ìƒˆ í˜ì´ì§€ë¥¼ 0 -> 1ë¡œ ìˆœì°¨ í˜ì´ë“œ ì¸í•©ë‹ˆë‹¤.
         if (fadeDuration > 0f && nextGroup != null)
         {
             float elapsed = 0f;
@@ -282,6 +365,7 @@ public class BattleFirstTutorialController : MonoBehaviour
     private void HideTutorialImmediate()
     {
         StopTransition();
+        StopPanelFade();
 
         isRunning = false;
         isTransitioning = false;
@@ -289,6 +373,13 @@ public class BattleFirstTutorialController : MonoBehaviour
 
         HideAllStepsImmediate();
         RefreshPageUI();
+
+        if (tutorialCanvasGroup != null)
+        {
+            tutorialCanvasGroup.alpha = 0f;
+            tutorialCanvasGroup.interactable = false;
+            tutorialCanvasGroup.blocksRaycasts = false;
+        }
 
         if (tutorialRoot != null)
             tutorialRoot.SetActive(false);
@@ -395,6 +486,17 @@ public class BattleFirstTutorialController : MonoBehaviour
             closeButton.interactable = interactable;
     }
 
+    private void CacheTutorialCanvasGroup()
+    {
+        if (tutorialRoot == null)
+        {
+            tutorialCanvasGroup = null;
+            return;
+        }
+
+        tutorialCanvasGroup = tutorialRoot.GetComponent<CanvasGroup>();
+    }
+
     private void CacheStepCanvasGroups()
     {
         stepCanvasGroups = new CanvasGroup[StepCount];
@@ -451,6 +553,15 @@ public class BattleFirstTutorialController : MonoBehaviour
 
         if (closeButton != null)
             closeButton.onClick.RemoveListener(CloseTutorial);
+    }
+
+    private void StopPanelFade()
+    {
+        if (panelFadeRoutine == null)
+            return;
+
+        StopCoroutine(panelFadeRoutine);
+        panelFadeRoutine = null;
     }
 
     private void StopTransition()

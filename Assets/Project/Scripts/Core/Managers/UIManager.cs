@@ -174,7 +174,7 @@ public class UIManager : Singleton<UIManager>
             return;
         }
 
-        optionPanelInstance = Instantiate(optionPanelPrefab, mainCanvas.transform, false);
+        optionPanelInstance = CreateInactiveInstance(optionPanelPrefab, mainCanvas.transform);
         optionPanelTransition = optionPanelInstance.GetComponent<OptionPanelTransition>();
         if (optionPanelTransition == null)
             optionPanelTransition = optionPanelInstance.AddComponent<OptionPanelTransition>();
@@ -182,6 +182,26 @@ public class UIManager : Singleton<UIManager>
         ApplyOptionPanelScale();
         BringOptionPanelToFront();
         optionPanelInstance.SetActive(false);
+    }
+
+    private GameObject CreateInactiveInstance(GameObject prefab, Transform parent)
+    {
+        if (prefab == null || parent == null)
+            return null;
+
+        // 활성 프리팹을 활성 Canvas 아래에 바로 Instantiate하면 OnEnable이 먼저 실행됩니다.
+        // 비활성 임시 부모 아래에서 생성한 뒤 clone 자체를 비활성화하고 실제 부모로 옮겨
+        // 옵션 패널이 ShowOption() 전에 한 프레임 활성화되는 것을 방지합니다.
+        var spawnRoot = new GameObject("__OptionPanelSpawnRoot");
+        spawnRoot.transform.SetParent(parent, false);
+        spawnRoot.SetActive(false);
+
+        GameObject instance = Instantiate(prefab, spawnRoot.transform, false);
+        instance.SetActive(false);
+        instance.transform.SetParent(parent, false);
+
+        Destroy(spawnRoot);
+        return instance;
     }
 
     private void CreateConfirmDialog()
