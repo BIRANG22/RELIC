@@ -122,6 +122,10 @@ namespace Relic.Gameplay.Data
             if (dataManager == null)
                 return;
 
+            // 전투 포기는 현재 탐사의 이어하기 상태를 폐기합니다.
+            // 메모리에 남아 있던 전투방 1턴 스냅샷이 다음 탐사에 재사용되지 않도록 먼저 정리합니다.
+            global::SaveSystem.Instance?.ClearBattleRoomResumeState();
+
             BattleRuntimeData currentBattleRuntime = dataManager.BattleRuntimeStore?.Get();
 
             Dictionary<string, BattleLobbyLoadoutSnapshotData> snapshots =

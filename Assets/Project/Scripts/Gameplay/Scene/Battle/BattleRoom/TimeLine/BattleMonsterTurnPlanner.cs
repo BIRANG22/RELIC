@@ -69,6 +69,152 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             yield return null;
     }
 
+
+    public IEnumerator RestoreMonsterTurnsAndWait(
+        List<MonsterUnit> monsterUnits,
+        IReadOnlyList<BattleRoomMonsterCommandSaveData> savedCommands,
+        bool showBattleStart = false)
+    {
+        if (timelineController == null)
+        {
+            Debug.LogWarning("[BattleMonsterTurnPlanner] BattleTimelineController가 없습니다.");
+            yield break;
+        }
+
+        ClearNocturnPortalDestinationIndicators();
+        timelineController.ClearMonsterCommands();
+        ApplyElisePlayerSlotLock(monsterUnits);
+        plannedBattleTurn = Mathf.Max(plannedBattleTurn, 1);
+
+        if (showBattleStart)
+            battleStartTextRoutine = StartCoroutine(ShowIntroTextAndWaitRoutine(battleStartMessage));
+
+        if (firstMonsterCommandDelay > 0f)
+            yield return new WaitForSeconds(firstMonsterCommandDelay);
+
+        int restoredCount = 0;
+        if (savedCommands != null)
+        {
+            for (int i = 0; i < savedCommands.Count; i++)
+            {
+                BattleRoomMonsterCommandSaveData saved = savedCommands[i];
+                if (saved == null ||
+                    saved.SlotIndex < 0 || saved.SlotIndex >= timelineController.SlotCount ||
+                    string.IsNullOrWhiteSpace(saved.SkillId))
+                {
+                    continue;
+                }
+
+                MonsterRuntimeData runtime = ResolveSavedMonsterRuntime(monsterUnits, saved);
+                if (runtime == null)
+                    continue;
+
+                MonsterSkillData skillData = DataManager.Instance?.MonsterSkillDatabase?.Get(saved.SkillId);
+                if (skillData == null)
+                    continue;
+
+                MonsterReservedCommand command = new MonsterReservedCommand(runtime, skillData);
+                command.SetMoveOffset(new Vector2Int(saved.MoveX, saved.MoveY));
+                command.SetActionIndex(saved.ActionIndex);
+                command.SetRangeOriginGridIndex(saved.RangeOriginGridIndex);
+                command.SetRangeOriginCasterGridIndex(saved.RangeOriginCasterGridIndex);
+                command.SetPortalMove(saved.IsPortalMove);
+                command.SetUseRequestedMoveOffsetForExecution(saved.UseRequestedMoveOffsetForExecution);
+
+                if (saved.ReservedDamage > 0)
+                    command.SetReservedDamage(saved.ReservedDamage);
+
+                if (saved.HasForcedDirection)
+                    command.SetForcedDirection((BattleDirection)saved.ForcedDirection);
+                else
+                    command.ClearForcedDirection();
+
+                if (saved.HasExplicitRangeResult)
+                    command.SetExplicitRangeResult(saved.RangeGridIndices, saved.TargetGridIndices);
+                else
+                    command.SetRangeResult(saved.RangeGridIndices, saved.TargetGridIndices);
+
+                if (saved.HasSimulatedResult)
+                {
+                    command.SetSimulatedMoveResult(
+                        saved.IsSimulatedMoveBlocked,
+                        new Vector2Int(saved.SimulatedMoveX, saved.SimulatedMoveY));
+                }
+
+                timelineController.AddMonsterCommand(saved.SlotIndex, command);
+                ShowNocturnPortalDestinationIndicator(command);
+                restoredCount++;
+
+                if (monsterCommandInterval > 0f && i < savedCommands.Count - 1)
+                    yield return new WaitForSeconds(monsterCommandInterval);
+            }
+        }
+
+        if (battleStartTextRoutine != null)
+        {
+            yield return battleStartTextRoutine;
+            battleStartTextRoutine = null;
+        }
+
+        if (actionReserveMessageDelay > 0f)
+            yield return new WaitForSeconds(actionReserveMessageDelay);
+
+        if (showBattleStart)
+            yield return ShowIntroTextAndWaitRoutine(actionReserveMessage);
+        else
+            ShowActionReserveIntroText();
+
+        Debug.Log($"[BattleMonsterTurnPlanner] 저장된 1턴 몬스터 예약 {restoredCount}개를 복원했습니다.", this);
+    }
+
+    private static MonsterRuntimeData ResolveSavedMonsterRuntime(
+        List<MonsterUnit> monsterUnits,
+        BattleRoomMonsterCommandSaveData saved)
+    {
+        if (monsterUnits == null || saved == null)
+            return null;
+
+        // RuntimeId는 전투방을 다시 만들 때 새로 발급됩니다.
+        // 동일 MonsterId가 여러 마리여도 바뀌지 않도록 저장 당시 생성 순번을 가장 먼저 사용합니다.
+        if (saved.MonsterSpawnOrder >= 0 && saved.MonsterSpawnOrder < monsterUnits.Count)
+        {
+            MonsterUnit orderedUnit = monsterUnits[saved.MonsterSpawnOrder];
+            MonsterRuntimeData orderedRuntime = orderedUnit != null ? orderedUnit.RuntimeData : null;
+            if (orderedRuntime != null &&
+                (string.IsNullOrWhiteSpace(saved.MonsterId) ||
+                 string.Equals(orderedRuntime.MonsterId, saved.MonsterId, System.StringComparison.OrdinalIgnoreCase)))
+            {
+                return orderedRuntime;
+            }
+        }
+
+        // 저장 순번이 없는 이전 데이터는 MonsterId + 시작 그리드 위치로 찾습니다.
+        for (int i = 0; i < monsterUnits.Count; i++)
+        {
+            MonsterUnit unit = monsterUnits[i];
+            MonsterRuntimeData runtime = unit != null ? unit.RuntimeData : null;
+            if (runtime == null)
+                continue;
+
+            if (!string.IsNullOrWhiteSpace(saved.MonsterId) &&
+                string.Equals(runtime.MonsterId, saved.MonsterId, System.StringComparison.OrdinalIgnoreCase) &&
+                unit.MainGridIndex == saved.MonsterGridIndex)
+            {
+                return runtime;
+            }
+        }
+
+        // 마지막으로 RuntimeId가 우연히 유지되는 경우만 보조 경로로 사용합니다.
+        for (int i = 0; i < monsterUnits.Count; i++)
+        {
+            MonsterRuntimeData runtime = monsterUnits[i] != null ? monsterUnits[i].RuntimeData : null;
+            if (runtime != null && runtime.RuntimeId == saved.RuntimeId)
+                return runtime;
+        }
+
+        return null;
+    }
+
     public void ResetBattleStartIntroState()
     {
         battleStartIntroShown = false;

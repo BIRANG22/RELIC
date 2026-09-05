@@ -16,6 +16,12 @@ public class SaveSystem : Singleton<SaveSystem>
     private GameSaveData battleRoomEntryCheckpoint;
     private int battleRoomEntryCheckpointNodeIndex = -1;
     private string battleRoomEntryCheckpointMapId = string.Empty;
+    private bool hasPendingResolvedBattleRoomEntryState;
+    private List<BattleRoomGridEffectSaveData> pendingBattleRoomGridEffects = new();
+    private List<BattleRoomMonsterCommandSaveData> pendingBattleRoomMonsterCommands = new();
+    // 탐사진행으로 읽은 저장본을 BattleScene 초기화가 끝날 때까지 유지합니다.
+    // 런타임 데이터 Apply 후에도 전투방 1턴의 확정 결과(장애물/몬스터 예약)는 이 스냅샷에서 복구합니다.
+    private GameSaveData pendingBattleContinueSaveData;
 
     public string SaveFilePath => Path.Combine(Application.persistentDataPath, SaveFileName);
 
@@ -35,6 +41,8 @@ public class SaveSystem : Singleton<SaveSystem>
     public bool DeleteSaveFile()
     {
         ClearBattleRoomEntryCheckpoint();
+        ClearPendingResolvedBattleRoomEntryState();
+        pendingBattleContinueSaveData = null;
 
         try
         {
@@ -94,6 +102,10 @@ public class SaveSystem : Singleton<SaveSystem>
         battleRoomEntryCheckpoint = CreateSaveData();
         battleRoomEntryCheckpointNodeIndex = map.CurrentNodeIndex;
         battleRoomEntryCheckpointMapId = map.CurrentMapId ?? string.Empty;
+
+        // 이어하기로 같은 전투방에 재진입하면 BattleSceneController가 체크포인트를 다시 잡습니다.
+        // 이때 저장 파일에 있던 확정 1턴 상태를 잃지 않도록 새 체크포인트에 즉시 병합합니다.
+        MergeResolvedBattleRoomEntryStateIntoCheckpoint(map);
     }
 
     public void ClearBattleRoomEntryCheckpoint()
@@ -101,6 +113,17 @@ public class SaveSystem : Singleton<SaveSystem>
         battleRoomEntryCheckpoint = null;
         battleRoomEntryCheckpointNodeIndex = -1;
         battleRoomEntryCheckpointMapId = string.Empty;
+    }
+
+    /// <summary>
+    /// 이어하기 전용 전투방 1턴 스냅샷과 체크포인트 캐시를 모두 비웁니다.
+    /// 전투 포기 또는 새 탐사를 시작할 때 호출해 이전 탐사의 장애물/몬스터 예약이 재사용되지 않게 합니다.
+    /// </summary>
+    public void ClearBattleRoomResumeState()
+    {
+        ClearBattleRoomEntryCheckpoint();
+        ClearPendingResolvedBattleRoomEntryState();
+        pendingBattleContinueSaveData = null;
     }
 
     private bool TryCreateBattleRoomEntryCheckpointSave(out GameSaveData saveData)
@@ -134,6 +157,8 @@ public class SaveSystem : Singleton<SaveSystem>
 
     public bool TryLoadProgress()
     {
+        ClearPendingResolvedBattleRoomEntryState();
+        pendingBattleContinueSaveData = null;
         if (!HasSaveFile())
             return false;
 
@@ -154,8 +179,178 @@ public class SaveSystem : Singleton<SaveSystem>
         if (!CanContinueBattle(saveData))
             return false;
 
+        // ApplySaveData는 커스텀 전투방 체크포인트 필드를 런타임 Store로 옮기지 않으므로
+        // 원본 저장 스냅샷을 별도로 보관합니다.
+        pendingBattleContinueSaveData = CloneSerializable(saveData);
+        PreparePendingResolvedBattleRoomEntryState(saveData);
         ApplySaveData(saveData);
         return true;
+    }
+
+    public void UpdateBattleRoomEntryCheckpointResolvedState(
+        List<BattleRoomGridEffectSaveData> gridEffects,
+        List<BattleRoomMonsterCommandSaveData> monsterCommands)
+    {
+        if (battleRoomEntryCheckpoint == null)
+            return;
+
+        battleRoomEntryCheckpoint.HasResolvedBattleRoomEntryState = true;
+        battleRoomEntryCheckpoint.BattleRoomGridEffects = CloneGridEffectSaves(gridEffects);
+        battleRoomEntryCheckpoint.BattleRoomMonsterCommands = CloneMonsterCommandSaves(monsterCommands);
+    }
+
+    public bool TryGetPendingResolvedBattleRoomEntryState(
+        out IReadOnlyList<BattleRoomGridEffectSaveData> gridEffects,
+        out IReadOnlyList<BattleRoomMonsterCommandSaveData> monsterCommands)
+    {
+        return TryGetResolvedBattleRoomEntryState(out gridEffects, out monsterCommands);
+    }
+
+    /// <summary>
+    /// 탐사진행으로 읽은 저장본에서 현재 전투방의 확정된 1턴 시작 상태를 반환합니다.
+    /// pending 리스트가 이미 소비됐더라도 저장 스냅샷을 통해 다시 얻을 수 있습니다.
+    /// </summary>
+    public bool TryGetResolvedBattleRoomEntryState(
+        out IReadOnlyList<BattleRoomGridEffectSaveData> gridEffects,
+        out IReadOnlyList<BattleRoomMonsterCommandSaveData> monsterCommands)
+    {
+        if (hasPendingResolvedBattleRoomEntryState)
+        {
+            gridEffects = pendingBattleRoomGridEffects;
+            monsterCommands = pendingBattleRoomMonsterCommands;
+            return true;
+        }
+
+        MapRuntimeData currentMap = DataManager.Instance?.MapRuntimeStore?.Get();
+        if (HasMatchingResolvedBattleRoomEntryState(pendingBattleContinueSaveData, currentMap))
+        {
+            gridEffects = CloneGridEffectSaves(pendingBattleContinueSaveData.BattleRoomGridEffects);
+            monsterCommands = CloneMonsterCommandSaves(pendingBattleContinueSaveData.BattleRoomMonsterCommands);
+            return true;
+        }
+
+        gridEffects = Array.Empty<BattleRoomGridEffectSaveData>();
+        monsterCommands = Array.Empty<BattleRoomMonsterCommandSaveData>();
+        return false;
+    }
+
+    private void MergeResolvedBattleRoomEntryStateIntoCheckpoint(MapRuntimeData currentMap)
+    {
+        if (battleRoomEntryCheckpoint == null || currentMap == null)
+            return;
+
+        GameSaveData source = null;
+        if (HasMatchingResolvedBattleRoomEntryState(pendingBattleContinueSaveData, currentMap))
+            source = pendingBattleContinueSaveData;
+
+        if (source == null)
+            return;
+
+        battleRoomEntryCheckpoint.HasResolvedBattleRoomEntryState = true;
+        battleRoomEntryCheckpoint.BattleRoomGridEffects = CloneGridEffectSaves(source.BattleRoomGridEffects);
+        battleRoomEntryCheckpoint.BattleRoomMonsterCommands = CloneMonsterCommandSaves(source.BattleRoomMonsterCommands);
+    }
+
+    private static bool HasMatchingResolvedBattleRoomEntryState(GameSaveData saveData, MapRuntimeData currentMap)
+    {
+        if (saveData == null || !saveData.HasResolvedBattleRoomEntryState || saveData.Map == null || currentMap == null)
+            return false;
+
+        return saveData.Map.CurrentNodeIndex == currentMap.CurrentNodeIndex &&
+               string.Equals(saveData.Map.CurrentMapId ?? string.Empty,
+                   currentMap.CurrentMapId ?? string.Empty,
+                   StringComparison.Ordinal);
+    }
+
+    public void ConsumePendingResolvedBattleRoomEntryState()
+    {
+        ClearPendingResolvedBattleRoomEntryState();
+    }
+
+    private void PreparePendingResolvedBattleRoomEntryState(GameSaveData saveData)
+    {
+        ClearPendingResolvedBattleRoomEntryState();
+
+        if (saveData == null || !saveData.HasResolvedBattleRoomEntryState)
+            return;
+
+        hasPendingResolvedBattleRoomEntryState = true;
+        pendingBattleRoomGridEffects = CloneGridEffectSaves(saveData.BattleRoomGridEffects);
+        pendingBattleRoomMonsterCommands = CloneMonsterCommandSaves(saveData.BattleRoomMonsterCommands);
+    }
+
+    private void ClearPendingResolvedBattleRoomEntryState()
+    {
+        hasPendingResolvedBattleRoomEntryState = false;
+        pendingBattleRoomGridEffects = new List<BattleRoomGridEffectSaveData>();
+        pendingBattleRoomMonsterCommands = new List<BattleRoomMonsterCommandSaveData>();
+    }
+
+    private static List<BattleRoomGridEffectSaveData> CloneGridEffectSaves(
+        IEnumerable<BattleRoomGridEffectSaveData> source)
+    {
+        var result = new List<BattleRoomGridEffectSaveData>();
+        if (source == null)
+            return result;
+
+        foreach (BattleRoomGridEffectSaveData item in source)
+        {
+            if (item == null)
+                continue;
+
+            result.Add(new BattleRoomGridEffectSaveData
+            {
+                GridIndex = item.GridIndex,
+                GridEffectId = item.GridEffectId,
+                RemainingDuration = item.RemainingDuration,
+                HitPoints = item.HitPoints
+            });
+        }
+
+        return result;
+    }
+
+    private static List<BattleRoomMonsterCommandSaveData> CloneMonsterCommandSaves(
+        IEnumerable<BattleRoomMonsterCommandSaveData> source)
+    {
+        var result = new List<BattleRoomMonsterCommandSaveData>();
+        if (source == null)
+            return result;
+
+        foreach (BattleRoomMonsterCommandSaveData item in source)
+        {
+            if (item == null)
+                continue;
+
+            result.Add(new BattleRoomMonsterCommandSaveData
+            {
+                SlotIndex = item.SlotIndex,
+                RuntimeId = item.RuntimeId,
+                MonsterId = item.MonsterId,
+                MonsterGridIndex = item.MonsterGridIndex,
+                MonsterSpawnOrder = item.MonsterSpawnOrder,
+                SkillId = item.SkillId,
+                MoveX = item.MoveX,
+                MoveY = item.MoveY,
+                ReservedDamage = item.ReservedDamage,
+                ActionIndex = item.ActionIndex,
+                RangeOriginGridIndex = item.RangeOriginGridIndex,
+                RangeOriginCasterGridIndex = item.RangeOriginCasterGridIndex,
+                HasForcedDirection = item.HasForcedDirection,
+                ForcedDirection = item.ForcedDirection,
+                IsPortalMove = item.IsPortalMove,
+                HasExplicitRangeResult = item.HasExplicitRangeResult,
+                RangeGridIndices = item.RangeGridIndices != null ? new List<int>(item.RangeGridIndices) : new List<int>(),
+                TargetGridIndices = item.TargetGridIndices != null ? new List<int>(item.TargetGridIndices) : new List<int>(),
+                HasSimulatedResult = item.HasSimulatedResult,
+                IsSimulatedMoveBlocked = item.IsSimulatedMoveBlocked,
+                SimulatedMoveX = item.SimulatedMoveX,
+                SimulatedMoveY = item.SimulatedMoveY,
+                UseRequestedMoveOffsetForExecution = item.UseRequestedMoveOffsetForExecution
+            });
+        }
+
+        return result;
     }
 
     public GameSaveData ReadSaveData()
@@ -435,6 +630,8 @@ public class SaveSystem : Singleton<SaveSystem>
 
         saveData.Characters ??= new List<CharacterRuntimeData>();
         saveData.Skills ??= new List<SkillRuntimeData>();
+        saveData.BattleRoomGridEffects ??= new List<BattleRoomGridEffectSaveData>();
+        saveData.BattleRoomMonsterCommands ??= new List<BattleRoomMonsterCommandSaveData>();
         saveData.Player ??= new PlayerRuntimeData();
         RecordDiscoveryService.Normalize(saveData.Player);
         saveData.Party ??= new PartyRuntimeData();
@@ -568,6 +765,48 @@ public class GameSaveData
 
     public List<CharacterRuntimeData> Characters = new();
     public List<SkillRuntimeData> Skills = new();
+
+    public bool HasResolvedBattleRoomEntryState;
+    public List<BattleRoomGridEffectSaveData> BattleRoomGridEffects = new();
+    public List<BattleRoomMonsterCommandSaveData> BattleRoomMonsterCommands = new();
+}
+
+[Serializable]
+public class BattleRoomGridEffectSaveData
+{
+    public int GridIndex;
+    public string GridEffectId;
+    public int RemainingDuration;
+    public int HitPoints;
+}
+
+[Serializable]
+public class BattleRoomMonsterCommandSaveData
+{
+    public int SlotIndex;
+    public string RuntimeId;
+    public string MonsterId;
+    public int MonsterGridIndex = -1;
+    // 전투방에서 생성된 몬스터 목록의 고정 순번입니다. RuntimeId 재발급과 동종 몬스터 중복을 구분합니다.
+    public int MonsterSpawnOrder = -1;
+    public string SkillId;
+    public int MoveX;
+    public int MoveY;
+    public int ReservedDamage;
+    public int ActionIndex;
+    public int RangeOriginGridIndex = -1;
+    public int RangeOriginCasterGridIndex = -1;
+    public bool HasForcedDirection;
+    public int ForcedDirection;
+    public bool IsPortalMove;
+    public bool HasExplicitRangeResult;
+    public List<int> RangeGridIndices = new();
+    public List<int> TargetGridIndices = new();
+    public bool HasSimulatedResult;
+    public bool IsSimulatedMoveBlocked;
+    public int SimulatedMoveX;
+    public int SimulatedMoveY;
+    public bool UseRequestedMoveOffsetForExecution;
 }
 
 public interface IRuntimeSaveStateContributor

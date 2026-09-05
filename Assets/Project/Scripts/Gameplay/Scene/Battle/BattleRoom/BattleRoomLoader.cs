@@ -73,6 +73,8 @@ public class BattleRoomLoader : MonoBehaviour
     private Coroutine openSelectedSkillListWhenReadyRoutine;
     private Coroutine loadRoutine;
     private Coroutine initialMonsterPlanRoutine;
+    private bool restoringResolvedBattleRoomEntryState;
+    private IReadOnlyList<BattleRoomMonsterCommandSaveData> restoredInitialMonsterCommands;
     private bool initialMonsterPlanStarted;
     private bool isLoaded;
     private bool isLoading;
@@ -657,7 +659,11 @@ public class BattleRoomLoader : MonoBehaviour
 
         SpawnPlayersAndHUD();
         SpawnMonstersAndHUD(false);
-        SpawnInitialGridEffects();
+
+        restoringResolvedBattleRoomEntryState = TryRestoreInitialGridEffectsFromSave();
+        if (!restoringResolvedBattleRoomEntryState)
+            SpawnInitialGridEffects();
+
         RefreshBattleHUDs();
 
         EnsureTurnExecutor();
@@ -1406,9 +1412,22 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (monsterTurnPlanner != null)
         {
-            // showBattleStart=true인 초기 예약은 BattleMonsterTurnPlanner 내부에서
-            // "행동 예약" 안내가 완전히 끝날 때까지 직접 기다립니다.
-            yield return monsterTurnPlanner.PlanMonsterTurnsAndWait(spawnedMonsterUnits, true);
+            // 이어하기에서는 전투방에 처음 입장했을 때 확정된 1턴 예약을 그대로 복원합니다.
+            if (restoringResolvedBattleRoomEntryState)
+            {
+                yield return monsterTurnPlanner.RestoreMonsterTurnsAndWait(
+                    spawnedMonsterUnits,
+                    restoredInitialMonsterCommands,
+                    true);
+            }
+            else
+            {
+                // showBattleStart=true인 초기 예약은 BattleMonsterTurnPlanner 내부에서
+                // "행동 예약" 안내가 완전히 끝날 때까지 직접 기다립니다.
+                yield return monsterTurnPlanner.PlanMonsterTurnsAndWait(spawnedMonsterUnits, true);
+                CaptureResolvedBattleRoomEntryState();
+            }
+
             Debug.Log("[BattleTutorial] Initial monster reservation finished", this);
         }
         else
@@ -1450,7 +1469,126 @@ public class BattleRoomLoader : MonoBehaviour
             $"{(firstBattleTutorialController != null && firstBattleTutorialController.IsTutorialRootActive)}",
             this);
 
+        if (restoringResolvedBattleRoomEntryState)
+        {
+            SaveSystem.Instance?.ConsumePendingResolvedBattleRoomEntryState();
+            restoringResolvedBattleRoomEntryState = false;
+            restoredInitialMonsterCommands = null;
+        }
+
         initialMonsterPlanRoutine = null;
+    }
+
+    private bool TryRestoreInitialGridEffectsFromSave()
+    {
+        restoredInitialMonsterCommands = null;
+
+        if (SaveSystem.Instance == null ||
+            !SaveSystem.Instance.TryGetResolvedBattleRoomEntryState(
+                out IReadOnlyList<BattleRoomGridEffectSaveData> gridEffects,
+                out IReadOnlyList<BattleRoomMonsterCommandSaveData> monsterCommands))
+        {
+            return false;
+        }
+
+        EnsureGridEffectController();
+        gridEffectController?.RestoreEffects(gridEffects);
+        restoredInitialMonsterCommands = monsterCommands;
+        Debug.Log($"[BattleRoomLoader] 저장된 전투방 초기 그리드 효과 {gridEffects?.Count ?? 0}개를 복원했습니다.", this);
+        return true;
+    }
+
+    private void CaptureResolvedBattleRoomEntryState()
+    {
+        if (SaveSystem.Instance == null)
+            return;
+
+        var gridEffects = new List<BattleRoomGridEffectSaveData>();
+        EnsureGridEffectController(false);
+
+        if (gridEffectController != null)
+        {
+            IReadOnlyList<Relic.Gameplay.Battle.BattleGridEffectPlacement> placements =
+                gridEffectController.State.GetPlacements();
+
+            for (int i = 0; i < placements.Count; i++)
+            {
+                Relic.Gameplay.Battle.BattleGridEffectPlacement placement = placements[i];
+                gridEffectController.State.TryGetRemainingDuration(placement.GridIndex, out int duration);
+                gridEffectController.State.TryGetHitPoints(placement.GridIndex, out int hitPoints);
+
+                gridEffects.Add(new BattleRoomGridEffectSaveData
+                {
+                    GridIndex = placement.GridIndex,
+                    GridEffectId = placement.GridEffectId,
+                    RemainingDuration = duration,
+                    HitPoints = hitPoints
+                });
+            }
+        }
+
+        var monsterCommands = new List<BattleRoomMonsterCommandSaveData>();
+        EnsureTimelineController();
+
+        if (timelineController != null)
+        {
+            for (int slotIndex = 0; slotIndex < timelineController.SlotCount; slotIndex++)
+            {
+                IReadOnlyList<MonsterReservedCommand> commands = timelineController.GetMonsterCommands(slotIndex);
+                if (commands == null)
+                    continue;
+
+                for (int i = 0; i < commands.Count; i++)
+                {
+                    MonsterReservedCommand command = commands[i];
+                    if (command == null)
+                        continue;
+
+                    MonsterUnit commandMonsterUnit = null;
+                    int monsterSpawnOrder = -1;
+                    for (int monsterIndex = 0; monsterIndex < spawnedMonsterUnits.Count; monsterIndex++)
+                    {
+                        MonsterUnit candidate = spawnedMonsterUnits[monsterIndex];
+                        if (candidate?.RuntimeData != null && candidate.RuntimeData.RuntimeId == command.RuntimeId)
+                        {
+                            commandMonsterUnit = candidate;
+                            monsterSpawnOrder = monsterIndex;
+                            break;
+                        }
+                    }
+
+                    monsterCommands.Add(new BattleRoomMonsterCommandSaveData
+                    {
+                        SlotIndex = slotIndex,
+                        RuntimeId = command.RuntimeId,
+                        MonsterId = command.MonsterId,
+                        MonsterGridIndex = commandMonsterUnit != null ? commandMonsterUnit.MainGridIndex : -1,
+                        MonsterSpawnOrder = monsterSpawnOrder,
+                        SkillId = command.SkillId,
+                        MoveX = command.MoveOffset.x,
+                        MoveY = command.MoveOffset.y,
+                        ReservedDamage = command.ReservedDamage,
+                        ActionIndex = command.ActionIndex,
+                        RangeOriginGridIndex = command.RangeOriginGridIndex,
+                        RangeOriginCasterGridIndex = command.RangeOriginCasterGridIndex,
+                        HasForcedDirection = command.HasForcedDirection,
+                        ForcedDirection = (int)command.ForcedDirection,
+                        IsPortalMove = command.IsPortalMove,
+                        HasExplicitRangeResult = command.HasExplicitRangeResult,
+                        RangeGridIndices = new List<int>(command.RangeGridIndices),
+                        TargetGridIndices = new List<int>(command.TargetGridIndices),
+                        HasSimulatedResult = command.HasSimulatedResult,
+                        IsSimulatedMoveBlocked = command.IsSimulatedMoveBlocked,
+                        SimulatedMoveX = command.SimulatedMoveOffset.x,
+                        SimulatedMoveY = command.SimulatedMoveOffset.y,
+                        UseRequestedMoveOffsetForExecution = command.UseRequestedMoveOffsetForExecution
+                    });
+                }
+            }
+        }
+
+        SaveSystem.Instance.UpdateBattleRoomEntryCheckpointResolvedState(gridEffects, monsterCommands);
+        Debug.Log($"[BattleRoomLoader] 전투방 1턴 시작 상태 저장: Grid={gridEffects.Count}, MonsterCommand={monsterCommands.Count}", this);
     }
 
     public void PlanNextMonsterTurns()

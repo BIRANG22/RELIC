@@ -5,7 +5,7 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Project/Scenes/YDM/Bootstrap.unity
     guid: ef74e2dc631a13640b37b83b66059a75
   - enabled: 1
