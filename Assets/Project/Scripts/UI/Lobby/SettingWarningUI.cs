@@ -93,7 +93,32 @@ public class SettingWarningUI : MonoBehaviour
             baseAnchoredPosition = moveTarget.anchoredPosition;
 
         EnsureTopSorting();
-        HideImmediate();
+        InitializeHiddenVisualState();
+    }
+
+    private void Start()
+    {
+        // 비활성 오브젝트에서 첫 Show()로 Awake가 실행된 경우에는
+        // 이미 시작된 표시 요청을 다시 숨기지 않습니다.
+        if (!isShowing)
+            gameObject.SetActive(false);
+    }
+
+    private void InitializeHiddenVisualState()
+    {
+        isShowing = false;
+        timer = 0f;
+
+        SetAlpha(0f);
+
+        if (moveTarget != null)
+        {
+            if (useMoveEffect)
+                moveTarget.anchoredPosition = baseAnchoredPosition + endOffset;
+
+            if (useScalePop)
+                moveTarget.localScale = endScale;
+        }
     }
 
     private void OnDestroy()

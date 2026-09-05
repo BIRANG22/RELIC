@@ -53,7 +53,33 @@ public class BattleWarningUI : MonoBehaviour
         EnsureReferences();
         EnsureTopSorting();
         CaptureBasePositionIfNeeded();
-        HideImmediate();
+        InitializeHiddenVisualState();
+    }
+
+    private void Start()
+    {
+        // 비활성 오브젝트에서 첫 Show()로 Awake가 실행된 경우에는
+        // 이미 시작된 표시 요청을 다시 숨기지 않습니다.
+        if (!isShowing && !keepRootObjectActive)
+            gameObject.SetActive(false);
+    }
+
+    private void InitializeHiddenVisualState()
+    {
+        isShowing = false;
+        timer = 0f;
+
+        SetAlpha(0f);
+
+        if (moveTarget != null)
+        {
+            moveTarget.anchoredPosition = baseAnchoredPosition + endOffset;
+
+            if (useScalePop)
+                moveTarget.localScale = endScale;
+        }
+
+        SetWarningChildrenActive(false);
     }
 
     private void OnDestroy()
