@@ -30,6 +30,7 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private string startButtonName = "StartButton";
     [SerializeField] private string continueButtonName = "ContinueButton";
     [SerializeField] private string abandonBattleButtonName = "AbandonBattleButton";
+    [SerializeField] private int runButtonRefreshRetryFrameCount = 3;
 
     [Header("Title Mode Panels")]
     [SerializeField] private GameObject[] titleModePanels;
@@ -61,6 +62,7 @@ public class TitleManager : MonoBehaviour
     private void OnEnable()
     {
         RefreshRunButtons();
+        StartCoroutine(RefreshRunButtonsRetryRoutine());
     }
 
     private void Start()
@@ -68,6 +70,17 @@ public class TitleManager : MonoBehaviour
         RefreshLogoDefaultState();
         RefreshRunButtons();
         StartTitleBgmRetry();
+    }
+
+    private IEnumerator RefreshRunButtonsRetryRoutine()
+    {
+        int retryFrameCount = Mathf.Max(1, runButtonRefreshRetryFrameCount);
+
+        for (int i = 0; i < retryFrameCount; i++)
+        {
+            yield return null;
+            RefreshRunButtons();
+        }
     }
 
     private void StartTitleBgmRetry()

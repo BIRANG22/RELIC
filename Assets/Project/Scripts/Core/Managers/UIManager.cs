@@ -552,17 +552,20 @@ public class UIManager : Singleton<UIManager>
         if (GameManager.Instance != null && GameManager.Instance.StateMachine != null)
         {
             await GameManager.Instance.StateMachine.ChangeState(GameStateType.Title);
+            TitleManager.RefreshRunButtonsInScene();
             return;
         }
 
         if (SceneFlowManager.Instance != null)
         {
             await SceneFlowManager.Instance.LoadSceneAsync(SceneName.Title);
+            TitleManager.RefreshRunButtonsInScene();
             PlayTitleBgmIfPossible();
             return;
         }
 
         UnityEngine.SceneManagement.SceneManager.LoadScene(SceneName.Title);
+        TitleManager.RefreshRunButtonsInScene();
         PlayTitleBgmIfPossible();
     }
 
