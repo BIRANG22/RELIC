@@ -42,7 +42,28 @@ public class TitleWarningUI : MonoBehaviour
         if (moveTarget != null)
             baseAnchoredPosition = moveTarget.anchoredPosition;
 
-        HideImmediate();
+        // 첫 Show() 요청이 비활성 오브젝트를 활성화하면서 Awake()를 실행할 수 있으므로
+        // 여기서는 즉시 비활성화하지 않고 숨김 상태만 초기화합니다.
+        isShowing = false;
+        timer = 0f;
+        SetAlpha(0f);
+
+        if (moveTarget != null)
+        {
+            if (useMoveEffect)
+                moveTarget.anchoredPosition = baseAnchoredPosition + endOffset;
+
+            if (useScalePop)
+                moveTarget.localScale = endScale;
+        }
+    }
+
+    private void Start()
+    {
+        // 씬 시작 시 별도의 표시 요청이 없었다면 기존처럼 비활성 상태로 정리합니다.
+        // 비활성 오브젝트에서 Show()가 먼저 호출된 경우에는 isShowing이 true이므로 유지됩니다.
+        if (!isShowing)
+            HideImmediate();
     }
 
     private void OnDestroy()
