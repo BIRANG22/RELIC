@@ -1118,18 +1118,6 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   monsterSkillVfxSfxList:
-  - displayName: rancor.move
-    vfxPrefab: {fileID: 7536603162193489409, guid: 202308854d37812468663a39cbb11bc6, type: 3}
-    cues:
-    - clip: {fileID: 8300000, guid: 291bfac2e385043099fd29b6eb15752e, type: 3}
-      delay: 0
-      volume: 0.1
-      pitch: 0.5
-      loop: 0
-      playOncePerAction: 0
-      useRandomPitch: 0
-      randomPitchMin: 1
-      randomPitchMax: 1
   - displayName: rancor.attack.01
     vfxPrefab: {fileID: 5426120665623789715, guid: 380aaad3e9937d04fa4d33c13ad754cd, type: 3}
     cues:
@@ -1269,7 +1257,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: vespa.move
-    vfxPrefab: {fileID: 4600409003816526173, guid: f74f0a9fa13de5c4387bc30ed75e4381, type: 3}
+    vfxPrefab: {fileID: 4145361429921181282, guid: 7990150aefb368844be3edb4e9e4d400, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e436a12901d084ceea61f2c90c56223c, type: 3}
       delay: 0
@@ -1310,18 +1298,6 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: sinder.move
-    vfxPrefab: {fileID: 6378392980798579278, guid: a208dd6401fb010499954a6d2c6bbd4c, type: 3}
-    cues:
-    - clip: {fileID: 8300000, guid: 1cc53eeae15764f418b6033e4b3b2429, type: 3}
-      delay: 0
-      volume: 1
-      pitch: 1
-      loop: 0
-      playOncePerAction: 0
-      useRandomPitch: 0
-      randomPitchMin: 0
-      randomPitchMax: 0
   - displayName: sinder.attack
     vfxPrefab: {fileID: 4003987336476800750, guid: 73a480090faa5b24bbb538efb54be0a9, type: 3}
     cues:
@@ -1488,7 +1464,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: nocturne.attack.01
-    vfxPrefab: {fileID: 8678038702199689449, guid: dafad4a8c50e0e5419500dadf5f7a4d5, type: 3}
+    vfxPrefab: {fileID: 4274269069465894755, guid: dafad4a8c50e0e5419500dadf5f7a4d5, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 31c5d114f830245468a89f1097770791, type: 3}
       delay: 0
@@ -1518,7 +1494,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: nocturne.attack.02
-    vfxPrefab: {fileID: 883642454426607995, guid: 337cd8521de29174b89b08942c92953f, type: 3}
+    vfxPrefab: {fileID: 5793995357469845939, guid: 337cd8521de29174b89b08942c92953f, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 31c5d114f830245468a89f1097770791, type: 3}
       delay: 0
@@ -1548,7 +1524,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: nocturne.attack.03
-    vfxPrefab: {fileID: 4923209245293396599, guid: 3de88738a70e25a43b753719fc19c5e5, type: 3}
+    vfxPrefab: {fileID: 871528175240582480, guid: 3de88738a70e25a43b753719fc19c5e5, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 23ddc3ea5b3ee4ed59eb5b03f1aca24f, type: 3}
       delay: 0
@@ -1623,7 +1599,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: ruke.move
-    vfxPrefab: {fileID: 4145361429921181282, guid: 7990150aefb368844be3edb4e9e4d400, type: 3}
+    vfxPrefab: {fileID: 4145361429921181282, guid: b9629030528528647b8450147fc2c871, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 92f13001fa1d3493ebc00cf66b61c53e, type: 3}
       delay: 0
@@ -1737,7 +1713,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: arabella.attack.02
-    vfxPrefab: {fileID: 7525588489078206328, guid: 69474b264de00714485785d33ec45076, type: 3}
+    vfxPrefab: {fileID: 6228339372252518442, guid: 69474b264de00714485785d33ec45076, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e78ee39c4d8316c4999ad3df556acdf3, type: 3}
       delay: 0
