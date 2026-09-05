@@ -70,6 +70,13 @@ public class BattleCharacter : MonoBehaviour
         if (IsBattleEnded())
             selected = false;
 
+        if (RuntimeData != null && RuntimeData.IsDead)
+        {
+            selectionHighlightVisible = false;
+            ApplyTimelineHoverHighlightAlpha();
+            return;
+        }
+
         selectionHighlightVisible = selected;
 
         if (selected)
