@@ -15,9 +15,8 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
     private const string UIBlurTextureName = "_UIBlurUiTexture";
     private const string SettingUpperName = "Setting_upper";
     private const int SharedBlurSortingOrder = 9000;
-    private const int UIBlurTextureWidth = 1920;
-    private const int UIBlurTextureHeight = 1080;
     private const int UIBlurLayer = 5;
+    private static readonly Vector2 DefaultReferenceResolution = new(1920f, 1080f);
 
     private static UIBlurBackgroundManager instance;
 
@@ -161,6 +160,8 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         if (activeRequester == null)
             return;
 
+        EnsureUiBlurTexture();
+
         if (replicaDirty)
             SyncReplicas();
 
@@ -196,7 +197,7 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
         CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.referenceResolution = DefaultReferenceResolution;
 
         GameObject background = new("SharedBlurBackground", typeof(RectTransform), typeof(CanvasRenderer), typeof(RawImage));
         background.transform.SetParent(canvasObject.transform, false);
@@ -229,15 +230,14 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
             uiBlurCamera.clearFlags = CameraClearFlags.SolidColor;
             uiBlurCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
             uiBlurCamera.orthographic = true;
-            uiBlurCamera.orthographicSize = UIBlurTextureHeight * 0.5f;
             uiBlurCamera.nearClipPlane = 0.01f;
             uiBlurCamera.farClipPlane = 10f;
             uiBlurCamera.cullingMask = 1 << UIBlurLayer;
-            uiBlurCamera.targetTexture = uiBlurTexture;
             uiBlurCamera.allowHDR = false;
             uiBlurCamera.allowMSAA = false;
             uiBlurCamera.enabled = false;
         }
+        ConfigureUiBlurCamera();
 
         if (blurReplicaCanvas != null)
             return;
@@ -254,7 +254,7 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
         CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(UIBlurTextureWidth, UIBlurTextureHeight);
+        scaler.referenceResolution = DefaultReferenceResolution;
 
         RectTransform rect = canvasObject.GetComponent<RectTransform>();
         rect.anchorMin = Vector2.zero;
@@ -267,12 +267,20 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
     private void EnsureUiBlurTexture()
     {
-        if (uiBlurTexture != null)
+        Vector2Int targetSize = GetUiBlurTextureSize();
+        if (uiBlurTexture != null &&
+            uiBlurTexture.width == targetSize.x &&
+            uiBlurTexture.height == targetSize.y)
+        {
+            ConfigureUiBlurCamera();
             return;
+        }
+
+        ReleaseUiBlurTexture();
 
         RenderTextureDescriptor descriptor = new(
-            UIBlurTextureWidth,
-            UIBlurTextureHeight,
+            targetSize.x,
+            targetSize.y,
             RenderTextureFormat.ARGB32)
         {
             depthBufferBits = 24,
@@ -289,6 +297,31 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         };
         uiBlurTexture.Create();
         Shader.SetGlobalTexture(UIBlurTextureName, uiBlurTexture);
+        textureDiagnosticsLogged = false;
+        replicaDirty = true;
+        ConfigureUiBlurCamera();
+    }
+
+    private static Vector2Int GetUiBlurTextureSize()
+    {
+        int width = Mathf.Max(1, Screen.width);
+        int height = Mathf.Max(1, Screen.height);
+        return new Vector2Int(width, height);
+    }
+
+    private void ConfigureUiBlurCamera()
+    {
+        if (uiBlurCamera == null)
+            return;
+
+        Vector2Int targetSize = uiBlurTexture != null
+            ? new Vector2Int(uiBlurTexture.width, uiBlurTexture.height)
+            : GetUiBlurTextureSize();
+
+        uiBlurCamera.targetTexture = uiBlurTexture;
+        uiBlurCamera.pixelRect = new Rect(0f, 0f, targetSize.x, targetSize.y);
+        uiBlurCamera.aspect = targetSize.x / (float)targetSize.y;
+        uiBlurCamera.orthographicSize = targetSize.y * 0.5f;
     }
 
     private void ReleaseUiBlurTexture()
@@ -308,6 +341,8 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
     {
         if (blurReplicaCanvas == null)
             return;
+
+        SyncReplicaCanvasScaler(topRequester);
 
         HashSet<GameObject> desiredSources = new();
         for (int i = 0; i < requesters.Count; i++)
@@ -346,6 +381,61 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
         SetReplicaVisibility(desiredSources);
         replicaDirty = true;
+    }
+
+    private void SyncReplicaCanvasScaler(UIBlurBackground topRequester)
+    {
+        if (blurReplicaCanvas == null || topRequester == null)
+            return;
+
+        CanvasScaler replicaScaler = blurReplicaCanvas.GetComponent<CanvasScaler>();
+        if (replicaScaler == null)
+            return;
+
+        CanvasScaler sourceScaler = FindSourceCanvasScaler(topRequester);
+        if (sourceScaler == null)
+        {
+            replicaScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            replicaScaler.referenceResolution = DefaultReferenceResolution;
+            replicaScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            replicaScaler.matchWidthOrHeight = 0f;
+            return;
+        }
+
+        replicaScaler.uiScaleMode = sourceScaler.uiScaleMode;
+        replicaScaler.scaleFactor = sourceScaler.scaleFactor;
+        replicaScaler.referencePixelsPerUnit = sourceScaler.referencePixelsPerUnit;
+        replicaScaler.referenceResolution = sourceScaler.referenceResolution;
+        replicaScaler.screenMatchMode = sourceScaler.screenMatchMode;
+        replicaScaler.matchWidthOrHeight = sourceScaler.matchWidthOrHeight;
+        replicaScaler.physicalUnit = sourceScaler.physicalUnit;
+        replicaScaler.fallbackScreenDPI = sourceScaler.fallbackScreenDPI;
+        replicaScaler.defaultSpriteDPI = sourceScaler.defaultSpriteDPI;
+        replicaScaler.dynamicPixelsPerUnit = sourceScaler.dynamicPixelsPerUnit;
+    }
+
+    private static CanvasScaler FindSourceCanvasScaler(UIBlurBackground requester)
+    {
+        if (requester == null)
+            return null;
+
+        foreach (GameObject root in requester.BlurredUiRoots)
+        {
+            CanvasScaler scaler = GetRootCanvasScaler(root);
+            if (scaler != null)
+                return scaler;
+        }
+
+        return GetRootCanvasScaler(requester.PanelRoot);
+    }
+
+    private static CanvasScaler GetRootCanvasScaler(GameObject root)
+    {
+        if (root == null)
+            return null;
+
+        Canvas canvas = root.GetComponentInParent<Canvas>();
+        return canvas != null ? canvas.GetComponent<CanvasScaler>() : null;
     }
 
     private static void AddReplicaSource(GameObject source, HashSet<GameObject> desiredSources)

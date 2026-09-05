@@ -52,6 +52,32 @@ public sealed class UIBackgroundBlurShaderTests
     }
 
     [Test]
+    public void SharedBlurManager_UsesCurrentScreenSizeForUiBlurTexture()
+    {
+        string manager = File.ReadAllText("Assets/Project/Scripts/UIBlurBackgroundManager.cs");
+
+        Assert.That(manager, Does.Contain("GetUiBlurTextureSize()"));
+        Assert.That(manager, Does.Contain("Screen.width"));
+        Assert.That(manager, Does.Contain("Screen.height"));
+        Assert.That(manager, Does.Contain("uiBlurTexture.width == targetSize.x"));
+        Assert.That(manager, Does.Contain("uiBlurTexture.height == targetSize.y"));
+        Assert.That(manager, Does.Not.Contain("UIBlurTextureWidth"));
+        Assert.That(manager, Does.Not.Contain("UIBlurTextureHeight"));
+    }
+
+    [Test]
+    public void SharedBlurManager_CopiesSourceCanvasScalerForReplicaCanvas()
+    {
+        string manager = File.ReadAllText("Assets/Project/Scripts/UIBlurBackgroundManager.cs");
+
+        Assert.That(manager, Does.Contain("SyncReplicaCanvasScaler(topRequester)"));
+        Assert.That(manager, Does.Contain("FindSourceCanvasScaler(topRequester)"));
+        Assert.That(manager, Does.Contain("replicaScaler.referenceResolution = sourceScaler.referenceResolution"));
+        Assert.That(manager, Does.Contain("replicaScaler.screenMatchMode = sourceScaler.screenMatchMode"));
+        Assert.That(manager, Does.Contain("replicaScaler.matchWidthOrHeight = sourceScaler.matchWidthOrHeight"));
+    }
+
+    [Test]
     public void SharedBlurManager_DoesNotBlockInputAndPausesCameraWhileARequesterIsActive()
     {
         string manager = File.ReadAllText("Assets/Project/Scripts/UIBlurBackgroundManager.cs");
