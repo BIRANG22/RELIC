@@ -30,7 +30,7 @@ public class Settings : Singleton<Settings>
 public static class OnboardingToggleDefaults
 {
     private const string DefaultsVersionPrefsKey = "Dustium.OnboardingToggleDefaultsVersion";
-    private const int CurrentDefaultsVersion = 1;
+    private const int CurrentDefaultsVersion = 2;
 
     /// <summary>
     /// 이 버전의 초기 안내 설정을 처음 적용할 때만 튜토리얼/인트로 예약 토글을 ON으로 맞춥니다.
@@ -42,8 +42,16 @@ public static class OnboardingToggleDefaults
         if (appliedVersion >= CurrentDefaultsVersion)
             return;
 
-        TutorialSettings.SetShouldShowTutorial(true);
-        IntroSettings.SetShouldPlayIntro(true);
+        if (appliedVersion < 1)
+        {
+            TutorialSettings.SetShouldShowTutorial(true);
+            IntroSettings.SetShouldPlayIntro(true);
+        }
+
+        // 기존 빌드에서 IntroSeen 값이 남아 IntroToggle1이 OFF로 시작하던 상태를
+        // 이번 버전에서 한 번만 ON으로 보정합니다. TutorialToggle1 상태는 건드리지 않습니다.
+        if (appliedVersion < 2)
+            IntroSettings.SetShouldPlayIntro(true);
 
         PlayerPrefs.SetInt(DefaultsVersionPrefsKey, CurrentDefaultsVersion);
         PlayerPrefs.Save();

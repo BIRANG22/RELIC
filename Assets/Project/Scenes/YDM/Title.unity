@@ -658,7 +658,6 @@ MonoBehaviour:
   flipButtonOnMove: 0
   flipTarget: {fileID: 0}
   toggleIfAlreadyOpen: 1
-  bringOpenedPanelToFront: 0
   forceOpenedPanelCanvasSorting: 0
   openedPanelSortingOrder: 1000
   addGraphicRaycasterToOpenedPanel: 1
@@ -761,6 +760,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -903,6 +906,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -939,7 +946,6 @@ MonoBehaviour:
   flipButtonOnMove: 0
   flipTarget: {fileID: 0}
   toggleIfAlreadyOpen: 1
-  bringOpenedPanelToFront: 0
   forceOpenedPanelCanvasSorting: 0
   openedPanelSortingOrder: 1000
   addGraphicRaycasterToOpenedPanel: 1
@@ -1320,6 +1326,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 0.8, y: 0.8, z: 0.8}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -3650,7 +3660,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &900000203
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4100,6 +4110,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -4144,7 +4158,6 @@ MonoBehaviour:
   flipButtonOnMove: 0
   flipTarget: {fileID: 0}
   toggleIfAlreadyOpen: 1
-  bringOpenedPanelToFront: 1
   forceOpenedPanelCanvasSorting: 1
   openedPanelSortingOrder: 1000
   addGraphicRaycasterToOpenedPanel: 1
@@ -4261,6 +4274,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -5780,6 +5797,7 @@ MonoBehaviour:
   startButtonName: StartButton
   continueButtonName: ContinueButton
   abandonBattleButtonName: AbandonBattleButton
+  runButtonRefreshRetryFrameCount: 3
   titleModePanels: []
   autoFindTitleModePanels: 1
   autoFindTitleModePanelNames:
@@ -5938,6 +5956,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -7056,6 +7078,10 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
@@ -7092,7 +7118,6 @@ MonoBehaviour:
   flipButtonOnMove: 0
   flipTarget: {fileID: 0}
   toggleIfAlreadyOpen: 1
-  bringOpenedPanelToFront: 0
   forceOpenedPanelCanvasSorting: 0
   openedPanelSortingOrder: 1000
   addGraphicRaycasterToOpenedPanel: 1

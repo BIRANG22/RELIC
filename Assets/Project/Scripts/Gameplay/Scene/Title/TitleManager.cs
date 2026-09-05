@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -261,11 +262,38 @@ public class TitleManager : MonoBehaviour
         TitleManager manager = FindFirstObjectByType<TitleManager>(FindObjectsInactive.Include);
 
         if (manager == null)
-        {
             return;
-        }
 
         manager.RefreshRunButtons();
+    }
+
+    /// <summary>
+    /// 타이틀 씬 전환 직후 TitleManager 생성 순서와 관계없이
+    /// 저장 상태가 버튼에 반영될 때까지 몇 프레임 동안 다시 확인합니다.
+    /// </summary>
+    public static async Task RefreshRunButtonsAfterSceneReadyAsync(int retryFrameCount = 12)
+    {
+        int retries = Mathf.Max(1, retryFrameCount);
+
+        for (int i = 0; i < retries; i++)
+        {
+            TitleManager manager = FindFirstObjectByType<TitleManager>(FindObjectsInactive.Include);
+            if (manager != null)
+            {
+                manager.RefreshRunButtons();
+
+                // 한 프레임 더 기다린 뒤 한 번 더 확정하여 OnEnable/Start 순서에 의한 덮어쓰기를 방지합니다.
+                await Task.Yield();
+                if (manager != null)
+                    manager.RefreshRunButtons();
+
+                return;
+            }
+
+            await Task.Yield();
+        }
+
+        RefreshRunButtonsInScene();
     }
 
     private void RefreshLogoDefaultState()
