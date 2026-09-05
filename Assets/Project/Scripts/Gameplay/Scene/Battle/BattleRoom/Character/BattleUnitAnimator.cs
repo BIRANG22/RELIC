@@ -11,6 +11,17 @@ public enum VfxFlipType
     None
 }
 
+
+[System.Serializable]
+public class BattleProjectileVfxRenderRoutingOverride
+{
+    [Tooltip("렌더 라우팅을 적용할 Projectile/Impact 프리팹입니다.")]
+    public GameObject projectilePrefab;
+
+    [Tooltip("일반 VFX와 동일한 Render Routing 설정입니다. Prefab/Flip 값은 사용하지 않고 렌더 관련 값만 복사합니다.")]
+    public BattleVfxEntry renderRouting = new();
+}
+
 public class BattleUnitAnimator : MonoBehaviour
 {
     private const string DefaultVfxSortingReferenceName = "SpriteRoot";
@@ -58,6 +69,10 @@ public class BattleUnitAnimator : MonoBehaviour
 
     [Header("VFX Spawn")]
     [SerializeField] private Transform vfxSpawnPoint;
+
+    [Header("Projectile VFX Render Routing")]
+    [Tooltip("Projectile/Impact 프리팹별 Render Routing Override입니다. 목록에 없는 프리팹은 기존 기본 렌더링 방식을 유지합니다.")]
+    [SerializeField] private BattleProjectileVfxRenderRoutingOverride[] projectileVfxRenderRoutingOverrides;
 
     [Header("VFX Sorting")]
     [SerializeField] private string vfxSortingReferenceName = DefaultVfxSortingReferenceName;
@@ -1833,11 +1848,56 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private BattleVfxEntry CreateRuntimeVfxEntry(GameObject prefab, VfxFlipType flipType)
     {
-        return new BattleVfxEntry
+        BattleVfxEntry entry = new BattleVfxEntry
         {
             prefab = prefab,
             flipType = flipType
         };
+
+        if (TryGetProjectileVfxRenderRouting(prefab, out BattleVfxEntry routing))
+            CopyRenderRouting(routing, entry);
+
+        return entry;
+    }
+
+    private bool TryGetProjectileVfxRenderRouting(GameObject prefab, out BattleVfxEntry routing)
+    {
+        routing = null;
+
+        if (prefab == null || projectileVfxRenderRoutingOverrides == null)
+            return false;
+
+        for (int i = 0; i < projectileVfxRenderRoutingOverrides.Length; i++)
+        {
+            BattleProjectileVfxRenderRoutingOverride item = projectileVfxRenderRoutingOverrides[i];
+
+            if (item == null || item.projectilePrefab != prefab || item.renderRouting == null)
+                continue;
+
+            routing = item.renderRouting;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void CopyRenderRouting(BattleVfxEntry routing, BattleVfxEntry target)
+    {
+        if (routing == null || target == null)
+            return;
+
+        target.renderMode = routing.renderMode;
+        target.proxyBlendMode = routing.proxyBlendMode;
+        target.scaleDirectWorldRendererToProxyHeight = routing.scaleDirectWorldRendererToProxyHeight;
+        target.renderTextureWidth = routing.renderTextureWidth;
+        target.renderTextureHeight = routing.renderTextureHeight;
+        target.renderCameraOrthographicSize = routing.renderCameraOrthographicSize;
+        target.proxyWorldHeight = routing.proxyWorldHeight;
+        target.proxyWorldOffset = routing.proxyWorldOffset;
+        target.proxySortingLayerName = routing.proxySortingLayerName;
+        target.proxySortingOrderOffset = routing.proxySortingOrderOffset;
+        target.proxySortingWorldYOffset = routing.proxySortingWorldYOffset;
+        target.proxyYMultiplier = routing.proxyYMultiplier;
     }
 
     private static BattleVfxEntry CreateTargetGridVfxEntry(BattleVfxEntry source)
@@ -1864,17 +1924,12 @@ public class BattleUnitAnimator : MonoBehaviour
         };
     }
 
-    private static BattleVfxEntry CreateTargetGridImpactVfxEntry(BattleProjectileVfxEntry source)
+    private BattleVfxEntry CreateTargetGridImpactVfxEntry(BattleProjectileVfxEntry source)
     {
-        if (source == null)
+        if (source == null || source.impactPrefab == null)
             return null;
 
-        return new BattleVfxEntry
-        {
-            prefab = source.impactPrefab,
-            flipType = VfxFlipType.None,
-            renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture
-        };
+        return CreateRuntimeVfxEntry(source.impactPrefab, VfxFlipType.None);
     }
 
     private void ApplyUnitVfxSortingTarget(BattleWorldVfxHandle handle, BattleVfxEntry entry)

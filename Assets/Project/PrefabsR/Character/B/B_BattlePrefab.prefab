@@ -468,8 +468,8 @@ MonoBehaviour:
   deadStateName: Dead
   moveVfx:
     prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
-    flipType: 0
-    renderMode: 0
+    flipType: 2
+    renderMode: 2
     proxyBlendMode: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
@@ -483,9 +483,9 @@ MonoBehaviour:
     proxyYMultiplier: 100
   guardVfx:
     prefab: {fileID: 8802234492492066749, guid: 0beedeb423fa0d84585fcbbb3397e1d8, type: 3}
-    flipType: 0
-    renderMode: 0
-    proxyBlendMode: 1
+    flipType: 2
+    renderMode: 2
+    proxyBlendMode: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
@@ -498,9 +498,9 @@ MonoBehaviour:
     proxyYMultiplier: 100
   hitVfx:
     prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
-    flipType: 0
-    renderMode: 0
-    proxyBlendMode: 1
+    flipType: 2
+    renderMode: 2
+    proxyBlendMode: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
@@ -805,8 +805,8 @@ MonoBehaviour:
       stateName: AttackAction1
       vfx:
         prefab: {fileID: 0}
-        flipType: 0
-        renderMode: 0
+        flipType: 2
+        renderMode: 2
         proxyBlendMode: 0
         scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
@@ -836,8 +836,8 @@ MonoBehaviour:
       stateName: AttackAction2
       vfx:
         prefab: {fileID: 0}
-        flipType: 0
-        renderMode: 0
+        flipType: 2
+        renderMode: 2
         proxyBlendMode: 0
         scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
@@ -868,7 +868,7 @@ MonoBehaviour:
       vfx:
         prefab: {fileID: 0}
         flipType: 0
-        renderMode: 0
+        renderMode: 2
         proxyBlendMode: 0
         scaleDirectWorldRendererToProxyHeight: 0
         renderTextureWidth: 512
@@ -1383,6 +1383,7 @@ MonoBehaviour:
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
   vfxSpawnPoint: {fileID: 8553652059678573032}
+  projectileVfxRenderRoutingOverrides: []
   vfxSortingReferenceName: SpriteRoot
   vfxSortingReferenceYOffset: -0.1
   unitFacing: {fileID: 0}

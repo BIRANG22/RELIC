@@ -318,8 +318,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 1597553239
-  m_SortingLayer: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 9f50d00e0f5f7314ba28e83b3854e295, type: 3}
   m_Color: {r: 0.9339623, g: 0.2863564, b: 0.2863564, a: 1}
@@ -507,8 +507,8 @@ MonoBehaviour:
   deadStateName: Dead
   moveVfx:
     prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
-    flipType: 0
-    renderMode: 0
+    flipType: 2
+    renderMode: 2
     proxyBlendMode: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
@@ -522,8 +522,8 @@ MonoBehaviour:
     proxyYMultiplier: 100
   guardVfx:
     prefab: {fileID: 8802234492492066749, guid: 0beedeb423fa0d84585fcbbb3397e1d8, type: 3}
-    flipType: 0
-    renderMode: 0
+    flipType: 2
+    renderMode: 2
     proxyBlendMode: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
@@ -537,8 +537,8 @@ MonoBehaviour:
     proxyYMultiplier: 100
   hitVfx:
     prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
-    flipType: 0
-    renderMode: 0
+    flipType: 2
+    renderMode: 2
     proxyBlendMode: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
@@ -1127,8 +1127,8 @@ MonoBehaviour:
     vfx:
       prefab: {fileID: 8323198300880681488, guid: 54a105f7d4413df498febf2c20247103, type: 3}
       flipType: 0
-      renderMode: 0
-      proxyBlendMode: 1
+      renderMode: 2
+      proxyBlendMode: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -1155,16 +1155,16 @@ MonoBehaviour:
     prepareDuration: 0.15
     stateName: AttackAction2
     vfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 4041418071315160412, guid: 7963aebfb224776469c914d75069f13a, type: 3}
       flipType: 0
-      renderMode: 0
-      proxyBlendMode: 1
+      renderMode: 2
+      proxyBlendMode: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
       proxyWorldHeight: 10
-      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxyWorldOffset: {x: 0, y: 3, z: 0}
       proxySortingLayerName: Unit
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
@@ -1185,9 +1185,9 @@ MonoBehaviour:
     prepareDuration: 0.15
     stateName: AttackAction3
     vfx:
-      prefab: {fileID: 0}
-      flipType: 0
-      renderMode: 0
+      prefab: {fileID: 7504876253414955642, guid: 053bd2aa4af49e442baaafe93c960063, type: 3}
+      flipType: 2
+      renderMode: 2
       proxyBlendMode: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
@@ -1210,7 +1210,7 @@ MonoBehaviour:
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
-      impactOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 5, z: 0}
   - prepareStateName: 
     prepareDuration: 0.15
     stateName: 
@@ -1422,6 +1422,7 @@ MonoBehaviour:
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
   vfxSpawnPoint: {fileID: 7198944354738326185}
+  projectileVfxRenderRoutingOverrides: []
   vfxSortingReferenceName: SpriteRoot
   vfxSortingReferenceYOffset: -0.1
   unitFacing: {fileID: 0}
