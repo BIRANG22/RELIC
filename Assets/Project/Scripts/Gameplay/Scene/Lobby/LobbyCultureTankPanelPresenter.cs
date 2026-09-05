@@ -38,6 +38,8 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     [SerializeField] private Vector2 compoundTransferBounceOffset = new Vector2(180f, 120f);
     [SerializeField, Min(0.01f)] private float compoundTransferBounceDuration = 0.18f;
     [SerializeField, Min(0.01f)] private float compoundTransferFlyDuration = 0.32f;
+    [Tooltip("이동 효과가 생성될 때의 크기 배율입니다. 튜토리얼 파편과 동일한 방식으로 사용합니다.")]
+    [SerializeField, Min(0.05f)] private float compoundTransferStartScale = 2.5f;
     [SerializeField, Min(0.05f)] private float compoundTransferEndScale = 0.35f;
 
     [Header("Compound Transfer Trail")]
@@ -359,7 +361,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.sizeDelta = compoundTransferEffectSize;
-        rect.localScale = Vector3.one;
+        rect.localScale = Vector3.one * compoundTransferStartScale;
         rect.anchoredPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, screenPosition);
         rect.SetAsLastSibling();
 
@@ -394,8 +396,10 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         Vector2 toPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, toScreenPosition);
         Vector2 bouncePosition = fromPosition + compoundTransferBounceOffset;
         Vector3 startScale = effect.localScale;
-        Vector3 bounceScale = startScale * 1.08f;
         Vector3 endScale = Vector3.one * compoundTransferEndScale;
+        float totalDuration = Mathf.Max(0.02f, compoundTransferBounceDuration + compoundTransferFlyDuration);
+        float bounceRatio = Mathf.Clamp01(compoundTransferBounceDuration / totalDuration);
+        Vector3 bounceScale = Vector3.LerpUnclamped(startScale, endScale, bounceRatio);
         var trailGhosts = new List<CompoundTrailGhost>();
         float trailTimer = 0f;
 

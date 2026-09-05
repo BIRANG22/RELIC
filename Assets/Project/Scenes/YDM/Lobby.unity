@@ -73038,7 +73038,7 @@ MonoBehaviour:
   fragmentTransferFlyDuration: 0.32
   fragmentTransferSwapInterval: 0.08
   fragmentTransferLaunchInterval: 0.12
-  fragmentTransferStartScale: 1
+  fragmentTransferStartScale: 2.5
   fragmentTransferEndScale: 0.35
   fragmentTrailSpawnInterval: 0.025
   fragmentTrailLifetime: 0.18

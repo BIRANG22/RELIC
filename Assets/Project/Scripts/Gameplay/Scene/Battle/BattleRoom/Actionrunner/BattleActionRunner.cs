@@ -37,6 +37,7 @@ public class BattleActionRunner
     private const float ForcedMoveVisualCompletionDelay = 0.18f;
     private const float DefaultActionRoutineTimeout = 8f;
     private const string MuckMonsterId = "Mon_01";
+    private const string MuckMoveSkillId = "S_Monster_01";
     private const string MuckProjectileSkillId = "S_Monster_02";
     private const string BlobAttackSkillId = "S_Monster_04";
     private const string BlobMoveSkillId = "S_Monster_03";
@@ -4531,9 +4532,23 @@ public class BattleActionRunner
 
     private static bool ShouldSkipPlayerSkillCamera(PlayerReservedCommand command)
     {
-        return command != null &&
-               command.SkillData != null &&
-               command.SkillData.RangeType == RangeType.Selection;
+        if (command == null || command.SkillData == null)
+            return false;
+
+        // 이동 스킬은 Range_All을 사용하더라도 카메라 연출 분류에서는 제외합니다.
+        if (BattleEquipmentEffectService.IsMoveCommand(command))
+            return false;
+
+        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(
+            command.UserRuntime,
+            command.SkillData);
+
+        // Range_All은 UI 분류상 '전체'이지만, 이동 스킬이 아닌 경우
+        // 전투 카메라 연출은 원거리 스킬과 동일하게 처리합니다.
+        if (BattleRangeCalculator.IsAllRangeId(rangeId))
+            return true;
+
+        return command.SkillData.RangeType == RangeType.Selection;
     }
 
     private static bool ShouldSkipMonsterSkillCamera(MonsterReservedCommand command)
@@ -4917,6 +4932,16 @@ public class BattleActionRunner
     {
         if (command == null)
             return Vector2Int.zero;
+
+        // 머크도 예약 시 정한 이동 벡터를 실행 순간까지 그대로 유지합니다.
+        // 예약 이후 캐릭터가 이동 경로에 들어오면 EffectiveMoveOffset이 축소될 수 있으므로,
+        // 원래 MoveOffset으로 진입을 시도해 ResolveMonsterMove에서 실제 충돌을 처리합니다.
+        if (string.Equals(command.MonsterId, MuckMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, MuckMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
 
         // 블롭은 캐릭터가 있는 칸으로 충돌 이동을 예약할 수 있습니다.
         // 타임라인 시뮬레이션에서는 점유된 칸이라 이동량이 0으로 계산될 수 있지만,

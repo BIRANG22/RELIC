@@ -2585,7 +2585,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         RefreshSkillInfoCost(skillData);
 
         if (skillInfoTypeText != null)
-            skillInfoTypeText.text = GetSkillTypeDisplayName(skillData.RangeType);
+            skillInfoTypeText.text = GetSkillTypeDisplayName(skillData);
 
         if (skillInfoDetailsText != null)
         {
@@ -2802,9 +2802,22 @@ public class BattleCharacterPanelUI : MonoBehaviour
         return effectName;
     }
 
-    private static string GetSkillTypeDisplayName(RangeType rangeType)
+    private static string GetSkillTypeDisplayName(SkillMasterData skillData)
     {
-        switch (rangeType)
+        if (skillData == null)
+            return string.Empty;
+
+        // 이동 스킬을 포함해 Range_All을 사용하는 스킬은 RangeType과 관계없이
+        // UI에서 '전체'로 표시합니다.
+        if (BattleRangeCalculator.IsAllRangeId(skillData.RangeId))
+            return "전체";
+
+        // Range_Self는 RangeType과 관계없이 자기 자신을 대상으로 하는 범위이므로
+        // UI에서 '개인'으로 표시합니다.
+        if (string.Equals(skillData.RangeId, "Range_Self", StringComparison.OrdinalIgnoreCase))
+            return "개인";
+
+        switch (skillData.RangeType)
         {
             case RangeType.Selection:
                 return "원거리";

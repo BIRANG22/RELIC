@@ -5,6 +5,7 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 public sealed class LobbyRelicShopPresenter : MonoBehaviour
 {
@@ -26,7 +27,11 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     [SerializeField, Min(0.01f)] private float purchaseBounceDuration = 0.18f;
     [Tooltip("튀어 오른 위치에서 Equip 버튼까지 돌진하는 시간입니다. 처음에는 느리고 끝으로 갈수록 빠르게 가속합니다.")]
     [SerializeField, Min(0.01f)] private float ringFlyDuration = 0.32f;
-    [SerializeField, Min(0.1f)] private float ringEndScale = 0.72f;
+    [Tooltip("이동 효과가 생성될 때의 크기 배율입니다. 튜토리얼 파편과 동일한 방식으로 사용합니다.")]
+    [SerializeField, Min(0.05f)] private float purchaseTransferStartScale = 2.5f;
+    [FormerlySerializedAs("ringEndScale")]
+    [Tooltip("Equip 타겟에 도착할 때 이동 효과의 최종 크기 배율입니다.")]
+    [SerializeField, Min(0.05f)] private float purchaseTransferEndScale = 0.35f;
     [Tooltip("유물 구매 후 Equip 버튼으로 날아갈 원형 효과 Texture2D입니다. Texture Type은 Default를 사용할 수 있습니다.")]
     [SerializeField] private Texture2D purchaseTransferEffectTexture;
     [Tooltip("원형 효과의 UI 크기입니다.")]
@@ -784,7 +789,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.sizeDelta = purchaseTransferEffectSize;
-        rect.localScale = Vector3.one;
+        rect.localScale = Vector3.one * purchaseTransferStartScale;
         rect.anchoredPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, screenPosition);
         rect.SetAsLastSibling();
 
@@ -819,9 +824,11 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         Vector2 toPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, toScreenPosition);
         Vector2 bouncePosition = fromPosition + purchaseBounceOffset;
 
-        Vector3 originalScale = target.localScale;
-        Vector3 bounceScale = originalScale * 1.08f;
-        Vector3 endScale = originalScale * ringEndScale;
+        Vector3 startScale = target.localScale;
+        Vector3 endScale = Vector3.one * purchaseTransferEndScale;
+        float totalDuration = Mathf.Max(0.02f, purchaseBounceDuration + ringFlyDuration);
+        float bounceRatio = Mathf.Clamp01(purchaseBounceDuration / totalDuration);
+        Vector3 bounceScale = Vector3.LerpUnclamped(startScale, endScale, bounceRatio);
         var trailGhosts = new List<PurchaseTrailGhost>();
         float trailTimer = 0f;
 
@@ -839,7 +846,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             float eased = EaseInCubic(t);
 
             target.anchoredPosition = Vector2.LerpUnclamped(fromPosition, bouncePosition, eased);
-            target.localScale = Vector3.LerpUnclamped(originalScale, bounceScale, eased);
+            target.localScale = Vector3.LerpUnclamped(startScale, bounceScale, eased);
 
             trailTimer += deltaTime;
             SpawnTrailGhostsIfNeeded(
