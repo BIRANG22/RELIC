@@ -76,7 +76,12 @@ public class SaveSystem : Singleton<SaveSystem>
         }
 
         if (TryCreateBattleRoomEntryCheckpointSave(out GameSaveData checkpointSave))
-            return WriteSaveData(checkpointSave);
+        {
+            if (CanContinueBattle(checkpointSave))
+                return WriteSaveData(checkpointSave);
+
+            Debug.LogWarning("[SaveSystem] Battle room entry checkpoint is not a valid continue save. Falling back to the current runtime snapshot.");
+        }
 
         CommitRuntimeStateContributorsForSave();
         RecordDiscoveryService.BackfillFromCurrentState(DataManager.Instance);
