@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class SettingWarningUI : MonoBehaviour
 {
+    private const int MinimumTopSortingOrder = 11000;
+
     public static SettingWarningUI Instance { get; private set; }
 
     [Header("UI")]
@@ -33,7 +35,7 @@ public class SettingWarningUI : MonoBehaviour
 
     [Header("Sort Order")]
     [SerializeField] private bool forceTopSorting = true;
-    [SerializeField] private int topSortingOrder = 9000;
+    [SerializeField] private int topSortingOrder = MinimumTopSortingOrder;
     [SerializeField] private bool setAsLastSiblingOnShow = true;
 
     [Header("Warning Text - General")]
@@ -491,7 +493,7 @@ public class SettingWarningUI : MonoBehaviour
             sortingCanvas = gameObject.AddComponent<Canvas>();
 
         sortingCanvas.overrideSorting = true;
-        sortingCanvas.sortingOrder = topSortingOrder;
+        sortingCanvas.sortingOrder = Mathf.Max(topSortingOrder, MinimumTopSortingOrder);
     }
 
     private void SetAlpha(float alpha)

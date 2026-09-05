@@ -105,6 +105,41 @@ public sealed class UIBackgroundBlurShaderTests
     }
 
     [Test]
+    public void BlurBackground_SupportsAdditiveRuntimeRootsWithoutBreakingSetReplacement()
+    {
+        string blurBackground = File.ReadAllText("Assets/Project/Scripts/UIBlurBackground.cs");
+
+        Assert.That(blurBackground, Does.Contain("public void SetRuntimeBlurredUiRoots"));
+        Assert.That(blurBackground, Does.Contain("runtimeBlurredUiRoots.Clear();"));
+        Assert.That(blurBackground, Does.Contain("public void AddRuntimeBlurredUiRoot(GameObject root)"));
+        Assert.That(blurBackground, Does.Contain("private bool AddRuntimeBlurredUiRootInternal(GameObject root)"));
+        Assert.That(blurBackground, Does.Contain("blurredUiRoots.Contains(root) || runtimeBlurredUiRoots.Contains(root)"));
+    }
+
+    [Test]
+    public void LobbyMenu_AddsSettingButtonAndQuestRootsForMenuBlur()
+    {
+        string menu = File.ReadAllText("Assets/Project/Scripts/LobbyMenuController.cs");
+        string quest = File.ReadAllText("Assets/Project/Scripts/Gameplay/Scene/Lobby/Quest/LobbyQuestManager.cs");
+
+        Assert.That(menu, Does.Contain("SettingButtonObjectName = \"SettingButton\""));
+        Assert.That(menu, Does.Contain("ConfigureMenuBlurRoots();"));
+        Assert.That(menu, Does.Contain("blurBackground.AddRuntimeBlurredUiRoot(settingButton);"));
+        Assert.That(menu, Does.Contain("LobbyQuestManager.Instance?.ConfigureQuestPanelBlur(blurBackground);"));
+        Assert.That(quest, Does.Contain("blurBackground.AddRuntimeBlurredUiRoot(questPanel.gameObject);"));
+        Assert.That(quest, Does.Contain("UIBlurBackgroundManager.MarkReplicaDirty();"));
+    }
+
+    [Test]
+    public void SettingWarning_StaysAboveSharedBlurAndSharpLobbyPanels()
+    {
+        string warning = File.ReadAllText("Assets/Project/Scripts/UI/Lobby/SettingWarningUI.cs");
+
+        Assert.That(warning, Does.Contain("MinimumTopSortingOrder = 11000"));
+        Assert.That(warning, Does.Contain("Mathf.Max(topSortingOrder, MinimumTopSortingOrder)"));
+    }
+
+    [Test]
     public void SharedBlurManager_DoesNotBlockInputAndPausesCameraWhileARequesterIsActive()
     {
         string manager = File.ReadAllText("Assets/Project/Scripts/UIBlurBackgroundManager.cs");

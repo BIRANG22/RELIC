@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class LobbyMenuController : MonoBehaviour
 {
+    private const string SettingButtonObjectName = "SettingButton";
+
     [Header("Menu Panel")]
     [Tooltip("���� ���� �κ� �޴� �г��Դϴ�.")]
     [SerializeField] private GameObject menuPanel;
@@ -86,6 +88,7 @@ public class LobbyMenuController : MonoBehaviour
             if (menuPanel != null && menuPanel.activeInHierarchy)
             {
                 isMenuOpen = true;
+                ConfigureMenuBlurRoots();
                 ApplyOpenedPanelState();
                 return;
             }
@@ -138,7 +141,7 @@ public class LobbyMenuController : MonoBehaviour
         if (menuPanel == null)
             return;
 
-        UIBlurBackground.EnsureForPanel(menuPanel);
+        ConfigureMenuBlurRoots();
         menuPanel.SetActive(true);
         isMenuOpen = true;
         ApplyOpenedPanelState();
@@ -149,8 +152,26 @@ public class LobbyMenuController : MonoBehaviour
         if (menuPanel == null)
             return;
 
+        ConfigureMenuBlurRoots();
+
         if (selectFirstButtonOnOpen)
             SelectFirstButton();
+    }
+
+    private void ConfigureMenuBlurRoots()
+    {
+        if (menuPanel == null)
+            return;
+
+        UIBlurBackground blurBackground = UIBlurBackground.EnsureForPanel(menuPanel);
+        if (blurBackground == null)
+            return;
+
+        GameObject settingButton = FindSceneObject(SettingButtonObjectName);
+        if (settingButton != null)
+            blurBackground.AddRuntimeBlurredUiRoot(settingButton);
+
+        LobbyQuestManager.Instance?.ConfigureQuestPanelBlur(blurBackground);
     }
 
     private void SelectFirstButton()
@@ -294,6 +315,31 @@ public class LobbyMenuController : MonoBehaviour
 
             if (button.gameObject.name == objectName)
                 return button;
+        }
+
+        return null;
+    }
+
+    private static GameObject FindSceneObject(string objectName)
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform candidate = transforms[i];
+
+            if (candidate == null)
+                continue;
+
+            GameObject gameObject = candidate.gameObject;
+            if (!gameObject.scene.IsValid())
+                continue;
+
+            if (gameObject.name == objectName)
+                return gameObject;
         }
 
         return null;

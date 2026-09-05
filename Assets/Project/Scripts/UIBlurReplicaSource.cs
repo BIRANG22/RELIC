@@ -202,8 +202,9 @@ public sealed class UIBlurReplicaSource
             replica.anchorMin = new Vector2(0.5f, 0.5f);
             replica.anchorMax = new Vector2(0.5f, 0.5f);
             replica.pivot = source.pivot;
-            replica.anchoredPosition = (min + max) * 0.5f;
-            replica.sizeDelta = max - min;
+            Vector2 size = max - min;
+            replica.anchoredPosition = min + Vector2.Scale(size, source.pivot);
+            replica.sizeDelta = size;
             replica.localRotation = source.localRotation;
             replica.localScale = source.localScale;
         }
