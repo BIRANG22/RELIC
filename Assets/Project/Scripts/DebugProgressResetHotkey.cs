@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -7,14 +8,25 @@ using UnityEngine.InputSystem;
 /// ] 키를 누르면 게임 진행 데이터만 초기화하고 타이틀로 이동합니다.
 /// ; 키를 누르면 현재 저장된 획득 기록 기준 도감을 열고, ' 키를 누르면 저장을 바꾸지 않고 도감을 전체 공개합니다.
 /// - 키를 누르면 푸른 더스티움을 100 감소시키고, = 키를 누르면 100 증가시킵니다.
-/// [ 키를 누르면 Item_001~Item_012를 각각 10개 획득하고, 푸른 더스티움 5000과 캐릭터 5레벨 테스트 상태를 준비합니다.
+/// L 키를 누르면 테스트 치트를 켜거나 끕니다. ON 시 Item_001~Item_012 각각 +10, 푸른 더스티움 +5000, 캐릭터 레벨 +5가 적용되고 OFF 시 안전하게 회수합니다.
 /// 언어, 음량 등 환경설정은 유지합니다.
 /// </summary>
 public sealed class DebugProgressResetHotkey : MonoBehaviour
 {
     private static DebugProgressResetHotkey instance;
     private bool isResetting;
-    private bool pendingLevel5Grant;
+    private bool pendingCharacterCheatGrant;
+    private bool testBundleActive;
+    private int blueDustiumBeforeCheat;
+
+    private const int TestItemGrantCount = 10;
+    private const int TestBlueDustiumGrant = 5000;
+    private const int CharacterLevelCheatDelta = 5;
+    private const int MaxCharacterLevel = 30;
+
+    private readonly Dictionary<string, int> itemCountsBeforeCheat = new();
+    private readonly Dictionary<string, int> grantedCharacterLevels = new();
+    private readonly Dictionary<string, int> grantedCharacterExperience = new();
 
     private static readonly string[] DefaultTestCharacterIds =
     {
@@ -61,15 +73,15 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
         if (isResetting)
             return;
 
-        TryApplyPendingLevel5Grant();
+        TryApplyPendingCharacterCheat();
 
         Keyboard keyboard = Keyboard.current;
         if (keyboard == null)
             return;
 
-        if (keyboard.leftBracketKey.wasPressedThisFrame)
+        if (keyboard.lKey.wasPressedThisFrame)
         {
-            GrantTestBundle();
+            ToggleTestBundle();
             return;
         }
 
@@ -120,7 +132,15 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
             : "[DebugProgressResetHotkey] 현재 저장된 획득 기록 기준으로 도감을 열었습니다.");
     }
 
-    private static void GrantTestBundle()
+    private void ToggleTestBundle()
+    {
+        if (testBundleActive)
+            DisableTestBundle();
+        else
+            EnableTestBundle();
+    }
+
+    private void EnableTestBundle()
     {
         DataManager dataManager = DataManager.Instance;
 
@@ -128,92 +148,235 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
             InitialDefaultPartySetup.TryInitialize(dataManager);
 
         LobbyRuntimeData lobby = dataManager?.LobbyRuntimeStore?.GetOrCreate();
-
         if (dataManager == null || lobby == null)
         {
-            Debug.LogWarning("[DebugProgressResetHotkey] 테스트 지급에 필요한 런타임 데이터를 찾지 못했습니다.");
+            Debug.LogWarning("[DebugProgressResetHotkey] 테스트 치트에 필요한 런타임 데이터를 찾지 못했습니다.");
+            ShowCheatWarning("테스트 치트를 적용할 수 없습니다.");
             return;
         }
 
-        lobby.BagItemIds ??= new System.Collections.Generic.List<string>();
+        lobby.BagItemIds ??= new List<string>();
+        itemCountsBeforeCheat.Clear();
+
         for (int itemNumber = 1; itemNumber <= 12; itemNumber++)
         {
             string itemId = $"Item_{itemNumber:000}";
-            for (int count = 0; count < 10; count++)
+            itemCountsBeforeCheat[itemId] = CountItem(lobby.BagItemIds, itemId);
+
+            for (int count = 0; count < TestItemGrantCount; count++)
                 lobby.BagItemIds.Add(itemId);
         }
 
-        ChangeBlueDustium(5000);
+        blueDustiumBeforeCheat = lobby.BlueDustium;
+        lobby.BlueDustium += TestBlueDustiumGrant;
 
-        instance.pendingLevel5Grant = true;
-        int leveledCharacterCount = ApplyLevel5ToExistingCharacters(dataManager);
-        instance.TryCompletePendingLevel5Grant(dataManager);
+        grantedCharacterLevels.Clear();
+        grantedCharacterExperience.Clear();
+        testBundleActive = true;
+        pendingCharacterCheatGrant = true;
 
-        BattleBagPanelUI.RefreshAll();
+        int changedCharacterCount = ApplyCharacterCheatToExistingCharacters(dataManager);
+        TryCompletePendingCharacterCheat(dataManager);
 
-        if (SaveSystem.Instance != null)
-            SaveSystem.Instance.SaveCurrentProgress();
+        RefreshCheatAffectedUI();
+        SaveProgress();
 
-        Debug.Log($"[DebugProgressResetHotkey] [ 치트 적용: Item_001~Item_012 각 10개, 푸른 더스티움 +5000, 5레벨 미만 캐릭터 {leveledCharacterCount}명 -> Lv.5. 아직 기본 캐릭터가 생성되지 않았다면 로비 생성 직후 자동 적용됩니다.");
+        ShowCheatWarning("테스트 치트가 활성화되었습니다.");
+        Debug.Log($"[DebugProgressResetHotkey] 테스트 치트 ON: Item_001~Item_012 각 +{TestItemGrantCount}, 푸른 더스티움 +{TestBlueDustiumGrant}, 캐릭터 {changedCharacterCount}명 레벨 +{CharacterLevelCheatDelta}.");
     }
 
-    private void TryApplyPendingLevel5Grant()
+    private void DisableTestBundle()
     {
-        if (!pendingLevel5Grant)
+        DataManager dataManager = DataManager.Instance;
+        LobbyRuntimeData lobby = dataManager?.LobbyRuntimeStore?.GetOrCreate();
+
+        if (dataManager == null || lobby == null)
+        {
+            Debug.LogWarning("[DebugProgressResetHotkey] 테스트 치트 해제에 필요한 런타임 데이터를 찾지 못했습니다.");
+            ShowCheatWarning("테스트 치트를 해제할 수 없습니다.");
+            return;
+        }
+
+        lobby.BagItemIds ??= new List<string>();
+
+        for (int itemNumber = 1; itemNumber <= 12; itemNumber++)
+        {
+            string itemId = $"Item_{itemNumber:000}";
+            int originalCount = itemCountsBeforeCheat.TryGetValue(itemId, out int savedCount) ? savedCount : 0;
+            int currentCount = CountItem(lobby.BagItemIds, itemId);
+            int reclaimCount = Mathf.Min(TestItemGrantCount, Mathf.Max(0, currentCount - originalCount));
+            RemoveItemOccurrences(lobby.BagItemIds, itemId, reclaimCount);
+        }
+
+        int blueDustiumReclaim = Mathf.Min(TestBlueDustiumGrant, Mathf.Max(0, lobby.BlueDustium - blueDustiumBeforeCheat));
+        lobby.BlueDustium = Mathf.Max(0, lobby.BlueDustium - blueDustiumReclaim);
+
+        int changedCharacterCount = RemoveCharacterCheat(dataManager);
+
+        pendingCharacterCheatGrant = false;
+        testBundleActive = false;
+        itemCountsBeforeCheat.Clear();
+        grantedCharacterLevels.Clear();
+        grantedCharacterExperience.Clear();
+        blueDustiumBeforeCheat = 0;
+
+        RefreshCheatAffectedUI();
+        SaveProgress();
+
+        ShowCheatWarning("테스트 치트가 비활성화되었습니다.");
+        Debug.Log($"[DebugProgressResetHotkey] 테스트 치트 OFF: 남아 있는 치트 지급분만 회수하고 캐릭터 {changedCharacterCount}명에서 치트 레벨을 제거했습니다.");
+    }
+
+    private static void ShowCheatWarning(string message)
+    {
+        if (SettingWarningUI.ShowMessage(message))
+            return;
+
+        TitleWarningUI titleWarningUI = TitleWarningUI.Instance;
+        if (titleWarningUI == null)
+            titleWarningUI = FindFirstObjectByType<TitleWarningUI>(FindObjectsInactive.Include);
+
+        if (titleWarningUI != null)
+            titleWarningUI.Show(message);
+    }
+
+    private void TryApplyPendingCharacterCheat()
+    {
+        if (!testBundleActive || !pendingCharacterCheatGrant)
             return;
 
         DataManager dataManager = DataManager.Instance;
         if (dataManager?.CharacterRuntimeStore == null)
             return;
 
-        int changedCount = ApplyLevel5ToExistingCharacters(dataManager);
-        bool completed = TryCompletePendingLevel5Grant(dataManager);
+        int changedCount = ApplyCharacterCheatToExistingCharacters(dataManager);
+        bool completed = TryCompletePendingCharacterCheat(dataManager);
 
-        if (changedCount > 0 && SaveSystem.Instance != null)
-            SaveSystem.Instance.SaveCurrentProgress();
+        if (changedCount > 0)
+            SaveProgress();
 
         if (completed)
-            Debug.Log("[DebugProgressResetHotkey] 기본 캐릭터 생성 후 [ 치트의 Lv.5 적용을 완료했습니다.");
+            Debug.Log("[DebugProgressResetHotkey] 기본 캐릭터 생성 후 테스트 치트의 레벨 +5 적용을 완료했습니다.");
     }
 
-    private bool TryCompletePendingLevel5Grant(DataManager dataManager)
+    private bool TryCompletePendingCharacterCheat(DataManager dataManager)
     {
-        if (!pendingLevel5Grant || dataManager?.CharacterRuntimeStore == null)
+        if (!pendingCharacterCheatGrant || dataManager?.CharacterRuntimeStore == null)
             return false;
 
         for (int i = 0; i < DefaultTestCharacterIds.Length; i++)
         {
-            if (!dataManager.CharacterRuntimeStore.TryGet(DefaultTestCharacterIds[i], out CharacterRuntimeData character) ||
+            string characterId = DefaultTestCharacterIds[i];
+            if (!dataManager.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData character) ||
                 character == null ||
-                character.Level < 5)
+                !grantedCharacterLevels.ContainsKey(characterId))
             {
                 return false;
             }
         }
 
-        pendingLevel5Grant = false;
+        pendingCharacterCheatGrant = false;
         return true;
     }
 
-    private static int ApplyLevel5ToExistingCharacters(DataManager dataManager)
+    private int ApplyCharacterCheatToExistingCharacters(DataManager dataManager)
     {
         if (dataManager?.CharacterRuntimeStore == null)
             return 0;
 
         int changedCount = 0;
-        int level5Experience = BattleStageClearExperienceService.GetCumulativeExperienceForLevel(5);
 
         foreach (CharacterRuntimeData character in dataManager.CharacterRuntimeStore.GetAll().Values)
         {
-            if (character == null || character.Level >= 5)
+            if (character == null || string.IsNullOrWhiteSpace(character.CharacterId))
                 continue;
 
-            character.Level = 5;
-            character.Exp = Mathf.Max(character.Exp, level5Experience);
+            if (grantedCharacterLevels.ContainsKey(character.CharacterId))
+                continue;
+
+            int levelBefore = Mathf.Clamp(character.Level, 1, MaxCharacterLevel);
+            int levelAfter = Mathf.Min(MaxCharacterLevel, levelBefore + CharacterLevelCheatDelta);
+            int grantedLevels = levelAfter - levelBefore;
+            int experienceBeforeLevel = BattleStageClearExperienceService.GetCumulativeExperienceForLevel(levelBefore);
+            int experienceAfterLevel = BattleStageClearExperienceService.GetCumulativeExperienceForLevel(levelAfter);
+            int grantedExperience = Mathf.Max(0, experienceAfterLevel - experienceBeforeLevel);
+
+            character.Level = levelAfter;
+            character.Exp = Mathf.Max(0, character.Exp + grantedExperience);
+
+            grantedCharacterLevels[character.CharacterId] = grantedLevels;
+            grantedCharacterExperience[character.CharacterId] = grantedExperience;
             changedCount++;
         }
 
         return changedCount;
+    }
+
+    private int RemoveCharacterCheat(DataManager dataManager)
+    {
+        if (dataManager?.CharacterRuntimeStore == null)
+            return 0;
+
+        int changedCount = 0;
+
+        foreach (KeyValuePair<string, int> pair in grantedCharacterLevels)
+        {
+            if (!dataManager.CharacterRuntimeStore.TryGet(pair.Key, out CharacterRuntimeData character) || character == null)
+                continue;
+
+            int grantedLevels = Mathf.Max(0, pair.Value);
+            int grantedExperience = grantedCharacterExperience.TryGetValue(pair.Key, out int experience)
+                ? Mathf.Max(0, experience)
+                : 0;
+
+            character.Level = Mathf.Max(1, character.Level - grantedLevels);
+            character.Exp = Mathf.Max(0, character.Exp - grantedExperience);
+            changedCount++;
+        }
+
+        return changedCount;
+    }
+
+    private static int CountItem(List<string> itemIds, string itemId)
+    {
+        if (itemIds == null || string.IsNullOrEmpty(itemId))
+            return 0;
+
+        int count = 0;
+        for (int i = 0; i < itemIds.Count; i++)
+        {
+            if (itemIds[i] == itemId)
+                count++;
+        }
+
+        return count;
+    }
+
+    private static void RemoveItemOccurrences(List<string> itemIds, string itemId, int removeCount)
+    {
+        if (itemIds == null || string.IsNullOrEmpty(itemId) || removeCount <= 0)
+            return;
+
+        for (int i = itemIds.Count - 1; i >= 0 && removeCount > 0; i--)
+        {
+            if (itemIds[i] != itemId)
+                continue;
+
+            itemIds.RemoveAt(i);
+            removeCount--;
+        }
+    }
+
+    private static void RefreshCheatAffectedUI()
+    {
+        BattleBagPanelUI.RefreshAll();
+        LobbyBlueDustiumHudUI.RefreshAll();
+    }
+
+    private static void SaveProgress()
+    {
+        if (SaveSystem.Instance != null)
+            SaveSystem.Instance.SaveCurrentProgress();
     }
 
     private static void ChangeBlueDustium(int amount)
@@ -240,7 +403,12 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
     private async void ResetAllProgress()
     {
         isResetting = true;
-        pendingLevel5Grant = false;
+        pendingCharacterCheatGrant = false;
+        testBundleActive = false;
+        itemCountsBeforeCheat.Clear();
+        grantedCharacterLevels.Clear();
+        grantedCharacterExperience.Clear();
+        blueDustiumBeforeCheat = 0;
 
         // 저장 파일에 들어 있는 아이템, 재화, 캐릭터 성장, 편성,
         // 클리어 및 탐사 진행 데이터를 삭제합니다.
