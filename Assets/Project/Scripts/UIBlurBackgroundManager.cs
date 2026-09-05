@@ -16,6 +16,7 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
     private const string SettingUpperName = "Setting_upper";
     private const int SharedBlurSortingOrder = 9000;
     private const int UIBlurLayer = 5;
+    private const float ReferenceBlurHeight = 1080f;
     private static readonly Vector2 DefaultReferenceResolution = new(1920f, 1080f);
 
     private static UIBlurBackgroundManager instance;
@@ -557,10 +558,27 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
         LogTextureDiagnosticsOnce(sourceTexture);
 
-        material.SetFloat("_BlurRadius", requester.BlurRadius);
+        material.SetFloat("_BlurRadius", GetResolutionScaledBlurRadius(requester.BlurRadius, sourceTexture));
         material.SetFloat("_Darken", requester.Darken);
         material.SetFloat("_Saturation", requester.Saturation);
         material.SetFloat("_Contrast", requester.Contrast);
+    }
+
+    private float GetResolutionScaledBlurRadius(float blurRadius, Texture sourceTexture)
+    {
+        float renderHeight = GetBlurRenderHeight(sourceTexture);
+        return blurRadius * (renderHeight / ReferenceBlurHeight);
+    }
+
+    private float GetBlurRenderHeight(Texture sourceTexture)
+    {
+        if (sourceTexture != null && sourceTexture.height > 0)
+            return sourceTexture.height;
+
+        if (uiBlurTexture != null && uiBlurTexture.height > 0)
+            return uiBlurTexture.height;
+
+        return Mathf.Max(1, Screen.height);
     }
 
     private Material CreateBlurMaterial()

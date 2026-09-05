@@ -78,6 +78,19 @@ public sealed class UIBackgroundBlurShaderTests
     }
 
     [Test]
+    public void SharedBlurManager_ScalesBlurRadiusByRenderHeightBeforeSendingToShader()
+    {
+        string manager = File.ReadAllText("Assets/Project/Scripts/UIBlurBackgroundManager.cs");
+
+        Assert.That(manager, Does.Contain("ReferenceBlurHeight = 1080f"));
+        Assert.That(manager, Does.Contain("GetResolutionScaledBlurRadius(requester.BlurRadius, sourceTexture)"));
+        Assert.That(manager, Does.Contain("return blurRadius * (renderHeight / ReferenceBlurHeight)"));
+        Assert.That(manager.IndexOf("if (sourceTexture != null && sourceTexture.height > 0)"),
+            Is.LessThan(manager.IndexOf("if (uiBlurTexture != null && uiBlurTexture.height > 0)")));
+        Assert.That(manager, Does.Not.Contain("requester.BlurRadius ="));
+    }
+
+    [Test]
     public void SharedBlurManager_DoesNotBlockInputAndPausesCameraWhileARequesterIsActive()
     {
         string manager = File.ReadAllText("Assets/Project/Scripts/UIBlurBackgroundManager.cs");
