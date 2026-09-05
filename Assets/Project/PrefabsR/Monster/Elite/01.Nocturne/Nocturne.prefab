@@ -207,9 +207,9 @@ MonoBehaviour:
   deadStateName: Dead
   moveVfx:
     prefab: {fileID: 5677070968414788663, guid: 8bcb4e0d61109cf4eb10358a484b4127, type: 3}
-    flipType: 0
-    renderMode: 0
-    proxyBlendMode: 1
+    flipType: 2
+    renderMode: 2
+    proxyBlendMode: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512
@@ -222,8 +222,8 @@ MonoBehaviour:
     proxyYMultiplier: 100
   guardVfx:
     prefab: {fileID: 8802234492492066749, guid: 0beedeb423fa0d84585fcbbb3397e1d8, type: 3}
-    flipType: 0
-    renderMode: 0
+    flipType: 2
+    renderMode: 2
     proxyBlendMode: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
@@ -237,8 +237,8 @@ MonoBehaviour:
     proxyYMultiplier: 100
   hitVfx:
     prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
-    flipType: 0
-    renderMode: 0
+    flipType: 2
+    renderMode: 2
     proxyBlendMode: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
@@ -827,7 +827,7 @@ MonoBehaviour:
     vfx:
       prefab: {fileID: 4274269069465894755, guid: dafad4a8c50e0e5419500dadf5f7a4d5, type: 3}
       flipType: 0
-      renderMode: 1
+      renderMode: 2
       proxyBlendMode: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
