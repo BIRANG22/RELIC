@@ -1124,9 +1124,9 @@ MonoBehaviour:
   monsterActionPresentations:
   - prepareStateName: 
     prepareDuration: 0.15
-    stateName: AttackAction2
+    stateName: AttackAction1
     vfx:
-      prefab: {fileID: 7849381218892773088, guid: 175104cf9b3817347a0db75fa72f3291, type: 3}
+      prefab: {fileID: 7849381218892773088, guid: dba56832103a0a841a7c8b232077fce6, type: 3}
       flipType: 2
       renderMode: 2
       proxyBlendMode: 0
@@ -1154,9 +1154,9 @@ MonoBehaviour:
       impactOffset: {x: 0, y: 0, z: 0}
   - prepareStateName: 
     prepareDuration: 0.15
-    stateName: AttackAction1
+    stateName: AttackAction2
     vfx:
-      prefab: {fileID: 7849381218892773088, guid: dba56832103a0a841a7c8b232077fce6, type: 3}
+      prefab: {fileID: 7849381218892773088, guid: 175104cf9b3817347a0db75fa72f3291, type: 3}
       flipType: 2
       renderMode: 2
       proxyBlendMode: 0
