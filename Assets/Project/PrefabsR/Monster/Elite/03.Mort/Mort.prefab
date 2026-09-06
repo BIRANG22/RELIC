@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7198944354738326185}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: VfxSpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 108596752665085118}
   - component: {fileID: 7150696886340755660}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Shadow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 8953835548887357420}
   - component: {fileID: 1991961792868554423}
   - component: {fileID: 3600074925671409079}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: SpriteRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -255,7 +255,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5086175829547556225}
   - component: {fileID: 8697646064394840958}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: HighlightSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -346,7 +346,7 @@ GameObject:
   - component: {fileID: 6817001310453254729}
   - component: {fileID: 1718523480768826163}
   - component: {fileID: 2423722508837748408}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Mort
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1164,7 +1164,7 @@ MonoBehaviour:
       renderTextureHeight: 512
       renderCameraOrthographicSize: 5
       proxyWorldHeight: 10
-      proxyWorldOffset: {x: 0, y: 3, z: 0}
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
       proxySortingLayerName: Unit
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
@@ -1210,14 +1210,14 @@ MonoBehaviour:
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
-      impactOffset: {x: 0, y: 5, z: 0}
+      impactOffset: {x: 0, y: 1, z: 0}
   - prepareStateName: 
     prepareDuration: 0.15
-    stateName: 
+    stateName: AttackAction2
     vfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 4446691050184879336, guid: 46b9eb83d32e816408b988f7fe673e51, type: 3}
       flipType: 0
-      renderMode: 0
+      renderMode: 2
       proxyBlendMode: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512

@@ -711,7 +711,7 @@ MonoBehaviour:
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
-      impactOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 1, z: 0}
     TargetUnitVfx:
       prefab: {fileID: 0}
       flipType: 0
@@ -753,7 +753,7 @@ MonoBehaviour:
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
-      impactOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 1, z: 0}
     TargetUnitVfx:
       prefab: {fileID: 0}
       flipType: 0
