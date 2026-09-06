@@ -543,21 +543,6 @@ public class UIManager : Singleton<UIManager>
         UIPanelButton.CloseCurrentOpenedPanel();
         Time.timeScale = 1f;
 
-        if (SaveSystem.Instance != null)
-        {
-            if (!SaveSystem.Instance.SaveCurrentProgress())
-            {
-                Debug.LogWarning("[UIManager] 현재 진행상황 저장에 실패했습니다. 타이틀로 이동합니다.");
-            }
-            else if (!SaveSystem.Instance.HasBattleContinueSave())
-            {
-                Debug.LogWarning("[UIManager] 저장은 완료됐지만 탐사진행 가능한 전투 저장으로 판정되지 않았습니다.");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("[UIManager] SaveSystem.Instance를 찾지 못했습니다. 타이틀로 이동합니다.");
-        }
 
         if (GameManager.Instance != null && GameManager.Instance.StateMachine != null)
         {

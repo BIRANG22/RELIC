@@ -4,6 +4,46 @@ using Relic.Gameplay.Data;
 public class SaveSystemSnapshotTests
 {
     [Test]
+    public void ResumeData_UsesLogicalPhasesAndPersistsResolvedRandomValues()
+    {
+        var resume = new ResumeData
+        {
+            Phase = ResumePhase.EventDice,
+            NodeIndex = 7,
+            EventId = "Event_03",
+            DiceFaces = new[] { 2, 5, 6 }
+        };
+
+        Assert.That(resume.Phase, Is.EqualTo(ResumePhase.EventDice));
+        Assert.That(resume.DiceFaces, Is.EqualTo(new[] { 2, 5, 6 }));
+    }
+
+    [Test]
+    public void ResumeData_EventChoicePayloadMarksAppliedChoiceAndKeepsPendingRewardUnclaimed()
+    {
+        var resume = new ResumeData
+        {
+            Phase = ResumePhase.EventChoice,
+            EventId = "Event_04",
+            SelectedChoiceId = "2",
+            ChoiceResultApplied = true,
+            PendingRewards =
+            {
+                new BattleRewardSaveData
+                {
+                    Type = BattleRewardType.Remnant,
+                    RewardId = "remnant",
+                    Amount = 75
+                }
+            }
+        };
+
+        Assert.That(resume.ChoiceResultApplied, Is.True);
+        Assert.That(resume.PendingRewards, Has.Count.EqualTo(1));
+        Assert.That(resume.ClaimedRewards, Is.Empty);
+    }
+
+    [Test]
     public void ResetUpgradedSkillVariantsToBase_KeepsSavedPassiveAndUniqueAlternates()
     {
         var store = new CharacterRuntimeStore();
