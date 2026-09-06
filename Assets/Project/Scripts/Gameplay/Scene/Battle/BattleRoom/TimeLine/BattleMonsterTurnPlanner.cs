@@ -25,6 +25,16 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     [SerializeField] private float monsterCommandInterval = 0.18f;
     [SerializeField] private float actionReserveMessageDelay = 0.1f;
 
+    [Header("Action Reservation Start SFX")]
+    [Tooltip("'행동 예약' 인트로 텍스트가 표시되기 시작할 때 SFX를 재생합니다.")]
+    [SerializeField] private bool playActionReservationStartSfx = true;
+
+    [Tooltip("행동 예약 인트로 시작 시 재생할 SFX입니다.")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string actionReservationStartSfxId;
+
+    [Tooltip("행동 예약 시작 SFX 볼륨 배율입니다.")]
+    [SerializeField, Range(0f, 1f)] private float actionReservationStartSfxVolume = 1f;
+
     private Coroutine planRoutine;
     private Coroutine battleStartTextRoutine;
     private bool battleStartIntroShown;
@@ -87,7 +97,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         plannedBattleTurn = Mathf.Max(plannedBattleTurn, 1);
 
         if (showBattleStart)
+        {
+            BattleMapIntroText.PlayRoomIntroSfx();
             battleStartTextRoutine = StartCoroutine(ShowIntroTextAndWaitRoutine(battleStartMessage));
+        }
 
         if (firstMonsterCommandDelay > 0f)
             yield return new WaitForSeconds(firstMonsterCommandDelay);
@@ -160,7 +173,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             yield return new WaitForSeconds(actionReserveMessageDelay);
 
         if (showBattleStart)
-            yield return ShowIntroTextAndWaitRoutine(actionReserveMessage);
+            yield return ShowActionReserveIntroTextAndWaitRoutine();
         else
             ShowActionReserveIntroText();
 
@@ -267,7 +280,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         ApplyElisePlayerSlotLock(monsterUnits);
 
         if (showBattleStart)
+        {
+            BattleMapIntroText.PlayRoomIntroSfx();
             battleStartTextRoutine = StartCoroutine(ShowIntroTextAndWaitRoutine(battleStartMessage));
+        }
 
         if (firstMonsterCommandDelay > 0f)
             yield return new WaitForSeconds(firstMonsterCommandDelay);
@@ -298,7 +314,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         // 첫 전투 진입 연출에서는 행동 예약 안내까지 이 코루틴이 직접 기다립니다.
         // BattleRoomLoader가 전역 표시 상태를 폴링하지 않아도 정확한 종료 시점을 알 수 있습니다.
         if (showBattleStart)
-            yield return ShowIntroTextAndWaitRoutine(actionReserveMessage);
+            yield return ShowActionReserveIntroTextAndWaitRoutine();
         else
             ShowActionReserveIntroText();
 
@@ -321,7 +337,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         ApplyElisePlayerSlotLock(monsterUnits);
 
         if (showBattleStart)
+        {
+            BattleMapIntroText.PlayRoomIntroSfx();
             ShowIntroText(battleStartMessage);
+        }
 
         List<MonsterReservedCommandPlan> plans = BuildMonsterCommandPlans(monsterUnits);
 
@@ -772,7 +791,39 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
     private void ShowActionReserveIntroText()
     {
+        PlayActionReservationStartSfx();
         ShowIntroText(actionReserveMessage);
+    }
+
+    private IEnumerator ShowActionReserveIntroTextAndWaitRoutine()
+    {
+        PlayActionReservationStartSfx();
+        yield return ShowIntroTextAndWaitRoutine(actionReserveMessage);
+    }
+
+    private void PlayActionReservationStartSfx()
+    {
+        if (!playActionReservationStartSfx || string.IsNullOrWhiteSpace(actionReservationStartSfxId))
+            return;
+
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager == null)
+        {
+            Debug.LogWarning(
+                $"[{nameof(BattleMonsterTurnPlanner)}] 행동 예약 시작 SFX를 재생할 AudioManager.Instance가 없습니다.",
+                this);
+            return;
+        }
+
+        if (!audioManager.TryGetSfxData(actionReservationStartSfxId, out _))
+        {
+            Debug.LogWarning(
+                $"[{nameof(BattleMonsterTurnPlanner)}] 행동 예약 시작 SFX ID를 찾을 수 없습니다: {actionReservationStartSfxId}",
+                this);
+            return;
+        }
+
+        audioManager.PlaySfx(actionReservationStartSfxId, Mathf.Clamp01(actionReservationStartSfxVolume));
     }
 
     private void ShowIntroText(string text)

@@ -39,6 +39,12 @@ public class BattleMapIntroText : MonoBehaviour
     [SerializeField] private bool autoBindIntroImage = true;
     [SerializeField] private string introImageObjectName = "Image";
 
+    [Header("Room Intro SFX")]
+    [Tooltip("전투방/이벤트방에 처음 진입할 때 방 인트로 텍스트와 함께 재생합니다.")]
+    [SerializeField] private bool playRoomIntroSfx = true;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string roomIntroSfxId;
+    [SerializeField, Range(0f, 1f)] private float roomIntroSfxVolume = 1f;
+
     [Header("Timing")]
     [SerializeField] private bool playOnStart;
     [SerializeField] private bool ignorePlayOnStart = true;
@@ -105,6 +111,24 @@ public class BattleMapIntroText : MonoBehaviour
         }
 
         yield return target.PlayAndWait(text);
+    }
+
+    public static void PlayRoomIntroSfx()
+    {
+        BattleMapIntroText target = FindTarget();
+        target?.PlayConfiguredRoomIntroSfx();
+    }
+
+    private void PlayConfiguredRoomIntroSfx()
+    {
+        if (!playRoomIntroSfx || string.IsNullOrWhiteSpace(roomIntroSfxId))
+            return;
+
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager == null)
+            return;
+
+        audioManager.PlaySfx(roomIntroSfxId, Mathf.Clamp01(roomIntroSfxVolume));
     }
 
     public void Play()

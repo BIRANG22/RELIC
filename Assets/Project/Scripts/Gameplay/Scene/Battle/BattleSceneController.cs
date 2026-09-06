@@ -128,10 +128,8 @@ public class BattleSceneController : MonoBehaviour
         if (!TryRestoreBattleRewardOnStart() &&
             !TryOpenUnclearedCurrentNodeOnStart() && !TryOpenLayerZeroNodeOnNewRun())
         {
-            // 지도 진입 시 사용하던 구역 인트로 텍스트는 더 이상 표시하지 않는다.
-            // Continue로 지도 상태를 복원했을 때도 BattleMapIntroText가 재생되지 않도록
-            // 지도 패널만 즉시 연다.
             OpenMapPanelImmediate();
+            PlayMapIntroTextOnStart();
         }
 
         lastActiveRoomLastFrame = FindActiveRoomObject();
@@ -1153,7 +1151,12 @@ public class BattleSceneController : MonoBehaviour
             AutoFindBattleMapIntroTextIfNeeded();
 
         if (battleMapIntroText != null)
+        {
+            if (eventRoom != null && eventRoom.activeInHierarchy)
+                BattleMapIntroText.PlayRoomIntroSfx();
+
             battleMapIntroText.Play(pendingRoomIntroMessage);
+        }
 
         pendingRoomIntroMessage = null;
     }
