@@ -151,6 +151,17 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         return requester != null && requesters.Contains(requester);
     }
 
+    // 동적으로 슬롯을 생성/삭제하는 패널은 기존 replica hierarchy를 재사용할 수 없다.
+    public void InvalidateReplicaSource(GameObject source)
+    {
+        if (source == null || !replicas.TryGetValue(source, out UIBlurReplicaSource replica))
+            return;
+
+        replica.Destroy();
+        replicas.Remove(source);
+        replicaDirty = true;
+    }
+
     private void LateUpdate()
     {
         if (RemoveInvalidRequesters())
