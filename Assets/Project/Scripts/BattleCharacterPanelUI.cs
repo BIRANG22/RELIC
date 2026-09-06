@@ -195,6 +195,25 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     [SerializeField] private bool useUnscaledTimeForPanelMove = true;
 
+    [Header("Battle Slot Move SFX")]
+    [Tooltip("전투 종료 후 BattleSlot이 행동 예약 위치로 올라갈 때 SFX를 재생합니다.")]
+    [SerializeField] private bool playBattleSlotUpSfx = true;
+
+    [Tooltip("BattleSlot이 행동 예약 위치로 올라갈 때 재생할 SFX입니다.")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string battleSlotUpSfxId;
+
+    [Tooltip("BattleSlot 상승 SFX 볼륨 배율입니다.")]
+    [SerializeField, Range(0f, 1f)] private float battleSlotUpSfxVolume = 1f;
+
+    [Tooltip("전투 진행 시작 시 BattleSlot이 실행 위치로 내려갈 때 SFX를 재생합니다.")]
+    [SerializeField] private bool playBattleSlotDownSfx = true;
+
+    [Tooltip("BattleSlot이 실행 위치로 내려갈 때 재생할 SFX입니다.")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string battleSlotDownSfxId;
+
+    [Tooltip("BattleSlot 하강 SFX 볼륨 배율입니다.")]
+    [SerializeField, Range(0f, 1f)] private float battleSlotDownSfxVolume = 1f;
+
     [Header("Number Change Animation")]
     [Tooltip("현재 표시값에서 변경된 값까지 숫자가 변하는 시간입니다.")]
     [SerializeField, Min(0f)] private float numberChangeDuration = 0.2f;
@@ -859,6 +878,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
             : Vector3.one;
         Vector3 battleSlotTargetScale = Vector3.one * battleSlotTargetScaleValue;
 
+        // 실제 BattleSlot 이동이 시작되는 지점에서만 SFX를 판정합니다.
+        // 이벤트 발생 여부가 아니라 현재 위치와 목표 위치를 기준으로 하므로
+        // 전투 실행/예약 복귀의 실제 UI 이동과 정확히 동기화됩니다.
+        PlayBattleSlotMovementSfxIfNeeded(
+            battleSlotStartPosition.y,
+            battleSlotTargetY);
+
         float elapsed = 0f;
         float duration = Mathf.Max(0.0001f, panelMoveDuration);
 
@@ -965,6 +991,62 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private float ResolveBattleSlotTargetScale(float panelTargetY)
     {
         return battleSlotNormalScale;
+    }
+
+    private void PlayBattleSlotMovementSfxIfNeeded(float startY, float targetY)
+    {
+        if (Mathf.Approximately(startY, targetY))
+            return;
+
+        bool isMovingToReservation =
+            Mathf.Approximately(targetY, battleSlotReservationPositionY) &&
+            targetY > startY;
+
+        bool isLeavingReservationDownward =
+            Mathf.Approximately(startY, battleSlotReservationPositionY) &&
+            targetY < startY;
+
+        if (isMovingToReservation)
+        {
+            PlayBattleSlotMoveSfx(
+                playBattleSlotUpSfx,
+                battleSlotUpSfxId,
+                battleSlotUpSfxVolume);
+            return;
+        }
+
+        if (isLeavingReservationDownward)
+        {
+            PlayBattleSlotMoveSfx(
+                playBattleSlotDownSfx,
+                battleSlotDownSfxId,
+                battleSlotDownSfxVolume);
+        }
+    }
+
+    private void PlayBattleSlotMoveSfx(bool play, string sfxId, float volume)
+    {
+        if (!play || string.IsNullOrWhiteSpace(sfxId))
+            return;
+
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager == null)
+        {
+            Debug.LogWarning(
+                $"[{nameof(BattleCharacterPanelUI)}] BattleSlot SFX를 재생할 AudioManager.Instance가 없습니다.",
+                this);
+            return;
+        }
+
+        if (!audioManager.TryGetSfxData(sfxId, out _))
+        {
+            Debug.LogWarning(
+                $"[{nameof(BattleCharacterPanelUI)}] BattleSlot SFX ID를 찾을 수 없습니다: {sfxId}",
+                this);
+            return;
+        }
+
+        audioManager.PlaySfx(sfxId, Mathf.Clamp01(volume));
     }
 
     private void StopPanelMoveCoroutine()

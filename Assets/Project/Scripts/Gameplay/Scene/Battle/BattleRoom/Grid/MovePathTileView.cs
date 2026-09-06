@@ -153,7 +153,7 @@ public class MovePathTileView : MonoBehaviour
             runtimeMesh = new Mesh
             {
                 name = "Move Path Tile Mesh",
-                hideFlags = HideFlags.HideAndDontSave
+                hideFlags = HideFlags.DontSaveInBuild
             };
             runtimeMesh.MarkDynamic();
         }
@@ -435,7 +435,7 @@ public class MovePathTileView : MonoBehaviour
             : new Material(shader);
 
         material.name = materialName;
-        material.hideFlags = HideFlags.HideAndDontSave;
+        material.hideFlags = HideFlags.DontSaveInBuild;
         material.renderQueue = 3000;
 
         ConfigureMaterial(material, color);

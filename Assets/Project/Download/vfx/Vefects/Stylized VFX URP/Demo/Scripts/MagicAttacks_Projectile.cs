@@ -15,10 +15,17 @@ public class MagicAttacks_Projectile : MonoBehaviour
 
     private void Start()
     {
-        FX_Projectile = gameObject.transform.GetChild(0).GetComponent<VisualEffect>();
-        FX_ProjectileTail = gameObject.transform.GetChild(1).GetComponent<VisualEffect>();
-        SFX_Projectile = gameObject.GetComponent<AudioSource>();
+        if (transform.childCount > 0)
+        {
+            FX_Projectile = transform.GetChild(0).GetComponent<VisualEffect>();
+        }
 
+        if (transform.childCount > 1)
+        {
+            FX_ProjectileTail = transform.GetChild(1).GetComponent<VisualEffect>();
+        }
+
+        SFX_Projectile = GetComponent<AudioSource>();
     }
 
     public void Setup(Vector3 projectileDir)
@@ -35,11 +42,25 @@ public class MagicAttacks_Projectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider col)
     {
-        Instantiate(FX_Hit, col.transform.position, Quaternion.identity);
-        
-        Destroy(FX_Projectile);
-        FX_ProjectileTail.Stop();
-        SFX_Projectile.Stop();
+        if (FX_Hit != null)
+        {
+            Instantiate(FX_Hit, col.transform.position, Quaternion.identity);
+        }
+
+        if (FX_Projectile != null)
+        {
+            Destroy(FX_Projectile);
+        }
+
+        if (FX_ProjectileTail != null)
+        {
+            FX_ProjectileTail.Stop();
+        }
+
+        if (SFX_Projectile != null)
+        {
+            SFX_Projectile.Stop();
+        }
 
         Destroy(gameObject, 3f);
     }
