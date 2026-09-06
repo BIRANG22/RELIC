@@ -434,6 +434,7 @@ GameObject:
   - component: {fileID: 2047153763679250045}
   - component: {fileID: 6491668060546084858}
   - component: {fileID: 2828185636923793020}
+  - component: {fileID: 3564981197478119324}
   m_Layer: 5
   m_Name: StorageSlotUI
   m_TagString: Untagged
@@ -535,6 +536,24 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3564981197478119324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9039969618354719716}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff4b7367bd084594bbb5ece9dd0c16e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playHoverSound: 1
+  hoverSoundId: ui.normal.hover
+  hoverSoundVolume: 1
+  playClickSound: 0
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
 --- !u!1 &9063594866557124451
 GameObject:
   m_ObjectHideFlags: 0
