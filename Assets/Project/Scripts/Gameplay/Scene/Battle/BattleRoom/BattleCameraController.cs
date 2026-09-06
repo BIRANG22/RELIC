@@ -107,6 +107,7 @@ public class BattleCameraController : MonoBehaviour
     private float defaultSize;
     private Vector3 defaultPosition;
     private Coroutine routine;
+    private Coroutine panelDownReturnRoutine;
     private bool holdDefaultReturn;
     private bool hasActiveCombatZoom;
     private bool hasActiveMonsterInfoFocus;
@@ -487,6 +488,12 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             return;
 
+        if (panelDownReturnRoutine != null)
+        {
+            StopCoroutine(panelDownReturnRoutine);
+            panelDownReturnRoutine = null;
+        }
+
         ClearMouseParallaxImmediate();
         EndZoomFollowTarget();
 
@@ -509,6 +516,25 @@ public class BattleCameraController : MonoBehaviour
 
     public void StartReturnPanelDown()
     {
+        if (panelDownReturnRoutine != null)
+            return;
+
+        StartReturnPanelDownInternal(returnDuration);
+    }
+
+    public void StartReturnPanelDown(float moveDuration)
+    {
+        if (panelDownReturnRoutine != null)
+        {
+            StopCoroutine(panelDownReturnRoutine);
+            panelDownReturnRoutine = null;
+        }
+
+        StartReturnPanelDownInternal(moveDuration);
+    }
+
+    private void StartReturnPanelDownInternal(float moveDuration)
+    {
         if (targetCamera == null)
             return;
 
@@ -519,10 +545,21 @@ public class BattleCameraController : MonoBehaviour
             return;
         }
 
-        StartCoroutine(ReturnPanelDown());
+        panelDownReturnRoutine = StartCoroutine(ReturnPanelDownRoutine(moveDuration));
+    }
+
+    private IEnumerator ReturnPanelDownRoutine(float moveDuration)
+    {
+        yield return ReturnPanelDown(moveDuration);
+        panelDownReturnRoutine = null;
     }
 
     public IEnumerator ReturnPanelDown()
+    {
+        yield return ReturnPanelDown(returnDuration);
+    }
+
+    private IEnumerator ReturnPanelDown(float moveDuration)
     {
         if (targetCamera == null)
             yield break;
@@ -538,7 +575,7 @@ public class BattleCameraController : MonoBehaviour
         ApplyCameraRotationZ(0f);
         ResetDamageImpactRotationSequence();
 
-        routine = StartCoroutine(MoveCamera(GetNeutralBattlePosition(), defaultSize, returnDuration, false, true));
+        routine = StartCoroutine(MoveCamera(GetNeutralBattlePosition(), defaultSize, moveDuration, false, true));
         yield return routine;
 
         ApplyCameraRotationZ(0f);
@@ -551,6 +588,12 @@ public class BattleCameraController : MonoBehaviour
     {
         if (targetCamera == null)
             return;
+
+        if (panelDownReturnRoutine != null)
+        {
+            StopCoroutine(panelDownReturnRoutine);
+            panelDownReturnRoutine = null;
+        }
 
         ClearMouseParallaxImmediate();
         EndZoomFollowTarget();
@@ -609,6 +652,12 @@ public class BattleCameraController : MonoBehaviour
     {
         if (targetCamera == null)
             return;
+
+        if (panelDownReturnRoutine != null)
+        {
+            StopCoroutine(panelDownReturnRoutine);
+            panelDownReturnRoutine = null;
+        }
 
         ClearMouseParallaxImmediate();
         EndZoomFollowTarget();
