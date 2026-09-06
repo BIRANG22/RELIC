@@ -48580,6 +48580,8 @@ MonoBehaviour:
   completionButton: {fileID: 1915938317}
   completionIcon: {fileID: 2023525550}
   automaticClaimDelay: 1
+  ingredientRegisterSoundId: add_Compound
+  ingredientRegisterSoundVolume: 0.5
   compoundTransferStartSoundId: effect_get
   compoundTransferStartSoundVolume: 0.5
   compoundTransferTarget: {fileID: 546363576}

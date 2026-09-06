@@ -29,9 +29,23 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     [Header("Automatic Claim")]
     [Min(0f)][SerializeField] private float automaticClaimDelay = 1f;
 
+    [Header("Ingredient Register Sound")]
+    [Tooltip("Storage의 재료가 CultureTankRow에 실제로 등록되었을 때 재생할 SFX입니다.")]
+    [SerializeField, SoundId(SoundCategory.Sfx)]
+    private string ingredientRegisterSoundId = AudioIds.Sfx.NormalButtonClick;
+
+    [Tooltip("CultureTankRow 등록 사운드의 볼륨입니다.")]
+    [SerializeField, Range(0f, 1f)]
+    private float ingredientRegisterSoundVolume = 1f;
+
     [Header("Compound Transfer Sound")]
-    [SerializeField, SoundId(SoundCategory.Sfx)] private string compoundTransferStartSoundId = "";
-    [SerializeField, Range(0f, 1f)] private float compoundTransferStartSoundVolume = 0.5f;
+    [Tooltip("완성된 연성제 획득 이펙트가 타겟으로 이동하기 시작할 때 재생할 SFX입니다.")]
+    [SerializeField, SoundId(SoundCategory.Sfx)]
+    private string compoundTransferStartSoundId = string.Empty;
+
+    [Tooltip("연성제 획득 이동 시작 사운드의 볼륨입니다.")]
+    [SerializeField, Range(0f, 1f)]
+    private float compoundTransferStartSoundVolume = 0.5f;
 
     [Header("Compound Transfer Animation")]
     [Tooltip("딜레이가 끝난 뒤 연성제 획득 이펙트가 도착할 UI 타겟입니다.")]
@@ -184,9 +198,24 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             return;
         }
 
+        PlayIngredientRegisterSound();
         selectedSlotIndex = -1;
         SaveAndPublish();
         RefreshAll();
+    }
+
+    private void PlayIngredientRegisterSound()
+    {
+        if (string.IsNullOrWhiteSpace(ingredientRegisterSoundId))
+            return;
+
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager == null)
+            return;
+
+        audioManager.PlaySfx(
+            ingredientRegisterSoundId,
+            Mathf.Clamp01(ingredientRegisterSoundVolume));
     }
 
     private void Combine()
@@ -300,7 +329,6 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         activeCompoundTransferEffect = effectImage.gameObject;
         compoundTransferInProgress = true;
         completionIcon.enabled = false;
-
         PlayCompoundTransferStartSound();
 
         yield return AnimateCompoundTransferEffect(
@@ -319,10 +347,14 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
     private void PlayCompoundTransferStartSound()
     {
-        if (string.IsNullOrWhiteSpace(compoundTransferStartSoundId) || AudioManager.Instance == null)
+        if (string.IsNullOrWhiteSpace(compoundTransferStartSoundId))
             return;
 
-        AudioManager.Instance.PlaySfx(
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager == null)
+            return;
+
+        audioManager.PlaySfx(
             compoundTransferStartSoundId,
             Mathf.Clamp01(compoundTransferStartSoundVolume));
     }

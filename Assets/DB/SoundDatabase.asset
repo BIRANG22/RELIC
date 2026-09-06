@@ -653,6 +653,15 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  - id: add_Compound
+    aliases: []
+    clip: {fileID: 8300000, guid: 3597f236e563b482f9dda573f0fb5a7b, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
   eventSfxList:
   - id: sfx_debuff
     aliases: []
