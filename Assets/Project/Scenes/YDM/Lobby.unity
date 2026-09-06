@@ -48580,12 +48580,17 @@ MonoBehaviour:
   completionButton: {fileID: 1915938317}
   completionIcon: {fileID: 2023525550}
   automaticClaimDelay: 1
+  ingredientRegisterSoundId: add_Compound
+  ingredientRegisterSoundVolume: 0.5
+  compoundTransferStartSoundId: effect_get
+  compoundTransferStartSoundVolume: 0.5
   compoundTransferTarget: {fileID: 546363576}
   compoundTransferEffectTexture: {fileID: 2800000, guid: f416ed12a9deb6f40ac52e708154fa95, type: 3}
   compoundTransferEffectSize: {x: 96, y: 96}
   compoundTransferBounceOffset: {x: 180, y: 120}
   compoundTransferBounceDuration: 0.18
   compoundTransferFlyDuration: 0.32
+  compoundTransferStartScale: 2.5
   compoundTransferEndScale: 0.35
   compoundTrailSpawnInterval: 0.025
   compoundTrailLifetime: 0.18
@@ -73022,6 +73027,8 @@ MonoBehaviour:
   nextButtonIndicator: {fileID: 0}
   speakerName: "\uC5F0\uAD6C\uC6D0 \uC5D8\uB9AD"
   charactersPerSecond: 30
+  lineAdvanceSoundId: ui.normal.click
+  lineAdvanceSoundVolume: 0.5
   indicatorMoveDistance: 6
   indicatorMoveSpeed: 0.5
   tutorialDisplay: {fileID: 1170293879}
@@ -73030,6 +73037,8 @@ MonoBehaviour:
   - {fileID: 16871967}
   - {fileID: 1190707468}
   - {fileID: 1195802682}
+  fragmentTransferStartSoundId: effect_get
+  fragmentTransferStartSoundVolume: 0.5
   fragmentTransferTarget: {fileID: 4650065}
   fragmentTransferEffectTexture: {fileID: 2800000, guid: f416ed12a9deb6f40ac52e708154fa95, type: 3}
   fragmentTransferEffectSize: {x: 96, y: 96}
@@ -73048,16 +73057,15 @@ MonoBehaviour:
   introDialogue:
   - "\uB4DC\uB514\uC5B4 \uBAA8\uB450 \uB3C4\uCC29\uD558\uC168\uAD70\uC694. \uAE30\uB2E4\uB9AC\uACE0
     \uC788\uC5C8\uC2B5\uB2C8\uB2E4."
-  - "\uC9C0\uAE08 \uC5EC\uB7EC \uC9C0\uC5ED\uC5D0\uC11C \uB354\uC2A4\uD2F0\uC6C0\uC774
-    \uBE44\uC815\uC0C1\uC801\uC73C\uB85C \uC99D\uD3ED\uB418\uACE0 \uC788\uC2B5\uB2C8\uB2E4."
-  - "\uADF8 \uC601\uD5A5\uC73C\uB85C \uCE68\uC2DD \uB610\uD55C \uBE60\uB974\uAC8C
-    \uAE4A\uC5B4\uC9C0\uACE0 \uC788\uC5B4\uC694.\n\uC544\uC9C1 \uC815\uD655\uD55C
-    \uC6D0\uC778\uC740 \uBC1D\uD600\uC9C0\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4."
-  - "\uC6B0\uC120\uC740 \uCE68\uC2DD\uB41C \uC9C0\uC5ED\uC744 \uC9C1\uC811 \uC870\uC0AC\uD558\uBA70
-    \uB2E8\uC11C\uB97C \uBAA8\uC544\uC57C \uD560 \uAC83 \uAC19\uC2B5\uB2C8\uB2E4."
-  - "\uD0D0\uC0AC\uC5D0 \uB3C4\uC6C0\uC774 \uB420 \uB9CC\uD55C \uD30C\uD3B8\uC744
-    \uC900\uBE44\uD574 \uB450\uC5C8\uC2B5\uB2C8\uB2E4."
-  - "\uC798 \uD65C\uC6A9\uD558\uBA74 \uC55E\uC73C\uB85C\uC758 \uD0D0\uC0AC\uC5D0
+  - "\uD604\uC7AC \uCE68\uC2DD \uAD6C\uC5ED\uC5D0 \uB300\uD55C \uC870\uC0AC\uAC00
+    \uD544\uC694\uD55C \uC0C1\uD669\uC785\uB2C8\uB2E4."
+  - "\uC6B0\uC120 \uAC01 \uC9C0\uC5ED\uC744 \uD0D0\uC0AC\uD558\uBA70 \uC6D0\uC778\uC744
+    \uD30C\uC545\uD560 \uB2E8\uC11C\uB97C \uBAA8\uC544\uC57C \uD569\uB2C8\uB2E4."
+  - "\uD0D0\uC0AC\uC5D0 \uC55E\uC11C \uC5EC\uB7EC\uBD84\uC5D0\uAC8C \uB3C4\uC6C0\uC774
+    \uB420 \uBB3C\uAC74\uC744 \uC900\uBE44\uD574 \uB450\uC5C8\uC2B5\uB2C8\uB2E4."
+  - "\uC774 \uD30C\uD3B8\uB4E4\uC740 \uAC01\uC790\uC758 \uB2A5\uB825\uC744 \uAC15\uD654\uD558\uB294
+    \uB370 \uC0AC\uC6A9\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
+  - "\uC798 \uD65C\uC6A9\uD55C\uB2E4\uBA74 \uC55E\uC73C\uB85C\uC758 \uD0D0\uC0AC\uC5D0
     \uD070 \uB3C4\uC6C0\uC774 \uB420 \uAC81\uB2C8\uB2E4."
   - "\uC900\uBE44\uB97C \uB9C8\uCE5C \uB4A4, \uB2E4\uC2DC \uC800\uC5D0\uAC8C \uB9D0\uC744
     \uAC78\uC5B4 \uC8FC\uC138\uC694."
@@ -128274,10 +128282,13 @@ MonoBehaviour:
   relicDescriptionNameText: {fileID: 1544248583}
   relicDescriptionRarityText: {fileID: 0}
   relicDescriptionBodyText: {fileID: 1911251391}
+  purchaseTransferStartSoundId: effect_get
+  purchaseTransferStartSoundVolume: 0.5
   purchaseBounceOffset: {x: 180, y: 120}
   purchaseBounceDuration: 0.18
   ringFlyDuration: 0.42
-  ringEndScale: 0.72
+  purchaseTransferStartScale: 2.5
+  purchaseTransferEndScale: 0.72
   purchaseTransferEffectTexture: {fileID: 2800000, guid: f416ed12a9deb6f40ac52e708154fa95, type: 3}
   purchaseTransferEffectSize: {x: 60, y: 60}
   equipEffectTarget: {fileID: 1283672518}

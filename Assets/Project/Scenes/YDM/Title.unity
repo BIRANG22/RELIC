@@ -1333,7 +1333,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
-  playClickSound: 1
+  playClickSound: 0
   clickSoundId: ui.normal.click
   clickSoundVolume: 1
   toggleClickState: 1

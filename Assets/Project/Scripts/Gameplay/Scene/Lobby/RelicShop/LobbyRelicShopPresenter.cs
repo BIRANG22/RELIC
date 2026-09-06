@@ -20,6 +20,10 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     [SerializeField] private TMP_Text relicDescriptionRarityText;
     [SerializeField] private TMP_Text relicDescriptionBodyText;
 
+    [Header("Purchase Transfer Sound")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string purchaseTransferStartSoundId = "";
+    [SerializeField, Range(0f, 1f)] private float purchaseTransferStartSoundVolume = 0.5f;
+
     [Header("Purchase Animation")]
     [Tooltip("구매 효과가 처음 오른쪽 위로 튀어 오르는 UI 이동량입니다.")]
     [SerializeField] private Vector2 purchaseBounceOffset = new Vector2(180f, 120f);
@@ -343,6 +347,8 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
         if (transferEffect != null && equipButtonTarget != null)
         {
+            PlayPurchaseTransferStartSound();
+
             yield return AnimateUiTransferEffectRoutine(
                 transferEffect.rectTransform,
                 transferCanvas,
@@ -355,6 +361,16 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             Destroy(transferEffect.gameObject);
 
         FinalizePurchasePresentation(runtime);
+    }
+
+    private void PlayPurchaseTransferStartSound()
+    {
+        if (string.IsNullOrWhiteSpace(purchaseTransferStartSoundId) || AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(
+            purchaseTransferStartSoundId,
+            Mathf.Clamp01(purchaseTransferStartSoundVolume));
     }
 
     private void FinalizePurchasePresentation(LobbyRuntimeData runtime)

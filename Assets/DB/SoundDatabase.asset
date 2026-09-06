@@ -15,8 +15,8 @@ MonoBehaviour:
   bgmList:
   - id: bgm.title
     aliases: []
-    clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
-    volume: 0.5
+    clip: {fileID: 8300000, guid: f2b34d847f53fae449df8005afaafeae, type: 3}
+    volume: 1
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -24,8 +24,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: bgm.lobby
     aliases: []
-    clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
-    volume: 0.5
+    clip: {fileID: 8300000, guid: 7af83959617778349b2100f3eacb6b10, type: 3}
+    volume: 1
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -34,7 +34,7 @@ MonoBehaviour:
   - id: bgm.battle.main
     aliases: []
     clip: {fileID: 8300000, guid: c55ddf15d3da7a54cb7785f4e402bce1, type: 3}
-    volume: 0.5
+    volume: 1
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -115,8 +115,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.logo.click
     aliases: []
-    clip: {fileID: 8300000, guid: 39b652a79e3a14f53bd96ae2fc42bb7e, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: 748ab9133e00d04458c3a6b54f77b212, type: 3}
+    volume: 0.6
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -638,6 +638,24 @@ MonoBehaviour:
   - id: intro.build3
     aliases: []
     clip: {fileID: 8300000, guid: 205b5e72f9b784b6daf228d7a7ebee76, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: effect_get
+    aliases: []
+    clip: {fileID: 8300000, guid: 0598b31e0b2714a0c8aec68123887515, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: add_Compound
+    aliases: []
+    clip: {fileID: 8300000, guid: 3597f236e563b482f9dda573f0fb5a7b, type: 3}
     volume: 0.5
     pitch: 0.8
     loop: 0
