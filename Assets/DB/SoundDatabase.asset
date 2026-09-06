@@ -13,42 +13,60 @@ MonoBehaviour:
   m_Name: SoundDatabase
   m_EditorClassIdentifier: 
   bgmList:
-  - id: bgm.title
-    aliases: []
-    clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
-    volume: 0.6
-    pitch: 1
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
-  - id: bgm.lobby
-    aliases: []
-    clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
-    volume: 0.6
-    pitch: 1
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
-  - id: bgm.battle.main
-    aliases: []
-    clip: {fileID: 8300000, guid: c55ddf15d3da7a54cb7785f4e402bce1, type: 3}
-    volume: 0.8
-    pitch: 1
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
-  - id: bgm.battle.ambience
-    aliases: []
-    clip: {fileID: 8300000, guid: 206e86ad69c3d4241a7d2e5ca8e2ea63, type: 3}
-    volume: 0.5
-    pitch: 1
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
+  - state: 0
+    mainClip:
+      clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
+      volume: 0.6
+      pitch: 1
+      loop: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 1
+    mainClip:
+      clip: {fileID: 8300000, guid: 7af83959617778349b2100f3eacb6b10, type: 3}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips:
+    - clip: {fileID: 8300000, guid: 206e86ad69c3d4241a7d2e5ca8e2ea63, type: 3}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - state: 2
+    mainClip:
+      clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
+      volume: 0.6
+      pitch: 1
+      loop: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 6
+    mainClip:
+      clip: {fileID: 8300000, guid: c55ddf15d3da7a54cb7785f4e402bce1, type: 3}
+      volume: 0.8
+      pitch: 1
+      loop: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips:
+    - clip: {fileID: 8300000, guid: 206e86ad69c3d4241a7d2e5ca8e2ea63, type: 3}
+      volume: 0.5
+      pitch: 1
+      loop: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
   sfxList:
   - id: ui.normal.hover
     aliases: []

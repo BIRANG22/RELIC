@@ -576,7 +576,7 @@ public class UIManager : Singleton<UIManager>
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlayBgm(AudioIds.Bgm.Title);
+        AudioManager.Instance.PlayBgm(BgmState.TitleMain);
     }
 
     private void OnConfirmQuitGame()

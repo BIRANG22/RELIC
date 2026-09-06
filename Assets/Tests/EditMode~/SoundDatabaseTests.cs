@@ -92,7 +92,7 @@ public class SoundDatabaseTests
     }
 
     [Test]
-    public void AudioManager_PlayBgm_UsesIdPrefixForLayeredBgm()
+    public void AudioManager_PlayBgm_UsesStateConfiguredMainAndAmbience()
     {
         GameObject audioObject = new("SoundDatabaseBgmLayerTest");
         AudioClip mainClip = null;
@@ -109,26 +109,20 @@ public class SoundDatabaseTests
             SetPrivateField(
                 database,
                 "bgmList",
-                new List<SoundData>
+                new List<BgmData>
                 {
                     new()
                     {
-                        id = "bgm.battle.main",
-                        clip = mainClip,
-                        volume = 0.8f
-                    },
-                    new()
-                    {
-                        id = "bgm.battle.ambience",
-                        clip = layerClip,
-                        volume = 0.2f
+                        state = BgmState.BattleMain,
+                        mainClip = new BgmClipData { clip = mainClip },
+                        ambienceClips = new List<BgmClipData> { new() { clip = layerClip } }
                     }
                 });
             SetPrivateField(manager, "bgmSource", mainSource);
             SetPrivateField(manager, "soundDatabase", database);
 
             manager.Initialize();
-            manager.PlayBgm(AudioIds.Bgm.Battle);
+            manager.PlayBgm(BgmState.BattleMain);
 
             AudioClip[] assignedClips = audioObject.GetComponentsInChildren<AudioSource>(true)
                 .Select(source => source.clip)

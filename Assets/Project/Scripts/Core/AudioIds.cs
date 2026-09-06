@@ -1,14 +1,5 @@
 public static class AudioIds
 {
-    public static class Bgm
-    {
-        public const string Title = "bgm.title";
-        public const string Lobby = "bgm.lobby";
-        public const string Battle = "bgm.battle";
-        public const string BattleMain = "bgm.battle.main";
-        public const string BattleAmbience = "bgm.battle.ambience";
-    }
-
     public static class Sfx
     {
         public const string NormalButtonHover = "ui.normal.hover";

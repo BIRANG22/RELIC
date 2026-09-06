@@ -47,11 +47,10 @@ public sealed class SoundIdDrawer : PropertyDrawer
         if (database == null)
             return Array.Empty<string>();
 
-        IEnumerable<SoundData> entries = category switch
-        {
-            SoundCategory.Bgm => database.BgmEntries,
-            _ => CombineSfxEntries(database)
-        };
+        if (category == SoundCategory.Bgm)
+            return Array.Empty<string>();
+
+        IEnumerable<SoundData> entries = CombineSfxEntries(database);
 
         if (entries == null)
             return Array.Empty<string>();
