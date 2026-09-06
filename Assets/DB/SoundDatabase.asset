@@ -16,7 +16,7 @@ MonoBehaviour:
   - id: bgm.title
     aliases: []
     clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
-    volume: 1
+    volume: 0.6
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -25,7 +25,7 @@ MonoBehaviour:
   - id: bgm.lobby
     aliases: []
     clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
-    volume: 1
+    volume: 0.6
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -34,7 +34,7 @@ MonoBehaviour:
   - id: bgm.battle.main
     aliases: []
     clip: {fileID: 8300000, guid: c55ddf15d3da7a54cb7785f4e402bce1, type: 3}
-    volume: 1
+    volume: 0.8
     pitch: 1
     loop: 0
     useRandomPitch: 0
