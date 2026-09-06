@@ -18,6 +18,12 @@ public static class BattleUIBlurRootCollector
             return;
 
         List<GameObject> roots = Collect(panelRoot.transform);
+        if (UIBlurBackgroundManager.HasInstance)
+        {
+            for (int i = 0; i < roots.Count; i++)
+                UIBlurBackgroundManager.Instance.InvalidateReplicaSource(roots[i]);
+        }
+
         for (int i = 0; i < blurBackgrounds.Length; i++)
         {
             UIBlurBackground blurBackground = blurBackgrounds[i];
