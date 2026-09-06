@@ -26,7 +26,7 @@ MonoBehaviour:
   - state: 1
     mainClip:
       clip: {fileID: 8300000, guid: 7af83959617778349b2100f3eacb6b10, type: 3}
-      volume: 1
+      volume: 0.8
       pitch: 1
       loop: 1
       useRandomPitch: 0
