@@ -115,8 +115,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.logo.click
     aliases: []
-    clip: {fileID: 8300000, guid: 39b652a79e3a14f53bd96ae2fc42bb7e, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: 748ab9133e00d04458c3a6b54f77b212, type: 3}
+    volume: 0.6
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -638,6 +638,15 @@ MonoBehaviour:
   - id: intro.build3
     aliases: []
     clip: {fileID: 8300000, guid: 205b5e72f9b784b6daf228d7a7ebee76, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: effect_get
+    aliases: []
+    clip: {fileID: 8300000, guid: 0598b31e0b2714a0c8aec68123887515, type: 3}
     volume: 0.5
     pitch: 0.8
     loop: 0

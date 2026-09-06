@@ -29,6 +29,10 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     [Header("Automatic Claim")]
     [Min(0f)][SerializeField] private float automaticClaimDelay = 1f;
 
+    [Header("Compound Transfer Sound")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string compoundTransferStartSoundId = "";
+    [SerializeField, Range(0f, 1f)] private float compoundTransferStartSoundVolume = 0.5f;
+
     [Header("Compound Transfer Animation")]
     [Tooltip("딜레이가 끝난 뒤 연성제 획득 이펙트가 도착할 UI 타겟입니다.")]
     [SerializeField] private RectTransform compoundTransferTarget;
@@ -297,6 +301,8 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         compoundTransferInProgress = true;
         completionIcon.enabled = false;
 
+        PlayCompoundTransferStartSound();
+
         yield return AnimateCompoundTransferEffect(
             effectImage.rectTransform,
             transferCanvas,
@@ -309,6 +315,16 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
         activeCompoundTransferEffect = null;
         compoundTransferInProgress = false;
+    }
+
+    private void PlayCompoundTransferStartSound()
+    {
+        if (string.IsNullOrWhiteSpace(compoundTransferStartSoundId) || AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(
+            compoundTransferStartSoundId,
+            Mathf.Clamp01(compoundTransferStartSoundVolume));
     }
 
     private Color ResolveCompletedCompoundRarityColor()

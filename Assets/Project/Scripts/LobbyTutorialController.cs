@@ -30,6 +30,15 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [Min(1f)]
     [SerializeField] private float charactersPerSecond = 30f;
 
+    [Header("문장 넘김 사운드")]
+    [Tooltip("다음 문장으로 넘어갈 때 재생할 SFX입니다. AudioManager의 사운드 DB에서 선택합니다.")]
+    [SerializeField, SoundId(SoundCategory.Sfx)]
+    private string lineAdvanceSoundId = AudioIds.Sfx.NormalButtonClick;
+
+    [Tooltip("문장 넘김 사운드의 볼륨입니다.")]
+    [SerializeField, Range(0f, 1f)]
+    private float lineAdvanceSoundVolume = 0.5f;
+
     [Header("Next Button Indicator")]
     [Tooltip("NextButton의 자식 Image가 위아래로 움직이는 거리입니다.")]
     [Min(0f)]
@@ -43,6 +52,10 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [SerializeField] private GameObject tutorialDisplay;
     [SerializeField] private GameObject fragmentGroup;
     [SerializeField] private Image[] fragmentImages = new Image[3];
+
+    [Header("Fragment Transfer Sound")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string fragmentTransferStartSoundId = "";
+    [SerializeField, Range(0f, 1f)] private float fragmentTransferStartSoundVolume = 0.5f;
 
     [Header("Fragment Transfer Animation")]
     [Tooltip("튜토리얼 종료 후 Fragment01~03이 날아갈 SettingButton 위치입니다. 비워두면 이름이 SettingButton인 오브젝트를 자동으로 찾습니다.")]
@@ -252,7 +265,27 @@ public sealed class LobbyTutorialController : MonoBehaviour
             return;
         }
 
+        PlayLineAdvanceSound();
         RefreshDialogueStep();
+    }
+
+    /// <summary>
+    /// 다음 문장으로 넘어갈 때 AudioManager에 등록된 SFX를 재생합니다.
+    /// </summary>
+    private void PlayLineAdvanceSound()
+    {
+        if (string.IsNullOrWhiteSpace(lineAdvanceSoundId))
+            return;
+
+        if (AudioManager.Instance == null)
+        {
+            Debug.LogWarning(
+                $"[{nameof(LobbyTutorialController)}] AudioManager.Instance를 찾지 못했습니다. 문장 넘김 사운드를 재생할 수 없습니다.",
+                this);
+            return;
+        }
+
+        AudioManager.Instance.PlaySfx(lineAdvanceSoundId, Mathf.Clamp01(lineAdvanceSoundVolume));
     }
 
     private void RefreshDialogueStep()
@@ -568,6 +601,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
             if (effectImage == null || snapshot == null)
                 continue;
 
+            PlayFragmentTransferStartSound();
+
             Coroutine transfer = StartCoroutine(AnimateAndDestroyFragmentTransfer(
                 effectImage,
                 transferCanvas,
@@ -590,6 +625,16 @@ public sealed class LobbyTutorialController : MonoBehaviour
         fragmentTransferCoroutine = null;
     }
 
+
+    private void PlayFragmentTransferStartSound()
+    {
+        if (string.IsNullOrWhiteSpace(fragmentTransferStartSoundId) || AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(
+            fragmentTransferStartSoundId,
+            Mathf.Clamp01(fragmentTransferStartSoundVolume));
+    }
 
     private IEnumerator AnimateAndDestroyFragmentTransfer(
         RawImage effectImage,
