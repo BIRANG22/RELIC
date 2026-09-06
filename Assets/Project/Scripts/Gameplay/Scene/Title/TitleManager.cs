@@ -108,7 +108,7 @@ public class TitleManager : MonoBehaviour
             yield break;
         }
 
-        AudioManager.Instance.PlayBgm(AudioIds.Bgm.Title);
+        AudioManager.Instance.PlayBgm(BgmState.TitleMain);
     }
 
     private void OnDestroy()

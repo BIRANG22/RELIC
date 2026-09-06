@@ -421,6 +421,7 @@ public class IntroSequenceController : MonoBehaviour
         moveToLobbyWhenFinished = goToLobbyAfterFinish;
         isPlaying = true;
         isTransitioning = true;
+        AudioManager.Instance?.PlayBgm(BgmState.TitleIntro);
         currentLineIndex = 0;
         inputUnlockTime = float.PositiveInfinity;
         nextAdvanceInputTime = 0f;
@@ -1311,6 +1312,7 @@ public class IntroSequenceController : MonoBehaviour
         if (transition != null)
             await transition.PlayOpenAsync();
 
+        AudioManager.Instance?.PlayBgm(BgmState.TitleMain);
         isPlaying = false;
         isTransitioning = false;
         HideOverlayCanvasesForIntro(false);

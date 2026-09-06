@@ -16,12 +16,11 @@ public class AudioManager : Singleton<AudioManager>
     [SerializeField, Min(0f)] private float bgmFadeOutDuration = 0.5f;
     [SerializeField, Min(0f)] private float bgmFadeInDuration = 0.5f;
 
-    private Dictionary<string, SoundData> bgmIdDict;
     private Dictionary<string, SoundData> sfxIdDict;
     private readonly List<AudioSource> bgmLayerSources = new();
     private readonly List<RoutedSfxSource> routedSfxSources = new();
-    private IReadOnlyList<SoundData> activeBgmLayers;
-    private Coroutine pendingBgmRoutine;
+    private IReadOnlyList<BgmClipData> activeBgmLayers;
+    private BgmState? activeBgmState;
     private Coroutine bgmTransitionRoutine;
     private float bgmFadeMultiplier = 1f;
 
@@ -43,7 +42,6 @@ public class AudioManager : Singleton<AudioManager>
 
     private void InitializeDictionary()
     {
-        bgmIdDict = new Dictionary<string, SoundData>(System.StringComparer.Ordinal);
         sfxIdDict = new Dictionary<string, SoundData>(System.StringComparer.Ordinal);
 
         RegisterSoundDatabase();
@@ -56,40 +54,11 @@ public class AudioManager : Singleton<AudioManager>
 
         soundDatabase.Initialize();
 
-        foreach (SoundData data in soundDatabase.BgmEntries)
-            RegisterBgmId(data);
-
         foreach (SoundData data in soundDatabase.SfxEntries)
             RegisterSfxId(data);
 
         foreach (SoundData data in soundDatabase.EventSfxEntries)
             RegisterSfxId(data);
-    }
-
-    private void RegisterBgmId(SoundData data)
-    {
-        if (data == null || data.clip == null)
-            return;
-
-        RegisterBgmId(data.id, data);
-
-        if (data.aliases == null)
-            return;
-
-        foreach (string alias in data.aliases)
-            RegisterBgmId(alias, data);
-    }
-
-    private void RegisterBgmId(string id, SoundData data)
-    {
-        if (data == null || data.clip == null || string.IsNullOrWhiteSpace(id))
-            return;
-
-        id = id.Trim();
-        if (!bgmIdDict.ContainsKey(id))
-            bgmIdDict.Add(id, data);
-        else
-            Debug.LogWarning($"[AudioManager] Duplicate BGM ID: {id}");
     }
 
     private void RegisterSfxId(SoundData data)
@@ -118,26 +87,28 @@ public class AudioManager : Singleton<AudioManager>
             Debug.LogWarning($"[AudioManager] Duplicate SFX ID: {id}");
     }
 
-    public void PlayBgm(string id, bool loop = true)
+    public void PlayBgm(BgmState state)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            return;
-
         if (bgmSource == null)
         {
             Debug.LogWarning("[AudioManager] BGM Source is not assigned.");
             return;
         }
 
-        string trimmedId = id.Trim();
-        List<SoundData> layers = GetBgmLayers(trimmedId);
-        if (layers.Count == 0)
+        if (soundDatabase == null || !soundDatabase.TryGetBgm(state, out BgmData data))
         {
-            Debug.LogWarning($"[AudioManager] BGM ID not found: {trimmedId}");
+            Debug.LogWarning($"[AudioManager] BGM state is not configured: {state}");
             return;
         }
 
-        if (IsBgmAlreadyPlaying(layers, loop))
+        List<BgmClipData> layers = GetBgmLayers(data);
+        if (layers.Count == 0)
+        {
+            Debug.LogWarning($"[AudioManager] BGM state has no playable entries: {state}");
+            return;
+        }
+
+        if (activeBgmState == state && IsBgmAlreadyPlaying(layers, true))
         {
             activeBgmLayers = layers;
             ApplyVolumes();
@@ -148,15 +119,20 @@ public class AudioManager : Singleton<AudioManager>
         {
             CancelBgmTransition();
             bgmFadeMultiplier = 1f;
-            PlayBgmImmediate(layers, loop);
+            PlayBgmImmediate(state, layers);
             return;
         }
 
         CancelBgmTransition();
-        bgmTransitionRoutine = StartCoroutine(BgmTransitionRoutine(layers, loop));
+        bgmTransitionRoutine = StartCoroutine(BgmTransitionRoutine(state, layers));
     }
 
-    private IEnumerator BgmTransitionRoutine(IReadOnlyList<SoundData> layers, bool loop)
+    public void PlayBgmState(BgmState state)
+    {
+        PlayBgm(state);
+    }
+
+    private IEnumerator BgmTransitionRoutine(BgmState state, IReadOnlyList<BgmClipData> layers)
     {
         if (HasPlayingBgm())
             yield return FadeBgmMultiplier(0f, bgmFadeOutDuration);
@@ -166,7 +142,7 @@ public class AudioManager : Singleton<AudioManager>
             ApplyVolumes();
         }
 
-        PlayBgmImmediate(layers, loop);
+        PlayBgmImmediate(state, layers);
 
         if (bgmFadeInDuration > 0f)
             yield return FadeBgmMultiplier(1f, bgmFadeInDuration);
@@ -205,20 +181,22 @@ public class AudioManager : Singleton<AudioManager>
         ApplyVolumes();
     }
 
-    private void PlayBgmImmediate(IReadOnlyList<SoundData> layers, bool loop)
+    private void PlayBgmImmediate(BgmState state, IReadOnlyList<BgmClipData> layers)
     {
         if (layers == null || layers.Count == 0)
             return;
 
+        StopBgmPlaybackSources();
         activeBgmLayers = layers;
+        activeBgmState = state;
 
-        PlayBgmClip(bgmSource, layers[0], loop);
+        PlayBgmClip(bgmSource, layers[0]);
         EnsureBgmLayerSourceCount(layers.Count - 1);
 
         for (int i = 1; i < layers.Count; i++)
         {
             AudioSource layerSource = bgmLayerSources[i - 1];
-            PlayBgmClip(layerSource, layers[i], loop);
+            PlayBgmClip(layerSource, layers[i]);
         }
 
         StopUnusedBgmLayerSources(layers.Count - 1);
@@ -248,95 +226,46 @@ public class AudioManager : Singleton<AudioManager>
         bgmTransitionRoutine = null;
     }
 
-    private List<SoundData> GetBgmLayers(string id)
+    private static List<BgmClipData> GetBgmLayers(BgmData data)
     {
-        List<SoundData> layers = new();
+        List<BgmClipData> layers = new();
 
-        if (bgmIdDict == null || string.IsNullOrWhiteSpace(id))
+        if (data == null || data.mainClip == null || data.mainClip.clip == null)
             return layers;
 
-        if (bgmIdDict.TryGetValue(id, out SoundData exact) && exact != null && exact.clip != null)
-            layers.Add(exact);
+        layers.Add(data.mainClip);
 
-        string layerPrefix = id + ".";
-        if (soundDatabase == null)
+        if (data.ambienceClips == null)
             return layers;
 
-        foreach (SoundData data in soundDatabase.BgmEntries)
+        foreach (BgmClipData ambienceClip in data.ambienceClips)
         {
-            if (!HasBgmLayerId(data, layerPrefix))
-            {
-                continue;
-            }
-
-            layers.Add(data);
+            if (ambienceClip != null && ambienceClip.clip != null)
+                layers.Add(ambienceClip);
         }
 
         return layers;
-    }
-
-    private static bool HasBgmLayerId(SoundData data, string layerPrefix)
-    {
-        if (data == null || data.clip == null || string.IsNullOrWhiteSpace(layerPrefix))
-            return false;
-
-        if (!string.IsNullOrWhiteSpace(data.id) &&
-            data.id.StartsWith(layerPrefix, System.StringComparison.Ordinal))
-        {
-            return true;
-        }
-
-        if (data.aliases == null)
-            return false;
-
-        foreach (string alias in data.aliases)
-        {
-            if (!string.IsNullOrWhiteSpace(alias) &&
-                alias.StartsWith(layerPrefix, System.StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public void PlayBgmDelayed(string id, bool loop = true)
-    {
-        if (!isActiveAndEnabled)
-        {
-            PlayBgm(id, loop);
-            return;
-        }
-
-        if (pendingBgmRoutine != null)
-            StopCoroutine(pendingBgmRoutine);
-
-        pendingBgmRoutine = StartCoroutine(PlayBgmDelayedRoutine(id, loop));
-    }
-
-    private IEnumerator PlayBgmDelayedRoutine(string id, bool loop)
-    {
-        yield return null;
-
-        pendingBgmRoutine = null;
-        PlayBgm(id, loop);
     }
 
     public void StopBgm()
     {
         CancelBgmTransition();
         bgmFadeMultiplier = 1f;
-
-        if (bgmSource == null)
-            return;
-
-        bgmSource.Stop();
-        bgmSource.clip = null;
-        activeBgmLayers = null;
-
-        StopUnusedBgmLayerSources(0);
+        activeBgmState = null;
+        StopBgmPlaybackSources();
         ApplyVolumes();
+    }
+
+    private void StopBgmPlaybackSources()
+    {
+        if (bgmSource != null)
+        {
+            bgmSource.Stop();
+            bgmSource.clip = null;
+        }
+
+        activeBgmLayers = null;
+        StopUnusedBgmLayerSources(0);
     }
 
     public void PlaySfx(string id)
@@ -592,12 +521,12 @@ public class AudioManager : Singleton<AudioManager>
         ApplyRoutedSfxVolumes();
     }
 
-    private bool IsBgmAlreadyPlaying(IReadOnlyList<SoundData> layers, bool loop)
+    private bool IsBgmAlreadyPlaying(IReadOnlyList<BgmClipData> layers, bool loop)
     {
         if (layers == null || layers.Count == 0)
             return false;
 
-        if (!IsBgmSourcePlayingClip(bgmSource, layers[0].clip, loop))
+        if (!IsBgmSourcePlayingClip(bgmSource, layers[0].clip, layers[0].loop))
             return false;
 
         for (int i = 1; i < layers.Count; i++)
@@ -607,7 +536,7 @@ public class AudioManager : Singleton<AudioManager>
             if (layerIndex >= bgmLayerSources.Count)
                 return false;
 
-            if (!IsBgmSourcePlayingClip(bgmLayerSources[layerIndex], layers[i].clip, loop))
+            if (!IsBgmSourcePlayingClip(bgmLayerSources[layerIndex], layers[i].clip, layers[i].loop))
                 return false;
         }
 
@@ -622,7 +551,7 @@ public class AudioManager : Singleton<AudioManager>
             source.isPlaying;
     }
 
-    private static void PlayBgmClip(AudioSource source, SoundData data, bool loop)
+    private static void PlayBgmClip(AudioSource source, BgmClipData data)
     {
         if (source == null || data == null || data.clip == null)
             return;
@@ -633,7 +562,7 @@ public class AudioManager : Singleton<AudioManager>
             source.clip = data.clip;
         }
 
-        source.loop = loop;
+        source.loop = data.loop;
         source.pitch = data.GetPlaybackPitch();
         source.Play();
     }
@@ -692,7 +621,7 @@ public class AudioManager : Singleton<AudioManager>
         if (activeBgmLayers == null || layerIndex < 0 || layerIndex >= activeBgmLayers.Count)
             return 1f;
 
-        SoundData data = activeBgmLayers[layerIndex];
+        BgmClipData data = activeBgmLayers[layerIndex];
         return data != null ? Mathf.Clamp01(data.volume) : 1f;
     }
 

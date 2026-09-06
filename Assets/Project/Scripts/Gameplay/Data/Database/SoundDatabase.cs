@@ -8,6 +8,24 @@ public enum SoundCategory
     Sfx
 }
 
+public enum BgmState
+{
+    TitleMain,
+    TitleIntro,
+    LobbyMain,
+    Lobby1,
+    Lobby2,
+    Lobby3,
+    BattleMain,
+    Battle1,
+    Battle2,
+    Battle3,
+    Event1,
+    Event2,
+    Shop,
+    Rest
+}
+
 [AttributeUsage(AttributeTargets.Field)]
 public sealed class SoundIdAttribute : PropertyAttribute
 {
@@ -33,17 +51,17 @@ public sealed class SoundIdAttribute : PropertyAttribute
 [CreateAssetMenu(menuName = "Relic/Data/Sound Database")]
 public class SoundDatabase : ScriptableObject
 {
-    [SerializeField] private List<SoundData> bgmList = new();
+    [SerializeField] private List<BgmData> bgmList = new();
     [SerializeField] private List<SoundData> sfxList = new();
     [SerializeField] private List<SoundData> eventSfxList = new();
     [SerializeField] private List<VfxSoundData> playerSkillVfxSfxList = new();
     [SerializeField] private List<VfxSoundData> monsterSkillVfxSfxList = new();
 
-    private Dictionary<string, SoundData> bgmById;
     private Dictionary<string, SoundData> sfxById;
+    private Dictionary<BgmState, BgmData> bgmByState;
     private Dictionary<GameObject, VfxSoundData> skillVfxSfxByPrefab;
 
-    public IReadOnlyList<SoundData> BgmEntries => bgmList;
+    public IReadOnlyList<BgmData> BgmEntries => bgmList;
     public IReadOnlyList<SoundData> SfxEntries => sfxList;
     public IReadOnlyList<SoundData> EventSfxEntries => eventSfxList;
     public IReadOnlyList<VfxSoundData> PlayerSkillVfxSfxEntries => playerSkillVfxSfxList;
@@ -51,8 +69,8 @@ public class SoundDatabase : ScriptableObject
 
     public void Initialize()
     {
-        bgmById = new Dictionary<string, SoundData>(StringComparer.Ordinal);
         sfxById = new Dictionary<string, SoundData>(StringComparer.Ordinal);
+        bgmByState = new Dictionary<BgmState, BgmData>();
         skillVfxSfxByPrefab = new Dictionary<GameObject, VfxSoundData>();
 
         RegisterBgmList();
@@ -62,14 +80,13 @@ public class SoundDatabase : ScriptableObject
         RegisterVfxSoundList(monsterSkillVfxSfxList, "Monster Skill VFX SFX");
     }
 
-    public bool TryGetBgm(string id, out SoundData bgm)
+    public bool TryGetBgm(BgmState state, out BgmData bgm)
     {
-        if (bgmById == null)
+        if (bgmByState == null)
             Initialize();
 
-        id = NormalizeId(id);
         bgm = null;
-        return !string.IsNullOrEmpty(id) && bgmById.TryGetValue(id, out bgm) && bgm != null;
+        return bgmByState.TryGetValue(state, out bgm) && bgm != null;
     }
 
     public bool TryGetSfx(string id, out SoundData sfx)
@@ -99,14 +116,20 @@ public class SoundDatabase : ScriptableObject
         if (bgmList == null)
             return;
 
-        foreach (SoundData data in bgmList)
+        foreach (BgmData data in bgmList)
         {
-            if (data == null || data.clip == null)
+            if (data == null || data.mainClip == null || data.mainClip.clip == null)
                 continue;
 
-            data.volume = Mathf.Clamp01(data.volume);
+            data.Normalize();
 
-            RegisterIds(bgmById, data, "BGM");
+            if (bgmByState.ContainsKey(data.state))
+            {
+                Debug.LogWarning($"[SoundDatabase] Duplicate BGM state: {data.state}");
+                continue;
+            }
+
+            bgmByState.Add(data.state, data);
         }
     }
 
@@ -182,6 +205,67 @@ public class SoundDatabase : ScriptableObject
     private static string NormalizeId(string id)
     {
         return string.IsNullOrWhiteSpace(id) ? string.Empty : id.Trim();
+    }
+}
+
+[Serializable]
+public class BgmData
+{
+    public BgmState state;
+    public BgmClipData mainClip;
+    public List<BgmClipData> ambienceClips = new();
+
+    public void Normalize()
+    {
+        mainClip?.Normalize();
+        ambienceClips ??= new List<BgmClipData>();
+
+        foreach (BgmClipData ambienceClip in ambienceClips)
+            ambienceClip?.Normalize();
+    }
+}
+
+[Serializable]
+public class BgmClipData
+{
+    public AudioClip clip;
+
+    [Range(0f, 1f)]
+    public float volume = 1f;
+
+    [Range(SoundData.MinPitch, SoundData.MaxPitch)]
+    public float pitch = 1f;
+
+    public bool loop = true;
+    public bool useRandomPitch;
+
+    [Range(SoundData.MinPitch, SoundData.MaxPitch)]
+    public float randomPitchMin = 1f;
+
+    [Range(SoundData.MinPitch, SoundData.MaxPitch)]
+    public float randomPitchMax = 1f;
+
+    public float GetPlaybackPitch()
+    {
+        if (!useRandomPitch)
+            return SoundData.ClampPlaybackPitch(pitch);
+
+        float min = SoundData.ClampPlaybackPitch(randomPitchMin);
+        float max = SoundData.ClampPlaybackPitch(randomPitchMax);
+        if (min > max)
+            (min, max) = (max, min);
+
+        return Mathf.Approximately(min, max)
+            ? min
+            : UnityEngine.Random.Range(min, max);
+    }
+
+    public void Normalize()
+    {
+        volume = Mathf.Clamp01(volume);
+        pitch = SoundData.ClampPlaybackPitch(pitch);
+        randomPitchMin = SoundData.ClampPlaybackPitch(randomPitchMin);
+        randomPitchMax = SoundData.ClampPlaybackPitch(randomPitchMax);
     }
 }
 

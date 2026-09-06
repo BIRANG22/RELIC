@@ -6,24 +6,14 @@ using UnityEngine;
 public class SoundIdDrawerTests
 {
     [Test]
-    public void GetSoundIds_ReturnsOnlyIdsForSelectedCategory()
+    public void GetSoundIds_DoesNotExposeBgmIds()
     {
         SoundDatabase database = ScriptableObject.CreateInstance<SoundDatabase>();
-        AudioClip bgmClip = null;
         AudioClip sfxClip = null;
 
         try
         {
-            bgmClip = AudioClip.Create("Bgm", 32, 1, 44100, false);
             sfxClip = AudioClip.Create("Sfx", 32, 1, 44100, false);
-
-            SetPrivateField(
-                database,
-                "bgmList",
-                new List<SoundData>
-                {
-                    new() { id = "bgm.lobby", aliases = new List<string> { "Lobby" }, clip = bgmClip }
-                });
             SetPrivateField(
                 database,
                 "sfxList",
@@ -39,12 +29,11 @@ public class SoundIdDrawerTests
                 database,
                 SoundCategory.Sfx);
 
-            Assert.That(bgmIds, Is.EquivalentTo(new[] { "bgm.lobby" }));
+            Assert.That(bgmIds, Is.Empty);
             Assert.That(sfxIds, Is.EquivalentTo(new[] { "ui.normal.click" }));
         }
         finally
         {
-            DestroyObject(bgmClip);
             DestroyObject(sfxClip);
             DestroyObject(database);
         }

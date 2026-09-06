@@ -8,7 +8,55 @@ using UnityEngine.TestTools;
 public class AudioManagerTests
 {
     [Test]
-    public void PlayBgm_WithMultipleClipsForSameId_AssignsEachClipToSeparateSource()
+    public void PlayBgmState_PlaysConfiguredMainAndAmbienceWithoutPrefixLookup()
+    {
+        GameObject audioObject = new("AudioManagerBgmStateTest");
+        AudioClip mainClip = null;
+        AudioClip ambienceClip = null;
+
+        try
+        {
+            AudioSource mainSource = audioObject.AddComponent<AudioSource>();
+            AudioManager manager = audioObject.AddComponent<AudioManager>();
+            SoundDatabase database = ScriptableObject.CreateInstance<SoundDatabase>();
+            mainClip = AudioClip.Create("BattleStateMain", 32, 1, 44100, false);
+            ambienceClip = AudioClip.Create("BattleStateAmbience", 32, 1, 44100, false);
+
+            SetPrivateField(manager, "bgmSource", mainSource);
+            SetPrivateField(
+                database,
+                "bgmList",
+                new List<BgmData>
+                {
+                    new()
+                    {
+                        state = BgmState.BattleMain,
+                        mainClip = new BgmClipData { clip = mainClip },
+                        ambienceClips = new List<BgmClipData>
+                        {
+                            new() { clip = ambienceClip }
+                        }
+                    }
+                });
+            SetPrivateField(manager, "soundDatabase", database);
+
+            manager.Initialize();
+            manager.PlayBgmState(BgmState.BattleMain);
+
+            AudioSource[] sources = audioObject.GetComponentsInChildren<AudioSource>(true);
+            Assert.That(sources.Any(source => source.clip == mainClip && source.loop), Is.True);
+            Assert.That(sources.Any(source => source.clip == ambienceClip && source.loop), Is.True);
+        }
+        finally
+        {
+            DestroyObject(mainClip);
+            DestroyObject(ambienceClip);
+            DestroyObject(audioObject);
+        }
+    }
+
+    [Test]
+    public void PlayBgmState_WithMultipleAmbience_AssignsEachClipToSeparateSource()
     {
         GameObject audioObject = new("AudioManagerTest");
         AudioClip mainClip = null;
@@ -26,24 +74,19 @@ public class AudioManagerTests
             SetPrivateField(
                 database,
                 "bgmList",
-                new List<SoundData>
+                new List<BgmData>
                 {
                     new()
                     {
-                        id = "bgm.battle.main",
-                        clip = mainClip
-                    },
-                    new()
-                    {
-                        id = "bgm.battle.ambience",
-                        clip = layerClip
+                        state = BgmState.BattleMain,
+                        mainClip = new BgmClipData { clip = mainClip },
+                        ambienceClips = new List<BgmClipData> { new() { clip = layerClip } }
                     }
                 });
             SetPrivateField(manager, "soundDatabase", database);
 
-            LogAssert.ignoreFailingMessages = true;
             manager.Initialize();
-            manager.PlayBgm(AudioIds.Bgm.Battle);
+            manager.PlayBgm(BgmState.BattleMain);
 
             AudioClip[] assignedClips = audioObject
                 .GetComponentsInChildren<AudioSource>(true)
@@ -55,7 +98,6 @@ public class AudioManagerTests
         }
         finally
         {
-            LogAssert.ignoreFailingMessages = false;
             DestroyObject(mainClip);
             DestroyObject(layerClip);
             DestroyObject(audioObject);
@@ -63,7 +105,7 @@ public class AudioManagerTests
     }
 
     [Test]
-    public void PlayBgm_AppliesIndividualVolumeForEachBgmEntry()
+    public void PlayBgmState_AppliesSharedBgmVolumeToMainAndAmbience()
     {
         GameObject audioObject = new("AudioManagerVolumeTest");
         AudioClip mainClip = null;
@@ -81,37 +123,28 @@ public class AudioManagerTests
             SetPrivateField(
                 database,
                 "bgmList",
-                new List<SoundData>
+                new List<BgmData>
                 {
                     new()
                     {
-                        id = "bgm.battle.main",
-                        clip = mainClip,
-                        volume = 0.8f
-                    },
-                    new()
-                    {
-                        id = "bgm.battle.ambience",
-                        clip = layerClip,
-                        volume = 0.25f
+                        state = BgmState.BattleMain,
+                        mainClip = new BgmClipData { clip = mainClip },
+                        ambienceClips = new List<BgmClipData> { new() { clip = layerClip } }
                     }
                 });
             SetPrivateField(manager, "soundDatabase", database);
 
-            LogAssert.ignoreFailingMessages = true;
             manager.Initialize();
-            manager.PlayBgm(AudioIds.Bgm.Battle);
+            manager.PlayBgm(BgmState.BattleMain);
 
             AudioSource layerSource = audioObject
                 .GetComponentsInChildren<AudioSource>(true)
                 .First(source => source.clip == layerClip);
 
-            Assert.That(mainSource.volume, Is.EqualTo(0.8f).Within(0.001f));
-            Assert.That(layerSource.volume, Is.EqualTo(0.25f).Within(0.001f));
+            Assert.That(layerSource.volume, Is.EqualTo(mainSource.volume).Within(0.001f));
         }
         finally
         {
-            LogAssert.ignoreFailingMessages = false;
             DestroyObject(mainClip);
             DestroyObject(layerClip);
             DestroyObject(audioObject);

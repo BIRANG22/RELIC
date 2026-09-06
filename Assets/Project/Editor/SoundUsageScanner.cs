@@ -251,7 +251,6 @@ public static class SoundUsageScanner
         if (database == null)
             return;
 
-        AddDatabaseEntries(report, SoundCategory.Bgm, database.BgmEntries);
         AddDatabaseEntries(report, SoundCategory.Sfx, database.SfxEntries);
         AddDatabaseEntries(report, SoundCategory.Sfx, database.EventSfxEntries);
     }
