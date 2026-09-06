@@ -258,7 +258,7 @@ S_Monster_41,사령술,Self,E_Spawn_Soldier,1,1,0,Range_Self,Buff,죽은 병사 
 GridEffectID,Name,Passed,expendable,EffectIds,ValueRate,CountRate,Duration,SpawnType,HP,TargetType,ToolTip
 GR_debris,잔해,0,0,-1,0,1,0,BattleStart,25,Object,이동을 방해하는 장애물이다.
 GR_thorn,가시,1,0,E_Strike,3,1,0,BattleStart,0,None,대상에게 {ValueRate}의 피해를 준다.
-GR_Poisson,독,1,1,E_Poison,2,1,0,BattleStart,0,None,대상에게 중독 {ValueRate}를 부여한다.
+,독,1,1,E_Poison,2,1,0,BattleStart,0,None,대상에게 중독 {ValueRate}를 부여한다.GR_Poisson
 GR_Residue,점액,1,1,E_Strike,2,1,2,Monster,0,None,대상에게 {ValueRate}의 피해를 준다.
 GR_dummy,루어,0,0,-1,0,1,0,Summon,10,Character,캐릭터로 인식되는 생명체이다.
 GR_explosive_doll,브룸,0,0,-1,8,1,0,Summon,15,Object,이번 턴이 끝날 때 주변 적에게 {ValueRate}의 피해를 준다.
