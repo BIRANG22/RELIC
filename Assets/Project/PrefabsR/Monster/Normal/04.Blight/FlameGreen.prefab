@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7097640343967305519}
   - component: {fileID: 5189240133773444434}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: HighlightSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -102,7 +102,7 @@ GameObject:
   - component: {fileID: 3336246533455826411}
   - component: {fileID: 8020941402780159688}
   - component: {fileID: 5745507067164070965}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: FlameGreen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1238,7 +1238,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3815237261585603597}
   - component: {fileID: 1544076472537150448}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Shadow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1327,7 +1327,7 @@ GameObject:
   - component: {fileID: 5838251175498979922}
   - component: {fileID: 7299354235888229577}
   - component: {fileID: 230220194176380725}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: SpriteRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1451,7 +1451,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7941592936749848263}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: VfxSpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}

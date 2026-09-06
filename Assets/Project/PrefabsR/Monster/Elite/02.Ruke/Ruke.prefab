@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7198944354738326185}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: VfxSpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 108596752665085118}
   - component: {fileID: 7150696886340755660}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Shadow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 8953835548887357420}
   - component: {fileID: 1991961792868554423}
   - component: {fileID: 3600074925671409079}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: SpriteRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -255,7 +255,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5086175829547556225}
   - component: {fileID: 8697646064394840958}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: HighlightSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -346,8 +346,7 @@ GameObject:
   - component: {fileID: 6817001310453254729}
   - component: {fileID: 1718523480768826163}
   - component: {fileID: 2423722508837748408}
-  - component: {fileID: 3235921873329881336}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Ruke
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1186,7 +1185,7 @@ MonoBehaviour:
     prepareDuration: 0.15
     stateName: AttackAction3
     vfx:
-      prefab: {fileID: 5048194300403814765, guid: f3f99cfb5e2b7ed46acf00d0eee8d861, type: 3}
+      prefab: {fileID: 3602943759074218325, guid: 25872a24560375c49a2441cb58273416, type: 3}
       flipType: 2
       renderMode: 2
       proxyBlendMode: 0
@@ -1196,11 +1195,11 @@ MonoBehaviour:
       renderCameraOrthographicSize: 5
       proxyWorldHeight: 10
       proxyWorldOffset: {x: 0, y: 0, z: 0}
-      proxySortingLayerName: Background
+      proxySortingLayerName: Unit
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-    spawnVfxOnEachTargetGrid: 0
+    spawnVfxOnEachTargetGrid: 1
     projectileVfx:
       missilePrefab: {fileID: 0}
       impactPrefab: {fileID: 0}
@@ -1214,11 +1213,11 @@ MonoBehaviour:
       impactOffset: {x: 0, y: 0, z: 0}
   - prepareStateName: 
     prepareDuration: 0.15
-    stateName: 
+    stateName: Guard
     vfx:
-      prefab: {fileID: 0}
-      flipType: 0
-      renderMode: 0
+      prefab: {fileID: 7528646786082519194, guid: 38e0999ffd8f187408059414ae758c8b, type: 3}
+      flipType: 2
+      renderMode: 2
       proxyBlendMode: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
@@ -1437,39 +1436,3 @@ MonoBehaviour:
   forceAnimatorUpdate: 1
   autoFindAnimatorInChildren: 1
   vfxLayerName: VFX
---- !u!114 &3235921873329881336
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5089267951778699808}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 46a3b90ac864fa341b003dc84fd7d7f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetAnimator: {fileID: 2423722508837748408}
-  targetFacing: {fileID: 1718523480768826163}
-  debugBindings:
-  - key: 49
-    action: 2
-    flipBeforeAction: 1
-  - key: 50
-    action: 3
-    flipBeforeAction: 1
-  - key: 51
-    action: 4
-    flipBeforeAction: 1
-  - key: 52
-    action: 10
-    flipBeforeAction: 1
-  - key: 53
-    action: 11
-    flipBeforeAction: 1
-  - key: 54
-    action: 12
-    flipBeforeAction: 1
-  - key: 122
-    action: 20
-    flipBeforeAction: 0

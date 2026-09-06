@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3700595326482099818}
   - component: {fileID: 4102111945871168053}
   - component: {fileID: 6378924651290265512}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: SpriteRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -137,7 +137,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1530879800068049377}
   - component: {fileID: 252614297398486257}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Shadow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -223,7 +223,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2443549660959925802}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: VfxSpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -260,7 +260,7 @@ GameObject:
   - component: {fileID: 3787985041276772322}
   - component: {fileID: 4630770982391641600}
   - component: {fileID: 5190771714538004787}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: SlimeMini
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1396,7 +1396,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8925332234310595719}
   - component: {fileID: 6209691492024993201}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: HighlightSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7198944354738326185}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: VfxSpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 108596752665085118}
   - component: {fileID: 7150696886340755660}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Shadow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 8953835548887357420}
   - component: {fileID: 1991961792868554423}
   - component: {fileID: 3600074925671409079}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: SpriteRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -255,7 +255,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5086175829547556225}
   - component: {fileID: 8697646064394840958}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: HighlightSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -347,7 +347,7 @@ GameObject:
   - component: {fileID: 1718523480768826163}
   - component: {fileID: 2423722508837748408}
   - component: {fileID: 3235921873329881336}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Draugr
   m_TagString: Untagged
   m_Icon: {fileID: 0}
