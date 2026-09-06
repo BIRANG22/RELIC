@@ -43,6 +43,11 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     public void Open(List<BattleRewardData> rewards, Action completedCallback = null)
     {
+        Open(rewards, completedCallback, null);
+    }
+
+    public void Open(List<BattleRewardData> rewards, Action completedCallback, ResumeData resumeData)
+    {
         currentRewards.Clear();
         claimedRewards.Clear();
         activeSlots.Clear();
@@ -51,7 +56,18 @@ public class BattleRewardPanelUI : MonoBehaviour
         ResolveEquipPanelIfNeeded();
 
         if (rewards != null)
-            currentRewards.AddRange(rewards);
+        {
+            for (int i = 0; i < rewards.Count; i++)
+            {
+                BattleRewardData reward = rewards[i];
+                if (reward == null)
+                    continue;
+
+                if (string.IsNullOrWhiteSpace(reward.Name) || reward.Icon == null)
+                    PopulateRewardPresentation(reward);
+                currentRewards.Add(reward);
+            }
+        }
 
         Debug.Log($"[BattleRewardPanelUI] Open / RewardCount:{currentRewards.Count}");
 
@@ -69,6 +85,23 @@ public class BattleRewardPanelUI : MonoBehaviour
             return;
         }
 
+    }
+
+    public void OpenSavedRewards(ResumeData resumeData, Action completedCallback = null)
+    {
+        if (resumeData == null)
+            return;
+
+        // BattleReward checkpoint는 항상 수령 전 snapshot이다.
+        Open(ToRuntimeRewards(resumeData.PendingRewards), completedCallback, null);
+    }
+
+    public void PrepareForResumePresentation()
+    {
+        ResolveEquipPanelIfNeeded();
+        pendingEquipmentReward = false;
+        if (equipPanel != null)
+            equipPanel.gameObject.SetActive(false);
     }
 
     private void Refresh()
@@ -161,6 +194,68 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         if (rewardRoot is RectTransform rectTransform)
             LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
+    }
+
+    private List<BattleRewardData> ToRuntimeRewards(IReadOnlyList<BattleRewardSaveData> saved)
+    {
+        var rewards = new List<BattleRewardData>();
+        if (saved == null)
+            return rewards;
+
+        for (int i = 0; i < saved.Count; i++)
+        {
+            BattleRewardSaveData reward = saved[i];
+            if (reward != null)
+            {
+                var runtimeReward = new BattleRewardData
+                {
+                    Type = reward.Type,
+                    RewardId = reward.RewardId,
+                    Amount = reward.Amount
+                };
+                PopulateRewardPresentation(runtimeReward);
+                rewards.Add(runtimeReward);
+            }
+        }
+        return rewards;
+    }
+
+    private static void PopulateRewardPresentation(BattleRewardData reward)
+    {
+        if (reward == null || DataManager.Instance == null || string.IsNullOrWhiteSpace(reward.RewardId))
+            return;
+
+        string id = reward.RewardId.Trim();
+        switch (reward.Type)
+        {
+            case BattleRewardType.Item:
+                ItemData item = DataManager.Instance.ItemDatabase?.Get(id);
+                if (item != null)
+                {
+                    reward.Name = GameDataLocalization.ItemName(item);
+                    reward.Description = GameDataLocalization.ItemDescription(item);
+                }
+                DataManager.Instance.ItemIconDatabase?.TryGetIcon(id, out reward.Icon);
+                break;
+
+            case BattleRewardType.Relic:
+                if (DataManager.Instance.RelicDatabase != null && DataManager.Instance.RelicDatabase.TryGet(id, out RelicData relic))
+                {
+                    reward.Name = GameDataLocalization.RelicName(relic);
+                    reward.Description = GameDataLocalization.RelicEffectDescription(relic);
+                }
+                DataManager.Instance.RelicIconDatabase?.TryGetIcon(id, out reward.Icon);
+                break;
+
+            case BattleRewardType.Skill:
+                if (DataManager.Instance.SkillDatabase != null && DataManager.Instance.SkillDatabase.TryGet(id, out SkillMasterData skill))
+                {
+                    reward.Name = GameDataLocalization.SkillName(skill);
+                    reward.Description = GameDataLocalization.SkillDetails(skill);
+                }
+                DataManager.Instance.SkillIconDatabase?.TryGetIcon(id, out reward.Icon);
+                break;
+        }
     }
 
     private void ResolveEquipPanelIfNeeded()

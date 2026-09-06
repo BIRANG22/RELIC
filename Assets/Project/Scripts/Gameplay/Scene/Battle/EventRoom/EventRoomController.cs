@@ -148,6 +148,8 @@ public class EventRoomController : MonoBehaviour
     private Coroutine event02ResultContinuationRoutine;
     private Coroutine event04ResultContinuationRoutine;
     private Coroutine event01RewardTransitionRoutine;
+    private EventData pendingDiceChoice;
+    private int[] pendingDiceFaces = System.Array.Empty<int>();
     private Coroutine event02ChestTransitionRoutine;
     private Coroutine event04ChoiceTransitionRoutine;
     private Coroutine event04ResultTitleFadeRoutine;
@@ -490,6 +492,19 @@ public class EventRoomController : MonoBehaviour
         ClearSkillAwakenSelection();
         eventChoiceSessionState.AwakenedSkillTargets.Clear();
 
+        // Choice 실행 후 다음 Event의 선택지를 표시하는 checkpoint는 Map node의 최초 EventId가 아니라
+        // Resume에 저장된 다음 EventId를 기준으로 definition을 먼저 구성해야 한다.
+        if (SaveSystem.Instance != null &&
+            SaveSystem.Instance.TryGetPendingResumeData(out ResumeData resume) &&
+            resume != null &&
+            (resume.Phase == ResumePhase.EventDice ||
+             (resume.Phase == ResumePhase.EventChoice &&
+              resume.Presentation == ResumePresentation.ChoiceList)) &&
+            !string.IsNullOrWhiteSpace(resume.EventId))
+        {
+            pendingEventId = EventIdUtility.Normalize(resume.EventId);
+        }
+
         if (string.IsNullOrWhiteSpace(pendingEventId))
             return false;
 
@@ -509,7 +524,177 @@ public class EventRoomController : MonoBehaviour
         SetChestRootVisible(false);
         EnsureDataEventReferences();
         LoadEventDefinition(definition, string.Empty);
+        if (TryRestorePendingEventResume())
+            return true;
+
+        if (!HasPendingEventResume())
+            SaveEventResume(ResumePhase.EventEntry, null, default, null);
         return true;
+    }
+
+    private bool TryRestorePendingEventResume()
+    {
+        if (SaveSystem.Instance == null ||
+            !SaveSystem.Instance.TryGetPendingResumeData(out ResumeData resume) ||
+            resume == null ||
+            !string.Equals(EventIdUtility.Normalize(resume.EventId),
+                EventIdUtility.Normalize(currentEventDefinition?.EventId), System.StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        Debug.Log($"[EventResume] Restore phase:{resume.Phase} event:{resume.EventId} current:{currentEventDefinition?.EventId} choice:{resume.SelectedChoiceId}", this);
+
+        // EventEntry는 LoadEventDefinition이 이미 정상 입력 화면을 구성했다.
+        // 복원 중 autosave만 막고, 이후 사용자의 선택/Dice checkpoint는 저장 가능해야 한다.
+        if (resume.Phase == ResumePhase.EventEntry)
+        {
+            SaveSystem.Instance.ClearPendingResumeData();
+            SaveSystem.Instance.CompleteCheckpointAutosaveRestore();
+            return true;
+        }
+
+        if (resume.Phase == ResumePhase.EventDice)
+        {
+            if (!int.TryParse(resume.SelectedChoiceId, out int order))
+            {
+                Debug.LogWarning($"[EventResume] Dice restore skipped: invalid ChoiceOrder '{resume.SelectedChoiceId}'.", this);
+                return false;
+            }
+
+            EventData choice = FindChoiceByOrder(GetCurrentVisibleChoices(), order);
+            if (choice == null || resume.DiceFaces == null || resume.DiceFaces.Length == 0)
+            {
+                Debug.LogWarning($"[EventResume] Dice restore skipped: choice:{choice != null}, faces:{resume.DiceFaces?.Length ?? 0}.", this);
+                return false;
+            }
+
+            EnsureDiceRollPresenter();
+            if (diceRollPresenter == null)
+            {
+                Debug.LogWarning("[EventResume] Dice restore skipped: presenter missing.", this);
+                return false;
+            }
+
+            ResetEventResumeTransientPresentation();
+            SetChoiceSlotsInteractable(false);
+            SetNextButtonVisible(false);
+            diceRollPresenter.ShowResolved(
+                resume.DiceFaces,
+                BuildDiceDetailText(choice, SumDiceFaces(resume.DiceFaces)),
+                () => ExecuteEventChoice(choice, forcedDiceFaces: resume.DiceFaces));
+            Debug.Log($"[EventResume] Dice restored: presenterActive:{diceRollPresenter.gameObject.activeInHierarchy} faces:{string.Join(",", resume.DiceFaces)}.", this);
+            SaveSystem.Instance.ClearPendingResumeData();
+            // 복원 자체는 저장하지 않되, 이후 사용자의 Roll/확인 입력은 새 checkpoint를 만들 수 있어야 한다.
+            SaveSystem.Instance.CompleteCheckpointAutosaveRestore();
+            return true;
+        }
+
+        if (resume.Phase == ResumePhase.EventChoice && resume.ChoiceResultApplied)
+        {
+            // ChoiceList는 이미 다음 EventDefinition을 LoadEventDefinition에서 bind한 입력 화면이다.
+            // 결과 presentation baseline을 적용하면 choice scroll이 닫히므로 별도 복원한다.
+            if (resume.Presentation == ResumePresentation.ChoiceList)
+            {
+                isEventResolved = false;
+                BindChoiceSlots(ResolveSavedVisibleChoices(resume));
+                SetChoiceSlotsInteractable(true);
+                SetNextButtonVisible(EventRoomRewardFlowUtility.CanSkipUnresolvedEvent(currentEventDefinition));
+                SaveSystem.Instance.ClearPendingResumeData();
+                SaveSystem.Instance.CompleteCheckpointAutosaveRestore();
+                return true;
+            }
+
+            ResetEventResumeTransientPresentation();
+
+            if (resume.Presentation == ResumePresentation.Shop)
+            {
+                RestRoomShopPanel restoredShop = ResolveShopPanel();
+                if (restoredShop == null || resume.ShopGoods == null || resume.ShopGoods.Count == 0)
+                    return false;
+
+                shopPanel = restoredShop;
+                UnbindEvent06ShopClose();
+                shopPanel.Closed += OnEvent06ShopClosed;
+                waitingForEvent06ShopClose = true;
+                event06NextEventId = EventIdUtility.Normalize(resume.NextEventId);
+                restoredShop.OpenSavedStock(resume.ShopGoods);
+                SaveSystem.Instance.ClearPendingResumeData();
+                SaveSystem.Instance.CompleteCheckpointAutosaveRestore();
+                return true;
+            }
+
+            pendingEventRewards.Clear();
+            if (resume.PendingRewards != null)
+            {
+                for (int i = 0; i < resume.PendingRewards.Count; i++)
+                {
+                    BattleRewardSaveData reward = resume.PendingRewards[i];
+                    if (reward != null)
+                    {
+                        pendingEventRewards.Add(new BattleRewardData
+                        {
+                            Type = reward.Type,
+                            RewardId = reward.RewardId,
+                            Amount = reward.Amount
+                        });
+                    }
+                }
+            }
+
+            isEventResolved = true;
+            SetChoiceSlotsInteractable(false);
+            SetNextButtonVisible(false);
+            HideEventChoicePresentation();
+            if (pendingEventRewards.Count > 0)
+                TryOpenPendingEventRewardPanel(false, false);
+            else
+            {
+                if (eventResultText != null)
+                    eventResultText.text = resume.ResultMessage ?? string.Empty;
+                SetNextButtonVisible(true);
+            }
+
+            SaveSystem.Instance.ClearPendingResumeData();
+            return true;
+        }
+
+        return false;
+    }
+
+    private void HideEventChoicePresentation()
+    {
+        ClearChoiceSlots();
+        if (eventChoiceScrollView != null)
+            eventChoiceScrollView.gameObject.SetActive(false);
+        if (eventChoiceGradation != null)
+            eventChoiceGradation.gameObject.SetActive(false);
+    }
+
+    private void ResetEventResumeTransientPresentation()
+    {
+        StopEventRewardPanelDelay();
+        HideEventChoicePresentation();
+        HideDiceRollPresenterImmediate();
+        ClearEquippedRelicCostSelection();
+        ClearSkillAwakenSelection();
+        isEventRewardPanelOpen = false;
+        SetNextButtonVisible(false);
+        if (eventResultText != null)
+            eventResultText.text = string.Empty;
+    }
+
+    private static bool HasPendingEventResume()
+    {
+        if (SaveSystem.Instance == null ||
+            !SaveSystem.Instance.TryGetPendingResumeData(out ResumeData resume))
+        {
+            return false;
+        }
+
+        return resume.Phase == ResumePhase.EventEntry ||
+               resume.Phase == ResumePhase.EventChoice ||
+               resume.Phase == ResumePhase.EventDice;
     }
 
     private void LoadEventDefinition(EventDefinition definition, string resultMessage)
@@ -984,6 +1169,10 @@ public class EventRoomController : MonoBehaviour
 
         ClearEquippedRelicCostSelection();
 
+        // Execute가 성공한 시점에는 비용·확률·보상 후보가 Runtime에 확정되어 있다.
+        // checkpoint는 아래에서 실제 다음 presentation이 확정된 직후에만 만든다.
+        PersistEventRuntime();
+
         bool playSkillAwakenResult =
             selectedSkillAwakenTarget.IsValid &&
             EventChoiceExecutionService.RequiresSkillAwakenSelection(choice);
@@ -1036,8 +1225,6 @@ public class EventRoomController : MonoBehaviour
         int[] resolvedDiceFaces = null)
     {
         // 이벤트 결과 오브젝트 연출을 항상 보상 UI보다 먼저 시작합니다.
-        PersistEventRuntime();
-
         bool playedEvent06OpenVisual = false;
         if (EventIdUtility.Normalize(choice?.EventId) == "Event_06" && result.Accepted)
         {
@@ -1115,6 +1302,14 @@ public class EventRoomController : MonoBehaviour
         {
             hasContinuingEvent = true;
             LoadEventDefinition(nextDefinition, result.ResultMessage);
+            SaveEventResume(
+                ResumePhase.EventChoice,
+                choice,
+                result,
+                resolvedDiceFaces,
+                ResumePresentation.ChoiceList,
+                nextDefinition.EventId,
+                result.ResultMessage);
 
             if (resolvedDiceFaces != null)
                 RestoreEventChoiceUiAfterDice();
@@ -1143,6 +1338,14 @@ public class EventRoomController : MonoBehaviour
         }
 
         SetNextButtonVisible(true);
+        SaveEventResume(
+            ResumePhase.EventChoice,
+            choice,
+            result,
+            resolvedDiceFaces,
+            ResumePresentation.ResultOnly,
+            null,
+            result.ResultMessage);
     }
 
     private bool TryQueueEvent01ResultContinuation(
@@ -1548,6 +1751,8 @@ public class EventRoomController : MonoBehaviour
 
         SetChoiceSlotsInteractable(false);
         SetNextButtonVisible(false);
+        pendingDiceChoice = choice;
+        pendingDiceFaces = RollThreeSixSidedDiceFaces();
         diceTransitionRoutine = StartCoroutine(OpenDiceRollPresenterWithTransition(choice));
         return true;
     }
@@ -1573,7 +1778,7 @@ public class EventRoomController : MonoBehaviour
             yield break;
         }
 
-        int[] diceFaces = RollThreeSixSidedDiceFaces();
+        int[] diceFaces = pendingDiceFaces;
         int diceRoll = SumDiceFaces(diceFaces);
         string detailText = BuildDiceDetailText(choice, diceRoll);
         diceRollPresenter.ShowInteractive(
@@ -1582,8 +1787,11 @@ public class EventRoomController : MonoBehaviour
             () =>
             {
                 diceTransitionRoutine = null;
+                pendingDiceChoice = null;
+                pendingDiceFaces = System.Array.Empty<int>();
                 ExecuteEventChoice(choice, forcedDiceFaces: diceFaces);
-            });
+            },
+            () => SaveEventResume(ResumePhase.EventDice, choice, default, diceFaces, diceRollResolved: true));
 
         diceTransitionRoutine = null;
     }
@@ -3457,6 +3665,7 @@ public class EventRoomController : MonoBehaviour
         {
             // 상점 패널의 페이드 인과 동시에 기존 EventRoom TITLE/선택지 UI를 부드럽게 숨깁니다.
             shopPanel.Open();
+            SaveEventResume(ResumePhase.EventChoice, null, default, null, ResumePresentation.Shop);
             yield return FadeOutEvent06EventUi();
         }
 
@@ -3683,6 +3892,92 @@ public class EventRoomController : MonoBehaviour
             RefreshRemnantHud = BattleGoldHudUI.RefreshAll,
             SuppressRewardResultMessages = true
         };
+    }
+
+    private void SaveEventResume(
+        ResumePhase phase,
+        EventData choice,
+        EventChoiceExecutionResult result,
+        int[] diceFaces,
+        ResumePresentation presentation = ResumePresentation.None,
+        string eventIdOverride = null,
+        string resultMessage = null,
+        bool diceRollResolved = false)
+    {
+        MapRuntimeData map = DataManager.Instance?.MapRuntimeStore?.Get();
+        var resume = new ResumeData
+        {
+            Phase = phase,
+            NodeIndex = map != null ? map.CurrentNodeIndex : -1,
+            MapId = map?.CurrentMapId,
+            EventId = EventIdUtility.Normalize(eventIdOverride ?? currentEventDefinition?.EventId ?? pendingEventId),
+            SelectedChoiceId = choice != null ? choice.ChoiceOrder.ToString() : string.Empty,
+            ChoiceResultApplied = phase == ResumePhase.EventChoice,
+            NextEventId = !string.IsNullOrWhiteSpace(result.NextEventId) ? result.NextEventId : event06NextEventId,
+            Presentation = presentation != ResumePresentation.None
+                ? presentation
+                : phase == ResumePhase.EventEntry ? ResumePresentation.ChoiceList
+                : phase == ResumePhase.EventDice ? ResumePresentation.DiceResolved
+                : ResumePresentation.ResultOnly,
+            ResultMessage = resultMessage ?? result.ResultMessage,
+            ChanceSucceeded = result.Succeeded,
+            DiceFaces = diceFaces ?? System.Array.Empty<int>(),
+            DiceRollResolved = diceRollResolved
+        };
+
+        for (int i = 0; i < pendingEventRewards.Count; i++)
+        {
+            BattleRewardData reward = pendingEventRewards[i];
+            if (reward == null) continue;
+            resume.PendingRewards.Add(new BattleRewardSaveData { Type = reward.Type, RewardId = reward.RewardId, Amount = reward.Amount });
+        }
+
+        if (resume.Presentation == ResumePresentation.ChoiceList)
+        {
+            IReadOnlyList<EventData> visibleChoices = GetCurrentVisibleChoices();
+            if (visibleChoices != null)
+            {
+                for (int i = 0; i < visibleChoices.Count; i++)
+                {
+                    EventData visibleChoice = visibleChoices[i];
+                    if (visibleChoice == null) continue;
+                    resume.VisibleChoices.Add(new EventChoiceReferenceSaveData
+                    {
+                        EventId = EventIdUtility.Normalize(visibleChoice.EventId),
+                        ChoiceOrder = visibleChoice.ChoiceOrder
+                    });
+                }
+            }
+        }
+
+        if (presentation == ResumePresentation.Shop && shopPanel != null)
+            resume.ShopGoods.AddRange(shopPanel.CaptureResumeStock());
+
+        SaveSystem.Instance?.SaveCheckpoint(resume);
+    }
+
+    private IReadOnlyList<EventData> ResolveSavedVisibleChoices(ResumeData resume)
+    {
+        if (resume?.VisibleChoices == null || resume.VisibleChoices.Count == 0 ||
+            DataManager.Instance?.EventDatabase == null)
+        {
+            return GetCurrentVisibleChoices();
+        }
+
+        var choices = new List<EventData>();
+        for (int i = 0; i < resume.VisibleChoices.Count; i++)
+        {
+            EventChoiceReferenceSaveData reference = resume.VisibleChoices[i];
+            if (reference == null || string.IsNullOrWhiteSpace(reference.EventId)) continue;
+            if (!DataManager.Instance.EventDatabase.TryGetEvent(reference.EventId, out EventDefinition definition) ||
+                definition?.Choices == null) continue;
+
+            EventData choice = FindChoiceByOrder(definition.Choices, reference.ChoiceOrder);
+            if (choice != null)
+                choices.Add(choice);
+        }
+
+        return choices.Count > 0 ? choices : GetCurrentVisibleChoices();
     }
 
     private void PersistEventRuntime()
@@ -4684,7 +4979,7 @@ public class EventRoomController : MonoBehaviour
         pendingEventRewards.Add(reward);
     }
 
-    private bool TryOpenPendingEventRewardPanel(bool delayOpening = false)
+    private bool TryOpenPendingEventRewardPanel(bool delayOpening = false, bool saveCheckpoint = true)
     {
         if (pendingEventRewards.Count <= 0)
             return false;
@@ -4702,6 +4997,15 @@ public class EventRoomController : MonoBehaviour
         SetChoiceSlotsInteractable(false);
 
         List<BattleRewardData> rewards = new(pendingEventRewards);
+        if (saveCheckpoint)
+        {
+            SaveEventResume(
+                ResumePhase.EventChoice,
+                activeRewardChoice,
+                default,
+                null,
+                ResumePresentation.RewardPanel);
+        }
         pendingEventRewards.Clear();
 
         if (delayOpening && eventRewardPanelOpenDelay > 0f && isActiveAndEnabled)
@@ -5864,6 +6168,8 @@ public class EventRoomController : MonoBehaviour
             runtime.VisitedMapIds.Add(nodeKey);
 
         DataManager.Instance.MapRuntimeStore.Set(runtime);
+        SaveSystem.Instance?.ClearBattleRoomResumeState();
+        SaveSystem.Instance?.SaveCheckpoint();
 
         Debug.Log(
             $"[EventRoomController] Complete Node / Node:{runtime.CurrentNodeIndex} / Map:{runtime.CurrentMapId}"

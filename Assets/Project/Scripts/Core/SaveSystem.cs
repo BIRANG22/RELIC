@@ -17,11 +17,13 @@ public class SaveSystem : Singleton<SaveSystem>
     private int battleRoomEntryCheckpointNodeIndex = -1;
     private string battleRoomEntryCheckpointMapId = string.Empty;
     private bool hasPendingResolvedBattleRoomEntryState;
+    private bool suppressCheckpointAutosave;
     private List<BattleRoomGridEffectSaveData> pendingBattleRoomGridEffects = new();
     private List<BattleRoomMonsterCommandSaveData> pendingBattleRoomMonsterCommands = new();
     // 탐사진행으로 읽은 저장본을 BattleScene 초기화가 끝날 때까지 유지합니다.
     // 런타임 데이터 Apply 후에도 전투방 1턴의 확정 결과(장애물/몬스터 예약)는 이 스냅샷에서 복구합니다.
     private GameSaveData pendingBattleContinueSaveData;
+    private ResumeData pendingResumeData;
 
     public string SaveFilePath => Path.Combine(Application.persistentDataPath, SaveFileName);
 
@@ -87,6 +89,32 @@ public class SaveSystem : Singleton<SaveSystem>
         RecordDiscoveryService.BackfillFromCurrentState(DataManager.Instance);
 
         GameSaveData saveData = CreateSaveData();
+        return WriteSaveData(saveData);
+    }
+
+    public bool SaveCheckpoint()
+    {
+        return SaveCheckpoint(null);
+    }
+
+    public bool SaveCheckpoint(ResumeData resumeData)
+    {
+        if (suppressCheckpointAutosave)
+        {
+            Debug.Log("[SaveSystem] Checkpoint autosave suppressed while Continue is restoring.");
+            return false;
+        }
+
+        if (DataManager.Instance == null)
+        {
+            Debug.LogWarning("[SaveSystem] DataManager is not ready. Checkpoint was not saved.");
+            return false;
+        }
+
+        CommitRuntimeStateContributorsForSave();
+        RecordDiscoveryService.BackfillFromCurrentState(DataManager.Instance);
+        GameSaveData saveData = CreateSaveData();
+        saveData.Resume = CloneSerializable(resumeData);
         return WriteSaveData(saveData);
     }
 
@@ -187,7 +215,9 @@ public class SaveSystem : Singleton<SaveSystem>
         // ApplySaveData는 커스텀 전투방 체크포인트 필드를 런타임 Store로 옮기지 않으므로
         // 원본 저장 스냅샷을 별도로 보관합니다.
         pendingBattleContinueSaveData = CloneSerializable(saveData);
+        pendingResumeData = CloneSerializable(saveData.Resume);
         PreparePendingResolvedBattleRoomEntryState(saveData);
+        suppressCheckpointAutosave = true;
         ApplySaveData(saveData);
         return true;
     }
@@ -202,6 +232,16 @@ public class SaveSystem : Singleton<SaveSystem>
         battleRoomEntryCheckpoint.HasResolvedBattleRoomEntryState = true;
         battleRoomEntryCheckpoint.BattleRoomGridEffects = CloneGridEffectSaves(gridEffects);
         battleRoomEntryCheckpoint.BattleRoomMonsterCommands = CloneMonsterCommandSaves(monsterCommands);
+
+        MapRuntimeData map = DataManager.Instance?.MapRuntimeStore?.Get();
+        SaveCheckpoint(new ResumeData
+        {
+            Phase = ResumePhase.BattleEntry,
+            NodeIndex = map != null ? map.CurrentNodeIndex : -1,
+            MapId = map?.CurrentMapId,
+            InitialGridEffects = CloneGridEffectSaves(gridEffects),
+            InitialMonsterCommands = CloneMonsterCommandSaves(monsterCommands)
+        });
     }
 
     public bool TryGetPendingResolvedBattleRoomEntryState(
@@ -267,9 +307,26 @@ public class SaveSystem : Singleton<SaveSystem>
                    StringComparison.Ordinal);
     }
 
+    public bool TryGetPendingResumeData(out ResumeData resumeData)
+    {
+        resumeData = CloneSerializable(pendingResumeData);
+        return resumeData != null && resumeData.Phase != ResumePhase.None;
+    }
+
+    public void ClearPendingResumeData()
+    {
+        pendingResumeData = null;
+    }
+
+    public void CompleteCheckpointAutosaveRestore()
+    {
+        suppressCheckpointAutosave = false;
+    }
+
     public void ConsumePendingResolvedBattleRoomEntryState()
     {
         ClearPendingResolvedBattleRoomEntryState();
+        suppressCheckpointAutosave = false;
     }
 
     private void PreparePendingResolvedBattleRoomEntryState(GameSaveData saveData)
@@ -767,6 +824,7 @@ public class GameSaveData
     public MapRuntimeData Map;
     public BattleRuntimeData Battle;
     public LobbyRuntimeData Lobby;
+    public ResumeData Resume;
 
     public List<CharacterRuntimeData> Characters = new();
     public List<SkillRuntimeData> Skills = new();

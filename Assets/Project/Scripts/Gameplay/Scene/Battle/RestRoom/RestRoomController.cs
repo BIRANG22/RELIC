@@ -1384,6 +1384,8 @@ public class RestRoomController : MonoBehaviour
             runtime.VisitedMapIds.Add(nodeKey);
 
         DataManager.Instance.MapRuntimeStore.Set(runtime);
+        SaveSystem.Instance?.ClearBattleRoomResumeState();
+        SaveSystem.Instance?.SaveCheckpoint();
 
         Debug.Log(
             $"[RestRoomController] Complete Node / Node:{runtime.CurrentNodeIndex} / Map:{runtime.CurrentMapId}"

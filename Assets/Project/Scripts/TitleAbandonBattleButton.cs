@@ -103,7 +103,7 @@ public class TitleAbandonBattleButton : MonoBehaviour
         try
         {
             BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
-            SaveSystem.Instance?.SaveCurrentProgress();
+            SaveSystem.Instance?.DeleteSaveFile();
             TitleManager.RefreshRunButtonsInScene();
             ShowWarning(completeMessage);
         }

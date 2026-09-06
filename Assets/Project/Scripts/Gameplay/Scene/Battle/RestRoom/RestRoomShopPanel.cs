@@ -35,6 +35,7 @@ public class RestRoomShopPanel : MonoBehaviour
     [SerializeField] private float uniqueRarityWeight = RestRoomShopService.DefaultUniqueWeight;
 
     private readonly ISkillRewardRandom random = new UnitySkillRewardRandom();
+    private readonly List<RestRoomShopGoods> currentStock = new();
     private Coroutine panelFadeRoutine;
 
     private void Awake()
@@ -100,6 +101,47 @@ public class RestRoomShopPanel : MonoBehaviour
             epicRarityWeight,
             uniqueRarityWeight);
 
+        currentStock.Clear();
+        currentStock.AddRange(stock);
+        BindStock(currentStock);
+    }
+
+    public List<ResumeShopGoodsSaveData> CaptureResumeStock()
+    {
+        var saved = new List<ResumeShopGoodsSaveData>();
+        for (int i = 0; i < currentStock.Count; i++)
+        {
+            RestRoomShopGoods goods = currentStock[i];
+            if (goods != null)
+                saved.Add(new ResumeShopGoodsSaveData { Kind = goods.Kind, Id = goods.Id, Price = goods.Price });
+        }
+        return saved;
+    }
+
+    public void OpenSavedStock(IReadOnlyList<ResumeShopGoodsSaveData> savedStock)
+    {
+        EnsureBindings();
+        currentStock.Clear();
+        if (savedStock != null)
+        {
+            for (int i = 0; i < savedStock.Count; i++)
+            {
+                ResumeShopGoodsSaveData saved = savedStock[i];
+                if (saved == null || string.IsNullOrWhiteSpace(saved.Id)) continue;
+                if (saved.Kind == RestRoomShopGoodsKind.Skill && DataManager.Instance.SkillDatabase.TryGet(saved.Id, out SkillMasterData skill))
+                    currentStock.Add(new RestRoomShopGoods(saved.Kind, saved.Id, GameDataLocalization.SkillName(skill), GameDataLocalization.SkillDetails(skill), saved.Price, skill.Rarity, skill));
+                else if (saved.Kind == RestRoomShopGoodsKind.Relic && DataManager.Instance.RelicDatabase.TryGet(saved.Id, out RelicData relic))
+                    currentStock.Add(new RestRoomShopGoods(saved.Kind, saved.Id, GameDataLocalization.RelicName(relic), GameDataLocalization.RelicEffectDescription(relic), saved.Price, relic: relic));
+            }
+        }
+        SetPanelRootActive(true);
+        BindStock(currentStock);
+        StopPanelFade();
+        SetPanelCanvasState(1f, true);
+    }
+
+    private void BindStock(IReadOnlyList<RestRoomShopGoods> stock)
+    {
         int bindCount = Mathf.Min(stock.Count, goodsSlots.Length);
         for (int i = 0; i < bindCount; i++)
             BindGoodsSlot(goodsSlots[i], stock[i]);

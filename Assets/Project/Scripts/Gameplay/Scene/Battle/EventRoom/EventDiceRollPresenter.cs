@@ -50,6 +50,7 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
     private int[] pendingDiceFaces = Array.Empty<int>();
     private string pendingDetailText = string.Empty;
     private Action pendingConfirmAction;
+    private Action pendingRollStartedAction;
     private bool buttonListenerBound;
 
     private void Awake()
@@ -88,14 +89,21 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         SetPresenterAlphaImmediate(0f);
         BindRollButton();
         EnsureRollButtonCanvasGroup();
+        // 비활성 Presenter가 Continue에서 처음 켜지면 Awake의 hideOnAwake가 다시 끌 수 있다.
+        // 참조 초기화가 끝난 뒤 최종 활성 상태를 보장한다.
+        if (!gameObject.activeSelf)
+            gameObject.SetActive(true);
     }
 
     public void ShowInteractive(
         IReadOnlyList<int> diceFaces,
         string resultDetailText,
-        Action confirmed)
+        Action confirmed,
+        Action rollStarted = null)
     {
-        PrepareForPlay();
+        // Restore display bypasses fade coroutines while the Room hierarchy is being rebuilt.
+        PrepareForInteractiveUse();
+        SetPresenterAlphaImmediate(1f);
         BindRollButton();
 
         if (rollRoutine != null)
@@ -107,6 +115,7 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         pendingDiceFaces = CopyDiceFaces(diceFaces);
         pendingDetailText = resultDetailText ?? string.Empty;
         pendingConfirmAction = confirmed;
+        pendingRollStartedAction = rollStarted;
         interactiveState = InteractiveState.ReadyToRoll;
 
         StopRollAnimation();
@@ -116,6 +125,40 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         SetRollButtonInteractable(true);
     }
 
+    // Continue 복원 전용: 이미 확정된 주사위 결과를 애니메이션/재굴림 없이 표시한다.
+    public void ShowResolved(
+        IReadOnlyList<int> diceFaces,
+        string resultDetailText,
+        Action confirmed,
+        Action rollStarted = null)
+    {
+        // Restore display bypasses fade coroutines while the Room hierarchy is being rebuilt.
+        PrepareForInteractiveUse();
+        SetPresenterAlphaImmediate(1f);
+        BindRollButton();
+
+        if (rollRoutine != null)
+        {
+            StopCoroutine(rollRoutine);
+            rollRoutine = null;
+        }
+
+        pendingDiceFaces = CopyDiceFaces(diceFaces);
+        pendingDetailText = resultDetailText ?? string.Empty;
+        pendingConfirmAction = confirmed;
+        StopRollAnimation();
+        ApplyDiceFaces(pendingDiceFaces);
+
+        if (valueText != null)
+            valueText.text = SumDiceFaces(pendingDiceFaces).ToString();
+        if (detailText != null)
+            detailText.text = pendingDetailText;
+
+        interactiveState = InteractiveState.ReadyToConfirm;
+        SetRollButtonLabel("확인");
+        SetRollButtonVisibleImmediate(true);
+        SetRollButtonInteractable(true);
+    }
     public void Play(IReadOnlyList<int> diceFaces, Action completed)
     {
         PrepareForPlay();
@@ -157,6 +200,7 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         pendingDiceFaces = Array.Empty<int>();
         pendingDetailText = string.Empty;
         pendingConfirmAction = null;
+        pendingRollStartedAction = null;
         interactiveState = InteractiveState.Hidden;
         SetPresenterAlphaImmediate(0f);
         gameObject.SetActive(false);
@@ -177,6 +221,9 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
 
         if (interactiveState == InteractiveState.ReadyToRoll)
         {
+            Action rollStarted = pendingRollStartedAction;
+            pendingRollStartedAction = null;
+            rollStarted?.Invoke();
             rollRoutine = StartCoroutine(RollInteractiveRoutine());
             return;
         }

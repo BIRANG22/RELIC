@@ -206,10 +206,53 @@ public class BattleResultChecker : MonoBehaviour
 
         Debug.Log($"[BattleResultChecker] ResolvedRewardCount:{rewards.Count}");
 
-        rewardPanel.Open(rewards, () => OnBattleRewardPanelCompleted(onRewardFlowCompleted));
+        ResumeData resume = CreateBattleRewardResume(rewards);
+        SaveSystem.Instance?.SaveCheckpoint(resume);
+        rewardPanel.Open(rewards, () => OnBattleRewardPanelCompleted(onRewardFlowCompleted), resume);
         return true;
     }
 
+
+    private static ResumeData CreateBattleRewardResume(IReadOnlyList<BattleRewardData> rewards)
+    {
+        MapRuntimeData map = DataManager.Instance?.MapRuntimeStore?.Get();
+        var resume = new ResumeData
+        {
+            Phase = ResumePhase.BattleReward,
+            NodeIndex = map != null ? map.CurrentNodeIndex : -1,
+            MapId = map?.CurrentMapId
+        };
+
+        if (rewards == null)
+            return resume;
+
+        for (int i = 0; i < rewards.Count; i++)
+        {
+            BattleRewardData reward = rewards[i];
+            if (reward == null)
+                continue;
+
+            resume.PendingRewards.Add(new BattleRewardSaveData
+            {
+                Type = reward.Type,
+                RewardId = reward.RewardId,
+                Amount = reward.Amount
+            });
+        }
+
+        return resume;
+    }
+    // Continue 복원 전용: 보상 수령 완료 뒤 정상 전투 종료와 같은 Next/보스 선택 UI를 재구성한다.
+    public void RestoreBattleRewardCompletionPresentation()
+    {
+        if (IsCurrentNodeBoss())
+        {
+            ShowBossClearChoiceButtons();
+            return;
+        }
+
+        OnBattleRewardPanelCompleted(null);
+    }
     private void OnBattleRewardPanelCompleted(System.Action completedCallback)
     {
         pendingRewardFlowCompletedCallback = completedCallback;
@@ -473,6 +516,8 @@ public class BattleResultChecker : MonoBehaviour
             return;
 
         DataManager.Instance.MapRuntimeStore.Set(runtime);
+        SaveSystem.Instance?.ClearBattleRoomResumeState();
+        SaveSystem.Instance?.SaveCheckpoint();
     }
 
     private bool IsAllMonstersDead()

@@ -125,7 +125,8 @@ public class BattleSceneController : MonoBehaviour
         if (battleMapPanel != null)
             battleMapPanel.Prepare(mapRuntime);
 
-        if (!TryOpenUnclearedCurrentNodeOnStart() && !TryOpenLayerZeroNodeOnNewRun())
+        if (!TryRestoreBattleRewardOnStart() &&
+            !TryOpenUnclearedCurrentNodeOnStart() && !TryOpenLayerZeroNodeOnNewRun())
         {
             OpenMapPanelImmediate();
             PlayMapIntroTextOnStart();
@@ -134,6 +135,52 @@ public class BattleSceneController : MonoBehaviour
         lastActiveRoomLastFrame = FindActiveRoomObject();
         wasAnyRoomActiveLastFrame = lastActiveRoomLastFrame != null;
         isStarted = true;
+    }
+
+    private bool TryRestoreBattleRewardOnStart()
+    {
+        if (SaveSystem.Instance == null ||
+            !SaveSystem.Instance.TryGetPendingResumeData(out ResumeData resume) ||
+            resume.Phase != ResumePhase.BattleReward)
+        {
+            return false;
+        }
+
+        BattleRewardPanelUI rewardPanel = Object.FindFirstObjectByType<BattleRewardPanelUI>(
+            FindObjectsInactive.Include);
+        if (rewardPanel == null)
+        {
+            Debug.LogWarning("[BattleSceneController] Saved battle reward panel was not found.");
+            return false;
+        }
+
+        PrepareBattleRewardResumePresentation(rewardPanel);
+        rewardPanel.OpenSavedRewards(resume, RestoreBattleRewardCompletionPresentation);
+        SaveSystem.Instance.ClearPendingResumeData();
+        SaveSystem.Instance.CompleteCheckpointAutosaveRestore();
+        return true;
+    }
+
+    private void PrepareBattleRewardResumePresentation(BattleRewardPanelUI rewardPanel)
+    {
+        CloseAllRooms();
+        battleMapPanel?.Close();
+        mapSelectionPresenter?.Hide();
+        CloseInventoryAndBagPanelsImmediate();
+        rewardPanel?.PrepareForResumePresentation();
+    }
+
+    private void RestoreBattleRewardCompletionPresentation()
+    {
+        BattleResultChecker resultChecker = Object.FindFirstObjectByType<BattleResultChecker>(
+            FindObjectsInactive.Include);
+        if (resultChecker != null)
+        {
+            resultChecker.RestoreBattleRewardCompletionPresentation();
+            return;
+        }
+
+        Debug.LogWarning("[BattleSceneController] BattleResultChecker가 없어 보상 완료 Next UI를 복원할 수 없습니다.");
     }
 
     private void OnDisable()
@@ -319,6 +366,7 @@ public class BattleSceneController : MonoBehaviour
 
     private void OpenMapPanelImmediate()
     {
+        SaveSystem.Instance?.CompleteCheckpointAutosaveRestore();
         if (battleMapPanel == null)
         {
             Debug.LogWarning("[BattleSceneController] BattleMapPanel is not assigned.");
@@ -419,6 +467,9 @@ public class BattleSceneController : MonoBehaviour
             $"{currentNode.MapId} / Node:{currentNode.NodeIndex} / {currentNode.Type}"
         );
 
+        // Continue가 지도 대신 방으로 직행하는 경우에도, Runtime 적용은 이미 끝났다.
+        // 이 시점 이후 Event/Battle의 확정 결과 checkpoint는 저장 가능해야 한다.
+        SaveSystem.Instance?.CompleteCheckpointAutosaveRestore();
         HideMapPanelImmediate();
         HandleSelectedMap(currentNode);
         PlayPendingRoomIntroText();
