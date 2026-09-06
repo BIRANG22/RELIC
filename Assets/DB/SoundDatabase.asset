@@ -15,7 +15,7 @@ MonoBehaviour:
   bgmList:
   - id: bgm.title
     aliases: []
-    clip: {fileID: 8300000, guid: f2b34d847f53fae449df8005afaafeae, type: 3}
+    clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
     volume: 1
     pitch: 1
     loop: 0
@@ -24,7 +24,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: bgm.lobby
     aliases: []
-    clip: {fileID: 8300000, guid: 7af83959617778349b2100f3eacb6b10, type: 3}
+    clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
     volume: 1
     pitch: 1
     loop: 0
@@ -1671,7 +1671,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: ruke.attack.03
-    vfxPrefab: {fileID: 5048194300403814765, guid: f3f99cfb5e2b7ed46acf00d0eee8d861, type: 3}
+    vfxPrefab: {fileID: 3602943759074218325, guid: 25872a24560375c49a2441cb58273416, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: ad70aa54bc5c0014da0dd61091f3807c, type: 3}
       delay: 0
@@ -1683,6 +1683,27 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: ruke_skill_04
+    vfxPrefab: {fileID: 7528646786082519194, guid: 38e0999ffd8f187408059414ae758c8b, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 97817a60a94f74d928219194d6292af4, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 0.8
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
       delay: 0
       volume: 0.5
       pitch: 1
