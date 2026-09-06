@@ -2071,7 +2071,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         SelectSkillDirectly(
             boundRuntime != null ? boundRuntime.MoveSkillId : string.Empty,
-            moveButton);
+            moveButton,
+            true);
     }
 
     private void OnItemButtonClicked()
@@ -2089,7 +2090,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
         SelectSkillDirectly(GetSkillIdForDisplaySlot(displaySlotIndex), sourceButton);
     }
 
-    private void SelectSkillDirectly(string skillId, Button sourceButton = null)
+    private void SelectSkillDirectly(
+        string skillId,
+        Button sourceButton = null,
+        bool toggleMoveSelection = false)
     {
         if (boundRuntime == null)
         {
@@ -2122,8 +2126,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
             sourceButton != null ? sourceButton.GetComponent<BattleCharacterSkillHoverUI>() : null;
         clickedHover?.ShowClickSelectionFeedback();
 
-        battleTimelineController.SelectCharacter(boundRuntime);
-        battleTimelineController.SelectSkill(skillData);
+        if (toggleMoveSelection)
+            battleTimelineController.ToggleMoveSkillSelection(boundRuntime, skillData);
+        else
+        {
+            battleTimelineController.SelectCharacter(boundRuntime);
+            battleTimelineController.SelectSkill(skillData);
+        }
 
         // BattleCharacterPanel의 스킬 버튼을 눌러도 현재 선택 캐릭터의
         // 카메라 포커스가 기본 위치로 풀리지 않도록 다시 고정합니다.

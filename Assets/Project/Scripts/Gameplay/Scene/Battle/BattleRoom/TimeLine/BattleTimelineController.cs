@@ -27,13 +27,6 @@ public class BattleTimelineController : MonoBehaviour
     [Header("MoveGhostPreview")]
     [SerializeField] private MoveGhostPreview moveGhostPreview;
 
-    [Header("Character Panel Auto Move Selection")]
-    [Tooltip("캐릭터 선택 후 이동 스킬을 자동 선택하기 전에 완전히 열릴 때까지 기다릴 패널입니다.")]
-    [SerializeField] private BattleCharacterPanelUI battleCharacterPanelUI;
-
-    private Coroutine defaultMoveSelectionCoroutine;
-    private int defaultMoveSelectionRequestVersion;
-
     [Header("Grid")]
     [SerializeField] private GridManager gridManager;
 
@@ -615,101 +608,7 @@ public class BattleTimelineController : MonoBehaviour
         TryFocusCameraOnSelectedCharacter(runtimeData);
 
         if (selectionChanged)
-        {
             CharacterSelectionChanged?.Invoke(selectedCharacter);
-
-            // 캐릭터 선택 자체는 즉시 반영하지만 이동 스킬은 BattleCharacterPanel이
-            // 예약 위치까지 완전히 올라온 뒤에만 자동 선택합니다.
-            RequestDefaultMoveSkillAfterCharacterPanelOpened(runtimeData);
-        }
-    }
-
-    private void RequestDefaultMoveSkillAfterCharacterPanelOpened(CharacterRuntimeData runtimeData)
-    {
-        defaultMoveSelectionRequestVersion++;
-
-        if (defaultMoveSelectionCoroutine != null)
-        {
-            StopCoroutine(defaultMoveSelectionCoroutine);
-            defaultMoveSelectionCoroutine = null;
-        }
-
-        if (runtimeData == null || runtimeData.IsDead)
-            return;
-
-        ResolveBattleCharacterPanelUI();
-
-        // 패널이 이미 완전히 열린 상태에서 캐릭터만 바뀐 경우에는 즉시 선택합니다.
-        if (battleCharacterPanelUI != null && battleCharacterPanelUI.IsAtReservationPosition)
-        {
-            TrySelectDefaultMoveSkill(runtimeData);
-            return;
-        }
-
-        if (!isActiveAndEnabled)
-            return;
-
-        int requestVersion = defaultMoveSelectionRequestVersion;
-        defaultMoveSelectionCoroutine = StartCoroutine(
-            SelectDefaultMoveSkillWhenCharacterPanelOpened(runtimeData, requestVersion));
-    }
-
-    private IEnumerator SelectDefaultMoveSkillWhenCharacterPanelOpened(
-        CharacterRuntimeData runtimeData,
-        int requestVersion)
-    {
-        while (requestVersion == defaultMoveSelectionRequestVersion)
-        {
-            if (runtimeData == null || runtimeData.IsDead ||
-                selectedCharacter == null ||
-                selectedCharacter.CharacterId != runtimeData.CharacterId)
-            {
-                break;
-            }
-
-            ResolveBattleCharacterPanelUI();
-
-            if (battleCharacterPanelUI != null && battleCharacterPanelUI.IsAtReservationPosition)
-            {
-                TrySelectDefaultMoveSkill(runtimeData);
-                break;
-            }
-
-            yield return null;
-        }
-
-        if (requestVersion == defaultMoveSelectionRequestVersion)
-            defaultMoveSelectionCoroutine = null;
-    }
-
-    private void ResolveBattleCharacterPanelUI()
-    {
-        if (battleCharacterPanelUI != null)
-            return;
-
-        battleCharacterPanelUI = FindFirstObjectByType<BattleCharacterPanelUI>(FindObjectsInactive.Include);
-    }
-
-    private void TrySelectDefaultMoveSkill(CharacterRuntimeData runtimeData)
-    {
-        if (runtimeData == null || runtimeData.IsDead)
-            return;
-
-        if (string.IsNullOrWhiteSpace(runtimeData.MoveSkillId))
-            return;
-
-        if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
-            return;
-
-        if (!DataManager.Instance.SkillDatabase.TryGet(
-                runtimeData.MoveSkillId,
-                out SkillMasterData moveSkillData) ||
-            moveSkillData == null)
-        {
-            return;
-        }
-
-        SelectSkill(moveSkillData);
     }
 
     public void ClearCharacterSelectionFromSkillList(CharacterRuntimeData runtimeData)
@@ -877,6 +776,31 @@ public class BattleTimelineController : MonoBehaviour
     {
         selectedSkill = skillData;
         TryStartSkillReservation();
+    }
+
+    public bool ToggleMoveSkillSelection(
+        CharacterRuntimeData runtimeData,
+        SkillMasterData moveSkillData)
+    {
+        if (runtimeData == null || moveSkillData == null)
+            return false;
+
+        bool isSameCharacter =
+            selectedCharacter != null &&
+            selectedCharacter.CharacterId == runtimeData.CharacterId;
+        bool isSameSkill =
+            selectedSkill != null &&
+            selectedSkill.SkillId == moveSkillData.SkillId;
+
+        if (isSameCharacter && isSameSkill)
+        {
+            CancelSkillReservationPreviewFromSkillList(runtimeData);
+            return false;
+        }
+
+        SelectCharacter(runtimeData);
+        SelectSkill(moveSkillData);
+        return true;
     }
 
     public void ClearMonsterCommands()

@@ -37526,6 +37526,7 @@ MonoBehaviour:
   timelineSlotSpacingX: 320
   trailingFirstTimelineSlotX: 1130
   generateTimelineSlotsIfMissing: 1
+  lockedSlotOverlaySprite: {fileID: 21300000, guid: 57cfdc60441b47046866d2ed376ecb99, type: 3}
   rangePreview: {fileID: 1832433056}
   gridManager: {fileID: 124704205}
 --- !u!114 &778875970

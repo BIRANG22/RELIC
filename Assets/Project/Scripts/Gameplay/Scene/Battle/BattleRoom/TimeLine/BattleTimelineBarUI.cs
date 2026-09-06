@@ -19,6 +19,9 @@ public class BattleTimelineBarUI : MonoBehaviour
     [SerializeField] private float trailingFirstTimelineSlotX = 1130f;
     [SerializeField] private bool generateTimelineSlotsIfMissing = true;
 
+    [Header("Locked Slot Overlay")]
+    [SerializeField] private Sprite lockedSlotOverlaySprite;
+
     [SerializeField] private RangePreview rangePreview;
     [SerializeField] private GridManager gridManager;
     private int activeSlotIndex = -1;
@@ -173,6 +176,7 @@ public class BattleTimelineBarUI : MonoBehaviour
             if (overlay == null)
                 overlay = group.gameObject.AddComponent<BattleTimelineLockedSlotOverlay>();
 
+            overlay.SetOverlaySprite(lockedSlotOverlaySprite);
             overlay.SetLocked(i == lockedSlotIndex);
         }
     }
@@ -385,6 +389,7 @@ public class BattleTimelineBarUI : MonoBehaviour
             overlay = group.gameObject.AddComponent<BattleTimelineLockedSlotOverlay>();
         }
 
+        overlay.SetOverlaySprite(lockedSlotOverlaySprite);
         overlay.SetLocked(locked);
     }
     private void InitGroups()
@@ -686,7 +691,6 @@ public class BattleTimelineBarUI : MonoBehaviour
 public class BattleTimelineLockedSlotOverlay : MonoBehaviour
 {
     private const string DefaultOverlayObjectName = "CobwebSlotLock";
-    private const string DefaultEditorSpritePath = "Assets/Project/Art/Image/UI/Battle/CobwebUI.png";
 
     [SerializeField] private Image overlayImage;
     [SerializeField] private Sprite overlaySprite;
@@ -702,6 +706,15 @@ public class BattleTimelineLockedSlotOverlay : MonoBehaviour
     public void SetLocked(bool locked)
     {
         IsLocked = locked;
+        Refresh();
+    }
+
+    public void SetOverlaySprite(Sprite sprite)
+    {
+        if (sprite == null || overlaySprite == sprite)
+            return;
+
+        overlaySprite = sprite;
         Refresh();
     }
 
@@ -724,8 +737,6 @@ public class BattleTimelineLockedSlotOverlay : MonoBehaviour
 
     private void EnsureOverlayImage()
     {
-        ResolveOverlaySpriteIfNeeded();
-
         if (overlayImage == null)
         {
             Transform found = FindChildRecursive(transform, DefaultOverlayObjectName);
@@ -772,16 +783,6 @@ public class BattleTimelineLockedSlotOverlay : MonoBehaviour
         overlayRect.pivot = middleCenter;
         overlayRect.anchoredPosition = new Vector2(160f, 0f);
         overlayRect.sizeDelta = new Vector2(300f, 80f);
-    }
-
-    private void ResolveOverlaySpriteIfNeeded()
-    {
-        if (overlaySprite != null)
-            return;
-
-#if UNITY_EDITOR
-        overlaySprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(DefaultEditorSpritePath);
-#endif
     }
 
     private static Transform FindChildRecursive(Transform root, string childName)
