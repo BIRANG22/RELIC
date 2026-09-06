@@ -214,6 +214,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [Tooltip("BattleSlot 하강 SFX 볼륨 배율입니다.")]
     [SerializeField, Range(0f, 1f)] private float battleSlotDownSfxVolume = 1f;
 
+
     [Header("Number Change Animation")]
     [Tooltip("현재 표시값에서 변경된 값까지 숫자가 변하는 시간입니다.")]
     [SerializeField, Min(0f)] private float numberChangeDuration = 0.2f;

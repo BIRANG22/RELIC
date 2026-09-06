@@ -115,6 +115,11 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private Transform rightSmallGear;
     [SerializeField] private float rightSmallGearRotateStepZ = -20f;
 
+    [Header("Timeline Gear Tick SFX")]
+    [SerializeField] private bool playTimelineGearTickSfx = true;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string timelineGearTickSfxId = "";
+    [SerializeField, Range(0f, 1f)] private float timelineGearTickSfxVolume = 1f;
+
     [Header("Timeline Sprite Grind Animation")]
     [SerializeField] private BattleTimelineSpriteAnimationController timelineSpriteAnimationController;
     [SerializeField] private bool autoFindTimelineSpriteAnimationController = true;
@@ -1477,6 +1482,9 @@ public class BattleTimelineController : MonoBehaviour
                 animationDuration
             );
 
+            // 실제 캐릭터/몬스터 예약 오더 위치에 도착해 타임라인이 멈춘 순간에만 1회 재생합니다.
+            PlayTimelineGearTickSfx();
+
             if (timelineSpriteAnimationController != null)
             {
                 SpawnTimelineGrindVfx();
@@ -1520,6 +1528,9 @@ public class BattleTimelineController : MonoBehaviour
                 targetX,
                 animationDuration
             );
+
+            // 실제 캐릭터/몬스터 예약 오더 위치에 도착해 타임라인이 멈춘 순간에만 1회 재생합니다.
+            PlayTimelineGearTickSfx();
 
             if (timelineSpriteAnimationController != null)
             {
@@ -2707,6 +2718,20 @@ public class BattleTimelineController : MonoBehaviour
             gearRotateSteps);
 
         timelineSlotSlideRoutine = null;
+    }
+
+    private void PlayTimelineGearTickSfx()
+    {
+        if (!playTimelineGearTickSfx)
+            return;
+
+        if (string.IsNullOrWhiteSpace(timelineGearTickSfxId))
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(timelineGearTickSfxId, timelineGearTickSfxVolume);
     }
 
     private Transform[] GetTimelineBarGearTargets()

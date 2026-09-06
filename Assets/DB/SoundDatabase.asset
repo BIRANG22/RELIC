@@ -689,9 +689,27 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
-  - id: Slot_doun
+  - id: Slot_down
     aliases: []
     clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: Action_Start
+    aliases: []
+    clip: {fileID: 8300000, guid: 97920063d95b7e94c8098f16e03d9bf8, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: Room Intro
+    aliases: []
+    clip: {fileID: 8300000, guid: 9f24e65fb42424c2d8f2f2cdb008e663, type: 3}
     volume: 0.5
     pitch: 0.8
     loop: 0
