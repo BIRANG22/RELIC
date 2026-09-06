@@ -49,7 +49,7 @@ namespace Relic.Gameplay.Data
             if (mapData == null || allSkills == null || random == null)
                 return false;
 
-            if (!IsChanceSuccess(mapData.SkillDropChance, random))
+            if (!IsChanceSuccess(mapData.MemoryDropChance, random))
                 return false;
 
             if (!TryRollRarity(mapData, random, out SkillRarity rarity))
@@ -81,10 +81,11 @@ namespace Relic.Gameplay.Data
         {
             rarity = SkillRarity.None;
 
-            float common = Mathf.Max(0f, mapData.CoreCommonChance);
-            float rare = Mathf.Max(0f, mapData.CoreRareChance);
-            float epic = Mathf.Max(0f, mapData.CoreEpicChance);
-            float total = common + rare + epic;
+            float common = Mathf.Max(0f, mapData.MemoryCommonChance);
+            float rare = Mathf.Max(0f, mapData.MemoryRareChance);
+            float epic = Mathf.Max(0f, mapData.MemoryEpicChance);
+            float unique = Mathf.Max(0f, mapData.MemoryUniqueChance);
+            float total = common + rare + epic + unique;
 
             if (total <= 0f)
                 return false;
@@ -93,7 +94,7 @@ namespace Relic.Gameplay.Data
 
             if (roll < common)
             {
-                rarity = SkillRarity.CoreCommon;
+                rarity = SkillRarity.Common;
                 return true;
             }
 
@@ -101,11 +102,19 @@ namespace Relic.Gameplay.Data
 
             if (roll < rare)
             {
-                rarity = SkillRarity.CoreRare;
+                rarity = SkillRarity.Rare;
                 return true;
             }
 
-            rarity = SkillRarity.CoreEpic;
+            roll -= rare;
+
+            if (roll < epic)
+            {
+                rarity = SkillRarity.Epic;
+                return true;
+            }
+
+            rarity = SkillRarity.Unique;
             return true;
         }
 
@@ -127,9 +136,6 @@ namespace Relic.Gameplay.Data
                     continue;
 
                 if (skill.Category != Category.Core)
-                    continue;
-
-                if (!skill.SkillId.StartsWith("S_Core_", System.StringComparison.Ordinal))
                     continue;
 
                 if (skill.Rarity != rarity)

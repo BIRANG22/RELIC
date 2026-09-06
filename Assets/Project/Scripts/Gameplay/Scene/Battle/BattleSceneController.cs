@@ -1,48 +1,69 @@
+using System;
+using System.Collections;
+using Object = UnityEngine.Object;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using TMPro;
 using Relic.Gameplay.Data;
 
 public class BattleSceneController : MonoBehaviour
 {
+    private const string SharedPartyPresentationRootObjectName = "AllyRoot";
+
+    public static bool IsBattleRoomIntroPlaying { get; private set; }
+    public static event Action BattleRoomIntroStarted;
+    public static event Action BattleRoomIntroCompleted;
     [Header("Panels")]
     [SerializeField] private BattleMapPanel battleMapPanel;
+    [SerializeField] private BattleRoomMapSelectionPresenter mapSelectionPresenter;
 
     [Header("Battle Scene Transition")]
     [SerializeField] private BattleDiagonalSceneTransition battleTransition;
 
     [Header("Battle Map Intro Text")]
     [SerializeField] private BattleMapIntroText battleMapIntroText;
-    [SerializeField] private string mapIntroMessage = "��1���� ����";
-    [SerializeField] private string startRoomIntroMessage = "������ �ڿ� ����";
-    [SerializeField] private string battleRoomIntroMessage = "���� ����";
-    [SerializeField] private string restRoomIntroMessage = "�޽� ����";
-    [SerializeField] private string eventRoomIntroMessage = "���� ������";
+    [SerializeField] private string mapIntroMessage = "제1구역 폐허";
+    [SerializeField] private string battleRoomIntroMessage = "전투 시작";
+    [SerializeField] private string restRoomIntroMessage = "휴식 구역";
     [SerializeField] private bool playMapIntroOnStart = true;
     [SerializeField] private bool playBattleRoomIntroFromSceneController = false;
+
+    [Header("Stage Entry Position Panel")]
+    [SerializeField] private GameObject positionPanel;
+    [SerializeField] private CanvasGroup positionPanelCanvasGroup;
+    [SerializeField] private TMP_Text positionStageText;
+    [SerializeField] private TMP_Text positionNameText;
+    [SerializeField] private float positionPanelHoldDuration = 1.2f;
+    [SerializeField] private float positionPanelFadeDuration = 0.35f;
 
     [Header("Auto Return To Map")]
     [SerializeField] private bool autoDetectReturnToMap = true;
     [SerializeField] private Transform roomRoot;
+
+    [Header("Shared Room Presentation")]
+    [SerializeField] private GameObject sharedRoomRoot;
+    [SerializeField] private StageBackgroundController sharedBackgroundController;
+    [SerializeField] private MapVisualController sharedMapVisualController;
+    [SerializeField] private GameObject sharedPartyPresentationRoot;
+    [SerializeField] private MapRoomController sharedRoomPresentationController;
 
     [Header("Runtime Default")]
     [SerializeField] private string defaultChapterId = "Chapter1";
     [SerializeField] private string defaultStage = "Stage1";
 
     [Header("Rooms")]
-    [SerializeField] private GameObject startRoom;
     [SerializeField] private GameObject battleRoom;
     [SerializeField] private GameObject eventRoom;
     [SerializeField] private GameObject restRoom;
-
-    [Header("Boss Demo")]
-    [SerializeField] private GameObject bossDemoPanel;
 
     [Header("Room Change Auto Close")]
     [SerializeField] private bool closeInventoryAndBagOnRoomActiveChange = true;
     [SerializeField] private string[] inventoryPanelObjectNames = { "InventoryPanel" };
     [SerializeField] private string[] bagPanelObjectNames = { "BattleBagPanel", "BagPanel", "BagPanelUI" };
-    [SerializeField] private float inventoryClosedX = -1550f;
+    [SerializeField] private float inventoryClosedY = 1080f;
+    [SerializeField] private float bagClosedX = 1100f;
 
     private MapRuntimeStore mapRuntimeStore;
     private MapRuntimeData mapRuntime;
@@ -59,24 +80,119 @@ public class BattleSceneController : MonoBehaviour
     private bool hasRoomPanelAutoCloseState;
     private bool lastAnyRoomActiveForPanelAutoClose;
     private GameObject lastActiveRoomForPanelAutoClose;
+    private int lastNetworkAppliedNodeIndex = int.MinValue;
+    private bool lastNetworkAppliedNodeCleared;
+    private bool forceNextBattleRoomLoad;
+    private bool pendingBattleRoomUsesBossIntro;
+    private readonly BattleRoomIntroLoadGate battleRoomIntroLoadGate = new();
 
     private void Awake()
     {
+        HideSharedNextButtonOnSceneStart();
         AutoFindRoomRootIfNeeded();
+        AutoFindSharedRoomPresentationIfNeeded();
         AutoFindBattleMapIntroTextIfNeeded();
         InstallMapPanelAutoReturnWatcher();
+
+        if (mapSelectionPresenter == null)
+            mapSelectionPresenter = GetComponent<BattleRoomMapSelectionPresenter>();
+
+        if (mapSelectionPresenter == null)
+            mapSelectionPresenter = gameObject.AddComponent<BattleRoomMapSelectionPresenter>();
+    }
+
+    private void HideSharedNextButtonOnSceneStart()
+    {
+        HideSceneObjectOnStart("NextButton");
+        HideSceneObjectOnStart("NextStageButton");
+        HideSceneObjectOnStart("ReturnButton");
+    }
+
+    private static void HideSceneObjectOnStart(string objectName)
+    {
+        Transform target = FindSceneTransformByName(objectName);
+
+        if (target != null)
+            target.gameObject.SetActive(false);
     }
 
     private void Start()
     {
+        SteamBattleStateSynchronizer.EnsureForBattleScene(null, null);
         InitializeRuntime();
         CloseAllRooms();
-        OpenMapPanelImmediate();
-        PlayMapIntroTextOnStart();
+
+        if (battleMapPanel != null)
+            battleMapPanel.Prepare(mapRuntime);
+
+        if (!TryRestoreBattleRewardOnStart() &&
+            !TryOpenUnclearedCurrentNodeOnStart() && !TryOpenLayerZeroNodeOnNewRun())
+        {
+            OpenMapPanelImmediate();
+            PlayMapIntroTextOnStart();
+        }
 
         lastActiveRoomLastFrame = FindActiveRoomObject();
         wasAnyRoomActiveLastFrame = lastActiveRoomLastFrame != null;
         isStarted = true;
+    }
+
+    private bool TryRestoreBattleRewardOnStart()
+    {
+        if (SaveSystem.Instance == null ||
+            !SaveSystem.Instance.TryGetPendingResumeData(out ResumeData resume) ||
+            resume.Phase != ResumePhase.BattleReward)
+        {
+            return false;
+        }
+
+        BattleRewardPanelUI rewardPanel = Object.FindFirstObjectByType<BattleRewardPanelUI>(
+            FindObjectsInactive.Include);
+        if (rewardPanel == null)
+        {
+            Debug.LogWarning("[BattleSceneController] Saved battle reward panel was not found.");
+            return false;
+        }
+
+        PrepareBattleRewardResumePresentation(rewardPanel);
+        rewardPanel.OpenSavedRewards(resume, RestoreBattleRewardCompletionPresentation);
+        SaveSystem.Instance.ClearPendingResumeData();
+        SaveSystem.Instance.CompleteCheckpointAutosaveRestore();
+        return true;
+    }
+
+    private void PrepareBattleRewardResumePresentation(BattleRewardPanelUI rewardPanel)
+    {
+        CloseAllRooms();
+        battleMapPanel?.Close();
+        mapSelectionPresenter?.Hide();
+        CloseInventoryAndBagPanelsImmediate();
+        rewardPanel?.PrepareForResumePresentation();
+    }
+
+    private void RestoreBattleRewardCompletionPresentation()
+    {
+        BattleResultChecker resultChecker = Object.FindFirstObjectByType<BattleResultChecker>(
+            FindObjectsInactive.Include);
+        if (resultChecker != null)
+        {
+            resultChecker.RestoreBattleRewardCompletionPresentation();
+            return;
+        }
+
+        Debug.LogWarning("[BattleSceneController] BattleResultChecker가 없어 보상 완료 Next UI를 복원할 수 없습니다.");
+    }
+
+    private void OnDisable()
+    {
+        CancelPendingBattleRoomIntro();
+        SetBattleRoomIntroPlaying(false);
+    }
+
+    private void OnEnable()
+    {
+        if (isStarted && battleRoom != null && battleRoom.activeInHierarchy)
+            RequestBattleRoomLoadOnce();
     }
 
     private void LateUpdate()
@@ -158,12 +274,82 @@ public class BattleSceneController : MonoBehaviour
             roomRoot = foundRoomRoot.transform;
     }
 
+    private void AutoFindSharedRoomPresentationIfNeeded()
+    {
+        if (sharedRoomRoot == null && roomRoot != null)
+        {
+            Transform sharedTransform = roomRoot.Find("SharedRoomRoot");
+            if (sharedTransform != null)
+                sharedRoomRoot = sharedTransform.gameObject;
+        }
+
+        if (sharedBackgroundController == null && sharedRoomRoot != null)
+            sharedBackgroundController = sharedRoomRoot.GetComponentInChildren<StageBackgroundController>(true);
+
+        if (sharedMapVisualController == null && sharedRoomRoot != null)
+            sharedMapVisualController = sharedRoomRoot.GetComponent<MapVisualController>();
+
+        if (sharedRoomPresentationController == null && sharedRoomRoot != null)
+            sharedRoomPresentationController = sharedRoomRoot.GetComponent<MapRoomController>();
+
+        if (sharedPartyPresentationRoot == null && sharedRoomRoot != null)
+        {
+            Transform sharedPartyTransform =
+                FindChildRecursive(sharedRoomRoot.transform, SharedPartyPresentationRootObjectName);
+
+            if (sharedPartyTransform != null)
+                sharedPartyPresentationRoot = sharedPartyTransform.gameObject;
+        }
+
+        if (sharedRoomRoot != null && !sharedRoomRoot.activeSelf)
+            sharedRoomRoot.SetActive(true);
+    }
+
     private void AutoFindBattleMapIntroTextIfNeeded()
     {
         if (battleMapIntroText != null)
             return;
 
         battleMapIntroText = Object.FindFirstObjectByType<BattleMapIntroText>(FindObjectsInactive.Include);
+    }
+
+    private void ShowRoomBackground(GameObject room, GeneratedMapNodeData nodeData, bool playBossReveal = false)
+    {
+        AutoFindSharedRoomPresentationIfNeeded();
+        if (sharedBackgroundController != null)
+        {
+            sharedBackgroundController.ShowForMap(nodeData.MapId, nodeData.LayerIndex, playBossReveal);
+            return;
+        }
+
+        StageBackgroundController controller = room != null
+            ? room.GetComponentInChildren<StageBackgroundController>(true)
+            : null;
+
+        if (controller == null)
+        {
+            string roomName = room != null ? room.name : "null";
+            Debug.LogWarning($"[BattleSceneController] StageBackgroundController is missing in {roomName}.");
+            return;
+        }
+
+        controller.ShowForMap(nodeData.MapId, nodeData.LayerIndex, playBossReveal);
+    }
+
+    private void ApplyRoomVisual(GameObject room, GeneratedMapNodeData nodeData)
+    {
+        AutoFindSharedRoomPresentationIfNeeded();
+        if (sharedMapVisualController != null)
+        {
+            sharedMapVisualController.ApplyMapVisual(nodeData?.MapId);
+            return;
+        }
+
+        MapVisualController controller = room != null
+            ? room.GetComponentInChildren<MapVisualController>(true)
+            : null;
+
+        controller?.ApplyMapVisual(nodeData?.MapId);
     }
 
     private void InstallMapPanelAutoReturnWatcher()
@@ -180,24 +366,307 @@ public class BattleSceneController : MonoBehaviour
 
     private void OpenMapPanelImmediate()
     {
+        SaveSystem.Instance?.CompleteCheckpointAutosaveRestore();
         if (battleMapPanel == null)
         {
             Debug.LogWarning("[BattleSceneController] BattleMapPanel is not assigned.");
             return;
         }
 
+        BattleTurnExecutor turnExecutor =
+            Object.FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+        turnExecutor?.RestoreBattleExecutionUiAfterRoomEnd();
+
+        ActivateMapRoomForMap();
+        ResetCameraForMap();
+
         isOpeningMapFromController = true;
         battleMapPanel.Open(mapRuntime);
         isOpeningMapFromController = false;
+        sharedRoomPresentationController?.RefreshForMapSelection(
+            MapRuntimeProgressUtility.FindCurrentNode(mapRuntime)?.MapId);
+    }
+
+    private static void ResetCameraForMap()
+    {
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController != null)
+        {
+            cameraController.ForceReturnMapImmediate();
+            return;
+        }
+
+        Camera mainCamera = Camera.main;
+        if (mainCamera == null)
+            return;
+
+        mainCamera.transform.position = new Vector3(0f, 0f, -20f);
+        mainCamera.transform.rotation = Quaternion.identity;
     }
 
     private void HideMapPanelImmediate()
     {
-        if (battleMapPanel == null)
+        if (battleMapPanel != null && battleMapPanel.gameObject.activeSelf)
+            battleMapPanel.gameObject.SetActive(false);
+
+    }
+
+    private void ActivateMapRoomForMap()
+    {
+        // 지도에서는 직전에 사용한 Battle/Event/Rest/Shop 등의 룸을 남겨두지 않는다.
+        // RoomRoot 아래에서는 MapRoom만 활성 상태로 유지한다.
+        if (roomRoot != null)
+        {
+            for (int i = 0; i < roomRoot.childCount; i++)
+            {
+                GameObject roomObject = roomRoot.GetChild(i).gameObject;
+                if (roomObject == sharedRoomRoot)
+                    continue;
+
+                if (roomObject.activeSelf)
+                    roomObject.SetActive(false);
+            }
+        }
+        else
+        {
+            SetActiveIfNotNull(battleRoom, false);
+            SetActiveIfNotNull(eventRoom, false);
+            SetActiveIfNotNull(restRoom, false);
+        }
+
+        SetBattleRoomIntroPlaying(false);
+
+        AutoFindSharedRoomPresentationIfNeeded();
+        sharedMapVisualController?.ClearVisuals();
+        SetSharedPartyPresentationVisible(true);
+        sharedRoomPresentationController?.RefreshNow();
+    }
+
+    private bool TryOpenUnclearedCurrentNodeOnStart()
+    {
+        if (!MapRuntimeProgressUtility.HasUnclearedCurrentNode(mapRuntime))
+            return false;
+
+        GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
+        if (currentNode == null)
+            return false;
+
+        mapRuntime.CurrentMapId = currentNode.MapId;
+        mapRuntime.CurrentNodeIndex = currentNode.NodeIndex;
+
+        string nodeKey = currentNode.NodeIndex.ToString();
+        mapRuntime.VisitedMapIds ??= new List<string>();
+        if (!mapRuntime.VisitedMapIds.Contains(nodeKey))
+            mapRuntime.VisitedMapIds.Add(nodeKey);
+
+        mapRuntimeStore.Set(mapRuntime);
+        CaptureRoomEntrySaveCheckpoint();
+
+        Debug.Log(
+            $"[BattleSceneController] Restore uncleared map node: " +
+            $"{currentNode.MapId} / Node:{currentNode.NodeIndex} / {currentNode.Type}"
+        );
+
+        // Continue가 지도 대신 방으로 직행하는 경우에도, Runtime 적용은 이미 끝났다.
+        // 이 시점 이후 Event/Battle의 확정 결과 checkpoint는 저장 가능해야 한다.
+        SaveSystem.Instance?.CompleteCheckpointAutosaveRestore();
+        HideMapPanelImmediate();
+        HandleSelectedMap(currentNode);
+        PlayPendingRoomIntroText();
+        PlayEventRoomEntranceAnimationIfNeeded();
+        return true;
+    }
+
+    private bool TryOpenLayerZeroNodeOnNewRun()
+    {
+        if (mapRuntime == null || mapRuntime.CurrentNodeIndex >= 0)
+            return false;
+
+        GeneratedMapNodeData entryNode = MapRuntimeProgressUtility.FindStartNode(mapRuntime);
+        if (entryNode == null)
+        {
+            Debug.LogWarning("[BattleSceneController] Generated map has no Layer 0 entry node.");
+            return false;
+        }
+
+        mapRuntime.CurrentMapId = entryNode.MapId;
+        mapRuntime.CurrentNodeIndex = entryNode.NodeIndex;
+        mapRuntime.VisitedMapIds ??= new List<string>();
+
+        string nodeKey = entryNode.NodeIndex.ToString();
+        if (!mapRuntime.VisitedMapIds.Contains(nodeKey))
+            mapRuntime.VisitedMapIds.Add(nodeKey);
+
+        mapRuntimeStore.Set(mapRuntime);
+        CaptureRoomEntrySaveCheckpoint();
+        HideMapPanelImmediate();
+
+        PrepareStageEntryPositionPanel();
+        StartCoroutine(PlayStageEntryThenOpenNodeRoutine(entryNode));
+        return true;
+    }
+
+    private void PrepareStageEntryPositionPanel()
+    {
+        AutoFindStageEntryPositionPanelIfNeeded();
+
+        if (positionPanel == null)
             return;
 
-        if (battleMapPanel.gameObject.activeSelf)
-            battleMapPanel.gameObject.SetActive(false);
+        ResolveStageEntryTexts(
+            mapRuntime != null ? mapRuntime.CurrentStage : defaultStage,
+            out string stageLabel,
+            out string stageName);
+
+        if (positionStageText != null)
+            positionStageText.text = stageLabel;
+
+        if (positionNameText != null)
+            positionNameText.text = stageName;
+
+        positionPanel.SetActive(true);
+
+        if (positionPanelCanvasGroup == null)
+            positionPanelCanvasGroup = positionPanel.GetComponent<CanvasGroup>();
+
+        if (positionPanelCanvasGroup == null)
+            positionPanelCanvasGroup = positionPanel.AddComponent<CanvasGroup>();
+
+        positionPanelCanvasGroup.alpha = 1f;
+        positionPanelCanvasGroup.interactable = false;
+        positionPanelCanvasGroup.blocksRaycasts = false;
+    }
+
+    private IEnumerator PlayStageEntryThenOpenNodeRoutine(GeneratedMapNodeData entryNode)
+    {
+        CanvasMaterialSceneTransition sceneTransition = CanvasMaterialSceneTransition.Instance;
+        SceneFlowManager sceneFlow = SceneFlowManager.Instance;
+
+        // 씬 전환이 화면을 가리고 있는 동안 Position_Panel은 이미 활성화되어 있다.
+        // 로비 -> Battle 비동기 로드가 완전히 끝난 뒤부터 표시 시간을 계산한다.
+        if (sceneFlow != null && sceneFlow.IsLoading)
+        {
+            while (sceneFlow.IsLoading)
+                yield return null;
+        }
+        else if (sceneTransition != null)
+        {
+            // 씬 활성화 직후 PlayOpenAsync가 시작되는 프레임도 놓치지 않는다.
+            yield return null;
+
+            while (sceneTransition.IsPlaying)
+                yield return null;
+        }
+        else
+        {
+            yield return null;
+        }
+
+        if (positionPanel != null && positionPanel.activeSelf)
+        {
+            float holdDuration = Mathf.Max(0f, positionPanelHoldDuration);
+            float holdElapsed = 0f;
+
+            while (holdElapsed < holdDuration)
+            {
+                holdElapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            float fadeDuration = Mathf.Max(0f, positionPanelFadeDuration);
+
+            if (positionPanelCanvasGroup != null && fadeDuration > 0f)
+            {
+                float fadeElapsed = 0f;
+
+                while (fadeElapsed < fadeDuration)
+                {
+                    fadeElapsed += Time.unscaledDeltaTime;
+                    float t = Mathf.Clamp01(fadeElapsed / fadeDuration);
+                    positionPanelCanvasGroup.alpha = 1f - t;
+                    yield return null;
+                }
+            }
+
+            if (positionPanelCanvasGroup != null)
+                positionPanelCanvasGroup.alpha = 0f;
+
+            positionPanel.SetActive(false);
+        }
+
+        HandleSelectedMap(entryNode);
+        PlayPendingRoomIntroText();
+        PlayEventRoomEntranceAnimationIfNeeded();
+    }
+
+    private void AutoFindStageEntryPositionPanelIfNeeded()
+    {
+        if (positionPanel == null)
+        {
+            Transform found = FindSceneTransformByName("Position_Panel");
+            if (found != null)
+                positionPanel = found.gameObject;
+        }
+
+        if (positionPanel == null)
+            return;
+
+        if (positionPanelCanvasGroup == null)
+            positionPanelCanvasGroup = positionPanel.GetComponent<CanvasGroup>();
+
+        if (positionStageText == null)
+        {
+            Transform stageTransform = FindChildRecursive(positionPanel.transform, "Stage_Text");
+            if (stageTransform != null)
+                positionStageText = stageTransform.GetComponent<TMP_Text>();
+        }
+
+        if (positionNameText == null)
+        {
+            Transform nameTransform = FindChildRecursive(positionPanel.transform, "Name_Text");
+            if (nameTransform != null)
+                positionNameText = nameTransform.GetComponent<TMP_Text>();
+        }
+    }
+
+    private static Transform FindSceneTransformByName(string targetName)
+    {
+        if (string.IsNullOrWhiteSpace(targetName))
+            return null;
+
+        UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        GameObject[] roots = scene.GetRootGameObjects();
+
+        for (int i = 0; i < roots.Length; i++)
+        {
+            Transform found = FindChildRecursive(roots[i].transform, targetName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
+    }
+
+    private static void ResolveStageEntryTexts(string stageId, out string stageLabel, out string stageName)
+    {
+        switch (stageId?.Trim())
+        {
+            case "Stage2":
+                stageLabel = "2구역";
+                stageName = "모르덴 지하수로";
+                break;
+
+            case "Stage3":
+                stageLabel = "3구역";
+                stageName = "아우렐 묘지";
+                break;
+
+            case "Stage1":
+            default:
+                stageLabel = "1구역";
+                stageName = "로데른 폐허";
+                break;
+        }
     }
 
     public async void OnMapNodeSelected(GeneratedMapNodeData nodeData)
@@ -208,6 +677,19 @@ public class BattleSceneController : MonoBehaviour
         if (isChangingRoom)
             return;
 
+        if (!MapRuntimeProgressUtility.IsNodeClickableFromCurrentProgress(mapRuntime, nodeData))
+        {
+            Debug.LogWarning(
+                $"[BattleSceneController] Selectable next node validation failed: {nodeData.NodeIndex}");
+            return;
+        }
+
+        // 방 내용은 실제로 이 노드를 선택한 순간 확정합니다.
+        // 지도에 생성만 되고 지나가지 않은 방은 중복 방지 이력에 포함되지 않습니다.
+        List<MapData> mapPool = DataManager.Instance.MapDatabase.GetAll();
+        MapData resolvedMap = MapRoomSelectionResolver.ResolveForVisit(nodeData, mapRuntime, mapPool);
+        MapRoomSelectionResolver.ApplyToNode(nodeData, resolvedMap);
+
         mapRuntime.CurrentMapId = nodeData.MapId;
         mapRuntime.CurrentNodeIndex = nodeData.NodeIndex;
 
@@ -217,23 +699,57 @@ public class BattleSceneController : MonoBehaviour
             mapRuntime.VisitedMapIds.Add(nodeKey);
 
         mapRuntimeStore.Set(mapRuntime);
+        CaptureRoomEntrySaveCheckpoint();
 
         Debug.Log(
             $"[BattleSceneController] Map Selected: " +
             $"{nodeData.MapId} / Node:{nodeData.NodeIndex} / {nodeData.Type}"
         );
 
-        await PlayMapToRoomTransitionAsync(() => HandleSelectedMap(nodeData));
+        await PlayMapToRoomTransitionAsync(() =>
+        {
+            CleanupCompletedBattleRoom();
+            HandleSelectedMap(nodeData);
+        });
+
+        PlayEventRoomEntranceAnimationIfNeeded();
     }
 
-    public async void ReturnToMap()
+    public void OnMapNodeSelectedByIndex(int nodeIndex)
+    {
+        if (mapRuntime?.GeneratedNodes == null)
+            return;
+
+        for (int i = 0; i < mapRuntime.GeneratedNodes.Count; i++)
+        {
+            GeneratedMapNodeData node = mapRuntime.GeneratedNodes[i];
+            if (node == null || node.NodeIndex != nodeIndex)
+                continue;
+
+            OnMapNodeSelected(node);
+            return;
+        }
+
+        Debug.LogWarning($"[BattleSceneController] Map node not found: {nodeIndex}");
+    }
+
+    public void ReturnToMap()
+    {
+        ReturnToMap(null);
+    }
+
+    public async void ReturnToMap(System.Action onCovered)
     {
         if (isChangingRoom)
             return;
 
+        GameObject roomToKeepVisible = FindActiveRoomObject();
+
         await PlayRoomToMapTransitionAsync(() =>
         {
-            CloseAllRooms();
+            // 전환 화면이 방을 완전히 가린 시점에만 외부 UI 정리를 허용합니다.
+            onCovered?.Invoke();
+            PrepareRoomForMapSelection(roomToKeepVisible);
             OpenMapPanelImmediate();
         });
 
@@ -338,7 +854,7 @@ public class BattleSceneController : MonoBehaviour
         {
             isAutoReturningToMap = false;
             autoReturnRoomToKeepVisible = null;
-            CloseAllRooms();
+            PrepareRoomForMapSelection(roomToKeepVisible);
             OpenMapPanelImmediate();
         });
 
@@ -369,7 +885,8 @@ public class BattleSceneController : MonoBehaviour
 
         await PlayRoomToMapAlreadyCoveredTransitionAsync(() =>
         {
-            CloseAllRooms();
+            GameObject roomToKeepVisible = FindActiveRoomObject() ?? lastActiveRoomLastFrame;
+            PrepareRoomForMapSelection(roomToKeepVisible);
             OpenMapPanelImmediate();
         });
 
@@ -429,25 +946,75 @@ public class BattleSceneController : MonoBehaviour
         UpdateLastActiveRoomState();
     }
 
+    public void ApplyNetworkMapRuntime(MapRuntimeData runtime)
+    {
+        if (runtime == null || DataManager.Instance == null)
+            return;
+
+        if (mapRuntimeStore == null)
+            mapRuntimeStore = DataManager.Instance.MapRuntimeStore;
+
+        mapRuntime = runtime;
+        bool isCurrentNodeCleared = MapRuntimeProgressUtility.IsCurrentNodeCleared(mapRuntime);
+
+        if (lastNetworkAppliedNodeIndex == mapRuntime.CurrentNodeIndex &&
+            lastNetworkAppliedNodeCleared == isCurrentNodeCleared)
+        {
+            return;
+        }
+
+        lastNetworkAppliedNodeIndex = mapRuntime.CurrentNodeIndex;
+        lastNetworkAppliedNodeCleared = isCurrentNodeCleared;
+
+        if (mapRuntime.CurrentNodeIndex >= 0 && !isCurrentNodeCleared)
+        {
+            GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
+            if (currentNode != null)
+            {
+                forceNextBattleRoomLoad = IsBattleNodeType(currentNode.Type);
+                CaptureRoomEntrySaveCheckpoint();
+                HideMapPanelImmediate();
+                HandleSelectedMap(currentNode);
+                PlayPendingRoomIntroText();
+                PlayEventRoomEntranceAnimationIfNeeded();
+                UpdateLastActiveRoomState();
+                return;
+            }
+        }
+
+        CloseAllRooms();
+        OpenMapPanelImmediate();
+        UpdateLastActiveRoomState();
+    }
+
+    private void CaptureRoomEntrySaveCheckpoint()
+    {
+        SaveSystem.Instance?.CaptureBattleRoomEntryCheckpoint();
+    }
+
     private void HandleSelectedMap(GeneratedMapNodeData nodeData)
     {
         switch (nodeData.Type)
         {
-            case "Start":
-                OpenStartEvent(nodeData);
-                break;
-
             case "Common":
             case "Elite":
                 OpenBattleMap(nodeData);
                 break;
 
             case "Boss":
-                OpenBossDemo(nodeData);
+                OpenBossBattle(nodeData);
                 break;
 
             case "Rest":
                 OpenRestEvent(nodeData);
+                break;
+
+            case "Shop":
+                OpenSpecialEvent(nodeData);
+                break;
+
+            case "Start":
+                OpenSpecialEvent(nodeData);
                 break;
 
             case "Special":
@@ -460,49 +1027,104 @@ public class BattleSceneController : MonoBehaviour
         }
     }
 
-    private void OpenStartEvent(GeneratedMapNodeData nodeData)
-    {
-        pendingRoomIntroMessage = startRoomIntroMessage;
-        OpenRoom(startRoom, "StartRoom");
-    }
-
     private void OpenBattleMap(GeneratedMapNodeData nodeData)
     {
         Debug.Log($"[BattleSceneController] Battle room start: {nodeData.MapId}");
+        pendingBattleRoomUsesBossIntro = false;
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
+        ShowRoomBackground(battleRoom, nodeData);
         OpenRoom(battleRoom, "BattleRoom");
+        ApplyRoomVisual(battleRoom, nodeData);
+    }
+
+    private void OpenBossBattle(GeneratedMapNodeData nodeData)
+    {
+        Debug.Log($"[BattleSceneController] Boss battle start: {nodeData.MapId}");
+        pendingBattleRoomUsesBossIntro = true;
+        pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
+        ShowRoomBackground(battleRoom, nodeData, true);
+        OpenRoom(battleRoom, "BattleRoom");
+        ApplyRoomVisual(battleRoom, nodeData);
     }
 
     private void OpenRestEvent(GeneratedMapNodeData nodeData)
     {
         Debug.Log($"[BattleSceneController] Rest event start: {nodeData.MapId}");
+        pendingBattleRoomUsesBossIntro = false;
         pendingRoomIntroMessage = restRoomIntroMessage;
+        ShowRoomBackground(restRoom, nodeData);
         OpenRoom(restRoom, "RestRoom");
+        sharedRoomPresentationController?.RefreshForMap(nodeData.MapId);
+        ApplyRoomVisual(restRoom, nodeData);
     }
 
     private void OpenSpecialEvent(GeneratedMapNodeData nodeData)
     {
-        Debug.Log($"[BattleSceneController] Special event start: {nodeData.MapId}");
+        Debug.Log($"[BattleSceneController] Special event start: {nodeData.MapId} / Event:{nodeData.EventId}");
+        pendingBattleRoomUsesBossIntro = false;
 
-        // ����� �̺�Ʈ�� ��嵵 RestRoom ������Ʈ�� �Բ� ����� �� �����Ƿ�
-        // Event Room Intro Message �⺻���� �޽� �������� �д�.
-        // ���߿� ���� EventRoom�� �߰��ϸ� �ν����Ϳ��� ������ �ٲٸ� �ȴ�.
-        pendingRoomIntroMessage = eventRoomIntroMessage;
+        pendingRoomIntroMessage = ResolveEventRoomIntroMessage(nodeData);
+        EventRoomController eventController =
+            eventRoom != null
+                ? eventRoom.GetComponentInChildren<EventRoomController>(true)
+                : null;
+
+        if (eventController != null)
+            eventController.SetEventId(nodeData.EventId);
+
+        // EventRoom의 OnEnable에서 이벤트 선택지/연출이 즉시 실행될 수 있으므로
+        // MapVisual을 먼저 생성한 뒤 EventRoom을 활성화한다.
+        ApplyRoomVisual(eventRoom, nodeData);
         OpenRoom(eventRoom, "EventRoom");
     }
 
-    private void OpenBossDemo(GeneratedMapNodeData nodeData)
+    private static string ResolveEventRoomIntroMessage(GeneratedMapNodeData nodeData)
     {
-        Debug.Log($"[BattleSceneController] Boss Demo Open : {nodeData.MapId}");
+        if (nodeData == null)
+            return string.Empty;
 
-        if (battleMapPanel != null)
-            battleMapPanel.Close();
+        string eventId = EventIdUtility.Normalize(nodeData.EventId);
+        if (string.IsNullOrWhiteSpace(eventId))
+            return string.Empty;
 
-        CloseInventoryAndBagPanelsImmediate();
-        CloseAllRooms();
+        if (DataManager.Instance?.EventDatabase != null &&
+            DataManager.Instance.EventDatabase.TryGetEvent(eventId, out EventDefinition definition) &&
+            definition != null)
+        {
+            if (!string.IsNullOrWhiteSpace(definition.EventName))
+                return definition.EventName.Trim();
+        }
 
-        if (bossDemoPanel != null)
-            bossDemoPanel.SetActive(true);
+        Debug.LogWarning($"[BattleSceneController] EventName을 찾을 수 없습니다: {eventId}");
+        return eventId;
+    }
+
+    private void PrepareRoomForMapSelection(GameObject completedRoom)
+    {
+        BattleRoomCleaner cleaner =
+            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
+        cleaner?.PrepareForMapSelection();
+
+        if (completedRoom == eventRoom && eventRoom != null)
+            eventRoom.SetActive(false);
+
+        AutoFindSharedRoomPresentationIfNeeded();
+        sharedRoomPresentationController?.RefreshForMapSelection(
+            MapRuntimeProgressUtility.FindCurrentNode(mapRuntime)?.MapId);
+    }
+
+    public bool TryPlaySharedMapVisualAction(string visualObjectId, string actionId)
+    {
+        AutoFindSharedRoomPresentationIfNeeded();
+        return sharedMapVisualController != null &&
+               sharedMapVisualController.TryPlayAction(visualObjectId, actionId);
+    }
+
+    public bool TryReverseSharedMapVisualAction(string visualObjectId, string actionId)
+    {
+        AutoFindSharedRoomPresentationIfNeeded();
+        return sharedMapVisualController != null &&
+               sharedMapVisualController.TryReverseAction(visualObjectId, actionId);
     }
 
     private void PlayMapIntroTextOnStart()
@@ -529,13 +1151,30 @@ public class BattleSceneController : MonoBehaviour
             AutoFindBattleMapIntroTextIfNeeded();
 
         if (battleMapIntroText != null)
+        {
+            if (eventRoom != null && eventRoom.activeInHierarchy)
+                BattleMapIntroText.PlayRoomIntroSfx();
+
             battleMapIntroText.Play(pendingRoomIntroMessage);
+        }
 
         pendingRoomIntroMessage = null;
     }
 
+    private void PlayEventRoomEntranceAnimationIfNeeded()
+    {
+        if (eventRoom == null || !eventRoom.activeInHierarchy)
+            return;
+
+        EventRoomController eventController =
+            eventRoom.GetComponentInChildren<EventRoomController>(true);
+        eventController?.PlayEventChoiceEntranceAnimation();
+    }
+
     private void OpenRoom(GameObject roomObject, string roomName)
     {
+        mapSelectionPresenter?.Hide();
+
         if (battleMapPanel != null)
             battleMapPanel.Close();
 
@@ -548,15 +1187,126 @@ public class BattleSceneController : MonoBehaviour
             return;
         }
 
+        bool isBattleRoom = roomObject == battleRoom;
+        ResetCameraForNonBattleRoom(roomObject, isBattleRoom);
+        SetSharedPartyPresentationVisible(!isBattleRoom);
+
+        if (isBattleRoom)
+            SetBattleRoomIntroPlaying(true);
+
         roomObject.SetActive(true);
 
-        if (roomObject == battleRoom)
+        if (isBattleRoom)
             RequestBattleRoomLoadOnce();
+    }
+
+    private static void ResetCameraForNonBattleRoom(GameObject roomObject, bool isBattleRoom)
+    {
+        if (roomObject == null || isBattleRoom)
+            return;
+
+        ResetCameraForMap();
+    }
+
+    private void CleanupCompletedBattleRoom()
+    {
+        BattleRoomCleaner cleaner =
+            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
+        cleaner?.Clean();
     }
 
     private void RequestBattleRoomLoadOnce()
     {
         if (battleRoom == null)
+            return;
+
+        CancelPendingBattleRoomIntro();
+
+        IBattleRoomIntroSequence introSequence = ResolveBattleRoomIntroSequence();
+
+        if (introSequence == null || introSequence.IsCompleted)
+        {
+            SetBattleRoomIntroPlaying(false);
+        }
+        else
+        {
+            SetBattleRoomIntroPlaying(true);
+            SuppressBattleRoomExecutionUiUntilPlayerInputReady();
+        }
+
+        battleRoomIntroLoadGate.Request(
+            introSequence,
+            HandleBattleRoomIntroCompletedAndLoad
+        );
+    }
+
+    private IBattleRoomIntroSequence ResolveBattleRoomIntroSequence()
+    {
+        IBattleRoomIntroSequence introSequence =
+            BattleRoomIntroSequenceUtility.FindFirst(battleRoom);
+
+        if (introSequence != null)
+            return introSequence;
+
+        if (!pendingBattleRoomUsesBossIntro)
+            return null;
+
+        AutoFindSharedRoomPresentationIfNeeded();
+
+        introSequence = sharedBackgroundController != null
+            ? sharedBackgroundController.CurrentBattleRoomIntroSequence
+            : null;
+
+        if (introSequence != null)
+            return introSequence;
+
+        return BattleRoomIntroSequenceUtility.FindFirst(sharedRoomRoot);
+    }
+
+    private void SuppressBattleRoomExecutionUiUntilPlayerInputReady()
+    {
+        BattleTurnExecutor[] executors = battleRoom != null
+            ? battleRoom.GetComponentsInChildren<BattleTurnExecutor>(true)
+            : null;
+
+        if (executors == null || executors.Length == 0)
+        {
+            executors = Object.FindObjectsByType<BattleTurnExecutor>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+        }
+
+        for (int i = 0; i < executors.Length; i++)
+            executors[i]?.SuppressBattleExecutionUiUntilPlayerInputReady();
+    }
+
+    private void CancelPendingBattleRoomIntro()
+    {
+        battleRoomIntroLoadGate.Cancel();
+    }
+
+    private void HandleBattleRoomIntroCompletedAndLoad()
+    {
+        LoadBattleRoomNow();
+        SetBattleRoomIntroPlaying(false);
+    }
+
+    private static void SetBattleRoomIntroPlaying(bool isPlaying)
+    {
+        if (IsBattleRoomIntroPlaying == isPlaying)
+            return;
+
+        IsBattleRoomIntroPlaying = isPlaying;
+
+        if (isPlaying)
+            BattleRoomIntroStarted?.Invoke();
+        else
+            BattleRoomIntroCompleted?.Invoke();
+    }
+
+    private void LoadBattleRoomNow()
+    {
+        if (battleRoom == null || !battleRoom.activeInHierarchy)
             return;
 
         BattleRoomLoader loader = battleRoom.GetComponentInChildren<BattleRoomLoader>(true);
@@ -567,26 +1317,44 @@ public class BattleSceneController : MonoBehaviour
             return;
         }
 
-        loader.LoadBattleFromSceneController();
+        bool forceReload = forceNextBattleRoomLoad;
+        forceNextBattleRoomLoad = false;
+        loader.LoadBattleFromSceneController(forceReload);
+    }
+
+    private static bool IsBattleNodeType(string nodeType)
+    {
+        return nodeType == "Common" ||
+               nodeType == "Elite" ||
+               nodeType == "Boss";
     }
 
     private void CloseAllRooms()
     {
+        CancelPendingBattleRoomIntro();
+        SetBattleRoomIntroPlaying(false);
         CloseInventoryAndBagPanelsImmediate();
 
         if (roomRoot != null)
         {
             for (int i = 0; i < roomRoot.childCount; i++)
-                roomRoot.GetChild(i).gameObject.SetActive(false);
+            {
+                GameObject roomObject = roomRoot.GetChild(i).gameObject;
+                if (roomObject == sharedRoomRoot)
+                    continue;
+
+                roomObject.SetActive(false);
+            }
+
+            if (sharedRoomRoot != null && !sharedRoomRoot.activeSelf)
+                sharedRoomRoot.SetActive(true);
 
             return;
         }
 
-        SetActiveIfNotNull(startRoom, false);
         SetActiveIfNotNull(battleRoom, false);
         SetActiveIfNotNull(eventRoom, false);
         SetActiveIfNotNull(restRoom, false);
-        SetActiveIfNotNull(bossDemoPanel, false);
     }
 
     private void UpdateRoomPanelAutoCloseState()
@@ -638,7 +1406,7 @@ public class BattleSceneController : MonoBehaviour
 
             RectTransform rect = inventoryPanel.GetComponent<RectTransform>();
             if (rect != null)
-                rect.anchoredPosition = new Vector2(inventoryClosedX, rect.anchoredPosition.y);
+                rect.anchoredPosition = new Vector2(0f, inventoryClosedY);
 
             ClearSelectedObjectIfChildOf(inventoryPanel);
         }
@@ -649,7 +1417,7 @@ public class BattleSceneController : MonoBehaviour
         GameObject[] namedBagPanels = FindObjectsByNames(bagPanelObjectNames);
 
         for (int i = 0; i < namedBagPanels.Length; i++)
-            ClosePanelGameObjectImmediate(namedBagPanels[i]);
+            CloseBagPanelImmediate(namedBagPanels[i]);
 
         BattleBagPanelUI[] bagPanels = Object.FindObjectsByType<BattleBagPanelUI>(
             FindObjectsInactive.Include,
@@ -661,8 +1429,23 @@ public class BattleSceneController : MonoBehaviour
             if (bagPanels[i] == null)
                 continue;
 
-            ClosePanelGameObjectImmediate(bagPanels[i].gameObject);
+            CloseBagPanelImmediate(bagPanels[i].gameObject);
         }
+    }
+
+    private void CloseBagPanelImmediate(GameObject panelObject)
+    {
+        if (panelObject == null)
+            return;
+
+        ClearSelectedObjectIfChildOf(panelObject);
+
+        if (!panelObject.activeSelf)
+            panelObject.SetActive(true);
+
+        RectTransform rect = panelObject.GetComponent<RectTransform>();
+        if (rect != null)
+            rect.anchoredPosition = new Vector2(bagClosedX, rect.anchoredPosition.y);
     }
 
     private void ClosePanelGameObjectImmediate(GameObject panelObject)
@@ -788,15 +1571,15 @@ public class BattleSceneController : MonoBehaviour
             for (int i = 0; i < roomRoot.childCount; i++)
             {
                 GameObject roomObject = roomRoot.GetChild(i).gameObject;
+                if (roomObject == sharedRoomRoot)
+                    continue;
+
                 if (roomObject.activeSelf)
                     return roomObject;
             }
 
             return null;
         }
-
-        if (IsActiveSelf(startRoom))
-            return startRoom;
 
         if (IsActiveSelf(battleRoom))
             return battleRoom;
@@ -818,15 +1601,18 @@ public class BattleSceneController : MonoBehaviour
         {
             for (int i = 0; i < roomRoot.childCount; i++)
             {
-                if (roomRoot.GetChild(i).gameObject == target)
+                GameObject roomObject = roomRoot.GetChild(i).gameObject;
+                if (roomObject == sharedRoomRoot)
+                    continue;
+
+                if (roomObject == target)
                     return true;
             }
 
             return false;
         }
 
-        return target == startRoom ||
-               target == battleRoom ||
+        return target == battleRoom ||
                target == eventRoom ||
                target == restRoom;
     }
@@ -845,5 +1631,34 @@ public class BattleSceneController : MonoBehaviour
     {
         if (target != null)
             target.SetActive(active);
+    }
+
+    private void SetSharedPartyPresentationVisible(bool visible)
+    {
+        AutoFindSharedRoomPresentationIfNeeded();
+
+        if (sharedPartyPresentationRoot != null &&
+            sharedPartyPresentationRoot.activeSelf != visible)
+        {
+            sharedPartyPresentationRoot.SetActive(visible);
+        }
+    }
+
+    private static Transform FindChildRecursive(Transform root, string targetName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(targetName))
+            return null;
+
+        if (root.name == targetName)
+            return root;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform found = FindChildRecursive(root.GetChild(i), targetName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 }

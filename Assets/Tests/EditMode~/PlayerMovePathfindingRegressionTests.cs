@@ -3,6 +3,7 @@ using System.Reflection;
 using NUnit.Framework;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
+using TMPro;
 using UnityEngine;
 
 public class PlayerMovePathfindingRegressionTests
@@ -1896,6 +1897,69 @@ public class PlayerMovePathfindingRegressionTests
         }
     }
 
+    [Test]
+    public void MoveHoverPing_UsesGridYSortBetweenRows()
+    {
+        GameObject controllerObject = new("MoveHoverPingSortingController");
+        GameObject gridObject = new("MoveHoverPingSortingGrid");
+        Texture2D texture = null;
+        Sprite sprite = null;
+
+        try
+        {
+            PlayerSkillReservationController controller =
+                controllerObject.AddComponent<PlayerSkillReservationController>();
+            GridCell[] cells = CreatePositionedGridCells(gridObject.transform);
+            GridManager gridManager = gridObject.AddComponent<GridManager>();
+            sprite = CreateTestSprite(out texture);
+            int targetGridIndex = 1;
+            float targetY = cells[targetGridIndex].transform.position.y;
+
+            SetPrivateField(gridManager, "cells", cells);
+            InvokePrivateMethod(gridManager, "InitializeCells");
+            SetPrivateField(controller, "gridManager", gridManager);
+            SetPrivateField(controller, "moveHoverPingBaseSprite", sprite);
+            SetPrivateField(controller, "moveHoverPingFloatingSprite", sprite);
+            SetPrivateField(controller, "currentCasterGridIndex", targetGridIndex);
+            SetPrivateField(controller, "moveHoverPingBaseSortingOrder", 30000);
+            SetPrivateField(controller, "moveHoverPingFloatingSortingOrder", 30001);
+            SetPrivateField(controller, "moveHoverCostSortingOrder", 30002);
+
+            List<int> selectableIndices =
+                GetPrivateField<List<int>>(controller, "currentMoveSelectableIndices");
+            selectableIndices.Add(targetGridIndex);
+
+            InvokePrivateMethod(controller, "ShowMoveHoverPing", targetGridIndex);
+
+            SpriteRenderer baseRenderer =
+                GetPrivateField<SpriteRenderer>(controller, "moveHoverPingBaseInstance");
+            SpriteRenderer floatingRenderer =
+                GetPrivateField<SpriteRenderer>(controller, "moveHoverPingFloatingInstance");
+            TextMeshPro costText =
+                GetPrivateField<TextMeshPro>(controller, "moveHoverCostTextInstance");
+            int sameRowUnitOrder = BattleWorldVfxSortUtility.CalculateSortingOrder(targetY, 100f, 0);
+            int aboveRowUnitOrder = BattleWorldVfxSortUtility.CalculateSortingOrder(targetY + 1f, 100f, 0);
+            int belowRowUnitOrder = BattleWorldVfxSortUtility.CalculateSortingOrder(targetY - 1f, 100f, 0);
+
+            AssertYSortedMoveHoverRenderer(baseRenderer, sameRowUnitOrder, aboveRowUnitOrder, belowRowUnitOrder);
+            AssertYSortedMoveHoverRenderer(floatingRenderer, sameRowUnitOrder, aboveRowUnitOrder, belowRowUnitOrder);
+            AssertYSortedMoveHoverRenderer(costText.renderer, sameRowUnitOrder, aboveRowUnitOrder, belowRowUnitOrder);
+            Assert.That(floatingRenderer.sortingOrder, Is.EqualTo(baseRenderer.sortingOrder + 1));
+            Assert.That(costText.renderer.sortingOrder, Is.EqualTo(baseRenderer.sortingOrder + 2));
+        }
+        finally
+        {
+            Object.DestroyImmediate(controllerObject);
+            Object.DestroyImmediate(gridObject);
+
+            if (sprite != null)
+                Object.DestroyImmediate(sprite);
+
+            if (texture != null)
+                Object.DestroyImmediate(texture);
+        }
+    }
+
     private static int GetReservationCount(IReadOnlyList<Vector2Int> moveSteps, int moveDistancePerCommand)
     {
         if (moveSteps == null || moveSteps.Count <= 0)
@@ -2036,5 +2100,46 @@ public class PlayerMovePathfindingRegressionTests
             total += Mathf.Abs(moveSteps[i].x) + Mathf.Abs(moveSteps[i].y);
 
         return total;
+    }
+
+    private static GridCell[] CreatePositionedGridCells(Transform parent)
+    {
+        GridCell[] cells = new GridCell[3];
+
+        for (int i = 0; i < cells.Length; i++)
+        {
+            GameObject cellObject = new($"MoveHoverYSortCell_{i}");
+            cellObject.transform.SetParent(parent);
+            cellObject.transform.position = new Vector3(0f, i, 0f);
+            cellObject.AddComponent<MeshRenderer>();
+            cellObject.AddComponent<BoxCollider>();
+            cells[i] = cellObject.AddComponent<GridCell>();
+        }
+
+        return cells;
+    }
+
+    private static Sprite CreateTestSprite(out Texture2D texture)
+    {
+        texture = new Texture2D(1, 1);
+        texture.SetPixel(0, 0, Color.white);
+        texture.Apply();
+        return Sprite.Create(
+            texture,
+            new Rect(0, 0, 1, 1),
+            new Vector2(0.5f, 0.5f));
+    }
+
+    private static void AssertYSortedMoveHoverRenderer(
+        Renderer renderer,
+        int sameRowUnitOrder,
+        int aboveRowUnitOrder,
+        int belowRowUnitOrder)
+    {
+        Assert.That(renderer, Is.Not.Null);
+        Assert.That(renderer.sortingLayerName, Is.EqualTo("Unit"));
+        Assert.That(renderer.sortingOrder, Is.GreaterThan(sameRowUnitOrder));
+        Assert.That(renderer.sortingOrder, Is.GreaterThan(aboveRowUnitOrder));
+        Assert.That(renderer.sortingOrder, Is.LessThan(belowRowUnitOrder));
     }
 }

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
+[DisallowMultipleComponent]
 public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 {
     public enum PanelTransitionMode
@@ -15,9 +16,30 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private GameObject[] panelsToClose;
     [SerializeField] private GameObject panelToOpen;
 
+    [Header("Lobby Background Change")]
+    [Tooltip("Panel To Open에 맞는 로비 배경을 자동으로 전환합니다.")]
+    [SerializeField] private bool changeLobbyBackground = true;
+
+    [Tooltip("비어 있으면 오브젝트 이름으로 자동 탐색합니다.")]
+    [SerializeField] private GameObject positionBackground;
+    [SerializeField] private GameObject characterSettingBackground;
+    [SerializeField] private GameObject erosionSelectBackground;
+    [SerializeField] private GameObject relicShopBackground;
+    [SerializeField] private GameObject cultureTankBackground;
+
     [Header("Opened Popup Close")]
     [SerializeField] private bool closeCurrentUIPanelButtonPanelOnExecute = true;
     [SerializeField] private GameObject[] extraPanelsToCloseOnExecute;
+
+    [Header("World Object Click")]
+    [Tooltip("체크하면 이 스크립트가 붙은 월드 오브젝트를 클릭했을 때 Execute를 실행합니다.")]
+    [SerializeField] private bool executeOnWorldClick = true;
+
+    [Tooltip("UI 위에서 클릭한 경우 월드 오브젝트 클릭을 차단합니다.")]
+    [SerializeField] private bool blockWorldClickOverUI = true;
+
+    [Tooltip("Collider2D가 없으면 SpriteRenderer 기준으로 PolygonCollider2D를 자동 추가합니다.")]
+    [SerializeField] private bool addColliderAutomatically = true;
 
     [Header("World Object Change")]
     [SerializeField] private GameObject[] worldObjectsToClose;
@@ -25,9 +47,10 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     [Header("Transition")]
     [SerializeField] private LobbyPanelTransition lobbyPanelTransition;
-    [SerializeField] private PanelTransitionMode transitionMode = PanelTransitionMode.LobbyToCharacter;
-    [SerializeField] private LobbyPanelTransition.TransitionDirection customCloseDirection = LobbyPanelTransition.TransitionDirection.Vertical;
-    [SerializeField] private LobbyPanelTransition.TransitionDirection customOpenDirection = LobbyPanelTransition.TransitionDirection.Horizontal;
+    [SerializeField]
+    private PanelTransitionMode transitionMode =
+        PanelTransitionMode.LobbyToCharacter;
+
     [SerializeField] private float clickActionDelay = 0f;
 
     [Header("Middle Actions")]
@@ -36,37 +59,96 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     [Header("Button Sound")]
     [SerializeField] private bool playHoverSound = true;
-    [SerializeField] private SfxType hoverSfx = SfxType.NormalButtonHover;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string hoverSfx = AudioIds.Sfx.NormalButtonHover;
     [SerializeField] private float hoverSfxVolumeMultiplier = 1f;
+
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
     [SerializeField] private float clickSfxVolumeMultiplier = 1f;
 
+    private LobbyBackgroundStateController backgroundStateController;
     private bool isProcessing;
+
+    /// <summary>
+    /// 이 버튼이 열 대상 Panel To Open이 현재 열려 있는지 반환합니다.
+    /// SpriteHoverScale에서 현재 선택 표시를 유지할 때 사용합니다.
+    /// </summary>
+    public bool IsTargetPanelOpen =>
+        panelToOpen != null && panelToOpen.activeInHierarchy;
+
+    private void Awake()
+    {
+        ResolveLobbyBackgrounds();
+
+        if (executeOnWorldClick && addColliderAutomatically)
+            EnsureWorldCollider();
+    }
+
+    private void OnMouseUpAsButton()
+    {
+        if (!executeOnWorldClick)
+            return;
+
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
+        if (LobbyPositionModalInputBlocker.IsBlocked)
+            return;
+
+        if (blockWorldClickOverUI &&
+            EventSystem.current != null &&
+            EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+
+        Execute();
+    }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
         if (!playHoverSound)
             return;
 
         if (AudioManager.Instance != null)
-            AudioManager.Instance.PlaySfx(hoverSfx, hoverSfxVolumeMultiplier);
+        {
+            AudioManager.Instance.PlaySfx(
+                hoverSfx,
+                hoverSfxVolumeMultiplier);
+        }
     }
 
     public void Execute()
     {
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
+        if (panelToOpen != null &&
+            !panelToOpen.activeInHierarchy &&
+            PanelCameraMover.IsAnotherTargetPanelOpen(panelToOpen))
+        {
+            return;
+        }
+
         if (isProcessing)
             return;
 
         if (playClickSound && AudioManager.Instance != null)
-            AudioManager.Instance.PlaySfx(clickSfx, clickSfxVolumeMultiplier);
+        {
+            AudioManager.Instance.PlaySfx(
+                clickSfx,
+                clickSfxVolumeMultiplier);
+        }
 
         CloseOpenedPopupPanels();
 
         if (lobbyPanelTransition == null)
         {
-            Debug.LogWarning("[LobbyPanelTransitionButton] Lobby Panel Transition is not assigned.");
             InvokeBeforePanelChange();
+            ApplyWorldObjectChangeImmediately();
             ApplyPanelChangeImmediately();
             InvokeAfterPanelChange();
             return;
@@ -75,14 +157,19 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
         if (lobbyPanelTransition.IsPlaying)
             return;
 
-        GetDirections(out LobbyPanelTransition.TransitionDirection closeDirection, out LobbyPanelTransition.TransitionDirection openDirection);
+        GetDirections(
+            out LobbyPanelTransition.TransitionDirection closeDirection,
+            out LobbyPanelTransition.TransitionDirection openDirection);
 
         isProcessing = true;
 
+        GameObject[] effectivePanelsToClose = GetEffectivePanelsToClose();
+        GameObject[] effectiveWorldObjectsToClose = GetEffectiveWorldObjectsToClose();
+
         lobbyPanelTransition.PlayPanelChange(
-            panelsToClose,
+            effectivePanelsToClose,
             panelToOpen,
-            worldObjectsToClose,
+            effectiveWorldObjectsToClose,
             worldObjectsToOpen,
             closeDirection,
             openDirection,
@@ -90,27 +177,44 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
             InvokeBeforePanelChange,
             InvokeAfterPanelChange);
 
-        Invoke(nameof(ClearProcessing), Mathf.Max(0.01f, clickActionDelay + lobbyPanelTransition.EstimatedTransitionTime + 0.1f));
+        Invoke(
+            nameof(ClearProcessing),
+            Mathf.Max(
+                0.01f,
+                clickActionDelay +
+                lobbyPanelTransition.EstimatedTransitionTime +
+                0.1f));
     }
 
-    private void GetDirections(out LobbyPanelTransition.TransitionDirection closeDirection, out LobbyPanelTransition.TransitionDirection openDirection)
+    /// <summary>
+    /// MenuPanel이 열려 있으면 바깥쪽 로비 월드 오브젝트 입력을 차단합니다.
+    /// MenuPanel 자신과 그 자식 버튼은 계속 사용할 수 있습니다.
+    /// </summary>
+    private bool ShouldBlockInteractionByOpenMenuPanel()
     {
-        if (transitionMode == PanelTransitionMode.LobbyToCharacter)
-        {
-            closeDirection = LobbyPanelTransition.TransitionDirection.Vertical;
-            openDirection = LobbyPanelTransition.TransitionDirection.Horizontal;
-            return;
-        }
+        if (!UIPanelButton.IsMenuPanelOpen)
+            return false;
 
-        if (transitionMode == PanelTransitionMode.CharacterToLobby)
-        {
-            closeDirection = LobbyPanelTransition.TransitionDirection.Horizontal;
-            openDirection = LobbyPanelTransition.TransitionDirection.Vertical;
-            return;
-        }
+        GameObject menuPanel = UIPanelButton.FindMenuPanelInScene();
 
-        closeDirection = customCloseDirection;
-        openDirection = customOpenDirection;
+        if (menuPanel == null)
+            return true;
+
+        Transform currentTransform = transform;
+
+        return currentTransform != menuPanel.transform &&
+               !currentTransform.IsChildOf(menuPanel.transform);
+    }
+
+    private void GetDirections(
+        out LobbyPanelTransition.TransitionDirection closeDirection,
+        out LobbyPanelTransition.TransitionDirection openDirection)
+    {
+        closeDirection =
+            LobbyPanelTransition.TransitionDirection.Horizontal;
+
+        openDirection =
+            LobbyPanelTransition.TransitionDirection.Horizontal;
     }
 
     private void CloseOpenedPopupPanels()
@@ -130,25 +234,45 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     private void InvokeBeforePanelChange()
     {
-        if (beforePanelChange != null)
-            beforePanelChange.Invoke();
+
+        ApplyLobbyBackgroundForTargetPanel();
+        beforePanelChange?.Invoke();
     }
 
     private void InvokeAfterPanelChange()
     {
-        if (afterPanelChange != null)
-            afterPanelChange.Invoke();
-    }
+        afterPanelChange?.Invoke();
 
+        LobbyViewStateController viewStateController =
+            FindFirstObjectByType<LobbyViewStateController>();
+
+        if (viewStateController == null)
+            return;
+
+        if (transitionMode == PanelTransitionMode.LobbyToCharacter)
+        {
+            viewStateController.ShowCharacterSelection();
+
+            if (panelToOpen != null && panelToOpen.name == "CharacterSettingPanel")
+                SetSettingUpperActive(false);
+        }
+        else if (transitionMode == PanelTransitionMode.CharacterToLobby)
+        {
+            viewStateController.ShowPosition();
+            SetSettingUpperActive(true);
+        }
+    }
 
     private void ApplyWorldObjectChangeImmediately()
     {
-        if (worldObjectsToClose != null)
+        GameObject[] effectiveWorldObjectsToClose = GetEffectiveWorldObjectsToClose();
+
+        if (effectiveWorldObjectsToClose != null)
         {
-            for (int i = 0; i < worldObjectsToClose.Length; i++)
+            for (int i = 0; i < effectiveWorldObjectsToClose.Length; i++)
             {
-                if (worldObjectsToClose[i] != null)
-                    worldObjectsToClose[i].SetActive(false);
+                if (effectiveWorldObjectsToClose[i] != null)
+                    effectiveWorldObjectsToClose[i].SetActive(false);
             }
         }
 
@@ -164,17 +288,320 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
     private void ApplyPanelChangeImmediately()
     {
-        if (panelsToClose != null)
+        GameObject[] effectivePanelsToClose = GetEffectivePanelsToClose();
+
+        if (effectivePanelsToClose != null)
         {
-            for (int i = 0; i < panelsToClose.Length; i++)
+            for (int i = 0; i < effectivePanelsToClose.Length; i++)
             {
-                if (panelsToClose[i] != null)
-                    panelsToClose[i].SetActive(false);
+                if (effectivePanelsToClose[i] != null)
+                    effectivePanelsToClose[i].SetActive(false);
             }
         }
 
         if (panelToOpen != null)
             panelToOpen.SetActive(true);
+    }
+
+    /// <summary>
+    /// CharacterSettingPanel을 열 때 로비의 SettingButton은 유지합니다.
+    /// 인스펙터의 Panels To Close에 SettingButton이 포함되어 있어도
+    /// 캐릭터 설정 화면으로 전환할 때 자동으로 제외합니다.
+    /// </summary>
+    private GameObject[] GetEffectivePanelsToClose()
+    {
+        if (panelsToClose == null || panelsToClose.Length == 0)
+            return panelsToClose;
+
+        if (panelToOpen == null || panelToOpen.name != "CharacterSettingPanel")
+            return panelsToClose;
+
+        int keepCount = 0;
+
+        for (int i = 0; i < panelsToClose.Length; i++)
+        {
+            GameObject panel = panelsToClose[i];
+
+            if (panel != null && panel.name != "SettingButton")
+                keepCount++;
+        }
+
+        if (keepCount == panelsToClose.Length)
+            return panelsToClose;
+
+        GameObject[] filtered = new GameObject[keepCount];
+        int index = 0;
+
+        for (int i = 0; i < panelsToClose.Length; i++)
+        {
+            GameObject panel = panelsToClose[i];
+
+            if (panel == null || panel.name == "SettingButton")
+                continue;
+
+            filtered[index++] = panel;
+        }
+
+        return filtered;
+    }
+
+
+    /// <summary>
+    /// CharacterSettingPanel을 열 때 World Objects To Close에 등록된 SettingButton은 끄지 않습니다.
+    /// </summary>
+    private GameObject[] GetEffectiveWorldObjectsToClose()
+    {
+        if (worldObjectsToClose == null || worldObjectsToClose.Length == 0)
+            return worldObjectsToClose;
+
+        if (panelToOpen == null || panelToOpen.name != "CharacterSettingPanel")
+            return worldObjectsToClose;
+
+        int keepCount = 0;
+
+        for (int i = 0; i < worldObjectsToClose.Length; i++)
+        {
+            GameObject target = worldObjectsToClose[i];
+
+            if (target != null && target.name != "SettingButton")
+                keepCount++;
+        }
+
+        if (keepCount == worldObjectsToClose.Length)
+            return worldObjectsToClose;
+
+        GameObject[] filtered = new GameObject[keepCount];
+        int index = 0;
+
+        for (int i = 0; i < worldObjectsToClose.Length; i++)
+        {
+            GameObject target = worldObjectsToClose[i];
+
+            if (target == null || target.name == "SettingButton")
+                continue;
+
+            filtered[index++] = target;
+        }
+
+        return filtered;
+    }
+
+
+    private void SetSettingUpperActive(bool active)
+    {
+        GameObject settingUpper = FindSceneObject("Setting_upper");
+
+        if (settingUpper != null)
+            settingUpper.SetActive(active);
+    }
+
+    private void ResolveLobbyBackgrounds()
+    {
+        if (positionBackground == null)
+            positionBackground = FindSceneObject("Position_Back");
+
+        if (characterSettingBackground == null)
+        {
+            characterSettingBackground =
+                FindSceneObject("CharacterSetting_Back");
+        }
+
+        if (erosionSelectBackground == null)
+            erosionSelectBackground = FindSceneObject("ErosionSelect_Back");
+
+        if (relicShopBackground == null)
+            relicShopBackground = FindSceneObject("RelicShop_Back");
+
+        if (cultureTankBackground == null)
+            cultureTankBackground = FindSceneObject("CultureTank_Back");
+    }
+
+    private void ApplyLobbyBackgroundForTargetPanel()
+    {
+        if (!changeLobbyBackground)
+            return;
+
+        if (!TryGetTargetLobbyBackgroundState(
+                out LobbyBackgroundState targetState))
+        {
+            return;
+        }
+
+        LobbyBackgroundStateController controller =
+            ResolveBackgroundStateController();
+
+        if (controller != null)
+        {
+            controller.ShowBackground(targetState);
+            return;
+        }
+
+        ApplyLobbyBackgroundFallback(targetState);
+    }
+
+    private bool TryGetTargetLobbyBackgroundState(
+        out LobbyBackgroundState state)
+    {
+        if (transitionMode == PanelTransitionMode.CharacterToLobby)
+        {
+            state = LobbyBackgroundState.Position;
+            return true;
+        }
+
+        if (panelToOpen == null)
+        {
+            state = LobbyBackgroundState.Position;
+            return true;
+        }
+
+        switch (panelToOpen.name)
+        {
+            case "PositionPanel":
+                state = LobbyBackgroundState.Position;
+                return true;
+
+            case "CharacterSettingPanel":
+                state = LobbyBackgroundState.CharacterSetting;
+                return true;
+
+            case "ErosionSelectPanel":
+                state = LobbyBackgroundState.ErosionSelect;
+                return true;
+
+            case "RelicShopPanel":
+                state = LobbyBackgroundState.RelicShop;
+                return true;
+
+            case "CultureTankPanel":
+                state = LobbyBackgroundState.CultureTank;
+                return true;
+
+            default:
+                state = LobbyBackgroundState.Position;
+                return false;
+        }
+    }
+
+    private LobbyBackgroundStateController ResolveBackgroundStateController()
+    {
+        if (backgroundStateController != null)
+            return backgroundStateController;
+
+        backgroundStateController =
+            FindFirstObjectByType<LobbyBackgroundStateController>(
+                FindObjectsInactive.Include);
+
+        return backgroundStateController;
+    }
+
+    private void ApplyLobbyBackgroundFallback(
+        LobbyBackgroundState targetState)
+    {
+        ResolveLobbyBackgrounds();
+
+        GameObject targetBackground =
+            GetBackgroundForState(targetState);
+
+        if (targetBackground == null)
+            return;
+
+        SetBackgroundActive(
+            positionBackground,
+            targetBackground);
+
+        SetBackgroundActive(
+            characterSettingBackground,
+            targetBackground);
+
+        SetBackgroundActive(
+            erosionSelectBackground,
+            targetBackground);
+
+        SetBackgroundActive(
+            relicShopBackground,
+            targetBackground);
+
+        SetBackgroundActive(
+            cultureTankBackground,
+            targetBackground);
+    }
+
+    private GameObject GetBackgroundForState(
+        LobbyBackgroundState state)
+    {
+        switch (state)
+        {
+            case LobbyBackgroundState.Position:
+                return positionBackground;
+
+            case LobbyBackgroundState.CharacterSetting:
+                return characterSettingBackground;
+
+            case LobbyBackgroundState.ErosionSelect:
+                return erosionSelectBackground;
+
+            case LobbyBackgroundState.RelicShop:
+                return relicShopBackground;
+
+            case LobbyBackgroundState.CultureTank:
+                return cultureTankBackground;
+
+            default:
+                return null;
+        }
+    }
+
+    private static void SetBackgroundActive(
+        GameObject background,
+        GameObject targetBackground)
+    {
+        if (background != null)
+            background.SetActive(background == targetBackground);
+    }
+
+    private static GameObject FindSceneObject(string objectName)
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        GameObject[] objects =
+            FindObjectsByType<GameObject>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+
+        for (int i = 0; i < objects.Length; i++)
+        {
+            GameObject candidate = objects[i];
+
+            if (candidate != null &&
+                candidate.name == objectName)
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private void EnsureWorldCollider()
+    {
+        if (GetComponent<Collider2D>() != null ||
+            GetComponent<Collider>() != null)
+        {
+            return;
+        }
+
+        if (GetComponent<SpriteRenderer>() == null)
+        {
+            Debug.LogWarning(
+                "[LobbyPanelTransitionButton] World click requires a Collider or SpriteRenderer. " +
+                "Add a Collider2D to the anchor object manually.",
+                this);
+
+            return;
+        }
+
+        gameObject.AddComponent<PolygonCollider2D>();
     }
 
     private void ClearProcessing()

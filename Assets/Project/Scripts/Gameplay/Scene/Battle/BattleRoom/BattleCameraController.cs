@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Relic.Gameplay.Monster;
+using System.Collections;
 using UnityEngine;
 
 public class BattleCameraController : MonoBehaviour
@@ -25,14 +26,34 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private bool enableDamageImpactRotation = true;
     [SerializeField] private float[] damageImpactRotationZPattern = { 0f, -1f, 1f };
     [SerializeField] private float impactZoomAmount = 0f;
-    [SerializeField] private float impactZoomZOffset = 0f;
-    [SerializeField] private float impactZoomInDuration = 0f;
-    [SerializeField] private float impactZoomOutDuration = 0f;
+    [SerializeField] private float impactZoomZOffset = 1.5f;
+    [SerializeField] private float impactZoomInDuration = 0.08f;
+    [SerializeField] private float impactZoomOutDuration = 0.12f;
     [SerializeField] private float impactShakeDuration = 0.08f;
     [SerializeField] private float impactShakeStrength = 0.1f;
     [SerializeField] private float impactShakeFrequency = 20f;
     [SerializeField] private float impactHitStopDuration = 0.1f;
+    [SerializeField, Range(0f, 1f)] private float impactHitStopTimeScale = 0.08f;
+    [SerializeField, Min(1f)] private float impactRecoverySpeedMultiplier = 1.5f;
+    [SerializeField, Min(0f)] private float impactRecoverySpeedDuration = 0.18f;
     [SerializeField] private bool useUnscaledTimeForImpact = true;
+
+    [Header("Ranged Skill Zoom")]
+    [Tooltip("원거리 스킬 실행 시작 시 카메라가 이동할 Z 위치입니다. X/Y는 이동하지 않습니다.")]
+    [SerializeField] private float rangedExecutionZoomZPosition = -18f;
+    [Tooltip("원거리 스킬 실행 시작 시 Z 줌에 걸리는 시간입니다.")]
+    [SerializeField] private float rangedExecutionZoomDuration = 0.25f;
+
+    [Header("Ranged Damage Impact")]
+    [Tooltip("원거리 공격 명중 시 적용할 약한 Z 줌 거리입니다. 근거리 impactZoomZOffset과 별도로 사용합니다.")]
+    [SerializeField] private float rangedImpactZoomZOffset = 0.5f;
+    [Tooltip("원거리 공격 명중 시 약한 줌이 들어가는 시간입니다.")]
+    [SerializeField] private float rangedImpactZoomInDuration = 0.06f;
+    [Tooltip("원거리 공격 명중 후 원래 카메라 Z 위치로 돌아오는 시간입니다.")]
+    [SerializeField] private float rangedImpactZoomOutDuration = 0.12f;
+
+    [Header("Map Camera")]
+    [SerializeField] private Vector3 mapPosition = new Vector3(0f, 0f, -20f);
 
     [Header("Character Selection Focus")]
     [SerializeField] private bool enableCharacterSelectionFocus = true;
@@ -68,30 +89,38 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private float monsterInfoFocusOrthographicSize = 4.4f;
     [SerializeField] private bool clampMonsterInfoFocusPosition = false;
 
-    [Header("Drag")]
-    [SerializeField] private bool enableMouseDrag = true;
-    [SerializeField] private bool dragOnlyInBattleRoom = true;
-    [SerializeField] private Transform battleRoomRoot;
-    [SerializeField] private string battleRoomObjectName = "BattleRoom";
-    [SerializeField] private float dragSpeed = 1f;
-    [SerializeField] private float dragSmoothTime = 0.08f;
-    [SerializeField] private bool returnToDefaultAfterDrag = true;
-    [SerializeField] private float dragReturnDuration = 0.5f;
+    [Header("Camera Position Clamp")]
     [SerializeField] private Vector2 minCameraPosition = new Vector2(-0.5f, -1f);
     [SerializeField] private Vector2 maxCameraPosition = new Vector2(0.5f, 1f);
+
+    [Header("Panel Down Position")]
+    [Tooltip("BattleCharacterPanel과 BattleSlot이 내려가 있을 때 사용할 Main Camera Y 위치입니다.")]
+    [SerializeField] private float panelDownPositionY = 1.5f;
+
+    [Header("Mouse Parallax")]
+    [SerializeField] private bool enableMouseParallax = true;
+    [SerializeField] private Vector2 mouseParallaxPositionAmount = new Vector2(0.08f, 0.05f);
+    [SerializeField] private Vector2 mouseParallaxRotationAmount = new Vector2(1f, 1f);
+    [SerializeField, Min(0f)] private float mouseParallaxSmoothSpeed = 8f;
+    [SerializeField, Range(0f, 1f)] private float mouseParallaxCameraMotionMultiplier = 0.35f;
 
     private float defaultSize;
     private Vector3 defaultPosition;
     private Coroutine routine;
-    private Vector3 lastMouseWorldPosition;
-    private Vector3 dragTargetPosition;
-    private Vector3 dragSmoothVelocity;
-    private bool isDragging;
-    private bool hasDragTarget;
+    private Coroutine panelDownReturnRoutine;
     private bool holdDefaultReturn;
     private bool hasActiveCombatZoom;
     private bool hasActiveMonsterInfoFocus;
-    private bool suppressDragUntilMouseReleased;
+
+    private enum CombatCameraFocusMode
+    {
+        None,
+        Melee,
+        Ranged
+    }
+
+    private Transform activeCombatFocusOwner;
+    private CombatCameraFocusMode activeCombatFocusMode = CombatCameraFocusMode.None;
 
     private Transform zoomFollowTarget;
     private Vector3 zoomFollowVelocity;
@@ -101,7 +130,15 @@ public class BattleCameraController : MonoBehaviour
     private Vector3 lastImpactAppliedPosition;
     private bool isImpactHitStopActive;
     private float previousTimeScale = 1f;
+    private Coroutine impactRecoverySpeedRoutine;
+    private bool isImpactRecoverySpeedActive;
+    private float impactRecoveryBaseTimeScale = 1f;
     private int damageImpactRotationIndex;
+
+    private Vector2 currentMouseParallax;
+    private Vector3 lastMouseParallaxPositionOffset;
+    private Quaternion lastMouseParallaxRotationOffset = Quaternion.identity;
+    private bool hasAppliedMouseParallax;
 
     public bool IsCombatZoomActive => hasActiveCombatZoom;
     public bool IsMonsterInfoFocusActive => hasActiveMonsterInfoFocus;
@@ -120,22 +157,24 @@ public class BattleCameraController : MonoBehaviour
         }
     }
 
-    private void Start()
-    {
-        TryFindBattleRoomRoot();
-    }
-
     private void OnDisable()
     {
+        RemoveMouseParallax();
         RestoreTimeScaleIfNeeded();
+        CancelImpactRecoverySpeedBoost();
         ClearImpactOffset();
         ForceReturnDefaultImmediate();
     }
 
     private void Update()
     {
-        HandleMouseDrag();
+        RemoveMouseParallax();
         HandleZoomFollowTarget();
+    }
+
+    private void LateUpdate()
+    {
+        ApplyMouseParallax();
     }
 
     public IEnumerator ZoomTo(Transform target)
@@ -160,12 +199,18 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null || attacker == null)
             yield break;
 
-        // 전투 줌은 한 연속 행동 묶음에서 처음 잡은 타격자 기준으로 한 번만 이동한다.
-        // 피격자가 바뀌어도 피격자 위치로 다시 줌 이동하지 않는다.
-        if (hasActiveCombatZoom)
+        // 같은 공격자가 같은 근거리 연출을 연속으로 사용할 때만 현재 줌을 유지합니다.
+        // 공격자가 바뀌거나 원거리 -> 근거리처럼 연출 타입이 바뀌면 새 기준으로 다시 포커스합니다.
+        if (hasActiveCombatZoom &&
+            activeCombatFocusOwner == attacker &&
+            activeCombatFocusMode == CombatCameraFocusMode.Melee)
+        {
             yield break;
+        }
 
         hasActiveCombatZoom = true;
+        activeCombatFocusOwner = attacker;
+        activeCombatFocusMode = CombatCameraFocusMode.Melee;
         ResetDamageImpactRotationSequence();
 
         yield return ZoomToPosition(attacker.position);
@@ -177,6 +222,49 @@ public class BattleCameraController : MonoBehaviour
         yield return ZoomToAttacker(hitTarget);
     }
 
+    /// <summary>
+    /// 원거리 스킬 실행용 카메라 줌입니다.
+    /// 공격자 위치를 따라가지 않고 현재 X/Y를 유지한 채 Z만 약하게 확대합니다.
+    /// </summary>
+    public IEnumerator ZoomForRangedSkill(Transform attacker = null)
+    {
+        if (targetCamera == null)
+            yield break;
+
+        // 같은 공격자가 같은 원거리 연출을 연속으로 사용할 때만 현재 줌을 유지합니다.
+        // 공격자가 바뀌거나 근거리 -> 원거리처럼 연출 타입이 바뀌면 Z 줌을 다시 갱신합니다.
+        if (hasActiveCombatZoom &&
+            activeCombatFocusOwner == attacker &&
+            activeCombatFocusMode == CombatCameraFocusMode.Ranged)
+        {
+            yield break;
+        }
+
+        hasActiveCombatZoom = true;
+        activeCombatFocusOwner = attacker;
+        activeCombatFocusMode = CombatCameraFocusMode.Ranged;
+        ResetDamageImpactRotationSequence();
+        RemoveMouseParallax();
+        hasActiveMonsterInfoFocus = false;
+        EndZoomFollowTarget();
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        ClearImpactOffset();
+
+        Vector3 targetPos = targetCamera.transform.position;
+        targetPos.z = rangedExecutionZoomZPosition;
+
+        routine = StartCoroutine(MoveCamera(
+            targetPos,
+            targetCamera.orthographicSize,
+            rangedExecutionZoomDuration,
+            false,
+            false));
+        yield return routine;
+    }
+
     public void SetHoldDefaultReturn(bool hold)
     {
         holdDefaultReturn = hold;
@@ -186,7 +274,6 @@ public class BattleCameraController : MonoBehaviour
     {
         zoomFollowTarget = target;
         zoomFollowVelocity = Vector3.zero;
-        CancelDrag(false);
     }
 
     public void EndZoomFollowTarget()
@@ -208,8 +295,8 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             yield break;
 
+        RemoveMouseParallax();
         hasActiveMonsterInfoFocus = false;
-        CancelDrag(false);
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -250,8 +337,8 @@ public class BattleCameraController : MonoBehaviour
         if (hasActiveCombatZoom)
             return;
 
+        RemoveMouseParallax();
         hasActiveMonsterInfoFocus = false;
-        CancelDrag(false);
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -322,7 +409,7 @@ public class BattleCameraController : MonoBehaviour
         if (hasActiveCombatZoom)
             return;
 
-        CancelDrag(false);
+        RemoveMouseParallax();
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -355,16 +442,21 @@ public class BattleCameraController : MonoBehaviour
         if (!hasActiveMonsterInfoFocus)
             return;
 
+        // BattleCharacterPanel에 캐릭터 또는 몬스터 선택이 남아 있다면
+        // 패널 내부 UI 조작으로 간주하고 선택 포커스를 유지합니다.
+        if (HasActiveInfoSelection())
+            return;
+
         if (targetCamera == null)
             return;
 
+        RemoveMouseParallax();
         if (!isActiveAndEnabled)
         {
             ForceReturnDefaultImmediate();
             return;
         }
 
-        CancelDrag(false);
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -374,33 +466,35 @@ public class BattleCameraController : MonoBehaviour
 
         hasActiveMonsterInfoFocus = false;
         MoveCameraWithOptionalImmediate(
-            defaultPosition,
+            GetNeutralBattlePosition(),
             defaultSize,
             monsterInfoReturnDuration,
             false,
             true);
     }
 
-    public void StartReturnDefault()
+    private Vector3 GetNeutralBattlePosition()
     {
-        if (targetCamera == null)
-            return;
-
-        if (!isActiveAndEnabled)
-        {
-            ForceReturnDefaultImmediate();
-            return;
-        }
-
-        StartCoroutine(ReturnDefault());
+        Vector3 neutralPosition = defaultPosition;
+        neutralPosition.y = panelDownPositionY;
+        return neutralPosition;
     }
 
-    public void ForceReturnDefaultImmediate()
+    public void ForceReturnMapImmediate()
     {
+        if (targetCamera == null)
+            targetCamera = Camera.main;
+
         if (targetCamera == null)
             return;
 
-        CancelDrag(false);
+        if (panelDownReturnRoutine != null)
+        {
+            StopCoroutine(panelDownReturnRoutine);
+            panelDownReturnRoutine = null;
+        }
+
+        ClearMouseParallaxImmediate();
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -411,20 +505,66 @@ public class BattleCameraController : MonoBehaviour
 
         ClearImpactOffset();
 
-        targetCamera.transform.position = defaultPosition;
+        targetCamera.transform.position = mapPosition;
         targetCamera.transform.rotation = Quaternion.identity;
         targetCamera.orthographicSize = defaultSize;
         hasActiveCombatZoom = false;
+        ResetCombatFocusTracking();
         ResetDamageImpactRotationSequence();
         hasActiveMonsterInfoFocus = false;
     }
 
-    public IEnumerator ReturnDefault()
+    public void StartReturnPanelDown()
+    {
+        if (panelDownReturnRoutine != null)
+            return;
+
+        StartReturnPanelDownInternal(returnDuration);
+    }
+
+    public void StartReturnPanelDown(float moveDuration)
+    {
+        if (panelDownReturnRoutine != null)
+        {
+            StopCoroutine(panelDownReturnRoutine);
+            panelDownReturnRoutine = null;
+        }
+
+        StartReturnPanelDownInternal(moveDuration);
+    }
+
+    private void StartReturnPanelDownInternal(float moveDuration)
+    {
+        if (targetCamera == null)
+            return;
+
+        RemoveMouseParallax();
+        if (!isActiveAndEnabled)
+        {
+            ForceReturnPanelDownImmediate();
+            return;
+        }
+
+        panelDownReturnRoutine = StartCoroutine(ReturnPanelDownRoutine(moveDuration));
+    }
+
+    private IEnumerator ReturnPanelDownRoutine(float moveDuration)
+    {
+        yield return ReturnPanelDown(moveDuration);
+        panelDownReturnRoutine = null;
+    }
+
+    public IEnumerator ReturnPanelDown()
+    {
+        yield return ReturnPanelDown(returnDuration);
+    }
+
+    private IEnumerator ReturnPanelDown(float moveDuration)
     {
         if (targetCamera == null)
             yield break;
 
-        CancelDrag(false);
+        RemoveMouseParallax();
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -435,12 +575,139 @@ public class BattleCameraController : MonoBehaviour
         ApplyCameraRotationZ(0f);
         ResetDamageImpactRotationSequence();
 
-        routine = StartCoroutine(MoveCamera(defaultPosition, defaultSize, returnDuration, false, true));
+        routine = StartCoroutine(MoveCamera(GetNeutralBattlePosition(), defaultSize, moveDuration, false, true));
         yield return routine;
 
         ApplyCameraRotationZ(0f);
         hasActiveCombatZoom = false;
+        ResetCombatFocusTracking();
         hasActiveMonsterInfoFocus = false;
+    }
+
+    public void ForceReturnPanelDownImmediate()
+    {
+        if (targetCamera == null)
+            return;
+
+        if (panelDownReturnRoutine != null)
+        {
+            StopCoroutine(panelDownReturnRoutine);
+            panelDownReturnRoutine = null;
+        }
+
+        ClearMouseParallaxImmediate();
+        EndZoomFollowTarget();
+
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+
+        ClearImpactOffset();
+
+        targetCamera.transform.position = GetNeutralBattlePosition();
+        targetCamera.transform.rotation = Quaternion.identity;
+        targetCamera.orthographicSize = defaultSize;
+        hasActiveCombatZoom = false;
+        ResetCombatFocusTracking();
+        ResetDamageImpactRotationSequence();
+        hasActiveMonsterInfoFocus = false;
+    }
+
+    public void StartReturnDefault()
+    {
+        // BattleCharacterPanel이 올라와 있는 동안에는 카메라를 기본 위치로
+        // 복귀시키지 않습니다. 실제 선택이 모두 해제되어 패널이 내려갈 때만
+        // 기본 위치 복귀를 허용합니다.
+        if (HasActiveInfoSelection())
+            return;
+
+        if (targetCamera == null)
+            return;
+
+        RemoveMouseParallax();
+        if (!isActiveAndEnabled)
+        {
+            ForceReturnDefaultImmediate();
+            return;
+        }
+
+        StartCoroutine(ReturnDefault());
+    }
+
+    private bool HasActiveInfoSelection()
+    {
+        if (MonsterUnit.CurrentInfoSelectedMonster != null)
+            return true;
+
+        BattleTimelineController timelineController =
+            FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+
+        return timelineController != null &&
+               timelineController.SelectedCharacter != null;
+    }
+
+    public void ForceReturnDefaultImmediate()
+    {
+        if (targetCamera == null)
+            return;
+
+        if (panelDownReturnRoutine != null)
+        {
+            StopCoroutine(panelDownReturnRoutine);
+            panelDownReturnRoutine = null;
+        }
+
+        ClearMouseParallaxImmediate();
+        EndZoomFollowTarget();
+
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+
+        ClearImpactOffset();
+
+        targetCamera.transform.position = GetNeutralBattlePosition();
+        targetCamera.transform.rotation = Quaternion.identity;
+        targetCamera.orthographicSize = defaultSize;
+        hasActiveCombatZoom = false;
+        ResetCombatFocusTracking();
+        ResetDamageImpactRotationSequence();
+        hasActiveMonsterInfoFocus = false;
+    }
+
+    public IEnumerator ReturnDefault()
+    {
+        if (targetCamera == null)
+            yield break;
+
+        RemoveMouseParallax();
+        EndZoomFollowTarget();
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        ClearImpactOffset();
+
+        ApplyCameraRotationZ(0f);
+        ResetDamageImpactRotationSequence();
+
+        routine = StartCoroutine(MoveCamera(GetNeutralBattlePosition(), defaultSize, returnDuration, false, true));
+        yield return routine;
+
+        ApplyCameraRotationZ(0f);
+        hasActiveCombatZoom = false;
+        ResetCombatFocusTracking();
+        hasActiveMonsterInfoFocus = false;
+    }
+
+    private void ResetCombatFocusTracking()
+    {
+        activeCombatFocusOwner = null;
+        activeCombatFocusMode = CombatCameraFocusMode.None;
     }
 
     public IEnumerator PlayDamageImpact()
@@ -448,6 +715,7 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null || !enableDamageImpact)
             yield break;
 
+        RemoveMouseParallax();
         ApplyNextDamageImpactRotation();
 
         if (routine != null)
@@ -466,6 +734,50 @@ public class BattleCameraController : MonoBehaviour
 
         if (useOrthographicSizeZoom)
             targetCamera.orthographicSize = baseSize;
+
+        Vector3 restoredPosition = targetCamera.transform.position;
+        restoredPosition.z = baseZ;
+        targetCamera.transform.position = restoredPosition;
+        ClearImpactOffset();
+    }
+
+    /// <summary>
+    /// 원거리 공격용 피격 카메라 연출입니다.
+    /// 공격자 위치로 이동하거나 추적하지 않고, 현재 카메라 위치에서 약한 Z 줌과 흔들림/히트스톱만 재생합니다.
+    /// </summary>
+    public IEnumerator PlayRangedDamageImpact()
+    {
+        if (targetCamera == null || !enableDamageImpact)
+            yield break;
+
+        RemoveMouseParallax();
+
+        if (routine != null)
+            yield return routine;
+
+        ClearImpactOffset();
+
+        float baseSize = targetCamera.orthographicSize;
+        float baseZ = targetCamera.transform.position.z;
+        float targetZ = usePositionZZoom
+            ? baseZ + Mathf.Max(0f, rangedImpactZoomZOffset)
+            : baseZ;
+
+        yield return LerpImpactZoom(
+            baseSize,
+            baseSize,
+            baseZ,
+            targetZ,
+            rangedImpactZoomInDuration);
+
+        yield return ShakeAndHitStop();
+
+        yield return LerpImpactZoom(
+            targetCamera.orthographicSize,
+            baseSize,
+            targetCamera.transform.position.z,
+            baseZ,
+            rangedImpactZoomOutDuration);
 
         Vector3 restoredPosition = targetCamera.transform.position;
         restoredPosition.z = baseZ;
@@ -503,6 +815,7 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             return;
 
+        RemoveMouseParallax();
         targetCamera.transform.rotation = Quaternion.Euler(0f, 0f, rotationZ);
     }
 
@@ -538,7 +851,7 @@ public class BattleCameraController : MonoBehaviour
 
         while (timer < duration)
         {
-            timer += Time.deltaTime;
+            timer += GetCameraDeltaTime();
             float t = Mathf.Clamp01(timer / duration);
             float curvedT = EvaluateZoomCurve(t);
 
@@ -653,8 +966,10 @@ public class BattleCameraController : MonoBehaviour
 
         if (hitStopRunning)
         {
+            CancelImpactRecoverySpeedBoost();
             previousTimeScale = Time.timeScale;
-            Time.timeScale = 0f;
+            BattleVfxPlaybackPauseController.PauseAll();
+            Time.timeScale = Mathf.Min(previousTimeScale, Mathf.Clamp01(impactHitStopTimeScale));
             isImpactHitStopActive = true;
         }
 
@@ -667,7 +982,9 @@ public class BattleCameraController : MonoBehaviour
 
             if (hitStopRunning)
             {
-                hitStopElapsed += Time.unscaledDeltaTime;
+                hitStopElapsed +=
+                    BattleConsecutiveActionPresentationContext.ScaleDeltaTime(
+                        Time.unscaledDeltaTime);
 
                 if (hitStopElapsed >= hitStopDuration)
                 {
@@ -721,6 +1038,136 @@ public class BattleCameraController : MonoBehaviour
             ZoomFollowSmoothTime,
             Mathf.Infinity,
             Time.deltaTime);
+    }
+
+    private void ApplyMouseParallax()
+    {
+        if (targetCamera == null)
+            return;
+
+        RemoveMouseParallax();
+
+        if (!enableMouseParallax)
+        {
+            currentMouseParallax = Vector2.zero;
+            return;
+        }
+
+        Vector2 screenSize = new Vector2(Screen.width, Screen.height);
+        Vector2 targetParallax = NormalizeMousePositionForParallax(Input.mousePosition, screenSize);
+        float interpolation = GetMouseParallaxInterpolation();
+        currentMouseParallax = Vector2.Lerp(currentMouseParallax, targetParallax, interpolation);
+
+        float intensityMultiplier = GetMouseParallaxIntensityMultiplier();
+        lastMouseParallaxPositionOffset = CalculateMouseParallaxPositionOffset(
+            currentMouseParallax,
+            mouseParallaxPositionAmount,
+            intensityMultiplier);
+
+        Vector3 eulerOffset = CalculateMouseParallaxEulerOffset(
+            currentMouseParallax,
+            mouseParallaxRotationAmount,
+            intensityMultiplier);
+
+        lastMouseParallaxRotationOffset = Quaternion.Euler(eulerOffset);
+
+        Transform cameraTransform = targetCamera.transform;
+        cameraTransform.SetPositionAndRotation(
+            cameraTransform.position + lastMouseParallaxPositionOffset,
+            cameraTransform.rotation * lastMouseParallaxRotationOffset);
+
+        hasAppliedMouseParallax = true;
+    }
+
+    private void RemoveMouseParallax()
+    {
+        if (targetCamera == null || !hasAppliedMouseParallax)
+            return;
+
+        Transform cameraTransform = targetCamera.transform;
+        cameraTransform.SetPositionAndRotation(
+            cameraTransform.position - lastMouseParallaxPositionOffset,
+            cameraTransform.rotation * Quaternion.Inverse(lastMouseParallaxRotationOffset));
+
+        lastMouseParallaxPositionOffset = Vector3.zero;
+        lastMouseParallaxRotationOffset = Quaternion.identity;
+        hasAppliedMouseParallax = false;
+    }
+
+    private void ClearMouseParallaxImmediate()
+    {
+        RemoveMouseParallax();
+        currentMouseParallax = Vector2.zero;
+    }
+
+    private float GetMouseParallaxInterpolation()
+    {
+        float smoothSpeed = Mathf.Max(0f, mouseParallaxSmoothSpeed);
+
+        if (smoothSpeed <= 0f)
+            return 1f;
+
+        return 1f - Mathf.Exp(-smoothSpeed * Time.unscaledDeltaTime);
+    }
+
+    private float GetMouseParallaxIntensityMultiplier()
+    {
+        bool isCameraMotionActive =
+            routine != null ||
+            hasActiveCombatZoom ||
+            hasActiveMonsterInfoFocus ||
+            isImpactHitStopActive ||
+            activeImpactOffset.sqrMagnitude > 0.000001f;
+
+        return isCameraMotionActive ? Mathf.Clamp01(mouseParallaxCameraMotionMultiplier) : 1f;
+    }
+
+    public static Vector2 NormalizeMousePositionForParallax(Vector2 mousePosition, Vector2 screenSize)
+    {
+        if (screenSize.x <= 0f || screenSize.y <= 0f)
+            return Vector2.zero;
+
+        float normalizedX = (mousePosition.x / screenSize.x - 0.5f) * 2f;
+        float normalizedY = (mousePosition.y / screenSize.y - 0.5f) * 2f;
+
+        return new Vector2(
+            Mathf.Clamp(normalizedX, -1f, 1f),
+            Mathf.Clamp(normalizedY, -1f, 1f));
+    }
+
+    public static Vector3 CalculateMouseParallaxPositionOffset(
+        Vector2 normalizedMouseOffset,
+        Vector2 positionAmount,
+        float intensityMultiplier)
+    {
+        Vector2 clampedOffset = ClampMouseParallaxOffset(normalizedMouseOffset);
+        float multiplier = Mathf.Max(0f, intensityMultiplier);
+
+        return new Vector3(
+            clampedOffset.x * positionAmount.x * multiplier,
+            clampedOffset.y * positionAmount.y * multiplier,
+            0f);
+    }
+
+    public static Vector3 CalculateMouseParallaxEulerOffset(
+        Vector2 normalizedMouseOffset,
+        Vector2 rotationAmount,
+        float intensityMultiplier)
+    {
+        Vector2 clampedOffset = ClampMouseParallaxOffset(normalizedMouseOffset);
+        float multiplier = Mathf.Max(0f, intensityMultiplier);
+
+        return new Vector3(
+            -clampedOffset.y * rotationAmount.x * multiplier,
+            clampedOffset.x * rotationAmount.y * multiplier,
+            0f);
+    }
+
+    private static Vector2 ClampMouseParallaxOffset(Vector2 normalizedMouseOffset)
+    {
+        return new Vector2(
+            Mathf.Clamp(normalizedMouseOffset.x, -1f, 1f),
+            Mathf.Clamp(normalizedMouseOffset.y, -1f, 1f));
     }
 
     private float GetZoomZPosition()
@@ -788,7 +1235,17 @@ public class BattleCameraController : MonoBehaviour
 
     private float GetImpactDeltaTime()
     {
-        return useUnscaledTimeForImpact ? Time.unscaledDeltaTime : Time.deltaTime;
+        float deltaTime = useUnscaledTimeForImpact ? Time.unscaledDeltaTime : Time.deltaTime;
+
+        if (useUnscaledTimeForImpact && isImpactRecoverySpeedActive)
+            deltaTime *= Mathf.Max(1f, impactRecoverySpeedMultiplier);
+
+        return BattleConsecutiveActionPresentationContext.ScaleDeltaTime(deltaTime);
+    }
+
+    private float GetCameraDeltaTime()
+    {
+        return BattleConsecutiveActionPresentationContext.ScaleDeltaTime(Time.deltaTime);
     }
 
     private void RestoreTimeScaleIfNeeded()
@@ -797,7 +1254,61 @@ public class BattleCameraController : MonoBehaviour
             return;
 
         Time.timeScale = previousTimeScale;
+        BattleVfxPlaybackPauseController.ResumeAll();
         isImpactHitStopActive = false;
+        StartImpactRecoverySpeedBoost(previousTimeScale);
+    }
+
+    private void StartImpactRecoverySpeedBoost(float baseTimeScale)
+    {
+        if (!isActiveAndEnabled ||
+            impactRecoverySpeedDuration <= 0f ||
+            impactRecoverySpeedMultiplier <= 1f)
+        {
+            return;
+        }
+
+        CancelImpactRecoverySpeedBoost();
+        impactRecoverySpeedRoutine = StartCoroutine(PlayImpactRecoverySpeedBoost(baseTimeScale));
+    }
+
+    private IEnumerator PlayImpactRecoverySpeedBoost(float baseTimeScale)
+    {
+        impactRecoveryBaseTimeScale = Mathf.Max(0f, baseTimeScale);
+        isImpactRecoverySpeedActive = true;
+        Time.timeScale = impactRecoveryBaseTimeScale * Mathf.Max(1f, impactRecoverySpeedMultiplier);
+
+        float elapsed = 0f;
+
+        while (elapsed < impactRecoverySpeedDuration && !isImpactHitStopActive)
+        {
+            elapsed += BattleConsecutiveActionPresentationContext.ScaleDeltaTime(
+                Time.unscaledDeltaTime);
+            yield return null;
+        }
+
+        impactRecoverySpeedRoutine = null;
+        EndImpactRecoverySpeedBoost();
+    }
+
+    private void CancelImpactRecoverySpeedBoost()
+    {
+        if (impactRecoverySpeedRoutine != null)
+        {
+            StopCoroutine(impactRecoverySpeedRoutine);
+            impactRecoverySpeedRoutine = null;
+        }
+
+        EndImpactRecoverySpeedBoost();
+    }
+
+    private void EndImpactRecoverySpeedBoost()
+    {
+        if (!isImpactRecoverySpeedActive)
+            return;
+
+        Time.timeScale = impactRecoveryBaseTimeScale;
+        isImpactRecoverySpeedActive = false;
     }
 
     private void ClearImpactOffset()
@@ -817,159 +1328,6 @@ public class BattleCameraController : MonoBehaviour
         lastImpactAppliedPosition = targetCamera.transform.position;
     }
 
-    private void HandleMouseDrag()
-    {
-        if (!enableMouseDrag || targetCamera == null || !IsDragAllowedInCurrentRoom())
-        {
-            CancelDrag(false);
-            return;
-        }
-
-        if (suppressDragUntilMouseReleased)
-        {
-            if (!Input.GetMouseButton(2) && !Input.GetMouseButton(1))
-                suppressDragUntilMouseReleased = false;
-            else
-                return;
-        }
-
-        if (routine != null)
-        {
-            CancelDrag(false);
-            return;
-        }
-
-        if (isDragging && !Input.GetMouseButton(2) && !Input.GetMouseButton(1))
-        {
-            EndDrag(true);
-            return;
-        }
-
-        if (Input.GetMouseButtonDown(2) || Input.GetMouseButtonDown(1))
-        {
-            isDragging = true;
-            hasDragTarget = true;
-            dragTargetPosition = targetCamera.transform.position;
-            dragSmoothVelocity = Vector3.zero;
-            lastMouseWorldPosition = GetMouseWorldPosition();
-        }
-
-        if (Input.GetMouseButtonUp(2) || Input.GetMouseButtonUp(1))
-        {
-            EndDrag(true);
-            return;
-        }
-
-        if (!isDragging)
-            return;
-
-        Vector3 currentMouseWorldPosition = GetMouseWorldPosition();
-        Vector3 delta = lastMouseWorldPosition - currentMouseWorldPosition;
-
-        dragTargetPosition = ClampCameraPosition(dragTargetPosition + delta * dragSpeed);
-        targetCamera.transform.position = SmoothMoveToDragTarget(targetCamera.transform.position, dragTargetPosition);
-
-        lastMouseWorldPosition = currentMouseWorldPosition;
-    }
-
-    private void EndDrag(bool returnToDefault)
-    {
-        if (!isDragging && !hasDragTarget)
-            return;
-
-        isDragging = false;
-        dragSmoothVelocity = Vector3.zero;
-
-        if (returnToDefault && returnToDefaultAfterDrag)
-            StartDragReturnToDefault();
-    }
-
-    private void CancelDrag(bool returnToDefault)
-    {
-        if (!isDragging && !hasDragTarget)
-        {
-            if (Input.GetMouseButton(2) || Input.GetMouseButton(1))
-                suppressDragUntilMouseReleased = true;
-
-            return;
-        }
-
-        isDragging = false;
-        hasDragTarget = false;
-        dragSmoothVelocity = Vector3.zero;
-
-        if (Input.GetMouseButton(2) || Input.GetMouseButton(1))
-            suppressDragUntilMouseReleased = true;
-    }
-
-    private Vector3 SmoothMoveToDragTarget(Vector3 currentPosition, Vector3 targetPosition)
-    {
-        if (dragSmoothTime <= 0f)
-            return targetPosition;
-
-        return Vector3.SmoothDamp(
-            currentPosition,
-            targetPosition,
-            ref dragSmoothVelocity,
-            dragSmoothTime,
-            Mathf.Infinity,
-            Time.deltaTime);
-    }
-
-    private void StartDragReturnToDefault()
-    {
-        suppressDragUntilMouseReleased = false;
-
-        if (!hasDragTarget || targetCamera == null)
-            return;
-
-        if (routine != null)
-            StopCoroutine(routine);
-
-        hasDragTarget = false;
-        ClearImpactOffset();
-        routine = StartCoroutine(MoveCamera(defaultPosition, defaultSize, dragReturnDuration, false, true));
-    }
-
-    private bool IsDragAllowedInCurrentRoom()
-    {
-        if (!dragOnlyInBattleRoom)
-            return true;
-
-        if (battleRoomRoot == null)
-            TryFindBattleRoomRoot();
-
-        return battleRoomRoot != null && battleRoomRoot.gameObject.activeInHierarchy;
-    }
-
-    private void TryFindBattleRoomRoot()
-    {
-        if (battleRoomRoot != null || string.IsNullOrWhiteSpace(battleRoomObjectName))
-            return;
-
-        Transform[] transforms = Resources.FindObjectsOfTypeAll<Transform>();
-        for (int i = 0; i < transforms.Length; i++)
-        {
-            Transform candidate = transforms[i];
-            if (candidate == null || candidate.name != battleRoomObjectName)
-                continue;
-
-            GameObject candidateObject = candidate.gameObject;
-            if (!candidateObject.scene.IsValid() || !candidateObject.scene.isLoaded)
-                continue;
-
-            battleRoomRoot = candidate;
-            return;
-        }
-    }
-
-    private Vector3 GetMouseWorldPosition()
-    {
-        Vector3 mouse = Input.mousePosition;
-        mouse.z = Mathf.Abs(targetCamera.transform.position.z);
-        return targetCamera.ScreenToWorldPoint(mouse);
-    }
-
     private Vector3 ClampCameraPosition(Vector3 position)
     {
         position.x = Mathf.Clamp(position.x, minCameraPosition.x, maxCameraPosition.x);
@@ -984,8 +1342,6 @@ public class BattleCameraController : MonoBehaviour
         zoomDuration = Mathf.Max(0f, zoomDuration);
         returnDuration = Mathf.Max(0f, returnDuration);
         zoomZOffset = Mathf.Max(0f, zoomZOffset);
-        dragSmoothTime = Mathf.Max(0f, dragSmoothTime);
-        dragReturnDuration = Mathf.Max(0f, dragReturnDuration);
         impactZoomAmount = Mathf.Max(0f, impactZoomAmount);
         impactZoomZOffset = Mathf.Max(0f, impactZoomZOffset);
         impactZoomInDuration = Mathf.Max(0f, impactZoomInDuration);
@@ -994,6 +1350,12 @@ public class BattleCameraController : MonoBehaviour
         impactShakeStrength = Mathf.Max(0f, impactShakeStrength);
         impactShakeFrequency = Mathf.Max(1f, impactShakeFrequency);
         impactHitStopDuration = Mathf.Max(0f, impactHitStopDuration);
+        impactHitStopTimeScale = Mathf.Clamp01(impactHitStopTimeScale);
+        rangedImpactZoomZOffset = Mathf.Max(0f, rangedImpactZoomZOffset);
+        rangedImpactZoomInDuration = Mathf.Max(0f, rangedImpactZoomInDuration);
+        rangedImpactZoomOutDuration = Mathf.Max(0f, rangedImpactZoomOutDuration);
+        impactRecoverySpeedMultiplier = Mathf.Max(1f, impactRecoverySpeedMultiplier);
+        impactRecoverySpeedDuration = Mathf.Max(0f, impactRecoverySpeedDuration);
         monsterInfoFocusDuration = Mathf.Max(0f, monsterInfoFocusDuration);
         monsterInfoReturnDuration = Mathf.Max(0f, monsterInfoReturnDuration);
         monsterInfoFocusSideOffset = Mathf.Max(0f, monsterInfoFocusSideOffset);
@@ -1001,6 +1363,12 @@ public class BattleCameraController : MonoBehaviour
         monsterInfoFocusOrthographicSize = Mathf.Max(0.1f, monsterInfoFocusOrthographicSize);
         characterSelectionFocusGridColumnCount = Mathf.Max(1, characterSelectionFocusGridColumnCount);
         characterSelectionFocusGridRowCount = Mathf.Max(1, characterSelectionFocusGridRowCount);
+        mouseParallaxPositionAmount.x = Mathf.Max(0f, mouseParallaxPositionAmount.x);
+        mouseParallaxPositionAmount.y = Mathf.Max(0f, mouseParallaxPositionAmount.y);
+        mouseParallaxRotationAmount.x = Mathf.Max(0f, mouseParallaxRotationAmount.x);
+        mouseParallaxRotationAmount.y = Mathf.Max(0f, mouseParallaxRotationAmount.y);
+        mouseParallaxSmoothSpeed = Mathf.Max(0f, mouseParallaxSmoothSpeed);
+        mouseParallaxCameraMotionMultiplier = Mathf.Clamp01(mouseParallaxCameraMotionMultiplier);
     }
 #endif
 }

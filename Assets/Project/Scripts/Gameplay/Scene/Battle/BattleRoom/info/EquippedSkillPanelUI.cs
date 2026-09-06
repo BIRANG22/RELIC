@@ -149,7 +149,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
         }
 
         SetTooltip(
-            string.IsNullOrWhiteSpace(skillData.Name) ? skillData.SkillId : skillData.Name,
+            string.IsNullOrWhiteSpace(skillData.Name) ? skillData.SkillId : GameDataLocalization.SkillName(skillData),
             BuildSkillDescription(skillData, runtimeData),
             hoveredSlotRect
         );
@@ -157,19 +157,30 @@ public class EquippedSkillPanelUI : MonoBehaviour
 
     public void ShowRelicTooltip(string relicId, RectTransform hoveredSlotRect)
     {
-        if (string.IsNullOrWhiteSpace(relicId) || DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
+        if (string.IsNullOrWhiteSpace(relicId) || DataManager.Instance == null)
         {
             HideSkillTooltip();
             return;
         }
 
-        if (!DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relicData))
+        if (DataManager.Instance.CompoundDatabase != null &&
+            DataManager.Instance.CompoundDatabase.TryGet(relicId, out CompoundData compoundData))
         {
-            HideSkillTooltip();
+            SetTooltip(
+                string.IsNullOrWhiteSpace(compoundData.Name) ? compoundData.CompoundId : compoundData.Name,
+                BuildRelicDescription(compoundData),
+                hoveredSlotRect);
             return;
         }
 
-        ShowRelicTooltip(relicData, hoveredSlotRect);
+        if (DataManager.Instance.RelicDatabase != null &&
+            DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relicData))
+        {
+            ShowRelicTooltip(relicData, hoveredSlotRect);
+            return;
+        }
+
+        HideSkillTooltip();
     }
 
     public void ShowRelicTooltip(RelicData relicData, RectTransform hoveredSlotRect)
@@ -181,7 +192,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
         }
 
         SetTooltip(
-            string.IsNullOrWhiteSpace(relicData.Name) ? relicData.FragmentId : relicData.Name,
+            string.IsNullOrWhiteSpace(relicData.Name) ? relicData.FragmentId : GameDataLocalization.RelicName(relicData),
             BuildRelicDescription(relicData),
             hoveredSlotRect
         );
@@ -234,24 +245,12 @@ public class EquippedSkillPanelUI : MonoBehaviour
         if (skillData == null)
             return string.Empty;
 
-        string text = "";
+        // 인벤토리 툴팁에는 스킬 마스터의 Details만 그대로 표시합니다.
+        // ValueRate를 설명 앞에 자동으로 붙이지 않습니다.
+        if (!string.IsNullOrWhiteSpace(skillData.Details))
+            return GameDataLocalization.SkillDetails(skillData);
 
-        if (!string.IsNullOrWhiteSpace(skillData.ToolTip))
-            text = skillData.ToolTip;
-        else if (!string.IsNullOrWhiteSpace(skillData.Details))
-            text = skillData.Details;
-
-        if (!string.IsNullOrWhiteSpace(text))
-        {
-            int payAmount = skillData.ResourceCostValue;
-
-            if (SkillCostCalculator.TryGetPreviewPayAmount(runtimeData, skillData, out int previewPayAmount))
-                payAmount = previewPayAmount;
-
-            return SkillTooltipFormatter.Format(skillData, text, runtimeData, payAmount);
-        }
-
-        return "효과 설명이 없습니다.";
+        return GameLocalization.Get("common.no_effect_description", "효과 설명이 없습니다.");
     }
 
     private string BuildRelicDescription(RelicData relicData)
@@ -260,9 +259,9 @@ public class EquippedSkillPanelUI : MonoBehaviour
             return string.Empty;
 
         if (!string.IsNullOrWhiteSpace(relicData.EffectDesc))
-            return relicData.EffectDesc;
+            return GameDataLocalization.RelicEffectDescription(relicData);
 
-        return "효과 설명이 없습니다.";
+        return GameLocalization.Get("common.no_effect_description", "효과 설명이 없습니다.");
     }
 
     private void MoveTooltipToSlot(RectTransform hoveredSlotRect)

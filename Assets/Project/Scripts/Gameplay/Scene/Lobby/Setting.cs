@@ -1,8 +1,10 @@
-﻿using Relic.Gameplay.Data;
+using Relic.Gameplay.Data;
+using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class Setting : MonoBehaviour
 {
@@ -16,6 +18,7 @@ public class Setting : MonoBehaviour
     [Header("Setting Panel Scripts")]
     [SerializeField] private RuneSettingPanel runeSettingPanelScript;
     [SerializeField] private SkillSettingPanel skillSettingPanelScript;
+    [SerializeField] private CharPick charPick;
 
     [Header("Character Level UI")]
     [SerializeField] private TMP_Text characterLevelText;
@@ -44,10 +47,35 @@ public class Setting : MonoBehaviour
     [Header("Setting Area Tabs")]
     [SerializeField] private GameObject skillArea;
     [SerializeField] private GameObject runeArea;
+    [SerializeField] private Button previewButton;
     [SerializeField] private Button skillButton;
     [SerializeField] private Button runeButton;
     [SerializeField] private Color tabNormalColor = Color.white;
     [SerializeField] private Color tabSelectedColor = new Color(1f, 0.78f, 0.25f, 1f);
+
+    [Header("Setting Area Slide Effect")]
+    [Tooltip("스킬 영역에서 함께 이동할 BackGround입니다. 비어 있으면 자동으로 찾습니다.")]
+    [SerializeField] private RectTransform skillAreaBackGround;
+    [Tooltip("스킬 영역에서 함께 이동할 SkillSettingPanel입니다. 비어 있으면 자동으로 찾습니다.")]
+    [SerializeField] private RectTransform skillSettingPanelRect;
+    [Tooltip("룬 영역에서 함께 이동할 BackGround입니다. 비어 있으면 자동으로 찾습니다.")]
+    [SerializeField] private RectTransform runeAreaBackGround;
+    [Tooltip("룬 영역에서 함께 이동할 RuneSettingPanel입니다. 비어 있으면 자동으로 찾습니다.")]
+    [SerializeField] private RectTransform runeSettingPanelRect;
+    [Tooltip("스킬 영역이 화면에 표시될 때의 X 좌표입니다.")]
+    [SerializeField] private float skillShownX = 0f;
+    [Tooltip("스킬 영역이 화면 오른쪽으로 숨겨질 때의 X 좌표입니다.")]
+    [SerializeField] private float skillHiddenX = 400f;
+    [Tooltip("룬 영역이 화면에 표시될 때의 Y 좌표입니다.")]
+    [SerializeField] private float runeShownY = 0f;
+    [Tooltip("룬 영역이 화면 위로 숨겨질 때의 Y 좌표입니다.")]
+    [SerializeField] private float runeHiddenY = 800f;
+    [Tooltip("영역이 목표 위치까지 이동하는 시간입니다.")]
+    [SerializeField] private float areaMoveDuration = 0.25f;
+
+    [Header("Setting Area Tab Sound Effect")]
+    [Range(0f, 1f)]
+    [SerializeField] private float tabTransitionSfxVolume = 1f;
 
     [Header("Setting Area Tab Scale Effect")]
     [SerializeField] private float tabHoverScale = 1.08f;
@@ -57,9 +85,8 @@ public class Setting : MonoBehaviour
     [SerializeField] private float tabScaleOutDuration = 0.10f;
     [SerializeField] private float tabBreathSpeed = 3.5f;
 
-    [Header("Fixed Info Areas")]
-    [SerializeField] private RectTransform skillInfoArea;
-    [SerializeField] private RectTransform runeInfoArea;
+    [Header("Shared Info Area")]
+    [SerializeField] private RectTransform infoArea;
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
@@ -68,28 +95,113 @@ public class Setting : MonoBehaviour
     private CharacterMasterData currentMasterData;
     private CharacterRuntimeData currentRuntimeData;
 
-    private int currentPartyIndex = -1;
-    private bool isSkillTabOpen = true;
+    private enum SettingTab
+    {
+        Preview,
+        Skill,
+        Rune
+    }
 
+    private int currentPartyIndex = -1;
+    private int pendingPartyIndex = -1;
+    private Coroutine pendingPartyOpenCoroutine;
+    private SettingTab currentTab = SettingTab.Preview;
+
+    private CharacterSettingTabButtonScaleEffect previewButtonScaleEffect;
     private CharacterSettingTabButtonScaleEffect skillButtonScaleEffect;
     private CharacterSettingTabButtonScaleEffect runeButtonScaleEffect;
+    private Coroutine areaMoveCoroutine;
 
     private void Awake()
     {
+        BindCharacterInfoTextIfNeeded();
+        BindInfoAreaIfNeeded();
+        BindAreaSlideTargetsIfNeeded();
+
+        // 탭 전환 중에도 오브젝트가 꺼지지 않도록 두 영역은 항상 활성화한다.
+        if (skillArea != null)
+            skillArea.SetActive(true);
+
+        if (runeArea != null)
+            runeArea.SetActive(true);
+
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
+
+        if (charPick == null)
+            charPick = FindFirstObjectByType<CharPick>(FindObjectsInactive.Include);
 
         if (runeSettingPanelScript != null)
             runeSettingPanelScript.OnRuneChanged += RefreshCharacterInfo;
 
+        if (skillSettingPanelScript != null)
+            skillSettingPanelScript.SetSettingController(this);
+
+        if (runeSettingPanelScript != null)
+            runeSettingPanelScript.SetSettingController(this);
+
         InitPresetButtons();
         InitTabButtons();
+        DisableTabButtonNavigation();
         InitTestLevelHoldButtons();
+    }
+
+    /// <summary>
+    /// A/D 입력이 탭 버튼 사이의 Unity UI 자동 네비게이션으로 처리되지 않도록 한다.
+    /// 탭 전환은 Tab 키와 직접 클릭으로만 처리한다.
+    /// </summary>
+    private void DisableTabButtonNavigation()
+    {
+        SetButtonNavigationNone(previewButton);
+        SetButtonNavigationNone(skillButton);
+        SetButtonNavigationNone(runeButton);
+    }
+
+    private static void SetButtonNavigationNone(Button button)
+    {
+        if (button == null)
+            return;
+
+        Navigation navigation = button.navigation;
+        navigation.mode = Navigation.Mode.None;
+        button.navigation = navigation;
+
+        // 현재 탭 색상은 Setting에서 직접 관리한다.
+        // EventSystem 선택 상태가 CharacterSelect로 이동해도 탭 색상이 깜빡이지 않도록
+        // Button의 Color Tint 전환이 Target Graphic 색상을 덮어쓰지 않게 한다.
+        button.transition = Selectable.Transition.None;
+    }
+
+    private void OnEnable()
+    {
+        if (pendingPartyIndex < 0)
+            return;
+
+        if (pendingPartyOpenCoroutine != null)
+            StopCoroutine(pendingPartyOpenCoroutine);
+
+        pendingPartyOpenCoroutine = StartCoroutine(OpenPendingPartySettingRoutine());
+    }
+
+    private IEnumerator OpenPendingPartySettingRoutine()
+    {
+        // 패널이 활성화된 첫 프레임의 Start/초기화가 끝난 뒤 선택 캐릭터를 적용합니다.
+        yield return null;
+
+        int partyIndex = pendingPartyIndex;
+        pendingPartyIndex = -1;
+        pendingPartyOpenCoroutine = null;
+
+        if (partyIndex >= 0)
+            OpenPartySetting(partyIndex);
     }
 
     private void Start()
     {
-        ShowSkillSetting();
+        // 첫 화면을 구성할 때는 버튼을 누른 것이 아니므로 전환 효과음을 재생하지 않는다.
+        SettingTab initialTab = currentTab;
+        currentTab = initialTab == SettingTab.Preview ? SettingTab.Skill : SettingTab.Preview;
+        ShowPreviewSetting();
     }
 
     private void Update()
@@ -97,8 +209,60 @@ public class Setting : MonoBehaviour
         HandleTestLevelCheatKeys();
     }
 
+    /// <summary>
+    /// 외부 키보드 입력 컨트롤러에서 호출한다.
+    /// 프리뷰 → 룬 → 스킬 → 프리뷰 순서로 한 단계만 전환하며,
+    /// 버튼 클릭과 같은 등장/퇴장 효과음을 재생한다.
+    /// </summary>
+    public void CycleTabByKeyboard()
+    {
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+            return;
+
+        SettingTab targetTab;
+
+        switch (currentTab)
+        {
+            case SettingTab.Preview:
+                targetTab = SettingTab.Rune;
+                break;
+
+            case SettingTab.Rune:
+                targetTab = SettingTab.Skill;
+                break;
+
+            default:
+                targetTab = SettingTab.Preview;
+                break;
+        }
+
+        PlayUserTabTransitionSound(targetTab);
+
+        switch (targetTab)
+        {
+            case SettingTab.Rune:
+                ShowRuneSetting();
+                break;
+
+            case SettingTab.Skill:
+                ShowSkillSetting();
+                break;
+
+            default:
+                ShowPreviewSetting();
+                break;
+        }
+
+    }
+
     private void OnDisable()
     {
+        if (areaMoveCoroutine != null)
+        {
+            StopCoroutine(areaMoveCoroutine);
+            areaMoveCoroutine = null;
+        }
+
         ResetTabButtonScaleEffects();
     }
 
@@ -107,11 +271,6 @@ public class Setting : MonoBehaviour
         if (runeSettingPanelScript != null)
             runeSettingPanelScript.OnRuneChanged -= RefreshCharacterInfo;
 
-        if (skillButton != null)
-            skillButton.onClick.RemoveListener(ShowSkillSetting);
-
-        if (runeButton != null)
-            runeButton.onClick.RemoveListener(ShowRuneSetting);
     }
 
     private void InitPresetButtons()
@@ -136,19 +295,37 @@ public class Setting : MonoBehaviour
 
     private void InitTabButtons()
     {
-        if (skillButton != null)
-        {
-            skillButton.onClick.RemoveListener(ShowSkillSetting);
-            skillButton.onClick.AddListener(ShowSkillSetting);
-        }
-
-        if (runeButton != null)
-        {
-            runeButton.onClick.RemoveListener(ShowRuneSetting);
-            runeButton.onClick.AddListener(ShowRuneSetting);
-        }
+        // 기존 Button OnClick과 UIPanelButton의 클릭 효과음 연결은 건드리지 않는다.
+        // 실제 마우스 클릭의 PointerDown 시점에서만 탭 전환 효과음을 먼저 재생한다.
+        SetupTabPointerSoundRelay(previewButton, SettingTab.Preview);
+        SetupTabPointerSoundRelay(skillButton, SettingTab.Skill);
+        SetupTabPointerSoundRelay(runeButton, SettingTab.Rune);
 
         InitTabButtonScaleEffects();
+    }
+
+    private void SetupTabPointerSoundRelay(Button button, SettingTab targetTab)
+    {
+        if (button == null)
+            return;
+
+        SettingTabPointerSoundRelay relay = button.GetComponent<SettingTabPointerSoundRelay>();
+        if (relay == null)
+            relay = button.gameObject.AddComponent<SettingTabPointerSoundRelay>();
+
+        relay.Setup(this, (int)targetTab);
+    }
+
+    internal void HandleTabButtonPointerDown(int targetTabValue)
+    {
+        if (!System.Enum.IsDefined(typeof(SettingTab), targetTabValue))
+            return;
+
+        SettingTab targetTab = (SettingTab)targetTabValue;
+        if (currentTab == targetTab)
+            return;
+
+        PlayUserTabTransitionSound(targetTab);
     }
 
     private void InitTestLevelHoldButtons()
@@ -172,28 +349,35 @@ public class Setting : MonoBehaviour
 
     public void OpenCharacterSetting(string characterId)
     {
-        SaveBeforeBattle();
+        // 캐릭터를 전환할 때 이전 캐릭터의 스킬/룬 상태를 다시 저장하지 않는다.
+        // 각 패널에서 변경한 내용은 기존 저장 시점에 처리한다.
+
+        // CharacterSettingPanel에 들어올 때마다 항상 프리뷰 탭부터 표시한다.
+        if (currentTab == SettingTab.Preview)
+            currentTab = SettingTab.Skill;
+
+        ShowPreviewSetting();
 
         currentPartyIndex = -1;
 
         if (string.IsNullOrWhiteSpace(characterId))
         {
             Clear();
-            ShowWarning("선택된 캐릭터가 없습니다.");
+            ShowWarning("선택된 캐릭터가 없다.");
             return;
         }
 
         if (DataManager.Instance == null)
         {
             Clear();
-            ShowWarning("DataManager가 없습니다.");
+            ShowWarning("데이터를 불러올 수 없다.");
             return;
         }
 
         if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out currentMasterData))
         {
             Clear();
-            ShowWarning("캐릭터 데이터를 찾을 수 없습니다.");
+            ShowWarning("캐릭터 데이터를 찾을 수 없다.");
             return;
         }
 
@@ -203,11 +387,27 @@ public class Setting : MonoBehaviour
         if (currentRuntimeData == null)
         {
             Clear();
-            ShowWarning("캐릭터 런타임 데이터를 찾을 수 없습니다.");
+            ShowWarning("캐릭터 데이터를 찾을 수 없다.");
             return;
         }
 
         RefreshAllPanels();
+    }
+
+    /// <summary>
+    /// CharacterSettingPanel이 아직 비활성 상태면 슬롯 선택을 예약하고,
+    /// 패널 활성화/초기화가 끝난 다음 해당 캐릭터를 엽니다.
+    /// </summary>
+    public void OpenPartySettingWhenActive(int partyIndex)
+    {
+        if (isActiveAndEnabled && gameObject.activeInHierarchy)
+        {
+            pendingPartyIndex = -1;
+            OpenPartySetting(partyIndex);
+            return;
+        }
+
+        pendingPartyIndex = partyIndex;
     }
 
     public void OpenPartySetting(int partyIndex)
@@ -219,7 +419,7 @@ public class Setting : MonoBehaviour
         if (DataManager.Instance == null)
         {
             Clear();
-            ShowWarning("DataManager가 없습니다.");
+            ShowWarning("데이터를 불러올 수 없다.");
             return;
         }
 
@@ -227,9 +427,22 @@ public class Setting : MonoBehaviour
 
         if (string.IsNullOrWhiteSpace(characterId))
         {
-            Clear();
-            ShowWarning("해당 파티 슬롯에 캐릭터가 없습니다.");
-            return;
+            // 빈 슬롯이면 현재 파티에 아직 편성되지 않은 캐릭터 중
+            // CharacterSelect에서 가장 앞에 있는 사용 가능한 캐릭터를 보여준다.
+            if (charPick == null ||
+                !charPick.TrySelectFirstUnassignedCharacterForSetting(out characterId))
+            {
+                Clear();
+                ShowWarning("선택할 수 있는 캐릭터가 없다.");
+                return;
+            }
+        }
+        else
+        {
+            // 외부의 Character1~3 슬롯에서 설정 화면을 연 경우에도
+            // CharacterSelect의 CharBtn 선택 상태를 실제 파티 캐릭터와 맞춘다.
+            if (charPick != null)
+                charPick.SelectViewedCharacterForSetting(characterId);
         }
 
         OpenCharacterSetting(characterId);
@@ -247,17 +460,25 @@ public class Setting : MonoBehaviour
         if (runeSettingPanelScript != null)
             runeSettingPanelScript.OpenCharacterSetting(currentCharacterId);
 
-        if (isSkillTabOpen)
-            ShowSkillSetting();
-        else
-            ShowRuneSetting();
+        switch (currentTab)
+        {
+            case SettingTab.Preview:
+                ShowPreviewSetting();
+                break;
+            case SettingTab.Rune:
+                ShowRuneSetting();
+                break;
+            default:
+                ShowSkillSetting();
+                break;
+        }
     }
 
     public void SelectPreset(int presetIndex)
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 합니다.");
+            ShowWarning("캐릭터를 먼저 선택해야 한다.");
             return;
         }
 
@@ -280,57 +501,185 @@ public class Setting : MonoBehaviour
     public void OnClickPresetC() => SelectPreset(2);
     public void OnClickPresetD() => SelectPreset(3);
 
-    public void ShowSkillSetting()
+
+    private void OnPreviewButtonClicked()
     {
-        isSkillTabOpen = true;
+        ShowPreviewSetting();
+    }
 
-        if (skillArea != null)
-            skillArea.SetActive(true);
+    private void OnSkillButtonClicked()
+    {
+        ShowSkillSetting();
+    }
 
-        if (runeArea != null)
-            runeArea.SetActive(false);
+    private void OnRuneButtonClicked()
+    {
+        ShowRuneSetting();
+    }
 
-        if (skillSettingPanelScript != null)
-            skillSettingPanelScript.SetSkillSelectPanelVisible(true);
+    public void OpenSkillSettingForSlot(SkillSlotButton slotButton)
+    {
+        if (slotButton == null || skillSettingPanelScript == null)
+            return;
 
-        if (skillInfoArea != null)
-            skillInfoArea.gameObject.SetActive(true);
+        PlayUserTabTransitionSound(SettingTab.Skill);
+        ShowSkillSetting(openDefaultSlot: false);
+        skillSettingPanelScript.OpenSkillSelectPanel(slotButton);
+    }
 
-        if (runeInfoArea != null)
-            runeInfoArea.gameObject.SetActive(false);
+    public void OpenRuneSettingForSlot(RuneSlotButton slotButton)
+    {
+        if (slotButton == null || runeSettingPanelScript == null)
+            return;
 
-        if (InfoTooltip.Instance != null)
+        if (slotButton.IsLocked)
         {
-            InfoTooltip.Instance.SetFixedRoot(skillInfoArea);
-            InfoTooltip.Instance.ClearFixedText();
+            runeSettingPanelScript.HandleRuneSlotClick(slotButton);
+            return;
         }
 
+        PlayUserTabTransitionSound(SettingTab.Rune);
+        ShowRuneSetting();
+        runeSettingPanelScript.SelectRuneSlotForSetting(slotButton);
+    }
+
+    /// <summary>
+    /// 사용자가 프리뷰/스킬/룬 버튼을 직접 눌렀을 때만 탭 이동 효과음을 재생한다.
+    /// 초기화나 다른 스크립트에서 Show...Setting()을 호출하는 경우에는 재생하지 않는다.
+    /// </summary>
+    private void PlayUserTabTransitionSound(SettingTab targetTab)
+    {
+        SettingTab previousTab = currentTab;
+
+        if (previousTab == targetTab)
+            return;
+
+        if (targetTab == SettingTab.Preview)
+        {
+            // 숨겨져 있던 스킬 또는 룬 영역이 다시 등장한다.
+            PlayTabTransitionSound(AudioIds.Sfx.CharacterSettingAreaAppear);
+            return;
+        }
+
+        if (previousTab == SettingTab.Preview)
+        {
+            // 프리뷰에서 스킬 또는 룬 탭으로 이동하면 한 영역이 나간다.
+            PlayTabTransitionSound(AudioIds.Sfx.CharacterSettingAreaExit);
+            return;
+        }
+
+        // 스킬과 룬 사이를 전환하면 기존 영역은 나가고 새 영역은 등장한다.
+        PlayTabTransitionSound(AudioIds.Sfx.CharacterSettingAreaExit);
+        PlayTabTransitionSound(AudioIds.Sfx.CharacterSettingAreaAppear);
+    }
+
+    private void PlayTabTransitionSound(string sfxId)
+    {
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(sfxId, tabTransitionSfxVolume);
+    }
+
+    public void ShowPreviewSetting()
+    {
+        if (currentTab == SettingTab.Preview)
+        {
+            RefreshTabButtons();
+            return;
+        }
+
+        currentTab = SettingTab.Preview;
+
+        // 프리뷰 탭에서는 선택용 패널을 먼저 잠근 뒤,
+        // 장착 중인 스킬 세팅 패널과 룬 세팅 패널을 한 화면에 함께 표시한다.
+        if (skillSettingPanelScript != null)
+            skillSettingPanelScript.SetSkillSelectPanelEnabledForTab(false);
+
+        if (runeSettingPanelScript != null)
+            runeSettingPanelScript.SetRuneSelectPanelEnabledForTab(false);
+
+        MoveSettingAreas(showSkillArea: true, showRuneArea: true);
+
+        if (charPick != null)
+            charPick.ShowCurrentPreviewNormal();
+
+        SetSharedInfoArea(false);
+        ApplyEmptyInfoText(
+            string.Empty,
+            "파편/스킬의 정보가 표시된다.");
         RefreshTabButtons();
+    }
+
+    public void ShowSkillSetting()
+    {
+        ShowSkillSetting(openDefaultSlot: true);
+    }
+
+    private void ShowSkillSetting(bool openDefaultSlot)
+    {
+        if (currentTab == SettingTab.Skill)
+        {
+            if (openDefaultSlot && skillSettingPanelScript != null)
+                skillSettingPanelScript.OpenDefaultSkillSlot();
+
+            return;
+        }
+
+        currentTab = SettingTab.Skill;
+
+        // 스킬 탭에서는 스킬 영역만 표시한다.
+        if (skillSettingPanelScript != null)
+            skillSettingPanelScript.SetSkillSelectPanelEnabledForTab(true);
+
+        if (runeSettingPanelScript != null)
+            runeSettingPanelScript.SetRuneSelectPanelEnabledForTab(false);
+
+        MoveSettingAreas(showSkillArea: true, showRuneArea: false);
+
+        if (charPick != null)
+            charPick.ShowCurrentPreviewSkill();
+
+        SetSharedInfoArea(false);
+        ApplyEmptyInfoText(
+            "스킬정보",
+            "스킬의 정보가 표시된다.");
+        RefreshTabButtons();
+
+        // 상단 스킬 버튼으로 진입하면 무엇을 설정하는 화면인지 바로 알 수 있도록
+        // 첫 번째 스킬 슬롯의 선택 목록을 기본으로 표시한다.
+        if (openDefaultSlot && skillSettingPanelScript != null)
+            skillSettingPanelScript.OpenDefaultSkillSlot();
     }
 
     public void ShowRuneSetting()
     {
-        isSkillTabOpen = false;
+        if (currentTab == SettingTab.Rune)
+            return;
 
-        if (skillArea != null)
-            skillArea.SetActive(false);
+        currentTab = SettingTab.Rune;
 
-        if (runeArea != null)
-            runeArea.SetActive(true);
+        // 룬 탭에서는 룬 영역만 표시한다.
+        if (skillSettingPanelScript != null)
+            skillSettingPanelScript.SetSkillSelectPanelEnabledForTab(false);
 
-        if (skillInfoArea != null)
-            skillInfoArea.gameObject.SetActive(false);
+        if (runeSettingPanelScript != null)
+            runeSettingPanelScript.SetRuneSelectPanelEnabledForTab(true);
 
-        if (runeInfoArea != null)
-            runeInfoArea.gameObject.SetActive(true);
+        MoveSettingAreas(showSkillArea: false, showRuneArea: true);
 
-        if (InfoTooltip.Instance != null)
-        {
-            InfoTooltip.Instance.SetFixedRoot(runeInfoArea);
-            InfoTooltip.Instance.ClearFixedText();
-        }
+        if (charPick != null)
+            charPick.ShowCurrentPreviewRune();
 
+        SetSharedInfoArea(false);
+        ApplyEmptyInfoText(
+            "파편정보",
+            "파편의 정보가 표시된다.");
         RefreshTabButtons();
+
+        // 파편 탭 진입 시 보유 중인 첫 번째 파편 정보를 기본으로 표시한다.
+        if (runeSettingPanelScript != null)
+            runeSettingPanelScript.ShowFirstOwnedRuneInfo();
     }
 
     public void SaveBeforeBattle()
@@ -344,6 +693,8 @@ public class Setting : MonoBehaviour
 
     private void RefreshCharacterInfo()
     {
+        BindCharacterInfoTextIfNeeded();
+
         if (currentMasterData == null || currentRuntimeData == null)
         {
             Clear();
@@ -354,7 +705,7 @@ public class Setting : MonoBehaviour
             characterNameText.text = currentMasterData.Name;
 
         if (characterInfoText != null)
-            characterInfoText.text = "";
+            characterInfoText.text = FormatCharacterIntroduction(currentMasterData.Introduction);
 
         if (characterInfoPanel != null)
             characterInfoPanel.SetCharacter(currentMasterData, currentRuntimeData);
@@ -369,8 +720,10 @@ public class Setting : MonoBehaviour
         currentRuntimeData = null;
         currentPartyIndex = -1;
 
+        // 캐릭터 정보가 없는 잠금 버튼을 선택해도 빈칸으로 보이지 않도록
+        // 기본 안내 문구와 0 수치를 표시한다.
         if (characterNameText != null)
-            characterNameText.text = "";
+            characterNameText.text = "잠김";
 
         if (characterInfoText != null)
             characterInfoText.text = "";
@@ -379,10 +732,10 @@ public class Setting : MonoBehaviour
             characterInfoPanel.Clear();
 
         if (characterLevelText != null)
-            characterLevelText.text = "";
+            characterLevelText.text = "LV. 1";
 
         if (characterExpText != null)
-            characterExpText.text = "";
+            characterExpText.text = "EXP 0";
 
         if (skillSettingPanelScript != null)
             skillSettingPanelScript.ClearForEmptyCharacter();
@@ -405,7 +758,21 @@ public class Setting : MonoBehaviour
             characterLevelText.text = "LV. " + currentRuntimeData.Level;
 
         if (characterExpText != null)
-            characterExpText.text = "EXP " + currentRuntimeData.Exp;
+            characterExpText.text = "EXP " + GetDisplayedCharacterExperienceInCurrentLevel(
+                currentRuntimeData.Level,
+                currentRuntimeData.Exp);
+    }
+
+    public static int GetDisplayedCharacterExperienceInCurrentLevel(
+        int level,
+        int cumulativeExperience)
+    {
+        int safeLevel = Mathf.Max(1, level);
+        int safeCumulativeExperience = Mathf.Max(0, cumulativeExperience);
+        int levelStartExperience =
+            BattleStageClearExperienceService.GetCumulativeExperienceForLevel(safeLevel);
+
+        return Mathf.Max(0, safeCumulativeExperience - levelStartExperience);
     }
 
     private void HandleTestLevelCheatKeys()
@@ -429,7 +796,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 합니다.");
+            ShowWarning("캐릭터를 먼저 선택해야 한다.");
             return;
         }
 
@@ -442,7 +809,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 합니다.");
+            ShowWarning("캐릭터를 먼저 선택해야 한다.");
             return;
         }
 
@@ -466,7 +833,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 합니다.");
+            ShowWarning("캐릭터를 먼저 선택해야 한다.");
             return;
         }
 
@@ -540,14 +907,35 @@ public class Setting : MonoBehaviour
 
     private void RefreshTabButtons()
     {
-        SetButtonColor(skillButton, isSkillTabOpen ? tabSelectedColor : tabNormalColor);
-        SetButtonColor(runeButton, isSkillTabOpen ? tabNormalColor : tabSelectedColor);
+        SetButtonColor(previewButton, currentTab == SettingTab.Preview ? tabSelectedColor : tabNormalColor);
+        SetButtonColor(skillButton, currentTab == SettingTab.Skill ? tabSelectedColor : tabNormalColor);
+        SetButtonColor(runeButton, currentTab == SettingTab.Rune ? tabSelectedColor : tabNormalColor);
+
+        // EventSystem 포커스와 무관하게 실제 탭 상태를 기준으로 Glow를 동기화합니다.
+        // CharBtn으로 캐릭터를 변경해 탭 UI가 다시 갱신되어도 현재 탭의 Glow가 유지됩니다.
+        SetTabButtonGlowSelected(previewButton, currentTab == SettingTab.Preview);
+        SetTabButtonGlowSelected(skillButton, currentTab == SettingTab.Skill);
+        SetTabButtonGlowSelected(runeButton, currentTab == SettingTab.Rune);
 
         RefreshTabButtonScaleEffects();
     }
 
+    private static void SetTabButtonGlowSelected(Button button, bool selected)
+    {
+        if (button == null)
+            return;
+
+        SelectedButtonBorderGlow glow = button.GetComponent<SelectedButtonBorderGlow>();
+        if (glow == null)
+            glow = button.GetComponentInChildren<SelectedButtonBorderGlow>(true);
+
+        if (glow != null)
+            glow.SetSelected(selected);
+    }
+
     private void InitTabButtonScaleEffects()
     {
+        previewButtonScaleEffect = InitTabButtonScaleEffect(previewButton);
         skillButtonScaleEffect = InitTabButtonScaleEffect(skillButton);
         runeButtonScaleEffect = InitTabButtonScaleEffect(runeButton);
 
@@ -577,21 +965,30 @@ public class Setting : MonoBehaviour
 
     private void RefreshTabButtonScaleEffects()
     {
+        if (previewButtonScaleEffect == null && previewButton != null)
+            previewButtonScaleEffect = InitTabButtonScaleEffect(previewButton);
+
         if (skillButtonScaleEffect == null && skillButton != null)
             skillButtonScaleEffect = InitTabButtonScaleEffect(skillButton);
 
         if (runeButtonScaleEffect == null && runeButton != null)
             runeButtonScaleEffect = InitTabButtonScaleEffect(runeButton);
 
+        if (previewButtonScaleEffect != null)
+            previewButtonScaleEffect.SetSelected(currentTab == SettingTab.Preview);
+
         if (skillButtonScaleEffect != null)
-            skillButtonScaleEffect.SetSelected(isSkillTabOpen);
+            skillButtonScaleEffect.SetSelected(currentTab == SettingTab.Skill);
 
         if (runeButtonScaleEffect != null)
-            runeButtonScaleEffect.SetSelected(!isSkillTabOpen);
+            runeButtonScaleEffect.SetSelected(currentTab == SettingTab.Rune);
     }
 
     private void ResetTabButtonScaleEffects()
     {
+        if (previewButtonScaleEffect != null)
+            previewButtonScaleEffect.ResetScaleImmediate();
+
         if (skillButtonScaleEffect != null)
             skillButtonScaleEffect.ResetScaleImmediate();
 
@@ -599,15 +996,231 @@ public class Setting : MonoBehaviour
             runeButtonScaleEffect.ResetScaleImmediate();
     }
 
+    private void BindAreaSlideTargetsIfNeeded()
+    {
+        if (skillArea != null)
+        {
+            if (skillAreaBackGround == null)
+                skillAreaBackGround = FindDirectChildRectTransform(skillArea.transform, "BackGround");
+
+            if (skillSettingPanelRect == null)
+            {
+                if (skillSettingPanelScript != null)
+                    skillSettingPanelRect = skillSettingPanelScript.transform as RectTransform;
+                else
+                    skillSettingPanelRect = FindDirectChildRectTransform(skillArea.transform, "SkillSettingPanel");
+            }
+        }
+
+        if (runeArea != null)
+        {
+            if (runeAreaBackGround == null)
+                runeAreaBackGround = FindDirectChildRectTransform(runeArea.transform, "BackGround");
+
+            if (runeSettingPanelRect == null)
+            {
+                if (runeSettingPanelScript != null)
+                    runeSettingPanelRect = runeSettingPanelScript.transform as RectTransform;
+                else
+                    runeSettingPanelRect = FindDirectChildRectTransform(runeArea.transform, "RuneSettingPanel");
+            }
+        }
+    }
+
+    private RectTransform FindDirectChildRectTransform(Transform parent, string childName)
+    {
+        if (parent == null)
+            return null;
+
+        Transform child = parent.Find(childName);
+        return child as RectTransform;
+    }
+
+    private void MoveSettingAreas(bool showSkillArea, bool showRuneArea)
+    {
+        BindAreaSlideTargetsIfNeeded();
+
+        if (skillArea != null && !skillArea.activeSelf)
+            skillArea.SetActive(true);
+
+        if (runeArea != null && !runeArea.activeSelf)
+            runeArea.SetActive(true);
+
+        if (areaMoveCoroutine != null)
+            StopCoroutine(areaMoveCoroutine);
+
+        float skillTargetX = showSkillArea ? skillShownX : skillHiddenX;
+        float runeTargetY = showRuneArea ? runeShownY : runeHiddenY;
+
+        areaMoveCoroutine = StartCoroutine(MoveSettingAreasRoutine(skillTargetX, runeTargetY));
+    }
+
+    private IEnumerator MoveSettingAreasRoutine(float skillTargetX, float runeTargetY)
+    {
+        Vector2 skillBackGroundStart = GetAnchoredPosition(skillAreaBackGround);
+        Vector2 skillPanelStart = GetAnchoredPosition(skillSettingPanelRect);
+        Vector2 runeBackGroundStart = GetAnchoredPosition(runeAreaBackGround);
+        Vector2 runePanelStart = GetAnchoredPosition(runeSettingPanelRect);
+
+        float duration = Mathf.Max(0.01f, areaMoveDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float easedT = 1f - Mathf.Pow(1f - t, 3f);
+
+            SetAnchoredPositionX(skillAreaBackGround, Mathf.Lerp(skillBackGroundStart.x, skillTargetX, easedT));
+            SetAnchoredPositionX(skillSettingPanelRect, Mathf.Lerp(skillPanelStart.x, skillTargetX, easedT));
+            SetAnchoredPositionY(runeAreaBackGround, Mathf.Lerp(runeBackGroundStart.y, runeTargetY, easedT));
+            SetAnchoredPositionY(runeSettingPanelRect, Mathf.Lerp(runePanelStart.y, runeTargetY, easedT));
+
+            yield return null;
+        }
+
+        SetAnchoredPositionX(skillAreaBackGround, skillTargetX);
+        SetAnchoredPositionX(skillSettingPanelRect, skillTargetX);
+        SetAnchoredPositionY(runeAreaBackGround, runeTargetY);
+        SetAnchoredPositionY(runeSettingPanelRect, runeTargetY);
+
+        areaMoveCoroutine = null;
+    }
+
+    private Vector2 GetAnchoredPosition(RectTransform target)
+    {
+        return target != null ? target.anchoredPosition : Vector2.zero;
+    }
+
+    private void SetAnchoredPositionX(RectTransform target, float x)
+    {
+        if (target == null)
+            return;
+
+        Vector2 position = target.anchoredPosition;
+        position.x = x;
+        target.anchoredPosition = position;
+    }
+
+    private void SetAnchoredPositionY(RectTransform target, float y)
+    {
+        if (target == null)
+            return;
+
+        Vector2 position = target.anchoredPosition;
+        position.y = y;
+        target.anchoredPosition = position;
+    }
+
+    private static string FormatCharacterIntroduction(string introduction)
+    {
+        if (string.IsNullOrEmpty(introduction))
+            return string.Empty;
+
+        // GameData 소개문은 일반 큰따옴표(" "), 스마트 따옴표(“ ”) 둘 다 사용할 수 있습니다.
+        // 따옴표 안에 줄바꿈이 있어도 시작/종료 따옴표 사이 전체를 중앙 정렬합니다.
+        int firstQuote = introduction.IndexOf('“');
+        char closingQuote = '”';
+
+        if (firstQuote < 0)
+        {
+            firstQuote = introduction.IndexOf('\"');
+            closingQuote = '\"';
+        }
+
+        if (firstQuote < 0)
+            return introduction;
+
+        int secondQuote = introduction.IndexOf(closingQuote, firstQuote + 1);
+        if (secondQuote < 0)
+            return introduction;
+
+        string beforeQuote = introduction.Substring(0, firstQuote);
+        string quotedText = introduction.Substring(firstQuote, secondQuote - firstQuote + 1);
+        string afterQuote = introduction.Substring(secondQuote + 1);
+
+        // TMP 정렬 태그 안에서도 GameData 셀의 줄바꿈이 확실히 유지되도록
+        // 인용문 내부의 실제 개행 문자를 <br> 태그로 변환합니다.
+        quotedText = quotedText
+            .Replace("\r\n", "<br>")
+            .Replace("\r", "<br>")
+            .Replace("\n", "<br>");
+
+        return beforeQuote + "<align=\"center\">" + quotedText + "</align>" + afterQuote;
+    }
+
+    private void BindCharacterInfoTextIfNeeded()
+    {
+        if (characterInfoText != null)
+            return;
+
+        TMP_Text[] texts = transform.root.GetComponentsInChildren<TMP_Text>(true);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            TMP_Text candidate = texts[i];
+            if (candidate != null && candidate.name == "CharacterInfoText")
+            {
+                characterInfoText = candidate;
+                return;
+            }
+        }
+    }
+
+    private void BindInfoAreaIfNeeded()
+    {
+        if (infoArea != null)
+            return;
+
+        RectTransform[] rectTransforms = transform.root.GetComponentsInChildren<RectTransform>(true);
+
+        for (int i = 0; i < rectTransforms.Length; i++)
+        {
+            if (rectTransforms[i] != null && rectTransforms[i].name == "InfoArea")
+            {
+                infoArea = rectTransforms[i];
+                return;
+            }
+        }
+    }
+
+    private void SetSharedInfoArea(bool clearText)
+    {
+        BindInfoAreaIfNeeded();
+
+        if (infoArea != null)
+            infoArea.gameObject.SetActive(true);
+
+        if (InfoTooltip.Instance == null)
+            return;
+
+        if (infoArea != null)
+            InfoTooltip.Instance.SetFixedRoot(infoArea);
+
+        if (clearText)
+            InfoTooltip.Instance.ClearFixedText();
+    }
+
+    private void ApplyEmptyInfoText(string title, string effect)
+    {
+        if (skillSettingPanelScript != null)
+            skillSettingPanelScript.SetEmptyInfoText(title, effect);
+
+        if (runeSettingPanelScript != null)
+            runeSettingPanelScript.SetEmptyInfoText(title, effect);
+    }
+
     private void SetButtonColor(Button button, Color color)
     {
         if (button == null)
             return;
 
-        Image image = button.GetComponent<Image>();
+        Graphic targetGraphic = button.targetGraphic;
 
-        if (image != null)
-            image.color = color;
+        if (targetGraphic == null)
+            targetGraphic = button.GetComponent<Graphic>();
+
+        if (targetGraphic != null)
+            targetGraphic.color = color;
     }
 
     private void ShowWarning(string message)
@@ -619,5 +1232,29 @@ public class Setting : MonoBehaviour
             warningUI.Show(message);
         else
             Debug.LogWarning("[Setting] " + message);
+    }
+}
+
+/// <summary>
+/// 프리뷰/스킬/룬 버튼의 실제 마우스 클릭 시작 시점만 Setting에 전달한다.
+/// Button의 기존 OnClick 및 UIPanelButton 효과음 연결은 변경하지 않는다.
+/// </summary>
+public sealed class SettingTabPointerSoundRelay : MonoBehaviour, IPointerDownHandler
+{
+    private Setting owner;
+    private int targetTabValue;
+
+    public void Setup(Setting setting, int tabValue)
+    {
+        owner = setting;
+        targetTabValue = tabValue;
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        owner?.HandleTabButtonPointerDown(targetTabValue);
     }
 }

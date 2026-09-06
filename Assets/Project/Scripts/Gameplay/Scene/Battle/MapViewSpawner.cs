@@ -11,17 +11,52 @@ public class MapViewSpawner : MonoBehaviour
     [SerializeField] private RectTransform nodeRoot;
     [SerializeField] private RectTransform lineRoot;
 
+    [Header("Node Layout")]
+    [SerializeField, Min(0f)] private float nodeGapX = 200f;
+    [SerializeField, Min(0f)] private float nodeGapY = 80f;
+
+    [Header("Map Layout")]
+    [SerializeField] private RectTransform mapRect;
+    [SerializeField, Min(0f)] private float mapWidth = 2730f;
+
     private readonly Dictionary<int, MapNodeView> spawnedNodes = new();
+
+    private bool hasCapturedMapBasePosition;
+    private Vector2 mapBaseAnchoredPosition;
 
     private List<GeneratedMapNodeData> lastNodes;
     private Action<GeneratedMapNodeData> lastOnNodeClicked;
+    private Action<GeneratedMapNodeData, Sprite> lastOnNodeHovered;
+    private Action lastOnNodeHoverExited;
 
     public void Spawn(
         List<GeneratedMapNodeData> nodes,
         Action<GeneratedMapNodeData> onNodeClicked)
     {
+        Spawn(nodes, onNodeClicked, null, null);
+    }
+
+    public void Spawn(List<GeneratedMapNodeData> nodes,
+        Action<GeneratedMapNodeData> onNodeClicked,
+        Action<GeneratedMapNodeData, Sprite> onNodeHovered,
+        Action onNodeHoverExited)
+    {
         lastNodes = nodes;
         lastOnNodeClicked = onNodeClicked;
+        lastOnNodeHovered = onNodeHovered;
+        lastOnNodeHoverExited = onNodeHoverExited;
+
+        ApplyMapWidth();
+
+        MapRuntimeData runtime = DataManager.Instance?.MapRuntimeStore?.Get();
+        ApplyMapProgressOffset(nodes, runtime);
+
+        // 방 클리어 후 맵으로 돌아왔을 때 이전 카테고리 버튼 색상이 남지 않도록 초기화합니다.
+        MapCategoryHighlightController categoryHighlightController =
+            FindFirstObjectByType<MapCategoryHighlightController>();
+
+        if (categoryHighlightController != null)
+            categoryHighlightController.ResetHighlightForMapRefresh();
 
         Clear();
 
@@ -30,17 +65,18 @@ public class MapViewSpawner : MonoBehaviour
 
         if (nodePrefab == null || linePrefab == null)
         {
-            Debug.LogWarning("[MapViewSpawner] NodePrefab �Ǵ� LinePrefab�� ������� �ʾҽ��ϴ�.");
+            Debug.LogWarning("[MapViewSpawner] NodePrefab 또는 LinePrefab이 연결되지 않았습니다.");
             return;
         }
 
         if (nodeRoot == null || lineRoot == null)
         {
-            Debug.LogWarning("[MapViewSpawner] NodeRoot �Ǵ� LineRoot�� ������� �ʾҽ��ϴ�.");
+            Debug.LogWarning("[MapViewSpawner] NodeRoot 또는 LineRoot가 연결되지 않았습니다.");
             return;
         }
 
-        MapRuntimeData runtime = DataManager.Instance.MapRuntimeStore.Get();
+        EnsureLineRootBehindNodeRoot();
+
         MapNodeIconDatabase iconDatabase = DataManager.Instance.MapNodeIconDatabase;
 
         for (int i = 0; i < nodes.Count; i++)
@@ -53,17 +89,18 @@ public class MapViewSpawner : MonoBehaviour
 
             if (rect != null)
             {
-                rect.anchorMin = new Vector2(0.5f, 0.5f);
-                rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.anchorMin = new Vector2(0f, 0.5f);
+                rect.anchorMax = new Vector2(0f, 0.5f);
                 rect.pivot = new Vector2(0.5f, 0.5f);
-                rect.anchoredPosition = data.Position;
+                rect.anchoredPosition = GetDisplayPosition(data.Position);
                 rect.localScale = Vector3.one;
                 rect.localRotation = Quaternion.identity;
             }
 
-            bool canClick = IsNodeClickable(data, nodes, runtime);
-
-            node.Setup(data, iconDatabase, onNodeClicked, canClick);
+            node.Setup(data, iconDatabase, null, false);
+            node.SetProgressVisual(
+                IsCurrentlyAvailable(runtime, data),
+                IsVisitedOrCleared(runtime, data));
 
             spawnedNodes[data.NodeIndex] = node;
         }
@@ -81,38 +118,73 @@ public class MapViewSpawner : MonoBehaviour
                 if (to == null)
                     continue;
 
-                CreateLine(from.Position, to.Position);
+                CreateLine(
+                    GetDisplayPosition(from.Position),
+                    GetDisplayPosition(to.Position),
+                    IsCurrentOutgoingLineAvailable(runtime, from, to),
+                    IsTraversedLine(runtime, from, to));
             }
         }
     }
 
-    private bool IsNodeClickable(
-    GeneratedMapNodeData node,
-    List<GeneratedMapNodeData> nodes,
-    MapRuntimeData runtime)
+
+    private void ApplyMapWidth()
     {
-        if (node == null || runtime == null)
-            return false;
+        if (mapRect == null)
+            return;
 
-        if (runtime.CurrentNodeIndex < 0)
-            return node.Type == "Start";
+        mapRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, mapWidth);
+    }
 
-        GeneratedMapNodeData currentNode = GetNodeData(
-            nodes,
-            runtime.CurrentNodeIndex
-        );
+    private void ApplyMapProgressOffset(List<GeneratedMapNodeData> nodes, MapRuntimeData runtime)
+    {
+        if (mapRect == null || nodes == null || nodes.Count == 0)
+            return;
 
-        if (currentNode == null)
+        if (!hasCapturedMapBasePosition)
         {
-            Debug.LogWarning(
-                $"[MapViewSpawner] CurrentNode not found / CurrentNodeIndex:{runtime.CurrentNodeIndex}"
-            );
-            return false;
+            mapBaseAnchoredPosition = mapRect.anchoredPosition;
+            hasCapturedMapBasePosition = true;
         }
 
-        bool canClick = currentNode.NextNodeIndices.Contains(node.NodeIndex);
+        float targetX = mapBaseAnchoredPosition.x;
 
-        return canClick;
+        GeneratedMapNodeData currentNode = GetNodeData(nodes, runtime != null ? runtime.CurrentNodeIndex : -1);
+        if (currentNode != null && IsCleared(runtime, currentNode))
+        {
+            float sourceGapX = Mathf.Max(0.0001f, BattleMapLayoutUtility.LayerGap);
+            float clearedLayer = Mathf.Max(0f, currentNode.Position.x / sourceGapX);
+            float shiftLayer = Mathf.Max(0f, clearedLayer - 1f);
+            targetX -= shiftLayer * nodeGapX;
+        }
+
+        Vector2 position = mapRect.anchoredPosition;
+        position.x = targetX;
+        mapRect.anchoredPosition = position;
+    }
+
+
+    private void EnsureLineRootBehindNodeRoot()
+    {
+        if (lineRoot == null || nodeRoot == null)
+            return;
+
+        // 같은 부모 아래에 있다면 LineRoot가 NodeRoot보다 먼저 그려지도록 배치합니다.
+        // Unity UI는 같은 Canvas 안에서 뒤쪽 sibling이 위에 그려지므로,
+        // 라인이 항상 노드 이미지 뒤에 가려지게 됩니다.
+        if (lineRoot.parent == nodeRoot.parent && lineRoot.GetSiblingIndex() > nodeRoot.GetSiblingIndex())
+            lineRoot.SetSiblingIndex(nodeRoot.GetSiblingIndex());
+    }
+
+    private Vector2 GetDisplayPosition(Vector2 sourcePosition)
+    {
+        float sourceGapX = Mathf.Max(0.0001f, BattleMapLayoutUtility.LayerGap);
+        float sourceGapY = Mathf.Max(0.0001f, BattleMapLayoutUtility.RowGap);
+
+        return new Vector2(
+            sourcePosition.x / sourceGapX * nodeGapX,
+            sourcePosition.y / sourceGapY * nodeGapY
+        );
     }
 
     private GeneratedMapNodeData GetNodeData(List<GeneratedMapNodeData> nodes, int nodeIndex)
@@ -126,10 +198,61 @@ public class MapViewSpawner : MonoBehaviour
         return null;
     }
 
-    private void CreateLine(Vector2 from, Vector2 to)
+    private static bool IsCurrentlyAvailable(MapRuntimeData runtime, GeneratedMapNodeData node)
+    {
+        if (runtime == null || node == null)
+            return false;
+
+        return MapRuntimeProgressUtility.IsNodeClickableFromCurrentProgress(runtime, node);
+    }
+
+
+    private static bool IsCurrentOutgoingLineAvailable(
+        MapRuntimeData runtime,
+        GeneratedMapNodeData from,
+        GeneratedMapNodeData to)
+    {
+        if (runtime == null || from == null || to == null)
+            return false;
+
+        return from.NodeIndex == runtime.CurrentNodeIndex &&
+               IsCurrentlyAvailable(runtime, to);
+    }
+
+    private static bool IsCleared(MapRuntimeData runtime, GeneratedMapNodeData node)
+    {
+        if (runtime == null || node == null)
+            return false;
+
+        string nodeKey = node.NodeIndex.ToString();
+        return runtime.ClearedMapIds != null && runtime.ClearedMapIds.Contains(nodeKey);
+    }
+
+    private static bool IsVisitedOrCleared(MapRuntimeData runtime, GeneratedMapNodeData node)
+    {
+        if (runtime == null || node == null)
+            return false;
+
+        string nodeKey = node.NodeIndex.ToString();
+
+        bool visited = runtime.VisitedMapIds != null && runtime.VisitedMapIds.Contains(nodeKey);
+        bool cleared = runtime.ClearedMapIds != null && runtime.ClearedMapIds.Contains(nodeKey);
+        return visited || cleared;
+    }
+
+    private static bool IsTraversedLine(
+        MapRuntimeData runtime,
+        GeneratedMapNodeData from,
+        GeneratedMapNodeData to)
+    {
+        return IsVisitedOrCleared(runtime, from) && IsVisitedOrCleared(runtime, to);
+    }
+
+    private void CreateLine(Vector2 from, Vector2 to, bool available, bool traversed)
     {
         MapLineView line = Instantiate(linePrefab, lineRoot);
         line.Setup(from, to);
+        line.SetProgressVisual(available, traversed);
     }
 
     private void Clear()
@@ -149,8 +272,52 @@ public class MapViewSpawner : MonoBehaviour
         }
     }
 
+    public void HighlightCategory(string nodeType)
+    {
+        if (lastNodes == null)
+            return;
+
+        foreach (KeyValuePair<int, MapNodeView> pair in spawnedNodes)
+        {
+            MapNodeView nodeView = pair.Value;
+
+            if (nodeView == null)
+                continue;
+
+            GeneratedMapNodeData data = GetNodeData(lastNodes, pair.Key);
+            string displayType = MapNodeView.GetDisplayType(data);
+            bool isMatch = data != null &&
+                           string.Equals(displayType, nodeType, StringComparison.OrdinalIgnoreCase);
+
+            nodeView.SetCategoryHighlighted(isMatch);
+        }
+    }
+
+    public void ClearCategoryHighlight()
+    {
+        foreach (MapNodeView nodeView in spawnedNodes.Values)
+        {
+            if (nodeView != null)
+                nodeView.SetCategoryHighlighted(false);
+        }
+    }
+
+    /// <summary>
+    /// NextNodeSelectionRoot에서 선택한 노드의 지도 X 표시 애니메이션을 재생합니다.
+    /// 반환값이 false이면 해당 노드 뷰를 찾지 못한 경우입니다.
+    /// </summary>
+    public bool PlayNodeCheckAnimation(int nodeIndex, Action onCompleted)
+    {
+        if (!spawnedNodes.TryGetValue(nodeIndex, out MapNodeView nodeView) || nodeView == null)
+            return false;
+
+        ClearCategoryHighlight();
+        nodeView.PlayCheckAnimation(onCompleted);
+        return true;
+    }
+
     public void Refresh()
     {
-        Spawn(lastNodes, lastOnNodeClicked);
+        Spawn(lastNodes, lastOnNodeClicked, lastOnNodeHovered, lastOnNodeHoverExited);
     }
 }

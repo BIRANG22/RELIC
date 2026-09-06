@@ -11,7 +11,7 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         HP,
         Cost,
         CostRecovery,
-        Move
+        Karma
     }
 
     [Header("Target")]
@@ -20,17 +20,30 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 
     [Header("Text Override")]
     [SerializeField] private string customName;
-    [SerializeField, TextArea] private string customDescription;
 
     [Header("Value Color")]
     [SerializeField] private string runeIncreaseColor = "#4E66DF";
     [SerializeField] private string runeDecreaseColor = "#D94B4B";
 
+    [Header("Hover Scale")]
+    [Tooltip("ìƒëª…ë ¥, ì¹´ë¥´ë§ˆ, ë§ˆë‚˜, ë§ˆë‚˜ì¬ìƒëŸ‰ ì•„ì´ì½˜ì— ë§ˆìš°ìŠ¤ë¥¼ ì˜¬ë ¸ì„ ë•Œ ì ìš©í•  í¬ê¸° ë°°ìœ¨ì…ë‹ˆë‹¤.")]
+    [Min(1f)]
+    [SerializeField] private float hoverScaleMultiplier = 1.1f;
+
     private bool isPointerInside;
+    private RectTransform hoverScaleTarget;
+    private Vector3 originalHoverScale;
+    private bool scaleInitialized;
 
     private void Awake()
     {
         AutoBindIfNeeded();
+        InitializeScale();
+    }
+
+    private void OnEnable()
+    {
+        InitializeScale();
     }
 
 #if UNITY_EDITOR
@@ -45,21 +58,100 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         if (isPointerInside && characterInfoPanel != null)
             characterInfoPanel.HideStatTooltipInStory(this);
 
+        ApplyHoverScale(false);
         isPointerInside = false;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        isPointerInside = true;
-        ShowInStory();
+        SetHoverState(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        isPointerInside = false;
+        SetHoverState(false);
+    }
 
-        if (characterInfoPanel != null)
+    private void SetHoverState(bool hovered)
+    {
+        if (isPointerInside == hovered)
+            return;
+
+        isPointerInside = hovered;
+        ApplyHoverScale(hovered);
+
+        if (hovered)
+        {
+            ShowInStory();
+        }
+        else if (characterInfoPanel != null)
+        {
             characterInfoPanel.HideStatTooltipInStory(this);
+        }
+    }
+
+    private RectTransform FindHoverScaleTarget()
+    {
+        Transform directIcon = transform.Find("Icon");
+        if (directIcon is RectTransform directRect)
+            return directRect;
+
+        RectTransform[] children = GetComponentsInChildren<RectTransform>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            RectTransform child = children[i];
+            if (child != null && child != transform &&
+                string.Equals(child.name, "Icon", System.StringComparison.OrdinalIgnoreCase))
+            {
+                return child;
+            }
+        }
+
+        return transform as RectTransform;
+    }
+
+    private void InitializeScale()
+    {
+        if (hoverScaleTarget == null)
+            hoverScaleTarget = FindHoverScaleTarget();
+
+        if (hoverScaleTarget == null)
+        {
+            scaleInitialized = false;
+            return;
+        }
+
+        originalHoverScale = hoverScaleTarget.localScale;
+        scaleInitialized = true;
+    }
+
+    private void ApplyHoverScale(bool hovered)
+    {
+        if (!scaleInitialized || hoverScaleTarget == null)
+            InitializeScale();
+
+        if (hoverScaleTarget == null)
+            return;
+
+        if (!IsHoverScaleEnabled())
+        {
+            hoverScaleTarget.localScale = originalHoverScale;
+            return;
+        }
+
+        hoverScaleTarget.localScale = hovered
+            ? originalHoverScale * hoverScaleMultiplier
+            : originalHoverScale;
+    }
+
+    private bool IsHoverScaleEnabled()
+    {
+        StatType resolvedStatType = GetResolvedStatType();
+
+        return resolvedStatType == StatType.HP ||
+               resolvedStatType == StatType.Cost ||
+               resolvedStatType == StatType.CostRecovery ||
+               resolvedStatType == StatType.Karma;
     }
 
     private void ShowInStory()
@@ -79,12 +171,15 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         int baseValue = GetBaseValue(masterData, resolvedStatType);
         int effectiveValue = GetEffectiveValue(runtimeData, masterData, resolvedStatType);
         int runeBonus = effectiveValue - baseValue;
+        string valueLine = resolvedStatType == StatType.Karma
+            ? "ìµœëŒ€ë³´ìœ ëŸ‰ " + effectiveValue
+            : FormatValueLine(baseValue, runeBonus);
 
         characterInfoPanel.ShowStatTooltipInStory(
             this,
             GetStatName(resolvedStatType),
             GetStatDescription(resolvedStatType),
-            FormatValueLine(baseValue, runeBonus));
+            valueLine);
     }
 
     private int GetBaseValue(CharacterMasterData masterData, StatType resolvedStatType)
@@ -100,8 +195,8 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
                 return Mathf.Max(0, masterData.MaxCost);
             case StatType.CostRecovery:
                 return Mathf.Max(0, masterData.CostRecovery);
-            case StatType.Move:
-                return Mathf.Max(0, masterData.MoveValue);
+            case StatType.Karma:
+                return Mathf.Max(0, masterData.MaxResource);
             default:
                 return 0;
         }
@@ -117,8 +212,8 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
                 return BattleEquipmentEffectService.GetEffectiveMaxCost(runtimeData, masterData);
             case StatType.CostRecovery:
                 return BattleEquipmentEffectService.GetEffectiveCostRecovery(runtimeData, masterData);
-            case StatType.Move:
-                return BattleEquipmentEffectService.GetEffectiveMoveValue(runtimeData, masterData);
+            case StatType.Karma:
+                return GetBaseValue(masterData, resolvedStatType);
             default:
                 return GetBaseValue(masterData, resolvedStatType);
         }
@@ -129,36 +224,50 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         if (!string.IsNullOrWhiteSpace(customName))
             return customName;
 
+        if (characterInfoPanel != null)
+        {
+            string panelTitle = characterInfoPanel.GetStatTooltipTitle(resolvedStatType);
+            if (!string.IsNullOrWhiteSpace(panelTitle))
+                return panelTitle;
+        }
+
         switch (resolvedStatType)
         {
             case StatType.HP:
-                return "Ã¼·Â";
+                return "ìƒëª…ë ¥";
             case StatType.Cost:
-                return "ÄÚ½ºÆ®";
+                return "ë§ˆë‚˜";
             case StatType.CostRecovery:
-                return "ÄÚ½ºÆ® È¸º¹·®";
-            case StatType.Move:
-                return "ÀÌµ¿·Â";
+                return "ë§ˆë‚˜ì¬ìƒëŸ‰";
+            case StatType.Karma:
+                return "ì¹´ë¥´ë§ˆ";
             default:
-                return "Á¤º¸";
+                return "ì •ë³´";
         }
     }
 
     private string GetStatDescription(StatType resolvedStatType)
     {
-        if (!string.IsNullOrWhiteSpace(customDescription))
-            return customDescription;
+        if (characterInfoPanel != null)
+        {
+            string panelDescription = characterInfoPanel.GetStatTooltipDescription(resolvedStatType);
+            if (!string.IsNullOrWhiteSpace(panelDescription))
+                return panelDescription;
+        }
 
         switch (resolvedStatType)
         {
             case StatType.HP:
-                return "Ä³¸¯ÅÍÀÇ »ı¸í·ÂÀÔ´Ï´Ù.\nÃ¼·ÂÀÌ 0ÀÌ µÇ¸é ÀüÅõºÒ´É »óÅÂ°¡ µË´Ï´Ù.";
+                return "ìºë¦­í„°ì˜ ìƒëª…ë ¥ì´ë‹¤.\nìƒëª…ë ¥ì´ 0ì´ ë˜ë©´ ì „íˆ¬ë¶ˆëŠ¥ ìƒíƒœê°€ ëœë‹¤.";
             case StatType.Cost:
-                return "½ºÅ³À» »ç¿ëÇÒ ¶§ ¼Ò¸ğÇÏ´Â ÀÚ¿øÀÔ´Ï´Ù.\nº¸À¯ ÄÚ½ºÆ®°¡ ³ôÀ»¼ö·Ï ÇÑ ÅÏ¿¡ ´õ ¸¹Àº ½ºÅ³À» »ç¿ëÇÒ ¼ö ÀÖ½À´Ï´Ù.";
+                return "ê¸°ì–µì„ ì‚¬ìš©í•  ë•Œ ì†Œëª¨í•˜ëŠ” ìì›ì´ë‹¤.\ní˜„ì¬ ë§ˆë‚˜ê°€ ë¶€ì¡±í•˜ë©´ ê¸°ì–µì„ ì‚¬ìš©í•  ìˆ˜ ì—†ë‹¤.";
             case StatType.CostRecovery:
-                return "ÅÏÀÌ ½ÃÀÛµÉ ¶§ È¸º¹µÇ´Â ÄÚ½ºÆ® ¼öÄ¡ÀÔ´Ï´Ù.\nÈ¸º¹·®ÀÌ ³ôÀ»¼ö·Ï ¸Å ÅÏ »ç¿ëÇÒ ¼ö ÀÖ´Â ½ºÅ³ ¼±ÅÃÁö°¡ ´Ã¾î³³´Ï´Ù.";
-            case StatType.Move:
-                return "ÀüÅõ Áß ÀÌµ¿½ºÅ³ »ç¿ë ½Ã 1Ä­ ÀÌµ¿¿¡ 1ÄÚ½ºÆ®¸¦ »ç¿ëÇÕ´Ï´Ù.\nÀÌµ¿·ÂÀÌ 50 ÀÌ»óÀÏ ¶§´Â 2Ä­ ÀÌµ¿¿¡ 1ÄÚ½ºÆ®¸¦ »ç¿ëÇÕ´Ï´Ù.";
+                return "í„´ì´ ì‹œì‘ë  ë•Œ íšŒë³µë˜ëŠ” ë§ˆë‚˜ ìˆ˜ì¹˜ì´ë‹¤.\níšŒë³µëŸ‰ì´ ë†’ì„ìˆ˜ë¡ í•œ í„´ì— ì‚¬ìš©í•  ìˆ˜ ìˆëŠ” ê¸°ì–µ ì„ íƒì§€ê°€ ëŠ˜ì–´ë‚œë‹¤.";
+            case StatType.Karma:
+                int maxKarma = characterInfoPanel != null && characterInfoPanel.CurrentMasterData != null
+                    ? Mathf.Max(0, characterInfoPanel.CurrentMasterData.MaxResource)
+                    : 0;
+                return string.Format("ë°œí˜„ê¸°ì–µì— ì‚¬ìš©í•˜ëŠ” ìì›ì´ë‹¤.\nìµœëŒ€ ë³´ìœ ëŸ‰ì€ {0}ì´ë‹¤.", maxKarma);
             default:
                 return "";
         }
@@ -177,24 +286,23 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 
             if (NameContains(objectName, "HP") ||
                 NameContains(objectName, "Health") ||
-                NameContains(objectName, "Ã¼·Â"))
+                NameContains(objectName, "ì²´ë ¥"))
                 return StatType.HP;
 
             if (NameContains(objectName, "Recovery") ||
                 NameContains(objectName, "Recover") ||
                 NameContains(objectName, "CostRecovery") ||
-                NameContains(objectName, "È¸º¹"))
+                NameContains(objectName, "íšŒë³µ"))
                 return StatType.CostRecovery;
+
+            if (NameContains(objectName, "Karma") ||
+                NameContains(objectName, "ì¹´ë¥´ë§ˆ"))
+                return StatType.Karma;
 
             if (NameContains(objectName, "Stamina") ||
                 NameContains(objectName, "Cost") ||
-                NameContains(objectName, "ÄÚ½ºÆ®"))
+                NameContains(objectName, "ì½”ìŠ¤íŠ¸"))
                 return StatType.Cost;
-
-            if (NameContains(objectName, "Move") ||
-                NameContains(objectName, "MoveValue") ||
-                NameContains(objectName, "ÀÌµ¿"))
-                return StatType.Move;
 
             current = current.parent;
         }
@@ -212,8 +320,10 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 
     private string FormatValueLine(int baseValue, int runeBonus)
     {
+        string baseLine = string.Format("ê¸°ë³¸ ìˆ˜ì¹˜ {0}", baseValue);
+
         if (runeBonus == 0)
-            return "±âº» ¼öÄ¡ " + baseValue;
+            return baseLine;
 
         string sign = runeBonus > 0 ? "+" : "";
         string runeColor = runeBonus > 0 ? runeIncreaseColor : runeDecreaseColor;
@@ -222,8 +332,23 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         if (!string.IsNullOrWhiteSpace(runeColor))
             runeText = "<color=" + runeColor + ">" + runeText + "</color>";
 
-        return "±âº» ¼öÄ¡ " + baseValue + "\n" +
-               "·é º¸Á¤ " + runeText;
+        string runeLine = "íŒŒí¸ ë³´ì • " + runeText;
+
+        return baseLine + "\n" + runeLine;
+    }
+
+
+    private string NormalizeTooltipText(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
+
+        return text
+            .Replace("\\r\\n", "\n")
+            .Replace("\\n", "\n")
+            .Replace("\\r", "")
+            .Replace("\r\n", "\n")
+            .Replace("\r", "\n");
     }
 
     private void AutoBindIfNeeded()

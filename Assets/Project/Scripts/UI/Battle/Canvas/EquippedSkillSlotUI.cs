@@ -8,6 +8,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
     [Header("Icon")]
     [SerializeField] private Image iconImage;
 
+
     [Header("Interaction")]
     [SerializeField] private Button button;
     [SerializeField] private bool hideEmptySlotIcon = true;
@@ -20,6 +21,11 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
     [SerializeField] private Color hoverBorderColor = new Color(1f, 0.86f, 0.35f, 1f);
     [SerializeField] private Color selectedBorderColor = new Color(1f, 0.58f, 0.12f, 1f);
 
+    [Header("Equip Available Highlight")]
+    [SerializeField] private Color equipAvailableColor = new Color32(78, 103, 223, 255);
+    [SerializeField] private Color equipAvailableBreathColor = Color.white;
+    private const float EquipAvailableBreathSpeed = 0.5f;
+
     [Header("Selected Effect")]
     [SerializeField] private RectTransform scaleTarget;
     [SerializeField] private bool useSelectedScale = true;
@@ -30,7 +36,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     [Header("Sound")]
     [SerializeField] private bool playClickSfx = true;
-    [SerializeField] private SfxType clickSfxType = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfxId = AudioIds.Sfx.NormalButtonClick;
 
     private EquippedSkillPanelUI ownerPanel;
     private SkillInventoryPanelUI skillInventoryPanel;
@@ -42,6 +48,8 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
     private bool hasCapturedBaseScale;
     private bool isPointerOver;
     private bool isSelected;
+    private bool isEquipAvailableHighlighted;
+    private float equipAvailableHighlightStartTime;
     private Canvas sortingCanvas;
     private bool hadSortingCanvas;
     private bool originalOverrideSorting;
@@ -70,13 +78,19 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     private void Update()
     {
-        ApplyScale(false);
+        if (NeedsScaleAnimation())
+            ApplyScale(false);
+
+        // 장착 가능 강조는 숨쉬기 색상이라 강조 중일 때만 프레임 갱신이 필요합니다.
+        if (isEquipAvailableHighlighted)
+            ApplyBorderState();
     }
 
     private void OnDisable()
     {
         isPointerOver = false;
         isSelected = false;
+        isEquipAvailableHighlighted = false;
         ApplyBorderState();
         ResetScale();
         ApplySortingState();
@@ -117,6 +131,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         canClick = clickable;
         isPointerOver = false;
         isSelected = false;
+        isEquipAvailableHighlighted = false;
 
         if (scaleTarget == null)
             scaleTarget = GetComponent<RectTransform>();
@@ -129,10 +144,9 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         {
             iconImage.sprite = icon;
             iconImage.enabled = icon != null || !hideEmptySlotIcon;
-            iconImage.color = skillData != null
-                ? SkillRarityUtility.GetSkillIconColor(skillData.SkillId)
-                : Color.white;
+            iconImage.color = Color.white;
             iconImage.raycastTarget = true;
+            SkillUpgradeMarkStyle.ApplyShared(iconImage, skillData != null ? skillData.SkillId : null);
         }
 
         if (button != null)
@@ -157,6 +171,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         canClick = true;
         isPointerOver = false;
         isSelected = false;
+        isEquipAvailableHighlighted = false;
 
         if (scaleTarget == null)
             scaleTarget = GetComponent<RectTransform>();
@@ -190,6 +205,7 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         canClick = true;
         isPointerOver = false;
         isSelected = false;
+        isEquipAvailableHighlighted = false;
 
         if (iconImage != null)
         {
@@ -205,6 +221,24 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         ApplyBorderState();
         ApplyScale(true);
         ApplySortingState();
+    }
+
+    public bool IsEmptyEquipSlot =>
+        canClick &&
+        skillData == null &&
+        runtimeData != null &&
+        skillInventoryPanel != null &&
+        SkillInventoryEquipService.IsFreeSkillSlotIndex(equippedSkillIndex);
+
+    public void SetEquipAvailableHighlight(bool highlighted)
+    {
+        bool shouldHighlight = highlighted && IsEmptyEquipSlot;
+
+        if (shouldHighlight && !isEquipAvailableHighlighted)
+            equipAvailableHighlightStartTime = Time.unscaledTime;
+
+        isEquipAvailableHighlighted = shouldHighlight;
+        ApplyBorderState();
     }
 
     public void SetSelected(bool selected)
@@ -311,12 +345,25 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
         bool canShowHoverOrSelectedEffect = canClick && (skillData != null || skillInventoryPanel != null);
 
-        if (isSelected && canShowHoverOrSelectedEffect)
+        if (isEquipAvailableHighlighted && IsEmptyEquipSlot)
+            borderImage.color = GetEquipAvailableBreathColor();
+        else if (isSelected && canShowHoverOrSelectedEffect)
             borderImage.color = selectedBorderColor;
         else if (isPointerOver && canShowHoverOrSelectedEffect)
             borderImage.color = hoverBorderColor;
         else
             borderImage.color = normalBorderColor;
+    }
+
+
+    private Color GetEquipAvailableBreathColor()
+    {
+        float speed = Mathf.Max(0.01f, EquipAvailableBreathSpeed);
+        float elapsed = Time.unscaledTime - equipAvailableHighlightStartTime;
+        float t = (Mathf.Sin(elapsed * speed * Mathf.PI * 2f - Mathf.PI * 0.5f) + 1f) * 0.5f;
+
+        // Skill slots alternate between available highlight colors.
+        return Color.Lerp(equipAvailableBreathColor, equipAvailableColor, t);
     }
 
     private void ApplyScale(bool instant)
@@ -343,9 +390,21 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
     {
         isPointerOver = false;
         isSelected = false;
+        isEquipAvailableHighlighted = false;
         ApplyBorderState();
         ResetScale();
         ApplySortingState();
+    }
+
+    private bool NeedsScaleAnimation()
+    {
+        if (scaleTarget == null)
+            return false;
+
+        CaptureBaseScaleOnce();
+        float multiplier = useSelectedScale && isSelected && canClick && (skillData != null || skillInventoryPanel != null) ? selectedScale : 1f;
+        Vector3 targetScale = baseScale * multiplier;
+        return (scaleTarget.localScale - targetScale).sqrMagnitude > 0.000001f;
     }
 
     private void ResetScale()
@@ -410,6 +469,6 @@ public class EquippedSkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         if (!playClickSfx || AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(clickSfxType);
+        AudioManager.Instance.PlaySfx(clickSfxId);
     }
 }

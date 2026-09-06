@@ -1,18 +1,31 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 
 namespace Relic.Gameplay.Data
 {
     public class RelicEquipService
     {
         private readonly CharacterRuntimeStore characterStore;
-        private readonly BattleRuntimeData battleRuntimeData;
+        private readonly System.Collections.Generic.IList<string> ownedRelicIds;
+        private readonly RelicDatabase relicDatabase;
 
         public RelicEquipService(
             CharacterRuntimeStore characterStore,
-            BattleRuntimeData battleRuntimeData)
+            BattleRuntimeData battleRuntimeData,
+            RelicDatabase relicDatabase)
         {
             this.characterStore = characterStore;
-            this.battleRuntimeData = battleRuntimeData;
+            ownedRelicIds = battleRuntimeData?.OwnedRelicIds;
+            this.relicDatabase = relicDatabase;
+        }
+
+        public RelicEquipService(
+            CharacterRuntimeStore characterStore,
+            System.Collections.Generic.IList<string> ownedRelicIds,
+            RelicDatabase relicDatabase)
+        {
+            this.characterStore = characterStore;
+            this.ownedRelicIds = ownedRelicIds;
+            this.relicDatabase = relicDatabase;
         }
 
         public bool EquipRelic(string characterId, int slotIndex, string relicId)
@@ -20,7 +33,7 @@ namespace Relic.Gameplay.Data
             if (string.IsNullOrWhiteSpace(characterId))
                 return false;
 
-            if (slotIndex < 0 || slotIndex >= 5)
+            if (slotIndex < 0 || slotIndex >= ActiveRelicRuntimeUtility.EquippedRelicSlotCount)
                 return false;
 
             if (string.IsNullOrWhiteSpace(relicId))
@@ -28,17 +41,22 @@ namespace Relic.Gameplay.Data
 
             relicId = relicId.Trim();
 
-            if (battleRuntimeData == null ||
-                battleRuntimeData.OwnedRelicIds == null ||
+            if (!CanEquipRelicInSlot(slotIndex, relicId))
+            {
+                Debug.LogWarning($"[RelicEquipService] Ïä¨Î°Ø ÌÉÄÏûÖ Î∂àÏùºÏπò / Relic:{relicId} / Slot:{slotIndex + 1}");
+                return false;
+            }
+
+            if (ownedRelicIds == null ||
                 !HasOwnedRelic(relicId))
             {
-                Debug.LogWarning($"[RelicEquipService] ∫∏¿Ø«œ¡ˆ æ ¿∫ ¿Øπ∞: {relicId}");
+                Debug.LogWarning($"[RelicEquipService] Î≥¥Ïú†ÌïòÏßÄ ÏïäÏùÄ Ïú†Î¨º: {relicId}");
                 return false;
             }
 
             if (!characterStore.TryGet(characterId, out CharacterRuntimeData character))
             {
-                Debug.LogWarning($"[RelicEquipService] ƒ≥∏Ø≈Õ æ¯¿Ω: {characterId}");
+                Debug.LogWarning($"[RelicEquipService] Ï∫êÎ¶≠ÌÑ∞ ÏóÜÏùå: {characterId}");
                 return false;
             }
 
@@ -52,7 +70,25 @@ namespace Relic.Gameplay.Data
             character.EquippedRelicIds[slotIndex] = relicId;
             RemoveAllOwnedRelic(relicId);
 
+            if (slotIndex == ActiveRelicRuntimeUtility.ActiveRelicSlotIndex)
+                ResetActiveRelicUsesForEquippedRelic(character, relicId);
+
             return true;
+        }
+
+        private bool CanEquipRelicInSlot(int slotIndex, string relicId)
+        {
+            bool isCompoundSlot = slotIndex == ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
+
+            if (isCompoundSlot)
+            {
+                return global::DataManager.Instance?.CompoundDatabase != null &&
+                       global::DataManager.Instance.CompoundDatabase.TryGet(relicId, out _);
+            }
+
+            return relicDatabase != null &&
+                   relicDatabase.TryGet(relicId, out RelicData relic) &&
+                   !ActiveRelicEffectResolver.IsActiveRelic(relic);
         }
 
         public bool UnequipRelic(string characterId, int slotIndex)
@@ -60,7 +96,7 @@ namespace Relic.Gameplay.Data
             if (string.IsNullOrWhiteSpace(characterId))
                 return false;
 
-            if (slotIndex < 0 || slotIndex >= 5)
+            if (slotIndex < 0 || slotIndex >= ActiveRelicRuntimeUtility.EquippedRelicSlotCount)
                 return false;
 
             if (!characterStore.TryGet(characterId, out CharacterRuntimeData character))
@@ -82,26 +118,25 @@ namespace Relic.Gameplay.Data
 
         private void AddOwnedRelicIfMissing(string relicId)
         {
-            if (battleRuntimeData == null || string.IsNullOrWhiteSpace(relicId))
+            if (ownedRelicIds == null || string.IsNullOrWhiteSpace(relicId))
                 return;
 
             relicId = relicId.Trim();
-            battleRuntimeData.OwnedRelicIds ??= new System.Collections.Generic.List<string>();
 
             if (!HasOwnedRelic(relicId))
-                battleRuntimeData.OwnedRelicIds.Add(relicId);
+                ownedRelicIds.Add(relicId);
         }
 
         private bool HasOwnedRelic(string relicId)
         {
-            if (battleRuntimeData == null || battleRuntimeData.OwnedRelicIds == null || string.IsNullOrWhiteSpace(relicId))
+            if (ownedRelicIds == null || string.IsNullOrWhiteSpace(relicId))
                 return false;
 
             string targetId = relicId.Trim();
 
-            for (int i = 0; i < battleRuntimeData.OwnedRelicIds.Count; i++)
+            for (int i = 0; i < ownedRelicIds.Count; i++)
             {
-                if (string.Equals(battleRuntimeData.OwnedRelicIds[i]?.Trim(), targetId, System.StringComparison.Ordinal))
+                if (string.Equals(ownedRelicIds[i]?.Trim(), targetId, System.StringComparison.Ordinal))
                     return true;
             }
 
@@ -110,38 +145,38 @@ namespace Relic.Gameplay.Data
 
         private void RemoveAllOwnedRelic(string relicId)
         {
-            if (battleRuntimeData == null || battleRuntimeData.OwnedRelicIds == null || string.IsNullOrWhiteSpace(relicId))
+            if (ownedRelicIds == null || string.IsNullOrWhiteSpace(relicId))
                 return;
 
             string targetId = relicId.Trim();
 
-            for (int i = battleRuntimeData.OwnedRelicIds.Count - 1; i >= 0; i--)
+            for (int i = ownedRelicIds.Count - 1; i >= 0; i--)
             {
-                if (string.Equals(battleRuntimeData.OwnedRelicIds[i]?.Trim(), targetId, System.StringComparison.Ordinal))
-                    battleRuntimeData.OwnedRelicIds.RemoveAt(i);
+                if (string.Equals(ownedRelicIds[i]?.Trim(), targetId, System.StringComparison.Ordinal))
+                    ownedRelicIds.RemoveAt(i);
             }
         }
 
         public static void EnsureRelicSlots(CharacterRuntimeData character)
         {
-            if (character == null)
-                return;
+            ActiveRelicRuntimeUtility.EnsureRelicSlots(character);
+        }
 
-            if (character.EquippedRelicIds != null &&
-                character.EquippedRelicIds.Length == 5)
-                return;
-
-            string[] newSlots = new string[5];
-
-            if (character.EquippedRelicIds != null)
+        private static void ResetActiveRelicUsesForEquippedRelic(
+            CharacterRuntimeData character,
+            string relicId)
+        {
+            if (character == null ||
+                string.IsNullOrWhiteSpace(relicId) ||
+                global::DataManager.Instance?.CompoundDatabase == null)
             {
-                int count = Mathf.Min(character.EquippedRelicIds.Length, newSlots.Length);
-
-                for (int i = 0; i < count; i++)
-                    newSlots[i] = character.EquippedRelicIds[i];
+                return;
             }
 
-            character.EquippedRelicIds = newSlots;
+            if (!global::DataManager.Instance.CompoundDatabase.TryGet(relicId, out CompoundData compound))
+                return;
+
+            ActiveRelicRuntimeUtility.ResetUses(character, compound);
         }
     }
 }

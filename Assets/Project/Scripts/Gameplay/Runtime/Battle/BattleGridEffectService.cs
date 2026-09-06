@@ -41,6 +41,9 @@ namespace Relic.Gameplay.Battle
 
     public sealed class BattleGridEffectService
     {
+        private const string SpiderWebGridEffectId = "GR_spider_web";
+        private const string SpiderWebEffectId = "E_Spider_Web";
+        private const int SpiderWebPendingTurnCount = 2;
         private const int DefaultMinSpawnCount = 2;
         private const int DefaultMaxSpawnCount = 3;
 
@@ -92,8 +95,16 @@ namespace Relic.Gameplay.Battle
 
                 string gridEffectId = BattleRandom.Pick(effectIds);
 
-                if (!state.Place(gridIndex, gridEffectId))
+                if (!database.TryGet(gridEffectId, out GridEffectData gridEffectData) ||
+                    gridEffectData == null ||
+                    !state.Place(
+                        gridIndex,
+                        gridEffectId,
+                        gridEffectData.Duration,
+                        Mathf.Max(0, gridEffectData.HP)))
+                {
                     continue;
+                }
 
                 placements.Add(new BattleGridEffectPlacement(gridIndex, gridEffectId));
             }
@@ -137,6 +148,15 @@ namespace Relic.Gameplay.Battle
             if (runtimeData == null || runtimeData.IsDead)
                 return BattleGridEffectApplyResult.None;
 
+            // 잔여물은 머크와 블롭이 생성하는 몬스터 전용 지형입니다.
+            // 거미줄은 플레이어 전용 방해 지형이므로 몬스터가 지나가도 발동하거나 사라지지 않습니다.
+            if (TryGetGridEffectData(state, gridIndex, out GridEffectData gridEffectData) &&
+                (string.Equals(gridEffectData.GridEffectID, "GR_Residue", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(gridEffectData.GridEffectID, SpiderWebGridEffectId, StringComparison.OrdinalIgnoreCase)))
+            {
+                return BattleGridEffectApplyResult.None;
+            }
+
             return ApplyToRuntime(
                 state,
                 gridIndex,
@@ -159,7 +179,9 @@ namespace Relic.Gameplay.Battle
 
             IReadOnlyList<string> appliedEffectIds = applyEffects(data);
             bool applied = appliedEffectIds != null && appliedEffectIds.Count > 0;
-            bool consumed = applied && data.Consumable == 1;
+            bool consumed = applied &&
+                (data.Consumable == 1 ||
+                 string.Equals(data.GridEffectID, SpiderWebGridEffectId, StringComparison.OrdinalIgnoreCase));
 
             if (consumed)
                 state.Remove(gridIndex);
@@ -233,12 +255,21 @@ namespace Relic.Gameplay.Battle
             if (damage <= 0)
                 return false;
 
+            int hpBefore = runtimeData.CurrentHP;
+            int shieldBefore = runtimeData.CurrentShield;
+
             int shieldDamage = Mathf.Min(runtimeData.CurrentShield, damage);
             runtimeData.CurrentShield -= shieldDamage;
             damage -= shieldDamage;
 
             if (damage > 0)
                 runtimeData.CurrentHP = Mathf.Max(0, runtimeData.CurrentHP - damage);
+
+            int hpDamage = Mathf.Max(0, hpBefore - runtimeData.CurrentHP);
+            int appliedDamage = Mathf.Max(0, shieldBefore - runtimeData.CurrentShield) + hpDamage;
+
+            if (appliedDamage > 0)
+                BattleEquipmentEffectService.MarkPlayerDamagedThisTurn(runtimeData);
 
             return true;
         }
@@ -253,8 +284,7 @@ namespace Relic.Gameplay.Battle
             if (damage <= 0)
                 return false;
 
-            int shieldDamage = Mathf.Min(runtimeData.CurrentShield, damage);
-            runtimeData.CurrentShield -= shieldDamage;
+            int shieldDamage = runtimeData.AbsorbShieldDamage(damage);
             damage -= shieldDamage;
 
             if (damage > 0)
@@ -268,7 +298,9 @@ namespace Relic.Gameplay.Battle
             if (!IsArmorEffect(effectId))
                 return false;
 
-            int shield = Mathf.Max(0, value);
+            int shield = BattleEquipmentEffectService.ModifyArmorGainForPlayer(
+                runtimeData,
+                Mathf.Max(0, value));
 
             if (shield <= 0)
                 return false;
@@ -287,7 +319,7 @@ namespace Relic.Gameplay.Battle
             if (shield <= 0)
                 return false;
 
-            runtimeData.CurrentShield += shield;
+            runtimeData.AddTemporaryShield(shield);
             return true;
         }
 
@@ -300,6 +332,21 @@ namespace Relic.Gameplay.Battle
 
             if (heal <= 0)
                 return false;
+
+            if (BattleEquipmentEffectService.ShouldBlockPlayerHealing(runtimeData))
+                return false;
+
+            int overhealArmor = BattleEquipmentEffectService.GetOverhealArmorAmount(
+                runtimeData,
+                heal);
+
+            if (overhealArmor > 0)
+            {
+                runtimeData.CurrentShield += BattleEquipmentEffectService.ModifyArmorGainForPlayer(
+                    runtimeData,
+                    overhealArmor);
+                return true;
+            }
 
             if (runtimeData.MaxHP > 0)
                 runtimeData.CurrentHP = Mathf.Min(runtimeData.MaxHP, runtimeData.CurrentHP + heal);
@@ -334,9 +381,40 @@ namespace Relic.Gameplay.Battle
             if (IsDamageEffect(effectId) || IsArmorEffect(effectId) || IsHealEffect(effectId))
                 return false;
 
+            string normalizedEffectId = effectId.Trim();
+
+            if (string.Equals(normalizedEffectId, SpiderWebEffectId, StringComparison.OrdinalIgnoreCase))
+            {
+                if (statusEffects == null)
+                    return false;
+
+                int multiplier = Mathf.Max(1, value);
+
+                for (int i = 0; i < statusEffects.Count; i++)
+                {
+                    StatusEffectRuntimeData existing = statusEffects[i];
+
+                    if (existing == null ||
+                        !string.Equals(existing.EffectId, SpiderWebEffectId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    existing.Stack = Mathf.Max(existing.Stack, multiplier);
+                    existing.TurnCount = SpiderWebPendingTurnCount;
+                    return true;
+                }
+
+                statusEffects.Add(new StatusEffectRuntimeData(
+                    SpiderWebEffectId,
+                    multiplier,
+                    SpiderWebPendingTurnCount));
+                return true;
+            }
+
             return BattleEffectUtility.AddOrStackStatus(
                 statusEffects,
-                effectId.Trim(),
+                normalizedEffectId,
                 Mathf.Max(1, value),
                 1
             );
@@ -369,8 +447,18 @@ namespace Relic.Gameplay.Battle
 
             foreach (KeyValuePair<string, GridEffectData> pair in all)
             {
-                if (!string.IsNullOrWhiteSpace(pair.Key) && pair.Value != null)
-                    effectIds.Add(pair.Key);
+                if (string.IsNullOrWhiteSpace(pair.Key) || pair.Value == null)
+                    continue;
+
+                if (!string.Equals(
+                        pair.Value.SpawnType?.Trim(),
+                        "BattleStart",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                effectIds.Add(pair.Key);
             }
 
             return effectIds;
@@ -434,7 +522,7 @@ namespace Relic.Gameplay.Battle
                 return false;
 
             string normalized = effectId.Trim();
-            return string.Equals(normalized, "E_Recover", StringComparison.Ordinal) ||
+            return string.Equals(normalized, "E_Focus", StringComparison.Ordinal) ||
                    normalized.IndexOf("Heal", StringComparison.OrdinalIgnoreCase) >= 0 ||
                    normalized.IndexOf("Recover", StringComparison.OrdinalIgnoreCase) >= 0;
         }

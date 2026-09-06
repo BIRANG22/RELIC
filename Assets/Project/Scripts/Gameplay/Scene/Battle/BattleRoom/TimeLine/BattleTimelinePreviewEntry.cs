@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class BattleTimelinePreviewEntry
 {
+    private static MonsterSkillIconDatabase cachedMonsterSkillIconDatabase;
     public int SlotIndex;
     public int OrderIndex;
 
@@ -51,7 +52,7 @@ public class BattleTimelinePreviewEntry
         get
         {
             if (IsMonster && MonsterSkillData != null)
-                return GetTimelineActionIcon(MonsterSkillData.TimelineNotation);
+                return GetMonsterSkillIcon(MonsterSkillData);
 
             if (IsPlayer && PlayerSkillData != null)
                 return GetSkillIcon(PlayerSkillData.SkillId);
@@ -78,7 +79,7 @@ public class BattleTimelinePreviewEntry
             if (IsPlayer && PlayerSkillData != null)
             {
                 if (!string.IsNullOrWhiteSpace(PlayerSkillData.Name))
-                    return PlayerSkillData.Name;
+                    return GameDataLocalization.SkillName(PlayerSkillData);
 
                 return PlayerSkillData.SkillId;
             }
@@ -86,7 +87,7 @@ public class BattleTimelinePreviewEntry
             if (IsMonster && MonsterSkillData != null)
             {
                 if (!string.IsNullOrWhiteSpace(MonsterSkillData.Name))
-                    return MonsterSkillData.Name;
+                    return GameDataLocalization.MonsterSkillName(MonsterSkillData);
 
                 if (!string.IsNullOrWhiteSpace(MonsterSkillData.SkillId))
                     return MonsterSkillData.SkillId;
@@ -104,23 +105,17 @@ public class BattleTimelinePreviewEntry
         {
             if (IsPlayer && PlayerSkillData != null)
             {
-                if (!string.IsNullOrWhiteSpace(PlayerSkillData.EffectDescription))
-                    return FormatPlayerSkillEffectDescription(PlayerSkillData.EffectDescription);
-
-                if (!string.IsNullOrWhiteSpace(PlayerSkillData.EffectDesc))
-                    return FormatPlayerSkillEffectDescription(PlayerSkillData.EffectDesc);
-
-                if (!string.IsNullOrWhiteSpace(PlayerSkillData.ToolTip))
-                    return FormatPlayerSkillEffectDescription(PlayerSkillData.ToolTip);
-
                 if (!string.IsNullOrWhiteSpace(PlayerSkillData.Details))
-                    return FormatPlayerSkillEffectDescription(PlayerSkillData.Details);
+                    return FormatPlayerSkillEffectDescription(GameDataLocalization.SkillDetails(PlayerSkillData));
             }
 
             if (IsMonster && MonsterSkillData != null)
             {
                 if (!string.IsNullOrWhiteSpace(MonsterSkillData.EffectDesc))
-                    return FormatMonsterSkillEffectDescription(MonsterSkillData.EffectDesc, MonsterCommand, MonsterSkillData);
+                    return FormatMonsterSkillEffectDescription(
+                        GameDataLocalization.MonsterSkillDescription(MonsterSkillData),
+                        MonsterCommand,
+                        MonsterSkillData);
             }
 
             return "";
@@ -132,10 +127,11 @@ public class BattleTimelinePreviewEntry
         get
         {
             if (IsPlayer)
-                return GetDisplayValueText(PlayerSkillData != null ? PlayerSkillData.EffectEntries : null, GetPlayerPayAmount());
+                return BattlePlayerSkillPreviewCalculator.GetTimelineValueText(
+                    BattlePlayerSkillPreviewCalculator.CreatePreview(PlayerCommand));
 
             if (IsMonster)
-                return GetMonsterDisplayValueText(MonsterCommand);
+                return GetMonsterDamageDisplayValueText(MonsterCommand);
 
             return "";
         }
@@ -196,6 +192,72 @@ public class BattleTimelinePreviewEntry
         };
     }
 
+    private static string GetPlayerDamageDisplayValueText(SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return string.Empty;
+
+        List<SkillEffectEntry> entries = skillData.EffectEntries;
+
+        if ((entries == null || entries.Count == 0) && DataManager.Instance != null)
+            entries = SkillEffectParser.Parse(skillData, DataManager.Instance.EffectDatabase);
+
+        if (entries == null)
+            return string.Empty;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            SkillEffectEntry entry = entries[i];
+            if (entry == null || !IsDamageEffect(entry.EffectId))
+                continue;
+
+            int damage = SkillValueCalculator.GetValue(entry);
+            if (damage <= 0)
+                damage = Mathf.Max(0, entry.ValueAmount);
+
+            if (damage <= 0)
+                return string.Empty;
+
+            int hitCount = Mathf.Max(1, entry.CountAmount);
+            return hitCount > 1 ? $"{damage}x{hitCount}" : damage.ToString();
+        }
+
+        return string.Empty;
+    }
+
+    private static string GetMonsterDamageDisplayValueText(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return string.Empty;
+
+        string damageText = BattleDamageService.GetMonsterDamageTotalText(command);
+        if (string.IsNullOrWhiteSpace(damageText))
+            return string.Empty;
+
+        int hitCount = GetDamageHitCount(command.SkillData.EffectEntries);
+        return hitCount > 1 ? $"{damageText}x{hitCount}" : damageText;
+    }
+
+    private static int GetDamageHitCount(List<SkillEffectEntry> entries)
+    {
+        if (entries == null)
+            return 1;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            SkillEffectEntry entry = entries[i];
+            if (entry != null && IsDamageEffect(entry.EffectId))
+                return Mathf.Max(1, entry.CountAmount);
+        }
+
+        return 1;
+    }
+
+    private static bool IsDamageEffect(string effectId)
+    {
+        return effectId == "E_Strike" || effectId == "E_Pierce";
+    }
+
     private static string GetDisplayValueText(List<SkillEffectEntry> effectEntries, int payAmount)
     {
         return GetDisplayValueText(effectEntries, payAmount, null);
@@ -222,13 +284,13 @@ public class BattleTimelinePreviewEntry
             if (monsterCommand != null &&
                 BattleDamageService.IsMonsterDamageHitEffect(entry.EffectId))
             {
-                string damageText = BattleDamageService.GetMonsterDamageText(monsterCommand);
+                string damageText = BattleDamageService.GetMonsterDamageTotalText(monsterCommand);
 
                 if (!string.IsNullOrWhiteSpace(damageText))
                     return damageText;
             }
 
-            int value = SkillValueCalculator.GetValue(entry, payAmount);
+            int value = SkillValueCalculator.GetValue(entry);
 
             if (value <= 0)
                 value = entry.ValueAmount;
@@ -252,7 +314,7 @@ public class BattleTimelinePreviewEntry
         if (!BattleDamageService.ShouldReserveMonsterDamage(command.SkillData))
             return "";
 
-        return BattleDamageService.GetMonsterDamageText(command);
+        return BattleDamageService.GetMonsterDamageTotalText(command);
     }
 
     private static bool ShouldShowValueText(string effectId)
@@ -261,11 +323,10 @@ public class BattleTimelinePreviewEntry
         {
             case "E_Strike":
             case "E_Pierce":
-            case "E_Addicted":
-            case "E_Bleeding":
-            case "E_Burn":
-            case "E_Thorns":
-            case "E_Power":
+            case "E_Poison":
+            case "E_Bleed":
+            case "E_Ward":
+            case "E_Boost":
             case "E_Armor":
                 return true;
 
@@ -305,12 +366,10 @@ public class BattleTimelinePreviewEntry
             ? GetPlayerPayAmount()
             : PlayerSkillData.ResourceCostValue;
 
-        return SkillTooltipFormatter.Format(
+        return BattlePlayerSkillPreviewCalculator.FormatDescription(
             PlayerSkillData,
             description,
-            CharacterRuntime,
-            payAmount
-        );
+            BattlePlayerSkillPreviewCalculator.CreatePreview(PlayerCommand));
     }
 
     private static Sprite GetCharacterTimelineIcon(string characterId)
@@ -337,17 +396,39 @@ public class BattleTimelinePreviewEntry
         return null;
     }
 
+    private static Sprite GetMonsterSkillIcon(MonsterSkillData skillData)
+    {
+        if (skillData == null)
+            return null;
+
+        if (cachedMonsterSkillIconDatabase == null)
+        {
+            MonsterSkillIconDatabase[] databases = Resources.FindObjectsOfTypeAll<MonsterSkillIconDatabase>();
+            if (databases != null && databases.Length > 0)
+                cachedMonsterSkillIconDatabase = databases[0];
+        }
+
+        if (cachedMonsterSkillIconDatabase != null &&
+            !string.IsNullOrWhiteSpace(skillData.SkillIcon) &&
+            cachedMonsterSkillIconDatabase.TryGetIcon(skillData.SkillIcon, out Sprite skillIcon))
+        {
+            return skillIcon;
+        }
+
+        return GetTimelineActionIcon(skillData.TimelineNotation);
+    }
+
     private static Sprite GetTimelineActionIcon(TimelineActionType actionType)
     {
         if (DataManager.Instance == null)
         {
-            Debug.LogWarning("[TimelineIcon] DataManager°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[TimelineIcon] DataManager°¡ ¾ø½?´Ï´Ù.");
             return null;
         }
 
         if (DataManager.Instance.ActionTypeIconDatabase == null)
         {
-            Debug.LogWarning("[TimelineIcon] ActionTypeIconDatabase°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[TimelineIcon] ActionTypeIconDatabase°¡ ¾ø½?´Ï´Ù.");
             return null;
         }
 
@@ -393,26 +474,13 @@ public class BattleTimelinePreviewEntry
         MonsterReservedCommand command,
         MonsterSkillData skillData)
     {
-        if (string.IsNullOrWhiteSpace(description))
-            return "";
-
         MonsterSkillData sourceSkillData = command != null && command.SkillData != null
             ? command.SkillData
             : skillData;
 
-        string valueText = BattleDamageService.GetMonsterDamageText(command);
-
-        if (string.IsNullOrWhiteSpace(valueText))
-            valueText = BattleDamageService.GetMonsterDamageRangeText(sourceSkillData);
-
-        if (string.IsNullOrWhiteSpace(valueText))
-            return description;
-
-        const string valueToken = "\uC218\uCE58";
-
-        return description
-            .Replace($"\"{valueToken}\"", valueText)
-            .Replace(valueToken, valueText);
+        return MonsterSkillDescriptionFormatter.Format(description, sourceSkillData);
     }
+
+
 
 }

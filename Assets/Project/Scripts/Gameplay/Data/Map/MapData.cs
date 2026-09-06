@@ -2,14 +2,6 @@ using System;
 
 namespace Relic.Gameplay.Data
 {
-    public enum FixedPosition
-    {
-        None,
-        Front,
-        Final,
-        Penultimate
-    }
-
     [Serializable]
     public class MapData
     {
@@ -20,10 +12,11 @@ namespace Relic.Gameplay.Data
         public string BattleMapId;
         public string EventId;
 
-        public string Chapter;
         public string Stage;
 
         public int SpawnWeight;
-        public FixedPosition FixedPosition;
+
+        // Common: Weak / Normal / Hard, Elite: 1 / 2 / 3
+        public string BattleGroup;
     }
 }

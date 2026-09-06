@@ -8,12 +8,14 @@ public class RangePreview : MonoBehaviour
     private readonly List<GridCell> directionCells = new();
     private readonly List<GridCell> rangeCells = new();
     private Color currentDirectionPreviewColor = Color.white;
+    private Material currentDirectionPreviewMaterial;
     private bool hasCustomDirectionPreviewColor;
 
     public void ShowDirectionCells(List<int> gridIndices)
     {
         ClearAll();
         hasCustomDirectionPreviewColor = false;
+        currentDirectionPreviewMaterial = null;
 
         if (gridManager == null || gridIndices == null)
             return;
@@ -34,6 +36,7 @@ public class RangePreview : MonoBehaviour
     {
         ClearAll();
         currentDirectionPreviewColor = highlightColor;
+        currentDirectionPreviewMaterial = null;
         hasCustomDirectionPreviewColor = true;
 
         if (gridManager == null || gridIndices == null)
@@ -47,6 +50,31 @@ public class RangePreview : MonoBehaviour
                 continue;
 
             cell.SetPreview(highlightColor);
+            directionCells.Add(cell);
+        }
+    }
+
+    public void ShowDirectionCells(
+        List<int> gridIndices,
+        Color highlightColor,
+        Material materialOverride)
+    {
+        ClearAll();
+        currentDirectionPreviewColor = highlightColor;
+        currentDirectionPreviewMaterial = materialOverride;
+        hasCustomDirectionPreviewColor = true;
+
+        if (gridManager == null || gridIndices == null)
+            return;
+
+        foreach (int index in gridIndices)
+        {
+            GridCell cell = gridManager.GetCellByIndex(index);
+
+            if (cell == null)
+                continue;
+
+            cell.SetPreview(highlightColor, materialOverride);
             directionCells.Add(cell);
         }
     }
@@ -105,7 +133,7 @@ public class RangePreview : MonoBehaviour
                 continue;
 
             if (hasCustomDirectionPreviewColor)
-                cell.SetPreview(currentDirectionPreviewColor);
+                cell.SetPreview(currentDirectionPreviewColor, currentDirectionPreviewMaterial);
             else
                 cell.SetPreview();
         }
@@ -127,6 +155,7 @@ public class RangePreview : MonoBehaviour
 
         directionCells.Clear();
         rangeCells.Clear();
+        currentDirectionPreviewMaterial = null;
         hasCustomDirectionPreviewColor = false;
     }
 

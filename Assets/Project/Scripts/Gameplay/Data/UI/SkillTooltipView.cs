@@ -24,7 +24,7 @@ namespace Relic.Gameplay.Data
                 return;
             }
 
-            titleText.text = skill.Name;
+            titleText.text = GameDataLocalization.SkillName(skill);
         }
     }
 }

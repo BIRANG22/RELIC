@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07952d0c7207ea44cbb113a3d6355f31, type: 3}
+  m_Name: MonsterSkillIconDatabase
+  m_EditorClassIdentifier: 
+  entries:
+  - iconId: icon_mon_skill_001
+    sprite: {fileID: 21300000, guid: ef4d5ae0dad531740a46a1f260d05a38, type: 3}
+  - iconId: icon_mon_skill_002
+    sprite: {fileID: 21300000, guid: bfdd10e22035c19419b5a00a996a1cdb, type: 3}
+  - iconId: icon_mon_skill_003
+    sprite: {fileID: 21300000, guid: d70b7307298c4c943b6dd95f18b73d47, type: 3}
+  - iconId: icon_mon_skill_004
+    sprite: {fileID: 21300000, guid: d3f982661657c9c4f8009aacdf97a89c, type: 3}
+  - iconId: icon_mon_skill_005
+    sprite: {fileID: 21300000, guid: 672b6fff5e615db4fa7ffe99848e0bd5, type: 3}
+  - iconId: icon_mon_skill_006
+    sprite: {fileID: 21300000, guid: 985b69935f3ba8b49ae4a37967df1cce, type: 3}
+  - iconId: icon_mon_skill_007
+    sprite: {fileID: 21300000, guid: 21f683be4d4149f4aab10c6a92b2edda, type: 3}
+  - iconId: icon_mon_skill_008
+    sprite: {fileID: 21300000, guid: 064536b45acf3e64f8fb8d3fb46efcb0, type: 3}
+  - iconId: icon_mon_skill_009
+    sprite: {fileID: 21300000, guid: 5e5d0b4a64fbd6047be9bdaa328d15ed, type: 3}
+  - iconId: icon_mon_skill_010
+    sprite: {fileID: 21300000, guid: 74c763328c94c6f48ad010f59bbdb6de, type: 3}
+  - iconId: icon_mon_skill_011
+    sprite: {fileID: 21300000, guid: ac77556bc3dcd1b448ad0db8bf1a02f8, type: 3}
+  - iconId: icon_mon_skill_012
+    sprite: {fileID: 21300000, guid: cba1eca44345f0f48814c611d8df11b8, type: 3}
+  - iconId: icon_mon_skill_013
+    sprite: {fileID: 21300000, guid: 76f882e569e765b48aaed3be968c0625, type: 3}
+  - iconId: icon_mon_skill_014
+    sprite: {fileID: 21300000, guid: 80e62709a99dba54094dac62e8d5daa3, type: 3}
+  - iconId: icon_mon_skill_015
+    sprite: {fileID: 21300000, guid: 1bb636c3fa3ca8b40931de0c66e8d2a5, type: 3}
+  - iconId: icon_mon_skill_016
+    sprite: {fileID: 21300000, guid: 47b4f8ba4daf728479d1c4232f2ea95b, type: 3}
+  - iconId: icon_mon_skill_017
+    sprite: {fileID: 21300000, guid: d233529da27939c4587db9e7f06b9d3a, type: 3}
+  - iconId: icon_mon_skill_018
+    sprite: {fileID: 21300000, guid: 16f40582d3e2fc54dbfcc2ea05f887a4, type: 3}
+  - iconId: icon_mon_skill_019
+    sprite: {fileID: 21300000, guid: e29eadcd615093943bca600e557f2b2e, type: 3}
+  - iconId: icon_mon_skill_020
+    sprite: {fileID: 21300000, guid: 3b18fd4820a8e5d448db4fa309997236, type: 3}
+  - iconId: icon_mon_skill_021
+    sprite: {fileID: 21300000, guid: e2f017b47a165974281a52f25405ac6f, type: 3}
+  - iconId: icon_mon_skill_022
+    sprite: {fileID: 21300000, guid: b212ff7f10e0d1c41aa09ad9e68765d9, type: 3}
+  - iconId: icon_mon_skill_023
+    sprite: {fileID: 21300000, guid: 49677a240b8924e4bbc88d6d540b6ba7, type: 3}
+  - iconId: icon_mon_skill_024
+    sprite: {fileID: 21300000, guid: 31505ea75e122f24fb035da6910a1eb1, type: 3}
+  - iconId: icon_mon_skill_025
+    sprite: {fileID: 21300000, guid: 84a71a7a57c390a4f91230634a749714, type: 3}
+  - iconId: icon_mon_skill_026
+    sprite: {fileID: 21300000, guid: efb2aebd4891d5e44815eca4b7bd067c, type: 3}
+  - iconId: icon_mon_skill_027
+    sprite: {fileID: 21300000, guid: c5f492360e256424498a2e1b3921f236, type: 3}
+  - iconId: icon_mon_skill_028
+    sprite: {fileID: 21300000, guid: f40dbb61013bf0846ac80a4076f8e7f6, type: 3}
+  - iconId: icon_mon_skill_029
+    sprite: {fileID: 21300000, guid: 352c8ead4d76ff944abcd433b453e253, type: 3}
+  - iconId: icon_mon_skill_030
+    sprite: {fileID: 21300000, guid: 40bcf86111a69d946b2b627d94e9c07d, type: 3}

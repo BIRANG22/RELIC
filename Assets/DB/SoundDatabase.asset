@@ -1,0 +1,1891 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2ad814949be4d14aae338321b9207d5, type: 3}
+  m_Name: SoundDatabase
+  m_EditorClassIdentifier: 
+  bgmList:
+  - state: 0
+    mainClip:
+      clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
+      volume: 0.6
+      pitch: 1
+      loop: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 1
+    mainClip:
+      clip: {fileID: 8300000, guid: 7af83959617778349b2100f3eacb6b10, type: 3}
+      volume: 0.8
+      pitch: 1
+      loop: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips:
+    - clip: {fileID: 8300000, guid: 206e86ad69c3d4241a7d2e5ca8e2ea63, type: 3}
+      volume: 1
+      pitch: 1
+      loop: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - state: 2
+    mainClip:
+      clip: {fileID: 8300000, guid: f1584eda286725a45aeb97a48f676d41, type: 3}
+      volume: 0.6
+      pitch: 1
+      loop: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips: []
+  - state: 6
+    mainClip:
+      clip: {fileID: 8300000, guid: c55ddf15d3da7a54cb7785f4e402bce1, type: 3}
+      volume: 0.8
+      pitch: 1
+      loop: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    ambienceClips:
+    - clip: {fileID: 8300000, guid: 206e86ad69c3d4241a7d2e5ca8e2ea63, type: 3}
+      volume: 0.5
+      pitch: 1
+      loop: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  sfxList:
+  - id: ui.normal.hover
+    aliases: []
+    clip: {fileID: 8300000, guid: 74ade2b8b222d4ecd9dbd0c5a2ec312a, type: 3}
+    volume: 0.15
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.normal.click
+    aliases: []
+    clip: {fileID: 8300000, guid: 57f1816a568354089a07eef6b2935351, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.transition
+    aliases: []
+    clip: {fileID: 8300000, guid: 97817a60a94f74d928219194d6292af4, type: 3}
+    volume: 0.5
+    pitch: 0.87
+    loop: 0
+    useRandomPitch: 1
+    randomPitchMin: 0.8
+    randomPitchMax: 1
+  - id: scene.lobby.transition.open
+    aliases: []
+    clip: {fileID: 8300000, guid: bfd8f90086dcf4beabb793f48fde3712, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 1
+    randomPitchMin: 0.7
+    randomPitchMax: 0.9
+  - id: scene.lobby.transition.close
+    aliases: []
+    clip: {fileID: 8300000, guid: 2741745f661af4b49b22b08e7b51be30, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 1
+    randomPitchMin: 0.7
+    randomPitchMax: 0.9
+  - id: ui.title.hover
+    aliases: []
+    clip: {fileID: 8300000, guid: 010ca4953b15dd546994bcc230c3ff2d, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.title.click
+    aliases: []
+    clip: {fileID: 8300000, guid: 7f7f2003f18fd4f6a9b31445986ac291, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.logo.click
+    aliases: []
+    clip: {fileID: 8300000, guid: 748ab9133e00d04458c3a6b54f77b212, type: 3}
+    volume: 0.6
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.move.hover
+    aliases: []
+    clip: {fileID: 8300000, guid: eb3bf9be5c83d4dbd939ab156a55bdad, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 1
+    randomPitchMin: 0.8
+    randomPitchMax: 1.2
+  - id: ui.move.click
+    aliases: []
+    clip: {fileID: 8300000, guid: 6f5ea4a51440e4b7595865cdf64f8556, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 1
+    randomPitchMin: 0.8
+    randomPitchMax: 1.2
+  - id: ui.confirm
+    aliases: []
+    clip: {fileID: 8300000, guid: cd79944ddc33df841a78f5f3915afa10, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.box.open
+    aliases: []
+    clip: {fileID: 8300000, guid: 3b21ea75963842c428923e1ed0ad2910, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.character.setting.appear
+    aliases: []
+    clip: {fileID: 8300000, guid: 5b4391889346143bd9e5d0b5d7b4367b, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.character.setting.exit
+    aliases: []
+    clip: {fileID: 8300000, guid: 24d098200df484638a8ec41969bfa22c, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.bag.open
+    aliases: []
+    clip: {fileID: 8300000, guid: e50f271b50fe04e0398fd1421b209d08, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.bag.close
+    aliases: []
+    clip: {fileID: 8300000, guid: 4403cfceb942a43f0a74a632580685bf, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.inventory.open
+    aliases: []
+    clip: {fileID: 8300000, guid: 55426547c0ee0324787f7a5db6bcdfcd, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.inventory.close
+    aliases: []
+    clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.skill.reserve
+    aliases: []
+    clip: {fileID: 8300000, guid: d73a42d2f4c3449eab261e629916465f, type: 3}
+    volume: 0.5
+    pitch: 0.5
+    loop: 0
+    useRandomPitch: 1
+    randomPitchMin: 0.5
+    randomPitchMax: 0.8
+  - id: battle.action.reserve.text
+    aliases: []
+    clip: {fileID: 8300000, guid: 622685aba6ffb47928d0e20ae84be81b, type: 3}
+    volume: 0.8
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.progress.text
+    aliases: []
+    clip: {fileID: 8300000, guid: 2c2818c3964034785904306ce99bc49b, type: 3}
+    volume: 0.8
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.reward.remnant.acquire
+    aliases: []
+    clip: {fileID: 8300000, guid: 21ebc6cd23edc0e4aa1f23084fa0547d, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.reward.relic.skill.acquire
+    aliases: []
+    clip: {fileID: 8300000, guid: d91e392b462644884a2e4b0bb372973c, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.relic.choice.acquire
+    aliases: []
+    clip: {fileID: 8300000, guid: 42a1d30a2806e4087acd3298b3acfce4, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.timeline.slot.rotate
+    aliases: []
+    clip: {fileID: 8300000, guid: 5b4391889346143bd9e5d0b5d7b4367b, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 1
+    randomPitchMin: 0.8
+    randomPitchMax: 1.2
+  - id: battle.timeline.slot.slide
+    aliases: []
+    clip: {fileID: 8300000, guid: 39b652a79e3a14f53bd96ae2fc42bb7e, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 1
+    randomPitchMin: 0.8
+    randomPitchMax: 1.2
+  - id: battle.end.button.hover
+    aliases: []
+    clip: {fileID: 8300000, guid: 57f1816a568354089a07eef6b2935351, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.map.node.check.animation
+    aliases: []
+    clip: {fileID: 8300000, guid: 23ffa4d4eed73744eac96aa612ee44d5, type: 3}
+    volume: 0.1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.skill.list.open
+    aliases: []
+    clip: {fileID: 8300000, guid: 55426547c0ee0324787f7a5db6bcdfcd, type: 3}
+    volume: 0.4
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.skill.list.close
+    aliases: []
+    clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
+    volume: 0.4
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.event.dice.roll
+    aliases: []
+    clip: {fileID: 8300000, guid: f2cea4ad5318749b09c3a483e56dde97, type: 3}
+    volume: 0.4
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.boss.reveal.impact.low
+    aliases: []
+    clip: {fileID: 8300000, guid: 31c5d114f830245468a89f1097770791, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 1
+    randomPitchMin: 0.8
+    randomPitchMax: 1.2
+  - id: battle.reward.panel.open
+    aliases: []
+    clip: {fileID: 8300000, guid: 4f3e7bb757e76489aa06b31f83c573c9, type: 3}
+    volume: 0.5
+    pitch: 0.9
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.record.page.turn
+    aliases: []
+    clip: {fileID: 8300000, guid: 487af83246b5e462f97f3c1cf691dc70, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.book.open
+    aliases: []
+    clip: {fileID: 8300000, guid: a2f8d2f2beb873d47aa8d7f7883b66f5, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.table
+    aliases: []
+    clip: {fileID: 8300000, guid: d4a5fc08e8b932d44b21dea73acd6ebc, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.title.in
+    aliases: []
+    clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.record.click
+    aliases: []
+    clip: {fileID: 8300000, guid: efe3ec89809cb44d4afb171fb9b7fbff, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.statue.hover
+    aliases: []
+    clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.relicstone.hover
+    aliases: []
+    clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.relicstone.click
+    aliases: []
+    clip: {fileID: 8300000, guid: 9ebd67a496e154865b4cb3db7e72cc55, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.equipment.click
+    aliases: []
+    clip: {fileID: 8300000, guid: d722278585c9d48468c3f7065ffa7b25, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.equipment.close
+    aliases: []
+    clip: {fileID: 8300000, guid: 498b8022009a34a0497c059689432d01, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.chest.close
+    aliases: []
+    clip: {fileID: 8300000, guid: 3f7cd4d9f03084daf9d66177f9ddcdec, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.chest.click
+    aliases: []
+    clip: {fileID: 8300000, guid: 1386d1025d1db42f48f69d85ce36def3, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.back.click
+    aliases: []
+    clip: {fileID: 8300000, guid: cf05ddb3e0f3a40299f6d29a004761b5, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.record.open
+    aliases: []
+    clip: {fileID: 8300000, guid: 5dd444ef4e8264876aaf05afb792355d, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: intro.transition
+    aliases: []
+    clip: {fileID: 8300000, guid: 03735ec227f1f4fc79c9074a1ce65f73, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: intro.transition2
+    aliases: []
+    clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.5
+    randomPitchMax: 1
+  - id: intro.transition3
+    aliases: []
+    clip: {fileID: 8300000, guid: 9f24e65fb42424c2d8f2f2cdb008e663, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: intro.scene2
+    aliases: []
+    clip: {fileID: 8300000, guid: ee7c4142f38e94396883afb6dbb060fe, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: intro.scene3
+    aliases: []
+    clip: {fileID: 8300000, guid: 9fab18c3c572441f6958705916a3196b, type: 3}
+    volume: 0.5
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.flag.hover
+    aliases: []
+    clip: {fileID: 8300000, guid: 78be9394759c044ddaea5fc710863e8c, type: 3}
+    volume: 0.3
+    pitch: 0.6
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.flag.click
+    aliases: []
+    clip: {fileID: 8300000, guid: 602ba08c3a1834cefa18cc796ff63c89, type: 3}
+    volume: 0.3
+    pitch: 0.6
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.relic.hover
+    aliases: []
+    clip: {fileID: 8300000, guid: d73a42d2f4c3449eab261e629916465f, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.relic.click
+    aliases: []
+    clip: {fileID: 8300000, guid: 605184b7b2a25437d9c83759b038dde3, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.warning.text
+    aliases: []
+    clip: {fileID: 8300000, guid: 5b4a9bf472cff4c878ff5ce7e0281556, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.door.open
+    aliases: []
+    clip: {fileID: 8300000, guid: 1bfddafd281ff48f6a8e440fc6f0628d, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.door.open2
+    aliases: []
+    clip: {fileID: 8300000, guid: 370748b228e4c4554a01ed16028303af, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.foot.step.01
+    aliases: []
+    clip: {fileID: 8300000, guid: 293dca7ff4b604695b7fc731a9a57eba, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.foot.step.02
+    aliases: []
+    clip: {fileID: 8300000, guid: 177e25c8f366d4a27a65fb6f02de76f1, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.foot.step.03
+    aliases: []
+    clip: {fileID: 8300000, guid: 93870d42c592f4f2d8bfb03da30197a0, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: scene.foot.step.04
+    aliases: []
+    clip: {fileID: 8300000, guid: de0de99c0334d4e918254cd1a8e85bdd, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: intro.build1
+    aliases: []
+    clip: {fileID: 8300000, guid: 6be68c585f8bf489496019e2e4a2825c, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.5
+    randomPitchMax: 1
+  - id: intro.build2
+    aliases: []
+    clip: {fileID: 8300000, guid: 1358fd5e89cd046e5b0d9710d44f829d, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: intro.build3
+    aliases: []
+    clip: {fileID: 8300000, guid: 205b5e72f9b784b6daf228d7a7ebee76, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: effect_get
+    aliases: []
+    clip: {fileID: 8300000, guid: 0598b31e0b2714a0c8aec68123887515, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: add_Compound
+    aliases: []
+    clip: {fileID: 8300000, guid: 3597f236e563b482f9dda573f0fb5a7b, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: Slot_up
+    aliases: []
+    clip: {fileID: 8300000, guid: 55426547c0ee0324787f7a5db6bcdfcd, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: Slot_down
+    aliases: []
+    clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: Action_Start
+    aliases: []
+    clip: {fileID: 8300000, guid: 97920063d95b7e94c8098f16e03d9bf8, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: Room Intro
+    aliases: []
+    clip: {fileID: 8300000, guid: 9f24e65fb42424c2d8f2f2cdb008e663, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  eventSfxList:
+  - id: sfx_debuff
+    aliases: []
+    clip: {fileID: 8300000, guid: 602ba08c3a1834cefa18cc796ff63c89, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: sfx_buff
+    aliases: []
+    clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.09.Skylight
+    aliases: []
+    clip: {fileID: 8300000, guid: f0cecff6fa8e53b44940647c0e37efe7, type: 3}
+    volume: 1
+    pitch: 0.7
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.08
+    aliases: []
+    clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.08.fail
+    aliases: []
+    clip: {fileID: 8300000, guid: 31c5d114f830245468a89f1097770791, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.07
+    aliases: []
+    clip: {fileID: 8300000, guid: 642e46ed993fc42eaaa6fa78582572ea, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.07.Ambience
+    aliases: []
+    clip: {fileID: 8300000, guid: 690959147432d4186a426744a96c9965, type: 3}
+    volume: 0.1
+    pitch: 1
+    loop: 1
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.07.buff
+    aliases: []
+    clip: {fileID: 8300000, guid: 8459a860bc1684a01964dcbcafab4b49, type: 3}
+    volume: 0.1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.05
+    aliases: []
+    clip: {fileID: 8300000, guid: 92f13001fa1d3493ebc00cf66b61c53e, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.05_2
+    aliases: []
+    clip: {fileID: 8300000, guid: 5331f1c7609bb4150bcd81484f4f3397, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.05.fail
+    aliases: []
+    clip: {fileID: 8300000, guid: 06f264db30c9b49ad8faa968413c9775, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.01
+    aliases: []
+    clip: {fileID: 8300000, guid: 8769190389def4340b87c3382bbc2898, type: 3}
+    volume: 0.2
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.01_1
+    aliases: []
+    clip: {fileID: 8300000, guid: d03e7a64efe4d4fa68f50bf30c4272b9, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.02_1
+    aliases: []
+    clip: {fileID: 8300000, guid: 0ac25ba4b34704c478bb665e2901b5fb, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.02_2
+    aliases: []
+    clip: {fileID: 8300000, guid: 3b21ea75963842c428923e1ed0ad2910, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.02_2.fail
+    aliases: []
+    clip: {fileID: 8300000, guid: 2c2f5645a58094ea587d546cd0a8b357, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.02_4
+    aliases: []
+    clip: {fileID: 8300000, guid: 7c282863eacd94764aaf292f96c30cbf, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.02_3
+    aliases: []
+    clip: {fileID: 8300000, guid: b1977313535064e1ea47ed263f94a095, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  - id: event.06
+    aliases: []
+    clip: {fileID: 8300000, guid: 324c6dda82f204f498220f244a65bc44, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0
+    randomPitchMax: 0
+  playerSkillVfxSfxList:
+  - displayName: move
+    vfxPrefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: d769fbbf2229323439b901ed33f6fe6f, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 0.8
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 1
+      randomPitchMin: 0.7
+      randomPitchMax: 1.3
+  - displayName: S_Unique_01
+    vfxPrefab: {fileID: 396270323009959054, guid: eab634f3ffd2e4441ab6c90624f5b2be, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 188ab83b8bea94aa39e1c4676fda9d0d, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Unique_02
+    vfxPrefab: {fileID: 5372841363813152920, guid: efbd15a5c1bcbcb4dab256d631f18d60, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Unique_03
+    vfxPrefab: {fileID: 6453203898449280538, guid: d2549dd471998d54d97cc0c61d413305, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Unique_04
+    vfxPrefab: {fileID: 306457477009657887, guid: 8c7cc4a40f6dea04f89f2f807cdb8472, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Unique_05
+    vfxPrefab: {fileID: 3857453107072273608, guid: e63bdec7a44d8e74ca2b1e69d61d3e7e, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Unique_06
+    vfxPrefab: {fileID: 3657311369840355751, guid: a2bb111defe50ed44aba0c62d3eac585, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Ability_01,02
+    vfxPrefab: {fileID: 9032009973510874767, guid: cd098c4abf4c0094b9c18e2d5c90dfe0, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 6e0bdec41ec14d5418e3fe352d1d6e48, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 0.71
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 8a61b882716654b9aa3d20f57413cca1, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Ability_03,04
+    vfxPrefab: {fileID: 7311764206653381872, guid: e60bee9487d55684db191b1b1c1eb04d, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 3989b987d2b839448a485c420a838652, type: 3}
+      delay: 0
+      volume: 0.3
+      pitch: 1.5
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 37239b9b36f5f49398a8d8d062b4201c, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Ability_05,06
+    vfxPrefab: {fileID: 6814607968632299061, guid: d9e677191abd37b4ea44b0c2a095d363, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: cf61ffb1f8ecb496886da1d7eaeb3082, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 1
+      randomPitchMin: 0.7
+      randomPitchMax: 1.2
+    - clip: {fileID: 8300000, guid: fe52aae0ff84e43fabc86d3c14f5d35a, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 1
+      randomPitchMin: 0.7
+      randomPitchMax: 1.2
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Ability_07,08
+    vfxPrefab: {fileID: 1211211539450989031, guid: ad2188fbf0e2d7745911825db1f2644e, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: bab4a55ee83d64dada13ea8bdc94fce2, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1.22
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 1
+      randomPitchMin: 0.7
+      randomPitchMax: 1.2
+    - clip: {fileID: 8300000, guid: f081a1d2500784f1cbcce4fd71ad6823, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 1
+      randomPitchMin: 0.7
+      randomPitchMax: 1.2
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Ability_09,10
+    vfxPrefab: {fileID: 5464498477634507533, guid: 7d62d8b59c052e74f841fe794b1df8a6, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: b79f0e09b1417457ea791e32c70e243f, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Ability_11,12
+    vfxPrefab: {fileID: 2841605795099109794, guid: 69ccb2bf4a2fae641bfda27160ed0dd5, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: e79916dd3c45d32498dc10be254c166d, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  monsterSkillVfxSfxList:
+  - displayName: rancor.attack.01
+    vfxPrefab: {fileID: 5426120665623789715, guid: 380aaad3e9937d04fa4d33c13ad754cd, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 5c0d51bb2410941c0b84a733863c70f5, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: rancor.attack.02
+    vfxPrefab: {fileID: 4953072336942044038, guid: 11539de2e4a6fcd438d0a127451f66f5, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 4849ef08b472b48dfb65024a8156e50d, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: blight.attack.01
+    vfxPrefab: {fileID: 8931706953396669433, guid: b9392d3c64a56d24da5c515180f9ccc4, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 87125b98f6af84f509e86033bca0b283, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: blight.attack.02
+    vfxPrefab: {fileID: 1267188191556793296, guid: c79e07f8b5d5a8d46b9eeed91914045f, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 4849ef08b472b48dfb65024a8156e50d, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 0.7
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 602ba08c3a1834cefa18cc796ff63c89, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: muck.missile
+    vfxPrefab: {fileID: 7625895887722065679, guid: 46f6c725fd762724d94b566b0d4f508e, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 05d8a2a02bfa4422e96e236f7ceb4781, type: 3}
+      delay: 0.1
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: muck.attack
+    vfxPrefab: {fileID: 3362751810309854143, guid: 10bad5f4be8c97b4fa38a4fb131738e7, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 9670def1623724ffcb07858587cdf951, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: blob.attack
+    vfxPrefab: {fileID: 3362751810309854143, guid: ec16484300f824c4dba8bf7959423f46, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: c540d97b531a3401f8fc577ff5f9bf92, type: 3}
+      delay: 0
+      volume: 0.8
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: vespa.move
+    vfxPrefab: {fileID: 4145361429921181282, guid: 7990150aefb368844be3edb4e9e4d400, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: e436a12901d084ceea61f2c90c56223c, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 0
+      randomPitchMax: 0
+  - displayName: vespa.attack
+    vfxPrefab: {fileID: 5208702714398133800, guid: 3fcdc7b143b3df849b48de95de31fcb2, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: f00737831b0e645bdb1a303c22981ae6, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: da9151920998742508acb66cf5d35e92, type: 3}
+      delay: 0.2
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: sinder.attack
+    vfxPrefab: {fileID: 4003987336476800750, guid: 73a480090faa5b24bbb538efb54be0a9, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: db8231501116cb04290b3ed54ff277cf, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 0.7
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: draugr.attack.01
+    vfxPrefab: {fileID: 7849381218892773088, guid: 175104cf9b3817347a0db75fa72f3291, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: f5bb2da2f813545e69c4424a96f39522, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 37f9cbfd94f6c4f28bb432b57228e407, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: draugr.attack.02
+    vfxPrefab: {fileID: 7849381218892773088, guid: dba56832103a0a841a7c8b232077fce6, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: f5bb2da2f813545e69c4424a96f39522, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 37f9cbfd94f6c4f28bb432b57228e407, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 76fd7fac57b284675b40fe40bb079c62, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: barrow.attack.01
+    vfxPrefab: {fileID: 4842766680182321979, guid: 8404b38b90edf4440af576b08baac5d8, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 979c8088438b44b45a63851c8e2398e8, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: barrow.attack.02
+    vfxPrefab: {fileID: 4842766680182321979, guid: 5a0861b7a8fde794e94e49da70c5b6fd, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 81beb3b75933f494d924cb1792f838d7, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 2
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 979c8088438b44b45a63851c8e2398e8, type: 3}
+      delay: 0.2
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: barrow.missile
+    vfxPrefab: {fileID: 49662444496052213, guid: 2edccefc0a1f0814090e5c4715726a68, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 8d287e348b46949429b2c0f400af717f, type: 3}
+      delay: 0.2
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 108b562eaeb054ab0b1e6db666b9485f, type: 3}
+      delay: 0.2
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: nocturne.move
+    vfxPrefab: {fileID: 5677070968414788663, guid: 8bcb4e0d61109cf4eb10358a484b4127, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 2c4c60b57283f4619b81aaf673cc9c08, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: nocturne.attack.01
+    vfxPrefab: {fileID: 4274269069465894755, guid: dafad4a8c50e0e5419500dadf5f7a4d5, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 31c5d114f830245468a89f1097770791, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 69ff91372fde648479a99dbb0c3e5d7b, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: cd58c9246e9e74f9ca9c97b6d55d220c, type: 3}
+      delay: 0.1
+      volume: 0.3
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: nocturne.attack.02
+    vfxPrefab: {fileID: 5793995357469845939, guid: 337cd8521de29174b89b08942c92953f, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 31c5d114f830245468a89f1097770791, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: bab4a55ee83d64dada13ea8bdc94fce2, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: d569393dfcbfe46ceb38cb5cf10f7c93, type: 3}
+      delay: 0.1
+      volume: 0.3
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: nocturne.attack.03
+    vfxPrefab: {fileID: 871528175240582480, guid: 3de88738a70e25a43b753719fc19c5e5, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 23ddc3ea5b3ee4ed59eb5b03f1aca24f, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 0.6
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: mort.attack.01
+    vfxPrefab: {fileID: 8323198300880681488, guid: 54a105f7d4413df498febf2c20247103, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 7b853722a280e466f8fc0bb615044a73, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 9b02f295ba2434817a92492a2aed4b88, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: mort.attack.02
+    vfxPrefab: {fileID: 2270861586506169575, guid: 0572c5c158b09494c9b80317f866ec91, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 85f156dde302e41c2a5a9ae5ea2a76e0, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: mort.attack.03
+    vfxPrefab: {fileID: 2722526190595881914, guid: 6c96fe66d3d5321458160c40faa279bb, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 87fd491f0c3290f448e4f254c98243fd, type: 3}
+      delay: 0
+      volume: 0.1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: ruke.move
+    vfxPrefab: {fileID: 4145361429921181282, guid: b9629030528528647b8450147fc2c871, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 92f13001fa1d3493ebc00cf66b61c53e, type: 3}
+      delay: 0
+      volume: 1
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: ruke.attack.01
+    vfxPrefab: {fileID: 3632081370858408973, guid: fc3bffa3b289e5c4ca4df00da1eba747, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 55e46a78bf935ff4c840aa490b913026, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: ruke.attack.02
+    vfxPrefab: {fileID: 8945540552819743209, guid: b012a0a4d7fa0d745bb777a8278cab78, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 37fa1d21b3607bd48bd5b2247ea7d7c4, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: ruke.attack.03
+    vfxPrefab: {fileID: 3602943759074218325, guid: 25872a24560375c49a2441cb58273416, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: ad70aa54bc5c0014da0dd61091f3807c, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: ruke_skill_04
+    vfxPrefab: {fileID: 7528646786082519194, guid: 38e0999ffd8f187408059414ae758c8b, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 97817a60a94f74d928219194d6292af4, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 0.8
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: arabella.attack.01
+    vfxPrefab: {fileID: 5755029021125086085, guid: 4fa99d2efc68cb541b6fc5c7f44a8447, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 6fe7c8d23d32943a783119d6e0c38b05, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: bab4a55ee83d64dada13ea8bdc94fce2, type: 3}
+      delay: 0.1
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: d569393dfcbfe46ceb38cb5cf10f7c93, type: 3}
+      delay: 0.1
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: arabella.attack.02
+    vfxPrefab: {fileID: 6228339372252518442, guid: 69474b264de00714485785d33ec45076, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: e78ee39c4d8316c4999ad3df556acdf3, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: arabella.attack.03
+    vfxPrefab: {fileID: 7042334462189142359, guid: 7053264502be7a342bbf60ff7ae337f6, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 31c15024aff0740faaaa5cee0e09aa5b, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: arabella.attack.04
+    vfxPrefab: {fileID: 7042334462189142359, guid: 675f32f386a432f409f44b450ac64ed4, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 5797e1d0da3a944ac94ad8f0654441cb, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: arabella.attack.05
+    vfxPrefab: {fileID: 7042334462189142359, guid: 1b2db9fcbd8002640b795a7f1acb7540, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: b1b5b4d788529457a94c4c01720b4907, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 1cf10d68406ef4714a240476f6c1c2b3, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1

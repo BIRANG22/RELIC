@@ -1,4 +1,5 @@
 using Relic.Gameplay.Data;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -17,6 +18,10 @@ public class MonsterHUDSlot : MonoBehaviour
     [SerializeField] private Image shieldFill;
     [SerializeField] private TMP_Text shieldValueText;
 
+    [Header("Value Animation")]
+    [SerializeField, Min(0f)] private float hpValueChangeDuration = 0.35f;
+    [SerializeField, Min(0f)] private float shieldValueChangeDuration = 0.35f;
+
     [Header("Status Effects")]
     [SerializeField] private Transform statusIconRoot;
     [SerializeField] private StatusEffectIcon statusIconPrefab;
@@ -34,6 +39,17 @@ public class MonsterHUDSlot : MonoBehaviour
     private Collider2D followCollider2D;
     private readonly List<StatusEffectIcon> spawnedStatusIcons = new();
 
+    private Coroutine hpValueRoutine;
+    private Coroutine shieldValueRoutine;
+    private float displayedHP;
+    private float displayedShield;
+    private int displayedMaxHP = 1;
+    private int targetHP;
+    private int targetShield;
+    private bool hasDisplayedValues;
+    private bool isVisible;
+    private Camera cachedMainCamera;
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -44,15 +60,22 @@ public class MonsterHUDSlot : MonoBehaviour
         if (canvasGroup == null)
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
+        canvasGroup.ignoreParentGroups = true;
+
         ApplyStatusEffectParentLayout();
+    }
+
+    private void OnDisable()
+    {
+        StopValueAnimations();
+        isVisible = false;
+        hasDisplayedValues = false;
     }
 
     private void LateUpdate()
     {
-        if (!useFollowPosition)
-            return;
-
-        UpdateFollowPosition();
+        if (useFollowPosition)
+            UpdateFollowPosition();
     }
 
     public void SetUseFollowPosition(bool value)
@@ -76,13 +99,10 @@ public class MonsterHUDSlot : MonoBehaviour
 
     private void UpdateFollowPosition()
     {
-        if (!useFollowPosition)
+        if (!useFollowPosition || followTarget == null || rectTransform == null)
             return;
 
-        if (followTarget == null || rectTransform == null)
-            return;
-
-        Camera cam = Camera.main;
+        Camera cam = GetMainCamera();
         if (cam == null)
             return;
 
@@ -109,8 +129,17 @@ public class MonsterHUDSlot : MonoBehaviour
         return followTarget.position + worldOffset;
     }
 
+    private Camera GetMainCamera()
+    {
+        if (cachedMainCamera == null)
+            cachedMainCamera = Camera.main;
+
+        return cachedMainCamera;
+    }
+
     public void Bind(MonsterRuntimeData runtimeData)
     {
+        bool runtimeChanged = !ReferenceEquals(boundRuntime, runtimeData);
         boundRuntime = runtimeData;
         ApplyStatusEffectParentLayout();
 
@@ -118,6 +147,12 @@ public class MonsterHUDSlot : MonoBehaviour
         {
             Clear();
             return;
+        }
+
+        if (runtimeChanged)
+        {
+            StopValueAnimations();
+            hasDisplayedValues = false;
         }
 
         Refresh();
@@ -128,15 +163,20 @@ public class MonsterHUDSlot : MonoBehaviour
         if (useFollowPosition)
             UpdateFollowPosition();
 
-        Refresh();
-
+        isVisible = true;
         canvasGroup.alpha = 1f;
         canvasGroup.interactable = true;
         canvasGroup.blocksRaycasts = true;
+
+        Refresh();
+        StartPendingValueAnimations();
     }
 
     public void Hide()
     {
+        isVisible = false;
+        StopValueAnimations();
+
         canvasGroup.alpha = 0f;
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
@@ -151,10 +191,43 @@ public class MonsterHUDSlot : MonoBehaviour
         }
 
         if (nameText != null)
-            nameText.text = boundRuntime.GetDisplayName();
+            nameText.text = GetDisplayName();
 
-        RefreshBar(hpFill, hpValueText, boundRuntime.CurrentHP, boundRuntime.MaxHP);
-        RefreshShield(boundRuntime.CurrentShield, boundRuntime.MaxHP);
+        int maxHP = Mathf.Max(1, boundRuntime.MaxHP);
+        int newTargetHP = Mathf.Clamp(boundRuntime.CurrentHP, 0, maxHP);
+        int newTargetShield = Mathf.Max(0, boundRuntime.CurrentShield);
+
+        if (!hasDisplayedValues)
+        {
+            InitializeDisplayedValues(newTargetHP, newTargetShield, maxHP);
+        }
+        else
+        {
+            displayedMaxHP = maxHP;
+
+            if (targetHP != newTargetHP)
+            {
+                targetHP = newTargetHP;
+                if (isVisible)
+                    StartHPAnimation();
+            }
+            else
+            {
+                ApplyHPDisplay(displayedHP, displayedMaxHP);
+            }
+
+            if (targetShield != newTargetShield)
+            {
+                targetShield = newTargetShield;
+                if (isVisible)
+                    StartShieldAnimation();
+            }
+            else
+            {
+                ApplyShieldDisplay(displayedShield, displayedMaxHP);
+            }
+        }
+
         RefreshStatusEffects(boundRuntime.StatusEffects);
     }
 
@@ -179,33 +252,149 @@ public class MonsterHUDSlot : MonoBehaviour
         rectTransform.anchoredPosition = new Vector2(0f, rectTransform.anchoredPosition.y);
     }
 
-    private void RefreshBar(Image fill, TMP_Text valueText, int current, int max)
+    private string GetDisplayName()
     {
-        max = Mathf.Max(1, max);
-        current = Mathf.Clamp(current, 0, max);
-
-        if (fill != null)
-            fill.fillAmount = (float)current / max;
-
-        if (valueText != null)
-            valueText.text = current.ToString();
+        return boundRuntime != null ? boundRuntime.GetDisplayName() : string.Empty;
     }
 
-    private void RefreshShield(int shield, int maxHP)
+    private void InitializeDisplayedValues(int hp, int shield, int maxHP)
     {
-        shield = Mathf.Max(0, shield);
+        displayedMaxHP = Mathf.Max(1, maxHP);
+        targetHP = hp;
+        targetShield = shield;
+        displayedHP = hp;
+        displayedShield = shield;
+        hasDisplayedValues = true;
+
+        ApplyHPDisplay(displayedHP, displayedMaxHP);
+        ApplyShieldDisplay(displayedShield, displayedMaxHP);
+    }
+
+    private void StartPendingValueAnimations()
+    {
+        if (!hasDisplayedValues)
+            return;
+
+        if (Mathf.RoundToInt(displayedHP) != targetHP)
+            StartHPAnimation();
+
+        if (Mathf.RoundToInt(displayedShield) != targetShield)
+            StartShieldAnimation();
+    }
+
+    private void StartHPAnimation()
+    {
+        if (hpValueRoutine != null)
+            StopCoroutine(hpValueRoutine);
+
+        if (hpValueChangeDuration <= 0f || Mathf.Approximately(displayedHP, targetHP))
+        {
+            displayedHP = targetHP;
+            ApplyHPDisplay(displayedHP, displayedMaxHP);
+            hpValueRoutine = null;
+            return;
+        }
+
+        hpValueRoutine = StartCoroutine(AnimateHPValue(displayedHP, targetHP));
+    }
+
+    private IEnumerator AnimateHPValue(float startValue, int endValue)
+    {
+        float duration = Mathf.Max(0.0001f, hpValueChangeDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            displayedHP = Mathf.Lerp(startValue, endValue, t);
+            ApplyHPDisplay(displayedHP, displayedMaxHP);
+            yield return null;
+        }
+
+        displayedHP = endValue;
+        ApplyHPDisplay(displayedHP, displayedMaxHP);
+        hpValueRoutine = null;
+    }
+
+    private void StartShieldAnimation()
+    {
+        if (shieldValueRoutine != null)
+            StopCoroutine(shieldValueRoutine);
+
+        if (shieldValueChangeDuration <= 0f || Mathf.Approximately(displayedShield, targetShield))
+        {
+            displayedShield = targetShield;
+            ApplyShieldDisplay(displayedShield, displayedMaxHP);
+            shieldValueRoutine = null;
+            return;
+        }
+
+        shieldValueRoutine = StartCoroutine(AnimateShieldValue(displayedShield, targetShield));
+    }
+
+    private IEnumerator AnimateShieldValue(float startValue, int endValue)
+    {
+        float duration = Mathf.Max(0.0001f, shieldValueChangeDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            displayedShield = Mathf.Lerp(startValue, endValue, t);
+            ApplyShieldDisplay(displayedShield, displayedMaxHP);
+            yield return null;
+        }
+
+        displayedShield = endValue;
+        ApplyShieldDisplay(displayedShield, displayedMaxHP);
+        shieldValueRoutine = null;
+    }
+
+    private void StopValueAnimations()
+    {
+        if (hpValueRoutine != null)
+        {
+            StopCoroutine(hpValueRoutine);
+            hpValueRoutine = null;
+        }
+
+        if (shieldValueRoutine != null)
+        {
+            StopCoroutine(shieldValueRoutine);
+            shieldValueRoutine = null;
+        }
+    }
+
+    private void ApplyHPDisplay(float value, int max)
+    {
+        max = Mathf.Max(1, max);
+        int rounded = Mathf.Clamp(Mathf.RoundToInt(value), 0, max);
+
+        if (hpFill != null)
+            hpFill.fillAmount = Mathf.Clamp01(value / max);
+
+        if (hpValueText != null)
+            hpValueText.text = rounded.ToString();
+    }
+
+    private void ApplyShieldDisplay(float value, int maxHP)
+    {
         maxHP = Mathf.Max(1, maxHP);
+        int rounded = Mathf.Max(0, Mathf.RoundToInt(value));
+        bool shouldShow = rounded > 0 || targetShield > 0 || shieldValueRoutine != null;
 
         if (shieldFill != null)
         {
-            shieldFill.gameObject.SetActive(shield > 0);
-            shieldFill.fillAmount = (float)shield / maxHP;
+            shieldFill.gameObject.SetActive(shouldShow);
+            shieldFill.fillAmount = Mathf.Max(0f, value) / maxHP;
         }
 
         if (shieldValueText != null)
         {
-            shieldValueText.gameObject.SetActive(shield > 0);
-            shieldValueText.text = shield.ToString();
+            shieldValueText.gameObject.SetActive(shouldShow);
+            shieldValueText.text = "+" + rounded;
         }
     }
 
@@ -214,10 +403,7 @@ public class MonsterHUDSlot : MonoBehaviour
         ClearStatusEffectIcons();
         ApplyStatusEffectParentLayout();
 
-        if (statusIconRoot == null || statusIconPrefab == null)
-            return;
-
-        if (statusEffects == null)
+        if (statusIconRoot == null || statusIconPrefab == null || statusEffects == null)
             return;
 
         for (int i = 0; i < statusEffects.Count; i++)
@@ -226,8 +412,8 @@ public class MonsterHUDSlot : MonoBehaviour
                 continue;
 
             StatusEffectIcon icon = Instantiate(statusIconPrefab, statusIconRoot);
+            icon.SetTooltipEnabled(false);
             icon.Set(statusEffects[i]);
-
             spawnedStatusIcons.Add(icon);
         }
     }
@@ -255,18 +441,25 @@ public class MonsterHUDSlot : MonoBehaviour
             return;
 
         HorizontalLayoutGroup layout = statusIconRoot.GetComponent<HorizontalLayoutGroup>();
-
         if (layout != null)
             layout.spacing = statusEffectIconSpacing;
     }
 
     private void Clear()
     {
-        if (nameText != null)
-            nameText.text = "";
+        StopValueAnimations();
+        hasDisplayedValues = false;
+        targetHP = 0;
+        targetShield = 0;
+        displayedHP = 0f;
+        displayedShield = 0f;
+        displayedMaxHP = 1;
 
-        RefreshBar(hpFill, hpValueText, 0, 1);
-        RefreshShield(0, 1);
+        if (nameText != null)
+            nameText.text = string.Empty;
+
+        ApplyHPDisplay(0f, 1);
+        ApplyShieldDisplay(0f, 1);
         ClearStatusEffectIcons();
     }
 }

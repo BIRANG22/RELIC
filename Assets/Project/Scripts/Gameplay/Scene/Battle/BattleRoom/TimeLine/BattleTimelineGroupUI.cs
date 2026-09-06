@@ -1,4 +1,5 @@
 using Relic.Gameplay.Monster;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -8,7 +9,16 @@ using UnityEngine.UI;
 public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 {
     [Header("Turn Mark")]
+    [SerializeField] private TMP_Text turnText;
+    [SerializeField] private Image firstIconRootImage;
+    [SerializeField] private Image firstIconImage;
+    [SerializeField] private Image laterIconRootImage;
+    [SerializeField] private Image laterIconImage;
+
+    [Header("Legacy Owner Icon References")]
+    [SerializeField] private Image playerIconRootImage;
     [SerializeField] private Image playerIconImage;
+    [SerializeField] private Image enemyIconRootImage;
     [SerializeField] private Image enemyIconImage;
 
     [Header("Order Slots")]
@@ -18,6 +28,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [Header("Reserved Colors")]
     [SerializeField] private Color playerReservedColor = new Color32(0x0A, 0x46, 0x9E, 0xFF);
     [SerializeField] private Color enemyReservedColor = new Color32(0xDF, 0x4D, 0x56, 0xFF);
+    [SerializeField] private Color deadReservationColor = new Color32(0x77, 0x77, 0x77, 0xFF);
 
     [Header("Empty Use Skill Slots")]
     [SerializeField] private Color emptyUseSkillColor = new Color32(0xFF, 0xFF, 0xFF, 0x05);
@@ -33,20 +44,42 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private float selectedTurnMarkColorSpeed = 4f;
 
     private readonly List<BattleTimelinePreviewEntry> currentEntries = new();
+    private readonly List<bool> currentEntryOwnerDeadStates = new();
+    private BattleTimelinePreviewEntry firstOwnerEntry;
+    private BattleTimelinePreviewEntry laterOwnerEntry;
+    private bool firstOwnerDeadState;
+    private bool laterOwnerDeadState;
 
     private BattleTimelineBarUI owner;
     private int slotIndex;
     private bool isActive;
-    private bool emptyUseSkillSlotsVisible = true;
+    private bool emptyUseSkillSlotsVisible = false;
 
     private Vector3 turnMarkNormalScale = Vector3.one;
     private bool hasCachedTurnMarkVisual;
     private Color turnMarkNormalImageColor = Color.white;
+    private Sprite turnMarkNormalSprite;
+    private Sprite[] useSkillRootNormalSprites;
+    private Color[] useSkillRootNormalColors;
+    private bool hasCachedTrailingVisualDefaults;
 
     private string enemyOwnerIconMonsterRuntimeId = "";
     private MonsterUnit hoveredEnemyOwnerIconMonster;
     private GameObject registeredEnemyOwnerIconImageObject;
     private GameObject registeredEnemyOwnerIconRootObject;
+
+    private string playerOwnerIconCharacterId = "";
+    private BattleCharacter hoveredPlayerOwnerIconCharacter;
+    private GameObject registeredPlayerOwnerIconImageObject;
+    private GameObject registeredPlayerOwnerIconRootObject;
+
+    [Header("Owner Icon Hover Scale")]
+    [SerializeField] private float ownerIconHoverScaleMultiplier = 1.1f;
+    [SerializeField] private float ownerIconHoverScaleDuration = 0.12f;
+
+    private Transform ownerIconScaleTransform;
+    private Vector3 ownerIconBaseScale = Vector3.one;
+    private Coroutine ownerIconScaleRoutine;
 
     public int SlotIndex => slotIndex;
 
@@ -54,12 +87,23 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     {
         AutoFindReferences();
         CacheTurnMarkNormalVisual();
+        CacheTrailingVisualDefaults();
         ApplyTurnMarkSelectedVisual(false);
     }
 
     private void Update()
     {
+        if (IsBattleEnded())
+        {
+            if (isActive)
+                SetActiveTimelineSlot(false);
+
+            UpdateDeadReservationVisuals();
+            return;
+        }
+
         UpdateTurnMarkSelectedAnimation();
+        UpdateDeadReservationVisuals();
     }
 
     public void Init(BattleTimelineBarUI owner, int slotIndex)
@@ -69,25 +113,49 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         AutoFindReferences();
         CacheTurnMarkNormalVisual();
+        CacheTrailingVisualDefaults();
         ApplyTurnMarkSelectedVisual(isActive);
+        ApplyTurnText();
     }
 
     public void SetActiveTimelineSlot(bool active)
     {
+        if (IsBattleEnded())
+            active = false;
+
         isActive = active;
         ApplyTurnMarkSelectedVisual(active);
+    }
+
+    public void SetOwnerIconsVisible(bool visible)
+    {
+        if (!visible)
+        {
+            SetOwnerIconImage(firstIconRootImage, firstIconImage, null, false, Color.white);
+            SetOwnerIconImage(laterIconRootImage, laterIconImage, null, false, Color.white);
+            SetOwnerIconImage(playerIconRootImage, playerIconImage, null, false, playerReservedColor);
+            SetOwnerIconImage(enemyIconRootImage, enemyIconImage, null, false, enemyReservedColor);
+            ClearEnemyOwnerIconHudHoverTarget();
+            ClearPlayerOwnerIconHudHoverTarget();
+            return;
+        }
+
+        // 실제 표시 여부는 SetTimelineEntries에서 현재 실행 순서에 맞춰 다시 계산합니다.
     }
 
     public void SetTimelineEntries(IReadOnlyList<BattleTimelinePreviewEntry> entries, int targetSlotIndex)
     {
         Clear();
+        slotIndex = targetSlotIndex;
+        ApplyTurnText();
 
         if (entries == null || entries.Count <= 0)
             return;
 
-        Sprite firstPlayerIcon = null;
-        Sprite firstEnemyIcon = null;
-        string firstEnemyRuntimeId = "";
+        BattleTimelinePreviewEntry firstPlayerEntry = null;
+        BattleTimelinePreviewEntry firstMonsterEntry = null;
+        int firstPlayerIndex = int.MaxValue;
+        int firstMonsterIndex = int.MaxValue;
 
         int visibleIndex = 0;
         int maxOrderCount = 5;
@@ -103,32 +171,31 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                 break;
 
             currentEntries.Add(entry);
+            bool ownerDead = IsEntryOwnerDead(entry);
+            currentEntryOwnerDeadStates.Add(ownerDead);
 
-            bool isMonster = entry.IsMonster;
-            Color reservedColor = isMonster ? enemyReservedColor : playerReservedColor;
+            if (entry.IsMonster && firstMonsterEntry == null)
+            {
+                firstMonsterEntry = entry;
+                firstMonsterIndex = visibleIndex;
+            }
+            else if (entry.IsPlayer && firstPlayerEntry == null)
+            {
+                firstPlayerEntry = entry;
+                firstPlayerIndex = visibleIndex;
+            }
 
-            if (isMonster)
-            {
-                if (firstEnemyIcon == null)
-                {
-                    firstEnemyIcon = entry.OwnerIcon;
-                    firstEnemyRuntimeId = entry.MonsterRuntimeId;
-                }
-            }
-            else
-            {
-                if (firstPlayerIcon == null)
-                    firstPlayerIcon = entry.OwnerIcon;
-            }
+            Color reservedColor = entry.IsMonster ? enemyReservedColor : playerReservedColor;
 
             if (useSkillIconImages != null && visibleIndex < useSkillIconImages.Length)
             {
                 Image useSkillImage = useSkillIconImages[visibleIndex];
 
                 SetSkillImage(useSkillImage, entry.SkillIcon, true, reservedColor);
+                ApplySkillReservationColor(useSkillImage, entry, ownerDead);
                 SetSkillValueText(useSkillValueTexts, visibleIndex, entry.SkillValueText);
 
-                if (isMonster)
+                if (entry.IsMonster)
                     SetupEnemySkillHoverTarget(useSkillImage, entry);
                 else
                     SetupPlayerSkillHoverTarget(useSkillImage, entry);
@@ -137,18 +204,47 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             visibleIndex++;
         }
 
-        SetOwnerIconImage(playerIconImage, firstPlayerIcon, firstPlayerIcon != null, playerReservedColor);
-        SetOwnerIconImage(enemyIconImage, firstEnemyIcon, firstEnemyIcon != null, enemyReservedColor);
-        SetupEnemyOwnerIconHudHoverTarget(enemyIconImage, firstEnemyRuntimeId);
+        BattleTimelinePreviewEntry firstEntry = null;
+        BattleTimelinePreviewEntry laterEntry = null;
+
+        if (firstPlayerEntry != null && firstMonsterEntry != null)
+        {
+            bool playerFirst = firstPlayerIndex < firstMonsterIndex;
+            firstEntry = playerFirst ? firstPlayerEntry : firstMonsterEntry;
+            laterEntry = playerFirst ? firstMonsterEntry : firstPlayerEntry;
+        }
+        else
+        {
+            firstEntry = firstPlayerEntry ?? firstMonsterEntry;
+        }
+
+        firstOwnerEntry = firstEntry;
+        laterOwnerEntry = laterEntry;
+        firstOwnerDeadState = IsEntryOwnerDead(firstEntry);
+        laterOwnerDeadState = IsEntryOwnerDead(laterEntry);
+
+        ApplyOwnerOrderIcon(firstIconRootImage, firstIconImage, firstEntry);
+        ApplyOwnerOrderIcon(laterIconRootImage, laterIconImage, laterEntry);
+
+        SetupOwnerIconInteractionTarget(firstIconImage, firstEntry);
+        SetupOwnerIconInteractionTarget(laterIconImage, laterEntry);
     }
 
     public void Clear()
     {
         currentEntries.Clear();
+        currentEntryOwnerDeadStates.Clear();
+        firstOwnerEntry = null;
+        laterOwnerEntry = null;
+        firstOwnerDeadState = false;
+        laterOwnerDeadState = false;
 
-        SetOwnerIconImage(playerIconImage, null, false, Color.white);
-        SetOwnerIconImage(enemyIconImage, null, false, Color.white);
+        SetOwnerIconImage(firstIconRootImage, firstIconImage, null, false, Color.white);
+        SetOwnerIconImage(laterIconRootImage, laterIconImage, null, false, Color.white);
+        SetOwnerIconImage(playerIconRootImage, playerIconImage, null, false, playerReservedColor);
+        SetOwnerIconImage(enemyIconRootImage, enemyIconImage, null, false, enemyReservedColor);
         ClearEnemyOwnerIconHudHoverTarget();
+        ClearPlayerOwnerIconHudHoverTarget();
 
         if (useSkillIconImages != null)
         {
@@ -185,16 +281,37 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         ClearSkillHoverTarget(image);
     }
 
-    private void SetupEnemyOwnerIconHudHoverTarget(Image ownerIconImage, string monsterRuntimeId)
+    private void SetupOwnerIconInteractionTarget(Image ownerIconImage, BattleTimelinePreviewEntry entry)
     {
-        ClearEnemyOwnerIconHudHoverTarget(false);
-
-        if (ownerIconImage == null || string.IsNullOrWhiteSpace(monsterRuntimeId))
+        if (entry == null)
             return;
 
+        if (entry.IsMonster)
+            SetupEnemyOwnerIconHudHoverTarget(ownerIconImage, entry.MonsterRuntimeId);
+        else if (entry.IsPlayer)
+            SetupPlayerOwnerIconHudHoverTarget(ownerIconImage, entry.OwnerId);
+    }
+
+    private void SetupEnemyOwnerIconHudHoverTarget(Image ownerIconImage, string monsterRuntimeId)
+    {
+        if (ownerIconImage == null || string.IsNullOrWhiteSpace(monsterRuntimeId))
+        {
+            ClearEnemyOwnerIconHudHoverTarget(false);
+            return;
+        }
+
+        if (registeredEnemyOwnerIconImageObject == ownerIconImage.gameObject &&
+            enemyOwnerIconMonsterRuntimeId == monsterRuntimeId)
+        {
+            ownerIconImage.raycastTarget = true;
+            return;
+        }
+
+        ClearEnemyOwnerIconHudHoverTarget(false);
         enemyOwnerIconMonsterRuntimeId = monsterRuntimeId;
 
         GameObject imageObject = ownerIconImage.gameObject;
+        CacheOwnerIconBaseScale(ownerIconImage.transform);
         GameObject rootObject = ownerIconImage.transform.parent != null
             ? ownerIconImage.transform.parent.gameObject
             : imageObject;
@@ -207,7 +324,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     private void ClearEnemyOwnerIconHudHoverTarget(bool clearRegisteredObjects = true)
     {
-        HideHoveredEnemyOwnerIconHUD();
+        HideEnemyOwnerIconHover();
         enemyOwnerIconMonsterRuntimeId = "";
 
         if (registeredEnemyOwnerIconImageObject != null)
@@ -265,7 +382,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             eventID = EventTriggerType.PointerEnter
         };
 
-        enterEntry.callback.AddListener(_ => ShowEnemyOwnerIconHUD());
+        enterEntry.callback.AddListener(_ => ShowEnemyOwnerIconHover());
         trigger.triggers.Add(enterEntry);
 
         EventTrigger.Entry exitEntry = new EventTrigger.Entry
@@ -273,8 +390,16 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             eventID = EventTriggerType.PointerExit
         };
 
-        exitEntry.callback.AddListener(_ => HideHoveredEnemyOwnerIconHUD());
+        exitEntry.callback.AddListener(_ => HideEnemyOwnerIconHover());
         trigger.triggers.Add(exitEntry);
+
+        EventTrigger.Entry clickEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerClick
+        };
+
+        clickEntry.callback.AddListener(_ => SelectEnemyOwnerIcon());
+        trigger.triggers.Add(clickEntry);
     }
 
     private void RemoveEnemyOwnerIconHoverEvents(EventTrigger trigger)
@@ -290,11 +415,48 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                 continue;
 
             if (entry.eventID == EventTriggerType.PointerEnter ||
-                entry.eventID == EventTriggerType.PointerExit)
+                entry.eventID == EventTriggerType.PointerExit ||
+                entry.eventID == EventTriggerType.PointerClick)
             {
                 trigger.triggers.RemoveAt(i);
             }
         }
+    }
+
+    private void SelectEnemyOwnerIcon()
+    {
+        MonsterUnit monster = FindEnemyOwnerIconMonster();
+
+        if (monster != null)
+            monster.SelectForInfoFromTimeline();
+    }
+
+    private void ShowEnemyOwnerIconHover()
+    {
+        AnimateOwnerIconScale(true);
+        ShowEnemyOwnerIconHUD();
+
+        if (hoveredEnemyOwnerIconMonster != null)
+        {
+            hoveredEnemyOwnerIconMonster.SetTimelineHoverHighlight(true);
+            hoveredEnemyOwnerIconMonster.ShowAttackRangePreviewFromTimeline();
+        }
+    }
+
+    private void HideEnemyOwnerIconHover()
+    {
+        AnimateOwnerIconScale(false);
+
+        if (hoveredEnemyOwnerIconMonster == null)
+            hoveredEnemyOwnerIconMonster = FindEnemyOwnerIconMonster();
+
+        if (hoveredEnemyOwnerIconMonster != null)
+        {
+            hoveredEnemyOwnerIconMonster.SetTimelineHoverHighlight(false);
+            hoveredEnemyOwnerIconMonster.HideAttackRangePreviewFromTimeline();
+        }
+
+        HideHoveredEnemyOwnerIconHUD();
     }
 
     private void ShowEnemyOwnerIconHUD()
@@ -338,9 +500,296 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         return null;
     }
 
+    private void SetupPlayerOwnerIconHudHoverTarget(Image ownerIconImage, string characterId)
+    {
+        if (ownerIconImage == null || string.IsNullOrWhiteSpace(characterId))
+        {
+            ClearPlayerOwnerIconHudHoverTarget(false);
+            return;
+        }
+
+        // 동일한 타임라인 아이콘이 같은 캐릭터를 계속 표시하는 동안에는
+        // Hover 상태를 초기화하지 않습니다. 타임라인 갱신은 매 프레임 발생할 수 있으므로,
+        // 여기서 Clear를 반복하면 CharacterHUDSlot이 Hover 직후 다시 숨겨집니다.
+        if (registeredPlayerOwnerIconImageObject == ownerIconImage.gameObject &&
+            playerOwnerIconCharacterId == characterId)
+        {
+            ownerIconImage.raycastTarget = true;
+            return;
+        }
+
+        ClearPlayerOwnerIconHudHoverTarget(false);
+        playerOwnerIconCharacterId = characterId;
+
+        GameObject imageObject = ownerIconImage.gameObject;
+        CacheOwnerIconBaseScale(ownerIconImage.transform);
+        GameObject rootObject = ownerIconImage.transform.parent != null
+            ? ownerIconImage.transform.parent.gameObject
+            : imageObject;
+
+        RegisterPlayerOwnerIconEvents(imageObject, true);
+
+        if (rootObject != imageObject)
+            RegisterPlayerOwnerIconEvents(rootObject, false);
+    }
+
+    private void ClearPlayerOwnerIconHudHoverTarget(bool clearRegisteredObjects = true)
+    {
+        HidePlayerOwnerIconHover();
+        playerOwnerIconCharacterId = "";
+
+        if (registeredPlayerOwnerIconImageObject != null)
+        {
+            Image image = registeredPlayerOwnerIconImageObject.GetComponent<Image>();
+            if (image != null)
+                image.raycastTarget = false;
+        }
+
+        if (registeredPlayerOwnerIconRootObject != null)
+        {
+            Image image = registeredPlayerOwnerIconRootObject.GetComponent<Image>();
+            if (image != null)
+                image.raycastTarget = false;
+        }
+
+        if (clearRegisteredObjects)
+        {
+            registeredPlayerOwnerIconImageObject = null;
+            registeredPlayerOwnerIconRootObject = null;
+        }
+    }
+
+    private void RegisterPlayerOwnerIconEvents(GameObject targetObject, bool isImageObject)
+    {
+        if (targetObject == null)
+            return;
+
+        if (isImageObject)
+            registeredPlayerOwnerIconImageObject = targetObject;
+        else
+            registeredPlayerOwnerIconRootObject = targetObject;
+
+        Image image = targetObject.GetComponent<Image>();
+        if (image == null)
+        {
+            image = targetObject.AddComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0f);
+        }
+
+        image.raycastTarget = true;
+
+        EventTrigger trigger = targetObject.GetComponent<EventTrigger>();
+        if (trigger == null)
+            trigger = targetObject.AddComponent<EventTrigger>();
+
+        RemovePlayerOwnerIconEvents(trigger);
+
+        EventTrigger.Entry enterEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerEnter
+        };
+        enterEntry.callback.AddListener(_ => ShowPlayerOwnerIconHover());
+        trigger.triggers.Add(enterEntry);
+
+        EventTrigger.Entry exitEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerExit
+        };
+        exitEntry.callback.AddListener(_ => HidePlayerOwnerIconHover());
+        trigger.triggers.Add(exitEntry);
+
+        EventTrigger.Entry clickEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerClick
+        };
+        clickEntry.callback.AddListener(_ => SelectPlayerOwnerIcon());
+        trigger.triggers.Add(clickEntry);
+    }
+
+    private void RemovePlayerOwnerIconEvents(EventTrigger trigger)
+    {
+        if (trigger == null || trigger.triggers == null)
+            return;
+
+        for (int i = trigger.triggers.Count - 1; i >= 0; i--)
+        {
+            EventTrigger.Entry entry = trigger.triggers[i];
+            if (entry == null)
+                continue;
+
+            if (entry.eventID == EventTriggerType.PointerEnter ||
+                entry.eventID == EventTriggerType.PointerExit ||
+                entry.eventID == EventTriggerType.PointerClick)
+            {
+                trigger.triggers.RemoveAt(i);
+            }
+        }
+    }
+
+    private void ShowPlayerOwnerIconHover()
+    {
+        AnimateOwnerIconScale(true);
+        ShowPlayerOwnerIconHUD();
+    }
+
+    private void HidePlayerOwnerIconHover()
+    {
+        AnimateOwnerIconScale(false);
+        HideHoveredPlayerOwnerIconHUD();
+    }
+
+    private void ShowPlayerOwnerIconHUD()
+    {
+        hoveredPlayerOwnerIconCharacter = FindPlayerOwnerIconCharacter();
+
+        if (hoveredPlayerOwnerIconCharacter == null)
+            return;
+
+        hoveredPlayerOwnerIconCharacter.SetTimelineHoverHighlight(true);
+
+        BattleCharacterHUDController hudController = Object.FindFirstObjectByType<BattleCharacterHUDController>(FindObjectsInactive.Include);
+        if (hudController != null)
+            hudController.ShowTimelineIconCharacterHUD(hoveredPlayerOwnerIconCharacter);
+    }
+
+    private void HideHoveredPlayerOwnerIconHUD()
+    {
+        if (hoveredPlayerOwnerIconCharacter == null)
+            hoveredPlayerOwnerIconCharacter = FindPlayerOwnerIconCharacter();
+
+        if (hoveredPlayerOwnerIconCharacter != null)
+            hoveredPlayerOwnerIconCharacter.SetTimelineHoverHighlight(false);
+
+        BattleCharacterHUDController hudController = Object.FindFirstObjectByType<BattleCharacterHUDController>(FindObjectsInactive.Include);
+        if (hudController != null)
+            hudController.HideTimelineIconCharacterHUD(hoveredPlayerOwnerIconCharacter);
+
+        hoveredPlayerOwnerIconCharacter = null;
+    }
+
+    private void CacheOwnerIconBaseScale(Transform iconTransform)
+    {
+        if (iconTransform == null)
+            return;
+
+        if (ownerIconScaleTransform == iconTransform)
+            return;
+
+        ResetOwnerIconScaleImmediate();
+        ownerIconScaleTransform = iconTransform;
+        ownerIconBaseScale = iconTransform.localScale;
+    }
+
+    private void AnimateOwnerIconScale(bool hovered)
+    {
+        if (ownerIconScaleTransform == null)
+            return;
+
+        Vector3 targetScale = hovered
+            ? Vector3.Scale(ownerIconBaseScale, Vector3.one * ownerIconHoverScaleMultiplier)
+            : ownerIconBaseScale;
+
+        // 전투방 정리 과정에서는 TimelineSlot이 먼저 비활성화될 수 있습니다.
+        // 비활성화된 MonoBehaviour에서는 코루틴을 시작할 수 없으므로
+        // 이 경우 애니메이션 없이 즉시 목표 스케일로 복원합니다.
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            ownerIconScaleRoutine = null;
+
+            if (ownerIconScaleTransform != null)
+                ownerIconScaleTransform.localScale = targetScale;
+
+            return;
+        }
+
+        if (ownerIconScaleRoutine != null)
+        {
+            StopCoroutine(ownerIconScaleRoutine);
+            ownerIconScaleRoutine = null;
+        }
+
+        ownerIconScaleRoutine = StartCoroutine(AnimateOwnerIconScale(ownerIconScaleTransform, targetScale));
+    }
+
+    private IEnumerator AnimateOwnerIconScale(Transform target, Vector3 targetScale)
+    {
+        if (target == null)
+            yield break;
+
+        Vector3 startScale = target.localScale;
+        float duration = Mathf.Max(0f, ownerIconHoverScaleDuration);
+
+        if (duration <= 0f)
+        {
+            target.localScale = targetScale;
+            ownerIconScaleRoutine = null;
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration && target != null)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            t = t * t * (3f - 2f * t);
+            target.localScale = Vector3.LerpUnclamped(startScale, targetScale, t);
+            yield return null;
+        }
+
+        if (target != null)
+            target.localScale = targetScale;
+
+        ownerIconScaleRoutine = null;
+    }
+
+    private void ResetOwnerIconScaleImmediate()
+    {
+        if (ownerIconScaleRoutine != null)
+        {
+            StopCoroutine(ownerIconScaleRoutine);
+            ownerIconScaleRoutine = null;
+        }
+
+        if (ownerIconScaleTransform != null)
+            ownerIconScaleTransform.localScale = ownerIconBaseScale;
+    }
+
+    private void SelectPlayerOwnerIcon()
+    {
+        BattleCharacter character = FindPlayerOwnerIconCharacter();
+        if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
+            return;
+
+        BattleRoomLoader roomLoader = Object.FindFirstObjectByType<BattleRoomLoader>(FindObjectsInactive.Include);
+        if (roomLoader != null)
+            roomLoader.OnPlayerCharacterClicked(character.RuntimeData);
+    }
+
+    private BattleCharacter FindPlayerOwnerIconCharacter()
+    {
+        if (string.IsNullOrWhiteSpace(playerOwnerIconCharacterId))
+            return null;
+
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            if (characters[i] == null || characters[i].RuntimeData == null)
+                continue;
+
+            if (characters[i].RuntimeData.CharacterId == playerOwnerIconCharacterId)
+                return characters[i];
+        }
+
+        return null;
+    }
+
     private void OnDisable()
     {
         HideHoveredEnemyOwnerIconHUD();
+        HideHoveredPlayerOwnerIconHUD();
     }
 
     private void SetupEnemySkillHoverTarget(Image skillImage, BattleTimelinePreviewEntry entry)
@@ -467,24 +916,89 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (IsBattleEnded())
+            return;
+
         if (owner != null)
             owner.OnTimelineSlotClicked(slotIndex);
     }
 
     public void OnOrderClicked(int orderIndex)
     {
-        if (orderIndex < 0 || orderIndex >= currentEntries.Count)
+        if (IsBattleEnded())
             return;
+
+        if (orderIndex < 0)
+            return;
+
+        if (orderIndex >= currentEntries.Count)
+        {
+            if (owner != null)
+                owner.OnTimelineSlotClicked(slotIndex);
+
+            return;
+        }
 
         BattleTimelinePreviewEntry entry = currentEntries[orderIndex];
 
         if (entry == null)
+        {
+            if (owner != null)
+                owner.OnTimelineSlotClicked(slotIndex);
+
             return;
+        }
 
         TimelineReservationHoverPreview.HideCurrent();
 
+        if (entry.IsMonster)
+        {
+            SelectMonsterOrderSkill(entry);
+            return;
+        }
+
         if (owner != null)
             owner.OnEntryClicked(entry);
+    }
+
+    private void SelectMonsterOrderSkill(BattleTimelinePreviewEntry entry)
+    {
+        if (entry == null || !entry.IsMonster || entry.MonsterSkillData == null)
+            return;
+
+        MonsterUnit monster = FindMonsterByRuntimeId(entry.MonsterRuntimeId);
+        if (monster == null)
+            return;
+
+        monster.SelectForInfoFromTimeline();
+
+        BattleCharacterPanelUI panel = Object.FindFirstObjectByType<BattleCharacterPanelUI>(
+            FindObjectsInactive.Include);
+
+        if (panel != null)
+            panel.SelectMonsterSkillFromTimeline(monster, entry.MonsterSkillData.SkillId);
+    }
+
+    private MonsterUnit FindMonsterByRuntimeId(string runtimeId)
+    {
+        if (string.IsNullOrWhiteSpace(runtimeId))
+            return null;
+
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+            if (monster == null || monster.RuntimeData == null)
+                continue;
+
+            if (monster.RuntimeData.RuntimeId == runtimeId)
+                return monster;
+        }
+
+        return null;
     }
 
     private void AutoFindReferences()
@@ -495,8 +1009,33 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (turnMarkImage == null && turnMarkTransform != null)
             turnMarkImage = turnMarkTransform.GetComponent<Image>();
 
+        if (turnText == null && turnMarkTransform != null)
+        {
+            Transform turnTextTransform = FindChildRecursive(turnMarkTransform, "Turn_Text");
+            if (turnTextTransform != null)
+                turnText = turnTextTransform.GetComponent<TMP_Text>();
+        }
+
+        if (firstIconRootImage == null)
+            firstIconRootImage = FindRootImage("First_Icon");
+
+        if (firstIconImage == null)
+            firstIconImage = FindImage("First_Icon", "image");
+
+        if (laterIconRootImage == null)
+            laterIconRootImage = FindRootImage("Later_Icon");
+
+        if (laterIconImage == null)
+            laterIconImage = FindImage("Later_Icon", "image");
+
+        if (playerIconRootImage == null)
+            playerIconRootImage = FindRootImage("Player_Icon");
+
         if (playerIconImage == null)
             playerIconImage = FindImage("Player_Icon", "image");
+
+        if (enemyIconRootImage == null)
+            enemyIconRootImage = FindRootImage("Enemy_Icon");
 
         if (enemyIconImage == null)
             enemyIconImage = FindImage("Enemy_Icon", "image");
@@ -508,7 +1047,105 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             useSkillValueTexts = FindOrderUseSkillTexts();
 
         EnsureButton();
+        SetupTurnMarkClickTarget();
         SetupOrderClickTargets();
+    }
+
+    private void CacheTrailingVisualDefaults()
+    {
+        if (hasCachedTrailingVisualDefaults)
+            return;
+
+        if (turnMarkImage != null)
+            turnMarkNormalSprite = turnMarkImage.sprite;
+
+        int count = useSkillIconImages != null ? useSkillIconImages.Length : 0;
+        useSkillRootNormalSprites = new Sprite[count];
+        useSkillRootNormalColors = new Color[count];
+
+        for (int i = 0; i < count; i++)
+        {
+            Image skillIcon = useSkillIconImages[i];
+            GameObject root = GetSkillHoverObject(skillIcon);
+            Image rootImage = root != null ? root.GetComponent<Image>() : null;
+
+            if (rootImage == null)
+                continue;
+
+            useSkillRootNormalSprites[i] = rootImage.sprite;
+            useSkillRootNormalColors[i] = rootImage.color;
+        }
+
+        hasCachedTrailingVisualDefaults = true;
+    }
+
+    public void PrepareTrailingDecorationVisuals()
+    {
+        AutoFindReferences();
+        CacheTurnMarkNormalVisual();
+        CacheTrailingVisualDefaults();
+
+        SetActiveTimelineSlot(false);
+        SetOwnerIconsVisible(false);
+
+        if (turnMarkTransform != null)
+            turnMarkTransform.gameObject.SetActive(true);
+
+        if (turnMarkImage != null)
+        {
+            if (turnMarkNormalSprite != null)
+                turnMarkImage.sprite = turnMarkNormalSprite;
+
+            Color color = turnMarkNormalImageColor;
+            color.a = 1f;
+            turnMarkImage.color = color;
+            turnMarkImage.enabled = true;
+            turnMarkImage.raycastTarget = false;
+        }
+
+        if (useSkillIconImages != null)
+        {
+            for (int i = 0; i < useSkillIconImages.Length; i++)
+            {
+                Image skillIcon = useSkillIconImages[i];
+                if (skillIcon == null)
+                    continue;
+
+                GameObject root = GetSkillHoverObject(skillIcon);
+                if (root != null)
+                {
+                    Image rootImage = root.GetComponent<Image>();
+                    if (rootImage != null)
+                    {
+                        if (useSkillRootNormalSprites != null && i < useSkillRootNormalSprites.Length &&
+                            useSkillRootNormalSprites[i] != null)
+                        {
+                            rootImage.sprite = useSkillRootNormalSprites[i];
+                        }
+
+                        Color color = Color.white;
+                        if (useSkillRootNormalColors != null && i < useSkillRootNormalColors.Length)
+                            color = useSkillRootNormalColors[i];
+
+                        color.a = 1f;
+                        rootImage.color = color;
+                        rootImage.enabled = true;
+                        rootImage.raycastTarget = false;
+                    }
+
+                    // 아직 행동이 등록되지 않은 Next 슬롯의 Order 프레임은 표시하지 않습니다.
+                    root.SetActive(false);
+                }
+
+                skillIcon.sprite = null;
+                skillIcon.color = Color.white;
+                skillIcon.enabled = false;
+                skillIcon.gameObject.SetActive(false);
+                skillIcon.raycastTarget = false;
+            }
+        }
+
+        ClearSkillValueTexts(useSkillValueTexts);
     }
 
     private void CacheTurnMarkNormalVisual()
@@ -572,6 +1209,42 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             turnMarkImage.color = blinkColor;
     }
 
+
+    public ReserveTurnSlotUI GetOrCreateReserveTurnSlot(BattleTimelineController controller, int targetSlotIndex)
+    {
+        ReserveTurnSlotUI slot = GetComponent<ReserveTurnSlotUI>();
+
+        if (slot == null)
+            slot = gameObject.AddComponent<ReserveTurnSlotUI>();
+
+        slot.SetAutoBindButtonsInChildren(false);
+        slot.Init(controller, targetSlotIndex);
+        return slot;
+    }
+
+    private void SetupTurnMarkClickTarget()
+    {
+        if (turnMarkTransform == null)
+            return;
+
+        Image image = turnMarkTransform.GetComponent<Image>();
+        if (image == null)
+        {
+            image = turnMarkTransform.gameObject.AddComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0f);
+        }
+
+        image.raycastTarget = true;
+
+        Button button = turnMarkTransform.GetComponent<Button>();
+        if (button == null)
+            button = turnMarkTransform.gameObject.AddComponent<Button>();
+
+        button.transition = Selectable.Transition.None;
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(OnClickTimelineSlot);
+    }
+
     private void EnsureButton()
     {
         Button button = GetComponent<Button>();
@@ -596,8 +1269,16 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     private void OnClickTimelineSlot()
     {
+        if (IsBattleEnded())
+            return;
+
         if (owner != null)
             owner.OnTimelineSlotClicked(slotIndex);
+    }
+
+    private static bool IsBattleEnded()
+    {
+        return BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded;
     }
 
     private void SetupOrderClickTargets()
@@ -719,7 +1400,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (root == null)
             return null;
 
-        Transform textTransform = FindChildRecursive(root, "Text (TMP)");
+        Transform textTransform = FindChildRecursive(root, "Value");
+
+        if (textTransform == null)
+            textTransform = FindChildRecursive(root, "Text (TMP)");
 
         if (textTransform == null)
             textTransform = FindChildRecursive(root, "Text");
@@ -728,6 +1412,16 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             return null;
 
         return textTransform.GetComponent<TMP_Text>();
+    }
+
+    private Image FindRootImage(string rootName)
+    {
+        Transform root = FindChildRecursive(transform, rootName);
+
+        if (root == null)
+            return null;
+
+        return root.GetComponent<Image>();
     }
 
     private Image FindImage(string rootName, string imageName)
@@ -743,6 +1437,130 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             return null;
 
         return imageTransform.GetComponent<Image>();
+    }
+
+    private void ApplyTurnText()
+    {
+        if (turnText == null)
+            return;
+
+        turnText.text = GetRomanTurnText(slotIndex);
+        turnText.gameObject.SetActive(true);
+    }
+
+    private static string GetRomanTurnText(int index)
+    {
+        switch (index)
+        {
+            case 0: return "I";
+            case 1: return "II";
+            case 2: return "III";
+            case 3: return "IV";
+            case 4: return "V";
+            default: return string.Empty;
+        }
+    }
+
+    private void ApplyOwnerOrderIcon(Image rootImage, Image contentImage, BattleTimelinePreviewEntry entry)
+    {
+        if (entry == null)
+        {
+            SetOwnerIconImage(rootImage, contentImage, null, false, Color.white);
+            return;
+        }
+
+        Color color = entry.IsMonster ? enemyReservedColor : playerReservedColor;
+        SetOwnerIconImage(rootImage, contentImage, entry.OwnerIcon, true, color);
+        ApplyOwnerReservationColor(rootImage, contentImage, entry, IsEntryOwnerDead(entry));
+    }
+
+    private void UpdateDeadReservationVisuals()
+    {
+        int count = Mathf.Min(currentEntries.Count, useSkillIconImages != null ? useSkillIconImages.Length : 0);
+
+        for (int i = 0; i < count; i++)
+        {
+            BattleTimelinePreviewEntry entry = currentEntries[i];
+            bool ownerDead = IsEntryOwnerDead(entry);
+
+            if (i < currentEntryOwnerDeadStates.Count && currentEntryOwnerDeadStates[i] == ownerDead)
+                continue;
+
+            while (currentEntryOwnerDeadStates.Count <= i)
+                currentEntryOwnerDeadStates.Add(false);
+
+            currentEntryOwnerDeadStates[i] = ownerDead;
+            ApplySkillReservationColor(useSkillIconImages[i], entry, ownerDead);
+        }
+
+        bool firstDead = IsEntryOwnerDead(firstOwnerEntry);
+        if (firstDead != firstOwnerDeadState)
+        {
+            firstOwnerDeadState = firstDead;
+            ApplyOwnerReservationColor(firstIconRootImage, firstIconImage, firstOwnerEntry, firstDead);
+        }
+
+        bool laterDead = IsEntryOwnerDead(laterOwnerEntry);
+        if (laterDead != laterOwnerDeadState)
+        {
+            laterOwnerDeadState = laterDead;
+            ApplyOwnerReservationColor(laterIconRootImage, laterIconImage, laterOwnerEntry, laterDead);
+        }
+    }
+
+    private bool IsEntryOwnerDead(BattleTimelinePreviewEntry entry)
+    {
+        if (entry == null)
+            return false;
+
+        if (entry.IsPlayer)
+            return entry.CharacterRuntime != null && entry.CharacterRuntime.IsDead;
+
+        if (entry.IsMonster)
+            return entry.MonsterRuntime != null && entry.MonsterRuntime.IsDead;
+
+        return false;
+    }
+
+    private void ApplySkillReservationColor(
+        Image skillImage,
+        BattleTimelinePreviewEntry entry,
+        bool ownerDead)
+    {
+        if (skillImage == null || entry == null)
+            return;
+
+        Color rootColor = ownerDead
+            ? deadReservationColor
+            : (entry.IsMonster ? enemyReservedColor : playerReservedColor);
+        Color contentColor = ownerDead ? deadReservationColor : Color.white;
+
+        GameObject root = GetSkillHoverObject(skillImage);
+        if (root != null)
+            SetRootImageColor(root, rootColor);
+
+        skillImage.color = contentColor;
+    }
+
+    private void ApplyOwnerReservationColor(
+        Image rootImage,
+        Image contentImage,
+        BattleTimelinePreviewEntry entry,
+        bool ownerDead)
+    {
+        if (entry == null)
+            return;
+
+        Color rootColor = ownerDead
+            ? deadReservationColor
+            : (entry.IsMonster ? enemyReservedColor : playerReservedColor);
+        Color contentColor = ownerDead ? deadReservationColor : Color.white;
+
+        if (rootImage != null)
+            rootImage.color = rootColor;
+
+        if (contentImage != null)
+            contentImage.color = contentColor;
     }
 
     private void SetImage(Image image, Sprite sprite, bool visible)
@@ -764,25 +1582,29 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         image.raycastTarget = false;
     }
 
-    private void SetOwnerIconImage(Image image, Sprite sprite, bool visible, Color borderColor)
+    private void SetOwnerIconImage(
+        Image rootImage,
+        Image contentImage,
+        Sprite sprite,
+        bool visible,
+        Color reservedColor)
     {
-        if (image == null)
-            return;
-
         bool show = visible && sprite != null;
-        Transform parent = image.transform.parent;
 
-        if (parent != null)
+        if (rootImage != null)
         {
-            SetRootImageColor(parent.gameObject, show ? borderColor : Color.white);
-            parent.gameObject.SetActive(show);
+            rootImage.color = reservedColor;
+            rootImage.enabled = true;
+            rootImage.gameObject.SetActive(show);
         }
 
-        image.sprite = sprite;
-        image.color = Color.white;
-        image.enabled = show;
-        image.gameObject.SetActive(show);
-        image.raycastTarget = false;
+        if (contentImage == null)
+            return;
+
+        contentImage.sprite = sprite;
+        contentImage.enabled = show;
+        contentImage.gameObject.SetActive(show);
+        contentImage.raycastTarget = false;
     }
 
     private void SetSkillImage(Image image, Sprite sprite, bool visible, Color borderColor)

@@ -9,15 +9,42 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
 {
     [Header("References")]
     [SerializeField] private Image iconImage;
+    [SerializeField] private Image typeIconImage;
     [SerializeField] private TMP_Text valueText;
 
     [Header("Tooltip")]
     [SerializeField] private bool showTooltipOnHover = true;
     [SerializeField] private UnitStatusEffectTooltipUI statusTooltipUI;
 
+    [Header("Hover Raycast Area")]
+    [Tooltip("StatusEffectIcon 루트 RectTransform 전체를 마우스 호버 영역으로 사용합니다.")]
+    [SerializeField] private bool ensureFullRectHoverArea = true;
+
     private readonly List<StatusEffectRuntimeData> tooltipStatusEffects = new(1);
     private StatusEffectRuntimeData currentData;
     private bool pointerInside;
+    private Graphic rootRaycastGraphic;
+
+    private void Awake()
+    {
+        EnsureFullRectHoverRaycast();
+    }
+
+    private void OnEnable()
+    {
+        EnsureFullRectHoverRaycast();
+    }
+
+    public void SetTooltipEnabled(bool enabled)
+    {
+        showTooltipOnHover = enabled;
+
+        if (!showTooltipOnHover)
+        {
+            pointerInside = false;
+            HideTooltip();
+        }
+    }
 
     public void Set(StatusEffectRuntimeData data)
     {
@@ -33,10 +60,10 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
         gameObject.SetActive(true);
 
         if (iconImage != null)
-        {
-            iconImage.sprite = GetIcon(data.EffectId);
-            iconImage.enabled = iconImage.sprite != null;
-        }
+            ApplyImage(iconImage, GetIcon(data.EffectId));
+
+        if (typeIconImage != null)
+            ApplyImage(typeIconImage, GetTypeIcon(data.EffectId));
 
         if (valueText != null)
         {
@@ -57,10 +84,9 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     public void OnPointerMove(PointerEventData eventData)
     {
-        if (!pointerInside)
-            return;
-
-        ShowTooltip();
+        // 툴팁은 StatusEffectIcon의 위치를 기준으로 고정되므로
+        // 마우스가 움직일 때마다 다시 생성할 필요가 없습니다.
+        // OnPointerEnter에서 한 번 표시하고 OnPointerExit까지 유지합니다.
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -78,6 +104,29 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
     private void OnDestroy()
     {
         HideTooltip();
+    }
+
+    private void EnsureFullRectHoverRaycast()
+    {
+        if (!ensureFullRectHoverArea)
+            return;
+
+        if (transform is not RectTransform)
+            return;
+
+        if (rootRaycastGraphic == null)
+            rootRaycastGraphic = GetComponent<Graphic>();
+
+        if (rootRaycastGraphic == null)
+        {
+            Image transparentImage = gameObject.AddComponent<Image>();
+            transparentImage.sprite = null;
+            transparentImage.color = new Color(1f, 1f, 1f, 0f);
+            transparentImage.type = Image.Type.Simple;
+            rootRaycastGraphic = transparentImage;
+        }
+
+        rootRaycastGraphic.raycastTarget = true;
     }
 
     private void ShowTooltip()
@@ -172,5 +221,30 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
             return icon;
 
         return null;
+    }
+
+    private Sprite GetTypeIcon(string effectId)
+    {
+        if (DataManager.Instance == null)
+            return null;
+
+        if (DataManager.Instance.StatusEffectIconDatabase == null)
+            return null;
+
+        if (DataManager.Instance.StatusEffectIconDatabase.TryGetTypeIcon(
+                effectId,
+                DataManager.Instance.EffectDatabase,
+                out Sprite icon))
+        {
+            return icon;
+        }
+
+        return null;
+    }
+
+    private static void ApplyImage(Image image, Sprite sprite)
+    {
+        image.sprite = sprite;
+        image.enabled = sprite != null;
     }
 }

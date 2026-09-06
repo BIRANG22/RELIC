@@ -191,6 +191,29 @@ public class UIDissolveRevealLayoutTests
     }
 
     [Test]
+    public void AwakeHide_DoesNotCreateRenderOutputCanvas()
+    {
+        GameObject root = new("UIDissolveRevealLayoutTests_AwakeHideRoot");
+        GameObject renderObject = new("RawImage(RT)", typeof(RectTransform));
+        renderObject.transform.SetParent(root.transform, false);
+
+        GameObject revealObject = new("DissolveImage", typeof(RectTransform), typeof(RawImage));
+        revealObject.transform.SetParent(renderObject.transform, false);
+
+        try
+        {
+            UIDissolveReveal reveal = revealObject.AddComponent<UIDissolveReveal>();
+            reveal.HideImmediate();
+
+            Assert.That(renderObject.GetComponent<Canvas>(), Is.Null);
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
     public void HideToLeft_UsesLeftRevealDirection()
     {
         DirectionFixture fixture = CreateDirectionFixture();

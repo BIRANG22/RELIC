@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 8192
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -97,177 +97,353 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Cha_01_idle_battle_back_0
+      name: CharA_idle_battle_back_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 2048
-        width: 2048
-        height: 2048
+        y: 3240
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a9085a2aa66da66498f06f5fcd23a114
-      internalID: 1936606401
+      spriteID: 6327322d5bca9624fa119c61b3e59350
+      internalID: 1641862427
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_battle_back_1
+      name: CharA_idle_battle_back_1
       rect:
         serializedVersion: 2
-        x: 2048
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 1920
+        y: 3240
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d02032aa6fdde1b4a95eee4e6b938c62
-      internalID: -1517094013
+      spriteID: d7725404d46440d489149721e6457fb7
+      internalID: -238166782
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_battle_back_2
+      name: CharA_idle_battle_back_2
       rect:
         serializedVersion: 2
-        x: 4096
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 3840
+        y: 3240
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a35b0c33f7005764483e9af13df824e3
-      internalID: 1904998170
+      spriteID: 4059f8f2380c68e4a84613522898f203
+      internalID: -596486321
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_battle_back_3
+      name: CharA_idle_battle_back_3
       rect:
         serializedVersion: 2
-        x: 6144
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 5760
+        y: 3240
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 037886eaab3be23458251dbb7f918bac
-      internalID: -2122060692
+      spriteID: f57b0f8ad8f67764e90fdd927e3168f2
+      internalID: 1574452255
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_battle_back_4
+      name: CharA_idle_battle_back_4
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2160
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 66d63aea485ae0a4e80cf57e6c113778
+      internalID: 1912414458
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_idle_battle_back_5
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 2160
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bc3e1535e24942d4d8c76d686a0bd3e0
+      internalID: 1877868870
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_idle_battle_back_6
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 2160
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1cfeb2e44af548e44bd11eb3684c96cc
+      internalID: 6471531
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_idle_battle_back_7
+      rect:
+        serializedVersion: 2
+        x: 5760
+        y: 2160
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c594d4a8de9bebe488ed16768ca6ecec
+      internalID: -793871927
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_idle_battle_back_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1080
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b7264536710f2f541ab769d09bad2591
+      internalID: -904957908
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_idle_battle_back_9
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 1080
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c24c038db3eff4447a075567fe49240f
+      internalID: 1401658531
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_idle_battle_back_10
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 1080
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 521682025bf4b3d409fb47d89cba9fd8
+      internalID: 1594988429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_idle_battle_back_11
+      rect:
+        serializedVersion: 2
+        x: 5760
+        y: 1080
+        width: 1920
+        height: 1080
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8e89f846e153b604596743e02571a91d
+      internalID: -790543331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CharA_idle_battle_back_12
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 2048
-        height: 2048
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2cbc593cc457890419c38715de2ad746
-      internalID: 1841591214
+      spriteID: 2e26973688a3a314b824b25dbc9613e0
+      internalID: 1540303750
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_battle_back_5
+      name: CharA_idle_battle_back_13
       rect:
         serializedVersion: 2
-        x: 2048
+        x: 1920
         y: 0
-        width: 2048
-        height: 2048
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c9787247775cd4745a577390ac60ac11
-      internalID: -933341832
+      spriteID: 73386aab65d26ad4da72f4ebea16d5e3
+      internalID: 815397354
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_battle_back_6
+      name: CharA_idle_battle_back_14
       rect:
         serializedVersion: 2
-        x: 4096
+        x: 3840
         y: 0
-        width: 2048
-        height: 2048
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1c56c83c5e22c944a9054c9498d089b6
-      internalID: -192556957
+      spriteID: b1f38f61d743929408672c371bc5c551
+      internalID: 22515139
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_battle_back_7
+      name: CharA_idle_battle_back_15
       rect:
         serializedVersion: 2
-        x: 6144
+        x: 5760
         y: 0
-        width: 2048
-        height: 2048
+        width: 1920
+        height: 1080
       alignment: 9
-      pivot: {x: 0.51, y: 0.15}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c50b66a86dfbf2c4abc5ab129dc6a78b
-      internalID: 745430065
+      spriteID: d6f944cc40a67b84cab40478d8211ef0
+      internalID: 502735308
       vertices: []
       indices: 
       edges: []
@@ -286,14 +462,22 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Cha_01_idle_battle_back_0: 1936606401
-      Cha_01_idle_battle_back_1: -1517094013
-      Cha_01_idle_battle_back_2: 1904998170
-      Cha_01_idle_battle_back_3: -2122060692
-      Cha_01_idle_battle_back_4: 1841591214
-      Cha_01_idle_battle_back_5: -933341832
-      Cha_01_idle_battle_back_6: -192556957
-      Cha_01_idle_battle_back_7: 745430065
+      CharA_idle_battle_back_0: 1641862427
+      CharA_idle_battle_back_1: -238166782
+      CharA_idle_battle_back_10: 1594988429
+      CharA_idle_battle_back_11: -790543331
+      CharA_idle_battle_back_12: 1540303750
+      CharA_idle_battle_back_13: 815397354
+      CharA_idle_battle_back_14: 22515139
+      CharA_idle_battle_back_15: 502735308
+      CharA_idle_battle_back_2: -596486321
+      CharA_idle_battle_back_3: 1574452255
+      CharA_idle_battle_back_4: 1912414458
+      CharA_idle_battle_back_5: 1877868870
+      CharA_idle_battle_back_6: 6471531
+      CharA_idle_battle_back_7: -793871927
+      CharA_idle_battle_back_8: -904957908
+      CharA_idle_battle_back_9: 1401658531
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

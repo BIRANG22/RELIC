@@ -20,10 +20,19 @@ public class GridCell : MonoBehaviour
     [SerializeField] private Color selectedColor = Color.green;
     [SerializeField] private Color rangePreviewColor = Color.red;
 
+    [Header("Sorting")]
+    [SerializeField] private bool forceBackSorting = true;
+    [SerializeField] private string backSortingLayerName = "Empty";
+    [SerializeField] private int backSortingOrder = -1000;
+    [SerializeField] private bool forceHighlightBackRenderQueue = true;
+    [SerializeField] private int highlightBackRenderQueue = 2400;
+
     private MaterialPropertyBlock highlightPropertyBlock;
+    private Material defaultHighlightMaterial;
     private Renderer[] baseRenderers;
     private bool executionRangeTintActive;
     private readonly List<ExecutionRendererState> executionRendererStates = new();
+    private readonly Dictionary<Material, Material> highlightBackMaterials = new();
 
     private sealed class ExecutionRendererState
     {
@@ -40,7 +49,9 @@ public class GridCell : MonoBehaviour
         Index = index;
 
         AutoFindHighlightIfNeeded();
+        CacheDefaultHighlightMaterial();
         CacheBaseRenderers();
+        ApplyBackSorting();
 
         highlightPropertyBlock = new MaterialPropertyBlock();
 
@@ -50,7 +61,25 @@ public class GridCell : MonoBehaviour
     private void Awake()
     {
         AutoFindHighlightIfNeeded();
+        CacheDefaultHighlightMaterial();
         CacheBaseRenderers();
+        ApplyBackSorting();
+    }
+
+    private void OnDestroy()
+    {
+        foreach (Material material in highlightBackMaterials.Values)
+        {
+            if (material == null)
+                continue;
+
+            if (Application.isPlaying)
+                Destroy(material);
+            else
+                DestroyImmediate(material);
+        }
+
+        highlightBackMaterials.Clear();
     }
 
     private void OnMouseDown()
@@ -73,6 +102,7 @@ public class GridCell : MonoBehaviour
 
     public void SetNormal()
     {
+        RestoreDefaultHighlightMaterial();
         SetHighlightActive(false);
     }
 
@@ -83,12 +113,19 @@ public class GridCell : MonoBehaviour
 
     public void SetPreview(Color color)
     {
+        SetPreview(color, null);
+    }
+
+    public void SetPreview(Color color, Material materialOverride)
+    {
+        SetHighlightMaterial(materialOverride);
         SetHighlightColor(color);
         SetHighlightActive(true);
     }
 
     public void SetSelected()
     {
+        SetHighlightMaterial(null);
         SetHighlightColor(selectedColor);
         SetHighlightActive(true);
     }
@@ -100,6 +137,7 @@ public class GridCell : MonoBehaviour
 
     public void SetRangePreview(Color color)
     {
+        SetHighlightMaterial(null);
         SetHighlightColor(color);
         SetHighlightActive(true);
     }
@@ -108,6 +146,7 @@ public class GridCell : MonoBehaviour
     {
         ClearExecutionRangeTint();
         CacheBaseRenderers();
+        ApplyBackSorting();
 
         if (baseRenderers == null || baseRenderers.Length == 0)
             return;
@@ -203,6 +242,42 @@ public class GridCell : MonoBehaviour
         baseRenderers = filteredRenderers.ToArray();
     }
 
+
+    private void CacheDefaultHighlightMaterial()
+    {
+        if (highlightRenderer == null || defaultHighlightMaterial != null)
+            return;
+
+        defaultHighlightMaterial = highlightRenderer.sharedMaterial;
+    }
+
+    private void SetHighlightMaterial(Material materialOverride)
+    {
+        if (highlightRenderer == null)
+            return;
+
+        CacheDefaultHighlightMaterial();
+        Material targetMaterial = materialOverride != null
+            ? materialOverride
+            : defaultHighlightMaterial;
+
+        highlightRenderer.sharedMaterial = GetHighlightBackMaterial(targetMaterial);
+    }
+
+    private void RestoreDefaultHighlightMaterial()
+    {
+        if (highlightRenderer == null)
+            return;
+
+        CacheDefaultHighlightMaterial();
+
+        if (defaultHighlightMaterial != null &&
+            highlightRenderer.sharedMaterial != defaultHighlightMaterial)
+        {
+            highlightRenderer.sharedMaterial = defaultHighlightMaterial;
+        }
+    }
+
     private void SetHighlightActive(bool active)
     {
         if (highlightObject == null)
@@ -217,6 +292,7 @@ public class GridCell : MonoBehaviour
         if (highlightRenderer == null)
             return;
 
+        ApplyBackSorting(highlightRenderer);
         color.a = 1f;
 
         if (highlightPropertyBlock == null)
@@ -227,6 +303,96 @@ public class GridCell : MonoBehaviour
         SetTintProperties(highlightPropertyBlock, color);
 
         highlightRenderer.SetPropertyBlock(highlightPropertyBlock);
+    }
+
+    private void ApplyBackSorting()
+    {
+        ApplyBackSorting(highlightRenderer);
+
+        if (baseRenderers == null)
+            return;
+
+        for (int i = 0; i < baseRenderers.Length; i++)
+            ApplyBackSorting(baseRenderers[i]);
+    }
+
+    private void ApplyBackSorting(Renderer renderer)
+    {
+        if (!forceBackSorting || renderer == null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(backSortingLayerName))
+            renderer.sortingLayerName = backSortingLayerName;
+
+        renderer.sortingOrder = backSortingOrder;
+
+        if (renderer == highlightRenderer)
+            ApplyHighlightBackMaterial();
+    }
+
+    private void ApplyHighlightBackMaterial()
+    {
+        if (highlightRenderer == null)
+            return;
+
+        Material material = GetHighlightBackMaterial(highlightRenderer.sharedMaterial);
+
+        if (material != highlightRenderer.sharedMaterial)
+            highlightRenderer.sharedMaterial = material;
+    }
+
+    private Material GetHighlightBackMaterial(Material source)
+    {
+        if (!forceHighlightBackRenderQueue || source == null)
+            return source;
+
+        int renderQueue = Mathf.Clamp(highlightBackRenderQueue, 0, 5000);
+
+        if (IsHighlightBackMaterialConfigured(source, renderQueue))
+            return source;
+
+        if (highlightBackMaterials.TryGetValue(source, out Material cachedMaterial) &&
+            cachedMaterial != null)
+        {
+            return cachedMaterial;
+        }
+
+        Material backMaterial = new(source)
+        {
+            name = $"{source.name} (Grid Back)"
+        };
+
+        ConfigureHighlightBackMaterial(backMaterial, renderQueue);
+        highlightBackMaterials[source] = backMaterial;
+        return backMaterial;
+    }
+
+    private static bool IsHighlightBackMaterialConfigured(Material material, int renderQueue)
+    {
+        if (material == null || material.renderQueue != renderQueue)
+            return false;
+
+        if (material.HasProperty("_ZWrite") &&
+            !Mathf.Approximately(material.GetFloat("_ZWrite"), 0f))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static void ConfigureHighlightBackMaterial(Material material, int renderQueue)
+    {
+        if (material == null)
+            return;
+
+        material.renderQueue = renderQueue;
+
+        if (material.HasProperty("_ZWrite"))
+            material.SetFloat("_ZWrite", 0f);
+
+        if (material.HasProperty("_ZWriteControl"))
+            material.SetFloat("_ZWriteControl", 0f);
     }
 
     private static void SetTintProperties(MaterialPropertyBlock propertyBlock, Color color)

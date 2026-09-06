@@ -1,4 +1,5 @@
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -8,12 +9,15 @@ using UnityEngine.UI;
 
 public class BattleTimelineController : MonoBehaviour
 {
+    private const int MaxMonsterCommandsPerSlot = 2;
+    public static event System.Action<CharacterRuntimeData> CharacterSelectionChanged;
+
     [Header("Timeline")]
-    [Tooltip("이전 구조 호환용입니다. 비어 있지 않으면 TimelineBar1로 사용합니다.")]
+    [Tooltip("전투 구조 호환용 TimelineBar입니다. 비어 있으면 TimelineBar1을 사용합니다.")]
     [SerializeField] private BattleTimelineBarUI timelineBarUI;
-    [Tooltip("홀수 턴에 예약 표시를 담당하는 TimelineBar입니다.")]
+    [Tooltip("홀수 턴의 예약 표시를 담당하는 TimelineBar입니다.")]
     [SerializeField] private BattleTimelineBarUI timelineBarUI1;
-    [Tooltip("짝수 턴에 예약 표시를 담당하는 TimelineBar입니다.")]
+    [Tooltip("짝수 턴의 예약 표시를 담당하는 TimelineBar입니다.")]
     [SerializeField] private BattleTimelineBarUI timelineBarUI2;
     [SerializeField] private ReserveTurnSlotUI[] reserveSlots;
 
@@ -22,6 +26,13 @@ public class BattleTimelineController : MonoBehaviour
 
     [Header("MoveGhostPreview")]
     [SerializeField] private MoveGhostPreview moveGhostPreview;
+
+    [Header("Character Panel Auto Move Selection")]
+    [Tooltip("캐릭터 선택 후 이동 스킬을 자동 선택하기 전에 완전히 열릴 때까지 기다릴 패널입니다.")]
+    [SerializeField] private BattleCharacterPanelUI battleCharacterPanelUI;
+
+    private Coroutine defaultMoveSelectionCoroutine;
+    private int defaultMoveSelectionRequestVersion;
 
     [Header("Grid")]
     [SerializeField] private GridManager gridManager;
@@ -51,7 +62,7 @@ public class BattleTimelineController : MonoBehaviour
 
     [Header("Selected Slot Effect SFX")]
     [SerializeField] private bool playSelectedSlotEffectSfx = true;
-    [SerializeField] private SfxType selectedSlotEffectSfxType = SfxType.BattleTimelineSlotRotate;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string selectedSlotEffectSfxId = AudioIds.Sfx.BattleTimelineSlotRotate;
     [SerializeField, Range(0f, 1f)] private float selectedSlotEffectSfxVolume = 1f;
 
     [Header("Slot Selection Lock")]
@@ -73,32 +84,58 @@ public class BattleTimelineController : MonoBehaviour
 
     [Header("Timeline Bar Slide")]
     [SerializeField] private bool playTimelineSlotSlide = true;
-    [Tooltip("이전 구조 호환용입니다. 비어 있지 않으면 TimelineBar1 이동 대상으로 사용합니다.")]
+    [Tooltip("전투 구조 호환용 이동 대상입니다. 비어 있으면 TimelineBar1 이동 대상을 사용합니다.")]
     [SerializeField] private RectTransform timelineBarSlideTarget;
     [Tooltip("홀수 턴에 사용하는 TimelineBar1 이동 대상입니다.")]
     [SerializeField] private RectTransform timelineBarSlideTarget1;
     [Tooltip("짝수 턴에 사용하는 TimelineBar2 이동 대상입니다.")]
     [SerializeField] private RectTransform timelineBarSlideTarget2;
-    [Tooltip("대기 중인 TimelineBar를 현재 TimelineBar 오른쪽에 이어붙일 X 거리입니다.")]
+    [Tooltip("대기 중인 TimelineBar를 현재 TimelineBar 오른쪽에 배치할 X 거리입니다.")]
     [SerializeField] private float standbyTimelineBarOffsetX = 1420f;
-    [Tooltip("5슬롯까지 모두 진행된 뒤 현재 TimelineBar가 도착해야 하는 X 위치입니다. 기본 위치 X=0 기준입니다. 5슬롯 종료 위치에서 이 값까지 추가 이동합니다.")]
-    [SerializeField] private float completedTurnTimelineBarPositionX = -1420f;
-    [Tooltip("턴엔드 버튼을 누른 직후, 1번 슬롯이 시작되기 전에 TimelineBar가 먼저 왼쪽으로 이동하는 거리입니다. 1번 슬롯에서만 한 번 적용됩니다.")]
-    [SerializeField] private float firstSlotEndTurnTimelineLineSlideAmountX = -60f;
+    [Tooltip("5개 슬롯이 모두 진행된 뒤 현재 TimelineBar가 도착하는 절대 X 위치입니다.")]
+    [SerializeField] private float completedTurnTimelineBarPositionX = -1870f;
     [SerializeField] private float timelineSlotSlideDuration = 0.18f;
-    [Tooltip("TurnMark와 Use_skill의 4프레임 갈림 애니메이션이 눈에 보이도록, 갈림 연출과 함께 이동할 때 사용하는 최소 이동 시간입니다.")]
+    [Tooltip("TurnMark와 Use_skill의 프레임 가림 애니메이션이 보이도록 가림 연출과 함께 이동할 때 사용하는 최소 시간입니다.")]
     [SerializeField] private float grindTimelineSlideDuration = 0.32f;
     [SerializeField] private bool useUnscaledTimeForTimelineSlotSlide = false;
+
+    [Header("Timeline Bar Gear Rotation")]
+    [SerializeField] private Transform leftLargeGear;
+    [SerializeField] private float leftLargeGearRotateStepZ = 10f;
+    [SerializeField] private Transform leftMediumGear;
+    [SerializeField] private float leftMediumGearRotateStepZ = 15f;
+    [SerializeField] private Transform leftSmallGear;
+    [SerializeField] private float leftSmallGearRotateStepZ = -20f;
+    [SerializeField] private Transform rightLargeGear1;
+    [SerializeField] private float rightLargeGear1RotateStepZ = 10f;
+    [SerializeField] private Transform rightLargeGear2;
+    [SerializeField] private float rightLargeGear2RotateStepZ = -10f;
+    [SerializeField] private Transform rightMediumGear;
+    [SerializeField] private float rightMediumGearRotateStepZ = 15f;
+    [SerializeField] private Transform rightSmallGear;
+    [SerializeField] private float rightSmallGearRotateStepZ = -20f;
+
+    [Header("Timeline Gear Tick SFX")]
+    [SerializeField] private bool playTimelineGearTickSfx = true;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string timelineGearTickSfxId = "";
+    [SerializeField, Range(0f, 1f)] private float timelineGearTickSfxVolume = 1f;
 
     [Header("Timeline Sprite Grind Animation")]
     [SerializeField] private BattleTimelineSpriteAnimationController timelineSpriteAnimationController;
     [SerializeField] private bool autoFindTimelineSpriteAnimationController = true;
-    [Tooltip("각 슬롯이 시작될 때 TurnMark가 갈리면서 TimelineBar 전체가 왼쪽으로 이동하는 거리입니다.")]
-    [SerializeField] private float slotStartTimelineLineSlideAmountX = -50f;
-    [Tooltip("해당 슬롯의 첫 번째 Use_skill이 갈릴 때 전체 타임라인 라인이 왼쪽으로 이동하는 거리입니다.")]
-    [SerializeField] private float firstUseSkillTimelineLineSlideAmountX = -45f;
-    [Tooltip("해당 슬롯의 두 번째 이후 Use_skill이 갈릴 때 전체 타임라인 라인이 왼쪽으로 이동하는 거리입니다.")]
-    [SerializeField] private float additionalUseSkillTimelineLineSlideAmountX = -40f;
+
+    [Header("Timeline Grind Positions")]
+    [Tooltip("슬롯별 TurnMark / Order01~05 갈림 위치는 현재 타임라인 디자인의 절대 X 좌표를 사용합니다.")]
+    [SerializeField] private float timelineBarStartPositionX = -240f;
+
+    private static readonly float[][] OrderGrindPositions =
+    {
+        new[] { -380f, -430f, -480f, -530f, -580f },
+        new[] { -710f, -760f, -810f, -860f, -910f },
+        new[] { -1030f, -1080f, -1130f, -1180f, -1230f },
+        new[] { -1350f, -1400f, -1450f, -1500f, -1500f },
+        new[] { -1670f, -1720f, -1770f, -1820f, -1870f }
+    };
 
     [Header("Timeline Grind VFX")]
     [SerializeField] private GameObject timelineGrindVfxPrefab;
@@ -116,23 +153,14 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private bool keepHoverUntilMouseLeavesEndGearBounds = true;
     [SerializeField] private float endButtonHoverBoundsPadding = 8f;
 
-    [Header("End Button Hover Linked Gears")]
-    [SerializeField] private bool autoBindEndButtonHoverLinkedGears = true;
-    [SerializeField] private RectTransform endButtonHoverSmallGearRotationTarget;
-    [SerializeField] private string endButtonHoverSmallGearRotationTargetName = "EndButtonSmallGear";
-    [SerializeField] private float endButtonHoverSmallGearRotationOffsetZ = 60f;
-    [SerializeField] private RectTransform endButtonHoverLargeGearRotationTarget;
-    [SerializeField] private string endButtonHoverLargeGearRotationTargetName = "EndButtonLargeGear";
-    [SerializeField] private float endButtonHoverLargeGearRotationOffsetZ = -30f;
-
     [Header("End Button Hover SFX")]
     [SerializeField] private bool playEndButtonHoverSfx = true;
-    [SerializeField] private SfxType endButtonHoverSfxType = SfxType.BattleEndButtonHover;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string endButtonHoverSfxId = AudioIds.Sfx.BattleEndButtonHover;
     [SerializeField, Range(0f, 1f)] private float endButtonHoverSfxVolume = 1f;
 
     [Header("Timeline Slot Slide SFX")]
     [SerializeField] private bool playTimelineSlotSlideSfx = true;
-    [SerializeField] private SfxType timelineSlotSlideSfxType = SfxType.BattleTimelineSlotSlide;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string timelineSlotSlideSfxId = AudioIds.Sfx.BattleTimelineSlotSlide;
     [SerializeField, Range(0f, 1f)] private float timelineSlotSlideSfxVolume = 1f;
 
     [Header("Total Used Cost Text")]
@@ -143,6 +171,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private int activeSlotIndex = -1;
     private CharacterRuntimeData selectedCharacter;
+    private CharacterRuntimeData lastSelectedCharacter;
     private SkillMasterData selectedSkill;
     private int reservationVersion;
     private Coroutine selectedSlotEffectRoutine;
@@ -150,10 +179,9 @@ public class BattleTimelineController : MonoBehaviour
     private Coroutine timelineSlideGearRotationRoutine;
     private Coroutine endButtonHoverRotationRoutine;
     private bool isSlotSelectionLocked;
+    private int playerLockedSlotIndex = -1;
     private bool isEndButtonHovering;
     private float endButtonRotationBeforeHoverZ;
-    private float endButtonSmallGearRotationBeforeHoverZ;
-    private float endButtonLargeGearRotationBeforeHoverZ;
     private Vector2 timelineBar1OriginalAnchoredPosition;
     private Vector2 timelineBar2OriginalAnchoredPosition;
     private bool timelineBarOriginalPositionCaptured;
@@ -162,27 +190,36 @@ public class BattleTimelineController : MonoBehaviour
     private int timelineSlotSlideStepIndex;
     private int activeTimelineBarIndex;
     private string lastCameraFocusedCharacterId;
+    private bool preserveManuallySelectedSlotForNextCharacter;
 
     private readonly List<MonsterReservedCommand>[] monsterCommandsBySlot =
         new List<MonsterReservedCommand>[5];
 
     private readonly List<PlayerReservationHistoryEntry> playerReservationHistory = new();
+    private readonly HashSet<int> networkViewedSlotIndices = new();
 
     public int SlotCount => reserveSlots != null ? reserveSlots.Length : 0;
     public int ActiveSlotIndex => activeSlotIndex;
     public int ReservationVersion => reservationVersion;
     public CharacterRuntimeData SelectedCharacter => selectedCharacter;
+    public int PlayerLockedSlotIndex => playerLockedSlotIndex;
+    public bool HasPlayerLockedSlot => playerLockedSlotIndex >= 0;
 
 
     private void OnValidate()
     {
-        // Unity는 스크립트 기본값이 바뀌어도 이미 씬/프리팹에 저장된 Inspector 값을 유지합니다.
-        // 이전 수정본에서 남은 1335 / -1440 값은 현재 구조의 기준값인 1420 / -1420으로 자동 보정합니다.
+        // Unity 스크립트 기본값이 바뀌어도 이미 프리팹에 저장된 Inspector 값을 유지합니다.
+        // 이전 수정본의 1335 / -1440 값을 현재 구조의 기준값인 1420 / -1420으로 자동 보정합니다.
         if (Mathf.Approximately(standbyTimelineBarOffsetX, 1335f) || standbyTimelineBarOffsetX <= 0f)
             standbyTimelineBarOffsetX = 1420f;
 
-        if (Mathf.Approximately(completedTurnTimelineBarPositionX, -1440f) || completedTurnTimelineBarPositionX >= 0f)
-            completedTurnTimelineBarPositionX = -1420f;
+        // 현재 TimelineBar의 마지막 위치는 5슬롯 Order05의 절대 X = -1870입니다.
+        // 이전 버전에서 저장된 완료 위치 값은 새 구조에 맞게 자동 보정합니다.
+        if (!Mathf.Approximately(completedTurnTimelineBarPositionX, -1870f))
+            completedTurnTimelineBarPositionX = -1870f;
+
+        if (!Mathf.Approximately(timelineBarStartPositionX, -240f))
+            timelineBarStartPositionX = -240f;
 
         if (timelineGrindVfxLifeTime < 0f)
             timelineGrindVfxLifeTime = 0f;
@@ -202,7 +239,6 @@ public class BattleTimelineController : MonoBehaviour
         PrepareTimelineBarsForActiveTurn(false);
         AutoFindTimelineSpriteAnimationControllerIfNeeded();
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
         AutoFindTotalUsedCostTextIfNeeded();
         BindEndButtonHoverRotationEventsIfNeeded();
 
@@ -213,6 +249,7 @@ public class BattleTimelineController : MonoBehaviour
         RefreshTotalUsedCostText();
 
         InitTimelineBars();
+        AutoBindReserveSlotsFromTimelineBarIfNeeded();
 
         if (reserveSlots != null)
         {
@@ -232,6 +269,177 @@ public class BattleTimelineController : MonoBehaviour
         HandleKeyboardSlotMoveInput();
         HandleKeyboardUndoReservationInput();
         HandleEndButtonHoverOutsidePolling();
+        HandleSelectionCancelRightClick();
+        HandleCharacterSelectionOutsideGridClick();
+    }
+
+    private void HandleSelectionCancelRightClick()
+    {
+        if (!Input.GetMouseButtonDown(1))
+            return;
+
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
+        if (playerSkillReservationController == null)
+        {
+            playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(
+                FindObjectsInactive.Include);
+        }
+
+        // 같은 우클릭으로 스킬 선택과 캐릭터 선택이 동시에 해제되지 않게 합니다.
+        // 스킬 예약 컨트롤러가 이번 프레임에 우클릭 취소를 처리했다면
+        // 현재 캐릭터/몬스터 선택은 다음 우클릭까지 유지합니다.
+        if (playerSkillReservationController != null)
+        {
+            if (playerSkillReservationController.IsSkillSelectionActive() ||
+                playerSkillReservationController.WasSkillSelectionCancelledByRightClickThisFrame)
+            {
+                return;
+            }
+        }
+
+        bool hasCharacterSelection = selectedCharacter != null;
+        bool hasMonsterSelection = Relic.Gameplay.Monster.MonsterUnit.CurrentInfoSelectedMonster != null;
+
+        if (hasCharacterSelection)
+            ClearCharacterSelection();
+
+        if (hasMonsterSelection)
+            Relic.Gameplay.Monster.MonsterUnit.ClearMonsterInfoSelection();
+    }
+
+    private void HandleCharacterSelectionOutsideGridClick()
+    {
+        bool hasCharacterSelection = selectedCharacter != null;
+        bool hasMonsterSelection = Relic.Gameplay.Monster.MonsterUnit.CurrentInfoSelectedMonster != null;
+
+        if (!hasCharacterSelection && !hasMonsterSelection)
+            return;
+
+        if (!Input.GetMouseButtonDown(0))
+            return;
+
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            return;
+
+        if (IsPointerInsideBattleGrid(Input.mousePosition))
+            return;
+
+        if (IsPointerOverBattleWorldTarget(Input.mousePosition))
+            return;
+
+        if (hasCharacterSelection)
+            ClearCharacterSelection();
+
+        if (hasMonsterSelection)
+            Relic.Gameplay.Monster.MonsterUnit.ClearMonsterInfoSelection();
+    }
+
+    private bool IsPointerOverBattleWorldTarget(Vector2 screenPosition)
+    {
+        Camera camera = Camera.main;
+        if (camera == null)
+            return false;
+
+        Ray ray = camera.ScreenPointToRay(screenPosition);
+        float maxDistance = camera.farClipPlane;
+
+        RaycastHit[] hits3D = Physics.RaycastAll(ray, maxDistance);
+        for (int i = 0; i < hits3D.Length; i++)
+        {
+            Transform hitTransform = hits3D[i].transform;
+            if (IsSelectionPreservingWorldTarget(hitTransform))
+                return true;
+        }
+
+        RaycastHit2D[] hits2D = Physics2D.GetRayIntersectionAll(ray, maxDistance);
+        for (int i = 0; i < hits2D.Length; i++)
+        {
+            Transform hitTransform = hits2D[i].transform;
+            if (IsSelectionPreservingWorldTarget(hitTransform))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsSelectionPreservingWorldTarget(Transform target)
+    {
+        if (target == null)
+            return false;
+
+        if (target.GetComponentInParent<BattleCharacter>() != null)
+            return true;
+
+        if (target.GetComponentInParent<MonsterUnit>() != null)
+            return true;
+
+        if (target.GetComponentInParent<GridCell>() != null)
+            return true;
+
+        return false;
+    }
+
+    private bool IsPointerInsideBattleGrid(Vector2 screenPosition)
+    {
+        if (gridManager == null)
+            gridManager = FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+
+        if (gridManager == null)
+            return false;
+
+        Camera camera = Camera.main;
+        if (camera == null)
+            return false;
+
+        Ray ray = camera.ScreenPointToRay(screenPosition);
+        float maxDistance = camera.farClipPlane;
+
+        for (int x = 0; x < gridManager.Width; x++)
+        {
+            for (int y = 0; y < gridManager.Height; y++)
+            {
+                GridCell cell = gridManager.GetCell(x, y);
+                if (cell == null || !cell.gameObject.activeInHierarchy)
+                    continue;
+
+                Collider[] colliders = cell.GetComponentsInChildren<Collider>(false);
+                for (int i = 0; i < colliders.Length; i++)
+                {
+                    Collider cellCollider = colliders[i];
+                    if (cellCollider == null || !cellCollider.enabled)
+                        continue;
+
+                    if (cellCollider.Raycast(ray, out _, maxDistance))
+                        return true;
+                }
+
+                Collider2D[] colliders2D = cell.GetComponentsInChildren<Collider2D>(false);
+                for (int i = 0; i < colliders2D.Length; i++)
+                {
+                    Collider2D cellCollider = colliders2D[i];
+                    if (cellCollider == null || !cellCollider.enabled)
+                        continue;
+
+                    Plane cellPlane = new Plane(
+                        cellCollider.transform.forward,
+                        cellCollider.transform.position);
+
+                    if (!cellPlane.Raycast(ray, out float enter))
+                        continue;
+
+                    Vector3 worldPoint = ray.GetPoint(enter);
+                    if (cellCollider.OverlapPoint(worldPoint))
+                        return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private void HandleKeyboardSlotMoveInput()
@@ -334,7 +542,7 @@ public class BattleTimelineController : MonoBehaviour
             nextIndex -= slotCount;
 
         int safety = 0;
-        while (safety < slotCount && reserveSlots[nextIndex] == null)
+        while (safety < slotCount && !IsTimelineSlotSelectable(nextIndex))
         {
             nextIndex += direction;
 
@@ -347,7 +555,7 @@ public class BattleTimelineController : MonoBehaviour
             safety++;
         }
 
-        if (reserveSlots[nextIndex] == null)
+        if (!IsTimelineSlotSelectable(nextIndex))
             return;
 
         OnTimelineSlotClicked(nextIndex);
@@ -374,9 +582,134 @@ public class BattleTimelineController : MonoBehaviour
 
     public void SelectCharacter(CharacterRuntimeData runtimeData)
     {
+        if (runtimeData != null)
+            Relic.Gameplay.Monster.MonsterUnit.ClearMonsterInfoSelection();
+
+        bool isChangingCharacter =
+            runtimeData != null &&
+            (selectedCharacter == null ||
+             selectedCharacter.CharacterId != runtimeData.CharacterId);
+
+        bool selectionChanged =
+            selectedCharacter != runtimeData ||
+            (selectedCharacter != null && runtimeData != null &&
+             selectedCharacter.CharacterId != runtimeData.CharacterId);
+
+        bool keepCurrentSlotFromManualSelection =
+            runtimeData != null && preserveManuallySelectedSlotForNextCharacter;
+
+        // 사용자가 캐릭터를 고르기 전에 타임라인 슬롯을 직접 선택했다면
+        // 그 슬롯 선택을 이번 캐릭터 선택에서 한 번 우선합니다.
+        if (runtimeData != null)
+            preserveManuallySelectedSlotForNextCharacter = false;
+
         selectedCharacter = runtimeData;
+
+        if (runtimeData != null && !runtimeData.IsDead)
+            lastSelectedCharacter = runtimeData;
+
+        if (isChangingCharacter && !keepCurrentSlotFromManualSelection)
+            TryAutoSelectSlotForCharacter(runtimeData);
+
         ApplySelectedCharacterScaleFeedback(runtimeData);
         TryFocusCameraOnSelectedCharacter(runtimeData);
+
+        if (selectionChanged)
+        {
+            CharacterSelectionChanged?.Invoke(selectedCharacter);
+
+            // 캐릭터 선택 자체는 즉시 반영하지만 이동 스킬은 BattleCharacterPanel이
+            // 예약 위치까지 완전히 올라온 뒤에만 자동 선택합니다.
+            RequestDefaultMoveSkillAfterCharacterPanelOpened(runtimeData);
+        }
+    }
+
+    private void RequestDefaultMoveSkillAfterCharacterPanelOpened(CharacterRuntimeData runtimeData)
+    {
+        defaultMoveSelectionRequestVersion++;
+
+        if (defaultMoveSelectionCoroutine != null)
+        {
+            StopCoroutine(defaultMoveSelectionCoroutine);
+            defaultMoveSelectionCoroutine = null;
+        }
+
+        if (runtimeData == null || runtimeData.IsDead)
+            return;
+
+        ResolveBattleCharacterPanelUI();
+
+        // 패널이 이미 완전히 열린 상태에서 캐릭터만 바뀐 경우에는 즉시 선택합니다.
+        if (battleCharacterPanelUI != null && battleCharacterPanelUI.IsAtReservationPosition)
+        {
+            TrySelectDefaultMoveSkill(runtimeData);
+            return;
+        }
+
+        if (!isActiveAndEnabled)
+            return;
+
+        int requestVersion = defaultMoveSelectionRequestVersion;
+        defaultMoveSelectionCoroutine = StartCoroutine(
+            SelectDefaultMoveSkillWhenCharacterPanelOpened(runtimeData, requestVersion));
+    }
+
+    private IEnumerator SelectDefaultMoveSkillWhenCharacterPanelOpened(
+        CharacterRuntimeData runtimeData,
+        int requestVersion)
+    {
+        while (requestVersion == defaultMoveSelectionRequestVersion)
+        {
+            if (runtimeData == null || runtimeData.IsDead ||
+                selectedCharacter == null ||
+                selectedCharacter.CharacterId != runtimeData.CharacterId)
+            {
+                break;
+            }
+
+            ResolveBattleCharacterPanelUI();
+
+            if (battleCharacterPanelUI != null && battleCharacterPanelUI.IsAtReservationPosition)
+            {
+                TrySelectDefaultMoveSkill(runtimeData);
+                break;
+            }
+
+            yield return null;
+        }
+
+        if (requestVersion == defaultMoveSelectionRequestVersion)
+            defaultMoveSelectionCoroutine = null;
+    }
+
+    private void ResolveBattleCharacterPanelUI()
+    {
+        if (battleCharacterPanelUI != null)
+            return;
+
+        battleCharacterPanelUI = FindFirstObjectByType<BattleCharacterPanelUI>(FindObjectsInactive.Include);
+    }
+
+    private void TrySelectDefaultMoveSkill(CharacterRuntimeData runtimeData)
+    {
+        if (runtimeData == null || runtimeData.IsDead)
+            return;
+
+        if (string.IsNullOrWhiteSpace(runtimeData.MoveSkillId))
+            return;
+
+        if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
+            return;
+
+        if (!DataManager.Instance.SkillDatabase.TryGet(
+                runtimeData.MoveSkillId,
+                out SkillMasterData moveSkillData) ||
+            moveSkillData == null)
+        {
+            return;
+        }
+
+        SelectSkill(moveSkillData);
     }
 
     public void ClearCharacterSelectionFromSkillList(CharacterRuntimeData runtimeData)
@@ -389,6 +722,19 @@ public class BattleTimelineController : MonoBehaviour
             return;
         }
 
+        ClearCharacterSelection();
+    }
+
+    public void ClearCharacterSelection()
+    {
+        if (selectedCharacter == null && selectedSkill == null)
+            return;
+
+        CharacterRuntimeData previousCharacter = selectedCharacter;
+
+        if (previousCharacter != null)
+            CancelSkillReservationPreviewFromSkillList(previousCharacter);
+
         selectedCharacter = null;
         selectedSkill = null;
         lastCameraFocusedCharacterId = null;
@@ -397,6 +743,14 @@ public class BattleTimelineController : MonoBehaviour
         BattleCameraController cameraController = BattleCameraController.Instance;
         if (cameraController != null)
             cameraController.StartReturnDefault();
+
+        CharacterSelectionChanged?.Invoke(null);
+    }
+
+    public static void ClearCurrentCharacterSelection()
+    {
+        BattleTimelineController controller = FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Exclude);
+        controller?.ClearCharacterSelection();
     }
 
     private void ApplySelectedCharacterScaleFeedback(CharacterRuntimeData runtimeData)
@@ -440,15 +794,23 @@ public class BattleTimelineController : MonoBehaviour
 
     private void TryFocusCameraOnSelectedCharacter(CharacterRuntimeData runtimeData)
     {
-        TryFocusCameraOnSelectedCharacter(runtimeData, false);
+        TryFocusCameraOnSelectedCharacter(runtimeData, false, false);
     }
 
     public void RefocusCurrentSelectedCharacterWhenInputReady()
     {
-        TryFocusCameraOnSelectedCharacter(selectedCharacter, true);
+        TryFocusCameraOnSelectedCharacter(selectedCharacter, true, false);
     }
 
-    private void TryFocusCameraOnSelectedCharacter(CharacterRuntimeData runtimeData, bool forceRefocus)
+    public void RefocusCurrentSelectedCharacterForPanelRaise()
+    {
+        TryFocusCameraOnSelectedCharacter(selectedCharacter, true, true);
+    }
+
+    private void TryFocusCameraOnSelectedCharacter(
+        CharacterRuntimeData runtimeData,
+        bool forceRefocus,
+        bool ignoreInputReady)
     {
         if (!focusCameraOnCharacterSelect)
             return;
@@ -462,7 +824,7 @@ public class BattleTimelineController : MonoBehaviour
         if (!forceRefocus && !refocusSameCharacter && lastCameraFocusedCharacterId == runtimeData.CharacterId)
             return;
 
-        if (focusCameraOnlyWhenInputReady)
+        if (focusCameraOnlyWhenInputReady && !ignoreInputReady)
         {
             if (turnExecutor == null)
                 turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
@@ -541,14 +903,163 @@ public class BattleTimelineController : MonoBehaviour
             return;
         }
 
+        if (IsPlayerSlotLocked(slotIndex))
+        {
+            ShowPlayerLockedSlotWarning();
+            return;
+        }
+
+        // 사용자가 직접 고른 슬롯은 바로 다음 캐릭터 선택에서 자동 슬롯 선택보다 우선합니다.
+        preserveManuallySelectedSlotForNextCharacter = true;
+
+        if (SteamBattleStateSynchronizer.TryHandleTimelineSlotClicked(this, slotIndex))
+            return;
+
+        if (SetActiveTimelineSlot(slotIndex, true))
+            TryRestoreLastSelectedCharacterForTimelineSlot();
+    }
+
+    private void TryRestoreLastSelectedCharacterForTimelineSlot()
+    {
+        if (selectedCharacter != null)
+            return;
+
+        // 몬스터 정보를 보고 있는 동안에는 TurnMark 클릭이 캐릭터 정보로 강제 전환되지 않게 합니다.
+        if (Relic.Gameplay.Monster.MonsterUnit.CurrentInfoSelectedMonster != null)
+            return;
+
+        if (lastSelectedCharacter == null || lastSelectedCharacter.IsDead)
+            return;
+
+        SelectCharacter(lastSelectedCharacter);
+    }
+
+    public bool SelectTimelineSlotFromNetwork(int slotIndex, bool tryStartReservation)
+    {
+        return SelectTimelineSlotFromNetwork(slotIndex, tryStartReservation, true);
+    }
+
+    public bool SelectTimelineSlotFromNetwork(
+        int slotIndex,
+        bool tryStartReservation,
+        bool playSelectionEffect)
+    {
+        return SetActiveTimelineSlot(slotIndex, tryStartReservation, playSelectionEffect);
+    }
+
+    private bool SetActiveTimelineSlot(int slotIndex, bool tryStartReservation)
+    {
+        return SetActiveTimelineSlot(slotIndex, tryStartReservation, true);
+    }
+
+    private bool SetActiveTimelineSlot(
+        int slotIndex,
+        bool tryStartReservation,
+        bool playSelectionEffect)
+    {
+        if (reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return false;
+
+        if (IsPlayerSlotLocked(slotIndex))
+            return false;
+
+        if (reserveSlots[slotIndex] == null)
+            return false;
+
         int previousSlotIndex = activeSlotIndex;
         activeSlotIndex = slotIndex;
 
         SetActiveTimelineSlotVisual(activeSlotIndex);
 
         RefreshSelectedSlotValueText();
-        PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
-        TryStartSkillReservation();
+
+        if (playSelectionEffect)
+            PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
+
+        if (tryStartReservation)
+            TryStartSkillReservation();
+
+        return true;
+    }
+
+    private bool TryAutoSelectSlotForCharacter(CharacterRuntimeData runtimeData)
+    {
+        if (runtimeData == null)
+            return false;
+
+        if (!CanAutoSelectSlotForCharacter())
+            return false;
+
+        TimelineAutoSlotState[] slotStates = BuildAutoSlotStates(runtimeData);
+        int targetSlotIndex =
+            TimelineAutoSlotSelectionUtility.FindBestSlot(slotStates);
+
+        if (targetSlotIndex < 0 || targetSlotIndex == activeSlotIndex)
+            return false;
+
+        return SetActiveTimelineSlot(targetSlotIndex, false);
+    }
+
+    private bool CanAutoSelectSlotForCharacter()
+    {
+        if (isSlotSelectionLocked)
+            return false;
+
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return false;
+
+        if (turnExecutor == null)
+            turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return false;
+
+        return true;
+    }
+
+    private TimelineAutoSlotState[] BuildAutoSlotStates(CharacterRuntimeData runtimeData)
+    {
+        if (reserveSlots == null)
+            return System.Array.Empty<TimelineAutoSlotState>();
+
+        TimelineAutoSlotState[] result = new TimelineAutoSlotState[reserveSlots.Length];
+        string characterId = runtimeData != null ? runtimeData.CharacterId : null;
+
+        for (int i = 0; i < reserveSlots.Length; i++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[i];
+
+            bool isSelectable = IsTimelineSlotSelectable(i);
+
+            result[i] = new TimelineAutoSlotState(
+                isSelectable,
+                isSelectable && slot.CommandCount <= 0,
+                isSelectable && slot.CanAcceptCharacter(runtimeData),
+                isSelectable && CanAddPlayerCommandToSlot(i),
+                isSelectable && HasPlayerCommandForCharacter(slot, characterId)
+            );
+        }
+
+        return result;
+    }
+
+    private bool HasPlayerCommandForCharacter(ReserveTurnSlotUI slot, string characterId)
+    {
+        if (slot == null || slot.Commands == null || string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        for (int i = 0; i < slot.Commands.Count; i++)
+        {
+            PlayerReservedCommand command = slot.Commands[i];
+
+            if (command == null || command.UserRuntime == null)
+                continue;
+
+            if (command.UserRuntime.CharacterId == characterId)
+                return true;
+        }
+
+        return false;
     }
 
     public void ClearSelectedSlotSelection()
@@ -556,9 +1067,47 @@ public class BattleTimelineController : MonoBehaviour
         activeSlotIndex = -1;
         selectedSkill = null;
 
+        if (playerSkillReservationController == null)
+        {
+            playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(
+                FindObjectsInactive.Include);
+        }
+
+        if (playerSkillReservationController != null)
+            playerSkillReservationController.ClearPreview();
+
         SetActiveTimelineSlotVisual(activeSlotIndex);
 
         RefreshSelectedSlotValueText();
+    }
+
+    public void StopTimelineMotionEffects()
+    {
+        if (selectedSlotEffectRoutine != null)
+        {
+            StopCoroutine(selectedSlotEffectRoutine);
+            selectedSlotEffectRoutine = null;
+        }
+
+        if (timelineSlotSlideRoutine != null)
+        {
+            StopCoroutine(timelineSlotSlideRoutine);
+            timelineSlotSlideRoutine = null;
+        }
+
+        if (timelineSlideGearRotationRoutine != null)
+        {
+            StopCoroutine(timelineSlideGearRotationRoutine);
+            timelineSlideGearRotationRoutine = null;
+        }
+
+        if (endButtonHoverRotationRoutine != null)
+        {
+            StopCoroutine(endButtonHoverRotationRoutine);
+            endButtonHoverRotationRoutine = null;
+        }
+
+        isEndButtonHovering = false;
     }
 
     public void SetSlotSelectionLocked(bool locked)
@@ -569,7 +1118,132 @@ public class BattleTimelineController : MonoBehaviour
             CancelEndButtonHoverRotationIfNeeded();
     }
 
-    public void SelectDefaultSlotWhenInputReady()
+    public void SetPlayerLockedSlot(int slotIndex)
+    {
+        int normalizedSlotIndex = IsValidReserveSlotIndex(slotIndex) ? slotIndex : -1;
+
+        if (playerLockedSlotIndex == normalizedSlotIndex)
+        {
+            RefreshPlayerLockedSlotVisuals();
+            return;
+        }
+
+        playerLockedSlotIndex = normalizedSlotIndex;
+
+        if (IsPlayerSlotLocked(activeSlotIndex))
+        {
+            activeSlotIndex = FindFirstSelectableTimelineSlot(activeSlotIndex);
+            selectedSkill = null;
+
+            if (playerSkillReservationController != null)
+                playerSkillReservationController.ClearPreview();
+
+            SetActiveTimelineSlotVisual(activeSlotIndex);
+            RefreshSelectedSlotValueText();
+        }
+
+        RefreshPlayerLockedSlotVisuals();
+    }
+
+    public void ClearPlayerLockedSlot()
+    {
+        SetPlayerLockedSlot(-1);
+    }
+
+    public bool IsPlayerSlotLocked(int slotIndex)
+    {
+        return IsPlayerSlotLocked(slotIndex, false);
+    }
+
+    private bool IsPlayerSlotLocked(int slotIndex, bool ignoreNetworkViewedSlotLock)
+    {
+        return (playerLockedSlotIndex >= 0 && slotIndex == playerLockedSlotIndex) ||
+               (!ignoreNetworkViewedSlotLock && networkViewedSlotIndices.Contains(slotIndex));
+    }
+
+    public void SetNetworkViewedSlots(IReadOnlyList<int> slotIndices)
+    {
+        networkViewedSlotIndices.Clear();
+
+        if (slotIndices != null)
+        {
+            for (int i = 0; i < slotIndices.Count; i++)
+            {
+                if (IsValidReserveSlotIndex(slotIndices[i]))
+                    networkViewedSlotIndices.Add(slotIndices[i]);
+            }
+        }
+
+        if (IsPlayerSlotLocked(activeSlotIndex))
+        {
+            activeSlotIndex = FindFirstSelectableTimelineSlot(activeSlotIndex);
+
+            SetActiveTimelineSlotVisual(activeSlotIndex);
+            RefreshSelectedSlotValueText();
+        }
+
+        RefreshPlayerLockedSlotVisuals();
+    }
+
+    private bool IsValidReserveSlotIndex(int slotIndex)
+    {
+        return reserveSlots != null && slotIndex >= 0 && slotIndex < reserveSlots.Length;
+    }
+
+    private bool IsTimelineSlotSelectable(int slotIndex)
+    {
+        return IsValidReserveSlotIndex(slotIndex) &&
+               reserveSlots[slotIndex] != null &&
+               !IsPlayerSlotLocked(slotIndex);
+    }
+
+    private int FindFirstSelectableTimelineSlot(int preferredSlotIndex)
+    {
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return -1;
+
+        int startIndex = preferredSlotIndex >= 0 && preferredSlotIndex < reserveSlots.Length
+            ? preferredSlotIndex
+            : Mathf.Clamp(defaultSlotIndex, 0, reserveSlots.Length - 1);
+
+        for (int offset = 0; offset < reserveSlots.Length; offset++)
+        {
+            int slotIndex = (startIndex + offset) % reserveSlots.Length;
+
+            if (IsTimelineSlotSelectable(slotIndex))
+                return slotIndex;
+        }
+
+        return -1;
+    }
+
+    private void RefreshPlayerLockedSlotVisuals()
+    {
+        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
+        BattleTimelineBarUI standbyBar = GetStandbyTimelineBarUI();
+        int visualLockedSlotIndex = playerLockedSlotIndex;
+
+        if (visualLockedSlotIndex < 0)
+        {
+            foreach (int slotIndex in networkViewedSlotIndices)
+            {
+                visualLockedSlotIndex = slotIndex;
+                break;
+            }
+        }
+
+        if (activeBar != null)
+            activeBar.SetPlayerLockedSlot(visualLockedSlotIndex);
+
+        if (standbyBar != null && standbyBar != activeBar)
+            standbyBar.SetPlayerLockedSlot(-1);
+    }
+
+    private void ShowPlayerLockedSlotWarning()
+    {
+        ShowBattleWarning("선택할 수 없는 슬롯입니다.");
+    }
+    public void SelectDefaultSlotWhenInputReady(bool playSelectionEffect = true)
     {
         if (!autoSelectFirstSlotWhenInputReady)
             return;
@@ -580,19 +1254,23 @@ public class BattleTimelineController : MonoBehaviour
         if (reserveSlots == null || reserveSlots.Length <= 0)
             return;
 
-        int slotIndex = Mathf.Clamp(defaultSlotIndex, 0, reserveSlots.Length - 1);
+        int slotIndex = FindFirstSelectableTimelineSlot(
+            Mathf.Clamp(defaultSlotIndex, 0, reserveSlots.Length - 1));
 
-        if (reserveSlots[slotIndex] == null)
+        if (slotIndex < 0)
             return;
 
         int previousSlotIndex = activeSlotIndex;
         activeSlotIndex = slotIndex;
         selectedSkill = null;
+        preserveManuallySelectedSlotForNextCharacter = false;
 
         SetActiveTimelineSlotVisual(activeSlotIndex);
 
         RefreshSelectedSlotValueText();
-        PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
+
+        if (playSelectionEffect)
+            PlaySelectedSlotEffect(previousSlotIndex, activeSlotIndex);
     }
 
     public IEnumerator SlideTimelineSlotsLeftOneStepRoutine()
@@ -644,9 +1322,9 @@ public class BattleTimelineController : MonoBehaviour
 
         timelineSlotSlideStepIndex = Mathf.Clamp(endSlotIndex + 1, 0, slideSlotCount);
 
-        // 5번 슬롯의 TurnMark가 갈렸다고 해서 턴 라인을 바로 완료 위치로 보내면,
-        // 5번 슬롯에 등록된 Use_skill들이 개별적으로 갈리기 전에 한 번에 이동해 보입니다.
-        // 완료 위치 보정은 BattleTurnExecutor가 모든 슬롯/스킬 처리를 끝낸 뒤 호출합니다.
+        // 5번 슬롯의 TurnMark가 가려진 뒤 라인을 바로 완료 위치로 보내면
+        // 5번 슬롯에 등록된 Use_skill들이 개별적으로 가려지기 전에 한 번에 이동해 보입니다.
+        // 완료 위치 보정은 BattleTurnExecutor가 모든 슬롯과 연출 처리를 끝낸 뒤 호출합니다.
     }
 
     public IEnumerator PlayTimelineTurnMarkAnimationRoutine(int slotIndex)
@@ -668,30 +1346,36 @@ public class BattleTimelineController : MonoBehaviour
         AutoFindTimelineSpriteAnimationControllerIfNeeded();
         ConfigureTimelineSpriteAnimationRootForActiveBar();
 
-        // 턴 엔드 직후 1번 슬롯이 진행될 때만 라인을 먼저 -60 이동합니다.
-        // 2번 슬롯부터는 이 선행 이동 없이 슬롯 시작 이동만 진행합니다.
-        if (slotIndex == 0 && !Mathf.Approximately(firstSlotEndTurnTimelineLineSlideAmountX, 0f))
-        {
-            PlayTimelineSlideGearRotation(1);
-            yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(firstSlotEndTurnTimelineLineSlideAmountX);
-        }
-
-        // 슬롯 시작 시 TurnMark 애니메이션을 먼저 보여주고, 그 다음 TimelineBar 전체를 이동합니다.
-        // 스킬이 없는 슬롯은 Use_skill 1~5칸까지 한 번에 이동해서 다음 슬롯 직전까지 보냅니다.
         float animationDuration = GetTurnMarkGrindDuration();
+
+        // 행동이 없는 슬롯은 TurnMark / 빈 Order를 전부 건너뛰고 해당 슬롯의 Order05까지 한 번에 이동합니다.
+        // 행동이 있는 슬롯은 먼저 해당 슬롯의 TurnMark 위치까지 이동한 뒤 TurnMark 갈림 연출을 보여줍니다.
+        float targetX = isEmptySlot
+            ? GetOrderGrindPositionX(slotIndex, 4)
+            : GetTurnMarkGrindPositionX(slotIndex);
+
+        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
+        if (activeBar != null)
+            activeBar.HideOwnerIconsForSlot(slotIndex);
+
+        Coroutine turnMarkAnimation = null;
 
         if (timelineSpriteAnimationController != null)
         {
             SpawnTimelineGrindVfx();
-            yield return timelineSpriteAnimationController.PlayTurnMarkRoutine(slotIndex);
+            turnMarkAnimation = StartCoroutine(
+                timelineSpriteAnimationController.PlayTurnMarkRoutine(slotIndex)
+            );
         }
 
-        float lineSlideAmountX = isEmptySlot
-            ? GetFullUseSkillTimelineLineSlideAmountX()
-            : slotStartTimelineLineSlideAmountX;
+        yield return MoveTimelineSlotToGrindPositionRoutine(
+            slotIndex,
+            targetX,
+            animationDuration
+        );
 
-        PlayTimelineSlideGearRotation(1, animationDuration);
-        yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(lineSlideAmountX, animationDuration);
+        if (turnMarkAnimation != null)
+            yield return turnMarkAnimation;
     }
 
     public IEnumerator MoveTimelineBarsToCompletedTurnPositionRoutine()
@@ -700,29 +1384,21 @@ public class BattleTimelineController : MonoBehaviour
             yield break;
 
         RectTransform activeTarget = GetActiveTimelineBarSlideTarget();
-        RectTransform standbyTarget = GetStandbyTimelineBarSlideTarget();
 
         if (activeTarget == null)
             yield break;
 
-        Vector2 basePosition = GetTimelineBarBasePosition();
-        float completedX = basePosition.x + completedTurnTimelineBarPositionX;
-        float standbyX = basePosition.x;
+        float completedX = completedTurnTimelineBarPositionX;
         float offsetX = completedX - activeTarget.anchoredPosition.x;
 
-        // 이미 완료 위치에 도착했거나 지나친 경우에는 추가 이동을 재생하지 않습니다.
-        // active는 -1420, standby는 0으로 위치만 보정합니다.
-        bool alreadyAtOrPastCompletedPosition = completedTurnTimelineBarPositionX < 0f
-            ? activeTarget.anchoredPosition.x <= completedX + 0.01f
-            : activeTarget.anchoredPosition.x >= completedX - 0.01f;
+        // 완료 위치까지도 활성 TimelineBar만 이동합니다.
+        // Standby TimelineBar는 다음 턴 전환 시점까지 화면 밖의 대기 위치를 유지합니다.
+        bool alreadyAtOrPastCompletedPosition = activeTarget.anchoredPosition.x <= completedX + 0.01f;
 
         if (!alreadyAtOrPastCompletedPosition && !Mathf.Approximately(offsetX, 0f))
             yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(offsetX, timelineSlotSlideDuration, true);
 
         activeTarget.anchoredPosition = new Vector2(completedX, activeTarget.anchoredPosition.y);
-
-        if (standbyTarget != null && standbyTarget != activeTarget)
-            standbyTarget.anchoredPosition = new Vector2(standbyX, standbyTarget.anchoredPosition.y);
 
         completedTimelineBarPositionApplied = true;
     }
@@ -740,14 +1416,92 @@ public class BattleTimelineController : MonoBehaviour
         if (slotIndex < 0)
             return true;
 
-        return GetPlayerCommandCount(slotIndex) + GetMonsterCommandCount(slotIndex) <= 0;
+        IReadOnlyList<PlayerReservedCommand> playerCommands = GetPlayerCommands(slotIndex);
+        if (playerCommands != null)
+        {
+            for (int i = 0; i < playerCommands.Count; i++)
+            {
+                PlayerReservedCommand command = playerCommands[i];
+                if (command != null && IsTimelineCommandOwnerAlive(command.UserRuntime))
+                    return false;
+            }
+        }
+
+        IReadOnlyList<MonsterReservedCommand> monsterCommands = GetMonsterCommands(slotIndex);
+        if (monsterCommands != null)
+        {
+            for (int i = 0; i < monsterCommands.Count; i++)
+            {
+                MonsterReservedCommand command = monsterCommands[i];
+                if (command != null && IsTimelineCommandOwnerAlive(command.UserRuntime))
+                    return false;
+            }
+        }
+
+        return true;
     }
 
-    private float GetFullUseSkillTimelineLineSlideAmountX()
+    private static bool IsTimelineCommandOwnerAlive(CharacterRuntimeData runtimeData)
     {
-        return slotStartTimelineLineSlideAmountX +
-               firstUseSkillTimelineLineSlideAmountX +
-               additionalUseSkillTimelineLineSlideAmountX * 4f;
+        return runtimeData != null && !runtimeData.IsDead;
+    }
+
+    private static bool IsTimelineCommandOwnerAlive(MonsterRuntimeData runtimeData)
+    {
+        return runtimeData != null && !runtimeData.IsDead;
+    }
+
+    public IEnumerator PlayTimelineActionAnimationsForOrdersRoutine(
+        int slotIndex,
+        IReadOnlyList<int> orderIndices,
+        bool fillRemainingUseSkillLine = false)
+    {
+        AutoFindTimelineSpriteAnimationControllerIfNeeded();
+        ConfigureTimelineSpriteAnimationRootForActiveBar();
+
+        if (orderIndices == null || orderIndices.Count <= 0)
+            yield break;
+
+        int lastAnimatedOrderIndex = -1;
+
+        for (int i = 0; i < orderIndices.Count; i++)
+        {
+            int orderIndex = orderIndices[i];
+
+            if (orderIndex < 0 || orderIndex >= 5)
+                continue;
+
+            float animationDuration = GetUseSkillGrindDuration();
+            float targetX = GetOrderGrindPositionX(slotIndex, orderIndex);
+
+            // 사망한 예약 행동의 Order 위치에는 멈추지 않고,
+            // 실제 실행되는 다음 Order 위치까지 한 번에 이동합니다.
+            yield return MoveTimelineSlotToGrindPositionRoutine(
+                slotIndex,
+                targetX,
+                animationDuration
+            );
+
+            // 실제 캐릭터/몬스터 예약 오더 위치에 도착해 타임라인이 멈춘 순간에만 1회 재생합니다.
+            PlayTimelineGearTickSfx();
+
+            if (timelineSpriteAnimationController != null)
+            {
+                SpawnTimelineGrindVfx();
+                yield return timelineSpriteAnimationController.PlayUseSkillRoutine(slotIndex, orderIndex);
+            }
+
+            lastAnimatedOrderIndex = orderIndex;
+        }
+
+        if (fillRemainingUseSkillLine && lastAnimatedOrderIndex >= 0 && lastAnimatedOrderIndex < 4)
+        {
+            yield return MoveTimelineSlotToGrindPositionRoutine(
+                slotIndex,
+                GetOrderGrindPositionX(slotIndex, 4),
+                GetUseSkillGrindDuration()
+            );
+        }
     }
 
     public IEnumerator PlayTimelineActionAnimationsRoutine(int slotIndex, int startOrderIndex, int count, bool fillRemainingUseSkillLine = false)
@@ -765,8 +1519,18 @@ public class BattleTimelineController : MonoBehaviour
             if (orderIndex < 0 || orderIndex >= 5)
                 yield break;
 
-            // Use_skill 애니메이션을 먼저 보여주고, 그 다음 TimelineBar 전체를 이동합니다.
             float animationDuration = GetUseSkillGrindDuration();
+            float targetX = GetOrderGrindPositionX(slotIndex, orderIndex);
+
+            // 각 Order가 지정된 X 위치에 도달한 뒤 Use_skill 갈림 연출을 재생합니다.
+            yield return MoveTimelineSlotToGrindPositionRoutine(
+                slotIndex,
+                targetX,
+                animationDuration
+            );
+
+            // 실제 캐릭터/몬스터 예약 오더 위치에 도착해 타임라인이 멈춘 순간에만 1회 재생합니다.
+            PlayTimelineGearTickSfx();
 
             if (timelineSpriteAnimationController != null)
             {
@@ -774,18 +1538,60 @@ public class BattleTimelineController : MonoBehaviour
                 yield return timelineSpriteAnimationController.PlayUseSkillRoutine(slotIndex, orderIndex);
             }
 
-            float lineSlideAmountX = orderIndex == 0
-                ? firstUseSkillTimelineLineSlideAmountX
-                : additionalUseSkillTimelineLineSlideAmountX;
-
-            if (fillRemainingUseSkillLine && i == safeCount - 1)
-                lineSlideAmountX += GetRemainingUseSkillTimelineLineSlideAmountX(orderIndex);
-
-            PlayTimelineSlideGearRotation(1, animationDuration);
-            yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(lineSlideAmountX, animationDuration);
+            // 마지막 실제 행동 뒤에 빈 Order가 남아 있으면 중간 정지 지점을 건너뛰고
+            // 슬롯 완료 위치인 Order05(-580)까지 한 번에 이동합니다.
+            if (fillRemainingUseSkillLine && i == safeCount - 1 && orderIndex < 4)
+            {
+                yield return MoveTimelineSlotToGrindPositionRoutine(
+                    slotIndex,
+                    GetOrderGrindPositionX(slotIndex, 4),
+                    animationDuration
+                );
+            }
         }
     }
 
+    private static float GetTurnMarkGrindPositionX(int slotIndex)
+    {
+        switch (Mathf.Clamp(slotIndex, 0, 4))
+        {
+            case 0: return -330f;
+            case 1: return -650f;
+            case 2: return -980f;
+            case 3: return -1300f;
+            case 4: return -1620f;
+            default: return -1620f;
+        }
+    }
+
+    private static float GetOrderGrindPositionX(int slotIndex, int orderIndex)
+    {
+        int safeSlotIndex = Mathf.Clamp(slotIndex, 0, OrderGrindPositions.Length - 1);
+        int safeOrderIndex = Mathf.Clamp(orderIndex, 0, 4);
+        return OrderGrindPositions[safeSlotIndex][safeOrderIndex];
+    }
+
+    private IEnumerator MoveTimelineSlotToGrindPositionRoutine(
+        int slotIndex,
+        float targetBarX,
+        float duration)
+    {
+        RectTransform activeTarget = GetActiveTimelineBarSlideTarget();
+
+        if (activeTarget == null)
+            yield break;
+
+        // 갈림 위치는 TimelineBar 자체의 절대 anchoredPosition X를 사용합니다.
+        // 슬롯별 좌표를 간격 계산으로 추정하지 않고 지정된 위치표를 그대로 적용합니다.
+        float offsetX = targetBarX - activeTarget.anchoredPosition.x;
+
+        // 갈림 연출 중 TimelineBar가 오른쪽으로 되돌아가는 상황은 허용하지 않습니다.
+        if (offsetX >= -0.01f)
+            yield break;
+
+        PlayTimelineSlideGearRotation(1, duration);
+        yield return MoveAllTimelineSlotSlideTargetsByOffsetRoutine(offsetX, duration);
+    }
 
     private float GetTurnMarkGrindDuration()
     {
@@ -825,13 +1631,6 @@ public class BattleTimelineController : MonoBehaviour
 
         return vfx;
     }
-
-    private float GetRemainingUseSkillTimelineLineSlideAmountX(int lastPlayedOrderIndex)
-    {
-        int remainingUseSkillCount = Mathf.Clamp(4 - lastPlayedOrderIndex, 0, 4);
-        return additionalUseSkillTimelineLineSlideAmountX * remainingUseSkillCount;
-    }
-
 
     public IEnumerator ResetTimelineSlotsToOriginalPositionRoutine()
     {
@@ -892,49 +1691,6 @@ public class BattleTimelineController : MonoBehaviour
             endButtonHoverRotationTarget = FindRectTransformByName(foundTimelineBar.transform, endButtonHoverRotationTargetName);
     }
 
-    private void AutoBindEndButtonHoverLinkedGearTargetsIfNeeded()
-    {
-        if (!autoBindEndButtonHoverLinkedGears)
-            return;
-
-        endButtonHoverSmallGearRotationTarget = AutoBindEndButtonHoverLinkedGearTargetIfNeeded(
-            endButtonHoverSmallGearRotationTarget,
-            endButtonHoverSmallGearRotationTargetName
-        );
-
-        endButtonHoverLargeGearRotationTarget = AutoBindEndButtonHoverLinkedGearTargetIfNeeded(
-            endButtonHoverLargeGearRotationTarget,
-            endButtonHoverLargeGearRotationTargetName
-        );
-    }
-
-    private RectTransform AutoBindEndButtonHoverLinkedGearTargetIfNeeded(RectTransform currentTarget, string targetName)
-    {
-        if (currentTarget != null)
-            return currentTarget;
-
-        if (string.IsNullOrEmpty(targetName))
-            return null;
-
-        RectTransform found = FindRectTransformByName(transform, targetName);
-
-        if (found != null)
-            return found;
-
-        Transform searchRoot = GetTimelineSearchRoot();
-        found = FindRectTransformByName(searchRoot, targetName);
-
-        if (found != null)
-            return found;
-
-        BattleTimelineBarUI foundTimelineBar = FindFirstObjectByType<BattleTimelineBarUI>(FindObjectsInactive.Include);
-
-        if (foundTimelineBar == null)
-            return null;
-
-        return FindRectTransformByName(foundTimelineBar.transform, targetName);
-    }
-
     private RectTransform FindRectTransformByName(Transform root, string targetName)
     {
         if (root == null || string.IsNullOrEmpty(targetName))
@@ -954,7 +1710,6 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
 
         if (endButtonHoverRotationTarget == null)
             return;
@@ -1000,11 +1755,7 @@ public class BattleTimelineController : MonoBehaviour
             endButtonHoverRotationRoutine = null;
         }
 
-        PlayEndButtonHoverRotationTo(
-            endButtonRotationBeforeHoverZ,
-            endButtonSmallGearRotationBeforeHoverZ,
-            endButtonLargeGearRotationBeforeHoverZ
-        );
+        PlayEndButtonHoverRotationTo(endButtonRotationBeforeHoverZ);
     }
 
     private void OnEndButtonHoverEnter()
@@ -1013,7 +1764,6 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
 
         if (endButtonHoverRotationTarget == null)
             return;
@@ -1023,15 +1773,11 @@ public class BattleTimelineController : MonoBehaviour
 
         isEndButtonHovering = true;
         endButtonRotationBeforeHoverZ = GetTransformRotationZ(endButtonHoverRotationTarget);
-        endButtonSmallGearRotationBeforeHoverZ = GetTransformRotationZ(endButtonHoverSmallGearRotationTarget);
-        endButtonLargeGearRotationBeforeHoverZ = GetTransformRotationZ(endButtonHoverLargeGearRotationTarget);
 
         float targetRotationZ = endButtonRotationBeforeHoverZ + endButtonHoverRotationOffsetZ;
-        float smallGearTargetRotationZ = endButtonSmallGearRotationBeforeHoverZ + endButtonHoverSmallGearRotationOffsetZ;
-        float largeGearTargetRotationZ = endButtonLargeGearRotationBeforeHoverZ + endButtonHoverLargeGearRotationOffsetZ;
 
         PlayEndButtonHoverSfx();
-        PlayEndButtonHoverRotationTo(targetRotationZ, smallGearTargetRotationZ, largeGearTargetRotationZ);
+        PlayEndButtonHoverRotationTo(targetRotationZ);
     }
 
     private void OnEndButtonHoverExit()
@@ -1040,7 +1786,6 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
 
         if (endButtonHoverRotationTarget == null)
             return;
@@ -1074,20 +1819,14 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         isEndButtonHovering = false;
-        PlayEndButtonHoverRotationTo(
-            endButtonRotationBeforeHoverZ,
-            endButtonSmallGearRotationBeforeHoverZ,
-            endButtonLargeGearRotationBeforeHoverZ
-        );
+        PlayEndButtonHoverRotationTo(endButtonRotationBeforeHoverZ);
     }
 
     private bool IsPointerInsideEndButtonHoverBounds()
     {
         Vector2 screenPosition = Input.mousePosition;
 
-        return IsScreenPositionInsideRectTransformBounds(endButtonHoverRotationTarget, screenPosition) ||
-               IsScreenPositionInsideRectTransformBounds(endButtonHoverSmallGearRotationTarget, screenPosition) ||
-               IsScreenPositionInsideRectTransformBounds(endButtonHoverLargeGearRotationTarget, screenPosition);
+        return IsScreenPositionInsideRectTransformBounds(endButtonHoverRotationTarget, screenPosition);
     }
 
     private bool IsScreenPositionInsideRectTransformBounds(RectTransform rectTransform, Vector2 screenPosition)
@@ -1132,7 +1871,7 @@ public class BattleTimelineController : MonoBehaviour
         return canvas.worldCamera;
     }
 
-    private void PlayEndButtonHoverRotationTo(float targetRotationZ, float smallGearTargetRotationZ, float largeGearTargetRotationZ)
+    private void PlayEndButtonHoverRotationTo(float targetRotationZ)
     {
         if (endButtonHoverRotationTarget == null)
             return;
@@ -1141,17 +1880,15 @@ public class BattleTimelineController : MonoBehaviour
             StopCoroutine(endButtonHoverRotationRoutine);
 
         endButtonHoverRotationRoutine = StartCoroutine(
-            RotateEndButtonHoverToRoutine(targetRotationZ, smallGearTargetRotationZ, largeGearTargetRotationZ)
+            RotateEndButtonHoverToRoutine(targetRotationZ)
         );
     }
 
-    private IEnumerator RotateEndButtonHoverToRoutine(float targetRotationZ, float smallGearTargetRotationZ, float largeGearTargetRotationZ)
+    private IEnumerator RotateEndButtonHoverToRoutine(float targetRotationZ)
     {
         float duration = Mathf.Max(0.01f, endButtonHoverRotationDuration);
         float elapsed = 0f;
         float startRotationZ = GetTransformRotationZ(endButtonHoverRotationTarget);
-        float smallGearStartRotationZ = GetTransformRotationZ(endButtonHoverSmallGearRotationTarget);
-        float largeGearStartRotationZ = GetTransformRotationZ(endButtonHoverLargeGearRotationTarget);
 
         while (elapsed < duration)
         {
@@ -1160,15 +1897,10 @@ public class BattleTimelineController : MonoBehaviour
             float easedT = 1f - Mathf.Pow(1f - t, 3f);
 
             SetTransformRotationZ(endButtonHoverRotationTarget, Mathf.LerpAngle(startRotationZ, targetRotationZ, easedT));
-            SetTransformRotationZ(endButtonHoverSmallGearRotationTarget, Mathf.LerpAngle(smallGearStartRotationZ, smallGearTargetRotationZ, easedT));
-            SetTransformRotationZ(endButtonHoverLargeGearRotationTarget, Mathf.LerpAngle(largeGearStartRotationZ, largeGearTargetRotationZ, easedT));
-
             yield return null;
         }
 
         SetTransformRotationZ(endButtonHoverRotationTarget, targetRotationZ);
-        SetTransformRotationZ(endButtonHoverSmallGearRotationTarget, smallGearTargetRotationZ);
-        SetTransformRotationZ(endButtonHoverLargeGearRotationTarget, largeGearTargetRotationZ);
         endButtonHoverRotationRoutine = null;
     }
 
@@ -1180,7 +1912,7 @@ public class BattleTimelineController : MonoBehaviour
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(endButtonHoverSfxType, endButtonHoverSfxVolume);
+        AudioManager.Instance.PlaySfx(endButtonHoverSfxId, endButtonHoverSfxVolume);
     }
 
     private void PlayTimelineSlotSlideSfx()
@@ -1191,7 +1923,7 @@ public class BattleTimelineController : MonoBehaviour
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(timelineSlotSlideSfxType, timelineSlotSlideSfxVolume);
+        AudioManager.Instance.PlaySfx(timelineSlotSlideSfxId, timelineSlotSlideSfxVolume);
     }
 
     private void PlayTimelineSlideGearRotation(int completedStepCount, float durationOverride = -1f)
@@ -1202,15 +1934,12 @@ public class BattleTimelineController : MonoBehaviour
         AutoFindSelectedSlotEffectIfNeeded();
         AutoFindSelectedSlotGearEffectsIfNeeded();
         AutoBindEndButtonHoverRotationTargetIfNeeded();
-        AutoBindEndButtonHoverLinkedGearTargetsIfNeeded();
 
         bool hasTarget =
             selectedSlotEffect != null ||
             selectedSlotLargeGearEffect != null ||
             selectedSlotSmallGearEffect != null ||
-            endButtonHoverRotationTarget != null ||
-            endButtonHoverSmallGearRotationTarget != null ||
-            endButtonHoverLargeGearRotationTarget != null;
+            endButtonHoverRotationTarget != null;
 
         if (!hasTarget)
             return;
@@ -1229,15 +1958,9 @@ public class BattleTimelineController : MonoBehaviour
         float smallGearTargetZ = GetTransformRotationZ(selectedSlotSmallGearEffect) + selectedSlotSmallGearRotateStepZ * completedStepCount;
 
         float endButtonTargetZ = GetTransformRotationZ(endButtonHoverRotationTarget) + endButtonHoverRotationOffsetZ * completedStepCount;
-        float endButtonSmallGearTargetZ = GetTransformRotationZ(endButtonHoverSmallGearRotationTarget) + endButtonHoverSmallGearRotationOffsetZ * completedStepCount;
-        float endButtonLargeGearTargetZ = GetTransformRotationZ(endButtonHoverLargeGearRotationTarget) + endButtonHoverLargeGearRotationOffsetZ * completedStepCount;
 
         if (isEndButtonHovering)
-        {
             endButtonRotationBeforeHoverZ += endButtonHoverRotationOffsetZ * completedStepCount;
-            endButtonSmallGearRotationBeforeHoverZ += endButtonHoverSmallGearRotationOffsetZ * completedStepCount;
-            endButtonLargeGearRotationBeforeHoverZ += endButtonHoverLargeGearRotationOffsetZ * completedStepCount;
-        }
 
         if (selectedSlotEffectRoutine != null)
         {
@@ -1259,8 +1982,6 @@ public class BattleTimelineController : MonoBehaviour
             largeGearTargetZ,
             smallGearTargetZ,
             endButtonTargetZ,
-            endButtonSmallGearTargetZ,
-            endButtonLargeGearTargetZ,
             durationOverride
         ));
     }
@@ -1270,8 +1991,6 @@ public class BattleTimelineController : MonoBehaviour
         float largeGearTargetZ,
         float smallGearTargetZ,
         float endButtonTargetZ,
-        float endButtonSmallGearTargetZ,
-        float endButtonLargeGearTargetZ,
         float durationOverride)
     {
         float duration = durationOverride > 0f
@@ -1283,12 +2002,13 @@ public class BattleTimelineController : MonoBehaviour
         float largeGearStartZ = GetTransformRotationZ(selectedSlotLargeGearEffect);
         float smallGearStartZ = GetTransformRotationZ(selectedSlotSmallGearEffect);
         float endButtonStartZ = GetTransformRotationZ(endButtonHoverRotationTarget);
-        float endButtonSmallGearStartZ = GetTransformRotationZ(endButtonHoverSmallGearRotationTarget);
-        float endButtonLargeGearStartZ = GetTransformRotationZ(endButtonHoverLargeGearRotationTarget);
 
         while (elapsed < duration)
         {
-            elapsed += useUnscaledTimeForTimelineSlotSlide ? Time.unscaledDeltaTime : Time.deltaTime;
+            float deltaTime = useUnscaledTimeForTimelineSlotSlide
+                ? Time.unscaledDeltaTime
+                : Time.deltaTime;
+            elapsed += BattleConsecutiveActionPresentationContext.ScaleDeltaTime(deltaTime);
             float t = Mathf.Clamp01(elapsed / duration);
             float easedT = 1f - Mathf.Pow(1f - t, 3f);
 
@@ -1296,8 +2016,6 @@ public class BattleTimelineController : MonoBehaviour
             SetTransformRotationZ(selectedSlotLargeGearEffect, Mathf.LerpAngle(largeGearStartZ, largeGearTargetZ, easedT));
             SetTransformRotationZ(selectedSlotSmallGearEffect, Mathf.LerpAngle(smallGearStartZ, smallGearTargetZ, easedT));
             SetTransformRotationZ(endButtonHoverRotationTarget, Mathf.LerpAngle(endButtonStartZ, endButtonTargetZ, easedT));
-            SetTransformRotationZ(endButtonHoverSmallGearRotationTarget, Mathf.LerpAngle(endButtonSmallGearStartZ, endButtonSmallGearTargetZ, easedT));
-            SetTransformRotationZ(endButtonHoverLargeGearRotationTarget, Mathf.LerpAngle(endButtonLargeGearStartZ, endButtonLargeGearTargetZ, easedT));
 
             yield return null;
         }
@@ -1306,8 +2024,6 @@ public class BattleTimelineController : MonoBehaviour
         SetTransformRotationZ(selectedSlotLargeGearEffect, largeGearTargetZ);
         SetTransformRotationZ(selectedSlotSmallGearEffect, smallGearTargetZ);
         SetTransformRotationZ(endButtonHoverRotationTarget, endButtonTargetZ);
-        SetTransformRotationZ(endButtonHoverSmallGearRotationTarget, endButtonSmallGearTargetZ);
-        SetTransformRotationZ(endButtonHoverLargeGearRotationTarget, endButtonLargeGearTargetZ);
         timelineSlideGearRotationRoutine = null;
     }
 
@@ -1551,6 +2267,40 @@ public class BattleTimelineController : MonoBehaviour
         return barUI;
     }
 
+
+    private void AutoBindReserveSlotsFromTimelineBarIfNeeded()
+    {
+        bool needsRebind = reserveSlots == null || reserveSlots.Length != 5;
+
+        if (!needsRebind)
+        {
+            for (int i = 0; i < reserveSlots.Length; i++)
+            {
+                if (reserveSlots[i] == null)
+                {
+                    needsRebind = true;
+                    break;
+                }
+            }
+        }
+
+        if (!needsRebind)
+            return;
+
+        AutoFindTimelineBarsIfNeeded();
+
+        BattleTimelineBarUI sourceBar = timelineBarUI1 != null ? timelineBarUI1 : timelineBarUI2;
+        if (sourceBar == null)
+            return;
+
+        ReserveTurnSlotUI[] resolvedSlots = sourceBar.GetOrCreateReserveSlots(this);
+        if (resolvedSlots == null || resolvedSlots.Length == 0)
+            return;
+
+        reserveSlots = resolvedSlots;
+        InitializeMonsterCommandSlots();
+    }
+
     private void InitTimelineBars()
     {
         AutoFindTimelineBarsIfNeeded();
@@ -1608,11 +2358,11 @@ public class BattleTimelineController : MonoBehaviour
     {
         AutoFindTimelineBarsIfNeeded();
 
-        if (timelineBarSlideTarget1 != null && timelineBarSlideTarget2 != null)
-            return new[] { timelineBarSlideTarget1, timelineBarSlideTarget2 };
-
-        RectTransform singleTarget = GetActiveTimelineBarSlideTarget();
-        return singleTarget != null ? new[] { singleTarget } : System.Array.Empty<RectTransform>();
+        // 진행 연출 중에는 현재 활성 TimelineBar만 이동합니다.
+        // 대기 Bar까지 같이 움직이면 턴 종료 직전에 화면을 가로질러
+        // 휙 지나가는 것처럼 보일 수 있습니다.
+        RectTransform activeTarget = GetActiveTimelineBarSlideTarget();
+        return activeTarget != null ? new[] { activeTarget } : System.Array.Empty<RectTransform>();
     }
 
     private void SetActiveTimelineSlotVisual(int slotIndex)
@@ -1653,7 +2403,7 @@ public class BattleTimelineController : MonoBehaviour
         else if (timelineBarSlideTarget1 != null)
             timelineBar2OriginalAnchoredPosition = timelineBar1OriginalAnchoredPosition + new Vector2(standbyTimelineBarOffsetX, 0f);
 
-        // 두 TimelineBar의 실제 RectTransform width나 현재 배치값을 기준으로 간격을 다시 계산하지 않습니다.
+        // 두 TimelineBar의 실제 RectTransform 너비나 현재 배치값을 기준으로 간격을 다시 계산하지 않습니다.
         // Inspector에서 지정한 Standby Timeline Bar Offset X 값만 사용해야
         // 0 / 1420 위치를 번갈아 쓰는 구조가 흔들리지 않습니다.
         resolvedStandbyTimelineBarOffsetX = Mathf.Abs(standbyTimelineBarOffsetX);
@@ -1666,10 +2416,12 @@ public class BattleTimelineController : MonoBehaviour
 
     private Vector2 GetTimelineBarBasePosition()
     {
-        if (timelineBarSlideTarget1 != null)
-            return timelineBar1OriginalAnchoredPosition;
+        Vector2 basePosition = timelineBarSlideTarget1 != null
+            ? timelineBar1OriginalAnchoredPosition
+            : timelineBar2OriginalAnchoredPosition;
 
-        return timelineBar2OriginalAnchoredPosition;
+        basePosition.x = timelineBarStartPositionX;
+        return basePosition;
     }
 
 
@@ -1705,6 +2457,11 @@ public class BattleTimelineController : MonoBehaviour
         if (standbyTarget != null && standbyTarget != activeTarget)
             standbyTarget.anchoredPosition = basePosition + new Vector2(resolvedStandbyTimelineBarOffsetX, 0f);
 
+        // 체인은 턴마다 초기화하지 않고, 새 전투방 최초 진입에서만 시작 위치로 맞춥니다.
+        ResetChainLoopForBar(timelineBarUI1);
+        if (timelineBarUI2 != null && timelineBarUI2 != timelineBarUI1)
+            ResetChainLoopForBar(timelineBarUI2);
+
         ConfigureTimelineSpriteAnimationRootForActiveBar();
 
         if (timelineSpriteAnimationController != null)
@@ -1723,6 +2480,7 @@ public class BattleTimelineController : MonoBehaviour
         if (standbyBar != null && standbyBar != activeBar)
         {
             standbyBar.Clear();
+            standbyBar.SetPlayerLockedSlot(-1);
             standbyBar.SetActiveTimelineSlot(-1);
             standbyBar.SetTurnMarkChildrenVisible(false);
             standbyBar.SetEmptyUseSkillSlotsVisible(false);
@@ -1736,33 +2494,87 @@ public class BattleTimelineController : MonoBehaviour
         AutoFindTimelineBarsIfNeeded();
         CaptureTimelineSlotOriginalPositionsIfNeeded();
 
-        if (swapActiveBar && timelineBarSlideTarget1 != null && timelineBarSlideTarget2 != null)
-            activeTimelineBarIndex = activeTimelineBarIndex == 0 ? 1 : 0;
-
-        completedTimelineBarPositionApplied = false;
-
+        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
         RectTransform activeTarget = GetActiveTimelineBarSlideTarget();
         RectTransform standbyTarget = GetStandbyTimelineBarSlideTarget();
 
-        Vector2 activeBasePosition = GetTimelineBarBasePosition();
+        Vector3[] chainWorldPositions = null;
+        ChainLoopScroller activeChain = GetChainLoopScroller(activeBar);
+        if (activeChain != null)
+            chainWorldPositions = activeChain.CaptureWorldPositions();
 
+        if (swapActiveBar && activeBar != null)
+        {
+            // 현재 슬롯 세트는 갈림 연출의 마지막 프레임/숨김 상태가 남아 있을 수 있습니다.
+            // 이 세트가 곧 다음 Next 슬롯으로 재활용되므로 승격/교체 전에 원래 비주얼로 복구합니다.
+            ConfigureTimelineSpriteAnimationRootForActiveBar();
+            if (timelineSpriteAnimationController != null)
+                timelineSpriteAnimationController.ResetTimelineSpritesForNextTurn();
+
+            ReserveTurnSlotUI[] promotedSlots = activeBar.PromoteTrailingTimelineGroupsToCurrent(this);
+            if (promotedSlots != null && promotedSlots.Length > 0)
+                reserveSlots = promotedSlots;
+        }
+
+        completedTimelineBarPositionApplied = false;
+
+        Vector2 activeBasePosition = GetTimelineBarBasePosition();
         if (activeTarget != null)
             activeTarget.anchoredPosition = activeBasePosition;
 
         if (standbyTarget != null && standbyTarget != activeTarget)
             standbyTarget.anchoredPosition = activeBasePosition + new Vector2(resolvedStandbyTimelineBarOffsetX, 0f);
 
+        if (chainWorldPositions != null && activeChain != null)
+            activeChain.RestoreWorldPositions(chainWorldPositions);
+
         ConfigureTimelineSpriteAnimationRootForActiveBar();
+
+        // Current/Next 슬롯의 이름과 역할이 교체되면 animationRoot 자체는 같은 TimelineBar이므로
+        // SetAnimationRoot만 호출해서는 SpriteAnimationController의 기존 Image 참조가 갱신되지 않습니다.
+        // 반드시 새 TimelineSlot01~05를 다시 탐색한 뒤 Current 쪽만 원본 프레임으로 복구해야 합니다.
+        // 그렇지 않으면 이전 Current(현재 Next)의 TurnMark/Use_skill이 계속 애니메이션 대상으로 남아
+        // Next TurnMark에 갈림 프레임이 남고 비어 있는 Order 루트까지 다시 활성화됩니다.
+        if (swapActiveBar && timelineSpriteAnimationController != null)
+        {
+            timelineSpriteAnimationController.RefreshTargets();
+            timelineSpriteAnimationController.ResetTimelineSpritesForNextTurn();
+        }
+
         SetActiveTimelineSlotVisual(activeSlotIndex);
 
-        BattleTimelineBarUI activeBar = GetActiveTimelineBarUI();
-        BattleTimelineBarUI standbyBar = GetStandbyTimelineBarUI();
-
         if (activeBar != null)
+        {
             activeBar.SetEmptyUseSkillSlotsVisible(true);
+            activeBar.SetTurnMarkChildrenVisible(true);
+        }
 
+        BattleTimelineBarUI standbyBar = GetStandbyTimelineBarUI();
         if (standbyBar != null && standbyBar != activeBar)
+        {
+            standbyBar.SetActiveTimelineSlot(-1);
+            standbyBar.SetTurnMarkChildrenVisible(false);
             standbyBar.SetEmptyUseSkillSlotsVisible(false);
+        }
+    }
+
+    private static ChainLoopScroller GetChainLoopScroller(BattleTimelineBarUI barUI)
+    {
+        if (barUI == null)
+            return null;
+
+        ChainLoopScroller scroller = barUI.GetComponent<ChainLoopScroller>();
+        if (scroller != null)
+            return scroller;
+
+        return barUI.GetComponentInChildren<ChainLoopScroller>(true);
+    }
+
+    private static void ResetChainLoopForBar(BattleTimelineBarUI barUI)
+    {
+        ChainLoopScroller scroller = GetChainLoopScroller(barUI);
+        if (scroller != null)
+            scroller.ResetPositions();
     }
 
     private void ConfigureTimelineSpriteAnimationRootForActiveBar()
@@ -1788,9 +2600,9 @@ public class BattleTimelineController : MonoBehaviour
         if (targets == null || targets.Length <= 0 || Mathf.Approximately(offsetX, 0f))
             yield break;
 
-        // 두 개의 TimelineBar가 0 / 1420 위치를 번갈아 쓰는 구조에서는
-        // 진행 중인 바가 완료 위치(-1420)에 도착한 뒤 추가 보정 이동이 들어가면 안 됩니다.
-        // 그래서 모든 라인 이동 요청은 완료 위치를 넘지 않도록 항상 한 번 클램프합니다.
+        // 두 개의 TimelineBar가 0 / 1420 위치를 번갈아 쓰는 구조에서
+        // 진행 중인 Bar가 완료 위치에 도착할 때 추가 보정 이동이 들어가면 안 됩니다.
+        // 따라서 모든 라인 이동 요청은 완료 위치를 넘지 않도록 항상 한 번 제한합니다.
         float appliedOffsetX = ClampTimelineBarOffsetToCompletedPosition(offsetX);
 
         if (Mathf.Approximately(appliedOffsetX, 0f))
@@ -1815,15 +2627,11 @@ public class BattleTimelineController : MonoBehaviour
         if (activeTarget == null || Mathf.Approximately(offsetX, 0f))
             return offsetX;
 
-        Vector2 basePosition = GetTimelineBarBasePosition();
-        float completedX = basePosition.x + completedTurnTimelineBarPositionX;
+        float completedX = completedTurnTimelineBarPositionX;
         float currentX = activeTarget.anchoredPosition.x;
         float targetX = currentX + offsetX;
 
-        if (completedTurnTimelineBarPositionX < 0f && targetX < completedX)
-            return completedX - currentX;
-
-        if (completedTurnTimelineBarPositionX > 0f && targetX > completedX)
+        if (targetX < completedX)
             return completedX - currentX;
 
         return offsetX;
@@ -1866,10 +2674,16 @@ public class BattleTimelineController : MonoBehaviour
             ? Mathf.Max(0.01f, durationOverride)
             : Mathf.Max(0.01f, timelineSlotSlideDuration);
         float elapsed = 0f;
+        Transform[] gearTargets = GetTimelineBarGearTargets();
+        float[] gearRotateSteps = GetTimelineBarGearRotateSteps();
+        float[] gearStartRotations = CaptureTimelineBarGearRotationState(gearTargets);
 
         while (elapsed < duration)
         {
-            elapsed += useUnscaledTimeForTimelineSlotSlide ? Time.unscaledDeltaTime : Time.deltaTime;
+            float deltaTime = useUnscaledTimeForTimelineSlotSlide
+                ? Time.unscaledDeltaTime
+                : Time.deltaTime;
+            elapsed += BattleConsecutiveActionPresentationContext.ScaleDeltaTime(deltaTime);
             float t = Mathf.Clamp01(elapsed / duration);
             float easedT = 1f - Mathf.Pow(1f - t, 3f);
 
@@ -1880,6 +2694,12 @@ public class BattleTimelineController : MonoBehaviour
 
                 targets[i].anchoredPosition = Vector2.Lerp(startPositions[i], targetPositions[i], easedT);
             }
+
+            ApplyTimelineBarGearRotation(
+                gearTargets,
+                gearStartRotations,
+                gearRotateSteps,
+                easedT);
 
             yield return null;
         }
@@ -1892,7 +2712,109 @@ public class BattleTimelineController : MonoBehaviour
             targets[i].anchoredPosition = targetPositions[i];
         }
 
+        CompleteTimelineBarGearRotation(
+            gearTargets,
+            gearStartRotations,
+            gearRotateSteps);
+
         timelineSlotSlideRoutine = null;
+    }
+
+    private void PlayTimelineGearTickSfx()
+    {
+        if (!playTimelineGearTickSfx)
+            return;
+
+        if (string.IsNullOrWhiteSpace(timelineGearTickSfxId))
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(timelineGearTickSfxId, timelineGearTickSfxVolume);
+    }
+
+    private Transform[] GetTimelineBarGearTargets()
+    {
+        return new[]
+        {
+            leftLargeGear,
+            leftMediumGear,
+            leftSmallGear,
+            rightLargeGear1,
+            rightLargeGear2,
+            rightMediumGear,
+            rightSmallGear
+        };
+    }
+
+    private float[] GetTimelineBarGearRotateSteps()
+    {
+        return new[]
+        {
+            leftLargeGearRotateStepZ,
+            leftMediumGearRotateStepZ,
+            leftSmallGearRotateStepZ,
+            rightLargeGear1RotateStepZ,
+            rightLargeGear2RotateStepZ,
+            rightMediumGearRotateStepZ,
+            rightSmallGearRotateStepZ
+        };
+    }
+
+    private float[] CaptureTimelineBarGearRotationState(Transform[] gearTargets)
+    {
+        if (gearTargets == null)
+            return System.Array.Empty<float>();
+
+        float[] startRotations = new float[gearTargets.Length];
+
+        for (int i = 0; i < gearTargets.Length; i++)
+            startRotations[i] = GetTransformRotationZ(gearTargets[i]);
+
+        return startRotations;
+    }
+
+    private void ApplyTimelineBarGearRotation(
+        Transform[] gearTargets,
+        float[] startRotations,
+        float[] rotateSteps,
+        float progress)
+    {
+        if (gearTargets == null || startRotations == null || rotateSteps == null)
+            return;
+
+        int count = Mathf.Min(gearTargets.Length, startRotations.Length, rotateSteps.Length);
+
+        for (int i = 0; i < count; i++)
+        {
+            if (gearTargets[i] == null)
+                continue;
+
+            float targetRotation = startRotations[i] + rotateSteps[i];
+            SetTransformRotationZ(
+                gearTargets[i],
+                Mathf.LerpAngle(startRotations[i], targetRotation, progress));
+        }
+    }
+
+    private void CompleteTimelineBarGearRotation(
+        Transform[] gearTargets,
+        float[] startRotations,
+        float[] rotateSteps)
+    {
+        if (gearTargets == null || startRotations == null || rotateSteps == null)
+            return;
+
+        int count = Mathf.Min(gearTargets.Length, startRotations.Length, rotateSteps.Length);
+
+        for (int i = 0; i < count; i++)
+        {
+            if (gearTargets[i] == null)
+                continue;
+
+            SetTransformRotationZ(gearTargets[i], startRotations[i] + rotateSteps[i]);
+        }
     }
 
     private Transform GetTimelineSearchRoot()
@@ -1947,7 +2869,7 @@ public class BattleTimelineController : MonoBehaviour
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(selectedSlotEffectSfxType, selectedSlotEffectSfxVolume);
+        AudioManager.Instance.PlaySfx(selectedSlotEffectSfxId, selectedSlotEffectSfxVolume);
     }
 
     private int GetSelectedSlotEffectRotateDirection(int previousSlotIndex, int currentSlotIndex)
@@ -2087,6 +3009,19 @@ public class BattleTimelineController : MonoBehaviour
         );
     }
 
+    public void CancelGridSelectionWhenHoveringDifferentSkill(
+        CharacterRuntimeData runtimeData,
+        SkillMasterData skillData)
+    {
+        if (playerSkillReservationController == null)
+            playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+
+        playerSkillReservationController?.CancelSelectionWhenHoveringDifferentSkill(
+            runtimeData,
+            skillData
+        );
+    }
+
     public void ClearSkillHoverRangePreview()
     {
         if (playerSkillReservationController == null)
@@ -2120,20 +3055,17 @@ public class BattleTimelineController : MonoBehaviour
         if (activeSlotIndex < 0)
         {
             if (selectedSkill != null)
-                ShowBattleWarning("타임라인 슬롯을 먼저 선택해주세요.");
+                ShowBattleWarning("타임라인 슬롯을 먼저 선택해 주세요.");
 
             return;
         }
 
         if (selectedCharacter == null && selectedSkill == null)
-        {
-            ShowBattleWarning("캐릭터와 스킬을 먼저 선택해주세요.");
             return;
-        }
 
         if (selectedCharacter == null)
         {
-            ShowBattleWarning("캐릭터를 먼저 선택해주세요.");
+            ShowBattleWarning("캐릭터를 먼저 선택해 주세요.");
             return;
         }
 
@@ -2231,6 +3163,28 @@ public class BattleTimelineController : MonoBehaviour
 
     public bool ConfirmPlayerCommand(int slotIndex, PlayerReservedCommand command)
     {
+        if (SteamBattleStateSynchronizer.TryHandlePlayerCommandReservation(
+                this,
+                slotIndex,
+                command,
+                out bool networkAccepted))
+        {
+            return networkAccepted;
+        }
+
+        return ConfirmPlayerCommandFromNetwork(slotIndex, command);
+    }
+
+    public bool ConfirmPlayerCommandFromNetwork(int slotIndex, PlayerReservedCommand command)
+    {
+        return ConfirmPlayerCommandFromNetwork(slotIndex, command, false);
+    }
+
+    public bool ConfirmPlayerCommandFromNetwork(
+        int slotIndex,
+        PlayerReservedCommand command,
+        bool ignoreNetworkViewedSlotLock)
+    {
         if (command == null)
         {
             ShowBattleWarning("예약할 스킬 정보가 없습니다.");
@@ -2249,6 +3203,12 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
+        if (IsPlayerSlotLocked(slotIndex, ignoreNetworkViewedSlotLock))
+        {
+            ShowPlayerLockedSlotWarning();
+            return false;
+        }
+
         ReserveTurnSlotUI slot = reserveSlots[slotIndex];
 
         if (slot == null)
@@ -2264,10 +3224,20 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
+        string equipmentBlockReason = GetEquipmentReservationBlockReason(command, slotIndex);
+        if (!string.IsNullOrEmpty(equipmentBlockReason))
+        {
+            ShowBattleWarning(equipmentBlockReason);
+            return false;
+        }
+
         if (TryHandleMoveCommandMerge(slot, command, out bool mergeSucceeded))
         {
             if (mergeSucceeded)
+            {
                 selectedSkill = null;
+                preserveManuallySelectedSlotForNextCharacter = false;
+            }
 
             return mergeSucceeded;
         }
@@ -2281,7 +3251,7 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
-        if (!CanAddPlayerCommandToSlot(slotIndex))
+        if (!CanAddPlayerCommandToSlot(slotIndex, ignoreNetworkViewedSlotLock))
         {
             ShowCombinedSlotCapacityWarning();
             return false;
@@ -2296,6 +3266,7 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
+        BattleEquipmentEffectService.TryApplyAndConsumeSpiderWebMoveCostPenalty(command);
         RecordPlayerReservation(slotIndex, command);
 
         RecalculateAllReservedCosts();
@@ -2305,8 +3276,73 @@ public class BattleTimelineController : MonoBehaviour
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
         selectedSkill = null;
+        preserveManuallySelectedSlotForNextCharacter = false;
 
         return true;
+    }
+
+    public bool AddPlayerCommandFromNetworkSnapshot(int slotIndex, PlayerReservedCommand command)
+    {
+        if (command == null)
+            return false;
+
+        if (reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return false;
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+        if (slot == null ||
+            !slot.CanAcceptCharacter(command.UserRuntime) ||
+            !slot.CanAddCommand())
+        {
+            return false;
+        }
+
+        PrepareCommandForReservation(slotIndex, command);
+
+        if (!slot.AddCommand(command))
+            return false;
+
+        RecordPlayerReservation(slotIndex, command);
+        return true;
+    }
+
+    public void FinalizeNetworkSnapshotReservations()
+    {
+        RecalculateAllReservedCosts();
+        RefreshReservationSimulation();
+        RefreshTimeline();
+        RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
+        selectedSkill = null;
+    }
+
+    private string GetEquipmentReservationBlockReason(
+        PlayerReservedCommand command,
+        int slotIndex)
+    {
+        CharacterRuntimeData runtime = command?.UserRuntime;
+
+        if (runtime == null)
+            return string.Empty;
+
+        if (BattleEquipmentEffectService.IsSlotBlockedByEquipment(runtime, slotIndex))
+            return GameLocalization.Get("battle.skill_slot_blocked", "이 슬롯에는 스킬을 등록할 수 없습니다.");
+
+        int maxSlotCount = BattleEquipmentEffectService.GetMaxRegistrableSlotCount(runtime);
+
+        if (maxSlotCount == int.MaxValue)
+            return string.Empty;
+
+        int occupiedSlotCount = CountPlayerOccupiedSlots(runtime.CharacterId, command);
+        bool targetSlotAlreadyOccupied = HasPlayerCommandInSlot(runtime.CharacterId, slotIndex, command);
+
+        if (!targetSlotAlreadyOccupied)
+            occupiedSlotCount++;
+
+        return occupiedSlotCount > maxSlotCount
+            ? GameLocalization.Format("battle.skill_slot_limit", "스킬을 등록할 수 있는 슬롯은 {0}개까지입니다.", maxSlotCount)
+            : string.Empty;
     }
 
     private bool TryHandleMoveCommandMerge(
@@ -2599,7 +3635,7 @@ public class BattleTimelineController : MonoBehaviour
             RefreshMoveGhostPreview();
 
             if (showLog)
-                Debug.Log($"[BattleTimelineController] 마지막 예약 되돌림 / Slot:{entry.SlotIndex} / Order:{i}");
+                Debug.Log($"[BattleTimelineController] 마지막 예약 되돌리기 / Slot:{entry.SlotIndex} / Order:{i}");
 
             return true;
         }
@@ -2612,18 +3648,26 @@ public class BattleTimelineController : MonoBehaviour
         if (reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
             return 0;
 
+        if (IsPlayerSlotLocked(slotIndex))
+            return 0;
+
         if (reserveSlots[slotIndex] == null)
             return 0;
 
         return GetRemainingCombinedCommandCapacity(slotIndex);
     }
 
-    private bool CanAddPlayerCommandToSlot(int slotIndex)
+    private bool CanAddPlayerCommandToSlot(
+        int slotIndex,
+        bool ignoreNetworkViewedSlotLock = false)
     {
         if (reserveSlots == null)
             return false;
 
         if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return false;
+
+        if (IsPlayerSlotLocked(slotIndex, ignoreNetworkViewedSlotLock))
             return false;
 
         ReserveTurnSlotUI slot = reserveSlots[slotIndex];
@@ -2734,6 +3778,64 @@ public class BattleTimelineController : MonoBehaviour
         return reserveSlots[slotIndex].Commands;
     }
 
+    public int CountPlayerOccupiedSlots(string characterId)
+    {
+        return CountPlayerOccupiedSlots(characterId, null);
+    }
+
+    public int CountPlayerEmptySlots(string characterId)
+    {
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return 0;
+
+        return Mathf.Max(0, reserveSlots.Length - CountPlayerOccupiedSlots(characterId));
+    }
+
+    public int GetPlayerEmptySlotMask(string characterId)
+    {
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return 0;
+
+        int mask = 0;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            if (!HasPlayerCommandInSlot(characterId, slotIndex, null))
+                mask |= 1 << slotIndex;
+        }
+
+        return mask;
+    }
+
+    public int CountPlayerAttackSkillCommands(string characterId)
+    {
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return 0;
+
+        int count = 0;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand command = slot.Commands[i];
+
+                if (!IsPlayerCommandForCharacter(command, characterId, null))
+                    continue;
+
+                if (command.SkillData != null && command.SkillData.SkillType == SkillType.Attack)
+                    count++;
+            }
+        }
+
+        return count;
+    }
+
     public IReadOnlyList<MonsterReservedCommand> GetMonsterCommands(int slotIndex)
     {
         InitializeMonsterCommandSlots();
@@ -2774,12 +3876,33 @@ public class BattleTimelineController : MonoBehaviour
         bool isLastTimelineSlot =
             reserveSlots != null &&
             slotIndex == reserveSlots.Length - 1;
+        bool isFirstSkillInSlot = !HasEarlierCommandInSlot(
+            command.UserRuntime,
+            slotIndex,
+            command);
+        bool hadEarlierMoveInSlot = HasEarlierMoveCommandInSlot(
+            command.UserRuntime,
+            slotIndex,
+            command);
+        int sameSlotMoveCostBeforeCommand = GetEarlierMoveCostInSlot(
+            command.UserRuntime,
+            slotIndex,
+            command);
+        int earlierAttackReservationCount = GetEarlierAttackCommandCount(
+            command.UserRuntime,
+            slotIndex,
+            command);
+
+        command.SetEarlierAttackReservationCount(earlierAttackReservationCount);
 
         BattleEquipmentEffectService.ApplyReservationCostModifiers(
             command,
             slotIndex,
             isFirstMoveCommand,
-            isLastTimelineSlot);
+            isLastTimelineSlot,
+            isFirstSkillInSlot,
+            hadEarlierMoveInSlot,
+            sameSlotMoveCostBeforeCommand);
     }
 
     private bool HasEarlierMoveCommand(CharacterRuntimeData runtime, int targetSlotIndex)
@@ -2812,6 +3935,198 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         return false;
+    }
+
+    private int GetEarlierAttackCommandCount(
+        CharacterRuntimeData runtime,
+        int targetSlotIndex,
+        PlayerReservedCommand currentCommand)
+    {
+        if (runtime == null || reserveSlots == null || reserveSlots.Length <= 0)
+            return 0;
+
+        int safeTargetSlotIndex = Mathf.Clamp(targetSlotIndex, 0, reserveSlots.Length - 1);
+        int count = 0;
+
+        for (int slotIndex = 0; slotIndex <= safeTargetSlotIndex; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int i = 0; i < slot.Commands.Count; i++)
+            {
+                PlayerReservedCommand candidate = slot.Commands[i];
+
+                if (candidate == currentCommand)
+                    return count;
+
+                if (!IsSameRuntimeCommand(runtime, candidate) || candidate.SkillData == null)
+                    continue;
+
+                if (candidate.SkillData.SkillType == SkillType.Attack)
+                    count++;
+            }
+        }
+
+        return count;
+    }
+
+    private bool HasEarlierCommandInSlot(
+        CharacterRuntimeData runtime,
+        int slotIndex,
+        PlayerReservedCommand currentCommand)
+    {
+        return FindEarlierCommandInSlot(runtime, slotIndex, currentCommand, _ => true) != null;
+    }
+
+    private bool HasEarlierMoveCommandInSlot(
+        CharacterRuntimeData runtime,
+        int slotIndex,
+        PlayerReservedCommand currentCommand)
+    {
+        return FindEarlierCommandInSlot(
+            runtime,
+            slotIndex,
+            currentCommand,
+            BattleEquipmentEffectService.IsMoveCommand) != null;
+    }
+
+    private int GetEarlierMoveCostInSlot(
+        CharacterRuntimeData runtime,
+        int slotIndex,
+        PlayerReservedCommand currentCommand)
+    {
+        if (runtime == null || reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
+            return 0;
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+        if (slot == null || slot.Commands == null)
+            return 0;
+
+        int totalCost = 0;
+
+        for (int i = 0; i < slot.Commands.Count; i++)
+        {
+            PlayerReservedCommand candidate = slot.Commands[i];
+
+            if (candidate == currentCommand)
+                break;
+
+            if (!IsSameRuntimeCommand(runtime, candidate))
+                continue;
+
+            if (!BattleEquipmentEffectService.IsMoveCommand(candidate))
+                continue;
+
+            totalCost += Mathf.Max(0, candidate.Cost);
+        }
+
+        return totalCost;
+    }
+
+    private PlayerReservedCommand FindEarlierCommandInSlot(
+        CharacterRuntimeData runtime,
+        int slotIndex,
+        PlayerReservedCommand currentCommand,
+        System.Predicate<PlayerReservedCommand> predicate)
+    {
+        if (runtime == null ||
+            reserveSlots == null ||
+            slotIndex < 0 ||
+            slotIndex >= reserveSlots.Length)
+        {
+            return null;
+        }
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+        if (slot == null || slot.Commands == null)
+            return null;
+
+        for (int i = 0; i < slot.Commands.Count; i++)
+        {
+            PlayerReservedCommand candidate = slot.Commands[i];
+
+            if (candidate == currentCommand)
+                return null;
+
+            if (!IsSameRuntimeCommand(runtime, candidate))
+                continue;
+
+            if (predicate == null || predicate(candidate))
+                return candidate;
+        }
+
+        return null;
+    }
+
+    private static bool IsSameRuntimeCommand(
+        CharacterRuntimeData runtime,
+        PlayerReservedCommand command)
+    {
+        if (runtime == null || command == null || command.UserRuntime == null)
+            return false;
+
+        return command.UserRuntime.CharacterId == runtime.CharacterId;
+    }
+
+    private int CountPlayerOccupiedSlots(
+        string characterId,
+        PlayerReservedCommand ignoreCommand)
+    {
+        if (reserveSlots == null || reserveSlots.Length <= 0)
+            return 0;
+
+        int count = 0;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            if (HasPlayerCommandInSlot(characterId, slotIndex, ignoreCommand))
+                count++;
+        }
+
+        return count;
+    }
+
+    private bool HasPlayerCommandInSlot(
+        string characterId,
+        int slotIndex,
+        PlayerReservedCommand ignoreCommand)
+    {
+        if (reserveSlots == null ||
+            slotIndex < 0 ||
+            slotIndex >= reserveSlots.Length ||
+            string.IsNullOrWhiteSpace(characterId))
+        {
+            return false;
+        }
+
+        ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+        if (slot == null || slot.Commands == null)
+            return false;
+
+        for (int i = 0; i < slot.Commands.Count; i++)
+        {
+            if (IsPlayerCommandForCharacter(slot.Commands[i], characterId, ignoreCommand))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsPlayerCommandForCharacter(
+        PlayerReservedCommand command,
+        string characterId,
+        PlayerReservedCommand ignoreCommand)
+    {
+        if (command == null || command == ignoreCommand || command.UserRuntime == null)
+            return false;
+
+        return command.UserRuntime.CharacterId == characterId;
     }
 
     private void RecalculateAllReservedCosts()
@@ -2850,12 +4165,33 @@ public class BattleTimelineController : MonoBehaviour
                     isMoveCommand &&
                     !isMoveContinuationCommand &&
                     !firstMoveAppliedCharacterIds.Contains(command.CharacterId);
+                bool isFirstSkillInSlot = !HasEarlierCommandInSlot(
+                    command.UserRuntime,
+                    slotIndex,
+                    command);
+                bool hadEarlierMoveInSlot = HasEarlierMoveCommandInSlot(
+                    command.UserRuntime,
+                    slotIndex,
+                    command);
+                int sameSlotMoveCostBeforeCommand = GetEarlierMoveCostInSlot(
+                    command.UserRuntime,
+                    slotIndex,
+                    command);
+                int earlierAttackReservationCount = GetEarlierAttackCommandCount(
+                    command.UserRuntime,
+                    slotIndex,
+                    command);
+
+                command.SetEarlierAttackReservationCount(earlierAttackReservationCount);
 
                 BattleEquipmentEffectService.ApplyReservationCostModifiers(
                     command,
                     slotIndex,
                     isFirstMoveCommand,
-                    isLastTimelineSlot);
+                    isLastTimelineSlot,
+                    isFirstSkillInSlot,
+                    hadEarlierMoveInSlot,
+                    sameSlotMoveCostBeforeCommand);
 
                 AddReservedCosts(command);
 
@@ -2923,34 +4259,12 @@ public class BattleTimelineController : MonoBehaviour
     private string GetReserveBlockReason(PlayerReservedCommand command)
     {
         if (command == null)
-            return "예약할 스킬 정보가 없습니다.";
+            return GameLocalization.Get("battle.no_skill_to_reserve", "예약할 스킬 정보가 없습니다.");
 
         if (command.UserRuntime == null)
-            return "선택된 캐릭터가 없습니다.";
+            return GameLocalization.Get("battle.no_character_selected", "선택한 캐릭터가 없습니다.");
 
         CharacterRuntimeData runtime = command.UserRuntime;
-
-        if (command.SkillData != null &&
-            command.SkillData.ResourceCostType == ResourceCostType.AllCurrent)
-        {
-            int minRequired = BattleEquipmentEffectService.GetAllCurrentMinimumCost(
-                runtime,
-                command.SkillData,
-                command.SkillData.ResourceCostValue);
-
-            if (command.ResourceCost < minRequired)
-            {
-                Debug.LogWarning(
-                    $"[BattleTimelineController] AllCurrent 자원 부족 / " +
-                    $"Character:{runtime.CharacterId} / " +
-                    $"Skill:{command.SkillId} / " +
-                    $"Cost:{command.ResourceCost} / " +
-                    $"MinRequired:{minRequired}"
-                );
-
-                return $"{GetCostLabel(command.SkillData.ReferenceResource)}이 부족합니다. 필요:{minRequired} / 보유:{command.ResourceCost}";
-            }
-        }
 
         string shortageMessage = GetShortageMessage(runtime, command);
         if (!string.IsNullOrEmpty(shortageMessage))
@@ -2962,19 +4276,19 @@ public class BattleTimelineController : MonoBehaviour
     private string GetShortageMessage(CharacterRuntimeData runtime, PlayerReservedCommand command)
     {
         if (runtime == null || command == null)
-            return "예약할 스킬 정보가 없습니다.";
+            return GameLocalization.Get("battle.no_skill_to_reserve", "예약할 스킬 정보가 없습니다.");
 
         if (!runtime.CanReserveHP(command.HPCost))
-            return BuildShortageMessage("HP", command.HPCost, runtime.CurrentHP - runtime.ReservedHPCost);
+            return BuildShortageMessage("생명력", command.HPCost, runtime.CurrentHP - runtime.ReservedHPCost);
 
         if (!runtime.CanReserveCost(command.Cost))
-            return BuildShortageMessage("Cost", command.Cost, runtime.CurrentCost - runtime.ReservedCost);
+            return BuildShortageMessage("마나", command.Cost, runtime.CurrentCost - runtime.ReservedCost);
 
         if (!runtime.CanReserveResource(command.ResourceCost))
-            return BuildShortageMessage("고유자원", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
+            return BuildShortageMessage("카르마", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
 
         if (!runtime.CanReserveShield(command.ShieldCost))
-            return BuildShortageMessage("방어도", command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
+            return BuildShortageMessage(GameLocalization.Get("common.armor", "방어도"), command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
 
         return string.Empty;
     }
@@ -2982,7 +4296,8 @@ public class BattleTimelineController : MonoBehaviour
     private string BuildShortageMessage(string label, int required, int available)
     {
         int safeAvailable = Mathf.Max(0, available);
-        return $"{label}이 부족합니다. 필요:{required} / 보유:{safeAvailable}";
+        string particle = label == "생명력" ? "이" : "가";
+        return $"{label}{particle} 부족합니다. 필요:{required} / 보유:{safeAvailable}";
     }
 
     private string GetCostLabel(ReferenceResource resource)
@@ -2997,10 +4312,10 @@ public class BattleTimelineController : MonoBehaviour
                 return "Cost";
 
             case ReferenceResource.UniqueResource:
-                return "고유자원";
+                return GameLocalization.Get("resource.unique", "고유자원");
 
             default:
-                return "자원";
+                return GameLocalization.Get("common.resource", "자원");
         }
     }
 
@@ -3037,8 +4352,8 @@ public class BattleTimelineController : MonoBehaviour
                 if (command.UserRuntime.CharacterId != runtimeData.CharacterId)
                     continue;
 
-                if (command.ReservedMoveGridIndex >= 0)
-                    gridIndex = command.EffectiveMoveGridIndex;
+                if (TryGetCommandPreviewMoveGridIndex(command, out int previewMoveGridIndex))
+                    gridIndex = previewMoveGridIndex;
             }
         }
 
@@ -3284,6 +4599,9 @@ public class BattleTimelineController : MonoBehaviour
         if (commands == null || commands.Count <= 0)
             return true;
 
+        if (commands.Count >= MaxMonsterCommandsPerSlot)
+            return false;
+
         for (int i = 0; i < commands.Count; i++)
         {
             MonsterReservedCommand command = commands[i];
@@ -3319,21 +4637,90 @@ public class BattleTimelineController : MonoBehaviour
 
     public void RemoveCommand(int slotIndex, int orderIndex)
     {
-        if (reserveSlots == null)
+        if (SteamBattleStateSynchronizer.TryHandleRemoveCommand(
+                this,
+                slotIndex,
+                orderIndex,
+                out _))
+        {
             return;
+        }
+
+        RemoveCommandFromNetwork(slotIndex, orderIndex);
+    }
+
+
+    public int CancelMoveAndAttackReservations(CharacterRuntimeData runtime)
+    {
+        if (runtime == null || reserveSlots == null)
+            return 0;
+
+        int removedCount = 0;
+
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int commandIndex = slot.Commands.Count - 1; commandIndex >= 0; commandIndex--)
+            {
+                PlayerReservedCommand command = slot.Commands[commandIndex];
+
+                if (command == null || command.UserRuntime != runtime)
+                    continue;
+
+                bool isMove = IsMoveCommand(command) ||
+                              (command.SkillData != null &&
+                               command.SkillData.TimelineNotation == TimelineActionType.Move);
+                bool isAttack = command.SkillData != null &&
+                                (command.SkillData.SkillType == SkillType.Attack ||
+                                 command.SkillData.TimelineNotation == TimelineActionType.Attack);
+
+                if (!isMove && !isAttack)
+                    continue;
+
+                if (!slot.RemoveCommandAt(commandIndex, out PlayerReservedCommand removedCommand))
+                    continue;
+
+                RemoveReservedCosts(removedCommand);
+                RemovePlayerReservationHistoryEntries(removedCommand);
+                removedCount++;
+            }
+        }
+
+        if (removedCount <= 0)
+            return 0;
+
+        reservationVersion++;
+        RecalculateAllReservedCosts();
+        RefreshReservationSimulation();
+        RefreshTimeline();
+        RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
+
+        Debug.Log($"[BattleTimelineController] 위치 변경으로 이동/공격 예약 취소 / Character:{runtime.CharacterId} / Count:{removedCount}");
+        return removedCount;
+    }
+
+    public bool RemoveCommandFromNetwork(int slotIndex, int orderIndex)
+    {
+        if (reserveSlots == null)
+            return false;
 
         if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
-            return;
+            return false;
 
         ReserveTurnSlotUI slot = reserveSlots[slotIndex];
 
         if (slot == null)
-            return;
+            return false;
 
         bool removed = slot.RemoveCommandAt(orderIndex, out PlayerReservedCommand removedCommand);
 
         if (!removed)
-            return;
+            return false;
 
         RemoveReservedCosts(removedCommand);
         RemovePlayerReservationHistoryEntries(removedCommand);
@@ -3349,6 +4736,7 @@ public class BattleTimelineController : MonoBehaviour
         RefreshMoveGhostPreview();
 
         Debug.Log($"[BattleTimelineController] 예약 취소 / Slot:{slotIndex} / Order:{orderIndex}");
+        return true;
     }
 
     private bool IsMoveCommand(PlayerReservedCommand command)
@@ -3388,6 +4776,7 @@ public class BattleTimelineController : MonoBehaviour
     public void ClearAllReservations()
     {
         ClearSelectedSlotSelection();
+        ClearPlayerLockedSlot();
         playerReservationHistory.Clear();
         reservationVersion++;
 
@@ -3496,7 +4885,31 @@ public class BattleTimelineController : MonoBehaviour
 
     private void ShowBattleWarning(string message)
     {
-        BattleWarningUI.ShowMessage(message);
+        BattleWarningUI.ShowMessage(NormalizeBattleWarningMessage(message));
+    }
+
+    private string NormalizeBattleWarningMessage(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            return GameLocalization.Get("battle.cannot_reserve_now", "현재 상태에서는 예약할 수 없습니다.");
+
+        if (!LooksLikeBrokenKorean(message))
+            return message;
+
+        if (message.Contains("HP"))
+            return GameLocalization.Get("battle.hp_shortage", "생명력이 부족합니다.");
+
+        if (message.Contains("Cost"))
+            return GameLocalization.Get("battle.cost_shortage", "마나가 부족합니다.");
+
+        return GameLocalization.Get("battle.cannot_reserve_now", "현재 상태에서는 예약할 수 없습니다.");
+    }
+
+    private bool LooksLikeBrokenKorean(string message)
+    {
+        return message.Contains("??") ||
+               message.Contains("\uFFFD") ||
+               message.Contains("?");
     }
 
     private void RefreshTimeline()
@@ -3505,7 +4918,10 @@ public class BattleTimelineController : MonoBehaviour
         BattleTimelineBarUI standbyBar = GetStandbyTimelineBarUI();
 
         if (activeBar != null)
+        {
             activeBar.Refresh(reserveSlots, monsterCommandsBySlot);
+            activeBar.SetPlayerLockedSlot(playerLockedSlotIndex);
+        }
         else
         {
             ShowBattleWarning("타임라인 UI를 찾을 수 없습니다.");
@@ -3515,6 +4931,7 @@ public class BattleTimelineController : MonoBehaviour
         if (standbyBar != null && standbyBar != activeBar)
         {
             standbyBar.Clear();
+            standbyBar.SetPlayerLockedSlot(-1);
             standbyBar.SetTurnMarkChildrenVisible(false);
             standbyBar.SetEmptyUseSkillSlotsVisible(false);
         }
@@ -3581,8 +4998,8 @@ public class BattleTimelineController : MonoBehaviour
                 if (slotIndex == targetSlotIndex && i >= targetPlayerCommandIndex)
                     break;
 
-                if (command.ReservedMoveGridIndex >= 0)
-                    gridIndex = command.EffectiveMoveGridIndex;
+                if (TryGetCommandPreviewMoveGridIndex(command, out int previewMoveGridIndex))
+                    gridIndex = previewMoveGridIndex;
             }
         }
 
@@ -3662,10 +5079,41 @@ public class BattleTimelineController : MonoBehaviour
         if (command == null || command.UserRuntime == null)
             return false;
 
-        if (command.ReservedMoveGridIndex < 0 || command.PreviewMoveGridIndex < 0)
+        if (command.PreviewMoveGridIndex < 0)
+            return false;
+
+        bool hasReservedMove = command.ReservedMoveGridIndex >= 0;
+        bool hasSkillMovePreview =
+            command.HasSimulatedResult &&
+            command.SimulatedMoveGridIndex >= 0 &&
+            command.SimulatedMoveOffset != Vector2Int.zero;
+
+        if (!hasReservedMove && !hasSkillMovePreview)
             return false;
 
         return command.UserRuntime.CharacterId == characterId;
+    }
+
+    private static bool TryGetCommandPreviewMoveGridIndex(
+        PlayerReservedCommand command,
+        out int gridIndex)
+    {
+        gridIndex = -1;
+
+        if (command == null)
+            return false;
+
+        if (command.HasSimulatedResult && command.SimulatedMoveGridIndex >= 0)
+        {
+            gridIndex = command.SimulatedMoveGridIndex;
+            return true;
+        }
+
+        if (command.ReservedMoveGridIndex < 0)
+            return false;
+
+        gridIndex = command.EffectiveMoveGridIndex;
+        return gridIndex >= 0;
     }
 
     private Sprite GetCharacterSprite(string characterId)
@@ -3706,4 +5154,88 @@ public class BattleTimelineController : MonoBehaviour
         public PlayerReservedCommand Command { get; }
     }
 
+}
+
+public readonly struct TimelineAutoSlotState
+{
+    public TimelineAutoSlotState(
+        bool exists,
+        bool isEmpty,
+        bool canAcceptCharacter,
+        bool canAddCommand,
+        bool hasSelectedCharacterCommand)
+    {
+        Exists = exists;
+        IsEmpty = isEmpty;
+        CanAcceptCharacter = canAcceptCharacter;
+        CanAddCommand = canAddCommand;
+        HasSelectedCharacterCommand = hasSelectedCharacterCommand;
+    }
+
+    public bool Exists { get; }
+    public bool IsEmpty { get; }
+    public bool CanAcceptCharacter { get; }
+    public bool CanAddCommand { get; }
+    public bool HasSelectedCharacterCommand { get; }
+
+    public bool CanUseAsEmptySlot =>
+        Exists && IsEmpty && CanAcceptCharacter && CanAddCommand;
+
+    public bool CanUseAsSelectedCharacterSlot =>
+        Exists && !IsEmpty && CanAcceptCharacter && CanAddCommand && HasSelectedCharacterCommand;
+}
+
+public static class TimelineAutoSlotSelectionUtility
+{
+    public static int FindBestSlot(IReadOnlyList<TimelineAutoSlotState> slots)
+    {
+        if (slots == null || slots.Count <= 0)
+            return -1;
+
+        // 슬롯을 따로 고르지 않고 캐릭터를 선택한 경우에는
+        // 해당 캐릭터가 이미 예약된 슬롯에 행동을 더 넣을 수 있다면 그 슬롯을 가장 먼저 사용합니다.
+        int selectedCharacterSlot = FindFirstSelectedCharacterSlot(slots);
+        if (selectedCharacterSlot >= 0)
+            return selectedCharacterSlot;
+
+        // 기존 슬롯을 더 사용할 수 없다면 앞쪽부터 가장 빠른 빈 슬롯을 선택합니다.
+        return FindFirstEmptySlot(slots, 0, slots.Count - 1);
+    }
+
+    private static int FindFirstEmptySlot(
+        IReadOnlyList<TimelineAutoSlotState> slots,
+        int startIndex,
+        int endIndex)
+    {
+        if (slots == null || slots.Count <= 0)
+            return -1;
+
+        int safeStartIndex = Mathf.Clamp(startIndex, 0, slots.Count - 1);
+        int safeEndIndex = Mathf.Clamp(endIndex, -1, slots.Count - 1);
+
+        if (safeEndIndex < safeStartIndex)
+            return -1;
+
+        for (int i = safeStartIndex; i <= safeEndIndex; i++)
+        {
+            if (slots[i].CanUseAsEmptySlot)
+                return i;
+        }
+
+        return -1;
+    }
+
+    private static int FindFirstSelectedCharacterSlot(IReadOnlyList<TimelineAutoSlotState> slots)
+    {
+        if (slots == null)
+            return -1;
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (slots[i].CanUseAsSelectedCharacterSlot)
+                return i;
+        }
+
+        return -1;
+    }
 }

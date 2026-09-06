@@ -6,6 +6,7 @@ using NUnit.Framework;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
+using UnityEngine.UI;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -159,6 +160,46 @@ public class AnimationVfxLoadoutCleanupTests
         Assert.That(runtime.PossibleSkillIdsByActionIndex, Is.All.EqualTo(""));
         Assert.That(runtime.PossSkillIds, Is.Empty);
         Assert.That(runtime.GetActionIndexForSkill("AnySkill"), Is.EqualTo(0));
+    }
+
+    [Test]
+    public void MonsterRuntimeData_PresentationIndexUsesOneSequenceAfterExcludingMove()
+    {
+        GameObject dataManagerObject = new("DataManager_Presentation_Index_Test");
+
+        try
+        {
+            DataManager dataManager = dataManagerObject.AddComponent<DataManager>();
+            dataManager.MonsterSkillDatabase.Initialize(new[]
+            {
+                new MonsterSkillData { SkillId = "Move", TimelineNotation = TimelineActionType.Move },
+                new MonsterSkillData { SkillId = "Attack_01", TimelineNotation = TimelineActionType.Attack },
+                new MonsterSkillData { SkillId = "Attack_02", TimelineNotation = TimelineActionType.Attack },
+                new MonsterSkillData { SkillId = "Skill_03", TimelineNotation = TimelineActionType.Buff },
+                new MonsterSkillData { SkillId = "Skill_04", TimelineNotation = TimelineActionType.Debuff }
+            });
+
+            MonsterRuntimeData runtime = new("Arabella_Runtime", new MonsterMasterData
+            {
+                MonsterId = "Arabella",
+                HP = 10,
+                PossSkillId01 = "Move",
+                PossSkillId02 = "Attack_01",
+                PossSkillId03 = "Attack_02",
+                PossSkillId04 = "Skill_03",
+                PossSkillId05 = "Skill_04"
+            });
+
+            Assert.That(runtime.GetPresentationActionIndexForSkill("Move"), Is.EqualTo(0));
+            Assert.That(runtime.GetPresentationActionIndexForSkill("Attack_01"), Is.EqualTo(1));
+            Assert.That(runtime.GetPresentationActionIndexForSkill("Attack_02"), Is.EqualTo(2));
+            Assert.That(runtime.GetPresentationActionIndexForSkill("Skill_03"), Is.EqualTo(3));
+            Assert.That(runtime.GetPresentationActionIndexForSkill("Skill_04"), Is.EqualTo(4));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(dataManagerObject);
+        }
     }
 
     [Test]
@@ -331,7 +372,6 @@ public class AnimationVfxLoadoutCleanupTests
             BattleUnitActionPresentation[] slots = BattleUnitActionPresentation.CreateArray(10);
             slots[1].projectileVfx = new BattleProjectileVfxEntry
             {
-                skillId = "S_Monster_Projectile",
                 missilePrefab = missilePrefab,
                 impactPrefab = impactPrefab,
                 travelDuration = 0.01f
@@ -358,7 +398,7 @@ public class AnimationVfxLoadoutCleanupTests
     }
 
     [Test]
-    public void BattleUnitAnimator_MonsterCommandProjectileVfxCanBeMatchedBySkillId()
+    public void BattleUnitAnimator_MonsterCommandProjectileVfxDoesNotFallbackToSkillId()
     {
         GameObject owner = new("MonsterProjectileSkillIdOwner");
         GameObject missilePrefab = new("MonsterSkillIdProjectileMissileVfx");
@@ -370,7 +410,6 @@ public class AnimationVfxLoadoutCleanupTests
             BattleUnitActionPresentation[] slots = BattleUnitActionPresentation.CreateArray(10);
             slots[1].projectileVfx = new BattleProjectileVfxEntry
             {
-                skillId = "S_Monster_Projectile",
                 missilePrefab = missilePrefab
             };
             SetPrivateField(animator, "monsterActionPresentations", slots);
@@ -385,11 +424,48 @@ public class AnimationVfxLoadoutCleanupTests
             MonsterReservedCommand command = new(runtime, new MonsterSkillData { SkillId = "S_Monster_Projectile" });
 
             Assert.That(command.ActionIndex, Is.EqualTo(0));
-            Assert.That(animator.HasMonsterProjectileVfx(command), Is.True);
+            Assert.That(animator.HasMonsterProjectileVfx(command), Is.False);
         }
         finally
         {
             UnityEngine.Object.DestroyImmediate(missilePrefab);
+            UnityEngine.Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void BattleUnitAnimator_MonsterCommandProjectileVfxCanUseImpactOnlySlot()
+    {
+        GameObject owner = new("MonsterProjectileImpactOnlyOwner");
+        GameObject impactPrefab = new("MonsterProjectileImpactOnlyVfx");
+
+        try
+        {
+            BattleUnitAnimator animator = owner.AddComponent<BattleUnitAnimator>();
+
+            BattleUnitActionPresentation[] slots = BattleUnitActionPresentation.CreateArray(10);
+            slots[1].projectileVfx = new BattleProjectileVfxEntry
+            {
+                impactPrefab = impactPrefab,
+                impactLifeTime = 0.01f
+            };
+            SetPrivateField(animator, "monsterActionPresentations", slots);
+
+            MonsterMasterData master = new()
+            {
+                MonsterId = "M_ImpactOnly",
+                HP = 10,
+                PossSkillId02 = "S_Monster_ImpactOnly"
+            };
+            MonsterRuntimeData runtime = new("Runtime_ImpactOnly", master);
+            MonsterReservedCommand command = new(runtime, new MonsterSkillData { SkillId = "S_Monster_ImpactOnly" });
+
+            Assert.That(command.ActionIndex, Is.EqualTo(2));
+            Assert.That(animator.HasMonsterProjectileVfx(command), Is.True);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(impactPrefab);
             UnityEngine.Object.DestroyImmediate(owner);
         }
     }
@@ -461,7 +537,72 @@ public class AnimationVfxLoadoutCleanupTests
     }
 
     [Test]
-    public void BattleVfxCameraSyncCopiesSourceCameraButPreservesVfxOutput()
+    public void BattleVfxCameraSyncKeepsLockedRenderTextureCameraReferenceState()
+    {
+        GameObject sourceObject = new("MainCameraSource");
+        GameObject targetObject = new("VfxCameraTarget");
+        RenderTexture targetTexture = new(64, 64, 0);
+
+        try
+        {
+            Camera sourceCamera = sourceObject.AddComponent<Camera>();
+            Camera targetCamera = targetObject.AddComponent<Camera>();
+
+            targetCamera.transform.position = new Vector3(0f, 0f, -20f);
+            targetCamera.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            targetCamera.orthographic = true;
+            targetCamera.fieldOfView = 20f;
+            targetCamera.orthographicSize = 8f;
+            targetCamera.nearClipPlane = 0.3f;
+            targetCamera.farClipPlane = 100f;
+            targetCamera.cullingMask = 1 << 9;
+            targetCamera.targetTexture = targetTexture;
+            targetCamera.clearFlags = CameraClearFlags.SolidColor;
+            targetCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            targetCamera.depth = 99f;
+
+            BattleVfxCameraSync sync = targetObject.AddComponent<BattleVfxCameraSync>();
+
+            SetPrivateField(sync, "sourceCamera", sourceCamera);
+            SetPrivateField(sync, "targetCamera", targetCamera);
+            SetPrivateField(sync, "lockRenderTextureReferenceState", true);
+
+            sourceCamera.transform.position = new Vector3(1.25f, -2.5f, -17f);
+            sourceCamera.transform.rotation = Quaternion.Euler(5f, 10f, 15f);
+            sourceCamera.orthographic = false;
+            sourceCamera.fieldOfView = 31f;
+            sourceCamera.orthographicSize = 4.25f;
+            sourceCamera.nearClipPlane = 0.2f;
+            sourceCamera.farClipPlane = 250f;
+            sourceCamera.rect = new Rect(0.1f, 0.2f, 0.7f, 0.6f);
+
+            sync.SyncNow();
+
+            Assert.That(targetCamera.transform.position, Is.EqualTo(new Vector3(0f, 0f, -20f)));
+            Assert.That(Quaternion.Angle(targetCamera.transform.rotation, Quaternion.identity), Is.LessThan(0.01f));
+            Assert.That(targetCamera.orthographic, Is.True);
+            Assert.That(targetCamera.fieldOfView, Is.EqualTo(20f));
+            Assert.That(targetCamera.orthographicSize, Is.EqualTo(8f));
+            Assert.That(targetCamera.nearClipPlane, Is.EqualTo(0.3f));
+            Assert.That(targetCamera.farClipPlane, Is.EqualTo(100f));
+            Assert.That(targetCamera.rect, Is.EqualTo(new Rect(0f, 0f, 1f, 1f)));
+            Assert.That(targetCamera.aspect, Is.EqualTo(1f).Within(0.001f));
+            Assert.That(targetCamera.cullingMask, Is.EqualTo(1 << 9));
+            Assert.That(targetCamera.targetTexture, Is.SameAs(targetTexture));
+            Assert.That(targetCamera.clearFlags, Is.EqualTo(CameraClearFlags.SolidColor));
+            Assert.That(targetCamera.backgroundColor, Is.EqualTo(new Color(0f, 0f, 0f, 0f)));
+            Assert.That(targetCamera.depth, Is.EqualTo(99f));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(targetTexture);
+            UnityEngine.Object.DestroyImmediate(targetObject);
+            UnityEngine.Object.DestroyImmediate(sourceObject);
+        }
+    }
+
+    [Test]
+    public void BattleVfxCameraSyncCopiesSourceCameraForRenderTextureByDefault()
     {
         GameObject sourceObject = new("MainCameraSource");
         GameObject targetObject = new("VfxCameraTarget");
@@ -503,7 +644,8 @@ public class AnimationVfxLoadoutCleanupTests
             Assert.That(targetCamera.orthographicSize, Is.EqualTo(sourceCamera.orthographicSize));
             Assert.That(targetCamera.nearClipPlane, Is.EqualTo(sourceCamera.nearClipPlane));
             Assert.That(targetCamera.farClipPlane, Is.EqualTo(sourceCamera.farClipPlane));
-            Assert.That(targetCamera.rect, Is.EqualTo(sourceCamera.rect));
+            Assert.That(targetCamera.rect, Is.EqualTo(new Rect(0f, 0f, 1f, 1f)));
+            Assert.That(targetCamera.aspect, Is.EqualTo(1f).Within(0.001f));
             Assert.That(targetCamera.cullingMask, Is.EqualTo(1 << 9));
             Assert.That(targetCamera.targetTexture, Is.SameAs(targetTexture));
             Assert.That(targetCamera.clearFlags, Is.EqualTo(CameraClearFlags.SolidColor));
@@ -583,7 +725,7 @@ public class AnimationVfxLoadoutCleanupTests
 
         BattleProjectileVfxEntry projectileVfx = presentations
             .Select(presentation => presentation?.projectileVfx)
-            .FirstOrDefault(entry => entry != null && entry.skillId == "S_Monster_04");
+            .FirstOrDefault(entry => entry != null && entry.missilePrefab != null && entry.impactPrefab != null);
 
         Assert.That(projectileVfx, Is.Not.Null);
         Assert.That(projectileVfx.missileFlipType, Is.EqualTo(VfxFlipType.ParticleRendererFlipY));

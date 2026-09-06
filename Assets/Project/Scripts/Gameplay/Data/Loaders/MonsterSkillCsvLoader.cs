@@ -35,7 +35,6 @@ namespace Relic.Gameplay.Data
                 if (row == null)
                     continue;
 
-                DataColumnAliasUtility.CopyAlias(row, "ValueRandomRange", "ValueRandomRange", "\uC218\uCE58\uAC12\uBCC0\uC218");
                 DataColumnAliasUtility.CopyAlias(row, "EffectDesc", "EffectDesc", "Effectdesc");
             }
         }

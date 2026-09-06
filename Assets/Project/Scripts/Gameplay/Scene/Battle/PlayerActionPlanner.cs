@@ -8,7 +8,6 @@ namespace Relic.Gameplay.Battle
     public class PlayerActionPlanner : MonoBehaviour
     {
         private const string MoveSkillLevelOneId = "S_Move_1";
-        private const string MoveSkillLevelTwoId = "S_Move_2";
 
         [Header("Timeline")]
         [SerializeField] private BattleTimelineManager timelineManager;
@@ -216,15 +215,6 @@ namespace Relic.Gameplay.Battle
                     Debug.Log($"[CostCheck Confirm] Skill:{currentSkillData.SkillId} / Preview 자원 부족");
                     return;
                 }
-            }
-
-            if (currentSkillData.ResourceCostType == ResourceCostType.AllCurrent && previewCost <= 0)
-            {
-                Debug.LogWarning(
-                    $"[ConfirmAction] AllCurrent 자원 부족 / " +
-                    $"Skill:{currentSkillData.SkillId} / PreviewCost:{previewCost}"
-                );
-                return;
             }
 
             bool added = currentSlot.AddSkill(SkillIconUtility.GetSkillIcon(currentSkillData.SkillId));
@@ -443,8 +433,7 @@ namespace Relic.Gameplay.Battle
             if (skillData.TimelineNotation == TimelineActionType.Move)
                 return true;
 
-            return skillData.SkillId == MoveSkillLevelOneId ||
-                   skillData.SkillId == MoveSkillLevelTwoId;
+            return skillData.SkillId == MoveSkillLevelOneId;
         }
 
         private void ClearPendingTargetSelection()

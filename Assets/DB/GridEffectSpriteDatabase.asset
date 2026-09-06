@@ -17,7 +17,15 @@ MonoBehaviour:
     prefab: {fileID: 7292564715269318754, guid: 55c1deb426eceda4da41cc3e14d447cd, type: 3}
   - gridEffectId: GR_thorn
     prefab: {fileID: 7510714500437303365, guid: 2ef70dbb844adfd43bd31b97818a7fe5, type: 3}
-  - gridEffectId: GR_helmet
-    prefab: {fileID: 7510714500437303365, guid: efb8cd38b41997c4c85ee3ae2f44b868, type: 3}
-  - gridEffectId: GR_Poisson
-    prefab: {fileID: 6416350362071025190, guid: 856df3037918ae9458bc104242ac020a, type: 3}
+  - gridEffectId: GR_Residue
+    prefab: {fileID: 6416350362071025190, guid: 29e413fcd251b764daf2b40f112d6b53, type: 3}
+  - gridEffectId: GR_dummy
+    prefab: {fileID: 7100000000000000001, guid: 5f34c491989d4d27a6f82d03b84ad901, type: 3}
+  - gridEffectId: GR_explosive_doll
+    prefab: {fileID: 7200000000000000001, guid: c7fa81e817df4a4e95e61b4abf6c67ae, type: 3}
+  - gridEffectId: GR_spider_egg
+    prefab: {fileID: 7300000000000000001, guid: d90630b968e146ed9f934c2565d1b4e3, type: 3}
+  - gridEffectId: GR_spider_web
+    prefab: {fileID: 7400000000000000001, guid: 9aa89ef1f9eb4ef68a9dd5fe303e0f5f, type: 3}
+  - gridEffectId: GR_nocturn_portal_preview
+    prefab: {fileID: 7383548059930101559, guid: ecd05d8207b1dc7479b902ef4afeb80f, type: 3}

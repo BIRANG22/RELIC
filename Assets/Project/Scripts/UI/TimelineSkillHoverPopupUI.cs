@@ -31,7 +31,6 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
     private RectTransform currentHoveredIconRect;
     private Object currentOwner;
     private bool initialized;
-
     public static TimelineSkillHoverPopupUI Instance
     {
         get
@@ -153,7 +152,7 @@ public class TimelineSkillHoverPopupUI : MonoBehaviour
         currentOwner = owner;
         currentHoveredIconRect = hoveredIconRect;
 
-        item.Set(skillName, effectDescription, rangeIcon);
+        item.Set(skillName);
         SetVisible(true);
 
         if (moveToHoveredIcon)

@@ -30,6 +30,27 @@ namespace Relic.Gameplay.Data
             return map;
         }
 
+        public void Clear()
+        {
+            map.Clear();
+        }
+
+        public void SetAll(IEnumerable<CharacterRuntimeData> characters)
+        {
+            Clear();
+
+            if (characters == null)
+                return;
+
+            foreach (CharacterRuntimeData character in characters)
+            {
+                if (character == null || string.IsNullOrWhiteSpace(character.CharacterId))
+                    continue;
+
+                map[character.CharacterId] = character;
+            }
+        }
+
         public void ResetUpgradedSkillVariantsToBase()
         {
             foreach (CharacterRuntimeData data in map.Values)
@@ -37,14 +58,17 @@ namespace Relic.Gameplay.Data
                 if (data == null)
                     continue;
 
-                data.PassiveSkillId = ConvertUpgradeVariantToBase(data.PassiveSkillId);
-                data.UniqueSkillId = ConvertUpgradeVariantToBase(data.UniqueSkillId);
                 data.AbilitySkillId = ConvertUpgradeVariantToBase(data.AbilitySkillId);
 
                 if (data.EquippedSkillIds != null)
                 {
                     for (int i = 0; i < data.EquippedSkillIds.Length; i++)
+                    {
+                        if (i == 0)
+                            continue;
+
                         data.EquippedSkillIds[i] = ConvertUpgradeVariantToBase(data.EquippedSkillIds[i]);
+                    }
                 }
             }
         }

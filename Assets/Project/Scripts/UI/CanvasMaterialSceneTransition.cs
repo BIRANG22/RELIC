@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransition>
 {
+    private const int TransitionSortingOrderFloor = 32000;
+    private const int TransitionSortingOrderCeiling = 32760;
     [Header("Root")]
     [SerializeField] private GameObject transitionRoot;
     [SerializeField] private CanvasGroup canvasGroup;
@@ -40,7 +42,7 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
 
     [Header("Sound")]
     [SerializeField] private bool playTransitionSound = true;
-    [SerializeField] private SfxType transitionSfx = SfxType.SceneTransition;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string transitionSfx = AudioIds.Sfx.SceneTransition;
     [SerializeField] private float transitionSfxVolumeMultiplier = 1f;
 
     [Header("Timing")]
@@ -56,8 +58,12 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
     private Material runtimeRightMaterial;
     private bool isInitialized;
     private bool isPlaying;
+    private bool isOpening;
+    private float openRemainingTime;
 
     public bool IsPlaying => isPlaying;
+    public bool IsOpening => isOpening;
+    public float OpenRemainingTime => openRemainingTime;
 
     protected override void Awake()
     {
@@ -93,11 +99,22 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
     {
         InitializeIfNeeded();
 
+        isOpening = true;
+        openRemainingTime = Mathf.Max(0f, openDuration);
         ShowRoot();
-        await AnimateTransitionAsync(false, openDuration, openCurve);
-        SetOpenedImmediate();
-        HideRoot();
-        isPlaying = false;
+
+        try
+        {
+            await AnimateTransitionAsync(false, openDuration, openCurve);
+            SetOpenedImmediate();
+            HideRoot();
+        }
+        finally
+        {
+            openRemainingTime = 0f;
+            isOpening = false;
+            isPlaying = false;
+        }
     }
 
     public async Task HoldClosedAsync()
@@ -184,7 +201,7 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
         }
 
         canvas.overrideSorting = true;
-        canvas.sortingOrder = canvasSortingOrder;
+        canvas.sortingOrder = Mathf.Clamp(canvasSortingOrder, TransitionSortingOrderFloor, TransitionSortingOrderCeiling);
 
         EnsureRootCanvasScaler();
 
@@ -269,6 +286,10 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
         while (elapsedTime < safeDuration)
         {
             elapsedTime += Time.unscaledDeltaTime;
+
+            if (!closing)
+                openRemainingTime = Mathf.Max(0f, safeDuration - elapsedTime);
+
             float normalizedTime = Mathf.Clamp01(elapsedTime / safeDuration);
             float curveValue = curve != null ? curve.Evaluate(normalizedTime) : normalizedTime;
 

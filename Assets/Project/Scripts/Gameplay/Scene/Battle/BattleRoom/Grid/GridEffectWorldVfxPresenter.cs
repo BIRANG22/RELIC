@@ -141,8 +141,8 @@ public class GridEffectWorldVfxPresenter : MonoBehaviour
         {
             prefab = source.prefab,
             flipType = source.flipType,
-            sfx = BattleVfxSfxEntry.CopyFrom(source.sfx),
             renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture,
+            proxyBlendMode = source.proxyBlendMode,
             renderTextureWidth = source.renderTextureWidth,
             renderTextureHeight = source.renderTextureHeight,
             renderCameraOrthographicSize = source.renderCameraOrthographicSize,
@@ -207,8 +207,18 @@ public class GridEffectWorldVfxPresenter : MonoBehaviour
         if (renderLayer >= 0)
             SetLayerRecursively(vfx, renderLayer);
 
+        EnsureVfxPauseController(vfx);
         ApplyVfxFlip(vfx, entry.flipType);
-        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.sfx, this);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.prefab, this);
+    }
+
+    private static void EnsureVfxPauseController(GameObject vfx)
+    {
+        if (vfx == null)
+            return;
+
+        if (vfx.GetComponent<BattleVfxPlaybackPauseController>() == null)
+            vfx.AddComponent<BattleVfxPlaybackPauseController>();
     }
 
     private static void SetLayerRecursively(GameObject obj, int layer)

@@ -1,0 +1,321 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace Relic.Gameplay.Data
+{
+    /// <summary>
+    /// 도감의 영구 획득 이력을 관리합니다.
+    /// 탐사 중 소모하거나 포기해도 PlayerRuntimeData에 기록된 획득 이력은 유지됩니다.
+    /// </summary>
+    public static class RecordDiscoveryService
+    {
+        public static void Normalize(PlayerRuntimeData player)
+        {
+            if (player == null)
+                return;
+
+            player.DiscoveredSkillIds ??= new List<string>();
+            player.DiscoveredRuneIds ??= new List<string>();
+            player.DiscoveredRelicIds ??= new List<string>();
+            player.DiscoveredCompoundIds ??= new List<string>();
+            player.DiscoveredItemIds ??= new List<string>();
+
+            NormalizeIds(player.DiscoveredSkillIds);
+            NormalizeIds(player.DiscoveredRuneIds);
+            NormalizeIds(player.DiscoveredRelicIds);
+            NormalizeIds(player.DiscoveredCompoundIds);
+            NormalizeIds(player.DiscoveredItemIds);
+        }
+
+        public static bool RegisterSkill(DataManager dataManager, string skillId)
+        {
+            PlayerRuntimeData player = PreparePlayer(dataManager);
+            return Register(skillId, player?.DiscoveredSkillIds);
+        }
+
+        public static bool RegisterRune(DataManager dataManager, string runeId)
+        {
+            PlayerRuntimeData player = PreparePlayer(dataManager);
+            return Register(runeId, player?.DiscoveredRuneIds);
+        }
+
+        public static bool RegisterRelic(DataManager dataManager, string relicId)
+        {
+            PlayerRuntimeData player = PreparePlayer(dataManager);
+            return Register(relicId, player?.DiscoveredRelicIds);
+        }
+
+        public static bool RegisterCompound(DataManager dataManager, string compoundId)
+        {
+            PlayerRuntimeData player = PreparePlayer(dataManager);
+            return Register(compoundId, player?.DiscoveredCompoundIds);
+        }
+
+        public static bool RegisterItem(DataManager dataManager, string itemId)
+        {
+            PlayerRuntimeData player = PreparePlayer(dataManager);
+            return Register(itemId, player?.DiscoveredItemIds);
+        }
+
+        public static bool IsSkillDiscovered(DataManager dataManager, string skillId)
+        {
+            return Contains(dataManager?.PlayerRuntimeStore?.Data?.DiscoveredSkillIds, skillId);
+        }
+
+        public static bool IsRuneDiscovered(DataManager dataManager, string runeId)
+        {
+            return Contains(dataManager?.PlayerRuntimeStore?.Data?.DiscoveredRuneIds, runeId);
+        }
+
+        public static bool IsRelicDiscovered(DataManager dataManager, string relicId)
+        {
+            return Contains(dataManager?.PlayerRuntimeStore?.Data?.DiscoveredRelicIds, relicId);
+        }
+
+        public static bool IsCompoundDiscovered(DataManager dataManager, string compoundId)
+        {
+            return Contains(dataManager?.PlayerRuntimeStore?.Data?.DiscoveredCompoundIds, compoundId);
+        }
+
+        public static bool IsItemDiscovered(DataManager dataManager, string itemId)
+        {
+            return Contains(dataManager?.PlayerRuntimeStore?.Data?.DiscoveredItemIds, itemId);
+        }
+
+        /// <summary>
+        /// 기존 세이브와 현재 보유/장착 상태를 도감 이력으로 보정합니다.
+        /// 기본 지급 캐릭터의 기본 기억은 런타임 캐릭터가 아직 생성되지 않았더라도 처음부터 공개합니다.
+        /// 전용 파편은 캐릭터 마스터 데이터만으로 자동 등록하지 않고, 실제 장착된 파편만 등록합니다.
+        /// </summary>
+        public static void BackfillFromCurrentState(DataManager dataManager)
+        {
+            if (dataManager?.PlayerRuntimeStore?.Data == null)
+                return;
+
+            Normalize(dataManager.PlayerRuntimeStore.Data);
+
+            BackfillDefaultProvidedCharacterSkills(dataManager);
+            BackfillCharacters(dataManager);
+            BackfillBattleRuntime(dataManager);
+            BackfillLobbyRuntime(dataManager);
+        }
+
+        private static void BackfillDefaultProvidedCharacterSkills(DataManager dataManager)
+        {
+            IReadOnlyDictionary<string, CharacterMasterData> masters =
+                dataManager.CharacterDatabase?.GetAll();
+
+            if (masters == null)
+                return;
+
+            foreach (KeyValuePair<string, CharacterMasterData> pair in masters)
+            {
+                CharacterMasterData master = pair.Value;
+                if (master == null || !master.IsDefaultProvided)
+                    continue;
+
+                // 런타임 데이터가 아직 없어도 기본 지급 캐릭터는 1레벨 해금 기억을 도감에 공개합니다.
+                RegisterUnlockedMemorySkills(dataManager, master, 1);
+                RegisterSkill(dataManager, master.CommonSkill1);
+            }
+        }
+
+        private static void BackfillCharacters(DataManager dataManager)
+        {
+            IReadOnlyDictionary<string, CharacterRuntimeData> characters =
+                dataManager.CharacterRuntimeStore?.GetAll();
+
+            if (characters == null)
+                return;
+
+            foreach (KeyValuePair<string, CharacterRuntimeData> pair in characters)
+            {
+                CharacterRuntimeData character = pair.Value;
+                if (character == null)
+                    continue;
+
+                // 잠겨 있는 캐릭터의 기억/파편/유물은 도감에 자동 등록하지 않습니다.
+                if (!character.IsUnlocked)
+                    continue;
+
+                RegisterSkill(dataManager, character.MoveSkillId);
+                RegisterSkill(dataManager, character.PassiveSkillId);
+                RegisterSkill(dataManager, character.UniqueSkillId);
+                RegisterSkill(dataManager, character.AbilitySkillId);
+                RegisterIds(character.EquippedSkillIds, id => RegisterSkill(dataManager, id));
+
+                // 파편은 캐릭터 마스터에 존재한다는 이유만으로 등록하지 않습니다.
+                // 실제 장착한 파편만 도감 획득 이력으로 등록합니다.
+                RegisterIds(character.EquippedRuneIds, id => RegisterRune(dataManager, id));
+
+                if (character.EquippedRelicIds != null)
+                {
+                    for (int i = 0; i < character.EquippedRelicIds.Length; i++)
+                    {
+                        string equippedId = character.EquippedRelicIds[i];
+                        if (IsCompoundId(equippedId))
+                            RegisterCompound(dataManager, equippedId);
+                        else
+                            RegisterRelic(dataManager, equippedId);
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(character.CharacterId) ||
+                    dataManager.CharacterDatabase == null ||
+                    !dataManager.CharacterDatabase.TryGet(character.CharacterId, out CharacterMasterData master) ||
+                    master == null)
+                {
+                    continue;
+                }
+
+                // 캐릭터의 현재 레벨에서 실제로 해금된 기억을 도감 획득 이력에 반영합니다.
+                RegisterUnlockedMemorySkills(dataManager, master, Mathf.Max(1, character.Level));
+                RegisterSkill(dataManager, master.CommonSkill1);
+            }
+        }
+
+        private static void RegisterUnlockedMemorySkills(
+            DataManager dataManager,
+            CharacterMasterData master,
+            int characterLevel)
+        {
+            if (master == null)
+                return;
+
+            int level = Mathf.Max(1, characterLevel);
+            string[][] memorySkillIds =
+            {
+                new[] { master.PassiveSkill1, master.PassiveSkill2 },
+                new[] { master.UniqueSkill1, master.UniqueSkill2 },
+                new[] { master.CharacterSkill1, master.CharacterSkill2 }
+            };
+
+            for (int slotIndex = 0; slotIndex < memorySkillIds.Length; slotIndex++)
+            {
+                string[] candidates = memorySkillIds[slotIndex];
+                for (int candidateIndex = 0; candidateIndex < candidates.Length; candidateIndex++)
+                {
+                    int unlockLevel = CharacterLevelUnlockService.GetSkillMemoryUnlockLevel(
+                        master,
+                        slotIndex,
+                        candidateIndex);
+
+                    if (level >= Mathf.Max(1, unlockLevel))
+                        RegisterSkill(dataManager, candidates[candidateIndex]);
+                }
+            }
+        }
+
+        private static void BackfillBattleRuntime(DataManager dataManager)
+        {
+            BattleRuntimeData battle = dataManager.BattleRuntimeStore?.Get();
+            if (battle == null)
+                return;
+
+            RegisterIds(battle.SkillInventoryIds, id => RegisterSkill(dataManager, id));
+            RegisterIds(battle.AcquiredSkillIds, id => RegisterSkill(dataManager, id));
+            RegisterIds(battle.OwnedRelicIds, id => RegisterOwnedRelicOrCompound(dataManager, id));
+            RegisterIds(battle.BagItemIds, id => RegisterItem(dataManager, id));
+        }
+
+        private static void BackfillLobbyRuntime(DataManager dataManager)
+        {
+            LobbyRuntimeData lobby = dataManager.LobbyRuntimeStore?.Get();
+            if (lobby == null)
+                return;
+
+            RegisterIds(lobby.SkillInventoryIds, id => RegisterSkill(dataManager, id));
+            RegisterIds(lobby.OwnedRelicIds, id => RegisterOwnedRelicOrCompound(dataManager, id));
+            RegisterIds(lobby.BagItemIds, id => RegisterItem(dataManager, id));
+            RegisterIds(lobby.StoredCompoundIds, id => RegisterCompound(dataManager, id));
+
+            if (lobby.CultureTankResearches != null)
+            {
+                for (int i = 0; i < lobby.CultureTankResearches.Count; i++)
+                {
+                    CultureTankResearchRuntimeData research = lobby.CultureTankResearches[i];
+                    if (research != null)
+                        RegisterItem(dataManager, research.ItemId);
+                }
+            }
+        }
+
+        private static void RegisterOwnedRelicOrCompound(DataManager dataManager, string id)
+        {
+            if (IsCompoundId(id))
+                RegisterCompound(dataManager, id);
+            else
+                RegisterRelic(dataManager, id);
+        }
+
+        private static bool IsCompoundId(string id)
+        {
+            return !string.IsNullOrWhiteSpace(id) &&
+                   id.Trim().StartsWith("Compound_", StringComparison.Ordinal);
+        }
+
+        private static PlayerRuntimeData PreparePlayer(DataManager dataManager)
+        {
+            PlayerRuntimeData player = dataManager?.PlayerRuntimeStore?.Data;
+            Normalize(player);
+            return player;
+        }
+
+        private static bool Register(string id, List<string> target)
+        {
+            if (target == null || string.IsNullOrWhiteSpace(id))
+                return false;
+
+            string normalizedId = id.Trim();
+            if (Contains(target, normalizedId))
+                return false;
+
+            target.Add(normalizedId);
+            return true;
+        }
+
+        private static bool Contains(List<string> ids, string targetId)
+        {
+            if (ids == null || string.IsNullOrWhiteSpace(targetId))
+                return false;
+
+            string normalizedTarget = targetId.Trim();
+            for (int i = 0; i < ids.Count; i++)
+            {
+                if (string.Equals(ids[i]?.Trim(), normalizedTarget, StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static void RegisterIds(IEnumerable<string> ids, Action<string> register)
+        {
+            if (ids == null || register == null)
+                return;
+
+            foreach (string id in ids)
+                register(id);
+        }
+
+        private static void NormalizeIds(List<string> ids)
+        {
+            if (ids == null)
+                return;
+
+            HashSet<string> unique = new(StringComparer.Ordinal);
+            for (int i = ids.Count - 1; i >= 0; i--)
+            {
+                string id = ids[i]?.Trim();
+                if (string.IsNullOrWhiteSpace(id) || !unique.Add(id))
+                {
+                    ids.RemoveAt(i);
+                    continue;
+                }
+
+                ids[i] = id;
+            }
+        }
+    }
+}

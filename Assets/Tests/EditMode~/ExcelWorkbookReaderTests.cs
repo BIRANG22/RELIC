@@ -8,6 +8,22 @@ using Relic.Gameplay.Data;
 public class ExcelWorkbookReaderTests
 {
     [Test]
+    public void ReadSectionedCsv_PreservesQuotedMultilineCell()
+    {
+        const string csv =
+            "# Character\n" +
+            "캐릭터 ID,소개\n" +
+            "CharacterId,introduction\n" +
+            "Char_01,\"첫째 줄\n둘째 \"\"강조\"\" 줄\"\n";
+
+        var workbook = ExcelWorkbookReader.Read(Encoding.UTF8.GetBytes(csv));
+
+        Assert.That(workbook["Character"], Has.Count.EqualTo(1));
+        Assert.That(workbook["Character"][0]["CharacterId"], Is.EqualTo("Char_01"));
+        Assert.That(workbook["Character"][0]["introduction"], Is.EqualTo("첫째 줄\n둘째 \"강조\" 줄"));
+    }
+
+    [Test]
     public void CharacterLoader_PreservesColumnsWhenXlsxDataRowOmitsMiddleCell()
     {
         var workbook = ExcelWorkbookReader.Read(BuildSparseCharacterWorkbook());

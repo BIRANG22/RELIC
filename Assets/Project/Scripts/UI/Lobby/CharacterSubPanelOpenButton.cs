@@ -25,7 +25,7 @@ public class CharacterSubPanelOpenButton : MonoBehaviour
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     private static GameObject currentOpenedSubPanel;
 

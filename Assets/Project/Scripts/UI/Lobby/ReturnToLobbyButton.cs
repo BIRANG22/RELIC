@@ -30,7 +30,7 @@ public class ReturnToPartyLobbyButton : MonoBehaviour
             return;
 
         if (playClickSound && AudioManager.Instance != null)
-            AudioManager.Instance.PlaySfx(SfxType.NormalButtonClick);
+            AudioManager.Instance.PlaySfx(AudioIds.Sfx.NormalButtonClick);
 
         if (clickActionDelay <= 0f)
         {

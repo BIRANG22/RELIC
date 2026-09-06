@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -16,6 +16,8 @@ namespace Relic.Gameplay.Data
         public int MaxHP;
         [FormerlySerializedAs("MaxStamina")]
         public int MaxCost;
+        public int RunMaxHPBonus;
+        public int RunMaxCostBonus;
         [FormerlySerializedAs("StaminaRecovery")]
         public int CostRecovery;
         [FormerlySerializedAs("BonusStaminaRecovery")]
@@ -37,6 +39,8 @@ namespace Relic.Gameplay.Data
         public int ReservedShieldCost;
 
         public BattleDirection Direction = BattleDirection.Right;
+        public int LastMoveOffsetX;
+        public int LastMoveOffsetY;
 
         public List<StatusEffectRuntimeData> StatusEffects = new();
 
@@ -47,11 +51,25 @@ namespace Relic.Gameplay.Data
         public string AbilitySkillId;
 
         public string[] EquippedSkillIds = new string[4];
-        public string[] EquippedRuneIds = new string[12];
-        public string[] EquippedRelicIds = new string[5];
+        public string[] EquippedRuneIds = new string[6];
+        public string[] EquippedRelicIds = new string[7];
+        public List<ActiveRelicUseRuntimeData> ActiveRelicUses = new();
         public List<string> AppliedBattleEquipmentEffectIds = new();
+        public int PendingNextTurnSmiteStack;
+        public int PendingNextTurnSmiteTurn;
+        public int PendingNextTurnBoostStack;
+        public int PendingNextTurnBoostTurn;
+
+        // 카르마 최대 도달 룬은 도달한 턴이 아니라 다음 턴 시작 시 적용합니다.
+        public int PendingUniqueResourceMaxBoost;
+        public int PendingUniqueResourceMaxSmite;
+        public int PendingUniqueResourceMaxCostRecovery;
+        public int PendingUniqueResourceMaxArmor;
+        public int PendingUniqueResourceMaxSelfLowestAllyArmor;
 
         public bool IsUnlocked;
+
+        public Vector2Int LastMoveOffset => new(LastMoveOffsetX, LastMoveOffsetY);
 
         public int TotalCostRecovery => Mathf.Max(0, CostRecovery + BonusCostRecovery);
         public bool IsDead => CurrentHP <= 0;
@@ -59,6 +77,31 @@ namespace Relic.Gameplay.Data
         public int PreviewCost => Mathf.Max(0, CurrentCost - ReservedCost);
         public int PreviewResource => Mathf.Max(0, CurrentResource - ReservedResourceCost);
         public int PreviewShield => Mathf.Max(0, CurrentShield - ReservedShieldCost);
+
+        public void SetLastMoveOffset(Vector2Int offset)
+        {
+            LastMoveOffsetX = NormalizeMoveAxis(offset.x);
+            LastMoveOffsetY = NormalizeMoveAxis(offset.y);
+
+            if (LastMoveOffsetX != 0 && LastMoveOffsetY != 0)
+            {
+                if (Mathf.Abs(offset.x) >= Mathf.Abs(offset.y))
+                    LastMoveOffsetY = 0;
+                else
+                    LastMoveOffsetX = 0;
+            }
+        }
+
+        private static int NormalizeMoveAxis(int value)
+        {
+            if (value > 0)
+                return 1;
+
+            if (value < 0)
+                return -1;
+
+            return 0;
+        }
 
         public bool CanReserveHP(int cost)
         {

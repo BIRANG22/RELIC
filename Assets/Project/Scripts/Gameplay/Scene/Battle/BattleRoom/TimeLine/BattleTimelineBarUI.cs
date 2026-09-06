@@ -1,6 +1,7 @@
 using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BattleTimelineBarUI : MonoBehaviour
 {
@@ -9,6 +10,14 @@ public class BattleTimelineBarUI : MonoBehaviour
 
     [Header("Timeline Slots")]
     [SerializeField] private BattleTimelineGroupUI[] timelineGroups;
+    [SerializeField] private BattleTimelineGroupUI[] trailingTimelineGroups;
+    [SerializeField] private BattleTimelineGroupUI timelineSlotPrefab;
+    [SerializeField] private RectTransform timelineSlotParent;
+    [SerializeField, Min(1)] private int timelineSlotCount = 5;
+    [SerializeField] private float firstTimelineSlotX = -500f;
+    [SerializeField] private float timelineSlotSpacingX = 350f;
+    [SerializeField] private float trailingFirstTimelineSlotX = 1130f;
+    [SerializeField] private bool generateTimelineSlotsIfMissing = true;
 
     [SerializeField] private RangePreview rangePreview;
     [SerializeField] private GridManager gridManager;
@@ -17,14 +26,16 @@ public class BattleTimelineBarUI : MonoBehaviour
 
     private void Awake()
     {
-        AutoFindGroupsIfNeeded();
+        EnsureTimelineGroups();
+        EnsureTrailingTimelineGroups();
         InitGroups();
     }
 
     public void Init(BattleTimelineController owner)
     {
         this.owner = owner;
-        AutoFindGroupsIfNeeded();
+        EnsureTimelineGroups();
+        EnsureTrailingTimelineGroups();
         InitGroups();
     }
 
@@ -38,6 +49,94 @@ public class BattleTimelineBarUI : MonoBehaviour
     {
         result = owner;
         return result != null;
+    }
+
+
+    public ReserveTurnSlotUI[] GetOrCreateReserveSlots(BattleTimelineController controller)
+    {
+        EnsureTimelineGroups();
+        InitGroups();
+
+        if (timelineGroups == null || timelineGroups.Length == 0)
+            return System.Array.Empty<ReserveTurnSlotUI>();
+
+        ReserveTurnSlotUI[] result = new ReserveTurnSlotUI[timelineGroups.Length];
+
+        for (int i = 0; i < timelineGroups.Length; i++)
+        {
+            BattleTimelineGroupUI group = timelineGroups[i];
+            if (group == null)
+                continue;
+
+            result[i] = group.GetOrCreateReserveTurnSlot(controller, i);
+        }
+
+        return result;
+    }
+
+
+    public ReserveTurnSlotUI[] PromoteTrailingTimelineGroupsToCurrent(BattleTimelineController controller)
+    {
+        EnsureTimelineGroups();
+        EnsureTrailingTimelineGroups();
+
+        if (trailingTimelineGroups == null || trailingTimelineGroups.Length == 0)
+            return GetOrCreateReserveSlots(controller);
+
+        BattleTimelineGroupUI[] oldCurrent = timelineGroups;
+        timelineGroups = trailingTimelineGroups;
+        trailingTimelineGroups = oldCurrent;
+
+        activeSlotIndex = -1;
+
+        for (int i = 0; i < timelineGroups.Length; i++)
+        {
+            BattleTimelineGroupUI group = timelineGroups[i];
+            if (group == null)
+                continue;
+
+            group.name = "TimelineSlot" + (i + 1).ToString("00");
+
+            CanvasGroup canvasGroup = group.GetComponent<CanvasGroup>();
+            if (canvasGroup != null)
+            {
+                canvasGroup.interactable = true;
+                canvasGroup.blocksRaycasts = true;
+            }
+
+            group.Init(this, i);
+            group.Clear();
+            group.SetActiveTimelineSlot(false);
+            group.SetOwnerIconsVisible(false);
+            group.SetEmptyUseSkillSlotsVisible(false);
+        }
+
+        ApplyTimelineSlotPositions();
+
+        if (trailingTimelineGroups != null)
+        {
+            for (int i = 0; i < trailingTimelineGroups.Length; i++)
+            {
+                BattleTimelineGroupUI group = trailingTimelineGroups[i];
+                if (group == null)
+                    continue;
+
+                group.name = "TimelineSlotNext" + (i + 1).ToString("00");
+                group.Init(this, i);
+                group.Clear();
+                group.SetActiveTimelineSlot(false);
+                group.SetOwnerIconsVisible(false);
+                group.SetEmptyUseSkillSlotsVisible(false);
+                ConfigureTrailingAsDecoration(group);
+                group.PrepareTrailingDecorationVisuals();
+                ClearTrailingTurnText(group);
+            }
+        }
+
+        ApplyTrailingTimelineSlotPositions();
+        InitGroups();
+
+        return GetOrCreateReserveSlots(controller);
     }
 
     public void SetActiveTimelineSlot(int slotIndex)
@@ -54,11 +153,34 @@ public class BattleTimelineBarUI : MonoBehaviour
         }
     }
 
+    public void SetPlayerLockedSlot(int lockedSlotIndex)
+    {
+        EnsureTimelineGroups();
+
+        if (timelineGroups == null)
+            return;
+
+        for (int i = 0; i < timelineGroups.Length; i++)
+        {
+            BattleTimelineGroupUI group = timelineGroups[i];
+
+            if (group == null)
+                continue;
+
+            BattleTimelineLockedSlotOverlay overlay =
+                group.GetComponent<BattleTimelineLockedSlotOverlay>();
+
+            if (overlay == null)
+                overlay = group.gameObject.AddComponent<BattleTimelineLockedSlotOverlay>();
+
+            overlay.SetLocked(i == lockedSlotIndex);
+        }
+    }
     public void Refresh(
         ReserveTurnSlotUI[] reserveSlots,
         IReadOnlyList<MonsterReservedCommand>[] monsterCommandsBySlot)
     {
-        AutoFindGroupsIfNeeded();
+        EnsureTimelineGroups();
         InitGroups();
 
         if (timelineGroups == null)
@@ -146,17 +268,27 @@ public class BattleTimelineBarUI : MonoBehaviour
             {
                 timelineGroups[i].SetTimelineEntries(entries, i);
 
-                // 진행 중인 TimelineBar에서는 등록된 행동이 없어도 Turn1~Turn5 숫자는 항상 보여야 합니다.
-                // Player_Icon / Enemy_Icon은 BattleTimelineGroupUI.SetTimelineEntries()가 실제 등록 상태에 맞게 따로 제어합니다.
                 SetTurnMarkChildrenVisible(timelineGroups[i], true);
             }
         }
     }
 
 
+    public void HideOwnerIconsForSlot(int slotIndex)
+    {
+        EnsureTimelineGroups();
+
+        if (timelineGroups == null || slotIndex < 0 || slotIndex >= timelineGroups.Length)
+            return;
+
+        BattleTimelineGroupUI group = timelineGroups[slotIndex];
+        if (group != null)
+            group.SetOwnerIconsVisible(false);
+    }
+
     public void SetTurnMarkChildrenVisible(bool visible)
     {
-        AutoFindGroupsIfNeeded();
+        EnsureTimelineGroups();
 
         if (timelineGroups == null)
             return;
@@ -166,9 +298,6 @@ public class BattleTimelineBarUI : MonoBehaviour
 
         for (int i = 0; i < timelineGroups.Length; i++)
         {
-            // visible == true인 바는 현재 진행/등록 대상 TimelineBar입니다.
-            // 이 바에서는 스킬 등록 여부와 관계없이 Turn1~Turn5 숫자는 항상 보여야 합니다.
-            // visible == false인 바는 대기 TimelineBar이므로 TurnMark 자식 전체를 숨깁니다.
             SetTurnMarkChildrenVisible(timelineGroups[i], visible);
         }
     }
@@ -190,9 +319,6 @@ public class BattleTimelineBarUI : MonoBehaviour
             if (child == null)
                 continue;
 
-            // Player_Icon / Enemy_Icon은 BattleTimelineGroupUI.SetTimelineEntries()에서
-            // 실제 등록된 플레이어/몬스터 행동 유무에 따라 개별 제어합니다.
-            // 여기서 한꺼번에 켜면 몬스터 행동만 있는 슬롯에도 Player_Icon이 켜질 수 있습니다.
             bool isOwnerIcon = child.name == "Player_Icon" || child.name == "Enemy_Icon";
 
             if (!visible)
@@ -208,7 +334,7 @@ public class BattleTimelineBarUI : MonoBehaviour
 
     public void SetEmptyUseSkillSlotsVisible(bool visible)
     {
-        AutoFindGroupsIfNeeded();
+        EnsureTimelineGroups();
 
         if (timelineGroups == null)
             return;
@@ -222,7 +348,7 @@ public class BattleTimelineBarUI : MonoBehaviour
 
     public void Clear()
     {
-        AutoFindGroupsIfNeeded();
+        EnsureTimelineGroups();
 
         if (timelineGroups == null)
             return;
@@ -237,11 +363,30 @@ public class BattleTimelineBarUI : MonoBehaviour
             if (timelineGroups[i] != null)
             {
                 timelineGroups[i].Clear();
+                SetGroupPlayerLocked(timelineGroups[i], false);
                 SetTurnMarkChildrenVisible(timelineGroups[i], false);
             }
         }
     }
 
+    private void SetGroupPlayerLocked(BattleTimelineGroupUI group, bool locked)
+    {
+        if (group == null)
+            return;
+
+        BattleTimelineLockedSlotOverlay overlay =
+            group.GetComponent<BattleTimelineLockedSlotOverlay>();
+
+        if (overlay == null)
+        {
+            if (!locked)
+                return;
+
+            overlay = group.gameObject.AddComponent<BattleTimelineLockedSlotOverlay>();
+        }
+
+        overlay.SetLocked(locked);
+    }
     private void InitGroups()
     {
         if (timelineGroups == null)
@@ -254,9 +399,6 @@ public class BattleTimelineBarUI : MonoBehaviour
 
             timelineGroups[i].Init(this, i);
 
-            // TimelineBar를 1/2로 나누면 두 바 안에 같은 TimelineSlot01~05가 각각 존재합니다.
-            // 키보드 입력은 BattleTimelineController의 reserveSlots를 직접 사용하지만,
-            // 마우스 클릭은 각 TimelineSlot에 붙은 ReserveTurnSlotUI가 owner를 가지고 있어야 동작합니다.
             ReserveTurnSlotUI clickSlot = timelineGroups[i].GetComponent<ReserveTurnSlotUI>();
 
             if (clickSlot == null)
@@ -267,14 +409,40 @@ public class BattleTimelineBarUI : MonoBehaviour
         }
     }
 
-    private void AutoFindGroupsIfNeeded()
+    private void EnsureTimelineGroups()
     {
-        if (timelineGroups != null && timelineGroups.Length > 0)
-            return;
+        if (timelineSlotParent == null)
+            timelineSlotParent = transform as RectTransform;
 
+        List<BattleTimelineGroupUI> groups = FindExistingTimelineGroups();
+
+        if (groups.Count == 0 && generateTimelineSlotsIfMissing && timelineSlotPrefab != null)
+        {
+            RectTransform parent = timelineSlotParent != null
+                ? timelineSlotParent
+                : transform as RectTransform;
+
+            for (int i = 0; i < Mathf.Max(1, timelineSlotCount); i++)
+            {
+                BattleTimelineGroupUI instance = Instantiate(timelineSlotPrefab, parent);
+                instance.name = "TimelineSlot" + (i + 1).ToString("00");
+                groups.Add(instance);
+            }
+        }
+
+        int expectedCount = Mathf.Max(1, timelineSlotCount);
+        if (groups.Count > expectedCount)
+            groups.RemoveRange(expectedCount, groups.Count - expectedCount);
+
+        timelineGroups = groups.ToArray();
+        ApplyTimelineSlotPositions();
+    }
+
+    private List<BattleTimelineGroupUI> FindExistingTimelineGroups()
+    {
         List<BattleTimelineGroupUI> groups = new();
 
-        for (int i = 1; i <= 5; i++)
+        for (int i = 1; i <= Mathf.Max(1, timelineSlotCount); i++)
         {
             Transform found = FindChildRecursive(transform, "TimelineSlot" + i.ToString("00"));
 
@@ -292,7 +460,131 @@ public class BattleTimelineBarUI : MonoBehaviour
             groups.Add(group);
         }
 
-        timelineGroups = groups.ToArray();
+        if (groups.Count == 0 && timelineGroups != null)
+        {
+            for (int i = 0; i < timelineGroups.Length; i++)
+            {
+                if (timelineGroups[i] != null && !groups.Contains(timelineGroups[i]))
+                    groups.Add(timelineGroups[i]);
+            }
+        }
+
+        return groups;
+    }
+
+    private void EnsureTrailingTimelineGroups()
+    {
+        if (timelineSlotPrefab == null)
+            return;
+
+        if (timelineSlotParent == null)
+            timelineSlotParent = transform as RectTransform;
+
+        int count = Mathf.Max(1, timelineSlotCount);
+        List<BattleTimelineGroupUI> groups = new();
+
+        for (int i = 0; i < count; i++)
+        {
+            Transform found = FindChildRecursive(transform, "TimelineSlotNext" + (i + 1).ToString("00"));
+            BattleTimelineGroupUI group = found != null
+                ? found.GetComponent<BattleTimelineGroupUI>()
+                : null;
+
+            if (group == null)
+            {
+                RectTransform parent = timelineSlotParent != null
+                    ? timelineSlotParent
+                    : transform as RectTransform;
+
+                group = Instantiate(timelineSlotPrefab, parent);
+                group.name = "TimelineSlotNext" + (i + 1).ToString("00");
+            }
+
+            group.Init(this, i);
+            group.Clear();
+            group.SetActiveTimelineSlot(false);
+            group.SetOwnerIconsVisible(false);
+            group.SetEmptyUseSkillSlotsVisible(false);
+            ConfigureTrailingAsDecoration(group);
+            group.PrepareTrailingDecorationVisuals();
+            ClearTrailingTurnText(group);
+            groups.Add(group);
+        }
+
+        trailingTimelineGroups = groups.ToArray();
+        ApplyTrailingTimelineSlotPositions();
+    }
+
+    private void ApplyTrailingTimelineSlotPositions()
+    {
+        if (trailingTimelineGroups == null)
+            return;
+
+        for (int i = 0; i < trailingTimelineGroups.Length; i++)
+        {
+            BattleTimelineGroupUI group = trailingTimelineGroups[i];
+            if (group == null)
+                continue;
+
+            RectTransform rect = group.transform as RectTransform;
+            if (rect == null)
+                continue;
+
+            Vector2 position = rect.anchoredPosition;
+            position.x = trailingFirstTimelineSlotX + timelineSlotSpacingX * i;
+            rect.anchoredPosition = position;
+        }
+    }
+
+    private static void ConfigureTrailingAsDecoration(BattleTimelineGroupUI group)
+    {
+        if (group == null)
+            return;
+
+        CanvasGroup canvasGroup = group.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = group.gameObject.AddComponent<CanvasGroup>();
+
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
+    }
+
+    private void ClearTrailingTurnText(BattleTimelineGroupUI group)
+    {
+        if (group == null)
+            return;
+
+        Transform turnTextTransform = FindChildRecursive(group.transform, "Turn_Text");
+        if (turnTextTransform == null)
+            return;
+
+        TMPro.TMP_Text turnText = turnTextTransform.GetComponent<TMPro.TMP_Text>();
+        if (turnText == null)
+            return;
+
+        turnText.text = string.Empty;
+        turnText.gameObject.SetActive(true);
+    }
+
+    private void ApplyTimelineSlotPositions()
+    {
+        if (timelineGroups == null)
+            return;
+
+        for (int i = 0; i < timelineGroups.Length; i++)
+        {
+            BattleTimelineGroupUI group = timelineGroups[i];
+            if (group == null)
+                continue;
+
+            RectTransform rect = group.transform as RectTransform;
+            if (rect == null)
+                continue;
+
+            Vector2 position = rect.anchoredPosition;
+            position.x = firstTimelineSlotX + timelineSlotSpacingX * i;
+            rect.anchoredPosition = position;
+        }
     }
 
     private Transform FindChildRecursive(Transform root, string childName)
@@ -371,7 +663,7 @@ public class BattleTimelineBarUI : MonoBehaviour
         else if (command.SkillData.RangeType == RangeType.Selection)
         {
             rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
-                casterGridIndex,
+                command.SelectedGridIndex >= 0 ? command.SelectedGridIndex : casterGridIndex,
                 BattleEquipmentEffectService.GetEffectiveRangeId(command.UserRuntime, command.SkillData),
                 DataManager.Instance.RangeDatabase,
                 gridManager
@@ -389,5 +681,127 @@ public class BattleTimelineBarUI : MonoBehaviour
     {
         if (rangePreview != null)
             rangePreview.Clear();
+    }
+}
+public class BattleTimelineLockedSlotOverlay : MonoBehaviour
+{
+    private const string DefaultOverlayObjectName = "CobwebSlotLock";
+    private const string DefaultEditorSpritePath = "Assets/Project/Art/Image/UI/Battle/CobwebUI.png";
+
+    [SerializeField] private Image overlayImage;
+    [SerializeField] private Sprite overlaySprite;
+    [SerializeField, Range(0f, 1f)] private float overlayAlpha = 0.55f;
+
+    public bool IsLocked { get; private set; }
+
+    private void Awake()
+    {
+        Refresh();
+    }
+
+    public void SetLocked(bool locked)
+    {
+        IsLocked = locked;
+        Refresh();
+    }
+
+    private void Refresh()
+    {
+        EnsureOverlayImage();
+
+        if (overlayImage == null)
+            return;
+
+        bool visible = IsLocked && overlaySprite != null;
+        overlayImage.sprite = overlaySprite;
+        overlayImage.preserveAspect = false;
+        overlayImage.raycastTarget = false;
+        overlayImage.color = new Color(1f, 1f, 1f, overlayAlpha);
+        overlayImage.enabled = visible;
+        overlayImage.gameObject.SetActive(visible);
+        overlayImage.transform.SetAsLastSibling();
+    }
+
+    private void EnsureOverlayImage()
+    {
+        ResolveOverlaySpriteIfNeeded();
+
+        if (overlayImage == null)
+        {
+            Transform found = FindChildRecursive(transform, DefaultOverlayObjectName);
+
+            if (found != null)
+                overlayImage = found.GetComponent<Image>();
+        }
+
+        if (overlayImage != null)
+        {
+            ApplyOverlayRectTransformSettings(overlayImage.rectTransform);
+            overlayImage.raycastTarget = false;
+            return;
+        }
+
+        RectTransform parentRect = transform as RectTransform;
+
+        if (parentRect == null)
+            return;
+
+        GameObject overlayObject = new GameObject(
+            DefaultOverlayObjectName,
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image));
+        overlayObject.layer = gameObject.layer;
+        overlayObject.transform.SetParent(transform, false);
+
+        RectTransform overlayRect = overlayObject.GetComponent<RectTransform>();
+        ApplyOverlayRectTransformSettings(overlayRect);
+
+        overlayImage = overlayObject.GetComponent<Image>();
+        overlayImage.raycastTarget = false;
+    }
+
+    private static void ApplyOverlayRectTransformSettings(RectTransform overlayRect)
+    {
+        if (overlayRect == null)
+            return;
+
+        Vector2 middleCenter = new Vector2(0.5f, 0.5f);
+        overlayRect.anchorMin = middleCenter;
+        overlayRect.anchorMax = middleCenter;
+        overlayRect.pivot = middleCenter;
+        overlayRect.anchoredPosition = new Vector2(160f, 0f);
+        overlayRect.sizeDelta = new Vector2(300f, 80f);
+    }
+
+    private void ResolveOverlaySpriteIfNeeded()
+    {
+        if (overlaySprite != null)
+            return;
+
+#if UNITY_EDITOR
+        overlaySprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(DefaultEditorSpritePath);
+#endif
+    }
+
+    private static Transform FindChildRecursive(Transform root, string childName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(childName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+
+            if (child.name == childName)
+                return child;
+
+            Transform found = FindChildRecursive(child, childName);
+
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 }

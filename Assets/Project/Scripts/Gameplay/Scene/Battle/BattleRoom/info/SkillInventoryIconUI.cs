@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+﻿using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -8,9 +8,13 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
     [Header("UI")]
     [SerializeField] private Image iconImage;
 
-    [Header("Selection")]
+
+    [Header("Scale Effect")]
     [SerializeField] private RectTransform scaleTarget;
-    [SerializeField] private float selectedScale = 1.08f;
+    [SerializeField] private float hoverMaxScale = 1.1f;
+    [SerializeField] private float hoverBreathSpeed = 2f;
+    [SerializeField] private float selectedScale = 1.2f;
+    [SerializeField] private float scaleLerpSpeed = 14f;
 
     private string skillId;
     private SkillInventoryPanelUI owner;
@@ -18,6 +22,7 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
     private Vector3 baseScale = Vector3.one;
     private bool hasCapturedBaseScale;
     private bool isSelected;
+    private bool isPointerOver;
 
     public string SkillId => skillId;
 
@@ -32,6 +37,21 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
             iconImage = GetComponent<Image>();
 
         CaptureBaseScaleOnce();
+        ApplyScale(true);
+    }
+
+    private void Update()
+    {
+        if (NeedsScaleAnimation())
+            ApplyScale(false);
+    }
+
+    private void OnDisable()
+    {
+        isPointerOver = false;
+        isSelected = false;
+        ApplyScale(true);
+        owner?.HideSkillTooltip();
     }
 
     public void Setup(string skillId, SkillInventoryPanelUI owner)
@@ -39,14 +59,15 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
         this.skillId = skillId;
         this.owner = owner;
         isSelected = false;
+        isPointerOver = false;
         RefreshIcon();
-        ApplyScale();
+        ApplyScale(true);
     }
 
     public void SetSelected(bool selected)
     {
         isSelected = selected && !string.IsNullOrWhiteSpace(skillId);
-        ApplyScale();
+        ApplyScale(false);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -69,6 +90,8 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
         if (string.IsNullOrWhiteSpace(skillId))
             return;
 
+        isPointerOver = true;
+
         if (rectTransform == null)
             rectTransform = GetComponent<RectTransform>();
 
@@ -77,6 +100,7 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        isPointerOver = false;
         owner?.HideSkillTooltip();
     }
 
@@ -107,16 +131,54 @@ public class SkillInventoryIconUI : MonoBehaviour, IPointerClickHandler, IPointe
 
         iconImage.sprite = icon;
         iconImage.enabled = icon != null;
-        iconImage.color = SkillRarityUtility.GetSkillIconColor(skillId);
+        iconImage.color = Color.white;
+        SkillUpgradeMarkStyle.ApplyShared(iconImage, skillId);
     }
 
-    private void ApplyScale()
+    private void ApplyScale(bool instant)
     {
         if (scaleTarget == null)
             return;
 
         CaptureBaseScaleOnce();
-        scaleTarget.localScale = isSelected ? baseScale * selectedScale : baseScale;
+
+        float scaleMultiplier = 1f;
+
+        if (isSelected && !string.IsNullOrWhiteSpace(skillId))
+        {
+            scaleMultiplier = selectedScale;
+        }
+        else if (isPointerOver && !string.IsNullOrWhiteSpace(skillId))
+        {
+            // 1.0과 1.1 사이를 반복합니다.
+            float breathT = (Mathf.Sin(Time.unscaledTime * hoverBreathSpeed) + 1f) * 0.5f;
+            scaleMultiplier = Mathf.Lerp(1f, hoverMaxScale, breathT);
+        }
+
+        Vector3 targetScale = baseScale * scaleMultiplier;
+
+        if (instant)
+        {
+            scaleTarget.localScale = targetScale;
+            return;
+        }
+
+        float t = 1f - Mathf.Exp(-scaleLerpSpeed * Time.unscaledDeltaTime);
+        scaleTarget.localScale = Vector3.Lerp(scaleTarget.localScale, targetScale, t);
+    }
+
+    private bool NeedsScaleAnimation()
+    {
+        if (scaleTarget == null)
+            return false;
+
+        if (isPointerOver && !string.IsNullOrWhiteSpace(skillId) && !isSelected)
+            return true;
+
+        CaptureBaseScaleOnce();
+        float multiplier = isSelected && !string.IsNullOrWhiteSpace(skillId) ? selectedScale : 1f;
+        Vector3 targetScale = baseScale * multiplier;
+        return (scaleTarget.localScale - targetScale).sqrMagnitude > 0.000001f;
     }
 
     private void CaptureBaseScaleOnce()

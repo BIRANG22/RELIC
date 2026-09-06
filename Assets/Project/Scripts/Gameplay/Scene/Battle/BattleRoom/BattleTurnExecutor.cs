@@ -13,7 +13,9 @@ public class BattleTurnExecutor : MonoBehaviour
     public static event Action BattleExecutionStarted;
     public static event Action PlayerTurnReturned;
 
-    public bool CanAcceptPlayerInput => !isExecuting && isMonsterPlanReady && isPlayerInputReady;
+    public bool CanAcceptPlayerInput => !networkExecutionLocked && !isExecuting && isMonsterPlanReady && isPlayerInputReady;
+    public bool IsExecuting => isExecuting;
+    public Button EndTurnButton => endTurnButton;
 
     [SerializeField] private BattleTimelineController timelineController;
     [SerializeField] private GridManager gridManager;
@@ -22,12 +24,27 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
     [SerializeField] private SkillListPanel skillListPanel;
 
+    [Header("Battle Execution UI Roots")]
+    [SerializeField] private GameObject playerHudRoot;
+    [SerializeField] private GameObject menuRoot;
+    [SerializeField] private bool autoFindBattleExecutionUiRoots = true;
+    [SerializeField] private string playerHudRootObjectName = "PlayerHUD_Root";
+    [SerializeField] private string menuRootObjectName = "MenuRoot";
+
     [Header("End Turn")]
     [SerializeField] private Button endTurnButton;
+
+    [Header("End Turn Visual Feedback")]
+    [SerializeField] private Image endTurnLineImage;
+    [SerializeField] private GameObject endTurnBackground2;
+    [SerializeField] private Color endTurnLineHoverColor = new Color32(0x4E, 0x66, 0xDF, 0xFF);
+    [SerializeField, Min(0f)] private float endTurnClickFeedbackDuration = 0.15f;
 
     [Header("Turn Text")]
     [SerializeField] private TMP_Text turnNumberText;
     [SerializeField] private bool autoFindTurnNumberText = true;
+    [SerializeField] private string turnNumberTextRootObjectName = "TurnText";
+    [SerializeField] private string turnNumberTextValueObjectName = "Value";
     [SerializeField] private string turnNumberTextObjectName = "TURN_TEXT2";
 
     [Header("Keyboard Input")]
@@ -37,6 +54,12 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private bool useSafeSequentialExecution = true;
     [SerializeField] private float actionRoutineTimeout = 8f;
 
+    [Header("Consecutive Action Presentation")]
+    [SerializeField, Min(1f)] private float consecutiveActionSpeedMultiplier = 1.2f;
+
+    [Header("Multi Hit Presentation")]
+    [SerializeField, Min(0f)] private float multiHitActionInterval = 0.12f;
+
     [Header("Intro Text")]
     [SerializeField] private string battleProgressMessage = "전투 진행";
     [SerializeField] private bool waitIntroText = false;
@@ -44,24 +67,33 @@ public class BattleTurnExecutor : MonoBehaviour
 
     [Header("SFX")]
     [SerializeField] private bool playBattleProgressSfx = true;
-    [SerializeField] private SfxType battleProgressSfxType = SfxType.BattleProgressText;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string battleProgressSfxId = AudioIds.Sfx.BattleProgressText;
     [SerializeField, Range(0f, 1f)] private float battleProgressSfxVolume = 1f;
 
     private bool isMonsterPlanReady;
     private bool isPlayerInputReady;
     private bool isExecuting;
+    private bool networkExecutionLocked;
+    private bool battleExecutionUiSuppressed;
     private Coroutine executeTurnCoroutine;
+    private Coroutine endTurnClickFeedbackCoroutine;
     private int playerTurnNumber = 1;
+    private Color endTurnLineDefaultColor = Color.white;
+    private bool endTurnVisualFeedbackInitialized;
+    private CharacterRuntimeData selectedCharacterBeforeExecution;
 
     private readonly BattleUniqueResourceService uniqueResourceService = new();
     private readonly BattlePassiveSkillService passiveSkillService = new();
+    private readonly Dictionary<string, int> pendingNextTurnSwiftByCharacterId = new();
 
     private void Start()
     {
         AutoFindTurnNumberTextIfNeeded();
+        InitializeEndTurnVisualFeedback();
         RefreshTurnNumberText();
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+        SteamBattleStateSynchronizer.EnsureForBattleScene(this, timelineController);
     }
 
 
@@ -75,13 +107,80 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private void OnEnable()
     {
-        BattleEffectUtility.OnPlayerDamaged -= uniqueResourceService.OnPlayerDamaged;
-        BattleEffectUtility.OnPlayerDamaged += uniqueResourceService.OnPlayerDamaged;
+        BattleEffectUtility.OnPlayerHit -= uniqueResourceService.OnAnyPlayerDamaged;
+        BattleEffectUtility.OnPlayerHit += uniqueResourceService.OnAnyPlayerDamaged;
+        BattleEffectUtility.OnPlayerBuffApplied -= uniqueResourceService.OnPlayerBuffApplied;
+        BattleEffectUtility.OnPlayerBuffApplied += uniqueResourceService.OnPlayerBuffApplied;
+        BattleEffectUtility.OnPlayerDamagedEnemy -= uniqueResourceService.OnPlayerDamagedEnemy;
+        BattleEffectUtility.OnPlayerDamagedEnemy += uniqueResourceService.OnPlayerDamagedEnemy;
     }
 
     private void OnDisable()
     {
-        BattleEffectUtility.OnPlayerDamaged -= uniqueResourceService.OnPlayerDamaged;
+        BattleEffectUtility.OnPlayerHit -= uniqueResourceService.OnAnyPlayerDamaged;
+        BattleEffectUtility.OnPlayerBuffApplied -= uniqueResourceService.OnPlayerBuffApplied;
+        BattleEffectUtility.OnPlayerDamagedEnemy -= uniqueResourceService.OnPlayerDamagedEnemy;
+
+        if (endTurnClickFeedbackCoroutine != null)
+        {
+            StopCoroutine(endTurnClickFeedbackCoroutine);
+            endTurnClickFeedbackCoroutine = null;
+        }
+
+        RestoreEndTurnLineColor();
+        SetEndTurnBackground2Visible(false);
+    }
+
+    public void QueueNextTurnSwift(BattleCharacter target, int value, int count)
+    {
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+            return;
+
+        string characterId = target.RuntimeData.CharacterId;
+
+        if (string.IsNullOrWhiteSpace(characterId))
+            return;
+
+        int stack = BattleEffectUtility.GetRepeatedValue(value, count);
+
+        if (stack <= 0)
+            return;
+
+        pendingNextTurnSwiftByCharacterId.TryGetValue(characterId, out int queuedStack);
+        pendingNextTurnSwiftByCharacterId[characterId] = queuedStack + stack;
+    }
+
+    private void ApplyQueuedNextTurnSwift()
+    {
+        if (pendingNextTurnSwiftByCharacterId.Count <= 0)
+            return;
+
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
+                continue;
+
+            string characterId = character.RuntimeData.CharacterId;
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!pendingNextTurnSwiftByCharacterId.TryGetValue(characterId, out int stack))
+                continue;
+
+            if (stack <= 0)
+                continue;
+
+            BattleEffectUtility.AddStatusToPlayer(character, "E_Swift", stack, 1);
+        }
+
+        pendingNextTurnSwiftByCharacterId.Clear();
     }
 
     public void SetBattleInputReady(bool ready)
@@ -94,6 +193,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+        RefreshBattleExecutionUiVisibility();
 
         if (ready && timelineController != null)
             timelineController.SelectDefaultSlotWhenInputReady();
@@ -102,6 +202,7 @@ public class BattleTurnExecutor : MonoBehaviour
     public void ResetBattleTurnState()
     {
         playerTurnNumber = 1;
+        pendingNextTurnSwiftByCharacterId.Clear();
         RefreshTurnNumberText();
     }
 
@@ -116,6 +217,8 @@ public class BattleTurnExecutor : MonoBehaviour
         isExecuting = false;
         isMonsterPlanReady = false;
         isPlayerInputReady = false;
+        networkExecutionLocked = false;
+        pendingNextTurnSwiftByCharacterId.Clear();
 
         EnsureSkillListPanel();
         if (skillListPanel != null)
@@ -136,10 +239,40 @@ public class BattleTurnExecutor : MonoBehaviour
 
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+        RefreshBattleExecutionUiVisibility();
+    }
+
+    public void RestoreBattleExecutionUiAfterRoomEnd()
+    {
+        if (!battleExecutionUiSuppressed)
+            return;
+
+        battleExecutionUiSuppressed = false;
+        SetBattleExecutionUiVisible(true);
+    }
+
+    public void SuppressBattleExecutionUiUntilPlayerInputReady()
+    {
+        HideBattleExecutionUiUntilPlayerTurn();
     }
 
     private void ResetBattleEffectPlanesForRoomEnd()
     {
+        // 전투 종료 시 공격 연출로 변경된 Plane 회전/위치를 먼저 기본 상태로 복구합니다.
+        BattleEffectPlaneRotation[] rotationControllers = UnityEngine.Object.FindObjectsByType<BattleEffectPlaneRotation>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < rotationControllers.Length; i++)
+        {
+            if (rotationControllers[i] == null)
+                continue;
+
+            rotationControllers[i].StopHitEffect();
+        }
+
+        // 이후 기존 슬라이드 컨트롤러의 전투 대기 위치를 다시 적용합니다.
         BattleEffectPlaneSlideController[] planeControllers = UnityEngine.Object.FindObjectsByType<BattleEffectPlaneSlideController>(
             FindObjectsInactive.Include,
             FindObjectsSortMode.None
@@ -174,11 +307,23 @@ public class BattleTurnExecutor : MonoBehaviour
         ExecuteTurn();
     }
 
+    public void SetNetworkExecutionLocked(bool locked)
+    {
+        if (networkExecutionLocked == locked)
+            return;
+
+        networkExecutionLocked = locked;
+        RefreshEndTurnButton();
+        RefreshBattlePresentationState();
+        RefreshBattleExecutionUiVisibility();
+    }
+
     public void SetMonsterPlanReady(bool ready)
     {
         isMonsterPlanReady = ready;
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+        RefreshBattleExecutionUiVisibility();
     }
 
     public void SetPlayerInputReady(bool ready)
@@ -186,9 +331,60 @@ public class BattleTurnExecutor : MonoBehaviour
         isPlayerInputReady = ready;
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
+        RefreshBattleExecutionUiVisibility();
     }
 
     public void ExecuteTurn()
+    {
+        if (SteamBattleStateSynchronizer.TryHandleExecuteTurnRequest(this))
+            return;
+
+        ExecuteTurnInternal();
+    }
+
+    public void ExecuteTurnFromNetworkHost()
+    {
+        ExecuteTurnInternal();
+    }
+
+    public void PlayNetworkExecutionFromHost(List<BattleActionBatch> batches)
+    {
+        if (batches == null || batches.Count <= 0 || executeTurnCoroutine != null)
+            return;
+
+        CaptureSelectedCharacterBeforeExecution();
+
+        MonsterUnit.ClearMonsterInfoSelection();
+        MonsterUnit.HideAllTemporaryHUDs();
+
+        EnsureSkillListPanel();
+        if (skillListPanel != null)
+            skillListPanel.CloseForBattleExecution();
+
+        HideBattleExecutionUiUntilPlayerTurn();
+
+        isExecuting = true;
+        isMonsterPlanReady = false;
+        isPlayerInputReady = false;
+        RefreshEndTurnButton();
+        RefreshBattlePresentationState();
+
+        if (endTurnButton != null)
+            endTurnButton.interactable = false;
+
+        if (timelineController != null)
+        {
+            timelineController.ClearSelectedSlotSelection();
+            timelineController.SetSelectedCharacterScaleFeedbackActive(false);
+            timelineController.SetSlotSelectionLocked(true);
+        }
+
+        BattleExecutionStarted?.Invoke();
+
+        executeTurnCoroutine = StartCoroutine(PlayNetworkExecutionRoutine(batches));
+    }
+
+    private void ExecuteTurnInternal()
     {
         Debug.Log(
        $"[EndTurnCheck] isExecuting:{isExecuting} / " +
@@ -211,11 +407,16 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
         }
 
+        CaptureSelectedCharacterBeforeExecution();
+
+        MonsterUnit.ClearMonsterInfoSelection();
         MonsterUnit.HideAllTemporaryHUDs();
 
         EnsureSkillListPanel();
         if (skillListPanel != null)
             skillListPanel.CloseForBattleExecution();
+
+        HideBattleExecutionUiUntilPlayerTurn();
 
         isExecuting = true;
 
@@ -230,6 +431,9 @@ public class BattleTurnExecutor : MonoBehaviour
         timelineController.ClearSelectedSlotSelection();
         timelineController.SetSelectedCharacterScaleFeedbackActive(false);
         timelineController.SetSlotSelectionLocked(true);
+
+        ApplyPlayerReservationTurnStartEquipmentEffects();
+        RefreshBattleHUDs();
 
         BattleExecutionStarted?.Invoke();
 
@@ -246,31 +450,37 @@ public class BattleTurnExecutor : MonoBehaviour
             yield return ReturnCameraDefaultRoutine();
 
             BattleActionBatchBuilder builder = new(gridManager);
+            BattleActionSimulationService simulator = new(gridManager);
+
+            uniqueResourceService.BeginTurnExecution();
+
+            simulator.Simulate(timelineController);
+
+            List<BattleActionBatch> batches = builder.Build(timelineController);
+            BattleConsecutiveActionPlan consecutiveActionPlan =
+                BattleConsecutiveActionPlan.Build(
+                    batches,
+                    consecutiveActionSpeedMultiplier);
             BattleActionRunner runner = new(
                 gridManager,
                 monsterSpawner,
                 roomLoader,
                 useSafeSequentialExecution,
-                actionRoutineTimeout
+                actionRoutineTimeout,
+                uniqueResourceService.OnPlayerCommandExecuted,
+                consecutiveActionPlan,
+                multiHitActionInterval
             );
-            BattleActionSimulationService simulator = new(gridManager);
-
-            uniqueResourceService.ApplyTimelineSlotResourceGain(timelineController);
-
-            simulator.Simulate(timelineController);
-
-            List<BattleActionBatch> batches = builder.Build(timelineController);
+            SteamBattleStateSynchronizer.TryBroadcastBattleExecution(batches);
 
             yield return ShowBattleProgressIntroTextRoutineSafe();
 
             int slidThroughSlotIndex = -1;
-            Dictionary<int, int> nextTimelineOrderAnimationIndexBySlot = new Dictionary<int, int>();
-
             for (int i = 0; i < batches.Count; i++)
             {
                 BattleActionBatch batch = batches[i];
 
-                if (!BatchHasCommands(batch))
+                if (!BatchHasExecutableCommands(batch))
                     continue;
 
                 int currentSlotIndex = GetBatchTimelineSlotIndex(batch, i);
@@ -288,35 +498,38 @@ public class BattleTurnExecutor : MonoBehaviour
                     slidThroughSlotIndex = Mathf.Max(slidThroughSlotIndex, currentSlotIndex);
                 }
 
-                int nextOrderAnimationIndex = 0;
-                if (nextTimelineOrderAnimationIndexBySlot.TryGetValue(currentSlotIndex, out int savedOrderIndex))
-                    nextOrderAnimationIndex = savedOrderIndex;
+                List<int> executableOrderIndices =
+                    GetExecutableTimelineOrderIndices(batch, currentSlotIndex);
 
-                int batchCommandCount = GetBatchCommandCount(batch);
+                if (executableOrderIndices.Count <= 0)
+                    continue;
 
                 bool keepCameraAfterBatch =
-                    runner.BatchHasCrossSideHitAction(batch) &&
-                    NextExecutableBatchHasCrossSideHitAction(batches, i + 1, runner);
+                    ShouldKeepCameraAcrossBatchBoundary(
+                        batch,
+                        batches,
+                        i + 1,
+                        runner,
+                        consecutiveActionPlan);
 
                 yield return runner.RunBatch(batch, keepCameraAfterBatch);
 
                 bool hasNextBatchInSameTimelineSlot = HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
 
-                if (timelineController != null && batchCommandCount > 0)
+                if (timelineController != null && executableOrderIndices.Count > 0)
                 {
-                    yield return timelineController.PlayTimelineActionAnimationsRoutine(
+                    yield return timelineController.PlayTimelineActionAnimationsForOrdersRoutine(
                         currentSlotIndex,
-                        nextOrderAnimationIndex,
-                        batchCommandCount,
+                        executableOrderIndices,
                         !hasNextBatchInSameTimelineSlot
                     );
                 }
 
-                nextTimelineOrderAnimationIndexBySlot[currentSlotIndex] = nextOrderAnimationIndex + batchCommandCount;
-
                 if (BattleResultChecker.Instance != null &&
                     BattleResultChecker.Instance.CheckBattleEnd())
                 {
+                    uniqueResourceService.FlushPendingUniqueResourceGains();
+                    RefreshBattleHUDs();
                     yield return ReturnCameraDefaultRoutine();
                     ClearTimeline();
                     yield break;
@@ -351,8 +564,14 @@ public class BattleTurnExecutor : MonoBehaviour
 
             yield return runner.ReturnCameraDefaultIfNeeded();
 
+            // 턴 종료 회복 팝업은 모두 모은 뒤 카르마 -> 마나 -> 체력 순으로 차례대로 표시합니다.
+            BattleDamageTextPopupUI.BeginRecoveryPopupSequence();
+
             yield return runner.ApplyTurnEndEffectsRoutine();
 
+            ResolveTurnEndGridEffects();
+            AdvanceGridEffectDurations();
+            ClearActiveRelicTurnScopedStatuses();
             ClearAllShield();
             RefreshBattleHUDs();
 
@@ -362,17 +581,27 @@ public class BattleTurnExecutor : MonoBehaviour
                 RefreshBattleHUDs();
             }
 
+            ApplyPlayerEndTurnTriggeredEquipmentEffects();
+            RefreshBattleHUDs();
+
+            // 전투 실행 중 획득한 카르마는 행동마다 즉시 반영하지 않고
+            // 모든 행동과 턴 종료 효과가 끝난 뒤 캐릭터별 합계로 한 번만 반영합니다.
+            uniqueResourceService.FlushPendingUniqueResourceGains();
+            RefreshBattleHUDs();
+
             ClearTimeline();
             yield return null;
 
             if (BattleResultChecker.Instance != null &&
                 BattleResultChecker.Instance.CheckBattleEnd())
             {
+                BattleDamageTextPopupUI.EndRecoveryPopupSequence();
                 yield return ReturnCameraDefaultRoutine();
                 yield break;
             }
 
             playerTurnNumber++;
+            ApplyQueuedNextTurnSwift();
             RefreshTurnNumberText();
 
             if (timelineController != null)
@@ -382,6 +611,9 @@ public class BattleTurnExecutor : MonoBehaviour
             {
                 roomLoader.RecoverPlayerCostsToMax();
 
+                // 카르마/마나/체력 회복값이 모두 확정된 뒤 순차 팝업 재생을 시작합니다.
+                BattleDamageTextPopupUI.EndRecoveryPopupSequence();
+
                 passiveSkillService.ClearAllPlayerPassiveEffects();
 
                 yield return roomLoader.PlanNextMonsterTurnsRoutine();
@@ -390,9 +622,36 @@ public class BattleTurnExecutor : MonoBehaviour
 
                 roomLoader.RefreshBattleHUDs();
             }
+            else
+            {
+                BattleDamageTextPopupUI.EndRecoveryPopupSequence();
+            }
+
+            // 몬스터 계획과 턴 전환 정리가 모두 끝난 뒤, 실제 다음 플레이어 턴이 시작되는 시점에
+            // 현재 잔여물 위에 서 있는 캐릭터에게 피해를 다시 적용합니다.
+            ApplyStandingResidueAtTurnStart();
+
+            if (BattleResultChecker.Instance != null &&
+                BattleResultChecker.Instance.CheckBattleEnd())
+            {
+                yield return ReturnCameraDefaultRoutine();
+                yield break;
+            }
+
+            // 이전 턴의 캐릭터 선택 상태를 먼저 비웁니다.
+            // 여기서는 카메라를 움직이지 않고 선택 상태만 해제하여,
+            // Y 1.5 복귀가 끝난 뒤 실제 캐릭터 선택 이벤트가 새로 발생하도록 합니다.
+            if (timelineController != null)
+                timelineController.SelectCharacter(null);
+
+            // 다음 예약 턴으로 UI가 올라오기 직전까지만 Panel Down 카메라를 사용합니다.
+            // PlayerTurnReturned가 발생하기 전이므로 BattleCharacterPanel/BattleSlot은 아직 내려가 있습니다.
+            yield return ReturnCameraPanelDownRoutine();
         }
         finally
         {
+            // 중간 종료/예외가 발생해도 회복 팝업 대기 상태가 남지 않도록 해제합니다.
+            BattleDamageTextPopupUI.EndRecoveryPopupSequence();
             executeTurnCoroutine = null;
 
             if (timelineController != null)
@@ -402,12 +661,17 @@ public class BattleTurnExecutor : MonoBehaviour
 
             RefreshEndTurnButton();
             RefreshBattlePresentationState();
+            RefreshBattleExecutionUiVisibility();
 
-            if (CanAcceptPlayerInput && timelineController != null)
+            if (CanAcceptPlayerInput)
             {
-                timelineController.SelectDefaultSlotWhenInputReady();
-                timelineController.SetSelectedCharacterScaleFeedbackActive(true);
-                timelineController.RefocusCurrentSelectedCharacterWhenInputReady();
+                RestoreSelectedCharacterForReservationTurn();
+
+                if (timelineController != null)
+                {
+                    timelineController.SelectDefaultSlotWhenInputReady();
+                    timelineController.SetSelectedCharacterScaleFeedbackActive(true);
+                }
             }
 
             EnsureSkillListPanel();
@@ -418,6 +682,226 @@ public class BattleTurnExecutor : MonoBehaviour
         }
     }
 
+    private IEnumerator PlayNetworkExecutionRoutine(List<BattleActionBatch> batches)
+    {
+        try
+        {
+            if (moveGhostPreview != null)
+                moveGhostPreview.ClearAll();
+
+            yield return ReturnCameraDefaultRoutine();
+
+            BattleConsecutiveActionPlan consecutiveActionPlan =
+                BattleConsecutiveActionPlan.Build(
+                    batches,
+                    consecutiveActionSpeedMultiplier);
+            BattleActionRunner runner = new(
+                gridManager,
+                monsterSpawner,
+                roomLoader,
+                useSafeSequentialExecution,
+                actionRoutineTimeout,
+                uniqueResourceService != null ? uniqueResourceService.OnPlayerCommandExecuted : null,
+                consecutiveActionPlan,
+                multiHitActionInterval
+            );
+
+            yield return ShowBattleProgressIntroTextRoutineSafe();
+
+            int slidThroughSlotIndex = -1;
+            for (int i = 0; i < batches.Count; i++)
+            {
+                BattleActionBatch batch = batches[i];
+
+                if (!BatchHasExecutableCommands(batch))
+                    continue;
+
+                int currentSlotIndex = GetBatchTimelineSlotIndex(batch, i);
+
+                if (currentSlotIndex > slidThroughSlotIndex)
+                {
+                    if (timelineController != null)
+                    {
+                        yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(
+                            currentSlotIndex);
+                    }
+
+                    slidThroughSlotIndex = Mathf.Max(slidThroughSlotIndex, currentSlotIndex);
+                }
+
+                List<int> executableOrderIndices =
+                    GetExecutableTimelineOrderIndices(batch, currentSlotIndex);
+
+                if (executableOrderIndices.Count <= 0)
+                    continue;
+
+                bool keepCameraAfterBatch =
+                    ShouldKeepCameraAcrossBatchBoundary(
+                        batch,
+                        batches,
+                        i + 1,
+                        runner,
+                        consecutiveActionPlan);
+
+                yield return runner.RunBatch(batch, keepCameraAfterBatch);
+
+                bool hasNextBatchInSameTimelineSlot =
+                    HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
+
+                if (timelineController != null && executableOrderIndices.Count > 0)
+                {
+                    yield return timelineController.PlayTimelineActionAnimationsForOrdersRoutine(
+                        currentSlotIndex,
+                        executableOrderIndices,
+                        !hasNextBatchInSameTimelineSlot);
+                }
+
+                if (hasNextBatchInSameTimelineSlot)
+                    continue;
+
+                int slideThroughSlotIndex =
+                    GetSlideThroughSlotIndexAfterExecutedTimelineSlot(batches, i, currentSlotIndex);
+
+                if (slideThroughSlotIndex > slidThroughSlotIndex)
+                {
+                    if (timelineController != null)
+                        yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(slideThroughSlotIndex);
+
+                    slidThroughSlotIndex = slideThroughSlotIndex;
+                }
+            }
+
+            if (timelineController != null && slidThroughSlotIndex < 4)
+                yield return timelineController.SlideTimelineSlotsLeftThroughSlotRoutine(4);
+
+            if (timelineController != null)
+                yield return timelineController.MoveTimelineBarsToCompletedTurnPositionRoutine();
+
+            yield return runner.ReturnCameraDefaultIfNeeded();
+
+            yield return RestoreNetworkReservationStateAfterExecutionRoutine();
+
+            // 네트워크 실행에서도 이전 선택을 비운 뒤 Y 1.5 복귀를 완료하고,
+            // finally에서 실제 살아있는 캐릭터를 새로 선택합니다.
+            if (timelineController != null)
+                timelineController.SelectCharacter(null);
+
+            // 네트워크 실행도 예약 UI가 다시 올라오기 직전에만 Y 1.5로 복귀합니다.
+            yield return ReturnCameraPanelDownRoutine();
+        }
+        finally
+        {
+            executeTurnCoroutine = null;
+
+            if (timelineController != null)
+                timelineController.SetSlotSelectionLocked(false);
+
+            isExecuting = false;
+            networkExecutionLocked = false;
+            isMonsterPlanReady = true;
+            isPlayerInputReady = true;
+
+            RefreshEndTurnButton();
+            RefreshBattlePresentationState();
+            RefreshBattleExecutionUiVisibility();
+
+            if (CanAcceptPlayerInput)
+            {
+                RestoreSelectedCharacterForReservationTurn();
+
+                if (timelineController != null)
+                {
+                    timelineController.SelectDefaultSlotWhenInputReady(false);
+                    timelineController.SetSelectedCharacterScaleFeedbackActive(true);
+                    timelineController.StopTimelineMotionEffects();
+                }
+            }
+
+            EnsureSkillListPanel();
+            if (CanAcceptPlayerInput && skillListPanel != null)
+                skillListPanel.ReopenAfterBattleExecution();
+
+            if (CanAcceptPlayerInput && timelineController != null)
+                timelineController.StopTimelineMotionEffects();
+
+            PlayerTurnReturned?.Invoke();
+        }
+    }
+
+    private void CaptureSelectedCharacterBeforeExecution()
+    {
+        selectedCharacterBeforeExecution = timelineController != null
+            ? timelineController.SelectedCharacter
+            : null;
+    }
+
+    private void RestoreSelectedCharacterForReservationTurn()
+    {
+        if (selectedCharacterBeforeExecution != null && !selectedCharacterBeforeExecution.IsDead)
+        {
+            if (roomLoader != null)
+                roomLoader.OnPlayerCharacterClicked(selectedCharacterBeforeExecution);
+            else if (timelineController != null)
+                timelineController.SelectCharacter(selectedCharacterBeforeExecution);
+        }
+        else if (roomLoader != null)
+        {
+            roomLoader.SelectFirstAlivePlayerCharacterIfNeeded();
+        }
+
+        selectedCharacterBeforeExecution = null;
+    }
+
+    private IEnumerator RestoreNetworkReservationStateAfterExecutionRoutine()
+    {
+        ClearTimeline();
+
+        if (moveGhostPreview != null)
+            moveGhostPreview.ClearAll();
+
+        yield return null;
+
+        playerTurnNumber++;
+        ApplyQueuedNextTurnSwift();
+        RefreshTurnNumberText();
+
+        if (timelineController != null)
+        {
+            yield return timelineController.ResetTimelineSlotsToOriginalPositionRoutine();
+            timelineController.StopTimelineMotionEffects();
+        }
+
+        SteamBattleStateSynchronizer.TryRefreshIdleSnapshotAfterNetworkExecution();
+        RefreshBattleHUDs();
+    }
+
+    private static void ApplyStandingResidueAtTurnStart()
+    {
+        BattleGridEffectController controller =
+            FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (controller != null)
+            controller.ApplyStandingResidueToPlayers();
+    }
+
+    private static void ResolveTurnEndGridEffects()
+    {
+        BattleGridEffectController controller =
+            FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (controller != null)
+            controller.ResolveTurnEndGridEffects();
+    }
+
+    private static void AdvanceGridEffectDurations()
+    {
+        BattleGridEffectController controller =
+            FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (controller != null)
+            controller.AdvanceTurnDurations();
+    }
+
     private IEnumerator ReturnCameraDefaultRoutine()
     {
         BattleCameraController cameraController = BattleCameraController.Instance;
@@ -426,6 +910,18 @@ public class BattleTurnExecutor : MonoBehaviour
             yield break;
 
         yield return cameraController.ReturnDefault();
+    }
+
+    private IEnumerator ReturnCameraPanelDownRoutine()
+    {
+        BattleCameraController cameraController = BattleCameraController.Instance;
+
+        if (cameraController == null)
+            yield break;
+
+        // 모든 행동/턴 전환 처리가 끝났고 패널은 아직 내려가 있는 구간에서만
+        // 카메라를 Panel Down 기준 Y(기본 1.5)로 옮깁니다.
+        yield return cameraController.ReturnPanelDown();
     }
 
     private bool IsTypingInputFieldSelected()
@@ -447,6 +943,110 @@ public class BattleTurnExecutor : MonoBehaviour
         return false;
     }
 
+    private void InitializeEndTurnVisualFeedback()
+    {
+        if (endTurnVisualFeedbackInitialized || endTurnButton == null)
+            return;
+
+        if (endTurnLineImage == null)
+        {
+            Transform lineTransform = FindChildRecursive(endTurnButton.transform, "Line");
+            if (lineTransform != null)
+                endTurnLineImage = lineTransform.GetComponent<Image>();
+        }
+
+        if (endTurnBackground2 == null)
+        {
+            Transform background2Transform = FindChildRecursive(endTurnButton.transform, "Background2");
+            if (background2Transform != null)
+                endTurnBackground2 = background2Transform.gameObject;
+        }
+
+        if (endTurnLineImage != null)
+            endTurnLineDefaultColor = endTurnLineImage.color;
+
+        SetEndTurnBackground2Visible(false);
+
+        EventTrigger trigger = endTurnButton.GetComponent<EventTrigger>();
+        if (trigger == null)
+            trigger = endTurnButton.gameObject.AddComponent<EventTrigger>();
+
+        if (trigger.triggers == null)
+            trigger.triggers = new List<EventTrigger.Entry>();
+
+        EventTrigger.Entry enterEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        enterEntry.callback.AddListener(_ => SetEndTurnLineHovered(true));
+        trigger.triggers.Add(enterEntry);
+
+        EventTrigger.Entry exitEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        exitEntry.callback.AddListener(_ => SetEndTurnLineHovered(false));
+        trigger.triggers.Add(exitEntry);
+
+        endTurnButton.onClick.AddListener(PlayEndTurnClickFeedback);
+        endTurnVisualFeedbackInitialized = true;
+    }
+
+    private void SetEndTurnLineHovered(bool hovered)
+    {
+        if (endTurnLineImage == null)
+            return;
+
+        endTurnLineImage.color = hovered ? endTurnLineHoverColor : endTurnLineDefaultColor;
+    }
+
+    private void RestoreEndTurnLineColor()
+    {
+        if (endTurnLineImage != null)
+            endTurnLineImage.color = endTurnLineDefaultColor;
+    }
+
+    private void PlayEndTurnClickFeedback()
+    {
+        InitializeEndTurnVisualFeedback();
+
+        if (endTurnClickFeedbackCoroutine != null)
+            StopCoroutine(endTurnClickFeedbackCoroutine);
+
+        SetEndTurnBackground2Visible(true);
+        endTurnClickFeedbackCoroutine = StartCoroutine(EndTurnClickFeedbackRoutine());
+    }
+
+    private IEnumerator EndTurnClickFeedbackRoutine()
+    {
+        float duration = Mathf.Max(0f, endTurnClickFeedbackDuration);
+
+        if (duration > 0f)
+            yield return new WaitForSecondsRealtime(duration);
+
+        SetEndTurnBackground2Visible(false);
+        endTurnClickFeedbackCoroutine = null;
+    }
+
+    private void SetEndTurnBackground2Visible(bool visible)
+    {
+        if (endTurnBackground2 != null && endTurnBackground2.activeSelf != visible)
+            endTurnBackground2.SetActive(visible);
+    }
+
+    private static Transform FindChildRecursive(Transform root, string objectName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child.name == objectName)
+                return child;
+
+            Transform found = FindChildRecursive(child, objectName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
+    }
+
     private void AutoFindTurnNumberTextIfNeeded()
     {
         if (!autoFindTurnNumberText)
@@ -455,15 +1055,35 @@ public class BattleTurnExecutor : MonoBehaviour
         if (turnNumberText != null)
             return;
 
+        if (!string.IsNullOrWhiteSpace(turnNumberTextRootObjectName) &&
+            !string.IsNullOrWhiteSpace(turnNumberTextValueObjectName))
+        {
+            Transform[] transforms = FindObjectsByType<Transform>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+
+            for (int i = 0; i < transforms.Length; i++)
+            {
+                Transform root = transforms[i];
+                if (root == null || root.name != turnNumberTextRootObjectName)
+                    continue;
+
+                Transform valueTransform = root.Find(turnNumberTextValueObjectName);
+                if (valueTransform == null)
+                    continue;
+
+                turnNumberText = valueTransform.GetComponent<TMP_Text>();
+                if (turnNumberText != null)
+                    return;
+            }
+        }
+
         if (string.IsNullOrWhiteSpace(turnNumberTextObjectName))
             return;
 
         GameObject found = GameObject.Find(turnNumberTextObjectName);
-
-        if (found == null)
-            return;
-
-        turnNumberText = found.GetComponent<TMP_Text>();
+        if (found != null)
+            turnNumberText = found.GetComponent<TMP_Text>();
     }
 
     private void RefreshTurnNumberText()
@@ -474,7 +1094,7 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
 
         int displayTurnNumber = Mathf.Max(1, playerTurnNumber);
-        turnNumberText.text = displayTurnNumber.ToString();
+        turnNumberText.text = displayTurnNumber.ToString("D2");
     }
 
     private void RefreshEndTurnButton()
@@ -483,6 +1103,7 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
 
         endTurnButton.interactable =
+            !networkExecutionLocked &&
             !isExecuting &&
             isMonsterPlanReady &&
             isPlayerInputReady;
@@ -496,6 +1117,102 @@ public class BattleTurnExecutor : MonoBehaviour
             gridManager.SetGridVisible(isReservationState);
 
         MonsterUnit.SetAllReservationVisualState(false);
+    }
+
+    private void HideBattleExecutionUiUntilPlayerTurn()
+    {
+        battleExecutionUiSuppressed = true;
+        SetBattleExecutionUiVisible(false);
+    }
+
+    private void RefreshBattleExecutionUiVisibility()
+    {
+        if (!battleExecutionUiSuppressed)
+            return;
+
+        if (!CanAcceptPlayerInput)
+        {
+            SetBattleExecutionUiVisible(false);
+            return;
+        }
+
+        battleExecutionUiSuppressed = false;
+        SetBattleExecutionUiVisible(true);
+    }
+
+    private void SetBattleExecutionUiVisible(bool visible)
+    {
+        EnsureBattleExecutionUiRoots();
+
+        SetRootActive(playerHudRoot, true);
+        SetRootActive(menuRoot, visible);
+
+        if (!autoFindBattleExecutionUiRoots)
+            return;
+
+        SetNamedBattleExecutionUiRootsVisible(playerHudRootObjectName, true, playerHudRoot);
+        SetNamedBattleExecutionUiRootsVisible(menuRootObjectName, visible, menuRoot);
+    }
+
+    private void EnsureBattleExecutionUiRoots()
+    {
+        if (!autoFindBattleExecutionUiRoots)
+            return;
+
+        if (playerHudRoot == null && !string.IsNullOrWhiteSpace(playerHudRootObjectName))
+            playerHudRoot = FindFirstBattleExecutionUiRoot(playerHudRootObjectName);
+
+        if (menuRoot == null && !string.IsNullOrWhiteSpace(menuRootObjectName))
+            menuRoot = FindFirstBattleExecutionUiRoot(menuRootObjectName);
+    }
+
+    private static GameObject FindFirstBattleExecutionUiRoot(string objectName)
+    {
+        Transform[] transforms = UnityEngine.Object.FindObjectsByType<Transform>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform root = transforms[i];
+
+            if (root != null && root.gameObject.name == objectName)
+                return root.gameObject;
+        }
+
+        return null;
+    }
+
+    private static void SetNamedBattleExecutionUiRootsVisible(
+        string objectName,
+        bool visible,
+        GameObject configuredRoot)
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+            return;
+
+        Transform[] transforms = UnityEngine.Object.FindObjectsByType<Transform>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform root = transforms[i];
+
+            if (root == null || root.gameObject.name != objectName)
+                continue;
+
+            if (configuredRoot != null && root.gameObject == configuredRoot)
+                continue;
+
+            SetRootActive(root.gameObject, visible);
+        }
+    }
+
+    private static void SetRootActive(GameObject root, bool active)
+    {
+        if (root != null && root.activeSelf != active)
+            root.SetActive(active);
     }
 
     private void ApplyPlayerTurnStartEquipmentEffects()
@@ -529,9 +1246,74 @@ public class BattleTurnExecutor : MonoBehaviour
         }
     }
 
+    private void ApplyPlayerEndTurnTriggeredEquipmentEffects()
+    {
+        if (DataManager.Instance == null ||
+            DataManager.Instance.PartyRuntimeStore == null ||
+            DataManager.Instance.CharacterRuntimeStore == null)
+        {
+            return;
+        }
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
+                    characterId,
+                    out CharacterRuntimeData runtime))
+            {
+                continue;
+            }
+
+            BattleEquipmentEffectService.ApplyEndTurnTriggeredEffects(runtime);
+        }
+    }
+
+    private void ApplyPlayerReservationTurnStartEquipmentEffects()
+    {
+        if (timelineController == null ||
+            DataManager.Instance == null ||
+            DataManager.Instance.PartyRuntimeStore == null ||
+            DataManager.Instance.CharacterRuntimeStore == null)
+        {
+            return;
+        }
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
+                    characterId,
+                    out CharacterRuntimeData runtime))
+            {
+                continue;
+            }
+
+            BattleEquipmentEffectService.ApplyReservationTurnStartEffects(
+                runtime,
+                playerTurnNumber,
+                timelineController.CountPlayerOccupiedSlots(characterId),
+                timelineController.CountPlayerEmptySlots(characterId),
+                timelineController.GetPlayerEmptySlotMask(characterId),
+                timelineController.CountPlayerAttackSkillCommands(characterId));
+        }
+    }
+
     private IEnumerator ShowBattleProgressIntroTextRoutineSafe()
     {
-        PlaySfx(playBattleProgressSfx, battleProgressSfxType, battleProgressSfxVolume);
+        PlaySfx(playBattleProgressSfx, battleProgressSfxId, battleProgressSfxVolume);
 
         IEnumerator routine = BattleMapIntroText.ShowMessageAndWait(battleProgressMessage);
 
@@ -572,7 +1354,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
         for (int i = Mathf.Max(0, startIndex); i < batches.Count; i++)
         {
-            if (BatchHasCommands(batches[i]))
+            if (BatchHasExecutableCommands(batches[i]))
                 return i;
         }
 
@@ -635,20 +1417,224 @@ public class BattleTurnExecutor : MonoBehaviour
     }
 
 
-    private int GetBatchCommandCount(BattleActionBatch batch)
+    private List<int> GetExecutableTimelineOrderIndices(
+        BattleActionBatch batch,
+        int timelineSlotIndex)
     {
-        if (batch == null)
-            return 0;
+        List<int> orderIndices = new();
 
-        int count = 0;
+        if (batch == null || timelineController == null)
+            return orderIndices;
 
         if (batch.PlayerCommands != null)
-            count += batch.PlayerCommands.Count;
+        {
+            for (int i = 0; i < batch.PlayerCommands.Count; i++)
+            {
+                PlayerReservedCommand command = batch.PlayerCommands[i];
+                if (!IsExecutablePlayerCommand(command))
+                    continue;
+
+                int orderIndex = GetTimelineOrderIndex(timelineSlotIndex, command);
+                if (orderIndex >= 0 && !orderIndices.Contains(orderIndex))
+                    orderIndices.Add(orderIndex);
+            }
+        }
 
         if (batch.MonsterCommands != null)
-            count += batch.MonsterCommands.Count;
+        {
+            for (int i = 0; i < batch.MonsterCommands.Count; i++)
+            {
+                MonsterReservedCommand command = batch.MonsterCommands[i];
+                if (!IsExecutableMonsterCommand(command))
+                    continue;
 
-        return count;
+                int orderIndex = GetTimelineOrderIndex(timelineSlotIndex, command);
+                if (orderIndex >= 0 && !orderIndices.Contains(orderIndex))
+                    orderIndices.Add(orderIndex);
+            }
+        }
+
+        orderIndices.Sort();
+        return orderIndices;
+    }
+
+    private int GetTimelineOrderIndex(
+        int timelineSlotIndex,
+        PlayerReservedCommand targetCommand)
+    {
+        if (timelineController == null || targetCommand == null)
+            return -1;
+
+        IReadOnlyList<PlayerReservedCommand> playerCommands =
+            timelineController.GetPlayerCommands(timelineSlotIndex);
+        IReadOnlyList<MonsterReservedCommand> monsterCommands =
+            timelineController.GetMonsterCommands(timelineSlotIndex);
+
+        int orderIndex = 0;
+
+        if (playerCommands != null)
+        {
+            for (int i = 0; i < playerCommands.Count; i++)
+            {
+                PlayerReservedCommand command = playerCommands[i];
+                if (command == null || !BattleActionOrderUtility.HasSwift(command))
+                    continue;
+
+                if (ReferenceEquals(command, targetCommand))
+                    return orderIndex;
+
+                orderIndex++;
+            }
+        }
+
+        if (monsterCommands != null)
+            orderIndex += monsterCommands.Count;
+
+        if (playerCommands != null)
+        {
+            for (int i = 0; i < playerCommands.Count; i++)
+            {
+                PlayerReservedCommand command = playerCommands[i];
+                if (command == null || BattleActionOrderUtility.HasSwift(command))
+                    continue;
+
+                if (ReferenceEquals(command, targetCommand))
+                    return orderIndex;
+
+                orderIndex++;
+            }
+        }
+
+        return -1;
+    }
+
+    private int GetTimelineOrderIndex(
+        int timelineSlotIndex,
+        MonsterReservedCommand targetCommand)
+    {
+        if (timelineController == null || targetCommand == null)
+            return -1;
+
+        IReadOnlyList<PlayerReservedCommand> playerCommands =
+            timelineController.GetPlayerCommands(timelineSlotIndex);
+        IReadOnlyList<MonsterReservedCommand> monsterCommands =
+            timelineController.GetMonsterCommands(timelineSlotIndex);
+
+        int orderIndex = 0;
+
+        if (playerCommands != null)
+        {
+            for (int i = 0; i < playerCommands.Count; i++)
+            {
+                PlayerReservedCommand command = playerCommands[i];
+                if (command != null && BattleActionOrderUtility.HasSwift(command))
+                    orderIndex++;
+            }
+        }
+
+        if (monsterCommands == null)
+            return -1;
+
+        for (int i = 0; i < monsterCommands.Count; i++)
+        {
+            if (ReferenceEquals(monsterCommands[i], targetCommand))
+                return orderIndex + i;
+        }
+
+        return -1;
+    }
+
+    private static bool IsExecutablePlayerCommand(PlayerReservedCommand command)
+    {
+        return command != null &&
+               command.UserRuntime != null &&
+               !command.UserRuntime.IsDead;
+    }
+
+    private static bool IsExecutableMonsterCommand(MonsterReservedCommand command)
+    {
+        return command != null &&
+               command.UserRuntime != null &&
+               !command.UserRuntime.IsDead;
+    }
+
+    private bool BatchHasExecutableCommands(BattleActionBatch batch)
+    {
+        if (batch == null)
+            return false;
+
+        if (batch.PlayerCommands != null)
+        {
+            for (int i = 0; i < batch.PlayerCommands.Count; i++)
+            {
+                if (IsExecutablePlayerCommand(batch.PlayerCommands[i]))
+                    return true;
+            }
+        }
+
+        if (batch.MonsterCommands != null)
+        {
+            for (int i = 0; i < batch.MonsterCommands.Count; i++)
+            {
+                if (IsExecutableMonsterCommand(batch.MonsterCommands[i]))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool ShouldKeepCameraAcrossBatchBoundary(
+        BattleActionBatch currentBatch,
+        List<BattleActionBatch> batches,
+        int nextStartIndex,
+        BattleActionRunner runner,
+        BattleConsecutiveActionPlan consecutiveActionPlan)
+    {
+        if (currentBatch == null || batches == null || runner == null)
+            return false;
+
+        int nextExecutableBatchIndex = GetNextExecutableBatchIndex(batches, nextStartIndex);
+        if (nextExecutableBatchIndex < 0)
+            return false;
+
+        BattleActionBatch nextBatch = batches[nextExecutableBatchIndex];
+
+        if (consecutiveActionPlan != null &&
+            consecutiveActionPlan.ContinuesAcrossBoundary(currentBatch, nextBatch))
+        {
+            return true;
+        }
+
+        if (!runner.BatchHasCrossSideHitAction(currentBatch))
+            return false;
+
+        if (nextBatch == null || !runner.BatchHasCrossSideHitAction(nextBatch))
+            return false;
+
+        string currentMonsterRuntimeId = GetSingleMonsterRuntimeId(currentBatch);
+        string nextMonsterRuntimeId = GetSingleMonsterRuntimeId(nextBatch);
+
+        // 서로 다른 몬스터의 행동 사이에는 이전 몬스터의 전투 줌을 유지하지 않는다.
+        // A 몬스터 연출이 끝나면 기본 전투 카메라(Y=1.5)로 복귀한 뒤
+        // B 몬스터의 카메라 연출이 새로 시작되어야 한다.
+        if (!string.IsNullOrEmpty(currentMonsterRuntimeId) &&
+            !string.IsNullOrEmpty(nextMonsterRuntimeId) &&
+            !string.Equals(currentMonsterRuntimeId, nextMonsterRuntimeId, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private string GetSingleMonsterRuntimeId(BattleActionBatch batch)
+    {
+        if (batch == null || batch.MonsterCommands == null || batch.MonsterCommands.Count != 1)
+            return string.Empty;
+
+        MonsterReservedCommand command = batch.MonsterCommands[0];
+        return command != null ? command.RuntimeId : string.Empty;
     }
 
     private bool NextExecutableBatchHasCrossSideHitAction(
@@ -667,23 +1653,8 @@ public class BattleTurnExecutor : MonoBehaviour
         return runner.BatchHasCrossSideHitAction(batches[nextExecutableBatchIndex]);
     }
 
-    private bool BatchHasCommands(BattleActionBatch batch)
-    {
-        if (batch == null)
-            return false;
 
-        bool hasPlayerCommand =
-            batch.PlayerCommands != null &&
-            batch.PlayerCommands.Count > 0;
-
-        bool hasMonsterCommand =
-            batch.MonsterCommands != null &&
-            batch.MonsterCommands.Count > 0;
-
-        return hasPlayerCommand || hasMonsterCommand;
-    }
-
-    private void PlaySfx(bool play, SfxType sfxType, float volume)
+    private void PlaySfx(bool play, string sfxId, float volume)
     {
         if (!play)
             return;
@@ -691,7 +1662,7 @@ public class BattleTurnExecutor : MonoBehaviour
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(sfxType, volume);
+        AudioManager.Instance.PlaySfx(sfxId, volume);
     }
 
     private void ShowBattleWarning(string message)
@@ -730,7 +1701,23 @@ public class BattleTurnExecutor : MonoBehaviour
             if (monsters[i] == null || monsters[i].RuntimeData == null)
                 continue;
 
-            monsters[i].RuntimeData.CurrentShield = 0;
+            monsters[i].RuntimeData.ClearTemporaryShield();
+        }
+    }
+
+    private void ClearActiveRelicTurnScopedStatuses()
+    {
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            if (characters[i] == null || characters[i].RuntimeData == null)
+                continue;
+
+            ActiveRelicRuntimeUtility.RemoveTurnScopedStatuses(characters[i].RuntimeData);
         }
     }
 

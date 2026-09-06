@@ -8,17 +8,19 @@ using UnityEngine.UI;
 public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IPointerClickHandler
 {
     private static readonly Color NormalIconColor = Color.white;
-    private static readonly Color HighlightBorderColor = new Color32(0x4E, 0x67, 0xDF, 0xFF);
+    private static readonly Color HighlightBorderColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
 
     [Header("UI")]
     [SerializeField] private Image borderImage;
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text nameText;
+    [SerializeField] private TMP_Text quantityText;
     [SerializeField] private GameObject emptyRoot;
     [SerializeField] private GameObject filledRoot;
     [SerializeField] private Button button;
 
     private string itemId;
+    private int quantity;
     private Action<BattleBagItemSlotUI> onFocus;
     private Action<BattleBagItemSlotUI> onExit;
     private Action<BattleBagItemSlotUI> onClick;
@@ -30,6 +32,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public string ItemId => itemId;
     public bool HasItem => !string.IsNullOrWhiteSpace(itemId);
+    public int Quantity => quantity;
     public RectTransform RectTransform => transform as RectTransform;
 
     private void Awake()
@@ -43,8 +46,24 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         }
     }
 
+    private void OnEnable()
+    {
+        AutoBind();
+        RefreshQuantityVisual();
+    }
+
     public void Setup(
         string newItemId,
+        Action<BattleBagItemSlotUI> focusCallback,
+        Action<BattleBagItemSlotUI> exitCallback,
+        Action<BattleBagItemSlotUI> clickCallback)
+    {
+        Setup(newItemId, 1, focusCallback, exitCallback, clickCallback);
+    }
+
+    public void Setup(
+        string newItemId,
+        int quantity,
         Action<BattleBagItemSlotUI> focusCallback,
         Action<BattleBagItemSlotUI> exitCallback,
         Action<BattleBagItemSlotUI> clickCallback)
@@ -52,6 +71,27 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         AutoBind();
 
         itemId = string.IsNullOrWhiteSpace(newItemId) ? "" : newItemId.Trim();
+        this.quantity = HasItem ? Mathf.Max(1, quantity) : 0;
+        onFocus = focusCallback;
+        onExit = exitCallback;
+        onClick = clickCallback;
+        isSelected = false;
+        isHovered = false;
+
+        Refresh();
+    }
+
+    public void SetupAllowZeroQuantity(
+        string newItemId,
+        int quantity,
+        Action<BattleBagItemSlotUI> focusCallback,
+        Action<BattleBagItemSlotUI> exitCallback,
+        Action<BattleBagItemSlotUI> clickCallback)
+    {
+        AutoBind();
+
+        itemId = string.IsNullOrWhiteSpace(newItemId) ? "" : newItemId.Trim();
+        this.quantity = HasItem ? Mathf.Max(0, quantity) : 0;
         onFocus = focusCallback;
         onExit = exitCallback;
         onClick = clickCallback;
@@ -66,7 +106,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         Action<BattleBagItemSlotUI> exitCallback,
         Action<BattleBagItemSlotUI> clickCallback)
     {
-        Setup("", focusCallback, exitCallback, clickCallback);
+        Setup("", 0, focusCallback, exitCallback, clickCallback);
     }
 
     public void SetSelected(bool selected)
@@ -117,6 +157,12 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
             if (nameText != null)
                 nameText.text = "";
 
+            if (quantityText != null)
+            {
+                quantityText.text = "";
+                quantityText.ForceMeshUpdate();
+            }
+
             isSelected = false;
             isHovered = false;
             RefreshHighlight();
@@ -124,14 +170,26 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         }
 
         ItemData item = null;
+        CompoundData compound = null;
         Sprite icon = null;
 
         if (DataManager.Instance != null)
         {
-            item = DataManager.Instance.ItemDatabase.Get(itemId);
+            bool isCompound = DataManager.Instance.CompoundDatabase != null &&
+                              DataManager.Instance.CompoundDatabase.TryGet(itemId, out compound);
 
-            if (DataManager.Instance.ItemIconDatabase != null)
-                DataManager.Instance.ItemIconDatabase.TryGetIcon(itemId, out icon);
+            if (isCompound)
+            {
+                if (DataManager.Instance.RelicIconDatabase != null)
+                    DataManager.Instance.RelicIconDatabase.TryGetIcon(itemId, out icon);
+            }
+            else
+            {
+                item = DataManager.Instance.ItemDatabase.Get(itemId);
+
+                if (DataManager.Instance.ItemIconDatabase != null)
+                    DataManager.Instance.ItemIconDatabase.TryGetIcon(itemId, out icon);
+            }
         }
 
         if (iconImage != null)
@@ -141,10 +199,47 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
             iconImage.color = NormalIconColor;
         }
 
-        if (nameText != null)
-            nameText.text = item != null && !string.IsNullOrWhiteSpace(item.Name) ? item.Name : itemId;
+        if (nameText != null && nameText != quantityText)
+        {
+            if (item != null && !string.IsNullOrWhiteSpace(item.Name))
+                nameText.text = GameDataLocalization.ItemName(item);
+            else if (compound != null && !string.IsNullOrWhiteSpace(compound.Name))
+                nameText.text = compound.Name;
+            else
+                nameText.text = itemId;
+        }
+
+        RefreshQuantityVisual();
 
         RefreshHighlight();
+    }
+
+    /// <summary>
+    /// 슬롯이 다시 활성화되거나 패널을 다시 열었을 때 수량 표시를 확실하게 복구합니다.
+    /// 프리팹의 Value/ValueText 오브젝트가 꺼져 있더라도 실제 아이템 슬롯이면 다시 활성화합니다.
+    /// </summary>
+    public void RefreshQuantityVisual()
+    {
+        AutoBind();
+
+        if (quantityText == null)
+            return;
+
+        if (!HasItem)
+        {
+            quantityText.text = "";
+            quantityText.ForceMeshUpdate();
+            return;
+        }
+
+        Transform valueRoot = quantityText.transform.parent;
+        if (valueRoot != null && string.Equals(valueRoot.name, "Value", StringComparison.OrdinalIgnoreCase))
+            valueRoot.gameObject.SetActive(true);
+
+        quantityText.gameObject.SetActive(true);
+        quantityText.enabled = true;
+        quantityText.text = quantity.ToString();
+        quantityText.ForceMeshUpdate();
     }
 
     private void RefreshHighlight()
@@ -181,8 +276,14 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         if (iconImage == borderImage)
             iconImage = FindChildImageExcept(borderImage, "Icon", "ItemIcon", "ItemImage", "Image");
 
+        if (quantityText == null)
+            quantityText = FindChildTextByName("ValueText", "CountText", "QuantityText", "Count", "Value");
+
         if (nameText == null)
             nameText = FindChildTextByName("Name", "ItemName", "Text", "Text (TMP)");
+
+        if (nameText == quantityText)
+            nameText = null;
     }
 
     private Image FindChildImageByName(params string[] names)
@@ -253,7 +354,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
                 return text;
         }
 
-        return GetComponentInChildren<TMP_Text>(true);
+        return null;
     }
 
     private Transform FindDeepChild(Transform root, string childName)
@@ -309,8 +410,8 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void OnSelect(BaseEventData eventData)
     {
-        // ��ư ����/Ŭ�����δ� ������ ����� �ʽ��ϴ�.
-        // ���� ������ PointerEnter ���¿����� ǥ���մϴ�.
+        // 버튼 선택/클릭으로는 툴팁을 띄우지 않습니다.
+        // 가방 툴팁은 PointerEnter 상태에서만 표시합니다.
     }
 
     public void OnPointerClick(PointerEventData eventData)

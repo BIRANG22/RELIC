@@ -12,6 +12,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     [Header("Summary UI")]
     [SerializeField] private Image skillIconImage;
+
     [SerializeField] private TMP_Text skillNameText;
     [SerializeField] private Image skillRangeImage;
     [SerializeField] private TMP_Text skillCostTypeText;
@@ -35,6 +36,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private Color disabledTextColor = new Color(1f, 1f, 1f, 0.5f);
     [SerializeField] private Color usableImageColor = Color.white;
     [SerializeField] private Color emptyImageColor = new Color(1f, 1f, 1f, 0.15f);
+    [SerializeField] private Color insufficientResourceColor = new Color32(0x55, 0x55, 0x55, 0xFF);
 
     [Header("Hover Breath Effect")]
     [SerializeField] private RectTransform scaleTarget;
@@ -52,7 +54,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     [Header("Sound")]
     [SerializeField] private bool playClickSfx = true;
-    [SerializeField] private SfxType clickSfxType = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfxId = AudioIds.Sfx.NormalButtonClick;
 
     private SkillListPanel owner;
     private string skillId;
@@ -63,6 +65,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private RectTransform rectTransform;
     private string detailText = "";
     private bool canClick;
+    private int displayedCostValue;
     private int lastSelectFrame = -1;
     private Vector3 baseScale = Vector3.one;
     private bool hasCapturedBaseScale;
@@ -70,6 +73,9 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private bool hadSortingCanvas;
     private bool originalOverrideSorting;
     private int originalSortingOrder;
+
+    private bool hasCachedAffordability;
+    private bool cachedCanAfford = true;
 
     private void Awake()
     {
@@ -101,7 +107,18 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void Update()
     {
-        ApplyScale(false);
+        // 예약 비용과 고유 자원 예약량은 슬롯 생성 이후에도 변할 수 있습니다.
+        // 매 프레임 UI 전체를 다시 칠하지 않고, 실제 사용 가능 여부가 바뀐 순간만 갱신합니다.
+        bool canAfford = CanAffordDisplayedCost();
+        if (!hasCachedAffordability || canAfford != cachedCanAfford)
+        {
+            cachedCanAfford = canAfford;
+            hasCachedAffordability = true;
+            ApplyVisualState();
+        }
+
+        if (NeedsScaleAnimation())
+            ApplyScale(false);
     }
 
     private void OnDisable()
@@ -155,6 +172,8 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             ? displayedCostValue
             : skillData.ResourceCostValue;
 
+        this.displayedCostValue = Mathf.Max(0, payAmount);
+
         ApplySkillMasterData(skillData, displayedCostValue);
 
         detailText = BuildDetailText(skillData, payAmount);
@@ -176,6 +195,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     }
 
     public bool CanSelectByKeyboard => canClick && skillData != null;
+    public bool IsPointerOver => isPointerOver;
     public string SkillId => skillId;
     public SkillMasterData SkillData => skillData;
     public string DetailText => detailText;
@@ -210,7 +230,9 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             skillCostImage.enabled = false;
 
         if (skillNameText != null)
-            skillNameText.text = string.IsNullOrWhiteSpace(data.Name) ? data.SkillId : data.Name;
+            skillNameText.text = string.IsNullOrWhiteSpace(data.Name)
+                ? data.SkillId
+                : GameDataLocalization.SkillName(data);
 
         if (skillCostTypeText != null)
             skillCostTypeText.text = GetReferenceResourceDisplayName(data.ReferenceResource);
@@ -224,8 +246,12 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         BindMissingReferences();
 
+        displayedCostValue = Mathf.Max(0, costValue);
+
         if (skillCostValueText != null)
-            skillCostValueText.text = Mathf.Max(0, costValue).ToString();
+            skillCostValueText.text = displayedCostValue.ToString();
+
+        ApplyVisualState();
     }
 
     private void SetEmpty()
@@ -234,6 +260,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         skillData = null;
         runtimeData = null;
         detailText = "";
+        displayedCostValue = 0;
         isPointerOver = false;
         isSelected = false;
 
@@ -255,7 +282,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             skillCostImage.enabled = false;
 
         if (skillNameText != null)
-            skillNameText.text = "스킬 없음";
+            skillNameText.text = GameLocalization.Get("battle.no_skill", "스킬 없음");
 
         if (skillCostTypeText != null)
             skillCostTypeText.text = "";
@@ -345,10 +372,16 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private void ApplyVisualState()
     {
         bool hasSkill = skillData != null;
+        bool canAfford = CanAffordDisplayedCost();
+        bool isResourceInsufficient = hasSkill && !canAfford;
+        cachedCanAfford = canAfford;
+        hasCachedAffordability = true;
 
         if (backgroundImage != null)
         {
-            if (isSelected && hasSkill)
+            if (isResourceInsufficient)
+                backgroundImage.color = insufficientResourceColor;
+            else if (isSelected && hasSkill)
                 backgroundImage.color = selectedBackgroundColor;
             else if (isPointerOver && hasSkill)
                 backgroundImage.color = hoverBackgroundColor;
@@ -360,7 +393,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         Color imageColor = hasSkill ? usableImageColor : emptyImageColor;
 
         if (skillNameText != null)
-            skillNameText.color = textColor;
+            skillNameText.color = isResourceInsufficient ? insufficientResourceColor : textColor;
 
         if (skillCostTypeText != null)
             skillCostTypeText.color = textColor;
@@ -368,13 +401,34 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (skillCostValueText != null)
             skillCostValueText.color = textColor;
 
-        Color skillIconColor = hasSkill
-            ? SkillRarityUtility.GetSkillIconColor(skillData.SkillId, usableImageColor)
-            : emptyImageColor;
+        Color skillIconColor = isResourceInsufficient
+            ? insufficientResourceColor
+            : hasSkill
+                ? usableImageColor
+                : emptyImageColor;
 
         ApplyImageColor(skillIconImage, skillIconColor);
+        SkillUpgradeMarkStyle.ApplyShared(skillIconImage, hasSkill ? skillData : null);
         ApplyImageColor(skillRangeImage, imageColor);
         ApplyImageColor(skillCostImage, imageColor);
+    }
+
+
+    private bool CanAffordDisplayedCost()
+    {
+        if (skillData == null || runtimeData == null)
+            return true;
+
+        int cost = Mathf.Max(0, displayedCostValue);
+
+        return skillData.ReferenceResource switch
+        {
+            ReferenceResource.HP => runtimeData.CanReserveHP(cost),
+            ReferenceResource.Cost => runtimeData.CanReserveCost(cost),
+            ReferenceResource.MovePoint => runtimeData.CanReserveCost(cost),
+            ReferenceResource.UniqueResource => runtimeData.CanReserveResource(cost),
+            _ => true
+        };
     }
 
     private void ApplyImageColor(Image targetImage, Color color)
@@ -413,6 +467,20 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         float t = 1f - Mathf.Exp(-scaleLerpSpeed * Time.unscaledDeltaTime);
         scaleTarget.localScale = Vector3.Lerp(scaleTarget.localScale, targetScale, t);
+    }
+
+    private bool NeedsScaleAnimation()
+    {
+        if (scaleTarget == null)
+            return false;
+
+        if (useHoverBreathEffect && isPointerOver && skillData != null && !isSelected)
+            return true;
+
+        CaptureBaseScaleOnce();
+        float multiplier = useSelectedScale && isSelected && skillData != null ? selectedScale : 1f;
+        Vector3 targetScale = baseScale * multiplier;
+        return (scaleTarget.localScale - targetScale).sqrMagnitude > 0.000001f;
     }
 
     private void ResetScale()
@@ -477,7 +545,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (!playClickSfx || AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(clickSfxType);
+        AudioManager.Instance.PlaySfx(clickSfxId);
     }
 
 
@@ -542,11 +610,11 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (data == null)
             return "";
 
-        string text = !string.IsNullOrWhiteSpace(data.ToolTip)
-            ? data.ToolTip
-            : data.Details;
-
-        return SkillTooltipFormatter.Format(data, text, runtimeData, payAmount);
+        // SkillListPanel의 detailsBackground에는 Details만 그대로 표시합니다.
+        // ValueRate를 설명 앞에 자동으로 붙이지 않습니다.
+        return !string.IsNullOrWhiteSpace(data.Details)
+            ? GameDataLocalization.SkillDetails(data)
+            : "효과 설명이 없습니다.";
     }
 
     private void BindMissingReferences()

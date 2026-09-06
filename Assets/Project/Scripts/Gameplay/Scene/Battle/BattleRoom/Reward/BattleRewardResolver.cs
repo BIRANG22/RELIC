@@ -44,9 +44,43 @@ public class BattleRewardResolver : MonoBehaviour
             : uniqueMonsterCount;
 
         TrimUniqueItemRewardsToMonsterCount(rewards, uniqueItemLimit);
-        AddSkillReward(rewards);
+
+        BattleMapData dropSettings = GetCurrentBattleMapDropSettings();
+        AddBattleMapRelicReward(rewards, dropSettings);
+        AddMemoryReward(rewards, dropSettings);
+        MergeDuplicateItemRewards(rewards);
 
         return rewards;
+    }
+
+    private void MergeDuplicateItemRewards(List<BattleRewardData> rewards)
+    {
+        if (rewards == null || rewards.Count <= 1)
+            return;
+
+        Dictionary<string, BattleRewardData> firstRewardByItemId = new();
+
+        for (int i = 0; i < rewards.Count; i++)
+        {
+            BattleRewardData reward = rewards[i];
+
+            if (reward == null || reward.Type != BattleRewardType.Item || string.IsNullOrWhiteSpace(reward.RewardId))
+                continue;
+
+            string itemId = reward.RewardId.Trim();
+            reward.RewardId = itemId;
+            reward.Amount = Mathf.Max(1, reward.Amount);
+
+            if (!firstRewardByItemId.TryGetValue(itemId, out BattleRewardData existing))
+            {
+                firstRewardByItemId.Add(itemId, reward);
+                continue;
+            }
+
+            existing.Amount += Mathf.Max(1, reward.Amount);
+            rewards.RemoveAt(i);
+            i--;
+        }
     }
 
     private int GetCurrentBattleMonsterUnitCount()
@@ -142,11 +176,10 @@ public class BattleRewardResolver : MonoBehaviour
         if (monster == null)
             return;
 
-        Debug.Log($"[BattleRewardResolver] Monster:{monster.MonsterId} / Key:{monsterKey} / Remnant:{monster.MinRemnant}-{monster.MaxRemnant} / Item:{monster.UniqueItemId}({monster.UniqueItemChance}) / Relic:{monster.RelicChance}");
+        Debug.Log($"[BattleRewardResolver] Monster:{monster.MonsterId} / Key:{monsterKey} / Remnant:{monster.MinRemnant}-{monster.MaxRemnant} / Item:{monster.UniqueItemId}({monster.UniqueItemChance})");
 
         AddRemnant(monster, rewards);
         AddUniqueItem(monster, rewards, monsterKey, uniqueItemResolvedMonsterKeys);
-        AddRelic(monster, rewards);
     }
 
     private void AddRemnant(MonsterRuntimeData monster, List<BattleRewardData> rewards)
@@ -158,6 +191,7 @@ public class BattleRewardResolver : MonoBehaviour
             return;
 
         int amount = BattleRandom.Range(min, max + 1);
+        amount = BattleEquipmentEffectService.ModifyBattleRewardCurrencyAmount(amount);
 
         if (amount <= 0)
             return;
@@ -222,22 +256,47 @@ public class BattleRewardResolver : MonoBehaviour
             SourceKey = uniqueRewardKey,
             Amount = 1,
             Icon = icon,
-            Name = item != null ? item.Name : uniqueItemId,
-            Description = item != null ? item.Desc : "",
-            Value = item != null ? item.Value : 0
+            Name = item != null ? GameDataLocalization.ItemName(item) : uniqueItemId,
+            Description = item != null ? GameDataLocalization.ItemDescription(item) : "",
+            Value = 0
         });
     }
 
-    private void AddRelic(MonsterRuntimeData monster, List<BattleRewardData> rewards)
+    private void AddBattleMapRelicReward(
+        List<BattleRewardData> rewards,
+        BattleMapData dropSettings)
     {
-        if (!IsChanceSuccess(monster.RelicChance))
+        if (dropSettings == null || DataManager.Instance == null)
             return;
 
-        RelicData relic = GetRandomAvailableRelic(rewards);
+        if (!TryRollRelicRarity(dropSettings, out RelicRarity rarity))
+        {
+            Debug.LogWarning($"[BattleRewardResolver] 유물 등급 확률 합계가 0입니다. BattleMapId:{dropSettings.BattleMapId}");
+            return;
+        }
+
+        // 전투 보상 유물은 항상 1개를 생성합니다.
+        // 우선 아직 보유하지 않은 같은 등급 유물을 선택하고, 해당 등급을 모두 보유했다면
+        // 같은 등급의 유물 전체에서 다시 선택해 보상 자체가 사라지지 않도록 합니다.
+        RelicData relic = GetRandomRelicByRarity(rewards, rarity, true);
 
         if (relic == null)
         {
-            Debug.Log("[BattleRewardResolver] 획득 가능한 새 유물이 없습니다.");
+            relic = GetRandomRelicByRarity(rewards, rarity, false);
+
+            if (relic != null)
+            {
+                Debug.LogWarning(
+                    $"[BattleRewardResolver] {rarity} 등급의 미보유 유물이 없어 중복 가능한 풀에서 유물을 선택합니다. " +
+                    $"BattleMapId:{dropSettings.BattleMapId} / RelicId:{relic.FragmentId}");
+            }
+        }
+
+        if (relic == null)
+        {
+            Debug.LogWarning(
+                $"[BattleRewardResolver] {rarity} 등급 유물을 찾을 수 없습니다. " +
+                $"BattleMapId:{dropSettings.BattleMapId}");
             return;
         }
 
@@ -250,23 +309,64 @@ public class BattleRewardResolver : MonoBehaviour
         {
             Type = BattleRewardType.Relic,
             RewardId = relic.FragmentId,
-            SourceKey = $"Relic|{relic.FragmentId}",
+            SourceKey = $"Relic|{dropSettings.BattleMapId}|{relic.FragmentId}",
             Amount = 1,
             Icon = icon,
-            Name = relic.Name,
-            Description = relic.EffectDesc,
+            Name = GameDataLocalization.RelicName(relic),
+            Description = GameDataLocalization.RelicEffectDescription(relic),
             Value = 0
         });
     }
 
-    private void AddSkillReward(List<BattleRewardData> rewards)
+    private bool TryRollRelicRarity(BattleMapData mapData, out RelicRarity rarity)
     {
-        if (DataManager.Instance == null)
-            return;
+        rarity = RelicRarity.None;
 
-        BattleMapData dropSettings = GetCurrentBattleMapDropSettings();
+        if (mapData == null)
+            return false;
 
-        if (dropSettings == null)
+        float common = Mathf.Max(0f, mapData.RelicCommonChance);
+        float rare = Mathf.Max(0f, mapData.RelicRareChance);
+        float epic = Mathf.Max(0f, mapData.RelicEpicChance);
+        float unique = Mathf.Max(0f, mapData.RelicUniqueChance);
+        float total = common + rare + epic + unique;
+
+        if (total <= 0f)
+            return false;
+
+        float roll = BattleRandom.Value() * total;
+
+        if (roll < common)
+        {
+            rarity = RelicRarity.Common;
+            return true;
+        }
+
+        roll -= common;
+
+        if (roll < rare)
+        {
+            rarity = RelicRarity.Rare;
+            return true;
+        }
+
+        roll -= rare;
+
+        if (roll < epic)
+        {
+            rarity = RelicRarity.Epic;
+            return true;
+        }
+
+        rarity = RelicRarity.Unique;
+        return true;
+    }
+
+    private void AddMemoryReward(
+        List<BattleRewardData> rewards,
+        BattleMapData dropSettings)
+    {
+        if (DataManager.Instance == null || dropSettings == null)
             return;
 
         IReadOnlyList<SkillMasterData> candidates = GetAvailableSkillRewardCandidates(rewards);
@@ -292,7 +392,7 @@ public class BattleRewardResolver : MonoBehaviour
             SourceKey = $"Skill|{dropSettings.BattleMapId}|{skill.SkillId}",
             Amount = 1,
             Icon = icon,
-            Name = string.IsNullOrWhiteSpace(skill.Name) ? skill.SkillId : skill.Name,
+            Name = string.IsNullOrWhiteSpace(skill.Name) ? skill.SkillId : GameDataLocalization.SkillName(skill),
             Description = BuildSkillRewardDescription(skill),
             Value = 0
         });
@@ -409,13 +509,11 @@ public class BattleRewardResolver : MonoBehaviour
         if (skill == null)
             return "";
 
-        string rarityName = SkillRarityUtility.GetDisplayName(skill.Rarity);
-        string description = !string.IsNullOrWhiteSpace(skill.Details)
-            ? skill.Details
-            : skill.ToolTip;
+        string rarityName = SkillRarityUtility.GetDisplayName(skill);
+        string description = GameDataLocalization.SkillDetails(skill);
 
         if (string.IsNullOrWhiteSpace(description))
-            description = "획득 가능한 스킬입니다.";
+            description = GameLocalization.Get("battle.available_skill", "획득 가능한 스킬입니다.");
 
         if (string.IsNullOrWhiteSpace(rarityName))
             return description;
@@ -463,7 +561,10 @@ public class BattleRewardResolver : MonoBehaviour
         return BattleRandom.Value() <= chance;
     }
 
-    private RelicData GetRandomAvailableRelic(List<BattleRewardData> pendingRewards)
+    private RelicData GetRandomRelicByRarity(
+        List<BattleRewardData> pendingRewards,
+        RelicRarity targetRarity,
+        bool excludeUnavailable)
     {
         if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
             return null;
@@ -473,7 +574,9 @@ public class BattleRewardResolver : MonoBehaviour
         if (allRelics == null || allRelics.Count == 0)
             return null;
 
-        HashSet<string> unavailableRelicIds = GetUnavailableRelicIds(pendingRewards);
+        HashSet<string> unavailableRelicIds = excludeUnavailable
+            ? GetUnavailableRelicIds(pendingRewards)
+            : null;
         List<RelicData> candidates = new();
 
         for (int i = 0; i < allRelics.Count; i++)
@@ -483,9 +586,15 @@ public class BattleRewardResolver : MonoBehaviour
             if (relic == null || string.IsNullOrWhiteSpace(relic.FragmentId))
                 continue;
 
+            if (!RelicRarityUtility.TryParseChestRarity(relic.Rarity, out RelicRarity relicRarity))
+                continue;
+
+            if (relicRarity != targetRarity)
+                continue;
+
             string relicId = relic.FragmentId.Trim();
 
-            if (unavailableRelicIds.Contains(relicId))
+            if (unavailableRelicIds != null && unavailableRelicIds.Contains(relicId))
                 continue;
 
             candidates.Add(relic);

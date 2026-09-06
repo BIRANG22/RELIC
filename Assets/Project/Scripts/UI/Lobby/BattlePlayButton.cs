@@ -6,20 +6,13 @@ public class BattlePlayButton : MonoBehaviour
 {
     [Header("Button")]
     [SerializeField] private Button button;
+    [SerializeField] private LobbyQuestGate questGate;
 
-    [Header("Stage Carousel")]
-    [Tooltip("½ºÅ×ÀÌÁö ¹öÆ°À» Ä³·¯¼¿ ¹æ½ÄÀ¸·Î »ç¿ëÇÒ ¶§ ¿¬°áÇÕ´Ï´Ù. ºñ¿öµÎ¸é ¾À¿¡¼­ ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
-    [SerializeField] private LobbyStageButtonCarousel stageButtonCarousel;
-    [Tooltip("Áß¾Ó¿¡ ÀÖ´Â ½ºÅ×ÀÌÁö°¡ Àá°Ü ÀÖÀ» ¶§ PlayButtonÀ» ´©¸£¸é ÀÔÀåÀ» ¸·°í °æ°í¸¦ Ç¥½ÃÇÕ´Ï´Ù.")]
-    [SerializeField] private bool blockLockedCarouselStage = true;
-
-    [Header("Erosion Entry Lock")]
-    [Tooltip("Ä§½Äµµ ¼±ÅÃ Ä³·¯¼¿ÀÔ´Ï´Ù. ºñ¿öµÎ¸é ¾À¿¡¼­ ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
-    [SerializeField] private ErosionSelectCarousel erosionSelectCarousel;
-    [Tooltip("Ã¼Å©ÇÏ¸é Erosion_0ÀÌ ¾Æ´Ñ Erosion_1~5 ¼±ÅÃ »óÅÂ¿¡¼­´Â °ÔÀÓ ÀÔÀåÀ» ¸·½À´Ï´Ù.")]
-    [SerializeField] private bool blockNonZeroErosionEntry = true;
-    [Tooltip("ÀÔÀåÀÌ °¡´ÉÇÑ Ä§½Äµµ ÀÎµ¦½ºÀÔ´Ï´Ù. ±âº»°ª 0Àº Erosion_0ÀÔ´Ï´Ù.")]
-    [SerializeField] private int allowedErosionIndex = 0;
+    [Header("Direct Battle Target")]
+    [Tooltip("ìŠ¤í…Œì´ì§€ ì„ íƒ UIë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šì„ ë•Œ PlayButtonì´ ë°”ë¡œ ì§„ì…í•  ì±•í„°ì…ë‹ˆë‹¤.")]
+    [SerializeField] private string directChapterId = "Chapter1";
+    [Tooltip("ìŠ¤í…Œì´ì§€ ì„ íƒ UIë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šì„ ë•Œ PlayButtonì´ ë°”ë¡œ ì§„ì…í•  ìŠ¤í…Œì´ì§€ì…ë‹ˆë‹¤.")]
+    [SerializeField] private string directStageId = "Stage1";
 
     [Header("Option")]
     [SerializeField] private bool checkMapSelected = true;
@@ -28,17 +21,18 @@ public class BattlePlayButton : MonoBehaviour
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
-    [SerializeField] private string lockedStageEnterMessage = "¾ÆÁ÷ ÀÔÀåÇÒ ¼ö ¾ø´Â ±¸¿ªÀÔ´Ï´Ù.";
-    [SerializeField] private string lockedErosionEnterMessage = "ÇöÀç´Â ±âº» ³­ÀÌµµ¸¸ ÀÔÀåÇÒ ¼ö ÀÖ½À´Ï´Ù.";
-    [SerializeField] private string mapNotSelectedMessage = "½ºÅ×ÀÌÁö¸¦ ¼±ÅÃÇØ¾ß ÇÕ´Ï´Ù.";
-    [SerializeField] private string partyEmptyMessage = "Ä³¸¯ÅÍ¸¦ Æí¼ºÇØ¾ß ÇÕ´Ï´Ù.";
-    [SerializeField] private string partyNotFullMessage = "Ä³¸¯ÅÍ 3¸íÀ» ¸ğµÎ Æí¼ºÇØ¾ß ÇÕ´Ï´Ù. ÇöÀç {0}/{1}";
-    [SerializeField] private string dataManagerMissingMessage = "µ¥ÀÌÅÍ ¸Å´ÏÀú°¡ ¾ø½À´Ï´Ù.";
-    [SerializeField] private string gameManagerMissingMessage = "°ÔÀÓ ¸Å´ÏÀú°¡ ¾ø½À´Ï´Ù.";
+    [SerializeField] private string mapNotSelectedMessage = "ìŠ¤í…Œì´ì§€ë¥¼ ì„ íƒí•´ì•¼ í•©ë‹ˆë‹¤.";
+    [SerializeField] private string partyEmptyMessage = "ìºë¦­í„°ë¥¼ í¸ì„±í•´ì•¼ í•©ë‹ˆë‹¤.";
+    [SerializeField] private string partyNotFullMessage = "ìºë¦­í„° 3ëª…ì„ ëª¨ë‘ í¸ì„±í•´ì•¼ í•©ë‹ˆë‹¤. í˜„ì¬ {0}/{1}";
+    [SerializeField] private string dataManagerMissingMessage = "ë°ì´í„° ë§¤ë‹ˆì €ê°€ ì—†ìŠµë‹ˆë‹¤.";
+    [SerializeField] private string gameManagerMissingMessage = "ê²Œì„ ë§¤ë‹ˆì €ê°€ ì—†ìŠµë‹ˆë‹¤.";
+    [SerializeField] private string networkClientStartBlockedMessage = "Only the host can start in multiplayer lobby.";
+    [SerializeField] private string networkBattleStartSyncFailedMessage = "Failed to synchronize battle start.";
+    [SerializeField] private string elricDialogueRequiredMessage = "ì—˜ë¦­ê³¼ ëŒ€í™”ë¥¼ ë§ˆì¹œ ë’¤ íƒì‚¬ë¥¼ ì‹œì‘í•´ ì£¼ì„¸ìš”.";
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     private bool isProcessing;
 
@@ -47,9 +41,23 @@ public class BattlePlayButton : MonoBehaviour
         if (button == null)
             button = GetComponent<Button>();
 
+        if (questGate == null)
+        {
+            questGate = GetComponent<LobbyQuestGate>();
+            if (questGate == null)
+                questGate = gameObject.AddComponent<LobbyQuestGate>();
+
+            questGate.RequiredProgress = LobbyTutorialProgress.FirstExpeditionAssigned;
+        }
+
+        // íƒì‚¬ ì‹œì‘ ë²„íŠ¼ì€ ì ê¸ˆ ìƒíƒœì—ì„œë„ í´ë¦­ì„ ë°›ì•„ ì•ˆë‚´ ë¬¸êµ¬ë¥¼ í‘œì‹œí•´ì•¼ í•©ë‹ˆë‹¤.
+        if (questGate != null)
+        {
+            questGate.UpdateButtonInteractable = false;
+            questGate.RequiredProgress = LobbyTutorialProgress.FirstExpeditionAssigned;
+        }
+
         FindWarningUIIfMissing();
-        FindStageCarouselIfMissing();
-        FindErosionCarouselIfMissing();
     }
 
     private void OnValidate()
@@ -63,6 +71,12 @@ public class BattlePlayButton : MonoBehaviour
         if (isProcessing)
             return;
 
+        if (questGate != null && !questGate.CanExecute())
+        {
+            ShowWarning(elricDialogueRequiredMessage);
+            return;
+        }
+
         isProcessing = true;
 
         if (button != null)
@@ -72,15 +86,9 @@ public class BattlePlayButton : MonoBehaviour
         {
             PlayClickSound();
 
-            if (IsLockedCarouselStageCentered())
+            if (!CanLocalPlayerStartBattle())
             {
-                ShowWarning(lockedStageEnterMessage);
-                return;
-            }
-
-            if (IsBlockedErosionSelected())
-            {
-                ShowWarning(lockedErosionEnterMessage);
+                ShowWarning(networkClientStartBlockedMessage);
                 return;
             }
 
@@ -91,10 +99,12 @@ public class BattlePlayButton : MonoBehaviour
                 return;
             }
 
+            EnsureDirectBattleMapRuntime();
+
             if (checkMapSelected && !IsMapSelected())
             {
                 ShowWarning(mapNotSelectedMessage);
-                Debug.LogWarning("[BattlePlayButton] ¼±ÅÃµÈ Ã©ÅÍ/½ºÅ×ÀÌÁö°¡ ¾ø½À´Ï´Ù.");
+                Debug.LogWarning("[BattlePlayButton] ì§ì ‘ ì§„ì…í•  ì±•í„°/ìŠ¤í…Œì´ì§€ ê°’ì´ ì—†ìŠµë‹ˆë‹¤.");
                 return;
             }
 
@@ -108,7 +118,19 @@ public class BattlePlayButton : MonoBehaviour
                 return;
             }
 
-            await GameManager.Instance.StateMachine.ChangeState(GameStateType.Battle);
+            LobbyBattleEntryService.CommitRuntimeStateContributorsForBattleStart();
+
+            if (!TryBroadcastNetworkBattleStart(out LobbyBattleStartCommand battleStartCommand))
+                return;
+
+            LobbyBattleEntryResult entryResult =
+                await LobbyBattleEntryService.EnterBattleAsync(battleStartCommand);
+            if (!entryResult.Succeeded)
+            {
+                Debug.LogWarning($"[BattlePlayButton] Failed to enter battle. {entryResult.Error}");
+                ShowWarning(entryResult.Error);
+                return;
+            }
         }
         finally
         {
@@ -130,27 +152,30 @@ public class BattlePlayButton : MonoBehaviour
         AudioManager.Instance.PlaySfx(clickSfx);
     }
 
-    private bool IsLockedCarouselStageCentered()
+    private void EnsureDirectBattleMapRuntime()
     {
-        if (!blockLockedCarouselStage)
-            return false;
+        if (DataManager.Instance == null || DataManager.Instance.MapRuntimeStore == null)
+            return;
 
-        FindStageCarouselIfMissing();
+        if (string.IsNullOrWhiteSpace(directChapterId) || string.IsNullOrWhiteSpace(directStageId))
+            return;
 
-        return stageButtonCarousel != null && stageButtonCarousel.IsCurrentStageLocked();
-    }
+        MapRuntimeData current = DataManager.Instance.MapRuntimeStore.Get();
+        if (current != null &&
+            string.Equals(current.SelectedChapterId, directChapterId.Trim(), System.StringComparison.Ordinal) &&
+            string.Equals(current.CurrentStage, directStageId.Trim(), System.StringComparison.Ordinal))
+        {
+            return;
+        }
 
-    private bool IsBlockedErosionSelected()
-    {
-        if (!blockNonZeroErosionEntry)
-            return false;
-
-        FindErosionCarouselIfMissing();
-
-        if (erosionSelectCarousel == null)
-            return false;
-
-        return erosionSelectCarousel.CurrentIndex != allowedErosionIndex;
+        DataManager.Instance.MapRuntimeStore.Set(new MapRuntimeData
+        {
+            SelectedChapterId = directChapterId.Trim(),
+            CurrentStage = directStageId.Trim(),
+            CurrentMapId = string.Empty,
+            CurrentSceneName = SceneName.Battle,
+            IsRunInitialized = false
+        });
     }
 
     private bool CanStartWithCurrentParty()
@@ -175,14 +200,14 @@ public class BattlePlayButton : MonoBehaviour
             if (currentCount < requiredCount)
             {
                 ShowWarning(FormatPartyNotFullMessage(currentCount, requiredCount));
-                Debug.LogWarning($"[BattlePlayButton] ÆÄÆ¼ ÀÎ¿øÀÌ ºÎÁ·ÇÕ´Ï´Ù. Current:{currentCount} / Required:{requiredCount}");
+                Debug.LogWarning($"[BattlePlayButton] íŒŒí‹° ì¸ì›ì´ ë¶€ì¡±í•©ë‹ˆë‹¤. Current:{currentCount} / Required:{requiredCount}");
                 return false;
             }
         }
         else if (currentCount <= 0)
         {
             ShowWarning(partyEmptyMessage);
-            Debug.LogWarning("[BattlePlayButton] ÆÄÆ¼¿¡ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[BattlePlayButton] íŒŒí‹°ì— ìºë¦­í„°ê°€ ì—†ìŠµë‹ˆë‹¤.");
             return false;
         }
 
@@ -209,7 +234,7 @@ public class BattlePlayButton : MonoBehaviour
     private string FormatPartyNotFullMessage(int currentCount, int requiredCount)
     {
         if (string.IsNullOrWhiteSpace(partyNotFullMessage))
-            return $"Ä³¸¯ÅÍ {requiredCount}¸íÀ» ¸ğµÎ Æí¼ºÇØ¾ß ÇÕ´Ï´Ù. ÇöÀç {currentCount}/{requiredCount}";
+            return $"ìºë¦­í„° {requiredCount}ëª…ì„ ëª¨ë‘ í¸ì„±í•´ì•¼ í•©ë‹ˆë‹¤. í˜„ì¬ {currentCount}/{requiredCount}";
 
         if (partyNotFullMessage.Contains("{0}") || partyNotFullMessage.Contains("{1}"))
             return string.Format(partyNotFullMessage, currentCount, requiredCount);
@@ -247,22 +272,6 @@ public class BattlePlayButton : MonoBehaviour
         warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
     }
 
-    private void FindStageCarouselIfMissing()
-    {
-        if (stageButtonCarousel != null)
-            return;
-
-        stageButtonCarousel = FindFirstObjectByType<LobbyStageButtonCarousel>(FindObjectsInactive.Include);
-    }
-
-    private void FindErosionCarouselIfMissing()
-    {
-        if (erosionSelectCarousel != null)
-            return;
-
-        erosionSelectCarousel = FindFirstObjectByType<ErosionSelectCarousel>(FindObjectsInactive.Include);
-    }
-
     private bool IsMapSelected()
     {
         MapRuntimeData mapData = DataManager.Instance.MapRuntimeStore.Get();
@@ -270,5 +279,75 @@ public class BattlePlayButton : MonoBehaviour
         return mapData != null &&
                !string.IsNullOrWhiteSpace(mapData.SelectedChapterId) &&
                !string.IsNullOrWhiteSpace(mapData.CurrentStage);
+    }
+
+    private bool TryBroadcastNetworkBattleStart(out LobbyBattleStartCommand command)
+    {
+        command = null;
+        SteamLobbySharedStateSynchronizer sharedStateSynchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        SteamLobbyBattleStartSynchronizer battleStartSynchronizer =
+            SteamLobbyBattleStartSynchronizer.Instance;
+
+        bool networkBattleStartRequired =
+            (sharedStateSynchronizer != null && sharedStateSynchronizer.IsNetworkSharedStateActive) ||
+            (battleStartSynchronizer != null && battleStartSynchronizer.IsNetworkBattleStartActive);
+        if (!networkBattleStartRequired)
+            return true;
+
+        if (battleStartSynchronizer == null ||
+            !battleStartSynchronizer.IsNetworkBattleStartActive)
+        {
+            ShowWarning(networkBattleStartSyncFailedMessage);
+            return false;
+        }
+
+        if (!battleStartSynchronizer.CanLocalPlayerStartBattle())
+        {
+            ShowWarning(networkClientStartBlockedMessage);
+            return false;
+        }
+
+        if (sharedStateSynchronizer == null)
+        {
+            ShowWarning(networkBattleStartSyncFailedMessage);
+            return false;
+        }
+
+        LobbySharedStateSnapshot snapshot =
+            sharedStateSynchronizer.PublishHostSnapshotNow();
+        if (snapshot == null || snapshot.Revision <= 0)
+        {
+            ShowWarning(networkBattleStartSyncFailedMessage);
+            return false;
+        }
+
+        MapRuntimeData mapRuntime = DataManager.Instance?.MapRuntimeStore?.Get();
+        if (!battleStartSynchronizer.TryBroadcastBattleStart(
+                snapshot,
+                mapRuntime,
+                out command))
+        {
+            ShowWarning(networkBattleStartSyncFailedMessage);
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool CanLocalPlayerStartBattle()
+    {
+        SteamLobbyBattleStartSynchronizer battleStartSynchronizer =
+            SteamLobbyBattleStartSynchronizer.Instance;
+        if (battleStartSynchronizer != null &&
+            !battleStartSynchronizer.CanLocalPlayerStartBattle())
+        {
+            return false;
+        }
+
+        SteamLobbySharedStateSynchronizer sharedStateSynchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return sharedStateSynchronizer == null ||
+               sharedStateSynchronizer.CanLocalPlayerMutateHostOnlyState();
     }
 }

@@ -33,7 +33,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     [SerializeField] private bool toggleIfAlreadyOpen = true;
 
     [Header("Opened Panel Front Sorting")]
-    [SerializeField] private bool bringOpenedPanelToFront = true;
     [SerializeField] private bool forceOpenedPanelCanvasSorting = true;
     [SerializeField] private int openedPanelSortingOrder = 1000;
     [SerializeField] private bool addGraphicRaycasterToOpenedPanel = true;
@@ -58,12 +57,21 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     [Header("Sound")]
     [SerializeField] private bool playHoverSound = true;
-    [SerializeField] private SfxType hoverSfx = SfxType.NormalButtonHover;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string hoverSfx = AudioIds.Sfx.NormalButtonHover;
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
+
+    [Header("Panel Open Close Sound")]
+    [SerializeField] private bool playPanelOpenCloseSound = false;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string panelOpenSfx = AudioIds.Sfx.BagOpen;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string panelCloseSfx = AudioIds.Sfx.BagClose;
+    [SerializeField, Range(0f, 1f)] private float panelOpenCloseSfxVolume = 1f;
 
     private const string DefaultMenuPanelObjectName = "MenuPanel";
     private const string DefaultMenuButtonObjectName = "MenuButton";
+    private const string DefaultMenuRootObjectName = "MenuRoot";
+    private const string DefaultLobbyMenuRootObjectName = "Setting_upper";
+    private const string DefaultBattlePlayerHudRootName = "PlayerHUD_Root";
 
     private static UIPanelButton currentOpenedPanelOwner;
 
@@ -102,6 +110,8 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     private Coroutine panelImageFadeCoroutine;
     private int lastClickSoundFrame = -1;
     private float originalPanelAlpha = 1f;
+    private bool usesBattlePlayerHudOpenOrigin;
+    private int lastMoveToggleFrame = -1;
 
     public static void CloseCurrentOpenedPanel()
     {
@@ -135,9 +145,83 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         }
     }
 
+    public void ConfigurePanelMove(RectTransform targetPanel, Vector2 offset)
+    {
+        panelToOpen = null;
+        panelsToClose = System.Array.Empty<GameObject>();
+        panelToMove = targetPanel;
+        moveOffset = offset;
+        toggleMove = true;
+        moveTogetherTargets = System.Array.Empty<RectTransform>();
+        CacheOriginalMovePositions();
+        SyncMoveStateFromCurrentPosition();
+    }
+
+    public bool ControlsMovePanel(RectTransform targetPanel)
+    {
+        return panelToMove != null && panelToMove == targetPanel;
+    }
+
+    public bool IsMovePanelOpen()
+    {
+        if (panelToMove == null)
+            return false;
+
+        SyncMoveStateFromCurrentPosition();
+        return isMoved;
+    }
+
+    public void SetMovePanelOpen(bool open, bool instant = false)
+    {
+        if (panelToMove == null)
+        {
+            Debug.LogWarning("[UIPanelButton] Panel To Move is not assigned.");
+            return;
+        }
+
+        SyncMoveStateFromCurrentPosition();
+
+        Vector2 targetPosition = open
+            ? GetOpenedPosition()
+            : GetClosedPosition();
+
+        if (Vector2.SqrMagnitude(panelToMove.anchoredPosition - targetPosition) < 0.01f)
+        {
+            isMoved = open;
+            return;
+        }
+
+        if (playPanelOpenCloseSound)
+            PlayPanelOpenCloseSound(open);
+        else
+            PlayClickSound();
+
+        ApplyButtonFlip();
+
+        if (moveCoroutine != null)
+        {
+            StopCoroutine(moveCoroutine);
+            moveCoroutine = null;
+        }
+
+        isPlayingEffect = false;
+        isMoved = open;
+
+        if (instant)
+        {
+            ApplyMovePanelPosition(open);
+            FadePanelImageTo(open ? openedPanelAlpha : originalPanelAlpha);
+            return;
+        }
+
+        moveCoroutine = StartCoroutine(MoveRoutine(targetPosition));
+        FadePanelImageTo(open ? openedPanelAlpha : originalPanelAlpha);
+    }
+
     private void Awake()
     {
         CacheOriginalMovePositions();
+        ApplyBattlePlayerHudInitialOpenState();
 
         if (flipTarget == null)
             flipTarget = GetComponent<RectTransform>();
@@ -150,6 +234,14 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     {
         if (currentOpenedPanelOwner == this)
             currentOpenedPanelOwner = null;
+
+        if (IsLobbyStorageMovePanel())
+            LobbyPositionModalInputBlocker.Unblock(this);
+    }
+
+    private void Update()
+    {
+        HandleMovePanelDismissInput();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -157,7 +249,9 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (ShouldBlockInteractionByOpenMenuPanel())
             return;
 
-        CloseCurrentOpenedPanelIfThisIsOtherButton();
+        // 마우스 호버는 사운드만 재생합니다.
+        // 패널 안의 새로하기, 이어하기, 방 생성, 입장 버튼에 마우스를 올렸을 때
+        // 열린 모드 패널이 접히는 현상을 막기 위해 호버에서는 패널을 닫지 않습니다.
         PlayHoverSound();
     }
 
@@ -169,7 +263,12 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (isPlayingEffect)
             return;
 
-        PlayClickSound();
+        bool willOpen = panelToOpen == null || !panelToOpen.activeSelf;
+
+        if (playPanelOpenCloseSound)
+            PlayPanelOpenCloseSound(willOpen);
+        else
+            PlayClickSound();
 
         if (toggleIfAlreadyOpen &&
             panelToOpen != null &&
@@ -210,11 +309,30 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (UIManager.Instance == null)
         {
-            Debug.LogWarning("[UIPanelButton] UIManager.Instance�� ã�� ���߽��ϴ�.");
+            Debug.LogWarning("[UIPanelButton] UIManager.Instance를 찾지 못했습니다.");
             return;
         }
 
         UIManager.Instance.ShowGiveUpConfirm();
+    }
+
+    public void ExecuteRecord()
+    {
+        if (ShouldBlockInteractionByOpenMenuPanel())
+            return;
+
+        if (isPlayingEffect)
+            return;
+
+        PlayClickSound();
+
+        if (UIManager.Instance == null)
+        {
+            Debug.LogWarning("[UIPanelButton] UIManager.Instance를 찾지 못했습니다.");
+            return;
+        }
+
+        UIManager.Instance.ShowRecord();
     }
 
     public void ExecuteQuitConfirm()
@@ -229,11 +347,11 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (UIManager.Instance == null)
         {
-            Debug.LogWarning("[UIPanelButton] UIManager.Instance�� ã�� ���߽��ϴ�.");
+            Debug.LogWarning("[UIPanelButton] UIManager.Instance를 찾지 못했습니다.");
             return;
         }
 
-        UIManager.Instance.ShowQuitConfirm();
+        UIManager.Instance.SaveAndReturnToTitle();
     }
 
     public void ExecuteCloseCurrentPanel()
@@ -267,8 +385,6 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (isPlayingEffect)
             return;
 
-        PlayClickSound();
-
         Vector2 targetPosition;
         bool willOpen = true;
 
@@ -279,15 +395,38 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
             willOpen = !isMoved;
 
             targetPosition = willOpen
-                ? originalPosition + moveOffset
-                : originalPosition;
+                ? GetOpenedPosition()
+                : GetClosedPosition();
 
             isMoved = willOpen;
+
+            if (IsLobbyStorageMovePanel())
+            {
+                lastMoveToggleFrame = Time.frameCount;
+
+                if (willOpen)
+                {
+                    currentOpenedPanelOwner = this;
+                    LobbyPositionModalInputBlocker.Block(this);
+                }
+                else
+                {
+                    if (currentOpenedPanelOwner == this)
+                        currentOpenedPanelOwner = null;
+
+                    LobbyPositionModalInputBlocker.Unblock(this);
+                }
+            }
         }
         else
         {
             targetPosition = panelToMove.anchoredPosition + moveOffset;
         }
+
+        if (playPanelOpenCloseSound)
+            PlayPanelOpenCloseSound(willOpen);
+        else
+            PlayClickSound();
 
         ApplyButtonFlip();
 
@@ -299,18 +438,70 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         FadePanelImageTo(willOpen ? openedPanelAlpha : originalPanelAlpha);
     }
 
+    private void HandleMovePanelDismissInput()
+    {
+        if (currentOpenedPanelOwner != this || !IsLobbyStorageMovePanel())
+            return;
+
+        SyncMoveStateFromCurrentPosition();
+        if (!isMoved || Time.frameCount == lastMoveToggleFrame)
+            return;
+
+        if (!Input.GetMouseButtonDown(0))
+            return;
+
+        Vector2 pointerPosition = Input.mousePosition;
+        if (IsScreenPointInsideRect(panelToMove, pointerPosition))
+            return;
+
+        RectTransform buttonRect = transform as RectTransform;
+        if (IsScreenPointInsideRect(buttonRect, pointerPosition))
+            return;
+
+        CloseLobbyStorageMovePanel();
+    }
+
+    private void CloseLobbyStorageMovePanel()
+    {
+        if (!IsLobbyStorageMovePanel())
+            return;
+
+        SyncMoveStateFromCurrentPosition();
+        if (isMoved)
+            SetMovePanelOpen(false);
+
+        if (currentOpenedPanelOwner == this)
+            currentOpenedPanelOwner = null;
+
+        LobbyPositionModalInputBlocker.Unblock(this);
+    }
+
+    private bool IsLobbyStorageMovePanel()
+    {
+        return panelToMove != null &&
+               string.Equals(panelToMove.name, "StoragePanel", System.StringComparison.Ordinal);
+    }
+
+    private static bool IsScreenPointInsideRect(RectTransform rect, Vector2 screenPosition)
+    {
+        if (rect == null || !rect.gameObject.activeInHierarchy)
+            return false;
+
+        Canvas canvas = rect.GetComponentInParent<Canvas>();
+        Camera eventCamera = null;
+
+        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            eventCamera = canvas.worldCamera;
+
+        return RectTransformUtility.RectangleContainsScreenPoint(rect, screenPosition, eventCamera);
+    }
+
     private bool ShouldBlockInteractionByOpenMenuPanel()
     {
-        if (!IsMenuPanelActiveInScene())
-            return false;
+        if (IsMenuPanelActiveInScene())
+            return !IsMenuPanelButton() && !IsInsideOpenMenuPanel();
 
-        if (IsMenuPanelButton())
-            return false;
-
-        if (IsInsideOpenMenuPanel())
-            return false;
-
-        return true;
+        return false;
     }
 
     private bool IsMenuPanelButton()
@@ -329,6 +520,36 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         return target == menuPanel.transform || target.IsChildOf(menuPanel.transform);
     }
 
+    private bool IsInsideMenuRoot()
+    {
+        Transform current = transform;
+
+        while (current != null)
+        {
+            if (current.name == DefaultMenuRootObjectName)
+                return true;
+
+            current = current.parent;
+        }
+
+        return false;
+    }
+
+    private bool IsInsideLobbyMenuRoot()
+    {
+        Transform current = transform;
+
+        while (current != null)
+        {
+            if (current.name == DefaultLobbyMenuRootObjectName)
+                return true;
+
+            current = current.parent;
+        }
+
+        return false;
+    }
+
     private bool IsMenuPanelTarget()
     {
         return panelToOpen != null && panelToOpen.name == DefaultMenuPanelObjectName;
@@ -337,7 +558,14 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
     private void CacheOriginalMovePositions()
     {
         if (panelToMove != null)
+        {
             originalPosition = panelToMove.anchoredPosition;
+            usesBattlePlayerHudOpenOrigin = string.Equals(
+                panelToMove.name,
+                DefaultBattlePlayerHudRootName,
+                System.StringComparison.Ordinal
+            );
+        }
 
         if (moveTogetherTargets == null)
         {
@@ -354,15 +582,103 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         }
     }
 
+    /// <summary>
+    /// 전투방의 PlayerHUD_Root는 프리팹에 저장된 위치를 열린 위치로 사용합니다.
+    /// 따라서 입장 시 위치를 이동하지 않고 열린 상태로만 초기화합니다.
+    /// </summary>
+    private void ApplyBattlePlayerHudInitialOpenState()
+    {
+        if (panelToMove == null || !usesBattlePlayerHudOpenOrigin)
+            return;
+
+        panelToMove.anchoredPosition = GetOpenedPosition();
+
+        if (moveTogetherTargets != null && originalTogetherPositions != null)
+        {
+            for (int i = 0; i < moveTogetherTargets.Length; i++)
+            {
+                if (moveTogetherTargets[i] == null ||
+                    i >= originalTogetherPositions.Length)
+                {
+                    continue;
+                }
+
+                moveTogetherTargets[i].anchoredPosition =
+                    GetOpenedTogetherPosition(i);
+            }
+        }
+
+        isMoved = true;
+    }
+
+    private Vector2 GetClosedPosition()
+    {
+        return usesBattlePlayerHudOpenOrigin
+            ? originalPosition + moveOffset
+            : originalPosition;
+    }
+
+    private Vector2 GetOpenedPosition()
+    {
+        return usesBattlePlayerHudOpenOrigin
+            ? originalPosition
+            : originalPosition + moveOffset;
+    }
+
+    private Vector2 GetClosedTogetherPosition(int index)
+    {
+        Vector2 position = originalTogetherPositions[index];
+        return usesBattlePlayerHudOpenOrigin
+            ? position + moveOffset
+            : position;
+    }
+
+    private Vector2 GetOpenedTogetherPosition(int index)
+    {
+        Vector2 position = originalTogetherPositions[index];
+        return usesBattlePlayerHudOpenOrigin
+            ? position
+            : position + moveOffset;
+    }
+
+    private void ApplyMovePanelPosition(bool open)
+    {
+        if (panelToMove == null)
+            return;
+
+        panelToMove.anchoredPosition = open
+            ? GetOpenedPosition()
+            : GetClosedPosition();
+
+        if (moveTogetherTargets != null && originalTogetherPositions != null)
+        {
+            for (int i = 0; i < moveTogetherTargets.Length; i++)
+            {
+                if (moveTogetherTargets[i] == null ||
+                    i >= originalTogetherPositions.Length)
+                {
+                    continue;
+                }
+
+                moveTogetherTargets[i].anchoredPosition = open
+                    ? GetOpenedTogetherPosition(i)
+                    : GetClosedTogetherPosition(i);
+            }
+        }
+
+        isMoved = open;
+    }
+
     private void SyncMoveStateFromCurrentPosition()
     {
         if (panelToMove == null)
             return;
 
-        Vector2 openedPosition = originalPosition + moveOffset;
+        Vector2 closedPosition = GetClosedPosition();
+        Vector2 openedPosition = GetOpenedPosition();
         Vector2 currentPosition = panelToMove.anchoredPosition;
 
-        float distanceToClosed = Vector2.SqrMagnitude(currentPosition - originalPosition);
+        float distanceToClosed = Vector2.SqrMagnitude(currentPosition - closedPosition);
         float distanceToOpened = Vector2.SqrMagnitude(currentPosition - openedPosition);
 
         isMoved = distanceToOpened < distanceToClosed;
@@ -379,15 +695,57 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (!currentOpenedPanelOwner.closeOpenedPanelWhenOtherButtonHovered)
             return;
 
+        GameObject openedPanel = currentOpenedPanelOwner.panelToOpen;
+
+        // 현재 열린 패널 안에 있는 버튼에 마우스를 올린 경우에는
+        // 다른 메뉴 버튼으로 취급하지 않습니다.
+        // 튜토리얼, 새로하기, 이어하기, 방 생성, 참여 버튼을
+        // 조작할 때 펼쳐진 버튼들이 다시 접히는 것을 방지합니다.
+        if (openedPanel != null)
+        {
+            Transform openedPanelTransform = openedPanel.transform;
+            Transform hoveredButtonTransform = transform;
+
+            if (hoveredButtonTransform == openedPanelTransform ||
+                hoveredButtonTransform.IsChildOf(openedPanelTransform))
+            {
+                return;
+            }
+        }
+
         currentOpenedPanelOwner.CloseOwnPanel();
     }
 
     private void CloseOwnPanel()
     {
-        ResetButtonAnimationsInClosedPanel();
+        if (IsLobbyStorageMovePanel())
+        {
+            CloseLobbyStorageMovePanel();
+            return;
+        }
 
         if (panelToOpen != null)
-            panelToOpen.SetActive(false);
+        {
+            TitleModePanelSpreadAnimator titleModeAnimator =
+                panelToOpen.GetComponent<TitleModePanelSpreadAnimator>();
+
+            if (titleModeAnimator != null)
+            {
+                // 버튼 상태 초기화가 RectTransform 위치를 먼저 바꾸면
+                // 닫힘 애니메이션이 시작되기 전에 버튼이 접힌 위치로 순간 이동합니다.
+                // 따라서 펼침 패널은 닫힘 연출이 끝난 뒤 버튼 상태를 초기화합니다.
+                titleModeAnimator.Close(ResetButtonAnimationsInClosedPanel);
+            }
+            else
+            {
+                ResetButtonAnimationsInClosedPanel();
+                panelToOpen.SetActive(false);
+            }
+        }
+        else
+        {
+            ResetButtonAnimationsInClosedPanel();
+        }
 
         if (currentOpenedPanelOwner == this)
             currentOpenedPanelOwner = null;
@@ -430,7 +788,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         }
 
         if (panelToMove != null)
-            panelToMove.anchoredPosition = originalPosition;
+            panelToMove.anchoredPosition = GetClosedPosition();
 
         if (moveTogetherTargets != null && originalTogetherPositions != null)
         {
@@ -439,7 +797,8 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
                 if (moveTogetherTargets[i] == null || i >= originalTogetherPositions.Length)
                     continue;
 
-                moveTogetherTargets[i].anchoredPosition = originalTogetherPositions[i];
+                moveTogetherTargets[i].anchoredPosition =
+                    GetClosedTogetherPosition(i);
             }
         }
 
@@ -477,6 +836,18 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         lastClickSoundFrame = Time.frameCount;
         AudioManager.Instance.PlaySfx(clickSfx);
+    }
+
+    private void PlayPanelOpenCloseSound(bool willOpen)
+    {
+        if (!playPanelOpenCloseSound)
+            return;
+
+        if (AudioManager.Instance == null)
+            return;
+
+        string targetSfx = willOpen ? panelOpenSfx : panelCloseSfx;
+        AudioManager.Instance.PlaySfx(targetSfx, panelOpenCloseSfxVolume);
     }
 
     private void ApplyButtonFlip()
@@ -566,13 +937,44 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         if (panelToOpen != null)
         {
-            TitleManager.CloseTitleModePanelsExceptInScene(panelToOpen);
+            if (!isMenuPanelTarget)
+                TitleManager.CloseTitleModePanelsExceptInScene(panelToOpen);
 
             panelToOpen.SetActive(true);
+
+            TitleModePanelSpreadAnimator titleModeAnimator =
+                panelToOpen.GetComponent<TitleModePanelSpreadAnimator>();
+            if (titleModeAnimator != null)
+                titleModeAnimator.Open();
+
+            RefreshMenuPanelTextIfNeeded(panelToOpen);
+
             ApplyOpenedPanelFrontSorting(panelToOpen);
+            RegisterMenuPanelBlurIfNeeded(panelToOpen);
             currentOpenedPanelOwner = this;
             FadePanelImageTo(openedPanelAlpha);
         }
+    }
+
+    private static void RegisterMenuPanelBlurIfNeeded(GameObject openedPanel)
+    {
+        if (openedPanel == null || openedPanel.name != DefaultMenuPanelObjectName)
+            return;
+
+        BattleUIBlurRootCollector.ConfigureForMenuPanel(openedPanel);
+    }
+
+    private static void RefreshMenuPanelTextIfNeeded(GameObject openedPanel)
+    {
+        if (openedPanel == null || openedPanel.name != DefaultMenuPanelObjectName)
+            return;
+
+        MenuPanelTextRefresher refresher = openedPanel.GetComponent<MenuPanelTextRefresher>();
+        if (refresher == null)
+            refresher = openedPanel.AddComponent<MenuPanelTextRefresher>();
+
+        refresher.RefreshNow();
+        refresher.RefreshNextFrame();
     }
 
     private void ApplyOpenedPanelFrontSorting(GameObject openedPanel)
@@ -580,15 +982,15 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
         if (openedPanel == null)
             return;
 
-        if (bringOpenedPanelToFront)
-            openedPanel.transform.SetAsLastSibling();
-
         if (!forceOpenedPanelCanvasSorting)
+            return;
+
+        if (openedPanel.GetComponent<UIBlurBackground>() != null)
             return;
 
         Canvas canvas = openedPanel.GetComponent<Canvas>();
         if (canvas == null)
-            canvas = openedPanel.AddComponent<Canvas>();
+            return;
 
         canvas.overrideSorting = true;
         canvas.sortingOrder = openedPanel.name == DefaultMenuPanelObjectName
@@ -600,7 +1002,7 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         GraphicRaycaster raycaster = openedPanel.GetComponent<GraphicRaycaster>();
         if (raycaster == null)
-            openedPanel.AddComponent<GraphicRaycaster>();
+            Debug.LogWarning("[UIPanelButton] Opened panel Canvas has no GraphicRaycaster.", openedPanel);
     }
 
     private void ClosePanels()
@@ -610,7 +1012,15 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
         for (int i = 0; i < panelsToClose.Length; i++)
         {
-            if (panelsToClose[i] != null)
+            if (panelsToClose[i] == null)
+                continue;
+
+            TitleModePanelSpreadAnimator titleModeAnimator =
+                panelsToClose[i].GetComponent<TitleModePanelSpreadAnimator>();
+
+            if (titleModeAnimator != null)
+                titleModeAnimator.Close();
+            else
                 panelsToClose[i].SetActive(false);
         }
     }
@@ -693,6 +1103,14 @@ public class UIPanelButton : MonoBehaviour, IPointerEnterHandler
 
     private void OnMouseUpAsButton()
     {
+        if (LobbyPositionModalInputBlocker.IsBlocked)
+            return;
+
+        // 강화 패널이 열려 있는 동안에는 월드 스프라이트 오브젝트의 클릭만 막습니다.
+        // UI Button.onClick으로 실행되는 Execute/MovePanel 동작에는 영향을 주지 않습니다.
+        if (SkillUpgradePanel.IsAnyPanelOpen)
+            return;
+
         if (ShouldBlockInteractionByOpenMenuPanel())
             return;
 

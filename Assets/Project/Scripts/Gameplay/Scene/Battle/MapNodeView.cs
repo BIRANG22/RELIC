@@ -3,9 +3,8 @@ using System.Collections;
 using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 
-public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class MapNodeView : MonoBehaviour
 {
     [Header("Base")]
     [SerializeField] private Image iconImage;
@@ -17,7 +16,7 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private bool autoCreateCheckAnimationImage = true;
     [SerializeField] private Sprite[] checkAnimationSprites = Array.Empty<Sprite>();
     [SerializeField] private float checkFrameInterval = 0.05f;
-    [SerializeField] private Vector2 checkImageSize = new Vector2(96f, 96f);
+    private static readonly Vector2 CheckImageSize = new Vector2(80f, 80f);
     [SerializeField] private bool hideIconDuringCheckAnimation;
     [SerializeField] private bool keepLastCheckSpriteUntilRoomOpens = true;
     [SerializeField] private int keepFrameIndex = -1;
@@ -26,7 +25,7 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     [Header("Check Animation SFX")]
     [SerializeField] private bool playCheckAnimationSfx = true;
-    [SerializeField] private SfxType checkAnimationSfxType = SfxType.BattleMapNodeCheckAnimation;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string checkAnimationSfxId = AudioIds.Sfx.BattleMapNodeCheckAnimation;
     [SerializeField, Range(0f, 1f)] private float checkAnimationSfxVolume = 1f;
 
     [Header("Persistent Check")]
@@ -38,14 +37,24 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [SerializeField] private float hoverBreathScaleMultiplier = 1.08f;
     [SerializeField] private float hoverBreathSpeed = 4f;
 
+    [Header("Category Hover Breath")]
+    [SerializeField, Min(1f)] private float categoryBreathMinScale = 1.2f;
+    [SerializeField, Min(1f)] private float categoryBreathMaxScale = 1.4f;
+    [SerializeField] private float categoryBreathSpeed = 4f;
+
     private GeneratedMapNodeData nodeData;
     private Action<GeneratedMapNodeData> onClicked;
     private Coroutine clickRoutine;
     private bool isClickProcessing;
     private bool currentCanClick;
-    private bool isPointerInside;
+    private bool currentAvailable;
+    private bool currentVisited;
+    private bool isCategoryHighlighted;
     private RectTransform rectTransform;
     private Vector3 baseScale = Vector3.one;
+    private Vector3 baseIconScale = Vector3.one;
+    private Color baseIconColor = Color.white;
+    private bool hasCapturedBaseIconColor;
 
     private void Awake()
     {
@@ -55,18 +64,29 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (button == null)
             button = GetComponent<Button>();
 
+        CaptureBaseIconColor();
+        CaptureBaseIconScale();
         EnsureCheckAnimationImage();
     }
 
     private void OnDisable()
     {
-        isPointerInside = false;
         ResetHoverScale();
+        ResetCategoryIconScale();
     }
 
     private void Update()
     {
-        UpdateSelectableHoverBreath();
+        if (isCategoryHighlighted)
+        {
+            UpdateCategoryHoverBreath();
+            return;
+        }
+
+        if (CanPlayHoverBreath())
+            UpdateSelectableHoverBreath();
+        else
+            ResetHoverScale();
     }
 
     public void Setup(
@@ -78,10 +98,14 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         nodeData = data;
         onClicked = clickCallback;
         currentCanClick = canClick;
+        currentAvailable = false;
+        currentVisited = false;
+        isCategoryHighlighted = false;
         isClickProcessing = false;
-        isPointerInside = false;
         CaptureBaseScale();
+        CaptureBaseIconScale();
         ResetHoverScale();
+        ResetCategoryIconScale();
 
         if (clickRoutine != null)
         {
@@ -92,10 +116,12 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         EnsureCheckAnimationImage();
         HideCheckImage();
 
+        string displayType = GetDisplayType(data);
+
         if (iconImage != null &&
             iconDatabase != null &&
             data != null &&
-            iconDatabase.TryGetIcon(data.Type, out Sprite icon))
+            iconDatabase.TryGetIcon(displayType, out Sprite icon))
         {
             iconImage.sprite = icon;
             iconImage.enabled = true;
@@ -105,6 +131,33 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         SetClickable(canClick);
     }
 
+    /// <summary>
+    /// NodeIndex가 0인 시작 노드는 Type과 관계없이 Start 아이콘으로 표시합니다.
+    /// 실제 Type 데이터는 유지되므로 시작 노드 이벤트 처리는 그대로 동작합니다.
+    /// </summary>
+    public static string GetDisplayType(GeneratedMapNodeData data)
+    {
+        if (data == null)
+            return string.Empty;
+
+        if (data.NodeIndex == 0)
+            return "Start";
+
+        // 레이어 7은 고정 상점 구간이므로 실제 이벤트 타입보다 상점 플래그를 우선 표시합니다.
+        if (data.LayerIndex == 7)
+            return "Shop";
+
+        if (string.Equals(
+            EventIdUtility.Normalize(data.EventId),
+            "Event_06",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return "Shop";
+        }
+
+        return data.Type;
+    }
+
     public void SetClickable(bool canClick)
     {
         currentCanClick = canClick;
@@ -112,36 +165,55 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (button != null)
             button.interactable = canClick && !isClickProcessing;
 
-        if (iconImage != null)
-        {
-            Color color = iconImage.color;
-            color.a = canClick ? 1f : 0.45f;
-            iconImage.color = color;
-        }
-
         if (!CanPlayHoverBreath())
             ResetHoverScale();
     }
 
-    public void OnPointerEnter(PointerEventData eventData)
+    public void SetAvailabilityVisual(bool available)
     {
-        if (UIPanelButton.IsMenuPanelOpen)
+        SetProgressVisual(available, false);
+    }
+
+    public void SetProgressVisual(bool available, bool visited)
+    {
+        currentAvailable = available;
+        currentVisited = visited;
+        ApplyNodeColor();
+    }
+
+    public void SetCategoryHighlighted(bool highlighted)
+    {
+        isCategoryHighlighted = highlighted;
+
+        if (highlighted)
         {
-            isPointerInside = false;
             ResetHoverScale();
             return;
         }
 
-        isPointerInside = true;
+        ResetCategoryIconScale();
 
         if (!CanPlayHoverBreath())
             ResetHoverScale();
     }
 
-    public void OnPointerExit(PointerEventData eventData)
+    private void ApplyNodeColor()
     {
-        isPointerInside = false;
-        ResetHoverScale();
+        if (iconImage == null)
+            return;
+
+        Color availableColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
+        Color unavailableColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+        iconImage.color = (currentAvailable || currentVisited) ? availableColor : unavailableColor;
+    }
+    private void CaptureBaseIconColor()
+    {
+        if (iconImage == null || hasCapturedBaseIconColor)
+            return;
+
+        baseIconColor = iconImage.color;
+        baseIconColor.a = 1f;
+        hasCapturedBaseIconColor = true;
     }
 
     public void OnClick()
@@ -160,14 +232,32 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         if (playCheckAnimationBeforeClick && HasCheckAnimationSprites())
         {
-            clickRoutine = StartCoroutine(PlayCheckAnimationThenClick());
+            PlayCheckAnimation(InvokeClick);
             return;
         }
 
         InvokeClick();
     }
 
-    private IEnumerator PlayCheckAnimationThenClick()
+    /// <summary>
+    /// 외부 선택 UI에서 클릭할 때 노드 X 표시 애니메이션을 재생합니다.
+    /// 애니메이션이 끝나면 onCompleted를 호출합니다.
+    /// </summary>
+    public void PlayCheckAnimation(Action onCompleted)
+    {
+        if (isClickProcessing)
+            return;
+
+        if (!HasCheckAnimationSprites())
+        {
+            onCompleted?.Invoke();
+            return;
+        }
+
+        clickRoutine = StartCoroutine(PlayCheckAnimationThenComplete(onCompleted));
+    }
+
+    private IEnumerator PlayCheckAnimationThenComplete(Action onCompleted)
     {
         isClickProcessing = true;
         ResetHoverScale();
@@ -219,7 +309,8 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (hideIconDuringCheckAnimation && iconImage != null)
             iconImage.enabled = true;
 
-        InvokeClick();
+        clickRoutine = null;
+        onCompleted?.Invoke();
     }
 
     private void PlayCheckAnimationSfx()
@@ -230,7 +321,7 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(checkAnimationSfxType, checkAnimationSfxVolume);
+        AudioManager.Instance.PlaySfx(checkAnimationSfxId, checkAnimationSfxVolume);
     }
 
     private void CaptureBaseScale()
@@ -254,15 +345,26 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         transform.localScale = baseScale * scale;
     }
 
+    private void UpdateCategoryHoverBreath()
+    {
+        if (iconImage == null)
+            return;
+
+        float speed = Mathf.Max(0.01f, categoryBreathSpeed);
+        float minScale = Mathf.Max(1f, categoryBreathMinScale);
+        float maxScale = Mathf.Max(minScale, categoryBreathMaxScale);
+        float t = (Mathf.Sin(Time.unscaledTime * speed) + 1f) * 0.5f;
+        float scale = Mathf.Lerp(minScale, maxScale, t);
+
+        iconImage.rectTransform.localScale = baseIconScale * scale;
+    }
+
     private bool CanPlayHoverBreath()
     {
         if (UIPanelButton.IsMenuPanelOpen)
             return false;
 
         if (!useSelectableHoverBreath)
-            return false;
-
-        if (!isPointerInside)
             return false;
 
         if (!currentCanClick || isClickProcessing)
@@ -277,6 +379,18 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     private void ResetHoverScale()
     {
         transform.localScale = baseScale;
+    }
+
+    private void CaptureBaseIconScale()
+    {
+        if (iconImage != null)
+            baseIconScale = iconImage.rectTransform.localScale;
+    }
+
+    private void ResetCategoryIconScale()
+    {
+        if (iconImage != null)
+            iconImage.rectTransform.localScale = baseIconScale;
     }
 
     private void InvokeClick()
@@ -424,7 +538,7 @@ public class MapNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = Vector2.zero;
-        rect.sizeDelta = checkImageSize;
+        rect.sizeDelta = CheckImageSize;
         rect.localScale = Vector3.one;
         rect.localRotation = Quaternion.identity;
     }

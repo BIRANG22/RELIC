@@ -11,20 +11,19 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
     [Header("Hover Breath Effect")]
     [SerializeField] private RectTransform scaleTarget;
     [SerializeField] private bool useHoverBreathEffect = true;
-    [SerializeField] private float hoverBaseScale = 1.08f;
-    [SerializeField] private float breathAmount = 0.04f;
-    [SerializeField] private float breathSpeed = 4f;
+    [SerializeField] private float hoverMaxScale = 1.1f;
+    [SerializeField] private float breathSpeed = 2f;
     [SerializeField] private float scaleLerpSpeed = 14f;
 
     [Header("Selected Effect")]
     [SerializeField] private bool useSelectedScale = true;
-    [SerializeField] private float selectedScale = 1.08f;
+    [SerializeField] private float selectedScale = 1.2f;
     [SerializeField] private bool boostSortingOnHoverOrSelected = true;
     [SerializeField] private int sortingOrderBoost = 2000;
 
     [Header("Sound")]
     [SerializeField] private bool playClickSfx = true;
-    [SerializeField] private SfxType clickSfxType = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfxId = AudioIds.Sfx.NormalButtonClick;
 
     private string relicId;
     private RelicEquipPanelUI owner;
@@ -59,7 +58,8 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
 
     private void Update()
     {
-        ApplyScale(false);
+        if (NeedsScaleAnimation())
+            ApplyScale(false);
     }
 
     private void OnDisable()
@@ -152,7 +152,7 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
 
         if (owner == null)
         {
-            Debug.LogWarning($"[RelicIconUI] owner ¾øÀ½ / Relic:{relicId}");
+            Debug.LogWarning($"[RelicIconUI] owner is missing / Relic:{relicId}");
             return;
         }
 
@@ -202,7 +202,9 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
         }
         else if (useHoverBreathEffect && isPointerOver && !string.IsNullOrWhiteSpace(relicId))
         {
-            scaleMultiplier = hoverBaseScale + Mathf.Sin(Time.unscaledTime * breathSpeed) * breathAmount;
+            // Repeat between 1.0 and the configured hover max scale.
+            float breathT = (Mathf.Sin(Time.unscaledTime * breathSpeed) + 1f) * 0.5f;
+            scaleMultiplier = Mathf.Lerp(1f, hoverMaxScale, breathT);
         }
 
         Vector3 targetScale = baseScale * scaleMultiplier;
@@ -223,6 +225,20 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
 
         if (scaleTarget != null)
             scaleTarget.localScale = baseScale;
+    }
+
+    private bool NeedsScaleAnimation()
+    {
+        if (scaleTarget == null)
+            return false;
+
+        if (useHoverBreathEffect && isPointerOver && !string.IsNullOrWhiteSpace(relicId) && !isSelected)
+            return true;
+
+        CaptureBaseScaleOnce();
+        float multiplier = useSelectedScale && isSelected && !string.IsNullOrWhiteSpace(relicId) ? selectedScale : 1f;
+        Vector3 targetScale = baseScale * multiplier;
+        return (scaleTarget.localScale - targetScale).sqrMagnitude > 0.000001f;
     }
 
     private void CaptureBaseScaleOnce()
@@ -279,6 +295,6 @@ public class RelicIconUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHan
         if (!playClickSfx || AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(clickSfxType);
+        AudioManager.Instance.PlaySfx(clickSfxId);
     }
 }

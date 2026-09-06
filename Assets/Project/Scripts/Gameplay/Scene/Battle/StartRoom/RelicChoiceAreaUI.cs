@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 
 public class RelicChoiceAreaUI : MonoBehaviour
@@ -8,30 +10,30 @@ public class RelicChoiceAreaUI : MonoBehaviour
     [Header("Slots In Scene")]
     [SerializeField] private RelicChoiceSlotUI[] choiceSlots;
 
-    [Header("Hover Info Panel")]
-    [SerializeField] private GameObject relicHoverInfoPanel;
-    [SerializeField] private TMP_Text relicHoverNameText;
-    [SerializeField] private TMP_Text relicHoverDescText;
-
     [Header("Choice Setting")]
     [SerializeField, Min(1)] private int choiceCount = 3;
-    [SerializeField] private bool useRelicNumberRange = true;
+    [SerializeField] private Button acquireButton;
 
-    [Header("Relic Id Range")]
-    [SerializeField] private int minRelicNumber = 1;
-    [SerializeField] private int maxRelicNumber = 20;
-    [SerializeField] private string relicIdPrefix = "Relic_";
+    [Header("Skill Reward")]
+    [SerializeField] private BattleRewardPanelUI rewardPanel;
+    [SerializeField, Min(1)] private int skillRewardCount = StartRoomSkillRewardSelectionUtility.RewardCountPerChoice;
 
     [Header("Complete")]
     [SerializeField] private BattleMapController battleMapController;
     [SerializeField] private StartRoomController startRoomController;
 
+    [Header("Canvas Handoff")]
+    [Tooltip("Equip_panel이 열리는 동안 숨길 시작방 선택 Canvas입니다. 비워두면 부모의 RelicChoiceCanvas/Canvas를 자동으로 찾습니다.")]
+    [SerializeField] private GameObject relicChoiceCanvas;
+
     [Header("SFX")]
     [SerializeField] private bool playAcquireSfx = true;
-    [SerializeField] private SfxType acquireSfxType = SfxType.RelicChoiceAcquire;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string acquireSfxId = AudioIds.Sfx.RelicChoiceAcquire;
 
     private bool isOpen;
     private bool isSelectionCompleted;
+    private string selectedRelicId;
+    private RelicChoiceSlotUI selectedSlot;
 
     private void Awake()
     {
@@ -41,34 +43,73 @@ public class RelicChoiceAreaUI : MonoBehaviour
         if (battleMapController == null)
             battleMapController = Object.FindFirstObjectByType<BattleMapController>(FindObjectsInactive.Include);
 
-        HideRelicHoverInfo();
+        EnsureRewardPanelReference();
+
+        if (relicChoiceCanvas == null)
+            relicChoiceCanvas = FindRelicChoiceCanvas();
+
+        // Choice Slot을 클릭하면 즉시 유물을 습득하므로 Acquire Button은 사용하지 않습니다.
+        if (acquireButton != null)
+        {
+            acquireButton.onClick.RemoveListener(AcquireSelectedRelic);
+            acquireButton.gameObject.SetActive(false);
+        }
     }
 
     private void OnDisable()
     {
-        HideRelicHoverInfo();
+        ClearSelection();
+    }
+
+    private void OnDestroy()
+    {
+        if (acquireButton != null)
+            acquireButton.onClick.RemoveListener(AcquireSelectedRelic);
     }
 
     public void Open()
     {
         isOpen = true;
         isSelectionCompleted = false;
+        ClearSelection();
 
         gameObject.SetActive(true);
-        HideRelicHoverInfo();
-        SetupChoices();
+
+        SetupSkillRewardChoices();
     }
 
     public void Close()
     {
         isOpen = false;
-        HideRelicHoverInfo();
+        ClearSelection();
         ClearSlots();
         gameObject.SetActive(false);
     }
 
+    public void ApplyNetworkChoices(IReadOnlyList<string> relicIds)
+    {
+        if (isSelectionCompleted)
+            return;
+
+        isOpen = true;
+        ClearSelection();
+        gameObject.SetActive(true);
+        SetupChoices(relicIds, false);
+    }
+
     private void SetupChoices()
     {
+        SetupChoices(PickRandomRelicIds(), true);
+    }
+
+    private void SetupSkillRewardChoices()
+    {
+        SetupSkillRewardChoices(StartRoomSkillRewardSelectionUtility.DefaultChoices);
+    }
+
+    private void SetupSkillRewardChoices(IReadOnlyList<StartRoomSkillRewardChoice> choices)
+    {
+        ClearSelection();
         ClearSlots();
 
         List<RelicChoiceSlotUI> validSlots = GetValidSlots();
@@ -78,21 +119,57 @@ public class RelicChoiceAreaUI : MonoBehaviour
             return;
         }
 
-        List<string> relicIds = PickRandomRelicIds();
-        if (relicIds.Count == 0)
+        List<StartRoomSkillRewardChoice> validChoices = NormalizeSkillRewardChoices(choices);
+        if (validChoices.Count == 0)
         {
-            Debug.LogWarning("[RelicChoiceAreaUI] No selectable relic ids were found.");
+            Debug.LogWarning("[RelicChoiceAreaUI] No selectable start room skill reward choices were found.");
             return;
         }
 
-        int count = Mathf.Min(choiceCount, relicIds.Count, validSlots.Count);
+        int count = Mathf.Min(choiceCount, validChoices.Count, validSlots.Count);
         for (int i = 0; i < validSlots.Count; i++)
         {
             RelicChoiceSlotUI slot = validSlots[i];
             if (i < count)
             {
                 slot.gameObject.SetActive(true);
-                slot.Setup(relicIds[i], this);
+                slot.SetupSkillRewardChoice(validChoices[i], this);
+            }
+            else
+            {
+                slot.ClearSlot();
+                slot.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private void SetupChoices(IReadOnlyList<string> relicIds, bool broadcastChoices)
+    {
+        ClearSelection();
+        ClearSlots();
+
+        List<RelicChoiceSlotUI> validSlots = GetValidSlots();
+        if (validSlots.Count == 0)
+        {
+            Debug.LogWarning("[RelicChoiceAreaUI] Choice Slots are empty. Put RelicChoiceSlot_1, RelicChoiceSlot_2, RelicChoiceSlot_3 into Choice Slots in the Inspector.");
+            return;
+        }
+
+        List<string> normalizedRelicIds = NormalizeChoiceIds(relicIds);
+        if (normalizedRelicIds.Count == 0)
+        {
+            Debug.LogWarning("[RelicChoiceAreaUI] No selectable relic ids were found.");
+            return;
+        }
+
+        int count = Mathf.Min(choiceCount, normalizedRelicIds.Count, validSlots.Count);
+        for (int i = 0; i < validSlots.Count; i++)
+        {
+            RelicChoiceSlotUI slot = validSlots[i];
+            if (i < count)
+            {
+                slot.gameObject.SetActive(true);
+                slot.Setup(normalizedRelicIds[i], this);
             }
             else
             {
@@ -101,8 +178,53 @@ public class RelicChoiceAreaUI : MonoBehaviour
             }
         }
 
-        if (relicHoverInfoPanel != null)
-            relicHoverInfoPanel.transform.SetAsLastSibling();
+        if (broadcastChoices)
+            SteamBattleStateSynchronizer.TryBroadcastStartRelicChoices(normalizedRelicIds.GetRange(0, count));
+
+    }
+
+    private List<string> NormalizeChoiceIds(IReadOnlyList<string> relicIds)
+    {
+        List<string> normalized = new();
+        HashSet<string> uniqueIds = new();
+
+        if (relicIds == null)
+            return normalized;
+
+        for (int i = 0; i < relicIds.Count; i++)
+        {
+            string relicId = relicIds[i];
+            if (string.IsNullOrWhiteSpace(relicId))
+                continue;
+
+            relicId = relicId.Trim();
+            if (uniqueIds.Add(relicId))
+                normalized.Add(relicId);
+        }
+
+        return normalized;
+    }
+
+    private List<StartRoomSkillRewardChoice> NormalizeSkillRewardChoices(
+        IReadOnlyList<StartRoomSkillRewardChoice> choices)
+    {
+        List<StartRoomSkillRewardChoice> normalized = new();
+        HashSet<SkillType> uniqueTypes = new();
+
+        if (choices == null)
+            return normalized;
+
+        for (int i = 0; i < choices.Count; i++)
+        {
+            StartRoomSkillRewardChoice choice = choices[i];
+            if (!choice.IsValid)
+                continue;
+
+            if (uniqueTypes.Add(choice.SkillType))
+                normalized.Add(choice);
+        }
+
+        return normalized;
     }
 
     private List<RelicChoiceSlotUI> GetValidSlots()
@@ -123,18 +245,14 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
     private List<string> PickRandomRelicIds()
     {
-        List<string> candidates = new();
-
         if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
         {
             Debug.LogWarning("[RelicChoiceAreaUI] DataManager or RelicDatabase is null.");
-            return candidates;
+            return new List<string>();
         }
 
-        if (useRelicNumberRange)
-            AddRelicsFromNumberRange(candidates);
-        else
-            AddAllRelics(candidates);
+        List<string> candidates = StartRoomRelicSelectionUtility.CollectActiveRelicIds(
+            DataManager.Instance.RelicDatabase.GetAll());
 
         RemoveAlreadyOwnedRelics(candidates);
         Shuffle(candidates);
@@ -144,36 +262,6 @@ public class RelicChoiceAreaUI : MonoBehaviour
             return new List<string>();
 
         return candidates.GetRange(0, count);
-    }
-
-    private void AddRelicsFromNumberRange(List<string> candidates)
-    {
-        int start = Mathf.Min(minRelicNumber, maxRelicNumber);
-        int end = Mathf.Max(minRelicNumber, maxRelicNumber);
-        string prefix = string.IsNullOrWhiteSpace(relicIdPrefix) ? "Relic_" : relicIdPrefix;
-
-        for (int i = start; i <= end; i++)
-        {
-            string id = prefix + i.ToString("00");
-            if (DataManager.Instance.RelicDatabase.TryGet(id, out _))
-                candidates.Add(id);
-        }
-    }
-
-    private void AddAllRelics(List<string> candidates)
-    {
-        IReadOnlyList<RelicData> allRelics = DataManager.Instance.RelicDatabase.GetAll();
-        if (allRelics == null)
-            return;
-
-        for (int i = 0; i < allRelics.Count; i++)
-        {
-            RelicData relicData = allRelics[i];
-            if (relicData == null || string.IsNullOrWhiteSpace(relicData.FragmentId))
-                continue;
-
-            candidates.Add(relicData.FragmentId.Trim());
-        }
     }
 
     private void RemoveAlreadyOwnedRelics(List<string> candidates)
@@ -189,42 +277,57 @@ public class RelicChoiceAreaUI : MonoBehaviour
         candidates.RemoveAll(id => !string.IsNullOrWhiteSpace(id) && unavailableRelicIds.Contains(id.Trim()));
     }
 
-    public void ShowRelicHoverInfo(string relicId)
+    public void SelectSlot(RelicChoiceSlotUI slot, string relicId)
     {
-        if (!isOpen || string.IsNullOrWhiteSpace(relicId))
+        if (!isOpen || isSelectionCompleted || slot == null || string.IsNullOrWhiteSpace(relicId))
             return;
 
-        if (DataManager.Instance == null || DataManager.Instance.RelicDatabase == null)
-        {
-            Debug.LogWarning("[RelicChoiceAreaUI] DataManager or RelicDatabase is null.");
-            return;
-        }
-
-        if (!DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relicData) || relicData == null)
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
             return;
 
-        if (relicHoverNameText != null)
-            relicHoverNameText.text = relicData.Name;
+        selectedSlot = slot;
+        selectedRelicId = relicId.Trim();
 
-        if (relicHoverDescText != null)
-            relicHoverDescText.text = relicData.EffectDesc;
+        List<RelicChoiceSlotUI> validSlots = GetValidSlots();
+        for (int i = 0; i < validSlots.Count; i++)
+            validSlots[i].SetSelected(validSlots[i] == selectedSlot);
 
-        if (relicHoverInfoPanel != null)
-        {
-            relicHoverInfoPanel.transform.SetAsLastSibling();
-            relicHoverInfoPanel.SetActive(true);
-        }
+        // 선택 상태만 만드는 것이 아니라 슬롯 클릭 즉시 유물을 습득합니다.
+        SelectRelic(selectedRelicId);
     }
 
-    public void HideRelicHoverInfo()
+    public void SelectSkillRewardChoice(RelicChoiceSlotUI slot, StartRoomSkillRewardChoice choice)
     {
-        if (relicHoverInfoPanel != null)
-            relicHoverInfoPanel.SetActive(false);
+        if (!isOpen || isSelectionCompleted || slot == null || !choice.IsValid)
+            return;
+
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
+        selectedSlot = slot;
+        selectedRelicId = choice.ChoiceId;
+
+        List<RelicChoiceSlotUI> validSlots = GetValidSlots();
+        for (int i = 0; i < validSlots.Count; i++)
+            validSlots[i].SetSelected(validSlots[i] == selectedSlot);
+
+        SelectSkillRewardChoice(choice);
+    }
+
+    public void AcquireSelectedRelic()
+    {
+        if (string.IsNullOrWhiteSpace(selectedRelicId))
+            return;
+
+        SelectRelic(selectedRelicId);
     }
 
     public void SelectRelic(string relicId)
     {
         if (!isOpen || isSelectionCompleted)
+            return;
+
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
             return;
 
         if (string.IsNullOrWhiteSpace(relicId))
@@ -246,37 +349,236 @@ public class RelicChoiceAreaUI : MonoBehaviour
 
         if (HasRelicAnywhere(relicId))
         {
-            Debug.LogWarning($"[RelicChoiceAreaUI] �̹� ���� ���� �����Դϴ�. Relic:{relicId}");
+            Debug.LogWarning($"[RelicChoiceAreaUI] 이미 보유 중인 유물입니다. Relic:{relicId}");
             SetupChoices();
             return;
         }
 
         isSelectionCompleted = true;
+        SteamBattleStateSynchronizer.TryBroadcastStartRelicSelected(relicId);
 
-        if (!GrantRelic(relicId))
+        PlayAcquireSfx();
+
+        // 시작방 선택 Canvas가 Equip_panel 뒤에 그대로 남지 않도록 먼저 숨깁니다.
+        // Close()를 사용하면 선택 슬롯이 초기화되므로 Canvas 활성 상태만 임시로 변경합니다.
+        SetRelicChoiceCanvasVisible(false);
+
+        if (BattleRewardEquipPanelUI.TryOpenRelicReward(
+                relicId,
+                () =>
+                {
+                    RefreshRelicEquipPanel();
+                    RestoreChoiceCanvasAndComplete(relicId);
+                }))
         {
-            isSelectionCompleted = false;
-            SetupChoices();
             return;
         }
 
-        PlayAcquireSfx();
-        RefreshRelicEquipPanel();
-        CompleteChoiceEvent(relicId);
+        SetRelicChoiceCanvasVisible(true);
+        Debug.LogWarning($"[RelicChoiceAreaUI] Equip_panel을 찾을 수 없어 유물 선택을 완료하지 않았습니다. Relic:{relicId}");
+        isSelectionCompleted = false;
+        SetupChoices();
     }
 
-    private bool GrantRelic(string relicId)
+    private void SelectSkillRewardChoice(StartRoomSkillRewardChoice choice)
     {
-        if (string.IsNullOrWhiteSpace(relicId) || HasRelicAnywhere(relicId))
+        if (!isOpen || isSelectionCompleted || !choice.IsValid)
+            return;
+
+        if (!TryCreateSkillRewards(
+                choice.SkillType,
+                skillRewardCount,
+                out List<BattleRewardData> rewards,
+                out string resultMessage))
+        {
+            Debug.LogWarning($"[RelicChoiceAreaUI] {resultMessage}");
+            SetupSkillRewardChoices();
+            return;
+        }
+
+        EnsureRewardPanelReference();
+        if (rewardPanel == null)
+        {
+            Debug.LogWarning("[RelicChoiceAreaUI] Shared BattleRewardPanelUI not found for start room skill rewards.");
+            SetupSkillRewardChoices();
+            return;
+        }
+
+        isSelectionCompleted = true;
+        PlayAcquireSfx();
+        SetRelicChoiceCanvasVisible(false);
+
+        rewardPanel.Open(rewards, () => RestoreChoiceCanvasAndComplete(choice.ChoiceId));
+    }
+
+
+    private GameObject FindRelicChoiceCanvas()
+    {
+        Transform current = transform;
+        while (current != null)
+        {
+            if (string.Equals(current.name, "RelicChoiceCanvas", System.StringComparison.OrdinalIgnoreCase))
+                return current.gameObject;
+
+            current = current.parent;
+        }
+
+        Canvas parentCanvas = GetComponentInParent<Canvas>(true);
+        return parentCanvas != null ? parentCanvas.gameObject : gameObject;
+    }
+
+    private void SetRelicChoiceCanvasVisible(bool visible)
+    {
+        if (relicChoiceCanvas == null)
+            relicChoiceCanvas = FindRelicChoiceCanvas();
+
+        if (relicChoiceCanvas != null && relicChoiceCanvas.activeSelf != visible)
+            relicChoiceCanvas.SetActive(visible);
+    }
+
+    private void RestoreChoiceCanvasAndComplete(string relicId)
+    {
+        SetRelicChoiceCanvasVisible(true);
+
+        if (isActiveAndEnabled)
+            StartCoroutine(CompleteChoiceAfterCanvasRestoreRoutine(relicId));
+        else
+            CompleteChoiceEvent(relicId);
+    }
+
+    private bool TryCreateSkillRewards(
+        SkillType skillType,
+        int count,
+        out List<BattleRewardData> rewards,
+        out string resultMessage)
+    {
+        rewards = new List<BattleRewardData>();
+        resultMessage = string.Empty;
+
+        int rewardCount = Mathf.Max(0, count);
+        if (rewardCount <= 0)
+        {
+            resultMessage = "Start room skill reward count is invalid.";
             return false;
+        }
 
+        if (DataManager.Instance == null ||
+            DataManager.Instance.SkillDatabase == null ||
+            DataManager.Instance.BattleRuntimeStore == null)
+        {
+            resultMessage = "DataManager, SkillDatabase, or BattleRuntimeStore is null.";
+            return false;
+        }
+
+        IReadOnlyList<SkillMasterData> allSkills = DataManager.Instance.SkillDatabase.GetAll();
         BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
-        runtime.OwnedRelicIds ??= new List<string>();
+        IReadOnlyDictionary<string, CharacterRuntimeData> characters =
+            DataManager.Instance.CharacterRuntimeStore?.GetAll();
 
-        runtime.OwnedRelicIds.Add(relicId.Trim());
-        NormalizeOwnedRelics(runtime);
-        DataManager.Instance.BattleRuntimeStore.Set(runtime);
+        HashSet<string> unavailableSkillIds =
+            StartRoomSkillRewardSelectionUtility.CollectUnavailableSkillIds(runtime, characters);
+        List<SkillMasterData> candidates =
+            StartRoomSkillRewardSelectionUtility.CollectAvailableCoreSkillRewards(
+                allSkills,
+                skillType,
+                unavailableSkillIds);
+
+        if (candidates.Count < rewardCount)
+        {
+            resultMessage = $"Not enough available {skillType} core skill rewards.";
+            return false;
+        }
+
+        for (int i = 0; i < rewardCount; i++)
+        {
+            int selectedIndex = BattleRandom.Range(0, candidates.Count);
+            SkillMasterData skill = candidates[selectedIndex];
+            candidates.RemoveAt(selectedIndex);
+
+            if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId))
+                continue;
+
+            string skillId = skill.SkillId.Trim();
+            rewards.Add(CreateSkillReward(skill, GetSkillSprite(skillId, skill)));
+            StartRoomSkillRewardSelectionUtility.AddSkillAndPair(unavailableSkillIds, skillId);
+        }
+
+        if (rewards.Count <= 0)
+        {
+            resultMessage = "No valid start room skill rewards were created.";
+            return false;
+        }
+
         return true;
+    }
+
+    private BattleRewardData CreateSkillReward(SkillMasterData skill, Sprite icon)
+    {
+        string skillId = skill != null && !string.IsNullOrWhiteSpace(skill.SkillId)
+            ? skill.SkillId.Trim()
+            : string.Empty;
+
+        return new BattleRewardData
+        {
+            Type = BattleRewardType.Skill,
+            RewardId = skillId,
+            SourceKey = $"StartRoom|Skill|{skillId}",
+            Amount = 1,
+            Icon = icon,
+            Name = skill != null ? GameDataLocalization.SkillName(skill) : skillId,
+            Description = BuildSkillDescription(skill)
+        };
+    }
+
+    private string BuildSkillDescription(SkillMasterData skill)
+    {
+        if (skill == null)
+            return string.Empty;
+
+        string rarityName = SkillRarityUtility.GetDisplayName(skill);
+        string description = GameDataLocalization.SkillDetails(skill);
+
+        if (string.IsNullOrWhiteSpace(description))
+            description = GameLocalization.Get("battle.available_skill", "획득 가능한 기억입니다.");
+
+        return string.IsNullOrWhiteSpace(rarityName)
+            ? description
+            : $"[{rarityName}] {description}";
+    }
+
+    private Sprite GetSkillSprite(string skillId, SkillMasterData skill)
+    {
+        if (skill != null && skill.Icon != null)
+            return skill.Icon;
+
+        if (string.IsNullOrWhiteSpace(skillId) ||
+            DataManager.Instance == null ||
+            DataManager.Instance.SkillIconDatabase == null)
+        {
+            return null;
+        }
+
+        return DataManager.Instance.SkillIconDatabase.TryGetIcon(skillId.Trim(), out Sprite icon)
+            ? icon
+            : null;
+    }
+
+    private void EnsureRewardPanelReference()
+    {
+        if (rewardPanel != null)
+            return;
+
+        rewardPanel = GetComponentInChildren<BattleRewardPanelUI>(true);
+
+        if (rewardPanel == null)
+            rewardPanel = Object.FindFirstObjectByType<BattleRewardPanelUI>(FindObjectsInactive.Include);
+    }
+
+    private IEnumerator CompleteChoiceAfterCanvasRestoreRoutine(string relicId)
+    {
+        // Canvas가 다시 표시된 한 프레임 뒤 시작방 완료 처리를 진행합니다.
+        yield return null;
+        CompleteChoiceEvent(relicId);
     }
 
     private void PlayAcquireSfx()
@@ -287,7 +589,7 @@ public class RelicChoiceAreaUI : MonoBehaviour
         if (AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(acquireSfxType);
+        AudioManager.Instance.PlaySfx(acquireSfxId);
     }
 
     private HashSet<string> GetUnavailableRelicIds()
@@ -391,6 +693,17 @@ public class RelicChoiceAreaUI : MonoBehaviour
             validSlots[i].ClearSlot();
     }
 
+    private void ClearSelection()
+    {
+        selectedRelicId = string.Empty;
+        selectedSlot = null;
+
+        List<RelicChoiceSlotUI> validSlots = GetValidSlots();
+        for (int i = 0; i < validSlots.Count; i++)
+            validSlots[i].SetSelected(false);
+
+    }
+
     private void Shuffle(List<string> list)
     {
         for (int i = 0; i < list.Count; i++)
@@ -398,5 +711,186 @@ public class RelicChoiceAreaUI : MonoBehaviour
             int randomIndex = Random.Range(i, list.Count);
             (list[i], list[randomIndex]) = (list[randomIndex], list[i]);
         }
+    }
+}
+
+public static class StartRoomRelicSelectionUtility
+{
+    private const string ActiveRelicIdPrefix = "Relic_A_";
+
+    public static List<string> CollectActiveRelicIds(IReadOnlyList<RelicData> relics)
+    {
+        List<string> result = new();
+
+        if (relics == null)
+            return result;
+
+        for (int i = 0; i < relics.Count; i++)
+        {
+            string id = relics[i]?.FragmentId?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(id) &&
+                id.StartsWith(ActiveRelicIdPrefix, System.StringComparison.Ordinal))
+            {
+                result.Add(id);
+            }
+        }
+
+        return result;
+    }
+}
+
+public readonly struct StartRoomSkillRewardChoice
+{
+    public StartRoomSkillRewardChoice(SkillType skillType, string title, string description)
+    {
+        SkillType = skillType;
+        Title = title;
+        Description = description;
+    }
+
+    public SkillType SkillType { get; }
+    public string Title { get; }
+    public string Description { get; }
+
+    public string ChoiceId => SkillType switch
+    {
+        SkillType.Attack => "StartRoom_Event09_Attack",
+        SkillType.Buff => "StartRoom_Event09_Buff",
+        SkillType.Debuff => "StartRoom_Event09_Debuff",
+        _ => string.Empty
+    };
+
+    public bool IsValid => SkillType == SkillType.Attack ||
+                           SkillType == SkillType.Buff ||
+                           SkillType == SkillType.Debuff;
+}
+
+public static class StartRoomSkillRewardSelectionUtility
+{
+    public const int RewardCountPerChoice = 2;
+
+    private static readonly StartRoomSkillRewardChoice[] DefaultChoiceSet =
+    {
+        new(SkillType.Attack, "공격 관련 기억", "보유하지 않은 공격 기억 2개를 제시합니다."),
+        new(SkillType.Buff, "버프 관련 기억", "보유하지 않은 버프 기억 2개를 제시합니다."),
+        new(SkillType.Debuff, "디버프 관련 기억", "보유하지 않은 디버프 기억 2개를 제시합니다.")
+    };
+
+    public static IReadOnlyList<StartRoomSkillRewardChoice> DefaultChoices => DefaultChoiceSet;
+
+    public static List<SkillMasterData> CollectAvailableCoreSkillRewards(
+        IReadOnlyList<SkillMasterData> allSkills,
+        SkillType requiredSkillType,
+        ISet<string> unavailableSkillIds)
+    {
+        List<SkillMasterData> result = new();
+
+        if (allSkills == null)
+            return result;
+
+        HashSet<string> normalizedUnavailableIds = NormalizeSkillIds(unavailableSkillIds);
+
+        for (int i = 0; i < allSkills.Count; i++)
+        {
+            SkillMasterData skill = allSkills[i];
+            if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId))
+                continue;
+
+            string skillId = skill.SkillId.Trim();
+
+            if (skill.Category != Category.Core)
+                continue;
+
+            if (skill.SkillType != requiredSkillType)
+                continue;
+
+            if (!SkillRarityUtility.IsBaseSkillVariant(skillId))
+                continue;
+
+            if (normalizedUnavailableIds.Contains(skillId))
+                continue;
+
+            result.Add(skill);
+        }
+
+        return result;
+    }
+
+    public static HashSet<string> CollectUnavailableSkillIds(
+        BattleRuntimeData runtime,
+        IReadOnlyDictionary<string, CharacterRuntimeData> characters,
+        IReadOnlyList<BattleRewardData> pendingRewards = null)
+    {
+        HashSet<string> ids = new();
+
+        if (runtime?.SkillInventoryIds != null)
+        {
+            for (int i = 0; i < runtime.SkillInventoryIds.Count; i++)
+                AddSkillAndPair(ids, runtime.SkillInventoryIds[i]);
+        }
+
+        if (characters != null)
+        {
+            foreach (KeyValuePair<string, CharacterRuntimeData> pair in characters)
+            {
+                CharacterRuntimeData character = pair.Value;
+                if (character == null)
+                    continue;
+
+                AddSkillAndPair(ids, character.MoveSkillId);
+                AddSkillAndPair(ids, character.PassiveSkillId);
+                AddSkillAndPair(ids, character.UniqueSkillId);
+                AddSkillAndPair(ids, character.AbilitySkillId);
+
+                if (character.EquippedSkillIds == null)
+                    continue;
+
+                for (int i = 0; i < character.EquippedSkillIds.Length; i++)
+                    AddSkillAndPair(ids, character.EquippedSkillIds[i]);
+            }
+        }
+
+        if (pendingRewards != null)
+        {
+            for (int i = 0; i < pendingRewards.Count; i++)
+            {
+                BattleRewardData reward = pendingRewards[i];
+                if (reward != null && reward.Type == BattleRewardType.Skill)
+                    AddSkillAndPair(ids, reward.RewardId);
+            }
+        }
+
+        return ids;
+    }
+
+    public static void AddSkillAndPair(HashSet<string> ids, string skillId)
+    {
+        if (ids == null || string.IsNullOrWhiteSpace(skillId))
+            return;
+
+        string normalizedSkillId = skillId.Trim();
+        ids.Add(normalizedSkillId);
+
+        if (SkillRarityUtility.TryGetPairedVariantId(normalizedSkillId, out string pairedSkillId))
+            ids.Add(pairedSkillId);
+    }
+
+    private static HashSet<string> NormalizeSkillIds(ISet<string> skillIds)
+    {
+        HashSet<string> result = new();
+
+        if (skillIds == null)
+            return result;
+
+        foreach (string skillId in skillIds)
+        {
+            if (string.IsNullOrWhiteSpace(skillId))
+                continue;
+
+            result.Add(skillId.Trim());
+        }
+
+        return result;
     }
 }

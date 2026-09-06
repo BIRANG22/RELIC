@@ -18,13 +18,15 @@ namespace Relic.Gameplay.Data
         [FormerlySerializedAs("CurrentHp")]
         public int CurrentHP;
         public int CurrentShield;
+        public int RemainingInnateShield;
 
         public int MinRemnant;
         public int MaxRemnant;
         public string UniqueItemId;
         public float UniqueItemChance;
-        public float RelicChance;
         public string AttackRangeId;
+        public string SpecialAction1;
+        public string SpecialAction2;
 
         public string[] PossibleSkillIdsByActionIndex = new string[MonsterMasterData.PossibleSkillSlotCount];
         public List<string> PossSkillIds = new();
@@ -33,6 +35,8 @@ namespace Relic.Gameplay.Data
         public List<StatusEffectRuntimeData> StatusEffects = new();
 
         public bool IsDeathHandled;
+        public bool IsExplodeReady;
+        public bool SuppressDeathReward;
 
         public BattleDirection Direction = BattleDirection.Left;
 
@@ -54,25 +58,64 @@ namespace Relic.Gameplay.Data
 
             MaxHP = masterData.HP;
             CurrentHP = masterData.HP;
+            CurrentShield = Math.Max(0, masterData.Armor);
+            RemainingInnateShield = CurrentShield;
 
             MinRemnant = masterData.MinRemnant;
             MaxRemnant = masterData.MaxRemnant;
             UniqueItemId = masterData.UniqueItemId;
             UniqueItemChance = masterData.UniqueItemChance;
-            RelicChance = masterData.RelicChance;
             AttackRangeId = masterData.AttackRangeId;
+            SpecialAction1 = masterData.SpecialAction1;
+            SpecialAction2 = masterData.SpecialAction2;
 
             TurnCount = 0;
             InitializePossibleSkills(masterData);
+            InitializeMonsterTraits();
         }
-
 
         public string GetDisplayName()
         {
-            if (!string.IsNullOrWhiteSpace(DisplayName))
-                return DisplayName;
+            string localizedBaseName = GameDataLocalization.MonsterName(MonsterId, Name);
+            string baseDisplayName = ResolveBaseDisplayName(localizedBaseName);
 
-            return string.IsNullOrWhiteSpace(Name) ? string.Empty : Name;
+            if (!string.IsNullOrWhiteSpace(DisplayName))
+            {
+                if (DisplayName == Name)
+                    return baseDisplayName;
+
+                if (!string.IsNullOrWhiteSpace(Name) && DisplayName.StartsWith(Name + "_", StringComparison.Ordinal))
+                    return baseDisplayName + DisplayName.Substring(Name.Length);
+
+                return DisplayName;
+            }
+
+            return baseDisplayName;
+        }
+
+        private string ResolveBaseDisplayName(string localizedBaseName)
+        {
+            string normalizedMonsterId = MonsterId?.Trim();
+            string normalizedName = Name?.Trim();
+            string normalizedLocalizedName = localizedBaseName?.Trim();
+
+            // 로컬라이징 테이블에 신규 몬스터 키가 아직 없어서 ID가 그대로 반환되는 경우,
+            // GameData Monster 시트의 Name 값을 우선 사용합니다.
+            if (!string.IsNullOrWhiteSpace(normalizedName) &&
+                !string.Equals(normalizedName, normalizedMonsterId, StringComparison.OrdinalIgnoreCase) &&
+                (string.IsNullOrWhiteSpace(normalizedLocalizedName) ||
+                 string.Equals(normalizedLocalizedName, normalizedMonsterId, StringComparison.OrdinalIgnoreCase)))
+            {
+                return normalizedName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(normalizedLocalizedName))
+                return normalizedLocalizedName;
+
+            if (!string.IsNullOrWhiteSpace(normalizedName))
+                return normalizedName;
+
+            return normalizedMonsterId ?? string.Empty;
         }
 
         public void SetDisplaySuffix(string suffix)
@@ -97,6 +140,51 @@ namespace Relic.Gameplay.Data
 
             if (CurrentHP < 0)
                 CurrentHP = 0;
+        }
+
+        public int AbsorbShieldDamage(int damage)
+        {
+            damage = Math.Max(0, damage);
+
+            if (damage <= 0 || CurrentShield <= 0)
+                return 0;
+
+            int shieldBefore = CurrentShield;
+            int temporaryShield = Math.Max(0, CurrentShield - RemainingInnateShield);
+            int temporaryDamage = Math.Min(temporaryShield, damage);
+
+            CurrentShield -= temporaryDamage;
+            damage -= temporaryDamage;
+
+            if (damage > 0 && RemainingInnateShield > 0)
+            {
+                int innateDamage = Math.Min(RemainingInnateShield, damage);
+                RemainingInnateShield -= innateDamage;
+                CurrentShield -= innateDamage;
+            }
+
+            CurrentShield = Math.Max(0, CurrentShield);
+            RemainingInnateShield = Math.Max(0, Math.Min(RemainingInnateShield, CurrentShield));
+            return shieldBefore - CurrentShield;
+        }
+
+        public void AddTemporaryShield(int amount)
+        {
+            if (amount <= 0)
+                return;
+
+            CurrentShield += amount;
+        }
+
+        public void ClearTemporaryShield()
+        {
+            CurrentShield = Math.Max(0, RemainingInnateShield);
+        }
+
+        public void ClearAllShield()
+        {
+            CurrentShield = 0;
+            RemainingInnateShield = 0;
         }
 
         public void Heal(int amount)
@@ -139,12 +227,94 @@ namespace Relic.Gameplay.Data
             return 0;
         }
 
+        public int GetPresentationActionIndexForSkill(string skillId)
+        {
+            int originalActionIndex = GetActionIndexForSkill(skillId);
+
+            if (originalActionIndex <= 0 || DataManager.Instance?.MonsterSkillDatabase == null)
+                return originalActionIndex;
+
+            string normalizedSkillId = skillId.Trim();
+            MonsterSkillData selectedSkillData =
+                DataManager.Instance.MonsterSkillDatabase.Get(normalizedSkillId);
+
+            if (selectedSkillData == null)
+                return originalActionIndex;
+
+            // 실제 이동은 Move 상태를 사용하고, 나머지 행동은 하나의 연속 프레젠테이션 슬롯에 연결합니다.
+            if (IsActualMoveSkill(selectedSkillData))
+                return 0;
+
+            int presentationActionIndex = 0;
+
+            for (int i = 0; i < PossibleSkillIdsByActionIndex.Length; i++)
+            {
+                string possibleSkillId = PossibleSkillIdsByActionIndex[i];
+
+                if (string.IsNullOrWhiteSpace(possibleSkillId))
+                    continue;
+
+                MonsterSkillData possibleSkillData =
+                    DataManager.Instance.MonsterSkillDatabase.Get(possibleSkillId);
+
+                if (possibleSkillData != null && !IsActualMoveSkill(possibleSkillData))
+                    presentationActionIndex++;
+
+                if (string.Equals(possibleSkillId, normalizedSkillId, StringComparison.Ordinal))
+                    return presentationActionIndex;
+            }
+
+            return originalActionIndex;
+        }
+
+        private static bool IsActualMoveSkill(MonsterSkillData skillData)
+        {
+            if (skillData == null)
+                return false;
+
+            if (skillData.TimelineNotation == TimelineActionType.Move)
+                return true;
+
+            if (string.IsNullOrWhiteSpace(skillData.EffectIds))
+                return false;
+
+            string[] effectIds = skillData.EffectIds.Split(',', ';');
+
+            for (int i = 0; i < effectIds.Length; i++)
+            {
+                if (string.Equals(effectIds[i].Trim(), "E_Move", StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
+        }
+
         public float GetHPPercent()
         {
             if (MaxHP <= 0)
                 return 0f;
 
             return (float)CurrentHP / MaxHP;
+        }
+
+        private void InitializeMonsterTraits()
+        {
+            if (StatusEffects == null)
+                StatusEffects = new List<StatusEffectRuntimeData>();
+
+            if (MonsterId == "Mon_01")
+            {
+                StatusEffects.Add(new StatusEffectRuntimeData("E_Split", 5));
+            }
+            else if (MonsterId == "Mon_06")
+            {
+                StatusEffects.Add(new StatusEffectRuntimeData("E_Explode", 2));
+            }
+            else if (MonsterId == "Mon_10")
+            {
+                // 녹턴은 전투 내내 유지되는 기습 효과를 기본 특성으로 가집니다.
+                StatusEffects.Add(new StatusEffectRuntimeData("E_Flank", 1));
+            }
         }
 
         private void InitializePossibleSkills(MonsterMasterData masterData)
@@ -166,4 +336,3 @@ namespace Relic.Gameplay.Data
         }
     }
 }
-

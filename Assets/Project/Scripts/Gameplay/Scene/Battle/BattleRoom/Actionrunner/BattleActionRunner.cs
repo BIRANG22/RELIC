@@ -3,6 +3,8 @@ using Relic.Gameplay.Battle;
 using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
+using System;
+using Object = UnityEngine.Object;
 using UnityEngine;
 
 public class BattleActionRunner
@@ -18,16 +20,70 @@ public class BattleActionRunner
     private readonly BattleEffectExecutor effectExecutor = new();
     private readonly bool useSafeSequentialExecution;
     private readonly float actionRoutineTimeout;
+    private readonly Action<PlayerReservedCommand, int> onPlayerCommandExecuted;
+    private readonly BattleConsecutiveActionPlan consecutiveActionPlan;
+    private readonly float multiHitActionInterval;
+    private BattleConsecutiveActionInfo activeActionInfo = BattleConsecutiveActionInfo.Single;
     private BattleGridEffectController gridEffectController;
+    private readonly HashSet<string> nocturnPortalFailedRuntimeIds = new();
 
     private const float ActionDelay = 0.03f;
+    private const float GroupedActionBeatDelay = 0.12f;
     private const float BatchEndDelay = 0.03f;
     private const float NoInteractionPostDelay = 0.12f;
 
     private const float HitCameraDelay = 0.08f;
     private const float MonsterHUDVisibleDelay = 0.45f;
+    private const float ForcedMoveVisualCompletionDelay = 0.18f;
     private const float DefaultActionRoutineTimeout = 8f;
-    private const string MuckProjectileSkillId = "S_Monster_04";
+    private const string MuckMonsterId = "Mon_01";
+    private const string MuckMoveSkillId = "S_Monster_01";
+    private const string MuckProjectileSkillId = "S_Monster_02";
+    private const string BlobAttackSkillId = "S_Monster_04";
+    private const string BlobMoveSkillId = "S_Monster_03";
+    private const string BlobMonsterId = "Mon_02";
+    private const string RancorMonsterId = "Mon_03";
+    private const string RancorMoveSkillId = "S_Monster_05";
+    private const string BlightMonsterId = "Mon_04";
+    private const string BlightMoveSkillId = "S_Monster_08";
+    private const string BlightDebuffSkillId = "S_Monster_10";
+    private const string VespaMonsterId = "Mon_05";
+    private const string VespaMoveSkillId = "S_Monster_11";
+    private const string VespaAttackSkillId = "S_Monster_12";
+    private const string CinderMonsterId = "Mon_06";
+    private const string CinderExplodeSkillId = "S_Monster_14";
+    private const string DraugrMonsterId = "Mon_07";
+    private const string DraugrMoveSkillId = "S_Monster_26";
+    private const string DraugrAttackSkillId = "S_Monster_27";
+    private const string BarrowMonsterId = "Mon_08";
+    private const string BarrowMoveSkillId = "S_Monster_29";
+    private const string BarrowDirectShotSkillId = "S_Monster_30";
+    private const string BarrowArcShotSkillId = "S_Monster_31";
+    private const string RookMonsterId = "Mon_09";
+    private const string RookMoveSkillId = "S_Monster_32";
+    private const string RookBashSkillId = "S_Monster_34";
+    private const string RookEarthquakeSkillId = "S_Monster_35";
+    private const string NocturnMonsterId = "Mon_10";
+    private const string NocturnMoveSkillId = "S_Monster_15";
+    private const string MortMonsterId = "Mon_11";
+    private const string MortMoveSkillId = "S_Monster_37";
+    private const string MortWraithRushSkillId = "S_Monster_38";
+    private const string ArabellaMonsterId = "Mon_12";
+    private const string ArabellaMoveSkillId = "S_Monster_20";
+    private static readonly HashSet<string> RangedMonsterAttackSkillIds = new(StringComparer.Ordinal)
+    {
+        "S_Monster_02",
+        "S_Monster_22",
+        "S_Monster_30",
+        "S_Monster_31",
+        "S_Monster_35",
+        "S_Monster_38",
+        "S_Monster_39"
+    };
+    private const string NocturnThrustSkillId = "S_Monster_17";
+    private const string NocturnSlashSkillId = "S_Monster_18";
+    private const string NocturnPullSkillId = "S_Monster_19";
+    private const string ResidueGridEffectId = "GR_Residue";
     private static readonly Color ExecutionRangeColor = Color.red;
     public const float MoveAnimationDuration = 0.15f;
 
@@ -35,6 +91,7 @@ public class BattleActionRunner
     {
         public string Label;
         public IEnumerator Routine;
+        public BattleConsecutiveActionInfo PresentationInfo;
     }
 
     public BattleActionRunner(
@@ -50,11 +107,17 @@ public class BattleActionRunner
       BattleMonsterSpawner monsterSpawner,
       BattleRoomLoader roomLoader,
       bool useSafeSequentialExecution,
-      float actionRoutineTimeout)
+      float actionRoutineTimeout,
+      Action<PlayerReservedCommand, int> onPlayerCommandExecuted = null,
+      BattleConsecutiveActionPlan consecutiveActionPlan = null,
+      float multiHitActionInterval = 0.12f)
     {
         this.gridManager = gridManager;
         this.useSafeSequentialExecution = useSafeSequentialExecution;
         this.actionRoutineTimeout = Mathf.Max(0.1f, actionRoutineTimeout);
+        this.onPlayerCommandExecuted = onPlayerCommandExecuted;
+        this.consecutiveActionPlan = consecutiveActionPlan;
+        this.multiHitActionInterval = Mathf.Max(0f, multiHitActionInterval);
 
         unitFinder = new BattleUnitFinder();
         hudService = new BattleHUDService();
@@ -87,19 +150,44 @@ public class BattleActionRunner
         List<ActionRoutine> actionRoutines = BuildActionRoutines(batch);
 
         if (actionRoutines.Count <= 0)
+        {
+            BattleConsecutiveActionInfo skippedLastInfo =
+                GetLastPresentationInfo(batch);
+
+            if (skippedLastInfo.IsGrouped && skippedLastInfo.IsGroupEnd)
+                BattleConsecutiveActionPresentationContext.EndGroup();
+
+            if (!keepCameraAfterBatch && BattleCameraController.Instance != null)
+            {
+                BattleCameraController.Instance.SetHoldDefaultReturn(false);
+                yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+            }
+
             yield break;
+        }
 
         bool batchHasInteraction = BatchHasInteractionAction(batch);
         bool batchHasCrossSideHit = BatchHasCrossSideHitAction(batch);
-        bool holdCameraDuringBatch = batchHasCrossSideHit &&
-            (ShouldHoldCameraUntilBatchEnd(batch) || keepCameraAfterBatch);
+        BattleConsecutiveActionInfo firstInfo = consecutiveActionPlan != null
+            ? consecutiveActionPlan.GetFirstInfo(batch)
+            : BattleConsecutiveActionInfo.Single;
+        bool continuesGroupFromPreviousBatch =
+            firstInfo.IsGrouped && !firstInfo.IsGroupStart;
+        bool holdCameraDuringBatch =
+            keepCameraAfterBatch ||
+            continuesGroupFromPreviousBatch ||
+            (batchHasCrossSideHit && ShouldHoldCameraUntilBatchEnd(batch));
 
         if (BattleCameraController.Instance != null)
         {
             BattleCameraController.Instance.SetHoldDefaultReturn(holdCameraDuringBatch);
 
-            if (!batchHasCrossSideHit && BattleCameraController.Instance.IsCombatZoomActive)
+            if (!batchHasCrossSideHit &&
+                !continuesGroupFromPreviousBatch &&
+                BattleCameraController.Instance.IsCombatZoomActive)
+            {
                 yield return BattleCameraController.Instance.ReturnDefault();
+            }
         }
 
         if (useSafeSequentialExecution)
@@ -115,7 +203,10 @@ public class BattleActionRunner
 
         IncreaseMonsterTurnCountsOnceInSlot(batch);
 
-        yield return RunPostActionPresentationRoutine(batchHasInteraction);
+        BattleConsecutiveActionInfo lastInfo = GetLastPresentationInfo(batch);
+
+        if (!lastInfo.IsGrouped || lastInfo.IsGroupEnd)
+            yield return RunPostActionPresentationRoutine(batchHasInteraction, lastInfo.SpeedMultiplier);
     }
 
     private List<ActionRoutine> BuildActionRoutines(BattleActionBatch batch)
@@ -132,17 +223,20 @@ public class BattleActionRunner
             if (!BattleActionOrderUtility.HasSwift(command))
                 continue;
 
-            AddPlayerActionRoutine(actionRoutines, command);
+            AddPlayerActionRoutine(actionRoutines, command, batch.TimelineSlotIndex);
         }
 
         for (int i = 0; i < batch.MonsterCommands.Count; i++)
         {
             MonsterReservedCommand command = batch.MonsterCommands[i];
 
-            if (command == null)
+            if (command == null || IsDeadMonsterCommand(command))
                 continue;
 
-            actionRoutines.Add(CreateActionRoutine($"Monster:{command.RuntimeId}:{command.SkillId}", ExecuteMonsterCommand(command)));
+            actionRoutines.Add(CreateActionRoutine(
+                $"Monster:{command.RuntimeId}:{command.SkillId}",
+                ExecuteMonsterCommand(command),
+                GetPresentationInfo(command)));
         }
 
         for (int i = 0; i < batch.PlayerCommands.Count; i++)
@@ -152,13 +246,16 @@ public class BattleActionRunner
             if (BattleActionOrderUtility.HasSwift(command))
                 continue;
 
-            AddPlayerActionRoutine(actionRoutines, command);
+            AddPlayerActionRoutine(actionRoutines, command, batch.TimelineSlotIndex);
         }
 
         return actionRoutines;
     }
 
-    private void AddPlayerActionRoutine(List<ActionRoutine> actionRoutines, PlayerReservedCommand command)
+    private void AddPlayerActionRoutine(
+        List<ActionRoutine> actionRoutines,
+        PlayerReservedCommand command,
+        int timelineSlotIndex)
     {
         if (actionRoutines == null || command == null)
             return;
@@ -171,22 +268,107 @@ public class BattleActionRunner
             if (IsConsumedVisualSkipMove(command))
                 return;
 
-            actionRoutines.Add(CreateActionRoutine($"PlayerMove:{command.CharacterId}", ExecutePlayerMove(command)));
+            actionRoutines.Add(CreateActionRoutine(
+                $"PlayerMove:{command.CharacterId}",
+                ExecutePlayerCommandAndNotify(command, timelineSlotIndex, ExecutePlayerMove(command)),
+                BattleConsecutiveActionInfo.Single));
             return;
         }
 
-        actionRoutines.Add(CreateActionRoutine($"PlayerSkill:{command.CharacterId}:{command.SkillId}", ExecutePlayerSkill(command)));
+        actionRoutines.Add(CreateActionRoutine(
+            $"PlayerSkill:{command.CharacterId}:{command.SkillId}",
+            ExecutePlayerCommandAndNotify(command, timelineSlotIndex, ExecutePlayerSkill(command)),
+            GetPresentationInfo(command)));
     }
 
-    private IEnumerator RunPostActionPresentationRoutine(bool hasInteraction = true)
+    private IEnumerator ExecutePlayerCommandAndNotify(
+        PlayerReservedCommand command,
+        int timelineSlotIndex,
+        IEnumerator actionRoutine)
     {
+        // 같은 배치 안에서 앞선 행동으로 예약자가 사망할 수 있으므로,
+        // 실제 실행 직전에도 다시 확인하고 즉시 건너뜁니다.
+        if (command == null || command.UserRuntime == null || command.UserRuntime.IsDead)
+            yield break;
+
+        bool consumeSmiteAfterAttack = ShouldConsumeSmite(command);
+
+        if (actionRoutine != null)
+        {
+            while (actionRoutine.MoveNext())
+                yield return actionRoutine.Current;
+        }
+
+        if (consumeSmiteAfterAttack)
+            ConsumeSmiteAfterAttack(command);
+
+        if (command != null && command.UserRuntime != null && !command.UserRuntime.IsDead)
+            onPlayerCommandExecuted?.Invoke(command, timelineSlotIndex);
+    }
+
+    private static bool ShouldConsumeSmite(PlayerReservedCommand command)
+    {
+        if (command == null ||
+            command.UserRuntime == null ||
+            command.SkillData == null ||
+            command.SkillData.SkillType != SkillType.Attack ||
+            command.UserRuntime.StatusEffects == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < command.UserRuntime.StatusEffects.Count; i++)
+        {
+            StatusEffectRuntimeData status = command.UserRuntime.StatusEffects[i];
+
+            if (status != null && status.EffectId == "E_Smite" && status.Stack > 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static void ConsumeSmiteAfterAttack(PlayerReservedCommand command)
+    {
+        if (command == null || command.UserRuntime == null || command.UserRuntime.StatusEffects == null)
+            return;
+
+        List<StatusEffectRuntimeData> statuses = command.UserRuntime.StatusEffects;
+
+        for (int i = statuses.Count - 1; i >= 0; i--)
+        {
+            StatusEffectRuntimeData status = statuses[i];
+
+            if (status == null || status.EffectId != "E_Smite")
+                continue;
+
+            if (status.Stack > 1)
+            {
+                status.Stack--;
+                status.TurnCount = Mathf.Max(status.TurnCount, 1);
+            }
+            else
+            {
+                statuses.RemoveAt(i);
+            }
+
+            return;
+        }
+    }
+
+    private IEnumerator RunPostActionPresentationRoutine(
+        bool hasInteraction = true,
+        float speedMultiplier = 1f)
+    {
+        float safeSpeed = Mathf.Max(1f, speedMultiplier);
+
         if (hasInteraction)
         {
-            yield return new WaitForSeconds(MonsterHUDVisibleDelay);
+            yield return new WaitForSeconds(MonsterHUDVisibleDelay / safeSpeed);
 
             hudService.HideUnselectedMonsterHUDs();
 
-            yield return new WaitForSeconds(BatchEndDelay);
+            yield return new WaitForSeconds(BatchEndDelay / safeSpeed);
 
             hudService.PlayAllAliveIdle();
             yield break;
@@ -194,7 +376,7 @@ public class BattleActionRunner
 
         hudService.HideUnselectedMonsterHUDs();
 
-        yield return new WaitForSeconds(NoInteractionPostDelay);
+        yield return new WaitForSeconds(NoInteractionPostDelay / safeSpeed);
 
         hudService.PlayAllAliveIdle();
     }
@@ -222,6 +404,8 @@ public class BattleActionRunner
 
     public IEnumerator ReturnCameraDefaultIfNeeded()
     {
+        BattleConsecutiveActionPresentationContext.EndGroup();
+
         if (BattleCameraController.Instance == null)
             yield break;
 
@@ -267,16 +451,17 @@ public class BattleActionRunner
 
     private bool PlayerCommandHasInteraction(PlayerReservedCommand command)
     {
-        if (command == null || command.SkillData == null)
+        if (command == null || command.SkillData == null ||
+            command.UserRuntime == null || command.UserRuntime.IsDead)
             return false;
 
         if (command.ReservedMoveGridIndex >= 0)
             return false;
 
-        if (command.SkillData.Target == TargetType.Self)
+        if (ShouldPlayerSkillTargetSelf(command))
             return command.UserRuntime != null && !command.UserRuntime.IsDead;
 
-        if (command.SkillData.Target == TargetType.PlayerParty)
+        if (ShouldPlayerSkillTargetPlayerParty(command))
             return HasPlayerPartyTarget(command);
 
         return HasMonsterTarget(command);
@@ -284,7 +469,7 @@ public class BattleActionRunner
 
     private bool MonsterCommandHasInteraction(MonsterReservedCommand command)
     {
-        if (command == null || command.SkillData == null)
+        if (command == null || command.SkillData == null || IsDeadMonsterCommand(command))
             return false;
 
         if (command.SkillData.TimelineNotation == TimelineActionType.Move)
@@ -300,6 +485,50 @@ public class BattleActionRunner
             return FindFirstAliveMonsterTarget(command, unitFinder.FindMonsterUnit(command.RuntimeId)) != null;
 
         return HasPlayerTarget(command);
+    }
+
+    private static bool IsAllRangePlayerSkill(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(
+            command.UserRuntime,
+            command.SkillData
+        );
+
+        return BattleRangeCalculator.IsAllRangeId(rangeId);
+    }
+
+    private static bool ShouldPlayerSkillTargetPlayerParty(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        if (!IsAllRangePlayerSkill(command))
+            return command.SkillData.Target == TargetType.PlayerParty;
+
+        if (command.SkillData.SkillType == SkillType.Buff)
+            return true;
+
+        if (command.SkillData.SkillType == SkillType.Attack ||
+            command.SkillData.SkillType == SkillType.Debuff)
+        {
+            return false;
+        }
+
+        return command.SkillData.Target == TargetType.PlayerParty;
+    }
+
+    private static bool ShouldPlayerSkillTargetSelf(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        if (IsAllRangePlayerSkill(command))
+            return false;
+
+        return command.SkillData.Target == TargetType.Self;
     }
 
     private bool HasPlayerPartyTarget(PlayerReservedCommand command)
@@ -342,14 +571,19 @@ public class BattleActionRunner
             {
                 PlayerReservedCommand command = batch.PlayerCommands[i];
 
-                if (command == null || command.SkillData == null)
+                if (command == null || command.SkillData == null ||
+                    command.UserRuntime == null || command.UserRuntime.IsDead)
                     continue;
 
                 if (command.ReservedMoveGridIndex >= 0)
                     continue;
 
-                if (command.SkillData.Target == TargetType.Self || command.SkillData.Target == TargetType.PlayerParty)
+                if (ShouldPlayerSkillTargetSelf(command) ||
+                    ShouldPlayerSkillTargetPlayerParty(command) ||
+                    ShouldSkipPlayerSkillCamera(command))
+                {
                     continue;
+                }
 
                 if (HasMonsterTarget(command))
                     count++;
@@ -362,10 +596,13 @@ public class BattleActionRunner
             {
                 MonsterReservedCommand command = batch.MonsterCommands[i];
 
-                if (command == null || command.SkillData == null)
+                if (command == null || command.SkillData == null || IsDeadMonsterCommand(command))
                     continue;
 
                 if (command.SkillData.TimelineNotation == TimelineActionType.Move)
+                    continue;
+
+                if (ShouldSkipMonsterSkillCamera(command))
                     continue;
 
                 if (HasPlayerTarget(command))
@@ -424,7 +661,7 @@ public class BattleActionRunner
 
             MonsterUnit monster = unitFinder.FindMonsterUnit(command.RuntimeId);
 
-            if (monster == null || monster.RuntimeData == null)
+            if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
                 continue;
 
             monster.RuntimeData.IncreaseTurnCount();
@@ -432,13 +669,116 @@ public class BattleActionRunner
         }
     }
 
-    private ActionRoutine CreateActionRoutine(string label, IEnumerator routine)
+    private ActionRoutine CreateActionRoutine(
+        string label,
+        IEnumerator routine,
+        BattleConsecutiveActionInfo presentationInfo = default)
     {
         return new ActionRoutine
         {
             Label = label,
-            Routine = routine
+            Routine = routine,
+            PresentationInfo = presentationInfo.GroupSize > 0
+                ? presentationInfo
+                : BattleConsecutiveActionInfo.Single
         };
+    }
+
+    private BattleConsecutiveActionInfo GetPresentationInfo(
+        PlayerReservedCommand command)
+    {
+        if (!useSafeSequentialExecution || consecutiveActionPlan == null)
+            return BattleConsecutiveActionInfo.Single;
+
+        return consecutiveActionPlan.GetInfo(command);
+    }
+
+    private BattleConsecutiveActionInfo GetPresentationInfo(
+        MonsterReservedCommand command)
+    {
+        if (!useSafeSequentialExecution || consecutiveActionPlan == null)
+            return BattleConsecutiveActionInfo.Single;
+
+        return consecutiveActionPlan.GetInfo(command);
+    }
+
+    private BattleConsecutiveActionInfo GetLastPresentationInfo(
+        BattleActionBatch batch)
+    {
+        if (!useSafeSequentialExecution || consecutiveActionPlan == null)
+            return BattleConsecutiveActionInfo.Single;
+
+        return consecutiveActionPlan.GetLastInfo(batch);
+    }
+
+    private bool ShouldEnterCameraForActiveAction()
+    {
+        return activeActionInfo.ShouldEnterCamera;
+    }
+
+    private bool ShouldPlayCameraImpactForHit(int hitIndex, int hitCount)
+    {
+        int safeHitCount = Mathf.Max(1, hitCount);
+
+        // 화면 흔들림/히트스톱은 예약 행동 하나당 한 번 재생합니다.
+        // 다단 공격이라면 해당 행동의 마지막 내부 타격에서만 재생합니다.
+        return hitIndex >= safeHitCount - 1;
+    }
+
+    private bool ShouldPlayExternalImpactForHit(int hitIndex, int hitCount)
+    {
+        int safeHitCount = Mathf.Max(1, hitCount);
+        bool isLastHit = hitIndex >= safeHitCount - 1;
+
+        // 피격 밀림은 기존 정책대로 연속 행동 그룹의 마지막 행동에서만 재생합니다.
+        // 다단 공격이라면 그 마지막 행동의 마지막 내부 타격에서만 적용합니다.
+        if (safeHitCount > 1)
+        {
+            if (!activeActionInfo.IsGrouped)
+                return isLastHit;
+
+            return activeActionInfo.ShouldPlayExternalImpact && isLastHit;
+        }
+
+        return !activeActionInfo.IsGrouped || activeActionInfo.ShouldPlayExternalImpact;
+    }
+
+    private static float GetMultiHitAnimationSpeed(int hitCount)
+    {
+        if (hitCount <= 1)
+            return 1f;
+
+        // 2타=1.25, 3타=1.5, 4타=1.75, 5타 이상=2.0
+        return Mathf.Min(2f, 1f + ((hitCount - 1) * 0.25f));
+    }
+
+    private bool ShouldReturnCameraForActiveAction()
+    {
+        return activeActionInfo.ShouldReturnCamera;
+    }
+
+    private float GetActivePresentationSpeed()
+    {
+        // 연속 행동 배율은 현재 행동 내부가 아니라
+        // 현재 행동의 마지막 연출 -> 다음 같은 행동 시작 경계에만 적용합니다.
+        return activeActionInfo.IsGrouped && !activeActionInfo.IsGroupEnd
+            ? Mathf.Max(1f, activeActionInfo.SpeedMultiplier)
+            : 1f;
+    }
+
+    private float GetActiveActionBeatDelay(float baseDelay = ActionDelay)
+    {
+        return BattleConsecutiveActionPresentationContext.ScaleActionBeatDuration(
+            baseDelay,
+            GroupedActionBeatDelay);
+    }
+
+    private IEnumerator ReturnCameraAfterActiveActionIfNeeded()
+    {
+        if (!ShouldReturnCameraForActiveAction() || BattleCameraController.Instance == null)
+            yield break;
+
+        yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
     }
 
     private IEnumerator RunSequential(List<ActionRoutine> routines)
@@ -447,7 +787,39 @@ public class BattleActionRunner
             yield break;
 
         for (int i = 0; i < routines.Count; i++)
+        {
+            if (i > 0 &&
+                ShouldReturnCameraBetweenSequentialActions(routines[i - 1], routines[i]) &&
+                BattleCameraController.Instance != null)
+            {
+                yield return BattleCameraController.Instance.ReturnDefault();
+            }
+
             yield return RunSingleWithTimeout(routines[i]);
+        }
+    }
+
+    private static bool ShouldReturnCameraBetweenSequentialActions(
+        ActionRoutine previous,
+        ActionRoutine current)
+    {
+        if (previous != null &&
+            current != null &&
+            previous.PresentationInfo.IsGrouped &&
+            current.PresentationInfo.IsGrouped &&
+            previous.PresentationInfo.GroupId == current.PresentationInfo.GroupId)
+        {
+            return false;
+        }
+
+        return IsMonsterActionRoutine(previous) && IsMonsterActionRoutine(current);
+    }
+
+    private static bool IsMonsterActionRoutine(ActionRoutine actionRoutine)
+    {
+        return actionRoutine != null &&
+               !string.IsNullOrEmpty(actionRoutine.Label) &&
+               actionRoutine.Label.StartsWith("Monster:", StringComparison.Ordinal);
     }
 
     private IEnumerator RunSingleWithTimeout(ActionRoutine actionRoutine)
@@ -462,6 +834,9 @@ public class BattleActionRunner
         }
 
         bool completed = false;
+        activeActionInfo = actionRoutine.PresentationInfo;
+        BattleConsecutiveActionPresentationContext.BeginAction(activeActionInfo);
+
         Coroutine runningCoroutine = CoroutineHost.Instance.StartCoroutine(
             RunAndCountDown(
                 actionRoutine,
@@ -485,11 +860,20 @@ public class BattleActionRunner
                 if (runningCoroutine != null && CoroutineHost.Instance != null)
                     CoroutineHost.Instance.StopCoroutine(runningCoroutine);
 
+                BattleConsecutiveActionPresentationContext.CompleteAction(
+                    activeActionInfo,
+                    completedNormally: false);
+                activeActionInfo = BattleConsecutiveActionInfo.Single;
                 yield break;
             }
 
             yield return null;
         }
+
+        BattleConsecutiveActionPresentationContext.CompleteAction(
+            activeActionInfo,
+            completedNormally: true);
+        activeActionInfo = BattleConsecutiveActionInfo.Single;
     }
 
     private IEnumerator RunParallel(List<ActionRoutine> routines)
@@ -639,6 +1023,34 @@ public class BattleActionRunner
         return range;
     }
 
+    private List<int> BuildPlayerMoveExecutionRange(
+        PlayerReservedCommand command,
+        int currentGridIndex)
+    {
+        List<int> range = new();
+
+        if (command == null || gridManager == null || currentGridIndex < 0)
+            return range;
+
+        Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
+
+        if (!gridManager.IsValidCoord(currentCoord))
+            return range;
+
+        Vector2Int reservedOffset = command.ExecutionMoveOffset;
+
+        if (command.VisualMoveSteps != null && command.VisualMoveSteps.Count > 0)
+            reservedOffset = GetTotalMoveOffset(command.VisualMoveSteps);
+
+        Vector2Int targetCoord = currentCoord + reservedOffset;
+
+        if (!gridManager.IsValidCoord(targetCoord))
+            return range;
+
+        AddUnique(range, gridManager.CoordToIndex(targetCoord));
+        return range;
+    }
+
     private List<int> BuildPlayerExecutionRange(PlayerReservedCommand command, int excludeGridIndex)
     {
         List<int> range = BuildPlayerExecutionRange(command);
@@ -716,6 +1128,42 @@ public class BattleActionRunner
 
         if (!target.Contains(index))
             target.Add(index);
+    }
+
+    private void TryPlaceMuckProjectileResidue(MonsterReservedCommand command)
+    {
+        if (command == null)
+            return;
+
+        int targetGridIndex = command.RangeOriginGridIndex;
+
+        if (targetGridIndex < 0 && command.TargetGridIndices != null && command.TargetGridIndices.Count > 0)
+            targetGridIndex = command.TargetGridIndices[0];
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null || !controller.TryPlaceEffect(targetGridIndex, ResidueGridEffectId))
+            return;
+
+        // 머크의 투사체 피해와 잔여물 피해는 별도의 타격으로 처리합니다.
+        // 목표 그리드에 캐릭터가 있다면 잔여물 생성 직후 GR_Residue 피해를 따로 적용합니다.
+        BattleCharacter character = FindPlayerAtGrid(targetGridIndex);
+
+        if (character != null)
+            controller.ApplyToPlayer(targetGridIndex, character);
+    }
+
+    private void TryPlaceResidue(int gridIndex)
+    {
+        if (gridIndex < 0)
+            return;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null)
+            return;
+
+        controller.TryPlaceEffect(gridIndex, ResidueGridEffectId);
     }
 
     private bool IsGridEffectBlocked(int gridIndex)
@@ -800,7 +1248,7 @@ public class BattleActionRunner
             yield break;
         }
 
-        ShowExecutionRange(BuildPlayerExecutionRange(command));
+        ShowExecutionRange(BuildPlayerMoveExecutionRange(command, currentGridIndex));
 
         try
         {
@@ -817,6 +1265,7 @@ public class BattleActionRunner
                 moveOffset = command.ExecutionMoveOffset;
 
             List<int> enteredGridIndices = new();
+            List<int> blockingUnitGridIndices = new();
 
             if (moveOffset == Vector2Int.zero)
             {
@@ -824,7 +1273,7 @@ public class BattleActionRunner
                 ApplyBlockedPlayerMoveCostRefund(command);
                 ApplyPlayerMoveFacing(character, command.Direction, moveOffset);
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(GetActiveActionBeatDelay());
                 yield break;
             }
 
@@ -842,13 +1291,15 @@ public class BattleActionRunner
                     command.VisualMoveSteps,
                     command.CharacterId,
                     out targetGridIndex,
-                    enteredGridIndices)
+                    enteredGridIndices,
+                    blockingUnitGridIndices)
                 : TryGetPlayerMoveTargetGridIndex(
                     currentGridIndex,
                     moveOffset,
                     command.CharacterId,
                     out targetGridIndex,
-                    enteredGridIndices);
+                    enteredGridIndices,
+                    blockingUnitGridIndices);
 
             if (!foundMoveTarget)
             {
@@ -861,10 +1312,16 @@ public class BattleActionRunner
 
             RecordPlayerMoveExecutionDistance(command, currentGridIndex, targetGridIndex);
 
+            Vector2Int startCoord = gridManager.IndexToCoord(currentGridIndex);
+            Vector2Int resolvedCoord = gridManager.IndexToCoord(targetGridIndex);
+            Vector2Int actualMoveOffset = resolvedCoord - startCoord;
+
             if (targetGridIndex == currentGridIndex)
             {
+                ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
+
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(GetActiveActionBeatDelay());
                 yield break;
             }
 
@@ -883,13 +1340,17 @@ public class BattleActionRunner
             );
 
             character.SetGridIndex(targetGridIndex);
+            character.RuntimeData.SetLastMoveOffset(actualMoveOffset);
+            BattleEquipmentEffectService.MarkMovedBeforeNextAttack(character.RuntimeData);
             UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
             ApplyGridEffectsToPlayer(enteredGridIndices, character);
-            statusEffectService.ApplyBurnDamageToPlayerOnMove(character);
+            statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
+
+            ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
 
             hudService.RefreshHUDs();
 
-            yield return new WaitForSeconds(ActionDelay);
+            yield return new WaitForSeconds(GetActiveActionBeatDelay());
         }
         finally
         {
@@ -920,23 +1381,29 @@ public class BattleActionRunner
             }
 
             List<int> enteredGridIndices = new();
+            List<int> blockingUnitGridIndices = new();
 
             if (!TryGetPlayerMoveTargetGridIndex(
                 currentGridIndex,
                 stepGroup,
                 command.CharacterId,
                 out int targetGridIndex,
-                enteredGridIndices))
+                enteredGridIndices,
+                blockingUnitGridIndices))
             {
                 break;
             }
 
-            if (targetGridIndex == currentGridIndex)
-                break;
-
             Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
             Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
             Vector2Int actualOffset = targetCoord - currentCoord;
+            bool wasBlockedDuringStep = actualOffset != stepOffset;
+
+            if (targetGridIndex == currentGridIndex)
+            {
+                ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
+                break;
+            }
 
             ApplyPlayerMoveFacing(character, command.Direction, actualOffset);
 
@@ -953,12 +1420,16 @@ public class BattleActionRunner
             );
 
             character.SetGridIndex(targetGridIndex);
+            character.RuntimeData.SetLastMoveOffset(actualOffset);
+            BattleEquipmentEffectService.MarkMovedBeforeNextAttack(character.RuntimeData);
             UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
             ApplyGridEffectsToPlayer(enteredGridIndices, character);
             currentGridIndex = targetGridIndex;
             executedDistance += GetMoveDistance(actualOffset);
 
-            if (character.RuntimeData == null || character.RuntimeData.IsDead)
+            ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
+
+            if (character.RuntimeData == null || character.RuntimeData.IsDead || wasBlockedDuringStep)
                 break;
         }
 
@@ -966,10 +1437,10 @@ public class BattleActionRunner
         ApplyBlockedPlayerMoveCostRefund(command);
 
         if (currentGridIndex != startGridIndex)
-            statusEffectService.ApplyBurnDamageToPlayerOnMove(character);
+            statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
 
         hudService.RefreshHUDs();
-        yield return new WaitForSeconds(ActionDelay);
+        yield return new WaitForSeconds(GetActiveActionBeatDelay());
     }
 
     private static List<List<Vector2Int>> BuildPlayerMoveExecutionStepGroups(
@@ -1098,35 +1569,27 @@ public class BattleActionRunner
         targetGridIndex = currentGridIndex;
         visualMoveOffset = Vector2Int.zero;
 
-        if (command == null ||
-            !command.HasVisualMoveResult ||
-            command.VisualMoveSteps == null ||
-            command.VisualMoveSteps.Count <= 0)
-        {
-            return false;
-        }
-
-        if (!TryGetPlayerMoveTargetGridIndex(
-            currentGridIndex,
-            command.VisualMoveSteps,
-            command.CharacterId,
-            out targetGridIndex))
-        {
-            return false;
-        }
-
-        if (gridManager == null)
+        if (command == null || gridManager == null || command.ReservedMoveGridIndex < 0)
             return false;
 
         Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
-        Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
 
-        if (!gridManager.IsValidCoord(currentCoord) || !gridManager.IsValidCoord(targetCoord))
-        {
+        if (!gridManager.IsValidCoord(currentCoord))
             return false;
-        }
 
-        visualMoveOffset = targetCoord - currentCoord;
+        // 예약 당시의 절대 목적지가 아니라 실행 순간의 실제 위치를 원점으로 사용한다.
+        // 넉백/그랩으로 위치가 달라져도 예약된 이동 방향과 이동량은 그대로 유지한다.
+        visualMoveOffset = command.ExecutionMoveOffset;
+
+        if (command.VisualMoveSteps != null && command.VisualMoveSteps.Count > 0)
+            visualMoveOffset = GetTotalMoveOffset(command.VisualMoveSteps);
+
+        Vector2Int targetCoord = currentCoord + visualMoveOffset;
+
+        if (!gridManager.IsValidCoord(targetCoord))
+            return false;
+
+        targetGridIndex = gridManager.CoordToIndex(targetCoord);
         return true;
     }
 
@@ -1135,7 +1598,8 @@ public class BattleActionRunner
         Vector2Int moveOffset,
         string characterId,
         out int targetGridIndex,
-        List<int> enteredGridIndices = null)
+        List<int> enteredGridIndices = null,
+        List<int> blockingUnitGridIndices = null)
     {
         targetGridIndex = currentGridIndex;
 
@@ -1152,11 +1616,11 @@ public class BattleActionRunner
 
         bool reachedTarget = true;
 
-        if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId, enteredGridIndices))
+        if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId, enteredGridIndices, blockingUnitGridIndices))
             reachedTarget = false;
 
         if (reachedTarget &&
-            !TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId, enteredGridIndices))
+            !TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId, enteredGridIndices, blockingUnitGridIndices))
         {
             reachedTarget = false;
         }
@@ -1170,7 +1634,8 @@ public class BattleActionRunner
         IReadOnlyList<Vector2Int> moveSteps,
         string characterId,
         out int targetGridIndex,
-        List<int> enteredGridIndices = null)
+        List<int> enteredGridIndices = null,
+        List<int> blockingUnitGridIndices = null)
     {
         targetGridIndex = currentGridIndex;
 
@@ -1186,10 +1651,10 @@ public class BattleActionRunner
         {
             Vector2Int moveOffset = moveSteps[i];
 
-            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId, enteredGridIndices))
+            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, characterId, enteredGridIndices, blockingUnitGridIndices))
                 break;
 
-            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId, enteredGridIndices))
+            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, characterId, enteredGridIndices, blockingUnitGridIndices))
                 break;
         }
 
@@ -1202,7 +1667,8 @@ public class BattleActionRunner
         int amount,
         bool horizontal,
         string characterId,
-        List<int> enteredGridIndices = null)
+        List<int> enteredGridIndices = null,
+        List<int> blockingUnitGridIndices = null)
     {
         int remaining = amount;
 
@@ -1219,7 +1685,12 @@ public class BattleActionRunner
             int gridIndex = gridManager.CoordToIndex(nextCoord);
 
             if (BattleOccupancyService.IsOccupiedByAnyUnit(gridIndex, characterId))
+            {
+                // 경로 계산에서는 피해를 발생시키지 않는다.
+                // 실제 실행 흐름에서 이 충돌 지점을 한 번만 처리한다.
+                AddUnique(blockingUnitGridIndices, gridIndex);
                 return false;
+            }
 
             if (IsGridEffectBlocked(gridIndex))
                 return false;
@@ -1230,6 +1701,20 @@ public class BattleActionRunner
         }
 
         return true;
+    }
+
+    private void ApplyPlayerMoveCollisionOnce(
+        IReadOnlyList<int> blockingUnitGridIndices,
+        string movingCharacterId)
+    {
+        if (blockingUnitGridIndices == null || blockingUnitGridIndices.Count <= 0)
+            return;
+
+        int blockingGridIndex = blockingUnitGridIndices[0];
+        if (blockingGridIndex < 0)
+            return;
+
+        ApplyCrashToBlockingUnitAtGrid(blockingGridIndex, movingCharacterId, null);
     }
 
     private void ApplyPlayerMoveFacing(
@@ -1331,9 +1816,18 @@ public class BattleActionRunner
         if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
             yield break;
 
-        RecalculatePlayerSkillRangeAtExecution(attacker, command);
+        // E_Move가 첫 피해 효과보다 먼저인 Direction 스킬은 예약 단계에서 이미
+        // 이동 예정 위치 기준 범위를 계산했습니다. 실행 시작 시 이동 전 위치로
+        // 다시 덮어쓰지 않고, 실제 이동 결과가 나온 뒤에만 범위를 재판정합니다.
+        if (!HasDirectionalMoveBeforeFirstDamage(command))
+            RecalculatePlayerSkillRangeAtExecution(attacker, command);
 
-        ShowExecutionRange(BuildPlayerExecutionRange(command, attacker.CurrentGridIndex));
+        ShowExecutionRange(BuildPlayerExecutionRange(command));
+
+        bool shouldControlAttackPlane = ShouldControlAttackPlaneForPlayerSkill(command);
+        PlaneAttackType playerPlaneAttackType = ShouldSkipPlayerSkillCamera(command)
+            ? PlaneAttackType.Ranged
+            : PlaneAttackType.Melee;
 
         try
         {
@@ -1347,16 +1841,30 @@ public class BattleActionRunner
 
             BattleUnitAnimator attackerAnimator = attacker.GetComponent<BattleUnitAnimator>();
 
-            if (command.SkillData.Target == TargetType.PlayerParty)
-            {
-                if (attackerAnimator != null)
-                    attackerAnimator.PlaySkillAction(command.SkillData);
+            BeginAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane, playerPlaneAttackType);
 
-                statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
+            if (ShouldPlayerSkillTargetPlayerParty(command))
+            {
+                if (ShouldEnterCameraForActiveAction() &&
+                    ShouldSkipPlayerSkillCamera(command) &&
+                    BattleCameraController.Instance != null)
+                    yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
+
+                if (attackerAnimator != null)
+                {
+                    attackerAnimator.PlaySkillAction(command);
+
+                    float prepareWaitDuration = attackerAnimator.LastScheduledPrepareWaitDuration;
+                    if (prepareWaitDuration > 0f)
+                        yield return new WaitForSeconds(prepareWaitDuration);
+                }
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
                 {
                     hudService.RefreshHUDs();
+
+                    yield return ReturnCameraAfterActiveActionIfNeeded();
+
                     yield break;
                 }
 
@@ -1364,6 +1872,8 @@ public class BattleActionRunner
                     FindObjectsInactive.Exclude,
                     FindObjectsSortMode.None
                 );
+
+                bool allowTargetUnitPlayOnceCue = true;
 
                 for (int i = 0; i < characters.Length; i++)
                 {
@@ -1378,31 +1888,64 @@ public class BattleActionRunner
                     if (!command.RangeGridIndices.Contains(target.CurrentGridIndex))
                         continue;
 
+                    bool spawnedTargetUnitVfx = PlayTargetUnitVfxOnPlayerTarget(
+                        attackerAnimator,
+                        command,
+                        target,
+                        allowPlayOncePerActionCues: allowTargetUnitPlayOnceCue);
+
+                    if (spawnedTargetUnitVfx)
+                        allowTargetUnitPlayOnceCue = false;
+
                     ExecutePlayerSkillEffectsToPlayer(attacker, target, command);
                 }
 
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(GetActiveActionBeatDelay());
+
+                yield return ReturnCameraAfterActiveActionIfNeeded();
+
                 yield break;
             }
 
-            if (command.SkillData.Target == TargetType.Self)
+            if (ShouldPlayerSkillTargetSelf(command))
             {
-                if (attackerAnimator != null)
-                    attackerAnimator.PlaySkillAction(command.SkillData);
+                if (ShouldEnterCameraForActiveAction() &&
+                    ShouldSkipPlayerSkillCamera(command) &&
+                    BattleCameraController.Instance != null)
+                    yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
 
-                statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
+                if (attackerAnimator != null)
+                {
+                    attackerAnimator.PlaySkillAction(command);
+
+                    float prepareWaitDuration = attackerAnimator.LastScheduledPrepareWaitDuration;
+                    if (prepareWaitDuration > 0f)
+                        yield return new WaitForSeconds(prepareWaitDuration);
+                }
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
                 {
                     hudService.RefreshHUDs();
+
+                    yield return ReturnCameraAfterActiveActionIfNeeded();
+
                     yield break;
                 }
+
+                PlayTargetUnitVfxOnPlayerTarget(
+                    attackerAnimator,
+                    command,
+                    attacker,
+                    allowPlayOncePerActionCues: true);
 
                 ExecutePlayerSkillEffectsToPlayer(attacker, attacker, command);
 
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(GetActiveActionBeatDelay());
+
+                yield return ReturnCameraAfterActiveActionIfNeeded();
+
                 yield break;
             }
 
@@ -1427,40 +1970,69 @@ public class BattleActionRunner
                 hitTargets.Add(monster);
             }
 
-            if (hitTargets.Count > 0 && BattleCameraController.Instance != null)
-                yield return BattleCameraController.Instance.ZoomToAttacker(attacker.transform);
+            List<int> gridEffectTargets = BuildDamageableGridEffectTargets(command);
 
-            statusEffectService.ApplyBleedingDamageToPlayerOnAttack(attacker);
+            if (ShouldEnterCameraForActiveAction() &&
+                ShouldSkipPlayerSkillCamera(command) &&
+                BattleCameraController.Instance != null)
+            {
+                yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
+            }
+            else if (ShouldEnterCameraForActiveAction() &&
+                     hitTargets.Count > 0 &&
+                     BattleCameraController.Instance != null)
+            {
+                yield return BattleCameraController.Instance.ZoomToAttacker(attacker.transform);
+            }
+
 
             if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
             {
                 hudService.RefreshHUDs();
+
+                yield return ReturnCameraAfterActiveActionIfNeeded();
+
                 yield break;
             }
 
-            if (hitTargets.Count <= 0)
+            if (hitTargets.Count <= 0 &&
+                gridEffectTargets.Count <= 0 &&
+                !HasDirectionalMoveBeforeFirstDamage(command))
             {
+                if (command.SkillData.SkillType == SkillType.Attack)
+                    BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
+
                 if (attackerAnimator != null)
-                    attackerAnimator.PlaySkillAction(command.SkillData);
+                {
+                    attackerAnimator.PlaySkillAction(command);
+                    yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
+                }
 
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(GetActiveActionBeatDelay());
+
+                yield return ReturnCameraAfterActiveActionIfNeeded();
+
                 yield break;
             }
 
             yield return ExecutePlayerSkillEffectsToMonsters(
                 attacker,
                 hitTargets,
+                gridEffectTargets,
                 command,
                 attackerAnimator);
 
             hudService.RefreshHUDs();
 
-            if (BattleCameraController.Instance != null)
-                yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+            yield return ReturnCameraAfterActiveActionIfNeeded();
         }
         finally
         {
+            EndAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane);
+            BattleEquipmentEffectService.ClearMoveFirstAttackPowerIfAttack(
+                attacker != null ? attacker.RuntimeData : command.UserRuntime,
+                command.SkillData);
             ClearExecutionRange();
         }
     }
@@ -1478,7 +2050,7 @@ public class BattleActionRunner
         if (command.SkillData.RangeType == RangeType.None)
             return;
 
-        if (DataManager.Instance == null || DataManager.Instance.RangeDatabase == null)
+        if (gridManager == null || DataManager.Instance == null)
             return;
 
         BattleDirection direction = attacker.RuntimeData != null
@@ -1487,6 +2059,12 @@ public class BattleActionRunner
 
         string rangeId =
             BattleEquipmentEffectService.GetEffectiveRangeId(attacker.RuntimeData, command.SkillData);
+
+        if (!BattleRangeCalculator.IsAllRangeId(rangeId) &&
+            DataManager.Instance.RangeDatabase == null)
+        {
+            return;
+        }
 
         List<int> rangeGridIndices = new();
 
@@ -1511,24 +2089,38 @@ public class BattleActionRunner
 
         if (command.SkillData.RangeType == RangeType.Selection)
         {
+            if (IsMoveSkill(command.SkillData) || command.SelectedGridIndex < 0)
+                return;
+
             rangeGridIndices = BattleRangeCalculator.GetSelectionRangeIndices(
-                attacker.CurrentGridIndex,
+                command.SelectedGridIndex,
                 rangeId,
                 DataManager.Instance.RangeDatabase,
                 gridManager
             );
 
-            command.SetDirectionResult(
+            command.SetSelectionAreaResult(
                 direction,
-                rangeGridIndices,
+                command.SelectedGridIndex,
                 rangeGridIndices
             );
         }
     }
 
+    private static bool IsMoveSkill(SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return false;
+
+        return skillData.Category == Category.Move ||
+               skillData.TimelineNotation == TimelineActionType.Move ||
+               skillData.SkillId == "S_Move_1";
+    }
+
     private IEnumerator ExecutePlayerSkillEffectsToMonsters(
         BattleCharacter caster,
         List<MonsterUnit> monsterTargets,
+        List<int> gridEffectTargets,
         PlayerReservedCommand command,
         BattleUnitAnimator attackerAnimator)
     {
@@ -1540,14 +2132,19 @@ public class BattleActionRunner
             Debug.LogWarning($"[PlayerSkillEffect] EffectEntries 없음 / Skill:{command.SkillData.SkillId}");
 
             if (attackerAnimator != null)
-                attackerAnimator.PlaySkillAction(command.SkillData);
+            {
+                attackerAnimator.PlaySkillAction(command);
+                yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
+            }
 
-            yield return new WaitForSeconds(ActionDelay);
+            yield return new WaitForSeconds(GetActiveActionBeatDelay());
             yield break;
         }
 
         bool playedDamageSequence = false;
         bool playedActionForNonDamage = false;
+        bool hasForcedMoveVisual = false;
+        HashSet<MonsterUnit> draugrCounterCandidates = new();
 
         for (int i = 0; i < command.SkillData.EffectEntries.Count; i++)
         {
@@ -1556,21 +2153,47 @@ public class BattleActionRunner
             if (entry == null || string.IsNullOrWhiteSpace(entry.EffectId))
                 continue;
 
+            string effectId = BattleEquipmentEffectService.GetEffectivePlayerDamageEffectId(
+                command.UserRuntime,
+                command,
+                entry.EffectId);
+
+            if (TryGetExplicitPlayerDirectionalMoveDistance(
+                    command,
+                    effectId,
+                    i,
+                    out int directionalMoveDistance))
+            {
+                yield return ExecutePlayerDirectionalMoveEffect(
+                    caster,
+                    command,
+                    directionalMoveDistance);
+
+                RefreshPlayerMonsterTargetsAfterDirectionalMove(
+                    caster,
+                    command,
+                    monsterTargets,
+                    gridEffectTargets);
+                continue;
+            }
+
             int value = GetPlayerEffectValue(command, entry);
             int count = GetPlayerEffectCount(command, entry);
 
-            if (IsDamageHitEffect(entry.EffectId))
+            if (IsDamageHitEffect(effectId))
             {
                 playedDamageSequence = true;
 
                 yield return ExecutePlayerDamageHitSequence(
                     caster,
                     monsterTargets,
+                    gridEffectTargets,
                     command,
-                    entry.EffectId,
+                    effectId,
                     value,
                     count,
-                    attackerAnimator);
+                    attackerAnimator,
+                    draugrCounterCandidates);
 
                 continue;
             }
@@ -1578,51 +2201,203 @@ public class BattleActionRunner
             if (!playedDamageSequence && !playedActionForNonDamage)
             {
                 if (attackerAnimator != null)
-                    attackerAnimator.PlaySkillAction(command.SkillData);
+                {
+                    attackerAnimator.PlaySkillAction(command);
+                    yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
+                }
 
                 playedActionForNonDamage = true;
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(GetActiveActionBeatDelay());
+
+                PlayTargetUnitVfxOnMonsterTargets(
+                    attackerAnimator,
+                    command,
+                    monsterTargets,
+                    allowPlayOncePerActionCues: true);
             }
 
             ExecutePlayerNonDamageEffectToMonsters(
                 caster,
                 monsterTargets,
                 command,
-                entry.EffectId,
+                effectId,
                 value,
                 count);
+
+            if (effectId == "E_Knockback" || effectId == "E_Grab")
+                hasForcedMoveVisual = true;
+        }
+
+        // 드라우그 반격은 공격 스킬의 모든 효과가 끝난 뒤 실행합니다.
+        // 넉백/그랩이 포함된 경우 강제이동과 충돌 처리가 먼저 끝나므로,
+        // 반격은 이동이 완료된 실제 드라우그 위치를 기준으로 판정됩니다.
+        if (draugrCounterCandidates.Count > 0)
+        {
+            // 넉백/그랩은 논리 그리드 위치를 먼저 갱신한 뒤 별도 코루틴으로 시각 이동을 진행합니다.
+            // 드라우그 반격 애니메이션은 해당 이동 연출까지 끝난 뒤 시작해야 화면 위치가 튀지 않습니다.
+            if (hasForcedMoveVisual)
+                yield return new WaitForSeconds(
+                    ForcedMoveVisualCompletionDelay / GetActivePresentationSpeed());
+
+            yield return ExecuteDraugrCounters(caster, draugrCounterCandidates);
         }
 
         if (!playedDamageSequence && !playedActionForNonDamage)
         {
             if (attackerAnimator != null)
-                attackerAnimator.PlaySkillAction(command.SkillData);
+            {
+                attackerAnimator.PlaySkillAction(command);
+                yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
+            }
 
-            yield return new WaitForSeconds(ActionDelay);
+            yield return new WaitForSeconds(GetActiveActionBeatDelay());
         }
+    }
+
+    private static bool PlayTargetUnitVfxOnPlayerTarget(
+        BattleUnitAnimator attackerAnimator,
+        PlayerReservedCommand command,
+        BattleCharacter target,
+        bool allowPlayOncePerActionCues)
+    {
+        if (attackerAnimator == null ||
+            command == null ||
+            command.SkillData == null ||
+            target == null ||
+            target.RuntimeData == null ||
+            target.RuntimeData.IsDead)
+        {
+            return false;
+        }
+
+        return attackerAnimator.PlaySkillTargetUnitVfx(
+            command.SkillData,
+            target.transform,
+            allowPlayOncePerActionCues);
+    }
+
+    private static void PlayTargetUnitVfxOnMonsterTargets(
+        BattleUnitAnimator attackerAnimator,
+        PlayerReservedCommand command,
+        IReadOnlyList<MonsterUnit> targets,
+        bool allowPlayOncePerActionCues)
+    {
+        if (attackerAnimator == null ||
+            command == null ||
+            command.SkillData == null ||
+            targets == null ||
+            targets.Count <= 0)
+        {
+            return;
+        }
+
+        bool allowPlayOnceCueForNextSpawn = allowPlayOncePerActionCues;
+
+        for (int i = 0; i < targets.Count; i++)
+        {
+            MonsterUnit target = targets[i];
+
+            if (target == null ||
+                target.RuntimeData == null ||
+                target.RuntimeData.IsDead)
+            {
+                continue;
+            }
+
+            bool spawned = attackerAnimator.PlaySkillTargetUnitVfx(
+                command.SkillData,
+                target.transform,
+                allowPlayOnceCueForNextSpawn);
+
+            if (spawned)
+                allowPlayOnceCueForNextSpawn = false;
+        }
+    }
+
+    private static IEnumerator PlayPlayerSkillTargetVfxIfNeeded(
+        BattleUnitAnimator attackerAnimator,
+        PlayerReservedCommand command)
+    {
+        if (!ShouldPlayPlayerSkillTargetVfx(attackerAnimator, command))
+            yield break;
+
+        yield return attackerAnimator.PlaySkillTargetVfx(command);
+    }
+
+    private static bool ShouldPlayPlayerSkillTargetVfx(
+        BattleUnitAnimator attackerAnimator,
+        PlayerReservedCommand command)
+    {
+        return attackerAnimator != null &&
+               command != null &&
+               command.SkillData != null &&
+               command.SkillData.RangeType == RangeType.Selection &&
+               command.SelectedGridIndex >= 0 &&
+               command.ReservedMoveGridIndex < 0;
     }
 
     private IEnumerator ExecutePlayerDamageHitSequence(
         BattleCharacter caster,
         List<MonsterUnit> monsterTargets,
+        List<int> gridEffectTargets,
         PlayerReservedCommand command,
         string effectId,
         int value,
         int count,
-        BattleUnitAnimator attackerAnimator)
+        BattleUnitAnimator attackerAnimator,
+        HashSet<MonsterUnit> draugrCounterCandidates)
     {
         int hitCount = Mathf.Max(1, count);
+        bool isMultiHit = hitCount > 1;
+        float multiHitAnimationSpeed = GetMultiHitAnimationSpeed(hitCount);
+
+        // 연타 횟수가 많을수록 공격 모션을 더 빠르게 재생해 전체 행동 시간이 과도하게 길어지지 않도록 합니다.
+        // 2타=1.25, 3타=1.5, 4타=1.75, 5타 이상=2.0
+        if (isMultiHit && attackerAnimator != null)
+            attackerAnimator.SetPlaybackSpeed(multiHitAnimationSpeed);
 
         for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
         {
-            if (!HasAliveMonsterTarget(monsterTargets))
+            if (!HasAliveMonsterTarget(monsterTargets) &&
+                !HasDamageableGridEffectTarget(gridEffectTargets))
+            {
+                BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
+
+                if (isMultiHit && attackerAnimator != null)
+                    attackerAnimator.RestorePlaybackSpeed();
+
                 yield break;
+            }
 
             if (attackerAnimator != null)
-                attackerAnimator.PlaySkillAction(command.SkillData);
+            {
+                attackerAnimator.PlaySkillAction(command, hitIndex);
 
-            yield return new WaitForSeconds(ActionDelay);
+                // 각 행동의 첫 타에 Prepare가 있으면 Runner도 그 시간을 실제 행동 시간으로 보장합니다.
+                // 그래야 연속 행동에서도 a -> b / a -> b처럼 다음 행동의 Prepare가 Action에 덮이지 않습니다.
+                float prepareWaitDuration = attackerAnimator.LastScheduledPrepareWaitDuration;
+                if (prepareWaitDuration > 0f)
+                    yield return new WaitForSeconds(prepareWaitDuration);
 
+                // Target VFX도 Prepare가 끝난 뒤 Action 시점에 재생합니다.
+                yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
+            }
+
+            // 연타 내부 타격 간격은 일반 ActionDelay와 분리합니다.
+            // 연속행동 배율은 이 값에 적용되지 않고, 연타 배율만 적용됩니다.
+            float hitActionDelay = isMultiHit
+                ? multiHitActionInterval / multiHitAnimationSpeed
+                : ActionDelay;
+            yield return new WaitForSeconds(
+                GetActiveActionBeatDelay(hitActionDelay));
+
+            PlayTargetUnitVfxOnMonsterTargets(
+                attackerAnimator,
+                command,
+                monsterTargets,
+                allowPlayOncePerActionCues: hitIndex <= 0);
+
+            List<Transform> feedbackTargets = new();
             bool appliedAnyHit = false;
 
             for (int i = 0; i < monsterTargets.Count; i++)
@@ -1642,23 +2417,371 @@ public class BattleActionRunner
                     value,
                     1);
 
+                int hpBeforeHit = monster.RuntimeData != null
+                    ? monster.RuntimeData.CurrentHP
+                    : 0;
+                int shieldBeforeHit = monster.RuntimeData != null
+                    ? monster.RuntimeData.CurrentShield
+                    : 0;
+
                 ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
                 appliedAnyHit = true;
+                AddFeedbackTarget(feedbackTargets, monster.transform);
+
+                bool receivedDamage = monster.RuntimeData != null &&
+                    (monster.RuntimeData.CurrentHP < hpBeforeHit ||
+                     monster.RuntimeData.CurrentShield < shieldBeforeHit);
+
+                // 드라우그는 플레이어의 공격 스킬에 실제로 피격된 경우에만 반격 후보가 됩니다.
+                // 다단 공격은 타격마다 반격하지 않고, 해당 스킬의 모든 타격이 끝난 뒤 한 번만 반격합니다.
+                if (receivedDamage &&
+                    monster.RuntimeData != null &&
+                    !monster.RuntimeData.IsDead &&
+                    string.Equals(monster.RuntimeData.MonsterId, "Mon_07", StringComparison.Ordinal))
+                {
+                    draugrCounterCandidates.Add(monster);
+                }
+
+                bool shouldSplit = receivedDamage &&
+                    statusEffectService.ApplySplitHitAndCheckTrigger(monster);
+
+                if (shouldSplit)
+                {
+                    deathService.HandleMuckSplit(monster);
+                    continue;
+                }
 
                 if (monster.RuntimeData != null && monster.RuntimeData.IsDead)
                     deathService.HandleMonsterDead(monster);
             }
 
+            appliedAnyHit |= ApplyPlayerDamageHitToGridEffects(
+                gridEffectTargets,
+                Mathf.Max(0, value));
+
             hudService.RefreshHUDs();
 
             if (!appliedAnyHit)
+            {
+                BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
+
+                if (isMultiHit && attackerAnimator != null)
+                    attackerAnimator.RestorePlaybackSpeed();
+
                 yield break;
+            }
 
-            if (BattleCameraController.Instance != null)
-                yield return BattleCameraController.Instance.PlayDamageImpact();
+            bool playCameraImpact = ShouldPlayCameraImpactForHit(hitIndex, hitCount);
+            bool playPushFeedback = ShouldPlayExternalImpactForHit(hitIndex, hitCount);
 
-            yield return new WaitForSeconds(HitCameraDelay);
+            if (playCameraImpact)
+            {
+                if (ShouldSkipPlayerSkillCamera(command))
+                {
+                    yield return PlayRangedDamageCameraFeedback();
+                }
+                else if (playPushFeedback)
+                {
+                    yield return PlayDamageHitFeedback(
+                        caster != null ? caster.transform : null,
+                        feedbackTargets,
+                        command.Direction);
+                }
+                else
+                {
+                    yield return PlayDamageCameraFeedback();
+                }
+            }
+
+            if (hitIndex >= hitCount - 1)
+            {
+                float endDelay = playCameraImpact ? HitCameraDelay : ActionDelay;
+                yield return new WaitForSeconds(endDelay / GetActivePresentationSpeed());
+            }
         }
+
+        if (isMultiHit && attackerAnimator != null)
+            attackerAnimator.RestorePlaybackSpeed();
+
+    }
+
+    private IEnumerator ExecuteDraugrCounters(
+        BattleCharacter caster,
+        HashSet<MonsterUnit> counterCandidates)
+    {
+        if (caster == null ||
+            caster.RuntimeData == null ||
+            caster.RuntimeData.IsDead ||
+            caster.CurrentGridIndex < 0 ||
+            counterCandidates == null ||
+            counterCandidates.Count <= 0)
+        {
+            yield break;
+        }
+
+        MonsterSkillData counterSkill =
+            DataManager.Instance?.MonsterSkillDatabase?.Get("S_Monster_28");
+
+        if (counterSkill == null)
+        {
+            Debug.LogWarning("[DraugrAI] 반격 스킬 S_Monster_28 데이터를 찾을 수 없습니다.");
+            yield break;
+        }
+
+        foreach (MonsterUnit draugr in counterCandidates)
+        {
+            if (draugr == null ||
+                draugr.RuntimeData == null ||
+                draugr.RuntimeData.IsDead ||
+                draugr.MainGridIndex < 0 ||
+                caster.RuntimeData.IsDead ||
+                caster.CurrentGridIndex < 0)
+            {
+                continue;
+            }
+
+            Vector2Int draugrCoord = gridManager.IndexToCoord(draugr.MainGridIndex);
+            Vector2Int casterCoord = gridManager.IndexToCoord(caster.CurrentGridIndex);
+
+            // 반격은 공격자가 현재 반격 범위 밖에 있더라도 행동 자체는 반드시 실행합니다.
+            // 공격자가 좌우 어느 쪽에 있는지는 현재 실제 위치를 기준으로 정하고,
+            // 같은 열에 있다면 드라우그가 현재 바라보는 방향을 그대로 사용합니다.
+            int deltaX = casterCoord.x - draugrCoord.x;
+
+            BattleUnitFacing draugrFacing = draugr.GetComponent<BattleUnitFacing>();
+            BattleDirection counterDirection = deltaX > 0
+                ? BattleDirection.Right
+                : deltaX < 0
+                    ? BattleDirection.Left
+                    : draugrFacing != null
+                        ? draugrFacing.GetBattleDirection()
+                        : BattleDirection.Right;
+
+            int horizontalSign = counterDirection == BattleDirection.Right ? 1 : -1;
+
+            List<int> counterRange = new();
+
+            for (int distance = 1; distance <= 2; distance++)
+            {
+                Vector2Int coord = draugrCoord + new Vector2Int(horizontalSign * distance, 0);
+
+                if (!gridManager.IsValidCoord(coord))
+                    continue;
+
+                counterRange.Add(gridManager.CoordToIndex(coord));
+            }
+
+            MonsterReservedCommand counterCommand =
+                new MonsterReservedCommand(draugr.RuntimeData, counterSkill);
+
+            counterCommand.SetRangeOriginGridIndex(draugr.MainGridIndex);
+            counterCommand.SetForcedDirection(counterDirection);
+            counterCommand.SetExplicitRangeResult(counterRange, counterRange);
+
+            yield return ExecuteMonsterSkill(counterCommand);
+
+            if (caster.RuntimeData.IsDead)
+                yield break;
+        }
+    }
+
+    private bool HasDirectionalMoveBeforeFirstDamage(PlayerReservedCommand command)
+    {
+        if (command == null ||
+            command.SkillData == null ||
+            command.SkillData.EffectEntries == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < command.SkillData.EffectEntries.Count; i++)
+        {
+            SkillEffectEntry entry = command.SkillData.EffectEntries[i];
+
+            if (entry == null || string.IsNullOrWhiteSpace(entry.EffectId))
+                continue;
+
+            string effectId = BattleEquipmentEffectService.GetEffectivePlayerDamageEffectId(
+                command.UserRuntime,
+                command,
+                entry.EffectId);
+
+            if (IsDamageHitEffect(effectId))
+                return false;
+
+            if (TryGetExplicitPlayerDirectionalMoveDistance(
+                    command,
+                    effectId,
+                    i,
+                    out _))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void RefreshPlayerMonsterTargetsAfterDirectionalMove(
+        BattleCharacter caster,
+        PlayerReservedCommand command,
+        List<MonsterUnit> monsterTargets,
+        List<int> gridEffectTargets)
+    {
+        if (caster == null || command == null)
+            return;
+
+        RecalculatePlayerSkillRangeAtExecution(caster, command);
+
+        // 이동 성공 시에는 예약 프리뷰와 같은 도착 위치 기준 범위가 유지되고,
+        // 이동 실패/충돌 시에는 실제 남아 있는 위치 기준 범위로 즉시 갱신합니다.
+        ShowExecutionRange(BuildPlayerExecutionRange(command));
+
+        if (monsterTargets != null)
+        {
+            monsterTargets.Clear();
+
+            MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
+
+            for (int i = 0; i < monsters.Length; i++)
+            {
+                MonsterUnit monster = monsters[i];
+
+                if (monster == null || monster.RuntimeData == null)
+                    continue;
+
+                if (!IsMonsterInRange(monster, command))
+                    continue;
+
+                monsterTargets.Add(monster);
+            }
+        }
+
+        if (gridEffectTargets != null)
+        {
+            gridEffectTargets.Clear();
+            gridEffectTargets.AddRange(BuildDamageableGridEffectTargets(command));
+        }
+    }
+
+    private static bool TryGetExplicitPlayerDirectionalMoveDistance(
+        PlayerReservedCommand command,
+        string effectId,
+        int effectIndex,
+        out int signedDistance)
+    {
+        signedDistance = 0;
+
+        if (command == null ||
+            command.SkillData == null ||
+            command.SkillData.RangeType != RangeType.Direction ||
+            !string.Equals(effectId, "E_Move", StringComparison.Ordinal) ||
+            effectIndex < 0 ||
+            string.IsNullOrWhiteSpace(command.SkillData.ValueRate))
+        {
+            return false;
+        }
+
+        string[] values = command.SkillData.ValueRate.Split(';');
+
+        if (effectIndex >= values.Length ||
+            string.IsNullOrWhiteSpace(values[effectIndex]))
+        {
+            return false;
+        }
+
+        return int.TryParse(values[effectIndex].Trim(), out signedDistance) &&
+               signedDistance != 0;
+    }
+
+    private IEnumerator ExecutePlayerDirectionalMoveEffect(
+        BattleCharacter caster,
+        PlayerReservedCommand command,
+        int signedDistance)
+    {
+        if (caster == null || command == null || caster.RuntimeData == null)
+            yield break;
+
+        if (caster.RuntimeData.IsDead || caster.CurrentGridIndex < 0 || gridManager == null)
+            yield break;
+
+        if (signedDistance == 0)
+            yield break;
+
+        Vector2Int attackDirection = command.Direction == BattleDirection.Right
+            ? Vector2Int.right
+            : Vector2Int.left;
+        Vector2Int moveOffset = attackDirection * signedDistance;
+
+        List<int> enteredGridIndices = new();
+        List<int> blockingUnitGridIndices = new();
+        int startGridIndex = caster.CurrentGridIndex;
+
+        if (!TryGetPlayerMoveTargetGridIndex(
+                startGridIndex,
+                moveOffset,
+                command.CharacterId,
+                out int targetGridIndex,
+                enteredGridIndices,
+                blockingUnitGridIndices))
+        {
+            yield break;
+        }
+
+        if (targetGridIndex == startGridIndex)
+        {
+            ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
+            yield break;
+        }
+
+        Vector2Int startCoord = gridManager.IndexToCoord(startGridIndex);
+        Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+        Vector2Int actualMoveOffset = targetCoord - startCoord;
+
+        BattleUnitFacing facing = caster.GetComponent<BattleUnitFacing>();
+        bool originalFacingRight = command.Direction == BattleDirection.Right;
+
+        if (facing != null)
+        {
+            facing.FaceByMoveOffset(moveOffset);
+            caster.RuntimeData.Direction = facing.GetBattleDirection();
+        }
+
+        BattleUnitAnimator animator = caster.GetComponent<BattleUnitAnimator>();
+
+        if (animator != null)
+            animator.PlayMove();
+
+        Vector3 targetPosition = gridManager.GetWorldPositionByIndex(targetGridIndex);
+
+        yield return MoveTransformSmooth(
+            caster.transform,
+            caster.transform.position,
+            targetPosition,
+            MoveAnimationDuration);
+
+        caster.SetGridIndex(targetGridIndex);
+        caster.RuntimeData.SetLastMoveOffset(actualMoveOffset);
+        BattleEquipmentEffectService.MarkMovedBeforeNextAttack(caster.RuntimeData);
+        UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
+        ApplyGridEffectsToPlayer(enteredGridIndices, caster);
+        statusEffectService.ApplyBleedDamageToPlayerOnMove(caster);
+
+        ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
+
+        if (facing != null)
+        {
+            facing.FaceRight(originalFacingRight);
+            caster.RuntimeData.Direction = facing.GetBattleDirection();
+        }
+        else
+        {
+            caster.RuntimeData.Direction = command.Direction;
+        }
+
+        hudService.RefreshHUDs();
     }
 
     private void ExecutePlayerNonDamageEffectToMonsters(
@@ -1689,7 +2812,7 @@ public class BattleActionRunner
                 value,
                 count);
 
-            ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
+            ExecutePlayerNonDamageEffectRepeated(effectId, context, command.SkillData.SkillId);
         }
     }
 
@@ -1706,6 +2829,7 @@ public class BattleActionRunner
             PlayerCaster = caster,
             MonsterTarget = monsterTarget,
             PlayerSkillData = command.SkillData,
+            PlayerCommand = command,
 
             Direction = command.Direction,
             GridManager = gridManager,
@@ -1719,6 +2843,127 @@ public class BattleActionRunner
     private bool IsDamageHitEffect(string effectId)
     {
         return effectId == "E_Strike" || effectId == "E_Pierce";
+    }
+
+    private List<int> BuildDamageableGridEffectTargets(PlayerReservedCommand command)
+    {
+        List<int> targets = new();
+
+        if (command == null || !HasPlayerDamageHitEffect(command))
+            return targets;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null || command.RangeGridIndices == null)
+            return targets;
+
+        for (int i = 0; i < command.RangeGridIndices.Count; i++)
+        {
+            int gridIndex = command.RangeGridIndices[i];
+
+            if (!controller.HasDamageableEffect(gridIndex))
+                continue;
+
+            AddUnique(targets, gridIndex);
+        }
+
+        return targets;
+    }
+
+    private bool HasPlayerDamageHitEffect(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        if (command.SkillData.EffectEntries != null && command.SkillData.EffectEntries.Count > 0)
+        {
+            for (int i = 0; i < command.SkillData.EffectEntries.Count; i++)
+            {
+                SkillEffectEntry entry = command.SkillData.EffectEntries[i];
+
+                if (entry == null || string.IsNullOrWhiteSpace(entry.EffectId))
+                    continue;
+
+                string effectId = BattleEquipmentEffectService.GetEffectivePlayerDamageEffectId(
+                    command.UserRuntime,
+                    command,
+                    entry.EffectId);
+
+                if (IsDamageHitEffect(effectId))
+                    return true;
+            }
+
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(command.SkillData.EffectIds))
+            return false;
+
+        string[] effectIds = command.SkillData.EffectIds.Split(';');
+
+        for (int i = 0; i < effectIds.Length; i++)
+        {
+            if (IsDamageHitEffect(effectIds[i].Trim()))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool HasDamageableGridEffectTarget(List<int> gridEffectTargets)
+    {
+        if (gridEffectTargets == null || gridEffectTargets.Count <= 0)
+            return false;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null)
+            return false;
+
+        for (int i = gridEffectTargets.Count - 1; i >= 0; i--)
+        {
+            int gridIndex = gridEffectTargets[i];
+
+            if (controller.HasDamageableEffect(gridIndex))
+                return true;
+
+            gridEffectTargets.RemoveAt(i);
+        }
+
+        return false;
+    }
+
+    private bool ApplyPlayerDamageHitToGridEffects(
+        List<int> gridEffectTargets,
+        int damage)
+    {
+        if (gridEffectTargets == null || gridEffectTargets.Count <= 0 || damage <= 0)
+            return false;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null)
+            return false;
+
+        bool applied = false;
+
+        for (int i = gridEffectTargets.Count - 1; i >= 0; i--)
+        {
+            int gridIndex = gridEffectTargets[i];
+
+            if (!controller.TryDamageEffect(gridIndex, damage, out bool destroyed))
+            {
+                gridEffectTargets.RemoveAt(i);
+                continue;
+            }
+
+            applied = true;
+
+            if (destroyed)
+                gridEffectTargets.RemoveAt(i);
+        }
+
+        return applied;
     }
 
     private bool HasAliveMonsterTarget(List<MonsterUnit> monsterTargets)
@@ -1782,21 +3027,26 @@ public class BattleActionRunner
             if (string.IsNullOrWhiteSpace(entry.EffectId))
                 continue;
 
+            string effectId = BattleEquipmentEffectService.GetEffectivePlayerDamageEffectId(
+                command.UserRuntime,
+                command,
+                entry.EffectId);
             BattleEffectContext context = new BattleEffectContext
             {
                 PlayerCaster = caster,
                 MonsterTarget = monsterTarget,
                 PlayerSkillData = command.SkillData,
+                PlayerCommand = command,
 
                 Direction = command.Direction,
                 GridManager = gridManager,
 
-                EffectId = entry.EffectId,
+                EffectId = effectId,
                 Value = GetPlayerEffectValue(command, entry),
                 Count = GetPlayerEffectCount(command, entry)
             };
 
-            if (IsDamageHitEffect(entry.EffectId))
+            if (IsDamageHitEffect(effectId))
             {
                 int hitCount = Mathf.Max(1, context.Count);
 
@@ -1806,12 +3056,12 @@ public class BattleActionRunner
                         break;
 
                     context.Count = 1;
-                    ExecutePlayerEffectSafely(entry.EffectId, context, command.SkillData.SkillId);
+                    ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
                 }
             }
             else
             {
-                ExecutePlayerEffectSafely(entry.EffectId, context, command.SkillData.SkillId);
+                ExecutePlayerNonDamageEffectRepeated(effectId, context, command.SkillData.SkillId);
             }
         }
     }
@@ -1843,21 +3093,26 @@ public class BattleActionRunner
             if (string.IsNullOrWhiteSpace(entry.EffectId))
                 continue;
 
+            string effectId = BattleEquipmentEffectService.GetEffectivePlayerDamageEffectId(
+                command.UserRuntime,
+                command,
+                entry.EffectId);
             BattleEffectContext context = new BattleEffectContext
             {
                 PlayerCaster = caster,
                 PlayerTarget = playerTarget,
                 PlayerSkillData = command.SkillData,
+                PlayerCommand = command,
 
                 Direction = command.Direction,
                 GridManager = gridManager,
 
-                EffectId = entry.EffectId,
+                EffectId = effectId,
                 Value = GetPlayerEffectValue(command, entry),
                 Count = GetPlayerEffectCount(command, entry)
             };
 
-            if (IsDamageHitEffect(entry.EffectId))
+            if (IsDamageHitEffect(effectId))
             {
                 int hitCount = Mathf.Max(1, context.Count);
 
@@ -1867,13 +3122,42 @@ public class BattleActionRunner
                         break;
 
                     context.Count = 1;
-                    ExecutePlayerEffectSafely(entry.EffectId, context, command.SkillData.SkillId);
+                    ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
                 }
             }
             else
             {
-                ExecutePlayerEffectSafely(entry.EffectId, context, command.SkillData.SkillId);
+                ExecutePlayerNonDamageEffectRepeated(effectId, context, command.SkillData.SkillId);
             }
+        }
+    }
+
+    private void ExecutePlayerNonDamageEffectRepeated(
+        string effectId,
+        BattleEffectContext context,
+        string skillId)
+    {
+        if (context == null)
+            return;
+
+        int repeatCount = Mathf.Max(1, context.Count);
+        context.Count = 1;
+
+        for (int repeatIndex = 0; repeatIndex < repeatCount; repeatIndex++)
+        {
+            if (context.PlayerTarget != null &&
+                (context.PlayerTarget.RuntimeData == null || context.PlayerTarget.RuntimeData.IsDead))
+            {
+                break;
+            }
+
+            if (context.MonsterTarget != null &&
+                (context.MonsterTarget.RuntimeData == null || context.MonsterTarget.RuntimeData.IsDead))
+            {
+                break;
+            }
+
+            ExecutePlayerEffectSafely(effectId, context, skillId);
         }
     }
 
@@ -1889,7 +3173,7 @@ public class BattleActionRunner
         catch (System.Exception e)
         {
             Debug.LogError(
-                $"[PlayerSkillEffect] Effect 실행 중 에러 / " +
+                $"[PlayerSkillEffect] Effect 실행 중 오류 / " +
                 $"Skill:{skillId} / Effect:{effectId}"
             );
             Debug.LogException(e);
@@ -1906,14 +3190,21 @@ public class BattleActionRunner
                 command.UserRuntime,
                 command,
                 entry,
-                damageService.GetPlayerDamage(command));
+                entry.ValueAmount);
 
         if (entry.EffectId == "E_Pierce")
             return BattleEquipmentEffectService.ModifyPlayerEffectValue(
                 command.UserRuntime,
                 command,
                 entry,
-                damageService.GetPlayerDamage(command));
+                entry.ValueAmount);
+
+        if (entry.EffectId == "E_Knockback")
+            return BattleEquipmentEffectService.ModifyPlayerKnockbackValue(
+                command.UserRuntime,
+                command,
+                entry,
+                entry.ValueAmount);
 
         return BattleEquipmentEffectService.ModifyPlayerEffectValue(
             command.UserRuntime,
@@ -1933,12 +3224,26 @@ public class BattleActionRunner
             entry,
             entry.CountAmount);
     }
+
+    private bool IsDeadMonsterCommand(MonsterReservedCommand command)
+    {
+        if (command == null || string.IsNullOrWhiteSpace(command.RuntimeId))
+            return true;
+
+        MonsterUnit monster = unitFinder.FindMonsterUnit(command.RuntimeId);
+        return monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead;
+    }
     private IEnumerator ExecuteMonsterCommand(MonsterReservedCommand command)
     {
-        if (command == null || command.SkillData == null)
+        if (command == null || command.SkillData == null || IsDeadMonsterCommand(command))
             yield break;
 
-        if (command.SkillData.TimelineNotation == TimelineActionType.Move)
+        // 사슬 이동은 투사 데이터의 타입이나 표기와 관계없이 이동 처리로 보냅니다.
+        if (IsNocturnPortalMove(command))
+        {
+            yield return ExecuteMonsterMove(command);
+        }
+        else if (command.SkillData.TimelineNotation == TimelineActionType.Move)
         {
             yield return ExecuteMonsterMove(command);
         }
@@ -1962,6 +3267,23 @@ public class BattleActionRunner
 
         Vector2Int moveOffset = GetMonsterMoveOffset(command);
 
+        // 사슬 이동은 예약된 절대 목적지를 사용할 수 있으므로 일반 이동의 0 오프셋 검사보다 먼저 처리합니다.
+        if (IsNocturnPortalMove(command))
+        {
+            ShowExecutionRange(BuildMonsterMoveExecutionRange(monster, command));
+
+            try
+            {
+                yield return ExecuteNocturnPortalMove(monster, command, moveOffset);
+            }
+            finally
+            {
+                ClearExecutionRange();
+            }
+
+            yield break;
+        }
+
         if (moveOffset == Vector2Int.zero)
             yield break;
 
@@ -1969,18 +3291,36 @@ public class BattleActionRunner
 
         try
         {
+
             BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
             if (facing != null)
                 facing.FaceByMoveOffset(moveOffset);
 
-            if (!CanApplyMonsterMove(monster, moveOffset))
+            // 첫 이동 칸이 이미 다른 유닛에게 점유되어 있다면 한 칸도 이동하지 않고 즉시 충돌합니다.
+            // 이동자와 해당 칸을 점유한 유닛 모두 충돌 고정 피해를 받습니다.
+            if (TryHandleImmediateMonsterUnitCollision(monster, moveOffset))
+            {
+                hudService.RefreshHUDs();
+                yield return new WaitForSeconds(GetActiveActionBeatDelay());
                 yield break;
+            }
 
-            List<int> enteredGridIndices = BuildMonsterEnteredGridIndices(monster, moveOffset);
+            MonsterMoveResolution moveResolution = ResolveMonsterMove(monster, moveOffset);
+
+            if (moveResolution.ActualOffset == Vector2Int.zero)
+            {
+                ApplyMonsterMoveCrashAfterMovement(monster, moveResolution);
+
+                hudService.RefreshHUDs();
+                yield return new WaitForSeconds(GetActiveActionBeatDelay());
+                yield break;
+            }
+
+            List<int> enteredGridIndices = moveResolution.EnteredGridIndices;
 
             Vector2Int mainCoord = gridManager.IndexToCoord(currentGridIndex);
-            Vector2Int movedMainCoord = mainCoord + moveOffset;
+            Vector2Int movedMainCoord = mainCoord + moveResolution.ActualOffset;
             int movedMainIndex = gridManager.CoordToIndex(movedMainCoord);
 
             Vector3 pos = gridManager.GetWorldPositionByIndex(movedMainIndex);
@@ -1997,18 +3337,310 @@ public class BattleActionRunner
                 MoveAnimationDuration
             );
 
-            monster.MoveOccupiedCells(moveOffset, gridManager);
+            monster.MoveOccupiedCells(moveResolution.ActualOffset, gridManager);
+
+            // 예약 후 다른 유닛이 경로를 막은 경우, 실제로 이동 가능한 지점까지 이동한 뒤
+            // 막힌 유닛과 이동한 몬스터 양쪽에 충돌 피해를 적용합니다.
+            ApplyMonsterMoveCrashAfterMovement(monster, moveResolution);
+
+            // 블롭은 이동이 완료되면 이동 전 그리드에 잔여물을 남깁니다.
+            // 잔여물의 피해는 이동 공격과 별개로 GridEffect 데이터에 따라 적용합니다.
+            if (monster.RuntimeData != null &&
+                string.Equals(monster.RuntimeData.MonsterId, BlobMonsterId, System.StringComparison.Ordinal))
+            {
+                TryPlaceResidue(currentGridIndex);
+            }
+
             ApplyGridEffectsToMonster(enteredGridIndices, monster);
-            statusEffectService.ApplyBurnDamageToMonsterOnMove(monster);
+            statusEffectService.ApplyBleedDamageToMonsterOnMove(monster);
 
             hudService.RefreshHUDs();
 
-            yield return new WaitForSeconds(ActionDelay);
+            yield return new WaitForSeconds(GetActiveActionBeatDelay());
         }
         finally
         {
             ClearExecutionRange();
         }
+    }
+
+
+
+    private static void HideNocturnPortalDestinationIndicator(MonsterReservedCommand command)
+    {
+        if (command == null || command.RangeOriginGridIndex < 0)
+            return;
+
+        PlayerSkillReservationController reservationController =
+            Object.FindFirstObjectByType<PlayerSkillReservationController>(
+                FindObjectsInactive.Include);
+
+        if (reservationController != null)
+        {
+            reservationController.HideNocturnPortalDestinationIndicator(
+                command.RuntimeId,
+                command.RangeOriginGridIndex);
+        }
+    }
+
+    private void MarkNocturnPortalFailed(MonsterReservedCommand command)
+    {
+        if (command == null || string.IsNullOrEmpty(command.RuntimeId))
+            return;
+
+        nocturnPortalFailedRuntimeIds.Add(command.RuntimeId);
+    }
+
+    private void ClearNocturnPortalFailed(MonsterReservedCommand command)
+    {
+        if (command == null || string.IsNullOrEmpty(command.RuntimeId))
+            return;
+
+        nocturnPortalFailedRuntimeIds.Remove(command.RuntimeId);
+    }
+
+    private bool ConsumeNocturnPortalFailure(MonsterReservedCommand command)
+    {
+        if (command == null || string.IsNullOrEmpty(command.RuntimeId))
+            return false;
+
+        return nocturnPortalFailedRuntimeIds.Remove(command.RuntimeId);
+    }
+
+    private static bool IsNocturnPortalMove(MonsterReservedCommand command)
+    {
+        return command != null && command.IsPortalMove;
+    }
+
+    private IEnumerator ExecuteNocturnPortalMove(
+        MonsterUnit monster,
+        MonsterReservedCommand command,
+        Vector2Int moveOffset)
+    {
+        if (monster == null || gridManager == null)
+            yield break;
+
+        // 사슬은 예약된 절대 목적지를 우선 사용합니다.
+        // 앞선 행동으로 현재 위치가 달라지면 예약 당시의 상대 오프셋이 0이 될 수도 있으므로
+        // 절대 목적지가 있는 명령은 MoveOffset이 0이어도 취소하지 않습니다.
+        bool hasReservedDestination = command != null && command.RangeOriginGridIndex >= 0;
+
+        if (!hasReservedDestination && moveOffset == Vector2Int.zero)
+            yield break;
+
+        int currentGridIndex = monster.MainGridIndex;
+
+        if (currentGridIndex < 0)
+            yield break;
+
+        Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
+
+        // 예약 당시의 절대 목적지가 있으면 그 값을 우선 사용합니다.
+        // 앞선 이동이나 그랩 때문에 몬스터의 현재 위치가 달라져도 사슬 목적지가 바뀌지 않습니다.
+        int destinationGridIndex = hasReservedDestination
+            ? command.RangeOriginGridIndex
+            : -1;
+
+        Vector2Int destinationCoord;
+
+        if (destinationGridIndex >= 0)
+        {
+            destinationCoord = gridManager.IndexToCoord(destinationGridIndex);
+            moveOffset = destinationCoord - currentCoord;
+        }
+        else
+        {
+            destinationCoord = currentCoord + moveOffset;
+
+            if (!gridManager.IsValidCoord(destinationCoord))
+                yield break;
+
+            destinationGridIndex = gridManager.CoordToIndex(destinationCoord);
+        }
+
+        // 그림자걸음은 실제 이동 성공 여부와 무관하게 예약된 목적지 방향을 바라봅니다.
+        // 목적지가 실행 직전에 막혀 순간이동에 실패하더라도, 이후 공격은 이 방향을 기준으로 실행됩니다.
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+        if (facing != null && moveOffset != Vector2Int.zero)
+            facing.FaceByMoveOffset(moveOffset);
+
+        // 실행 직전까지 목적지 칸이 비어 있어야 합니다.
+        // 캐릭터나 다른 몬스터가 해당 칸을 차지했다면 그림자걸음의 위치 이동만 취소합니다.
+        if (BattleOccupancyService.IsOccupiedByAnyUnit(destinationGridIndex, null, monster))
+        {
+            MarkNocturnPortalFailed(command);
+            HideNocturnPortalDestinationIndicator(command);
+            yield break;
+        }
+
+        BattleGridEffectController gridEffectController =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (gridEffectController != null && gridEffectController.IsBlocked(destinationGridIndex))
+        {
+            MarkNocturnPortalFailed(command);
+            HideNocturnPortalDestinationIndicator(command);
+            yield break;
+        }
+
+        // 목적지 검사를 통과했으므로 이번 사슬은 성공 상태로 기록합니다.
+        ClearNocturnPortalFailed(command);
+
+        // 이동 연출이 시작되는 순간 목적지 잔여물을 제거합니다.
+        HideNocturnPortalDestinationIndicator(command);
+
+        Vector3 destinationPosition = gridManager.GetWorldPositionByIndex(destinationGridIndex);
+
+        // 사슬 이동의 이동 상태임을 보여주기 위해 Move 애니메이션을 재생합니다.
+        // 위치 보간은 사용하지 않고 목적지에는 즉시 배치합니다.
+        BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+
+        if (animator != null)
+        {
+            animator.PlayMove();
+            yield return new WaitForSeconds(MoveAnimationDuration);
+        }
+
+        // 논리 그리드와 화면 위치를 함께 갱신해 실제 점유 위치를 전방 칸으로 이동시킵니다.
+        monster.MoveOccupiedCells(moveOffset, gridManager);
+        monster.transform.position = destinationPosition;
+
+        if (animator != null)
+        {
+            animator.PlayMoveReverse();
+            yield return new WaitForSeconds(MoveAnimationDuration);
+            animator.RestorePlaybackSpeed();
+        }
+
+        ApplyGridEffectsToMonster(new List<int> { destinationGridIndex }, monster);
+        statusEffectService.ApplyBleedDamageToMonsterOnMove(monster);
+        hudService.RefreshHUDs();
+        yield return new WaitForSeconds(GetActiveActionBeatDelay());
+    }
+
+    private sealed class MonsterMoveResolution
+    {
+        public Vector2Int ActualOffset;
+        public bool WasBlocked;
+        public bool BlockedByUnit;
+        public int BlockingUnitGridIndex = -1;
+        public bool BlockedByGridEffect;
+        public int BlockingGridEffectGridIndex = -1;
+        public bool BlockedByBoundary;
+        public List<int> EnteredGridIndices = new();
+    }
+
+    private void ApplyMonsterMoveCrashAfterMovement(
+        MonsterUnit monster,
+        MonsterMoveResolution moveResolution)
+    {
+        if (monster == null ||
+            moveResolution == null ||
+            !moveResolution.WasBlocked ||
+            monster.RuntimeData == null ||
+            monster.RuntimeData.IsDead)
+        {
+            return;
+        }
+
+        if (moveResolution.BlockedByUnit && moveResolution.BlockingUnitGridIndex >= 0)
+        {
+            ApplyCrashToBlockingUnitAtGrid(
+                moveResolution.BlockingUnitGridIndex,
+                null,
+                monster);
+            return;
+        }
+
+        if (moveResolution.BlockedByGridEffect &&
+            moveResolution.BlockingGridEffectGridIndex >= 0)
+        {
+            ApplyCrashToMonster(monster);
+
+            BattleGridEffectController controller = ResolveGridEffectController();
+            if (controller != null)
+            {
+                controller.TryDamageEffect(
+                    moveResolution.BlockingGridEffectGridIndex,
+                    2,
+                    out _);
+            }
+
+            return;
+        }
+
+        // 맵 경계는 충돌 대상이 아닙니다.
+        // 이동 가능한 마지막 칸에서 멈추기만 하고 충돌 피해는 발생하지 않습니다.
+        if (moveResolution.BlockedByBoundary)
+            return;
+
+        ApplyCrashToMonster(monster);
+    }
+
+    private MonsterMoveResolution ResolveMonsterMove(MonsterUnit monster, Vector2Int requestedOffset)
+    {
+        if (monster == null || gridManager == null || requestedOffset == Vector2Int.zero)
+            return new MonsterMoveResolution();
+
+        if (requestedOffset.x != 0 && requestedOffset.y != 0)
+        {
+            MonsterMoveResolution horizontalFirst =
+                ResolveMonsterMoveAxisOrder(monster, requestedOffset, true, false);
+            MonsterMoveResolution verticalFirst =
+                ResolveMonsterMoveAxisOrder(monster, requestedOffset, false, false);
+
+            bool useVerticalFirst =
+                GetMoveDistance(verticalFirst.ActualOffset) >
+                GetMoveDistance(horizontalFirst.ActualOffset);
+
+            return ResolveMonsterMoveAxisOrder(
+                monster,
+                requestedOffset,
+                !useVerticalFirst,
+                true);
+        }
+
+        return ResolveMonsterMoveAxisOrder(
+            monster,
+            requestedOffset,
+            requestedOffset.x != 0,
+            true);
+    }
+
+    private MonsterMoveResolution ResolveMonsterMoveAxisOrder(
+        MonsterUnit monster,
+        Vector2Int requestedOffset,
+        bool horizontalFirst,
+        bool applyCrashToBlockingUnit)
+    {
+        MonsterMoveResolution result = new();
+        List<Vector2Int> currentCoords = new();
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+            currentCoords.Add(gridManager.IndexToCoord(monster.OccupiedGridIndices[i]));
+
+        Vector2Int startMainCoord = gridManager.IndexToCoord(monster.MainGridIndex);
+        bool completed;
+
+        if (horizontalFirst)
+        {
+            completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.x, true, monster, result.EnteredGridIndices, applyCrashToBlockingUnit, result);
+            if (completed)
+                completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.y, false, monster, result.EnteredGridIndices, applyCrashToBlockingUnit, result);
+        }
+        else
+        {
+            completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.y, false, monster, result.EnteredGridIndices, applyCrashToBlockingUnit, result);
+            if (completed)
+                completed = TryApplyMonsterMoveAxisSteps(currentCoords, requestedOffset.x, true, monster, result.EnteredGridIndices, applyCrashToBlockingUnit, result);
+        }
+
+        if (currentCoords.Count > 0)
+            result.ActualOffset = currentCoords[0] - startMainCoord;
+
+        result.WasBlocked = !completed || result.ActualOffset != requestedOffset;
+        return result;
     }
 
     private bool CanApplyMonsterMove(MonsterUnit monster, Vector2Int moveOffset)
@@ -2053,7 +3685,9 @@ public class BattleActionRunner
         int amount,
         bool horizontal,
         MonsterUnit monster,
-        List<int> enteredGridIndices = null)
+        List<int> enteredGridIndices = null,
+        bool applyCrashToBlockingUnit = false,
+        MonsterMoveResolution moveResolution = null)
     {
         int remaining = amount;
 
@@ -2069,15 +3703,36 @@ public class BattleActionRunner
                     : new Vector2Int(0, step));
 
                 if (!gridManager.IsValidCoord(nextCoord))
+                {
+                    if (applyCrashToBlockingUnit && moveResolution != null)
+                        moveResolution.BlockedByBoundary = true;
+
                     return false;
+                }
 
                 int targetIndex = gridManager.CoordToIndex(nextCoord);
 
                 if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monster))
+                {
+                    if (applyCrashToBlockingUnit && moveResolution != null)
+                    {
+                        moveResolution.BlockedByUnit = true;
+                        moveResolution.BlockingUnitGridIndex = targetIndex;
+                    }
+
                     return false;
+                }
 
                 if (IsGridEffectBlocked(targetIndex))
+                {
+                    if (applyCrashToBlockingUnit && moveResolution != null)
+                    {
+                        moveResolution.BlockedByGridEffect = true;
+                        moveResolution.BlockingGridEffectGridIndex = targetIndex;
+                    }
+
                     return false;
+                }
 
                 nextCoords.Add(nextCoord);
                 AddUnique(enteredGridIndices, targetIndex);
@@ -2140,6 +3795,150 @@ public class BattleActionRunner
                TryApplyMonsterMoveAxisSteps(currentCoords, moveOffset.x, true, monster, enteredGridIndices);
     }
 
+    private bool TryHandleImmediateMonsterUnitCollision(
+        MonsterUnit monster,
+        Vector2Int requestedOffset)
+    {
+        if (monster == null || gridManager == null || requestedOffset == Vector2Int.zero)
+            return false;
+
+        Vector2Int firstStep;
+
+        if (requestedOffset.x != 0)
+            firstStep = new Vector2Int(requestedOffset.x > 0 ? 1 : -1, 0);
+        else
+            firstStep = new Vector2Int(0, requestedOffset.y > 0 ? 1 : -1);
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+        {
+            Vector2Int occupiedCoord = gridManager.IndexToCoord(monster.OccupiedGridIndices[i]);
+            Vector2Int nextCoord = occupiedCoord + firstStep;
+
+            // 맵 경계는 충돌 피해 대상이 아닙니다.
+            if (!gridManager.IsValidCoord(nextCoord))
+                return false;
+
+            int nextGridIndex = gridManager.CoordToIndex(nextCoord);
+
+            if (!BattleOccupancyService.IsOccupiedByAnyUnit(nextGridIndex, null, monster))
+                continue;
+
+            ApplyCrashToBlockingUnitAtGrid(nextGridIndex, null, monster);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void ApplyCrashToBlockingUnitAtGrid(
+        int gridIndex,
+        string movingCharacterId,
+        MonsterUnit movingMonster)
+    {
+        const int baseCrashDamage = 2;
+
+        BattleCharacter movingCharacter = !string.IsNullOrWhiteSpace(movingCharacterId)
+            ? unitFinder.FindBattleCharacter(movingCharacterId)
+            : null;
+
+        if (BattleOccupancyService.TryGetCharacterAtGrid(
+                gridIndex,
+                out BattleCharacter blockingCharacter,
+                movingCharacterId))
+        {
+            int damageToMovingUnit = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(blockingCharacter.RuntimeData);
+            int damageToBlockingCharacter = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(
+                    movingCharacter != null ? movingCharacter.RuntimeData : null);
+
+            bool movingMonsterKilled = false;
+
+            if (movingCharacter != null)
+                ApplyCrashToPlayer(movingCharacter, damageToMovingUnit);
+            else if (movingMonster != null)
+                movingMonsterKilled = ApplyCrashToMonster(movingMonster, damageToMovingUnit);
+
+            ApplyCrashToPlayer(blockingCharacter, damageToBlockingCharacter);
+
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                movingCharacter,
+                blockingCharacter,
+                null);
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                blockingCharacter,
+                movingCharacter,
+                movingMonster,
+                movingMonsterKilled);
+            return;
+        }
+
+        if (BattleOccupancyService.TryGetMonsterAtGrid(
+                gridIndex,
+                out MonsterUnit blockingMonster,
+                movingMonster))
+        {
+            int damageToBlockingMonster = baseCrashDamage +
+                BattleEquipmentEffectService.GetCollisionTargetDamageDelta(
+                    movingCharacter != null ? movingCharacter.RuntimeData : null);
+
+            if (movingCharacter != null)
+                ApplyCrashToPlayer(movingCharacter, baseCrashDamage);
+            else if (movingMonster != null)
+                ApplyCrashToMonster(movingMonster, baseCrashDamage);
+
+            bool blockingMonsterKilled = ApplyCrashToMonster(blockingMonster, damageToBlockingMonster);
+            BattleEquipmentEffectService.ApplyPlayerCollisionEffects(
+                movingCharacter,
+                null,
+                blockingMonster,
+                blockingMonsterKilled);
+        }
+    }
+
+    private void ApplyCrashToPlayer(BattleCharacter target, int damage = 2)
+    {
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+            return;
+
+        BattleEffectPlaneRotation.PlayCollisionRotationFeedback();
+
+        new CrashEffect().Execute(new BattleEffectContext
+        {
+            PlayerTarget = target,
+            GridManager = gridManager,
+            EffectId = "E_Crash",
+            Value = Mathf.Max(0, damage),
+            Count = 1
+        });
+    }
+
+    private bool ApplyCrashToMonster(MonsterUnit target, int damage = 2)
+    {
+        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+            return false;
+
+        BattleEffectPlaneRotation.PlayCollisionRotationFeedback();
+
+        bool wasAlive = !target.RuntimeData.IsDead;
+
+        new CrashEffect().Execute(new BattleEffectContext
+        {
+            MonsterTarget = target,
+            GridManager = gridManager,
+            EffectId = "E_Crash",
+            Value = Mathf.Max(0, damage),
+            Count = 1
+        });
+
+        bool killedByCrash = wasAlive && target.RuntimeData != null && target.RuntimeData.IsDead;
+
+        if (killedByCrash)
+            deathService.HandleMonsterDead(target);
+
+        return killedByCrash;
+    }
+
     private IEnumerator ExecuteMonsterSkill(MonsterReservedCommand command)
     {
         if (command == null || command.SkillData == null)
@@ -2150,9 +3949,32 @@ public class BattleActionRunner
         if (monster == null)
             yield break;
 
-        if (command.SkillData.SkillId == "S_Monster_07")
+        bool shouldControlAttackPlane = ShouldControlAttackPlaneForMonsterSkill(command);
+        PlaneAttackType monsterPlaneAttackType = ShouldSkipMonsterSkillCamera(command)
+            ? PlaneAttackType.Ranged
+            : PlaneAttackType.Melee;
+
+        // 직전 사슬이 점유 또는 이동 불가로 취소됐다면 예약된 사슬 위치를 공격 원점으로 사용하지 않습니다.
+        // 몬스터의 실제 현재 위치를 원점으로 바꾸고, 현재 위치에서 실제 대상을 향해 방향을 다시 정합니다.
+        if (ConsumeNocturnPortalFailure(command))
         {
+            command.SetRangeOriginGridIndex(monster.MainGridIndex);
+            command.ClearForcedDirection();
+        }
+
+        if (command.SkillData.SkillId == "S_Monster_12" ||
+            command.SkillData.SkillId == "S_Monster_33")
+        {
+            // 베스파 돌진은 실행 순간의 실제 위치를 범위 원점으로 사용합니다.
+            // 선행 이동이 충돌로 실패하거나 일부만 성공해도 예약 당시 예상 위치를 표시하지 않습니다.
+            if (command.SkillData.SkillId == VespaAttackSkillId)
+            {
+                AlignRelativeRangeOriginToActualPosition(monster, command);
+                RecalculateMonsterSkillRangeAtExecution(monster, command);
+            }
+
             ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
+            BeginAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane, monsterPlaneAttackType);
 
             try
             {
@@ -2160,44 +3982,82 @@ public class BattleActionRunner
             }
             finally
             {
+                EndAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane);
                 ClearExecutionRange();
             }
 
             yield break;
         }
 
-        // 현재 방향 기준으로 먼저 범위 재계산
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+        bool isNocturnDirectionalAttack = IsNocturnDirectionalAttack(command);
+
+        // 녹턴의 연계 공격은 예약된 방향을 유지하지만, 공격만 예약된 행동은 현재 Facing을 사용합니다.
+        // 그림자걸음이 실패한 경우에는 위에서 ForcedDirection을 해제했으므로 실제 현재 방향으로 공격합니다.
+        if (command.HasForcedDirection)
+        {
+            if (facing != null)
+                facing.FaceRight(command.ForcedDirection == BattleDirection.Right);
+
+            if (monster.RuntimeData != null)
+                monster.RuntimeData.Direction = command.ForcedDirection;
+        }
+
+        // 확정된 방향을 기준으로 공격 범위를 계산합니다.
+        // 머크는 예약된 공격 오프셋을 유지하고, 블롭은 실제 현재 위치 자체를 공격 원점으로 사용합니다.
+        AlignRelativeRangeOriginToActualPosition(monster, command);
+
         RecalculateMonsterSkillRangeAtExecution(monster, command);
 
         BattleCharacter firstPlayerTarget = FindFirstPlayerTarget(command);
 
         BattleUnitAnimator monsterAnimator = monster.GetComponent<BattleUnitAnimator>();
 
-        // 타겟이 있으면 바라보고, 바라본 방향으로 다시 범위 재계산
-        if (firstPlayerTarget != null)
+        // 강제 방향이 없는 일반 AI 행동만 실제 명중 대상 쪽으로 회전합니다.
+        // 사슬 후속 공격처럼 방향이 예약된 행동은 앞에서 지정한 방향을 유지합니다.
+        if (!command.HasForcedDirection &&
+            !isNocturnDirectionalAttack &&
+            firstPlayerTarget != null &&
+            facing != null)
         {
-            BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+            facing.FaceByWorldTarget(firstPlayerTarget.transform.position);
 
-            if (facing != null)
-            {
-                facing.FaceByWorldTarget(firstPlayerTarget.transform.position);
+            if (monster.RuntimeData != null)
+                monster.RuntimeData.Direction = facing.GetBattleDirection();
 
-                if (monster.RuntimeData != null)
-                    monster.RuntimeData.Direction = facing.GetBattleDirection();
+            RecalculateMonsterSkillRangeAtExecution(monster, command);
+            firstPlayerTarget = FindFirstPlayerTarget(command);
+        }
 
-                RecalculateMonsterSkillRangeAtExecution(monster, command);
-                firstPlayerTarget = FindFirstPlayerTarget(command);
-            }
+        bool isRookEarthquake =
+            string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, RookEarthquakeSkillId, System.StringComparison.Ordinal);
+
+        if (isRookEarthquake && BattleCameraController.Instance != null)
+        {
+            BattleCameraController.Instance.SetHoldDefaultReturn(false);
+            yield return BattleCameraController.Instance.ReturnDefault();
         }
 
         ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
+        BeginAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane, monsterPlaneAttackType);
 
         try
         {
-            if (firstPlayerTarget != null && BattleCameraController.Instance != null)
+            if (ShouldEnterCameraForActiveAction() &&
+                ShouldSkipMonsterSkillCamera(command) &&
+                BattleCameraController.Instance != null)
+            {
+                yield return BattleCameraController.Instance.ZoomForRangedSkill(monster.transform);
+            }
+            else if (ShouldEnterCameraForActiveAction() &&
+                     firstPlayerTarget != null &&
+                     BattleCameraController.Instance != null)
+            {
                 yield return BattleCameraController.Instance.ZoomToAttacker(monster.transform);
+            }
 
-            statusEffectService.ApplyBleedingDamageToMonsterOnAttack(monster);
 
             bool hasDamageHitEffect = monsterSkillEffectService.HasDamageHitEffect(command);
 
@@ -2215,20 +4075,33 @@ public class BattleActionRunner
 
                 monsterSkillEffectService.ApplyMonsterSkill(monster, command);
 
-                if (firstPlayerTarget != null && BattleCameraController.Instance != null)
-                    yield return BattleCameraController.Instance.PlayDamageImpact();
-
                 if (firstPlayerTarget != null)
-                    yield return new WaitForSeconds(HitCameraDelay);
+                    yield return new WaitForSeconds(HitCameraDelay / GetActivePresentationSpeed());
                 else
-                    yield return new WaitForSeconds(ActionDelay);
+                    yield return new WaitForSeconds(GetActiveActionBeatDelay());
             }
 
-            if (BattleCameraController.Instance != null)
-                yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+            // 머크의 투사체는 명중 여부와 관계없이 예약된 목표 그리드에 잔여물을 생성합니다.
+            // 투사체 피해와 잔여물 피해는 분리하며, 생성 순간에는 잔여물 피해를 즉시 적용하지 않습니다.
+            if (string.Equals(command.SkillData.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal))
+                TryPlaceMuckProjectileResidue(command);
+
+            // 신더의 자폭은 공격 효과 적용이 끝난 후 자신을 제거합니다.
+            // 일반 처치가 아니므로 분열 등 고유 사망 시 효과와 처치 보상은 발생하지 않습니다.
+            if (monster.RuntimeData != null &&
+                monster.RuntimeData.MonsterId == "Mon_06" &&
+                command.SkillData.SkillId == "S_Monster_14")
+            {
+                monster.RuntimeData.IsExplodeReady = false;
+                monster.RuntimeData.CurrentHP = 0;
+                deathService.HandleMonsterDeadWithoutReward(monster);
+            }
+
+            yield return ReturnCameraAfterActiveActionIfNeeded();
         }
         finally
         {
+            EndAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane);
             ClearExecutionRange();
         }
     }
@@ -2248,32 +4121,129 @@ public class BattleActionRunner
             bool hasAliveTarget = HasAliveMonsterSkillTarget(monster, command);
             bool canPlayProjectileVfx = ShouldPlayMonsterProjectileVfx(monster, command, monsterAnimator);
 
-            if (!hasAliveTarget && !canPlayProjectileVfx)
-                yield break;
-
+            // 명중 대상이 없어도 몬스터의 공격 모션은 반드시 재생합니다.
+            // 대상 부재는 피해 적용만 건너뛰며, 공격 시도 자체를 취소하지 않습니다.
             if (monsterAnimator != null)
                 monsterAnimator.PlayMonsterSkillAction(command);
 
             if (canPlayProjectileVfx)
                 yield return PlayMonsterProjectileVfxIfNeeded(monster, command, monsterAnimator);
             else
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(GetActiveActionBeatDelay());
 
             if (!hasAliveTarget)
             {
-                yield return new WaitForSeconds(ActionDelay);
+                yield return new WaitForSeconds(GetActiveActionBeatDelay());
                 yield break;
             }
 
-            bool hadCameraTarget = HasMonsterSkillCameraTarget(command);
+            bool isRangedPresentation = ShouldSkipMonsterSkillCamera(command);
+            List<Transform> feedbackTargets = BuildMonsterSkillFeedbackTargets(monster, command);
 
             monsterSkillEffectService.ApplyMonsterSkillDamageHit(monster, command, hitIndex);
 
-            if (BattleCameraController.Instance != null && hadCameraTarget)
-                yield return BattleCameraController.Instance.PlayDamageImpact();
+            bool playCameraImpact = ShouldPlayCameraImpactForHit(hitIndex, hitCount);
+            bool playPushFeedback = ShouldPlayExternalImpactForHit(hitIndex, hitCount);
 
-            yield return new WaitForSeconds(HitCameraDelay);
+            if (feedbackTargets.Count > 0 && playCameraImpact)
+            {
+                if (isRangedPresentation)
+                {
+                    yield return PlayRangedDamageCameraFeedback();
+                }
+                else if (playPushFeedback)
+                {
+                    yield return PlayDamageHitFeedback(
+                        monster != null ? monster.transform : null,
+                        feedbackTargets,
+                        GetMonsterImpactFallbackDirection(monster));
+                }
+                else
+                {
+                    yield return PlayDamageCameraFeedback();
+                }
+            }
+
+            float hitDelay = playCameraImpact ? HitCameraDelay : ActionDelay;
+            yield return new WaitForSeconds(hitDelay / GetActivePresentationSpeed());
         }
+    }
+
+    private void AlignRelativeRangeOriginToActualPosition(
+        MonsterUnit monster,
+        MonsterReservedCommand command)
+    {
+        if (monster == null || command == null || gridManager == null)
+            return;
+
+        bool isBlobAttack =
+            string.Equals(command.MonsterId, BlobMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BlobAttackSkillId, System.StringComparison.Ordinal);
+
+        bool isVespaAttack =
+            string.Equals(command.MonsterId, VespaMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, VespaAttackSkillId, System.StringComparison.Ordinal);
+
+        bool isCinderExplosion =
+            string.Equals(command.MonsterId, CinderMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, CinderExplodeSkillId, System.StringComparison.Ordinal);
+
+        bool isDraugrAttack =
+            string.Equals(command.MonsterId, DraugrMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, DraugrAttackSkillId, System.StringComparison.Ordinal);
+
+        bool isRookBash =
+            string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, RookBashSkillId, System.StringComparison.Ordinal);
+
+        bool isMortWraithRush =
+            string.Equals(command.MonsterId, MortMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, MortWraithRushSkillId, System.StringComparison.Ordinal);
+
+        bool isNocturnDirectionalAttack = IsNocturnDirectionalAttack(command);
+
+        // 녹턴 방향 공격과 모르트의 망령쇄도는 실행 순간의 실제 위치에서 시작합니다.
+        // 선행 이동이 실패하거나 일부만 성공했다면 예약 당시 성공 예상 위치를 공격 원점으로 사용하지 않습니다.
+        if (isBlobAttack || isVespaAttack || isCinderExplosion || isDraugrAttack || isRookBash || isMortWraithRush || isNocturnDirectionalAttack)
+        {
+            if (monster.MainGridIndex >= 0)
+                command.SetRangeOriginGridIndex(monster.MainGridIndex);
+
+            return;
+        }
+
+        if (!UsesRelativeRangeOriginAtExecution(command))
+            return;
+
+        if (monster.MainGridIndex < 0 ||
+            command.RangeOriginGridIndex < 0 ||
+            command.RangeOriginCasterGridIndex < 0)
+        {
+            return;
+        }
+
+        Vector2Int plannedCasterCoord = gridManager.IndexToCoord(command.RangeOriginCasterGridIndex);
+        Vector2Int reservedOriginCoord = gridManager.IndexToCoord(command.RangeOriginGridIndex);
+        Vector2Int actualCasterCoord = gridManager.IndexToCoord(monster.MainGridIndex);
+        Vector2Int relativeOriginOffset = reservedOriginCoord - plannedCasterCoord;
+        Vector2Int executionOriginCoord = actualCasterCoord + relativeOriginOffset;
+
+        if (!gridManager.IsValidCoord(executionOriginCoord))
+            return;
+
+        command.SetRangeOriginGridIndex(gridManager.CoordToIndex(executionOriginCoord));
+    }
+
+    private static bool UsesRelativeRangeOriginAtExecution(MonsterReservedCommand command)
+    {
+        if (command == null)
+            return false;
+
+        bool isMuckAttack =
+            string.Equals(command.MonsterId, MuckMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal);
+
+        return isMuckAttack;
     }
 
     private void RecalculateMonsterSkillRangeAtExecution(
@@ -2283,13 +4253,76 @@ public class BattleActionRunner
         if (monster == null || command == null || command.SkillData == null)
             return;
 
+        bool isBlobAttack =
+            string.Equals(command.MonsterId, BlobMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BlobAttackSkillId, System.StringComparison.Ordinal);
+
+        bool isVespaAttack =
+            string.Equals(command.MonsterId, VespaMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, VespaAttackSkillId, System.StringComparison.Ordinal);
+
+        bool isCinderExplosion =
+            string.Equals(command.MonsterId, CinderMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, CinderExplodeSkillId, System.StringComparison.Ordinal);
+
+        bool isDraugrAttack =
+            string.Equals(command.MonsterId, DraugrMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, DraugrAttackSkillId, System.StringComparison.Ordinal);
+
+        bool isBarrowDirectShot =
+            string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BarrowDirectShotSkillId, System.StringComparison.Ordinal);
+
+        bool isRookBash =
+            string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, RookBashSkillId, System.StringComparison.Ordinal);
+
+        bool isMortWraithRush =
+            string.Equals(command.MonsterId, MortMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, MortWraithRushSkillId, System.StringComparison.Ordinal);
+
+        bool isNocturnDirectionalAttack = IsNocturnDirectionalAttack(command);
+
+        // 블롭, 베스파, 신더 대폭발, 드라우그 가로베기, 바로우 직사, 녹턴 방향 공격과 모르트 망령쇄도는 예약 시 계산된 범위를 재사용하지 않습니다.
+        // 이동 성공/실패 결과가 정해진 뒤 실제 위치를 원점으로 범위를 다시 계산합니다.
+        // 드라우그는 이때 예약 방향이 아니라 실행 직전의 실제 Facing을 사용합니다.
+        if (command.HasExplicitRangeResult &&
+            !isBlobAttack &&
+            !isVespaAttack &&
+            !isCinderExplosion &&
+            !isDraugrAttack &&
+            !isBarrowDirectShot &&
+            !isRookBash &&
+            !isMortWraithRush &&
+            !isNocturnDirectionalAttack)
+        {
+            return;
+        }
+
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
-        bool facingRight = command.HasForcedDirection
-            ? command.ForcedDirection == BattleDirection.Right
-            : command.RangeOriginGridIndex >= 0
-                ? IsNearestPlayerToRight(command.RangeOriginGridIndex)
-                : facing == null || facing.IsFacingRight;
+        bool facingRight;
+
+        // 드라우그의 가로베기는 예약 방향이 아니라 실행 직전의 실제 Facing을 사용합니다.
+        // 이동 + 공격이면 이동이 만든 Facing으로, 공격만 예약된 경우에는
+        // 그 사이 피격 등으로 변경된 현재 Facing으로 공격합니다.
+        if ((isDraugrAttack || isBarrowDirectShot || isNocturnDirectionalAttack) && facing != null)
+        {
+            // 이동 연계처럼 방향이 예약된 공격은 예약 방향을 유지합니다.
+            // 녹턴의 제자리 공격 또는 실패한 그림자걸음의 후속 공격은 ForcedDirection이 없으므로
+            // 피격 등으로 바뀐 실행 직전의 실제 Facing을 그대로 사용합니다.
+            facingRight = command.HasForcedDirection
+                ? command.ForcedDirection == BattleDirection.Right
+                : facing.IsFacingRight;
+        }
+        else
+        {
+            facingRight = command.HasForcedDirection
+                ? command.ForcedDirection == BattleDirection.Right
+                : command.RangeOriginGridIndex >= 0
+                    ? IsNearestPlayerToRight(command.RangeOriginGridIndex)
+                    : facing == null || facing.IsFacingRight;
+        }
 
         List<int> rangeGridIndices =
             MonsterSkillRangeService.BuildRangeGridIndices(
@@ -2309,6 +4342,19 @@ public class BattleActionRunner
         command.SetRangeResult(rangeGridIndices, targetGridIndices);
     }
 
+    private static bool IsNocturnDirectionalAttack(MonsterReservedCommand command)
+    {
+        if (command == null ||
+            !string.Equals(command.MonsterId, NocturnMonsterId, System.StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return string.Equals(command.SkillId, NocturnThrustSkillId, System.StringComparison.Ordinal) ||
+               string.Equals(command.SkillId, NocturnSlashSkillId, System.StringComparison.Ordinal) ||
+               string.Equals(command.SkillId, NocturnPullSkillId, System.StringComparison.Ordinal);
+    }
+
     private bool IsNearestPlayerToRight(int originGridIndex)
     {
         if (gridManager == null || originGridIndex < 0)
@@ -2320,7 +4366,7 @@ public class BattleActionRunner
         );
 
         Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
-        BattleCharacter nearest = null;
+        int nearestGridIndex = -1;
         int nearestDistance = int.MaxValue;
 
         for (int i = 0; i < characters.Length; i++)
@@ -2330,10 +4376,7 @@ public class BattleActionRunner
             if (character == null || character.RuntimeData == null)
                 continue;
 
-            if (character.RuntimeData.IsDead)
-                continue;
-
-            if (character.CurrentGridIndex < 0)
+            if (character.RuntimeData.IsDead || character.CurrentGridIndex < 0)
                 continue;
 
             Vector2Int targetCoord = gridManager.IndexToCoord(character.CurrentGridIndex);
@@ -2344,14 +4387,37 @@ public class BattleActionRunner
             if (distance < nearestDistance)
             {
                 nearestDistance = distance;
-                nearest = character;
+                nearestGridIndex = character.CurrentGridIndex;
             }
         }
 
-        if (nearest == null)
+        BattleGridEffectController gridEffectController = ResolveGridEffectController();
+
+        if (gridEffectController != null)
+        {
+            IReadOnlyList<int> characterTargetGridIndices =
+                gridEffectController.GetCharacterTargetGridIndices();
+
+            for (int i = 0; i < characterTargetGridIndices.Count; i++)
+            {
+                int gridIndex = characterTargetGridIndices[i];
+                Vector2Int targetCoord = gridManager.IndexToCoord(gridIndex);
+                int distance =
+                    Mathf.Abs(targetCoord.x - originCoord.x) +
+                    Mathf.Abs(targetCoord.y - originCoord.y);
+
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestGridIndex = gridIndex;
+                }
+            }
+        }
+
+        if (nearestGridIndex < 0)
             return false;
 
-        return gridManager.IndexToCoord(nearest.CurrentGridIndex).x >= originCoord.x;
+        return gridManager.IndexToCoord(nearestGridIndex).x >= originCoord.x;
     }
 
     private BattleCharacter FindFirstPlayerTarget(MonsterReservedCommand command)
@@ -2391,7 +4457,8 @@ public class BattleActionRunner
         switch (command.SkillData.Target)
         {
             case TargetType.PlayerParty:
-                return FindFirstAlivePlayerTarget(command) != null;
+                return FindFirstAlivePlayerTarget(command) != null ||
+                       HasCharacterGridEffectTarget(command);
 
             case TargetType.EnemyParty:
                 return FindFirstAliveMonsterTarget(command, caster) != null;
@@ -2406,9 +4473,286 @@ public class BattleActionRunner
         }
     }
 
-    private bool HasMonsterSkillCameraTarget(MonsterReservedCommand command)
+    private bool HasCharacterGridEffectTarget(MonsterReservedCommand command)
     {
-        return FindFirstAlivePlayerTarget(command) != null;
+        if (command == null || command.TargetGridIndices == null)
+            return false;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null)
+            return false;
+
+        for (int i = 0; i < command.TargetGridIndices.Count; i++)
+        {
+            if (controller.IsCharacterTargetEffect(command.TargetGridIndices[i]))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool ShouldControlAttackPlaneForPlayerSkill(PlayerReservedCommand command)
+    {
+        return command != null &&
+               command.SkillData != null &&
+               command.SkillData.SkillType == SkillType.Attack;
+    }
+
+    private static bool ShouldControlAttackPlaneForMonsterSkill(MonsterReservedCommand command)
+    {
+        return command != null &&
+               command.SkillData != null &&
+               command.SkillData.TimelineNotation == TimelineActionType.Attack;
+    }
+
+    private void BeginAttackPlaneFeedbackIfNeeded(
+        bool shouldControlAttackPlane,
+        PlaneAttackType attackType)
+    {
+        if (!shouldControlAttackPlane)
+            return;
+
+        if (activeActionInfo.IsGrouped && !activeActionInfo.IsGroupStart)
+            return;
+
+        BattleEffectPlaneRotation.BeginAttackRotationFeedback(attackType);
+    }
+
+    private void EndAttackPlaneFeedbackIfNeeded(bool shouldControlAttackPlane)
+    {
+        if (!shouldControlAttackPlane)
+            return;
+
+        if (activeActionInfo.IsGrouped && !activeActionInfo.IsGroupEnd)
+            return;
+
+        BattleEffectPlaneRotation.EndAttackRotationFeedback();
+    }
+
+    private static bool ShouldSkipPlayerSkillCamera(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        // 이동 스킬은 Range_All을 사용하더라도 카메라 연출 분류에서는 제외합니다.
+        if (BattleEquipmentEffectService.IsMoveCommand(command))
+            return false;
+
+        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(
+            command.UserRuntime,
+            command.SkillData);
+
+        // Range_All은 UI 분류상 '전체'이지만, 이동 스킬이 아닌 경우
+        // 전투 카메라 연출은 원거리 스킬과 동일하게 처리합니다.
+        if (BattleRangeCalculator.IsAllRangeId(rangeId))
+            return true;
+
+        return command.SkillData.RangeType == RangeType.Selection;
+    }
+
+    private static bool ShouldSkipMonsterSkillCamera(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        TimelineActionType notation = command.SkillData.TimelineNotation;
+
+        if (notation == TimelineActionType.Buff ||
+            notation == TimelineActionType.Debuff)
+        {
+            return true;
+        }
+
+        return notation == TimelineActionType.Attack &&
+               RangedMonsterAttackSkillIds.Contains(command.SkillData.SkillId);
+    }
+
+    private static IEnumerator PlayDamageCameraFeedback()
+    {
+        if (BattleCameraController.Instance != null)
+            yield return BattleCameraController.Instance.PlayDamageImpact();
+    }
+
+    private static IEnumerator PlayRangedDamageCameraFeedback()
+    {
+        if (BattleCameraController.Instance != null)
+            yield return BattleCameraController.Instance.PlayRangedDamageImpact();
+    }
+
+    private IEnumerator PlayDamageHitFeedback(
+        Transform attacker,
+        IReadOnlyList<Transform> targets,
+        BattleDirection fallbackDirection)
+    {
+        yield return PlayDamageHitFeedback(
+            attacker,
+            targets,
+            BattleDirectionToHorizontal(fallbackDirection));
+    }
+
+    private IEnumerator PlayDamageHitFeedback(
+        Transform attacker,
+        IReadOnlyList<Transform> targets,
+        int fallbackHorizontalDirection,
+        bool includeTargetPush)
+    {
+        yield return BattleHitImpactFeedback.PlayDamageHitFeedback(
+            attacker,
+            targets,
+            fallbackHorizontalDirection,
+            includeTargetPush);
+    }
+
+    private IEnumerator PlayDamageHitFeedback(
+        Transform attacker,
+        IReadOnlyList<Transform> targets,
+        int fallbackHorizontalDirection)
+    {
+        yield return BattleHitImpactFeedback.PlayDamageHitFeedback(
+            attacker,
+            targets,
+            fallbackHorizontalDirection);
+    }
+
+    private static int BattleDirectionToHorizontal(BattleDirection direction)
+    {
+        return direction == BattleDirection.Left ? -1 : 1;
+    }
+
+    private static void AddFeedbackTarget(List<Transform> targets, Transform target)
+    {
+        if (targets == null || target == null)
+            return;
+
+        if (!targets.Contains(target))
+            targets.Add(target);
+    }
+
+    private int GetMonsterImpactFallbackDirection(MonsterUnit monster)
+    {
+        if (monster == null)
+            return 1;
+
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+
+        if (facing != null)
+            return facing.IsFacingRight ? 1 : -1;
+
+        if (monster.RuntimeData != null)
+            return BattleDirectionToHorizontal(monster.RuntimeData.Direction);
+
+        return 1;
+    }
+
+    private List<Transform> BuildMonsterSkillFeedbackTargets(
+        MonsterUnit caster,
+        MonsterReservedCommand command)
+    {
+        List<Transform> targets = new();
+
+        if (command == null || command.SkillData == null)
+            return targets;
+
+        switch (command.SkillData.Target)
+        {
+            case TargetType.PlayerParty:
+                AddPlayerFeedbackTargets(command, targets);
+                break;
+
+            case TargetType.EnemyParty:
+                AddMonsterFeedbackTargets(caster, command, targets);
+                break;
+
+            case TargetType.Self:
+                AddFeedbackTarget(targets, caster != null ? caster.transform : null);
+                break;
+        }
+
+        return targets;
+    }
+
+    private void AddPlayerFeedbackTargets(MonsterReservedCommand command, List<Transform> targets)
+    {
+        if (command == null || command.TargetGridIndices == null)
+            return;
+
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            if (character.RuntimeData.CurrentHP <= 0)
+                continue;
+
+            if (command.TargetGridIndices.Contains(character.CurrentGridIndex))
+                AddFeedbackTarget(targets, character.transform);
+        }
+    }
+
+    private void AddMonsterFeedbackTargets(
+        MonsterUnit caster,
+        MonsterReservedCommand command,
+        List<Transform> targets)
+    {
+        if (command == null || command.TargetGridIndices == null)
+            return;
+
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+
+            if (monster == null || monster == caster || monster.RuntimeData == null)
+                continue;
+
+            if (monster.RuntimeData.IsDead)
+                continue;
+
+            if (IsMonsterInTargetGridIndices(monster, command.TargetGridIndices))
+                AddFeedbackTarget(targets, monster.transform);
+        }
+    }
+
+    private static bool IsMonsterInTargetGridIndices(
+        MonsterUnit monster,
+        IReadOnlyCollection<int> targetGridIndices)
+    {
+        if (monster == null || targetGridIndices == null)
+            return false;
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+        {
+            if (ContainsGridIndex(targetGridIndices, monster.OccupiedGridIndices[i]))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool ContainsGridIndex(IReadOnlyCollection<int> gridIndices, int gridIndex)
+    {
+        if (gridIndices == null)
+            return false;
+
+        foreach (int candidate in gridIndices)
+        {
+            if (candidate == gridIndex)
+                return true;
+        }
+
+        return false;
     }
 
     private BattleCharacter FindFirstAlivePlayerTarget(MonsterReservedCommand command)
@@ -2589,6 +4933,114 @@ public class BattleActionRunner
         if (command == null)
             return Vector2Int.zero;
 
+        // 머크도 예약 시 정한 이동 벡터를 실행 순간까지 그대로 유지합니다.
+        // 예약 이후 캐릭터가 이동 경로에 들어오면 EffectiveMoveOffset이 축소될 수 있으므로,
+        // 원래 MoveOffset으로 진입을 시도해 ResolveMonsterMove에서 실제 충돌을 처리합니다.
+        if (string.Equals(command.MonsterId, MuckMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, MuckMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 블롭은 캐릭터가 있는 칸으로 충돌 이동을 예약할 수 있습니다.
+        // 타임라인 시뮬레이션에서는 점유된 칸이라 이동량이 0으로 계산될 수 있지만,
+        // 실제 실행에서는 원래 요청한 이동 방향으로 충돌을 시도해야 합니다.
+        if (string.Equals(command.MonsterId, BlobMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BlobMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 랜서는 예약한 도망 경로를 실행 시점에도 그대로 시도합니다.
+        // 플레이어가 그 경로를 먼저 막았다면 실제 이동 처리에서 충돌이 발생해야 하므로,
+        // 타임라인 시뮬레이션에서 줄어든 이동량이 아니라 원래 예약된 이동 벡터를 사용합니다.
+        if (string.Equals(command.MonsterId, RancorMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, RancorMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 블라이트도 랜서와 같은 도망 이동 규칙을 사용합니다.
+        // 예약 후 점유 상태가 바뀌더라도 실행 시 다른 방향을 다시 고르지 않고,
+        // 원래 예약한 2칸 이동 벡터를 그대로 시도해 실제 충돌 여부를 결정합니다.
+        if (string.Equals(command.MonsterId, BlightMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BlightMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 드라우그도 예약한 이동 방향을 실행 순간까지 유지합니다.
+        // 예약 이후 플레이어가 목적지/경로를 먼저 점유했다면 ResolveMonsterMove에서 실제 충돌을 처리해야 하므로,
+        // 타임라인 시뮬레이션으로 축소된 EffectiveMoveOffset 대신 원래 MoveOffset을 사용합니다.
+        if (string.Equals(command.MonsterId, DraugrMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, DraugrMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 바로우도 예약한 2칸 도망 방향을 실행 순간까지 유지합니다.
+        // 예약 후 플레이어가 경로나 목적지를 먼저 점유했다면 다른 방향으로 재탐색하지 않고,
+        // 원래 예약한 이동을 시도해 ResolveMonsterMove에서 실제 충돌을 처리합니다.
+        if (string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BarrowMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 루크도 예약한 일반 이동을 실행 순간까지 그대로 시도합니다.
+        // 예약 이후 플레이어가 목적지로 먼저 이동했다면 시뮬레이션 축소값을 쓰지 않고,
+        // 원래 예약한 이동 방향으로 진입을 시도해 ResolveMonsterMove에서 실제 충돌을 처리합니다.
+        if (string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, RookMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 녹턴의 일반 이동도 예약 시 정한 이동 벡터를 실행 순간까지 유지합니다.
+        // 예약 후 플레이어가 이동 칸을 먼저 점유했다면 이동 자체를 지우지 않고,
+        // 원래 방향으로 진입을 시도해 실제 실행 시 충돌하도록 합니다.
+        if (string.Equals(command.MonsterId, NocturnMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, NocturnMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 모르트의 도망 이동도 예약 시 정한 1칸 이동 방향을 실행 순간까지 유지합니다.
+        // 예약 후 플레이어가 목적지를 먼저 점유하면 이동을 취소하지 않고 원래 방향으로 진입을 시도해
+        // ResolveMonsterMove의 기존 충돌 규칙으로 처리합니다.
+        if (string.Equals(command.MonsterId, MortMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, MortMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // Arabella keeps the escape vector selected at reservation time.
+        // If a player occupies that path before execution, ResolveMonsterMove handles the collision.
+        if (string.Equals(command.MonsterId, ArabellaMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, ArabellaMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 베스파의 비행은 1칸/2칸 어느 쪽이든 예약 시 정한 이동 벡터를 실행 순간까지 유지합니다.
+        // 이동 스킬 ID 자체로 판정해 런타임 MonsterId 상태와 무관하게 시뮬레이션 축소값을 사용하지 않습니다.
+        // 실행 순간 실제 점유 상태는 ResolveMonsterMove에서 확인하므로, 새로 길을 막은 유닛과 정상적으로 충돌합니다.
+        if (string.Equals(command.SkillId, VespaMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
         return command.EffectiveMoveOffset;
     }
 
@@ -2651,21 +5103,53 @@ public class BattleActionRunner
             : facing == null || facing.IsFacingRight;
 
         int dirX = facingRight ? 1 : -1;
-        int maxMove = gridManager.Width;
+        int maxMove = command.SkillData.SkillId == "S_Monster_33"
+            ? 6
+            : gridManager.Width;
 
         Vector2Int finalOffset = Vector2Int.zero;
         BattleCharacter hitPlayer = null;
+        MonsterUnit hitBlockingMonster = null;
+        int hitCharacterGridEffectIndex = -1;
+        bool wasBlockedByCollision = false;
 
         for (int step = 1; step <= maxMove; step++)
         {
             Vector2Int testOffset = new Vector2Int(dirX * step, 0);
 
-            if (!CanMonsterDashToOffset(monster, testOffset, out BattleCharacter blockingPlayer))
+            if (IsMonsterDashOutsideGrid(monster, testOffset))
+            {
+                // 그리드 경계는 충돌 대상이 아니므로 맵 밖으로 나가지 않고 멈추기만 합니다.
                 break;
+            }
+
+            if (!CanMonsterDashToOffset(
+                    monster,
+                    testOffset,
+                    out BattleCharacter blockingPlayer,
+                    out MonsterUnit blockingMonster,
+                    out int blockingCharacterGridEffectIndex))
+            {
+                // 장애물이나 다른 유닛에 막힌 경우에만 충돌로 처리합니다.
+                wasBlockedByCollision = true;
+                break;
+            }
 
             if (blockingPlayer != null)
             {
                 hitPlayer = blockingPlayer;
+                break;
+            }
+
+            if (blockingMonster != null)
+            {
+                hitBlockingMonster = blockingMonster;
+                break;
+            }
+
+            if (blockingCharacterGridEffectIndex >= 0)
+            {
+                hitCharacterGridEffectIndex = blockingCharacterGridEffectIndex;
                 break;
             }
 
@@ -2674,7 +5158,9 @@ public class BattleActionRunner
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
 
-        if (hitPlayer != null && BattleCameraController.Instance != null)
+        if (ShouldEnterCameraForActiveAction() &&
+            hitPlayer != null &&
+            BattleCameraController.Instance != null)
             yield return BattleCameraController.Instance.ZoomToAttacker(monster.transform);
 
         if (animator != null)
@@ -2710,28 +5196,82 @@ public class BattleActionRunner
         {
             ApplyMonsterDashDamage(command, monster, hitPlayer);
 
-            if (BattleCameraController.Instance != null)
-                yield return BattleCameraController.Instance.PlayDamageImpact();
+            IEnumerator feedbackRoutine = activeActionInfo.ShouldPlayExternalImpact
+                ? PlayDamageHitFeedback(
+                    monster != null ? monster.transform : null,
+                    new List<Transform> { hitPlayer.transform },
+                    GetMonsterImpactFallbackDirection(monster),
+                    false)
+                : null;
+            ApplyMonsterDashKnockback(command, monster, hitPlayer);
 
-            yield return new WaitForSeconds(HitCameraDelay);
+            if (feedbackRoutine != null)
+                yield return feedbackRoutine;
 
-            if (BattleCameraController.Instance != null)
-                yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
+            float dashHitDelay = activeActionInfo.ShouldPlayExternalImpact
+                ? HitCameraDelay
+                : ActionDelay;
+            yield return new WaitForSeconds(
+                activeActionInfo.ShouldPlayExternalImpact
+                    ? dashHitDelay / GetActivePresentationSpeed()
+                    : GetActiveActionBeatDelay(dashHitDelay));
+
+            yield return ReturnCameraAfterActiveActionIfNeeded();
+        }
+        else if (hitBlockingMonster != null)
+        {
+            if (monster.RuntimeData != null && !monster.RuntimeData.IsDead)
+                ApplyCrashToMonster(monster);
+
+            if (hitBlockingMonster.RuntimeData != null && !hitBlockingMonster.RuntimeData.IsDead)
+                ApplyCrashToMonster(hitBlockingMonster);
+
+            yield return new WaitForSeconds(GetActiveActionBeatDelay());
+        }
+        else if (hitCharacterGridEffectIndex >= 0)
+        {
+            ApplyMonsterDashDamageToGridEffect(command, hitCharacterGridEffectIndex);
+            yield return new WaitForSeconds(HitCameraDelay / GetActivePresentationSpeed());
         }
         else
         {
-            yield return new WaitForSeconds(ActionDelay);
+            if (wasBlockedByCollision && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
+                ApplyCrashToMonster(monster);
+
+            yield return new WaitForSeconds(GetActiveActionBeatDelay());
         }
 
         hudService.RefreshHUDs();
     }
 
+
+    private bool IsMonsterDashOutsideGrid(MonsterUnit monster, Vector2Int moveOffset)
+    {
+        if (monster == null || gridManager == null)
+            return true;
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+        {
+            Vector2Int currentCoord = gridManager.IndexToCoord(monster.OccupiedGridIndices[i]);
+            Vector2Int targetCoord = currentCoord + moveOffset;
+
+            if (!gridManager.IsValidCoord(targetCoord))
+                return true;
+        }
+
+        return false;
+    }
+
     private bool CanMonsterDashToOffset(
     MonsterUnit monster,
     Vector2Int moveOffset,
-    out BattleCharacter blockingPlayer)
+    out BattleCharacter blockingPlayer,
+    out MonsterUnit blockingMonster,
+    out int blockingCharacterGridEffectIndex)
     {
         blockingPlayer = null;
+        blockingMonster = null;
+        blockingCharacterGridEffectIndex = -1;
 
         if (monster == null || gridManager == null)
             return false;
@@ -2753,6 +5293,24 @@ public class BattleActionRunner
             if (player != null)
             {
                 blockingPlayer = player;
+                return true;
+            }
+
+            BattleGridEffectController gridEffectController = ResolveGridEffectController();
+
+            if (gridEffectController != null &&
+                gridEffectController.IsCharacterTargetEffect(targetIndex))
+            {
+                blockingCharacterGridEffectIndex = targetIndex;
+                return true;
+            }
+
+            if (BattleOccupancyService.TryGetMonsterAtGrid(
+                    targetIndex,
+                    out MonsterUnit occupiedMonster,
+                    monster))
+            {
+                blockingMonster = occupiedMonster;
                 return true;
             }
 
@@ -2788,6 +5346,93 @@ public class BattleActionRunner
         }
 
         return null;
+    }
+
+
+    private void ApplyMonsterDashKnockback(
+        MonsterReservedCommand command,
+        MonsterUnit monster,
+        BattleCharacter target)
+    {
+        if (command == null || command.SkillData == null || monster == null || target == null)
+            return;
+
+        if (target.RuntimeData == null || target.RuntimeData.IsDead)
+            return;
+
+        if (!TryGetMonsterSkillEffectValue(command.SkillData, "E_Knockback", out int knockbackValue))
+            return;
+
+        Vector2Int monsterCoord = gridManager.IndexToCoord(monster.MainGridIndex);
+        Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex);
+        BattleDirection knockbackDirection = targetCoord.x < monsterCoord.x
+            ? BattleDirection.Left
+            : BattleDirection.Right;
+
+        new KnockbackEffect().Execute(new BattleEffectContext
+        {
+            MonsterCaster = monster,
+            PlayerTarget = target,
+            Direction = knockbackDirection,
+            GridManager = gridManager,
+            EffectId = "E_Knockback",
+            Value = Mathf.Max(1, knockbackValue),
+            Count = 1
+        });
+    }
+
+    private static bool TryGetMonsterSkillEffectValue(
+        Relic.Gameplay.Data.MonsterSkillData skillData,
+        string targetEffectId,
+        out int value)
+    {
+        value = 0;
+
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.EffectIds))
+            return false;
+
+        string[] effectIds = skillData.EffectIds.Split(';');
+        string[] valueRates = string.IsNullOrWhiteSpace(skillData.ValueRate)
+            ? System.Array.Empty<string>()
+            : skillData.ValueRate.Split(';');
+
+        for (int i = 0; i < effectIds.Length; i++)
+        {
+            if (!string.Equals(
+                    effectIds[i].Trim(),
+                    targetEffectId,
+                    System.StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (i < valueRates.Length && int.TryParse(valueRates[i].Trim(), out int parsed))
+                value = parsed;
+            else
+                value = 1;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private void ApplyMonsterDashDamageToGridEffect(
+        MonsterReservedCommand command,
+        int gridIndex)
+    {
+        if (command == null || gridIndex < 0)
+            return;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+
+        if (controller == null || !controller.IsCharacterTargetEffect(gridIndex))
+            return;
+
+        int damage = Mathf.Max(0, damageService.GetMonsterDamage(command));
+
+        if (damage > 0)
+            controller.TryDamageEffect(gridIndex, damage, out _);
     }
 
     private void ApplyMonsterDashDamage(

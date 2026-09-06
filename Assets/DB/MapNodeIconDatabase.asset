@@ -20,8 +20,10 @@ MonoBehaviour:
   - Type: Boss
     Icon: {fileID: 21300000, guid: a21f791167f81394f8fdae70deae9e7b, type: 3}
   - Type: Rest
-    Icon: {fileID: 21300000, guid: c07e3888fbf85154badd80b572ea008f, type: 3}
+    Icon: {fileID: 21300000, guid: ad9ca56e2e58b6648b38bf76e77adb42, type: 3}
   - Type: Special
     Icon: {fileID: 21300000, guid: c593e07fd2008324988d3f8d5903fe1e, type: 3}
   - Type: Start
     Icon: {fileID: 21300000, guid: a147ed98ec7034b4d86e240c78a90ccc, type: 3}
+  - Type: Shop
+    Icon: {fileID: 21300000, guid: 5b3330ac4e015f8448010483f64fefaf, type: 3}

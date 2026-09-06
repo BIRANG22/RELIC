@@ -12,7 +12,27 @@ public abstract class BattleEffectBase
         if (!CanApply(context))
             return;
 
+        if (BattleEquipmentEffectService.ShouldBlockSelfBuff(context))
+            return;
+
         Apply(context);
+
+        if (context.PlayerSkillData != null &&
+            context.PlayerSkillData.SkillType == Relic.Gameplay.Data.SkillType.Buff)
+        {
+            BattleCharacter buffTarget = context.PlayerTarget != null
+                ? context.PlayerTarget
+                : context.PlayerCaster;
+
+            if (buffTarget != null)
+            {
+                BattleEffectUtility.OnPlayerBuffApplied?.Invoke(buffTarget);
+                BattleEquipmentEffectService.HandlePlayerBuffApplied(context, buffTarget);
+                BattleRunStatisticsRecorder.RecordBuffApplied(
+                    context.PlayerCaster?.RuntimeData?.CharacterId,
+                    BattleEffectUtility.GetRepeatedValue(context));
+            }
+        }
     }
 
     protected abstract void Apply(BattleEffectContext context);

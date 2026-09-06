@@ -1,4 +1,4 @@
-using Relic.Gameplay.Battle;
+﻿using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
@@ -141,6 +141,64 @@ public class MonsterSkillEffectService
 
             ExecuteEffects(caster, target, null, command, mode, hitIndex);
         }
+
+        ApplyDamageToCharacterGridEffects(command, mode, hitIndex);
+    }
+
+    private void ApplyDamageToCharacterGridEffects(
+        MonsterReservedCommand command,
+        EffectExecutionMode mode,
+        int hitIndex)
+    {
+        if (command == null || command.SkillData == null ||
+            mode == EffectExecutionMode.NonDamage ||
+            command.TargetGridIndices == null ||
+            command.TargetGridIndices.Count <= 0 ||
+            string.IsNullOrWhiteSpace(command.SkillData.EffectIds))
+        {
+            return;
+        }
+
+        BattleGridEffectController controller =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        if (controller == null)
+            return;
+
+        string[] effectIds = command.SkillData.EffectIds.Split(';');
+
+        for (int effectIndex = 0; effectIndex < effectIds.Length; effectIndex++)
+        {
+            string effectId = effectIds[effectIndex].Trim();
+
+            if (!IsDamageHitEffect(effectId))
+                continue;
+
+            int hitCount = Mathf.Max(1, ParseIndexedValue(command.SkillData.CountRate, effectIndex));
+
+            if (mode == EffectExecutionMode.DamageHit && hitIndex >= hitCount)
+                continue;
+
+            int repetitions = mode == EffectExecutionMode.All ? hitCount : 1;
+
+            for (int hit = 0; hit < repetitions; hit++)
+            {
+                int damage = ResolveEffectValue(command, effectId, effectIndex);
+
+                if (damage <= 0)
+                    continue;
+
+                for (int targetIndex = 0; targetIndex < command.TargetGridIndices.Count; targetIndex++)
+                {
+                    int gridIndex = command.TargetGridIndices[targetIndex];
+
+                    if (!controller.IsCharacterTargetEffect(gridIndex))
+                        continue;
+
+                    controller.TryDamageEffect(gridIndex, damage, out _);
+                }
+            }
+        }
     }
 
     private void ApplyToMonsters(
@@ -240,6 +298,7 @@ public class MonsterSkillEffectService
 
             int count = ParseIndexedValue(command.SkillData.CountRate, i);
             bool isDamageHitEffect = IsDamageHitEffect(effectId);
+
             int value = ResolveEffectValue(command, effectId, i);
 
             if (mode == EffectExecutionMode.DamageHit && !isDamageHitEffect)
@@ -266,6 +325,7 @@ public class MonsterSkillEffectService
                 PlayerTarget = playerTarget,
                 MonsterTarget = monsterTarget,
                 MonsterSkillData = command.SkillData,
+                MonsterCommand = command,
 
                 Direction = direction,
                 GridManager = gridManager,
@@ -305,7 +365,33 @@ public class MonsterSkillEffectService
                 );
                 Debug.LogException(e);
             }
+
+            // 기습 판정은 피격 직전의 방향을 사용해야 합니다.
+            // 피해 적용이 끝난 뒤에만 피격 캐릭터가 공격자를 바라보도록 전환합니다.
+            if (playerTarget != null && isDamageHitEffect &&
+                playerTarget.RuntimeData != null && !playerTarget.RuntimeData.IsDead)
+            {
+                FacePlayerToAttacker(playerTarget, caster);
+            }
         }
+    }
+
+    private static void FacePlayerToAttacker(
+        BattleCharacter target,
+        MonsterUnit attacker)
+    {
+        if (target == null || attacker == null)
+            return;
+
+        BattleUnitFacing targetFacing = target.GetComponent<BattleUnitFacing>();
+
+        if (targetFacing == null)
+            return;
+
+        targetFacing.FaceByWorldTarget(attacker.transform.position);
+
+        if (target.RuntimeData != null)
+            target.RuntimeData.Direction = targetFacing.GetBattleDirection();
     }
 
     private int ParseIndexedValue(string text, int index)

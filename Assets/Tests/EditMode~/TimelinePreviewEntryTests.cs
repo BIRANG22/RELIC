@@ -113,7 +113,6 @@ public class TimelinePreviewEntryTests
         skill.EffectEntries.Add(new SkillEffectEntry
         {
             EffectId = "E_Strike",
-            ValueCalcType = ValueCalcType.Fixed,
             ValueAmount = 5
         });
 
@@ -133,7 +132,6 @@ public class TimelinePreviewEntryTests
         skill.EffectEntries.Add(new SkillEffectEntry
         {
             EffectId = "E_Burn",
-            ValueCalcType = ValueCalcType.Fixed,
             ValueAmount = 0
         });
 
@@ -144,7 +142,7 @@ public class TimelinePreviewEntryTests
     }
 
     [Test]
-    public void SkillTooltipFormatter_ShowsZeroWhenRuntimeCalculationReachesZero()
+    public void SkillTooltipFormatter_UsesFixedValueEvenWhenPayAmountIsZero()
     {
         SkillMasterData skill = new()
         {
@@ -154,13 +152,12 @@ public class TimelinePreviewEntryTests
         skill.EffectEntries.Add(new SkillEffectEntry
         {
             EffectId = "E_Strike",
-            ValueCalcType = ValueCalcType.PerCost,
             ValueAmount = 3
         });
 
         string description = SkillTooltipFormatter.Format(skill, skill.ToolTip, null, 0);
 
-        Assert.That(description, Is.EqualTo("0 \uD53C\uD574\uB97C \uC900\uB2E4."));
+        Assert.That(description, Is.EqualTo("3 \uD53C\uD574\uB97C \uC900\uB2E4."));
     }
 
     [Test]
@@ -170,7 +167,6 @@ public class TimelinePreviewEntryTests
         {
             SkillId = "M_Timeline_Damage",
             EffectIds = "E_Strike",
-            ValueCalcTypes = "Fixed",
             ValueRate = "6",
             CountRate = "1",
             ValueRandomRange = 2,
@@ -179,7 +175,6 @@ public class TimelinePreviewEntryTests
         skill.EffectEntries.Add(new SkillEffectEntry
         {
             EffectId = "E_Strike",
-            ValueCalcType = ValueCalcType.Fixed,
             ValueAmount = 6,
             CountAmount = 1
         });

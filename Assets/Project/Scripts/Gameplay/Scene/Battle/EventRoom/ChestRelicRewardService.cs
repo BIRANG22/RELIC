@@ -21,8 +21,8 @@ public static class ChestRelicRewardService
     private static readonly RelicRarity[] RevealOrder =
     {
         RelicRarity.Common,
-        RelicRarity.Uncommon,
         RelicRarity.Rare,
+        RelicRarity.Epic,
         RelicRarity.Unique
     };
 
@@ -89,6 +89,7 @@ public static class ChestRelicRewardService
         if (!ContainsRelicId(runtime.OwnedRelicIds, relicId))
             runtime.OwnedRelicIds.Add(relicId);
 
+        RecordDiscoveryService.RegisterRelic(dataManager, relicId);
         dataManager.BattleRuntimeStore.Set(runtime);
         return true;
     }

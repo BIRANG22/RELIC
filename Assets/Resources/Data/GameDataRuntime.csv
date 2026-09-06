@@ -1,0 +1,889 @@
+# Character
+캐릭터ID,이름,최대 HP,최대 Cost,Cost 회복량,자원최대치,자원타입,자원조건,기본지급여부,해금조건,패시브스킬1,패시브스킬2,고유스킬1,고유스킬2,캐릭터스킬1,캐릭터스킬2,공유스킬1,공유스킬2,룬1,룬2,룬3,룬4,룬5,카르마 회복,캐릭터소개
+CharacterId,Name,MaxHP,MaxCost,CostRecovery,MaxResource,ResourceType,ResourceTrigger,IsDefaultProvided,UnlockCondition,PassiveSkill1,PassiveSkill2,UniqueSkill1,UniqueSkill2,CharacterSkill1,CharacterSkill2,CommonSkill1,CommonSkill2,Rune1,Rune2,Rune3,Rune4,Rune5,Regeneration,introduction
+Char_01,힐트,104,10,4,5,Karma,OnAnyAllyDamaged,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_03,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,"피해를 받았을 때
+생명력이 감소하지 않았다면
+카르마를 1 회복한다.","“강한 놈들이 득실거린다며?
+그럼 내가 가야지.”
+
+벨가드 용병단의 용병.
+호전적이고 거침없는 성격으로, 위험한 전투일수록 앞장서며 이번 탐사에서도 자신의 강함을 증명하려 한다.",,,,,
+Char_02,카야,98,11,4,5,Karma,OnThreeActionsInSameSlot,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_05,S_Ability_07,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,"한 슬롯에서 3회 이상 행동을
+등록하면 카르마를 1 회복한다.","“임무라면 완수한다. 그뿐이야.”
+
+하쿠렌 가문의 검사.
+침착하고 냉철하며 어떤 상황에서도 흐트러지지 않는다. 미지의 적들과 맞서며 자신의 검술을 더욱 완성해 나간다.",,,,,
+Char_03,헤이즈,92,14,4,5,Karma,OnSpendEightCostInTurn,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_09,S_Ability_11,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,"한 턴에 마나를 8 이상 소모하면
+카르마를 1 회복한다.","“정말 제가 가야 하는 건가요?”
+
+아스텔 학회의 학자.
+겁이 많고 소심하지만 맡은 연구에서는 물러서지 않는다. 소환수 니아와 함께 탐사에 나서며 자신의 나약함을 극복하려 한다.",,,,,
+Char_04,이네스,100,10,4,5,Karma,OnAllyBuffApplied,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_13,S_Ability_15,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,"아군에게 이로운 효과를 부여하면
+카르마를 1 회복한다.","“걱정하지 마세요.
+모두 무사히 돌아갈 수 있도록 할게요.”
+
+세라피아 교단의 집행자.
+밝고 상냥한 성격으로 동료들을 살뜰히 보살핀다. 하지만 그들을 위협하는 존재 앞에서는 망설임 없이 냉혹한 모습을 드러낸다.",,,,,
+Char_05,레이나,90,12,4,5,Karma,OnDamageEnemy,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Unique_10,S_Ability_17,S_Ability_19,S_Public_17,S_Public_19,Rune_71,Rune_72,Rune_73,Rune_74,Rune_75,"공격타입의 기억으로
+적에게 피해를 주면
+카르마를1 회복한다.","“그냥 내가 가고 싶어서 가는 거야.”
+
+자유롭게 떠도는 방랑자.
+말수가 적고 자유분방하며 타인의 규칙에 얽매이지 않는다. 자신의 관심이 향한 탐사대를 따라 스스로 위험 속으로 발을 들인다.",,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+,,,,,,,
+
+# Monster
+몬스터ID,이름,등급,HP,방어도,최소 렘넌트,최대 렘넌트,고유아이템,고유 아이템 확률,공격범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID,보유스킬6 ID,보유스킬7 ID,보유스킬8 ID,보유스킬9 ID,보유스킬10 ID,특수행동1
+MonsterId,Name,Grade,HP,Armor,MinRemnant,MaxRemnant,UniqueItemId ,UniqueItemChance,AttackRange,PossSkillId01,PossSkillId02,PossSkillId03,PossSkillId04,PossSkillId05,PossSkillId06,PossSkillId07,PossSkillId08,PossSkillId09,PossSkillId10,SpecialAction1
+Mon_01,머크,Common,34,0,8,16,Item_001,0.3,Range_19,S_Monster_01,S_Monster_02,0,0,0,0,0,0,0,0,분열이 0이 되면 블롭 2마리로 분열한다.
+Mon_02,블롭,Common,15,0,5,10,Item_002,0.3,Range_01,S_Monster_03,S_Monster_04,0,0,0,0,0,0,0,0,이동할 때 지나온 위치에 점액을 생성한다.
+Mon_03,랜서,Common,26,0,12,18,Item_003,0.3,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0,0,0,0,0,0,매 턴 모든 몬스터에게 원한을 부여한다.
+Mon_04,블라이트,Common,25,0,12,18,Item_004,0.3,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0,0,0,0,0,0,매 턴 모든 캐릭터에게 침식을 부여한다.
+Mon_05,베스파,Common,38,0,18,25,Item_005,0.3,Range_20,S_Monster_11,S_Monster_12,0,0,0,0,0,0,0,0,이동을 2번 사용할 수 있다.
+Mon_06,신더,Common,18,20,15,22,Item_006,0.3,Range_24,S_Monster_13,S_Monster_14,0,0,0,0,0,0,0,0,턴이 끝나도 방어도를 보유한다.
+Mon_07,드라우그,Common,42,0,10,20,Item_007,0.3,Range_02,S_Monster_26,S_Monster_27,S_Monster_28,0,0,0,0,0,0,0,공격에 피해를 받으면 반격한다.
+Mon_08,바로우,Common,40,0,10,20,Item_008,0.3,Range_20,S_Monster_29,S_Monster_30,S_Monster_31,0,0,0,0,0,0,0,같은 라인에 상대가 없거나 다른 라인으로 이동할 때 곡사를 사용한다.
+Mon_09,루크,Elite,82,0,30,45,Item_009,0.2,Range_02,S_Monster_32,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,0,0,0,0,0,"매 턴 방어도를 획득하며, 2턴마다 대지진을 사용한다."
+Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.2,Range_24,S_Monster_15,S_Monster_16,S_Monster_17,S_Monster_18,S_Monster_19,0,0,0,0,0,후방에 피해를 줄 때 강한 피해를 준다.
+Mon_11,모르트,Elite,77,0,35,42,Item_011,0.2,Range_19,S_Monster_37,S_Monster_38,S_Monster_39,S_Monster_40,S_Monster_41,0,0,0,0,0,병사가 죽었다면 1턴 후 되살린다.
+Mon_12,아라벨라,Boss,142,0,45,55,Item_012,0.5,Range_19,S_Monster_20,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,S_Monster_25,0,0,0,0,매 턴 무작위 슬롯 하나를 막는다.
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+
+# SkillMaster
+스킬 ID,이름,분류,레어도,참조자원,대상,레벨,타입,효과 ID,수치계수,횟수계수,자원소모량,범위타입,범위ID,효과,상점가격
+SkillId,Name,Category,Rarity,ReferenceResource,Target,Level,SkillType,EffectIds,ValueRate,CountRate,ResourceCostValue,RangeType,RangeId,Details,RedDustiumCost
+S_Move_1,이동,Move,Move,Cost,Self,1,0,E_Move,0,1,1,Selection,Range_All,선택한 그리드로 이동한다. 이동한 칸만큼 마나를 소모한다.,0
+S_Passive_01,결속,Passive,Exclusive,Ulti,Self,0,0,E_Armor,5,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 방어도를 {ValueRate1} 얻는다.,0
+S_Passive_02,호전성,Passive,Exclusive,Ulti,Self,0,0,E_Boost,1,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 증폭을 {ValueRate1} 얻는다.,0
+S_Passive_03,평정심,Passive,Exclusive,Ulti,Self,0,0,E_Charge,1,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 충전을 {ValueRate1} 얻는다.,0
+S_Passive_04,간파,Passive,Exclusive,Ulti,Self,0,0,E_Swift,1,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 신속을 {ValueRate1} 얻는다.,0
+S_Passive_05,안도감,Passive,Exclusive,Ulti,Self,0,0,E_Armor,4,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 방어도를 {ValueRate1} 얻는다.,0
+S_Passive_06,결심,Passive,Exclusive,Ulti,Self,0,0,E_Armor,3,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 생명력이 가장 낮은 아군에게 방어도를 {ValueRate1} 부여한다.,0
+S_Passive_07,자애심,Passive,Exclusive,Ulti,Self,0,0,E_Heal,2,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 최대 생명력 대비 생명력이 낮은 아군의 생명력을 {ValueRate1} 회복한다.,0
+S_Passive_08,심판,Passive,Exclusive,Ulti,Self,0,0,E_Smite,1,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 강타를 {ValueRate1} 얻는다.,0
+S_Passive_09,블러드러스트,Passive,Exclusive,Ulti,Self,0,0,E_Lifesteal,1,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 흡혈을 {ValueRate1} 얻는다.,0
+S_Passive_10,나이트메어,Passive,Exclusive,Ulti,Self,0,0,E_Boost,1,1,0,Passive,Range_Self,턴 시작 시 카르마가 최대라면 증폭을 {ValueRate1} 얻는다.,0
+S_Unique_01,용의 가호,Unique,Exclusive,Ulti,PlayerParty,0,Buff,E_Armor,8,1,3,Direction,Range_All,용의 힘으로 아군에게 방어도를 {ValueRate1} 부여한다.,0
+S_Unique_02,대지가르기,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike;E_Knockback,14;1,1;1,3,Direction,Range_15,대지를 갈라 {ValueRate1}의 피해를 주고 {ValueRate2}칸 밀쳐낸다.,0
+S_Unique_03,질풍검 연무,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike,3,4,3,Direction,Range_07,연속으로 휘둘러 {ValueRate1}의 피해를 {CountRate1}번 준다.,0
+S_Unique_04,질풍검 일섬,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Pierce;E_Move,15,1,3,Direction,Range_21,검기를 발산하여 {ValueRate1}의 관통 피해를 준다.,0
+S_Unique_05,날카로운 빛,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike;E_Vulnerable,4;1,1;1,3,Selection,Range_05,빛을 발산하여 {ValueRate1}의 피해를 주고 취약을 {ValueRate2} 부여한다.,0
+S_Unique_06,빛의 의지,Unique,Exclusive,Ulti,PlayerParty,0,Buff,E_Boost,2,1,3,Direction,Range_b_19,빛을 발산하여 아군에게 증폭을 {ValueRate1} 부여한다.,0
+S_Unique_07,구원의 기도,Unique,Exclusive,Ulti,PlayerParty,0,Buff,E_Heal,4,1,3,Direction,Range_b_19,기도를 올려 아군의 생명력을 {ValueRate1} 회복한다.,0
+S_Unique_08,신성한 일격,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike;E_Weaken,10;1,1;1,3,Direction,Range_07,신성한 힘을 담아 {ValueRate1}의 피해를 주고 약화를 {ValueRate2} 부여한다.,0
+S_Unique_09,데스사이드,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Pierce;E_Vulnerable,12;1,1;1,3,Direction,Range_12,깊게 베어내어 {ValueRate1}의 관통 피해를 주고 취약을 {ValueRate2} 부여한다.,0
+S_Unique_10,스칼렛노바,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike,16,1,3,Selection,Range_05,피를 폭발시켜 {ValueRate1}의 피해를 준다.,0
+S_Ability_01,휘두르기,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike,6,1,3,Direction,Range_14,할버드를 휘둘러 {ValueRate1}의 피해를 준다.,0
+S_Ability_02,휘두르기+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike,8,1,3,Direction,Range_14,할버드를 휘둘러 {ValueRate1}의 피해를 준다.,0
+S_Ability_03,내려찍기,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike;E_Knockback,7;1,1,3,Direction,Range_04,할버드를 내려찍어 {ValueRate1}의 피해를 주고 {ValueRate2}칸 밀쳐낸다.,0
+S_Ability_04,내려찍기+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike;E_Knockback,9;1,1,3,Direction,Range_04,할버드를 내려찍어 {ValueRate1}의 피해를 주고 {ValueRate2}칸 밀쳐낸다.,0
+S_Ability_05,질풍검 3식,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike,3,2,3,Direction,Range_06,카타나를 휘둘러 {ValueRate1}의 피해를 {CountRate1}번 준다.,0
+S_Ability_06,질풍검 3식+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike,4,2,3,Direction,Range_06,카타나를 휘둘러 {ValueRate1}의 피해를 {CountRate1}번 준다.,0
+S_Ability_07,질풍검 1식,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Pierce,7,1,3,Direction,Range_23,발도하여 {ValueRate1}의 관통 피해를 준다.,0
+S_Ability_08,질풍검 1식+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Pierce,9,1,3,Direction,Range_23,발도하여 {ValueRate1}의 관통 피해를 준다.,0
+S_Ability_09,니아의 독기,Ability,Exclusive,Cost,EnemyParty,1,Debuff,E_Poison,2,1,4,Selection,Range_17,독기를 퍼뜨려 중독을 {ValueRate1} 부여한다.,0
+S_Ability_10,니아의 독기+,Ability,Exclusive,Cost,EnemyParty,2,Debuff,E_Poison,2,1,3,Selection,Range_17,독기를 퍼뜨려 중독을 {ValueRate1} 부여한다.,0
+S_Ability_11,니아의 섬광,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike,6,1,3,Selection,Range_17,섬광으로 {ValueRate1}의 피해를 준다.,0
+S_Ability_12,니아의 섬광+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike,8,1,3,Selection,Range_17,섬광으로 {ValueRate1}의 피해를 준다.,0
+S_Ability_13,정권지르기,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike,6,1,3,Direction,Range_03,주먹을 내질러 {ValueRate1}의 피해를 준다.,0
+S_Ability_14,정권지르기+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike,10,1,4,Direction,Range_03,주먹을 내질러 {ValueRate1}의 피해를 준다.,0
+S_Ability_15,공방일체,Ability,Exclusive,Cost,PlayerParty,1,Buff,E_Boost;E_Armor,1;3,1;1,5,Selection,Range_b_17,"태세를 갖추며 증폭을 {ValueRate1}, 방어도를 {ValueRate2} 부여한다.",0
+S_Ability_16,공방일체+,Ability,Exclusive,Cost,PlayerParty,2,Buff,E_Boost;E_Armor,1;3,1;1,5,Selection,Range_b_05,"태세를 갖추며 증폭을 {ValueRate1}, 방어도를 {ValueRate2} 부여한다.",0
+S_Ability_17,크림슨체인,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike;E_Grab,6;1,1;1,4,Direction,Range_21,사이드로 {ValueRate1}의 피해를 주고 {ValueRate2}칸 당겨온다.,0
+S_Ability_18,크림슨체인+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike;E_Grab,8;1,1;1,4,Direction,Range_21,사이드로 {ValueRate1}의 피해를 주고 {ValueRate2}칸 당겨온다.,0
+S_Ability_19,크레센트스윙,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike,6,1,3,Direction,Range_15,넓게 휘둘러 {ValueRate1}의 피해를 준다.,0
+S_Ability_20,크레센트스윙+,Ability,Exclusive,Cost,EnemyParty,2,Attack,E_Strike,7,1,3,Direction,Range_15,넓게 휘둘러 {ValueRate1}의 피해를 준다.,0
+S_Core_01,생명의 대가,Core,Common,Hp,Self,1,Buff,E_Focus,1,1,4,Direction,Range_Self,생명력을 대가로 카르마를 {ValueRate1} 회복한다.,13
+S_Core_02,생명의 대가+,Core,Common,Hp,Self,2,Buff,E_Focus,1,1,3,Direction,Range_Self,생명력을 대가로 카르마를 {ValueRate1} 회복한다.,13
+S_Core_03,전의 상승,Core,Common,Cost,PlayerParty,1,Buff,E_Boost,1,1,4,Selection,Range_b_17,전의를 끌어올려 증폭을 {ValueRate1} 부여한다.,18
+S_Core_04,전의 상승+,Core,Common,Cost,PlayerParty,2,Buff,E_Boost,1,1,4,Selection,Range_b_05,전의를 끌어올려 증폭을 {ValueRate1} 부여한다.,18
+S_Core_05,응급 처치,Core,Rare,Cost,PlayerParty,1,Buff,E_Heal,3,1,4,Selection,Range_b_16,상처를 치료해 생명력을 {ValueRate1} 회복한다.,27
+S_Core_06,응급 처치+,Core,Rare,Cost,PlayerParty,2,Buff,E_Heal,5,1,4,Selection,Range_b_16,상처를 치료해 생명력을 {ValueRate1} 회복한다.,27
+S_Core_07,보호막,Core,Common,Cost,PlayerParty,1,Buff,E_Armor,4,1,3,Selection,Range_b_17,보호막으로 감싸 방어도를 {ValueRate1} 부여한다.,15
+S_Core_08,보호막+,Core,Common,Cost,PlayerParty,2,Buff,E_Armor,6,1,3,Selection,Range_b_17,보호막으로 감싸 방어도를 {ValueRate1} 부여한다.,15
+S_Core_09,강철 피부,Core,Rare,Cost,Self,1,Buff,E_Armor,6,1,3,Direction,Range_Self,피부를 단단하게 만들어 방어도를 {ValueRate1} 얻는다.,25
+S_Core_10,강철 피부+,Core,Rare,Cost,Self,2,Buff,E_Armor,6,1,2,Direction,Range_Self,피부를 단단하게 만들어 방어도를 {ValueRate1} 얻는다.,25
+S_Core_11,보급,Core,Common,Cost,PlayerParty,1,Buff,E_Charge,2,1,3,Selection,Range_b_17,보급품을 보충하여 충전을 {ValueRate1} 얻는다.,17
+S_Core_12,보급+,Core,Common,Cost,PlayerParty,2,Buff,E_Charge,2,1,3,Selection,Range_b_05,보급품을 보충하여 충전을 {ValueRate1} 얻는다.,17
+S_Core_13,가시갑옷,Core,Common,Cost,Self,1,Buff,E_Ward,2,1,4,Direction,Range_Self,가시 돋친 갑옷을 둘러 가호를 {ValueRate1} 얻는다.,19
+S_Core_14,가시갑옷+,Core,Common,Cost,Self,2,Buff,E_Ward,2,1,3,Direction,Range_Self,가시 돋친 갑옷을 둘러 가호를 {ValueRate1} 얻는다.,19
+S_Core_15,약점간파,Core,Epic,Cost,EnemyParty,1,Debuff,E_Vulnerable,2,1,5,Direction,Range_06,약점을 간파하여 취약을 {ValueRate1} 부여한다.,45
+S_Core_16,약점간파+,Core,Epic,Cost,EnemyParty,2,Debuff,E_Vulnerable,2,1,4,Direction,Range_06,약점을 간파하여 취약을 {ValueRate1} 부여한다.,45
+S_Core_17,무력화,Core,Rare,Cost,EnemyParty,1,Debuff,E_Weaken,2,1,5,Direction,Range_06,태세를 무너뜨려 약화를 {ValueRate1} 부여한다.,31
+S_Core_18,무력화+,Core,Rare,Cost,EnemyParty,2,Debuff,E_Weaken,2,1,4,Direction,Range_06,태세를 무너뜨려 약화를 {ValueRate1} 부여한다.,31
+S_Core_19,맹독안개,Core,Epic,Cost,EnemyParty,1,Debuff,E_Poison,3,1,6,Selection,Range_17,독성이 강한 안개로 중독을 {ValueRate1} 부여한다.,46
+S_Core_20,맹독안개+,Core,Epic,Cost,EnemyParty,2,Debuff,E_Poison,3,1,6,Selection,Range_05,독성이 강한 안개로 중독을 {ValueRate1} 부여한다.,46
+S_Core_21,상처벌리기,Core,Epic,Cost,EnemyParty,1,Debuff,E_Bleed,3,1,6,Direction,Range_07,상처를 벌려 출혈을 {ValueRate1} 부여한다.,44
+S_Core_22,상처벌리기+,Core,Epic,Cost,EnemyParty,2,Debuff,E_Bleed,3,1,6,Direction,Range_12,상처를 벌려 출혈을 {ValueRate1} 부여한다.,44
+S_Core_23,참격,Core,Common,Cost,EnemyParty,1,Attack,E_Strike,7,1,3,Direction,Range_03,검에 기를 둘러 {ValueRate1}의 피해를 준다.,14
+S_Core_24,참격+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike,8,1,3,Direction,Range_21,검에 기를 둘러 {ValueRate1}의 피해를 준다.,14
+S_Core_25,꿰뚫는 빛,Core,Common,Cost,EnemyParty,1,Attack,E_Pierce,7,1,3,Direction,Range_03,빛을 쏘아 {ValueRate1}의 관통 피해를 준다.,18
+S_Core_26,꿰뚫는 빛+,Core,Common,Cost,EnemyParty,2,Attack,E_Pierce,8,1,3,Direction,Range_21,빛을 쏘아 {ValueRate1}의 관통 피해를 준다.,18
+S_Core_27,이동 사격,Core,Rare,Cost,EnemyParty,1,Attack,E_Strike;E_Move,4;-1,1;1,3,Direction,Range_23,날렵하게 {ValueRate1}의 피해를 주고 뒤로 {ValueRate2}칸 이동한다.,34
+S_Core_28,이동 사격+,Core,Rare,Cost,EnemyParty,2,Attack,E_Strike;E_Move,6;-1,1;1,3,Direction,Range_23,날렵하게 {ValueRate1}의 피해를 주고 뒤로 {ValueRate2}칸 이동한다.,34
+S_Core_29,바이탈 가드,Core,Unique,Cost,PlayerParty,1,Buff,E_Heal;E_Armor,2;4,1;1,5,Selection,Range_b_16,아군의 생명력을 {ValueRate1} 회복하고 방어도를 {ValueRate2} 부여한다.,58
+S_Core_30,바이탈 가드+,Core,Unique,Cost,PlayerParty,2,Buff,E_Heal;E_Armor,2;4,1;1,5,Selection,Range_b_17,아군의 생명력을 {ValueRate1} 회복하고 방어도를 {ValueRate2} 부여한다.,58
+S_Core_31,전술 정비,Core,Epic,Cost,Self,1,Buff,E_Charge;E_Focus,2;1,1;1,4,Direction,Range_Self,"재정비하여 충전을 {ValueRate1} 얻고, 카르마를 {ValueRate2} 회복한다.",51
+S_Core_32,전술 정비+,Core,Epic,Cost,Self,2,Buff,E_Charge;E_Focus,3;1,1;1,4,Direction,Range_Self,"재정비하여 충전을 {ValueRate1} 얻고, 카르마를 {ValueRate2} 회복한다.",51
+S_Core_33,블러드 마크,Core,Rare,Hp,EnemyParty,1,Debuff,E_Bleed;E_Vulnerable,2;1,1;1,4,Direction,Range_13,"피의 표식을 새겨  출혈을 {ValueRate1}, 취약을 {ValueRate2} 부여한다.",33
+S_Core_34,블러드 마크+,Core,Rare,Hp,EnemyParty,2,Debuff,E_Bleed;E_Vulnerable,2;1,1;1,3,Direction,Range_13,"피의 표식을 새겨  출혈을 {ValueRate1}, 취약을 {ValueRate2} 부여한다.",33
+S_Core_35,독성 침식,Core,Rare,Cost,EnemyParty,1,Debuff,E_Weaken;E_Poison,1;2,1;1,5,Direction,Range_02,"독성 기운으로 침식시켜 약화를 {ValueRate1}, 중독을 {ValueRate2} 부여한다.",36
+S_Core_36,독성 침식+,Core,Rare,Cost,EnemyParty,2,Debuff,E_Weaken;E_Poison,1;2,1;1,4,Direction,Range_02,"독성 기운으로 침식시켜 약화를 {ValueRate1}, 중독을 {ValueRate2} 부여한다.",36
+S_Core_37,쇼크 웨이브,Core,Common,Cost,EnemyParty,1,Attack,E_Strike;E_Knockback,6;1,1;1,4,Direction,Range_06,충격파를 일으켜 {ValueRate1}의 피해를 주고 {ValueRate2}칸 밀쳐낸다.,20
+S_Core_38,쇼크 웨이브+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike;E_Knockback,8;2,1;1,4,Direction,Range_06,충격파를 일으켜 {ValueRate1}의 피해를 주고 {ValueRate2}칸 밀쳐낸다.,20
+S_Core_39,바인드 체인,Core,Common,Cost,EnemyParty,1,Attack,E_Strike;E_Grab,6;1,1;1,4,Direction,Range_22,붙잡아 {ValueRate1}의 피해를 주고 {ValueRate2}칸 당겨온다.,21
+S_Core_40,바인드 체인+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike;E_Grab,6;1,1;1,3,Direction,Range_22,붙잡아 {ValueRate1}의 피해를 주고 {ValueRate2}칸 당겨온다.,21
+S_Core_41,크러시 블로우,Core,Epic,Cost,EnemyParty,1,Attack,E_Strike,12,1,4,Direction,Range_23,묵직한 타격으로 {ValueRate1}의 피해를 준다.,39
+S_Core_42,크러시 블로우+,Core,Epic,Cost,EnemyParty,2,Attack,E_Strike,16,1,4,Direction,Range_23,묵직한 타격으로 {ValueRate1}의 피해를 준다.,39
+S_Core_43,연격,Core,Epic,Cost,EnemyParty,1,Attack,E_Strike,4,2,3,Direction,Range_06,연속으로 공격해 {ValueRate1}의 피해를 {CountRate1}번 준다.,43
+S_Core_44,연격+,Core,Epic,Cost,EnemyParty,2,Attack,E_Strike,4,3,3,Direction,Range_06,연속으로 공격해 {ValueRate1}의 피해를 {CountRate1}번 준다.,43
+S_Core_45,화살 세례,Core,Unique,Cost,EnemyParty,1,Attack,E_Strike,3,3,4,Selection,Range_17,화살을 쏟아부어 {ValueRate1}의 피해를 {CountRate1}번 준다.,60
+S_Core_46,화살 세례+,Core,Unique,Cost,EnemyParty,2,Attack,E_Strike,3,4,4,Selection,Range_17,화살을 쏟아부어 {ValueRate1}의 피해를 {CountRate1}번 준다.,60
+S_Core_47,전진일격,Core,Common,Cost,EnemyParty,1,Attack,E_Move;E_Strike,1;9,1;1,4,Direction,Range_22,앞으로 {ValueRate1}칸 전진하며 적에게 {ValueRate2}의 피해를 준다.,22
+S_Core_48,전진일격+,Core,Common,Cost,EnemyParty,2,Attack,E_Move;E_Strike,1;12,1;1,4,Direction,Range_22,앞으로 {ValueRate1}칸 전진하며 적에게 {ValueRate2}의 피해를 준다.,22
+S_Core_49,크림슨 아머,Core,Rare,Cost,PlayerParty,1,Buff,E_Ward;E_Armor,2;8,1;1,6,Selection,Range_b_17,"아군에게 가호를 {ValueRate1}, 방어도를 {ValueRate2} 부여합니다.",36
+S_Core_50,크림슨 아머+,Core,Rare,Cost,PlayerParty,2,Buff,E_Ward;E_Armor,3;10,1;1,6,Selection,Range_b_17,"아군에게 가호를 {ValueRate1}, 방어도를 {ValueRate2} 부여합니다.",36
+S_Core_51,시간 왜곡,Core,Epic,Cost,PlayerParty,1,Buff,E_Swift,1,1,8,Direction,Range_All,시간의 흐름을 왜곡시켜 아군에게 다음 턴 시작 시 신속을 {ValueRate1} 부여한다.,52
+S_Core_52,시간 왜곡+,Core,Epic,Cost,PlayerParty,2,Buff,E_Swift,1,1,7,Direction,Range_All,시간의 흐름을 왜곡시켜 아군에게 다음 턴 시작 시 신속을 {ValueRate1} 부여한다.,52
+S_Core_53,도미네이션,Core,Epic,Cost,EnemyParty,1,Debuff,E_Vulnerable;E_Weaken,2;2,1;1,8,Direction,Range_All,"전장을 지배하여 취약을 {ValueRate1}, 약화를 {ValueRate2} 부여한다.",52,
+S_Core_54,도미네이션+,Core,Epic,Cost,EnemyParty,2,Debuff,E_Vulnerable;E_Weaken,3;3,1;1,8,Direction,Range_All,"전장을 지배하여 취약을 {ValueRate1}, 약화를 {ValueRate2} 부여한다.",52,
+S_Core_55,블러드 베놈,Core,Rare,Cost,EnemyParty,1,Debuff,E_Poison;E_Bleed,2;2,1;1,6,Selection,Range_17,"독성의 피를 퍼뜨려 중독을 {ValueRate1}, 출혈을 {ValueRate2} 부여한다.",35,
+S_Core_56,블러드 베놈+,Core,Rare,Cost,EnemyParty,2,Debuff,E_Poison;E_Bleed,2;2,1;1,6,Selection,Range_05,"독성의 피를 퍼뜨려 중독을 {ValueRate1}, 출혈을 {ValueRate2} 부여한다.",35
+S_Core_57,하트 피어스,Core,Unique,Cost,EnemyParty,1,Attack,E_Pierce;E_Vulnerable,13;1,1;1,6,Direction,Range_21,급소를 꿰뚫어 {ValueRate1}의 관통 피해를 주고 취약을 {ValueRate2} 부여한다.,70
+S_Core_58,하트 피어스+,Core,Unique,Cost,EnemyParty,2,Attack,E_Pierce;E_Vulnerable,15;2,1;1,6,Direction,Range_21,급소를 꿰뚫어 {ValueRate1}의 관통 피해를 주고 취약을 {ValueRate2} 부여한다.,70
+S_Core_59,피니셔,Core,Unique,Cost,EnemyParty,1,Attack,E_Strike,18,1,5,Direction,Range_09,마무리 일격으로 {ValueRate1}의 피해를 준다.,64
+S_Core_60,피니셔+,Core,Unique,Cost,EnemyParty,2,Attack,E_Strike,22,1,5,Direction,Range_09,마무리 일격으로 {ValueRate1}의 피해를 준다.,64
+S_Core_61,위압,Core,Common,Cost,EnemyParty,1,Debuff,E_Weaken,1,1,4,Direction,Range_07,기세를 억눌러 약화를 {ValueRate1} 부여한다.,16
+S_Core_62,위압+,Core,Common,Cost,EnemyParty,2,Debuff,E_Weaken,1,1,3,Direction,Range_07,기세를 억눌러 약화를 {ValueRate1} 부여한다.,16
+S_Core_63,공격태세,Core,Rare,Cost,PlayerParty,1,Buff,E_Boost,1,1,4,Direction,Range_b_02,공격 태세를 갖추며 아군에게 증폭을 {ValueRate1} 부여한다.,30
+S_Core_64,공격태세+,Core,Rare,Cost,PlayerParty,2,Buff,E_Boost,2,1,4,Direction,Range_b_02,공격 태세를 갖추며 아군에게 증폭을 {ValueRate1} 부여한다.,30
+S_Core_65,틈새베기,Core,Common,Cost,EnemyParty,1,Attack,E_Strike,4,1,2,Direction,Range_10,빈틈을 빠르게 베어 {ValueRate1}의 피해를 준다.,12
+S_Core_66,틈새베기+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike,6,1,2,Direction,Range_10,빈틈을 빠르게 베어 {ValueRate1}의 피해를 준다.,12
+S_Core_67,숨돌리기,Core,Common,Cost,PlayerParty,1,Buff,E_Focus,1,1,5,Direction,Range_Self,호흡을 가다듬어 카르마를 {ValueRate1} 회복한다.,15
+S_Core_68,숨돌리기+,Core,Common,Cost,PlayerParty,2,Buff,E_Focus,1,1,4,Direction,Range_Self,호흡을 가다듬어 카르마를 {ValueRate1} 회복한다.,15
+S_Core_69,밀쳐내기,Core,Common,Cost,EnemyParty,1,Attack,E_Strike;E_Knockback,4;1,1,3,Direction,Range_23,몸으로 부딪쳐 {ValueRate1}의 피해를 주고 {ValueRate2}칸 밀쳐낸다.,17
+S_Core_70,밀쳐내기+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike;E_Knockback,4;1,1,2,Direction,Range_23,몸으로 부딪쳐 {ValueRate1}의 피해를 주고 {ValueRate2}칸 밀쳐낸다.,17
+S_Core_71,격려,Core,Common,Cost,PlayerParty,1,Buff,E_Charge,2,1,4,Selection,Range_b_17,용기를 북돋아 아군에게 충전을 {ValueRate1} 부여한다.,17
+S_Core_72,격려+,Core,Common,Cost,PlayerParty,2,Buff,E_Charge,2,1,3,Selection,Range_b_17,용기를 북돋아 아군에게 충전을 {ValueRate1} 부여한다.,17
+S_Core_73,버티기,Core,Rare,Cost,PlayerParty,1,Buff,E_Armor,4,1,2,Direction,Range_b_02,굳게 버티며 아군에게 방어도를 {ValueRate1} 부여한다.,29
+S_Core_74,버티기+,Core,Rare,Cost,PlayerParty,2,Buff,E_Armor,4,1,2,Direction,Range_b_19,굳게 버티며 아군에게 방어도를 {ValueRate1} 부여한다.,29
+S_Core_75,끌어당기기,Core,Common,Cost,EnemyParty,1,Attack,E_Strike;E_Grab,5;1,1,3,Direction,Range_22,끌어내며 {ValueRate1}의 피해를 주고 {ValueRate2}칸 당겨온다.,19
+S_Core_76,끌어당기기+,Core,Common,Cost,EnemyParty,2,Attack,E_Strike;E_Grab,6;1,1,3,Direction,Range_22,끌어내며 {ValueRate1}의 피해를 주고 {ValueRate2}칸 당겨온다.,19
+S_Core_77,블러드피어스,Core,Common,Hp,EnemyParty,1,Attack,E_Strike;E_Bleed,4;1,1,3,Direction,Range_06,끝을 찔러 {ValueRate1}의 피해를 주고 출혈을 {ValueRate2} 부여한다.,18
+S_Core_78,블러드피어스+,Core,Common,Hp,EnemyParty,2,Attack,E_Strike;E_Bleed,4;1,1,2,Direction,Range_07,끝을 찔러 {ValueRate1}의 피해를 주고 출혈을 {ValueRate2} 부여한다.,18
+S_Core_79,스피드스터,Core,Common,Cost,PlayerParty,1,Buff,E_Swift,1,1,4,Direction,Range_Self,움직일 틈을 잡아 다음 턴 시작 시 신속을 {ValueRate1} 얻는다.,21
+S_Core_80,스피드스터+,Core,Common,Cost,PlayerParty,2,Buff,E_Swift,1,1,3,Direction,Range_Self,움직일 틈을 잡아 다음 턴 시작 시 신속을 {ValueRate1} 얻는다.,21
+
+# MonsterSkill
+스킬ID,이름,대상,효과ID,수치계수,횟수계수,그리드이동,범위ID,타임라인표기,효과설명,아이콘,타입
+SkillId,Name,Target,EffectIds,ValueRate,CountRate,GridMove,RangeId,TimelineNotation,EffectDesc,SkillIcon,SkillType
+S_Monster_01,이동,Self,E_Move,0,1,0,Range_02,Move,가까운 캐릭터 주변으로 1칸 이동한다.,icon_mon_skill_001,이동
+S_Monster_02,점액투척,PlayerParty,E_Strike,7,1,0,Range_16,Attack,범위 내에서 가까운 대상에게 {ValueRate1}의 피해를 주고 점액을 남긴다.,icon_mon_skill_002,일반피해
+S_Monster_03,이동,Self,E_Move,0,1,0,Range_01,Move,가까운 캐릭터를 향해 1칸 이동한다.,icon_mon_skill_001,이동
+S_Monster_04,덮치기,PlayerParty,E_Strike,5,1,0,Range_10,Attack,대상에게 {ValueRate1}의 피해를 준다.,icon_mon_skill_003,일반피해
+S_Monster_05,이동,Self,E_Move,0,1,0,Range_20,Move,범위 내에 캐릭터가 들어오면 2칸 도망간다.,icon_mon_skill_001,이동
+S_Monster_06,화염폭발,PlayerParty,E_Strike,8,1,0,Range_02,Attack,주변에 {ValueRate1}의 피해를 준다.,icon_mon_skill_004,일반피해
+S_Monster_07,원한의 불꽃,EnemyParty,E_Grudge,1,1,0,Range_All,Buff,모든 몬스터에게 원한을 {ValueRate1} 부여한다.,icon_mon_skill_005,버프
+S_Monster_08,이동,Self,E_Move,0,1,0,Range_20,Move,범위 내에 캐릭터가 들어오면 2칸 도망간다.,icon_mon_skill_001,이동
+S_Monster_09,침식폭발,PlayerParty,E_Strike,8,1,0,Range_02,Attack,주변에 {ValueRate1}의 피해를 준다.,icon_mon_skill_006,일반피해
+S_Monster_10,침식 확산,PlayerParty,E_Corrosion,1,1,0,Range_All,Debuff,모든 캐릭터에게 침식을 {ValueRate1} 부여한다.,icon_mon_skill_007,디버프
+S_Monster_11,이동,Self,E_Move,0,1,0,Range_20,Move,같은 라인을 맞추기 위해 이동한다.,icon_mon_skill_001,이동
+S_Monster_12,들이받기,PlayerParty,E_Strike;E_Knockback,12;1,1,6,Range_18,Attack,돌진하여 대상에게 {ValueRate1}의 피해를 주고 {ValueRate2}칸 밀쳐낸다.,icon_mon_skill_008,일반피해
+S_Monster_13,이동,Self,E_Move,0,1,0,Range_02,Move,가까운 캐릭터 주변으로 1칸 이동한다.,icon_mon_skill_001,이동
+S_Monster_14,대폭발,PlayerParty,E_Strike,24,1,0,Range_24,Attack,범위 내에 {ValueRate1}의 피해를 주고 사망한다.,icon_mon_skill_009,일반피해
+S_Monster_15,이동,Self,E_Move,0,1,0,Range_01,Move,가까운 캐릭터 주변으로 1칸 이동한다.,icon_mon_skill_001,이동
+S_Monster_16,그림자걸음,Self,E_Move,0,1,0,Range_24,Move,범위 내에서 가장 먼 대상의 후방으로 순간이동한다.,icon_mon_skill_018,이동
+S_Monster_17,심연 찌르기,PlayerParty,E_Pierce,10,1,0,Range_03,Attack,대상에게 {ValueRate1}의 관통피해를 준다.,icon_mon_skill_019,관통피해
+S_Monster_18,어둠 가르기,PlayerParty,E_Strike,12,1,0,Range_14,Attack,대상에게 {ValueRate1}의 피해를 준다.,icon_mon_skill_020,일반피해
+S_Monster_19,그림자 소용돌이,PlayerParty,E_Strike;E_Grab,2;1,1,0,Range_12,Attack,대상에게 {ValueRate1}의 피해를 주고 {ValueRate2}칸 당겨온다.,icon_mon_skill_021,일반피해
+S_Monster_20,이동,Self,E_Move,0,1,0,Range_19,Move,범위 내에 캐릭터가 들어오면 최대 2칸 이동한다.,icon_mon_skill_001,이동
+S_Monster_21,사방 찢기,PlayerParty,E_Strike,10,1,0,Range_02,Attack,주변에 {ValueRate1}의 피해를 준다.,icon_mon_skill_026,일반피해
+S_Monster_22,사냥 표식,PlayerParty,E_Strike,8,1,0,Range_16,Attack,턴 시작 시 대상의 위치에 {ValueRate1}의 피해를 준다.,icon_mon_skill_027,일반피해
+S_Monster_23,고치 심기,Self,E_Spawn_Spider_Egg,1,1,0,Range_16,Debuff,주변에 고치를 {ValueRate1}개 심는다.,icon_mon_skill_028,설치
+S_Monster_24,사냥실,Self,E_Spawn_Spider_Web,1,1,0,Range_16,Debuff,길목에 거미줄을 {ValueRate1}개 생성한다.,icon_mon_skill_029,설치
+S_Monster_25,거미줄 갑주,Self,E_Barrier,1,1,0,Range_Self,Buff,피해를 {ValueRate1}회 막는 장막을 부여한다.,icon_mon_skill_030,버프
+S_Monster_26,이동,Self,E_Move,0,1,0,Range_02,Move,가까운 캐릭터 앞으로 1칸 이동한다.,icon_mon_skill_001,이동
+S_Monster_27,횡베기,PlayerParty,E_Strike,9,1,0,Range_07,Attack,대상에게 {ValueRate1}의 피해를 준다.,icon_mon_skill_010,일반피해
+S_Monster_28,반격,PlayerParty,E_Strike,6,1,0,Range_10,Attack,직접 피해를 받으면 {ValueRate1}의 피해를 준다.,icon_mon_skill_011,일반피해
+S_Monster_29,이동,Self,E_Move,0,1,0,Range_20,Move,범위 내에 캐릭터가 들어오면 2칸 이동한다.,icon_mon_skill_001,이동
+S_Monster_30,직사,PlayerParty,E_Strike,8,1,0,Range_18,Attack,대상에게 {ValueRate1}의 피해를 준다.,icon_mon_skill_012,일반피해
+S_Monster_31,곡사,PlayerParty,E_Strike,4,2,0,Range_05,Attack,가장 먼 대상에게 {ValueRate1}의 피해를 2회 준다.,icon_mon_skill_013,일반피해
+S_Monster_32,이동,Self,E_Move,0,1,0,Range_02,Move,가까운 캐릭터를 향해 1칸 이동한다.,icon_mon_skill_001,이동
+S_Monster_33,방패돌진,PlayerParty,E_Strike;E_Knockback,14;6,1,6,Range_18,Attack,"대상에게 {ValueRate1}의 피해를 주고, 끝까지 밀어낸다.",icon_mon_skill_014,일반피해
+S_Monster_34,방패강타,PlayerParty,E_Strike;E_Knockback,16;1,1,0,Range_14,Attack,"대상에게 {ValueRate1}의 피해를 주고, {ValueRate2}칸 밀쳐낸다.",icon_mon_skill_015,일반피해
+S_Monster_35,대지진,PlayerParty,E_Strike,4,1,0,Range_All,Attack,모든 범위에 {ValueRate1}의 피해를 준다.,icon_mon_skill_016,일반피해
+S_Monster_36,철옹성,Self,E_Armor,10,1,0,Range_Self,Buff,자신에게 {ValueRate1}만큼 방어도를 부여한다.,icon_mon_skill_017,버프
+S_Monster_37,이동,Self,E_Move,0,1,0,Range_02,Move,범위 내에 캐릭터가 들어오면 1칸 도망간다.,icon_mon_skill_001,이동
+S_Monster_38,망령쇄도,PlayerParty,E_Pierce,12,1,0,Range_18,Attack,대상에게 {ValueRate1}의 관통 피해를 준다.,icon_mon_skill_022,관통피해
+S_Monster_39,혼령폭발,PlayerParty,E_Strike,14,1,0,Range_17,Attack,가까운 대상에게 {ValueRate1}의 피해를 준다.,icon_mon_skill_023,일반피해
+S_Monster_40,피의저주,PlayerParty,E_Bleed,1,1,0,Range_16,Debuff,범위 내 대상에게 출혈을 {ValueRate1} 부여한다.,icon_mon_skill_024,디버프
+S_Monster_41,사령술,Self,E_Spawn_Soldier,1,1,0,Range_Self,Buff,죽은 병사 하나를 30% 체력으로 되살린다.,icon_mon_skill_025,버프
+
+# GridEffect
+그리드효과ID,이름,통과유무,소모성,효과ID,수치계수,횟수계수,지속턴,생성 방식,체력,타입,툴팁
+GridEffectID,Name,Passed,expendable,EffectIds,ValueRate,CountRate,Duration,SpawnType,HP,TargetType,ToolTip
+GR_debris,잔해,0,0,-1,0,1,0,BattleStart,25,Object,이동을 방해하는 장애물이다.
+GR_thorn,가시,1,0,E_Strike,3,1,0,BattleStart,0,None,대상에게 {ValueRate}의 피해를 준다.
+GR_Poisson,독,1,1,E_Poison,2,1,0,BattleStart,0,None,대상에게 중독 {ValueRate}를 부여한다.
+GR_Residue,점액,1,1,E_Strike,2,1,2,Monster,0,None,대상에게 {ValueRate}의 피해를 준다.
+GR_dummy,루어,0,0,-1,0,1,0,Summon,10,Character,캐릭터로 인식되는 생명체이다.
+GR_explosive_doll,브룸,0,0,-1,8,1,0,Summon,15,Object,이번 턴이 끝날 때 주변 적에게 {ValueRate}의 피해를 준다.
+GR_spider_egg,고치,0,0,-1,0,5,2,Summon,8,Object,{Duration}턴 후 신더가 부화한다.
+GR_spider_web,거미줄,1,0,E_Spider_Web,1,1,2,Monster,0,None,뒤얽힘을 {ValueRate} 부여한다.
+GR_nocturn_portal_preview,그림자,1,0,-1,0,1,1,Monster,0,None,그림자가 머문 곳으로 이동할 예정이다.
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+
+# Effect
+효과ID,이름,효과타입,턴종료제거,툴팁,,사용처
+EffectId,Name,EffectType,EndTurn,ToolTip,,Usage
+E_Max_HP,최대   HP,Neutral,0,생명력 자원,,"Rune: 6개 / Relic_P_01, Relic_P_04, Relic_P_05"
+E_Max_Cost,최대 Cost,Neutral,0,기억사용에 필요한 자원,,"Rune_01, Rune_03, Rune_05, Rune_07, Rune_09 / Relic_P_02, Relic_P_04"
+E_Strike,타격,Neutral,0,일반적인 피해를 준다. 대상의 방어도가 있으면 방어도부터 감소시킨다.,,"SkillMaster: 45개 / MonsterSkill: 18개 / GridEffect: GR_thorn, GR_Residue"
+E_Pierce,관통,Neutral,0,방어도를 무시하고 대상의 생명력에 직접 피해를 준다.,,"SkillMaster: 8개 / S_Monster_17, S_Monster_38"
+E_Heal,치유,Neutral,0,생명력을 수치만큼 즉시 회복한다.,,SkillMaster: 6개
+E_Move,이동,Neutral,0,이동 효과입니다.,,SkillMaster: 7개 / MonsterSkill: 13개
+E_Knockback,넉백,Neutral,0,대상을 시전자와 멀어지는 방향으로 밀어낸다.,,"SkillMaster: 7개 / S_Monster_12, S_Monster_33, S_Monster_34"
+E_Grab,그랩,Neutral,0,대상을 시전자와 가까워지는 방향으로 당겨온다.,,SkillMaster: 6개 / S_Monster_19
+E_Crash,충돌,Neutral,0,이동 중 유닛 또는 장애물에 막히면 2의 고정 피해를 받는다.,,코드: 충돌 처리 (BattleActionRunner /   Knockback / Grab)
+E_Boost,증폭,Beneficial,Remove,이번 턴 동안 공격 수치가 수치만큼 증가한다. 턴 종료 시 증폭 수치는 사라진다.,,SkillMaster: 9개
+E_Armor,방어도,Beneficial,Remove,번 턴 동안 수치만큼 피해를 막는다. 턴 종료 시 방어도 수치는 사라진다.,,SkillMaster: 16개 / MonsterSkill: S_Monster_36
+E_Charge,충전,Beneficial,Remove,턴 종료 시 마나를 수치만큼 회복한다.,,SkillMaster: 7개
+E_Focus,집중,Beneficial,Remove,턴 종료 시 카르마를 수치만큼 획득한다.,,SkillMaster: 6개
+E_Swift,신속,Beneficial,Decrease,몬스터보다 먼저 행동을 진행할 수 있다. 턴 종료 시 수치가 1씩 감소한다.,,"S_Passive_04, /  S_Core_51, S_Core_52, S_Core_79, S_Core_80"
+E_Smite,강타,Beneficial,Decrease,첫 공격의 피해가 50% 증가한다. 턴 종료 시 수치가 1씩 감소한다.,,S_Passive_08
+E_Lifesteal,흡혈,Beneficial,Decrease,준 피해의 30%만큼 체력을 회복한다. 턴 종료 시 수치가 1씩 감소한다.,,S_Passive_09
+E_Ward,가호,Beneficial,Decrease,피해를 받을 때 수치만큼 피해를 준다. 턴 종료 시 수치가 1씩 감소한다.,,"S_Core_13,   S_Core_14, S_Core_49, S_Core_50"
+E_Grudge,원한,Beneficial,Maintain,공격 수치가 수치만큼 증가한다. 턴 종료 시 사라지지 않는다.,,S_Monster_07
+E_Barrier,장막,Beneficial,Decrease,받는 피해를 1회 무시한다. 발동 시 사라진다. 턴 종료 시 수치가 1씩 감소한다.,,S_Monster_25
+E_Poison,중독,Harmful,Decrease,턴 종료 시 수치만큼 피해를 받는다. 턴 종료 시 수치가 1씩 감소한다.,,SkillMaster: 8개 / GR_Poisson
+E_Bleed,출혈,Harmful,Decrease,이동 시 수치만큼 피해를 받는다. 턴 종료 시 수치가 1씩 감소한다.,,SkillMaster: 8개 / S_Monster_40
+E_Vulnerable,취약,Harmful,Decrease,받는 피해를 30% 증가시킨다. 턴 종료 시 수치가 1씩 감소한다.,,SkillMaster: 10개
+E_Weaken,약화,Harmful,Decrease,주는 피해를 15% 감소시킨다. 턴 종료 시 수치가 1씩 감소한다.,,SkillMaster: 9개
+E_Corrosion,침식,Harmful,Maintain,받는 모든 피해가 수치만큼 증가한다. 턴 종료 시 사라지지 않는다.,,S_Monster_10
+E_Split,분열,Neutral,Maintain,피해횟수에 따라 수치가 1 감소한다. 0이 되었을 때 살아 있다면 블롭 2마리로 분열한다.,,코드: Mon_01 머크 기본 분열 상태
+E_Explode,폭발,Neutral,Decrease,턴 종료 시 수치가 1 감소합니다. 수치가 0이 되면 대폭발을 사용한다.,,코드: Mon_06 신더 기본 폭발 상태
+E_Flank,기습,Beneficial,Maintain,뒤를 공격할 때 피해가 50% 증가한다.,,코드: Mon_10 녹턴 기본 기습 상태
+E_Spider_Web,뒤얽힘,Neutral,Maintain,이동에 사용하는 마나 소모량이 2배가 된다.,,GridEffect: GR_spider_web
+E_Spawn_Spider_Egg,거미알 생성,Neutral,None,선택한 그리드에 거미알을 생성한다.,,S_Monster_23
+E_Spawn_Spider_Web,거미줄 생성,Neutral,None,선택한 그리드에 거미줄을 생성한다.,,S_Monster_24
+E_Spawn_Soldier,사령술,Neutral,None,지정된 위치에 죽었던 병사를 다시 생성한다.,,S_Monster_41
+E_Cost_Recovery_Delta,코스트 회복량 변화,Neutral,0,마나 재생량을 수치만큼 변화시킨다.,,"Rune_02, Rune_05, Rune_08, Rune_09 / Relic_P_03, Relic_P_05, Relic_P_17"
+E_UniqueResource_Overflow_To_Cost,고유자원 초과 코스트 회복,Neutral,0,카르마가 최대일 때 카르마를 회복하면 수치 배율만큼 마나를 회복한다.,,Relic_P_57
+E_UniqueResource_Max_Skill_Cost_Delta,고유자원 최대 스킬 코스트 변화,Neutral,0,카르마가 최대일 때 모든 스킬 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_58
+E_First_Move_Cost_Delta,첫 이동 코스트 변화,Neutral,0,첫 이동의 마나 사용량을 수치만큼 변화시킨다.,,Rune_10
+E_Attack_Cost_Delta,공격 스킬 코스트 변화,Neutral,0,공격타입 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_06
+E_Debuff_Cost_Delta,디버프 스킬 코스트 변화,Neutral,0,디버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_08
+E_Move_Cost_Zero,이동 코스트 제거,Neutral,0,이동이 코스트를 소모하지 않는다.,,Relic_P_18
+E_Blocked_Slot_Mask,등록 금지 슬롯 마스크,Neutral,0,마스크에 포함된 슬롯에 기억을 등록할 수 없다.,,Relic_P_17
+E_Max_Registrable_Slot_Count,등록 가능 슬롯 수 제한,Neutral,0,기억을 등록할 수 있는 슬롯 수를 수치로 제한한다.,,Relic_P_18
+E_No_Move_In_Slot_Buff_Cost_Delta,이동 없음 슬롯 버프 코스트 변화,Neutral,0,해당 슬롯에서 이동하지 않았다면 버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_31
+E_After_Move_Debuff_Cost_Delta,이동 후 디버프 코스트 변화,Neutral,0,해당 슬롯에서 이동한 뒤 등록하는 디버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_32
+E_Slot1_First_Skill_Cost_Delta,1번 슬롯 첫 스킬 코스트 변화,Neutral,0,1번 슬롯에 등록하는 첫 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_09
+E_Slot5_Skill_Cost_Delta,5번 슬롯 스킬 코스트 변화,Neutral,0,5번 슬롯에 등록하는 모든 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_13
+E_Low_HP_Skill_Cost_Delta,낮은 체력 스킬 코스트 변화,Neutral,0,현재 체력이 30% 이하라면 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_44
+E_High_HP_Cost_Recovery_Delta,높은 체력 코스트 회복 변화,Neutral,0,현재 체력이 90% 이상이라면 마나 재생량을 수치만큼 변화시킨다.,,Relic_P_47
+E_High_HP_Buff_Cost_Delta,높은 체력 버프 코스트 변화,Neutral,0,현재 체력이 90% 이상이라면 버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_48
+E_Attack_Value_Delta,공격 스킬 피해량 변화,Neutral,0,공격타입 기억의 피해량을 수치만큼 변화시킨다.,,"Rune_11 / Relic_P_06, Relic_P_07"
+E_Attack_Count_Delta,공격 스킬 횟수 변화,Neutral,0,공격타입 기억의 피해 횟수를 수치만큼 변화시킨다.,,Relic_P_07
+E_Debuff_Value_Delta,디버프 스킬 수치 변화,Neutral,0,디버프타입 기억의 효과 수치를 수치만큼 변화시킨다.,,Relic_P_08
+E_Heal_Value_Delta,기억 치유량 변화,Neutral,0,기억으로 회복하는 생명력을 수치만큼 변화시킨다.,,Rune_12
+E_Skill_Armor_Value_Delta,기억 방어도 변화,Neutral,0,기억으로 부여하는 방어도를 수치만큼 변화시킨다.,,Rune_13
+E_Poison_Value_Delta,기억 중독 부여량 변화,Neutral,0,기억으로 부여하는 중독 수치를 수치만큼 변화시킨다.,,Rune_14
+E_Bleed_Value_Delta,기억 출혈 부여량 변화,Neutral,0,기억으로 부여하는 출혈 수치를 수치만큼 변화시킨다.,,Rune_15
+E_Armor_Gain_Percent,방어도 획득량 퍼센트 변화,Neutral,0,방어도 획득량을 퍼센트로 변화시킨다.,,Relic_P_40
+E_After_Move_Debuff_Value_Delta,이동 후 디버프 수치 변화,Neutral,0,해당 슬롯에서 이동한 뒤 등록하는 디버프타입 기억의 효과수치를 수치만큼 변화시킨다.,,Relic_P_33
+E_After_Move_Attack_Value_Per_Cost,이동 후 공격 소모 코스트 비례 피해,Neutral,0,해당 슬롯에서 이동에 소모한 마나만큼 공격 피해량을 증가시킨다.,,Relic_P_34
+E_Slot1_Attack_Value_Delta,1번 슬롯 공격 수치 변화,Neutral,0,1번 슬롯 공격타입 기억의 피해량을 수치만큼 변화시킨다.,,Relic_P_10
+E_Slot1_Buff_Value_Delta,1번 슬롯 버프 수치 변화,Neutral,0,1번 슬롯 버프타입 기억의 효과수치를 수치만큼 변화시킨다.,,Relic_P_12
+E_Slot5_Attack_Value_Delta,5번 슬롯 공격 수치 변화,Neutral,0,5번 슬롯 공격타입 기억의 피해량을 수치만큼 변화시킨다.,,Relic_P_14
+E_Low_HP_Attack_Value_Delta,낮은 체력 공격 피해 변화,Neutral,0,현재 체력이 30% 이하라면 공격타입 기억의 피해량을 수치만큼 변화시킨다.,,Relic_P_45
+E_Self_Buff_Blocked_Buff_Value_Delta,자신 버프 차단 버프 수치 변화,Neutral,0,자신에게 버프를 부여할 수 없는 대신 버프타입 기억의 효과수치를 수치만큼 증가시킨다.,,Relic_P_54
+E_Full_HP_Buff_Value_Delta,최대 체력 버프 수치 변화,Neutral,0,체력이 최대라면 버프타입 기억의 효과수치를 수치만큼 변화시킨다.,,Relic_P_55
+E_Unique_Skill_Value_Percent,발현 기억 수치 퍼센트 변화,Neutral,0,발현 기억의 효과 수치를 퍼센트로 변화시킨다.,,Relic_P_60
+E_Unique_Skill_Count_Delta,발현 기억 횟수 변화,Neutral,0,발현 기억의 횟수를 수치만큼 변화시킨다.,,Relic_P_61
+E_Slot5_Attack_Pierce,5번 슬롯 공격 관통 변경,Neutral,0,5번 슬롯 공격타입 기억의의 피해를 관통 피해로 변경한다.,,Relic_P_16
+E_Slot1_Attack_Kill_Focus,1번 슬롯 공격 처치 집중,Neutral,0,1번 슬롯 공격타입 기억으로 적 처치 시 집중을 수치만큼 얻는다.,,Relic_P_11
+E_Slot5_Attack_Kill_Cost_Refund,5번 슬롯 공격 처치 코스트 반환,Neutral,0,5번 슬롯 공격타입 기억으로 적 처치 시 해당 스킬 사용 마나를 돌려받는다.,,Relic_P_15
+E_Unique_Skill_Kill_Focus,발현 기억 처치 집중,Neutral,0,발현 기억으로 적 처치 시 집중을 수치만큼 얻는다.,,Relic_P_59
+E_Damage_Poisoned_Fixed,중독 대상 추가 고정피해,Neutral,0,중독이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.,,Relic_P_49
+E_Damage_Bleeding_Fixed,출혈 대상 추가 고정피해,Neutral,0,출혈이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.,,Relic_P_50
+E_Damage_Vulnerable_Armor,취약 대상 피해 방어도 획득,Neutral,0,취약이 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.,,Relic_P_51
+E_Damage_Weakened_Armor,약화 대상 피해 방어도 획득,Neutral,0,약화가 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.,,Relic_P_52
+E_Damage_Non_Poisoned_Apply_Poison,비중독 대상 피해 중독 부여,Neutral,0,중독이 부여되지 않은 적에게 피해를 주면 중독을 수치만큼 부여한다.,,Relic_P_53
+E_Ally_Buff_Charge,아군 버프 충전 획득,Neutral,0,자신을 제외한 아군에게 버프를 부여하면 충전을 수치만큼 얻는다.,,Relic_P_56
+E_Low_HP_Damage_Reduction_Percent,낮은 체력 피해 감소,Neutral,0,현재 체력이 30% 이하라면 받는 피해를 퍼센트로 감소시킨다.,,Relic_P_46
+E_Forced_Move_Immune,강제이동 면역,Neutral,0,넉백과 그랩으로 이동하지 않는다.,,Relic_P_35
+E_Crash_Damage_Immune,충돌 피해 면역,Neutral,0,충돌로 인한 피해를 받지 않는다.,,Relic_P_36
+E_Grid_Effect_Immune,그리드 효과 면역,Neutral,0,그리드 효과를 받지 않는다.,,Relic_P_37
+E_Overheal_To_Armor,최대 체력 회복 방어도 전환,Neutral,0,최대 체력에서 회복되면 회복량에 비례해 방어도를 얻는다.,,Relic_P_38
+E_Healing_Blocked,회복 차단,Neutral,0,체력을 회복할 수 없다.,,Relic_P_40
+E_No_Damage_Previous_Turn_Smite,피해 없음 다음 턴 강타,Neutral,0,이전 턴 동안 피해를 받지 않았다면 턴 시작 시 강타를 수치만큼 얻는다.,,Relic_P_39
+E_Once_Battle_End_Turn_Zero_Cost_Charge,턴 종료 마나 0 회복,Neutral,0,턴 종료 시 남은 마나가 0이면 마나를 수치만큼 회복한다.,,Relic_P_62
+E_Once_Battle_Attack_Miss_Charge,공격 실패 마나 회복,Neutral,0,공격이 적중하지 않았을 때마다 마나를 수치만큼 회복한다.,,Relic_P_63
+E_Once_Battle_Full_HP_Target_Damage_Percent,최대 생명력 대상 피해 배율,Neutral,0,생명력이 최대인 적에게 피해를 줄 때 피해량을 수치 배로 적용한다.,,Relic_P_64
+E_Turn_Start_Cost_Recovery,지정 턴 마나 회복,Neutral,0,지정 턴 시작 시 마나를 수치만큼 회복한다.,,Relic_P_28
+E_Turn_Start_Unique_Resource_Recovery,지정 턴 카르마 회복,Neutral,0,지정 턴 시작 시 카르마를 수치만큼 회복한다. 최대치를 초과하지 않는다.,,Relic_P_28
+E_Turn_Start_Armor,지정 턴 방어도,Neutral,0,지정 턴 시작 시 방어도를 수치만큼 얻는다.,,Relic_P_27
+E_Turn_Start_Armor_Per_Used_Slot,등록 슬롯 비례 방어도,Neutral,0,등록된 슬롯 수에 비례해 방어도를 얻는다.,,Relic_P_19
+E_Turn_Start_Armor_Per_Empty_Slot,빈 슬롯 비례 방어도,Neutral,0,비어 있는 슬롯 수에 비례해 방어도를 얻는다.,,Relic_P_20
+E_Turn_Start_Swift,지정 턴 신속,Neutral,0,지정 턴 시작 시 신속을 수치만큼 얻는다.,,Rune_16 / Relic_P_29
+E_Turn_Start_Boost,지정 턴 증폭,Neutral,0,지정 턴 시작 시 증폭을 수치만큼 얻는다.,,Rune_18 / Relic_P_29
+E_Turn_Start_Smite,지정 턴 강타,Neutral,0,지정 턴 시작 시 강타를 수치만큼 얻는다.,,Rune_17 / Relic_P_30
+E_Turn_Start_Lifesteal,지정 턴 흡혈,Neutral,0,지정 턴 시작 시 흡혈을 수치만큼 얻는다.,,Relic_P_30
+E_Turn_Start_Smite_If_Slots_Empty_Mask,빈 슬롯 조건 강타,Neutral,0,마스크에 포함된 슬롯이 모두 비어 있으면 강타를 수치만큼 얻는다.,,Relic_P_21
+E_Turn_Start_Boost_If_Slots_Empty_Mask,빈 슬롯 조건 증폭,Neutral,0,마스크에 포함된 슬롯이 모두 비어 있으면 증폭을 수치만큼 얻는다.,,Relic_P_22
+E_Turn_Start_Boost_If_One_Attack_Command,공격 하나 조건 증폭,Neutral,0,등록한 공격타입 기억이 하나뿐이면 증폭을 수치만큼 얻는다.,,Relic_P_23
+E_Turn_Start_Boost_If_Attack_Command_Count_At_Least,공격 수 조건 증폭,Neutral,0,등록한 공격타입 기억의 수가 기준 이상이면 증폭을 수치만큼 얻는다.,,Relic_P_24
+E_Turn_Start_All_Enemy_Vulnerable,지정 턴 전체 적 취약,Neutral,0,지정 턴 시작 시 모든 적에게 취약을 수치만큼 부여한다.,,Relic_P_25
+E_Turn_Start_All_Enemy_Weaken,지정 턴 전체 적 약화,Neutral,0,지정 턴 시작 시 모든 적에게 약화를 수치만큼 부여한다.,,Relic_P_25
+E_Turn_Start_All_Enemy_Poison,지정 턴 전체 적 중독,Neutral,0,지정 턴 시작 시 모든 적에게 중독을 수치만큼 부여한다.,,Relic_P_26
+E_Turn_Start_All_Enemy_Bleed,지정 턴 전체 적 출혈,Neutral,0,지정 턴 시작 시 모든 적에게 출혈을 수치만큼 부여한다.,,Relic_P_26
+E_Collision_Target_Damage_Delta,충돌 상대 피해 변화,Neutral,0,자신과 충돌한 상대가 받는 피해를 수치만큼 변화시킨다.,,Relic_P_41
+E_Collision_Charge,충돌 충전 획득,Neutral,0,자신과 충돌이 발생하면 충전을 수치만큼 얻는다.,,Relic_P_42
+E_Collision_Kill_Focus,충돌 처치 집중,Neutral,0,자신과 충돌한 상대가 사망하면 집중을 수치만큼 얻는다.,,Relic_P_43
+E_Rest_Heal_Percent_Bonus,휴식 회복량 증가,Neutral,0,휴식으로 회복하는 회복량을 퍼센트로 증가시킨다.,,Relic_P_65
+E_Shop_Price_Discount_Percent,상점 가격 할인,Neutral,0,상점 판매 가격을 퍼센트로 감소시킨다.,,Relic_P_66
+E_Battle_Reward_Currency_Percent,전투 보상 재화 증가,Neutral,0,전투 보상 재화 획득량을 퍼센트로 증가시킨다.,,Rune_19 / Relic_P_67
+E_Battle_End_Heal,전투 종료 회복,Neutral,0,전투 종료 후 체력을 수치만큼 회복한다.,,"Rune_04, Rune_20 / Relic_P_68"
+E_Exploration_Start_Unique_Resource,탐사 시작 카르마 회복,Neutral,0,탐사 시작 시 1회 카르마를 수치만큼 회복한다.,,"Rune_51, Rune_56, Rune_61, Rune_66, Rune_71"
+E_Unique_Resource_Max_Reached_Boost,카르마 최대 도달 증폭,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 증폭을 수치만큼 얻는다.,,Rune_52
+E_Unique_Resource_Max_Reached_Smite,카르마 최대 도달 강타,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 강타를 수치만큼 얻는다.,,Rune_57
+E_Unique_Resource_Max_Reached_Cost_Recovery,카르마 최대 도달 마나 회복,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 마나를 수치만큼 회복한다.,,Rune_62
+E_Unique_Resource_Max_Reached_Armor,카르마 최대 도달 방어도,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 방어도를 수치만큼 얻는다.,,Rune_72
+E_Unique_Resource_Max_Reached_Self_Lowest_Ally_Armor,카르마 최대 도달 아군 방어도,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 자신과 생명력 비율이 가장 낮은 다른 아군에게 방어도를 수치만큼 부여한다.,,Rune_67
+E_Rune_Target_Damage_Value_Delta,룬 대상 기억 피해 변화,Neutral,0,룬의 대상 기억이 주는 피해를 수치만큼 변화시킨다.,,Rune: 9개
+E_Rune_Target_Attack_Count_Delta,룬 대상 기억 공격 횟수 변화,Neutral,0,룬의 대상 기억 공격 횟수를 수치만큼 변화시킨다.,,Rune_58
+E_Rune_Target_Skill_Cost_Delta,룬 대상 기억 마나 소모 변화,Neutral,0,룬의 대상 기억 마나 소모량을 수치만큼 변화시킨다.,,Rune_70
+E_Rune_Target_Armor_Multiplier,룬 대상 기억 방어도 배율,Neutral,0,룬의 대상 기억이 부여하는 방어도를 수치 배율로 적용한다.,,Rune_53
+E_Rune_Target_Boost_Value_Delta,룬 대상 기억 증폭 변화,Neutral,0,룬의 대상 기억이 부여하는 증폭을 수치만큼 변화시킨다.,,Rune_64
+E_Rune_Target_Heal_Value_Delta,룬 대상 기억 치유 변화,Neutral,0,룬의 대상 기억이 회복하는 생명력을 수치만큼 변화시킨다.,,Rune_68
+E_Rune_Target_Knockback_Value_Delta,룬 대상 기억 넉백 변화,Neutral,0,룬의 대상 기억이 부여하는 넉백 거리를 수치만큼 변화시킨다.,,Rune_54
+E_Rune_Target_Range_Expand,룬 대상 기억 범위 확장,Neutral,0,룬의 대상 기억 범위를 한 단계 확장한다.,,Rune_65
+AR_DamageBoostThisTurn,힘,Beneficial,Decrease,이번 턴 동안 주는 피해가 100% 증가한다.,,Compound_01
+AR_DamageReductionThisTurn,경화,Beneficial,Decrease,이번 턴 동안 받는 피해가 50% 감소한다.,,Compound_02
+AR_RecoverUniqueResourceToMax,응축된 카르마,Neutral,0,카르마를 3 회복한다.,,Compound_03
+AR_RecoverCostToMax,마력 플라스크,Neutral,0,마나를 10 회복한다.,,Compound_04
+AR_GrantSwift,각성,Neutral,0,신속을 2 부여한다.,,Compound_05
+AR_CleanseDebuffs,맑은 물,Neutral,0,모든 디버프를 제거한다.,,Compound_06
+AR_MoveToGrid,위치 이동,Neutral,0,선택한 빈 그리드로 이동한다.,,Compound_07
+AR_SwapAlly,위치 변경,Neutral,0,선택한 그리드의 아군과 위치를 교환한다.,,Compound_08
+AR_SpawnPoisonGridEffect,독 장판 생성,Neutral,0,선택한 그리드에 독 장판을 생성한다.,,Compound_09
+AR_SpawnThornGridEffect,가시 생성,Neutral,0,선택한 그리드에 가시를 생성한다.,,Compound_10
+AR_TargetOutgoingDamageReductionThisTurn,쇠약,Harmful,Decrease,이번 턴 동안 주는 피해를 50% 감소시킨다.,,Compound_11
+AR_SpawnObstacleGridEffect,잔해 생성,Neutral,0,선택한 그리드에 잔해를 생성한다.,,Compound_12
+AR_RemoveGridEffect,장애물 제거,Neutral,0,선택한 그리드의 장애물을 제거한다.,,Compound_13
+AR_SpawnDummyGridEffect,호문쿨루스 루어,Neutral,0,선택한 빈 그리드에 루어를 생성한다.,,Compound_14
+AR_SpawnExplosiveDollGridEffect,호문쿨루스 브룸,Neutral,0,선택한 빈 그리드에 브룸을 생성한다.,,Compound_15
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Map
+맵ID,이름,타입,전투맵ID,이벤트ID,스테이지 맵,등장가중치,전투난이도
+MapId,Name,Type,BattleMapId,EventId,Stage,SpawnWeight,BattleGroup
+Map_01,Common_Battle1,Common,Battlemap_01,0,Stage1,1,Weak
+Map_02,Common_Battle2,Common,Battlemap_02,0,Stage1,1,Weak
+Map_03,Common_Battle3,Common,Battlemap_03,0,Stage1,1,Hard
+Map_04,Common_Battle4,Common,Battlemap_04,0,Stage1,1,Hard
+Map_05,Common_Battle5,Common,Battlemap_05,0,Stage1,1,Normal
+Map_06,Common_Battle6,Common,Battlemap_06,0,Stage1,1,Normal
+Map_07,Common_Battle7,Common,Battlemap_07,0,Stage1,1,Normal
+Map_08,Common_Battle8,Common,Battlemap_08,0,Stage1,1,Normal
+Map_09,Common_Battle9,Common,Battlemap_09,0,Stage1,1,Hard
+Map_10,Common_Battle10,Common,Battlemap_10,0,Stage1,1,Hard
+Map_11,Elite_Battle1,Elite,Battlemap_11,0,Stage1,1,1
+Map_12,Elite_Battle2,Elite,Battlemap_12,0,Stage1,1,1
+Map_13,Elite_Battle3,Elite,Battlemap_13,0,Stage1,1,2
+Map_14,Elite_Battle4,Elite,Battlemap_14,0,Stage1,1,3
+Map_15,Elite_Battle5,Elite,Battlemap_15,0,Stage1,1,3
+Map_16,Boss_Battle,Boss,Battlemap_16,0,Stage1,1,0
+Map_17,Special1,Special,0,Event_01,Stage1,1,0
+Map_18,Special2,Special,0,Event_02,Stage1,1,0
+Map_19,Special3,Special,0,Event_03,Stage1,1,0
+Map_20,Special4,Special,0,Event_04,Stage1,1,0
+Map_21,Special5,Special,0,Event_05,Stage1,1,0
+Map_22,Special6,Shop,0,Event_06,Stage1,1,0
+Map_23,Special7,Special,0,Event_07,Stage1,1,0
+Map_24,Special8,Special,0,Event_08,Stage1,1,0
+Map_25,Special9,Start,0,Event_09,Stage1,1,0
+Map_26,Rest,Rest,0,0,Stage1,1,0
+
+,,,
+
+
+
+# BattleMap
+전투맵ID,몬스터ID,점유칸1,점유칸2,점유칸3,점유칸4,설명,기억 획득,유물 노말,유물 레어,유물 에픽,유물 유니크,기억 노말,기억 레어,기억 에픽,기억 유니크
+BattleMapId,MonsterId,OccupiedCell1,OccupiedCell2,OccupiedCell3,OccupiedCell4,Description,MemoryDropChance,RelicCommonChance,RelicRareChance,RelicEpicChance,RelicUniqueChance,MemoryCommonChance,MemoryRareChance,MemoryEpicChance,MemoryUniqueChance
+Battlemap_01,Mon_01,24,-1,-1,-1,"머크 2마리, 블롭 1마리",20,35,30,25,10,25,35,25,15
+Battlemap_01,Mon_01,25,-1,-1,-1,,,,,,,,,,
+Battlemap_01,Mon_02,22,-1,-1,-1,,,,,,,,,,
+Battlemap_02,Mon_02,21,-1,-1,-1,"블롭 2마리, 블라이트 1마리",20,35,30,25,10,25,35,25,15
+Battlemap_02,Mon_02,23,-1,-1,-1,,,,,,,,,,
+Battlemap_02,Mon_04,27,-1,-1,-1,,,,,,,,,,
+Battlemap_03,Mon_06,22,-1,-1,-1,"신더, 베스파, 랜서",20,35,30,25,10,25,35,25,15
+Battlemap_03,Mon_05,31,-1,-1,-1,,,,,,,,,,
+Battlemap_03,Mon_03,28,-1,-1,-1,,,,,,,,,,,
+Battlemap_04,Mon_06,22,-1,-1,-1,"신더, 베스파, 블라이트",20,35,30,25,10,25,35,25,15
+Battlemap_04,Mon_05,34,-1,-1,-1,,,,,,,,,,
+Battlemap_04,Mon_04,26,-1,-1,-1,,,,,,,,,,
+Battlemap_05,Mon_05,25,-1,-1,-1,베스파 2마리,20,35,30,25,10,25,35,25,15,
+Battlemap_05,Mon_05,33,-1,-1,-1,,,,,,,,,,,
+Battlemap_06,Mon_07,26,-1,-1,-1,"드라우그 1마리, 바로우 1마리",20,35,30,25,10,25,35,25,15,
+Battlemap_06,Mon_08,28,-1,-1,-1,,,,,,,,,,,
+Battlemap_07,Mon_06,21,-1,-1,-1,"신더 2마리, 랜서 1마리",20,35,30,25,10,25,35,25,15
+Battlemap_07,Mon_06,23,-1,-1,-1,,,,,,,,,,
+Battlemap_07,Mon_03,32,-1,-1,-1,,,,,,,,,,
+Battlemap_08,Mon_01,24,-1,-1,-1,"머크 1마리, 드라우그 2마리",20,35,30,25,10,25,35,25,15
+Battlemap_08,Mon_07,20,-1,-1,-1,,,,,,,,,,
+Battlemap_08,Mon_07,28,-1,-1,-1,,,,,,,,,,
+Battlemap_09,Mon_03,27,-1,-1,-1,"바로우 2마리, 랜서 1마리",20,35,30,25,10,25,35,25,15
+Battlemap_09,Mon_08,29,-1,-1,-1,,,,,,,,,,
+Battlemap_09,Mon_08,31,-1,-1,-1,,,,,,,,,,
+Battlemap_10,Mon_04,33,-1,-1,-1,"드라우그, 바로우, 블라이트",20,35,30,25,10,25,35,25,15
+Battlemap_10,Mon_07,21,-1,-1,-1,,,,,,,,,,
+Battlemap_10,Mon_08,27,-1,-1,-1,,,,,,,,,,
+Battlemap_11,Mon_09,27,-1,-1,-1,"정예 루크, 랜서",60,20,25,30,25,25,35,25,15
+Battlemap_11,Mon_03,31,-1,-1,-1,,,,,,,,,,
+Battlemap_12,Mon_09,27,-1,-1,-1,"정예 루크, 블라이트",60,20,25,30,25,25,35,25,15
+Battlemap_12,Mon_04,33,-1,-1,-1,,,,,,,,,,
+Battlemap_13,Mon_10,22,-1,-1,-1,정예 녹턴,60,20,25,30,25,25,35,25,15
+Battlemap_14,Mon_07,21,-1,-1,-1,"정예 모르트, 드라우그",60,20,25,30,25,25,35,25,15,,,,,
+Battlemap_14,Mon_11,28,-1,-1,-1,,,,,,,,,,,,,,,
+Battlemap_15,Mon_08,26,-1,-1,-1,"정예 모르트, 바로우",60,20,25,30,25,25,35,25,15
+Battlemap_15,Mon_11,32,-1,-1,-1,,,,,,,,,,,,,,
+Battlemap_16,Mon_12,27,-1,-1,-1,보스 아라벨라,100,5,15,50,30,25,35,25,15,,,,
+
+# Event
+이벤트ID,이벤트 이름,제목,선택지 순서,선택지이름,선택지 내용,선택불가 내용,선택지 타입,선택 조건,비용 타입,비용 대상,비용 값,성공 조건,결과타입,결과대상,결과값,성공확률,실패결과,다음이벤트ID,실패 다음이벤트ID,다음 이벤트까지 유지,성공 시각적 객체 ID,성공 시각적 작업 ID,실패 시각적 객체 ID,실패 시 시각적 동작 ID
+EventId,EventName,Title,ChoiceOrder,ChoiceName,ChoiceDesc,UnavailableChoiceDesc,ChoiceType,SelectCondition,CostType,CostTarget,CostValue,SuccessCondition,ResultType,ResultTarget,ResultValue,SuccessRate,FailResult,NextEventId,FailNextEventId,PersistAcrossNextEvent,SuccessVisualObjectId,SuccessVisualActionId,FailureVisualObjectId,FailureVisualActionId
+Event_01,세라피아의 지원,“이곳은 오래 머물 곳이 아닙니다. 떠나시기 전에 저희의 도움이 필요하다면 말씀해 주세요.”,1,지원을 요청한다.,무작위 유물 1개 획득,,Immediate,,,,,,GainRandom,유물,1개,,,Event_01_A,,,event1,event_choice_01_success,event1,event_choice_01_failure
+Event_01,세라피아의 지원,,2,정화를 요청한다.,"주사위 판정
+보상 : 생명력 회복
+높을수록 생명력 회복량 상승",,Dice,,,,,,RollTable,파티 전원 현재 체력,RT001,,,Event_01_B,,,event1,event_choice_02_success,event1,event_choice_02_failure
+Event_01,세라피아의 지원,,3,기도를 요청한다.,"주사위 판정
+보상 : 최대 생명력 증가
+높을수록 최대 생명력 증가량 상승",,Dice,,,,,,RollTable,파티 전원 최대 체력,RT002,,,Event_01_C,,,event1,event_choice_03_success,event1,event_choice_03_failure
+Event_01_A,세라피아의 지원,“조금이나마 도움이 되기를 바랍니다. 부디 조심해서 사용해 주세요.”,,,,,,,,,,,,,,,,,,,event1,event_choice_01_success,event1,event_choice_01_failure
+Event_01_B,세라피아의 지원,“상처가 조금은 나아졌군요. 이 힘이 당신들의 여정에 보탬이 되기를 바랍니다.”,,,,,,,,,,,,,,,,,,,event1,event_choice_02_success,event1,event_choice_02_failure
+Event_01_C,세라피아의 지원,“당신들의 생명에 축복이 머물기를.”,,,,,,,,,,,,,,,,,,,event1,event_choice_03_success,event1,event_choice_03_failure
+Event_02,금단의 의식,낡은 상자와 정체를 알 수 없는 의식 도구들이 어지럽게 놓여 있다.,1,상자를 연다.,레드 더스티움 35 획득,,Immediate,,,,,,Gain,레드 더스티움,35,,,Event_02_A,,,event2,event_choice_01_success,event2,event_choice_01_failure
+Event_02_A,금단의 의식,한 번 더 손을 뻗을 수 있을 것 같다.,1,상자 안을 뒤적인다.,"주사위 판정 9
+성공 : 무작위 유물 1개 획득
+실패 : 파티 전원 현재 체력 3 감소",,Dice,Event_02 상자 열기 선택 후,,,,9~18,GainMultiple,무작위 유물,기존 더스티움 유지 + 유물 1개,,3~8: 파티 전원 현재 체력 3 감소,Event_02_H,Event_02_I,,event2,event_choice_02_success,event2,event_choice_02_failure
+Event_02,금단의 의식,,2,의식 도구에 손을 댄다.,"주사위 판정 11
+성공 : 마나 재생량 1 증가
+실패 : 파티 전원 현재 체력 3 감소",,Dice,,,,,11~18,Modify,파티 전원 마나 재생량,1,,3~10: 파티 전원 현재 체력 3 감소,Event_02_B,Event_02_D,,event2,event_choice_03_success,event2,event_choice_03_failure
+Event_02,금단의 의식,,3,의식의 흔적을 헤집는다.,"주사위 판정 13
+성공 : 에픽 유물 1개 획득
+실패 : 파티 전원 현재 체력 5 감소",,Dice,,,,,13~18,GainRandom,에픽 유물,1개,,3~12: 파티 전원 현재 체력 5 감소,Event_02_C,Event_02_E,,event2,event_choice_04_success,event2,event_choice_04_failure
+Event_02_B,금단의 의식,의식 도구에 남아 있던 힘이 몸 안으로 스며든다.,,,,,,,,,,,,,,,,,,,event2,event_choice_03_success,event2,event_choice_03_failure
+Event_02_C,금단의 의식,흔적을 헤집자 안쪽에서 강한 힘을 머금은 유물이 모습을 드러냈다.,,,,,,,,,,,,,,,,,,,event2,event_choice_04_success,event2,event_choice_04_failure
+Event_02_D,금단의 의식,의식 도구에 손을 대는 순간 불길한 기운이 역류한다.,,,,,,,,,,,,,,,,,,,event2,event_choice_03_success,event2,event_choice_03_failure
+Event_02_E,금단의 의식,흔적을 훼손한 순간 억눌려 있던 힘이 폭발한다.,,,,,,,,,,,,,,,,,,,event2,event_choice_04_success,event2,event_choice_04_failure
+Event_02_F,금단의 의식,,4,자리를 떠난다.,이벤트 종료,,Exit,,,,,,EndEvent,,,,,Event_02_G,,1,event2,event_choice_05_success,event2,event_choice_05_failure
+Event_02_G,금단의 의식,"더 이상 손대지 않기로 하고, 조용히 자리를 떠난다.",,,,,,,,,,,,,,,,,,,event2,event_choice_05_success,event2,event_choice_05_failure
+Event_02_H,금단의 의식,뜻밖의 수확을 얻었다. 더 이상 손댈 것은 없어 보인다.,,,,,,,,,,,,,,,,,,,event2,event_choice_02_success,event2,event_choice_02_failure
+Event_02_I,금단의 의식,예상치 못한 폭발에 휘말렸다.,,,,,,,,,,,,,,,,,,,event2,event_choice_02_success,event2,event_choice_02_failure
+Event_03,시체더미,"시체들 사이로 아직 쓸 만한 물건이 보이지만, 더미 안쪽에서 희미한 움직임이 느껴진다.",1,불태운다.,육면체 주사위 3개를 굴려 레드 더스티움을 획득한다.,,Dice,,,,,,RollTable,레드 더스티움,RT003,,,,,,event3,event_choice_01_success,event3,event_choice_01_failure
+Event_03,시체더미,"시체들 사이로 아직 쓸 만한 물건이 보이지만, 더미 안쪽에서 희미한 움직임이 느껴진다.",2,조사한다.,무작위 기억 1개 획득,,Immediate,,,,,,GainRandom,기억,1개,,,,,,event3,event_choice_02_success,event3,event_choice_02_failure
+Event_04,의문의 이방인,“쓸 만한 물건을 찾는 모양이군. 대가는…… 어떤 방식으로 치르겠나?”,1,대가를 지불한다.,"레드 더스티움 50 소모
+무작위 유물 1개 획득",레드 더스티움이 부족합니다.,CostExchange,,레드 더스티움,파티,50,,GainRandom,유물,1개,,,Event_04_A,,,event4,event_choice_01_success,event4,event_choice_01_failure
+Event_04,의문의 이방인,,2,운명을 시험한다.,"주사위 판정 11
+성공 : 무작위 유물 1개 획득
+실패 : 생명력 5 감소",,Dice,,,,,11~18,GainRandom,유물,1개,,3~10: 파티 전원 현재 체력 -5,Event_04_B,Event_04_D,,event4,event_choice_02_success,event4,event_choice_02_failure
+Event_04,의문의 이방인,,3,교환을 청한다.,"보유 유물 1개 소모
+무작위 유물 1개 획득",교환할 유물이 없습니다.,CostExchange,유물 1개 이상 보유,유물,선택 유물,1개,,GainRandom,유물,1개,,,Event_04_C,,,event4,event_choice_03_success,event4,event_choice_03_failure
+Event_04_A,의문의 이방인,“좋아. 이 정도면 충분한 대가였군.”,,,,,,,,,,,,,,,,,,,event4,event_choice_01_success,event4,event_choice_01_failure
+Event_04_B,의문의 이방인,“제법 운이 좋았군.”,,,,,,,,,,,,,,,,,,,event4,event_choice_02_success,event4,event_choice_02_failure
+Event_04_C,의문의 이방인,“나쁘지 않은 거래였어..”,,,,,,,,,,,,,,,,,,,event4,event_choice_03_success,event4,event_choice_03_failure
+Event_04_D,의문의 이방인,"""모자란 몫은 생명으로 받아가겠다.”",,,,,,,,,,,,,,,,,,,event4,event_choice_02_success,event4,event_choice_02_failure
+Event_05,더스티움 광맥,"불안정해 보이지만, 조심스럽게 채굴한다면 상당한 양을 확보할 수 있을 것 같다.",1,조심스럽게 채굴한다.,"주사위 판정 8
+레드 더스티움 15 누적",,Dice,,,,,8~18,Accumulate,레드 더스티움,15,,3~7: 누적 레드 더스티움 전부 소실,Event_05_A,Event_05_D,,event5,event_choice_01_success,event5,event_choice_01_failure
+Event_05,더스티움 광맥,,2,과감하게 채굴한다.,"주사위 판정 12
+레드 더스티움 45 누적",,Dice,,,,,12~18,Accumulate,레드 더스티움,45,,3~11: 누적 레드 더스티움 전부 소실,Event_05_A,Event_05_D,,event5,event_choice_02_success,event5,event_choice_02_failure
+Event_05_A,더스티움 광맥,"조금 더 채굴할 수 있을 것 같지만, 붕괴의 위험도 커지고 있다.",1,조심스럽게 채굴한다.,"주사위 판정 8
+레드 더스티움 15 누적",,Dice,,,,,8~18,Accumulate,레드 더스티움,15,,3~7: 누적 레드 더스티움 전부 소실,Event_05_B,Event_05_D,,event5,event_choice_01_success,event5,event_choice_01_failure
+Event_05_A,더스티움 광맥,,2,과감하게 채굴한다.,"주사위 판정 12
+레드 더스티움 45 누적",,Dice,,,,,12~18,Accumulate,레드 더스티움,45,,3~11: 누적 레드 더스티움 전부 소실,Event_05_B,Event_05_D,,event5,event_choice_02_success,event5,event_choice_02_failure
+Event_05_B,더스티움 광맥,이번이 마지막으로 채굴할 수 있는 기회일 것 같다.,1,조심스럽게 채굴한다.,"주사위 판정 8
+레드 더스티움 15 누적",,Dice,,,,,8~18,Accumulate,레드 더스티움,15,,3~7: 누적 레드 더스티움 전부 소실,Event_05_E,Event_05_D,,event5,event_choice_01_success,event5,event_choice_01_failure
+Event_05_B,더스티움 광맥,,2,과감하게 채굴한다.,"주사위 판정 12
+레드 더스티움 45 누적",,Dice,,,,,12~18,Accumulate,레드 더스티움,45,,3~11: 누적 레드 더스티움 전부 소실,Event_05_E,Event_05_D,,event5,event_choice_02_success,event5,event_choice_02_failure
+Event_05,더스티움 광맥,,3,그만둔다.,누적한 레드 더스티움 획득,,Conditional,채굴 1회 이상 성공,,,,,CommitAccumulated,레드 더스티움,누적량,,,Event_05_C,,,event5,event_choice_03_success,event5,event_choice_03_failure
+Event_05_C,더스티움 광맥,지금까지 채굴한 더스티움을 챙겨 자리를 떠났다.,,,,,,,,,,,,,,,,,,,event5,event_choice_03_success,event5,event_choice_03_failure
+Event_05_D,더스티움 광맥,채굴해 두었던 더스티움마저 잔해 속에 묻혀 버렸다.,,,,,,,,,,,,,,,,,,,event5,event_choice_03_success,event5,event_choice_03_failure
+Event_05_E,더스티움 광맥,붕괴되기 전 모든 더스티움을 확보하는 데 성공했다.,,,,,,,,,,,,,,,,,,,event5,event_choice_03_success,event5,event_choice_03_failure
+Event_06,그림자 상인,“이런 곳에서 손님을 만날 줄이야. 마침 괜찮은 물건이 좀 있지. 구경해 보겠나?”,1,물건을 살펴본다.,상점 이용,,OpenUI,,,,,,OpenPanel,상점,활성화,,,Event_06_A,,,event6,event_choice_01_success,event6,event_choice_01_failure
+Event_06_A,그림자 상인,“이 정도면 됐겠지. 오래 붙잡아 둘 생각은 없어.”,,,,,,,,,,,,,,,,,,,event6,event_choice_01_success,event6,event_choice_01_failure
+Event_07,안식의 샘,고요한 물소리와 함께 분수에서 희미한 빛이 흘러나온다. 분수에 남은 힘은 한 번만 사용할 수 있을 것 같다.,1,생명의 힘을 받아들인다.,파티 전원의 최대 생명력 12 증가,,Immediate,,,,,,Modify,파티 전원 최대 생명력,+12,,,,,,event7,event_choice_01_success,event7,event_choice_01_failure
+Event_07,안식의 샘,,2,마나의 힘을 받아들인다.,파티 전원의 최대 마나 2 증가,,Immediate,,,,,,Modify,파티 전원 최대 마나,+2,,,,,,event7,event_choice_02_success,event7,event_choice_02_failure
+Event_08,공명의 비석,“비석에 새겨진 문자가 기억에 반응해 희미하게 빛난다. 잠든 기억의 힘을 깨울 수 있을 것 같다.”,1,공명을 시작한다.,"성공 확률 90%
+성공: 기억 1개 각성
+실패: 기억 소멸",각성할 수 있는 기억이 없습니다.,Chance,미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,90%,선택한 기억 소멸,Event_08_A,Event_08_D,,event8,event_choice_01_success,event8,event_choice_01_failure
+Event_08_A,공명의 비석,“아직 남아 있는 힘을 한층 더 끌어낼 수 있을 것 같다.”,1,공명을 이어간다.,"성공 확률 50%
+성공: 기억 1개 각성
+실패: 기억 소멸",각성할 수 있는 기억이 없습니다.,Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,50%,선택한 기억 소멸,Event_08_B,Event_08_D,,event8,event_choice_02_success,event8,event_choice_02_failure
+Event_08_B,공명의 비석,"""남은 힘을 마지막으로 깨울 수 있을 것 같다.”",1,공명을 이어간다.,"성공 확률 30%
+성공: 기억 1개 각성
+실패: 기억 소멸",각성할 수 있는 기억이 없습니다.,Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,30%,선택한 기억 소멸,Event_08_C,Event_08_D,,event8,event_choice_03_success,event8,event_choice_03_failure
+Event_08,공명의 비석,,2,자리를 떠난다.,이벤트 종료,,Exit,,,,,,EndEvent,,,,,,,1,event8,event_choice_04_success,event8,event_choice_04_failure
+Event_08_C,공명의 비석,"""더 이상 끌어낼 힘은 남아 있지 않은 듯하다.”",,,,,,,,,,,,,,,,,,,event8,event_choice_02_success,event8,event_choice_02_failure
+Event_08_D,공명의 비석,"""기억의 흔적은 흩어지고, 더 이상 공명을 이어갈 수 없을 것 같다.”",,,,,,,,,,,,,,,,,,,event8,event_choice_03_success,event8,event_choice_03_failure
+Event_09,균열의 메아리,허공에 갈라진 균열이 모습을 드러냈다. 틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.,1,흩어진 기억을 거둔다.,무작위 일반~레어 기억 3개 획득,,Immediate,,,,,,SelectReward,일반~레어 기억,3개 제시,,,,,,event9,event_choice_01_success,event9,event_choice_01_failure
+Event_09,균열의 메아리,,2,전투의 기억을 붙잡는다.,공격 기억 2개 획득,,Immediate,,,,,,SelectReward,공격 기억,2개 제시,,,,,,event9,event_choice_02_success,event9,event_choice_02_failure
+Event_09,균열의 메아리,,3,강렬한 기억을 택한다.,에픽 기억 1개 획득,,Immediate,,,,,,SelectReward,에픽 기억,1개 제시,,,,,,event9,event_choice_03_success,event9,event_choice_03_failure
+
+,,,,,,,
+
+
+
+,,,,,,,,,
+
+
+
+
+
+
+
+
+
+# SkillRange
+범위ID,이름,범위1,범위2,범위3,범위4,범위5,범위6,범위7,범위8,범위9,범위10,범위11,범위12,범위13,범위14,범위15,범위16,범위17,범위18,범위19,범위20,범위21,범위22,범위23,범위24,범위25,범위26,범위27,범위28,범위29,범위30
+RangeId,Name,Range1,Range2,Range3,Range4,Range5,Range6,Range7,Range8,Range9,Range10,Range11,Range12,Range13,Range14,Range15,Range16,Range17,Range18,Range19,Range20,Range21,Range22,Range23,Range24,Range25,Range26,Range27,Range28,Range29,Range30
+Range_01,Range_Cross4,0,1;0,-1;0,0;1,0;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_02,Range_Square8,0,1;0,-1;0,0;1,0;-1,-1;1,1;1,1;-1,-1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_19,Range_Rhombus12,0,0;2,-1;1,0;1,1;1,-2;0,-1;0,1;0,2;0,-1;-1,0;-1,1;-1,0;-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_20,Range_Bigcross8,0,0;2,0;1,-2;0,-1;0,1;0,2;0,0;-1,0;-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_09,Range_Front1,0,1;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_10,Range_Front2,0,1;0,2;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_03,Range_Front3,0,1;0,2;0,3;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_21,Range_Front4,0,1;0,2;0,3;0,4;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_18,Range_Front6,0,1;0,2;0,3;0,4;0,5;0,6;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_04,Range_Tuck5,0,1;0,0;1,1;1,0;-1,1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_14,Range_Tuck6,0,1;0,0;1,1;1,0;-1,1;-1,2;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,,,
+Range_15,Range_Tuck8,0,0;1,1;1,2;1,1;0,2;0,0;-1,1;-1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,,,
+Range_06,Range_T-shaped4,0,1;0,2;0,1;1,1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,,
+Range_11,Range_T-shaped7,0,1;1,2;1,1;0,2;0,3;0,1;-1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,,
+Range_07,Range_Oblong6,0,1;0,2;0,1;1,2;1,1;-1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_12,Range_Frontsquare9,0,1;1,2;1,3;1,1;0,2;0,3;0,1;-1,2;-1,3;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_13,Range_Frontcross5,0,1;0,2;0,3;0,2;1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_16,Range_One,0;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_17,Range_Five,0;0,0;1,1;0,0;-1,-1;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_05,Range_Square9,0;0,1;0,-1;0,0;1,0;-1,-1;1,1;1,1;-1,-1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_22,Range_One_Front3,0,1;0,2;0,2;1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_23,Range_Front3,0,1;1,1;0,1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_24,Range_Explosion,0,-2;2,-1;2,0;2,1;2,2;2,-2;1,-1;1,0;1,1;1,2;1,-2;0,-1;0,1;0,2;0,-2;-1,-1;-1,0;-1,1;-1,2;-1,-2;-2,-1;-2,0;-2,1;-2,2;-2,0,0,0,0,0
+Range_All,All,0;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_Party,Party,0;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_Self,Self,0;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_01,Range_Cross4,0;0,1;0,-1;0,0;1,0;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_02,Range_Square8,0;0,1;0,-1;0,0;1,0;-1,-1;1,1;1,1;-1,-1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_19,Range_Rhombus12,0;0,0;2,-1;1,0;1,1;1,-2;0,-1;0,1;0,2;0,-1;-1,0;-1,1;-1,0;-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_20,Range_Bigcross8,0;0,0;2,0;1,-2;0,-1;0,1;0,2;0,0;-1,0;-2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_09,Range_Front1,0,1;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_10,Range_Front2,0,1;0,2;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_03,Range_Front3,0,1;0,2;0,3;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_21,Range_Front4,0,1;0,2;0,3;0,4;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_18,Range_Front6,0,1;0,2;0,3;0,4;0,5;0,6;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_04,Range_Tuck5,0,1;0,0;1,1;1,0;-1,1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_14,Range_Tuck6,0,1;0,0;1,1;1,0;-1,1;-1,2;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_15,Range_Tuck8,0,1;1,2;1,3;1,1;0,2;0,1;-1,2;-1,3;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_06,Range_T-shaped4,0,1;0,2;0,1;1,1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_11,Range_T-shaped7,0,1;1,2;1,1;0,2;0,3;0,1;-1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_07,Range_Oblong6,0,1;0,2;0,1;1,2;1,1;-1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_12,Range_Frontsquare9,0,1;1,2;1,3;1,1;0,2;0,3;0,1;-1,2;-1,3;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_13,Range_Frontcross5,0,1;0,2;0,3;0,2;1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_16,Range_One,0;0,0;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_17,Range_Five,0;0,0;1,1;0,0;-1,-1;0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_05,Range_Square9,0;0,1;0,-1;0,0;1,0;-1,-1;1,1;1,1;-1,-1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_22,Range_One_Front3,0,1;0,2;0,2;1,2;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_23,Range_Front3,0,1;1,1;0,1;-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Range_b_24,Range_Explosion,0;0,-2;2,-1;2,0;2,1;2,2;2,-2;1,-1;1,0;1,1;1,2;1,-2;0,-1;0,1;0,2;0,-2;-1,-1;-1,0;-1,1;-1,2;-1,-2;-2,-1;-2,0;-2,1;-2,2;-2,0,0,0,0,0
+
+# Rune
+룬ID,이름,대상캐릭터ID,대상스킬ID,효과ID,수치계수,횟수계수,해금가격,해금레벨,효과설명,레어도
+RuneId,Name,TargetCharacterId,TargetSkillId,EffectIds,ValueRate,CountRate,BlueDustiumCost,UnlockLevel,EffectDesc,Rarity
+Rune_51,용린·분기,Char_01,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복한다.,Exclusive
+Rune_52,용린·격앙,Char_01,0,E_Unique_Resource_Max_Reached_Boost,2,1,0,12,카르마가 최대에 도달하면 다음 턴에 증폭을 {ValueRate1} 얻는다.,Exclusive
+Rune_53,용린·수호,Char_01,S_Unique_01,E_Rune_Target_Armor_Multiplier,2,1,0,6,용의 가호로 부여하는 방어도가 {ValueRate1}배로 증가한다.,Exclusive
+Rune_54,용린·격진,Char_01,S_Unique_02,E_Rune_Target_Damage_Value_Delta;E_Rune_Target_Knockback_Value_Delta,2;3,1;1,0,15,"대지 가르기의 피해량이 {ValueRate1} 증가하고, 넉백이 {ValueRate2}칸으로 변경된다.",Exclusive
+Rune_55,용린·맹격,Char_01,S_Ability_01;S_Ability_02;S_Ability_03;S_Ability_04,E_Rune_Target_Damage_Value_Delta,1,1,0,3,휘두르기와 내려찍기의 피해량이 {ValueRate1} 증가한다.,Exclusive
+Rune_56,검심·예기,Char_02,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복한다.,Exclusive
+Rune_57,검심·절정,Char_02,0,E_Unique_Resource_Max_Reached_Smite,2,1,0,12,카르마가 최대에 도달하면 다음 턴에 강타를 {ValueRate1} 얻는다.,Exclusive
+Rune_58,검심·연무,Char_02,S_Unique_03,E_Rune_Target_Attack_Count_Delta,1,1,0,6,질풍검 연무의 공격 횟수가 {ValueRate1}회 증가한다.,Exclusive
+Rune_59,검심·일섬,Char_02,S_Unique_04,E_Rune_Target_Damage_Value_Delta,3,1,0,15,질풍검 일섬의 피해량이 {ValueRate1} 증가한다.,Exclusive
+Rune_60,검심·질풍,Char_02,S_Ability_05;S_Ability_06;S_Ability_07;S_Ability_08,E_Rune_Target_Damage_Value_Delta,1,1,0,3,질풍검 3식과 질풍검 1식의 피해량이 {ValueRate1} 증가한다.,Exclusive
+Rune_61,불씨·점화,Char_03,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복한다.,Exclusive
+Rune_62,불씨·온기,Char_03,0,E_Unique_Resource_Max_Reached_Cost_Recovery,2,1,0,12,카르마가 최대에 도달하면 다음 턴에 마나를 {ValueRate1} 회복한다.,Exclusive
+Rune_63,불씨·광휘,Char_03,S_Unique_05,E_Rune_Target_Damage_Value_Delta,2,1,0,6,날카로운 빛의 피해량이 {ValueRate1} 증가한다.,Exclusive
+Rune_64,불씨·의지,Char_03,S_Unique_06,E_Rune_Target_Boost_Value_Delta,1,1,0,15,빛의 의지로 부여하는 증폭이 {ValueRate1} 증가한다.,Exclusive
+Rune_65,불씨·확산,Char_03,S_Ability_09;S_Ability_10;S_Ability_11;S_Ability_12,E_Rune_Target_Range_Expand,1,1,0,3,니아의 독기와 니아의 섬광의 범위가 증가한다.,Exclusive
+Rune_66,은총·신심,Char_04,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복한다.,Exclusive
+Rune_67,은총·가호,Char_04,0,E_Unique_Resource_Max_Reached_Self_Lowest_Ally_Armor,5,1,0,12,카르마가 최대에 도달하면 다음 턴에 자신과 생명력이 가장 낮은 아군에게 방어도를 {ValueRate1} 부여한다.,Exclusive
+Rune_68,은총·구원,Char_04,S_Unique_07,E_Rune_Target_Heal_Value_Delta,1,1,0,6,구원의 기도로 회복하는 생명력이 {ValueRate1} 증가한다.,Exclusive
+Rune_69,은총·심판,Char_04,S_Unique_08,E_Rune_Target_Damage_Value_Delta,2,1,0,15,신성한 일격의 피해량이 {ValueRate1} 증가한다.,Exclusive
+Rune_70,은총·헌신,Char_04,S_Ability_13;S_Ability_14;S_Ability_15;S_Ability_16,E_Rune_Target_Skill_Cost_Delta,-1,1,0,3,정권 지르기와 공방일체의 마나 소모량이 {ValueRate1} 감소한다.,Exclusive
+Rune_71,해방·갈증,Char_05,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복한다.,Exclusive
+Rune_72,해방·격정,Char_05,0,E_Unique_Resource_Max_Reached_Armor,5,1,0,12,카르마가 최대에 도달하면 다음 턴에 방어도를 {ValueRate1} 얻는다.,Exclusive
+Rune_73,해방·사신,Char_05,S_Unique_09,E_Rune_Target_Damage_Value_Delta,3,1,0,6,데스사이드의 피해량이 {ValueRate1} 증가한다.,Exclusive
+Rune_74,해방·혈화,Char_05,S_Unique_10,E_Rune_Target_Damage_Value_Delta,2,1,0,15,스칼렛노바의 피해량이 {ValueRate1} 증가한다.,Exclusive
+Rune_75,해방·참월,Char_05,S_Ability_17;S_Ability_18;S_Ability_19;S_Ability_20,E_Rune_Target_Damage_Value_Delta,1,1,0,3,크림슨체인과 크레센트스윙의 피해량이 {ValueRate1} 증가한다.,Exclusive
+Rune_01,각인·불안정한 원천,All,0,E_Max_HP;E_Max_Cost,-3;1,1;1,60,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 최대 마나가 {ValueRate2} 증가한다.",Common
+Rune_02,각인·메마른 고동,All,0,E_Max_HP;E_Cost_Recovery_Delta,-5;1,1;1,80,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 마나 재생량이 {ValueRate2} 증가한다.",Common
+Rune_03,각인·굳어진 육신,All,0,E_Max_Cost;E_Max_HP,-1;4,1;1,65,0,"최대 마나가 {ValueRate1} 감소하는 대신, 최대 생명력이 {ValueRate2} 증가한다.",Common
+Rune_04,각인·잃어버린 숨결,All,0,E_Max_HP;E_Battle_End_Heal,-15;3,1;1,105,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 전투 종료 후 생명력을 {ValueRate2} 회복한다.",Common
+Rune_05,각인·뒤틀린 격류,All,0,E_Max_Cost;E_Cost_Recovery_Delta,-3;2,1;1,145,0,"최대 마나가 {ValueRate1} 감소하는 대신, 마나 재생량이 {ValueRate2} 증가한다.",Common
+Rune_06,넘치는 생명,All,0,E_Max_HP,6,1,80,0,최대 생명력이 {ValueRate1} 증가한다.,Rare
+Rune_07,깊어진 그릇,All,0,E_Max_Cost,1,1,80,0,최대 마나가 {ValueRate1} 증가한다.,Rare
+Rune_08,끊임없는 순환,All,0,E_Cost_Recovery_Delta,1,1,100,0,마나 재생량이 {ValueRate1} 증가한다.,Rare
+Rune_09,완전한 균형,All,0,E_Max_HP;E_Max_Cost;E_Cost_Recovery_Delta,1,1,200,0,"최대 생명력, 최대 마나, 마나 재생량이 각각 {ValueRate1} 증가한다.",Rare
+Rune_10,가벼운 발걸음,All,0,E_First_Move_Cost_Delta,-1,1,150,0,첫 이동의 마나 소모량이 {ValueRate1} 감소한다.,Rare
+Rune_11,강렬한 파동,All,0,E_Attack_Value_Delta,1,1,120,0,공격타입 기억의 피해량이 {ValueRate1} 증가한다.,Rare
+Rune_12,온전한 회복,All,0,E_Heal_Value_Delta,1,1,125,0,기억으로 회복하는 생명력이 {ValueRate1} 증가한다.,Rare
+Rune_13,굳건한 방벽,All,0,E_Skill_Armor_Value_Delta,2,1,125,0,기억으로 부여하는 방어도가 {ValueRate1} 증가한다.,Rare
+Rune_14,짙은 독기,All,0,E_Poison_Value_Delta,1,1,180,0,기억으로 부여하는 중독이 {ValueRate1} 증가한다.,Rare
+Rune_15,선명한 혈흔,All,0,E_Bleed_Value_Delta,1,1,180,0,기억으로 부여하는 출혈이 {ValueRate1} 증가한다.,Rare
+Rune_16,축복·신속,All,0,E_Turn_Start_Swift,1,1,350,0,전투 시작 시 신속을 {ValueRate1} 얻는다.,Unique
+Rune_17,축복·강타,All,0,E_Turn_Start_Smite,1,1,350,0,전투 시작 시 강타를 {ValueRate1} 얻는다.,Unique
+Rune_18,축복·증폭,All,0,E_Turn_Start_Boost,1,1,350,0,전투 시작 시 증폭을 {ValueRate1} 얻는다.,Unique
+Rune_19,축복·풍요,All,0,E_Battle_Reward_Currency_Percent,5,1,500,0,전투 보상으로 획득하는 재화의 양이 {ValueRate1}% 증가한다.,Unique
+Rune_20,축복·재생,All,0,E_Battle_End_Heal,1,1,300,0,전투 종료 후 생명력을 {ValueRate1} 회복한다.,Unique
+
+# Relic
+유물 ID,이름,효과ID,수치계수,횟수계수,효과설명,레어도,로비가격,상점가격
+FragmentId,Name,EffectIds,ValueRate,CountRate,EffectDesc,Rarity,BlueDustiumCost,RedDustiumCost,,,,,,,
+Relic_P_01,생명의 뿌리,E_Max_HP,5,1,최대 생명력이 {ValueRate1} 증가한다.,Common,68,19,,,,,,,
+Relic_P_02,에테르 조각,E_Max_Cost,1,1,최대 마나가 {ValueRate1} 증가한다.,Common,84,24,,,,,,,
+Relic_P_03,은빛 태엽,E_Cost_Recovery_Delta,1,1,마나 재생량이 {ValueRate1} 증가한다.,Common,104,31,,,,,
+Relic_P_04,메마른 그릇,E_Max_HP;E_Max_Cost,-8;2,1;1,"최대 생명력이 {ValueRate1} 감소하고, 최대 마나가 {ValueRate2} 증가한다.",Common,78,22,,,,,
+Relic_P_05,영혼 기생충,E_Max_HP;E_Cost_Recovery_Delta,-5;1,1;1,"최대 생명력이 {ValueRate1} 감소하고, 마나 재생량이 {ValueRate2} 증가한다.",Common,91,27
+Relic_P_06,붉은 서약검,E_Attack_Cost_Delta;E_Attack_Value_Delta,1;2,1;1,"공격 기억의 마나 소모량이 {ValueRate1} 증가하지만, 피해량이 {ValueRate2} 증가한다.",Common,88,26
+Relic_P_07,날카로운 파편,E_Attack_Value_Delta;E_Attack_Count_Delta,-2;1,1;1,"공격 기억의 피해량이 {ValueRate1} 감소하는 대신, 공격 횟수가 {ValueRate2}회 증가한다.",Common,101,30
+Relic_P_08,유령 인형,E_Debuff_Cost_Delta;E_Debuff_Value_Delta,2;2,1;1,"디버프 기억의 마나 소모량이 {ValueRate1} 증가하지만, 효과 수치가 {ValueRate2} 증가한다.",Common,86,25,,,,,,
+Relic_P_09,선봉의 날개,E_Slot1_First_Skill_Cost_Delta,-1,1,1번 슬롯에 등록하는 첫 번째 기억의 마나 소모량이 {ValueRate1} 감소한다.,Rare,120,35,,,,,,
+Relic_P_10,돌격대의 머리띠,E_Slot1_Attack_Value_Delta,1,1,1번 슬롯에 등록하는 공격 기억의 피해량이 {ValueRate1} 증가한다.,Rare,118,34,,,,,,
+Relic_P_11,진군의 깃발,E_Slot1_Attack_Kill_Focus,1,1,1번 슬롯에 등록한 공격 기억으로 적을 처치하면 카르마를 {ValueRate1} 회복한다.,Rare,158,46,,,,,,
+Relic_P_12,황금잔,E_Slot1_Buff_Value_Delta,1,1,1번 슬롯에 등록하는 버프 기억의 효과 수치가 {ValueRate1} 증가한다.,Rare,116,33
+Relic_P_13,굳은 모래시계,E_Slot5_Skill_Cost_Delta,-1,1,5번 슬롯에 등록하는 모든 기억의 마나 소모량이 {ValueRate1} 감소한다.,Epic,211,61
+Relic_P_14,부서진 칼날,E_Slot5_Attack_Value_Delta,2,1,5번 슬롯에 등록하는 공격 기억의 피해량이 {ValueRate1} 증가한다.,Rare,143,41
+Relic_P_15,뾰족한 갈고리,E_Slot5_Attack_Kill_Cost_Refund,1,1,"5번 슬롯에 등록한 공격 기억으로 적을 처치하면, 기억에 사용한 마나를 돌려받는다.",Epic,246,72
+Relic_P_16,흑요석 반지,E_Slot5_Attack_Pierce,1,1,5번 슬롯에 등록하는 공격 기억의 피해가 관통 피해로 변경된다.,Unique,386,108
+Relic_P_17,봉인된 팔찌,E_Cost_Recovery_Delta;E_Blocked_Slot_Mask,2;3,1;1,"1번과 2번 슬롯에 기억을 등록할 수 없는 대신, 마나 재생량이 {ValueRate1} 증가한다.",Unique,326,91
+Relic_P_18,부서진 나침반,E_Max_Registrable_Slot_Count;E_Move_Cost_Zero,1;1,1;1,"하나의 슬롯에만 기억을 등록할 수 있는 대신, 이동이 마나를 소모하지 않는다.",Unique,292,82
+Relic_P_19,어깨 보호대,E_Turn_Start_Armor_Per_Used_Slot,2,1,턴 실행 시 자신의 기억이 등록된 슬롯 수 × {ValueRate1}만큼 방어도를 얻는다.,Common,95,28
+Relic_P_20,단단한 투구,E_Turn_Start_Armor_Per_Empty_Slot,2,1,턴 실행 시 자신의 기억이 등록되지 않은 슬롯 수 × {ValueRate1}만큼 방어도를 얻는다.,Common,90,26
+Relic_P_21,단안경,E_Turn_Start_Smite_If_Slots_Empty_Mask,1,7,"턴 실행 시 1, 2, 3번 슬롯에 자신의 기억이 하나도 없다면 다음 턴에 강타를 {ValueRate1} 얻는다.",Rare,132,38
+Relic_P_22,망원경,E_Turn_Start_Boost_If_Slots_Empty_Mask,1,28,"턴 실행 시 3, 4, 5번 슬롯에 자신의 기억이 하나도 없다면 다음 턴에 증폭을 {ValueRate1} 얻는다.",Rare,132,38
+Relic_P_23,식칼,E_Turn_Start_Boost_If_One_Attack_Command,3,1,"턴 실행 시 자신이 등록한 공격 기억이 하나뿐이라면, 해당 기억의 피해량이 {ValueRate1} 증가한다.",Epic,216,62
+Relic_P_24,삼지창,E_Turn_Start_Boost_If_Attack_Command_Count_At_Least,1,3,"턴 실행 시 공격 기억을 {CountRate1}개 이상 등록했다면, 모든 기억의 피해량이 {ValueRate1} 증가한다.",Common,108,32
+Relic_P_25,선각자의 부적,E_Turn_Start_All_Enemy_Vulnerable;E_Turn_Start_All_Enemy_Weaken,1,1,1턴 시작 시 모든 적에게 취약과 약화를 각각 {ValueRate1} 부여한다.,Rare,178,52
+Relic_P_26,역병의 향로,E_Turn_Start_All_Enemy_Poison;E_Turn_Start_All_Enemy_Bleed,1,1,1턴 시작 시 모든 적에게 중독과 출혈을 각각 {ValueRate1} 부여한다.,Rare,171,50
+Relic_P_27,회중시계,E_Turn_Start_Armor,10,2,2턴 시작 시 방어도를 {ValueRate1} 얻는다.,Common,73,21
+Relic_P_28,촛대,E_Turn_Start_Cost_Recovery;E_Turn_Start_Unique_Resource_Recovery,1;1,2;2,2턴 시작 시 마나와 카르마를 각각 {ValueRate1} 회복한다.,Common,105,31
+Relic_P_29,막대자석,E_Turn_Start_Swift;E_Turn_Start_Boost,2;2,3;3,3턴 시작 시 신속과 증폭을 각각 {ValueRate1} 얻는다.,Common,102,30
+Relic_P_30,박쥐 인형,E_Turn_Start_Lifesteal;E_Turn_Start_Smite,2;2,3;3,3턴 시작 시 흡혈과 강타를 각각 {ValueRate1} 얻는다.,Common,106,31
+Relic_P_31,무거운 발장식,E_No_Move_In_Slot_Buff_Cost_Delta,-1,1,"등록하려는 슬롯에서 이동하지 않았다면, 버프 기억의 마나 소모량이 {ValueRate1} 감소한다.",Rare,117,34
+Relic_P_32,뿔조각,E_After_Move_Debuff_Cost_Delta,-2,1,"등록하려는 슬롯에서 이동한 뒤라면, 디버프 기억의 마나 소모량이 {ValueRate1} 감소한다.",Epic,189,55
+Relic_P_33,송곳니,E_After_Move_Debuff_Value_Delta,2,1,"등록하려는 슬롯에서 이동한 뒤라면, 디버프 기억의 효과 수치가 {ValueRate1} 증가한다.",Unique,286,80
+Relic_P_34,편자,E_After_Move_Attack_Value_Per_Cost,1,1,"등록하려는 슬롯에서 이동한 뒤라면, 공격 기억의 피해량이 이동에 소모한 마나만큼 증가한다.",Epic,232,68
+Relic_P_35,강철 닻,E_Forced_Move_Immune,1,1,넉백과 그랩의 영향을 받지 않는다.,Rare,149,43
+Relic_P_36,심연의 비늘,E_Crash_Damage_Immune,1,1,충돌로 인한 피해를 받지 않는다.,Epic,211,61
+Relic_P_37,무쇠 장화,E_Grid_Effect_Immune,1,1,장애물로 인한 효과를 받지 않는다.,Unique,313,88
+Relic_P_38,주전자,E_Overheal_To_Armor,1,1,"생명력이 최대인 상태에서 생명력을 회복하면, 회복량만큼 방어도를 얻는다.",Rare,139,40
+Relic_P_39,단단한 얼음,E_No_Damage_Previous_Turn_Smite,1,1,"이번 턴 동안 피해를 받지 않았다면, 다음 턴에 강타를 {ValueRate1} 얻는다.",Unique,282,79
+Relic_P_40,피의 잔,E_Healing_Blocked;E_Armor_Gain_Percent,50,1,"생명력을 회복할 수 없는 대신, 자신이 얻는 방어도가 {ValueRate1}% 증가한다.",Epic,220,64
+Relic_P_41,날이 선 톱,E_Collision_Target_Damage_Delta,2,1,충돌한 대상이 받는 충돌 피해가 {ValueRate1} 증가한다.,Epic,204,59
+Relic_P_42,축전지,E_Collision_Charge,1,1,충돌이 발생하면 마나를 {ValueRate1} 회복한다.,Common,86,25
+Relic_P_43,신수의 뿔,E_Collision_Kill_Focus,2,1,"충돌한 대상의 생명력이 0이 되면, 카르마를 {ValueRate1} 회복한다.",Common,92,27
+Relic_P_44,낡은 허리띠,E_Low_HP_Skill_Cost_Delta,-1,1,"생명력이 30% 이하라면, 모든 기억의 마나 소모량이 {ValueRate1} 감소한다.",Common,99,29
+Relic_P_45,피 묻은 발톱,E_Low_HP_Attack_Value_Delta,1,1,"생명력이 30% 이하라면, 공격 기억의 피해량이 {ValueRate1} 증가한다.",Common,76,22
+Relic_P_46,두꺼운 가죽,E_Low_HP_Damage_Reduction_Percent,50,1,"생명력이 30% 이하라면, 받는 피해가 {ValueRate1}% 감소한다.",Common,108,32
+Relic_P_47,배,E_High_HP_Cost_Recovery_Delta,1,1,"생명력이 90% 이상이라면, 마나 재생량이 {ValueRate1} 증가한다.",Rare,148,43
+Relic_P_48,지팡이,E_High_HP_Buff_Cost_Delta,-1,1,"생명력이 90% 이상이라면, 버프 기억의 마나 소모량이 {ValueRate1} 감소한다.",Rare,134,38
+Relic_P_49,독주사기,E_Damage_Poisoned_Fixed,1,1,"중독이 부여된 적에게 피해를 줄 때, {ValueRate1}의 추가 피해를 준다.",Common,82,24
+Relic_P_50,톱니 단검,E_Damage_Bleeding_Fixed,1,1,"출혈이 부여된 적에게 피해를 줄 때, {ValueRate1}의 추가 피해를 준다.",Common,82,24
+Relic_P_51,금이 간 완갑,E_Damage_Vulnerable_Armor,2,1,"취약이 부여된 적에게 피해를 주면, 방어도를 {ValueRate1} 얻는다.",Common,80,23
+Relic_P_52,무거운 방패,E_Damage_Weakened_Armor,2,1,"약화가 부여된 적에게 피해를 주면, 방어도를 {ValueRate1} 얻는다.",Common,80,23
+Relic_P_53,감염된 바늘,E_Damage_Non_Poisoned_Apply_Poison,1,1,"중독이 부여되지 않은 적에게 피해를 주면, 중독을 {ValueRate1} 부여한다.",Common,103,30
+Relic_P_54,희생자의 관,E_Self_Buff_Blocked_Buff_Value_Delta,2,1,"자신에게 이로운 효과를 부여할 수 없는 대신, 버프 기억의 효과 수치가 {ValueRate1} 증가한다.",Unique,300,84
+Relic_P_55,순백의 왕관,E_Full_HP_Buff_Value_Delta,1,1,"생명력이 최대라면, 버프 기억의 효과 수치가 {ValueRate1} 증가한다.",Rare,122,35
+Relic_P_56,까마귀의 깃,E_Ally_Buff_Charge,1,1,"아군에게 이로운 효과를 부여하면, 마나를 {ValueRate1} 회복한다.",Epic,242,71
+Relic_P_57,빛나는 수정구,E_UniqueResource_Overflow_To_Cost,1,1,"카르마가 최대인 상태에서 카르마를 회복하면, 획득하려던 수치만큼 마나를 회복한다.",Epic,227,66
+Relic_P_58,비단 초커,E_UniqueResource_Max_Skill_Cost_Delta,-1,1,"카르마가 최대라면, 모든 기억의 마나 소모량이 {ValueRate1} 감소한다.",Unique,365,103
+Relic_P_59,사슬낫,E_Unique_Skill_Kill_Focus,1,1,"카르마를 사용하는 기억으로 적을 처치하면, 카르마를 {ValueRate1} 회복한다.",Epic,201,58
+Relic_P_60,마력 렌즈,E_Unique_Skill_Value_Percent,50,1,카르마를 사용하는 기억의 효과 수치가 {ValueRate1}% 증가한다.,Rare,175,51
+Relic_P_61,마력 수정,E_Unique_Skill_Count_Delta,1,1,카르마를 사용하는 기억의 횟수가 {ValueRate1}회 증가한다.,Epic,268,79
+Relic_P_62,부싯돌,E_Once_Battle_End_Turn_Zero_Cost_Charge,3,1,턴 종료 시 마나가 0이라면 마나를 {ValueRate1} 회복한다.,Epic,196,57
+Relic_P_63,불발탄,E_Once_Battle_Attack_Miss_Charge,1,1,공격이 적중하지 않았다면 마나를 {ValueRate1} 회복한다.,Rare,116,34
+Relic_P_64,처형인의 안경,E_Once_Battle_Full_HP_Target_Damage_Percent,2,1,"생명력이 최대인 적에게 피해를 주면, 피해량이 {ValueRate1}배로 적용된다.",Epic,266,78
+Relic_P_65,블럭집,E_Rest_Heal_Percent_Bonus,50,1,휴식으로 회복하는 생명력이 {ValueRate1}% 증가한다.,Common,67,19
+Relic_P_66,상인의 금인장,E_Shop_Price_Discount_Percent,30,1,상점에서 판매하는 모든 물품의 가격이 {ValueRate1}% 감소한다.,Common,108,32
+Relic_P_67,구슬 주머니,E_Battle_Reward_Currency_Percent,20,1,전투 보상으로 획득하는 재화의 양이 {ValueRate1}% 증가한다.,Rare,178,52
+Relic_P_68,붕대,E_Battle_End_Heal,2,1,전투 종료 후 생명력을 {ValueRate1} 회복한다.,Rare,124,36
+
+# Compound
+연성제 ID,이름,레어도,효과ID,수치계수,횟수계수,타입,내구도,효과설명,조합1,조합2,조합3
+CompoundId,Name,Rarity,EffectIds,ValueRate,CountRate,TargetType,Durability,EffectDesc,MaterialId1,MaterialId2,MaterialId3
+Compound_01,아드레날린,Epic,AR_DamageBoostThisTurn,100,1,Self,1,이번 턴 동안 공격 기억의 피해량이 100% 증가한다.,Item_003,Item_005,Item_007
+Compound_02,경화제 앰플,Common,AR_DamageReductionThisTurn,50,1,Self,1,이번 턴 동안 받는 피해가 50% 감소한다.,Item_001,Item_005,Item_009
+Compound_03,응축 에테르,Rare,AR_RecoverUniqueResourceToMax,3,1,Self,1,카르마를 3 회복한다. 현재 카르마와 예약된 카르마를 합한 값은 최대치를 초과할 수 없다.,Item_002,Item_010,Item_011
+Compound_04,마력 플라스크,Rare,AR_RecoverCostToMax,10,1,Self,1,"마나를 10 회복한다. 최대치를 초과하여 보유할 수 있으며, 초과한 마나는 다음 턴에 사라진다.",Item_002,Item_003,Item_004
+Compound_05,각성제,Epic,AR_GrantSwift,2,1,Self,1,자신에게 신속 2를 부여한다.,Item_003,Item_011,Item_012
+Compound_06,맑은 물병,Common,AR_CleanseDebuffs,1,1,Self,1,자신에게 부여된 모든 디버프를 제거한다.,Item_002,Item_009,Item_011
+Compound_07,차원 촉매,Common,AR_MoveToGrid,1,1,Grid,3,선택한 빈 그리드로 이동한다. 이동 후 예약한 이동 및 공격 행동은 취소된다.,Item_008,Item_010,Item_012
+Compound_08,공명 전이제,Epic,AR_SwapAlly,1,1,Grid,3,선택한 그리드의 아군과 위치를 변경한다. 위치가 변경된 두 캐릭터가 예약한 이동 및 공격 행동은 취소된다.,Item_007,Item_009,Item_010
+Compound_09,독성 배양액,Common,AR_SpawnPoisonGridEffect,2,1,Grid,3,선택한 그리드에 독 장판을 생성한다.,Item_004,Item_005,Item_006
+Compound_10,가시 증식제,Common,AR_SpawnThornGridEffect,3,1,Grid,3,선택한 그리드에 가시를 생성한다.,Item_001,Item_005,Item_006
+Compound_11,쇠약 저주제,Rare,AR_TargetOutgoingDamageReductionThisTurn,50,1,Grid,3,선택한 적은 이번 턴 동안 주는 피해가 50% 감소한다.,Item_004,Item_011,Item_012
+Compound_12,응고 발포제,Common,AR_SpawnObstacleGridEffect,1,1,Grid,3,선택한 빈 그리드에 잔해를 생성한다.,Item_001,Item_008,Item_009
+Compound_13,분해 용해제,Common,AR_RemoveGridEffect,1,1,Grid,3,선택한 그리드의 장애물을 제거한다.,Item_004,Item_007,Item_008
+Compound_14,호문쿨루스 루어,Rare,AR_SpawnDummyGridEffect,1,1,Grid,3,선택한 빈 그리드에 루어를 생성한다.,Item_002,Item_006,Item_007
+Compound_15,호문쿨루스 브룸,Rare,AR_SpawnExplosiveDollGridEffect,4,1,Grid,3,선택한 빈 그리드에 브룸을 생성한다.,Item_001,Item_003,Item_006
+Compound_16,추가연성제01,Common,,,,,,,,,
+Compound_17,추가연성제02,Common,,,,,,,,,
+Compound_18,추가연성제03,Rare,,,,,,,,,
+Compound_19,추가연성제04,Rare,,,,,,,,,
+Compound_20,추가연성제05,Epic,,,,,,,,,
+
+# Item
+아이템ID,레어도,이름,설명
+ItemId,Rarity,Name,Desc
+Item_001,Common,끈적한 젤,머크의 몸을 이루던 점성이 강한 젤. 침식된 조직의 흔적이 남아 있다.
+Item_002,Common,말랑한 점액,블롭에게서 채취한 부드러운 점액. 형태가 쉽게 변하면서도 끈적한 성질을 유지한다.
+Item_003,Common,타오르는 코어,랜서의 내부에서 꺼낸 뜨거운 코어. 꺼진 뒤에도 미약한 열기와 에너지가 남아 있다.
+Item_004,Common,오염된 코어,블라이트에게서 얻은 탁하게 변색된 코어. 주변의 물질을 천천히 침식시키는 기운이 감돈다.
+Item_005,Common,단단한 침,베스파의 몸에서 떨어져 나온 단단한 침. 날카로운 끝부분에 변이된 독성 성분이 남아 있다.
+Item_006,Common,거미 다리,신더에게서 잘라낸 단단한 다리. 외피는 가볍지만 충격에 쉽게 부서지지 않는다.
+Item_007,Common,부러진 도끼,드라우그가 사용하던 도끼. 오래된 금속 표면에 침식과 부패의 흔적이 겹겹이 남아 있다.
+Item_008,Common,녹슨 화살촉,바로우가 사용하던 화살의 촉. 녹이 심하게 슬었지만 끝부분에는 변이체 특유의 기운이 남아 있다.
+Item_009,Rare,방패 조각,루크의 방패에서 떨어져 나온 파편. 작은 조각임에도 상당한 충격을 견딜 만큼 단단하다.
+Item_010,Rare,그림자 갑주,녹턴의 갑주에서 떨어져 나온 검은 조각. 빛을 받으면 표면의 그림자가 미세하게 흔들린다.
+Item_011,Rare,혼령석,모르트의 사령술과 연관된 힘이 응축된 결정. 가까이 두면 희미한 울림이 느껴진다.
+Item_012,Epic,부서진 왕관,아라벨라가 지니고 있던 왕관의 파편. 강한 침식의 흔적을 품고 있다.
+Item_013,Common,2S-1,
+Item_014,Common,2S-2,
+Item_015,Common,2S-3,
+Item_016,Common,2S-4,
+Item_017,Common,2S-5,
+Item_018,Common,2S-6,
+Item_019,Common,2S-7,
+Item_020,Common,2S-8,
+Item_021,Rare,2S-9,
+Item_022,Rare,2S-10,
+Item_023,Rare,2S-11,
+Item_024,Epic,2S-12,
+Item_025,Common,3S-1,
+Item_026,Common,3S-2,
+Item_027,Common,3S-3,
+Item_028,Common,3S-4,
+Item_029,Common,3S-5,
+Item_030,Common,3S-6,,
+Item_031,Common,3S-7,,
+Item_032,Common,3S-8,,
+Item_033,Rare,3S-9,
+Item_034,Rare,3S-10,
+Item_035,Rare,3S-11,
+Item_036,Epic,3S-12,
+Item_037,Unique,퀘스트1,
+Item_038,Unique,퀘스트2,
+Item_039,Unique,퀘스트3,
+
+# Erosion
+난이도 ID,난이도이름,UI 슬롯,단계,점수,선택 그룹,선택 방식,효과 항목,효과 타입,효과 수치,선택 가능,설명
+DifficultyId,ErosionName,SlotName,Tier,Score,GroupId,SelectionMode,EffectName,EffectType,EffectValue,Selectable,Description
+Erosion_01_01,강인한 변이체,Level01_1,1,1,Group_01,Exclusive,몬스터 최대 생명력 10% 증가,MonsterMaxHPPercent,10,1,변이체의 최대 생명력이 10% 증가한다.
+Erosion_01_02,흉포한 변이체,Level01_2,1,1,Group_02,Exclusive,몬스터 피해량 25% 증가,MonsterDamagePercent,25,1,변이체가 주는 피해가 25% 증가한다.
+Erosion_01_03,쇠약한 육체,Level01_3,1,1,Group_03,Exclusive,모든 캐릭터 최대 생명력 5% 감소,PartyMaxHPPercent,-5,1,모든 캐릭터의 최대 생명력이 5% 감소한다.
+Erosion_01_04,불길한 징후,Level01_4,1,1,Group_04,Exclusive,5턴마다 무작위 디버프 1개 부여,PeriodicRandomDebuffTurns,5,1,5턴마다 파티에 무작위 디버프 1개를 부여한다.
+Erosion_01_05,메마른 보급,Level01_5,1,1,Group_05,Exclusive,상점 가격 15% 증가,ShopPricePercent,15,1,상점 가격이 15% 증가한다.
+Erosion_01_06,뒤틀린 운명,Level01_6,1,0,Group_06,Exclusive,,,,0,난이도 없음
+Erosion_01_07,휴식방 제거,Level01_7,1,1,Erosion_01_07,Independent,휴식방 제거,RemoveRestRoom,1,1,보스방 입장 전에 배치되는 휴식방을 제거한다.
+Erosion_01_08,시야 제한,Level01_8,1,1,Erosion_01_08,Independent,지도 시야 제한,MapVisionLimit,1,1,지도에서 다음 방의 종류를 확인할 수 없게 된다.
+Erosion_02_01,강인한 변이체,Level02_1,2,2,Group_01,Exclusive,몬스터 최대 생명력 20% 증가,MonsterMaxHPPercent,20,1,변이체의 최대 생명력이 20% 증가한다.
+Erosion_02_02,흉포한 변이체,Level02_2,2,2,Group_02,Exclusive,몬스터 피해량 50% 증가,MonsterDamagePercent,50,1,변이체가 주는 피해가 50% 증가한다.
+Erosion_02_03,쇠약한 육체,Level02_3,2,2,Group_03,Exclusive,모든 캐릭터 최대 생명력 10% 감소,PartyMaxHPPercent,-10,1,모든 캐릭터의 최대 생명력이 10% 감소한다.
+Erosion_02_04,불길한 징후,Level02_4,2,0,Group_04,Exclusive,,,,0,난이도 없음
+Erosion_02_05,메마른 보급,Level02_5,2,2,Group_05,Exclusive,상점 가격 30% 증가,ShopPricePercent,30,1,상점 가격이 30% 증가한다.
+Erosion_02_06,뒤틀린 운명,Level02_6,2,2,Group_06,Exclusive,주사위 판정 난이도 1 증가,DiceDifficultyAdd,1,1,주사위 판정 난이도가 1 증가한다.
+Erosion_02_07,레어도 감소,Level02_7,2,2,Erosion_02_07,Independent,희귀도 확률 감소,RarityChanceReduction,1,1,높은 레어도의 등장 확률을 감소시킨다.
+Erosion_02_08,연성제 제한,Level02_8,2,2,Erosion_02_08,Independent,연성제 사용 제한,CompoundUseLimit,1,1,연성제를 사용할 수 없다.
+Erosion_03_01,강인한 변이체,Level03_1,3,3,Group_01,Exclusive,몬스터 최대 생명력 30% 증가,MonsterMaxHPPercent,30,1,변이체의 최대 생명력이 30% 증가한다.
+Erosion_03_02,흉포한 변이체,Level03_2,3,0,Group_02,Exclusive,,,,0,난이도 없음
+Erosion_03_03,쇠약한 육체,Level03_3,3,3,Group_03,Exclusive,모든 캐릭터 최대 생명력 20% 감소,PartyMaxHPPercent,-15,1,모든 캐릭터의 최대 생명력이 20% 감소한다.
+Erosion_03_04,불길한 징후,Level03_4,3,3,Group_04,Exclusive,3턴마다 무작위 디버프 1개 부여,PeriodicRandomDebuffTurns,3,1,3턴마다 파티에 무작위 디버프 1개를 부여한다.
+Erosion_03_05,메마른 보급,Level03_5,3,0,Group_05,Exclusive,,,,0,난이도 없음
+Erosion_03_06,뒤틀린 운명,Level03_6,3,3,Group_06,Exclusive,주사위 판정 난이도 2 증가,DiceDifficultyAdd,2,1,주사위 판정 난이도가 2 증가한다.
+Erosion_03_07,유물 슬롯 잠금,Level03_7,3,3,Erosion_03_07,Independent,마지막 유물칸 잠금,LockLastRelicSlot,1,1,캐릭터의 마지막 유물 슬롯을 잠근다.
+Erosion_03_08,무거운 발걸음,Level03_8,3,3,Erosion_03_08,Independent,이동 최종 마나 소모 +1,MoveFinalManaCostAdd,1,1,이동에 필요한 최종 마나 소모가 1 증가한다.
+

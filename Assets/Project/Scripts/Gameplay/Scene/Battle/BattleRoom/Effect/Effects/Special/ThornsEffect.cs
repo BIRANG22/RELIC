@@ -1,6 +1,6 @@
-public class ThornsEffect : BattleEffectBase
+public class WardEffect : BattleEffectBase
 {
-    public override string EffectId => "E_Thorns";
+    public override string EffectId => "E_Ward";
 
     protected override void Apply(BattleEffectContext context)
     {
@@ -15,7 +15,7 @@ public class ThornsEffect : BattleEffectBase
 
         if (context.PlayerCaster != null)
         {
-            BattleEffectUtility.AddStatusToPlayer(context.PlayerTarget, EffectId, context.Value, context.Count);
+            BattleEffectUtility.AddStatusToPlayer(context.PlayerCaster, EffectId, context.Value, context.Count);
             return;
         }
 
@@ -26,8 +26,6 @@ public class ThornsEffect : BattleEffectBase
         }
 
         if (context.MonsterCaster != null)
-        {
-            BattleEffectUtility.AddStatusToMonster(context.MonsterTarget, EffectId, context.Value, context.Count);
-        }
+            BattleEffectUtility.AddStatusToMonster(context.MonsterCaster, EffectId, context.Value, context.Count);
     }
 }

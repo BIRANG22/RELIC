@@ -63,6 +63,24 @@ public class YSortSpriteTests
         Assert.That(particleRenderer.sortingOrder, Is.EqualTo(-118));
     }
 
+    [Test]
+    public void YSortSprite_DoesNotRewriteSortingOrderWhenInputsDoNotChange()
+    {
+        rootObject = new GameObject("GridEffectVfx");
+        rootObject.transform.position = new Vector3(0f, 1f, 0f);
+
+        SpriteRenderer spriteRenderer = rootObject.AddComponent<SpriteRenderer>();
+        YSortSprite sorter = rootObject.AddComponent<YSortSprite>();
+
+        InvokeUnityMessage(sorter, "Awake");
+        InvokeUnityMessage(sorter, "LateUpdate");
+
+        spriteRenderer.sortingOrder = 777;
+        InvokeUnityMessage(sorter, "LateUpdate");
+
+        Assert.That(spriteRenderer.sortingOrder, Is.EqualTo(777));
+    }
+
     private static void InvokeUnityMessage(object target, string methodName)
     {
         MethodInfo method = target.GetType().GetMethod(

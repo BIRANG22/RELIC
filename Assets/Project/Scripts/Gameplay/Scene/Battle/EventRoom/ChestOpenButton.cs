@@ -60,6 +60,14 @@ public class ChestOpenButton : MonoBehaviour
     [Tooltip("마지막 클릭에서 덜컹 VFX가 나온 뒤 Open Complete VFX가 나오기까지의 지연 시간입니다.")]
     [SerializeField] private float openCompleteVfxDelay = 0.12f;
 
+    [Header("Chest SFX")]
+    [SerializeField] private bool playClickSfx = true;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfxId = AudioIds.Sfx.Confirm;
+    [Min(0f)][SerializeField] private float clickSfxVolumeMultiplier = 1f;
+    [SerializeField] private bool playOpenSfx = true;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string openSfxId = AudioIds.Sfx.BoxOpen;
+    [Min(0f)][SerializeField] private float openSfxVolumeMultiplier = 1f;
+
     [Header("VFX 런타임 스폰")]
     [SerializeField] private Transform vfxSpawnRoot;
     [SerializeField] private Vector3 stepVfxLocalPosition = new(1.79f, 0f, 0f);
@@ -322,6 +330,9 @@ public class ChestOpenButton : MonoBehaviour
         if (IsMenuPanelOpen())
             return;
 
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
         if (isOpened || isOpening || isClickCooling)
             return;
 
@@ -330,6 +341,7 @@ public class ChestOpenButton : MonoBehaviour
 
         currentClickCount++;
 
+        PlayChestClickSfx();
         PlayClunk();
         PlayStepVfxByClickCount();
 
@@ -399,6 +411,24 @@ public class ChestOpenButton : MonoBehaviour
         clunkCoroutine = StartCoroutine(ClunkRoutine());
     }
 
+    private void PlayChestClickSfx()
+    {
+        PlayChestSfx(playClickSfx, clickSfxId, clickSfxVolumeMultiplier);
+    }
+
+    private void PlayChestOpenSfx()
+    {
+        PlayChestSfx(playOpenSfx, openSfxId, openSfxVolumeMultiplier);
+    }
+
+    private static void PlayChestSfx(bool play, string sfxId, float volumeMultiplier)
+    {
+        if (!play || AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(sfxId, volumeMultiplier);
+    }
+
     private IEnumerator ClunkRoutine()
     {
         float timer = 0f;
@@ -458,6 +488,7 @@ public class ChestOpenButton : MonoBehaviour
         isOpening = true;
 
         EnsureRewardItemObject();
+        PlayChestOpenSfx();
 
         if (openCompleteVfxDelayCoroutine != null)
             StopCoroutine(openCompleteVfxDelayCoroutine);
@@ -489,12 +520,6 @@ public class ChestOpenButton : MonoBehaviour
         if (!useRandomRelicReward || !hasSelectedReward || isRewardGranted || !selectedReward.IsValid)
             return;
 
-        if (!ChestRelicRewardService.GrantReward(DataManager.Instance, selectedReward))
-        {
-            Debug.LogWarning($"[ChestOpenButton] 유물 보상 지급 실패 / Relic:{selectedReward.RelicId}");
-            return;
-        }
-
         isRewardGranted = true;
         SetRewardItemInteractable(false);
         RewardPointerExited?.Invoke();
@@ -502,9 +527,23 @@ public class ChestOpenButton : MonoBehaviour
         if (rewardItemObject != null)
             rewardItemObject.SetActive(false);
 
+        string relicId = selectedReward.RelicId;
+        if (BattleRewardEquipPanelUI.TryOpenRelicReward(relicId, () => CompleteSelectedRewardClaim(relicId)))
+            return;
+
+        isRewardGranted = false;
+        SetRewardItemInteractable(true);
+        if (rewardItemObject != null)
+            rewardItemObject.SetActive(true);
+
+        Debug.LogWarning($"[ChestOpenButton] Equip_panel을 찾을 수 없어 유물 보상 처리를 보류합니다. Relic:{selectedReward.RelicId}");
+    }
+
+    private void CompleteSelectedRewardClaim(string relicId)
+    {
         RelicEquipPanelUI.RefreshAll();
-        RewardClaimed?.Invoke(selectedReward.RelicId);
-        Debug.Log($"[ChestOpenButton] 유물 보상 지급 / Relic:{selectedReward.RelicId}");
+        RewardClaimed?.Invoke(relicId);
+        Debug.Log($"[ChestOpenButton] 유물 보상 처리 완료 / Relic:{relicId}");
     }
 
     public void NotifyRewardPointerEnter()
@@ -820,7 +859,10 @@ public class ChestOpenButton : MonoBehaviour
 
         playTarget.SetActive(true);
         RestartParticles(playTarget);
-        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(playTarget, null, this);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(
+            playTarget,
+            vfxObject,
+            this);
 
         if (!IsSceneObject(vfxObject) && vfxAutoDestroyDelay > 0f)
             Destroy(playTarget, vfxAutoDestroyDelay);
@@ -884,7 +926,7 @@ public class ChestOpenButton : MonoBehaviour
             SetLayerRecursively(vfxObject, layer);
 
         RestartParticles(vfxObject);
-        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfxObject, entry.sfx, this);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfxObject, entry.prefab, this);
     }
 
     private GameObject PrepareDirectVfxInstance(GameObject vfxObject, Vector3 localPosition, int sortingOrderOffset)

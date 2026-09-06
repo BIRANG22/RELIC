@@ -1,12 +1,25 @@
-using System.Collections;
+﻿using System.Collections;
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public enum VfxFlipType
 {
     RotationY180,
     ParticleRendererFlipY,
     None
+}
+
+
+[System.Serializable]
+public class BattleProjectileVfxRenderRoutingOverride
+{
+    [Tooltip("렌더 라우팅을 적용할 Projectile/Impact 프리팹입니다.")]
+    public GameObject projectilePrefab;
+
+    [Tooltip("일반 VFX와 동일한 Render Routing 설정입니다. Prefab/Flip 값은 사용하지 않고 렌더 관련 값만 복사합니다.")]
+    public BattleVfxEntry renderRouting = new();
 }
 
 public class BattleUnitAnimator : MonoBehaviour
@@ -42,12 +55,24 @@ public class BattleUnitAnimator : MonoBehaviour
     [Header("Player Skill Presentations")]
     [SerializeField] private BattleUnitPlayerSkillPresentations playerSkillPresentations = new();
 
+    [Header("Skill Attack Overrides")]
+    [SerializeField] private SkillAttackOverrideDatabase skillAttackOverrideDatabase;
+
+    [Header("Skill VFX")]
+    [SerializeField] private SkillVfxDatabase skillVfxDatabase;
+    [SerializeField] private GridManager gridManager;
+
     [Header("Monster Action Presentations")]
-    [SerializeField] private BattleUnitActionPresentation[] monsterActionPresentations =
+    [SerializeField]
+    private BattleUnitActionPresentation[] monsterActionPresentations =
         BattleUnitActionPresentation.CreateArray(10);
 
     [Header("VFX Spawn")]
     [SerializeField] private Transform vfxSpawnPoint;
+
+    [Header("Projectile VFX Render Routing")]
+    [Tooltip("Projectile/Impact 프리팹별 Render Routing Override입니다. 목록에 없는 프리팹은 기존 기본 렌더링 방식을 유지합니다.")]
+    [SerializeField] private BattleProjectileVfxRenderRoutingOverride[] projectileVfxRenderRoutingOverrides;
 
     [Header("VFX Sorting")]
     [SerializeField] private string vfxSortingReferenceName = DefaultVfxSortingReferenceName;
@@ -72,9 +97,12 @@ public class BattleUnitAnimator : MonoBehaviour
     private int vfxLayer = -1;
 
     private int currentAttackIndex;
+    private SkillAttackSlot previousSkillAttackOverrideSlot = SkillAttackSlot.None;
     private Transform vfxSortingReference;
+    private float playbackSpeedMultiplier = 1f;
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
+    public float LastScheduledPrepareWaitDuration { get; private set; }
 
     private void Awake()
     {
@@ -103,8 +131,55 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayMove()
     {
+        if (EnsureAnimator())
+            animator.speed = 1f;
+
         PlayState(moveStateName);
         SpawnVfx(moveVfx);
+    }
+
+    /// <summary>
+    /// Move 상태를 마지막 프레임부터 역방향으로 재생합니다.
+    /// 포탈 도착 연출처럼 같은 이동 애니메이션을 반대로 보여줄 때 사용합니다.
+    /// </summary>
+    public void PlayMoveReverse()
+    {
+        if (!TryResolveAnimatorStateName(moveStateName, out string resolvedStateName))
+            return;
+
+        animator.speed = -1f;
+        animator.Play(resolvedStateName, animatorLayer, 1f);
+
+        if (forceAnimatorUpdate)
+            animator.Update(0f);
+    }
+
+    /// <summary>
+    /// 현재 애니메이터의 재생 속도를 변경합니다.
+    /// 다단 공격처럼 같은 행동 안에서 여러 모션을 빠르게 이어갈 때 사용합니다.
+    /// </summary>
+    public void SetPlaybackSpeed(float speed)
+    {
+        playbackSpeedMultiplier = Mathf.Max(0.01f, speed);
+
+        if (EnsureAnimator())
+        {
+            BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(
+                animator,
+                playbackSpeedMultiplier);
+        }
+    }
+
+    public void RestorePlaybackSpeed()
+    {
+        playbackSpeedMultiplier = 1f;
+
+        if (EnsureAnimator())
+        {
+            BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(
+                animator,
+                playbackSpeedMultiplier);
+        }
     }
 
     public void PlayGuard()
@@ -151,6 +226,22 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlaySkillAction(SkillMasterData skillData)
     {
+        PlaySkillAction(skillData, null);
+    }
+
+    public void PlaySkillAction(PlayerReservedCommand command)
+    {
+        if (command == null)
+        {
+            PlayIdle();
+            return;
+        }
+
+        PlaySkillAction(command.SkillData, command);
+    }
+
+    private void PlaySkillAction(SkillMasterData skillData, PlayerReservedCommand command)
+    {
         if (skillData == null)
         {
             PlayIdle();
@@ -159,30 +250,122 @@ public class BattleUnitAnimator : MonoBehaviour
 
         if (skillData.Category == Category.Move)
         {
+            PlaySkillVfx(skillData, command);
             PlayMove();
             return;
         }
 
+        // DB에 Presentation이 지정되어 있으면 SkillType보다 우선합니다.
+        if (TryPlaySkillPresentationOverride(
+                skillData,
+                () => PlaySkillVfx(skillData, command)))
+        {
+            return;
+        }
+
+        // DB Override가 없을 때만 기존 SkillType 기본 연출을 사용합니다.
+        EnsurePlayerSkillPresentations();
+
         switch (skillData.SkillType)
         {
-            case SkillType.Power:
-                EnsurePlayerSkillPresentations();
-                PlayPresentation(playerSkillPresentations.power);
+            case SkillType.Buff:
+                PlayPresentation(
+                    playerSkillPresentations.power,
+                    null,
+                    () => PlaySkillVfx(skillData, command));
                 break;
 
-            case SkillType.Skill:
-                EnsurePlayerSkillPresentations();
-                PlayPresentation(playerSkillPresentations.skill);
+            case SkillType.Debuff:
+                PlayPresentation(
+                    playerSkillPresentations.skill,
+                    null,
+                    () => PlaySkillVfx(skillData, command));
                 break;
 
             case SkillType.Attack:
-                PlayRandomAttackAction();
-                break;
-
             default:
-                PlayRandomAttackAction();
+                PlayRandomAttackAction(() => PlaySkillVfx(skillData, command));
                 break;
         }
+    }
+
+    /// <summary>
+    /// 다단 공격의 타격 순서에 맞춰 서로 다른 공격 모션을 재생합니다.
+    /// Attack 1~3 중 실제로 등록된 모션만 순서대로 순환합니다.
+    /// </summary>
+    public void PlaySkillAction(SkillMasterData skillData, int hitIndex)
+    {
+        PlaySkillAction(skillData, null, hitIndex);
+    }
+
+    public void PlaySkillAction(PlayerReservedCommand command, int hitIndex)
+    {
+        LastScheduledPrepareWaitDuration = 0f;
+
+        if (command == null)
+        {
+            PlayIdle();
+            return;
+        }
+
+        PlaySkillAction(command.SkillData, command, hitIndex);
+    }
+
+    private void PlaySkillAction(SkillMasterData skillData, PlayerReservedCommand command, int hitIndex)
+    {
+        if (skillData == null || skillData.SkillType != SkillType.Attack)
+        {
+            PlaySkillAction(skillData, command);
+            return;
+        }
+
+        System.Action playActionVfx =
+            () => PlaySkillVfx(skillData, command, hitIndex);
+
+        // 첫 타격은 기존 AttackSlot을 사용합니다.
+        // 2타부터는 RepeatAttackSlots에서 바로 직전 타격 슬롯을 제외해 랜덤 선택합니다.
+        if (hitIndex <= 0)
+        {
+            previousSkillAttackOverrideSlot = SkillAttackSlot.None;
+
+            if (TryPlaySkillPresentationOverride(
+                    skillData,
+                    out SkillAttackSlot firstSlot,
+                    playActionVfx,
+                    playPrepare: true))
+            {
+                previousSkillAttackOverrideSlot = firstSlot;
+                return;
+            }
+        }
+        else
+        {
+            if (TryPlayRepeatSkillPresentationOverride(
+                    skillData,
+                    previousSkillAttackOverrideSlot,
+                    out SkillAttackSlot repeatSlot,
+                    playActionVfx,
+                    playPrepare: false))
+            {
+                previousSkillAttackOverrideSlot = repeatSlot;
+                return;
+            }
+        }
+
+        List<int> assignedAttackIndices = GetAssignedAttackIndices();
+
+        if (assignedAttackIndices.Count <= 0)
+        {
+            // 애니메이션 슬롯이 하나도 없더라도 기존 스킬 VFX/사운드는 유지합니다.
+            playActionVfx();
+            return;
+        }
+
+        int sequenceIndex = Mathf.Abs(hitIndex) % assignedAttackIndices.Count;
+        PlayAttackAction(
+            assignedAttackIndices[sequenceIndex],
+            playActionVfx,
+            playPrepare: hitIndex <= 0);
     }
 
     public void PlayMonsterSkillReady(MonsterReservedCommand command)
@@ -201,24 +384,64 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
         }
 
-        if (command.SkillData.TimelineNotation == TimelineActionType.Move)
+        if (IsActualMonsterMove(command))
         {
             PlayMove();
             return;
         }
 
-        if (!IsValidMonsterActionIndex(command.ActionIndex))
+        if (IsValidMonsterActionIndex(command.ActionIndex))
         {
-            PlayMonsterSkillAction(command.SkillData);
-            return;
+            BattleUnitActionPresentation monsterPresentation =
+                GetMonsterActionPresentation(command.ActionIndex);
+
+            if (HasPresentation(monsterPresentation))
+            {
+                PlayPresentation(monsterPresentation, command);
+                return;
+            }
         }
 
-        PlayPresentation(GetMonsterActionPresentation(command.ActionIndex));
+        // 몬스터 전용 슬롯이 비어 있는 공격 행동은 기존 공용 Attack 1~3 연출로 보정합니다.
+        if (command.SkillData.TimelineNotation == TimelineActionType.Attack &&
+            command.ActionIndex >= 1 && command.ActionIndex <= 3)
+        {
+            EnsurePlayerSkillPresentations();
+            BattleUnitActionPresentation attackPresentation =
+                playerSkillPresentations.GetAttack(command.ActionIndex);
+
+            if (HasPresentation(attackPresentation))
+            {
+                PlayPresentation(attackPresentation, command);
+                return;
+            }
+        }
+
+        PlayMonsterSkillAction(command.SkillData);
+    }
+
+
+    private static bool IsActualMonsterMove(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+
+        // 실제 이동 명령만 이동 연출을 사용합니다.
+        // 공격 스킬의 EffectIds에 이동 관련 값이 섞여 있더라도 공격 연출이
+        // 이동 VFX로 잘못 재생되지 않도록 EffectIds만으로 이동을 판정하지 않습니다.
+        if (command.IsPortalMove)
+            return true;
+
+        if (command.EffectiveMoveOffset != Vector2Int.zero)
+            return true;
+
+        return command.SkillData.TimelineNotation == TimelineActionType.Move;
     }
 
     public bool HasMonsterProjectileVfx(MonsterReservedCommand command)
     {
-        return TryGetMonsterProjectilePresentation(command, out BattleUnitActionPresentation _);
+        return TryGetMonsterProjectilePresentation(command, out BattleUnitActionPresentation presentation) &&
+               !ShouldSpawnProjectileImpactOnMonsterTargetGrids(presentation);
     }
 
     public IEnumerator PlayMonsterProjectileVfx(
@@ -234,6 +457,55 @@ public class BattleUnitAnimator : MonoBehaviour
             yield break;
 
         yield return PlayProjectileVfx(projectile, targetWorldPosition);
+    }
+
+    public IEnumerator PlaySkillTargetVfx(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            yield break;
+
+        if (!TryResolveSkillVfxEntry(command.SkillData, out SkillVfxEntry entry))
+            yield break;
+
+        if (!TryResolveSelectedGridWorldPosition(command, out Vector3 targetWorldPosition))
+            yield break;
+
+        if (!HasProjectileVfx(entry.ProjectileVfx))
+            yield break;
+
+        yield return PlayProjectileVfx(entry.ProjectileVfx, targetWorldPosition);
+    }
+
+    /// <summary>
+    /// SkillVfxDatabase의 TargetUnitVfx를 실제 효과 대상 유닛 위치에 생성합니다.
+    /// TargetUnitVfx가 비어 있거나 targetUnit이 없으면 아무 동작도 하지 않습니다.
+    /// </summary>
+    public bool PlaySkillTargetUnitVfx(
+        SkillMasterData skillData,
+        Transform targetUnit,
+        bool allowPlayOncePerActionCues = true)
+    {
+        if (skillData == null || targetUnit == null)
+            return false;
+
+        if (!TryResolveSkillVfxEntry(skillData, out SkillVfxEntry entry) ||
+            entry == null ||
+            !HasVfx(entry.TargetUnitVfx))
+        {
+            return false;
+        }
+
+        Vector3 targetWorldPosition = ResolveTargetUnitVfxAnchorPosition(targetUnit);
+
+        SpawnDetachedVfx(
+            entry.TargetUnitVfx,
+            targetWorldPosition,
+            vfxLifeTime,
+            applyFacingFlip: false,
+            stabilizeVisualEffects: false,
+            allowPlayOncePerActionCues: allowPlayOncePerActionCues);
+
+        return true;
     }
 
     public void PlayMonsterSkillAction(MonsterSkillData skillData)
@@ -264,28 +536,360 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayCurrentAttackAction()
     {
+        PlayCurrentAttackAction(null);
+    }
+
+    private void PlayCurrentAttackAction(
+        System.Action onActionStart,
+        bool playPrepare = true)
+    {
         EnsurePlayerSkillPresentations();
 
         if (currentAttackIndex < 1 || currentAttackIndex > 3)
             currentAttackIndex = GetRandomAssignedAttackIndex();
 
         currentAttackIndex = GetAssignedAttackIndexOrFallback(currentAttackIndex);
-        PlayPresentation(playerSkillPresentations.GetAttack(currentAttackIndex));
+        PlayPresentation(
+            playerSkillPresentations.GetAttack(currentAttackIndex),
+            null,
+            onActionStart,
+            playPrepare);
     }
 
     public void PlayRandomAttackAction()
     {
+        PlayRandomAttackAction(null);
+    }
+
+    private void PlayRandomAttackAction(
+        System.Action onActionStart,
+        bool playPrepare = true)
+    {
         currentAttackIndex = GetRandomAssignedAttackIndex();
-        PlayCurrentAttackAction();
+        PlayCurrentAttackAction(onActionStart, playPrepare);
+    }
+
+    private bool TryPlaySkillPresentationOverride(SkillMasterData skillData)
+    {
+        return TryPlaySkillPresentationOverride(skillData, out _, null);
+    }
+
+    private bool TryPlaySkillPresentationOverride(
+        SkillMasterData skillData,
+        System.Action onActionStart)
+    {
+        return TryPlaySkillPresentationOverride(skillData, out _, onActionStart);
+    }
+
+    private bool TryPlaySkillPresentationOverride(
+        SkillMasterData skillData,
+        out SkillAttackSlot playedSlot)
+    {
+        return TryPlaySkillPresentationOverride(skillData, out playedSlot, null);
+    }
+
+    private bool TryPlaySkillPresentationOverride(
+        SkillMasterData skillData,
+        out SkillAttackSlot playedSlot,
+        System.Action onActionStart,
+        bool playPrepare = true)
+    {
+        playedSlot = SkillAttackSlot.None;
+
+        if (!TryResolveSkillPresentationOverride(skillData, out SkillAttackSlot slot))
+            return false;
+
+        if (!TryPlayPresentationSlot(slot, onActionStart, playPrepare))
+            return false;
+
+        playedSlot = slot;
+        return true;
+    }
+
+    private bool TryPlayRepeatSkillPresentationOverride(
+        SkillMasterData skillData,
+        SkillAttackSlot previousSlot,
+        out SkillAttackSlot playedSlot)
+    {
+        return TryPlayRepeatSkillPresentationOverride(
+            skillData,
+            previousSlot,
+            out playedSlot,
+            null);
+    }
+
+    private bool TryPlayRepeatSkillPresentationOverride(
+        SkillMasterData skillData,
+        SkillAttackSlot previousSlot,
+        out SkillAttackSlot playedSlot,
+        System.Action onActionStart,
+        bool playPrepare = true)
+    {
+        playedSlot = SkillAttackSlot.None;
+
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.SkillId))
+            return false;
+
+        string characterId = GetOwnerCharacterId();
+        if (string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        SkillAttackOverrideDatabase database = ResolveSkillAttackOverrideDatabase();
+        if (database == null ||
+            !database.TryGetRepeatPresentationSlot(
+                characterId,
+                skillData.SkillId,
+                previousSlot,
+                out SkillAttackSlot slot))
+        {
+            return false;
+        }
+
+        if (!TryPlayPresentationSlot(slot, onActionStart, playPrepare))
+            return false;
+
+        playedSlot = slot;
+        return true;
+    }
+
+    private bool TryPlayPresentationSlot(SkillAttackSlot slot)
+    {
+        return TryPlayPresentationSlot(slot, null);
+    }
+
+    private bool TryPlayPresentationSlot(
+        SkillAttackSlot slot,
+        System.Action onActionStart,
+        bool playPrepare = true)
+    {
+        if (slot == SkillAttackSlot.None)
+            return false;
+
+        EnsurePlayerSkillPresentations();
+
+        BattleUnitActionPresentation presentation = playerSkillPresentations.GetPresentation(slot);
+        if (!HasPresentation(presentation))
+            return false;
+
+        // currentAttackIndex는 Attack1~3에만 의미가 있습니다.
+        if (slot >= SkillAttackSlot.Attack1 && slot <= SkillAttackSlot.Attack3)
+            currentAttackIndex = (int)slot;
+
+        PlayPresentation(presentation, null, onActionStart, playPrepare);
+        return true;
+    }
+
+    private bool TryResolveSkillPresentationOverride(
+        SkillMasterData skillData,
+        out SkillAttackSlot slot)
+    {
+        slot = SkillAttackSlot.None;
+
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.SkillId))
+            return false;
+
+        string characterId = GetOwnerCharacterId();
+        if (string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        SkillAttackOverrideDatabase database = ResolveSkillAttackOverrideDatabase();
+        return database != null &&
+               database.TryGetPresentationSlot(characterId, skillData.SkillId, out slot);
+    }
+
+    private SkillAttackOverrideDatabase ResolveSkillAttackOverrideDatabase()
+    {
+        if (skillAttackOverrideDatabase != null)
+            return skillAttackOverrideDatabase;
+
+        return DataManager.Instance != null
+            ? DataManager.Instance.SkillAttackOverrideDatabase
+            : null;
+    }
+
+    private void PlaySkillVfx(SkillMasterData skillData)
+    {
+        PlaySkillVfx(skillData, null);
+    }
+
+    private void PlaySkillVfx(SkillMasterData skillData, PlayerReservedCommand command)
+    {
+        if (!TryResolveSkillVfx(skillData, out BattleVfxEntry vfx))
+            return;
+
+        SpawnVfx(vfx, command);
+    }
+
+    private void PlaySkillVfx(
+        SkillMasterData skillData,
+        PlayerReservedCommand command,
+        int hitIndex)
+    {
+        if (!TryResolveSkillVfx(skillData, out BattleVfxEntry vfx))
+            return;
+
+        SpawnVfx(
+            vfx,
+            command,
+            allowPlayOncePerActionCues: hitIndex <= 0);
+    }
+
+    private bool TryResolveSkillVfx(SkillMasterData skillData, out BattleVfxEntry vfx)
+    {
+        vfx = null;
+
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.SkillId))
+            return false;
+
+        SkillVfxDatabase database = ResolveSkillVfxDatabase();
+        return database != null && database.TryGetVfx(skillData.SkillId, out vfx);
+    }
+
+    private bool TryResolveSkillVfxEntry(SkillMasterData skillData, out SkillVfxEntry entry)
+    {
+        entry = null;
+
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.SkillId))
+            return false;
+
+        SkillVfxDatabase database = ResolveSkillVfxDatabase();
+        return database != null && database.TryGetEntry(skillData.SkillId, out entry);
+    }
+
+    private SkillVfxDatabase ResolveSkillVfxDatabase()
+    {
+        if (skillVfxDatabase != null)
+            return skillVfxDatabase;
+
+        return DataManager.Instance != null
+            ? DataManager.Instance.SkillVfxDatabase
+            : null;
+    }
+
+    private string GetOwnerCharacterId()
+    {
+        BattleCharacter character = GetComponentInParent<BattleCharacter>();
+        return character != null && character.RuntimeData != null
+            ? character.RuntimeData.CharacterId
+            : null;
     }
 
     private void PlayPresentation(BattleUnitActionPresentation presentation)
+    {
+        PlayPresentation(presentation, null, null);
+    }
+
+    private void PlayPresentation(
+        BattleUnitActionPresentation presentation,
+        MonsterReservedCommand command)
+    {
+        PlayPresentation(presentation, command, null);
+    }
+
+    private void PlayPresentation(
+        BattleUnitActionPresentation presentation,
+        MonsterReservedCommand command,
+        System.Action onActionStart,
+        bool playPrepare = true)
+    {
+        LastScheduledPrepareWaitDuration = 0f;
+
+        if (presentation == null)
+        {
+            onActionStart?.Invoke();
+            return;
+        }
+
+        // 같은 행동의 2타 이후처럼 Prepare를 생략해야 하는 경우에는 즉시 Action을 재생합니다.
+        // Prepare가 비어 있거나 Animator에 존재하지 않는 경우에도 기존처럼 즉시 Action으로 넘어갑니다.
+        if (!playPrepare ||
+            !CanPlayOptionalState(presentation.prepareStateName) ||
+            presentation.prepareDuration <= 0f)
+        {
+            onActionStart?.Invoke();
+            PlayPresentationAction(presentation, command);
+            return;
+        }
+
+        LastScheduledPrepareWaitDuration = GetPrepareWaitDuration(presentation.prepareDuration);
+
+        StartCoroutine(PlayPresentationSequence(
+            presentation,
+            command,
+            onActionStart,
+            LastScheduledPrepareWaitDuration));
+    }
+
+    private IEnumerator PlayPresentationSequence(
+        BattleUnitActionPresentation presentation,
+        MonsterReservedCommand command,
+        System.Action onActionStart,
+        float waitDuration)
+    {
+        if (presentation == null)
+        {
+            onActionStart?.Invoke();
+            yield break;
+        }
+
+        // Prepare 단계에서는 애니메이션만 재생합니다.
+        // VFX와 그 VFX에 연결된 사운드는 Action 시작 시점까지 재생하지 않습니다.
+        PlayOptionalState(presentation.prepareStateName);
+
+        if (waitDuration > 0f)
+            yield return new WaitForSeconds(waitDuration);
+
+        onActionStart?.Invoke();
+        PlayPresentationAction(presentation, command);
+    }
+
+    private float GetPrepareWaitDuration(float prepareDuration)
+    {
+        float duration = Mathf.Max(0f, prepareDuration);
+        if (duration <= 0f)
+            return 0f;
+
+        if (!EnsureAnimator())
+            return duration;
+
+        float playbackSpeed = Mathf.Max(0.01f, Mathf.Abs(animator.speed));
+        return duration / playbackSpeed;
+    }
+
+    private void PlayPresentationAction(
+        BattleUnitActionPresentation presentation,
+        MonsterReservedCommand command)
     {
         if (presentation == null)
             return;
 
         PlayState(presentation.stateName);
+
+        if (presentation.spawnVfxOnEachTargetGrid &&
+            TrySpawnVfxOnMonsterTargetGrids(presentation.vfx, command))
+        {
+            return;
+        }
+
+        if (presentation.spawnVfxOnEachTargetGrid &&
+            TrySpawnProjectileImpactOnMonsterTargetGrids(presentation.projectileVfx, command))
+        {
+            return;
+        }
+
         SpawnVfx(presentation.vfx);
+    }
+
+    /// <summary>
+    /// 디버그 입력 등에서 Monster Action Presentations의 지정 슬롯을 직접 재생합니다.
+    /// 인스펙터의 Monster Action Presentations 1~10과 동일한 인덱스를 사용합니다.
+    /// </summary>
+    public void PlayMonsterActionPresentation(int actionIndex)
+    {
+        if (!IsValidMonsterActionIndex(actionIndex))
+            return;
+
+        PlayPresentation(GetMonsterActionPresentation(actionIndex));
     }
 
     private BattleUnitActionPresentation GetMonsterActionPresentation(int actionIndex)
@@ -318,29 +922,9 @@ public class BattleUnitAnimator : MonoBehaviour
             return false;
 
         if (TryGetMonsterActionPresentation(command, out BattleUnitActionPresentation mapped) &&
-            HasProjectileVfx(mapped.projectileVfx) &&
-            ProjectileVfxMatchesSkill(command, mapped.projectileVfx, true))
+            HasProjectileVfx(mapped.projectileVfx))
         {
             presentation = mapped;
-            return true;
-        }
-
-        EnsureMonsterActionPresentationArray();
-
-        for (int i = 0; i < monsterActionPresentations.Length; i++)
-        {
-            BattleUnitActionPresentation candidate = monsterActionPresentations[i];
-
-            if (candidate == null)
-                continue;
-
-            if (!HasProjectileVfx(candidate.projectileVfx))
-                continue;
-
-            if (!ProjectileVfxMatchesSkill(command, candidate.projectileVfx, false))
-                continue;
-
-            presentation = candidate;
             return true;
         }
 
@@ -385,6 +969,24 @@ public class BattleUnitAnimator : MonoBehaviour
             if (monsterActionPresentations[i] == null)
                 monsterActionPresentations[i] = new BattleUnitActionPresentation();
         }
+    }
+
+    private List<int> GetAssignedAttackIndices()
+    {
+        EnsurePlayerSkillPresentations();
+
+        List<int> result = new();
+
+        if (HasPresentation(playerSkillPresentations.attack1))
+            result.Add(1);
+
+        if (HasPresentation(playerSkillPresentations.attack2))
+            result.Add(2);
+
+        if (HasPresentation(playerSkillPresentations.attack3))
+            result.Add(3);
+
+        return result;
     }
 
     private int GetRandomAssignedAttackIndex()
@@ -467,22 +1069,18 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private bool HasProjectileVfx(BattleProjectileVfxEntry entry)
     {
-        return entry != null && entry.missilePrefab != null;
+        return entry != null && (entry.missilePrefab != null || entry.impactPrefab != null);
     }
 
-    private bool ProjectileVfxMatchesSkill(
-        MonsterReservedCommand command,
-        BattleProjectileVfxEntry entry,
-        bool allowEmptySkillId)
+    private bool ShouldSpawnProjectileImpactOnMonsterTargetGrids(
+        BattleUnitActionPresentation presentation)
     {
-        if (entry == null)
-            return false;
-
-        if (string.IsNullOrWhiteSpace(entry.skillId))
-            return allowEmptySkillId;
-
-        return command != null &&
-               string.Equals(entry.skillId.Trim(), command.SkillId, System.StringComparison.Ordinal);
+        return presentation != null &&
+               presentation.spawnVfxOnEachTargetGrid &&
+               presentation.vfx?.prefab == null &&
+               presentation.projectileVfx != null &&
+               presentation.projectileVfx.missilePrefab == null &&
+               presentation.projectileVfx.impactPrefab != null;
     }
 
     private bool HasPresentation(BattleUnitActionPresentation presentation)
@@ -493,6 +1091,149 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void SpawnVfx(BattleVfxEntry entry)
     {
+        SpawnVfx(entry, null);
+    }
+
+    private bool TrySpawnVfxOnMonsterTargetGrids(
+        BattleVfxEntry entry,
+        MonsterReservedCommand command)
+    {
+        if (entry == null || entry.prefab == null || command == null)
+            return false;
+
+        IReadOnlyList<int> targetGridIndices = GetMonsterPresentationVfxGridIndices(command);
+
+        if (targetGridIndices == null || targetGridIndices.Count <= 0)
+            return false;
+
+        GridManager manager = ResolveGridManager();
+
+        if (manager == null)
+            return false;
+
+        BattleVfxEntry targetGridEntry = CreateTargetGridVfxEntry(entry);
+        bool spawnedAny = false;
+        HashSet<int> spawnedGridIndices = new();
+
+        for (int i = 0; i < targetGridIndices.Count; i++)
+        {
+            int gridIndex = targetGridIndices[i];
+
+            if (gridIndex < 0 || !spawnedGridIndices.Add(gridIndex))
+                continue;
+
+            if (!TryResolveMonsterPresentationVfxAnchor(manager, gridIndex, out Vector3 anchorPosition))
+                continue;
+
+            SpawnDetachedVfx(
+                targetGridEntry,
+                anchorPosition,
+                vfxLifeTime,
+                applyFacingFlip: false);
+            spawnedAny = true;
+        }
+
+        return spawnedAny;
+    }
+
+    private bool TrySpawnProjectileImpactOnMonsterTargetGrids(
+        BattleProjectileVfxEntry entry,
+        MonsterReservedCommand command)
+    {
+        if (entry == null || entry.missilePrefab != null || entry.impactPrefab == null || command == null)
+            return false;
+
+        IReadOnlyList<int> targetGridIndices = GetMonsterPresentationVfxGridIndices(command);
+
+        if (targetGridIndices == null || targetGridIndices.Count <= 0)
+            return false;
+
+        GridManager manager = ResolveGridManager();
+
+        if (manager == null)
+            return false;
+
+        if (vfxLayer < 0)
+            vfxLayer = LayerMask.NameToLayer(vfxLayerName);
+
+        BattleVfxEntry targetGridImpactEntry = CreateTargetGridImpactVfxEntry(entry);
+        bool spawnedAny = false;
+        HashSet<int> spawnedGridIndices = new();
+
+        for (int i = 0; i < targetGridIndices.Count; i++)
+        {
+            int gridIndex = targetGridIndices[i];
+
+            if (gridIndex < 0 || !spawnedGridIndices.Add(gridIndex))
+                continue;
+
+            if (!TryResolveMonsterPresentationVfxAnchor(manager, gridIndex, out Vector3 anchorPosition))
+                continue;
+
+            Vector3 impactPosition = ResolveTargetGridImpactPosition(
+                anchorPosition,
+                entry.impactOffset);
+
+            SpawnDetachedVfx(
+                targetGridImpactEntry,
+                impactPosition,
+                Mathf.Max(0.01f, entry.impactLifeTime),
+                applyFacingFlip: false,
+                stabilizeVisualEffects: true);
+            spawnedAny = true;
+        }
+
+        return spawnedAny;
+    }
+
+    private static bool TryResolveMonsterPresentationVfxAnchor(
+        GridManager manager,
+        int gridIndex,
+        out Vector3 anchorPosition)
+    {
+        anchorPosition = Vector3.zero;
+
+        if (manager == null || gridIndex < 0)
+            return false;
+
+        GridCell cell = manager.GetCellByIndex(gridIndex);
+
+        if (cell == null)
+            return false;
+
+        anchorPosition = cell.transform.position;
+        return true;
+    }
+
+    private static Vector3 ResolveTargetGridImpactPosition(
+        Vector3 targetWorldPosition,
+        Vector3 impactOffset)
+    {
+        return targetWorldPosition + impactOffset;
+    }
+
+    private static IReadOnlyList<int> GetMonsterPresentationVfxGridIndices(
+        MonsterReservedCommand command)
+    {
+        if (command == null)
+            return null;
+
+        if (command.TargetGridIndices != null && command.TargetGridIndices.Count > 0)
+            return command.TargetGridIndices;
+
+        return command.RangeGridIndices;
+    }
+
+    private void SpawnVfx(BattleVfxEntry entry, PlayerReservedCommand command)
+    {
+        SpawnVfx(entry, command, allowPlayOncePerActionCues: true);
+    }
+
+    private void SpawnVfx(
+        BattleVfxEntry entry,
+        PlayerReservedCommand command,
+        bool allowPlayOncePerActionCues)
+    {
         if (entry == null || entry.prefab == null)
             return;
 
@@ -501,29 +1242,233 @@ public class BattleUnitAnimator : MonoBehaviour
 
         Transform spawn = GetVfxSpawnTransform();
 
-        if (TrySpawnWorldVfx(entry, spawn, vfxLifeTime))
+        if (TrySpawnWorldVfx(
+                entry,
+                spawn,
+                vfxLifeTime,
+                allowPlayOncePerActionCues))
+        {
             return;
+        }
 
-        if (TrySpawnDirectWorldVfx(entry, spawn, vfxLifeTime))
+        if (TrySpawnDirectWorldVfx(
+                entry,
+                spawn,
+                vfxLifeTime,
+                allowPlayOncePerActionCues))
+        {
             return;
+        }
 
         GameObject vfx = Instantiate(entry.prefab, spawn, false);
 
-        ConfigureVfxInstance(vfx, entry);
+        ConfigureVfxInstance(
+            vfx,
+            entry,
+            applyFacingFlip: true,
+            allowPlayOncePerActionCues: allowPlayOncePerActionCues);
         ApplyDirectWorldVfxSorting(vfx, entry, GetUnitVfxSortingReferenceY());
 
-        Destroy(vfx, vfxLifeTime);
+        Destroy(
+            vfx,
+            BattleConsecutiveActionPresentationContext.ScaleDuration(vfxLifeTime));
+    }
+
+    private Vector3 ResolveTargetUnitVfxAnchorPosition(Transform targetUnit)
+    {
+        if (targetUnit == null)
+            return Vector3.zero;
+
+        BattleUnitAnimator targetAnimator = targetUnit.GetComponent<BattleUnitAnimator>();
+        if (targetAnimator == null)
+            targetAnimator = targetUnit.GetComponentInChildren<BattleUnitAnimator>(true);
+
+        if (targetAnimator != null)
+        {
+            Transform targetSpawn = targetAnimator.GetVfxSpawnTransform();
+            if (targetSpawn != null)
+                return targetSpawn.position;
+        }
+
+        return targetUnit.position;
+    }
+
+    private bool TryResolveSelectedGridWorldPosition(
+        PlayerReservedCommand command,
+        out Vector3 targetWorldPosition)
+    {
+        targetWorldPosition = Vector3.zero;
+
+        if (command == null || command.SelectedGridIndex < 0)
+            return false;
+
+        GridManager manager = ResolveGridManager();
+
+        if (manager == null)
+            return false;
+
+        Vector2Int coord = manager.IndexToCoord(command.SelectedGridIndex);
+        if (!manager.IsValidCoord(coord))
+            return false;
+
+        GridCell cell = manager.GetCell(coord);
+        if (cell == null)
+            return false;
+
+        targetWorldPosition = cell.transform.position;
+        return true;
+    }
+
+    private GridManager ResolveGridManager()
+    {
+        if (gridManager != null)
+            return gridManager;
+
+        gridManager = Object.FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+        return gridManager;
+    }
+
+    private void SpawnDetachedVfx(
+        BattleVfxEntry entry,
+        Vector3 anchorWorldPosition,
+        float lifeTime)
+    {
+        SpawnDetachedVfx(
+            entry,
+            anchorWorldPosition,
+            lifeTime,
+            applyFacingFlip: true);
+    }
+
+    private void SpawnDetachedVfx(
+        BattleVfxEntry entry,
+        Vector3 anchorWorldPosition,
+        float lifeTime,
+        bool applyFacingFlip,
+        bool stabilizeVisualEffects = false,
+        bool allowPlayOncePerActionCues = true)
+    {
+        if (TrySpawnDetachedWorldVfx(
+                entry,
+                anchorWorldPosition,
+                lifeTime,
+                useUnitSortingTarget: false,
+                applyFacingFlip: applyFacingFlip,
+                stabilizeVisualEffects: stabilizeVisualEffects,
+                out _,
+                allowPlayOncePerActionCues))
+        {
+            return;
+        }
+
+        if (TrySpawnDetachedDirectWorldVfx(
+                entry,
+                anchorWorldPosition,
+                lifeTime,
+                applyFacingFlip,
+                stabilizeVisualEffects,
+                allowPlayOncePerActionCues))
+        {
+            return;
+        }
+
+        SpawnDetachedPrefabVfx(
+            entry,
+            anchorWorldPosition,
+            lifeTime,
+            applyFacingFlip,
+            stabilizeVisualEffects,
+            allowPlayOncePerActionCues);
+    }
+
+    private bool TrySpawnDetachedDirectWorldVfx(
+        BattleVfxEntry entry,
+        Vector3 anchorWorldPosition,
+        float lifeTime,
+        bool applyFacingFlip,
+        bool stabilizeVisualEffects,
+        bool allowPlayOncePerActionCues = true)
+    {
+        if (entry.renderMode != BattleVfxRenderMode.DirectWorldRenderer)
+            return false;
+
+        GameObject anchor = CreateDetachedVfxAnchor(entry, anchorWorldPosition);
+        GameObject vfx = Instantiate(entry.prefab, anchor.transform, false);
+
+        ConfigureDirectWorldVfxInstance(
+            vfx,
+            entry,
+            anchor.transform.position.y,
+            applyFacingFlip,
+            allowPlayOncePerActionCues);
+
+        if (stabilizeVisualEffects)
+            StabilizeVisualEffectPlayback(vfx);
+
+        Destroy(
+            anchor,
+            Mathf.Max(
+                0.01f,
+                BattleConsecutiveActionPresentationContext.ScaleDuration(lifeTime)));
+        return true;
+    }
+
+    private void SpawnDetachedPrefabVfx(
+        BattleVfxEntry entry,
+        Vector3 anchorWorldPosition,
+        float lifeTime,
+        bool applyFacingFlip,
+        bool stabilizeVisualEffects,
+        bool allowPlayOncePerActionCues = true)
+    {
+        GameObject anchor = CreateDetachedVfxAnchor(entry, anchorWorldPosition);
+        GameObject vfx = Instantiate(entry.prefab, anchor.transform, false);
+
+        ConfigureDirectWorldVfxInstance(
+            vfx,
+            entry,
+            anchor.transform.position.y,
+            applyFacingFlip,
+            allowPlayOncePerActionCues);
+
+        if (stabilizeVisualEffects)
+            StabilizeVisualEffectPlayback(vfx);
+
+        if (entry.renderMode == BattleVfxRenderMode.IndividualWorldRenderTexture)
+        {
+            Transform spawn = GetVfxSpawnTransform();
+            int visibleLayer = spawn != null ? spawn.gameObject.layer : 0;
+            SetLayerRecursively(vfx, visibleLayer);
+        }
+
+        Destroy(
+            anchor,
+            Mathf.Max(
+                0.01f,
+                BattleConsecutiveActionPresentationContext.ScaleDuration(lifeTime)));
+    }
+
+    private static GameObject CreateDetachedVfxAnchor(
+        BattleVfxEntry entry,
+        Vector3 anchorWorldPosition)
+    {
+        string anchorName = entry != null && entry.prefab != null
+            ? $"{entry.prefab.name}_VfxAnchor"
+            : "SkillVfx_VfxAnchor";
+        GameObject anchor = new(anchorName);
+        anchor.transform.position = anchorWorldPosition + (entry != null ? entry.proxyWorldOffset : Vector3.zero);
+        return anchor;
     }
 
     private IEnumerator PlayProjectileVfx(
         BattleProjectileVfxEntry entry,
         Vector3 targetWorldPosition)
     {
-        if (entry == null || entry.missilePrefab == null)
+        if (!HasProjectileVfx(entry))
             yield break;
 
         if (entry.launchDelay > 0f)
-            yield return new WaitForSeconds(entry.launchDelay);
+            yield return WaitForVfxPlaybackDelay(entry.launchDelay);
 
         if (vfxLayer < 0)
             vfxLayer = LayerMask.NameToLayer(vfxLayerName);
@@ -531,10 +1476,20 @@ public class BattleUnitAnimator : MonoBehaviour
         Transform spawn = GetVfxSpawnTransform();
         Vector3 startPosition = spawn.position;
 
+        if (entry.missilePrefab == null)
+        {
+            SpawnImpactVfx(
+                entry,
+                ResolveProjectileImpactPosition(
+                    targetWorldPosition,
+                    entry.impactOffset,
+                    startPosition.z));
+            yield break;
+        }
+
         BattleVfxEntry missileEntry = CreateRuntimeVfxEntry(
             entry.missilePrefab,
-            entry.missileFlipType,
-            entry.missileSfx);
+            entry.missileFlipType);
 
         if (TrySpawnDetachedWorldVfx(
                 missileEntry,
@@ -544,7 +1499,6 @@ public class BattleUnitAnimator : MonoBehaviour
         {
             startPosition += entry.launchOffset;
             missileHandle.SetWorldPosition(startPosition);
-
             Vector3 worldImpactPosition = ResolveProjectileImpactPosition(
                 targetWorldPosition,
                 entry.impactOffset,
@@ -626,7 +1580,7 @@ public class BattleUnitAnimator : MonoBehaviour
             if (projectile == null)
                 yield break;
 
-            elapsed += Time.deltaTime;
+            elapsed += GetVfxPlaybackDeltaTime();
 
             float t = Mathf.Clamp01(elapsed / duration);
             projectile.position = Vector3.Lerp(startPosition, targetPosition, t);
@@ -644,6 +1598,33 @@ public class BattleUnitAnimator : MonoBehaviour
             projectile.position = targetPosition;
     }
 
+    private static IEnumerator WaitForVfxPlaybackDelay(float delay)
+    {
+        if (delay <= 0f)
+            yield break;
+
+        float elapsed = 0f;
+
+        while (elapsed < delay)
+        {
+            elapsed += GetVfxPlaybackDeltaTime();
+
+            yield return null;
+        }
+    }
+
+    private static float GetVfxPlaybackDeltaTime()
+    {
+        float deltaTime = Time.deltaTime;
+
+        float pauseAdjustedDeltaTime = BattleVfxPlaybackPauseController.IsGlobalPauseActive
+            ? deltaTime * BattleVfxPlaybackPauseController.ActiveSpeedMultiplier
+            : deltaTime;
+
+        return BattleConsecutiveActionPresentationContext.ScaleDeltaTime(
+            pauseAdjustedDeltaTime);
+    }
+
     private void SpawnImpactVfx(BattleProjectileVfxEntry entry, Vector3 impactPosition)
     {
         if (entry == null || entry.impactPrefab == null)
@@ -651,8 +1632,7 @@ public class BattleUnitAnimator : MonoBehaviour
 
         BattleVfxEntry impactEntry = CreateRuntimeVfxEntry(
             entry.impactPrefab,
-            entry.impactFlipType,
-            entry.impactSfx);
+            entry.impactFlipType);
 
         if (TrySpawnDetachedWorldVfx(
                 impactEntry,
@@ -672,20 +1652,32 @@ public class BattleUnitAnimator : MonoBehaviour
         impact.transform.SetParent(null, true);
         impact.transform.position = impactPosition;
 
-        Destroy(impact, Mathf.Max(0.01f, entry.impactLifeTime));
+        Destroy(
+            impact,
+            Mathf.Max(
+                0.01f,
+                BattleConsecutiveActionPresentationContext.ScaleDuration(
+                    entry.impactLifeTime)));
     }
 
     private bool TrySpawnWorldVfx(
         BattleVfxEntry entry,
         Transform spawn,
-        float lifeTime)
+        float lifeTime,
+        bool allowPlayOncePerActionCues = true)
     {
         bool spawned = BattleWorldVfxRenderer.TrySpawn(
             entry,
             spawn,
             vfxLayer,
-            Mathf.Max(0.01f, lifeTime),
-            vfx => ConfigureVfxInstance(vfx, entry),
+            Mathf.Max(
+                0.01f,
+                BattleConsecutiveActionPresentationContext.ScaleDuration(lifeTime)),
+            vfx => ConfigureVfxInstance(
+                vfx,
+                entry,
+                applyFacingFlip: true,
+                allowPlayOncePerActionCues: allowPlayOncePerActionCues),
             out BattleWorldVfxHandle handle);
 
         if (spawned)
@@ -697,16 +1689,109 @@ public class BattleUnitAnimator : MonoBehaviour
     private bool TrySpawnDirectWorldVfx(
         BattleVfxEntry entry,
         Transform spawn,
-        float lifeTime)
+        float lifeTime,
+        bool allowPlayOncePerActionCues = true)
     {
         if (entry.renderMode != BattleVfxRenderMode.DirectWorldRenderer)
             return false;
 
         GameObject vfx = Instantiate(entry.prefab, spawn, false);
-        ConfigureVfxInstance(vfx, entry);
-        ApplyDirectWorldVfxSorting(vfx, entry, GetUnitVfxSortingReferenceY());
-        Destroy(vfx, Mathf.Max(0.01f, lifeTime));
+        vfx.transform.localPosition += entry.proxyWorldOffset;
+        ConfigureDirectWorldVfxInstance(
+            vfx,
+            entry,
+            GetUnitVfxSortingReferenceY(),
+            applyFacingFlip: true,
+            allowPlayOncePerActionCues: allowPlayOncePerActionCues);
+        Destroy(
+            vfx,
+            Mathf.Max(
+                0.01f,
+                BattleConsecutiveActionPresentationContext.ScaleDuration(lifeTime)));
         return true;
+    }
+
+    private void ConfigureDirectWorldVfxInstance(
+        GameObject vfx,
+        BattleVfxEntry entry,
+        float sortingReferenceY)
+    {
+        ConfigureDirectWorldVfxInstance(
+            vfx,
+            entry,
+            sortingReferenceY,
+            applyFacingFlip: true);
+    }
+
+    private void ConfigureDirectWorldVfxInstance(
+        GameObject vfx,
+        BattleVfxEntry entry,
+        float sortingReferenceY,
+        bool applyFacingFlip,
+        bool allowPlayOncePerActionCues = true)
+    {
+        ConfigureVfxInstance(
+            vfx,
+            entry,
+            applyFacingFlip,
+            allowPlayOncePerActionCues);
+        ScaleDirectWorldVfxToProxyHeight(vfx, entry);
+        ApplyDirectWorldVfxSorting(vfx, entry, sortingReferenceY);
+    }
+
+    private static void ScaleDirectWorldVfxToProxyHeight(
+        GameObject vfx,
+        BattleVfxEntry entry)
+    {
+        if (vfx == null || entry == null)
+            return;
+
+        if (!entry.scaleDirectWorldRendererToProxyHeight)
+            return;
+
+        float targetHeight = Mathf.Max(0.01f, entry.proxyWorldHeight);
+        if (!TryGetRendererBounds(vfx, out Bounds bounds))
+            return;
+
+        float currentHeight = bounds.size.y;
+        if (currentHeight <= 0.0001f)
+            return;
+
+        float multiplier = targetHeight / currentHeight;
+        vfx.transform.localScale = new Vector3(
+            vfx.transform.localScale.x * multiplier,
+            vfx.transform.localScale.y * multiplier,
+            vfx.transform.localScale.z * multiplier);
+    }
+
+    private static bool TryGetRendererBounds(GameObject root, out Bounds bounds)
+    {
+        bounds = default;
+
+        if (root == null)
+            return false;
+
+        Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+        bool hasBounds = false;
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+
+            if (renderer == null)
+                continue;
+
+            if (!hasBounds)
+            {
+                bounds = renderer.bounds;
+                hasBounds = true;
+                continue;
+            }
+
+            bounds.Encapsulate(renderer.bounds);
+        }
+
+        return hasBounds;
     }
 
     private bool TrySpawnDetachedWorldVfx(
@@ -714,6 +1799,26 @@ public class BattleUnitAnimator : MonoBehaviour
         Vector3 position,
         float lifeTime,
         out BattleWorldVfxHandle handle)
+    {
+        return TrySpawnDetachedWorldVfx(
+            entry,
+            position,
+            lifeTime,
+            useUnitSortingTarget: true,
+            applyFacingFlip: true,
+            stabilizeVisualEffects: false,
+            out handle);
+    }
+
+    private bool TrySpawnDetachedWorldVfx(
+        BattleVfxEntry entry,
+        Vector3 position,
+        float lifeTime,
+        bool useUnitSortingTarget,
+        bool applyFacingFlip,
+        bool stabilizeVisualEffects,
+        out BattleWorldVfxHandle handle,
+        bool allowPlayOncePerActionCues = true)
     {
         Transform spawn = GetVfxSpawnTransform();
         int visibleLayer = spawn != null ? spawn.gameObject.layer : 0;
@@ -723,11 +1828,19 @@ public class BattleUnitAnimator : MonoBehaviour
             position,
             vfxLayer,
             visibleLayer,
-            Mathf.Max(0.01f, lifeTime),
-            vfx => ConfigureVfxInstance(vfx, entry),
+            Mathf.Max(
+                0.01f,
+                BattleConsecutiveActionPresentationContext.ScaleDuration(lifeTime)),
+            vfx =>
+            {
+                ConfigureVfxInstance(vfx, entry, applyFacingFlip, allowPlayOncePerActionCues);
+
+                if (stabilizeVisualEffects)
+                    StabilizeVisualEffectPlayback(vfx);
+            },
             out handle);
 
-        if (spawned)
+        if (spawned && useUnitSortingTarget)
             ApplyUnitVfxSortingTarget(handle, entry);
 
         return spawned;
@@ -735,20 +1848,88 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private BattleVfxEntry CreateRuntimeVfxEntry(GameObject prefab, VfxFlipType flipType)
     {
-        return CreateRuntimeVfxEntry(prefab, flipType, null);
-    }
-
-    private BattleVfxEntry CreateRuntimeVfxEntry(
-        GameObject prefab,
-        VfxFlipType flipType,
-        BattleVfxSfxEntry sfx)
-    {
-        return new BattleVfxEntry
+        BattleVfxEntry entry = new BattleVfxEntry
         {
             prefab = prefab,
-            flipType = flipType,
-            sfx = BattleVfxSfxEntry.CopyFrom(sfx)
+            flipType = flipType
         };
+
+        if (TryGetProjectileVfxRenderRouting(prefab, out BattleVfxEntry routing))
+            CopyRenderRouting(routing, entry);
+
+        return entry;
+    }
+
+    private bool TryGetProjectileVfxRenderRouting(GameObject prefab, out BattleVfxEntry routing)
+    {
+        routing = null;
+
+        if (prefab == null || projectileVfxRenderRoutingOverrides == null)
+            return false;
+
+        for (int i = 0; i < projectileVfxRenderRoutingOverrides.Length; i++)
+        {
+            BattleProjectileVfxRenderRoutingOverride item = projectileVfxRenderRoutingOverrides[i];
+
+            if (item == null || item.projectilePrefab != prefab || item.renderRouting == null)
+                continue;
+
+            routing = item.renderRouting;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void CopyRenderRouting(BattleVfxEntry routing, BattleVfxEntry target)
+    {
+        if (routing == null || target == null)
+            return;
+
+        target.renderMode = routing.renderMode;
+        target.proxyBlendMode = routing.proxyBlendMode;
+        target.scaleDirectWorldRendererToProxyHeight = routing.scaleDirectWorldRendererToProxyHeight;
+        target.renderTextureWidth = routing.renderTextureWidth;
+        target.renderTextureHeight = routing.renderTextureHeight;
+        target.renderCameraOrthographicSize = routing.renderCameraOrthographicSize;
+        target.proxyWorldHeight = routing.proxyWorldHeight;
+        target.proxyWorldOffset = routing.proxyWorldOffset;
+        target.proxySortingLayerName = routing.proxySortingLayerName;
+        target.proxySortingOrderOffset = routing.proxySortingOrderOffset;
+        target.proxySortingWorldYOffset = routing.proxySortingWorldYOffset;
+        target.proxyYMultiplier = routing.proxyYMultiplier;
+    }
+
+    private static BattleVfxEntry CreateTargetGridVfxEntry(BattleVfxEntry source)
+    {
+        if (source == null)
+            return null;
+
+        return new BattleVfxEntry
+        {
+            prefab = source.prefab,
+            flipType = VfxFlipType.None,
+            renderMode = source.renderMode,
+            proxyBlendMode = source.proxyBlendMode,
+            scaleDirectWorldRendererToProxyHeight = source.scaleDirectWorldRendererToProxyHeight,
+            renderTextureWidth = source.renderTextureWidth,
+            renderTextureHeight = source.renderTextureHeight,
+            renderCameraOrthographicSize = source.renderCameraOrthographicSize,
+            proxyWorldHeight = source.proxyWorldHeight,
+            proxyWorldOffset = source.proxyWorldOffset,
+            proxySortingLayerName = source.proxySortingLayerName,
+            proxySortingOrderOffset = source.proxySortingOrderOffset,
+            proxySortingWorldYOffset = source.proxySortingWorldYOffset,
+            proxyYMultiplier = source.proxyYMultiplier
+        };
+    }
+
+    private BattleVfxEntry CreateTargetGridImpactVfxEntry(BattleProjectileVfxEntry source)
+    {
+        if (source == null || source.impactPrefab == null)
+            return null;
+
+        return CreateRuntimeVfxEntry(source.impactPrefab, VfxFlipType.None);
     }
 
     private void ApplyUnitVfxSortingTarget(BattleWorldVfxHandle handle, BattleVfxEntry entry)
@@ -768,11 +1949,55 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void ConfigureVfxInstance(GameObject vfx, BattleVfxEntry entry)
     {
+        ConfigureVfxInstance(
+            vfx,
+            entry,
+            applyFacingFlip: true,
+            allowPlayOncePerActionCues: true);
+    }
+
+    private void ConfigureVfxInstance(
+        GameObject vfx,
+        BattleVfxEntry entry,
+        bool applyFacingFlip,
+        bool allowPlayOncePerActionCues = true)
+    {
         if (vfxLayer >= 0)
             SetLayerRecursively(vfx, vfxLayer);
 
-        ApplyVfxFlip(vfx, entry.flipType);
-        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(vfx, entry.sfx, this);
+        EnsureVfxPauseController(vfx);
+        BattleConsecutiveActionPresentationContext.ApplyVfxSpeed(vfx);
+        if (applyFacingFlip)
+            ApplyVfxFlip(vfx, entry.flipType);
+        BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(
+            vfx,
+            entry.prefab,
+            this,
+            allowPlayOncePerActionCues);
+    }
+
+    private static void StabilizeVisualEffectPlayback(GameObject vfx)
+    {
+        if (vfx == null)
+            return;
+
+        VisualEffect[] visualEffects = vfx.GetComponentsInChildren<VisualEffect>(true);
+
+        for (int i = 0; i < visualEffects.Length; i++)
+        {
+            VisualEffect visualEffect = visualEffects[i];
+            visualEffect.resetSeedOnPlay = false;
+            visualEffect.Reinit();
+        }
+    }
+
+    private static void EnsureVfxPauseController(GameObject vfx)
+    {
+        if (vfx == null)
+            return;
+
+        if (vfx.GetComponent<BattleVfxPlaybackPauseController>() == null)
+            vfx.AddComponent<BattleVfxPlaybackPauseController>();
     }
 
     private float GetUnitVfxSortingReferenceY()
@@ -936,28 +2161,34 @@ public class BattleUnitAnimator : MonoBehaviour
     }
     private void PlayState(string stateName)
     {
-        if (!EnsureAnimator())
+        if (!TryResolveAnimatorStateName(stateName, out string resolvedStateName))
             return;
 
-        if (string.IsNullOrWhiteSpace(stateName))
-            return;
-
-        if (animator.runtimeAnimatorController == null)
-            return;
-
-        PlayAnimatorState(stateName);
+        PlayAnimatorState(resolvedStateName);
     }
 
     private void PlayOptionalState(string stateName)
     {
-        if (!CanPlayOptionalState(stateName))
+        if (!TryResolveAnimatorStateName(stateName, out string resolvedStateName))
             return;
 
-        PlayAnimatorState(stateName);
+        PlayAnimatorState(resolvedStateName);
     }
 
     private bool CanPlayOptionalState(string stateName)
     {
+        return TryResolveAnimatorStateName(stateName, out _);
+    }
+
+    /// <summary>
+    /// 지정한 애니메이터 상태가 실제 컨트롤러에 존재하는지 확인합니다.
+    /// 로비 프리뷰처럼 전투용 상태가 없는 Animator에서는 재생을 건너뛰어
+    /// Animator.GotoState 경고가 발생하지 않도록 합니다.
+    /// </summary>
+    private bool TryResolveAnimatorStateName(string stateName, out string resolvedStateName)
+    {
+        resolvedStateName = null;
+
         if (!EnsureAnimator())
             return false;
 
@@ -970,22 +2201,32 @@ public class BattleUnitAnimator : MonoBehaviour
         if (animatorLayer < 0 || animatorLayer >= animator.layerCount)
             return false;
 
-        if (animator.HasState(animatorLayer, Animator.StringToHash(stateName)))
+        int shortStateHash = Animator.StringToHash(stateName);
+        if (animator.HasState(animatorLayer, shortStateHash))
+        {
+            resolvedStateName = stateName;
             return true;
+        }
 
         string layerName = animator.GetLayerName(animatorLayer);
-
         if (string.IsNullOrWhiteSpace(layerName))
             return false;
 
-        return animator.HasState(
-            animatorLayer,
-            Animator.StringToHash($"{layerName}.{stateName}")
-        );
+        string fullStateName = $"{layerName}.{stateName}";
+        int fullStateHash = Animator.StringToHash(fullStateName);
+        if (!animator.HasState(animatorLayer, fullStateHash))
+            return false;
+
+        resolvedStateName = fullStateName;
+        return true;
     }
 
     private void PlayAnimatorState(string stateName)
     {
+        BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(
+            animator,
+            playbackSpeedMultiplier);
+
         if (crossFadeDuration > 0f)
             animator.CrossFadeInFixedTime(stateName, crossFadeDuration, animatorLayer, 0f);
         else
@@ -1045,7 +2286,15 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayAttackAction(int attackIndex)
     {
+        PlayAttackAction(attackIndex, null);
+    }
+
+    private void PlayAttackAction(
+        int attackIndex,
+        System.Action onActionStart,
+        bool playPrepare = true)
+    {
         currentAttackIndex = Mathf.Clamp(attackIndex, 1, 3);
-        PlayCurrentAttackAction();
+        PlayCurrentAttackAction(onActionStart, playPrepare);
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
 
@@ -31,36 +32,29 @@ public class BattlePassiveSkillService
 
         SkillMasterData passiveSkill = GetPassiveSkill(runtime);
 
-        if (passiveSkill == null)
+        if (passiveSkill == null || !IsPassiveConditionMet(runtime))
         {
             BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
             return;
         }
 
-        int stack = CalculatePassiveStack(runtime, passiveSkill);
-
-        if (stack <= 0)
+        if (passiveSkill.EffectEntries == null || passiveSkill.EffectEntries.Count == 0)
         {
             BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(passiveSkill.EffectIds))
+        for (int i = 0; i < passiveSkill.EffectEntries.Count; i++)
         {
-            BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
-            return;
-        }
+            SkillEffectEntry entry = passiveSkill.EffectEntries[i];
 
-        string[] effectIds = passiveSkill.EffectIds.Split(';');
-
-        for (int i = 0; i < effectIds.Length; i++)
-        {
-            string effectId = effectIds[i].Trim();
-
-            if (string.IsNullOrWhiteSpace(effectId))
+            if (entry == null || string.IsNullOrWhiteSpace(entry.EffectId))
                 continue;
 
-            ApplyPassiveEffect(runtime, passiveSkill, effectId, stack);
+            int value = Mathf.Max(0, entry.ValueAmount);
+            int count = Mathf.Max(1, entry.CountAmount);
+
+            ApplyPassiveEffect(runtime, passiveSkill, entry.EffectId, value, count);
         }
 
         BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
@@ -70,32 +64,92 @@ public class BattlePassiveSkillService
         CharacterRuntimeData runtime,
         SkillMasterData passiveSkill,
         string effectId,
-        int stack)
+        int value,
+        int count)
     {
+        int appliedValue = BattleEffectUtility.GetRepeatedValue(value, count);
+
+        if (effectId == "E_Heal" && passiveSkill.SkillId == "S_Passive_07")
+        {
+            // S_Passive_07(자애심): 조건은 패시브 보유자의 카르마 최대 여부를 확인하지만,
+            // 실제 회복 대상은 최대 생명력보다 현재 생명력이 낮은 생존 아군 중
+            // 현재 생명력 수치가 가장 낮은 1명입니다. 회복은 버프가 아니라 즉시 적용합니다.
+            CharacterRuntimeData targetRuntime = FindLowestCurrentHpInjuredLivingPartyMember();
+
+            if (targetRuntime == null)
+                return;
+
+            BattleCharacter targetCharacter = FindBattleCharacter(targetRuntime);
+
+            if (targetCharacter != null)
+            {
+                int hpBefore = targetRuntime.CurrentHP;
+                BattleEffectUtility.HealPlayer(targetCharacter, appliedValue);
+                int healedValue = Mathf.Max(0, targetRuntime.CurrentHP - hpBefore);
+
+                Debug.Log(
+                    $"[Passive] Heal / Owner:{runtime.CharacterId} / Target:{targetRuntime.CharacterId} / " +
+                    $"Skill:{passiveSkill.SkillId} / Heal:+{healedValue} / CurrentHP:{targetRuntime.CurrentHP}"
+                );
+            }
+            else
+            {
+                int hpBefore = targetRuntime.CurrentHP;
+                targetRuntime.CurrentHP = Mathf.Min(
+                    targetRuntime.MaxHP,
+                    targetRuntime.CurrentHP + appliedValue);
+
+                int healedValue = Mathf.Max(0, targetRuntime.CurrentHP - hpBefore);
+
+                Debug.Log(
+                    $"[Passive] Heal / Owner:{runtime.CharacterId} / Target:{targetRuntime.CharacterId} / " +
+                    $"Skill:{passiveSkill.SkillId} / Heal:+{healedValue} / CurrentHP:{targetRuntime.CurrentHP}"
+                );
+            }
+
+            return;
+        }
+
         if (effectId == "E_Armor")
         {
-            int finalStack =
-                BattleEquipmentEffectService.ModifyPassiveEffectStack(runtime, effectId, stack);
+            CharacterRuntimeData targetRuntime = runtime;
 
-            runtime.CurrentShield += finalStack;
+            // S_Passive_06(결심): 조건은 패시브 보유자의 카르마 최대 여부를 확인하지만,
+            // 실제 방어도는 현재 생명력 수치가 가장 낮은 살아있는 아군 1명에게 부여합니다.
+            if (passiveSkill.SkillId == "S_Passive_06")
+            {
+                targetRuntime = FindLowestCurrentHpLivingPartyMember();
+                if (targetRuntime == null)
+                    return;
+            }
+
+            int finalValue =
+                BattleEquipmentEffectService.ModifyPassiveEffectStack(targetRuntime, effectId, appliedValue);
+
+            if (finalValue <= 0)
+                return;
+
+            targetRuntime.CurrentShield += finalValue;
+            BattleDamageTextPopupUI.ShowArmorGain(targetRuntime.CharacterId, finalValue);
 
             Debug.Log(
-                $"[Passive] Armor / Character:{runtime.CharacterId} / " +
-                $"Skill:{passiveSkill.SkillId} / Shield:+{finalStack} / CurrentShield:{runtime.CurrentShield}"
+                $"[Passive] Armor / Owner:{runtime.CharacterId} / Target:{targetRuntime.CharacterId} / " +
+                $"Skill:{passiveSkill.SkillId} / Shield:+{finalValue} / CurrentShield:{targetRuntime.CurrentShield}"
             );
 
             return;
         }
 
-        stack = BattleEquipmentEffectService.ModifyPassiveEffectStack(runtime, effectId, stack);
+        int finalStack =
+            BattleEquipmentEffectService.ModifyPassiveEffectStack(runtime, effectId, appliedValue);
 
-        if (stack <= 0)
+        if (finalStack <= 0)
             return;
 
         StatusEffectRuntimeData status = new StatusEffectRuntimeData
         {
             EffectId = effectId,
-            Stack = stack,
+            Stack = finalStack,
             TurnCount = 1,
             IsPassive = true,
             SourceSkillId = passiveSkill.SkillId
@@ -108,8 +162,200 @@ public class BattlePassiveSkillService
 
         Debug.Log(
             $"[Passive] Status / Character:{runtime.CharacterId} / " +
-            $"Skill:{passiveSkill.SkillId} / Effect:{effectId} / Stack:{stack}"
+            $"Skill:{passiveSkill.SkillId} / Effect:{effectId} / " +
+            $"Stack:{finalStack} / Turn:1"
         );
+    }
+
+
+    private static CharacterRuntimeData FindLowestCurrentHpInjuredLivingPartyMember()
+    {
+        if (DataManager.Instance == null ||
+            DataManager.Instance.CharacterRuntimeStore == null)
+        {
+            return null;
+        }
+
+        CharacterRuntimeData best = null;
+        int bestCurrentHp = int.MaxValue;
+        HashSet<string> addedIds = new(System.StringComparer.Ordinal);
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        if (partyStore != null)
+        {
+            for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+            {
+                string characterId = partyStore.GetCharacterId(i);
+
+                if (string.IsNullOrWhiteSpace(characterId))
+                    continue;
+
+                characterId = characterId.Trim();
+
+                if (!addedIds.Add(characterId))
+                    continue;
+
+                if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
+                        characterId,
+                        out CharacterRuntimeData candidate) ||
+                    candidate == null ||
+                    candidate.IsDead ||
+                    candidate.MaxHP <= 0 ||
+                    candidate.CurrentHP >= candidate.MaxHP)
+                {
+                    continue;
+                }
+
+                if (best == null || candidate.CurrentHP < bestCurrentHp)
+                {
+                    best = candidate;
+                    bestCurrentHp = candidate.CurrentHP;
+                }
+            }
+        }
+
+        if (best != null)
+            return best;
+
+        IReadOnlyDictionary<string, CharacterRuntimeData> allCharacters =
+            DataManager.Instance.CharacterRuntimeStore.GetAll();
+
+        if (allCharacters == null)
+            return null;
+
+        foreach (KeyValuePair<string, CharacterRuntimeData> pair in allCharacters)
+        {
+            CharacterRuntimeData candidate = pair.Value;
+
+            if (candidate == null ||
+                candidate.IsDead ||
+                candidate.MaxHP <= 0 ||
+                candidate.CurrentHP >= candidate.MaxHP)
+            {
+                continue;
+            }
+
+            if (best == null || candidate.CurrentHP < bestCurrentHp)
+            {
+                best = candidate;
+                bestCurrentHp = candidate.CurrentHP;
+            }
+        }
+
+        return best;
+    }
+
+    private static BattleCharacter FindBattleCharacter(CharacterRuntimeData runtime)
+    {
+        if (runtime == null)
+            return null;
+
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            if (ReferenceEquals(character.RuntimeData, runtime) ||
+                character.RuntimeData.CharacterId == runtime.CharacterId)
+            {
+                return character;
+            }
+        }
+
+        return null;
+    }
+
+    private static CharacterRuntimeData FindLowestCurrentHpLivingPartyMember()
+    {
+        if (DataManager.Instance == null ||
+            DataManager.Instance.CharacterRuntimeStore == null)
+        {
+            return null;
+        }
+
+        CharacterRuntimeData best = null;
+        int bestCurrentHp = int.MaxValue;
+        HashSet<string> addedIds = new(System.StringComparer.Ordinal);
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        if (partyStore != null)
+        {
+            for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+            {
+                string characterId = partyStore.GetCharacterId(i);
+
+                if (string.IsNullOrWhiteSpace(characterId))
+                    continue;
+
+                characterId = characterId.Trim();
+
+                if (!addedIds.Add(characterId))
+                    continue;
+
+                if (!DataManager.Instance.CharacterRuntimeStore.TryGet(
+                        characterId,
+                        out CharacterRuntimeData candidate) ||
+                    candidate == null ||
+                    candidate.IsDead ||
+                    candidate.MaxHP <= 0)
+                {
+                    continue;
+                }
+
+                if (best == null || candidate.CurrentHP < bestCurrentHp)
+                {
+                    best = candidate;
+                    bestCurrentHp = candidate.CurrentHP;
+                }
+            }
+        }
+
+        if (best != null)
+            return best;
+
+        IReadOnlyDictionary<string, CharacterRuntimeData> allCharacters =
+            DataManager.Instance.CharacterRuntimeStore.GetAll();
+
+        if (allCharacters == null)
+            return null;
+
+        foreach (KeyValuePair<string, CharacterRuntimeData> pair in allCharacters)
+        {
+            CharacterRuntimeData candidate = pair.Value;
+
+            if (candidate == null || candidate.IsDead || candidate.MaxHP <= 0)
+                continue;
+
+            if (best == null || candidate.CurrentHP < bestCurrentHp)
+            {
+                best = candidate;
+                bestCurrentHp = candidate.CurrentHP;
+            }
+        }
+
+        return best;
+    }
+
+    private static bool IsPassiveConditionMet(CharacterRuntimeData runtime)
+    {
+        if (runtime == null || DataManager.Instance == null)
+            return false;
+
+        CharacterMasterData characterData =
+            DataManager.Instance.CharacterDatabase.Get(runtime.CharacterId);
+
+        if (characterData == null)
+            return false;
+
+        int maxResource = Mathf.Max(0, characterData.MaxResource);
+
+        return maxResource > 0 && runtime.CurrentResource >= maxResource;
     }
 
     private static SkillMasterData GetPassiveSkill(CharacterRuntimeData runtime)
@@ -135,40 +381,6 @@ public class BattlePassiveSkillService
             return null;
 
         return skillData;
-    }
-
-    private static int CalculatePassiveStack(
-        CharacterRuntimeData runtime,
-        SkillMasterData passiveSkill)
-    {
-        if (runtime == null || passiveSkill == null)
-            return 0;
-
-        int resource = Mathf.Max(0, runtime.CurrentResource);
-
-        switch (passiveSkill.SkillId)
-        {
-            case "S_Passive_01":
-                return resource;
-
-            case "S_Passive_02":
-                return resource >= 2 ? 2 : 0;
-
-            case "S_Passive_03":
-                return resource >= 3 ? 1 : 0;
-
-            case "S_Passive_04":
-                return resource >= 5 ? 1 : 0;
-
-            case "S_Passive_05":
-                return resource >= 2 ? 1 : 0;
-
-            case "S_Passive_06":
-                return resource >= 3 ? 1 : 0;
-
-            default:
-                return 0;
-        }
     }
 
     private static void ClearPassiveStatusEffects(CharacterRuntimeData runtime)

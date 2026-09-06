@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
@@ -7,7 +7,7 @@ public class LobbyPanelTransition : MonoBehaviour
     public enum TransitionDirection
     {
         Horizontal,
-        Vertical
+        Vertical // Legacy compatibility. Current flow uses HorizontalTransition.
     }
 
     [System.Serializable]
@@ -115,34 +115,25 @@ public class LobbyPanelTransition : MonoBehaviour
         secondClosedLocalPosition = new Vector3(500f, 0f, 0f)
     };
 
-    [Header("Vertical Transition")]
-    [SerializeField]
-    private TransitionImageSet verticalTransition = new TransitionImageSet
-    {
-        firstOpenedLocalPosition = new Vector3(0f, 1500f, 0f),
-        firstClosedLocalPosition = new Vector3(0f, 500f, 0f),
-        secondOpenedLocalPosition = new Vector3(0f, -1500f, 0f),
-        secondClosedLocalPosition = new Vector3(0f, -500f, 0f)
-    };
-
     [Header("Timing")]
     [SerializeField] private float closeDuration = 0.35f;
-    [SerializeField] private float rotationDuration = 0.2f;
     [SerializeField] private float openDuration = 0.35f;
     [SerializeField] private float closedHoldDuration = 0.05f;
 
-    [Header("Rotation")]
-    [SerializeField] private float directionChangeRotationAngle = 90f;
-
     [Header("Curve")]
     [SerializeField] private AnimationCurve closeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-    [SerializeField] private AnimationCurve rotationCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     [SerializeField] private AnimationCurve openCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Transition Sound")]
     [SerializeField] private bool playTransitionSound = true;
-    [SerializeField] private SfxType transitionSfx = SfxType.LobbyPanelTransition;
-    [SerializeField] private float transitionSfxVolumeMultiplier = 1f;
+
+    [Header("Close SFX")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string closeSfx = AudioIds.Sfx.LobbyPanelTransition;
+    [SerializeField] private float closeSfxVolumeMultiplier = 1f;
+
+    [Header("Open SFX")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string openSfx = AudioIds.Sfx.LobbyPanelTransition;
+    [SerializeField] private float openSfxVolumeMultiplier = 1f;
 
     private Coroutine transitionCoroutine;
     private bool isPlaying;
@@ -153,7 +144,6 @@ public class LobbyPanelTransition : MonoBehaviour
         get
         {
             return Mathf.Max(0f, closeDuration)
-                + Mathf.Max(0f, rotationDuration)
                 + Mathf.Max(0f, openDuration)
                 + Mathf.Max(0f, closedHoldDuration);
         }
@@ -215,13 +205,16 @@ public class LobbyPanelTransition : MonoBehaviour
             afterPanelChange));
     }
 
+    private static void UpdateLobbyCameraPauseForOpenedPanel(GameObject panelToOpen)
+    {
+        bool shouldPause = panelToOpen != null && panelToOpen.name != "PositionPanel";
+        CameraMouseParallaxController.SetLobbyContentPanelPause(shouldPause);
+    }
+
     public void SetAllOpenedImmediate()
     {
         horizontalTransition.SetRootRotationZ(0f);
         horizontalTransition.SetOpenedImmediate();
-
-        verticalTransition.SetRootRotationZ(0f);
-        verticalTransition.SetOpenedImmediate();
     }
 
     private IEnumerator PanelChangeRoutine(
@@ -237,9 +230,8 @@ public class LobbyPanelTransition : MonoBehaviour
     {
         isPlaying = true;
 
-        TransitionImageSet activeSet = GetSet(closeDirection);
-        bool shouldRotateForOpen = closeDirection != openDirection;
-        float openRotationZ = shouldRotateForOpen ? directionChangeRotationAngle : 0f;
+        // CharacterSettingPanel and other lobby panel changes use one HorizontalTransition.
+        TransitionImageSet activeSet = horizontalTransition;
 
         HideInactiveSet(activeSet);
         activeSet.Show();
@@ -249,7 +241,7 @@ public class LobbyPanelTransition : MonoBehaviour
         if (startDelay > 0f)
             yield return new WaitForSecondsRealtime(startDelay);
 
-        PlayTransitionSound();
+        PlayCloseSound();
 
         yield return AnimatePosition(activeSet, true, closeDuration, closeCurve);
         activeSet.SetClosedImmediate();
@@ -257,18 +249,16 @@ public class LobbyPanelTransition : MonoBehaviour
         beforePanelChange?.Invoke();
         ApplyWorldObjectChange(worldObjectsToClose, worldObjectsToOpen);
         ApplyPanelChange(panelsToClose, panelToOpen);
+        UpdateLobbyCameraPauseForOpenedPanel(panelToOpen);
         afterPanelChange?.Invoke();
 
         if (closedHoldDuration > 0f)
             yield return new WaitForSecondsRealtime(closedHoldDuration);
 
-        if (shouldRotateForOpen)
-            yield return AnimateRootRotation(activeSet, 0f, openRotationZ, rotationDuration, rotationCurve);
-        else
-            activeSet.SetRootRotationZ(0f);
-
+        activeSet.SetRootRotationZ(0f);
         activeSet.SetClosedImmediate();
 
+        PlayOpenSound();
         yield return AnimatePosition(activeSet, false, openDuration, openCurve);
         activeSet.SetOpenedImmediate();
         activeSet.Hide();
@@ -319,62 +309,37 @@ public class LobbyPanelTransition : MonoBehaviour
             set.secondImage.localPosition = secondEnd;
     }
 
-    private IEnumerator AnimateRootRotation(TransitionImageSet set, float startZ, float endZ, float duration, AnimationCurve curve)
+    private void PlayCloseSound()
     {
-        if (set == null)
-            yield break;
-
-        float safeDuration = Mathf.Max(0.01f, duration);
-        float elapsedTime = 0f;
-
-        while (elapsedTime < safeDuration)
-        {
-            elapsedTime += Time.unscaledDeltaTime;
-            float normalizedTime = Mathf.Clamp01(elapsedTime / safeDuration);
-            float t = curve != null ? curve.Evaluate(normalizedTime) : normalizedTime;
-            float currentZ = Mathf.LerpUnclamped(startZ, endZ, t);
-
-            set.SetRootRotationZ(currentZ);
-
-            yield return null;
-        }
-
-        set.SetRootRotationZ(endZ);
-    }
-
-    private void PlayTransitionSound()
-    {
-        if (!playTransitionSound)
+        if (!playTransitionSound || string.IsNullOrWhiteSpace(closeSfx))
             return;
 
         if (AudioManager.Instance != null)
-            AudioManager.Instance.PlaySfx(transitionSfx, transitionSfxVolumeMultiplier);
+            AudioManager.Instance.PlaySfx(closeSfx, closeSfxVolumeMultiplier);
+    }
+
+    private void PlayOpenSound()
+    {
+        if (!playTransitionSound || string.IsNullOrWhiteSpace(openSfx))
+            return;
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlaySfx(openSfx, openSfxVolumeMultiplier);
     }
 
     private TransitionImageSet GetSet(TransitionDirection direction)
     {
-        return direction == TransitionDirection.Vertical ? verticalTransition : horizontalTransition;
+        return horizontalTransition;
     }
 
     private void HideInactiveSet(TransitionImageSet activeSet)
     {
-        if (horizontalTransition != activeSet)
-        {
-            horizontalTransition.SetRootRotationZ(0f);
-            horizontalTransition.Hide();
-        }
-
-        if (verticalTransition != activeSet)
-        {
-            verticalTransition.SetRootRotationZ(0f);
-            verticalTransition.Hide();
-        }
+        // Only HorizontalTransition is used, so there is no inactive set to hide.
     }
 
     private void HideAllRoots()
     {
         horizontalTransition.Hide();
-        verticalTransition.Hide();
     }
 
     private void ApplyWorldObjectChange(GameObject[] worldObjectsToClose, GameObject[] worldObjectsToOpen)

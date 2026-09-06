@@ -1,8 +1,9 @@
+using System;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 public class BattleRewardPanelUI : MonoBehaviour
 {
@@ -14,15 +15,11 @@ public class BattleRewardPanelUI : MonoBehaviour
     [SerializeField] private Sprite remnantIcon;
     [SerializeField] private Color remnantIconColor = Color.white;
 
-    [Header("Detail Panel")]
-    [SerializeField] private GameObject detailPanel;
-    [SerializeField] private Image detailIconImage;
-    [SerializeField] private TMP_Text detailNameText;
-    [SerializeField] private TMP_Text detailDescriptionText;
-    [SerializeField] private TMP_Text detailValueText;
-
     [Header("Legacy Confirm Button")]
     [SerializeField] private Button confirmButton;
+
+    [Header("Reward Equip Panel")]
+    [SerializeField] private BattleRewardEquipPanelUI equipPanel;
 
     [Header("After Reward")]
     [SerializeField] private GameObject battlePanel;
@@ -31,25 +28,46 @@ public class BattleRewardPanelUI : MonoBehaviour
     private readonly List<BattleRewardData> currentRewards = new();
     private readonly List<BattleRewardData> claimedRewards = new();
     private readonly List<BattleRewardSlotUI> activeSlots = new();
-    private BattleRewardSlotUI focusedSlot;
+    private Action onRewardFlowCompleted;
+    private bool pendingEquipmentReward;
 
     private void Awake()
     {
+        ResolveEquipPanelIfNeeded();
+
         if (confirmButton != null)
             confirmButton.gameObject.SetActive(false);
 
-        HideDetailPanel();
         gameObject.SetActive(false);
     }
 
-    public void Open(List<BattleRewardData> rewards)
+    public void Open(List<BattleRewardData> rewards, Action completedCallback = null)
+    {
+        Open(rewards, completedCallback, null);
+    }
+
+    public void Open(List<BattleRewardData> rewards, Action completedCallback, ResumeData resumeData)
     {
         currentRewards.Clear();
         claimedRewards.Clear();
         activeSlots.Clear();
+        onRewardFlowCompleted = completedCallback;
+        pendingEquipmentReward = false;
+        ResolveEquipPanelIfNeeded();
 
         if (rewards != null)
-            currentRewards.AddRange(rewards);
+        {
+            for (int i = 0; i < rewards.Count; i++)
+            {
+                BattleRewardData reward = rewards[i];
+                if (reward == null)
+                    continue;
+
+                if (string.IsNullOrWhiteSpace(reward.Name) || reward.Icon == null)
+                    PopulateRewardPresentation(reward);
+                currentRewards.Add(reward);
+            }
+        }
 
         Debug.Log($"[BattleRewardPanelUI] Open / RewardCount:{currentRewards.Count}");
 
@@ -67,8 +85,23 @@ public class BattleRewardPanelUI : MonoBehaviour
             return;
         }
 
-        ClearFocusedSlot();
-        HideDetailPanel();
+    }
+
+    public void OpenSavedRewards(ResumeData resumeData, Action completedCallback = null)
+    {
+        if (resumeData == null)
+            return;
+
+        // BattleReward checkpoint는 항상 수령 전 snapshot이다.
+        Open(ToRuntimeRewards(resumeData.PendingRewards), completedCallback, null);
+    }
+
+    public void PrepareForResumePresentation()
+    {
+        ResolveEquipPanelIfNeeded();
+        pendingEquipmentReward = false;
+        if (equipPanel != null)
+            equipPanel.gameObject.SetActive(false);
     }
 
     private void Refresh()
@@ -89,32 +122,9 @@ public class BattleRewardPanelUI : MonoBehaviour
                 continue;
 
             BattleRewardSlotUI slot = Instantiate(rewardSlotPrefab, rewardRoot);
-            slot.Setup(reward, remnantIcon, remnantIconColor, OnClickRewardSlot, OnFocusRewardSlot, OnExitRewardSlot);
+            slot.Setup(reward, remnantIcon, remnantIconColor, OnClickRewardSlot, null, null);
             activeSlots.Add(slot);
         }
-    }
-
-    private void OnFocusRewardSlot(BattleRewardSlotUI slot)
-    {
-        if (slot == null || slot.Reward == null)
-            return;
-
-        focusedSlot = slot;
-        ShowRewardDetail(slot.Reward);
-    }
-
-    private void OnExitRewardSlot(BattleRewardSlotUI slot)
-    {
-        if (slot == null || focusedSlot != slot)
-            return;
-
-        ClearFocusedSlot();
-        HideDetailPanel();
-    }
-
-    private void ClearFocusedSlot()
-    {
-        focusedSlot = null;
     }
 
     private void OnClickRewardSlot(BattleRewardSlotUI slot)
@@ -122,23 +132,59 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (slot == null || slot.Reward == null)
             return;
 
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return;
+
         BattleRewardData reward = slot.Reward;
 
         if (!CanClaimReward(reward))
             return;
 
-        ApplyReward(reward);
-        PlayRewardAcquireSfx(reward);
-        claimedRewards.Add(reward);
-        activeSlots.Remove(slot);
+        if (pendingEquipmentReward)
+            return;
 
-        if (focusedSlot == slot)
+        if (reward.Type == BattleRewardType.Relic || reward.Type == BattleRewardType.Skill)
         {
-            ClearFocusedSlot();
-            HideDetailPanel();
+            if (!OpenEquipmentRewardPanel(slot, reward))
+                Debug.LogWarning($"[BattleRewardPanelUI] Equip_panel을 찾을 수 없어 보상 처리를 보류합니다. Type:{reward.Type} / Id:{reward.RewardId}");
+
+            return;
         }
 
-        Destroy(slot.gameObject);
+        ApplyReward(reward);
+        PlayRewardAcquireSfx(reward);
+        CompleteRewardSlot(slot, reward);
+    }
+
+    private bool OpenEquipmentRewardPanel(BattleRewardSlotUI slot, BattleRewardData reward)
+    {
+        ResolveEquipPanelIfNeeded();
+
+        if (equipPanel == null || slot == null || reward == null)
+            return false;
+
+        pendingEquipmentReward = true;
+        PlayRewardAcquireSfx(reward);
+        equipPanel.Open(reward, () => OnEquipmentRewardResolved(slot, reward));
+        return true;
+    }
+
+    private void OnEquipmentRewardResolved(BattleRewardSlotUI slot, BattleRewardData reward)
+    {
+        pendingEquipmentReward = false;
+        CompleteRewardSlot(slot, reward);
+    }
+
+    private void CompleteRewardSlot(BattleRewardSlotUI slot, BattleRewardData reward)
+    {
+        if (reward != null && !claimedRewards.Contains(reward))
+            claimedRewards.Add(reward);
+
+        if (slot != null)
+        {
+            activeSlots.Remove(slot);
+            Destroy(slot.gameObject);
+        }
 
         if (claimedRewards.Count >= currentRewards.Count)
         {
@@ -146,10 +192,78 @@ public class BattleRewardPanelUI : MonoBehaviour
             return;
         }
 
-        LayoutRebuilder.ForceRebuildLayoutImmediate(rewardRoot as RectTransform);
+        if (rewardRoot is RectTransform rectTransform)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
+    }
 
-        ClearFocusedSlot();
-        HideDetailPanel();
+    private List<BattleRewardData> ToRuntimeRewards(IReadOnlyList<BattleRewardSaveData> saved)
+    {
+        var rewards = new List<BattleRewardData>();
+        if (saved == null)
+            return rewards;
+
+        for (int i = 0; i < saved.Count; i++)
+        {
+            BattleRewardSaveData reward = saved[i];
+            if (reward != null)
+            {
+                var runtimeReward = new BattleRewardData
+                {
+                    Type = reward.Type,
+                    RewardId = reward.RewardId,
+                    Amount = reward.Amount
+                };
+                PopulateRewardPresentation(runtimeReward);
+                rewards.Add(runtimeReward);
+            }
+        }
+        return rewards;
+    }
+
+    private static void PopulateRewardPresentation(BattleRewardData reward)
+    {
+        if (reward == null || DataManager.Instance == null || string.IsNullOrWhiteSpace(reward.RewardId))
+            return;
+
+        string id = reward.RewardId.Trim();
+        switch (reward.Type)
+        {
+            case BattleRewardType.Item:
+                ItemData item = DataManager.Instance.ItemDatabase?.Get(id);
+                if (item != null)
+                {
+                    reward.Name = GameDataLocalization.ItemName(item);
+                    reward.Description = GameDataLocalization.ItemDescription(item);
+                }
+                DataManager.Instance.ItemIconDatabase?.TryGetIcon(id, out reward.Icon);
+                break;
+
+            case BattleRewardType.Relic:
+                if (DataManager.Instance.RelicDatabase != null && DataManager.Instance.RelicDatabase.TryGet(id, out RelicData relic))
+                {
+                    reward.Name = GameDataLocalization.RelicName(relic);
+                    reward.Description = GameDataLocalization.RelicEffectDescription(relic);
+                }
+                DataManager.Instance.RelicIconDatabase?.TryGetIcon(id, out reward.Icon);
+                break;
+
+            case BattleRewardType.Skill:
+                if (DataManager.Instance.SkillDatabase != null && DataManager.Instance.SkillDatabase.TryGet(id, out SkillMasterData skill))
+                {
+                    reward.Name = GameDataLocalization.SkillName(skill);
+                    reward.Description = GameDataLocalization.SkillDetails(skill);
+                }
+                DataManager.Instance.SkillIconDatabase?.TryGetIcon(id, out reward.Icon);
+                break;
+        }
+    }
+
+    private void ResolveEquipPanelIfNeeded()
+    {
+        if (equipPanel != null)
+            return;
+
+        equipPanel = Object.FindFirstObjectByType<BattleRewardEquipPanelUI>(FindObjectsInactive.Include);
     }
 
     private void ApplyReward(BattleRewardData reward)
@@ -172,29 +286,26 @@ public class BattleRewardPanelUI : MonoBehaviour
                 break;
 
             case BattleRewardType.Item:
-                if (!string.IsNullOrWhiteSpace(reward.RewardId) && runtime.BagItemIds.Count < MaxBagItemCount)
+                if (!string.IsNullOrWhiteSpace(reward.RewardId))
                 {
-                    runtime.BagItemIds.Add(reward.RewardId.Trim());
-                    BattleBagPanelUI.RefreshAll();
+                    string itemId = reward.RewardId.Trim();
+
+                    if (BagItemStackUtility.CanAddItem(runtime.BagItemIds, itemId, MaxBagItemCount))
+                    {
+                        int amount = Mathf.Max(1, reward.Amount);
+
+                        for (int i = 0; i < amount; i++)
+                            runtime.BagItemIds.Add(itemId);
+
+                        RecordDiscoveryService.RegisterItem(DataManager.Instance, itemId);
+                        BattleBagPanelUI.RefreshAll();
+                    }
                 }
                 break;
 
             case BattleRewardType.Relic:
-                if (!string.IsNullOrWhiteSpace(reward.RewardId) && !HasRelic(runtime, reward.RewardId))
-                {
-                    runtime.OwnedRelicIds.Add(reward.RewardId.Trim());
-                    NormalizeOwnedRelics(runtime);
-                    RelicEquipPanelUI.RefreshAll();
-                }
-                break;
-
             case BattleRewardType.Skill:
-                if (!string.IsNullOrWhiteSpace(reward.RewardId) && !HasSkill(runtime, reward.RewardId))
-                {
-                    runtime.SkillInventoryIds.Add(reward.RewardId.Trim());
-                    SkillInventoryNotificationUI.ShowNewSkillNotice();
-                    SkillInventoryPanelUI.RefreshAll();
-                }
+                // 기억/유물은 Equip_panel에서 직접 처리하며 인벤토리에 저장하지 않습니다.
                 break;
         }
 
@@ -209,13 +320,13 @@ public class BattleRewardPanelUI : MonoBehaviour
         switch (reward.Type)
         {
             case BattleRewardType.Remnant:
-                AudioManager.Instance.PlaySfx(SfxType.BattleRewardRemnantAcquire);
+                AudioManager.Instance.PlaySfx(AudioIds.Sfx.BattleRewardRemnantAcquire);
                 break;
 
             case BattleRewardType.Item:
             case BattleRewardType.Relic:
             case BattleRewardType.Skill:
-                AudioManager.Instance.PlaySfx(SfxType.BattleRewardRelicSkillAcquire);
+                AudioManager.Instance.PlaySfx(AudioIds.Sfx.BattleRewardRelicSkillAcquire);
                 break;
         }
     }
@@ -228,23 +339,21 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (reward.Type != BattleRewardType.Item)
             return true;
 
-        int currentCount = GetCurrentBagItemCount();
-
-        if (currentCount < MaxBagItemCount)
-            return true;
-
-        ShowWarning($"가방이 가득 찼습니다. 고유아이템은 최대 {MaxBagItemCount}개까지 보유할 수 있습니다.");
-        return false;
-    }
-
-    private int GetCurrentBagItemCount()
-    {
         if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null)
-            return 0;
+            return false;
 
         BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
         runtime.BagItemIds ??= new List<string>();
-        return runtime.BagItemIds.Count;
+
+        if (BagItemStackUtility.CanAddItem(runtime.BagItemIds, reward.RewardId, MaxBagItemCount))
+            return true;
+
+        ShowWarning(string.Format(
+            GameLocalization.Get(
+                "battle.bag_full_unique_item_limit",
+                "가방이 가득 찼습니다. 서로 다른 아이템은 최대 {0}종류까지 보유할 수 있습니다."),
+            MaxBagItemCount));
+        return false;
     }
 
     private void ShowWarning(string message)
@@ -379,104 +488,11 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private void FinishRewardFlow()
     {
-        if (BattleRewardCollector.Instance != null)
-            BattleRewardCollector.Instance.Clear();
-
-        BattleRoomCleaner cleaner =
-            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
-
-        if (cleaner != null)
-            cleaner.Clean();
-
-        HideDetailPanel();
         gameObject.SetActive(false);
 
-        if (battlePanel != null)
-            battlePanel.SetActive(false);
-
-        if (mapPanel != null)
-            mapPanel.SetActive(true);
-
-        MapViewSpawner mapViewSpawner =
-            Object.FindFirstObjectByType<MapViewSpawner>(FindObjectsInactive.Include);
-
-        if (mapViewSpawner != null)
-            mapViewSpawner.Refresh();
-    }
-
-    private void ShowRewardDetail(BattleRewardData reward)
-    {
-        if (detailPanel != null)
-            detailPanel.SetActive(reward != null);
-
-        if (reward == null)
-        {
-            HideDetailPanel();
-            return;
-        }
-
-        Sprite icon = reward.Icon;
-        Color iconColor = Color.white;
-
-        if (reward.Type == BattleRewardType.Remnant)
-        {
-            if (icon == null)
-                icon = remnantIcon;
-
-            iconColor = remnantIconColor;
-        }
-
-        if (detailIconImage != null)
-        {
-            detailIconImage.sprite = icon;
-            detailIconImage.color = iconColor;
-            detailIconImage.enabled = icon != null;
-        }
-
-        if (detailNameText != null)
-            detailNameText.text = reward.GetDisplayName();
-
-        if (detailDescriptionText != null)
-        {
-            if (reward.Type == BattleRewardType.Remnant)
-                detailDescriptionText.text = reward.GetRemnantAmountDescription();
-            else
-                detailDescriptionText.text = string.IsNullOrWhiteSpace(reward.Description) ? GetDefaultDescription(reward) : reward.Description;
-        }
-
-        if (detailValueText != null)
-        {
-            if (reward.Type == BattleRewardType.Item)
-                detailValueText.text = $"가치 {reward.Value}";
-            else
-                detailValueText.text = "";
-        }
-    }
-
-    private void HideDetailPanel()
-    {
-        if (detailPanel != null)
-            detailPanel.SetActive(false);
-    }
-
-    private string GetDefaultDescription(BattleRewardData reward)
-    {
-        if (reward == null)
-            return "";
-
-        switch (reward.Type)
-        {
-            case BattleRewardType.Remnant:
-                return reward.GetRemnantAmountDescription();
-            case BattleRewardType.Item:
-                return "획득 가능한 아이템입니다.";
-            case BattleRewardType.Relic:
-                return "획득 가능한 유물입니다.";
-            case BattleRewardType.Skill:
-                return "획득 가능한 스킬입니다.";
-            default:
-                return "";
-        }
+        Action completedCallback = onRewardFlowCompleted;
+        onRewardFlowCompleted = null;
+        completedCallback?.Invoke();
     }
 
     private void EnsureVerticalRewardLayout()

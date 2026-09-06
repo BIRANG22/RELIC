@@ -1,29 +1,67 @@
 using System.Collections.Generic;
+using System.Linq;
 using Relic.Gameplay.Battle;
 using UnityEngine;
 
 namespace Relic.Gameplay.Data
 {
+    public static class BattleMapLayoutUtility
+    {
+        public const float LayerGap = 100f;
+        public const float RowGap = 40f;
+
+        public static Vector2 CalculatePosition(int layerIndex, int rowIndex, int rowCount)
+        {
+            int safeRowCount = Mathf.Max(1, rowCount);
+            float centeredRow = rowIndex - (safeRowCount - 1) * 0.5f;
+            return new Vector2(layerIndex * LayerGap, -centeredRow * RowGap);
+        }
+
+        public static void ApplyHorizontalLayout(List<GeneratedMapNodeData> nodes)
+        {
+            if (nodes == null)
+                return;
+
+            foreach (IGrouping<int, GeneratedMapNodeData> layerGroup in
+                     nodes.Where(node => node != null).GroupBy(node => node.LayerIndex))
+            {
+                List<GeneratedMapNodeData> layer = layerGroup.ToList();
+                float minX = layer.Min(node => node.Position.x);
+                float maxX = layer.Max(node => node.Position.x);
+                bool alreadyHorizontal = maxX - minX < 1f;
+
+                layer.Sort((left, right) => alreadyHorizontal
+                    ? right.Position.y.CompareTo(left.Position.y)
+                    : left.Position.x.CompareTo(right.Position.x));
+
+                for (int row = 0; row < layer.Count; row++)
+                    layer[row].Position = CalculatePosition(layerGroup.Key, row, layer.Count);
+            }
+        }
+    }
+
     public class ProceduralMapGenerator
     {
         private int nextNodeIndex;
 
+        // Common 맵은 한 번 등장하면 이후 선택 가중치를 낮춥니다.
+        // 같은 Common 맵이 2회 연속 등장한 경우에는 더 크게 낮춥니다.
+        private readonly Dictionary<string, int> commonMapAppearCounts = new();
+        private string lastCommonMapId = string.Empty;
+        private int consecutiveCommonMapCount;
+
+        private const float CommonRepeatWeightMultiplier = 0.5f;
+        private const float CommonDoubleRepeatWeightMultiplier = 0.2f;
+
         private const int TotalLayerCount = 10;
-        private const int MaxColumnCount = 5;
+        private const int MaxColumnCount = 3;
 
         private const int MaxOutgoingConnections = 2;
         private const int MaxIncomingConnections = 2;
         private const float MinNodeXDistance = 110f;
 
-        private const int MinTotalNodeCount = 24;
-        private const int MaxTotalNodeCount = 30;
-
-        private const float YStart = -1070f;
-        private const float YGap = 150f;
-        private const float XGap = 280f;
-
-        private const float XJitter = 45f;
-        private const float YJitter = 25f;
+        private const int MinTotalNodeCount = 20;
+        private const int MaxTotalNodeCount = 24;
 
         private const float ExtraConnectionChance = 0.60f;
         private const float EdgeExtraConnectionChance = 0.80f;
@@ -34,13 +72,25 @@ namespace Relic.Gameplay.Data
             string chapter,
             string stage)
         {
+            return Generate(mapPool, chapter, stage, null);
+        }
+
+        public List<GeneratedMapNodeData> Generate(
+            List<MapData> mapPool,
+            string chapter,
+            string stage,
+            EventMapRandomExclusionSettings randomExclusionSettings)
+        {
             nextNodeIndex = 0;
+            commonMapAppearCounts.Clear();
+            lastCommonMapId = string.Empty;
+            consecutiveCommonMapCount = 0;
 
             List<GeneratedMapNodeData> result = new();
 
             if (mapPool == null || mapPool.Count == 0)
             {
-                Debug.LogWarning("[ProceduralMapGenerator] MapPool�� ��� �ֽ��ϴ�.");
+                Debug.LogWarning("[ProceduralMapGenerator] MapPool이 비어 있습니다.");
                 return result;
             }
 
@@ -53,37 +103,37 @@ namespace Relic.Gameplay.Data
                 List<GeneratedMapNodeData> currentLayer = new();
 
                 int nodeCount = layerNodeCounts[layer];
-                int[] columns = DecideColumns(layer, nodeCount);
+                List<string> layerTypes = DecideLayerTypes(layer, nodeCount, layers);
 
-              List<string> layerTypes = DecideLayerTypes(layer, nodeCount, layers);
+                for (int i = 0; i < nodeCount; i++)
+                {
+                    string type = layerTypes[i];
 
-for (int i = 0; i < nodeCount; i++)
-{
-    string type = layerTypes[i];
+                    MapData mapData = PickMapDataForLayer(
+                        mapPool,
+                        chapter,
+                        stage,
+                        layer,
+                        type,
+                        randomExclusionSettings
+                    );
 
-    MapData mapData = PickMapDataForLayer(
-        mapPool,
-        chapter,
-        stage,
-        layer,
-        type
-    );
+                    if (mapData == null)
+                        continue;
 
-    if (mapData == null)
-        continue;
+                    Vector2 position = CalculatePosition(layer, i, nodeCount);
 
-    Vector2 position = CalculatePosition(layer, columns[i]);
+                    GeneratedMapNodeData node = CreateNode(
+                        mapData.MapId,
+                        mapData.Type,
+                        mapData.EventId,
+                        position,
+                        layer
+                    );
 
-    GeneratedMapNodeData node = CreateNode(
-        mapData.MapId,
-        mapData.Type,
-        position,
-        layer
-    );
-
-    currentLayer.Add(node);
-    result.Add(node);
-}
+                    currentLayer.Add(node);
+                    result.Add(node);
+                }
 
                 FixLayerNodeOverlap(currentLayer);
                 layers.Add(currentLayer);
@@ -96,6 +146,16 @@ for (int i = 0; i < nodeCount; i++)
                     layers[layer + 1]
                 );
             }
+
+            // 서로 직접 연결된 Common 노드는 같은 맵을 사용하지 않습니다.
+            // 연결 정보가 완성된 뒤 부모 노드의 맵 ID를 제외하고 다시 선택합니다.
+            EnforceConnectedCommonMapUniqueness(
+                layers,
+                mapPool,
+                chapter,
+                stage,
+                randomExclusionSettings
+            );
 
             return result;
         }
@@ -115,7 +175,7 @@ for (int i = 0; i < nodeCount; i++)
                     {
                         counts[layer] = 2;
                     }
-                    else if(layer == 2)
+                    else if (layer == 2)
                     {
                         counts[layer] = 3;
                     }
@@ -125,7 +185,7 @@ for (int i = 0; i < nodeCount; i++)
                     }
                     else if (layer == TotalLayerCount - 3)
                     {
-                        counts[layer] = 4;
+                        counts[layer] = 3;
                     }
                     else
                     {
@@ -152,7 +212,7 @@ for (int i = 0; i < nodeCount; i++)
 
             return new int[]
             {
-                1,3,4,3,4,4,3,3,2,1
+                1,2,3,3,3,3,3,3,2,1
             };
         }
 
@@ -176,21 +236,21 @@ for (int i = 0; i < nodeCount; i++)
         private int[] DecideColumns(int layer, int nodeCount)
         {
             if (layer == 0)
-                return new int[] { 2 };
+                return new int[] { 1 };
 
             if (layer == 1 && nodeCount == 2)
-                return new int[] { 1, 3 };
+                return new int[] { 0, 2 };
 
             if (layer == TotalLayerCount - 3)
             {
-                return new int[] { 0, 1, 3, 4 };
+                return new int[] { 0, 1, 2 };
             }
 
             if (layer == TotalLayerCount - 2)
-                return new int[] { 1, 3 };
+                return new int[] { 0, 2 };
 
             if (layer == TotalLayerCount - 1)
-                return new int[] { 2 };
+                return new int[] { 1 };
 
             List<int> columns = new();
 
@@ -206,28 +266,9 @@ for (int i = 0; i < nodeCount; i++)
             return columns.ToArray();
         }
 
-        private Vector2 CalculatePosition(int layer, int column)
+        private Vector2 CalculatePosition(int layer, int row, int rowCount)
         {
-            float centerOffset = (MaxColumnCount - 1) * 0.5f;
-
-            float baseX = (column - centerOffset) * XGap;
-            float baseY = YStart + layer * YGap;
-
-            bool isStartLayer = layer == 0;
-            bool isPenultimateLayer = layer == TotalLayerCount - 2;
-            bool isBossLayer = layer == TotalLayerCount - 1;
-
-
-            if (isStartLayer || isBossLayer)
-                return new Vector2(0f, baseY);
-
-            float randomX = BattleRandom.Range(-XJitter, XJitter);
-            float randomY = BattleRandom.Range(-YJitter, YJitter);
-
-            return new Vector2(
-                baseX + randomX,
-                baseY + randomY
-            );
+            return BattleMapLayoutUtility.CalculatePosition(layer, row, rowCount);
         }
 
         private void ConnectLayersWithoutCrossing(
@@ -240,8 +281,8 @@ for (int i = 0; i < nodeCount; i++)
             if (previousLayer.Count == 0 || currentLayer.Count == 0)
                 return;
 
-            previousLayer.Sort((a, b) => a.Position.x.CompareTo(b.Position.x));
-            currentLayer.Sort((a, b) => a.Position.x.CompareTo(b.Position.x));
+            previousLayer.Sort((a, b) => a.Position.y.CompareTo(b.Position.y));
+            currentLayer.Sort((a, b) => a.Position.y.CompareTo(b.Position.y));
 
             Dictionary<int, int> outgoingCount = new();
             Dictionary<int, int> incomingCount = new();
@@ -328,7 +369,7 @@ for (int i = 0; i < nodeCount; i++)
 
                 float chance = ExtraConnectionChance;
 
-                if (Mathf.Abs(from.Position.x) >= EdgeColumnThresholdX)
+                if (Mathf.Abs(from.Position.y) >= EdgeColumnThresholdX)
                     chance = EdgeExtraConnectionChance;
 
                 if (BattleRandom.Value() > chance)
@@ -361,9 +402,9 @@ for (int i = 0; i < nodeCount; i++)
 
                 if (connectedIndex >= 0)
                 {
-                    float connectedX = currentLayer[connectedIndex].Position.x;
+                    float connectedX = currentLayer[connectedIndex].Position.y;
 
-                    if (connectedX < from.Position.x)
+                    if (connectedX < from.Position.y)
                     {
                         AddLimitedConnection(
                             from,
@@ -372,7 +413,7 @@ for (int i = 0; i < nodeCount; i++)
                             incomingCount
                         );
                     }
-                    else if (connectedX > from.Position.x)
+                    else if (connectedX > from.Position.y)
                     {
                         AddLimitedConnection(
                             from,
@@ -415,8 +456,8 @@ for (int i = 0; i < nodeCount; i++)
                 if (from.NextNodeIndices.Contains(candidate.NodeIndex))
                     continue;
 
-                bool isLeft = candidate.Position.x < from.Position.x;
-                bool isRight = candidate.Position.x > from.Position.x;
+                bool isLeft = candidate.Position.y < from.Position.y;
+                bool isRight = candidate.Position.y > from.Position.y;
 
                 if (leftSide && !isLeft)
                     continue;
@@ -424,7 +465,7 @@ for (int i = 0; i < nodeCount; i++)
                 if (!leftSide && !isRight)
                     continue;
 
-                float distance = Mathf.Abs(candidate.Position.x - from.Position.x);
+                float distance = Mathf.Abs(candidate.Position.y - from.Position.y);
 
                 if (distance < bestDistance)
                 {
@@ -434,7 +475,7 @@ for (int i = 0; i < nodeCount; i++)
             }
 
             return bestIndex;
-        }        
+        }
 
         private void AddLimitedConnection(
             GeneratedMapNodeData from,
@@ -478,8 +519,8 @@ for (int i = 0; i < nodeCount; i++)
                     if (!parent.NextNodeIndices.Contains(current.NodeIndex))
                         continue;
 
-                    minParentX = Mathf.Min(minParentX, parent.Position.x);
-                    maxParentX = Mathf.Max(maxParentX, parent.Position.x);
+                    minParentX = Mathf.Min(minParentX, parent.Position.y);
+                    maxParentX = Mathf.Max(maxParentX, parent.Position.y);
                     parentCount++;
                 }
 
@@ -487,9 +528,114 @@ for (int i = 0; i < nodeCount; i++)
                     continue;
 
                 Vector2 position = current.Position;
-                position.x = Mathf.Clamp(position.x, minParentX, maxParentX);
+                position.y = Mathf.Clamp(position.y, minParentX, maxParentX);
                 current.Position = position;
             }
+        }
+
+
+        private void EnforceConnectedCommonMapUniqueness(
+            List<List<GeneratedMapNodeData>> layers,
+            List<MapData> mapPool,
+            string chapter,
+            string stage,
+            EventMapRandomExclusionSettings randomExclusionSettings)
+        {
+            if (layers == null || mapPool == null)
+                return;
+
+            for (int layerIndex = 1; layerIndex < layers.Count; layerIndex++)
+            {
+                List<GeneratedMapNodeData> previousLayer = layers[layerIndex - 1];
+                List<GeneratedMapNodeData> currentLayer = layers[layerIndex];
+
+                if (previousLayer == null || currentLayer == null)
+                    continue;
+
+                for (int nodeIndex = 0; nodeIndex < currentLayer.Count; nodeIndex++)
+                {
+                    GeneratedMapNodeData currentNode = currentLayer[nodeIndex];
+
+                    if (currentNode == null || currentNode.Type != "Common")
+                        continue;
+
+                    HashSet<string> connectedParentCommonMapIds = new();
+
+                    for (int parentIndex = 0; parentIndex < previousLayer.Count; parentIndex++)
+                    {
+                        GeneratedMapNodeData parentNode = previousLayer[parentIndex];
+
+                        if (parentNode == null || parentNode.Type != "Common")
+                            continue;
+
+                        if (!parentNode.NextNodeIndices.Contains(currentNode.NodeIndex))
+                            continue;
+
+                        if (!string.IsNullOrEmpty(parentNode.MapId))
+                            connectedParentCommonMapIds.Add(parentNode.MapId);
+                    }
+
+                    if (!connectedParentCommonMapIds.Contains(currentNode.MapId))
+                        continue;
+
+                    List<MapData> alternatives = new();
+
+                    for (int mapIndex = 0; mapIndex < mapPool.Count; mapIndex++)
+                    {
+                        MapData candidate = mapPool[mapIndex];
+
+                        if (candidate == null)
+                            continue;
+
+                        if (candidate.Stage != stage)
+                            continue;
+
+                        if (candidate.Type != "Common")
+                            continue;
+
+                        if (!IsRandomCandidateAllowed(candidate, randomExclusionSettings))
+                            continue;
+
+                        if (connectedParentCommonMapIds.Contains(candidate.MapId))
+                            continue;
+
+                        alternatives.Add(candidate);
+                    }
+
+                    // 대체 가능한 Common 맵이 하나도 없다면 기존 맵을 유지합니다.
+                    if (alternatives.Count == 0)
+                        continue;
+
+                    DecreaseCommonMapAppearCount(currentNode.MapId);
+
+                    MapData replacement = PickCommonMapByWeight(alternatives);
+
+                    if (replacement == null)
+                        continue;
+
+                    currentNode.MapId = replacement.MapId;
+                    currentNode.Type = replacement.Type;
+                    currentNode.EventId = EventIdUtility.Normalize(replacement.EventId);
+                    RecordCommonMapSelection(replacement);
+                }
+            }
+        }
+
+        private void DecreaseCommonMapAppearCount(string mapId)
+        {
+            if (string.IsNullOrEmpty(mapId))
+                return;
+
+            if (!commonMapAppearCounts.TryGetValue(mapId, out int appearCount))
+                return;
+
+            if (appearCount <= 1)
+            {
+                commonMapAppearCounts.Remove(mapId);
+                return;
+            }
+
+            commonMapAppearCounts[mapId] = appearCount - 1;
         }
 
         private MapData PickMapDataForLayer(
@@ -497,15 +643,17 @@ for (int i = 0; i < nodeCount; i++)
             string chapter,
             string stage,
             int layer,
-            string decidedType)
+            string decidedType,
+            EventMapRandomExclusionSettings randomExclusionSettings)
         {
             if (layer == 0)
             {
-                MapData startMap = PickFixedMapData(
+                MapData startMap = PickRandomMapData(
                     mapPool,
                     chapter,
                     stage,
-                    FixedPosition.Front
+                    "Start",
+                    randomExclusionSettings
                 );
 
                 if (startMap != null)
@@ -514,39 +662,15 @@ for (int i = 0; i < nodeCount; i++)
                 return CreateVirtualMapData("Start", "Start");
             }
 
-            //if (layer == TotalLayerCount - 2)
-            //{
-            //    MapData penultimateMap = PickFixedMapData(
-            //        mapPool,
-            //        chapter,
-            //        stage,
-            //        FixedPosition.Penultimate
-            //    );
-
-            //    if (penultimateMap != null)
-            //        return penultimateMap;
-            //}
-
             if (layer == TotalLayerCount - 1)
-            {
-                MapData finalMap = PickFixedMapData(
-                    mapPool,
-                    chapter,
-                    stage,
-                    FixedPosition.Final
-                );
-
-                if (finalMap != null)
-                    return finalMap;
-
-                return PickRandomMapData(mapPool, chapter, stage, "Boss");
-            }
+                return PickRandomMapData(mapPool, chapter, stage, "Boss", randomExclusionSettings);
 
             return PickRandomMapData(
                 mapPool,
                 chapter,
                 stage,
-                decidedType
+                decidedType,
+                randomExclusionSettings
             );
         }
 
@@ -571,7 +695,8 @@ for (int i = 0; i < nodeCount; i++)
             List<MapData> mapPool,
             string chapter,
             string stage,
-            string type)
+            string type,
+            EventMapRandomExclusionSettings randomExclusionSettings)
         {
             List<MapData> candidates = new();
 
@@ -579,7 +704,7 @@ for (int i = 0; i < nodeCount; i++)
             {
                 MapData data = mapPool[i];
 
-                if (data.Chapter != chapter)
+                if (data == null)
                     continue;
 
                 if (data.Stage != stage)
@@ -588,44 +713,29 @@ for (int i = 0; i < nodeCount; i++)
                 if (data.Type != type)
                     continue;
 
-                if (data.FixedPosition != FixedPosition.None)
+                // 일반 Special 노드에는 실제 랜덤 이벤트 풀만 사용합니다.
+                // Map_19(Event_03), Map_22(Event_06 상점), Map_25(Event_09 시작방)는 제외됩니다.
+                if (type == "Special" && !MapRoomSelectionResolver.IsNormalRandomEventMap(data))
+                    continue;
+
+                if (!IsRandomCandidateAllowed(data, randomExclusionSettings))
                     continue;
 
                 candidates.Add(data);
             }
 
-            if (candidates.Count == 0)
-                return PickAnyNormalMap(mapPool, chapter, stage);
-
-            return PickByWeight(candidates);
-        }
-
-        private MapData PickFixedMapData(
-            List<MapData> mapPool,
-            string chapter,
-            string stage,
-            FixedPosition fixedPosition)
-        {
-            List<MapData> candidates = new();
-
-            for (int i = 0; i < mapPool.Count; i++)
-            {
-                MapData data = mapPool[i];
-
-                if (data.Chapter != chapter)
-                    continue;
-
-                if (data.Stage != stage)
-                    continue;
-
-                if (data.FixedPosition != fixedPosition)
-                    continue;
-
-                candidates.Add(data);
-            }
+            if (candidates.Count == 0 && !IsReservedMapType(type))
+                return PickAnyNormalMap(mapPool, chapter, stage, randomExclusionSettings);
 
             if (candidates.Count == 0)
                 return null;
+
+            if (type == "Common")
+            {
+                MapData selectedCommonMap = PickCommonMapByWeight(candidates);
+                RecordCommonMapSelection(selectedCommonMap);
+                return selectedCommonMap;
+            }
 
             return PickByWeight(candidates);
         }
@@ -633,7 +743,8 @@ for (int i = 0; i < nodeCount; i++)
         private MapData PickAnyNormalMap(
             List<MapData> mapPool,
             string chapter,
-            string stage)
+            string stage,
+            EventMapRandomExclusionSettings randomExclusionSettings)
         {
             List<MapData> candidates = new();
 
@@ -641,13 +752,16 @@ for (int i = 0; i < nodeCount; i++)
             {
                 MapData data = mapPool[i];
 
-                if (data.Chapter != chapter)
+                if (data == null)
                     continue;
 
                 if (data.Stage != stage)
                     continue;
 
-                if (data.FixedPosition != FixedPosition.None)
+                if (IsReservedMapType(data.Type))
+                    continue;
+
+                if (!IsRandomCandidateAllowed(data, randomExclusionSettings))
                     continue;
 
                 candidates.Add(data);
@@ -657,6 +771,70 @@ for (int i = 0; i < nodeCount; i++)
                 return null;
 
             return PickByWeight(candidates);
+        }
+
+
+        private MapData PickCommonMapByWeight(List<MapData> candidates)
+        {
+            if (candidates == null || candidates.Count == 0)
+                return null;
+
+            float totalWeight = 0f;
+
+            for (int i = 0; i < candidates.Count; i++)
+                totalWeight += GetCommonMapAdjustedWeight(candidates[i]);
+
+            if (totalWeight <= 0f)
+                return candidates[BattleRandom.Range(0, candidates.Count)];
+
+            float random = BattleRandom.Range(0f, totalWeight);
+            float current = 0f;
+
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                current += GetCommonMapAdjustedWeight(candidates[i]);
+
+                if (random < current)
+                    return candidates[i];
+            }
+
+            return candidates[candidates.Count - 1];
+        }
+
+        private float GetCommonMapAdjustedWeight(MapData candidate)
+        {
+            if (candidate == null)
+                return 0f;
+
+            float weight = Mathf.Max(0, candidate.SpawnWeight);
+
+            if (commonMapAppearCounts.TryGetValue(candidate.MapId, out int appearCount) && appearCount > 0)
+                weight *= CommonRepeatWeightMultiplier;
+
+            if (candidate.MapId == lastCommonMapId && consecutiveCommonMapCount >= 2)
+                weight *= CommonDoubleRepeatWeightMultiplier / CommonRepeatWeightMultiplier;
+
+            return weight;
+        }
+
+        private void RecordCommonMapSelection(MapData selectedMap)
+        {
+            if (selectedMap == null || string.IsNullOrEmpty(selectedMap.MapId))
+                return;
+
+            if (commonMapAppearCounts.TryGetValue(selectedMap.MapId, out int appearCount))
+                commonMapAppearCounts[selectedMap.MapId] = appearCount + 1;
+            else
+                commonMapAppearCounts[selectedMap.MapId] = 1;
+
+            if (lastCommonMapId == selectedMap.MapId)
+            {
+                consecutiveCommonMapCount++;
+                return;
+            }
+
+            lastCommonMapId = selectedMap.MapId;
+            consecutiveCommonMapCount = 1;
         }
 
         private MapData PickByWeight(List<MapData> candidates)
@@ -688,14 +866,14 @@ for (int i = 0; i < nodeCount; i++)
             if (layer == null || layer.Count <= 1)
                 return;
 
-            layer.Sort((a, b) => a.Position.x.CompareTo(b.Position.x));
+            layer.Sort((a, b) => a.Position.y.CompareTo(b.Position.y));
 
             for (int i = 1; i < layer.Count; i++)
             {
                 GeneratedMapNodeData left = layer[i - 1];
                 GeneratedMapNodeData right = layer[i];
 
-                float distance = right.Position.x - left.Position.x;
+                float distance = right.Position.y - left.Position.y;
 
                 if (distance >= MinNodeXDistance)
                     continue;
@@ -706,8 +884,8 @@ for (int i = 0; i < nodeCount; i++)
                 Vector2 leftPos = left.Position;
                 Vector2 rightPos = right.Position;
 
-                leftPos.x -= half;
-                rightPos.x += half;
+                leftPos.y -= half;
+                rightPos.y += half;
 
                 left.Position = leftPos;
                 right.Position = rightPos;
@@ -718,14 +896,14 @@ for (int i = 0; i < nodeCount; i++)
 
         private void ClampLayerInsideMapWidth(List<GeneratedMapNodeData> layer)
         {
-            float maxX = ((MaxColumnCount - 1) * 0.5f) * XGap + XJitter;
+            float maxX = ((MaxColumnCount - 1) * 0.5f) * BattleMapLayoutUtility.RowGap;
             float minX = -maxX;
 
             for (int i = 0; i < layer.Count; i++)
             {
                 Vector2 position = layer[i].Position;
 
-                position.x = Mathf.Clamp(position.x, minX, maxX);
+                position.y = Mathf.Clamp(position.y, minX, maxX);
 
                 layer[i].Position = position;
             }
@@ -738,9 +916,22 @@ for (int i = 0; i < nodeCount; i++)
                 MapId = mapId,
                 Name = mapId,
                 Type = type,
-                SpawnWeight = 1,
-                FixedPosition = FixedPosition.Front
+                EventId = string.Empty,
+                SpawnWeight = 1
             };
+        }
+
+        private bool IsReservedMapType(string type)
+        {
+            return type == "Start" || type == "Boss";
+        }
+
+        private static bool IsRandomCandidateAllowed(
+            MapData candidate,
+            EventMapRandomExclusionSettings randomExclusionSettings)
+        {
+            return randomExclusionSettings == null ||
+                   randomExclusionSettings.IsMapAllowedForRandomSelection(candidate);
         }
 
         private bool WouldCrossExistingConnections(
@@ -806,6 +997,7 @@ for (int i = 0; i < nodeCount; i++)
         private GeneratedMapNodeData CreateNode(
             string mapId,
             string type,
+            string eventId,
             Vector2 position,
             int layerIndex)
         {
@@ -815,6 +1007,7 @@ for (int i = 0; i < nodeCount; i++)
                 LayerIndex = layerIndex,
                 MapId = mapId,
                 Type = type,
+                EventId = EventIdUtility.Normalize(eventId),
                 Position = position
             };
         }

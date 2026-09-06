@@ -1,9 +1,11 @@
 ﻿using Relic.Gameplay.Battle;
+using System;
 using Relic.Gameplay.Data;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 
 namespace Relic.Gameplay.Monster
 {
@@ -15,27 +17,46 @@ namespace Relic.Gameplay.Monster
         [Header("Timeline Hover Highlight")]
         [SerializeField] private GameObject timelineHoverHighlightObject;
 
+        [Header("Mouse Hover Attack Range")]
+        [SerializeField] private bool showAttackRangeOnHover = true;
+
         [Header("Reservation Visual")]
         [SerializeField] private bool dimMonsterDuringMoveTargetSelection = true;
         [SerializeField, Range(0f, 1f)] private float reservationAlpha = 0.45f;
         [SerializeField] private bool disableInteractionDuringReservationVisual = true;
 
-        [Header("Status Click Tooltip")]
-        [SerializeField] private bool showStatusTooltipOnClick = true;
+        [Header("Status Hover Tooltip")]
+        [FormerlySerializedAs("showStatusTooltipOnClick")]
+        [SerializeField] private bool showStatusTooltipOnHover = true;
         [SerializeField] private UnitStatusEffectTooltipUI statusTooltipUI;
+
+        [Header("Effect HUD")]
+        [SerializeField, Min(0f)] private float effectHudVisibleDuration = 1.5f;
+
+        private bool isStatusTooltipHovering;
 
         public MonsterRuntimeData RuntimeData { get; private set; }
 
         private MonsterAIBase ai;
+        private bool aiEnabled = true;
         private MonsterHUDSlot hud;
         private Collider2D clickCollider2D;
         private Coroutine temporaryHUDRoutine;
         private bool isTemporaryHUDVisible;
         private MaterialPropertyBlock reservationPropertyBlock;
         private bool reservationVisualActive;
+        private readonly Dictionary<SpriteRenderer, float> originalSpriteRendererAlphas = new();
+        private RangePreview hoverRangePreview;
+        private GridManager hoverGridManager;
+        private PlayerSkillReservationController reservationController;
+        private bool isAttackRangePreviewVisible;
 
         private static MonsterUnit selectedMonster;
+        private static MonsterUnit infoSelectedMonster;
         private static int selectedMonsterClickFrame = -1000;
+
+        public static event Action<MonsterUnit> MonsterInfoSelectionChanged;
+        public static MonsterUnit CurrentInfoSelectedMonster => infoSelectedMonster;
 
         private readonly List<int> occupiedGridIndices = new();
         public IReadOnlyList<int> OccupiedGridIndices => occupiedGridIndices;
@@ -85,6 +106,9 @@ namespace Relic.Gameplay.Monster
             BattleContext context,
             GridManager gridManager)
         {
+            if (!aiEnabled)
+                return new MonsterAIPlan();
+
             if (ai == null)
             {
                 Debug.LogWarning($"[MonsterUnit] AI 없음: {RuntimeData?.MonsterId}");
@@ -92,6 +116,11 @@ namespace Relic.Gameplay.Monster
             }
 
             return ai.CreatePlan(this, context, gridManager);
+        }
+
+        public void SetAIEnabled(bool enabled)
+        {
+            aiEnabled = enabled;
         }
 
         public string SelectSkill(BattleContext context)
@@ -166,6 +195,7 @@ namespace Relic.Gameplay.Monster
 
         private void OnDisable()
         {
+            HideAttackRangePreview();
             HideTemporaryHUD();
 
             if (selectedMonster == this)
@@ -174,11 +204,18 @@ namespace Relic.Gameplay.Monster
                 selectedMonster = null;
             }
 
-            HideStatusClickTooltip();
+            if (infoSelectedMonster == this)
+            {
+                infoSelectedMonster = null;
+                MonsterInfoSelectionChanged?.Invoke(null);
+            }
+
+            HideStatusHoverTooltip();
         }
 
         private void OnDestroy()
         {
+            HideAttackRangePreview();
             HideTemporaryHUD();
 
             if (selectedMonster == this)
@@ -187,11 +224,19 @@ namespace Relic.Gameplay.Monster
                 selectedMonster = null;
             }
 
-            HideStatusClickTooltip();
+            if (infoSelectedMonster == this)
+            {
+                infoSelectedMonster = null;
+                MonsterInfoSelectionChanged?.Invoke(null);
+            }
+
+            HideStatusHoverTooltip();
         }
 
         private void Update()
         {
+            UpdateStatusHoverTooltipPosition();
+
             if (selectedMonster != this)
                 return;
 
@@ -207,17 +252,29 @@ namespace Relic.Gameplay.Monster
             if (IsScreenPointOverAnyMonster(Input.mousePosition))
                 return;
 
-            DeselectCurrentMonster();
+            if (infoSelectedMonster == this)
+                ClearMonsterInfoSelection();
+            else
+                DeselectCurrentMonster();
         }
 
-        private void ShowStatusClickTooltip()
+        private void UpdateStatusHoverTooltipPosition()
         {
-            if (!showStatusTooltipOnClick)
+            if (!isStatusTooltipHovering || statusTooltipUI == null)
+                return;
+
+            UnitStatusEffectTooltipSide tooltipSide = GetStatusTooltipSide();
+            statusTooltipUI.UpdatePosition(GetStatusTooltipScreenPosition(tooltipSide), tooltipSide);
+        }
+
+        private void ShowStatusHoverTooltip()
+        {
+            if (!showStatusTooltipOnHover)
                 return;
 
             if (RuntimeData == null || RuntimeData.StatusEffects == null || RuntimeData.StatusEffects.Count <= 0)
             {
-                HideStatusClickTooltip();
+                HideStatusHoverTooltip();
                 return;
             }
 
@@ -234,11 +291,7 @@ namespace Relic.Gameplay.Monster
 
         private UnitStatusEffectTooltipSide GetStatusTooltipSide()
         {
-            int gridIndex = MainGridIndex;
-
-            if (gridIndex >= 20 && gridIndex <= 34)
-                return UnitStatusEffectTooltipSide.Left;
-
+            // 몬스터 본체 호버 툴팁은 항상 몬스터 Collider2D의 오른쪽에 표시합니다.
             return UnitStatusEffectTooltipSide.Right;
         }
 
@@ -255,13 +308,15 @@ namespace Relic.Gameplay.Monster
             else if (!TryGetRendererBounds(out bounds))
                 bounds = new Bounds(transform.position, Vector3.zero);
 
-            float anchorX = side == UnitStatusEffectTooltipSide.Left ? bounds.min.x : bounds.max.x;
+            float anchorX = bounds.max.x;
             Vector3 worldPosition = new Vector3(anchorX, bounds.center.y, bounds.center.z);
             return mainCamera.WorldToScreenPoint(worldPosition);
         }
 
-        private void HideStatusClickTooltip()
+        private void HideStatusHoverTooltip()
         {
+            isStatusTooltipHovering = false;
+
             if (statusTooltipUI == null)
                 return;
 
@@ -270,6 +325,11 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseDown()
         {
+            // 턴 실행 중에는 몬스터 클릭 선택과 카메라 포커스를 막습니다.
+            // 호버 HUD/범위/상태 정보는 OnMouseEnter에서 계속 표시합니다.
+            if (IsBattleExecutionActive())
+                return;
+
             if (UIPanelButton.IsMenuPanelOpen)
                 return;
 
@@ -282,8 +342,30 @@ namespace Relic.Gameplay.Monster
             if (IsPointerOverUI())
                 return;
 
+            MonsterUnit previousInfoSelectedMonster = infoSelectedMonster;
+
             SelectThisMonster();
-            global::UIDissolveReveal.ShowForMonsterClick(this);
+
+            if (previousInfoSelectedMonster != null &&
+                previousInfoSelectedMonster != this)
+            {
+                previousInfoSelectedMonster.SetSelected(false);
+                previousInfoSelectedMonster.HideAttackRangePreview();
+                previousInfoSelectedMonster.HideStatusHoverTooltip();
+            }
+
+            infoSelectedMonster = this;
+            BattleTimelineController.ClearCurrentCharacterSelection();
+
+            BattleCameraController cameraController = BattleCameraController.Instance;
+            if (cameraController != null)
+                cameraController.FocusOnCharacterSelection(transform, MainGridIndex);
+
+            // 클릭으로 선택한 몬스터는 마우스가 빠져도 HUD와 행동 범위를 유지합니다.
+            SetSelected(true);
+            ShowAttackRangePreview();
+
+            MonsterInfoSelectionChanged?.Invoke(this);
         }
 
         private void OnMouseEnter()
@@ -300,21 +382,150 @@ namespace Relic.Gameplay.Monster
             if (IsPointerOverUI())
                 return;
 
-            SelectThisMonster();
+            if (IsBattleExecutionActive())
+            {
+                // 턴 실행 중에는 실제 선택 상태를 만들지 않고 호버 정보만 표시합니다.
+                if (hud != null)
+                    hud.Show();
+
+                ShowAttackRangePreview();
+                isStatusTooltipHovering = true;
+                ShowStatusHoverTooltip();
+                return;
+            }
+
+            if (infoSelectedMonster == null || infoSelectedMonster == this)
+            {
+                SelectThisMonster();
+            }
+            else if (hud != null)
+            {
+                // 다른 몬스터가 클릭 선택되어 있어도 현재 호버한 몬스터의 HUD는 임시로 함께 표시합니다.
+                hud.Show();
+            }
+
+            ShowAttackRangePreview();
+            isStatusTooltipHovering = true;
+            ShowStatusHoverTooltip();
         }
 
         private void OnMouseExit()
         {
+            isStatusTooltipHovering = false;
+            HideStatusHoverTooltip();
+
             if (UIPanelButton.IsMenuPanelOpen)
                 return;
 
             if (reservationVisualActive)
                 return;
 
+            if (IsBattleExecutionActive())
+            {
+                HideAttackRangePreview();
+
+                if (!isTemporaryHUDVisible && hud != null)
+                    hud.Hide();
+
+                return;
+            }
+
+            // 클릭 선택된 몬스터는 호버가 끝나도 HUD와 행동 범위를 유지합니다.
+            if (infoSelectedMonster == this)
+            {
+                SetSelected(true);
+                ShowAttackRangePreview();
+                return;
+            }
+
+            HideAttackRangePreview();
+
+            if (infoSelectedMonster != null)
+            {
+                if (!isTemporaryHUDVisible && hud != null)
+                    hud.Hide();
+
+                // 다른 몬스터를 잠깐 호버했다면 클릭 선택된 몬스터의 범위를 다시 표시합니다.
+                infoSelectedMonster.SetSelected(true);
+                infoSelectedMonster.ShowAttackRangePreview();
+                return;
+            }
+
             if (selectedMonster != this)
                 return;
 
             DeselectCurrentMonster();
+        }
+
+
+        private void ShowAttackRangePreview()
+        {
+            HideAttackRangePreview();
+
+            if (!showAttackRangeOnHover || RuntimeData == null || RuntimeData.IsDead)
+                return;
+
+            if (string.IsNullOrWhiteSpace(RuntimeData.AttackRangeId))
+                return;
+
+            FindHoverRangeReferences();
+
+            if (hoverRangePreview == null || hoverGridManager == null)
+                return;
+
+            if (reservationController != null && reservationController.IsSkillSelectionActive())
+                return;
+
+            if (DataManager.Instance == null || DataManager.Instance.RangeDatabase == null)
+                return;
+
+            bool facingRight = RuntimeData.Direction == BattleDirection.Right;
+            List<int> rangeIndices = MonsterSkillRangeService.BuildRangeGridIndices(
+                this,
+                RuntimeData.AttackRangeId,
+                hoverGridManager,
+                facingRight,
+                MainGridIndex,
+                DataManager.Instance.RangeDatabase);
+
+            if (rangeIndices.Count <= 0)
+                return;
+
+            hoverRangePreview.ShowRangeCells(rangeIndices);
+            isAttackRangePreviewVisible = true;
+        }
+
+        private void HideAttackRangePreview()
+        {
+            if (!isAttackRangePreviewVisible)
+                return;
+
+            if (hoverRangePreview != null)
+                hoverRangePreview.ClearRangeOnly();
+
+            isAttackRangePreviewVisible = false;
+        }
+
+        private void FindHoverRangeReferences()
+        {
+            if (hoverRangePreview == null)
+                hoverRangePreview = UnityEngine.Object.FindFirstObjectByType<RangePreview>(FindObjectsInactive.Include);
+
+            if (hoverGridManager == null)
+                hoverGridManager = UnityEngine.Object.FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+
+            if (reservationController == null)
+            {
+                reservationController = UnityEngine.Object.FindFirstObjectByType<PlayerSkillReservationController>(
+                    FindObjectsInactive.Include);
+            }
+        }
+
+        private static bool IsBattleExecutionActive()
+        {
+            BattleTurnExecutor executor = UnityEngine.Object.FindFirstObjectByType<BattleTurnExecutor>(
+                FindObjectsInactive.Include);
+            return executor != null && executor.IsExecuting;
         }
 
         private bool IsPointerOverUI()
@@ -367,6 +578,78 @@ namespace Relic.Gameplay.Monster
             return false;
         }
 
+        public void ShowAttackRangePreviewFromTimeline()
+        {
+            ShowAttackRangePreview();
+        }
+
+        public void HideAttackRangePreviewFromTimeline()
+        {
+            if (infoSelectedMonster == this)
+            {
+                ShowAttackRangePreview();
+                return;
+            }
+
+            HideAttackRangePreview();
+
+            if (infoSelectedMonster != null && infoSelectedMonster != this)
+                infoSelectedMonster.ShowAttackRangePreview();
+        }
+
+        public void SelectForInfoFromTimeline()
+        {
+            if (UIPanelButton.IsMenuPanelOpen)
+                return;
+
+            if (reservationVisualActive)
+                return;
+
+            if (RuntimeData == null || RuntimeData.IsDead)
+                return;
+
+            MonsterUnit previousInfoSelectedMonster = infoSelectedMonster;
+
+            SelectThisMonster();
+
+            if (previousInfoSelectedMonster != null &&
+                previousInfoSelectedMonster != this)
+            {
+                previousInfoSelectedMonster.SetSelected(false);
+                previousInfoSelectedMonster.HideAttackRangePreview();
+                previousInfoSelectedMonster.HideStatusHoverTooltip();
+            }
+
+            infoSelectedMonster = this;
+            BattleTimelineController.ClearCurrentCharacterSelection();
+
+            BattleCameraController cameraController = BattleCameraController.Instance;
+            if (cameraController != null)
+                cameraController.FocusOnCharacterSelection(transform, MainGridIndex);
+
+            SetSelected(true);
+            ShowAttackRangePreview();
+            MonsterInfoSelectionChanged?.Invoke(this);
+        }
+
+        public static void ClearMonsterInfoSelection()
+        {
+            if (infoSelectedMonster == null)
+                return;
+
+            MonsterUnit previous = infoSelectedMonster;
+            infoSelectedMonster = null;
+
+            previous.HideAttackRangePreview();
+
+            if (selectedMonster == previous)
+                DeselectCurrentMonster();
+            else
+                previous.SetSelected(false);
+
+            MonsterInfoSelectionChanged?.Invoke(null);
+        }
+
         private static void DeselectCurrentMonster()
         {
             if (selectedMonster == null)
@@ -376,7 +659,7 @@ namespace Relic.Gameplay.Monster
             selectedMonster = null;
 
             monster.SetSelected(false);
-            monster.HideStatusClickTooltip();
+            monster.HideStatusHoverTooltip();
         }
 
         private void EnsureClickCollider2D()
@@ -470,6 +753,11 @@ namespace Relic.Gameplay.Monster
 
         public void SetReservationVisualState(bool reservation)
         {
+            SetReservationVisualState(reservation, true);
+        }
+
+        public void SetReservationVisualState(bool reservation, bool dimVisual)
+        {
             reservationVisualActive = reservation;
 
             if (reservation)
@@ -478,10 +766,10 @@ namespace Relic.Gameplay.Monster
                     DeselectCurrentMonster();
 
                 HideTemporaryHUD();
-                HideStatusClickTooltip();
+                HideStatusHoverTooltip();
             }
 
-            float alpha = reservation && dimMonsterDuringMoveTargetSelection ? reservationAlpha : 1f;
+            float alpha = reservation && dimVisual && dimMonsterDuringMoveTargetSelection ? reservationAlpha : 1f;
 
             SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
             for (int i = 0; i < spriteRenderers.Length; i++)
@@ -491,8 +779,16 @@ namespace Relic.Gameplay.Monster
                 if (spriteRenderer == null)
                     continue;
 
+                if (!originalSpriteRendererAlphas.TryGetValue(spriteRenderer, out float originalAlpha))
+                {
+                    originalAlpha = spriteRenderer.color.a;
+                    originalSpriteRendererAlphas.Add(spriteRenderer, originalAlpha);
+                }
+
                 Color color = spriteRenderer.color;
-                color.a = alpha;
+                color.a = reservation && dimVisual && dimMonsterDuringMoveTargetSelection
+                    ? originalAlpha * reservationAlpha
+                    : originalAlpha;
                 spriteRenderer.color = color;
             }
 
@@ -514,8 +810,13 @@ namespace Relic.Gameplay.Monster
 
         public static void SetAllReservationVisualState(bool reservation)
         {
+            SetAllReservationVisualState(reservation, true);
+        }
+
+        public static void SetAllReservationVisualState(bool reservation, bool dimVisual)
+        {
             MonsterUnit[] monsters =
-                Object.FindObjectsByType<MonsterUnit>(
+                UnityEngine.Object.FindObjectsByType<MonsterUnit>(
                     FindObjectsInactive.Exclude,
                     FindObjectsSortMode.None
                 );
@@ -523,7 +824,7 @@ namespace Relic.Gameplay.Monster
             for (int i = 0; i < monsters.Length; i++)
             {
                 if (monsters[i] != null)
-                    monsters[i].SetReservationVisualState(reservation);
+                    monsters[i].SetReservationVisualState(reservation, dimVisual);
             }
         }
 
@@ -561,14 +862,13 @@ namespace Relic.Gameplay.Monster
             if (selectedMonster != null && selectedMonster != this)
             {
                 selectedMonster.SetSelected(false);
-                selectedMonster.HideStatusClickTooltip();
+                selectedMonster.HideStatusHoverTooltip();
             }
 
             selectedMonster = this;
             selectedMonsterClickFrame = Time.frameCount;
 
             SetSelected(true);
-            ShowStatusClickTooltip();
         }
 
         public void SetSelected(bool selected)
@@ -629,6 +929,11 @@ namespace Relic.Gameplay.Monster
                 temporaryHUDRoutine = StartCoroutine(HideTemporaryHUDAfterDelay(duration));
         }
 
+        public void ShowTemporaryHUDForEffect()
+        {
+            ShowTemporaryHUD(Mathf.Max(1.5f, effectHudVisibleDuration));
+        }
+
         public void HideTemporaryHUD()
         {
             if (temporaryHUDRoutine != null)
@@ -656,7 +961,7 @@ namespace Relic.Gameplay.Monster
                                     new HashSet<int>(rangeGridIndices);
 
             MonsterUnit[] monsters =
-                Object.FindObjectsByType<MonsterUnit>(
+                UnityEngine.Object.FindObjectsByType<MonsterUnit>(
                     FindObjectsInactive.Exclude,
                     FindObjectsSortMode.None
                 );
@@ -681,7 +986,7 @@ namespace Relic.Gameplay.Monster
         public static void HideAllTemporaryHUDs()
         {
             MonsterUnit[] monsters =
-                Object.FindObjectsByType<MonsterUnit>(
+                UnityEngine.Object.FindObjectsByType<MonsterUnit>(
                     FindObjectsInactive.Exclude,
                     FindObjectsSortMode.None
                 );

@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TestVfxWorkbenchTests
@@ -14,17 +15,13 @@ public class TestVfxWorkbenchTests
             {
                 FlipType = VfxFlipType.ParticleRendererFlipY,
                 RenderMode = BattleVfxRenderMode.DirectWorldRenderer,
-                PlaySfx = true,
-                SfxId = "Hit_01",
-                SfxDelay = -0.5f,
-                SfxVolumeMultiplier = -1f,
-                RouteEmbeddedAudioSourcesThroughAudioManager = false,
-                RemoveEmbeddedAudioSources = false,
+                ProxyBlendMode = BattleVfxProxyBlendMode.Alpha,
                 RenderTextureWidth = 0,
                 RenderTextureHeight = -8,
                 RenderCameraOrthographicSize = 0f,
                 ProxyWorldHeight = -1f,
                 ProxyWorldOffset = new Vector3(1f, 2f, 3f),
+                ScaleDirectWorldRendererToProxyHeight = true,
                 SortingLayerName = "Unit",
                 SortingOrderOffset = 12,
                 SortingWorldYOffset = 0.25f,
@@ -36,17 +33,13 @@ public class TestVfxWorkbenchTests
             Assert.That(entry.prefab, Is.SameAs(prefab));
             Assert.That(entry.flipType, Is.EqualTo(VfxFlipType.ParticleRendererFlipY));
             Assert.That(entry.renderMode, Is.EqualTo(BattleVfxRenderMode.DirectWorldRenderer));
-            Assert.That(entry.sfx.playSfx, Is.True);
-            Assert.That(entry.sfx.sfxId, Is.EqualTo("Hit_01"));
-            Assert.That(entry.sfx.delay, Is.EqualTo(0f));
-            Assert.That(entry.sfx.volumeMultiplier, Is.EqualTo(0f));
-            Assert.That(entry.sfx.routeEmbeddedAudioSourcesThroughAudioManager, Is.False);
-            Assert.That(entry.sfx.removeEmbeddedAudioSources, Is.False);
+            Assert.That(entry.proxyBlendMode, Is.EqualTo(BattleVfxProxyBlendMode.Alpha));
             Assert.That(entry.renderTextureWidth, Is.EqualTo(1));
             Assert.That(entry.renderTextureHeight, Is.EqualTo(1));
             Assert.That(entry.renderCameraOrthographicSize, Is.EqualTo(0.01f));
             Assert.That(entry.proxyWorldHeight, Is.EqualTo(0.01f));
             Assert.That(entry.proxyWorldOffset, Is.EqualTo(new Vector3(1f, 2f, 3f)));
+            Assert.That(entry.scaleDirectWorldRendererToProxyHeight, Is.True);
             Assert.That(entry.proxySortingLayerName, Is.EqualTo("Unit"));
             Assert.That(entry.proxySortingOrderOffset, Is.EqualTo(12));
             Assert.That(entry.proxySortingWorldYOffset, Is.EqualTo(0.25f));
@@ -141,6 +134,48 @@ public class TestVfxWorkbenchTests
         VfxFlipType previous = TestVfxWorkbenchUtility.PreviousEnumValue(VfxFlipType.RotationY180);
 
         Assert.That(previous, Is.EqualTo(VfxFlipType.None));
+    }
+
+    [Test]
+    public void RebuildFilteredLabelIndexes_TrimsCaseInsensitiveSearchAndLimitsVisibleResults()
+    {
+        List<string> labels = new()
+        {
+            "SpriteAni/Light/Vfx_SpriteAni_flash_explosion",
+            "SpriteAni/Arrow/Vfx_SpriteAni_Arrow",
+            "Legacy/VFX_FLASH_Burst"
+        };
+        List<int> resultIndexes = new();
+
+        int totalMatches = TestVfxWorkbenchUtility.RebuildFilteredLabelIndexes(
+            labels,
+            " flash ",
+            resultIndexes,
+            1);
+
+        Assert.That(totalMatches, Is.EqualTo(2));
+        Assert.That(resultIndexes, Is.EqualTo(new[] { 0 }));
+    }
+
+    [Test]
+    public void RebuildFilteredLabelIndexes_EmptySearchKeepsSourceOrderAndReportsTotalMatches()
+    {
+        List<string> labels = new()
+        {
+            "A",
+            "B",
+            "C"
+        };
+        List<int> resultIndexes = new();
+
+        int totalMatches = TestVfxWorkbenchUtility.RebuildFilteredLabelIndexes(
+            labels,
+            "",
+            resultIndexes,
+            2);
+
+        Assert.That(totalMatches, Is.EqualTo(3));
+        Assert.That(resultIndexes, Is.EqualTo(new[] { 0, 1 }));
     }
 
     private static void DestroyObject(Object target)

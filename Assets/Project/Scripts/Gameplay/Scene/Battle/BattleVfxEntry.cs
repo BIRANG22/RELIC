@@ -7,35 +7,10 @@ public enum BattleVfxRenderMode
     DirectWorldRenderer
 }
 
-[System.Serializable]
-public class BattleVfxSfxEntry
+public enum BattleVfxProxyBlendMode
 {
-    [Header("SFX ID")]
-    public bool playSfx;
-    public string sfxId;
-    [Min(0f)] public float delay;
-    [Min(0f)] public float volumeMultiplier = 1f;
-
-    [Header("Embedded AudioSource Migration")]
-    public bool routeEmbeddedAudioSourcesThroughAudioManager = true;
-    public bool removeEmbeddedAudioSources = true;
-
-    public static BattleVfxSfxEntry CopyFrom(BattleVfxSfxEntry source)
-    {
-        if (source == null)
-            return new BattleVfxSfxEntry();
-
-        return new BattleVfxSfxEntry
-        {
-            playSfx = source.playSfx,
-            sfxId = source.sfxId,
-            delay = source.delay,
-            volumeMultiplier = source.volumeMultiplier,
-            routeEmbeddedAudioSourcesThroughAudioManager =
-                source.routeEmbeddedAudioSourcesThroughAudioManager,
-            removeEmbeddedAudioSources = source.removeEmbeddedAudioSources
-        };
-    }
+    Additive,
+    Alpha
 }
 
 [System.Serializable]
@@ -44,11 +19,11 @@ public class BattleVfxEntry
     public GameObject prefab;
     public VfxFlipType flipType;
 
-    [Header("SFX")]
-    public BattleVfxSfxEntry sfx = new();
-
     [Header("Render Routing")]
     public BattleVfxRenderMode renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture;
+    public BattleVfxProxyBlendMode proxyBlendMode = BattleVfxProxyBlendMode.Additive;
+    [Header("Direct World Renderer")]
+    public bool scaleDirectWorldRendererToProxyHeight;
 
     [Header("Individual World RenderTexture")]
     [Min(1)] public int renderTextureWidth = 512;

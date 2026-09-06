@@ -36,6 +36,11 @@ namespace Relic.Gameplay.Data
 
                 DataColumnAliasUtility.CopyAlias(row, "Passed", "Passed", "Passable", "CanPass", "\uD1B5\uACFC\uC720\uBB34");
                 DataColumnAliasUtility.CopyAlias(row, "Consumable", "Consumable", "IsConsumable", "Expendable", "expendable", "\uC18C\uBAA8\uC131");
+                DataColumnAliasUtility.CopyAlias(row, "CountRate", "CountRate", "횟수계수");
+                DataColumnAliasUtility.CopyAlias(row, "Duration", "Duration", "지속턴");
+                DataColumnAliasUtility.CopyAlias(row, "SpawnType", "SpawnType", "생성 방식", "생성방식");
+                DataColumnAliasUtility.CopyAlias(row, "HP", "HP", "Hp", "체력");
+                DataColumnAliasUtility.CopyAlias(row, "TargetType", "TargetType", "Target", "타입");
             }
         }
     }

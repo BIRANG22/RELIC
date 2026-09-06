@@ -48,6 +48,25 @@ public class SkillRewardAndInventoryTests
     }
 
     [Test]
+    public void SkillRarityUtility_DoesNotTreatPassiveAndUniqueEvenIdsAsUpgradeVariants()
+    {
+        Assert.That(SkillRarityUtility.IsUpgradeSkillVariant("S_Passive_02"), Is.False);
+        Assert.That(SkillRarityUtility.IsUpgradeSkillVariant("S_Unique_02"), Is.False);
+        Assert.That(SkillRarityUtility.IsBaseSkillVariant("S_Passive_02"), Is.True);
+        Assert.That(SkillRarityUtility.IsBaseSkillVariant("S_Unique_02"), Is.True);
+
+        Assert.That(
+            SkillRarityUtility.TryGetPairedVariantId("S_Passive_02", out string passivePairId),
+            Is.False);
+        Assert.That(passivePairId, Is.Null);
+
+        Assert.That(
+            SkillRarityUtility.TryGetPairedVariantId("S_Unique_02", out string uniquePairId),
+            Is.False);
+        Assert.That(uniquePairId, Is.Null);
+    }
+
+    [Test]
     public void SkillRewardRoller_RollsOnceAndSelectsBaseCoreSkillByRarity()
     {
         BattleMapData mapData = new()

@@ -5,11 +5,16 @@ using UnityEngine.EventSystems;
 
 public class BattleCharacter : MonoBehaviour
 {
+    private static readonly Color CharacterSelectedHighlightColor = new Color32(0x0C, 0x58, 0xC5, 0xFF);
+    private static readonly Color CharacterHoverHighlightColor = new Color32(0xEE, 0xEE, 0xEE, 0xFF);
+    public const string SelectionReadyAnimationStateName = "battle_ready";
+    public const string SelectionIdleAnimationStateName = "Idle";
     private const string TimelineHoverHighlightIdleBackName = "Idle_Back";
     private const string TimelineHoverHighlightShadowName = "Shadow";
 
     [Header("Timeline Hover Highlight")]
     [SerializeField] private GameObject timelineHoverHighlightObject;
+    [SerializeField] private bool playBattleReadyAnimationOnSelect = true;
 
     private SpriteRenderer[] timelineHoverHighlightRenderers;
     private float[] timelineHoverHighlightOriginalAlphas;
@@ -19,7 +24,9 @@ public class BattleCharacter : MonoBehaviour
     private SpriteRenderer[] timelineHoverHighlightShadowRenderers;
     private Animator timelineHoverHighlightSourceAnimator;
     private Animator timelineHoverHighlightIdleBackAnimator;
+    private Animator selectionReadyAnimator;
     private bool timelineHoverHighlightVisible;
+    private bool selectionHighlightVisible;
 
     public CharacterRuntimeData RuntimeData { get; private set; }
 
@@ -51,17 +58,49 @@ public class BattleCharacter : MonoBehaviour
 
     public void SetTimelineHoverHighlight(bool active)
     {
+        if (IsBattleEnded())
+            active = false;
+
         SetTimelineHoverHighlightAlpha(active);
     }
 
 
     public void SetSelectionScaleFeedback(bool selected)
     {
-        SetTimelineHoverHighlight(selected);
+        if (IsBattleEnded())
+            selected = false;
+
+        if (RuntimeData != null && RuntimeData.IsDead)
+        {
+            selectionHighlightVisible = false;
+            ApplyTimelineHoverHighlightAlpha();
+            return;
+        }
+
+        selectionHighlightVisible = selected;
+
+        if (selected)
+            PlaySelectionReadyAnimation();
+        else
+            PlaySelectionIdleAnimation();
+
+        ApplyTimelineHoverHighlightAlpha();
     }
 
     private void LateUpdate()
     {
+        if (IsBattleEnded())
+        {
+            if (timelineHoverHighlightVisible || selectionHighlightVisible)
+            {
+                ForceTimelineHoverHighlightOff();
+                PlaySelectionIdleAnimation();
+                SetLinkedHudHover(false);
+            }
+
+            return;
+        }
+
         SyncTimelineHoverHighlightAnimation();
     }
 
@@ -75,13 +114,89 @@ public class BattleCharacter : MonoBehaviour
         SetTimelineHoverHighlight(false);
     }
 
+    private void OnMouseEnter()
+    {
+        if (IsBattleEnded())
+            return;
+
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
+        if (RuntimeData == null || RuntimeData.IsDead)
+            return;
+
+        if (IsPointerOverUI())
+            return;
+
+        SetTimelineHoverHighlight(true);
+        SetLinkedHudHover(true);
+    }
+
+    private void OnMouseExit()
+    {
+        SetTimelineHoverHighlight(false);
+        SetLinkedHudHover(false);
+    }
+
+    /// <summary>
+    /// HUD 호버와 연동되어 캐릭터 하이라이트만 변경합니다.
+    /// 반대쪽 HUD에 다시 전달하지 않아 호버 호출이 순환하지 않습니다.
+    /// </summary>
+    public void SetLinkedHudHoverHighlight(bool active)
+    {
+        if (selectionHighlightVisible)
+            active = false;
+
+        SetTimelineHoverHighlight(active);
+    }
+
+    private void SetLinkedHudHover(bool active)
+    {
+        if (RuntimeData == null || string.IsNullOrWhiteSpace(RuntimeData.CharacterId))
+            return;
+
+        PlayerHUDSlot[] hudSlots = FindObjectsByType<PlayerHUDSlot>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < hudSlots.Length; i++)
+        {
+            PlayerHUDSlot hudSlot = hudSlots[i];
+
+            if (hudSlot == null || hudSlot.BoundRuntime == null)
+                continue;
+
+            if (hudSlot.BoundRuntime.CharacterId != RuntimeData.CharacterId)
+                continue;
+
+            hudSlot.SetLinkedCharacterHover(active);
+        }
+    }
+
     private void OnMouseDown()
     {
+        if (IsBattleEnded())
+            return;
+
+        // 턴 실행 중에는 캐릭터를 호버해서 HUD/정보만 확인할 수 있고,
+        // 클릭 선택으로 카메라 포커스가 발생하지 않도록 막습니다.
+        if (IsBattleExecutionActive())
+            return;
+
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
         if (RuntimeData == null)
             return;
+
+        if (RuntimeData.IsDead)
+            return;
+
+        if (!SteamBattleStateSynchronizer.CanLocalPlayerControlCharacter(RuntimeData.CharacterId))
+        {
+            BattleWarningUI.ShowMessage("다른 플레이어의 캐릭터입니다.");
+            return;
+        }
 
         if (IsPointerOverUI())
             return;
@@ -94,7 +209,18 @@ public class BattleCharacter : MonoBehaviour
             return;
         }
 
-        roomLoader.OnPlayerCharacterClicked(RuntimeData);
+        roomLoader.OnPlayerWorldCharacterClicked(RuntimeData);
+    }
+
+    private static bool IsBattleEnded()
+    {
+        return BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded;
+    }
+
+    private static bool IsBattleExecutionActive()
+    {
+        BattleTurnExecutor executor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+        return executor != null && executor.IsExecuting;
     }
 
     private bool IsPointerOverUI()
@@ -165,6 +291,12 @@ public class BattleCharacter : MonoBehaviour
 
     private void SetTimelineHoverHighlightAlpha(bool active)
     {
+        if (IsTimelineHoverHighlightBlockedByDeath())
+        {
+            ForceTimelineHoverHighlightOff();
+            return;
+        }
+
         timelineHoverHighlightVisible = active;
 
         if (timelineHoverHighlightObject == null)
@@ -179,6 +311,12 @@ public class BattleCharacter : MonoBehaviour
 
     private void SyncTimelineHoverHighlightAnimation()
     {
+        if (IsTimelineHoverHighlightBlockedByDeath())
+        {
+            ForceTimelineHoverHighlightOff();
+            return;
+        }
+
         if (timelineHoverHighlightObject == null)
             return;
 
@@ -232,10 +370,33 @@ public class BattleCharacter : MonoBehaviour
             if (spriteRenderer == null)
                 continue;
 
-            Color color = spriteRenderer.color;
-            color.a = timelineHoverHighlightVisible ? timelineHoverHighlightOriginalAlphas[i] : 0f;
+            bool shouldShow = selectionHighlightVisible || timelineHoverHighlightVisible;
+            Color color = selectionHighlightVisible
+                ? CharacterSelectedHighlightColor
+                : CharacterHoverHighlightColor;
+            color.a = shouldShow ? timelineHoverHighlightOriginalAlphas[i] : 0f;
             spriteRenderer.color = color;
         }
+    }
+
+    private bool IsTimelineHoverHighlightBlockedByDeath()
+    {
+        return RuntimeData != null && RuntimeData.IsDead;
+    }
+
+    private void ForceTimelineHoverHighlightOff()
+    {
+        timelineHoverHighlightVisible = false;
+        selectionHighlightVisible = false;
+
+        if (timelineHoverHighlightObject == null)
+            return;
+
+        CacheTimelineHoverHighlightRenderers();
+        ApplyTimelineHoverHighlightAlpha();
+
+        if (timelineHoverHighlightObject.activeSelf)
+            timelineHoverHighlightObject.SetActive(false);
     }
 
     private void CacheTimelineHoverHighlightRenderers()
@@ -380,6 +541,74 @@ public class BattleCharacter : MonoBehaviour
             timelineHoverHighlightSourceAnimator = animator;
             return;
         }
+    }
+
+    private void PlaySelectionReadyAnimation()
+    {
+        if (!playBattleReadyAnimationOnSelect)
+            return;
+
+        CacheSelectionReadyAnimator();
+
+        if (selectionReadyAnimator == null ||
+            selectionReadyAnimator.runtimeAnimatorController == null)
+        {
+            return;
+        }
+
+        int stateHash = Animator.StringToHash(SelectionReadyAnimationStateName);
+
+        if (!selectionReadyAnimator.HasState(0, stateHash))
+            return;
+
+        if (!selectionReadyAnimator.enabled)
+            selectionReadyAnimator.enabled = true;
+
+        selectionReadyAnimator.speed = 1f;
+        selectionReadyAnimator.Play(stateHash, 0, 0f);
+        selectionReadyAnimator.Update(0f);
+    }
+
+    private void PlaySelectionIdleAnimation()
+    {
+        if (selectionReadyAnimator == null ||
+            selectionReadyAnimator.runtimeAnimatorController == null)
+        {
+            return;
+        }
+
+        int stateHash = Animator.StringToHash(SelectionIdleAnimationStateName);
+
+        if (!selectionReadyAnimator.HasState(0, stateHash))
+            return;
+
+        if (!selectionReadyAnimator.enabled)
+            selectionReadyAnimator.enabled = true;
+
+        selectionReadyAnimator.speed = 1f;
+        selectionReadyAnimator.Play(stateHash, 0, 0f);
+        selectionReadyAnimator.Update(0f);
+    }
+
+    private void CacheSelectionReadyAnimator()
+    {
+        if (selectionReadyAnimator != null)
+            return;
+
+        selectionReadyAnimator = FindSelectionReadyAnimator(transform);
+    }
+
+    public static Animator FindSelectionReadyAnimator(Transform characterRoot)
+    {
+        if (characterRoot == null)
+            return null;
+
+        Transform spriteRoot = characterRoot.Find("SpriteRoot");
+
+        if (spriteRoot != null)
+            return spriteRoot.GetComponentInChildren<Animator>(true);
+
+        return null;
     }
 
     private void CacheTimelineHoverHighlightIdleBackAnimator()

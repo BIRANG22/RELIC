@@ -120,13 +120,13 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Edgecolor: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Vector2: {r: 0.5, g: 0.5, b: 0, a: 0}
+    - _Vector2: {r: 0, g: 0, b: 0, a: 0}
     - _noisefloow: {r: 0, g: -0.1, b: 0, a: 0}
     - _noiseflow: {r: -0.01, g: 0, b: 0, a: 0}
     - _noiseflow_1: {r: 0, g: 0, b: 0, a: 0}
-    - _noiseoffset: {r: 0, g: 0.16, b: 0, a: 0}
+    - _noiseoffset: {r: 0, g: 0, b: 0, a: 0}
     - _noiseoffset_1: {r: 0, g: 0, b: 0, a: 0}
-    - _noisetiling: {r: 0.55, g: 0.73, b: 0, a: 0}
+    - _noisetiling: {r: 1, g: 1, b: 0, a: 0}
     - _noisetiling_1: {r: 1, g: 1, b: 0, a: 0}
     - _sine: {r: 0.1, g: 0.1, b: 0, a: 0}
   m_BuildTextureStacks: []

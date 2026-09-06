@@ -6,6 +6,8 @@ namespace Relic.Gameplay.Monster
     public enum MonsterAISlotPreference
     {
         Front,
+        Earliest,
+        FirstTwo,
         Back,
         Center,
         Last,
@@ -21,8 +23,12 @@ namespace Relic.Gameplay.Monster
         public int SameSlotGroup;
         public int Priority;
         public int RangeOriginGridIndex;
+        public int RangeOriginCasterGridIndex;
         public bool HasForcedDirection;
         public BattleDirection ForcedDirection;
+        public bool IsPortalMove;
+        public int SlotOffset;
+        public List<int> ExplicitRangeGridIndices;
 
         public MonsterAIAction(
             string skillId,
@@ -32,7 +38,11 @@ namespace Relic.Gameplay.Monster
             int priority = 0,
             int rangeOriginGridIndex = -1,
             bool hasForcedDirection = false,
-            BattleDirection forcedDirection = BattleDirection.Right)
+            BattleDirection forcedDirection = BattleDirection.Right,
+            bool isPortalMove = false,
+            int slotOffset = 0,
+            List<int> explicitRangeGridIndices = null,
+            int rangeOriginCasterGridIndex = -1)
         {
             SkillId = skillId;
             MoveOffset = moveOffset;
@@ -40,8 +50,14 @@ namespace Relic.Gameplay.Monster
             SameSlotGroup = sameSlotGroup;
             Priority = priority;
             RangeOriginGridIndex = Mathf.Max(-1, rangeOriginGridIndex);
+            RangeOriginCasterGridIndex = Mathf.Max(-1, rangeOriginCasterGridIndex);
             HasForcedDirection = hasForcedDirection;
             ForcedDirection = forcedDirection;
+            IsPortalMove = isPortalMove;
+            SlotOffset = slotOffset;
+            ExplicitRangeGridIndices = explicitRangeGridIndices != null
+                ? new List<int>(explicitRangeGridIndices)
+                : null;
         }
     }
 

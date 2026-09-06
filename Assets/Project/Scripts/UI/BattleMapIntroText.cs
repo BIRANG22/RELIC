@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -7,6 +8,8 @@ public class BattleMapIntroText : MonoBehaviour
     private static BattleMapIntroText instance;
 
     public static int CurrentPlayCounter { get; private set; }
+    public static event Action IntroStarted;
+    public static event Action IntroCompleted;
 
     public static bool IsAnyPlayingOrVisible()
     {
@@ -35,6 +38,12 @@ public class BattleMapIntroText : MonoBehaviour
     [SerializeField] private GameObject introImage;
     [SerializeField] private bool autoBindIntroImage = true;
     [SerializeField] private string introImageObjectName = "Image";
+
+    [Header("Room Intro SFX")]
+    [Tooltip("전투방/이벤트방에 처음 진입할 때 방 인트로 텍스트와 함께 재생합니다.")]
+    [SerializeField] private bool playRoomIntroSfx = true;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string roomIntroSfxId;
+    [SerializeField, Range(0f, 1f)] private float roomIntroSfxVolume = 1f;
 
     [Header("Timing")]
     [SerializeField] private bool playOnStart;
@@ -104,6 +113,24 @@ public class BattleMapIntroText : MonoBehaviour
         yield return target.PlayAndWait(text);
     }
 
+    public static void PlayRoomIntroSfx()
+    {
+        BattleMapIntroText target = FindTarget();
+        target?.PlayConfiguredRoomIntroSfx();
+    }
+
+    private void PlayConfiguredRoomIntroSfx()
+    {
+        if (!playRoomIntroSfx || string.IsNullOrWhiteSpace(roomIntroSfxId))
+            return;
+
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager == null)
+            return;
+
+        audioManager.PlaySfx(roomIntroSfxId, Mathf.Clamp01(roomIntroSfxVolume));
+    }
+
     public void Play()
     {
         Play(message);
@@ -124,6 +151,7 @@ public class BattleMapIntroText : MonoBehaviour
 
         CurrentPlayCounter++;
         int version = ++playVersion;
+        IntroStarted?.Invoke();
         playRoutine = StartCoroutine(PlayRoutine(text, version));
     }
 
@@ -142,6 +170,7 @@ public class BattleMapIntroText : MonoBehaviour
 
         CurrentPlayCounter++;
         int version = ++playVersion;
+        IntroStarted?.Invoke();
         playRoutine = StartCoroutine(PlayRoutine(text, version));
         yield return playRoutine;
     }
@@ -217,6 +246,7 @@ public class BattleMapIntroText : MonoBehaviour
                 introImage.SetActive(false);
 
             playRoutine = null;
+            IntroCompleted?.Invoke();
         }
     }
 

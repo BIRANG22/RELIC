@@ -6,7 +6,7 @@ namespace Relic.Gameplay.Data
     public class DataBootstrap
     {
         private TextAsset excelWorkbook;
-        private string resourcesWorkbookPath = "Data/GameData";
+        private string resourcesWorkbookPath = "Data/GameDataRuntime";
 
         private CharacterPrefabDatabase characterPrefabDatabase;
         private SkillIconDatabase skillIconDatabase;
@@ -19,9 +19,9 @@ namespace Relic.Gameplay.Data
         public SkillDatabase SkillDatabase { get; } = new();
         public EffectDatabase EffectDatabase { get; } = new();
         public RelicDatabase RelicDatabase { get; } = new();
+        public CompoundDatabase CompoundDatabase { get; } = new();
         public RangeDatabase RangeDatabase { get; } = new();
         public AssetDatabase AssetDatabase { get; } = new();
-        public QuestDatabase QuestDatabase { get; } = new();
         public EventDatabase EventDatabase { get; } = new();
         public RewardTableDatabase RewardTableDatabase { get; } = new();
         public ItemDatabase ItemDatabase { get; } = new();
@@ -31,6 +31,7 @@ namespace Relic.Gameplay.Data
         public MonsterSkillDatabase MonsterSkillDatabase { get; } = new();
         public MonsterPatternInfoDatabase MonsterPatternInfoDatabase { get; } = new();
         public RuneDatabase RuneDatabase { get; } = new();
+        public ErosionDatabase ErosionDatabase { get; } = new();
 
         public void SetCharacterPrefabDatabase(CharacterPrefabDatabase db)
         {
@@ -67,7 +68,7 @@ namespace Relic.Gameplay.Data
 
             if (excelWorkbook == null)
             {
-                Debug.LogError("[DataBootstrap] GameData가 비어 있습니다. Resources/Data/GameData.csv 또는 Resources/Data/GameData.bytes 경로를 확인하세요.");
+                Debug.LogError("[DataBootstrap] GameData가 비어 있습니다. Resources/Data/GameDataRuntime.csv 경로를 확인하세요.");
                 return;
             }
 
@@ -86,20 +87,27 @@ namespace Relic.Gameplay.Data
             var characters = CharacterCsvLoader.Load(workbook);
             var monsters = MonsterCsvLoader.Load(workbook);
             var skills = SkillCsvLoader.LoadSkills(workbook);
+
+            // 이동 스킬은 S_Move_1만 사용한다.
+            // 오래된 GameDataRuntime에 S_Move_2가 남아 있어도 런타임 데이터에는 포함하지 않는다.
+            skills.RemoveAll(skill =>
+                skill != null &&
+                string.Equals(skill.SkillId, "S_Move_2", System.StringComparison.Ordinal));
+
             var effects = EffectCsvLoader.Load(workbook);
             var relics = RelicCsvLoader.Load(workbook);
+            var compounds = CompoundCsvLoader.Load(workbook);
             var ranges = RangeCsvLoader.Load(workbook);
             var assets = AssetCsvLoader.Load(workbook);
-            var quests = QuestCsvLoader.Load(workbook);
-            var events = EventCsvLoader.LoadMaster(workbook);
+            var events = EventCsvLoader.Load(workbook);
             var rewardTables = RewardTableCsvLoader.Load(workbook);
             var items = ItemCsvLoader.Load(workbook);
             var maps = MapCsvLoader.Load(workbook);
             var gridEffects = GridEffectCsvLoader.Load(workbook);
             var battleMapDataList = BattleMapCsvLoader.Load(workbook);
             var monsterSkills = MonsterSkillCsvLoader.Load(workbook);
-            var monsterPatternInfos = MonsterPatternInfoCsvLoader.Load(workbook);
             var runes = RuneCsvLoader.Load(workbook);
+            var erosions = ErosionCsvLoader.Load(workbook);
 
             InjectCharacterPrefabs(characters);
             InjectCharacterIcons(characters);
@@ -126,19 +134,23 @@ namespace Relic.Gameplay.Data
             foreach (var relic in relics)
                 relic.EffectEntries = SkillEffectParser.Parse(relic, EffectDatabase);
 
+            foreach (var compound in compounds)
+                compound.EffectEntries = SkillEffectParser.Parse(compound, EffectDatabase);
+
             RelicDatabase.Initialize(relics);
+            CompoundDatabase.Initialize(compounds);
             SkillDatabase.Initialize(skills);
             RangeDatabase.Initialize(ranges);
             MonsterSkillDatabase.Initialize(monsterSkills);
-            MonsterPatternInfoDatabase.Initialize(monsterPatternInfos);
             RuneDatabase.Initialize(runes);
             AssetDatabase.Initialize(assets);
-            QuestDatabase.Initialize(quests);
+            EventDatabase.Initialize(events);
             RewardTableDatabase.Initialize(rewardTables);
             ItemDatabase.Initialize(items);
             MapDatabase.Initialize(maps);
             GridEffectDatabase.Initialize(gridEffects);
             BattleMapDatabase.Initialize(battleMapDataList);
+            ErosionDatabase.Initialize(erosions);
         }
 
         private void InjectCharacterPrefabs(List<CharacterMasterData> characters)

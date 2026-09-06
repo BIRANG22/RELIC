@@ -6,9 +6,9 @@ namespace Relic.Gameplay.Data
     public enum SkillType
     {
         None,
-        Power,
-        Attack,
-        Skill
+        Buff,
+        Debuff,
+        Attack
     }
 
     public enum TimelineActionType
@@ -34,15 +34,23 @@ namespace Relic.Gameplay.Data
 
     public enum SkillRarity
     {
-        None,
-        Move,
-        Passive,
-        Unique,
-        CharacterExclusive,
-        Shared,
-        CoreCommon,
-        CoreRare,
-        CoreEpic
+        None = 0,
+        Move = 1,
+
+        // 현재 기억 레어도 체계
+        Exclusive = 2,
+        Common = 3,
+        Rare = 4,
+        Epic = 5,
+        Unique = 6,
+
+        // 이전 코드 호환용 별칭
+        Passive = Exclusive,
+        CharacterExclusive = Exclusive,
+        Shared = Common,
+        CoreCommon = Common,
+        CoreRare = Rare,
+        CoreEpic = Epic
     }
 
     public enum ReferenceResource
@@ -63,21 +71,8 @@ namespace Relic.Gameplay.Data
     {
         None,
         Selection,
-        Direction
-    }
-
-    public enum ResourceCostType
-    {
-        None,
-        Fixed,
-        AllCurrent
-    }
-
-    public enum PassiveFormulaType
-    {
-        None,
-        ResourceStack,      // 자원 N마다 스택 M
-        MinResourceStack    // 자원 N 이상이면 스택 M
+        Direction,
+        Passive
     }
 
     public enum TargetType
@@ -85,13 +80,6 @@ namespace Relic.Gameplay.Data
         Self,
         PlayerParty,
         EnemyParty
-    }
-
-    public enum ValueCalcType
-    {
-        None,
-        Fixed,   // 고정값
-        PerCost  // 실제 소모량 * 값
     }
 
     [System.Serializable]
@@ -109,28 +97,20 @@ namespace Relic.Gameplay.Data
 
         // 엑셀 원본 문자열: 세미콜론 구분
         public string EffectIds;
-        public string ValueCalcTypes;
         public string ValueRate;
         public string CountRate;
 
-        // 패시브
-        public PassiveFormulaType PassiveFormulaType;
-        public int PassiveMinResource;
-
-        // 자원 소모
-        public ResourceCostType ResourceCostType;
+        // 스킬이 사용하는 자원의 고정 소모량
         public int ResourceCostValue;
 
         public int GridMove;
         public RangeType RangeType;
         public string RangeId;
 
-        // CSV/엑셀에 EffectDescription 또는 EffectDesc 컬럼을 추가하면 자동으로 매핑됩니다.
-        public string EffectDescription;
-        public string EffectDesc;
-
-        public string ToolTip;
         public string Details;
+
+        // 전투 중 기억 상점에서 사용하는 레드 더스티움 가격
+        public int RedDustiumCost;
 
         // 런타임 사용용
         public List<SkillEffectEntry> EffectEntries = new();

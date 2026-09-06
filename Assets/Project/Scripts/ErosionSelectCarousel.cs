@@ -1,366 +1,222 @@
-using System.Collections;
+using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
+/// <summary>
+/// Í∞Å ÏãúÎ†® Ïπ¥ÎìúÏùò ÏÑ†ÌÉù, Ïû†Í∏à, Ïù¥Î¶Ñ, Ìö®Í≥º ÌëúÏãúÎ•º Í¥ÄÎ¶¨Ìï©ÎãàÎã§.
+/// </summary>
 public class ErosionSelectCarousel : MonoBehaviour
 {
     [System.Serializable]
-    private sealed class ErosionItem
+    private sealed class TrialItem
     {
-        [Tooltip("¿ÃµøΩ√≈≥ ƒßΩƒ ≥≠¿Ãµµ ¿ÃπÃ¡ˆ¿‘¥œ¥Ÿ. Erosion_0~5∏¶ º¯º≠¥Î∑Œ ≥÷æÓ¡÷ººø‰.")]
+        [Tooltip("ÏãúÎ†® Ïπ¥ÎìúÏùò Î£®Ìä∏ Ìä∏ÎûúÏä§ÌèºÏûÖÎãàÎã§.")]
         public Transform target;
 
-        [HideInInspector] public Vector3 baseLocalPosition;
-        [HideInInspector] public Vector2 baseAnchoredPosition;
-        [HideInInspector] public RectTransform rectTransform;
+        [Tooltip("ÏãúÎ†® ÏÑ†ÌÉù Î≤ÑÌäºÏûÖÎãàÎã§. ÎπÑÏñ¥ ÏûàÏúºÎ©¥ Target ÏïÑÎûòÏóêÏÑú ÏûêÎèô ÌÉêÏÉâÌï©ÎãàÎã§.")]
+        public Button button;
+
+        [Tooltip("ÏÑ†ÌÉùÎêòÏóàÏùÑ Îïå ÌëúÏãúÌï† Ïò§Î∏åÏ†ùÌä∏ÏûÖÎãàÎã§.")]
+        public GameObject selectedVisual;
+
+        [Tooltip("Ïû†Í∏à ÏÉÅÌÉúÏóêÏÑú ÌëúÏãúÌï† LOCK Ïò§Î∏åÏ†ùÌä∏ÏûÖÎãàÎã§.")]
+        public GameObject lockVisual;
+
+        [Tooltip("ÏûêÏãù Name Ïò§Î∏åÏ†ùÌä∏Ïùò TMP ÌÖçÏä§Ìä∏ÏûÖÎãàÎã§.")]
+        public TMP_Text nameText;
+
+        [Tooltip("ÏûêÏãù Effect Ïò§Î∏åÏ†ùÌä∏Ïùò TMP ÌÖçÏä§Ìä∏ÏûÖÎãàÎã§.")]
+        public TMP_Text effectText;
+
+        [Tooltip("Effect ÌÖçÏä§Ìä∏Ïùò Localize String EventÏûÖÎãàÎã§. ÎπÑÏñ¥ ÏûàÏúºÎ©¥ EffectÏóêÏÑú ÏûêÎèô ÌÉêÏÉâÌï©ÎãàÎã§.")]
+        public LocalizeStringEvent effectLocalizer;
+
+        [Tooltip("ÏÑ†ÌÉù ÏÉÅÌÉúÏóê Îî∞Îùº ÏÉâÏÉÅÏùÑ Î∞îÍøÄ Í∑∏ÎûòÌîΩÏûÖÎãàÎã§.")]
+        public Graphic tintGraphic;
+
+        [HideInInspector] public string unlockedName;
+        [HideInInspector] public string unlockedEffect;
+        [HideInInspector] public string unlockedEffectKey;
+        [HideInInspector] public bool textCached;
     }
 
-    [Header("Erosion Items")]
-    [Tooltip("Erosion_0, Erosion_1, Erosion_2, Erosion_3, Erosion_4, Erosion_5 º¯º≠¥Î∑Œ ≥÷æÓ¡÷ººø‰.")]
-    [SerializeField] private ErosionItem[] erosionItems = new ErosionItem[6];
+    [Header("Trial Items")]
+    [Tooltip("ÏãúÎ†® 1, ÏãúÎ†® 2, ÏãúÎ†® 3 Ìï≠Î™©ÏùÑ ÏÑ§Ï†ïÌï©ÎãàÎã§.")]
+    [SerializeField]
+    private TrialItem[] trialItems = new TrialItem[TrialSelectionState.TrialCount];
 
-    [Tooltip("ƒ—¡Æ ¿÷¿∏∏È ¿⁄Ωƒ ø¿∫Í¡ß∆Æ ¿Ã∏ß Erosion_0~5∏¶ ¿⁄µø¿∏∑Œ √£æ∆ ø¨∞·«’¥œ¥Ÿ.")]
-    [SerializeField] private bool autoBindErosionItems = true;
+    [SerializeField] private bool autoBindTrialItems = true;
+    [SerializeField] private bool allowLegacyErosionNames = true;
 
-    [Tooltip("Ω√¿€«“ ∂ß ¡ﬂæ”ø° µ— ƒßΩƒ ≥≠¿Ãµµ π¯»£¿‘¥œ¥Ÿ.")]
-    [SerializeField] private int startIndex = 0;
+    [Header("Locked Text")]
+    [SerializeField] private string lockedNameText = "???";
 
-    [Tooltip("≥°ø°º≠ «— π¯ ¥ı ≥—±‚∏È π›¥Î¬ ¿∏∑Œ ¿ÃæÓ¡ˆ∞‘ «’¥œ¥Ÿ.")]
-    [SerializeField] private bool wrapSelection = true;
+    [Header("Selection Visual")]
+    [SerializeField] private bool changeTintColor = true;
+    [SerializeField] private Color selectedColor = Color.white;
+    [SerializeField] private Color unselectedColor = new Color(1f, 1f, 1f, 0.55f);
 
-    [Tooltip("Wrap Selection¿Ã ƒ—¡Æ ¿÷¿ª ∂ß ≥°∞˙ ≥°¿ª Ω«¡¶ ø∑ ¿ßƒ°∑Œ πËƒ°«’¥œ¥Ÿ. øπ: Erosion_0 ¡ﬂæ”¿œ ∂ß Erosion_5¥¬ X -600ø° πËƒ°µÀ¥œ¥Ÿ.")]
-    [SerializeField] private bool useCircularWrapPositions = true;
-
-    [Header("Navigation Buttons")]
-    [Tooltip("¥©∏£∏È «ˆ¿Á ¡ﬂæ” ¿ÃπÃ¡ˆ∞° øﬁ¬ ¿∏∑Œ ¡ˆ≥™∞°∞Ì, ø¿∏•¬  ¿ÃπÃ¡ˆ∞° ¡ﬂæ”¿∏∑Œ ø…¥œ¥Ÿ.")]
-    [SerializeField] private Button prevButton;
-
-    [Tooltip("¥©∏£∏È «ˆ¿Á ¡ﬂæ” ¿ÃπÃ¡ˆ∞° ø¿∏•¬ ¿∏∑Œ ¡ˆ≥™∞°∞Ì, øﬁ¬  ¿ÃπÃ¡ˆ∞° ¡ﬂæ”¿∏∑Œ ø…¥œ¥Ÿ.")]
-    [SerializeField] private Button nextButton;
-
-    [Tooltip("ƒ—¡Æ ¿÷¿∏∏È πˆ∆∞ OnClick¿ª Ω∫≈©∏≥∆Æø°º≠ ¿⁄µø¿∏∑Œ ø¨∞·«’¥œ¥Ÿ.")]
-    [SerializeField] private bool bindNavigationButtonClicks = true;
-
-    [Tooltip("≥°ø°º≠ ¥ı ¿Ãµø«“ ºˆ æ¯¿ª ∂ß πˆ∆∞¿ª ∫Ò»∞º∫»≠«’¥œ¥Ÿ. Wrap Selection¿Ã ƒ—¡Æ ¿÷¿∏∏È ¿˚øÎµ«¡ˆ æ Ω¿¥œ¥Ÿ.")]
-    [SerializeField] private bool disableButtonsAtEnds = true;
-
-    [Header("Input Block")]
-    [Tooltip("∑Œ∫Ò ∏ﬁ¥∫∞° ø≠∑¡ ¿÷¿ª ∂ß A/D, πÊ«‚≈∞, ¿Ã¿¸/¥Ÿ¿Ω πˆ∆∞ ¿‘∑¬¿ª ∏∑Ω¿¥œ¥Ÿ.")]
-    [SerializeField] private bool blockInputWhenLobbyMenuOpen = true;
-
-    [Tooltip("∑Œ∫Ò ∏ﬁ¥∫∏¶ ø≠∞Ì ¥›¥¬ ƒ¡∆Æ∑—∑Ø¿‘¥œ¥Ÿ. ∫ÒøˆµŒ∏È ¿⁄µø¿∏∑Œ √£Ω¿¥œ¥Ÿ.")]
-    [SerializeField] private LobbyMenuController lobbyMenuController;
-
-    [Tooltip("∑Œ∫Ò ∏ﬁ¥∫ ∆–≥Œ¿‘¥œ¥Ÿ. LobbyMenuController∏¶ √£¡ˆ ∏¯«ﬂ¿ª ∂ß »∞º∫ ªÛ≈¬ »Æ¿ŒøÎ¿∏∑Œ ªÁøÎ«’¥œ¥Ÿ.")]
-    [SerializeField] private GameObject menuPanel;
-
-    [Tooltip("ƒ—¡Æ ¿÷¿∏∏È LobbyMenuController∏¶ ¿⁄µø¿∏∑Œ √£Ω¿¥œ¥Ÿ.")]
-    [SerializeField] private bool autoFindLobbyMenuController = true;
-
-    [Tooltip("ƒ—¡Æ ¿÷¥¬ µøæ» ƒßΩƒ ≥≠¿Ãµµ ¿‘∑¬¿ª ∏∑¿ª ∆–≥ŒµÈ¿‘¥œ¥Ÿ. ∏ﬁ¥∫ æ»¿« º≥¡§/»Æ¿Œ «¡∏Æ∆’¿Ã ¿÷¥Ÿ∏È « ø‰«“ ∂ß µÓ∑œ«“ ºˆ ¿÷Ω¿¥œ¥Ÿ.")]
-    [SerializeField] private GameObject[] inputBlockingPanels;
-
-    [Header("Keyboard")]
-    [Tooltip("A ≈∞ ¿‘∑¬¿ª ªÁøÎ«’¥œ¥Ÿ.")]
-    [SerializeField] private bool useAKey = true;
-
-    [Tooltip("D ≈∞ ¿‘∑¬¿ª ªÁøÎ«’¥œ¥Ÿ.")]
-    [SerializeField] private bool useDKey = true;
-
-    [Tooltip("øﬁ¬ /ø¿∏•¬  πÊ«‚≈∞ ¿‘∑¬¿ª «‘≤≤ ªÁøÎ«’¥œ¥Ÿ.")]
-    [SerializeField] private bool useArrowKeys = true;
-
-    [Tooltip("¿‘∑¬ »ƒ ¥Ÿ¿Ω ¿‘∑¬¿ª πﬁ¿ª ∂ß±Ó¡ˆ¿« ¬™¿∫ ¥Î±‚ Ω√∞£¿‘¥œ¥Ÿ.")]
-    [SerializeField] private float inputCooldown = 0.08f;
-
-    [Header("Movement")]
-    [Tooltip("«— ¥‹∞Ë ¿Ãµø ∞≈∏Æ¿‘¥œ¥Ÿ. «ˆ¿Á º≥¡§ ±‚¡ÿ Erosion_0=0, Erosion_1=600¿Ãπ«∑Œ 600¿ª ªÁøÎ«’¥œ¥Ÿ.")]
-    [SerializeField] private float spacingX = 600f;
-
-    [Tooltip("ƒ—¡Æ ¿÷¿∏∏È Ω√¿€ Ω√ «ˆ¿Á ø¿∫Í¡ß∆Æ ¿ßƒ°∏¶ ±‚¡ÿ ¿ßƒ°∑Œ ¿˙¿Â«’¥œ¥Ÿ. Erosion_0=0, Erosion_1=600√≥∑≥ ¡˜¡¢ πËƒ°«— ∞™¿ª ±◊¥Î∑Œ ªÁøÎ«’¥œ¥Ÿ.")]
-    [SerializeField] private bool useCurrentPositionsAsBase = true;
-
-    [Tooltip("»∏¿¸ø° ∞…∏Æ¥¬ Ω√∞£¿‘¥œ¥Ÿ.")]
-    [SerializeField] private float moveDuration = 0.25f;
-
-    [Tooltip("Time.timeScale¿« øµ«‚¿ª πﬁ¡ˆ æ ∞‘ øÚ¡˜¿‘¥œ¥Ÿ.")]
-    [SerializeField] private bool useUnscaledTime = true;
-
-    [SerializeField] private AnimationCurve moveCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-
-    [Header("Selection Move SFX")]
-    [SerializeField] private bool playSelectionMoveSfx = true;
-    [SerializeField] private SfxType selectionMoveSfxType = SfxType.NormalButtonClick;
+    [Header("Sound")]
+    [SerializeField] private bool playClickSound = true;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
     [Range(0f, 1f)]
-    [SerializeField] private float selectionMoveSfxVolume = 1f;
+    [SerializeField] private float clickVolume = 1f;
 
-    [Header("Navigation Button Press Feedback")]
-    [Tooltip("πˆ∆∞¿ª ¡˜¡¢ ¥©∏£¡ˆ æ ∞Ì ≈∞∫∏µÂ∑Œ ¡ﬂæ” º±≈√¿Ã ¿Ãµø«ÿµµ ¿Ã¿¸/¥Ÿ¿Ω πˆ∆∞¿Ã ¥≠∏∞ ∞Õ√≥∑≥ ∫∏¿Ã∞‘ «’¥œ¥Ÿ.")]
-    [SerializeField] private bool playNavigationButtonPressFeedback = true;
-    [Tooltip("≈∞∫∏µÂ ¿Ãµø Ω√ πˆ∆∞¿Ã ¥≠∏∞ ªÛ≈¬∑Œ ¿Ø¡ˆµ«¥¬ Ω√∞£¿‘¥œ¥Ÿ.")]
-    [SerializeField] private float navigationButtonPressDuration = 0.08f;
+    private readonly UnityEngine.Events.UnityAction[] clickActions =
+        new UnityEngine.Events.UnityAction[TrialSelectionState.TrialCount];
 
-    private Coroutine moveCoroutine;
-    private Coroutine prevButtonPressCoroutine;
-    private Coroutine nextButtonPressCoroutine;
-    private int currentIndex;
-    private float nextInputAllowedTime;
     private bool isInitialized;
 
-    public int CurrentIndex => currentIndex;
+    public int SelectedMask => TrialSelectionState.SelectedMask;
+
+    public int CurrentIndex
+    {
+        get
+        {
+            for (int i = 0; i < TrialSelectionState.TrialCount; i++)
+            {
+                if (TrialSelectionState.IsSelected(i))
+                    return i;
+            }
+
+            return -1;
+        }
+    }
 
     private void Awake()
     {
-        FindInputBlockReferencesIfNeeded();
         Initialize();
     }
 
     private void OnEnable()
     {
-        FindInputBlockReferencesIfNeeded();
         Initialize();
-        currentIndex = Mathf.Clamp(startIndex, 0, GetLastIndex());
-        ApplyPositions(true);
-        RefreshNavigationButtons();
+
+        TrialSelectionState.SelectionChanged -= RefreshVisuals;
+        TrialSelectionState.SelectionChanged += RefreshVisuals;
+
+        TrialUnlockProgress.ProgressChanged -= RefreshVisuals;
+        TrialUnlockProgress.ProgressChanged += RefreshVisuals;
+
+        RefreshVisuals();
+        RefreshPanelText();
     }
 
     private void OnDisable()
     {
-        if (moveCoroutine != null)
-        {
-            StopCoroutine(moveCoroutine);
-            moveCoroutine = null;
-        }
-
-        StopNavigationButtonPressFeedback();
+        TrialSelectionState.SelectionChanged -= RefreshVisuals;
+        TrialUnlockProgress.ProgressChanged -= RefreshVisuals;
     }
 
     private void OnDestroy()
     {
-        UnbindNavigationButtons();
+        UnbindButtons();
+        TrialSelectionState.SelectionChanged -= RefreshVisuals;
+        TrialUnlockProgress.ProgressChanged -= RefreshVisuals;
     }
 
-    private void Update()
+    private void OnValidate()
     {
-        if (!isActiveAndEnabled)
-            return;
-
-        if (IsInputBlocked())
-            return;
-
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null)
-            return;
-
-        if (GetTime() < nextInputAllowedTime)
-            return;
-
-        if ((useAKey && keyboard.aKey.wasPressedThisFrame) || (useArrowKeys && keyboard.leftArrowKey.wasPressedThisFrame))
-        {
-            MoveLeftImageToCenter();
-            BlockInputForCooldown();
-            return;
-        }
-
-        if ((useDKey && keyboard.dKey.wasPressedThisFrame) || (useArrowKeys && keyboard.rightArrowKey.wasPressedThisFrame))
-        {
-            MoveRightImageToCenter();
-            BlockInputForCooldown();
-        }
+        EnsureArraySize();
     }
 
-    [ContextMenu("Move Right Image To Center")]
-    public void MoveRightImageToCenter()
+    public void ToggleTrial(int trialIndex)
     {
-        if (IsInputBlocked())
+        if (trialIndex < 0 || trialIndex >= TrialSelectionState.TrialCount)
             return;
 
-        // «ˆ¿Á ¡ﬂæ” ¿ÃπÃ¡ˆ∞° øﬁ¬ ¿∏∑Œ ¡ˆ≥™∞°∞Ì, ø¿∏•¬  ¿ÃπÃ¡ˆ∞° ¡ﬂæ”¿∏∑Œ ø…¥œ¥Ÿ.
-        MoveSelection(1);
-    }
-
-    [ContextMenu("Move Left Image To Center")]
-    public void MoveLeftImageToCenter()
-    {
-        if (IsInputBlocked())
+        if (!TrialUnlockProgress.IsUnlocked(trialIndex))
             return;
 
-        // «ˆ¿Á ¡ﬂæ” ¿ÃπÃ¡ˆ∞° ø¿∏•¬ ¿∏∑Œ ¡ˆ≥™∞°∞Ì, øﬁ¬  ¿ÃπÃ¡ˆ∞° ¡ﬂæ”¿∏∑Œ ø…¥œ¥Ÿ.
-        MoveSelection(-1);
-    }
-
-    public void SetSelection(int index, bool instant = false)
-    {
-        Initialize();
-
-        int lastIndex = GetLastIndex();
-        if (lastIndex < 0)
+        if (!CanLocalPlayerMutateHostOnlyState())
             return;
 
-        int nextIndex = Mathf.Clamp(index, 0, lastIndex);
-        bool selectionChanged = currentIndex != nextIndex;
-
-        currentIndex = nextIndex;
-        ApplyPositions(instant);
-        RefreshNavigationButtons();
-
-        if (selectionChanged && !instant)
-            PlaySelectionMoveSfx();
+        TrialSelectionState.Toggle(trialIndex);
+        PlayClickSound();
+        PublishHostSnapshotAfterLocalMutation();
     }
 
-    private void MoveSelection(int direction)
-    {
-        Initialize();
+    public void ToggleTrial1() => ToggleTrial(0);
+    public void ToggleTrial2() => ToggleTrial(1);
+    public void ToggleTrial3() => ToggleTrial(2);
 
-        int lastIndex = GetLastIndex();
-        if (lastIndex < 0 || direction == 0)
+    public void SetTrialSelected(int trialIndex, bool selected)
+    {
+        if (selected && !TrialUnlockProgress.IsUnlocked(trialIndex))
             return;
 
-        int nextIndex = currentIndex + direction;
-
-        if (wrapSelection)
-        {
-            if (nextIndex < 0)
-                nextIndex = lastIndex;
-            else if (nextIndex > lastIndex)
-                nextIndex = 0;
-        }
-        else
-        {
-            nextIndex = Mathf.Clamp(nextIndex, 0, lastIndex);
-        }
-
-        if (nextIndex == currentIndex)
-            return;
-
-        currentIndex = nextIndex;
-        ApplyPositions(false);
-        RefreshNavigationButtons();
-        PlaySelectionMoveSfx();
-        PlayNavigationButtonPressFeedback(direction);
+        TrialSelectionState.SetSelected(trialIndex, selected);
     }
 
-    private void PlaySelectionMoveSfx()
+    public bool IsTrialSelected(int trialIndex)
     {
-        if (!playSelectionMoveSfx || AudioManager.Instance == null)
-            return;
-
-        AudioManager.Instance.PlaySfx(selectionMoveSfxType, selectionMoveSfxVolume);
+        return TrialSelectionState.IsSelected(trialIndex);
     }
 
-    private void PlayNavigationButtonPressFeedback(int direction)
+    [ContextMenu("Clear Trial Selection")]
+    public void ClearSelection()
     {
-        if (!playNavigationButtonPressFeedback)
-            return;
-
-        // «ˆ¿Á ø¨∞· ±‚¡ÿªÛ prevButton¿∫ MoveSelection(1), nextButton¿∫ MoveSelection(-1)¿ª Ω««‡«’¥œ¥Ÿ.
-        Button targetButton = direction > 0 ? prevButton : nextButton;
-
-        if (targetButton == null || !targetButton.gameObject.activeInHierarchy || !targetButton.interactable)
-            return;
-
-        if (direction > 0)
-        {
-            if (prevButtonPressCoroutine != null)
-                StopCoroutine(prevButtonPressCoroutine);
-
-            prevButtonPressCoroutine = StartCoroutine(PlayButtonPressFeedbackRoutine(targetButton, true));
-        }
-        else
-        {
-            if (nextButtonPressCoroutine != null)
-                StopCoroutine(nextButtonPressCoroutine);
-
-            nextButtonPressCoroutine = StartCoroutine(PlayButtonPressFeedbackRoutine(targetButton, false));
-        }
+        TrialSelectionState.Clear();
     }
 
-    private IEnumerator PlayButtonPressFeedbackRoutine(Button button, bool isPrevButton)
+    [ContextMenu("Auto Bind Trial Items")]
+    public void AutoBindTrialItems()
     {
-        if (button == null || EventSystem.current == null)
-            yield break;
+        EnsureArraySize();
 
-        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        for (int i = 0; i < TrialSelectionState.TrialCount; i++)
         {
-            button = PointerEventData.InputButton.Left,
-            position = Vector2.zero
-        };
+            TrialItem item = trialItems[i];
+            Transform target = item.target;
 
-        ExecuteEvents.Execute(button.gameObject, pointerData, ExecuteEvents.pointerDownHandler);
-
-        float elapsed = 0f;
-        float duration = Mathf.Max(0f, navigationButtonPressDuration);
-
-        while (elapsed < duration)
-        {
-            elapsed += GetDeltaTime();
-            yield return null;
-        }
-
-        ExecuteEvents.Execute(button.gameObject, pointerData, ExecuteEvents.pointerUpHandler);
-
-        if (isPrevButton)
-            prevButtonPressCoroutine = null;
-        else
-            nextButtonPressCoroutine = null;
-    }
-
-    private void StopNavigationButtonPressFeedback()
-    {
-        if (prevButtonPressCoroutine != null)
-        {
-            StopCoroutine(prevButtonPressCoroutine);
-            prevButtonPressCoroutine = null;
-        }
-
-        if (nextButtonPressCoroutine != null)
-        {
-            StopCoroutine(nextButtonPressCoroutine);
-            nextButtonPressCoroutine = null;
-        }
-    }
-
-    private bool IsInputBlocked()
-    {
-        if (blockInputWhenLobbyMenuOpen)
-        {
-            FindInputBlockReferencesIfNeeded();
-
-            if (lobbyMenuController != null)
-                return lobbyMenuController.IsMenuOpen;
-
-            // LobbyMenuController∏¶ √£¡ˆ ∏¯«ﬂ¿ª ∂ß∏∏ ∆–≥Œ »∞º∫ ªÛ≈¬∏¶ øπ∫Ò∑Œ »Æ¿Œ«’¥œ¥Ÿ.
-            // ƒ¡∆Æ∑—∑Ø∞° ø¨∞·µ» ªÛ≈¬ø°º≠¥¬ ƒ¡∆Æ∑—∑Ø∞° ±‚∑œ«— ¿œΩ√¡§¡ˆ ªÛ≈¬∏∏ πœæÓæﬂ
-            // ∫Ò»∞º∫√≥∑≥ æ≤¥¬ ∏ﬁ¥∫ ∆–≥Œ ∂ßπÆø° A/D∞° ∞Ëº” ∏∑»˜¥¬ ¿œ¿ª «««“ ºˆ ¿÷Ω¿¥œ¥Ÿ.
-            if (menuPanel != null && menuPanel.activeInHierarchy)
-                return true;
-        }
-
-        if (inputBlockingPanels != null)
-        {
-            for (int i = 0; i < inputBlockingPanels.Length; i++)
+            if (target == null)
             {
-                GameObject panel = inputBlockingPanels[i];
-                if (panel != null && panel.activeInHierarchy)
-                    return true;
+                target = FindChildRecursive(transform, "Trial_" + (i + 1));
+
+                if (target == null)
+                    target = FindChildRecursive(transform, "Trial" + (i + 1));
+
+                if (target == null && allowLegacyErosionNames)
+                    target = FindChildRecursive(transform, "Erosion_" + i);
+
+                item.target = target;
             }
+
+            if (target == null)
+                continue;
+
+            if (item.button == null)
+                item.button = target.GetComponent<Button>() ?? target.GetComponentInChildren<Button>(true);
+
+            if (item.tintGraphic == null)
+                item.tintGraphic = target.GetComponent<Graphic>() ?? target.GetComponentInChildren<Graphic>(true);
+
+            if (item.selectedVisual == null)
+                item.selectedVisual = FindNamedChild(target, "Selected");
+
+            if (item.lockVisual == null)
+                item.lockVisual = FindNamedChild(target, "LOCK");
+
+            if (item.nameText == null)
+                item.nameText = FindTextChild(target, "Name");
+
+            if (item.effectText == null)
+                item.effectText = FindTextChild(target, "Effect");
+
+            if (item.effectLocalizer == null && item.effectText != null)
+                item.effectLocalizer = item.effectText.GetComponent<LocalizeStringEvent>();
+
+            CacheUnlockedText(item);
         }
 
-        return false;
-    }
-
-    private void FindInputBlockReferencesIfNeeded()
-    {
-        if (!autoFindLobbyMenuController)
-            return;
-
-        if (lobbyMenuController == null)
-            lobbyMenuController = FindFirstObjectByType<LobbyMenuController>(FindObjectsInactive.Include);
-
-        if (lobbyMenuController != null && menuPanel == null)
-            menuPanel = lobbyMenuController.MenuPanel;
+        if (Application.isPlaying && isInitialized)
+        {
+            UnbindButtons();
+            BindButtons();
+            RefreshVisuals();
+        }
     }
 
     private void Initialize()
@@ -368,295 +224,243 @@ public class ErosionSelectCarousel : MonoBehaviour
         if (isInitialized)
             return;
 
-        if (autoBindErosionItems)
-            AutoBindItems();
+        EnsureArraySize();
 
-        CacheBasePositions();
-        BindNavigationButtons();
+        if (autoBindTrialItems)
+            AutoBindTrialItems();
+        else
+            CacheAllUnlockedTexts();
+
+        BindButtons();
         isInitialized = true;
     }
 
-    private void AutoBindItems()
+    private void EnsureArraySize()
     {
-        if (erosionItems == null || erosionItems.Length != 6)
-            erosionItems = new ErosionItem[6];
-
-        for (int i = 0; i < erosionItems.Length; i++)
+        if (trialItems != null && trialItems.Length == TrialSelectionState.TrialCount)
         {
-            if (erosionItems[i] == null)
-                erosionItems[i] = new ErosionItem();
+            for (int i = 0; i < trialItems.Length; i++)
+            {
+                if (trialItems[i] == null)
+                    trialItems[i] = new TrialItem();
+            }
 
-            if (erosionItems[i].target != null)
+            return;
+        }
+
+        TrialItem[] resized = new TrialItem[TrialSelectionState.TrialCount];
+
+        if (trialItems != null)
+        {
+            int copyCount = Mathf.Min(trialItems.Length, resized.Length);
+            for (int i = 0; i < copyCount; i++)
+                resized[i] = trialItems[i];
+        }
+
+        for (int i = 0; i < resized.Length; i++)
+        {
+            if (resized[i] == null)
+                resized[i] = new TrialItem();
+        }
+
+        trialItems = resized;
+    }
+
+    private void BindButtons()
+    {
+        for (int i = 0; i < TrialSelectionState.TrialCount; i++)
+        {
+            TrialItem item = trialItems[i];
+            if (item == null || item.button == null)
                 continue;
 
-            Transform found = transform.Find("Erosion_" + i);
-            if (found != null)
-                erosionItems[i].target = found;
+            int capturedIndex = i;
+            clickActions[i] = () => ToggleTrial(capturedIndex);
+            item.button.onClick.RemoveListener(clickActions[i]);
+            item.button.onClick.AddListener(clickActions[i]);
         }
     }
 
-    private void CacheBasePositions()
+    private void UnbindButtons()
     {
-        if (erosionItems == null)
+        if (trialItems == null)
             return;
 
-        for (int i = 0; i < erosionItems.Length; i++)
+        int count = Mathf.Min(trialItems.Length, clickActions.Length);
+        for (int i = 0; i < count; i++)
         {
-            ErosionItem item = erosionItems[i];
-            if (item == null || item.target == null)
+            TrialItem item = trialItems[i];
+            if (item == null || item.button == null || clickActions[i] == null)
                 continue;
 
-            item.rectTransform = item.target as RectTransform;
-
-            if (useCurrentPositionsAsBase)
-            {
-                item.baseLocalPosition = item.target.localPosition;
-                if (item.rectTransform != null)
-                    item.baseAnchoredPosition = item.rectTransform.anchoredPosition;
-            }
-            else
-            {
-                item.baseLocalPosition = new Vector3(i * spacingX, item.target.localPosition.y, item.target.localPosition.z);
-                item.baseAnchoredPosition = new Vector2(i * spacingX, item.rectTransform != null ? item.rectTransform.anchoredPosition.y : item.target.localPosition.y);
-            }
+            item.button.onClick.RemoveListener(clickActions[i]);
+            clickActions[i] = null;
         }
     }
 
-    private void BindNavigationButtons()
+    private void RefreshVisuals()
     {
-        if (!bindNavigationButtonClicks)
+        if (trialItems == null)
             return;
 
-        if (prevButton != null)
+        int count = Mathf.Min(trialItems.Length, TrialSelectionState.TrialCount);
+        for (int i = 0; i < count; i++)
         {
-            prevButton.onClick.RemoveListener(MoveRightImageToCenter);
-            prevButton.onClick.AddListener(MoveRightImageToCenter);
-        }
-
-        if (nextButton != null)
-        {
-            nextButton.onClick.RemoveListener(MoveLeftImageToCenter);
-            nextButton.onClick.AddListener(MoveLeftImageToCenter);
-        }
-    }
-
-    private void UnbindNavigationButtons()
-    {
-        if (!bindNavigationButtonClicks)
-            return;
-
-        if (prevButton != null)
-            prevButton.onClick.RemoveListener(MoveRightImageToCenter);
-
-        if (nextButton != null)
-            nextButton.onClick.RemoveListener(MoveLeftImageToCenter);
-    }
-
-    private void ApplyPositions(bool instant)
-    {
-        if (moveCoroutine != null)
-        {
-            StopCoroutine(moveCoroutine);
-            moveCoroutine = null;
-        }
-
-        if (instant || moveDuration <= 0f)
-        {
-            ApplyTargetPositions(1f, null, null);
-            return;
-        }
-
-        moveCoroutine = StartCoroutine(AnimatePositions());
-    }
-
-    private IEnumerator AnimatePositions()
-    {
-        Vector3[] startLocalPositions = new Vector3[erosionItems.Length];
-        Vector2[] startAnchoredPositions = new Vector2[erosionItems.Length];
-        Vector3[] targetLocalPositions = new Vector3[erosionItems.Length];
-        Vector2[] targetAnchoredPositions = new Vector2[erosionItems.Length];
-
-        for (int i = 0; i < erosionItems.Length; i++)
-        {
-            ErosionItem item = erosionItems[i];
-            if (item == null || item.target == null)
+            TrialItem item = trialItems[i];
+            if (item == null)
                 continue;
 
-            startLocalPositions[i] = item.target.localPosition;
-            startAnchoredPositions[i] = item.rectTransform != null ? item.rectTransform.anchoredPosition : Vector2.zero;
-            GetTargetPosition(i, out targetLocalPositions[i], out targetAnchoredPositions[i]);
-        }
+            CacheUnlockedText(item);
 
-        float elapsed = 0f;
-        while (elapsed < moveDuration)
-        {
-            elapsed += GetDeltaTime();
-            float t = Mathf.Clamp01(elapsed / moveDuration);
-            float eased = moveCurve != null ? moveCurve.Evaluate(t) : Mathf.SmoothStep(0f, 1f, t);
+            bool unlocked = TrialUnlockProgress.IsUnlocked(i);
+            bool selected = unlocked && TrialSelectionState.IsSelected(i);
 
-            ApplyTargetPositions(eased, startLocalPositions, startAnchoredPositions, targetLocalPositions, targetAnchoredPositions);
-            yield return null;
-        }
+            if (!unlocked && TrialSelectionState.IsSelected(i))
+                TrialSelectionState.SetSelected(i, false);
 
-        ApplyTargetPositions(1f, startLocalPositions, startAnchoredPositions, targetLocalPositions, targetAnchoredPositions);
-        moveCoroutine = null;
-    }
+            if (item.lockVisual != null)
+                item.lockVisual.SetActive(!unlocked);
 
-    private void ApplyTargetPositions(float t, Vector3[] startLocalPositions, Vector2[] startAnchoredPositions)
-    {
-        Vector3[] targetLocalPositions = new Vector3[erosionItems.Length];
-        Vector2[] targetAnchoredPositions = new Vector2[erosionItems.Length];
+            if (item.selectedVisual != null)
+                item.selectedVisual.SetActive(selected);
 
-        for (int i = 0; i < erosionItems.Length; i++)
-            GetTargetPosition(i, out targetLocalPositions[i], out targetAnchoredPositions[i]);
+            if (item.button != null)
+                item.button.interactable = unlocked && CanLocalPlayerMutateHostOnlyState();
 
-        ApplyTargetPositions(t, startLocalPositions, startAnchoredPositions, targetLocalPositions, targetAnchoredPositions);
-    }
+            if (item.nameText != null)
+                item.nameText.text = unlocked ? item.unlockedName : lockedNameText;
 
-    private void ApplyTargetPositions(float t, Vector3[] startLocalPositions, Vector2[] startAnchoredPositions, Vector3[] targetLocalPositions, Vector2[] targetAnchoredPositions)
-    {
-        for (int i = 0; i < erosionItems.Length; i++)
-        {
-            ErosionItem item = erosionItems[i];
-            if (item == null || item.target == null)
-                continue;
-
-            if (item.rectTransform != null)
+            if (item.effectText != null)
             {
-                Vector2 start = startAnchoredPositions != null ? startAnchoredPositions[i] : item.rectTransform.anchoredPosition;
-                item.rectTransform.anchoredPosition = Vector2.LerpUnclamped(start, targetAnchoredPositions[i], t);
+                if (unlocked)
+                    ApplyEffectText(item, item.unlockedEffectKey, item.unlockedEffect);
+                else
+                    ApplyEffectText(
+                        item,
+                        TrialUnlockProgress.GetUnlockRequirementKey(i),
+                        TrialUnlockProgress.GetUnlockRequirementText(i));
             }
-            else
-            {
-                Vector3 start = startLocalPositions != null ? startLocalPositions[i] : item.target.localPosition;
-                item.target.localPosition = Vector3.LerpUnclamped(start, targetLocalPositions[i], t);
-            }
+
+            if (changeTintColor && item.tintGraphic != null)
+                item.tintGraphic.color = selected ? selectedColor : unselectedColor;
         }
     }
 
-    private void GetTargetPosition(int itemIndex, out Vector3 localPosition, out Vector2 anchoredPosition)
+    private void CacheAllUnlockedTexts()
     {
-        ErosionItem item = erosionItems[itemIndex];
+        if (trialItems == null)
+            return;
 
-        if (item == null || item.target == null)
+        for (int i = 0; i < trialItems.Length; i++)
+            CacheUnlockedText(trialItems[i]);
+    }
+
+    private static void CacheUnlockedText(TrialItem item)
+    {
+        if (item == null || item.textCached)
+            return;
+
+        item.unlockedName = item.nameText != null ? item.nameText.text : string.Empty;
+        item.unlockedEffect = item.effectText != null ? item.effectText.text : string.Empty;
+        item.unlockedEffectKey = item.effectLocalizer != null
+            ? item.effectLocalizer.StringReference.TableEntryReference.Key
+            : string.Empty;
+        item.textCached = true;
+    }
+
+    private static void ApplyEffectText(TrialItem item, string localizationKey, string fallback)
+    {
+        if (item == null || item.effectText == null)
+            return;
+
+        if (item.effectLocalizer == null)
         {
-            localPosition = Vector3.zero;
-            anchoredPosition = Vector2.zero;
+            item.effectText.text = fallback ?? string.Empty;
             return;
         }
 
-        int clampedCurrentIndex = Mathf.Clamp(currentIndex, 0, GetLastIndex());
-        float x;
-
-        if (wrapSelection && useCircularWrapPositions)
+        if (!string.IsNullOrWhiteSpace(localizationKey))
         {
-            int relativeIndex = GetCircularRelativeIndex(itemIndex, clampedCurrentIndex);
-            x = relativeIndex * spacingX;
-        }
-        else
-        {
-            float baseCurrentX = useCurrentPositionsAsBase
-                ? GetBaseX(clampedCurrentIndex)
-                : clampedCurrentIndex * spacingX;
-
-            x = useCurrentPositionsAsBase
-                ? GetBaseX(itemIndex) - baseCurrentX
-                : (itemIndex - clampedCurrentIndex) * spacingX;
+            item.effectLocalizer.StringReference = new LocalizedString(
+                GameLocalization.TableName,
+                localizationKey);
+            item.effectLocalizer.RefreshString();
+            item.effectText.text = GameLocalization.Get(localizationKey, fallback);
+            return;
         }
 
-        localPosition = item.baseLocalPosition;
-        localPosition.x = x;
-
-        anchoredPosition = item.baseAnchoredPosition;
-        anchoredPosition.x = x;
+        item.effectText.text = fallback ?? string.Empty;
     }
 
-    private int GetCircularRelativeIndex(int itemIndex, int centerIndex)
+    private void RefreshPanelText()
     {
-        int count = GetValidItemCount();
-        if (count <= 0)
-            return itemIndex - centerIndex;
-
-        int relativeIndex = itemIndex - centerIndex;
-        int halfCount = count / 2;
-
-        if (relativeIndex > halfCount)
-            relativeIndex -= count;
-        else if (relativeIndex < -halfCount)
-            relativeIndex += count;
-
-        return relativeIndex;
-    }
-
-    private int GetValidItemCount()
-    {
-        if (erosionItems == null)
-            return 0;
-
-        int count = 0;
-        for (int i = 0; i < erosionItems.Length; i++)
-        {
-            if (erosionItems[i] != null && erosionItems[i].target != null)
-                count++;
-        }
-
-        return count;
-    }
-
-    private float GetBaseX(int index)
-    {
-        if (erosionItems == null || index < 0 || index >= erosionItems.Length)
-            return index * spacingX;
-
-        ErosionItem item = erosionItems[index];
-        if (item == null || item.target == null)
-            return index * spacingX;
-
-        return item.rectTransform != null ? item.baseAnchoredPosition.x : item.baseLocalPosition.x;
-    }
-
-    private int GetLastIndex()
-    {
-        if (erosionItems == null)
-            return -1;
-
-        for (int i = erosionItems.Length - 1; i >= 0; i--)
-        {
-            if (erosionItems[i] != null && erosionItems[i].target != null)
-                return i;
-        }
-
-        return -1;
-    }
-
-    private void RefreshNavigationButtons()
-    {
-        if (!disableButtonsAtEnds || wrapSelection)
+        MenuPanelTextRefresher refresher = EnsurePanelTextRefresher(gameObject);
+        if (refresher == null)
             return;
 
-        int lastIndex = GetLastIndex();
-        if (lastIndex < 0)
+        refresher.RefreshNow();
+        refresher.RefreshNextFrame();
+    }
+
+    private static MenuPanelTextRefresher EnsurePanelTextRefresher(GameObject panel)
+    {
+        if (panel == null)
+            return null;
+
+        MenuPanelTextRefresher refresher = panel.GetComponent<MenuPanelTextRefresher>();
+        return refresher != null ? refresher : panel.AddComponent<MenuPanelTextRefresher>();
+    }
+
+    private void PlayClickSound()
+    {
+        if (!playClickSound || AudioManager.Instance == null)
             return;
 
-        if (prevButton != null)
-            prevButton.interactable = currentIndex < lastIndex;
-
-        if (nextButton != null)
-            nextButton.interactable = currentIndex > 0;
+        AudioManager.Instance.PlaySfx(clickSfx, clickVolume);
     }
 
-    private void BlockInputForCooldown()
+    private static bool CanLocalPlayerMutateHostOnlyState()
     {
-        nextInputAllowedTime = GetTime() + Mathf.Max(0f, inputCooldown);
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return synchronizer == null ||
+               synchronizer.CanLocalPlayerMutateHostOnlyState();
     }
 
-    private float GetTime()
+    private static void PublishHostSnapshotAfterLocalMutation()
     {
-        return useUnscaledTime ? Time.unscaledTime : Time.time;
+        SteamLobbySharedStateSynchronizer.Instance
+            ?.PublishHostSnapshotAfterLocalMutation();
     }
 
-    private float GetDeltaTime()
+    private static GameObject FindNamedChild(Transform target, string childName)
     {
-        return useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+        Transform found = FindChildRecursive(target, childName);
+        return found != null ? found.gameObject : null;
+    }
+
+    private static TMP_Text FindTextChild(Transform target, string childName)
+    {
+        Transform found = FindChildRecursive(target, childName);
+        return found != null ? found.GetComponent<TMP_Text>() : null;
+    }
+
+    private static Transform FindChildRecursive(Transform root, string objectName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(objectName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child.name == objectName)
+                return child;
+
+            Transform nested = FindChildRecursive(child, objectName);
+            if (nested != null)
+                return nested;
+        }
+
+        return null;
     }
 }

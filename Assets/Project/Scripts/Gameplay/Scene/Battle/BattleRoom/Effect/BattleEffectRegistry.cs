@@ -9,18 +9,29 @@ public class BattleEffectRegistry
     {
         Register(new StrikeEffect());
         Register(new PierceEffect());
+        Register(new HealEffect());
+        Register(new CostRecoveryEffect());
+        Register(new UniqueRecoveryEffect());
 
-        Register(new BurnEffect());
-        Register(new BleedingEffect());
-        Register(new AddictedEffect());
+        Register(new BleedEffect());
+        Register(new PoisonEffect());
 
-        Register(new PowerEffect());
+        Register(new BoostEffect());
         Register(new ArmorEffect());
-        Register(new AimingEffect());
-        Register(new RecoverEffect());
-        Register(new RechargeEffect());
+        Register(new ChargeEffect());
         Register(new FocusEffect());
         Register(new SwiftEffect());
+        Register(new SmiteEffect());
+        Register(new BarrierEffect());
+        Register(new MoveFirstAttackPowerEffect());
+        Register(new PoisonApplyDoubleEffect());
+        Register(new BleedingApplyDoubleEffect());
+        Register(new MaxHpUpEffect());
+        Register(new KillHealEffect());
+        Register(new SkillResourceGainUpEffect());
+        Register(new BuffApplyDoubleEffect());
+        Register(new LowHpPowerEffect());
+        Register(new MovePointUpEffect());
 
         Register(new VulnerableEffect());
         Register(new WeakenEffect());
@@ -28,11 +39,16 @@ public class BattleEffectRegistry
         Register(new CorrosionEffect());
 
         Register(new BlockEffect());
-        Register(new ThornsEffect());
-        Register(new DrainEffect());
+        Register(new WardEffect());
+        Register(new LifestealEffect());
 
         Register(new KnockbackEffect());
         Register(new GrabEffect());
+        Register(new SpawnSpiderEggEffect());
+        Register(new SpawnSpiderWebEffect());
+        Register(new SpawnSoldierEffect());
+        Register(new LogOnlyEffect("E_Rush"));
+        Register(new CrashEffect());
     }
 
     private void Register(BattleEffectBase effect)

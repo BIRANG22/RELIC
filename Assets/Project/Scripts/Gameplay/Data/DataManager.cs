@@ -17,6 +17,10 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private SkillRangeIconDatabase skillRangeIconDatabase;
     [SerializeField] private ItemIconDatabase itemIconDatabase;
     [SerializeField] private GridEffectSpriteDatabase gridEffectSpriteDatabase;
+    [SerializeField] private SkillAttackOverrideDatabase skillAttackOverrideDatabase;
+    [SerializeField] private SkillVfxDatabase skillVfxDatabase;
+    [SerializeField] private MapVisualDatabase mapVisualDatabase;
+    [SerializeField] private ErosionIconDatabase erosionIconDatabase;
 
     private DataBootstrap dataBootstrap = new();
 
@@ -31,6 +35,7 @@ public class DataManager : Singleton<DataManager>
     public RuneIconDatabase RuneIconDatabase => runeIconDatabase;
     public EffectDatabase EffectDatabase => dataBootstrap.EffectDatabase;
     public RelicDatabase RelicDatabase => dataBootstrap.RelicDatabase;
+    public CompoundDatabase CompoundDatabase => dataBootstrap.CompoundDatabase;
     public StatusEffectIconDatabase StatusEffectIconDatabase => statusEffectIconDatabase;
     public ActionTypeIconDatabase ActionTypeIconDatabase => actionTypeIconDatabase;
     public MapNodeIconDatabase MapNodeIconDatabase => mapNodeIconDatabase;
@@ -38,6 +43,7 @@ public class DataManager : Singleton<DataManager>
     public MonsterDatabase MonsterDatabase => dataBootstrap.MonsterDatabase;
     public MonsterIconDatabase MonsterIconDatabase => monsterIconDatabase;
     public MapDatabase MapDatabase => dataBootstrap.MapDatabase;
+    public EventDatabase EventDatabase => dataBootstrap.EventDatabase;
     public MonsterSkillDatabase MonsterSkillDatabase => dataBootstrap.MonsterSkillDatabase;
     public MonsterPatternInfoDatabase MonsterPatternInfoDatabase => dataBootstrap.MonsterPatternInfoDatabase;
     public RuneDatabase RuneDatabase => dataBootstrap.RuneDatabase;
@@ -46,6 +52,11 @@ public class DataManager : Singleton<DataManager>
     public ItemIconDatabase ItemIconDatabase => itemIconDatabase;
     public GridEffectDatabase GridEffectDatabase => dataBootstrap.GridEffectDatabase;
     public GridEffectSpriteDatabase GridEffectSpriteDatabase => gridEffectSpriteDatabase;
+    public SkillAttackOverrideDatabase SkillAttackOverrideDatabase => skillAttackOverrideDatabase;
+    public SkillVfxDatabase SkillVfxDatabase => skillVfxDatabase;
+    public MapVisualDatabase MapVisualDatabase => mapVisualDatabase;
+    public ErosionDatabase ErosionDatabase => dataBootstrap.ErosionDatabase;
+    public ErosionIconDatabase ErosionIconDatabase => erosionIconDatabase;
     public CharacterRuntimeStore CharacterRuntimeStore { get; private set; } = new();
     public PartyRuntimeStore PartyRuntimeStore { get; private set; } = new();
     public SkillRuntimeStore SkillRuntimeStore { get; private set; } = new();
@@ -53,6 +64,7 @@ public class DataManager : Singleton<DataManager>
     public MapRuntimeStore MapRuntimeStore { get; private set; } = new();
     public PlayerRuntimeStore PlayerRuntimeStore { get; private set; } = new();
     public BattleRuntimeStore BattleRuntimeStore { get; private set; } = new();
+    public LobbyRuntimeStore LobbyRuntimeStore { get; private set; } = new();
     protected override void Awake()
     {
         base.Awake();
@@ -80,6 +92,18 @@ public class DataManager : Singleton<DataManager>
 
         if (gridEffectSpriteDatabase != null)
             gridEffectSpriteDatabase.Initialize();
+
+        if (skillAttackOverrideDatabase != null)
+            skillAttackOverrideDatabase.Initialize();
+
+        if (skillVfxDatabase != null)
+            skillVfxDatabase.Initialize();
+
+        if (mapVisualDatabase != null)
+            mapVisualDatabase.Initialize();
+
+        if (erosionIconDatabase != null)
+            erosionIconDatabase.Initialize();
 
         SkillEquipService = new SkillEquipService(CharacterRuntimeStore);
     }

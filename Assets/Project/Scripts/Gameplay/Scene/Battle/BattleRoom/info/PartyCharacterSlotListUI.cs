@@ -42,25 +42,19 @@ public class PartyCharacterSlotListUI : MonoBehaviour
 
         ClearAll();
 
-        int displaySlotIndex = 0;
-
         for (int partyIndex = 0; partyIndex < slots.Length; partyIndex++)
         {
-            string characterId = partyStore.GetCharacterId(partyIndex);
-
-            if (string.IsNullOrWhiteSpace(characterId))
-                continue;
-
-            if (displaySlotIndex >= slots.Length)
-                break;
-
-            PartyCharacterSlotUI slot = slots[displaySlotIndex];
+            PartyCharacterSlotUI slot = slots[partyIndex];
 
             if (slot == null)
-            {
-                displaySlotIndex++;
                 continue;
-            }
+
+            string characterId = partyStore.GetCharacterId(partyIndex);
+
+            // 빈 파티 슬롯은 그대로 비워 둡니다.
+            // 뒤쪽 캐릭터를 앞 슬롯으로 당기지 않아 실제 파티 번호를 유지합니다.
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
 
             CharacterMasterData masterData = null;
 
@@ -81,8 +75,6 @@ public class PartyCharacterSlotListUI : MonoBehaviour
                 : characterId;
 
             ApplySlot(slot.transform, characterName, markSprite, mark2Sprite);
-
-            displaySlotIndex++;
         }
     }
 

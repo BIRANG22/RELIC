@@ -12,6 +12,7 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private Button button;
 
+
     private BattleRewardData reward;
     private Sprite remnantIcon;
     private Color remnantIconColor = Color.white;
@@ -77,7 +78,7 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
         }
         else if (reward.Type == BattleRewardType.Skill)
         {
-            iconColor = SkillRarityUtility.GetSkillIconColor(reward.RewardId);
+            iconColor = Color.white;
         }
 
         if (iconImage != null)
@@ -85,6 +86,9 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
             iconImage.sprite = icon;
             iconImage.color = iconColor;
             iconImage.enabled = icon != null;
+            SkillUpgradeMarkStyle.ApplyShared(
+                iconImage,
+                reward.Type == BattleRewardType.Skill ? reward.RewardId : null);
         }
 
         if (nameText != null)

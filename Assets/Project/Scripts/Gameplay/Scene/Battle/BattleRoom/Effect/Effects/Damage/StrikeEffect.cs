@@ -20,9 +20,39 @@ public class StrikeEffect : BattleEffectBase
 
         if (context.MonsterTarget != null)
         {
+            bool wasAlive = !context.MonsterTarget.RuntimeData.IsDead;
             int finalDamage = CalculateFinalDamageToMonster(context, damage);
 
-            BattleEffectUtility.DamageMonster(context.MonsterTarget, finalDamage);
+            int dealtDamage = BattleEffectUtility.DamageMonster(context.MonsterTarget, finalDamage);
+
+            BattleEquipmentEffectService.ApplyPlayerDamageDealtEffects(
+                context,
+                dealtDamage,
+                wasAlive && context.MonsterTarget.RuntimeData.IsDead);
+
+            BattleEquipmentEffectService.ApplyPlayerLifesteal(
+                context,
+                dealtDamage);
+
+            bool killedTarget = wasAlive && context.MonsterTarget.RuntimeData.IsDead;
+
+            if (dealtDamage > 0 && context.PlayerCaster != null)
+            {
+                BattleRunStatisticsRecorder.RecordDamageDealt(
+                    context.PlayerCaster.RuntimeData.CharacterId,
+                    dealtDamage,
+                    killedTarget);
+                BattleEffectUtility.OnPlayerDamagedEnemy?.Invoke(context.PlayerCaster);
+            }
+
+            if (killedTarget && context.PlayerCaster != null)
+            {
+                int healAmount = BattleEquipmentEffectService.GetKillHealAmount(
+                    context.PlayerCaster.RuntimeData);
+
+                if (healAmount > 0)
+                    BattleEffectUtility.HealPlayer(context.PlayerCaster, healAmount);
+            }
         }
     }
 

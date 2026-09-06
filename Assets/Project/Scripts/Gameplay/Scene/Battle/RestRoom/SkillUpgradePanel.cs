@@ -42,8 +42,7 @@ public class SkillUpgradePanel : MonoBehaviour
     [SerializeField] private float gearRotateTickDuration = 0.12f;
     [SerializeField] private float gearRotateTickInterval = 1f;
     [SerializeField] private float closeDelayAfterUpgradeComplete = 0.5f;
-    [SerializeField] private string upgradeCompleteMessageFormat = "{0}으로 강화되었습니다.";
-    [SerializeField] private Color upgradedSkillIconColor = new Color32(0x7E, 0x93, 0xEC, 0xFF);
+
 
     [Header("Layout")]
     [SerializeField] private Vector2 fallbackIconSize = new(80f, 80f);
@@ -63,14 +62,54 @@ public class SkillUpgradePanel : MonoBehaviour
 
     public bool HasUpgradedThisRestRoom => hasUpgradedThisRestRoom;
 
+    /// <summary>
+    /// 강화 패널의 실제 표시 오브젝트가 현재 열려 있는지 반환합니다.
+    /// </summary>
+    public bool IsOpen
+    {
+        get
+        {
+            GameObject activePanelRoot = panelRoot != null
+                ? panelRoot
+                : gameObject;
+
+            return activePanelRoot != null && activePanelRoot.activeInHierarchy;
+        }
+    }
+
+    /// <summary>
+    /// 씬 안에 열려 있는 강화 패널이 하나라도 있는지 확인합니다.
+    /// 월드 오브젝트 클릭을 막을 때 사용합니다.
+    /// </summary>
+    public static bool IsAnyPanelOpen
+    {
+        get
+        {
+            SkillUpgradePanel[] panels = FindObjectsByType<SkillUpgradePanel>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None
+            );
+
+            for (int i = 0; i < panels.Length; i++)
+            {
+                if (panels[i] != null && panels[i].IsOpen)
+                    return true;
+            }
+
+            return false;
+        }
+    }
+
     private void Awake()
     {
         ConfigureContentLayout();
+        BindBattleButtons();
     }
 
     private void OnEnable()
     {
         ConfigureContentLayout();
+        BindBattleButtons();
     }
 
     private void OnRectTransformDimensionsChange()
@@ -93,15 +132,56 @@ public class SkillUpgradePanel : MonoBehaviour
             return;
         }
 
-        if (panelRoot != null)
-            panelRoot.SetActive(true);
-        else
-            gameObject.SetActive(true);
+        GameObject activePanelRoot = panelRoot != null
+            ? panelRoot
+            : gameObject;
+
+        activePanelRoot.SetActive(true);
+        GetComponent<SkillUpgradePanelContextSelector>()?.RefreshContext();
+
+        // 다른 패널이 열렸다 닫힌 뒤에도 투명한 UI가 입력을 가로채지 않도록
+        // 강화 패널을 현재 Canvas의 가장 앞쪽 형제로 올립니다.
+        activePanelRoot.transform.SetAsLastSibling();
+
+        RestorePanelInteractionState(activePanelRoot);
 
         ClearSelectedUpgradeSelection();
         ClearSkillInfoTexts();
         ConfigureContentLayout();
         Refresh();
+    }
+
+    public void ActivateForContext()
+    {
+        enabled = true;
+        BindBattleButtons();
+    }
+
+
+    /// <summary>
+    /// 다른 패널을 열고 닫은 뒤 남을 수 있는 UI 입력 상태를 초기화합니다.
+    /// </summary>
+    private static void RestorePanelInteractionState(GameObject activePanelRoot)
+    {
+        if (activePanelRoot == null)
+            return;
+
+        CanvasGroup rootCanvasGroup = activePanelRoot.GetComponent<CanvasGroup>();
+
+        if (rootCanvasGroup != null)
+        {
+            rootCanvasGroup.interactable = true;
+            rootCanvasGroup.blocksRaycasts = true;
+        }
+
+        ButtonAnimationCoroutine[] buttonAnimations =
+            activePanelRoot.GetComponentsInChildren<ButtonAnimationCoroutine>(true);
+
+        for (int i = 0; i < buttonAnimations.Length; i++)
+        {
+            if (buttonAnimations[i] != null)
+                buttonAnimations[i].ForceClearState(false);
+        }
     }
 
     public void Close()
@@ -272,6 +352,9 @@ public class SkillUpgradePanel : MonoBehaviour
 
     private bool ApplySkillUpgrade(SkillUpgradeRequest request)
     {
+        if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
+            return false;
+
         if (DataManager.Instance == null)
             return false;
 
@@ -449,7 +532,8 @@ public class SkillUpgradePanel : MonoBehaviour
 
             if (item != null && item.Matches(request))
             {
-                item.SetIconColor(upgradedSkillIconColor);
+                item.ResetIconColor();
+                item.ShowUpgradeMark(request.UpgradeSkillId);
                 return;
             }
         }
@@ -463,7 +547,8 @@ public class SkillUpgradePanel : MonoBehaviour
             return;
 
         CacheSelectedSkillIconDefault(targetImage);
-        targetImage.color = upgradedSkillIconColor;
+        targetImage.color = selectedIconDefaultColor;
+        SkillUpgradeMarkStyle.ApplyShared(targetImage, selectedUpgradeRequest.UpgradeSkillId);
     }
 
     private Transform ResolveGearTransform()
@@ -579,7 +664,7 @@ public class SkillUpgradePanel : MonoBehaviour
             return string.Empty;
 
         if (!string.IsNullOrWhiteSpace(skillData.Name))
-            return skillData.Name;
+            return GameDataLocalization.SkillName(skillData);
 
         return skillData.SkillId;
     }
@@ -598,17 +683,15 @@ public class SkillUpgradePanel : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(request.UpgradeSkillId))
             return request.UpgradeSkillId;
 
-        return "스킬";
+        return GameLocalization.Get("common.skill", "스킬");
     }
 
     private void ShowUpgradeCompleteWarning(string upgradedSkillName)
     {
-        string safeName = string.IsNullOrWhiteSpace(upgradedSkillName) ? "스킬" : upgradedSkillName;
-        string format = string.IsNullOrWhiteSpace(upgradeCompleteMessageFormat)
-            ? "{0}으로 강화되었습니다."
-            : upgradeCompleteMessageFormat;
-
-        BattleWarningUI.ShowMessage(string.Format(format, safeName));
+        string safeName = string.IsNullOrWhiteSpace(upgradedSkillName)
+            ? GameLocalization.Get("common.skill", "스킬")
+            : upgradedSkillName;
+        BattleWarningUI.ShowMessage(GameLocalization.Format("battle.skill_upgraded", "{0}으로 강화되었습니다.", safeName));
     }
 
     private void ClearSkillInfoTexts()
@@ -959,6 +1042,32 @@ public class SkillUpgradePanel : MonoBehaviour
         layoutElement.preferredHeight = iconSize.y;
         layoutElement.flexibleWidth = 0f;
         layoutElement.flexibleHeight = 0f;
+    }
+
+    private void BindBattleButtons()
+    {
+        Transform root = panelRoot != null ? panelRoot.transform : transform;
+        Transform tuningTransform = FindChildByName(root, "TuningButton");
+        Transform cancelTransform = FindChildByName(root, "Cancel");
+        Button tuningButton = tuningTransform != null ? tuningTransform.GetComponent<Button>() : null;
+        Button cancelButton = cancelTransform != null ? cancelTransform.GetComponent<Button>() : null;
+        RestRoomController controller = FindFirstObjectByType<RestRoomController>(FindObjectsInactive.Include);
+
+        if (tuningButton != null)
+        {
+            tuningButton.onClick = new Button.ButtonClickedEvent();
+            if (controller != null)
+                tuningButton.onClick.AddListener(controller.OnTuningButtonClicked);
+        }
+
+        if (cancelButton != null)
+        {
+            cancelButton.onClick = new Button.ButtonClickedEvent();
+            if (controller != null)
+                cancelButton.onClick.AddListener(controller.OnUpgradeCancelButtonClicked);
+            else
+                cancelButton.onClick.AddListener(Close);
+        }
     }
 
     private void RebuildContentLayout()

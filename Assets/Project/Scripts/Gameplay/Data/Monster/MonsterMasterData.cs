@@ -15,12 +15,12 @@ namespace Relic.Gameplay.Data
         public string Grade;
         [FormerlySerializedAs("Health")]
         public int HP;
+        public int Armor;
 
         public int MinRemnant;
         public int MaxRemnant;
         public string UniqueItemId;
         public float UniqueItemChance;
-        public float RelicChance;
         public string AttackRangeId;
 
         public string PossSkillId01;
@@ -33,6 +33,9 @@ namespace Relic.Gameplay.Data
         public string PossSkillId08;
         public string PossSkillId09;
         public string PossSkillId10;
+
+        public string SpecialAction1;
+        public string SpecialAction2;
 
         [NonSerialized]
         public GameObject BattlePrefab;

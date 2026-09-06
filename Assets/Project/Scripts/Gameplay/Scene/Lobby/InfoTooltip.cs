@@ -225,16 +225,16 @@ public class InfoTooltip : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(runeData.CountRate))
             text += "\nCount: " + runeData.CountRate;
 
-        if (runeData.Consumption > 0)
-            text += "\nCost: " + runeData.Consumption;
+        if (runeData.BlueDustiumCost > 0)
+            text += "\nBlue Dustium Cost: " + runeData.BlueDustiumCost;
 
-        if (runeData.EnhancementLevel > 0)
-            text += "\nEnhancement Lv. " + runeData.EnhancementLevel;
+        if (runeData.UnlockLevel > 0)
+            text += "\nUnlock Lv. " + runeData.UnlockLevel;
 
-        if (!string.IsNullOrWhiteSpace(runeData.RangeId))
-            text += "\nRange: " + runeData.RangeId;
+        if (!string.IsNullOrWhiteSpace(runeData.Rarity))
+            text += "\nRarity: " + runeData.Rarity;
 
-        return string.IsNullOrWhiteSpace(text) ? "È¿°ú ¾øÀ½" : text;
+        return string.IsNullOrWhiteSpace(text) ? GameLocalization.Get("common.no_effect", "íš¨ê³¼ ì—†ìŒ") : text;
     }
 
     public static string GetSkillEffectText(SkillMasterData skillData)
@@ -242,12 +242,8 @@ public class InfoTooltip : MonoBehaviour
         if (skillData == null)
             return "";
 
-        string text = "";
-
-        if (!string.IsNullOrWhiteSpace(skillData.ToolTip))
-            text += "ToolTip: " + skillData.ToolTip;
-
-        return string.IsNullOrWhiteSpace(text) ? "È¿°ú ¾øÀ½" : text;
+        string text = GameDataLocalization.SkillDetails(skillData);
+        return string.IsNullOrWhiteSpace(text) ? GameLocalization.Get("common.no_effect", "íš¨ê³¼ ì—†ìŒ") : text;
     }
     private string HighlightNumbers(string text)
     {

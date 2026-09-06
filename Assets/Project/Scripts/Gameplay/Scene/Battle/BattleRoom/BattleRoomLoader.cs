@@ -8,6 +8,9 @@ using UnityEngine.UI;
 
 public class BattleRoomLoader : MonoBehaviour
 {
+    private const string BattleHudCanvasObjectName = "BattleHUDCanvas";
+    private const string BattleCharacterPanelObjectName = "BattleCharacterPanel";
+
     [Header("Spawner")]
     [SerializeField] private BattleUnitSpawner unitSpawner;
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
@@ -21,15 +24,15 @@ public class BattleRoomLoader : MonoBehaviour
 
     [Header("Player HUD Position Anchors")]
     [SerializeField] private Transform[] playerHudPositionAnchors = new Transform[3];
-    [SerializeField] private bool selectFirstPlayerHudByDefault = true;
-    [SerializeField] private bool forcePlayerHudRootOnTop = true;
-    [SerializeField] private int playerHudRootSortingOrder = 100;
     [SerializeField] private int selectedHudSortingOrder = 200;
 
     [Header("Monster World HUD")]
     [SerializeField] private RectTransform battleCanvasRect;
     [SerializeField] private Camera worldCamera;
     [SerializeField] private Camera uiCamera;
+
+    [Header("Character Panel")]
+    [SerializeField] private BattleCharacterPanelUI battleCharacterPanel;
 
     [Header("Skill List")]
     [SerializeField] private SkillListPanel skillListPanel;
@@ -55,9 +58,13 @@ public class BattleRoomLoader : MonoBehaviour
 
     [Header("Timeline")]
     [SerializeField] private BattleTimelineController timelineController;
+    [SerializeField] private PlayerSkillReservationController playerSkillReservationController;
 
     [Header("Grid Effects")]
     [SerializeField] private BattleGridEffectController gridEffectController;
+
+    [Header("Tutorial")]
+    [SerializeField] private BattleFirstTutorialController firstBattleTutorialController;
 
     private readonly List<MonsterUnit> spawnedMonsterUnits = new();
     private readonly List<PlayerHUDSlot> playerHudSlots = new();
@@ -65,11 +72,23 @@ public class BattleRoomLoader : MonoBehaviour
     private CharacterRuntimeData selectedPlayerRuntime;
     private Coroutine openSelectedSkillListWhenReadyRoutine;
     private Coroutine loadRoutine;
+    private Coroutine initialMonsterPlanRoutine;
+    private bool restoringResolvedBattleRoomEntryState;
+    private IReadOnlyList<BattleRoomMonsterCommandSaveData> restoredInitialMonsterCommands;
+    private bool initialMonsterPlanStarted;
     private bool isLoaded;
     private bool isLoading;
     private string loadedMapId;
+    private string debugTargetMonsterId;
+    private int debugTargetGridIndex = -1;
 
     private readonly BattlePassiveSkillService passiveSkillService = new();
+
+    public void ConfigureDebugTargetMonster(string monsterId, int gridIndex)
+    {
+        debugTargetMonsterId = string.IsNullOrWhiteSpace(monsterId) ? null : monsterId.Trim();
+        debugTargetGridIndex = gridIndex;
+    }
 
     private void EnsureTimelineController()
     {
@@ -79,9 +98,37 @@ public class BattleRoomLoader : MonoBehaviour
         timelineController = Object.FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
     }
 
+    private void EnsurePlayerSkillReservationController()
+    {
+        if (playerSkillReservationController != null)
+            return;
+
+        playerSkillReservationController = Object.FindFirstObjectByType<PlayerSkillReservationController>(
+            FindObjectsInactive.Include);
+    }
+
+    private void EnsureFirstBattleTutorialController()
+    {
+        // Battle 씬에 남아 있는 예전 SerializeField 참조나 임의 검색 결과를 사용하지 않습니다.
+        // Bootstrap/UIManager 아래에서 정상 UI 참조를 가진 컨트롤러가 등록한 Instance만 사용합니다.
+        firstBattleTutorialController = BattleFirstTutorialController.Instance;
+
+        if (firstBattleTutorialController == null)
+        {
+            Debug.LogWarning(
+                "[BattleTutorial] Bootstrap BattleFirstTutorialController.Instance가 없습니다. " +
+                "UIManager 아래 Tutorial 오브젝트의 Tutorial Root / Steps 참조를 확인해 주세요.",
+                this);
+        }
+    }
+
     public void RefreshBattleHUDs()
     {
         RefreshPlayerHUDs();
+        EnsureBattleCharacterPanel();
+
+        if (battleCharacterPanel != null)
+            battleCharacterPanel.Refresh();
 
         MonsterHUDSlot[] monsterHuds = FindObjectsByType<MonsterHUDSlot>(
             FindObjectsInactive.Include,
@@ -97,6 +144,9 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void OnEnable()
     {
+        BattleTimelineController.CharacterSelectionChanged -= HandleTimelineCharacterSelectionChanged;
+        BattleTimelineController.CharacterSelectionChanged += HandleTimelineCharacterSelectionChanged;
+
         if (loadOnEnableWithoutSceneController)
             RequestLoadBattle();
     }
@@ -171,6 +221,35 @@ public class BattleRoomLoader : MonoBehaviour
         return -1;
     }
 
+    public bool SelectFirstAlivePlayerCharacterIfNeeded()
+    {
+        EnsureTimelineController();
+
+        CharacterRuntimeData currentSelection = timelineController != null
+            ? timelineController.SelectedCharacter
+            : null;
+
+        if (currentSelection != null && !currentSelection.IsDead)
+            return false;
+
+        RemoveNullPlayerHudSlots();
+        RemoveNullPlayerHudNumberOrder();
+
+        for (int i = 0; i < playerHudNumberOrder.Count; i++)
+        {
+            PlayerHUDSlot hud = playerHudNumberOrder[i];
+            CharacterRuntimeData runtimeData = hud != null ? hud.BoundRuntime : null;
+
+            if (runtimeData == null || runtimeData.IsDead)
+                continue;
+
+            SelectPlayerHUD(runtimeData);
+            return true;
+        }
+
+        return false;
+    }
+
     private void SelectPlayerCharacterByNumberIndex(int characterIndex)
     {
         RemoveNullPlayerHudSlots();
@@ -184,8 +263,25 @@ public class BattleRoomLoader : MonoBehaviour
         if (hud == null || hud.BoundRuntime == null)
             return;
 
-        RectTransform hudRect = hud.GetComponent<RectTransform>();
-        OpenSkillListForPlayer(hud.BoundRuntime, hudRect);
+        SelectPlayerHUD(hud.BoundRuntime);
+    }
+
+    /// <summary>
+    /// SkillButton의 OnClick에서 호출합니다.
+    /// Tab 키와 동일하게 현재 선택된 캐릭터의 스킬 목록을 열거나 닫습니다.
+    /// </summary>
+    public void ToggleSkillListPanelFromButton()
+    {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
+        if (turnExecutor == null)
+            EnsureTurnExecutor();
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
+
+        ToggleSkillListForSelectedPlayer();
     }
 
     private void ToggleSkillListForSelectedPlayer()
@@ -253,6 +349,91 @@ public class BattleRoomLoader : MonoBehaviour
         openSelectedSkillListWhenReadyRoutine = null;
     }
 
+    private void EnsureBattleCharacterPanel()
+    {
+        BattleCharacterPanelUI roomPanel = FindOwnBattleCharacterPanel();
+        if (roomPanel != null)
+        {
+            battleCharacterPanel = roomPanel;
+            EnsureBattleCharacterPanelHierarchy();
+            return;
+        }
+
+        battleCharacterPanel = FindSceneBattleCharacterPanel();
+
+        EnsureBattleCharacterPanelHierarchy();
+    }
+
+    private BattleCharacterPanelUI FindOwnBattleCharacterPanel()
+    {
+        BattleCharacterPanelUI[] panels = GetComponentsInChildren<BattleCharacterPanelUI>(true);
+        return SelectPreferredBattleCharacterPanel(panels);
+    }
+
+    private static BattleCharacterPanelUI FindSceneBattleCharacterPanel()
+    {
+        BattleCharacterPanelUI[] panels = Object.FindObjectsByType<BattleCharacterPanelUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        return SelectPreferredBattleCharacterPanel(panels);
+    }
+
+    private static BattleCharacterPanelUI SelectPreferredBattleCharacterPanel(
+        BattleCharacterPanelUI[] panels)
+    {
+        if (panels == null || panels.Length == 0)
+            return null;
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            if (panels[i] != null && panels[i].name == BattleCharacterPanelObjectName)
+                return panels[i];
+        }
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            if (panels[i] != null)
+                return panels[i];
+        }
+
+        return null;
+    }
+
+    private void EnsureBattleCharacterPanelHierarchy()
+    {
+        if (battleCharacterPanel == null)
+            return;
+
+        Transform battleHudCanvas = FindChildRecursive(transform, BattleHudCanvasObjectName);
+        if (battleHudCanvas == null)
+            return;
+
+        Transform panelTransform = battleCharacterPanel.transform;
+        if (panelTransform.parent != battleHudCanvas)
+            panelTransform.SetParent(battleHudCanvas, false);
+
+        panelTransform.SetAsLastSibling();
+    }
+
+    private static Transform FindChildRecursive(Transform root, string targetName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(targetName))
+            return null;
+
+        if (root.name == targetName)
+            return root;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform found = FindChildRecursive(root.GetChild(i), targetName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
+    }
+
     private void EnsureSkillListPanel()
     {
         if (skillListPanel != null)
@@ -297,7 +478,7 @@ public class BattleRoomLoader : MonoBehaviour
         if (nextHud == null || nextHud.BoundRuntime == null)
             return;
 
-        OpenSkillListForPlayer(nextHud.BoundRuntime);
+        SelectPlayerHUD(nextHud.BoundRuntime);
     }
 
     private int WrapIndex(int index, int count)
@@ -351,10 +532,21 @@ public class BattleRoomLoader : MonoBehaviour
         return false;
     }
 
-    public void RequestLoadBattle()
+    public void RequestLoadBattle(bool forceReload = false)
     {
         if (!isActiveAndEnabled)
             return;
+
+        if (forceReload)
+        {
+            if (loadRoutine != null)
+            {
+                StopCoroutine(loadRoutine);
+                loadRoutine = null;
+            }
+
+            ResetLoadedStateForNextBattle(true);
+        }
 
         if (isLoaded || isLoading || loadRoutine != null)
             return;
@@ -362,13 +554,15 @@ public class BattleRoomLoader : MonoBehaviour
         loadRoutine = StartCoroutine(LoadBattleWhenDataManagerReady());
     }
 
-    public void LoadBattleFromSceneController()
+    public void LoadBattleFromSceneController(bool forceReload = false)
     {
-        RequestLoadBattle();
+        RequestLoadBattle(forceReload);
     }
 
     private void OnDisable()
     {
+        BattleTimelineController.CharacterSelectionChanged -= HandleTimelineCharacterSelectionChanged;
+
         if (loadRoutine != null)
         {
             StopCoroutine(loadRoutine);
@@ -449,6 +643,7 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         RegisterSkillListKeepOpenRoots();
+        PrepareCameraForBattleEntry();
 
         ResetPartyCurrentGridToSpawn();
         ClearPartyBattleRoomTemporaryStatusEffects();
@@ -464,7 +659,11 @@ public class BattleRoomLoader : MonoBehaviour
 
         SpawnPlayersAndHUD();
         SpawnMonstersAndHUD(false);
-        SpawnInitialGridEffects();
+
+        restoringResolvedBattleRoomEntryState = TryRestoreInitialGridEffectsFromSave();
+        if (!restoringResolvedBattleRoomEntryState)
+            SpawnInitialGridEffects();
+
         RefreshBattleHUDs();
 
         EnsureTurnExecutor();
@@ -480,15 +679,35 @@ public class BattleRoomLoader : MonoBehaviour
         if (timelineController != null)
             timelineController.ResetTimelineBarsForNewBattleRoom();
 
+        SteamBattleStateSynchronizer.EnsureForBattleScene(turnExecutor, timelineController);
+
         loadedMapId = currentMapId;
         isLoaded = true;
         isLoading = false;
 
-        StartCoroutine(PlanInitialMonsterTurnsAndEnableInputRoutine());
+        StartInitialMonsterPlanOnce();
+    }
+
+    private static void PrepareCameraForBattleEntry()
+    {
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController == null)
+        {
+            cameraController = Object.FindFirstObjectByType<BattleCameraController>(FindObjectsInactive.Include);
+        }
+
+        cameraController?.StartReturnPanelDown(0.8f);
     }
 
     public void ResetLoadedStateForNextBattle(bool clearSpawnedObjects = true)
     {
+        if (initialMonsterPlanRoutine != null)
+        {
+            StopCoroutine(initialMonsterPlanRoutine);
+            initialMonsterPlanRoutine = null;
+        }
+
+        initialMonsterPlanStarted = false;
         isLoaded = false;
         isLoading = false;
         loadedMapId = null;
@@ -564,6 +783,24 @@ public class BattleRoomLoader : MonoBehaviour
             return;
 
         PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        var battleStartCharacters = new List<CharacterRuntimeData>();
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (!DataManager.Instance.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtimeData))
+                continue;
+
+            battleStartCharacters.Add(runtimeData);
+        }
+
+        CultureTankBattleStartEffectService.ApplyToPartyAndConsume(
+            DataManager.Instance.BattleRuntimeStore?.GetOrCreate(),
+            battleStartCharacters);
 
         for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
         {
@@ -605,7 +842,7 @@ public class BattleRoomLoader : MonoBehaviour
 
             DataManager.Instance.CharacterDatabase.TryGet(characterId, out CharacterMasterData masterData);
 
-            int rechargeBonus = GetStatusStack(runtimeData.StatusEffects, "E_Recharge") * 2;
+            int rechargeBonus = GetStatusStack(runtimeData.StatusEffects, "E_Charge");
 
             int maxCost = runtimeData.MaxCost > 0
                 ? runtimeData.MaxCost
@@ -615,18 +852,42 @@ public class BattleRoomLoader : MonoBehaviour
                 ? runtimeData.CostRecovery
                 : masterData != null ? Mathf.Max(0, masterData.CostRecovery) : 0;
 
+            int equipmentRecovery = BattleEquipmentEffectService.GetEffectiveCostRecovery(
+                runtimeData,
+                masterData);
+
             int totalRecovery = Mathf.Max(
                 0,
-                baseRecovery + runtimeData.BonusCostRecovery + rechargeBonus
+                equipmentRecovery + rechargeBonus
             );
 
             runtimeData.CostRecovery = baseRecovery;
 
+            int costBefore = runtimeData.CurrentCost;
             runtimeData.CurrentCost =
                 Mathf.Min(
                     maxCost,
                     runtimeData.CurrentCost + totalRecovery
                 );
+
+            int recoveredCost = Mathf.Max(0, runtimeData.CurrentCost - costBefore);
+            if (recoveredCost > 0)
+            {
+                BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+                    FindObjectsInactive.Exclude,
+                    FindObjectsSortMode.None
+                );
+
+                for (int characterIndex = 0; characterIndex < characters.Length; characterIndex++)
+                {
+                    BattleCharacter character = characters[characterIndex];
+                    if (character != null && character.CharacterId == characterId)
+                    {
+                        BattleDamageTextPopupUI.ShowCostRecovery(character.transform, recoveredCost);
+                        break;
+                    }
+                }
+            }
         }
 
         RefreshPlayerHUDs();
@@ -701,12 +962,13 @@ public class BattleRoomLoader : MonoBehaviour
         for (int i = 0; i < playerRuntimes.Count; i++)
             CreatePlayerHUD(playerRuntimes[i], i);
 
-        if (selectFirstPlayerHudByDefault && playerRuntimes.Count > 0)
-            selectedPlayerRuntime = playerRuntimes[0];
-
         ApplyPlayerHudAnchorOrder();
-        RefreshPlayerHudSelectionVisuals();
-        EnsurePlayerHudLayerOrder();
+
+        // 전투방에 입장한 직후에는 아직 예약 단계가 시작되지 않았으므로
+        // 캐릭터를 선택하지 않습니다. 첫 번째 캐릭터 선택은 전투 입력이 활성화되어
+        // 예약 단계가 시작되는 시점에 처리합니다.
+        SelectPlayerHUD(null);
+
     }
 
     private void CreatePlayerHUD(CharacterRuntimeData runtimeData, int displayIndex)
@@ -822,12 +1084,30 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void OnPlayerHudClicked(CharacterRuntimeData runtimeData, RectTransform hudRect)
     {
-        OpenSkillListForPlayer(runtimeData, hudRect);
+        SelectPlayerHUD(runtimeData);
     }
 
     public void OnPlayerCharacterClicked(CharacterRuntimeData runtimeData)
     {
-        OpenSkillListForPlayer(runtimeData);
+        SelectPlayerHUD(runtimeData);
+    }
+
+    /// <summary>
+    /// 전투 필드 위의 캐릭터 오브젝트를 직접 클릭했을 때만 사용하는 진입점입니다.
+    /// 그리드 선택형 스킬의 타겟을 고르는 동안에는 필드 캐릭터 클릭으로 선택을 바꾸지 않습니다.
+    /// HUD 클릭이나 키보드 캐릭터 변경은 OnPlayerCharacterClicked/SelectPlayerHUD 경로를 사용하므로 계속 허용됩니다.
+    /// </summary>
+    public void OnPlayerWorldCharacterClicked(CharacterRuntimeData runtimeData)
+    {
+        EnsurePlayerSkillReservationController();
+
+        if (playerSkillReservationController != null &&
+            playerSkillReservationController.IsGridSelectionActive())
+        {
+            return;
+        }
+
+        SelectPlayerHUD(runtimeData);
     }
 
     private void OpenSkillListForPlayer(CharacterRuntimeData runtimeData)
@@ -837,6 +1117,13 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void OpenSkillListForPlayer(CharacterRuntimeData runtimeData, RectTransform hudRect)
     {
+        if (runtimeData != null &&
+            !SteamBattleStateSynchronizer.CanLocalPlayerControlCharacter(runtimeData.CharacterId))
+        {
+            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.other_player_character", "다른 플레이어의 캐릭터입니다."));
+            return;
+        }
+
         SelectPlayerHUD(runtimeData);
         EnsureSkillListPanel();
 
@@ -851,9 +1138,38 @@ public class BattleRoomLoader : MonoBehaviour
         skillListPanel.Open(runtimeData, hudRect);
     }
 
-    private void SelectPlayerHUD(CharacterRuntimeData runtimeData)
+    private void HandleTimelineCharacterSelectionChanged(CharacterRuntimeData runtimeData)
     {
         selectedPlayerRuntime = runtimeData;
+        RefreshPlayerHudSelectionVisuals();
+    }
+
+    private void SelectPlayerHUD(CharacterRuntimeData runtimeData)
+    {
+        EnsureBattleCharacterPanel();
+        EnsureTimelineController();
+        EnsurePlayerSkillReservationController();
+
+        bool isChangingCharacter =
+            selectedPlayerRuntime != null &&
+            runtimeData != null &&
+            selectedPlayerRuntime.CharacterId != runtimeData.CharacterId;
+
+        // HUD 클릭, 키보드(1/2/3), TurnMark 복원 등 명시적인 캐릭터 변경은
+        // 그리드 선택 중에도 허용합니다. 전투 필드의 캐릭터 직접 클릭만
+        // OnPlayerWorldCharacterClicked에서 별도로 차단합니다.
+        if (isChangingCharacter && timelineController != null)
+        {
+            timelineController.CancelSkillReservationPreviewFromSkillList(selectedPlayerRuntime);
+        }
+
+        selectedPlayerRuntime = runtimeData;
+
+        if (battleCharacterPanel != null)
+            battleCharacterPanel.Bind(runtimeData);
+
+        if (timelineController != null)
+            timelineController.SelectCharacter(runtimeData);
 
         for (int i = playerHudSlots.Count - 1; i >= 0; i--)
         {
@@ -869,7 +1185,6 @@ public class BattleRoomLoader : MonoBehaviour
         if (selectedIndex < 0)
             return;
 
-        RotatePlayerHudOrder(selectedIndex);
         RefreshPlayerHudSelectionVisuals();
     }
 
@@ -937,6 +1252,8 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void RefreshPlayerHudSelectionVisuals()
     {
+        ApplyPlayerHudAnchorOrder();
+
         for (int i = 0; i < playerHudSlots.Count; i++)
         {
             PlayerHUDSlot hud = playerHudSlots[i];
@@ -949,27 +1266,7 @@ public class BattleRoomLoader : MonoBehaviour
             ApplyPlayerHudCanvasSorting(hud, selected);
         }
 
-        ApplyPlayerHudAnchorOrder();
-        EnsurePlayerHudLayerOrder();
-    }
 
-    private void EnsurePlayerHudLayerOrder()
-    {
-        if (playerHudRoot == null || !forcePlayerHudRootOnTop)
-            return;
-
-        playerHudRoot.SetAsLastSibling();
-
-        Canvas rootCanvas = playerHudRoot.GetComponent<Canvas>();
-
-        if (rootCanvas == null)
-            rootCanvas = playerHudRoot.gameObject.AddComponent<Canvas>();
-
-        rootCanvas.overrideSorting = true;
-        rootCanvas.sortingOrder = playerHudRootSortingOrder;
-
-        if (playerHudRoot.GetComponent<GraphicRaycaster>() == null)
-            playerHudRoot.gameObject.AddComponent<GraphicRaycaster>();
     }
 
     private void ApplyPlayerHudCanvasSorting(PlayerHUDSlot hud, bool selected)
@@ -986,7 +1283,7 @@ public class BattleRoomLoader : MonoBehaviour
                 canvas = hud.gameObject.AddComponent<Canvas>();
 
             canvas.overrideSorting = true;
-            canvas.sortingOrder = Mathf.Max(selectedHudSortingOrder, playerHudRootSortingOrder + 10);
+            canvas.sortingOrder = selectedHudSortingOrder;
 
             if (raycaster == null)
                 hud.gameObject.AddComponent<GraphicRaycaster>();
@@ -1008,6 +1305,56 @@ public class BattleRoomLoader : MonoBehaviour
             return;
         }
 
+        if (!string.IsNullOrWhiteSpace(debugTargetMonsterId))
+        {
+            SpawnDebugTargetMonster();
+        }
+        else
+        {
+            SpawnMapMonsters();
+        }
+
+        RefreshMonsterDisplayNames();
+
+        if (!planMonsterTurns)
+            return;
+
+        if (monsterTurnPlanner != null)
+        {
+            monsterTurnPlanner.PlanMonsterTurns(spawnedMonsterUnits, true);
+        }
+        else
+        {
+            Debug.LogWarning("[BattleRoomLoader] MonsterTurnPlanner is missing.");
+        }
+    }
+
+    private void SpawnDebugTargetMonster()
+    {
+        SpawnedMonsterResult result = monsterSpawner.SpawnRuntimeMonster(
+            debugTargetMonsterId,
+            new List<int> { debugTargetGridIndex });
+
+        if (result == null || result.RuntimeData == null || result.MonsterTransform == null)
+        {
+            Debug.LogError($"[BattleRoomLoader] Failed to spawn debug target: {debugTargetMonsterId}");
+            return;
+        }
+
+        DebugBattleTargetRules.Configure(result.RuntimeData);
+
+        MonsterUnit monsterUnit = result.MonsterTransform.GetComponent<MonsterUnit>();
+        if (monsterUnit != null)
+        {
+            monsterUnit.SetAIEnabled(false);
+            monsterUnit.RefreshRuntimeDisplayName();
+        }
+
+        RegisterRuntimeMonster(result);
+    }
+
+    private void SpawnMapMonsters()
+    {
         MapRuntimeData mapRuntime = DataManager.Instance.MapRuntimeStore.Get();
 
         if (mapRuntime == null || string.IsNullOrWhiteSpace(mapRuntime.CurrentMapId))
@@ -1045,20 +1392,15 @@ public class BattleRoomLoader : MonoBehaviour
                 spawnedMonsterUnits.Add(monsterUnit);
             }
         }
+    }
 
-        RefreshMonsterDisplayNames();
-
-        if (!planMonsterTurns)
+    private void StartInitialMonsterPlanOnce()
+    {
+        if (initialMonsterPlanStarted || initialMonsterPlanRoutine != null)
             return;
 
-        if (monsterTurnPlanner != null)
-        {
-            monsterTurnPlanner.PlanMonsterTurns(spawnedMonsterUnits, true);
-        }
-        else
-        {
-            Debug.LogWarning("[BattleRoomLoader] MonsterTurnPlanner is missing.");
-        }
+        initialMonsterPlanStarted = true;
+        initialMonsterPlanRoutine = StartCoroutine(PlanInitialMonsterTurnsAndEnableInputRoutine());
     }
 
     private IEnumerator PlanInitialMonsterTurnsAndEnableInputRoutine()
@@ -1070,7 +1412,23 @@ public class BattleRoomLoader : MonoBehaviour
 
         if (monsterTurnPlanner != null)
         {
-            yield return monsterTurnPlanner.PlanMonsterTurnsAndWait(spawnedMonsterUnits, true);
+            // 이어하기에서는 전투방에 처음 입장했을 때 확정된 1턴 예약을 그대로 복원합니다.
+            if (restoringResolvedBattleRoomEntryState)
+            {
+                yield return monsterTurnPlanner.RestoreMonsterTurnsAndWait(
+                    spawnedMonsterUnits,
+                    restoredInitialMonsterCommands,
+                    true);
+            }
+            else
+            {
+                // showBattleStart=true인 초기 예약은 BattleMonsterTurnPlanner 내부에서
+                // "행동 예약" 안내가 완전히 끝날 때까지 직접 기다립니다.
+                yield return monsterTurnPlanner.PlanMonsterTurnsAndWait(spawnedMonsterUnits, true);
+                CaptureResolvedBattleRoomEntryState();
+            }
+
+            Debug.Log("[BattleTutorial] Initial monster reservation finished", this);
         }
         else
         {
@@ -1083,7 +1441,154 @@ public class BattleRoomLoader : MonoBehaviour
             Debug.Log("[BattleRoomLoader] Battle input ready true after initial monster plan");
         }
 
-        OpenSelectedCharacterSkillListWhenInputReady();
+        // 초기 몬스터 예약이 끝나고 플레이어 예약 단계가 실제로 시작된 시점에
+        // 첫 번째 캐릭터를 기본 선택하여 패널, HUD, 하이라이트를 함께 갱신합니다.
+        CharacterRuntimeData initialSelectedRuntime = GetSelectedOrFirstPlayerRuntime();
+        if (initialSelectedRuntime != null)
+        {
+            SelectPlayerHUD(initialSelectedRuntime);
+            OpenSelectedCharacterSkillListWhenInputReady();
+        }
+
+        EnsureFirstBattleTutorialController();
+
+        Debug.Log(
+            $"[BattleTutorial] Controller found: {firstBattleTutorialController != null}",
+            this);
+        Debug.Log(
+            $"[BattleTutorial] TutorialToggle1 value: {TutorialSettings.ShouldShowTutorial}",
+            this);
+
+        bool tutorialStarted = false;
+        if (firstBattleTutorialController != null)
+            tutorialStarted = firstBattleTutorialController.TryStartTutorialIfNeeded();
+
+        Debug.Log($"[BattleTutorial] TryStart result: {tutorialStarted}", this);
+        Debug.Log(
+            $"[BattleTutorial] Tutorial_Panel active: " +
+            $"{(firstBattleTutorialController != null && firstBattleTutorialController.IsTutorialRootActive)}",
+            this);
+
+        if (restoringResolvedBattleRoomEntryState)
+        {
+            SaveSystem.Instance?.ConsumePendingResolvedBattleRoomEntryState();
+            restoringResolvedBattleRoomEntryState = false;
+            restoredInitialMonsterCommands = null;
+        }
+
+        initialMonsterPlanRoutine = null;
+    }
+
+    private bool TryRestoreInitialGridEffectsFromSave()
+    {
+        restoredInitialMonsterCommands = null;
+
+        if (SaveSystem.Instance == null ||
+            !SaveSystem.Instance.TryGetResolvedBattleRoomEntryState(
+                out IReadOnlyList<BattleRoomGridEffectSaveData> gridEffects,
+                out IReadOnlyList<BattleRoomMonsterCommandSaveData> monsterCommands))
+        {
+            return false;
+        }
+
+        EnsureGridEffectController();
+        gridEffectController?.RestoreEffects(gridEffects);
+        restoredInitialMonsterCommands = monsterCommands;
+        Debug.Log($"[BattleRoomLoader] 저장된 전투방 초기 그리드 효과 {gridEffects?.Count ?? 0}개를 복원했습니다.", this);
+        return true;
+    }
+
+    private void CaptureResolvedBattleRoomEntryState()
+    {
+        if (SaveSystem.Instance == null)
+            return;
+
+        var gridEffects = new List<BattleRoomGridEffectSaveData>();
+        EnsureGridEffectController(false);
+
+        if (gridEffectController != null)
+        {
+            IReadOnlyList<Relic.Gameplay.Battle.BattleGridEffectPlacement> placements =
+                gridEffectController.State.GetPlacements();
+
+            for (int i = 0; i < placements.Count; i++)
+            {
+                Relic.Gameplay.Battle.BattleGridEffectPlacement placement = placements[i];
+                gridEffectController.State.TryGetRemainingDuration(placement.GridIndex, out int duration);
+                gridEffectController.State.TryGetHitPoints(placement.GridIndex, out int hitPoints);
+
+                gridEffects.Add(new BattleRoomGridEffectSaveData
+                {
+                    GridIndex = placement.GridIndex,
+                    GridEffectId = placement.GridEffectId,
+                    RemainingDuration = duration,
+                    HitPoints = hitPoints
+                });
+            }
+        }
+
+        var monsterCommands = new List<BattleRoomMonsterCommandSaveData>();
+        EnsureTimelineController();
+
+        if (timelineController != null)
+        {
+            for (int slotIndex = 0; slotIndex < timelineController.SlotCount; slotIndex++)
+            {
+                IReadOnlyList<MonsterReservedCommand> commands = timelineController.GetMonsterCommands(slotIndex);
+                if (commands == null)
+                    continue;
+
+                for (int i = 0; i < commands.Count; i++)
+                {
+                    MonsterReservedCommand command = commands[i];
+                    if (command == null)
+                        continue;
+
+                    MonsterUnit commandMonsterUnit = null;
+                    int monsterSpawnOrder = -1;
+                    for (int monsterIndex = 0; monsterIndex < spawnedMonsterUnits.Count; monsterIndex++)
+                    {
+                        MonsterUnit candidate = spawnedMonsterUnits[monsterIndex];
+                        if (candidate?.RuntimeData != null && candidate.RuntimeData.RuntimeId == command.RuntimeId)
+                        {
+                            commandMonsterUnit = candidate;
+                            monsterSpawnOrder = monsterIndex;
+                            break;
+                        }
+                    }
+
+                    monsterCommands.Add(new BattleRoomMonsterCommandSaveData
+                    {
+                        SlotIndex = slotIndex,
+                        RuntimeId = command.RuntimeId,
+                        MonsterId = command.MonsterId,
+                        MonsterGridIndex = commandMonsterUnit != null ? commandMonsterUnit.MainGridIndex : -1,
+                        MonsterSpawnOrder = monsterSpawnOrder,
+                        SkillId = command.SkillId,
+                        MoveX = command.MoveOffset.x,
+                        MoveY = command.MoveOffset.y,
+                        ReservedDamage = command.ReservedDamage,
+                        ActionIndex = command.ActionIndex,
+                        RangeOriginGridIndex = command.RangeOriginGridIndex,
+                        RangeOriginCasterGridIndex = command.RangeOriginCasterGridIndex,
+                        HasForcedDirection = command.HasForcedDirection,
+                        ForcedDirection = (int)command.ForcedDirection,
+                        IsPortalMove = command.IsPortalMove,
+                        HasExplicitRangeResult = command.HasExplicitRangeResult,
+                        RangeGridIndices = new List<int>(command.RangeGridIndices),
+                        TargetGridIndices = new List<int>(command.TargetGridIndices),
+                        HasSimulatedResult = command.HasSimulatedResult,
+                        IsSimulatedMoveBlocked = command.IsSimulatedMoveBlocked,
+                        SimulatedMoveX = command.SimulatedMoveOffset.x,
+                        SimulatedMoveY = command.SimulatedMoveOffset.y,
+                        UseRequestedMoveOffsetForExecution = command.UseRequestedMoveOffsetForExecution
+                    });
+                }
+            }
+        }
+
+        SaveSystem.Instance.UpdateBattleRoomEntryCheckpointResolvedState(gridEffects, monsterCommands);
+        Debug.Log($"[BattleRoomLoader] 전투방 1턴 시작 상태 저장: Grid={gridEffects.Count}, MonsterCommand={monsterCommands.Count}", this);
     }
 
     public void PlanNextMonsterTurns()
@@ -1113,7 +1618,6 @@ public class BattleRoomLoader : MonoBehaviour
         if (turnExecutor != null)
             turnExecutor.SetBattleInputReady(true);
 
-        OpenSelectedCharacterSkillListWhenInputReady();
     }
 
     private MonsterHUDSlot CreateMonsterHUD(MonsterRuntimeData runtimeData, Transform monsterTransform, Collider2D monsterCollider)
@@ -1190,6 +1694,9 @@ public class BattleRoomLoader : MonoBehaviour
     private void ClearHUD()
     {
         selectedPlayerRuntime = null;
+
+        if (battleCharacterPanel != null)
+            battleCharacterPanel.Bind(null);
 
         if (skillListPanel != null)
         {

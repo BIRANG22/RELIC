@@ -107,17 +107,87 @@ namespace Relic.Gameplay.Monster
                    !player.RuntimeData.IsDead;
         }
 
+        protected List<int> FindCharacterTargetGridIndices()
+        {
+            List<int> result = new();
+            BattleCharacter[] players = FindPlayers();
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                BattleCharacter player = players[i];
+
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
+                    continue;
+
+                if (!result.Contains(player.CurrentGridIndex))
+                    result.Add(player.CurrentGridIndex);
+            }
+
+            BattleGridEffectController gridEffectController =
+                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+            if (gridEffectController != null)
+            {
+                IReadOnlyList<int> gridEffectTargets =
+                    gridEffectController.GetCharacterTargetGridIndices();
+
+                for (int i = 0; i < gridEffectTargets.Count; i++)
+                {
+                    int gridIndex = gridEffectTargets[i];
+
+                    if (gridIndex >= 0 && !result.Contains(gridIndex))
+                        result.Add(gridIndex);
+                }
+            }
+
+            return result;
+        }
+
+        protected int FindNearestCharacterTargetGridIndex(
+            MonsterUnit monsterUnit,
+            GridManager gridManager)
+        {
+            if (monsterUnit == null || gridManager == null || monsterUnit.MainGridIndex < 0)
+                return -1;
+
+            List<int> targets = FindCharacterTargetGridIndices();
+            Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            int nearestGridIndex = -1;
+            int nearestDistance = int.MaxValue;
+
+            for (int i = 0; i < targets.Count; i++)
+            {
+                int gridIndex = targets[i];
+
+                if (gridIndex < 0 || gridManager.GetCellByIndex(gridIndex) == null)
+                    continue;
+
+                Vector2Int targetCoord = gridManager.IndexToCoord(gridIndex);
+                int distance =
+                    Mathf.Abs(targetCoord.x - monsterCoord.x) +
+                    Mathf.Abs(targetCoord.y - monsterCoord.y);
+
+                if (distance >= nearestDistance)
+                    continue;
+
+                nearestDistance = distance;
+                nearestGridIndex = gridIndex;
+            }
+
+            return nearestGridIndex;
+        }
+
         protected Vector2Int GetMoveTowardNearestPlayer(
             MonsterUnit monsterUnit,
             GridManager gridManager,
             int moveAmount)
         {
-            BattleCharacter target = FindNearestPlayer(monsterUnit, gridManager);
+            int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
 
-            if (target == null)
+            if (targetGridIndex < 0)
                 return Vector2Int.zero;
 
-            return GetMoveTowardTarget(monsterUnit.MainGridIndex, target.CurrentGridIndex, gridManager, moveAmount);
+            return GetMoveTowardTarget(monsterUnit.MainGridIndex, targetGridIndex, gridManager, moveAmount);
         }
 
         protected BattleCharacter FindNearestPlayer(
@@ -245,35 +315,34 @@ namespace Relic.Gameplay.Monster
             if (gridManager == null || originGridIndex < 0)
                 return BattleDirection.Left;
 
-            BattleCharacter[] players = FindPlayers();
+            List<int> targets = FindCharacterTargetGridIndices();
             Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
-
-            BattleCharacter nearest = null;
+            int nearestGridIndex = -1;
             int nearestDistance = int.MaxValue;
 
-            for (int i = 0; i < players.Length; i++)
+            for (int i = 0; i < targets.Count; i++)
             {
-                BattleCharacter player = players[i];
+                int gridIndex = targets[i];
 
-                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
+                if (gridIndex < 0)
                     continue;
 
-                Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
+                Vector2Int targetCandidateCoord = gridManager.IndexToCoord(gridIndex);
                 int distance =
-                    Mathf.Abs(playerCoord.x - originCoord.x) +
-                    Mathf.Abs(playerCoord.y - originCoord.y);
+                    Mathf.Abs(targetCandidateCoord.x - originCoord.x) +
+                    Mathf.Abs(targetCandidateCoord.y - originCoord.y);
 
                 if (distance < nearestDistance)
                 {
                     nearestDistance = distance;
-                    nearest = player;
+                    nearestGridIndex = gridIndex;
                 }
             }
 
-            if (nearest == null)
+            if (nearestGridIndex < 0)
                 return BattleDirection.Left;
 
-            Vector2Int targetCoord = gridManager.IndexToCoord(nearest.CurrentGridIndex);
+            Vector2Int targetCoord = gridManager.IndexToCoord(nearestGridIndex);
 
             return targetCoord.x >= originCoord.x
                 ? BattleDirection.Right
@@ -378,14 +447,14 @@ namespace Relic.Gameplay.Monster
             GridManager gridManager,
             int moveAmount)
         {
-            BattleCharacter nearest = FindNearestPlayer(monsterUnit, gridManager);
+            int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
 
-            if (nearest == null)
+            if (targetGridIndex < 0)
                 return Vector2Int.zero;
 
             Vector2Int toward = GetMoveTowardTarget(
                 monsterUnit.MainGridIndex,
-                nearest.CurrentGridIndex,
+                targetGridIndex,
                 gridManager,
                 moveAmount
             );
@@ -397,19 +466,19 @@ namespace Relic.Gameplay.Monster
             MonsterUnit monsterUnit,
             GridManager gridManager)
         {
-            BattleCharacter[] players = FindPlayers();
+            List<int> targets = FindCharacterTargetGridIndices();
             Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
 
-            for (int i = 0; i < players.Length; i++)
+            for (int i = 0; i < targets.Count; i++)
             {
-                BattleCharacter player = players[i];
+                int gridIndex = targets[i];
 
-                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
+                if (gridIndex < 0)
                     continue;
 
-                Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
-                int dx = Mathf.Abs(playerCoord.x - monsterCoord.x);
-                int dy = Mathf.Abs(playerCoord.y - monsterCoord.y);
+                Vector2Int targetCoord = gridManager.IndexToCoord(gridIndex);
+                int dx = Mathf.Abs(targetCoord.x - monsterCoord.x);
+                int dy = Mathf.Abs(targetCoord.y - monsterCoord.y);
 
                 if (dx <= 1 && dy <= 1)
                     return true;
@@ -423,14 +492,14 @@ namespace Relic.Gameplay.Monster
     GridManager gridManager,
     List<Vector2Int> moveOffsets)
         {
-            BattleCharacter target = FindNearestPlayer(monsterUnit, gridManager);
+            int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
 
-            if (target == null)
+            if (targetGridIndex < 0)
                 return Vector2Int.zero;
 
             return GetBestMoveTowardTarget(
                 monsterUnit,
-                target.CurrentGridIndex,
+                targetGridIndex,
                 gridManager,
                 moveOffsets
             );
@@ -484,14 +553,14 @@ namespace Relic.Gameplay.Monster
             GridManager gridManager,
             List<Vector2Int> moveOffsets)
         {
-            BattleCharacter target = FindNearestPlayer(monsterUnit, gridManager);
+            int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
 
-            if (target == null)
+            if (targetGridIndex < 0)
                 return Vector2Int.zero;
 
             return GetBestMoveAwayFromTarget(
                 monsterUnit,
-                target.CurrentGridIndex,
+                targetGridIndex,
                 gridManager,
                 moveOffsets
             );
@@ -631,6 +700,13 @@ namespace Relic.Gameplay.Monster
                     int targetIndex = gridManager.CoordToIndex(nextCoord);
 
                     if (BattleOccupancyService.IsOccupiedByAnyUnit(targetIndex, null, monsterUnit))
+                        return false;
+
+                    BattleGridEffectController gridEffectController =
+                        Object.FindFirstObjectByType<BattleGridEffectController>(
+                            FindObjectsInactive.Include);
+
+                    if (gridEffectController != null && gridEffectController.IsBlocked(targetIndex))
                         return false;
 
                     nextCoords.Add(nextCoord);

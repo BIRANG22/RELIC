@@ -25,6 +25,7 @@ public class SkillSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private Color defaultBorderColor = Color.white;
     private bool hasDefaultBorderColor;
     private bool isSelected;
+    private int shownInfoVersion = -1;
 
     public int SlotIndex => slotIndex;
     public SkillMasterData EquippedSkill => equippedSkill;
@@ -79,7 +80,10 @@ public class SkillSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (owner != null && equippedSkill != null)
+        {
             owner.ShowSkillInfo(equippedSkill);
+            shownInfoVersion = LobbyInfoHoverState.CurrentVersion;
+        }
 
         if (!isSelected)
             SetBorderColor(selectedBorderColor);
@@ -89,6 +93,13 @@ public class SkillSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (!isSelected)
             RestoreDefaultBorderColor();
+
+        // 프리뷰에서는 기본 안내 정보로 돌아가고,
+        // 스킬 세팅에서는 마지막으로 확인한 정보를 유지합니다.
+        if (owner != null && owner.ShouldClearInfoOnHoverExit && shownInfoVersion >= 0)
+            owner.ClearSkillInfoFromHover(shownInfoVersion);
+
+        shownInfoVersion = -1;
     }
 
     public void Execute()
@@ -108,7 +119,7 @@ public class SkillSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         equippedSkill = skill;
 
         if (nameText != null)
-            nameText.text = skill != null ? skill.Name : "";
+            nameText.text = skill != null ? GameDataLocalization.SkillName(skill) : "";
 
         if (iconImage != null)
         {
@@ -147,8 +158,22 @@ public class SkillSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void CacheDefaultVisualState()
     {
-        if (defaultScale == Vector3.zero)
-            defaultScale = transform.localScale;
+        // 패널이 켜지는 순간 다른 UI 처리로 스케일이 잠시 0이 될 수 있습니다.
+        // 0 스케일을 기본값으로 저장하면 이후에도 버튼이 계속 보이지 않으므로
+        // 유효한 스케일만 저장하고, 값이 0이면 기본 크기인 1로 복구합니다.
+        Vector3 currentScale = transform.localScale;
+
+        if (IsZeroScale(currentScale))
+        {
+            if (IsZeroScale(defaultScale))
+                defaultScale = Vector3.one;
+
+            transform.localScale = defaultScale;
+        }
+        else if (IsZeroScale(defaultScale))
+        {
+            defaultScale = currentScale;
+        }
 
         if (button == null)
             button = GetComponent<Button>();
@@ -161,6 +186,16 @@ public class SkillSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
             defaultBorderColor = borderImage.color;
             hasDefaultBorderColor = true;
         }
+    }
+
+
+    private static bool IsZeroScale(Vector3 scale)
+    {
+        const float epsilon = 0.0001f;
+
+        return Mathf.Abs(scale.x) <= epsilon
+            || Mathf.Abs(scale.y) <= epsilon
+            || Mathf.Abs(scale.z) <= epsilon;
     }
 
     private void SetBorderColor(Color color)

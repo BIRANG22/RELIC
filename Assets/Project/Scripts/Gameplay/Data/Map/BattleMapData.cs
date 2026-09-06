@@ -14,10 +14,17 @@ namespace Relic.Gameplay.Data
         public int OccupiedCell3;
         public int OccupiedCell4;
 
-        public float SkillDropChance;
-        public float CoreCommonChance;
-        public float CoreRareChance;
-        public float CoreEpicChance;
+        public float MemoryDropChance;
+
+        public float RelicCommonChance;
+        public float RelicRareChance;
+        public float RelicEpicChance;
+        public float RelicUniqueChance;
+
+        public float MemoryCommonChance;
+        public float MemoryRareChance;
+        public float MemoryEpicChance;
+        public float MemoryUniqueChance;
 
         public string Description;
 

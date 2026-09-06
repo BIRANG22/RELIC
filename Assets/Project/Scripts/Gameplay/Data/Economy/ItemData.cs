@@ -7,7 +7,7 @@ namespace Relic.Gameplay.Data
     {
         public string ItemId;
         public string Name;
-        public int Value;
         public string Desc;
+        public string Rarity;
     }
 }

@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,8 +20,18 @@ public class TitleManager : MonoBehaviour
 
     [Header("Warning")]
     [SerializeField] private TitleWarningUI warningUI;
-    [SerializeField] private string unavailableMessage = "���� �غ���� �ʾҽ��ϴ�.";
+    [SerializeField] private string unavailableMessage = "아직 준비되지 않았습니다.";
     [SerializeField] private Button[] unavailableButtons;
+
+    [Header("Run Buttons")]
+    [SerializeField] private GameObject startButtonObject;
+    [SerializeField] private GameObject continueButtonObject;
+    [SerializeField] private GameObject abandonBattleButtonObject;
+    [SerializeField] private bool autoFindRunButtons = true;
+    [SerializeField] private string startButtonName = "StartButton";
+    [SerializeField] private string continueButtonName = "ContinueButton";
+    [SerializeField] private string abandonBattleButtonName = "AbandonBattleButton";
+    [SerializeField] private int runButtonRefreshRetryFrameCount = 3;
 
     [Header("Title Mode Panels")]
     [SerializeField] private GameObject[] titleModePanels;
@@ -36,22 +47,41 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private Button exitButton;
     [SerializeField] private bool autoFindExitButton = true;
     [SerializeField] private bool playExitClickSound = true;
-    [SerializeField] private SfxType exitClickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string exitClickSfx = AudioIds.Sfx.NormalButtonClick;
 
     private bool isOnLogoActive = true;
 
     private void Awake()
     {
         ResolveTitleModePanels();
+        ResolveRunButtons();
         ResolveExitButton();
         AddExitButtonListener();
         AddUnavailableButtonListeners();
     }
 
+    private void OnEnable()
+    {
+        RefreshRunButtons();
+        StartCoroutine(RefreshRunButtonsRetryRoutine());
+    }
+
     private void Start()
     {
         RefreshLogoDefaultState();
+        RefreshRunButtons();
         StartTitleBgmRetry();
+    }
+
+    private IEnumerator RefreshRunButtonsRetryRoutine()
+    {
+        int retryFrameCount = Mathf.Max(1, runButtonRefreshRetryFrameCount);
+
+        for (int i = 0; i < retryFrameCount; i++)
+        {
+            yield return null;
+            RefreshRunButtons();
+        }
     }
 
     private void StartTitleBgmRetry()
@@ -78,7 +108,7 @@ public class TitleManager : MonoBehaviour
             yield break;
         }
 
-        AudioManager.Instance.PlayBgm(BgmType.Title);
+        AudioManager.Instance.PlayBgm(BgmState.TitleMain);
     }
 
     private void OnDestroy()
@@ -121,6 +151,40 @@ public class TitleManager : MonoBehaviour
         QuitGameImmediately();
     }
 
+    public void RefreshRunButtons()
+    {
+        ResolveRunButtons();
+
+        bool hasBattleContinueSave = HasBattleContinueSave();
+
+        SetActiveSafely(startButtonObject, !hasBattleContinueSave);
+        SetActiveSafely(continueButtonObject, hasBattleContinueSave);
+        SetActiveSafely(abandonBattleButtonObject, hasBattleContinueSave);
+
+        if (continueButtonObject != null)
+        {
+            TitleContinueButton continueButton = continueButtonObject.GetComponent<TitleContinueButton>();
+            if (continueButton != null)
+            {
+                continueButton.RefreshLockState();
+            }
+        }
+
+        if (abandonBattleButtonObject != null)
+        {
+            TitleAbandonBattleButton abandonButton = abandonBattleButtonObject.GetComponent<TitleAbandonBattleButton>();
+            if (abandonButton != null)
+            {
+                abandonButton.RefreshInteractable();
+            }
+        }
+    }
+
+    public bool HasBattleContinueSave()
+    {
+        return SaveSystem.Instance != null && SaveSystem.Instance.HasBattleContinueSave();
+    }
+
     private void QuitGameImmediately()
     {
 #if UNITY_EDITOR
@@ -155,7 +219,16 @@ public class TitleManager : MonoBehaviour
 
             if (panel.activeSelf)
             {
-                panel.SetActive(false);
+                TitleModePanelSpreadAnimator animator = panel.GetComponent<TitleModePanelSpreadAnimator>();
+
+                if (animator != null)
+                {
+                    animator.Close();
+                }
+                else
+                {
+                    panel.SetActive(false);
+                }
             }
         }
     }
@@ -182,6 +255,45 @@ public class TitleManager : MonoBehaviour
         }
 
         manager.CloseTitleModePanelsExcept(panelToKeep);
+    }
+
+    public static void RefreshRunButtonsInScene()
+    {
+        TitleManager manager = FindFirstObjectByType<TitleManager>(FindObjectsInactive.Include);
+
+        if (manager == null)
+            return;
+
+        manager.RefreshRunButtons();
+    }
+
+    /// <summary>
+    /// 타이틀 씬 전환 직후 TitleManager 생성 순서와 관계없이
+    /// 저장 상태가 버튼에 반영될 때까지 몇 프레임 동안 다시 확인합니다.
+    /// </summary>
+    public static async Task RefreshRunButtonsAfterSceneReadyAsync(int retryFrameCount = 12)
+    {
+        int retries = Mathf.Max(1, retryFrameCount);
+
+        for (int i = 0; i < retries; i++)
+        {
+            TitleManager manager = FindFirstObjectByType<TitleManager>(FindObjectsInactive.Include);
+            if (manager != null)
+            {
+                manager.RefreshRunButtons();
+
+                // 한 프레임 더 기다린 뒤 한 번 더 확정하여 OnEnable/Start 순서에 의한 덮어쓰기를 방지합니다.
+                await Task.Yield();
+                if (manager != null)
+                    manager.RefreshRunButtons();
+
+                return;
+            }
+
+            await Task.Yield();
+        }
+
+        RefreshRunButtonsInScene();
     }
 
     private void RefreshLogoDefaultState()
@@ -269,6 +381,64 @@ public class TitleManager : MonoBehaviour
         }
 
         titleModePanels = resolvedPanels.ToArray();
+    }
+
+    private void ResolveRunButtons()
+    {
+        if (!autoFindRunButtons)
+        {
+            return;
+        }
+
+        if (startButtonObject == null)
+        {
+            startButtonObject = FindObjectByName(startButtonName);
+        }
+
+        if (continueButtonObject == null)
+        {
+            continueButtonObject = FindObjectByName(continueButtonName);
+        }
+
+        if (abandonBattleButtonObject == null)
+        {
+            abandonBattleButtonObject = FindObjectByName(abandonBattleButtonName);
+        }
+    }
+
+    private static void SetActiveSafely(GameObject target, bool shouldBeActive)
+    {
+        if (target == null || target.activeSelf == shouldBeActive)
+        {
+            return;
+        }
+
+        target.SetActive(shouldBeActive);
+    }
+
+    private static GameObject FindObjectByName(string objectName)
+    {
+        if (string.IsNullOrWhiteSpace(objectName))
+        {
+            return null;
+        }
+
+        Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform target = transforms[i];
+            if (target == null || target.gameObject == null)
+            {
+                continue;
+            }
+
+            if (target.name == objectName)
+            {
+                return target.gameObject;
+            }
+        }
+
+        return null;
     }
 
     private void AddPanelIfValid(List<GameObject> panels, GameObject panel)

@@ -20,12 +20,12 @@ public class BattleState : BaseGameState
         if (string.IsNullOrWhiteSpace(mapRuntime.SelectedChapterId) ||
             string.IsNullOrWhiteSpace(mapRuntime.CurrentStage))
         {
-            Debug.LogError("[BattleState] Chapter 또는 Stage가 선택되지 않았습니다.");
+            Debug.LogError("[BattleState] Chapter or Stage is not selected.");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(mapRuntime.CurrentMapId))
-            mapRuntime.CurrentMapId = "";//넣은 id 부터 시작
+            mapRuntime.CurrentMapId = ""; // Keep empty until a map node is selected.
 
         mapRuntime.CurrentSceneName = SceneName.Battle;
 
@@ -33,7 +33,7 @@ public class BattleState : BaseGameState
 
         await sceneFlow.LoadSceneAsync(mapRuntime.CurrentSceneName);
 
-        AudioManager.Instance.PlayBgmDelayed(BgmType.Battle);
+        AudioManager.Instance.PlayBgm(BgmState.BattleMain);
     }
 
     public override Task Exit()

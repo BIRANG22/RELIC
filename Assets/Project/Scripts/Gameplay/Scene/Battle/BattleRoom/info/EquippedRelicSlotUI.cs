@@ -20,6 +20,11 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
     [SerializeField] private Color hoverBorderColor = new Color(1f, 0.86f, 0.35f, 1f);
     [SerializeField] private Color selectedBorderColor = new Color(1f, 0.58f, 0.12f, 1f);
 
+    [Header("Equip Available Highlight")]
+    [SerializeField] private Color passiveEquipAvailableColor = new Color32(78, 103, 223, 255);
+    [SerializeField] private Color equipAvailableBreathColor = Color.white;
+    private const float EquipAvailableBreathSpeed = 0.5f;
+
     [Header("Selected Effect")]
     [SerializeField] private RectTransform scaleTarget;
     [SerializeField] private bool useSelectedScale = true;
@@ -30,7 +35,7 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
 
     [Header("Sound")]
     [SerializeField] private bool playClickSfx = true;
-    [SerializeField] private SfxType clickSfxType = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfxId = AudioIds.Sfx.NormalButtonClick;
 
     private RelicEquipPanelUI owner;
     private string currentRelicId;
@@ -39,6 +44,8 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
     private bool hasCapturedBaseScale;
     private bool isPointerOver;
     private bool isSelected;
+    private bool isEquipAvailableHighlighted;
+    private float equipAvailableHighlightStartTime;
     private Canvas sortingCanvas;
     private bool hadSortingCanvas;
     private bool originalOverrideSorting;
@@ -76,13 +83,19 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
 
     private void Update()
     {
-        ApplyScale(false);
+        if (NeedsScaleAnimation())
+            ApplyScale(false);
+
+        // 장착 가능 강조는 숨쉬기 색상이라 강조 중일 때만 프레임 갱신이 필요합니다.
+        if (isEquipAvailableHighlighted)
+            ApplyBorderState();
     }
 
     private void OnDisable()
     {
         isPointerOver = false;
         isSelected = false;
+        isEquipAvailableHighlighted = false;
         ApplyBorderState();
         ResetScale();
         ApplySortingState();
@@ -118,6 +131,21 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
         SetIcon(relicId);
     }
 
+    public bool IsEmptyEquipSlot =>
+        !string.IsNullOrWhiteSpace(GetCharacterId()) &&
+        string.IsNullOrWhiteSpace(currentRelicId);
+
+    public void SetEquipAvailableHighlight(bool highlighted)
+    {
+        bool shouldHighlight = highlighted && IsEmptyEquipSlot;
+
+        if (shouldHighlight && !isEquipAvailableHighlighted)
+            equipAvailableHighlightStartTime = Time.unscaledTime;
+
+        isEquipAvailableHighlighted = shouldHighlight;
+        ApplyBorderState();
+    }
+
     public void SetSelected(bool selected)
     {
         isSelected = selected && !string.IsNullOrWhiteSpace(GetCharacterId());
@@ -139,7 +167,7 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
         if (owner != null && owner.EquipSelectedInventoryRelicToSlot(characterId, relicSlotIndex))
         {
             Debug.Log(
-                $"[EquippedRelicSlotUI] ������ ���� ���� / Character:{characterId} / Slot:{relicSlotIndex + 1}"
+                $"[EquippedRelicSlotUI] 선택한 유물 장착 / Character:{characterId} / Slot:{relicSlotIndex + 1}"
             );
 
             return;
@@ -152,7 +180,7 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
             owner?.UnequipRelic(characterId, relicSlotIndex);
 
             Debug.Log(
-                $"[EquippedRelicSlotUI] ���� ���� / Character:{characterId} / Slot:{relicSlotIndex + 1} / Relic:{equippedRelicId}"
+                $"[EquippedRelicSlotUI] 유물 해제 / Character:{characterId} / Slot:{relicSlotIndex + 1} / Relic:{equippedRelicId}"
             );
 
             return;
@@ -161,7 +189,7 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
         owner?.SelectEquipSlot(characterId, relicSlotIndex);
 
         Debug.Log(
-            $"[EquippedRelicSlotUI] �� ���� ���� / Character:{characterId} / Slot:{relicSlotIndex + 1}"
+            $"[EquippedRelicSlotUI] 빈 슬롯 선택 / Character:{characterId} / Slot:{relicSlotIndex + 1}"
         );
     }
 
@@ -242,6 +270,7 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
     private void SetIcon(string relicId)
     {
         currentRelicId = relicId;
+        isEquipAvailableHighlighted = false;
 
         if (clickTargetGraphic == null)
             clickTargetGraphic = GetComponent<Graphic>();
@@ -275,6 +304,7 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
     {
         currentRelicId = null;
         isPointerOver = false;
+        isEquipAvailableHighlighted = false;
         isSelected = false;
 
         if (clickTargetGraphic == null)
@@ -308,12 +338,25 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
 
         bool hasCharacter = !string.IsNullOrWhiteSpace(GetCharacterId());
 
-        if (isSelected && hasCharacter)
+        if (isEquipAvailableHighlighted && IsEmptyEquipSlot)
+            borderImage.color = GetEquipAvailableBreathColor();
+        else if (isSelected && hasCharacter)
             borderImage.color = selectedBorderColor;
         else if (isPointerOver && hasCharacter)
             borderImage.color = hoverBorderColor;
         else
             borderImage.color = normalBorderColor;
+    }
+
+
+    private Color GetEquipAvailableBreathColor()
+    {
+        float speed = Mathf.Max(0.01f, EquipAvailableBreathSpeed);
+        float elapsed = Time.unscaledTime - equipAvailableHighlightStartTime;
+        float t = (Mathf.Sin(elapsed * speed * Mathf.PI * 2f - Mathf.PI * 0.5f) + 1f) * 0.5f;
+
+        // 액티브와 패시브 유물 슬롯 모두 흰색에서 시작해 파란색으로 숨쉽니다.
+        return Color.Lerp(equipAvailableBreathColor, passiveEquipAvailableColor, t);
     }
 
     private void ApplyScale(bool instant)
@@ -334,6 +377,17 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
 
         float t = 1f - Mathf.Exp(-scaleLerpSpeed * Time.unscaledDeltaTime);
         scaleTarget.localScale = Vector3.Lerp(scaleTarget.localScale, targetScale, t);
+    }
+
+    private bool NeedsScaleAnimation()
+    {
+        if (scaleTarget == null)
+            return false;
+
+        CaptureBaseScaleOnce();
+        float multiplier = useSelectedScale && isSelected && !string.IsNullOrWhiteSpace(GetCharacterId()) ? selectedScale : 1f;
+        Vector3 targetScale = baseScale * multiplier;
+        return (scaleTarget.localScale - targetScale).sqrMagnitude > 0.000001f;
     }
 
     private void ResetScale()
@@ -398,6 +452,6 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
         if (!playClickSfx || AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlaySfx(clickSfxType);
+        AudioManager.Instance.PlaySfx(clickSfxId);
     }
 }

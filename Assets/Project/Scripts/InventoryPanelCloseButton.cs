@@ -11,12 +11,12 @@ public class InventoryPanelCloseButton : MonoBehaviour
     [SerializeField] private bool autoFindInventoryPanel = true;
 
     [Header("Move")]
-    [SerializeField] private float closedX = -1550f;
+    [SerializeField] private float closedY = 1080f;
     [SerializeField] private float closeDuration = 0.2f;
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     private Coroutine closeCoroutine;
     private int lastClickSoundFrame = -1;
@@ -38,7 +38,7 @@ public class InventoryPanelCloseButton : MonoBehaviour
 
         if (inventoryPanelRect == null)
         {
-            Debug.LogWarning("[InventoryPanelCloseButton] InventoryPanel의 RectTransform을 찾지 못했습니다.");
+            Debug.LogWarning("[InventoryPanelCloseButton] InventoryPanel RectTransform is missing.");
             return;
         }
 
@@ -54,7 +54,7 @@ public class InventoryPanelCloseButton : MonoBehaviour
     private IEnumerator CloseRoutine()
     {
         Vector2 startPosition = inventoryPanelRect.anchoredPosition;
-        Vector2 targetPosition = new Vector2(closedX, startPosition.y);
+        Vector2 targetPosition = new Vector2(0f, closedY);
 
         float time = 0f;
         float duration = Mathf.Max(0.01f, closeDuration);

@@ -1,7 +1,12 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
+using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 
 public class PlayerSkillReservationController : MonoBehaviour
 {
@@ -9,12 +14,67 @@ public class PlayerSkillReservationController : MonoBehaviour
     [SerializeField] private BattleGridEffectController gridEffectController;
     [SerializeField] private RangePreview rangePreview;
     [SerializeField] private MoveGhostPreview moveGhostPreview;
+    [SerializeField] private MovePathPreview movePathPreview;
     [SerializeField] private BattleTimelineController timelineController;
 
     [Header("Skill List Panel")]
     [SerializeField] private SkillListPanel skillListPanel;
     [SerializeField] private bool keepSkillListOpenAfterReservationClick = true;
     [SerializeField] private int keepSkillListOpenIgnoreFrames = 1;
+
+    [Header("Reservation SFX")]
+    [Tooltip("스킬 또는 이동 행동이 타임라인에 정상 등록되었을 때 재생할 효과음입니다.")]
+    [SerializeField] private string reservationConfirmSfxId = "SkillReserve";
+    [Tooltip("행동 등록 효과음의 볼륨 배율입니다.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float reservationConfirmSfxVolume = 1f;
+
+    [Header("Range Highlight Material")]
+    [Tooltip("이동 스킬의 선택 가능 그리드에만 사용하는 머테리얼입니다. 비워두면 기존 하이라이트 머테리얼을 사용합니다.")]
+    [SerializeField] private Material moveHighlightMaterial;
+
+    [Header("Move Hover Ping")]
+    [Tooltip("이동 가능한 그리드에 마우스를 올렸을 때 고정해서 표시할 기본 핑 이미지입니다.")]
+    [FormerlySerializedAs("moveHoverPingSprite")]
+    [SerializeField] private Sprite moveHoverPingBaseSprite;
+    [FormerlySerializedAs("moveHoverPingOffset")]
+    [SerializeField] private Vector3 moveHoverPingBaseOffset = Vector3.zero;
+    [Tooltip("기본 핑 이미지의 크기입니다. 1은 원본 크기입니다.")]
+    [FormerlySerializedAs("moveHoverPingScale")]
+    [Min(0f)]
+    [SerializeField] private float moveHoverPingBaseScale = 0.5f;
+    [FormerlySerializedAs("moveHoverPingSortingOrder")]
+    [SerializeField] private int moveHoverPingBaseSortingOrder = 10;
+
+    [Tooltip("기본 핑과 함께 표시되며 위아래로 둥둥 움직이는 보조 핑 이미지입니다.")]
+    [SerializeField] private Sprite moveHoverPingFloatingSprite;
+    [SerializeField] private Vector3 moveHoverPingFloatingOffset = Vector3.zero;
+    [Tooltip("보조 핑 이미지의 크기입니다. 1은 원본 크기입니다.")]
+    [Min(0f)]
+    [SerializeField] private float moveHoverPingFloatingScale = 0.5f;
+    [SerializeField] private int moveHoverPingFloatingSortingOrder = 11;
+    [Tooltip("보조 핑이 기준 위치에서 위아래로 움직이는 거리입니다.")]
+    [Min(0f)]
+    [SerializeField] private float moveHoverPingFloatHeight = 0.15f;
+    [Tooltip("보조 핑이 위아래로 움직이는 속도입니다.")]
+    [Min(0f)]
+    [SerializeField] private float moveHoverPingFloatSpeed = 2f;
+
+    [Header("Move Hover Cost Text")]
+    [Tooltip("이동 코스트 텍스트에 사용할 TMP 폰트입니다. 비워두면 TMP 기본 폰트를 사용합니다.")]
+    [SerializeField] private TMP_FontAsset moveHoverCostFont;
+    [SerializeField] private Vector3 moveHoverCostTextOffset = new Vector3(0f, 0.35f, 0f);
+    [Min(0f)]
+    [SerializeField] private float moveHoverCostFontSize = 4f;
+    [SerializeField] private Color moveHoverCostTextColor = Color.white;
+    [SerializeField] private int moveHoverCostSortingOrder = 12;
+
+
+    [Header("Nocturn Portal Preview")]
+    [Tooltip("그리드 중심에서 포털 예고 프리팹에 추가할 위치 오프셋입니다.")]
+    [SerializeField] private Vector3 nocturnPortalIndicatorOffset = Vector3.zero;
+    [Tooltip("포털 예고 프리팹 렌더러의 정렬 순서 오프셋입니다.")]
+    [SerializeField] private int nocturnPortalIndicatorSortingOrder = 13;
 
     [Header("Range Highlight Colors")]
     [SerializeField] private Color moveHighlightColor = new Color(0.698f, 0.698f, 0.243f, 1f);
@@ -30,27 +90,133 @@ public class PlayerSkillReservationController : MonoBehaviour
     private Sprite currentCasterSprite;
 
     private readonly List<int> currentMoveSelectableIndices = new();
+    private readonly List<int> currentGeneralSelectionSelectableIndices = new();
     private readonly Dictionary<int, List<List<Vector2Int>>> currentMovePathCandidatesByTargetIndex = new();
-    private bool isMoveTargetMonsterVisualActive;
+    private bool isGridTargetMonsterVisualActive;
+    private SpriteRenderer moveHoverPingBaseInstance;
+    private SpriteRenderer moveHoverPingFloatingInstance;
+    private TextMeshPro moveHoverCostTextInstance;
+    private int moveHoverPingGridIndex = -1;
+    private Vector3 moveHoverPingFloatingBasePosition;
+    private float moveHoverPingFloatStartTime;
+
+
+    private sealed class NocturnPortalIndicatorEntry
+    {
+        public GameObject Instance;
+        public int ReferenceCount;
+    }
+
+    private readonly Dictionary<string, NocturnPortalIndicatorEntry> nocturnPortalIndicators = new();
 
     private int currentMoveDistancePerCommand = 1;
     private int currentMoveReservationCapacity = 1;
 
     private const string MoveSkillLevelOneId = "S_Move_1";
-    private const string MoveSkillLevelTwoId = "S_Move_2";
+    private const string NocturnPortalPreviewGridEffectId = "GR_nocturn_portal_preview";
+    private const string NocturnPortalVfxLayerName = "VFX";
+    private const float NocturnPortalPreviewLifeTime = 9999f;
+    private const string GeneralSelectionRangeId = "Range_b_24";
+    private const string MoveHoverPingSortingLayerName = "Unit";
+    private const float MoveHoverPingYSortMultiplier = 100f;
+    private const int MoveHoverPingDefaultSortingOffset = 10;
+    private const int MoveHoverPingLegacyFrontSortingOrderThreshold = 1000;
+
+    private int lastRightClickSkillCancelFrame = -1;
+
+    public bool WasSkillSelectionCancelledByRightClickThisFrame =>
+        lastRightClickSkillCancelFrame == Time.frameCount;
 
     private void OnEnable()
     {
         if (gridManager != null)
+        {
             gridManager.OnCellClicked += HandleCellClicked;
+            gridManager.OnCellHovered += HandleCellHovered;
+            gridManager.OnCellHoverExited += HandleCellHoverExited;
+        }
     }
 
     private void OnDisable()
     {
-        SetMoveTargetMonsterVisualActive(false);
+        ClearNocturnPortalDestinationIndicators();
+        HideMoveHoverPing();
+        HideMovePathPreview();
+        SetGridTargetMonsterVisualActive(false);
 
         if (gridManager != null)
+        {
             gridManager.OnCellClicked -= HandleCellClicked;
+            gridManager.OnCellHovered -= HandleCellHovered;
+            gridManager.OnCellHoverExited -= HandleCellHoverExited;
+        }
+    }
+
+    private void Update()
+    {
+        if (IsGridPointerInteractionBlocked())
+        {
+            HideBlockedGridPointerVisuals();
+            return;
+        }
+
+        HandleGridSelectionCancelInput();
+        UpdateMoveHoverPingFloatingAnimation();
+    }
+
+    private bool IsGridPointerInteractionBlocked()
+    {
+        if (BattleFirstTutorialController.Instance != null &&
+            BattleFirstTutorialController.Instance.IsRunning)
+        {
+            return true;
+        }
+
+        if (UIPanelButton.IsMenuPanelOpen)
+            return true;
+
+        return EventSystem.current != null &&
+               EventSystem.current.IsPointerOverGameObject();
+    }
+
+    private void HideBlockedGridPointerVisuals()
+    {
+        HideMoveHoverPing();
+        HideMovePathPreview();
+
+        if (IsGeneralSelectionSkillActive() && rangePreview != null)
+            rangePreview.ClearRangeOnly();
+    }
+
+    private void HandleGridSelectionCancelInput()
+    {
+        if (currentSkillData == null ||
+            currentSkillData.RangeType != RangeType.Selection)
+        {
+            return;
+        }
+
+        if (!Input.GetMouseButtonDown(1))
+            return;
+
+        lastRightClickSkillCancelFrame = Time.frameCount;
+        ClearPreview();
+    }
+
+    private void UpdateMoveHoverPingFloatingAnimation()
+    {
+        if (moveHoverPingFloatingInstance == null ||
+            !moveHoverPingFloatingInstance.gameObject.activeSelf)
+        {
+            return;
+        }
+
+        float elapsedTime = Time.unscaledTime - moveHoverPingFloatStartTime;
+        float floatingOffsetY = Mathf.Sin(elapsedTime * Mathf.Max(0f, moveHoverPingFloatSpeed)) *
+                                Mathf.Max(0f, moveHoverPingFloatHeight);
+
+        moveHoverPingFloatingInstance.transform.position =
+            moveHoverPingFloatingBasePosition + Vector3.up * floatingOffsetY;
     }
 
     private void EnsureSkillListPanel()
@@ -82,6 +248,26 @@ public class PlayerSkillReservationController : MonoBehaviour
         skillListPanel.IgnoreOutsideCloseForFrames(keepSkillListOpenIgnoreFrames);
     }
 
+    private void RestoreHoveredSkillRangeAfterReservation()
+    {
+        EnsureSkillListPanel();
+
+        if (skillListPanel == null)
+            return;
+
+        StartCoroutine(RestoreHoveredSkillRangeAfterReservationRoutine());
+    }
+
+    private IEnumerator RestoreHoveredSkillRangeAfterReservationRoutine()
+    {
+        // 예약 완료 시 기존 범위가 지워진 뒤 UI 클릭 처리가 끝난 다음 프레임에
+        // 마우스가 여전히 같은 스킬 위에 있다면 호버 범위를 다시 표시합니다.
+        yield return null;
+
+        EnsureSkillListPanel();
+        skillListPanel?.RestoreSelectedSkillHoverRangeIfPointerOver();
+    }
+
     public void ShowSkillHoverRangePreview(
         CharacterRuntimeData userRuntime,
         SkillMasterData skillData,
@@ -90,15 +276,12 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (rangePreview == null)
             return;
 
-        rangePreview.ClearRangeOnly();
+        // 호버 프리뷰는 현재 선택 중인 프리뷰를 잠시 완전히 덮어쓴다.
+        // Selection/Direction이 서로 다른 Highlight 머테리얼을 사용하므로
+        // 기존 방향 셀까지 모두 지운 뒤 호버한 스킬의 머테리얼로 다시 표시해야 한다.
+        rangePreview.ClearAll();
 
         if (userRuntime == null || skillData == null)
-            return;
-
-        if (IsMoveSkillSelectionActive())
-            return;
-
-        if (IsMoveSkill(skillData))
             return;
 
         if (gridManager == null || DataManager.Instance == null || DataManager.Instance.RangeDatabase == null)
@@ -122,31 +305,70 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (casterGridIndex < 0)
             return;
 
-        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(userRuntime, skillData);
         List<int> rangeIndices = new();
+
+        if (IsMoveSkill(skillData))
+        {
+            int moveDistancePerCommand = GetMoveDistancePerCommandForPreview(
+                userRuntime,
+                skillData);
+            int moveReservationCapacity = Mathf.Max(0, userRuntime.PreviewCost);
+
+            rangeIndices = GetMoveRangeIndices(
+                casterGridIndex,
+                moveReservationCapacity,
+                moveDistancePerCommand,
+                gridManager);
+
+            if (rangeIndices.Count <= 0)
+                return;
+
+            rangePreview.ShowDirectionCells(
+                rangeIndices,
+                moveHighlightColor,
+                moveHighlightMaterial);
+
+            return;
+        }
+
+        if (skillData.RangeType == RangeType.Selection)
+        {
+            rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
+                casterGridIndex,
+                GeneralSelectionRangeId,
+                DataManager.Instance.RangeDatabase,
+                gridManager
+            );
+
+            if (rangeIndices.Count <= 0)
+                return;
+
+            rangePreview.ShowDirectionCells(
+                rangeIndices,
+                moveHighlightColor,
+                moveHighlightMaterial
+            );
+
+            return;
+        }
+
+        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(userRuntime, skillData);
 
         if (skillData.RangeType == RangeType.Direction)
         {
-            rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+            int rangeOriginGridIndex = GetDirectionalAttackPreviewOriginGridIndex(
                 casterGridIndex,
+                casterDirection,
+                skillData);
+
+            rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+                rangeOriginGridIndex,
                 rangeId,
                 casterDirection,
                 DataManager.Instance.RangeDatabase,
                 gridManager
             );
         }
-        else if (skillData.RangeType == RangeType.Selection)
-        {
-            rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
-                casterGridIndex,
-                rangeId,
-                DataManager.Instance.RangeDatabase,
-                gridManager
-            );
-        }
-
-        if (ShouldExcludeCasterGridFromPreview(skillData))
-            rangeIndices.RemoveAll(index => index == casterGridIndex);
 
         if (rangeIndices.Count <= 0)
             return;
@@ -156,8 +378,15 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     public void ClearSkillHoverRangePreview()
     {
-        if (rangePreview != null)
-            rangePreview.ClearRangeOnly();
+        if (rangePreview == null)
+            return;
+
+        // 실제로 그리드 선택을 진행 중일 때는 선택 가능 범위를 유지하고,
+        // 스킬 아이콘 호버로만 표시한 범위는 Highlight까지 완전히 해제한다.
+        if (IsMoveSkillSelectionActive() || IsGeneralSelectionSkillActive())
+            RestoreCurrentSelectionPreview();
+        else
+            rangePreview.ClearAll();
     }
 
     public void StartReservation(
@@ -179,6 +408,32 @@ public class PlayerSkillReservationController : MonoBehaviour
             casterDirection,
             casterSprite
         );
+    }
+
+    private void RestoreCurrentSelectionPreview()
+    {
+        if (rangePreview == null)
+            return;
+
+        if (IsMoveSkillSelectionActive())
+        {
+            rangePreview.ShowDirectionCells(
+                currentMoveSelectableIndices,
+                GetHighlightColor(currentSkillData),
+                moveHighlightMaterial);
+            return;
+        }
+
+        if (IsGeneralSelectionSkillActive())
+        {
+            rangePreview.ShowDirectionCells(
+                currentGeneralSelectionSelectableIndices,
+                moveHighlightColor,
+                moveHighlightMaterial);
+            return;
+        }
+
+        rangePreview.ClearAll();
     }
 
     public void StartReservation(
@@ -217,21 +472,43 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
+        if (!IsMoveSkill(currentSkillData) &&
+            IsAllRangeSkill(currentUserRuntime, currentSkillData))
+        {
+            SetGridTargetMonsterVisualActive(false);
+            ConfirmAllRangeReservation();
+            return;
+        }
+
         if (currentSkillData.RangeType == RangeType.Direction)
         {
-            SetMoveTargetMonsterVisualActive(false);
+            SetGridTargetMonsterVisualActive(false);
             ConfirmDirectionReservation(currentCasterDirection);
             return;
         }
 
         if (currentSkillData.RangeType == RangeType.Selection)
         {
-            SetMoveTargetMonsterVisualActive(IsMoveSkill(currentSkillData));
-            PreviewMoveSelectableCells();
+            bool isMoveSkill = IsMoveSkill(currentSkillData);
+            SetGridTargetMonsterVisualActive(true, isMoveSkill);
+
+            if (isMoveSkill)
+            {
+                PreviewMoveSelectableCells();
+            }
+            else if (CanUseRangeData())
+            {
+                PreviewGeneralSelectionSelectableCells();
+            }
+            else
+            {
+                ShowBattleWarning("스킬 범위 정보를 찾을 수 없습니다.");
+            }
+
             return;
         }
 
-        SetMoveTargetMonsterVisualActive(false);
+        SetGridTargetMonsterVisualActive(false);
         ConfirmDirectReservation();
     }
 
@@ -278,9 +555,44 @@ public class PlayerSkillReservationController : MonoBehaviour
             timelineController.GetPreviewDirection(currentUserRuntime, currentSlotIndex);
     }
 
+    private void PreviewGeneralSelectionSelectableCells()
+    {
+        currentGeneralSelectionSelectableIndices.Clear();
+
+        if (!IsGeneralSelectionSkillActive() || !CanUseRangeData())
+            return;
+
+        RefreshCurrentCasterStateFromTimelinePreview();
+
+        currentGeneralSelectionSelectableIndices.AddRange(
+            BattleRangeCalculator.GetSelectionRangeIndices(
+                currentCasterGridIndex,
+                GeneralSelectionRangeId,
+                DataManager.Instance.RangeDatabase,
+                gridManager
+            )
+        );
+
+        if (currentGeneralSelectionSelectableIndices.Count <= 0)
+        {
+            ShowBattleWarning("선택 가능한 그리드 범위를 찾을 수 없습니다.");
+            return;
+        }
+
+        if (rangePreview != null)
+        {
+            rangePreview.ShowDirectionCells(
+                currentGeneralSelectionSelectableIndices,
+                moveHighlightColor,
+                moveHighlightMaterial
+            );
+        }
+    }
+
     private void PreviewMoveSelectableCells()
     {
         currentMoveSelectableIndices.Clear();
+        currentGeneralSelectionSelectableIndices.Clear();
         currentMovePathCandidatesByTargetIndex.Clear();
 
         if (!CanUseRangeData())
@@ -298,7 +610,10 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (currentMoveReservationCapacity <= 0)
         {
             if (currentMoveSelectableIndices.Count > 0 && rangePreview != null)
-                rangePreview.ShowDirectionCells(currentMoveSelectableIndices, GetHighlightColor(currentSkillData));
+                rangePreview.ShowDirectionCells(
+                    currentMoveSelectableIndices,
+                    GetHighlightColor(currentSkillData),
+                    moveHighlightMaterial);
 
             if (currentMoveSelectableIndices.Count > 0)
                 return;
@@ -342,7 +657,10 @@ public class PlayerSkillReservationController : MonoBehaviour
             ShowBattleWarning("선택 가능한 칸이 없습니다.");
 
         if (rangePreview != null)
-            rangePreview.ShowDirectionCells(currentMoveSelectableIndices, GetHighlightColor(currentSkillData));
+            rangePreview.ShowDirectionCells(
+                currentMoveSelectableIndices,
+                GetHighlightColor(currentSkillData),
+                moveHighlightMaterial);
     }
 
     private void AddCurrentCasterSelfFlipCandidate(ISet<int> blockedDestinationGridIndices)
@@ -384,13 +702,487 @@ public class PlayerSkillReservationController : MonoBehaviour
         };
     }
 
+    private void HandleCellHovered(GridCell cell)
+    {
+        if (IsGridPointerInteractionBlocked())
+        {
+            HideBlockedGridPointerVisuals();
+            return;
+        }
+
+        if (cell == null)
+            return;
+
+        if (IsMoveSkillSelectionActive())
+        {
+            if (currentMoveSelectableIndices.Contains(cell.Index))
+            {
+                ShowMoveHoverPing(cell.Index);
+                ShowMovePathPreview(cell.Index);
+            }
+            else
+            {
+                HideMoveHoverPing();
+                HideMovePathPreview();
+            }
+
+            return;
+        }
+
+        if (!IsGeneralSelectionSkillActive())
+            return;
+
+        if (currentGeneralSelectionSelectableIndices.Contains(cell.Index))
+            ShowSelectionRangeAt(cell.Index);
+        else if (rangePreview != null)
+            rangePreview.ClearRangeOnly();
+    }
+
+    private void HandleCellHoverExited(GridCell cell)
+    {
+        if (IsMoveSkillSelectionActive())
+        {
+            if (cell == null || cell.Index == moveHoverPingGridIndex)
+            {
+                HideMoveHoverPing();
+                HideMovePathPreview();
+            }
+
+            return;
+        }
+
+        if (!IsGeneralSelectionSkillActive())
+            return;
+
+        if (rangePreview != null)
+            rangePreview.ClearRangeOnly();
+    }
+
+    private void ShowMoveHoverPing(int gridIndex)
+    {
+        if (gridManager == null ||
+            (moveHoverPingBaseSprite == null && moveHoverPingFloatingSprite == null))
+        {
+            HideMoveHoverPing();
+            return;
+        }
+
+        if (!currentMoveSelectableIndices.Contains(gridIndex))
+        {
+            HideMoveHoverPing();
+            return;
+        }
+
+        Vector3 gridWorldPosition = gridManager.GetWorldPositionByIndex(gridIndex);
+
+        if (moveHoverPingBaseSprite != null)
+        {
+            moveHoverPingBaseInstance = EnsureMoveHoverPingRenderer(
+                moveHoverPingBaseInstance,
+                "Move Hover Ping Base");
+
+            moveHoverPingBaseInstance.sprite = moveHoverPingBaseSprite;
+            ApplyMoveHoverYSort(
+                moveHoverPingBaseInstance,
+                gridWorldPosition.y,
+                moveHoverPingBaseSortingOrder,
+                0);
+            moveHoverPingBaseInstance.transform.position = gridWorldPosition + moveHoverPingBaseOffset;
+            moveHoverPingBaseInstance.transform.localScale =
+                Vector3.one * Mathf.Max(0f, moveHoverPingBaseScale);
+            moveHoverPingBaseInstance.gameObject.SetActive(true);
+        }
+        else if (moveHoverPingBaseInstance != null)
+        {
+            moveHoverPingBaseInstance.gameObject.SetActive(false);
+        }
+
+        if (moveHoverPingFloatingSprite != null)
+        {
+            moveHoverPingFloatingInstance = EnsureMoveHoverPingRenderer(
+                moveHoverPingFloatingInstance,
+                "Move Hover Ping Floating");
+
+            moveHoverPingFloatingInstance.sprite = moveHoverPingFloatingSprite;
+            ApplyMoveHoverYSort(
+                moveHoverPingFloatingInstance,
+                gridWorldPosition.y,
+                moveHoverPingFloatingSortingOrder,
+                1);
+            moveHoverPingFloatingInstance.transform.localScale =
+                Vector3.one * Mathf.Max(0f, moveHoverPingFloatingScale);
+
+            moveHoverPingFloatingBasePosition = gridWorldPosition + moveHoverPingFloatingOffset;
+            moveHoverPingFloatingInstance.transform.position = moveHoverPingFloatingBasePosition;
+            moveHoverPingFloatStartTime = Time.unscaledTime;
+            moveHoverPingFloatingInstance.gameObject.SetActive(true);
+        }
+        else if (moveHoverPingFloatingInstance != null)
+        {
+            moveHoverPingFloatingInstance.gameObject.SetActive(false);
+        }
+
+        ShowMoveHoverCostText(gridIndex, gridWorldPosition);
+        moveHoverPingGridIndex = gridIndex;
+    }
+
+    private void ShowMoveHoverCostText(int gridIndex, Vector3 gridWorldPosition)
+    {
+        int moveCost = GetMoveHoverCost(gridIndex);
+
+        if (moveCost < 0)
+        {
+            if (moveHoverCostTextInstance != null)
+                moveHoverCostTextInstance.gameObject.SetActive(false);
+
+            return;
+        }
+
+        moveHoverCostTextInstance = EnsureMoveHoverCostText();
+        moveHoverCostTextInstance.text = moveCost.ToString();
+        moveHoverCostTextInstance.fontSize = Mathf.Max(0f, moveHoverCostFontSize);
+        moveHoverCostTextInstance.color = moveHoverCostTextColor;
+        moveHoverCostTextInstance.transform.position = gridWorldPosition + moveHoverCostTextOffset;
+        ApplyMoveHoverYSort(
+            moveHoverCostTextInstance.renderer,
+            gridWorldPosition.y,
+            moveHoverCostSortingOrder,
+            2);
+        moveHoverCostTextInstance.gameObject.SetActive(true);
+    }
+
+    private int GetMoveHoverCost(int gridIndex)
+    {
+        if (gridIndex == currentCasterGridIndex)
+            return 0;
+
+        if (!currentMovePathCandidatesByTargetIndex.TryGetValue(gridIndex, out List<List<Vector2Int>> pathCandidates))
+            pathCandidates = BuildPreferredMovePathCandidates(gridIndex);
+
+        List<Vector2Int> movePath = GetFirstReservableMovePath(pathCandidates);
+        return movePath == null ? -1 : GetEffectiveMoveReservationCost(movePath);
+    }
+
+    private TextMeshPro EnsureMoveHoverCostText()
+    {
+        if (moveHoverCostTextInstance != null)
+            return moveHoverCostTextInstance;
+
+        GameObject textObject = new GameObject("Move Hover Cost Text");
+        textObject.transform.SetParent(transform, false);
+
+        moveHoverCostTextInstance = textObject.AddComponent<TextMeshPro>();
+        moveHoverCostTextInstance.alignment = TextAlignmentOptions.Center;
+        moveHoverCostTextInstance.textWrappingMode = TextWrappingModes.NoWrap;
+
+        if (moveHoverCostFont != null)
+            moveHoverCostTextInstance.font = moveHoverCostFont;
+
+        return moveHoverCostTextInstance;
+    }
+
+    private SpriteRenderer EnsureMoveHoverPingRenderer(
+        SpriteRenderer currentRenderer,
+        string objectName)
+    {
+        if (currentRenderer != null)
+            return currentRenderer;
+
+        GameObject pingObject = new GameObject(objectName);
+        pingObject.transform.SetParent(transform, false);
+        return pingObject.AddComponent<SpriteRenderer>();
+    }
+
+    private static void ApplyMoveHoverYSort(
+        Renderer renderer,
+        float sortingWorldY,
+        int configuredSortingOffset,
+        int fallbackOffset)
+    {
+        if (renderer == null)
+            return;
+
+        renderer.sortingLayerName = MoveHoverPingSortingLayerName;
+        renderer.sortingOrder = BattleWorldVfxSortUtility.CalculateSortingOrder(
+            sortingWorldY,
+            MoveHoverPingYSortMultiplier,
+            ResolveMoveHoverSortingOffset(configuredSortingOffset, fallbackOffset));
+    }
+
+    private static int ResolveMoveHoverSortingOffset(
+        int configuredSortingOffset,
+        int fallbackOffset)
+    {
+        if (Mathf.Abs(configuredSortingOffset) >= MoveHoverPingLegacyFrontSortingOrderThreshold)
+            return MoveHoverPingDefaultSortingOffset + Mathf.Max(0, fallbackOffset);
+
+        return configuredSortingOffset;
+    }
+
+    private void HideMoveHoverPing()
+    {
+        moveHoverPingGridIndex = -1;
+
+        if (moveHoverPingBaseInstance != null)
+            moveHoverPingBaseInstance.gameObject.SetActive(false);
+
+        if (moveHoverPingFloatingInstance != null)
+            moveHoverPingFloatingInstance.gameObject.SetActive(false);
+
+        if (moveHoverCostTextInstance != null)
+            moveHoverCostTextInstance.gameObject.SetActive(false);
+    }
+
+    private void ShowMovePathPreview(int gridIndex)
+    {
+        EnsureMovePathPreview();
+
+        if (movePathPreview == null || gridManager == null)
+            return;
+
+        if (gridIndex == currentCasterGridIndex)
+        {
+            movePathPreview.Clear();
+            return;
+        }
+
+        if (!currentMovePathCandidatesByTargetIndex.TryGetValue(gridIndex, out List<List<Vector2Int>> pathCandidates))
+            pathCandidates = BuildPreferredMovePathCandidates(gridIndex);
+
+        List<Vector2Int> movePath = GetFirstReservableMovePath(pathCandidates);
+
+        if (movePath == null || movePath.Count <= 0)
+        {
+            movePathPreview.Clear();
+            return;
+        }
+
+        movePathPreview.ShowPath(currentCasterGridIndex, movePath);
+    }
+
+    private void HideMovePathPreview()
+    {
+        if (movePathPreview != null)
+            movePathPreview.Clear();
+    }
+
+    private void EnsureMovePathPreview()
+    {
+        if (movePathPreview == null)
+            movePathPreview = GetComponent<MovePathPreview>();
+
+        if (movePathPreview != null)
+            movePathPreview.BindGridManager(gridManager);
+    }
+
+
+    public void ShowNocturnPortalDestinationIndicator(string runtimeId, int destinationGridIndex)
+    {
+        if (gridManager == null || destinationGridIndex < 0)
+            return;
+
+        string key = BuildNocturnPortalIndicatorKey(runtimeId, destinationGridIndex);
+
+        if (nocturnPortalIndicators.TryGetValue(key, out NocturnPortalIndicatorEntry existing) &&
+            existing != null && existing.Instance != null)
+        {
+            existing.ReferenceCount++;
+            existing.Instance.SetActive(true);
+            return;
+        }
+
+        if (!TryGetNocturnPortalPreviewData(out GridEffectData previewData))
+        {
+            Debug.LogWarning(
+                $"[PlayerSkillReservationController] GridEffect 데이터에서 {NocturnPortalPreviewGridEffectId}를 찾을 수 없습니다.");
+            return;
+        }
+
+        Vector3 gridWorldPosition = gridManager.GetWorldPositionByIndex(destinationGridIndex);
+        BattleVfxEntry previewEntry = CreateNocturnPortalPreviewEntry(
+            previewData,
+            DataManager.Instance?.GridEffectSpriteDatabase,
+            nocturnPortalIndicatorSortingOrder);
+        int renderLayer = LayerMask.NameToLayer(NocturnPortalVfxLayerName);
+
+        if (previewEntry == null ||
+            !BattleWorldVfxRenderer.TrySpawnDetached(
+                previewEntry,
+                gridWorldPosition + nocturnPortalIndicatorOffset,
+                renderLayer,
+                gameObject.layer,
+                NocturnPortalPreviewLifeTime,
+                vfx => ConfigureNocturnPortalPreviewVfx(vfx, renderLayer),
+                out BattleWorldVfxHandle handle) ||
+            handle == null)
+        {
+            Debug.LogWarning(
+                $"[PlayerSkillReservationController] Failed to spawn grid effect preview: {NocturnPortalPreviewGridEffectId}");
+            return;
+        }
+
+        GameObject indicatorObject = handle.gameObject;
+        indicatorObject.name = $"Nocturn Portal Destination {runtimeId}_{destinationGridIndex}";
+
+        // 녹턴의 이동 예정 위치 VFX도 일반 그리드 효과와 같은 툴팁 경로를 사용합니다.
+        GridEffectHoverTarget.Attach(
+            indicatorObject,
+            previewData.GridEffectID,
+            new Vector2(1f, 1f));
+
+        nocturnPortalIndicators[key] = new NocturnPortalIndicatorEntry
+        {
+            Instance = indicatorObject,
+            ReferenceCount = 1
+        };
+    }
+
+    public void HideNocturnPortalDestinationIndicator(string runtimeId, int destinationGridIndex)
+    {
+        string key = BuildNocturnPortalIndicatorKey(runtimeId, destinationGridIndex);
+
+        if (!nocturnPortalIndicators.TryGetValue(key, out NocturnPortalIndicatorEntry entry) ||
+            entry == null)
+        {
+            return;
+        }
+
+        entry.ReferenceCount--;
+
+        if (entry.ReferenceCount > 0)
+            return;
+
+        nocturnPortalIndicators.Remove(key);
+
+        if (entry.Instance != null)
+            Destroy(entry.Instance);
+    }
+
+    public void ClearNocturnPortalDestinationIndicators()
+    {
+        foreach (KeyValuePair<string, NocturnPortalIndicatorEntry> pair in nocturnPortalIndicators)
+        {
+            if (pair.Value != null && pair.Value.Instance != null)
+                Destroy(pair.Value.Instance);
+        }
+
+        nocturnPortalIndicators.Clear();
+    }
+
+    private static bool TryGetNocturnPortalPreviewData(out GridEffectData data)
+    {
+        data = null;
+
+        GridEffectDatabase database = DataManager.Instance?.GridEffectDatabase;
+
+        return database != null &&
+               database.TryGet(NocturnPortalPreviewGridEffectId, out data) &&
+               data != null;
+    }
+
+    private static BattleVfxEntry CreateNocturnPortalPreviewEntry(
+        GridEffectData previewData,
+        GridEffectSpriteDatabase database,
+        int sortingOrderOffset)
+    {
+        if (previewData == null ||
+            string.IsNullOrWhiteSpace(previewData.GridEffectID) ||
+            database == null ||
+            !database.TryGetPrefab(previewData.GridEffectID, out GameObject prefab) ||
+            prefab == null)
+        {
+            return null;
+        }
+
+        return new BattleVfxEntry
+        {
+            prefab = prefab,
+            renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture,
+            proxyBlendMode = BattleVfxProxyBlendMode.Alpha,
+            proxySortingLayerName = MoveHoverPingSortingLayerName,
+            proxySortingOrderOffset = sortingOrderOffset,
+            proxyYMultiplier = MoveHoverPingYSortMultiplier
+        };
+    }
+
+    private static void ConfigureNocturnPortalPreviewVfx(GameObject vfx, int renderLayer)
+    {
+        if (vfx == null)
+            return;
+
+        vfx.SetActive(true);
+
+        if (renderLayer >= 0)
+            SetNocturnPortalPreviewLayerRecursively(vfx, renderLayer);
+
+        if (vfx.GetComponent<BattleVfxPlaybackPauseController>() == null)
+            vfx.AddComponent<BattleVfxPlaybackPauseController>();
+    }
+
+    private static void SetNocturnPortalPreviewLayerRecursively(GameObject target, int layer)
+    {
+        target.layer = layer;
+
+        foreach (Transform child in target.transform)
+            SetNocturnPortalPreviewLayerRecursively(child.gameObject, layer);
+    }
+
+    private static string BuildNocturnPortalIndicatorKey(
+        string runtimeId,
+        int destinationGridIndex)
+    {
+        return $"{runtimeId ?? string.Empty}:{destinationGridIndex}";
+    }
+
+    private bool IsGeneralSelectionSkillActive()
+    {
+        return currentSkillData != null &&
+               currentSkillData.RangeType == RangeType.Selection &&
+               !IsMoveSkill(currentSkillData);
+    }
+
+    private void ShowSelectionRangeAt(int selectedGridIndex)
+    {
+        if (!IsGeneralSelectionSkillActive() || !CanUseRangeData())
+            return;
+
+        List<int> rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
+            selectedGridIndex,
+            BattleEquipmentEffectService.GetEffectiveRangeId(currentUserRuntime, currentSkillData),
+            DataManager.Instance.RangeDatabase,
+            gridManager
+        );
+
+        if (rangePreview != null)
+            rangePreview.ShowRangeCells(rangeIndices, GetHighlightColor(currentSkillData));
+    }
+
     private void HandleCellClicked(GridCell cell)
     {
+        if (IsGridPointerInteractionBlocked())
+        {
+            HideBlockedGridPointerVisuals();
+            return;
+        }
+
         if (cell == null || currentSkillData == null)
             return;
 
         if (currentSkillData.RangeType != RangeType.Selection)
             return;
+
+        if (!IsMoveSkill(currentSkillData))
+        {
+            if (!currentGeneralSelectionSelectableIndices.Contains(cell.Index))
+            {
+                ShowBattleWarning("선택할 수 없는 칸입니다.");
+                Debug.LogWarning($"[PlayerSkillReservationController] 일반 선택 스킬의 사용 가능 범위를 벗어났습니다: {cell.name}");
+                return;
+            }
+
+            ConfirmSelectionReservation(cell.Index);
+            return;
+        }
 
         if (!currentMoveSelectableIndices.Contains(cell.Index))
         {
@@ -399,7 +1191,101 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
+        HideMovePathPreview();
         ConfirmMoveReservation(cell.Index);
+    }
+
+    private void ConfirmSelectionReservation(int selectedGridIndex)
+    {
+        if (!CanConfirmReservation() || !CanUseRangeData())
+            return;
+
+        List<int> rangeIndices = BattleRangeCalculator.GetSelectionRangeIndices(
+            selectedGridIndex,
+            BattleEquipmentEffectService.GetEffectiveRangeId(currentUserRuntime, currentSkillData),
+            DataManager.Instance.RangeDatabase,
+            gridManager
+        );
+
+        PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
+        command.SetSelectionAreaResult(
+            currentCasterDirection,
+            selectedGridIndex,
+            rangeIndices
+        );
+
+        bool confirmed = ConfirmCommand(command);
+        KeepSkillListOpenForThisClick();
+
+        if (!confirmed || !RefreshContinuousGridSelection())
+        {
+            ClearPreview();
+            return;
+        }
+
+        StartCoroutine(RestoreSelectionRangeAfterReservation(selectedGridIndex));
+    }
+
+    private IEnumerator RestoreSelectionRangeAfterReservation(int selectedGridIndex)
+    {
+        // 예약 완료 순간 기존 범위를 한 번 지우고, 다음 프레임에 같은 칸의 범위를 다시 표시합니다.
+        // 마우스를 움직이지 않아도 연속 등록 가능한 범위를 바로 확인할 수 있습니다.
+        if (rangePreview != null)
+            rangePreview.ClearRangeOnly();
+
+        yield return null;
+
+        if (!IsGeneralSelectionSkillActive() ||
+            !currentGeneralSelectionSelectableIndices.Contains(selectedGridIndex))
+        {
+            yield break;
+        }
+
+        ShowSelectionRangeAt(selectedGridIndex);
+    }
+
+    private void ConfirmAllRangeReservation()
+    {
+        if (!CanConfirmReservation() || gridManager == null)
+            return;
+
+        List<int> rangeIndices = BattleRangeCalculator.GetAllGridIndices(gridManager);
+        PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
+
+        if (currentSkillData.RangeType == RangeType.Selection)
+        {
+            command.SetSelectionAreaResult(
+                currentCasterDirection,
+                currentCasterGridIndex,
+                rangeIndices
+            );
+        }
+        else
+        {
+            command.SetDirectionResult(
+                currentCasterDirection,
+                rangeIndices,
+                rangeIndices
+            );
+        }
+
+        bool confirmed = ConfirmCommand(command);
+        KeepSkillListOpenForThisClick();
+        ClearPreview();
+
+        if (confirmed)
+            RestoreHoveredSkillRangeAfterReservation();
+    }
+
+    private static bool IsAllRangeSkill(
+        CharacterRuntimeData userRuntime,
+        SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return false;
+
+        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(userRuntime, skillData);
+        return BattleRangeCalculator.IsAllRangeId(rangeId);
     }
 
     private void ConfirmDirectionReservation(BattleDirection direction)
@@ -407,8 +1293,13 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (!CanConfirmReservation())
             return;
 
-        List<int> rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+        int rangeOriginGridIndex = GetDirectionalAttackPreviewOriginGridIndex(
             currentCasterGridIndex,
+            direction,
+            currentSkillData);
+
+        List<int> rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
+            rangeOriginGridIndex,
             BattleEquipmentEffectService.GetEffectiveRangeId(currentUserRuntime, currentSkillData),
             direction,
             DataManager.Instance.RangeDatabase,
@@ -418,9 +1309,122 @@ public class PlayerSkillReservationController : MonoBehaviour
         PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
         command.SetDirectionResult(direction, rangeIndices, rangeIndices);
 
-        ConfirmCommand(command);
+        bool confirmed = ConfirmCommand(command);
         KeepSkillListOpenForThisClick();
         ClearPreview();
+
+        if (confirmed)
+            RestoreHoveredSkillRangeAfterReservation();
+    }
+
+    private int GetDirectionalAttackPreviewOriginGridIndex(
+        int casterGridIndex,
+        BattleDirection direction,
+        SkillMasterData skillData)
+    {
+        if (gridManager == null || casterGridIndex < 0 || skillData == null)
+            return casterGridIndex;
+
+        if (!TryGetDirectionalMoveBeforeFirstDamage(skillData, out int signedDistance))
+            return casterGridIndex;
+
+        Vector2Int casterCoord = gridManager.IndexToCoord(casterGridIndex);
+        Vector2Int forward = direction == BattleDirection.Right
+            ? Vector2Int.right
+            : Vector2Int.left;
+        Vector2Int previewCoord = casterCoord + forward * signedDistance;
+
+        // 예약/호버 단계에서는 전진이 성공한다고 가정한 위치에서 공격 범위를 보여줍니다.
+        // 실제 실행 시에는 BattleActionRunner가 이동 성공/실패 후 실제 위치에서 범위를 다시 계산합니다.
+        if (!gridManager.IsValidCoord(previewCoord))
+            return casterGridIndex;
+
+        return gridManager.CoordToIndex(previewCoord);
+    }
+
+    private static bool TryGetDirectionalMoveBeforeFirstDamage(
+        SkillMasterData skillData,
+        out int signedDistance)
+    {
+        signedDistance = 0;
+
+        if (skillData == null || skillData.RangeType != RangeType.Direction)
+            return false;
+
+        if (skillData.EffectEntries != null && skillData.EffectEntries.Count > 0)
+        {
+            for (int i = 0; i < skillData.EffectEntries.Count; i++)
+            {
+                SkillEffectEntry entry = skillData.EffectEntries[i];
+
+                if (entry == null || string.IsNullOrWhiteSpace(entry.EffectId))
+                    continue;
+
+                string effectId = entry.EffectId.Trim();
+
+                if (IsDamageEffectForPreview(effectId))
+                    return false;
+
+                if (string.Equals(effectId, "E_Move", StringComparison.Ordinal) &&
+                    TryGetExplicitEffectValue(skillData, i, out signedDistance) &&
+                    signedDistance != 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(skillData.EffectIds))
+            return false;
+
+        string[] effectIds = skillData.EffectIds.Split(';');
+
+        for (int i = 0; i < effectIds.Length; i++)
+        {
+            string effectId = effectIds[i].Trim();
+
+            if (IsDamageEffectForPreview(effectId))
+                return false;
+
+            if (string.Equals(effectId, "E_Move", StringComparison.Ordinal) &&
+                TryGetExplicitEffectValue(skillData, i, out signedDistance) &&
+                signedDistance != 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryGetExplicitEffectValue(
+        SkillMasterData skillData,
+        int effectIndex,
+        out int value)
+    {
+        value = 0;
+
+        if (skillData == null ||
+            effectIndex < 0 ||
+            string.IsNullOrWhiteSpace(skillData.ValueRate))
+        {
+            return false;
+        }
+
+        string[] values = skillData.ValueRate.Split(';');
+
+        if (effectIndex >= values.Length || string.IsNullOrWhiteSpace(values[effectIndex]))
+            return false;
+
+        return int.TryParse(values[effectIndex].Trim(), out value);
+    }
+
+    private static bool IsDamageEffectForPreview(string effectId)
+    {
+        return string.Equals(effectId, "E_Strike", StringComparison.Ordinal) ||
+               string.Equals(effectId, "E_Pierce", StringComparison.Ordinal);
     }
 
     private void ConfirmMoveReservation(int selectedGridIndex)
@@ -461,10 +1465,11 @@ public class PlayerSkillReservationController : MonoBehaviour
             if (selfFlipCommands.Count <= 0)
                 return;
 
-            ConfirmCommands(selfFlipCommands);
+            bool selfFlipConfirmed = ConfirmCommands(selfFlipCommands);
 
             KeepSkillListOpenForThisClick();
-            ClearPreview();
+            if (!selfFlipConfirmed || !RefreshContinuousGridSelection())
+                ClearPreview();
             return;
         }
 
@@ -493,10 +1498,11 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
-        ConfirmCommands(commands);
+        bool confirmed = ConfirmCommands(commands);
 
         KeepSkillListOpenForThisClick();
-        ClearPreview();
+        if (!confirmed || !RefreshContinuousGridSelection())
+            ClearPreview();
     }
 
     private List<Vector2Int> GetFirstReservableMovePath(List<List<Vector2Int>> pathCandidates)
@@ -613,6 +1619,37 @@ public class PlayerSkillReservationController : MonoBehaviour
         return timelineController.GetRemainingPlayerCommandCapacity(currentSlotIndex);
     }
 
+    private int GetMoveDistancePerCommandForPreview(
+        CharacterRuntimeData userRuntime,
+        SkillMasterData skillData)
+    {
+        int distance = Mathf.Max(0, skillData != null ? skillData.GridMove : 0);
+
+        if (distance > 0)
+            return distance;
+
+        if (skillData != null)
+        {
+            if (skillData.SkillId == MoveSkillLevelOneId)
+                return 1;
+        }
+
+        if (DataManager.Instance == null ||
+            DataManager.Instance.RangeDatabase == null ||
+            skillData == null)
+        {
+            return 1;
+        }
+
+        string rangeId =
+            BattleEquipmentEffectService.GetEffectiveRangeId(userRuntime, skillData);
+
+        if (IsAllMoveRangeId(rangeId))
+            return 1;
+
+        return 1;
+    }
+
     private int GetMoveDistancePerCommand()
     {
         int distance = Mathf.Max(0, currentSkillData != null ? currentSkillData.GridMove : 0);
@@ -622,9 +1659,6 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (currentSkillData != null)
         {
-            if (currentSkillData.SkillId == MoveSkillLevelTwoId)
-                return 2;
-
             if (currentSkillData.SkillId == MoveSkillLevelOneId)
                 return 1;
         }
@@ -777,7 +1811,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         BattleActionSimulationService simulationService = new(gridManager);
         bool includeCurrentSlotMonsterCommands =
-            !BattleActionOrderUtility.HasSwift(currentSkillData);
+            !BattleActionOrderUtility.HasSwift(currentUserRuntime);
 
         HashSet<int> projectedGridIndices =
             simulationService.GetProjectedMonsterOccupiedGridIndices(
@@ -1712,8 +2746,95 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         PlayerReservedCommand command = new PlayerReservedCommand(currentUserRuntime, currentSkillData);
 
-        ConfirmCommand(command);
+        bool confirmed = ConfirmCommand(command);
         KeepSkillListOpenForThisClick();
+        ClearPreview();
+
+        if (confirmed)
+            RestoreHoveredSkillRangeAfterReservation();
+    }
+
+
+    private bool RefreshContinuousGridSelection()
+    {
+        if (currentUserRuntime == null ||
+            currentSkillData == null ||
+            currentSkillData.RangeType != RangeType.Selection ||
+            currentSlotIndex < 0)
+        {
+            return false;
+        }
+
+        EnsureTimelineController();
+
+        if (timelineController == null ||
+            timelineController.GetRemainingPlayerCommandCapacity(currentSlotIndex) <= 0 ||
+            !CanReserveCurrentSkillAgain())
+        {
+            return false;
+        }
+
+        HideMoveHoverPing();
+        RefreshCurrentCasterStateFromTimelinePreview();
+
+        bool isMoveSkill = IsMoveSkill(currentSkillData);
+        SetGridTargetMonsterVisualActive(true, isMoveSkill);
+
+        if (rangePreview != null)
+            rangePreview.Clear();
+
+        if (isMoveSkill)
+        {
+            PreviewMoveSelectableCells();
+            return currentMoveSelectableIndices.Count > 0;
+        }
+
+        PreviewGeneralSelectionSelectableCells();
+        return currentGeneralSelectionSelectableIndices.Count > 0;
+    }
+
+    private bool CanReserveCurrentSkillAgain()
+    {
+        if (currentUserRuntime == null || currentSkillData == null || currentUserRuntime.IsDead)
+            return false;
+
+        PlayerReservedCommand previewCommand =
+            new PlayerReservedCommand(currentUserRuntime, currentSkillData);
+
+        EnsureTimelineController();
+        if (timelineController != null && currentSlotIndex >= 0)
+            timelineController.PreparePreviewCommandForReservation(currentSlotIndex, previewCommand);
+
+        return currentUserRuntime.PreviewHP > previewCommand.HPCost &&
+               currentUserRuntime.PreviewCost >= previewCommand.Cost &&
+               currentUserRuntime.PreviewResource >= previewCommand.ResourceCost &&
+               currentUserRuntime.PreviewShield >= previewCommand.ShieldCost;
+    }
+
+    public void CancelSelectionWhenHoveringDifferentSkill(
+        CharacterRuntimeData runtimeData,
+        SkillMasterData hoveredSkillData)
+    {
+        if (currentSkillData == null ||
+            currentSkillData.RangeType != RangeType.Selection ||
+            hoveredSkillData == null)
+        {
+            return;
+        }
+
+        if (runtimeData != null &&
+            currentUserRuntime != null &&
+            runtimeData.CharacterId != currentUserRuntime.CharacterId)
+        {
+            return;
+        }
+
+        if (IsMoveSkill(hoveredSkillData))
+            return;
+
+        if (currentSkillData.SkillId == hoveredSkillData.SkillId)
+            return;
+
         ClearPreview();
     }
 
@@ -1730,7 +2851,10 @@ public class PlayerSkillReservationController : MonoBehaviour
         bool confirmed = timelineController.ConfirmPlayerCommand(currentSlotIndex, command);
 
         if (confirmed)
+        {
             ShowTemporaryMonsterHUDsForCommand(command);
+            PlayReservationConfirmSfx();
+        }
 
         return confirmed;
     }
@@ -1748,9 +2872,23 @@ public class PlayerSkillReservationController : MonoBehaviour
         bool confirmed = timelineController.ConfirmPlayerCommands(currentSlotIndex, commands);
 
         if (confirmed)
+        {
             ShowTemporaryMonsterHUDsForCommands(commands);
+            PlayReservationConfirmSfx();
+        }
 
         return confirmed;
+    }
+
+    private void PlayReservationConfirmSfx()
+    {
+        if (AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(
+            reservationConfirmSfxId,
+            reservationConfirmSfxVolume
+        );
     }
 
     private void ShowTemporaryMonsterHUDsForCommands(IReadOnlyList<PlayerReservedCommand> commands)
@@ -1822,13 +2960,22 @@ public class PlayerSkillReservationController : MonoBehaviour
         return true;
     }
 
-    private void SetMoveTargetMonsterVisualActive(bool active)
-    {
-        if (isMoveTargetMonsterVisualActive == active)
-            return;
+    private bool isGridTargetMonsterDimVisualActive;
 
-        isMoveTargetMonsterVisualActive = active;
-        MonsterUnit.SetAllReservationVisualState(active);
+    private void SetGridTargetMonsterVisualActive(bool active, bool dimVisual = true)
+    {
+        if (isGridTargetMonsterVisualActive == active &&
+            (!active || isGridTargetMonsterDimVisualActive == dimVisual))
+        {
+            return;
+        }
+
+        isGridTargetMonsterVisualActive = active;
+        isGridTargetMonsterDimVisualActive = active && dimVisual;
+
+        MonsterUnit.SetAllReservationVisualState(
+            active,
+            isGridTargetMonsterDimVisualActive);
     }
 
     private bool IsMoveSkill(SkillMasterData skillData)
@@ -1842,8 +2989,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (skillData.TimelineNotation == TimelineActionType.Move)
             return true;
 
-        return skillData.SkillId == MoveSkillLevelOneId ||
-               skillData.SkillId == MoveSkillLevelTwoId;
+        return skillData.SkillId == MoveSkillLevelOneId;
     }
 
     private int FindCurrentCharacterGridIndex(CharacterRuntimeData userRuntime)
@@ -1873,6 +3019,17 @@ public class PlayerSkillReservationController : MonoBehaviour
     }
 
 
+    public bool IsSkillSelectionActive()
+    {
+        return currentSkillData != null;
+    }
+
+    public bool IsGridSelectionActive()
+    {
+        return currentSkillData != null &&
+               currentSkillData.RangeType == RangeType.Selection;
+    }
+
     public bool IsMoveSkillSelectionActive()
     {
         return currentSkillData != null && IsMoveSkill(currentSkillData);
@@ -1881,15 +3038,6 @@ public class PlayerSkillReservationController : MonoBehaviour
     public Color GetHighlightColorForSkill(SkillMasterData skillData)
     {
         return GetHighlightColor(skillData);
-    }
-
-    public bool ShouldExcludeCasterGridFromPreview(SkillMasterData skillData)
-    {
-        if (skillData == null)
-            return false;
-
-        return skillData.SkillType == SkillType.Attack ||
-               skillData.SkillType == SkillType.Skill;
     }
 
     private Color GetHighlightColor(SkillMasterData skillData)
@@ -1902,13 +3050,13 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         switch (skillData.SkillType)
         {
-            case SkillType.Power:
+            case SkillType.Buff:
                 return powerHighlightColor;
 
             case SkillType.Attack:
                 return attackHighlightColor;
 
-            case SkillType.Skill:
+            case SkillType.Debuff:
                 return skillHighlightColor;
 
             default:
@@ -1921,9 +3069,25 @@ public class PlayerSkillReservationController : MonoBehaviour
         BattleWarningUI.ShowMessage(message);
     }
 
+    public bool IsGridSelectionActiveFor(
+        CharacterRuntimeData runtimeData,
+        SkillMasterData skillData)
+    {
+        if (runtimeData == null || skillData == null || currentUserRuntime == null || currentSkillData == null)
+            return false;
+
+        if (currentSkillData.RangeType != RangeType.Selection)
+            return false;
+
+        return runtimeData.CharacterId == currentUserRuntime.CharacterId &&
+               skillData.SkillId == currentSkillData.SkillId;
+    }
+
     public void ClearPreview()
     {
-        SetMoveTargetMonsterVisualActive(false);
+        HideMoveHoverPing();
+        HideMovePathPreview();
+        SetGridTargetMonsterVisualActive(false);
 
         currentUserRuntime = null;
         currentSkillData = null;
@@ -1932,6 +3096,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         currentCasterDirection = BattleDirection.Right;
         currentCasterSprite = null;
         currentMoveSelectableIndices.Clear();
+        currentGeneralSelectionSelectableIndices.Clear();
         currentMovePathCandidatesByTargetIndex.Clear();
         currentMoveDistancePerCommand = 1;
         currentMoveReservationCapacity = 1;

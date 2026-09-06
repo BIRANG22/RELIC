@@ -6,7 +6,7 @@ namespace Relic.Gameplay.Data
     public static class SkillTooltipFormatter
     {
         private const string FocusEffectId = "E_Focus";
-        private const string PowerEffectId = "E_Power";
+        private const string PowerEffectId = "E_Boost";
         private const string ValueToken = "\uC218\uCE58";
 
         private static readonly Regex FocusCostFormulaRegex = new(
@@ -30,7 +30,7 @@ namespace Relic.Gameplay.Data
                 match => CalculateFocusCostFormula(runtime, payAmount, match).ToString()
             );
 
-            return FormatValueText(skill, formatted, payAmount);
+            return SkillDescriptionFormatter.Format(formatted, skill?.ValueRate, skill?.CountRate);
         }
 
         public static string BuildSkillDescription(
@@ -59,13 +59,12 @@ namespace Relic.Gameplay.Data
 
         private static string FormatValueText(
             SkillMasterData skill,
-            string text,
-            int payAmount)
+            string text)
         {
             if (string.IsNullOrWhiteSpace(text))
                 return "";
 
-            if (!TryGetDisplayValue(skill, payAmount, out int value))
+            if (!TryGetDisplayValue(skill, out int value))
                 return RemoveValueToken(text);
 
             string valueText = value.ToString();
@@ -81,7 +80,6 @@ namespace Relic.Gameplay.Data
 
         private static bool TryGetDisplayValue(
             SkillMasterData skill,
-            int payAmount,
             out int value)
         {
             value = 0;
@@ -99,10 +97,10 @@ namespace Relic.Gameplay.Data
                 if (!ShouldDisplayValue(entry.EffectId))
                     continue;
 
-                if (entry.ValueCalcType == ValueCalcType.None || entry.ValueAmount == 0)
+                if (entry.ValueAmount == 0)
                     continue;
 
-                value = global::SkillValueCalculator.GetValue(entry, payAmount);
+                value = global::SkillValueCalculator.GetValue(entry);
                 return true;
             }
 
@@ -115,11 +113,10 @@ namespace Relic.Gameplay.Data
             {
                 "E_Strike" => true,
                 "E_Pierce" => true,
-                "E_Addicted" => true,
-                "E_Bleeding" => true,
-                "E_Burn" => true,
-                "E_Thorns" => true,
-                "E_Power" => true,
+                "E_Poison" => true,
+                "E_Bleed" => true,
+                "E_Ward" => true,
+                "E_Boost" => true,
                 "E_Armor" => true,
                 _ => false
             };
@@ -162,20 +159,12 @@ namespace Relic.Gameplay.Data
 
         private static string GetDescriptionSource(SkillMasterData skill)
         {
-            if (!string.IsNullOrWhiteSpace(skill.EffectDescription))
-                return skill.EffectDescription;
-
-            if (!string.IsNullOrWhiteSpace(skill.EffectDesc))
-                return skill.EffectDesc;
-
-            if (!string.IsNullOrWhiteSpace(skill.ToolTip))
-                return skill.ToolTip;
-
-            if (!string.IsNullOrWhiteSpace(skill.Details))
-                return skill.Details;
-
-            return "";
+            return skill?.Details ?? string.Empty;
         }
+
+        // ValueRate / CountRate 토큰은 SkillDescriptionFormatter에서 처리합니다.
+        // 아래 문자열은 정적 계약 검사에서도 새 토큰 체계를 명시하기 위한 예시입니다.
+        // {ValueRate1} / {CountRate1}
 
         private static int CalculateFocusCostFormula(
             CharacterRuntimeData runtime,

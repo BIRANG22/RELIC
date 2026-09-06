@@ -1,4 +1,4 @@
-using System.Collections;
+Ôªøusing System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
@@ -18,13 +18,14 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     [Header("Tooltip")]
     [SerializeField] private EquippedSkillPanelUI tooltipPanelOwner;
+    [SerializeField] private InventoryRuntimeContextProvider runtimeContextProvider;
 
     private string selectedCharacterId;
     private int selectedRelicSlotIndex = -1;
     private RelicIconUI selectedInventoryRelicIcon;
 
     [SerializeField] private bool lockEditInBattleRoom = true;
-    [SerializeField] private string battleRoomLockMessage = "¿¸≈ı ¡ﬂø°¥¬ ¿Øπ∞¿ª ∫Ø∞Ê«“ ºˆ æ¯Ω¿¥œ¥Ÿ.";
+    [SerializeField] private string battleRoomLockMessage = "Ï†ÑÌà¨ Ï§ëÏóêÎäî Ïú†Î¨ºÏùÑ Î≥ÄÍ≤ΩÌï† Ïàò ÏóÜÏäµÎãàÎã§.";
 
     private void Awake()
     {
@@ -63,11 +64,14 @@ public class RelicEquipPanelUI : MonoBehaviour
 
         InventoryPanelSelectionResetter.ResetAllSelectionsExcept(this);
 
+        if (!CanLocalPlayerEditCharacter(characterId))
+            return;
+
         selectedCharacterId = characterId;
         selectedRelicSlotIndex = relicSlotIndex;
         UpdateEquippedSlotSelectionVisuals();
 
-        Debug.Log($"[RelicEquipPanelUI] ¿Â¬¯ ΩΩ∑‘ º±≈√ / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1}");
+        Debug.Log($"[RelicEquipPanelUI] Ïû•Ï∞© Ïä¨Î°Ø ÏÑ†ÌÉù / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1}");
     }
 
     public void SelectInventoryRelicIcon(RelicIconUI selectedIcon)
@@ -79,6 +83,7 @@ public class RelicEquipPanelUI : MonoBehaviour
 
         selectedInventoryRelicIcon = selectedIcon;
         UpdateInventorySelectionVisuals();
+        UpdateEmptyEquipSlotHighlights();
     }
 
     public void ResetSelectionState()
@@ -88,6 +93,7 @@ public class RelicEquipPanelUI : MonoBehaviour
         selectedInventoryRelicIcon = null;
         UpdateEquippedSlotSelectionVisuals();
         UpdateInventorySelectionVisuals();
+        UpdateEmptyEquipSlotHighlights();
     }
 
     public void SelectRelic(string relicId)
@@ -95,20 +101,20 @@ public class RelicEquipPanelUI : MonoBehaviour
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
-        Debug.Log($"[RelicEquipPanelUI] ¿Øπ∞ ≈¨∏Ø / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1} / Relic:{relicId}");
+        Debug.Log($"[RelicEquipPanelUI] Ïú†Î¨º ÌÅ¥Î¶≠ / Character:{selectedCharacterId} / RelicSlot:{selectedRelicSlotIndex + 1} / Relic:{relicId}");
 
         if (string.IsNullOrWhiteSpace(relicId))
             return;
 
         if (string.IsNullOrWhiteSpace(selectedCharacterId))
         {
-            Debug.Log("[RelicEquipPanelUI] ¿Øπ∞ ∏’¿˙ º±≈√µ . ¿Â¬¯«“ ¿Øπ∞ ΩΩ∑‘¿ª º±≈√«œ∏È ¿Â¬¯µÀ¥œ¥Ÿ.");
+            Debug.Log("[RelicEquipPanelUI] Ïú†Î¨º Î®ºÏ†Ä ÏÑ†ÌÉùÎê®. Ïû•Ï∞©Ìï† Ïú†Î¨º Ïä¨Î°ØÏùÑ ÏÑ†ÌÉùÌïòÎ©¥ Ïû•Ï∞©Îê©ÎãàÎã§.");
             return;
         }
 
         if (selectedRelicSlotIndex < 0)
         {
-            Debug.Log("[RelicEquipPanelUI] ¿Øπ∞ ∏’¿˙ º±≈√µ . ¿Â¬¯«“ ¿Øπ∞ ΩΩ∑‘¿ª º±≈√«œ∏È ¿Â¬¯µÀ¥œ¥Ÿ.");
+            Debug.Log("[RelicEquipPanelUI] Ïú†Î¨º Î®ºÏ†Ä ÏÑ†ÌÉùÎê®. Ïû•Ï∞©Ìï† Ïú†Î¨º Ïä¨Î°ØÏùÑ ÏÑ†ÌÉùÌïòÎ©¥ Ïû•Ï∞©Îê©ÎãàÎã§.");
             return;
         }
 
@@ -165,15 +171,29 @@ public class RelicEquipPanelUI : MonoBehaviour
         if (CheckRelicEditLocked())
             return false;
 
+        if (TryRequestNetworkEquipRelic(
+                characterId,
+                relicSlotIndex,
+                relicId,
+                out bool networkEquipResult))
+        {
+            if (networkEquipResult)
+                ResetSelectionState();
+
+            return networkEquipResult;
+        }
+
         if (DataManager.Instance == null)
             return false;
 
-        BattleRuntimeData battleRuntimeData =
-            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+        if (context == null)
+            return false;
 
         RelicEquipService service = new RelicEquipService(
             DataManager.Instance.CharacterRuntimeStore,
-            battleRuntimeData
+            context.OwnedRelicIds,
+            DataManager.Instance.RelicDatabase
         );
 
         if (service.EquipRelic(characterId, relicSlotIndex, relicId))
@@ -199,25 +219,24 @@ public class RelicEquipPanelUI : MonoBehaviour
 
         EnsureInventoryVerticalLayout();
         selectedInventoryRelicIcon = null;
+        UpdateEmptyEquipSlotHighlights();
 
         ClearInventoryIcons();
 
         if (DataManager.Instance == null)
             return;
 
-        BattleRuntimeData runtime =
-            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
-
-        NormalizeOwnedRelicIds(runtime);
-
-        if (runtime.OwnedRelicIds == null)
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+        if (context == null)
             return;
+
+        NormalizeOwnedRelicIds(context.OwnedRelicIds);
 
         HashSet<string> displayedRelicIds = new();
 
-        for (int i = 0; i < runtime.OwnedRelicIds.Count; i++)
+        for (int i = 0; i < context.OwnedRelicIds.Count; i++)
         {
-            string relicId = runtime.OwnedRelicIds[i];
+            string relicId = context.OwnedRelicIds[i];
 
             if (string.IsNullOrWhiteSpace(relicId))
                 continue;
@@ -345,21 +364,20 @@ public class RelicEquipPanelUI : MonoBehaviour
         RebuildInventoryLayout();
     }
 
-    private void NormalizeOwnedRelicIds(BattleRuntimeData runtime)
+    private static void NormalizeOwnedRelicIds(IList<string> ownedRelicIds)
     {
-        if (runtime == null)
+        if (ownedRelicIds == null)
             return;
 
-        runtime.OwnedRelicIds ??= new List<string>();
         HashSet<string> uniqueIds = new();
 
-        for (int i = runtime.OwnedRelicIds.Count - 1; i >= 0; i--)
+        for (int i = ownedRelicIds.Count - 1; i >= 0; i--)
         {
-            string relicId = runtime.OwnedRelicIds[i];
+            string relicId = ownedRelicIds[i];
 
             if (string.IsNullOrWhiteSpace(relicId))
             {
-                runtime.OwnedRelicIds.RemoveAt(i);
+                ownedRelicIds.RemoveAt(i);
                 continue;
             }
 
@@ -367,14 +385,12 @@ public class RelicEquipPanelUI : MonoBehaviour
 
             if (!uniqueIds.Add(relicId))
             {
-                runtime.OwnedRelicIds.RemoveAt(i);
+                ownedRelicIds.RemoveAt(i);
                 continue;
             }
 
-            runtime.OwnedRelicIds[i] = relicId;
+            ownedRelicIds[i] = relicId;
         }
-
-        DataManager.Instance?.BattleRuntimeStore?.Set(runtime);
     }
 
     public static void RefreshAll()
@@ -410,6 +426,57 @@ public class RelicEquipPanelUI : MonoBehaviour
             if (icon != null)
                 icon.SetSelected(icon == selectedInventoryRelicIcon);
         }
+    }
+
+    private void UpdateEmptyEquipSlotHighlights()
+    {
+        if (equippedSlots == null)
+            return;
+
+        bool hasSelectedRelic = TryGetSelectedRelicType(out bool isActiveRelic);
+
+        for (int i = 0; i < equippedSlots.Length; i++)
+        {
+            EquippedRelicSlotUI slot = equippedSlots[i];
+            if (slot == null)
+                continue;
+
+            bool isActiveSlot =
+                slot.RelicSlotIndex == ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
+
+            bool isCompatibleSlot =
+                hasSelectedRelic && isActiveRelic == isActiveSlot;
+
+            slot.SetEquipAvailableHighlight(isCompatibleSlot);
+        }
+    }
+
+    private bool TryGetSelectedRelicType(out bool isActiveRelic)
+    {
+        isActiveRelic = false;
+
+        if (selectedInventoryRelicIcon == null || DataManager.Instance == null)
+            return false;
+
+        string relicId = selectedInventoryRelicIcon.RelicId;
+        if (string.IsNullOrWhiteSpace(relicId))
+            return false;
+
+        if (DataManager.Instance.CompoundDatabase != null &&
+            DataManager.Instance.CompoundDatabase.TryGet(relicId, out _))
+        {
+            isActiveRelic = true;
+            return true;
+        }
+
+        if (DataManager.Instance.RelicDatabase != null &&
+            DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relic))
+        {
+            isActiveRelic = ActiveRelicEffectResolver.IsActiveRelic(relic);
+            return true;
+        }
+
+        return false;
     }
 
     private void UpdateEquippedSlotSelectionVisuals()
@@ -458,15 +525,31 @@ public class RelicEquipPanelUI : MonoBehaviour
         if (CheckRelicEditLocked())
             return;
 
+        if (TryRequestNetworkUnequipRelic(
+                characterId,
+                relicSlotIndex,
+                out bool networkUnequipResult))
+        {
+            if (networkUnequipResult)
+            {
+                selectedCharacterId = null;
+                selectedRelicSlotIndex = -1;
+            }
+
+            return;
+        }
+
         if (DataManager.Instance == null)
             return;
 
-        BattleRuntimeData battleRuntimeData =
-            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+        if (context == null)
+            return;
 
         RelicEquipService service = new RelicEquipService(
             DataManager.Instance.CharacterRuntimeStore,
-            battleRuntimeData
+            context.OwnedRelicIds,
+            DataManager.Instance.RelicDatabase
         );
 
         if (service.UnequipRelic(characterId, relicSlotIndex))
@@ -479,6 +562,12 @@ public class RelicEquipPanelUI : MonoBehaviour
 
     private bool IsRelicEditLocked()
     {
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+            return false;
+
         if (!lockEditInBattleRoom)
             return false;
 
@@ -495,5 +584,95 @@ public class RelicEquipPanelUI : MonoBehaviour
 
         BattleWarningUI.ShowMessage(battleRoomLockMessage);
         return true;
+    }
+
+    private static bool CanLocalPlayerEditCharacter(string characterId)
+    {
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+            return battleSynchronizer.CanLocalPlayerEditCharacter(characterId);
+
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return synchronizer == null ||
+               !synchronizer.IsNetworkSharedStateActive ||
+               synchronizer.CanLocalPlayerEditCharacter(characterId);
+    }
+
+    private static bool TryRequestNetworkEquipRelic(
+        string characterId,
+        int relicSlotIndex,
+        string relicId,
+        out bool requestSent)
+    {
+        requestSent = false;
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+        {
+            requestSent = battleSynchronizer.RequestEquipRelic(
+                characterId,
+                relicSlotIndex,
+                relicId);
+            return true;
+        }
+
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkSharedStateActive)
+            return false;
+
+        requestSent = synchronizer.RequestEquipRelic(
+            characterId,
+            relicSlotIndex,
+            relicId);
+        return true;
+    }
+
+    private static bool TryRequestNetworkUnequipRelic(
+        string characterId,
+        int relicSlotIndex,
+        out bool requestSent)
+    {
+        requestSent = false;
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+        {
+            requestSent = battleSynchronizer.RequestUnequipRelic(
+                characterId,
+                relicSlotIndex);
+            return true;
+        }
+
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkSharedStateActive)
+            return false;
+
+        requestSent = synchronizer.RequestUnequipRelic(
+            characterId,
+            relicSlotIndex);
+        return true;
+    }
+
+    private IInventoryRuntimeContext ResolveRuntimeContext()
+    {
+        if (runtimeContextProvider == null)
+            runtimeContextProvider = GetComponentInParent<InventoryRuntimeContextProvider>(true);
+
+        if (runtimeContextProvider != null)
+            return runtimeContextProvider.GetContext();
+
+        if (DataManager.Instance == null)
+            return null;
+
+        return InventoryRuntimeContext.ForBattle(DataManager.Instance.BattleRuntimeStore.GetOrCreate());
     }
 }

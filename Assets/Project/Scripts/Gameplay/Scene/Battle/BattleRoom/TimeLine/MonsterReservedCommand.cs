@@ -17,8 +17,11 @@ public class MonsterReservedCommand
     public bool HasReservedDamage => ReservedDamage > 0;
     public int ActionIndex { get; private set; }
     public int RangeOriginGridIndex { get; private set; } = -1;
+    public int RangeOriginCasterGridIndex { get; private set; } = -1;
     public bool HasForcedDirection { get; private set; }
     public BattleDirection ForcedDirection { get; private set; } = BattleDirection.Right;
+    public bool IsPortalMove { get; private set; }
+    public bool HasExplicitRangeResult { get; private set; }
 
     public List<int> RangeGridIndices { get; private set; } = new();
     public List<int> TargetGridIndices { get; private set; } = new();
@@ -28,7 +31,7 @@ public class MonsterReservedCommand
         UserRuntime = userRuntime;
         SkillData = skillData;
         SetActionIndex(userRuntime != null && skillData != null
-            ? userRuntime.GetActionIndexForSkill(skillData.SkillId)
+            ? userRuntime.GetPresentationActionIndexForSkill(skillData.SkillId)
             : 0);
         ReserveDamage();
     }
@@ -37,8 +40,12 @@ public class MonsterReservedCommand
     public bool IsSimulatedMoveBlocked { get; private set; }
     public Vector2Int SimulatedMoveOffset { get; private set; } = Vector2Int.zero;
 
+    public bool UseRequestedMoveOffsetForExecution { get; private set; }
+
     public Vector2Int EffectiveMoveOffset =>
-        HasSimulatedResult ? SimulatedMoveOffset : MoveOffset;
+        UseRequestedMoveOffsetForExecution
+            ? MoveOffset
+            : (HasSimulatedResult ? SimulatedMoveOffset : MoveOffset);
 
     public void SetSimulatedMoveResult(bool blocked, Vector2Int moveOffset)
     {
@@ -51,6 +58,11 @@ public class MonsterReservedCommand
         MoveOffset = moveOffset;
     }
 
+    public void SetUseRequestedMoveOffsetForExecution(bool useRequestedMoveOffset)
+    {
+        UseRequestedMoveOffsetForExecution = useRequestedMoveOffset;
+    }
+
     public void SetActionIndex(int actionIndex)
     {
         ActionIndex = Mathf.Clamp(actionIndex, 0, MonsterMasterData.PossibleSkillSlotCount);
@@ -61,10 +73,25 @@ public class MonsterReservedCommand
         RangeOriginGridIndex = Mathf.Max(-1, gridIndex);
     }
 
+    public void SetRangeOriginCasterGridIndex(int gridIndex)
+    {
+        RangeOriginCasterGridIndex = Mathf.Max(-1, gridIndex);
+    }
+
     public void SetForcedDirection(BattleDirection direction)
     {
         HasForcedDirection = true;
         ForcedDirection = direction;
+    }
+
+    public void ClearForcedDirection()
+    {
+        HasForcedDirection = false;
+    }
+
+    public void SetPortalMove(bool isPortalMove)
+    {
+        IsPortalMove = isPortalMove;
     }
 
     public int EnsureReservedDamage()
@@ -103,5 +130,11 @@ public class MonsterReservedCommand
         TargetGridIndices = targetGridIndices != null
             ? new List<int>(targetGridIndices)
             : new List<int>(RangeGridIndices);
+    }
+
+    public void SetExplicitRangeResult(List<int> rangeGridIndices, List<int> targetGridIndices = null)
+    {
+        HasExplicitRangeResult = true;
+        SetRangeResult(rangeGridIndices, targetGridIndices);
     }
 }

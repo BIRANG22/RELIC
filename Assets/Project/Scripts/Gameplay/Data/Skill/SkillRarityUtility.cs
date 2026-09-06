@@ -31,13 +31,17 @@ namespace Relic.Gameplay.Data
 
         public static bool IsCoreDropRarity(SkillRarity rarity)
         {
-            return rarity == SkillRarity.CoreCommon ||
-                   rarity == SkillRarity.CoreRare ||
-                   rarity == SkillRarity.CoreEpic;
+            return rarity == SkillRarity.Common ||
+                   rarity == SkillRarity.Rare ||
+                   rarity == SkillRarity.Epic ||
+                   rarity == SkillRarity.Unique;
         }
 
         public static bool IsBaseSkillVariant(string skillId)
         {
+            if (IsUnpairedNumberedSkill(skillId))
+                return true;
+
             if (!TryGetTrailingNumber(skillId, out int number))
                 return true;
 
@@ -46,19 +50,20 @@ namespace Relic.Gameplay.Data
 
         public static bool IsUpgradeSkillVariant(string skillId)
         {
+            if (IsUnpairedNumberedSkill(skillId))
+                return false;
+
             return TryGetTrailingNumber(skillId, out int number) && number % 2 == 0;
         }
 
-        public static readonly Color UpgradedSkillIconColor = new Color32(0x7E, 0x93, 0xEC, 0xFF);
-
         public static Color GetSkillIconColor(string skillId)
         {
-            return IsUpgradeSkillVariant(skillId) ? UpgradedSkillIconColor : Color.white;
+            return Color.white;
         }
 
         public static Color GetSkillIconColor(string skillId, Color normalColor)
         {
-            return IsUpgradeSkillVariant(skillId) ? UpgradedSkillIconColor : normalColor;
+            return normalColor;
         }
 
         public static bool TryGetPairedVariantId(string skillId, out string pairedSkillId)
@@ -69,6 +74,10 @@ namespace Relic.Gameplay.Data
                 return false;
 
             skillId = skillId.Trim();
+
+            if (IsUnpairedNumberedSkill(skillId))
+                return false;
+
             int underscoreIndex = skillId.LastIndexOf('_');
 
             if (underscoreIndex < 0 || underscoreIndex >= skillId.Length - 1)
@@ -89,19 +98,47 @@ namespace Relic.Gameplay.Data
             return true;
         }
 
+        public static string GetCanonicalName(SkillRarity rarity)
+        {
+            if (rarity == SkillRarity.Move) return "Move";
+            if (rarity == SkillRarity.Exclusive) return "Exclusive";
+            if (rarity == SkillRarity.Common) return "Common";
+            if (rarity == SkillRarity.Rare) return "Rare";
+            if (rarity == SkillRarity.Epic) return "Epic";
+            if (rarity == SkillRarity.Unique) return "Unique";
+            return string.Empty;
+        }
+
         public static string GetDisplayName(SkillRarity rarity)
         {
             return rarity switch
             {
                 SkillRarity.Move => "이동",
-                SkillRarity.Passive => "패시브",
-                SkillRarity.Unique => "고유",
-                SkillRarity.CharacterExclusive => "캐릭터 전용",
-                SkillRarity.Shared => "공유 가능",
-                SkillRarity.CoreCommon => "코어 일반",
-                SkillRarity.CoreRare => "코어 희귀",
-                SkillRarity.CoreEpic => "코어 영웅",
+                SkillRarity.Exclusive => "기억",
+                SkillRarity.Common => "일반 기억",
+                SkillRarity.Rare => "레어 기억",
+                SkillRarity.Epic => "에픽 기억",
+                SkillRarity.Unique => "유니크 기억",
                 _ => string.Empty
+            };
+        }
+
+        public static string GetDisplayName(SkillMasterData skill)
+        {
+            return GetMemoryTypeDisplayName(skill);
+        }
+
+        public static string GetMemoryTypeDisplayName(SkillMasterData skill)
+        {
+            if (skill == null)
+                return string.Empty;
+
+            return skill.Category switch
+            {
+                Category.Passive => "본능 기억",
+                Category.Unique => "발현 기억",
+                Category.Ability => "구현 기억",
+                _ => GetDisplayName(skill.Rarity)
             };
         }
 
@@ -120,5 +157,16 @@ namespace Relic.Gameplay.Data
             string numberText = id.Substring(underscoreIndex + 1);
             return int.TryParse(numberText, out number);
         }
+
+        private static bool IsUnpairedNumberedSkill(string skillId)
+        {
+            if (string.IsNullOrWhiteSpace(skillId))
+                return false;
+
+            string normalizedSkillId = skillId.Trim();
+            return normalizedSkillId.StartsWith("S_Passive_", StringComparison.OrdinalIgnoreCase) ||
+                   normalizedSkillId.StartsWith("S_Unique_", StringComparison.OrdinalIgnoreCase);
+        }
     }
+
 }

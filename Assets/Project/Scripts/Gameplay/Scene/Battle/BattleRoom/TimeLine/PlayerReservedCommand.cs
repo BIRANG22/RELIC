@@ -26,6 +26,12 @@ public class PlayerReservedCommand
     public int TimelineSlotIndex { get; private set; } = -1;
     public bool ReservationCostModifiersApplied { get; private set; }
     public bool IsMoveContinuationCommand { get; private set; }
+    public bool IsFirstSkillInSlot { get; private set; } = true;
+    public bool HadEarlierMoveInSlot { get; private set; }
+    public int SameSlotMoveCostBeforeCommand { get; private set; }
+    public int EarlierAttackReservationCount { get; private set; }
+    public bool AllyBuffChargeApplied { get; private set; }
+    public int MoveReservationCostMultiplier { get; private set; } = 1;
 
     public BattleDirection Direction { get; private set; } = BattleDirection.Right;
     public int SelectedGridIndex { get; private set; } = -1;
@@ -171,13 +177,13 @@ public class PlayerReservedCommand
     public int EffectiveMoveGridIndex =>
         HasSimulatedResult ? SimulatedMoveGridIndex : ReservedMoveGridIndex;
 
-    public Vector2Int ExecutionMoveOffset =>
-        SkipMoveVisual ? MoveOffset : EffectiveMoveOffset;
+    // 예약형 전투에서는 실행 시점에 예약한 이동 자체를 시도해야 한다.
+    // 시뮬레이션 결과는 후속 예약 표시를 위한 참고값일 뿐, 실제 이동량을 바꾸지 않는다.
+    public Vector2Int ExecutionMoveOffset => MoveOffset;
 
+    // 고스트는 현재 점유 상태로 성공/실패를 예측하지 않고 사용자가 예약한 목적지를 표시한다.
     public int PreviewMoveGridIndex =>
-        SkipMoveVisual && ReservedMoveGridIndex >= 0
-            ? ReservedMoveGridIndex
-            : EffectiveMoveGridIndex;
+        ReservedMoveGridIndex >= 0 ? ReservedMoveGridIndex : EffectiveMoveGridIndex;
 
     public bool IsVisualSkipConsumedAtGrid(int gridIndex)
     {
@@ -205,6 +211,30 @@ public class PlayerReservedCommand
     public void SetTimelineSlotIndex(int slotIndex)
     {
         TimelineSlotIndex = slotIndex;
+    }
+
+    public void SetSlotReservationContext(
+        bool isFirstSkillInSlot,
+        bool hadEarlierMoveInSlot,
+        int sameSlotMoveCostBeforeCommand)
+    {
+        IsFirstSkillInSlot = isFirstSkillInSlot;
+        HadEarlierMoveInSlot = hadEarlierMoveInSlot;
+        SameSlotMoveCostBeforeCommand = Mathf.Max(0, sameSlotMoveCostBeforeCommand);
+    }
+
+    public void SetEarlierAttackReservationCount(int count)
+    {
+        EarlierAttackReservationCount = Mathf.Max(0, count);
+    }
+
+    public bool TryMarkAllyBuffChargeApplied()
+    {
+        if (AllyBuffChargeApplied)
+            return false;
+
+        AllyBuffChargeApplied = true;
+        return true;
     }
 
     public void MarkReservationCostModifiersApplied()
@@ -245,6 +275,11 @@ public class PlayerReservedCommand
         Cost = Mathf.Max(0, cost);
         ResourceCost = Mathf.Max(0, resourceCost);
         ShieldCost = Mathf.Max(0, shieldCost);
+    }
+
+    public void SetMoveReservationCostMultiplier(int multiplier)
+    {
+        MoveReservationCostMultiplier = Mathf.Max(1, multiplier);
     }
 
     public void SetMoveReservationCost(
@@ -432,6 +467,23 @@ public class PlayerReservedCommand
         TargetGridIndices = new List<int> { selectedGridIndex };
     }
 
+    public void SetSelectionAreaResult(
+        BattleDirection direction,
+        int selectedGridIndex,
+        List<int> rangeGridIndices)
+    {
+        Direction = direction;
+        SelectedGridIndex = selectedGridIndex;
+        ReservedMoveGridIndex = -1;
+        MoveOffset = Vector2Int.zero;
+        ClearVisualMoveResult();
+
+        RangeGridIndices = rangeGridIndices != null
+            ? new List<int>(rangeGridIndices)
+            : new List<int>();
+        TargetGridIndices = new List<int>(RangeGridIndices);
+    }
+
     private void ClearVisualMoveResult()
     {
         VisualMoveGridIndex = -1;
@@ -480,41 +532,8 @@ public class PlayerReservedCommand
 
     private int GetCostValue(SkillMasterData skillData)
     {
-        if (skillData == null)
-            return 0;
-
-        switch (skillData.ResourceCostType)
-        {
-            case ResourceCostType.Fixed:
-                return Mathf.Max(0, skillData.ResourceCostValue);
-
-            case ResourceCostType.AllCurrent:
-                return GetAllCurrentCost(skillData.ReferenceResource);
-
-            default:
-                return 0;
-        }
-    }
-
-    private int GetAllCurrentCost(ReferenceResource resource)
-    {
-        if (UserRuntime == null)
-            return 0;
-
-        switch (resource)
-        {
-            case ReferenceResource.HP:
-                return Mathf.Max(0, UserRuntime.PreviewHP);
-
-            case ReferenceResource.Cost:
-            case ReferenceResource.MovePoint:
-                return Mathf.Max(0, UserRuntime.PreviewCost);
-
-            case ReferenceResource.UniqueResource:
-                return Mathf.Max(0, UserRuntime.PreviewResource);
-
-            default:
-                return 0;
-        }
+        return skillData == null
+            ? 0
+            : Mathf.Max(0, skillData.ResourceCostValue);
     }
 }

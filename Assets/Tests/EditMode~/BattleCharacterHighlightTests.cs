@@ -146,6 +146,53 @@ public class BattleCharacterHighlightTests
         Assert.That(shadowRenderer.sortingOrder, Is.EqualTo(sourceRenderer.sortingOrder - 1));
     }
 
+    [Test]
+    public void TimelineHoverHighlight_StaysOffForDeadCharacter()
+    {
+        BattleCharacter character = CreateCharacterWithHighlight(
+            out GameObject highlightObject,
+            out SpriteRenderer highlightRenderer,
+            out SpriteRenderer idleBackRenderer);
+
+        character.Initialize(new Relic.Gameplay.Data.CharacterRuntimeData
+        {
+            CharacterId = "Char_Dead_Highlight",
+            MaxHP = 10,
+            CurrentHP = 0
+        });
+
+        character.SetTimelineHoverHighlight(true);
+        InvokePrivate(character, "LateUpdate");
+
+        Assert.That(highlightObject.activeSelf, Is.False);
+        Assert.That(highlightRenderer.color.a, Is.EqualTo(0f).Within(0.001f));
+        Assert.That(idleBackRenderer.color.a, Is.EqualTo(0f).Within(0.001f));
+    }
+
+    [Test]
+    public void SelectionFeedback_DoesNotPlayIdleForDeadCharacter()
+    {
+        BattleCharacter character = CreateCharacterWithHighlight(
+            out _,
+            out _);
+
+        Animator animator = CreateSourceAnimator("Idle", "Dead");
+        character.Initialize(new Relic.Gameplay.Data.CharacterRuntimeData
+        {
+            CharacterId = "Char_Dead_Selection",
+            MaxHP = 10,
+            CurrentHP = 0
+        });
+
+        animator.Play("Dead", 0, 0f);
+        animator.Update(0f);
+
+        character.SetSelectionScaleFeedback(false);
+        animator.Update(0f);
+
+        Assert.That(animator.GetCurrentAnimatorStateInfo(0).IsName("Dead"), Is.True);
+    }
+
     private BattleCharacter CreateCharacterWithHighlight(
         out GameObject highlightObject,
         out SpriteRenderer highlightRenderer,
@@ -193,18 +240,24 @@ public class BattleCharacterHighlightTests
         return shadow.AddComponent<SpriteRenderer>();
     }
 
-    private Animator CreateSourceAnimator()
+    private Animator CreateSourceAnimator(params string[] stateNames)
     {
         GameObject spriteRoot = new("SpriteRoot");
         spriteRoot.transform.SetParent(characterObject.transform);
 
         Animator animator = spriteRoot.AddComponent<Animator>();
-        animator.runtimeAnimatorController = CreateAnimatorController("Idle");
+        animator.runtimeAnimatorController =
+            CreateAnimatorController(stateNames == null || stateNames.Length <= 0
+                ? new[] { "Idle" }
+                : stateNames);
         return animator;
     }
 
-    private RuntimeAnimatorController CreateAnimatorController(string stateName)
+    private RuntimeAnimatorController CreateAnimatorController(params string[] stateNames)
     {
+        if (stateNames == null || stateNames.Length <= 0)
+            stateNames = new[] { "Idle" };
+
         string folderPath = "Assets/TempBattleCharacterHighlightTests";
         if (!AssetDatabase.IsValidFolder(folderPath))
         {
@@ -212,22 +265,29 @@ public class BattleCharacterHighlightTests
             createdAssetPaths.Add(folderPath);
         }
 
+        string stateName = stateNames[0];
         string controllerPath = AssetDatabase.GenerateUniqueAssetPath(
             $"{folderPath}/{stateName}_Test.controller");
         AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
         createdAssetPaths.Add(controllerPath);
 
-        AnimationClip clip = new() { frameRate = 8f };
-        clip.SetCurve(
-            "",
-            typeof(Transform),
-            "m_LocalPosition.x",
-            AnimationCurve.Linear(0f, 0f, 1f, 1f));
-        AssetDatabase.AddObjectToAsset(clip, controller);
+        for (int i = 0; i < stateNames.Length; i++)
+        {
+            AnimationClip clip = new() { frameRate = 8f };
+            clip.SetCurve(
+                "",
+                typeof(Transform),
+                "m_LocalPosition.x",
+                AnimationCurve.Linear(0f, 0f, 1f, 1f));
+            AssetDatabase.AddObjectToAsset(clip, controller);
 
-        AnimatorState state = controller.layers[0].stateMachine.AddState(stateName);
-        state.motion = clip;
-        controller.layers[0].stateMachine.defaultState = state;
+            AnimatorState state = controller.layers[0].stateMachine.AddState(stateNames[i]);
+            state.motion = clip;
+
+            if (i == 0)
+                controller.layers[0].stateMachine.defaultState = state;
+        }
+
         AssetDatabase.SaveAssets();
 
         return controller;

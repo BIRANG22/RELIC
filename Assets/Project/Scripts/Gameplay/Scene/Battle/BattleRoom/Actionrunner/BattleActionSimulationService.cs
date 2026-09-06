@@ -281,6 +281,8 @@ public class BattleActionSimulationService
     {
         HashSet<int> blockedGridIndices = new();
 
+        // 예약 경로를 찾을 때는 현재 유닛 점유를 장애물로 사용한다.
+        // 다만 이것은 경로 탐색 기준일 뿐, 실행 시점의 충돌 결과를 미리 확정하지 않는다.
         foreach (var pair in playerPositions)
         {
             if ("P:" + pair.Key == selfKey)
@@ -298,6 +300,8 @@ public class BattleActionSimulationService
             {
                 int gridIndex = pair.Value[i];
 
+                // 사용자가 몬스터가 있는 칸 자체를 목적지로 예약한 경우에는
+                // 목적지를 막지 않고, 중간 경로의 현재 몬스터 점유만 우회한다.
                 if (gridIndex == targetGridIndex)
                     continue;
 
@@ -306,7 +310,6 @@ public class BattleActionSimulationService
         }
 
         AddBlockedGridEffectIndices(blockedGridIndices);
-
         return blockedGridIndices;
     }
 
@@ -516,9 +519,8 @@ public class BattleActionSimulationService
 
             int gridIndex = gridManager.CoordToIndex(nextCoord);
 
-            if (IsOccupiedForPlayerMove(gridIndex, selfKey))
-                return false;
-
+            // 유닛 점유는 예약 단계에서 이동 실패로 확정하지 않는다.
+            // 실제 실행 순간의 점유 상태로 충돌 여부를 결정한다.
             if (IsGridEffectBlocked(gridIndex))
                 return false;
 
@@ -537,10 +539,30 @@ public class BattleActionSimulationService
             command.UserRuntime,
             command.SkillData);
 
+        int simulatedCasterGrid = casterGrid;
+        bool hasDirectionalMove = TryGetExplicitDirectionalMove(
+            command.SkillData,
+            out int moveEffectIndex,
+            out int signedMoveDistance);
+        int firstDamageEffectIndex = GetFirstDamageEffectIndex(command.SkillData);
+        bool moveBeforeDamage =
+            hasDirectionalMove &&
+            firstDamageEffectIndex >= 0 &&
+            moveEffectIndex < firstDamageEffectIndex;
+
+        if (moveBeforeDamage)
+        {
+            simulatedCasterGrid = SimulatePlayerDirectionalSkillMove(
+                command,
+                simulatedCasterGrid,
+                direction,
+                signedMoveDistance);
+        }
+
         if (command.SkillData.RangeType == RangeType.Direction)
         {
             range = BattleRangeCalculator.GetDirectionRangeIndices(
-                casterGrid,
+                simulatedCasterGrid,
                 rangeId,
                 direction,
                 DataManager.Instance.RangeDatabase,
@@ -548,19 +570,132 @@ public class BattleActionSimulationService
             );
 
             command.SetDirectionResult(direction, range, range);
-            return;
         }
         else if (command.SkillData.RangeType == RangeType.Selection)
         {
+            int selectionCenter = command.SelectedGridIndex >= 0
+                ? command.SelectedGridIndex
+                : simulatedCasterGrid;
+
             range = BattleRangeCalculator.GetSelectionRangeIndices(
-                casterGrid,
+                selectionCenter,
                 rangeId,
                 DataManager.Instance.RangeDatabase,
                 gridManager
             );
+
+            command.SetSimulatedRangeResult(range, range);
+        }
+        else
+        {
+            command.SetSimulatedRangeResult(range, range);
         }
 
-        command.SetSimulatedRangeResult(range, range);
+        if (hasDirectionalMove && !moveBeforeDamage)
+        {
+            SimulatePlayerDirectionalSkillMove(
+                command,
+                simulatedCasterGrid,
+                direction,
+                signedMoveDistance);
+        }
+    }
+
+    private int SimulatePlayerDirectionalSkillMove(
+        PlayerReservedCommand command,
+        int currentGrid,
+        BattleDirection direction,
+        int signedDistance)
+    {
+        if (command == null ||
+            command.UserRuntime == null ||
+            currentGrid < 0 ||
+            signedDistance == 0 ||
+            gridManager == null)
+        {
+            return currentGrid;
+        }
+
+        Vector2Int forward = direction == BattleDirection.Right
+            ? Vector2Int.right
+            : Vector2Int.left;
+        Vector2Int requestedMoveOffset = forward * signedDistance;
+
+        bool reachedTarget = TryGetPlayerMoveTargetGridIndex(
+            currentGrid,
+            requestedMoveOffset,
+            "P:" + command.CharacterId,
+            out int targetGrid);
+
+        Vector2Int startCoord = gridManager.IndexToCoord(currentGrid);
+        Vector2Int targetCoord = gridManager.IndexToCoord(targetGrid);
+        Vector2Int actualMoveOffset = targetCoord - startCoord;
+
+        playerPositions[command.CharacterId] = targetGrid;
+        command.SetSimulatedMoveResult(
+            !reachedTarget || actualMoveOffset != requestedMoveOffset,
+            targetGrid,
+            actualMoveOffset);
+
+        return targetGrid;
+    }
+
+    private static bool TryGetExplicitDirectionalMove(
+        SkillMasterData skillData,
+        out int effectIndex,
+        out int signedDistance)
+    {
+        effectIndex = -1;
+        signedDistance = 0;
+
+        if (skillData == null ||
+            skillData.RangeType != RangeType.Direction ||
+            string.IsNullOrWhiteSpace(skillData.EffectIds) ||
+            string.IsNullOrWhiteSpace(skillData.ValueRate))
+        {
+            return false;
+        }
+
+        string[] effectIds = skillData.EffectIds.Split(';');
+        string[] values = skillData.ValueRate.Split(';');
+
+        for (int i = 0; i < effectIds.Length; i++)
+        {
+            if (!string.Equals(effectIds[i].Trim(), "E_Move", System.StringComparison.Ordinal))
+                continue;
+
+            if (i >= values.Length || string.IsNullOrWhiteSpace(values[i]))
+                return false;
+
+            if (!int.TryParse(values[i].Trim(), out signedDistance) || signedDistance == 0)
+                return false;
+
+            effectIndex = i;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static int GetFirstDamageEffectIndex(SkillMasterData skillData)
+    {
+        if (skillData == null || string.IsNullOrWhiteSpace(skillData.EffectIds))
+            return -1;
+
+        string[] effectIds = skillData.EffectIds.Split(';');
+
+        for (int i = 0; i < effectIds.Length; i++)
+        {
+            string effectId = effectIds[i].Trim();
+
+            if (string.Equals(effectId, "E_Strike", System.StringComparison.Ordinal) ||
+                string.Equals(effectId, "E_Pierce", System.StringComparison.Ordinal))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     private BattleDirection GetPlayerDirection(PlayerReservedCommand command)
@@ -641,18 +776,174 @@ public class BattleActionSimulationService
             return;
         }
 
-        if (!TryGetSimulatedMonsterMoveCells(
-            currentCells,
-            moveOffset,
-            "M:" + command.RuntimeId,
-            out List<int> movedCells))
+        if (IsNocturnPortalMove(command))
         {
-            command.SetSimulatedMoveResult(true, Vector2Int.zero);
+            if (!TryGetSimulatedPortalDestinationCells(
+                    currentCells,
+                    moveOffset,
+                    "M:" + command.RuntimeId,
+                    out List<int> portalCells))
+            {
+                command.SetSimulatedMoveResult(true, Vector2Int.zero);
+                return;
+            }
+
+            monsterPositions[command.RuntimeId] = portalCells;
+            command.SetSimulatedMoveResult(false, moveOffset);
             return;
         }
 
-        monsterPositions[command.RuntimeId] = movedCells;
-        command.SetSimulatedMoveResult(false, moveOffset);
+        SimulatedMonsterMoveResolution moveResolution = ResolveSimulatedMonsterMove(
+            currentCells,
+            moveOffset,
+            "M:" + command.RuntimeId);
+
+        if (moveResolution.ActualOffset != Vector2Int.zero &&
+            moveResolution.MovedCells != null &&
+            moveResolution.MovedCells.Count > 0)
+        {
+            monsterPositions[command.RuntimeId] = moveResolution.MovedCells;
+        }
+
+        command.SetSimulatedMoveResult(
+            moveResolution.WasBlocked,
+            moveResolution.ActualOffset);
+    }
+
+    private sealed class SimulatedMonsterMoveResolution
+    {
+        public Vector2Int ActualOffset;
+        public bool WasBlocked;
+        public List<int> MovedCells = new();
+    }
+
+    private SimulatedMonsterMoveResolution ResolveSimulatedMonsterMove(
+        IReadOnlyList<int> currentCells,
+        Vector2Int requestedOffset,
+        string selfKey)
+    {
+        if (currentCells == null || currentCells.Count <= 0 || requestedOffset == Vector2Int.zero)
+            return new SimulatedMonsterMoveResolution { WasBlocked = true };
+
+        if (requestedOffset.x != 0 && requestedOffset.y != 0)
+        {
+            SimulatedMonsterMoveResolution horizontalFirst =
+                ResolveSimulatedMonsterMoveAxisOrder(currentCells, requestedOffset, selfKey, true);
+            SimulatedMonsterMoveResolution verticalFirst =
+                ResolveSimulatedMonsterMoveAxisOrder(currentCells, requestedOffset, selfKey, false);
+
+            int horizontalDistance =
+                Mathf.Abs(horizontalFirst.ActualOffset.x) + Mathf.Abs(horizontalFirst.ActualOffset.y);
+            int verticalDistance =
+                Mathf.Abs(verticalFirst.ActualOffset.x) + Mathf.Abs(verticalFirst.ActualOffset.y);
+
+            return verticalDistance > horizontalDistance
+                ? verticalFirst
+                : horizontalFirst;
+        }
+
+        return ResolveSimulatedMonsterMoveAxisOrder(
+            currentCells,
+            requestedOffset,
+            selfKey,
+            requestedOffset.x != 0);
+    }
+
+    private SimulatedMonsterMoveResolution ResolveSimulatedMonsterMoveAxisOrder(
+        IReadOnlyList<int> currentCells,
+        Vector2Int requestedOffset,
+        string selfKey,
+        bool horizontalFirst)
+    {
+        SimulatedMonsterMoveResolution result = new();
+        List<Vector2Int> currentCoords = new();
+
+        for (int i = 0; i < currentCells.Count; i++)
+            currentCoords.Add(gridManager.IndexToCoord(currentCells[i]));
+
+        Vector2Int startMainCoord = currentCoords[0];
+        bool completed;
+
+        if (horizontalFirst)
+        {
+            completed = TryApplySimulatedMonsterMoveAxisSteps(
+                currentCoords,
+                requestedOffset.x,
+                true,
+                selfKey);
+
+            if (completed)
+            {
+                completed = TryApplySimulatedMonsterMoveAxisSteps(
+                    currentCoords,
+                    requestedOffset.y,
+                    false,
+                    selfKey);
+            }
+        }
+        else
+        {
+            completed = TryApplySimulatedMonsterMoveAxisSteps(
+                currentCoords,
+                requestedOffset.y,
+                false,
+                selfKey);
+
+            if (completed)
+            {
+                completed = TryApplySimulatedMonsterMoveAxisSteps(
+                    currentCoords,
+                    requestedOffset.x,
+                    true,
+                    selfKey);
+            }
+        }
+
+        result.ActualOffset = currentCoords[0] - startMainCoord;
+        result.WasBlocked = !completed || result.ActualOffset != requestedOffset;
+
+        for (int i = 0; i < currentCoords.Count; i++)
+            result.MovedCells.Add(gridManager.CoordToIndex(currentCoords[i]));
+
+        return result;
+    }
+
+
+    private static bool IsNocturnPortalMove(MonsterReservedCommand command)
+    {
+        // 포탈 여부는 몬스터/스킬 ID로 추측하지 않고 AI가 예약한 플래그만 사용합니다.
+        // 따라서 S_Monster_18은 중간 경로가 막혀 있어도 일반 이동 경로 검사를 타지 않습니다.
+        return command != null && command.IsPortalMove;
+    }
+
+    private bool TryGetSimulatedPortalDestinationCells(
+        IReadOnlyList<int> currentCells,
+        Vector2Int moveOffset,
+        string selfKey,
+        out List<int> movedCells)
+    {
+        movedCells = new List<int>();
+
+        if (currentCells == null || currentCells.Count <= 0 || gridManager == null)
+            return false;
+
+        for (int i = 0; i < currentCells.Count; i++)
+        {
+            Vector2Int currentCoord = gridManager.IndexToCoord(currentCells[i]);
+            Vector2Int destinationCoord = currentCoord + moveOffset;
+
+            if (!gridManager.IsValidCoord(destinationCoord))
+                return false;
+
+            int destinationGridIndex = gridManager.CoordToIndex(destinationCoord);
+
+            if (IsOccupied(destinationGridIndex, selfKey))
+                return false;
+
+            movedCells.Add(destinationGridIndex);
+        }
+
+        return true;
     }
 
     private bool TryGetSimulatedMonsterMoveCells(
@@ -764,6 +1055,9 @@ public class BattleActionSimulationService
         MonsterReservedCommand command,
         List<int> currentCells)
     {
+        if (command != null && command.HasExplicitRangeResult)
+            return;
+
         if (currentCells == null || currentCells.Count <= 0)
             return;
 
@@ -871,6 +1165,15 @@ public class BattleActionSimulationService
                 continue;
 
             if (pair.Value == gridIndex)
+                return true;
+        }
+
+        foreach (var pair in monsterPositions)
+        {
+            if (pair.Value == null)
+                continue;
+
+            if (pair.Value.Contains(gridIndex))
                 return true;
         }
 

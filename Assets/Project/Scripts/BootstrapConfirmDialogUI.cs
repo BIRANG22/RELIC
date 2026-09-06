@@ -34,6 +34,7 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
     {
         ResolveReferencesIfNeeded();
         RegisterButtonEvents();
+        RefreshTextMeshes();
     }
 
     private void OnDestroy()
@@ -51,6 +52,7 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
 
         SetMessage(message);
         SetButtonTexts(yesText, noText);
+        RefreshTextMeshes();
     }
 
     public void OnClickYes()
@@ -87,7 +89,7 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
     private void SetMessage(string message)
     {
         if (tmpMessageText != null)
-            tmpMessageText.text = message;
+            SetTmpText(tmpMessageText, message);
 
         if (legacyMessageText != null)
             legacyMessageText.text = message;
@@ -96,16 +98,41 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
     private void SetButtonTexts(string yesText, string noText)
     {
         if (tmpYesButtonText != null)
-            tmpYesButtonText.text = yesText;
+            SetTmpText(tmpYesButtonText, yesText);
 
         if (legacyYesButtonText != null)
             legacyYesButtonText.text = yesText;
 
         if (tmpNoButtonText != null)
-            tmpNoButtonText.text = noText;
+            SetTmpText(tmpNoButtonText, noText);
 
         if (legacyNoButtonText != null)
             legacyNoButtonText.text = noText;
+    }
+
+    public void RefreshTextMeshes()
+    {
+        RefreshTmpText(tmpMessageText);
+        RefreshTmpText(tmpYesButtonText);
+        RefreshTmpText(tmpNoButtonText);
+    }
+
+    private static void SetTmpText(TMP_Text target, string value)
+    {
+        if (target == null)
+            return;
+
+        target.text = value ?? string.Empty;
+        RefreshTmpText(target);
+    }
+
+    private static void RefreshTmpText(TMP_Text target)
+    {
+        if (target == null)
+            return;
+
+        target.SetAllDirty();
+        target.ForceMeshUpdate(true, true);
     }
 
     private void RegisterButtonEvents()

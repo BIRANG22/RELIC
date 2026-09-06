@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using Relic.Gameplay.Data;
 
 public class CharPick : MonoBehaviour
@@ -22,43 +23,16 @@ public class CharPick : MonoBehaviour
     [SerializeField] private float bgShrinkDuration = 0.12f;
     [SerializeField] private float bgExpandDuration = 0.12f;
 
-    [Header("Position")]
-    [SerializeField] private float spacing = 260f;
-
-    [Header("Scale")]
-    [SerializeField] private float centerScale = 1.4f;
-    [SerializeField] private float centerHoverBreathScale = 1.5f;
-    [SerializeField] private float centerHoverBreathSpeed = 3f;
-    [SerializeField] private float sideScale = 0.9f;
-    [SerializeField] private float sideHoverScale = 1.1f;
-
-    [Header("Drag")]
-    [SerializeField] private float dragThreshold = 180f;
-
-    [Header("Smooth")]
-    [SerializeField] private float moveSpeed = 12f;
-    [SerializeField] private float scaleSpeed = 12f;
-
     [Header("Party Confirm")]
     [SerializeField] private int firstPartyDefaultDeployCellNumber = 7;
     [SerializeField] private int maxDeployGridCount = 15;
     [SerializeField] private bool resetPendingSelectionOnEnable = true;
     [SerializeField] private bool resetPendingSelectionOnDisable = true;
 
-    [Header("World Preview Transform")]
-    [SerializeField] private Vector3 previewLocalPosition = Vector3.zero;
-    [SerializeField] private Vector3 previewLocalEulerAngles = Vector3.zero;
-    [SerializeField] private float previewScale = 1f;
-
     private readonly List<string> pendingCharacterIds = new();
     private readonly List<string> runtimeCharacterIdsSnapshot = new();
 
     private int centerIndex = 0;
-
-    private bool isDragging;
-    private float dragStartX;
-    private bool movedByDrag;
-    private CharBtn hoveredButton;
 
     private GameObject currentPreview;
     private string currentPreviewCharacterId;
@@ -67,6 +41,7 @@ public class CharPick : MonoBehaviour
     private Vector3 previewBackgroundOriginalScale;
     private bool hasPreviewBackgroundOriginalScale;
     private bool isStarted;
+    private SteamLobbyPartySynchronizer subscribedPartySynchronizer;
 
     public CharBtn CurrentButton
     {
@@ -83,20 +58,26 @@ public class CharPick : MonoBehaviour
     {
         AutoBindCharButtonsIfNeeded();
         ClampCenterIndex();
+        SubscribeNetworkPartyEvents();
 
-        if (resetPendingSelectionOnEnable)
+        if (IsNetworkPartyActive())
+            RefreshFromNetworkPartyState();
+        else if (resetPendingSelectionOnEnable)
             ResetPendingSelectionFromRuntime();
 
         if (isStarted)
         {
-            RefreshInstant();
-            RefreshCenterInfo();
+            RefreshFixedButtons();
+
+            if (!IsNetworkPartyActive())
+                RefreshCenterInfo();
         }
     }
 
     private void Start()
     {
         isStarted = true;
+        ConfigurePreviewCanvasScaler();
         CachePreviewBackgroundScale();
         AutoBindCharButtonsIfNeeded();
         ClampCenterIndex();
@@ -107,14 +88,20 @@ public class CharPick : MonoBehaviour
                 charBtns[i].Init(this);
         }
 
-        if (pendingCharacterIds.Count <= 0)
+        bool isNetworkPartyActive = IsNetworkPartyActive();
+
+        if (isNetworkPartyActive)
+            RefreshFromNetworkPartyState();
+        else if (pendingCharacterIds.Count <= 0)
             ResetPendingSelectionFromRuntime();
         else
             RefreshAllSelectedPartyMarkers();
 
-        RefreshInstant();
+        RefreshFixedButtons();
 
-        if (charBtns.Count > 0 && charBtns[centerIndex] != null)
+        if (!isNetworkPartyActive &&
+            charBtns.Count > 0 &&
+            charBtns[centerIndex] != null)
         {
             CreateOrUpdateRuntimeData(charBtns[centerIndex]);
             RefreshCenterInfo();
@@ -123,30 +110,27 @@ public class CharPick : MonoBehaviour
 
     private void OnDisable()
     {
+        ClearNetworkViewedCharacterOnDisable();
+        UnsubscribeNetworkPartyEvents();
+
         if (resetPendingSelectionOnDisable)
             ResetPendingSelectionFromRuntime();
     }
 
     private void Update()
     {
-        RefreshSmooth();
+        // 캐릭터 버튼은 배치된 위치를 그대로 사용한다.
+        // 이전의 좌우 이동, 중앙 정렬, 중앙 확대 갱신은 더 이상 실행하지 않는다.
     }
 
     public void PointerEnterButton(CharBtn btn)
     {
-        if (btn == null)
-            return;
-
-        hoveredButton = btn;
+        // 고정형 버튼 배치에서는 CharPick이 호버 위치나 크기를 제어하지 않는다.
     }
 
     public void PointerExitButton(CharBtn btn)
     {
-        if (btn == null)
-            return;
-
-        if (hoveredButton == btn)
-            hoveredButton = null;
+        // 고정형 버튼 배치에서는 CharPick이 호버 위치나 크기를 제어하지 않는다.
     }
 
     public void ClickBtn(CharBtn btn)
@@ -156,29 +140,33 @@ public class CharPick : MonoBehaviour
 
     public void ClickBtn(CharBtn btn, bool playPartyActionSound)
     {
-        if (movedByDrag)
-        {
-            movedByDrag = false;
-            return;
-        }
-
         int index = charBtns.IndexOf(btn);
 
         if (index < 0)
             return;
 
-        if (index != centerIndex)
-        {
-            centerIndex = index;
-            RefreshCenterInfo();
+        if (TryHandleNetworkCharacterClick(btn, playPartyActionSound))
             return;
-        }
+
+        // 클릭하기 전부터 정보를 보고 있던 캐릭터인지 먼저 기록한다.
+        // 다른 캐릭터 버튼을 눌러 정보를 전환한 경우에는 이미 편성된 캐릭터라도 해제하지 않는다.
+        bool wasCurrentInfoCharacter = centerIndex == index;
+
+        // 버튼을 누르면 해당 캐릭터의 정보와 프리뷰를 즉시 갱신한다.
+        centerIndex = index;
+        RefreshCenterInfo();
 
         if (btn.IsLocked || !HasUsableCharacterData(btn))
-        {
-            RefreshCenterInfo();
             return;
-        }
+
+        string characterId = btn.CharacterId;
+        bool isAlreadyInParty = FindPendingPartySlot(characterId) >= 0;
+
+        // 아직 편성되지 않은 캐릭터는 한 번 클릭하면 바로 편성한다.
+        // 이미 편성된 다른 캐릭터를 클릭한 경우에는 정보만 보여주고 편성을 유지한다.
+        // 현재 정보를 보고 있는 편성 캐릭터를 다시 클릭한 경우에만 편성을 해제한다.
+        if (isAlreadyInParty && !wasCurrentInfoCharacter)
+            return;
 
         ToggleButtonPartyMarker(btn, playPartyActionSound);
     }
@@ -204,24 +192,45 @@ public class CharPick : MonoBehaviour
         if (string.IsNullOrWhiteSpace(characterId))
             return;
 
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer != null && synchronizer.IsNetworkPartyActive)
+        {
+            synchronizer.RequestAutomaticCharacterToggle(characterId);
+            return;
+        }
+
+        EnsurePendingSlotCount();
+
         int registeredSlot = pendingCharacterIds.IndexOf(characterId);
 
         if (registeredSlot >= 0)
-            pendingCharacterIds.RemoveAt(registeredSlot);
+        {
+            // 선택 해제 시 해당 슬롯만 비운다.
+            // 뒤 슬롯의 캐릭터를 앞으로 당기지 않는다.
+            pendingCharacterIds[registeredSlot] = string.Empty;
+        }
         else
         {
-            int maxPartyCount = GetMaxPartyCount();
+            int emptySlot = FindFirstEmptyPendingSlot();
 
-            if (pendingCharacterIds.Count >= maxPartyCount)
+            if (emptySlot < 0)
             {
                 Debug.LogWarning("[Party] 빈 파티 슬롯이 없습니다.");
                 return;
             }
 
-            pendingCharacterIds.Add(characterId);
+            pendingCharacterIds[emptySlot] = characterId;
         }
 
         RefreshAllSelectedPartyMarkers();
+
+        // 캐릭터 버튼을 누르는 즉시 실제 파티 데이터에 반영한다.
+        // LobbyMainPanel이 현재 비활성화되어 있어도 PartySlot이 다시 활성화될 때
+        // PartyRuntimeStore의 최신 편성 정보를 읽어 정상적으로 표시할 수 있다.
+        ApplyPendingSelectionToRuntime();
+        RefreshPartyViews();
+        SyncRuntimeSnapshotFromPendingSelection();
     }
 
     public int FindPendingPartySlot(string characterId)
@@ -232,41 +241,130 @@ public class CharPick : MonoBehaviour
         return pendingCharacterIds.IndexOf(characterId);
     }
 
+    /// <summary>
+    /// 기존 SelectButton 연결을 위한 호환 메서드입니다.
+    /// 현재는 캐릭터 버튼을 누르는 즉시 파티 편성이 저장되므로
+    /// SelectButton을 사용하거나 씬에 배치할 필요가 없습니다.
+    /// </summary>
     public void ConfirmCurrentCharacter()
     {
         ConfirmCurrentCharacter(true);
     }
 
+    /// <summary>
+    /// 기존 UnityEvent 연결이 남아 있어도 오류가 발생하지 않도록 유지합니다.
+    /// 파티 데이터는 이미 즉시 반영되어 있으므로 추가 편성이나 슬롯 이동은 하지 않습니다.
+    /// </summary>
     public void ConfirmCurrentCharacter(bool withClickSound)
     {
-        CharBtn currentButton = CurrentButton;
-
-        if (currentButton == null)
-        {
-            Debug.LogWarning("[CharPick] 선택된 캐릭터가 없습니다.");
-            return;
-        }
-
-        if (!currentButton.PrepareCharacterForPartyAction(withClickSound))
-            return;
-
-        if (HasPendingSelectionChanged())
-        {
-            ApplyPendingSelectionToRuntime();
-        }
-        else
-        {
-            string characterId = currentButton.CharacterId;
-            int pendingSlot = FindPendingPartySlot(characterId);
-
-            if (pendingSlot >= 0)
-                ApplyPendingSelectionToRuntime();
-            else
-                SaveCharacterToEnteredPartySlot(currentButton);
-        }
-
         RefreshPartyViews();
+        RefreshAllSelectedPartyMarkers();
+    }
+
+    public void RefreshFromPartyRuntime()
+    {
+        if (IsNetworkPartyActive())
+        {
+            RefreshFromNetworkPartyState();
+            return;
+        }
+
         ResetPendingSelectionFromRuntime();
+        RefreshPartyViews();
+        RefreshAllSelectedPartyMarkers();
+    }
+
+    public void RefreshFromNetworkPartyState()
+    {
+        SubscribeNetworkPartyEvents();
+        ResetPendingSelectionFromRuntime();
+        ApplyNetworkViewedCharacter();
+        RefreshPartyViews();
+        RefreshAllSelectedPartyMarkers();
+    }
+
+    /// <summary>
+    /// CharacterSettingPanel을 외부 파티 슬롯에서 열 때,
+    /// CharacterSelect의 현재 선택 버튼도 해당 캐릭터로 맞춥니다.
+    /// 파티 편성 자체는 변경하지 않습니다.
+    /// </summary>
+    public bool SelectViewedCharacterForSetting(string characterId)
+    {
+        AutoBindCharButtonsIfNeeded();
+
+        int index = FindButtonIndexByCharacterId(characterId);
+        if (index < 0)
+            return false;
+
+        CharBtn button = charBtns[index];
+        if (button == null || !CanShowCharacterData(button, characterId))
+            return false;
+
+        centerIndex = index;
+        RefreshFixedButtons();
+        RefreshViewedCharacterButtons(true);
+
+        CreateOrUpdateRuntimeData(button);
+        SelectCenterCharacterState(button, characterId);
+        ShowPreview(characterId);
+
+        return true;
+    }
+
+    /// <summary>
+    /// 빈 파티 슬롯에서 CharacterSettingPanel을 열 때 사용합니다.
+    /// CharacterSelect의 앞쪽 버튼부터 확인하여 현재 파티에 아직 편성되지 않은
+    /// 사용 가능한 캐릭터를 선택합니다. 파티 편성 자체는 변경하지 않습니다.
+    /// </summary>
+    public bool TrySelectFirstUnassignedCharacterForSetting(out string characterId)
+    {
+        characterId = null;
+        AutoBindCharButtonsIfNeeded();
+
+        if (DataManager.Instance == null || DataManager.Instance.PartyRuntimeStore == null)
+            return false;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+
+        for (int i = 0; i < charBtns.Count; i++)
+        {
+            CharBtn button = charBtns[i];
+            if (button == null || button.IsLocked || !HasUsableCharacterData(button))
+                continue;
+
+            string candidateId = button.CharacterId;
+            if (string.IsNullOrWhiteSpace(candidateId))
+                continue;
+
+            if (partyStore.FindCharacterSlot(candidateId) >= 0)
+                continue;
+
+            if (!SelectViewedCharacterForSetting(candidateId))
+                continue;
+
+            characterId = candidateId;
+            return true;
+        }
+
+        return false;
+    }
+
+    public void ShowCurrentPreviewNormal()
+    {
+        if (TryGetCurrentPreviewAnimator(out ButtonResponsiveSpriteAnimator animator))
+            animator.ShowNormal();
+    }
+
+    public void ShowCurrentPreviewSkill()
+    {
+        if (TryGetCurrentPreviewAnimator(out ButtonResponsiveSpriteAnimator animator))
+            animator.ShowSkill();
+    }
+
+    public void ShowCurrentPreviewRune()
+    {
+        if (TryGetCurrentPreviewAnimator(out ButtonResponsiveSpriteAnimator animator))
+            animator.ShowRune();
     }
 
     private int GetMaxPartyCount()
@@ -277,15 +375,44 @@ public class CharPick : MonoBehaviour
         return DataManager.Instance.PartyRuntimeStore.MaxPartyCountValue;
     }
 
+
+    private void EnsurePendingSlotCount()
+    {
+        int maxPartyCount = GetMaxPartyCount();
+
+        while (pendingCharacterIds.Count < maxPartyCount)
+            pendingCharacterIds.Add(string.Empty);
+
+        if (pendingCharacterIds.Count > maxPartyCount)
+            pendingCharacterIds.RemoveRange(maxPartyCount, pendingCharacterIds.Count - maxPartyCount);
+    }
+
+    private int FindFirstEmptyPendingSlot()
+    {
+        EnsurePendingSlotCount();
+
+        for (int i = 0; i < pendingCharacterIds.Count; i++)
+        {
+            if (string.IsNullOrWhiteSpace(pendingCharacterIds[i]))
+                return i;
+        }
+
+        return -1;
+    }
+
     private void ResetPendingSelectionFromRuntime()
     {
         pendingCharacterIds.Clear();
         runtimeCharacterIdsSnapshot.Clear();
 
+        int maxPartyCount = GetMaxPartyCount();
+
+        for (int i = 0; i < maxPartyCount; i++)
+            pendingCharacterIds.Add(string.Empty);
+
         if (DataManager.Instance != null)
         {
             PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
-            int maxPartyCount = partyStore.MaxPartyCountValue;
 
             for (int i = 0; i < maxPartyCount; i++)
             {
@@ -294,17 +421,21 @@ public class CharPick : MonoBehaviour
                 if (string.IsNullOrWhiteSpace(characterId))
                     continue;
 
-                if (pendingCharacterIds.Contains(characterId))
-                    continue;
-
-                pendingCharacterIds.Add(characterId);
+                // 런타임 파티의 슬롯 번호를 그대로 유지한다.
+                pendingCharacterIds[i] = characterId;
             }
         }
 
+        SyncRuntimeSnapshotFromPendingSelection();
+        RefreshAllSelectedPartyMarkers();
+    }
+
+    private void SyncRuntimeSnapshotFromPendingSelection()
+    {
+        runtimeCharacterIdsSnapshot.Clear();
+
         for (int i = 0; i < pendingCharacterIds.Count; i++)
             runtimeCharacterIdsSnapshot.Add(pendingCharacterIds[i]);
-
-        RefreshAllSelectedPartyMarkers();
     }
 
     private bool HasPendingSelectionChanged()
@@ -321,6 +452,131 @@ public class CharPick : MonoBehaviour
         return false;
     }
 
+    private bool TryHandleNetworkCharacterClick(
+        CharBtn btn,
+        bool playPartyActionSound)
+    {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkPartyActive)
+            return false;
+
+        if (btn == null || btn.IsLocked || !HasUsableCharacterData(btn))
+            return true;
+
+        string characterId = btn.CharacterId;
+
+        if (string.IsNullOrWhiteSpace(characterId))
+            return true;
+
+        string viewedCharacterId = synchronizer.GetLocalViewedCharacterId();
+
+        if (viewedCharacterId != characterId)
+        {
+            synchronizer.RequestViewedCharacter(characterId);
+            return true;
+        }
+
+        ToggleButtonPartyMarker(btn, playPartyActionSound);
+        return true;
+    }
+
+    private void ApplyNetworkViewedCharacter()
+    {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkPartyActive)
+            return;
+
+        string viewedCharacterId = synchronizer.GetLocalViewedCharacterId();
+        int viewedIndex = FindButtonIndexByCharacterId(viewedCharacterId);
+
+        if (viewedIndex < 0)
+        {
+            ClearNetworkViewedCharacter();
+            return;
+        }
+
+        centerIndex = viewedIndex;
+        RefreshFixedButtons();
+
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            RefreshViewedCharacterButtons(true);
+            return;
+        }
+
+        RefreshCenterInfo();
+    }
+
+    private void ClearNetworkViewedCharacter()
+    {
+        RefreshViewedCharacterButtons(true);
+
+        if (isActiveAndEnabled && gameObject.activeInHierarchy)
+            ClearCenterCharacterInfo();
+    }
+
+    private int FindButtonIndexByCharacterId(string characterId)
+    {
+        if (string.IsNullOrWhiteSpace(characterId))
+            return -1;
+
+        for (int i = 0; i < charBtns.Count; i++)
+        {
+            if (charBtns[i] != null && charBtns[i].CharacterId == characterId)
+                return i;
+        }
+
+        return -1;
+    }
+
+    private bool IsNetworkPartyActive()
+    {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+        return synchronizer != null && synchronizer.IsNetworkPartyActive;
+    }
+
+    private void SubscribeNetworkPartyEvents()
+    {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (subscribedPartySynchronizer == synchronizer)
+            return;
+
+        UnsubscribeNetworkPartyEvents();
+        subscribedPartySynchronizer = synchronizer;
+
+        if (subscribedPartySynchronizer != null)
+            subscribedPartySynchronizer.PartyStateApplied += HandleNetworkPartyStateApplied;
+    }
+
+    private void UnsubscribeNetworkPartyEvents()
+    {
+        if (subscribedPartySynchronizer == null)
+            return;
+
+        subscribedPartySynchronizer.PartyStateApplied -= HandleNetworkPartyStateApplied;
+        subscribedPartySynchronizer = null;
+    }
+
+    private void HandleNetworkPartyStateApplied()
+    {
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+            return;
+
+        if (IsNetworkPartyActive())
+            RefreshFromNetworkPartyState();
+    }
+
+    private void ClearNetworkViewedCharacterOnDisable()
+    {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer != null && synchronizer.IsNetworkPartyActive)
+            synchronizer.RequestClearViewedCharacter();
+    }
+
     private void ApplyPendingSelectionToRuntime()
     {
         if (DataManager.Instance == null)
@@ -331,17 +587,20 @@ public class CharPick : MonoBehaviour
 
         PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
         int maxPartyCount = partyStore.MaxPartyCountValue;
-        int count = Mathf.Min(pendingCharacterIds.Count, maxPartyCount);
+
+        EnsurePendingSlotCount();
 
         for (int i = 0; i < maxPartyCount; i++)
-            partyStore.ClearSlot(i);
-
-        for (int i = 0; i < count; i++)
         {
-            string characterId = pendingCharacterIds[i];
+            string characterId = i < pendingCharacterIds.Count
+                ? pendingCharacterIds[i]
+                : string.Empty;
 
             if (string.IsNullOrWhiteSpace(characterId))
+            {
+                partyStore.ClearSlot(i);
                 continue;
+            }
 
             partyStore.SetCharacter(i, characterId);
 
@@ -506,7 +765,13 @@ public class CharPick : MonoBehaviour
         var runtimeStore = DataManager.Instance.CharacterRuntimeStore;
 
         if (runtimeStore.TryGet(characterId, out var runtime))
+        {
+            CharacterStartingRelicUtility.EnsureStartingRelicEquippedIfEmpty(
+                runtime,
+                master,
+                DataManager.Instance.RelicDatabase);
             return;
+        }
 
         runtime = new CharacterRuntimeData
         {
@@ -517,7 +782,7 @@ public class CharPick : MonoBehaviour
             CurrentHP = master.MaxHP,
             CurrentCost = master.MaxCost,
             CurrentResource = 0,
-            CurrentMoveLevel = 1,
+            CurrentMoveLevel = 0,
 
             IsUnlocked = master.IsDefaultProvided,
 
@@ -530,72 +795,35 @@ public class CharPick : MonoBehaviour
             {
                 master.UniqueSkill1,
                 master.CharacterSkill1,
-                master.CommonSkill1,
+                "",
                 ""
             },
 
-            EquippedRuneIds = new string[12]
+            EquippedRuneIds = new string[6],
+            EquippedRelicIds = CharacterStartingRelicUtility.CreateStartingRelicSlots(master)
         };
+
+        CharacterStartingRelicUtility.InitializeActiveRelicUses(
+            runtime,
+            DataManager.Instance.RelicDatabase);
 
         runtimeStore.AddOrUpdate(runtime);
     }
 
     public void BeginDrag(PointerEventData eventData)
     {
-        hoveredButton = null;
-        isDragging = true;
-        movedByDrag = false;
-        dragStartX = eventData.position.x;
+        // 고정형 캐릭터 버튼 목록에서는 드래그로 캐릭터를 넘기지 않는다.
     }
 
     public void Drag(PointerEventData eventData)
     {
-        if (!isDragging)
-            return;
-
-        float dragAmount = eventData.position.x - dragStartX;
-
-        if (Mathf.Abs(dragAmount) < dragThreshold)
-            return;
-
-        if (dragAmount < 0)
-            Next();
-        else
-            Prev();
-
-        movedByDrag = true;
-        dragStartX = eventData.position.x;
-
-        RefreshCenterInfo();
+        // 고정형 캐릭터 버튼 목록에서는 드래그로 캐릭터를 넘기지 않는다.
     }
 
     public void EndDrag(PointerEventData eventData)
     {
-        isDragging = false;
+        // 고정형 캐릭터 버튼 목록에서는 드래그로 캐릭터를 넘기지 않는다.
     }
-
-    private void Next()
-    {
-        if (charBtns.Count <= 0)
-            return;
-
-        centerIndex++;
-
-        if (centerIndex >= charBtns.Count)
-            centerIndex = 0;
-    }
-
-    private void Prev()
-    {
-        if (charBtns.Count <= 0)
-            return;
-
-        centerIndex--;
-
-        if (centerIndex < 0)
-            centerIndex = charBtns.Count - 1;
-    }
-
 
     private void AutoBindCharButtonsIfNeeded()
     {
@@ -767,6 +995,7 @@ public class CharPick : MonoBehaviour
             return;
 
         ClampCenterIndex();
+        RefreshViewedCharacterButtons();
 
         if (centerIndex < 0 || centerIndex >= charBtns.Count)
             return;
@@ -793,6 +1022,32 @@ public class CharPick : MonoBehaviour
 
         if (setting != null)
             setting.OpenCharacterSetting(characterId);
+    }
+
+    private void RefreshViewedCharacterButtons(bool immediate = false)
+    {
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+        bool isNetworkPartyActive = synchronizer != null && synchronizer.IsNetworkPartyActive;
+
+        for (int i = 0; i < charBtns.Count; i++)
+        {
+            CharBtn button = charBtns[i];
+
+            if (button == null)
+                continue;
+
+            if (isNetworkPartyActive)
+            {
+                string characterId = button.CharacterId;
+                button.SetNetworkViewedCharacterState(
+                    synchronizer.IsLocalViewingCharacter(characterId),
+                    synchronizer.IsCharacterViewedByRemoteMember(characterId),
+                    immediate);
+                continue;
+            }
+
+            button.SetViewedCharacter(i == centerIndex, immediate);
+        }
     }
 
     private bool CanShowCharacterData(CharBtn btn, string characterId)
@@ -878,21 +1133,49 @@ public class CharPick : MonoBehaviour
             return;
         }
 
-        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewWorldPrefab(characterId, out var prefab))
+        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewUIPrefab(characterId, out var prefab))
         {
-            Debug.LogWarning("[CharPick] PreviewWorldPrefab not found: " + characterId);
+            Debug.LogWarning("[CharPick] PreviewUIPrefab not found: " + characterId);
             return;
         }
 
         if (prefab == null)
             return;
 
-        currentPreview = Instantiate(prefab, previewRoot);
-        currentPreview.transform.localPosition = previewLocalPosition;
-        currentPreview.transform.localRotation = Quaternion.Euler(previewLocalEulerAngles);
-        currentPreview.transform.localScale = Vector3.one * previewScale;
+        currentPreview = Instantiate(prefab, previewRoot, false);
+        currentPreview.name = "Preview_" + characterId;
 
         PlayPreviewBackgroundAnim();
+    }
+
+    private void ConfigurePreviewCanvasScaler()
+    {
+        if (previewRoot == null)
+            return;
+
+        Canvas canvas = previewRoot.GetComponentInParent<Canvas>();
+        if (canvas == null)
+            return;
+
+        CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
+        if (scaler == null)
+            return;
+
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = 0f;
+    }
+
+    private bool TryGetCurrentPreviewAnimator(out ButtonResponsiveSpriteAnimator animator)
+    {
+        animator = null;
+
+        if (currentPreview == null)
+            return false;
+
+        animator = currentPreview.GetComponentInChildren<ButtonResponsiveSpriteAnimator>(true);
+        return animator != null;
     }
 
     private void CachePreviewBackgroundScale()
@@ -959,130 +1242,20 @@ public class CharPick : MonoBehaviour
         bgAnimRoutine = null;
     }
 
-    private void RefreshInstant()
+    private void RefreshFixedButtons()
     {
         for (int i = 0; i < charBtns.Count; i++)
         {
-            if (charBtns[i] == null)
+            CharBtn btn = charBtns[i];
+
+            if (btn == null)
                 continue;
 
-            int offset = GetOffset(i);
-
-            if (offset == -1)
-                ApplyInstant(charBtns[i], new Vector2(-spacing, 0f), GetButtonScale(charBtns[i], false), true, false);
-            else if (offset == 0)
-                ApplyInstant(charBtns[i], Vector2.zero, GetButtonScale(charBtns[i], true), true, true);
-            else if (offset == 1)
-                ApplyInstant(charBtns[i], new Vector2(spacing, 0f), GetButtonScale(charBtns[i], false), true, false);
-            else
-            {
-                charBtns[i].SetVisible(false);
-                charBtns[i].SetCenter(false);
-            }
+            // 씬에서 설정한 위치와 크기를 변경하지 않고 모든 버튼을 표시한다.
+            btn.SetVisible(true);
+            btn.SetCenter(false);
         }
     }
 
-    private void RefreshSmooth()
-    {
-        if (!isStarted)
-            return;
 
-        for (int i = 0; i < charBtns.Count; i++)
-        {
-            if (charBtns[i] == null)
-                continue;
-
-            int offset = GetOffset(i);
-
-            if (offset == -1)
-                ApplySmooth(charBtns[i], new Vector2(-spacing, 0f), GetButtonScale(charBtns[i], false), true, false);
-            else if (offset == 0)
-                ApplySmooth(charBtns[i], Vector2.zero, GetButtonScale(charBtns[i], true), true, true);
-            else if (offset == 1)
-                ApplySmooth(charBtns[i], new Vector2(spacing, 0f), GetButtonScale(charBtns[i], false), true, false);
-            else
-            {
-                charBtns[i].SetVisible(false);
-                charBtns[i].SetCenter(false);
-            }
-        }
-    }
-
-    private float GetButtonScale(CharBtn btn, bool isCenter)
-    {
-        if (!isDragging && hoveredButton == btn)
-        {
-            if (isCenter)
-                return GetCenterHoverBreathScale();
-
-            return sideHoverScale;
-        }
-
-        return isCenter ? centerScale : sideScale;
-    }
-
-    private float GetCenterHoverBreathScale()
-    {
-        float minScale = Mathf.Min(centerScale, centerHoverBreathScale);
-        float maxScale = Mathf.Max(centerScale, centerHoverBreathScale);
-        float breath = (Mathf.Sin(Time.unscaledTime * centerHoverBreathSpeed) + 1f) * 0.5f;
-
-        return Mathf.Lerp(minScale, maxScale, breath);
-    }
-
-    private void ApplyInstant(CharBtn btn, Vector2 pos, float scale, bool visible, bool center)
-    {
-        btn.SetVisible(visible);
-        btn.SetCenter(center);
-        btn.Rect.anchoredPosition = pos;
-        btn.Rect.localScale = Vector3.one * scale;
-    }
-
-    private void ApplySmooth(CharBtn btn, Vector2 pos, float scale, bool visible, bool center)
-    {
-        btn.SetVisible(visible);
-        btn.SetCenter(center);
-
-        if (!visible)
-            return;
-
-        btn.Rect.anchoredPosition = Vector2.Lerp(
-            btn.Rect.anchoredPosition,
-            pos,
-            Time.deltaTime * moveSpeed
-        );
-
-        btn.Rect.localScale = Vector3.Lerp(
-            btn.Rect.localScale,
-            Vector3.one * scale,
-            Time.deltaTime * scaleSpeed
-        );
-    }
-
-    private int GetOffset(int index)
-    {
-        int count = charBtns.Count;
-
-        if (count <= 0)
-            return 999;
-
-        if (index == centerIndex)
-            return 0;
-
-        int leftIndex = centerIndex - 1;
-        if (leftIndex < 0)
-            leftIndex = count - 1;
-
-        int rightIndex = centerIndex + 1;
-        if (rightIndex >= count)
-            rightIndex = 0;
-
-        if (index == leftIndex)
-            return -1;
-
-        if (index == rightIndex)
-            return 1;
-
-        return 999;
-    }
 }

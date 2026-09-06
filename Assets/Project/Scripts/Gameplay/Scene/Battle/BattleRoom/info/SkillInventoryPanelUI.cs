@@ -15,6 +15,7 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
     [Header("Tooltip")]
     [SerializeField] private EquippedSkillPanelUI tooltipPanelOwner;
+    [SerializeField] private InventoryRuntimeContextProvider runtimeContextProvider;
 
     [Header("Battle Room Lock")]
     [SerializeField] private bool lockEditInBattleRoom = true;
@@ -56,6 +57,9 @@ public class SkillInventoryPanelUI : MonoBehaviour
         if (CheckSkillEditLocked())
             return;
 
+        if (!CanLocalPlayerEditCharacter(characterId))
+            return;
+
         selectedCharacterId = characterId;
         selectedEquippedSkillIndex = equippedSkillIndex;
 
@@ -72,6 +76,7 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
         selectedInventorySkillIcon = selectedIcon;
         UpdateInventorySelectionVisuals();
+        UpdateEmptyEquipSlotHighlights();
     }
 
     public void SelectSkill(string skillId)
@@ -118,18 +123,29 @@ public class SkillInventoryPanelUI : MonoBehaviour
         if (CheckSkillEditLocked())
             return false;
 
+        if (TryRequestNetworkUnequipSkill(
+                characterId,
+                equippedSkillIndex,
+                out bool networkUnequipResult))
+        {
+            if (networkUnequipResult)
+                ResetSelectionState();
+
+            return networkUnequipResult;
+        }
+
         if (DataManager.Instance == null)
             return false;
 
-        BattleRuntimeData battleRuntimeData =
-            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+        if (context == null)
+            return false;
 
-        SkillInventoryEquipService service = CreateEquipService(battleRuntimeData);
+        SkillInventoryEquipService service = CreateEquipService(context.SkillInventoryIds);
 
         if (!service.UnequipSkillFromSlot(characterId, equippedSkillIndex))
             return false;
 
-        DataManager.Instance.BattleRuntimeStore.Set(battleRuntimeData);
         ResetSelectionState();
         RefreshAll();
         EquippedSkillPanelUI.RefreshAll();
@@ -147,6 +163,22 @@ public class SkillInventoryPanelUI : MonoBehaviour
         selectedEquippedSkillIndex = -1;
         selectedInventorySkillIcon = null;
         UpdateInventorySelectionVisuals();
+        UpdateEmptyEquipSlotHighlights();
+    }
+
+    private void UpdateEmptyEquipSlotHighlights()
+    {
+        bool shouldHighlight = selectedInventorySkillIcon != null;
+
+        EquippedSkillSlotUI[] slots = Object.FindObjectsByType<EquippedSkillSlotUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] != null)
+                slots[i].SetEquipAvailableHighlight(shouldHighlight);
+        }
     }
 
     public void ShowSkillTooltip(string skillId, RectTransform hoveredSlotRect)
@@ -209,29 +241,41 @@ public class SkillInventoryPanelUI : MonoBehaviour
         if (CheckSkillEditLocked())
             return false;
 
+        if (TryRequestNetworkEquipSkill(
+                characterId,
+                equippedSkillIndex,
+                skillId,
+                out bool networkEquipResult))
+        {
+            if (networkEquipResult)
+                ResetSelectionState();
+
+            return networkEquipResult;
+        }
+
         if (DataManager.Instance == null)
             return false;
 
-        BattleRuntimeData battleRuntimeData =
-            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+        if (context == null)
+            return false;
 
-        SkillInventoryEquipService service = CreateEquipService(battleRuntimeData);
+        SkillInventoryEquipService service = CreateEquipService(context.SkillInventoryIds);
 
         if (!service.EquipInventorySkillToSlot(characterId, equippedSkillIndex, skillId))
             return false;
 
-        DataManager.Instance.BattleRuntimeStore.Set(battleRuntimeData);
         ResetSelectionState();
         RefreshAll();
         EquippedSkillPanelUI.RefreshAll();
         return true;
     }
 
-    private SkillInventoryEquipService CreateEquipService(BattleRuntimeData battleRuntimeData)
+    private SkillInventoryEquipService CreateEquipService(IList<string> skillInventoryIds)
     {
         return new SkillInventoryEquipService(
             DataManager.Instance.CharacterRuntimeStore,
-            battleRuntimeData,
+            skillInventoryIds,
             ResolveSkill);
     }
 
@@ -250,6 +294,12 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
     public bool IsSkillEditLocked()
     {
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+            return false;
+
         if (!lockEditInBattleRoom)
             return false;
 
@@ -269,6 +319,82 @@ public class SkillInventoryPanelUI : MonoBehaviour
         return true;
     }
 
+    private static bool CanLocalPlayerEditCharacter(string characterId)
+    {
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+            return battleSynchronizer.CanLocalPlayerEditCharacter(characterId);
+
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+        return synchronizer == null ||
+               !synchronizer.IsNetworkSharedStateActive ||
+               synchronizer.CanLocalPlayerEditCharacter(characterId);
+    }
+
+    private static bool TryRequestNetworkEquipSkill(
+        string characterId,
+        int equippedSkillIndex,
+        string skillId,
+        out bool requestSent)
+    {
+        requestSent = false;
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+        {
+            requestSent = battleSynchronizer.RequestEquipSkill(
+                characterId,
+                equippedSkillIndex,
+                skillId);
+            return true;
+        }
+
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkSharedStateActive)
+            return false;
+
+        requestSent = synchronizer.RequestEquipSkill(
+            characterId,
+            equippedSkillIndex,
+            skillId);
+        return true;
+    }
+
+    private static bool TryRequestNetworkUnequipSkill(
+        string characterId,
+        int equippedSkillIndex,
+        out bool requestSent)
+    {
+        requestSent = false;
+        SteamBattleStateSynchronizer battleSynchronizer =
+            SteamBattleStateSynchronizer.Instance;
+
+        if (battleSynchronizer != null && battleSynchronizer.IsNetworkBattleActive)
+        {
+            requestSent = battleSynchronizer.RequestUnequipSkill(
+                characterId,
+                equippedSkillIndex);
+            return true;
+        }
+
+        SteamLobbySharedStateSynchronizer synchronizer =
+            SteamLobbySharedStateSynchronizer.Instance;
+
+        if (synchronizer == null || !synchronizer.IsNetworkSharedStateActive)
+            return false;
+
+        requestSent = synchronizer.RequestUnequipSkill(
+            characterId,
+            equippedSkillIndex);
+        return true;
+    }
+
     private void RefreshInventory()
     {
         ResolveContentIfNeeded();
@@ -278,19 +404,19 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
         EnsureInventoryVerticalLayout();
         selectedInventorySkillIcon = null;
+        UpdateEmptyEquipSlotHighlights();
         ClearInventoryIcons();
 
         if (DataManager.Instance == null)
             return;
 
-        BattleRuntimeData runtime =
-            DataManager.Instance.BattleRuntimeStore.GetOrCreate();
+        IInventoryRuntimeContext context = ResolveRuntimeContext();
+        if (context == null)
+            return;
 
-        runtime.SkillInventoryIds ??= new List<string>();
-
-        for (int i = 0; i < runtime.SkillInventoryIds.Count; i++)
+        for (int i = 0; i < context.SkillInventoryIds.Count; i++)
         {
-            string skillId = runtime.SkillInventoryIds[i];
+            string skillId = context.SkillInventoryIds[i];
 
             if (string.IsNullOrWhiteSpace(skillId))
                 continue;
@@ -540,5 +666,19 @@ public class SkillInventoryPanelUI : MonoBehaviour
             panel = root.AddComponent<SkillInventoryPanelUI>();
 
         return panel;
+    }
+
+    private IInventoryRuntimeContext ResolveRuntimeContext()
+    {
+        if (runtimeContextProvider == null)
+            runtimeContextProvider = GetComponentInParent<InventoryRuntimeContextProvider>(true);
+
+        if (runtimeContextProvider != null)
+            return runtimeContextProvider.GetContext();
+
+        if (DataManager.Instance == null)
+            return null;
+
+        return InventoryRuntimeContext.ForBattle(DataManager.Instance.BattleRuntimeStore.GetOrCreate());
     }
 }

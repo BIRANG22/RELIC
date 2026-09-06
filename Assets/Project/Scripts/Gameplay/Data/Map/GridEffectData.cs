@@ -7,8 +7,13 @@ namespace Relic.Gameplay.Data
         public string Name;
         public int Passed;
         public int Consumable;
-        public int ValueRate;
         public string EffectIds;
+        public int ValueRate;
+        public int CountRate;
+        public int Duration;
+        public string SpawnType;
+        public int HP;
+        public string TargetType;
         public string ToolTip;
     }
 }

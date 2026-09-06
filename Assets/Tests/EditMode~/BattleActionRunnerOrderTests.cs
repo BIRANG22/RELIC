@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 using Relic.Gameplay.Data;
@@ -7,6 +9,87 @@ using UnityEngine;
 
 public class BattleActionRunnerOrderTests
 {
+    [Test]
+    public void MonsterDashHit_StartsKnockbackBeforeWaitingForDamageFeedback()
+    {
+        string path = Path.Combine(
+            Application.dataPath,
+            "Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Actionrunner/BattleActionRunner.cs");
+        string source = File.ReadAllText(path);
+
+        int methodIndex = source.IndexOf(
+            "private IEnumerator ExecuteMonsterDashAttack",
+            StringComparison.Ordinal);
+        int damageIndex = source.IndexOf(
+            "ApplyMonsterDashDamage(command, monster, hitPlayer);",
+            methodIndex,
+            StringComparison.Ordinal);
+        int feedbackRoutineIndex = source.IndexOf(
+            "IEnumerator feedbackRoutine = PlayDamageHitFeedback(",
+            methodIndex,
+            StringComparison.Ordinal);
+        int skipTargetPushIndex = source.IndexOf(
+            "false);",
+            feedbackRoutineIndex,
+            StringComparison.Ordinal);
+        int knockbackIndex = source.IndexOf(
+            "ApplyMonsterDashKnockback(command, monster, hitPlayer);",
+            methodIndex,
+            StringComparison.Ordinal);
+        int waitFeedbackIndex = source.IndexOf(
+            "yield return feedbackRoutine;",
+            methodIndex,
+            StringComparison.Ordinal);
+
+        Assert.That(methodIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(damageIndex, Is.GreaterThan(methodIndex));
+        Assert.That(feedbackRoutineIndex, Is.GreaterThan(damageIndex));
+        Assert.That(skipTargetPushIndex, Is.GreaterThan(feedbackRoutineIndex));
+        Assert.That(knockbackIndex, Is.GreaterThan(skipTargetPushIndex));
+        Assert.That(waitFeedbackIndex, Is.GreaterThan(knockbackIndex));
+    }
+
+    [Test]
+    public void PlayerSelectionSkillExecution_PlaysSelectedGridProjectileVfx()
+    {
+        string path = Path.Combine(
+            Application.dataPath,
+            "Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Actionrunner/BattleActionRunner.cs");
+        string source = File.ReadAllText(path);
+
+        int nonDamageMethodIndex = source.IndexOf(
+            "private IEnumerator ExecutePlayerSkillEffectsToMonsters",
+            StringComparison.Ordinal);
+        int nonDamageActionIndex = source.IndexOf(
+            "attackerAnimator.PlaySkillAction(command);",
+            nonDamageMethodIndex,
+            StringComparison.Ordinal);
+        int nonDamageTargetVfxIndex = source.IndexOf(
+            "yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);",
+            nonDamageActionIndex,
+            StringComparison.Ordinal);
+
+        int damageMethodIndex = source.IndexOf(
+            "private IEnumerator ExecutePlayerDamageHitSequence",
+            StringComparison.Ordinal);
+        int damageActionIndex = source.IndexOf(
+            "attackerAnimator.PlaySkillAction(command, hitIndex);",
+            damageMethodIndex,
+            StringComparison.Ordinal);
+        int damageTargetVfxIndex = source.IndexOf(
+            "yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);",
+            damageActionIndex,
+            StringComparison.Ordinal);
+
+        Assert.That(nonDamageMethodIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(nonDamageActionIndex, Is.GreaterThan(nonDamageMethodIndex));
+        Assert.That(nonDamageTargetVfxIndex, Is.GreaterThan(nonDamageActionIndex));
+
+        Assert.That(damageMethodIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(damageActionIndex, Is.GreaterThan(damageMethodIndex));
+        Assert.That(damageTargetVfxIndex, Is.GreaterThan(damageActionIndex));
+    }
+
     [Test]
     public void BuildActionRoutines_OrdersMonsterCommandsBeforePlayerCommandsInSameBatch()
     {

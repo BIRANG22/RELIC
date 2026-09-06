@@ -21,14 +21,11 @@ public class BattleWorldVfxRendererTests
         BattleVfxEntry entry = new();
 
         Assert.That(entry.renderMode, Is.EqualTo(BattleVfxRenderMode.IndividualWorldRenderTexture));
+        Assert.That(entry.proxyBlendMode, Is.EqualTo(BattleVfxProxyBlendMode.Additive));
         Assert.That(entry.renderTextureWidth, Is.GreaterThan(0));
         Assert.That(entry.renderTextureHeight, Is.GreaterThan(0));
         Assert.That(entry.proxySortingLayerName, Is.EqualTo("Unit"));
         Assert.That(entry.proxySortingWorldYOffset, Is.EqualTo(0f));
-        Assert.That(entry.sfx, Is.Not.Null);
-        Assert.That(entry.sfx.playSfx, Is.False);
-        Assert.That(entry.sfx.routeEmbeddedAudioSourcesThroughAudioManager, Is.True);
-        Assert.That(entry.sfx.removeEmbeddedAudioSources, Is.True);
     }
 
     [Test]
@@ -86,23 +83,69 @@ public class BattleWorldVfxRendererTests
     }
 
     [Test]
-    public void BattleVfxAudioUtility_RemovesEmbeddedAudioSourcesFromRuntimeVfx()
+    public void BattleVfxAudioUtility_RemovesEmbeddedAudioSourcesFromSpawnedVfx()
     {
+        GameObject prefab = new("VfxPrefab");
         GameObject vfx = new("VfxWithEmbeddedAudio");
-        vfx.AddComponent<AudioSource>();
+        AudioClip clip = null;
 
         try
         {
+            AudioSource source = vfx.AddComponent<AudioSource>();
+            clip = AudioClip.Create("EmbeddedClip", 32, 1, 44100, false);
+            source.clip = clip;
+            source.playOnAwake = true;
+
             BattleVfxAudioUtility.PlayAndStripEmbeddedAudioSources(
                 vfx,
-                new BattleVfxSfxEntry(),
+                prefab,
                 coroutineHost: null);
 
             Assert.That(vfx.GetComponentsInChildren<AudioSource>(true), Is.Empty);
+            Assert.That(GameObject.Find("EmbeddedClip_RoutedSfx"), Is.Null);
         }
         finally
         {
+            DestroyObject(clip);
             DestroyObject(vfx);
+            DestroyObject(prefab);
+        }
+    }
+
+    [Test]
+    public void VfxHandle_StaticHandleSkipsLateUpdateSortingRefresh()
+    {
+        GameObject proxy = new("Proxy");
+        MeshRenderer proxyRenderer = proxy.AddComponent<MeshRenderer>();
+        BattleWorldVfxHandle handle = proxy.AddComponent<BattleWorldVfxHandle>();
+
+        try
+        {
+            proxy.transform.position = new Vector3(0f, 1f, 0f);
+
+            handle.Initialize(
+                followTarget: null,
+                followWorldOffset: Vector3.zero,
+                proxyRenderer: proxyRenderer,
+                sortingOrderOffset: 0,
+                sortingWorldYOffset: 0f,
+                yMultiplier: 100f,
+                renderGroup: null,
+                renderTexture: null,
+                runtimeMaterial: null);
+
+            proxyRenderer.sortingOrder = 777;
+
+            MethodInfo lateUpdate = typeof(BattleWorldVfxHandle).GetMethod(
+                "LateUpdate",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            lateUpdate.Invoke(handle, null);
+
+            Assert.That(proxyRenderer.sortingOrder, Is.EqualTo(777));
+        }
+        finally
+        {
+            DestroyObject(proxy);
         }
     }
 
@@ -185,30 +228,6 @@ public class BattleWorldVfxRendererTests
     }
 
     [Test]
-    public void BattleVfxSfxEntry_CopyFromKeepsExplicitSfxSettings()
-    {
-        BattleVfxSfxEntry source = new()
-        {
-            playSfx = true,
-            sfxId = "vfx.skill",
-            delay = 0.25f,
-            volumeMultiplier = 0.5f,
-            routeEmbeddedAudioSourcesThroughAudioManager = false,
-            removeEmbeddedAudioSources = true
-        };
-
-        BattleVfxSfxEntry copy = BattleVfxSfxEntry.CopyFrom(source);
-
-        Assert.That(copy, Is.Not.SameAs(source));
-        Assert.That(copy.playSfx, Is.True);
-        Assert.That(copy.sfxId, Is.EqualTo("vfx.skill"));
-        Assert.That(copy.delay, Is.EqualTo(0.25f));
-        Assert.That(copy.volumeMultiplier, Is.EqualTo(0.5f));
-        Assert.That(copy.routeEmbeddedAudioSourcesThroughAudioManager, Is.False);
-        Assert.That(copy.removeEmbeddedAudioSources, Is.True);
-    }
-
-    [Test]
     public void ProxyMaterialTemplate_LoadsFromResourcesWithWorldVfxShader()
     {
         Material material = Resources.Load<Material>("BattleWorldVfxProxyMaterial");
@@ -245,6 +264,43 @@ public class BattleWorldVfxRendererTests
             Assert.That(runtimeMaterial, Is.Not.Null);
             Assert.That(runtimeMaterial, Is.Not.SameAs(template));
             Assert.That(runtimeMaterial.shader.name, Is.EqualTo("Relic/World/VFX RenderTexture Additive"));
+            Assert.That(runtimeMaterial.mainTexture, Is.SameAs(renderTexture));
+        }
+        finally
+        {
+            DestroyObject(runtimeMaterial);
+            DestroyObject(renderTexture);
+            DestroyObject(prefab);
+            DestroyObject(rendererRoot);
+        }
+    }
+
+    [Test]
+    public void CreateProxyMaterial_UsesAlphaTemplateWhenEntryRequestsAlphaBlend()
+    {
+        GameObject rendererRoot = new("Renderer");
+        BattleWorldVfxRenderer renderer = rendererRoot.AddComponent<BattleWorldVfxRenderer>();
+        GameObject prefab = new("BlackVfxPrefab");
+        RenderTexture renderTexture = new(1, 1, 0, RenderTextureFormat.ARGB32);
+        Material runtimeMaterial = null;
+
+        try
+        {
+            BattleVfxEntry entry = new()
+            {
+                prefab = prefab,
+                proxyBlendMode = BattleVfxProxyBlendMode.Alpha
+            };
+
+            MethodInfo method = typeof(BattleWorldVfxRenderer).GetMethod(
+                "CreateProxyMaterial",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null);
+            runtimeMaterial = (Material)method.Invoke(renderer, new object[] { entry, renderTexture });
+
+            Assert.That(runtimeMaterial, Is.Not.Null);
+            Assert.That(runtimeMaterial.shader.name, Is.EqualTo("Relic/World/VFX RenderTexture Alpha"));
             Assert.That(runtimeMaterial.mainTexture, Is.SameAs(renderTexture));
         }
         finally

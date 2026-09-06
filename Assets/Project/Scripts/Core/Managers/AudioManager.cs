@@ -3,108 +3,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Audio;
 
-public enum BgmType
-{
-    Title,
-    Lobby,
-    Battle
-}
-
-public enum SfxType
-{
-    Click,
-    Cancel,
-    Confirm,
-
-    Attack,
-    Hit,
-    Skill,
-
-    NormalButtonHover,
-    NormalButtonClick,
-    MoveButtonHover,
-    MoveButtonClick,
-
-    SceneTransition,
-    LobbyPanelTransition,
-
-    BattleActionReserveText,
-    BattleProgressText,
-    BattleTimelineSlotRotate,
-    BattleEndButtonHover,
-    BattleTimelineSlotSlide,
-    BattleMapNodeCheckAnimation,
-
-    RelicChoiceAcquire,
-    BattleRewardRemnantAcquire,
-    BattleRewardRelicSkillAcquire,
-
-    SkillListPanelOpen,
-    SkillListPanelClose
-}
-
-[System.Serializable]
-public class BgmData
-{
-    public BgmType type;
-    public AudioClip clip;
-}
-
-[System.Serializable]
-public class SfxData
-{
-    public SfxType type;
-    public AudioClip clip;
-
-    [Range(0f, 1f)]
-    public float volume = 1f;
-}
-
-[System.Serializable]
-public class SfxIdData
-{
-    public string id;
-    public AudioClip clip;
-
-    [Range(0f, 1f)]
-    public float volume = 1f;
-}
-
 public class AudioManager : Singleton<AudioManager>
 {
     [Header("Audio Sources")]
     [SerializeField] private AudioSource bgmSource;
     [SerializeField] private AudioSource sfxSource;
 
-    [Header("BGM List")]
-    [SerializeField] private List<BgmData> bgmList = new();
+    [Header("Sound Database")]
+    [SerializeField] private SoundDatabase soundDatabase;
 
-    [Header("Common SFX")]
-    [SerializeField] private List<SfxData> commonSfxList = new();
+    [Header("BGM Transition")]
+    [SerializeField, Min(0f)] private float bgmFadeOutDuration = 0.5f;
+    [SerializeField, Min(0f)] private float bgmFadeInDuration = 0.5f;
 
-    [Header("Player SFX")]
-    [SerializeField] private List<SfxData> playerSfxList = new();
-
-    [Header("Monster SFX")]
-    [SerializeField] private List<SfxData> monsterSfxList = new();
-
-    [Header("UI SFX")]
-    [SerializeField] private List<SfxData> uiSfxList = new();
-
-    [Header("Battle SFX")]
-    [SerializeField] private List<SfxData> battleSfxList = new();
-
-    [Header("Reward SFX")]
-    [SerializeField] private List<SfxData> rewardSfxList = new();
-
-    [Header("VFX SFX ID List")]
-    [SerializeField] private List<SfxIdData> vfxSfxIdList = new();
-
-    private Dictionary<BgmType, AudioClip> bgmDict;
-    private Dictionary<SfxType, SfxData> sfxDict;
-    private Dictionary<string, SfxIdData> sfxIdDict;
+    private Dictionary<string, SoundData> sfxIdDict;
+    private readonly List<AudioSource> bgmLayerSources = new();
     private readonly List<RoutedSfxSource> routedSfxSources = new();
-    private Coroutine pendingBgmRoutine;
+    private IReadOnlyList<BgmClipData> activeBgmLayers;
+    private BgmState? activeBgmState;
+    private Coroutine bgmTransitionRoutine;
+    private float bgmFadeMultiplier = 1f;
 
     protected override void Awake()
     {
@@ -124,70 +42,52 @@ public class AudioManager : Singleton<AudioManager>
 
     private void InitializeDictionary()
     {
-        bgmDict = new Dictionary<BgmType, AudioClip>();
-        sfxDict = new Dictionary<SfxType, SfxData>();
-        sfxIdDict = new Dictionary<string, SfxIdData>(System.StringComparer.Ordinal);
+        sfxIdDict = new Dictionary<string, SoundData>(System.StringComparer.Ordinal);
 
-        foreach (BgmData data in bgmList)
-        {
-            if (data == null || data.clip == null)
-                continue;
-
-            if (!bgmDict.ContainsKey(data.type))
-                bgmDict.Add(data.type, data.clip);
-            else
-                Debug.LogWarning($"[AudioManager] Duplicate BGM Type: {data.type}");
-        }
-
-        RegisterSfxList(commonSfxList);
-        RegisterSfxList(playerSfxList);
-        RegisterSfxList(monsterSfxList);
-        RegisterSfxList(uiSfxList);
-        RegisterSfxList(battleSfxList);
-        RegisterSfxList(rewardSfxList);
-        RegisterSfxIdList(vfxSfxIdList);
+        RegisterSoundDatabase();
     }
 
-    private void RegisterSfxList(List<SfxData> list)
+    private void RegisterSoundDatabase()
     {
-        if (list == null)
+        if (soundDatabase == null)
             return;
 
-        foreach (SfxData data in list)
-        {
-            if (data == null || data.clip == null)
-                continue;
+        soundDatabase.Initialize();
 
-            data.volume = Mathf.Clamp01(data.volume);
+        foreach (SoundData data in soundDatabase.SfxEntries)
+            RegisterSfxId(data);
 
-            if (!sfxDict.ContainsKey(data.type))
-                sfxDict.Add(data.type, data);
-            else
-                Debug.LogWarning($"[AudioManager] Duplicate SFX Type: {data.type}");
-        }
+        foreach (SoundData data in soundDatabase.EventSfxEntries)
+            RegisterSfxId(data);
     }
 
-    private void RegisterSfxIdList(List<SfxIdData> list)
+    private void RegisterSfxId(SoundData data)
     {
-        if (list == null)
+        if (data == null || data.clip == null)
             return;
 
-        foreach (SfxIdData data in list)
-        {
-            if (data == null || string.IsNullOrWhiteSpace(data.id) || data.clip == null)
-                continue;
+        RegisterSfxId(data.id, data);
 
-            string id = data.id.Trim();
-            data.volume = Mathf.Clamp01(data.volume);
+        if (data.aliases == null)
+            return;
 
-            if (!sfxIdDict.ContainsKey(id))
-                sfxIdDict.Add(id, data);
-            else
-                Debug.LogWarning($"[AudioManager] Duplicate SFX ID: {id}");
-        }
+        foreach (string alias in data.aliases)
+            RegisterSfxId(alias, data);
     }
 
-    public void PlayBgm(BgmType type, bool loop = true)
+    private void RegisterSfxId(string id, SoundData data)
+    {
+        if (data == null || data.clip == null || string.IsNullOrWhiteSpace(id))
+            return;
+
+        id = id.Trim();
+        if (!sfxIdDict.ContainsKey(id))
+            sfxIdDict.Add(id, data);
+        else
+            Debug.LogWarning($"[AudioManager] Duplicate SFX ID: {id}");
+    }
+
+    public void PlayBgm(BgmState state)
     {
         if (bgmSource == null)
         {
@@ -195,74 +95,177 @@ public class AudioManager : Singleton<AudioManager>
             return;
         }
 
-        if (!bgmDict.TryGetValue(type, out AudioClip clip))
+        if (soundDatabase == null || !soundDatabase.TryGetBgm(state, out BgmData data))
         {
-            Debug.LogWarning($"[AudioManager] BGM not found: {type}");
+            Debug.LogWarning($"[AudioManager] BGM state is not configured: {state}");
             return;
         }
 
-        if (bgmSource.clip == clip && bgmSource.isPlaying)
+        List<BgmClipData> layers = GetBgmLayers(data);
+        if (layers.Count == 0)
+        {
+            Debug.LogWarning($"[AudioManager] BGM state has no playable entries: {state}");
             return;
+        }
 
-        bgmSource.clip = clip;
-        bgmSource.loop = loop;
-        bgmSource.Play();
+        if (activeBgmState == state && IsBgmAlreadyPlaying(layers, true))
+        {
+            activeBgmLayers = layers;
+            ApplyVolumes();
+            return;
+        }
 
+        if (!isActiveAndEnabled || (bgmFadeOutDuration <= 0f && bgmFadeInDuration <= 0f))
+        {
+            CancelBgmTransition();
+            bgmFadeMultiplier = 1f;
+            PlayBgmImmediate(state, layers);
+            return;
+        }
+
+        CancelBgmTransition();
+        bgmTransitionRoutine = StartCoroutine(BgmTransitionRoutine(state, layers));
+    }
+
+    public void PlayBgmState(BgmState state)
+    {
+        PlayBgm(state);
+    }
+
+    private IEnumerator BgmTransitionRoutine(BgmState state, IReadOnlyList<BgmClipData> layers)
+    {
+        if (HasPlayingBgm())
+            yield return FadeBgmMultiplier(0f, bgmFadeOutDuration);
+        else
+        {
+            bgmFadeMultiplier = 0f;
+            ApplyVolumes();
+        }
+
+        PlayBgmImmediate(state, layers);
+
+        if (bgmFadeInDuration > 0f)
+            yield return FadeBgmMultiplier(1f, bgmFadeInDuration);
+        else
+        {
+            bgmFadeMultiplier = 1f;
+            ApplyVolumes();
+        }
+
+        bgmTransitionRoutine = null;
+    }
+
+    private IEnumerator FadeBgmMultiplier(float target, float duration)
+    {
+        target = Mathf.Clamp01(target);
+        float start = bgmFadeMultiplier;
+
+        if (duration <= 0f)
+        {
+            bgmFadeMultiplier = target;
+            ApplyVolumes();
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            bgmFadeMultiplier = Mathf.Lerp(start, target, t);
+            ApplyVolumes();
+            yield return null;
+        }
+
+        bgmFadeMultiplier = target;
         ApplyVolumes();
     }
 
-    public void PlayBgmDelayed(BgmType type, bool loop = true)
+    private void PlayBgmImmediate(BgmState state, IReadOnlyList<BgmClipData> layers)
     {
-        if (!isActiveAndEnabled)
-        {
-            PlayBgm(type, loop);
+        if (layers == null || layers.Count == 0)
             return;
+
+        StopBgmPlaybackSources();
+        activeBgmLayers = layers;
+        activeBgmState = state;
+
+        PlayBgmClip(bgmSource, layers[0]);
+        EnsureBgmLayerSourceCount(layers.Count - 1);
+
+        for (int i = 1; i < layers.Count; i++)
+        {
+            AudioSource layerSource = bgmLayerSources[i - 1];
+            PlayBgmClip(layerSource, layers[i]);
         }
 
-        if (pendingBgmRoutine != null)
-            StopCoroutine(pendingBgmRoutine);
-
-        pendingBgmRoutine = StartCoroutine(PlayBgmDelayedRoutine(type, loop));
+        StopUnusedBgmLayerSources(layers.Count - 1);
+        ApplyVolumes();
     }
 
-    private IEnumerator PlayBgmDelayedRoutine(BgmType type, bool loop)
+    private bool HasPlayingBgm()
     {
-        yield return null;
+        if (bgmSource != null && bgmSource.isPlaying)
+            return true;
 
-        pendingBgmRoutine = null;
-        PlayBgm(type, loop);
+        for (int i = 0; i < bgmLayerSources.Count; i++)
+        {
+            if (bgmLayerSources[i] != null && bgmLayerSources[i].isPlaying)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void CancelBgmTransition()
+    {
+        if (bgmTransitionRoutine == null)
+            return;
+
+        StopCoroutine(bgmTransitionRoutine);
+        bgmTransitionRoutine = null;
+    }
+
+    private static List<BgmClipData> GetBgmLayers(BgmData data)
+    {
+        List<BgmClipData> layers = new();
+
+        if (data == null || data.mainClip == null || data.mainClip.clip == null)
+            return layers;
+
+        layers.Add(data.mainClip);
+
+        if (data.ambienceClips == null)
+            return layers;
+
+        foreach (BgmClipData ambienceClip in data.ambienceClips)
+        {
+            if (ambienceClip != null && ambienceClip.clip != null)
+                layers.Add(ambienceClip);
+        }
+
+        return layers;
     }
 
     public void StopBgm()
     {
-        if (bgmSource == null)
-            return;
-
-        bgmSource.Stop();
-        bgmSource.clip = null;
+        CancelBgmTransition();
+        bgmFadeMultiplier = 1f;
+        activeBgmState = null;
+        StopBgmPlaybackSources();
+        ApplyVolumes();
     }
 
-    public void PlaySfx(SfxType type)
+    private void StopBgmPlaybackSources()
     {
-        PlaySfx(type, 1f);
-    }
-
-    public void PlaySfx(SfxType type, float volumeMultiplier)
-    {
-        if (sfxSource == null)
+        if (bgmSource != null)
         {
-            Debug.LogWarning("[AudioManager] SFX Source is not assigned.");
-            return;
+            bgmSource.Stop();
+            bgmSource.clip = null;
         }
 
-        if (!sfxDict.TryGetValue(type, out SfxData data) || data == null || data.clip == null)
-        {
-            Debug.LogWarning($"[AudioManager] SFX not found: {type}");
-            return;
-        }
-
-        float volume = Mathf.Clamp01(data.volume) * Mathf.Clamp01(volumeMultiplier);
-        sfxSource.PlayOneShot(data.clip, volume);
+        activeBgmLayers = null;
+        StopUnusedBgmLayerSources(0);
     }
 
     public void PlaySfx(string id)
@@ -272,27 +275,69 @@ public class AudioManager : Singleton<AudioManager>
 
     public void PlaySfx(string id, float volumeMultiplier)
     {
-        if (string.IsNullOrWhiteSpace(id))
+        if (!TryGetSfxData(id, out SoundData data))
             return;
+
+        Vector3 worldPosition = sfxSource != null ? sfxSource.transform.position : transform.position;
+        Quaternion worldRotation = sfxSource != null ? sfxSource.transform.rotation : transform.rotation;
+
+        AudioSourcePlaybackSettings settings =
+            AudioSourcePlaybackSettings.From(data, worldPosition, worldRotation, sfxSource);
+
+        PlaySfxClip(settings, volumeMultiplier);
+    }
+
+    public bool TryGetSfxData(string id, out SoundData data)
+    {
+        data = null;
+
+        if (string.IsNullOrWhiteSpace(id))
+            return false;
 
         string trimmedId = id.Trim();
 
         if (sfxIdDict != null &&
-            sfxIdDict.TryGetValue(trimmedId, out SfxIdData data) &&
+            sfxIdDict.TryGetValue(trimmedId, out data) &&
             data != null &&
             data.clip != null)
         {
-            PlaySfxClip(data.clip, Mathf.Clamp01(data.volume) * Mathf.Clamp01(volumeMultiplier));
-            return;
-        }
-
-        if (System.Enum.TryParse(trimmedId, out SfxType type))
-        {
-            PlaySfx(type, volumeMultiplier);
-            return;
+            return true;
         }
 
         Debug.LogWarning($"[AudioManager] SFX ID not found: {trimmedId}");
+        data = null;
+        return false;
+    }
+
+    public bool TryGetSkillVfxSfx(GameObject vfxPrefab, out VfxSoundData data)
+    {
+        data = null;
+
+        return soundDatabase != null &&
+            soundDatabase.TryGetSkillVfxSfx(vfxPrefab, out data);
+    }
+
+    public AudioSource PlayVfxSfxCue(
+        VfxSoundCue cue,
+        Vector3 worldPosition,
+        Quaternion worldRotation,
+        float volumeMultiplier = 1f)
+    {
+        if (cue == null || cue.clip == null)
+            return null;
+
+        if (cue.loop)
+        {
+            AudioSourcePlaybackSettings settings =
+                AudioSourcePlaybackSettings.From(cue, worldPosition, worldRotation, sfxSource);
+
+            return PlaySfxClip(settings, volumeMultiplier);
+        }
+
+        AudioSourcePlaybackSettings oneShotSettings =
+            AudioSourcePlaybackSettings.From(cue, worldPosition, worldRotation, sfxSource);
+
+        return PlaySfxClip(oneShotSettings, volumeMultiplier);
     }
 
     public void PlaySfxClip(AudioClip clip)
@@ -301,6 +346,11 @@ public class AudioManager : Singleton<AudioManager>
     }
 
     public void PlaySfxClip(AudioClip clip, float volumeMultiplier)
+    {
+        PlaySfxClip(clip, volumeMultiplier, 1f);
+    }
+
+    private void PlaySfxClip(AudioClip clip, float volumeMultiplier, float pitch)
     {
         if (clip == null)
             return;
@@ -311,7 +361,12 @@ public class AudioManager : Singleton<AudioManager>
             return;
         }
 
-        sfxSource.PlayOneShot(clip, Mathf.Clamp01(volumeMultiplier));
+        AudioSourcePlaybackSettings settings = AudioSourcePlaybackSettings.From(sfxSource);
+        if (settings == null)
+            return;
+
+        settings.SetClipAndPitch(clip, SoundData.ClampPlaybackPitch(pitch));
+        PlaySfxClip(settings, volumeMultiplier);
     }
 
     public AudioSource PlaySfxClip(AudioSource source)
@@ -352,6 +407,21 @@ public class AudioManager : Singleton<AudioManager>
         return routedSource;
     }
 
+    public AudioSource PlaySfxSource(
+        string id,
+        Vector3 worldPosition,
+        Quaternion worldRotation,
+        float volumeMultiplier)
+    {
+        if (!TryGetSfxData(id, out SoundData data))
+            return null;
+
+        AudioSourcePlaybackSettings settings =
+            AudioSourcePlaybackSettings.From(data, worldPosition, worldRotation, sfxSource);
+
+        return PlaySfxClip(settings, volumeMultiplier);
+    }
+
     public void StopRoutedSfxSource(AudioSource routedSource)
     {
         if (routedSource == null)
@@ -386,11 +456,17 @@ public class AudioManager : Singleton<AudioManager>
         ApplyVolumes();
     }
 
-    public void SetSfxVolume(SfxType type, float volume)
+    public void SetSfxVolume(string id, float volume)
     {
-        if (!sfxDict.TryGetValue(type, out SfxData data) || data == null)
+        if (string.IsNullOrWhiteSpace(id))
+            return;
+
+        string trimmedId = id.Trim();
+        if (sfxIdDict == null ||
+            !sfxIdDict.TryGetValue(trimmedId, out SoundData data) ||
+            data == null)
         {
-            Debug.LogWarning($"[AudioManager] SFX not found: {type}");
+            Debug.LogWarning($"[AudioManager] SFX not found: {trimmedId}");
             return;
         }
 
@@ -412,9 +488,15 @@ public class AudioManager : Singleton<AudioManager>
         return Settings.Instance.SFXVolume;
     }
 
-    public float GetSfxVolume(SfxType type)
+    public float GetSfxVolume(string id)
     {
-        if (!sfxDict.TryGetValue(type, out SfxData data) || data == null)
+        if (string.IsNullOrWhiteSpace(id))
+            return 1f;
+
+        string trimmedId = id.Trim();
+        if (sfxIdDict == null ||
+            !sfxIdDict.TryGetValue(trimmedId, out SoundData data) ||
+            data == null)
             return 1f;
 
         return Mathf.Clamp01(data.volume);
@@ -426,13 +508,148 @@ public class AudioManager : Singleton<AudioManager>
         float bgm = GetBgmVolumeOrDefault();
         float sfx = GetSfxVolumeOrDefault();
 
+        float fadedBgmVolume = master * bgm * bgmFadeMultiplier;
+
         if (bgmSource != null)
-            bgmSource.volume = master * bgm;
+            bgmSource.volume = fadedBgmVolume * GetBgmLayerVolume(0);
+
+        ApplyBgmLayerVolumes(fadedBgmVolume);
 
         if (sfxSource != null)
             sfxSource.volume = master * sfx;
 
         ApplyRoutedSfxVolumes();
+    }
+
+    private bool IsBgmAlreadyPlaying(IReadOnlyList<BgmClipData> layers, bool loop)
+    {
+        if (layers == null || layers.Count == 0)
+            return false;
+
+        if (!IsBgmSourcePlayingClip(bgmSource, layers[0].clip, layers[0].loop))
+            return false;
+
+        for (int i = 1; i < layers.Count; i++)
+        {
+            int layerIndex = i - 1;
+
+            if (layerIndex >= bgmLayerSources.Count)
+                return false;
+
+            if (!IsBgmSourcePlayingClip(bgmLayerSources[layerIndex], layers[i].clip, layers[i].loop))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsBgmSourcePlayingClip(AudioSource source, AudioClip clip, bool loop)
+    {
+        return source != null &&
+            source.clip == clip &&
+            source.loop == loop &&
+            source.isPlaying;
+    }
+
+    private static void PlayBgmClip(AudioSource source, BgmClipData data)
+    {
+        if (source == null || data == null || data.clip == null)
+            return;
+
+        if (source.clip != data.clip)
+        {
+            source.Stop();
+            source.clip = data.clip;
+        }
+
+        source.loop = data.loop;
+        source.pitch = data.GetPlaybackPitch();
+        source.Play();
+    }
+
+    private void EnsureBgmLayerSourceCount(int count)
+    {
+        for (int i = bgmLayerSources.Count - 1; i >= 0; i--)
+        {
+            if (bgmLayerSources[i] == null)
+                bgmLayerSources.RemoveAt(i);
+        }
+
+        while (bgmLayerSources.Count < count)
+        {
+            GameObject layerObject = new($"BGM Layer {bgmLayerSources.Count + 1}");
+            layerObject.transform.SetParent(transform, false);
+
+            AudioSource layerSource = layerObject.AddComponent<AudioSource>();
+            CopyBgmSourceSettings(bgmSource, layerSource);
+            bgmLayerSources.Add(layerSource);
+        }
+    }
+
+    private void StopUnusedBgmLayerSources(int activeCount)
+    {
+        for (int i = 0; i < bgmLayerSources.Count; i++)
+        {
+            AudioSource layerSource = bgmLayerSources[i];
+
+            if (layerSource == null || i < activeCount)
+                continue;
+
+            layerSource.Stop();
+            layerSource.clip = null;
+        }
+    }
+
+    private void ApplyBgmLayerVolumes(float volume)
+    {
+        for (int i = bgmLayerSources.Count - 1; i >= 0; i--)
+        {
+            AudioSource layerSource = bgmLayerSources[i];
+
+            if (layerSource == null)
+            {
+                bgmLayerSources.RemoveAt(i);
+                continue;
+            }
+
+            layerSource.volume = volume * GetBgmLayerVolume(i + 1);
+        }
+    }
+
+    private float GetBgmLayerVolume(int layerIndex)
+    {
+        if (activeBgmLayers == null || layerIndex < 0 || layerIndex >= activeBgmLayers.Count)
+            return 1f;
+
+        BgmClipData data = activeBgmLayers[layerIndex];
+        return data != null ? Mathf.Clamp01(data.volume) : 1f;
+    }
+
+    private static void CopyBgmSourceSettings(AudioSource source, AudioSource target)
+    {
+        if (source == null || target == null)
+            return;
+
+        target.outputAudioMixerGroup = source.outputAudioMixerGroup;
+        target.bypassEffects = source.bypassEffects;
+        target.bypassListenerEffects = source.bypassListenerEffects;
+        target.bypassReverbZones = source.bypassReverbZones;
+        target.playOnAwake = false;
+        target.priority = source.priority;
+        target.pitch = source.pitch;
+        target.panStereo = source.panStereo;
+        target.spatialBlend = source.spatialBlend;
+        target.reverbZoneMix = source.reverbZoneMix;
+        target.dopplerLevel = source.dopplerLevel;
+        target.spread = source.spread;
+        target.rolloffMode = source.rolloffMode;
+        target.minDistance = source.minDistance;
+        target.maxDistance = source.maxDistance;
+        target.ignoreListenerPause = source.ignoreListenerPause;
+        target.ignoreListenerVolume = source.ignoreListenerVolume;
+        target.spatialize = source.spatialize;
+        target.spatializePostEffects = source.spatializePostEffects;
+        target.velocityUpdateMode = source.velocityUpdateMode;
     }
 
     private IEnumerator DestroyRoutedSfxWhenFinished(AudioSource routedSource)
@@ -590,6 +807,117 @@ public sealed class AudioSourcePlaybackSettings
             reverbZoneMixCurve = CopyCurve(source.GetCustomCurve(AudioSourceCurveType.ReverbZoneMix)),
             spreadCurve = CopyCurve(source.GetCustomCurve(AudioSourceCurveType.Spread))
         };
+    }
+
+    public static AudioSourcePlaybackSettings From(
+        SoundData data,
+        Vector3 worldPosition,
+        Quaternion worldRotation,
+        AudioSource template)
+    {
+        if (data == null || data.clip == null)
+            return null;
+
+        return new AudioSourcePlaybackSettings
+        {
+            Clip = data.clip,
+            OutputAudioMixerGroup = template != null ? template.outputAudioMixerGroup : null,
+            WorldPosition = worldPosition,
+            WorldRotation = worldRotation,
+            BypassEffects = template != null && template.bypassEffects,
+            BypassListenerEffects = template != null && template.bypassListenerEffects,
+            BypassReverbZones = template != null && template.bypassReverbZones,
+            Loop = data.loop,
+            Priority = template != null ? template.priority : 128,
+            Volume = Mathf.Clamp01(data.volume),
+            Pitch = data.GetPlaybackPitch(),
+            PanStereo = template != null ? template.panStereo : 0f,
+            SpatialBlend = template != null ? template.spatialBlend : 0f,
+            ReverbZoneMix = template != null ? template.reverbZoneMix : 1f,
+            DopplerLevel = template != null ? template.dopplerLevel : 1f,
+            Spread = template != null ? template.spread : 0f,
+            RolloffMode = template != null ? template.rolloffMode : AudioRolloffMode.Logarithmic,
+            MinDistance = template != null ? template.minDistance : 1f,
+            MaxDistance = template != null ? template.maxDistance : 500f,
+            IgnoreListenerPause = template != null && template.ignoreListenerPause,
+            IgnoreListenerVolume = template != null && template.ignoreListenerVolume,
+            Spatialize = template != null && template.spatialize,
+            SpatializePostEffects = template != null && template.spatializePostEffects,
+            VelocityUpdateMode = template != null
+                ? template.velocityUpdateMode
+                : AudioVelocityUpdateMode.Auto,
+            customRolloffCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.CustomRolloff))
+                : null,
+            spatialBlendCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.SpatialBlend))
+                : null,
+            reverbZoneMixCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.ReverbZoneMix))
+                : null,
+            spreadCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.Spread))
+                : null
+        };
+    }
+
+    public static AudioSourcePlaybackSettings From(
+        VfxSoundCue cue,
+        Vector3 worldPosition,
+        Quaternion worldRotation,
+        AudioSource template)
+    {
+        if (cue == null || cue.clip == null)
+            return null;
+
+        return new AudioSourcePlaybackSettings
+        {
+            Clip = cue.clip,
+            OutputAudioMixerGroup = template != null ? template.outputAudioMixerGroup : null,
+            WorldPosition = worldPosition,
+            WorldRotation = worldRotation,
+            BypassEffects = template != null && template.bypassEffects,
+            BypassListenerEffects = template != null && template.bypassListenerEffects,
+            BypassReverbZones = template != null && template.bypassReverbZones,
+            Loop = cue.loop,
+            Priority = template != null ? template.priority : 128,
+            Volume = Mathf.Clamp01(cue.volume),
+            Pitch = cue.GetPlaybackPitch(),
+            PanStereo = template != null ? template.panStereo : 0f,
+            SpatialBlend = template != null ? template.spatialBlend : 0f,
+            ReverbZoneMix = template != null ? template.reverbZoneMix : 1f,
+            DopplerLevel = template != null ? template.dopplerLevel : 1f,
+            Spread = template != null ? template.spread : 0f,
+            RolloffMode = template != null ? template.rolloffMode : AudioRolloffMode.Logarithmic,
+            MinDistance = template != null ? template.minDistance : 1f,
+            MaxDistance = template != null ? template.maxDistance : 500f,
+            IgnoreListenerPause = template != null && template.ignoreListenerPause,
+            IgnoreListenerVolume = template != null && template.ignoreListenerVolume,
+            Spatialize = template != null && template.spatialize,
+            SpatializePostEffects = template != null && template.spatializePostEffects,
+            VelocityUpdateMode = template != null
+                ? template.velocityUpdateMode
+                : AudioVelocityUpdateMode.Auto,
+            customRolloffCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.CustomRolloff))
+                : null,
+            spatialBlendCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.SpatialBlend))
+                : null,
+            reverbZoneMixCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.ReverbZoneMix))
+                : null,
+            spreadCurve = template != null
+                ? CopyCurve(template.GetCustomCurve(AudioSourceCurveType.Spread))
+                : null
+        };
+    }
+
+    public void SetClipAndPitch(AudioClip clip, float pitch)
+    {
+        Clip = clip;
+        Loop = false;
+        Pitch = SoundData.ClampPlaybackPitch(pitch);
     }
 
     public void ApplyTo(AudioSource target, float volumeMultiplier)

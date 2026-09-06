@@ -53,13 +53,53 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: f20fa421894317c4eb56a44f596fb5f8, type: 3}
   - RuneId: Rune_20
     Icon: {fileID: 21300000, guid: 35b38523ad8b9fb4b871257db112d942, type: 3}
-  - RuneId: Rune_21
-    Icon: {fileID: 21300000, guid: 925e501542969ec4da2f0e212700bd1f, type: 3}
-  - RuneId: Rune_22
-    Icon: {fileID: 21300000, guid: 7068cd68305a97340995eed278697318, type: 3}
-  - RuneId: Rune_23
-    Icon: {fileID: 21300000, guid: 8226c734d16425a4ba5ce540b8a42595, type: 3}
-  - RuneId: Rune_24
-    Icon: {fileID: 21300000, guid: 458d02cbfb4f15848a54386d3874281c, type: 3}
-  - RuneId: Rune_25
-    Icon: {fileID: 21300000, guid: 4aa907edd10d83d4cb703f0b6f3633ba, type: 3}
+  - RuneId: Rune_51
+    Icon: {fileID: 21300000, guid: 237ff151fb789f744a7246aa1e7a42d7, type: 3}
+  - RuneId: Rune_52
+    Icon: {fileID: 21300000, guid: 61b7722375ae1cc4c9d67714ff7df60c, type: 3}
+  - RuneId: Rune_53
+    Icon: {fileID: 21300000, guid: b43553080b68cd04999a1d8f3bda885d, type: 3}
+  - RuneId: Rune_54
+    Icon: {fileID: 21300000, guid: f0b9a2cf177067b42b7d72619aa4ec68, type: 3}
+  - RuneId: Rune_55
+    Icon: {fileID: 21300000, guid: 00c15218cc74ac049b43dcded995953c, type: 3}
+  - RuneId: Rune_56
+    Icon: {fileID: 21300000, guid: 9a756bcc42667264a972d38869a0046b, type: 3}
+  - RuneId: Rune_57
+    Icon: {fileID: 21300000, guid: d850a88d23e51c14482fd691cc6b9008, type: 3}
+  - RuneId: Rune_58
+    Icon: {fileID: 21300000, guid: 2bc78deb7bc887140b6d03c957cabb4f, type: 3}
+  - RuneId: Rune_59
+    Icon: {fileID: 21300000, guid: 232a974b4497b914ea4908bc3ef5fe1d, type: 3}
+  - RuneId: Rune_60
+    Icon: {fileID: 21300000, guid: 3fadfa1b9653ac54a8a61cf108c4198e, type: 3}
+  - RuneId: Rune_61
+    Icon: {fileID: 21300000, guid: 5ab655aa0d25ed14a948ac6f0c842822, type: 3}
+  - RuneId: Rune_62
+    Icon: {fileID: 21300000, guid: d23d8f931677c5043aa841e8514bcfd3, type: 3}
+  - RuneId: Rune_63
+    Icon: {fileID: 21300000, guid: 57424f683959c4645ba107b250a3c8eb, type: 3}
+  - RuneId: Rune_64
+    Icon: {fileID: 21300000, guid: 735ea39c69ef25b48904abfaac3f840d, type: 3}
+  - RuneId: Rune_65
+    Icon: {fileID: 21300000, guid: 04ca92f7e1471d04787468e96201fa0d, type: 3}
+  - RuneId: Rune_66
+    Icon: {fileID: 21300000, guid: 34d87d64af644b84c948b1b7ea531b87, type: 3}
+  - RuneId: Rune_67
+    Icon: {fileID: 21300000, guid: 7db0f0247d27ed342b6452732105ee8f, type: 3}
+  - RuneId: Rune_68
+    Icon: {fileID: 21300000, guid: 63e1a8c63ac9c884dbdf6c4719452e72, type: 3}
+  - RuneId: Rune_69
+    Icon: {fileID: 21300000, guid: ac24b65d7346b5d4dbbe7a3ef5aca67d, type: 3}
+  - RuneId: Rune_70
+    Icon: {fileID: 21300000, guid: 81e8bb05b0ffa6548aba2f783f7c9105, type: 3}
+  - RuneId: Rune_71
+    Icon: {fileID: 21300000, guid: 91a84183118d52144a038c78f38c9a5b, type: 3}
+  - RuneId: Rune_72
+    Icon: {fileID: 21300000, guid: f9ffddb819e37c04398261e1480d65fb, type: 3}
+  - RuneId: Rune_73
+    Icon: {fileID: 21300000, guid: 013c9178bb5954f46836611d0dd8a2a8, type: 3}
+  - RuneId: Rune_74
+    Icon: {fileID: 21300000, guid: ef1483c381a845b41b0e4c15f04176d9, type: 3}
+  - RuneId: Rune_75
+    Icon: {fileID: 21300000, guid: 2a8ecfd572d614041b9468bbba2dd8d7, type: 3}

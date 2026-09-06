@@ -1,5 +1,6 @@
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -378,9 +379,14 @@ public class MonsterInfoPanelUI : MonoBehaviour
             return patternInfo.SkillInfo.Trim();
 
         if (skillData != null && !string.IsNullOrWhiteSpace(skillData.EffectDesc))
-            return skillData.EffectDesc.Trim();
+            return FormatMonsterEffectDescription(skillData.EffectDesc, skillData);
 
         return string.Empty;
+    }
+
+    private static string FormatMonsterEffectDescription(string description, MonsterSkillData skillData)
+    {
+        return MonsterSkillDescriptionFormatter.Format(description, skillData);
     }
 
     private static Sprite GetTimelineActionIcon(MonsterSkillData skillData)

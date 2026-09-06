@@ -5,92 +5,98 @@ public static class BattleVfxAudioUtility
 {
     public static void PlayAndStripEmbeddedAudioSources(
         GameObject vfx,
-        BattleVfxSfxEntry settings,
-        MonoBehaviour coroutineHost)
+        GameObject sourcePrefab,
+        MonoBehaviour coroutineHost,
+        bool allowPlayOncePerActionCues = true)
     {
-        PlayConfiguredSfx(settings, coroutineHost);
+        PlayDatabaseVfxSfx(
+            vfx,
+            sourcePrefab,
+            coroutineHost,
+            allowPlayOncePerActionCues);
 
         if (vfx == null)
             return;
 
         AudioSource[] sources = vfx.GetComponentsInChildren<AudioSource>(true);
-
-        if (ShouldRouteEmbeddedAudioSources(settings))
-            PlayEmbeddedAudioSources(vfx, sources, settings);
-
-        if (ShouldRemoveEmbeddedAudioSources(settings))
-            RemoveEmbeddedAudioSources(sources);
+        RemoveEmbeddedAudioSources(sources);
     }
 
-    private static void PlayConfiguredSfx(BattleVfxSfxEntry settings, MonoBehaviour coroutineHost)
-    {
-        if (settings == null || !settings.playSfx)
-            return;
-
-        if (settings.delay > 0f && coroutineHost != null && coroutineHost.isActiveAndEnabled)
-        {
-            coroutineHost.StartCoroutine(PlayConfiguredSfxDelayed(settings));
-            return;
-        }
-
-        PlayConfiguredSfxNow(settings);
-    }
-
-    private static IEnumerator PlayConfiguredSfxDelayed(BattleVfxSfxEntry settings)
-    {
-        yield return new WaitForSeconds(Mathf.Max(0f, settings.delay));
-        PlayConfiguredSfxNow(settings);
-    }
-
-    private static void PlayConfiguredSfxNow(BattleVfxSfxEntry settings)
-    {
-        if (AudioManager.Instance == null)
-            return;
-
-        AudioManager.Instance.PlaySfx(settings.sfxId, settings.volumeMultiplier);
-    }
-
-    private static bool ShouldRouteEmbeddedAudioSources(BattleVfxSfxEntry settings)
-    {
-        if (settings == null)
-            return true;
-
-        return settings.routeEmbeddedAudioSourcesThroughAudioManager && !settings.playSfx;
-    }
-
-    private static bool ShouldRemoveEmbeddedAudioSources(BattleVfxSfxEntry settings)
-    {
-        return settings == null || settings.removeEmbeddedAudioSources;
-    }
-
-    private static void PlayEmbeddedAudioSources(
+    private static void PlayDatabaseVfxSfx(
         GameObject vfx,
-        AudioSource[] sources,
-        BattleVfxSfxEntry settings)
+        GameObject sourcePrefab,
+        MonoBehaviour coroutineHost,
+        bool allowPlayOncePerActionCues)
     {
-        if (AudioManager.Instance == null || sources == null)
+        if (AudioManager.Instance == null || sourcePrefab == null)
             return;
 
-        float entryVolume = settings != null ? Mathf.Clamp01(settings.volumeMultiplier) : 1f;
-
-        for (int i = 0; i < sources.Length; i++)
+        if (!AudioManager.Instance.TryGetSkillVfxSfx(sourcePrefab, out VfxSoundData data) ||
+            data == null ||
+            data.Cues == null)
         {
-            AudioSource source = sources[i];
-
-            if (source == null ||
-                !source.enabled ||
-                source.mute ||
-                !source.playOnAwake ||
-                source.clip == null)
-            {
-                continue;
-            }
-
-            AudioSource routedSource = AudioManager.Instance.PlaySfxClip(source, entryVolume);
-
-            if (routedSource != null && routedSource.loop)
-                TrackLoopedRoutedAudioSource(vfx, routedSource);
+            return;
         }
+
+        for (int i = 0; i < data.Cues.Count; i++)
+        {
+            VfxSoundCue cue = data.Cues[i];
+
+            if (cue == null)
+                continue;
+
+            if (cue.playOncePerAction && !allowPlayOncePerActionCues)
+                continue;
+
+            PlayDatabaseVfxSfxCue(vfx, cue, coroutineHost);
+        }
+    }
+
+    private static void PlayDatabaseVfxSfxCue(
+        GameObject vfx,
+        VfxSoundCue cue,
+        MonoBehaviour coroutineHost)
+    {
+        if (cue == null || cue.clip == null)
+            return;
+
+        float delay = Mathf.Max(0f, cue.delay);
+        if (delay > 0f && coroutineHost != null && coroutineHost.isActiveAndEnabled)
+        {
+            coroutineHost.StartCoroutine(PlayDatabaseVfxSfxDelayed(
+                vfx,
+                cue,
+                delay));
+            return;
+        }
+
+        PlayDatabaseVfxSfxNow(vfx, cue);
+    }
+
+    private static IEnumerator PlayDatabaseVfxSfxDelayed(
+        GameObject vfx,
+        VfxSoundCue cue,
+        float delay)
+    {
+        yield return new WaitForSeconds(Mathf.Max(0f, delay));
+        PlayDatabaseVfxSfxNow(vfx, cue);
+    }
+
+    private static void PlayDatabaseVfxSfxNow(
+        GameObject vfx,
+        VfxSoundCue cue)
+    {
+        if (AudioManager.Instance == null || cue == null || cue.clip == null)
+            return;
+
+        Transform vfxTransform = vfx != null ? vfx.transform : null;
+        AudioSource routedSource = AudioManager.Instance.PlayVfxSfxCue(
+            cue,
+            vfxTransform != null ? vfxTransform.position : Vector3.zero,
+            vfxTransform != null ? vfxTransform.rotation : Quaternion.identity);
+
+        if (routedSource != null && routedSource.loop)
+            TrackLoopedRoutedAudioSource(vfx, routedSource);
     }
 
     private static void TrackLoopedRoutedAudioSource(GameObject vfx, AudioSource routedSource)

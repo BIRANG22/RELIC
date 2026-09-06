@@ -3,7 +3,7 @@ using Relic.Gameplay.Data;
 
 public class RuntimeDataDebugKey : Singleton<RuntimeDataDebugKey>
 {
-    [SerializeField] private KeyCode debugKey = KeyCode.BackQuote;
+    [SerializeField] private KeyCode debugKey = KeyCode.F12;
 
     protected override void Awake()
     {

@@ -6,12 +6,10 @@ public class PartySlotButton : MonoBehaviour
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = false;
-    [SerializeField] private SfxType clickSfx = SfxType.NormalButtonClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     public void Execute()
     {
-        PlayClickSound();
-
         if (CharacterSelectionState.Instance == null)
         {
             Debug.LogWarning("[PartySlotButton] CharacterSelectionState instance is missing.");
@@ -19,6 +17,16 @@ public class PartySlotButton : MonoBehaviour
         }
 
         int resolvedSlotIndex = ResolveSlotIndex();
+        SteamLobbyPartySynchronizer synchronizer = SteamLobbyPartySynchronizer.Instance;
+
+        if (synchronizer != null &&
+            synchronizer.IsNetworkPartyActive &&
+            !synchronizer.CanLocalPlayerEditSlot(resolvedSlotIndex))
+        {
+            return;
+        }
+
+        PlayClickSound();
         CharacterSelectionState.Instance.SelectPartySlot(resolvedSlotIndex);
 
         Debug.Log($"[PartySlotButton] Selected party slot: {resolvedSlotIndex}", this);

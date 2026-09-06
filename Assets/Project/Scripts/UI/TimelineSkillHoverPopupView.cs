@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,179 +8,139 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
     [Header("References")]
     [SerializeField] private Image backgroundImage;
     [SerializeField] private TMP_Text nameText;
-    [SerializeField] private TMP_Text effectText;
-    [SerializeField] private Image rangeIconImage;
+    [SerializeField] private RectTransform popupRect;
+
+    [Header("Auto Size")]
+    [SerializeField] private bool autoSizeToName = true;
+    [SerializeField] private Vector2 textPadding = new Vector2(36f, 16f);
+    [SerializeField] private float minWidth = 80f;
+    [SerializeField] private float minHeight = 40f;
+    [SerializeField] private float maxWidth = 0f;
+    [SerializeField] private bool resizeBackgrounds = true;
 
     [Header("Font Override")]
     [SerializeField] private bool applyFontAssetToTexts = false;
     [SerializeField] private TMP_FontAsset textFontAsset;
 
-    [Header("No Range Icon Layout")]
-    [SerializeField] private bool expandEffectTextWhenNoRangeIcon = true;
-    [SerializeField] private float noRangeEffectTextXOffset = -30f;
-    [SerializeField] private float noRangeEffectTextWidth = 370f;
-
     [Header("Fallback Text")]
     [SerializeField] private string emptyNameText = "";
-    [TextArea]
-    [SerializeField] private string emptyEffectText = "";
 
-    private RectTransform effectTextRect;
-    private Vector2 originalEffectTextAnchoredPosition;
-    private Vector2 originalEffectTextSizeDelta;
-    private bool hasOriginalEffectTextLayout;
+    private readonly List<RectTransform> backgroundRects = new List<RectTransform>();
 
     private void Awake()
     {
-        NormalizeNoRangeIconLayoutDefaults();
         AutoBindReferences();
-        CacheOriginalEffectTextLayout();
         DisableRaycastTargets();
         ApplyFontAsset();
-        HideRangeIcon();
-        ApplyNoRangeIconLayout();
     }
 
     private void OnValidate()
     {
-        NormalizeNoRangeIconLayoutDefaults();
+        // OnValidate/Awake 단계에서는 RectTransform 크기를 변경하지 않습니다.
+        // 팝업 크기는 실제 스킬 이름이 설정되는 Set()에서만 갱신합니다.
         AutoBindReferences();
     }
 
     public void Set(string skillName, string effectDescription)
     {
-        Set(skillName, effectDescription, null);
+        Set(skillName);
     }
 
     public void Set(string skillName, string effectDescription, Sprite rangeIcon)
+    {
+        Set(skillName);
+    }
+
+    public void Set(string skillName)
     {
         if (!gameObject.activeSelf)
             gameObject.SetActive(true);
 
         AutoBindReferences();
-        CacheOriginalEffectTextLayout();
         DisableRaycastTargets();
         ApplyFontAsset();
 
         if (nameText != null)
             nameText.text = string.IsNullOrWhiteSpace(skillName) ? emptyNameText : skillName;
 
-        if (effectText != null)
-            effectText.text = string.IsNullOrWhiteSpace(effectDescription) ? emptyEffectText : effectDescription;
-
-        SetRangeIcon(rangeIcon);
+        RefreshSize();
     }
 
-
-    private void NormalizeNoRangeIconLayoutDefaults()
+    private void RefreshSize()
     {
-        // 기존 프리팹/씬에 저장되어 있던 이전 기본값을 새 기본값으로 갱신합니다.
-        if (Mathf.Approximately(noRangeEffectTextXOffset, -45f) || Mathf.Approximately(noRangeEffectTextXOffset, -50f) || Mathf.Approximately(noRangeEffectTextXOffset, -75f))
-            noRangeEffectTextXOffset = -30f;
+        if (!autoSizeToName || nameText == null)
+            return;
 
-        if (Mathf.Approximately(noRangeEffectTextWidth, 300f) || Mathf.Approximately(noRangeEffectTextWidth, 350f))
-            noRangeEffectTextWidth = 370f;
+        if (popupRect == null)
+            popupRect = transform as RectTransform;
+
+        if (popupRect == null)
+            return;
+
+        nameText.ForceMeshUpdate();
+
+        string displayText = nameText.text ?? string.Empty;
+        Vector2 preferredSize = nameText.GetPreferredValues(displayText);
+
+        float targetWidth = Mathf.Max(minWidth, preferredSize.x + Mathf.Max(0f, textPadding.x));
+        float targetHeight = Mathf.Max(minHeight, preferredSize.y + Mathf.Max(0f, textPadding.y));
+
+        if (maxWidth > 0f)
+            targetWidth = Mathf.Min(targetWidth, maxWidth);
+
+        popupRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetWidth);
+        popupRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, targetHeight);
+
+        RectTransform nameRect = nameText.rectTransform;
+        if (nameRect != null && IsFixedAnchor(nameRect))
+        {
+            nameRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, preferredSize.x);
+            nameRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, preferredSize.y);
+        }
+
+        if (!resizeBackgrounds)
+            return;
+
+        CacheBackgroundRects();
+
+        for (int i = 0; i < backgroundRects.Count; i++)
+        {
+            RectTransform backgroundRect = backgroundRects[i];
+            if (backgroundRect == null)
+                continue;
+
+            // Stretch 앵커는 부모 크기를 자동으로 따라가므로 별도 크기 지정이 필요 없습니다.
+            if (!IsFixedAnchor(backgroundRect))
+                continue;
+
+            backgroundRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetWidth);
+            backgroundRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, targetHeight);
+        }
+    }
+
+    private static bool IsFixedAnchor(RectTransform rectTransform)
+    {
+        if (rectTransform == null)
+            return false;
+
+        return Mathf.Approximately(rectTransform.anchorMin.x, rectTransform.anchorMax.x)
+            && Mathf.Approximately(rectTransform.anchorMin.y, rectTransform.anchorMax.y);
     }
 
     private void ApplyFontAsset()
     {
-        if (!applyFontAssetToTexts)
-            return;
-
-        if (textFontAsset == null)
+        if (!applyFontAssetToTexts || textFontAsset == null)
             return;
 
         if (nameText != null)
             nameText.font = textFontAsset;
-
-        if (effectText != null)
-            effectText.font = textFontAsset;
-    }
-
-    private void SetRangeIcon(Sprite rangeIcon)
-    {
-        if (rangeIconImage == null)
-        {
-            ApplyNoRangeIconLayout();
-            return;
-        }
-
-        if (rangeIcon == null)
-        {
-            HideRangeIcon();
-            ApplyNoRangeIconLayout();
-            return;
-        }
-
-        rangeIconImage.sprite = rangeIcon;
-        rangeIconImage.gameObject.SetActive(true);
-        RestoreOriginalEffectTextLayout();
-    }
-
-    private void HideRangeIcon()
-    {
-        if (rangeIconImage != null)
-            rangeIconImage.gameObject.SetActive(false);
-    }
-
-    private void CacheOriginalEffectTextLayout()
-    {
-        if (hasOriginalEffectTextLayout)
-            return;
-
-        if (effectText == null)
-            return;
-
-        effectTextRect = effectText.rectTransform;
-        if (effectTextRect == null)
-            return;
-
-        originalEffectTextAnchoredPosition = effectTextRect.anchoredPosition;
-        originalEffectTextSizeDelta = effectTextRect.sizeDelta;
-        hasOriginalEffectTextLayout = true;
-    }
-
-    private void ApplyNoRangeIconLayout()
-    {
-        if (!expandEffectTextWhenNoRangeIcon)
-            return;
-
-        if (effectText == null)
-            return;
-
-        effectTextRect = effectText.rectTransform;
-        if (effectTextRect == null)
-            return;
-
-        Vector2 anchoredPosition = effectTextRect.anchoredPosition;
-        anchoredPosition.x = hasOriginalEffectTextLayout
-            ? originalEffectTextAnchoredPosition.x + noRangeEffectTextXOffset
-            : anchoredPosition.x + noRangeEffectTextXOffset;
-        effectTextRect.anchoredPosition = anchoredPosition;
-
-        Vector2 sizeDelta = effectTextRect.sizeDelta;
-        sizeDelta.x = noRangeEffectTextWidth;
-        effectTextRect.sizeDelta = sizeDelta;
-    }
-
-    private void RestoreOriginalEffectTextLayout()
-    {
-        if (!hasOriginalEffectTextLayout)
-            return;
-
-        if (effectText == null)
-            return;
-
-        effectTextRect = effectText.rectTransform;
-        if (effectTextRect == null)
-            return;
-
-        effectTextRect.anchoredPosition = originalEffectTextAnchoredPosition;
-        effectTextRect.sizeDelta = originalEffectTextSizeDelta;
     }
 
     private void AutoBindReferences()
     {
+        if (popupRect == null)
+            popupRect = transform as RectTransform;
+
         if (backgroundImage == null)
             backgroundImage = FindImage("BackGround");
 
@@ -198,23 +159,31 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
         if (nameText == null)
             nameText = FindText("Name");
 
-        if (effectText == null)
-            effectText = FindText("EffectText");
+        CacheBackgroundRects();
+    }
 
-        if (effectText == null)
-            effectText = FindText("Effect");
+    private void CacheBackgroundRects()
+    {
+        backgroundRects.Clear();
 
-        if (rangeIconImage == null)
-            rangeIconImage = FindImage("RangeIcon");
+        Image[] images = GetComponentsInChildren<Image>(true);
+        for (int i = 0; i < images.Length; i++)
+        {
+            Image image = images[i];
+            if (image == null)
+                continue;
 
-        if (rangeIconImage == null)
-            rangeIconImage = FindImage("RangeIconImage");
+            string objectName = image.gameObject.name;
+            bool isBackground = objectName.StartsWith("BackGround", System.StringComparison.OrdinalIgnoreCase)
+                || objectName.StartsWith("Background", System.StringComparison.OrdinalIgnoreCase);
 
-        if (rangeIconImage == null)
-            rangeIconImage = FindImage("SkillRangeIcon");
+            if (!isBackground && image != backgroundImage)
+                continue;
 
-        if (rangeIconImage == null)
-            rangeIconImage = FindImage("RangeImage");
+            RectTransform rect = image.rectTransform;
+            if (rect != null && !backgroundRects.Contains(rect))
+                backgroundRects.Add(rect);
+        }
     }
 
     private Image FindImage(string objectName)
