@@ -696,7 +696,7 @@ public class BattleRoomLoader : MonoBehaviour
             cameraController = Object.FindFirstObjectByType<BattleCameraController>(FindObjectsInactive.Include);
         }
 
-        cameraController?.ForceReturnPanelDownImmediate();
+        cameraController?.StartReturnPanelDown(0.8f);
     }
 
     public void ResetLoadedStateForNextBattle(bool clearSpawnedObjects = true)
