@@ -1077,7 +1077,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         SetSkillInfoLabelsVisible(true);
         SetSkillInfoValueObjectsVisible(true);
 
-        SetPlainTmpText(skillInfoTitleText, skill.Name);
+        SetPlainTmpText(skillInfoTitleText, GameDataLocalization.SkillName(skill));
         SetPlainTmpText(skillInfoRarityText, SkillRarityUtility.GetMemoryTypeDisplayName(skill));
         ApplySkillInfoRarityColor(skill.Rarity);
         SetRichTmpText(skillInfoEffectText, BuildSkillDetailsText(skill));
@@ -1467,7 +1467,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         // 도감과 동일하게 토큰 치환 전 원본 Details를 사용합니다.
         // 스킬 상세 문구는 먼저 {ValueRate}/{CountRate}를 숫자로 바꾸므로
         // 이후에는 어떤 숫자가 치환값인지 알 수 없어 색상 태그를 적용할 수 없습니다.
-        string details = skill.Details;
+        string details = GameDataLocalization.SkillDetails(skill);
 
         if (string.IsNullOrWhiteSpace(details))
             return "";

@@ -52,6 +52,45 @@ public static class StaticLocalizationMigration
         return true;
     }
 
+    /// <summary>Localization Manager용 전체 프로젝트 안전 적용 진입점입니다.</summary>
+    public static void ApplyKnownTextAcrossProject()
+    {
+        SceneSetup[] originalSetup = EditorSceneManager.GetSceneManagerSetup();
+        try
+        {
+            IReadOnlyDictionary<string, string> sourceToKey = ReadSourceToKeyMap();
+            int changed = 0;
+            foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Project" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                GameObject root = PrefabUtility.LoadPrefabContents(path);
+                try
+                {
+                    if (ApplyToHierarchy(root, sourceToKey) > 0)
+                    {
+                        PrefabUtility.SaveAsPrefabAsset(root, path);
+                        changed++;
+                    }
+                }
+                finally { PrefabUtility.UnloadPrefabContents(root); }
+            }
+
+            foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+                if (scene.GetRootGameObjects().Sum(root => ApplyToHierarchy(root, sourceToKey)) > 0)
+                {
+                    EditorSceneManager.SaveScene(scene);
+                    changed++;
+                }
+            }
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[StaticLocalizationMigration] 전체 프로젝트 안전 적용 Asset {changed}개.");
+        }
+        finally { EditorSceneManager.RestoreSceneManagerSetup(originalSetup); }
+    }
+
     private static void ApplyAndLog()
     {
         SceneSetup[] originalSetup = EditorSceneManager.GetSceneManagerSetup();
@@ -79,12 +118,32 @@ public static class StaticLocalizationMigration
 
     public static bool ConfigureText(TMP_Text text, string key)
     {
+        return ConfigureText(text, key, false);
+    }
+
+    public static bool RepairTextBinding(TMP_Text text, string key)
+    {
+        return ConfigureText(text, key, true);
+    }
+
+    private static bool ConfigureText(TMP_Text text, string key, bool overwriteExistingKey)
+    {
         if (text == null)
             throw new ArgumentNullException(nameof(text));
         if (string.IsNullOrWhiteSpace(key))
             throw new ArgumentException("Localization key is required.", nameof(key));
 
+        // LocalizeStringEvent의 갱신 콜백보다 먼저 원문을 보존합니다.
+        string koreanSource = text.text;
+        LocalizedTMPText existingRuntimeLocalizer = text.GetComponent<LocalizedTMPText>();
+        if (existingRuntimeLocalizer != null &&
+            !overwriteExistingKey &&
+            !string.IsNullOrWhiteSpace(existingRuntimeLocalizer.LocalizationKey))
+            return false;
+
         LocalizeStringEvent localizer = text.GetComponent<LocalizeStringEvent>();
+        bool bindingAlreadyValid = false;
+        bool runtimeLocalizerCreated = false;
         if (localizer != null)
         {
             bool sameReference =
@@ -94,6 +153,12 @@ public static class StaticLocalizationMigration
                 .Any(index => localizer.OnUpdateString.GetPersistentTarget(index) == text);
 
             if (sameReference && hasTextListener)
+                bindingAlreadyValid = true;
+
+            // 이미 설정된 Key는 원문 일치만으로 다른 의미의 Key로 바꾸지 않습니다.
+            if (!bindingAlreadyValid && !overwriteExistingKey &&
+                localizer.StringReference.TableReference.TableCollectionName == LocalizationExcelImporter.TableCollectionName &&
+                !string.IsNullOrWhiteSpace(localizer.StringReference.TableEntryReference.Key))
                 return false;
         }
         else
@@ -101,33 +166,59 @@ public static class StaticLocalizationMigration
             localizer = Undo.AddComponent<LocalizeStringEvent>(text.gameObject);
         }
 
-        Undo.RecordObject(localizer, "Configure localized text");
-        localizer.StringReference = new LocalizedString(
-            LocalizationExcelImporter.TableCollectionName,
-            key);
-
-        bool listenerExists = Enumerable.Range(0, localizer.OnUpdateString.GetPersistentEventCount())
-            .Any(index => localizer.OnUpdateString.GetPersistentTarget(index) == text);
-        if (!listenerExists)
+        if (!bindingAlreadyValid)
         {
-            PropertyInfo textProperty = text.GetType().GetProperty(nameof(TMP_Text.text));
-            MethodInfo setter = textProperty?.GetSetMethod();
-            if (setter == null)
-                throw new InvalidOperationException($"'{text.GetType().Name}' does not expose a text setter.");
+            Undo.RecordObject(localizer, "Configure localized text");
+            localizer.StringReference = new LocalizedString(
+                LocalizationExcelImporter.TableCollectionName,
+                key);
 
-            var callback = (UnityAction<string>)Delegate.CreateDelegate(
-                typeof(UnityAction<string>),
-                text,
-                setter);
-            UnityEventTools.AddPersistentListener(localizer.OnUpdateString, callback);
-            int listenerIndex = localizer.OnUpdateString.GetPersistentEventCount() - 1;
-            localizer.OnUpdateString.SetPersistentListenerState(
-                listenerIndex,
-                UnityEventCallState.EditorAndRuntime);
+            bool listenerExists = Enumerable.Range(0, localizer.OnUpdateString.GetPersistentEventCount())
+                .Any(index => localizer.OnUpdateString.GetPersistentTarget(index) == text);
+            if (!listenerExists)
+            {
+                PropertyInfo textProperty = text.GetType().GetProperty(nameof(TMP_Text.text));
+                MethodInfo setter = textProperty?.GetSetMethod();
+                if (setter == null)
+                    throw new InvalidOperationException($"'{text.GetType().Name}' does not expose a text setter.");
+
+                var callback = (UnityAction<string>)Delegate.CreateDelegate(
+                    typeof(UnityAction<string>),
+                    text,
+                    setter);
+                UnityEventTools.AddPersistentListener(localizer.OnUpdateString, callback);
+                int listenerIndex = localizer.OnUpdateString.GetPersistentEventCount() - 1;
+                localizer.OnUpdateString.SetPersistentListenerState(
+                    listenerIndex,
+                    UnityEventCallState.EditorAndRuntime);
+            }
         }
 
         EditorUtility.SetDirty(localizer);
-        return true;
+        Type runtimeLocalizerType = Type.GetType("LocalizedTMPText, Assembly-CSharp");
+        if (runtimeLocalizerType != null)
+        {
+            Component runtimeLocalizer = text.GetComponent(runtimeLocalizerType);
+            if (runtimeLocalizer == null)
+            {
+                runtimeLocalizer = Undo.AddComponent(text.gameObject, runtimeLocalizerType);
+                runtimeLocalizerCreated = true;
+            }
+
+            Undo.RecordObject(runtimeLocalizer, "Configure runtime localized TMP text");
+            var serializedRuntimeLocalizer = new SerializedObject(runtimeLocalizer);
+            serializedRuntimeLocalizer.FindProperty("localizationKey").stringValue = key;
+            serializedRuntimeLocalizer.FindProperty("koreanSource").stringValue = koreanSource;
+            serializedRuntimeLocalizer.FindProperty("automaticallyRegistered").boolValue = true;
+            serializedRuntimeLocalizer.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(runtimeLocalizer);
+
+            // 런타임 표시와 빈 번역 처리의 소유자는 LocalizedTMPText입니다.
+            // 이전 LocalizeStringEvent가 남아 있으면 다른 키가 같은 TMP를 다시 덮어씁니다.
+            // 표시 권한을 LocalizedTMPText 하나로 단일화합니다.
+            Undo.DestroyObjectImmediate(localizer);
+        }
+        return !bindingAlreadyValid || runtimeLocalizerCreated;
     }
 
     private static IReadOnlyDictionary<string, string> ReadSourceToKeyMap()
@@ -149,14 +240,9 @@ public static class StaticLocalizationMigration
             if (string.IsNullOrWhiteSpace(key) || string.IsNullOrEmpty(source))
                 continue;
 
-            if (result.TryGetValue(source, out string existingKey) && existingKey != key)
-            {
-                throw new InvalidDataException(
-                    $"Korean source '{source}' is assigned to both '{existingKey}' and '{key}'. " +
-                    "정적 텍스트 자동 연결을 위해 한국어 원문을 고유하게 유지하세요.");
-            }
-
-            result[source] = key;
+            // 동일 원문은 공통 Key 재사용 후보입니다. 첫 Key를 유지해 기존 연결을 흔들지 않습니다.
+            if (!result.ContainsKey(source))
+                result[source] = key;
         }
 
         return result;
@@ -216,6 +302,9 @@ public static class StaticLocalizationMigration
         int changedCount = 0;
         foreach (TMP_Text text in root.GetComponentsInChildren<TMP_Text>(true))
         {
+            if (!LocalizedTMPText.ShouldManageText(text))
+                continue;
+
             if (sourceToKey.TryGetValue(text.text, out string key) && ConfigureText(text, key))
                 changedCount++;
         }

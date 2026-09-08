@@ -24,16 +24,6 @@ namespace Relic.Gameplay.Data
         {
             if (data == null)
                 return string.Empty;
-
-            // ÇÑ±¹¾î¿¡¼­´Â GameDataÀÇ ¸ó½ºÅÍ ½ºÅ³ ÀÌ¸§À» ¿øº»À¸·Î »ç¿ëÇÕ´Ï´Ù.
-            // ÀÌ¸§À» ¼öÁ¤ÇßÀ» ¶§ LocalizationÀÇ ¿À·¡µÈ °ªÀÌ ¿ì¼±µÇ¾î ÀÌÀü ÀÌ¸§ÀÌ Ç¥½ÃµÇ´Â °ÍÀ» ¹æÁöÇÕ´Ï´Ù.
-            string localeCode = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code;
-            if (!string.IsNullOrWhiteSpace(localeCode) &&
-                localeCode.StartsWith("ko", System.StringComparison.OrdinalIgnoreCase))
-            {
-                return string.IsNullOrWhiteSpace(data.Name) ? data.SkillId : data.Name;
-            }
-
             return GameLocalization.GetData("MonsterSkill", data.SkillId, "name", data.Name);
         }
 
@@ -47,7 +37,7 @@ namespace Relic.Gameplay.Data
             data == null ? string.Empty : GameLocalization.GetData("MonsterPatternInfo", data.PatternId, "skill_description", data.SkillInfo);
 
         public static string RuneName(RuneData data) =>
-            data == null ? string.Empty : data.Name;
+            data == null ? string.Empty : GameLocalization.GetData("Rune", data.RuneId, "name", data.Name);
 
         public static string RuneDescription(RuneData data) =>
             data == null ? string.Empty : GameLocalization.GetData("Rune", data.RuneId, "effect_description", data.EffectDesc);
@@ -59,15 +49,15 @@ namespace Relic.Gameplay.Data
             data == null ? string.Empty : GameLocalization.GetData("Relic", data.FragmentId, "effect_description", data.EffectDesc);
 
         /// <summary>
-        /// À¯¹° È¿°ú ¼³¸íÀº Localization ¼³¸í¹®ÀÌ ¾Æ´Ï¶ó GameData Relic.EffectDesc¸¦ ¿øº»À¸·Î »ç¿ëÇÕ´Ï´Ù.
-        /// ValueRate/CountRate ÀÚ¸®Ç¥½ÃÀÚ´Â ½ÇÁ¦ µ¥ÀÌÅÍ °ªÀ¸·Î Ä¡È¯ÇÕ´Ï´Ù.
+        /// ìœ ë¬¼ íš¨ê³¼ ì„¤ëª…ì€ Localization ì„¤ëª…ë¬¸ì´ ì•„ë‹ˆë¼ GameData Relic.EffectDescë¥¼ ì›ë³¸ìœ¼ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.
+        /// ValueRate/CountRate ìë¦¬í‘œì‹œìëŠ” ì‹¤ì œ ë°ì´í„° ê°’ìœ¼ë¡œ ì¹˜í™˜í•©ë‹ˆë‹¤.
         /// </summary>
         public static string RelicEffectDescription(RelicData data)
         {
             if (data == null || string.IsNullOrWhiteSpace(data.EffectDesc))
                 return string.Empty;
 
-            string result = data.EffectDesc;
+            string result = GameLocalization.GetData("Relic", data.FragmentId, "effect_description", data.EffectDesc);
             result = ReplaceRelicIndexedValues(result, "ValueRate", data.ValueRate);
             result = ReplaceRelicIndexedValues(result, "CountRate", data.CountRate);
             result = ReplaceRelicValue(result, "{ValueRate}", data.ValueRate);
@@ -126,38 +116,31 @@ namespace Relic.Gameplay.Data
             data == null ? string.Empty : GameLocalization.GetData("Relic", data.FragmentId, "rarity", data.Rarity);
 
         public static string ItemName(ItemData data) =>
-            data == null ? string.Empty : data.Name;
+            data == null ? string.Empty : GameLocalization.GetData("Item", data.ItemId, "name", data.Name);
 
         public static string ItemDescription(ItemData data) =>
-            data == null ? string.Empty : data.Desc;
+            data == null ? string.Empty : GameLocalization.GetData("Item", data.ItemId, "description", data.Desc);
 
-        private static bool UseRawEffectData()
-        {
-            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-            if (scene.IsValid() && string.Equals(scene.name, "DebugBattle", System.StringComparison.OrdinalIgnoreCase))
-                return true;
+        public static string CompoundName(CompoundData data) =>
+            data == null ? string.Empty : GameLocalization.GetData("Compound", data.CompoundId, "name", data.Name);
 
-            var selectedLocale = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale;
-            string languageCode = selectedLocale != null
-                ? selectedLocale.Identifier.Code
-                : string.Empty;
+        public static string CompoundDescription(CompoundData data) =>
+            data == null ? string.Empty : GameLocalization.GetData("Compound", data.CompoundId, "effect_description", data.EffectDesc);
 
-            return !string.IsNullOrWhiteSpace(languageCode) &&
-                   languageCode.StartsWith("ko", System.StringComparison.OrdinalIgnoreCase);
-        }
+        public static string GridEffectName(GridEffectData data) =>
+            data == null ? string.Empty : GameLocalization.GetData("GridEffect", data.GridEffectID, "name", data.Name);
+
+        public static string GridEffectTooltip(GridEffectData data) =>
+            data == null ? string.Empty : GameLocalization.GetData("GridEffect", data.GridEffectID, "tooltip", data.ToolTip);
 
         public static string EffectName(EffectMasterData data) =>
             data == null
                 ? string.Empty
-                : UseRawEffectData()
-                    ? data.Name
-                    : GameLocalization.GetData("Effect", data.EffectId, "name", data.Name);
+                : GameLocalization.GetData("Effect", data.EffectId, "name", data.Name);
 
         public static string EffectTooltip(EffectMasterData data) =>
             data == null
                 ? string.Empty
-                : UseRawEffectData()
-                    ? data.ToolTip
-                    : GameLocalization.GetData("Effect", data.EffectId, "tooltip", data.ToolTip);
+                : GameLocalization.GetData("Effect", data.EffectId, "tooltip", data.ToolTip);
     }
 }

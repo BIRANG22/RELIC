@@ -144,7 +144,6 @@ MonoBehaviour:
   gearRotateTickDuration: 0.12
   gearRotateTickInterval: 1
   closeDelayAfterUpgradeComplete: 0.5
-  upgradedSkillIconColor: {r: 0.49411765, g: 0.5764706, b: 0.9254902, a: 1}
   fallbackIconSize: {x: 50, y: 50}
   iconSpacing: {x: 15, y: 15}
   iconPadding:
@@ -479,6 +478,7 @@ GameObject:
   - component: {fileID: 8829744850149344613}
   - component: {fileID: 4085886024651699586}
   - component: {fileID: 719838856091350226}
+  - component: {fileID: 3486707893971929709}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -645,6 +645,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &3486707893971929709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2093394021849751893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 4085886024651699586}
+  localizationKey: battle.skill_upgrade_available
+  koreanSource: "\uAC15\uD654\uAC00\uB2A5\uC2A4\uD0AC"
+  automaticallyRegistered: 1
 --- !u!1 &2101620364352253588
 GameObject:
   m_ObjectHideFlags: 0
@@ -1006,6 +1022,7 @@ GameObject:
   - component: {fileID: 61012260235623058}
   - component: {fileID: 472656251414365704}
   - component: {fileID: 1080067520149863761}
+  - component: {fileID: 4987300244216376153}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -1172,6 +1189,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &4987300244216376153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2651172300671169505}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 472656251414365704}
+  localizationKey: battle.upgrade
+  koreanSource: "\uAC15\uD654\uD558\uAE30"
+  automaticallyRegistered: 1
 --- !u!1 &3584480198448132999
 GameObject:
   m_ObjectHideFlags: 0
@@ -1368,16 +1401,16 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 3, y: 3, z: 0}
   hoverButtonScale: {x: 0.8, y: 0.8, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 4700317725916327744}
-  protectedButtonImage: {fileID: 4331601362628420342}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: -5, y: -5, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 0, g: 0, b: 0, a: 1}
-  hoverColor: {r: 0, g: 0, b: 0, a: 1}
-  clickedColor: {r: 0, g: 0, b: 0, a: 1}
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -1507,16 +1540,16 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 2872886079152696315}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 0.3019608, g: 0.40784317, b: 0.8745099, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0

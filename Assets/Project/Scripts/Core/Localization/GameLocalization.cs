@@ -50,7 +50,9 @@ public static class GameLocalization
                 arguments ?? Array.Empty<object>());
 
             if (string.IsNullOrEmpty(localized) || IsMissingTranslationResult(localized))
-                return fallback ?? string.Empty;
+                return ResolveMissingTranslation(
+                    LocalizationSettings.SelectedLocale?.Identifier.Code,
+                    fallback);
 
             return localized;
         }
@@ -58,6 +60,30 @@ public static class GameLocalization
         {
             return fallback ?? string.Empty;
         }
+    }
+
+    public static string ResolveMissingTranslation(string localeCode, string koreanFallback = null)
+    {
+        if (!string.IsNullOrWhiteSpace(localeCode) &&
+            localeCode.StartsWith("ko", StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(koreanFallback))
+        {
+            return koreanFallback;
+        }
+
+        if (string.IsNullOrWhiteSpace(localeCode))
+            return "미번역";
+
+        if (localeCode.StartsWith("en", StringComparison.OrdinalIgnoreCase))
+            return "Untranslated";
+        if (localeCode.StartsWith("ja", StringComparison.OrdinalIgnoreCase))
+            return "未翻訳";
+        if (localeCode.StartsWith("zh", StringComparison.OrdinalIgnoreCase))
+            return "未翻译";
+        if (localeCode.StartsWith("es", StringComparison.OrdinalIgnoreCase))
+            return "Sin traducir";
+
+        return "미번역";
     }
 
     private static bool IsMissingTranslationResult(string localized)

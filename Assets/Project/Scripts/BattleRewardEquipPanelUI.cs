@@ -680,7 +680,9 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             if (itemRarityText != null)
             {
                 string relicRarity = relic?.Rarity ?? string.Empty;
-                itemRarityText.text = GetRelicRarityDisplayName(relicRarity);
+                itemRarityText.text = relic != null
+                    ? GameDataLocalization.RelicRarity(relic)
+                    : string.Empty;
                 ApplyItemRarityColor(relicRarity);
             }
 

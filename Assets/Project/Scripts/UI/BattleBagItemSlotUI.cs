@@ -204,7 +204,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
             if (item != null && !string.IsNullOrWhiteSpace(item.Name))
                 nameText.text = GameDataLocalization.ItemName(item);
             else if (compound != null && !string.IsNullOrWhiteSpace(compound.Name))
-                nameText.text = compound.Name;
+                nameText.text = GameDataLocalization.CompoundName(compound);
             else
                 nameText.text = itemId;
         }
@@ -215,8 +215,8 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
     }
 
     /// <summary>
-    /// 슬롯이 다시 활성화되거나 패널을 다시 열었을 때 수량 표시를 확실하게 복구합니다.
-    /// 프리팹의 Value/ValueText 오브젝트가 꺼져 있더라도 실제 아이템 슬롯이면 다시 활성화합니다.
+    /// ?щ’???ㅼ떆 ?쒖꽦?붾릺嫄곕굹 ?⑤꼸???ㅼ떆 ?댁뿀?????섎웾 ?쒖떆瑜??뺤떎?섍쾶 蹂듦뎄?⑸땲??
+    /// ?꾨━?뱀쓽 Value/ValueText ?ㅻ툕?앺듃媛 爰쇱졇 ?덈뜑?쇰룄 ?ㅼ젣 ?꾩씠???щ’?대㈃ ?ㅼ떆 ?쒖꽦?뷀빀?덈떎.
     /// </summary>
     public void RefreshQuantityVisual()
     {
@@ -410,8 +410,8 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void OnSelect(BaseEventData eventData)
     {
-        // 버튼 선택/클릭으로는 툴팁을 띄우지 않습니다.
-        // 가방 툴팁은 PointerEnter 상태에서만 표시합니다.
+        // 踰꾪듉 ?좏깮/?대┃?쇰줈???댄똻???꾩슦吏 ?딆뒿?덈떎.
+        // 媛諛??댄똻? PointerEnter ?곹깭?먯꽌留??쒖떆?⑸땲??
     }
 
     public void OnPointerClick(PointerEventData eventData)

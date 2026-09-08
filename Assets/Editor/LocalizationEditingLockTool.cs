@@ -56,11 +56,14 @@ public static class LocalizationEditingLockTool
         int changedCount = 0;
         foreach (LocalizeStringEvent localizer in root.GetComponentsInChildren<LocalizeStringEvent>(true))
         {
-            if (localizer.enabled == enabled)
+            // LocalizedTMPText는 빈 번역을 짧은 안내 문구로 대체하는 표시 소유자입니다.
+            // LocalizeStringEvent를 다시 켜면 Unity의 긴 누락 오류가 텍스트를 덮어씁니다.
+            bool targetEnabled = enabled && localizer.GetComponent<LocalizedTMPText>() == null;
+            if (localizer.enabled == targetEnabled)
                 continue;
 
-            Undo.RecordObject(localizer, enabled ? "Enable localized text editing lock" : "Disable localized text editing lock");
-            localizer.enabled = enabled;
+            Undo.RecordObject(localizer, targetEnabled ? "Enable localized text editing lock" : "Disable localized text editing lock");
+            localizer.enabled = targetEnabled;
             EditorUtility.SetDirty(localizer);
             changedCount++;
         }
