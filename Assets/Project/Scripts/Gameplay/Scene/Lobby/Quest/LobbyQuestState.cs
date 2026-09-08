@@ -42,14 +42,16 @@ public readonly struct LobbyQuestState
                 return new LobbyQuestState(
                     progress,
                     true,
-                    config.SetupQuestText);
+                    GameLocalization.Get("lobby.quest.setup", config.SetupQuestText));
 
             case LobbyTutorialProgress.FirstExpeditionAssigned:
                 int targetCount = Math.Max(1, config.FirstExpeditionTargetCount);
                 int currentCount = HasRequiredItem(lobby, config.FirstExpeditionRequiredItemId)
                     ? targetCount
                     : 0;
-                string text = (config.FirstExpeditionQuestText ?? string.Empty)
+                string text = GameLocalization.Get(
+                        "lobby.quest.first_expedition",
+                        config.FirstExpeditionQuestText)
                     .Replace("{Current}", currentCount.ToString())
                     .Replace("{Target}", targetCount.ToString());
                 return new LobbyQuestState(progress, true, text);

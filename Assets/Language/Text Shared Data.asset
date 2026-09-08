@@ -6183,6 +6183,5338 @@ MonoBehaviour:
     m_Key: lobby.trial.unlock.two_trials_clear
     m_Metadata:
       m_Items: []
+  - m_Id: 10169488418283520
+    m_Key: ui.check.text_tmp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449344
+    m_Key: ui.equip_panel.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449345
+    m_Key: ui.equip_panel.effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449346
+    m_Key: ui.erosionslot.catalog_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449347
+    m_Key: ui.erosionslot.effect_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449348
+    m_Key: ui.inventorypanel.passive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449349
+    m_Key: ui.option.label
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449350
+    m_Key: ui.option.introlabel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449351
+    m_Key: ui.option.text_tmp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449352
+    m_Key: ui.option.text_tmp_1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449353
+    m_Key: ui.record.text_tmp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449354
+    m_Key: ui.record.effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449355
+    m_Key: ui.record.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449356
+    m_Key: ui.record.uses
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449357
+    m_Key: ui.record.mixture
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449358
+    m_Key: ui.record.unlock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449359
+    m_Key: ui.record.method
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449360
+    m_Key: ui.record.consumption
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449361
+    m_Key: ui.record.point
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449362
+    m_Key: ui.timelinepopupprefab.nametext
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449363
+    m_Key: ui.unitstatuseffecttooltipitemui.nametext
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449364
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449365
+    m_Key: ui.assets.project.scripts.battlemonsterinfopanelui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449366
+    m_Key: ui.assets.project.scripts.battlerewardequippanelui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449367
+    m_Key: ui.assets.project.scripts.compoundrecipeslotui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449368
+    m_Key: ui.assets.project.scripts.compoundreferencenametooltip.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449369
+    m_Key: ui.assets.project.scripts.core.managers.uimanager.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449370
+    m_Key: ui.assets.project.scripts.directtemplatedropdown.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449371
+    m_Key: ui.assets.project.scripts.erosiondifficultycatalogui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449372
+    m_Key: ui.assets.project.scripts.erosionselectcarousel.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449373
+    m_Key: ui.assets.project.scripts.gameplay.data.ui.skilliconbutton.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449374
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.battleturnexecutor.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449375
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.info.equippedskillpanelui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449376
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.info.partycharacterslotlistui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449377
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449378
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.skill.skilllistpanel.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449379
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449380
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449381
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.tutorial.battlefirsttutorialcontroller.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449382
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battlescenecontroller.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449383
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventdicerollpresenter.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449384
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventequippedrelicselectionpanelui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449385
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449386
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventskillawakenselectionpanelui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449387
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.restroom.goodsiconitem.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449388
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.startroom.startroomchatwindow.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449389
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.characterinfopanel.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449390
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.charbtn.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449391
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.lobbyculturetankpanelpresenter.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449392
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.positionstageselectcontroller.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449393
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449394
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449395
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.researchresultpanelui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449396
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449397
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449398
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449399
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillupgrade.lobbyskillupgradepanelui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449400
+    m_Key: ui.assets.project.scripts.grideffecttooltipui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449401
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449402
+    m_Key: ui.assets.project.scripts.lobbyequippanelui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449403
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449404
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449405
+    m_Key: ui.assets.project.scripts.lobbyworldobjecthovername.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449406
+    m_Key: ui.assets.project.scripts.recordpanelui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449407
+    m_Key: ui.assets.project.scripts.ui.battle.canvas.statuseffecticon.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449408
+    m_Key: ui.assets.project.scripts.ui.battlebagpanelui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449409
+    m_Key: ui.assets.project.scripts.ui.battledamagetextpopupui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449410
+    m_Key: ui.assets.project.scripts.ui.battlegoldhudui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449411
+    m_Key: ui.assets.project.scripts.ui.battlemapintrotext.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449412
+    m_Key: ui.assets.project.scripts.ui.battlewarningui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449413
+    m_Key: ui.assets.project.scripts.ui.lobby.mapchapterselectbutton.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449414
+    m_Key: ui.assets.project.scripts.ui.lobby.playerlevelpanel.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449415
+    m_Key: ui.assets.project.scripts.ui.lobby.playerrewardslotui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449416
+    m_Key: ui.assets.project.scripts.ui.lobby.runeslotbutton.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449417
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449418
+    m_Key: ui.assets.project.scripts.ui.lobbybluedustiumhudui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449419
+    m_Key: ui.assets.project.scripts.ui.title.optionpanelui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10169488443449420
+    m_Key: ui.assets.project.scripts.ui.titlewarningui.text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380870807552
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.0493af96
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584768
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.9e615493
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584769
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.8d2afe43
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584770
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.dbabd916
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584771
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.52a965d7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584772
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.67dc25e1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584773
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.bb8c1ed1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584774
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.a55b0611
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584775
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.bb706fca
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584776
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.f9b9061d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584777
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.6a086b42
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584778
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.a9be3be7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584779
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.3718108c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584780
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.72b59814
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584781
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.2fc47e2f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584782
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.e90a0e32
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584783
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.7af260f1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584784
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.24f460fb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584785
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.6c83ab4b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584786
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.fc46193d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584787
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.6f998b86
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584788
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.79e4f5cc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584789
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.0c5eaf00
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584790
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.b18141fd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584791
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.c595d5b1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584792
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.035660b3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584793
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.3f7a6360
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584794
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.4f5805db
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584795
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.51d14d28
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584796
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.6d77ca31
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584797
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.65220f8e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584798
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.7979b2af
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584799
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.aa53324e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584800
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.15a0e9a4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584801
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.0cbfc004
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584802
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.dead498a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584803
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.964dfc6c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584804
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.a0e228d7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584805
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.dc9eb20f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584806
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.b2faf68b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584807
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.86aa37e6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380887584808
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.59bd5825
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779072
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.46741259
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779073
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.9382de53
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779074
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.1f308507
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779075
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.e9cb0876
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779076
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.b1cd91c6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779077
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.2da86415
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779078
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.f452209a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779079
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.dd0b0b3a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779080
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.acc398c5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779081
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.f70a3f2c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779082
+    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.6fe7abfd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779083
+    m_Key: ui.assets.project.scripts.battlemonsterinfopanelui.text.58355d65
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779084
+    m_Key: ui.assets.project.scripts.battlemonsterinfopanelui.text.661cf6fc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779085
+    m_Key: ui.assets.project.scripts.battlemonsterinfopanelui.text.be650f62
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779086
+    m_Key: ui.assets.project.scripts.battlemonsterinfopanelui.text.aef59ee6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779087
+    m_Key: ui.assets.project.scripts.battlerewardequippanelui.text.ead22107
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779088
+    m_Key: ui.assets.project.scripts.battlerewardequippanelui.text.c0b3fea7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779089
+    m_Key: ui.assets.project.scripts.battlerewardequippanelui.text.56b873ee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779090
+    m_Key: ui.assets.project.scripts.battlerewardequippanelui.text.0664e01d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779091
+    m_Key: ui.assets.project.scripts.compoundrecipeslotui.text.d3a78736
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779092
+    m_Key: ui.assets.project.scripts.compoundrecipeslotui.text.24241124
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779093
+    m_Key: ui.assets.project.scripts.compoundrecipeslotui.text.2f03658a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779094
+    m_Key: ui.assets.project.scripts.compoundrecipeslotui.text.2e0363f7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779095
+    m_Key: ui.assets.project.scripts.compoundrecipeslotui.text.2d036264
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779096
+    m_Key: ui.assets.project.scripts.core.managers.uimanager.text.acf962d7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779097
+    m_Key: ui.assets.project.scripts.core.managers.uimanager.text.7466ddcc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779098
+    m_Key: ui.assets.project.scripts.core.managers.uimanager.text.b3f30b35
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779099
+    m_Key: ui.assets.project.scripts.erosiondifficultycatalogui.text.bed51dce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779100
+    m_Key: ui.assets.project.scripts.erosiondifficultycatalogui.text.aedf2313
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779101
+    m_Key: ui.assets.project.scripts.erosiondifficultycatalogui.text.516b2fde
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779102
+    m_Key: ui.assets.project.scripts.erosiondifficultycatalogui.text.ced77124
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779103
+    m_Key: ui.assets.project.scripts.erosionselectcarousel.text.593627d3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779104
+    m_Key: ui.assets.project.scripts.erosionselectcarousel.text.43e73128
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779105
+    m_Key: ui.assets.project.scripts.erosionselectcarousel.text.d0c20e05
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779106
+    m_Key: ui.assets.project.scripts.erosionselectcarousel.text.29ab998f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779107
+    m_Key: ui.assets.project.scripts.erosionselectcarousel.text.2347c5d1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779108
+    m_Key: ui.assets.project.scripts.erosionselectcarousel.text.6b7fa7ca
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779109
+    m_Key: ui.assets.project.scripts.erosionselectcarousel.text.61d9e4ab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779110
+    m_Key: ui.assets.project.scripts.erosionselectcarousel.text.d3c43d69
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779111
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.battleturnexecutor.text.40652b71
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779112
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.battleturnexecutor.text.964dfc6c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779113
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.info.equippedskillpanelui.text.701ce229
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779114
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.info.equippedskillpanelui.text.f869fded
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779115
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.93f93207
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779116
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.fd62c4a5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779117
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.7a41828b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779118
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.f9201ae4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779119
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.a07d9fd7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779120
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.45039c17
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779121
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.4611a179
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779122
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.4eee8f81
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779123
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.d43192af
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779124
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.8c88e2a0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779125
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.53b83ffb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779126
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.d91dd135
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779127
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.skill.skilllistpanel.text.0cbfc004
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779128
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.skill.skilllistpanel.text.dead498a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779129
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.skill.skilllistpanel.text.c2094f13
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779130
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.skill.skilllistpanel.text.d8776089
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779131
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.skill.skilllistpanel.text.964dfc6c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779132
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.skill.skilllistpanel.text.c9c8b96c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779133
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.skill.skilllistpanel.text.a0e228d7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779134
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.skill.skilllistpanel.text.2e01a436
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779135
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.skill.skilllistpanel.text.dc9eb20f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779136
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.skill.skilllistpanel.text.b2faf68b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779137
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.70645922
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779138
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.3de35675
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779139
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.ed1e67ae
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779140
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.5a89b020
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779141
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.bcb72560
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779142
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.5f3551e6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779143
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.7f0b8ed2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380891779144
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.401f4f9c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973376
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.4467f802
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973377
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.a2fc1bcd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973378
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.cd0d243b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973379
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.50127b96
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973380
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.dd0c15ef
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973381
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.bd1ebfdf
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973382
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.00895a1f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973383
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.81b102a5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973384
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.039d7903
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973385
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.ed3275d8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973386
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.5a8e9841
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973387
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.52a2e0f8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973388
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.56687c73
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973389
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.7d11964f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973390
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.9c41fc33
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973391
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.d8a2690e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973392
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.9dbff575
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973393
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.f13b6453
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973394
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.0b55c83d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973395
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.e672f087
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973396
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.f0a2c4a3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973397
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.0462591f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973398
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.9ddc6e95
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973399
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.32af5a03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973400
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.a89ac7d5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973401
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.4100191f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973402
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.cd5a3a0a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973403
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.38076f11
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973404
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.bb9d2996
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973405
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.23460bcb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973406
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.2a8b4996
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973407
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.a8a1f01a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973408
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.36941ea6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973409
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.e082919d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973410
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.5f21c375
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973411
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.8f63f9e1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973412
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.e68ffe28
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973413
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.d886d4a9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973414
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.6e206f07
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973415
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.ad38dbe1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973416
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.47834365
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973417
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.e7f4dd17
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973418
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.d44ad696
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973419
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.3b53accb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973420
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.2053e294
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973421
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.36c514b4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973422
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.eeb5e28b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973423
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.8c4316cb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973424
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.1bd21e0e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973425
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.4b70bf54
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973426
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.a176699f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973427
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.7b3f2084
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973428
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.bfa42788
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973429
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.964dfc6c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973430
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.14d11ba5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973431
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.d0f2dc26
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973432
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.playerskillreservationcontroller.text.1470e860
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973433
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.tutorial.battlefirsttutorialcontroller.text.c604a421
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973434
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.tutorial.battlefirsttutorialcontroller.text.f5e62ed0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973435
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battlescenecontroller.text.dd53cf20
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973436
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battlescenecontroller.text.abc4f271
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973437
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battlescenecontroller.text.5db7815b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973438
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battlescenecontroller.text.6d2940e2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973439
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battlescenecontroller.text.8b93ab11
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973440
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battlescenecontroller.text.e613ec85
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973441
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battlescenecontroller.text.fb4d0331
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973442
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battlescenecontroller.text.382a5a87
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973443
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battlescenecontroller.text.bb7ae301
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973444
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battlescenecontroller.text.8cfccd56
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973445
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventequippedrelicselectionpanelui.text.ead22107
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973446
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventequippedrelicselectionpanelui.text.c0b3fea7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973447
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventequippedrelicselectionpanelui.text.56b873ee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973448
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventequippedrelicselectionpanelui.text.0664e01d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973449
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventequippedrelicselectionpanelui.text.f5869665
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973450
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventequippedrelicselectionpanelui.text.97ed8496
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973451
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.08cee6df
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973452
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.dfe5cd0d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973453
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.89d85aa5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973454
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.c6e7d52a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973455
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.152d7c55
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973456
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.51d5024a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973457
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.e210779a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973458
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.33337560
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973459
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.299a7534
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973460
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.3e17a168
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973461
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.bf2c5f42
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973462
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.78f614cb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973463
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.34768668
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973464
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.aeef0129
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973465
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.041a7cb6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973466
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.b2143374
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973467
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.b4473fa8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973468
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.78836bd9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973469
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.2a31f80a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973470
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.b494090c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973471
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.e86b00eb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973472
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.1e37ffc9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973473
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.f8d64257
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973474
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.0a1f28a7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973475
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.dc1ec171
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973476
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.dc3590e0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973477
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.5f417e08
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973478
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.d3c3b631
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973479
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.c2a6703b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973480
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.484ab042
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973481
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.38d9d6cb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973482
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.052a41c1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973483
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.60bb48f9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973484
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.83484339
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973485
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.791a4d5d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973486
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.f504384d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973487
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.96f60383
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973488
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.3284090d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973489
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.5353c929
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973490
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.f7817d9d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973491
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.3553e4f8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973492
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.be53a91f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973493
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.de4a62cb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973494
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.25311298
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973495
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.6b569756
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973496
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.97f19d8d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973497
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.5dcc7cd4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973498
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.d443df0e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973499
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.f8d775ca
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973500
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.00c9fbb7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973501
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.1c66c422
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973502
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.a0dc0d1f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973503
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.acfcf3e6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973504
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.1b9273c2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973505
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.f5869665
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973506
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.97ed8496
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973507
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.173d2409
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973508
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.e8e739f0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973509
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.6e0626e0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973510
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.5d908ae2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973511
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.417a0a72
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973512
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.8fe4bfbb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973513
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.4934ecf5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973514
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.35d61513
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973515
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.ae896b0f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973516
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.1740bcfc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973517
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.4adf9826
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973518
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.b7cce655
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973519
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.a755f57a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973520
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.4605db0c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973521
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.74be75ca
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973522
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.fd8a25ea
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973523
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.2ae040b8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973524
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.b9526cc4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973525
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.db564fd4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973526
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.8c65560b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973527
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.54a2fef1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973528
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.58e2d632
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973529
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.36031b66
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973530
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.5a098228
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973531
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.d4b36394
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973532
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.68f53696
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973533
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.2b8ee39d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973534
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.f832f62b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973535
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.49ee85bb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973536
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.cdc9197f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973537
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.3bcfb150
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973538
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.5e67ba14
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973539
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.f373effc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973540
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.9123491c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973541
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.896dbb2c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973542
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.677d82b6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973543
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.bc13030c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973544
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.635277e2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973545
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.71c15557
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973546
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.5b3a404b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973547
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.3d1018df
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973548
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.d6d95e18
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973549
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.9afb60d9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973550
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.3855c422
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973551
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.1b7820c9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973552
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.cfadc92e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973553
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.9161fb25
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973554
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.c52c89b9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973555
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.restroom.goodsiconitem.text.f6b806cf
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973556
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.restroom.goodsiconitem.text.8ab1ce19
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973557
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.restroom.goodsiconitem.text.63c810b9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973558
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.restroom.goodsiconitem.text.677d82b6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973559
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.restroom.goodsiconitem.text.db8a527b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973560
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.startroom.startroomchatwindow.text.4f04a8e2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973561
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.startroom.startroomchatwindow.text.5f11c7a8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973562
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.characterinfopanel.text.0b55c83d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973563
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.characterinfopanel.text.84716909
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973564
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.characterinfopanel.text.ce3011c9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973565
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.characterinfopanel.text.e672f087
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973566
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.characterinfopanel.text.d2f9bde4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973567
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.characterinfopanel.text.82534e98
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973568
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.characterinfopanel.text.4442c084
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973569
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.characterinfopanel.text.d9ac23c0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973570
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.characterinfopanel.text.f654af13
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973571
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.characterinfopanel.text.160d6dcc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380895973572
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.charbtn.text.d3e55149
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167680
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.charbtn.text.e4abf666
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167681
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.lobbyculturetankpanelpresenter.text.99a5ec94
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167682
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.lobbyculturetankpanelpresenter.text.7f1c82b6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167683
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.lobbyculturetankpanelpresenter.text.8b074365
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167684
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.lobbyculturetankpanelpresenter.text.1080fd9f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167685
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.lobbyculturetankpanelpresenter.text.7564725a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167686
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.lobbyculturetankpanelpresenter.text.8302fa74
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167687
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.lobbyculturetankpanelpresenter.text.6eb5d78d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167688
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.lobbyculturetankpanelpresenter.text.1c810b2b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167689
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.lobbyculturetankpanelpresenter.text.dd859e0d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167690
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text.c09046b5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167691
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text.a15c0caf
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167692
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text.854ff447
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167693
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text.ee9ce8ab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167694
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text.f071c111
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167695
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text.55e0c3a4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167696
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text.a2c7b8e5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167697
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text.6b0ba1b8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167698
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text.85c2de39
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167699
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text.4f8a5299
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167700
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text.94ef2dee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167701
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text.2037d54b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167702
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicofferbuttonui.text.77556952
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167703
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.ab7e370c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167704
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.def70364
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167705
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.8302fa74
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167706
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.254ef1a8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167707
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.81e4e0d6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167708
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.c2e4ecfb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167709
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.58161c1b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167710
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.a926cd93
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167711
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.183d00aa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167712
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.213d5dd7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167713
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.decac10a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167714
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.2306b99a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167715
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.412b2263
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167716
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.366aae74
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167717
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.de259db1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167718
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.ead22107
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167719
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.c0b3fea7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167720
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.56b873ee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167721
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.0664e01d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167722
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.1c945416
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167723
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.relicshop.lobbyrelicshoppresenter.text.fed602aa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167724
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.researchresultpanelui.text.78c0ac54
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167725
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.researchresultpanelui.text.eb9f339d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167726
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.researchresultpanelui.text.9986fb22
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167727
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.researchresultpanelui.text.80e04f57
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167728
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.1dbb9913
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167729
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.c5552fe3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167730
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.cd67992c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167731
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.76f89b2a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167732
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.da109fe3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167733
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.4f44a604
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167734
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.e5bf215d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167735
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.cabc4f92
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167736
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.f04344bb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167737
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.a5340bba
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167738
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.188f0c87
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167739
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.51f62416
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167740
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.baaaf30c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167741
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.a33ef0f6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167742
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.92285b09
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167743
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.b2cc9a43
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167744
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.6f41ef9a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167745
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.e02728ba
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167746
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.13bf5faa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167747
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.4abde839
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167748
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.c4b42a53
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167749
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.0459d0bb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167750
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.ca4aadf0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167751
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.8c63a957
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167752
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.53e17e51
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167753
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.c47e78cb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167754
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.5fbeb7f7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167755
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.runesettingpanel.text.c75af506
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167756
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.754af4af
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167757
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.e5a92e40
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167758
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.3151d3d1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167759
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.f47ee9e3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380900167760
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.1ff5683c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361984
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.2421d48d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361985
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.c18651f3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361986
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.6b8b93eb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361987
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.d1cc624c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361988
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.e5bf215d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361989
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.e8dd0ce1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361990
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.983817d4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361991
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.84450f29
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361992
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.f04344bb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361993
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.7e5a6bf7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361994
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.8ac471e6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361995
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.2a602a80
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361996
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.setting.text.285ac9d2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361997
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.5d6c7058
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361998
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.f649faf7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904361999
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.4f44a604
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362000
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.e5bf215d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362001
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.cabc4f92
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362002
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.59511a46
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362003
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.f04344bb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362004
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.7859f54e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362005
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.c6c920b2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362006
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.de896e5c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362007
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.0b55c83d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362008
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.e672f087
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362009
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.342b2058
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362010
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.810709f0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362011
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.d43192af
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362012
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.fac301bb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362013
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.ba0f1196
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362014
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.baa63ee0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362015
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillsettingpanel.text.06060242
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362016
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillupgrade.lobbyskillupgradepanelui.text.934ccc5f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362017
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillupgrade.lobbyskillupgradepanelui.text.1a41afff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362018
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillupgrade.lobbyskillupgradepanelui.text.a7c12937
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362019
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillupgrade.lobbyskillupgradepanelui.text.e433b88a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362020
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillupgrade.lobbyskillupgradepanelui.text.7d00385e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362021
+    m_Key: ui.assets.project.scripts.gameplay.scene.lobby.skillupgrade.lobbyskillupgradepanelui.text.e73bbd35
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362022
+    m_Key: ui.assets.project.scripts.grideffecttooltipui.text.210ef2de
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362023
+    m_Key: ui.assets.project.scripts.grideffecttooltipui.text.c6ff2e31
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362024
+    m_Key: ui.assets.project.scripts.grideffecttooltipui.text.03820c18
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362025
+    m_Key: ui.assets.project.scripts.grideffecttooltipui.text.6c5f2a24
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362026
+    m_Key: ui.assets.project.scripts.grideffecttooltipui.text.ba4bfeb2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362027
+    m_Key: ui.assets.project.scripts.grideffecttooltipui.text.56f9cfca
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362028
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.1f1468f3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362029
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.36d77166
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362030
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.c4f82178
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362031
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.1649fa00
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362032
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.7cce45bd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362033
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.23507373
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362034
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.a55cc070
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362035
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.d2e623ad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362036
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.729ba69d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362037
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.7fdd0fa2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362038
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.f0d6a222
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362039
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.1c3ff1e2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362040
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.85ebea00
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362041
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.2695ce29
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362042
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.abef10fe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362043
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.d49cabce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362044
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.dafa01b0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362045
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.f494341d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362046
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.b7cfcc73
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362047
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.a6e627a0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362048
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.0aa164db
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362049
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.566747f3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362050
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.97663506
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362051
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.a2868fd4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362052
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.369d7a7b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362053
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.b0c50d1c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362054
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.edbe9e4c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362055
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.b3f63f02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362056
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.e536231f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362057
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.44987aa9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380904362058
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.2736e507
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556288
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.9b76def7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556289
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.2352b93a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556290
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.f1ca9f0b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556291
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.827ba265
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556292
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.de730dc2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556293
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.692650d4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556294
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.4bbf6648
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556295
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.9866f1a4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556296
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.7462434e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556297
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.9a59eb23
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556298
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.19c0cb53
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556299
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.a46e40cf
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556300
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.c98db4e5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556301
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.d213067f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556302
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.07847e87
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556303
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.10bbe7b5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556304
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.0207983a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556305
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.8f328fdd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556306
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.730e154f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556307
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.a6d863de
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556308
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.ec0a8bac
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556309
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.26897585
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556310
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.66f83688
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556311
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.ab1451c4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556312
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.9cf32ce8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556313
+    m_Key: ui.assets.project.scripts.introsequencecontroller.text.1a2bd10c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556314
+    m_Key: ui.assets.project.scripts.lobbyequippanelui.text.465b6441
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556315
+    m_Key: ui.assets.project.scripts.lobbyequippanelui.text.1b1b971f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556316
+    m_Key: ui.assets.project.scripts.lobbyequippanelui.text.225e9155
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556317
+    m_Key: ui.assets.project.scripts.lobbyequippanelui.text.432ff7e2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556318
+    m_Key: ui.assets.project.scripts.lobbyequippanelui.text.887637d6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556319
+    m_Key: ui.assets.project.scripts.lobbyequippanelui.text.f557799f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556320
+    m_Key: ui.assets.project.scripts.lobbyequippanelui.text.ab4d07f7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556321
+    m_Key: ui.assets.project.scripts.lobbyequippanelui.text.ac24115b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556322
+    m_Key: ui.assets.project.scripts.lobbyequippanelui.text.ead22107
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556323
+    m_Key: ui.assets.project.scripts.lobbyequippanelui.text.c0b3fea7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556324
+    m_Key: ui.assets.project.scripts.lobbyequippanelui.text.56b873ee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556325
+    m_Key: ui.assets.project.scripts.lobbyequippanelui.text.0664e01d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556326
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.7f3431e0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556327
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.34846548
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556328
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.ea3227e3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556329
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.bd4a76cf
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556330
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.56e713cd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556331
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.dc02ac53
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556332
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.7b1d59d5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556333
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.5fb614f2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556334
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.83eb46da
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556335
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.d8b9bf9f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556336
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.e2ecd345
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556337
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.db1d1661
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556338
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.4037be63
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556339
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.73b1994e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556340
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.15788b78
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556341
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.5e6cc3ba
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556342
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.d4ce9c24
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556343
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.296016d0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556344
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.7495a24a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556345
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.5317ebb7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556346
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.d1b85778
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556347
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.d4092632
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556348
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.1bd3c3aa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556349
+    m_Key: ui.assets.project.scripts.lobbystagebuttoncarousel.text.4f4a21c7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556350
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.dfd8b78b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556351
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.a6d863de
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556352
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.ec0a8bac
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556353
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.26897585
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556354
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.844dca94
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556355
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.3b59f0dd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556356
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.3923c68a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556357
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.3858dce2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556358
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.6b361822
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556359
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.a3f97cd9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556360
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.f67bbe32
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556361
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.03226fe5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556362
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.d0b5934c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556363
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.8177f7a7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556364
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.1f76c300
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556365
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.16604a62
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556366
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.9acf655e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556367
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.5d1ae56d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556368
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.3837ce7b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556369
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.220119d4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556370
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.b1a2929e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556371
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.08783d4f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556372
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.a238ae2b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556373
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.3d4e67c6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556374
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.b2cd85a4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556375
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.f38e6a23
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556376
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.ebbeb4af
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556377
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.25b4ad09
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556378
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.6b11a937
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556379
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.4cd234b0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556380
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.4ae81bbb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556381
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.ea3e9681
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556382
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.c2be956a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556383
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.27ff1845
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556384
+    m_Key: ui.assets.project.scripts.lobbytutorialcontroller.text.82e87ab0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556385
+    m_Key: ui.assets.project.scripts.lobbyworldobjecthovername.text.1d4cd375
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556386
+    m_Key: ui.assets.project.scripts.lobbyworldobjecthovername.text.602da21f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556387
+    m_Key: ui.assets.project.scripts.lobbyworldobjecthovername.text.92195b46
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556388
+    m_Key: ui.assets.project.scripts.lobbyworldobjecthovername.text.311b0f03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556389
+    m_Key: ui.assets.project.scripts.lobbyworldobjecthovername.text.71d5adc3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556390
+    m_Key: ui.assets.project.scripts.lobbyworldobjecthovername.text.7bc76bf9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556391
+    m_Key: ui.assets.project.scripts.lobbyworldobjecthovername.text.e64136c8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556392
+    m_Key: ui.assets.project.scripts.lobbyworldobjecthovername.text.1eddc821
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556393
+    m_Key: ui.assets.project.scripts.lobbyworldobjecthovername.text.7f98c971
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556394
+    m_Key: ui.assets.project.scripts.lobbyworldobjecthovername.text.c44b550a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556395
+    m_Key: ui.assets.project.scripts.lobbyworldobjecthovername.text.aa521052
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556396
+    m_Key: ui.assets.project.scripts.recordpanelui.text.8d813bb8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556397
+    m_Key: ui.assets.project.scripts.recordpanelui.text.28c75dad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556398
+    m_Key: ui.assets.project.scripts.recordpanelui.text.80a63f38
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556399
+    m_Key: ui.assets.project.scripts.recordpanelui.text.505dd670
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556400
+    m_Key: ui.assets.project.scripts.recordpanelui.text.09b7996c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556401
+    m_Key: ui.assets.project.scripts.recordpanelui.text.d944050c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556402
+    m_Key: ui.assets.project.scripts.recordpanelui.text.12353459
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556403
+    m_Key: ui.assets.project.scripts.recordpanelui.text.27e6cc62
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556404
+    m_Key: ui.assets.project.scripts.recordpanelui.text.0459d0bb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556405
+    m_Key: ui.assets.project.scripts.recordpanelui.text.ca4aadf0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556406
+    m_Key: ui.assets.project.scripts.recordpanelui.text.8c63a957
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556407
+    m_Key: ui.assets.project.scripts.recordpanelui.text.53e17e51
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556408
+    m_Key: ui.assets.project.scripts.recordpanelui.text.d8267ffb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556409
+    m_Key: ui.assets.project.scripts.recordpanelui.text.6f9af8db
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556410
+    m_Key: ui.assets.project.scripts.recordpanelui.text.e7c91032
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556411
+    m_Key: ui.assets.project.scripts.recordpanelui.text.efb09234
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556412
+    m_Key: ui.assets.project.scripts.recordpanelui.text.cbe27394
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556413
+    m_Key: ui.assets.project.scripts.recordpanelui.text.99e67ffb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556414
+    m_Key: ui.assets.project.scripts.recordpanelui.text.ead22107
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556415
+    m_Key: ui.assets.project.scripts.recordpanelui.text.c0b3fea7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556416
+    m_Key: ui.assets.project.scripts.recordpanelui.text.56b873ee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556417
+    m_Key: ui.assets.project.scripts.recordpanelui.text.0664e01d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556418
+    m_Key: ui.assets.project.scripts.recordpanelui.text.a6b4e569
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556419
+    m_Key: ui.assets.project.scripts.recordpanelui.text.856e689a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556420
+    m_Key: ui.assets.project.scripts.recordpanelui.text.209383f3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556421
+    m_Key: ui.assets.project.scripts.recordpanelui.text.05a42855
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556422
+    m_Key: ui.assets.project.scripts.recordpanelui.text.402ac23f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556423
+    m_Key: ui.assets.project.scripts.recordpanelui.text.c7f113da
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556424
+    m_Key: ui.assets.project.scripts.recordpanelui.text.9f1e6cc8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556425
+    m_Key: ui.assets.project.scripts.recordpanelui.text.afe16700
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556426
+    m_Key: ui.assets.project.scripts.recordpanelui.text.342b2058
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556427
+    m_Key: ui.assets.project.scripts.recordpanelui.text.e672f087
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556428
+    m_Key: ui.assets.project.scripts.recordpanelui.text.0b55c83d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556429
+    m_Key: ui.assets.project.scripts.recordpanelui.text.d43192af
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556430
+    m_Key: ui.assets.project.scripts.recordpanelui.text.b967f422
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556431
+    m_Key: ui.assets.project.scripts.recordpanelui.text.997d4c8c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380908556432
+    m_Key: ui.assets.project.scripts.recordpanelui.text.9811abbe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750592
+    m_Key: ui.assets.project.scripts.recordpanelui.text.6175ee11
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750593
+    m_Key: ui.assets.project.scripts.recordpanelui.text.2b81acfd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750594
+    m_Key: ui.assets.project.scripts.recordpanelui.text.1c791917
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750595
+    m_Key: ui.assets.project.scripts.recordpanelui.text.09af029f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750596
+    m_Key: ui.assets.project.scripts.recordpanelui.text.e92b0092
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750597
+    m_Key: ui.assets.project.scripts.recordpanelui.text.d475704d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750598
+    m_Key: ui.assets.project.scripts.recordpanelui.text.8643f70b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750599
+    m_Key: ui.assets.project.scripts.recordpanelui.text.f19672fe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750600
+    m_Key: ui.assets.project.scripts.recordpanelui.text.09d38052
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750601
+    m_Key: ui.assets.project.scripts.ui.battledamagetextpopupui.text.2e7893d0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750602
+    m_Key: ui.assets.project.scripts.ui.battledamagetextpopupui.text.631cc139
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750603
+    m_Key: ui.assets.project.scripts.ui.battledamagetextpopupui.text.4fb6a208
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750604
+    m_Key: ui.assets.project.scripts.ui.battledamagetextpopupui.text.5919a63a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750605
+    m_Key: ui.assets.project.scripts.ui.battledamagetextpopupui.text.d10746cb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750606
+    m_Key: ui.assets.project.scripts.ui.battledamagetextpopupui.text.d707503d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750607
+    m_Key: ui.assets.project.scripts.ui.battledamagetextpopupui.text.837c395a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750608
+    m_Key: ui.assets.project.scripts.ui.battlegoldhudui.text.696e449b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750609
+    m_Key: ui.assets.project.scripts.ui.battlemapintrotext.text.74e27705
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750610
+    m_Key: ui.assets.project.scripts.ui.battlemapintrotext.text.53240360
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750611
+    m_Key: ui.assets.project.scripts.ui.battlemapintrotext.text.162dd0a4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750612
+    m_Key: ui.assets.project.scripts.ui.lobby.mapchapterselectbutton.text.1752395a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750613
+    m_Key: ui.assets.project.scripts.ui.lobby.mapchapterselectbutton.text.c64f52e0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750614
+    m_Key: ui.assets.project.scripts.ui.lobby.mapchapterselectbutton.text.c146739f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750615
+    m_Key: ui.assets.project.scripts.ui.lobby.playerlevelpanel.text.d4cbec95
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750616
+    m_Key: ui.assets.project.scripts.ui.lobby.playerrewardslotui.text.236b4ad5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750617
+    m_Key: ui.assets.project.scripts.ui.lobby.runeslotbutton.text.58a0d99a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750618
+    m_Key: ui.assets.project.scripts.ui.lobby.runeslotbutton.text.80052ebc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750619
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.8fb36c48
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750620
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.2ea8e0ea
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750621
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.33955c53
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750622
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.4552e484
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750623
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.0cce3f03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750624
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.87490e60
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750625
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.49df933d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750626
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.dbc49d43
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750627
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.2071f5f3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750628
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.532b8dc6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750629
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.3a490952
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750630
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.949297df
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750631
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.88f8b003
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750632
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.e57fc0a4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750633
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.0db8f2c2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750634
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.44de110f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750635
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.ff583a37
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750636
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.b1041125
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750637
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.57e5b419
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750638
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.aa40ca5d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750639
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.3bbc7045
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750640
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.2303c2d9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750641
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.043fd465
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750642
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.c66c2a22
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750643
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.ae977244
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750644
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.461d41c2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750645
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.a8babae6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750646
+    m_Key: ui.assets.project.scripts.ui.lobby.settingwarningui.text.7dc6073a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750647
+    m_Key: ui.assets.project.scripts.ui.lobbybluedustiumhudui.text.d88247c7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750648
+    m_Key: ui.assets.project.scripts.ui.lobbybluedustiumhudui.text.57113a74
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750649
+    m_Key: ui.assets.project.scripts.ui.lobbybluedustiumhudui.text.f4b56c71
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750650
+    m_Key: ui.assets.project.scripts.ui.title.optionpanelui.text.eea2a0c6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750651
+    m_Key: ui.assets.project.scripts.ui.title.optionpanelui.text.a5161c6c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10173380912750652
+    m_Key: ui.assets.project.scripts.ui.title.optionpanelui.text.8f291651
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10175616531308544
+    m_Key: title.explore_continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10175616548085760
+    m_Key: title.explore_abandon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10175616548085761
+    m_Key: title.archive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10175616548085762
+    m_Key: title.exit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974289539072
+    m_Key: data.monster.mon_01.special_action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316288
+    m_Key: data.monster.mon_02.special_action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316289
+    m_Key: data.monster.mon_03.special_action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316290
+    m_Key: data.monster.mon_04.special_action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316291
+    m_Key: data.monster.mon_05.special_action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316292
+    m_Key: data.monster.mon_06.special_action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316293
+    m_Key: data.monster.mon_07.special_action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316294
+    m_Key: data.monster.mon_08.special_action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316295
+    m_Key: data.monster.mon_09.special_action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316296
+    m_Key: data.monster.mon_10.special_action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316297
+    m_Key: data.monster.mon_11.special_action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316298
+    m_Key: data.monster.mon_12.special_action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316299
+    m_Key: data.monsterskill.s_monster_01.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316300
+    m_Key: data.monsterskill.s_monster_02.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316301
+    m_Key: data.monsterskill.s_monster_03.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316302
+    m_Key: data.monsterskill.s_monster_04.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316303
+    m_Key: data.monsterskill.s_monster_05.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316304
+    m_Key: data.monsterskill.s_monster_06.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316305
+    m_Key: data.monsterskill.s_monster_07.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316306
+    m_Key: data.monsterskill.s_monster_08.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316307
+    m_Key: data.monsterskill.s_monster_09.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316308
+    m_Key: data.monsterskill.s_monster_10.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316309
+    m_Key: data.monsterskill.s_monster_11.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316310
+    m_Key: data.monsterskill.s_monster_12.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316311
+    m_Key: data.monsterskill.s_monster_13.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316312
+    m_Key: data.monsterskill.s_monster_14.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316313
+    m_Key: data.monsterskill.s_monster_15.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316314
+    m_Key: data.monsterskill.s_monster_16.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316315
+    m_Key: data.monsterskill.s_monster_17.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316316
+    m_Key: data.monsterskill.s_monster_18.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974306316317
+    m_Key: data.monsterskill.s_monster_19.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510592
+    m_Key: data.monsterskill.s_monster_20.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510593
+    m_Key: data.monsterskill.s_monster_21.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510594
+    m_Key: data.monsterskill.s_monster_22.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510595
+    m_Key: data.monsterskill.s_monster_23.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510596
+    m_Key: data.monsterskill.s_monster_24.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510597
+    m_Key: data.monsterskill.s_monster_25.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510598
+    m_Key: data.monsterskill.s_monster_26.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510599
+    m_Key: data.monsterskill.s_monster_27.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510600
+    m_Key: data.monsterskill.s_monster_27.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510601
+    m_Key: data.monsterskill.s_monster_28.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510602
+    m_Key: data.monsterskill.s_monster_28.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510603
+    m_Key: data.monsterskill.s_monster_29.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510604
+    m_Key: data.monsterskill.s_monster_30.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510605
+    m_Key: data.monsterskill.s_monster_30.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510606
+    m_Key: data.monsterskill.s_monster_31.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510607
+    m_Key: data.monsterskill.s_monster_31.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510608
+    m_Key: data.monsterskill.s_monster_32.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510609
+    m_Key: data.monsterskill.s_monster_33.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510610
+    m_Key: data.monsterskill.s_monster_33.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510611
+    m_Key: data.monsterskill.s_monster_34.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510612
+    m_Key: data.monsterskill.s_monster_34.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510613
+    m_Key: data.monsterskill.s_monster_35.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510614
+    m_Key: data.monsterskill.s_monster_35.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510615
+    m_Key: data.monsterskill.s_monster_36.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510616
+    m_Key: data.monsterskill.s_monster_36.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510617
+    m_Key: data.monsterskill.s_monster_37.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510618
+    m_Key: data.monsterskill.s_monster_38.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510619
+    m_Key: data.monsterskill.s_monster_38.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510620
+    m_Key: data.monsterskill.s_monster_39.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510621
+    m_Key: data.monsterskill.s_monster_39.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510622
+    m_Key: data.monsterskill.s_monster_40.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510623
+    m_Key: data.monsterskill.s_monster_40.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510624
+    m_Key: data.monsterskill.s_monster_41.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510625
+    m_Key: data.monsterskill.s_monster_41.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510626
+    m_Key: data.grideffect.gr_debris.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510627
+    m_Key: data.grideffect.gr_thorn.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510628
+    m_Key: data.grideffect.gr_residue.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510629
+    m_Key: data.grideffect.gr_residue.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510630
+    m_Key: data.grideffect.gr_dummy.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510631
+    m_Key: data.grideffect.gr_dummy.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510632
+    m_Key: data.grideffect.gr_explosive_doll.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510633
+    m_Key: data.grideffect.gr_explosive_doll.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510634
+    m_Key: data.grideffect.gr_spider_egg.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510635
+    m_Key: data.grideffect.gr_spider_egg.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510636
+    m_Key: data.grideffect.gr_spider_web.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510637
+    m_Key: data.grideffect.gr_nocturn_portal_preview.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510638
+    m_Key: data.grideffect.gr_nocturn_portal_preview.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510639
+    m_Key: data.effect.e_spawn_soldier.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510640
+    m_Key: data.effect.e_spawn_soldier.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510641
+    m_Key: data.effect.e_uniqueresource_overflow_to_cost.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510642
+    m_Key: data.effect.e_uniqueresource_max_skill_cost_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510643
+    m_Key: data.effect.e_heal_value_delta.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510644
+    m_Key: data.effect.e_heal_value_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510645
+    m_Key: data.effect.e_skill_armor_value_delta.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510646
+    m_Key: data.effect.e_skill_armor_value_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510647
+    m_Key: data.effect.e_poison_value_delta.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510648
+    m_Key: data.effect.e_poison_value_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510649
+    m_Key: data.effect.e_bleed_value_delta.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510650
+    m_Key: data.effect.e_bleed_value_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510651
+    m_Key: data.effect.e_turn_start_cost_recovery.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510652
+    m_Key: data.effect.e_turn_start_cost_recovery.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510653
+    m_Key: data.effect.e_turn_start_unique_resource_recovery.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510654
+    m_Key: data.effect.e_turn_start_unique_resource_recovery.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510655
+    m_Key: data.effect.e_exploration_start_unique_resource.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510656
+    m_Key: data.effect.e_exploration_start_unique_resource.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510657
+    m_Key: data.effect.e_unique_resource_max_reached_boost.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510658
+    m_Key: data.effect.e_unique_resource_max_reached_boost.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510659
+    m_Key: data.effect.e_unique_resource_max_reached_smite.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510660
+    m_Key: data.effect.e_unique_resource_max_reached_smite.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510661
+    m_Key: data.effect.e_unique_resource_max_reached_cost_recovery.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510662
+    m_Key: data.effect.e_unique_resource_max_reached_cost_recovery.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510663
+    m_Key: data.effect.e_unique_resource_max_reached_armor.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510664
+    m_Key: data.effect.e_unique_resource_max_reached_armor.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510665
+    m_Key: data.effect.e_unique_resource_max_reached_self_lowest_ally_armor.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510666
+    m_Key: data.effect.e_unique_resource_max_reached_self_lowest_ally_armor.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510667
+    m_Key: data.effect.e_rune_target_damage_value_delta.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510668
+    m_Key: data.effect.e_rune_target_damage_value_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510669
+    m_Key: data.effect.e_rune_target_attack_count_delta.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510670
+    m_Key: data.effect.e_rune_target_attack_count_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510671
+    m_Key: data.effect.e_rune_target_skill_cost_delta.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510672
+    m_Key: data.effect.e_rune_target_skill_cost_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510673
+    m_Key: data.effect.e_rune_target_armor_multiplier.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510674
+    m_Key: data.effect.e_rune_target_armor_multiplier.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510675
+    m_Key: data.effect.e_rune_target_boost_value_delta.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510676
+    m_Key: data.effect.e_rune_target_boost_value_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510677
+    m_Key: data.effect.e_rune_target_heal_value_delta.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510678
+    m_Key: data.effect.e_rune_target_heal_value_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510679
+    m_Key: data.effect.e_rune_target_knockback_value_delta.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510680
+    m_Key: data.effect.e_rune_target_knockback_value_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510681
+    m_Key: data.effect.e_rune_target_range_expand.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510682
+    m_Key: data.effect.e_rune_target_range_expand.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510683
+    m_Key: data.effect.ar_damageboostthisturn.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510684
+    m_Key: data.effect.ar_damageboostthisturn.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510685
+    m_Key: data.effect.ar_damagereductionthisturn.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510686
+    m_Key: data.effect.ar_damagereductionthisturn.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510687
+    m_Key: data.effect.ar_recoveruniqueresourcetomax.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510688
+    m_Key: data.effect.ar_recoveruniqueresourcetomax.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510689
+    m_Key: data.effect.ar_recovercosttomax.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510690
+    m_Key: data.effect.ar_recovercosttomax.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510691
+    m_Key: data.effect.ar_grantswift.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510692
+    m_Key: data.effect.ar_grantswift.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510693
+    m_Key: data.effect.ar_cleansedebuffs.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510694
+    m_Key: data.effect.ar_movetogrid.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510695
+    m_Key: data.effect.ar_swapally.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510696
+    m_Key: data.effect.ar_spawnpoisongrideffect.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510697
+    m_Key: data.effect.ar_spawnthorngrideffect.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510698
+    m_Key: data.effect.ar_spawnthorngrideffect.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510699
+    m_Key: data.effect.ar_targetoutgoingdamagereductionthisturn.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510700
+    m_Key: data.effect.ar_targetoutgoingdamagereductionthisturn.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510701
+    m_Key: data.effect.ar_spawnobstaclegrideffect.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510702
+    m_Key: data.effect.ar_spawnobstaclegrideffect.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510703
+    m_Key: data.effect.ar_removegrideffect.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510704
+    m_Key: data.effect.ar_removegrideffect.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510705
+    m_Key: data.effect.ar_spawndummygrideffect.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510706
+    m_Key: data.effect.ar_spawndummygrideffect.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510707
+    m_Key: data.effect.ar_spawnexplosivedollgrideffect.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510708
+    m_Key: data.effect.ar_spawnexplosivedollgrideffect.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510709
+    m_Key: data.battlemap.battlemap_01.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510710
+    m_Key: data.battlemap.battlemap_02.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510711
+    m_Key: data.battlemap.battlemap_03.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510712
+    m_Key: data.battlemap.battlemap_04.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510713
+    m_Key: data.battlemap.battlemap_05.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510714
+    m_Key: data.battlemap.battlemap_06.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510715
+    m_Key: data.battlemap.battlemap_07.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510716
+    m_Key: data.battlemap.battlemap_08.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510717
+    m_Key: data.battlemap.battlemap_09.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510718
+    m_Key: data.battlemap.battlemap_10.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510719
+    m_Key: data.battlemap.battlemap_11.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510720
+    m_Key: data.battlemap.battlemap_12.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510721
+    m_Key: data.battlemap.battlemap_13.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510722
+    m_Key: data.battlemap.battlemap_14.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510723
+    m_Key: data.battlemap.battlemap_15.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510724
+    m_Key: data.battlemap.battlemap_16.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510725
+    m_Key: data.event.event_01.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510726
+    m_Key: data.event.event_01.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510727
+    m_Key: data.event.event_01_a.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510728
+    m_Key: data.event.event_01_b.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510729
+    m_Key: data.event.event_01_c.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510730
+    m_Key: data.event.event_02.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510731
+    m_Key: data.event.event_02.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510732
+    m_Key: data.event.event_02_a.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510733
+    m_Key: data.event.event_02_a.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510734
+    m_Key: data.event.event_02_a.failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510735
+    m_Key: data.event.event_02.failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510736
+    m_Key: data.event.event_02_b.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510737
+    m_Key: data.event.event_02_c.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510738
+    m_Key: data.event.event_02_d.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510739
+    m_Key: data.event.event_02_e.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510740
+    m_Key: data.event.event_02_f.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510741
+    m_Key: data.event.event_02_f.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510742
+    m_Key: data.event.event_02_g.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510743
+    m_Key: data.event.event_02_h.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510744
+    m_Key: data.event.event_02_i.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510745
+    m_Key: data.event.event_03.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510746
+    m_Key: data.event.event_03.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510747
+    m_Key: data.event.event_04.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510748
+    m_Key: data.event.event_04.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510749
+    m_Key: data.event.event_04.failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510750
+    m_Key: data.event.event_04_a.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510751
+    m_Key: data.event.event_04_b.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510752
+    m_Key: data.event.event_04_c.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510753
+    m_Key: data.event.event_04_d.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510754
+    m_Key: data.event.event_05.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510755
+    m_Key: data.event.event_05.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510756
+    m_Key: data.event.event_05.failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510757
+    m_Key: data.event.event_05_a.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510758
+    m_Key: data.event.event_05_a.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510759
+    m_Key: data.event.event_05_a.failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510760
+    m_Key: data.event.event_05_b.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510761
+    m_Key: data.event.event_05_b.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510762
+    m_Key: data.event.event_05_b.failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510763
+    m_Key: data.event.event_05_c.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510764
+    m_Key: data.event.event_05_d.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510765
+    m_Key: data.event.event_05_e.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510766
+    m_Key: data.event.event_06.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510767
+    m_Key: data.event.event_06.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510768
+    m_Key: data.event.event_06_a.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510769
+    m_Key: data.event.event_07.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510770
+    m_Key: data.event.event_07.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510771
+    m_Key: data.event.event_08.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510772
+    m_Key: data.event.event_08.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510773
+    m_Key: data.event.event_08.failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510774
+    m_Key: data.event.event_08_a.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510775
+    m_Key: data.event.event_08_a.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510776
+    m_Key: data.event.event_08_a.failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510777
+    m_Key: data.event.event_08_b.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510778
+    m_Key: data.event.event_08_b.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510779
+    m_Key: data.event.event_08_b.failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510780
+    m_Key: data.event.event_08_c.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510781
+    m_Key: data.event.event_08_d.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510782
+    m_Key: data.event.event_09.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510783
+    m_Key: data.event.event_09.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974310510784
+    m_Key: data.rune.rune_51.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899200
+    m_Key: data.rune.rune_52.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899201
+    m_Key: data.rune.rune_53.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899202
+    m_Key: data.rune.rune_54.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899203
+    m_Key: data.rune.rune_55.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899204
+    m_Key: data.rune.rune_56.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899205
+    m_Key: data.rune.rune_57.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899206
+    m_Key: data.rune.rune_58.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899207
+    m_Key: data.rune.rune_59.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899208
+    m_Key: data.rune.rune_60.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899209
+    m_Key: data.rune.rune_61.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899210
+    m_Key: data.rune.rune_62.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899211
+    m_Key: data.rune.rune_63.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899212
+    m_Key: data.rune.rune_64.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899213
+    m_Key: data.rune.rune_65.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899214
+    m_Key: data.rune.rune_66.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899215
+    m_Key: data.rune.rune_67.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899216
+    m_Key: data.rune.rune_68.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899217
+    m_Key: data.rune.rune_69.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899218
+    m_Key: data.rune.rune_70.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899219
+    m_Key: data.rune.rune_71.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899220
+    m_Key: data.rune.rune_72.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899221
+    m_Key: data.rune.rune_73.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899222
+    m_Key: data.rune.rune_74.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899223
+    m_Key: data.rune.rune_75.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899224
+    m_Key: data.rune.rune_01.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899225
+    m_Key: data.rune.rune_02.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899226
+    m_Key: data.rune.rune_03.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899227
+    m_Key: data.rune.rune_04.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899228
+    m_Key: data.rune.rune_05.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899229
+    m_Key: data.rune.rune_06.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899230
+    m_Key: data.rune.rune_07.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899231
+    m_Key: data.rune.rune_08.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899232
+    m_Key: data.rune.rune_09.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899233
+    m_Key: data.rune.rune_10.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899234
+    m_Key: data.rune.rune_11.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899235
+    m_Key: data.rune.rune_12.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899236
+    m_Key: data.rune.rune_13.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899237
+    m_Key: data.rune.rune_14.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899238
+    m_Key: data.rune.rune_15.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899239
+    m_Key: data.rune.rune_16.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899240
+    m_Key: data.rune.rune_17.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899241
+    m_Key: data.rune.rune_18.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899242
+    m_Key: data.rune.rune_19.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899243
+    m_Key: data.rune.rune_20.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899244
+    m_Key: data.relic.relic_p_01.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899245
+    m_Key: data.relic.relic_p_02.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899246
+    m_Key: data.relic.relic_p_03.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899247
+    m_Key: data.relic.relic_p_04.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899248
+    m_Key: data.relic.relic_p_05.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899249
+    m_Key: data.relic.relic_p_06.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899250
+    m_Key: data.relic.relic_p_07.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899251
+    m_Key: data.relic.relic_p_08.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899252
+    m_Key: data.relic.relic_p_09.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899253
+    m_Key: data.relic.relic_p_10.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899254
+    m_Key: data.relic.relic_p_11.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899255
+    m_Key: data.relic.relic_p_12.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899256
+    m_Key: data.relic.relic_p_13.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899257
+    m_Key: data.relic.relic_p_14.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899258
+    m_Key: data.relic.relic_p_15.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899259
+    m_Key: data.relic.relic_p_16.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899260
+    m_Key: data.relic.relic_p_17.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899261
+    m_Key: data.relic.relic_p_18.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899262
+    m_Key: data.relic.relic_p_19.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899263
+    m_Key: data.relic.relic_p_20.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899264
+    m_Key: data.relic.relic_p_21.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899265
+    m_Key: data.relic.relic_p_22.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899266
+    m_Key: data.relic.relic_p_23.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899267
+    m_Key: data.relic.relic_p_24.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899268
+    m_Key: data.relic.relic_p_25.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899269
+    m_Key: data.relic.relic_p_26.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899270
+    m_Key: data.relic.relic_p_27.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899271
+    m_Key: data.relic.relic_p_28.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899272
+    m_Key: data.relic.relic_p_29.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899273
+    m_Key: data.relic.relic_p_30.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899274
+    m_Key: data.relic.relic_p_31.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899275
+    m_Key: data.relic.relic_p_32.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899276
+    m_Key: data.relic.relic_p_33.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899277
+    m_Key: data.relic.relic_p_34.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899278
+    m_Key: data.relic.relic_p_35.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899279
+    m_Key: data.relic.relic_p_37.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899280
+    m_Key: data.relic.relic_p_38.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899281
+    m_Key: data.relic.relic_p_39.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899282
+    m_Key: data.relic.relic_p_40.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899283
+    m_Key: data.relic.relic_p_41.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899284
+    m_Key: data.relic.relic_p_42.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899285
+    m_Key: data.relic.relic_p_43.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899286
+    m_Key: data.relic.relic_p_44.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899287
+    m_Key: data.relic.relic_p_45.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899288
+    m_Key: data.relic.relic_p_46.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899289
+    m_Key: data.relic.relic_p_47.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899290
+    m_Key: data.relic.relic_p_48.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899291
+    m_Key: data.relic.relic_p_49.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899292
+    m_Key: data.relic.relic_p_50.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899293
+    m_Key: data.relic.relic_p_51.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899294
+    m_Key: data.relic.relic_p_52.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899295
+    m_Key: data.relic.relic_p_53.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899296
+    m_Key: data.relic.relic_p_54.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899297
+    m_Key: data.relic.relic_p_55.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899298
+    m_Key: data.relic.relic_p_56.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899299
+    m_Key: data.relic.relic_p_57.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899300
+    m_Key: data.relic.relic_p_58.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899301
+    m_Key: data.relic.relic_p_59.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899302
+    m_Key: data.relic.relic_p_60.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899303
+    m_Key: data.relic.relic_p_61.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899304
+    m_Key: data.relic.relic_p_62.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899305
+    m_Key: data.relic.relic_p_63.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899306
+    m_Key: data.relic.relic_p_64.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899307
+    m_Key: data.relic.relic_p_65.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899308
+    m_Key: data.relic.relic_p_66.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899309
+    m_Key: data.relic.relic_p_67.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899310
+    m_Key: data.relic.relic_p_68.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899311
+    m_Key: data.compound.compound_01.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899312
+    m_Key: data.compound.compound_02.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899313
+    m_Key: data.compound.compound_03.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899314
+    m_Key: data.compound.compound_04.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899315
+    m_Key: data.compound.compound_04.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899316
+    m_Key: data.compound.compound_05.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899317
+    m_Key: data.compound.compound_06.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899318
+    m_Key: data.compound.compound_07.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899319
+    m_Key: data.compound.compound_07.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899320
+    m_Key: data.compound.compound_08.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899321
+    m_Key: data.compound.compound_08.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899322
+    m_Key: data.compound.compound_09.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899323
+    m_Key: data.compound.compound_09.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899324
+    m_Key: data.compound.compound_10.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899325
+    m_Key: data.compound.compound_10.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899326
+    m_Key: data.compound.compound_11.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899327
+    m_Key: data.compound.compound_11.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899328
+    m_Key: data.compound.compound_12.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899329
+    m_Key: data.compound.compound_12.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899330
+    m_Key: data.compound.compound_13.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899331
+    m_Key: data.compound.compound_13.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899332
+    m_Key: data.compound.compound_14.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899333
+    m_Key: data.compound.compound_14.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899334
+    m_Key: data.compound.compound_15.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899335
+    m_Key: data.compound.compound_15.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899336
+    m_Key: data.compound.compound_16.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899337
+    m_Key: data.compound.compound_17.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899338
+    m_Key: data.compound.compound_18.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899339
+    m_Key: data.compound.compound_19.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974318899340
+    m_Key: data.compound.compound_20.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093504
+    m_Key: data.item.item_037.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093505
+    m_Key: data.item.item_038.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093506
+    m_Key: data.item.item_039.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093507
+    m_Key: data.erosion.erosion_01_01.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093508
+    m_Key: data.erosion.erosion_01_01.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093509
+    m_Key: data.erosion.erosion_01_02.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093510
+    m_Key: data.erosion.erosion_01_02.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093511
+    m_Key: data.erosion.erosion_01_03.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093512
+    m_Key: data.erosion.erosion_01_03.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093513
+    m_Key: data.erosion.erosion_01_04.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093514
+    m_Key: data.erosion.erosion_01_04.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093515
+    m_Key: data.erosion.erosion_01_05.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093516
+    m_Key: data.erosion.erosion_01_05.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093517
+    m_Key: data.erosion.erosion_01_06.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093518
+    m_Key: data.erosion.erosion_01_06.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093519
+    m_Key: data.erosion.erosion_01_07.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093520
+    m_Key: data.erosion.erosion_01_07.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093521
+    m_Key: data.erosion.erosion_01_08.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093522
+    m_Key: data.erosion.erosion_01_08.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093523
+    m_Key: data.erosion.erosion_02_01.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093524
+    m_Key: data.erosion.erosion_02_01.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093525
+    m_Key: data.erosion.erosion_02_02.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093526
+    m_Key: data.erosion.erosion_02_02.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093527
+    m_Key: data.erosion.erosion_02_03.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093528
+    m_Key: data.erosion.erosion_02_03.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093529
+    m_Key: data.erosion.erosion_02_04.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093530
+    m_Key: data.erosion.erosion_02_04.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093531
+    m_Key: data.erosion.erosion_02_05.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093532
+    m_Key: data.erosion.erosion_02_05.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093533
+    m_Key: data.erosion.erosion_02_06.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093534
+    m_Key: data.erosion.erosion_02_06.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093535
+    m_Key: data.erosion.erosion_02_07.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093536
+    m_Key: data.erosion.erosion_02_07.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093537
+    m_Key: data.erosion.erosion_02_08.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093538
+    m_Key: data.erosion.erosion_02_08.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093539
+    m_Key: data.erosion.erosion_03_01.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093540
+    m_Key: data.erosion.erosion_03_01.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093541
+    m_Key: data.erosion.erosion_03_02.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093542
+    m_Key: data.erosion.erosion_03_02.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093543
+    m_Key: data.erosion.erosion_03_03.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093544
+    m_Key: data.erosion.erosion_03_03.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093545
+    m_Key: data.erosion.erosion_03_04.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093546
+    m_Key: data.erosion.erosion_03_04.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093547
+    m_Key: data.erosion.erosion_03_05.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093548
+    m_Key: data.erosion.erosion_03_05.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093549
+    m_Key: data.erosion.erosion_03_06.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093550
+    m_Key: data.erosion.erosion_03_06.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093551
+    m_Key: data.erosion.erosion_03_07.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093552
+    m_Key: data.erosion.erosion_03_07.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093553
+    m_Key: data.erosion.erosion_03_08.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10185974323093554
+    m_Key: data.erosion.erosion_03_08.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665076396032
+    m_Key: data.character.char_01.introduction.fea68585
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173248
+    m_Key: data.character.char_02.introduction.7418c03d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173249
+    m_Key: data.character.char_03.introduction.a7115735
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173250
+    m_Key: data.character.char_04.introduction.727b39de
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173251
+    m_Key: data.character.char_05.introduction.0eea265c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173252
+    m_Key: data.monster.mon_07.name.93b49015
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173253
+    m_Key: data.monster.mon_08.name.8a684507
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173254
+    m_Key: data.monster.mon_09.name.3a50f561
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173255
+    m_Key: data.monster.mon_11.name.a0f36833
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173256
+    m_Key: data.effect.e_max_hp.name.b2cb67eb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173257
+    m_Key: data.effect.e_max_hp.tooltip.54ae3fb2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173258
+    m_Key: data.effect.e_max_cost.tooltip.d8558779
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173259
+    m_Key: data.effect.e_pierce.tooltip.157c75b4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173260
+    m_Key: data.effect.e_heal.tooltip.444c7e58
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173261
+    m_Key: data.effect.e_charge.tooltip.a0d17e1f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173262
+    m_Key: data.effect.e_focus.tooltip.2bf09e40
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173263
+    m_Key: data.effect.e_split.tooltip.d433a666
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173264
+    m_Key: data.effect.e_explode.tooltip.24555766
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173265
+    m_Key: data.effect.e_spider_web.name.1c4d52d6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173266
+    m_Key: data.effect.e_spider_web.tooltip.70774c14
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173267
+    m_Key: data.effect.e_cost_recovery_delta.tooltip.e8bf0bf3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173268
+    m_Key: data.effect.e_first_move_cost_delta.tooltip.781379df
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173269
+    m_Key: data.effect.e_attack_cost_delta.tooltip.40fbac35
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173270
+    m_Key: data.effect.e_debuff_cost_delta.tooltip.58e83f7d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173271
+    m_Key: data.effect.e_move_cost_zero.tooltip.98a9d35a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173272
+    m_Key: data.effect.e_blocked_slot_mask.tooltip.0ea96255
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173273
+    m_Key: data.effect.e_max_registrable_slot_count.tooltip.e48b0845
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173274
+    m_Key: data.effect.e_no_move_in_slot_buff_cost_delta.tooltip.b94030ae
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173275
+    m_Key: data.effect.e_after_move_debuff_cost_delta.tooltip.2f3fc21e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173276
+    m_Key: data.effect.e_slot1_first_skill_cost_delta.tooltip.560f8e57
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173277
+    m_Key: data.effect.e_slot5_skill_cost_delta.tooltip.02f33120
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173278
+    m_Key: data.effect.e_low_hp_skill_cost_delta.tooltip.5fc8d667
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173279
+    m_Key: data.effect.e_high_hp_cost_recovery_delta.tooltip.f5434bbd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173280
+    m_Key: data.effect.e_high_hp_buff_cost_delta.tooltip.8ec35e41
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173281
+    m_Key: data.effect.e_attack_value_delta.tooltip.73adfd50
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173282
+    m_Key: data.effect.e_attack_count_delta.tooltip.8b655778
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173283
+    m_Key: data.effect.e_debuff_value_delta.tooltip.30247b19
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173284
+    m_Key: data.effect.e_after_move_debuff_value_delta.tooltip.5d451218
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173285
+    m_Key: data.effect.e_after_move_attack_value_per_cost.tooltip.43205ae8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173286
+    m_Key: data.effect.e_slot1_attack_value_delta.tooltip.41b00762
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173287
+    m_Key: data.effect.e_slot1_buff_value_delta.tooltip.3c76d2cf
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173288
+    m_Key: data.effect.e_slot5_attack_value_delta.tooltip.c619d666
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173289
+    m_Key: data.effect.e_low_hp_attack_value_delta.tooltip.d36d9a19
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173290
+    m_Key: data.effect.e_self_buff_blocked_buff_value_delta.tooltip.3ca2e4d8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173291
+    m_Key: data.effect.e_full_hp_buff_value_delta.tooltip.b0522d36
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173292
+    m_Key: data.effect.e_unique_skill_value_percent.name.742c3bbc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173293
+    m_Key: data.effect.e_unique_skill_value_percent.tooltip.8e58157a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173294
+    m_Key: data.effect.e_unique_skill_count_delta.name.4b153519
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173295
+    m_Key: data.effect.e_unique_skill_count_delta.tooltip.63251dcb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665093173296
+    m_Key: data.effect.e_slot5_attack_pierce.tooltip.0ee95c83
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367552
+    m_Key: data.effect.e_slot1_attack_kill_focus.tooltip.60bb87b9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367553
+    m_Key: data.effect.e_slot5_attack_kill_cost_refund.tooltip.777a21ab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367554
+    m_Key: data.effect.e_unique_skill_kill_focus.name.bdbca956
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367555
+    m_Key: data.effect.e_unique_skill_kill_focus.tooltip.12de08fe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367556
+    m_Key: data.effect.e_once_battle_end_turn_zero_cost_charge.name.6495df2b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367557
+    m_Key: data.effect.e_once_battle_end_turn_zero_cost_charge.tooltip.d1da64f7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367558
+    m_Key: data.effect.e_once_battle_attack_miss_charge.name.5e82bc7a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367559
+    m_Key: data.effect.e_once_battle_attack_miss_charge.tooltip.c862517a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367560
+    m_Key: data.effect.e_once_battle_full_hp_target_damage_percent.name.12a36b1b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367561
+    m_Key: data.effect.e_once_battle_full_hp_target_damage_percent.tooltip.882ccefa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367562
+    m_Key: data.effect.e_turn_start_boost_if_one_attack_command.tooltip.429f8ac0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367563
+    m_Key: data.effect.e_turn_start_boost_if_attack_command_count_at_least.tooltip.747c1135
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367564
+    m_Key: data.event.event_01.name.0c830f50
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367565
+    m_Key: data.event.event_01.name.3af1914f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367566
+    m_Key: data.event.event_01.description.c2b50b91
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367567
+    m_Key: data.event.event_01.name.b9729e84
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367568
+    m_Key: data.event.event_01.description.f3b35683
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367569
+    m_Key: data.event.event_02.name.2022a67e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367570
+    m_Key: data.event.event_02_a.name.86eab557
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367571
+    m_Key: data.event.event_02.name.8d0e62d4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367572
+    m_Key: data.event.event_02.description.4519e302
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367573
+    m_Key: data.event.event_02.name.01d3a074
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367574
+    m_Key: data.event.event_02.description.265a2cf0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367575
+    m_Key: data.event.event_02.failure_description.cf68bf05
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367576
+    m_Key: data.event.event_02_f.name.20da7453
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367577
+    m_Key: data.event.event_03.name.e9ce9c1d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367578
+    m_Key: data.event.event_03.name.bee0ad3d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367579
+    m_Key: data.event.event_03.description.72643f70
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367580
+    m_Key: data.event.event_04.name.08a2544d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367581
+    m_Key: data.event.event_04.name.ac43bd5c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367582
+    m_Key: data.event.event_04.description.c390d5e2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367583
+    m_Key: data.event.event_04.name.f0ed8ac6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367584
+    m_Key: data.event.event_04.description.b9221c68
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367585
+    m_Key: data.event.event_05.name.1b47701c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367586
+    m_Key: data.event.event_05.name.9bc4c55b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367587
+    m_Key: data.event.event_05.description.ca6b26a1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367588
+    m_Key: data.event.event_05.failure_description.b95b07af
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367589
+    m_Key: data.event.event_05_a.name.1b47701c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367590
+    m_Key: data.event.event_05_a.name.9bc4c55b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367591
+    m_Key: data.event.event_05_a.description.ca6b26a1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367592
+    m_Key: data.event.event_05_a.failure_description.b95b07af
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367593
+    m_Key: data.event.event_05_b.name.1b47701c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367594
+    m_Key: data.event.event_05_b.name.9bc4c55b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367595
+    m_Key: data.event.event_05_b.description.ca6b26a1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367596
+    m_Key: data.event.event_05_b.failure_description.b95b07af
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367597
+    m_Key: data.event.event_05.name.0d68fa9d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367598
+    m_Key: data.event.event_05.description.bcb7167c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367599
+    m_Key: data.event.event_06.name.6c29e279
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367600
+    m_Key: data.event.event_07.name.24ef16a4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367601
+    m_Key: data.event.event_07.name.faa6c01e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367602
+    m_Key: data.event.event_07.description.eb5b4cdc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367603
+    m_Key: data.event.event_08.name.160b1b0e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367604
+    m_Key: data.event.event_08_a.name.57ec1a17
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367605
+    m_Key: data.event.event_08_b.name.57ec1a17
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367606
+    m_Key: data.event.event_08.name.20da7453
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367607
+    m_Key: data.event.event_09.name.d11fc7f1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367608
+    m_Key: data.event.event_09.name.bd3b8fc2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367609
+    m_Key: data.event.event_09.description.999d991e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367610
+    m_Key: data.event.event_09.name.82deb3ac
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367611
+    m_Key: data.event.event_09.description.c0517730
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367612
+    m_Key: data.rune.rune_51.name.afaf47cd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367613
+    m_Key: data.rune.rune_52.name.de2b9e03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367614
+    m_Key: data.rune.rune_53.name.8e09f089
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367615
+    m_Key: data.rune.rune_54.name.593118a4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367616
+    m_Key: data.rune.rune_55.name.3195aa23
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367617
+    m_Key: data.rune.rune_56.name.a8740b92
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367618
+    m_Key: data.rune.rune_57.name.80561479
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367619
+    m_Key: data.rune.rune_58.name.b97255de
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367620
+    m_Key: data.rune.rune_59.name.3a96061a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367621
+    m_Key: data.rune.rune_60.name.95f7c281
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367622
+    m_Key: data.rune.rune_61.name.56f0042a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367623
+    m_Key: data.rune.rune_62.name.709458c6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367624
+    m_Key: data.rune.rune_63.name.36082b4f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367625
+    m_Key: data.rune.rune_64.name.c34bc206
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367626
+    m_Key: data.rune.rune_65.name.18230263
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367627
+    m_Key: data.rune.rune_66.name.b909726f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367628
+    m_Key: data.rune.rune_67.name.04d6af93
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367629
+    m_Key: data.rune.rune_68.name.f7881217
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367630
+    m_Key: data.rune.rune_69.name.15107b57
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367631
+    m_Key: data.rune.rune_70.name.e878ee87
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367632
+    m_Key: data.rune.rune_71.name.3c23394c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367633
+    m_Key: data.rune.rune_72.name.f693a949
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367634
+    m_Key: data.rune.rune_73.name.cc44c77f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367635
+    m_Key: data.rune.rune_74.name.1baad2b7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367636
+    m_Key: data.rune.rune_75.name.13823487
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367637
+    m_Key: data.relic.relic_p_28.name.09f99a0e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367638
+    m_Key: data.relic.relic_p_30.name.258a6c87
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367639
+    m_Key: data.item.item_001.name.1a448afe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367640
+    m_Key: data.item.item_001.description.c068e47e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367641
+    m_Key: data.item.item_002.name.a531e549
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367642
+    m_Key: data.item.item_002.description.b7b0b18f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367643
+    m_Key: data.item.item_003.name.932d7bc3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367644
+    m_Key: data.item.item_003.description.09727544
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367645
+    m_Key: data.item.item_004.name.f30ccba9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367646
+    m_Key: data.item.item_004.description.298e1233
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367647
+    m_Key: data.item.item_005.name.f3cc0e43
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367648
+    m_Key: data.item.item_005.description.3a43e887
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367649
+    m_Key: data.item.item_006.name.e6293b67
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367650
+    m_Key: data.item.item_006.description.145b5e83
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367651
+    m_Key: data.item.item_007.name.bf19ce4d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367652
+    m_Key: data.item.item_007.description.abe32109
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367653
+    m_Key: data.item.item_008.name.d9af75f7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367654
+    m_Key: data.item.item_008.description.ccc0686e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367655
+    m_Key: data.item.item_009.name.46d7728f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367656
+    m_Key: data.item.item_009.description.db09efb0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367657
+    m_Key: data.item.item_010.name.e223380c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367658
+    m_Key: data.item.item_010.description.d37ad8ca
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367659
+    m_Key: data.item.item_011.name.a0cab1a1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367660
+    m_Key: data.item.item_011.description.513c8505
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367661
+    m_Key: data.item.item_012.name.e7c282f0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10187665097367662
+    m_Key: data.item.item_012.description.9d868411
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

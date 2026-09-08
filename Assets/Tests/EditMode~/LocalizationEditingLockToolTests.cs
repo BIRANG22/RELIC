@@ -43,4 +43,17 @@ public class LocalizationEditingLockToolTests
         Assert.That(changed, Is.Zero);
         Assert.That(localizer.enabled, Is.False);
     }
+
+    [Test]
+    public void SetHierarchyLocalizersEnabled_KeepsRuntimeFallbackOwnerDisabled()
+    {
+        root = new GameObject("Root", typeof(TMPro.TextMeshProUGUI), typeof(LocalizeStringEvent), typeof(LocalizedTMPText));
+        LocalizeStringEvent localizer = root.GetComponent<LocalizeStringEvent>();
+        localizer.enabled = false;
+
+        int changed = LocalizationEditingLockTool.SetHierarchyLocalizersEnabled(root, true);
+
+        Assert.That(changed, Is.Zero);
+        Assert.That(localizer.enabled, Is.False);
+    }
 }

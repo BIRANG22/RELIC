@@ -5,29 +5,29 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// CompoundRecipeSlot ÇÑ °³ÀÇ °á°ú¹°°ú Àç·á 3°³ Ç¥½Ã¸¦ ´ã´çÇÕ´Ï´Ù.
-/// ¹ß°ßµÇÁö ¾ÊÀº ´ë»óÀº IconÀ» ²ô°í qus¸¦ ÄÕ´Ï´Ù.
+/// CompoundRecipeSlot í•œ ê°œì˜ ê²°ê³¼ë¬¼ê³¼ ì¬ë£Œ 3ê°œ í‘œì‹œë¥¼ ë‹´ë‹¹í•©ë‹ˆë‹¤.
+/// ë°œê²¬ë˜ì§€ ì•Šì€ ëŒ€ìƒì€ Iconì„ ë„ê³  qusë¥¼ ì¼­ë‹ˆë‹¤.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class CompoundRecipeSlotUI : MonoBehaviour
 {
-    [Header("·¹½ÃÇÇ ¹øÈ£")]
-    [Tooltip("Background/Value¿¡ Ç¥½ÃÇÒ ·¹½ÃÇÇ ¹øÈ£ÀÔ´Ï´Ù. ºñ¿öµÎ¸é ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Header("ë ˆì‹œí”¼ ë²ˆí˜¸")]
+    [Tooltip("Background/Valueì— í‘œì‹œí•  ë ˆì‹œí”¼ ë²ˆí˜¸ì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private TMP_Text recipeNumberText;
 
-    [Header("°á°ú ¿¬¼ºÁ¦")]
+    [Header("ê²°ê³¼ ì—°ì„±ì œ")]
     [SerializeField] private Image compoundIcon;
     [SerializeField] private GameObject compoundQuestion;
 
-    [Header("Àç·á 1")]
+    [Header("ì¬ë£Œ 1")]
     [SerializeField] private Image material1Icon;
     [SerializeField] private GameObject material1Question;
 
-    [Header("Àç·á 2")]
+    [Header("ì¬ë£Œ 2")]
     [SerializeField] private Image material2Icon;
     [SerializeField] private GameObject material2Question;
 
-    [Header("Àç·á 3")]
+    [Header("ì¬ë£Œ 3")]
     [SerializeField] private Image material3Icon;
     [SerializeField] private GameObject material3Question;
 
@@ -45,7 +45,7 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
             TryGetCompoundIcon(dataManager, compound.CompoundId, out compoundSprite);
 
         string compoundName = compoundDiscovered
-            ? (string.IsNullOrWhiteSpace(compound.Name) ? compound.CompoundId : compound.Name)
+            ? (string.IsNullOrWhiteSpace(compound.Name) ? compound.CompoundId : GameDataLocalization.CompoundName(compound))
             : string.Empty;
 
         ApplyEntry(compoundIcon, compoundQuestion, compoundDiscovered, compoundSprite, compoundName, tooltip);
@@ -77,7 +77,7 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
                 : null;
 
             displayName = item != null && !string.IsNullOrWhiteSpace(item.Name)
-                ? item.Name
+                ? GameDataLocalization.ItemName(item)
                 : itemId.Trim();
         }
 

@@ -424,6 +424,7 @@ GameObject:
   - component: {fileID: 89322944}
   - component: {fileID: 89322943}
   - component: {fileID: 89322945}
+  - component: {fileID: 89322946}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -567,7 +568,7 @@ MonoBehaviour:
       m_TableCollectionName: Text
     m_TableEntryReference:
       m_KeyId: 0
-      m_Key: common.exit
+      m_Key: title.exit
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -590,6 +591,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &89322946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 89322941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 89322943}
+  localizationKey: title.exit
+  koreanSource: "\uAC8C\uC784\uC885\uB8CC"
+  automaticallyRegistered: 1
 --- !u!1 &141494590
 GameObject:
   m_ObjectHideFlags: 0
@@ -1449,6 +1466,7 @@ GameObject:
   - component: {fileID: 354764073}
   - component: {fileID: 354764072}
   - component: {fileID: 354764071}
+  - component: {fileID: 354764074}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -1492,7 +1510,7 @@ MonoBehaviour:
       m_TableCollectionName: Text
     m_TableEntryReference:
       m_KeyId: 0
-      m_Key: lobby.explore
+      m_Key: title.explore_continue
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -1615,6 +1633,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 354764069}
   m_CullTransparentMesh: 1
+--- !u!114 &354764074
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 354764069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 354764072}
+  localizationKey: title.explore_continue
+  koreanSource: "\uD0D0\uC0AC\uC9C4\uD589"
+  automaticallyRegistered: 1
 --- !u!1 &392488099
 GameObject:
   m_ObjectHideFlags: 0
@@ -1954,6 +1988,7 @@ GameObject:
   - component: {fileID: 450454606}
   - component: {fileID: 450454605}
   - component: {fileID: 450454607}
+  - component: {fileID: 450454608}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -2120,6 +2155,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &450454608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 450454603}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 450454605}
+  localizationKey: lobby.explore
+  koreanSource: "\uD0D0\uC0AC"
+  automaticallyRegistered: 1
 --- !u!1 &453270546
 GameObject:
   m_ObjectHideFlags: 0
@@ -2986,6 +3037,7 @@ GameObject:
   - component: {fileID: 712827448}
   - component: {fileID: 712827447}
   - component: {fileID: 712827449}
+  - component: {fileID: 712827450}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -3152,6 +3204,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &712827450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 712827445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 712827447}
+  localizationKey: common.settings
+  koreanSource: "\uC124\uC815"
+  automaticallyRegistered: 1
 --- !u!1 &740221744
 GameObject:
   m_ObjectHideFlags: 0
@@ -4821,6 +4889,7 @@ GameObject:
   - component: {fileID: 1226593374}
   - component: {fileID: 1226593373}
   - component: {fileID: 1226593375}
+  - component: {fileID: 1226593376}
   m_Layer: 5
   m_Name: text
   m_TagString: Untagged
@@ -4987,6 +5056,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &1226593376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1226593371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1226593373}
+  localizationKey: title.press_any_key
+  koreanSource: Press any key
+  automaticallyRegistered: 1
 --- !u!1 &1288704611
 GameObject:
   m_ObjectHideFlags: 0
@@ -7575,6 +7660,7 @@ GameObject:
   - component: {fileID: 1852231632}
   - component: {fileID: 1852231631}
   - component: {fileID: 1852231633}
+  - component: {fileID: 1852231634}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -7718,7 +7804,7 @@ MonoBehaviour:
       m_TableCollectionName: Text
     m_TableEntryReference:
       m_KeyId: 0
-      m_Key: lobby.archive
+      m_Key: title.archive
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -7741,6 +7827,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &1852231634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1852231629}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1852231631}
+  localizationKey: title.archive
+  koreanSource: "\uAE30\uB85D\uC11C"
+  automaticallyRegistered: 1
 --- !u!1 &1892694983
 GameObject:
   m_ObjectHideFlags: 0
@@ -8179,6 +8281,7 @@ GameObject:
   - component: {fileID: 2131548106}
   - component: {fileID: 2131548105}
   - component: {fileID: 2131548104}
+  - component: {fileID: 2131548107}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -8222,7 +8325,7 @@ MonoBehaviour:
       m_TableCollectionName: Text
     m_TableEntryReference:
       m_KeyId: 0
-      m_Key: lobby.explore
+      m_Key: title.explore_abandon
     m_FallbackState: 0
     m_WaitForCompletion: 0
     m_LocalVariables: []
@@ -8345,6 +8448,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2131548102}
   m_CullTransparentMesh: 1
+--- !u!114 &2131548107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2131548102}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2131548105}
+  localizationKey: title.explore_abandon
+  koreanSource: "\uD0D0\uC0AC\uD3EC\uAE30"
+  automaticallyRegistered: 1
 --- !u!1 &2136260213
 GameObject:
   m_ObjectHideFlags: 0

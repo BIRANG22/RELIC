@@ -702,10 +702,11 @@ public class Setting : MonoBehaviour
         }
 
         if (characterNameText != null)
-            characterNameText.text = currentMasterData.Name;
+            characterNameText.text = GameDataLocalization.CharacterName(currentMasterData);
 
         if (characterInfoText != null)
-            characterInfoText.text = FormatCharacterIntroduction(currentMasterData.Introduction);
+            characterInfoText.text = FormatCharacterIntroduction(
+                GameDataLocalization.CharacterIntroduction(currentMasterData));
 
         if (characterInfoPanel != null)
             characterInfoPanel.SetCharacter(currentMasterData, currentRuntimeData);

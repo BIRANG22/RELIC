@@ -34,8 +34,8 @@ public class GridEffectTooltipUI : MonoBehaviour
     private bool targetVisible;
 
     /// <summary>
-    /// ¾À¿¡ »ç¿ëÀÚ°¡ Á÷Á¢ ¹èÄ¡ÇÑ GridEffectTooltipUI¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
-    /// UI¸¦ ·±Å¸ÀÓ¿¡ ÀÚµ¿ »ı¼ºÇÏÁö ¾Ê½À´Ï´Ù.
+    /// ì”¬ì— ì‚¬ìš©ìê°€ ì§ì ‘ ë°°ì¹˜í•œ GridEffectTooltipUIë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
+    /// UIë¥¼ ëŸ°íƒ€ì„ì— ìë™ ìƒì„±í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     /// </summary>
     public static GridEffectTooltipUI GetOrCreate()
     {
@@ -51,8 +51,8 @@ public class GridEffectTooltipUI : MonoBehaviour
         }
 
         Debug.LogWarning(
-            "[GridEffectTooltipUI] ¾À¿¡¼­ GridEffectTooltipUI¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù. " +
-            "ÀüÅõ UI¿¡ GridEffectTooltipUI ¿ÀºêÁ§Æ®¸¦ ¸¸µé°í ½ºÅ©¸³Æ®¸¦ ¿¬°áÇØ ÁÖ¼¼¿ä.");
+            "[GridEffectTooltipUI] ì”¬ì—ì„œ GridEffectTooltipUIë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. " +
+            "ì „íˆ¬ UIì— GridEffectTooltipUI ì˜¤ë¸Œì íŠ¸ë¥¼ ë§Œë“¤ê³  ìŠ¤í¬ë¦½íŠ¸ë¥¼ ì—°ê²°í•´ ì£¼ì„¸ìš”.");
 
         return null;
     }
@@ -62,8 +62,8 @@ public class GridEffectTooltipUI : MonoBehaviour
         if (instance != null && instance != this)
         {
             Debug.LogWarning(
-                "[GridEffectTooltipUI] ¾À¿¡ GridEffectTooltipUI°¡ ¿©·¯ °³ ÀÖ½À´Ï´Ù. " +
-                "ÇÏ³ª¸¸ »ç¿ëÇØ ÁÖ¼¼¿ä.",
+                "[GridEffectTooltipUI] ì”¬ì— GridEffectTooltipUIê°€ ì—¬ëŸ¬ ê°œ ìˆìŠµë‹ˆë‹¤. " +
+                "í•˜ë‚˜ë§Œ ì‚¬ìš©í•´ ì£¼ì„¸ìš”.",
                 this);
             return;
         }
@@ -155,8 +155,8 @@ public class GridEffectTooltipUI : MonoBehaviour
         if (nameText == null || toolTipText == null)
         {
             Debug.LogWarning(
-                "[GridEffectTooltipUI] Name Text ¶Ç´Â Tool Tip Text°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù. " +
-                "Inspector¿¡¼­ Á÷Á¢ ¿¬°áÇØ ÁÖ¼¼¿ä.",
+                "[GridEffectTooltipUI] Name Text ë˜ëŠ” Tool Tip Textê°€ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤. " +
+                "Inspectorì—ì„œ ì§ì ‘ ì—°ê²°í•´ ì£¼ì„¸ìš”.",
                 this);
             return;
         }
@@ -167,7 +167,7 @@ public class GridEffectTooltipUI : MonoBehaviour
         currentOwner = owner;
         lastScreenPosition = screenPosition;
 
-        nameText.text = data.Name ?? string.Empty;
+        nameText.text = GameDataLocalization.GridEffectName(data);
         toolTipText.text = FormatToolTip(data, remainingDuration);
 
         BringToFront();
@@ -180,12 +180,12 @@ public class GridEffectTooltipUI : MonoBehaviour
         if (data == null || string.IsNullOrEmpty(data.ToolTip))
             return string.Empty;
 
-        string result = data.ToolTip;
+        string result = GameDataLocalization.GridEffectTooltip(data);
         string valueRate = data.ValueRate.ToString();
         int duration = remainingDuration ?? data.Duration;
 
-        // GridEffect GameData ÅøÆÁÀÇ ÇÃ·¹ÀÌ½ºÈ¦´õ¸¦ ½ÇÁ¦ ¼öÄ¡·Î Ä¡È¯ÇÕ´Ï´Ù.
-        // <br> °°Àº TMP Rich Text ÅÂ±×´Â °Çµå¸®Áö ¾Ê½À´Ï´Ù.
+        // GridEffect GameData íˆ´íŒì˜ í”Œë ˆì´ìŠ¤í™€ë”ë¥¼ ì‹¤ì œ ìˆ˜ì¹˜ë¡œ ì¹˜í™˜í•©ë‹ˆë‹¤.
+        // <br> ê°™ì€ TMP Rich Text íƒœê·¸ëŠ” ê±´ë“œë¦¬ì§€ ì•ŠìŠµë‹ˆë‹¤.
         result = result.Replace("{ValueRate}", valueRate);
         result = result.Replace("{ValueRate1}", valueRate);
         result = result.Replace("{Duration}", Mathf.Max(0, duration).ToString());
@@ -232,7 +232,7 @@ public class GridEffectTooltipUI : MonoBehaviour
 
     private void InitializeReferences()
     {
-        // Inspector¿¡¼­ ¿¬°áÇÑ °ªÀº Àı´ë ±³Ã¼ÇÏÁö ¾Ê½À´Ï´Ù.
+        // Inspectorì—ì„œ ì—°ê²°í•œ ê°’ì€ ì ˆëŒ€ êµì²´í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         if (tooltipRect == null)
             tooltipRect = transform as RectTransform;
 
@@ -305,9 +305,9 @@ public class GridEffectTooltipUI : MonoBehaviour
         if (visible && !gameObject.activeSelf)
             gameObject.SetActive(true);
 
-        // ºñÈ°¼ºÈ­µÈ GameObject¿¡¼­´Â ÄÚ·çÆ¾À» ½ÃÀÛÇÒ ¼ö ¾ø½À´Ï´Ù.
-        // ±×¸®µå È¿°ú Á¦°Å °úÁ¤¿¡¼­ HoverTarget.OnDisable()ÀÌ Hide()¸¦ ´Ù½Ã È£ÃâÇÒ ¼ö ÀÖÀ¸¹Ç·Î,
-        // ÀÌ¹Ì Hierarchy¿¡¼­ ºñÈ°¼ºÈ­µÈ »óÅÂ¶ó¸é Áï½Ã »óÅÂ¸¸ Á¤¸®ÇÕ´Ï´Ù.
+        // ë¹„í™œì„±í™”ëœ GameObjectì—ì„œëŠ” ì½”ë£¨í‹´ì„ ì‹œì‘í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
+        // ê·¸ë¦¬ë“œ íš¨ê³¼ ì œê±° ê³¼ì •ì—ì„œ HoverTarget.OnDisable()ì´ Hide()ë¥¼ ë‹¤ì‹œ í˜¸ì¶œí•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+        // ì´ë¯¸ Hierarchyì—ì„œ ë¹„í™œì„±í™”ëœ ìƒíƒœë¼ë©´ ì¦‰ì‹œ ìƒíƒœë§Œ ì •ë¦¬í•©ë‹ˆë‹¤.
         if (!gameObject.activeInHierarchy)
         {
             SetVisibleImmediate(visible);

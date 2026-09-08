@@ -157,7 +157,6 @@ MonoBehaviour:
   flipButtonOnMove: 0
   flipTarget: {fileID: 0}
   toggleIfAlreadyOpen: 1
-  bringOpenedPanelToFront: 1
   forceOpenedPanelCanvasSorting: 1
   openedPanelSortingOrder: 1000
   addGraphicRaycasterToOpenedPanel: 1
@@ -190,6 +189,8 @@ GameObject:
   - component: {fileID: 6892804327739567014}
   - component: {fileID: 159957929314609771}
   - component: {fileID: 4409893882068956932}
+  - component: {fileID: 121482609399489027}
+  - component: {fileID: 5449422278818992940}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -316,6 +317,62 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &121482609399489027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1109885761183887017}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: Text
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: ui.check.text_tmp
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4409893882068956932}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+  references:
+    version: 2
+    RefIds: []
+--- !u!114 &5449422278818992940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1109885761183887017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 4409893882068956932}
+  localizationKey: ui.check.text_tmp
+  koreanSource: "\uC544\uB2C8\uC624\n"
+  automaticallyRegistered: 1
 --- !u!1 &4344066926318577350
 GameObject:
   m_ObjectHideFlags: 0
@@ -862,7 +919,6 @@ MonoBehaviour:
   flipButtonOnMove: 0
   flipTarget: {fileID: 0}
   toggleIfAlreadyOpen: 1
-  bringOpenedPanelToFront: 1
   forceOpenedPanelCanvasSorting: 1
   openedPanelSortingOrder: 1000
   addGraphicRaycasterToOpenedPanel: 1
@@ -896,6 +952,7 @@ GameObject:
   - component: {fileID: 6140578237709119474}
   - component: {fileID: 8800931833729288723}
   - component: {fileID: 2226194339596755963}
+  - component: {fileID: 4195790494918432848}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -1062,3 +1119,19 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &4195790494918432848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8398640021877746656}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 8800931833729288723}
+  localizationKey: common.yes
+  koreanSource: "\uC608"
+  automaticallyRegistered: 1

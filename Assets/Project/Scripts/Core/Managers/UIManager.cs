@@ -15,6 +15,8 @@ using UnityEditor;
 public class UIManager : Singleton<UIManager>
 {
     private const int ModalPanelSortingOrderCeiling = 30000;
+    private const string LobbyQuitButtonLocalizationKey = "ui.assets.project.scripts.core.managers.uimanager.text";
+    private const string BattleQuitButtonLocalizationKey = "ui.assets.project.scripts.core.managers.uimanager.text.acf962d7";
     [Header("References")]
     [SerializeField] private Canvas mainCanvas;
 
@@ -726,7 +728,9 @@ public class UIManager : Singleton<UIManager>
 
         if (cachedQuitText != null)
         {
-            cachedQuitText.text = isLobbyScene ? lobbyQuitButtonText : battleQuitButtonText;
+            cachedQuitText.text = isLobbyScene
+                ? GameLocalization.Get(LobbyQuitButtonLocalizationKey, lobbyQuitButtonText)
+                : GameLocalization.Get(BattleQuitButtonLocalizationKey, battleQuitButtonText);
             RefreshTmpText(cachedQuitText);
         }
     }

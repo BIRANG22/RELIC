@@ -15,19 +15,17 @@ public class StaticLocalizationMigrationTests
     }
 
     [Test]
-    public void ConfigureText_AddsLocalizedStringReferenceAndTextListener()
+    public void ConfigureText_AddsSingleRuntimeLocalizedTextOwner()
     {
         TextMeshProUGUI text = CreateText("닫기");
 
         bool changed = StaticLocalizationMigration.ConfigureText(text, "common.close");
 
-        LocalizeStringEvent localizer = text.GetComponent<LocalizeStringEvent>();
+        LocalizedTMPText localizer = text.GetComponent<LocalizedTMPText>();
         Assert.That(changed, Is.True);
         Assert.That(localizer, Is.Not.Null);
-        Assert.That(localizer.StringReference.TableReference.TableCollectionName, Is.EqualTo("Text"));
-        Assert.That(localizer.StringReference.TableEntryReference.Key, Is.EqualTo("common.close"));
-        Assert.That(localizer.OnUpdateString.GetPersistentEventCount(), Is.EqualTo(1));
-        Assert.That(localizer.OnUpdateString.GetPersistentTarget(0), Is.SameAs(text));
+        Assert.That(localizer.LocalizationKey, Is.EqualTo("common.close"));
+        Assert.That(text.GetComponent<LocalizeStringEvent>(), Is.Null);
     }
 
     [Test]
@@ -39,7 +37,33 @@ public class StaticLocalizationMigrationTests
         bool changedAgain = StaticLocalizationMigration.ConfigureText(text, "common.close");
 
         Assert.That(changedAgain, Is.False);
-        Assert.That(text.GetComponents<LocalizeStringEvent>(), Has.Length.EqualTo(1));
+        Assert.That(text.GetComponents<LocalizedTMPText>(), Has.Length.EqualTo(1));
+    }
+
+    [Test]
+    public void ConfigureText_WhenExistingKeyDiffers_DoesNotOverwriteSemanticKey()
+    {
+        TextMeshProUGUI text = CreateText("탐사진행");
+        StaticLocalizationMigration.ConfigureText(text, "title.explore_continue");
+
+        bool changed = StaticLocalizationMigration.ConfigureText(text, "lobby.explore");
+
+        Assert.That(changed, Is.False);
+        Assert.That(text.GetComponent<LocalizedTMPText>().LocalizationKey,
+            Is.EqualTo("title.explore_continue"));
+    }
+
+    [Test]
+    public void RepairTextBinding_WhenExistingKeyDiffers_ReplacesIncorrectKey()
+    {
+        TextMeshProUGUI text = CreateText("탐사진행");
+        StaticLocalizationMigration.ConfigureText(text, "lobby.explore");
+
+        bool changed = StaticLocalizationMigration.RepairTextBinding(text, "title.explore_continue");
+
+        Assert.That(changed, Is.True);
+        Assert.That(text.GetComponent<LocalizedTMPText>().LocalizationKey,
+            Is.EqualTo("title.explore_continue"));
     }
 
     private TextMeshProUGUI CreateText(string value)

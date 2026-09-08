@@ -764,6 +764,7 @@ GameObject:
   - component: {fileID: 810000000000000013}
   - component: {fileID: 810000000000000014}
   - component: {fileID: 4935623309634030063}
+  - component: {fileID: 1123922619841015863}
   m_Layer: 5
   m_Name: TutorialLabel
   m_TagString: Untagged
@@ -930,6 +931,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &1123922619841015863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 810000000000000011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 810000000000000014}
+  localizationKey: common.tutorial
+  koreanSource: "\uD29C\uD1A0\uB9AC\uC5BC"
+  automaticallyRegistered: 1
 --- !u!1 &810000000000000021
 GameObject:
   m_ObjectHideFlags: 0
@@ -1178,6 +1195,8 @@ GameObject:
   - component: {fileID: 191276603675987382}
   - component: {fileID: 7586150522419188794}
   - component: {fileID: 4864372928432226908}
+  - component: {fileID: 1377173736498745278}
+  - component: {fileID: 3147700542820649823}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -1304,6 +1323,62 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &1377173736498745278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 845457574821689703}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: Text
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: ui.option.text_tmp
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4864372928432226908}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+  references:
+    version: 2
+    RefIds: []
+--- !u!114 &3147700542820649823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 845457574821689703}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 4864372928432226908}
+  localizationKey: ui.option.text_tmp
+  koreanSource: "\uCF1C\uAE30"
+  automaticallyRegistered: 1
 --- !u!1 &932455375749877420
 GameObject:
   m_ObjectHideFlags: 0
@@ -1541,6 +1616,8 @@ GameObject:
   - component: {fileID: 1283018427494764970}
   - component: {fileID: 6590938854986971476}
   - component: {fileID: 246777527486999900}
+  - component: {fileID: 2047650332558911404}
+  - component: {fileID: 3789650511595967793}
   m_Layer: 5
   m_Name: Text (TMP) (1)
   m_TagString: Untagged
@@ -1667,6 +1744,62 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2047650332558911404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 982835772615191318}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: Text
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: ui.option.text_tmp_1
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 246777527486999900}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+  references:
+    version: 2
+    RefIds: []
+--- !u!114 &3789650511595967793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 982835772615191318}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 246777527486999900}
+  localizationKey: ui.option.text_tmp_1
+  koreanSource: "\uBCF4\uAE30"
+  automaticallyRegistered: 1
 --- !u!1 &1104494493059102668
 GameObject:
   m_ObjectHideFlags: 0
@@ -3002,6 +3135,7 @@ GameObject:
   - component: {fileID: 3665205016805612810}
   - component: {fileID: 2820607329304191192}
   - component: {fileID: 5497762293682132098}
+  - component: {fileID: 8677041916753557453}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -3168,6 +3302,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &8677041916753557453
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2169414387771345616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2820607329304191192}
+  localizationKey: common.sound
+  koreanSource: "\uC0AC\uC6B4\uB4DC"
+  automaticallyRegistered: 1
 --- !u!1 &2417734967351433486
 GameObject:
   m_ObjectHideFlags: 0
@@ -3467,6 +3617,7 @@ GameObject:
   - component: {fileID: 9170813653061302885}
   - component: {fileID: 8337094280427064499}
   - component: {fileID: 1333596524868855279}
+  - component: {fileID: 4394536388554601602}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -3633,6 +3784,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &4394536388554601602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2522881559536705600}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 8337094280427064499}
+  localizationKey: common.resolution
+  koreanSource: "\uD574\uC0C1\uB3C4"
+  automaticallyRegistered: 1
 --- !u!1 &2584595357982738179
 GameObject:
   m_ObjectHideFlags: 0
@@ -5958,6 +6125,7 @@ GameObject:
   - component: {fileID: 6030791574544084138}
   - component: {fileID: 3339814765033232218}
   - component: {fileID: 3738410211537502637}
+  - component: {fileID: 1866137397710073154}
   m_Layer: 5
   m_Name: Bright
   m_TagString: Untagged
@@ -6124,6 +6292,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &1866137397710073154
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4428361820609955213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 3339814765033232218}
+  localizationKey: common.sound_effects
+  koreanSource: "\uD6A8\uACFC\uC74C"
+  automaticallyRegistered: 1
 --- !u!1 &4480662608780922192
 GameObject:
   m_ObjectHideFlags: 0
@@ -6604,6 +6788,7 @@ GameObject:
   - component: {fileID: 1478938118853903036}
   - component: {fileID: 2756294096239472060}
   - component: {fileID: 3722348775452748210}
+  - component: {fileID: 5321024596669542951}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -6770,6 +6955,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &5321024596669542951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5028534276800333203}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2756294096239472060}
+  localizationKey: common.save
+  koreanSource: "\uC800\uC7A5"
+  automaticallyRegistered: 1
 --- !u!1 &5053170158799943986
 GameObject:
   m_ObjectHideFlags: 0
@@ -6781,6 +6982,8 @@ GameObject:
   - component: {fileID: 5669480516169799695}
   - component: {fileID: 473595451970151172}
   - component: {fileID: 6316546584503093180}
+  - component: {fileID: 6984956370747101539}
+  - component: {fileID: 3741579602192615677}
   m_Layer: 5
   m_Name: IntroLabel
   m_TagString: Untagged
@@ -6907,6 +7110,62 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &6984956370747101539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5053170158799943986}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: Text
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: ui.option.introlabel
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6316546584503093180}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+  references:
+    version: 2
+    RefIds: []
+--- !u!114 &3741579602192615677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5053170158799943986}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 6316546584503093180}
+  localizationKey: ui.option.introlabel
+  koreanSource: "\uC778\uD2B8\uB85C \uC7AC\uC0DD"
+  automaticallyRegistered: 1
 --- !u!1 &5061051199066491063
 GameObject:
   m_ObjectHideFlags: 0
@@ -7464,6 +7723,7 @@ GameObject:
   - component: {fileID: 5416217517730103365}
   - component: {fileID: 3795061501022237283}
   - component: {fileID: 202816655486113934}
+  - component: {fileID: 8026921042501761262}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -7630,6 +7890,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &8026921042501761262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5829642606479008480}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 3795061501022237283}
+  localizationKey: common.close
+  koreanSource: "\uB2EB\uAE30"
+  automaticallyRegistered: 1
 --- !u!1 &5893997608595458828
 GameObject:
   m_ObjectHideFlags: 0
@@ -7903,6 +8179,7 @@ GameObject:
   - component: {fileID: 2571047804875759669}
   - component: {fileID: 3121025707234344906}
   - component: {fileID: 324531975558454014}
+  - component: {fileID: 4946617286424469764}
   m_Layer: 5
   m_Name: Master
   m_TagString: Untagged
@@ -8069,6 +8346,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &4946617286424469764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6089369130192619452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 3121025707234344906}
+  localizationKey: common.master
+  koreanSource: "\uB9C8\uC2A4\uD130"
+  automaticallyRegistered: 1
 --- !u!1 &6115930277039624576
 GameObject:
   m_ObjectHideFlags: 0
@@ -8469,6 +8762,7 @@ GameObject:
   - component: {fileID: 6315930102958819826}
   - component: {fileID: 7772554794672981405}
   - component: {fileID: 8458680718469908460}
+  - component: {fileID: 6246621180122312183}
   m_Layer: 5
   m_Name: text
   m_TagString: Untagged
@@ -8635,6 +8929,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &6246621180122312183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6236881580964587800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 7772554794672981405}
+  localizationKey: common.resolution
+  koreanSource: "\uD574\uC0C1\uB3C4"
+  automaticallyRegistered: 1
 --- !u!1 &6278147784542615829
 GameObject:
   m_ObjectHideFlags: 0
@@ -8797,6 +9107,7 @@ GameObject:
   - component: {fileID: 8139277959100274790}
   - component: {fileID: 8860885958236526875}
   - component: {fileID: 5424431763851082194}
+  - component: {fileID: 9035798267545010181}
   m_Layer: 5
   m_Name: BGM
   m_TagString: Untagged
@@ -8963,6 +9274,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &9035798267545010181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6346809105744308764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 8860885958236526875}
+  localizationKey: common.background_music
+  koreanSource: "\uBC30\uACBD\uC74C"
+  automaticallyRegistered: 1
 --- !u!1 &6412049705962723440
 GameObject:
   m_ObjectHideFlags: 0
@@ -9201,6 +9528,7 @@ GameObject:
   - component: {fileID: 4628849406058358259}
   - component: {fileID: 4746411675010002314}
   - component: {fileID: 1021869242684073447}
+  - component: {fileID: 8361221549535693215}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -9367,6 +9695,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &8361221549535693215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6688494600026539897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 4746411675010002314}
+  localizationKey: common.language
+  koreanSource: "\uC5B8\uC5B4"
+  automaticallyRegistered: 1
 --- !u!1 &6713335299844793141
 GameObject:
   m_ObjectHideFlags: 0
@@ -9653,6 +9997,7 @@ GameObject:
   - component: {fileID: 2632769771165132668}
   - component: {fileID: 5671299057200729675}
   - component: {fileID: 4582032422183061502}
+  - component: {fileID: 6076353865660090049}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -9819,6 +10164,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &6076353865660090049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6935236349028506215}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 5671299057200729675}
+  localizationKey: common.controls
+  koreanSource: "\uC870\uC791"
+  automaticallyRegistered: 1
 --- !u!1 &6962311665446795140
 GameObject:
   m_ObjectHideFlags: 0
@@ -9906,6 +10267,7 @@ GameObject:
   - component: {fileID: 5154225196384570997}
   - component: {fileID: 2873430942213951600}
   - component: {fileID: 7850221556830833740}
+  - component: {fileID: 1085635747575373753}
   m_Layer: 5
   m_Name: text
   m_TagString: Untagged
@@ -10072,6 +10434,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &1085635747575373753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7005189477797310113}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2873430942213951600}
+  localizationKey: common.language
+  koreanSource: "\uC5B8\uC5B4"
+  automaticallyRegistered: 1
 --- !u!1 &7007198580823449223
 GameObject:
   m_ObjectHideFlags: 0
@@ -10945,6 +11323,8 @@ GameObject:
   - component: {fileID: 2725493151550285684}
   - component: {fileID: 3001646477509901107}
   - component: {fileID: 5983890592641597528}
+  - component: {fileID: 4520838397302340709}
+  - component: {fileID: 4311959559795205382}
   m_Layer: 5
   m_Name: Label
   m_TagString: Untagged
@@ -11071,6 +11451,62 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &4520838397302340709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7597544595848106989}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: Text
+    m_TableEntryReference:
+      m_KeyId: 0
+      m_Key: ui.option.label
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 5983890592641597528}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+  references:
+    version: 2
+    RefIds: []
+--- !u!114 &4311959559795205382
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7597544595848106989}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 5983890592641597528}
+  localizationKey: ui.option.label
+  koreanSource: "\uD55C\uAD6D\uC5B4"
+  automaticallyRegistered: 1
 --- !u!1 &7686797016708969894
 GameObject:
   m_ObjectHideFlags: 0
@@ -12947,6 +13383,7 @@ GameObject:
   - component: {fileID: 4929451579643228823}
   - component: {fileID: 2983033750429540116}
   - component: {fileID: 825039166220379770}
+  - component: {fileID: 7206884800257644815}
   m_Layer: 5
   m_Name: SFX
   m_TagString: Untagged
@@ -13113,6 +13550,22 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &7206884800257644815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9148687400549845267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2983033750429540116}
+  localizationKey: common.sound_effects
+  koreanSource: "\uD6A8\uACFC\uC74C"
+  automaticallyRegistered: 1
 --- !u!1 &9188092128689818746
 GameObject:
   m_ObjectHideFlags: 0

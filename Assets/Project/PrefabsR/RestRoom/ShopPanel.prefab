@@ -234,16 +234,16 @@ MonoBehaviour:
   hoverButtonMoveOffset: {x: 0, y: 0, z: 0}
   hoverButtonScale: {x: 1.1, y: 1.1, z: 1}
   hoverDuration: 0.2
-  protectedBackgroundImage: {fileID: 0}
-  protectedButtonImage: {fileID: 0}
-  changingBackgroundImage: {fileID: 0}
-  changingBackgroundGraphic: {fileID: 0}
-  hoverChangingBackgroundMoveOffset: {x: 0, y: 0, z: 0}
-  hoverChangingBackgroundRotationZOffset: 0
-  changingBackgroundDuration: 0.2
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  hoverColor: {r: 1, g: 1, b: 1, a: 1}
-  clickedColor: {r: 1, g: 1, b: 1, a: 1}
+  useHoverZRotation: 0
+  hoverRotationTarget: {fileID: 0}
+  hoverZRotationAngle: 5
+  hoverRotationDuration: 0.2
+  playHoverSound: 0
+  hoverSoundId: ui.normal.click
+  hoverSoundVolume: 1
+  playClickSound: 1
+  clickSoundId: ui.normal.click
+  clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
   usePersistentClickedState: 0
@@ -491,22 +491,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a9d3240d2dc4a0ba58c3b977e1b5b4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  purchaseConfirmMessage: "\uAD6C\uB9E4\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
   panelRoot: {fileID: 1273546924}
   contentRoot: {fileID: 693261992}
-  goodsPrefab: {fileID: 5774346894898299771, guid: bfd13add770962e45a2244f92cbe52ad, type: 3}
-  slideRoot: {fileID: 1273546925}
-  openAnchoredPosition: {x: 0, y: 0}
-  closedAnchoredPosition: {x: 0, y: 1100}
+  goodsSlots:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  costResourceIcon: {fileID: 0}
+  hpResourceIcon: {fileID: 0}
+  uniqueResourceIcon: {fileID: 0}
+  moveResourceIcon: {fileID: 0}
+  panelCanvasGroup: {fileID: 0}
+  openCloseFadeDuration: 0.25
   deactivateOnClose: 0
-  totalGoodsCount: 8
-  skillGoodsCount: 4
-  commonSkillWeight: 60
-  rareSkillWeight: 30
-  epicSkillWeight: 10
-  columnCount: 4
-  firstCellAnchoredPosition: {x: -330, y: 100}
-  cellSpacing: {x: 220, y: 300}
-  fallbackItemSize: {x: 130, y: 150}
+  commonRarityWeight: 30
+  rareRarityWeight: 30
+  epicRarityWeight: 25
+  uniqueRarityWeight: 15
 --- !u!1 &1618568920
 GameObject:
   m_ObjectHideFlags: 0
@@ -670,6 +673,7 @@ GameObject:
   - component: {fileID: 1922504793}
   - component: {fileID: 1922504792}
   - component: {fileID: 1922504794}
+  - component: {fileID: 729014235380885145}
   m_Layer: 0
   m_Name: BackText
   m_TagString: Untagged
@@ -836,3 +840,19 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &729014235380885145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1922504790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1922504792}
+  localizationKey: common.back
+  koreanSource: "\uB4A4\uB85C"
+  automaticallyRegistered: 1
