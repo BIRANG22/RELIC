@@ -8,6 +8,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 public class RuneSettingPanel : MonoBehaviour
 {
@@ -41,8 +43,8 @@ public class RuneSettingPanel : MonoBehaviour
     [SerializeField] private TMP_Text runeInfoRarityText;
     [Tooltip("같은 InfoArea를 사용하는 SkillSettingPanel입니다. 비어 있으면 자동으로 찾습니다.")]
     [SerializeField] private SkillSettingPanel sharedSkillSettingPanel;
-    [SerializeField] private string emptyRuneInfoTitle = "파편 정보";
-    [SerializeField, TextArea] private string emptyRuneInfoEffect = "파편을 선택하면 정보가 표시된다.";
+    [SerializeField] private string emptyRuneInfoTitle;
+    [SerializeField, TextArea] private string emptyRuneInfoEffect;
 
     [Header("Info Rarity Colors")]
     [SerializeField] private Color commonRarityColor = Color.white;
@@ -69,6 +71,9 @@ public class RuneSettingPanel : MonoBehaviour
     private Coroutine runeSelectPanelMoveCoroutine;
     private RuneSlotButton selectedRuneSlot;
     private RuneData selectedPurchaseRune;
+    private RuneData currentDisplayedRune;
+
+    public bool IsDisplayingRuneInfo => currentDisplayedRune != null;
 
     public bool IsRuneInteractionEnabled => runeSelectPanelAllowed;
     public bool ShouldClearInfoOnHoverExit => !runeSelectPanelAllowed;
@@ -88,6 +93,7 @@ public class RuneSettingPanel : MonoBehaviour
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
         AutoBindRuneInfoTexts();
+        EnsureDynamicInfoTextOwnership();
         BindSharedSkillSettingPanel();
         BindRuneSelectPanelRect();
         ClearRuneInfo();
@@ -120,10 +126,13 @@ public class RuneSettingPanel : MonoBehaviour
 
     private void OnEnable()
     {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
         AutoBindRuneInfoTexts();
+        EnsureDynamicInfoTextOwnership();
         BindSharedSkillSettingPanel();
         BindRuneSelectPanelRect();
         BindCommonRunePurchaseUI();
@@ -140,11 +149,18 @@ public class RuneSettingPanel : MonoBehaviour
 
     private void OnDisable()
     {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         if (runeSelectPanelMoveCoroutine != null)
         {
             StopCoroutine(runeSelectPanelMoveCoroutine);
             runeSelectPanelMoveCoroutine = null;
         }
+    }
+
+    private void OnLocaleChanged(Locale _)
+    {
+        if (currentDisplayedRune != null)
+            ShowRuneInfo(currentDisplayedRune);
     }
 
     private void LateUpdate()
@@ -727,6 +743,8 @@ public class RuneSettingPanel : MonoBehaviour
             ShowWarning("선택된 파편이 없다.");
             return;
         }
+
+        currentDisplayedRune = runeData;
 
         if (IsRuneLockedForCurrentState(runeData))
         {
@@ -1512,9 +1530,7 @@ public class RuneSettingPanel : MonoBehaviour
         }
 
         if (runeInfoTitleText != null)
-            runeInfoTitleText.text = string.IsNullOrWhiteSpace(runeData.Name)
-                ? runeData.RuneId
-                : runeData.Name;
+            runeInfoTitleText.text = GameDataLocalization.RuneName(runeData);
 
         if (runeInfoRarityText != null)
         {
@@ -1557,11 +1573,14 @@ public class RuneSettingPanel : MonoBehaviour
 
     private void ClearRuneInfo()
     {
+        currentDisplayedRune = null;
         AutoBindRuneInfoTexts();
         HideSkillOnlyInfoObjects();
 
         if (runeInfoTitleText != null)
-            runeInfoTitleText.text = emptyRuneInfoTitle;
+            runeInfoTitleText.text = string.IsNullOrWhiteSpace(emptyRuneInfoTitle)
+                ? GameLocalization.Get(LocalizationKeys.Rune.InfoTitle)
+                : emptyRuneInfoTitle;
 
         if (runeInfoRarityText != null)
         {
@@ -1573,7 +1592,9 @@ public class RuneSettingPanel : MonoBehaviour
         {
             runeInfoEffectText.richText = true;
             runeInfoEffectText.overrideColorTags = false;
-            runeInfoEffectText.text = emptyRuneInfoEffect;
+            runeInfoEffectText.text = string.IsNullOrWhiteSpace(emptyRuneInfoEffect)
+                ? GameLocalization.Get(LocalizationKeys.Rune.InfoEmptyDescription)
+                : emptyRuneInfoEffect;
         }
     }
 
@@ -1607,6 +1628,13 @@ public class RuneSettingPanel : MonoBehaviour
             else if (runeInfoRarityText == null && objectName == "RarityText")
                 runeInfoRarityText = texts[i];
         }
+    }
+
+    private void EnsureDynamicInfoTextOwnership()
+    {
+        foreach (TMP_Text text in new[] { runeInfoTitleText, runeInfoEffectText, runeInfoRarityText })
+            if (text != null && text.GetComponent<LocalizationIgnore>() == null)
+                text.gameObject.AddComponent<LocalizationIgnore>();
     }
 
     private void BindSharedSkillSettingPanel()
@@ -1724,15 +1752,15 @@ public class RuneSettingPanel : MonoBehaviour
         string rarity = runeData.Rarity.Trim();
 
         if (string.Equals(rarity, "Exclusive", StringComparison.OrdinalIgnoreCase))
-            return "고유 파편";
+            return GameLocalization.Get(LocalizationKeys.FragmentRarity.Exclusive);
         if (string.Equals(rarity, "Common", StringComparison.OrdinalIgnoreCase))
-            return "각인 파편";
+            return GameLocalization.Get(LocalizationKeys.FragmentRarity.Common);
         if (string.Equals(rarity, "Rare", StringComparison.OrdinalIgnoreCase))
-            return "일반 파편";
+            return GameLocalization.Get(LocalizationKeys.FragmentRarity.Rare);
         if (string.Equals(rarity, "Unique", StringComparison.OrdinalIgnoreCase))
-            return "축복 파편";
+            return GameLocalization.Get(LocalizationKeys.FragmentRarity.Unique);
 
-        return rarity;
+        return string.Empty;
     }
 
     private Color GetRuneInfoRarityColor(string rarity)
@@ -1765,24 +1793,14 @@ public class RuneSettingPanel : MonoBehaviour
         if (runeData == null)
             return string.Empty;
 
-        if (!string.IsNullOrWhiteSpace(runeData.EffectDesc))
+        string localizedDescription = GameDataLocalization.RuneDescription(runeData);
+        if (!string.IsNullOrWhiteSpace(localizedDescription))
         {
-            string effectDesc = NormalizeRuneEffectDesc(runeData.EffectDesc);
+            string effectDesc = NormalizeRuneEffectDesc(localizedDescription);
             return ReplaceRuneEffectTokens(effectDesc, runeData.ValueRate, runeData.CountRate);
         }
 
-        StringBuilder builder = new StringBuilder();
-
-        if (!string.IsNullOrWhiteSpace(runeData.EffectIds))
-        {
-            builder.Append("- ");
-            builder.Append(runeData.EffectIds);
-        }
-
-        if (builder.Length <= 0)
-            builder.Append("등록된 효과 설명이 없습니다.");
-
-        return StripRichTextTags(builder.ToString());
+        return GameLocalization.Get(LocalizationKeys.Rune.NoEffectDescription);
     }
 
     private string ReplaceRuneEffectTokens(string source, string valueRate, string countRate)
@@ -1874,30 +1892,7 @@ public class RuneSettingPanel : MonoBehaviour
         if (entry == null)
             return string.Empty;
 
-        if (entry.EffectData != null && !string.IsNullOrWhiteSpace(entry.EffectData.Name))
-            return entry.EffectData.Name;
-
-        return entry.EffectId;
-    }
-
-    private string BuildEffectAmountText(SkillEffectEntry entry)
-    {
-        if (entry == null)
-            return string.Empty;
-
-        List<string> parts = new List<string>();
-
-        if (entry.ValueAmount != 0)
-        {
-            string valueText = entry.ValueAmount.ToString();
-
-            parts.Add("수치 " + valueText);
-        }
-
-        if (entry.CountAmount > 0)
-            parts.Add("횟수 " + entry.CountAmount);
-
-        return parts.Count > 0 ? "(" + string.Join(", ", parts) + ")" : string.Empty;
+        return entry.EffectData != null ? GameDataLocalization.EffectName(entry.EffectData) : string.Empty;
     }
 
     public void SaveBeforeBattle()

@@ -4,6 +4,8 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 [DisallowMultipleComponent]
 public sealed class LobbyTutorialController : MonoBehaviour
@@ -23,28 +25,28 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [SerializeField] private TMP_Text dialogueText;
     [SerializeField] private Button nextButton;
     [SerializeField] private RectTransform nextButtonIndicator;
-    [SerializeField] private string speakerName = "¿¤¸¯";
+    [SerializeField] private string speakerNameKey = LocalizationKeys.Tutorial.SpeakerElric;
 
     [Header("Text Typewriter")]
-    [Tooltip("1ÃÊ¿¡ Ç¥½ÃÇÒ ±ÛÀÚ ¼öÀÔ´Ï´Ù.")]
+    [Tooltip("1ì´ˆì— í‘œì‹œí•  ê¸€ì ìˆ˜ì…ë‹ˆë‹¤.")]
     [Min(1f)]
     [SerializeField] private float charactersPerSecond = 30f;
 
-    [Header("¹®Àå ³Ñ±è »ç¿îµå")]
-    [Tooltip("´ÙÀ½ ¹®ÀåÀ¸·Î ³Ñ¾î°¥ ¶§ Àç»ıÇÒ SFXÀÔ´Ï´Ù. AudioManagerÀÇ »ç¿îµå DB¿¡¼­ ¼±ÅÃÇÕ´Ï´Ù.")]
+    [Header("ë¬¸ì¥ ë„˜ê¹€ ì‚¬ìš´ë“œ")]
+    [Tooltip("ë‹¤ìŒ ë¬¸ì¥ìœ¼ë¡œ ë„˜ì–´ê°ˆ ë•Œ ì¬ìƒí•  SFXì…ë‹ˆë‹¤. AudioManagerì˜ ì‚¬ìš´ë“œ DBì—ì„œ ì„ íƒí•©ë‹ˆë‹¤.")]
     [SerializeField, SoundId(SoundCategory.Sfx)]
     private string lineAdvanceSoundId = AudioIds.Sfx.NormalButtonClick;
 
-    [Tooltip("¹®Àå ³Ñ±è »ç¿îµåÀÇ º¼·ıÀÔ´Ï´Ù.")]
+    [Tooltip("ë¬¸ì¥ ë„˜ê¹€ ì‚¬ìš´ë“œì˜ ë³¼ë¥¨ì…ë‹ˆë‹¤.")]
     [SerializeField, Range(0f, 1f)]
     private float lineAdvanceSoundVolume = 0.5f;
 
     [Header("Next Button Indicator")]
-    [Tooltip("NextButtonÀÇ ÀÚ½Ä Image°¡ À§¾Æ·¡·Î ¿òÁ÷ÀÌ´Â °Å¸®ÀÔ´Ï´Ù.")]
+    [Tooltip("NextButtonì˜ ìì‹ Imageê°€ ìœ„ì•„ë˜ë¡œ ì›€ì§ì´ëŠ” ê±°ë¦¬ì…ë‹ˆë‹¤.")]
     [Min(0f)]
     [SerializeField] private float indicatorMoveDistance = 6f;
 
-    [Tooltip("NextButtonÀÇ ÀÚ½Ä Image°¡ À§¾Æ·¡·Î ¿òÁ÷ÀÌ´Â ¼ÓµµÀÔ´Ï´Ù.")]
+    [Tooltip("NextButtonì˜ ìì‹ Imageê°€ ìœ„ì•„ë˜ë¡œ ì›€ì§ì´ëŠ” ì†ë„ì…ë‹ˆë‹¤.")]
     [Min(0f)]
     [SerializeField] private float indicatorMoveSpeed = 2.5f;
 
@@ -58,25 +60,25 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float fragmentTransferStartSoundVolume = 0.5f;
 
     [Header("Fragment Transfer Animation")]
-    [Tooltip("Æ©Åä¸®¾ó Á¾·á ÈÄ Fragment01~03ÀÌ ³¯¾Æ°¥ SettingButton À§Ä¡ÀÔ´Ï´Ù. ºñ¿öµÎ¸é ÀÌ¸§ÀÌ SettingButtonÀÎ ¿ÀºêÁ§Æ®¸¦ ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("íŠœí† ë¦¬ì–¼ ì¢…ë£Œ í›„ Fragment01~03ì´ ë‚ ì•„ê°ˆ SettingButton ìœ„ì¹˜ì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ì´ë¦„ì´ SettingButtonì¸ ì˜¤ë¸Œì íŠ¸ë¥¼ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private RectTransform fragmentTransferTarget;
-    [Tooltip("À¯¹° ±¸¸Å ÀÌµ¿ ¿¬Ãâ°ú µ¿ÀÏÇÏ°Ô »ç¿ëÇÒ RelicPurchaseTransferEffect Texture2DÀÔ´Ï´Ù. Texture TypeÀº Default¸¦ »ç¿ëÇÒ ¼ö ÀÖ½À´Ï´Ù.")]
+    [Tooltip("ìœ ë¬¼ êµ¬ë§¤ ì´ë™ ì—°ì¶œê³¼ ë™ì¼í•˜ê²Œ ì‚¬ìš©í•  RelicPurchaseTransferEffect Texture2Dì…ë‹ˆë‹¤. Texture Typeì€ Defaultë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.")]
     [SerializeField] private Texture2D fragmentTransferEffectTexture;
-    [Tooltip("»ı¼ºµÇ´Â RelicPurchaseTransferEffectÀÇ Å©±âÀÔ´Ï´Ù.")]
+    [Tooltip("ìƒì„±ë˜ëŠ” RelicPurchaseTransferEffectì˜ í¬ê¸°ì…ë‹ˆë‹¤.")]
     [SerializeField] private Vector2 fragmentTransferEffectSize = new Vector2(96f, 96f);
-    [Tooltip("ÆÄÆíÀÌ Ã³À½ ¿À¸¥ÂÊ À§·Î Æ¢¾î ¿À¸£´Â UI ÀÌµ¿·®ÀÔ´Ï´Ù.")]
+    [Tooltip("íŒŒí¸ì´ ì²˜ìŒ ì˜¤ë¥¸ìª½ ìœ„ë¡œ íŠ€ì–´ ì˜¤ë¥´ëŠ” UI ì´ë™ëŸ‰ì…ë‹ˆë‹¤.")]
     [SerializeField] private Vector2 fragmentTransferBounceOffset = new Vector2(180f, 120f);
-    [Tooltip("ÆÄÆíÀÌ Ã³À½ Æ¢¾î ¿À¸£´Â ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("íŒŒí¸ì´ ì²˜ìŒ íŠ€ì–´ ì˜¤ë¥´ëŠ” ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0.01f)] private float fragmentTransferBounceDuration = 0.18f;
-    [Tooltip("Æ¢¾î ¿À¸¥ µÚ SettingButton±îÁö ÀÌµ¿ÇÏ´Â ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("íŠ€ì–´ ì˜¤ë¥¸ ë’¤ SettingButtonê¹Œì§€ ì´ë™í•˜ëŠ” ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0.01f)] private float fragmentTransferFlyDuration = 0.32f;
-    [Tooltip("Fragment01~03ÀÌ RelicPurchaseTransferEffect·Î ÃÒ¶ó¶ô ±³Ã¼µÇ´Â °£°İÀÔ´Ï´Ù.")]
+    [Tooltip("Fragment01~03ì´ RelicPurchaseTransferEffectë¡œ ì´¤ë¼ë½ êµì²´ë˜ëŠ” ê°„ê²©ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0f)] private float fragmentTransferSwapInterval = 0.08f;
-    [Tooltip("°¢ RelicPurchaseTransferEffect°¡ SettingButtonÀ¸·Î Ãâ¹ßÇÏ´Â °£°İÀÔ´Ï´Ù. ¾Õ È¿°ú°¡ ÀÌµ¿ ÁßÀÌ¾îµµ ´ÙÀ½ È¿°ú°¡ Ãâ¹ßÇÕ´Ï´Ù.")]
+    [Tooltip("ê° RelicPurchaseTransferEffectê°€ SettingButtonìœ¼ë¡œ ì¶œë°œí•˜ëŠ” ê°„ê²©ì…ë‹ˆë‹¤. ì• íš¨ê³¼ê°€ ì´ë™ ì¤‘ì´ì–´ë„ ë‹¤ìŒ íš¨ê³¼ê°€ ì¶œë°œí•©ë‹ˆë‹¤.")]
     [SerializeField, Min(0f)] private float fragmentTransferLaunchInterval = 0.12f;
-    [Tooltip("RelicPurchaseTransferEffect°¡ »ı¼ºµÉ ¶§ÀÇ Å©±â ¹èÀ²ÀÔ´Ï´Ù.")]
+    [Tooltip("RelicPurchaseTransferEffectê°€ ìƒì„±ë  ë•Œì˜ í¬ê¸° ë°°ìœ¨ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0.05f)] private float fragmentTransferStartScale = 1f;
-    [Tooltip("SettingButton¿¡ µµÂøÇÒ ¶§ RelicPurchaseTransferEffectÀÇ ÃÖÁ¾ Å©±â ¹èÀ²ÀÔ´Ï´Ù.")]
+    [Tooltip("SettingButtonì— ë„ì°©í•  ë•Œ RelicPurchaseTransferEffectì˜ ìµœì¢… í¬ê¸° ë°°ìœ¨ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0.05f)] private float fragmentTransferEndScale = 0.35f;
 
     [Header("Fragment Transfer Trail")]
@@ -87,37 +89,32 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float fragmentTrailStartAlpha = 0.48f;
 
     [Header("Tutorial Dialogue Text")]
-    [Tooltip("ÃÖÃÊ ·Îºñ ÁøÀÔ ½Ã ¿¤¸¯ÀÌ ¸»ÇÏ´Â ´ë»çÀÔ´Ï´Ù. À§¿¡¼­ºÎÅÍ ¼ø¼­´ë·Î Àç»ıµË´Ï´Ù.")]
+    [Tooltip("Initial Lobby dialogue localization keys, played in order.")]
     [TextArea(2, 4)]
     [SerializeField]
     private string[] introDialogue =
     {
-        "µåµğ¾î ¸ğµÎ µµÂøÇÏ¼Ì±º¿ä. ±â´Ù¸®°í ÀÖ¾ú½À´Ï´Ù.",
-        "¿ì¼±, ÀÌ°ÍÀ» ¹Ş¾Æ ÁÖ¼¼¿ä.",
-        "ÀÌ¹Ì ÀÌ °ÅÁ¡°ú ¾ŞÄ¿¸µÀ» ¸¶ÃÄ µÎ¾ú½À´Ï´Ù.",
-        "Å½»ç Áß ¸ğµÎ°¡ ¾²·¯Áö´Â »óÈ²ÀÌ »ı±â´õ¶óµµ, ¾ŞÄ¿°¡ ¿©·¯ºĞÀ» ÀÌ°÷À¸·Î ÀÌ²ø¾î ÁÙ °Ì´Ï´Ù.",
-        "±×¸®°í ÀÌ°Íµéµµ ÇÔ²² ¹Ş¾Æ ÁÖ¼¼¿ä.",
-        "ÀÌ ÆÄÆíµéÀ» ÀûÀıÈ÷ È°¿ëÇÏ½Å´Ù¸é ¿©·¯ºĞÀÇ ´É·ÂÀ» ÇÑÃş ²ø¾î¿Ã¸± ¼ö ÀÖÀ» °Ì´Ï´Ù.",
-        "ÁØºñ°¡ ³¡³ª¸é ´Ù½Ã Àú¿¡°Ô ¸»À» °É¾î ÁÖ¼¼¿ä."
+        LocalizationKeys.Tutorial.Intro01, LocalizationKeys.Tutorial.Intro02, LocalizationKeys.Tutorial.Intro03,
+        LocalizationKeys.Tutorial.Intro04, LocalizationKeys.Tutorial.Intro05, LocalizationKeys.Tutorial.Intro06,
+        LocalizationKeys.Tutorial.Intro07
     };
 
-    [Tooltip("FragmentGroupÀ» Ç¥½ÃÇÏ±â ½ÃÀÛÇÒ ÃÖÃÊ ´ë»ç ¹øÈ£ÀÔ´Ï´Ù. 0ºÎÅÍ ½ÃÀÛÇÕ´Ï´Ù.")]
+    [Tooltip("FragmentGroupì„ í‘œì‹œí•˜ê¸° ì‹œì‘í•  ìµœì´ˆ ëŒ€ì‚¬ ë²ˆí˜¸ì…ë‹ˆë‹¤. 0ë¶€í„° ì‹œì‘í•©ë‹ˆë‹¤.")]
     [Min(0)]
     [SerializeField] private int fragmentShowStartIndex = 4;
 
     [Header("First Expedition Dialogue Text")]
-    [Tooltip("ÃÖÃÊ Æ©Åä¸®¾ó ÀÌÈÄ ¿¤¸¯¿¡°Ô ´Ù½Ã ¸»À» °É¾úÀ» ¶§ ³ª¿À´Â ´ë»çÀÔ´Ï´Ù.")]
+    [Tooltip("Post-intro dialogue localization keys, played in order.")]
     [TextArea(2, 4)]
     [SerializeField]
     private string[] firstExpeditionDialogue =
     {
-        "ÁØºñ¸¦ ¸¶Ä¡¼Ì±º¿ä.",
-        "Ã¹ Å½»çÁö´Â ·Îµ¥¸¥ ÆóÇãÀÔ´Ï´Ù.",
-        "±×°÷¿¡¼­ ¿¬±¸¿¡ ÇÊ¿äÇÑ Àç·á¸¦ È®º¸ÇØ ¿Í ÁÖ¼¼¿ä."
+        LocalizationKeys.Tutorial.FirstExpedition01, LocalizationKeys.Tutorial.FirstExpedition02,
+        LocalizationKeys.Tutorial.FirstExpedition03
     };
 
     [Header("Starter Common Runes")]
-    [Tooltip("Ã¹ ·Îºñ Æ©Åä¸®¾ó¿¡¼­ Áö±ŞÇÒ °ø¿ë ·é ID 3°³ÀÔ´Ï´Ù.")]
+    [Tooltip("ì²« ë¡œë¹„ íŠœí† ë¦¬ì–¼ì—ì„œ ì§€ê¸‰í•  ê³µìš© ë£¬ ID 3ê°œì…ë‹ˆë‹¤.")]
     [SerializeField] private string[] starterRuneIds = new string[3];
 
     private DialogueMode dialogueMode;
@@ -161,7 +158,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     private IEnumerator Start()
     {
-        // DataManager¿Í ·Îºñ ·±Å¸ÀÓ µ¥ÀÌÅÍ°¡ ÁØºñµÈ ´ÙÀ½ ÃÖÃÊ ÁøÀÔ ¿©ºÎ¸¦ È®ÀÎÇÕ´Ï´Ù.
+        // DataManagerì™€ ë¡œë¹„ ëŸ°íƒ€ì„ ë°ì´í„°ê°€ ì¤€ë¹„ëœ ë‹¤ìŒ ìµœì´ˆ ì§„ì… ì—¬ë¶€ë¥¼ í™•ì¸í•©ë‹ˆë‹¤.
         while (DataManager.Instance == null || DataManager.Instance.LobbyRuntimeStore == null)
             yield return null;
 
@@ -170,8 +167,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
         if (lobby.TutorialProgress == LobbyTutorialProgress.NotStarted)
         {
-            // ÃÖÃÊ Æ©Åä¸®¾óÀº ¾À ÀüÈ¯ÀÌ È­¸éÀ» °¡¸®°í ÀÖ´Â µ¿¾È ¹Ì¸® ÁØºñÇÕ´Ï´Ù.
-            // ÀÏ¹İ ·Îºñ È­¸éÀÌ ¸ÕÀú ³ëÃâµÈ µÚ ÆĞ³ÎÀÌ ÄÑÁö´Â ±ôºıÀÓÀ» ¹æÁöÇÕ´Ï´Ù.
+            // ìµœì´ˆ íŠœí† ë¦¬ì–¼ì€ ì”¬ ì „í™˜ì´ í™”ë©´ì„ ê°€ë¦¬ê³  ìˆëŠ” ë™ì•ˆ ë¯¸ë¦¬ ì¤€ë¹„í•©ë‹ˆë‹¤.
+            // ì¼ë°˜ ë¡œë¹„ í™”ë©´ì´ ë¨¼ì € ë…¸ì¶œëœ ë’¤ íŒ¨ë„ì´ ì¼œì§€ëŠ” ê¹œë¹¡ì„ì„ ë°©ì§€í•©ë‹ˆë‹¤.
             BeginIntroDialogue();
         }
     }
@@ -180,15 +177,28 @@ public sealed class LobbyTutorialController : MonoBehaviour
     {
         UpdateNextButtonIndicatorMotion();
 
-        // Æ©Åä¸®¾ó ´ëÈ­°¡ ÁøÇà ÁßÀÏ ¶§´Â Space Å°µµ ¸¶¿ì½º Å¬¸¯°ú µ¿ÀÏÇÏ°Ô Ã³¸®ÇÕ´Ï´Ù.
+        // íŠœí† ë¦¬ì–¼ ëŒ€í™”ê°€ ì§„í–‰ ì¤‘ì¼ ë•ŒëŠ” Space í‚¤ë„ ë§ˆìš°ìŠ¤ í´ë¦­ê³¼ ë™ì¼í•˜ê²Œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
         if (dialogueMode != DialogueMode.None && Input.GetKeyDown(KeyCode.Space))
             AdvanceDialogue();
     }
 
     private void OnDisable()
     {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         StopTypewriter();
         ReleaseCameraPause();
+    }
+
+    private void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+    }
+
+    private void OnLocaleChanged(Locale _)
+    {
+        if (dialogueMode != DialogueMode.None)
+            RefreshDialogueStep();
     }
 
     private void OnDestroy()
@@ -245,8 +255,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
         if (dialogueMode == DialogueMode.None)
             return;
 
-        // ÀÎÆ®·Î¿Í µ¿ÀÏÇÏ°Ô Å¸ÀÌÇÎ Áß Å¬¸¯ÇÏ¸é ÇöÀç ¹®ÀåÀ» Áï½Ã ÀüºÎ Ç¥½ÃÇÕ´Ï´Ù.
-        // ¹®ÀåÀÌ ¸ğµÎ Ç¥½ÃµÈ »óÅÂ¿¡¼­ ´Ù½Ã Å¬¸¯ÇØ¾ß ´ÙÀ½ ´ë»ç·Î ³Ñ¾î°©´Ï´Ù.
+        // ì¸íŠ¸ë¡œì™€ ë™ì¼í•˜ê²Œ íƒ€ì´í•‘ ì¤‘ í´ë¦­í•˜ë©´ í˜„ì¬ ë¬¸ì¥ì„ ì¦‰ì‹œ ì „ë¶€ í‘œì‹œí•©ë‹ˆë‹¤.
+        // ë¬¸ì¥ì´ ëª¨ë‘ í‘œì‹œëœ ìƒíƒœì—ì„œ ë‹¤ì‹œ í´ë¦­í•´ì•¼ ë‹¤ìŒ ëŒ€ì‚¬ë¡œ ë„˜ì–´ê°‘ë‹ˆë‹¤.
         if (isTyping)
         {
             CompleteTypewriterImmediately();
@@ -270,7 +280,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
     }
 
     /// <summary>
-    /// ´ÙÀ½ ¹®ÀåÀ¸·Î ³Ñ¾î°¥ ¶§ AudioManager¿¡ µî·ÏµÈ SFX¸¦ Àç»ıÇÕ´Ï´Ù.
+    /// ë‹¤ìŒ ë¬¸ì¥ìœ¼ë¡œ ë„˜ì–´ê°ˆ ë•Œ AudioManagerì— ë“±ë¡ëœ SFXë¥¼ ì¬ìƒí•©ë‹ˆë‹¤.
     /// </summary>
     private void PlayLineAdvanceSound()
     {
@@ -280,7 +290,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
         if (AudioManager.Instance == null)
         {
             Debug.LogWarning(
-                $"[{nameof(LobbyTutorialController)}] AudioManager.Instance¸¦ Ã£Áö ¸øÇß½À´Ï´Ù. ¹®Àå ³Ñ±è »ç¿îµå¸¦ Àç»ıÇÒ ¼ö ¾ø½À´Ï´Ù.",
+                $"[{nameof(LobbyTutorialController)}] AudioManager.Instanceë¥¼ ì°¾ì§€ ëª»í–ˆìŠµë‹ˆë‹¤. ë¬¸ì¥ ë„˜ê¹€ ì‚¬ìš´ë“œë¥¼ ì¬ìƒí•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.",
                 this);
             return;
         }
@@ -291,7 +301,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
     private void RefreshDialogueStep()
     {
         if (nameText != null)
-            nameText.text = speakerName;
+            nameText.text = GameLocalization.Get(speakerNameKey);
 
         string line = string.Empty;
 
@@ -306,7 +316,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
             SetTutorialDisplay(false);
         }
 
-        StartTypewriter(line);
+        StartTypewriter(GameLocalization.Get(line));
     }
 
 
@@ -341,7 +351,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
         typewriterCoroutine = StartCoroutine(TypeDialogueLine());
 
-        // Å¸ÀÌÇÎ Áß¿¡µµ Å¬¸¯À» ¹Ş¾Æ ÇöÀç ¹®ÀåÀ» Áï½Ã ¿Ï¼ºÇÒ ¼ö ÀÖ°Ô ÇÕ´Ï´Ù.
+        // íƒ€ì´í•‘ ì¤‘ì—ë„ í´ë¦­ì„ ë°›ì•„ í˜„ì¬ ë¬¸ì¥ì„ ì¦‰ì‹œ ì™„ì„±í•  ìˆ˜ ìˆê²Œ í•©ë‹ˆë‹¤.
         if (nextButton != null)
             nextButton.interactable = true;
     }
@@ -416,7 +426,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     private void ApplyIntroDisplay(int index)
     {
-        // ÆÄÆíÀÌ Ã³À½ Ç¥½ÃµÈ µÚ¿¡´Â ¸¶Áö¸· ´ë»ç°¡ ³¡³ª ÆĞ³ÎÀÌ ´İÈú ¶§±îÁö °è¼Ó À¯ÁöÇÕ´Ï´Ù.
+        // íŒŒí¸ì´ ì²˜ìŒ í‘œì‹œëœ ë’¤ì—ëŠ” ë§ˆì§€ë§‰ ëŒ€ì‚¬ê°€ ëë‚˜ íŒ¨ë„ì´ ë‹«í ë•Œê¹Œì§€ ê³„ì† ìœ ì§€í•©ë‹ˆë‹¤.
         bool showFragments = index >= fragmentShowStartIndex;
 
         SetTutorialDisplay(showFragments);
@@ -446,7 +456,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
         dialogueMode = DialogueMode.None;
         dialogueIndex = 0;
 
-        // ¸¶Áö¸· ¹®Àå±îÁö ¿øº» Fragment¸¦ À¯ÁöÇÑ µÚ, ÆĞ³ÎÀÌ ´İÈù ´ÙÀ½ ¼øÂ÷ ÀÌµ¿ ¿¬ÃâÀ» ½ÃÀÛÇÕ´Ï´Ù.
+        // ë§ˆì§€ë§‰ ë¬¸ì¥ê¹Œì§€ ì›ë³¸ Fragmentë¥¼ ìœ ì§€í•œ ë’¤, íŒ¨ë„ì´ ë‹«íŒ ë‹¤ìŒ ìˆœì°¨ ì´ë™ ì—°ì¶œì„ ì‹œì‘í•©ë‹ˆë‹¤.
         SetDialogueVisible(false);
 
         if (finishedMode == DialogueMode.Intro)
@@ -461,7 +471,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
         if (finishedMode == DialogueMode.Intro)
         {
-            // ´ëÈ­¸¦ ³¡³»±â Àü¿¡ Next¸¦ ¿¬¼Ó ÀÔ·ÂÇØµµ Áö±ŞÀÌ ´©¶ôµÇÁö ¾Êµµ·Ï ÇÑ ¹ø ´õ º¸ÀåÇÕ´Ï´Ù.
+            // ëŒ€í™”ë¥¼ ëë‚´ê¸° ì „ì— Nextë¥¼ ì—°ì† ì…ë ¥í•´ë„ ì§€ê¸‰ì´ ëˆ„ë½ë˜ì§€ ì•Šë„ë¡ í•œ ë²ˆ ë” ë³´ì¥í•©ë‹ˆë‹¤.
             GrantStarterRunes();
             lobby.TutorialProgress = LobbyTutorialProgress.WaitingForSetup;
             SaveTutorialProgressImmediately();
@@ -553,10 +563,10 @@ public sealed class LobbyTutorialController : MonoBehaviour
         if (fragmentTransferTarget == null || transferCanvas == null || fragmentTransferEffectTexture == null)
         {
             if (fragmentTransferTarget == null)
-                Debug.LogWarning("[LobbyTutorialController] Fragment ÀÌµ¿ È¿°úÀÇ SettingButton ¸ñÇ¥¸¦ Ã£Áö ¸øÇß½À´Ï´Ù.", this);
+                Debug.LogWarning("[LobbyTutorialController] Fragment ì´ë™ íš¨ê³¼ì˜ SettingButton ëª©í‘œë¥¼ ì°¾ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.", this);
 
             if (fragmentTransferEffectTexture == null)
-                Debug.LogWarning("[LobbyTutorialController] Fragment Transfer Effect Texture°¡ ÁöÁ¤µÇÁö ¾Ê¾Ò½À´Ï´Ù.", this);
+                Debug.LogWarning("[LobbyTutorialController] Fragment Transfer Effect Textureê°€ ì§€ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.", this);
 
             SetTutorialDisplay(false);
             fragmentTransferCoroutine = null;
@@ -569,8 +579,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
         var preparedEffects = new List<(RawImage EffectImage, FragmentTransferSnapshot Snapshot)>();
 
-        // ¸ÕÀú Fragment01 -> 02 -> 03 ¼ø¼­·Î ÃÒ¶ó¶ô Effect·Î ±³Ã¼ÇÕ´Ï´Ù.
-        // ÀÌ ´Ü°è¿¡¼­´Â ¾ÆÁ÷ SettingButtonÀ¸·Î Ãâ¹ßÇÏÁö ¾Ê½À´Ï´Ù.
+        // ë¨¼ì € Fragment01 -> 02 -> 03 ìˆœì„œë¡œ ì´¤ë¼ë½ Effectë¡œ êµì²´í•©ë‹ˆë‹¤.
+        // ì´ ë‹¨ê³„ì—ì„œëŠ” ì•„ì§ SettingButtonìœ¼ë¡œ ì¶œë°œí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         for (int i = 0; i < snapshots.Count; i++)
         {
             FragmentTransferSnapshot snapshot = snapshots[i];
@@ -588,11 +598,11 @@ public sealed class LobbyTutorialController : MonoBehaviour
                 yield return new WaitForSecondsRealtime(fragmentTransferSwapInterval);
         }
 
-        // ¿øº» Fragment´Â ¸ğµÎ Effect·Î ±³Ã¼µÇ¾úÀ¸¹Ç·Î TutorialDisplay´Â Á¤¸®ÇÕ´Ï´Ù.
-        // Effect´Â º°µµÀÇ Canvas¿¡ »ı¼ºµÇ¾î ÀÖÀ¸¹Ç·Î °è¼Ó È­¸é¿¡ ³²¾Æ ÀÌµ¿ÇÕ´Ï´Ù.
+        // ì›ë³¸ FragmentëŠ” ëª¨ë‘ Effectë¡œ êµì²´ë˜ì—ˆìœ¼ë¯€ë¡œ TutorialDisplayëŠ” ì •ë¦¬í•©ë‹ˆë‹¤.
+        // EffectëŠ” ë³„ë„ì˜ Canvasì— ìƒì„±ë˜ì–´ ìˆìœ¼ë¯€ë¡œ ê³„ì† í™”ë©´ì— ë‚¨ì•„ ì´ë™í•©ë‹ˆë‹¤.
         SetTutorialDisplay(false);
 
-        // Effect01ÀÌ ÀÌµ¿ ÁßÀÏ ¶§ Effect02, Effect03µµ ¼øÂ÷ÀûÀ¸·Î Ãâ¹ßÇÏµµ·Ï °ãÃÄ Àç»ıÇÕ´Ï´Ù.
+        // Effect01ì´ ì´ë™ ì¤‘ì¼ ë•Œ Effect02, Effect03ë„ ìˆœì°¨ì ìœ¼ë¡œ ì¶œë°œí•˜ë„ë¡ ê²¹ì³ ì¬ìƒí•©ë‹ˆë‹¤.
         var runningTransfers = new List<Coroutine>();
         for (int i = 0; i < preparedEffects.Count; i++)
         {
@@ -615,7 +625,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
                 yield return new WaitForSecondsRealtime(fragmentTransferLaunchInterval);
         }
 
-        // ÀÌ¹Ì µ¿½Ã¿¡ ÁøÇà ÁßÀÎ ÀÌµ¿µéÀÌ ¸ğµÎ ³¡³¯ ¶§±îÁö¸¸ ±â´Ù¸³´Ï´Ù.
+        // ì´ë¯¸ ë™ì‹œì— ì§„í–‰ ì¤‘ì¸ ì´ë™ë“¤ì´ ëª¨ë‘ ëë‚  ë•Œê¹Œì§€ë§Œ ê¸°ë‹¤ë¦½ë‹ˆë‹¤.
         for (int i = 0; i < runningTransfers.Count; i++)
         {
             if (runningTransfers[i] != null)
@@ -984,7 +994,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
         if (SaveSystem.Instance == null)
         {
             Debug.LogWarning(
-                "[LobbyTutorialController] SaveSystem.Instance¸¦ Ã£Áö ¸øÇØ Æ©Åä¸®¾ó ÁøÇà »óÅÂ¸¦ Áï½Ã ÀúÀåÇÏÁö ¸øÇß½À´Ï´Ù.",
+                "[LobbyTutorialController] SaveSystem.Instanceë¥¼ ì°¾ì§€ ëª»í•´ íŠœí† ë¦¬ì–¼ ì§„í–‰ ìƒíƒœë¥¼ ì¦‰ì‹œ ì €ì¥í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.",
                 this);
             return;
         }
@@ -992,7 +1002,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
         if (!SaveSystem.Instance.SaveCurrentProgress())
         {
             Debug.LogWarning(
-                "[LobbyTutorialController] Æ©Åä¸®¾ó ÁøÇà »óÅÂ Áï½Ã ÀúÀå¿¡ ½ÇÆĞÇß½À´Ï´Ù.",
+                "[LobbyTutorialController] íŠœí† ë¦¬ì–¼ ì§„í–‰ ìƒíƒœ ì¦‰ì‹œ ì €ì¥ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.",
                 this);
         }
     }
@@ -1129,8 +1139,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
 
     /// <summary>
-    /// ´ëÈ­ NPC ÀÌ¹ÌÁö¸¦ Ç¥½ÃÇÏ°Å³ª ¼û±é´Ï´Ù.
-    /// ÀÌÈÄ ÆäÀÌµå, ½ºÄÉÀÏ µîÀÇ ÃÊ»óÈ­ ¿¬ÃâÀº ÀÌ ¸Ş¼­µå¸¦ È®ÀåÇØ¼­ Àû¿ëÇÒ ¼ö ÀÖ½À´Ï´Ù.
+    /// ëŒ€í™” NPC ì´ë¯¸ì§€ë¥¼ í‘œì‹œí•˜ê±°ë‚˜ ìˆ¨ê¹ë‹ˆë‹¤.
+    /// ì´í›„ í˜ì´ë“œ, ìŠ¤ì¼€ì¼ ë“±ì˜ ì´ˆìƒí™” ì—°ì¶œì€ ì´ ë©”ì„œë“œë¥¼ í™•ì¥í•´ì„œ ì ìš©í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
     /// </summary>
     private void SetNpcImageVisible(bool visible)
     {

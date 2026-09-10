@@ -4,6 +4,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 public class Setting : MonoBehaviour
@@ -174,6 +176,9 @@ public class Setting : MonoBehaviour
 
     private void OnEnable()
     {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+
         if (pendingPartyIndex < 0)
             return;
 
@@ -257,6 +262,8 @@ public class Setting : MonoBehaviour
 
     private void OnDisable()
     {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+
         if (areaMoveCoroutine != null)
         {
             StopCoroutine(areaMoveCoroutine);
@@ -264,6 +271,26 @@ public class Setting : MonoBehaviour
         }
 
         ResetTabButtonScaleEffects();
+    }
+
+    private void OnLocaleChanged(Locale _)
+    {
+        switch (currentTab)
+        {
+            case SettingTab.Preview:
+                ApplyEmptyInfoText(string.Empty, GameLocalization.Get(LocalizationKeys.CharacterSetting.PreviewInfo));
+                break;
+            case SettingTab.Skill when skillSettingPanelScript == null || !skillSettingPanelScript.IsDisplayingSkillInfo:
+                ApplyEmptyInfoText(
+                    GameLocalization.Get(LocalizationKeys.CharacterSetting.SkillInfoTitle),
+                    GameLocalization.Get(LocalizationKeys.CharacterSetting.SkillInfoEmpty));
+                break;
+            case SettingTab.Rune when runeSettingPanelScript == null || !runeSettingPanelScript.IsDisplayingRuneInfo:
+                ApplyEmptyInfoText(
+                    GameLocalization.Get(LocalizationKeys.CharacterSetting.RuneInfoTitle),
+                    GameLocalization.Get(LocalizationKeys.CharacterSetting.RuneInfoEmpty));
+                break;
+        }
     }
 
     private void OnDestroy()
@@ -607,7 +634,7 @@ public class Setting : MonoBehaviour
         SetSharedInfoArea(false);
         ApplyEmptyInfoText(
             string.Empty,
-            "파편/스킬의 정보가 표시된다.");
+            GameLocalization.Get(LocalizationKeys.CharacterSetting.PreviewInfo));
         RefreshTabButtons();
     }
 
@@ -642,8 +669,8 @@ public class Setting : MonoBehaviour
 
         SetSharedInfoArea(false);
         ApplyEmptyInfoText(
-            "스킬정보",
-            "스킬의 정보가 표시된다.");
+            GameLocalization.Get(LocalizationKeys.CharacterSetting.SkillInfoTitle),
+            GameLocalization.Get(LocalizationKeys.CharacterSetting.SkillInfoEmpty));
         RefreshTabButtons();
 
         // 상단 스킬 버튼으로 진입하면 무엇을 설정하는 화면인지 바로 알 수 있도록
@@ -673,8 +700,8 @@ public class Setting : MonoBehaviour
 
         SetSharedInfoArea(false);
         ApplyEmptyInfoText(
-            "파편정보",
-            "파편의 정보가 표시된다.");
+            GameLocalization.Get(LocalizationKeys.CharacterSetting.RuneInfoTitle),
+            GameLocalization.Get(LocalizationKeys.CharacterSetting.RuneInfoEmpty));
         RefreshTabButtons();
 
         // 파편 탭 진입 시 보유 중인 첫 번째 파편 정보를 기본으로 표시한다.
@@ -1166,6 +1193,7 @@ public class Setting : MonoBehaviour
             }
         }
     }
+
 
     private void BindInfoAreaIfNeeded()
     {

@@ -6,11 +6,13 @@ using System.Reflection;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 /// <summary>
-/// µµ°¨ ÆĞ³ÎÀÇ ÅÇ, ºĞ·ù, ¾ÆÀÌÄÜ ¸ñ·Ï, ¼±ÅÃ Á¤º¸ Ç¥½Ã¸¦ °ü¸®ÇÕ´Ï´Ù.
-/// ½ÇÁ¦ µ¥ÀÌÅÍ¿Í ¾ÆÀÌÄÜÀº DataManager¿¡ µî·ÏµÈ GameData¸¦ »ç¿ëÇÕ´Ï´Ù.
+/// ë„ê° íŒ¨ë„ì˜ íƒ­, ë¶„ë¥˜, ì•„ì´ì½˜ ëª©ë¡, ì„ íƒ ì •ë³´ í‘œì‹œë¥¼ ê´€ë¦¬í•©ë‹ˆë‹¤.
+/// ì‹¤ì œ ë°ì´í„°ì™€ ì•„ì´ì½˜ì€ DataManagerì— ë“±ë¡ëœ GameDataë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
 /// </summary>
 public class RecordPanelUI : MonoBehaviour
 {
@@ -31,7 +33,7 @@ public class RecordPanelUI : MonoBehaviour
     }
 
     private const string UnknownDisplayName = "???";
-    private const string UnknownDescription = "¾ÆÁ÷ ±â·ÏµÇÁö ¾Ê¾Ò½À´Ï´Ù";
+    private static string UnknownDescription => GameLocalization.Get(LocalizationKeys.Record.UnknownDescription);
 
     [Header("Main Tab Panels")]
     [SerializeField] private GameObject uniqueContent;
@@ -92,7 +94,7 @@ public class RecordPanelUI : MonoBehaviour
     [SerializeField] private Color exclusiveRarityColor = new Color(1f, 0.82f, 0.2f, 1f);
 
     [Header("Effect Value Color")]
-    [Tooltip("À¯¹° È¿°ú ¼³¸í¿¡¼­ {ValueRate1}, {ValueRate2}, {CountRate1} µîÀ¸·Î Ä¡È¯µÇ´Â ¼öÄ¡ÀÇ °­Á¶ »ö»óÀÔ´Ï´Ù.")]
+    [Tooltip("ìœ ë¬¼ íš¨ê³¼ ì„¤ëª…ì—ì„œ {ValueRate1}, {ValueRate2}, {CountRate1} ë“±ìœ¼ë¡œ ì¹˜í™˜ë˜ëŠ” ìˆ˜ì¹˜ì˜ ê°•ì¡° ìƒ‰ìƒì…ë‹ˆë‹¤.")]
     [SerializeField] private Color valueHighlightColor = Color.yellow;
 
     [Header("Fragment Info")]
@@ -122,9 +124,9 @@ public class RecordPanelUI : MonoBehaviour
     [SerializeField] private bool selectFirstItemAutomatically = true;
 
     [Header("Record Scroll Padding")]
-    [Tooltip("¸ğµç µµ°¨ ½ºÅ©·Ñ¿¡¼­ ¸¶Áö¸· ½½·ÔÀÌ Viewport ¸¶½ºÅ©¿¡ Àß¸®Áö ¾Êµµ·Ï Content ÇÏ´Ü¿¡ Ãß°¡ÇÏ´Â °øÅë ¿©¹éÀÔ´Ï´Ù.")]
+    [Tooltip("ëª¨ë“  ë„ê° ìŠ¤í¬ë¡¤ì—ì„œ ë§ˆì§€ë§‰ ìŠ¬ë¡¯ì´ Viewport ë§ˆìŠ¤í¬ì— ì˜ë¦¬ì§€ ì•Šë„ë¡ Content í•˜ë‹¨ì— ì¶”ê°€í•˜ëŠ” ê³µí†µ ì—¬ë°±ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0f)] private float contentBottomPadding = 40f;
-    [Tooltip("¸ğµç µµ°¨ ½ºÅ©·Ñ¿¡¼­ Ã¹ ½½·ÔÀÌ Viewport »ó´Ü¿¡ ³Ê¹« ºÙ°Å³ª Àß¸®Áö ¾Êµµ·Ï Content »ó´Ü¿¡ Ãß°¡ÇÏ´Â °øÅë ¿©¹éÀÔ´Ï´Ù.")]
+    [Tooltip("ëª¨ë“  ë„ê° ìŠ¤í¬ë¡¤ì—ì„œ ì²« ìŠ¬ë¡¯ì´ Viewport ìƒë‹¨ì— ë„ˆë¬´ ë¶™ê±°ë‚˜ ì˜ë¦¬ì§€ ì•Šë„ë¡ Content ìƒë‹¨ì— ì¶”ê°€í•˜ëŠ” ê³µí†µ ì—¬ë°±ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0f)] private float contentTopPadding = 20f;
 
     private readonly List<RecordIconSlotUI> spawnedSlots = new();
@@ -164,15 +166,26 @@ public class RecordPanelUI : MonoBehaviour
 
     private void OnEnable()
     {
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
         RecordDiscoveryService.BackfillFromCurrentState(GetDataManager());
         EnsureReferences();
         RefreshRecordCounts();
         ShowUniqueTab();
     }
 
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+    }
+
+    private void OnLocaleChanged(Locale _)
+    {
+        RefreshRarityInfo(selectedSlot);
+    }
+
     /// <summary>
-    /// µğ¹ö±× µµ°¨ Ç¥½Ã ¸ğµå¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-    /// trueÀÌ¸é ÀúÀåµÈ È¹µæ ÀÌ·ÂÀ» º¯°æÇÏÁö ¾Ê°í ¸ğµç Ç×¸ñÀ» UI¿¡¼­¸¸ °ø°³ÇÕ´Ï´Ù.
+    /// ë””ë²„ê·¸ ë„ê° í‘œì‹œ ëª¨ë“œë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+    /// trueì´ë©´ ì €ì¥ëœ íšë“ ì´ë ¥ì„ ë³€ê²½í•˜ì§€ ì•Šê³  ëª¨ë“  í•­ëª©ì„ UIì—ì„œë§Œ ê³µê°œí•©ë‹ˆë‹¤.
     /// </summary>
     public void SetDebugRevealAll(bool revealAll)
     {
@@ -247,19 +260,19 @@ public class RecordPanelUI : MonoBehaviour
         BuildItemList();
     }
 
-    // ±âÁ¸ Skill ÅÇÀÇ ÇÏÀ§ ¹öÆ° ¿¬°áÀÌ ³²¾Æ ÀÖ¾îµµ ¸ğµÎ Àü½Â ±â¾ï ¸ñ·ÏÀ¸·Î µ¿ÀÛÇÏµµ·Ï À¯ÁöÇÕ´Ï´Ù.
+    // ê¸°ì¡´ Skill íƒ­ì˜ í•˜ìœ„ ë²„íŠ¼ ì—°ê²°ì´ ë‚¨ì•„ ìˆì–´ë„ ëª¨ë‘ ì „ìŠ¹ ê¸°ì–µ ëª©ë¡ìœ¼ë¡œ ë™ì‘í•˜ë„ë¡ ìœ ì§€í•©ë‹ˆë‹¤.
     public void ShowSkillPassive() => BuildLegacySkillList(Category.Passive);
     public void ShowSkillUnique() => BuildLegacySkillList(Category.Unique);
     public void ShowSkillAbility() => BuildLegacySkillList(Category.Ability);
     public void ShowSkillPublic() => BuildLegacySkillList(Category.Public);
     public void ShowSkillCore() => BuildLegacySkillList(Category.Core);
 
-    // ±âÁ¸ ¹öÆ° ¿¬°á È£È¯.
+    // ê¸°ì¡´ ë²„íŠ¼ ì—°ê²° í˜¸í™˜.
     public void ShowCommonRunes() => BuildRuneList();
     public void ShowExclusiveRunes() => BuildRuneList();
 
     public void ShowPassiveRelics() => BuildRelicList();
-    // ±âÁ¸ ÇÁ¸®ÆÕ/¹öÆ° ÀÌº¥Æ® È£È¯¿ë. ¾×Æ¼ºê À¯¹°Àº ÀÌÁ¦ ¿¬¼ºÁ¦ ÅÇÀ¸·Î ÀÌµ¿Çß½À´Ï´Ù.
+    // ê¸°ì¡´ í”„ë¦¬íŒ¹/ë²„íŠ¼ ì´ë²¤íŠ¸ í˜¸í™˜ìš©. ì•¡í‹°ë¸Œ ìœ ë¬¼ì€ ì´ì œ ì—°ì„±ì œ íƒ­ìœ¼ë¡œ ì´ë™í–ˆìŠµë‹ˆë‹¤.
     public void ShowActiveRelics() => ShowCompoundTab();
 
     private void BuildUniqueSkillSections()
@@ -540,7 +553,7 @@ public class RecordPanelUI : MonoBehaviour
         if (rune == null)
             return string.Empty;
 
-        string description = rune.EffectDesc;
+        string description = GameDataLocalization.RuneDescription(rune);
         return FormatHighlightedEffectDescription(description, rune.ValueRate, rune.CountRate);
     }
 
@@ -577,18 +590,18 @@ public class RecordPanelUI : MonoBehaviour
 
     private string FormatHighlightedSkillDescription(SkillMasterData skill)
     {
-        if (skill == null || string.IsNullOrWhiteSpace(skill.Details))
+        if (skill == null)
             return string.Empty;
 
-        return FormatHighlightedEffectDescription(skill.Details, skill.ValueRate, skill.CountRate);
+        return FormatHighlightedEffectDescription(GameDataLocalization.SkillDetails(skill), skill.ValueRate, skill.CountRate);
     }
 
     private string FormatRelicEffectDescription(RelicData relic)
     {
-        if (relic == null || string.IsNullOrWhiteSpace(relic.EffectDesc))
+        if (relic == null)
             return string.Empty;
 
-        return FormatHighlightedEffectDescription(relic.EffectDesc, relic.ValueRate, relic.CountRate);
+        return FormatHighlightedEffectDescription(GameDataLocalization.RelicEffectDescription(relic), relic.ValueRate, relic.CountRate);
     }
 
     private string FormatHighlightedEffectDescription(string description, string valueRate, string countRate)
@@ -602,7 +615,7 @@ public class RecordPanelUI : MonoBehaviour
         result = ReplaceIndexedHighlightedValues(result, "ValueRate", valueRate, colorHex);
         result = ReplaceIndexedHighlightedValues(result, "CountRate", countRate, colorHex);
 
-        // ±âÁ¸ µ¥ÀÌÅÍÀÇ {ValueRate}, {CountRate} Ç¥±âµµ È£È¯À» À§ÇØ À¯ÁöÇÕ´Ï´Ù.
+        // ê¸°ì¡´ ë°ì´í„°ì˜ {ValueRate}, {CountRate} í‘œê¸°ë„ í˜¸í™˜ì„ ìœ„í•´ ìœ ì§€í•©ë‹ˆë‹¤.
         result = ReplaceHighlightedValue(result, "{ValueRate}", valueRate, colorHex);
         result = ReplaceHighlightedValue(result, "{CountRate}", countRate, colorHex);
 
@@ -647,7 +660,7 @@ public class RecordPanelUI : MonoBehaviour
 
         string displayValue = value.Trim();
 
-        // ½ÇÁ¦ °è»ê µ¥ÀÌÅÍÀÇ À½¼ö ºÎÈ£´Â À¯ÁöÇÏµÇ, ¼³¸í¿¡¼­´Â '°¨¼Ò' ¹®±¸¿Í Áßº¹µÇÁö ¾Êµµ·Ï ºÎÈ£¸¦ ¼û±é´Ï´Ù.
+        // ì‹¤ì œ ê³„ì‚° ë°ì´í„°ì˜ ìŒìˆ˜ ë¶€í˜¸ëŠ” ìœ ì§€í•˜ë˜, ì„¤ëª…ì—ì„œëŠ” 'ê°ì†Œ' ë¬¸êµ¬ì™€ ì¤‘ë³µë˜ì§€ ì•Šë„ë¡ ë¶€í˜¸ë¥¼ ìˆ¨ê¹ë‹ˆë‹¤.
         if (displayValue.Length > 1 &&
             displayValue[0] == '-' &&
             float.TryParse(
@@ -716,10 +729,8 @@ public class RecordPanelUI : MonoBehaviour
             if (discovered)
                 TryGetCompoundIcon(dataManager, compound.CompoundId, out icon);
 
-            string displayName = discovered
-                ? (string.IsNullOrWhiteSpace(compound.Name) ? compound.CompoundId : compound.Name)
-                : UnknownDisplayName;
-            string description = discovered ? compound.EffectDesc : UnknownDescription;
+            string displayName = discovered ? GameDataLocalization.CompoundName(compound) : UnknownDisplayName;
+            string description = discovered ? GameDataLocalization.CompoundDescription(compound) : UnknownDescription;
             RecordIconSlotUI slot = CreateSlot(compoundGridContent, icon, displayName, discovered, description, FormatRarityLabel(compound.Rarity, MainTab.Compound), compound.Rarity);
             if (slot != null)
                 slotCompounds[slot] = compound;
@@ -992,8 +1003,8 @@ public class RecordPanelUI : MonoBehaviour
             colors.normalColor = normalColor;
             colors.highlightedColor = originalColors.highlightedColor;
 
-            // EventSystemÀÌ ÀÌÀü ¹öÆ°À» Selected »óÅÂ·Î Àá½Ã À¯ÁöÇÏ´õ¶óµµ
-            // ºñ¼±ÅÃ ÅÇÀº ¼±ÅÃ »öÀ¸·Î º¸ÀÌÁö ¾Êµµ·Ï Selected »öµµ ±âº»»öÀ¸·Î ¸ÂÃä´Ï´Ù.
+            // EventSystemì´ ì´ì „ ë²„íŠ¼ì„ Selected ìƒíƒœë¡œ ì ì‹œ ìœ ì§€í•˜ë”ë¼ë„
+            // ë¹„ì„ íƒ íƒ­ì€ ì„ íƒ ìƒ‰ìœ¼ë¡œ ë³´ì´ì§€ ì•Šë„ë¡ Selected ìƒ‰ë„ ê¸°ë³¸ìƒ‰ìœ¼ë¡œ ë§ì¶¥ë‹ˆë‹¤.
             colors.selectedColor = normalColor;
         }
 
@@ -1216,8 +1227,8 @@ public class RecordPanelUI : MonoBehaviour
         if (rarityText != null)
         {
             rarityText.gameObject.SetActive(showRarity);
-            rarityText.text = showRarity && slot != null && slotRarityLabels.TryGetValue(slot, out string label)
-                ? label ?? string.Empty
+            rarityText.text = showRarity && slot != null && slotRarities.TryGetValue(slot, out string labelRarity)
+                ? FormatRarityLabel(labelRarity, currentMainTab)
                 : string.Empty;
         }
 
@@ -1320,7 +1331,7 @@ public class RecordPanelUI : MonoBehaviour
     }
 
     /// <summary>
-    /// µµ°¨¿¡¼­ ½ÇÁ¦ »ç¿ëÇÏ´Â ·¹¾î¸®Æ¼ »ö»óÀ» ¿ÜºÎ UI¿¡¼­µµ µ¿ÀÏÇÏ°Ô »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ¹İÈ¯ÇÕ´Ï´Ù.
+    /// ë„ê°ì—ì„œ ì‹¤ì œ ì‚¬ìš©í•˜ëŠ” ë ˆì–´ë¦¬í‹° ìƒ‰ìƒì„ ì™¸ë¶€ UIì—ì„œë„ ë™ì¼í•˜ê²Œ ì‚¬ìš©í•  ìˆ˜ ìˆë„ë¡ ë°˜í™˜í•©ë‹ˆë‹¤.
     /// </summary>
     public Color GetRarityDisplayColor(string rarity)
     {
@@ -1347,37 +1358,37 @@ public class RecordPanelUI : MonoBehaviour
 
         if (tab == MainTab.Unique || tab == MainTab.Skill)
         {
-            if (string.Equals(normalized, "Exclusive", StringComparison.OrdinalIgnoreCase)) return "°íÀ¯ ±â¾ï";
-            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "ÀÏ¹İ ±â¾ï";
-            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "·¹¾î ±â¾ï";
-            if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return "¿¡ÇÈ ±â¾ï";
-            if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return "À¯´ÏÅ© ±â¾ï";
+            if (string.Equals(normalized, "Exclusive", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.MemoryRarity.Exclusive);
+            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.MemoryRarity.Common);
+            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.MemoryRarity.Rare);
+            if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.MemoryRarity.Epic);
+            if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.MemoryRarity.Unique);
         }
         else if (tab == MainTab.Fragment)
         {
-            if (string.Equals(normalized, "Exclusive", StringComparison.OrdinalIgnoreCase)) return "°íÀ¯ ÆÄÆí";
-            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "°¢ÀÎ ÆÄÆí";
-            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "ÀÏ¹İ ÆÄÆí";
-            if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return "Ãàº¹ ÆÄÆí";
+            if (string.Equals(normalized, "Exclusive", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.FragmentRarity.Exclusive);
+            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.FragmentRarity.Common);
+            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.FragmentRarity.Rare);
+            if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.FragmentRarity.Unique);
         }
         else if (tab == MainTab.Item)
         {
-            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "ÀÏ¹İ Àç·á";
-            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "·¹¾î Àç·á";
-            if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return "¿¡ÇÈ Àç·á";
+            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.ItemRarity.Common);
+            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.ItemRarity.Rare);
+            if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.ItemRarity.Epic);
         }
         else if (tab == MainTab.Compound)
         {
-            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "ÀÏ¹İ ¿¬¼ºÁ¦";
-            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "·¹¾î ¿¬¼ºÁ¦";
-            if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return "¿¡ÇÈ ¿¬¼ºÁ¦";
+            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.CompoundRarity.Common);
+            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.CompoundRarity.Rare);
+            if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.CompoundRarity.Epic);
         }
         else if (tab == MainTab.Relic)
         {
-            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "ÀÏ¹İ À¯¹°";
-            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "·¹¾î À¯¹°";
-            if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return "¿¡ÇÈ À¯¹°";
-            if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return "À¯´ÏÅ© À¯¹°";
+            if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.RelicRarity.Common);
+            if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.RelicRarity.Rare);
+            if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.RelicRarity.Epic);
+            if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.RelicRarity.Unique);
         }
 
         return normalized;
@@ -1401,11 +1412,11 @@ public class RecordPanelUI : MonoBehaviour
 
         if (string.Equals(rune.Rarity, "Exclusive", StringComparison.OrdinalIgnoreCase))
         {
-            fragmentUnlockText.text = $"È¹µæ Á¶°Ç : Ä³¸¯ÅÍ Lv.{Mathf.Max(0, rune.UnlockLevel)} µµ´Ş";
+            fragmentUnlockText.text = GameLocalization.Format(LocalizationKeys.Record.UnlockCharacterLevel, Mathf.Max(0, rune.UnlockLevel));
             return;
         }
 
-        fragmentUnlockText.text = $"È¹µæ Á¶°Ç : ºí·ç ´õ½ºÆ¼¿ò {Mathf.Max(0, rune.BlueDustiumCost)}";
+        fragmentUnlockText.text = GameLocalization.Format(LocalizationKeys.Record.UnlockBlueDustium, Mathf.Max(0, rune.BlueDustiumCost));
     }
 
     private void ClearFragmentInfo()
@@ -1435,17 +1446,17 @@ public class RecordPanelUI : MonoBehaviour
         SetMemoryRangeImage(ResolveSkillRangeIcon(skill.RangeId));
 
         if (memoryMethodText != null)
-            memoryMethodText.text = $"¹æ½Ä : {GetMemoryMethodTypeDisplayName(skill.RangeType)}";
+            memoryMethodText.text = GameLocalization.Format(LocalizationKeys.Record.Method, GetMemoryMethodTypeDisplayName(skill.RangeType));
 
         if (memoryConsumptionText != null)
-            memoryConsumptionText.text = $"¼Ò¸ğ : {GetMemoryConsumptionDisplay(skill)}";
+            memoryConsumptionText.text = GameLocalization.Format(LocalizationKeys.Record.Consumption, GetMemoryConsumptionDisplay(skill));
 
         List<SkillEffectEntry> entries = skill.EffectEntries;
         if ((entries == null || entries.Count == 0) && DataManager.Instance != null)
             entries = SkillEffectParser.Parse(skill, DataManager.Instance.EffectDatabase);
 
         if (memoryPointText != null)
-            memoryPointText.text = $"È¿°ú : {GetMemoryPointDisplay(entries)}";
+            memoryPointText.text = GameLocalization.Format(LocalizationKeys.Record.Effect, GetMemoryPointDisplay(entries));
     }
 
     private void ClearMemoryInfo()
@@ -1469,13 +1480,13 @@ public class RecordPanelUI : MonoBehaviour
         SetMemoryRangeQuestion(true);
 
         if (memoryMethodText != null)
-            memoryMethodText.text = "¹æ½Ä : ???";
+            memoryMethodText.text = GameLocalization.Get(LocalizationKeys.Record.UnknownMethod);
 
         if (memoryConsumptionText != null)
-            memoryConsumptionText.text = "¼Ò¸ğ : ???";
+            memoryConsumptionText.text = GameLocalization.Get(LocalizationKeys.Record.UnknownConsumption);
 
         if (memoryPointText != null)
-            memoryPointText.text = "È¿°ú : ???";
+            memoryPointText.text = GameLocalization.Get(LocalizationKeys.Record.UnknownEffect);
     }
 
     private void SetMemoryRangeQuestion(bool active)
@@ -1515,11 +1526,11 @@ public class RecordPanelUI : MonoBehaviour
         switch (rangeType)
         {
             case RangeType.Direction:
-                return "½ÃÀüÀÚ À§Ä¡";
+                return GameLocalization.Get(LocalizationKeys.Range.Direction);
             case RangeType.Selection:
-                return "±×¸®µå ¼±ÅÃ";
+                return GameLocalization.Get(LocalizationKeys.Range.Selection);
             case RangeType.Passive:
-                return "Ä«¸£¸¶ ÃÖ´ë ½Ã Áö¼Ó";
+                return GameLocalization.Get(LocalizationKeys.Range.Passive);
             default:
                 return string.Empty;
         }
@@ -1531,22 +1542,22 @@ public class RecordPanelUI : MonoBehaviour
             return string.Empty;
 
         if (skill.ResourceCostValue <= 0)
-            return "¼Ò¸ğ ¾øÀ½";
+            return GameLocalization.Get(LocalizationKeys.Record.NoConsumption);
 
         string resourceName;
         switch (skill.ReferenceResource)
         {
             case ReferenceResource.HP:
-                resourceName = "»ı¸í·Â";
+                resourceName = GameLocalization.Get(LocalizationKeys.Resource.Hp);
                 break;
             case ReferenceResource.UniqueResource:
-                resourceName = "Ä«¸£¸¶";
+                resourceName = GameLocalization.Get(LocalizationKeys.Resource.Karma);
                 break;
             case ReferenceResource.Cost:
-                resourceName = "¸¶³ª";
+                resourceName = GameLocalization.Get(LocalizationKeys.Resource.Mana);
                 break;
             case ReferenceResource.MovePoint:
-                resourceName = "ÀÌµ¿";
+                resourceName = GameLocalization.Get(LocalizationKeys.Resource.Move);
                 break;
             default:
                 resourceName = string.Empty;
@@ -1562,7 +1573,7 @@ public class RecordPanelUI : MonoBehaviour
     private static string GetMemoryPointDisplay(List<SkillEffectEntry> entries)
     {
         if (entries == null || entries.Count == 0)
-            return "¾øÀ½";
+            return GameLocalization.Get(LocalizationKeys.Common.None);
 
         List<string> parts = new List<string>(2);
         int count = Mathf.Min(2, entries.Count);
@@ -1578,7 +1589,7 @@ public class RecordPanelUI : MonoBehaviour
             parts.Add(string.IsNullOrWhiteSpace(effectName) ? valueText : $"{effectName} {valueText}");
         }
 
-        return parts.Count > 0 ? string.Join(" / ", parts) : "¾øÀ½";
+        return parts.Count > 0 ? string.Join(" / ", parts) : GameLocalization.Get(LocalizationKeys.Common.None);
     }
 
     private static string GetMemoryEffectDisplayName(SkillEffectEntry entry)
@@ -1591,8 +1602,8 @@ public class RecordPanelUI : MonoBehaviour
             : entry.EffectId;
 
         string normalized = effectName.Replace(" ", string.Empty).ToLowerInvariant();
-        if (normalized.Contains("Å¸°İ") || normalized.Contains("strike"))
-            return "ÇÇÇØ";
+        if (normalized.Contains("íƒ€ê²©") || normalized.Contains("strike"))
+            return GameLocalization.Get("common.damage");
 
         return effectName;
     }
@@ -1613,13 +1624,13 @@ public class RecordPanelUI : MonoBehaviour
 
         if (compoundTypeText != null)
             compoundTypeText.text = discovered
-                ? $"»ç¿ë ´ë»ó : {GetCompoundTargetTypeLabel(compound.TargetType)}"
-                : "»ç¿ë ´ë»ó : ???";
+                ? GameLocalization.Format(LocalizationKeys.Record.UseTarget, GetCompoundTargetTypeLabel(compound.TargetType))
+                : GameLocalization.Get(LocalizationKeys.Record.UnknownUseTarget);
 
         if (compoundUsesText != null)
             compoundUsesText.text = discovered
-                ? $"»ç¿ë °¡´É È½¼ö : {compound.Durability}"
-                : "»ç¿ë °¡´É È½¼ö : ???";
+                ? GameLocalization.Format(LocalizationKeys.Record.UseCount, compound.Durability)
+                : GameLocalization.Get(LocalizationKeys.Record.UnknownUseCount);
 
         UpdateCompoundMaterialSlot(compound.MaterialId1, compoundItem01Question, compoundItem01Icon, dataManager);
         UpdateCompoundMaterialSlot(compound.MaterialId2, compoundItem02Question, compoundItem02Icon, dataManager);
@@ -1629,10 +1640,10 @@ public class RecordPanelUI : MonoBehaviour
     private static string GetCompoundTargetTypeLabel(string targetType)
     {
         if (string.Equals(targetType, "Self", StringComparison.OrdinalIgnoreCase))
-            return "ÀÚ½Å";
+            return GameLocalization.Get(LocalizationKeys.Target.Self);
 
         if (string.Equals(targetType, "Grid", StringComparison.OrdinalIgnoreCase))
-            return "±×¸®µå";
+            return GameLocalization.Get(LocalizationKeys.Target.Grid);
 
         return string.IsNullOrWhiteSpace(targetType) ? "?" : targetType.Trim();
     }
@@ -1689,7 +1700,7 @@ public class RecordPanelUI : MonoBehaviour
 
         DataManager dataManager = FindFirstObjectByType<DataManager>(FindObjectsInactive.Include);
         if (dataManager == null)
-            Debug.LogWarning("[RecordPanelUI] DataManager¸¦ Ã£Áö ¸øÇØ µµ°¨ ¸ñ·ÏÀ» ¸¸µé ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[RecordPanelUI] DataManagerë¥¼ ì°¾ì§€ ëª»í•´ ë„ê° ëª©ë¡ì„ ë§Œë“¤ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
 
         return dataManager;
     }
@@ -1906,7 +1917,7 @@ public class RecordPanelUI : MonoBehaviour
         if (compoundTabButton == null)
             return;
 
-        // »õ Compound ¹öÆ°ÀÇ Inspector OnClick ¿¬°áÀÌ ºñ¾î ÀÖ¾îµµ µµ°¨¿¡¼­ ¹Ù·Î »ç¿ëÇÒ ¼ö ÀÖ°Ô ÇÕ´Ï´Ù.
+        // ìƒˆ Compound ë²„íŠ¼ì˜ Inspector OnClick ì—°ê²°ì´ ë¹„ì–´ ìˆì–´ë„ ë„ê°ì—ì„œ ë°”ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆê²Œ í•©ë‹ˆë‹¤.
         compoundTabButton.onClick.RemoveListener(ShowCompoundTab);
         compoundTabButton.onClick.AddListener(ShowCompoundTab);
     }
@@ -2028,8 +2039,8 @@ public class RecordPanelUI : MonoBehaviour
 
     private IEnumerator RefreshUniqueLayoutNextFrame(RectTransform root)
     {
-        // Ã¹ ÁøÀÔ ÇÁ·¹ÀÓ¿¡´Â °íÀ¯±â¾ï ½½·Ô ÇÁ¸®ÆÕ°ú ·¹ÀÌ¾Æ¿ôÀÇ Å©±â°¡ ¾ÆÁ÷ ¹İ¿µµÇÁö ¾ÊÀ» ¼ö ÀÖ½À´Ï´Ù.
-        // ÇÑ ÇÁ·¹ÀÓ ±â´Ù¸° µÚ ÀÚ½Ä°ú Content ·¹ÀÌ¾Æ¿ôÀ» °­Á¦·Î °»½ÅÇÏ¿© Áï½Ã ½ºÅ©·Ñ °¡´ÉÇÏ°Ô ¸¸µì´Ï´Ù.
+        // ì²« ì§„ì… í”„ë ˆì„ì—ëŠ” ê³ ìœ ê¸°ì–µ ìŠ¬ë¡¯ í”„ë¦¬íŒ¹ê³¼ ë ˆì´ì•„ì›ƒì˜ í¬ê¸°ê°€ ì•„ì§ ë°˜ì˜ë˜ì§€ ì•Šì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+        // í•œ í”„ë ˆì„ ê¸°ë‹¤ë¦° ë’¤ ìì‹ê³¼ Content ë ˆì´ì•„ì›ƒì„ ê°•ì œë¡œ ê°±ì‹ í•˜ì—¬ ì¦‰ì‹œ ìŠ¤í¬ë¡¤ ê°€ëŠ¥í•˜ê²Œ ë§Œë“­ë‹ˆë‹¤.
         yield return null;
 
         if (root == null || uniqueContent == null || !uniqueContent.activeInHierarchy)
@@ -2255,11 +2266,11 @@ public class RecordPanelUI : MonoBehaviour
 
     private static IEnumerable<string> GetCharacterAliases()
     {
-        yield return "Hilt|ÈúÆ®";
-        yield return "Kaya|Ä«¾ß";
-        yield return "Haze|ÇìÀÌÁî";
-        yield return "Ines|ÀÌ³×½º";
-        yield return "Reina|·¹ÀÌ³ª";
+        yield return "Hilt|ííŠ¸";
+        yield return "Kaya|ì¹´ì•¼";
+        yield return "Haze|í—¤ì´ì¦ˆ";
+        yield return "Ines|ì´ë„¤ìŠ¤";
+        yield return "Reina|ë ˆì´ë‚˜";
     }
 
     private static string NormalizeKey(string value)

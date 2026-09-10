@@ -43,7 +43,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
     private void Scan()
     {
         candidates.Clear();
-        Dictionary<string, string> known = ReadKoreanToFirstKey();
+        Dictionary<string, string> known = ReadKoreanToUniqueKey();
         HashSet<string> knownKeys = ReadKnownKeys();
         if (scanPrefabs) foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Project" })) ScanPrefab(AssetDatabase.GUIDToAssetPath(guid), known);
         if (scanScenes) foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" })) ScanScene(AssetDatabase.GUIDToAssetPath(guid), known);
@@ -179,14 +179,18 @@ public sealed class LocalizationManagerWindow : EditorWindow
         Debug.Log($"[Localization Manager] Applied {rows} new Excel rows and repaired TMP bindings.");
     }
 
-    private static Dictionary<string, string> ReadKoreanToFirstKey()
+    /// <summary>Only unique source text may be reused automatically. Duplicate copy requires contextual review.</summary>
+    private static Dictionary<string, string> ReadKoreanToUniqueKey()
     {
-        var result = new Dictionary<string, string>(StringComparer.Ordinal);
         var rows = LocalizationXlsxReader.ReadSheet(LocalizationExcelImporter.WorkbookPath, LocalizationExcelImporter.WorksheetName);
         int key = rows[0].ToList().FindIndex(value => value == "Key");
         int korean = rows[0].ToList().FindIndex(value => value == "Korean(ko)");
-        foreach (var row in rows.Skip(1)) if (key < row.Count && korean < row.Count && !string.IsNullOrWhiteSpace(row[key]) && !result.ContainsKey(row[korean])) result.Add(row[korean], row[key]);
-        return result;
+        return rows.Skip(1)
+            .Where(row => key >= 0 && korean >= 0 && key < row.Count && korean < row.Count &&
+                          !string.IsNullOrWhiteSpace(row[key]) && !string.IsNullOrWhiteSpace(row[korean]))
+            .GroupBy(row => LocalizationBindingResolver.Normalize(row[korean]), StringComparer.Ordinal)
+            .Where(group => group.Select(row => row[key]).Distinct(StringComparer.Ordinal).Count() == 1)
+            .ToDictionary(group => group.Key, group => group.First()[key], StringComparer.Ordinal);
     }
 
     private static HashSet<string> ReadKnownKeys()

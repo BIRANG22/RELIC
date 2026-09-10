@@ -12,7 +12,7 @@ using UnityEngine.Localization.Tables;
 /// </summary>
 public static class RuntimeTMPTextAutoLocalizer
 {
-    private static readonly Dictionary<string, string> KeyByKoreanSource = new(StringComparer.Ordinal);
+    private static LocalizationBindingResolver resolver = new(Array.Empty<LocalizationBindingEntry>());
     private static readonly HashSet<int> ProcessingTextIds = new();
     private static bool isReady;
 
@@ -33,13 +33,8 @@ public static class RuntimeTMPTextAutoLocalizer
         if (koreanTable == null)
             return;
 
-        KeyByKoreanSource.Clear();
-        foreach (StringTableEntry entry in koreanTable.Values)
-        {
-            string koreanSource = NormalizeKoreanSource(entry.Value);
-            if (!string.IsNullOrWhiteSpace(koreanSource) && !KeyByKoreanSource.ContainsKey(koreanSource))
-                KeyByKoreanSource.Add(koreanSource, entry.Key);
-        }
+        resolver = new LocalizationBindingResolver(koreanTable.Values
+            .Select(entry => new LocalizationBindingEntry(entry.Key, NormalizeKoreanSource(entry.Value))));
 
         isReady = true;
         foreach (TMP_Text text in UnityEngine.Object.FindObjectsByType<TMP_Text>(
@@ -56,7 +51,8 @@ public static class RuntimeTMPTextAutoLocalizer
 
     private static void TryAttach(TMP_Text text)
     {
-        if (!isReady || text == null || !LocalizedTMPText.ShouldManageText(text))
+        if (!isReady || text == null || !LocalizedTMPText.ShouldManageText(text) ||
+            text.GetComponent<LocalizedTMPText>() != null)
             return;
 
         int instanceId = text.GetInstanceID();
@@ -66,17 +62,17 @@ public static class RuntimeTMPTextAutoLocalizer
         try
         {
             string koreanSource = NormalizeKoreanSource(text.text);
-            if (!LocalizationTextRules.IsKoreanPlayerText(koreanSource) ||
-                !KeyByKoreanSource.TryGetValue(koreanSource, out string key))
+            LocalizationKeyResolution resolution = resolver.ResolveSource(koreanSource);
+            if (!LocalizationTextRules.IsKoreanPlayerText(koreanSource) || !resolution.IsUnique)
                 return;
 
             LocalizedTMPText localizer = text.GetComponent<LocalizedTMPText>();
             if (localizer == null)
                 localizer = text.gameObject.AddComponent<LocalizedTMPText>();
 
-            if (!string.Equals(localizer.LocalizationKey, key, StringComparison.Ordinal) ||
+            if (!string.Equals(localizer.LocalizationKey, resolution.Key, StringComparison.Ordinal) ||
                 !string.Equals(localizer.KoreanSource, koreanSource, StringComparison.Ordinal))
-                localizer.Configure(key, koreanSource, true);
+                localizer.Configure(resolution.Key, koreanSource, true);
         }
         finally
         {

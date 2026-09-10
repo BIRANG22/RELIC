@@ -52,13 +52,182 @@ public static class StaticLocalizationMigration
         return true;
     }
 
+    /// <summary>Uses a shared prefab source when present; otherwise migrates the 25 serialized Lobby scene instances in one pass.</summary>
+    public static void MigrateRuneInstallationTexts()
+    {
+        const string installationKey = "ui.rune.installation";
+        SceneSetup[] originalSetup = EditorSceneManager.GetSceneManagerSetup();
+        try
+        {
+            bool prefabSourceFound = false;
+            foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Project" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                GameObject root = PrefabUtility.LoadPrefabContents(path);
+                try
+                {
+                    int changed = ConfigureRuneInstallationTexts(root, installationKey);
+                    if (changed > 0)
+                    {
+                        PrefabUtility.SaveAsPrefabAsset(root, path);
+                        prefabSourceFound = true;
+                    }
+                }
+                finally { PrefabUtility.UnloadPrefabContents(root); }
+            }
+
+            if (!prefabSourceFound)
+            {
+                const string lobbyPath = "Assets/Project/Scenes/YDM/Lobby.unity";
+                Scene scene = EditorSceneManager.OpenScene(lobbyPath, OpenSceneMode.Single);
+                int changed = scene.GetRootGameObjects().Sum(root => ConfigureRuneInstallationTexts(root, installationKey));
+                if (changed > 0)
+                {
+                    EditorSceneManager.MarkSceneDirty(scene);
+                    EditorSceneManager.SaveScene(scene);
+                }
+                Debug.Log($"[StaticLocalizationMigration] Rune Installation scene bindings: {changed}");
+            }
+        }
+        finally { EditorSceneManager.RestoreSceneManagerSetup(originalSetup); }
+    }
+
+    [MenuItem("Tools/Localization/Migrate Character InfoArea Dynamic Ownership")]
+    public static void MigrateCharacterInfoAreaDynamicOwnership()
+    {
+        const string lobbyPath = "Assets/Project/Scenes/YDM/Lobby.unity";
+        string[] dynamicTextNames = { "TitleText", "RarityText", "EffectText", "TypeText", "CostText", "ValueText" };
+        SceneSetup[] originalSetup = EditorSceneManager.GetSceneManagerSetup();
+        try
+        {
+            Scene scene = EditorSceneManager.OpenScene(lobbyPath, OpenSceneMode.Single);
+            Transform area = scene.GetRootGameObjects()
+                .SelectMany(root => root.GetComponentsInChildren<Transform>(true))
+                .FirstOrDefault(candidate => PathEquals(candidate, "Canvas/PositionPanel/CharacterSettingPanel/Setting_Area/InfoArea"));
+            if (area == null)
+                throw new InvalidOperationException("CharacterSettingPanel/Setting_Area/InfoArea was not found in Lobby.");
+
+            TMP_Text[] dynamicTexts = dynamicTextNames.Select(textName =>
+                area.GetComponentsInChildren<TMP_Text>(true).FirstOrDefault(candidate =>
+                    candidate.name == textName || (textName == "TypeText" && candidate.name == "TpyeText"))).ToArray();
+            for (int index = 0; index < dynamicTexts.Length; index++)
+                if (dynamicTexts[index] == null)
+                    throw new InvalidOperationException($"Character InfoArea dynamic text '{dynamicTextNames[index]}' was not found.");
+
+            int changed = 0;
+            foreach (TMP_Text text in dynamicTexts)
+            {
+                if (text.GetComponent<LocalizationIgnore>() == null)
+                {
+                    Undo.AddComponent<LocalizationIgnore>(text.gameObject);
+                    changed++;
+                }
+            }
+
+            if (changed > 0)
+            {
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+            }
+            Debug.Log($"[StaticLocalizationMigration] Character InfoArea dynamic ownership bindings: {changed}");
+        }
+        finally { EditorSceneManager.RestoreSceneManagerSetup(originalSetup); }
+    }
+
+    [MenuItem("Tools/Localization/Repair CharacterSetting InfoText Bindings")]
+    public static void MigrateCharacterSettingInfoText()
+    {
+        const string lobbyPath = "Assets/Project/Scenes/YDM/Lobby.unity";
+        const string staticInfoTextPath = "Canvas/PositionPanel/CharacterSettingPanel/Info_Area/InfoText";
+        const string dynamicCharacterInfoTextPath = "Canvas/PositionPanel/CharacterSettingPanel/Info_Area/CharacterinfoText";
+        SceneSetup[] originalSetup = EditorSceneManager.GetSceneManagerSetup();
+        try
+        {
+            Scene scene = EditorSceneManager.OpenScene(lobbyPath, OpenSceneMode.Single);
+            Transform target = scene.GetRootGameObjects()
+                .SelectMany(root => root.GetComponentsInChildren<Transform>(true))
+                .FirstOrDefault(candidate => PathEquals(candidate, staticInfoTextPath));
+            TMP_Text text = target?.GetComponent<TMP_Text>();
+            if (text == null)
+                throw new InvalidOperationException($"Static CharacterSetting InfoText was not found at '{staticInfoTextPath}'.");
+
+            bool staticChanged = RepairTextBinding(text, LocalizationKeys.CharacterSetting.CharacterIntro);
+            Transform dynamicTarget = scene.GetRootGameObjects()
+                .SelectMany(root => root.GetComponentsInChildren<Transform>(true))
+                .FirstOrDefault(candidate => PathEquals(candidate, dynamicCharacterInfoTextPath));
+            TMP_Text dynamicText = dynamicTarget?.GetComponent<TMP_Text>();
+            if (dynamicText == null)
+                throw new InvalidOperationException($"Dynamic CharacterInfoText was not found at '{dynamicCharacterInfoTextPath}'.");
+
+            bool dynamicChanged = false;
+            LocalizedTMPText wrongLocalizer = dynamicText.GetComponent<LocalizedTMPText>();
+            if (wrongLocalizer != null)
+            {
+                Undo.DestroyObjectImmediate(wrongLocalizer);
+                dynamicChanged = true;
+            }
+            if (dynamicText.GetComponent<LocalizationIgnore>() == null)
+            {
+                Undo.AddComponent<LocalizationIgnore>(dynamicText.gameObject);
+                dynamicChanged = true;
+            }
+
+            CharacterInfoPanel infoPanel = text.GetComponentInParent<CharacterInfoPanel>();
+            if (infoPanel == null)
+                throw new InvalidOperationException("CharacterInfoPanel owning Info_Area was not found.");
+            var serializedInfoPanel = new SerializedObject(infoPanel);
+            SerializedProperty storyText = serializedInfoPanel.FindProperty("storyText");
+            if (storyText == null)
+                throw new InvalidOperationException("CharacterInfoPanel.storyText serialized field was not found.");
+            bool storyWriterRemoved = storyText.objectReferenceValue != null;
+            if (storyWriterRemoved)
+            {
+                storyText.objectReferenceValue = null;
+                serializedInfoPanel.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(infoPanel);
+            }
+
+            bool changed = staticChanged || dynamicChanged || storyWriterRemoved;
+            if (changed)
+            {
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+            }
+            Debug.Log($"[StaticLocalizationMigration] CharacterSetting bindings: InfoText={(staticChanged ? "repaired" : "valid")}, CharacterinfoText={(dynamicChanged ? "dynamic isolated" : "valid")}, StoryWriter={(storyWriterRemoved ? "removed from static InfoText" : "absent")}");
+        }
+        finally { EditorSceneManager.RestoreSceneManagerSetup(originalSetup); }
+    }
+
+    private static bool PathEquals(Transform value, string expected)
+    {
+        return GetPath(value) == expected;
+    }
+
+    private static string GetPath(Transform value)
+    {
+        return value.parent == null ? value.name : GetPath(value.parent) + "/" + value.name;
+    }
+
+    private static int ConfigureRuneInstallationTexts(GameObject root, string key)
+    {
+        int changed = 0;
+        foreach (Transform installation in root.GetComponentsInChildren<Transform>(true).Where(candidate => candidate.name == "Installation"))
+        {
+            Transform textRoot = installation.Find("Text") ?? installation.Find("Text (TMP)");
+            TMP_Text text = textRoot?.GetComponent<TMP_Text>();
+            if (text != null && LocalizedTMPText.ShouldManageText(text) && ConfigureText(text, key))
+                changed++;
+        }
+        return changed;
+    }
+
     /// <summary>Localization Manager용 전체 프로젝트 안전 적용 진입점입니다.</summary>
     public static void ApplyKnownTextAcrossProject()
     {
         SceneSetup[] originalSetup = EditorSceneManager.GetSceneManagerSetup();
         try
         {
-            IReadOnlyDictionary<string, string> sourceToKey = ReadSourceToKeyMap();
+            LocalizationBindingResolver sourceToKey = ReadSourceToKeyMap();
             int changed = 0;
             foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Project" }))
             {
@@ -97,7 +266,7 @@ public static class StaticLocalizationMigration
         try
         {
             LocalizationExcelImporter.Import();
-            IReadOnlyDictionary<string, string> sourceToKey = ReadSourceToKeyMap();
+            LocalizationBindingResolver sourceToKey = ReadSourceToKeyMap();
             int prefabCount = ApplyToPrefabs(sourceToKey);
             int sceneCount = ApplyToScenes(sourceToKey);
 
@@ -221,7 +390,7 @@ public static class StaticLocalizationMigration
         return !bindingAlreadyValid || runtimeLocalizerCreated;
     }
 
-    private static IReadOnlyDictionary<string, string> ReadSourceToKeyMap()
+    private static LocalizationBindingResolver ReadSourceToKeyMap()
     {
         IReadOnlyList<IReadOnlyList<string>> rows = LocalizationXlsxReader.ReadSheet(
             LocalizationExcelImporter.WorkbookPath,
@@ -231,7 +400,7 @@ public static class StaticLocalizationMigration
         IReadOnlyList<string> headers = rows[0];
         int keyIndex = FindHeader(headers, "Key");
         int koreanIndex = FindHeader(headers, KoreanHeader);
-        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        var entries = new List<LocalizationBindingEntry>();
 
         foreach (IReadOnlyList<string> row in rows.Skip(1))
         {
@@ -240,15 +409,13 @@ public static class StaticLocalizationMigration
             if (string.IsNullOrWhiteSpace(key) || string.IsNullOrEmpty(source))
                 continue;
 
-            // 동일 원문은 공통 Key 재사용 후보입니다. 첫 Key를 유지해 기존 연결을 흔들지 않습니다.
-            if (!result.ContainsKey(source))
-                result[source] = key;
+            entries.Add(new LocalizationBindingEntry(key, source));
         }
 
-        return result;
+        return new LocalizationBindingResolver(entries);
     }
 
-    private static int ApplyToPrefabs(IReadOnlyDictionary<string, string> sourceToKey)
+    private static int ApplyToPrefabs(LocalizationBindingResolver sourceToKey)
     {
         int changedTextCount = 0;
         foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { PrefabRoot }))
@@ -273,7 +440,7 @@ public static class StaticLocalizationMigration
         return changedTextCount;
     }
 
-    private static int ApplyToScenes(IReadOnlyDictionary<string, string> sourceToKey)
+    private static int ApplyToScenes(LocalizationBindingResolver sourceToKey)
     {
         int changedTextCount = 0;
         foreach (string path in TargetScenePaths)
@@ -297,7 +464,7 @@ public static class StaticLocalizationMigration
 
     private static int ApplyToHierarchy(
         GameObject root,
-        IReadOnlyDictionary<string, string> sourceToKey)
+        LocalizationBindingResolver sourceToKey)
     {
         int changedCount = 0;
         foreach (TMP_Text text in root.GetComponentsInChildren<TMP_Text>(true))
@@ -305,7 +472,8 @@ public static class StaticLocalizationMigration
             if (!LocalizedTMPText.ShouldManageText(text))
                 continue;
 
-            if (sourceToKey.TryGetValue(text.text, out string key) && ConfigureText(text, key))
+            LocalizationKeyResolution resolution = sourceToKey.ResolveSource(text.text);
+            if (resolution.IsUnique && ConfigureText(text, resolution.Key))
                 changedCount++;
         }
 

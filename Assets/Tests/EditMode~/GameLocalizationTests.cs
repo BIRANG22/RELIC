@@ -2,6 +2,18 @@ using NUnit.Framework;
 
 public class GameLocalizationTests
 {
+    [Test]
+    public void Get_WithEmptyKey_UsesLocaleNeutralMissingTextWithoutKoreanFallback()
+    {
+        Assert.That(GameLocalization.Get(string.Empty), Is.EqualTo("Untranslated"));
+    }
+
+    [Test]
+    public void Format_WithEmptyKey_FormatsLocaleNeutralMissingText()
+    {
+        Assert.That(GameLocalization.Format(string.Empty, 5), Is.EqualTo("Untranslated"));
+    }
+
     [TestCase("SkillMaster", "SKILL 001-A", "EffectDesc", "data.skill_master.skill_001_a.effect_desc")]
     [TestCase("Monster", "M_Boss-01", "Name", "data.monster.m_boss_01.name")]
     public void BuildDataKey_NormalizesStableSegments(

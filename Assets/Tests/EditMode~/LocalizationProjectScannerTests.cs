@@ -3,6 +3,38 @@ using NUnit.Framework;
 public class LocalizationProjectScannerTests
 {
     [Test]
+    public void BindingResolver_WhenSourceHasMultipleCandidates_ReturnsAmbiguousWithoutChoosingFirstKey()
+    {
+        var resolver = new LocalizationBindingResolver(new[]
+        {
+            new LocalizationBindingEntry("ui.record.title", "기록서"),
+            new LocalizationBindingEntry("ui.setting.title", "설정"),
+            new LocalizationBindingEntry("ui.popup.confirm", "확인"),
+            new LocalizationBindingEntry("ui.common.confirm", "확인"),
+        });
+
+        LocalizationKeyResolution resolution = resolver.ResolveSource("확인");
+
+        Assert.That(resolution.Status, Is.EqualTo(LocalizationBindingStatus.AmbiguousKey));
+        Assert.That(resolution.Key, Is.Empty);
+        Assert.That(resolution.Candidates, Is.EquivalentTo(new[] { "ui.popup.confirm", "ui.common.confirm" }));
+    }
+
+    [Test]
+    public void BindingResolver_WhenPersistedSourceDoesNotMatchKey_ReturnsSourceMismatch()
+    {
+        var resolver = new LocalizationBindingResolver(new[]
+        {
+            new LocalizationBindingEntry("ui.record.title", "기록서"),
+            new LocalizationBindingEntry("ui.setting.title", "설정"),
+        });
+
+        LocalizationBindingStatus status = resolver.Validate("기록서", "ui.setting.title");
+
+        Assert.That(status, Is.EqualTo(LocalizationBindingStatus.SourceMismatch));
+    }
+
+    [Test]
     public void BuildSuggestedKey_UsesStableNormalizedSourceAndObjectNames()
     {
         string result = LocalizationProjectScanner.BuildSuggestedKey(

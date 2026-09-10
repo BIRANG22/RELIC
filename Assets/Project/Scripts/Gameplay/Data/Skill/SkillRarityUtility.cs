@@ -111,16 +111,7 @@ namespace Relic.Gameplay.Data
 
         public static string GetDisplayName(SkillRarity rarity)
         {
-            return rarity switch
-            {
-                SkillRarity.Move => "이동",
-                SkillRarity.Exclusive => "기억",
-                SkillRarity.Common => "일반 기억",
-                SkillRarity.Rare => "레어 기억",
-                SkillRarity.Epic => "에픽 기억",
-                SkillRarity.Unique => "유니크 기억",
-                _ => string.Empty
-            };
+            return GameLocalization.Get(GetLocalizationKey(rarity));
         }
 
         public static string GetDisplayName(SkillMasterData skill)
@@ -133,12 +124,34 @@ namespace Relic.Gameplay.Data
             if (skill == null)
                 return string.Empty;
 
+            return GameLocalization.Get(GetLocalizationKey(skill));
+        }
+
+        public static string GetLocalizationKey(SkillMasterData skill)
+        {
+            if (skill == null)
+                return string.Empty;
+
             return skill.Category switch
             {
-                Category.Passive => "본능 기억",
-                Category.Unique => "발현 기억",
-                Category.Ability => "구현 기억",
-                _ => GetDisplayName(skill.Rarity)
+                Category.Passive => LocalizationKeys.SkillInfo.RarityInstinctMemory,
+                Category.Unique => LocalizationKeys.SkillInfo.RarityManifestationMemory,
+                Category.Ability => LocalizationKeys.SkillInfo.RarityImplementationMemory,
+                _ => GetLocalizationKey(skill.Rarity)
+            };
+        }
+
+        public static string GetLocalizationKey(SkillRarity rarity)
+        {
+            return rarity switch
+            {
+                SkillRarity.Move => LocalizationKeys.SkillInfo.RarityMove,
+                SkillRarity.Exclusive => LocalizationKeys.SkillInfo.RarityMemory,
+                SkillRarity.Common => LocalizationKeys.SkillInfo.RarityCommonMemory,
+                SkillRarity.Rare => LocalizationKeys.SkillInfo.RarityRareMemory,
+                SkillRarity.Epic => LocalizationKeys.SkillInfo.RarityEpicMemory,
+                SkillRarity.Unique => LocalizationKeys.SkillInfo.RarityUniqueMemory,
+                _ => string.Empty
             };
         }
 
