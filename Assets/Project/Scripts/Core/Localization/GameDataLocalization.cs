@@ -17,8 +17,16 @@ namespace Relic.Gameplay.Data
         public static string SkillName(SkillMasterData data) =>
             data == null ? string.Empty : GameLocalization.GetData("SkillMaster", data.SkillId, "name", data.Name);
 
-        public static string SkillDetails(SkillMasterData data) =>
-            SkillDescriptionFormatter.Format(data);
+        public static string SkillDetails(SkillMasterData data)
+        {
+            return data == null
+                ? string.Empty
+                : SkillDescriptionFormatter.Format(SkillDetailsTemplate(data), data.ValueRate, data.CountRate);
+        }
+
+        /// <summary>Returns the locale-specific template before UI-owned token and RichText formatting.</summary>
+        public static string SkillDetailsTemplate(SkillMasterData data) =>
+            data == null ? string.Empty : GameLocalization.GetData("SkillMaster", data.SkillId, "details", data.Details);
 
         public static string MonsterSkillName(MonsterSkillData data)
         {

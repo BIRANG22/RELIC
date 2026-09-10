@@ -21,6 +21,28 @@ public static class GameLocalization
         return Get(BuildDataKey(category, stableId, field), fallback);
     }
 
+    /// <summary>Runtime UI/system copy must identify a workbook key and must not embed Korean fallback text.</summary>
+    public static string Get(string key, params object[] arguments)
+    {
+        return Get(key, ResolveMissingTranslation("en"), arguments);
+    }
+
+    public static string Format(string key, params object[] arguments)
+    {
+        string template = Get(key);
+        try
+        {
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                template,
+                arguments ?? Array.Empty<object>());
+        }
+        catch (FormatException)
+        {
+            return template;
+        }
+    }
+
     public static string Format(string key, string fallback, params object[] arguments)
     {
         string template = Get(key, fallback);

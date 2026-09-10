@@ -971,7 +971,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 11019546}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -1402,6 +1402,7 @@ GameObject:
   - component: {fileID: 13538229}
   - component: {fileID: 13538231}
   - component: {fileID: 13538230}
+  - component: {fileID: 13538232}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -1528,6 +1529,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 13538228}
   m_CullTransparentMesh: 1
+--- !u!114 &13538232
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 13538228}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 13538230}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &13551064
 GameObject:
   m_ObjectHideFlags: 0
@@ -2782,6 +2799,7 @@ GameObject:
   - component: {fileID: 54695921}
   - component: {fileID: 54695923}
   - component: {fileID: 54695922}
+  - component: {fileID: 54695924}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -2908,6 +2926,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 54695920}
   m_CullTransparentMesh: 1
+--- !u!114 &54695924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 54695920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 54695922}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &56305728
 GameObject:
   m_ObjectHideFlags: 0
@@ -3298,6 +3332,7 @@ GameObject:
   - component: {fileID: 69929208}
   - component: {fileID: 69929210}
   - component: {fileID: 69929209}
+  - component: {fileID: 69929211}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -3424,6 +3459,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 69929207}
   m_CullTransparentMesh: 1
+--- !u!114 &69929211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 69929207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 69929209}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &74388931
 GameObject:
   m_ObjectHideFlags: 0
@@ -3622,6 +3673,7 @@ GameObject:
   - component: {fileID: 81234129}
   - component: {fileID: 81234131}
   - component: {fileID: 81234130}
+  - component: {fileID: 81234132}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -3748,6 +3800,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 81234128}
   m_CullTransparentMesh: 1
+--- !u!114 &81234132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 81234128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 81234130}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &86989392
 GameObject:
   m_ObjectHideFlags: 0
@@ -4380,7 +4448,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 95124934}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -5012,7 +5080,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 105715791}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -6624,6 +6692,7 @@ GameObject:
   - component: {fileID: 129666090}
   - component: {fileID: 129666089}
   - component: {fileID: 129666091}
+  - component: {fileID: 129666092}
   m_Layer: 0
   m_Name: CostText
   m_TagString: Untagged
@@ -6766,6 +6835,18 @@ MonoBehaviour:
   localizationKey: ui.record.consumption
   koreanSource: "\uC18C\uBAA8 : \uCE74\uB974\uB9C8 99"
   automaticallyRegistered: 1
+--- !u!114 &129666092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 129666087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &130168484
 GameObject:
   m_ObjectHideFlags: 0
@@ -7596,7 +7677,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 139910395}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -7941,6 +8022,7 @@ GameObject:
   - component: {fileID: 148508384}
   - component: {fileID: 148508383}
   - component: {fileID: 148508385}
+  - component: {fileID: 148508386}
   m_Layer: 0
   m_Name: ValueText
   m_TagString: Untagged
@@ -8074,7 +8156,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 148508381}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -8107,6 +8189,18 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &148508386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148508381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &152604198
 GameObject:
   m_ObjectHideFlags: 0
@@ -9686,13 +9780,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 183454274}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 183454276}
-  localizationKey: lobby.character_intro
-  koreanSource: "\uCE90\uB9AD\uD130 \uC18C\uAC1C"
-  automaticallyRegistered: 1
 --- !u!1 &184601709
 GameObject:
   m_ObjectHideFlags: 0
@@ -10421,6 +10511,7 @@ GameObject:
   - component: {fileID: 204282139}
   - component: {fileID: 204282141}
   - component: {fileID: 204282140}
+  - component: {fileID: 204282142}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -10547,6 +10638,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 204282138}
   m_CullTransparentMesh: 1
+--- !u!114 &204282142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 204282138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 204282140}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &206800677
 GameObject:
   m_ObjectHideFlags: 0
@@ -11009,6 +11116,7 @@ GameObject:
   - component: {fileID: 218586680}
   - component: {fileID: 218586682}
   - component: {fileID: 218586681}
+  - component: {fileID: 218586683}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -11135,6 +11243,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 218586679}
   m_CullTransparentMesh: 1
+--- !u!114 &218586683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 218586679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 218586681}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &219941695
 GameObject:
   m_ObjectHideFlags: 0
@@ -15039,7 +15163,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 248243711}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -21166,6 +21290,7 @@ GameObject:
   - component: {fileID: 382584246}
   - component: {fileID: 382584248}
   - component: {fileID: 382584247}
+  - component: {fileID: 382584249}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -21292,6 +21417,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 382584245}
   m_CullTransparentMesh: 1
+--- !u!114 &382584249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 382584245}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 382584247}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &385485016
 GameObject:
   m_ObjectHideFlags: 0
@@ -28698,7 +28839,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 509170777}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -30628,7 +30769,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 553269349}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -36863,6 +37004,7 @@ GameObject:
   - component: {fileID: 591050862}
   - component: {fileID: 591050864}
   - component: {fileID: 591050863}
+  - component: {fileID: 591050865}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -36989,6 +37131,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 591050861}
   m_CullTransparentMesh: 1
+--- !u!114 &591050865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 591050861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 591050863}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &593063062
 GameObject:
   m_ObjectHideFlags: 0
@@ -41365,6 +41523,7 @@ GameObject:
   - component: {fileID: 674155768}
   - component: {fileID: 674155770}
   - component: {fileID: 674155769}
+  - component: {fileID: 674155771}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -41491,6 +41650,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 674155767}
   m_CullTransparentMesh: 1
+--- !u!114 &674155771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 674155767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 674155769}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &677109808
 GameObject:
   m_ObjectHideFlags: 0
@@ -42781,7 +42956,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 699362576}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -47860,6 +48035,7 @@ GameObject:
   - component: {fileID: 808950609}
   - component: {fileID: 808950608}
   - component: {fileID: 808950607}
+  - component: {fileID: 808950610}
   m_Layer: 0
   m_Name: RarityText
   m_TagString: Untagged
@@ -47893,7 +48069,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 808950605}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -48026,6 +48202,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 808950605}
   m_CullTransparentMesh: 1
+--- !u!114 &808950610
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 808950605}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &810608898
 GameObject:
   m_ObjectHideFlags: 0
@@ -48112,6 +48300,7 @@ GameObject:
   - component: {fileID: 813096785}
   - component: {fileID: 813096787}
   - component: {fileID: 813096786}
+  - component: {fileID: 813096788}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -48238,6 +48427,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 813096784}
   m_CullTransparentMesh: 1
+--- !u!114 &813096788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 813096784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 813096786}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &814607700
 GameObject:
   m_ObjectHideFlags: 0
@@ -49146,7 +49351,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 829871923}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -61546,6 +61751,7 @@ GameObject:
   - component: {fileID: 994675723}
   - component: {fileID: 994675725}
   - component: {fileID: 994675724}
+  - component: {fileID: 994675726}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -61672,6 +61878,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 994675722}
   m_CullTransparentMesh: 1
+--- !u!114 &994675726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 994675722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 994675724}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &994678772
 GameObject:
   m_ObjectHideFlags: 0
@@ -61962,6 +62184,7 @@ GameObject:
   - component: {fileID: 996911932}
   - component: {fileID: 996911934}
   - component: {fileID: 996911933}
+  - component: {fileID: 996911935}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -62088,6 +62311,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 996911931}
   m_CullTransparentMesh: 1
+--- !u!114 &996911935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 996911931}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 996911933}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &999125677
 GameObject:
   m_ObjectHideFlags: 0
@@ -63097,6 +63336,7 @@ GameObject:
   - component: {fileID: 1011434705}
   - component: {fileID: 1011434707}
   - component: {fileID: 1011434706}
+  - component: {fileID: 1011434708}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -63223,6 +63463,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1011434704}
   m_CullTransparentMesh: 1
+--- !u!114 &1011434708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1011434704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1011434706}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &1014395895
 GameObject:
   m_ObjectHideFlags: 0
@@ -63469,7 +63725,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1019612076}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -64920,6 +65176,7 @@ GameObject:
   - component: {fileID: 1041149765}
   - component: {fileID: 1041149767}
   - component: {fileID: 1041149766}
+  - component: {fileID: 1041149768}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -65046,6 +65303,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1041149764}
   m_CullTransparentMesh: 1
+--- !u!114 &1041149768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1041149764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1041149766}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &1042425272
 GameObject:
   m_ObjectHideFlags: 0
@@ -65644,6 +65917,7 @@ GameObject:
   - component: {fileID: 1064080764}
   - component: {fileID: 1064080766}
   - component: {fileID: 1064080765}
+  - component: {fileID: 1064080767}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -65770,6 +66044,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1064080763}
   m_CullTransparentMesh: 1
+--- !u!114 &1064080767
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1064080763}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1064080765}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &1066503947
 GameObject:
   m_ObjectHideFlags: 0
@@ -65931,6 +66221,7 @@ GameObject:
   - component: {fileID: 1070492890}
   - component: {fileID: 1070492892}
   - component: {fileID: 1070492891}
+  - component: {fileID: 1070492893}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -66057,6 +66348,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1070492889}
   m_CullTransparentMesh: 1
+--- !u!114 &1070492893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1070492889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1070492891}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &1073192341
 GameObject:
   m_ObjectHideFlags: 0
@@ -69371,6 +69678,7 @@ GameObject:
   - component: {fileID: 1141720273}
   - component: {fileID: 1141720275}
   - component: {fileID: 1141720274}
+  - component: {fileID: 1141720276}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -69497,6 +69805,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1141720272}
   m_CullTransparentMesh: 1
+--- !u!114 &1141720276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1141720272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1141720274}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &1144870882
 GameObject:
   m_ObjectHideFlags: 0
@@ -69642,7 +69966,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1144870882}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -70401,6 +70725,7 @@ GameObject:
   - component: {fileID: 1169981077}
   - component: {fileID: 1169981079}
   - component: {fileID: 1169981078}
+  - component: {fileID: 1169981080}
   m_Layer: 0
   m_Name: EffectText
   m_TagString: Untagged
@@ -70528,6 +70853,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1169981076}
   m_CullTransparentMesh: 1
+--- !u!114 &1169981080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1169981076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1170293879
 GameObject:
   m_ObjectHideFlags: 0
@@ -72955,7 +73292,7 @@ MonoBehaviour:
   dialogueText: {fileID: 1353154815}
   nextButton: {fileID: 1339705162}
   nextButtonIndicator: {fileID: 0}
-  speakerName: "\uC5F0\uAD6C\uC6D0 \uC5D8\uB9AD"
+  speakerNameKey: tutorial.speaker.elric
   charactersPerSecond: 30
   lineAdvanceSoundId: ui.normal.click
   lineAdvanceSoundVolume: 0.5
@@ -73563,39 +73900,15 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1233950897}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_StringReference:
-    m_TableReference:
-      m_TableCollectionName: Text
-    m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: lobby.character_intro
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  m_FormatArguments: []
-  m_UpdateString:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1233950899}
-        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
-        m_MethodName: set_text
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
-  references:
-    version: 2
-    RefIds: []
+  target: {fileID: 1233950899}
+  localizationKey: lobby.character_intro
+  koreanSource: "\uCE74\uB974\uB9C8 \uD68D\uB4DD \uC124\uBA85 & \uC2A4\uD0EF\uC124\uBA85"
+  automaticallyRegistered: 1
 --- !u!1 &1239049219
 GameObject:
   m_ObjectHideFlags: 0
@@ -74978,6 +75291,7 @@ GameObject:
   - component: {fileID: 1260823027}
   - component: {fileID: 1260823026}
   - component: {fileID: 1260823029}
+  - component: {fileID: 1260823030}
   m_Layer: 0
   m_Name: TitleText
   m_TagString: Untagged
@@ -75120,6 +75434,18 @@ MonoBehaviour:
   localizationKey: common.name
   koreanSource: "\uC774\uB984"
   automaticallyRegistered: 1
+--- !u!114 &1260823030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1260823024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1262102740
 GameObject:
   m_ObjectHideFlags: 0
@@ -75714,6 +76040,7 @@ GameObject:
   - component: {fileID: 1273993908}
   - component: {fileID: 1273993910}
   - component: {fileID: 1273993909}
+  - component: {fileID: 1273993911}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -75840,6 +76167,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1273993907}
   m_CullTransparentMesh: 1
+--- !u!114 &1273993911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1273993907}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1273993909}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &1276466395
 GameObject:
   m_ObjectHideFlags: 0
@@ -78658,7 +79001,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1336859988}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -85154,7 +85497,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1363142371}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -86161,6 +86504,7 @@ GameObject:
   - component: {fileID: 1389942579}
   - component: {fileID: 1389942581}
   - component: {fileID: 1389942580}
+  - component: {fileID: 1389942582}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -86287,6 +86631,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1389942578}
   m_CullTransparentMesh: 1
+--- !u!114 &1389942582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389942578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1389942580}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &1390271540
 GameObject:
   m_ObjectHideFlags: 0
@@ -86512,6 +86872,7 @@ GameObject:
   - component: {fileID: 1391774473}
   - component: {fileID: 1391774475}
   - component: {fileID: 1391774474}
+  - component: {fileID: 1391774476}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -86638,6 +86999,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1391774472}
   m_CullTransparentMesh: 1
+--- !u!114 &1391774476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1391774472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1391774474}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &1393479069
 GameObject:
   m_ObjectHideFlags: 0
@@ -88113,7 +88490,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1433460218}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -93765,6 +94142,7 @@ GameObject:
   - component: {fileID: 1550725096}
   - component: {fileID: 1550725098}
   - component: {fileID: 1550725097}
+  - component: {fileID: 1550725099}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -93891,6 +94269,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1550725095}
   m_CullTransparentMesh: 1
+--- !u!114 &1550725099
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1550725095}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1550725097}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &1552160585
 GameObject:
   m_ObjectHideFlags: 0
@@ -104718,6 +105112,7 @@ GameObject:
   - component: {fileID: 1770445885}
   - component: {fileID: 1770445887}
   - component: {fileID: 1770445886}
+  - component: {fileID: 1770445888}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -104844,6 +105239,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1770445884}
   m_CullTransparentMesh: 1
+--- !u!114 &1770445888
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1770445884}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1770445886}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &1770518310
 GameObject:
   m_ObjectHideFlags: 0
@@ -105744,6 +106155,7 @@ GameObject:
   - component: {fileID: 1783230622}
   - component: {fileID: 1783230624}
   - component: {fileID: 1783230623}
+  - component: {fileID: 1783230625}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -105870,6 +106282,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1783230621}
   m_CullTransparentMesh: 1
+--- !u!114 &1783230625
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1783230621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1783230623}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &1783997051
 GameObject:
   m_ObjectHideFlags: 0
@@ -112942,7 +113370,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1829256048}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -113310,6 +113738,7 @@ GameObject:
   - component: {fileID: 1841991391}
   - component: {fileID: 1841991393}
   - component: {fileID: 1841991392}
+  - component: {fileID: 1841991394}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -113436,6 +113865,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1841991390}
   m_CullTransparentMesh: 1
+--- !u!114 &1841991394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1841991390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1841991392}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &1842297685
 GameObject:
   m_ObjectHideFlags: 0
@@ -119314,7 +119759,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1947493859}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -122093,6 +122538,7 @@ GameObject:
   - component: {fileID: 2016325708}
   - component: {fileID: 2016325710}
   - component: {fileID: 2016325709}
+  - component: {fileID: 2016325711}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -122219,6 +122665,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2016325707}
   m_CullTransparentMesh: 1
+--- !u!114 &2016325711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2016325707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2016325709}
+  localizationKey: ui.rune.installation
+  koreanSource: "\uC7A5\uCC29 \uC911"
+  automaticallyRegistered: 1
 --- !u!1 &2017209457
 GameObject:
   m_ObjectHideFlags: 0
@@ -123596,6 +124058,7 @@ GameObject:
   - component: {fileID: 2040703525}
   - component: {fileID: 2040703524}
   - component: {fileID: 2040703526}
+  - component: {fileID: 2040703527}
   m_Layer: 0
   m_Name: TpyeText
   m_TagString: Untagged
@@ -123729,7 +124192,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2040703522}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
   m_Name: 
@@ -123762,6 +124225,18 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!114 &2040703527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2040703522}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2041133376
 GameObject:
   m_ObjectHideFlags: 0

@@ -11515,6 +11515,298 @@ MonoBehaviour:
     m_Key: data.item.item_012.description.9d868411
     m_Metadata:
       m_Items: []
+  - m_Id: 10986483455893504
+    m_Key: common.none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059328
+    m_Key: common.mana
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059329
+    m_Key: resource.karma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059330
+    m_Key: ui.record.target.self
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059331
+    m_Key: ui.record.target.grid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059332
+    m_Key: ui.record.range.direction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059333
+    m_Key: ui.record.range.selection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059334
+    m_Key: ui.record.range.passive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059335
+    m_Key: ui.record.unlock_character_level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059336
+    m_Key: ui.record.unlock_blue_dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059337
+    m_Key: ui.record.use_target
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059338
+    m_Key: ui.record.use_count
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059339
+    m_Key: ui.record.no_consumption
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059340
+    m_Key: ui.record.unknown_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059341
+    m_Key: ui.record.unknown_method
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059342
+    m_Key: ui.record.unknown_consumption
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059343
+    m_Key: ui.record.unknown_effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059344
+    m_Key: ui.record.unknown_use_target
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059345
+    m_Key: ui.record.unknown_use_count
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059346
+    m_Key: ui.record.memory_rarity.exclusive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059347
+    m_Key: ui.record.memory_rarity.common
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059348
+    m_Key: ui.record.memory_rarity.rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059349
+    m_Key: ui.record.memory_rarity.epic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059350
+    m_Key: ui.record.memory_rarity.unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059351
+    m_Key: ui.record.fragment_rarity.exclusive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059352
+    m_Key: ui.record.fragment_rarity.common
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059353
+    m_Key: ui.record.fragment_rarity.rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059354
+    m_Key: ui.record.fragment_rarity.unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059355
+    m_Key: ui.record.item_rarity.common
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059356
+    m_Key: ui.record.item_rarity.rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059357
+    m_Key: ui.record.item_rarity.epic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059358
+    m_Key: ui.record.compound_rarity.common
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059359
+    m_Key: ui.record.compound_rarity.rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059360
+    m_Key: ui.record.compound_rarity.epic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059361
+    m_Key: ui.record.relic_rarity.common
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059362
+    m_Key: ui.record.relic_rarity.rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059363
+    m_Key: ui.record.relic_rarity.epic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10986483481059364
+    m_Key: ui.record.relic_rarity.unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999245246570496
+    m_Key: tutorial.speaker.elric
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999245267542016
+    m_Key: tutorial.intro.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999245267542017
+    m_Key: tutorial.intro.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999245267542018
+    m_Key: tutorial.intro.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999245267542019
+    m_Key: tutorial.intro.04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999245267542020
+    m_Key: tutorial.intro.05
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999245267542021
+    m_Key: tutorial.intro.06
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999245267542022
+    m_Key: tutorial.intro.07
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999245267542023
+    m_Key: tutorial.first_expedition.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999245267542024
+    m_Key: tutorial.first_expedition.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999245267542025
+    m_Key: tutorial.first_expedition.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565568
+    m_Key: ui.skill.cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565569
+    m_Key: ui.skill.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565570
+    m_Key: ui.skill.effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565571
+    m_Key: ui.skill.rarity.move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565572
+    m_Key: ui.skill.rarity.memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565573
+    m_Key: ui.skill.rarity.common_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565574
+    m_Key: ui.skill.rarity.rare_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565575
+    m_Key: ui.skill.rarity.epic_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565576
+    m_Key: ui.skill.rarity.unique_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565577
+    m_Key: ui.skill.rarity.instinct_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565578
+    m_Key: ui.skill.rarity.manifestation_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565579
+    m_Key: ui.skill.rarity.implementation_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565580
+    m_Key: ui.skill.range.direction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565581
+    m_Key: ui.skill.range.selection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565582
+    m_Key: ui.skill.range.passive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999261155565583
+    m_Key: ui.skill.range.passive_activation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10999272912199680
+    m_Key: ui.rune.installation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11008757965791232
+    m_Key: ui.rune.info.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11008757982568448
+    m_Key: ui.rune.info.empty_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11012039819927552
+    m_Key: ui.character_setting.preview_info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11012039836704768
+    m_Key: ui.character_setting.skill_info_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11012039836704769
+    m_Key: ui.character_setting.skill_info_empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11012039836704770
+    m_Key: ui.character_setting.rune_info_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11012039836704771
+    m_Key: ui.character_setting.rune_info_empty
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

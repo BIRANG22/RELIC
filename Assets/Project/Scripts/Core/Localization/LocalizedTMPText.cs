@@ -19,7 +19,9 @@ public sealed class LocalizedTMPText : MonoBehaviour
     {
         // Dropdown의 Caption/Item은 TMP_Dropdown이 선택값과 목록값을 직접 작성합니다.
         // 여기에 정적 LocalizedTMPText가 붙으면 선택 언어명이 번역 키 값으로 덮어써집니다.
-        return text != null && text.GetComponentInParent<TMP_Dropdown>() == null;
+        return text != null &&
+               text.GetComponentInParent<TMP_Dropdown>() == null &&
+               text.GetComponent<LocalizationIgnore>() == null;
     }
 
     public static string ResolveText(string key, string koreanFallback)
@@ -71,9 +73,29 @@ public sealed class LocalizedTMPText : MonoBehaviour
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
     }
 
-    private void OnLocaleChanged(Locale _)
+    private async void OnLocaleChanged(Locale locale)
     {
+        if (!ShouldManageText(target) || !isActiveAndEnabled || string.IsNullOrWhiteSpace(localizationKey))
+            return;
+
+        // The locale event can arrive before its String Table has completed loading.
+        // Apply the immediate value, then refresh once the selected locale's key is ready.
         Refresh();
+
+        try
+        {
+            await LocalizationSettings.StringDatabase
+                .GetLocalizedStringAsync(GameLocalization.TableName, localizationKey)
+                .Task;
+            if (isActiveAndEnabled &&
+                ShouldManageText(target) &&
+                LocalizationSettings.SelectedLocale?.Identifier == locale.Identifier)
+                Refresh();
+        }
+        catch
+        {
+            // Refresh already applied the standard missing-translation fallback.
+        }
     }
 
     public void Refresh()

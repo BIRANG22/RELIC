@@ -27,7 +27,7 @@ public static class LocalizationTextBindingRepairTool
     {
         try
         {
-            BindingMaps maps = ReadBindingMaps();
+            LocalizationBindingResolver maps = ReadBindingMaps();
             SceneSetup[] originalSetup = EditorSceneManager.GetSceneManagerSetup();
             try
             {
@@ -50,7 +50,7 @@ public static class LocalizationTextBindingRepairTool
         }
     }
 
-    private static RepairSummary RepairPrefabs(BindingMaps maps)
+    private static RepairSummary RepairPrefabs(LocalizationBindingResolver maps)
     {
         RepairSummary summary = default;
         foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Project" }))
@@ -73,7 +73,7 @@ public static class LocalizationTextBindingRepairTool
         return summary;
     }
 
-    private static RepairSummary RepairScenes(BindingMaps maps)
+    private static RepairSummary RepairScenes(LocalizationBindingResolver maps)
     {
         RepairSummary summary = default;
         foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" }))
@@ -92,7 +92,7 @@ public static class LocalizationTextBindingRepairTool
         return summary;
     }
 
-    private static RepairSummary RepairHierarchy(GameObject root, BindingMaps maps)
+    private static RepairSummary RepairHierarchy(GameObject root, LocalizationBindingResolver resolver)
     {
         RepairSummary summary = default;
         foreach (TMP_Text text in root.GetComponentsInChildren<TMP_Text>(true))
@@ -104,16 +104,14 @@ public static class LocalizationTextBindingRepairTool
             if (string.IsNullOrWhiteSpace(source))
                 continue;
 
-            string normalizedSource = source.Trim();
+            string normalizedSource = LocalizationBindingResolver.Normalize(source);
 
             summary.Checked++;
+            LocalizedTMPText existing = text.GetComponent<LocalizedTMPText>();
             LocalizeStringEvent localizer = text.GetComponent<LocalizeStringEvent>();
-            string currentKey = localizer != null
-                ? localizer.StringReference.TableEntryReference.Key
-                : string.Empty;
-            if (!string.IsNullOrWhiteSpace(currentKey) &&
-                maps.KoreanByKey.TryGetValue(currentKey, out string currentKorean) &&
-                string.Equals(currentKorean, normalizedSource, StringComparison.Ordinal))
+            string currentKey = existing != null ? existing.LocalizationKey : localizer != null
+                ? localizer.StringReference.TableEntryReference.Key : string.Empty;
+            if (resolver.Validate(normalizedSource, currentKey) == LocalizationBindingStatus.Valid)
             {
                 summary.Matched++;
                 if (StaticLocalizationMigration.RepairTextBinding(text, currentKey))
@@ -121,9 +119,10 @@ public static class LocalizationTextBindingRepairTool
                 continue;
             }
 
-            if (maps.KeyByKorean.TryGetValue(normalizedSource, out string repairedKey))
+            LocalizationKeyResolution resolution = resolver.ResolveSource(normalizedSource);
+            if (resolution.IsUnique)
             {
-                if (StaticLocalizationMigration.RepairTextBinding(text, repairedKey))
+                if (StaticLocalizationMigration.RepairTextBinding(text, resolution.Key))
                     summary.Repaired++;
             }
             else
@@ -148,7 +147,7 @@ public static class LocalizationTextBindingRepairTool
         return string.IsNullOrWhiteSpace(source) ? text.text : source;
     }
 
-    private static BindingMaps ReadBindingMaps()
+    private static LocalizationBindingResolver ReadBindingMaps()
     {
         IReadOnlyList<IReadOnlyList<string>> rows = LocalizationXlsxReader.ReadSheet(
             LocalizationExcelImporter.WorkbookPath,
@@ -157,8 +156,7 @@ public static class LocalizationTextBindingRepairTool
 
         int keyIndex = FindHeader(rows[0], "Key");
         int koreanIndex = FindHeader(rows[0], KoreanHeader);
-        var keyByKorean = new Dictionary<string, string>(StringComparer.Ordinal);
-        var koreanByKey = new Dictionary<string, string>(StringComparer.Ordinal);
+        var entries = new List<LocalizationBindingEntry>();
         foreach (IReadOnlyList<string> row in rows.Skip(1))
         {
             string key = GetValue(row, keyIndex);
@@ -166,12 +164,10 @@ public static class LocalizationTextBindingRepairTool
             if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(korean))
                 continue;
 
-            koreanByKey[key] = korean;
-            if (!keyByKorean.ContainsKey(korean))
-                keyByKorean[korean] = key;
+            entries.Add(new LocalizationBindingEntry(key, korean));
         }
 
-        return new BindingMaps(keyByKorean, koreanByKey);
+        return new LocalizationBindingResolver(entries);
     }
 
     private static int FindHeader(IReadOnlyList<string> headers, string name)
@@ -184,18 +180,6 @@ public static class LocalizationTextBindingRepairTool
 
     private static string GetValue(IReadOnlyList<string> row, int index) =>
         index >= 0 && index < row.Count ? row[index] ?? string.Empty : string.Empty;
-
-    private readonly struct BindingMaps
-    {
-        public BindingMaps(Dictionary<string, string> keyByKorean, Dictionary<string, string> koreanByKey)
-        {
-            KeyByKorean = keyByKorean;
-            KoreanByKey = koreanByKey;
-        }
-
-        public Dictionary<string, string> KeyByKorean { get; }
-        public Dictionary<string, string> KoreanByKey { get; }
-    }
 
     private struct RepairSummary
     {

@@ -8,6 +8,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Serialization;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 {
@@ -74,6 +76,9 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     private string currentCharacterId;
     private CharacterMasterData currentMasterData;
     private CharacterRuntimeData currentRuntimeData;
+    private SkillMasterData currentDisplayedSkillInfo;
+
+    public bool IsDisplayingSkillInfo => currentDisplayedSkillInfo != null;
 
     private void Awake()
     {
@@ -82,6 +87,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         BindSkillIconButtonsIfNeeded();
         BindSkillInfoAreaIfNeeded();
+        EnsureDynamicTextOwnership();
         InitSkillSlotButtons();
         InitSkillIconButtons();
 
@@ -97,17 +103,31 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private void OnEnable()
     {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
         BindSkillIconButtonsIfNeeded();
         BindSkillInfoAreaIfNeeded();
+        EnsureDynamicTextOwnership();
         InitSkillSlotButtons();
         InitSkillIconButtons();
         SetSelectedSkillSlot(null);
         ClearSkillIconButtons();
         ClearSkillInfo();
         SetSkillSelectPanelVisible(false, true);
+    }
+
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+    }
+
+    private void OnLocaleChanged(Locale _)
+    {
+        if (currentDisplayedSkillInfo != null)
+            ShowSkillInfo(currentDisplayedSkillInfo);
     }
 
 #if UNITY_EDITOR
@@ -1071,6 +1091,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             return;
         }
 
+        currentDisplayedSkillInfo = skill;
+
         if (sharedInfoArea != null)
             sharedInfoArea.SetActive(true);
 
@@ -1082,9 +1104,9 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         ApplySkillInfoRarityColor(skill.Rarity);
         SetRichTmpText(skillInfoEffectText, BuildSkillDetailsText(skill));
         SetSkillRangeImage(skill);
-        SetPlainTmpText(skillInfoCostText, $"소모 : {BuildSkillCostText(skill)}");
-        SetPlainTmpText(skillInfoTypeText, $"방식 : {BuildSkillRangeTypeText(skill)}");
-        SetPlainTmpText(skillInfoValueText, $"효과 : {BuildSkillValueText(skill)}");
+        SetPlainTmpText(skillInfoCostText, GameLocalization.Format(LocalizationKeys.SkillInfo.Cost, BuildSkillCostText(skill)));
+        SetPlainTmpText(skillInfoTypeText, GameLocalization.Format(LocalizationKeys.SkillInfo.Type, BuildSkillRangeTypeText(skill)));
+        SetPlainTmpText(skillInfoValueText, GameLocalization.Format(LocalizationKeys.SkillInfo.Effect, BuildSkillValueText(skill)));
     }
 
     public void ClearSkillInfoFromHover()
@@ -1114,6 +1136,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     public void ClearSkillInfo()
     {
+        currentDisplayedSkillInfo = null;
         BindSkillInfoAreaIfNeeded();
         ConfigureSkillInfoTextComponents();
 
@@ -1226,6 +1249,22 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         }
     }
 
+    /// <summary>These TMPs are populated by this presenter and must never be claimed by static localization.</summary>
+    private void EnsureDynamicTextOwnership()
+    {
+        TMP_Text[] dynamicTexts =
+        {
+            skillInfoTitleText, skillInfoEffectText, skillInfoRarityText,
+            skillInfoCostText, skillInfoTypeText, skillInfoValueText,
+        };
+
+        foreach (TMP_Text text in dynamicTexts)
+        {
+            if (text != null && text.GetComponent<LocalizationIgnore>() == null)
+                text.gameObject.AddComponent<LocalizationIgnore>();
+        }
+    }
+
     private void SetSkillRangeImage(SkillMasterData skill)
     {
         if (skillInfoRangeImage == null)
@@ -1270,22 +1309,22 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             return string.Empty;
 
         if (skill.ResourceCostValue <= 0)
-            return "소모 없음";
+            return GameLocalization.Get(LocalizationKeys.SkillInfo.NoCost);
 
         string resourceName;
         switch (skill.ReferenceResource)
         {
             case ReferenceResource.HP:
-                resourceName = "생명력";
+                resourceName = GameLocalization.Get(LocalizationKeys.Resource.Hp);
                 break;
             case ReferenceResource.Cost:
-                resourceName = "마나";
+                resourceName = GameLocalization.Get(LocalizationKeys.Resource.Mana);
                 break;
             case ReferenceResource.UniqueResource:
-                resourceName = "카르마";
+                resourceName = GameLocalization.Get(LocalizationKeys.Resource.Karma);
                 break;
             case ReferenceResource.MovePoint:
-                resourceName = "이동";
+                resourceName = GameLocalization.Get(LocalizationKeys.Resource.Move);
                 break;
             default:
                 resourceName = string.Empty;
@@ -1303,22 +1342,22 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         switch (GetCurrentCharacterNumber())
         {
             case 1:
-                return "분노";
+                return GameLocalization.Get("resource.rage");
 
             case 2:
-                return "기세";
+                return GameLocalization.Get("resource.momentum");
 
             case 3:
-                return "에테르";
+                return GameLocalization.Get("resource.aether");
 
             case 4:
-                return "신앙";
+                return GameLocalization.Get("resource.faith");
 
             case 5:
-                return "혈기";
+                return GameLocalization.Get("resource.blood");
 
             default:
-                return "카르마";
+                return GameLocalization.Get(LocalizationKeys.Resource.Karma);
         }
     }
 
@@ -1330,11 +1369,11 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         switch (skill.RangeType)
         {
             case RangeType.Direction:
-                return "시전자 위치";
+                return GameLocalization.Get(LocalizationKeys.SkillInfo.RangeDirection);
             case RangeType.Selection:
-                return "그리드 선택";
+                return GameLocalization.Get(LocalizationKeys.SkillInfo.RangeSelection);
             case RangeType.Passive:
-                return "카르마 최대 시 지속";
+                return GameLocalization.Get(LocalizationKeys.SkillInfo.RangePassive);
             default:
                 return string.Empty;
         }
@@ -1345,22 +1384,22 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         switch (GetCurrentCharacterNumber())
         {
             case 1:
-                return "분노 3 유지 시 지속";
+                return GameLocalization.Format(LocalizationKeys.SkillInfo.PassiveActivation, GameLocalization.Get("resource.rage"), 3);
 
             case 2:
-                return "기세 5 유지 시 지속";
+                return GameLocalization.Format(LocalizationKeys.SkillInfo.PassiveActivation, GameLocalization.Get("resource.momentum"), 5);
 
             case 3:
-                return "에테르 3 유지 시 지속";
+                return GameLocalization.Format(LocalizationKeys.SkillInfo.PassiveActivation, GameLocalization.Get("resource.aether"), 3);
 
             case 4:
-                return "신앙 3 유지 시 지속";
+                return GameLocalization.Format(LocalizationKeys.SkillInfo.PassiveActivation, GameLocalization.Get("resource.faith"), 3);
 
             case 5:
-                return "혈기 5 유지 시 지속";
+                return GameLocalization.Format(LocalizationKeys.SkillInfo.PassiveActivation, GameLocalization.Get("resource.blood"), 5);
 
             default:
-                return "카르마 최대치 유지 시 지속";
+                return GameLocalization.Format(LocalizationKeys.SkillInfo.RangePassive, GameLocalization.Get(LocalizationKeys.Resource.Karma));
         }
     }
 
@@ -1378,7 +1417,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         }
 
         if (entries == null || entries.Count == 0)
-            return "없음";
+            return GameLocalization.Get(LocalizationKeys.SkillInfo.NoEffect);
 
         List<string> parts = new List<string>(2);
         int count = Mathf.Min(2, entries.Count);
@@ -1389,45 +1428,16 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             if (entry == null || string.IsNullOrWhiteSpace(entry.EffectId))
                 continue;
 
-            string effectName = entry.EffectData != null && !string.IsNullOrWhiteSpace(entry.EffectData.Name)
-                ? entry.EffectData.Name
+            string effectName = entry.EffectData != null
+                ? GameDataLocalization.EffectName(entry.EffectData)
                 : entry.EffectId;
-
-            string normalized = (effectName ?? string.Empty).Replace(" ", string.Empty).ToLowerInvariant();
-            if (normalized.Contains("타격") || normalized.Contains("strike"))
-                effectName = "피해";
 
             int effectValue = entry.ValueAmount != 0 ? entry.ValueAmount : entry.CountAmount;
             string valueText = Mathf.Abs(effectValue).ToString();
             parts.Add(string.IsNullOrWhiteSpace(effectName) ? valueText : $"{effectName} {valueText}");
         }
 
-        return parts.Count > 0 ? string.Join(" / ", parts) : "없음";
-    }
-
-    private string GetEffectDisplayName(string effectName, string effectId)
-    {
-        string source = !string.IsNullOrWhiteSpace(effectName)
-            ? effectName.Trim()
-            : string.Empty;
-
-        string id = !string.IsNullOrWhiteSpace(effectId)
-            ? effectId.Trim()
-            : string.Empty;
-
-        if (string.Equals(source, "타격", System.StringComparison.OrdinalIgnoreCase))
-            return "피해";
-
-        if (string.Equals(source, "관통", System.StringComparison.OrdinalIgnoreCase))
-            return "관통피해";
-
-        if (string.Equals(source, "E_Move", System.StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(id, "E_Move", System.StringComparison.OrdinalIgnoreCase))
-        {
-            return "이동";
-        }
-
-        return source;
+        return parts.Count > 0 ? string.Join(" / ", parts) : GameLocalization.Get(LocalizationKeys.SkillInfo.NoEffect);
     }
 
     private void SetPlainTmpText(TMP_Text targetText, string rawText)
@@ -1467,7 +1477,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         // 도감과 동일하게 토큰 치환 전 원본 Details를 사용합니다.
         // 스킬 상세 문구는 먼저 {ValueRate}/{CountRate}를 숫자로 바꾸므로
         // 이후에는 어떤 숫자가 치환값인지 알 수 없어 색상 태그를 적용할 수 없습니다.
-        string details = GameDataLocalization.SkillDetails(skill);
+        string details = GameDataLocalization.SkillDetailsTemplate(skill);
 
         if (string.IsNullOrWhiteSpace(details))
             return "";
