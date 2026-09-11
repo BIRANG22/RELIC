@@ -76,6 +76,9 @@ public static class LocalizationProjectScanner
             return "name";
         if (header.Contains("소개", StringComparison.Ordinal))
             return "introduction";
+        if (header.Contains("Regeneration", StringComparison.OrdinalIgnoreCase) ||
+            header.Contains("카르마 획득", StringComparison.Ordinal))
+            return "regeneration";
         if (header.Contains("효과설명", StringComparison.Ordinal))
             return "effect_description";
         if (header.Contains("툴팁", StringComparison.Ordinal))

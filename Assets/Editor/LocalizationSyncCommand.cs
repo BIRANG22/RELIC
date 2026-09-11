@@ -223,6 +223,9 @@ public static class LocalizationSyncCommand
         E(LocalizationKeys.CharacterSetting.RuneInfoTitle, "파편정보"),
         E(LocalizationKeys.CharacterSetting.RuneInfoEmpty, "파편의 정보가 표시된다."),
         E(LocalizationKeys.CharacterSetting.CharacterIntro, "카르마 획득 설명 & 스텟설명"),
+        E(LocalizationKeys.CharacterSetting.KarmaAcquisitionTitle, "카르마 획득 조건"),
+        E(LocalizationKeys.CharacterSetting.KarmaDescription, "각자의 전투 방식에 따라 축적되며, 기억을 발현하는 힘이 된다."),
+        E(LocalizationKeys.CharacterSetting.StatMaximumValue, "최대보유량 {0}"),
     };
     private static IReadOnlyList<LocalizationWorkbookEntry> RuneInstallationEntries() => new[]
     {

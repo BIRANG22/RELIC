@@ -6,6 +6,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Localization.Components;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public static class LocalizationEditingLockTool
 {
@@ -39,12 +40,12 @@ public static class LocalizationEditingLockTool
         int disabledCount = CountDisabledTargetLocalizers();
         if (disabledCount == 0)
         {
-            Debug.Log("[LocalizationEditingLockTool] 모든 대상 LocalizeStringEvent가 활성화되어 있습니다.");
+            Debug.Log("[LocalizationEditingLockTool] 모든 대상 텍스트 로컬라이저가 활성화되어 있습니다.");
             return;
         }
 
         Debug.LogWarning(
-            $"[LocalizationEditingLockTool] 비활성화된 대상 LocalizeStringEvent가 {disabledCount}개 있습니다. " +
+            $"[LocalizationEditingLockTool] 비활성화된 대상 텍스트 로컬라이저가 {disabledCount}개 있습니다. " +
             "빌드 전 Enable Text Localization Editing Lock을 실행하세요.");
     }
 
@@ -54,16 +55,40 @@ public static class LocalizationEditingLockTool
             throw new ArgumentNullException(nameof(root));
 
         int changedCount = 0;
-        foreach (LocalizeStringEvent localizer in root.GetComponentsInChildren<LocalizeStringEvent>(true))
+        foreach (LocalizedTMPText localizer in root.GetComponentsInChildren<LocalizedTMPText>(true))
         {
-            // LocalizedTMPText는 빈 번역을 짧은 안내 문구로 대체하는 표시 소유자입니다.
-            // LocalizeStringEvent를 다시 켜면 Unity의 긴 누락 오류가 텍스트를 덮어씁니다.
-            bool targetEnabled = enabled && localizer.GetComponent<LocalizedTMPText>() == null;
-            if (localizer.enabled == targetEnabled)
+            TMP_Text text = localizer.GetComponent<TMP_Text>();
+            if (!LocalizedTMPText.ShouldManageText(text))
                 continue;
 
-            Undo.RecordObject(localizer, targetEnabled ? "Enable localized text editing lock" : "Disable localized text editing lock");
-            localizer.enabled = targetEnabled;
+            if (localizer.enabled != enabled)
+            {
+                Undo.RecordObject(localizer, enabled ? "Enable localized text editing lock" : "Disable localized text editing lock");
+                localizer.enabled = enabled;
+                EditorUtility.SetDirty(localizer);
+                changedCount++;
+            }
+
+            if (!enabled && text.text != localizer.KoreanSource)
+            {
+                Undo.RecordObject(text, "Restore Korean text for editing");
+                text.text = localizer.KoreanSource;
+                EditorUtility.SetDirty(text);
+            }
+            else if (enabled)
+            {
+                localizer.Refresh();
+            }
+        }
+
+        foreach (LocalizeStringEvent localizer in root.GetComponentsInChildren<LocalizeStringEvent>(true))
+        {
+            // 마이그레이션된 TMP의 표시 소유자는 LocalizedTMPText 하나입니다.
+            if (localizer.GetComponent<LocalizedTMPText>() != null || localizer.enabled == enabled)
+                continue;
+
+            Undo.RecordObject(localizer, enabled ? "Enable localized text editing lock" : "Disable localized text editing lock");
+            localizer.enabled = enabled;
             EditorUtility.SetDirty(localizer);
             changedCount++;
         }
@@ -76,9 +101,10 @@ public static class LocalizationEditingLockTool
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
             return;
 
+        LocalizationEditingLockState.SetEnabledForEditor(enabled);
         int changedCount = SetTargetLocalizersEnabled(enabled);
         string state = enabled ? "활성화" : "비활성화";
-        Debug.Log($"[LocalizationEditingLockTool] 대상 LocalizeStringEvent {changedCount}개를 {state}했습니다.");
+        Debug.Log($"[LocalizationEditingLockTool] 대상 텍스트 로컬라이저 {changedCount}개를 {state}했습니다.");
     }
 
     private static int SetTargetLocalizersEnabled(bool enabled)
@@ -167,8 +193,7 @@ public static class LocalizationEditingLockTool
             GameObject root = PrefabUtility.LoadPrefabContents(path);
             try
             {
-                disabledCount += root.GetComponentsInChildren<LocalizeStringEvent>(true)
-                    .Count(localizer => !localizer.enabled);
+                disabledCount += CountDisabledInHierarchy(root);
             }
             finally
             {
@@ -188,11 +213,24 @@ public static class LocalizationEditingLockTool
                 throw new FileNotFoundException("Target localization scene was not found.", path);
 
             Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
-            disabledCount += scene.GetRootGameObjects()
-                .SelectMany(root => root.GetComponentsInChildren<LocalizeStringEvent>(true))
-                .Count(localizer => !localizer.enabled);
+            disabledCount += scene.GetRootGameObjects().Sum(CountDisabledInHierarchy);
         }
 
         return disabledCount;
+    }
+
+    private static int CountDisabledInHierarchy(GameObject root)
+    {
+        int runtimeDisabledCount = root.GetComponentsInChildren<LocalizedTMPText>(true)
+            .Count(localizer =>
+            {
+                TMP_Text text = localizer.GetComponent<TMP_Text>();
+                return LocalizedTMPText.ShouldManageText(text) && !localizer.enabled;
+            });
+
+        int legacyDisabledCount = root.GetComponentsInChildren<LocalizeStringEvent>(true)
+            .Count(localizer => localizer.GetComponent<LocalizedTMPText>() == null && !localizer.enabled);
+
+        return runtimeDisabledCount + legacyDisabledCount;
     }
 }

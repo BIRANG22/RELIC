@@ -14,11 +14,18 @@ public static class RuntimeTMPTextAutoLocalizer
 {
     private static LocalizationBindingResolver resolver = new(Array.Empty<LocalizationBindingEntry>());
     private static readonly HashSet<int> ProcessingTextIds = new();
+    private static readonly HashSet<int> SceneStartupTextIds = new();
     private static bool isReady;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static async void Initialize()
     {
+        foreach (TMP_Text text in UnityEngine.Object.FindObjectsByType<TMP_Text>(
+                     FindObjectsInactive.Include,
+                     FindObjectsSortMode.None))
+            if (text != null)
+                SceneStartupTextIds.Add(text.GetInstanceID());
+
         TMPro_EventManager.TEXT_CHANGED_EVENT.Remove(OnTextChanged);
         TMPro_EventManager.TEXT_CHANGED_EVENT.Add(OnTextChanged);
 
@@ -37,22 +44,31 @@ public static class RuntimeTMPTextAutoLocalizer
             .Select(entry => new LocalizationBindingEntry(entry.Key, NormalizeKoreanSource(entry.Value))));
 
         isReady = true;
-        foreach (TMP_Text text in UnityEngine.Object.FindObjectsByType<TMP_Text>(
-                     FindObjectsInactive.Include,
-                     FindObjectsSortMode.None))
-            TryAttach(text);
     }
 
     private static void OnTextChanged(UnityEngine.Object changedObject)
     {
-        if (changedObject is TMP_Text text)
-            TryAttach(text);
+        if (changedObject is not TMP_Text text)
+            return;
+
+        if (SceneStartupTextIds.Contains(text.GetInstanceID()))
+            return;
+
+        TryAttach(text);
     }
 
     private static void TryAttach(TMP_Text text)
     {
-        if (!isReady || text == null || !LocalizedTMPText.ShouldManageText(text) ||
-            text.GetComponent<LocalizedTMPText>() != null)
+        if (text == null)
+            return;
+
+        if (!isReady)
+            return;
+
+        if (!LocalizedTMPText.ShouldManageText(text))
+            return;
+
+        if (text.GetComponent<LocalizedTMPText>() != null)
             return;
 
         int instanceId = text.GetInstanceID();
@@ -86,4 +102,5 @@ public static class RuntimeTMPTextAutoLocalizer
             ? string.Empty
             : source.Replace("\r\n", "\n").Trim();
     }
+
 }

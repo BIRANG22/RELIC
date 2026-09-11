@@ -24,6 +24,9 @@ public static class GameLocalization
     /// <summary>Runtime UI/system copy must identify a workbook key and must not embed Korean fallback text.</summary>
     public static string Get(string key, params object[] arguments)
     {
+        if (!LocalizationEditingLockState.IsEnabledForEditor)
+            return GetKoreanSourceForEditor(key, arguments);
+
         return Get(key, ResolveMissingTranslation("en"), arguments);
     }
 
@@ -61,6 +64,9 @@ public static class GameLocalization
 
     public static string Get(string key, string fallback, params object[] arguments)
     {
+        if (!LocalizationEditingLockState.IsEnabledForEditor)
+            return fallback ?? string.Empty;
+
         if (string.IsNullOrWhiteSpace(key))
             return fallback ?? string.Empty;
 
@@ -117,6 +123,37 @@ public static class GameLocalization
         return trimmed.StartsWith("No translation found for", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static string GetKoreanSourceForEditor(string key, object[] arguments)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return ResolveMissingTranslation("ko");
+
+        try
+        {
+            foreach (var locale in LocalizationSettings.AvailableLocales.Locales)
+            {
+                if (!locale.Identifier.Code.StartsWith("ko", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                string koreanSource = LocalizationSettings.StringDatabase.GetLocalizedString(
+                    TableName,
+                    key,
+                    locale,
+                    FallbackBehavior.DontUseFallback,
+                    arguments ?? Array.Empty<object>());
+                return IsMissingTranslationResult(koreanSource)
+                    ? ResolveMissingTranslation("ko")
+                    : koreanSource;
+            }
+        }
+        catch (Exception)
+        {
+            // The editor lock is only a source-view aid; retain a visible Korean fallback while tables initialize.
+        }
+
+        return ResolveMissingTranslation("ko");
+    }
+
     private static string NormalizeKeySegment(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -126,4 +163,24 @@ public static class GameLocalization
         snakeCase = Regex.Replace(snakeCase, "[^A-Za-z0-9]+", "_");
         return snakeCase.Trim('_').ToLowerInvariant();
     }
+}
+
+public static class LocalizationEditingLockState
+{
+#if UNITY_EDITOR
+    private const string EditorPreferenceKey = "RELIC.LocalizationEditingLock.Enabled";
+
+    public static bool IsEnabledForEditor => UnityEditor.EditorPrefs.GetBool(EditorPreferenceKey, true);
+
+    public static void SetEnabledForEditor(bool enabled)
+    {
+        UnityEditor.EditorPrefs.SetBool(EditorPreferenceKey, enabled);
+    }
+#else
+    public static bool IsEnabledForEditor => true;
+
+    public static void SetEnabledForEditor(bool enabled)
+    {
+    }
+#endif
 }

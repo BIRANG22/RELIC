@@ -1,17 +1,19 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization.Components;
+using UnityEngine.UI;
 
 /// <summary>
-/// reference ¾Æ·¡¿¡ ÇÏ³ª¸¸ Á¸ÀçÇÏ´Â °ø¿ë NameinfoÀÔ´Ï´Ù.
-/// È£¹öÇÑ ¾ÆÀÌÄÜÀÇ ½ÇÁ¦ ÇÏ´Ü Áß¾Ó ¹Ù·Î ¾Æ·¡¿¡ ºÙ¾î¼­ ÀÌ¸§À» Ç¥½ÃÇÕ´Ï´Ù.
+/// reference ì•„ë˜ì— í•˜ë‚˜ë§Œ ì¡´ì¬í•˜ëŠ” ê³µìš© Nameinfoì…ë‹ˆë‹¤.
+/// í˜¸ë²„í•œ ì•„ì´ì½˜ì˜ ì‹¤ì œ í•˜ë‹¨ ì¤‘ì•™ ë°”ë¡œ ì•„ë˜ì— ë¶™ì–´ì„œ ì´ë¦„ì„ í‘œì‹œí•©ë‹ˆë‹¤.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class CompoundReferenceNameTooltip : MonoBehaviour
 {
     [SerializeField] private TMP_Text nameText;
 
-    [Tooltip("¾ÆÀÌÄÜ ÇÏ´Ü¿¡¼­ Ãß°¡·Î ¶³¾î¶ß¸± °Å¸®ÀÔ´Ï´Ù. Y°¡ À½¼ö¸é ¾Æ·¡ÂÊÀ¸·Î ³»·Á°©´Ï´Ù.")]
+    [Tooltip("ì•„ì´ì½˜ í•˜ë‹¨ì—ì„œ ì¶”ê°€ë¡œ ë–¨ì–´ëœ¨ë¦´ ê±°ë¦¬ì…ë‹ˆë‹¤. Yê°€ ìŒìˆ˜ë©´ ì•„ë˜ìª½ìœ¼ë¡œ ë‚´ë ¤ê°‘ë‹ˆë‹¤.")]
     [SerializeField] private Vector2 offset = new Vector2(0f, -4f);
 
     private RectTransform rectTransform;
@@ -20,6 +22,8 @@ public sealed class CompoundReferenceNameTooltip : MonoBehaviour
     private void Awake()
     {
         ResolveReferences();
+        MarkNameTextAsDynamic();
+        DisableRaycastTargets();
         Hide();
     }
 
@@ -46,6 +50,7 @@ public sealed class CompoundReferenceNameTooltip : MonoBehaviour
         }
 
         ResolveReferences();
+        MarkNameTextAsDynamic();
         if (rectTransform == null || rectTransform.parent is not RectTransform)
             return;
 
@@ -84,8 +89,8 @@ public sealed class CompoundReferenceNameTooltip : MonoBehaviour
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, screenPoint, eventCamera, out Vector2 iconBottomLocal))
             return;
 
-        // NameinfoÀÇ 'À­º¯ Áß¾Ó'ÀÌ ¾ÆÀÌÄÜÀÇ '¾Æ·§º¯ Áß¾Ó'¿¡ ¿Àµµ·Ï ¸ÂÃä´Ï´Ù.
-        // PivotÀÌ Áß¾Ó/¾Æ·¡/À§ ¾îµğ¿¡ ÀÖ¾îµµ ½ÇÁ¦ Ç¥½Ã ¹Ú½º°¡ ¾ÆÀÌÄÜ ¹Ù·Î ¾Æ·¡¿¡ À§Ä¡ÇÕ´Ï´Ù.
+        // Nameinfoì˜ 'ìœ—ë³€ ì¤‘ì•™'ì´ ì•„ì´ì½˜ì˜ 'ì•„ë«ë³€ ì¤‘ì•™'ì— ì˜¤ë„ë¡ ë§ì¶¥ë‹ˆë‹¤.
+        // Pivotì´ ì¤‘ì•™/ì•„ë˜/ìœ„ ì–´ë””ì— ìˆì–´ë„ ì‹¤ì œ í‘œì‹œ ë°•ìŠ¤ê°€ ì•„ì´ì½˜ ë°”ë¡œ ì•„ë˜ì— ìœ„ì¹˜í•©ë‹ˆë‹¤.
         Rect tooltipRect = rectTransform.rect;
         Vector2 pivot = rectTransform.pivot;
         Vector2 topCenterFromPivot = new Vector2(
@@ -115,36 +120,68 @@ public sealed class CompoundReferenceNameTooltip : MonoBehaviour
         rectTransform ??= transform as RectTransform;
         nameText ??= GetComponentInChildren<TMP_Text>(true);
     }
+
+    private void MarkNameTextAsDynamic()
+    {
+        if (nameText == null)
+            return;
+
+        if (nameText.GetComponent<LocalizationIgnore>() == null)
+            nameText.gameObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localizer = nameText.GetComponent<LocalizedTMPText>();
+        if (localizer != null)
+        {
+            localizer.enabled = false;
+            Destroy(localizer);
+        }
+
+        LocalizeStringEvent legacyLocalizer = nameText.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+        {
+            legacyLocalizer.enabled = false;
+            Destroy(legacyLocalizer);
+        }
+    }
+
+    private void DisableRaycastTargets()
+    {
+        foreach (Graphic graphic in GetComponentsInChildren<Graphic>(true))
+            graphic.raycastTarget = false;
+    }
 }
 
 /// <summary>
-/// ½ÇÁ¦·Î °ø°³µÈ Icon¿¡¸¸ ·±Å¸ÀÓÀ¸·Î ºÙ´Â È£¹ö ÄÄÆ÷³ÍÆ®ÀÔ´Ï´Ù.
-/// qus¿¡´Â ºÙÁö ¾ÊÀ¸¹Ç·Î ¹Ì¹ß°ß ÀÌ¸§Àº ³ëÃâµÇÁö ¾Ê½À´Ï´Ù.
+/// ì‹¤ì œë¡œ ê³µê°œëœ Iconì—ë§Œ ëŸ°íƒ€ì„ìœ¼ë¡œ ë¶™ëŠ” í˜¸ë²„ ì»´í¬ë„ŒíŠ¸ì…ë‹ˆë‹¤.
+/// qusì—ëŠ” ë¶™ì§€ ì•Šìœ¼ë¯€ë¡œ ë¯¸ë°œê²¬ ì´ë¦„ì€ ë…¸ì¶œë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 /// </summary>
 public sealed class CompoundReferenceIconHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     private CompoundReferenceNameTooltip tooltip;
     private RectTransform targetIcon;
-    private string displayName;
+    private System.Func<string> displayNameProvider;
 
-    public void Initialize(CompoundReferenceNameTooltip targetTooltip, RectTransform icon, string name)
+    public void Initialize(CompoundReferenceNameTooltip targetTooltip, RectTransform icon, System.Func<string> nameProvider)
     {
         tooltip = targetTooltip;
         targetIcon = icon;
-        displayName = name ?? string.Empty;
+        displayNameProvider = nameProvider;
     }
 
     public void Clear()
     {
         tooltip = null;
         targetIcon = null;
-        displayName = string.Empty;
+        displayNameProvider = null;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        string displayName = displayNameProvider?.Invoke() ?? string.Empty;
         if (tooltip != null && targetIcon != null && !string.IsNullOrWhiteSpace(displayName))
+        {
             tooltip.Show(targetIcon, displayName);
+        }
     }
 
     public void OnPointerExit(PointerEventData eventData)

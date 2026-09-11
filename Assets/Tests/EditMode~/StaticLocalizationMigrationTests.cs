@@ -66,6 +66,31 @@ public class StaticLocalizationMigrationTests
             Is.EqualTo("title.explore_continue"));
     }
 
+    [Test]
+    public void ConfigureDynamicText_RemovesStaticLocalizationOwnerAndAddsIgnoreMarker()
+    {
+        TextMeshProUGUI text = CreateText("카르마 획득 조건");
+        StaticLocalizationMigration.ConfigureText(text, "lobby.character_intro");
+
+        bool changed = StaticLocalizationMigration.ConfigureDynamicText(text);
+
+        Assert.That(changed, Is.True);
+        Assert.That(text.GetComponent<LocalizedTMPText>(), Is.Null);
+        Assert.That(text.GetComponent<LocalizationIgnore>(), Is.Not.Null);
+    }
+
+    [Test]
+    public void ShouldManageText_WhenParentHasLocalizationIgnore_ReturnsFalse()
+    {
+        GameObject parent = new GameObject("Dynamic Tooltip Root", typeof(LocalizationIgnore));
+        TextMeshProUGUI text = CreateText("첫 번째 값");
+        text.transform.SetParent(parent.transform);
+
+        Assert.That(LocalizedTMPText.ShouldManageText(text), Is.False);
+
+        Object.DestroyImmediate(parent);
+    }
+
     private TextMeshProUGUI CreateText(string value)
     {
         textObject = new GameObject("Localized Text", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));

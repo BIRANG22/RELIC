@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Components;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.Localization;
@@ -1474,6 +1475,7 @@ public class RuneSettingPanel : MonoBehaviour
     {
         LobbyInfoHoverState.NotifyRuneInfoShown();
         AutoBindRuneInfoTexts();
+        EnsureDynamicInfoTextOwnership();
         HideSkillOnlyInfoObjects();
 
         if (isLocked)
@@ -1521,6 +1523,7 @@ public class RuneSettingPanel : MonoBehaviour
     {
         LobbyInfoHoverState.NotifyRuneInfoShown();
         AutoBindRuneInfoTexts();
+        EnsureDynamicInfoTextOwnership();
         HideSkillOnlyInfoObjects();
 
         if (runeData == null)
@@ -1633,8 +1636,30 @@ public class RuneSettingPanel : MonoBehaviour
     private void EnsureDynamicInfoTextOwnership()
     {
         foreach (TMP_Text text in new[] { runeInfoTitleText, runeInfoEffectText, runeInfoRarityText })
-            if (text != null && text.GetComponent<LocalizationIgnore>() == null)
-                text.gameObject.AddComponent<LocalizationIgnore>();
+            EnsureDynamicInfoTextOwnership(text);
+    }
+
+    private static void EnsureDynamicInfoTextOwnership(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        if (text.GetComponent<LocalizationIgnore>() == null)
+            text.gameObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localizer = text.GetComponent<LocalizedTMPText>();
+        if (localizer != null)
+        {
+            localizer.enabled = false;
+            Destroy(localizer);
+        }
+
+        LocalizeStringEvent legacyLocalizer = text.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+        {
+            legacyLocalizer.enabled = false;
+            Destroy(legacyLocalizer);
+        }
     }
 
     private void BindSharedSkillSettingPanel()

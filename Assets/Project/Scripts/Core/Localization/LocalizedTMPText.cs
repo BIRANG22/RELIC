@@ -21,7 +21,7 @@ public sealed class LocalizedTMPText : MonoBehaviour
         // 여기에 정적 LocalizedTMPText가 붙으면 선택 언어명이 번역 키 값으로 덮어써집니다.
         return text != null &&
                text.GetComponentInParent<TMP_Dropdown>() == null &&
-               text.GetComponent<LocalizationIgnore>() == null;
+               text.GetComponentInParent<LocalizationIgnore>(true) == null;
     }
 
     public static string ResolveText(string key, string koreanFallback)

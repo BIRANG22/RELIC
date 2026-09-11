@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 using UnityEngine.Serialization;
 using UnityEngine.Localization;
@@ -1083,6 +1084,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         LobbyInfoHoverState.NotifyInfoShown();
         BindSkillInfoAreaIfNeeded();
+        EnsureDynamicTextOwnership();
         ConfigureSkillInfoTextComponents();
 
         if (skill == null)
@@ -1138,6 +1140,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     {
         currentDisplayedSkillInfo = null;
         BindSkillInfoAreaIfNeeded();
+        EnsureDynamicTextOwnership();
         ConfigureSkillInfoTextComponents();
 
         if (sharedInfoArea != null)
@@ -1259,9 +1262,29 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         };
 
         foreach (TMP_Text text in dynamicTexts)
+            EnsureDynamicTextOwnership(text);
+    }
+
+    private static void EnsureDynamicTextOwnership(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        if (text.GetComponent<LocalizationIgnore>() == null)
+            text.gameObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localizer = text.GetComponent<LocalizedTMPText>();
+        if (localizer != null)
         {
-            if (text != null && text.GetComponent<LocalizationIgnore>() == null)
-                text.gameObject.AddComponent<LocalizationIgnore>();
+            localizer.enabled = false;
+            Destroy(localizer);
+        }
+
+        LocalizeStringEvent legacyLocalizer = text.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+        {
+            legacyLocalizer.enabled = false;
+            Destroy(legacyLocalizer);
         }
     }
 

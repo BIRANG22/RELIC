@@ -1,5 +1,7 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Components;
+using UnityEngine.UI;
 
 public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 {
@@ -15,24 +17,24 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     [SerializeField] private HoverNameType hoverNameType = HoverNameType.Research;
 
     [Header("Position")]
-    [Tooltip("Äİ¶óÀÌ´õ ÇÏ´Ü¿¡¼­ ÀÌ¸§ UI±îÁöÀÇ È­¸é ÇÈ¼¿ °£°İÀÔ´Ï´Ù. À½¼ö°ªÀÌ¸é Äİ¶óÀÌ´õ ¾Æ·¡ÂÊÀ¸·Î ³»·Á°©´Ï´Ù.")]
+    [Tooltip("ì½œë¼ì´ë” í•˜ë‹¨ì—ì„œ ì´ë¦„ UIê¹Œì§€ì˜ í™”ë©´ í”½ì…€ ê°„ê²©ì…ë‹ˆë‹¤. ìŒìˆ˜ê°’ì´ë©´ ì½œë¼ì´ë” ì•„ë˜ìª½ìœ¼ë¡œ ë‚´ë ¤ê°‘ë‹ˆë‹¤.")]
     [SerializeField] private float screenYOffset = -18f;
 
     [Header("Name Background Size")]
-    [Tooltip("WorldObjectNamePanel/ImageÀÇ °¡·Î Å©±â¸¦ ÀÌ¸§ ±æÀÌ¿¡ ¸ÂÃç ÀÚµ¿ Á¶ÀıÇÕ´Ï´Ù.")]
+    [Tooltip("WorldObjectNamePanel/Imageì˜ ê°€ë¡œ í¬ê¸°ë¥¼ ì´ë¦„ ê¸¸ì´ì— ë§ì¶° ìë™ ì¡°ì ˆí•©ë‹ˆë‹¤.")]
     [SerializeField] private RectTransform backgroundRect;
 
-    [Tooltip("ÅØ½ºÆ® ÁÂ¿ì¿¡ Ãß°¡ÇÒ ¿©¹éÀÔ´Ï´Ù. ½ÇÁ¦ ÁÂ¿ì ¿©¹éÀº ÀÌ °ª¾¿ Àû¿ëµË´Ï´Ù.")]
+    [Tooltip("í…ìŠ¤íŠ¸ ì¢Œìš°ì— ì¶”ê°€í•  ì—¬ë°±ì…ë‹ˆë‹¤. ì‹¤ì œ ì¢Œìš° ì—¬ë°±ì€ ì´ ê°’ì”© ì ìš©ë©ë‹ˆë‹¤.")]
     [SerializeField] private float backgroundSidePadding = 20f;
 
-    [Tooltip("ÀÌ¸§ÀÌ Âª¾Æµµ À¯ÁöÇÒ ¹è°æÀÇ ÃÖ¼Ò °¡·Î Å©±âÀÔ´Ï´Ù.")]
+    [Tooltip("ì´ë¦„ì´ ì§§ì•„ë„ ìœ ì§€í•  ë°°ê²½ì˜ ìµœì†Œ ê°€ë¡œ í¬ê¸°ì…ë‹ˆë‹¤.")]
     [SerializeField] private float backgroundMinWidth = 100f;
 
     [Header("Blocking Panels")]
-    [Tooltip("µî·ÏµÈ ÆĞ³Î Áß ÇÏ³ª¶óµµ È°¼ºÈ­µÇ¾î ÀÖÀ¸¸é ¿ùµå ¿ÀºêÁ§Æ® ÀÌ¸§À» ¼û±é´Ï´Ù.")]
+    [Tooltip("ë“±ë¡ëœ íŒ¨ë„ ì¤‘ í•˜ë‚˜ë¼ë„ í™œì„±í™”ë˜ì–´ ìˆìœ¼ë©´ ì›”ë“œ ì˜¤ë¸Œì íŠ¸ ì´ë¦„ì„ ìˆ¨ê¹ë‹ˆë‹¤.")]
     [SerializeField] private GameObject[] blockingPanels;
 
-    [Tooltip("È°¼ºÈ­ÇÏ¸é ·Îºñ¿¡¼­ ÀÚÁÖ »ç¿ëÇÏ´Â ¸ğ´Ş ÆĞ³ÎÀ» ÀÌ¸§À¸·Î ÀÚµ¿ °¨ÁöÇÕ´Ï´Ù.")]
+    [Tooltip("í™œì„±í™”í•˜ë©´ ë¡œë¹„ì—ì„œ ìì£¼ ì‚¬ìš©í•˜ëŠ” ëª¨ë‹¬ íŒ¨ë„ì„ ì´ë¦„ìœ¼ë¡œ ìë™ ê°ì§€í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool autoDetectCommonBlockingPanels = true;
 
     private static readonly string[] CommonBlockingPanelNames =
@@ -46,10 +48,10 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     };
 
     [Header("Optional Direct References")]
-    [Tooltip("ºñ¿öµÎ¸é WorldObjectNamePanel ¾Æ·¡ÀÇ ObjectNameÀ» ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("ë¹„ì›Œë‘ë©´ WorldObjectNamePanel ì•„ë˜ì˜ ObjectNameì„ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private RectTransform objectNameRect;
 
-    [Tooltip("ºñ¿öµÎ¸é ObjectNameÀÇ TMP_Text¸¦ ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("ë¹„ì›Œë‘ë©´ ObjectNameì˜ TMP_Textë¥¼ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private TMP_Text objectNameText;
 
     private static LobbyWorldObjectHoverName currentOwner;
@@ -72,6 +74,8 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     private void Awake()
     {
         AutoBindIfNeeded();
+        EnsureDynamicTextOwnership();
+        DisablePanelRaycasts();
         isHovered = false;
 
         if (currentOwner == null)
@@ -81,6 +85,8 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     private void OnEnable()
     {
         AutoBindIfNeeded();
+        EnsureDynamicTextOwnership();
+        DisablePanelRaycasts();
         isHovered = false;
     }
 
@@ -105,12 +111,19 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
         if (IsAnyBlockingPanelActive())
             return;
 
-        currentOwner = this;
-        isHovered = true;
-        objectNameText.text = GetDisplayName();
-        RefreshBackgroundWidth();
-        UpdateNamePosition();
-        SetNameVisible(true);
+        ShowCurrentName();
+    }
+
+    private void OnMouseOver()
+    {
+        if (IsAnyBlockingPanelActive())
+            return;
+
+        AutoBindIfNeeded();
+        if (targetCollider == null || objectNameText == null || worldObjectNamePanel == null)
+            return;
+
+        ShowCurrentName();
     }
 
     private void OnMouseExit()
@@ -137,7 +150,17 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
             return;
         }
 
+        ShowCurrentName();
+    }
+
+    private void ShowCurrentName()
+    {
+        currentOwner = this;
+        isHovered = true;
+        objectNameText.text = GetDisplayName();
+        RefreshBackgroundWidth();
         UpdateNamePosition();
+        SetNameVisible(true);
     }
 
     private void RefreshBackgroundWidth()
@@ -151,7 +174,7 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
         float preferredWidth = objectNameText.GetPreferredValues(objectNameText.text).x;
         float targetWidth = Mathf.Max(backgroundMinWidth, preferredWidth + backgroundSidePadding * 2f);
 
-        // ±âÁ¸ Middle Center ¾ŞÄ¿/ÇÇ¹ş°ú ³ôÀÌ´Â À¯ÁöÇÏ°í °¡·Î Å©±â¸¸ º¯°æÇÕ´Ï´Ù.
+        // ê¸°ì¡´ Middle Center ì•µì»¤/í”¼ë²—ê³¼ ë†’ì´ëŠ” ìœ ì§€í•˜ê³  ê°€ë¡œ í¬ê¸°ë§Œ ë³€ê²½í•©ë‹ˆë‹¤.
         backgroundRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetWidth);
     }
 
@@ -199,7 +222,7 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
             return;
         }
 
-        // ObjectNameÀÇ ·ÎÄÃ X/Y´Â °Çµå¸®Áö ¾Ê°í ºÎ¸ğ ÆĞ³Î¸¸ Äİ¶óÀÌ´õ ÇÏ´ÜÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù.
+        // ObjectNameì˜ ë¡œì»¬ X/YëŠ” ê±´ë“œë¦¬ì§€ ì•Šê³  ë¶€ëª¨ íŒ¨ë„ë§Œ ì½œë¼ì´ë” í•˜ë‹¨ìœ¼ë¡œ ì´ë™í•©ë‹ˆë‹¤.
         worldObjectNamePanelRect.position = worldPoint;
     }
 
@@ -214,16 +237,16 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
         switch (hoverNameType)
         {
             case HoverNameType.Research:
-                return "ÀÛ¾÷´ë";
+                return "ì‘ì—…ëŒ€";
 
             case HoverNameType.Exploration:
-                return "Á¶°¢»ó";
+                return "ì¡°ê°ìƒ";
 
             case HoverNameType.Resonance:
-                return "ºñ¼®";
+                return "ë¹„ì„";
 
             case HoverNameType.Npc:
-                return "¿¬±¸¿ø ¿¤¸¯";
+                return "ì—°êµ¬ì› ì—˜ë¦­";
 
             default:
                 return string.Empty;
@@ -232,8 +255,8 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 
     private bool IsAnyBlockingPanelActive()
     {
-        // ½ÇÁ¦·Î ·Îºñ ¸ğ´Ş ÀÔ·Â Â÷´Ü±â°¡ È°¼ºÈ­µÈ °æ¿ì¿¡¸¸ ¿ùµå È£¹ö¸¦ Â÷´ÜÇÕ´Ï´Ù.
-        // ÆĞ³Î ¿ÀºêÁ§Æ® ÀÌ¸§¸¸À¸·Î »óÅÂ¸¦ ÃßÁ¤ÇÏÁö ¾Ê¾Æ, ´İÈù Storage/Equip ¶§¹®¿¡ È£¹ö°¡ ¸·È÷Áö ¾Ê½À´Ï´Ù.
+        // ì‹¤ì œë¡œ ë¡œë¹„ ëª¨ë‹¬ ì…ë ¥ ì°¨ë‹¨ê¸°ê°€ í™œì„±í™”ëœ ê²½ìš°ì—ë§Œ ì›”ë“œ í˜¸ë²„ë¥¼ ì°¨ë‹¨í•©ë‹ˆë‹¤.
+        // íŒ¨ë„ ì˜¤ë¸Œì íŠ¸ ì´ë¦„ë§Œìœ¼ë¡œ ìƒíƒœë¥¼ ì¶”ì •í•˜ì§€ ì•Šì•„, ë‹«íŒ Storage/Equip ë•Œë¬¸ì— í˜¸ë²„ê°€ ë§‰íˆì§€ ì•ŠìŠµë‹ˆë‹¤.
         if (LobbyPositionModalInputBlocker.IsBlocked)
             return true;
 
@@ -319,6 +342,38 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 
         if (worldCamera == null)
             worldCamera = Camera.main;
+    }
+
+    private void EnsureDynamicTextOwnership()
+    {
+        if (objectNameText == null)
+            return;
+
+        if (objectNameText.GetComponent<LocalizationIgnore>() == null)
+            objectNameText.gameObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localizer = objectNameText.GetComponent<LocalizedTMPText>();
+        if (localizer != null)
+        {
+            localizer.enabled = false;
+            Destroy(localizer);
+        }
+
+        LocalizeStringEvent legacyLocalizer = objectNameText.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+        {
+            legacyLocalizer.enabled = false;
+            Destroy(legacyLocalizer);
+        }
+    }
+
+    private void DisablePanelRaycasts()
+    {
+        if (worldObjectNamePanel == null)
+            return;
+
+        foreach (Graphic graphic in worldObjectNamePanel.GetComponentsInChildren<Graphic>(true))
+            graphic.raycastTarget = false;
     }
 
     private static GameObject FindSceneObjectByName(string objectName)
