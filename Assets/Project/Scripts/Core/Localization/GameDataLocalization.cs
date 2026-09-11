@@ -8,6 +8,9 @@ namespace Relic.Gameplay.Data
         public static string CharacterIntroduction(CharacterMasterData data) =>
             data == null ? string.Empty : GameLocalization.GetData("Character", data.CharacterId, "introduction", data.Introduction);
 
+        public static string CharacterRegeneration(CharacterMasterData data) =>
+            data == null ? string.Empty : GameLocalization.GetData("Character", data.CharacterId, "regeneration", data.Regeneration);
+
         public static string MonsterName(string monsterId, string fallback) =>
             GameLocalization.GetData("Monster", monsterId, "name", fallback);
 

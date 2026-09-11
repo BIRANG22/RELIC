@@ -44,11 +44,13 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
         if (compoundDiscovered)
             TryGetCompoundIcon(dataManager, compound.CompoundId, out compoundSprite);
 
-        string compoundName = compoundDiscovered
-            ? (string.IsNullOrWhiteSpace(compound.Name) ? compound.CompoundId : GameDataLocalization.CompoundName(compound))
-            : string.Empty;
-
-        ApplyEntry(compoundIcon, compoundQuestion, compoundDiscovered, compoundSprite, compoundName, tooltip);
+        ApplyEntry(
+            compoundIcon,
+            compoundQuestion,
+            compoundDiscovered,
+            compoundSprite,
+            compoundDiscovered ? () => GameDataLocalization.CompoundName(compound) : null,
+            tooltip);
         ApplyMaterial(dataManager, compound.MaterialId1, material1Icon, material1Question, tooltip);
         ApplyMaterial(dataManager, compound.MaterialId2, material2Icon, material2Question, tooltip);
         ApplyMaterial(dataManager, compound.MaterialId3, material3Icon, material3Question, tooltip);
@@ -65,23 +67,21 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
             && RecordDiscoveryService.IsItemDiscovered(dataManager, itemId.Trim());
 
         Sprite sprite = null;
-        string displayName = string.Empty;
-
         if (discovered)
         {
             if (dataManager.ItemIconDatabase != null)
                 dataManager.ItemIconDatabase.TryGetIcon(itemId.Trim(), out sprite);
 
-            ItemData item = dataManager.ItemDatabase != null
-                ? dataManager.ItemDatabase.Get(itemId.Trim())
-                : null;
-
-            displayName = item != null && !string.IsNullOrWhiteSpace(item.Name)
-                ? GameDataLocalization.ItemName(item)
-                : itemId.Trim();
         }
 
-        ApplyEntry(icon, question, discovered, sprite, displayName, tooltip);
+        string normalizedItemId = itemId.Trim();
+        ApplyEntry(
+            icon,
+            question,
+            discovered,
+            sprite,
+            discovered ? () => GetItemDisplayName(dataManager, normalizedItemId) : null,
+            tooltip);
     }
 
     private static void ApplyEntry(
@@ -89,7 +89,7 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
         GameObject question,
         bool discovered,
         Sprite sprite,
-        string displayName,
+        Func<string> displayNameProvider,
         CompoundReferenceNameTooltip tooltip)
     {
         if (question != null)
@@ -114,7 +114,15 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
         if (hover == null)
             hover = icon.gameObject.AddComponent<CompoundReferenceIconHover>();
 
-        hover.Initialize(tooltip, icon.rectTransform, displayName);
+        hover.Initialize(tooltip, icon.rectTransform, displayNameProvider);
+    }
+
+    private static string GetItemDisplayName(DataManager dataManager, string itemId)
+    {
+        ItemData item = dataManager?.ItemDatabase?.Get(itemId);
+        return item != null && !string.IsNullOrWhiteSpace(item.Name)
+            ? GameDataLocalization.ItemName(item)
+            : itemId;
     }
 
     private void ApplyRecipeNumber(string compoundId)

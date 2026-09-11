@@ -46,6 +46,9 @@ public static class LocalizationKeys
         public const string RuneInfoTitle = "ui.character_setting.rune_info_title";
         public const string RuneInfoEmpty = "ui.character_setting.rune_info_empty";
         public const string CharacterIntro = "lobby.character_intro";
+        public const string KarmaAcquisitionTitle = "lobby.karma.acquisition_title";
+        public const string KarmaDescription = "lobby.karma.description";
+        public const string StatMaximumValue = "lobby.stat.maximum_value";
     }
 
     public static class SkillInfo

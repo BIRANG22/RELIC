@@ -138,64 +138,89 @@ public static class StaticLocalizationMigration
     public static void MigrateCharacterSettingInfoText()
     {
         const string lobbyPath = "Assets/Project/Scenes/YDM/Lobby.unity";
-        const string staticInfoTextPath = "Canvas/PositionPanel/CharacterSettingPanel/Info_Area/InfoText";
-        const string dynamicCharacterInfoTextPath = "Canvas/PositionPanel/CharacterSettingPanel/Info_Area/CharacterinfoText";
+        const string infoTextPath = "Canvas/PositionPanel/CharacterSettingPanel/Info_Area/InfoText";
+        const string characterInfoTextPath = "Canvas/PositionPanel/CharacterSettingPanel/Info_Area/CharacterinfoText";
         SceneSetup[] originalSetup = EditorSceneManager.GetSceneManagerSetup();
         try
         {
             Scene scene = EditorSceneManager.OpenScene(lobbyPath, OpenSceneMode.Single);
             Transform target = scene.GetRootGameObjects()
                 .SelectMany(root => root.GetComponentsInChildren<Transform>(true))
-                .FirstOrDefault(candidate => PathEquals(candidate, staticInfoTextPath));
+                .FirstOrDefault(candidate => PathEquals(candidate, infoTextPath));
             TMP_Text text = target?.GetComponent<TMP_Text>();
             if (text == null)
-                throw new InvalidOperationException($"Static CharacterSetting InfoText was not found at '{staticInfoTextPath}'.");
+                throw new InvalidOperationException($"CharacterSetting InfoText was not found at '{infoTextPath}'.");
 
-            bool staticChanged = RepairTextBinding(text, LocalizationKeys.CharacterSetting.CharacterIntro);
             Transform dynamicTarget = scene.GetRootGameObjects()
                 .SelectMany(root => root.GetComponentsInChildren<Transform>(true))
-                .FirstOrDefault(candidate => PathEquals(candidate, dynamicCharacterInfoTextPath));
+                .FirstOrDefault(candidate => PathEquals(candidate, characterInfoTextPath));
             TMP_Text dynamicText = dynamicTarget?.GetComponent<TMP_Text>();
             if (dynamicText == null)
-                throw new InvalidOperationException($"Dynamic CharacterInfoText was not found at '{dynamicCharacterInfoTextPath}'.");
+                throw new InvalidOperationException($"Dynamic CharacterInfoText was not found at '{characterInfoTextPath}'.");
 
-            bool dynamicChanged = false;
-            LocalizedTMPText wrongLocalizer = dynamicText.GetComponent<LocalizedTMPText>();
-            if (wrongLocalizer != null)
+            bool infoTextChanged = ConfigureDynamicText(text);
+            bool characterInfoTextChanged = ConfigureDynamicText(dynamicText);
+            CharacterInfoPanel[] panels = UnityEngine.Object.FindObjectsByType<CharacterInfoPanel>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+            int storyTextReferences = 0;
+            foreach (CharacterInfoPanel panel in panels)
             {
-                Undo.DestroyObjectImmediate(wrongLocalizer);
-                dynamicChanged = true;
-            }
-            if (dynamicText.GetComponent<LocalizationIgnore>() == null)
-            {
-                Undo.AddComponent<LocalizationIgnore>(dynamicText.gameObject);
-                dynamicChanged = true;
-            }
+                var serializedPanel = new SerializedObject(panel);
+                SerializedProperty storyText = serializedPanel.FindProperty("storyText");
+                if (storyText == null)
+                    throw new InvalidOperationException("CharacterInfoPanel.storyText serialized field was not found.");
 
-            CharacterInfoPanel infoPanel = text.GetComponentInParent<CharacterInfoPanel>();
-            if (infoPanel == null)
-                throw new InvalidOperationException("CharacterInfoPanel owning Info_Area was not found.");
-            var serializedInfoPanel = new SerializedObject(infoPanel);
-            SerializedProperty storyText = serializedInfoPanel.FindProperty("storyText");
-            if (storyText == null)
-                throw new InvalidOperationException("CharacterInfoPanel.storyText serialized field was not found.");
-            bool storyWriterRemoved = storyText.objectReferenceValue != null;
-            if (storyWriterRemoved)
-            {
-                storyText.objectReferenceValue = null;
-                serializedInfoPanel.ApplyModifiedPropertiesWithoutUndo();
-                EditorUtility.SetDirty(infoPanel);
+                if (storyText.objectReferenceValue == text)
+                    storyTextReferences++;
             }
 
-            bool changed = staticChanged || dynamicChanged || storyWriterRemoved;
+            bool changed = infoTextChanged || characterInfoTextChanged;
             if (changed)
             {
                 EditorSceneManager.MarkSceneDirty(scene);
                 EditorSceneManager.SaveScene(scene);
             }
-            Debug.Log($"[StaticLocalizationMigration] CharacterSetting bindings: InfoText={(staticChanged ? "repaired" : "valid")}, CharacterinfoText={(dynamicChanged ? "dynamic isolated" : "valid")}, StoryWriter={(storyWriterRemoved ? "removed from static InfoText" : "absent")}");
+            Debug.Log(
+                "[CharacterSetting InfoText Repair]\n" +
+                $"Target InfoText: {GetPath(text.transform)}\n" +
+                $"CharacterInfoPanel count: {panels.Length}\n" +
+                $"storyText references to InfoText: {storyTextReferences}\n" +
+                "StoryWriter: InfoText (hover and karma acquisition information)\n" +
+                $"CharacterInfoText: {GetPath(dynamicText.transform)} (character introduction)\n" +
+                $"InfoText LocalizedTMPText: {(text.GetComponent<LocalizedTMPText>() == null ? "None" : "Unexpected")}\n" +
+                $"Result: {(storyTextReferences > 0 ? "SUCCESS" : "MANUAL_BINDING_REQUIRED")}");
         }
         finally { EditorSceneManager.RestoreSceneManagerSetup(originalSetup); }
+    }
+
+    public static bool ConfigureDynamicText(TMP_Text text)
+    {
+        if (text == null)
+            throw new ArgumentNullException(nameof(text));
+
+        bool changed = false;
+        LocalizedTMPText localizer = text.GetComponent<LocalizedTMPText>();
+        if (localizer != null)
+        {
+            Undo.DestroyObjectImmediate(localizer);
+            changed = true;
+        }
+
+        LocalizeStringEvent legacyLocalizer = text.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+        {
+            Undo.DestroyObjectImmediate(legacyLocalizer);
+            changed = true;
+        }
+
+        if (text.GetComponent<LocalizationIgnore>() == null)
+        {
+            Undo.AddComponent<LocalizationIgnore>(text.gameObject);
+            changed = true;
+        }
+
+        return changed;
     }
 
     private static bool PathEquals(Transform value, string expected)

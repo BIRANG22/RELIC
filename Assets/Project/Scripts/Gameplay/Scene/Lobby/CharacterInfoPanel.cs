@@ -212,8 +212,10 @@ public class CharacterInfoPanel : MonoBehaviour
         }
 
         currentStoryText = FormatStoryTooltip(
-            NormalizeEditableText(karmaAcquisitionTitle),
-            NormalizeEditableText(currentMasterData.Regeneration),
+            GameLocalization.Get(
+                LocalizationKeys.CharacterSetting.KarmaAcquisitionTitle,
+                NormalizeEditableText(karmaAcquisitionTitle)),
+            NormalizeEditableText(GameDataLocalization.CharacterRegeneration(currentMasterData)),
             "");
     }
 
@@ -222,13 +224,13 @@ public class CharacterInfoPanel : MonoBehaviour
         switch (statType)
         {
             case CharacterStatTooltipTarget.StatType.HP:
-                return NormalizeEditableText(hpTooltipTitle);
+                return GameLocalization.Get("common.hp", NormalizeEditableText(hpTooltipTitle));
             case CharacterStatTooltipTarget.StatType.Cost:
-                return NormalizeEditableText(costTooltipTitle);
+                return GameLocalization.Get("common.cost", NormalizeEditableText(costTooltipTitle));
             case CharacterStatTooltipTarget.StatType.CostRecovery:
-                return NormalizeEditableText(recoveryTooltipTitle);
+                return GameLocalization.Get("common.recovery", NormalizeEditableText(recoveryTooltipTitle));
             case CharacterStatTooltipTarget.StatType.Karma:
-                return NormalizeEditableText(karmaTooltipTitle);
+                return GameLocalization.Get("resource.karma", NormalizeEditableText(karmaTooltipTitle));
             default:
                 return string.Empty;
         }
@@ -239,13 +241,21 @@ public class CharacterInfoPanel : MonoBehaviour
         switch (statType)
         {
             case CharacterStatTooltipTarget.StatType.HP:
-                return "생명력이 0이 되면 전투불능 상태가 된다.";
+                return GameLocalization.Get(
+                    "lobby.stat.hp.description",
+                    "생명력이 0이 되면 전투불능 상태가 된다.");
             case CharacterStatTooltipTarget.StatType.Cost:
-                return "보유 마나가 부족하면 행동을 등록할 수 없다.";
+                return GameLocalization.Get(
+                    "lobby.stat.cost.description",
+                    "보유 마나가 부족하면 행동을 등록할 수 없다.");
             case CharacterStatTooltipTarget.StatType.CostRecovery:
-                return "턴이 시작될 때 자동으로 회복되는 마나 수치이다.";
+                return GameLocalization.Get(
+                    "lobby.stat.recovery.description",
+                    "턴이 시작될 때 자동으로 회복되는 마나 수치이다.");
             case CharacterStatTooltipTarget.StatType.Karma:
-                return "각자의 전투 방식에 따라 축적되며, 기억을 발현하는 힘이 된다.";
+                return GameLocalization.Get(
+                    LocalizationKeys.CharacterSetting.KarmaDescription,
+                    "각자의 전투 방식에 따라 축적되며, 기억을 발현하는 힘이 된다.");
             default:
                 return string.Empty;
         }

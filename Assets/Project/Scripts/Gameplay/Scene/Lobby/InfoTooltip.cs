@@ -2,6 +2,7 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Localization.Components;
 
 public class InfoTooltip : MonoBehaviour
 {
@@ -51,6 +52,7 @@ public class InfoTooltip : MonoBehaviour
 
         DisableRaycastTargets();
         ResolveFixedTexts();
+        MarkTooltipTextsAsDynamic();
         Hide();
     }
 
@@ -73,6 +75,7 @@ public class InfoTooltip : MonoBehaviour
             fixedRoot.gameObject.SetActive(true);
 
         ResolveFixedTexts();
+        MarkTooltipTextsAsDynamic();
         ClearFixedText();
     }
 
@@ -182,6 +185,38 @@ public class InfoTooltip : MonoBehaviour
 
         if (targetEffectText != null)
             targetEffectText.text = HighlightNumbers(effect);
+
+    }
+
+    private void MarkTooltipTextsAsDynamic()
+    {
+        MarkDynamicText(titleText);
+        MarkDynamicText(effectText);
+        MarkDynamicText(fixedTitleText);
+        MarkDynamicText(fixedEffectText);
+    }
+
+    private static void MarkDynamicText(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        if (text.GetComponent<LocalizationIgnore>() == null)
+            text.gameObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localizer = text.GetComponent<LocalizedTMPText>();
+        if (localizer != null)
+        {
+            localizer.enabled = false;
+            Destroy(localizer);
+        }
+
+        LocalizeStringEvent legacyLocalizer = text.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+        {
+            legacyLocalizer.enabled = false;
+            Destroy(legacyLocalizer);
+        }
     }
 
     private void SetPositionToTargetBottomRight(RectTransform targetRect)
