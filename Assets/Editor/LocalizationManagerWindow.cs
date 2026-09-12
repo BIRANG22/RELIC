@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -44,15 +45,15 @@ public sealed class LocalizationManagerWindow : EditorWindow
     {
         candidates.Clear();
         Dictionary<string, string> known = ReadKoreanToUniqueKey();
-        HashSet<string> knownKeys = ReadKnownKeys();
+        Dictionary<string, string> knownKoreanByKey = ReadKoreanByKey();
         if (scanPrefabs) foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Project" })) ScanPrefab(AssetDatabase.GUIDToAssetPath(guid), known);
         if (scanScenes) foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" })) ScanScene(AssetDatabase.GUIDToAssetPath(guid), known);
         if (scanScripts) ScanScripts(known);
-        if (scanGameData) ScanGameData(known, knownKeys);
+        if (scanGameData) ScanGameData(knownKoreanByKey);
         Repaint();
     }
 
-    private void ScanGameData(Dictionary<string, string> known, HashSet<string> knownKeys)
+    private void ScanGameData(IReadOnlyDictionary<string, string> knownKoreanByKey)
     {
         const string gameDataWorkbook = "Assets/ExcelSource/GameData.xlsx";
         string[] sheets =
@@ -61,6 +62,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
             "Map", "BattleMap", "Event", "SkillRange", "Rune", "Relic", "Compound", "Item", "Erosion",
         };
 
+        var scannedGameDataKeys = new HashSet<string>(StringComparer.Ordinal);
         foreach (string sheet in sheets)
         {
             IReadOnlyList<IReadOnlyList<string>> rows;
@@ -90,18 +92,24 @@ public sealed class LocalizationManagerWindow : EditorWindow
                         !LocalizationProjectScanner.IsLocalizableKoreanText(korean))
                         continue;
 
-                    known.TryGetValue(korean, out string existingKey);
-                    string key = existingKey ?? LocalizationProjectScanner.BuildGameDataKey(sheet, stableId, header);
-                    // Event처럼 하나의 ID에 여러 선택지 행이 있는 경우 같은 필드명이 충돌합니다.
-                    // 기존 키가 다른 원문에 이미 사용 중이면 원문 hash를 붙여 별도 행을 만듭니다.
-                    if (existingKey == null && knownKeys.Contains(key))
-                        key = LocalizationProjectScanner.BuildUniqueGameDataKey(sheet, stableId, header, korean);
+                    string stableKey = LocalizationProjectScanner.BuildGameDataKey(sheet, stableId, header);
+                    // 같은 검사에서 동일 ID/필드가 실제로 반복되는 구조(Event 선택지 등)에만 hash를 붙입니다.
+                    string key = scannedGameDataKeys.Add(stableKey)
+                        ? stableKey
+                        : LocalizationProjectScanner.BuildUniqueGameDataKey(sheet, stableId, header, korean);
+                    bool exists = knownKoreanByKey.TryGetValue(key, out string currentKorean);
+                    bool sourceChanged = exists && !string.Equals(
+                        LocalizationBindingResolver.Normalize(currentKorean),
+                        LocalizationBindingResolver.Normalize(korean),
+                        StringComparison.Ordinal);
                     candidates.Add(new LocalizationCandidate(
                         $"{gameDataWorkbook}/{sheet}!{rowIndex + 1}:{header}",
                         korean,
                         key,
                         false,
-                        existingKey == null));
+                        !exists,
+                        false,
+                        sourceChanged));
                 }
             }
         }
@@ -173,10 +181,95 @@ public sealed class LocalizationManagerWindow : EditorWindow
     private void ApplySafe()
     {
         var additions = candidates.Where(candidate => candidate.IsNew && !candidate.RequiresReview).Select(candidate => new LocalizationWorkbookEntry(candidate.Key, candidate.Korean));
+        var sourceUpdates = candidates.Where(candidate => candidate.NeedsSourceUpdate && !candidate.RequiresReview).Select(candidate => new LocalizationWorkbookEntry(candidate.Key, candidate.Korean));
+        int updated = LocalizationWorkbookWriter.UpdateExistingEntries(LocalizationExcelImporter.WorkbookPath, sourceUpdates);
         int rows = LocalizationWorkbookWriter.MergeNewEntries(LocalizationExcelImporter.WorkbookPath, additions);
-        if (rows > 0) LocalizationExcelImporter.Import();
+        int removed = RemoveUnusedEntries();
+        if (rows > 0 || updated > 0 || removed > 0) LocalizationExcelImporter.Import();
         LocalizationTextBindingRepairTool.RepairAllBindings();
-        Debug.Log($"[Localization Manager] Applied {rows} new Excel rows and repaired TMP bindings.");
+        Debug.Log($"[Localization Manager] Applied {rows} new Excel rows, updated {updated} GameData sources, removed {removed} unused keys, and repaired TMP bindings.");
+    }
+
+    private static int RemoveUnusedEntries()
+    {
+        HashSet<string> workbookKeys = ReadKoreanByKey().Keys.ToHashSet(StringComparer.Ordinal);
+        HashSet<string> usedKeys = CollectExplicitKeyReferences(workbookKeys);
+        usedKeys.UnionWith(CollectCurrentGameDataKeys());
+        return LocalizationWorkbookWriter.RemoveEntries(
+            LocalizationExcelImporter.WorkbookPath,
+            workbookKeys.Where(key => !usedKeys.Contains(key)));
+    }
+
+    private static HashSet<string> CollectExplicitKeyReferences(HashSet<string> workbookKeys)
+    {
+        var used = new HashSet<string>(StringComparer.Ordinal);
+        foreach (string path in System.IO.Directory.GetFiles("Assets", "*.*", System.IO.SearchOption.AllDirectories))
+        {
+            string normalized = path.Replace('\\', '/');
+            if (normalized.StartsWith("Assets/Language/", StringComparison.OrdinalIgnoreCase) ||
+                normalized.StartsWith("Assets/ExcelSource/", StringComparison.OrdinalIgnoreCase))
+                continue;
+            string extension = System.IO.Path.GetExtension(path);
+            if (!string.Equals(extension, ".cs", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(extension, ".prefab", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(extension, ".unity", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(extension, ".asset", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            string source;
+            try { source = System.IO.File.ReadAllText(path); }
+            catch { continue; }
+            foreach (Match match in Regex.Matches(source, @"(?<![A-Za-z0-9_.])[a-z][a-z0-9_.]*(?![A-Za-z0-9_.])"))
+            {
+                if (workbookKeys.Contains(match.Value))
+                    used.Add(match.Value);
+            }
+        }
+
+        return used;
+    }
+
+    private static HashSet<string> CollectCurrentGameDataKeys()
+    {
+        const string gameDataWorkbook = "Assets/ExcelSource/GameData.xlsx";
+        string[] sheets =
+        {
+            "Character", "Monster", "SkillMaster", "MonsterSkill", "GridEffect", "Effect",
+            "Map", "BattleMap", "Event", "SkillRange", "Rune", "Relic", "Compound", "Item", "Erosion",
+        };
+        var keys = new HashSet<string>(StringComparer.Ordinal);
+        var scannedKeys = new HashSet<string>(StringComparer.Ordinal);
+        foreach (string sheet in sheets)
+        {
+            IReadOnlyList<IReadOnlyList<string>> rows;
+            try { rows = LocalizationXlsxReader.ReadSheet(gameDataWorkbook, sheet); }
+            catch { continue; }
+            if (rows.Count < 2)
+                continue;
+
+            IReadOnlyList<string> headers = rows[0];
+            for (int rowIndex = 1; rowIndex < rows.Count; rowIndex++)
+            {
+                IReadOnlyList<string> row = rows[rowIndex];
+                string stableId = row.Count > 0 ? row[0] : string.Empty;
+                if (string.IsNullOrWhiteSpace(stableId))
+                    continue;
+                for (int column = 1; column < headers.Count; column++)
+                {
+                    string korean = column < row.Count ? row[column] : string.Empty;
+                    if (LocalizationProjectScanner.IsPlayerFacingGameDataColumn(headers[column]) &&
+                        LocalizationProjectScanner.IsLocalizableKoreanText(korean))
+                    {
+                        string stableKey = LocalizationProjectScanner.BuildGameDataKey(sheet, stableId, headers[column]);
+                        keys.Add(scannedKeys.Add(stableKey)
+                            ? stableKey
+                            : LocalizationProjectScanner.BuildUniqueGameDataKey(sheet, stableId, headers[column], korean));
+                    }
+                }
+            }
+        }
+
+        return keys;
     }
 
     /// <summary>Only unique source text may be reused automatically. Duplicate copy requires contextual review.</summary>
@@ -193,14 +286,15 @@ public sealed class LocalizationManagerWindow : EditorWindow
             .ToDictionary(group => group.Key, group => group.First()[key], StringComparer.Ordinal);
     }
 
-    private static HashSet<string> ReadKnownKeys()
+    private static Dictionary<string, string> ReadKoreanByKey()
     {
         var rows = LocalizationXlsxReader.ReadSheet(LocalizationExcelImporter.WorkbookPath, LocalizationExcelImporter.WorksheetName);
         int key = rows[0].ToList().FindIndex(value => value == "Key");
+        int korean = rows[0].ToList().FindIndex(value => value == "Korean(ko)");
         return rows.Skip(1)
-            .Where(row => key >= 0 && key < row.Count && !string.IsNullOrWhiteSpace(row[key]))
-            .Select(row => row[key])
-            .ToHashSet(StringComparer.Ordinal);
+            .Where(row => key >= 0 && korean >= 0 && key < row.Count && korean < row.Count && !string.IsNullOrWhiteSpace(row[key]))
+            .GroupBy(row => row[key], StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Last()[korean] ?? string.Empty, StringComparer.Ordinal);
     }
 }
 
@@ -212,7 +306,8 @@ public sealed class LocalizationCandidate
     public bool NeedsComponent { get; }
     public bool IsNew { get; }
     public bool RequiresReview { get; }
-    public LocalizationCandidate(string assetPath, string korean, string key, bool needsComponent, bool isNew, bool requiresReview = false) { AssetPath = assetPath; Korean = korean; Key = key; NeedsComponent = needsComponent; IsNew = isNew; RequiresReview = requiresReview; }
+    public bool NeedsSourceUpdate { get; }
+    public LocalizationCandidate(string assetPath, string korean, string key, bool needsComponent, bool isNew, bool requiresReview = false, bool needsSourceUpdate = false) { AssetPath = assetPath; Korean = korean; Key = key; NeedsComponent = needsComponent; IsNew = isNew; RequiresReview = requiresReview; NeedsSourceUpdate = needsSourceUpdate; }
 }
 
 public readonly struct LocalizationScanSummary
