@@ -161,7 +161,7 @@ public class RecordPanelUI : MonoBehaviour
         ApplyGridConstraints();
         CacheMainTabButtonColors();
         CacheInfoTextColors();
-        BindCompoundTabButton();
+        BindMainTabButtons();
     }
 
     private void OnEnable()
@@ -1912,14 +1912,23 @@ public class RecordPanelUI : MonoBehaviour
         }
     }
 
-    private void BindCompoundTabButton()
+    private void BindMainTabButtons()
     {
-        if (compoundTabButton == null)
+        BindMainTabButton(uniqueTabButton, ShowUniqueTab);
+        BindMainTabButton(skillTabButton, ShowSkillTab);
+        BindMainTabButton(fragmentTabButton, ShowFragmentTab);
+        BindMainTabButton(relicTabButton, ShowRelicTab);
+        BindMainTabButton(compoundTabButton, ShowCompoundTab);
+        BindMainTabButton(itemTabButton, ShowItemTab);
+    }
+
+    private static void BindMainTabButton(Button button, UnityEngine.Events.UnityAction action)
+    {
+        if (button == null || action == null)
             return;
 
-        // 새 Compound 버튼의 Inspector OnClick 연결이 비어 있어도 도감에서 바로 사용할 수 있게 합니다.
-        compoundTabButton.onClick.RemoveListener(ShowCompoundTab);
-        compoundTabButton.onClick.AddListener(ShowCompoundTab);
+        button.onClick.RemoveListener(action);
+        button.onClick.AddListener(action);
     }
 
     private TMP_Text FindTextByPathOrName(string path, string objectName)
