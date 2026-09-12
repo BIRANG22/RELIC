@@ -10,6 +10,29 @@ using UnityEngine.UI;
 
 public class LobbyCharacterUiIdleAssetTests
 {
+    private static readonly (string stateName, string clipPath)[] DUiStateClips =
+    {
+        ("ines_select_idle", "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_select_idle.anim"),
+        ("ines_skill_idle", "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_skill_idle.anim"),
+        ("ines_rune_idle", "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_rune_idle.anim"),
+        ("ines_select_to_skill", "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_select_to_skill.anim"),
+        ("ines_select_to_skill_reverse", "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_select_to_skill.anim"),
+        ("ines_rune_to_select", "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_rune_to_select.anim"),
+        ("ines_rune_to_select_reverse", "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_rune_to_select.anim"),
+        ("ines_skill_to_rune", "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_skill_to_rune.anim"),
+        ("ines_skill_to_rune_reverse", "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_skill_to_rune.anim")
+    };
+
+    private static readonly string[] DUiClipPaths =
+    {
+        "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_select_idle.anim",
+        "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_skill_idle.anim",
+        "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_rune_idle.anim",
+        "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_select_to_skill.anim",
+        "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_rune_to_select.anim",
+        "Assets/Project/PrefabsR/Character/D/Clip/D_UI_ines_skill_to_rune.anim"
+    };
+
     private static readonly (string sourcePath, string uiPath)[] ClipPairs =
     {
         (
@@ -170,6 +193,28 @@ public class LobbyCharacterUiIdleAssetTests
         );
         Assert.That(serialized.FindProperty("targetSpriteRenderer").objectReferenceValue, Is.Null);
         Assert.That(serialized.FindProperty("useAnimatorStates").boolValue, Is.True);
+    }
+
+    [TestCaseSource(nameof(DUiStateClips))]
+    public void DUiController_UsesCurrentUiClipForEveryState(
+        (string stateName, string clipPath) testCase)
+    {
+        AnimatorController controller = LoadController(
+            "Assets/Project/PrefabsR/Character/D/Controller/D_Robby_UI_idle.controller");
+        Dictionary<string, AnimatorState> states = GetStatesByName(controller);
+        AnimationClip expectedClip = LoadClip(testCase.clipPath);
+
+        Assert.That(states, Does.ContainKey(testCase.stateName));
+        Assert.That(states[testCase.stateName].motion, Is.SameAs(expectedClip));
+    }
+
+    [TestCaseSource(nameof(DUiClipPaths))]
+    public void DUiClip_UsesSameSixteenFpsOneSecondTimingAsExistingUiPreviews(string clipPath)
+    {
+        AnimationClip clip = LoadClip(clipPath);
+
+        Assert.That(clip.frameRate, Is.EqualTo(16f));
+        Assert.That(clip.length, Is.EqualTo(1f).Within(0.0001f));
     }
 
     [TestCaseSource(nameof(PreviewSizeCases))]

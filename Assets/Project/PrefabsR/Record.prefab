@@ -10517,7 +10517,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 8837712396379978307}
-  localizationKey: ui.record.effect
+  localizationKey: ui.record.effect.cef1448c
   koreanSource: "\uD574\uB2F9 \uC544\uC774\uD15C\uC758 \uD6A8\uACFC\n\uD574\uB2F9
     \uC544\uC774\uD15C\uC758 \uD6A8\uACFC\n\uD574\uB2F9 \uC544\uC774\uD15C\uC758
     \uD6A8\uACFC"

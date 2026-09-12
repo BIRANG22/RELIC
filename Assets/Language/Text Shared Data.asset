@@ -5075,6 +5075,46 @@ MonoBehaviour:
     m_Key: ui.option.bright.e15a2328
     m_Metadata:
       m_Items: []
+  - m_Id: 11751459711885317
+    m_Key: ui.record.effect.cef1448c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11753938784624640
+    m_Key: intro.story.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11753938788818944
+    m_Key: intro.story.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11753938788818945
+    m_Key: intro.story.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11753938788818946
+    m_Key: intro.story.04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11753938788818947
+    m_Key: intro.story.05
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11753938788818948
+    m_Key: intro.story.06
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11753938788818949
+    m_Key: intro.story.07
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11753938788818950
+    m_Key: intro.story.08
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11753938788818951
+    m_Key: intro.story.09
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
