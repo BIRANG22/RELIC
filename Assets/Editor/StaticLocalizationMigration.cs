@@ -223,6 +223,50 @@ public static class StaticLocalizationMigration
         return changed;
     }
 
+    public static int ConfigureDynamicTexts(IEnumerable<TMP_Text> texts)
+    {
+        return (texts ?? Array.Empty<TMP_Text>())
+            .Where(text => text != null)
+            .Count(ConfigureDynamicText);
+    }
+
+    /// <summary>Record 기억 상세의 값은 RecordPanelUI가 조합하므로 정적 로컬라이저가 소유하면 안 됩니다.</summary>
+    public static int MigrateRecordMemoryDynamicOwnership()
+    {
+        const string prefabPath = "Assets/Project/PrefabsR/Record.prefab";
+        string[] paths = { "Info/Memory/method", "Info/Memory/consumption", "Info/Memory/Point" };
+        GameObject root = PrefabUtility.LoadPrefabContents(prefabPath);
+        try
+        {
+            TMP_Text[] texts = paths.Select(path => root.transform.Find(path)?.GetComponent<TMP_Text>()).ToArray();
+            if (texts.Any(text => text == null))
+                throw new InvalidOperationException("Record memory dynamic TMP binding could not be found.");
+
+            int changed = ConfigureDynamicTexts(texts);
+            if (changed > 0)
+                PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+            return changed;
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+    }
+
+    /// <summary>동적 Record 출력이 사용하는 포맷 템플릿을 워크북의 정식 원문으로 복원합니다.</summary>
+    public static int EnsureRecordMemoryFormatTemplates()
+    {
+        LocalizationWorkbookEntry[] entries =
+        {
+            new(LocalizationKeys.Record.Method, "방식 : {0}"),
+            new(LocalizationKeys.Record.Consumption, "소모 : {0}"),
+            new(LocalizationKeys.Record.Effect, "효과 : {0}"),
+        };
+        int added = LocalizationWorkbookWriter.MergeNewEntries(LocalizationExcelImporter.WorkbookPath, entries);
+        int updated = LocalizationWorkbookWriter.UpdateExistingEntries(LocalizationExcelImporter.WorkbookPath, entries);
+        return added + updated;
+    }
+
     private static bool PathEquals(Transform value, string expected)
     {
         return GetPath(value) == expected;

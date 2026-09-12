@@ -43,6 +43,24 @@ public readonly struct LocalizationKeyResolution
     public bool IsUnique => Status == LocalizationBindingStatus.Valid && !string.IsNullOrWhiteSpace(Key);
 }
 
+/// <summary>정적 TMP의 현재 입력값을 원문으로 취급하는 정책입니다.</summary>
+public static class LocalizationBindingSourcePolicy
+{
+    public static string GetSourceForRepair(string currentTmpText)
+    {
+        return currentTmpText ?? string.Empty;
+    }
+
+    /// <summary>기존 키는 현재 입력 원문이 워크북의 한국어 원문과 같을 때만 재사용합니다.</summary>
+    public static bool DoesCurrentSourceMatchTable(string currentTmpText, string tableKoreanSource)
+    {
+        return string.Equals(
+            LocalizationBindingResolver.Normalize(currentTmpText),
+            LocalizationBindingResolver.Normalize(tableKoreanSource),
+            StringComparison.Ordinal);
+    }
+}
+
 /// <summary>Workbook Korean source/key relations. Duplicate Korean copy never selects an arbitrary key.</summary>
 public sealed class LocalizationBindingResolver
 {

@@ -44,4 +44,31 @@ public class LocalizationWorkbookWriterTests
             new[] { "ui.used", "1", "사용 중" },
         }));
     }
+
+    [Test]
+    public void CompactRows_RemovesBlankKeyRowsAndKeepsDataOrder()
+    {
+        IReadOnlyList<IReadOnlyList<string>> rows = new List<IReadOnlyList<string>>
+        {
+            new[] { "Key", "Id", "Korean(ko)" },
+            new[] { "ui.first", "1", "첫 번째" },
+            new[] { string.Empty, string.Empty, string.Empty },
+            new[] { "ui.second", "2", "두 번째" },
+        };
+
+        IReadOnlyList<IReadOnlyList<string>> compacted = LocalizationWorkbookWriter.CompactRows(rows);
+
+        Assert.That(compacted, Is.EqualTo(new IReadOnlyList<string>[]
+        {
+            new[] { "Key", "Id", "Korean(ko)" },
+            new[] { "ui.first", "1", "첫 번째" },
+            new[] { "ui.second", "2", "두 번째" },
+        }));
+    }
+
+    [Test]
+    public void RequiresCompaction_WhenWorksheetDimensionExtendsBeyondData_ReturnsTrue()
+    {
+        Assert.That(LocalizationWorkbookWriter.RequiresCompaction(dataRowCount: 3, declaredLastRow: 999), Is.True);
+    }
 }

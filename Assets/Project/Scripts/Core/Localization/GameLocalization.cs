@@ -32,33 +32,27 @@ public static class GameLocalization
 
     public static string Format(string key, params object[] arguments)
     {
-        string template = Get(key);
-        try
-        {
-            return string.Format(
-                CultureInfo.CurrentCulture,
-                template,
-                arguments ?? Array.Empty<object>());
-        }
-        catch (FormatException)
-        {
-            return template;
-        }
+        return ApplyFormatTemplate(Get(key), arguments);
     }
 
-    public static string Format(string key, string fallback, params object[] arguments)
+    /// <summary>명시적인 원문 fallback이 필요한 호출 전용입니다. 일반 문자열 인자와 구분합니다.</summary>
+    public static string FormatWithFallback(string key, string fallback, params object[] arguments)
     {
-        string template = Get(key, fallback);
+        return ApplyFormatTemplate(Get(key, fallback), arguments);
+    }
+
+    public static string ApplyFormatTemplate(string template, params object[] arguments)
+    {
         try
         {
             return string.Format(
                 CultureInfo.CurrentCulture,
-                template,
+                template ?? string.Empty,
                 arguments ?? Array.Empty<object>());
         }
         catch (FormatException)
         {
-            return fallback ?? string.Empty;
+            return template ?? string.Empty;
         }
     }
 

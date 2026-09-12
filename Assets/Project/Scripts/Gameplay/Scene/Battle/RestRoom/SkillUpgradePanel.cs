@@ -691,7 +691,7 @@ public class SkillUpgradePanel : MonoBehaviour
         string safeName = string.IsNullOrWhiteSpace(upgradedSkillName)
             ? GameLocalization.Get("common.skill", "스킬")
             : upgradedSkillName;
-        BattleWarningUI.ShowMessage(GameLocalization.Format("battle.skill_upgraded", "{0}으로 강화되었습니다.", safeName));
+        BattleWarningUI.ShowMessage(GameLocalization.FormatWithFallback("battle.skill_upgraded", "{0}으로 강화되었습니다.", safeName));
     }
 
     private void ClearSkillInfoTexts()

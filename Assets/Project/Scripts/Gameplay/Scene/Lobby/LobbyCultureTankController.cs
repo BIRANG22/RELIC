@@ -97,7 +97,7 @@ public sealed class LobbyCultureTankController : MonoBehaviour
         string suffix = trimmed[prefix.Length..].Trim();
         return string.IsNullOrEmpty(suffix)
             ? GameLocalization.Get("lobby.culture_tank", "배양조")
-            : GameLocalization.Format("lobby.culture_tank_number", "배양조 {0}", suffix);
+            : GameLocalization.FormatWithFallback("lobby.culture_tank_number", "배양조 {0}", suffix);
     }
 
     private static bool CanLocalPlayerMutateHostOnlyState() =>

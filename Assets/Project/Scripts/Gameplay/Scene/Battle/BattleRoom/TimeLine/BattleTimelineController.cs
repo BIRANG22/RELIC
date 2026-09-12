@@ -3265,7 +3265,7 @@ public class BattleTimelineController : MonoBehaviour
             occupiedSlotCount++;
 
         return occupiedSlotCount > maxSlotCount
-            ? GameLocalization.Format("battle.skill_slot_limit", "스킬을 등록할 수 있는 슬롯은 {0}개까지입니다.", maxSlotCount)
+            ? GameLocalization.FormatWithFallback("battle.skill_slot_limit", "스킬을 등록할 수 있는 슬롯은 {0}개까지입니다.", maxSlotCount)
             : string.Empty;
     }
 

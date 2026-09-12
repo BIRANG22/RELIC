@@ -39,10 +39,6 @@ MonoBehaviour:
     m_Key: common.no
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100677
-    m_Key: common.save
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100678
     m_Key: common.delete
     m_Metadata:
@@ -127,10 +123,6 @@ MonoBehaviour:
     m_Key: common.exclusive
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100699
-    m_Key: common.master
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100700
     m_Key: common.item
     m_Metadata:
@@ -155,20 +147,12 @@ MonoBehaviour:
     m_Key: common.rune
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100705
-    m_Key: common.sound
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100706
     m_Key: common.background_music
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100707
     m_Key: common.sound_effects
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100708
-    m_Key: common.controls
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100709
@@ -2589,10 +2573,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 10169488443449360
     m_Key: ui.record.consumption
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449361
-    m_Key: ui.record.point
     m_Metadata:
       m_Items: []
   - m_Id: 10169488443449362
@@ -5081,6 +5061,18 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11677536467034122
     m_Key: data.compound.compound_12.effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11697455342559232
+    m_Key: ui.record.text_tmp.41cd5512
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11699293018136576
+    m_Key: ui.option.master.a6c4e689
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11699293039108096
+    m_Key: ui.option.bright.e15a2328
     m_Metadata:
       m_Items: []
   m_Metadata:

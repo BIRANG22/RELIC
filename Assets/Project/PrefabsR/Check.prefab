@@ -1024,7 +1024,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC7A5\uCC29"
+  m_text: "\uC544\uB2C8\uC624"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
@@ -1109,8 +1109,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 20415964709543319}
-  localizationKey: ui.assets.project.scripts.lobbyequippanelui.text
-  koreanSource: "\uC7A5\uCC29"
+  localizationKey: common.no
+  koreanSource: "\uC544\uB2C8\uC624"
   automaticallyRegistered: 1
 --- !u!1 &5944418756103535323
 GameObject:
@@ -1447,7 +1447,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC7A5\uCC29"
+  m_text: "\uC608"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
@@ -1532,8 +1532,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 9019999157706006818}
-  localizationKey: ui.assets.project.scripts.lobbyequippanelui.text
-  koreanSource: "\uC7A5\uCC29"
+  localizationKey: common.yes
+  koreanSource: "\uC608"
   automaticallyRegistered: 1
 --- !u!1 &6832482531256616197
 GameObject:
