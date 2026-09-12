@@ -6519,23 +6519,23 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11012039819927552
-    m_Localized: Fragment/Skill information is displayed.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11012039836704771
-    m_Localized: Fragment information is displayed.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11012039836704770
-    m_Localized: Fragment Info
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11012039836704769
-    m_Localized: Skill information is displayed.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11012039836704768
-    m_Localized: Skill Info
+    m_Localized: 
     m_Metadata:
       m_Items: []
   references:
