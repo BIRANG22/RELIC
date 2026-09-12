@@ -234,23 +234,32 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 
     private string GetDisplayName()
     {
-        switch (hoverNameType)
+        string key = GetDisplayNameKey(hoverNameType);
+        return GameLocalization.Get(key, GetKoreanDisplayName(hoverNameType));
+    }
+
+    public static string GetDisplayNameKey(HoverNameType type)
+    {
+        return type switch
         {
-            case HoverNameType.Research:
-                return "작업대";
+            HoverNameType.Research => "lobby.world_object.workbench",
+            HoverNameType.Exploration => "lobby.world_object.statue",
+            HoverNameType.Resonance => "lobby.world_object.stela",
+            HoverNameType.Npc => "lobby.world_object.researcher_elric",
+            _ => string.Empty
+        };
+    }
 
-            case HoverNameType.Exploration:
-                return "조각상";
-
-            case HoverNameType.Resonance:
-                return "비석";
-
-            case HoverNameType.Npc:
-                return "연구원 엘릭";
-
-            default:
-                return string.Empty;
-        }
+    private static string GetKoreanDisplayName(HoverNameType type)
+    {
+        return type switch
+        {
+            HoverNameType.Research => "\uC791\uC5C5\uB300",
+            HoverNameType.Exploration => "\uC870\uAC01\uC0C1",
+            HoverNameType.Resonance => "\uBE44\uC11D",
+            HoverNameType.Npc => "\uC5F0\uAD6C\uC6D0 \uC5D8\uB9AD",
+            _ => string.Empty
+        };
     }
 
     private bool IsAnyBlockingPanelActive()

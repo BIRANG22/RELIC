@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 /// <summary>
 /// Bootstrap 씬에 배치되어 타이틀 -> 로비 사이의 게임 인트로를 재생합니다.
@@ -262,6 +264,16 @@ public class IntroSequenceController : MonoBehaviour
         SetIntroVisible(false);
     }
 
+    private void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged += HandleLocaleChanged;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
+    }
+
     private void OnDestroy()
     {
         StopAllObjectAnimations();
@@ -273,6 +285,23 @@ public class IntroSequenceController : MonoBehaviour
 
         if (Instance == this)
             Instance = null;
+    }
+
+    private void HandleLocaleChanged(Locale _)
+    {
+        if (!isPlaying || introText == null)
+            return;
+
+        int visibleCharacters = isTyping
+            ? introText.maxVisibleCharacters
+            : int.MaxValue;
+
+        introText.text = GetLine(currentLineIndex);
+        introText.ForceMeshUpdate();
+        currentLineCharacterCount = introText.textInfo.characterCount;
+        introText.maxVisibleCharacters = isTyping
+            ? Mathf.Min(visibleCharacters, currentLineCharacterCount)
+            : currentLineCharacterCount;
     }
 
     private void Update()
@@ -1815,6 +1844,6 @@ public class IntroSequenceController : MonoBehaviour
         if (introLines == null || index < 0 || index >= introLines.Length)
             return string.Empty;
 
-        return introLines[index] ?? string.Empty;
+        return GameLocalization.Get(introLines[index] ?? string.Empty);
     }
 }

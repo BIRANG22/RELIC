@@ -31,6 +31,19 @@ public static class LocalizationKeys
         public const string FirstExpedition03 = "tutorial.first_expedition.03";
     }
 
+    public static class IntroStory
+    {
+        public const string Line01 = "intro.story.01";
+        public const string Line02 = "intro.story.02";
+        public const string Line03 = "intro.story.03";
+        public const string Line04 = "intro.story.04";
+        public const string Line05 = "intro.story.05";
+        public const string Line06 = "intro.story.06";
+        public const string Line07 = "intro.story.07";
+        public const string Line08 = "intro.story.08";
+        public const string Line09 = "intro.story.09";
+    }
+
     public static class Rune
     {
         public const string InfoTitle = "ui.rune.info.title";

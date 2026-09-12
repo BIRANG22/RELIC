@@ -39,6 +39,16 @@ public static class LocalizationSyncCommand
     public static LocalizationSyncResult SyncTutorialLocalization() =>
         Sync("Tutorial Localization", TutorialEntries(), Array.Empty<string>());
 
+    [MenuItem("Tools/Localization/Sync Intro Story Localization")]
+    public static void SyncIntroStoryLocalizationFromMenu()
+    {
+        LocalizationSyncResult result = SyncIntroStoryLocalization();
+        Debug.Log(result.ToLog());
+    }
+
+    public static LocalizationSyncResult SyncIntroStoryLocalization() =>
+        Sync("Intro Story Localization", IntroStoryEntries(), Array.Empty<string>());
+
     [MenuItem("Tools/Localization/Sync Skill Setting Localization")]
     public static void SyncSkillSettingLocalizationFromMenu()
     {
@@ -196,17 +206,29 @@ public static class LocalizationSyncCommand
     };
     private static IReadOnlyList<LocalizationWorkbookEntry> TutorialEntries() => new[]
     {
-        E(LocalizationKeys.Tutorial.SpeakerElric, "엘릭"),
-        E(LocalizationKeys.Tutorial.Intro01, "드디어 모두 도착하셨군요. 기다리고 있었습니다."),
-        E(LocalizationKeys.Tutorial.Intro02, "우선, 이것을 받아 주세요."),
-        E(LocalizationKeys.Tutorial.Intro03, "이미 이 거점과 앵커링을 마쳐 두었습니다."),
-        E(LocalizationKeys.Tutorial.Intro04, "탐사 중 모두가 쓰러지는 상황이 생기더라도, 앵커가 여러분을 이곳으로 이끌어 줄 겁니다."),
-        E(LocalizationKeys.Tutorial.Intro05, "그리고 이것들도 함께 받아 주세요."),
-        E(LocalizationKeys.Tutorial.Intro06, "이 파편들을 적절히 활용하신다면 여러분의 능력을 한층 끌어올릴 수 있을 겁니다."),
-        E(LocalizationKeys.Tutorial.Intro07, "준비가 끝나면 다시 저에게 말을 걸어 주세요."),
-        E(LocalizationKeys.Tutorial.FirstExpedition01, "준비를 마치셨군요."),
-        E(LocalizationKeys.Tutorial.FirstExpedition02, "첫 탐사지는 로데른 폐허입니다."),
-        E(LocalizationKeys.Tutorial.FirstExpedition03, "그곳에서 연구에 필요한 재료를 확보해 와 주세요."),
+        E(LocalizationKeys.Tutorial.SpeakerElric, "\uC5D8\uB9AD"),
+        E(LocalizationKeys.Tutorial.Intro01, "\uB4DC\uB514\uC5B4 \uBAA8\uB450 \uB3C4\uCC29\uD558\uC168\uAD70\uC694. \uAE30\uB2E4\uB9AC\uACE0 \uC788\uC5C8\uC2B5\uB2C8\uB2E4."),
+        E(LocalizationKeys.Tutorial.Intro02, "\uD604\uC7AC \uCE68\uC2DD \uAD6C\uC5ED\uC5D0 \uB300\uD55C \uC870\uC0AC\uAC00 \uD544\uC694\uD55C \uC0C1\uD669\uC785\uB2C8\uB2E4."),
+        E(LocalizationKeys.Tutorial.Intro03, "\uC6B0\uC120 \uAC01 \uC9C0\uC5ED\uC744 \uD0D0\uC0AC\uD558\uBA70 \uC6D0\uC778\uC744 \uD30C\uC545\uD560 \uB2E8\uC11C\uB97C \uBAA8\uC544\uC57C \uD569\uB2C8\uB2E4."),
+        E(LocalizationKeys.Tutorial.Intro04, "\uD0D0\uC0AC\uC5D0 \uC55E\uC11C \uC5EC\uB7EC\uBD84\uC5D0\uAC8C \uB3C4\uC6C0\uC774 \uB420 \uBB3C\uAC74\uC744 \uC900\uBE44\uD574 \uB450\uC5C8\uC2B5\uB2C8\uB2E4."),
+        E(LocalizationKeys.Tutorial.Intro05, "\uC774 \uD30C\uD3B8\uB4E4\uC740 \uAC01\uC790\uC758 \uB2A5\uB825\uC744 \uAC15\uD654\uD558\uB294 \uB370 \uC0AC\uC6A9\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."),
+        E(LocalizationKeys.Tutorial.Intro06, "\uC798 \uD65C\uC6A9\uD55C\uB2E4\uBA74 \uC55E\uC73C\uB85C\uC758 \uD0D0\uC0AC\uC5D0 \uD070 \uB3C4\uC6C0\uC774 \uB420 \uAC81\uB2C8\uB2E4."),
+        E(LocalizationKeys.Tutorial.Intro07, "\uC900\uBE44\uB97C \uB9C8\uCE5C \uB4A4, \uB2E4\uC2DC \uC800\uC5D0\uAC8C \uB9D0\uC744 \uAC78\uC5B4 \uC8FC\uC138\uC694."),
+        E(LocalizationKeys.Tutorial.FirstExpedition01, "\uC900\uBE44\uB97C \uB9C8\uCE58\uC168\uAD70\uC694."),
+        E(LocalizationKeys.Tutorial.FirstExpedition02, "\uCCAB \uD0D0\uC0AC\uC9C0\uB294 \uB85C\uB370\uB978 \uD3D0\uD5C8\uC785\uB2C8\uB2E4."),
+        E(LocalizationKeys.Tutorial.FirstExpedition03, "\uADF8\uACF3\uC5D0\uC11C \uC5F0\uAD6C\uC5D0 \uD544\uC694\uD55C \uC7AC\uB8CC\uB97C \uD655\uBCF4\uD574 \uC640 \uC8FC\uC138\uC694."),
+    };
+    private static IReadOnlyList<LocalizationWorkbookEntry> IntroStoryEntries() => new[]
+    {
+        E(LocalizationKeys.IntroStory.Line01, "\uB354\uC2A4\uD2F0\uC6C0\uC774 \uACFC\uB3C4\uD558\uAC8C \uC751\uCD95\uB418\uBA70 \uCE68\uC2DD \uAD6C\uC5ED\uC774 \uC0DD\uACA8\uB0AC\uB2E4."),
+        E(LocalizationKeys.IntroStory.Line02, "\uCE68\uC2DD\uB41C \uB545\uC5D0\uB294 \uC815\uCCB4\uB97C \uC54C \uC218 \uC5C6\uB294 \uBCC0\uC774\uCCB4\uAC00 \uB098\uD0C0\uB0AC\uACE0,"),
+        E(LocalizationKeys.IntroStory.Line03, "\uADF8\uACF3\uC740 \uC810\uCC28 \uD568\uBD80\uB85C \uBC1C\uC744 \uB4E4\uC774\uAE30 \uC5B4\uB824\uC6B4 \uC704\uD5D8\uD55C \uC7A5\uC18C\uAC00 \uB418\uC5C8\uB2E4."),
+        E(LocalizationKeys.IntroStory.Line04, "\uD559\uD68C\uB294 \uCE68\uC2DD\uC758 \uC6D0\uC778\uC744 \uD30C\uC545\uD558\uACE0 \uD604\uC0C1\uC744 \uC5F0\uAD6C\uD558\uACE0\uC790"),
+        E(LocalizationKeys.IntroStory.Line05, "\uCE68\uC2DD \uAD6C\uC5ED\uC5D0 \uB300\uD55C \uC870\uC0AC\uB97C \uACB0\uC815\uD588\uB2E4."),
+        E(LocalizationKeys.IntroStory.Line06, "\uC5BC\uB9C8 \uB4A4, \uD0D0\uC0AC \uC778\uC6D0\uC744 \uBAA8\uC9D1\uD558\uB294 \uC758\uB8B0\uC11C\uAC00 \uB0B4\uAC78\uB838\uB2E4."),
+        E(LocalizationKeys.IntroStory.Line07, "\uC800\uB9C8\uB2E4 \uB2E4\uB978 \uC774\uC720\uB97C \uAC00\uC9C4 \uC774\uB4E4\uC774 \uADF8 \uC758\uB8B0\uC11C\uB97C \uC9D1\uC5B4 \uB4E4\uC5C8\uB2E4."),
+        E(LocalizationKeys.IntroStory.Line08, "\uCE68\uC2DD \uAD6C\uC5ED\uC758 \uACBD\uACC4\uC5D0\uB294 \uD0D0\uC0AC \uAC70\uC810\uC774 \uC138\uC6CC\uC84C\uACE0,"),
+        E(LocalizationKeys.IntroStory.Line09, "\uD558\uB098\uB458 \uADF8\uACF3\uC73C\uB85C \uBAA8\uC5EC\uB4E4\uC5C8\uB2E4."),
     };
     private static IReadOnlyList<LocalizationWorkbookEntry> SkillSettingEntries() => new[]
     {

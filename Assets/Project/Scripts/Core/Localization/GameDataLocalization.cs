@@ -153,5 +153,15 @@ namespace Relic.Gameplay.Data
             data == null
                 ? string.Empty
                 : GameLocalization.GetData("Effect", data.EffectId, "tooltip", data.ToolTip);
+
+        public static string ErosionName(ErosionData data) =>
+            data == null
+                ? string.Empty
+                : GameLocalization.GetData("Erosion", data.DifficultyId, "name", data.ErosionName);
+
+        public static string ErosionDescription(ErosionData data) =>
+            data == null
+                ? string.Empty
+                : GameLocalization.GetData("Erosion", data.DifficultyId, "description", data.Description);
     }
 }
