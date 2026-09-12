@@ -42,10 +42,6 @@ MonoBehaviour:
     m_Localized: No
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100677
-    m_Localized: Save
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100678
     m_Localized: Delete
     m_Metadata:
@@ -130,10 +126,6 @@ MonoBehaviour:
     m_Localized: Exclusive
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100699
-    m_Localized: Master
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100700
     m_Localized: Item
     m_Metadata:
@@ -158,20 +150,12 @@ MonoBehaviour:
     m_Localized: Rune
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100705
-    m_Localized: Sound
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100706
     m_Localized: Music
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100707
     m_Localized: Sound Effects
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100708
-    m_Localized: Controls
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100709

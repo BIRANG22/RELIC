@@ -42,6 +42,15 @@ public static class LocalizationProjectScanner
         return LocalizationTextRules.IsKoreanPlayerText(value);
     }
 
+    /// <summary>
+    /// 코드 리터럴은 실제 표시 대상인지 안전하게 판별할 수 없습니다.
+    /// 자동 키 추가는 프리팹/씬/게임데이터의 명시적인 원문에만 허용합니다.
+    /// </summary>
+    public static bool IsAutomaticScriptLiteralCandidate(string value)
+    {
+        return false;
+    }
+
     public static bool IsPlayerFacingGameDataColumn(string header)
     {
         if (string.IsNullOrWhiteSpace(header))

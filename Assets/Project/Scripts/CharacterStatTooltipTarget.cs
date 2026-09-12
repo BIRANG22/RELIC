@@ -172,7 +172,7 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         int effectiveValue = GetEffectiveValue(runtimeData, masterData, resolvedStatType);
         int runeBonus = effectiveValue - baseValue;
         string valueLine = resolvedStatType == StatType.Karma
-            ? GameLocalization.Format(
+            ? GameLocalization.FormatWithFallback(
                 LocalizationKeys.CharacterSetting.StatMaximumValue,
                 "최대보유량 {0}",
                 effectiveValue)
@@ -329,7 +329,7 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 
     private string FormatValueLine(int baseValue, int runeBonus)
     {
-        string baseLine = GameLocalization.Format("lobby.stat.base_value", "기본 수치 {0}", baseValue);
+        string baseLine = GameLocalization.FormatWithFallback("lobby.stat.base_value", "기본 수치 {0}", baseValue);
 
         if (runeBonus == 0)
             return baseLine;
@@ -341,7 +341,7 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         if (!string.IsNullOrWhiteSpace(runeColor))
             runeText = "<color=" + runeColor + ">" + runeText + "</color>";
 
-        string runeLine = GameLocalization.Format("lobby.stat.rune_bonus", "룬 보정 {0}", runeText);
+        string runeLine = GameLocalization.FormatWithFallback("lobby.stat.rune_bonus", "룬 보정 {0}", runeText);
 
         return baseLine + "\n" + runeLine;
     }

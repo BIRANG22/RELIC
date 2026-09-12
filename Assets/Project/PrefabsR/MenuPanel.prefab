@@ -1439,7 +1439,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 1942304247}
   localizationKey: battle.give_up
-  koreanSource: "\uC804\uD22C \uD3EC\uAE30"
+  koreanSource: "\uD3EC\uAE30"
   automaticallyRegistered: 1
 --- !u!1 &2046715209
 GameObject:

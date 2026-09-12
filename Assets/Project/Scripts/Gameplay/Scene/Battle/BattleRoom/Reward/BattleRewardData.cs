@@ -41,6 +41,6 @@ public class BattleRewardData
     public string GetRemnantAmountDescription()
     {
         int amount = Mathf.Max(0, Amount);
-        return GameLocalization.Format("battle.obtain_dustium", "{0} 더스티움을 얻는다.", amount);
+        return GameLocalization.FormatWithFallback("battle.obtain_dustium", "{0} 더스티움을 얻는다.", amount);
     }
 }

@@ -138,13 +138,7 @@ public static class LocalizationTextBindingRepairTool
 
     private static string ReadKoreanSource(TMP_Text text)
     {
-        LocalizedTMPText runtimeLocalizer = text.GetComponent<LocalizedTMPText>();
-        if (runtimeLocalizer == null)
-            return text.text;
-
-        SerializedObject serialized = new SerializedObject(runtimeLocalizer);
-        string source = serialized.FindProperty("koreanSource")?.stringValue;
-        return string.IsNullOrWhiteSpace(source) ? text.text : source;
+        return LocalizationBindingSourcePolicy.GetSourceForRepair(text.text);
     }
 
     private static LocalizationBindingResolver ReadBindingMaps()

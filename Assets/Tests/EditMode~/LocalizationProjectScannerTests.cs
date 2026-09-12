@@ -1,4 +1,6 @@
 using NUnit.Framework;
+using TMPro;
+using UnityEngine;
 
 public class LocalizationProjectScannerTests
 {
@@ -97,5 +99,63 @@ public class LocalizationProjectScannerTests
 
         Assert.That(attack, Is.Not.EqualTo(confirm));
         Assert.That(attack, Does.StartWith("ui.battle.text."));
+    }
+    [Test]
+    public void BindingSourcePolicy_UsesCurrentTmpInputAsRepairSource()
+    {
+        Assert.That(
+            LocalizationBindingSourcePolicy.GetSourceForRepair("연성제"),
+            Is.EqualTo("연성제"));
+    }
+
+    [Test]
+    public void BindingSourcePolicy_CurrentInputMustMatchTableSourceToReuseKey()
+    {
+        Assert.That(
+            LocalizationBindingSourcePolicy.DoesCurrentSourceMatchTable("연성제", "유물"),
+            Is.False);
+    }
+
+    [Test]
+    public void LocalizationCandidate_KnownKeyIsNotNewEvenWhenSourceLookupIsAmbiguous()
+    {
+        Assert.That(
+            LocalizationCandidate.IsNewForKnownKeys("ui.record.text_tmp", new[] { "ui.record.text_tmp" }),
+            Is.False);
+    }
+
+    [Test]
+    public void ScriptKoreanLiteral_IsNeverAnAutomaticWorkbookAddition()
+    {
+        Assert.That(LocalizationProjectScanner.IsAutomaticScriptLiteralCandidate("표시 문구"), Is.False);
+    }
+
+    [Test]
+    public void ConfigureDynamicTexts_RemovesStaticLocalizerAndMarksTextIgnored()
+    {
+        var root = new GameObject("Root");
+        try
+        {
+            TMP_Text text = root.AddComponent<TextMeshProUGUI>();
+            root.AddComponent<LocalizedTMPText>();
+
+            int changed = StaticLocalizationMigration.ConfigureDynamicTexts(new[] { text });
+
+            Assert.That(changed, Is.EqualTo(1));
+            Assert.That(root.GetComponent<LocalizedTMPText>(), Is.Null);
+            Assert.That(root.GetComponent<LocalizationIgnore>(), Is.Not.Null);
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void ApplyFormatTemplate_WithStringValue_KeepsTheLabelAndInjectsValue()
+    {
+        Assert.That(
+            GameLocalization.ApplyFormatTemplate("방식 : {0}", "카르마 최대 시 지속"),
+            Is.EqualTo("방식 : 카르마 최대 시 지속"));
     }
 }

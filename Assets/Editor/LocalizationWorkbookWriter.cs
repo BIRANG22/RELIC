@@ -210,6 +210,75 @@ public static class LocalizationWorkbookWriter
         return result;
     }
 
+    public static int CompactBlankRows(string workbookPath)
+    {
+        var rows = LocalizationXlsxReader.ReadSheet(workbookPath, LocalizationExcelImporter.WorksheetName);
+        LocalizationXlsxReader.ValidateHeaders(rows);
+        IReadOnlyList<IReadOnlyList<string>> compacted = CompactRows(rows);
+        int removed = rows.Count - compacted.Count;
+
+        int keyIndex = FindHeader(rows[0], "Key");
+        string backupPath = workbookPath + ".localization-manager.backup";
+        File.Copy(workbookPath, backupPath, true);
+        using var archive = ZipFile.Open(workbookPath, ZipArchiveMode.Update);
+        ZipArchiveEntry sheetEntry = FindTextSheet(archive);
+        IReadOnlyList<string> sharedStrings = ReadSharedStrings(archive);
+        XDocument document;
+        using (Stream stream = sheetEntry.Open())
+            document = XDocument.Load(stream);
+
+        List<XElement> retainedRows = document.Descendants(Spreadsheet + "row")
+            .Where((row, index) => index == 0 || !string.IsNullOrWhiteSpace(ReadCellValue(row, keyIndex, sharedStrings)))
+            .ToList();
+        int declaredLastRow = ReadDeclaredLastRow(document.Root?.Element(Spreadsheet + "dimension"));
+        bool hasRowGaps = retainedRows.Select((row, index) => (string)row.Attribute("r") != (index + 1).ToString(CultureInfo.InvariantCulture)).Any(value => value);
+        if (removed == 0 && !RequiresCompaction(retainedRows.Count, declaredLastRow) && !hasRowGaps)
+            return 0;
+
+        sheetEntry.Delete();
+        foreach (XElement row in document.Descendants(Spreadsheet + "row").ToArray())
+            if (!retainedRows.Contains(row))
+                row.Remove();
+
+        for (int rowIndex = 0; rowIndex < retainedRows.Count; rowIndex++)
+        {
+            XElement row = retainedRows[rowIndex];
+            int excelRow = rowIndex + 1;
+            row.SetAttributeValue("r", excelRow);
+            foreach (XElement cell in row.Elements(Spreadsheet + "c"))
+            {
+                string reference = (string)cell.Attribute("r") ?? string.Empty;
+                string column = new string(reference.TakeWhile(char.IsLetter).ToArray());
+                cell.SetAttributeValue("r", column + excelRow);
+            }
+        }
+
+        XElement dimension = document.Root?.Element(Spreadsheet + "dimension");
+        if (dimension != null)
+            dimension.SetAttributeValue("ref", $"A1:{ColumnName(rows[0].Count - 1)}{retainedRows.Count}");
+
+        ZipArchiveEntry replacement = archive.CreateEntry(sheetEntry.FullName, CompressionLevel.Optimal);
+        using Stream output = replacement.Open();
+        document.Save(output);
+        return removed;
+    }
+
+    public static IReadOnlyList<IReadOnlyList<string>> CompactRows(IReadOnlyList<IReadOnlyList<string>> rows)
+    {
+        if (rows == null || rows.Count == 0)
+            return rows ?? Array.Empty<IReadOnlyList<string>>();
+
+        int keyIndex = FindHeader(rows[0], "Key");
+        var result = new List<IReadOnlyList<string>> { rows[0] };
+        result.AddRange(rows.Skip(1).Where(row => !string.IsNullOrWhiteSpace(Value(row, keyIndex))));
+        return result;
+    }
+
+    public static bool RequiresCompaction(int dataRowCount, int declaredLastRow)
+    {
+        return declaredLastRow > dataRowCount;
+    }
+
     private static XElement InlineCell(int column, int row, string value)
     {
         return new XElement(Spreadsheet + "c",
@@ -300,6 +369,17 @@ public static class LocalizationWorkbookWriter
         cell.RemoveNodes();
         cell.SetAttributeValue("t", "inlineStr");
         cell.Add(new XElement(Spreadsheet + "is", new XElement(Spreadsheet + "t", value)));
+    }
+
+    private static int ReadDeclaredLastRow(XElement dimension)
+    {
+        string reference = (string)dimension?.Attribute("ref") ?? string.Empty;
+        int index = reference.Length;
+        while (index > 0 && char.IsDigit(reference[index - 1]))
+            index--;
+        return int.TryParse(reference.Substring(index), NumberStyles.Integer, CultureInfo.InvariantCulture, out int row)
+            ? row
+            : 0;
     }
     private static string ColumnName(int index)
     {

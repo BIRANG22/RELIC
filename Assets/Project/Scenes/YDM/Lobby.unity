@@ -17325,6 +17325,7 @@ GameObject:
   - component: {fileID: 288407010}
   - component: {fileID: 288407012}
   - component: {fileID: 288407011}
+  - component: {fileID: 288407013}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -17451,6 +17452,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 288407009}
   m_CullTransparentMesh: 1
+--- !u!114 &288407013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 288407009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 288407011}
+  localizationKey: ui.record.text_tmp.41cd5512
+  koreanSource: "\uC5F0\uC131\uC81C"
+  automaticallyRegistered: 1
 --- !u!1 &290695087
 GameObject:
   m_ObjectHideFlags: 0
@@ -29233,7 +29250,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 520671541}
   localizationKey: battle.select_trial
-  koreanSource: "\uC804\uD22C \uC138\uD305"
+  koreanSource: "\uC2DC\uB828 \uC120\uD0DD"
   automaticallyRegistered: 1
 --- !u!1 &521635593
 GameObject:
@@ -39031,7 +39048,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 637934991}
   localizationKey: battle.select_trial
-  koreanSource: "\uC5F0\uC131\uC81C"
+  koreanSource: "\uC2DC\uB828 \uC120\uD0DD"
   automaticallyRegistered: 1
 --- !u!1 &642062177
 GameObject:
@@ -104945,7 +104962,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 1764486759}
   localizationKey: battle.select_trial
-  koreanSource: "\uBCF4\uAD00\uD568"
+  koreanSource: "\uC2DC\uB828 \uC120\uD0DD"
   automaticallyRegistered: 1
 --- !u!1 &1769557114
 GameObject:
