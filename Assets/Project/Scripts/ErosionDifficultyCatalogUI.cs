@@ -282,7 +282,7 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
         SetText(slotRoot, "Value_Text", item.ScoreValue.ToString());
         SetText(slotRoot, "Catalog_Text", BuildCatalogDisplayName(item.DifficultyData));
-        SetText(slotRoot, "Effect_Text", item.DifficultyData.Description ?? string.Empty);
+        SetText(slotRoot, "Effect_Text", GameDataLocalization.ErosionDescription(item.DifficultyData));
     }
 
     private static string BuildCatalogDisplayName(ErosionData data)
@@ -292,7 +292,7 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
         string erosionName = string.IsNullOrWhiteSpace(data.ErosionName)
             ? data.EffectName
-            : data.ErosionName;
+            : GameDataLocalization.ErosionName(data);
 
         if (string.IsNullOrWhiteSpace(erosionName))
             return string.Empty;
