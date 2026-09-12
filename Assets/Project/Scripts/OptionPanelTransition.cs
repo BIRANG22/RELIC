@@ -208,7 +208,6 @@ public class OptionPanelTransition : MonoBehaviour
         }
 
         transitionBackgroundGraphics = Array.Empty<Graphic>();
-        Debug.LogWarning("[OptionPanelTransition] BackGround_Back 오브젝트의 Graphic을 찾지 못했습니다.", this);
     }
 
     private void CacheTransitionBackgroundColors()

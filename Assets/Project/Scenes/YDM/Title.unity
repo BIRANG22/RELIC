@@ -807,8 +807,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameMode: 1
-  playClickSound: 0
-  clickSfx: ui.normal.click
+  playClickSound: 1
+  clickSfx: ui.title.click
 --- !u!114 &141494598
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4325,7 +4325,7 @@ MonoBehaviour:
   playHoverSound: 1
   hoverSfx: ui.title.hover
   playClickSound: 1
-  clickSfx: ui.normal.click
+  clickSfx: ui.title.click
 --- !u!114 &990578817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6024,7 +6024,7 @@ MonoBehaviour:
   playHoverSound: 1
   hoverSfx: ui.title.hover
   playClickSound: 1
-  clickSfx: ui.record.open
+  clickSfx: ui.title.click
 --- !u!114 &1550108843
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7219,7 +7219,7 @@ MonoBehaviour:
   panelFadeDuration: 0.2
   playHoverSound: 1
   hoverSfx: ui.title.hover
-  playClickSound: 0
+  playClickSound: 1
   clickSfx: ui.title.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open

@@ -233,6 +233,15 @@ public class OptionPanelUI : MonoBehaviour
             }
         }
 
+        // TutorialToggle2는 ControlContent 외부에 배치된 프리팹 구조도 허용합니다.
+        // 자동 탐색에 실패하더라도 기능 자체는 선택적으로 비활성화하고 경고는 출력하지 않습니다.
+        if (tutorialPreviewToggle == null)
+        {
+            Transform tutorialPreviewTransform = FindChildByName(transform, TutorialToggle2Name);
+            if (tutorialPreviewTransform != null)
+                tutorialPreviewToggle = tutorialPreviewTransform.GetComponent<Toggle>();
+        }
+
         if (tutorialToggle == null)
         {
             Debug.LogWarning(
@@ -246,13 +255,7 @@ public class OptionPanelUI : MonoBehaviour
             tutorialToggle.onValueChanged.AddListener(OnTutorialToggleChanged);
         }
 
-        if (tutorialPreviewToggle == null)
-        {
-            Debug.LogWarning(
-                "[OptionPanelUI] TutorialToggle2 is not assigned in the Option prefab.",
-                this);
-        }
-        else
+        if (tutorialPreviewToggle != null)
         {
             tutorialPreviewToggle.onValueChanged.RemoveListener(OnTutorialPreviewToggleChanged);
             tutorialPreviewToggle.SetIsOnWithoutNotify(false);
