@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+ï»¿using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using System;
 using System.Collections.Generic;
@@ -10,8 +10,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// BattleCharacterPanel ¾È¿¡¼­ ¼±ÅÃµÈ ¸ó½ºÅÍÀÇ ÇÙ½É Á¤º¸¿Í º¸À¯ ½ºÅ³À» Ç¥½ÃÇÕ´Ï´Ù.
-/// MonsterInfo / SkillList / SkillInfo ÇÏÀ§ UI¸¦ ÀÌ¸§À¸·Î ÀÚµ¿ ¿¬°áÇÕ´Ï´Ù.
+/// BattleCharacterPanel ì•ˆì—ì„œ ì„ íƒëœ ëª¬ìŠ¤í„°ì˜ í•µì‹¬ ì •ë³´ì™€ ë³´ìœ  ìŠ¤í‚¬ì„ í‘œì‹œí•©ë‹ˆë‹¤.
+/// MonsterInfo / SkillList / SkillInfo í•˜ìœ„ UIë¥¼ ì´ë¦„ìœ¼ë¡œ ìë™ ì—°ê²°í•©ë‹ˆë‹¤.
 /// </summary>
 public class BattleMonsterInfoPanelUI : MonoBehaviour
 {
@@ -33,13 +33,13 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text armorText;
 
     [Header("Action Range")]
-    [Tooltip("ActionRange/RangeIcon ÀÌ¹ÌÁöÀÔ´Ï´Ù. ¸ó½ºÅÍÀÇ AttackRangeId¿¡ ÇØ´çÇÏ´Â ¹üÀ§ ÀÌ¹ÌÁö¸¦ Ç¥½ÃÇÕ´Ï´Ù.")]
+    [Tooltip("ActionRange/RangeIcon ì´ë¯¸ì§€ì…ë‹ˆë‹¤. ëª¬ìŠ¤í„°ì˜ AttackRangeIdì— í•´ë‹¹í•˜ëŠ” ë²”ìœ„ ì´ë¯¸ì§€ë¥¼ í‘œì‹œí•©ë‹ˆë‹¤.")]
     [SerializeField] private Image actionRangeImage;
 
     [Header("Special Actions")]
-    [Tooltip("SpecialAction/Effect01 ÅØ½ºÆ®ÀÔ´Ï´Ù.")]
+    [Tooltip("SpecialAction/Effect01 í…ìŠ¤íŠ¸ì…ë‹ˆë‹¤.")]
     [SerializeField] private TMP_Text specialAction1Text;
-    [Tooltip("SpecialAction/Effect02 ÅØ½ºÆ®ÀÔ´Ï´Ù.")]
+    [Tooltip("SpecialAction/Effect02 í…ìŠ¤íŠ¸ì…ë‹ˆë‹¤.")]
     [SerializeField] private TMP_Text specialAction2Text;
 
     [Header("Status Effects")]
@@ -47,11 +47,11 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
     [SerializeField] private StatusEffectIcon statusEffectIconPrefab;
 
     [Header("Portrait")]
-    [Tooltip("MonsterIconDatabase¿¡¼­ ÀÏ¹İ IconÀ» Ã£Áö ¸øÇßÀ» ¶§¸¸ ¿ùµå ½ºÇÁ¶óÀÌÆ®¸¦ ¿¹ºñ ÃÊ»óÈ­·Î »ç¿ëÇÕ´Ï´Ù.")]
+    [Tooltip("MonsterIconDatabaseì—ì„œ ì¼ë°˜ Iconì„ ì°¾ì§€ ëª»í–ˆì„ ë•Œë§Œ ì›”ë“œ ìŠ¤í”„ë¼ì´íŠ¸ë¥¼ ì˜ˆë¹„ ì´ˆìƒí™”ë¡œ ì‚¬ìš©í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool useWorldSpriteAsPortraitFallback = true;
 
     [Header("Monster Skill List")]
-    [Tooltip("SkillList ¿ÀºêÁ§Æ®ÀÔ´Ï´Ù. ºñ¾î ÀÖÀ¸¸é ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("SkillList ì˜¤ë¸Œì íŠ¸ì…ë‹ˆë‹¤. ë¹„ì–´ ìˆìœ¼ë©´ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private Transform skillListRoot;
     [SerializeField] private Button[] skillButtons = new Button[MonsterSkillSlotCount];
     [SerializeField] private Image[] skillBackgroundImages = new Image[MonsterSkillSlotCount];
@@ -302,11 +302,19 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
 
         SetImage(actionRangeImage, ResolveRangeIcon(attackRangeId));
 
+        string monsterId = boundRuntime != null ? boundRuntime.MonsterId : string.Empty;
+
         if (specialAction1Text != null)
-            specialAction1Text.text = NormalizeDisplayText(GetStringMemberValue(monsterMasterData, "SpecialAction1"));
+        {
+            string fallback = NormalizeDisplayText(GetStringMemberValue(monsterMasterData, "SpecialAction1"));
+            specialAction1Text.text = GameDataLocalization.MonsterSpecialAction(monsterId, 1, fallback);
+        }
 
         if (specialAction2Text != null)
-            specialAction2Text.text = NormalizeDisplayText(GetStringMemberValue(monsterMasterData, "SpecialAction2"));
+        {
+            string fallback = NormalizeDisplayText(GetStringMemberValue(monsterMasterData, "SpecialAction2"));
+            specialAction2Text.text = GameDataLocalization.MonsterSpecialAction(monsterId, 2, fallback);
+        }
     }
 
     private void RefreshMonsterSkillList()
@@ -336,7 +344,15 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
             ApplySkillSlotVisualState(i, hasSkill);
 
             if (!hasSkill)
+            {
+                if (skillNameText != null)
+                    skillNameText.text = string.Empty;
+
                 continue;
+            }
+
+            if (skillNameText != null)
+                skillNameText.text = GameDataLocalization.MonsterSkillName(skillData);
 
             if (firstValidSkillIndex < 0)
                 firstValidSkillIndex = i;
@@ -416,16 +432,16 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
 
         if (skillInfoNameText != null)
         {
-            skillInfoNameText.text = !string.IsNullOrWhiteSpace(skillData.Name)
-                ? skillData.Name
-                : skillData.SkillId;
+            skillInfoNameText.text = GameDataLocalization.MonsterSkillName(skillData);
         }
 
         if (skillInfoTypeText != null)
-            skillInfoTypeText.text = GetStringMemberValue(skillData, "SkillType");
+            skillInfoTypeText.text = GameDataLocalization.MonsterSkillType(skillData);
 
         if (skillInfoDetailsText != null)
-            skillInfoDetailsText.text = FormatMonsterEffectDescription(skillData.EffectDesc, skillData);
+            skillInfoDetailsText.text = FormatMonsterEffectDescription(
+                GameDataLocalization.MonsterSkillDescription(skillData),
+                skillData);
 
         RefreshMonsterSkillEffects(skillData);
     }
@@ -610,24 +626,24 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         switch (effectId.Trim())
         {
             case "E_Move":
-                return "ÀÌµ¿";
+                return "ì´ë™";
             case "E_Strike":
             case "E_Pierce":
-                return "ÇÇÇØ";
+                return "í”¼í•´";
             case "E_Knockback":
-                return "¹Ğ¾î³¿";
+                return "ë°€ì–´ëƒ„";
             case "E_Grab":
-                return "²ø¾î´ç±è";
+                return "ëŒì–´ë‹¹ê¹€";
             case "E_Grudge":
-                return "¿øÇÑ";
+                return "ì›í•œ";
             case "E_Corrosion":
-                return "Ä§½Ä";
+                return "ì¹¨ì‹";
             case "E_Spawn_Spider_Egg":
-                return "°Å¹Ì¾Ë »ı¼º";
+                return "ê±°ë¯¸ì•Œ ìƒì„±";
             case "E_Spawn_Spider_Web":
-                return "°Å¹ÌÁÙ »ı¼º";
+                return "ê±°ë¯¸ì¤„ ìƒì„±";
             case "E_Barrier":
-                return "Àå¸·";
+                return "ì¥ë§‰";
             default:
                 return effectId.Trim();
         }

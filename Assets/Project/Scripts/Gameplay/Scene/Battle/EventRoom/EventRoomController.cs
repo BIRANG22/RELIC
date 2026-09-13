@@ -796,10 +796,9 @@ public class EventRoomController : MonoBehaviour
         if (definition == null)
             return string.Empty;
 
-        if (!string.IsNullOrWhiteSpace(definition.Title))
-            return definition.Title;
-
-        return EventIdUtility.Normalize(definition.EventId) switch
+        string fallback = !string.IsNullOrWhiteSpace(definition.Title)
+            ? definition.Title
+            : EventIdUtility.Normalize(definition.EventId) switch
         {
             "Event_01_A" => "“조금이나마 도움이 되기를 바랍니다. 부디 조심해서 사용해 주세요.”",
             "Event_01_B" => "“상처가 조금은 나아졌군요. 이 힘이 당신들의 여정에 보탬이 되기를 바랍니다.”",
@@ -818,6 +817,8 @@ public class EventRoomController : MonoBehaviour
             "Event_04_D" => "“값을 치를 차례다. 모자란 몫은 생명으로 받아가겠다.”",
             _ => string.Empty
         };
+
+        return GameDataLocalization.EventTitle(definition, fallback);
     }
 
     private void BindChoiceSlots(IReadOnlyList<EventData> choices)

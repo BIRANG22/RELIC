@@ -2684,7 +2684,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             skillInfoDetailsText.text = !string.IsNullOrWhiteSpace(skillData.Details)
                 ? BattlePlayerSkillPreviewCalculator.FormatDescription(
                     skillData,
-                    skillData.Details,
+                    GameDataLocalization.SkillDetailsTemplate(skillData),
                     preview,
                     SkillDetailNumericLinkHandler.DetailedMode,
                     hoveredSkillDetailsLinkId)
@@ -2785,7 +2785,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return string.Empty;
 
         if (skillData.Category == Category.Move)
-            return "이동 거리";
+            return GameLocalization.Get("battle.skill.move_distance", "이동 거리");
 
         BattlePlayerSkillPreview preview = GetSkillPreview(skillData);
         int cost = preview != null
@@ -2902,20 +2902,20 @@ public class BattleCharacterPanelUI : MonoBehaviour
         // 이동 스킬을 포함해 Range_All을 사용하는 스킬은 RangeType과 관계없이
         // UI에서 '전체'로 표시합니다.
         if (BattleRangeCalculator.IsAllRangeId(skillData.RangeId))
-            return "전체";
+            return GameLocalization.Get("battle.skill_type.all", "전체");
 
         // Range_Self는 RangeType과 관계없이 자기 자신을 대상으로 하는 범위이므로
         // UI에서 '개인'으로 표시합니다.
         if (string.Equals(skillData.RangeId, "Range_Self", StringComparison.OrdinalIgnoreCase))
-            return "개인";
+            return GameLocalization.Get("battle.skill_type.self", "개인");
 
         switch (skillData.RangeType)
         {
             case RangeType.Selection:
-                return "원거리";
+                return GameLocalization.Get("battle.skill_type.ranged", "원거리");
 
             case RangeType.Direction:
-                return "근거리";
+                return GameLocalization.Get("battle.skill_type.melee", "근거리");
 
             default:
                 return string.Empty;
@@ -2930,26 +2930,26 @@ public class BattleCharacterPanelUI : MonoBehaviour
         switch (skillData.Category)
         {
             case Category.Unique:
-                return "발현기억";
+                return GameLocalization.Get("battle.skill_rarity.unique_memory", "발현기억");
 
             case Category.Ability:
-                return "구현기억";
+                return GameLocalization.Get("battle.skill_rarity.ability_memory", "구현기억");
 
             case Category.Passive:
-                return "본능기억";
+                return GameLocalization.Get("battle.skill_rarity.passive_memory", "본능기억");
 
             case Category.Move:
-                return "이동";
+                return GameLocalization.Get("battle.skill_rarity.move", "이동");
 
             default:
                 return skillData.Rarity switch
                 {
-                    SkillRarity.Common => "일반기억",
-                    SkillRarity.Rare => "레어기억",
-                    SkillRarity.Epic => "에픽기억",
-                    SkillRarity.Unique => "유니크기억",
-                    SkillRarity.Exclusive => "전용기억",
-                    SkillRarity.Move => "이동",
+                    SkillRarity.Common => GameLocalization.Get("battle.skill_rarity.common_memory", "일반기억"),
+                    SkillRarity.Rare => GameLocalization.Get("battle.skill_rarity.rare_memory", "레어기억"),
+                    SkillRarity.Epic => GameLocalization.Get("battle.skill_rarity.epic_memory", "에픽기억"),
+                    SkillRarity.Unique => GameLocalization.Get("battle.skill_rarity.unique", "유니크기억"),
+                    SkillRarity.Exclusive => GameLocalization.Get("battle.skill_rarity.exclusive", "전용기억"),
+                    SkillRarity.Move => GameLocalization.Get("battle.skill_rarity.move", "이동"),
                     _ => string.Empty
                 };
         }

@@ -78,6 +78,7 @@ public static class LocalizationProjectScanner
             return false;
 
         return header.Contains("이름", StringComparison.Ordinal) ||
+               header.Contains("제목", StringComparison.Ordinal) ||
                header.Contains("설명", StringComparison.Ordinal) ||
                header.Contains("툴팁", StringComparison.Ordinal) ||
                header.Contains("소개", StringComparison.Ordinal) ||
@@ -98,35 +99,64 @@ public static class LocalizationProjectScanner
         return BuildGameDataKey(sheetName, stableId, header) + "." + BuildStableSuffix(koreanSource);
     }
 
+    /// <summary>Event 시트의 반복 선택지를 EventId와 선택 순서로 구분하는 런타임 키입니다.</summary>
+    public static string BuildEventChoiceKey(string eventId, int choiceOrder, string header)
+    {
+        string field = GetDataFieldName(header);
+        if (!field.StartsWith("choice_", StringComparison.Ordinal) &&
+            field != "disabled_choice_description" &&
+            field != "failure_description")
+        {
+            return BuildGameDataKey("Event", eventId, header);
+        }
+
+        int normalizedOrder = Math.Max(0, choiceOrder);
+        string choiceField = field switch
+        {
+            "choice_name" => $"choice_{normalizedOrder}_name",
+            "choice_description" => $"choice_{normalizedOrder}_description",
+            "disabled_choice_description" => $"choice_{normalizedOrder}_disabled_description",
+            "failure_description" => $"choice_{normalizedOrder}_failure_description",
+            _ => field,
+        };
+        return BuildGameDataKey("Event", eventId, choiceField);
+    }
+
     private static string GetDataFieldName(string header)
     {
         if (string.IsNullOrWhiteSpace(header))
             return "text";
-        if (header.Contains("이름", StringComparison.Ordinal))
+
+        string compactHeader = header.Replace(" ", string.Empty).Replace("\t", string.Empty);
+        if (compactHeader.Contains("이름", StringComparison.Ordinal))
             return "name";
-        if (header.Contains("소개", StringComparison.Ordinal))
+        if (compactHeader.Contains("제목", StringComparison.Ordinal))
+            return "description";
+        if (compactHeader.Contains("소개", StringComparison.Ordinal))
             return "introduction";
-        if (header.Contains("Regeneration", StringComparison.OrdinalIgnoreCase) ||
-            header.Contains("카르마 획득", StringComparison.Ordinal))
+        if (compactHeader.Contains("Regeneration", StringComparison.OrdinalIgnoreCase) ||
+            compactHeader.Contains("카르마획득", StringComparison.Ordinal))
             return "regeneration";
-        if (header.Contains("효과설명", StringComparison.Ordinal))
+        if (compactHeader.Contains("효과설명", StringComparison.Ordinal))
             return "effect_description";
-        if (header.Contains("툴팁", StringComparison.Ordinal))
+        if (compactHeader.Contains("툴팁", StringComparison.Ordinal))
             return "tooltip";
-        if (header.Contains("레어도", StringComparison.Ordinal))
+        if (compactHeader.Contains("레어도", StringComparison.Ordinal))
             return "rarity";
-        if (header.Contains("특수행동", StringComparison.Ordinal))
+        if (compactHeader.Contains("특수행동", StringComparison.Ordinal))
             return "special_action";
-        if (header.Contains("타임라인", StringComparison.Ordinal))
+        if (compactHeader.Contains("타임라인", StringComparison.Ordinal))
             return "timeline_label";
-        if (header.Contains("선택지이름", StringComparison.Ordinal))
+        if (compactHeader.Contains("선택지이름", StringComparison.Ordinal))
             return "choice_name";
-        if (header.Contains("선택지내용", StringComparison.Ordinal))
+        if (compactHeader.Contains("선택지내용", StringComparison.Ordinal))
             return "choice_description";
-        if (header.Contains("선택불가", StringComparison.Ordinal))
+        if (compactHeader.Contains("선택불가", StringComparison.Ordinal))
             return "disabled_choice_description";
-        if (header.Contains("실패결과", StringComparison.Ordinal))
+        if (compactHeader.Contains("실패결과", StringComparison.Ordinal))
             return "failure_description";
+        if (compactHeader == "타입")
+            return "type";
         return "description";
     }
 

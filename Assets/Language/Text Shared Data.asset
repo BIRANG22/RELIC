@@ -3643,16 +3643,8 @@ MonoBehaviour:
     m_Key: data.event.event_01.name.3af1914f
     m_Metadata:
       m_Items: []
-  - m_Id: 10187665097367566
-    m_Key: data.event.event_01.description.c2b50b91
-    m_Metadata:
-      m_Items: []
   - m_Id: 10187665097367567
     m_Key: data.event.event_01.name.b9729e84
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367568
-    m_Key: data.event.event_01.description.f3b35683
     m_Metadata:
       m_Items: []
   - m_Id: 10187665097367569
@@ -3667,16 +3659,8 @@ MonoBehaviour:
     m_Key: data.event.event_02.name.8d0e62d4
     m_Metadata:
       m_Items: []
-  - m_Id: 10187665097367572
-    m_Key: data.event.event_02.description.4519e302
-    m_Metadata:
-      m_Items: []
   - m_Id: 10187665097367573
     m_Key: data.event.event_02.name.01d3a074
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367574
-    m_Key: data.event.event_02.description.265a2cf0
     m_Metadata:
       m_Items: []
   - m_Id: 10187665097367575
@@ -3695,10 +3679,6 @@ MonoBehaviour:
     m_Key: data.event.event_03.name.bee0ad3d
     m_Metadata:
       m_Items: []
-  - m_Id: 10187665097367579
-    m_Key: data.event.event_03.description.72643f70
-    m_Metadata:
-      m_Items: []
   - m_Id: 10187665097367580
     m_Key: data.event.event_04.name.08a2544d
     m_Metadata:
@@ -3707,16 +3687,8 @@ MonoBehaviour:
     m_Key: data.event.event_04.name.ac43bd5c
     m_Metadata:
       m_Items: []
-  - m_Id: 10187665097367582
-    m_Key: data.event.event_04.description.c390d5e2
-    m_Metadata:
-      m_Items: []
   - m_Id: 10187665097367583
     m_Key: data.event.event_04.name.f0ed8ac6
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367584
-    m_Key: data.event.event_04.description.b9221c68
     m_Metadata:
       m_Items: []
   - m_Id: 10187665097367585
@@ -3725,10 +3697,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 10187665097367586
     m_Key: data.event.event_05.name.9bc4c55b
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367587
-    m_Key: data.event.event_05.description.ca6b26a1
     m_Metadata:
       m_Items: []
   - m_Id: 10187665097367588
@@ -3743,10 +3711,6 @@ MonoBehaviour:
     m_Key: data.event.event_05_a.name.9bc4c55b
     m_Metadata:
       m_Items: []
-  - m_Id: 10187665097367591
-    m_Key: data.event.event_05_a.description.ca6b26a1
-    m_Metadata:
-      m_Items: []
   - m_Id: 10187665097367592
     m_Key: data.event.event_05_a.failure_description.b95b07af
     m_Metadata:
@@ -3759,20 +3723,12 @@ MonoBehaviour:
     m_Key: data.event.event_05_b.name.9bc4c55b
     m_Metadata:
       m_Items: []
-  - m_Id: 10187665097367595
-    m_Key: data.event.event_05_b.description.ca6b26a1
-    m_Metadata:
-      m_Items: []
   - m_Id: 10187665097367596
     m_Key: data.event.event_05_b.failure_description.b95b07af
     m_Metadata:
       m_Items: []
   - m_Id: 10187665097367597
     m_Key: data.event.event_05.name.0d68fa9d
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367598
-    m_Key: data.event.event_05.description.bcb7167c
     m_Metadata:
       m_Items: []
   - m_Id: 10187665097367599
@@ -3785,10 +3741,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 10187665097367601
     m_Key: data.event.event_07.name.faa6c01e
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367602
-    m_Key: data.event.event_07.description.eb5b4cdc
     m_Metadata:
       m_Items: []
   - m_Id: 10187665097367603
@@ -3815,16 +3767,8 @@ MonoBehaviour:
     m_Key: data.event.event_09.name.bd3b8fc2
     m_Metadata:
       m_Items: []
-  - m_Id: 10187665097367609
-    m_Key: data.event.event_09.description.999d991e
-    m_Metadata:
-      m_Items: []
   - m_Id: 10187665097367610
     m_Key: data.event.event_09.name.82deb3ac
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367611
-    m_Key: data.event.event_09.description.c0517730
     m_Metadata:
       m_Items: []
   - m_Id: 10986483455893504
@@ -4979,10 +4923,6 @@ MonoBehaviour:
     m_Key: data.event.event_07.name.c071f18a
     m_Metadata:
       m_Items: []
-  - m_Id: 11677536462839958
-    m_Key: data.event.event_08.description.97db0284
-    m_Metadata:
-      m_Items: []
   - m_Id: 11677536462839959
     m_Key: data.event.event_09.name.f8d36297
     m_Metadata:
@@ -5319,10 +5259,6 @@ MonoBehaviour:
     m_Key: ui.lobby.text.d2b94af5
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458553032741
-    m_Key: ui.lobby.text.b93dee52
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458553032744
     m_Key: ui.lobby.text.48ab33a5
     m_Metadata:
@@ -5349,6 +5285,302 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11939766655787112
     m_Key: ui.samplescene.text.fd05ad0a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119742
+    m_Key: ui.lobby.text.3bee5b16
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119745
+    m_Key: ui.lobby.text.85573190
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119746
+    m_Key: ui.lobby.text.34e70344
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119747
+    m_Key: ui.lobby.text.367b0594
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119748
+    m_Key: ui.lobby.text.ff6c8359
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119750
+    m_Key: ui.lobby.text.fbcc900a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119760
+    m_Key: ui.lobby.text.0385cd9d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119761
+    m_Key: data.event.event_01.choice_description.0a84ed3f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119762
+    m_Key: data.event.event_01.choice_description.c2b50b91
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119763
+    m_Key: data.event.event_01.choice_description.f3b35683
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119764
+    m_Key: data.event.event_01_a.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119765
+    m_Key: data.event.event_01_b.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119766
+    m_Key: data.event.event_01_c.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119767
+    m_Key: data.event.event_02.choice_description.a28ed6bd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119768
+    m_Key: data.event.event_02_a.choice_description.dc6c676f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119769
+    m_Key: data.event.event_02.choice_description.4519e302
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119770
+    m_Key: data.event.event_02.choice_description.265a2cf0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180450119771
+    m_Key: data.event.event_02_b.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896896
+    m_Key: data.event.event_02_c.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896897
+    m_Key: data.event.event_02_d.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896898
+    m_Key: data.event.event_02_e.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896899
+    m_Key: data.event.event_02_g.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896900
+    m_Key: data.event.event_02_h.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896901
+    m_Key: data.event.event_02_i.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896902
+    m_Key: data.event.event_03.choice_description.8f43bd81
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896903
+    m_Key: data.event.event_03.description.a958b0a2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896904
+    m_Key: data.event.event_03.choice_description.72643f70
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896905
+    m_Key: data.event.event_04.choice_description.fec306f4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896906
+    m_Key: data.event.event_04.choice_description.c390d5e2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896907
+    m_Key: data.event.event_04.choice_description.b9221c68
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896908
+    m_Key: data.event.event_04_a.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896909
+    m_Key: data.event.event_04_b.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896910
+    m_Key: data.event.event_04_c.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896911
+    m_Key: data.event.event_04_d.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896912
+    m_Key: data.event.event_05.choice_description.73af1899
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896913
+    m_Key: data.event.event_05.choice_description.ca6b26a1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896914
+    m_Key: data.event.event_05_a.choice_description.73af1899
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896915
+    m_Key: data.event.event_05_a.choice_description.ca6b26a1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896916
+    m_Key: data.event.event_05_b.choice_description.73af1899
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896917
+    m_Key: data.event.event_05_b.choice_description.ca6b26a1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896918
+    m_Key: data.event.event_05.choice_description.bcb7167c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896919
+    m_Key: data.event.event_05_c.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896920
+    m_Key: data.event.event_05_d.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896921
+    m_Key: data.event.event_05_e.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896922
+    m_Key: data.event.event_06.choice_description.478b0fc3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896923
+    m_Key: data.event.event_06_a.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896924
+    m_Key: data.event.event_07.choice_description.faf32be2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896925
+    m_Key: data.event.event_07.choice_description.eb5b4cdc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896926
+    m_Key: data.event.event_08.choice_description.f5ca5d59
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896927
+    m_Key: data.event.event_08_a.choice_description.4e1c1dc5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896928
+    m_Key: data.event.event_08_b.choice_description.a6c0012b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896929
+    m_Key: data.event.event_08.choice_description.97db0284
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896930
+    m_Key: data.event.event_08_c.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896931
+    m_Key: data.event.event_08_d.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896932
+    m_Key: data.event.event_09.choice_description.d4f3b6d8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896933
+    m_Key: data.event.event_09.choice_description.999d991e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11981180466896934
+    m_Key: data.event.event_09.choice_description.c0517730
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550500753549
+    m_Key: battle.skill.move_distance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550500753550
+    m_Key: battle.skill_type.all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550500753551
+    m_Key: battle.skill_type.self
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550500753552
+    m_Key: battle.skill_type.ranged
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550500753553
+    m_Key: battle.skill_type.melee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550500753554
+    m_Key: battle.skill_rarity.unique_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550500753555
+    m_Key: battle.skill_rarity.ability_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550500753556
+    m_Key: battle.skill_rarity.passive_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550500753557
+    m_Key: battle.skill_rarity.move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550504947712
+    m_Key: battle.skill_rarity.common_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550504947713
+    m_Key: battle.skill_rarity.rare_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550504947714
+    m_Key: battle.skill_rarity.epic_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550504947715
+    m_Key: battle.skill_rarity.unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11988550504947716
+    m_Key: battle.skill_rarity.exclusive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11991769356443711
+    m_Key: ui.battle.equip_panel.character_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11991769356443712
+    m_Key: ui.check.slogan
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11993599759097874
+    m_Key: battle.dustium
     m_Metadata:
       m_Items: []
   m_Metadata:

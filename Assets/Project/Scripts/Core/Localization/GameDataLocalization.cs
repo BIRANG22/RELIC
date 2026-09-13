@@ -17,6 +17,18 @@ namespace Relic.Gameplay.Data
         public static string MonsterSpecialAction(string monsterId, int index, string fallback) =>
             GameLocalization.GetData("Monster", monsterId, $"special_action_{index}", fallback);
 
+        public static string EventTitle(EventDefinition data, string fallback) =>
+            data == null ? fallback ?? string.Empty : GameLocalization.GetData("Event", data.EventId, "description", fallback);
+
+        public static string EventChoiceName(EventData data) =>
+            EventChoiceText(data, "name", data?.ChoiceName);
+
+        public static string EventChoiceDescription(EventData data) =>
+            EventChoiceText(data, "description", data?.ChoiceDesc);
+
+        public static string EventUnavailableChoiceDescription(EventData data) =>
+            EventChoiceText(data, "disabled_description", data?.UnavailableChoiceDesc);
+
         public static string SkillName(SkillMasterData data) =>
             data == null ? string.Empty : GameLocalization.GetData("SkillMaster", data.SkillId, "name", data.Name);
 
@@ -40,6 +52,9 @@ namespace Relic.Gameplay.Data
 
         public static string MonsterSkillDescription(MonsterSkillData data) =>
             data == null ? string.Empty : GameLocalization.GetData("MonsterSkill", data.SkillId, "effect_description", data.EffectDesc);
+
+        public static string MonsterSkillType(MonsterSkillData data) =>
+            data == null ? string.Empty : GameLocalization.GetData("MonsterSkill", data.SkillId, "type", data.SkillType);
 
         public static string MonsterPatternDescription(MonsterPatternInfoData data) =>
             data == null ? string.Empty : GameLocalization.GetData("MonsterPatternInfo", data.PatternId, "pattern_description", data.Description);
@@ -163,5 +178,13 @@ namespace Relic.Gameplay.Data
             data == null
                 ? string.Empty
                 : GameLocalization.GetData("Erosion", data.DifficultyId, "description", data.Description);
+
+        private static string EventChoiceText(EventData data, string field, string fallback)
+        {
+            if (data == null)
+                return fallback ?? string.Empty;
+
+            return GameLocalization.GetData("Event", data.EventId, $"choice_{data.ChoiceOrder}_{field}", fallback);
+        }
     }
 }

@@ -51,6 +51,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
         if (scanScenes) foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" })) ScanScene(AssetDatabase.GUIDToAssetPath(guid), known, knownKeys);
         if (scanScripts) ScanScripts(known, knownKeys);
         if (scanGameData) ScanGameData(knownKoreanByKey);
+        AddRuntimeUiCandidates(knownKoreanByKey, knownKeys);
         Repaint();
     }
 
@@ -78,6 +79,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
                 continue;
 
             IReadOnlyList<string> headers = rows[0];
+            int choiceOrderColumn = FindHeaderIndex(headers, "ChoiceOrder", "선택지 순서");
             for (int rowIndex = 1; rowIndex < rows.Count; rowIndex++)
             {
                 IReadOnlyList<string> row = rows[rowIndex];
@@ -89,11 +91,13 @@ public sealed class LocalizationManagerWindow : EditorWindow
                 {
                     string header = headers[column];
                     string korean = column < row.Count ? row[column] : string.Empty;
-                    if (!LocalizationProjectScanner.IsPlayerFacingGameDataColumn(header) ||
+                    bool isMonsterSkillType = string.Equals(sheet, "MonsterSkill", StringComparison.Ordinal) &&
+                                              string.Equals(header.Trim(), "타입", StringComparison.Ordinal);
+                    if ((!LocalizationProjectScanner.IsPlayerFacingGameDataColumn(header) && !isMonsterSkillType) ||
                         !LocalizationProjectScanner.IsLocalizableKoreanText(korean))
                         continue;
 
-                    string stableKey = LocalizationProjectScanner.BuildGameDataKey(sheet, stableId, header);
+                    string stableKey = BuildGameDataKey(sheet, stableId, row, choiceOrderColumn, header);
                     // 같은 검사에서 동일 ID/필드가 실제로 반복되는 구조(Event 선택지 등)에만 hash를 붙입니다.
                     string key = scannedGameDataKeys.Add(stableKey)
                         ? stableKey
@@ -114,6 +118,50 @@ public sealed class LocalizationManagerWindow : EditorWindow
                 }
             }
         }
+    }
+
+    private void AddRuntimeUiCandidates(
+        IReadOnlyDictionary<string, string> knownKoreanByKey,
+        ISet<string> knownKeys)
+    {
+        AddRuntimeUiCandidate("ui.battle.equip_panel.character_text", "장착할 캐릭터를 선택하세요.", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("ui.check.slogan", "정말로 포기하시겠습니까?", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.dustium", "더스티움", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill.move_distance", "이동 거리", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill_type.all", "전체", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill_type.self", "개인", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill_type.ranged", "원거리", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill_type.melee", "근거리", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill_rarity.unique_memory", "발현기억", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill_rarity.ability_memory", "구현기억", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill_rarity.passive_memory", "본능기억", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill_rarity.move", "이동", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill_rarity.common_memory", "일반기억", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill_rarity.rare_memory", "레어기억", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill_rarity.epic_memory", "에픽기억", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill_rarity.unique", "유니크기억", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("battle.skill_rarity.exclusive", "전용기억", knownKoreanByKey, knownKeys);
+    }
+
+    private void AddRuntimeUiCandidate(
+        string key,
+        string korean,
+        IReadOnlyDictionary<string, string> knownKoreanByKey,
+        ISet<string> knownKeys)
+    {
+        bool exists = knownKoreanByKey.TryGetValue(key, out string currentKorean);
+        bool sourceChanged = exists && !string.Equals(
+            LocalizationBindingResolver.Normalize(currentKorean),
+            LocalizationBindingResolver.Normalize(korean),
+            StringComparison.Ordinal);
+        candidates.Add(new LocalizationCandidate(
+            "Runtime UI labels",
+            korean,
+            key,
+            false,
+            !exists && !knownKeys.Contains(key),
+            false,
+            sourceChanged));
     }
 
     private void ScanScripts(Dictionary<string, string> known, HashSet<string> knownKeys)
@@ -200,12 +248,13 @@ public sealed class LocalizationManagerWindow : EditorWindow
         int updated = LocalizationWorkbookWriter.UpdateExistingEntries(LocalizationExcelImporter.WorkbookPath, sourceUpdates);
         int rows = LocalizationWorkbookWriter.MergeNewEntries(LocalizationExcelImporter.WorkbookPath, additions);
         if (rows > 0 || updated > 0 || templateChanges > 0) LocalizationExcelImporter.Import();
+        int explicitStaticBindings = StaticLocalizationMigration.ApplyRequiredStaticUiBindings();
         int dynamicOwnershipChanges = StaticLocalizationMigration.MigrateRecordMemoryDynamicOwnership();
         LocalizationTextBindingRepairTool.RepairAllBindings();
         int removed = RemoveUnusedEntries();
         int compacted = LocalizationWorkbookWriter.CompactBlankRows(LocalizationExcelImporter.WorkbookPath);
         if (removed > 0) LocalizationExcelImporter.Import();
-        Debug.Log($"[Localization Manager] Applied {rows} new Excel rows, updated {updated} GameData sources, restored {templateChanges} Record templates, changed {dynamicOwnershipChanges} dynamic TMP ownerships, removed {removed} unused keys, compacted {compacted} blank rows, and repaired TMP bindings.");
+        Debug.Log($"[Localization Manager] Applied {rows} new Excel rows, updated {updated} GameData sources, restored {templateChanges} Record templates, applied {explicitStaticBindings} required static bindings, changed {dynamicOwnershipChanges} dynamic TMP ownerships, removed {removed} unused keys, compacted {compacted} blank rows, and repaired TMP bindings.");
     }
 
     private static int RemoveUnusedEntries()
@@ -266,6 +315,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
                 continue;
 
             IReadOnlyList<string> headers = rows[0];
+            int choiceOrderColumn = FindHeaderIndex(headers, "ChoiceOrder", "선택지 순서");
             for (int rowIndex = 1; rowIndex < rows.Count; rowIndex++)
             {
                 IReadOnlyList<string> row = rows[rowIndex];
@@ -278,7 +328,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
                     if (LocalizationProjectScanner.IsPlayerFacingGameDataColumn(headers[column]) &&
                         LocalizationProjectScanner.IsLocalizableKoreanText(korean))
                     {
-                        string stableKey = LocalizationProjectScanner.BuildGameDataKey(sheet, stableId, headers[column]);
+                        string stableKey = BuildGameDataKey(sheet, stableId, row, choiceOrderColumn, headers[column]);
                         keys.Add(scannedKeys.Add(stableKey)
                             ? stableKey
                             : LocalizationProjectScanner.BuildUniqueGameDataKey(sheet, stableId, headers[column], korean));
@@ -288,6 +338,41 @@ public sealed class LocalizationManagerWindow : EditorWindow
         }
 
         return keys;
+    }
+
+    private static string BuildGameDataKey(
+        string sheet,
+        string stableId,
+        IReadOnlyList<string> row,
+        int choiceOrderColumn,
+        string header)
+    {
+        if (string.Equals(sheet, "Event", StringComparison.Ordinal) &&
+            choiceOrderColumn >= 0 &&
+            header.Contains("선택지", StringComparison.Ordinal))
+        {
+            int choiceOrder = choiceOrderColumn < row.Count &&
+                int.TryParse(row[choiceOrderColumn], out int parsedOrder)
+                ? parsedOrder
+                : 0;
+            return LocalizationProjectScanner.BuildEventChoiceKey(stableId, choiceOrder, header);
+        }
+
+        return LocalizationProjectScanner.BuildGameDataKey(sheet, stableId, header);
+    }
+
+    private static int FindHeaderIndex(IReadOnlyList<string> headers, params string[] headerNames)
+    {
+        for (int i = 0; i < headers.Count; i++)
+        {
+            foreach (string headerName in headerNames)
+            {
+                if (string.Equals(headers[i], headerName, StringComparison.OrdinalIgnoreCase))
+                    return i;
+            }
+        }
+
+        return -1;
     }
 
     /// <summary>Only unique source text may be reused automatically. Duplicate copy requires contextual review.</summary>
