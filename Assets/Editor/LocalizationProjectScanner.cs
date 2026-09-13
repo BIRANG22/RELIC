@@ -42,6 +42,27 @@ public static class LocalizationProjectScanner
         return LocalizationTextRules.IsKoreanPlayerText(value);
     }
 
+    /// <summary>Unity YAML에 직렬화된 TMP 문자열을 스캔용 원문으로 복원합니다.</summary>
+    public static string DecodeUnityYamlText(string serializedValue)
+    {
+        if (string.IsNullOrWhiteSpace(serializedValue))
+            return string.Empty;
+
+        string value = serializedValue.Trim();
+        if (value.Length >= 2 && value[0] == '"' && value[value.Length - 1] == '"')
+            value = value.Substring(1, value.Length - 2);
+
+        try
+        {
+            return Regex.Unescape(value);
+        }
+        catch (ArgumentException)
+        {
+            // 손상된 YAML 이스케이프는 원문 그대로 두어 스캔 실패가 예외로 번지지 않게 합니다.
+            return value;
+        }
+    }
+
     /// <summary>
     /// 코드 리터럴은 실제 표시 대상인지 안전하게 판별할 수 없습니다.
     /// 자동 키 추가는 프리팹/씬/게임데이터의 명시적인 원문에만 허용합니다.

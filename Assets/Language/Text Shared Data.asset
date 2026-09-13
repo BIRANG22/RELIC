@@ -239,10 +239,6 @@ MonoBehaviour:
     m_Key: battle.selected_node_info
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100737
-    m_Key: battle.select_trial
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100738
     m_Key: battle.elite
     m_Metadata:
@@ -261,22 +257,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100742
     m_Key: battle.shard
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100743
-    m_Key: battle.preview
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100744
-    m_Key: battle.increasing_threat
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100745
-    m_Key: battle.corroded_body
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100746
-    m_Key: battle.sharp_remnant
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100747
@@ -5113,6 +5093,262 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11753938788818951
     m_Key: intro.story.09
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458540449803
+    m_Key: ui.ydh.battletest.text.ec102afe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458540449805
+    m_Key: ui.ydh.battletest.text.5f705503
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458540449808
+    m_Key: ui.ydh.battletest.text.034bd9f3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458540449810
+    m_Key: ui.ydh.battletest.text.1750c8ef
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458540449812
+    m_Key: ui.ydh.battletest.text.f69cb1d1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458540449813
+    m_Key: ui.ydh.battletest.text.1814ebc6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458540449815
+    m_Key: ui.ydh.battletest.text.c609c9dc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458540449816
+    m_Key: ui.ydh.battletest.text.714b08dd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458540449818
+    m_Key: ui.ydh.battletest.text.e86594de
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458540449819
+    m_Key: ui.ydh.battletest.text.38901857
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458540449820
+    m_Key: ui.ydh.battletest.text.3281ec84
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838401
+    m_Key: ui.ydh.battletest.text.c8756a72
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838403
+    m_Key: ui.ydh.battletest.text.e63f4bdf
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838404
+    m_Key: ui.ydh.battletest.text.086f8fd2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838412
+    m_Key: ui.battle.text.891c006d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838413
+    m_Key: ui.battle.text.9886b26d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838420
+    m_Key: ui.battle.text.e0659a12
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838421
+    m_Key: ui.battle.text.a456ff73
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838423
+    m_Key: ui.battle.text.2563e40d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838424
+    m_Key: ui.battle.text.3060fec1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838432
+    m_Key: ui.battle.text.e1cddfeb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838435
+    m_Key: ui.battle.text.77d8fe68
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838437
+    m_Key: ui.battle.text.bec668cb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838439
+    m_Key: ui.battle.text.76190860
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838442
+    m_Key: ui.battle.text.3b34f83f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838450
+    m_Key: ui.battle.text.a6a04ce1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838452
+    m_Key: ui.battle.text.5d0c537e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838454
+    m_Key: ui.battle.text.804e7e83
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838455
+    m_Key: ui.battle.text.29fbeb16
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838456
+    m_Key: ui.battle.text.c057cab5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838457
+    m_Key: ui.battle.text.eb472813
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838458
+    m_Key: ui.battle.text.1efcc6e8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838459
+    m_Key: ui.battle.text.2dab20ef
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838460
+    m_Key: ui.battle.text.3a4b35dd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838461
+    m_Key: ui.battle.text.1698677f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838462
+    m_Key: ui.battle.text.abdd11b1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838463
+    m_Key: ui.battle.text.64b1445e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838464
+    m_Key: ui.battle.text.487a2d2e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838465
+    m_Key: ui.battle.text.e3337fd8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838467
+    m_Key: ui.bootstrap.text.0f35c9dd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838470
+    m_Key: ui.bootstrap.text.b8eec541
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838471
+    m_Key: ui.bootstrap.text.e8b0a6f1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838472
+    m_Key: ui.bootstrap.text.125ff469
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838473
+    m_Key: ui.bootstrap.text.fa07452b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838476
+    m_Key: ui.bootstrap.text.09597077
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838477
+    m_Key: ui.bootstrap.text.35e62c42
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838478
+    m_Key: ui.bootstrap.text.90dd1e6d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458548838489
+    m_Key: ui.debugbattle.text.a422e3c6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032710
+    m_Key: ui.debugbattle.text.d18c4783
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032727
+    m_Key: ui.lobby.text.33abb2e3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032732
+    m_Key: ui.lobby.text.dae4b44d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032733
+    m_Key: ui.lobby.text.506c14d8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032734
+    m_Key: ui.lobby.text.de97bb9d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032735
+    m_Key: ui.lobby.text.a875ee63
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032739
+    m_Key: ui.lobby.text.2b301675
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032740
+    m_Key: ui.lobby.text.d2b94af5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032741
+    m_Key: ui.lobby.text.b93dee52
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032744
+    m_Key: ui.lobby.text.48ab33a5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032748
+    m_Key: ui.lobby.text.e5980dc5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032750
+    m_Key: ui.lobby.text.42ef35e8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032752
+    m_Key: ui.lobby.text.48bb3206
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032761
+    m_Key: ui.lobby.text.d32c0fa0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11938458553032762
+    m_Key: ui.lobby.text.a83209da
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11939766655787112
+    m_Key: ui.samplescene.text.fd05ad0a
     m_Metadata:
       m_Items: []
   m_Metadata:

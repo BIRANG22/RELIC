@@ -242,10 +242,6 @@ MonoBehaviour:
     m_Localized: Selected Node
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100737
-    m_Localized: Choose Trial
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100738
     m_Localized: Elite
     m_Metadata:
@@ -264,22 +260,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100742
     m_Localized: Shard
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100743
-    m_Localized: Preview
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100744
-    m_Localized: Rising Threat
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100745
-    m_Localized: Corroded Body
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100746
-    m_Localized: Sharp Remnant
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100747
