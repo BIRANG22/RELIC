@@ -22,6 +22,7 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
     private GameObject activePanel;
     private Action activeCloseAction;
     private bool backButtonBound;
+    private bool keepBackgroundActiveDuringSwitch;
 
     public bool IsShowing => backgroundRoot != null && backgroundRoot.activeSelf;
     public GameObject ActivePanel => activePanel;
@@ -79,6 +80,20 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
         controller?.Hide(owner);
     }
 
+    /// <summary>
+    /// ESC 등 공용 입력에서 현재 PositionPanel 모달을 패널별 Close 경로로 닫습니다.
+    /// 공용 BackButton과 동일한 closeAction을 사용합니다.
+    /// </summary>
+    public static bool TryCloseActivePanel()
+    {
+        LobbyPositionSharedModalBackground controller = FindController();
+        if (controller == null || controller.activePanel == null)
+            return false;
+
+        controller.HandleBackButtonClicked();
+        return true;
+    }
+
     public static void HideForPanel(GameObject panel)
     {
         if (panel == null)
@@ -86,6 +101,49 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
 
         LobbyPositionSharedModalBackground controller = FindController();
         controller?.HidePanel(panel);
+    }
+
+    /// <summary>
+    /// Lobby_Icon shortcut에서 다른 PositionPanel 모달로 전환하기 전에
+    /// 현재 패널의 정상 Close 경로를 실행합니다. 전환 중에는 BackgroundPanel을 유지합니다.
+    /// 현재 패널이 닫기를 거부하면 false를 반환합니다.
+    /// </summary>
+    public static bool PrepareForPanelSwitch(GameObject targetPanel)
+    {
+        if (targetPanel == null)
+            return false;
+
+        LobbyPositionSharedModalBackground controller = FindController();
+        if (controller == null || controller.activePanel == null)
+            return true;
+
+        if (controller.activePanel == targetPanel)
+            return false;
+
+        GameObject previousPanel = controller.activePanel;
+        Action closeAction = controller.activeCloseAction;
+
+        controller.keepBackgroundActiveDuringSwitch = true;
+        try
+        {
+            if (closeAction != null)
+                closeAction.Invoke();
+            else
+            {
+                if (previousPanel != null)
+                    previousPanel.SetActive(false);
+
+                controller.HideInternal();
+            }
+        }
+        finally
+        {
+            controller.keepBackgroundActiveDuringSwitch = false;
+        }
+
+        // Close가 실제로 완료되었다면 activePanel이 비워집니다.
+        // 구매 연출 등으로 Close가 거부된 경우에는 기존 패널이 그대로 남습니다.
+        return controller.activePanel == null;
     }
 
     private void Show(GameObject panel, object owner, Action closeAction)
@@ -144,8 +202,12 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
         activePanel = null;
         activeCloseAction = null;
 
-        if (backgroundRoot != null && backgroundRoot.activeSelf)
+        if (!keepBackgroundActiveDuringSwitch &&
+            backgroundRoot != null &&
+            backgroundRoot.activeSelf)
+        {
             backgroundRoot.SetActive(false);
+        }
     }
 
     private void HandleBackButtonClicked()

@@ -31,9 +31,19 @@ public class BattleBagPanelUI : MonoBehaviour
     [SerializeField] private BattleBagItemSlotUI storageSlotPrefab;
     [SerializeField] private ScrollRect storageScrollRect;
     [SerializeField] private Scrollbar storageVerticalScrollbar;
+
+    [Header("Lobby Compound Storage")]
+    [Tooltip("StoragePanel/Compound_ScrollView/Viewport/Content를 연결합니다. 비워두면 이름으로 자동 탐색합니다.")]
+    [SerializeField] private Transform compoundContentRoot;
+    [SerializeField] private ScrollRect compoundScrollRect;
+    [SerializeField] private Scrollbar compoundVerticalScrollbar;
+
+    [Header("Legacy Category Buttons")]
     [SerializeField] private Button itemButton;
     [SerializeField] private Button compoundButton;
+
     private readonly List<BattleBagItemSlotUI> storageSlots = new();
+    private readonly List<BattleBagItemSlotUI> compoundStorageSlots = new();
     private StorageCategory storageCategory = StorageCategory.Item;
 
     [Header("Discard")]
@@ -95,7 +105,8 @@ public class BattleBagPanelUI : MonoBehaviour
                 slotRoot = foundSlotRoot;
         }
 
-        Transform storageScrollView = FindDeepChild(transform, "Scroll View");
+        Transform namedStorageScrollView = FindDeepChild(transform, "Storage_ScrollView");
+        Transform storageScrollView = namedStorageScrollView ?? FindDeepChild(transform, "Scroll View");
         if (storageScrollView != null)
         {
             Transform viewport = FindDeepChild(storageScrollView, "Viewport");
@@ -114,6 +125,25 @@ public class BattleBagPanelUI : MonoBehaviour
                 storageVerticalScrollbar = FindDeepChild(storageScrollView, "Scrollbar Vertical")?.GetComponent<Scrollbar>();
         }
 
+        Transform compoundScrollView = FindDeepChild(transform, "Compound_ScrollView");
+        if (compoundScrollView != null)
+        {
+            Transform viewport = FindDeepChild(compoundScrollView, "Viewport");
+
+            if (compoundContentRoot == null && viewport != null)
+            {
+                Transform foundContent = FindDeepChild(viewport, "Content");
+                if (foundContent != null)
+                    compoundContentRoot = foundContent;
+            }
+
+            if (compoundScrollRect == null)
+                compoundScrollRect = compoundScrollView.GetComponent<ScrollRect>();
+
+            if (compoundVerticalScrollbar == null)
+                compoundVerticalScrollbar = FindDeepChild(compoundScrollView, "Scrollbar Vertical")?.GetComponent<Scrollbar>();
+        }
+
         if (storageContentRoot == null)
         {
             Transform foundContent = FindDeepChild(transform, "Content");
@@ -121,7 +151,8 @@ public class BattleBagPanelUI : MonoBehaviour
                 storageContentRoot = foundContent;
         }
 
-        BindStorageScrollView();
+        BindStorageScrollView(storageScrollRect, storageContentRoot, storageVerticalScrollbar);
+        BindStorageScrollView(compoundScrollRect, compoundContentRoot, compoundVerticalScrollbar);
 
         if (itemButton == null)
         {
@@ -178,31 +209,32 @@ public class BattleBagPanelUI : MonoBehaviour
         BuildSlotsIfNeeded();
     }
 
-    private void BindStorageScrollView()
+    private void BindStorageScrollView(
+        ScrollRect scrollRect,
+        Transform contentRoot,
+        Scrollbar verticalScrollbar)
     {
-        if (storageScrollRect == null)
+        if (scrollRect == null)
             return;
 
-        // ???꾨━?뱀뿉???ㅼ젙??Viewport/Content RectTransform 媛믪? ?덈? 蹂寃쏀븯吏 ?딆뒿?덈떎.
-        // ScrollRect 李몄“媛 鍮꾩뼱 ?덉쓣 ?뚮쭔 ?곌껐?섍퀬, ?ㅽ겕濡?湲곕뒫留??쒖꽦?뷀빀?덈떎.
-        if (storageScrollRect.content == null && storageContentRoot is RectTransform contentRect)
-            storageScrollRect.content = contentRect;
+        if (scrollRect.content == null && contentRoot is RectTransform contentRect)
+            scrollRect.content = contentRect;
 
-        if (storageScrollRect.viewport == null)
+        if (scrollRect.viewport == null)
         {
-            Transform viewportTransform = FindDeepChild(storageScrollRect.transform, "Viewport");
+            Transform viewportTransform = FindDeepChild(scrollRect.transform, "Viewport");
             if (viewportTransform != null)
-                storageScrollRect.viewport = viewportTransform as RectTransform;
+                scrollRect.viewport = viewportTransform as RectTransform;
         }
 
-        storageScrollRect.horizontal = false;
-        storageScrollRect.vertical = true;
+        scrollRect.horizontal = false;
+        scrollRect.vertical = true;
 
-        if (storageVerticalScrollbar != null)
+        if (verticalScrollbar != null)
         {
-            storageVerticalScrollbar.gameObject.SetActive(true);
-            storageScrollRect.verticalScrollbar = storageVerticalScrollbar;
-            storageScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
+            verticalScrollbar.gameObject.SetActive(true);
+            scrollRect.verticalScrollbar = verticalScrollbar;
+            scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
         }
     }
 
@@ -251,23 +283,47 @@ public class BattleBagPanelUI : MonoBehaviour
         hoveredSlot = null;
 
         IInventoryRuntimeContext context = ResolveRuntimeContext();
-        IReadOnlyList<string> displayedIds = GetDisplayedIds(context);
-        List<BagItemStack> stacks = BagItemStackUtility.BuildStacks(displayedIds);
 
-        if (storageContentRoot != null && storageSlotPrefab != null)
+        if (context != null &&
+            context.IsLobby &&
+            !isItemSelectionMode &&
+            storageContentRoot != null &&
+            compoundContentRoot != null &&
+            storageSlotPrefab != null)
         {
-            if (context != null && context.IsLobby)
-                RefreshLobbyStorageSlots(stacks);
-            else
-                RefreshBattleDynamicSlots(stacks);
+            RefreshLobbyDualStorage(context);
         }
         else
         {
-            RefreshBattleSlots(stacks);
+            IReadOnlyList<string> displayedIds = GetDisplayedIds(context);
+            List<BagItemStack> stacks = BagItemStackUtility.BuildStacks(displayedIds);
+
+            if (storageContentRoot != null && storageSlotPrefab != null)
+            {
+                if (context != null && context.IsLobby)
+                    RefreshLobbyStorageSlots(stacks);
+                else
+                    RefreshBattleDynamicSlots(stacks);
+            }
+            else
+            {
+                RefreshBattleSlots(stacks);
+            }
         }
 
         HideDetail();
         RefreshDiscardButtonState();
+    }
+
+    private void RefreshLobbyDualStorage(IInventoryRuntimeContext context)
+    {
+        LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
+
+        List<BagItemStack> itemStacks = BagItemStackUtility.BuildStacks(context?.BagItemIds);
+        List<BagItemStack> compoundStacks = BagItemStackUtility.BuildStacks(lobby?.StoredCompoundIds);
+
+        RefreshLobbyStorageSlots(storageContentRoot, storageSlots, itemStacks);
+        RefreshLobbyStorageSlots(compoundContentRoot, compoundStorageSlots, compoundStacks);
     }
 
     private void RefreshBattleSlots(List<BagItemStack> stacks)
@@ -329,14 +385,25 @@ public class BattleBagPanelUI : MonoBehaviour
 
     private void RefreshLobbyStorageSlots(List<BagItemStack> stacks)
     {
-        ClearLobbyStorageSlots();
+        RefreshLobbyStorageSlots(storageContentRoot, storageSlots, stacks);
+    }
+
+    private void RefreshLobbyStorageSlots(
+        Transform contentRoot,
+        List<BattleBagItemSlotUI> targetSlots,
+        List<BagItemStack> stacks)
+    {
+        ClearDynamicStorageSlots(targetSlots);
+
+        if (contentRoot == null || storageSlotPrefab == null)
+            return;
 
         int stackCount = stacks != null ? stacks.Count : 0;
         int visibleSlotCount = Mathf.Max(StorageMinimumSlotCount, stackCount);
 
         for (int i = 0; i < visibleSlotCount; i++)
         {
-            BattleBagItemSlotUI slot = Instantiate(storageSlotPrefab, storageContentRoot, false);
+            BattleBagItemSlotUI slot = Instantiate(storageSlotPrefab, contentRoot, false);
             slot.name = $"{storageSlotPrefab.name}_{i}";
             slot.gameObject.SetActive(true);
 
@@ -350,18 +417,27 @@ public class BattleBagPanelUI : MonoBehaviour
                 slot.Clear(OnFocusSlot, OnExitSlot, OnClickSlot);
             }
 
-            storageSlots.Add(slot);
+            targetSlots.Add(slot);
         }
 
-        if (storageContentRoot is RectTransform contentRect)
+        if (contentRoot is RectTransform contentRect)
             LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
     }
 
     private void ClearLobbyStorageSlots()
     {
-        for (int i = storageSlots.Count - 1; i >= 0; i--)
+        ClearDynamicStorageSlots(storageSlots);
+        ClearDynamicStorageSlots(compoundStorageSlots);
+    }
+
+    private void ClearDynamicStorageSlots(List<BattleBagItemSlotUI> targetSlots)
+    {
+        if (targetSlots == null)
+            return;
+
+        for (int i = targetSlots.Count - 1; i >= 0; i--)
         {
-            BattleBagItemSlotUI slot = storageSlots[i];
+            BattleBagItemSlotUI slot = targetSlots[i];
 
             if (slot != null)
             {
@@ -370,7 +446,7 @@ public class BattleBagPanelUI : MonoBehaviour
             }
         }
 
-        storageSlots.Clear();
+        targetSlots.Clear();
     }
 
     public void OpenForItemSelection(
@@ -406,14 +482,26 @@ public class BattleBagPanelUI : MonoBehaviour
 
     private List<string> GetMutableDisplayedIds(IInventoryRuntimeContext context)
     {
+        return GetMutableDisplayedIds(context, selectedSlot != null ? selectedSlot.ItemId : null);
+    }
+
+    private List<string> GetMutableDisplayedIds(IInventoryRuntimeContext context, string itemId)
+    {
         if (context == null)
             return null;
 
-        if (!context.IsLobby || storageCategory == StorageCategory.Item)
+        if (!context.IsLobby)
+            return context.BagItemIds;
+
+        bool isCompound = !string.IsNullOrWhiteSpace(itemId) &&
+                          DataManager.Instance?.CompoundDatabase != null &&
+                          DataManager.Instance.CompoundDatabase.TryGet(itemId, out _);
+
+        if (!isCompound && storageCategory == StorageCategory.Item)
             return context.BagItemIds;
 
         LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
-        return lobby?.StoredCompoundIds;
+        return isCompound ? lobby?.StoredCompoundIds : context.BagItemIds;
     }
 
     private IReadOnlyList<string> GetBagItemIds()
@@ -538,6 +626,12 @@ public class BattleBagPanelUI : MonoBehaviour
         {
             if (storageSlots[i] != null)
                 storageSlots[i].ResetVisualState();
+        }
+
+        for (int i = 0; i < compoundStorageSlots.Count; i++)
+        {
+            if (compoundStorageSlots[i] != null)
+                compoundStorageSlots[i].ResetVisualState();
         }
     }
 
@@ -705,6 +799,10 @@ public class BattleBagPanelUI : MonoBehaviour
 
     private void BindStorageCategoryButtons()
     {
+        bool usesDualLobbyLayout = storageContentRoot != null && compoundContentRoot != null;
+        if (usesDualLobbyLayout)
+            return;
+
         if (itemButton != null)
         {
             itemButton.onClick.RemoveListener(ShowStoredItems);
@@ -816,7 +914,7 @@ public class BattleBagPanelUI : MonoBehaviour
 
         string removedItemId = selectedSlot.ItemId;
 
-        List<string> displayedIds = GetMutableDisplayedIds(context);
+        List<string> displayedIds = GetMutableDisplayedIds(context, removedItemId);
 
         if (!BagItemStackUtility.RemoveOne(displayedIds, removedItemId))
         {
