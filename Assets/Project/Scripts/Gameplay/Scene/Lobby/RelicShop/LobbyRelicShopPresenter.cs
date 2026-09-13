@@ -61,7 +61,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private readonly List<LobbyRelicOfferButtonUI> buttons = new();
     private Canvas ownerCanvas;
-    private Button closeButton;
     private RecordPanelUI recordPanelUI;
     private bool missingPanelWarningLogged;
     private bool isPurchaseAnimating;
@@ -91,8 +90,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         selectedRelicId = string.Empty;
         LobbyPositionModalInputBlocker.Block(this);
         RestoreShopPanelVisualState();
-        UIBlurBackground blurBackground = UIBlurBackground.EnsureForPanel(panelRoot);
-        LobbyQuestManager.Instance?.ConfigureQuestPanelBlur(blurBackground);
+        LobbyPositionSharedModalBackground.ShowForPanel(panelRoot, this, Close);
         panelRoot.SetActive(true);
         RefreshOffers();
     }
@@ -105,6 +103,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         if (panelRoot != null)
             panelRoot.SetActive(false);
 
+        LobbyPositionSharedModalBackground.HideForOwner(this);
         ClearSelectedRelicDescription();
 
         // ESC와 닫기 버튼 모두 같은 Close()를 사용하므로
@@ -124,6 +123,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         selectedRelicId = string.Empty;
         RestoreOfferVisibility();
         SetCloseButtonInteractable(true);
+        LobbyPositionSharedModalBackground.HideForOwner(this);
 
         // 씬 전환이나 오브젝트 비활성화로 닫히는 경우에도
         // 정적 입력 차단 상태가 남지 않게 정리한다.
@@ -132,6 +132,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private void OnDestroy()
     {
+        LobbyPositionSharedModalBackground.HideForOwner(this);
         LobbyPositionModalInputBlocker.Unblock(this);
 
     }
@@ -389,6 +390,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         if (panelRoot != null)
             panelRoot.SetActive(false);
 
+        LobbyPositionSharedModalBackground.HideForOwner(this);
         LobbyPositionModalInputBlocker.Unblock(this);
     }
 
@@ -419,7 +421,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
         refreshButton?.Initialize(RefreshRelicOffers);
         EnsureDescriptionView();
-        BindCloseButton();
     }
 
     private GameObject FindScenePanelRoot()
@@ -461,19 +462,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             panelRoot.GetComponentsInChildren<LobbyRelicOfferButtonUI>(true);
         for (int i = 0; i < sceneButtons.Length; i++)
             buttons.Add(sceneButtons[i]);
-    }
-
-    private void BindCloseButton()
-    {
-        if (panelRoot == null)
-            return;
-
-        closeButton = panelRoot.transform.Find("CloseButton")?.GetComponent<Button>();
-        if (closeButton == null)
-            return;
-
-        closeButton.onClick.RemoveListener(Close);
-        closeButton.onClick.AddListener(Close);
     }
 
     private void RefreshRelicOffers()
@@ -715,8 +703,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private void SetCloseButtonInteractable(bool interactable)
     {
-        if (closeButton != null)
-            closeButton.interactable = interactable;
+        // BackButton은 PositionPanel/Background의 공용 버튼에서 관리합니다.
     }
 
     private LobbyRelicOfferButtonUI FindBoundOfferButton(string relicId)
@@ -1114,6 +1101,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         // 확인창에서 예를 눌러 실제 유물 획득이 확정되면
         // 상점 패널을 즉시 닫고, 그 뒤 획득 이펙트만 Canvas 위에서 진행합니다.
         panelRoot.SetActive(false);
+        LobbyPositionSharedModalBackground.HideForOwner(this);
         LobbyPositionModalInputBlocker.Unblock(this);
     }
 

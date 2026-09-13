@@ -348,7 +348,10 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
             if (relicShopPresenter != null)
                 relicShopPresenter.Close();
             else
+            {
                 relicShopPanel.SetActive(false);
+                LobbyPositionSharedModalBackground.HideForPanel(relicShopPanel);
+            }
 
             return true;
         }
@@ -358,7 +361,10 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
             if (cultureTankPanelPresenter != null)
                 cultureTankPanelPresenter.Close();
             else
+            {
                 cultureTankPanel.SetActive(false);
+                LobbyPositionSharedModalBackground.HideForPanel(cultureTankPanel);
+            }
 
             return true;
         }
@@ -378,6 +384,7 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
             else
             {
                 erosionSelectPanel.SetActive(false);
+                LobbyPositionSharedModalBackground.HideForPanel(erosionSelectPanel);
                 LobbyPositionModalInputBlocker.Unblock(null);
                 Debug.LogWarning(
                     "[LobbyMainPanelKeyboardInputController] ErosionSelectPanel을 관리하는 " +
