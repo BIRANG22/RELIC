@@ -178,6 +178,10 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
 
         if (!backgroundRoot.activeSelf)
             backgroundRoot.SetActive(true);
+
+        // 패널을 연 경로와 관계없이 현재 Shortcut의 Inspector Display Name/Icon으로
+        // BackgroundPanel의 Mainicon 표시를 동기화합니다.
+        LobbyPositionPanelShortcutUI.RefreshForPanel(panel);
     }
 
     private void Hide(object owner)

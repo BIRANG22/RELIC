@@ -126,6 +126,27 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
         ApplyMainDisplay(controller.ActivePanel);
     }
 
+    /// <summary>
+    /// 월드 오브젝트 또는 Lobby_Icon 어느 경로로 패널을 열어도
+    /// 해당 Shortcut의 Inspector Display Name과 Icon을 공용 Mainicon에 반영합니다.
+    /// </summary>
+    public static void RefreshForPanel(GameObject targetPanel)
+    {
+        if (targetPanel == null)
+            return;
+
+        LobbyPositionPanelShortcutUI[] shortcutUis =
+            FindObjectsByType<LobbyPositionPanelShortcutUI>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+
+        for (int i = 0; i < shortcutUis.Length; i++)
+        {
+            if (shortcutUis[i] != null)
+                shortcutUis[i].ApplyMainDisplay(targetPanel);
+        }
+    }
+
     private void ApplyMainDisplay(GameObject targetPanel)
     {
         if (targetPanel == null || shortcuts == null)
