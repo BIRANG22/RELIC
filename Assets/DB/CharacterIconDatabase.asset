@@ -41,12 +41,12 @@ MonoBehaviour:
     Mark: {fileID: 21300000, guid: e27844ec0bb5fe94abcbaec30f9794e1, type: 3}
     Mark2: {fileID: 21300000, guid: 958ff319e936d6147bda8effe611d0c6, type: 3}
   - CharacterId: Char_04
-    Icon: {fileID: 21300000, guid: a3d917883fd101940a849d3c12c90979, type: 3}
+    Icon: {fileID: -1547505533, guid: 2013d362fec4aee429add0fd04bfe4e4, type: 3}
     Portrait: {fileID: 0}
-    TimelineIcon: {fileID: 21300000, guid: d11a628bef2e90e4e98764018f6d0eaa, type: 3}
-    SideImage: {fileID: 0}
-    HUDPortraitImage: {fileID: 0}
-    HUDSelectedPortraitImage: {fileID: 0}
+    TimelineIcon: {fileID: 21300000, guid: 3a4b172437a6aec47b17bc45e999cc4d, type: 3}
+    SideImage: {fileID: 21300000, guid: 2e7f22c3b155eac4a8a467e694ad7db0, type: 3}
+    HUDPortraitImage: {fileID: 21300000, guid: 235e3bc7c2e71a94b9f6d7b0a6331bfe, type: 3}
+    HUDSelectedPortraitImage: {fileID: 21300000, guid: 2e7f22c3b155eac4a8a467e694ad7db0, type: 3}
     Mark: {fileID: 21300000, guid: e27844ec0bb5fe94abcbaec30f9794e1, type: 3}
     Mark2: {fileID: 21300000, guid: 958ff319e936d6147bda8effe611d0c6, type: 3}
   - CharacterId: Char_05
