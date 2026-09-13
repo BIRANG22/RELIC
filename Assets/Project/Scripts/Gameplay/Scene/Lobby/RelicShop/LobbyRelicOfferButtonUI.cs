@@ -87,6 +87,8 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     private Vector3 iconOriginalScale = Vector3.one;
     private bool iconScaleCached;
     private bool isHovered;
+    private bool pointerHovered;
+    private bool externalHovered;
     private RelicRarity currentRarity = RelicRarity.None;
 
     private bool clickListenerRegistered;
@@ -280,6 +282,11 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
     private void RequestPurchase()
     {
+        RequestPurchaseFromExternal();
+    }
+
+    public void RequestPurchaseFromExternal()
+    {
         if (button == null ||
             !button.interactable ||
             string.IsNullOrWhiteSpace(relicId))
@@ -290,29 +297,55 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
         purchaseRequested?.Invoke(relicId);
     }
 
+    public void SetExternalHover(bool hovered)
+    {
+        externalHovered = hovered;
+        UpdateHoverState();
+    }
+
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (button == null || !button.interactable || string.IsNullOrWhiteSpace(relicId))
-            return;
-
-        isHovered = true;
-
-        if (iconImage != null)
-            iconImage.rectTransform.localScale = iconOriginalScale * hoverIconScale;
-
-        ApplyRarityRingProxyLayout();
-        UIBlurBackgroundManager.MarkReplicaDirty();
-
-        hoverChanged?.Invoke(relicId, true);
+        pointerHovered = true;
+        UpdateHoverState();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        ResetHoverState();
+        pointerHovered = false;
+        UpdateHoverState();
+    }
+
+    private void UpdateHoverState()
+    {
+        bool canHover = button != null &&
+                        button.interactable &&
+                        !string.IsNullOrWhiteSpace(relicId);
+        bool nextHovered = canHover && (pointerHovered || externalHovered);
+
+        if (nextHovered == isHovered)
+            return;
+
+        isHovered = nextHovered;
+
+        if (iconImage != null && iconScaleCached)
+        {
+            iconImage.rectTransform.localScale = isHovered
+                ? iconOriginalScale * hoverIconScale
+                : iconOriginalScale;
+        }
+
+        ApplyRarityRingProxyLayout();
+        UIBlurBackgroundManager.MarkReplicaDirty();
+
+        if (!string.IsNullOrWhiteSpace(relicId))
+            hoverChanged?.Invoke(relicId, isHovered);
     }
 
     private void ResetHoverState()
     {
+        pointerHovered = false;
+        externalHovered = false;
+
         if (iconImage != null && iconScaleCached)
             iconImage.rectTransform.localScale = iconOriginalScale;
 
