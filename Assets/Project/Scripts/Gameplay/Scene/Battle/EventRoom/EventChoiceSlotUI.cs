@@ -1,4 +1,4 @@
-using TMPro;
+ï»¿using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -46,20 +46,20 @@ public class EventChoiceSlotUI : MonoBehaviour
         if (choiceNameText != null)
         {
             string order = choice.ChoiceOrder > 0 ? $"{choice.ChoiceOrder}. " : string.Empty;
-            choiceNameText.text = order + (choice.ChoiceName ?? string.Empty);
+            choiceNameText.text = order + GameDataLocalization.EventChoiceName(choice);
         }
 
         string displayedChoiceDesc = selectable
-            ? choice.ChoiceDesc
+            ? GameDataLocalization.EventChoiceDescription(choice)
             : (!string.IsNullOrWhiteSpace(choice.UnavailableChoiceDesc)
-                ? choice.UnavailableChoiceDesc
+                ? GameDataLocalization.EventUnavailableChoiceDescription(choice)
                 : unavailableReason);
 
         if (choiceDescText != null)
             choiceDescText.text = displayedChoiceDesc ?? string.Empty;
 
-        // ¼±ÅÃ ºÒ°¡ ¾È³»´Â ChoiceDescText¿¡ Ç¥½ÃÇÕ´Ï´Ù.
-        // ±âÁ¸ UnavailableReasonText°¡ ¾À¿¡ ³²¾Æ ÀÖ¾îµµ ¹®±¸°¡ Áßº¹µÇÁö ¾Ê°Ô ºñ¿ó´Ï´Ù.
+        // ì„ íƒ ë¶ˆê°€ ì•ˆë‚´ëŠ” ChoiceDescTextì— í‘œì‹œí•©ë‹ˆë‹¤.
+        // ê¸°ì¡´ UnavailableReasonTextê°€ ì”¬ì— ë‚¨ì•„ ìˆì–´ë„ ë¬¸êµ¬ê°€ ì¤‘ë³µë˜ì§€ ì•Šê²Œ ë¹„ì›ë‹ˆë‹¤.
         if (unavailableReasonText != null)
             unavailableReasonText.text = string.Empty;
 

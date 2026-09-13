@@ -3821,8 +3821,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 87077882}
-  localizationKey: data.erosion.erosion_01_02.name
-  koreanSource: "\uD749\uD3EC\uD55C \uBCC0\uC774\uCCB4"
+  localizationKey: ui.lobby.text.3bee5b16
+  koreanSource: "\uD749\uD3EC\uD55C\n\uBCC0\uC774\uCCB4"
   automaticallyRegistered: 1
 --- !u!1 &89042663
 GameObject:
@@ -33751,8 +33751,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 593605845}
-  localizationKey: data.erosion.erosion_01_06.name
-  koreanSource: "\uB4A4\uD2C0\uB9B0 \uC6B4\uBA85"
+  localizationKey: ui.lobby.text.85573190
+  koreanSource: "\uB4A4\uD2C0\uB9B0\n\uC6B4\uBA85"
   automaticallyRegistered: 1
 --- !u!1 &594746952
 GameObject:
@@ -34785,8 +34785,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 625170976}
-  localizationKey: data.erosion.erosion_01_05.name
-  koreanSource: "\uBA54\uB9C8\uB978 \uBCF4\uAE09"
+  localizationKey: ui.lobby.text.34e70344
+  koreanSource: "\uBA54\uB9C8\uB978\n\uBCF4\uAE09"
   automaticallyRegistered: 1
 --- !u!1 &628512231
 GameObject:
@@ -39841,8 +39841,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 713414330}
-  localizationKey: ui.lobby.text.b93dee52
-  koreanSource: "\uC5F4\uC545\uD55C \uD0D0\uC0AC"
+  localizationKey: ui.lobby.text.367b0594
+  koreanSource: "\uC5F4\uC545\uD55C\n\uD0D0\uC0AC"
   automaticallyRegistered: 1
 --- !u!1 &714532453
 GameObject:
@@ -40460,8 +40460,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 727276910}
-  localizationKey: data.erosion.erosion_01_03.name
-  koreanSource: "\uC1E0\uC57D\uD55C \uC721\uCCB4"
+  localizationKey: ui.lobby.text.ff6c8359
+  koreanSource: "\uC1E0\uC57D\uD55C\n\uC721\uCCB4"
   automaticallyRegistered: 1
 --- !u!1 &729216673
 GameObject:
@@ -43455,8 +43455,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 795704881}
-  localizationKey: data.erosion.erosion_01_04.name
-  koreanSource: "\uBD88\uAE38\uD55C \uC9D5\uD6C4"
+  localizationKey: ui.lobby.text.fbcc900a
+  koreanSource: "\uBD88\uAE38\uD55C\n\uC9D5\uD6C4"
   automaticallyRegistered: 1
 --- !u!1 &800187522
 GameObject:
@@ -47859,6 +47859,7 @@ GameObject:
   - component: {fileID: 901099920}
   - component: {fileID: 901099922}
   - component: {fileID: 901099921}
+  - component: {fileID: 901099923}
   m_Layer: 5
   m_Name: Character_Text
   m_TagString: Untagged
@@ -47985,6 +47986,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 901099919}
   m_CullTransparentMesh: 1
+--- !u!114 &901099923
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 901099919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 901099921}
+  localizationKey: ui.battle.equip_panel.character_text
+  koreanSource: "\uC7A5\uCC29\uD560 \uCE90\uB9AD\uD130\uB97C \uC120\uD0DD\uD558\uC138\uC694."
+  automaticallyRegistered: 1
 --- !u!1 &901756955
 GameObject:
   m_ObjectHideFlags: 0
@@ -126876,6 +126893,7 @@ GameObject:
   - component: {fileID: 2119781215}
   - component: {fileID: 2119781217}
   - component: {fileID: 2119781216}
+  - component: {fileID: 2119781218}
   m_Layer: 5
   m_Name: MainText
   m_TagString: Untagged
@@ -127002,6 +127020,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2119781214}
   m_CullTransparentMesh: 1
+--- !u!114 &2119781218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2119781214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 2119781216}
+  localizationKey: ui.lobby.text.0385cd9d
+  koreanSource: "\uD604\uC7AC\uD328\uB110"
+  automaticallyRegistered: 1
 --- !u!1 &2121758830
 GameObject:
   m_ObjectHideFlags: 0

@@ -290,6 +290,66 @@ public static class StaticLocalizationMigration
         return changed;
     }
 
+    /// <summary>원문 중복으로 자동 추론이 불가능한 고정 UI를 명시적 키로 연결합니다.</summary>
+    public static int ApplyRequiredStaticUiBindings()
+    {
+        const string battlePath = "Assets/Project/Scenes/YDM/Battle.unity";
+        const string checkPrefabPath = "Assets/Project/PrefabsR/Check.prefab";
+        const string characterKey = "ui.battle.equip_panel.character_text";
+        const string characterSource = "장착할 캐릭터를 선택하세요.";
+        const string sloganKey = "ui.check.slogan";
+        const string sloganSource = "정말로 포기하시겠습니까?";
+
+        SceneSetup[] originalSetup = EditorSceneManager.GetSceneManagerSetup();
+        int changed = 0;
+        try
+        {
+            Scene battleScene = EditorSceneManager.OpenScene(battlePath, OpenSceneMode.Single);
+            TMP_Text characterText = battleScene.GetRootGameObjects()
+                .SelectMany(root => root.GetComponentsInChildren<TMP_Text>(true))
+                .FirstOrDefault(text => text.gameObject.name == "Character_Text" &&
+                                        HasAncestorNamed(text.transform, "Equip_panel"));
+            if (characterText != null)
+            {
+                characterText.text = characterSource;
+                if (ConfigureText(characterText, characterKey, true))
+                    changed++;
+                EditorSceneManager.MarkSceneDirty(battleScene);
+                EditorSceneManager.SaveScene(battleScene);
+            }
+
+            GameObject checkRoot = PrefabUtility.LoadPrefabContents(checkPrefabPath);
+            try
+            {
+                TMP_Text sloganText = checkRoot.GetComponentsInChildren<TMP_Text>(true)
+                    .FirstOrDefault(text => text.gameObject.name == "Slogan");
+                if (sloganText != null)
+                {
+                    sloganText.text = sloganSource;
+                    if (ConfigureText(sloganText, sloganKey, true))
+                        changed++;
+                    PrefabUtility.SaveAsPrefabAsset(checkRoot, checkPrefabPath);
+                }
+            }
+            finally { PrefabUtility.UnloadPrefabContents(checkRoot); }
+
+            AssetDatabase.SaveAssets();
+            return changed;
+        }
+        finally { EditorSceneManager.RestoreSceneManagerSetup(originalSetup); }
+    }
+
+    private static bool HasAncestorNamed(Transform transform, string name)
+    {
+        for (Transform current = transform != null ? transform.parent : null; current != null; current = current.parent)
+        {
+            if (string.Equals(current.name, name, StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
+    }
+
     /// <summary>Localization Manager용 전체 프로젝트 안전 적용 진입점입니다.</summary>
     public static void ApplyKnownTextAcrossProject()
     {

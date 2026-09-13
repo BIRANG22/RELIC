@@ -27,7 +27,8 @@ public class BattleRewardData
         if (Type == BattleRewardType.Remnant)
         {
             string remnantName = string.IsNullOrWhiteSpace(Name) ? DefaultRemnantDisplayName : Name;
-            return $"{remnantName} x{Mathf.Max(0, Amount)}";
+            string localizedRemnantName = GameLocalization.Get("battle.dustium", remnantName);
+            return $"{localizedRemnantName} x{Mathf.Max(0, Amount)}";
         }
 
         string displayName = string.IsNullOrWhiteSpace(Name) ? RewardId : Name;

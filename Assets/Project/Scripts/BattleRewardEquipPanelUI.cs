@@ -803,7 +803,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
             CharacterMasterData master = DataManager.Instance.CharacterDatabase?.Get(characterId);
             view.CharacterName = master != null && !string.IsNullOrWhiteSpace(master.Name)
-                ? master.Name
+                ? GameDataLocalization.CharacterName(master)
                 : characterId;
 
             if (view.NameText != null)
