@@ -10,11 +10,16 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
         Research,
         Exploration,
         Resonance,
-        Npc
+        Npc,
+        Storage
     }
 
     [Header("Hover Name")]
     [SerializeField] private HoverNameType hoverNameType = HoverNameType.Research;
+
+    [Header("Storage Interaction")]
+    [Tooltip("Storage 월드 오브젝트 클릭 시 BackgroundPanel과 함께 활성화할 StoragePanel입니다. 비워두면 씬의 StoragePanel을 자동으로 찾습니다.")]
+    [SerializeField] private GameObject storagePanel;
 
     [Header("Position")]
     [Tooltip("콜라이더 하단에서 이름 UI까지의 화면 픽셀 간격입니다. 음수값이면 콜라이더 아래쪽으로 내려갑니다.")]
@@ -101,6 +106,12 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        LobbyPositionSharedModalBackground.HideForOwner(this);
+        LobbyPositionModalInputBlocker.Unblock(this);
+    }
+
     private void OnMouseEnter()
     {
         AutoBindIfNeeded();
@@ -124,6 +135,56 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
             return;
 
         ShowCurrentName();
+    }
+
+
+    private void OnMouseUpAsButton()
+    {
+        if (hoverNameType != HoverNameType.Storage)
+            return;
+
+        if (LobbyPositionModalInputBlocker.IsBlocked)
+            return;
+
+        OpenStoragePanel();
+    }
+
+    private void OpenStoragePanel()
+    {
+        if (storagePanel == null)
+            storagePanel = FindSceneObjectByName("StoragePanel");
+
+        if (storagePanel == null)
+        {
+            Debug.LogWarning(
+                "[LobbyWorldObjectHoverName] StoragePanel을 찾을 수 없습니다. Storage 월드 오브젝트의 Storage Panel을 연결해 주세요.",
+                this);
+            return;
+        }
+
+        if (LobbyPositionSharedModalBackground.IsPanelPresented(storagePanel))
+            return;
+
+        LobbyPositionModalInputBlocker.Block(this);
+
+        // StoragePanel은 이전 이동형 패널과 달리 공용 PositionPanel 모달로 사용합니다.
+        // 먼저 패널 Canvas를 활성화한 뒤 BackgroundPanel의 Blur/Presentation 정렬을 요청해야
+        // 첫 진입에서도 SharedBlurCanvas 위에 정상적으로 표시됩니다.
+        storagePanel.SetActive(true);
+        Canvas.ForceUpdateCanvases();
+        LobbyPositionSharedModalBackground.ShowForPanel(storagePanel, this, CloseStoragePanel);
+
+        if (UIBlurBackgroundManager.HasInstance)
+            UIBlurBackgroundManager.Instance.RefreshPresentation();
+    }
+
+    private void CloseStoragePanel()
+    {
+        if (storagePanel != null)
+            storagePanel.SetActive(false);
+
+        LobbyPositionSharedModalBackground.HideForOwner(this);
+        LobbyPositionModalInputBlocker.Unblock(this);
     }
 
     private void OnMouseExit()
@@ -246,6 +307,7 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
             HoverNameType.Exploration => "lobby.world_object.statue",
             HoverNameType.Resonance => "lobby.world_object.stela",
             HoverNameType.Npc => "lobby.world_object.researcher_elric",
+            HoverNameType.Storage => "lobby.world_object.storage",
             _ => string.Empty
         };
     }
@@ -258,6 +320,7 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
             HoverNameType.Exploration => "\uC870\uAC01\uC0C1",
             HoverNameType.Resonance => "\uBE44\uC11D",
             HoverNameType.Npc => "\uC5F0\uAD6C\uC6D0 \uC5D8\uB9AD",
+            HoverNameType.Storage => "\uBCF4\uAD00\uD568",
             _ => string.Empty
         };
     }

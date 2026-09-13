@@ -113,6 +113,12 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         LobbyPositionModalInputBlocker.Unblock(this);
     }
 
+    public bool ControlsPanel(GameObject panel)
+    {
+        EnsureShopPanelReady();
+        return panel != null && panelRoot == panel;
+    }
+
     private void OnDisable()
     {
         if (purchaseAnimationCoroutine != null)

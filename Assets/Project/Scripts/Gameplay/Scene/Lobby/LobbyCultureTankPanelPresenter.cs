@@ -104,6 +104,12 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         LobbyPositionModalInputBlocker.Unblock(this);
     }
 
+    public bool ControlsPanel(GameObject panel)
+    {
+        BindSceneObjects();
+        return panel != null && panelRoot == panel;
+    }
+
     private void OnDisable()
     {
         if (automaticClaimCoroutine != null)

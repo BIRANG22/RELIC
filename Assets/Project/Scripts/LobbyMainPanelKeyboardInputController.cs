@@ -338,7 +338,12 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
             return true;
         }
 
-        // StoragePanel처럼 UIPanelButton으로 열리는 이동 패널이 있으면
+        // Erosion / RelicShop / CultureTank / Storage 등 BackgroundPanel을 공유하는
+        // PositionPanel 모달은 공용 BackButton과 동일한 Close 경로로 닫습니다.
+        if (LobbyPositionSharedModalBackground.TryCloseActivePanel())
+            return true;
+
+        // 구형 UIPanelButton 이동 패널이 남아 있으면 기존 방식으로 닫습니다.
         // 해당 ESC 입력은 패널 닫기에만 사용하고 메뉴를 열지 않습니다.
         if (UIPanelButton.HasCurrentOpenedPanel && UIPanelButton.TryCloseCurrentOpenedPanel())
             return true;
@@ -348,10 +353,7 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
             if (relicShopPresenter != null)
                 relicShopPresenter.Close();
             else
-            {
                 relicShopPanel.SetActive(false);
-                LobbyPositionSharedModalBackground.HideForPanel(relicShopPanel);
-            }
 
             return true;
         }
@@ -361,10 +363,7 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
             if (cultureTankPanelPresenter != null)
                 cultureTankPanelPresenter.Close();
             else
-            {
                 cultureTankPanel.SetActive(false);
-                LobbyPositionSharedModalBackground.HideForPanel(cultureTankPanel);
-            }
 
             return true;
         }
@@ -384,7 +383,6 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
             else
             {
                 erosionSelectPanel.SetActive(false);
-                LobbyPositionSharedModalBackground.HideForPanel(erosionSelectPanel);
                 LobbyPositionModalInputBlocker.Unblock(null);
                 Debug.LogWarning(
                     "[LobbyMainPanelKeyboardInputController] ErosionSelectPanel을 관리하는 " +
