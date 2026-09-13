@@ -13,7 +13,6 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     private const float PassiveRefreshInterval = 0.25f;
 
     [SerializeField] private GameObject panelRoot;
-    [SerializeField] private Button backButton;
     [SerializeField] private RectTransform contentRoot;
     [SerializeField] private TMP_Text emptyText;
     [SerializeField] private Transform storageContentRoot;
@@ -92,14 +91,14 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         BindSceneObjects(); BindButtons();
         if (panelRoot == null) return;
         LobbyPositionModalInputBlocker.Block(this);
-        UIBlurBackground blurBackground = UIBlurBackground.EnsureForPanel(panelRoot);
-        LobbyQuestManager.Instance?.ConfigureQuestPanelBlur(blurBackground);
+        LobbyPositionSharedModalBackground.ShowForPanel(panelRoot, this, Close);
         panelRoot.SetActive(true); RefreshAll(); RefreshPanelText();
     }
 
     public void Close()
     {
         if (panelRoot != null) panelRoot.SetActive(false);
+        LobbyPositionSharedModalBackground.HideForOwner(this);
         selectedSlotIndex = -1;
         ResetStorageSlotVisualStates();
         LobbyPositionModalInputBlocker.Unblock(this);
@@ -120,9 +119,14 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             activeCompoundTransferEffect = null;
         }
 
+        LobbyPositionSharedModalBackground.HideForOwner(this);
         LobbyPositionModalInputBlocker.Unblock(this);
     }
-    private void OnDestroy() => LobbyPositionModalInputBlocker.Unblock(this);
+    private void OnDestroy()
+    {
+        LobbyPositionSharedModalBackground.HideForOwner(this);
+        LobbyPositionModalInputBlocker.Unblock(this);
+    }
 
     private void RefreshAll()
     {
@@ -850,7 +854,6 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     {
         if (panelRoot == null) panelRoot = gameObject;
         Transform root = panelRoot.transform;
-        if (backButton == null) backButton = Find(root, "BackButton")?.GetComponent<Button>();
         // 새 하이어라키에서는 CultureTankPanel 바로 아래에 MixButton, completion, CultureTankRow_1~3, Storage가 위치합니다.
         // contentRoot는 구형 하이어라키 호환용으로만 유지하며, 새 구조 바인딩에는 사용하지 않습니다.
         if (contentRoot == null) contentRoot = Find(root, "Content") as RectTransform;
@@ -950,7 +953,6 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
     private void BindButtons()
     {
-        if (backButton != null) { backButton.onClick.RemoveListener(Close); backButton.onClick.AddListener(Close); }
         if (combineButton != null) { combineButton.onClick.RemoveListener(Combine); combineButton.onClick.AddListener(Combine); }
         if (completionButton != null) completionButton.onClick.RemoveListener(ClaimCompletion);
         for (int i = 0; i < rows.Length; i++)

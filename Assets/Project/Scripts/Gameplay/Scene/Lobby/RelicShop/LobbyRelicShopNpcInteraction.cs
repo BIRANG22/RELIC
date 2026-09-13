@@ -1,15 +1,10 @@
 using Relic.Gameplay.Data;
 using UnityEngine;
-using UnityEngine.UI;
 
 public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
 {
     [Header("Presenter")]
     [SerializeField] private LobbyRelicShopPresenter presenter;
-
-    [Header("Back Button")]
-    [Tooltip("유물 상점 패널을 닫는 BackButton입니다.")]
-    [SerializeField] private Button backButton;
 
     [Header("Availability Indicator")]
     [Tooltip("유물 상점을 이용할 수 없을 때도 항상 표시할 relic_stone (1)의 SpriteRenderer입니다.")]
@@ -32,25 +27,17 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
 
     private void Awake()
     {
-        BindBackButton();
         RefreshAvailabilityIndicator(true);
     }
 
     private void OnEnable()
     {
-        BindBackButton();
         RefreshAvailabilityIndicator(true);
     }
 
     private void LateUpdate()
     {
         RefreshAvailabilityIndicator(false);
-    }
-
-    private void OnDestroy()
-    {
-        if (backButton != null)
-            backButton.onClick.RemoveListener(CloseRelicShopPanel);
     }
 
     private void OnMouseUpAsButton()
@@ -78,15 +65,6 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
 
         PlayClickSfx();
         presenter.Open();
-    }
-
-    private void BindBackButton()
-    {
-        if (backButton == null)
-            return;
-
-        backButton.onClick.RemoveListener(CloseRelicShopPanel);
-        backButton.onClick.AddListener(CloseRelicShopPanel);
     }
 
     public void CloseRelicShopPanel()

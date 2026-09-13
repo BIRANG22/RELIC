@@ -5,17 +5,11 @@ using UnityEngine.UI;
 public sealed class LobbyErosionMirrorButton : MonoBehaviour
 {
     private const string DefaultPanelObjectName = "ErosionSelectPanel";
-    private const string DefaultCloseButtonObjectName = "BackButton";
 
     [Header("Panel")]
     [SerializeField] private GameObject erosionSelectPanel;
     [SerializeField] private string erosionSelectPanelName = DefaultPanelObjectName;
     [SerializeField] private bool autoFindPanel = true;
-
-    [Header("Close Button")]
-    [SerializeField] private Button closeButton;
-    [SerializeField] private string closeButtonObjectName = DefaultCloseButtonObjectName;
-    [SerializeField] private bool autoFindCloseButton = true;
 
     [Header("Opened Panel Sorting")]
     [SerializeField] private bool forcePanelCanvasSorting = true;
@@ -33,12 +27,10 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
 
     private void Awake()
     {
-        BindCloseButton();
     }
 
     private void OnEnable()
     {
-        BindCloseButton();
     }
 
     private void LateUpdate()
@@ -60,7 +52,7 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
 
     private void OnDestroy()
     {
-        UnbindCloseButton();
+        LobbyPositionSharedModalBackground.HideForOwner(this);
         LobbyPositionModalInputBlocker.Unblock(this);
     }
 
@@ -77,12 +69,13 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
         if (!ResolveReferences())
             return;
 
-        BindCloseButton();
         PlayClickSfx();
         TitleManager.CloseTitleModePanelsExceptInScene(erosionSelectPanel);
 
-        UIBlurBackground blurBackground = UIBlurBackground.EnsureForPanel(erosionSelectPanel);
-        LobbyQuestManager.Instance?.ConfigureQuestPanelBlur(blurBackground);
+        LobbyPositionSharedModalBackground.ShowForPanel(
+            erosionSelectPanel,
+            this,
+            CloseErosionSelectPanel);
         erosionSelectPanel.SetActive(true);
         RefreshPanelText(erosionSelectPanel);
 
@@ -96,6 +89,7 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
         if (panel != null)
             panel.SetActive(false);
 
+        LobbyPositionSharedModalBackground.HideForOwner(this);
         LobbyPositionModalInputBlocker.Unblock(this);
     }
 
@@ -145,49 +139,14 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
         return erosionSelectPanel;
     }
 
-    private void BindCloseButton()
-    {
-        Button resolvedButton = ResolveCloseButton();
-        if (resolvedButton == null)
-            return;
-
-        resolvedButton.onClick.RemoveListener(CloseErosionSelectPanel);
-        resolvedButton.onClick.AddListener(CloseErosionSelectPanel);
-    }
-
-    private void UnbindCloseButton()
-    {
-        if (closeButton != null)
-            closeButton.onClick.RemoveListener(CloseErosionSelectPanel);
-    }
-
-    private Button ResolveCloseButton()
-    {
-        if (closeButton != null)
-            return closeButton;
-
-        if (!autoFindCloseButton)
-            return null;
-
-        GameObject panel = ResolvePanel();
-        if (panel == null)
-            return null;
-
-        Transform buttonTransform = FindChildRecursive(panel.transform, closeButtonObjectName);
-        if (buttonTransform == null && closeButtonObjectName != "BackButton")
-            buttonTransform = FindChildRecursive(panel.transform, "BackButton");
-        if (buttonTransform == null && closeButtonObjectName != "CloseButton")
-            buttonTransform = FindChildRecursive(panel.transform, "CloseButton");
-        if (buttonTransform == null)
-            return null;
-
-        closeButton = buttonTransform.GetComponent<Button>();
-        return closeButton;
-    }
-
     private void ApplyOpenedPanelSorting(GameObject panel)
     {
         if (panel == null || !forcePanelCanvasSorting)
+            return;
+
+        // 공용 BackgroundPanel의 Presentation Canvas로 표시 중일 때는
+        // UIBlurBackgroundManager가 SharedBlurCanvas 위의 정렬 순서를 관리합니다.
+        if (LobbyPositionSharedModalBackground.IsPanelPresented(panel))
             return;
 
         if (panel.GetComponent<UIBlurBackground>() != null)

@@ -15,6 +15,7 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
     private const string UIBlurTextureName = "_UIBlurUiTexture";
     private const string SettingUpperName = "Setting_upper";
     private const int SharedBlurSortingOrder = 9000;
+    private const int PresentationCanvasSortingOrder = SharedBlurSortingOrder + 10;
     private const int UIBlurLayer = 5;
     private const float ReferenceBlurHeight = 1080f;
     private static readonly Vector2 DefaultReferenceResolution = new(1920f, 1080f);
@@ -23,6 +24,7 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
     private readonly List<UIBlurBackground> requesters = new();
     private readonly Dictionary<GameObject, UIBlurReplicaSource> replicas = new();
+    private readonly Dictionary<Canvas, CanvasSortingState> presentationCanvasStates = new();
 
     private UIBlurBackground activeRequester;
     private Canvas sharedCanvas;
@@ -77,6 +79,7 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        RestorePresentationCanvases();
         ReleaseCameraPause();
         if (instance == this) instance = null;
         SceneManager.sceneLoaded -= OnSceneLoaded;
@@ -128,11 +131,13 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
             if (!hasRequesters)
             {
+                RestorePresentationCanvases();
                 SetReplicaVisibility(null);
                 UpdateCameraPause(false);
                 return;
             }
 
+            ApplyPresentationCanvases(activeRequester);
             EnsureBlurReplicaUI();
             RebuildReplicas(activeRequester);
             SyncReplicas();
@@ -182,6 +187,7 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        RestorePresentationCanvases();
         requesters.Clear();
         activeRequester = null;
         if (sharedCanvas != null)
@@ -193,6 +199,47 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         ClearReplicas();
         RefreshWorldCamera();
         UpdateCameraPause(false);
+    }
+
+    private void ApplyPresentationCanvases(UIBlurBackground requester)
+    {
+        RestorePresentationCanvases();
+        if (requester == null)
+            return;
+
+        IReadOnlyList<Canvas> canvases = requester.PresentationCanvases;
+        if (canvases == null)
+            return;
+
+        int nextOrder = PresentationCanvasSortingOrder;
+        for (int i = 0; i < canvases.Count; i++)
+        {
+            Canvas canvas = canvases[i];
+            if (canvas == null || presentationCanvasStates.ContainsKey(canvas))
+                continue;
+
+            presentationCanvasStates.Add(
+                canvas,
+                new CanvasSortingState(canvas.overrideSorting, canvas.sortingOrder));
+
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = nextOrder++;
+        }
+    }
+
+    private void RestorePresentationCanvases()
+    {
+        foreach (KeyValuePair<Canvas, CanvasSortingState> pair in presentationCanvasStates)
+        {
+            Canvas canvas = pair.Key;
+            if (canvas == null)
+                continue;
+
+            canvas.overrideSorting = pair.Value.OverrideSorting;
+            canvas.sortingOrder = pair.Value.SortingOrder;
+        }
+
+        presentationCanvasStates.Clear();
     }
 
     private void EnsureSharedUI()
@@ -688,6 +735,18 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         return
             $"{texture.name} {texture.width}x{texture.height} " +
             $"{texture.graphicsFormat} depth:{texture.depth} created:{texture.IsCreated()}";
+    }
+
+    private readonly struct CanvasSortingState
+    {
+        public CanvasSortingState(bool overrideSorting, int sortingOrder)
+        {
+            OverrideSorting = overrideSorting;
+            SortingOrder = sortingOrder;
+        }
+
+        public bool OverrideSorting { get; }
+        public int SortingOrder { get; }
     }
 
     public static bool IsRequesterPanelObject(GameObject target)
