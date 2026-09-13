@@ -4,21 +4,26 @@ using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.Serialization;
 
 public sealed class LobbyRelicShopPresenter : MonoBehaviour
 {
+    private const int RelicDescriptionSlotCount = 3;
+
     [SerializeField] private Transform[] worldAnchors = new Transform[3];
     [SerializeField] private LobbyBlueDustiumHudUI blueDustiumHud;
     [SerializeField] private Vector2 skillUpgradeButtonStartPosition = new(2400f, 200f);
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private LobbyRelicOfferButtonUI[] offerButtons = new LobbyRelicOfferButtonUI[3];
     [SerializeField] private LobbyRelicRefreshButtonUI refreshButton;
-    [SerializeField] private GameObject relicDescriptionRoot;
-    [SerializeField] private TMP_Text relicDescriptionNameText;
-    [SerializeField] private TMP_Text relicDescriptionRarityText;
-    [SerializeField] private TMP_Text relicDescriptionBodyText;
+    [SerializeField] private GameObject[] relicDescriptionRoots = new GameObject[RelicDescriptionSlotCount];
+
+    private readonly TMP_Text[] relicDescriptionNameTexts = new TMP_Text[RelicDescriptionSlotCount];
+    private readonly TMP_Text[] relicDescriptionRarityTexts = new TMP_Text[RelicDescriptionSlotCount];
+    private readonly TMP_Text[] relicDescriptionBodyTexts = new TMP_Text[RelicDescriptionSlotCount];
+    private readonly bool[] relicDescriptionInteractionsBound = new bool[RelicDescriptionSlotCount];
 
     [Header("Purchase Transfer Sound")]
     [SerializeField, SoundId(SoundCategory.Sfx)] private string purchaseTransferStartSoundId = "";
@@ -65,7 +70,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     private bool missingPanelWarningLogged;
     private bool isPurchaseAnimating;
     private Coroutine purchaseAnimationCoroutine;
-    private string selectedRelicId;
 
     private void Awake()
     {
@@ -87,7 +91,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         if (panelRoot == null)
             return;
 
-        selectedRelicId = string.Empty;
         LobbyPositionModalInputBlocker.Block(this);
         RestoreShopPanelVisualState();
         LobbyPositionSharedModalBackground.ShowForPanel(panelRoot, this, Close);
@@ -104,7 +107,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             panelRoot.SetActive(false);
 
         LobbyPositionSharedModalBackground.HideForOwner(this);
-        ClearSelectedRelicDescription();
 
         // ESC와 닫기 버튼 모두 같은 Close()를 사용하므로
         // 상점이 닫힐 때 월드 오브젝트 입력 차단도 반드시 해제한다.
@@ -120,7 +122,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         }
 
         isPurchaseAnimating = false;
-        selectedRelicId = string.Empty;
         RestoreOfferVisibility();
         SetCloseButtonInteractable(true);
         LobbyPositionSharedModalBackground.HideForOwner(this);
@@ -168,6 +169,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             if (i >= offers.Count)
             {
                 buttons[i].ShowEmpty();
+                HideRelicDescription(i);
                 continue;
             }
 
@@ -179,7 +181,8 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             if (DataManager.Instance.RelicDatabase.TryGet(offer.RelicId, out RelicData relic))
                 RelicRarityUtility.TryParseChestRarity(relic.Rarity, out rarity);
 
-            buttons[i].Bind(offer, icon, rarity, Purchase, HandleOfferHover);
+            buttons[i].Bind(offer, icon, rarity, Purchase);
+            ShowRelicDescription(i, offer.RelicId);
 
             if (Contains(runtime.OwnedRelicIds, offer.RelicId))
                 buttons[i].ShowSold();
@@ -255,8 +258,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             return;
 
         string confirmedRelicId = relicId.Trim();
-        selectedRelicId = confirmedRelicId;
-        ShowRelicDescription(selectedRelicId);
 
         UIManager.Instance.ShowConfirmDialog(
             purchaseConfirmMessage,
@@ -268,7 +269,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             () =>
             {
                 UIManager.Instance?.HideConfirmDialog();
-                ClearSelectedRelicDescription();
             });
     }
 
@@ -295,7 +295,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
         if (!result.Succeeded)
         {
-            ClearSelectedRelicDescription();
             RefreshOffers();
             return;
         }
@@ -320,7 +319,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         LobbyRelicOfferButtonUI selectedButton)
     {
         isPurchaseAnimating = true;
-        ClearSelectedRelicDescription();
         SetCloseButtonInteractable(false);
 
         // 선택된 유물의 현재 화면 위치를 먼저 저장한 뒤 상점을 바로 닫습니다.
@@ -377,7 +375,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     private void FinalizePurchasePresentation(LobbyRuntimeData runtime)
     {
         isPurchaseAnimating = false;
-        selectedRelicId = string.Empty;
         purchaseAnimationCoroutine = null;
         RestoreOfferVisibility();
         RestoreShopPanelVisualState();
@@ -420,7 +417,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             refreshButton = panelRoot.GetComponentInChildren<LobbyRelicRefreshButtonUI>(true);
 
         refreshButton?.Initialize(RefreshRelicOffers);
-        EnsureDescriptionView();
+        EnsureDescriptionViews();
     }
 
     private GameObject FindScenePanelRoot()
@@ -544,123 +541,200 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private void ShowAllEmpty()
     {
-        HideRelicDescription();
+        for (int i = 0; i < RelicDescriptionSlotCount; i++)
+            HideRelicDescription(i);
+
         for (int i = 0; i < buttons.Count; i++)
             buttons[i].ShowEmpty();
     }
 
-    private void HandleOfferHover(string relicId, bool hovered)
+    private void ShowRelicDescription(int slotIndex, string relicId)
     {
-        if (isPurchaseAnimating)
+        if (!IsValidDescriptionSlot(slotIndex))
             return;
 
-        if (hovered && !string.IsNullOrWhiteSpace(relicId))
-        {
-            ShowRelicDescription(relicId);
-            return;
-        }
-
-        if (!string.IsNullOrWhiteSpace(selectedRelicId))
-        {
-            ShowRelicDescription(selectedRelicId);
-            return;
-        }
-
-        HideRelicDescription();
-    }
-
-    private void ShowRelicDescription(string relicId)
-    {
         if (string.IsNullOrWhiteSpace(relicId))
         {
-            HideRelicDescription();
+            HideRelicDescription(slotIndex);
             return;
         }
 
-        EnsureDescriptionView();
+        EnsureDescriptionViews();
         RelicData relic = DataManager.Instance?.RelicDatabase?.Get(relicId);
-        if (relic == null || relicDescriptionRoot == null)
+        GameObject root = relicDescriptionRoots[slotIndex];
+        if (relic == null || root == null)
         {
-            HideRelicDescription();
+            HideRelicDescription(slotIndex);
             return;
         }
 
-        if (relicDescriptionNameText != null)
-            relicDescriptionNameText.text = string.IsNullOrWhiteSpace(relic.Name)
+        TMP_Text nameText = relicDescriptionNameTexts[slotIndex];
+        TMP_Text rarityText = relicDescriptionRarityTexts[slotIndex];
+        TMP_Text bodyText = relicDescriptionBodyTexts[slotIndex];
+
+        if (nameText != null)
+        {
+            nameText.text = string.IsNullOrWhiteSpace(relic.Name)
                 ? relicId
                 : GameDataLocalization.RelicName(relic);
-
-        if (relicDescriptionRarityText != null)
-        {
-            relicDescriptionRarityText.text = FormatRelicRarityLabel(relic.Rarity);
-            relicDescriptionRarityText.color = ResolveRecordRarityColor(relic.Rarity);
         }
 
-        if (relicDescriptionBodyText != null)
-            relicDescriptionBodyText.text = GameDataLocalization.RelicEffectDescription(relic);
-
-        relicDescriptionRoot.SetActive(true);
-    }
-
-    private void ClearSelectedRelicDescription()
-    {
-        selectedRelicId = string.Empty;
-        HideRelicDescription();
-    }
-
-    private void HideRelicDescription()
-    {
-        if (relicDescriptionNameText != null)
-            relicDescriptionNameText.text = string.Empty;
-
-        if (relicDescriptionRarityText != null)
+        if (rarityText != null)
         {
-            relicDescriptionRarityText.text = string.Empty;
-            relicDescriptionRarityText.color = Color.white;
+            rarityText.text = FormatRelicRarityLabel(relic.Rarity);
+            rarityText.color = ResolveRecordRarityColor(relic.Rarity);
         }
 
-        if (relicDescriptionBodyText != null)
-            relicDescriptionBodyText.text = string.Empty;
+        if (bodyText != null)
+            bodyText.text = GameDataLocalization.RelicEffectDescription(relic);
+
+        root.SetActive(true);
     }
 
-    private void EnsureDescriptionView()
+    private void HideRelicDescription(int slotIndex)
+    {
+        if (!IsValidDescriptionSlot(slotIndex))
+            return;
+
+        TMP_Text nameText = relicDescriptionNameTexts[slotIndex];
+        TMP_Text rarityText = relicDescriptionRarityTexts[slotIndex];
+        TMP_Text bodyText = relicDescriptionBodyTexts[slotIndex];
+
+        if (nameText != null)
+            nameText.text = string.Empty;
+
+        if (rarityText != null)
+        {
+            rarityText.text = string.Empty;
+            rarityText.color = Color.white;
+        }
+
+        if (bodyText != null)
+            bodyText.text = string.Empty;
+    }
+
+    private void EnsureDescriptionViews()
     {
         if (panelRoot == null)
             return;
 
-        if (relicDescriptionRoot == null)
+        if (relicDescriptionRoots == null || relicDescriptionRoots.Length != RelicDescriptionSlotCount)
+            Array.Resize(ref relicDescriptionRoots, RelicDescriptionSlotCount);
+
+        string[] rootNames = { "relic01_info", "relic02_info", "relic03_info" };
+        for (int i = 0; i < RelicDescriptionSlotCount; i++)
         {
-            Transform info = panelRoot.transform.Find("relic_info");
-            if (info != null)
-                relicDescriptionRoot = info.gameObject;
+            if (relicDescriptionRoots[i] == null)
+            {
+                Transform info = panelRoot.transform.Find(rootNames[i]);
+                if (info == null)
+                    info = FindDescendant(panelRoot.transform, rootNames[i]);
+
+                if (info != null)
+                    relicDescriptionRoots[i] = info.gameObject;
+            }
+
+            GameObject root = relicDescriptionRoots[i];
+            if (root == null)
+                continue;
+
+            if (relicDescriptionNameTexts[i] == null)
+            {
+                Transform nameTransform = FindDescendant(root.transform, "relic_name");
+                if (nameTransform != null)
+                    relicDescriptionNameTexts[i] = nameTransform.GetComponent<TMP_Text>();
+            }
+
+            if (relicDescriptionRarityTexts[i] == null)
+            {
+                Transform rarityTransform = FindDescendant(root.transform, "relic_Rarity");
+                if (rarityTransform != null)
+                    relicDescriptionRarityTexts[i] = rarityTransform.GetComponent<TMP_Text>();
+            }
+
+            if (relicDescriptionBodyTexts[i] == null)
+            {
+                Transform effectTransform = FindDescendant(root.transform, "relic_effect");
+                if (effectTransform != null)
+                    relicDescriptionBodyTexts[i] = effectTransform.GetComponent<TMP_Text>();
+            }
+
+            BindDescriptionInteractions(i, root);
+            root.SetActive(true);
+        }
+    }
+
+    private void BindDescriptionInteractions(int slotIndex, GameObject root)
+    {
+        if (!IsValidDescriptionSlot(slotIndex) ||
+            root == null ||
+            relicDescriptionInteractionsBound[slotIndex])
+        {
+            return;
         }
 
-        if (relicDescriptionRoot == null)
+        EventTrigger trigger = root.GetComponent<EventTrigger>();
+        if (trigger == null)
+            trigger = root.AddComponent<EventTrigger>();
+
+        trigger.triggers ??= new List<EventTrigger.Entry>();
+
+        int capturedSlotIndex = slotIndex;
+        AddDescriptionTrigger(
+            trigger,
+            EventTriggerType.PointerEnter,
+            _ => SetDescriptionHover(capturedSlotIndex, true));
+        AddDescriptionTrigger(
+            trigger,
+            EventTriggerType.PointerExit,
+            _ => SetDescriptionHover(capturedSlotIndex, false));
+        AddDescriptionTrigger(
+            trigger,
+            EventTriggerType.PointerClick,
+            _ => RequestDescriptionPurchase(capturedSlotIndex));
+
+        relicDescriptionInteractionsBound[slotIndex] = true;
+    }
+
+    private static void AddDescriptionTrigger(
+        EventTrigger trigger,
+        EventTriggerType eventType,
+        UnityEngine.Events.UnityAction<BaseEventData> callback)
+    {
+        if (trigger == null || callback == null)
             return;
 
-        if (relicDescriptionNameText == null)
+        var entry = new EventTrigger.Entry
         {
-            Transform nameTransform = FindDescendant(relicDescriptionRoot.transform, "relic_name");
-            if (nameTransform != null)
-                relicDescriptionNameText = nameTransform.GetComponent<TMP_Text>();
-        }
+            eventID = eventType
+        };
+        entry.callback.AddListener(callback);
+        trigger.triggers.Add(entry);
+    }
 
-        if (relicDescriptionRarityText == null)
-        {
-            Transform rarityTransform = FindDescendant(relicDescriptionRoot.transform, "relic_Rarity");
-            if (rarityTransform != null)
-                relicDescriptionRarityText = rarityTransform.GetComponent<TMP_Text>();
-        }
+    private void SetDescriptionHover(int slotIndex, bool hovered)
+    {
+        LobbyRelicOfferButtonUI button = GetOfferButton(slotIndex);
+        button?.SetExternalHover(hovered);
+    }
 
-        if (relicDescriptionBodyText == null)
-        {
-            Transform effectTransform = FindDescendant(relicDescriptionRoot.transform, "relic_effect");
-            if (effectTransform != null)
-                relicDescriptionBodyText = effectTransform.GetComponent<TMP_Text>();
-        }
+    private void RequestDescriptionPurchase(int slotIndex)
+    {
+        LobbyRelicOfferButtonUI button = GetOfferButton(slotIndex);
+        button?.RequestPurchaseFromExternal();
+    }
 
-        relicDescriptionRoot.SetActive(true);
-        HideRelicDescription();
+    private LobbyRelicOfferButtonUI GetOfferButton(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= buttons.Count)
+            return null;
+
+        return buttons[slotIndex];
+    }
+
+    private static bool IsValidDescriptionSlot(int slotIndex)
+    {
+        return slotIndex >= 0 && slotIndex < RelicDescriptionSlotCount;
     }
 
     private static string FormatRelicRarityLabel(string rarity)
