@@ -24565,7 +24565,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5927fbacdef890243827d3e11cca58fb, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 8332cf480f9b35a4c9ba9f2c126994cd, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -71087,11 +71087,11 @@ MonoBehaviour:
   - iconButton: {fileID: 316461454}
     targetPanel: {fileID: 230010000}
     iconImage: {fileID: 1509144754}
-    displayName: "\uC5F0\uC131"
+    displayName: "\uACF5\uBA85"
   - iconButton: {fileID: 1909441171}
     targetPanel: {fileID: 821549304}
     iconImage: {fileID: 480482209}
-    displayName: "\uACF5\uBA85"
+    displayName: "\uC5F0\uC131"
   - iconButton: {fileID: 1979706826}
     targetPanel: {fileID: 2300000092}
     iconImage: {fileID: 1264039642}
@@ -94743,7 +94743,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 8332cf480f9b35a4c9ba9f2c126994cd, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5927fbacdef890243827d3e11cca58fb, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
