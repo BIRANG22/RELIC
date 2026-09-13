@@ -159,7 +159,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
             @"(?m)^\s*m_text:\s*(?<value>.*)$");
         foreach (System.Text.RegularExpressions.Match match in matches)
         {
-            string korean = match.Groups["value"].Value.Trim().Trim('"');
+            string korean = LocalizationProjectScanner.DecodeUnityYamlText(match.Groups["value"].Value);
             if (!LocalizationProjectScanner.IsLocalizableKoreanText(korean))
                 continue;
 

@@ -167,7 +167,6 @@ GameObject:
   - component: {fileID: 37540200}
   - component: {fileID: 37540202}
   - component: {fileID: 37540201}
-  - component: {fileID: 37540204}
   - component: {fileID: 37540203}
   m_Layer: 5
   m_Name: Test
@@ -311,46 +310,6 @@ MonoBehaviour:
   localizationKey: battle.boss
   koreanSource: "\uBCF4\uC2A4"
   automaticallyRegistered: 1
---- !u!114 &37540204
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 37540199}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_StringReference:
-    m_TableReference:
-      m_TableCollectionName: Text
-    m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: battle.boss
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  m_FormatArguments: []
-  m_UpdateString:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 37540201}
-        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
-        m_MethodName: set_text
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
-  references:
-    version: 2
-    RefIds: []
 --- !u!1 &164553488
 GameObject:
   m_ObjectHideFlags: 0
@@ -653,7 +612,6 @@ GameObject:
   - component: {fileID: 283267050}
   - component: {fileID: 283267052}
   - component: {fileID: 283267051}
-  - component: {fileID: 283267054}
   - component: {fileID: 283267053}
   m_Layer: 5
   m_Name: Test
@@ -797,46 +755,6 @@ MonoBehaviour:
   localizationKey: battle.battle
   koreanSource: "\uC804\uD22C"
   automaticallyRegistered: 1
---- !u!114 &283267054
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 283267049}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_StringReference:
-    m_TableReference:
-      m_TableCollectionName: Text
-    m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: battle.battle
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  m_FormatArguments: []
-  m_UpdateString:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 283267051}
-        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
-        m_MethodName: set_text
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
-  references:
-    version: 2
-    RefIds: []
 --- !u!1 &326765620
 GameObject:
   m_ObjectHideFlags: 0
@@ -848,7 +766,6 @@ GameObject:
   - component: {fileID: 326765621}
   - component: {fileID: 326765623}
   - component: {fileID: 326765622}
-  - component: {fileID: 326765625}
   - component: {fileID: 326765624}
   m_Layer: 5
   m_Name: Test
@@ -992,46 +909,6 @@ MonoBehaviour:
   localizationKey: battle.elite
   koreanSource: "\uC815\uC608"
   automaticallyRegistered: 1
---- !u!114 &326765625
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 326765620}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_StringReference:
-    m_TableReference:
-      m_TableCollectionName: Text
-    m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: battle.elite
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  m_FormatArguments: []
-  m_UpdateString:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 326765622}
-        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
-        m_MethodName: set_text
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
-  references:
-    version: 2
-    RefIds: []
 --- !u!1 &421206641
 GameObject:
   m_ObjectHideFlags: 0
@@ -1180,7 +1057,6 @@ GameObject:
   - component: {fileID: 428041070}
   - component: {fileID: 428041072}
   - component: {fileID: 428041071}
-  - component: {fileID: 428041074}
   - component: {fileID: 428041073}
   m_Layer: 5
   m_Name: Test
@@ -1324,46 +1200,6 @@ MonoBehaviour:
   localizationKey: battle.event
   koreanSource: "\uC0AC\uAC74"
   automaticallyRegistered: 1
---- !u!114 &428041074
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 428041069}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_StringReference:
-    m_TableReference:
-      m_TableCollectionName: Text
-    m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: battle.event
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  m_FormatArguments: []
-  m_UpdateString:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 428041071}
-        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
-        m_MethodName: set_text
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
-  references:
-    version: 2
-    RefIds: []
 --- !u!1 &436595192
 GameObject:
   m_ObjectHideFlags: 0
@@ -3650,7 +3486,6 @@ GameObject:
   - component: {fileID: 1374481090}
   - component: {fileID: 1374481092}
   - component: {fileID: 1374481091}
-  - component: {fileID: 1374481094}
   - component: {fileID: 1374481093}
   m_Layer: 0
   m_Name: Node_Name
@@ -3794,46 +3629,6 @@ MonoBehaviour:
   localizationKey: battle.selected_node_info
   koreanSource: "\uC120\uD0DD\uD55C \uB178\uB4DC \uC815\uBCF4"
   automaticallyRegistered: 1
---- !u!114 &1374481094
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1374481089}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_StringReference:
-    m_TableReference:
-      m_TableCollectionName: Text
-    m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: battle.selected_node_info
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  m_FormatArguments: []
-  m_UpdateString:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1374481091}
-        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
-        m_MethodName: set_text
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
-  references:
-    version: 2
-    RefIds: []
 --- !u!1 &1431617081
 GameObject:
   m_ObjectHideFlags: 0
@@ -3845,6 +3640,7 @@ GameObject:
   - component: {fileID: 1431617082}
   - component: {fileID: 1431617084}
   - component: {fileID: 1431617083}
+  - component: {fileID: 1431617085}
   m_Layer: 0
   m_Name: PlayText
   m_TagString: Untagged
@@ -3971,6 +3767,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1431617081}
   m_CullTransparentMesh: 1
+--- !u!114 &1431617085
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1431617081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1431617083}
+  localizationKey: ui.samplescene.text.fd05ad0a
+  koreanSource: "\uD0D0\uC0AC\uC2DC\uC791"
+  automaticallyRegistered: 1
 --- !u!1 &1443296378
 GameObject:
   m_ObjectHideFlags: 0
@@ -5140,7 +4952,6 @@ GameObject:
   - component: {fileID: 1628845441}
   - component: {fileID: 1628845443}
   - component: {fileID: 1628845442}
-  - component: {fileID: 1628845445}
   - component: {fileID: 1628845444}
   m_Layer: 5
   m_Name: Test
@@ -5284,46 +5095,6 @@ MonoBehaviour:
   localizationKey: ui_start
   koreanSource: "\uC2DC\uC791"
   automaticallyRegistered: 1
---- !u!114 &1628845445
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1628845440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_StringReference:
-    m_TableReference:
-      m_TableCollectionName: Text
-    m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: ui_start
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  m_FormatArguments: []
-  m_UpdateString:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1628845442}
-        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
-        m_MethodName: set_text
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
-  references:
-    version: 2
-    RefIds: []
 --- !u!1 &1661778567
 GameObject:
   m_ObjectHideFlags: 0
@@ -5655,7 +5426,6 @@ GameObject:
   - component: {fileID: 1739505508}
   - component: {fileID: 1739505510}
   - component: {fileID: 1739505509}
-  - component: {fileID: 1739505512}
   - component: {fileID: 1739505511}
   m_Layer: 5
   m_Name: Test
@@ -5799,46 +5569,6 @@ MonoBehaviour:
   localizationKey: lobby.rest
   koreanSource: "\uD734\uC2DD"
   automaticallyRegistered: 1
---- !u!114 &1739505512
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1739505507}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_StringReference:
-    m_TableReference:
-      m_TableCollectionName: Text
-    m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: lobby.rest
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  m_FormatArguments: []
-  m_UpdateString:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1739505509}
-        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
-        m_MethodName: set_text
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 1
-  references:
-    version: 2
-    RefIds: []
 --- !u!1 &1745514319
 GameObject:
   m_ObjectHideFlags: 0

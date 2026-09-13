@@ -242,10 +242,6 @@ MonoBehaviour:
     m_Localized: Nodo seleccionado
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100737
-    m_Localized: Elegir prueba
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100738
     m_Localized: "\xC9lite"
     m_Metadata:
@@ -264,22 +260,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100742
     m_Localized: Fragmento
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100743
-    m_Localized: Vista previa
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100744
-    m_Localized: Amenaza creciente
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100745
-    m_Localized: "Cuerpo corro\xEDdo"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100746
-    m_Localized: Vestigio afilado
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100747
