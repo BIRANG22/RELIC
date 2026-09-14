@@ -7,6 +7,65 @@ using UnityEngine;
 public class SoundDatabaseTests
 {
     [Test]
+    public void AudioManager_AmbienceOutputVolume_UsesBgmInsteadOfSfxVolume()
+    {
+        GameObject settingsObject = new("AmbienceVolumeSettingsTest");
+
+        try
+        {
+            Settings settings = settingsObject.AddComponent<Settings>();
+            settings.MasterVolume = 0.8f;
+            settings.BGMVolume = 0.5f;
+            settings.SFXVolume = 0f;
+
+            MethodInfo method = typeof(AudioManager).GetMethod(
+                "GetAmbienceOutputVolumeMultiplier",
+                BindingFlags.Static | BindingFlags.NonPublic);
+
+            Assert.That(method, Is.Not.Null);
+            float outputVolume = (float)method.Invoke(null, null);
+            Assert.That(outputVolume, Is.EqualTo(0.4f).Within(0.001f));
+        }
+        finally
+        {
+            DestroyObject(settingsObject);
+        }
+    }
+
+    [Test]
+    public void SoundDatabase_ExposesAmbienceEntriesSeparatelyFromSfx()
+    {
+        SoundDatabase database = ScriptableObject.CreateInstance<SoundDatabase>();
+        AudioClip ambienceClip = null;
+
+        try
+        {
+            ambienceClip = AudioClip.Create("EnvironmentAmbience", 32, 1, 44100, false);
+            SetPrivateField(
+                database,
+                "ambienceList",
+                new List<SoundData>
+                {
+                    new() { id = "ambience.forest.wind", clip = ambienceClip, loop = true }
+                });
+
+            PropertyInfo ambienceEntries = typeof(SoundDatabase).GetProperty(
+                "AmbienceEntries",
+                BindingFlags.Instance | BindingFlags.Public);
+
+            Assert.That(ambienceEntries, Is.Not.Null);
+            IReadOnlyList<SoundData> entries = ambienceEntries.GetValue(database) as IReadOnlyList<SoundData>;
+            Assert.That(entries, Has.Count.EqualTo(1));
+            Assert.That(entries[0].id, Is.EqualTo("ambience.forest.wind"));
+        }
+        finally
+        {
+            DestroyObject(ambienceClip);
+            DestroyObject(database);
+        }
+    }
+
+    [Test]
     public void AudioManager_Initialize_UsesSoundDatabaseForIdLookups()
     {
         GameObject audioObject = new("SoundDatabaseAudioManagerTest");

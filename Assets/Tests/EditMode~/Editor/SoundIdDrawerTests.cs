@@ -6,6 +6,46 @@ using UnityEngine;
 public class SoundIdDrawerTests
 {
     [Test]
+    public void GetSoundIds_ReturnsOnlyAmbienceIdsForAmbienceCategory()
+    {
+        SoundDatabase database = ScriptableObject.CreateInstance<SoundDatabase>();
+        AudioClip ambienceClip = null;
+        AudioClip sfxClip = null;
+
+        try
+        {
+            ambienceClip = AudioClip.Create("Ambience", 32, 1, 44100, false);
+            sfxClip = AudioClip.Create("Sfx", 32, 1, 44100, false);
+            SetPrivateField(
+                database,
+                "ambienceList",
+                new List<SoundData>
+                {
+                    new() { id = "ambience.cave.drip", clip = ambienceClip, loop = true }
+                });
+            SetPrivateField(
+                database,
+                "sfxList",
+                new List<SoundData>
+                {
+                    new() { id = "ui.normal.click", clip = sfxClip }
+                });
+
+            IReadOnlyList<string> ambienceIds = SoundIdDrawer.GetSoundIdsForTest(
+                database,
+                (SoundCategory)2);
+
+            Assert.That(ambienceIds, Is.EquivalentTo(new[] { "ambience.cave.drip" }));
+        }
+        finally
+        {
+            DestroyObject(ambienceClip);
+            DestroyObject(sfxClip);
+            DestroyObject(database);
+        }
+    }
+
+    [Test]
     public void GetSoundIds_DoesNotExposeBgmIds()
     {
         SoundDatabase database = ScriptableObject.CreateInstance<SoundDatabase>();

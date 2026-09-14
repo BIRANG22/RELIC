@@ -19,6 +19,7 @@ public class AudioManager : Singleton<AudioManager>
     private Dictionary<string, SoundData> sfxIdDict;
     private readonly List<AudioSource> bgmLayerSources = new();
     private readonly List<RoutedSfxSource> routedSfxSources = new();
+    private readonly List<RoutedSfxSource> routedAmbienceSources = new();
     private IReadOnlyList<BgmClipData> activeBgmLayers;
     private BgmState? activeBgmState;
     private Coroutine bgmTransitionRoutine;
@@ -309,6 +310,21 @@ public class AudioManager : Singleton<AudioManager>
         return false;
     }
 
+    public bool TryGetAmbienceData(string id, out SoundData data)
+    {
+        data = null;
+
+        if (string.IsNullOrWhiteSpace(id) || soundDatabase == null)
+            return false;
+
+        if (soundDatabase.TryGetAmbience(id, out data) && data != null && data.clip != null)
+            return true;
+
+        Debug.LogWarning($"[AudioManager] Ambience ID not found: {id.Trim()}");
+        data = null;
+        return false;
+    }
+
     public bool TryGetSkillVfxSfx(GameObject vfxPrefab, out VfxSoundData data)
     {
         data = null;
@@ -422,12 +438,42 @@ public class AudioManager : Singleton<AudioManager>
         return PlaySfxClip(settings, volumeMultiplier);
     }
 
+    private AudioSource PlayAmbienceClip(AudioSourcePlaybackSettings settings, float volumeMultiplier)
+    {
+        if (settings == null || settings.Clip == null)
+            return null;
+
+        GameObject sourceObject = new($"{settings.Clip.name}_RoutedAmbience");
+        sourceObject.transform.SetParent(transform, false);
+        sourceObject.transform.SetPositionAndRotation(settings.WorldPosition, settings.WorldRotation);
+        AudioSource source = sourceObject.AddComponent<AudioSource>();
+        settings.ApplyTo(source, Mathf.Clamp01(volumeMultiplier));
+        float baseVolume = source.volume;
+        routedAmbienceSources.Add(new RoutedSfxSource { source = source, baseVolume = baseVolume });
+        ApplyRoutedAmbienceVolume(source, baseVolume);
+        source.Play();
+        return source;
+    }
+
+    public AudioSource PlayAmbienceSource(string id, float volumeMultiplier)
+    {
+        if (!TryGetAmbienceData(id, out SoundData data))
+            return null;
+
+        AudioSourcePlaybackSettings settings =
+            AudioSourcePlaybackSettings.From(data, transform.position, transform.rotation, sfxSource);
+        settings.Force2DLoop();
+
+        return PlayAmbienceClip(settings, volumeMultiplier);
+    }
+
     public void StopRoutedSfxSource(AudioSource routedSource)
     {
         if (routedSource == null)
             return;
 
         UnregisterRoutedSfxSource(routedSource);
+        UnregisterRoutedAmbienceSource(routedSource);
 
         GameObject sourceObject = routedSource.gameObject;
         routedSource.Stop();
@@ -519,6 +565,7 @@ public class AudioManager : Singleton<AudioManager>
             sfxSource.volume = master * sfx;
 
         ApplyRoutedSfxVolumes();
+        ApplyRoutedAmbienceVolumes();
     }
 
     private bool IsBgmAlreadyPlaying(IReadOnlyList<BgmClipData> layers, bool loop)
@@ -715,6 +762,38 @@ public class AudioManager : Singleton<AudioManager>
     private static float GetSfxOutputVolumeMultiplier()
     {
         return GetMasterVolumeOrDefault() * GetSfxVolumeOrDefault();
+    }
+
+    private void ApplyRoutedAmbienceVolumes()
+    {
+        for (int i = routedAmbienceSources.Count - 1; i >= 0; i--)
+        {
+            RoutedSfxSource routed = routedAmbienceSources[i];
+            if (routed == null || routed.source == null)
+            {
+                routedAmbienceSources.RemoveAt(i);
+                continue;
+            }
+            ApplyRoutedAmbienceVolume(routed.source, routed.baseVolume);
+        }
+    }
+
+    private void ApplyRoutedAmbienceVolume(AudioSource source, float baseVolume)
+    {
+        if (source != null)
+            source.volume = Mathf.Clamp01(baseVolume) * GetAmbienceOutputVolumeMultiplier();
+    }
+
+    private void UnregisterRoutedAmbienceSource(AudioSource source)
+    {
+        for (int i = routedAmbienceSources.Count - 1; i >= 0; i--)
+            if (routedAmbienceSources[i].source == source)
+                routedAmbienceSources.RemoveAt(i);
+    }
+
+    private static float GetAmbienceOutputVolumeMultiplier()
+    {
+        return GetMasterVolumeOrDefault() * GetBgmVolumeOrDefault();
     }
 
     private static float GetMasterVolumeOrDefault()
@@ -918,6 +997,15 @@ public sealed class AudioSourcePlaybackSettings
         Clip = clip;
         Loop = false;
         Pitch = SoundData.ClampPlaybackPitch(pitch);
+    }
+
+    public void Force2DLoop()
+    {
+        Loop = true;
+        SpatialBlend = 0f;
+        DopplerLevel = 0f;
+        Spatialize = false;
+        SpatializePostEffects = false;
     }
 
     public void ApplyTo(AudioSource target, float volumeMultiplier)
