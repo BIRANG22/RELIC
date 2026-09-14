@@ -61,12 +61,22 @@ MonoBehaviour:
       randomPitchMax: 1
     ambienceClips:
     - clip: {fileID: 8300000, guid: 206e86ad69c3d4241a7d2e5ca8e2ea63, type: 3}
-      volume: 0.5
+      volume: 1
       pitch: 1
       loop: 1
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
+  ambienceList:
+  - id: test
+    aliases: []
+    clip: {fileID: 8300000, guid: 22b66ad148b81584b861bab151a6e81d, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
   sfxList:
   - id: ui.normal.hover
     aliases: []

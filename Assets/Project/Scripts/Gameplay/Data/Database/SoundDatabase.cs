@@ -5,7 +5,8 @@ using UnityEngine;
 public enum SoundCategory
 {
     Bgm,
-    Sfx
+    Sfx,
+    Ambience
 }
 
 public enum BgmState
@@ -52,6 +53,7 @@ public sealed class SoundIdAttribute : PropertyAttribute
 public class SoundDatabase : ScriptableObject
 {
     [SerializeField] private List<BgmData> bgmList = new();
+    [SerializeField] private List<SoundData> ambienceList = new();
     [SerializeField] private List<SoundData> sfxList = new();
     [SerializeField] private List<SoundData> eventSfxList = new();
     [SerializeField] private List<VfxSoundData> playerSkillVfxSfxList = new();
@@ -62,6 +64,7 @@ public class SoundDatabase : ScriptableObject
     private Dictionary<GameObject, VfxSoundData> skillVfxSfxByPrefab;
 
     public IReadOnlyList<BgmData> BgmEntries => bgmList;
+    public IReadOnlyList<SoundData> AmbienceEntries => ambienceList;
     public IReadOnlyList<SoundData> SfxEntries => sfxList;
     public IReadOnlyList<SoundData> EventSfxEntries => eventSfxList;
     public IReadOnlyList<VfxSoundData> PlayerSkillVfxSfxEntries => playerSkillVfxSfxList;
@@ -74,6 +77,7 @@ public class SoundDatabase : ScriptableObject
         skillVfxSfxByPrefab = new Dictionary<GameObject, VfxSoundData>();
 
         RegisterBgmList();
+        NormalizeAmbienceList();
         RegisterSfxList(sfxList, "SFX");
         RegisterSfxList(eventSfxList, "Event SFX");
         RegisterVfxSoundList(playerSkillVfxSfxList, "Player Skill VFX SFX");
@@ -97,6 +101,32 @@ public class SoundDatabase : ScriptableObject
         id = NormalizeId(id);
         sfx = null;
         return !string.IsNullOrEmpty(id) && sfxById.TryGetValue(id, out sfx) && sfx != null;
+    }
+
+    public bool TryGetAmbience(string id, out SoundData ambience)
+    {
+        if (sfxById == null)
+            Initialize();
+
+        id = NormalizeId(id);
+        ambience = null;
+
+        if (string.IsNullOrEmpty(id) || ambienceList == null)
+            return false;
+
+        foreach (SoundData data in ambienceList)
+        {
+            if (data == null || data.clip == null)
+                continue;
+
+            if (string.Equals(NormalizeId(data.id), id, StringComparison.Ordinal))
+            {
+                ambience = data;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public bool TryGetSkillVfxSfx(GameObject vfxPrefab, out VfxSoundData data)
@@ -130,6 +160,19 @@ public class SoundDatabase : ScriptableObject
             }
 
             bgmByState.Add(data.state, data);
+        }
+    }
+
+    private void NormalizeAmbienceList()
+    {
+        ambienceList ??= new List<SoundData>();
+
+        foreach (SoundData data in ambienceList)
+        {
+            if (data == null)
+                continue;
+
+            data.volume = Mathf.Clamp01(data.volume);
         }
     }
 

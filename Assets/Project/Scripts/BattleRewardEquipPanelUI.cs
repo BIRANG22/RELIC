@@ -5,6 +5,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 public sealed class BattleRewardEquipPanelUI : MonoBehaviour
@@ -81,6 +83,8 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
     private void OnEnable()
     {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
         ResolveReferencesIfNeeded();
         RegisterButtonEvents();
         RefreshCharacterHoverVisuals();
@@ -96,7 +100,13 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         HideAllCharacterHoverSelections();
+    }
+
+    private void OnLocaleChanged(Locale _)
+    {
+        RefreshItemInfo();
     }
 
     private void OnDestroy()
@@ -152,7 +162,9 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
                 return false;
             }
 
-            reward.Name = string.IsNullOrWhiteSpace(relic.Name) ? rewardId : relic.Name;
+            reward.Name = string.IsNullOrWhiteSpace(relic.Name)
+                ? rewardId
+                : GameDataLocalization.RelicName(relic);
             reward.Description = GameDataLocalization.RelicEffectDescription(relic);
 
             if (DataManager.Instance.RelicIconDatabase != null &&
@@ -170,7 +182,9 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
                 return false;
             }
 
-            reward.Name = string.IsNullOrWhiteSpace(skill.Name) ? rewardId : skill.Name;
+            reward.Name = string.IsNullOrWhiteSpace(skill.Name)
+                ? rewardId
+                : GameDataLocalization.SkillName(skill);
             reward.Description = GetSkillDescription(skill, string.Empty);
             reward.Icon = skill.Icon;
         }
