@@ -8,13 +8,15 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// 로비 장비 관리용 Equip_panel 컨트롤러입니다.
-/// 패널 자체는 항상 활성 상태로 유지하고 Equip/Charter의 위치로 열림/닫힘을 표현합니다.
-/// 또한 Charter/Char1~3에 현재 파티 캐릭터의 이름, 마크, 연성제, 유물, 교체 가능한 기억을 표시합니다.
+/// 로비의 Ready_Panel(연성제/유물)을 관리합니다.
+/// Ready_Panel은 PlayButton의 탐사 준비 단계에서 공용 BackgroundPanel과 함께 활성화됩니다.
+/// Info_Panel은 LobbyInfoPanelUI가 별도로 관리합니다.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class LobbyEquipPanelUI : MonoBehaviour
 {
+    private const string ReadyPanelName = "Ready_Panel";
+    private const string InfoPanelName = "Info_Panel";
     private const int CharacterCount = 3;
     private const int VisibleRelicSlotCount = 6;
     private const int VisibleSkillSlotCount = 3;
@@ -31,7 +33,6 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     [Header("Panel")]
     [SerializeField] private GameObject panelRoot;
-
 
     [Header("Slide Targets")]
     [SerializeField] private RectTransform equipRect;
@@ -50,14 +51,12 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         new Keyframe(0f, 0f, 0f, 2f),
         new Keyframe(1f, 1f, 0f, 0f));
 
-    [Header("Close Input")]
-    [SerializeField] private bool closeOnOutsideClick = true;
 
     [Header("Opened Panel")]
     [SerializeField] private bool bringToFront = true;
 
     [Header("Character Data")]
-    [Tooltip("Charter/Char1~3 구조를 이름으로 자동 연결합니다.")]
+    [Tooltip("Info_Panel/Char1~3 구조를 이름으로 자동 연결합니다.")]
     [SerializeField] private bool autoBindCharacterHierarchy = true;
 
     [Header("Compound Inventory")]
@@ -90,9 +89,9 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private RectTransform toggleButtonRect;
     private bool isOpen;
     private bool isClosing;
-    private int lastToggleFrame = -1;
 
     public bool IsOpen => isOpen && !isClosing;
+    public event Action<bool> OpenStateChanged;
 
     private void Awake()
     {
@@ -103,73 +102,50 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         ResolveOwnedRelicViewIfNeeded();
         ResolveCompoundInventoryIfNeeded();
         ResolveCompoundSelectionViewIfNeeded();
-        ResetSlidePositions();
         isOpen = false;
         isClosing = false;
     }
 
     private void OnEnable()
     {
-        // Equip_panel은 항상 활성화된 상태를 유지합니다.
-        // 다시 활성화된 경우에도 닫힌 위치에서 시작합니다.
-        if (!isOpen && !isClosing)
-            ResetSlidePositions();
-
+        GameObject root = ResolvePanelRoot();
+        isOpen = root != null && root.activeSelf;
+        isClosing = false;
         RefreshCharacterData();
-    }
-
-    private void Update()
-    {
-        if (!IsOpen || Time.frameCount == lastToggleFrame)
-            return;
-
-        if (!closeOnOutsideClick || !Input.GetMouseButtonDown(0))
-            return;
-
-        Vector2 pointerPosition = Input.mousePosition;
-        if (IsPointerInsideOpenArea(pointerPosition))
-            return;
-
-        Close();
     }
 
     private void OnDisable()
     {
         StopSlideAnimation();
+        bool wasOpen = isOpen || isClosing;
         isOpen = false;
         isClosing = false;
+        if (wasOpen)
+            OpenStateChanged?.Invoke(false);
         ResetOwnedRelicSelection();
         ResetCompoundSelection();
-        ResetSlidePositions();
         LobbyPositionModalInputBlocker.Unblock(this);
+        LobbyPositionSharedModalBackground.HideForOwner(this);
     }
 
     private void OnDestroy()
     {
         LobbyPositionModalInputBlocker.Unblock(this);
+        LobbyPositionSharedModalBackground.HideForOwner(this);
     }
 
-    /// <summary>
-    /// Equip 버튼 자신의 RectTransform을 등록합니다.
-    /// 버튼 클릭을 패널 바깥 클릭으로 오인하지 않도록 사용합니다.
-    /// </summary>
     public void SetToggleButton(RectTransform buttonRect)
     {
         toggleButtonRect = buttonRect;
     }
 
     /// <summary>
-    /// Equip 버튼에서 호출합니다.
-    /// 닫혀 있으면 열고, 열려 있으면 시작 위치로 슬라이드 아웃합니다.
+    /// Ready_Panel을 활성/비활성화합니다.
     /// </summary>
     public void Toggle()
     {
-        if (slideAnimationCoroutine != null)
-            return;
-
-        lastToggleFrame = Time.frameCount;
-
-        if (isOpen && !isClosing)
+        GameObject root = ResolvePanelRoot();
+        if (root != null && root.activeSelf)
             Close();
         else
             Open();
@@ -180,17 +156,20 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         GameObject root = ResolvePanelRoot();
         if (root == null)
         {
-            Debug.LogWarning("[LobbyEquipPanelUI] Equip_panel을 찾을 수 없습니다.", this);
+            Debug.LogWarning("[LobbyEquipPanelUI] Ready_Panel을 찾을 수 없습니다.", this);
             return;
         }
 
-        if (isOpen && !isClosing)
-            return;
-
-        if (LobbyPositionModalInputBlocker.IsBlockedByAnother(this))
+        if (root.activeSelf && LobbyPositionSharedModalBackground.IsPanelPresented(root))
             return;
 
         if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
+        if (!LobbyPositionSharedModalBackground.PrepareForPanelSwitch(root))
+            return;
+
+        if (LobbyPositionModalInputBlocker.IsBlockedByAnother(this))
             return;
 
         TitleManager.CloseTitleModePanelsExceptInScene(root);
@@ -201,34 +180,35 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (bringToFront)
             root.transform.SetAsLastSibling();
 
+        isClosing = false;
+        isOpen = true;
+        OpenStateChanged?.Invoke(true);
+        LobbyPositionModalInputBlocker.Block(this);
+        LobbyPositionSharedModalBackground.ShowForPanel(root, this, Close);
+
         ResolveSlideTargets();
-        ResolveCharacterViewsIfNeeded();
-        ResolveCharacterTextIfNeeded();
         ResolveOwnedRelicViewIfNeeded();
         ResolveCompoundInventoryIfNeeded();
         ResolveCompoundSelectionViewIfNeeded();
         RefreshCharacterData();
-        StopSlideAnimation();
-
-        // 닫히는 도중 다시 열면 현재 위치에서 자연스럽게 이어서 엽니다.
-        isClosing = false;
-        isOpen = true;
-        LobbyPositionModalInputBlocker.Block(this);
-        slideAnimationCoroutine = StartCoroutine(PlaySlideAnimation(true));
     }
 
     public void Close()
     {
-        if (!isOpen || isClosing)
+        GameObject root = ResolvePanelRoot();
+        if (root == null)
             return;
 
         ResetOwnedRelicSelection();
         ResetCompoundSelection();
-        ResolveSlideTargets();
-        StopSlideAnimation();
-        isClosing = true;
+        isClosing = false;
         isOpen = false;
-        slideAnimationCoroutine = StartCoroutine(PlaySlideAnimation(false));
+        OpenStateChanged?.Invoke(false);
+        LobbyPositionSharedModalBackground.HideForOwner(this);
+        LobbyPositionModalInputBlocker.Unblock(this);
+
+        if (root.activeSelf)
+            root.SetActive(false);
     }
 
     /// <summary>
@@ -1396,11 +1376,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (characterTextObject != null)
             return;
 
-        ResolveSlideTargets();
-        Transform searchRoot = charterRect != null ? charterRect : ResolvePanelRoot()?.transform;
+        Transform searchRoot = ResolveInfoPanelTransform();
         Transform characterText = FindChildRecursive(searchRoot, "Character_Text");
-        if (characterText == null && ResolvePanelRoot() != null && searchRoot != ResolvePanelRoot().transform)
-            characterText = FindChildRecursive(ResolvePanelRoot().transform, "Character_Text");
 
         if (characterText != null)
         {
@@ -1415,8 +1392,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (!autoBindCharacterHierarchy)
             return;
 
-        ResolveSlideTargets();
-        Transform searchRoot = charterRect != null ? charterRect : ResolvePanelRoot()?.transform;
+        Transform searchRoot = ResolveInfoPanelTransform();
         if (searchRoot == null)
             return;
 
@@ -1627,15 +1603,56 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private static LobbyEquipPanelUI FindEquipPanelOwner(Transform child)
     {
-        return child != null ? child.GetComponentInParent<LobbyEquipPanelUI>(true) : null;
+        LobbyEquipPanelUI owner = child != null
+            ? child.GetComponentInParent<LobbyEquipPanelUI>(true)
+            : null;
+
+        if (owner != null)
+            return owner;
+
+        return FindFirstObjectByType<LobbyEquipPanelUI>(FindObjectsInactive.Include);
+    }
+
+    private Transform ResolveInfoPanelTransform()
+    {
+        GameObject infoPanel = FindSceneObject(InfoPanelName);
+        return infoPanel != null ? infoPanel.transform : null;
     }
 
     private GameObject ResolvePanelRoot()
     {
-        if (panelRoot == null)
+        if (panelRoot != null && panelRoot.name == ReadyPanelName)
+            return panelRoot;
+
+        if (gameObject.name == ReadyPanelName)
+        {
+            panelRoot = gameObject;
+            return panelRoot;
+        }
+
+        GameObject found = FindSceneObject(ReadyPanelName);
+        if (found != null)
+            panelRoot = found;
+        else if (panelRoot == null)
             panelRoot = gameObject;
 
         return panelRoot;
+    }
+
+    private static GameObject FindSceneObject(string targetName)
+    {
+        if (string.IsNullOrWhiteSpace(targetName))
+            return null;
+
+        GameObject[] roots = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
+        for (int i = 0; i < roots.Length; i++)
+        {
+            Transform found = FindChildRecursive(roots[i].transform, targetName);
+            if (found != null)
+                return found.gameObject;
+        }
+
+        return null;
     }
 
     private static void SetAnchoredX(RectTransform target, float x)

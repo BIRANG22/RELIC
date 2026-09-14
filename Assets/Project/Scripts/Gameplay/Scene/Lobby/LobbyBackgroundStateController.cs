@@ -45,12 +45,17 @@ public sealed class LobbyBackgroundStateController : MonoBehaviour
         CurrentState = state;
         ResolveSceneReferences();
 
-        SetActive(positionBackground, state == LobbyBackgroundState.Position);
-        SetActive(characterSettingBackground, state == LobbyBackgroundState.CharacterSetting);
+        bool usePositionBackground =
+            state == LobbyBackgroundState.Position ||
+            state == LobbyBackgroundState.CharacterSetting;
+
+        SetActive(positionBackground, usePositionBackground);
+        // CharacterSetting 전용 배경(char_back)은 더 이상 사용하지 않습니다.
+        SetActive(characterSettingBackground, false);
         SetActive(erosionSelectBackground, state == LobbyBackgroundState.ErosionSelect);
         SetActive(relicShopBackground, state == LobbyBackgroundState.RelicShop);
         SetActive(cultureTankBackground, state == LobbyBackgroundState.CultureTank);
-        SetActive(positionCharacterSetting, state == LobbyBackgroundState.Position);
+        SetActive(positionCharacterSetting, usePositionBackground);
     }
 
     private void ResolveSceneReferences()
@@ -60,9 +65,6 @@ public sealed class LobbyBackgroundStateController : MonoBehaviour
 
         if (positionBackground == null)
             positionBackground = FindSceneObject("Position_Back");
-
-        if (characterSettingBackground == null)
-            characterSettingBackground = FindSceneObject("CharacterSetting_Back");
 
         if (erosionSelectBackground == null)
             erosionSelectBackground = FindSceneObject("ErosionSelect_Back");

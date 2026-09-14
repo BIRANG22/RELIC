@@ -12,10 +12,12 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
 {
     private const string PositionPanelName = "PositionPanel";
     private const string BackgroundPanelName = "BackgroundPanel";
+    private const string InfoPanelName = "Info_Panel";
     private const string BackButtonName = "BackButton";
 
     [Header("Shared Background")]
     [SerializeField] private GameObject backgroundRoot;
+    [SerializeField] private GameObject infoRoot;
     [SerializeField] private Button backButton;
 
     private object activeOwner;
@@ -179,6 +181,11 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
         if (!backgroundRoot.activeSelf)
             backgroundRoot.SetActive(true);
 
+        if (infoRoot != null && !infoRoot.activeSelf)
+            infoRoot.SetActive(true);
+
+        LobbyInfoPanelUI.RefreshAll();
+
         // 패널을 연 경로와 관계없이 현재 Shortcut의 Inspector Display Name/Icon으로
         // BackgroundPanel의 Mainicon 표시를 동기화합니다.
         LobbyPositionPanelShortcutUI.RefreshForPanel(panel);
@@ -206,11 +213,13 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
         activePanel = null;
         activeCloseAction = null;
 
-        if (!keepBackgroundActiveDuringSwitch &&
-            backgroundRoot != null &&
-            backgroundRoot.activeSelf)
+        if (!keepBackgroundActiveDuringSwitch)
         {
-            backgroundRoot.SetActive(false);
+            if (backgroundRoot != null && backgroundRoot.activeSelf)
+                backgroundRoot.SetActive(false);
+
+            if (infoRoot != null && infoRoot.activeSelf)
+                infoRoot.SetActive(false);
         }
     }
 
@@ -246,6 +255,20 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
 
                 if (backgroundPanel != null)
                     backgroundRoot = backgroundPanel.gameObject;
+            }
+        }
+
+        if (infoRoot == null)
+        {
+            GameObject positionPanel = FindSceneObject(PositionPanelName);
+            if (positionPanel != null)
+            {
+                Transform infoPanel = positionPanel.transform.Find(InfoPanelName);
+                if (infoPanel == null)
+                    infoPanel = FindChildRecursive(positionPanel.transform, InfoPanelName);
+
+                if (infoPanel != null)
+                    infoRoot = infoPanel.gameObject;
             }
         }
 
