@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 
 /// <summary>
 /// 로비의 Character1 / Character2 / Character3 이미지 오브젝트에 직접 붙여서 사용합니다.
-/// 클릭한 파티 슬롯에 현재 배치된 캐릭터로 CharacterSettingPanel을 엽니다.
+/// 클릭한 파티 슬롯의 캐릭터로 CharacterSettingPanel을 일반 모달 방식으로 엽니다.
 /// </summary>
 [DisallowMultipleComponent]
 public class LobbyPartyCharacterSettingOpenButton : MonoBehaviour, IPointerClickHandler
@@ -23,9 +23,6 @@ public class LobbyPartyCharacterSettingOpenButton : MonoBehaviour, IPointerClick
     [Header("Optional References")]
     [Tooltip("비워 두면 씬의 Setting 컴포넌트를 자동으로 찾습니다.")]
     [SerializeField] private Setting setting;
-
-    [Tooltip("비워 두면 기존 Setting 버튼의 LobbyPanelTransitionButton을 자동으로 찾습니다.")]
-    [SerializeField] private LobbyPanelTransitionButton transitionButton;
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -62,11 +59,7 @@ public class LobbyPartyCharacterSettingOpenButton : MonoBehaviour, IPointerClick
             return;
         }
 
-        // 슬롯이 비어 있어도 설정 패널은 엽니다.
-        // Setting에서 현재 파티에 아직 편성되지 않은 캐릭터 중 가장 앞 캐릭터를 선택합니다.
-
         ResolveReferences();
-
         if (setting == null)
         {
             Debug.LogWarning(
@@ -75,20 +68,25 @@ public class LobbyPartyCharacterSettingOpenButton : MonoBehaviour, IPointerClick
             return;
         }
 
-        if (transitionButton == null)
+        GameObject characterSettingPanel = setting.gameObject;
+
+        // 이미 CharacterSettingPanel이 열려 있다면 패널 전환 없이 선택 캐릭터만 갱신합니다.
+        if (characterSettingPanel.activeInHierarchy)
         {
-            Debug.LogWarning(
-                "[LobbyPartyCharacterSettingOpenButton] 기존 Setting 버튼의 LobbyPanelTransitionButton을 찾을 수 없습니다.",
-                this);
+            setting.OpenPartySetting(partyIndex);
             return;
         }
 
-        // CharacterSettingPanel이 아직 비활성 상태이므로 먼저 슬롯 선택을 예약합니다.
-        // 패널이 실제로 활성화되고 초기화가 끝난 뒤 Setting이 해당 캐릭터를 적용합니다.
-        setting.OpenPartySettingWhenActive(partyIndex);
+        // 다른 PositionPanel 모달이 열려 있다면 기존 공용 Close 경로로 먼저 정리합니다.
+        if (!LobbyPositionSharedModalBackground.PrepareForPanelSwitch(characterSettingPanel))
+            return;
 
-        // 기존 Setting 버튼과 같은 패널/배경/카메라 전환을 시작합니다.
-        transitionButton.Execute();
+        TitleManager.CloseTitleModePanelsExceptInScene(characterSettingPanel);
+
+        // 패널이 비활성 상태이므로 먼저 슬롯 선택을 예약합니다.
+        // 활성화 후 Setting.OnEnable에서 BackgroundPanel을 열고, 다음 프레임에 캐릭터를 적용합니다.
+        setting.OpenPartySettingWhenActive(partyIndex);
+        characterSettingPanel.SetActive(true);
     }
 
     private int ResolvePartyIndex()
@@ -144,26 +142,5 @@ public class LobbyPartyCharacterSettingOpenButton : MonoBehaviour, IPointerClick
     {
         if (setting == null)
             setting = FindFirstObjectByType<Setting>(FindObjectsInactive.Include);
-
-        if (transitionButton != null)
-            return;
-
-        LobbyPanelTransitionButton[] transitionButtons =
-            FindObjectsByType<LobbyPanelTransitionButton>(
-                FindObjectsInactive.Include,
-                FindObjectsSortMode.None);
-
-        for (int i = 0; i < transitionButtons.Length; i++)
-        {
-            LobbyPanelTransitionButton candidate = transitionButtons[i];
-            if (candidate == null)
-                continue;
-
-            if (string.Equals(candidate.gameObject.name, "Setting", System.StringComparison.OrdinalIgnoreCase))
-            {
-                transitionButton = candidate;
-                return;
-            }
-        }
     }
 }
