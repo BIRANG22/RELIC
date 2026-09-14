@@ -543,24 +543,15 @@ public class BattleSceneController : MonoBehaviour
         SceneFlowManager sceneFlow = SceneFlowManager.Instance;
 
         // 씬 전환이 화면을 가리고 있는 동안 Position_Panel은 이미 활성화되어 있다.
-        // 로비 -> Battle 비동기 로드가 완전히 끝난 뒤부터 표시 시간을 계산한다.
-        if (sceneFlow != null && sceneFlow.IsLoading)
-        {
-            while (sceneFlow.IsLoading)
-                yield return null;
-        }
-        else if (sceneTransition != null)
-        {
-            // 씬 활성화 직후 PlayOpenAsync가 시작되는 프레임도 놓치지 않는다.
+        // BattleScene의 Start가 호출된 직후에는 PlayOpenAsync가 아직 시작되지 않았을 수 있으므로
+        // 최소 한 프레임 기다린 뒤, 씬 로드와 열림 전환이 모두 끝난 시점부터 표시 시간을 계산한다.
+        yield return null;
+
+        while (sceneFlow != null && sceneFlow.IsLoading)
             yield return null;
 
-            while (sceneTransition.IsPlaying)
-                yield return null;
-        }
-        else
-        {
+        while (sceneTransition != null && sceneTransition.IsPlaying)
             yield return null;
-        }
 
         if (positionPanel != null && positionPanel.activeSelf)
         {
@@ -603,7 +594,8 @@ public class BattleSceneController : MonoBehaviour
     {
         if (positionPanel == null)
         {
-            Transform found = FindSceneTransformByName("Position_Panel");
+            Transform found = FindSceneTransformByName("Position_Panel")
+                              ?? FindSceneTransformByName("PositionPanel");
             if (found != null)
                 positionPanel = found.gameObject;
         }

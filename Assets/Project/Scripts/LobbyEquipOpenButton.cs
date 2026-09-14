@@ -2,15 +2,15 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Opens and closes Equip_panel from the lobby Setting/Equip button.
-/// Does not depend on world object interactions.
+/// Ready_Panel을 직접 여닫아야 하는 레거시 버튼용 호환 컴포넌트입니다.
+/// 기본 탐사 흐름에서는 BattlePlayButton이 Ready_Panel을 엽니다.
+/// Info_Panel은 LobbyInfoPanelOpenButton을 사용합니다.
 /// </summary>
 [RequireComponent(typeof(Button))]
 [DisallowMultipleComponent]
 public sealed class LobbyEquipOpenButton : MonoBehaviour
 {
-    [Header("Equip Panel")]
-    [SerializeField] private LobbyEquipPanelUI equipPanel;
+    [SerializeField] private LobbyEquipPanelUI readyPanel;
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
@@ -22,7 +22,7 @@ public sealed class LobbyEquipOpenButton : MonoBehaviour
     private void Awake()
     {
         button = GetComponent<Button>();
-        ResolveEquipPanel();
+        ResolveReadyPanel();
         RegisterToggleButton();
         BindButton();
     }
@@ -32,7 +32,7 @@ public sealed class LobbyEquipOpenButton : MonoBehaviour
         if (button == null)
             button = GetComponent<Button>();
 
-        ResolveEquipPanel();
+        ResolveReadyPanel();
         RegisterToggleButton();
         BindButton();
     }
@@ -40,15 +40,15 @@ public sealed class LobbyEquipOpenButton : MonoBehaviour
     private void OnDestroy()
     {
         if (button != null)
-            button.onClick.RemoveListener(ToggleEquipPanel);
+            button.onClick.RemoveListener(ToggleReadyPanel);
     }
 
-    public void ToggleEquipPanel()
+    public void ToggleReadyPanel()
     {
-        LobbyEquipPanelUI resolved = ResolveEquipPanel();
+        LobbyEquipPanelUI resolved = ResolveReadyPanel();
         if (resolved == null)
         {
-            Debug.LogWarning("[LobbyEquipOpenButton] LobbyEquipPanelUI is missing.", this);
+            Debug.LogWarning("[LobbyEquipOpenButton] LobbyEquipPanelUI를 찾을 수 없습니다.", this);
             return;
         }
 
@@ -58,27 +58,24 @@ public sealed class LobbyEquipOpenButton : MonoBehaviour
 
     private void RegisterToggleButton()
     {
-        LobbyEquipPanelUI resolved = ResolveEquipPanel();
-        if (resolved == null)
-            return;
-
-        resolved.SetToggleButton(transform as RectTransform);
+        LobbyEquipPanelUI resolved = ResolveReadyPanel();
+        if (resolved != null)
+            resolved.SetToggleButton(transform as RectTransform);
     }
 
     private void BindButton()
     {
-        Button resolvedButton = button;
-        if (resolvedButton == null)
+        if (button == null)
             return;
 
-        resolvedButton.onClick.RemoveListener(ToggleEquipPanel);
-        resolvedButton.onClick.AddListener(ToggleEquipPanel);
+        button.onClick.RemoveListener(ToggleReadyPanel);
+        button.onClick.AddListener(ToggleReadyPanel);
     }
 
-    private LobbyEquipPanelUI ResolveEquipPanel()
+    private LobbyEquipPanelUI ResolveReadyPanel()
     {
-        if (equipPanel != null)
-            return equipPanel;
+        if (readyPanel != null)
+            return readyPanel;
 
         LobbyEquipPanelUI[] panels = FindObjectsByType<LobbyEquipPanelUI>(
             FindObjectsInactive.Include,
@@ -87,20 +84,17 @@ public sealed class LobbyEquipOpenButton : MonoBehaviour
         for (int i = 0; i < panels.Length; i++)
         {
             LobbyEquipPanelUI candidate = panels[i];
-            if (candidate == null)
-                continue;
-
-            if (candidate.gameObject.name == "Equip_panel")
+            if (candidate != null && candidate.gameObject.name == "Ready_Panel")
             {
-                equipPanel = candidate;
-                return equipPanel;
+                readyPanel = candidate;
+                return readyPanel;
             }
         }
 
         if (panels.Length > 0)
-            equipPanel = panels[0];
+            readyPanel = panels[0];
 
-        return equipPanel;
+        return readyPanel;
     }
 
     private void PlayClickSfx()

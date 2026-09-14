@@ -145,6 +145,15 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
 
         CloseOpenedPopupPanels();
 
+        // CharacterSettingPanel은 더 이상 LobbyToCharacter 화면 전환 대상이 아닙니다.
+        // PositionPanel 위에서 BackgroundPanel과 함께 열리는 일반 모달로 처리하여
+        // 화면 전환 연출, Position_Back 비활성화, ShowCharacterSelection 호출을 모두 건너뜁니다.
+        if (IsCharacterSettingModalTarget())
+        {
+            OpenCharacterSettingModalImmediately();
+            return;
+        }
+
         if (lobbyPanelTransition == null)
         {
             InvokeBeforePanelChange();
@@ -184,6 +193,34 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
                 clickActionDelay +
                 lobbyPanelTransition.EstimatedTransitionTime +
                 0.1f));
+    }
+
+    private bool IsCharacterSettingModalTarget()
+    {
+        return panelToOpen != null && panelToOpen.name == "CharacterSettingPanel";
+    }
+
+    private void OpenCharacterSettingModalImmediately()
+    {
+        if (panelToOpen == null)
+            return;
+
+        // 다른 PositionPanel 모달이 열려 있으면 그 패널의 정상 Close 경로로 닫습니다.
+        // 전환 중에도 공용 BackgroundPanel은 유지되며 CharacterSettingPanel OnEnable에서
+        // 현재 패널 소유권을 다시 등록합니다.
+        if (!LobbyPositionSharedModalBackground.PrepareForPanelSwitch(panelToOpen))
+            return;
+
+        if (!panelToOpen.activeSelf)
+            panelToOpen.SetActive(true);
+
+        // 별도 CharacterSelection 상태로 전환하지 않으므로 Position 화면은 그대로 유지합니다.
+        // 프리뷰 컨트롤러가 비활성 오브젝트에 있더라도 즉시 갱신할 수 있게 호출합니다.
+        LobbyCharacterPreviewController previewController =
+            FindFirstObjectByType<LobbyCharacterPreviewController>(FindObjectsInactive.Include);
+
+        if (previewController != null)
+            previewController.Refresh();
     }
 
     /// <summary>
@@ -461,7 +498,9 @@ public class LobbyPanelTransitionButton : MonoBehaviour, IPointerEnterHandler
                 return true;
 
             case "CharacterSettingPanel":
-                state = LobbyBackgroundState.CharacterSetting;
+                // CharacterSettingPanel은 별도 배경(char_back)을 사용하지 않고
+                // Position_Back을 그대로 유지합니다.
+                state = LobbyBackgroundState.Position;
                 return true;
 
             case "ErosionSelectPanel":

@@ -90,6 +90,10 @@ public class Setting : MonoBehaviour
     [Header("Shared Info Area")]
     [SerializeField] private RectTransform infoArea;
 
+    [Header("Character Preview Canvas")]
+    [Tooltip("CharacterSettingPanel과 함께 켜고 끌 CharacterPreviewCanvas입니다. 비어 있으면 이름으로 자동 탐색합니다.")]
+    [SerializeField] private Canvas characterPreviewCanvas;
+    [Tooltip("BackgroundPanel보다 캐릭터 프리뷰를 몇 단계 위에 그릴지 지정합니다. 기본값 1을 유지합니다.")]
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
 
@@ -113,6 +117,15 @@ public class Setting : MonoBehaviour
     private CharacterSettingTabButtonScaleEffect skillButtonScaleEffect;
     private CharacterSettingTabButtonScaleEffect runeButtonScaleEffect;
     private Coroutine areaMoveCoroutine;
+
+    private bool characterPreviewCanvasStateCached;
+    private bool characterPreviewOriginalOverrideSorting;
+    private int characterPreviewOriginalSortingOrder;
+    private int characterPreviewOriginalSortingLayerId;
+    private RenderMode characterPreviewOriginalRenderMode;
+    private Camera characterPreviewOriginalWorldCamera;
+    private float characterPreviewOriginalPlaneDistance;
+    private int characterPreviewOriginalTargetDisplay;
 
     private void Awake()
     {
@@ -178,6 +191,18 @@ public class Setting : MonoBehaviour
     {
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+
+        // CharacterSettingPanel도 다른 PositionPanel 모달과 동일하게
+        // 공용 BackgroundPanel을 먼저 활성화합니다. Blur/Presentation Canvas의 정렬값이
+        // 적용된 뒤 Preview를 그 사이에 배치해야 실제 표시 순서가 정확합니다.
+        LobbyPositionSharedModalBackground.ShowForPanel(
+            gameObject,
+            this,
+            CloseFromSharedBackground);
+
+        // CharacterPreviewCanvas는 CharacterSettingPanel과 별도 오브젝트이므로
+        // BackgroundPanel 바로 위, CharacterSettingPanel 바로 아래에 배치합니다.
+        ShowCharacterPreviewCanvas();
 
         if (pendingPartyIndex < 0)
             return;
@@ -263,6 +288,11 @@ public class Setting : MonoBehaviour
     private void OnDisable()
     {
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LobbyPositionSharedModalBackground.HideForOwner(this);
+
+        // CharacterSettingPanel이 닫히면 별도 Canvas에 생성된 캐릭터 이미지도
+        // 즉시 보이지 않도록 CharacterPreviewCanvas 전체를 함께 끕니다.
+        HideCharacterPreviewCanvas();
 
         if (areaMoveCoroutine != null)
         {
@@ -271,6 +301,170 @@ public class Setting : MonoBehaviour
         }
 
         ResetTabButtonScaleEffects();
+    }
+
+    private void CloseFromSharedBackground()
+    {
+        // CharacterSettingPanel은 이제 별도의 로비 화면 전환을 사용하지 않는
+        // PositionPanel 위의 일반 모달입니다. 공용 BackButton/ESC에서는
+        // 패널만 닫고 OnDisable에서 BackgroundPanel과 프리뷰 Canvas를 함께 정리합니다.
+        gameObject.SetActive(false);
+    }
+
+    private void ShowCharacterPreviewCanvas()
+    {
+        ResolveCharacterPreviewCanvas();
+        if (characterPreviewCanvas == null)
+            return;
+
+        if (!characterPreviewCanvasStateCached)
+        {
+            characterPreviewOriginalOverrideSorting = characterPreviewCanvas.overrideSorting;
+            characterPreviewOriginalSortingOrder = characterPreviewCanvas.sortingOrder;
+            characterPreviewOriginalSortingLayerId = characterPreviewCanvas.sortingLayerID;
+            characterPreviewOriginalRenderMode = characterPreviewCanvas.renderMode;
+            characterPreviewOriginalWorldCamera = characterPreviewCanvas.worldCamera;
+            characterPreviewOriginalPlaneDistance = characterPreviewCanvas.planeDistance;
+            characterPreviewOriginalTargetDisplay = characterPreviewCanvas.targetDisplay;
+            characterPreviewCanvasStateCached = true;
+        }
+
+        Canvas settingCanvas = GetComponent<Canvas>();
+        if (settingCanvas != null)
+        {
+            Canvas referenceCanvas = settingCanvas.rootCanvas != null
+                ? settingCanvas.rootCanvas
+                : settingCanvas;
+
+            // CharacterSettingPanel이 속한 메인 UI Canvas와 같은 Render Mode를 사용해야
+            // Sorting Order가 실제로 같은 렌더링 계층에서 비교됩니다.
+            characterPreviewCanvas.renderMode = referenceCanvas.renderMode;
+            characterPreviewCanvas.targetDisplay = referenceCanvas.targetDisplay;
+
+            if (referenceCanvas.renderMode == RenderMode.ScreenSpaceCamera)
+            {
+                characterPreviewCanvas.worldCamera = referenceCanvas.worldCamera;
+                characterPreviewCanvas.planeDistance = referenceCanvas.planeDistance;
+            }
+            else if (referenceCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
+            {
+                characterPreviewCanvas.worldCamera = null;
+            }
+
+            Canvas backgroundCanvas = ResolveSharedBackgroundCanvas();
+            if (backgroundCanvas != null)
+            {
+                int previewOrder = backgroundCanvas.sortingOrder + 1;
+
+                // 정확한 순서: BackgroundPanel + 1 = CharacterPreviewCanvas,
+                // CharacterPreviewCanvas + 1 = CharacterSettingPanel.
+                characterPreviewCanvas.sortingLayerID = backgroundCanvas.sortingLayerID;
+                characterPreviewCanvas.overrideSorting = true;
+                characterPreviewCanvas.sortingOrder = previewOrder;
+
+                settingCanvas.sortingLayerID = backgroundCanvas.sortingLayerID;
+                settingCanvas.overrideSorting = true;
+                settingCanvas.sortingOrder = previewOrder + 1;
+            }
+            else
+            {
+                // BackgroundPanel Canvas를 찾지 못한 경우에는 기존 CharacterSettingPanel을 기준으로
+                // Preview를 정확히 한 단계 아래에 배치합니다.
+                characterPreviewCanvas.sortingLayerID = settingCanvas.sortingLayerID;
+                characterPreviewCanvas.overrideSorting = true;
+                characterPreviewCanvas.sortingOrder = settingCanvas.sortingOrder - 1;
+            }
+        }
+
+        if (!characterPreviewCanvas.gameObject.activeSelf)
+            characterPreviewCanvas.gameObject.SetActive(true);
+
+        // Canvas를 다시 켠 직후 현재 선택 캐릭터 표시 상태를 즉시 갱신합니다.
+        LobbyCharacterPreviewController previewController = characterPreviewCanvas.GetComponent<LobbyCharacterPreviewController>();
+        if (previewController == null)
+            previewController = characterPreviewCanvas.GetComponentInChildren<LobbyCharacterPreviewController>(true);
+
+        previewController?.Refresh();
+    }
+
+    private void HideCharacterPreviewCanvas()
+    {
+        ResolveCharacterPreviewCanvas();
+        if (characterPreviewCanvas == null)
+            return;
+
+        if (characterPreviewCanvasStateCached)
+        {
+            characterPreviewCanvas.overrideSorting = characterPreviewOriginalOverrideSorting;
+            characterPreviewCanvas.sortingOrder = characterPreviewOriginalSortingOrder;
+            characterPreviewCanvas.sortingLayerID = characterPreviewOriginalSortingLayerId;
+            characterPreviewCanvas.renderMode = characterPreviewOriginalRenderMode;
+            characterPreviewCanvas.targetDisplay = characterPreviewOriginalTargetDisplay;
+            characterPreviewCanvas.worldCamera = characterPreviewOriginalWorldCamera;
+            characterPreviewCanvas.planeDistance = characterPreviewOriginalPlaneDistance;
+        }
+
+        if (characterPreviewCanvas.gameObject.activeSelf)
+            characterPreviewCanvas.gameObject.SetActive(false);
+    }
+
+
+    private Canvas ResolveSharedBackgroundCanvas()
+    {
+        GameObject[] objects = FindObjectsByType<GameObject>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        // BackgroundPanel 자체에 Canvas가 구성되어 있다면 그 정렬값을 최우선으로 사용합니다.
+        for (int i = 0; i < objects.Length; i++)
+        {
+            GameObject candidate = objects[i];
+            if (candidate == null || candidate.name != "BackgroundPanel")
+                continue;
+
+            Canvas canvas = candidate.GetComponent<Canvas>();
+            if (canvas != null)
+                return canvas;
+        }
+
+        // UIBlurBackgroundManager가 실제 블러 배경을 SharedBlurCanvas로 그리는 구조이므로
+        // BackgroundPanel에 별도 Canvas가 없으면 이 Canvas를 기준으로 사용합니다.
+        for (int i = 0; i < objects.Length; i++)
+        {
+            GameObject candidate = objects[i];
+            if (candidate == null || candidate.name != "SharedBlurCanvas")
+                continue;
+
+            Canvas canvas = candidate.GetComponent<Canvas>();
+            if (canvas != null)
+                return canvas;
+        }
+
+        return null;
+    }
+
+    private void ResolveCharacterPreviewCanvas()
+    {
+        if (characterPreviewCanvas != null)
+            return;
+
+        GameObject[] objects = FindObjectsByType<GameObject>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < objects.Length; i++)
+        {
+            GameObject candidate = objects[i];
+            if (candidate == null || candidate.name != "CharacterPreviewCanvas")
+                continue;
+
+            Canvas canvas = candidate.GetComponent<Canvas>();
+            if (canvas == null)
+                continue;
+
+            characterPreviewCanvas = canvas;
+            return;
+        }
     }
 
     private void OnLocaleChanged(Locale _)
