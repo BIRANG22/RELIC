@@ -109,6 +109,7 @@ MonoBehaviour:
   vfxRoot: {fileID: 2000000000000000001}
   actions:
   - ActionId: event_choice_01_success
+    Animator: {fileID: 0}
     AnimatorTrigger: 
     AnimatorStateName: 
     VfxPrefab: {fileID: 0}
@@ -124,10 +125,17 @@ MonoBehaviour:
     ScaleTarget: {fileID: 2000000000000000001}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
+    ShakeTarget: {fileID: 0}
+    ApplyShake: 0
+    ShakeDelay: 0
+    ShakeDuration: 0.35
+    ShakeStrength: 0.08
+    ShakeFrequency: 25
     Activations:
     - ActiveTarget: {fileID: 2573843949970508871}
       ApplyActiveState: 1
       ActiveState: 1
+      ActivationDelay: 0
       DisableAfterDelay: 1
       DisableDelay: 1
     DisableTargetsOnPlay: []
@@ -136,6 +144,7 @@ MonoBehaviour:
     ApplyActiveState: 0
     ActiveState: 1
   - ActionId: event_choice_01_failure
+    Animator: {fileID: 0}
     AnimatorTrigger: 
     AnimatorStateName: event_dustium_fale
     VfxPrefab: {fileID: 0}
@@ -151,26 +160,36 @@ MonoBehaviour:
     ScaleTarget: {fileID: 0}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
+    ShakeTarget: {fileID: 0}
+    ApplyShake: 0
+    ShakeDelay: 0
+    ShakeDuration: 0.35
+    ShakeStrength: 0.08
+    ShakeFrequency: 25
     Activations:
     - ActiveTarget: {fileID: 2573843949970508871}
       ApplyActiveState: 1
       ActiveState: 1
+      ActivationDelay: 0
       DisableAfterDelay: 1
       DisableDelay: 1
     - ActiveTarget: {fileID: 6605663912121200501}
       ApplyActiveState: 1
       ActiveState: 1
+      ActivationDelay: 0
       DisableAfterDelay: 1
       DisableDelay: 1
-    DisableTargetsOnPlay: []
+    DisableTargetsOnPlay:
+    - {fileID: 3324850994106290968}
     DisableDelayOnPlay: 0
     ActiveTarget: {fileID: 0}
     ApplyActiveState: 0
     ActiveState: 1
   - ActionId: event_choice_02_success
+    Animator: {fileID: 0}
     AnimatorTrigger: 
     AnimatorStateName: 
-    VfxPrefab: {fileID: 4873703482218212909, guid: 30178c6bbd6c7744f935aaeb353f081d, type: 3}
+    VfxPrefab: {fileID: 0}
     VfxRootOverride: {fileID: 2000000000000000001}
     VfxLocalPosition: {x: 0, y: 0, z: -0.1}
     VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
@@ -183,10 +202,17 @@ MonoBehaviour:
     ScaleTarget: {fileID: 2000000000000000001}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
+    ShakeTarget: {fileID: 0}
+    ApplyShake: 0
+    ShakeDelay: 0
+    ShakeDuration: 0.35
+    ShakeStrength: 0.08
+    ShakeFrequency: 25
     Activations:
     - ActiveTarget: {fileID: 2573843949970508871}
       ApplyActiveState: 1
       ActiveState: 1
+      ActivationDelay: 0
       DisableAfterDelay: 1
       DisableDelay: 0
     DisableTargetsOnPlay: []
@@ -195,6 +221,7 @@ MonoBehaviour:
     ApplyActiveState: 0
     ActiveState: 1
   - ActionId: event_choice_02_failure
+    Animator: {fileID: 0}
     AnimatorTrigger: 
     AnimatorStateName: event_dustium_fale
     VfxPrefab: {fileID: 0}
@@ -210,23 +237,33 @@ MonoBehaviour:
     ScaleTarget: {fileID: 0}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
+    ShakeTarget: {fileID: 0}
+    ApplyShake: 0
+    ShakeDelay: 0
+    ShakeDuration: 0.35
+    ShakeStrength: 0.08
+    ShakeFrequency: 25
     Activations:
     - ActiveTarget: {fileID: 2573843949970508871}
       ApplyActiveState: 1
       ActiveState: 1
+      ActivationDelay: 0
       DisableAfterDelay: 1
       DisableDelay: 1
     - ActiveTarget: {fileID: 6605663912121200501}
       ApplyActiveState: 1
       ActiveState: 1
+      ActivationDelay: 0
       DisableAfterDelay: 1
       DisableDelay: 1
-    DisableTargetsOnPlay: []
+    DisableTargetsOnPlay:
+    - {fileID: 3324850994106290968}
     DisableDelayOnPlay: 0
     ActiveTarget: {fileID: 0}
     ApplyActiveState: 0
     ActiveState: 1
   - ActionId: event_choice_03_success
+    Animator: {fileID: 0}
     AnimatorTrigger: 
     AnimatorStateName: 
     VfxPrefab: {fileID: 0}
@@ -242,6 +279,12 @@ MonoBehaviour:
     ScaleTarget: {fileID: 0}
     ApplyLocalScale: 0
     LocalScale: {x: 1, y: 1, z: 1}
+    ShakeTarget: {fileID: 0}
+    ApplyShake: 0
+    ShakeDelay: 0
+    ShakeDuration: 0.35
+    ShakeStrength: 0.08
+    ShakeFrequency: 25
     Activations: []
     DisableTargetsOnPlay: []
     DisableDelayOnPlay: 0

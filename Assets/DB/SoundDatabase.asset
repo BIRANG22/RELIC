@@ -124,7 +124,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.title.click
     aliases: []
-    clip: {fileID: 8300000, guid: 7f7f2003f18fd4f6a9b31445986ac291, type: 3}
+    clip: {fileID: 8300000, guid: eb3bf9be5c83d4dbd939ab156a55bdad, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -133,9 +133,9 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.logo.click
     aliases: []
-    clip: {fileID: 8300000, guid: 748ab9133e00d04458c3a6b54f77b212, type: 3}
+    clip: {fileID: 8300000, guid: e3a0b60ac751f420193e42de32eb175c, type: 3}
     volume: 0.6
-    pitch: 1
+    pitch: 0.8
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 1
@@ -684,14 +684,14 @@ MonoBehaviour:
     aliases: []
     clip: {fileID: 8300000, guid: c134991fbb1464f8f9db1f3a3c9b5479, type: 3}
     volume: 0.5
-    pitch: 0.8
+    pitch: 1
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
   - id: Slot_down
     aliases: []
-    clip: {fileID: 8300000, guid: f53c36f35456c4cdb80e7c5dfc942609, type: 3}
+    clip: {fileID: 8300000, guid: ecbe7c48e275f45e99797fe799cfbc60, type: 3}
     volume: 0.5
     pitch: 0.8
     loop: 0
@@ -1493,10 +1493,10 @@ MonoBehaviour:
   - displayName: barrow.attack.02
     vfxPrefab: {fileID: 4842766680182321979, guid: 5a0861b7a8fde794e94e49da70c5b6fd, type: 3}
     cues:
-    - clip: {fileID: 8300000, guid: 81beb3b75933f494d924cb1792f838d7, type: 3}
+    - clip: {fileID: 8300000, guid: 044d443c38b194b1ab87c864f94b5cd9, type: 3}
       delay: 0
       volume: 1
-      pitch: 2
+      pitch: 0.8
       loop: 0
       playOncePerAction: 1
       useRandomPitch: 0
