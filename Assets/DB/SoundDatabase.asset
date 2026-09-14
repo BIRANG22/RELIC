@@ -286,17 +286,17 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.timeline.slot.rotate
     aliases: []
-    clip: {fileID: 8300000, guid: 5b4391889346143bd9e5d0b5d7b4367b, type: 3}
-    volume: 0.5
+    clip: {fileID: 8300000, guid: 328ec450d560b47bf8832924754ea87b, type: 3}
+    volume: 0.2
     pitch: 1
     loop: 0
     useRandomPitch: 1
-    randomPitchMin: 0.8
-    randomPitchMax: 1.2
+    randomPitchMin: 0.7
+    randomPitchMax: 1.3
   - id: battle.timeline.slot.slide
     aliases: []
-    clip: {fileID: 8300000, guid: 39b652a79e3a14f53bd96ae2fc42bb7e, type: 3}
-    volume: 0.5
+    clip: {fileID: 8300000, guid: 8e87c8c82bb034a478a331d8ab94c1bd, type: 3}
+    volume: 0.2
     pitch: 1
     loop: 0
     useRandomPitch: 1
@@ -349,7 +349,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.boss.reveal.impact.low
     aliases: []
-    clip: {fileID: 8300000, guid: 31c5d114f830245468a89f1097770791, type: 3}
+    clip: {fileID: 8300000, guid: f68655a8e56c446688345b346d8decac, type: 3}
     volume: 0.5
     pitch: 0.8
     loop: 0
@@ -682,7 +682,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: Slot_up
     aliases: []
-    clip: {fileID: 8300000, guid: 55426547c0ee0324787f7a5db6bcdfcd, type: 3}
+    clip: {fileID: 8300000, guid: c134991fbb1464f8f9db1f3a3c9b5479, type: 3}
     volume: 0.5
     pitch: 0.8
     loop: 0
@@ -691,7 +691,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: Slot_down
     aliases: []
-    clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
+    clip: {fileID: 8300000, guid: f53c36f35456c4cdb80e7c5dfc942609, type: 3}
     volume: 0.5
     pitch: 0.8
     loop: 0
@@ -700,7 +700,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: Action_Start
     aliases: []
-    clip: {fileID: 8300000, guid: 97920063d95b7e94c8098f16e03d9bf8, type: 3}
+    clip: {fileID: 8300000, guid: f4c66d76b0374432693168267057ad1d, type: 3}
     volume: 0.5
     pitch: 0.8
     loop: 0
@@ -1352,7 +1352,7 @@ MonoBehaviour:
     - clip: {fileID: 8300000, guid: e436a12901d084ceea61f2c90c56223c, type: 3}
       delay: 0
       volume: 1
-      pitch: 1
+      pitch: 0.9
       loop: 0
       playOncePerAction: 0
       useRandomPitch: 0
