@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -34,5 +35,35 @@ public class LocalizedTMPTextTests
         {
             Object.DestroyImmediate(root);
         }
+    }
+
+    [TestCase("Assets/Project/PrefabsR/MenuPanel.prefab", "quit_Text")]
+    [TestCase("Assets/Project/PrefabsR/Check.prefab", "Slogan")]
+    public void DynamicPrefabText_IsExcludedFromStaticLocalization(string prefabPath, string objectName)
+    {
+        GameObject root = PrefabUtility.LoadPrefabContents(prefabPath);
+        try
+        {
+            TMP_Text text = FindText(root, objectName);
+
+            Assert.That(text, Is.Not.Null, $"{objectName} TMP text was not found.");
+            Assert.That(text.GetComponent<LocalizationIgnore>(), Is.Not.Null);
+            Assert.That(text.GetComponent<LocalizedTMPText>(), Is.Null);
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+    }
+
+    private static TMP_Text FindText(GameObject root, string objectName)
+    {
+        foreach (TMP_Text text in root.GetComponentsInChildren<TMP_Text>(true))
+        {
+            if (text.gameObject.name == objectName)
+                return text;
+        }
+
+        return null;
     }
 }

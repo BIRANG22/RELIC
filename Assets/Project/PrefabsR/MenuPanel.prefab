@@ -1280,13 +1280,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1890205736}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 1890205738}
-  localizationKey: ui.assets.project.scripts.core.managers.uimanager.text.acf962d7
-  koreanSource: "\uC800\uC7A5 \uD6C4 \uC885\uB8CC"
-  automaticallyRegistered: 1
 --- !u!1 &1942304245
 GameObject:
   m_ObjectHideFlags: 0
