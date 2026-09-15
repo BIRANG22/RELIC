@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Relic.Gameplay.Data;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 /// <summary>
@@ -14,6 +16,11 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class LobbyCompoundReferenceUI : MonoBehaviour
 {
+    [Header("고정 제목")]
+    [Tooltip("Reference/NameText입니다. Inspector에 적어둔 제목을 런타임에서도 그대로 유지합니다.")]
+    [SerializeField] private TMP_Text referenceNameText;
+
+    private string referenceNameTextInitialValue = string.Empty;
     [Header("레시피 목록")]
     [Tooltip("reference/Scroll View/Viewport/Content 입니다. 비워두면 자동으로 찾습니다.")]
     [SerializeField] private RectTransform contentRoot;
@@ -43,6 +50,8 @@ public sealed class LobbyCompoundReferenceUI : MonoBehaviour
 
     private void Awake()
     {
+        ResolveReferenceTitle();
+        ProtectReferenceTitle();
         ResolveReferences();
         ConfigureScrollRect();
         HideSceneTemplateIfNeeded();
@@ -50,6 +59,9 @@ public sealed class LobbyCompoundReferenceUI : MonoBehaviour
 
     private void OnEnable()
     {
+        ResolveReferenceTitle();
+        ProtectReferenceTitle();
+        RestoreReferenceTitle();
         ResolveReferences();
         ConfigureScrollRect();
         RefreshNow(true);
@@ -208,8 +220,54 @@ public sealed class LobbyCompoundReferenceUI : MonoBehaviour
         spawnedSlots.Clear();
     }
 
+    private void ResolveReferenceTitle()
+    {
+        if (referenceNameText != null)
+            return;
+
+        Transform title = transform.Find("NameText");
+        if (title == null)
+            title = FindDeepChild(transform, "NameText");
+
+        if (title != null)
+            referenceNameText = title.GetComponent<TMP_Text>();
+
+        if (referenceNameText != null && string.IsNullOrEmpty(referenceNameTextInitialValue))
+            referenceNameTextInitialValue = referenceNameText.text;
+    }
+
+    private void ProtectReferenceTitle()
+    {
+        if (referenceNameText == null)
+            return;
+
+        if (string.IsNullOrEmpty(referenceNameTextInitialValue))
+            referenceNameTextInitialValue = referenceNameText.text;
+
+        if (referenceNameText.GetComponent<LocalizationIgnore>() == null)
+            referenceNameText.gameObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localizer = referenceNameText.GetComponent<LocalizedTMPText>();
+        if (localizer != null)
+            localizer.enabled = false;
+
+        LocalizeStringEvent legacyLocalizer = referenceNameText.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+            legacyLocalizer.enabled = false;
+    }
+
+    private void RestoreReferenceTitle()
+    {
+        if (referenceNameText == null || string.IsNullOrEmpty(referenceNameTextInitialValue))
+            return;
+
+        referenceNameText.text = referenceNameTextInitialValue;
+    }
+
     private void ResolveReferences()
     {
+        ResolveReferenceTitle();
+
         if (contentRoot == null)
         {
             Transform content = transform.Find("Scroll View/Viewport/Content");
