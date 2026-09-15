@@ -23,6 +23,9 @@ public class OptionPanelUI : MonoBehaviour
     [Header("Resolution")]
     [SerializeField] private TMP_Dropdown resolutionDropdown;
 
+    [Header("Battle Presentation Speed")]
+    [SerializeField] private TextMeshProUGUI battlePresentationSpeedLabel;
+
     [Header("Tutorial")]
     [SerializeField] private Toggle tutorialToggle;
     [SerializeField] private Toggle tutorialPreviewToggle;
@@ -53,6 +56,7 @@ public class OptionPanelUI : MonoBehaviour
         SetupIntroToggle();
         SubscribeIntroFinished();
         ShowAllContents();
+        RefreshBattlePresentationSpeedLabel();
     }
 
     private void OnDisable()
@@ -64,6 +68,7 @@ public class OptionPanelUI : MonoBehaviour
     {
         if (resolutionDropdown != null)
             resolutionDropdown.onValueChanged.RemoveListener(OnResolutionChanged);
+
 
         if (tutorialToggle != null)
             tutorialToggle.onValueChanged.RemoveListener(OnTutorialToggleChanged);
@@ -150,6 +155,18 @@ public class OptionPanelUI : MonoBehaviour
             saveToastSortingOrder);
     }
 
+    /// <summary>
+    /// Option 프리팹의 전투 배속 버튼 UnityEvent에서 호출됩니다.
+    /// 전투 연출용 로컬 속도만 다음 단계로 순환합니다.
+    /// </summary>
+    public void CycleBattlePresentationSpeed()
+    {
+        int nextIndex = (BattlePresentationSpeedSettings.CurrentIndex + 1)
+            % BattlePresentationSpeedSettings.OptionCount;
+        BattlePresentationSpeedSettings.SetSelectedIndex(nextIndex);
+        RefreshBattlePresentationSpeedLabel();
+    }
+
     private void AutoFindReferences()
     {
         if (soundContent == null)
@@ -163,6 +180,7 @@ public class OptionPanelUI : MonoBehaviour
 
         if (controlContent == null)
             controlContent = FindChildGameObject(ControlContentName);
+
     }
 
     private void SetupLanguageDropdown()
@@ -210,6 +228,7 @@ public class OptionPanelUI : MonoBehaviour
 
         isResolutionDropdownReady = true;
     }
+
 
     private void SetupTutorialToggle()
     {
@@ -363,6 +382,22 @@ public class OptionPanelUI : MonoBehaviour
 
         ResolutionManager.ApplyResolution(index, true);
     }
+
+    private void RefreshBattlePresentationSpeedLabel()
+    {
+        if (battlePresentationSpeedLabel == null)
+        {
+            Transform speedButton = FindChildByName(transform, "BattleSpeedButton");
+            if (speedButton != null)
+                battlePresentationSpeedLabel = speedButton.GetComponentInChildren<TextMeshProUGUI>(true);
+        }
+
+        if (battlePresentationSpeedLabel != null)
+            battlePresentationSpeedLabel.text = $"{BattlePresentationSpeedSettings.CurrentMultiplier:0.0}x";
+        else
+            Debug.LogWarning("[BattlePresentationSpeed] Speed label reference is missing.", this);
+    }
+
 
     private IEnumerator ShowResolutionDropdownNextFrame()
     {

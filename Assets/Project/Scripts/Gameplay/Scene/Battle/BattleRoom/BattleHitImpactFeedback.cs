@@ -291,7 +291,7 @@ public class BattleHitImpactFeedback : MonoBehaviour
 
         while (elapsed < duration)
         {
-            elapsed += Time.unscaledDeltaTime;
+            elapsed += GetPresentationDeltaTime(Time.unscaledDeltaTime);
             float t = Mathf.Clamp01(elapsed / duration);
             float eased = EvaluateCurve(damageHitPushCurve, t);
             ApplyDamageMove(entries, Mathf.Lerp(from, to, eased));
@@ -376,7 +376,7 @@ public class BattleHitImpactFeedback : MonoBehaviour
             if (target == null)
                 yield break;
 
-            elapsed += Time.unscaledDeltaTime;
+            elapsed += GetPresentationDeltaTime(Time.unscaledDeltaTime);
             float t = Mathf.Clamp01(elapsed / duration);
             float eased = EvaluateCurve(statusPulseCurve, t);
             target.localScale = Vector3.Lerp(from, to, eased);
@@ -396,7 +396,7 @@ public class BattleHitImpactFeedback : MonoBehaviour
 
         while (elapsed < duration)
         {
-            elapsed += Time.unscaledDeltaTime;
+            elapsed += GetPresentationDeltaTime(Time.unscaledDeltaTime);
             yield return null;
         }
     }
@@ -416,6 +416,11 @@ public class BattleHitImpactFeedback : MonoBehaviour
         {
             BattleVfxPlaybackPauseController.ResumeAll();
         }
+    }
+
+    private static float GetPresentationDeltaTime(float unscaledDeltaTime)
+    {
+        return BattleConsecutiveActionPresentationContext.ScaleDeltaTime(unscaledDeltaTime);
     }
 
     private static Vector3 AcquireOriginalValue(

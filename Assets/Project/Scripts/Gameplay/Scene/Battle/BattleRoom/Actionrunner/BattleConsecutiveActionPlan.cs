@@ -392,19 +392,19 @@ public static class BattleConsecutiveActionPresentationContext
     // 같은 행동과 다음 행동 사이의 전환 지연만 BattleActionRunner에서 별도로 줄입니다.
     public static float ScaleDuration(float duration)
     {
-        return Mathf.Max(0f, duration);
+        return BattlePresentationSpeedSettings.ScaleDuration(duration);
     }
 
     public static float ScaleActionBeatDuration(float duration, float minimumGroupedDuration)
     {
         // 행동 내부 beat는 연속 행동 여부와 무관하게 원래 시간을 유지합니다.
         // minimumGroupedDuration도 더 이상 행동 내부 타이밍에 개입하지 않습니다.
-        return Mathf.Max(0f, duration);
+        return BattlePresentationSpeedSettings.ScaleDuration(duration);
     }
 
     public static float ScaleDeltaTime(float deltaTime)
     {
-        return Mathf.Max(0f, deltaTime);
+        return Mathf.Max(0f, deltaTime) * BattlePresentationSpeedSettings.CurrentMultiplier;
     }
 
     public static void ApplyAnimatorSpeed(Animator animator, float localMultiplier = 1f)
@@ -413,10 +413,11 @@ public static class BattleConsecutiveActionPresentationContext
             return;
 
         float safeLocalMultiplier = Mathf.Max(0.01f, localMultiplier);
+        float presentationMultiplier = BattlePresentationSpeedSettings.CurrentMultiplier;
 
         if (!CurrentInfo.IsGrouped)
         {
-            animator.speed = safeLocalMultiplier;
+            animator.speed = safeLocalMultiplier * presentationMultiplier;
             return;
         }
 
@@ -427,13 +428,30 @@ public static class BattleConsecutiveActionPresentationContext
         // 여기서는 BattleUnitAnimator가 요청한 로컬 배율(예: 연타 1.35)만 적용합니다.
         animator.speed = Mathf.Max(
             0.01f,
-            ManagedAnimators[animator] * safeLocalMultiplier);
+            ManagedAnimators[animator] * safeLocalMultiplier * presentationMultiplier);
     }
 
     public static void ApplyVfxSpeed(GameObject root)
     {
-        // 연속 행동 배율은 VFX 자체의 재생 속도를 바꾸지 않습니다.
-        // d -> 다음 a 같은 행동 경계 시간만 BattleActionRunner에서 단축합니다.
+        if (root == null)
+            return;
+
+        float multiplier = BattlePresentationSpeedSettings.CurrentMultiplier;
+
+        ParticleSystem[] particles = root.GetComponentsInChildren<ParticleSystem>(true);
+        for (int i = 0; i < particles.Length; i++)
+        {
+            ParticleSystem.MainModule main = particles[i].main;
+            main.simulationSpeed *= multiplier;
+        }
+
+        Animator[] animators = root.GetComponentsInChildren<Animator>(true);
+        for (int i = 0; i < animators.Length; i++)
+            animators[i].speed *= multiplier;
+
+        VisualEffect[] visualEffects = root.GetComponentsInChildren<VisualEffect>(true);
+        for (int i = 0; i < visualEffects.Length; i++)
+            visualEffects[i].playRate *= multiplier;
     }
 
     public static void EndGroup()

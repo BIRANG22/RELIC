@@ -137,6 +137,19 @@ public class BattleHitImpactFeedbackTests
     }
 
     [Test]
+    public void PresentationDeltaTime_AtFourTimesSpeed_MultipliesUnscaledDeltaTime()
+    {
+        BattlePresentationSpeedSettings.SetSelectedIndex(4);
+
+        MethodInfo method = typeof(BattleHitImpactFeedback).GetMethod(
+            "GetPresentationDeltaTime",
+            BindingFlags.Static | BindingFlags.NonPublic);
+
+        Assert.That(method, Is.Not.Null, "GetPresentationDeltaTime method is missing.");
+        Assert.That((float)method.Invoke(null, new object[] { 0.1f }), Is.EqualTo(0.4f));
+    }
+
+    [Test]
     public void DamageMoveEntries_CanExcludeTargetsForForcedMovementHits()
     {
         GameObject feedbackObject = new("ImpactFeedback_ExcludeTargets");

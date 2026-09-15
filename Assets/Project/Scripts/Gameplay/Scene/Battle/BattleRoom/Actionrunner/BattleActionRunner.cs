@@ -364,11 +364,13 @@ public class BattleActionRunner
 
         if (hasInteraction)
         {
-            yield return new WaitForSeconds(MonsterHUDVisibleDelay / safeSpeed);
+            yield return new WaitForSeconds(
+                BattleConsecutiveActionPresentationContext.ScaleDuration(MonsterHUDVisibleDelay / safeSpeed));
 
             hudService.HideUnselectedMonsterHUDs();
 
-            yield return new WaitForSeconds(BatchEndDelay / safeSpeed);
+            yield return new WaitForSeconds(
+                BattleConsecutiveActionPresentationContext.ScaleDuration(BatchEndDelay / safeSpeed));
 
             hudService.PlayAllAliveIdle();
             yield break;
@@ -376,7 +378,8 @@ public class BattleActionRunner
 
         hudService.HideUnselectedMonsterHUDs();
 
-        yield return new WaitForSeconds(NoInteractionPostDelay / safeSpeed);
+        yield return new WaitForSeconds(
+            BattleConsecutiveActionPresentationContext.ScaleDuration(NoInteractionPostDelay / safeSpeed));
 
         hudService.PlayAllAliveIdle();
     }
@@ -761,9 +764,11 @@ public class BattleActionRunner
     {
         // 연속 행동 배율은 현재 행동 내부가 아니라
         // 현재 행동의 마지막 연출 -> 다음 같은 행동 시작 경계에만 적용합니다.
-        return activeActionInfo.IsGrouped && !activeActionInfo.IsGroupEnd
+        float consecutiveMultiplier = activeActionInfo.IsGrouped && !activeActionInfo.IsGroupEnd
             ? Mathf.Max(1f, activeActionInfo.SpeedMultiplier)
             : 1f;
+
+        return consecutiveMultiplier * BattlePresentationSpeedSettings.CurrentMultiplier;
     }
 
     private float GetActiveActionBeatDelay(float baseDelay = ActionDelay)
@@ -3499,7 +3504,8 @@ public class BattleActionRunner
         if (animator != null)
         {
             animator.PlayMove();
-            yield return new WaitForSeconds(MoveAnimationDuration);
+            yield return new WaitForSeconds(
+                BattlePresentationSpeedSettings.ScaleDuration(MoveAnimationDuration));
         }
 
         // 논리 그리드와 화면 위치를 함께 갱신해 실제 점유 위치를 전방 칸으로 이동시킵니다.
@@ -3509,7 +3515,8 @@ public class BattleActionRunner
         if (animator != null)
         {
             animator.PlayMoveReverse();
-            yield return new WaitForSeconds(MoveAnimationDuration);
+            yield return new WaitForSeconds(
+                BattlePresentationSpeedSettings.ScaleDuration(MoveAnimationDuration));
             animator.RestorePlaybackSpeed();
         }
 
