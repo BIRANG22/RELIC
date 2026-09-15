@@ -2,6 +2,7 @@ using System;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
@@ -31,6 +32,8 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
     [SerializeField] private Image material3Icon;
     [SerializeField] private GameObject material3Question;
 
+    private LobbyCultureTankPanelPresenter cultureTankPresenter;
+
     public void Bind(DataManager dataManager, CompoundData compound, CompoundReferenceNameTooltip tooltip)
     {
         if (dataManager == null || compound == null)
@@ -51,12 +54,17 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
             compoundSprite,
             compoundDiscovered ? () => GameDataLocalization.CompoundName(compound) : null,
             tooltip);
-        ApplyMaterial(dataManager, compound.MaterialId1, material1Icon, material1Question, tooltip);
-        ApplyMaterial(dataManager, compound.MaterialId2, material2Icon, material2Question, tooltip);
-        ApplyMaterial(dataManager, compound.MaterialId3, material3Icon, material3Question, tooltip);
+        bool material1Discovered = ApplyMaterial(dataManager, compound.MaterialId1, material1Icon, material1Question, tooltip);
+        bool material2Discovered = ApplyMaterial(dataManager, compound.MaterialId2, material2Icon, material2Question, tooltip);
+        bool material3Discovered = ApplyMaterial(dataManager, compound.MaterialId3, material3Icon, material3Question, tooltip);
+
+        Transform materials = transform.Find("Materials");
+        ConfigureMaterialInteraction(materials?.Find("Material1"), compound.MaterialId1, material1Discovered);
+        ConfigureMaterialInteraction(materials?.Find("Material2"), compound.MaterialId2, material2Discovered);
+        ConfigureMaterialInteraction(materials?.Find("Material3"), compound.MaterialId3, material3Discovered);
     }
 
-    private static void ApplyMaterial(
+    private static bool ApplyMaterial(
         DataManager dataManager,
         string itemId,
         Image icon,
@@ -82,6 +90,8 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
             sprite,
             discovered ? () => GetItemDisplayName(dataManager, normalizedItemId) : null,
             tooltip);
+
+        return discovered;
     }
 
     private static void ApplyEntry(
@@ -115,6 +125,41 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
             hover = icon.gameObject.AddComponent<CompoundReferenceIconHover>();
 
         hover.Initialize(tooltip, icon.rectTransform, displayNameProvider);
+    }
+
+
+    private void ConfigureMaterialInteraction(Transform materialRoot, string itemId, bool discovered)
+    {
+        if (materialRoot == null)
+            return;
+
+        Image back = materialRoot.Find("Back")?.GetComponent<Image>();
+        if (back == null)
+            back = materialRoot.Find("back")?.GetComponent<Image>();
+
+        if (back != null)
+            back.raycastTarget = true;
+
+        CompoundRecipeMaterialInteraction interaction = materialRoot.GetComponent<CompoundRecipeMaterialInteraction>();
+        if (interaction == null)
+            interaction = materialRoot.gameObject.AddComponent<CompoundRecipeMaterialInteraction>();
+
+        string normalizedItemId = string.IsNullOrWhiteSpace(itemId) ? string.Empty : itemId.Trim();
+        interaction.Configure(
+            back,
+            discovered && !string.IsNullOrEmpty(normalizedItemId),
+            () => TryRegisterRecipeMaterial(normalizedItemId));
+    }
+
+    private void TryRegisterRecipeMaterial(string itemId)
+    {
+        if (string.IsNullOrWhiteSpace(itemId))
+            return;
+
+        if (cultureTankPresenter == null)
+            cultureTankPresenter = FindFirstObjectByType<LobbyCultureTankPanelPresenter>(FindObjectsInactive.Include);
+
+        cultureTankPresenter?.TryRegisterRecipeMaterial(itemId);
     }
 
     private static string GetItemDisplayName(DataManager dataManager, string itemId)
@@ -211,5 +256,95 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
 
         string suffix = id.Substring(prefix.Length);
         return dataManager.RelicIconDatabase.TryGetIcon($"Relic_A_{suffix}", out icon) && icon != null;
+    }
+}
+
+
+[DisallowMultipleComponent]
+internal sealed class CompoundRecipeMaterialInteraction : MonoBehaviour,
+    IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
+{
+    private static readonly Color32 NormalColor = new Color32(0x22, 0x22, 0x22, 0xFF);
+    private static readonly Color32 HoverColor = new Color32(0x33, 0x33, 0x33, 0xFF);
+    private static readonly Color32 PressedColor = new Color32(0x11, 0x11, 0x11, 0xFF);
+
+    private Image back;
+    private bool interactionEnabled;
+    private bool pointerInside;
+    private bool pointerPressed;
+    private bool clickCanceledByExit;
+    private Action onClick;
+
+    public void Configure(Image targetBack, bool enabled, Action clickAction)
+    {
+        back = targetBack;
+        interactionEnabled = enabled;
+        onClick = clickAction;
+        pointerInside = false;
+        pointerPressed = false;
+        clickCanceledByExit = false;
+        ApplyRgb(NormalColor);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (!interactionEnabled)
+            return;
+
+        pointerInside = true;
+        ApplyRgb(HoverColor);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        pointerInside = false;
+
+        // 누른 채 슬롯 밖으로 나간 클릭은 취소합니다.
+        // 이후 다시 슬롯 안으로 들어와 버튼을 놓아도 등록/제거가 실행되지 않습니다.
+        if (pointerPressed)
+            clickCanceledByExit = true;
+
+        ApplyRgb(NormalColor);
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (!interactionEnabled || eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        pointerPressed = true;
+        clickCanceledByExit = false;
+        ApplyRgb(PressedColor);
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        if (!interactionEnabled || eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        bool shouldInvoke = pointerPressed && pointerInside && !clickCanceledByExit;
+        pointerPressed = false;
+        clickCanceledByExit = false;
+
+        ApplyRgb(pointerInside ? HoverColor : NormalColor);
+        if (shouldInvoke)
+            onClick?.Invoke();
+    }
+
+    private void OnDisable()
+    {
+        pointerInside = false;
+        pointerPressed = false;
+        clickCanceledByExit = false;
+        ApplyRgb(NormalColor);
+    }
+
+    private void ApplyRgb(Color32 rgb)
+    {
+        if (back == null)
+            return;
+
+        float alpha = back.color.a;
+        back.color = new Color(rgb.r / 255f, rgb.g / 255f, rgb.b / 255f, alpha);
     }
 }

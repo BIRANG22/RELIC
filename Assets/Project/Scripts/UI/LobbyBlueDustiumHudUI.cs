@@ -25,6 +25,7 @@ public sealed class LobbyBlueDustiumHudUI : MonoBehaviour
     [SerializeField, Min(0)] private int editorPreviewValue = 0;
 
     private Coroutine numberChangeCoroutine;
+    private Coroutine initialRefreshCoroutine;
     private int displayedValue;
     private bool hasDisplayedValue;
 
@@ -43,6 +44,7 @@ public sealed class LobbyBlueDustiumHudUI : MonoBehaviour
         {
             Instances.Add(this);
             Refresh();
+            StartInitialRefresh();
         }
         else
         {
@@ -53,8 +55,35 @@ public sealed class LobbyBlueDustiumHudUI : MonoBehaviour
     private void OnDisable()
     {
         Instances.Remove(this);
+        StopInitialRefresh();
         StopNumberChangeCoroutine();
         hasDisplayedValue = false;
+    }
+
+    private void StartInitialRefresh()
+    {
+        StopInitialRefresh();
+        initialRefreshCoroutine = StartCoroutine(RefreshInitialValueAfterDataLoad());
+    }
+
+    private IEnumerator RefreshInitialValueAfterDataLoad()
+    {
+        // 모든 Awake/OnEnable 이후 Bootstrap.Start에서 저장 데이터가 로드되므로
+        // 한 프레임 기다린 뒤 실제 보유량을 즉시 다시 반영합니다.
+        yield return null;
+
+        int targetValue = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate()?.BlueDustium ?? 0;
+        SetValueImmediate(targetValue);
+        initialRefreshCoroutine = null;
+    }
+
+    private void StopInitialRefresh()
+    {
+        if (initialRefreshCoroutine == null)
+            return;
+
+        StopCoroutine(initialRefreshCoroutine);
+        initialRefreshCoroutine = null;
     }
 
     public static void RefreshAll()

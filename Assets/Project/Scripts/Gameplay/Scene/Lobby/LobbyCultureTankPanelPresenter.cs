@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [DisallowMultipleComponent]
@@ -162,7 +163,8 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             Sprite icon = null;
             if (filled) DataManager.Instance?.ItemIconDatabase?.TryGetIcon(slot.ItemId, out icon);
             row.SetIcon(icon);
-            if (row.Button != null) row.Button.interactable = CanMutate();
+            row.ApplyVisualState(filled);
+            if (row.Button != null) row.Button.interactable = filled && CanMutate();
         }
         if (emptyText != null) emptyText.gameObject.SetActive(false);
         if (combineButton != null)
@@ -172,23 +174,51 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
     private void SelectRow(int index)
     {
+        if (!CanMutate())
+            return;
+
         LobbyRuntimeData lobby = GetLobby();
-        if (CultureTankResearchService.TryGetTank(lobby, GetSlotId(index), out _))
-        {
-            if (CultureTankResearchService.TryRemoveIngredient(lobby, GetSlotId(index), out _)) SaveAndPublish();
-            selectedSlotIndex = -1;
-        }
-        else selectedSlotIndex = index;
+        if (!CultureTankResearchService.TryGetTank(lobby, GetSlotId(index), out _))
+            return;
+
+        if (CultureTankResearchService.TryRemoveIngredient(lobby, GetSlotId(index), out _))
+            SaveAndPublish();
+
+        selectedSlotIndex = -1;
         RefreshAll();
     }
 
-    private void SelectInventoryItem(string itemId)
+    public bool TryRegisterRecipeMaterial(string itemId)
+    {
+        if (string.IsNullOrWhiteSpace(itemId))
+            return false;
+
+        LobbyRuntimeData lobby = GetLobby();
+        if (lobby == null || !CanMutate())
+            return false;
+
+        string normalizedItemId = itemId.Trim();
+
+        // 조합식 재료도 Storage 슬롯과 동일하게 토글합니다.
+        // 이미 배양조에 들어 있는 재료라면 다시 클릭했을 때 제거합니다.
+        if (TryRemoveStorageItemFromTank(lobby, normalizedItemId))
+        {
+            selectedSlotIndex = -1;
+            SaveAndPublish();
+            RefreshAll();
+            return true;
+        }
+
+        return SelectInventoryItem(normalizedItemId);
+    }
+
+    private bool SelectInventoryItem(string itemId)
     {
         LobbyRuntimeData lobby = GetLobby();
         bool hasCompletedCombination = !string.IsNullOrWhiteSpace(lobby?.CompletedCultureTankCombinationId);
 
         if (!CanMutate() || hasCompletedCombination || string.IsNullOrWhiteSpace(itemId))
-            return;
+            return false;
 
         // Storage의 재료를 바로 클릭하면 선택된 행이 있을 때는 그 행에,
         // 선택된 행이 없을 때는 CultureTankRow_1~3 중 첫 번째 빈 행에 자동 투입합니다.
@@ -199,19 +229,20 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         if (targetSlotIndex < 0)
         {
             Debug.LogWarning("[LobbyCultureTankPanelPresenter] 비어 있는 배양조가 없습니다.");
-            return;
+            return false;
         }
 
         if (!CultureTankResearchService.TryPlaceIngredient(lobby, GetSlotId(targetSlotIndex), itemId, out string error))
         {
             Debug.LogWarning($"[LobbyCultureTankPanelPresenter] {error}");
-            return;
+            return false;
         }
 
         PlayIngredientRegisterSound();
         selectedSlotIndex = -1;
         SaveAndPublish();
         RefreshAll();
+        return true;
     }
 
     private void PlayIngredientRegisterSound()
@@ -708,7 +739,8 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
                 button,
                 itemId,
                 selected || (canSelect && slot.HasItem && itemCount > 0),
-                selectedItemId => OnStorageItemClicked(capturedSlot, selectedItemId));
+                selectedItemId => OnStorageItemClicked(capturedSlot, selectedItemId),
+                (draggedItemId, eventData) => TryDropStorageItem(draggedItemId, eventData));
 
             slot.SetSelected(selected);
 
@@ -737,6 +769,59 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             return;
 
         slot.SetHovered(false);
+    }
+
+    private bool TryDropStorageItem(string itemId, PointerEventData eventData)
+    {
+        if (string.IsNullOrWhiteSpace(itemId) || eventData == null)
+            return false;
+
+        LobbyRuntimeData lobby = GetLobby();
+        if (lobby == null || !CanMutate())
+            return false;
+
+        string normalizedItemId = itemId.Trim();
+
+        // 같은 재료를 여러 번 사용하는 조합식은 없으므로 배양조 중복 등록을 막습니다.
+        if (IsStorageItemSelectedInTank(lobby, normalizedItemId))
+            return false;
+
+        for (int i = 0; i < rows.Length; i++)
+        {
+            TankRow row = rows[i];
+            if (row?.Root == null || !row.Root.activeInHierarchy)
+                continue;
+
+            RectTransform rowRect = row.Root.transform as RectTransform;
+            if (rowRect == null)
+                continue;
+
+            Camera uiCamera = ResolveUiCamera(rowRect);
+            if (!RectTransformUtility.RectangleContainsScreenPoint(rowRect, eventData.position, uiCamera))
+                continue;
+
+            // 이미 재료가 있는 Row는 드롭으로 덮어쓰지 않습니다.
+            if (CultureTankResearchService.TryGetTank(lobby, GetSlotId(i), out _))
+                return false;
+
+            if (!CultureTankResearchService.TryPlaceIngredient(
+                    lobby,
+                    GetSlotId(i),
+                    normalizedItemId,
+                    out string error))
+            {
+                Debug.LogWarning($"[LobbyCultureTankPanelPresenter] {error}");
+                return false;
+            }
+
+            PlayIngredientRegisterSound();
+            selectedSlotIndex = -1;
+            SaveAndPublish();
+            RefreshAll();
+            return true;
+        }
+
+        return false;
     }
 
     private void OnStorageItemClicked(BattleBagItemSlotUI slot, string itemId)
@@ -1124,16 +1209,37 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     [Serializable]
     private sealed class TankRow
     {
-        [SerializeField] private GameObject root; [SerializeField] private Image background; [SerializeField] private Button button;
-        [SerializeField] private TMP_Text label; [SerializeField] private TMP_Text stateLabel; [SerializeField] private Image itemIcon;
+        private static readonly Color EmptyBacklineColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+        private static readonly Color FilledBacklineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+        private static readonly Color HoverBacklineColor = Color.white;
+
+        [SerializeField] private GameObject root;
+        [SerializeField] private Image background;
+        [SerializeField] private Button button;
+        [SerializeField] private TMP_Text label;
+        [SerializeField] private TMP_Text stateLabel;
+        [SerializeField] private Image itemIcon;
+        [SerializeField] private GameObject cultureText;
+
+        private LobbyCultureTankRowHoverRelay hoverRelay;
+        private bool filled;
+
         public GameObject Root { get => root; set => root = value; }
-        public Image Background => background; public Button Button => button;
-        public TMP_Text Label => label; public TMP_Text StateLabel => stateLabel;
+        public Image Background => background;
+        public Button Button => button;
+        public TMP_Text Label => label;
+        public TMP_Text StateLabel => stateLabel;
+
         public void Bind()
         {
             if (root == null) return;
+
+            Image hierarchyBackline = Find(root.transform, "backline")?.GetComponent<Image>() ??
+                                      Find(root.transform, "Backline")?.GetComponent<Image>();
+            if (hierarchyBackline != null) background = hierarchyBackline;
             if (background == null) background = Find(root.transform, "back")?.GetComponent<Image>();
             if (background == null) background = root.GetComponent<Image>();
+
             if (button == null) button = root.GetComponent<Button>() ?? root.AddComponent<Button>();
             Image clickSurface = root.GetComponent<Image>();
             if (clickSurface == null)
@@ -1143,14 +1249,23 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             }
             clickSurface.raycastTarget = true;
             button.targetGraphic = clickSurface;
-            if (label == null) label = Find(root.transform, "Label")?.GetComponent<TMP_Text>() ?? root.GetComponentInChildren<TMP_Text>(true);
+
+            if (label == null) label = Find(root.transform, "Label")?.GetComponent<TMP_Text>();
             if (stateLabel == null) stateLabel = Find(root.transform, "StateLabel")?.GetComponent<TMP_Text>();
-            // CultureTankRow 안에 이미 배치된 Icon 오브젝트를 재료 아이콘 표시용으로 사용합니다.
-            // 런타임에 ItemIcon 오브젝트를 새로 만들지 않습니다.
+
             if (itemIcon == null) itemIcon = Find(root.transform, "Icon")?.GetComponent<Image>();
             if (itemIcon == null) itemIcon = Find(root.transform, "icon")?.GetComponent<Image>();
             if (itemIcon != null) itemIcon.raycastTarget = false;
+
+            GameObject hierarchyCultureText = Find(root.transform, "Culture_Text")?.gameObject;
+            if (hierarchyCultureText != null)
+                cultureText = hierarchyCultureText;
+
+            hoverRelay = root.GetComponent<LobbyCultureTankRowHoverRelay>() ??
+                         root.AddComponent<LobbyCultureTankRowHoverRelay>();
+            hoverRelay.Configure(SetHovered);
         }
+
         public void SetIcon(Sprite icon)
         {
             if (itemIcon == null) return;
@@ -1161,6 +1276,77 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             itemIcon.enabled = hasIcon;
             itemIcon.gameObject.SetActive(hasIcon);
         }
+
+        public void ApplyVisualState(bool hasIngredient)
+        {
+            filled = hasIngredient;
+
+            if (cultureText != null)
+                cultureText.SetActive(!hasIngredient);
+
+            if (!hasIngredient && hoverRelay != null)
+                hoverRelay.ResetHover();
+
+            bool hovered = hasIngredient && hoverRelay != null && hoverRelay.IsHovered;
+            SetBacklineRgb(hasIngredient
+                ? (hovered ? HoverBacklineColor : FilledBacklineColor)
+                : EmptyBacklineColor);
+        }
+
+        private void SetHovered(bool isHovered)
+        {
+            if (!filled)
+            {
+                SetBacklineRgb(EmptyBacklineColor);
+                return;
+            }
+
+            SetBacklineRgb(isHovered ? HoverBacklineColor : FilledBacklineColor);
+        }
+
+        private void SetBacklineRgb(Color rgb)
+        {
+            if (background == null)
+                return;
+
+            Color current = background.color;
+            background.color = new Color(rgb.r, rgb.g, rgb.b, current.a);
+        }
     }
 
+}
+
+[DisallowMultipleComponent]
+public sealed class LobbyCultureTankRowHoverRelay : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    private Action<bool> onHoverChanged;
+    private bool hovered;
+
+    public bool IsHovered => hovered;
+
+    public void Configure(Action<bool> callback)
+    {
+        onHoverChanged = callback;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        hovered = true;
+        onHoverChanged?.Invoke(true);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        hovered = false;
+        onHoverChanged?.Invoke(false);
+    }
+
+    public void ResetHover()
+    {
+        if (!hovered)
+            return;
+
+        hovered = false;
+        onHoverChanged?.Invoke(false);
+    }
 }
