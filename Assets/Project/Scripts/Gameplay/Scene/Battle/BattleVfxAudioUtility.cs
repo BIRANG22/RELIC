@@ -78,7 +78,8 @@ public static class BattleVfxAudioUtility
         VfxSoundCue cue,
         float delay)
     {
-        yield return new WaitForSeconds(Mathf.Max(0f, delay));
+        yield return new WaitForSeconds(
+            BattlePresentationSpeedSettings.ScaleDuration(Mathf.Max(0f, delay)));
         PlayDatabaseVfxSfxNow(vfx, cue);
     }
 

@@ -126,13 +126,13 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayIdle()
     {
+        RestoreIdlePlaybackSpeed();
         PlayState(idleStateName);
     }
 
     public void PlayMove()
     {
-        if (EnsureAnimator())
-            animator.speed = 1f;
+        ApplyPresentationPlaybackSpeed();
 
         PlayState(moveStateName);
         SpawnVfx(moveVfx);
@@ -147,7 +147,7 @@ public class BattleUnitAnimator : MonoBehaviour
         if (!TryResolveAnimatorStateName(moveStateName, out string resolvedStateName))
             return;
 
-        animator.speed = -1f;
+        animator.speed = -BattlePresentationSpeedSettings.CurrentMultiplier;
         animator.Play(resolvedStateName, animatorLayer, 1f);
 
         if (forceAnimatorUpdate)
@@ -173,35 +173,33 @@ public class BattleUnitAnimator : MonoBehaviour
     public void RestorePlaybackSpeed()
     {
         playbackSpeedMultiplier = 1f;
-
-        if (EnsureAnimator())
-        {
-            BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(
-                animator,
-                playbackSpeedMultiplier);
-        }
+        RestoreIdlePlaybackSpeed();
     }
 
     public void PlayGuard()
     {
+        ApplyPresentationPlaybackSpeed();
         PlayState(guardStateName);
         SpawnVfx(guardVfx);
     }
 
     public void PlayHit()
     {
+        ApplyPresentationPlaybackSpeed();
         PlayState(hitStateName);
         SpawnVfx(hitVfx);
     }
 
     public void PlayHeal()
     {
+        ApplyPresentationPlaybackSpeed();
         PlayOptionalState(healStateName);
         SpawnVfx(healVfx);
     }
 
     public void PlayDead()
     {
+        ApplyPresentationPlaybackSpeed();
         PlayState(deadStateName);
     }
 
@@ -800,6 +798,8 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
         }
 
+        ApplyPresentationPlaybackSpeed();
+
         // 같은 행동의 2타 이후처럼 Prepare를 생략해야 하는 경우에는 즉시 Action을 재생합니다.
         // Prepare가 비어 있거나 Animator에 존재하지 않는 경우에도 기존처럼 즉시 Action으로 넘어갑니다.
         if (!playPrepare ||
@@ -863,6 +863,7 @@ public class BattleUnitAnimator : MonoBehaviour
         if (presentation == null)
             return;
 
+        ApplyPresentationPlaybackSpeed();
         PlayState(presentation.stateName);
 
         if (presentation.spawnVfxOnEachTargetGrid &&
@@ -2159,6 +2160,22 @@ public class BattleUnitAnimator : MonoBehaviour
             renderers[i].flip = flip;
         }
     }
+    private void ApplyPresentationPlaybackSpeed()
+    {
+        if (EnsureAnimator())
+        {
+            BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(
+                animator,
+                playbackSpeedMultiplier);
+        }
+    }
+
+    private void RestoreIdlePlaybackSpeed()
+    {
+        if (EnsureAnimator())
+            animator.speed = 1f;
+    }
+
     private void PlayState(string stateName)
     {
         if (!TryResolveAnimatorStateName(stateName, out string resolvedStateName))
@@ -2223,10 +2240,6 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void PlayAnimatorState(string stateName)
     {
-        BattleConsecutiveActionPresentationContext.ApplyAnimatorSpeed(
-            animator,
-            playbackSpeedMultiplier);
-
         if (crossFadeDuration > 0f)
             animator.CrossFadeInFixedTime(stateName, crossFadeDuration, animatorLayer, 0f);
         else
