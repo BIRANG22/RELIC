@@ -23,7 +23,8 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     [SerializeField] private Button button;
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text priceText;
-    [SerializeField, Min(1f)] private float hoverIconScale = 1.12f;
+    [SerializeField, Min(1f)] private float hoverScale = 1.05f;
+    [SerializeField, Min(0.01f)] private float hoverLerpSpeed = 14f;
 
     [Header("Rarity Ring")]
     [SerializeField] private GameObject rarityRingRoot;
@@ -84,8 +85,11 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     private string relicId;
     private Action<string> purchaseRequested;
     private Action<string, bool> hoverChanged;
-    private Vector3 iconOriginalScale = Vector3.one;
-    private bool iconScaleCached;
+    private Transform hoverScaleTarget;
+    private RectTransform hoverPointerRect;
+    private Canvas hoverCanvas;
+    private Vector3 originalScale = Vector3.one;
+    private bool originalScaleCached;
     private bool isHovered;
     private bool pointerHovered;
     private bool externalHovered;
@@ -165,10 +169,10 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
         ResetHoverState();
         SetTemporaryHidden(false);
-        priceText.text = GameLocalization.Get("lobby.sold_out", "판매 완료");
         button.interactable = false;
 
-        FadeOutRarityRing();
+        // 구매 완료 후에도 진열 정보와 가격 표시는 그대로 유지한다.
+        // 판매 완료 상태는 재구매/리롤 가능 여부로만 구분한다.
         UIBlurBackgroundManager.MarkReplicaDirty();
     }
 
@@ -221,10 +225,12 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
                 transform.Find("RelicIcon")?.GetComponent<Image>();
         }
 
-        if (iconImage != null && !iconScaleCached)
+        EnsureHoverScaleTarget();
+
+        if (!originalScaleCached && hoverScaleTarget != null)
         {
-            iconOriginalScale = iconImage.rectTransform.localScale;
-            iconScaleCached = true;
+            originalScale = hoverScaleTarget.localScale;
+            originalScaleCached = true;
         }
 
         if (priceText == null)
@@ -277,7 +283,61 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
     private void LateUpdate()
     {
+        UpdatePointerHoverFromTargetRect();
+        ApplyHoverScale();
         ApplyRarityRingProxyLayout();
+    }
+
+    private void ApplyHoverScale()
+    {
+        EnsureHoverScaleTarget();
+        if (!originalScaleCached || hoverScaleTarget == null)
+            return;
+
+        Vector3 targetScale = isHovered
+            ? originalScale * hoverScale
+            : originalScale;
+
+        float t = 1f - Mathf.Exp(-Mathf.Max(0.01f, hoverLerpSpeed) * Time.unscaledDeltaTime);
+        hoverScaleTarget.localScale = Vector3.Lerp(hoverScaleTarget.localScale, targetScale, t);
+
+        if ((hoverScaleTarget.localScale - targetScale).sqrMagnitude < 0.000001f)
+            hoverScaleTarget.localScale = targetScale;
+    }
+
+    private void EnsureHoverScaleTarget()
+    {
+        if (hoverScaleTarget != null)
+            return;
+
+        // Lobby hierarchy: Relic01~03 > RelicOffer_1~3.
+        // Hovering the offer should scale the whole Relic01~03 card, not only RelicOffer.
+        Transform parent = transform.parent;
+        hoverScaleTarget = parent != null ? parent : transform;
+        hoverPointerRect = hoverScaleTarget as RectTransform;
+        hoverCanvas = hoverScaleTarget.GetComponentInParent<Canvas>();
+    }
+
+    private void UpdatePointerHoverFromTargetRect()
+    {
+        EnsureHoverScaleTarget();
+        if (hoverPointerRect == null)
+            return;
+
+        Camera eventCamera = null;
+        if (hoverCanvas != null && hoverCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            eventCamera = hoverCanvas.worldCamera;
+
+        bool hovered = RectTransformUtility.RectangleContainsScreenPoint(
+            hoverPointerRect,
+            Input.mousePosition,
+            eventCamera);
+
+        if (pointerHovered == hovered)
+            return;
+
+        pointerHovered = hovered;
+        UpdateHoverState();
     }
 
     private void RequestPurchase()
@@ -317,22 +377,16 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
     private void UpdateHoverState()
     {
-        bool canHover = button != null &&
-                        button.interactable &&
-                        !string.IsNullOrWhiteSpace(relicId);
+        bool canHover =
+            !string.IsNullOrWhiteSpace(relicId) &&
+            button != null &&
+            button.interactable;
         bool nextHovered = canHover && (pointerHovered || externalHovered);
 
         if (nextHovered == isHovered)
             return;
 
         isHovered = nextHovered;
-
-        if (iconImage != null && iconScaleCached)
-        {
-            iconImage.rectTransform.localScale = isHovered
-                ? iconOriginalScale * hoverIconScale
-                : iconOriginalScale;
-        }
 
         ApplyRarityRingProxyLayout();
         UIBlurBackgroundManager.MarkReplicaDirty();
@@ -345,9 +399,6 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     {
         pointerHovered = false;
         externalHovered = false;
-
-        if (iconImage != null && iconScaleCached)
-            iconImage.rectTransform.localScale = iconOriginalScale;
 
         ApplyRarityRingProxyLayout();
         UIBlurBackgroundManager.MarkReplicaDirty();
@@ -841,8 +892,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
             Mathf.Max(1f, rarityRingProxySize.x),
             Mathf.Max(1f, rarityRingProxySize.y));
         rectTransform.localRotation = Quaternion.identity;
-        rectTransform.localScale =
-            Vector3.one * (isHovered ? hoverIconScale : 1f);
+        rectTransform.localScale = Vector3.one;
         UIBlurBackgroundManager.MarkReplicaDirty();
     }
 

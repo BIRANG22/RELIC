@@ -757,6 +757,9 @@ public class SaveSystem : Singleton<SaveSystem>
         lobby.StoredCompoundIds ??= new List<string>();
         lobby.CharacterLoadouts ??= new List<LobbyCharacterLoadoutData>();
         lobby.RelicOfferIds ??= new List<string>();
+        lobby.RelicRefreshCounts ??= new List<int>();
+        while (lobby.RelicRefreshCounts.Count < 3)
+            lobby.RelicRefreshCounts.Add(0);
         CultureTankResearchService.Normalize(lobby);
 
         if (!lobby.HasPendingResearchResult || lobby.PendingResearchResult == null)

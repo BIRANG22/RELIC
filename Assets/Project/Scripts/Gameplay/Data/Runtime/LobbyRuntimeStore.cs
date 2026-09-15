@@ -36,6 +36,9 @@ namespace Relic.Gameplay.Data
             value.CharacterLoadouts ??= new List<LobbyCharacterLoadoutData>();
             value.CharacterSkillUpgrades ??= new List<LobbySkillUpgradeRecordData>();
             value.RelicOfferIds ??= new List<string>();
+            value.RelicRefreshCounts ??= new List<int>();
+            while (value.RelicRefreshCounts.Count < 3)
+                value.RelicRefreshCounts.Add(0);
             CultureTankResearchService.Normalize(value);
 
             if (!value.HasPendingResearchResult || value.PendingResearchResult == null)

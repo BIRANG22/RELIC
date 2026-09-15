@@ -39,6 +39,11 @@ public static class LobbyRelicShopPurchaseLimit
 
         runtime.RelicShopPurchaseLocked = false;
         runtime.RelicRefreshCount = 0;
+        runtime.RelicRefreshCounts ??= new List<int>();
+        runtime.RelicRefreshCounts.Clear();
+        runtime.RelicRefreshCounts.Add(0);
+        runtime.RelicRefreshCounts.Add(0);
+        runtime.RelicRefreshCounts.Add(0);
         runtime.RelicOfferSeed = 0;
         runtime.RelicOfferIds?.Clear();
     }

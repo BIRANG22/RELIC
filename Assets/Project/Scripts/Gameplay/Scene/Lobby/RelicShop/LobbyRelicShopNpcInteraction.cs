@@ -1,4 +1,3 @@
-using Relic.Gameplay.Data;
 using UnityEngine;
 
 public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
@@ -7,18 +6,14 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
     [SerializeField] private LobbyRelicShopPresenter presenter;
 
     [Header("Availability Indicator")]
-    [Tooltip("유물 상점을 이용할 수 없을 때도 항상 표시할 relic_stone (1)의 SpriteRenderer입니다.")]
+    [Tooltip("유물 구매 여부와 관계없이 계속 표시하고 숨쉬는 효과를 유지할 relic_rune SpriteRenderer입니다.")]
     [SerializeField] private SpriteRenderer availabilityIndicatorRenderer;
-    [Tooltip("이용 가능 상태에서 표시할 색상입니다.")]
+    [Tooltip("숨쉬는 효과의 기준 색상입니다.")]
     [SerializeField] private Color availabilityAvailableColor = new Color32(0, 177, 255, 255);
-    [Tooltip("이용 제한 상태에서 깜박일 색상입니다.")]
+    [Tooltip("숨쉬는 효과에서 보간할 색상입니다.")]
     [SerializeField] private Color availabilityPulseColor = Color.white;
-    [Tooltip("깜박임 보간 속도입니다. 값이 클수록 빠르게 변합니다.")]
+    [Tooltip("숨쉬는 효과의 보간 속도입니다. 값이 클수록 빠르게 변합니다.")]
     [SerializeField, Min(0.01f)] private float availabilityPulseSpeed = 1f;
-
-    [Header("Purchase Cooldown")]
-    [SerializeField] private SettingWarningUI warningUI;
-    [SerializeField] private string purchaseCooldownWarningMessage = "다시 사용하려면 회복할 시간이 필요합니다.";
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
@@ -54,15 +49,6 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
         if (presenter == null)
             return;
 
-        LobbyRuntimeData runtime = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
-        if (LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime))
-        {
-            PlayClickSfx();
-            ShowWarning(purchaseCooldownWarningMessage);
-            RefreshAvailabilityIndicator(true);
-            return;
-        }
-
         PlayClickSfx();
         presenter.Open();
     }
@@ -72,7 +58,6 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
         if (presenter == null)
             return;
 
-        //PlayClickSfx();
         presenter.Close();
     }
 
@@ -81,15 +66,9 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
         if (availabilityIndicatorRenderer == null)
             return;
 
-        LobbyRuntimeData runtime = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
-        bool locked = LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime);
-
         GameObject indicatorObject = availabilityIndicatorRenderer.gameObject;
-        if (indicatorObject.activeSelf == locked)
-            indicatorObject.SetActive(!locked);
-
-        if (locked)
-            return;
+        if (!indicatorObject.activeSelf)
+            indicatorObject.SetActive(true);
 
         if (forceColorReset)
         {
@@ -105,29 +84,6 @@ public sealed class LobbyRelicShopNpcInteraction : MonoBehaviour
             availabilityAvailableColor,
             availabilityPulseColor,
             eased);
-    }
-
-    private void ShowWarning(string message)
-    {
-        if (string.IsNullOrWhiteSpace(message))
-            return;
-
-        if (warningUI == null)
-            warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
-
-        if (warningUI != null)
-        {
-            warningUI.Show(message);
-            return;
-        }
-
-        if (SettingWarningUI.Instance != null)
-        {
-            SettingWarningUI.Instance.Show(message);
-            return;
-        }
-
-        Debug.LogWarning($"[LobbyRelicShopNpcInteraction] Warning UI is missing. Message: {message}", this);
     }
 
     private void PlayClickSfx()

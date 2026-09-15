@@ -64,9 +64,6 @@ public sealed class LobbyRelicPurchaseService
         if (relicDatabase == null || !relicDatabase.TryGet(relicId, out RelicData relic))
             return Fail(relicId, LobbyRelicPurchaseFailure.RelicNotFound);
 
-        if (LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime))
-            return Fail(relicId, LobbyRelicPurchaseFailure.PurchaseLimitReached);
-
         if (!LobbyRelicPricePolicy.TryGetPrice(relic, out int price))
             return Fail(relicId, LobbyRelicPurchaseFailure.UnknownRarity);
 
@@ -79,7 +76,6 @@ public sealed class LobbyRelicPurchaseService
 
         runtime.BlueDustium -= price;
         runtime.OwnedRelicIds.Add(relicId);
-        LobbyRelicShopPurchaseLimit.LockAfterPurchase(runtime);
 
         return new LobbyRelicPurchaseResult(true, relicId, price, LobbyRelicPurchaseFailure.None);
     }

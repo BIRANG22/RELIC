@@ -4,22 +4,18 @@ using Relic.Gameplay.Data;
 
 public static class LobbyRelicRefreshPricePolicy
 {
-    public const int FixedPrice = 30;
-    public const int MaxRefreshCount = 3;
+    public const int BasePrice = 50;
+    public const int InitialIncrease = 15;
+    public const int IncreaseStep = 5;
 
+    // 50 -> 65 -> 85 -> 110 -> 140 -> 175 ...
     public static int GetPrice(int successfulRefreshCount)
     {
-        return FixedPrice;
-    }
-
-    public static int GetRemainingCount(int successfulRefreshCount)
-    {
-        return Math.Max(0, MaxRefreshCount - Math.Max(0, successfulRefreshCount));
-    }
-
-    public static bool CanRefresh(int successfulRefreshCount)
-    {
-        return GetRemainingCount(successfulRefreshCount) > 0;
+        int count = Math.Max(0, successfulRefreshCount);
+        long extra = (long)InitialIncrease * count
+                   + (long)IncreaseStep * count * (count - 1) / 2;
+        long price = BasePrice + extra;
+        return price >= int.MaxValue ? int.MaxValue : (int)price;
     }
 }
 
@@ -29,7 +25,6 @@ public enum LobbyRelicRefreshFailure
     InvalidRuntime,
     AllOffersPurchased,
     PurchaseLimitReached,
-    RefreshLimitReached,
     InsufficientBlueDustium,
     NotEnoughCandidates
 }
@@ -61,50 +56,51 @@ public sealed class LobbyRelicRefreshService
 
     public LobbyRelicRefreshResult Execute(LobbyRuntimeData runtime, int nextSeed)
     {
-        int price = LobbyRelicRefreshPricePolicy.GetPrice(runtime?.RelicRefreshCount ?? 0);
+        int refreshCount = Math.Max(0, runtime?.RelicRefreshCount ?? 0);
+        int price = LobbyRelicRefreshPricePolicy.GetPrice(refreshCount);
+
         if (runtime == null || relicDatabase == null || random == null || runtime.RelicOfferIds == null)
             return Fail(price, LobbyRelicRefreshFailure.InvalidRuntime);
 
-        if (!LobbyRelicRefreshPricePolicy.CanRefresh(runtime.RelicRefreshCount))
-            return Fail(price, LobbyRelicRefreshFailure.RefreshLimitReached);
+        var refreshableSlotIndices = new List<int>();
+        for (int i = 0; i < runtime.RelicOfferIds.Count; i++)
+        {
+            string offerId = runtime.RelicOfferIds[i];
+            if (!string.IsNullOrWhiteSpace(offerId) && !Contains(runtime.OwnedRelicIds, offerId))
+                refreshableSlotIndices.Add(i);
+        }
 
-        if (AreAllOffersPurchased(runtime))
+        if (refreshableSlotIndices.Count == 0)
             return Fail(price, LobbyRelicRefreshFailure.AllOffersPurchased);
 
-        if (LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime))
-            return Fail(price, LobbyRelicRefreshFailure.PurchaseLimitReached);
+        if (runtime.BlueDustium < price)
+            return Fail(price, LobbyRelicRefreshFailure.InsufficientBlueDustium);
 
-        var refreshIndices = new List<int>();
         var excludedIds = new List<string>();
         if (runtime.OwnedRelicIds != null)
             excludedIds.AddRange(runtime.OwnedRelicIds);
 
+        // 현재 진열 중인 유물은 구매 여부와 관계없이 새 리롤 후보에서 제외합니다.
+        // 구매한 슬롯은 그대로 유지하고, 미구매 슬롯만 새 유물로 교체합니다.
         for (int i = 0; i < runtime.RelicOfferIds.Count; i++)
         {
             string offerId = runtime.RelicOfferIds[i];
-            if (Contains(runtime.OwnedRelicIds, offerId))
-                continue;
-            refreshIndices.Add(i);
             if (!string.IsNullOrWhiteSpace(offerId))
                 excludedIds.Add(offerId.Trim());
         }
 
-        if (refreshIndices.Count == 0)
-            return Fail(price, LobbyRelicRefreshFailure.AllOffersPurchased);
-        if (runtime.BlueDustium < price)
-            return Fail(price, LobbyRelicRefreshFailure.InsufficientBlueDustium);
-
         IReadOnlyList<LobbyRelicOffer> replacements = new LobbyRelicOfferService(random).BuildOffers(
-            relicDatabase.GetAll(), excludedIds, refreshIndices.Count);
-        if (replacements.Count < refreshIndices.Count)
+            relicDatabase.GetAll(), excludedIds, refreshableSlotIndices.Count);
+        if (replacements.Count < refreshableSlotIndices.Count)
             return Fail(price, LobbyRelicRefreshFailure.NotEnoughCandidates);
 
-        for (int i = 0; i < refreshIndices.Count; i++)
-            runtime.RelicOfferIds[refreshIndices[i]] = replacements[i].RelicId;
+        for (int i = 0; i < refreshableSlotIndices.Count; i++)
+            runtime.RelicOfferIds[refreshableSlotIndices[i]] = replacements[i].RelicId;
 
         runtime.BlueDustium -= price;
-        runtime.RelicRefreshCount++;
+        runtime.RelicRefreshCount = refreshCount + 1;
         runtime.RelicOfferSeed = nextSeed == 0 ? 1 : nextSeed;
+
         return new LobbyRelicRefreshResult(true, price, LobbyRelicRefreshFailure.None);
     }
 
@@ -112,9 +108,14 @@ public sealed class LobbyRelicRefreshService
     {
         if (runtime?.RelicOfferIds == null || runtime.RelicOfferIds.Count == 0)
             return true;
+
         for (int i = 0; i < runtime.RelicOfferIds.Count; i++)
-            if (!Contains(runtime.OwnedRelicIds, runtime.RelicOfferIds[i]))
+        {
+            string offerId = runtime.RelicOfferIds[i];
+            if (!string.IsNullOrWhiteSpace(offerId) && !Contains(runtime.OwnedRelicIds, offerId))
                 return false;
+        }
+
         return true;
     }
 
@@ -122,9 +123,13 @@ public sealed class LobbyRelicRefreshService
     {
         if (ids == null || string.IsNullOrWhiteSpace(target))
             return false;
+
         foreach (string id in ids)
+        {
             if (string.Equals(id?.Trim(), target.Trim(), StringComparison.Ordinal))
                 return true;
+        }
+
         return false;
     }
 
