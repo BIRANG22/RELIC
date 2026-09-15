@@ -15,6 +15,15 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
     private const string InfoPanelName = "Info_Panel";
     private const string BackButtonName = "BackButton";
 
+    private static readonly string[] ReadyConflictingPanelNames =
+    {
+        "ErosionSelectPanel",
+        "RelicShopPanel",
+        "CultureTankPanel",
+        "StoragePanel",
+        "CharacterSettingPanel"
+    };
+
     [Header("Shared Background")]
     [SerializeField] private GameObject backgroundRoot;
     [SerializeField] private GameObject infoRoot;
@@ -148,6 +157,61 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
         return controller.activePanel == null;
     }
 
+    /// <summary>
+    /// Ready_Panel을 열기 전에 기존 PositionPanel 모달과 BackgroundPanel을 모두 정리합니다.
+    /// Ready_Panel은 공용 BackgroundPanel을 사용하지 않습니다.
+    /// </summary>
+    public static void PrepareForReadyPanel(GameObject readyPanel)
+    {
+        LobbyPositionSharedModalBackground controller = ResolveController();
+        if (controller != null)
+        {
+            controller.PrepareForReadyPanelInternal(readyPanel);
+            return;
+        }
+
+        DisableReadyConflictingPanels(readyPanel);
+    }
+
+    private void PrepareForReadyPanelInternal(GameObject readyPanel)
+    {
+        ResolveReferences();
+
+        GameObject previousPanel = activePanel;
+        Action closeAction = activeCloseAction;
+
+        // 각 패널의 정상 Close 경로를 먼저 실행해 고유 정리 로직을 보존합니다.
+        if (closeAction != null)
+            closeAction.Invoke();
+
+        // Close가 거부되거나 공용 컨트롤러에 등록되지 않은 상태여도
+        // Play 버튼에서는 준비 화면만 남아야 하므로 대상 모달을 확실히 닫습니다.
+        if (previousPanel != null && previousPanel != readyPanel && previousPanel.activeSelf)
+            previousPanel.SetActive(false);
+
+        activeOwner = null;
+        activePanel = null;
+        activeCloseAction = null;
+        keepBackgroundActiveDuringSwitch = false;
+
+        DisableReadyConflictingPanels(readyPanel);
+
+        if (backgroundRoot != null && backgroundRoot.activeSelf)
+            backgroundRoot.SetActive(false);
+    }
+
+    private static void DisableReadyConflictingPanels(GameObject readyPanel)
+    {
+        for (int i = 0; i < ReadyConflictingPanelNames.Length; i++)
+        {
+            GameObject panel = FindSceneObject(ReadyConflictingPanelNames[i]);
+            if (panel == null || panel == readyPanel || !panel.activeSelf)
+                continue;
+
+            panel.SetActive(false);
+        }
+    }
+
     private void Show(GameObject panel, object owner, Action closeAction)
     {
         ResolveReferences();
@@ -181,8 +245,6 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
         if (!backgroundRoot.activeSelf)
             backgroundRoot.SetActive(true);
 
-        if (infoRoot != null && !infoRoot.activeSelf)
-            infoRoot.SetActive(true);
 
         LobbyInfoPanelUI.RefreshAll();
 
@@ -218,8 +280,6 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
             if (backgroundRoot != null && backgroundRoot.activeSelf)
                 backgroundRoot.SetActive(false);
 
-            if (infoRoot != null && infoRoot.activeSelf)
-                infoRoot.SetActive(false);
         }
     }
 

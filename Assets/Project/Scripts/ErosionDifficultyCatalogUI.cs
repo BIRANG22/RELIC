@@ -45,6 +45,8 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
     private int targetScore;
     private int displayedScore;
     private Coroutine scoreRoutine;
+    private string erosionValueTemplate = string.Empty;
+    private bool erosionValueTemplateCaptured;
 
     public int CurrentScore => targetScore;
 
@@ -68,6 +70,8 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
         if (erosionValueText == null)
             erosionValueText = FindTextAnywhereInRoot("Erosion_Value");
+
+        CaptureErosionValueTemplate();
 
         AutoBindSelectedSlotScroll();
 
@@ -247,11 +251,43 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
             slotInstance.name = $"ErosionSlot_{item.DifficultyId}";
             BindErosionSlot(slotInstance.transform, item);
             erosionSlotInstances[slotKey] = slotInstance;
+            StartCoroutine(RebindErosionSlotNextFrame(slotKey, slotInstance));
             createdNewSlot = true;
         }
 
         if (createdNewSlot)
             ScrollErosionSlotsToBottom();
+    }
+
+
+    private IEnumerator RebindErosionSlotNextFrame(string slotKey, GameObject slotInstance)
+    {
+        // 프리팹이 처음 활성화되는 프레임에는 Localization/TMP 초기화가
+        // Inspector 기본 텍스트를 다시 적용할 수 있어 다음 프레임에 최종 데이터를 재적용합니다.
+        yield return null;
+
+        if (slotInstance == null || !erosionSlotInstances.TryGetValue(slotKey, out GameObject currentSlot) ||
+            currentSlot != slotInstance)
+        {
+            yield break;
+        }
+
+        ErosionDifficultyLevelItemUI selectedItem = null;
+        for (int i = 0; i < levelItems.Count; i++)
+        {
+            ErosionDifficultyLevelItemUI candidate = levelItems[i];
+            if (candidate == null || !candidate.IsSelectable || !candidate.IsSelected)
+                continue;
+
+            if (string.Equals(GetErosionSlotKey(candidate), slotKey, StringComparison.OrdinalIgnoreCase))
+            {
+                selectedItem = candidate;
+                break;
+            }
+        }
+
+        if (selectedItem != null)
+            BindErosionSlot(slotInstance.transform, selectedItem);
     }
 
     private static string GetErosionSlotKey(ErosionDifficultyLevelItemUI item)
@@ -429,7 +465,7 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         while (displayedScore != targetScore)
         {
             displayedScore += displayedScore < targetScore ? 1 : -1;
-            erosionValueText.text = displayedScore.ToString();
+            erosionValueText.text = FormatErosionValueText(displayedScore);
 
             if (useUnscaledTime)
                 yield return new WaitForSecondsRealtime(scoreStepInterval);
@@ -451,7 +487,36 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         displayedScore = score;
 
         if (erosionValueText != null)
-            erosionValueText.text = displayedScore.ToString();
+            erosionValueText.text = FormatErosionValueText(displayedScore);
+    }
+
+    private void CaptureErosionValueTemplate()
+    {
+        if (erosionValueTemplateCaptured || erosionValueText == null)
+            return;
+
+        erosionValueTemplate = erosionValueText.text ?? string.Empty;
+        erosionValueTemplateCaptured = true;
+    }
+
+    private string FormatErosionValueText(int value)
+    {
+        CaptureErosionValueTemplate();
+
+        if (string.IsNullOrEmpty(erosionValueTemplate))
+            return value.ToString();
+
+        if (erosionValueTemplate.IndexOf("{0}", StringComparison.Ordinal) >= 0)
+            return erosionValueTemplate.Replace("{0}", value.ToString());
+
+        string trimmed = erosionValueTemplate.Trim();
+        if (int.TryParse(trimmed, out _))
+        {
+            int index = erosionValueTemplate.IndexOf(trimmed, StringComparison.Ordinal);
+            return erosionValueTemplate.Remove(index, trimmed.Length).Insert(index, value.ToString());
+        }
+
+        return erosionValueTemplate;
     }
 
     private void RefreshAllVisuals()
