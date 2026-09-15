@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -38,6 +39,7 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
     [SerializeField] private TMP_Text mainText;
 
     private readonly Dictionary<Button, UnityAction> boundListeners = new();
+    private Coroutine deferredMainDisplayRoutine;
 
     private void OnEnable()
     {
@@ -47,6 +49,12 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
 
     private void OnDisable()
     {
+        if (deferredMainDisplayRoutine != null)
+        {
+            StopCoroutine(deferredMainDisplayRoutine);
+            deferredMainDisplayRoutine = null;
+        }
+
         UnbindButtons();
     }
 
@@ -142,9 +150,33 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
 
         for (int i = 0; i < shortcutUis.Length; i++)
         {
-            if (shortcutUis[i] != null)
-                shortcutUis[i].ApplyMainDisplay(targetPanel);
+            LobbyPositionPanelShortcutUI shortcutUi = shortcutUis[i];
+            if (shortcutUi == null)
+                continue;
+
+            shortcutUi.ApplyMainDisplay(targetPanel);
+            shortcutUi.ScheduleDeferredMainDisplay(targetPanel);
         }
+    }
+
+    private void ScheduleDeferredMainDisplay(GameObject targetPanel)
+    {
+        if (!isActiveAndEnabled || targetPanel == null)
+            return;
+
+        if (deferredMainDisplayRoutine != null)
+            StopCoroutine(deferredMainDisplayRoutine);
+
+        deferredMainDisplayRoutine = StartCoroutine(ApplyMainDisplayNextFrame(targetPanel));
+    }
+
+    private IEnumerator ApplyMainDisplayNextFrame(GameObject targetPanel)
+    {
+        yield return null;
+        deferredMainDisplayRoutine = null;
+
+        if (targetPanel != null)
+            ApplyMainDisplay(targetPanel);
     }
 
     private void ApplyMainDisplay(GameObject targetPanel)
@@ -169,7 +201,10 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
                 }
 
                 if (sourceImage != null)
+                {
                     mainIconImage.sprite = sourceImage.sprite;
+                    mainIconImage.color = sourceImage.color;
+                }
             }
 
             if (mainText != null)

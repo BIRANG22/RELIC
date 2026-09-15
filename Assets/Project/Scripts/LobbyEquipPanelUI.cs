@@ -111,6 +111,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         GameObject root = ResolvePanelRoot();
         isOpen = root != null && root.activeSelf;
         isClosing = false;
+        if (isOpen)
+            SetInfoPanelActive(true);
         RefreshCharacterData();
     }
 
@@ -124,6 +126,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             OpenStateChanged?.Invoke(false);
         ResetOwnedRelicSelection();
         ResetCompoundSelection();
+        SetInfoPanelActive(false);
         LobbyPositionModalInputBlocker.Unblock(this);
         LobbyPositionSharedModalBackground.HideForOwner(this);
     }
@@ -160,14 +163,13 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             return;
         }
 
-        if (root.activeSelf && LobbyPositionSharedModalBackground.IsPanelPresented(root))
+        if (root.activeSelf && isOpen)
             return;
 
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
-        if (!LobbyPositionSharedModalBackground.PrepareForPanelSwitch(root))
-            return;
+        LobbyPositionSharedModalBackground.PrepareForReadyPanel(root);
 
         if (LobbyPositionModalInputBlocker.IsBlockedByAnother(this))
             return;
@@ -182,9 +184,9 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
         isClosing = false;
         isOpen = true;
+        SetInfoPanelActive(true);
         OpenStateChanged?.Invoke(true);
         LobbyPositionModalInputBlocker.Block(this);
-        LobbyPositionSharedModalBackground.ShowForPanel(root, this, Close);
 
         ResolveSlideTargets();
         ResolveOwnedRelicViewIfNeeded();
@@ -203,6 +205,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         ResetCompoundSelection();
         isClosing = false;
         isOpen = false;
+        SetInfoPanelActive(false);
         OpenStateChanged?.Invoke(false);
         LobbyPositionSharedModalBackground.HideForOwner(this);
         LobbyPositionModalInputBlocker.Unblock(this);
@@ -1611,6 +1614,16 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             return owner;
 
         return FindFirstObjectByType<LobbyEquipPanelUI>(FindObjectsInactive.Include);
+    }
+
+    private void SetInfoPanelActive(bool active)
+    {
+        Transform infoPanel = ResolveInfoPanelTransform();
+        if (infoPanel != null && infoPanel.gameObject.activeSelf != active)
+            infoPanel.gameObject.SetActive(active);
+
+        if (active)
+            LobbyInfoPanelUI.RefreshAll();
     }
 
     private Transform ResolveInfoPanelTransform()

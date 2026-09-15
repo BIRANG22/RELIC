@@ -144,6 +144,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
         public float Age;
     }
 
+    private Coroutine deferredSpeakerNameRoutine;
+
     public bool IsDialogueOpen => dialogueMode != DialogueMode.None;
 
     private void Awake()
@@ -185,6 +187,13 @@ public sealed class LobbyTutorialController : MonoBehaviour
     private void OnDisable()
     {
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+
+        if (deferredSpeakerNameRoutine != null)
+        {
+            StopCoroutine(deferredSpeakerNameRoutine);
+            deferredSpeakerNameRoutine = null;
+        }
+
         StopTypewriter();
         ReleaseCameraPause();
     }
@@ -300,8 +309,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     private void RefreshDialogueStep()
     {
-        if (nameText != null)
-            nameText.text = GameLocalization.Get(speakerNameKey);
+        ApplySpeakerName();
+        ScheduleDeferredSpeakerNameRefresh();
 
         string line = string.Empty;
 
@@ -319,6 +328,32 @@ public sealed class LobbyTutorialController : MonoBehaviour
         StartTypewriter(GameLocalization.Get(line));
     }
 
+
+    private void ApplySpeakerName()
+    {
+        if (nameText != null)
+            nameText.text = GameLocalization.Get(speakerNameKey);
+    }
+
+    private void ScheduleDeferredSpeakerNameRefresh()
+    {
+        if (!isActiveAndEnabled)
+            return;
+
+        if (deferredSpeakerNameRoutine != null)
+            StopCoroutine(deferredSpeakerNameRoutine);
+
+        deferredSpeakerNameRoutine = StartCoroutine(ApplySpeakerNameNextFrame());
+    }
+
+    private IEnumerator ApplySpeakerNameNextFrame()
+    {
+        // DialoguePanel 최초 활성화 직후 로컬라이즈 컴포넌트가 기본 텍스트를 다시 적용할 수 있으므로
+        // 한 프레임 뒤 현재 언어의 NPC 이름을 최종 적용합니다.
+        yield return null;
+        deferredSpeakerNameRoutine = null;
+        ApplySpeakerName();
+    }
 
     private static int GetDialogueCount(string[] lines)
     {
