@@ -38,11 +38,20 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
     [Tooltip("현재 선택된 패널 이름을 표시할 Mainicon/MainText입니다.")]
     [SerializeField] private TMP_Text mainText;
 
+    [Header("Lobby Icon Selection Scale")]
+    [Tooltip("현재 활성 패널에 대응하는 Lobby_Icon의 확대 배율입니다.")]
+    [SerializeField] private float selectedIconScale = 1.2f;
+    [Tooltip("Lobby_Icon 선택 전환에 걸리는 시간(초)입니다.")]
+    [SerializeField] private float iconScaleDuration = 0.15f;
+
     private readonly Dictionary<Button, UnityAction> boundListeners = new();
+    private readonly Dictionary<Transform, Vector3> iconBaseScales = new();
     private Coroutine deferredMainDisplayRoutine;
+    private Coroutine iconScaleRoutine;
 
     private void OnEnable()
     {
+        CacheIconBaseScales();
         BindButtons();
         RefreshMainDisplayFromCurrentPanel();
     }
@@ -55,6 +64,13 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
             deferredMainDisplayRoutine = null;
         }
 
+        if (iconScaleRoutine != null)
+        {
+            StopCoroutine(iconScaleRoutine);
+            iconScaleRoutine = null;
+        }
+
+        ResetAllIconScalesImmediate();
         UnbindButtons();
     }
 
@@ -210,8 +226,154 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
             if (mainText != null)
                 mainText.text = entry.displayName ?? string.Empty;
 
+            AnimateIconSelection(targetPanel);
             return;
         }
+    }
+
+    private void CacheIconBaseScales()
+    {
+        if (shortcuts == null)
+            return;
+
+        for (int i = 0; i < shortcuts.Length; i++)
+        {
+            ShortcutEntry entry = shortcuts[i];
+            Transform iconTransform = GetShortcutIconTransform(entry);
+            if (iconTransform == null || iconBaseScales.ContainsKey(iconTransform))
+                continue;
+
+            iconBaseScales.Add(iconTransform, iconTransform.localScale);
+        }
+    }
+
+    private void AnimateIconSelection(GameObject targetPanel)
+    {
+        if (targetPanel == null)
+            return;
+
+        CacheIconBaseScales();
+
+        if (!isActiveAndEnabled)
+        {
+            ApplyIconSelectionImmediate(targetPanel);
+            return;
+        }
+
+        if (iconScaleRoutine != null)
+            StopCoroutine(iconScaleRoutine);
+
+        iconScaleRoutine = StartCoroutine(AnimateIconSelectionRoutine(targetPanel));
+    }
+
+    private IEnumerator AnimateIconSelectionRoutine(GameObject targetPanel)
+    {
+        float duration = Mathf.Max(0f, iconScaleDuration);
+        if (duration <= 0f)
+        {
+            ApplyIconSelectionImmediate(targetPanel);
+            iconScaleRoutine = null;
+            yield break;
+        }
+
+        Dictionary<Transform, Vector3> startScales = new();
+        Dictionary<Transform, Vector3> targetScales = new();
+
+        if (shortcuts != null)
+        {
+            for (int i = 0; i < shortcuts.Length; i++)
+            {
+                ShortcutEntry entry = shortcuts[i];
+                Transform iconTransform = GetShortcutIconTransform(entry);
+                if (iconTransform == null)
+                    continue;
+
+                if (!iconBaseScales.TryGetValue(iconTransform, out Vector3 baseScale))
+                {
+                    baseScale = iconTransform.localScale;
+                    iconBaseScales[iconTransform] = baseScale;
+                }
+
+                startScales[iconTransform] = iconTransform.localScale;
+                targetScales[iconTransform] = entry != null && entry.targetPanel == targetPanel
+                    ? baseScale * selectedIconScale
+                    : baseScale;
+            }
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            t = t * t * (3f - 2f * t);
+
+            foreach (KeyValuePair<Transform, Vector3> pair in targetScales)
+            {
+                Transform iconTransform = pair.Key;
+                if (iconTransform == null || !startScales.TryGetValue(iconTransform, out Vector3 startScale))
+                    continue;
+
+                iconTransform.localScale = Vector3.LerpUnclamped(startScale, pair.Value, t);
+            }
+
+            yield return null;
+        }
+
+        foreach (KeyValuePair<Transform, Vector3> pair in targetScales)
+        {
+            if (pair.Key != null)
+                pair.Key.localScale = pair.Value;
+        }
+
+        iconScaleRoutine = null;
+    }
+
+    private void ApplyIconSelectionImmediate(GameObject targetPanel)
+    {
+        if (shortcuts == null)
+            return;
+
+        for (int i = 0; i < shortcuts.Length; i++)
+        {
+            ShortcutEntry entry = shortcuts[i];
+            Transform iconTransform = GetShortcutIconTransform(entry);
+            if (iconTransform == null)
+                continue;
+
+            if (!iconBaseScales.TryGetValue(iconTransform, out Vector3 baseScale))
+            {
+                baseScale = iconTransform.localScale;
+                iconBaseScales[iconTransform] = baseScale;
+            }
+
+            iconTransform.localScale = entry != null && entry.targetPanel == targetPanel
+                ? baseScale * selectedIconScale
+                : baseScale;
+        }
+    }
+
+    private void ResetAllIconScalesImmediate()
+    {
+        foreach (KeyValuePair<Transform, Vector3> pair in iconBaseScales)
+        {
+            if (pair.Key != null)
+                pair.Key.localScale = pair.Value;
+        }
+    }
+
+    private static Transform GetShortcutIconTransform(ShortcutEntry entry)
+    {
+        if (entry == null)
+            return null;
+
+        if (entry.iconButton != null)
+            return entry.iconButton.transform;
+
+        if (entry.iconImage != null)
+            return entry.iconImage.transform;
+
+        return null;
     }
 
     private static bool TryOpenErosionPanel(GameObject targetPanel)

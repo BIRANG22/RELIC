@@ -24,7 +24,10 @@ namespace Relic.Gameplay.Data
         public List<LobbyCharacterLoadoutData> CharacterLoadouts = new();
         public List<LobbySkillUpgradeRecordData> CharacterSkillUpgrades = new();
         public int RelicOfferSeed;
+        // 유물 상점 공용 리롤 횟수입니다. 리롤 가격은 이 값에 따라 증가합니다.
         public int RelicRefreshCount;
+        // 이전 슬롯별 리롤 저장 데이터 호환용입니다. 현재 리롤 가격 계산에는 사용하지 않습니다.
+        public List<int> RelicRefreshCounts = new() { 0, 0, 0 };
         public List<string> RelicOfferIds = new();
         public bool RelicShopPurchaseLocked;
         public int CultureTankCombinationSchemaVersion;

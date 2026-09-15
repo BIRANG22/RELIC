@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -23,6 +24,10 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
 
     private Action onYes;
     private Action onNo;
+    private string configuredMessage = string.Empty;
+    private string configuredYesText = string.Empty;
+    private string configuredNoText = string.Empty;
+    private Coroutine delayedTextRefreshCoroutine;
 
     private void Awake()
     {
@@ -34,7 +39,21 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
     {
         ResolveReferencesIfNeeded();
         RegisterButtonEvents();
-        RefreshTextMeshes();
+        ReapplyConfiguredTexts();
+
+        if (delayedTextRefreshCoroutine != null)
+            StopCoroutine(delayedTextRefreshCoroutine);
+
+        delayedTextRefreshCoroutine = StartCoroutine(ReapplyConfiguredTextsNextFrame());
+    }
+
+    private void OnDisable()
+    {
+        if (delayedTextRefreshCoroutine == null)
+            return;
+
+        StopCoroutine(delayedTextRefreshCoroutine);
+        delayedTextRefreshCoroutine = null;
     }
 
     private void OnDestroy()
@@ -49,10 +68,11 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
 
         onYes = yesAction;
         onNo = noAction;
+        configuredMessage = message ?? string.Empty;
+        configuredYesText = yesText ?? string.Empty;
+        configuredNoText = noText ?? string.Empty;
 
-        SetMessage(message);
-        SetButtonTexts(yesText, noText);
-        RefreshTextMeshes();
+        ReapplyConfiguredTexts();
     }
 
     public void OnClickYes()
@@ -161,17 +181,25 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
 
     private void ResolveReferencesIfNeeded()
     {
+        // CHECK 프리팹의 메시지는 현재 Hierarchy의 Slogan을 우선 사용한다.
+        // 예전 Inspector 참조가 남아 있어도 새 Slogan에 구매 확인 문구가 표시되어야 한다.
+        ResolveMessageTextIfNeeded();
+
         if (!autoBindReferences)
             return;
 
-        ResolveMessageTextIfNeeded();
         ResolveButtonsIfNeeded();
         ResolveButtonTextsIfNeeded();
     }
 
     private void ResolveMessageTextIfNeeded()
     {
-        if (tmpMessageText == null)
+        TMP_Text namedSlogan = FindTmpTextByObjectName("Slogan");
+        if (namedSlogan != null)
+        {
+            tmpMessageText = namedSlogan;
+        }
+        else if (tmpMessageText == null)
         {
             TMP_Text[] tmpTexts = GetComponentsInChildren<TMP_Text>(true);
 
@@ -188,7 +216,12 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
             }
         }
 
-        if (legacyMessageText == null)
+        Text namedLegacySlogan = FindLegacyTextByObjectName("Slogan");
+        if (namedLegacySlogan != null)
+        {
+            legacyMessageText = namedLegacySlogan;
+        }
+        else if (legacyMessageText == null)
         {
             Text[] legacyTexts = GetComponentsInChildren<Text>(true);
 
@@ -204,6 +237,48 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
                 break;
             }
         }
+    }
+
+    private TMP_Text FindTmpTextByObjectName(string objectName)
+    {
+        TMP_Text[] texts = GetComponentsInChildren<TMP_Text>(true);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            TMP_Text text = texts[i];
+            if (text != null && string.Equals(text.gameObject.name, objectName, StringComparison.OrdinalIgnoreCase))
+                return text;
+        }
+
+        return null;
+    }
+
+    private Text FindLegacyTextByObjectName(string objectName)
+    {
+        Text[] texts = GetComponentsInChildren<Text>(true);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            Text text = texts[i];
+            if (text != null && string.Equals(text.gameObject.name, objectName, StringComparison.OrdinalIgnoreCase))
+                return text;
+        }
+
+        return null;
+    }
+
+    private void ReapplyConfiguredTexts()
+    {
+        SetMessage(configuredMessage);
+        SetButtonTexts(configuredYesText, configuredNoText);
+        RefreshTextMeshes();
+    }
+
+    private IEnumerator ReapplyConfiguredTextsNextFrame()
+    {
+        yield return null;
+        delayedTextRefreshCoroutine = null;
+
+        ResolveReferencesIfNeeded();
+        ReapplyConfiguredTexts();
     }
 
     private void ResolveButtonsIfNeeded()

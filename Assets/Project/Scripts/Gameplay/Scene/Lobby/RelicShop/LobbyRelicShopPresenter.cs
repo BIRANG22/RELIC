@@ -18,11 +18,17 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private LobbyRelicOfferButtonUI[] offerButtons = new LobbyRelicOfferButtonUI[3];
     [SerializeField] private LobbyRelicRefreshButtonUI refreshButton;
+    [SerializeField, HideInInspector] private LobbyRelicRefreshButtonUI[] refreshButtons = Array.Empty<LobbyRelicRefreshButtonUI>();
     [SerializeField] private GameObject[] relicDescriptionRoots = new GameObject[RelicDescriptionSlotCount];
 
     private readonly TMP_Text[] relicDescriptionNameTexts = new TMP_Text[RelicDescriptionSlotCount];
     private readonly TMP_Text[] relicDescriptionRarityTexts = new TMP_Text[RelicDescriptionSlotCount];
     private readonly TMP_Text[] relicDescriptionBodyTexts = new TMP_Text[RelicDescriptionSlotCount];
+    private readonly Image[] relicDescriptionBackImages = new Image[RelicDescriptionSlotCount];
+    private readonly GameObject[] relicOfferRoots = new GameObject[RelicDescriptionSlotCount];
+    private readonly GameObject[] relicCompletedRoots = new GameObject[RelicDescriptionSlotCount];
+    private readonly Image[] relicBacklineImages = new Image[RelicDescriptionSlotCount];
+    private readonly Transform[] relicSlotRoots = new Transform[RelicDescriptionSlotCount];
     private readonly bool[] relicDescriptionInteractionsBound = new bool[RelicDescriptionSlotCount];
 
     [Header("Purchase Transfer Sound")]
@@ -70,6 +76,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     private bool missingPanelWarningLogged;
     private bool isPurchaseAnimating;
     private Coroutine purchaseAnimationCoroutine;
+    private Coroutine initialTextRefreshCoroutine;
 
     private void Awake()
     {
@@ -96,12 +103,36 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         LobbyPositionSharedModalBackground.ShowForPanel(panelRoot, this, Close);
         panelRoot.SetActive(true);
         RefreshOffers();
+
+        if (initialTextRefreshCoroutine != null)
+            StopCoroutine(initialTextRefreshCoroutine);
+        initialTextRefreshCoroutine = StartCoroutine(RefreshOffersNextFrameRoutine());
+    }
+
+
+    private IEnumerator RefreshOffersNextFrameRoutine()
+    {
+        yield return null;
+        initialTextRefreshCoroutine = null;
+
+        if (panelRoot == null || !panelRoot.activeInHierarchy)
+            yield break;
+
+        // 패널 최초 활성화 직후 실행되는 로컬라이즈/초기화 컴포넌트가
+        // 표시 문자열을 덮어쓴 뒤 현재 유물 데이터로 최종 갱신한다.
+        RefreshOffers();
     }
 
     public void Close()
     {
         if (isPurchaseAnimating)
             return;
+
+        if (initialTextRefreshCoroutine != null)
+        {
+            StopCoroutine(initialTextRefreshCoroutine);
+            initialTextRefreshCoroutine = null;
+        }
 
         if (panelRoot != null)
             panelRoot.SetActive(false);
@@ -121,6 +152,12 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private void OnDisable()
     {
+        if (initialTextRefreshCoroutine != null)
+        {
+            StopCoroutine(initialTextRefreshCoroutine);
+            initialTextRefreshCoroutine = null;
+        }
+
         if (purchaseAnimationCoroutine != null)
         {
             StopCoroutine(purchaseAnimationCoroutine);
@@ -163,7 +200,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         bool hadRestoredOffers = runtime.RelicOfferIds != null &&
                                  runtime.RelicOfferIds.Count > 0;
         IReadOnlyList<LobbyRelicOffer> offers = ResolveOffers(runtime, canMutate);
-        bool purchaseLimitReached = LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime);
         bool generatedOffers =
             canMutate &&
             !hadRestoredOffers &&
@@ -190,10 +226,13 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             buttons[i].Bind(offer, icon, rarity, Purchase);
             ShowRelicDescription(i, offer.RelicId);
 
-            if (Contains(runtime.OwnedRelicIds, offer.RelicId))
+            bool purchased = Contains(runtime.OwnedRelicIds, offer.RelicId);
+            SetRelicSlotPurchasedVisual(i, purchased);
+
+            if (purchased)
                 buttons[i].ShowSold();
             else
-                buttons[i].SetInteractable(canMutate && !purchaseLimitReached && !isPurchaseAnimating);
+                buttons[i].SetInteractable(canMutate && !isPurchaseAnimating);
         }
 
         blueDustiumHud?.Refresh();
@@ -340,8 +379,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             ? selectedButton.CurrentRarityColor
             : Color.white;
 
-        HideShopPanelForPurchaseAnimation();
-
         Canvas transferCanvas = ResolveTransferEffectCanvas();
         RectTransform transferParent = ResolveTransferEffectParent(transferCanvas);
         RawImage transferEffect = CreateTransferEffectImage(
@@ -388,13 +425,8 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
         blueDustiumHud?.Refresh();
         RelicEquipPanelUI.RefreshAll();
+        RefreshOffers();
         PublishHostSnapshotAfterLocalMutation();
-
-        if (panelRoot != null)
-            panelRoot.SetActive(false);
-
-        LobbyPositionSharedModalBackground.HideForOwner(this);
-        LobbyPositionModalInputBlocker.Unblock(this);
     }
 
     private void EnsureShopPanelReady()
@@ -419,11 +451,9 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
         BindOfferButtons();
 
-        if (refreshButton == null && panelRoot != null)
-            refreshButton = panelRoot.GetComponentInChildren<LobbyRelicRefreshButtonUI>(true);
-
-        refreshButton?.Initialize(RefreshRelicOffers);
+        BindRefreshButtons();
         EnsureDescriptionViews();
+        EnsurePurchasedVisualViews();
     }
 
     private GameObject FindScenePanelRoot()
@@ -467,25 +497,71 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             buttons.Add(sceneButtons[i]);
     }
 
-    private void RefreshRelicOffers()
+    private void BindRefreshButtons()
     {
-        if (isPurchaseAnimating)
+        if (panelRoot == null)
             return;
 
-        if (!CanLocalPlayerMutateHostOnlyState())
+        // 현재 UI는 공용 RelicRefreshButton 하나만 사용합니다.
+        if (refreshButton == null)
+        {
+            LobbyRelicRefreshButtonUI[] found =
+                panelRoot.GetComponentsInChildren<LobbyRelicRefreshButtonUI>(true);
+
+            for (int i = 0; i < found.Length; i++)
+            {
+                if (found[i] == null)
+                    continue;
+
+                if (string.Equals(found[i].name, "RelicRefreshButton", StringComparison.Ordinal))
+                {
+                    refreshButton = found[i];
+                    break;
+                }
+            }
+
+            if (refreshButton == null && found.Length > 0)
+                refreshButton = found[0];
+        }
+
+        if (refreshButton == null && refreshButtons != null)
+        {
+            for (int i = 0; i < refreshButtons.Length; i++)
+            {
+                if (refreshButtons[i] != null)
+                {
+                    refreshButton = refreshButtons[i];
+                    break;
+                }
+            }
+        }
+
+        refreshButton?.Initialize(0, _ => RefreshRelicOffers());
+    }
+
+    private void RefreshRelicOffers()
+    {
+        if (isPurchaseAnimating || !CanLocalPlayerMutateHostOnlyState())
             return;
 
         LobbyRuntimeData runtime = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
         if (runtime == null || DataManager.Instance.RelicDatabase == null)
             return;
 
-        int nextSeed = unchecked(runtime.RelicOfferSeed * 1664525 + 1013904223 + runtime.RelicRefreshCount);
+        int nextSeed = unchecked(
+            runtime.RelicOfferSeed * 1664525 +
+            1013904223 +
+            runtime.RelicRefreshCount * 31 +
+            1);
+
         LobbyRelicRefreshResult result = new LobbyRelicRefreshService(
             DataManager.Instance.RelicDatabase,
             new SeededLobbyRelicShopRandom(nextSeed)).Execute(runtime, nextSeed);
+
         if (!result.Succeeded)
         {
-            Debug.LogWarning($"[LobbyRelicShopPresenter] Relic offer refresh failed: {result.Failure}");
+            Debug.LogWarning(
+                $"[LobbyRelicShopPresenter] Relic offers refresh failed. Failure={result.Failure}");
             RefreshRefreshButton(runtime);
             return;
         }
@@ -496,19 +572,17 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private void RefreshRefreshButton(LobbyRuntimeData runtime)
     {
-        if (refreshButton == null || runtime == null)
+        if (runtime == null || refreshButton == null)
             return;
 
         int price = LobbyRelicRefreshPricePolicy.GetPrice(runtime.RelicRefreshCount);
-        int remainingCount = LobbyRelicRefreshPricePolicy.GetRemainingCount(runtime.RelicRefreshCount);
-        refreshButton.SetState(
-            price,
-            remainingCount,
+        bool allPurchased = LobbyRelicRefreshService.AreAllOffersPurchased(runtime);
+        bool interactable =
             !isPurchaseAnimating &&
             CanLocalPlayerMutateHostOnlyState() &&
-            remainingCount > 0 &&
-            !LobbyRelicShopPurchaseLimit.HasPurchasedOffer(runtime) &&
-            !LobbyRelicRefreshService.AreAllOffersPurchased(runtime));
+            !allPurchased;
+
+        refreshButton.SetState(price, interactable);
     }
 
     private static bool CanLocalPlayerMutateHostOnlyState()
@@ -577,6 +651,8 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         TMP_Text nameText = relicDescriptionNameTexts[slotIndex];
         TMP_Text rarityText = relicDescriptionRarityTexts[slotIndex];
         TMP_Text bodyText = relicDescriptionBodyTexts[slotIndex];
+        Image backImage = relicDescriptionBackImages[slotIndex];
+        Color rarityColor = ResolveRecordRarityColor(relic.Rarity);
 
         if (nameText != null)
         {
@@ -588,13 +664,25 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         if (rarityText != null)
         {
             rarityText.text = FormatRelicRarityLabel(relic.Rarity);
-            rarityText.color = ResolveRecordRarityColor(relic.Rarity);
+            rarityText.color = rarityColor;
+        }
+
+        if (backImage != null)
+        {
+            // Inspector에서 설정한 Back 알파값은 유지하고 레어도 RGB만 갱신한다.
+            backImage.color = new Color(
+                rarityColor.r,
+                rarityColor.g,
+                rarityColor.b,
+                backImage.color.a);
         }
 
         if (bodyText != null)
             bodyText.text = GameDataLocalization.RelicEffectDescription(relic);
 
-        root.SetActive(true);
+        LobbyRuntimeData runtime = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
+        bool purchased = runtime != null && Contains(runtime.OwnedRelicIds, relicId);
+        root.SetActive(!purchased);
     }
 
     private void HideRelicDescription(int slotIndex)
@@ -665,8 +753,125 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
                     relicDescriptionBodyTexts[i] = effectTransform.GetComponent<TMP_Text>();
             }
 
+            if (relicDescriptionBackImages[i] == null)
+            {
+                Transform backTransform = FindDescendant(root.transform, "Back");
+                if (backTransform != null)
+                    relicDescriptionBackImages[i] = backTransform.GetComponent<Image>();
+            }
+
             BindDescriptionInteractions(i, root);
-            root.SetActive(true);
+            // 활성/비활성 상태는 SetRelicSlotPurchasedVisual()에서만 관리한다.
+            // 여기서 강제로 활성화하면 구매 완료된 relic##_info가 다시 켜질 수 있다.
+        }
+    }
+
+    private void EnsurePurchasedVisualViews()
+    {
+        if (panelRoot == null)
+            return;
+
+        string[] slotNames = { "Relic01", "Relic02", "Relic03" };
+        string[] offerNames = { "RelicOffer_1", "RelicOffer_2", "RelicOffer_3" };
+
+        for (int i = 0; i < RelicDescriptionSlotCount; i++)
+        {
+            Transform slotRoot = panelRoot.transform.Find(slotNames[i]);
+            if (slotRoot == null)
+                slotRoot = FindDescendant(panelRoot.transform, slotNames[i]);
+
+            if (slotRoot == null)
+                continue;
+
+            if (relicOfferRoots[i] == null)
+            {
+                Transform offer = slotRoot.Find(offerNames[i]);
+                if (offer == null)
+                    offer = FindDescendant(slotRoot, offerNames[i]);
+
+                if (offer != null)
+                    relicOfferRoots[i] = offer.gameObject;
+            }
+
+            relicSlotRoots[i] = slotRoot;
+
+            string infoName = $"relic0{i + 1}_info";
+            Transform info = slotRoot.Find(infoName);
+            if (info == null)
+                info = FindDescendant(slotRoot, infoName);
+
+            // 슬롯별 info를 Hierarchy 이름 기준으로 매번 다시 연결한다.
+            // Inspector에 이전 참조가 남아 있어도 Relic02/03이 Relic01_info를 끄지 않게 한다.
+            relicDescriptionRoots[i] = info != null ? info.gameObject : null;
+
+            if (relicCompletedRoots[i] == null)
+            {
+                Transform completed = slotRoot.Find("Completed");
+                if (completed == null)
+                    completed = FindDescendant(slotRoot, "Completed");
+
+                if (completed != null)
+                    relicCompletedRoots[i] = completed.gameObject;
+            }
+
+            if (relicBacklineImages[i] == null)
+            {
+                Transform backline = slotRoot.Find("Backline");
+                if (backline == null)
+                    backline = FindDescendant(slotRoot, "Backline");
+
+                if (backline != null)
+                    relicBacklineImages[i] = backline.GetComponent<Image>();
+            }
+        }
+    }
+
+    private void SetRelicSlotPurchasedVisual(int slotIndex, bool purchased)
+    {
+        if (!IsValidDescriptionSlot(slotIndex))
+            return;
+
+        EnsurePurchasedVisualViews();
+
+        if (relicOfferRoots[slotIndex] != null)
+            relicOfferRoots[slotIndex].SetActive(!purchased);
+
+        // 구매 상태 갱신 때마다 현재 슬롯 아래의 정확한 relic##_info를 다시 찾는다.
+        // Inspector의 오래된 참조나 이전 초기화 순서와 관계없이 해당 슬롯만 제어한다.
+        Transform slotRoot = relicSlotRoots[slotIndex];
+        if (slotRoot != null)
+        {
+            string infoName = $"relic0{slotIndex + 1}_info";
+            Transform info = slotRoot.Find(infoName);
+            if (info == null)
+                info = FindDescendant(slotRoot, infoName);
+
+            if (info != null)
+                relicDescriptionRoots[slotIndex] = info.gameObject;
+        }
+
+        if (relicDescriptionRoots[slotIndex] != null)
+            relicDescriptionRoots[slotIndex].SetActive(!purchased);
+
+        if (relicCompletedRoots[slotIndex] != null)
+            relicCompletedRoots[slotIndex].SetActive(purchased);
+
+        if (purchased && relicSlotRoots[slotIndex] != null)
+            relicSlotRoots[slotIndex].localScale = Vector3.one;
+
+        Image backline = relicBacklineImages[slotIndex];
+        if (backline != null)
+        {
+            Color targetRgb = purchased
+                ? new Color32(0x77, 0x77, 0x77, 0xFF)
+                : new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+
+            // Inspector에서 지정한 Backline 알파값은 유지하고 RGB만 변경한다.
+            backline.color = new Color(
+                targetRgb.r,
+                targetRgb.g,
+                targetRgb.b,
+                backline.color.a);
         }
     }
 
@@ -747,10 +952,10 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     {
         string normalized = string.IsNullOrWhiteSpace(rarity) ? string.Empty : rarity.Trim();
 
-        if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.RelicRarity.Common);
-        if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.RelicRarity.Rare);
-        if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.RelicRarity.Epic);
-        if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get(LocalizationKeys.RelicRarity.Unique);
+        if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "일반";
+        if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "레어";
+        if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return "에픽";
+        if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return "유니크";
 
         return normalized;
     }
@@ -1171,18 +1376,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         targetRect.GetWorldCorners(corners);
         Vector3 worldCenter = (corners[0] + corners[2]) * 0.5f;
         return RectTransformUtility.WorldToScreenPoint(uiCamera, worldCenter);
-    }
-
-    private void HideShopPanelForPurchaseAnimation()
-    {
-        if (panelRoot == null)
-            return;
-
-        // 확인창에서 예를 눌러 실제 유물 획득이 확정되면
-        // 상점 패널을 즉시 닫고, 그 뒤 획득 이펙트만 Canvas 위에서 진행합니다.
-        panelRoot.SetActive(false);
-        LobbyPositionSharedModalBackground.HideForOwner(this);
-        LobbyPositionModalInputBlocker.Unblock(this);
     }
 
     private void RestoreShopPanelVisualState()

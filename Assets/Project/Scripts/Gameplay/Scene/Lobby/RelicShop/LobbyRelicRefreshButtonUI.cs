@@ -8,41 +8,43 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
     [SerializeField] private Button button;
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text priceText;
-    [SerializeField] private TMP_Text remainingCountText;
     [Header("Disabled Visual")]
     [SerializeField, Range(0f, 1f)] private float disabledImageBrightness = 0.7f;
 
-    private Action refreshRequested;
+    private Action<int> refreshRequested;
+    private int slotIndex;
     private bool clickListenerRegistered;
     private bool missingViewWarningLogged;
-    private ButtonAnimationCoroutine[] buttonEffects = Array.Empty<ButtonAnimationCoroutine>();
-    private bool[] buttonEffectInitialEnabledStates = Array.Empty<bool>();
-    private bool effectsDisabledByRefreshLimit;
     private Image[] refreshImages = Array.Empty<Image>();
     private Color[] refreshImageOriginalColors = Array.Empty<Color>();
     private bool refreshImageColorsCached;
+    private UIChildHoverTransform childHoverTransform;
+    private ButtonAnimationCoroutine[] buttonEffects = Array.Empty<ButtonAnimationCoroutine>();
+    private bool[] buttonEffectInitialEnabledStates = Array.Empty<bool>();
+    private bool buttonEffectStatesCached;
 
     private void Awake()
     {
         EnsureView();
     }
 
-    public void Initialize(Action callback)
+    public void Initialize(int index, Action<int> callback)
     {
+        slotIndex = Mathf.Max(0, index);
         refreshRequested = callback;
         EnsureView();
     }
 
-    public void SetState(int price, int remainingCount, bool interactable)
+    public void SetState(int price, bool interactable)
     {
         if (!EnsureView())
             return;
 
         priceText.text = Mathf.Max(0, price).ToString();
-        remainingCountText.text = $"x{Mathf.Max(0, remainingCount)}";
         button.interactable = interactable;
-        SetButtonEffectsEnabledByRemainingCount(remainingCount);
-        ApplyRefreshImageBrightness(remainingCount <= 0);
+        ApplyRefreshImageBrightness(!interactable);
+        ApplyHoverInteractable(interactable);
+        ApplyButtonAnimationInteractable(interactable);
     }
 
     private bool EnsureView()
@@ -51,18 +53,16 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
             button = GetComponent<Button>();
 
         if (iconImage == null)
-            iconImage = transform.Find("RefreshIcon")?.GetComponent<Image>();
+            iconImage = transform.Find("Image")?.GetComponent<Image>();
 
         if (priceText == null)
             priceText = transform.Find("Price")?.GetComponent<TMP_Text>();
 
-        if (remainingCountText == null)
-            remainingCountText = transform.Find("Value")?.GetComponent<TMP_Text>();
-
-        EnsureButtonEffects();
         EnsureRefreshImages();
+        EnsureHoverTransform();
+        EnsureButtonEffects();
 
-        if (button == null || iconImage == null || priceText == null || remainingCountText == null)
+        if (button == null || priceText == null)
         {
             if (!missingViewWarningLogged)
             {
@@ -71,66 +71,12 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
                     this);
                 missingViewWarningLogged = true;
             }
-
             return false;
         }
 
         EnsureClickListener();
         return true;
     }
-
-    private void EnsureButtonEffects()
-    {
-        if (buttonEffects != null && buttonEffects.Length > 0)
-            return;
-
-        buttonEffects = GetComponentsInChildren<ButtonAnimationCoroutine>(true);
-        buttonEffectInitialEnabledStates = new bool[buttonEffects.Length];
-
-        for (int i = 0; i < buttonEffects.Length; i++)
-        {
-            if (buttonEffects[i] != null)
-                buttonEffectInitialEnabledStates[i] = buttonEffects[i].enabled;
-        }
-    }
-
-    private void SetButtonEffectsEnabledByRemainingCount(int remainingCount)
-    {
-        EnsureButtonEffects();
-
-        if (remainingCount <= 0)
-        {
-            for (int i = 0; i < buttonEffects.Length; i++)
-            {
-                ButtonAnimationCoroutine effect = buttonEffects[i];
-                if (effect == null)
-                    continue;
-
-                effect.ForceClearState(false);
-                effect.enabled = false;
-            }
-
-            effectsDisabledByRefreshLimit = true;
-            return;
-        }
-
-        if (!effectsDisabledByRefreshLimit)
-            return;
-
-        for (int i = 0; i < buttonEffects.Length; i++)
-        {
-            if (buttonEffects[i] == null)
-                continue;
-
-            bool shouldEnable =
-                i < buttonEffectInitialEnabledStates.Length &&
-                buttonEffectInitialEnabledStates[i];
-            buttonEffects[i].enabled = shouldEnable;
-        }
-
-        effectsDisabledByRefreshLimit = false;
-    }
-
 
     private void EnsureRefreshImages()
     {
@@ -139,41 +85,89 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
 
         refreshImages = GetComponentsInChildren<Image>(true);
         refreshImageOriginalColors = new Color[refreshImages.Length];
-
         for (int i = 0; i < refreshImages.Length; i++)
         {
             if (refreshImages[i] != null)
                 refreshImageOriginalColors[i] = refreshImages[i].color;
         }
-
         refreshImageColorsCached = true;
     }
 
     private void ApplyRefreshImageBrightness(bool disabled)
     {
         EnsureRefreshImages();
-
         for (int i = 0; i < refreshImages.Length; i++)
         {
             Image image = refreshImages[i];
             if (image == null)
                 continue;
 
-            Color original = i < refreshImageOriginalColors.Length
-                ? refreshImageOriginalColors[i]
-                : image.color;
+            Color original = refreshImageOriginalColors[i];
+            image.color = disabled
+                ? new Color(original.r * disabledImageBrightness,
+                            original.g * disabledImageBrightness,
+                            original.b * disabledImageBrightness,
+                            original.a)
+                : original;
+        }
+    }
 
-            if (!disabled)
+
+    private void EnsureHoverTransform()
+    {
+        if (childHoverTransform == null)
+            childHoverTransform = GetComponent<UIChildHoverTransform>();
+    }
+
+    private void ApplyHoverInteractable(bool interactable)
+    {
+        EnsureHoverTransform();
+        if (childHoverTransform == null)
+            return;
+
+        if (!interactable)
+            childHoverTransform.ApplyDefaultImmediately();
+
+        childHoverTransform.enabled = interactable;
+    }
+
+    private void EnsureButtonEffects()
+    {
+        if (buttonEffectStatesCached)
+            return;
+
+        buttonEffects = GetComponentsInChildren<ButtonAnimationCoroutine>(true);
+        buttonEffectInitialEnabledStates = new bool[buttonEffects.Length];
+        for (int i = 0; i < buttonEffects.Length; i++)
+        {
+            if (buttonEffects[i] != null)
+                buttonEffectInitialEnabledStates[i] = buttonEffects[i].enabled;
+        }
+
+        buttonEffectStatesCached = true;
+    }
+
+    private void ApplyButtonAnimationInteractable(bool interactable)
+    {
+        EnsureButtonEffects();
+
+        for (int i = 0; i < buttonEffects.Length; i++)
+        {
+            ButtonAnimationCoroutine effect = buttonEffects[i];
+            if (effect == null)
+                continue;
+
+            if (!interactable)
             {
-                image.color = original;
+                effect.ForceClearState(false);
+                effect.enabled = false;
                 continue;
             }
 
-            image.color = new Color(
-                original.r * disabledImageBrightness,
-                original.g * disabledImageBrightness,
-                original.b * disabledImageBrightness,
-                original.a);
+            bool shouldEnable =
+                i < buttonEffectInitialEnabledStates.Length &&
+                buttonEffectInitialEnabledStates[i];
+            effect.enabled = shouldEnable;
         }
     }
 
@@ -189,6 +183,6 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
     private void RequestRefresh()
     {
         if (button != null && button.interactable)
-            refreshRequested?.Invoke();
+            refreshRequested?.Invoke(slotIndex);
     }
 }
