@@ -577,9 +577,9 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.flag.click
     aliases: []
-    clip: {fileID: 8300000, guid: 602ba08c3a1834cefa18cc796ff63c89, type: 3}
-    volume: 0.3
-    pitch: 0.6
+    clip: {fileID: 8300000, guid: 609254407dc7aae4daf7acbfd54a4c82, type: 3}
+    volume: 0.4
+    pitch: 1
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 1
