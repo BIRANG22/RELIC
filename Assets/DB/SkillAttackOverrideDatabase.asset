@@ -37,6 +37,14 @@ MonoBehaviour:
     SkillId: S_Unique_06
     AttackSlot: 1
     RepeatAttackSlots: 
+  - CharacterId: Char_04
+    SkillId: S_Unique_07
+    AttackSlot: 2
+    RepeatAttackSlots: 
+  - CharacterId: Char_04
+    SkillId: S_Unique_08
+    AttackSlot: 3
+    RepeatAttackSlots: 
   - CharacterId: Char_01
     SkillId: S_Ability_01
     AttackSlot: 2
@@ -84,4 +92,20 @@ MonoBehaviour:
   - CharacterId: Char_03
     SkillId: S_Ability_12
     AttackSlot: 2
+    RepeatAttackSlots: 
+  - CharacterId: Char_04
+    SkillId: S_Ability_13
+    AttackSlot: 6
+    RepeatAttackSlots: 
+  - CharacterId: Char_04
+    SkillId: S_Ability_14
+    AttackSlot: 6
+    RepeatAttackSlots: 
+  - CharacterId: Char_04
+    SkillId: S_Ability_15
+    AttackSlot: 1
+    RepeatAttackSlots: 
+  - CharacterId: Char_04
+    SkillId: S_Ability_16
+    AttackSlot: 1
     RepeatAttackSlots: 

@@ -265,8 +265,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66e12dcb47a5a044283c4b28fbbec904, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ambienceId: test
-  volume: 1
+  ambienceId: Fire Burning
+  volume: 0.3
 --- !u!1 &2648706059071851812
 GameObject:
   m_ObjectHideFlags: 0

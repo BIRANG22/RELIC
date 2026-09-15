@@ -59,18 +59,38 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-    ambienceClips:
-    - clip: {fileID: 8300000, guid: 206e86ad69c3d4241a7d2e5ca8e2ea63, type: 3}
-      volume: 1
-      pitch: 1
-      loop: 1
-      useRandomPitch: 0
-      randomPitchMin: 1
-      randomPitchMax: 1
+    ambienceClips: []
   ambienceList:
-  - id: test
+  - id: Fire Burning
     aliases: []
-    clip: {fileID: 8300000, guid: 22b66ad148b81584b861bab151a6e81d, type: 3}
+    clip: {fileID: 8300000, guid: 24cba567cf88f4ee99a419a024806ae0, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: Wind
+    aliases: []
+    clip: {fileID: 8300000, guid: 5f6cb45591d9a45fdbfd692be54d70be, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: Cave
+    aliases: []
+    clip: {fileID: 8300000, guid: 206e86ad69c3d4241a7d2e5ca8e2ea63, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 1
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: Rest fire
+    aliases: []
+    clip: {fileID: 8300000, guid: 6fe15267ba9c244e8b1595745b0d39ac, type: 3}
     volume: 1
     pitch: 1
     loop: 1
