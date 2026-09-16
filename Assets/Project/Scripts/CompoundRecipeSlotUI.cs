@@ -40,9 +40,9 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
             return;
 
         ResolveReferences();
-        ApplyRecipeNumber(compound.CompoundId);
 
         bool compoundDiscovered = RecordDiscoveryService.IsCompoundDiscovered(dataManager, compound.CompoundId);
+        ApplyRecipeLabel(compound, compoundDiscovered);
         Sprite compoundSprite = null;
         if (compoundDiscovered)
             TryGetCompoundIcon(dataManager, compound.CompoundId, out compoundSprite);
@@ -170,13 +170,27 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
             : itemId;
     }
 
-    private void ApplyRecipeNumber(string compoundId)
+    private void ApplyRecipeLabel(CompoundData compound, bool discovered)
     {
-        if (recipeNumberText == null)
+        if (recipeNumberText == null || compound == null)
             return;
 
-        int recipeNumber = GetTrailingNumber(compoundId);
-        recipeNumberText.text = recipeNumber == int.MaxValue ? string.Empty : recipeNumber.ToString();
+        int recipeNumber = GetTrailingNumber(compound.CompoundId);
+        if (recipeNumber == int.MaxValue)
+        {
+            recipeNumberText.text = string.Empty;
+            return;
+        }
+
+        string displayName = "???";
+        if (discovered)
+        {
+            string localizedName = GameDataLocalization.CompoundName(compound);
+            if (!string.IsNullOrWhiteSpace(localizedName))
+                displayName = localizedName.Trim();
+        }
+
+        recipeNumberText.text = $"{recipeNumber:D2}. {displayName}";
     }
 
     private void ResolveReferences()
