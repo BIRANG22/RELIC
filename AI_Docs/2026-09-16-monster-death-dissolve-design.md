@@ -7,9 +7,10 @@
 ## 구조
 
 - 전투 결과와 사망 판정, 보상, 런타임 몬스터 등록 해제는 `BattleDeathService`의 기존 시점과 흐름을 유지한다.
-- `MonsterDeathDissolve`는 전용 Sprite URP 디졸브 머티리얼을 런타임 복제하여 자식 `SpriteRenderer`에 적용하고, MaterialPropertyBlock으로 진행도를 제어하는 순수 연출 컴포넌트다.
+- `MonsterDeathDissolve`는 독립 MonoBehaviour이며, 전용 공용 머티리얼을 런타임 복제하여 자식 `SpriteRenderer`에 적용하는 순수 연출 컴포넌트다.
 - `BattleDeathService`는 사망 애니메이션을 재생한 뒤 디졸브를 시작하고, 두 연출 시간의 합계가 지난 후 게임 오브젝트를 제거한다.
-- 공통 머티리얼·셰이더는 모든 몬스터 프리팹에서 공유하며, 시간·경계 색상·경계 폭·노이즈 크기는 프리팹 인스펙터에서 조정한다.
+- 공용 머티리얼·셰이더는 모든 전투 몬스터 프리팹에서 공유한다. 각 프리팹 루트의 컴포넌트가 `Duration`, `Edge Color`, `Edge Width`, `Noise Scale`을 직렬화해 인스펙터에서 개별 조정한다.
+- 스포너는 컴포넌트를 런타임에 추가하지 않는다. 누락된 프리팹은 디졸브 없이 기존 사망 시간만 대기하므로, 프리팹 구성 누락을 명확히 드러낸다.
 
 ## 흐름
 

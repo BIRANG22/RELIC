@@ -73,7 +73,6 @@ public class BattleMonsterSpawner : MonoBehaviour
         );
 
         SetMonsterInitialFacingLeft(monster);
-        EnsureDeathDissolve(monster);
 
         string runtimeId = MonsterRuntimeIdGenerator.Create();
 
@@ -182,7 +181,6 @@ public class BattleMonsterSpawner : MonoBehaviour
         );
 
         SetMonsterInitialFacingLeft(monster);
-        EnsureDeathDissolve(monster);
 
         string runtimeId = MonsterRuntimeIdGenerator.Create();
         MonsterRuntimeData runtimeData = new MonsterRuntimeData(runtimeId, monsterData);
@@ -241,14 +239,6 @@ public class BattleMonsterSpawner : MonoBehaviour
         return result;
     }
 
-    private static void EnsureDeathDissolve(GameObject monster)
-    {
-        if (monster == null || monster.GetComponent<MonsterDeathDissolve>() != null)
-            return;
-
-        // 기존 몬스터 프리팹에도 새 사망 연출을 적용하기 위한 호환 경로입니다.
-        monster.AddComponent<MonsterDeathDissolve>();
-    }
     private void SetMonsterInitialFacingLeft(GameObject monster)
     {
         if (monster == null)
