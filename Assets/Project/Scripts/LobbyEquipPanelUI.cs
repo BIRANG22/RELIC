@@ -3,14 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
+using UnityEngine.Localization.Components;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// 로비의 Ready_Panel(연성제/유물)을 관리합니다.
-/// Ready_Panel은 PlayButton의 탐사 준비 단계에서 공용 BackgroundPanel과 함께 활성화됩니다.
-/// Info_Panel은 LobbyInfoPanelUI가 별도로 관리합니다.
+/// 로비의 탐사 준비 화면을 관리합니다.
+/// Info_Panel과 Ready_Panel은 항상 활성 상태를 유지하며,
+/// PlayButton의 탐사 준비 단계에서 화면 안쪽으로 슬라이드 이동합니다.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class LobbyEquipPanelUI : MonoBehaviour
@@ -21,6 +22,9 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private const int VisibleRelicSlotCount = 6;
     private const int VisibleSkillSlotCount = 3;
     private const int CompoundMinimumSlotCount = 15;
+    private const int ReadyRelicMinimumSlotCount = 3;
+    private const int ReadyCompoundMinimumSlotCount = 6;
+    private const float ReadyInventorySlotScale = 1.2f;
     private const string EquipButtonDefaultText = "장착";
     private const string EquipButtonCancelText = "취소";
 
@@ -39,10 +43,14 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     [SerializeField] private RectTransform charterRect;
 
     [Header("Slide Position")]
+    [Tooltip("Info_Panel의 대기 위치 X입니다.")]
     [SerializeField] private float equipStartX = -1350f;
-    [SerializeField] private float equipEndX = -450f;
+    [Tooltip("탐사 준비 시 Info_Panel이 도착할 X입니다.")]
+    [SerializeField] private float equipEndX = -350f;
+    [Tooltip("Ready_Panel의 대기 위치 X입니다.")]
     [SerializeField] private float charterStartX = 1350f;
-    [SerializeField] private float charterEndX = 450f;
+    [Tooltip("탐사 준비 시 Ready_Panel이 도착할 X입니다.")]
+    [SerializeField] private float charterEndX = 350f;
 
     [Header("Slide Animation")]
     [SerializeField, Min(0f)] private float slideDuration = 0.35f;
@@ -67,6 +75,24 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     [Tooltip("연성제가 없어도 표시할 최소 빈 슬롯 수입니다.")]
     [SerializeField, Min(1)] private int compoundMinimumSlotCount = CompoundMinimumSlotCount;
 
+    [Header("Ready Inventory Display")]
+    [Tooltip("Ready_Panel/Relic/Viewport/Content입니다. 비워두면 새 구조에서 자동 연결합니다.")]
+    [SerializeField] private Transform readyRelicContentRoot;
+    [Tooltip("Ready_Panel/Compound/Viewport/Content입니다. 비워두면 새 구조에서 자동 연결합니다.")]
+    [SerializeField] private Transform readyCompoundContentRoot;
+    [Tooltip("Ready_Panel의 유물/연성제 표시용 StorageSlotUI 프리팹입니다. 비어 있으면 기존 Compound 슬롯 프리팹을 사용합니다.")]
+    [SerializeField] private BattleBagItemSlotUI readyInventorySlotPrefab;
+    [SerializeField, Min(1)] private int readyRelicMinimumSlotCount = ReadyRelicMinimumSlotCount;
+    [SerializeField, Min(1)] private int readyCompoundMinimumSlotCount = ReadyCompoundMinimumSlotCount;
+    [SerializeField, Min(0.1f)] private float readyInventorySlotScale = ReadyInventorySlotScale;
+
+    [Header("Ready Inventory Detail")]
+    [Tooltip("Ready_Panel/Detail입니다. 실제 유물 또는 연성제 슬롯에 마우스를 올릴 때만 활성화됩니다.")]
+    [SerializeField] private GameObject readyDetailRoot;
+    [SerializeField] private Image readyDetailIconImage;
+    [SerializeField] private TMP_Text readyDetailNameText;
+    [SerializeField] private TMP_Text readyDetailEffectText;
+
     [Header("Character Equip Target")]
     [Tooltip("장착 모드에서 캐릭터 선택 이미지에 마우스를 올렸을 때 사용할 색상입니다.")]
     [SerializeField] private Color characterSelectHoverColor = Color.white;
@@ -79,19 +105,60 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private bool isOwnedRelicSelected;
     private string selectedOwnedRelicId;
     private readonly List<BattleBagItemSlotUI> compoundSlots = new();
+    private readonly List<BattleBagItemSlotUI> readyRelicSlots = new();
+    private readonly List<BattleBagItemSlotUI> readyCompoundSlots = new();
     private CompoundSelectionView compoundSelectionView;
     private BattleBagItemSlotUI selectedCompoundSlot;
     private string selectedCompoundId;
     private bool isCompoundEquipSelectionActive;
     private GameObject characterTextObject;
+    private BattleBagItemSlotUI readyDetailSourceSlot;
+    private BattleBagItemSlotUI readyDetailPinnedSlot;
+    private bool readyDetailInitialized;
+
+    // Ready_Panel <-> Info_Panel 장착/해제 및 드래그 상태
+    private readonly LobbyReadyEquipmentPointerRelay[,] infoRelicTargetRelays = new LobbyReadyEquipmentPointerRelay[CharacterCount, 2];
+    private readonly LobbyReadyEquipmentPointerRelay[] infoCompoundTargetRelays = new LobbyReadyEquipmentPointerRelay[CharacterCount];
+    private string equipmentDragItemId;
+    private bool equipmentDragIsCompound;
+    private int equipmentDragSourcePartyIndex = -1;
+    private int equipmentDragSourceRuntimeSlotIndex = -1;
+    private bool equipmentDragFromInfo;
+    private bool equipmentDragHandled;
+    private Image equipmentDragGhostImage;
 
     private Coroutine slideAnimationCoroutine;
     private RectTransform toggleButtonRect;
     private bool isOpen;
     private bool isClosing;
+    private bool isPreparingOpen;
 
     public bool IsOpen => isOpen && !isClosing;
     public event Action<bool> OpenStateChanged;
+
+    /// <summary>
+    /// 공용 BackgroundPanel의 BackButton에서 탐사 준비 화면을 닫을 때 사용합니다.
+    /// 열려 있는 탐사 준비 화면이 있으면 일반 Close 경로를 실행해
+    /// Info_Panel / Ready_Panel의 퇴장 슬라이드를 그대로 재생합니다.
+    /// </summary>
+    public static bool TryCloseOpenReadyPanel()
+    {
+        LobbyEquipPanelUI[] panels = FindObjectsByType<LobbyEquipPanelUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            LobbyEquipPanelUI panel = panels[i];
+            if (panel == null || !panel.IsOpen)
+                continue;
+
+            panel.Close();
+            return true;
+        }
+
+        return false;
+    }
 
     private void Awake()
     {
@@ -102,17 +169,23 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         ResolveOwnedRelicViewIfNeeded();
         ResolveCompoundInventoryIfNeeded();
         ResolveCompoundSelectionViewIfNeeded();
+        ResolveReadyInventoryDisplayIfNeeded();
+        ResolveReadyInventoryDetailIfNeeded();
+        BindInfoPanelEquipmentTargets();
+        HideReadyInventoryDetail();
         isOpen = false;
         isClosing = false;
+        isPreparingOpen = false;
     }
 
     private void OnEnable()
     {
-        GameObject root = ResolvePanelRoot();
-        isOpen = root != null && root.activeSelf;
+        ResolvePanelRoot();
+        ResolveSlideTargets();
+        EnsurePreparationPanelsActive();
         isClosing = false;
-        if (isOpen)
-            SetInfoPanelActive(true);
+        isPreparingOpen = false;
+        isOpen = AreSlideTargetsAtOpenPosition();
         RefreshCharacterData();
     }
 
@@ -122,19 +195,21 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         bool wasOpen = isOpen || isClosing;
         isOpen = false;
         isClosing = false;
+        isPreparingOpen = false;
         if (wasOpen)
             OpenStateChanged?.Invoke(false);
         ResetOwnedRelicSelection();
         ResetCompoundSelection();
-        SetInfoPanelActive(false);
+        HideReadyInventoryDetail();
+        ClearEquipmentDragState();
         LobbyPositionModalInputBlocker.Unblock(this);
-        LobbyPositionSharedModalBackground.HideForOwner(this);
+        LobbyPositionSharedModalBackground.HideAfterReadyPanel();
     }
 
     private void OnDestroy()
     {
         LobbyPositionModalInputBlocker.Unblock(this);
-        LobbyPositionSharedModalBackground.HideForOwner(this);
+        LobbyPositionSharedModalBackground.HideAfterReadyPanel();
     }
 
     public void SetToggleButton(RectTransform buttonRect)
@@ -147,8 +222,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     /// </summary>
     public void Toggle()
     {
-        GameObject root = ResolvePanelRoot();
-        if (root != null && root.activeSelf)
+        if (IsOpen)
             Close();
         else
             Open();
@@ -163,36 +237,55 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             return;
         }
 
-        if (root.activeSelf && isOpen)
+        if (IsOpen || isPreparingOpen)
             return;
 
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
-        LobbyPositionSharedModalBackground.PrepareForReadyPanel(root);
+        isPreparingOpen = true;
+        LobbyPositionSharedModalBackground.PrepareForReadyPanel(root, BeginOpenAfterPanelFade);
+    }
+
+    private void BeginOpenAfterPanelFade()
+    {
+        isPreparingOpen = false;
+
+        if (this == null || !isActiveAndEnabled)
+            return;
+
+        GameObject root = ResolvePanelRoot();
+        if (root == null)
+            return;
 
         if (LobbyPositionModalInputBlocker.IsBlockedByAnother(this))
             return;
 
         TitleManager.CloseTitleModePanelsExceptInScene(root);
 
-        if (!root.activeSelf)
-            root.SetActive(true);
+        ResolveSlideTargets();
+        EnsurePreparationPanelsActive();
 
         if (bringToFront)
-            root.transform.SetAsLastSibling();
+        {
+            if (equipRect != null)
+                equipRect.SetAsLastSibling();
+            if (charterRect != null)
+                charterRect.SetAsLastSibling();
+        }
 
+        StopSlideAnimation();
         isClosing = false;
         isOpen = true;
-        SetInfoPanelActive(true);
         OpenStateChanged?.Invoke(true);
         LobbyPositionModalInputBlocker.Block(this);
 
-        ResolveSlideTargets();
         ResolveOwnedRelicViewIfNeeded();
         ResolveCompoundInventoryIfNeeded();
         ResolveCompoundSelectionViewIfNeeded();
         RefreshCharacterData();
+
+        slideAnimationCoroutine = StartCoroutine(PlaySlideAnimation(true));
     }
 
     public void Close()
@@ -201,17 +294,21 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (root == null)
             return;
 
+        if (!isOpen && !isClosing && !isPreparingOpen)
+            return;
+
+        isPreparingOpen = false;
+
         ResetOwnedRelicSelection();
         ResetCompoundSelection();
-        isClosing = false;
-        isOpen = false;
-        SetInfoPanelActive(false);
-        OpenStateChanged?.Invoke(false);
-        LobbyPositionSharedModalBackground.HideForOwner(this);
-        LobbyPositionModalInputBlocker.Unblock(this);
+        StopSlideAnimation();
 
-        if (root.activeSelf)
-            root.SetActive(false);
+        isOpen = false;
+        isClosing = true;
+        OpenStateChanged?.Invoke(false);
+
+        EnsurePreparationPanelsActive();
+        slideAnimationCoroutine = StartCoroutine(PlaySlideAnimation(false));
     }
 
     /// <summary>
@@ -224,8 +321,13 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         ResolveOwnedRelicViewIfNeeded();
         ResolveCompoundInventoryIfNeeded();
         ResolveCompoundSelectionViewIfNeeded();
+        ResolveReadyInventoryDisplayIfNeeded();
+        ResolveReadyInventoryDetailIfNeeded();
+        BindInfoPanelEquipmentTargets();
         RefreshOwnedRelicData();
         RefreshCompoundInventorySlots();
+        HideReadyInventoryDetail();
+        RefreshReadyInventoryDisplay();
 
         DataManager dataManager = DataManager.Instance;
         if (dataManager == null)
@@ -345,6 +447,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         isOpen = false;
         isClosing = false;
         LobbyPositionModalInputBlocker.Unblock(this);
+        LobbyPositionSharedModalBackground.HideAfterReadyPanel();
 
         // Equip_panel 자체는 비활성화하지 않습니다.
         // 닫힘 상태는 Equip=-1350, Charter=1350 위치로만 표현합니다.
@@ -852,23 +955,830 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void ResolveSlideTargets()
     {
-        GameObject root = ResolvePanelRoot();
-        if (root == null)
+        // 새 로비 구조에서는 Info_Panel과 Ready_Panel이 PositionPanel의 형제 오브젝트입니다.
+        // 둘 다 항상 활성 상태를 유지하고 X 위치만 이동합니다.
+        if (equipRect == null || equipRect.gameObject.name != InfoPanelName)
+        {
+            GameObject infoPanel = FindSceneObject(InfoPanelName);
+            equipRect = infoPanel != null ? infoPanel.transform as RectTransform : null;
+        }
+
+        if (charterRect == null || charterRect.gameObject.name != ReadyPanelName)
+        {
+            GameObject readyPanel = FindSceneObject(ReadyPanelName);
+            charterRect = readyPanel != null ? readyPanel.transform as RectTransform : null;
+        }
+    }
+
+    private void EnsurePreparationPanelsActive()
+    {
+        ResolveSlideTargets();
+
+        if (equipRect != null && !equipRect.gameObject.activeSelf)
+            equipRect.gameObject.SetActive(true);
+
+        if (charterRect != null && !charterRect.gameObject.activeSelf)
+            charterRect.gameObject.SetActive(true);
+
+        LobbyInfoPanelUI.RefreshAll();
+    }
+
+    private bool AreSlideTargetsAtOpenPosition()
+    {
+        const float tolerance = 0.5f;
+
+        bool infoOpen = equipRect == null || Mathf.Abs(equipRect.anchoredPosition.x - equipEndX) <= tolerance;
+        bool readyOpen = charterRect == null || Mathf.Abs(charterRect.anchoredPosition.x - charterEndX) <= tolerance;
+        return infoOpen && readyOpen;
+    }
+
+    private void ResolveReadyInventoryDisplayIfNeeded()
+    {
+        ResolveSlideTargets();
+        Transform readyRoot = charterRect != null ? charterRect : ResolvePanelRoot()?.transform;
+        if (readyRoot == null)
             return;
 
-        if (equipRect == null)
+        if (readyRelicContentRoot == null)
         {
-            Transform equip = FindChildRecursive(root.transform, "Equip");
-            if (equip != null)
-                equipRect = equip as RectTransform;
+            Transform relicRoot = readyRoot.Find("Relic");
+            Transform viewport = relicRoot != null ? relicRoot.Find("Viewport") : null;
+            Transform content = viewport != null ? viewport.Find("Content") : null;
+            if (content != null)
+                readyRelicContentRoot = content;
         }
 
-        if (charterRect == null)
+        if (readyCompoundContentRoot == null)
         {
-            Transform charter = FindChildRecursive(root.transform, "Charter");
-            if (charter != null)
-                charterRect = charter as RectTransform;
+            Transform compoundRoot = readyRoot.Find("Compound");
+            Transform viewport = compoundRoot != null ? compoundRoot.Find("Viewport") : null;
+            Transform content = viewport != null ? viewport.Find("Content") : null;
+            if (content != null)
+                readyCompoundContentRoot = content;
         }
+
+        if (readyInventorySlotPrefab == null)
+            readyInventorySlotPrefab = compoundSlotPrefab;
+
+        RegisterExistingReadySlots(readyRelicContentRoot, readyRelicSlots);
+        RegisterExistingReadySlots(readyCompoundContentRoot, readyCompoundSlots);
+    }
+
+    private void ResolveReadyInventoryDetailIfNeeded()
+    {
+        ResolveSlideTargets();
+        Transform readyRoot = charterRect != null ? charterRect : ResolvePanelRoot()?.transform;
+        if (readyRoot == null)
+            return;
+
+        if (readyDetailRoot == null)
+        {
+            Transform detail = readyRoot.Find("Detail");
+            if (detail != null)
+                readyDetailRoot = detail.gameObject;
+        }
+
+        if (readyDetailRoot == null)
+            return;
+
+        Transform detailRoot = readyDetailRoot.transform;
+        if (readyDetailIconImage == null)
+            readyDetailIconImage = FindImageByNames(detailRoot, "Icon");
+        if (readyDetailNameText == null)
+            readyDetailNameText = FindTextByNames(detailRoot, "Name");
+        if (readyDetailEffectText == null)
+            readyDetailEffectText = FindTextByNames(detailRoot, "Effect");
+
+        // Detail의 Name/Effect는 호버 중 원본 DB 데이터로 직접 갱신되는 동적 텍스트입니다.
+        // 정적 로컬라이즈 컴포넌트가 Detail 활성화 시 Inspector 기본값(예: "아이템")으로
+        // 다시 덮어쓰지 못하도록 동적 출력 대상으로 보호합니다.
+        ProtectReadyDetailText(readyDetailNameText);
+        ProtectReadyDetailText(readyDetailEffectText);
+
+        if (!readyDetailInitialized)
+        {
+            readyDetailInitialized = true;
+            readyDetailRoot.SetActive(false);
+        }
+    }
+
+
+    private static void ProtectReadyDetailText(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        GameObject target = text.gameObject;
+        if (target.GetComponent<LocalizationIgnore>() == null)
+            target.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localizedTmp = target.GetComponent<LocalizedTMPText>();
+        if (localizedTmp != null)
+            localizedTmp.enabled = false;
+
+        LocalizeStringEvent localizeStringEvent = target.GetComponent<LocalizeStringEvent>();
+        if (localizeStringEvent != null)
+            localizeStringEvent.enabled = false;
+    }
+
+    private void RefreshReadyInventoryDisplay()
+    {
+        ResolveReadyInventoryDisplayIfNeeded();
+        BattleBagItemSlotUI prefab = readyInventorySlotPrefab != null ? readyInventorySlotPrefab : compoundSlotPrefab;
+        if (prefab == null)
+            return;
+
+        LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
+
+        List<string> relicIds = new();
+        if (lobby?.OwnedRelicIds != null)
+        {
+            HashSet<string> seenRelics = new(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < lobby.OwnedRelicIds.Count; i++)
+            {
+                string relicId = lobby.OwnedRelicIds[i]?.Trim();
+                if (string.IsNullOrWhiteSpace(relicId) || !seenRelics.Add(relicId))
+                    continue;
+
+                relicIds.Add(relicId);
+            }
+        }
+
+        IReadOnlyList<string> storedCompoundIds = lobby?.StoredCompoundIds;
+        List<BagItemStack> compoundStacks = BagItemStackUtility.BuildStacks(storedCompoundIds);
+
+        RefreshReadyRelicSlots(prefab, relicIds);
+        RefreshReadyCompoundSlots(prefab, compoundStacks);
+    }
+
+    private void RefreshReadyRelicSlots(BattleBagItemSlotUI prefab, List<string> relicIds)
+    {
+        if (readyRelicContentRoot == null || prefab == null)
+            return;
+
+        int dataCount = relicIds != null ? relicIds.Count : 0;
+        int targetCount = Mathf.Max(Mathf.Max(1, readyRelicMinimumSlotCount), dataCount);
+        EnsureReadySlotCount(readyRelicContentRoot, readyRelicSlots, prefab, targetCount, "ReadyRelicSlot");
+
+        for (int i = 0; i < readyRelicSlots.Count; i++)
+        {
+            BattleBagItemSlotUI slot = readyRelicSlots[i];
+            if (slot == null)
+                continue;
+
+            bool visible = i < targetCount;
+            slot.gameObject.SetActive(visible);
+            if (!visible)
+                continue;
+
+            ApplyReadySlotScale(slot);
+            slot.SetQuantityVisible(false);
+
+            if (i < dataCount)
+            {
+                slot.Setup(relicIds[i], 1, ShowReadyInventoryDetail, HideReadyInventoryDetail, PinReadyInventoryDetail);
+                ConfigureReadyInventoryDrag(slot, isCompound: false);
+            }
+            else
+            {
+                slot.Clear(null, null, null);
+                ConfigureReadyInventoryDrag(slot, isCompound: false);
+            }
+
+            slot.SetQuantityVisible(false);
+            slot.SetSelected(false);
+            slot.SetHovered(false);
+        }
+    }
+
+    private void RefreshReadyCompoundSlots(BattleBagItemSlotUI prefab, List<BagItemStack> stacks)
+    {
+        if (readyCompoundContentRoot == null || prefab == null)
+            return;
+
+        int dataCount = stacks != null ? stacks.Count : 0;
+        int targetCount = Mathf.Max(Mathf.Max(1, readyCompoundMinimumSlotCount), dataCount);
+        EnsureReadySlotCount(readyCompoundContentRoot, readyCompoundSlots, prefab, targetCount, "ReadyCompoundSlot");
+
+        for (int i = 0; i < readyCompoundSlots.Count; i++)
+        {
+            BattleBagItemSlotUI slot = readyCompoundSlots[i];
+            if (slot == null)
+                continue;
+
+            bool visible = i < targetCount;
+            slot.gameObject.SetActive(visible);
+            if (!visible)
+                continue;
+
+            ApplyReadySlotScale(slot);
+            slot.SetQuantityVisible(true);
+
+            if (i < dataCount)
+            {
+                BagItemStack stack = stacks[i];
+                slot.Setup(stack.ItemId, stack.Count, ShowReadyInventoryDetail, HideReadyInventoryDetail, PinReadyInventoryDetail);
+                ConfigureReadyInventoryDrag(slot, isCompound: true);
+            }
+            else
+            {
+                slot.Clear(null, null, null);
+                ConfigureReadyInventoryDrag(slot, isCompound: true);
+            }
+
+            slot.SetQuantityVisible(true);
+            slot.SetSelected(false);
+            slot.SetHovered(false);
+        }
+    }
+
+    private void ShowReadyInventoryDetail(BattleBagItemSlotUI slot)
+    {
+        if (slot == null || !slot.HasItem || string.IsNullOrWhiteSpace(slot.ItemId))
+            return;
+
+        ResolveReadyInventoryDetailIfNeeded();
+        if (readyDetailRoot == null || DataManager.Instance == null)
+            return;
+
+        string itemId = slot.ItemId.Trim();
+        Sprite icon = null;
+        string displayName = string.Empty;
+        string effectText = string.Empty;
+        bool resolved = false;
+
+        if (DataManager.Instance.CompoundDatabase != null &&
+            DataManager.Instance.CompoundDatabase.TryGet(itemId, out CompoundData compound))
+        {
+            displayName = GameDataLocalization.CompoundName(compound);
+            effectText = GameDataLocalization.CompoundDescription(compound);
+            resolved = true;
+        }
+        else if (DataManager.Instance.RelicDatabase != null &&
+                 DataManager.Instance.RelicDatabase.TryGet(itemId, out RelicData relic))
+        {
+            displayName = GameDataLocalization.RelicName(relic);
+            effectText = GameDataLocalization.RelicEffectDescription(relic);
+            resolved = true;
+        }
+
+        if (!resolved)
+        {
+            HideReadyInventoryDetail();
+            return;
+        }
+
+        if (DataManager.Instance.RelicIconDatabase != null)
+            DataManager.Instance.RelicIconDatabase.TryGetIcon(itemId, out icon);
+
+        readyDetailSourceSlot = slot;
+
+        if (readyDetailIconImage != null)
+        {
+            readyDetailIconImage.sprite = icon;
+            readyDetailIconImage.enabled = icon != null;
+        }
+
+        if (readyDetailNameText != null)
+            readyDetailNameText.text = displayName;
+
+        if (readyDetailEffectText != null)
+            readyDetailEffectText.text = effectText;
+
+        readyDetailRoot.SetActive(true);
+    }
+
+    private void HideReadyInventoryDetail(BattleBagItemSlotUI slot)
+    {
+        if (readyDetailSourceSlot != null && slot != null && readyDetailSourceSlot != slot)
+            return;
+
+        if (readyDetailPinnedSlot != null)
+        {
+            ShowReadyInventoryDetail(readyDetailPinnedSlot);
+            return;
+        }
+
+        HideReadyInventoryDetail();
+    }
+
+    private void PinReadyInventoryDetail(BattleBagItemSlotUI slot)
+    {
+        if (slot == null || !slot.HasItem)
+            return;
+
+        if (readyDetailPinnedSlot != null && readyDetailPinnedSlot != slot)
+            readyDetailPinnedSlot.SetSelected(false);
+
+        readyDetailPinnedSlot = slot;
+        readyDetailPinnedSlot.SetSelected(true);
+        ShowReadyInventoryDetail(slot);
+    }
+
+    private void HideReadyInventoryDetail()
+    {
+        readyDetailSourceSlot = null;
+
+        if (readyDetailPinnedSlot != null)
+            readyDetailPinnedSlot.SetSelected(false);
+
+        readyDetailPinnedSlot = null;
+
+        if (readyDetailRoot != null)
+            readyDetailRoot.SetActive(false);
+    }
+
+
+    private void ConfigureReadyInventoryDrag(BattleBagItemSlotUI slot, bool isCompound)
+    {
+        if (slot == null)
+            return;
+
+        LobbyReadyEquipmentPointerRelay relay = slot.GetComponent<LobbyReadyEquipmentPointerRelay>();
+        if (relay == null)
+            relay = slot.gameObject.AddComponent<LobbyReadyEquipmentPointerRelay>();
+
+        relay.Configure(
+            null,
+            data => BeginReadyInventoryDrag(slot, isCompound, data),
+            UpdateEquipmentDrag,
+            EndEquipmentDrag,
+            null);
+    }
+
+    private void BindInfoPanelEquipmentTargets()
+    {
+        ResolveSlideTargets();
+        Transform infoRoot = equipRect;
+        if (infoRoot == null)
+            return;
+
+        for (int partyIndex = 0; partyIndex < CharacterCount; partyIndex++)
+        {
+            Transform charRoot = FindChildRecursive(infoRoot, "Char" + (partyIndex + 1));
+            if (charRoot == null)
+                continue;
+
+            Transform relicRoot = charRoot.Find("Relic") ?? FindChildRecursive(charRoot, "Relic");
+            for (int visibleIndex = 0; visibleIndex < 2; visibleIndex++)
+            {
+                Transform slotRoot = relicRoot != null
+                    ? relicRoot.Find("Relic" + (visibleIndex + 1).ToString("00"))
+                    : null;
+                if (slotRoot == null)
+                    continue;
+
+                int capturedParty = partyIndex;
+                int capturedVisible = visibleIndex;
+                int runtimeSlotIndex = visibleIndex + 1;
+                LobbyReadyEquipmentPointerRelay relay = GetOrAddEquipmentRelay(slotRoot.gameObject);
+                relay.Configure(
+                    _ => OnInfoEquipmentSlotClicked(capturedParty, runtimeSlotIndex, isCompound: false),
+                    data => BeginInfoEquipmentDrag(capturedParty, runtimeSlotIndex, isCompound: false, data),
+                    UpdateEquipmentDrag,
+                    EndEquipmentDrag,
+                    _ => CompleteEquipmentDrop(capturedParty, runtimeSlotIndex, isCompound: false));
+                infoRelicTargetRelays[partyIndex, visibleIndex] = relay;
+            }
+
+            Transform compoundRoot = charRoot.Find("Compound") ?? FindChildRecursive(charRoot, "Compound");
+            Transform compoundSlot = compoundRoot != null ? compoundRoot.Find("Compound01") : null;
+            if (compoundSlot != null)
+            {
+                int capturedParty = partyIndex;
+                int activeSlotIndex = ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
+                LobbyReadyEquipmentPointerRelay relay = GetOrAddEquipmentRelay(compoundSlot.gameObject);
+                relay.Configure(
+                    _ => OnInfoEquipmentSlotClicked(capturedParty, activeSlotIndex, isCompound: true),
+                    data => BeginInfoEquipmentDrag(capturedParty, activeSlotIndex, isCompound: true, data),
+                    UpdateEquipmentDrag,
+                    EndEquipmentDrag,
+                    _ => CompleteEquipmentDrop(capturedParty, activeSlotIndex, isCompound: true));
+                infoCompoundTargetRelays[partyIndex] = relay;
+            }
+        }
+    }
+
+    private static LobbyReadyEquipmentPointerRelay GetOrAddEquipmentRelay(GameObject target)
+    {
+        if (target == null)
+            return null;
+
+        LobbyReadyEquipmentPointerRelay relay = target.GetComponent<LobbyReadyEquipmentPointerRelay>();
+        if (relay == null)
+            relay = target.AddComponent<LobbyReadyEquipmentPointerRelay>();
+        return relay;
+    }
+
+    private void OnInfoEquipmentSlotClicked(int partyIndex, int runtimeSlotIndex, bool isCompound)
+    {
+        if (readyDetailPinnedSlot != null && readyDetailPinnedSlot.HasItem)
+        {
+            TryEquipReadySelectionToInfoSlot(partyIndex, runtimeSlotIndex, isCompound);
+            return;
+        }
+
+        TryUnequipInfoSlot(partyIndex, runtimeSlotIndex, isCompound);
+    }
+
+    private bool TryEquipReadySelectionToInfoSlot(int partyIndex, int runtimeSlotIndex, bool isCompound)
+    {
+        BattleBagItemSlotUI selected = readyDetailPinnedSlot;
+        if (selected == null || !selected.HasItem || string.IsNullOrWhiteSpace(selected.ItemId))
+            return false;
+
+        string itemId = selected.ItemId.Trim();
+        if (!IsEquipmentType(itemId, isCompound))
+            return false;
+
+        bool changed = isCompound
+            ? EquipStoredCompoundToInfoSlot(partyIndex, itemId)
+            : EquipOwnedRelicToInfoSlot(partyIndex, runtimeSlotIndex, itemId);
+
+        if (changed)
+            RefreshAfterEquipmentChange();
+
+        return changed;
+    }
+
+    private bool EquipOwnedRelicToInfoSlot(int partyIndex, int runtimeSlotIndex, string relicId)
+    {
+        DataManager dataManager = DataManager.Instance;
+        if (dataManager?.CharacterRuntimeStore == null || dataManager.RelicDatabase == null)
+            return false;
+
+        string characterId = dataManager.PartyRuntimeStore?.GetCharacterId(partyIndex);
+        LobbyRuntimeData lobby = dataManager.LobbyRuntimeStore?.GetOrCreate();
+        if (string.IsNullOrWhiteSpace(characterId) || lobby?.OwnedRelicIds == null)
+            return false;
+
+        RelicEquipService service = new RelicEquipService(
+            dataManager.CharacterRuntimeStore,
+            lobby.OwnedRelicIds,
+            dataManager.RelicDatabase);
+        return service.EquipRelic(characterId, runtimeSlotIndex, relicId);
+    }
+
+    private bool EquipStoredCompoundToInfoSlot(int partyIndex, string compoundId)
+    {
+        DataManager dataManager = DataManager.Instance;
+        if (dataManager?.CompoundDatabase == null || dataManager.CharacterRuntimeStore == null)
+            return false;
+
+        string characterId = dataManager.PartyRuntimeStore?.GetCharacterId(partyIndex);
+        if (string.IsNullOrWhiteSpace(characterId) ||
+            !dataManager.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtime) ||
+            !dataManager.CompoundDatabase.TryGet(compoundId, out CompoundData compound))
+        {
+            return false;
+        }
+
+        LobbyRuntimeData lobby = dataManager.LobbyRuntimeStore?.GetOrCreate();
+        if (lobby?.StoredCompoundIds == null)
+            return false;
+
+        int storedIndex = FindStoredCompoundIndex(lobby.StoredCompoundIds, compoundId);
+        if (storedIndex < 0)
+            return false;
+
+        ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
+        int activeSlot = ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
+        string previous = runtime.EquippedRelicIds[activeSlot];
+
+        lobby.StoredCompoundIds.RemoveAt(storedIndex);
+        if (!string.IsNullOrWhiteSpace(previous))
+            lobby.StoredCompoundIds.Add(previous.Trim());
+
+        runtime.EquippedRelicIds[activeSlot] = compoundId.Trim();
+        ActiveRelicRuntimeUtility.ResetUses(runtime, compound);
+        return true;
+    }
+
+    private bool TryUnequipInfoSlot(int partyIndex, int runtimeSlotIndex, bool isCompound)
+    {
+        DataManager dataManager = DataManager.Instance;
+        if (dataManager?.CharacterRuntimeStore == null)
+            return false;
+
+        string characterId = dataManager.PartyRuntimeStore?.GetCharacterId(partyIndex);
+        if (string.IsNullOrWhiteSpace(characterId) ||
+            !dataManager.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtime))
+        {
+            return false;
+        }
+
+        ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
+        if (runtimeSlotIndex < 0 || runtimeSlotIndex >= runtime.EquippedRelicIds.Length)
+            return false;
+
+        string itemId = runtime.EquippedRelicIds[runtimeSlotIndex];
+        if (string.IsNullOrWhiteSpace(itemId) || !IsEquipmentType(itemId, isCompound))
+            return false;
+
+        bool changed;
+        if (isCompound)
+        {
+            LobbyRuntimeData lobby = dataManager.LobbyRuntimeStore?.GetOrCreate();
+            if (lobby == null)
+                return false;
+
+            lobby.StoredCompoundIds ??= new List<string>();
+            lobby.StoredCompoundIds.Add(itemId.Trim());
+            runtime.EquippedRelicIds[runtimeSlotIndex] = null;
+            changed = true;
+        }
+        else
+        {
+            LobbyRuntimeData lobby = dataManager.LobbyRuntimeStore?.GetOrCreate();
+            if (lobby?.OwnedRelicIds == null || dataManager.RelicDatabase == null)
+                return false;
+
+            RelicEquipService service = new RelicEquipService(
+                dataManager.CharacterRuntimeStore,
+                lobby.OwnedRelicIds,
+                dataManager.RelicDatabase);
+            changed = service.UnequipRelic(characterId, runtimeSlotIndex);
+        }
+
+        if (changed)
+            RefreshAfterEquipmentChange();
+
+        return changed;
+    }
+
+    private bool IsEquipmentType(string itemId, bool isCompound)
+    {
+        if (string.IsNullOrWhiteSpace(itemId) || DataManager.Instance == null)
+            return false;
+
+        if (isCompound)
+            return DataManager.Instance.CompoundDatabase != null &&
+                   DataManager.Instance.CompoundDatabase.TryGet(itemId.Trim(), out _);
+
+        return DataManager.Instance.RelicDatabase != null &&
+               DataManager.Instance.RelicDatabase.TryGet(itemId.Trim(), out RelicData relic) &&
+               !ActiveRelicEffectResolver.IsActiveRelic(relic);
+    }
+
+    private void BeginReadyInventoryDrag(BattleBagItemSlotUI slot, bool isCompound, PointerEventData eventData)
+    {
+        if (slot == null || !slot.HasItem || string.IsNullOrWhiteSpace(slot.ItemId))
+            return;
+
+        equipmentDragItemId = slot.ItemId.Trim();
+        equipmentDragIsCompound = isCompound;
+        equipmentDragFromInfo = false;
+        equipmentDragSourcePartyIndex = -1;
+        equipmentDragSourceRuntimeSlotIndex = -1;
+        equipmentDragHandled = false;
+        CreateEquipmentDragGhost(equipmentDragItemId, eventData);
+    }
+
+    private void BeginInfoEquipmentDrag(int partyIndex, int runtimeSlotIndex, bool isCompound, PointerEventData eventData)
+    {
+        if (!TryGetEquippedItemId(partyIndex, runtimeSlotIndex, out string itemId) ||
+            !IsEquipmentType(itemId, isCompound))
+        {
+            return;
+        }
+
+        equipmentDragItemId = itemId;
+        equipmentDragIsCompound = isCompound;
+        equipmentDragFromInfo = true;
+        equipmentDragSourcePartyIndex = partyIndex;
+        equipmentDragSourceRuntimeSlotIndex = runtimeSlotIndex;
+        equipmentDragHandled = false;
+        CreateEquipmentDragGhost(itemId, eventData);
+    }
+
+    private void UpdateEquipmentDrag(PointerEventData eventData)
+    {
+        if (equipmentDragGhostImage != null && eventData != null)
+            equipmentDragGhostImage.rectTransform.position = eventData.position;
+    }
+
+    private void EndEquipmentDrag(PointerEventData eventData)
+    {
+        if (equipmentDragFromInfo && !equipmentDragHandled &&
+            equipmentDragSourcePartyIndex >= 0 && equipmentDragSourceRuntimeSlotIndex >= 0)
+        {
+            TryUnequipInfoSlot(
+                equipmentDragSourcePartyIndex,
+                equipmentDragSourceRuntimeSlotIndex,
+                equipmentDragIsCompound);
+        }
+
+        ClearEquipmentDragState();
+    }
+
+    private void CompleteEquipmentDrop(int targetPartyIndex, int targetRuntimeSlotIndex, bool isCompound)
+    {
+        if (string.IsNullOrWhiteSpace(equipmentDragItemId) || equipmentDragIsCompound != isCompound)
+            return;
+
+        bool changed;
+        if (equipmentDragFromInfo)
+        {
+            changed = MoveEquippedItem(
+                equipmentDragSourcePartyIndex,
+                equipmentDragSourceRuntimeSlotIndex,
+                targetPartyIndex,
+                targetRuntimeSlotIndex,
+                isCompound);
+        }
+        else
+        {
+            changed = isCompound
+                ? EquipStoredCompoundToInfoSlot(targetPartyIndex, equipmentDragItemId)
+                : EquipOwnedRelicToInfoSlot(targetPartyIndex, targetRuntimeSlotIndex, equipmentDragItemId);
+        }
+
+        if (!changed)
+            return;
+
+        equipmentDragHandled = true;
+        RefreshAfterEquipmentChange();
+    }
+
+    private bool MoveEquippedItem(
+        int sourcePartyIndex,
+        int sourceRuntimeSlotIndex,
+        int targetPartyIndex,
+        int targetRuntimeSlotIndex,
+        bool isCompound)
+    {
+        if (sourcePartyIndex == targetPartyIndex && sourceRuntimeSlotIndex == targetRuntimeSlotIndex)
+        {
+            equipmentDragHandled = true;
+            return true;
+        }
+
+        if (!TryGetCharacterRuntime(sourcePartyIndex, out CharacterRuntimeData sourceRuntime) ||
+            !TryGetCharacterRuntime(targetPartyIndex, out CharacterRuntimeData targetRuntime))
+        {
+            return false;
+        }
+
+        ActiveRelicRuntimeUtility.EnsureRelicSlots(sourceRuntime);
+        ActiveRelicRuntimeUtility.EnsureRelicSlots(targetRuntime);
+
+        string sourceItem = sourceRuntime.EquippedRelicIds[sourceRuntimeSlotIndex];
+        if (string.IsNullOrWhiteSpace(sourceItem) || !IsEquipmentType(sourceItem, isCompound))
+            return false;
+
+        string targetItem = targetRuntime.EquippedRelicIds[targetRuntimeSlotIndex];
+        if (!string.IsNullOrWhiteSpace(targetItem) && !IsEquipmentType(targetItem, isCompound))
+            return false;
+
+        sourceRuntime.EquippedRelicIds[sourceRuntimeSlotIndex] = targetItem;
+        targetRuntime.EquippedRelicIds[targetRuntimeSlotIndex] = sourceItem;
+
+        if (isCompound && DataManager.Instance?.CompoundDatabase != null)
+        {
+            if (!string.IsNullOrWhiteSpace(sourceRuntime.EquippedRelicIds[sourceRuntimeSlotIndex]) &&
+                DataManager.Instance.CompoundDatabase.TryGet(sourceRuntime.EquippedRelicIds[sourceRuntimeSlotIndex], out CompoundData sourceCompound))
+            {
+                ActiveRelicRuntimeUtility.ResetUses(sourceRuntime, sourceCompound);
+            }
+
+            if (DataManager.Instance.CompoundDatabase.TryGet(sourceItem, out CompoundData targetCompound))
+                ActiveRelicRuntimeUtility.ResetUses(targetRuntime, targetCompound);
+        }
+
+        return true;
+    }
+
+    private bool TryGetEquippedItemId(int partyIndex, int runtimeSlotIndex, out string itemId)
+    {
+        itemId = null;
+        if (!TryGetCharacterRuntime(partyIndex, out CharacterRuntimeData runtime))
+            return false;
+
+        ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
+        if (runtimeSlotIndex < 0 || runtimeSlotIndex >= runtime.EquippedRelicIds.Length)
+            return false;
+
+        itemId = runtime.EquippedRelicIds[runtimeSlotIndex]?.Trim();
+        return !string.IsNullOrWhiteSpace(itemId);
+    }
+
+    private bool TryGetCharacterRuntime(int partyIndex, out CharacterRuntimeData runtime)
+    {
+        runtime = null;
+        DataManager dataManager = DataManager.Instance;
+        string characterId = dataManager?.PartyRuntimeStore?.GetCharacterId(partyIndex);
+        return !string.IsNullOrWhiteSpace(characterId) &&
+               dataManager?.CharacterRuntimeStore != null &&
+               dataManager.CharacterRuntimeStore.TryGet(characterId, out runtime);
+    }
+
+    private void CreateEquipmentDragGhost(string itemId, PointerEventData eventData)
+    {
+        DestroyEquipmentDragGhost();
+
+        Sprite icon = ResolveRelicIcon(itemId);
+        if (icon == null)
+            return;
+
+        Canvas rootCanvas = GetComponentInParent<Canvas>()?.rootCanvas;
+        if (rootCanvas == null)
+            return;
+
+        GameObject ghost = new GameObject("ReadyEquipmentDragGhost", typeof(RectTransform), typeof(CanvasGroup), typeof(Image));
+        ghost.transform.SetParent(rootCanvas.transform, false);
+        ghost.transform.SetAsLastSibling();
+
+        RectTransform rect = ghost.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(96f, 96f);
+        rect.localScale = Vector3.one * 1.2f;
+        if (eventData != null)
+            rect.position = eventData.position;
+
+        CanvasGroup group = ghost.GetComponent<CanvasGroup>();
+        group.blocksRaycasts = false;
+        group.interactable = false;
+
+        equipmentDragGhostImage = ghost.GetComponent<Image>();
+        equipmentDragGhostImage.sprite = icon;
+        equipmentDragGhostImage.preserveAspect = true;
+        equipmentDragGhostImage.raycastTarget = false;
+    }
+
+    private void DestroyEquipmentDragGhost()
+    {
+        if (equipmentDragGhostImage != null)
+            Destroy(equipmentDragGhostImage.gameObject);
+        equipmentDragGhostImage = null;
+    }
+
+    private void ClearEquipmentDragState()
+    {
+        DestroyEquipmentDragGhost();
+        equipmentDragItemId = null;
+        equipmentDragIsCompound = false;
+        equipmentDragSourcePartyIndex = -1;
+        equipmentDragSourceRuntimeSlotIndex = -1;
+        equipmentDragFromInfo = false;
+        equipmentDragHandled = false;
+    }
+
+    private void RefreshAfterEquipmentChange()
+    {
+        HideReadyInventoryDetail();
+        RefreshReadyInventoryDisplay();
+        LobbyInfoPanelUI.RefreshAll();
+        RelicEquipPanelUI.RefreshAll();
+    }
+
+    private static void RegisterExistingReadySlots(Transform contentRoot, List<BattleBagItemSlotUI> slots)
+    {
+        if (contentRoot == null || slots == null)
+            return;
+
+        slots.RemoveAll(slot => slot == null);
+        if (slots.Count > 0)
+            return;
+
+        for (int i = 0; i < contentRoot.childCount; i++)
+        {
+            Transform child = contentRoot.GetChild(i);
+            BattleBagItemSlotUI slot = child != null ? child.GetComponent<BattleBagItemSlotUI>() : null;
+            if (slot != null)
+                slots.Add(slot);
+        }
+    }
+
+    private void EnsureReadySlotCount(
+        Transform contentRoot,
+        List<BattleBagItemSlotUI> slots,
+        BattleBagItemSlotUI prefab,
+        int targetCount,
+        string slotNamePrefix)
+    {
+        if (contentRoot == null || slots == null || prefab == null)
+            return;
+
+        slots.RemoveAll(slot => slot == null);
+        while (slots.Count < targetCount)
+        {
+            int index = slots.Count;
+            BattleBagItemSlotUI slot = Instantiate(prefab, contentRoot, false);
+            slot.name = $"{slotNamePrefix}_{index + 1}";
+            slot.gameObject.SetActive(true);
+            slot.Clear(null, null, null);
+            ApplyReadySlotScale(slot);
+            slots.Add(slot);
+        }
+    }
+
+    private void ApplyReadySlotScale(BattleBagItemSlotUI slot)
+    {
+        if (slot == null)
+            return;
+
+        float scale = Mathf.Max(0.1f, readyInventorySlotScale);
+        Vector3 current = slot.transform.localScale;
+        slot.transform.localScale = new Vector3(scale, scale, Mathf.Approximately(current.z, 0f) ? 1f : current.z);
     }
 
     private void ResolveCompoundInventoryIfNeeded()
@@ -881,7 +1791,9 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (searchRoot == null)
             return;
 
-        Transform compoundRoot = searchRoot.Find("Compound") ?? FindChildRecursive(searchRoot, "Compound");
+        // 새 Info_Panel의 CharN/Compound를 예전 연성제 선택 UI로 오인하지 않도록
+        // Info_Panel 바로 아래의 구 구조 Compound만 허용합니다.
+        Transform compoundRoot = searchRoot.Find("Compound");
         if (compoundRoot == null)
             return;
 
@@ -952,7 +1864,9 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (searchRoot == null)
             return;
 
-        Transform compoundRoot = searchRoot.Find("Compound") ?? FindChildRecursive(searchRoot, "Compound");
+        // 새 Info_Panel의 CharN/Compound를 예전 연성제 선택 UI로 오인하지 않도록
+        // Info_Panel 바로 아래의 구 구조 Compound만 허용합니다.
+        Transform compoundRoot = searchRoot.Find("Compound");
         if (compoundRoot == null)
             return;
 
@@ -1332,7 +2246,9 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (searchRoot == null)
             return;
 
-        Transform relicRoot = FindChildRecursive(searchRoot, "Relic");
+        // 새 Info_Panel의 CharN/Relic을 예전 유물 선택 UI로 오인하지 않도록
+        // Info_Panel 바로 아래의 구 구조 Relic만 허용합니다.
+        Transform relicRoot = searchRoot.Find("Relic");
         if (relicRoot == null)
             return;
 
@@ -1380,7 +2296,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             return;
 
         Transform searchRoot = ResolveInfoPanelTransform();
-        Transform characterText = FindChildRecursive(searchRoot, "Character_Text");
+        Transform characterText = searchRoot != null ? searchRoot.Find("Character_Text") : null;
 
         if (characterText != null)
         {
@@ -1414,15 +2330,24 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (root == null)
             return null;
 
+        // 새 Info_Panel의 Char1~3은 표시 전용이며 직접 Name 자식이 없습니다.
+        // 예전 장착 UI만 직접 Name 자식을 가지고 있으므로, 이 조건으로 구 구조와 새 구조를 분리합니다.
+        Transform legacyNameRoot = root.Find("Name");
+        if (legacyNameRoot == null)
+            return null;
+
         Transform backRoot = root.Find("Back") ?? FindChildRecursive(root, "Back");
         Image backImage = backRoot != null ? backRoot.GetComponent<Image>() : null;
         Transform selectRoot = FindChildRecursive(searchRoot, $"Character{index + 1}_Select");
         Image characterSelectImage = selectRoot != null ? selectRoot.GetComponent<Image>() : null;
 
+        TMP_Text legacyNameText = legacyNameRoot.GetComponent<TMP_Text>() ??
+                                  legacyNameRoot.GetComponentInChildren<TMP_Text>(true);
+
         CharacterView view = new CharacterView
         {
             Root = root,
-            NameText = FindTextByNames(root, "Name"),
+            NameText = legacyNameText,
             Mark1Image = FindImageByNames(root, "mark1", "Mark1"),
             Mark2Image = FindImageByNames(root, "mark2", "Mark2"),
             BackImage = backImage,
@@ -1618,12 +2543,15 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void SetInfoPanelActive(bool active)
     {
-        Transform infoPanel = ResolveInfoPanelTransform();
-        if (infoPanel != null && infoPanel.gameObject.activeSelf != active)
-            infoPanel.gameObject.SetActive(active);
+        // Info_Panel은 항상 활성 상태를 유지합니다. 닫힘/열림은 X 위치로만 표현합니다.
+        if (!active)
+            return;
 
-        if (active)
-            LobbyInfoPanelUI.RefreshAll();
+        Transform infoPanel = ResolveInfoPanelTransform();
+        if (infoPanel != null && !infoPanel.gameObject.activeSelf)
+            infoPanel.gameObject.SetActive(true);
+
+        LobbyInfoPanelUI.RefreshAll();
     }
 
     private Transform ResolveInfoPanelTransform()
@@ -1781,3 +2709,38 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         public Image[] SkillIcons = new Image[VisibleSkillSlotCount];
     }
 }
+
+/// <summary>
+/// Ready_Panel/Info_Panel 장착 슬롯의 런타임 포인터 이벤트 중계기입니다.
+/// 프리팹 수정 없이 클릭/드래그/드롭을 연결하기 위해 사용합니다.
+/// </summary>
+public sealed class LobbyReadyEquipmentPointerRelay : MonoBehaviour,
+    IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
+{
+    private Action<PointerEventData> onClick;
+    private Action<PointerEventData> onBeginDrag;
+    private Action<PointerEventData> onDrag;
+    private Action<PointerEventData> onEndDrag;
+    private Action<PointerEventData> onDrop;
+
+    public void Configure(
+        Action<PointerEventData> click,
+        Action<PointerEventData> beginDrag,
+        Action<PointerEventData> drag,
+        Action<PointerEventData> endDrag,
+        Action<PointerEventData> drop)
+    {
+        onClick = click;
+        onBeginDrag = beginDrag;
+        onDrag = drag;
+        onEndDrag = endDrag;
+        onDrop = drop;
+    }
+
+    public void OnPointerClick(PointerEventData eventData) => onClick?.Invoke(eventData);
+    public void OnBeginDrag(PointerEventData eventData) => onBeginDrag?.Invoke(eventData);
+    public void OnDrag(PointerEventData eventData) => onDrag?.Invoke(eventData);
+    public void OnEndDrag(PointerEventData eventData) => onEndDrag?.Invoke(eventData);
+    public void OnDrop(PointerEventData eventData) => onDrop?.Invoke(eventData);
+}
+
