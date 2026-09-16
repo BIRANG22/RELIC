@@ -5,12 +5,13 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 [DisallowMultipleComponent]
 public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 {
-    private const int StorageMinimumSlotCount = 36;
+    private const int StorageMinimumSlotCount = 12;
     private const float PassiveRefreshInterval = 0.25f;
 
     [SerializeField] private GameObject panelRoot;
@@ -76,14 +77,57 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     private GameObject activeCompoundTransferEffect;
 
     public bool IsOpen => panelRoot != null && panelRoot.activeSelf;
-    private void Awake() { BindSceneObjects(); BindButtons(); EnsureStorageSlots(); }
-    private void OnEnable() { BindSceneObjects(); BindButtons(); EnsureStorageSlots(); RefreshAll(); RefreshPanelText(); }
+    private void Awake() { BindSceneObjects(); ProtectCultureStorageHeader(); BindButtons(); EnsureStorageSlots(); }
+    private void OnEnable() { BindSceneObjects(); ProtectCultureStorageHeader(); StartCoroutine(ProtectCultureStorageHeaderNextFrame()); BindButtons(); EnsureStorageSlots(); RefreshAll(); RefreshPanelText(); }
+
+    private IEnumerator ProtectCultureStorageHeaderNextFrame()
+    {
+        yield return null;
+        ProtectCultureStorageHeader();
+    }
+
+    private void ProtectCultureStorageHeader()
+    {
+        Transform root = panelRoot != null ? panelRoot.transform : transform;
+        Transform storage = Find(root, "Storage");
+        Transform nameRoot = storage != null ? storage.Find("Name") : null;
+        Transform nameTextTransform = nameRoot != null ? nameRoot.Find("NameText") : null;
+        TMP_Text nameText = nameTextTransform != null ? nameTextTransform.GetComponent<TMP_Text>() : null;
+        if (nameText == null)
+            return;
+
+        if (nameText.GetComponent<LocalizationIgnore>() == null)
+            nameText.gameObject.AddComponent<LocalizationIgnore>();
+
+        if (nameRoot.GetComponent<LocalizationIgnore>() == null)
+            nameRoot.gameObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localizer = nameText.GetComponent<LocalizedTMPText>();
+        if (localizer != null)
+            localizer.enabled = false;
+
+        LocalizeStringEvent legacyLocalizer = nameText.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+            legacyLocalizer.enabled = false;
+
+        nameText.text = "재료";
+    }
+
     private void Update()
     {
         if (!IsOpen || Time.unscaledTime < nextPassiveRefreshTime)
             return;
 
         RefreshAll();
+    }
+
+    private void LateUpdate()
+    {
+        if (!IsOpen)
+            return;
+
+        // 외부 텍스트/로컬라이즈 갱신 이후에도 배양 패널의 고정 제목은 "재료"를 유지합니다.
+        ProtectCultureStorageHeader();
     }
 
     public void Open()
@@ -1059,12 +1103,10 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         if (storageContentRoot == null || storageSlotPrefab == null)
             return;
 
-        // Content 아래에 미리 배치한 StorageSlotUI_0~35를 우선 재사용합니다.
-        // 기본 36칸이 이미 존재하면 새 슬롯을 만들지 않고, 36종류를 초과할 때만 추가 생성합니다.
+        // Content 아래에 미리 배치한 StorageSlotUI를 우선 재사용합니다.
+        // 기본 표시 수는 12칸이며, 실제 재료가 12종류를 초과할 때만 필요한 만큼 추가로 활성화/생성합니다.
         RegisterExistingStorageSlots();
-
-        int targetCount = Mathf.Max(StorageMinimumSlotCount, storageSlots.Count);
-        EnsureStorageSlotCount(targetCount);
+        EnsureStorageSlotCount(StorageMinimumSlotCount);
     }
 
     private void RegisterExistingStorageSlots()
