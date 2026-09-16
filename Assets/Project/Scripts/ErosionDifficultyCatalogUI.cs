@@ -530,21 +530,52 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
     private void AutoBindSelectedSlotScroll()
     {
-        if (erosionSlotContent != null && erosionSlotScrollRect != null)
-            return;
-
-        Transform erosionSelect = FindTransformRecursive(transform.root, "Erosion_Select");
-        if (erosionSelect == null)
-            return;
-
-        Transform scrollView = FindTransformRecursive(erosionSelect, "Scroll View");
-        Transform viewport = scrollView != null ? FindTransformRecursive(scrollView, "Viewport") : null;
-
+        // 활성 침식 슬롯 Content는 Inspector에서 명시적으로 연결된 대상만 사용합니다.
+        // "Scroll View / Viewport / Content" 이름을 재귀 검색하면 Erosion_Catalog의
+        // 가로 스크롤 Content를 잘못 잡아 카탈로그 스크롤이 초기화될 수 있습니다.
         if (erosionSlotContent == null)
-            erosionSlotContent = viewport != null ? FindTransformRecursive(viewport, "Content") : null;
+        {
+            erosionSlotScrollRect = null;
+            return;
+        }
 
-        if (erosionSlotScrollRect == null && scrollView != null)
-            erosionSlotScrollRect = scrollView.GetComponent<ScrollRect>();
+        // 카탈로그 내부 Content가 잘못 연결되어 있으면 선택 슬롯 대상으로 사용하지 않습니다.
+        if (IsUnderNamedAncestor(erosionSlotContent, "Erosion_Catalog"))
+        {
+            Debug.LogWarning(
+                "[ErosionDifficultyCatalogUI] erosionSlotContent가 Erosion_Catalog 내부를 가리키고 있어 연결을 해제합니다. " +
+                "활성 침식 슬롯용 Content를 Inspector에 직접 연결해 주세요.",
+                this);
+            erosionSlotContent = null;
+            erosionSlotScrollRect = null;
+            return;
+        }
+
+        ScrollRect parentScrollRect = erosionSlotContent.GetComponentInParent<ScrollRect>();
+        if (parentScrollRect == null || parentScrollRect.content != erosionSlotContent as RectTransform)
+        {
+            erosionSlotScrollRect = null;
+            return;
+        }
+
+        erosionSlotScrollRect = parentScrollRect;
+    }
+
+    private static bool IsUnderNamedAncestor(Transform target, string ancestorName)
+    {
+        if (target == null || string.IsNullOrEmpty(ancestorName))
+            return false;
+
+        Transform current = target;
+        while (current != null)
+        {
+            if (string.Equals(current.name, ancestorName, StringComparison.Ordinal))
+                return true;
+
+            current = current.parent;
+        }
+
+        return false;
     }
 
     private void ScrollErosionSlotsToBottom()

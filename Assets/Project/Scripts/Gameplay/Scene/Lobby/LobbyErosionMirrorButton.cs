@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [DisallowMultipleComponent]
@@ -17,6 +18,7 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
     [SerializeField] private bool addGraphicRaycasterToPanel = true;
 
     [Header("Input Block")]
+    [SerializeField] private bool ignoreClickWhenPointerOverUi = true;
     [SerializeField] private bool blockWhenLobbyMenuOpen = true;
     [SerializeField] private bool blockWhenSkillUpgradePanelOpen = true;
 
@@ -58,6 +60,15 @@ public sealed class LobbyErosionMirrorButton : MonoBehaviour
 
     private void OnMouseUpAsButton()
     {
+        // 월드 오브젝트 클릭에서만 UI 위 포인터를 차단합니다.
+        // Lobby_Icon 같은 UI가 OpenErosionSelectPanel()을 직접 호출하는 경우는 허용합니다.
+        if (ignoreClickWhenPointerOverUi &&
+            EventSystem.current != null &&
+            EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+
         OpenErosionSelectPanel();
     }
 

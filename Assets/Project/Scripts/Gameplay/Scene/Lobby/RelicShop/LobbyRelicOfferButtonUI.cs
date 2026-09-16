@@ -283,7 +283,16 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
     private void LateUpdate()
     {
-        UpdatePointerHoverFromTargetRect();
+        if (UIPanelButton.IsMenuPanelOpen)
+        {
+            if (pointerHovered || externalHovered || isHovered)
+                ResetHoverState();
+        }
+        else
+        {
+            UpdatePointerHoverFromTargetRect();
+        }
+
         ApplyHoverScale();
         ApplyRarityRingProxyLayout();
     }
@@ -359,13 +368,13 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
     public void SetExternalHover(bool hovered)
     {
-        externalHovered = hovered;
+        externalHovered = !UIPanelButton.IsMenuPanelOpen && hovered;
         UpdateHoverState();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        pointerHovered = true;
+        pointerHovered = !UIPanelButton.IsMenuPanelOpen;
         UpdateHoverState();
     }
 
@@ -378,6 +387,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     private void UpdateHoverState()
     {
         bool canHover =
+            !UIPanelButton.IsMenuPanelOpen &&
             !string.IsNullOrWhiteSpace(relicId) &&
             button != null &&
             button.interactable;

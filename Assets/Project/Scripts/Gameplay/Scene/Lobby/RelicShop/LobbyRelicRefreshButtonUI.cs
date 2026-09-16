@@ -22,10 +22,18 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
     private ButtonAnimationCoroutine[] buttonEffects = Array.Empty<ButtonAnimationCoroutine>();
     private bool[] buttonEffectInitialEnabledStates = Array.Empty<bool>();
     private bool buttonEffectStatesCached;
+    private bool lastMenuPanelOpen;
+    private bool menuPanelStateInitialized;
 
     private void Awake()
     {
         EnsureView();
+        RefreshMenuPanelInteractionState(true);
+    }
+
+    private void Update()
+    {
+        RefreshMenuPanelInteractionState(false);
     }
 
     public void Initialize(int index, Action<int> callback)
@@ -43,8 +51,10 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
         priceText.text = Mathf.Max(0, price).ToString();
         button.interactable = interactable;
         ApplyRefreshImageBrightness(!interactable);
-        ApplyHoverInteractable(interactable);
-        ApplyButtonAnimationInteractable(interactable);
+
+        bool effectsInteractable = interactable && !UIPanelButton.IsMenuPanelOpen;
+        ApplyHoverInteractable(effectsInteractable);
+        ApplyButtonAnimationInteractable(effectsInteractable);
     }
 
     private bool EnsureView()
@@ -171,6 +181,24 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
         }
     }
 
+    private void RefreshMenuPanelInteractionState(bool force)
+    {
+        bool menuPanelOpen = UIPanelButton.IsMenuPanelOpen;
+        if (!force && menuPanelStateInitialized && menuPanelOpen == lastMenuPanelOpen)
+            return;
+
+        lastMenuPanelOpen = menuPanelOpen;
+        menuPanelStateInitialized = true;
+
+        bool effectsInteractable =
+            button != null &&
+            button.interactable &&
+            !menuPanelOpen;
+
+        ApplyHoverInteractable(effectsInteractable);
+        ApplyButtonAnimationInteractable(effectsInteractable);
+    }
+
     private void EnsureClickListener()
     {
         if (button == null || clickListenerRegistered)
@@ -182,7 +210,7 @@ public sealed class LobbyRelicRefreshButtonUI : MonoBehaviour
 
     private void RequestRefresh()
     {
-        if (button != null && button.interactable)
+        if (button != null && button.interactable && !UIPanelButton.IsMenuPanelOpen)
             refreshRequested?.Invoke(slotIndex);
     }
 }
