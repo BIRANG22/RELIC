@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -28,6 +28,7 @@ public class ResolutionManager : MonoBehaviour
 
     private ResolutionLetterboxOverlay letterboxOverlay;
     private Coroutine resolutionRefreshCoroutine;
+    private readonly List<ResolutionCanvasViewportFitter> canvasViewportFitters = new();
     private int lastScreenWidth = -1;
     private int lastScreenHeight = -1;
     private FullScreenMode lastFullScreenMode = (FullScreenMode)(-1);
@@ -39,8 +40,8 @@ public class ResolutionManager : MonoBehaviour
     public static Color LetterboxColor => letterboxColor;
 
     /// <summary>
-    /// Bootstrap¿¡¼­ ¸í½ÃÀûÀ¸·Î ÇÑ ¹ø È£ÃâÇÕ´Ï´Ù.
-    /// RuntimeInitializeOnLoadMethod·Î °ÔÀÓ ½ÃÀÛ Àü¿¡ °­Á¦ »ı¼ºÇÏÁö ¾Ê½À´Ï´Ù.
+    /// Bootstrapì—ì„œ ëª…ì‹œì ìœ¼ë¡œ í•œ ë²ˆ í˜¸ì¶œí•©ë‹ˆë‹¤.
+    /// RuntimeInitializeOnLoadMethodë¡œ ê²Œì„ ì‹œì‘ ì „ì— ê°•ì œ ìƒì„±í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     /// </summary>
     public static void EnsureInitialized()
     {
@@ -61,6 +62,11 @@ public class ResolutionManager : MonoBehaviour
         instance.Initialize();
     }
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void EnsureRuntimeInstance()
+    {
+        EnsureInitialized();
+    }
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -83,6 +89,15 @@ public class ResolutionManager : MonoBehaviour
 
         SceneManager.sceneLoaded -= OnSceneLoaded;
         instance = null;
+    }
+
+    private void Start()
+    {
+        // Ensure the scene-owned manager applies its viewport only after it is active.
+        // This also recovers from an earlier bootstrap initialization that ran before
+        // the scene canvas and camera were available.
+        Initialize();
+        StartResolutionRefresh();
     }
 
     private void Update()
@@ -191,30 +206,25 @@ public class ResolutionManager : MonoBehaviour
         if (!isActiveAndEnabled)
             return;
 
-        if (resolutionRefreshCoroutine != null)
-            StopCoroutine(resolutionRefreshCoroutine);
+        // Apply immediately while the player drags the window. Delaying every resize
+        // until a stability coroutine completes makes the content visibly lag behind.
+        lastScreenWidth = Screen.width;
+        lastScreenHeight = Screen.height;
+        lastFullScreenMode = Screen.fullScreenMode;
+        ApplyLetterbox();
 
-        resolutionRefreshCoroutine = StartCoroutine(RefreshResolutionLayoutRoutine());
+        // A short delayed pass handles UI created later in the current frame without
+        // repeatedly forcing an expensive full canvas rebuild during a drag operation.
+        if (resolutionRefreshCoroutine == null)
+            resolutionRefreshCoroutine = StartCoroutine(RefreshResolutionLayoutRoutine());
     }
 
     private IEnumerator RefreshResolutionLayoutRoutine()
     {
-        ResolutionRefreshStability stability = default;
+        yield return null;
+        ApplyLetterbox();
 
-        for (int i = 0; i < MaxResolutionRefreshFrames; i++)
-        {
-            yield return null;
-
-            Canvas.ForceUpdateCanvases();
-            ApplyLetterbox();
-
-            Vector2Int screenSize = new(Screen.width, Screen.height);
-            Vector2 layoutSize = new(Screen.width, Screen.height);
-            if (stability.Observe(screenSize, layoutSize, RequiredStableRefreshFrames))
-                break;
-        }
-
-        Canvas.ForceUpdateCanvases();
+        yield return null;
         ApplyLetterbox();
         resolutionRefreshCoroutine = null;
     }
@@ -246,7 +256,7 @@ public class ResolutionManager : MonoBehaviour
         return new Rect(0f, y, 1f, height);
     }
 
-    // ±âÁ¸ Å×½ºÆ®/È£ÃâºÎ È£È¯¿ë °è»ê API´Â À¯ÁöÇÕ´Ï´Ù.
+    // ê¸°ì¡´ í…ŒìŠ¤íŠ¸/í˜¸ì¶œë¶€ í˜¸í™˜ìš© ê³„ì‚° APIëŠ” ìœ ì§€í•©ë‹ˆë‹¤.
     public static ResolutionCanvasViewportLayout CalculateCanvasViewportLayout(
         Vector2 canvasSize,
         Rect viewport,
@@ -332,8 +342,11 @@ public class ResolutionManager : MonoBehaviour
             resolution.Height);
 
         ApplyCameraViewport(viewport);
-        ApplyExplicitCanvasFitters(viewport);
-        EnsureLetterboxOverlay().Apply(viewport, letterboxColor);
+        ApplyCanvasViewports(viewport);
+
+        ResolutionLetterboxOverlay overlay = EnsureLetterboxOverlay();
+        overlay.Apply(viewport, letterboxColor);
+
     }
 
     private static void ApplyCameraViewport(Rect viewport)
@@ -346,7 +359,7 @@ public class ResolutionManager : MonoBehaviour
             if (targetCamera == null)
                 continue;
 
-            // RenderTexture/VFX Ä«¸Ş¶ó´Â ÇØ»óµµ º¸Á¤ ´ë»ó¿¡¼­ Á¦¿ÜÇÕ´Ï´Ù.
+            // RenderTexture/VFX ì¹´ë©”ë¼ëŠ” í•´ìƒë„ ë³´ì • ëŒ€ìƒì—ì„œ ì œì™¸í•©ë‹ˆë‹¤.
             if (targetCamera.targetTexture != null)
                 continue;
 
@@ -358,25 +371,31 @@ public class ResolutionManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ResolutionCanvasViewportFitter¸¦ °³¹ßÀÚ°¡ Á÷Á¢ ºÙ¿© µĞ Canvas¸¸ º¸Á¤ÇÕ´Ï´Ù.
-    /// ¸ğµç Canvas¿¡ ·±Å¸ÀÓ AddComponent¸¦ ÇÏÁö ¾Ê½À´Ï´Ù.
+    /// ResolutionCanvasViewportFitterë¥¼ ê°œë°œìê°€ ì§ì ‘ ë¶™ì—¬ ë‘” Canvasë§Œ ë³´ì •í•©ë‹ˆë‹¤.
+    /// ëª¨ë“  Canvasì— ëŸ°íƒ€ì„ AddComponentë¥¼ í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     /// </summary>
-    private static void ApplyExplicitCanvasFitters(Rect viewport)
+    private void ApplyCanvasViewports(Rect viewport)
     {
-        ResolutionCanvasViewportFitter[] fitters =
-            FindObjectsByType<ResolutionCanvasViewportFitter>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        canvasViewportFitters.Clear();
 
-        ResolutionOption resolution = CurrentResolution;
-        for (int i = 0; i < fitters.Length; i++)
+        for (int i = 0; i < canvases.Length; i++)
         {
-            ResolutionCanvasViewportFitter fitter = fitters[i];
-            if (fitter == null)
+            Canvas canvas = canvases[i];
+            if (!ShouldFitCanvasForResolution(canvas))
                 continue;
 
-            fitter.Apply(viewport, resolution.Width, resolution.Height);
-        }
-    }
+            ResolutionCanvasViewportFitter fitter = canvas.GetComponent<ResolutionCanvasViewportFitter>();
+            if (fitter == null)
+                fitter = canvas.gameObject.AddComponent<ResolutionCanvasViewportFitter>();
 
+            canvasViewportFitters.Add(fitter);
+        }
+
+        ResolutionOption resolution = CurrentResolution;
+        for (int i = 0; i < canvasViewportFitters.Count; i++)
+            canvasViewportFitters[i].Apply(viewport, resolution.Width, resolution.Height);
+    }
     private ResolutionLetterboxOverlay EnsureLetterboxOverlay()
     {
         if (letterboxOverlay != null)
@@ -386,7 +405,10 @@ public class ResolutionManager : MonoBehaviour
         if (letterboxOverlay != null)
             return letterboxOverlay;
 
-        var overlayObject = new GameObject("Resolution Letterbox Overlay");
+        var overlayObject = new GameObject(
+            "Resolution Letterbox Overlay",
+            typeof(RectTransform),
+            typeof(Canvas));
         DontDestroyOnLoad(overlayObject);
 
         letterboxOverlay = overlayObject.AddComponent<ResolutionLetterboxOverlay>();
@@ -395,7 +417,7 @@ public class ResolutionManager : MonoBehaviour
         return letterboxOverlay;
     }
 
-    // ±âÁ¸ Å×½ºÆ®/¿ÜºÎ ÂüÁ¶ È£È¯¿ëÀÔ´Ï´Ù. ÀÚµ¿ Àû¿ë¿¡´Â »ç¿ëÇÏÁö ¾Ê½À´Ï´Ù.
+    // ê¸°ì¡´ í…ŒìŠ¤íŠ¸/ì™¸ë¶€ ì°¸ì¡° í˜¸í™˜ìš©ì…ë‹ˆë‹¤. ìë™ ì ìš©ì—ëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     public static bool ShouldFitCanvasForResolution(Canvas canvas)
     {
         if (canvas == null)
@@ -404,7 +426,7 @@ public class ResolutionManager : MonoBehaviour
         if (!canvas.isRootCanvas)
             return false;
 
-        // World Space Canvas´Â ÇØ»óµµ UI º¸Á¤ ´ë»óÀÌ ¾Æ´Õ´Ï´Ù.
+        // World Space CanvasëŠ” í•´ìƒë„ UI ë³´ì • ëŒ€ìƒì´ ì•„ë‹™ë‹ˆë‹¤.
         if (canvas.renderMode == RenderMode.WorldSpace)
             return false;
 
@@ -514,6 +536,15 @@ public sealed class ResolutionLetterboxOverlay : MonoBehaviour
         canvas.overrideSorting = true;
         canvas.sortingOrder = sortingOrder;
 
+        RectTransform root = transform as RectTransform;
+        if (root != null)
+        {
+            root.anchorMin = Vector2.zero;
+            root.anchorMax = Vector2.one;
+            root.offsetMin = Vector2.zero;
+            root.offsetMax = Vector2.zero;
+        }
+
         topBar = EnsureBar("Top");
         bottomBar = EnsureBar("Bottom");
         leftBar = EnsureBar("Left");
@@ -547,10 +578,10 @@ public sealed class ResolutionLetterboxOverlay : MonoBehaviour
         if (existing != null && existing is RectTransform existingRect)
             return existingRect;
 
-        var barObject = new GameObject(barName);
+        var barObject = new GameObject(barName, typeof(RectTransform));
         barObject.transform.SetParent(transform, false);
 
-        var rect = barObject.AddComponent<RectTransform>();
+        var rect = barObject.GetComponent<RectTransform>();
         var image = barObject.AddComponent<Image>();
 
         image.color = ResolutionManager.LetterboxColor;
@@ -579,8 +610,8 @@ public sealed class ResolutionLetterboxOverlay : MonoBehaviour
 }
 
 /// <summary>
-/// ÇÊ¿äÇÑ Canvas¿¡¸¸ ¼öµ¿À¸·Î ºÙÀÌ´Â ¼±ÅÃÀû º¸Á¤ ÄÄÆ÷³ÍÆ®ÀÔ´Ï´Ù.
-/// ±âÁ¸Ã³·³ Canvas ÀÚ½ÄµéÀ» ·±Å¸ÀÓ¿¡ °­Á¦·Î ÀçºÎ¸ğÈ­ÇÏÁö ¾Ê½À´Ï´Ù.
+/// í•„ìš”í•œ Canvasì—ë§Œ ìˆ˜ë™ìœ¼ë¡œ ë¶™ì´ëŠ” ì„ íƒì  ë³´ì • ì»´í¬ë„ŒíŠ¸ì…ë‹ˆë‹¤.
+/// ê¸°ì¡´ì²˜ëŸ¼ Canvas ìì‹ë“¤ì„ ëŸ°íƒ€ì„ì— ê°•ì œë¡œ ì¬ë¶€ëª¨í™”í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 /// </summary>
 public sealed class ResolutionCanvasViewportFitter : MonoBehaviour
 {
@@ -593,7 +624,7 @@ public sealed class ResolutionCanvasViewportFitter : MonoBehaviour
     {
         get
         {
-            ResolveExistingContentRoot();
+            EnsureViewportRoot();
             return contentRoot;
         }
     }
@@ -614,9 +645,8 @@ public sealed class ResolutionCanvasViewportFitter : MonoBehaviour
 
     public void Apply(Rect viewport, int targetWidth, int targetHeight)
     {
-        ResolveExistingContentRoot();
-        if (contentRoot == null)
-            return;
+        EnsureViewportRoot();
+        MoveDirectChildrenIntoViewport();
 
         RectTransform canvasRect = transform as RectTransform;
         Vector2 canvasSize = canvasRect != null
@@ -637,7 +667,7 @@ public sealed class ResolutionCanvasViewportFitter : MonoBehaviour
         contentRoot.localScale = Vector3.one * layout.Scale;
     }
 
-    private void ResolveExistingContentRoot()
+    private void EnsureViewportRoot()
     {
         if (contentRoot != null)
             return;
@@ -645,8 +675,36 @@ public sealed class ResolutionCanvasViewportFitter : MonoBehaviour
         Transform existing = transform.Find(ViewportObjectName);
         if (existing != null)
             contentRoot = existing as RectTransform;
+
+        if (contentRoot != null)
+            return;
+
+        var viewportObject = new GameObject(ViewportObjectName, typeof(RectTransform));
+        viewportObject.transform.SetParent(transform, false);
+        contentRoot = viewportObject.GetComponent<RectTransform>();
+        contentRoot.SetAsFirstSibling();
+        contentRoot.localRotation = Quaternion.identity;
+        contentRoot.anchoredPosition3D = Vector3.zero;
     }
 
+    private void MoveDirectChildrenIntoViewport()
+    {
+        var childrenToMove = new List<Transform>();
+
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Transform child = transform.GetChild(i);
+            if (child != null && child != contentRoot)
+                childrenToMove.Add(child);
+        }
+
+        for (int i = 0; i < childrenToMove.Count; i++)
+        {
+            Transform child = childrenToMove[i];
+            child.SetParent(contentRoot, false);
+            child.SetSiblingIndex(contentRoot.childCount - 1);
+        }
+    }
     private Vector2 GetTargetContentSize(int fallbackWidth, int fallbackHeight)
     {
         CanvasScaler scaler = GetComponent<CanvasScaler>();

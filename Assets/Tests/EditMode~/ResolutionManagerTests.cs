@@ -205,7 +205,7 @@ public class ResolutionManagerTests
     }
 
     [Test]
-    public void ShouldFitCanvas_IncludesWorldSpaceCanvasOnPrimaryDisplay()
+    public void ShouldFitCanvas_ExcludesWorldSpaceCanvas()
     {
         GameObject canvasObject = new("WorldCanvas", typeof(RectTransform), typeof(Canvas));
 
@@ -215,7 +215,7 @@ public class ResolutionManagerTests
             canvas.renderMode = RenderMode.WorldSpace;
             canvas.targetDisplay = 0;
 
-            Assert.That(ResolutionManager.ShouldFitCanvasForResolution(canvas), Is.True);
+            Assert.That(ResolutionManager.ShouldFitCanvasForResolution(canvas), Is.False);
         }
         finally
         {
