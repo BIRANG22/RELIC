@@ -21,6 +21,7 @@ public class BattleActionRunner
     private readonly bool useSafeSequentialExecution;
     private readonly float actionRoutineTimeout;
     private readonly Action<PlayerReservedCommand, int> onPlayerCommandExecuted;
+    private readonly Action<PlayerReservedCommand> onPlayerSkillStarted;
     private readonly BattleConsecutiveActionPlan consecutiveActionPlan;
     private readonly float multiHitActionInterval;
     private BattleConsecutiveActionInfo activeActionInfo = BattleConsecutiveActionInfo.Single;
@@ -110,12 +111,14 @@ public class BattleActionRunner
       float actionRoutineTimeout,
       Action<PlayerReservedCommand, int> onPlayerCommandExecuted = null,
       BattleConsecutiveActionPlan consecutiveActionPlan = null,
-      float multiHitActionInterval = 0.12f)
+      float multiHitActionInterval = 0.12f,
+      Action<PlayerReservedCommand> onPlayerSkillStarted = null)
     {
         this.gridManager = gridManager;
         this.useSafeSequentialExecution = useSafeSequentialExecution;
         this.actionRoutineTimeout = Mathf.Max(0.1f, actionRoutineTimeout);
         this.onPlayerCommandExecuted = onPlayerCommandExecuted;
+        this.onPlayerSkillStarted = onPlayerSkillStarted;
         this.consecutiveActionPlan = consecutiveActionPlan;
         this.multiHitActionInterval = Mathf.Max(0f, multiHitActionInterval);
 
@@ -1820,6 +1823,8 @@ public class BattleActionRunner
 
         if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
             yield break;
+
+        onPlayerSkillStarted?.Invoke(command);
 
         // E_Move가 첫 피해 효과보다 먼저인 Direction 스킬은 예약 단계에서 이미
         // 이동 예정 위치 기준 범위를 계산했습니다. 실행 시작 시 이동 전 위치로

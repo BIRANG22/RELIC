@@ -10,13 +10,14 @@ GameObject:
   m_Component:
   - component: {fileID: 3728229091726829713}
   - component: {fileID: 3268647095792659258}
+  - component: {fileID: 921093075986202006}
   m_Layer: 0
   m_Name: Skill_cutscene
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3728229091726829713
 Transform:
   m_ObjectHideFlags: 0
@@ -90,6 +91,19 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   useUnscaledTime: 1
+--- !u!114 &921093075986202006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1694736522265887693}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f3aa0a99b7b4a3d9e2fc680c6f6d31a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cutsceneImage: {fileID: 5930910254564793133}
 --- !u!1 &1898159511676384841
 GameObject:
   m_ObjectHideFlags: 0

@@ -996,6 +996,9 @@ MonoBehaviour:
   roomLoader: {fileID: 1242706631}
   monsterSpawner: {fileID: 834641892}
   skillListPanel: {fileID: 0}
+  skillCutscenePrefab: {fileID: 921093075986202006, guid: 14b49d1457d79aa4e992043818f38d90, type: 3}
+  skillCutsceneRoot: {fileID: 1512511010}
+  skillCutsceneIconDatabase: {fileID: 11400000, guid: 53ece5b87675ada49a6c51b9e9b05787, type: 2}
   playerHudRoot: {fileID: 0}
   menuRoot: {fileID: 0}
   autoFindBattleExecutionUiRoots: 1

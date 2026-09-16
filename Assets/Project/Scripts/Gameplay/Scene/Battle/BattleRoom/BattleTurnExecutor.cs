@@ -24,6 +24,11 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
     [SerializeField] private SkillListPanel skillListPanel;
 
+    [Header("Unique Skill Cutscene")]
+    [SerializeField] private SkillCutsceneView skillCutscenePrefab;
+    [SerializeField] private Transform skillCutsceneRoot;
+    [SerializeField] private CharacterIconDatabase skillCutsceneIconDatabase;
+
     [Header("Battle Execution UI Roots")]
     [SerializeField] private GameObject playerHudRoot;
     [SerializeField] private GameObject menuRoot;
@@ -85,6 +90,57 @@ public class BattleTurnExecutor : MonoBehaviour
     private readonly BattleUniqueResourceService uniqueResourceService = new();
     private readonly BattlePassiveSkillService passiveSkillService = new();
     private readonly Dictionary<string, int> pendingNextTurnSwiftByCharacterId = new();
+    private SkillCutsceneView activeSkillCutscene;
+
+    private void ShowUniqueSkillCutscene(PlayerReservedCommand command)
+    {
+        if (command == null ||
+            command.SkillData == null ||
+            command.SkillData.Category != Category.Unique)
+        {
+            return;
+        }
+
+        Debug.Log(
+            $"[UniqueSkillCutscene] Request / Character:{command.CharacterId} / " +
+            $"Skill:{command.SkillData.SkillId} / Category:{command.SkillData.Category}");
+
+        if (string.IsNullOrWhiteSpace(command.CharacterId) ||
+            skillCutscenePrefab == null ||
+            skillCutsceneRoot == null)
+        {
+            Debug.LogWarning(
+                $"[UniqueSkillCutscene] Missing reference / Character:{command.CharacterId} / " +
+                $"Prefab:{skillCutscenePrefab != null} / Root:{skillCutsceneRoot != null}");
+            return;
+        }
+
+        CharacterIconDatabase iconDatabase = skillCutsceneIconDatabase != null
+            ? skillCutsceneIconDatabase
+            : DataManager.Instance?.CharacterIconDatabase;
+
+        if (iconDatabase == null ||
+            !iconDatabase.TryGetSkillCutsceneImage(
+                command.CharacterId,
+                out Sprite image))
+        {
+            Debug.LogWarning(
+                $"[UniqueSkillCutscene] Image lookup failed / Character:{command.CharacterId} / " +
+                $"Database:{iconDatabase != null}");
+            return;
+        }
+
+        if (activeSkillCutscene == null)
+        {
+            activeSkillCutscene = Instantiate(skillCutscenePrefab, skillCutsceneRoot);
+            Debug.Log("[UniqueSkillCutscene] Prefab instantiated.");
+        }
+
+        activeSkillCutscene.gameObject.SetActive(false);
+        activeSkillCutscene.SetImage(image);
+        activeSkillCutscene.gameObject.SetActive(true);
+        Debug.Log("[UniqueSkillCutscene] Prefab activated.");
+    }
 
     private void Start()
     {
@@ -469,7 +525,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 actionRoutineTimeout,
                 uniqueResourceService.OnPlayerCommandExecuted,
                 consecutiveActionPlan,
-                multiHitActionInterval
+                multiHitActionInterval,
+                ShowUniqueSkillCutscene
             );
             SteamBattleStateSynchronizer.TryBroadcastBattleExecution(batches);
 
@@ -703,7 +760,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 actionRoutineTimeout,
                 uniqueResourceService != null ? uniqueResourceService.OnPlayerCommandExecuted : null,
                 consecutiveActionPlan,
-                multiHitActionInterval
+                multiHitActionInterval,
+                ShowUniqueSkillCutscene
             );
 
             yield return ShowBattleProgressIntroTextRoutineSafe();

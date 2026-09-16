@@ -292,6 +292,9 @@ public class BattleTimelineController : MonoBehaviour
             }
         }
 
+        if (ShouldKeepInfoSelectionDuringReservation())
+            return;
+
         bool hasCharacterSelection = selectedCharacter != null;
         bool hasMonsterSelection = Relic.Gameplay.Monster.MonsterUnit.CurrentInfoSelectedMonster != null;
 
@@ -316,6 +319,9 @@ public class BattleTimelineController : MonoBehaviour
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
+        if (ShouldKeepInfoSelectionDuringReservation())
+            return;
+
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
             return;
 
@@ -330,6 +336,32 @@ public class BattleTimelineController : MonoBehaviour
 
         if (hasMonsterSelection)
             Relic.Gameplay.Monster.MonsterUnit.ClearMonsterInfoSelection();
+    }
+
+    private bool ShouldKeepInfoSelectionDuringReservation()
+    {
+        return IsPlayerReservationInputActive;
+    }
+
+    public bool IsPlayerReservationInputActive
+    {
+        get
+        {
+            if (turnExecutor == null)
+            {
+                turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(
+                    FindObjectsInactive.Include);
+            }
+
+            return ShouldKeepInfoSelectionDuringReservation(
+                turnExecutor != null && turnExecutor.CanAcceptPlayerInput);
+        }
+    }
+
+    private static bool ShouldKeepInfoSelectionDuringReservation(
+        bool canAcceptPlayerInput)
+    {
+        return canAcceptPlayerInput;
     }
 
     private bool IsPointerOverBattleWorldTarget(Vector2 screenPosition)

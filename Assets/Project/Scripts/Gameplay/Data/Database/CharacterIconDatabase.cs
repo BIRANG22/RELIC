@@ -92,6 +92,20 @@ namespace Relic.Gameplay.Data
             return sideImage != null;
         }
 
+        public bool TryGetSkillCutsceneImage(string characterId, out Sprite skillCutsceneImage)
+        {
+            skillCutsceneImage = null;
+
+            if (map == null)
+                Initialize();
+
+            if (string.IsNullOrWhiteSpace(characterId) || !map.TryGetValue(characterId.Trim(), out var entry))
+                return false;
+
+            skillCutsceneImage = entry.SkillCutsceneImage;
+            return skillCutsceneImage != null;
+        }
+
         public bool TryGetHUDPortraitImage(string characterId, out Sprite portrait)
         {
             portrait = null;
@@ -175,6 +189,9 @@ namespace Relic.Gameplay.Data
         public Sprite TimelineIcon;
         [FormerlySerializedAs("CharBackImage")]
         public Sprite SideImage;
+
+        [Header("Battle Skill Cutscene")]
+        public Sprite SkillCutsceneImage;
 
         [Header("Battle HUD Portraits")]
         public Sprite HUDPortraitImage;
