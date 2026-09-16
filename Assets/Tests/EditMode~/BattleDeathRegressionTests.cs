@@ -203,6 +203,28 @@ public class BattleDeathRegressionTests
     }
 
     [Test]
+    public void MonsterDeathRoutine_AddsConfiguredDissolveDurationToDeathWait()
+    {
+        MonsterUnit monster = CreateMonster("Monster_Death_Dissolve_Routine", 0);
+        System.Type dissolveType = typeof(MonsterUnit).Assembly.GetType(
+            "Relic.Gameplay.Monster.MonsterDeathDissolve");
+
+        Assert.That(dissolveType, Is.Not.Null, "몬스터 사망 디졸브 컴포넌트가 필요합니다.");
+
+        Component dissolve = monster.gameObject.AddComponent(dissolveType);
+        SetPrivateField(dissolve, "duration", 0.4f);
+        BattleDeathService service = new(null, null, null);
+
+        IEnumerator routine = service.HandleMonsterDeadRoutine(monster);
+
+        Assert.That(routine.MoveNext(), Is.True);
+        WaitForSeconds wait = routine.Current as WaitForSeconds;
+
+        Assert.That(wait, Is.Not.Null);
+        Assert.That(GetWaitDuration(wait), Is.EqualTo(1f).Within(0.001f));
+    }
+
+    [Test]
     public void DebugKillAllMonsters_MarksMonstersDead()
     {
         BattleDebugKillAllMonsters debug =
@@ -333,5 +355,15 @@ public class BattleDeathRegressionTests
 
         Assert.That(field, Is.Not.Null, $"{fieldName} field is missing.");
         field.SetValue(target, value);
+    }
+
+    private static float GetWaitDuration(WaitForSeconds wait)
+    {
+        FieldInfo seconds = typeof(WaitForSeconds).GetField(
+            "m_Seconds",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.That(seconds, Is.Not.Null, "WaitForSeconds 초 필드를 찾지 못했습니다.");
+        return (float)seconds.GetValue(wait);
     }
 }
