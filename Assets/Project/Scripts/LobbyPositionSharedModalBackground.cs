@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,9 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
     private const string BackgroundPanelName = "BackgroundPanel";
     private const string InfoPanelName = "Info_Panel";
     private const string BackButtonName = "BackButton";
+    private const string BackName = "Back";
+    private const string LobbyIconName = "Lobby_Icon";
+    private const string MainIconName = "Mainicon";
 
     private static readonly string[] ReadyConflictingPanelNames =
     {
@@ -30,12 +34,24 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
     [SerializeField] private GameObject infoRoot;
     [SerializeField] private Button backButton;
 
+    [Header("Ready Presentation")]
+    [SerializeField] private GameObject readyBackRoot;
+    [SerializeField] private GameObject readyLobbyIconRoot;
+    [SerializeField] private GameObject readyMainIconRoot;
+
+    [Header("Ready Transition")]
+    [SerializeField, Min(0f)] private float readyPanelFadeDuration = 0.15f;
+
     private object activeOwner;
     private GameObject activePanel;
     private Action activeCloseAction;
     private bool backButtonBound;
     private bool keepBackgroundActiveDuringSwitch;
-    private Coroutine scrollResetRoutine;
+    private bool readyPresentationActive;
+    private bool readyBackWasActive;
+    private bool readyLobbyIconWasActive;
+    private bool readyMainIconWasActive;
+    private Coroutine readyTransitionCoroutine;
 
     public bool IsShowing => backgroundRoot != null && backgroundRoot.activeSelf;
     public GameObject ActivePanel => activePanel;
@@ -63,12 +79,6 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (scrollResetRoutine != null)
-        {
-            StopCoroutine(scrollResetRoutine);
-            scrollResetRoutine = null;
-        }
-
         UnbindBackButton();
     }
 
@@ -166,46 +176,242 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
     }
 
     /// <summary>
-    /// Ready_Panel을 열기 전에 기존 PositionPanel 모달과 BackgroundPanel을 모두 정리합니다.
-    /// Ready_Panel은 공용 BackgroundPanel을 사용하지 않습니다.
+    /// 탐사 준비 화면을 열기 전에 기존 PositionPanel 모달을 부드럽게 정리합니다.
+    /// BackgroundPanel 자체는 유지하고 Back / Lobby_Icon / Mainicon만 숨깁니다.
+    /// 기존 패널의 페이드아웃이 끝난 뒤 onPrepared를 호출합니다.
     /// </summary>
-    public static void PrepareForReadyPanel(GameObject readyPanel)
+    public static void PrepareForReadyPanel(GameObject readyPanel, Action onPrepared = null)
     {
         LobbyPositionSharedModalBackground controller = ResolveController();
         if (controller != null)
         {
-            controller.PrepareForReadyPanelInternal(readyPanel);
+            controller.PrepareForReadyPanelInternal(readyPanel, onPrepared);
             return;
         }
 
         DisableReadyConflictingPanels(readyPanel);
+        onPrepared?.Invoke();
     }
 
-    private void PrepareForReadyPanelInternal(GameObject readyPanel)
+    /// <summary>
+    /// 탐사 준비 화면을 닫을 때 숨겨둔 공용 UI 상태를 복구한 뒤 BackgroundPanel 전체를 끕니다.
+    /// </summary>
+    public static void HideAfterReadyPanel()
+    {
+        LobbyPositionSharedModalBackground controller = FindController();
+        controller?.HideAfterReadyPanelInternal();
+    }
+
+    /// <summary>
+    /// 이전 호출부 호환용입니다. 탐사 준비가 아닌 일반 복구가 필요할 때만 사용합니다.
+    /// </summary>
+    public static void RestoreAfterReadyPanel()
+    {
+        LobbyPositionSharedModalBackground controller = FindController();
+        controller?.RestoreReadyPresentationInternal();
+    }
+
+    private void PrepareForReadyPanelInternal(GameObject readyPanel, Action onPrepared)
     {
         ResolveReferences();
 
+        if (readyTransitionCoroutine != null)
+        {
+            StopCoroutine(readyTransitionCoroutine);
+            readyTransitionCoroutine = null;
+        }
+
+        readyTransitionCoroutine = StartCoroutine(PrepareForReadyPanelRoutine(readyPanel, onPrepared));
+    }
+
+    private IEnumerator PrepareForReadyPanelRoutine(GameObject readyPanel, Action onPrepared)
+    {
         GameObject previousPanel = activePanel;
         Action closeAction = activeCloseAction;
 
-        // 각 패널의 정상 Close 경로를 먼저 실행해 고유 정리 로직을 보존합니다.
-        if (closeAction != null)
-            closeAction.Invoke();
+        List<GameObject> panelsToFade = CollectReadyConflictingPanels(readyPanel);
+        if (previousPanel != null && previousPanel != readyPanel && previousPanel.activeSelf && !panelsToFade.Contains(previousPanel))
+            panelsToFade.Add(previousPanel);
 
-        // Close가 거부되거나 공용 컨트롤러에 등록되지 않은 상태여도
-        // Play 버튼에서는 준비 화면만 남아야 하므로 대상 모달을 확실히 닫습니다.
-        if (previousPanel != null && previousPanel != readyPanel && previousPanel.activeSelf)
-            previousPanel.SetActive(false);
+        yield return FadeOutPanels(panelsToFade);
+
+        // 패널별 정리 로직은 페이드가 끝난 뒤 실행합니다.
+        // 이 동안 BackgroundPanel은 유지해야 하므로 전환 플래그를 사용합니다.
+        keepBackgroundActiveDuringSwitch = true;
+        try
+        {
+            if (closeAction != null)
+                closeAction.Invoke();
+        }
+        finally
+        {
+            keepBackgroundActiveDuringSwitch = false;
+        }
+
+        for (int i = 0; i < panelsToFade.Count; i++)
+        {
+            GameObject panel = panelsToFade[i];
+            if (panel != null && panel != readyPanel && panel.activeSelf)
+                panel.SetActive(false);
+        }
 
         activeOwner = null;
         activePanel = null;
         activeCloseAction = null;
-        keepBackgroundActiveDuringSwitch = false;
 
-        DisableReadyConflictingPanels(readyPanel);
+        ApplyReadyPresentationInternal();
+        readyTransitionCoroutine = null;
+        onPrepared?.Invoke();
+    }
 
+    private IEnumerator FadeOutPanels(List<GameObject> panels)
+    {
+        if (panels == null || panels.Count == 0)
+            yield break;
+
+        List<CanvasGroup> groups = new List<CanvasGroup>();
+        List<float> originalAlpha = new List<float>();
+        List<bool> originalInteractable = new List<bool>();
+        List<bool> originalBlocksRaycasts = new List<bool>();
+
+        for (int i = 0; i < panels.Count; i++)
+        {
+            GameObject panel = panels[i];
+            if (panel == null || !panel.activeSelf)
+                continue;
+
+            CanvasGroup group = panel.GetComponent<CanvasGroup>();
+            if (group == null)
+                group = panel.AddComponent<CanvasGroup>();
+
+            groups.Add(group);
+            originalAlpha.Add(group.alpha);
+            originalInteractable.Add(group.interactable);
+            originalBlocksRaycasts.Add(group.blocksRaycasts);
+            group.interactable = false;
+            group.blocksRaycasts = false;
+        }
+
+        float duration = Mathf.Max(0f, readyPanelFadeDuration);
+        if (duration > 0f)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                for (int i = 0; i < groups.Count; i++)
+                {
+                    CanvasGroup group = groups[i];
+                    if (group != null)
+                        group.alpha = Mathf.Lerp(originalAlpha[i], 0f, t);
+                }
+                yield return null;
+            }
+        }
+
+        for (int i = 0; i < groups.Count; i++)
+        {
+            CanvasGroup group = groups[i];
+            if (group == null)
+                continue;
+
+            group.alpha = originalAlpha[i];
+            group.interactable = originalInteractable[i];
+            group.blocksRaycasts = originalBlocksRaycasts[i];
+        }
+    }
+
+    private static List<GameObject> CollectReadyConflictingPanels(GameObject readyPanel)
+    {
+        List<GameObject> result = new List<GameObject>();
+        for (int i = 0; i < ReadyConflictingPanelNames.Length; i++)
+        {
+            GameObject panel = FindSceneObject(ReadyConflictingPanelNames[i]);
+            if (panel == null || panel == readyPanel || !panel.activeSelf || result.Contains(panel))
+                continue;
+
+            result.Add(panel);
+        }
+        return result;
+    }
+
+    private void HideAfterReadyPanelInternal()
+    {
+        RestoreReadyPresentationInternal();
         if (backgroundRoot != null && backgroundRoot.activeSelf)
             backgroundRoot.SetActive(false);
+    }
+
+    private void ApplyReadyPresentationInternal()
+    {
+        ResolveReferences();
+        ResolveReadyPresentationRoots();
+
+        if (backgroundRoot != null && !backgroundRoot.activeSelf)
+            backgroundRoot.SetActive(true);
+
+        if (!readyPresentationActive)
+        {
+            readyBackWasActive = readyBackRoot != null && readyBackRoot.activeSelf;
+            readyLobbyIconWasActive = readyLobbyIconRoot != null && readyLobbyIconRoot.activeSelf;
+            readyMainIconWasActive = readyMainIconRoot != null && readyMainIconRoot.activeSelf;
+            readyPresentationActive = true;
+        }
+
+        SetActiveIfNeeded(readyBackRoot, false);
+        SetActiveIfNeeded(readyLobbyIconRoot, false);
+        SetActiveIfNeeded(readyMainIconRoot, false);
+    }
+
+    private void RestoreReadyPresentationInternal()
+    {
+        if (!readyPresentationActive)
+            return;
+
+        ResolveReferences();
+        ResolveReadyPresentationRoots();
+
+        if (backgroundRoot != null && !backgroundRoot.activeSelf)
+            backgroundRoot.SetActive(true);
+
+        SetActiveIfNeeded(readyBackRoot, readyBackWasActive);
+        SetActiveIfNeeded(readyLobbyIconRoot, readyLobbyIconWasActive);
+        SetActiveIfNeeded(readyMainIconRoot, readyMainIconWasActive);
+        readyPresentationActive = false;
+    }
+
+    private void ResolveReadyPresentationRoots()
+    {
+        if (backgroundRoot == null)
+            return;
+
+        if (readyBackRoot == null)
+        {
+            Transform found = FindChildRecursive(backgroundRoot.transform, BackName);
+            if (found != null)
+                readyBackRoot = found.gameObject;
+        }
+
+        if (readyLobbyIconRoot == null)
+        {
+            Transform found = FindChildRecursive(backgroundRoot.transform, LobbyIconName);
+            if (found != null)
+                readyLobbyIconRoot = found.gameObject;
+        }
+
+        if (readyMainIconRoot == null)
+        {
+            Transform found = FindChildRecursive(backgroundRoot.transform, MainIconName);
+            if (found != null)
+                readyMainIconRoot = found.gameObject;
+        }
+    }
+
+    private static void SetActiveIfNeeded(GameObject target, bool active)
+    {
+        if (target != null && target.activeSelf != active)
+            target.SetActive(active);
     }
 
     private static void DisableReadyConflictingPanels(GameObject readyPanel)
@@ -260,32 +466,10 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
         // BackgroundPanel의 Mainicon 표시를 동기화합니다.
         LobbyPositionPanelShortcutUI.RefreshForPanel(panel);
 
+        // 패널 진입 시 한 번만 초기화합니다.
+        // 다음 프레임에 다시 초기화하면 사용자가 스크롤한 직후 위치가 되돌아가
+        // 클릭을 방해할 수 있으므로 지연 초기화는 사용하지 않습니다.
         ResetPanelScrolls(panel);
-        SchedulePanelScrollReset(panel);
-    }
-
-    private void SchedulePanelScrollReset(GameObject panel)
-    {
-        if (panel == null || !isActiveAndEnabled)
-            return;
-
-        if (scrollResetRoutine != null)
-            StopCoroutine(scrollResetRoutine);
-
-        scrollResetRoutine = StartCoroutine(ResetPanelScrollsNextFrame(panel));
-    }
-
-    private IEnumerator ResetPanelScrollsNextFrame(GameObject panel)
-    {
-        yield return null;
-
-        // 패널 활성화 직후 Layout 계산이 끝난 뒤 한 번 더 맨 위로 복귀시킵니다.
-        Canvas.ForceUpdateCanvases();
-
-        if (panel != null && activePanel == panel)
-            ResetPanelScrolls(panel);
-
-        scrollResetRoutine = null;
     }
 
     private static void ResetPanelScrolls(GameObject panel)
@@ -342,6 +526,11 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
 
     private void HandleBackButtonClicked()
     {
+        // 탐사 준비 화면에서는 BackgroundPanel을 바로 닫지 않고
+        // LobbyEquipPanelUI의 정상 Close 경로를 사용해 Info/Ready 퇴장 슬라이드를 재생합니다.
+        if (readyPresentationActive && LobbyEquipPanelUI.TryCloseOpenReadyPanel())
+            return;
+
         Action closeAction = activeCloseAction;
         GameObject panelToClose = activePanel;
 

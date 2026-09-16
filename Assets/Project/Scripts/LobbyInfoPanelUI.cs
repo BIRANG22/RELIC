@@ -1,21 +1,23 @@
 using System;
 using Relic.Gameplay.Data;
 using TMPro;
+using UnityEngine.Localization.Components;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
 /// PositionPanel/Info_Panel의 파티 캐릭터 정보를 표시합니다.
-/// Info_Panel의 활성/비활성은 LobbyPositionSharedModalBackground가 BackgroundPanel과 함께 관리합니다.
+/// 새 Info_Panel 구조에 맞춰 캐릭터 아이콘, 장착 유물 2개, 장착 연성제 1개만 표시합니다.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class LobbyInfoPanelUI : MonoBehaviour
 {
     private const string InfoPanelName = "Info_Panel";
     private const int CharacterCount = 3;
-    private const int VisibleRelicSlotCount = 6;
-    private const int VisibleSkillSlotCount = 3;
-    private static readonly int[] RuntimeSkillSlotIndices = { 1, 2, 3 };
+    private const int VisibleRelicSlotCount = 2;
+    private const int VisibleCompoundSlotCount = 1;
+    private const string RelicTitle = "유물";
+    private const string CompoundTitle = "연성제";
 
     [Header("Panel")]
     [SerializeField] private GameObject panelRoot;
@@ -23,7 +25,6 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
     [Header("Character Data")]
     [Tooltip("Info_Panel 아래의 Char1~3 구조를 이름으로 자동 연결합니다.")]
     [SerializeField] private bool autoBindCharacterHierarchy = true;
-
 
     private readonly CharacterView[] characterViews = new CharacterView[CharacterCount];
 
@@ -43,7 +44,9 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         ResolveCharacterViewsIfNeeded();
 
         DataManager dataManager = DataManager.Instance;
-        if (dataManager == null || dataManager.PartyRuntimeStore == null || dataManager.CharacterRuntimeStore == null)
+        if (dataManager == null ||
+            dataManager.PartyRuntimeStore == null ||
+            dataManager.CharacterRuntimeStore == null)
         {
             ClearCharacterViews();
             return;
@@ -64,22 +67,20 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
             if (view.Root != null)
                 view.Root.gameObject.SetActive(hasCharacter);
 
+            ApplyFixedTitles(view);
+
             if (!hasCharacter)
             {
                 ClearCharacterView(view);
                 continue;
             }
 
-            CharacterMasterData master = null;
-            dataManager.CharacterDatabase?.TryGet(characterId, out master);
-
             CharacterRuntimeData runtime = null;
             characterStore.TryGet(characterId, out runtime);
 
-            RefreshCharacterIdentity(view, characterId, master);
-            RefreshCharacterActiveCompound(view, runtime);
+            RefreshCharacterIcon(view, characterId);
             RefreshCharacterRelics(view, runtime);
-            RefreshCharacterSkills(view, runtime);
+            RefreshCharacterCompound(view, runtime);
         }
     }
 
@@ -122,78 +123,103 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
 
         CharacterView view = new CharacterView
         {
-            Root = root,
-            NameText = FindTextByNames(root, "Name"),
-            Mark1Image = FindImageByNames(root, "mark1", "Mark1"),
-            Mark2Image = FindImageByNames(root, "mark2", "Mark2")
+            Root = root
         };
 
-        Transform activeRoot = root.Find("Active") ?? FindChildRecursive(root, "Active");
-        if (activeRoot != null)
-            view.ActiveCompoundIcon = FindImageByNames(activeRoot, "Icon");
+        // CharN/Relic/Name/RelicText, CharN/Compound/Name/CompoundText는 고정 제목입니다.
+        Transform relicTitle = FindChildRecursive(root, "RelicText");
+        view.RelicTitleText = relicTitle != null ? relicTitle.GetComponent<TMP_Text>() : null;
 
-        Transform relicRoot = root.Find("Relic") ?? FindChildRecursive(root, "Relic");
+        Transform compoundTitle = FindChildRecursive(root, "CompoundText");
+        view.CompoundTitleText = compoundTitle != null ? compoundTitle.GetComponent<TMP_Text>() : null;
+
+        ProtectFixedTitle(view.RelicTitleText, RelicTitle);
+        ProtectFixedTitle(view.CompoundTitleText, CompoundTitle);
+
+        // CharN/Icon/CharMask/Icon
+        Transform outerIconRoot = FindDirectChild(root, "Icon") ?? FindChildRecursive(root, "Icon");
+        Transform charMask = outerIconRoot != null
+            ? FindDirectChild(outerIconRoot, "CharMask") ?? FindChildRecursive(outerIconRoot, "CharMask")
+            : FindChildRecursive(root, "CharMask");
+        Transform characterIcon = charMask != null
+            ? FindDirectChild(charMask, "Icon") ?? FindChildRecursive(charMask, "Icon")
+            : null;
+        view.CharacterIconImage = characterIcon != null ? characterIcon.GetComponent<Image>() : null;
+
+        // CharN/Relic/Relic01~02/Icon
+        Transform relicRoot = FindDirectChild(root, "Relic") ?? FindChildRecursive(root, "Relic");
         for (int i = 0; i < VisibleRelicSlotCount; i++)
         {
-            string twoDigitName = "Relic" + (i + 1).ToString("00");
-            string oneDigitName = "Relic" + (i + 1);
+            string slotName = "Relic" + (i + 1).ToString("00");
             Transform slotRoot = relicRoot != null
-                ? FindChildRecursive(relicRoot, twoDigitName) ?? FindChildRecursive(relicRoot, oneDigitName)
+                ? FindDirectChild(relicRoot, slotName) ?? FindChildRecursive(relicRoot, slotName)
                 : null;
 
-            if (slotRoot == null)
-                continue;
-
-            view.RelicSlots[i] = new RelicSlotView
-            {
-                NumberText = FindTextByNames(slotRoot, "Number"),
-                IconImage = FindImageByNames(slotRoot, "Icon")
-            };
-        }
-
-        Transform skillRoot = root.Find("Skill") ?? FindChildRecursive(root, "Skill");
-        for (int i = 0; i < VisibleSkillSlotCount; i++)
-        {
-            string lowerName = "skill" + (i + 1);
-            string upperName = "Skill" + (i + 1);
-            Transform slotRoot = skillRoot != null
-                ? FindChildRecursive(skillRoot, lowerName) ?? FindChildRecursive(skillRoot, upperName)
+            Transform icon = slotRoot != null
+                ? FindDirectChild(slotRoot, "Icon") ?? FindChildRecursive(slotRoot, "Icon")
                 : null;
 
-            if (slotRoot == null)
-                continue;
-
-            view.SkillIcons[i] = FindImageByNames(slotRoot, "Icon") ?? slotRoot.GetComponent<Image>();
+            view.RelicIcons[i] = icon != null ? icon.GetComponent<Image>() : null;
         }
+
+        // CharN/Compound/Compound01/Icon
+        Transform compoundRoot = FindDirectChild(root, "Compound") ?? FindChildRecursive(root, "Compound");
+        Transform compoundSlot = compoundRoot != null
+            ? FindDirectChild(compoundRoot, "Compound01") ?? FindChildRecursive(compoundRoot, "Compound01")
+            : null;
+        Transform compoundIcon = compoundSlot != null
+            ? FindDirectChild(compoundSlot, "Icon") ?? FindChildRecursive(compoundSlot, "Icon")
+            : null;
+        view.CompoundIcons[0] = compoundIcon != null ? compoundIcon.GetComponent<Image>() : null;
 
         return view;
     }
 
-    private static void RefreshCharacterIdentity(CharacterView view, string characterId, CharacterMasterData master)
+    private static void ApplyFixedTitles(CharacterView view)
     {
-        if (view.NameText != null)
-        {
-            string displayName = master != null ? GameDataLocalization.CharacterName(master) : characterId;
-            view.NameText.text = string.IsNullOrWhiteSpace(displayName) ? characterId : displayName;
-        }
+        if (view == null)
+            return;
 
-        Sprite mark1 = null;
-        Sprite mark2 = null;
-        CharacterIconDatabase iconDatabase = DataManager.Instance?.CharacterIconDatabase;
-        if (iconDatabase != null)
-        {
-            iconDatabase.TryGetMark(characterId, out mark1);
-            iconDatabase.TryGetMark2(characterId, out mark2);
-        }
-
-        ApplyImage(view.Mark1Image, mark1);
-        ApplyImage(view.Mark2Image, mark2);
+        ProtectFixedTitle(view.RelicTitleText, RelicTitle);
+        ProtectFixedTitle(view.CompoundTitleText, CompoundTitle);
     }
 
-    private static void RefreshCharacterActiveCompound(CharacterView view, CharacterRuntimeData runtime)
+    private static void ProtectFixedTitle(TMP_Text text, string fixedText)
     {
-        string compoundId = ActiveRelicRuntimeUtility.GetActiveRelicId(runtime);
-        ApplyImage(view.ActiveCompoundIcon, ResolveRelicIcon(compoundId));
+        if (text == null)
+            return;
+
+        GameObject target = text.gameObject;
+
+        Transform titleRoot = text.transform.parent;
+        if (titleRoot != null && !titleRoot.gameObject.activeSelf)
+            titleRoot.gameObject.SetActive(true);
+
+        if (!target.activeSelf)
+            target.SetActive(true);
+
+        if (target.GetComponent<LocalizationIgnore>() == null)
+            target.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localizedTmp = target.GetComponent<LocalizedTMPText>();
+        if (localizedTmp != null)
+            localizedTmp.enabled = false;
+
+        LocalizeStringEvent legacyLocalizer = target.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+            legacyLocalizer.enabled = false;
+
+        text.text = fixedText;
+    }
+
+    private static void RefreshCharacterIcon(CharacterView view, string characterId)
+    {
+        Sprite icon = null;
+        CharacterIconDatabase iconDatabase = DataManager.Instance?.CharacterIconDatabase;
+        if (iconDatabase != null && !string.IsNullOrWhiteSpace(characterId))
+            iconDatabase.TryGetIcon(characterId, out icon);
+
+        ApplyImage(view.CharacterIconImage, icon);
     }
 
     private static void RefreshCharacterRelics(CharacterView view, CharacterRuntimeData runtime)
@@ -203,51 +229,21 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
 
         for (int i = 0; i < VisibleRelicSlotCount; i++)
         {
+            // 0번은 연성제 슬롯이므로 일반 유물은 1, 2번 런타임 슬롯을 사용합니다.
             int runtimeRelicIndex = i + 1;
-            string relicId = runtime?.EquippedRelicIds != null && runtimeRelicIndex < runtime.EquippedRelicIds.Length
+            string relicId = runtime?.EquippedRelicIds != null &&
+                             runtimeRelicIndex < runtime.EquippedRelicIds.Length
                 ? runtime.EquippedRelicIds[runtimeRelicIndex]
                 : null;
 
-            RelicSlotView slotView = view.RelicSlots[i];
-            if (slotView == null)
-                continue;
-
-            bool hasEquippedRelic = !string.IsNullOrWhiteSpace(relicId);
-            ApplyImage(slotView.IconImage, ResolveRelicIcon(relicId));
-
-            if (slotView.NumberText != null)
-                slotView.NumberText.gameObject.SetActive(!hasEquippedRelic);
+            ApplyImage(view.RelicIcons[i], ResolveRelicIcon(relicId));
         }
     }
 
-    private static void RefreshCharacterSkills(CharacterView view, CharacterRuntimeData runtime)
+    private static void RefreshCharacterCompound(CharacterView view, CharacterRuntimeData runtime)
     {
-        for (int i = 0; i < VisibleSkillSlotCount; i++)
-        {
-            int runtimeIndex = RuntimeSkillSlotIndices[i];
-            string skillId = GetEquippedSkillId(runtime, runtimeIndex);
-
-            Sprite icon = null;
-            if (!string.IsNullOrWhiteSpace(skillId) && DataManager.Instance?.SkillIconDatabase != null)
-                DataManager.Instance.SkillIconDatabase.TryGetIcon(skillId, out icon);
-
-            ApplyImage(view.SkillIcons[i], icon);
-            SkillUpgradeMarkStyle.ApplyShared(view.SkillIcons[i], skillId);
-        }
-    }
-
-    private static string GetEquippedSkillId(CharacterRuntimeData runtime, int runtimeIndex)
-    {
-        if (runtime == null)
-            return null;
-
-        if (runtimeIndex == 1 && !string.IsNullOrWhiteSpace(runtime.AbilitySkillId))
-            return runtime.AbilitySkillId;
-
-        if (runtime.EquippedSkillIds == null || runtimeIndex < 0 || runtimeIndex >= runtime.EquippedSkillIds.Length)
-            return null;
-
-        return runtime.EquippedSkillIds[runtimeIndex];
+        string compoundId = ActiveRelicRuntimeUtility.GetActiveRelicId(runtime);
+        ApplyImage(view.CompoundIcons[0], ResolveRelicIcon(compoundId));
     }
 
     private static Sprite ResolveRelicIcon(string relicId)
@@ -270,29 +266,13 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         if (view == null)
             return;
 
-        if (view.NameText != null)
-            view.NameText.text = string.Empty;
+        ApplyImage(view.CharacterIconImage, null);
 
-        ApplyImage(view.Mark1Image, null);
-        ApplyImage(view.Mark2Image, null);
-        ApplyImage(view.ActiveCompoundIcon, null);
+        for (int i = 0; i < view.RelicIcons.Length; i++)
+            ApplyImage(view.RelicIcons[i], null);
 
-        for (int i = 0; i < view.RelicSlots.Length; i++)
-        {
-            RelicSlotView slotView = view.RelicSlots[i];
-            if (slotView == null)
-                continue;
-
-            ApplyImage(slotView.IconImage, null);
-            if (slotView.NumberText != null)
-                slotView.NumberText.gameObject.SetActive(true);
-        }
-
-        for (int i = 0; i < view.SkillIcons.Length; i++)
-        {
-            ApplyImage(view.SkillIcons[i], null);
-            SkillUpgradeMarkStyle.ApplyShared(view.SkillIcons[i], (string)null);
-        }
+        for (int i = 0; i < view.CompoundIcons.Length; i++)
+            ApplyImage(view.CompoundIcons[i], null);
     }
 
     private static void ApplyImage(Image image, Sprite sprite)
@@ -341,39 +321,16 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         return null;
     }
 
-    private static TMP_Text FindTextByNames(Transform root, params string[] names)
+    private static Transform FindDirectChild(Transform parent, string childName)
     {
-        if (root == null)
+        if (parent == null || string.IsNullOrWhiteSpace(childName))
             return null;
 
-        for (int i = 0; i < names.Length; i++)
+        for (int i = 0; i < parent.childCount; i++)
         {
-            Transform target = FindChildRecursive(root, names[i]);
-            if (target == null)
-                continue;
-
-            TMP_Text text = target.GetComponent<TMP_Text>() ?? target.GetComponentInChildren<TMP_Text>(true);
-            if (text != null)
-                return text;
-        }
-
-        return null;
-    }
-
-    private static Image FindImageByNames(Transform root, params string[] names)
-    {
-        if (root == null)
-            return null;
-
-        for (int i = 0; i < names.Length; i++)
-        {
-            Transform target = FindChildRecursive(root, names[i]);
-            if (target == null)
-                continue;
-
-            Image image = target.GetComponent<Image>() ?? target.GetComponentInChildren<Image>(true);
-            if (image != null)
-                return image;
+            Transform child = parent.GetChild(i);
+            if (child != null && string.Equals(child.name, childName, StringComparison.OrdinalIgnoreCase))
+                return child;
         }
 
         return null;
@@ -398,21 +355,13 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
     }
 
     [Serializable]
-    private sealed class RelicSlotView
-    {
-        public TMP_Text NumberText;
-        public Image IconImage;
-    }
-
-    [Serializable]
     private sealed class CharacterView
     {
         public Transform Root;
-        public TMP_Text NameText;
-        public Image Mark1Image;
-        public Image Mark2Image;
-        public Image ActiveCompoundIcon;
-        public RelicSlotView[] RelicSlots = new RelicSlotView[VisibleRelicSlotCount];
-        public Image[] SkillIcons = new Image[VisibleSkillSlotCount];
+        public TMP_Text RelicTitleText;
+        public TMP_Text CompoundTitleText;
+        public Image CharacterIconImage;
+        public Image[] RelicIcons = new Image[VisibleRelicSlotCount];
+        public Image[] CompoundIcons = new Image[VisibleCompoundSlotCount];
     }
 }
