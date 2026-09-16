@@ -25,6 +25,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private const int ReadyRelicMinimumSlotCount = 3;
     private const int ReadyCompoundMinimumSlotCount = 6;
     private const float ReadyInventorySlotScale = 1.2f;
+    private const int EquipmentDragSortingOrder = 10000;
     private const string EquipButtonDefaultText = "장착";
     private const string EquipButtonCancelText = "취소";
 
@@ -125,6 +126,9 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private int equipmentDragSourceRuntimeSlotIndex = -1;
     private bool equipmentDragFromInfo;
     private bool equipmentDragHandled;
+    private GameObject equipmentDragCanvasObject;
+    private Canvas equipmentDragCanvas;
+    private RectTransform equipmentDragGhostRect;
     private Image equipmentDragGhostImage;
 
     private Coroutine slideAnimationCoroutine;
@@ -1525,6 +1529,10 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (slot == null || !slot.HasItem || string.IsNullOrWhiteSpace(slot.ItemId))
             return;
 
+        // 홀드/드래그를 시작한 아이템을 클릭한 것과 동일하게 선택합니다.
+        // Detail과 선택 Back 색도 드래그 중인 아이템 기준으로 즉시 이동합니다.
+        PinReadyInventoryDetail(slot);
+
         equipmentDragItemId = slot.ItemId.Trim();
         equipmentDragIsCompound = isCompound;
         equipmentDragFromInfo = false;
@@ -1553,8 +1561,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void UpdateEquipmentDrag(PointerEventData eventData)
     {
-        if (equipmentDragGhostImage != null && eventData != null)
-            equipmentDragGhostImage.rectTransform.position = eventData.position;
+        UpdateEquipmentDragGhostPosition(eventData);
     }
 
     private void EndEquipmentDrag(PointerEventData eventData)
@@ -1680,34 +1687,93 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (icon == null)
             return;
 
-        Canvas rootCanvas = GetComponentInParent<Canvas>()?.rootCanvas;
-        if (rootCanvas == null)
+        Canvas sourceCanvas = GetComponentInParent<Canvas>();
+        if (sourceCanvas == null)
             return;
 
-        GameObject ghost = new GameObject("ReadyEquipmentDragGhost", typeof(RectTransform), typeof(CanvasGroup), typeof(Image));
-        ghost.transform.SetParent(rootCanvas.transform, false);
-        ghost.transform.SetAsLastSibling();
+        Canvas rootCanvas = sourceCanvas.rootCanvas != null ? sourceCanvas.rootCanvas : sourceCanvas;
 
-        RectTransform rect = ghost.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(96f, 96f);
-        rect.localScale = Vector3.one * 1.2f;
-        if (eventData != null)
-            rect.position = eventData.position;
+        equipmentDragCanvasObject = new GameObject(
+            "ReadyEquipmentDragCanvas",
+            typeof(RectTransform),
+            typeof(Canvas));
+
+        RectTransform dragCanvasRect = equipmentDragCanvasObject.GetComponent<RectTransform>();
+        dragCanvasRect.SetParent(rootCanvas.transform, false);
+        dragCanvasRect.anchorMin = Vector2.zero;
+        dragCanvasRect.anchorMax = Vector2.one;
+        dragCanvasRect.offsetMin = Vector2.zero;
+        dragCanvasRect.offsetMax = Vector2.zero;
+        dragCanvasRect.localScale = Vector3.one;
+        dragCanvasRect.SetAsLastSibling();
+
+        equipmentDragCanvas = equipmentDragCanvasObject.GetComponent<Canvas>();
+        equipmentDragCanvas.overrideSorting = true;
+        equipmentDragCanvas.sortingLayerID = rootCanvas.sortingLayerID;
+        equipmentDragCanvas.sortingOrder = EquipmentDragSortingOrder;
+        equipmentDragCanvas.additionalShaderChannels = rootCanvas.additionalShaderChannels;
+
+        GameObject ghost = new GameObject(
+            "ReadyEquipmentDragGhost",
+            typeof(RectTransform),
+            typeof(CanvasGroup),
+            typeof(Image));
+
+        equipmentDragGhostRect = ghost.GetComponent<RectTransform>();
+        equipmentDragGhostRect.SetParent(equipmentDragCanvas.transform, false);
+        equipmentDragGhostRect.SetAsLastSibling();
+        equipmentDragGhostRect.anchorMin = new Vector2(0.5f, 0.5f);
+        equipmentDragGhostRect.anchorMax = new Vector2(0.5f, 0.5f);
+        equipmentDragGhostRect.pivot = new Vector2(0.5f, 0.5f);
+        equipmentDragGhostRect.sizeDelta = new Vector2(96f, 96f);
+        equipmentDragGhostRect.localScale = Vector3.one * 1.2f;
 
         CanvasGroup group = ghost.GetComponent<CanvasGroup>();
         group.blocksRaycasts = false;
         group.interactable = false;
+        group.ignoreParentGroups = true;
 
         equipmentDragGhostImage = ghost.GetComponent<Image>();
         equipmentDragGhostImage.sprite = icon;
         equipmentDragGhostImage.preserveAspect = true;
         equipmentDragGhostImage.raycastTarget = false;
+
+        UpdateEquipmentDragGhostPosition(eventData);
+    }
+
+    private void UpdateEquipmentDragGhostPosition(PointerEventData eventData)
+    {
+        if (equipmentDragGhostRect == null || equipmentDragCanvas == null || eventData == null)
+            return;
+
+        RectTransform canvasRect = equipmentDragCanvas.transform as RectTransform;
+        if (canvasRect == null)
+            return;
+
+        Camera uiCamera = equipmentDragCanvas.renderMode == RenderMode.ScreenSpaceOverlay
+            ? null
+            : (equipmentDragCanvas.worldCamera != null ? equipmentDragCanvas.worldCamera : eventData.pressEventCamera);
+
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvasRect,
+                eventData.position,
+                uiCamera,
+                out Vector2 localPoint))
+        {
+            equipmentDragGhostRect.anchoredPosition = localPoint;
+        }
     }
 
     private void DestroyEquipmentDragGhost()
     {
-        if (equipmentDragGhostImage != null)
-            Destroy(equipmentDragGhostImage.gameObject);
+        if (equipmentDragCanvasObject != null)
+            Destroy(equipmentDragCanvasObject);
+        else if (equipmentDragGhostRect != null)
+            Destroy(equipmentDragGhostRect.gameObject);
+
+        equipmentDragCanvasObject = null;
+        equipmentDragCanvas = null;
+        equipmentDragGhostRect = null;
         equipmentDragGhostImage = null;
     }
 
