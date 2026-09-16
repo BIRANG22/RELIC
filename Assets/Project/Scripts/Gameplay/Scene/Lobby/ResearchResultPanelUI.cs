@@ -1,3 +1,4 @@
+using System.Collections;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
@@ -10,6 +11,12 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
 
     [SerializeField] private TMP_Text resultText;
     [SerializeField] private Button confirmButton;
+    [Header("Reward VFX")]
+    [SerializeField] private Transform blueDustiumVfxRoot;
+    [SerializeField] private CanvasGroup presentationCanvasGroup;
+
+    private Coroutine vfxPresentationCoroutine;
+    private bool isOpening;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void RegisterPendingResultAutoOpen()
@@ -58,10 +65,16 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
 
     private bool OpenIfPending()
     {
+        if (isOpening || vfxPresentationCoroutine != null)
+            return true;
+
+        isOpening = true;
+
         LobbyRuntimeData lobby = DataManager.Instance?.LobbyRuntimeStore?.GetOrCreate();
         if (!PendingResearchSettlementService.HasPending(lobby))
         {
             gameObject.SetActive(false);
+            isOpening = false;
             return false;
         }
 
@@ -72,7 +85,10 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
             if (resultText != null)
                 resultText.text = BuildText(pending);
 
-            gameObject.SetActive(true);
+            if (!BeginVfxPresentation())
+                ShowResultPanel();
+
+            isOpening = false;
             return true;
         }
 
@@ -90,8 +106,86 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
 
         if (resultText != null)
             resultText.text = BuildText(pending);
-        gameObject.SetActive(true);
+
+        if (!BeginVfxPresentation())
+            ShowResultPanel();
+
+        isOpening = false;
         return true;
+    }
+
+    private bool BeginVfxPresentation()
+    {
+        if (blueDustiumVfxRoot == null)
+            return false;
+
+        gameObject.SetActive(true);
+        SetPresentationVisible(false);
+        blueDustiumVfxRoot.gameObject.SetActive(true);
+        RestartVfxParticles();
+        LobbyPositionModalInputBlocker.Block(this);
+        vfxPresentationCoroutine = StartCoroutine(WaitForVfxAndShowResult());
+        return true;
+    }
+
+    private IEnumerator WaitForVfxAndShowResult()
+    {
+        yield return null;
+
+        while (AreVfxParticlesAlive())
+            yield return null;
+
+        vfxPresentationCoroutine = null;
+        LobbyPositionModalInputBlocker.Unblock(this);
+
+        if (blueDustiumVfxRoot != null)
+            blueDustiumVfxRoot.gameObject.SetActive(false);
+
+        ShowResultPanel();
+    }
+
+    private void RestartVfxParticles()
+    {
+        ParticleSystem[] particleSystems =
+            blueDustiumVfxRoot.GetComponentsInChildren<ParticleSystem>(true);
+
+        for (int i = 0; i < particleSystems.Length; i++)
+        {
+            ParticleSystem particleSystem = particleSystems[i];
+            particleSystem.Clear(true);
+            particleSystem.Play(true);
+        }
+    }
+
+    private bool AreVfxParticlesAlive()
+    {
+        ParticleSystem[] particleSystems =
+            blueDustiumVfxRoot.GetComponentsInChildren<ParticleSystem>(true);
+
+        for (int i = 0; i < particleSystems.Length; i++)
+        {
+            ParticleSystem particleSystem = particleSystems[i];
+            if (particleSystem != null && particleSystem.IsAlive(true))
+                return true;
+        }
+
+        return false;
+    }
+
+    private void ShowResultPanel()
+    {
+        gameObject.SetActive(true);
+        SetPresentationVisible(true);
+    }
+
+    private void SetPresentationVisible(bool visible)
+    {
+        if (presentationCanvasGroup == null)
+            return;
+
+        presentationCanvasGroup.alpha = visible ? 1f : 0f;
+        presentationCanvasGroup.interactable = visible;
+        presentationCanvasGroup.blocksRaycasts = visible;
     }
 
     private static string BuildText(PendingResearchResultData pending)
@@ -125,6 +219,20 @@ public sealed class ResearchResultPanelUI : MonoBehaviour
         }
 
         gameObject.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        if (vfxPresentationCoroutine != null)
+        {
+            StopCoroutine(vfxPresentationCoroutine);
+            vfxPresentationCoroutine = null;
+        }
+
+        LobbyPositionModalInputBlocker.Unblock(this);
+
+        if (blueDustiumVfxRoot != null)
+            blueDustiumVfxRoot.gameObject.SetActive(false);
     }
 
     private static bool CanLocalPlayerMutateHostOnlyState()
