@@ -334,6 +334,30 @@ public class OptionPanelUITests
         }
     }
 
+    [Test]
+    public void OptionPrefab_BattlePresentationSpeedLabelReferencesTextMeshProComponent()
+    {
+        GameObject root = PrefabUtility.LoadPrefabContents(OptionPrefabPath);
+
+        try
+        {
+            OptionPanelUI panel = root.GetComponentInChildren<OptionPanelUI>(true);
+            Assert.That(panel, Is.Not.Null);
+
+            var serializedPanel = new SerializedObject(panel);
+            TextMeshProUGUI speedLabel = serializedPanel
+                .FindProperty("battlePresentationSpeedLabel")
+                .objectReferenceValue as TextMeshProUGUI;
+
+            Assert.That(speedLabel, Is.Not.Null);
+            Assert.That(speedLabel.gameObject.name, Is.EqualTo("Value"));
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+    }
+
     private OptionPanelUI CreateOptionPanel(out GameObject resolutionContent, out TMP_Dropdown dropdown)
     {
         return CreateOptionPanel(

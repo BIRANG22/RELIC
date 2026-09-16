@@ -4457,7 +4457,7 @@ MonoBehaviour:
   controlContent: {fileID: 0}
   resolutionDropdown: {fileID: 4945722684164142549}
   fullscreenToggle: {fileID: 7002000000000003}
-  battlePresentationSpeedLabel: {fileID: 7001000000000000009}
+  battlePresentationSpeedLabel: {fileID: 7001000000000000013}
   tutorialToggle: {fileID: 810000000000000023}
   tutorialPreviewToggle: {fileID: 0}
   introToggle: {fileID: 1813400477785046686}
@@ -4517,7 +4517,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speedButton: {fileID: 7001000000000000006}
-  speedLabel: {fileID: 7001000000000000009}
+  speedLabel: {fileID: 7001000000000000013}
 --- !u!1 &4278046376751162952
 GameObject:
   m_ObjectHideFlags: 0
