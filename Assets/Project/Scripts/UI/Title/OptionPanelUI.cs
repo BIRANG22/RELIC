@@ -9,6 +9,7 @@ public class OptionPanelUI : MonoBehaviour
     private const string SoundContentName = "SoundContent";
     private const string LanguageContentName = "LanguageContent";
     private const string ResolutionContentName = "ResolutionContent";
+    private const string FullscreenToggleName = "FullscreenToggle";
     private const string ControlContentName = "ControlContent";
     private const string TutorialToggle1Name = "TutorialToggle1";
     private const string TutorialToggle2Name = "TutorialToggle2";
@@ -22,6 +23,7 @@ public class OptionPanelUI : MonoBehaviour
 
     [Header("Resolution")]
     [SerializeField] private TMP_Dropdown resolutionDropdown;
+    [SerializeField] private Toggle fullscreenToggle;
 
     [Header("Battle Presentation Speed")]
     [SerializeField] private TextMeshProUGUI battlePresentationSpeedLabel;
@@ -52,6 +54,7 @@ public class OptionPanelUI : MonoBehaviour
         AutoFindReferences();
         SetupLanguageDropdown();
         SetupResolutionDropdown();
+        SetupFullscreenToggle();
         SetupTutorialToggle();
         SetupIntroToggle();
         SubscribeIntroFinished();
@@ -68,6 +71,9 @@ public class OptionPanelUI : MonoBehaviour
     {
         if (resolutionDropdown != null)
             resolutionDropdown.onValueChanged.RemoveListener(OnResolutionChanged);
+
+        if (fullscreenToggle != null)
+            fullscreenToggle.onValueChanged.RemoveListener(OnFullscreenToggleChanged);
 
 
         if (tutorialToggle != null)
@@ -229,6 +235,23 @@ public class OptionPanelUI : MonoBehaviour
         isResolutionDropdownReady = true;
     }
 
+    private void SetupFullscreenToggle()
+    {
+        if (fullscreenToggle == null && resolutionContent != null)
+        {
+            Transform toggleTransform = FindChildByName(resolutionContent.transform, FullscreenToggleName);
+            if (toggleTransform != null)
+                fullscreenToggle = toggleTransform.GetComponent<Toggle>();
+        }
+
+        if (fullscreenToggle == null)
+            return;
+
+        fullscreenToggle.onValueChanged.RemoveListener(OnFullscreenToggleChanged);
+        fullscreenToggle.SetIsOnWithoutNotify(ResolutionManager.IsFullScreen);
+        fullscreenToggle.onValueChanged.AddListener(OnFullscreenToggleChanged);
+    }
+
 
     private void SetupTutorialToggle()
     {
@@ -383,6 +406,11 @@ public class OptionPanelUI : MonoBehaviour
         ResolutionManager.ApplyResolution(index, true);
     }
 
+    private void OnFullscreenToggleChanged(bool isOn)
+    {
+        ResolutionManager.SetFullScreen(isOn, true);
+    }
+
     private void RefreshBattlePresentationSpeedLabel()
     {
         if (battlePresentationSpeedLabel == null)
@@ -414,6 +442,7 @@ public class OptionPanelUI : MonoBehaviour
         AutoFindReferences();
         SetupLanguageDropdown();
         SetupResolutionDropdown();
+        SetupFullscreenToggle();
         SetupTutorialToggle();
         SetupIntroToggle();
 

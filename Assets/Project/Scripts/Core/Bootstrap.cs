@@ -10,6 +10,9 @@ public class Bootstrap : MonoBehaviour
 
     private IEnumerator Start()
     {
+        // 해상도/전체화면 시스템은 Bootstrap 흐름 안에서 명시적으로 초기화합니다.
+        ResolutionManager.EnsureInitialized();
+
         UIBlurBackgroundManager.Instance.name = "SharedBlurRoot";
 
         // 1. Settings Load
