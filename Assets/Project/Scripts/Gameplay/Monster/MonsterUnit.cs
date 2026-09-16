@@ -252,10 +252,23 @@ namespace Relic.Gameplay.Monster
             if (IsScreenPointOverAnyMonster(Input.mousePosition))
                 return;
 
+            if (IsPlayerReservationInputActive())
+                return;
+
             if (infoSelectedMonster == this)
                 ClearMonsterInfoSelection();
             else
                 DeselectCurrentMonster();
+        }
+
+        private static bool IsPlayerReservationInputActive()
+        {
+            BattleTimelineController timelineController =
+                FindFirstObjectByType<BattleTimelineController>(
+                    FindObjectsInactive.Include);
+
+            return timelineController != null &&
+                   timelineController.IsPlayerReservationInputActive;
         }
 
         private void UpdateStatusHoverTooltipPosition()
