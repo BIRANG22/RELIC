@@ -281,6 +281,30 @@ public class OptionPanelUITests
     }
 
     [Test]
+    public void OptionPrefab_ContainsSerializedFullscreenToggleInsideResolutionContent()
+    {
+        GameObject root = PrefabUtility.LoadPrefabContents(OptionPrefabPath);
+
+        try
+        {
+            OptionPanelUI panel = root.GetComponentInChildren<OptionPanelUI>(true);
+            Assert.That(panel, Is.Not.Null);
+
+            var serializedPanel = new SerializedObject(panel);
+            GameObject resolutionContent = serializedPanel.FindProperty("resolutionContent").objectReferenceValue as GameObject;
+            Toggle fullscreenToggle = serializedPanel.FindProperty("fullscreenToggle").objectReferenceValue as Toggle;
+
+            Assert.That(resolutionContent, Is.Not.Null);
+            Assert.That(fullscreenToggle, Is.Not.Null);
+            Assert.That(fullscreenToggle.transform.IsChildOf(resolutionContent.transform), Is.True);
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+    }
+
+    [Test]
     public void OptionPrefab_LanguageDropdownControllerIsHostedByOptionRoot()
     {
         GameObject root = PrefabUtility.LoadPrefabContents(OptionPrefabPath);

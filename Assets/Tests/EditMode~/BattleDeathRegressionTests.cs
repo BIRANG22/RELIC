@@ -9,6 +9,7 @@ using UnityEngine;
 public class BattleDeathRegressionTests
 {
     private readonly List<GameObject> createdObjects = new();
+    private readonly List<Object> createdAssets = new();
 
     [TearDown]
     public void TearDown()
@@ -22,6 +23,14 @@ public class BattleDeathRegressionTests
         }
 
         createdObjects.Clear();
+
+        for (int i = createdAssets.Count - 1; i >= 0; i--)
+        {
+            if (createdAssets[i] != null)
+                Object.DestroyImmediate(createdAssets[i]);
+        }
+
+        createdAssets.Clear();
         DestroyIfExists("BattleDamageTextPopupUI_Auto");
         DestroyIfExists("BattleDamageTextCanvas_Auto");
     }
@@ -203,6 +212,49 @@ public class BattleDeathRegressionTests
     }
 
     [Test]
+    public void MonsterDeathRoutine_AddsConfiguredDissolveDurationToDeathWait()
+    {
+        MonsterUnit monster = CreateMonster("Monster_Death_Dissolve_Routine", 0);
+        System.Type dissolveType = typeof(MonsterUnit).Assembly.GetType(
+            "Relic.Gameplay.Monster.MonsterDeathDissolve");
+
+        Assert.That(dissolveType, Is.Not.Null, "몬스터 사망 디졸브 컴포넌트가 필요합니다.");
+
+        Component dissolve = monster.gameObject.AddComponent(dissolveType);
+        SetPrivateField(dissolve, "duration", 0.4f);
+        BattleDeathService service = new(null, null, null);
+
+        IEnumerator routine = service.HandleMonsterDeadRoutine(monster);
+
+        Assert.That(routine.MoveNext(), Is.True);
+        WaitForSeconds wait = routine.Current as WaitForSeconds;
+
+        Assert.That(wait, Is.Not.Null);
+        Assert.That(GetWaitDuration(wait), Is.EqualTo(1f).Within(0.001f));
+    }
+
+    [Test]
+    public void MonsterDeathDissolve_AppliesInspectorVisualSettingsToRuntimeMaterial()
+    {
+        GameObject monsterObject = CreateObject("Monster_Death_Dissolve_Visual_Settings");
+        SpriteRenderer renderer = monsterObject.AddComponent<SpriteRenderer>();
+        MonsterDeathDissolve dissolve = monsterObject.AddComponent<MonsterDeathDissolve>();
+        Material source = new(Shader.Find("Relic/Monster Death Dissolve"));
+        createdAssets.Add(source);
+
+        SetPrivateField(dissolve, "dissolveMaterial", source);
+        SetPrivateField(dissolve, "edgeColor", new Color(0.2f, 0.4f, 0.6f, 0.8f));
+        SetPrivateField(dissolve, "edgeWidth", 0.12f);
+        SetPrivateField(dissolve, "noiseScale", 27f);
+
+        InvokePrivateMethod<bool>(dissolve, "TryApplyDissolveMaterials");
+
+        Assert.That(renderer.material.GetColor("_EdgeColor"), Is.EqualTo(new Color(0.2f, 0.4f, 0.6f, 0.8f)));
+        Assert.That(renderer.material.GetFloat("_EdgeWidth"), Is.EqualTo(0.12f).Within(0.001f));
+        Assert.That(renderer.material.GetFloat("_NoiseScale"), Is.EqualTo(27f).Within(0.001f));
+    }
+
+    [Test]
     public void DebugKillAllMonsters_MarksMonstersDead()
     {
         BattleDebugKillAllMonsters debug =
@@ -333,5 +385,15 @@ public class BattleDeathRegressionTests
 
         Assert.That(field, Is.Not.Null, $"{fieldName} field is missing.");
         field.SetValue(target, value);
+    }
+
+    private static float GetWaitDuration(WaitForSeconds wait)
+    {
+        FieldInfo seconds = typeof(WaitForSeconds).GetField(
+            "m_Seconds",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.That(seconds, Is.Not.Null, "WaitForSeconds 초 필드를 찾지 못했습니다.");
+        return (float)seconds.GetValue(wait);
     }
 }

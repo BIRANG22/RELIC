@@ -111,9 +111,13 @@ public class BattleDeathService
             MortNecromancyTracker.RemoveMort(monster.RuntimeData.RuntimeId);
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+        MonsterDeathDissolve dissolve = monster.GetComponent<MonsterDeathDissolve>();
 
         if (animator != null)
             animator.PlayDead();
+
+        if (dissolve != null)
+            dissolve.PlayAfter(animator != null ? animator.DeadAnimationDuration : 0f);
 
         if (collectReward &&
             !monster.RuntimeData.SuppressDeathReward &&
@@ -147,11 +151,13 @@ public class BattleDeathService
             return DefaultMonsterDeathDestroyDelay;
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+        MonsterDeathDissolve dissolve = monster.GetComponent<MonsterDeathDissolve>();
+        float deadAnimationDuration = animator != null
+            ? animator.DeadAnimationDuration
+            : DefaultMonsterDeathDestroyDelay;
 
-        if (animator == null)
-            return DefaultMonsterDeathDestroyDelay;
-
-        return Mathf.Max(0f, animator.DeadAnimationDuration);
+        return Mathf.Max(0f, deadAnimationDuration) +
+               (dissolve != null ? dissolve.Duration : 0f);
     }
 
     private void CollectMonsterReward(MonsterUnit monster)

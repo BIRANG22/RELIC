@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System.IO;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -247,6 +248,17 @@ public class ResolutionManagerTests
         string projectSettings = File.ReadAllText("ProjectSettings/ProjectSettings.asset");
 
         Assert.That(projectSettings, Does.Contain("resizableWindow: 1"));
+    }
+
+    [Test]
+    public void ResolutionManager_ExposesPersistedFullscreenState()
+    {
+        PropertyInfo fullscreenProperty = typeof(ResolutionManager).GetProperty(
+            "IsFullScreen",
+            BindingFlags.Public | BindingFlags.Static);
+
+        Assert.That(fullscreenProperty, Is.Not.Null);
+        Assert.That(fullscreenProperty.PropertyType, Is.EqualTo(typeof(bool)));
     }
 
     private static RectTransform CreateRectChild(Transform parent, string name)
