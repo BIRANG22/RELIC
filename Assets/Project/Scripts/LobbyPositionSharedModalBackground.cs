@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -34,6 +35,7 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
     private Action activeCloseAction;
     private bool backButtonBound;
     private bool keepBackgroundActiveDuringSwitch;
+    private Coroutine scrollResetRoutine;
 
     public bool IsShowing => backgroundRoot != null && backgroundRoot.activeSelf;
     public GameObject ActivePanel => activePanel;
@@ -61,6 +63,12 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (scrollResetRoutine != null)
+        {
+            StopCoroutine(scrollResetRoutine);
+            scrollResetRoutine = null;
+        }
+
         UnbindBackButton();
     }
 
@@ -251,6 +259,55 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
         // 패널을 연 경로와 관계없이 현재 Shortcut의 Inspector Display Name/Icon으로
         // BackgroundPanel의 Mainicon 표시를 동기화합니다.
         LobbyPositionPanelShortcutUI.RefreshForPanel(panel);
+
+        ResetPanelScrolls(panel);
+        SchedulePanelScrollReset(panel);
+    }
+
+    private void SchedulePanelScrollReset(GameObject panel)
+    {
+        if (panel == null || !isActiveAndEnabled)
+            return;
+
+        if (scrollResetRoutine != null)
+            StopCoroutine(scrollResetRoutine);
+
+        scrollResetRoutine = StartCoroutine(ResetPanelScrollsNextFrame(panel));
+    }
+
+    private IEnumerator ResetPanelScrollsNextFrame(GameObject panel)
+    {
+        yield return null;
+
+        // 패널 활성화 직후 Layout 계산이 끝난 뒤 한 번 더 맨 위로 복귀시킵니다.
+        Canvas.ForceUpdateCanvases();
+
+        if (panel != null && activePanel == panel)
+            ResetPanelScrolls(panel);
+
+        scrollResetRoutine = null;
+    }
+
+    private static void ResetPanelScrolls(GameObject panel)
+    {
+        if (panel == null)
+            return;
+
+        ScrollRect[] scrollRects = panel.GetComponentsInChildren<ScrollRect>(true);
+        for (int i = 0; i < scrollRects.Length; i++)
+        {
+            ScrollRect scrollRect = scrollRects[i];
+            if (scrollRect == null)
+                continue;
+
+            if (scrollRect.vertical)
+                scrollRect.verticalNormalizedPosition = 1f;
+
+            if (scrollRect.horizontal)
+                scrollRect.horizontalNormalizedPosition = 0f;
+
+            scrollRect.StopMovement();
+        }
     }
 
     private void Hide(object owner)
