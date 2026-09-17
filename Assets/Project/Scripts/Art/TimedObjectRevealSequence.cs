@@ -15,6 +15,21 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
         [Min(0f)]
         public float revealTime = 0f;
 
+        [Header("등장 후 이동")]
+        [Tooltip("등장한 뒤 지정한 로컬 위치로 이동합니다.")]
+        public bool useMoveAfterReveal = false;
+
+        [Tooltip("오브젝트가 등장한 뒤 이동을 시작하기 전까지의 대기 시간")]
+        [Min(0f)]
+        public float moveDelay = 0f;
+
+        [Tooltip("이동이 끝났을 때의 Local Position")]
+        public Vector3 moveTargetLocalPosition;
+
+        [Tooltip("목표 위치까지 이동하는 데 걸리는 시간")]
+        [Min(0f)]
+        public float moveDuration = 1f;
+
         [Header("등장 효과음")]
         [Tooltip("오브젝트가 등장할 때 재생할 효과음")]
         [SoundId(SoundCategory.Sfx)]
@@ -93,6 +108,8 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
     private bool useUnscaledTime = false;
 
     private Coroutine sequenceCoroutine;
+    private readonly List<Coroutine> activeMovementCoroutines = new();
+    private int activeMovementCount;
 
     public bool IsPlaying => sequenceCoroutine != null;
     public bool IsCompleted { get; private set; } = true;
@@ -189,8 +206,19 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
             // 등장 카메라 흔들림
             PlayCameraShake(revealTarget);
 
+            // 등장 후 지정 위치로 이동
+            StartMoveAfterReveal(revealTarget);
+
             nextTargetIndex++;
         }
+
+        // 모든 오브젝트의 이동이 끝난 뒤 종료 유지 시간을 시작합니다.
+        while (activeMovementCount > 0)
+        {
+            yield return null;
+        }
+
+        activeMovementCoroutines.Clear();
 
         if (finalHoldTime > 0f)
         {
@@ -211,6 +239,78 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
         {
             gameObject.SetActive(false);
         }
+    }
+
+    private void StartMoveAfterReveal(RevealTarget revealTarget)
+    {
+        if (revealTarget == null ||
+            revealTarget.targetObject == null ||
+            !revealTarget.useMoveAfterReveal)
+        {
+            return;
+        }
+
+        activeMovementCount++;
+        Coroutine movementCoroutine =
+            StartCoroutine(MoveAfterRevealRoutine(revealTarget));
+
+        if (movementCoroutine != null)
+        {
+            activeMovementCoroutines.Add(movementCoroutine);
+        }
+    }
+
+    private IEnumerator MoveAfterRevealRoutine(RevealTarget revealTarget)
+    {
+        Transform targetTransform = revealTarget.targetObject.transform;
+
+        float delay = Mathf.Max(0f, revealTarget.moveDelay);
+        if (delay > 0f)
+        {
+            yield return WaitRoutine(delay);
+        }
+
+        if (targetTransform == null)
+        {
+            activeMovementCount = Mathf.Max(0, activeMovementCount - 1);
+            yield break;
+        }
+
+        Vector3 startLocalPosition = targetTransform.localPosition;
+        Vector3 targetLocalPosition = revealTarget.moveTargetLocalPosition;
+        float duration = Mathf.Max(0f, revealTarget.moveDuration);
+
+        if (duration <= 0f)
+        {
+            targetTransform.localPosition = targetLocalPosition;
+            activeMovementCount = Mathf.Max(0, activeMovementCount - 1);
+            yield break;
+        }
+
+        float elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+            if (targetTransform == null)
+            {
+                activeMovementCount = Mathf.Max(0, activeMovementCount - 1);
+                yield break;
+            }
+
+            elapsedTime += GetDeltaTime();
+            float t = Mathf.Clamp01(elapsedTime / duration);
+            targetTransform.localPosition =
+                Vector3.Lerp(startLocalPosition, targetLocalPosition, t);
+
+            yield return null;
+        }
+
+        if (targetTransform != null)
+        {
+            targetTransform.localPosition = targetLocalPosition;
+        }
+
+        activeMovementCount = Mathf.Max(0, activeMovementCount - 1);
     }
 
     private void PlayRevealSound(RevealTarget revealTarget)
@@ -321,11 +421,29 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
 
     public void StopSequence()
     {
-        if (sequenceCoroutine == null)
-            return;
+        if (sequenceCoroutine != null)
+        {
+            StopCoroutine(sequenceCoroutine);
+            sequenceCoroutine = null;
+        }
 
-        StopCoroutine(sequenceCoroutine);
-        sequenceCoroutine = null;
+        StopMovementCoroutines();
+    }
+
+    private void StopMovementCoroutines()
+    {
+        for (int i = 0; i < activeMovementCoroutines.Count; i++)
+        {
+            Coroutine movementCoroutine = activeMovementCoroutines[i];
+
+            if (movementCoroutine != null)
+            {
+                StopCoroutine(movementCoroutine);
+            }
+        }
+
+        activeMovementCoroutines.Clear();
+        activeMovementCount = 0;
     }
 
     public void ResetSequence()
