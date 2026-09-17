@@ -71,14 +71,6 @@ MonoBehaviour:
     m_Key: common.extract
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100688
-    m_Key: common.effect
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100689
-    m_Key: common.range
-    m_Metadata:
-      m_Items: []
   - m_Id: 41367126123487249
     m_Key: common.cost
     m_Metadata:
@@ -187,10 +179,6 @@ MonoBehaviour:
     m_Key: lobby.invite
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100722
-    m_Key: lobby.formation
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100724
     m_Key: lobby.explore
     m_Metadata:
@@ -287,14 +275,6 @@ MonoBehaviour:
     m_Key: battle.upgrade
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100754
-    m_Key: battle.use_method
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100755
-    m_Key: battle.numeric_effect
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100756
     m_Key: battle.relic_skill
     m_Metadata:
@@ -317,10 +297,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100763
     m_Key: lobby.cannot_combine
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100764
-    m_Key: lobby.sold_out
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100775
@@ -2569,10 +2545,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 10169488443449383
     m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventdicerollpresenter.text
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449402
-    m_Key: ui.assets.project.scripts.lobbyequippanelui.text
     m_Metadata:
       m_Items: []
   - m_Id: 10169488443449415
@@ -5247,18 +5219,6 @@ MonoBehaviour:
     m_Key: ui.lobby.text.de97bb9d
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458553032735
-    m_Key: ui.lobby.text.a875ee63
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458553032739
-    m_Key: ui.lobby.text.2b301675
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458553032740
-    m_Key: ui.lobby.text.d2b94af5
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458553032744
     m_Key: ui.lobby.text.48ab33a5
     m_Metadata:
@@ -5277,14 +5237,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11938458553032761
     m_Key: ui.lobby.text.d32c0fa0
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458553032762
-    m_Key: ui.lobby.text.a83209da
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11939766655787112
-    m_Key: ui.samplescene.text.fd05ad0a
     m_Metadata:
       m_Items: []
   - m_Id: 11981180450119742
@@ -5581,6 +5533,18 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11993599759097874
     m_Key: battle.dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13427954283307008
+    m_Key: lobby.karma.acquisition_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13427954308472832
+    m_Key: lobby.karma.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13427954308472833
+    m_Key: lobby.stat.maximum_value
     m_Metadata:
       m_Items: []
   m_Metadata:

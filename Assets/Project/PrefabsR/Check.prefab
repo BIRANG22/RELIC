@@ -833,6 +833,7 @@ GameObject:
   - component: {fileID: 2437079375890247210}
   - component: {fileID: 8951554733249553407}
   - component: {fileID: 2415922218136977348}
+  - component: {fileID: 5237843978970369666}
   m_Layer: 5
   m_Name: Slogan
   m_TagString: Untagged
@@ -971,6 +972,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &5237843978970369666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5772281876896344071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 8951554733249553407}
+  localizationKey: ui.check.slogan
+  koreanSource: "\uC815\uB9D0\uB85C \uD3EC\uAE30\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
+  automaticallyRegistered: 1
 --- !u!1 &5902741257937067773
 GameObject:
   m_ObjectHideFlags: 0

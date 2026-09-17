@@ -20,6 +20,12 @@ public class RuneSettingPanel : MonoBehaviour
     [Header("Rune Icon List Panel")]
     [SerializeField] private GameObject runeIconSelectPanel;
     [SerializeField] private RuneIconButton[] runeIconButtons;
+    [Tooltip("RuneIconSelectPanel/Shared 아래에 배치한 RuneIconButtonSlot 프리팹(또는 템플릿)입니다.")]
+    [SerializeField] private RuneIconButton runeIconButtonSlotPrefab;
+    [SerializeField] private Transform exclusiveRuneRoot;
+    [SerializeField] private Transform sharedRuneRoot;
+
+    private readonly List<RuneIconButton> generatedRuneIconButtons = new();
 
     [Header("Common Rune Purchase")]
     [SerializeField] private GameObject buyButtonRoot;
@@ -97,6 +103,7 @@ public class RuneSettingPanel : MonoBehaviour
         EnsureDynamicInfoTextOwnership();
         BindSharedSkillSettingPanel();
         BindRuneSelectPanelRect();
+        BindDynamicRuneListLayout();
         ClearRuneInfo();
 
         InitRuneSlots();
@@ -136,6 +143,7 @@ public class RuneSettingPanel : MonoBehaviour
         EnsureDynamicInfoTextOwnership();
         BindSharedSkillSettingPanel();
         BindRuneSelectPanelRect();
+        BindDynamicRuneListLayout();
         BindCommonRunePurchaseUI();
         SetRuneSelectPanelActive();
         MoveRuneSelectPanel(runeSelectPanelAllowed);
@@ -242,6 +250,13 @@ public class RuneSettingPanel : MonoBehaviour
 
     public void SetRuneSelectPanelEnabledForTab(bool enabled)
     {
+        if (HasDynamicRuneListLayout())
+        {
+            runeSelectPanelAllowed = true;
+            SetRuneSelectPanelActive();
+            return;
+        }
+
         runeSelectPanelAllowed = enabled;
 
         if (!enabled)
@@ -259,6 +274,12 @@ public class RuneSettingPanel : MonoBehaviour
 
     public void SetRuneSelectPanelVisible(bool visible)
     {
+        if (HasDynamicRuneListLayout())
+        {
+            SetRuneSelectPanelActive();
+            return;
+        }
+
         MoveRuneSelectPanel(runeSelectPanelAllowed && visible);
     }
 
@@ -516,7 +537,11 @@ public class RuneSettingPanel : MonoBehaviour
     {
         RuneData[] candidates = GetCurrentRuneCandidates();
 
-        if (runeIconButtons != null)
+        if (HasDynamicRuneListLayout())
+        {
+            RebuildDynamicRuneIconButtons(candidates);
+        }
+        else if (runeIconButtons != null)
         {
             for (int i = 0; i < runeIconButtons.Length; i++)
             {
@@ -530,10 +555,7 @@ public class RuneSettingPanel : MonoBehaviour
                     int requiredLevel = GetRequiredLevelForRune(runeData);
 
                     runeIconButtons[i].SetRuneData(runeData, locked, requiredLevel);
-                    runeIconButtons[i].SetPurchaseState(
-                        IsCommonRune(runeData),
-                        IsCommonRunePurchased(runeData),
-                        selectedPurchaseRune != null && selectedPurchaseRune.RuneId == runeData.RuneId);
+                    runeIconButtons[i].SetPurchaseState(false, true, false);
                 }
                 else
                 {
@@ -544,8 +566,95 @@ public class RuneSettingPanel : MonoBehaviour
         }
 
         SetRuneSelectPanelVisible(true);
-
         RefreshRuneIconEquippedStates();
+    }
+
+    private void BindDynamicRuneListLayout()
+    {
+        Transform searchRoot = runeIconSelectPanel != null ? runeIconSelectPanel.transform : transform;
+
+        if (exclusiveRuneRoot == null)
+            exclusiveRuneRoot = FindDeepChild(searchRoot, "Exclusive");
+
+        if (sharedRuneRoot == null)
+            sharedRuneRoot = FindDeepChild(searchRoot, "Shared");
+
+        if (runeIconButtonSlotPrefab == null)
+        {
+            Transform template = null;
+
+            if (sharedRuneRoot != null)
+                template = FindDeepChild(sharedRuneRoot, "RuneIconButtonSlot");
+
+            if (template == null && exclusiveRuneRoot != null)
+                template = FindDeepChild(exclusiveRuneRoot, "RuneIconButtonSlot");
+
+            if (template != null)
+                runeIconButtonSlotPrefab = template.GetComponent<RuneIconButton>();
+        }
+
+        if (runeIconButtonSlotPrefab != null &&
+            (runeIconButtonSlotPrefab.transform.parent == sharedRuneRoot ||
+             runeIconButtonSlotPrefab.transform.parent == exclusiveRuneRoot))
+        {
+            runeIconButtonSlotPrefab.gameObject.SetActive(false);
+        }
+    }
+
+    private bool HasDynamicRuneListLayout()
+    {
+        BindDynamicRuneListLayout();
+        return runeIconButtonSlotPrefab != null && exclusiveRuneRoot != null && sharedRuneRoot != null;
+    }
+
+    private void RebuildDynamicRuneIconButtons(RuneData[] candidates)
+    {
+        ClearGeneratedRuneIconButtons();
+
+        if (candidates == null || runeIconButtonSlotPrefab == null)
+        {
+            runeIconButtons = Array.Empty<RuneIconButton>();
+            return;
+        }
+
+        for (int i = 0; i < candidates.Length; i++)
+        {
+            RuneData runeData = candidates[i];
+            if (runeData == null)
+                continue;
+
+            Transform parent = IsCommonRune(runeData) ? sharedRuneRoot : exclusiveRuneRoot;
+            if (parent == null)
+                continue;
+
+            RuneIconButton item = Instantiate(runeIconButtonSlotPrefab, parent);
+            item.name = "RuneIconButtonSlot_" + runeData.RuneId;
+            item.gameObject.SetActive(true);
+
+            bool locked = !IsCommonRune(runeData) && IsRuneLockedForCurrentState(runeData);
+            int requiredLevel = GetRequiredLevelForRune(runeData);
+            item.SetRuneData(runeData, locked, requiredLevel);
+
+            // 구매/등록/상세 정보 동작은 다음 단계에서 연결한다.
+            // 이번 단계에서는 목록 표시만 담당하므로 구매 선택 상태를 사용하지 않는다.
+            item.SetPurchaseState(false, true, false);
+
+            generatedRuneIconButtons.Add(item);
+        }
+
+        runeIconButtons = generatedRuneIconButtons.ToArray();
+    }
+
+    private void ClearGeneratedRuneIconButtons()
+    {
+        for (int i = 0; i < generatedRuneIconButtons.Count; i++)
+        {
+            RuneIconButton item = generatedRuneIconButtons[i];
+            if (item != null)
+                Destroy(item.gameObject);
+        }
+
+        generatedRuneIconButtons.Clear();
     }
 
     private RuneData[] GetCurrentRuneCandidates()
@@ -851,6 +960,19 @@ public class RuneSettingPanel : MonoBehaviour
 
     private void RefreshRuneIconPurchaseStates()
     {
+        if (HasDynamicRuneListLayout())
+        {
+            if (runeIconButtons == null)
+                return;
+
+            for (int i = 0; i < runeIconButtons.Length; i++)
+            {
+                if (runeIconButtons[i] != null)
+                    runeIconButtons[i].SetPurchaseState(false, true, false);
+            }
+            return;
+        }
+
         if (runeIconButtons == null)
             return;
 

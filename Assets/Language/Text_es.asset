@@ -74,14 +74,6 @@ MonoBehaviour:
     m_Localized: Extraer
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100688
-    m_Localized: 'Efecto:'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100689
-    m_Localized: Alcance
-    m_Metadata:
-      m_Items: []
   - m_Id: 41367126123487249
     m_Localized: Coste
     m_Metadata:
@@ -190,10 +182,6 @@ MonoBehaviour:
     m_Localized: Invitar
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100722
-    m_Localized: "Formaci\xF3n"
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100724
     m_Localized: Explorar
     m_Metadata:
@@ -290,14 +278,6 @@ MonoBehaviour:
     m_Localized: Mejorar
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100754
-    m_Localized: Uso
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100755
-    m_Localized: "Efecto num\xE9rico"
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100756
     m_Localized: Habilidad pasiva
     m_Metadata:
@@ -320,10 +300,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100763
     m_Localized: No se puede combinar.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100764
-    m_Localized: Vendido
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100775

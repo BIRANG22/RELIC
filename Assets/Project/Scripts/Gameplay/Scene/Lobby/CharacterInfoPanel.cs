@@ -59,6 +59,8 @@ public class CharacterInfoPanel : MonoBehaviour
 
     private void Awake()
     {
+        AutoBindValueTexts();
+        AutoBindValueTexts();
         AutoBindCharacterMarkImageIfNeeded();
         AutoBindStatLabelTexts();
         ApplyCostLabels();
@@ -85,6 +87,7 @@ public class CharacterInfoPanel : MonoBehaviour
 
     public void Refresh()
     {
+        AutoBindValueTexts();
         ApplyCostLabels();
 
         if (currentMasterData == null)
@@ -292,6 +295,29 @@ public class CharacterInfoPanel : MonoBehaviour
 
         if (recoveryLabelText != null)
             recoveryLabelText.text = recoveryLabel;
+    }
+
+
+    private void AutoBindValueTexts()
+    {
+        if (hpValueText == null)
+            hpValueText = FindValueText("HP");
+        if (costValueText == null)
+            costValueText = FindValueText("Cost");
+        if (recoveryValueText == null)
+            recoveryValueText = FindValueText("Recovery");
+        if (karmaValueText == null)
+            karmaValueText = FindValueText("Karma");
+    }
+
+    private TMP_Text FindValueText(string rootName)
+    {
+        Transform root = FindChildByName(transform, rootName);
+        if (root == null)
+            return null;
+
+        Transform value = FindChildByName(root, "ValueText");
+        return value != null ? value.GetComponent<TMP_Text>() : null;
     }
 
     private void AutoBindStatLabelTexts()
