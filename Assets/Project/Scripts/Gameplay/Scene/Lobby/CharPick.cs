@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -12,16 +11,13 @@ public class CharPick : MonoBehaviour
     [SerializeField] private bool autoBindCharButtons = true;
     [SerializeField] private Transform charButtonRoot;
 
-    [Header("Preview")]
-    [SerializeField] private Transform previewRoot;
+    [Header("Profile Image")]
+    [SerializeField] private Image profileImage;
+    [SerializeField] private bool autoBindProfileImage = true;
 
     [Header("Setting Panel")]
     [SerializeField] private Setting setting;
 
-    [Header("Preview Background Animation")]
-    [SerializeField] private Transform previewBackground;
-    [SerializeField] private float bgShrinkDuration = 0.12f;
-    [SerializeField] private float bgExpandDuration = 0.12f;
 
     [Header("Party Confirm")]
     [SerializeField] private int firstPartyDefaultDeployCellNumber = 7;
@@ -34,12 +30,8 @@ public class CharPick : MonoBehaviour
 
     private int centerIndex = 0;
 
-    private GameObject currentPreview;
-    private string currentPreviewCharacterId;
+    private string currentProfileCharacterId;
 
-    private Coroutine bgAnimRoutine;
-    private Vector3 previewBackgroundOriginalScale;
-    private bool hasPreviewBackgroundOriginalScale;
     private bool isStarted;
     private SteamLobbyPartySynchronizer subscribedPartySynchronizer;
 
@@ -57,6 +49,7 @@ public class CharPick : MonoBehaviour
     private void OnEnable()
     {
         AutoBindCharButtonsIfNeeded();
+        AutoBindProfileImageIfNeeded();
         ClampCenterIndex();
         SubscribeNetworkPartyEvents();
 
@@ -77,8 +70,7 @@ public class CharPick : MonoBehaviour
     private void Start()
     {
         isStarted = true;
-        ConfigurePreviewCanvasScaler();
-        CachePreviewBackgroundScale();
+        AutoBindProfileImageIfNeeded();
         AutoBindCharButtonsIfNeeded();
         ClampCenterIndex();
 
@@ -145,6 +137,11 @@ public class CharPick : MonoBehaviour
         if (index < 0)
             return;
 
+        // 잠긴 캐릭터, 아직 해금되지 않은 캐릭터, 데이터가 없는 빈 버튼은
+        // 현재 보고 있는 캐릭터를 바꾸지 않고 클릭 자체를 무시합니다.
+        if (!CanShowCharacterData(btn, btn.CharacterId))
+            return;
+
         if (TryHandleNetworkCharacterClick(btn, playPartyActionSound))
             return;
 
@@ -155,9 +152,6 @@ public class CharPick : MonoBehaviour
 
         centerIndex = index;
         RefreshCenterInfo();
-
-        if (btn.IsLocked || !HasUsableCharacterData(btn))
-            return;
 
         if (!wasCurrentInfoCharacter)
             return;
@@ -175,7 +169,7 @@ public class CharPick : MonoBehaviour
         if (btn == null)
             return;
 
-        if (btn.IsLocked || !HasUsableCharacterData(btn))
+        if (!CanShowCharacterData(btn, btn.CharacterId))
             return;
 
         if (!btn.PrepareCharacterForPartyAction(withClickSound))
@@ -455,7 +449,7 @@ public class CharPick : MonoBehaviour
         if (synchronizer == null || !synchronizer.IsNetworkPartyActive)
             return false;
 
-        if (btn == null || btn.IsLocked || !HasUsableCharacterData(btn))
+        if (btn == null || !CanShowCharacterData(btn, btn.CharacterId))
             return true;
 
         string characterId = btn.CharacterId;
@@ -1044,15 +1038,40 @@ public class CharPick : MonoBehaviour
         }
     }
 
-    private bool CanShowCharacterData(CharBtn btn, string characterId)
+    public bool CanInteractWithButton(CharBtn btn)
     {
         if (btn == null)
             return false;
 
-        if (btn.IsLocked)
+        return CanShowCharacterData(btn, btn.CharacterId);
+    }
+
+    private bool CanShowCharacterData(CharBtn btn, string characterId)
+    {
+        if (btn == null || btn.IsLocked)
             return false;
 
-        return HasUsableCharacterData(btn);
+        if (string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        if (DataManager.Instance == null || DataManager.Instance.CharacterDatabase == null)
+            return false;
+
+        if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out var master) || master == null)
+            return false;
+
+        // 기본 제공 캐릭터는 런타임 데이터가 아직 생성되지 않았어도 선택할 수 있습니다.
+        if (master.IsDefaultProvided)
+            return true;
+
+        // 해금형 캐릭터는 실제 런타임 해금 정보가 있어야만 진입할 수 있습니다.
+        if (DataManager.Instance.CharacterRuntimeStore == null)
+            return false;
+
+        if (!DataManager.Instance.CharacterRuntimeStore.TryGet(characterId, out var runtime) || runtime == null)
+            return false;
+
+        return runtime.IsUnlocked;
     }
 
     private bool HasUsableCharacterData(CharBtn btn)
@@ -1098,21 +1117,19 @@ public class CharPick : MonoBehaviour
 
     private void ShowPreview(string characterId)
     {
-        if (previewRoot == null)
+        AutoBindProfileImageIfNeeded();
+
+        if (profileImage == null)
             return;
-
-        if (characterId == currentPreviewCharacterId && currentPreview != null)
-            return;
-
-        currentPreviewCharacterId = characterId;
-
-        if (currentPreview != null)
-        {
-            Destroy(currentPreview);
-            currentPreview = null;
-        }
 
         if (string.IsNullOrWhiteSpace(characterId))
+        {
+            currentProfileCharacterId = null;
+            profileImage.sprite = null;
+            return;
+        }
+
+        if (characterId == currentProfileCharacterId && profileImage.sprite != null)
             return;
 
         if (DataManager.Instance == null)
@@ -1127,115 +1144,62 @@ public class CharPick : MonoBehaviour
             return;
         }
 
-        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewUIPrefab(characterId, out var prefab))
+        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewUIPrefab(characterId, out var prefab) || prefab == null)
         {
             Debug.LogWarning("[CharPick] PreviewUIPrefab not found: " + characterId);
             return;
         }
 
-        if (prefab == null)
+        Image sourceImage = prefab.GetComponent<Image>();
+        if (sourceImage == null)
+            sourceImage = prefab.GetComponentInChildren<Image>(true);
+
+        if (sourceImage == null || sourceImage.sprite == null)
+        {
+            Debug.LogWarning("[CharPick] PreviewUIPrefab Image sprite not found: " + characterId);
             return;
+        }
 
-        currentPreview = Instantiate(prefab, previewRoot, false);
-        currentPreview.name = "Preview_" + characterId;
-        currentPreview.transform.localScale = Vector3.one * 0.4f;
-
-        PlayPreviewBackgroundAnim();
+        currentProfileCharacterId = characterId;
+        profileImage.sprite = sourceImage.sprite;
     }
 
-    private void ConfigurePreviewCanvasScaler()
+    private void AutoBindProfileImageIfNeeded()
     {
-        if (previewRoot == null)
+        if (profileImage != null || !autoBindProfileImage)
             return;
 
-        Canvas canvas = previewRoot.GetComponentInParent<Canvas>();
-        if (canvas == null)
-            return;
+        Transform searchRoot = setting != null ? setting.transform : transform.root;
+        Transform target = FindChildRecursive(searchRoot, "Profile_Image");
+        if (target != null)
+            profileImage = target.GetComponent<Image>();
+    }
 
-        CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
-        if (scaler == null)
-            return;
+    private static Transform FindChildRecursive(Transform root, string targetName)
+    {
+        if (root == null || string.IsNullOrEmpty(targetName))
+            return null;
 
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-        scaler.matchWidthOrHeight = 0f;
+        if (root.name == targetName)
+            return root;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform found = FindChildRecursive(root.GetChild(i), targetName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 
     private bool TryGetCurrentPreviewAnimator(out ButtonResponsiveSpriteAnimator animator)
     {
         animator = null;
-
-        if (currentPreview == null)
-            return false;
-
-        animator = currentPreview.GetComponentInChildren<ButtonResponsiveSpriteAnimator>(true);
-        return animator != null;
+        return false;
     }
 
-    private void CachePreviewBackgroundScale()
-    {
-        if (previewBackground == null)
-            return;
 
-        previewBackgroundOriginalScale = previewBackground.localScale;
-        hasPreviewBackgroundOriginalScale = true;
-    }
-
-    private void PlayPreviewBackgroundAnim()
-    {
-        if (previewBackground == null)
-            return;
-
-        if (!hasPreviewBackgroundOriginalScale)
-            CachePreviewBackgroundScale();
-
-        if (bgAnimRoutine != null)
-            StopCoroutine(bgAnimRoutine);
-
-        previewBackground.localScale = previewBackgroundOriginalScale;
-        bgAnimRoutine = StartCoroutine(PreviewBackgroundAnimRoutine());
-    }
-
-    private IEnumerator PreviewBackgroundAnimRoutine()
-    {
-        Vector3 originalScale = previewBackgroundOriginalScale;
-
-        float startX = originalScale.x;
-        float y = originalScale.y;
-        float z = originalScale.z;
-
-        float timer = 0f;
-
-        while (timer < bgShrinkDuration)
-        {
-            timer += Time.deltaTime;
-            float t = Mathf.Clamp01(timer / bgShrinkDuration);
-            float x = Mathf.Lerp(startX, 0f, t);
-
-            previewBackground.localScale = new Vector3(x, y, z);
-
-            yield return null;
-        }
-
-        previewBackground.localScale = new Vector3(0f, y, z);
-
-        timer = 0f;
-
-        while (timer < bgExpandDuration)
-        {
-            timer += Time.deltaTime;
-            float t = Mathf.Clamp01(timer / bgExpandDuration);
-            float x = Mathf.Lerp(0f, startX, t);
-
-            previewBackground.localScale = new Vector3(x, y, z);
-
-            yield return null;
-        }
-
-        previewBackground.localScale = originalScale;
-        bgAnimRoutine = null;
-    }
 
     private void RefreshFixedButtons()
     {
@@ -1249,6 +1213,7 @@ public class CharPick : MonoBehaviour
             // 씬에서 설정한 위치와 크기를 변경하지 않고 모든 버튼을 표시한다.
             btn.SetVisible(true);
             btn.SetCenter(false);
+            btn.RefreshInteractionAvailability();
         }
     }
 

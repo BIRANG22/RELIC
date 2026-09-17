@@ -44,8 +44,8 @@ MonoBehaviour:
     Mark: {fileID: 21300000, guid: e27844ec0bb5fe94abcbaec30f9794e1, type: 3}
     Mark2: {fileID: 21300000, guid: 958ff319e936d6147bda8effe611d0c6, type: 3}
   - CharacterId: Char_04
-    Icon: {fileID: -1547505533, guid: 2013d362fec4aee429add0fd04bfe4e4, type: 3}
-    Portrait: {fileID: 0}
+    Icon: {fileID: 595685617, guid: 789dd25bb9a108246a8a227fd2c73960, type: 3}
+    Portrait: {fileID: 595685617, guid: 789dd25bb9a108246a8a227fd2c73960, type: 3}
     TimelineIcon: {fileID: 21300000, guid: 3a4b172437a6aec47b17bc45e999cc4d, type: 3}
     SideImage: {fileID: 21300000, guid: 2e7f22c3b155eac4a8a467e694ad7db0, type: 3}
     SkillCutsceneImage: {fileID: 21300000, guid: 7893dc701a1d34941804dde0a83f5ef6, type: 3}
@@ -53,13 +53,13 @@ MonoBehaviour:
     HUDSelectedPortraitImage: {fileID: 21300000, guid: 2e7f22c3b155eac4a8a467e694ad7db0, type: 3}
     Mark: {fileID: 21300000, guid: 7f0c862d16fc9d04ebf2bc3a94a25113, type: 3}
     Mark2: {fileID: 21300000, guid: f1c08b480710a0346bed0a3012d03254, type: 3}
-  - CharacterId: Char_05
-    Icon: {fileID: 21300000, guid: a3d917883fd101940a849d3c12c90979, type: 3}
-    Portrait: {fileID: 0}
-    TimelineIcon: {fileID: 21300000, guid: 0dfe508e3f552a14b837e34407fa3bfb, type: 3}
-    SideImage: {fileID: 0}
-    SkillCutsceneImage: {fileID: 0}
-    HUDPortraitImage: {fileID: 0}
-    HUDSelectedPortraitImage: {fileID: 0}
-    Mark: {fileID: 21300000, guid: e27844ec0bb5fe94abcbaec30f9794e1, type: 3}
-    Mark2: {fileID: 21300000, guid: 958ff319e936d6147bda8effe611d0c6, type: 3}
+  - CharacterId: Char_04
+    Icon: {fileID: 595685617, guid: 789dd25bb9a108246a8a227fd2c73960, type: 3}
+    Portrait: {fileID: 595685617, guid: 789dd25bb9a108246a8a227fd2c73960, type: 3}
+    TimelineIcon: {fileID: 21300000, guid: 3a4b172437a6aec47b17bc45e999cc4d, type: 3}
+    SideImage: {fileID: 21300000, guid: 2e7f22c3b155eac4a8a467e694ad7db0, type: 3}
+    SkillCutsceneImage: {fileID: 21300000, guid: 7893dc701a1d34941804dde0a83f5ef6, type: 3}
+    HUDPortraitImage: {fileID: 21300000, guid: 235e3bc7c2e71a94b9f6d7b0a6331bfe, type: 3}
+    HUDSelectedPortraitImage: {fileID: 21300000, guid: 2e7f22c3b155eac4a8a467e694ad7db0, type: 3}
+    Mark: {fileID: 21300000, guid: 7f0c862d16fc9d04ebf2bc3a94a25113, type: 3}
+    Mark2: {fileID: 21300000, guid: f1c08b480710a0346bed0a3012d03254, type: 3}

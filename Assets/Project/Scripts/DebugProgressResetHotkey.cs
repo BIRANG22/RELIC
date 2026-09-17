@@ -8,7 +8,7 @@ using UnityEngine.InputSystem;
 /// ] 키를 누르면 게임 진행 데이터만 초기화하고 타이틀로 이동합니다.
 /// ; 키를 누르면 현재 저장된 획득 기록 기준 도감을 열고, ' 키를 누르면 저장을 바꾸지 않고 도감을 전체 공개합니다.
 /// - 키를 누르면 푸른 더스티움을 100 감소시키고, = 키를 누르면 100 증가시킵니다.
-/// L 키를 누르면 테스트 치트를 켜거나 끕니다. ON 시 Item_001~Item_012 각각 +10, 푸른 더스티움 +5000, 캐릭터 레벨 +5가 적용되고 OFF 시 안전하게 회수합니다.
+/// L 키를 누르면 테스트 치트를 켜거나 끕니다. ON 시 Item_001~Item_012 각각 +10, 푸른 더스티움 +5000, 캐릭터 레벨 +5와 경험치 +5000이 적용되고 OFF 시 안전하게 회수합니다.
 /// 언어, 음량 등 환경설정은 유지합니다.
 /// </summary>
 public sealed class DebugProgressResetHotkey : MonoBehaviour
@@ -32,7 +32,8 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
     {
         "Char_01",
         "Char_02",
-        "Char_03"
+        "Char_03",
+        "Char_04"
     };
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]

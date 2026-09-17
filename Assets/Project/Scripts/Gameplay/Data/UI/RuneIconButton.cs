@@ -3,21 +3,23 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
-public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler
+public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [Header("UI")]
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private Image iconImage;
+    [SerializeField] private Image backImage;
+    [SerializeField] private GameObject valueObject;
+    [SerializeField] private TMP_Text valueText;
 
     [Header("Hover Scale Effect")]
     [SerializeField] private Transform scaleTarget;
     [SerializeField] private float hoverScale = 1.1f;
-    [SerializeField] private float breathMaxScale = 1.16f;
     [SerializeField] private float scaleInDuration = 0.08f;
-    [SerializeField] private float breathSpeed = 4f;
     [SerializeField] private bool useUnscaledTime = true;
 
     [Header("Equipped UI")]
@@ -47,6 +49,9 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     private bool isPointerInside;
     private Color originalIconColor = Color.white;
     private bool isIconColorCached;
+    private Color originalBackColor = Color.white;
+    private bool isBackColorCached;
+    private bool suppressClickOnce;
 
     public RuneData CurrentRuneData => currentRuneData;
 
@@ -55,8 +60,10 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         ResolveEquippedUIReferences();
         ResolveLockedUIReferences();
         ResolvePurchaseSelectionUI();
+        ResolveHoverVisualReferences();
         CacheOriginalScale();
         CacheOriginalIconColor();
+        CacheOriginalBackColor();
     }
 
     private void OnEnable()
@@ -64,8 +71,12 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         ResolveEquippedUIReferences();
         ResolveLockedUIReferences();
         ResolvePurchaseSelectionUI();
+        ResolveHoverVisualReferences();
         CacheOriginalScale();
         CacheOriginalIconColor();
+        CacheOriginalBackColor();
+        SetBackHoverState(false);
+        RefreshValueHoverState();
     }
 
     private void OnDisable()
@@ -77,6 +88,8 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         }
 
         RefreshUnlockHoverState();
+        SetBackHoverState(false);
+        RefreshValueHoverState();
         StopHoverScaleEffect(true);
     }
 
@@ -99,6 +112,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     public void SetRuneData(RuneData runeData, bool locked, int requiredLevel)
     {
         StopHoverScaleEffect(true);
+        SetBackHoverState(false);
 
         currentRuneData = runeData;
         isLocked = locked;
@@ -112,6 +126,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         {
             SetEquippedState(false);
             SetLockedState(false, 0);
+            RefreshValueHoverState();
             return;
         }
 
@@ -128,6 +143,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         SetLockedState(isLocked, this.requiredLevel);
         RefreshPurchaseSelectionVisual();
         ApplyIconVisualState();
+        RefreshValueHoverState();
     }
 
     public void SetEquippedState(bool equipped)
@@ -148,6 +164,8 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         isPurchased = purchased;
         isPurchaseSelected = selectedForPurchase;
         RefreshPurchaseSelectionVisual();
+        RefreshUnlockHoverState();
+        RefreshValueHoverState();
         ApplyIconVisualState();
     }
 
@@ -158,6 +176,104 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         ApplyIconVisualState();
     }
 
+
+    private void ResolveHoverVisualReferences()
+    {
+        if (backImage == null)
+        {
+            Transform backTransform = transform.Find("Back") ?? FindDeepChild(transform, "Back");
+            if (backTransform != null)
+                backImage = backTransform.GetComponent<Image>();
+        }
+
+        if (valueObject == null)
+        {
+            Transform valueTransform = transform.Find("Value") ?? FindDeepChild(transform, "Value");
+            if (valueTransform != null)
+            {
+                valueObject = valueTransform.gameObject;
+                valueText = valueTransform.GetComponent<TMP_Text>();
+                if (valueText == null)
+                    valueText = valueTransform.GetComponentInChildren<TMP_Text>(true);
+            }
+        }
+        else if (valueText == null)
+        {
+            valueText = valueObject.GetComponent<TMP_Text>();
+            if (valueText == null)
+                valueText = valueObject.GetComponentInChildren<TMP_Text>(true);
+        }
+    }
+
+    private void CacheOriginalBackColor()
+    {
+        ResolveHoverVisualReferences();
+        if (isBackColorCached || backImage == null)
+            return;
+
+        originalBackColor = backImage.color;
+        isBackColorCached = true;
+    }
+
+    private void SetBackHoverState(bool hovered)
+    {
+        ResolveHoverVisualReferences();
+        CacheOriginalBackColor();
+
+        if (backImage == null)
+            return;
+
+        Color color = backImage.color;
+        // 전용 파편은 해금된 경우에만, 공용 파편은 구매한 경우에만 Back 호버 색상을 사용합니다.
+        // 잠금/미구매 상태에서도 스케일 호버는 별도로 정상 동작합니다.
+        bool canChangeBackColor = hovered && !isLocked && (!isCommonRune || isPurchased);
+        Color target = canChangeBackColor ? ParseColorOrWhite("#3C4476") : originalBackColor;
+        color.r = target.r;
+        color.g = target.g;
+        color.b = target.b;
+        backImage.color = color;
+    }
+
+    private void RefreshValueHoverState()
+    {
+        ResolveHoverVisualReferences();
+
+        if (valueObject == null)
+            return;
+
+        bool canShowPrice = isCommonRune && !isPurchased && currentRuneData != null;
+
+        // Value는 공용 파편의 미구매 가격 표시 전용입니다.
+        // 프리팹에 남아 있는 LocalizedTMPText / LocalizeStringEvent가 예전 문구(예: "장착 중")를
+        // 다시 덮어쓰지 못하도록 이 TMP는 런타임 가격 텍스트가 직접 소유합니다.
+        EnsureValueTextRuntimeOwnership();
+
+        if (valueText != null)
+            valueText.text = canShowPrice
+                ? Mathf.Max(0, currentRuneData.BlueDustiumCost).ToString()
+                : string.Empty;
+
+        valueObject.SetActive(isPointerInside && canShowPrice);
+    }
+
+    private void EnsureValueTextRuntimeOwnership()
+    {
+        if (valueText == null)
+            return;
+
+        GameObject target = valueText.gameObject;
+
+        if (target.GetComponent<LocalizationIgnore>() == null)
+            target.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localizedTmp = target.GetComponent<LocalizedTMPText>();
+        if (localizedTmp != null)
+            localizedTmp.enabled = false;
+
+        LocalizeStringEvent legacyLocalizer = target.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+            legacyLocalizer.enabled = false;
+    }
 
     private void ResolveEquippedUIReferences()
     {
@@ -268,7 +384,11 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
         if (isLocked)
         {
-            iconImage.color = new Color(0.35f, 0.35f, 0.35f, 1f);
+            Color lockedColor = iconImage.color;
+            lockedColor.r = 0.35f;
+            lockedColor.g = 0.35f;
+            lockedColor.b = 0.35f;
+            iconImage.color = lockedColor;
             return;
         }
 
@@ -288,6 +408,12 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     public void Execute()
     {
+        if (suppressClickOnce)
+        {
+            suppressClickOnce = false;
+            return;
+        }
+
         if (owner == null)
         {
             Debug.LogWarning("[RuneIconButton] owner is null.");
@@ -309,9 +435,13 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             isPointerInside = true;
         }
         RefreshUnlockHoverState();
+        SetBackHoverState(true);
         ShowCurrentRuneInfo();
         shownInfoVersion = LobbyInfoHoverState.CurrentVersion;
         StartHoverScaleEffect();
+
+        // 호버 과정의 다른 UI 갱신이 끝난 뒤 마지막으로 가격을 확정합니다.
+        RefreshValueHoverState();
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -322,6 +452,8 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             isPointerInside = false;
         }
         RefreshUnlockHoverState();
+        SetBackHoverState(false);
+        RefreshValueHoverState();
         StopHoverScaleEffect(true);
 
         // 프리뷰에서는 호버가 끝나면 기본 안내 정보로 돌아갑니다.
@@ -330,6 +462,32 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             owner.ClearRuneInfoFromHover(shownInfoVersion);
 
         shownInfoVersion = -1;
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if (owner == null || currentRuneData == null)
+            return;
+
+        if (owner.TryBeginRuneDrag(currentRuneData, null, iconImage, eventData))
+            suppressClickOnce = true;
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        owner?.UpdateRuneDrag(eventData);
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        owner?.EndRuneDrag(eventData);
+        StartCoroutine(ClearDragClickSuppressionNextFrame());
+    }
+
+    private IEnumerator ClearDragClickSuppressionNextFrame()
+    {
+        yield return null;
+        suppressClickOnce = false;
     }
 
     public void OnSelect(BaseEventData eventData)
@@ -412,20 +570,8 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             yield return null;
         }
 
-        float time = 0f;
-        float minScale = hoverScale;
-        float maxScale = Mathf.Max(hoverScale, breathMaxScale);
-
-        while (true)
-        {
-            time += GetDeltaTime() * breathSpeed;
-
-            float pingPong = (Mathf.Sin(time) + 1f) * 0.5f;
-            float currentScale = Mathf.Lerp(minScale, maxScale, pingPong);
-
-            scaleTarget.localScale = originalScale * currentScale;
-            yield return null;
-        }
+        scaleTarget.localScale = firstTargetScale;
+        hoverScaleCoroutine = null;
     }
 
     private float GetDeltaTime()

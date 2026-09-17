@@ -979,7 +979,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - SkillId: S_Ability_15
+  - SkillId: S_Ability_16
     Vfx:
       prefab: {fileID: 529139466995848897, guid: 4021fb98fe8fe3c4da30a2071dd71f02, type: 3}
       flipType: 2

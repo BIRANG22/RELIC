@@ -15,19 +15,20 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private GameObject lockObject;
     [Tooltip("기억 버튼의 Line 이미지입니다. 비어 있으면 자식 이름 'Line'으로 자동으로 찾습니다.")]
     [SerializeField] private Image lineImage;
-    [Tooltip("현재 장착된 기억에 표시할 SelectLine 오브젝트입니다. 비어 있으면 자식 이름 SelectLine으로 자동으로 찾습니다.")]
+    [Tooltip("현재 선택된 기억에 표시할 SelectLine 오브젝트입니다. 비어 있으면 자식 이름 SelectLine으로 자동으로 찾습니다.")]
     [SerializeField] private GameObject selectLine;
-    [Tooltip("선택 상태를 표시할 Back 이미지입니다. 비어 있으면 자식 이름 'Back'으로 자동으로 찾습니다.")]
+    [Tooltip("마우스 오버 상태를 표시할 Back 이미지입니다. 비어 있으면 자식 이름 'Back'으로 자동으로 찾습니다.")]
     [SerializeField] private Image buttonImage;
 
     private static readonly Color32 LockedVisualColor = new Color32(0x77, 0x77, 0x77, 0xFF);
     private static readonly Color32 DefaultLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
-    private static readonly Color32 SelectedButtonColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
+    private static readonly Color32 HoverButtonColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
 
     private Color originalIconColor = Color.white;
     private Color originalButtonColor = Color.white;
     private bool visualColorsCached;
     private bool isEquippedSelected;
+    private bool isPointerInside;
 
 
     [Header("Hover Scale Effect")]
@@ -99,7 +100,9 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     )
     {
         EnsureUiReferences();
-        StopHoverScaleEffect(true);
+        // 데이터 갱신 중에는 현재 스케일을 강제로 1.0으로 되돌리지 않습니다.
+        // 선택된 스킬은 갱신이 들어와도 1.1 배율을 그대로 유지해야 합니다.
+        StopHoverScaleEffect(false);
 
         currentSkillData = skillData;
         isLocked = locked;
@@ -170,15 +173,22 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        isPointerInside = true;
         SetHoverSelected(true);
         StartHoverScaleEffect();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        isPointerInside = false;
         CacheOriginalScale();
         if (scaleTarget != null && isScaleCached)
-            StartScaleTransition(originalScale);
+        {
+            Vector3 targetScale = isEquippedSelected
+                ? originalScale * hoverScale
+                : originalScale;
+            StartScaleTransition(targetScale);
+        }
 
         SetHoverSelected(false);
     }
@@ -209,21 +219,39 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public void SetEquippedSelected(bool selected)
     {
         EnsureUiReferences();
-        CacheVisualColors();
+        CacheOriginalScale();
+        ResolveSelectLine();
 
         isEquippedSelected = selected;
-        if (buttonImage == null)
-            return;
 
-        // 선택 여부에 따라 RGB만 바꾸고 현재 Back의 알파값은 절대 변경하지 않습니다.
-        SetRgbPreserveAlpha(buttonImage, selected ? (Color)SelectedButtonColor : originalButtonColor);
+        // SelectLine은 현재 선택된 스킬을 나타냅니다.
+        if (selectLine != null)
+            selectLine.SetActive(selected);
+
+        // 선택된 스킬은 마우스가 빠져도 1.1 배율을 유지합니다.
+        if (scaleTarget != null && isScaleCached && isActiveAndEnabled)
+        {
+            Vector3 targetScale = (selected || isPointerInside)
+                ? originalScale * hoverScale
+                : originalScale;
+            StartScaleTransition(targetScale);
+        }
     }
 
     private void SetHoverSelected(bool hovered)
     {
-        ResolveSelectLine();
-        if (selectLine != null)
-            selectLine.SetActive(hovered);
+        EnsureUiReferences();
+        CacheVisualColors();
+
+        // Back은 마우스 오버 상태만 표시합니다. 잠긴 기억은 색상을 바꾸지 않습니다.
+        // 알파값은 그대로 유지합니다.
+        if (buttonImage != null)
+        {
+            Color target = (hovered && !isLocked)
+                ? (Color)HoverButtonColor
+                : originalButtonColor;
+            SetRgbPreserveAlpha(buttonImage, target);
+        }
     }
 
     private void ResolveSelectLine()
@@ -284,7 +312,7 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (button != null)
             button.transition = Selectable.Transition.None;
 
-        // 선택 상태 색상은 SkillIconButton 본체가 아니라 자식 Back 이미지에 적용합니다.
+        // 호버 상태 색상은 SkillIconButton 본체가 아니라 자식 Back 이미지에 적용합니다.
         Transform backTransform = transform.Find("Back");
         if (backTransform == null)
             backTransform = FindChildByName(transform, "Back");
@@ -317,6 +345,28 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 if (lockText == null)
                     lockText = unlockTransform.GetComponent<TMP_Text>();
             }
+        }
+
+        DisableLockRaycastBlocking();
+    }
+
+    private void DisableLockRaycastBlocking()
+    {
+        if (lockObject == null)
+            return;
+
+        Graphic[] graphics = lockObject.GetComponentsInChildren<Graphic>(true);
+        for (int i = 0; i < graphics.Length; i++)
+        {
+            if (graphics[i] != null)
+                graphics[i].raycastTarget = false;
+        }
+
+        CanvasGroup[] canvasGroups = lockObject.GetComponentsInChildren<CanvasGroup>(true);
+        for (int i = 0; i < canvasGroups.Length; i++)
+        {
+            if (canvasGroups[i] != null)
+                canvasGroups[i].blocksRaycasts = false;
         }
     }
 

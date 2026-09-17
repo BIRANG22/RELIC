@@ -56,11 +56,14 @@ public class CharBtn : MonoBehaviour,
     private CharPick charPick;
     private RectTransform rect;
     private CanvasGroup canvasGroup;
-    private Button characterButton;
-    private static readonly Color ViewedCharacterSelectedColor = new Color32(0x4E, 0x66, 0xDF, 0xFF);
+    private static readonly Color CharacterMarkDefaultColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    private static readonly Color CharacterMarkSelectedColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
+    private static readonly Color CharacterMarkLockedColor = new Color32(0x77, 0x77, 0x77, 0xFF);
 
-    private ColorBlock originalButtonColors;
-    private bool hasOriginalButtonColors;
+    [Header("Character Select Mark Visual")]
+    [SerializeField] private Image jobmarkImage;
+    [SerializeField] private Image jobmarkInImage;
+
     private bool isViewedCharacter;
     private bool isRemoteViewedCharacter;
     private int lastHandledClickFrame = -1;
@@ -75,6 +78,8 @@ public class CharBtn : MonoBehaviour,
     private Vector3 charBtnOriginalScale = Vector3.one;
     private bool hasCharBtnOriginalScale;
     private Coroutine charBtnHoverCoroutine;
+    private UIPanelButton[] panelButtonComponents;
+    private bool[] panelButtonOriginalEnabledStates;
 
     public CharacterType CharacterType => characterType;
     public string CharacterId => characterId;
@@ -85,18 +90,12 @@ public class CharBtn : MonoBehaviour,
     {
         rect = GetComponent<RectTransform>();
         canvasGroup = GetComponent<CanvasGroup>();
-        characterButton = GetComponent<Button>();
-
-        if (characterButton != null)
-        {
-            originalButtonColors = characterButton.colors;
-            hasOriginalButtonColors = true;
-        }
-
         if (canvasGroup == null)
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         AutoPrepareSelectedPartyMarkerReferences();
+        AutoPrepareCharacterMarkReferences();
+        CachePanelButtonComponents();
         CacheCharBtnOriginalScale();
         AutoPrepareViewedCharacterBorder();
         CacheViewedCharacterOriginalValues();
@@ -105,7 +104,10 @@ public class CharBtn : MonoBehaviour,
 
     private void OnEnable()
     {
+        AutoPrepareCharacterMarkReferences();
+        CachePanelButtonComponents();
         CacheCharBtnOriginalScale();
+        RefreshInteractionAvailability();
         SetCharBtnHover(false);
         AutoPrepareViewedCharacterBorder();
         CacheViewedCharacterOriginalValues();
@@ -137,6 +139,7 @@ public class CharBtn : MonoBehaviour,
     private void OnValidate()
     {
         AutoPrepareSelectedPartyMarkerReferences();
+        AutoPrepareCharacterMarkReferences();
         AutoPrepareViewedCharacterBorder();
     }
 #endif
@@ -147,6 +150,7 @@ public class CharBtn : MonoBehaviour,
 
         SetCenter(false);
         SetVisible(false);
+        RefreshInteractionAvailability();
         RefreshSelectedPartyMarker();
     }
 
@@ -157,6 +161,9 @@ public class CharBtn : MonoBehaviour,
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (!IsInteractionAvailable())
+            return;
+
         SetCharBtnHover(true);
 
         if (charPick != null)
@@ -165,6 +172,9 @@ public class CharBtn : MonoBehaviour,
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        if (!IsInteractionAvailable())
+            return;
+
         SetCharBtnHover(false);
 
         if (charPick != null)
@@ -593,6 +603,9 @@ public class CharBtn : MonoBehaviour,
 
     private void SetCharBtnHover(bool hovered)
     {
+        if (!IsInteractionAvailable())
+            hovered = false;
+
         CacheCharBtnOriginalScale();
 
         if (rect == null)
@@ -604,7 +617,7 @@ public class CharBtn : MonoBehaviour,
             charBtnHoverCoroutine = null;
         }
 
-        float scaleMultiplier = hovered ? Mathf.Max(0f, charBtnHoverScale) : 1f;
+        float scaleMultiplier = (hovered || isViewedCharacter) ? Mathf.Max(0f, charBtnHoverScale) : 1f;
         Vector3 targetScale = charBtnOriginalScale * scaleMultiplier;
 
         if (!isActiveAndEnabled || charBtnHoverTransitionDuration <= 0f)
@@ -680,11 +693,10 @@ public class CharBtn : MonoBehaviour,
         bool isRemoteViewed,
         bool immediate = false)
     {
-        // 현재 보고 있는 캐릭터는 정보 갱신 상태로만 사용합니다.
-        // CharacterSelect의 시각 표현은 버튼 색/테두리/전체 스케일을 변경하지 않습니다.
-        // 파티 등록 상태는 SelectedPartyMarker, 마우스 호버는 CharBtn 전체 스케일로만 표시합니다.
         isViewedCharacter = isLocalViewed;
         isRemoteViewedCharacter = !isLocalViewed && isRemoteViewed;
+
+        ApplyViewedCharacterVisualState(immediate);
     }
 
     public void RefreshNetworkViewedCharacterState(bool immediate = false)
@@ -706,40 +718,145 @@ public class CharBtn : MonoBehaviour,
 
 
     /// <summary>
-    /// 현재 보고 있는 캐릭터 버튼의 선택 색상을 EventSystem과 별개로 유지한다.
-    /// 선택된 버튼은 Normal Color를 기존 Selected Color로 사용하므로,
-    /// 다른 UI를 눌러도 선택 색상이 꺼지지 않는다.
+    /// 현재 보고 있는 캐릭터 버튼은 확대 상태와 흰색을 유지합니다.
+    /// 선택되지 않은 버튼은 기본 색상(#A9B1BE)과 원래 스케일로 돌아갑니다.
     /// </summary>
-    private void ApplyViewedCharacterButtonColor(bool isViewed)
+    private void ApplyViewedCharacterVisualState(bool immediate)
     {
-        if (characterButton == null)
-            characterButton = GetComponent<Button>();
+        ApplyViewedCharacterMarkColor(isViewedCharacter);
 
-        if (characterButton == null)
+        CacheCharBtnOriginalScale();
+
+        if (rect == null)
             return;
 
-        if (!hasOriginalButtonColors)
+        if (charBtnHoverCoroutine != null)
         {
-            originalButtonColors = characterButton.colors;
-            hasOriginalButtonColors = true;
+            StopCoroutine(charBtnHoverCoroutine);
+            charBtnHoverCoroutine = null;
         }
 
-        ColorBlock colors = originalButtonColors;
+        float scaleMultiplier = isViewedCharacter ? Mathf.Max(0f, charBtnHoverScale) : 1f;
+        Vector3 targetScale = charBtnOriginalScale * scaleMultiplier;
 
-        if (isViewed)
-            colors.normalColor = ViewedCharacterSelectedColor;
+        if (immediate || !isActiveAndEnabled || charBtnHoverTransitionDuration <= 0f)
+        {
+            rect.localScale = targetScale;
+            return;
+        }
 
-        characterButton.colors = colors;
+        charBtnHoverCoroutine = StartCoroutine(AnimateCharBtnHoverRoutine(targetScale));
+    }
 
-        Graphic targetGraphic = characterButton.targetGraphic;
+    private void AutoPrepareCharacterMarkReferences()
+    {
+        Transform jobmark = transform.Find("jobmark");
 
+        if (jobmarkImage == null && jobmark != null)
+            jobmarkImage = jobmark.GetComponent<Image>();
+
+        if (jobmarkInImage == null && jobmark != null)
+        {
+            Transform jobmarkIn = jobmark.Find("jobmark_in");
+
+            if (jobmarkIn != null)
+                jobmarkInImage = jobmarkIn.GetComponent<Image>();
+        }
+    }
+
+    private void ApplyViewedCharacterMarkColor(bool isViewed)
+    {
+        AutoPrepareCharacterMarkReferences();
+
+        Color targetRgb = !IsInteractionAvailable()
+            ? CharacterMarkLockedColor
+            : (isViewed ? CharacterMarkSelectedColor : CharacterMarkDefaultColor);
+
+        ApplyRgbPreservingAlpha(jobmarkImage, targetRgb);
+        ApplyRgbPreservingAlpha(jobmarkInImage, targetRgb);
+    }
+
+    public void RefreshInteractionAvailability()
+    {
+        bool available = IsInteractionAvailable();
+
+        CachePanelButtonComponents();
+
+        if (panelButtonComponents != null && panelButtonOriginalEnabledStates != null)
+        {
+            int count = Mathf.Min(panelButtonComponents.Length, panelButtonOriginalEnabledStates.Length);
+
+            for (int i = 0; i < count; i++)
+            {
+                UIPanelButton panelButton = panelButtonComponents[i];
+                if (panelButton == null)
+                    continue;
+
+                panelButton.enabled = available && panelButtonOriginalEnabledStates[i];
+            }
+        }
+
+        if (!available)
+        {
+            if (charBtnHoverCoroutine != null)
+            {
+                StopCoroutine(charBtnHoverCoroutine);
+                charBtnHoverCoroutine = null;
+            }
+
+            CacheCharBtnOriginalScale();
+            if (rect != null)
+                rect.localScale = charBtnOriginalScale;
+        }
+
+        ApplyViewedCharacterMarkColor(isViewedCharacter);
+    }
+
+    private bool IsInteractionAvailable()
+    {
+        if (isLocked || string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        if (charPick != null)
+            return charPick.CanInteractWithButton(this);
+
+        if (DataManager.Instance == null || DataManager.Instance.CharacterDatabase == null)
+            return true;
+
+        if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out var master) || master == null)
+            return false;
+
+        if (master.IsDefaultProvided)
+            return true;
+
+        if (DataManager.Instance.CharacterRuntimeStore == null)
+            return false;
+
+        if (!DataManager.Instance.CharacterRuntimeStore.TryGet(characterId, out var runtime) || runtime == null)
+            return false;
+
+        return runtime.IsUnlocked;
+    }
+
+    private void CachePanelButtonComponents()
+    {
+        if (panelButtonComponents != null && panelButtonOriginalEnabledStates != null)
+            return;
+
+        panelButtonComponents = GetComponentsInChildren<UIPanelButton>(true);
+        panelButtonOriginalEnabledStates = new bool[panelButtonComponents.Length];
+
+        for (int i = 0; i < panelButtonComponents.Length; i++)
+            panelButtonOriginalEnabledStates[i] = panelButtonComponents[i] != null && panelButtonComponents[i].enabled;
+    }
+
+    private static void ApplyRgbPreservingAlpha(Graphic targetGraphic, Color targetRgb)
+    {
         if (targetGraphic == null)
-            targetGraphic = characterButton.GetComponent<Graphic>();
+            return;
 
-        if (targetGraphic != null)
-            targetGraphic.color = isViewed
-                ? ViewedCharacterSelectedColor
-                : originalButtonColors.normalColor;
+        Color current = targetGraphic.color;
+        targetGraphic.color = new Color(targetRgb.r, targetRgb.g, targetRgb.b, current.a);
     }
 
     private IEnumerator AnimateViewedCharacterRoutine(bool isViewed, Vector3 targetScale)

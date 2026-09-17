@@ -5,8 +5,6 @@ namespace Relic.Gameplay.Data
     public static class InitialDefaultPartySetup
     {
         private const string DefaultMoveSkillId = "S_Move_1";
-        private const int FirstDefaultSpawnGridIndex = 6;
-
         private static readonly string[] DefaultCharacterIds =
         {
             "Char_01",
@@ -55,10 +53,6 @@ namespace Relic.Gameplay.Data
                     master == null)
                     return false;
 
-                int spawnGridIndex = FirstDefaultSpawnGridIndex + i;
-                if (partyStore.IsGridUsed(spawnGridIndex))
-                    return false;
-
                 masters[i] = master;
             }
 
@@ -72,12 +66,6 @@ namespace Relic.Gameplay.Data
                     runtime = CreateRuntime(master, relicDatabase);
                     characterStore.AddOrUpdate(runtime);
                 }
-
-                if (!partyStore.SetSlot(
-                        i,
-                        master.CharacterId,
-                        FirstDefaultSpawnGridIndex + i))
-                    return false;
             }
 
             return true;
