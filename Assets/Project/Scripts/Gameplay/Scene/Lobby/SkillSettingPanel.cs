@@ -905,7 +905,27 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         SetRuntimeSkillId(slotIndex, skill.SkillId);
         DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(currentRuntimeData);
-        RefreshAllDirectSkillButtons();
+        RefreshDirectSkillSelection(slotIndex);
+    }
+
+    private void RefreshDirectSkillSelection(int slotIndex)
+    {
+        if (!IsDirectSelectionLayout)
+            return;
+
+        if (slotIndex < 0 || slotIndex >= SetupSkillSlotCount)
+            return;
+
+        string equippedId = GetRuntimeSkillId(slotIndex);
+        SkillIconButton[] buttons = GetSkillIconButtons(slotIndex);
+
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            SkillMasterData data = buttons[i] != null ? buttons[i].CurrentSkillData : null;
+            bool selected = data != null && !string.IsNullOrWhiteSpace(equippedId) &&
+                string.Equals(data.SkillId, equippedId, StringComparison.OrdinalIgnoreCase);
+            buttons[i]?.SetEquippedSelected(selected);
+        }
     }
 
     private void RefreshAllDirectSkillButtons()

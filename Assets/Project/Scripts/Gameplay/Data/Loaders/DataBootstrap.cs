@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -242,10 +243,30 @@ namespace Relic.Gameplay.Data
             foreach (var character in characters)
             {
                 if (characterIconDatabase.TryGetIcon(character.CharacterId, out Sprite icon))
+                {
                     character.Icon = icon;
-                else
+                    continue;
+                }
+
+                // Char_05부터는 현재 제작/해금 예정 캐릭터가 포함될 수 있으므로
+                // 아이콘이 아직 등록되지 않은 상태 자체를 오류성 경고로 취급하지 않습니다.
+                // 기본 제공 캐릭터(Char_01~Char_04)의 누락은 기존처럼 경고합니다.
+                if (!IsOptionalCharacterIcon(character.CharacterId))
                     Debug.LogWarning($"[DataBootstrap] CharacterIcon 없음: {character.CharacterId}");
             }
+        }
+
+        private static bool IsOptionalCharacterIcon(string characterId)
+        {
+            if (string.IsNullOrWhiteSpace(characterId))
+                return false;
+
+            const string prefix = "Char_";
+            if (!characterId.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            string numberText = characterId.Substring(prefix.Length);
+            return int.TryParse(numberText, out int characterNumber) && characterNumber >= 5;
         }
     }
 }

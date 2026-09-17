@@ -35,34 +35,21 @@ public class RuneSettingPanel : MonoBehaviour
     [SerializeField] private Color buyButtonInactiveColor = new Color(0.6f, 0.6f, 0.6f, 1f);
     [SerializeField] private Color buyButtonReadyColor = Color.white;
 
-    [Header("Rune Icon Select Panel Move Effect")]
-    [Tooltip("룬 선택 패널이 닫혀 있을 때의 X 좌표입니다.")]
-    [SerializeField] private float runeSelectPanelHiddenX = 1200f;
-    [Tooltip("룬 탭에서 표시될 때의 X 좌표입니다.")]
-    [SerializeField] private float runeSelectPanelShownX = 770f;
-    [Tooltip("룬 선택 패널이 목표 위치까지 이동하는 시간입니다.")]
-    [SerializeField] private float runeSelectPanelMoveDuration = 0.25f;
+    private GameObject sharedInfoArea;
+    private TMP_Text runeInfoTitleText;
+    private TMP_Text runeInfoEffectText;
+    private TMP_Text runeInfoRarityText;
+    private SkillSettingPanel sharedSkillSettingPanel;
+    private string emptyRuneInfoTitle;
+    private string emptyRuneInfoEffect;
 
-    [Header("Shared Info Area")]
-    [SerializeField] private GameObject sharedInfoArea;
-    [SerializeField] private TMP_Text runeInfoTitleText;
-    [SerializeField] private TMP_Text runeInfoEffectText;
-    [SerializeField] private TMP_Text runeInfoRarityText;
-    [Tooltip("같은 InfoArea를 사용하는 SkillSettingPanel입니다. 비어 있으면 자동으로 찾습니다.")]
-    [SerializeField] private SkillSettingPanel sharedSkillSettingPanel;
-    [SerializeField] private string emptyRuneInfoTitle;
-    [SerializeField, TextArea] private string emptyRuneInfoEffect;
+    private Color commonRarityColor = Color.white;
+    private Color rareRarityColor = Color.white;
+    private Color epicRarityColor = Color.white;
+    private Color uniqueRarityColor = Color.white;
+    private Color exclusiveRarityColor = new Color(1f, 0.82f, 0.2f, 1f);
 
-    [Header("Info Rarity Colors")]
-    [SerializeField] private Color commonRarityColor = Color.white;
-    [SerializeField] private Color rareRarityColor = Color.white;
-    [SerializeField] private Color epicRarityColor = Color.white;
-    [SerializeField] private Color uniqueRarityColor = Color.white;
-    [SerializeField] private Color exclusiveRarityColor = new Color(1f, 0.82f, 0.2f, 1f);
-
-    [Header("Info Effect Value Color")]
-    [Tooltip("도감과 동일하게 설명 안의 ValueRate/CountRate 치환 수치에 적용할 강조 색상입니다.")]
-    [SerializeField] private Color valueHighlightColor = Color.yellow;
+    private Color valueHighlightColor = Color.yellow;
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
@@ -74,16 +61,21 @@ public class RuneSettingPanel : MonoBehaviour
     private CharacterRuntimeData currentRuntimeData;
 
     private bool runeSelectPanelAllowed = true;
-    private RectTransform runeIconSelectPanelRect;
-    private Coroutine runeSelectPanelMoveCoroutine;
     private RuneSlotButton selectedRuneSlot;
     private RuneData selectedPurchaseRune;
     private RuneData currentDisplayedRune;
 
-    public bool IsDisplayingRuneInfo => currentDisplayedRune != null;
+    // RuneIconSelectPanel <-> RuneSettingPanel drag & drop state
+    private RuneData draggedRune;
+    private RuneSlotButton draggedSourceSlot;
+    private RectTransform runeDragVisual;
+    private Canvas runeDragCanvas;
+    private bool dragDroppedOnSlot;
+
+    public bool IsDisplayingRuneInfo => false;
 
     public bool IsRuneInteractionEnabled => runeSelectPanelAllowed;
-    public bool ShouldClearInfoOnHoverExit => !runeSelectPanelAllowed;
+    public bool ShouldClearInfoOnHoverExit => false;
 
     public event Action OnRuneChanged;
 
@@ -94,15 +86,9 @@ public class RuneSettingPanel : MonoBehaviour
 
     private void Awake()
     {
-        MigrateRuneSelectPanelMoveValues();
-
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
-        AutoBindRuneInfoTexts();
-        EnsureDynamicInfoTextOwnership();
-        BindSharedSkillSettingPanel();
-        BindRuneSelectPanelRect();
         BindDynamicRuneListLayout();
         ClearRuneInfo();
 
@@ -111,42 +97,19 @@ public class RuneSettingPanel : MonoBehaviour
         BindCommonRunePurchaseUI();
         ApplyDefaultLockedState();
 
-        // 탭 전환 시 활성화/비활성화하지 않고 X 좌표 이동만 사용한다.
+        // 새 CharacterSettingPanel에서는 룬 영역이 고정 배치되므로 항상 활성 상태만 유지한다.
         SetRuneSelectPanelActive();
-        SetRuneSelectPanelXImmediate(runeSelectPanelHiddenX);
     }
 
-
-    private void OnValidate()
-    {
-        MigrateRuneSelectPanelMoveValues();
-    }
-
-    private void MigrateRuneSelectPanelMoveValues()
-    {
-        if (Mathf.Approximately(runeSelectPanelHiddenX, 1200f) &&
-            Mathf.Approximately(runeSelectPanelShownX, 790f))
-        {
-            runeSelectPanelHiddenX = 1200f;
-            runeSelectPanelShownX = 770f;
-        }
-    }
 
     private void OnEnable()
     {
-        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
-        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
-        AutoBindRuneInfoTexts();
-        EnsureDynamicInfoTextOwnership();
-        BindSharedSkillSettingPanel();
-        BindRuneSelectPanelRect();
         BindDynamicRuneListLayout();
         BindCommonRunePurchaseUI();
         SetRuneSelectPanelActive();
-        MoveRuneSelectPanel(runeSelectPanelAllowed);
 
         if (currentRuntimeData != null)
             RefreshCurrentRuneView();
@@ -155,31 +118,6 @@ public class RuneSettingPanel : MonoBehaviour
 
     }
 
-
-    private void OnDisable()
-    {
-        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
-        if (runeSelectPanelMoveCoroutine != null)
-        {
-            StopCoroutine(runeSelectPanelMoveCoroutine);
-            runeSelectPanelMoveCoroutine = null;
-        }
-    }
-
-    private void OnLocaleChanged(Locale _)
-    {
-        if (currentDisplayedRune != null)
-            ShowRuneInfo(currentDisplayedRune);
-    }
-
-    private void LateUpdate()
-    {
-        // 스킬에서 룬으로 빠르게 이동할 때 늦게 실행된 스킬 호버가
-        // TypeText 같은 스킬 전용 오브젝트를 다시 켜는 경우가 있습니다.
-        // 룬을 호버하는 동안에는 매 프레임 룬 전용 표시 상태를 유지합니다.
-        if (LobbyInfoHoverState.IsRuneHovered)
-            HideSkillOnlyInfoObjects();
-    }
 
     private void InitRuneSlots()
     {
@@ -250,102 +188,21 @@ public class RuneSettingPanel : MonoBehaviour
 
     public void SetRuneSelectPanelEnabledForTab(bool enabled)
     {
-        if (HasDynamicRuneListLayout())
-        {
-            runeSelectPanelAllowed = true;
-            SetRuneSelectPanelActive();
-            return;
-        }
-
-        runeSelectPanelAllowed = enabled;
-
-        if (!enabled)
-        {
-            selectedRuneSlot = null;
-            ClearSelectedPurchaseRune();
-            ClearRuneInfo();
-            SetRuneSelectPanelVisible(false);
-            return;
-        }
-
-        // 룬 탭에서는 기존처럼 룬 선택 목록을 표시한다.
-        SetRuneSelectPanelVisible(true);
+        // 현재 CharacterSettingPanel에서는 탭 전환으로 룬 영역을 숨기거나 이동하지 않는다.
+        runeSelectPanelAllowed = true;
+        SetRuneSelectPanelActive();
     }
 
     public void SetRuneSelectPanelVisible(bool visible)
     {
-        if (HasDynamicRuneListLayout())
-        {
-            SetRuneSelectPanelActive();
-            return;
-        }
-
-        MoveRuneSelectPanel(runeSelectPanelAllowed && visible);
-    }
-
-    private void BindRuneSelectPanelRect()
-    {
-        if (runeIconSelectPanelRect != null)
-            return;
-
-        if (runeIconSelectPanel != null)
-            runeIconSelectPanelRect = runeIconSelectPanel.transform as RectTransform;
+        // 호환용 API. 룬 목록은 고정 배치이므로 위치/활성 상태를 변경하지 않는다.
+        SetRuneSelectPanelActive();
     }
 
     private void SetRuneSelectPanelActive()
     {
         if (runeIconSelectPanel != null && !runeIconSelectPanel.activeSelf)
             runeIconSelectPanel.SetActive(true);
-    }
-
-    private void MoveRuneSelectPanel(bool show)
-    {
-        BindRuneSelectPanelRect();
-        SetRuneSelectPanelActive();
-
-        if (runeIconSelectPanelRect == null)
-            return;
-
-        if (runeSelectPanelMoveCoroutine != null)
-            StopCoroutine(runeSelectPanelMoveCoroutine);
-
-        float targetX = show ? runeSelectPanelShownX : runeSelectPanelHiddenX;
-        runeSelectPanelMoveCoroutine = StartCoroutine(MoveRuneSelectPanelRoutine(targetX));
-    }
-
-    private IEnumerator MoveRuneSelectPanelRoutine(float targetX)
-    {
-        Vector2 startPosition = runeIconSelectPanelRect.anchoredPosition;
-        float duration = Mathf.Max(0.01f, runeSelectPanelMoveDuration);
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            float easedT = 1f - Mathf.Pow(1f - t, 3f);
-
-            Vector2 position = runeIconSelectPanelRect.anchoredPosition;
-            position.x = Mathf.Lerp(startPosition.x, targetX, easedT);
-            runeIconSelectPanelRect.anchoredPosition = position;
-
-            yield return null;
-        }
-
-        SetRuneSelectPanelXImmediate(targetX);
-        runeSelectPanelMoveCoroutine = null;
-    }
-
-    private void SetRuneSelectPanelXImmediate(float x)
-    {
-        BindRuneSelectPanelRect();
-
-        if (runeIconSelectPanelRect == null)
-            return;
-
-        Vector2 position = runeIconSelectPanelRect.anchoredPosition;
-        position.x = x;
-        runeIconSelectPanelRect.anchoredPosition = position;
     }
 
     public void OpenCharacterSetting(string characterId)
@@ -555,7 +412,9 @@ public class RuneSettingPanel : MonoBehaviour
                     int requiredLevel = GetRequiredLevelForRune(runeData);
 
                     runeIconButtons[i].SetRuneData(runeData, locked, requiredLevel);
-                    runeIconButtons[i].SetPurchaseState(false, true, false);
+                    bool isCommon = IsCommonRune(runeData);
+                    bool purchased = !isCommon || IsCommonRunePurchased(runeData);
+                    runeIconButtons[i].SetPurchaseState(isCommon, purchased, false);
                 }
                 else
                 {
@@ -590,7 +449,19 @@ public class RuneSettingPanel : MonoBehaviour
                 template = FindDeepChild(exclusiveRuneRoot, "RuneIconButtonSlot");
 
             if (template != null)
+            {
                 runeIconButtonSlotPrefab = template.GetComponent<RuneIconButton>();
+            }
+            else
+            {
+                // 새 RuneIconSelectPanel 구조에서는 Exclusive/Shared가 비어 있어도
+                // 기존에 연결되어 있던 RuneIconButton 중 하나를 슬롯 템플릿으로 재사용합니다.
+                // 따라서 프리팹 참조를 다시 지정하지 않아도 목록이 새 Root 아래에 생성됩니다.
+                runeIconButtonSlotPrefab = GetLegacyRuneButtonTemplate();
+
+                if (runeIconButtonSlotPrefab != null)
+                    HideLegacyRuneIconButtons();
+            }
         }
 
         if (runeIconButtonSlotPrefab != null &&
@@ -598,6 +469,41 @@ public class RuneSettingPanel : MonoBehaviour
              runeIconButtonSlotPrefab.transform.parent == exclusiveRuneRoot))
         {
             runeIconButtonSlotPrefab.gameObject.SetActive(false);
+        }
+    }
+
+
+    private RuneIconButton GetLegacyRuneButtonTemplate()
+    {
+        if (runeIconButtons == null)
+            return null;
+
+        for (int i = 0; i < runeIconButtons.Length; i++)
+        {
+            if (runeIconButtons[i] != null)
+                return runeIconButtons[i];
+        }
+
+        return null;
+    }
+
+    private void HideLegacyRuneIconButtons()
+    {
+        if (runeIconButtons == null)
+            return;
+
+        for (int i = 0; i < runeIconButtons.Length; i++)
+        {
+            RuneIconButton button = runeIconButtons[i];
+            if (button == null)
+                continue;
+
+            // 새 Exclusive/Shared 아래에 이미 배치된 슬롯은 건드리지 않습니다.
+            Transform parent = button.transform.parent;
+            if (parent == exclusiveRuneRoot || parent == sharedRuneRoot)
+                continue;
+
+            button.gameObject.SetActive(false);
         }
     }
 
@@ -630,14 +536,15 @@ public class RuneSettingPanel : MonoBehaviour
             RuneIconButton item = Instantiate(runeIconButtonSlotPrefab, parent);
             item.name = "RuneIconButtonSlot_" + runeData.RuneId;
             item.gameObject.SetActive(true);
+            item.Init(this);
 
             bool locked = !IsCommonRune(runeData) && IsRuneLockedForCurrentState(runeData);
             int requiredLevel = GetRequiredLevelForRune(runeData);
             item.SetRuneData(runeData, locked, requiredLevel);
 
-            // 구매/등록/상세 정보 동작은 다음 단계에서 연결한다.
-            // 이번 단계에서는 목록 표시만 담당하므로 구매 선택 상태를 사용하지 않는다.
-            item.SetPurchaseState(false, true, false);
+            bool isCommon = IsCommonRune(runeData);
+            bool purchased = !isCommon || IsCommonRunePurchased(runeData);
+            item.SetPurchaseState(isCommon, purchased, false);
 
             generatedRuneIconButtons.Add(item);
         }
@@ -840,6 +747,212 @@ public class RuneSettingPanel : MonoBehaviour
         list.Add(rune);
     }
 
+    public bool TryBeginRuneDrag(RuneData runeData, RuneSlotButton sourceSlot, Image sourceImage, PointerEventData eventData)
+    {
+        if (!runeSelectPanelAllowed || currentRuntimeData == null || currentMasterData == null)
+            return false;
+
+        if (sourceSlot != null)
+        {
+            if (sourceSlot.IsLocked || sourceSlot.EquippedRune == null)
+                return false;
+
+            runeData = sourceSlot.EquippedRune;
+        }
+        else
+        {
+            if (runeData == null || IsRuneLockedForCurrentState(runeData) || !IsRuneValidForCurrentCharacter(runeData))
+                return false;
+
+            if (IsCommonRune(runeData) && IsCommonRuneEquippedByOtherCharacter(runeData))
+            {
+                ShowWarning("다른 캐릭터가 장착 중인 파편입니다.");
+                return false;
+            }
+        }
+
+        if (runeData == null || sourceImage == null || sourceImage.sprite == null)
+            return false;
+
+        ClearRuneDragState(false);
+
+        draggedRune = runeData;
+        draggedSourceSlot = sourceSlot;
+        dragDroppedOnSlot = false;
+        CreateRuneDragVisual(sourceImage);
+        UpdateRuneDrag(eventData);
+        return true;
+    }
+
+    public void UpdateRuneDrag(PointerEventData eventData)
+    {
+        if (runeDragVisual == null || runeDragCanvas == null || eventData == null)
+            return;
+
+        RectTransform canvasRect = runeDragCanvas.transform as RectTransform;
+        if (canvasRect == null)
+            return;
+
+        Camera eventCamera = runeDragCanvas.renderMode == RenderMode.ScreenSpaceOverlay
+            ? null
+            : eventData.pressEventCamera ?? runeDragCanvas.worldCamera;
+
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvasRect, eventData.position, eventCamera, out Vector2 localPoint))
+        {
+            runeDragVisual.anchoredPosition = localPoint;
+        }
+    }
+
+    public void DropDraggedRuneOnSlot(RuneSlotButton targetSlot)
+    {
+        if (draggedRune == null || targetSlot == null)
+            return;
+
+        // 슬롯 위에 놓은 경우에는 장착 성공 여부와 관계없이 '슬롯 밖 드랍'으로 처리하지 않습니다.
+        dragDroppedOnSlot = true;
+
+        if (targetSlot.IsLocked)
+        {
+            ShowRuneSlotLockedWarning(targetSlot.SlotIndex);
+            return;
+        }
+
+        RuneSlotButton sourceSlot = draggedSourceSlot ?? FindEquippedRuneSlot(draggedRune);
+        if (sourceSlot == targetSlot)
+            return;
+
+        RuneData replacedRune = targetSlot.EquippedRune;
+
+        if (sourceSlot != null)
+            sourceSlot.SetRune(replacedRune);
+
+        targetSlot.SetRune(draggedRune);
+        SaveCurrentRuneSetting();
+        RefreshRuneIconEquippedStates();
+        OnRuneChanged?.Invoke();
+    }
+
+    public void EndRuneDrag(PointerEventData eventData)
+    {
+        RuneSlotButton sourceSlot = draggedSourceSlot;
+        bool unequipByOutsideDrop = sourceSlot != null && !dragDroppedOnSlot;
+
+        ClearRuneDragState(false);
+
+        if (unequipByOutsideDrop && sourceSlot != null && sourceSlot.EquippedRune != null)
+            UnequipRuneFromSlot(sourceSlot);
+    }
+
+    private RuneSlotButton FindEquippedRuneSlot(RuneData runeData)
+    {
+        if (runeData == null || runeSlotButtons == null)
+            return null;
+
+        for (int i = 0; i < runeSlotButtons.Length; i++)
+        {
+            RuneSlotButton slot = runeSlotButtons[i];
+            if (slot == null || slot.EquippedRune == null)
+                continue;
+
+            if (string.Equals(slot.EquippedRune.RuneId, runeData.RuneId, StringComparison.OrdinalIgnoreCase))
+                return slot;
+        }
+
+        return null;
+    }
+
+    private void CreateRuneDragVisual(Image sourceImage)
+    {
+        Canvas rootCanvas = sourceImage.canvas != null
+            ? sourceImage.canvas.rootCanvas
+            : GetComponentInParent<Canvas>();
+        if (rootCanvas == null)
+            return;
+
+        // 화면에 실제로 표시 중인 IconImg 자체를 복제해 드래그 비주얼로 사용합니다.
+        // Sprite/Image를 새로 조립하지 않으므로 원본의 머티리얼, 이미지 타입,
+        // preserveAspect 등 실제 렌더링 상태를 그대로 유지할 수 있습니다.
+        GameObject dragCanvasObject = new GameObject(
+            "RuneDragCanvas",
+            typeof(RectTransform),
+            typeof(Canvas));
+
+        RectTransform dragCanvasRect = dragCanvasObject.GetComponent<RectTransform>();
+        dragCanvasRect.SetParent(rootCanvas.transform, false);
+        dragCanvasRect.anchorMin = Vector2.zero;
+        dragCanvasRect.anchorMax = Vector2.one;
+        dragCanvasRect.offsetMin = Vector2.zero;
+        dragCanvasRect.offsetMax = Vector2.zero;
+        dragCanvasRect.localScale = Vector3.one;
+        dragCanvasRect.SetAsLastSibling();
+
+        runeDragCanvas = dragCanvasObject.GetComponent<Canvas>();
+        runeDragCanvas.overrideSorting = true;
+        runeDragCanvas.sortingOrder = 9030;
+
+        GameObject dragObject = Instantiate(sourceImage.gameObject, dragCanvasRect, false);
+        dragObject.name = "RuneDragIcon";
+        dragObject.SetActive(true);
+
+        runeDragVisual = dragObject.GetComponent<RectTransform>();
+        if (runeDragVisual == null)
+        {
+            Destroy(dragObject);
+            Destroy(dragCanvasObject);
+            runeDragCanvas = null;
+            return;
+        }
+
+        runeDragVisual.anchorMin = new Vector2(0.5f, 0.5f);
+        runeDragVisual.anchorMax = new Vector2(0.5f, 0.5f);
+        runeDragVisual.pivot = new Vector2(0.5f, 0.5f);
+        runeDragVisual.anchoredPosition = Vector2.zero;
+        runeDragVisual.localRotation = Quaternion.identity;
+        runeDragVisual.localScale = Vector3.one;
+
+        Vector2 sourceSize = sourceImage.rectTransform.rect.size;
+        if (sourceSize.x <= 1f || sourceSize.y <= 1f)
+            sourceSize = new Vector2(100f, 100f);
+        runeDragVisual.sizeDelta = sourceSize;
+
+        // 드래그 복제본과 그 자식은 드랍 판정을 가로채면 안 됩니다.
+        Graphic[] graphics = dragObject.GetComponentsInChildren<Graphic>(true);
+        for (int i = 0; i < graphics.Length; i++)
+        {
+            if (graphics[i] != null)
+                graphics[i].raycastTarget = false;
+        }
+
+        CanvasGroup canvasGroup = dragObject.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = dragObject.AddComponent<CanvasGroup>();
+        canvasGroup.alpha = 1f;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
+        canvasGroup.ignoreParentGroups = true;
+
+        runeDragVisual.SetAsLastSibling();
+    }
+
+    private void ClearRuneDragState(bool keepData)
+    {
+        if (runeDragCanvas != null)
+            Destroy(runeDragCanvas.gameObject);
+        else if (runeDragVisual != null)
+            Destroy(runeDragVisual.gameObject);
+
+        runeDragVisual = null;
+        runeDragCanvas = null;
+
+        if (keepData)
+            return;
+
+        draggedRune = null;
+        draggedSourceSlot = null;
+        dragDroppedOnSlot = false;
+    }
+
     public void TryEquipRuneToFirstEmptySlot(RuneData runeData)
     {
         if (currentRuntimeData == null || currentMasterData == null)
@@ -960,19 +1073,6 @@ public class RuneSettingPanel : MonoBehaviour
 
     private void RefreshRuneIconPurchaseStates()
     {
-        if (HasDynamicRuneListLayout())
-        {
-            if (runeIconButtons == null)
-                return;
-
-            for (int i = 0; i < runeIconButtons.Length; i++)
-            {
-                if (runeIconButtons[i] != null)
-                    runeIconButtons[i].SetPurchaseState(false, true, false);
-            }
-            return;
-        }
-
         if (runeIconButtons == null)
             return;
 
@@ -1577,50 +1677,12 @@ public class RuneSettingPanel : MonoBehaviour
 
     public bool ShowFirstOwnedRuneInfo()
     {
-        RuneData[] candidates = GetCurrentRuneCandidates();
-
-        for (int i = 0; i < candidates.Length; i++)
-        {
-            RuneData runeData = candidates[i];
-
-            if (runeData == null || IsRuneLockedForCurrentState(runeData))
-                continue;
-
-            ShowRuneInfo(runeData);
-            return true;
-        }
-
         return false;
     }
 
     public void ShowRuneSlotInfo(int slotIndex, RuneData runeData, bool isLocked)
     {
-        LobbyInfoHoverState.NotifyRuneInfoShown();
-        AutoBindRuneInfoTexts();
-        EnsureDynamicInfoTextOwnership();
-        HideSkillOnlyInfoObjects();
-
-        if (isLocked)
-        {
-            int requiredLevel = GetRuneSlotRequiredLevel(slotIndex);
-
-            if (runeInfoTitleText != null)
-                runeInfoTitleText.text = string.Empty;
-
-            if (runeInfoRarityText != null)
-                runeInfoRarityText.text = string.Empty;
-
-            if (runeInfoEffectText != null)
-                runeInfoEffectText.text = requiredLevel > 0
-                    ? string.Format(
-                        "캐릭터 {0}레벨에 해금되는 파편 슬롯이다.",
-                        requiredLevel)
-                    : "아직 잠겨있는 파편 슬롯이다.";
-
-            return;
-        }
-
-        ShowRuneInfo(runeData);
+        // 룬 상세 정보 UI는 다음 단계에서 새 구조로 연결한다.
     }
 
     private void ShowRuneSlotLockedWarning(int slotIndex)
@@ -1643,84 +1705,28 @@ public class RuneSettingPanel : MonoBehaviour
 
     public void ShowRuneInfo(RuneData runeData)
     {
-        LobbyInfoHoverState.NotifyRuneInfoShown();
-        AutoBindRuneInfoTexts();
-        EnsureDynamicInfoTextOwnership();
-        HideSkillOnlyInfoObjects();
-
-        if (runeData == null)
-        {
-            ClearRuneInfo();
-            return;
-        }
-
-        if (runeInfoTitleText != null)
-            runeInfoTitleText.text = GameDataLocalization.RuneName(runeData);
-
-        if (runeInfoRarityText != null)
-        {
-            runeInfoRarityText.text = BuildRuneRarityText(runeData);
-            runeInfoRarityText.color = GetRuneInfoRarityColor(runeData.Rarity);
-        }
-
-        if (runeInfoEffectText != null)
-        {
-            runeInfoEffectText.richText = true;
-            runeInfoEffectText.overrideColorTags = false;
-            runeInfoEffectText.text = BuildRuneEffectText(runeData);
-        }
+        // 호환용 API. 현재 CharacterSettingPanel에는 룬 상세 정보 영역이 없다.
+        currentDisplayedRune = null;
     }
 
     public void ClearRuneInfoFromHover()
     {
-        ClearRuneInfoFromHover(LobbyInfoHoverState.CurrentVersion);
+        currentDisplayedRune = null;
     }
 
     public void ClearRuneInfoFromHover(int hoverVersion)
     {
-        StartCoroutine(ClearRuneInfoAfterHoverDelay(hoverVersion));
-    }
-
-    private IEnumerator ClearRuneInfoAfterHoverDelay(int hoverVersion)
-    {
-        yield return new WaitForSecondsRealtime(LobbyInfoHoverState.ClearDelaySeconds);
-
-        if (LobbyInfoHoverState.CanClearRuneInfo(hoverVersion))
-            ClearRuneInfo();
+        currentDisplayedRune = null;
     }
 
     public void SetEmptyInfoText(string title, string effect)
     {
-        emptyRuneInfoTitle = title ?? string.Empty;
-        emptyRuneInfoEffect = effect ?? string.Empty;
-        ClearRuneInfo();
+        // 룬 상세 정보 UI는 다음 단계에서 새 구조로 연결한다.
     }
 
     private void ClearRuneInfo()
     {
         currentDisplayedRune = null;
-        AutoBindRuneInfoTexts();
-        HideSkillOnlyInfoObjects();
-
-        if (runeInfoTitleText != null)
-            runeInfoTitleText.text = string.IsNullOrWhiteSpace(emptyRuneInfoTitle)
-                ? GameLocalization.Get(LocalizationKeys.Rune.InfoTitle)
-                : emptyRuneInfoTitle;
-
-        if (runeInfoRarityText != null)
-        {
-            runeInfoRarityText.text = string.Empty;
-            runeInfoRarityText.color = commonRarityColor;
-        }
-
-        if (runeInfoEffectText != null)
-        {
-            runeInfoEffectText.richText = true;
-            runeInfoEffectText.overrideColorTags = false;
-            runeInfoEffectText.text = string.IsNullOrWhiteSpace(emptyRuneInfoEffect)
-                ? GameLocalization.Get(LocalizationKeys.Rune.InfoEmptyDescription)
-                : emptyRuneInfoEffect;
-        }
     }
 
     private void AutoBindRuneInfoTexts()

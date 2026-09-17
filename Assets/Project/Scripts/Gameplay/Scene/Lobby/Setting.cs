@@ -1,5 +1,6 @@
 using Relic.Gameplay.Data;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -82,14 +83,6 @@ public class Setting : MonoBehaviour
     [Header("Shared Info Area")]
     [SerializeField, HideInInspector] private RectTransform infoArea;
 
-    [Header("Character Preview Canvas")]
-    [Tooltip("CharacterSettingPanel과 함께 켜고 끌 CharacterPreviewCanvas입니다. 비어 있으면 이름으로 자동 탐색합니다.")]
-    [SerializeField] private Canvas characterPreviewCanvas;
-
-    [Header("Character Setting Fade")]
-    [Tooltip("CharacterSettingPanel이 부드럽게 나타나고 사라지는 시간입니다.")]
-    [SerializeField] private float characterSettingFadeDuration = 0.18f;
-
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
 
@@ -113,24 +106,21 @@ public class Setting : MonoBehaviour
     private CharacterSettingTabButtonScaleEffect skillButtonScaleEffect;
     private CharacterSettingTabButtonScaleEffect runeButtonScaleEffect;
     private Coroutine areaMoveCoroutine;
+    [Header("Character Setting Fade")]
+    [SerializeField] private float characterSettingFadeDuration = 0.18f;
+
     private CanvasGroup characterSettingCanvasGroup;
+    private Transform profileGradtionTransform;
+    private readonly List<CanvasGroup> characterSettingFadeTargets = new List<CanvasGroup>();
     private Coroutine characterSettingFadeCoroutine;
     private bool characterSettingClosing;
-
-    private bool characterPreviewCanvasStateCached;
-    private bool characterPreviewOriginalOverrideSorting;
-    private int characterPreviewOriginalSortingOrder;
-    private int characterPreviewOriginalSortingLayerId;
-    private RenderMode characterPreviewOriginalRenderMode;
-    private Camera characterPreviewOriginalWorldCamera;
-    private float characterPreviewOriginalPlaneDistance;
-    private int characterPreviewOriginalTargetDisplay;
 
     private void Awake()
     {
         BindCharacterInfoTextIfNeeded();
         BindInfoAreaIfNeeded();
         BindSkillSettingPanelIfNeeded();
+        BindProfileGradtionIfNeeded();
 
         // 탭 전환 중에도 오브젝트가 꺼지지 않도록 두 영역은 항상 활성화한다.
         if (skillArea != null)
@@ -206,9 +196,6 @@ public class Setting : MonoBehaviour
         LobbyPositionSharedModalBackground.RestoreAfterReadyPanel();
         LobbyEquipPanelUI.TryCloseOpenReadyPanel();
 
-        // CharacterPreviewCanvas는 CharacterSettingPanel과 별도 오브젝트이므로
-        // BackgroundPanel 바로 위, CharacterSettingPanel 바로 아래에 배치합니다.
-        ShowCharacterPreviewCanvas();
         PlayCharacterSettingFadeIn();
 
         if (pendingPartyIndex < 0)
@@ -270,10 +257,6 @@ public class Setting : MonoBehaviour
         LobbyPositionSharedModalBackground.HideForOwner(this);
         LobbyPositionModalInputBlocker.Unblock(this);
 
-        // CharacterSettingPanel이 닫히면 별도 Canvas에 생성된 캐릭터 이미지도
-        // 즉시 보이지 않도록 CharacterPreviewCanvas 전체를 함께 끕니다.
-        HideCharacterPreviewCanvas();
-
         if (areaMoveCoroutine != null)
         {
             StopCoroutine(areaMoveCoroutine);
@@ -298,8 +281,68 @@ public class Setting : MonoBehaviour
         characterSettingFadeCoroutine = StartCoroutine(FadeOutAndCloseCharacterSetting());
     }
 
+    private void BindProfileGradtionIfNeeded()
+    {
+        if (profileGradtionTransform != null)
+            return;
+
+        profileGradtionTransform = transform.Find("Profile_Area/Profile/Gradtion");
+    }
+
+    /// <summary>
+    /// CharacterSettingPanel 루트 자체는 페이드하지 않고, Gradtion으로 이어지는 경로의
+    /// 형제 가지들만 CanvasGroup으로 묶습니다. 이렇게 하면 Gradtion은 처음부터 그대로
+    /// 보이고 나머지 UI만 부드럽게 나타나고 사라집니다.
+    /// </summary>
+    private void BuildCharacterSettingFadeTargets()
+    {
+        BindProfileGradtionIfNeeded();
+        characterSettingFadeTargets.Clear();
+
+        if (profileGradtionTransform == null)
+        {
+            AddCharacterSettingFadeTarget(transform);
+            return;
+        }
+
+        Transform current = profileGradtionTransform;
+        while (current != null && current != transform)
+        {
+            Transform parent = current.parent;
+            if (parent == null)
+                break;
+
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform sibling = parent.GetChild(i);
+                if (sibling == current)
+                    continue;
+
+                AddCharacterSettingFadeTarget(sibling);
+            }
+
+            current = parent;
+        }
+    }
+
+    private void AddCharacterSettingFadeTarget(Transform target)
+    {
+        if (target == null)
+            return;
+
+        CanvasGroup group = target.GetComponent<CanvasGroup>();
+        if (group == null)
+            group = target.gameObject.AddComponent<CanvasGroup>();
+
+        if (!characterSettingFadeTargets.Contains(group))
+            characterSettingFadeTargets.Add(group);
+    }
+
     private void PrepareCharacterSettingFade()
     {
+        BindProfileGradtionIfNeeded();
+        BuildCharacterSettingFadeTargets();
+
         if (characterSettingCanvasGroup == null)
         {
             characterSettingCanvasGroup = GetComponent<CanvasGroup>();
@@ -314,9 +357,17 @@ public class Setting : MonoBehaviour
         }
 
         characterSettingClosing = false;
-        characterSettingCanvasGroup.alpha = 0f;
+
+        // 루트 CanvasGroup은 입력 차단에만 사용합니다. 알파를 변경하면 Gradtion도 같이 페이드됩니다.
+        characterSettingCanvasGroup.alpha = 1f;
         characterSettingCanvasGroup.interactable = false;
         characterSettingCanvasGroup.blocksRaycasts = false;
+
+        for (int i = 0; i < characterSettingFadeTargets.Count; i++)
+        {
+            if (characterSettingFadeTargets[i] != null)
+                characterSettingFadeTargets[i].alpha = 0f;
+        }
     }
 
     private void PlayCharacterSettingFadeIn()
@@ -324,7 +375,7 @@ public class Setting : MonoBehaviour
         if (characterSettingCanvasGroup == null)
             PrepareCharacterSettingFade();
 
-        characterSettingFadeCoroutine = StartCoroutine(FadeCharacterSettingCanvasGroup(1f, true));
+        characterSettingFadeCoroutine = StartCoroutine(FadeCharacterSettingVisuals(1f, true));
     }
 
     private IEnumerator FadeOutAndCloseCharacterSetting()
@@ -335,24 +386,30 @@ public class Setting : MonoBehaviour
         characterSettingCanvasGroup.interactable = false;
         characterSettingCanvasGroup.blocksRaycasts = false;
 
-        yield return FadeCharacterSettingCanvasGroup(0f, false);
+        yield return FadeCharacterSettingVisuals(0f, false);
         characterSettingFadeCoroutine = null;
 
         if (gameObject.activeSelf)
             gameObject.SetActive(false);
     }
 
-    private IEnumerator FadeCharacterSettingCanvasGroup(float targetAlpha, bool enableInputOnComplete)
+    private IEnumerator FadeCharacterSettingVisuals(float targetAlpha, bool enableInputOnComplete)
     {
         if (characterSettingCanvasGroup == null)
             yield break;
 
-        float startAlpha = characterSettingCanvasGroup.alpha;
+        if (characterSettingFadeTargets.Count == 0)
+            BuildCharacterSettingFadeTargets();
+
+        float[] startAlphas = new float[characterSettingFadeTargets.Count];
+        for (int i = 0; i < characterSettingFadeTargets.Count; i++)
+            startAlphas[i] = characterSettingFadeTargets[i] != null ? characterSettingFadeTargets[i].alpha : targetAlpha;
+
         float duration = Mathf.Max(0f, characterSettingFadeDuration);
 
         if (duration <= 0f)
         {
-            characterSettingCanvasGroup.alpha = targetAlpha;
+            SetCharacterSettingFadeTargetAlpha(targetAlpha);
         }
         else
         {
@@ -361,11 +418,18 @@ public class Setting : MonoBehaviour
             {
                 elapsed += Time.unscaledDeltaTime;
                 float t = Mathf.Clamp01(elapsed / duration);
-                characterSettingCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+
+                for (int i = 0; i < characterSettingFadeTargets.Count; i++)
+                {
+                    CanvasGroup group = characterSettingFadeTargets[i];
+                    if (group != null)
+                        group.alpha = Mathf.Lerp(startAlphas[i], targetAlpha, t);
+                }
+
                 yield return null;
             }
 
-            characterSettingCanvasGroup.alpha = targetAlpha;
+            SetCharacterSettingFadeTargetAlpha(targetAlpha);
         }
 
         if (enableInputOnComplete && !characterSettingClosing)
@@ -373,6 +437,16 @@ public class Setting : MonoBehaviour
             characterSettingCanvasGroup.interactable = true;
             characterSettingCanvasGroup.blocksRaycasts = true;
             characterSettingFadeCoroutine = null;
+        }
+    }
+
+    private void SetCharacterSettingFadeTargetAlpha(float alpha)
+    {
+        for (int i = 0; i < characterSettingFadeTargets.Count; i++)
+        {
+            CanvasGroup group = characterSettingFadeTargets[i];
+            if (group != null)
+                group.alpha = alpha;
         }
     }
 
@@ -384,161 +458,7 @@ public class Setting : MonoBehaviour
         characterSettingCanvasGroup.alpha = 1f;
         characterSettingCanvasGroup.interactable = true;
         characterSettingCanvasGroup.blocksRaycasts = true;
-    }
-
-    private void ShowCharacterPreviewCanvas()
-    {
-        ResolveCharacterPreviewCanvas();
-        if (characterPreviewCanvas == null)
-            return;
-
-        if (!characterPreviewCanvasStateCached)
-        {
-            characterPreviewOriginalOverrideSorting = characterPreviewCanvas.overrideSorting;
-            characterPreviewOriginalSortingOrder = characterPreviewCanvas.sortingOrder;
-            characterPreviewOriginalSortingLayerId = characterPreviewCanvas.sortingLayerID;
-            characterPreviewOriginalRenderMode = characterPreviewCanvas.renderMode;
-            characterPreviewOriginalWorldCamera = characterPreviewCanvas.worldCamera;
-            characterPreviewOriginalPlaneDistance = characterPreviewCanvas.planeDistance;
-            characterPreviewOriginalTargetDisplay = characterPreviewCanvas.targetDisplay;
-            characterPreviewCanvasStateCached = true;
-        }
-
-        Canvas settingCanvas = GetComponent<Canvas>();
-        if (settingCanvas != null)
-        {
-            Canvas referenceCanvas = settingCanvas.rootCanvas != null
-                ? settingCanvas.rootCanvas
-                : settingCanvas;
-
-            // CharacterSettingPanel이 속한 메인 UI Canvas와 같은 Render Mode를 사용해야
-            // Sorting Order가 실제로 같은 렌더링 계층에서 비교됩니다.
-            characterPreviewCanvas.renderMode = referenceCanvas.renderMode;
-            characterPreviewCanvas.targetDisplay = referenceCanvas.targetDisplay;
-
-            if (referenceCanvas.renderMode == RenderMode.ScreenSpaceCamera)
-            {
-                characterPreviewCanvas.worldCamera = referenceCanvas.worldCamera;
-                characterPreviewCanvas.planeDistance = referenceCanvas.planeDistance;
-            }
-            else if (referenceCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
-            {
-                characterPreviewCanvas.worldCamera = null;
-            }
-
-            Canvas backgroundCanvas = ResolveSharedBackgroundCanvas();
-            if (backgroundCanvas != null)
-            {
-                int previewOrder = backgroundCanvas.sortingOrder + 1;
-
-                // CharacterPreviewCanvas만 블러 배경 위로 올립니다.
-                // CharacterSettingPanel의 Canvas 정렬값은 절대 변경하지 않습니다.
-                // CharacterSettingPanel을 별도 overrideSorting Canvas로 올리면
-                // BackgroundPanel 자식인 Lobby_Icon보다 입력 우선순위가 높아져
-                // Lobby_Icon_01~05가 보이면서도 클릭되지 않는 문제가 발생합니다.
-                characterPreviewCanvas.sortingLayerID = backgroundCanvas.sortingLayerID;
-                characterPreviewCanvas.overrideSorting = true;
-                characterPreviewCanvas.sortingOrder = previewOrder;
-            }
-            else
-            {
-                // 공용 블러 Canvas를 찾지 못해도 CharacterSettingPanel 자체의 정렬값은 건드리지 않습니다.
-                // Preview만 현재 UI Canvas보다 한 단계 아래에서 표시합니다.
-                characterPreviewCanvas.sortingLayerID = settingCanvas.sortingLayerID;
-                characterPreviewCanvas.overrideSorting = true;
-                characterPreviewCanvas.sortingOrder = settingCanvas.sortingOrder - 1;
-            }
-        }
-
-        if (!characterPreviewCanvas.gameObject.activeSelf)
-            characterPreviewCanvas.gameObject.SetActive(true);
-
-        // Canvas를 다시 켠 직후 현재 선택 캐릭터 표시 상태를 즉시 갱신합니다.
-        LobbyCharacterPreviewController previewController = characterPreviewCanvas.GetComponent<LobbyCharacterPreviewController>();
-        if (previewController == null)
-            previewController = characterPreviewCanvas.GetComponentInChildren<LobbyCharacterPreviewController>(true);
-
-        previewController?.Refresh();
-    }
-
-    private void HideCharacterPreviewCanvas()
-    {
-        ResolveCharacterPreviewCanvas();
-        if (characterPreviewCanvas == null)
-            return;
-
-        if (characterPreviewCanvasStateCached)
-        {
-            characterPreviewCanvas.overrideSorting = characterPreviewOriginalOverrideSorting;
-            characterPreviewCanvas.sortingOrder = characterPreviewOriginalSortingOrder;
-            characterPreviewCanvas.sortingLayerID = characterPreviewOriginalSortingLayerId;
-            characterPreviewCanvas.renderMode = characterPreviewOriginalRenderMode;
-            characterPreviewCanvas.targetDisplay = characterPreviewOriginalTargetDisplay;
-            characterPreviewCanvas.worldCamera = characterPreviewOriginalWorldCamera;
-            characterPreviewCanvas.planeDistance = characterPreviewOriginalPlaneDistance;
-        }
-
-        if (characterPreviewCanvas.gameObject.activeSelf)
-            characterPreviewCanvas.gameObject.SetActive(false);
-    }
-
-
-    private Canvas ResolveSharedBackgroundCanvas()
-    {
-        GameObject[] objects = FindObjectsByType<GameObject>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
-
-        // BackgroundPanel 자체에 Canvas가 구성되어 있다면 그 정렬값을 최우선으로 사용합니다.
-        for (int i = 0; i < objects.Length; i++)
-        {
-            GameObject candidate = objects[i];
-            if (candidate == null || candidate.name != "BackgroundPanel")
-                continue;
-
-            Canvas canvas = candidate.GetComponent<Canvas>();
-            if (canvas != null)
-                return canvas;
-        }
-
-        // UIBlurBackgroundManager가 실제 블러 배경을 SharedBlurCanvas로 그리는 구조이므로
-        // BackgroundPanel에 별도 Canvas가 없으면 이 Canvas를 기준으로 사용합니다.
-        for (int i = 0; i < objects.Length; i++)
-        {
-            GameObject candidate = objects[i];
-            if (candidate == null || candidate.name != "SharedBlurCanvas")
-                continue;
-
-            Canvas canvas = candidate.GetComponent<Canvas>();
-            if (canvas != null)
-                return canvas;
-        }
-
-        return null;
-    }
-
-    private void ResolveCharacterPreviewCanvas()
-    {
-        if (characterPreviewCanvas != null)
-            return;
-
-        GameObject[] objects = FindObjectsByType<GameObject>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
-
-        for (int i = 0; i < objects.Length; i++)
-        {
-            GameObject candidate = objects[i];
-            if (candidate == null || candidate.name != "CharacterPreviewCanvas")
-                continue;
-
-            Canvas canvas = candidate.GetComponent<Canvas>();
-            if (canvas == null)
-                continue;
-
-            characterPreviewCanvas = canvas;
-            return;
-        }
+        SetCharacterSettingFadeTargetAlpha(1f);
     }
 
     private void OnLocaleChanged(Locale _)
@@ -983,21 +903,7 @@ public class Setting : MonoBehaviour
             characterLevelText.text = "LV. " + currentRuntimeData.Level;
 
         if (characterExpText != null)
-            characterExpText.text = "EXP " + GetDisplayedCharacterExperienceInCurrentLevel(
-                currentRuntimeData.Level,
-                currentRuntimeData.Exp);
-    }
-
-    public static int GetDisplayedCharacterExperienceInCurrentLevel(
-        int level,
-        int cumulativeExperience)
-    {
-        int safeLevel = Mathf.Max(1, level);
-        int safeCumulativeExperience = Mathf.Max(0, cumulativeExperience);
-        int levelStartExperience =
-            BattleStageClearExperienceService.GetCumulativeExperienceForLevel(safeLevel);
-
-        return Mathf.Max(0, safeCumulativeExperience - levelStartExperience);
+            characterExpText.text = "EXP " + Mathf.Max(0, currentRuntimeData.Exp);
     }
 
     private void HandleTestLevelCheatKeys()

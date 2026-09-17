@@ -1,12 +1,17 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 /// <summary>
-/// 로비의 Character1 / Character2 / Character3 이미지 오브젝트에 직접 붙여서 사용합니다.
-/// 클릭한 파티 슬롯의 캐릭터로 CharacterSettingPanel을 일반 모달 방식으로 엽니다.
+/// 로비 PartPanel의 Character1 / Character2 / Character3 슬롯에 사용합니다.
+/// 클릭한 파티 슬롯의 캐릭터로 CharacterSettingPanel을 열고,
+/// 호버 및 파티 등록 상태에 맞춰 슬롯 시각 효과를 갱신합니다.
 /// </summary>
 [DisallowMultipleComponent]
-public class LobbyPartyCharacterSettingOpenButton : MonoBehaviour, IPointerClickHandler
+public class LobbyPartyCharacterSettingOpenButton : MonoBehaviour,
+    IPointerClickHandler,
+    IPointerEnterHandler,
+    IPointerExitHandler
 {
     public enum PartySlot
     {
@@ -23,6 +28,65 @@ public class LobbyPartyCharacterSettingOpenButton : MonoBehaviour, IPointerClick
     [Header("Optional References")]
     [Tooltip("비워 두면 씬의 Setting 컴포넌트를 자동으로 찾습니다.")]
     [SerializeField] private Setting setting;
+
+    [Header("Visual")]
+    [Tooltip("비워 두면 자식 Back 이미지를 자동으로 찾습니다.")]
+    [SerializeField] private Image backImage;
+    [Tooltip("비워 두면 자식 Select_Line 또는 SelectLine 오브젝트를 자동으로 찾습니다.")]
+    [SerializeField] private GameObject selectLineRoot;
+    [SerializeField] private Color hoverBackColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
+    [Min(1f)]
+    [SerializeField] private float hoverScale = 1.1f;
+    [Min(0.01f)]
+    [SerializeField] private float scaleDuration = 0.15f;
+
+    private Vector3 baseLocalScale;
+    private Color baseBackColor;
+    private bool pointerInside;
+    private bool isRegistered;
+    private int cachedPartyIndex = -1;
+
+    private void Awake()
+    {
+        ResolveVisualReferences();
+        baseLocalScale = transform.localScale;
+        if (backImage != null)
+            baseBackColor = backImage.color;
+    }
+
+    private void OnEnable()
+    {
+        pointerInside = false;
+        ResolveVisualReferences();
+
+        if (baseLocalScale == Vector3.zero)
+            baseLocalScale = transform.localScale;
+
+        if (backImage != null && baseBackColor == default)
+            baseBackColor = backImage.color;
+
+        cachedPartyIndex = ResolvePartyIndex();
+        RefreshRegisteredState(forceVisualRefresh: true);
+        ApplyBackVisual();
+    }
+
+    private void Update()
+    {
+        RefreshRegisteredState(forceVisualRefresh: false);
+        UpdateScale();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        pointerInside = true;
+        ApplyBackVisual();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        pointerInside = false;
+        ApplyBackVisual();
+    }
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -84,9 +148,58 @@ public class LobbyPartyCharacterSettingOpenButton : MonoBehaviour, IPointerClick
         TitleManager.CloseTitleModePanelsExceptInScene(characterSettingPanel);
 
         // 패널이 비활성 상태이므로 먼저 슬롯 선택을 예약합니다.
-        // 활성화 후 Setting.OnEnable에서 BackgroundPanel을 열고, 다음 프레임에 캐릭터를 적용합니다.
+        // 활성화 후 Setting.OnEnable에서 BackgroundPanel을 열고 다음 프레임에 캐릭터를 적용합니다.
         setting.OpenPartySettingWhenActive(partyIndex);
         characterSettingPanel.SetActive(true);
+    }
+
+    private void RefreshRegisteredState(bool forceVisualRefresh)
+    {
+        if (cachedPartyIndex < 0)
+            cachedPartyIndex = ResolvePartyIndex();
+
+        bool nextRegistered = false;
+        DataManager dataManager = DataManager.Instance;
+        if (cachedPartyIndex >= 0 && dataManager != null && dataManager.PartyRuntimeStore != null)
+        {
+            string characterId = dataManager.PartyRuntimeStore.GetCharacterId(cachedPartyIndex);
+            nextRegistered = !string.IsNullOrWhiteSpace(characterId);
+        }
+
+        if (!forceVisualRefresh && nextRegistered == isRegistered)
+            return;
+
+        isRegistered = nextRegistered;
+
+        if (selectLineRoot != null)
+            selectLineRoot.SetActive(isRegistered);
+    }
+
+    private void UpdateScale()
+    {
+        Vector3 targetScale = (pointerInside || isRegistered)
+            ? baseLocalScale * hoverScale
+            : baseLocalScale;
+
+        if ((transform.localScale - targetScale).sqrMagnitude <= 0.000001f)
+        {
+            transform.localScale = targetScale;
+            return;
+        }
+
+        float duration = Mathf.Max(0.01f, scaleDuration);
+        float t = Mathf.Clamp01(Time.unscaledDeltaTime / duration);
+        transform.localScale = Vector3.Lerp(transform.localScale, targetScale, t);
+    }
+
+    private void ApplyBackVisual()
+    {
+        if (backImage == null)
+            return;
+
+        Color target = pointerInside ? hoverBackColor : baseBackColor;
+        target.a = backImage.color.a;
+        backImage.color = target;
     }
 
     private int ResolvePartyIndex()
@@ -142,5 +255,25 @@ public class LobbyPartyCharacterSettingOpenButton : MonoBehaviour, IPointerClick
     {
         if (setting == null)
             setting = FindFirstObjectByType<Setting>(FindObjectsInactive.Include);
+    }
+
+    private void ResolveVisualReferences()
+    {
+        if (backImage == null)
+        {
+            Transform back = transform.Find("Back");
+            if (back != null)
+                backImage = back.GetComponent<Image>();
+        }
+
+        if (selectLineRoot == null)
+        {
+            Transform selectLine = transform.Find("Select_Line");
+            if (selectLine == null)
+                selectLine = transform.Find("SelectLine");
+
+            if (selectLine != null)
+                selectLineRoot = selectLine.gameObject;
+        }
     }
 }

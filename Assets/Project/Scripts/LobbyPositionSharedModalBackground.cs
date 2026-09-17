@@ -150,6 +150,7 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
             return false;
 
         GameObject previousPanel = controller.activePanel;
+        object previousOwner = controller.activeOwner;
         Action closeAction = controller.activeCloseAction;
 
         // CharacterSettingPanel은 CanvasGroup 페이드아웃 후 비활성화되는 비동기 Close를 사용합니다.
@@ -163,6 +164,12 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
 
         if (asynchronousCharacterSettingClose)
         {
+            // CharacterSettingPanel은 페이드 아웃 동안 GameObject가 잠시 활성 상태로 남습니다.
+            // 새 Lobby_Icon 패널이 즉시 Open될 수 있도록 이전 입력 차단 소유권만 먼저 해제합니다.
+            // 이후 새 패널이 Block(...)을 가져가므로 늦게 실행되는 기존 OnDisable의 Unblock(this)는
+            // 새 소유권을 건드리지 않습니다.
+            LobbyPositionModalInputBlocker.Unblock(previousOwner);
+
             controller.activeOwner = null;
             controller.activePanel = null;
             controller.activeCloseAction = null;
