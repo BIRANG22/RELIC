@@ -17,50 +17,47 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     private const int SetupSkillSlotCount = 3;
 
     [Header("Skill Slots")]
-    [SerializeField] private SkillSlotButton[] skillSlotButtons;
+    [SerializeField, HideInInspector] private SkillSlotButton[] skillSlotButtons;
 
     [Header("Skill Select Panels")]
     [SerializeField] private GameObject[] skillIconSelectPanels = new GameObject[SetupSkillSlotCount];
-    [SerializeField] private float skillSelectPanelHiddenX = 235f;
-    [SerializeField] private float skillSelectPanelVisibleX = -15f;
-    [SerializeField, Min(0.01f)] private float skillSelectPanelMoveDuration = 0.2f;
+    [SerializeField, HideInInspector, Min(0.01f)] private float skillSelectPanelMoveDuration = 0.2f;
 
     [Header("Skill Select Button Count")]
-    [SerializeField] private int maxVisibleSkillIconButtonCount = 2;
     [SerializeField] private bool autoBindSkillIconButtons = true;
 
     [Header("Shared Info Area")]
     [FormerlySerializedAs("skillInfoArea")]
-    [SerializeField] private GameObject sharedInfoArea;
-    [SerializeField] private TMP_Text skillInfoTitleText;
-    [SerializeField] private TMP_Text skillInfoEffectText;
-    [SerializeField] private TMP_Text skillInfoRarityText;
-    [SerializeField] private GameObject skillInfoRangeRoot;
-    [SerializeField] private Image skillInfoRangeImage;
-    [SerializeField] private TMP_Text skillInfoCostText;
-    [SerializeField] private TMP_Text skillInfoTypeText;
-    [SerializeField] private TMP_Text skillInfoValueText;
+    [SerializeField, HideInInspector] private GameObject sharedInfoArea;
+    [SerializeField, HideInInspector] private TMP_Text skillInfoTitleText;
+    [SerializeField, HideInInspector] private TMP_Text skillInfoEffectText;
+    [SerializeField, HideInInspector] private TMP_Text skillInfoRarityText;
+    [SerializeField, HideInInspector] private GameObject skillInfoRangeRoot;
+    [SerializeField, HideInInspector] private Image skillInfoRangeImage;
+    [SerializeField, HideInInspector] private TMP_Text skillInfoCostText;
+    [SerializeField, HideInInspector] private TMP_Text skillInfoTypeText;
+    [SerializeField, HideInInspector] private TMP_Text skillInfoValueText;
 
     [Header("Info Rarity Colors")]
-    [SerializeField] private Color commonRarityColor = Color.white;
-    [SerializeField] private Color rareRarityColor = Color.white;
-    [SerializeField] private Color epicRarityColor = Color.white;
-    [SerializeField] private Color uniqueRarityColor = Color.white;
-    [SerializeField] private Color exclusiveRarityColor = new Color(1f, 0.82f, 0.2f, 1f);
+    [SerializeField, HideInInspector] private Color commonRarityColor = Color.white;
+    [SerializeField, HideInInspector] private Color rareRarityColor = Color.white;
+    [SerializeField, HideInInspector] private Color epicRarityColor = Color.white;
+    [SerializeField, HideInInspector] private Color uniqueRarityColor = Color.white;
+    [SerializeField, HideInInspector] private Color exclusiveRarityColor = new Color(1f, 0.82f, 0.2f, 1f);
 
     [Header("Info Effect Value Color")]
     [Tooltip("도감과 동일하게 설명 안의 ValueRate/CountRate 치환 수치에 적용할 강조 색상입니다.")]
-    [SerializeField] private Color valueHighlightColor = Color.yellow;
+    [SerializeField, HideInInspector] private Color valueHighlightColor = Color.yellow;
 
     [Header("Shared Info Labels")]
-    [SerializeField] private GameObject skillInfoRangeLabel;
-    [SerializeField] private GameObject skillInfoTypeLabel;
-    [SerializeField] private GameObject skillInfoCostLabel;
-    [SerializeField] private GameObject skillInfoValueLabel;
+    [SerializeField, HideInInspector] private GameObject skillInfoRangeLabel;
+    [SerializeField, HideInInspector] private GameObject skillInfoTypeLabel;
+    [SerializeField, HideInInspector] private GameObject skillInfoCostLabel;
+    [SerializeField, HideInInspector] private GameObject skillInfoValueLabel;
 
-    [SerializeField] private string emptySkillInfoTitle = "스킬명";
-    [SerializeField, TextArea] private string emptySkillInfoEffect = "스킬을 선택하면 정보가 표시된다.";
-    [SerializeField] private bool autoBindSkillInfoArea = true;
+    [SerializeField, HideInInspector] private string emptySkillInfoTitle = "스킬명";
+    [SerializeField, HideInInspector, TextArea] private string emptySkillInfoEffect = "스킬을 선택하면 정보가 표시된다.";
+    [SerializeField, HideInInspector] private bool autoBindSkillInfoArea = true;
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
@@ -69,27 +66,11 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private SkillSlotButton currentSelectedSlot;
     private int openedSkillSelectPanelIndex = -1;
-    private bool suppressSkillIconHover;
     private Coroutine[] skillSelectPanelMoveCoroutines = new Coroutine[SetupSkillSlotCount];
 
     private bool skillSelectPanelAllowed = true;
 
-    private bool IsDirectSelectionLayout
-    {
-        get
-        {
-            if (skillSlotButtons == null || skillSlotButtons.Length == 0)
-                return true;
-
-            for (int i = 0; i < skillSlotButtons.Length; i++)
-            {
-                if (skillSlotButtons[i] != null)
-                    return false;
-            }
-
-            return true;
-        }
-    }
+    private bool IsDirectSelectionLayout => true;
 
     private string currentCharacterId;
     private CharacterMasterData currentMasterData;
@@ -104,14 +85,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
         BindSkillIconButtonsIfNeeded();
-        BindSkillInfoAreaIfNeeded();
-        EnsureDynamicTextOwnership();
-        InitSkillSlotButtons();
         InitSkillIconButtons();
-
-        ClearSkillIconButtons();
-        ClearSkillInfo();
-        SetSkillSelectPanelVisible(false, true);
+        SetAllDirectSkillPanelsVisible();
     }
 
     public void SetSettingController(Setting controller)
@@ -123,18 +98,16 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     {
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
         BindSkillIconButtonsIfNeeded();
-        BindSkillInfoAreaIfNeeded();
-        EnsureDynamicTextOwnership();
-        InitSkillSlotButtons();
         InitSkillIconButtons();
-        SetSelectedSkillSlot(null);
-        ClearSkillIconButtons();
-        ClearSkillInfo();
-        SetSkillSelectPanelVisible(false, true);
+        SetAllDirectSkillPanelsVisible();
+
+        if (currentMasterData != null && currentRuntimeData != null)
+            RefreshAllDirectSkillButtons();
     }
 
     private void OnDisable()
@@ -147,14 +120,6 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (currentDisplayedSkillInfo != null)
             ShowSkillInfo(currentDisplayedSkillInfo);
     }
-
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        if (maxVisibleSkillIconButtonCount < 1)
-            maxVisibleSkillIconButtonCount = 1;
-    }
-#endif
 
     private void InitSkillSlotButtons()
     {
@@ -247,12 +212,22 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             panelIndex >= SetupSkillSlotCount ||
             panelIndex >= skillIconSelectPanels.Length ||
             skillIconSelectPanels[panelIndex] == null)
-            return new SkillIconButton[0];
+            return Array.Empty<SkillIconButton>();
 
         Transform panel = skillIconSelectPanels[panelIndex].transform;
-        Transform buttonRoot = panel.Find("ButtonRoot");
-        Transform root = buttonRoot != null ? buttonRoot : panel;
-        return root.GetComponentsInChildren<SkillIconButton>(true);
+        SkillIconButton[] result = new SkillIconButton[2];
+
+        for (int i = 0; i < result.Length; i++)
+        {
+            Transform buttonTransform = panel.Find("SkillIconButton_" + i);
+            if (buttonTransform == null)
+                buttonTransform = FindChildByName(panel, "SkillIconButton_" + i);
+
+            if (buttonTransform != null)
+                result[i] = buttonTransform.GetComponent<SkillIconButton>();
+        }
+
+        return result;
     }
 
 
@@ -425,30 +400,15 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         return null;
     }
 
-    public bool ShouldClearInfoOnHoverExit => !skillSelectPanelAllowed;
+    public bool ShouldClearInfoOnHoverExit => false;
 
     // 스킬 선택 패널이 이동하는 동안에는 지나가는 아이콘의 호버 정보를 반영하지 않습니다.
-    public bool CanPreviewSkillIconHover => !suppressSkillIconHover;
+    public bool CanPreviewSkillIconHover => false;
 
     public void SetSkillSelectPanelEnabledForTab(bool enabled)
     {
-        if (IsDirectSelectionLayout)
-        {
-            SetAllDirectSkillPanelsVisible();
-            return;
-        }
-        skillSelectPanelAllowed = enabled;
-
-        if (!enabled)
-        {
-            SetSelectedSkillSlot(null);
-            ClearSkillInfo();
-            SetSkillSelectPanelVisible(false);
-            return;
-        }
-
-        // 스킬 탭으로 들어온 직후에는 슬롯을 선택하기 전까지 선택 패널을 열지 않는다.
-        SetSkillSelectPanelVisible(currentSelectedSlot != null);
+        skillSelectPanelAllowed = true;
+        SetAllDirectSkillPanelsVisible();
     }
 
     public void SetSkillSelectPanelVisible(bool visible)
@@ -458,120 +418,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private void SetSkillSelectPanelVisible(bool visible, bool immediate)
     {
-        if (IsDirectSelectionLayout)
-        {
-            SetAllDirectSkillPanelsVisible();
-            openedSkillSelectPanelIndex = -1;
-            return;
-        }
-
-        BindSkillIconButtonsIfNeeded();
-
-        if (skillIconSelectPanels == null)
-            return;
-
-        EnsureMoveCoroutineArray();
-
-        int selectedIndex = currentSelectedSlot != null ? currentSelectedSlot.SlotIndex : -1;
-        bool canShow = skillSelectPanelAllowed && visible && selectedIndex >= 0;
-        openedSkillSelectPanelIndex = canShow ? selectedIndex : -1;
-
-        if (canShow)
-            suppressSkillIconHover = false;
-
-        for (int i = 0; i < skillIconSelectPanels.Length; i++)
-        {
-            GameObject panelObject = skillIconSelectPanels[i];
-            if (panelObject == null)
-                continue;
-
-            if (i >= SetupSkillSlotCount)
-            {
-                panelObject.SetActive(false);
-                continue;
-            }
-
-            // 선택 패널은 비활성화하지 않고 X 좌표 이동으로 화면 안팎을 전환한다.
-            if (!panelObject.activeSelf)
-                panelObject.SetActive(true);
-
-            float targetX = canShow && i == selectedIndex
-                ? skillSelectPanelVisibleX
-                : skillSelectPanelHiddenX;
-
-            MoveSkillSelectPanelX(i, panelObject, targetX, immediate);
-        }
-    }
-
-    private void EnsureMoveCoroutineArray()
-    {
-        int panelCount = skillIconSelectPanels != null ? skillIconSelectPanels.Length : 0;
-
-        if (skillSelectPanelMoveCoroutines == null || skillSelectPanelMoveCoroutines.Length != panelCount)
-            skillSelectPanelMoveCoroutines = new Coroutine[panelCount];
-    }
-
-    private void MoveSkillSelectPanelX(int panelIndex, GameObject panelObject, float targetX, bool immediate)
-    {
-        if (panelObject == null)
-            return;
-
-        RectTransform rectTransform = panelObject.GetComponent<RectTransform>();
-        if (rectTransform == null)
-            return;
-
-        if (panelIndex >= 0 &&
-            skillSelectPanelMoveCoroutines != null &&
-            panelIndex < skillSelectPanelMoveCoroutines.Length &&
-            skillSelectPanelMoveCoroutines[panelIndex] != null)
-        {
-            StopCoroutine(skillSelectPanelMoveCoroutines[panelIndex]);
-            skillSelectPanelMoveCoroutines[panelIndex] = null;
-        }
-
-        if (immediate || skillSelectPanelMoveDuration <= 0f || !isActiveAndEnabled)
-        {
-            Vector2 position = rectTransform.anchoredPosition;
-            position.x = targetX;
-            rectTransform.anchoredPosition = position;
-            return;
-        }
-
-        skillSelectPanelMoveCoroutines[panelIndex] = StartCoroutine(
-            MoveSkillSelectPanelXCoroutine(panelIndex, rectTransform, targetX));
-    }
-
-    private IEnumerator MoveSkillSelectPanelXCoroutine(
-        int panelIndex,
-        RectTransform rectTransform,
-        float targetX)
-    {
-        float startX = rectTransform.anchoredPosition.x;
-        float elapsed = 0f;
-
-        while (elapsed < skillSelectPanelMoveDuration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float progress = Mathf.Clamp01(elapsed / skillSelectPanelMoveDuration);
-            float easedProgress = progress * progress * (3f - 2f * progress);
-
-            Vector2 position = rectTransform.anchoredPosition;
-            position.x = Mathf.LerpUnclamped(startX, targetX, easedProgress);
-            rectTransform.anchoredPosition = position;
-
-            yield return null;
-        }
-
-        Vector2 finalPosition = rectTransform.anchoredPosition;
-        finalPosition.x = targetX;
-        rectTransform.anchoredPosition = finalPosition;
-
-        if (skillSelectPanelMoveCoroutines != null &&
-            panelIndex >= 0 &&
-            panelIndex < skillSelectPanelMoveCoroutines.Length)
-        {
-            skillSelectPanelMoveCoroutines[panelIndex] = null;
-        }
+        SetAllDirectSkillPanelsVisible();
+        openedSkillSelectPanelIndex = -1;
     }
 
     public void OpenCharacterSetting(string characterId)
@@ -623,7 +471,6 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         LoadCurrentSkillSetting();
         SetSelectedSkillSlot(null);
-        ClearSkillInfo();
 
         if (IsDirectSelectionLayout)
         {
@@ -855,116 +702,16 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private string[] GetCandidateSkillIds(int slotIndex)
     {
-        int characterNumber = GetCurrentCharacterNumber();
-
-        if (characterNumber > 0)
-        {
-            string[] fixedSkillIds = GetFixedCandidateSkillIds(characterNumber, slotIndex);
-
-            if (fixedSkillIds != null && fixedSkillIds.Length > 0)
-                return fixedSkillIds;
-        }
-
         if (currentMasterData == null)
-            return new string[0];
+            return Array.Empty<string>();
 
-        switch (slotIndex)
+        return slotIndex switch
         {
-            case 0:
-                return new string[]
-                {
-                    currentMasterData.PassiveSkill1,
-                    currentMasterData.PassiveSkill2
-                };
-
-            case 1:
-                return new string[]
-                {
-                    currentMasterData.UniqueSkill1,
-                    currentMasterData.UniqueSkill2
-                };
-
-            case 2:
-                return new string[]
-                {
-                    currentMasterData.CharacterSkill1,
-                    currentMasterData.CharacterSkill2
-                };
-
-            default:
-                return new string[0];
-        }
-    }
-
-    private string[] GetFixedCandidateSkillIds(int characterNumber, int slotIndex)
-    {
-        switch (characterNumber)
-        {
-            case 1:
-                switch (slotIndex)
-                {
-                    case 0:
-                        return new string[] { "S_Passive_01", "S_Passive_02" };
-                    case 1:
-                        return new string[] { "S_Unique_01", "S_Unique_02" };
-                    case 2:
-                        return new string[] { "S_Ability_01", "S_Ability_03" };
-                }
-                break;
-
-            case 2:
-                switch (slotIndex)
-                {
-                    case 0:
-                        return new string[] { "S_Passive_03", "S_Passive_04" };
-                    case 1:
-                        return new string[] { "S_Unique_03", "S_Unique_04" };
-                    case 2:
-                        return new string[] { "S_Ability_05", "S_Ability_07" };
-                }
-                break;
-
-            case 3:
-                switch (slotIndex)
-                {
-                    case 0:
-                        return new string[] { "S_Passive_05", "S_Passive_06" };
-                    case 1:
-                        return new string[] { "S_Unique_05", "S_Unique_06" };
-                    case 2:
-                        return new string[] { "S_Ability_09", "S_Ability_11" };
-                }
-                break;
-        }
-
-        return new string[0];
-    }
-
-    private int GetCurrentCharacterNumber()
-    {
-        if (string.IsNullOrWhiteSpace(currentCharacterId))
-            return 0;
-
-        string id = currentCharacterId.Trim();
-        int endIndex = id.Length - 1;
-
-        while (endIndex >= 0 && !char.IsDigit(id[endIndex]))
-            endIndex--;
-
-        if (endIndex < 0)
-            return 0;
-
-        int startIndex = endIndex;
-
-        while (startIndex >= 0 && char.IsDigit(id[startIndex]))
-            startIndex--;
-
-        string numberText = id.Substring(startIndex + 1, endIndex - startIndex);
-
-        if (int.TryParse(numberText, out int characterNumber))
-            return characterNumber;
-
-        return 0;
+            0 => new[] { currentMasterData.PassiveSkill1, currentMasterData.PassiveSkill2 },
+            1 => new[] { currentMasterData.UniqueSkill1, currentMasterData.UniqueSkill2 },
+            2 => new[] { currentMasterData.CharacterSkill1, currentMasterData.CharacterSkill2 },
+            _ => Array.Empty<string>()
+        };
     }
 
     private void AddUniqueSkill(List<SkillMasterData> result, SkillMasterData skill)
@@ -1109,30 +856,25 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         int characterLevel = currentRuntimeData != null ? currentRuntimeData.Level : 1;
         SkillIconButton[] buttons = GetSkillIconButtons(slotIndex);
 
-        if (buttons.Length == 0)
-            return;
-
-        int visibleCount = Mathf.Clamp(maxVisibleSkillIconButtonCount, 1, buttons.Length);
-
         for (int i = 0; i < buttons.Length; i++)
         {
-            if (buttons[i] == null)
+            SkillIconButton button = buttons[i];
+            if (button == null)
                 continue;
 
-            bool canUseButton = i < visibleCount;
+            if (!button.gameObject.activeSelf)
+                button.gameObject.SetActive(true);
 
-            if (canUseButton && skills != null && i < skills.Count && skills[i] != null)
+            SkillMasterData skill = skills != null && i < skills.Count ? skills[i] : null;
+            if (skill == null)
             {
-                SkillMasterData skill = skills[i];
-                int requiredLevel = GetRequiredLevelForSkill(skill, slotIndex);
-                bool locked = characterLevel < requiredLevel;
+                button.SetSkillData(null, false, 0);
+                continue;
+            }
 
-                buttons[i].SetSkillData(skill, locked, requiredLevel);
-            }
-            else
-            {
-                buttons[i].SetSkillData(null, false, 0);
-            }
+            int requiredLevel = GetRequiredLevelForSkill(skill, slotIndex);
+            bool locked = characterLevel < requiredLevel;
+            button.SetSkillData(skill, locked, requiredLevel);
         }
     }
 
@@ -1171,6 +913,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (!IsDirectSelectionLayout)
             return;
 
+        bool appliedDefaultSkill = false;
+
         for (int slotIndex = 0; slotIndex < SetupSkillSlotCount; slotIndex++)
         {
             List<SkillMasterData> candidates = GetSkillCandidates(slotIndex);
@@ -1178,6 +922,19 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
             string equippedId = GetRuntimeSkillId(slotIndex);
             SkillIconButton[] buttons = GetSkillIconButtons(slotIndex);
+
+            // 저장된 장착 정보가 없으면 각 분류의 Button_0을 기본 스킬로 사용합니다.
+            if (string.IsNullOrWhiteSpace(equippedId) && buttons.Length > 0)
+            {
+                SkillMasterData defaultSkill = buttons[0] != null ? buttons[0].CurrentSkillData : null;
+                if (defaultSkill != null && !IsSkillLockedForCurrentLevel(defaultSkill, slotIndex))
+                {
+                    equippedId = defaultSkill.SkillId;
+                    SetRuntimeSkillId(slotIndex, equippedId);
+                    appliedDefaultSkill = true;
+                }
+            }
+
             for (int i = 0; i < buttons.Length; i++)
             {
                 SkillMasterData data = buttons[i] != null ? buttons[i].CurrentSkillData : null;
@@ -1186,6 +943,9 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 buttons[i]?.SetEquippedSelected(selected);
             }
         }
+
+        if (appliedDefaultSkill && currentRuntimeData != null && DataManager.Instance != null)
+            DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(currentRuntimeData);
     }
 
     private void SetAllDirectSkillPanelsVisible()
@@ -1482,6 +1242,32 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         return string.IsNullOrEmpty(resourceName)
             ? costValue.ToString()
             : $"{resourceName} {costValue}";
+    }
+
+    private int GetCurrentCharacterNumber()
+    {
+        if (string.IsNullOrWhiteSpace(currentCharacterId))
+            return 0;
+
+        string id = currentCharacterId.Trim();
+        int endIndex = id.Length - 1;
+
+        while (endIndex >= 0 && !char.IsDigit(id[endIndex]))
+            endIndex--;
+
+        if (endIndex < 0)
+            return 0;
+
+        int startIndex = endIndex;
+
+        while (startIndex >= 0 && char.IsDigit(id[startIndex]))
+            startIndex--;
+
+        string numberText = id.Substring(startIndex + 1, endIndex - startIndex);
+
+        return int.TryParse(numberText, out int characterNumber)
+            ? characterNumber
+            : 0;
     }
 
     private string GetCurrentUniqueResourceName()
@@ -1831,9 +1617,6 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         ShowSkillInfo(skill);
         SaveCurrentSkillSetting();
 
-        // 패널이 닫히며 다른 아이콘 위를 지나갈 때 발생하는 PointerEnter를 무시합니다.
-        suppressSkillIconHover = true;
-
         // 패널 안의 스킬 버튼을 선택하면 선택 패널을 다시 숨김 위치로 돌린다.
         SetSkillSelectPanelVisible(false);
 
@@ -1857,7 +1640,6 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             ShowSkillInfo(selectedSkill);
         }
 
-        suppressSkillIconHover = false;
     }
 
     public void SaveBeforeBattle()
@@ -1964,17 +1746,24 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (skillIconSelectPanels == null)
             return;
 
-        for (int panelIndex = 0; panelIndex < skillIconSelectPanels.Length; panelIndex++)
+        for (int panelIndex = 0; panelIndex < Mathf.Min(skillIconSelectPanels.Length, SetupSkillSlotCount); panelIndex++)
         {
             SkillIconButton[] buttons = GetSkillIconButtons(panelIndex);
 
             for (int i = 0; i < buttons.Length; i++)
             {
-                if (buttons[i] != null)
-                    buttons[i].SetSkillData(null, false, 0);
+                if (buttons[i] == null)
+                    continue;
+
+                if (!buttons[i].gameObject.activeSelf)
+                    buttons[i].gameObject.SetActive(true);
+
+                buttons[i].SetSkillData(null, false, 0);
                 buttons[i].SetEquippedSelected(false);
             }
         }
+
+        SetAllDirectSkillPanelsVisible();
     }
 
     public void ClearForEmptyCharacter()
