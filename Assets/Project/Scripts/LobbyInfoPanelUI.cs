@@ -65,7 +65,7 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
             bool hasCharacter = !string.IsNullOrWhiteSpace(characterId);
 
             if (view.Root != null)
-                view.Root.gameObject.SetActive(hasCharacter);
+                view.Root.gameObject.SetActive(true);
 
             ApplyFixedTitles(view);
 
@@ -258,7 +258,14 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
     private void ClearCharacterViews()
     {
         for (int i = 0; i < characterViews.Length; i++)
-            ClearCharacterView(characterViews[i]);
+        {
+            CharacterView view = characterViews[i];
+            if (view?.Root != null)
+                view.Root.gameObject.SetActive(true);
+
+            ApplyFixedTitles(view);
+            ClearCharacterView(view);
+        }
     }
 
     private static void ClearCharacterView(CharacterView view)

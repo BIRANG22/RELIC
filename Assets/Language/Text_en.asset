@@ -74,14 +74,6 @@ MonoBehaviour:
     m_Localized: Extract
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100688
-    m_Localized: 'Effect:'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100689
-    m_Localized: Range
-    m_Metadata:
-      m_Items: []
   - m_Id: 41367126123487249
     m_Localized: Cost
     m_Metadata:
@@ -190,10 +182,6 @@ MonoBehaviour:
     m_Localized: Invite
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100722
-    m_Localized: Formation
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100724
     m_Localized: Explore
     m_Metadata:
@@ -290,14 +278,6 @@ MonoBehaviour:
     m_Localized: Upgrade
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100754
-    m_Localized: Usage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100755
-    m_Localized: Numeric Effect
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100756
     m_Localized: Passive Skill
     m_Metadata:
@@ -320,10 +300,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100763
     m_Localized: Unable to combine.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100764
-    m_Localized: Sold
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100775
@@ -2669,6 +2645,18 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11012039836704768
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13427954283307008
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13427954308472832
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13427954308472833
     m_Localized: 
     m_Metadata:
       m_Items: []

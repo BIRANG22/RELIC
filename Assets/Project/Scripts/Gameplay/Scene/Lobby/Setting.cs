@@ -193,6 +193,9 @@ public class Setting : MonoBehaviour
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
 
         // CharacterSettingPanel도 다른 PositionPanel 모달과 동일하게
+        // 자신이 열려 있는 동안 로비 월드 오브젝트 입력을 차단합니다.
+        LobbyPositionModalInputBlocker.Block(this);
+
         // 공용 BackgroundPanel을 먼저 활성화합니다. Blur/Presentation Canvas의 정렬값이
         // 적용된 뒤 Preview를 그 사이에 배치해야 실제 표시 순서가 정확합니다.
         LobbyPositionSharedModalBackground.ShowForPanel(
@@ -289,6 +292,7 @@ public class Setting : MonoBehaviour
     {
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         LobbyPositionSharedModalBackground.HideForOwner(this);
+        LobbyPositionModalInputBlocker.Unblock(this);
 
         // CharacterSettingPanel이 닫히면 별도 Canvas에 생성된 캐릭터 이미지도
         // 즉시 보이지 않도록 CharacterPreviewCanvas 전체를 함께 끕니다.
@@ -356,20 +360,19 @@ public class Setting : MonoBehaviour
             {
                 int previewOrder = backgroundCanvas.sortingOrder + 1;
 
-                // 정확한 순서: BackgroundPanel + 1 = CharacterPreviewCanvas,
-                // CharacterPreviewCanvas + 1 = CharacterSettingPanel.
+                // CharacterPreviewCanvas만 블러 배경 위로 올립니다.
+                // CharacterSettingPanel의 Canvas 정렬값은 절대 변경하지 않습니다.
+                // CharacterSettingPanel을 별도 overrideSorting Canvas로 올리면
+                // BackgroundPanel 자식인 Lobby_Icon보다 입력 우선순위가 높아져
+                // Lobby_Icon_01~05가 보이면서도 클릭되지 않는 문제가 발생합니다.
                 characterPreviewCanvas.sortingLayerID = backgroundCanvas.sortingLayerID;
                 characterPreviewCanvas.overrideSorting = true;
                 characterPreviewCanvas.sortingOrder = previewOrder;
-
-                settingCanvas.sortingLayerID = backgroundCanvas.sortingLayerID;
-                settingCanvas.overrideSorting = true;
-                settingCanvas.sortingOrder = previewOrder + 1;
             }
             else
             {
-                // BackgroundPanel Canvas를 찾지 못한 경우에는 기존 CharacterSettingPanel을 기준으로
-                // Preview를 정확히 한 단계 아래에 배치합니다.
+                // 공용 블러 Canvas를 찾지 못해도 CharacterSettingPanel 자체의 정렬값은 건드리지 않습니다.
+                // Preview만 현재 UI Canvas보다 한 단계 아래에서 표시합니다.
                 characterPreviewCanvas.sortingLayerID = settingCanvas.sortingLayerID;
                 characterPreviewCanvas.overrideSorting = true;
                 characterPreviewCanvas.sortingOrder = settingCanvas.sortingOrder - 1;
@@ -492,6 +495,8 @@ public class Setting : MonoBehaviour
         if (runeSettingPanelScript != null)
             runeSettingPanelScript.OnRuneChanged -= RefreshCharacterInfo;
 
+        LobbyPositionSharedModalBackground.HideForOwner(this);
+        LobbyPositionModalInputBlocker.Unblock(this);
     }
 
     private void InitPresetButtons()

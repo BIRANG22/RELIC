@@ -134,6 +134,12 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
             return;
         }
 
+        if (TryOpenCharacterSettingPanel(targetPanel))
+        {
+            ApplyMainDisplay(targetPanel);
+            return;
+        }
+
         OpenFallbackPanel(targetPanel);
         ApplyMainDisplay(targetPanel);
     }
@@ -431,6 +437,28 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// CharacterSettingPanel은 Setting 컴포넌트가 공용 BackgroundPanel과 입력 차단의
+    /// 소유자가 되도록 직접 활성화합니다. ShortcutUI가 임시 소유자가 되면
+    /// Setting.OnEnable에서 소유권이 덮어써져 닫을 때 입력 차단이 남을 수 있습니다.
+    /// </summary>
+    private static bool TryOpenCharacterSettingPanel(GameObject targetPanel)
+    {
+        if (targetPanel == null)
+            return false;
+
+        Setting setting = targetPanel.GetComponent<Setting>();
+        if (setting == null)
+            return false;
+
+        TitleManager.CloseTitleModePanelsExceptInScene(targetPanel);
+
+        if (!targetPanel.activeSelf)
+            targetPanel.SetActive(true);
+
+        return true;
     }
 
     private void OpenFallbackPanel(GameObject targetPanel)

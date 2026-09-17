@@ -143,7 +143,10 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
         if (hoverNameType != HoverNameType.Storage)
             return;
 
-        if (LobbyPositionModalInputBlocker.IsBlocked)
+        // CharacterSettingPanel 같은 전면 모달이 열려 있으면 Storage 월드 오브젝트 클릭을 무시합니다.
+        // 공용 모달 차단 상태와 실제 활성 패널 상태를 함께 확인해, 활성화 프레임 순서와 관계없이
+        // 뒤쪽 월드 오브젝트가 눌리지 않도록 합니다.
+        if (LobbyPositionModalInputBlocker.IsBlocked || IsAnyBlockingPanelActive())
             return;
 
         OpenStoragePanel();

@@ -15,6 +15,8 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private GameObject lockObject;
     [Tooltip("기억 버튼의 Line 이미지입니다. 비어 있으면 자식 이름 'Line'으로 자동으로 찾습니다.")]
     [SerializeField] private Image lineImage;
+    [Tooltip("현재 장착된 기억에 표시할 SelectLine 오브젝트입니다. 비어 있으면 자식 이름 SelectLine으로 자동으로 찾습니다.")]
+    [SerializeField] private GameObject selectLine;
 
 
     private static readonly Color32 LockedLineColor = new Color32(0x77, 0x77, 0x77, 0xFF);
@@ -31,6 +33,7 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private SkillSettingPanel owner;
     private SkillMasterData currentSkillData;
+    private int directSlotIndex = -1;
 
     private bool isLocked;
     private int requiredLevel;
@@ -48,6 +51,7 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         EnsureUiReferences();
         CacheOriginalScale();
         ResolveLineImage();
+        ResolveSelectLine();
     }
 
     private void OnEnable()
@@ -55,7 +59,9 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         EnsureUiReferences();
         CacheOriginalScale();
         ResolveLineImage();
+        ResolveSelectLine();
         ApplyLineVisualState();
+        SetEquippedSelected(false);
     }
 
     private void OnDisable()
@@ -71,7 +77,13 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void Init(SkillSettingPanel panel)
     {
+        Init(panel, -1);
+    }
+
+    public void Init(SkillSettingPanel panel, int slotIndex)
+    {
         owner = panel;
+        directSlotIndex = slotIndex;
 
         if (button != null)
         {
@@ -181,9 +193,33 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return;
         }
 
-        owner.SelectSkill(currentSkillData);
+        if (directSlotIndex >= 0)
+            owner.SelectSkillDirect(directSlotIndex, currentSkillData);
+        else
+            owner.SelectSkill(currentSkillData);
     }
 
+
+
+    public void SetEquippedSelected(bool selected)
+    {
+        ResolveSelectLine();
+        if (selectLine != null)
+            selectLine.SetActive(selected);
+    }
+
+    private void ResolveSelectLine()
+    {
+        if (selectLine != null)
+            return;
+
+        Transform selectedTransform = transform.Find("SelectLine");
+        if (selectedTransform == null)
+            selectedTransform = FindChildByName(transform, "SelectLine");
+
+        if (selectedTransform != null)
+            selectLine = selectedTransform.gameObject;
+    }
 
     private void ResolveLineImage()
     {
