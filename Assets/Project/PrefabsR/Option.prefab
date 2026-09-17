@@ -96,6 +96,7 @@ GameObject:
   - component: {fileID: 7002000000000012}
   - component: {fileID: 7002000000000013}
   - component: {fileID: 7002000000000034}
+  - component: {fileID: 7681764976068519921}
   m_Layer: 5
   m_Name: FullscreenLabel
   m_TagString: Untagged
@@ -222,6 +223,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7681764976068519921
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7002000000000011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 7002000000000034}
+  localizationKey: ui.option.fullscreenlabel.bbf100b5
+  koreanSource: "\uC804\uCCB4\uD654\uBA74"
+  automaticallyRegistered: 1
 --- !u!1 &7002000000000014
 GameObject:
   m_ObjectHideFlags: 0
@@ -7255,6 +7272,7 @@ GameObject:
   - component: {fileID: 7001000000000000010}
   - component: {fileID: 7001000000000000015}
   - component: {fileID: 7001000000000000016}
+  - component: {fileID: 885485854763155077}
   m_Layer: 5
   m_Name: BattleSpeedText
   m_TagString: Untagged
@@ -7381,6 +7399,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &885485854763155077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7001000000000000014}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 7001000000000000016}
+  localizationKey: ui.option.battlespeedtext.1c466818
+  koreanSource: "\uC804\uD22C \uBC30\uC18D"
+  automaticallyRegistered: 1
 --- !u!1 &7005189477797310113
 GameObject:
   m_ObjectHideFlags: 0

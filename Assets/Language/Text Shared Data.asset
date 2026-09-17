@@ -5203,10 +5203,6 @@ MonoBehaviour:
     m_Key: ui.debugbattle.text.d18c4783
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458553032727
-    m_Key: ui.lobby.text.33abb2e3
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458553032732
     m_Key: ui.lobby.text.dae4b44d
     m_Metadata:
@@ -5545,6 +5541,62 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 13427954308472833
     m_Key: lobby.stat.maximum_value
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191621
+    m_Key: ui.option.fullscreenlabel.bbf100b5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191622
+    m_Key: ui.option.battlespeedtext.1c466818
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191655
+    m_Key: ui.battle.text.9f263f3d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191671
+    m_Key: ui.battle.text.877a4575
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191717
+    m_Key: ui.lobby.text.79b934c8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191718
+    m_Key: ui.lobby.text.738233fd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191719
+    m_Key: ui.lobby.text.dd196dfb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191720
+    m_Key: ui.lobby.text.d68c846f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191722
+    m_Key: ui.lobby.text.8229ead1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191724
+    m_Key: ui.lobby.text.e06fba95
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191727
+    m_Key: ui.lobby.text.9361cb41
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191728
+    m_Key: ui.lobby.text.5fa154f1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191729
+    m_Key: ui.lobby.text.ca49a4f1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13436147038191730
+    m_Key: ui.lobby.text.ce00b05e
     m_Metadata:
       m_Items: []
   m_Metadata:
