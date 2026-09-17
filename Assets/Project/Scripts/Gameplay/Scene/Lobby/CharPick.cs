@@ -148,24 +148,18 @@ public class CharPick : MonoBehaviour
         if (TryHandleNetworkCharacterClick(btn, playPartyActionSound))
             return;
 
-        // 클릭하기 전부터 정보를 보고 있던 캐릭터인지 먼저 기록한다.
-        // 다른 캐릭터 버튼을 눌러 정보를 전환한 경우에는 이미 편성된 캐릭터라도 해제하지 않는다.
+        // CharacterSelect는 "정보 선택"과 "파티 등록"을 2단계로 처리합니다.
+        // 다른 캐릭터를 처음 클릭하면 그 캐릭터의 정보만 표시하고,
+        // 이미 보고 있는 캐릭터를 한 번 더 클릭했을 때만 파티 등록/해제를 처리합니다.
         bool wasCurrentInfoCharacter = centerIndex == index;
 
-        // 버튼을 누르면 해당 캐릭터의 정보와 프리뷰를 즉시 갱신한다.
         centerIndex = index;
         RefreshCenterInfo();
 
         if (btn.IsLocked || !HasUsableCharacterData(btn))
             return;
 
-        string characterId = btn.CharacterId;
-        bool isAlreadyInParty = FindPendingPartySlot(characterId) >= 0;
-
-        // 아직 편성되지 않은 캐릭터는 한 번 클릭하면 바로 편성한다.
-        // 이미 편성된 다른 캐릭터를 클릭한 경우에는 정보만 보여주고 편성을 유지한다.
-        // 현재 정보를 보고 있는 편성 캐릭터를 다시 클릭한 경우에만 편성을 해제한다.
-        if (isAlreadyInParty && !wasCurrentInfoCharacter)
+        if (!wasCurrentInfoCharacter)
             return;
 
         ToggleButtonPartyMarker(btn, playPartyActionSound);
@@ -1144,6 +1138,7 @@ public class CharPick : MonoBehaviour
 
         currentPreview = Instantiate(prefab, previewRoot, false);
         currentPreview.name = "Preview_" + characterId;
+        currentPreview.transform.localScale = Vector3.one * 0.4f;
 
         PlayPreviewBackgroundAnim();
     }
