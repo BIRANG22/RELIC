@@ -17,18 +17,23 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private Image lineImage;
     [Tooltip("현재 장착된 기억에 표시할 SelectLine 오브젝트입니다. 비어 있으면 자식 이름 SelectLine으로 자동으로 찾습니다.")]
     [SerializeField] private GameObject selectLine;
+    [Tooltip("선택 상태를 표시할 Back 이미지입니다. 비어 있으면 자식 이름 'Back'으로 자동으로 찾습니다.")]
+    [SerializeField] private Image buttonImage;
 
+    private static readonly Color32 LockedVisualColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+    private static readonly Color32 DefaultLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    private static readonly Color32 SelectedButtonColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
 
-    private static readonly Color32 LockedLineColor = new Color32(0x77, 0x77, 0x77, 0xFF);
-    private static readonly Color32 UnlockedLineColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
+    private Color originalIconColor = Color.white;
+    private Color originalButtonColor = Color.white;
+    private bool visualColorsCached;
+    private bool isEquippedSelected;
 
 
     [Header("Hover Scale Effect")]
     [SerializeField] private Transform scaleTarget;
     [SerializeField] private float hoverScale = 1.1f;
-    [SerializeField] private float breathMaxScale = 1.16f;
     [SerializeField] private float scaleInDuration = 0.08f;
-    [SerializeField] private float breathSpeed = 4f;
     [SerializeField] private bool useUnscaledTime = true;
 
     private SkillSettingPanel owner;
@@ -41,8 +46,6 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private Vector3 originalScale = Vector3.one;
     private bool isScaleCached;
     private Coroutine hoverScaleCoroutine;
-    private int shownInfoVersion = -1;
-    private bool isPointerInside;
 
     public SkillMasterData CurrentSkillData => currentSkillData;
 
@@ -52,6 +55,7 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         CacheOriginalScale();
         ResolveLineImage();
         ResolveSelectLine();
+        CacheVisualColors();
     }
 
     private void OnEnable()
@@ -60,19 +64,15 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         CacheOriginalScale();
         ResolveLineImage();
         ResolveSelectLine();
+        CacheVisualColors();
         ApplyLineVisualState();
-        SetEquippedSelected(false);
+        SetHoverSelected(false);
     }
 
     private void OnDisable()
     {
-        if (isPointerInside)
-        {
-            LobbyInfoHoverState.EndSkillHover();
-            isPointerInside = false;
-        }
-
         StopHoverScaleEffect(true);
+        SetHoverSelected(false);
     }
 
     public void Init(SkillSettingPanel panel)
@@ -107,10 +107,33 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         bool hasSkill = currentSkillData != null;
 
-        gameObject.SetActive(hasSkill);
+        // 새 CharacterSettingPanel에서는 버튼 0/1이 고정 UI이므로
+        // 데이터가 없더라도 버튼 오브젝트 자체를 비활성화하지 않습니다.
+        if (!gameObject.activeSelf)
+            gameObject.SetActive(true);
 
         if (!hasSkill)
+        {
+            if (nameText != null)
+                nameText.text = string.Empty;
+
+            if (iconImage != null)
+            {
+                iconImage.sprite = null;
+                iconImage.enabled = false;
+                SetRgbPreserveAlpha(iconImage, originalIconColor);
+            }
+
+            if (lockObject != null)
+                lockObject.SetActive(false);
+
+            if (lockText != null)
+                lockText.text = string.Empty;
+
+            ApplyLineVisualState();
+            SetEquippedSelected(false);
             return;
+        }
 
         if (nameText != null)
             nameText.text = GameDataLocalization.SkillName(currentSkillData);
@@ -122,10 +145,16 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
             iconImage.enabled = icon != null;
             iconImage.sprite = icon;
 
-            Color32 iconColor = Color.white;
-            iconColor.a = isLocked ? (byte)100 : (byte)255;
-            iconImage.color = iconColor;
-            SkillUpgradeMarkStyle.ApplyShared(iconImage, currentSkillData.SkillId);
+            // 알파값은 변경하지 않고 RGB만 잠금 색으로 바꿉니다.
+            if (isLocked)
+            {
+                SetRgbPreserveAlpha(iconImage, LockedVisualColor);
+            }
+            else
+            {
+                SetRgbPreserveAlpha(iconImage, originalIconColor);
+                SkillUpgradeMarkStyle.ApplyShared(iconImage, currentSkillData.SkillId);
+            }
         }
 
         if (lockObject != null)
@@ -141,39 +170,17 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!isPointerInside)
-        {
-            LobbyInfoHoverState.BeginSkillHover();
-            isPointerInside = true;
-        }
-
-        // 룬 버튼 위에 마우스가 있으면 룬 정보가 항상 우선입니다.
-        if (!LobbyInfoHoverState.IsRuneHovered &&
-            owner != null && currentSkillData != null && owner.CanPreviewSkillIconHover)
-        {
-            owner.ShowSkillInfo(currentSkillData);
-            shownInfoVersion = LobbyInfoHoverState.CurrentVersion;
-        }
-
+        SetHoverSelected(true);
         StartHoverScaleEffect();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (isPointerInside)
-        {
-            LobbyInfoHoverState.EndSkillHover();
-            isPointerInside = false;
-        }
+        CacheOriginalScale();
+        if (scaleTarget != null && isScaleCached)
+            StartScaleTransition(originalScale);
 
-        StopHoverScaleEffect(true);
-
-        // 프리뷰에서는 호버가 끝나면 기본 안내 정보로 돌아갑니다.
-        // 스킬 세팅에서는 마지막으로 확인한 정보를 유지합니다.
-        if (owner != null && owner.ShouldClearInfoOnHoverExit && shownInfoVersion >= 0)
-            owner.ClearSkillInfoFromHover(shownInfoVersion);
-
-        shownInfoVersion = -1;
+        SetHoverSelected(false);
     }
 
     public void Execute()
@@ -183,8 +190,6 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if (currentSkillData == null)
             return;
-
-        owner.ShowSkillInfo(currentSkillData);
 
         if (isLocked)
         {
@@ -203,9 +208,22 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void SetEquippedSelected(bool selected)
     {
+        EnsureUiReferences();
+        CacheVisualColors();
+
+        isEquippedSelected = selected;
+        if (buttonImage == null)
+            return;
+
+        // 선택 여부에 따라 RGB만 바꾸고 현재 Back의 알파값은 절대 변경하지 않습니다.
+        SetRgbPreserveAlpha(buttonImage, selected ? (Color)SelectedButtonColor : originalButtonColor);
+    }
+
+    private void SetHoverSelected(bool hovered)
+    {
         ResolveSelectLine();
         if (selectLine != null)
-            selectLine.SetActive(selected);
+            selectLine.SetActive(hovered);
     }
 
     private void ResolveSelectLine()
@@ -241,13 +259,40 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (lineImage == null)
             return;
 
-        lineImage.color = isLocked ? LockedLineColor : UnlockedLineColor;
+        Color32 rgb = isLocked ? LockedVisualColor : DefaultLineColor;
+        SetRgbPreserveAlpha(lineImage, rgb);
+    }
+
+
+    private static void SetRgbPreserveAlpha(Image image, Color rgbSource)
+    {
+        if (image == null)
+            return;
+
+        Color color = image.color;
+        color.r = rgbSource.r;
+        color.g = rgbSource.g;
+        color.b = rgbSource.b;
+        image.color = color;
     }
 
     private void EnsureUiReferences()
     {
         if (button == null)
             button = GetComponent<Button>();
+
+        if (button != null)
+            button.transition = Selectable.Transition.None;
+
+        // 선택 상태 색상은 SkillIconButton 본체가 아니라 자식 Back 이미지에 적용합니다.
+        Transform backTransform = transform.Find("Back");
+        if (backTransform == null)
+            backTransform = FindChildByName(transform, "Back");
+
+        if (backTransform != null)
+            buttonImage = backTransform.GetComponent<Image>();
+        else if (buttonImage == null)
+            buttonImage = GetComponent<Image>();
 
         if (iconImage == null)
         {
@@ -273,6 +318,22 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
                     lockText = unlockTransform.GetComponent<TMP_Text>();
             }
         }
+    }
+
+    private void CacheVisualColors()
+    {
+        if (visualColorsCached)
+            return;
+
+        EnsureUiReferences();
+
+        if (iconImage != null)
+            originalIconColor = iconImage.color;
+
+        if (buttonImage != null)
+            originalButtonColor = buttonImage.color;
+
+        visualColorsCached = true;
     }
 
     private static Transform FindChildByName(Transform root, string childName)
@@ -310,19 +371,23 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void StartHoverScaleEffect()
     {
-        if (!isActiveAndEnabled)
-            return;
-
-        if (currentSkillData == null)
+        if (!isActiveAndEnabled || currentSkillData == null)
             return;
 
         CacheOriginalScale();
-
         if (scaleTarget == null)
             return;
 
+        StartScaleTransition(originalScale * hoverScale);
+    }
+
+    private void StartScaleTransition(Vector3 targetScale)
+    {
+        if (!isActiveAndEnabled || scaleTarget == null)
+            return;
+
         StopHoverScaleEffect(false);
-        hoverScaleCoroutine = StartCoroutine(HoverScaleRoutine());
+        hoverScaleCoroutine = StartCoroutine(ScaleTransitionRoutine(targetScale));
     }
 
     private void StopHoverScaleEffect(bool resetScale)
@@ -337,38 +402,24 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
             scaleTarget.localScale = originalScale;
     }
 
-    private IEnumerator HoverScaleRoutine()
+    private IEnumerator ScaleTransitionRoutine(Vector3 targetScale)
     {
-        float safeScaleInDuration = Mathf.Max(0.01f, scaleInDuration);
+        float duration = Mathf.Max(0.01f, scaleInDuration);
         float elapsed = 0f;
-
         Vector3 startScale = scaleTarget.localScale;
-        Vector3 firstTargetScale = originalScale * hoverScale;
 
-        while (elapsed < safeScaleInDuration)
+        while (elapsed < duration)
         {
             elapsed += GetDeltaTime();
-            float t = Mathf.Clamp01(elapsed / safeScaleInDuration);
+            float t = Mathf.Clamp01(elapsed / duration);
             t = Mathf.SmoothStep(0f, 1f, t);
 
-            scaleTarget.localScale = Vector3.LerpUnclamped(startScale, firstTargetScale, t);
+            scaleTarget.localScale = Vector3.LerpUnclamped(startScale, targetScale, t);
             yield return null;
         }
 
-        float time = 0f;
-        float minScale = hoverScale;
-        float maxScale = Mathf.Max(hoverScale, breathMaxScale);
-
-        while (true)
-        {
-            time += GetDeltaTime() * breathSpeed;
-
-            float pingPong = (Mathf.Sin(time) + 1f) * 0.5f;
-            float currentScale = Mathf.Lerp(minScale, maxScale, pingPong);
-
-            scaleTarget.localScale = originalScale * currentScale;
-            yield return null;
-        }
+        scaleTarget.localScale = targetScale;
+        hoverScaleCoroutine = null;
     }
 
     private float GetDeltaTime()

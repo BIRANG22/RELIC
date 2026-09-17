@@ -125,15 +125,7 @@ namespace Relic.Gameplay.Data
             int slotIndex,
             int candidateIndex)
         {
-            int[] configuredLevels = slotIndex switch
-            {
-                0 => character?.PassiveSkillUnlockLevels,
-                1 => character?.UniqueSkillUnlockLevels,
-                2 => character?.CharacterSkillUnlockLevels,
-                _ => null
-            };
-
-            int[] defaultLevels = slotIndex switch
+            int[] fixedLevels = slotIndex switch
             {
                 0 => DefaultPassiveSkillUnlockLevels,
                 1 => DefaultUniqueSkillUnlockLevels,
@@ -141,7 +133,10 @@ namespace Relic.Gameplay.Data
                 _ => null
             };
 
-            return GetConfiguredLevel(configuredLevels, defaultLevels, candidateIndex, 1);
+            if (fixedLevels == null || candidateIndex < 0 || candidateIndex >= fixedLevels.Length)
+                return 1;
+
+            return fixedLevels[candidateIndex];
         }
 
         public static IReadOnlyList<string> GetUnlockTexts(

@@ -152,6 +152,37 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
         GameObject previousPanel = controller.activePanel;
         Action closeAction = controller.activeCloseAction;
 
+        // CharacterSettingPanel은 CanvasGroup 페이드아웃 후 비활성화되는 비동기 Close를 사용합니다.
+        // 기존 방식처럼 Close 직후 activePanel == null을 검사하면 전환이 취소되고,
+        // 늦게 끝난 OnDisable이 새 패널의 공용 Background 상태까지 정리할 수 있습니다.
+        // 따라서 CharacterSettingPanel에서 다른 Lobby_Icon 패널로 넘어갈 때는
+        // 먼저 공용 모달 소유권만 넘길 준비를 하고 기존 패널의 페이드아웃은 독립적으로 끝냅니다.
+        bool asynchronousCharacterSettingClose =
+            previousPanel != null &&
+            string.Equals(previousPanel.name, "CharacterSettingPanel", StringComparison.Ordinal);
+
+        if (asynchronousCharacterSettingClose)
+        {
+            controller.activeOwner = null;
+            controller.activePanel = null;
+            controller.activeCloseAction = null;
+
+            controller.keepBackgroundActiveDuringSwitch = true;
+            try
+            {
+                if (closeAction != null)
+                    closeAction.Invoke();
+                else if (previousPanel.activeSelf)
+                    previousPanel.SetActive(false);
+            }
+            finally
+            {
+                controller.keepBackgroundActiveDuringSwitch = false;
+            }
+
+            return true;
+        }
+
         controller.keepBackgroundActiveDuringSwitch = true;
         try
         {
@@ -339,7 +370,7 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
     private void HideAfterReadyPanelInternal()
     {
         RestoreReadyPresentationInternal();
-        if (backgroundRoot != null && backgroundRoot.activeSelf)
+        if (activePanel == null && backgroundRoot != null && backgroundRoot.activeSelf)
             backgroundRoot.SetActive(false);
     }
 
