@@ -3900,7 +3900,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -45, y: 45}
+  m_AnchoredPosition: {x: -47.5, y: 47.5}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &126390710
@@ -8829,6 +8829,8 @@ MonoBehaviour:
   selectedPartyMarkerImage: {fileID: 1785667002}
   selectedPartyMarkerText: {fileID: 1581049138}
   selectedPartyTextFormat: '{0}'
+  charBtnHoverScale: 1.2
+  charBtnHoverTransitionDuration: 0.15
   viewedCharacterBorder: {fileID: 0}
   viewedCharacterBorderName: BorderImg1
   viewedCharacterBorders: []
@@ -8928,7 +8930,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.003921569}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -14066,6 +14068,8 @@ MonoBehaviour:
   selectedPartyMarkerImage: {fileID: 1436148029}
   selectedPartyMarkerText: {fileID: 981589197}
   selectedPartyTextFormat: '{0}'
+  charBtnHoverScale: 1.2
+  charBtnHoverTransitionDuration: 0.15
   viewedCharacterBorder: {fileID: 0}
   viewedCharacterBorderName: BorderImg1
   viewedCharacterBorders: []
@@ -14165,7 +14169,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.003921569}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -15457,6 +15461,8 @@ MonoBehaviour:
   selectedPartyMarkerImage: {fileID: 2100204889}
   selectedPartyMarkerText: {fileID: 1310798312}
   selectedPartyTextFormat: '{0}'
+  charBtnHoverScale: 1.2
+  charBtnHoverTransitionDuration: 0.15
   viewedCharacterBorder: {fileID: 0}
   viewedCharacterBorderName: BorderImg1
   viewedCharacterBorders: []
@@ -15600,7 +15606,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.003921569}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -31719,7 +31725,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -45, y: 45}
+  m_AnchoredPosition: {x: -47.5, y: 47.5}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &760308991
@@ -34679,6 +34685,8 @@ MonoBehaviour:
   selectedPartyMarkerImage: {fileID: 1451438695}
   selectedPartyMarkerText: {fileID: 1873760199}
   selectedPartyTextFormat: '{0}'
+  charBtnHoverScale: 1.2
+  charBtnHoverTransitionDuration: 0.15
   viewedCharacterBorder: {fileID: 0}
   viewedCharacterBorderName: BorderImg1
   viewedCharacterBorders: []
@@ -34778,7 +34786,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.003921569}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -53294,7 +53302,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -45, y: 45}
+  m_AnchoredPosition: {x: -47.5, y: 47.5}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1133673333
@@ -53707,7 +53715,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -45, y: 45}
+  m_AnchoredPosition: {x: -47.5, y: 47.5}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1156883266
@@ -70822,6 +70830,8 @@ MonoBehaviour:
   selectedPartyMarkerImage: {fileID: 594746954}
   selectedPartyMarkerText: {fileID: 479017115}
   selectedPartyTextFormat: '{0}'
+  charBtnHoverScale: 1.2
+  charBtnHoverTransitionDuration: 0.15
   viewedCharacterBorder: {fileID: 0}
   viewedCharacterBorderName: BorderImg1
   viewedCharacterBorders: []
@@ -70965,7 +70975,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.003921569}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -92098,7 +92108,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 43.000023, y: 42.000015}
+  m_AnchoredPosition: {x: -47.5, y: 47.5}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1895560334
@@ -95848,7 +95858,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 43.000023, y: 42.000015}
+  m_AnchoredPosition: {x: -47.5, y: 47.5}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1989147210
@@ -96618,6 +96628,8 @@ MonoBehaviour:
   selectedPartyMarkerImage: {fileID: 203452732}
   selectedPartyMarkerText: {fileID: 434422950}
   selectedPartyTextFormat: '{0}'
+  charBtnHoverScale: 1.2
+  charBtnHoverTransitionDuration: 0.15
   viewedCharacterBorder: {fileID: 0}
   viewedCharacterBorderName: BorderImg1
   viewedCharacterBorders: []
@@ -96761,7 +96773,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.003921569}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -105501,13 +105513,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2200000400}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1328820452}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -500, y: -125}

@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using Relic.Gameplay.Data;
 
 public class CharBtn : MonoBehaviour,
@@ -36,7 +37,13 @@ public class CharBtn : MonoBehaviour,
     [SerializeField] private TMP_Text selectedPartyMarkerText;
     [SerializeField] private string selectedPartyTextFormat = "{0}";
 
-    [Header("현재 보고 있는 캐릭터 표시")]
+    [Header("Character Select Hover")]
+    [FormerlySerializedAs("jobmarkHoverScale")]
+    [SerializeField] private float charBtnHoverScale = 1.15f;
+    [FormerlySerializedAs("jobmarkHoverTransitionDuration")]
+    [SerializeField] private float charBtnHoverTransitionDuration = 0.15f;
+
+    [Header("현재 보고 있는 캐릭터 표시 (Legacy)")]
     [SerializeField] private RectTransform viewedCharacterBorder;
     [SerializeField] private string viewedCharacterBorderName = "BorderImg1";
     [SerializeField] private RectTransform[] viewedCharacterBorders;
@@ -65,6 +72,9 @@ public class CharBtn : MonoBehaviour,
     private Vector3 viewedCharacterOriginalScale = Vector3.one;
     private bool hasViewedCharacterOriginalValues;
     private Coroutine viewedCharacterTransitionCoroutine;
+    private Vector3 charBtnOriginalScale = Vector3.one;
+    private bool hasCharBtnOriginalScale;
+    private Coroutine charBtnHoverCoroutine;
 
     public CharacterType CharacterType => characterType;
     public string CharacterId => characterId;
@@ -87,6 +97,7 @@ public class CharBtn : MonoBehaviour,
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         AutoPrepareSelectedPartyMarkerReferences();
+        CacheCharBtnOriginalScale();
         AutoPrepareViewedCharacterBorder();
         CacheViewedCharacterOriginalValues();
         RefreshSelectedPartyMarker();
@@ -94,6 +105,8 @@ public class CharBtn : MonoBehaviour,
 
     private void OnEnable()
     {
+        CacheCharBtnOriginalScale();
+        SetCharBtnHover(false);
         AutoPrepareViewedCharacterBorder();
         CacheViewedCharacterOriginalValues();
         RefreshSelectedPartyMarker();
@@ -102,6 +115,17 @@ public class CharBtn : MonoBehaviour,
 
     private void OnDisable()
     {
+        if (charBtnHoverCoroutine != null)
+        {
+            StopCoroutine(charBtnHoverCoroutine);
+            charBtnHoverCoroutine = null;
+        }
+
+        CacheCharBtnOriginalScale();
+
+        if (rect != null)
+            rect.localScale = charBtnOriginalScale;
+
         if (viewedCharacterTransitionCoroutine != null)
         {
             StopCoroutine(viewedCharacterTransitionCoroutine);
@@ -133,18 +157,18 @@ public class CharBtn : MonoBehaviour,
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (charPick == null)
-            return;
+        SetCharBtnHover(true);
 
-        charPick.PointerEnterButton(this);
+        if (charPick != null)
+            charPick.PointerEnterButton(this);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (charPick == null)
-            return;
+        SetCharBtnHover(false);
 
-        charPick.PointerExitButton(this);
+        if (charPick != null)
+            charPick.PointerExitButton(this);
     }
 
     public void Execute()
@@ -555,6 +579,62 @@ public class CharBtn : MonoBehaviour,
             selectedPartyMarkerText = markerRootTransform.GetComponentInChildren<TMP_Text>(true);
     }
 
+    private void CacheCharBtnOriginalScale()
+    {
+        if (rect == null)
+            rect = GetComponent<RectTransform>();
+
+        if (rect == null || hasCharBtnOriginalScale)
+            return;
+
+        charBtnOriginalScale = rect.localScale;
+        hasCharBtnOriginalScale = true;
+    }
+
+    private void SetCharBtnHover(bool hovered)
+    {
+        CacheCharBtnOriginalScale();
+
+        if (rect == null)
+            return;
+
+        if (charBtnHoverCoroutine != null)
+        {
+            StopCoroutine(charBtnHoverCoroutine);
+            charBtnHoverCoroutine = null;
+        }
+
+        float scaleMultiplier = hovered ? Mathf.Max(0f, charBtnHoverScale) : 1f;
+        Vector3 targetScale = charBtnOriginalScale * scaleMultiplier;
+
+        if (!isActiveAndEnabled || charBtnHoverTransitionDuration <= 0f)
+        {
+            rect.localScale = targetScale;
+            return;
+        }
+
+        charBtnHoverCoroutine = StartCoroutine(AnimateCharBtnHoverRoutine(targetScale));
+    }
+
+    private IEnumerator AnimateCharBtnHoverRoutine(Vector3 targetScale)
+    {
+        Vector3 startScale = rect.localScale;
+        float duration = Mathf.Max(0.01f, charBtnHoverTransitionDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            t = Mathf.SmoothStep(0f, 1f, t);
+            rect.localScale = Vector3.LerpUnclamped(startScale, targetScale, t);
+            yield return null;
+        }
+
+        rect.localScale = targetScale;
+        charBtnHoverCoroutine = null;
+    }
+
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (charPick == null)
@@ -600,35 +680,11 @@ public class CharBtn : MonoBehaviour,
         bool isRemoteViewed,
         bool immediate = false)
     {
+        // 현재 보고 있는 캐릭터는 정보 갱신 상태로만 사용합니다.
+        // CharacterSelect의 시각 표현은 버튼 색/테두리/전체 스케일을 변경하지 않습니다.
+        // 파티 등록 상태는 SelectedPartyMarker, 마우스 호버는 CharBtn 전체 스케일로만 표시합니다.
         isViewedCharacter = isLocalViewed;
         isRemoteViewedCharacter = !isLocalViewed && isRemoteViewed;
-        ApplyViewedCharacterButtonColor(isLocalViewed);
-
-        AutoPrepareViewedCharacterBorder();
-        CacheViewedCharacterOriginalValues();
-
-        if (viewedCharacterBorderTargets.Count <= 0 || rect == null)
-            return;
-
-        bool shouldShowViewedState = isLocalViewed || isRemoteViewed;
-        Vector3 targetScale = GetViewedCharacterTargetScale(shouldShowViewedState);
-        ApplyViewedCharacterBorderAlpha(isRemoteViewedCharacter);
-
-        if (viewedCharacterTransitionCoroutine != null)
-        {
-            StopCoroutine(viewedCharacterTransitionCoroutine);
-            viewedCharacterTransitionCoroutine = null;
-        }
-
-        if (immediate || !isActiveAndEnabled || !gameObject.activeInHierarchy || viewedCharacterTransitionDuration <= 0f)
-        {
-            ApplyViewedCharacterBorderRotations(shouldShowViewedState);
-            rect.localScale = targetScale;
-            return;
-        }
-
-        viewedCharacterTransitionCoroutine = StartCoroutine(
-            AnimateViewedCharacterRoutine(shouldShowViewedState, targetScale));
     }
 
     public void RefreshNetworkViewedCharacterState(bool immediate = false)

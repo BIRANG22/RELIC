@@ -17,6 +17,9 @@ public sealed class LobbyViewStateController : MonoBehaviour
     [SerializeField] private GameObject characterSettingPanel;
     [SerializeField] private GameObject characterPreviewSpawnRoot;
 
+    [Header("Character Preview Scale")]
+    [SerializeField] private float characterPreviewScale = 0.4f;
+
     [Header("Position Objects")]
     [SerializeField] private GameObject position;
     [SerializeField] private GameObject positionPanel;
@@ -69,6 +72,9 @@ public sealed class LobbyViewStateController : MonoBehaviour
         SetActive(lobbyMainPanel, isLobby);
         SetActive(characterSettingPanel, isCharacterSelection);
         SetActive(characterPreviewSpawnRoot, isCharacterSelection);
+
+        if (isCharacterSelection)
+            ApplyCharacterPreviewScale();
         SetActive(position, isPosition);
         // CharacterSettingPanel과 SettingButton이 PositionPanel의 자식이므로
         // 캐릭터 설정 화면에서도 PositionPanel 루트는 유지합니다.
@@ -100,6 +106,30 @@ public sealed class LobbyViewStateController : MonoBehaviour
 
         SetActive(positionPanel, true);
         SetActive(settingButton, true);
+        ApplyCharacterPreviewScale();
+    }
+
+    private void ApplyCharacterPreviewScale()
+    {
+        if (characterPreviewSpawnRoot == null)
+            return;
+
+        Transform root = characterPreviewSpawnRoot.transform;
+        float scale = Mathf.Max(0f, characterPreviewScale);
+        Vector3 targetScale = Vector3.one * scale;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child == null)
+                continue;
+
+            if (!child.name.StartsWith("Preview_Char_", System.StringComparison.Ordinal))
+                continue;
+
+            if (child.localScale != targetScale)
+                child.localScale = targetScale;
+        }
     }
 
     private static GameObject FindSceneObject(string objectName)
