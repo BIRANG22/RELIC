@@ -176,6 +176,11 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
         testBundleActive = true;
         pendingCharacterCheatGrant = true;
 
+        // 치트를 켠 시점에 런타임이 아직 생성되지 않은 기본 테스트 캐릭터도
+        // 먼저 생성해 둡니다. 특히 Char_04처럼 기본 파티(1~3)에 포함되지 않는
+        // 캐릭터가 이후 로비에서 생성되며 레벨 +5를 놓치는 문제를 방지합니다.
+        EnsureDefaultTestCharacterRuntimes(dataManager);
+
         int changedCharacterCount = ApplyCharacterCheatToExistingCharacters(dataManager);
         TryCompletePendingCharacterCheat(dataManager);
 
@@ -278,6 +283,66 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
 
         pendingCharacterCheatGrant = false;
         return true;
+    }
+
+
+    private static void EnsureDefaultTestCharacterRuntimes(DataManager dataManager)
+    {
+        if (dataManager?.CharacterRuntimeStore == null || dataManager.CharacterDatabase == null)
+            return;
+
+        for (int i = 0; i < DefaultTestCharacterIds.Length; i++)
+        {
+            string characterId = DefaultTestCharacterIds[i];
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (dataManager.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData existing) &&
+                existing != null)
+            {
+                continue;
+            }
+
+            if (!dataManager.CharacterDatabase.TryGet(characterId, out CharacterMasterData master) ||
+                master == null)
+            {
+                continue;
+            }
+
+            CharacterRuntimeData runtime = new()
+            {
+                CharacterId = master.CharacterId,
+                Level = 1,
+                Exp = 0,
+                MaxHP = master.MaxHP,
+                MaxCost = master.MaxCost,
+                CostRecovery = master.CostRecovery,
+                CurrentHP = master.MaxHP,
+                CurrentCost = master.MaxCost,
+                CurrentResource = 0,
+                CurrentMoveLevel = 0,
+                IsUnlocked = master.IsDefaultProvided,
+                MoveSkillId = "S_Move_1",
+                PassiveSkillId = master.PassiveSkill1,
+                UniqueSkillId = master.UniqueSkill1,
+                AbilitySkillId = master.CharacterSkill1,
+                EquippedSkillIds = new[]
+                {
+                    master.UniqueSkill1,
+                    master.CharacterSkill1,
+                    string.Empty,
+                    string.Empty
+                },
+                EquippedRuneIds = new string[6],
+                EquippedRelicIds = CharacterStartingRelicUtility.CreateStartingRelicSlots(master)
+            };
+
+            CharacterStartingRelicUtility.InitializeActiveRelicUses(
+                runtime,
+                dataManager.RelicDatabase);
+
+            dataManager.CharacterRuntimeStore.AddOrUpdate(runtime);
+        }
     }
 
     private int ApplyCharacterCheatToExistingCharacters(DataManager dataManager)

@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Rendering.Universal;
@@ -20,6 +21,16 @@ public class UIHoverLight2DFalloff : MonoBehaviour, IPointerEnterHandler, IPoint
     [Tooltip("두 Falloff Strength 값 사이를 변화하는 속도입니다.")]
     [Min(0f)]
     [SerializeField] private float changeSpeed = 3f;
+
+    [Header("Character Name")]
+    [Tooltip("마우스를 올렸을 때 표시할 캐릭터 이름입니다.")]
+    [SerializeField] private string characterName;
+
+    [Tooltip("캐릭터 이름을 표시할 TMP_Text입니다.")]
+    [SerializeField] private TMP_Text characterNameText;
+
+    [Tooltip("캐릭터 이름 UI 전체를 켜고 끌 오브젝트입니다. 비워두면 Character Name Text 오브젝트를 사용합니다.")]
+    [SerializeField] private GameObject characterNameRoot;
 
     [Header("Hover Detection")]
     [Tooltip("UI 오브젝트라면 RectTransform 영역을 직접 검사하여 Raycast Target 설정과 관계없이 호버를 감지합니다.")]
@@ -44,6 +55,7 @@ public class UIHoverLight2DFalloff : MonoBehaviour, IPointerEnterHandler, IPoint
     {
         FindReferences();
         SetNormalValueImmediately();
+        SetCharacterNameVisible(false);
     }
 
     private void OnEnable()
@@ -52,6 +64,12 @@ public class UIHoverLight2DFalloff : MonoBehaviour, IPointerEnterHandler, IPoint
         SetNormalValueImmediately();
         isHovered = false;
         wasRectHovered = false;
+        SetCharacterNameVisible(false);
+    }
+
+    private void OnDisable()
+    {
+        SetCharacterNameVisible(false);
     }
 
     private void Update()
@@ -121,21 +139,22 @@ public class UIHoverLight2DFalloff : MonoBehaviour, IPointerEnterHandler, IPoint
     }
 
     /// <summary>
-    /// 현재 호버 상태에 따라 목표 Falloff Strength를 지정합니다.
+    /// 현재 호버 상태에 따라 Light 효과와 캐릭터 이름 표시 상태를 변경합니다.
     /// </summary>
     private void SetHoverState(bool hovered)
     {
-        if (targetLight == null)
-        {
-            return;
-        }
-
         if (isHovered == hovered)
         {
             return;
         }
 
         isHovered = hovered;
+        SetCharacterNameVisible(hovered);
+
+        if (targetLight == null)
+        {
+            return;
+        }
 
         if (hovered)
         {
@@ -148,6 +167,28 @@ public class UIHoverLight2DFalloff : MonoBehaviour, IPointerEnterHandler, IPoint
         {
             targetFalloffStrength = normalFalloffStrength;
             isChanging = true;
+        }
+    }
+
+    /// <summary>
+    /// 캐릭터 이름 UI의 표시 상태를 변경합니다.
+    /// </summary>
+    private void SetCharacterNameVisible(bool visible)
+    {
+        if (visible && characterNameText != null)
+        {
+            characterNameText.text = characterName;
+        }
+
+        GameObject root = characterNameRoot;
+        if (root == null && characterNameText != null)
+        {
+            root = characterNameText.gameObject;
+        }
+
+        if (root != null && root.activeSelf != visible)
+        {
+            root.SetActive(visible);
         }
     }
 
