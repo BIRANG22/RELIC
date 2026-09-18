@@ -6017,9 +6017,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 183454276}
-  localizationKey: data.character.char_01.introduction
-  koreanSource: "\u201C\uAC15\uD55C \uB188\uB4E4\uC774 \uB4DD\uC2E4\uAC70\uB9B0\uB2E4\uBA70?
-    \uADF8\uB7FC \uB0B4\uAC00 \uAC00\uC57C\uC9C0.\u201D\r\n"
+  localizationKey: data.character.char_04.introduction
+  koreanSource: "\u201C\uAC71\uC815\uD558\uC9C0 \uB9C8\uC138\uC694. \uBAA8\uB450
+    \uBB34\uC0AC\uD788 \uB3CC\uC544\uAC08 \uC218 \uC788\uB3C4\uB85D \uD560\uAC8C\uC694.\u201D\r\n"
   automaticallyRegistered: 1
 --- !u!1 &183745633
 GameObject:

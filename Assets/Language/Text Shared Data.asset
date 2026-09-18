@@ -5599,6 +5599,14 @@ MonoBehaviour:
     m_Key: ui.lobby.text.ce00b05e
     m_Metadata:
       m_Items: []
+  - m_Id: 13737100144574491
+    m_Key: ui.ydh.battletest.text.75dd6a4a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13737100144574514
+    m_Key: ui.battle.text.b9a1f4f3
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
