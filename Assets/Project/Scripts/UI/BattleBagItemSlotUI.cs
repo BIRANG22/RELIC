@@ -12,6 +12,8 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     [Header("UI")]
     [SerializeField] private Image borderImage;
+    [Tooltip("선택된 슬롯에 표시할 Select_Line 오브젝트입니다. 비워두면 자식 이름 Select_Line으로 자동 연결합니다.")]
+    [SerializeField] private GameObject selectLine;
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text quantityText;
@@ -271,10 +273,13 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         if (iconImage != null)
             iconImage.color = NormalIconColor;
 
+        if (selectLine != null)
+            selectLine.SetActive(HasItem && isSelected);
+
         if (borderImage == null)
             return;
 
-        borderImage.color = HasItem && (isSelected || isHovered) ? HighlightBorderColor : normalBorderColor;
+        borderImage.color = HasItem && isHovered ? HighlightBorderColor : normalBorderColor;
     }
 
     private void AutoBind()
@@ -286,12 +291,19 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
             borderImage = GetComponent<Image>();
 
         if (borderImage == null)
-            borderImage = FindChildImageByName("Border", "Frame", "BackGround", "Background");
+            borderImage = FindChildImageByName("Back", "Border", "Frame", "BackGround", "Background");
 
         if (borderImage != null && !hasCachedNormalBorderColor)
         {
             normalBorderColor = borderImage.color;
             hasCachedNormalBorderColor = true;
+        }
+
+        if (selectLine == null)
+        {
+            Transform selectLineTransform = FindDeepChild(transform, "Select_Line");
+            if (selectLineTransform != null)
+                selectLine = selectLineTransform.gameObject;
         }
 
         if (iconImage == null)

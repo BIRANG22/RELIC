@@ -28,6 +28,10 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private const int EquipmentDragSortingOrder = 10000;
     private const string EquipButtonDefaultText = "장착";
     private const string EquipButtonCancelText = "취소";
+    private static readonly Color InfoEquipmentLineNormalColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    private static readonly Color InfoEquipmentLineHighlightColor = Color.white;
+    private static readonly Color InfoEquipmentLineDisabledColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+    private static readonly Color InfoEquipmentBackHoverColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
 
     // 로비 Equip_panel의 Skill 1~3은 교체 가능한 기억만 표시합니다.
     // Skill1 = 구현 기억(AbilitySkillId / EquippedSkillIds[1])
@@ -120,6 +124,12 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     // Ready_Panel <-> Info_Panel 장착/해제 및 드래그 상태
     private readonly LobbyReadyEquipmentPointerRelay[,] infoRelicTargetRelays = new LobbyReadyEquipmentPointerRelay[CharacterCount, 2];
     private readonly LobbyReadyEquipmentPointerRelay[] infoCompoundTargetRelays = new LobbyReadyEquipmentPointerRelay[CharacterCount];
+    private readonly Image[,] infoRelicTargetLines = new Image[CharacterCount, 2];
+    private readonly Image[] infoCompoundTargetLines = new Image[CharacterCount];
+    private readonly Image[,] infoRelicTargetBacks = new Image[CharacterCount, 2];
+    private readonly Color[,] infoRelicTargetBackNormalColors = new Color[CharacterCount, 2];
+    private readonly Image[] infoCompoundTargetBacks = new Image[CharacterCount];
+    private readonly Color[] infoCompoundTargetBackNormalColors = new Color[CharacterCount];
     private string equipmentDragItemId;
     private bool equipmentDragIsCompound;
     private int equipmentDragSourcePartyIndex = -1;
@@ -383,6 +393,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         UpdateRelicEquipCandidateVisuals();
         UpdateActiveCompoundCandidateVisuals();
         UpdateCharacterEquipTargetVisuals();
+        UpdateInfoEquipmentSlotGuide();
     }
 
     public static void RefreshAllCharacterData()
@@ -1279,6 +1290,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         readyDetailPinnedSlot = slot;
         readyDetailPinnedSlot.SetSelected(true);
         ShowReadyInventoryDetail(slot);
+        UpdateInfoEquipmentSlotGuide();
     }
 
     private void HideReadyInventoryDetail()
@@ -1289,6 +1301,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             readyDetailPinnedSlot.SetSelected(false);
 
         readyDetailPinnedSlot = null;
+        UpdateInfoEquipmentSlotGuide();
 
         if (readyDetailRoot != null)
             readyDetailRoot.SetActive(false);
@@ -1343,8 +1356,14 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                     data => BeginInfoEquipmentDrag(capturedParty, runtimeSlotIndex, isCompound: false, data),
                     UpdateEquipmentDrag,
                     EndEquipmentDrag,
-                    _ => CompleteEquipmentDrop(capturedParty, runtimeSlotIndex, isCompound: false));
+                    _ => CompleteEquipmentDrop(capturedParty, runtimeSlotIndex, isCompound: false),
+                    _ => SetInfoEquipmentSlotHover(capturedParty, capturedVisible, isCompound: false, hovered: true),
+                    _ => SetInfoEquipmentSlotHover(capturedParty, capturedVisible, isCompound: false, hovered: false));
                 infoRelicTargetRelays[partyIndex, visibleIndex] = relay;
+                infoRelicTargetLines[partyIndex, visibleIndex] = FindLineImage(slotRoot);
+                infoRelicTargetBacks[partyIndex, visibleIndex] = FindBackImage(slotRoot);
+                if (infoRelicTargetBacks[partyIndex, visibleIndex] != null)
+                    infoRelicTargetBackNormalColors[partyIndex, visibleIndex] = infoRelicTargetBacks[partyIndex, visibleIndex].color;
             }
 
             Transform compoundRoot = charRoot.Find("Compound") ?? FindChildRecursive(charRoot, "Compound");
@@ -1359,9 +1378,157 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                     data => BeginInfoEquipmentDrag(capturedParty, activeSlotIndex, isCompound: true, data),
                     UpdateEquipmentDrag,
                     EndEquipmentDrag,
-                    _ => CompleteEquipmentDrop(capturedParty, activeSlotIndex, isCompound: true));
+                    _ => CompleteEquipmentDrop(capturedParty, activeSlotIndex, isCompound: true),
+                    _ => SetInfoEquipmentSlotHover(capturedParty, 0, isCompound: true, hovered: true),
+                    _ => SetInfoEquipmentSlotHover(capturedParty, 0, isCompound: true, hovered: false));
                 infoCompoundTargetRelays[partyIndex] = relay;
+                infoCompoundTargetLines[partyIndex] = FindLineImage(compoundSlot);
+                infoCompoundTargetBacks[partyIndex] = FindBackImage(compoundSlot);
+                if (infoCompoundTargetBacks[partyIndex] != null)
+                    infoCompoundTargetBackNormalColors[partyIndex] = infoCompoundTargetBacks[partyIndex].color;
             }
+        }
+
+        UpdateInfoEquipmentSlotGuide();
+    }
+
+    private static Image FindLineImage(Transform slotRoot)
+    {
+        if (slotRoot == null)
+            return null;
+
+        Transform lineRoot = slotRoot.Find("Line") ?? FindChildRecursive(slotRoot, "Line");
+        if (lineRoot == null)
+            return null;
+
+        return lineRoot.GetComponent<Image>() ?? lineRoot.GetComponentInChildren<Image>(true);
+    }
+
+    private static Image FindBackImage(Transform slotRoot)
+    {
+        if (slotRoot == null)
+            return null;
+
+        Transform backRoot = slotRoot.Find("Back");
+        if (backRoot == null)
+            return null;
+
+        return backRoot.GetComponent<Image>() ?? backRoot.GetComponentInChildren<Image>(true);
+    }
+
+    private bool HasInfoPanelCharacter(int partyIndex)
+    {
+        if (partyIndex < 0 || partyIndex >= CharacterCount)
+            return false;
+
+        string characterId = DataManager.Instance?.PartyRuntimeStore?.GetCharacterId(partyIndex);
+        return !string.IsNullOrWhiteSpace(characterId);
+    }
+
+    private void SetInfoEquipmentSlotHover(int partyIndex, int visibleSlotIndex, bool isCompound, bool hovered)
+    {
+        if (partyIndex < 0 || partyIndex >= CharacterCount)
+            return;
+
+        bool canInteract = hovered && IsInfoEquipmentSlotInteractable(partyIndex, visibleSlotIndex, isCompound);
+
+        if (isCompound)
+        {
+            Image back = infoCompoundTargetBacks[partyIndex];
+            if (back == null)
+                return;
+
+            back.color = canInteract
+                ? InfoEquipmentBackHoverColor
+                : infoCompoundTargetBackNormalColors[partyIndex];
+            return;
+        }
+
+        if (visibleSlotIndex < 0 || visibleSlotIndex >= 2)
+            return;
+
+        Image relicBack = infoRelicTargetBacks[partyIndex, visibleSlotIndex];
+        if (relicBack == null)
+            return;
+
+        relicBack.color = canInteract
+            ? InfoEquipmentBackHoverColor
+            : infoRelicTargetBackNormalColors[partyIndex, visibleSlotIndex];
+    }
+
+    private bool IsInfoEquipmentSlotInteractable(int partyIndex, int visibleSlotIndex, bool isCompound)
+    {
+        if (!HasInfoPanelCharacter(partyIndex))
+            return false;
+
+        // Ready_Panel에서 아이템을 선택한 동안에는 실제로 장착 가능한 종류의 슬롯만 반응합니다.
+        if (readyDetailPinnedSlot != null &&
+            readyDetailPinnedSlot.HasItem &&
+            !string.IsNullOrWhiteSpace(readyDetailPinnedSlot.ItemId))
+        {
+            return IsEquipmentType(readyDetailPinnedSlot.ItemId, isCompound);
+        }
+
+        // 선택된 아이템이 없을 때 Info_Panel 슬롯 클릭은 장착 해제 동작입니다.
+        // 따라서 실제 장착물이 없는 빈 슬롯은 호버 피드백을 표시하지 않습니다.
+        DataManager dataManager = DataManager.Instance;
+        if (dataManager?.CharacterRuntimeStore == null)
+            return false;
+
+        string characterId = dataManager.PartyRuntimeStore?.GetCharacterId(partyIndex);
+        if (string.IsNullOrWhiteSpace(characterId) ||
+            !dataManager.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtime))
+        {
+            return false;
+        }
+
+        ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
+
+        int runtimeSlotIndex = isCompound
+            ? ActiveRelicRuntimeUtility.ActiveRelicSlotIndex
+            : visibleSlotIndex + 1;
+
+        if (runtimeSlotIndex < 0 || runtimeSlotIndex >= runtime.EquippedRelicIds.Length)
+            return false;
+
+        string equippedItemId = runtime.EquippedRelicIds[runtimeSlotIndex];
+        return !string.IsNullOrWhiteSpace(equippedItemId) &&
+               IsEquipmentType(equippedItemId, isCompound);
+    }
+
+    private void UpdateInfoEquipmentSlotGuide()
+    {
+        bool hasSelection = readyDetailPinnedSlot != null &&
+                            readyDetailPinnedSlot.HasItem &&
+                            !string.IsNullOrWhiteSpace(readyDetailPinnedSlot.ItemId);
+
+        bool highlightCompound = hasSelection && IsEquipmentType(readyDetailPinnedSlot.ItemId, isCompound: true);
+        bool highlightRelic = hasSelection && !highlightCompound &&
+                              IsEquipmentType(readyDetailPinnedSlot.ItemId, isCompound: false);
+
+        Color relicLineColor = !hasSelection
+            ? InfoEquipmentLineNormalColor
+            : highlightRelic
+                ? InfoEquipmentLineHighlightColor
+                : InfoEquipmentLineDisabledColor;
+        Color compoundLineColor = !hasSelection
+            ? InfoEquipmentLineNormalColor
+            : highlightCompound
+                ? InfoEquipmentLineHighlightColor
+                : InfoEquipmentLineDisabledColor;
+
+        for (int partyIndex = 0; partyIndex < CharacterCount; partyIndex++)
+        {
+            for (int slotIndex = 0; slotIndex < 2; slotIndex++)
+            {
+                Image line = infoRelicTargetLines[partyIndex, slotIndex];
+                if (line != null)
+                    line.color = relicLineColor;
+            }
+
+            Image compoundLine = infoCompoundTargetLines[partyIndex];
+            if (compoundLine != null)
+                compoundLine.color = compoundLineColor;
         }
     }
 
@@ -2783,29 +2950,38 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 /// 프리팹 수정 없이 클릭/드래그/드롭을 연결하기 위해 사용합니다.
 /// </summary>
 public sealed class LobbyReadyEquipmentPointerRelay : MonoBehaviour,
-    IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
+    IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler,
+    IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
     private Action<PointerEventData> onClick;
     private Action<PointerEventData> onBeginDrag;
     private Action<PointerEventData> onDrag;
     private Action<PointerEventData> onEndDrag;
     private Action<PointerEventData> onDrop;
+    private Action<PointerEventData> onPointerEnter;
+    private Action<PointerEventData> onPointerExit;
 
     public void Configure(
         Action<PointerEventData> click,
         Action<PointerEventData> beginDrag,
         Action<PointerEventData> drag,
         Action<PointerEventData> endDrag,
-        Action<PointerEventData> drop)
+        Action<PointerEventData> drop,
+        Action<PointerEventData> pointerEnter = null,
+        Action<PointerEventData> pointerExit = null)
     {
         onClick = click;
         onBeginDrag = beginDrag;
         onDrag = drag;
         onEndDrag = endDrag;
         onDrop = drop;
+        onPointerEnter = pointerEnter;
+        onPointerExit = pointerExit;
     }
 
     public void OnPointerClick(PointerEventData eventData) => onClick?.Invoke(eventData);
+    public void OnPointerEnter(PointerEventData eventData) => onPointerEnter?.Invoke(eventData);
+    public void OnPointerExit(PointerEventData eventData) => onPointerExit?.Invoke(eventData);
     public void OnBeginDrag(PointerEventData eventData) => onBeginDrag?.Invoke(eventData);
     public void OnDrag(PointerEventData eventData) => onDrag?.Invoke(eventData);
     public void OnEndDrag(PointerEventData eventData) => onEndDrag?.Invoke(eventData);
