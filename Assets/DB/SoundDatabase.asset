@@ -406,7 +406,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.book.open
     aliases: []
-    clip: {fileID: 8300000, guid: a2f8d2f2beb873d47aa8d7f7883b66f5, type: 3}
+    clip: {fileID: 8300000, guid: c4e48431d7aa6431dbf6ef1c89293b4a, type: 3}
     volume: 0.5
     pitch: 0.7
     loop: 0
@@ -461,7 +461,7 @@ MonoBehaviour:
   - id: ui.relicstone.click
     aliases: []
     clip: {fileID: 8300000, guid: 9ebd67a496e154865b4cb3db7e72cc55, type: 3}
-    volume: 0.5
+    volume: 0.3
     pitch: 0.7
     loop: 0
     useRandomPitch: 0
@@ -485,9 +485,9 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
-  - id: ui.chest.close
+  - id: ui.party.click
     aliases: []
-    clip: {fileID: 8300000, guid: 3f7cd4d9f03084daf9d66177f9ddcdec, type: 3}
+    clip: {fileID: 8300000, guid: d73a42d2f4c3449eab261e629916465f, type: 3}
     volume: 0.5
     pitch: 0.7
     loop: 0
@@ -496,7 +496,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.chest.click
     aliases: []
-    clip: {fileID: 8300000, guid: 1386d1025d1db42f48f69d85ce36def3, type: 3}
+    clip: {fileID: 8300000, guid: d0f33a3777ef440c7b7dae47e0849c00, type: 3}
     volume: 0.5
     pitch: 0.7
     loop: 0
@@ -577,8 +577,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.flag.click
     aliases: []
-    clip: {fileID: 8300000, guid: 609254407dc7aae4daf7acbfd54a4c82, type: 3}
-    volume: 0.4
+    clip: {fileID: 8300000, guid: 3daa7bdc3529f46c88166e0ac529d1fe, type: 3}
+    volume: 0.3
     pitch: 1
     loop: 0
     useRandomPitch: 0
