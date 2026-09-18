@@ -187,20 +187,24 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(backKey) && CanHandleSharedInput())
+        bool backKeyPressed = Input.GetKeyDown(backKey);
+        bool rightMousePressed = Input.GetMouseButtonDown(1);
+
+        if ((backKeyPressed || rightMousePressed) && CanHandleSharedInput())
         {
-            // ESC 우선순위:
+            // ESC / 마우스 우클릭 우선순위:
             // 1. Equip_panel / StoragePanel 등 현재 열린 전면 패널 닫기
             // 2. 유물 상점 / 배양조 / 침식도 선택 패널 닫기
             // 3. CharacterSettingPanel 닫기
-            // 4. 닫을 패널이 없을 때만 MenuPanel 열기
+            // 4. ESC는 닫을 패널이 없을 때만 MenuPanel 열기
+            //    우클릭은 패널 닫기 전용이며 MenuPanel을 새로 열지 않습니다.
             if (TryCloseEscapePriorityPanel())
             {
                 BlockInputForCooldown();
                 return;
             }
 
-            if (CanOpenMenuFromPositionPanel())
+            if (backKeyPressed && CanOpenMenuFromPositionPanel())
             {
                 ToggleMenuPanel();
                 BlockInputForCooldown();
@@ -520,7 +524,7 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         if (!CanHandleSharedInput())
             return;
 
-        if (Input.GetKeyDown(backKey))
+        if (Input.GetKeyDown(backKey) || Input.GetMouseButtonDown(1))
         {
             CloseMenuPanel();
             BlockInputForCooldown();

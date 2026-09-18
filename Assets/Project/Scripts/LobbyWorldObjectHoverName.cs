@@ -11,7 +11,11 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
         Exploration,
         Resonance,
         Npc,
-        Storage
+        Storage,
+        Hilt,
+        Kaya,
+        Haze,
+        Ines
     }
 
     [Header("Hover Name")]
@@ -311,6 +315,10 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
             HoverNameType.Resonance => "lobby.world_object.stela",
             HoverNameType.Npc => "lobby.world_object.researcher_elric",
             HoverNameType.Storage => "lobby.world_object.storage",
+            HoverNameType.Hilt => "lobby.character.hilt",
+            HoverNameType.Kaya => "lobby.character.kaya",
+            HoverNameType.Haze => "lobby.character.haze",
+            HoverNameType.Ines => "lobby.character.ines",
             _ => string.Empty
         };
     }
@@ -324,6 +332,10 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
             HoverNameType.Resonance => "\uBE44\uC11D",
             HoverNameType.Npc => "\uC5F0\uAD6C\uC6D0 \uC5D8\uB9AD",
             HoverNameType.Storage => "\uBCF4\uAD00\uD568",
+            HoverNameType.Hilt => "\uD790\uD2B8",
+            HoverNameType.Kaya => "\uCE74\uC57C",
+            HoverNameType.Haze => "\uD5E4\uC774\uC988",
+            HoverNameType.Ines => "\uC774\uB124\uC2A4",
             _ => string.Empty
         };
     }
