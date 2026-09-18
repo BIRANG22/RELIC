@@ -91,6 +91,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         SetBackHoverState(false);
         RefreshValueHoverState();
         StopHoverScaleEffect(true);
+        owner?.HideRuneTooltip();
     }
 
     public void Init(RuneSettingPanel panel)
@@ -437,6 +438,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         RefreshUnlockHoverState();
         SetBackHoverState(true);
         ShowCurrentRuneInfo();
+        owner?.ShowRuneTooltip(currentRuneData, transform as RectTransform);
         shownInfoVersion = LobbyInfoHoverState.CurrentVersion;
         StartHoverScaleEffect();
 
@@ -455,6 +457,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         SetBackHoverState(false);
         RefreshValueHoverState();
         StopHoverScaleEffect(true);
+        owner?.HideRuneTooltip();
 
         // 프리뷰에서는 호버가 끝나면 기본 안내 정보로 돌아갑니다.
         // 룬 세팅에서는 마지막으로 확인한 정보를 유지합니다.

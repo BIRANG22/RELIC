@@ -104,6 +104,8 @@ public class RuneSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             LobbyInfoHoverState.EndRuneHover();
             isPointerInside = false;
         }
+
+        owner?.HideRuneTooltip();
     }
 
     public void Init(RuneSettingPanel panel, int index)
@@ -148,6 +150,7 @@ public class RuneSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         if (owner != null)
         {
             owner.ShowRuneSlotInfo(slotIndex, equippedRune, isLocked);
+            owner.ShowRuneTooltip(equippedRune, transform as RectTransform);
             shownInfoVersion = LobbyInfoHoverState.CurrentVersion;
         }
     }
@@ -172,6 +175,8 @@ public class RuneSlotButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
         // 프리뷰에서는 기본 안내 정보로 돌아가고,
         // 룬 세팅에서는 마지막으로 확인한 정보를 유지합니다.
+        owner?.HideRuneTooltip();
+
         if (owner != null && owner.ShouldClearInfoOnHoverExit && shownInfoVersion >= 0)
             owner.ClearRuneInfoFromHover(shownInfoVersion);
 
