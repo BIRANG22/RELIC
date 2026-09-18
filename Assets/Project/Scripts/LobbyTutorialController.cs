@@ -4,6 +4,7 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 
@@ -26,6 +27,12 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [SerializeField] private Button nextButton;
     [SerializeField] private RectTransform nextButtonIndicator;
     [SerializeField] private string speakerNameKey = LocalizationKeys.Tutorial.SpeakerElric;
+
+    [Header("Tutorial Input Blocker")]
+    [Tooltip("튜토리얼 대화 중 뒤쪽 로비 UI/월드 오브젝트 클릭을 막는 전체 화면 레이캐스트 블로커입니다. 비어 있으면 런타임에 자동 생성합니다.")]
+    [SerializeField] private GameObject tutorialInputBlocker;
+    [Tooltip("DialoguePanel에 별도 Canvas가 없을 때 자동 생성 블로커가 사용할 Sorting Order입니다.")]
+    [SerializeField] private int tutorialInputBlockerFallbackSortingOrder = 9049;
 
     [Header("Text Typewriter")]
     [Tooltip("1초에 표시할 글자 수입니다.")]
@@ -170,10 +177,54 @@ public sealed class LobbyTutorialController : MonoBehaviour
         ResetDialogueLocalizationKeys();
         AutoBindHierarchy();
         BindNextButton();
+        BindDialoguePanelClick();
         SetDialogueVisible(false);
         SetTutorialDisplay(false);
         CacheNextButtonIndicatorPosition();
         SetNextButtonReady(false);
+    }
+
+    private void BindDialoguePanelClick()
+    {
+        if (dialoguePanel == null)
+            return;
+
+        // DialoguePanel은 별도 Canvas(9050)를 사용하므로 자체 GraphicRaycaster가 있어야
+        // 9049의 TutorialInputBlocker보다 위에서 실제 포인터 입력을 받을 수 있습니다.
+        Canvas dialogueCanvas = dialoguePanel.GetComponent<Canvas>();
+        if (dialogueCanvas != null)
+        {
+            dialogueCanvas.overrideSorting = true;
+            dialogueCanvas.sortingOrder = 9050;
+
+            if (dialoguePanel.GetComponent<GraphicRaycaster>() == null)
+                dialoguePanel.AddComponent<GraphicRaycaster>();
+        }
+
+        // 패널의 빈 영역도 클릭 대상으로 만들기 위해 완전 투명 Image를 사용합니다.
+        // 기존 자식 UI의 표시에는 영향을 주지 않으며 Raycast만 받습니다.
+        Image clickSurface = dialoguePanel.GetComponent<Image>();
+        if (clickSurface == null)
+        {
+            clickSurface = dialoguePanel.AddComponent<Image>();
+            clickSurface.color = new Color(0f, 0f, 0f, 0f);
+        }
+
+        clickSurface.raycastTarget = true;
+
+        LobbyTutorialDialogueClickRelay relay = dialoguePanel.GetComponent<LobbyTutorialDialogueClickRelay>();
+        if (relay == null)
+            relay = dialoguePanel.AddComponent<LobbyTutorialDialogueClickRelay>();
+
+        relay.Setup(this);
+    }
+
+    internal void HandleDialoguePanelClick(PointerEventData eventData)
+    {
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        AdvanceDialogue();
     }
 
     private IEnumerator Start()
@@ -213,6 +264,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
         }
 
         StopTypewriter();
+        SetTutorialInputBlockerVisible(false);
+        LobbyPositionModalInputBlocker.Unblock(this);
         ReleaseCameraPause();
     }
 
@@ -232,6 +285,9 @@ public sealed class LobbyTutorialController : MonoBehaviour
     {
         if (nextButton != null)
             nextButton.onClick.RemoveListener(AdvanceDialogue);
+
+        SetTutorialInputBlockerVisible(false);
+        LobbyPositionModalInputBlocker.Unblock(this);
         ReleaseCameraPause();
 
     }
@@ -1125,6 +1181,10 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     private void SetDialogueVisible(bool visible)
     {
+        // DialoguePanel보다 바로 아래 Sorting Order의 투명 레이캐스트 블로커를 먼저 켜서
+        // 튜토리얼 중 뒤쪽 로비 버튼과 월드 오브젝트가 클릭되지 않도록 합니다.
+        SetTutorialInputBlockerVisible(visible);
+
         if (dialoguePanel != null)
         {
             dialoguePanel.SetActive(visible);
@@ -1147,6 +1207,90 @@ public sealed class LobbyTutorialController : MonoBehaviour
             LobbyPositionModalInputBlocker.Unblock(this);
             ReleaseCameraPause();
         }
+    }
+
+    private void SetTutorialInputBlockerVisible(bool visible)
+    {
+        if (visible)
+            EnsureTutorialInputBlocker();
+
+        if (tutorialInputBlocker == null)
+            return;
+
+        tutorialInputBlocker.SetActive(visible);
+
+        if (!visible)
+            return;
+
+        tutorialInputBlocker.transform.SetAsLastSibling();
+
+        // 블로커를 앞으로 올린 뒤 DialoguePanel을 한 번 더 마지막 형제로 보내
+        // Next 버튼을 포함한 대화 UI가 블로커 위에서 입력을 받도록 보장합니다.
+        if (dialoguePanel != null)
+            dialoguePanel.transform.SetAsLastSibling();
+    }
+
+    private void EnsureTutorialInputBlocker()
+    {
+        if (tutorialInputBlocker != null)
+        {
+            ConfigureTutorialInputBlocker(tutorialInputBlocker);
+            return;
+        }
+
+        Transform parent = dialoguePanel != null && dialoguePanel.transform.parent != null
+            ? dialoguePanel.transform.parent
+            : transform;
+
+        tutorialInputBlocker = new GameObject(
+            "TutorialInputBlocker",
+            typeof(RectTransform),
+            typeof(Canvas),
+            typeof(GraphicRaycaster),
+            typeof(Image));
+
+        RectTransform rect = tutorialInputBlocker.GetComponent<RectTransform>();
+        rect.SetParent(parent, false);
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+        rect.localScale = Vector3.one;
+
+        ConfigureTutorialInputBlocker(tutorialInputBlocker);
+    }
+
+    private void ConfigureTutorialInputBlocker(GameObject blocker)
+    {
+        if (blocker == null)
+            return;
+
+        Image blockerImage = blocker.GetComponent<Image>();
+        if (blockerImage == null)
+            blockerImage = blocker.AddComponent<Image>();
+
+        // 완전히 투명하지만 Raycast Target은 유지합니다.
+        blockerImage.color = new Color(0f, 0f, 0f, 0f);
+        blockerImage.raycastTarget = true;
+
+        Canvas blockerCanvas = blocker.GetComponent<Canvas>();
+        if (blockerCanvas == null)
+            blockerCanvas = blocker.AddComponent<Canvas>();
+
+        blockerCanvas.overrideSorting = true;
+
+        int blockerSortingOrder = tutorialInputBlockerFallbackSortingOrder;
+        if (dialoguePanel != null)
+        {
+            Canvas dialogueCanvas = dialoguePanel.GetComponent<Canvas>();
+            if (dialogueCanvas != null)
+                blockerSortingOrder = dialogueCanvas.sortingOrder - 1;
+        }
+
+        blockerCanvas.sortingOrder = blockerSortingOrder;
+
+        if (blocker.GetComponent<GraphicRaycaster>() == null)
+            blocker.AddComponent<GraphicRaycaster>();
     }
 
     private void AcquireCameraPause()
@@ -1313,3 +1457,23 @@ public sealed class LobbyTutorialController : MonoBehaviour
         return target != null ? target.GetComponent<T>() : null;
     }
 }
+
+/// <summary>
+/// DialoguePanel의 빈 영역/텍스트 영역 클릭을 LobbyTutorialController의 다음 대사 입력으로 전달합니다.
+/// NextButton처럼 자체 클릭 핸들러가 있는 자식은 기존 Button 처리를 그대로 사용합니다.
+/// </summary>
+public sealed class LobbyTutorialDialogueClickRelay : MonoBehaviour, IPointerClickHandler
+{
+    private LobbyTutorialController owner;
+
+    public void Setup(LobbyTutorialController controller)
+    {
+        owner = controller;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        owner?.HandleDialoguePanelClick(eventData);
+    }
+}
+
