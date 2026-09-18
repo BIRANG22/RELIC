@@ -27,6 +27,22 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
     [SerializeField] private Transform erosionSlotContent;
     [SerializeField] private ScrollRect erosionSlotScrollRect;
 
+    [Header("Erosion Tooltip")]
+    [Tooltip("각 침식도 Level에 마우스를 올렸을 때 표시할 TooltipPanel입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private GameObject tooltipPanel;
+    [Tooltip("TooltipPanel 아래에서 침식 효과 문구를 표시할 ErosionText입니다. 비워두면 자동으로 찾습니다.")]
+    [SerializeField] private TMP_Text tooltipErosionText;
+    [Tooltip("호버한 침식도 아이콘 기준 툴팁 X 오프셋입니다.")]
+    [SerializeField] private float tooltipOffsetX = 120f;
+    [Tooltip("호버한 침식도 아이콘 기준 툴팁 Y 오프셋입니다.")]
+    [SerializeField] private float tooltipOffsetY = 0f;
+    [Tooltip("툴팁이 나타나는 페이드 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float tooltipFadeInDuration = 0.12f;
+    [Tooltip("툴팁이 사라지는 페이드 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float tooltipFadeOutDuration = 0.10f;
+
     [Header("Hover")]
     [Min(1f)]
     [SerializeField] private float hoverIconScale = 1.1f;
@@ -47,19 +63,32 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
     private Coroutine scoreRoutine;
     private string erosionValueTemplate = string.Empty;
     private bool erosionValueTemplateCaptured;
+    private ErosionDifficultyLevelItemUI tooltipOwnerItem;
+    private CanvasGroup tooltipCanvasGroup;
+    private Coroutine tooltipFadeRoutine;
 
     public int CurrentScore => targetScore;
 
     private void Awake()
     {
+        AutoBindTooltipIfNeeded();
+        HideErosionTooltipImmediate();
+
         if (autoBindOnAwake)
             AutoBind();
     }
 
     private void OnEnable()
     {
+        AutoBindTooltipIfNeeded();
+        HideErosionTooltipImmediate();
         RefreshAllVisuals();
         ApplyDisplayedScoreImmediately(targetScore);
+    }
+
+    private void OnDisable()
+    {
+        HideErosionTooltipImmediate();
     }
 
     [ContextMenu("Auto Bind Erosion Difficulty UI")]
@@ -133,6 +162,236 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
         RecalculateTargetScore(true);
         RefreshErosionSlotInstances();
+    }
+
+    internal void ShowErosionTooltip(ErosionDifficultyLevelItemUI item)
+    {
+        if (item == null || item.DifficultyData == null)
+            return;
+
+        AutoBindTooltipIfNeeded();
+        if (tooltipPanel == null || tooltipErosionText == null)
+            return;
+
+        // TooltipPanel의 ErosionText는 동적으로 갱신되는 텍스트입니다.
+        // 고정 LocalizedTMPText가 아니라 현재 호버한 ErosionData의 로컬라이징 결과를 직접 사용합니다.
+        string effectText = GameDataLocalization.ErosionDescription(item.DifficultyData);
+        if (string.IsNullOrWhiteSpace(effectText))
+        {
+            HideErosionTooltip(item);
+            return;
+        }
+
+        tooltipOwnerItem = item;
+        tooltipErosionText.text = effectText;
+        UpdateTooltipPosition(item);
+        FadeTooltipToVisible();
+    }
+
+    private void UpdateTooltipPosition(ErosionDifficultyLevelItemUI item)
+    {
+        if (tooltipPanel == null || item == null)
+            return;
+
+        RectTransform tooltipRect = tooltipPanel.transform as RectTransform;
+        RectTransform itemRect = item.transform as RectTransform;
+        if (tooltipRect == null || itemRect == null)
+            return;
+
+        RectTransform parentRect = tooltipRect.parent as RectTransform;
+        if (parentRect == null)
+            return;
+
+        Canvas canvas = tooltipRect.GetComponentInParent<Canvas>();
+        Camera uiCamera = canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay
+            ? null
+            : canvas.worldCamera;
+
+        Vector3 itemWorldCenter = itemRect.TransformPoint(itemRect.rect.center);
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(uiCamera, itemWorldCenter);
+        screenPoint += new Vector2(tooltipOffsetX, tooltipOffsetY);
+
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentRect,
+                screenPoint,
+                uiCamera,
+                out Vector2 localPoint))
+        {
+            tooltipRect.anchoredPosition = localPoint;
+        }
+    }
+
+    internal void HideErosionTooltip(ErosionDifficultyLevelItemUI item)
+    {
+        if (tooltipOwnerItem != null && tooltipOwnerItem != item)
+            return;
+
+        HideErosionTooltip();
+    }
+
+    private void HideErosionTooltip()
+    {
+        tooltipOwnerItem = null;
+        FadeTooltipToHidden();
+    }
+
+    private void FadeTooltipToVisible()
+    {
+        AutoBindTooltipIfNeeded();
+        if (tooltipPanel == null || tooltipCanvasGroup == null)
+            return;
+
+        if (tooltipFadeRoutine != null)
+        {
+            StopCoroutine(tooltipFadeRoutine);
+            tooltipFadeRoutine = null;
+        }
+
+        if (!tooltipPanel.activeSelf)
+        {
+            tooltipPanel.SetActive(true);
+            tooltipCanvasGroup.alpha = 0f;
+        }
+
+        tooltipCanvasGroup.interactable = false;
+        tooltipCanvasGroup.blocksRaycasts = false;
+
+        if (tooltipFadeInDuration <= 0f)
+        {
+            tooltipCanvasGroup.alpha = 1f;
+            return;
+        }
+
+        if (tooltipCanvasGroup.alpha >= 0.999f)
+        {
+            tooltipCanvasGroup.alpha = 1f;
+            return;
+        }
+
+        tooltipFadeRoutine = StartCoroutine(FadeTooltipRoutine(1f, tooltipFadeInDuration, false));
+    }
+
+    private void FadeTooltipToHidden()
+    {
+        AutoBindTooltipIfNeeded();
+        if (tooltipPanel == null || tooltipCanvasGroup == null)
+            return;
+
+        if (tooltipFadeRoutine != null)
+        {
+            StopCoroutine(tooltipFadeRoutine);
+            tooltipFadeRoutine = null;
+        }
+
+        if (!tooltipPanel.activeSelf)
+        {
+            tooltipCanvasGroup.alpha = 0f;
+            return;
+        }
+
+        if (tooltipFadeOutDuration <= 0f)
+        {
+            tooltipCanvasGroup.alpha = 0f;
+            tooltipPanel.SetActive(false);
+            return;
+        }
+
+        tooltipFadeRoutine = StartCoroutine(FadeTooltipRoutine(0f, tooltipFadeOutDuration, true));
+    }
+
+    private IEnumerator FadeTooltipRoutine(float targetAlpha, float duration, bool deactivateWhenDone)
+    {
+        float startAlpha = tooltipCanvasGroup != null ? tooltipCanvasGroup.alpha : 0f;
+        float elapsed = 0f;
+
+        while (tooltipCanvasGroup != null && elapsed < duration)
+        {
+            elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            float t = duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration);
+            tooltipCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+            yield return null;
+        }
+
+        if (tooltipCanvasGroup != null)
+            tooltipCanvasGroup.alpha = targetAlpha;
+
+        if (deactivateWhenDone && tooltipPanel != null && tooltipOwnerItem == null)
+            tooltipPanel.SetActive(false);
+
+        tooltipFadeRoutine = null;
+    }
+
+    private void HideErosionTooltipImmediate()
+    {
+        tooltipOwnerItem = null;
+
+        if (tooltipFadeRoutine != null)
+        {
+            StopCoroutine(tooltipFadeRoutine);
+            tooltipFadeRoutine = null;
+        }
+
+        AutoBindTooltipIfNeeded();
+
+        if (tooltipCanvasGroup != null)
+        {
+            tooltipCanvasGroup.alpha = 0f;
+            tooltipCanvasGroup.interactable = false;
+            tooltipCanvasGroup.blocksRaycasts = false;
+        }
+
+        if (tooltipPanel != null && tooltipPanel.activeSelf)
+            tooltipPanel.SetActive(false);
+    }
+
+    private void AutoBindTooltipIfNeeded()
+    {
+        if (tooltipPanel == null)
+        {
+            Transform root = transform.root;
+            Transform found = FindTransformRecursive(root, "TooltipPanel");
+            if (found != null)
+                tooltipPanel = found.gameObject;
+        }
+
+        if (tooltipErosionText == null && tooltipPanel != null)
+        {
+            Transform erosionText = FindTransformRecursive(tooltipPanel.transform, "ErosionText");
+            if (erosionText != null)
+                tooltipErosionText = erosionText.GetComponent<TMP_Text>() ?? erosionText.GetComponentInChildren<TMP_Text>(true);
+        }
+
+        if (tooltipPanel != null && tooltipCanvasGroup == null)
+        {
+            tooltipCanvasGroup = tooltipPanel.GetComponent<CanvasGroup>();
+            if (tooltipCanvasGroup == null)
+                tooltipCanvasGroup = tooltipPanel.AddComponent<CanvasGroup>();
+
+            tooltipCanvasGroup.interactable = false;
+            tooltipCanvasGroup.blocksRaycasts = false;
+        }
+
+        EnsureDynamicTooltipTextOwnership();
+    }
+
+    /// <summary>
+    /// ErosionText는 현재 호버한 침식도에 따라 내용이 바뀌는 동적 텍스트입니다.
+    /// Inspector에 남아 있는 고정 LocalizedTMPText가 내용을 다시 덮어쓰지 않도록 정리합니다.
+    /// </summary>
+    private void EnsureDynamicTooltipTextOwnership()
+    {
+        if (tooltipErosionText == null)
+            return;
+
+        if (tooltipErosionText.GetComponent<LocalizationIgnore>() == null)
+            tooltipErosionText.gameObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText fixedLocalizer = tooltipErosionText.GetComponent<LocalizedTMPText>();
+        if (fixedLocalizer != null)
+        {
+            fixedLocalizer.enabled = false;
+            Destroy(fixedLocalizer);
+        }
     }
 
     private void BindCatalog(string catalogName)
@@ -870,15 +1129,23 @@ public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!isSelectable)
+        // 실제로 선택 가능한 침식도 데이터가 연결된 아이콘에서만 툴팁을 표시합니다.
+        // 데이터가 없거나 비활성 난이도 슬롯은 호버해도 TooltipPanel을 열지 않습니다.
+        if (!isSelectable || difficultyData == null)
+        {
+            owner?.HideErosionTooltip(this);
             return;
+        }
 
+        owner?.ShowErosionTooltip(this);
         isHovered = true;
         ApplyHoverScale(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        owner?.HideErosionTooltip(this);
+
         if (!isSelectable)
             return;
 
@@ -980,6 +1247,8 @@ public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
 
     private void OnDisable()
     {
+        owner?.HideErosionTooltip(this);
+
         if (hoverScaleRoutine != null)
         {
             StopCoroutine(hoverScaleRoutine);
