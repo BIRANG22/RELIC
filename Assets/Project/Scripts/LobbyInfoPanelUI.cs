@@ -3,6 +3,7 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine.Localization.Components;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
@@ -18,6 +19,7 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
     private const int VisibleCompoundSlotCount = 1;
     private const string RelicTitle = "유물";
     private const string CompoundTitle = "연성제";
+    private static readonly Color CharacterHoverColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
 
     [Header("Panel")]
     [SerializeField] private GameObject panelRoot;
@@ -26,17 +28,29 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
     [Tooltip("Info_Panel 아래의 Char1~3 구조를 이름으로 자동 연결합니다.")]
     [SerializeField] private bool autoBindCharacterHierarchy = true;
 
+    [Header("Character Slot Hover")]
+    [SerializeField] private float characterHoverScale = 1.1f;
+    [SerializeField] private float characterHoverScaleDuration = 0.15f;
+
     private readonly CharacterView[] characterViews = new CharacterView[CharacterCount];
+    private GameObject characterSelectRoot;
+    private CharPick infoPanelCharacterPicker;
 
     private void Awake()
     {
         ResolvePanelRoot();
         ResolveCharacterViewsIfNeeded();
+        ResolveInfoPanelCharacterSelect();
+        EnsureCharacterSelectAlwaysActive();
+        BindCharacterSlotInteractions();
     }
 
     private void OnEnable()
     {
+        ResolveInfoPanelCharacterSelect();
+        EnsureCharacterSelectAlwaysActive();
         RefreshCharacterData();
+        BindCharacterSlotInteractions();
     }
 
     public void RefreshCharacterData()
@@ -126,6 +140,20 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
             Root = root
         };
 
+        // CharN/Icon/Background
+        // Back/Background가 아니라 캐릭터 아이콘 영역의 Background만 호버 색상을 변경합니다.
+        Transform outerIconRoot = FindDirectChild(root, "Icon") ?? FindChildRecursive(root, "Icon");
+        Transform background = outerIconRoot != null
+            ? FindDirectChild(outerIconRoot, "Background")
+            : null;
+        view.BackgroundImage = background != null ? background.GetComponent<Image>() : null;
+        if (view.BackgroundImage != null)
+            view.NormalBackgroundColor = view.BackgroundImage.color;
+
+        view.IconRoot = outerIconRoot;
+        if (view.IconRoot != null)
+            view.NormalIconScale = view.IconRoot.localScale;
+
         // CharN/Relic/Name/RelicText, CharN/Compound/Name/CompoundText는 고정 제목입니다.
         Transform relicTitle = FindChildRecursive(root, "RelicText");
         view.RelicTitleText = relicTitle != null ? relicTitle.GetComponent<TMP_Text>() : null;
@@ -137,7 +165,6 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         ProtectFixedTitle(view.CompoundTitleText, CompoundTitle);
 
         // CharN/Icon/CharMask/Icon
-        Transform outerIconRoot = FindDirectChild(root, "Icon") ?? FindChildRecursive(root, "Icon");
         Transform charMask = outerIconRoot != null
             ? FindDirectChild(outerIconRoot, "CharMask") ?? FindChildRecursive(outerIconRoot, "CharMask")
             : FindChildRecursive(root, "CharMask");
@@ -173,6 +200,172 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         view.CompoundIcons[0] = compoundIcon != null ? compoundIcon.GetComponent<Image>() : null;
 
         return view;
+    }
+
+    private void BindCharacterSlotInteractions()
+    {
+        ResolveCharacterViewsIfNeeded();
+
+        for (int i = 0; i < characterViews.Length; i++)
+        {
+            CharacterView view = characterViews[i];
+            if (view == null || view.Root == null)
+                continue;
+
+            // 캐릭터 교체 입력은 Char 전체가 아니라 CharN/Icon 영역에서만 받습니다.
+            // 따라서 Relic/Compound 등 다른 영역에 마우스를 올려도 호버/클릭이 발생하지 않습니다.
+            Transform interactionRoot = view.IconRoot;
+            if (interactionRoot == null)
+                continue;
+
+            LobbyInfoCharacterSlotPointerRelay relay = interactionRoot.GetComponent<LobbyInfoCharacterSlotPointerRelay>();
+            if (relay == null)
+                relay = interactionRoot.gameObject.AddComponent<LobbyInfoCharacterSlotPointerRelay>();
+
+            relay.Initialize(this, i);
+        }
+    }
+
+    internal void HandleCharacterSlotPointerEnter(int partyIndex)
+    {
+        if (partyIndex < 0 || partyIndex >= characterViews.Length)
+            return;
+
+        CharacterView view = characterViews[partyIndex];
+        if (view == null)
+            return;
+
+        if (!view.IsHovering)
+        {
+            if (view.BackgroundImage != null)
+                view.NormalBackgroundColor = view.BackgroundImage.color;
+            if (view.IconRoot != null)
+                view.NormalIconScale = view.IconRoot.localScale;
+        }
+
+        view.IsHovering = true;
+        if (view.BackgroundImage != null)
+            view.BackgroundImage.color = CharacterHoverColor;
+
+        AnimateCharacterIconScale(view, view.NormalIconScale * Mathf.Max(0f, characterHoverScale));
+    }
+
+    internal void HandleCharacterSlotPointerExit(int partyIndex)
+    {
+        if (partyIndex < 0 || partyIndex >= characterViews.Length)
+            return;
+
+        CharacterView view = characterViews[partyIndex];
+        if (view == null)
+            return;
+
+        view.IsHovering = false;
+        if (view.BackgroundImage != null)
+            view.BackgroundImage.color = view.NormalBackgroundColor;
+
+        AnimateCharacterIconScale(view, view.NormalIconScale);
+    }
+
+    private void AnimateCharacterIconScale(CharacterView view, Vector3 targetScale)
+    {
+        if (view == null || view.IconRoot == null)
+            return;
+
+        if (view.ScaleCoroutine != null)
+        {
+            StopCoroutine(view.ScaleCoroutine);
+            view.ScaleCoroutine = null;
+        }
+
+        if (!isActiveAndEnabled || characterHoverScaleDuration <= 0f)
+        {
+            view.IconRoot.localScale = targetScale;
+            return;
+        }
+
+        view.ScaleCoroutine = StartCoroutine(AnimateCharacterIconScaleRoutine(view, targetScale));
+    }
+
+    private System.Collections.IEnumerator AnimateCharacterIconScaleRoutine(CharacterView view, Vector3 targetScale)
+    {
+        if (view == null || view.IconRoot == null)
+            yield break;
+
+        Vector3 startScale = view.IconRoot.localScale;
+        float duration = Mathf.Max(0.01f, characterHoverScaleDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            t = Mathf.SmoothStep(0f, 1f, t);
+            view.IconRoot.localScale = Vector3.LerpUnclamped(startScale, targetScale, t);
+            yield return null;
+        }
+
+        view.IconRoot.localScale = targetScale;
+        view.ScaleCoroutine = null;
+    }
+
+    internal void HandleCharacterSlotClicked(int partyIndex)
+    {
+        if (partyIndex < 0 || partyIndex >= CharacterCount)
+            return;
+
+        ResolveInfoPanelCharacterSelect();
+
+        if (characterSelectRoot == null)
+        {
+            Debug.LogWarning(
+                "[LobbyInfoPanelUI] Info_Panel/CharacterSelect를 찾을 수 없습니다.",
+                this);
+            return;
+        }
+
+        EnsureCharacterSelectAlwaysActive();
+
+        PartyRuntimeStore partyStore = DataManager.Instance?.PartyRuntimeStore;
+        string currentCharacterId = partyStore?.GetCharacterId(partyIndex);
+
+        // Info_Panel/Char1~3/Icon 클릭은 등록된 캐릭터 제거 전용입니다.
+        // 빈 슬롯을 클릭해도 다음 등록 슬롯으로 선택하거나 다른 동작을 하지 않습니다.
+        if (string.IsNullOrWhiteSpace(currentCharacterId) || partyStore == null)
+            return;
+
+        LobbyCharacterEquipmentReleaseUtility.ReleaseAll(currentCharacterId);
+        partyStore.ClearSlot(partyIndex);
+
+        RefreshCharacterData();
+        infoPanelCharacterPicker?.RefreshFromPartyRuntime();
+        LobbyEquipPanelUI.RefreshAllCharacterData();
+        LobbyPartyCharacterSettingOpenButton.RefreshAll();
+    }
+
+    private void ResolveInfoPanelCharacterSelect()
+    {
+        if (characterSelectRoot != null && infoPanelCharacterPicker != null)
+            return;
+
+        Transform infoRoot = ResolvePanelRoot()?.transform;
+        if (infoRoot == null)
+            return;
+
+        Transform select = FindDirectChild(infoRoot, "CharacterSelect")
+            ?? FindChildRecursive(infoRoot, "CharacterSelect");
+
+        if (select == null)
+            return;
+
+        characterSelectRoot = select.gameObject;
+        infoPanelCharacterPicker = select.GetComponent<CharPick>()
+            ?? select.GetComponentInChildren<CharPick>(true);
+    }
+
+    private void EnsureCharacterSelectAlwaysActive()
+    {
+        if (characterSelectRoot != null && !characterSelectRoot.activeSelf)
+            characterSelectRoot.SetActive(true);
     }
 
     private static void ApplyFixedTitles(CharacterView view)
@@ -365,10 +558,51 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
     private sealed class CharacterView
     {
         public Transform Root;
+        public Image BackgroundImage;
+        public Color NormalBackgroundColor = Color.white;
+        public Transform IconRoot;
+        public Vector3 NormalIconScale = Vector3.one;
+        public bool IsHovering;
+        public Coroutine ScaleCoroutine;
         public TMP_Text RelicTitleText;
         public TMP_Text CompoundTitleText;
         public Image CharacterIconImage;
         public Image[] RelicIcons = new Image[VisibleRelicSlotCount];
         public Image[] CompoundIcons = new Image[VisibleCompoundSlotCount];
+    }
+}
+
+
+/// <summary>
+/// Info_Panel Char1~3의 호버/클릭 이벤트를 LobbyInfoPanelUI로 전달합니다.
+/// </summary>
+[DisallowMultipleComponent]
+public sealed class LobbyInfoCharacterSlotPointerRelay : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+{
+    private LobbyInfoPanelUI owner;
+    private int partyIndex = -1;
+
+    public void Initialize(LobbyInfoPanelUI targetOwner, int targetPartyIndex)
+    {
+        owner = targetOwner;
+        partyIndex = targetPartyIndex;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        owner?.HandleCharacterSlotPointerEnter(partyIndex);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        owner?.HandleCharacterSlotPointerExit(partyIndex);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData != null && eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        owner?.HandleCharacterSlotClicked(partyIndex);
     }
 }

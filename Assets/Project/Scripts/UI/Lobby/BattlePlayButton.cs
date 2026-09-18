@@ -11,6 +11,7 @@ public class BattlePlayButton : MonoBehaviour
 
     [Header("Ready Panel")]
     [SerializeField] private LobbyEquipPanelUI readyPanel;
+    [SerializeField] private LobbyTutorialController tutorialController;
     [SerializeField] private TMP_Text buttonLabel;
     [SerializeField] private string readyButtonText = "탐사 준비";
     [SerializeField] private string departButtonText = "출정";
@@ -99,7 +100,9 @@ public class BattlePlayButton : MonoBehaviour
         ResolveReadyPanel();
         if (readyPanel != null && !readyPanel.IsOpen)
         {
-            if (questGate != null && !questGate.CanExecute())
+            // 최초 튜토리얼에서는 출발 대사를 듣기 전에도 Ready_Panel까지는 열 수 있어야 합니다.
+            // Ready_Panel이 실제 열린 뒤 HandleReadyPanelStateChanged에서 출발 대사를 자동 시작합니다.
+            if (questGate != null && !questGate.CanExecute() && !CanOpenReadyPanelForTutorial())
             {
                 ShowWarning(elricDialogueRequiredMessage);
                 return;
@@ -231,6 +234,29 @@ public class BattlePlayButton : MonoBehaviour
     private void HandleReadyPanelStateChanged(bool opened)
     {
         RefreshButtonLabel();
+
+        if (!opened)
+            return;
+
+        ResolveTutorialController();
+        tutorialController?.TryBeginFirstExpeditionDialogueFromReadyPanel();
+    }
+
+    private bool CanOpenReadyPanelForTutorial()
+    {
+        if (DataManager.Instance == null || DataManager.Instance.LobbyRuntimeStore == null)
+            return false;
+
+        LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
+        return lobby.TutorialProgress == LobbyTutorialProgress.WaitingForSetup;
+    }
+
+    private void ResolveTutorialController()
+    {
+        if (tutorialController != null)
+            return;
+
+        tutorialController = FindFirstObjectByType<LobbyTutorialController>(FindObjectsInactive.Include);
     }
 
     private void RefreshButtonLabel()

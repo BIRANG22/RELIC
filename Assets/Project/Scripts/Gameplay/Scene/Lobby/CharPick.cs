@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,18 +7,32 @@ using Relic.Gameplay.Data;
 
 public class CharPick : MonoBehaviour
 {
+    private enum CharacterSelectUsage
+    {
+        Auto = 0,
+        Legacy = 1,
+        CharacterSettingInfoOnly = 2,
+        InfoPanelPartyEdit = 3
+    }
+
+    [Header("Character Select Usage")]
+    [SerializeField] private CharacterSelectUsage characterSelectUsage = CharacterSelectUsage.Auto;
+
     [Header("Buttons")]
     [SerializeField] private List<CharBtn> charBtns = new();
     [SerializeField] private bool autoBindCharButtons = true;
     [SerializeField] private Transform charButtonRoot;
 
-    [Header("Profile Image")]
-    [SerializeField] private Image profileImage;
-    [SerializeField] private bool autoBindProfileImage = true;
+    [Header("Preview")]
+    [SerializeField] private Transform previewRoot;
 
     [Header("Setting Panel")]
     [SerializeField] private Setting setting;
 
+    [Header("Preview Background Animation")]
+    [SerializeField] private Transform previewBackground;
+    [SerializeField] private float bgShrinkDuration = 0.12f;
+    [SerializeField] private float bgExpandDuration = 0.12f;
 
     [Header("Party Confirm")]
     [SerializeField] private int firstPartyDefaultDeployCellNumber = 7;
@@ -29,9 +44,14 @@ public class CharPick : MonoBehaviour
     private readonly List<string> runtimeCharacterIdsSnapshot = new();
 
     private int centerIndex = 0;
+    private int partyEditTargetSlot = -1;
 
-    private string currentProfileCharacterId;
+    private GameObject currentPreview;
+    private string currentPreviewCharacterId;
 
+    private Coroutine bgAnimRoutine;
+    private Vector3 previewBackgroundOriginalScale;
+    private bool hasPreviewBackgroundOriginalScale;
     private bool isStarted;
     private SteamLobbyPartySynchronizer subscribedPartySynchronizer;
 
@@ -49,7 +69,6 @@ public class CharPick : MonoBehaviour
     private void OnEnable()
     {
         AutoBindCharButtonsIfNeeded();
-        AutoBindProfileImageIfNeeded();
         ClampCenterIndex();
         SubscribeNetworkPartyEvents();
 
@@ -63,14 +82,20 @@ public class CharPick : MonoBehaviour
             RefreshFixedButtons();
 
             if (!IsNetworkPartyActive())
-                RefreshCenterInfo();
+            {
+                if (ResolveCharacterSelectUsage() == CharacterSelectUsage.InfoPanelPartyEdit)
+                    ClearViewedCharacterStateForInfoPanel();
+                else
+                    RefreshCenterInfo();
+            }
         }
     }
 
     private void Start()
     {
         isStarted = true;
-        AutoBindProfileImageIfNeeded();
+        ConfigurePreviewCanvasScaler();
+        CachePreviewBackgroundScale();
         AutoBindCharButtonsIfNeeded();
         ClampCenterIndex();
 
@@ -95,8 +120,13 @@ public class CharPick : MonoBehaviour
             charBtns.Count > 0 &&
             charBtns[centerIndex] != null)
         {
-            CreateOrUpdateRuntimeData(charBtns[centerIndex]);
-            RefreshCenterInfo();
+            if (ResolveCharacterSelectUsage() == CharacterSelectUsage.InfoPanelPartyEdit)
+                ClearViewedCharacterStateForInfoPanel();
+            else
+            {
+                CreateOrUpdateRuntimeData(charBtns[centerIndex]);
+                RefreshCenterInfo();
+            }
         }
     }
 
@@ -137,26 +167,149 @@ public class CharPick : MonoBehaviour
         if (index < 0)
             return;
 
-        // 잠긴 캐릭터, 아직 해금되지 않은 캐릭터, 데이터가 없는 빈 버튼은
-        // 현재 보고 있는 캐릭터를 바꾸지 않고 클릭 자체를 무시합니다.
-        if (!CanShowCharacterData(btn, btn.CharacterId))
+        // 잠긴/사용 불가 캐릭터는 정보 화면과 파티 편성 모두 진입하지 않습니다.
+        // centerIndex도 바꾸기 전에 차단하여 현재 보고 있던 캐릭터를 그대로 유지합니다.
+        if (btn == null || btn.IsLocked || !HasUsableCharacterData(btn))
             return;
+
+        CharacterSelectUsage usage = ResolveCharacterSelectUsage();
+
+        // CharacterSettingPanel에서는 캐릭터 정보/세팅 대상만 바꿉니다.
+        // 파티 편성은 절대 변경하지 않습니다.
+        if (usage == CharacterSelectUsage.CharacterSettingInfoOnly)
+        {
+            centerIndex = index;
+            RefreshCenterInfo();
+            return;
+        }
+
+        // Info_Panel의 CharacterSelect는 파티 편성 전용 토글 UI입니다.
+        // 이미 파티에 등록된 캐릭터를 다시 누르면 해당 슬롯에서 해제하고,
+        // 미등록 캐릭터를 누르면 Char1 -> Char2 -> Char3 순서의 첫 빈 슬롯에 자동 등록합니다.
+        if (usage == CharacterSelectUsage.InfoPanelPartyEdit)
+        {
+            if (btn.IsLocked || !HasUsableCharacterData(btn))
+                return;
+
+            if (!btn.PrepareCharacterForPartyAction(playPartyActionSound))
+                return;
+
+            ToggleCharacterInInfoPanelParty(btn);
+            return;
+        }
 
         if (TryHandleNetworkCharacterClick(btn, playPartyActionSound))
             return;
 
-        // CharacterSelect는 "정보 선택"과 "파티 등록"을 2단계로 처리합니다.
-        // 다른 캐릭터를 처음 클릭하면 그 캐릭터의 정보만 표시하고,
-        // 이미 보고 있는 캐릭터를 한 번 더 클릭했을 때만 파티 등록/해제를 처리합니다.
+        // 그 외 기존 CharacterSelect는 이전 동작을 유지합니다.
         bool wasCurrentInfoCharacter = centerIndex == index;
 
         centerIndex = index;
         RefreshCenterInfo();
 
+        if (btn.IsLocked || !HasUsableCharacterData(btn))
+            return;
+
         if (!wasCurrentInfoCharacter)
             return;
 
         ToggleButtonPartyMarker(btn, playPartyActionSound);
+    }
+
+    public void SetPartyEditTargetSlot(int partySlotIndex)
+    {
+        partyEditTargetSlot = partySlotIndex;
+
+        if (CharacterSelectionState.Instance != null)
+            CharacterSelectionState.Instance.SelectPartySlot(partySlotIndex);
+    }
+
+    private CharacterSelectUsage ResolveCharacterSelectUsage()
+    {
+        if (characterSelectUsage != CharacterSelectUsage.Auto)
+            return characterSelectUsage;
+
+        Transform current = transform;
+        while (current != null)
+        {
+            if (string.Equals(current.name, "Info_Panel", System.StringComparison.OrdinalIgnoreCase))
+                return CharacterSelectUsage.InfoPanelPartyEdit;
+
+            if (string.Equals(current.name, "CharacterSettingPanel", System.StringComparison.OrdinalIgnoreCase))
+                return CharacterSelectUsage.CharacterSettingInfoOnly;
+
+            current = current.parent;
+        }
+
+        return CharacterSelectUsage.Legacy;
+    }
+
+    private bool ApplyCharacterToFirstEmptyInfoPanelPartySlot(CharBtn btn)
+    {
+        if (btn == null || DataManager.Instance == null || DataManager.Instance.PartyRuntimeStore == null)
+            return false;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        int emptySlot = -1;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            if (string.IsNullOrWhiteSpace(partyStore.GetCharacterId(i)))
+            {
+                emptySlot = i;
+                break;
+            }
+        }
+
+        if (emptySlot < 0)
+        {
+            Debug.LogWarning("[Party] 빈 파티 슬롯이 없습니다.");
+            return false;
+        }
+
+        partyEditTargetSlot = emptySlot;
+
+        if (CharacterSelectionState.Instance != null)
+            CharacterSelectionState.Instance.SelectPartySlot(emptySlot);
+
+        SaveCharacterToEnteredPartySlot(btn);
+        RefreshInfoPanelPartyEditState();
+
+        // Info_Panel의 CharacterSelect는 파티 편성 전용 상시 UI입니다.
+        // 캐릭터를 등록한 뒤에도 닫지 않고 그대로 유지합니다.
+        return true;
+    }
+
+
+    private void ToggleCharacterInInfoPanelParty(CharBtn btn)
+    {
+        if (btn == null || DataManager.Instance == null || DataManager.Instance.PartyRuntimeStore == null)
+            return;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        string characterId = btn.CharacterId;
+        int registeredSlot = partyStore.FindCharacterSlot(characterId);
+
+        if (registeredSlot >= 0)
+        {
+            LobbyCharacterEquipmentReleaseUtility.ReleaseAll(characterId);
+            partyStore.ClearSlot(registeredSlot);
+            RefreshInfoPanelPartyEditState();
+            return;
+        }
+
+        ApplyCharacterToFirstEmptyInfoPanelPartySlot(btn);
+    }
+
+    private void RefreshInfoPanelPartyEditState()
+    {
+        ResetPendingSelectionFromRuntime();
+        RefreshPartyViews();
+        RefreshAllSelectedPartyMarkers();
+        SyncRuntimeSnapshotFromPendingSelection();
+        LobbyInfoPanelUI.RefreshAll();
+        LobbyEquipPanelUI.RefreshAllCharacterData();
+        LobbyPartyCharacterSettingOpenButton.RefreshAll();
     }
 
     public void ToggleButtonPartyMarker(CharBtn btn)
@@ -169,7 +322,7 @@ public class CharPick : MonoBehaviour
         if (btn == null)
             return;
 
-        if (!CanShowCharacterData(btn, btn.CharacterId))
+        if (btn.IsLocked || !HasUsableCharacterData(btn))
             return;
 
         if (!btn.PrepareCharacterForPartyAction(withClickSound))
@@ -219,6 +372,25 @@ public class CharPick : MonoBehaviour
         ApplyPendingSelectionToRuntime();
         RefreshPartyViews();
         SyncRuntimeSnapshotFromPendingSelection();
+    }
+
+    private bool PendingSelectionContainsCharacter(string characterId)
+    {
+        if (string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        for (int i = 0; i < pendingCharacterIds.Count; i++)
+        {
+            if (string.Equals(
+                    pendingCharacterIds[i],
+                    characterId,
+                    System.StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public int FindPendingPartySlot(string characterId)
@@ -449,7 +621,7 @@ public class CharPick : MonoBehaviour
         if (synchronizer == null || !synchronizer.IsNetworkPartyActive)
             return false;
 
-        if (btn == null || !CanShowCharacterData(btn, btn.CharacterId))
+        if (btn == null || btn.IsLocked || !HasUsableCharacterData(btn))
             return true;
 
         string characterId = btn.CharacterId;
@@ -583,6 +755,14 @@ public class CharPick : MonoBehaviour
             string characterId = i < pendingCharacterIds.Count
                 ? pendingCharacterIds[i]
                 : string.Empty;
+            string previousCharacterId = partyStore.GetCharacterId(i);
+
+            if (!string.IsNullOrWhiteSpace(previousCharacterId) &&
+                !string.Equals(previousCharacterId, characterId, System.StringComparison.Ordinal) &&
+                !PendingSelectionContainsCharacter(previousCharacterId))
+            {
+                LobbyCharacterEquipmentReleaseUtility.ReleaseAll(previousCharacterId);
+            }
 
             if (string.IsNullOrWhiteSpace(characterId))
             {
@@ -612,15 +792,12 @@ public class CharPick : MonoBehaviour
             return;
         }
 
-        if (CharacterSelectionState.Instance == null)
-        {
-            Debug.LogWarning("[CharPick] CharacterSelectionState instance is missing.");
-            return;
-        }
-
         PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
         string characterId = btn.CharacterId;
-        int enteredSlot = CharacterSelectionState.Instance.CurrentPartySlotIndex;
+        int enteredSlot = partyEditTargetSlot;
+
+        if (enteredSlot < 0 && CharacterSelectionState.Instance != null)
+            enteredSlot = CharacterSelectionState.Instance.CurrentPartySlotIndex;
 
         if (enteredSlot < 0 || enteredSlot >= partyStore.MaxPartyCountValue)
         {
@@ -637,6 +814,13 @@ public class CharPick : MonoBehaviour
                 continue;
 
             partyStore.ClearSlot(i);
+        }
+
+        string previousCharacterId = partyStore.GetCharacterId(enteredSlot);
+        if (!string.IsNullOrWhiteSpace(previousCharacterId) &&
+            !string.Equals(previousCharacterId, characterId, System.StringComparison.Ordinal))
+        {
+            LobbyCharacterEquipmentReleaseUtility.ReleaseAll(previousCharacterId);
         }
 
         partyStore.SetCharacter(enteredSlot, characterId);
@@ -977,6 +1161,15 @@ public class CharPick : MonoBehaviour
         centerIndex = Mathf.Clamp(centerIndex, 0, charBtns.Count - 1);
     }
 
+    private void ClearViewedCharacterStateForInfoPanel()
+    {
+        for (int i = 0; i < charBtns.Count; i++)
+        {
+            if (charBtns[i] != null)
+                charBtns[i].SetViewedCharacter(false, true);
+        }
+    }
+
     private void RefreshCenterInfo()
     {
         if (charBtns.Count <= 0)
@@ -1038,40 +1231,15 @@ public class CharPick : MonoBehaviour
         }
     }
 
-    public bool CanInteractWithButton(CharBtn btn)
+    private bool CanShowCharacterData(CharBtn btn, string characterId)
     {
         if (btn == null)
             return false;
 
-        return CanShowCharacterData(btn, btn.CharacterId);
-    }
-
-    private bool CanShowCharacterData(CharBtn btn, string characterId)
-    {
-        if (btn == null || btn.IsLocked)
+        if (btn.IsLocked)
             return false;
 
-        if (string.IsNullOrWhiteSpace(characterId))
-            return false;
-
-        if (DataManager.Instance == null || DataManager.Instance.CharacterDatabase == null)
-            return false;
-
-        if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out var master) || master == null)
-            return false;
-
-        // 기본 제공 캐릭터는 런타임 데이터가 아직 생성되지 않았어도 선택할 수 있습니다.
-        if (master.IsDefaultProvided)
-            return true;
-
-        // 해금형 캐릭터는 실제 런타임 해금 정보가 있어야만 진입할 수 있습니다.
-        if (DataManager.Instance.CharacterRuntimeStore == null)
-            return false;
-
-        if (!DataManager.Instance.CharacterRuntimeStore.TryGet(characterId, out var runtime) || runtime == null)
-            return false;
-
-        return runtime.IsUnlocked;
+        return HasUsableCharacterData(btn);
     }
 
     private bool HasUsableCharacterData(CharBtn btn)
@@ -1117,19 +1285,21 @@ public class CharPick : MonoBehaviour
 
     private void ShowPreview(string characterId)
     {
-        AutoBindProfileImageIfNeeded();
-
-        if (profileImage == null)
+        if (previewRoot == null)
             return;
 
-        if (string.IsNullOrWhiteSpace(characterId))
+        if (characterId == currentPreviewCharacterId && currentPreview != null)
+            return;
+
+        currentPreviewCharacterId = characterId;
+
+        if (currentPreview != null)
         {
-            currentProfileCharacterId = null;
-            profileImage.sprite = null;
-            return;
+            Destroy(currentPreview);
+            currentPreview = null;
         }
 
-        if (characterId == currentProfileCharacterId && profileImage.sprite != null)
+        if (string.IsNullOrWhiteSpace(characterId))
             return;
 
         if (DataManager.Instance == null)
@@ -1144,62 +1314,115 @@ public class CharPick : MonoBehaviour
             return;
         }
 
-        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewUIPrefab(characterId, out var prefab) || prefab == null)
+        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewUIPrefab(characterId, out var prefab))
         {
             Debug.LogWarning("[CharPick] PreviewUIPrefab not found: " + characterId);
             return;
         }
 
-        Image sourceImage = prefab.GetComponent<Image>();
-        if (sourceImage == null)
-            sourceImage = prefab.GetComponentInChildren<Image>(true);
-
-        if (sourceImage == null || sourceImage.sprite == null)
-        {
-            Debug.LogWarning("[CharPick] PreviewUIPrefab Image sprite not found: " + characterId);
-            return;
-        }
-
-        currentProfileCharacterId = characterId;
-        profileImage.sprite = sourceImage.sprite;
-    }
-
-    private void AutoBindProfileImageIfNeeded()
-    {
-        if (profileImage != null || !autoBindProfileImage)
+        if (prefab == null)
             return;
 
-        Transform searchRoot = setting != null ? setting.transform : transform.root;
-        Transform target = FindChildRecursive(searchRoot, "Profile_Image");
-        if (target != null)
-            profileImage = target.GetComponent<Image>();
+        currentPreview = Instantiate(prefab, previewRoot, false);
+        currentPreview.name = "Preview_" + characterId;
+        currentPreview.transform.localScale = Vector3.one * 0.4f;
+
+        PlayPreviewBackgroundAnim();
     }
 
-    private static Transform FindChildRecursive(Transform root, string targetName)
+    private void ConfigurePreviewCanvasScaler()
     {
-        if (root == null || string.IsNullOrEmpty(targetName))
-            return null;
+        if (previewRoot == null)
+            return;
 
-        if (root.name == targetName)
-            return root;
+        Canvas canvas = previewRoot.GetComponentInParent<Canvas>();
+        if (canvas == null)
+            return;
 
-        for (int i = 0; i < root.childCount; i++)
-        {
-            Transform found = FindChildRecursive(root.GetChild(i), targetName);
-            if (found != null)
-                return found;
-        }
+        CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
+        if (scaler == null)
+            return;
 
-        return null;
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+        scaler.matchWidthOrHeight = 0f;
     }
 
     private bool TryGetCurrentPreviewAnimator(out ButtonResponsiveSpriteAnimator animator)
     {
         animator = null;
-        return false;
+
+        if (currentPreview == null)
+            return false;
+
+        animator = currentPreview.GetComponentInChildren<ButtonResponsiveSpriteAnimator>(true);
+        return animator != null;
     }
 
+    private void CachePreviewBackgroundScale()
+    {
+        if (previewBackground == null)
+            return;
 
+        previewBackgroundOriginalScale = previewBackground.localScale;
+        hasPreviewBackgroundOriginalScale = true;
+    }
+
+    private void PlayPreviewBackgroundAnim()
+    {
+        if (previewBackground == null)
+            return;
+
+        if (!hasPreviewBackgroundOriginalScale)
+            CachePreviewBackgroundScale();
+
+        if (bgAnimRoutine != null)
+            StopCoroutine(bgAnimRoutine);
+
+        previewBackground.localScale = previewBackgroundOriginalScale;
+        bgAnimRoutine = StartCoroutine(PreviewBackgroundAnimRoutine());
+    }
+
+    private IEnumerator PreviewBackgroundAnimRoutine()
+    {
+        Vector3 originalScale = previewBackgroundOriginalScale;
+
+        float startX = originalScale.x;
+        float y = originalScale.y;
+        float z = originalScale.z;
+
+        float timer = 0f;
+
+        while (timer < bgShrinkDuration)
+        {
+            timer += Time.deltaTime;
+            float t = Mathf.Clamp01(timer / bgShrinkDuration);
+            float x = Mathf.Lerp(startX, 0f, t);
+
+            previewBackground.localScale = new Vector3(x, y, z);
+
+            yield return null;
+        }
+
+        previewBackground.localScale = new Vector3(0f, y, z);
+
+        timer = 0f;
+
+        while (timer < bgExpandDuration)
+        {
+            timer += Time.deltaTime;
+            float t = Mathf.Clamp01(timer / bgExpandDuration);
+            float x = Mathf.Lerp(0f, startX, t);
+
+            previewBackground.localScale = new Vector3(x, y, z);
+
+            yield return null;
+        }
+
+        previewBackground.localScale = originalScale;
+        bgAnimRoutine = null;
+    }
 
     private void RefreshFixedButtons()
     {
@@ -1213,7 +1436,6 @@ public class CharPick : MonoBehaviour
             // 씬에서 설정한 위치와 크기를 변경하지 않고 모든 버튼을 표시한다.
             btn.SetVisible(true);
             btn.SetCenter(false);
-            btn.RefreshInteractionAvailability();
         }
     }
 
