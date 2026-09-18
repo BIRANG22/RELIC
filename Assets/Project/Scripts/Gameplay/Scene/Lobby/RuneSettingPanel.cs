@@ -54,6 +54,20 @@ public class RuneSettingPanel : MonoBehaviour
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
 
+    [Header("Rune Tooltip")]
+    [SerializeField] private GameObject runeTooltipPanel;
+    [SerializeField] private TMP_Text runeTooltipNameText;
+    [SerializeField] private TMP_Text runeTooltipDescriptionText;
+    [SerializeField] private float runeTooltipFadeInDuration = 0.12f;
+    [SerializeField] private float runeTooltipFadeOutDuration = 0.05f;
+    [SerializeField] private float runeTooltipOffsetX = 190f;
+    [SerializeField] private float runeTooltipOffsetY = -20f;
+    [SerializeField] private float runeTooltipScreenPadding = 20f;
+
+    private CanvasGroup runeTooltipCanvasGroup;
+    private RectTransform runeTooltipRectTransform;
+    private Coroutine runeTooltipFadeCoroutine;
+
     private Setting settingController;
     private RecordPanelUI recordPanelUI;
     private string currentCharacterId;
@@ -90,6 +104,8 @@ public class RuneSettingPanel : MonoBehaviour
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
         BindDynamicRuneListLayout();
+        BindRuneTooltipUI();
+        SetRuneTooltipImmediate(false);
         ClearRuneInfo();
 
         InitRuneSlots();
@@ -108,6 +124,8 @@ public class RuneSettingPanel : MonoBehaviour
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
         BindDynamicRuneListLayout();
+        BindRuneTooltipUI();
+        SetRuneTooltipImmediate(false);
         BindCommonRunePurchaseUI();
         SetRuneSelectPanelActive();
 
@@ -118,6 +136,17 @@ public class RuneSettingPanel : MonoBehaviour
 
     }
 
+
+    private void OnDisable()
+    {
+        if (runeTooltipFadeCoroutine != null)
+        {
+            StopCoroutine(runeTooltipFadeCoroutine);
+            runeTooltipFadeCoroutine = null;
+        }
+
+        SetRuneTooltipImmediate(false);
+    }
 
     private void InitRuneSlots()
     {
@@ -1675,6 +1704,239 @@ public class RuneSettingPanel : MonoBehaviour
         SetRuneSelectPanelVisible(true);
     }
 
+    public void ShowRuneTooltip(RuneData runeData)
+    {
+        ShowRuneTooltip(runeData, null);
+    }
+
+    public void ShowRuneTooltip(RuneData runeData, RectTransform sourceRect)
+    {
+        if (runeData == null)
+        {
+            HideRuneTooltip();
+            return;
+        }
+
+        BindRuneTooltipUI();
+        if (runeTooltipPanel == null || runeTooltipCanvasGroup == null)
+            return;
+
+        currentDisplayedRune = runeData;
+
+        if (runeTooltipNameText != null)
+            runeTooltipNameText.text = GameDataLocalization.RuneName(runeData);
+
+        if (runeTooltipDescriptionText != null)
+            runeTooltipDescriptionText.text = BuildRuneEffectText(runeData);
+
+        if (!runeTooltipPanel.activeSelf)
+            runeTooltipPanel.SetActive(true);
+
+        PositionRuneTooltip(sourceRect);
+        StartRuneTooltipFade(1f, runeTooltipFadeInDuration, false);
+    }
+
+    private void PositionRuneTooltip(RectTransform sourceRect)
+    {
+        if (sourceRect == null || runeTooltipRectTransform == null)
+            return;
+
+        RectTransform tooltipParent = runeTooltipRectTransform.parent as RectTransform;
+        if (tooltipParent == null)
+            return;
+
+        Vector3 sourceWorldCenter = sourceRect.TransformPoint(sourceRect.rect.center);
+        Vector3 sourceLocalCenter = tooltipParent.InverseTransformPoint(sourceWorldCenter);
+        Vector3 currentLocalPosition = runeTooltipRectTransform.localPosition;
+
+        runeTooltipRectTransform.localPosition = new Vector3(
+            sourceLocalCenter.x + runeTooltipOffsetX,
+            sourceLocalCenter.y + runeTooltipOffsetY,
+            currentLocalPosition.z);
+
+        // 텍스트 변경 직후 실제 툴팁 크기를 반영한 뒤 화면 밖으로 나가지 않도록 보정합니다.
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(runeTooltipRectTransform);
+        ClampRuneTooltipToCanvas(tooltipParent);
+    }
+
+    private void ClampRuneTooltipToCanvas(RectTransform tooltipParent)
+    {
+        if (runeTooltipRectTransform == null || tooltipParent == null)
+            return;
+
+        Canvas rootCanvas = runeTooltipRectTransform.GetComponentInParent<Canvas>();
+        if (rootCanvas == null)
+            return;
+
+        rootCanvas = rootCanvas.rootCanvas;
+        RectTransform canvasRect = rootCanvas.transform as RectTransform;
+        if (canvasRect == null)
+            return;
+
+        Vector3[] tooltipCorners = new Vector3[4];
+        runeTooltipRectTransform.GetWorldCorners(tooltipCorners);
+
+        float minX = float.PositiveInfinity;
+        float maxX = float.NegativeInfinity;
+        float minY = float.PositiveInfinity;
+        float maxY = float.NegativeInfinity;
+
+        for (int i = 0; i < tooltipCorners.Length; i++)
+        {
+            Vector3 localCorner = canvasRect.InverseTransformPoint(tooltipCorners[i]);
+            minX = Mathf.Min(minX, localCorner.x);
+            maxX = Mathf.Max(maxX, localCorner.x);
+            minY = Mathf.Min(minY, localCorner.y);
+            maxY = Mathf.Max(maxY, localCorner.y);
+        }
+
+        Rect bounds = canvasRect.rect;
+        float padding = Mathf.Max(0f, runeTooltipScreenPadding);
+        float left = bounds.xMin + padding;
+        float right = bounds.xMax - padding;
+        float bottom = bounds.yMin + padding;
+        float top = bounds.yMax - padding;
+
+        float deltaX = 0f;
+        float deltaY = 0f;
+
+        if (minX < left)
+            deltaX = left - minX;
+        else if (maxX > right)
+            deltaX = right - maxX;
+
+        if (minY < bottom)
+            deltaY = bottom - minY;
+        else if (maxY > top)
+            deltaY = top - maxY;
+
+        if (Mathf.Approximately(deltaX, 0f) && Mathf.Approximately(deltaY, 0f))
+            return;
+
+        // Canvas 로컬 보정량을 툴팁 부모의 로컬 축으로 변환해 현재 위치에 더합니다.
+        Vector3 worldDelta = canvasRect.TransformVector(new Vector3(deltaX, deltaY, 0f));
+        Vector3 parentLocalDelta = tooltipParent.InverseTransformVector(worldDelta);
+        runeTooltipRectTransform.localPosition += parentLocalDelta;
+    }
+
+    public void HideRuneTooltip()
+    {
+        BindRuneTooltipUI();
+        if (runeTooltipPanel == null || runeTooltipCanvasGroup == null)
+            return;
+
+        if (!runeTooltipPanel.activeSelf)
+        {
+            runeTooltipCanvasGroup.alpha = 0f;
+            return;
+        }
+
+        StartRuneTooltipFade(0f, runeTooltipFadeOutDuration, true);
+    }
+
+    private void BindRuneTooltipUI()
+    {
+        if (runeTooltipPanel == null)
+        {
+            Transform tooltipTransform = FindDeepChild(transform.root, "Rune_TooltipPanel");
+            if (tooltipTransform != null)
+                runeTooltipPanel = tooltipTransform.gameObject;
+        }
+
+        if (runeTooltipPanel == null)
+            return;
+
+        if (runeTooltipRectTransform == null)
+            runeTooltipRectTransform = runeTooltipPanel.transform as RectTransform;
+
+        if (runeTooltipCanvasGroup == null)
+        {
+            runeTooltipCanvasGroup = runeTooltipPanel.GetComponent<CanvasGroup>();
+            if (runeTooltipCanvasGroup == null)
+                runeTooltipCanvasGroup = runeTooltipPanel.AddComponent<CanvasGroup>();
+        }
+
+        runeTooltipCanvasGroup.interactable = false;
+        runeTooltipCanvasGroup.blocksRaycasts = false;
+
+        if (runeTooltipNameText == null)
+        {
+            Transform nameTransform = FindDeepChild(runeTooltipPanel.transform, "NameText");
+            if (nameTransform != null)
+                runeTooltipNameText = nameTransform.GetComponent<TMP_Text>();
+        }
+
+        if (runeTooltipDescriptionText == null)
+        {
+            Transform descriptionTransform = FindDeepChild(runeTooltipPanel.transform, "DescriptionText");
+            if (descriptionTransform != null)
+                runeTooltipDescriptionText = descriptionTransform.GetComponent<TMP_Text>();
+        }
+
+        EnsureDynamicInfoTextOwnership(runeTooltipNameText);
+        EnsureDynamicInfoTextOwnership(runeTooltipDescriptionText);
+    }
+
+    private void StartRuneTooltipFade(float targetAlpha, float duration, bool deactivateWhenFinished)
+    {
+        if (runeTooltipCanvasGroup == null)
+            return;
+
+        if (runeTooltipFadeCoroutine != null)
+            StopCoroutine(runeTooltipFadeCoroutine);
+
+        runeTooltipFadeCoroutine = StartCoroutine(
+            FadeRuneTooltip(targetAlpha, Mathf.Max(0f, duration), deactivateWhenFinished));
+    }
+
+    private IEnumerator FadeRuneTooltip(float targetAlpha, float duration, bool deactivateWhenFinished)
+    {
+        if (runeTooltipCanvasGroup == null)
+            yield break;
+
+        float startAlpha = runeTooltipCanvasGroup.alpha;
+
+        if (duration <= 0f || Mathf.Approximately(startAlpha, targetAlpha))
+        {
+            runeTooltipCanvasGroup.alpha = targetAlpha;
+        }
+        else
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                runeTooltipCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+                yield return null;
+            }
+
+            runeTooltipCanvasGroup.alpha = targetAlpha;
+        }
+
+        if (deactivateWhenFinished && targetAlpha <= 0f && runeTooltipPanel != null)
+            runeTooltipPanel.SetActive(false);
+
+        runeTooltipFadeCoroutine = null;
+    }
+
+    private void SetRuneTooltipImmediate(bool visible)
+    {
+        BindRuneTooltipUI();
+        if (runeTooltipPanel == null || runeTooltipCanvasGroup == null)
+            return;
+
+        if (runeTooltipFadeCoroutine != null)
+        {
+            StopCoroutine(runeTooltipFadeCoroutine);
+            runeTooltipFadeCoroutine = null;
+        }
+
+        runeTooltipCanvasGroup.alpha = visible ? 1f : 0f;
+        runeTooltipPanel.SetActive(visible);
+    }
+
     public bool ShowFirstOwnedRuneInfo()
     {
         return false;
@@ -1727,6 +1989,7 @@ public class RuneSettingPanel : MonoBehaviour
     private void ClearRuneInfo()
     {
         currentDisplayedRune = null;
+        HideRuneTooltip();
     }
 
     private void AutoBindRuneInfoTexts()
