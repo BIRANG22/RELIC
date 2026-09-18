@@ -29,6 +29,15 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     [Tooltip("콜라이더 하단에서 이름 UI까지의 화면 픽셀 간격입니다. 음수값이면 콜라이더 아래쪽으로 내려갑니다.")]
     [SerializeField] private float screenYOffset = -18f;
 
+    [Header("Fade")]
+    [Tooltip("이름 패널이 나타날 때 페이드 인 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float fadeInDuration = 0.12f;
+
+    [Tooltip("이름 패널이 사라질 때 페이드 아웃 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float fadeOutDuration = 0.05f;
+
     [Header("Name Background Size")]
     [Tooltip("WorldObjectNamePanel/Image의 가로 크기를 이름 길이에 맞춰 자동 조절합니다.")]
     [SerializeField] private RectTransform backgroundRect;
@@ -64,6 +73,9 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     [SerializeField] private TMP_Text objectNameText;
 
     private static LobbyWorldObjectHoverName currentOwner;
+    private static LobbyWorldObjectHoverName fadeDriver;
+    private static CanvasGroup sharedCanvasGroup;
+    private static bool sharedPanelTargetVisible;
 
     private GameObject worldObjectNamePanel;
     private RectTransform worldObjectNamePanelRect;
@@ -78,6 +90,9 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     private static void ResetStaticState()
     {
         currentOwner = null;
+        fadeDriver = null;
+        sharedCanvasGroup = null;
+        sharedPanelTargetVisible = false;
     }
 
     private void Awake()
@@ -88,7 +103,7 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
         isHovered = false;
 
         if (currentOwner == null)
-            SetNameVisible(false);
+            SetNameVisibleImmediately(false);
     }
 
     private void OnEnable()
@@ -96,6 +111,7 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
         AutoBindIfNeeded();
         EnsureDynamicTextOwnership();
         DisablePanelRaycasts();
+        EnsureSharedCanvasGroup();
         isHovered = false;
     }
 
@@ -207,6 +223,8 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 
     private void LateUpdate()
     {
+        UpdatePanelFade();
+
         if (!isHovered || currentOwner != this)
             return;
 
@@ -296,8 +314,105 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 
     private void SetNameVisible(bool visible)
     {
-        if (worldObjectNamePanel != null && worldObjectNamePanel.activeSelf != visible)
+        AutoBindIfNeeded();
+
+        if (worldObjectNamePanel == null)
+            return;
+
+        EnsureSharedCanvasGroup();
+        if (sharedCanvasGroup == null)
+        {
+            if (worldObjectNamePanel.activeSelf != visible)
+                worldObjectNamePanel.SetActive(visible);
+            return;
+        }
+
+        fadeDriver = this;
+        sharedPanelTargetVisible = visible;
+
+        if (visible)
+        {
+            if (!worldObjectNamePanel.activeSelf)
+            {
+                worldObjectNamePanel.SetActive(true);
+                sharedCanvasGroup.alpha = 0f;
+            }
+
+            sharedCanvasGroup.interactable = false;
+            sharedCanvasGroup.blocksRaycasts = false;
+            return;
+        }
+
+        sharedCanvasGroup.interactable = false;
+        sharedCanvasGroup.blocksRaycasts = false;
+    }
+
+    private void SetNameVisibleImmediately(bool visible)
+    {
+        AutoBindIfNeeded();
+
+        if (worldObjectNamePanel == null)
+            return;
+
+        EnsureSharedCanvasGroup();
+        sharedPanelTargetVisible = visible;
+        fadeDriver = this;
+
+        if (sharedCanvasGroup != null)
+        {
+            sharedCanvasGroup.alpha = visible ? 1f : 0f;
+            sharedCanvasGroup.interactable = false;
+            sharedCanvasGroup.blocksRaycasts = false;
+        }
+
+        if (worldObjectNamePanel.activeSelf != visible)
             worldObjectNamePanel.SetActive(visible);
+    }
+
+    private void EnsureSharedCanvasGroup()
+    {
+        if (sharedCanvasGroup != null)
+            return;
+
+        if (worldObjectNamePanel == null)
+            return;
+
+        sharedCanvasGroup = worldObjectNamePanel.GetComponent<CanvasGroup>();
+        if (sharedCanvasGroup == null)
+            sharedCanvasGroup = worldObjectNamePanel.AddComponent<CanvasGroup>();
+
+        sharedCanvasGroup.interactable = false;
+        sharedCanvasGroup.blocksRaycasts = false;
+    }
+
+    private void UpdatePanelFade()
+    {
+        if (fadeDriver != this || sharedCanvasGroup == null || worldObjectNamePanel == null)
+            return;
+
+        float targetAlpha = sharedPanelTargetVisible ? 1f : 0f;
+        float duration = sharedPanelTargetVisible ? fadeInDuration : fadeOutDuration;
+
+        if (duration <= 0f)
+        {
+            sharedCanvasGroup.alpha = targetAlpha;
+        }
+        else
+        {
+            float speed = 1f / duration;
+            sharedCanvasGroup.alpha = Mathf.MoveTowards(
+                sharedCanvasGroup.alpha,
+                targetAlpha,
+                speed * Time.unscaledDeltaTime);
+        }
+
+        if (!Mathf.Approximately(sharedCanvasGroup.alpha, targetAlpha))
+            return;
+
+        sharedCanvasGroup.alpha = targetAlpha;
+
+        if (!sharedPanelTargetVisible && worldObjectNamePanel.activeSelf)
+            worldObjectNamePanel.SetActive(false);
     }
 
     private string GetDisplayName()
@@ -327,10 +442,10 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     {
         return type switch
         {
-            HoverNameType.Research => "\uC791\uC5C5\uB300",
-            HoverNameType.Exploration => "\uC870\uAC01\uC0C1",
-            HoverNameType.Resonance => "\uBE44\uC11D",
-            HoverNameType.Npc => "\uC5F0\uAD6C\uC6D0 \uC5D8\uB9AD",
+            HoverNameType.Research => "\uC5F0\uC131",
+            HoverNameType.Exploration => "\uCE68\uC2DD\uB3C4",
+            HoverNameType.Resonance => "\uACF5\uBA85",
+            HoverNameType.Npc => "\uC5D8\uB9AD",
             HoverNameType.Storage => "\uBCF4\uAD00\uD568",
             HoverNameType.Hilt => "\uD790\uD2B8",
             HoverNameType.Kaya => "\uCE74\uC57C",

@@ -69,16 +69,31 @@ public class BattleBagPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text detailValueText;
     [SerializeField] private Vector2 detailPanelOffset = new Vector2(12f, 0f);
 
+    [Header("Detail Tooltip Fade")]
+    [Tooltip("StoragePanel TooltipPanel이 나타나는 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float detailFadeInDuration = 0.12f;
+
+    [Tooltip("StoragePanel TooltipPanel이 사라지는 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float detailFadeOutDuration = 0.10f;
+
+    [Tooltip("비워두면 TooltipPanel의 CanvasGroup을 자동으로 찾거나 추가합니다.")]
+    [SerializeField] private CanvasGroup detailCanvasGroup;
+
     private BattleBagItemSlotUI selectedSlot;
     private BattleBagItemSlotUI hoveredSlot;
     private readonly List<RaycastResult> pointerRaycastResults = new();
     private bool isItemSelectionMode;
     private Action<string> itemSelectionCallback;
     private Action itemSelectionClosedCallback;
+    private Coroutine detailFadeCoroutine;
 
     private void Awake()
     {
         AutoBind();
+        EnsureDetailCanvasGroup();
+        HideDetailImmediately();
         ProtectFixedStorageHeaders();
         BindDiscardButton();
         BindStorageCategoryButtons();
@@ -94,6 +109,7 @@ public class BattleBagPanelUI : MonoBehaviour
     private void OnDisable()
     {
         EndItemSelectionMode(false, true);
+        HideDetailImmediately();
     }
 
     private void Update()
@@ -828,8 +844,7 @@ public class BattleBagPanelUI : MonoBehaviour
             }
         }
 
-        if (detailPanel != null)
-            detailPanel.SetActive(true);
+        ShowDetailWithFade();
 
         if (detailIconImage != null && (detailPanel == null || detailIconImage.transform != detailPanel.transform))
         {
@@ -908,9 +923,116 @@ public class BattleBagPanelUI : MonoBehaviour
         detailRect.anchoredPosition = localPoint + detailPanelOffset;
     }
 
+    private void ShowDetailWithFade()
+    {
+        if (detailPanel == null)
+            return;
+
+        EnsureDetailCanvasGroup();
+
+        if (!detailPanel.activeSelf)
+            detailPanel.SetActive(true);
+
+        if (detailCanvasGroup == null)
+            return;
+
+        detailCanvasGroup.interactable = false;
+        detailCanvasGroup.blocksRaycasts = false;
+
+        StartDetailFade(1f, detailFadeInDuration, false);
+    }
+
     private void HideDetail()
     {
-        if (detailPanel != null)
+        if (detailPanel == null || !detailPanel.activeSelf)
+            return;
+
+        EnsureDetailCanvasGroup();
+
+        if (detailCanvasGroup == null)
+        {
+            detailPanel.SetActive(false);
+            return;
+        }
+
+        StartDetailFade(0f, detailFadeOutDuration, true);
+    }
+
+    private void EnsureDetailCanvasGroup()
+    {
+        if (detailPanel == null)
+            return;
+
+        if (detailCanvasGroup == null)
+            detailCanvasGroup = detailPanel.GetComponent<CanvasGroup>();
+
+        if (detailCanvasGroup == null)
+            detailCanvasGroup = detailPanel.AddComponent<CanvasGroup>();
+
+        detailCanvasGroup.interactable = false;
+        detailCanvasGroup.blocksRaycasts = false;
+    }
+
+    private void StartDetailFade(float targetAlpha, float duration, bool deactivateAfterFade)
+    {
+        if (detailCanvasGroup == null)
+            return;
+
+        if (detailFadeCoroutine != null)
+        {
+            StopCoroutine(detailFadeCoroutine);
+            detailFadeCoroutine = null;
+        }
+
+        if (duration <= 0f)
+        {
+            detailCanvasGroup.alpha = targetAlpha;
+
+            if (deactivateAfterFade && detailPanel != null)
+                detailPanel.SetActive(false);
+
+            return;
+        }
+
+        detailFadeCoroutine = StartCoroutine(FadeDetailRoutine(targetAlpha, duration, deactivateAfterFade));
+    }
+
+    private IEnumerator FadeDetailRoutine(float targetAlpha, float duration, bool deactivateAfterFade)
+    {
+        float startAlpha = detailCanvasGroup != null ? detailCanvasGroup.alpha : targetAlpha;
+        float elapsed = 0f;
+
+        while (detailCanvasGroup != null && elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            detailCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+            yield return null;
+        }
+
+        if (detailCanvasGroup != null)
+            detailCanvasGroup.alpha = targetAlpha;
+
+        detailFadeCoroutine = null;
+
+        if (deactivateAfterFade && detailPanel != null)
+            detailPanel.SetActive(false);
+    }
+
+    private void HideDetailImmediately()
+    {
+        if (detailFadeCoroutine != null)
+        {
+            StopCoroutine(detailFadeCoroutine);
+            detailFadeCoroutine = null;
+        }
+
+        EnsureDetailCanvasGroup();
+
+        if (detailCanvasGroup != null)
+            detailCanvasGroup.alpha = 0f;
+
+        if (detailPanel != null && detailPanel.activeSelf)
             detailPanel.SetActive(false);
     }
 
