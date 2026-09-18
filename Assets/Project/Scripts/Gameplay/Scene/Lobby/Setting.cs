@@ -15,6 +15,10 @@ public class Setting : MonoBehaviour
     [SerializeField] private TMP_Text characterNameText;
     [SerializeField] private TMP_Text characterInfoText;
 
+    [Header("Character Profile")]
+    [Tooltip("CharacterSettingPanel/Profile_Area/Profile/Profile_Image. 비어 있으면 이름으로 자동 탐색합니다.")]
+    [SerializeField] private Image characterProfileImage;
+
     [Header("Character Info Panel")]
     [SerializeField] private CharacterInfoPanel characterInfoPanel;
 
@@ -118,6 +122,7 @@ public class Setting : MonoBehaviour
     private void Awake()
     {
         BindCharacterInfoTextIfNeeded();
+        BindCharacterProfileImageIfNeeded();
         BindInfoAreaIfNeeded();
         BindSkillSettingPanelIfNeeded();
         BindProfileGradtionIfNeeded();
@@ -837,6 +842,7 @@ public class Setting : MonoBehaviour
     private void RefreshCharacterInfo()
     {
         BindCharacterInfoTextIfNeeded();
+        BindCharacterProfileImageIfNeeded();
 
         if (currentMasterData == null || currentRuntimeData == null)
         {
@@ -854,6 +860,7 @@ public class Setting : MonoBehaviour
         if (characterInfoPanel != null)
             characterInfoPanel.SetCharacter(currentMasterData, currentRuntimeData);
 
+        RefreshCharacterProfileImage();
         RefreshCharacterLevelInfo();
     }
 
@@ -875,6 +882,13 @@ public class Setting : MonoBehaviour
 
         if (characterInfoPanel != null)
             characterInfoPanel.Clear();
+
+        BindCharacterProfileImageIfNeeded();
+        if (characterProfileImage != null)
+        {
+            characterProfileImage.sprite = null;
+            characterProfileImage.enabled = false;
+        }
 
         if (characterLevelText != null)
             characterLevelText.text = "LV. 1";
@@ -1296,6 +1310,38 @@ public class Setting : MonoBehaviour
 
         skillSettingPanelScript = currentPanel;
         skillSettingPanelScript.SetSettingController(this);
+    }
+
+    private void BindCharacterProfileImageIfNeeded()
+    {
+        if (characterProfileImage != null)
+            return;
+
+        Image[] images = GetComponentsInChildren<Image>(true);
+        for (int i = 0; i < images.Length; i++)
+        {
+            Image candidate = images[i];
+            if (candidate != null && candidate.name == "Profile_Image")
+            {
+                characterProfileImage = candidate;
+                return;
+            }
+        }
+    }
+
+    private void RefreshCharacterProfileImage()
+    {
+        BindCharacterProfileImageIfNeeded();
+        if (characterProfileImage == null)
+            return;
+
+        Sprite profileSprite = null;
+        CharacterIconDatabase iconDatabase = DataManager.Instance?.CharacterIconDatabase;
+        if (iconDatabase != null && !string.IsNullOrWhiteSpace(currentCharacterId))
+            iconDatabase.TryGetSkillCutsceneImage(currentCharacterId, out profileSprite);
+
+        characterProfileImage.sprite = profileSprite;
+        characterProfileImage.enabled = profileSprite != null;
     }
 
     private void BindCharacterInfoTextIfNeeded()

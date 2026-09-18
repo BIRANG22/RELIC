@@ -139,6 +139,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     public bool IsOpen => isOpen && !isClosing;
     public event Action<bool> OpenStateChanged;
+    public event Action Closed;
 
     /// <summary>
     /// 공용 BackgroundPanel의 BackButton에서 탐사 준비 화면을 닫을 때 사용합니다.
@@ -452,6 +453,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         isClosing = false;
         LobbyPositionModalInputBlocker.Unblock(this);
         LobbyPositionSharedModalBackground.HideAfterReadyPanel();
+        Closed?.Invoke();
 
         // Equip_panel 자체는 비활성화하지 않습니다.
         // 닫힘 상태는 Equip=-1350, Charter=1350 위치로만 표현합니다.

@@ -95,13 +95,12 @@ public sealed class LobbyTutorialController : MonoBehaviour
     private string[] introDialogue =
     {
         LocalizationKeys.Tutorial.Intro01, LocalizationKeys.Tutorial.Intro02, LocalizationKeys.Tutorial.Intro03,
-        LocalizationKeys.Tutorial.Intro04, LocalizationKeys.Tutorial.Intro05, LocalizationKeys.Tutorial.Intro06,
-        LocalizationKeys.Tutorial.Intro07
+        LocalizationKeys.Tutorial.Intro04, LocalizationKeys.Tutorial.Intro05
     };
 
     [Tooltip("FragmentGroup을 표시하기 시작할 최초 대사 번호입니다. 0부터 시작합니다.")]
     [Min(0)]
-    [SerializeField] private int fragmentShowStartIndex = 4;
+    [SerializeField] private int fragmentShowStartIndex = 2;
 
     [Header("First Expedition Dialogue Text")]
     [Tooltip("Post-intro dialogue localization keys, played in order.")]
@@ -109,8 +108,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [SerializeField]
     private string[] firstExpeditionDialogue =
     {
-        LocalizationKeys.Tutorial.FirstExpedition01, LocalizationKeys.Tutorial.FirstExpedition02,
-        LocalizationKeys.Tutorial.FirstExpedition03
+        LocalizationKeys.Tutorial.FirstExpedition01, LocalizationKeys.Tutorial.FirstExpedition02
     };
 
     [Header("Starter Common Runes")]
@@ -148,8 +146,28 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     public bool IsDialogueOpen => dialogueMode != DialogueMode.None;
 
+    private void ResetDialogueLocalizationKeys()
+    {
+        // 씬/프리팹에 예전 7개/3개 배열이 직렬화되어 있어도 현재 튜토리얼 구성(5개/2개)을 사용합니다.
+        introDialogue = new[]
+        {
+            LocalizationKeys.Tutorial.Intro01,
+            LocalizationKeys.Tutorial.Intro02,
+            LocalizationKeys.Tutorial.Intro03,
+            LocalizationKeys.Tutorial.Intro04,
+            LocalizationKeys.Tutorial.Intro05
+        };
+
+        firstExpeditionDialogue = new[]
+        {
+            LocalizationKeys.Tutorial.FirstExpedition01,
+            LocalizationKeys.Tutorial.FirstExpedition02
+        };
+    }
+
     private void Awake()
     {
+        ResetDialogueLocalizationKeys();
         AutoBindHierarchy();
         BindNextButton();
         SetDialogueVisible(false);
@@ -234,11 +252,23 @@ public sealed class LobbyTutorialController : MonoBehaviour
             return;
         }
 
-        if (lobby.TutorialProgress == LobbyTutorialProgress.WaitingForSetup ||
-            lobby.TutorialProgress == LobbyTutorialProgress.FirstExpeditionAssigned)
-        {
-            BeginFirstExpeditionDialogue();
-        }
+        // 첫 탐사 출발 대사는 이제 엘릭 월드 오브젝트 클릭으로 시작하지 않습니다.
+        // 플레이 버튼으로 Ready_Panel이 실제 열린 뒤 자동으로 시작됩니다.
+    }
+
+    public void TryBeginFirstExpeditionDialogueFromReadyPanel()
+    {
+        if (IsDialogueOpen)
+            return;
+
+        if (DataManager.Instance == null || DataManager.Instance.LobbyRuntimeStore == null)
+            return;
+
+        LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
+        if (lobby.TutorialProgress != LobbyTutorialProgress.WaitingForSetup)
+            return;
+
+        BeginFirstExpeditionDialogue();
     }
 
     private void BeginIntroDialogue()
@@ -1096,7 +1126,14 @@ public sealed class LobbyTutorialController : MonoBehaviour
     private void SetDialogueVisible(bool visible)
     {
         if (dialoguePanel != null)
+        {
             dialoguePanel.SetActive(visible);
+
+            // Ready_Panel / Info_Panel이 열린 직후 첫 출발 대사가 시작될 때
+            // 대화 패널이 준비 UI 뒤에 가려지지 않도록 같은 부모의 최상단으로 올립니다.
+            if (visible)
+                dialoguePanel.transform.SetAsLastSibling();
+        }
 
         SetNpcImageVisible(visible);
 
