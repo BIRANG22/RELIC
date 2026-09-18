@@ -15,7 +15,9 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
     private const string UIBlurTextureName = "_UIBlurUiTexture";
     private const string SettingUpperName = "Setting_upper";
     private const int SharedBlurSortingOrder = 9000;
+    private const int BackgroundPanelSortingOrder = 9005;
     private const int PresentationCanvasSortingOrder = SharedBlurSortingOrder + 10;
+    private const int MenuPanelSortingOrder = 10000;
     private const int UIBlurLayer = 5;
     private const float ReferenceBlurHeight = 1080f;
     private static readonly Vector2 DefaultReferenceResolution = new(1920f, 1080f);
@@ -211,7 +213,6 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         if (canvases == null)
             return;
 
-        int nextOrder = PresentationCanvasSortingOrder;
         for (int i = 0; i < canvases.Count; i++)
         {
             Canvas canvas = canvases[i];
@@ -223,8 +224,52 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
                 new CanvasSortingState(canvas.overrideSorting, canvas.sortingOrder));
 
             canvas.overrideSorting = true;
-            canvas.sortingOrder = nextOrder++;
+
+            // BackgroundPanel만 9005, 일반 로비 패널과 PartPanel은 9010을 사용합니다.
+            // 패널 수에 따라 9011, 9012... 또는 10001, 10002...로 증가시키지 않습니다.
+            // MenuPanel은 튜토리얼(9050)보다 항상 위에 있도록 10000으로 고정합니다.
+            if (IsMenuPanelCanvas(canvas))
+                canvas.sortingOrder = MenuPanelSortingOrder;
+            else if (IsBackgroundPanelCanvas(canvas))
+                canvas.sortingOrder = BackgroundPanelSortingOrder;
+            else
+                canvas.sortingOrder = PresentationCanvasSortingOrder;
         }
+    }
+
+
+    private static bool IsBackgroundPanelCanvas(Canvas canvas)
+    {
+        if (canvas == null)
+            return false;
+
+        Transform current = canvas.transform;
+        while (current != null)
+        {
+            if (current.name == "BackgroundPanel")
+                return true;
+
+            current = current.parent;
+        }
+
+        return false;
+    }
+
+    private static bool IsMenuPanelCanvas(Canvas canvas)
+    {
+        if (canvas == null)
+            return false;
+
+        Transform current = canvas.transform;
+        while (current != null)
+        {
+            if (current.name == "MenuPanel")
+                return true;
+
+            current = current.parent;
+        }
+
+        return false;
     }
 
     private void RestorePresentationCanvases()
