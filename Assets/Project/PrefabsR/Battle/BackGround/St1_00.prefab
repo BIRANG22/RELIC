@@ -177,6 +177,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4294449021168252140}
+  - component: {fileID: 781201830100000001}
   m_Layer: 0
   m_Name: fire
   m_TagString: Untagged
@@ -206,6 +207,19 @@ Transform:
   - {fileID: 9023779222042737019}
   m_Father: {fileID: 4277994474162317063}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &781201830100000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074245262352765473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c1d7f6a8e3b4d209f61c7b2a0e94d13, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  webGlFallbackPrefab: {fileID: 4127896281107662253, guid: a9fcb99b4fa144a4cbdc08bc21ba53cd, type: 3}
 --- !u!1 &2161158441460083256
 GameObject:
   m_ObjectHideFlags: 0

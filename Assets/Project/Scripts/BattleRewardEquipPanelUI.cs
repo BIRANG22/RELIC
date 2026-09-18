@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.Localization;
+using UnityEngine.Localization.Components;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
@@ -78,6 +79,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
     private void Awake()
     {
         ResolveReferencesIfNeeded();
+        ProtectDynamicItemTexts();
         RegisterButtonEvents();
     }
 
@@ -86,6 +88,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
         ResolveReferencesIfNeeded();
+        ProtectDynamicItemTexts();
         RegisterButtonEvents();
         RefreshCharacterHoverVisuals();
         RefreshSelectionVisuals();
@@ -1295,6 +1298,31 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
         for (int i = 0; i < CharacterCount; i++)
             characterViews[i] ??= BuildCharacterView(i);
+    }
+
+    private void ProtectDynamicItemTexts()
+    {
+        ProtectDynamicItemText(itemNameText);
+        ProtectDynamicItemText(itemRarityText);
+        ProtectDynamicItemText(itemEffectText);
+    }
+
+    private static void ProtectDynamicItemText(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        GameObject target = text.gameObject;
+        if (target.GetComponent<LocalizationIgnore>() == null)
+            target.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localizedTmp = target.GetComponent<LocalizedTMPText>();
+        if (localizedTmp != null)
+            localizedTmp.enabled = false;
+
+        LocalizeStringEvent legacyLocalizer = target.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+            legacyLocalizer.enabled = false;
     }
 
     private CharacterView BuildCharacterView(int index)

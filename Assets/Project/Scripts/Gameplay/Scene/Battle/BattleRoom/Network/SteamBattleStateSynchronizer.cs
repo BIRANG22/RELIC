@@ -244,7 +244,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (Instance == null || !Instance.IsNetworkBattleActive)
             return;
 
+#if STEAMWORKS_NET
         Instance.BroadcastBattleExecution(batches);
+#endif
     }
 
     public static bool TryRefreshIdleSnapshotAfterNetworkExecution()
@@ -279,7 +281,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (Instance == null || !Instance.IsNetworkBattleActive)
             return;
 
+#if STEAMWORKS_NET
         Instance.BroadcastStartRelicSelected(relicId);
+#endif
     }
 
     public static void TryBroadcastStartRelicChoices(IReadOnlyList<string> relicIds)
@@ -287,7 +291,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         if (Instance == null || !Instance.IsNetworkBattleActive)
             return;
 
+#if STEAMWORKS_NET
         Instance.SetHostStartRelicChoices(relicIds);
+#endif
     }
 
     public static bool TryApplyKnownStartRelicChoices(RelicChoiceAreaUI choiceArea)
@@ -302,7 +308,6 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 #if STEAMWORKS_NET
         if (Instance.IsLocalHost())
             return false;
-#endif
 
         string[] choices = Instance.GetCachedStartRelicChoices();
         if (choices == null || choices.Length == 0)
@@ -310,6 +315,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         choiceArea.ApplyNetworkChoices(choices);
         return true;
+#else
+        return false;
+#endif
     }
 
     public bool CanLocalPlayerEditCharacter(string characterId)
@@ -319,36 +327,52 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
     public bool RequestEquipRelic(string characterId, int relicSlotIndex, string relicId)
     {
+#if STEAMWORKS_NET
         BattleNetworkCommand command = CreateCommand(BattleNetworkCommandType.EquipRelic);
         command.characterId = characterId ?? string.Empty;
         command.slotIndex = relicSlotIndex;
         command.itemId = relicId ?? string.Empty;
         return SendOrApplyCommand(command, false);
+#else
+        return false;
+#endif
     }
 
     public bool RequestUnequipRelic(string characterId, int relicSlotIndex)
     {
+#if STEAMWORKS_NET
         BattleNetworkCommand command = CreateCommand(BattleNetworkCommandType.UnequipRelic);
         command.characterId = characterId ?? string.Empty;
         command.slotIndex = relicSlotIndex;
         return SendOrApplyCommand(command, false);
+#else
+        return false;
+#endif
     }
 
     public bool RequestEquipSkill(string characterId, int equippedSkillIndex, string skillId)
     {
+#if STEAMWORKS_NET
         BattleNetworkCommand command = CreateCommand(BattleNetworkCommandType.EquipSkill);
         command.characterId = characterId ?? string.Empty;
         command.slotIndex = equippedSkillIndex;
         command.itemId = skillId ?? string.Empty;
         return SendOrApplyCommand(command, false);
+#else
+        return false;
+#endif
     }
 
     public bool RequestUnequipSkill(string characterId, int equippedSkillIndex)
     {
+#if STEAMWORKS_NET
         BattleNetworkCommand command = CreateCommand(BattleNetworkCommandType.UnequipSkill);
         command.characterId = characterId ?? string.Empty;
         command.slotIndex = equippedSkillIndex;
         return SendOrApplyCommand(command, false);
+#else
+        return false;
+#endif
     }
 
     private void Bind(BattleTurnExecutor executor, BattleTimelineController timeline)
@@ -2147,6 +2171,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         try
         {
+#if STEAMWORKS_NET
             if (!IsLocalHost())
             {
                 timelineController.ClearAllReservations();
@@ -2166,6 +2191,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
                 timelineController.FinalizeNetworkSnapshotReservations();
             }
+#endif
 
             ApplyViewedSlotsToTimeline(snapshot);
         }

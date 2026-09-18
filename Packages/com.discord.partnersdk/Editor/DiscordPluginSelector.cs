@@ -66,11 +66,19 @@ public class DiscordPluginSelector
     };
 
     public void OnPreprocessBuild(BuildReport report) {
+        if (report.summary.platform == BuildTarget.WebGL) {
+            return;
+        }
+
         bool isDevelopment = (report.summary.options & BuildOptions.Development) != 0;
         SetPluginConfig(isDevelopment);
     }
 
     public void OnPostprocessBuild(BuildReport report) {
+        if (report.summary.platform == BuildTarget.WebGL) {
+            return;
+        }
+
         bool isDevelopment = (report.summary.options & BuildOptions.Development) != 0;
         if (IsStandaloneBuildTarget(report.summary.platform)) {
             CopyKrispModelsToStandaloneBuild(

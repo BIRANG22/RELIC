@@ -23,6 +23,28 @@ public class ResolutionManagerTests
     }
 
     [Test]
+    public void BrowserManagedViewportPolicy_UsesBrowserCanvasOnlyForWebGlPlayer()
+    {
+        Assert.That(
+            ResolutionManager.UsesBrowserManagedViewport(RuntimePlatform.WebGLPlayer),
+            Is.True);
+        Assert.That(
+            ResolutionManager.UsesBrowserManagedViewport(RuntimePlatform.WindowsPlayer),
+            Is.False);
+    }
+
+    [Test]
+    public void UiViewportPolicy_FitsWebGlUiInsideTheLetterboxedViewport()
+    {
+        Assert.That(
+            ResolutionManager.ShouldFitUiToViewport(RuntimePlatform.WebGLPlayer),
+            Is.True);
+        Assert.That(
+            ResolutionManager.ShouldFitUiToViewport(RuntimePlatform.WindowsPlayer),
+            Is.True);
+    }
+
+    [Test]
     public void CalculateLetterboxRect_WideScreen_AddsSideBars()
     {
         Rect rect = ResolutionManager.CalculateLetterboxRect(3440, 1440, 1920, 1080);

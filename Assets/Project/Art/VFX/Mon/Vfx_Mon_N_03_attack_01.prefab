@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2840355733393985143}
   - component: {fileID: 8738728459081148521}
   - component: {fileID: 2952472397769173918}
+  - component: {fileID: 781201830100000006}
   m_Layer: 0
   m_Name: Vfx_Mon_N_03_attack_01
   m_TagString: Untagged
@@ -33,6 +34,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &781201830100000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8931706953396669433}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c1d7f6a8e3b4d209f61c7b2a0e94d13, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  webGlFallbackPrefab: {fileID: 4977948193729588429, guid: 38657a1b2b8b1234287e21dce188bee5, type: 3}
 --- !u!2083052967 &8738728459081148521
 VisualEffect:
   m_ObjectHideFlags: 0

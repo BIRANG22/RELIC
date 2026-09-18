@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6497404629649652409}
   - component: {fileID: 2479292117675422307}
   - component: {fileID: 1227944075195728651}
+  - component: {fileID: 781201830100000003}
   m_Layer: 0
   m_Name: Vfx_Mon_N_02_skill_01
   m_TagString: Untagged
@@ -33,6 +34,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &781201830100000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4953072336942044038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c1d7f6a8e3b4d209f61c7b2a0e94d13, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  webGlFallbackPrefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
 --- !u!2083052967 &2479292117675422307
 VisualEffect:
   m_ObjectHideFlags: 0
