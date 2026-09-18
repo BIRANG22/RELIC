@@ -47,13 +47,10 @@ Shader "Vefects/SH_VFX_Flat"
 		
 
 		HLSLINCLUDE
-		#pragma target 4.5
+		#pragma target 3.5
 		#pragma prefer_hlslcc gles
 		// ensure rendering platforms toggle list is visible
 
-		#if ( SHADER_TARGET > 35 ) && defined( SHADER_API_GLES3 )
-			#error For WebGL2/GLES3, please set your shader target to 3.5 via SubShader options. URP shaders in ASE use target 4.5 by default.
-		#endif
 
 		#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 		#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Filtering.hlsl"

@@ -188,7 +188,7 @@ public class ResolutionManager : MonoBehaviour
 
     private static void ApplyCurrentResolution(bool forceRefreshOnly)
     {
-        if (!forceRefreshOnly)
+        if (!forceRefreshOnly && !UsesBrowserManagedViewport(Application.platform))
         {
             ResolutionOption resolution = CurrentResolution;
             Screen.SetResolution(
@@ -199,6 +199,24 @@ public class ResolutionManager : MonoBehaviour
 
         if (instance != null)
             instance.StartResolutionRefresh();
+    }
+
+    /// <summary>
+    /// WebGL은 브라우저 Canvas의 CSS 크기가 실제 표시·입력 영역을 결정합니다.
+    /// 창 해상도 변경이나 고정 해상도 Canvas 재배치를 적용하면 두 영역이 분리됩니다.
+    /// </summary>
+    public static bool UsesBrowserManagedViewport(RuntimePlatform platform)
+    {
+        return platform == RuntimePlatform.WebGLPlayer;
+    }
+
+    /// <summary>
+    /// UI 콘텐츠는 플랫폼과 관계없이 카메라의 레터박스 viewport와 같은 영역에 배치합니다.
+    /// WebGL에서는 Canvas 자체가 아닌 그 내부 콘텐츠만 보정합니다.
+    /// </summary>
+    public static bool ShouldFitUiToViewport(RuntimePlatform platform)
+    {
+        return platform != RuntimePlatform.WebGLPlayer || UsesBrowserManagedViewport(platform);
     }
 
     private void StartResolutionRefresh()
@@ -342,7 +360,8 @@ public class ResolutionManager : MonoBehaviour
             resolution.Height);
 
         ApplyCameraViewport(viewport);
-        ApplyCanvasViewports(viewport);
+        if (ShouldFitUiToViewport(Application.platform))
+            ApplyCanvasViewports(viewport);
 
         ResolutionLetterboxOverlay overlay = EnsureLetterboxOverlay();
         overlay.Apply(viewport, letterboxColor);

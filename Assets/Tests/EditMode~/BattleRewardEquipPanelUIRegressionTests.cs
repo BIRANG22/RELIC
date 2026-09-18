@@ -1,12 +1,42 @@
 using System.Reflection;
 using System.Collections;
 using NUnit.Framework;
+using TMPro;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 
 public class BattleRewardEquipPanelUIRegressionTests
 {
+    [Test]
+    public void Awake_ProtectsDynamicItemTextsFromStaticLocalization()
+    {
+        GameObject panelObject = new("Equip_panel", typeof(RectTransform));
+
+        try
+        {
+            GameObject itemObject = new("item", typeof(RectTransform));
+            itemObject.transform.SetParent(panelObject.transform, false);
+
+            TextMeshProUGUI nameText = CreateText(itemObject.transform, "Name");
+            TextMeshProUGUI rarityText = CreateText(itemObject.transform, "Rarity");
+            TextMeshProUGUI effectText = CreateText(itemObject.transform, "Effect");
+            nameText.gameObject.AddComponent<LocalizedTMPText>();
+            rarityText.gameObject.AddComponent<LocalizedTMPText>();
+            effectText.gameObject.AddComponent<LocalizedTMPText>();
+
+            panelObject.AddComponent<BattleRewardEquipPanelUI>();
+
+            AssertDynamic(nameText);
+            AssertDynamic(rarityText);
+            AssertDynamic(effectText);
+        }
+        finally
+        {
+            Object.DestroyImmediate(panelObject);
+        }
+    }
+
     [Test]
     public void Open_AfterPreviousResolution_ReenablesDeleteButton()
     {
@@ -196,6 +226,21 @@ public class BattleRewardEquipPanelUIRegressionTests
         MethodInfo method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.That(method, Is.Not.Null);
         method.Invoke(target, null);
+    }
+
+    private static TextMeshProUGUI CreateText(Transform parent, string name)
+    {
+        GameObject textObject = new(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        textObject.transform.SetParent(parent, false);
+        return textObject.GetComponent<TextMeshProUGUI>();
+    }
+
+    private static void AssertDynamic(TMP_Text text)
+    {
+        Assert.That(text.GetComponent<LocalizationIgnore>(), Is.Not.Null);
+
+        LocalizedTMPText localizer = text.GetComponent<LocalizedTMPText>();
+        Assert.That(localizer == null || !localizer.enabled, Is.True);
     }
 
 }

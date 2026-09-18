@@ -411,6 +411,7 @@ GameObject:
   - component: {fileID: 3251396058578719342}
   - component: {fileID: 6383944365361433147}
   - component: {fileID: 8415562557208320667}
+  - component: {fileID: 781201830100000002}
   m_Layer: 0
   m_Name: Vfx_bonfire
   m_TagString: Untagged
@@ -433,6 +434,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 801717574754936926}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &781201830100000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9008989463746904227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c1d7f6a8e3b4d209f61c7b2a0e94d13, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  webGlFallbackPrefab: {fileID: 4127896281107662253, guid: a9fcb99b4fa144a4cbdc08bc21ba53cd, type: 3}
 --- !u!2083052967 &6383944365361433147
 VisualEffect:
   m_ObjectHideFlags: 0
