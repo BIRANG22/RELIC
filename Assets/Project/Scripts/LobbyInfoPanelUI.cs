@@ -28,10 +28,6 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
     [Tooltip("Info_Panel 아래의 Char1~3 구조를 이름으로 자동 연결합니다.")]
     [SerializeField] private bool autoBindCharacterHierarchy = true;
 
-    [Header("Character Slot Hover")]
-    [SerializeField] private float characterHoverScale = 1.1f;
-    [SerializeField] private float characterHoverScaleDuration = 0.15f;
-
     private readonly CharacterView[] characterViews = new CharacterView[CharacterCount];
     private GameObject characterSelectRoot;
     private CharPick infoPanelCharacterPicker;
@@ -85,6 +81,7 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
 
             if (!hasCharacter)
             {
+                ResetEmptyCharacterInteractionState(view);
                 ClearCharacterView(view);
                 continue;
             }
@@ -235,6 +232,13 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         if (view == null)
             return;
 
+        string characterId = DataManager.Instance?.PartyRuntimeStore?.GetCharacterId(partyIndex);
+        if (string.IsNullOrWhiteSpace(characterId))
+        {
+            ResetEmptyCharacterInteractionState(view);
+            return;
+        }
+
         if (!view.IsHovering)
         {
             if (view.BackgroundImage != null)
@@ -247,7 +251,8 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         if (view.BackgroundImage != null)
             view.BackgroundImage.color = CharacterHoverColor;
 
-        AnimateCharacterIconScale(view, view.NormalIconScale * Mathf.Max(0f, characterHoverScale));
+        // Info_Panel 캐릭터 아이콘은 호버 시 크기를 변경하지 않습니다.
+        ResetCharacterIconScale(view);
     }
 
     internal void HandleCharacterSlotPointerExit(int partyIndex)
@@ -263,10 +268,10 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         if (view.BackgroundImage != null)
             view.BackgroundImage.color = view.NormalBackgroundColor;
 
-        AnimateCharacterIconScale(view, view.NormalIconScale);
+        ResetCharacterIconScale(view);
     }
 
-    private void AnimateCharacterIconScale(CharacterView view, Vector3 targetScale)
+    private void ResetCharacterIconScale(CharacterView view)
     {
         if (view == null || view.IconRoot == null)
             return;
@@ -277,35 +282,21 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
             view.ScaleCoroutine = null;
         }
 
-        if (!isActiveAndEnabled || characterHoverScaleDuration <= 0f)
-        {
-            view.IconRoot.localScale = targetScale;
-            return;
-        }
-
-        view.ScaleCoroutine = StartCoroutine(AnimateCharacterIconScaleRoutine(view, targetScale));
+        view.IconRoot.localScale = view.NormalIconScale;
     }
 
-    private System.Collections.IEnumerator AnimateCharacterIconScaleRoutine(CharacterView view, Vector3 targetScale)
+    private static void ResetEmptyCharacterInteractionState(CharacterView view)
     {
-        if (view == null || view.IconRoot == null)
-            yield break;
+        if (view == null)
+            return;
 
-        Vector3 startScale = view.IconRoot.localScale;
-        float duration = Mathf.Max(0.01f, characterHoverScaleDuration);
-        float elapsed = 0f;
+        view.IsHovering = false;
 
-        while (elapsed < duration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            t = Mathf.SmoothStep(0f, 1f, t);
-            view.IconRoot.localScale = Vector3.LerpUnclamped(startScale, targetScale, t);
-            yield return null;
-        }
+        if (view.BackgroundImage != null)
+            view.BackgroundImage.color = view.NormalBackgroundColor;
 
-        view.IconRoot.localScale = targetScale;
-        view.ScaleCoroutine = null;
+        if (view.IconRoot != null)
+            view.IconRoot.localScale = view.NormalIconScale;
     }
 
     internal void HandleCharacterSlotClicked(int partyIndex)

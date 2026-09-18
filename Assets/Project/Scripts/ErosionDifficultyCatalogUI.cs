@@ -303,7 +303,7 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
             : item.name;
     }
 
-    private static void BindErosionSlot(Transform slotRoot, ErosionDifficultyLevelItemUI item)
+    private void BindErosionSlot(Transform slotRoot, ErosionDifficultyLevelItemUI item)
     {
         if (slotRoot == null || item == null || item.DifficultyData == null)
             return;
@@ -319,6 +319,24 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         SetText(slotRoot, "Value_Text", item.ScoreValue.ToString());
         SetText(slotRoot, "Catalog_Text", BuildCatalogDisplayName(item.DifficultyData));
         SetText(slotRoot, "Effect_Text", GameDataLocalization.ErosionDescription(item.DifficultyData));
+
+        ErosionSelectedSlotInteractionUI interaction =
+            slotRoot.GetComponent<ErosionSelectedSlotInteractionUI>();
+        if (interaction == null)
+            interaction = slotRoot.gameObject.AddComponent<ErosionSelectedSlotInteractionUI>();
+
+        Transform lineTransform = FindTransformRecursive(slotRoot, "Line");
+        Graphic lineGraphic = lineTransform != null ? lineTransform.GetComponent<Graphic>() : null;
+        interaction.Initialize(this, item, lineGraphic);
+    }
+
+    internal void OnSelectedErosionSlotClicked(ErosionDifficultyLevelItemUI item)
+    {
+        if (item == null || !item.IsSelectable || !item.IsSelected)
+            return;
+
+        // 선택 목록의 슬롯을 클릭하면 카탈로그에서 같은 항목을 다시 누른 것과 동일하게 해제합니다.
+        OnLevelClicked(item);
     }
 
     private static string BuildCatalogDisplayName(ErosionData data)
@@ -655,6 +673,63 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         }
 
         return null;
+    }
+}
+
+/// <summary>
+/// Erosion_Select 목록에 생성되는 선택 완료 슬롯의 호버와 해제 입력을 담당합니다.
+/// </summary>
+public sealed class ErosionSelectedSlotInteractionUI : MonoBehaviour,
+    IPointerEnterHandler,
+    IPointerExitHandler,
+    IPointerClickHandler
+{
+    private static readonly Color NormalLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    private static readonly Color HoverLineColor = Color.white;
+
+    private ErosionDifficultyCatalogUI owner;
+    private ErosionDifficultyLevelItemUI item;
+    private Graphic lineGraphic;
+
+    public void Initialize(
+        ErosionDifficultyCatalogUI owner,
+        ErosionDifficultyLevelItemUI item,
+        Graphic lineGraphic)
+    {
+        this.owner = owner;
+        this.item = item;
+        this.lineGraphic = lineGraphic;
+        SetLineColor(NormalLineColor);
+    }
+
+    private void OnDisable()
+    {
+        SetLineColor(NormalLineColor);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        SetLineColor(HoverLineColor);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        SetLineColor(NormalLineColor);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        SetLineColor(NormalLineColor);
+        owner?.OnSelectedErosionSlotClicked(item);
+    }
+
+    private void SetLineColor(Color color)
+    {
+        if (lineGraphic != null)
+            lineGraphic.color = color;
     }
 }
 
