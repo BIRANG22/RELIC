@@ -59,6 +59,25 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     [SerializeField, HideInInspector, TextArea] private string emptySkillInfoEffect = "스킬을 선택하면 정보가 표시된다.";
     [SerializeField, HideInInspector] private bool autoBindSkillInfoArea = true;
 
+    [Header("Skill Tooltip")]
+    [Tooltip("Skill_TootipPanel 오브젝트입니다. 비어 있으면 이름으로 자동 탐색합니다.")]
+    [SerializeField] private GameObject skillTooltipPanel;
+    [SerializeField] private Image skillTooltipRangeImage;
+    [SerializeField] private Image skillTooltipResourceImage;
+    [SerializeField] private TMP_Text skillTooltipResourceText;
+    [SerializeField] private TMP_Text skillTooltipNameText;
+    [SerializeField] private TMP_Text skillTooltipDescriptionText;
+    [Tooltip("호버한 스킬 아이콘을 기준으로 한 툴팁 X 오프셋입니다.")]
+    [SerializeField] private float skillTooltipOffsetX = 50f;
+    [Tooltip("호버한 스킬 아이콘을 기준으로 한 툴팁 Y 오프셋입니다.")]
+    [SerializeField] private float skillTooltipOffsetY = 50f;
+
+    [Header("Skill Tooltip Resource Icons")]
+    [SerializeField] private Sprite skillTooltipCostResourceIcon;
+    [SerializeField] private Sprite skillTooltipHpResourceIcon;
+    [SerializeField] private Sprite skillTooltipUniqueResourceIcon;
+    [SerializeField] private Sprite skillTooltipMoveResourceIcon;
+
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
 
@@ -86,6 +105,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         BindSkillIconButtonsIfNeeded();
         InitSkillIconButtons();
+        BindSkillTooltipIfNeeded();
+        HideSkillTooltipImmediate();
         SetAllDirectSkillPanelsVisible();
     }
 
@@ -104,6 +125,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         BindSkillIconButtonsIfNeeded();
         InitSkillIconButtons();
+        BindSkillTooltipIfNeeded();
+        HideSkillTooltipImmediate();
         SetAllDirectSkillPanelsVisible();
 
         if (currentMasterData != null && currentRuntimeData != null)
@@ -380,6 +403,159 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             if (label != null)
                 skillInfoValueLabel = label.gameObject;
         }
+    }
+
+    private void BindSkillTooltipIfNeeded()
+    {
+        Transform tooltip = skillTooltipPanel != null
+            ? skillTooltipPanel.transform
+            : FindChildByName(transform, "Skill_TootipPanel");
+
+        if (tooltip == null)
+            tooltip = FindChildByName(transform, "Skill_TooltipPanel");
+
+        if (tooltip == null)
+            return;
+
+        skillTooltipPanel = tooltip.gameObject;
+
+        if (skillTooltipRangeImage == null)
+        {
+            Transform child = tooltip.Find("Range");
+            if (child != null) skillTooltipRangeImage = child.GetComponent<Image>();
+        }
+
+        if (skillTooltipResourceImage == null)
+        {
+            Transform child = tooltip.Find("Resources_Image");
+            if (child != null) skillTooltipResourceImage = child.GetComponent<Image>();
+        }
+
+        if (skillTooltipResourceText == null)
+        {
+            Transform child = tooltip.Find("Resources_Text");
+            if (child != null) skillTooltipResourceText = child.GetComponent<TMP_Text>();
+        }
+
+        if (skillTooltipNameText == null)
+        {
+            Transform child = tooltip.Find("NameText");
+            if (child != null) skillTooltipNameText = child.GetComponent<TMP_Text>();
+        }
+
+        if (skillTooltipDescriptionText == null)
+        {
+            Transform child = tooltip.Find("DescriptionText");
+            if (child != null) skillTooltipDescriptionText = child.GetComponent<TMP_Text>();
+        }
+
+        EnsureDynamicTextOwnership(skillTooltipResourceText);
+        EnsureDynamicTextOwnership(skillTooltipNameText);
+        EnsureDynamicTextOwnership(skillTooltipDescriptionText);
+    }
+
+    public void ShowSkillTooltip(SkillIconButton sourceButton, SkillMasterData skill)
+    {
+        if (sourceButton == null || skill == null)
+            return;
+
+        BindSkillTooltipIfNeeded();
+        if (skillTooltipPanel == null)
+            return;
+
+        SetPlainTmpText(skillTooltipNameText, GameDataLocalization.SkillName(skill));
+        SetRichTmpText(skillTooltipDescriptionText, BuildSkillDetailsText(skill));
+
+        if (skillTooltipResourceText != null)
+            SetPlainTmpText(skillTooltipResourceText, Mathf.Max(0, skill.ResourceCostValue).ToString());
+
+        if (skillTooltipRangeImage != null)
+        {
+            Sprite rangeSprite = null;
+            if (!string.IsNullOrWhiteSpace(skill.RangeId) &&
+                DataManager.Instance != null &&
+                DataManager.Instance.SkillRangeIconDatabase != null)
+            {
+                DataManager.Instance.SkillRangeIconDatabase.TryGetIcon(skill.RangeId, out rangeSprite);
+            }
+
+            skillTooltipRangeImage.sprite = rangeSprite;
+            skillTooltipRangeImage.enabled = rangeSprite != null;
+        }
+
+        if (skillTooltipResourceImage != null)
+        {
+            Sprite resourceSprite = ResolveSkillTooltipResourceIcon(skill.ReferenceResource);
+            skillTooltipResourceImage.sprite = resourceSprite;
+            skillTooltipResourceImage.enabled = resourceSprite != null;
+        }
+
+        PositionSkillTooltip(sourceButton.transform as RectTransform);
+        skillTooltipPanel.SetActive(true);
+    }
+
+    public void HideSkillTooltip(SkillIconButton sourceButton)
+    {
+        if (skillTooltipPanel == null)
+            return;
+
+        skillTooltipPanel.SetActive(false);
+    }
+
+    private void HideSkillTooltipImmediate()
+    {
+        if (skillTooltipPanel != null)
+            skillTooltipPanel.SetActive(false);
+    }
+
+    private void PositionSkillTooltip(RectTransform sourceRect)
+    {
+        if (sourceRect == null || skillTooltipPanel == null)
+            return;
+
+        RectTransform tooltipRect = skillTooltipPanel.transform as RectTransform;
+        RectTransform parentRect = tooltipRect != null ? tooltipRect.parent as RectTransform : null;
+        if (tooltipRect == null || parentRect == null)
+            return;
+
+        Canvas canvas = tooltipRect.GetComponentInParent<Canvas>();
+        Camera uiCamera = null;
+        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            uiCamera = canvas.worldCamera;
+
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(uiCamera, sourceRect.position);
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, screenPoint, uiCamera, out Vector2 localPoint))
+        {
+            tooltipRect.anchoredPosition = localPoint + new Vector2(skillTooltipOffsetX, skillTooltipOffsetY);
+        }
+    }
+
+    private Sprite ResolveSkillTooltipResourceIcon(ReferenceResource resource)
+    {
+        Sprite assigned = resource switch
+        {
+            ReferenceResource.HP => skillTooltipHpResourceIcon,
+            ReferenceResource.UniqueResource => skillTooltipUniqueResourceIcon,
+            ReferenceResource.MovePoint => skillTooltipMoveResourceIcon != null ? skillTooltipMoveResourceIcon : skillTooltipCostResourceIcon,
+            _ => skillTooltipCostResourceIcon,
+        };
+
+        if (assigned != null)
+            return assigned;
+
+        string statName = resource switch
+        {
+            ReferenceResource.HP => "HP",
+            ReferenceResource.UniqueResource => "Karma",
+            ReferenceResource.MovePoint => "Cost",
+            _ => "Cost",
+        };
+
+        Transform statsArea = FindChildByName(transform, "Stats_Area");
+        Transform statRoot = statsArea != null ? statsArea.Find(statName) : null;
+        Transform icon = statRoot != null ? statRoot.Find("Icon") : null;
+        Image image = icon != null ? icon.GetComponent<Image>() : null;
+        return image != null ? image.sprite : null;
     }
 
     private Transform FindChildByName(Transform root, string targetName)
