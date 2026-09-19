@@ -289,6 +289,15 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
             return;
         }
 
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            tooltipCanvasGroup.alpha = 0f;
+            tooltipCanvasGroup.interactable = false;
+            tooltipCanvasGroup.blocksRaycasts = false;
+            tooltipPanel.SetActive(false);
+            return;
+        }
+
         if (tooltipFadeOutDuration <= 0f)
         {
             tooltipCanvasGroup.alpha = 0f;
