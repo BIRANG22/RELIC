@@ -31,6 +31,10 @@ public class Setting : MonoBehaviour
     [SerializeField] private TMP_Text characterLevelText;
     [SerializeField] private TMP_Text characterExpText;
 
+    [Header("Character Level Number Change Effect")]
+    [Tooltip("레벨/경험치 수치가 변할 때 이전 값에서 새 값까지 숫자가 변화하는 시간입니다.")]
+    [SerializeField, Min(0f)] private float levelNumberChangeDuration = 0.2f;
+
     [Header("Test Level Settings")]
     [SerializeField] private int testExpPerLevel = 1000;
     [SerializeField] private int maxTestLevel = 30;
@@ -110,6 +114,12 @@ public class Setting : MonoBehaviour
     private CharacterSettingTabButtonScaleEffect skillButtonScaleEffect;
     private CharacterSettingTabButtonScaleEffect runeButtonScaleEffect;
     private Coroutine areaMoveCoroutine;
+    private Coroutine levelNumberChangeCoroutine;
+    private bool hasDisplayedLevelValues;
+    private int displayedLevel;
+    private int displayedExp;
+    private string displayedLevelCharacterId;
+
     [Header("Character Setting Fade")]
     [SerializeField] private float characterSettingFadeDuration = 0.18f;
 
@@ -256,6 +266,9 @@ public class Setting : MonoBehaviour
         }
 
         characterSettingClosing = false;
+        StopLevelNumberChangeCoroutine();
+        hasDisplayedLevelValues = false;
+        displayedLevelCharacterId = null;
         ResetCharacterSettingFadeState();
 
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
@@ -890,8 +903,12 @@ public class Setting : MonoBehaviour
             characterProfileImage.enabled = false;
         }
 
+        StopLevelNumberChangeCoroutine();
+        hasDisplayedLevelValues = false;
+        displayedLevelCharacterId = null;
+
         if (characterLevelText != null)
-            characterLevelText.text = "LV. 1";
+            characterLevelText.text = "LV.1";
 
         if (characterExpText != null)
             characterExpText.text = "EXP 0";
@@ -913,11 +930,81 @@ public class Setting : MonoBehaviour
         if (currentRuntimeData == null)
             return;
 
+        int targetLevel = Mathf.Max(1, currentRuntimeData.Level);
+        int targetExp = Mathf.Max(0, currentRuntimeData.Exp);
+        bool characterChanged = !string.Equals(displayedLevelCharacterId, currentCharacterId, System.StringComparison.Ordinal);
+
+        if (!Application.isPlaying || !hasDisplayedLevelValues || characterChanged || levelNumberChangeDuration <= 0f)
+        {
+            SetLevelValuesImmediate(targetLevel, targetExp);
+            return;
+        }
+
+        if (displayedLevel == targetLevel && displayedExp == targetExp)
+        {
+            ApplyDisplayedLevelValues();
+            return;
+        }
+
+        StopLevelNumberChangeCoroutine();
+        levelNumberChangeCoroutine = StartCoroutine(AnimateLevelNumberValues(targetLevel, targetExp));
+    }
+
+    private void SetLevelValuesImmediate(int level, int exp)
+    {
+        StopLevelNumberChangeCoroutine();
+
+        displayedLevel = Mathf.Max(1, level);
+        displayedExp = Mathf.Max(0, exp);
+        displayedLevelCharacterId = currentCharacterId;
+        hasDisplayedLevelValues = true;
+
+        ApplyDisplayedLevelValues();
+    }
+
+    private IEnumerator AnimateLevelNumberValues(int targetLevel, int targetExp)
+    {
+        int startLevel = displayedLevel;
+        int startExp = displayedExp;
+        int safeTargetLevel = Mathf.Max(1, targetLevel);
+        int safeTargetExp = Mathf.Max(0, targetExp);
+
+        float elapsed = 0f;
+        while (elapsed < levelNumberChangeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float progress = Mathf.Clamp01(elapsed / levelNumberChangeDuration);
+
+            displayedLevel = Mathf.RoundToInt(Mathf.Lerp(startLevel, safeTargetLevel, progress));
+            displayedExp = Mathf.RoundToInt(Mathf.Lerp(startExp, safeTargetExp, progress));
+            ApplyDisplayedLevelValues();
+
+            yield return null;
+        }
+
+        displayedLevel = safeTargetLevel;
+        displayedExp = safeTargetExp;
+        displayedLevelCharacterId = currentCharacterId;
+        ApplyDisplayedLevelValues();
+        levelNumberChangeCoroutine = null;
+    }
+
+    private void ApplyDisplayedLevelValues()
+    {
         if (characterLevelText != null)
-            characterLevelText.text = "LV. " + currentRuntimeData.Level;
+            characterLevelText.text = "LV." + Mathf.Max(1, displayedLevel);
 
         if (characterExpText != null)
-            characterExpText.text = "EXP " + Mathf.Max(0, currentRuntimeData.Exp);
+            characterExpText.text = "EXP " + Mathf.Max(0, displayedExp);
+    }
+
+    private void StopLevelNumberChangeCoroutine()
+    {
+        if (levelNumberChangeCoroutine == null)
+            return;
+
+        StopCoroutine(levelNumberChangeCoroutine);
+        levelNumberChangeCoroutine = null;
     }
 
     private void HandleTestLevelCheatKeys()
