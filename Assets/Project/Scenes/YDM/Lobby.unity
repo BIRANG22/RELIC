@@ -100557,8 +100557,8 @@ MonoBehaviour:
   skillTooltipResourceText: {fileID: 66094691}
   skillTooltipNameText: {fileID: 1503996709}
   skillTooltipDescriptionText: {fileID: 152484765}
-  skillTooltipOffsetX: 50
-  skillTooltipOffsetY: 50
+  skillTooltipOffsetX: 1020
+  skillTooltipOffsetY: -475
   skillTooltipCostResourceIcon: {fileID: 21300000, guid: e9dc2d9ffcb39e645bb35dae5669cd88, type: 3}
   skillTooltipHpResourceIcon: {fileID: 21300000, guid: 2cd0a4f92d65d57488b0fde8624c99ce, type: 3}
   skillTooltipUniqueResourceIcon: {fileID: 21300000, guid: aeaf80931d6dbe74a8be95dd7653792e, type: 3}
