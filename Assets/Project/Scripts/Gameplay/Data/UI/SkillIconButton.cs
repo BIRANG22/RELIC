@@ -74,6 +74,9 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         StopHoverScaleEffect(true);
         SetHoverSelected(false);
+
+        if (owner != null)
+            owner.HideSkillTooltip(this);
     }
 
     public void Init(SkillSettingPanel panel)
@@ -176,6 +179,9 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         isPointerInside = true;
         SetHoverSelected(true);
         StartHoverScaleEffect();
+
+        if (owner != null && currentSkillData != null)
+            owner.ShowSkillTooltip(this, currentSkillData);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -191,6 +197,9 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
 
         SetHoverSelected(false);
+
+        if (owner != null)
+            owner.HideSkillTooltip(this);
     }
 
     public void Execute()
