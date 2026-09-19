@@ -25,6 +25,10 @@ public class CharacterInfoPanel : MonoBehaviour
     [SerializeField] private string statIncreaseColor = "#4E66DF";
     [SerializeField] private string statDecreaseColor = "#D94B4B";
 
+    [Header("Number Change Effect")]
+    [Tooltip("스탯 수치가 변할 때 이전 값에서 새 값까지 숫자가 변화하는 시간입니다.")]
+    [SerializeField, Min(0f)] private float numberChangeDuration = 0.2f;
+
     [Header("Story")]
     [SerializeField] private TMP_Text storyText;
     [SerializeField] private string storyTooltipTitleColor = "#4E66DF";
@@ -46,6 +50,15 @@ public class CharacterInfoPanel : MonoBehaviour
     private string currentStoryText = "";
     private Component temporaryStoryOwner;
     private Coroutine restoreStoryCoroutine;
+    private Coroutine statNumberChangeCoroutine;
+    private bool hasDisplayedStatValues;
+    private int displayedBaseHP;
+    private int displayedEffectiveHP;
+    private int displayedBaseCost;
+    private int displayedEffectiveCost;
+    private int displayedBaseRecovery;
+    private int displayedEffectiveRecovery;
+    private int displayedKarma;
 
     public CharacterMasterData CurrentMasterData => currentMasterData;
     public CharacterRuntimeData CurrentRuntimeData => currentRuntimeData;
@@ -68,10 +81,18 @@ public class CharacterInfoPanel : MonoBehaviour
 
     public void SetCharacter(CharacterMasterData masterData, CharacterRuntimeData runtimeData)
     {
+        bool characterChanged = currentMasterData != masterData || currentRuntimeData != runtimeData;
+
         currentMasterData = masterData;
         currentRuntimeData = runtimeData;
         temporaryStoryOwner = null;
         CancelRestoreStoryCoroutine();
+
+        if (characterChanged)
+        {
+            StopStatNumberChangeCoroutine();
+            hasDisplayedStatValues = false;
+        }
 
         Refresh();
     }
@@ -96,18 +117,15 @@ public class CharacterInfoPanel : MonoBehaviour
         int effectiveCost = BattleEquipmentEffectService.GetEffectiveMaxCost(currentRuntimeData, currentMasterData);
         int effectiveRecovery = BattleEquipmentEffectService.GetEffectiveCostRecovery(currentRuntimeData, currentMasterData);
 
-        if (hpValueText != null)
-            hpValueText.text = FormatStatValue(baseHP, effectiveHP);
-
-        if (costValueText != null)
-            costValueText.text = FormatStatValue(baseCost, effectiveCost);
-
-        if (recoveryValueText != null)
-            recoveryValueText.text = FormatStatValue(baseRecovery, effectiveRecovery);
-
         AutoBindKarmaValueText();
-        if (karmaValueText != null)
-            karmaValueText.text = maxKarma.ToString();
+        RefreshStatNumberValues(
+            baseHP,
+            effectiveHP,
+            baseCost,
+            effectiveCost,
+            baseRecovery,
+            effectiveRecovery,
+            maxKarma);
 
         RefreshStoryTextCache();
 
@@ -122,6 +140,8 @@ public class CharacterInfoPanel : MonoBehaviour
         currentStoryText = "";
         temporaryStoryOwner = null;
         CancelRestoreStoryCoroutine();
+        StopStatNumberChangeCoroutine();
+        hasDisplayedStatValues = false;
 
         ApplyCostLabels();
 
@@ -193,6 +213,145 @@ public class CharacterInfoPanel : MonoBehaviour
 
         StopCoroutine(restoreStoryCoroutine);
         restoreStoryCoroutine = null;
+    }
+
+    private void RefreshStatNumberValues(
+        int baseHP,
+        int effectiveHP,
+        int baseCost,
+        int effectiveCost,
+        int baseRecovery,
+        int effectiveRecovery,
+        int maxKarma)
+    {
+        if (!Application.isPlaying || !hasDisplayedStatValues || numberChangeDuration <= 0f)
+        {
+            SetStatValuesImmediate(
+                baseHP,
+                effectiveHP,
+                baseCost,
+                effectiveCost,
+                baseRecovery,
+                effectiveRecovery,
+                maxKarma);
+            return;
+        }
+
+        if (displayedBaseHP == baseHP &&
+            displayedEffectiveHP == effectiveHP &&
+            displayedBaseCost == baseCost &&
+            displayedEffectiveCost == effectiveCost &&
+            displayedBaseRecovery == baseRecovery &&
+            displayedEffectiveRecovery == effectiveRecovery &&
+            displayedKarma == maxKarma)
+        {
+            ApplyDisplayedStatValues();
+            return;
+        }
+
+        StopStatNumberChangeCoroutine();
+        statNumberChangeCoroutine = StartCoroutine(AnimateStatNumberValues(
+            baseHP,
+            effectiveHP,
+            baseCost,
+            effectiveCost,
+            baseRecovery,
+            effectiveRecovery,
+            maxKarma));
+    }
+
+    private void SetStatValuesImmediate(
+        int baseHP,
+        int effectiveHP,
+        int baseCost,
+        int effectiveCost,
+        int baseRecovery,
+        int effectiveRecovery,
+        int maxKarma)
+    {
+        StopStatNumberChangeCoroutine();
+
+        displayedBaseHP = baseHP;
+        displayedEffectiveHP = effectiveHP;
+        displayedBaseCost = baseCost;
+        displayedEffectiveCost = effectiveCost;
+        displayedBaseRecovery = baseRecovery;
+        displayedEffectiveRecovery = effectiveRecovery;
+        displayedKarma = maxKarma;
+        hasDisplayedStatValues = true;
+
+        ApplyDisplayedStatValues();
+    }
+
+    private IEnumerator AnimateStatNumberValues(
+        int targetBaseHP,
+        int targetEffectiveHP,
+        int targetBaseCost,
+        int targetEffectiveCost,
+        int targetBaseRecovery,
+        int targetEffectiveRecovery,
+        int targetKarma)
+    {
+        int startBaseHP = displayedBaseHP;
+        int startEffectiveHP = displayedEffectiveHP;
+        int startBaseCost = displayedBaseCost;
+        int startEffectiveCost = displayedEffectiveCost;
+        int startBaseRecovery = displayedBaseRecovery;
+        int startEffectiveRecovery = displayedEffectiveRecovery;
+        int startKarma = displayedKarma;
+
+        float elapsed = 0f;
+        while (elapsed < numberChangeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float progress = Mathf.Clamp01(elapsed / numberChangeDuration);
+
+            displayedBaseHP = Mathf.RoundToInt(Mathf.Lerp(startBaseHP, targetBaseHP, progress));
+            displayedEffectiveHP = Mathf.RoundToInt(Mathf.Lerp(startEffectiveHP, targetEffectiveHP, progress));
+            displayedBaseCost = Mathf.RoundToInt(Mathf.Lerp(startBaseCost, targetBaseCost, progress));
+            displayedEffectiveCost = Mathf.RoundToInt(Mathf.Lerp(startEffectiveCost, targetEffectiveCost, progress));
+            displayedBaseRecovery = Mathf.RoundToInt(Mathf.Lerp(startBaseRecovery, targetBaseRecovery, progress));
+            displayedEffectiveRecovery = Mathf.RoundToInt(Mathf.Lerp(startEffectiveRecovery, targetEffectiveRecovery, progress));
+            displayedKarma = Mathf.RoundToInt(Mathf.Lerp(startKarma, targetKarma, progress));
+
+            ApplyDisplayedStatValues();
+            yield return null;
+        }
+
+        displayedBaseHP = targetBaseHP;
+        displayedEffectiveHP = targetEffectiveHP;
+        displayedBaseCost = targetBaseCost;
+        displayedEffectiveCost = targetEffectiveCost;
+        displayedBaseRecovery = targetBaseRecovery;
+        displayedEffectiveRecovery = targetEffectiveRecovery;
+        displayedKarma = targetKarma;
+
+        ApplyDisplayedStatValues();
+        statNumberChangeCoroutine = null;
+    }
+
+    private void ApplyDisplayedStatValues()
+    {
+        if (hpValueText != null)
+            hpValueText.text = FormatStatValue(displayedBaseHP, displayedEffectiveHP);
+
+        if (costValueText != null)
+            costValueText.text = FormatStatValue(displayedBaseCost, displayedEffectiveCost);
+
+        if (recoveryValueText != null)
+            recoveryValueText.text = FormatStatValue(displayedBaseRecovery, displayedEffectiveRecovery);
+
+        if (karmaValueText != null)
+            karmaValueText.text = Mathf.Max(0, displayedKarma).ToString();
+    }
+
+    private void StopStatNumberChangeCoroutine()
+    {
+        if (statNumberChangeCoroutine == null)
+            return;
+
+        StopCoroutine(statNumberChangeCoroutine);
+        statNumberChangeCoroutine = null;
     }
 
     private void RefreshStoryTextCache()
@@ -362,9 +521,9 @@ public class CharacterInfoPanel : MonoBehaviour
         string color = delta > 0 ? statIncreaseColor : statDecreaseColor;
 
         if (string.IsNullOrWhiteSpace(color))
-            return effectiveValue + " (" + sign + delta + ")";
+            return effectiveValue + "(" + sign + delta + ")";
 
-        return effectiveValue + " <color=" + color + ">(" + sign + delta + ")</color>";
+        return effectiveValue + "<color=" + color + ">(" + sign + delta + ")</color>";
     }
 
     private string FormatStoryTooltip(string statName, string description, string valueLine)
