@@ -33,6 +33,7 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
     [SerializeField] private GameObject backgroundRoot;
     [SerializeField] private GameObject infoRoot;
     [SerializeField] private Button backButton;
+    [SerializeField] private Button infoBackButton;
 
     [Header("Ready Presentation")]
     [SerializeField] private GameObject readyBackRoot;
@@ -46,9 +47,11 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
     private GameObject activePanel;
     private Action activeCloseAction;
     private bool backButtonBound;
+    private bool infoBackButtonBound;
     private bool keepBackgroundActiveDuringSwitch;
     private bool readyPresentationActive;
     private bool readyBackWasActive;
+    private bool readySharedBackButtonWasActive;
     private bool readyLobbyIconWasActive;
     private bool readyMainIconWasActive;
     private Coroutine readyTransitionCoroutine;
@@ -68,18 +71,31 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
     private void Awake()
     {
         ResolveReferences();
+        ResolveReadyPresentationRoots();
         BindBackButton();
+        BindInfoBackButton();
+
+        // Info_Panel의 BackButton은 탐사 준비 화면 전용입니다.
+        // 일반 PositionPanel 화면에서는 공용 BackgroundPanel/BackButton만 사용합니다.
+        if (!readyPresentationActive)
+            SetActiveIfNeeded(infoBackButton != null ? infoBackButton.gameObject : null, false);
     }
 
     private void OnEnable()
     {
         ResolveReferences();
+        ResolveReadyPresentationRoots();
         BindBackButton();
+        BindInfoBackButton();
+
+        if (!readyPresentationActive)
+            SetActiveIfNeeded(infoBackButton != null ? infoBackButton.gameObject : null, false);
     }
 
     private void OnDestroy()
     {
         UnbindBackButton();
+        UnbindInfoBackButton();
     }
 
     public static void ShowForPanel(GameObject panel, object owner, Action closeAction)
@@ -392,12 +408,16 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
         if (!readyPresentationActive)
         {
             readyBackWasActive = readyBackRoot != null && readyBackRoot.activeSelf;
+            readySharedBackButtonWasActive = backButton != null && backButton.gameObject.activeSelf;
             readyLobbyIconWasActive = readyLobbyIconRoot != null && readyLobbyIconRoot.activeSelf;
             readyMainIconWasActive = readyMainIconRoot != null && readyMainIconRoot.activeSelf;
             readyPresentationActive = true;
         }
 
+        // 탐사 준비 화면에서는 좌우 이동 패널과 함께 움직이는 Info_Panel/BackButton을 사용합니다.
         SetActiveIfNeeded(readyBackRoot, false);
+        SetActiveIfNeeded(backButton != null ? backButton.gameObject : null, false);
+        SetActiveIfNeeded(infoBackButton != null ? infoBackButton.gameObject : null, true);
         SetActiveIfNeeded(readyLobbyIconRoot, false);
         SetActiveIfNeeded(readyMainIconRoot, false);
     }
@@ -414,6 +434,8 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
             backgroundRoot.SetActive(true);
 
         SetActiveIfNeeded(readyBackRoot, readyBackWasActive);
+        SetActiveIfNeeded(backButton != null ? backButton.gameObject : null, readySharedBackButtonWasActive);
+        SetActiveIfNeeded(infoBackButton != null ? infoBackButton.gameObject : null, false);
         SetActiveIfNeeded(readyLobbyIconRoot, readyLobbyIconWasActive);
         SetActiveIfNeeded(readyMainIconRoot, readyMainIconWasActive);
         readyPresentationActive = false;
@@ -444,6 +466,15 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
             if (found != null)
                 readyMainIconRoot = found.gameObject;
         }
+
+        if (infoBackButton == null && infoRoot != null)
+        {
+            Transform found = FindChildRecursive(infoRoot.transform, BackButtonName);
+            if (found != null)
+                infoBackButton = found.GetComponent<Button>();
+        }
+
+        BindInfoBackButton();
     }
 
     private static void SetActiveIfNeeded(GameObject target, bool active)
@@ -641,6 +672,33 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
 
         backButton.onClick.RemoveListener(HandleBackButtonClicked);
         backButtonBound = false;
+    }
+
+    private void BindInfoBackButton()
+    {
+        if (infoBackButton == null)
+            return;
+
+        infoBackButton.onClick.RemoveListener(HandleInfoBackButtonClicked);
+        infoBackButton.onClick.AddListener(HandleInfoBackButtonClicked);
+        infoBackButtonBound = true;
+    }
+
+    private void UnbindInfoBackButton()
+    {
+        if (!infoBackButtonBound || infoBackButton == null)
+            return;
+
+        infoBackButton.onClick.RemoveListener(HandleInfoBackButtonClicked);
+        infoBackButtonBound = false;
+    }
+
+    private void HandleInfoBackButtonClicked()
+    {
+        if (!readyPresentationActive)
+            return;
+
+        LobbyEquipPanelUI.TryCloseOpenReadyPanel();
     }
 
     private static LobbyPositionSharedModalBackground ResolveController()

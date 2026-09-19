@@ -20,6 +20,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private const string InfoPanelName = "Info_Panel";
     private const int CharacterCount = 3;
     private const int VisibleRelicSlotCount = 6;
+    private const int InfoPanelRelicSlotCount = 3;
     private const int VisibleSkillSlotCount = 3;
     private const int CompoundMinimumSlotCount = 15;
     private const int ReadyRelicMinimumSlotCount = 3;
@@ -91,6 +92,10 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     [SerializeField, Min(1)] private int readyCompoundMinimumSlotCount = ReadyCompoundMinimumSlotCount;
     [SerializeField, Min(0.1f)] private float readyInventorySlotScale = ReadyInventorySlotScale;
 
+    [Header("Ready Erosion Display")]
+    [Tooltip("Ready_Panel/Select/Erosion_Value입니다. 비워두면 이름으로 자동 연결합니다.")]
+    [SerializeField] private TMP_Text readyErosionValueText;
+
     [Header("Ready Inventory Detail")]
     [Tooltip("Ready_Panel/Detail입니다. 실제 유물 또는 연성제 슬롯에 마우스를 올릴 때만 활성화됩니다.")]
     [SerializeField] private GameObject readyDetailRoot;
@@ -120,14 +125,16 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private BattleBagItemSlotUI readyDetailSourceSlot;
     private BattleBagItemSlotUI readyDetailPinnedSlot;
     private bool readyDetailInitialized;
+    private string readyErosionValueTemplate = string.Empty;
+    private bool readyErosionValueTemplateCaptured;
 
     // Ready_Panel <-> Info_Panel 장착/해제 및 드래그 상태
-    private readonly LobbyReadyEquipmentPointerRelay[,] infoRelicTargetRelays = new LobbyReadyEquipmentPointerRelay[CharacterCount, 2];
+    private readonly LobbyReadyEquipmentPointerRelay[,] infoRelicTargetRelays = new LobbyReadyEquipmentPointerRelay[CharacterCount, InfoPanelRelicSlotCount];
     private readonly LobbyReadyEquipmentPointerRelay[] infoCompoundTargetRelays = new LobbyReadyEquipmentPointerRelay[CharacterCount];
-    private readonly Image[,] infoRelicTargetLines = new Image[CharacterCount, 2];
+    private readonly Image[,] infoRelicTargetLines = new Image[CharacterCount, InfoPanelRelicSlotCount];
     private readonly Image[] infoCompoundTargetLines = new Image[CharacterCount];
-    private readonly Image[,] infoRelicTargetBacks = new Image[CharacterCount, 2];
-    private readonly Color[,] infoRelicTargetBackNormalColors = new Color[CharacterCount, 2];
+    private readonly Image[,] infoRelicTargetBacks = new Image[CharacterCount, InfoPanelRelicSlotCount];
+    private readonly Color[,] infoRelicTargetBackNormalColors = new Color[CharacterCount, InfoPanelRelicSlotCount];
     private readonly Image[] infoCompoundTargetBacks = new Image[CharacterCount];
     private readonly Color[] infoCompoundTargetBackNormalColors = new Color[CharacterCount];
     private string equipmentDragItemId;
@@ -185,6 +192,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         ResolveCompoundInventoryIfNeeded();
         ResolveCompoundSelectionViewIfNeeded();
         ResolveReadyInventoryDisplayIfNeeded();
+        ResolveReadyErosionDisplayIfNeeded();
         ResolveReadyInventoryDetailIfNeeded();
         BindInfoPanelEquipmentTargets();
         HideReadyInventoryDetail();
@@ -337,8 +345,10 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         ResolveCompoundInventoryIfNeeded();
         ResolveCompoundSelectionViewIfNeeded();
         ResolveReadyInventoryDisplayIfNeeded();
+        ResolveReadyErosionDisplayIfNeeded();
         ResolveReadyInventoryDetailIfNeeded();
         BindInfoPanelEquipmentTargets();
+        RefreshReadyErosionValue();
         RefreshOwnedRelicData();
         RefreshCompoundInventorySlots();
         HideReadyInventoryDetail();
@@ -1041,6 +1051,85 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         RegisterExistingReadySlots(readyCompoundContentRoot, readyCompoundSlots);
     }
 
+    private void ResolveReadyErosionDisplayIfNeeded()
+    {
+        ResolveSlideTargets();
+        Transform readyRoot = charterRect != null ? charterRect : ResolvePanelRoot()?.transform;
+        if (readyRoot == null)
+            return;
+
+        if (readyErosionValueText == null)
+        {
+            Transform selectRoot = readyRoot.Find("Select");
+            Transform valueTransform = selectRoot != null
+                ? FindChildRecursive(selectRoot, "Erosion_Value")
+                : FindChildRecursive(readyRoot, "Erosion_Value");
+
+            if (valueTransform != null)
+                readyErosionValueText = valueTransform.GetComponent<TMP_Text>() ?? valueTransform.GetComponentInChildren<TMP_Text>(true);
+        }
+
+        if (readyErosionValueText == null)
+            return;
+
+        ProtectReadyDetailText(readyErosionValueText);
+        CaptureReadyErosionValueTemplate();
+    }
+
+    private void RefreshReadyErosionValue()
+    {
+        ResolveReadyErosionDisplayIfNeeded();
+        if (readyErosionValueText == null)
+            return;
+
+        int erosionValue = 0;
+        ErosionDifficultyCatalogUI[] catalogs = FindObjectsByType<ErosionDifficultyCatalogUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < catalogs.Length; i++)
+        {
+            ErosionDifficultyCatalogUI catalog = catalogs[i];
+            if (catalog == null || !catalog.gameObject.scene.IsValid())
+                continue;
+
+            erosionValue = catalog.CurrentScore;
+            break;
+        }
+
+        readyErosionValueText.text = FormatReadyErosionValue(erosionValue);
+        readyErosionValueText.SetAllDirty();
+    }
+
+    private void CaptureReadyErosionValueTemplate()
+    {
+        if (readyErosionValueTemplateCaptured || readyErosionValueText == null)
+            return;
+
+        readyErosionValueTemplate = readyErosionValueText.text ?? string.Empty;
+        readyErosionValueTemplateCaptured = true;
+    }
+
+    private string FormatReadyErosionValue(int value)
+    {
+        CaptureReadyErosionValueTemplate();
+
+        if (string.IsNullOrEmpty(readyErosionValueTemplate))
+            return value.ToString();
+
+        if (readyErosionValueTemplate.IndexOf("{0}", StringComparison.Ordinal) >= 0)
+            return readyErosionValueTemplate.Replace("{0}", value.ToString());
+
+        string trimmed = readyErosionValueTemplate.Trim();
+        if (int.TryParse(trimmed, out _))
+        {
+            int index = readyErosionValueTemplate.IndexOf(trimmed, StringComparison.Ordinal);
+            return readyErosionValueTemplate.Remove(index, trimmed.Length).Insert(index, value.ToString());
+        }
+
+        return value.ToString();
+    }
+
     private void ResolveReadyInventoryDetailIfNeeded()
     {
         ResolveSlideTargets();
@@ -1339,7 +1428,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                 continue;
 
             Transform relicRoot = charRoot.Find("Relic") ?? FindChildRecursive(charRoot, "Relic");
-            for (int visibleIndex = 0; visibleIndex < 2; visibleIndex++)
+            for (int visibleIndex = 0; visibleIndex < InfoPanelRelicSlotCount; visibleIndex++)
             {
                 Transform slotRoot = relicRoot != null
                     ? relicRoot.Find("Relic" + (visibleIndex + 1).ToString("00"))
@@ -1444,7 +1533,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             return;
         }
 
-        if (visibleSlotIndex < 0 || visibleSlotIndex >= 2)
+        if (visibleSlotIndex < 0 || visibleSlotIndex >= InfoPanelRelicSlotCount)
             return;
 
         Image relicBack = infoRelicTargetBacks[partyIndex, visibleSlotIndex];
@@ -1519,7 +1608,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
         for (int partyIndex = 0; partyIndex < CharacterCount; partyIndex++)
         {
-            for (int slotIndex = 0; slotIndex < 2; slotIndex++)
+            for (int slotIndex = 0; slotIndex < InfoPanelRelicSlotCount; slotIndex++)
             {
                 Image line = infoRelicTargetLines[partyIndex, slotIndex];
                 if (line != null)

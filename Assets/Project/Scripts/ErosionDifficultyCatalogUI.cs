@@ -456,6 +456,8 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
     private void RefreshErosionSlotInstances()
     {
+        // 선택한 프레임에 슬롯 정보를 즉시 갱신합니다.
+        // 슬롯 텍스트는 BindErosionSlot에서 정적 로컬라이징의 덮어쓰기를 차단합니다.
         if (erosionSlotPrefab == null || erosionSlotContent == null)
             return;
 
@@ -508,45 +510,13 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
             GameObject slotInstance = Instantiate(erosionSlotPrefab, erosionSlotContent);
             slotInstance.name = $"ErosionSlot_{item.DifficultyId}";
-            BindErosionSlot(slotInstance.transform, item);
             erosionSlotInstances[slotKey] = slotInstance;
-            StartCoroutine(RebindErosionSlotNextFrame(slotKey, slotInstance));
+            BindErosionSlot(slotInstance.transform, item);
             createdNewSlot = true;
         }
 
         if (createdNewSlot)
             ScrollErosionSlotsToBottom();
-    }
-
-
-    private IEnumerator RebindErosionSlotNextFrame(string slotKey, GameObject slotInstance)
-    {
-        // 프리팹이 처음 활성화되는 프레임에는 Localization/TMP 초기화가
-        // Inspector 기본 텍스트를 다시 적용할 수 있어 다음 프레임에 최종 데이터를 재적용합니다.
-        yield return null;
-
-        if (slotInstance == null || !erosionSlotInstances.TryGetValue(slotKey, out GameObject currentSlot) ||
-            currentSlot != slotInstance)
-        {
-            yield break;
-        }
-
-        ErosionDifficultyLevelItemUI selectedItem = null;
-        for (int i = 0; i < levelItems.Count; i++)
-        {
-            ErosionDifficultyLevelItemUI candidate = levelItems[i];
-            if (candidate == null || !candidate.IsSelectable || !candidate.IsSelected)
-                continue;
-
-            if (string.Equals(GetErosionSlotKey(candidate), slotKey, StringComparison.OrdinalIgnoreCase))
-            {
-                selectedItem = candidate;
-                break;
-            }
-        }
-
-        if (selectedItem != null)
-            BindErosionSlot(slotInstance.transform, selectedItem);
     }
 
     private static string GetErosionSlotKey(ErosionDifficultyLevelItemUI item)
@@ -634,8 +604,33 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
     {
         Transform target = FindTransformRecursive(root, objectName);
         TMP_Text text = target != null ? target.GetComponent<TMP_Text>() : null;
-        if (text != null)
-            text.text = value ?? string.Empty;
+        if (text == null)
+            return;
+
+        EnsureDynamicSlotTextOwnership(text);
+        text.text = value ?? string.Empty;
+        text.SetAllDirty();
+    }
+
+    /// <summary>
+    /// ErosionSlot의 정보 텍스트는 선택 상태에 따라 즉시 바뀌는 동적 텍스트입니다.
+    /// 정적 로컬라이징 컴포넌트가 프리팹 활성화 직후 값을 다시 덮어쓰지 않도록
+    /// 이 UI가 해당 TMP 텍스트의 표시를 직접 관리합니다.
+    /// </summary>
+    private static void EnsureDynamicSlotTextOwnership(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        if (text.GetComponent<LocalizationIgnore>() == null)
+            text.gameObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText fixedLocalizer = text.GetComponent<LocalizedTMPText>();
+        if (fixedLocalizer != null)
+        {
+            fixedLocalizer.enabled = false;
+            Destroy(fixedLocalizer);
+        }
     }
 
     private List<ErosionDifficultyLevelItemUI> FindGroupPeers(string groupId)

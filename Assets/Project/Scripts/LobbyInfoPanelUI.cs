@@ -8,14 +8,14 @@ using UnityEngine.UI;
 
 /// <summary>
 /// PositionPanel/Info_Panel의 파티 캐릭터 정보를 표시합니다.
-/// 새 Info_Panel 구조에 맞춰 캐릭터 아이콘, 장착 유물 2개, 장착 연성제 1개만 표시합니다.
+/// 새 Info_Panel 구조에 맞춰 캐릭터 아이콘, 장착 유물 3개, 장착 연성제 1개만 표시합니다.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class LobbyInfoPanelUI : MonoBehaviour
 {
     private const string InfoPanelName = "Info_Panel";
     private const int CharacterCount = 3;
-    private const int VisibleRelicSlotCount = 2;
+    private const int VisibleRelicSlotCount = 3;
     private const int VisibleCompoundSlotCount = 1;
     private const string RelicTitle = "유물";
     private const string CompoundTitle = "연성제";

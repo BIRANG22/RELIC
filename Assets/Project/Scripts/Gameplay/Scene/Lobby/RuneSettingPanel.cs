@@ -28,6 +28,8 @@ public class RuneSettingPanel : MonoBehaviour
     private readonly List<RuneIconButton> generatedRuneIconButtons = new();
 
     [Header("Common Rune Purchase")]
+    [Tooltip("미구매 공용 룬을 클릭했을 때 CHECK 확인창에 표시할 문구입니다.")]
+    [SerializeField] private string commonRunePurchaseConfirmMessage = "활성화하시겠습니까?";
     [SerializeField] private GameObject buyButtonRoot;
     [SerializeField] private Button buyButton;
     [SerializeField] private TMP_Text buyPriceText;
@@ -60,8 +62,12 @@ public class RuneSettingPanel : MonoBehaviour
     [SerializeField] private TMP_Text runeTooltipDescriptionText;
     [SerializeField] private float runeTooltipFadeInDuration = 0.12f;
     [SerializeField] private float runeTooltipFadeOutDuration = 0.05f;
-    [SerializeField] private float runeTooltipOffsetX = 190f;
-    [SerializeField] private float runeTooltipOffsetY = -20f;
+    [SerializeField] private float runeTooltipOffsetX = 50f;
+    [SerializeField] private float runeTooltipOffsetY = 50f;
+    [Tooltip("기본 위치에서 Screen Padding 보정이 필요할 때 사용하는 X 오프셋입니다.")]
+    [SerializeField] private float runeTooltipOverflowOffsetX = -345f;
+    [Tooltip("기본 위치에서 Screen Padding 보정이 필요할 때 사용하는 Y 오프셋입니다.")]
+    [SerializeField] private float runeTooltipOverflowOffsetY = 50f;
     [SerializeField] private float runeTooltipScreenPadding = 20f;
 
     private CanvasGroup runeTooltipCanvasGroup;
@@ -1081,10 +1087,85 @@ public class RuneSettingPanel : MonoBehaviour
 
     private void SelectCommonRuneForPurchase(RuneData runeData)
     {
+        if (runeData == null)
+            return;
+
+        ShowRuneInfo(runeData);
+
+        if (DataManager.Instance == null || DataManager.Instance.LobbyRuntimeStore == null)
+        {
+            ClearSelectedPurchaseRune();
+            ShowWarning("데이터를 불러올 수 없습니다.");
+            return;
+        }
+
+        LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
+        int price = Mathf.Max(0, runeData.BlueDustiumCost);
+
+        // 블루 더스티움이 부족하면 CHECK 확인창을 열기 전에 바로 안내합니다.
+        if (lobby == null || lobby.BlueDustium < price)
+        {
+            ClearSelectedPurchaseRune();
+            ShowWarning(SettingWarningUI.GetInsufficientBlueDustiumMessage());
+            return;
+        }
+
         selectedPurchaseRune = runeData;
         RefreshRuneIconPurchaseStates();
         RefreshCommonRunePurchaseUI();
-        ShowRuneInfo(runeData);
+        ShowCommonRunePurchaseConfirm();
+    }
+
+    private void ShowCommonRunePurchaseConfirm()
+    {
+        if (selectedPurchaseRune == null ||
+            !IsCommonRune(selectedPurchaseRune) ||
+            IsCommonRunePurchased(selectedPurchaseRune))
+        {
+            return;
+        }
+
+        if (UIManager.Instance == null)
+        {
+            Debug.LogWarning(
+                "[RuneSettingPanel] CHECK 프리팹을 표시할 UIManager를 찾을 수 없습니다.",
+                this);
+            return;
+        }
+
+        if (UIManager.Instance.IsConfirmDialogOpen)
+            return;
+
+        string confirmedRuneId = selectedPurchaseRune.RuneId;
+        string message = string.IsNullOrWhiteSpace(commonRunePurchaseConfirmMessage)
+            ? "활성화하시겠습니까?"
+            : commonRunePurchaseConfirmMessage;
+
+        UIManager.Instance.ShowConfirmDialog(
+            message,
+            () =>
+            {
+                UIManager.Instance?.HideConfirmDialog();
+
+                // 확인창이 열린 사이 선택 대상이 바뀌었다면 이전 룬을 구매하지 않습니다.
+                if (selectedPurchaseRune == null ||
+                    !string.Equals(selectedPurchaseRune.RuneId, confirmedRuneId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                BuySelectedCommonRune();
+            },
+            () =>
+            {
+                UIManager.Instance?.HideConfirmDialog();
+
+                if (selectedPurchaseRune != null &&
+                    string.Equals(selectedPurchaseRune.RuneId, confirmedRuneId, StringComparison.OrdinalIgnoreCase))
+                {
+                    ClearSelectedPurchaseRune();
+                }
+            });
     }
 
     private void ClearSelectedPurchaseRune()
@@ -1300,6 +1381,11 @@ public class RuneSettingPanel : MonoBehaviour
         yield return null;
 
         if (selectedPurchaseRune == null || selectedPurchaseRune.RuneId != runeId)
+            yield break;
+
+        // 공용 룬 CHECK 확인창이 열린 동안에는 버튼 포커스가 확인창으로 이동하므로
+        // RuneIconButton의 Deselect로 구매 선택을 해제하지 않습니다.
+        if (UIManager.Instance != null && UIManager.Instance.IsConfirmDialogOpen)
             yield break;
 
         GameObject selectedObject = EventSystem.current != null
@@ -1754,10 +1840,65 @@ public class RuneSettingPanel : MonoBehaviour
             sourceLocalCenter.y + runeTooltipOffsetY,
             currentLocalPosition.z);
 
-        // 텍스트 변경 직후 실제 툴팁 크기를 반영한 뒤 화면 밖으로 나가지 않도록 보정합니다.
+        // 텍스트 변경 직후 실제 툴팁 크기를 반영합니다.
         Canvas.ForceUpdateCanvases();
         LayoutRebuilder.ForceRebuildLayoutImmediate(runeTooltipRectTransform);
+
+        // 기본 위치가 Screen Padding 영역을 침범하려는 경우에는 패딩으로 밀어 넣지 않고
+        // 지정된 Overflow 위치로 통째로 옮깁니다.
+        if (WouldRuneTooltipNeedScreenPadding())
+        {
+            runeTooltipRectTransform.localPosition = new Vector3(
+                sourceLocalCenter.x + runeTooltipOverflowOffsetX,
+                sourceLocalCenter.y + runeTooltipOverflowOffsetY,
+                currentLocalPosition.z);
+
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(runeTooltipRectTransform);
+        }
+
+        // Overflow 위치에서도 화면을 벗어나는 특수한 해상도에 대비한 최종 안전장치입니다.
         ClampRuneTooltipToCanvas(tooltipParent);
+    }
+
+    private bool WouldRuneTooltipNeedScreenPadding()
+    {
+        if (runeTooltipRectTransform == null)
+            return false;
+
+        Canvas rootCanvas = runeTooltipRectTransform.GetComponentInParent<Canvas>();
+        if (rootCanvas == null)
+            return false;
+
+        rootCanvas = rootCanvas.rootCanvas;
+        RectTransform canvasRect = rootCanvas.transform as RectTransform;
+        if (canvasRect == null)
+            return false;
+
+        Vector3[] tooltipCorners = new Vector3[4];
+        runeTooltipRectTransform.GetWorldCorners(tooltipCorners);
+
+        float minX = float.PositiveInfinity;
+        float maxX = float.NegativeInfinity;
+        float minY = float.PositiveInfinity;
+        float maxY = float.NegativeInfinity;
+
+        for (int i = 0; i < tooltipCorners.Length; i++)
+        {
+            Vector3 localCorner = canvasRect.InverseTransformPoint(tooltipCorners[i]);
+            minX = Mathf.Min(minX, localCorner.x);
+            maxX = Mathf.Max(maxX, localCorner.x);
+            minY = Mathf.Min(minY, localCorner.y);
+            maxY = Mathf.Max(maxY, localCorner.y);
+        }
+
+        Rect bounds = canvasRect.rect;
+        float padding = Mathf.Max(0f, runeTooltipScreenPadding);
+
+        return minX < bounds.xMin + padding
+            || maxX > bounds.xMax - padding
+            || minY < bounds.yMin + padding
+            || maxY > bounds.yMax - padding;
     }
 
     private void ClampRuneTooltipToCanvas(RectTransform tooltipParent)
