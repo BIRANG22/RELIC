@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - CharacterId: Char_01
-    Icon: {fileID: 899417585, guid: 0904377b3ebbe004c916fa7159b80c85, type: 3}
-    Portrait: {fileID: 21300000, guid: 44d3c86cd9e655b40827b9593751c1a6, type: 3}
+    Icon: {fileID: 21300000, guid: ca7df79403e4f7a438ba7ddaf6844795, type: 3}
+    Portrait: {fileID: 21300000, guid: ca7df79403e4f7a438ba7ddaf6844795, type: 3}
     TimelineIcon: {fileID: 21300000, guid: adef57af37515fb4c923107c53a46572, type: 3}
     SideImage: {fileID: 21300000, guid: adb220ede8a2c4a4ca43934f3d6aaafe, type: 3}
     SkillCutsceneImage: {fileID: 21300000, guid: ca7df79403e4f7a438ba7ddaf6844795, type: 3}
@@ -24,8 +24,8 @@ MonoBehaviour:
     Mark: {fileID: 21300000, guid: 80d22705c1ab33f4cbbfc2adf849d6cf, type: 3}
     Mark2: {fileID: 21300000, guid: 828f72b5901018546814c7c7d67d47d7, type: 3}
   - CharacterId: Char_02
-    Icon: {fileID: -515913383, guid: d549bd2f0ab669a4a8e9672d5b7bbac7, type: 3}
-    Portrait: {fileID: 21300000, guid: 4da28786b29aead4887e0970173553c5, type: 3}
+    Icon: {fileID: 21300000, guid: 3eacb527057bd04439c68db2c695a7bf, type: 3}
+    Portrait: {fileID: 21300000, guid: 3eacb527057bd04439c68db2c695a7bf, type: 3}
     TimelineIcon: {fileID: 21300000, guid: 338a7310eaffd10469c955d1e1e43643, type: 3}
     SideImage: {fileID: 21300000, guid: f51093b6e204d1f40b7cab30ebbc3fda, type: 3}
     SkillCutsceneImage: {fileID: 21300000, guid: 3eacb527057bd04439c68db2c695a7bf, type: 3}
@@ -34,8 +34,8 @@ MonoBehaviour:
     Mark: {fileID: 21300000, guid: 3d1cfdd4679cdd545a7e1541a076736e, type: 3}
     Mark2: {fileID: 21300000, guid: 5629ba53ae60fa1418479b144759d93b, type: 3}
   - CharacterId: Char_03
-    Icon: {fileID: 190738329, guid: 77c67724ee63c7e42a37980b4506c10f, type: 3}
-    Portrait: {fileID: 21300000, guid: 339aece71dfa88a4f92a3719acbc6472, type: 3}
+    Icon: {fileID: 21300000, guid: 691c3146b0c44a9408c6706617f03f05, type: 3}
+    Portrait: {fileID: 21300000, guid: 691c3146b0c44a9408c6706617f03f05, type: 3}
     TimelineIcon: {fileID: 21300000, guid: e36088fa640749445a36aab0f0327287, type: 3}
     SideImage: {fileID: 21300000, guid: 78d9b4bb5ab638f40a7ed763945fd732, type: 3}
     SkillCutsceneImage: {fileID: 21300000, guid: 691c3146b0c44a9408c6706617f03f05, type: 3}
@@ -44,18 +44,8 @@ MonoBehaviour:
     Mark: {fileID: 21300000, guid: e27844ec0bb5fe94abcbaec30f9794e1, type: 3}
     Mark2: {fileID: 21300000, guid: 958ff319e936d6147bda8effe611d0c6, type: 3}
   - CharacterId: Char_04
-    Icon: {fileID: 595685617, guid: 789dd25bb9a108246a8a227fd2c73960, type: 3}
-    Portrait: {fileID: 595685617, guid: 789dd25bb9a108246a8a227fd2c73960, type: 3}
-    TimelineIcon: {fileID: 21300000, guid: 3a4b172437a6aec47b17bc45e999cc4d, type: 3}
-    SideImage: {fileID: 21300000, guid: 2e7f22c3b155eac4a8a467e694ad7db0, type: 3}
-    SkillCutsceneImage: {fileID: 21300000, guid: 7893dc701a1d34941804dde0a83f5ef6, type: 3}
-    HUDPortraitImage: {fileID: 21300000, guid: 235e3bc7c2e71a94b9f6d7b0a6331bfe, type: 3}
-    HUDSelectedPortraitImage: {fileID: 21300000, guid: 2e7f22c3b155eac4a8a467e694ad7db0, type: 3}
-    Mark: {fileID: 21300000, guid: 7f0c862d16fc9d04ebf2bc3a94a25113, type: 3}
-    Mark2: {fileID: 21300000, guid: f1c08b480710a0346bed0a3012d03254, type: 3}
-  - CharacterId: Char_04
-    Icon: {fileID: 595685617, guid: 789dd25bb9a108246a8a227fd2c73960, type: 3}
-    Portrait: {fileID: 595685617, guid: 789dd25bb9a108246a8a227fd2c73960, type: 3}
+    Icon: {fileID: 21300000, guid: 7893dc701a1d34941804dde0a83f5ef6, type: 3}
+    Portrait: {fileID: 21300000, guid: 7893dc701a1d34941804dde0a83f5ef6, type: 3}
     TimelineIcon: {fileID: 21300000, guid: 3a4b172437a6aec47b17bc45e999cc4d, type: 3}
     SideImage: {fileID: 21300000, guid: 2e7f22c3b155eac4a8a467e694ad7db0, type: 3}
     SkillCutsceneImage: {fileID: 21300000, guid: 7893dc701a1d34941804dde0a83f5ef6, type: 3}
