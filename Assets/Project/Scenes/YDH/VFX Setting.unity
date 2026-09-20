@@ -405,12 +405,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 088320f6bf6d925408c10b28129e5133, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxDragOffsetX: 2
-  maxDragOffsetY: 2
-  zoomSensitivity: 8
-  minZoomZ: -5
-  maxZoomZ: -20
-  smoothSpeed: 5
 --- !u!114 &1514492498
 MonoBehaviour:
   m_ObjectHideFlags: 0

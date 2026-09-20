@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 16384
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_0
+      name: Cha_01_idle_reaction_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 5400
-        width: 1920
-        height: 1080
+        y: 3072
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,20 +112,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: cbd2feceaf3a61348a7579cb390d131a
-      internalID: 627166157
+      spriteID: 7cedae9b9ca3a1545ba2073a2d002f6d
+      internalID: 918161217
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_1
+      name: Cha_01_idle_reaction_1
       rect:
         serializedVersion: 2
-        x: 1920
-        y: 5400
-        width: 1920
-        height: 1080
+        x: 1024
+        y: 3072
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -134,20 +134,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9f09e97066e1fa14b88d2326b66d90e0
-      internalID: 1058557975
+      spriteID: 4532f70eb84564842a52d889c87b495b
+      internalID: -262325471
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_2
+      name: Cha_01_idle_reaction_2
       rect:
         serializedVersion: 2
-        x: 3840
-        y: 5400
-        width: 1920
-        height: 1080
+        x: 2048
+        y: 3072
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,20 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 12251f80b288d8041b10e0961aa33c34
-      internalID: -1417637678
+      spriteID: 03cdac13afb99774295d64bb5a8d152d
+      internalID: -1111016971
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_3
+      name: Cha_01_idle_reaction_3
       rect:
         serializedVersion: 2
-        x: 5760
-        y: 5400
-        width: 1920
-        height: 1080
+        x: 3072
+        y: 3072
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -178,64 +178,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: dca5d4d315630fd4b9004b049da2180c
-      internalID: 1310106302
+      spriteID: 3c3dab0792003ac4a9c66ef9b29bb6b1
+      internalID: -1694391977
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_4
-      rect:
-        serializedVersion: 2
-        x: 7680
-        y: 5400
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 949d24a2e72a5ac46b9f2bdbaf80f21a
-      internalID: -1193392161
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_5
-      rect:
-        serializedVersion: 2
-        x: 9600
-        y: 5400
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 6dc0e1aa80d4629438f6d0599b8d9caf
-      internalID: 1765929600
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_6
+      name: Cha_01_idle_reaction_4
       rect:
         serializedVersion: 2
         x: 0
-        y: 4320
-        width: 1920
-        height: 1080
+        y: 2048
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -244,20 +200,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e82fcf1c597fec94bb65c6151fed3c2d
-      internalID: 2146016701
+      spriteID: 5360e8cccfc4c354dbc4c4a593a7ce30
+      internalID: -827618947
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_7
+      name: Cha_01_idle_reaction_5
       rect:
         serializedVersion: 2
-        x: 1920
-        y: 4320
-        width: 1920
-        height: 1080
+        x: 1024
+        y: 2048
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -266,20 +222,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2492c57d9ebb89a4e8c6dfb64e8baf6f
-      internalID: -803458271
+      spriteID: 3df51a07d6eb337499255d2334d90eeb
+      internalID: 195012428
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_8
+      name: Cha_01_idle_reaction_6
       rect:
         serializedVersion: 2
-        x: 3840
-        y: 4320
-        width: 1920
-        height: 1080
+        x: 2048
+        y: 2048
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -288,20 +244,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 946305c5ee010764cac6a902d979cc77
-      internalID: -298768758
+      spriteID: f215c0dc25b81e8448472bd226d19f83
+      internalID: 1743434567
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_9
+      name: Cha_01_idle_reaction_7
       rect:
         serializedVersion: 2
-        x: 5760
-        y: 4320
-        width: 1920
-        height: 1080
+        x: 3072
+        y: 2048
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -310,64 +266,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 69d85fdad04fff34f93e90db7d168ab8
-      internalID: -837730913
+      spriteID: e070ea1d22332a94192c742eb508b5a1
+      internalID: -972433718
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_10
-      rect:
-        serializedVersion: 2
-        x: 7680
-        y: 4320
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ef6e02caa5cf49d4d85ff5569bc3036c
-      internalID: 1569513524
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_11
-      rect:
-        serializedVersion: 2
-        x: 9600
-        y: 4320
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 6ee74cd368ae13b4ab01a55339036bf7
-      internalID: -658851175
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_12
+      name: Cha_01_idle_reaction_8
       rect:
         serializedVersion: 2
         x: 0
-        y: 3240
-        width: 1920
-        height: 1080
+        y: 1024
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -376,20 +288,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 18ece2eb3c9c07c4dbf8e93da2451f55
-      internalID: 1020522469
+      spriteID: e3744d13a5b61d24cbf035abb4d133ee
+      internalID: -411297157
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_13
+      name: Cha_01_idle_reaction_9
       rect:
         serializedVersion: 2
-        x: 1920
-        y: 3240
-        width: 1920
-        height: 1080
+        x: 1024
+        y: 1024
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -398,20 +310,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 524cbe47641076d4b8132ec325368967
-      internalID: -2046768542
+      spriteID: babed615816d0314b896633cf58e6c58
+      internalID: -1513133153
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_14
+      name: Cha_01_idle_reaction_10
       rect:
         serializedVersion: 2
-        x: 3840
-        y: 3240
-        width: 1920
-        height: 1080
+        x: 2048
+        y: 1024
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -420,20 +332,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 158932a216d1a4441b3482ec1ccee122
-      internalID: 1300514328
+      spriteID: 197d4d2138afe3b4ead923ff150214f3
+      internalID: 1660729369
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_15
+      name: Cha_01_idle_reaction_11
       rect:
         serializedVersion: 2
-        x: 5760
-        y: 3240
-        width: 1920
-        height: 1080
+        x: 3072
+        y: 1024
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -442,328 +354,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ac5a16c57946e204eb63316d22f210aa
-      internalID: 2004709249
+      spriteID: fbf781e213e6d3f45a355e83b42a7903
+      internalID: -1040907912
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_16
-      rect:
-        serializedVersion: 2
-        x: 7680
-        y: 3240
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 5e2da58c568c11c4e84bf114ed09198a
-      internalID: 196139372
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_17
-      rect:
-        serializedVersion: 2
-        x: 9600
-        y: 3240
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 415c1d904d55c154faec3a1133accd76
-      internalID: 1717596288
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_18
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 4dc165bf44b243c458f23b873eb1f975
-      internalID: -2070798814
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_19
-      rect:
-        serializedVersion: 2
-        x: 1920
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: f7d156c30b22ea648bc927c8d9942764
-      internalID: 1065388238
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_20
-      rect:
-        serializedVersion: 2
-        x: 3840
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 3bdf70059420b5f41a5ef93231b1f143
-      internalID: 375289896
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_21
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 18f2d9a74db390c49a5e8961534e58cb
-      internalID: 523477257
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_22
-      rect:
-        serializedVersion: 2
-        x: 7680
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 38166a0e730c1b346b12fb9cb3e7a632
-      internalID: 1705641237
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_23
-      rect:
-        serializedVersion: 2
-        x: 9600
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e1ba79ee10b960a468db6f312392eb1b
-      internalID: 458652043
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_24
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 68b7d9d88a18f35488ff91a4b980e9c8
-      internalID: -1744793611
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_25
-      rect:
-        serializedVersion: 2
-        x: 1920
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 3d2b979bccb3a69489d99b2180db452f
-      internalID: 1821280755
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_26
-      rect:
-        serializedVersion: 2
-        x: 3840
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d9ae6d0ba6315194ba5cecc2fef428b3
-      internalID: 1431119043
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_27
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 588a0e8e983126249afd639bcfdf18d7
-      internalID: 1294233073
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_28
-      rect:
-        serializedVersion: 2
-        x: 7680
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 233af9842a7bc154f8976d20e6e20864
-      internalID: 289682229
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_29
-      rect:
-        serializedVersion: 2
-        x: 9600
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 2dc35a12f3e74ca418631c2386963977
-      internalID: 1261421112
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_30
+      name: Cha_01_idle_reaction_12
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1920
-        height: 1080
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -772,20 +376,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 55ea990bfde02e04bb3ecdd82045a7de
-      internalID: 958549803
+      spriteID: c56c1adc940930a40996310ea3aa2d52
+      internalID: 973871687
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_31
+      name: Cha_01_idle_reaction_13
       rect:
         serializedVersion: 2
-        x: 1920
+        x: 1024
         y: 0
-        width: 1920
-        height: 1080
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -794,20 +398,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2f9485e3c835c3640b7eba150b36432f
-      internalID: 1837535254
+      spriteID: 0f8694e739316b048a97d6b08c033fb2
+      internalID: -436688149
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_32
+      name: Cha_01_idle_reaction_14
       rect:
         serializedVersion: 2
-        x: 3840
+        x: 2048
         y: 0
-        width: 1920
-        height: 1080
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -816,20 +420,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a8e44cb9488b2fa499570b82bd6e56dd
-      internalID: 1297838640
+      spriteID: 8c916ea16f5445d4d8a665e1405b7072
+      internalID: -1847129141
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_33
+      name: Cha_01_idle_reaction_15
       rect:
         serializedVersion: 2
-        x: 5760
+        x: 3072
         y: 0
-        width: 1920
-        height: 1080
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -838,52 +442,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2473bff94d5c2c045a94025f942648d9
-      internalID: -1059374402
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_34
-      rect:
-        serializedVersion: 2
-        x: 7680
-        y: 0
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 9be57da9ab5caa04c8503ab2d2e79e4e
-      internalID: 128099582
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Cha_01_idle_reactionpng_35
-      rect:
-        serializedVersion: 2
-        x: 9600
-        y: 0
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: df5427f71a78bc9409027b3e0b3cba8c
-      internalID: -1240012328
+      spriteID: f72e9dce80c17734098e1b81d6bd0055
+      internalID: -667246322
       vertices: []
       indices: 
       edges: []
@@ -902,42 +462,22 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Cha_01_idle_reactionpng_0: 627166157
-      Cha_01_idle_reactionpng_1: 1058557975
-      Cha_01_idle_reactionpng_10: 1569513524
-      Cha_01_idle_reactionpng_11: -658851175
-      Cha_01_idle_reactionpng_12: 1020522469
-      Cha_01_idle_reactionpng_13: -2046768542
-      Cha_01_idle_reactionpng_14: 1300514328
-      Cha_01_idle_reactionpng_15: 2004709249
-      Cha_01_idle_reactionpng_16: 196139372
-      Cha_01_idle_reactionpng_17: 1717596288
-      Cha_01_idle_reactionpng_18: -2070798814
-      Cha_01_idle_reactionpng_19: 1065388238
-      Cha_01_idle_reactionpng_2: -1417637678
-      Cha_01_idle_reactionpng_20: 375289896
-      Cha_01_idle_reactionpng_21: 523477257
-      Cha_01_idle_reactionpng_22: 1705641237
-      Cha_01_idle_reactionpng_23: 458652043
-      Cha_01_idle_reactionpng_24: -1744793611
-      Cha_01_idle_reactionpng_25: 1821280755
-      Cha_01_idle_reactionpng_26: 1431119043
-      Cha_01_idle_reactionpng_27: 1294233073
-      Cha_01_idle_reactionpng_28: 289682229
-      Cha_01_idle_reactionpng_29: 1261421112
-      Cha_01_idle_reactionpng_3: 1310106302
-      Cha_01_idle_reactionpng_30: 958549803
-      Cha_01_idle_reactionpng_31: 1837535254
-      Cha_01_idle_reactionpng_32: 1297838640
-      Cha_01_idle_reactionpng_33: -1059374402
-      Cha_01_idle_reactionpng_34: 128099582
-      Cha_01_idle_reactionpng_35: -1240012328
-      Cha_01_idle_reactionpng_4: -1193392161
-      Cha_01_idle_reactionpng_5: 1765929600
-      Cha_01_idle_reactionpng_6: 2146016701
-      Cha_01_idle_reactionpng_7: -803458271
-      Cha_01_idle_reactionpng_8: -298768758
-      Cha_01_idle_reactionpng_9: -837730913
+      Cha_01_idle_reaction_0: 918161217
+      Cha_01_idle_reaction_1: -262325471
+      Cha_01_idle_reaction_10: 1660729369
+      Cha_01_idle_reaction_11: -1040907912
+      Cha_01_idle_reaction_12: 973871687
+      Cha_01_idle_reaction_13: -436688149
+      Cha_01_idle_reaction_14: -1847129141
+      Cha_01_idle_reaction_15: -667246322
+      Cha_01_idle_reaction_2: -1111016971
+      Cha_01_idle_reaction_3: -1694391977
+      Cha_01_idle_reaction_4: -827618947
+      Cha_01_idle_reaction_5: 195012428
+      Cha_01_idle_reaction_6: 1743434567
+      Cha_01_idle_reaction_7: -972433718
+      Cha_01_idle_reaction_8: -411297157
+      Cha_01_idle_reaction_9: -1513133153
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

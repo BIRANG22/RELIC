@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 8192
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -97,353 +97,133 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: kaya_rest_0
+      name: Cha_02_rest_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 3240
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e1dadbe1067af604ba7616ff6b619e4e
-      internalID: -1172379529
+      spriteID: 1b17313b2efb71743b2def42cd69ddf3
+      internalID: -1752956036
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: kaya_rest_1
+      name: Cha_02_rest_1
       rect:
         serializedVersion: 2
-        x: 1920
-        y: 3240
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 1024
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 41d22983ee249d4489b02acfaf3b6395
-      internalID: -1596314680
+      spriteID: 3875151c17b6939419d62833859a7c5a
+      internalID: 552358235
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: kaya_rest_2
+      name: Cha_02_rest_2
       rect:
         serializedVersion: 2
-        x: 3840
-        y: 3240
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 2048
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 020ad400a1bb1dc47a5d93e72991768a
-      internalID: 1837673667
+      spriteID: 6a7a9dc3f700f5a43b6008a7b7a152a1
+      internalID: -843265171
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: kaya_rest_3
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 3240
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 5cf93353a259e0f409bf451c3339d0dd
-      internalID: -776015360
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: kaya_rest_4
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: befcf37e549756640b636d20166e85f2
-      internalID: 1705988363
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: kaya_rest_5
-      rect:
-        serializedVersion: 2
-        x: 1920
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 358effeefafff0d4cb12eafd6fb0f5d4
-      internalID: -1965104574
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: kaya_rest_6
-      rect:
-        serializedVersion: 2
-        x: 3840
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 31f42f07a797d33458fe733084958297
-      internalID: -1841671692
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: kaya_rest_7
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0955af25e4a2a99449b49a7539f40896
-      internalID: 151922041
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: kaya_rest_8
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d2125ac0ac7c3244ebcc7c3f772faacb
-      internalID: -1532675662
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: kaya_rest_9
-      rect:
-        serializedVersion: 2
-        x: 1920
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ceab985c5b3b5ee419a1f3162ddefece
-      internalID: 1461904518
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: kaya_rest_10
-      rect:
-        serializedVersion: 2
-        x: 3840
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e4676abbed3fbc943b61e415219e9bdb
-      internalID: 234627053
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: kaya_rest_11
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 5d7b78ae99e9ed34ea7598b0c826cb40
-      internalID: -1957012670
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: kaya_rest_12
+      name: Cha_02_rest_3
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        width: 1024
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0698ca88812ca7146bd176b2c6a76177
-      internalID: -1613952198
+      spriteID: b2be6f92d1cbd1145ab611f7c88cb44d
+      internalID: -20404753
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: kaya_rest_13
+      name: Cha_02_rest_4
       rect:
         serializedVersion: 2
-        x: 1920
+        x: 1024
         y: 0
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        width: 1024
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3c50c0602de5b80469354c93e7443c9f
-      internalID: 662572549
+      spriteID: 156dec141ec036b4ebaca98e3ccdd8b2
+      internalID: -975161207
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: kaya_rest_14
+      name: Cha_02_rest_5
       rect:
         serializedVersion: 2
-        x: 3840
+        x: 2048
         y: 0
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        width: 1024
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a5faf262fcf063f4e8ccca130d0b2e60
-      internalID: -1483855845
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: kaya_rest_15
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 0
-        width: 1920
-        height: 1080
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: fa4db7f05ff903043929c6d434d7f06b
-      internalID: 976228202
+      spriteID: d0886e592fecd3f47950b0fc8be36a53
+      internalID: -1670563120
       vertices: []
       indices: 
       edges: []
@@ -462,22 +242,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      kaya_rest_0: -1172379529
-      kaya_rest_1: -1596314680
-      kaya_rest_10: 234627053
-      kaya_rest_11: -1957012670
-      kaya_rest_12: -1613952198
-      kaya_rest_13: 662572549
-      kaya_rest_14: -1483855845
-      kaya_rest_15: 976228202
-      kaya_rest_2: 1837673667
-      kaya_rest_3: -776015360
-      kaya_rest_4: 1705988363
-      kaya_rest_5: -1965104574
-      kaya_rest_6: -1841671692
-      kaya_rest_7: 151922041
-      kaya_rest_8: -1532675662
-      kaya_rest_9: 1461904518
+      Cha_02_rest_0: -1752956036
+      Cha_02_rest_1: 552358235
+      Cha_02_rest_2: -843265171
+      Cha_02_rest_3: -20404753
+      Cha_02_rest_4: -975161207
+      Cha_02_rest_5: -1670563120
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
