@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 8192
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: CharB_Idle_0
+      name: Cha_02_idle_battle_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 3240
-        width: 1920
-        height: 1080
+        y: 1024
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,20 +112,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 26af7e544df9a694f8a55b094617266b
-      internalID: -1330892063
+      spriteID: e7686d2f86edc2f42980ea5a6b178f12
+      internalID: 581564002
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CharB_Idle_1
+      name: Cha_02_idle_battle_1
       rect:
         serializedVersion: 2
-        x: 1920
-        y: 3240
-        width: 1920
-        height: 1080
+        x: 1024
+        y: 1024
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -134,20 +134,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 18da910b2c6971f41a23c1dd96a88a82
-      internalID: 775510867
+      spriteID: 0e4ad76b12ea5c741adabc3385b2e617
+      internalID: 1105360932
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CharB_Idle_2
+      name: Cha_02_idle_battle_2
       rect:
         serializedVersion: 2
-        x: 3840
-        y: 3240
-        width: 1920
-        height: 1080
+        x: 2048
+        y: 1024
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,218 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 55bee9d549cb5e540a0ffbed87c3c65e
-      internalID: 1907157717
+      spriteID: 4c411e9ea3cd7fe4dba662796b54501b
+      internalID: -1568774279
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CharB_Idle_3
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 3240
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 7e90325dab04841428602723262362fa
-      internalID: 1290975393
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: CharB_Idle_4
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 5008bc7d17c8d2d46917cc709e1ff2a0
-      internalID: -1690909241
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: CharB_Idle_5
-      rect:
-        serializedVersion: 2
-        x: 1920
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: b8495fb5863c02244a3e4d69cdcb0ab7
-      internalID: -731516081
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: CharB_Idle_6
-      rect:
-        serializedVersion: 2
-        x: 3840
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: cba5bc1ee61b89348943656dc9dff4e4
-      internalID: 1754608102
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: CharB_Idle_7
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: c3cac26c1ecfb2c48b5ebb973658fa2d
-      internalID: -1250215522
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: CharB_Idle_8
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 37f839193dd49c84bb6de294b2aaefeb
-      internalID: 2076658536
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: CharB_Idle_9
-      rect:
-        serializedVersion: 2
-        x: 1920
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 310af67c67e88d14eb5fd351f3f206e9
-      internalID: -65636568
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: CharB_Idle_10
-      rect:
-        serializedVersion: 2
-        x: 3840
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 2140e71c6ceeffb46a69e6d2c5e22079
-      internalID: -593197170
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: CharB_Idle_11
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 2ace358afef2a764399f8f4bec02f5b8
-      internalID: 152898324
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: CharB_Idle_12
+      name: Cha_02_idle_battle_3
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1920
-        height: 1080
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -376,20 +178,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: fac785da64277014dbe2cf155a2b37a7
-      internalID: 1188169609
+      spriteID: a617c601c7d47224794f5d5c0f69740b
+      internalID: -1027459411
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CharB_Idle_13
+      name: Cha_02_idle_battle_4
       rect:
         serializedVersion: 2
-        x: 1920
+        x: 1024
         y: 0
-        width: 1920
-        height: 1080
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -398,20 +200,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2e5d431b79f9d7247896abc36f336817
-      internalID: -2082774976
+      spriteID: 082662e87f68d6a4380079b070158d10
+      internalID: -714880145
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CharB_Idle_14
+      name: Cha_02_idle_battle_5
       rect:
         serializedVersion: 2
-        x: 3840
+        x: 2048
         y: 0
-        width: 1920
-        height: 1080
+        width: 1024
+        height: 1024
       alignment: 9
       pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -420,30 +222,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f72eff6a6ade5944594facd82f805c89
-      internalID: 633624454
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: CharB_Idle_15
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 0
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: dc50c77207ba7df47bc8f8825f63f7ae
-      internalID: 2036086719
+      spriteID: 8f4855e109907ca4483ceb144777be5f
+      internalID: -485692280
       vertices: []
       indices: 
       edges: []
@@ -462,22 +242,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      CharB_Idle_0: -1330892063
-      CharB_Idle_1: 775510867
-      CharB_Idle_10: -593197170
-      CharB_Idle_11: 152898324
-      CharB_Idle_12: 1188169609
-      CharB_Idle_13: -2082774976
-      CharB_Idle_14: 633624454
-      CharB_Idle_15: 2036086719
-      CharB_Idle_2: 1907157717
-      CharB_Idle_3: 1290975393
-      CharB_Idle_4: -1690909241
-      CharB_Idle_5: -731516081
-      CharB_Idle_6: 1754608102
-      CharB_Idle_7: -1250215522
-      CharB_Idle_8: 2076658536
-      CharB_Idle_9: -65636568
+      Cha_02_idle_battle_0: 581564002
+      Cha_02_idle_battle_1: 1105360932
+      Cha_02_idle_battle_2: -1568774279
+      Cha_02_idle_battle_3: -1027459411
+      Cha_02_idle_battle_4: -714880145
+      Cha_02_idle_battle_5: -485692280
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
