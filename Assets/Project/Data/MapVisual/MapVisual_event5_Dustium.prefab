@@ -214,7 +214,7 @@ MonoBehaviour:
       ActiveState: 1
       ActivationDelay: 0
       DisableAfterDelay: 1
-      DisableDelay: 0
+      DisableDelay: 1
     DisableTargetsOnPlay: []
     DisableDelayOnPlay: 0
     ActiveTarget: {fileID: 0}
