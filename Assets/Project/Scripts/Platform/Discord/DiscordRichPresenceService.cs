@@ -49,6 +49,7 @@ public sealed class DiscordRichPresenceService : MonoBehaviour
     {
         if (isShuttingDown ||
             Status == DiscordPresenceStatus.Error ||
+            !CanRefreshPresenceInCurrentScene() ||
             Time.unscaledTime < nextRefreshTime)
             return;
 
@@ -57,7 +58,8 @@ public sealed class DiscordRichPresenceService : MonoBehaviour
 
     private void OnActiveSceneChanged(Scene previous, Scene current)
     {
-        RefreshPresence();
+        if (CanRefreshPresenceInCurrentScene())
+            RefreshPresence();
     }
 
     private void InitializeClient()
@@ -75,7 +77,6 @@ public sealed class DiscordRichPresenceService : MonoBehaviour
             client.SetApplicationId(ApplicationId);
             Status = DiscordPresenceStatus.Initializing;
             Debug.Log($"[DiscordPresence] SDK initialized. ApplicationId:{ApplicationId}");
-            RefreshPresence();
         }
         catch (Exception exception)
         {
@@ -87,6 +88,9 @@ public sealed class DiscordRichPresenceService : MonoBehaviour
 
     private void RefreshPresence()
     {
+        if (!CanRefreshPresenceInCurrentScene())
+            return;
+
         nextRefreshTime = Time.unscaledTime + RefreshIntervalSeconds;
 
         if (client == null || isShuttingDown)
@@ -123,6 +127,14 @@ public sealed class DiscordRichPresenceService : MonoBehaviour
             Status = DiscordPresenceStatus.Error;
             Debug.LogWarning($"[DiscordPresence] Presence update threw: {exception.Message}");
         }
+    }
+
+    private static bool CanRefreshPresenceInCurrentScene()
+    {
+        return !string.Equals(
+            SceneManager.GetActiveScene().name,
+            SceneName.Bootstrap,
+            StringComparison.OrdinalIgnoreCase);
     }
 
     private void OnPresenceUpdated(ClientResult result)
