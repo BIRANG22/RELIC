@@ -101,7 +101,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 3072
+        y: 1024
         width: 1024
         height: 1024
       alignment: 0
@@ -123,7 +123,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1024
-        y: 3072
+        y: 1024
         width: 1024
         height: 1024
       alignment: 0
@@ -145,7 +145,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 2048
-        y: 3072
+        y: 1024
         width: 1024
         height: 1024
       alignment: 0
@@ -166,8 +166,8 @@ TextureImporter:
       name: NPC_serapia_female_to_event_3
       rect:
         serializedVersion: 2
-        x: 3072
-        y: 3072
+        x: 0
+        y: 0
         width: 1024
         height: 1024
       alignment: 0
@@ -188,8 +188,8 @@ TextureImporter:
       name: NPC_serapia_female_to_event_4
       rect:
         serializedVersion: 2
-        x: 0
-        y: 2048
+        x: 1024
+        y: 0
         width: 1024
         height: 1024
       alignment: 0
@@ -210,8 +210,8 @@ TextureImporter:
       name: NPC_serapia_female_to_event_5
       rect:
         serializedVersion: 2
-        x: 1024
-        y: 2048
+        x: 2048
+        y: 0
         width: 1024
         height: 1024
       alignment: 0
@@ -224,226 +224,6 @@ TextureImporter:
       bones: []
       spriteID: 35f53910ec45c9349b34c48e47825f03
       internalID: -1459956712
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_to_event_6
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 2048
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a2f8de65b33b5594daa00d602dcabde4
-      internalID: 1462586522
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_to_event_7
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 2048
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 7a0b787053b4ab641bd05b7de2301d28
-      internalID: 1918814901
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_to_event_8
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0491f9c61eb911a448655d13f4e6edec
-      internalID: -648207398
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_to_event_9
-      rect:
-        serializedVersion: 2
-        x: 1024
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d0a0b4475ec3fd041815cac46f7a4097
-      internalID: -239026609
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_to_event_10
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: c0c438c20704048448c4be8d1bd64466
-      internalID: -1444704087
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_to_event_11
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: f620129e61b81ad4aaa9644992ef470c
-      internalID: 1516954486
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_to_event_12
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: b9e7117700396244e81309e348754ca1
-      internalID: 1366810685
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_to_event_13
-      rect:
-        serializedVersion: 2
-        x: 1024
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: cd6255c74f7c3264b9b285435fc7a5fa
-      internalID: -975809934
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_to_event_14
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: b9ecc3852aea6064f8e27ddfea2c4b14
-      internalID: 804819824
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_to_event_15
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 42fe9f1deb1d9c148a9744ab434e7cee
-      internalID: 938909558
       vertices: []
       indices: 
       edges: []
@@ -464,20 +244,10 @@ TextureImporter:
     nameFileIdTable:
       NPC_serapia_female_to_event_0: -1749368923
       NPC_serapia_female_to_event_1: 1838573863
-      NPC_serapia_female_to_event_10: -1444704087
-      NPC_serapia_female_to_event_11: 1516954486
-      NPC_serapia_female_to_event_12: 1366810685
-      NPC_serapia_female_to_event_13: -975809934
-      NPC_serapia_female_to_event_14: 804819824
-      NPC_serapia_female_to_event_15: 938909558
       NPC_serapia_female_to_event_2: -237126591
       NPC_serapia_female_to_event_3: -890133579
       NPC_serapia_female_to_event_4: -222845901
       NPC_serapia_female_to_event_5: -1459956712
-      NPC_serapia_female_to_event_6: 1462586522
-      NPC_serapia_female_to_event_7: 1918814901
-      NPC_serapia_female_to_event_8: -648207398
-      NPC_serapia_female_to_event_9: -239026609
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

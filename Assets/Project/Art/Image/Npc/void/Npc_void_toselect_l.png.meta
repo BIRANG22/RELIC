@@ -1,12 +1,12 @@
 fileFormatVersion: 2
-guid: 692702ecff54b034e9638ccd8d4932e0
+guid: f93ce555ac529b64e8ce99728f5ef679
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 1
+    enableMipMap: 0
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -39,7 +39,7 @@ TextureImporter:
     mipBias: 0
     wrapU: 1
     wrapV: 1
-    wrapW: 1
+    wrapW: 0
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -52,7 +52,7 @@ TextureImporter:
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
-  alphaIsTransparency: 0
+  alphaIsTransparency: 1
   spriteTessellationDetail: -1
   textureType: 8
   textureShape: 1
@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 8192
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -97,7 +97,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Npc_shop_toopen_0
+      name: Npc_void_toselect_l_0
       rect:
         serializedVersion: 2
         x: 0
@@ -112,14 +112,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 14541a8b680e76f4ba1391248d725689
-      internalID: -2086456756
+      spriteID: efdaef5e64eccdc43906b29b41b2c92a
+      internalID: 1917280899
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Npc_shop_toopen_1
+      name: Npc_void_toselect_l_1
       rect:
         serializedVersion: 2
         x: 1024
@@ -134,14 +134,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 55dac88af420bac448414b9addeaa4a9
-      internalID: 1287000647
+      spriteID: 2071b16fd47862e4b8bed1da2703bfc3
+      internalID: 1653798034
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Npc_shop_toopen_2
+      name: Npc_void_toselect_l_2
       rect:
         serializedVersion: 2
         x: 2048
@@ -156,36 +156,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 665ba0d939bf92c4eaa41c3413b80a3d
-      internalID: 1655458298
+      spriteID: aac72dc36a30c6d4da4e4d07f1e1d778
+      internalID: -438163110
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Npc_shop_toopen_3
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 444592433e440554eb75c7c6a9b49f4b
-      internalID: -2042731381
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Npc_shop_toopen_4
+      name: Npc_void_toselect_l_3
       rect:
         serializedVersion: 2
         x: 0
@@ -200,14 +178,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 796525293a45dca4f9a44de16d1eebfa
-      internalID: -1066435235
+      spriteID: 5a494b281a2c2074b910af9c6b0c14ab
+      internalID: 1138331689
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Npc_shop_toopen_5
+      name: Npc_void_toselect_l_4
       rect:
         serializedVersion: 2
         x: 1024
@@ -222,14 +200,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 72445fd718d7e53449de747739a68535
-      internalID: 674508157
+      spriteID: d63511f1999457841934e4f74d919f5b
+      internalID: 830107545
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Npc_shop_toopen_6
+      name: Npc_void_toselect_l_5
       rect:
         serializedVersion: 2
         x: 2048
@@ -244,30 +222,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4ffa6705c92ab0b429982f571a417e50
-      internalID: 1293145379
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Npc_shop_toopen_7
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 45a2484d42de73d4ba18eab36eb3aa30
-      internalID: 523970473
+      spriteID: db157c72954e30247b5f8d1bbfe5af4e
+      internalID: 254447088
       vertices: []
       indices: 
       edges: []
@@ -276,7 +232,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 77bdf05b04f065b45afc637d2d3aea3e
+    spriteID: 7a6f03582f719484eb727d139f7be59a
     internalID: 0
     vertices: []
     indices: 
@@ -286,14 +242,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Npc_shop_toopen_0: -2086456756
-      Npc_shop_toopen_1: 1287000647
-      Npc_shop_toopen_2: 1655458298
-      Npc_shop_toopen_3: -2042731381
-      Npc_shop_toopen_4: -1066435235
-      Npc_shop_toopen_5: 674508157
-      Npc_shop_toopen_6: 1293145379
-      Npc_shop_toopen_7: 523970473
+      Npc_void_toselect_l_0: 1917280899
+      Npc_void_toselect_l_1: 1653798034
+      Npc_void_toselect_l_2: -438163110
+      Npc_void_toselect_l_3: 1138331689
+      Npc_void_toselect_l_4: 830107545
+      Npc_void_toselect_l_5: 254447088
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

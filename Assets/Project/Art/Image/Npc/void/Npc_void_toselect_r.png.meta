@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: f93ce555ac529b64e8ce99728f5ef679
+guid: c95b469c03edc6442a01052719e059c8
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -97,7 +97,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Npc_void_toselect_0
+      name: Npc_void_toselect_r_0
       rect:
         serializedVersion: 2
         x: 0
@@ -112,14 +112,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e7cd75e8f627ec4428a65d803d9cff66
-      internalID: -2050654888
+      spriteID: 3bc0671bea87eb94e9b494e3e6403a7c
+      internalID: 1991972689
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Npc_void_toselect_1
+      name: Npc_void_toselect_r_1
       rect:
         serializedVersion: 2
         x: 1024
@@ -134,14 +134,36 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: bf7647ff746aeb247bad68de38bf0d62
-      internalID: 1340072672
+      spriteID: 2afebc6f36aeb1541ad579f321d79da9
+      internalID: -1149278138
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Npc_void_toselect_2
+      name: Npc_void_toselect_r_2
+      rect:
+        serializedVersion: 2
+        x: 2048
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f3ce4bc14077da84689719f1947f859f
+      internalID: 740629536
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Npc_void_toselect_r_3
       rect:
         serializedVersion: 2
         x: 0
@@ -156,14 +178,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 24658f17f9afdd5498e69593d62fb6cf
-      internalID: 907772677
+      spriteID: 6633d54d6919496408eeb97e059a4d36
+      internalID: -936327000
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Npc_void_toselect_3
+      name: Npc_void_toselect_r_4
       rect:
         serializedVersion: 2
         x: 1024
@@ -178,8 +200,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1457685f8a55c794cb0f30d59699914c
-      internalID: 717926800
+      spriteID: df22a062232c51b409839f4509a3ce43
+      internalID: 1215203171
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Npc_void_toselect_r_5
+      rect:
+        serializedVersion: 2
+        x: 2048
+        y: 0
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ca96b970b580d594ab147f04743aa49a
+      internalID: 1047837514
       vertices: []
       indices: 
       edges: []
@@ -188,7 +232,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 7a6f03582f719484eb727d139f7be59a
+    spriteID: 0acf2f3a433c0b44c9a5050854490ea4
     internalID: 0
     vertices: []
     indices: 
@@ -198,10 +242,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Npc_void_toselect_0: -2050654888
-      Npc_void_toselect_1: 1340072672
-      Npc_void_toselect_2: 907772677
-      Npc_void_toselect_3: 717926800
+      Npc_void_toselect_r_0: 1991972689
+      Npc_void_toselect_r_1: -1149278138
+      Npc_void_toselect_r_2: 740629536
+      Npc_void_toselect_r_3: -936327000
+      Npc_void_toselect_r_4: 1215203171
+      Npc_void_toselect_r_5: 1047837514
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

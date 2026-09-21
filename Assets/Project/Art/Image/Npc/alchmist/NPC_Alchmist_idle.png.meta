@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 200
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 8192
+    maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 0
@@ -101,11 +101,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 6144
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        y: 1024
+        width: 420
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -122,12 +122,12 @@ TextureImporter:
       name: NPC_Alchmist_idle_1
       rect:
         serializedVersion: 2
-        x: 2048
-        y: 6144
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 420
+        y: 1024
+        width: 420
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -144,12 +144,12 @@ TextureImporter:
       name: NPC_Alchmist_idle_2
       rect:
         serializedVersion: 2
-        x: 4096
-        y: 6144
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 840
+        y: 1024
+        width: 420
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -166,12 +166,12 @@ TextureImporter:
       name: NPC_Alchmist_idle_3
       rect:
         serializedVersion: 2
-        x: 6144
-        y: 6144
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 0
+        y: 0
+        width: 420
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -188,12 +188,12 @@ TextureImporter:
       name: NPC_Alchmist_idle_4
       rect:
         serializedVersion: 2
-        x: 0
-        y: 4096
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 420
+        y: 0
+        width: 420
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -210,12 +210,12 @@ TextureImporter:
       name: NPC_Alchmist_idle_5
       rect:
         serializedVersion: 2
-        x: 2048
-        y: 4096
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 840
+        y: 0
+        width: 420
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -224,226 +224,6 @@ TextureImporter:
       bones: []
       spriteID: 613e2dceea293c741bff1b8608385d44
       internalID: -1667492019
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_Alchmist_idle_6
-      rect:
-        serializedVersion: 2
-        x: 4096
-        y: 4096
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0ca742f5722bdd342bee9bd426b5feba
-      internalID: 858258967
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_Alchmist_idle_7
-      rect:
-        serializedVersion: 2
-        x: 6144
-        y: 4096
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 06841c03040e5eb4e957aecc8e542eb8
-      internalID: 45123150
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_Alchmist_idle_8
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 2048
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 11f8735f551b7594089c2fe8f3a477d1
-      internalID: -1881571593
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_Alchmist_idle_9
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 2048
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d41b986497e625643811d18e0fed001b
-      internalID: 457138503
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_Alchmist_idle_10
-      rect:
-        serializedVersion: 2
-        x: 4096
-        y: 2048
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 5c1b798814532344db5d58a0d1b58ed8
-      internalID: 1024500164
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_Alchmist_idle_11
-      rect:
-        serializedVersion: 2
-        x: 6144
-        y: 2048
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 98d26949a32f9ae4bbe353834c891907
-      internalID: -1005812452
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_Alchmist_idle_12
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: c4aa3cc70450f6848a90cd74bc5f4ae1
-      internalID: 631432895
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_Alchmist_idle_13
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 0
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 759138238a834c6419ab5e977b40d509
-      internalID: -1308692919
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_Alchmist_idle_14
-      rect:
-        serializedVersion: 2
-        x: 4096
-        y: 0
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 6b0a1842736cf38408749e19cc4c90a6
-      internalID: -385450051
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_Alchmist_idle_15
-      rect:
-        serializedVersion: 2
-        x: 6144
-        y: 0
-        width: 2048
-        height: 2048
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e75f18e646aab864dae48f2354805c95
-      internalID: -1646215538
       vertices: []
       indices: 
       edges: []
@@ -464,20 +244,10 @@ TextureImporter:
     nameFileIdTable:
       NPC_Alchmist_idle_0: -34409635
       NPC_Alchmist_idle_1: 922038954
-      NPC_Alchmist_idle_10: 1024500164
-      NPC_Alchmist_idle_11: -1005812452
-      NPC_Alchmist_idle_12: 631432895
-      NPC_Alchmist_idle_13: -1308692919
-      NPC_Alchmist_idle_14: -385450051
-      NPC_Alchmist_idle_15: -1646215538
       NPC_Alchmist_idle_2: 1428461240
       NPC_Alchmist_idle_3: 1293772522
       NPC_Alchmist_idle_4: 1419601158
       NPC_Alchmist_idle_5: -1667492019
-      NPC_Alchmist_idle_6: 858258967
-      NPC_Alchmist_idle_7: 45123150
-      NPC_Alchmist_idle_8: -1881571593
-      NPC_Alchmist_idle_9: 457138503
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
