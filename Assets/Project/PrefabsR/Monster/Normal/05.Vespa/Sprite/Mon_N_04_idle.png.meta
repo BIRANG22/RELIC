@@ -97,11 +97,11 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: hornet_idle_0
+      name: Mon_N_04_idle_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 3072
+        y: 1024
         width: 1024
         height: 1024
       alignment: 9
@@ -112,190 +112,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 09783dafb94814f4294ed2b2effd89b2
-      internalID: -887612473
+      spriteID: 4aa5776e349633548ba440c867dc8f6e
+      internalID: -1797916159
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_idle_1
-      rect:
-        serializedVersion: 2
-        x: 1024
-        y: 3072
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 461a73abee26dbf4c93491d31579cc99
-      internalID: 1141334535
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: hornet_idle_2
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 3072
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 83f4be79597b3ef4ba7263c5ac96887c
-      internalID: -1448532208
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: hornet_idle_3
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 3072
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 79813534d07367643a17573d521faa2d
-      internalID: -1363666868
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: hornet_idle_4
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 2052
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: b761e99c730f0604d99e3f86fdd3589d
-      internalID: 1298779566
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: hornet_idle_5
-      rect:
-        serializedVersion: 2
-        x: 1024
-        y: 2048
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 3f2b14f63c8b5d44eb75b236c5d824fa
-      internalID: 702620462
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: hornet_idle_6
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 2052
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 6f9e166ffcaea0c448d96ba30610b8e6
-      internalID: 1587743813
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: hornet_idle_7
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 2048
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 04a821dd69213c740924bf6e5e76fa76
-      internalID: 32217875
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: hornet_idle_8
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 1028
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: fde4709574581854f8604e35727ac2fa
-      internalID: -223766232
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: hornet_idle_9
+      name: Mon_N_04_idle_1
       rect:
         serializedVersion: 2
         x: 1024
@@ -310,14 +134,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9f84ede8c634b204c8ba91783853c015
-      internalID: -603811226
+      spriteID: b9445a564092c7a45b66ce08fbffb755
+      internalID: -380786659
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_idle_10
+      name: Mon_N_04_idle_2
       rect:
         serializedVersion: 2
         x: 2048
@@ -332,36 +156,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 58c852c95fe2f1241af5fc91a6a91b27
-      internalID: 151881771
+      spriteID: 4d0815216aa677f449c0a4ac8517b104
+      internalID: 1328812750
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_idle_11
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: bdff8c3e9baa30349a87d23d8740532e
-      internalID: 1621614691
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: hornet_idle_12
+      name: Mon_N_04_idle_3
       rect:
         serializedVersion: 2
         x: 0
@@ -376,14 +178,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ab40617287f8d1e44a1435e632a1fd4d
-      internalID: 2085996493
+      spriteID: 5da8b091604e5de4cbb7e49917043847
+      internalID: 677164954
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_idle_13
+      name: Mon_N_04_idle_4
       rect:
         serializedVersion: 2
         x: 1024
@@ -398,14 +200,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 830d103101fe3db45a479dbb240d3ea3
-      internalID: -1959920149
+      spriteID: 7840158336075764a91058cf9661e482
+      internalID: -1957666253
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: hornet_idle_14
+      name: Mon_N_04_idle_5
       rect:
         serializedVersion: 2
         x: 2048
@@ -420,30 +222,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ef3fdcc91fb85824ab6a636ca6636e5a
-      internalID: 946505783
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: hornet_idle_15
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 267e1ece67d731549a4776c22b36624b
-      internalID: -1063410941
+      spriteID: f31c7c266eff15546bacd99fc4ea4be6
+      internalID: 1840984055
       vertices: []
       indices: 
       edges: []
@@ -462,22 +242,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      hornet_idle_0: -887612473
-      hornet_idle_1: 1141334535
-      hornet_idle_10: 151881771
-      hornet_idle_11: 1621614691
-      hornet_idle_12: 2085996493
-      hornet_idle_13: -1959920149
-      hornet_idle_14: 946505783
-      hornet_idle_15: -1063410941
-      hornet_idle_2: -1448532208
-      hornet_idle_3: -1363666868
-      hornet_idle_4: 1298779566
-      hornet_idle_5: 702620462
-      hornet_idle_6: 1587743813
-      hornet_idle_7: 32217875
-      hornet_idle_8: -223766232
-      hornet_idle_9: -603811226
+      Mon_N_04_idle_0: -1797916159
+      Mon_N_04_idle_1: -380786659
+      Mon_N_04_idle_2: 1328812750
+      Mon_N_04_idle_3: 677164954
+      Mon_N_04_idle_4: -1957666253
+      Mon_N_04_idle_5: 1840984055
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

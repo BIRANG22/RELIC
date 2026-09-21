@@ -101,7 +101,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 3072
+        y: 1024
         width: 1024
         height: 1024
       alignment: 9
@@ -123,7 +123,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1024
-        y: 3072
+        y: 1024
         width: 1024
         height: 1024
       alignment: 9
@@ -145,7 +145,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 2048
-        y: 3072
+        y: 1024
         width: 1024
         height: 1024
       alignment: 9
@@ -166,8 +166,8 @@ TextureImporter:
       name: Mon_N_07_idle_die_3
       rect:
         serializedVersion: 2
-        x: 3072
-        y: 3072
+        x: 0
+        y: 0
         width: 1024
         height: 1024
       alignment: 9
@@ -188,8 +188,8 @@ TextureImporter:
       name: Mon_N_07_idle_die_4
       rect:
         serializedVersion: 2
-        x: 0
-        y: 2048
+        x: 1024
+        y: 0
         width: 1024
         height: 1024
       alignment: 9
@@ -210,8 +210,8 @@ TextureImporter:
       name: Mon_N_07_idle_die_5
       rect:
         serializedVersion: 2
-        x: 1024
-        y: 2048
+        x: 2048
+        y: 0
         width: 1024
         height: 1024
       alignment: 9
@@ -224,226 +224,6 @@ TextureImporter:
       bones: []
       spriteID: f6aca44a44c787446b956614a6fde120
       internalID: -1276708029
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_N_07_idle_die_6
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 2048
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1660db9d61662e84f952405ac908f9f6
-      internalID: 107448892
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_N_07_idle_die_7
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 2048
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 35269fff0278a044d904785bc3209c36
-      internalID: 1240843010
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_N_07_idle_die_8
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 5ea99803c9065f5439abc4e4c46a2429
-      internalID: 1533809742
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_N_07_idle_die_9
-      rect:
-        serializedVersion: 2
-        x: 1024
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 6dcaf0d6f3c731f4aa3f146846b796f5
-      internalID: 1364741503
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_N_07_idle_die_10
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: f85d039777b92c14c839ea18f56ea69e
-      internalID: -1741371945
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_N_07_idle_die_11
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: fa36adf457b6500408c334c9856c38b0
-      internalID: 121034334
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_N_07_idle_die_12
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 94398c787c248364bbdc7f8523117cec
-      internalID: 942123151
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_N_07_idle_die_13
-      rect:
-        serializedVersion: 2
-        x: 1024
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 2073d9c554c94cd4498eb0ddcca3bc64
-      internalID: -1401307305
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_N_07_idle_die_14
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d18d067e96371094a81cc5e1a993e1bc
-      internalID: 2114017416
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_N_07_idle_die_15
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.2}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 6e3b4d4fb36367048b44a2a575ae1f88
-      internalID: 830955586
       vertices: []
       indices: 
       edges: []
@@ -464,20 +244,10 @@ TextureImporter:
     nameFileIdTable:
       Mon_N_07_idle_die_0: 125559574
       Mon_N_07_idle_die_1: 836128849
-      Mon_N_07_idle_die_10: -1741371945
-      Mon_N_07_idle_die_11: 121034334
-      Mon_N_07_idle_die_12: 942123151
-      Mon_N_07_idle_die_13: -1401307305
-      Mon_N_07_idle_die_14: 2114017416
-      Mon_N_07_idle_die_15: 830955586
       Mon_N_07_idle_die_2: -888076227
       Mon_N_07_idle_die_3: 1271329772
       Mon_N_07_idle_die_4: -1236694142
       Mon_N_07_idle_die_5: -1276708029
-      Mon_N_07_idle_die_6: 107448892
-      Mon_N_07_idle_die_7: 1240843010
-      Mon_N_07_idle_die_8: 1533809742
-      Mon_N_07_idle_die_9: 1364741503
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

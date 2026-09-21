@@ -101,11 +101,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 3240
-        width: 1920
-        height: 1080
+        y: 1024
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.5, y: 0.1}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -122,12 +122,12 @@ TextureImporter:
       name: Mon_B_01_idle_1
       rect:
         serializedVersion: 2
-        x: 1920
-        y: 3240
-        width: 1920
-        height: 1080
+        x: 1024
+        y: 1024
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.5, y: 0.1}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -144,12 +144,12 @@ TextureImporter:
       name: Mon_B_01_idle_2
       rect:
         serializedVersion: 2
-        x: 3840
-        y: 3240
-        width: 1920
-        height: 1080
+        x: 2048
+        y: 1024
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.5, y: 0.1}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -166,12 +166,12 @@ TextureImporter:
       name: Mon_B_01_idle_3
       rect:
         serializedVersion: 2
-        x: 5760
-        y: 3240
-        width: 1920
-        height: 1080
+        x: 0
+        y: 0
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.5, y: 0.1}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -188,12 +188,12 @@ TextureImporter:
       name: Mon_B_01_idle_4
       rect:
         serializedVersion: 2
-        x: 0
-        y: 2160
-        width: 1920
-        height: 1080
+        x: 1024
+        y: 0
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.5, y: 0.1}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -210,12 +210,12 @@ TextureImporter:
       name: Mon_B_01_idle_5
       rect:
         serializedVersion: 2
-        x: 1920
-        y: 2160
-        width: 1920
-        height: 1080
+        x: 2048
+        y: 0
+        width: 1024
+        height: 1024
       alignment: 9
-      pivot: {x: 0.5, y: 0.1}
+      pivot: {x: 0.5, y: 0.15}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -224,226 +224,6 @@ TextureImporter:
       bones: []
       spriteID: 2aea2cf3663f7324bafc887b89ba3ea3
       internalID: 884133443
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_idle_6
-      rect:
-        serializedVersion: 2
-        x: 3840
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a8c9e6dd7ab0e35488c7b6faab9488ac
-      internalID: -1549302929
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_idle_7
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 2160
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 64ad13b656e382043b4ab3a05cee2c62
-      internalID: -1021094935
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_idle_8
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 30a237f3c4e6d824f8243f504b438e12
-      internalID: -1700033068
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_idle_9
-      rect:
-        serializedVersion: 2
-        x: 1920
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 01ac488b5f1918d459703c6bbc9c0279
-      internalID: -690195281
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_idle_10
-      rect:
-        serializedVersion: 2
-        x: 3840
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 24b7a16e81eb39a47885b69a1b3d7eb6
-      internalID: 1409686536
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_idle_11
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 1080
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e28231ba03f5a2e49850ba920151aa50
-      internalID: 1965810923
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_idle_12
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 471257f134c49a243ab60a671d9ebeb9
-      internalID: -937086807
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_idle_13
-      rect:
-        serializedVersion: 2
-        x: 1920
-        y: 0
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 36abb0201152467468812262c1b42695
-      internalID: -1603053532
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_idle_14
-      rect:
-        serializedVersion: 2
-        x: 3840
-        y: 0
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 37365823f5860fd41801717e5f090028
-      internalID: -241181024
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_B_01_idle_15
-      rect:
-        serializedVersion: 2
-        x: 5760
-        y: 0
-        width: 1920
-        height: 1080
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0b5eb19ac2ee90c4392307aa9e816977
-      internalID: 1822712538
       vertices: []
       indices: 
       edges: []
@@ -464,20 +244,10 @@ TextureImporter:
     nameFileIdTable:
       Mon_B_01_idle_0: -1025079184
       Mon_B_01_idle_1: 1567153515
-      Mon_B_01_idle_10: 1409686536
-      Mon_B_01_idle_11: 1965810923
-      Mon_B_01_idle_12: -937086807
-      Mon_B_01_idle_13: -1603053532
-      Mon_B_01_idle_14: -241181024
-      Mon_B_01_idle_15: 1822712538
       Mon_B_01_idle_2: 1077968526
       Mon_B_01_idle_3: 201591197
       Mon_B_01_idle_4: -218839707
       Mon_B_01_idle_5: 884133443
-      Mon_B_01_idle_6: -1549302929
-      Mon_B_01_idle_7: -1021094935
-      Mon_B_01_idle_8: -1700033068
-      Mon_B_01_idle_9: -690195281
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -101,7 +101,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 3072
+        y: 1024
         width: 1024
         height: 1024
       alignment: 9
@@ -123,7 +123,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1024
-        y: 3072
+        y: 1024
         width: 1024
         height: 1024
       alignment: 9
@@ -145,7 +145,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 2048
-        y: 3072
+        y: 1024
         width: 1024
         height: 1024
       alignment: 9
@@ -166,8 +166,8 @@ TextureImporter:
       name: Mon_E_02_idle_3
       rect:
         serializedVersion: 2
-        x: 3072
-        y: 3072
+        x: 0
+        y: 0
         width: 1024
         height: 1024
       alignment: 9
@@ -188,8 +188,8 @@ TextureImporter:
       name: Mon_E_02_idle_4
       rect:
         serializedVersion: 2
-        x: 0
-        y: 2048
+        x: 1024
+        y: 0
         width: 1024
         height: 1024
       alignment: 9
@@ -210,8 +210,8 @@ TextureImporter:
       name: Mon_E_02_idle_5
       rect:
         serializedVersion: 2
-        x: 1024
-        y: 2048
+        x: 2048
+        y: 0
         width: 1024
         height: 1024
       alignment: 9
@@ -224,226 +224,6 @@ TextureImporter:
       bones: []
       spriteID: 7bdded401b3b07e4aad3ec5710518390
       internalID: -1449199175
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_02_idle_6
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 2048
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 9fe0706b81d4a2f4898bef3c29f81500
-      internalID: -700579041
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_02_idle_7
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 2048
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: f7c97dddf08fb504fb1aa9d6b0fe1da6
-      internalID: 99523164
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_02_idle_8
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: c8f5e451d6ad3c0478debe66db13c924
-      internalID: -247541297
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_02_idle_9
-      rect:
-        serializedVersion: 2
-        x: 1024
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 35a30e94848b39247b1c406a2a86d6d8
-      internalID: -1685085354
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_02_idle_10
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 4b78eafebeddbcf4993723a1048bab6e
-      internalID: 899015058
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_02_idle_11
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 1024
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 9061bc06e973fcf4caccc59271cd43f5
-      internalID: 272235760
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_02_idle_12
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 39d7dd39d87787148857c97d59572db2
-      internalID: 2084253927
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_02_idle_13
-      rect:
-        serializedVersion: 2
-        x: 1024
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0f0eaba71b2e05c4eadb429386f4784c
-      internalID: 71644335
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_02_idle_14
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: b5795f5d11887474fb44c6771445439a
-      internalID: 445189812
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_E_02_idle_15
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.5, y: 0.15}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: c0c92e24701f8844fb89f7357bc7167a
-      internalID: -796133673
       vertices: []
       indices: 
       edges: []
@@ -464,20 +244,10 @@ TextureImporter:
     nameFileIdTable:
       Mon_E_02_idle_0: -1811993203
       Mon_E_02_idle_1: 645274696
-      Mon_E_02_idle_10: 899015058
-      Mon_E_02_idle_11: 272235760
-      Mon_E_02_idle_12: 2084253927
-      Mon_E_02_idle_13: 71644335
-      Mon_E_02_idle_14: 445189812
-      Mon_E_02_idle_15: -796133673
       Mon_E_02_idle_2: 1936133333
       Mon_E_02_idle_3: -1958665364
       Mon_E_02_idle_4: 1653332820
       Mon_E_02_idle_5: -1449199175
-      Mon_E_02_idle_6: -700579041
-      Mon_E_02_idle_7: 99523164
-      Mon_E_02_idle_8: -247541297
-      Mon_E_02_idle_9: -1685085354
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

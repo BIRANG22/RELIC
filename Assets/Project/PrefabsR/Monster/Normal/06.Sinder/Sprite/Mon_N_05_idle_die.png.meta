@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -166,8 +166,8 @@ TextureImporter:
       name: Mon_N_05_idle_die_3
       rect:
         serializedVersion: 2
-        x: 3072
-        y: 1024
+        x: 0
+        y: 0
         width: 1024
         height: 1024
       alignment: 9
@@ -188,7 +188,7 @@ TextureImporter:
       name: Mon_N_05_idle_die_4
       rect:
         serializedVersion: 2
-        x: 0
+        x: 1024
         y: 0
         width: 1024
         height: 1024
@@ -210,7 +210,7 @@ TextureImporter:
       name: Mon_N_05_idle_die_5
       rect:
         serializedVersion: 2
-        x: 1024
+        x: 2048
         y: 0
         width: 1024
         height: 1024
@@ -224,50 +224,6 @@ TextureImporter:
       bones: []
       spriteID: 98522cdb87cd79146b1d8da86593f367
       internalID: 1341749189
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_N_05_idle_die_6
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.6, y: 0.25}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d6a29812c16715f4c96f8d8f073194d3
-      internalID: -1026554791
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mon_N_05_idle_die_7
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 9
-      pivot: {x: 0.6, y: 0.25}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 6b32c87b5900ef340bc1318d5bba1ead
-      internalID: -694291674
       vertices: []
       indices: 
       edges: []
@@ -292,8 +248,6 @@ TextureImporter:
       Mon_N_05_idle_die_3: -1232991388
       Mon_N_05_idle_die_4: 252562975
       Mon_N_05_idle_die_5: 1341749189
-      Mon_N_05_idle_die_6: -1026554791
-      Mon_N_05_idle_die_7: -694291674
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
