@@ -57,16 +57,23 @@ public class GameStateMachine
         Debug.Log($"[GameStateMachine] ChangeState Start: {CurrentStateType} -> {newStateType}");
 
         isChangingState = true;
+        GameStateType previousStateType = CurrentStateType;
 
         try
         {
             if (CurrentState != null)
             {
-                await CurrentState.Exit();
+                string exitStep = $"State.Exit from={previousStateType} to={newStateType}";
+                StartupDiagnostics.Begin(exitStep);
+                try { await CurrentState.Exit(); StartupDiagnostics.Success(exitStep); }
+                catch (System.Exception exception) { StartupDiagnostics.Fail(exitStep, exception); throw; }
             }
 
             CurrentState = nextState;
-            await CurrentState.Enter(context);
+            string enterStep = $"State.Enter from={previousStateType} to={newStateType}";
+            StartupDiagnostics.Begin(enterStep);
+            try { await CurrentState.Enter(context); StartupDiagnostics.Success(enterStep); }
+            catch (System.Exception exception) { StartupDiagnostics.Fail(enterStep, exception); throw; }
         }
         finally
         {

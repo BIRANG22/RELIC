@@ -11,47 +11,20 @@ public class Bootstrap : MonoBehaviour
     private IEnumerator Start()
     {
         Debug.Log("[Bootstrap] Startup: begin");
-        // 해상도/전체화면 시스템은 Bootstrap 흐름 안에서 명시적으로 초기화합니다.
-        ResolutionManager.EnsureInitialized();
-
-        UIBlurBackgroundManager.Instance.name = "SharedBlurRoot";
-
-        // 1. Settings Load
-        Settings.Instance.Load();
-        GameBrightnessManager.ApplySavedBrightness();
-
-        // 2. SaveSystem Init
-        SaveSystem.Instance.Initialize();
-
-        // 3. EventBus Init
-        EventBus.Instance.Initialize();
-
-        // 4. Data Load
-        DataManager.Instance.Initialize();
-        Debug.Log("[Bootstrap] Startup: data initialized");
-        SaveSystem.Instance.TryLoadProgress();
-        InitialDefaultPartySetup.TryInitialize(DataManager.Instance);
-
-        // 5. Audio Init
-        AudioManager.Instance.Initialize();
-
-        // 6. Input Init
-        InputManager.Instance.Initialize();
-
-        // 7. UIManager Init
-        var uiManager = UIManager.Instance;
-
-        // 8. GameManager Init
-        GameManager.Instance.Initialize();
-
-        // 9. Localization Init
-        Debug.Log("[Bootstrap] Startup: localization initializing");
+        RunStep("Bootstrap.Resolution", ResolutionManager.EnsureInitialized);
+        RunStep("Bootstrap.Blur", () => UIBlurBackgroundManager.Instance.name = "SharedBlurRoot");
+        RunStep("Bootstrap.Settings", () => { Settings.Instance.Load(); GameBrightnessManager.ApplySavedBrightness(); });
+        RunStep("Bootstrap.Save", SaveSystem.Instance.Initialize);
+        RunStep("Bootstrap.EventBus", EventBus.Instance.Initialize);
+        RunStep("Bootstrap.Data", () => { DataManager.Instance.Initialize(); SaveSystem.Instance.TryLoadProgress(); InitialDefaultPartySetup.TryInitialize(DataManager.Instance); });
+        RunStep("Bootstrap.Audio", AudioManager.Instance.Initialize);
+        RunStep("Bootstrap.Input", InputManager.Instance.Initialize);
+        RunStep("Bootstrap.UI", () => { var unused = UIManager.Instance; });
+        RunStep("Bootstrap.GameManager", GameManager.Instance.Initialize);
+        StartupDiagnostics.Begin("Bootstrap.Localization");
         yield return InitializeLanguage();
-        Debug.Log("[Bootstrap] Startup: localization initialized");
-
+        StartupDiagnostics.Success("Bootstrap.Localization");
         yield return null;
-
-        Debug.Log($"[Bootstrap] Startup: changing first state to {firstState}");
         yield return ChangeFirstState();
     }
 
@@ -65,11 +38,20 @@ public class Bootstrap : MonoBehaviour
 
         if (task.IsFaulted)
         {
+            StartupDiagnostics.Fail("Bootstrap.FirstState", task.Exception);
             Debug.LogException(task.Exception);
             yield break;
         }
 
         Debug.Log($"[Bootstrap] Startup: first state entered ({firstState})");
+        StartupDiagnostics.Complete($"state={firstState} scene={UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
+    }
+
+    private static void RunStep(string step, System.Action action)
+    {
+        StartupDiagnostics.Begin(step);
+        try { action(); StartupDiagnostics.Success(step); }
+        catch (System.Exception exception) { StartupDiagnostics.Fail(step, exception); throw; }
     }
     private IEnumerator InitializeLanguage()
     {
