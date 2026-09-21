@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 16384
+    maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -101,9 +101,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 6144
-        width: 2048
-        height: 2048
+        y: 1536
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -122,10 +122,10 @@ TextureImporter:
       name: jam_1
       rect:
         serializedVersion: 2
-        x: 2048
-        y: 6144
-        width: 2048
-        height: 2048
+        x: 400
+        y: 1536
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -144,10 +144,10 @@ TextureImporter:
       name: jam_2
       rect:
         serializedVersion: 2
-        x: 4096
-        y: 6144
-        width: 2048
-        height: 2048
+        x: 800
+        y: 1536
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -166,10 +166,10 @@ TextureImporter:
       name: jam_3
       rect:
         serializedVersion: 2
-        x: 6144
-        y: 6144
-        width: 2048
-        height: 2048
+        x: 1200
+        y: 1536
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -188,10 +188,10 @@ TextureImporter:
       name: jam_4
       rect:
         serializedVersion: 2
-        x: 8192
-        y: 6144
-        width: 2048
-        height: 2048
+        x: 1600
+        y: 1536
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -210,10 +210,10 @@ TextureImporter:
       name: jam_5
       rect:
         serializedVersion: 2
-        x: 10240
-        y: 6144
-        width: 2048
-        height: 2048
+        x: 2000
+        y: 1536
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -232,10 +232,10 @@ TextureImporter:
       name: jam_6
       rect:
         serializedVersion: 2
-        x: 12288
-        y: 6144
-        width: 2048
-        height: 2048
+        x: 0
+        y: 1024
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -254,10 +254,10 @@ TextureImporter:
       name: jam_7
       rect:
         serializedVersion: 2
-        x: 14336
-        y: 6144
-        width: 2048
-        height: 2048
+        x: 400
+        y: 1024
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -276,10 +276,10 @@ TextureImporter:
       name: jam_8
       rect:
         serializedVersion: 2
-        x: 0
-        y: 4096
-        width: 2048
-        height: 2048
+        x: 800
+        y: 1024
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -298,10 +298,10 @@ TextureImporter:
       name: jam_9
       rect:
         serializedVersion: 2
-        x: 2048
-        y: 4096
-        width: 2048
-        height: 2048
+        x: 1200
+        y: 1024
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -320,10 +320,10 @@ TextureImporter:
       name: jam_10
       rect:
         serializedVersion: 2
-        x: 4096
-        y: 4096
-        width: 2048
-        height: 2048
+        x: 1600
+        y: 1024
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -342,10 +342,10 @@ TextureImporter:
       name: jam_11
       rect:
         serializedVersion: 2
-        x: 6144
-        y: 4096
-        width: 2048
-        height: 2048
+        x: 2000
+        y: 1024
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -364,10 +364,10 @@ TextureImporter:
       name: jam_12
       rect:
         serializedVersion: 2
-        x: 8192
-        y: 4096
-        width: 2048
-        height: 2048
+        x: 0
+        y: 512
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -386,10 +386,10 @@ TextureImporter:
       name: jam_13
       rect:
         serializedVersion: 2
-        x: 10240
-        y: 4096
-        width: 2048
-        height: 2048
+        x: 400
+        y: 512
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -408,10 +408,10 @@ TextureImporter:
       name: jam_14
       rect:
         serializedVersion: 2
-        x: 12288
-        y: 4096
-        width: 2048
-        height: 2048
+        x: 800
+        y: 512
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -430,10 +430,10 @@ TextureImporter:
       name: jam_15
       rect:
         serializedVersion: 2
-        x: 14336
-        y: 4096
-        width: 2048
-        height: 2048
+        x: 1200
+        y: 512
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -452,10 +452,10 @@ TextureImporter:
       name: jam_16
       rect:
         serializedVersion: 2
-        x: 0
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 1600
+        y: 512
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -464,8 +464,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ddda3251aac0bc2459c36401cf831eda
-      internalID: 215834246
+      spriteID: c48b3bc39e54bc64d9613babcff18a1a
+      internalID: -1658955456
       vertices: []
       indices: 
       edges: []
@@ -474,10 +474,10 @@ TextureImporter:
       name: jam_17
       rect:
         serializedVersion: 2
-        x: 2048
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 2000
+        y: 512
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -486,8 +486,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3f2e1c30e9fa131469e64be5bf1b8f58
-      internalID: -1548664516
+      spriteID: fef94e997e5efde439dd7394dc7afc4d
+      internalID: -347157002
       vertices: []
       indices: 
       edges: []
@@ -496,10 +496,10 @@ TextureImporter:
       name: jam_18
       rect:
         serializedVersion: 2
-        x: 4096
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 0
+        y: 0
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -508,8 +508,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 461df4d513fe2c345bc06a7dde960af7
-      internalID: 452278569
+      spriteID: 57c58a2ff957b0544a4a02f0907fa011
+      internalID: 1460389379
       vertices: []
       indices: 
       edges: []
@@ -518,10 +518,10 @@ TextureImporter:
       name: jam_19
       rect:
         serializedVersion: 2
-        x: 6144
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 400
+        y: 0
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -530,8 +530,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5b72200a45113744490746a81eeeeea2
-      internalID: 56831824
+      spriteID: e3215a1a86685fb4f8442e01f8e3695f
+      internalID: 284701994
       vertices: []
       indices: 
       edges: []
@@ -540,10 +540,10 @@ TextureImporter:
       name: jam_20
       rect:
         serializedVersion: 2
-        x: 8192
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 800
+        y: 0
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -552,8 +552,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f6e4abc00d9cf564d836b98553d9dfbf
-      internalID: -1561648473
+      spriteID: e1d7e835500be6f4dbabefb3c93cb33a
+      internalID: 478341454
       vertices: []
       indices: 
       edges: []
@@ -562,10 +562,10 @@ TextureImporter:
       name: jam_21
       rect:
         serializedVersion: 2
-        x: 10240
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 1200
+        y: 0
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -574,8 +574,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: fcfe0614d03514b40b51058d0efb7f1d
-      internalID: 263931310
+      spriteID: 2ea3562e7c2835e48b45fd99ba3d99a7
+      internalID: 1853262598
       vertices: []
       indices: 
       edges: []
@@ -584,10 +584,10 @@ TextureImporter:
       name: jam_22
       rect:
         serializedVersion: 2
-        x: 12288
-        y: 2048
-        width: 2048
-        height: 2048
+        x: 1600
+        y: 0
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -596,8 +596,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 118f1f9a1d9451f42bfaa5e5fc2590e7
-      internalID: -1612084711
+      spriteID: bae3f43db3450bd4bab2bebabd6b2e72
+      internalID: -651118920
       vertices: []
       indices: 
       edges: []
@@ -606,32 +606,10 @@ TextureImporter:
       name: jam_23
       rect:
         serializedVersion: 2
-        x: 14336
-        y: 2048
-        width: 2048
-        height: 2048
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 2d4ddc5a2fbe0da4584daee3f92687c0
-      internalID: 1058079942
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: jam_24
-      rect:
-        serializedVersion: 2
-        x: 0
+        x: 2000
         y: 0
-        width: 2048
-        height: 2048
+        width: 400
+        height: 512
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -640,162 +618,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 675102f742408bb43babe45830565576
-      internalID: -1856420434
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: jam_25
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 0
-        width: 2048
-        height: 2048
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 234750dc604768a49bf64c99c902f8cb
-      internalID: 23629949
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: jam_26
-      rect:
-        serializedVersion: 2
-        x: 4096
-        y: 0
-        width: 2048
-        height: 2048
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: aa5f741b77615b64ab3a0cfa8372da19
-      internalID: 1804006487
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: jam_27
-      rect:
-        serializedVersion: 2
-        x: 6144
-        y: 0
-        width: 2048
-        height: 2048
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d3f494426909d8f499abe3712cc204b4
-      internalID: -484621104
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: jam_28
-      rect:
-        serializedVersion: 2
-        x: 8192
-        y: 0
-        width: 2048
-        height: 2048
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 98daa566d1edd124ab0087cb4e94a885
-      internalID: 38574
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: jam_29
-      rect:
-        serializedVersion: 2
-        x: 10240
-        y: 0
-        width: 2048
-        height: 2048
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 8c50a4fc899001044b89a902201e13d0
-      internalID: 1355357814
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: jam_30
-      rect:
-        serializedVersion: 2
-        x: 12288
-        y: 0
-        width: 2048
-        height: 2048
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 9571ff8be6afb3943ad32251693e1d1e
-      internalID: 1399547210
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: jam_31
-      rect:
-        serializedVersion: 2
-        x: 14336
-        y: 0
-        width: 2048
-        height: 2048
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1c1d2f49016d4424f84d1550f8c15310
-      internalID: 2051893425
+      spriteID: 0daf7e8908bb2a941b240c1546bb2216
+      internalID: 1238016009
       vertices: []
       indices: 
       edges: []
@@ -822,24 +646,16 @@ TextureImporter:
       jam_13: -1008579932
       jam_14: -1746042682
       jam_15: 1887564926
-      jam_16: 215834246
-      jam_17: -1548664516
-      jam_18: 452278569
-      jam_19: 56831824
+      jam_16: -1658955456
+      jam_17: -347157002
+      jam_18: 1460389379
+      jam_19: 284701994
       jam_2: -426861349
-      jam_20: -1561648473
-      jam_21: 263931310
-      jam_22: -1612084711
-      jam_23: 1058079942
-      jam_24: -1856420434
-      jam_25: 23629949
-      jam_26: 1804006487
-      jam_27: -484621104
-      jam_28: 38574
-      jam_29: 1355357814
+      jam_20: 478341454
+      jam_21: 1853262598
+      jam_22: -651118920
+      jam_23: 1238016009
       jam_3: 504873239
-      jam_30: 1399547210
-      jam_31: 2051893425
       jam_4: -1159542796
       jam_5: -1043500909
       jam_6: 113552370

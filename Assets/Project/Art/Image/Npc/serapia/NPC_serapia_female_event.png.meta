@@ -101,7 +101,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 3072
+        y: 2048
         width: 1024
         height: 1024
       alignment: 0
@@ -123,7 +123,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1024
-        y: 3072
+        y: 2048
         width: 1024
         height: 1024
       alignment: 0
@@ -145,7 +145,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 2048
-        y: 3072
+        y: 2048
         width: 1024
         height: 1024
       alignment: 0
@@ -167,7 +167,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 3072
-        y: 3072
+        y: 2048
         width: 1024
         height: 1024
       alignment: 0
@@ -189,7 +189,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 2048
+        y: 1024
         width: 1024
         height: 1024
       alignment: 0
@@ -211,7 +211,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1024
-        y: 2048
+        y: 1024
         width: 1024
         height: 1024
       alignment: 0
@@ -233,7 +233,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 2048
-        y: 2048
+        y: 1024
         width: 1024
         height: 1024
       alignment: 0
@@ -255,7 +255,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 3072
-        y: 2048
+        y: 1024
         width: 1024
         height: 1024
       alignment: 0
@@ -277,7 +277,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1024
+        y: 0
         width: 1024
         height: 1024
       alignment: 0
@@ -299,7 +299,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 1024
-        y: 1024
+        y: 0
         width: 1024
         height: 1024
       alignment: 0
@@ -321,7 +321,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 2048
-        y: 1024
+        y: 0
         width: 1024
         height: 1024
       alignment: 0
@@ -343,7 +343,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 3072
-        y: 1024
+        y: 0
         width: 1024
         height: 1024
       alignment: 0
@@ -356,94 +356,6 @@ TextureImporter:
       bones: []
       spriteID: d4eb4f0e0b323e0469fd628e98756de0
       internalID: -1474337282
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_event_12
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: cad97fa5f2a504b48a26f66b467464c2
-      internalID: -1187425737
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_event_13
-      rect:
-        serializedVersion: 2
-        x: 1024
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 8efce83ffb92ccc408d641e69893f846
-      internalID: 1587569286
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_event_14
-      rect:
-        serializedVersion: 2
-        x: 2048
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 39742a1cbd66b46488bbc66781d7c786
-      internalID: -1123463364
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: NPC_serapia_female_event_15
-      rect:
-        serializedVersion: 2
-        x: 3072
-        y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ab200589cc5c3c942a2ffa521fb0ef65
-      internalID: -169607483
       vertices: []
       indices: 
       edges: []
@@ -466,10 +378,6 @@ TextureImporter:
       NPC_serapia_female_event_1: -1033731072
       NPC_serapia_female_event_10: -1965247269
       NPC_serapia_female_event_11: -1474337282
-      NPC_serapia_female_event_12: -1187425737
-      NPC_serapia_female_event_13: 1587569286
-      NPC_serapia_female_event_14: -1123463364
-      NPC_serapia_female_event_15: -169607483
       NPC_serapia_female_event_2: 417623140
       NPC_serapia_female_event_3: 1191522489
       NPC_serapia_female_event_4: -1857597644
