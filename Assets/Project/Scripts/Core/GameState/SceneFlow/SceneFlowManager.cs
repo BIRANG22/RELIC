@@ -111,6 +111,7 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
         }
 
         loadOperation.allowSceneActivation = true;
+        Debug.Log($"[SceneFlowManager] Async operation started: {sceneName}");
 
         while (!loadOperation.isDone)
         {

@@ -10,6 +10,7 @@ public class Bootstrap : MonoBehaviour
 
     private IEnumerator Start()
     {
+        Debug.Log("[Bootstrap] Startup: begin");
         // 해상도/전체화면 시스템은 Bootstrap 흐름 안에서 명시적으로 초기화합니다.
         ResolutionManager.EnsureInitialized();
 
@@ -27,6 +28,7 @@ public class Bootstrap : MonoBehaviour
 
         // 4. Data Load
         DataManager.Instance.Initialize();
+        Debug.Log("[Bootstrap] Startup: data initialized");
         SaveSystem.Instance.TryLoadProgress();
         InitialDefaultPartySetup.TryInitialize(DataManager.Instance);
 
@@ -43,10 +45,13 @@ public class Bootstrap : MonoBehaviour
         GameManager.Instance.Initialize();
 
         // 9. Localization Init
+        Debug.Log("[Bootstrap] Startup: localization initializing");
         yield return InitializeLanguage();
+        Debug.Log("[Bootstrap] Startup: localization initialized");
 
         yield return null;
 
+        Debug.Log($"[Bootstrap] Startup: changing first state to {firstState}");
         yield return ChangeFirstState();
     }
 
@@ -61,7 +66,10 @@ public class Bootstrap : MonoBehaviour
         if (task.IsFaulted)
         {
             Debug.LogException(task.Exception);
+            yield break;
         }
+
+        Debug.Log($"[Bootstrap] Startup: first state entered ({firstState})");
     }
     private IEnumerator InitializeLanguage()
     {
