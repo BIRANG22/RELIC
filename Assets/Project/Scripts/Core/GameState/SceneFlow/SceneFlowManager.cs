@@ -49,13 +49,25 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
 
         isLoading = true;
 
-        Debug.Log($"[SceneFlowManager] Loading scene: {sceneName}");
-        SceneManager.LoadScene(sceneName);
-
-        transitionAlreadyClosedForNextLoad = false;
-        hasLoadedSceneOnce = true;
-        isLoading = false;
-        Debug.Log($"[SceneFlowManager] Loaded scene: {sceneName}");
+        try
+        {
+            StartupDiagnostics.Begin($"Scene.Load target={sceneName} current={CurrentScene}");
+            Debug.Log($"[SceneFlowManager] Loading scene: {sceneName}");
+            SceneManager.LoadScene(sceneName);
+            transitionAlreadyClosedForNextLoad = false;
+            hasLoadedSceneOnce = true;
+            StartupDiagnostics.Success($"Scene.Load target={sceneName} active={CurrentScene}");
+            Debug.Log($"[SceneFlowManager] Loaded scene: {sceneName}");
+        }
+        catch (System.Exception exception)
+        {
+            StartupDiagnostics.Fail($"Scene.Load target={sceneName}", exception);
+            throw;
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     public async Task LoadSceneAsync(string sceneName)
@@ -82,6 +94,8 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
 
         isLoading = true;
 
+        try
+        {
         CanvasMaterialSceneTransition transition = GetSceneTransition();
         bool continueFromClosedTransition = transitionAlreadyClosedForNextLoad &&
                                             useSceneTransition &&
@@ -93,20 +107,23 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
 
         if (shouldPlayTransition && !continueFromClosedTransition)
         {
+            StartupDiagnostics.Begin($"Scene.Transition.Close target={sceneName}");
             await transition.PlayCloseAsync();
+            StartupDiagnostics.Success($"Scene.Transition.Close target={sceneName}");
             await Task.Yield();
         }
 
+        StartupDiagnostics.Begin($"Scene.Load target={sceneName} current={CurrentScene}");
         AsyncOperation loadOperation = SceneManager.LoadSceneAsync(sceneName);
 
         if (loadOperation == null)
         {
             Debug.LogError($"[SceneFlowManager] Failed to load scene: {sceneName}");
+            StartupDiagnostics.Fail($"Scene.Load target={sceneName}", new System.InvalidOperationException($"SceneManager.LoadSceneAsync returned null for '{sceneName}'."));
 
             if (continueFromClosedTransition && transition != null)
                 await transition.PlayOpenAsync();
 
-            isLoading = false;
             return;
         }
 
@@ -119,15 +136,27 @@ public class SceneFlowManager : Singleton<SceneFlowManager>
         }
 
         hasLoadedSceneOnce = true;
+        StartupDiagnostics.Success($"Scene.Load target={sceneName} active={CurrentScene}");
 
         if (shouldPlayTransition)
         {
+            StartupDiagnostics.Begin($"Scene.Transition.Open target={sceneName}");
             await transition.HoldClosedAsync();
             await transition.PlayOpenAsync();
+            StartupDiagnostics.Success($"Scene.Transition.Open target={sceneName}");
         }
 
-        isLoading = false;
         Debug.Log($"[SceneFlowManager] Loaded scene: {sceneName}");
+        }
+        catch (System.Exception exception)
+        {
+            StartupDiagnostics.Fail($"Scene.Load target={sceneName}", exception);
+            throw;
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     /// <summary>
