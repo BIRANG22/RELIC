@@ -63,10 +63,16 @@ MonoBehaviour:
   - {fileID: -772531041, guid: 2ed9a862c017c054cb9b1243ba7f749a, type: 3}
   - {fileID: -2068240016, guid: 2ed9a862c017c054cb9b1243ba7f749a, type: 3}
   - {fileID: 1484751409, guid: 2ed9a862c017c054cb9b1243ba7f749a, type: 3}
+  rollButton: {fileID: 0}
+  valueText: {fileID: 0}
+  detailText: {fileID: 0}
+  rollButtonText: {fileID: 0}
+  buttonFadeDuration: 0.2
+  presenterFadeDuration: 0.2
   animator: {fileID: 254698038903247364}
   rollTriggerName: Roll
   rollStateName: Roll
-  rollDuration: 1
+  rollDuration: 0.5
   hideOnAwake: 1
   rollSfxId: battle.event.dice.roll
   rollSfxVolumeMultiplier: 1
