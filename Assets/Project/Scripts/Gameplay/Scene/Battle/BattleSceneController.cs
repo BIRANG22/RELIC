@@ -138,6 +138,7 @@ public class BattleSceneController : MonoBehaviour
     {
         SteamBattleStateSynchronizer.EnsureForBattleScene(null, null);
         InitializeRuntime();
+        SetupBattleErosionGauge();
         PrimeBack2NameBeforePresentation();
         SetErosionSelectVisible(false);
         RefreshErosionScoreDisplay();
@@ -1370,7 +1371,41 @@ public class BattleSceneController : MonoBehaviour
 
     private void CaptureRoomEntrySaveCheckpoint()
     {
+        GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
+        BattleErosionRuntimeService.CountRoomEntry(currentNode);
         SaveSystem.Instance?.CaptureBattleRoomEntryCheckpoint();
+    }
+
+    private void SetupBattleErosionGauge()
+    {
+        Transform menuRoot = FindSceneTransformByName("MenuRoot");
+        if (menuRoot == null)
+            return;
+
+        Transform erosionRoot = null;
+        for (int i = 0; i < menuRoot.childCount; i++)
+        {
+            Transform child = menuRoot.GetChild(i);
+            if (child != null && child.name == "Erosion")
+            {
+                erosionRoot = child;
+                break;
+            }
+        }
+
+        if (erosionRoot == null)
+            return;
+
+        BattleErosionGaugeUI gauge = erosionRoot.GetComponent<BattleErosionGaugeUI>();
+        if (gauge == null)
+        {
+            Debug.LogWarning(
+                "[BattleSceneController] MenuRoot/Erosion에 BattleErosionGaugeUI가 없습니다. " +
+                "Erosion 오브젝트에 컴포넌트를 직접 추가하고 Fill/Value를 연결해 주세요.");
+            return;
+        }
+
+        gauge.Initialize();
     }
 
     private void HandleSelectedMap(GeneratedMapNodeData nodeData)

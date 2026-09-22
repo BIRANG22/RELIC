@@ -5464,7 +5464,7 @@ public class BattleActionRunner
             target,
             damageService.GetMonsterDamage(command));
 
-        BattleEffectUtility.DamagePlayer(target, damage);
+        BattleEffectUtility.DamagePlayer(target, damage, true);
 
         BattleUnitFacing targetFacing = target.GetComponent<BattleUnitFacing>();
 

@@ -271,6 +271,9 @@ namespace Relic.Gameplay.Battle
             if (appliedDamage > 0)
                 BattleEquipmentEffectService.MarkPlayerDamagedThisTurn(runtimeData);
 
+            if (hpBefore > 0 && runtimeData.CurrentHP <= 0)
+                BattleErosionRuntimeService.CountCharacterIncapacitated();
+
             return true;
         }
 

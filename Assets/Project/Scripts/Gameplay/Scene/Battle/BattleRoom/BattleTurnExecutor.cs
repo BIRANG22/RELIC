@@ -659,6 +659,7 @@ public class BattleTurnExecutor : MonoBehaviour
             }
 
             playerTurnNumber++;
+            BattleErosionRuntimeService.CountNextTurnStart();
             ApplyQueuedNextTurnSwift();
             RefreshTurnNumberText();
 
@@ -929,6 +930,7 @@ public class BattleTurnExecutor : MonoBehaviour
         yield return null;
 
         playerTurnNumber++;
+        BattleErosionRuntimeService.CountNextTurnStart();
         ApplyQueuedNextTurnSwift();
         RefreshTurnNumberText();
 

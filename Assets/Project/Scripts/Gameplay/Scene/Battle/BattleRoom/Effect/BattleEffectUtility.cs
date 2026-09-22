@@ -213,7 +213,7 @@ public static class BattleEffectUtility
         animator.PlayHeal();
     }
 
-    public static void DamagePlayer(BattleCharacter target, int damage)
+    public static void DamagePlayer(BattleCharacter target, int damage, bool countDirectMonsterHit = false)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
@@ -246,7 +246,15 @@ public static class BattleEffectUtility
             hpBefore > 0 && target.RuntimeData.CurrentHP <= 0);
 
         if (shownDamage > 0)
+        {
             BattleEquipmentEffectService.MarkPlayerDamagedThisTurn(target.RuntimeData);
+
+            if (countDirectMonsterHit)
+                BattleErosionRuntimeService.CountDirectMonsterHit();
+        }
+
+        if (hpBefore > 0 && target.RuntimeData.CurrentHP <= 0)
+            BattleErosionRuntimeService.CountCharacterIncapacitated();
 
         HandlePlayerDeathIfNeeded(target);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
@@ -314,7 +322,7 @@ public static class BattleEffectUtility
         return shownDamage;
     }
 
-    public static void PierceDamagePlayer(BattleCharacter target, int damage)
+    public static void PierceDamagePlayer(BattleCharacter target, int damage, bool countDirectMonsterHit = false)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
@@ -339,7 +347,15 @@ public static class BattleEffectUtility
             hpBefore > 0 && target.RuntimeData.CurrentHP <= 0);
 
         if (shownDamage > 0)
+        {
             BattleEquipmentEffectService.MarkPlayerDamagedThisTurn(target.RuntimeData);
+
+            if (countDirectMonsterHit)
+                BattleErosionRuntimeService.CountDirectMonsterHit();
+        }
+
+        if (hpBefore > 0 && target.RuntimeData.CurrentHP <= 0)
+            BattleErosionRuntimeService.CountCharacterIncapacitated();
 
         HandlePlayerDeathIfNeeded(target);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
@@ -491,6 +507,9 @@ public static class BattleEffectUtility
 
         if (shownDamage > 0)
             BattleEquipmentEffectService.MarkPlayerDamagedThisTurn(target.RuntimeData);
+
+        if (hpBefore > 0 && target.RuntimeData.CurrentHP <= 0)
+            BattleErosionRuntimeService.CountCharacterIncapacitated();
 
         HandlePlayerDeathIfNeeded(target);
         if (isPoison)

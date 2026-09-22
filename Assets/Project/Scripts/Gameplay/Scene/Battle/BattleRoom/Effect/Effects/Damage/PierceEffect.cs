@@ -15,7 +15,7 @@ public class PierceEffect : BattleEffectBase
         {
             int finalDamage = BattleDamageModifierUtility.CalculateFinalDamageToPlayer(context, damage);
 
-            BattleEffectUtility.PierceDamagePlayer(context.PlayerTarget, finalDamage);
+            BattleEffectUtility.PierceDamagePlayer(context.PlayerTarget, finalDamage, context.MonsterCaster != null || context.MonsterCommand != null);
         }
 
         if (context.MonsterTarget != null)
