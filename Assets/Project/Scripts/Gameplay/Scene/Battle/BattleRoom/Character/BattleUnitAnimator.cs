@@ -37,6 +37,35 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private string healStateName = "";
     [SerializeField] private string deadStateName = "Dead";
 
+    [Header("Hit Flash")]
+    [Tooltip("Hit/Guard 상태에서 Hit Flash 값을 적용할 SpriteRenderer입니다. 비어 있으면 자식 SpriteRenderer를 자동으로 찾습니다.")]
+    [SerializeField] private SpriteRenderer[] hitFlashRenderers;
+
+    [Tooltip("Sprite-Lit-HitFlash 셰이더의 프로퍼티 이름입니다.")]
+    [SerializeField] private string hitFlashPropertyName = "_HitFlash";
+
+    [Tooltip("Hit이 실행될 때 순간적으로 적용할 Hit Flash 값입니다.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float hitStateFlashValue = 1f;
+
+    [Tooltip("Hit Flash를 유지하는 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float hitFlashDuration = 0.08f;
+
+    [Tooltip("Guard가 실행될 때 순간적으로 적용할 Hit Flash 값입니다.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float guardStateFlashValue = 1f;
+
+    [Tooltip("Guard Flash를 유지하는 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float guardFlashDuration = 0.08f;
+
+    [Tooltip("플래시가 끝난 뒤 되돌아갈 기본 값입니다.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float defaultHitFlashValue = 0f;
+
+    [SerializeField] private bool autoFindHitFlashRenderers = true;
+
     [Header("Move VFX")]
     [SerializeField] private BattleVfxEntry moveVfx;
 
@@ -100,6 +129,9 @@ public class BattleUnitAnimator : MonoBehaviour
     private SkillAttackSlot previousSkillAttackOverrideSlot = SkillAttackSlot.None;
     private Transform vfxSortingReference;
     private float playbackSpeedMultiplier = 1f;
+    private MaterialPropertyBlock hitFlashPropertyBlock;
+    private int hitFlashPropertyId;
+    private Coroutine hitFlashCoroutine;
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
     public float LastScheduledPrepareWaitDuration { get; private set; }
@@ -113,7 +145,19 @@ public class BattleUnitAnimator : MonoBehaviour
 
         FindAnimatorIfNeeded();
         FindFacingIfNeeded();
+        InitializeHitFlash();
         PlayIdle();
+    }
+
+    private void OnDisable()
+    {
+        if (hitFlashCoroutine != null)
+        {
+            StopCoroutine(hitFlashCoroutine);
+            hitFlashCoroutine = null;
+        }
+
+        SetHitFlash(defaultHitFlashValue);
     }
 
     private void OnValidate()
@@ -122,6 +166,7 @@ public class BattleUnitAnimator : MonoBehaviour
         EnsureMonsterActionPresentationArray();
         statusVfx ??= new BattleStatusVfxSet();
         vfxSortingReference = null;
+        hitFlashPropertyId = Shader.PropertyToID(string.IsNullOrWhiteSpace(hitFlashPropertyName) ? "_HitFlash" : hitFlashPropertyName);
     }
 
     public void PlayIdle()
@@ -180,6 +225,7 @@ public class BattleUnitAnimator : MonoBehaviour
     {
         ApplyPresentationPlaybackSpeed();
         PlayState(guardStateName);
+        TriggerHitFlash(guardStateFlashValue, guardFlashDuration);
         SpawnVfx(guardVfx);
     }
 
@@ -187,6 +233,7 @@ public class BattleUnitAnimator : MonoBehaviour
     {
         ApplyPresentationPlaybackSpeed();
         PlayState(hitStateName);
+        TriggerHitFlash(hitStateFlashValue, hitFlashDuration);
         SpawnVfx(hitVfx);
     }
 
@@ -2160,6 +2207,85 @@ public class BattleUnitAnimator : MonoBehaviour
             renderers[i].flip = flip;
         }
     }
+    private void InitializeHitFlash()
+    {
+        hitFlashPropertyId = Shader.PropertyToID(
+            string.IsNullOrWhiteSpace(hitFlashPropertyName) ? "_HitFlash" : hitFlashPropertyName);
+
+        if (autoFindHitFlashRenderers && (hitFlashRenderers == null || hitFlashRenderers.Length == 0))
+            hitFlashRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+
+        hitFlashPropertyBlock ??= new MaterialPropertyBlock();
+        SetHitFlash(defaultHitFlashValue);
+    }
+
+    private void TriggerHitFlash(float value, float duration)
+    {
+        if (hitFlashCoroutine != null)
+        {
+            StopCoroutine(hitFlashCoroutine);
+            hitFlashCoroutine = null;
+        }
+
+        SetHitFlash(value);
+
+        if (duration <= 0f)
+        {
+            SetHitFlash(defaultHitFlashValue);
+            return;
+        }
+
+        hitFlashCoroutine = StartCoroutine(HitFlashRoutine(duration));
+    }
+
+    private IEnumerator HitFlashRoutine(float duration)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        SetHitFlash(defaultHitFlashValue);
+        hitFlashCoroutine = null;
+    }
+
+    private void SetHitFlash(float value)
+    {
+        if (hitFlashRenderers == null || hitFlashRenderers.Length == 0)
+        {
+            if (!autoFindHitFlashRenderers)
+                return;
+
+            hitFlashRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+        }
+
+        if (hitFlashPropertyBlock == null)
+            hitFlashPropertyBlock = new MaterialPropertyBlock();
+
+        if (hitFlashPropertyId == 0)
+        {
+            hitFlashPropertyId = Shader.PropertyToID(
+                string.IsNullOrWhiteSpace(hitFlashPropertyName) ? "_HitFlash" : hitFlashPropertyName);
+        }
+
+        float clampedValue = Mathf.Clamp01(value);
+
+        for (int i = 0; i < hitFlashRenderers.Length; i++)
+        {
+            SpriteRenderer spriteRenderer = hitFlashRenderers[i];
+            if (spriteRenderer == null)
+                continue;
+
+            spriteRenderer.GetPropertyBlock(hitFlashPropertyBlock);
+            hitFlashPropertyBlock.SetFloat(hitFlashPropertyId, clampedValue);
+            spriteRenderer.SetPropertyBlock(hitFlashPropertyBlock);
+            hitFlashPropertyBlock.Clear();
+        }
+    }
+
     private void ApplyPresentationPlaybackSpeed()
     {
         if (EnsureAnimator())
