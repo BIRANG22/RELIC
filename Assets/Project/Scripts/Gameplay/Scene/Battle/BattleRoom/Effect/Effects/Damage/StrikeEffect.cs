@@ -15,7 +15,7 @@ public class StrikeEffect : BattleEffectBase
         {
             int finalDamage = CalculateFinalDamageToPlayer(context, damage);
 
-            BattleEffectUtility.DamagePlayer(context.PlayerTarget, finalDamage);
+            BattleEffectUtility.DamagePlayer(context.PlayerTarget, finalDamage, context.MonsterCaster != null || context.MonsterCommand != null);
         }
 
         if (context.MonsterTarget != null)

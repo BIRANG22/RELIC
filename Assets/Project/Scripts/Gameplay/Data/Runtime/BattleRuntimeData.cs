@@ -35,6 +35,13 @@ namespace Relic.Gameplay.Data
         public int CurrentBattleCount;
         public int CurrentRewardCount;
 
+        // 탐사 중 누적되는 침식도입니다. 0~100 범위로 사용합니다.
+        public int ErosionValue;
+
+        // 저장 후 이어하기에서 같은 방 진입 침식도가 중복 증가하지 않도록
+        // 마지막으로 침식도를 적용한 지도 노드를 기억합니다.
+        public string LastErosionRoomKey;
+
         public bool IsBattleRunInitialized;
     }
 

@@ -63,6 +63,18 @@ public class BattleResultChecker : MonoBehaviour
             BattleRewardCollector.Instance.Clear();
     }
 
+    public void ForceDefeatFromErosion()
+    {
+        if (battleEnded)
+            return;
+
+        battleEnded = true;
+        PrepareBattleFinishedPresentation();
+        BattleFinished?.Invoke();
+        Debug.Log("[BattleResultChecker] Exploration failed: Erosion reached 100.");
+        OpenDefeatExplorationResultPanel();
+    }
+
     public bool CheckBattleEnd()
     {
         if (battleEnded)
