@@ -1425,7 +1425,7 @@ public class Setting : MonoBehaviour
         Sprite profileSprite = null;
         CharacterIconDatabase iconDatabase = DataManager.Instance?.CharacterIconDatabase;
         if (iconDatabase != null && !string.IsNullOrWhiteSpace(currentCharacterId))
-            iconDatabase.TryGetSkillCutsceneImage(currentCharacterId, out profileSprite);
+            iconDatabase.TryGetIcon(currentCharacterId, out profileSprite);
 
         characterProfileImage.sprite = profileSprite;
         characterProfileImage.enabled = profileSprite != null;

@@ -38,6 +38,14 @@ public class CharacterReaction : MonoBehaviour
     [Min(1)]
     [SerializeField] private int maxIdleRepeat = 10;
 
+    [Tooltip("새 Idle 사이클이 시작된 뒤 자동 Wait 카운트를 시작하기까지의 최소 랜덤 지연 시간(초)입니다.")]
+    [Min(0f)]
+    [SerializeField] private float minIdleStartDelay = 0f;
+
+    [Tooltip("새 Idle 사이클이 시작된 뒤 자동 Wait 카운트를 시작하기까지의 최대 랜덤 지연 시간(초)입니다. 캐릭터마다 다른 타이밍으로 자동 모션이 나오게 합니다.")]
+    [Min(0f)]
+    [SerializeField] private float maxIdleStartDelay = 4f;
+
     [Header("Click Input")]
     [Tooltip("켜져 있으면 이 오브젝트의 Collider를 직접 클릭했을 때 반응합니다.\n기존 캐릭터 선택 시스템에서 PlayReaction()을 호출할 경우 꺼두어도 됩니다.")]
     [SerializeField] private bool useOnMouseDown = true;
@@ -58,6 +66,7 @@ public class CharacterReaction : MonoBehaviour
     private int targetIdleRepeat;
     private int currentIdleRepeat;
     private int previousIdleLoop;
+    private float idleCountStartTime;
 
     private bool wasIdle;
     private bool wasReaction;
@@ -79,6 +88,8 @@ public class CharacterReaction : MonoBehaviour
 
         minIdleRepeat = Mathf.Max(1, minIdleRepeat);
         maxIdleRepeat = Mathf.Max(1, maxIdleRepeat);
+        minIdleStartDelay = Mathf.Max(0f, minIdleStartDelay);
+        maxIdleStartDelay = Mathf.Max(0f, maxIdleStartDelay);
 
         UpdateHashes();
     }
@@ -138,6 +149,14 @@ public class CharacterReaction : MonoBehaviour
             return;
 
         int currentLoop = Mathf.FloorToInt(currentState.normalizedTime);
+
+        // 캐릭터들이 같은 시점에 Idle을 시작해도 자동 Wait가 동시에 나오지 않도록
+        // 각 Idle 사이클마다 랜덤 지연 후 반복 횟수 카운트를 시작합니다.
+        if (Time.unscaledTime < idleCountStartTime)
+        {
+            previousIdleLoop = currentLoop;
+            return;
+        }
 
         if (currentLoop <= previousIdleLoop)
             return;
@@ -224,6 +243,10 @@ public class CharacterReaction : MonoBehaviour
         int max = Mathf.Max(minIdleRepeat, maxIdleRepeat);
 
         targetIdleRepeat = Random.Range(min, max + 1);
+
+        float minDelay = Mathf.Min(minIdleStartDelay, maxIdleStartDelay);
+        float maxDelay = Mathf.Max(minIdleStartDelay, maxIdleStartDelay);
+        idleCountStartTime = Time.unscaledTime + Random.Range(minDelay, maxDelay);
     }
 
     private void ResetIdleCounter()
