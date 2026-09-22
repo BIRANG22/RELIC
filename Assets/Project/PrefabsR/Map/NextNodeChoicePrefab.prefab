@@ -206,12 +206,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetImage: {fileID: 900000}
+  clickDelay: 3
   fadeDuration: 0.8
   resetDelay: 3
   useUnscaledTime: 0
-  playClickSound: 0
-  clickSoundId: ui.normal.click
-  clickSoundVolume: 1
 --- !u!1 &700000
 GameObject:
   m_ObjectHideFlags: 0
