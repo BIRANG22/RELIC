@@ -152,6 +152,14 @@ public class StageBackgroundController : MonoBehaviour
     /// <summary>
     /// 현재 행에 해당하는 배경 범위를 찾습니다.
     /// </summary>
+    public string ResolveBackgroundPrefabName(string mapId, int layerIndex)
+    {
+        BackgroundRange range = FindRange(mapId, layerIndex + 1);
+        return range != null && range.Prefab != null
+            ? range.Prefab.name
+            : string.Empty;
+    }
+
     private BackgroundRange FindRange(string mapId, int row)
     {
         if (backgroundRanges == null)

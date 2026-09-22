@@ -17,7 +17,6 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
     private const int SharedBlurSortingOrder = 9000;
     private const int BackgroundPanelSortingOrder = 9005;
     private const int PresentationCanvasSortingOrder = SharedBlurSortingOrder + 10;
-    private const int MenuPanelSortingOrder = 10000;
     private const int UIBlurLayer = 5;
     private const float ReferenceBlurHeight = 1080f;
     private static readonly Vector2 DefaultReferenceResolution = new(1920f, 1080f);
@@ -227,9 +226,11 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
             // BackgroundPanel만 9005, 일반 로비 패널과 PartPanel은 9010을 사용합니다.
             // 패널 수에 따라 9011, 9012... 또는 10001, 10002...로 증가시키지 않습니다.
-            // MenuPanel은 튜토리얼(9050)보다 항상 위에 있도록 10000으로 고정합니다.
+            // MenuPanel은 인스펙터에 설정한 Sort Order를 그대로 유지합니다.
             if (IsMenuPanelCanvas(canvas))
-                canvas.sortingOrder = MenuPanelSortingOrder;
+            {
+                // sortingOrder는 변경하지 않습니다.
+            }
             else if (IsBackgroundPanelCanvas(canvas))
                 canvas.sortingOrder = BackgroundPanelSortingOrder;
             else

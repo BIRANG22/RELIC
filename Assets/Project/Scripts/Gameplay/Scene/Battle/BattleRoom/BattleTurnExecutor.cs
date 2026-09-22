@@ -260,6 +260,7 @@ public class BattleTurnExecutor : MonoBehaviour
         playerTurnNumber = 1;
         pendingNextTurnSwiftByCharacterId.Clear();
         RefreshTurnNumberText();
+        RefreshBack2TurnName();
     }
 
     public void ForceStopBattleExecutionForRoomEnd()
@@ -735,6 +736,11 @@ public class BattleTurnExecutor : MonoBehaviour
             if (CanAcceptPlayerInput && skillListPanel != null)
                 skillListPanel.ReopenAfterBattleExecution();
 
+            // Back2 changes only when the next player turn is actually ready,
+            // not when the end-turn input is pressed or the counter increments internally.
+            if (CanAcceptPlayerInput)
+                RefreshBack2TurnName();
+
             PlayerTurnReturned?.Invoke();
         }
     }
@@ -881,6 +887,9 @@ public class BattleTurnExecutor : MonoBehaviour
 
             if (CanAcceptPlayerInput && timelineController != null)
                 timelineController.StopTimelineMotionEffects();
+
+            if (CanAcceptPlayerInput)
+                RefreshBack2TurnName();
 
             PlayerTurnReturned?.Invoke();
         }
@@ -1153,6 +1162,14 @@ public class BattleTurnExecutor : MonoBehaviour
 
         int displayTurnNumber = Mathf.Max(1, playerTurnNumber);
         turnNumberText.text = displayTurnNumber.ToString("D2");
+    }
+
+    private void RefreshBack2TurnName()
+    {
+        BattleSceneController sceneController =
+            UnityEngine.Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+
+        sceneController?.SetBack2TurnNumber(playerTurnNumber);
     }
 
     private void RefreshEndTurnButton()

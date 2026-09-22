@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.Localization.Components;
 using TMPro;
 using Relic.Gameplay.Data;
 
@@ -44,6 +45,9 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private TMP_Text positionNameText;
     [SerializeField] private float positionPanelHoldDuration = 1.2f;
     [SerializeField] private float positionPanelFadeDuration = 0.35f;
+
+    [Header("Back2 Name")]
+    [SerializeField] private TMP_Text back2NameText;
 
     [Header("Auto Return To Map")]
     [SerializeField] private bool autoDetectReturnToMap = true;
@@ -103,6 +107,8 @@ public class BattleSceneController : MonoBehaviour
         AutoFindErosionSelectIfNeeded();
         AutoFindErosionPanelIfNeeded();
         AutoFindErosionSlotBindingsIfNeeded();
+        AutoFindBack2NameIfNeeded();
+        PrepareBack2NameForDynamicUse();
         InstallErosionSelectClickHandler();
         SetErosionPanelVisible(false);
 
@@ -132,6 +138,7 @@ public class BattleSceneController : MonoBehaviour
     {
         SteamBattleStateSynchronizer.EnsureForBattleScene(null, null);
         InitializeRuntime();
+        PrimeBack2NameBeforePresentation();
         SetErosionSelectVisible(false);
         RefreshErosionScoreDisplay();
         RefreshBattleErosionSlots();
@@ -556,6 +563,7 @@ public class BattleSceneController : MonoBehaviour
 
         ActivateMapRoomForMap();
         ResetCameraForMap();
+        RefreshBack2LocationName(MapRuntimeProgressUtility.FindCurrentNode(mapRuntime));
 
         isOpeningMapFromController = true;
         battleMapPanel.Open(mapRuntime);
@@ -762,6 +770,9 @@ public class BattleSceneController : MonoBehaviour
         HideMapPanelImmediate();
 
         PrepareStageEntryPositionPanel();
+        // Position_Panel is the stage-entry information panel. While it covers the map UI,
+        // replace the editor default Back2 name with the actual first location.
+        RefreshBack2LocationName(entryNode);
         StartCoroutine(PlayStageEntryThenOpenNodeRoutine(entryNode));
         return true;
     }
@@ -848,6 +859,124 @@ public class BattleSceneController : MonoBehaviour
         HandleSelectedMap(entryNode);
         PlayPendingRoomIntroText();
         PlayEventRoomEntranceAnimationIfNeeded();
+    }
+
+
+    private void AutoFindBack2NameIfNeeded()
+    {
+        if (back2NameText != null)
+            return;
+
+        Transform back2 = FindSceneTransformByName("Back2");
+        if (back2 == null)
+            return;
+
+        Transform nameTransform = FindChildRecursive(back2, "Name");
+        if (nameTransform != null)
+            back2NameText = nameTransform.GetComponent<TMP_Text>();
+    }
+
+    private void PrepareBack2NameForDynamicUse()
+    {
+        AutoFindBack2NameIfNeeded();
+        if (back2NameText == null)
+            return;
+
+        // Back2 > Name은 지역명/턴을 런타임에서 직접 바꾸는 동적 텍스트입니다.
+        // 씬에 남아 있는 정적 로컬라이저가 OnEnable/Start에서 기본 문구를 다시 덮어쓰지 않도록 합니다.
+        LocalizedTMPText localizedTmp = back2NameText.GetComponent<LocalizedTMPText>();
+        if (localizedTmp != null)
+            localizedTmp.enabled = false;
+
+        LocalizeStringEvent legacyLocalizer = back2NameText.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+            legacyLocalizer.enabled = false;
+    }
+
+    private void PrimeBack2NameBeforePresentation()
+    {
+        PrepareBack2NameForDynamicUse();
+
+        if (mapRuntime == null)
+            return;
+
+        GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
+        if (currentNode == null)
+            currentNode = MapRuntimeProgressUtility.FindStartNode(mapRuntime);
+
+        if (currentNode == null)
+            return;
+
+        bool isUnclearedCurrentBattle =
+            currentNode.NodeIndex == mapRuntime.CurrentNodeIndex &&
+            MapRuntimeProgressUtility.HasUnclearedCurrentNode(mapRuntime) &&
+            IsBattleNodeType(currentNode.Type);
+
+        if (isUnclearedCurrentBattle)
+            SetBack2TurnNumber(1);
+        else
+            RefreshBack2LocationName(currentNode);
+    }
+
+    public void SetBack2TurnNumber(int turnNumber)
+    {
+        AutoFindBack2NameIfNeeded();
+        if (back2NameText == null)
+            return;
+
+        back2NameText.text = $"턴 {Mathf.Max(1, turnNumber):D2}";
+    }
+
+    private void RefreshBack2LocationName(GeneratedMapNodeData nodeData)
+    {
+        if (nodeData == null)
+            return;
+
+        AutoFindBack2NameIfNeeded();
+        if (back2NameText == null)
+            return;
+
+        string locationName = ResolveBack2LocationName(nodeData);
+        if (string.IsNullOrWhiteSpace(locationName))
+            return;
+
+        int progressNumber = Mathf.Max(1, nodeData.LayerIndex + 1);
+        back2NameText.text = $"{progressNumber:D2} {locationName}";
+    }
+
+    private string ResolveBack2LocationName(GeneratedMapNodeData nodeData)
+    {
+        AutoFindSharedRoomPresentationIfNeeded();
+
+        string backgroundName = sharedBackgroundController != null
+            ? sharedBackgroundController.ResolveBackgroundPrefabName(nodeData.MapId, nodeData.LayerIndex)
+            : string.Empty;
+
+        if (string.IsNullOrWhiteSpace(backgroundName))
+        {
+            StageBackgroundController fallbackController =
+                Object.FindFirstObjectByType<StageBackgroundController>(FindObjectsInactive.Include);
+
+            if (fallbackController != null)
+                backgroundName = fallbackController.ResolveBackgroundPrefabName(nodeData.MapId, nodeData.LayerIndex);
+        }
+
+        switch (backgroundName)
+        {
+            case "St1_00":
+                return "폐허 외곽";
+            case "St1_01":
+                return "성채 연결로";
+            case "St1_02":
+                return "내부 광장";
+            case "Share_Restroom":
+                return "휴식";
+        }
+
+        if (string.Equals(nodeData.Type, "Rest", StringComparison.OrdinalIgnoreCase))
+            return "휴식";
+
+        return backgroundName;
     }
 
     private void AutoFindStageEntryPositionPanelIfNeeded()
@@ -1285,6 +1414,7 @@ public class BattleSceneController : MonoBehaviour
         pendingBattleRoomUsesBossIntro = false;
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
         ShowRoomBackground(battleRoom, nodeData);
+        SetBack2TurnNumber(1);
         OpenRoom(battleRoom, "BattleRoom");
         ApplyRoomVisual(battleRoom, nodeData);
     }
@@ -1295,6 +1425,7 @@ public class BattleSceneController : MonoBehaviour
         pendingBattleRoomUsesBossIntro = true;
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
         ShowRoomBackground(battleRoom, nodeData, true);
+        SetBack2TurnNumber(1);
         OpenRoom(battleRoom, "BattleRoom");
         ApplyRoomVisual(battleRoom, nodeData);
     }
@@ -1305,6 +1436,7 @@ public class BattleSceneController : MonoBehaviour
         pendingBattleRoomUsesBossIntro = false;
         pendingRoomIntroMessage = restRoomIntroMessage;
         ShowRoomBackground(restRoom, nodeData);
+        RefreshBack2LocationName(nodeData);
         OpenRoom(restRoom, "RestRoom");
         sharedRoomPresentationController?.RefreshForMap(nodeData.MapId);
         ApplyRoomVisual(restRoom, nodeData);
@@ -1326,6 +1458,7 @@ public class BattleSceneController : MonoBehaviour
 
         // EventRoom의 OnEnable에서 이벤트 선택지/연출이 즉시 실행될 수 있으므로
         // MapVisual을 먼저 생성한 뒤 EventRoom을 활성화한다.
+        RefreshBack2LocationName(nodeData);
         ApplyRoomVisual(eventRoom, nodeData);
         OpenRoom(eventRoom, "EventRoom");
     }
