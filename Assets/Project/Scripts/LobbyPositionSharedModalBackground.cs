@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 /// <summary>
 /// PositionPanel 아래의 공용 BackgroundPanel을 ErosionSelectPanel, RelicShopPanel,
@@ -19,6 +20,8 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
     private const string BackName = "Back";
     private const string LobbyIconName = "Lobby_Icon";
     private const string MainIconName = "Mainicon";
+    private const string LobbyLocationNameObjectName = "Name";
+    private const string LobbyLocationDisplayName = "\uD0D0\uC0AC \uAC70\uC810";
 
     private static readonly string[] ReadyConflictingPanelNames =
     {
@@ -72,6 +75,7 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
     {
         ResolveReferences();
         ResolveReadyPresentationRoots();
+        ApplyLobbyLocationName();
         BindBackButton();
         BindInfoBackButton();
 
@@ -85,11 +89,24 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
     {
         ResolveReferences();
         ResolveReadyPresentationRoots();
+        ApplyLobbyLocationName();
         BindBackButton();
         BindInfoBackButton();
 
         if (!readyPresentationActive)
             SetActiveIfNeeded(infoBackButton != null ? infoBackButton.gameObject : null, false);
+    }
+
+    private void ApplyLobbyLocationName()
+    {
+        Transform settingRoot = FindChildRecursive(transform.root, "Setting");
+        Transform optionRoot = settingRoot != null ? FindChildRecursive(settingRoot, "Option") : null;
+        Transform back2Root = optionRoot != null ? FindChildRecursive(optionRoot, "Back2") : null;
+        Transform nameRoot = back2Root != null ? FindChildRecursive(back2Root, LobbyLocationNameObjectName) : null;
+
+        TMP_Text nameText = nameRoot != null ? nameRoot.GetComponent<TMP_Text>() : null;
+        if (nameText != null)
+            nameText.text = LobbyLocationDisplayName;
     }
 
     private void OnDestroy()

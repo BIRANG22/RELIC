@@ -799,24 +799,24 @@ public class EventRoomController : MonoBehaviour
         string fallback = !string.IsNullOrWhiteSpace(definition.Title)
             ? definition.Title
             : EventIdUtility.Normalize(definition.EventId) switch
-        {
-            "Event_01_A" => "“조금이나마 도움이 되기를 바랍니다. 부디 조심해서 사용해 주세요.”",
-            "Event_01_B" => "“상처가 조금은 나아졌군요. 이 힘이 당신들의 여정에 보탬이 되기를 바랍니다.”",
-            "Event_01_C" => "“당신들의 생명에 축복이 머물기를. 앞으로의 길이 조금은 덜 고되기를 바랍니다.”",
-            "Event_02_A" => "한 번 더 손을 뻗을 수 있을 것 같다.",
-            "Event_02_B" => "의식 도구에 남아 있던 힘이 몸 안으로 스며든다.",
-            "Event_02_C" => "흔적을 헤집자 안쪽에서 강한 힘을 머금은 유물이 모습을 드러냈다.",
-            "Event_02_D" => "의식 도구에 손을 대는 순간 불길한 기운이 역류한다.",
-            "Event_02_E" => "흔적을 훼손한 순간 억눌려 있던 힘이 폭발한다.",
-            "Event_02_G" => "더 이상 손대지 않기로 하고, 조용히 자리를 떠난다.",
-            "Event_02_H" => "뜻밖의 수확을 얻었다. 더 이상 손댈 것은 없어 보인다.",
-            "Event_02_I" => "예상치 못한 폭발에 휘말렸다.",
-            "Event_04_A" => "“좋아. 대가는 충분하군. 약속한 물건은 여기 있다.”",
-            "Event_04_B" => "“제법 운이 좋았군. 이 물건은 네 몫이다.”",
-            "Event_04_C" => "“나쁘지 않은 거래였어.”",
-            "Event_04_D" => "“값을 치를 차례다. 모자란 몫은 생명으로 받아가겠다.”",
-            _ => string.Empty
-        };
+            {
+                "Event_01_A" => "“조금이나마 도움이 되기를 바랍니다. 부디 조심해서 사용해 주세요.”",
+                "Event_01_B" => "“상처가 조금은 나아졌군요. 이 힘이 당신들의 여정에 보탬이 되기를 바랍니다.”",
+                "Event_01_C" => "“당신들의 생명에 축복이 머물기를. 앞으로의 길이 조금은 덜 고되기를 바랍니다.”",
+                "Event_02_A" => "한 번 더 손을 뻗을 수 있을 것 같다.",
+                "Event_02_B" => "의식 도구에 남아 있던 힘이 몸 안으로 스며든다.",
+                "Event_02_C" => "흔적을 헤집자 안쪽에서 강한 힘을 머금은 유물이 모습을 드러냈다.",
+                "Event_02_D" => "의식 도구에 손을 대는 순간 불길한 기운이 역류한다.",
+                "Event_02_E" => "흔적을 훼손한 순간 억눌려 있던 힘이 폭발한다.",
+                "Event_02_G" => "더 이상 손대지 않기로 하고, 조용히 자리를 떠난다.",
+                "Event_02_H" => "뜻밖의 수확을 얻었다. 더 이상 손댈 것은 없어 보인다.",
+                "Event_02_I" => "예상치 못한 폭발에 휘말렸다.",
+                "Event_04_A" => "“좋아. 대가는 충분하군. 약속한 물건은 여기 있다.”",
+                "Event_04_B" => "“제법 운이 좋았군. 이 물건은 네 몫이다.”",
+                "Event_04_C" => "“나쁘지 않은 거래였어.”",
+                "Event_04_D" => "“값을 치를 차례다. 모자란 몫은 생명으로 받아가겠다.”",
+                _ => string.Empty
+            };
 
         return GameDataLocalization.EventTitle(definition, fallback);
     }
@@ -5368,11 +5368,28 @@ public class EventRoomController : MonoBehaviour
         if (eventResultText == null)
             eventResultText = FindText(searchRoot, "EventResultText");
 
+        // EventName / EventTitle / EventResult는 현재 EventId에 따라 매번 바뀌는 동적 텍스트입니다.
+        // 프리팹에 남아 있는 고정 LocalizedTMPText가 이전 이벤트 문구를 다시 덮어쓰지 않도록 끕니다.
+        DisableStaticLocalizedText(eventNameText);
+        DisableStaticLocalizedText(eventTitleText);
+        DisableStaticLocalizedText(eventResultText);
+
         EnsureChoiceSlots();
         EnsureEquippedRelicSelectionPanel();
         EnsureSkillAwakenSelectionPanel();
         EnsureDiceRollPresenter();
         EnsureDustiumAcquireReferences();
+    }
+
+
+    private static void DisableStaticLocalizedText(TMP_Text target)
+    {
+        if (target == null)
+            return;
+
+        LocalizedTMPText localizer = target.GetComponent<LocalizedTMPText>();
+        if (localizer != null && localizer.enabled)
+            localizer.enabled = false;
     }
 
     private void EnsureEquippedRelicSelectionPanel()
