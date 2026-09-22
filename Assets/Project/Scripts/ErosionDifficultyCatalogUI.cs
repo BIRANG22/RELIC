@@ -240,6 +240,16 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
     private void HideErosionTooltip()
     {
         tooltipOwnerItem = null;
+
+        // Erosion_Catalog 자체가 닫히는 중에는 이 MonoBehaviour가 이미
+        // 비활성 상태이므로 코루틴을 시작할 수 없습니다. 이 경우에는
+        // 페이드아웃 대신 즉시 숨겨 Coroutine couldn't be started 오류를 막습니다.
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            HideErosionTooltipImmediate();
+            return;
+        }
+
         FadeTooltipToHidden();
     }
 
