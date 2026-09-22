@@ -57,7 +57,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: a63a917c8b24f3b44a785d127efc3dee, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -78,12 +78,12 @@ SpriteRenderer:
   m_SortingLayerID: 1597553239
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: -1330892063, guid: a932a7a836706a14081d9f72919a35c8, type: 3}
+  m_Sprite: {fileID: 1010498033, guid: c367f1477bbf80e438206c2ba7b59eaf, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 19.2, y: 10.8}
+  m_Size: {x: 10.24, y: 10.24}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -466,6 +466,14 @@ MonoBehaviour:
   hitStateName: Hit
   healStateName: 
   deadStateName: Dead
+  hitFlashRenderers: []
+  hitFlashPropertyName: _HitFlash
+  hitStateFlashValue: 1
+  hitFlashDuration: 0.08
+  guardStateFlashValue: 1
+  guardFlashDuration: 0.08
+  defaultHitFlashValue: 0
+  autoFindHitFlashRenderers: 1
   moveVfx:
     prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
     flipType: 2

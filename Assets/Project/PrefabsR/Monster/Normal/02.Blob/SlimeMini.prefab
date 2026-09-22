@@ -57,7 +57,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: a63a917c8b24f3b44a785d127efc3dee, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -300,13 +300,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   duration: 0.5
-  startDelay: 0.5
   dissolveMaterial: {fileID: 2100000, guid: 5163f1b8bb2f4b1e8b8ec5bd8fa85883, type: 2}
   edgeColor: {r: 0.10980392, g: 0.10980392, b: 0.10980392, a: 1}
   edgeWidth: 0.06
   noiseScale: 5
-  disableInsteadOfDissolve:
-  - {fileID: 2423744254409376743}
 --- !u!114 &1224083396689721577
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -440,6 +437,14 @@ MonoBehaviour:
   hitStateName: Hit
   healStateName: 
   deadStateName: Dead
+  hitFlashRenderers: []
+  hitFlashPropertyName: _HitFlash
+  hitStateFlashValue: 1
+  hitFlashDuration: 0.08
+  guardStateFlashValue: 1
+  guardFlashDuration: 0.08
+  defaultHitFlashValue: 0
+  autoFindHitFlashRenderers: 1
   moveVfx:
     prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
     flipType: 2

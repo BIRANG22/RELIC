@@ -5,58 +5,73 @@ public class MaskChainEnableAnimator : MonoBehaviour
 {
     [Header("Mask")]
     [SerializeField] private RectTransform mask;
+
+    [Header("Mask Position")]
     [SerializeField] private Vector2 maskPositionA;
     [SerializeField] private Vector2 maskPositionB;
     [SerializeField] private Vector2 maskPositionC;
 
-    [Header("Chain Under")]
-    [SerializeField] private RectTransform chainUnder;
-    [SerializeField] private Vector2 chainUnderPositionA;
-    [SerializeField] private Vector2 chainUnderPositionB;
-    [SerializeField] private Vector2 chainUnderPositionC;
-
-    [Header("Start Delay")]
-    [Tooltip("Mask가 A 위치에서 B 위치로 이동하기 전 대기 시간입니다.")]
+    [Header("Position A To B")]
+    [Tooltip("A 위치에서 B 위치로 이동하기 전 대기 시간입니다.")]
     [Min(0f)]
-    [SerializeField] private float maskStartDelay = 0f;
+    [SerializeField] private float positionAToBDelay = 0f;
 
-    [Tooltip("Chain Under가 A 위치에서 B 위치로 이동하기 전 대기 시간입니다.")]
+    [Tooltip("A 위치에서 B 위치로 이동하는 시간입니다.")]
     [Min(0f)]
-    [SerializeField] private float chainStartDelay = 0f;
+    [SerializeField] private float positionAToBDuration = 0.5f;
 
-    [Header("A To B")]
-    [Tooltip("Mask와 Chain Under가 A에서 B로 이동하는 시간입니다.")]
+    [Header("Position B Hold")]
+    [Tooltip("B 위치에 도착한 뒤 멈춰 있는 시간입니다.")]
     [Min(0f)]
-    [SerializeField] private float aToBDuration = 0.5f;
+    [SerializeField] private float positionBHoldDelay = 0f;
 
-    [Header("Mask B To C")]
-    [Tooltip("Mask가 B에 도착한 뒤, C 방향으로 천천히 이동하는 시간입니다.")]
+    [Header("Position B To C")]
+    [Tooltip("B 위치에서 C 위치로 이동하기 전 추가 대기 시간입니다.")]
     [Min(0f)]
-    [SerializeField] private float maskBToCDelay = 0f;
+    [SerializeField] private float positionBToCDelay = 0f;
 
-    [Tooltip("대기 시간 동안 B에서 C까지 거리 중 몇 %만큼 천천히 이동할지 지정합니다. 0.15 = 15%.")]
-    [Range(0f, 1f)]
-    [SerializeField] private float maskBToCDriftRatio = 0.15f;
-
-    [Tooltip("천천히 이동한 지점에서 C까지 이동하는 시간입니다.")]
+    [Tooltip("B 위치에서 C 위치로 이동하는 시간입니다.")]
     [Min(0f)]
-    [SerializeField] private float maskBToCDuration = 0.5f;
+    [SerializeField] private float positionBToCDuration = 0.5f;
 
-    [Header("Chain B To C")]
-    [Tooltip("Chain Under가 B에 도착한 뒤, C 방향으로 천천히 이동하는 시간입니다.")]
+    [Header("Mask Height")]
+    [Tooltip("시작 시 Mask의 Height입니다.")]
     [Min(0f)]
-    [SerializeField] private float chainBToCDelay = 0f;
+    [SerializeField] private float maskHeightA = 0f;
 
-    [Tooltip("대기 시간 동안 B에서 C까지 거리 중 몇 %만큼 천천히 이동할지 지정합니다. 0.15 = 15%.")]
-    [Range(0f, 1f)]
-    [SerializeField] private float chainBToCDriftRatio = 0.15f;
-
-    [Tooltip("천천히 이동한 지점에서 C까지 이동하는 시간입니다.")]
+    [Tooltip("첫 번째 Height 변화 완료 시 Mask의 Height입니다.")]
     [Min(0f)]
-    [SerializeField] private float chainBToCDuration = 0.5f;
+    [SerializeField] private float maskHeightB = 500f;
+
+    [Tooltip("두 번째 Height 변화 완료 시 Mask의 Height입니다.")]
+    [Min(0f)]
+    [SerializeField] private float maskHeightC = 500f;
+
+    [Header("Height A To B")]
+    [Tooltip("Height가 A에서 B로 변하기 전 대기 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float heightAToBDelay = 0f;
+
+    [Tooltip("Height가 A에서 B로 변하는 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float heightAToBDuration = 0.5f;
+
+    [Header("Height B Hold")]
+    [Tooltip("Height B에 도착한 뒤 멈춰 있는 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float heightBHoldDelay = 0f;
+
+    [Header("Height B To C")]
+    [Tooltip("Height B에서 C로 변하기 전 추가 대기 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float heightBToCDelay = 0f;
+
+    [Tooltip("Height가 B에서 C로 변하는 시간입니다.")]
+    [Min(0f)]
+    [SerializeField] private float heightBToCDuration = 0.5f;
 
     [Header("Deactivate")]
-    [Tooltip("정방향 애니메이션이 모두 끝난 뒤 이 GameObject를 비활성화하기 전 대기 시간입니다.")]
+    [Tooltip("Position과 Height 애니메이션이 모두 끝난 뒤 이 GameObject를 비활성화하기 전 대기 시간입니다.")]
     [Min(0f)]
     [SerializeField] private float deactivateDelay = 0f;
 
@@ -65,8 +80,8 @@ public class MaskChainEnableAnimator : MonoBehaviour
     [SerializeField] private bool useUnscaledTime = true;
 
     private Coroutine sequenceCoroutine;
-    private bool maskPhaseFinished;
-    private bool chainPhaseFinished;
+    private bool positionFinished;
+    private bool heightFinished;
 
     private void OnEnable()
     {
@@ -89,13 +104,13 @@ public class MaskChainEnableAnimator : MonoBehaviour
 
     private IEnumerator PlayFullSequence()
     {
-        maskPhaseFinished = false;
-        chainPhaseFinished = false;
+        positionFinished = false;
+        heightFinished = false;
 
-        StartCoroutine(PlayMaskForward());
-        StartCoroutine(PlayChainForward());
+        StartCoroutine(PlayPositionSequence());
+        StartCoroutine(PlayHeightSequence());
 
-        while (!maskPhaseFinished || !chainPhaseFinished)
+        while (!positionFinished || !heightFinished)
             yield return null;
 
         if (deactivateDelay > 0f)
@@ -105,61 +120,62 @@ public class MaskChainEnableAnimator : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    private IEnumerator PlayMaskForward()
+    private IEnumerator PlayPositionSequence()
     {
-        if (maskStartDelay > 0f)
-            yield return Wait(maskStartDelay);
+        if (mask == null)
+        {
+            positionFinished = true;
+            yield break;
+        }
 
-        // A -> B
-        yield return AnimateRectPosition(mask, maskPositionA, maskPositionB, aToBDuration);
+        if (positionAToBDelay > 0f)
+            yield return Wait(positionAToBDelay);
 
-        // B에서 멈추지 않고, 딜레이 시간 동안 C 방향으로 조금씩 이동합니다.
-        Vector2 driftEnd = Vector2.Lerp(maskPositionB, maskPositionC, maskBToCDriftRatio);
-        if (maskBToCDelay > 0f)
-            yield return AnimateRectPosition(mask, maskPositionB, driftEnd, maskBToCDelay, false);
-        else
-            SetRectPosition(mask, driftEnd);
+        yield return AnimateLocalPosition(mask, maskPositionA, maskPositionB, positionAToBDuration);
 
-        // 드리프트가 끝난 위치 -> C
-        yield return AnimateRectPosition(mask, driftEnd, maskPositionC, maskBToCDuration);
+        if (positionBHoldDelay > 0f)
+            yield return Wait(positionBHoldDelay);
 
-        maskPhaseFinished = true;
+        if (positionBToCDelay > 0f)
+            yield return Wait(positionBToCDelay);
+
+        yield return AnimateLocalPosition(mask, maskPositionB, maskPositionC, positionBToCDuration);
+
+        positionFinished = true;
     }
 
-    private IEnumerator PlayChainForward()
+    private IEnumerator PlayHeightSequence()
     {
-        if (chainStartDelay > 0f)
-            yield return Wait(chainStartDelay);
+        if (mask == null)
+        {
+            heightFinished = true;
+            yield break;
+        }
 
-        // A -> B
-        yield return AnimateRectPosition(chainUnder, chainUnderPositionA, chainUnderPositionB, aToBDuration);
+        if (heightAToBDelay > 0f)
+            yield return Wait(heightAToBDelay);
 
-        // B에서 멈추지 않고, 딜레이 시간 동안 C 방향으로 조금씩 이동합니다.
-        Vector2 driftEnd = Vector2.Lerp(chainUnderPositionB, chainUnderPositionC, chainBToCDriftRatio);
-        if (chainBToCDelay > 0f)
-            yield return AnimateRectPosition(chainUnder, chainUnderPositionB, driftEnd, chainBToCDelay, false);
-        else
-            SetRectPosition(chainUnder, driftEnd);
+        yield return AnimateHeight(mask, maskHeightA, maskHeightB, heightAToBDuration);
 
-        // 드리프트가 끝난 위치 -> C
-        yield return AnimateRectPosition(chainUnder, driftEnd, chainUnderPositionC, chainBToCDuration);
+        if (heightBHoldDelay > 0f)
+            yield return Wait(heightBHoldDelay);
 
-        chainPhaseFinished = true;
+        if (heightBToCDelay > 0f)
+            yield return Wait(heightBToCDelay);
+
+        yield return AnimateHeight(mask, maskHeightB, maskHeightC, heightBToCDuration);
+
+        heightFinished = true;
     }
 
-    private IEnumerator AnimateRectPosition(
-        RectTransform target,
-        Vector2 fromPosition,
-        Vector2 toPosition,
-        float duration,
-        bool useCurve = true)
+    private IEnumerator AnimateLocalPosition(RectTransform target, Vector2 fromPosition, Vector2 toPosition, float duration)
     {
         if (target == null)
             yield break;
 
         if (duration <= 0f)
         {
-            SetRectPosition(target, toPosition);
+            SetLocalPosition(target, toPosition);
             yield break;
         }
 
@@ -169,13 +185,39 @@ public class MaskChainEnableAnimator : MonoBehaviour
         {
             elapsed += DeltaTime();
             float t = Mathf.Clamp01(elapsed / duration);
-            float evaluatedT = useCurve ? EvaluateCurve(t) : t;
+            float evaluatedT = EvaluateCurve(t);
 
-            SetRectPosition(target, Vector2.LerpUnclamped(fromPosition, toPosition, evaluatedT));
+            SetLocalPosition(target, Vector2.LerpUnclamped(fromPosition, toPosition, evaluatedT));
             yield return null;
         }
 
-        SetRectPosition(target, toPosition);
+        SetLocalPosition(target, toPosition);
+    }
+
+    private IEnumerator AnimateHeight(RectTransform target, float fromHeight, float toHeight, float duration)
+    {
+        if (target == null)
+            yield break;
+
+        if (duration <= 0f)
+        {
+            SetHeight(target, toHeight);
+            yield break;
+        }
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += DeltaTime();
+            float t = Mathf.Clamp01(elapsed / duration);
+            float evaluatedT = EvaluateCurve(t);
+
+            SetHeight(target, Mathf.LerpUnclamped(fromHeight, toHeight, evaluatedT));
+            yield return null;
+        }
+
+        SetHeight(target, toHeight);
     }
 
     private IEnumerator Wait(float seconds)
@@ -191,8 +233,11 @@ public class MaskChainEnableAnimator : MonoBehaviour
 
     private void ResetToStartState()
     {
-        SetRectPosition(mask, maskPositionA);
-        SetRectPosition(chainUnder, chainUnderPositionA);
+        if (mask == null)
+            return;
+
+        SetLocalPosition(mask, maskPositionA);
+        SetHeight(mask, maskHeightA);
     }
 
     private float DeltaTime()
@@ -205,9 +250,22 @@ public class MaskChainEnableAnimator : MonoBehaviour
         return moveCurve != null ? moveCurve.Evaluate(t) : t;
     }
 
-    private void SetRectPosition(RectTransform target, Vector2 position)
+    private void SetLocalPosition(RectTransform target, Vector2 position)
     {
-        if (target != null)
-            target.anchoredPosition = position;
+        if (target == null)
+            return;
+
+        Vector3 localPosition = target.localPosition;
+        localPosition.x = position.x;
+        localPosition.y = position.y;
+        target.localPosition = localPosition;
+    }
+
+    private void SetHeight(RectTransform target, float height)
+    {
+        if (target == null)
+            return;
+
+        target.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(0f, height));
     }
 }
