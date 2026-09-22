@@ -10,6 +10,8 @@ public class RestRoomController : MonoBehaviour
     [Header("Ally Spawn")]
     [SerializeField] private Transform[] allySpawnPoints;
     [SerializeField] private float allySpawnScale = 0.7f;
+    [Tooltip("휴식방 캐릭터 호버 시 표시할 Character Resources UI입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private BattleCharacterResourcesUI characterResourcesUI;
 
     [Header("Upgrade")]
     [SerializeField] private EventSkillAwakenSelectionPanelUI skillAwakenSelectionPanel;
@@ -321,8 +323,77 @@ public class RestRoomController : MonoBehaviour
             if (ally.GetComponent<BattleMapSelectionCharacterMarker>() == null)
                 ally.AddComponent<BattleMapSelectionCharacterMarker>();
 
+            ConfigureCharacterResourceHover(ally, i, point);
             spawnedAllyAnimators[i] = ally.GetComponentInChildren<BattleUnitAnimator>(true);
         }
+    }
+
+
+    private void ConfigureCharacterResourceHover(GameObject ally, int partySlotIndex, Transform worldAnchor)
+    {
+        if (ally == null)
+            return;
+
+        ResolveCharacterResourcesUI();
+        if (characterResourcesUI == null)
+            return;
+
+        bool configured = false;
+
+        Collider2D[] colliders2D = ally.GetComponentsInChildren<Collider2D>(true);
+        for (int i = 0; i < colliders2D.Length; i++)
+        {
+            Collider2D collider = colliders2D[i];
+            if (collider == null)
+                continue;
+
+            BattleMapCharacterResourceHover hover =
+                collider.GetComponent<BattleMapCharacterResourceHover>();
+            if (hover == null)
+                hover = collider.gameObject.AddComponent<BattleMapCharacterResourceHover>();
+
+            hover.Configure(
+                characterResourcesUI,
+                partySlotIndex,
+                worldAnchor != null ? worldAnchor : ally.transform,
+                BattleCharacterResourcesUI.AnchorMode.Rest);
+            configured = true;
+        }
+
+        Collider[] colliders = ally.GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            Collider collider = colliders[i];
+            if (collider == null)
+                continue;
+
+            BattleMapCharacterResourceHover hover =
+                collider.GetComponent<BattleMapCharacterResourceHover>();
+            if (hover == null)
+                hover = collider.gameObject.AddComponent<BattleMapCharacterResourceHover>();
+
+            hover.Configure(
+                characterResourcesUI,
+                partySlotIndex,
+                worldAnchor != null ? worldAnchor : ally.transform,
+                BattleCharacterResourcesUI.AnchorMode.Rest);
+            configured = true;
+        }
+
+        if (!configured)
+        {
+            Debug.LogWarning(
+                $"[RestRoomController] 휴식방 캐릭터에 Collider/Collider2D가 없어 자원 UI 호버를 연결할 수 없습니다: {ally.name}",
+                ally);
+        }
+    }
+
+    private void ResolveCharacterResourcesUI()
+    {
+        if (characterResourcesUI != null)
+            return;
+
+        characterResourcesUI = Object.FindFirstObjectByType<BattleCharacterResourcesUI>(FindObjectsInactive.Include);
     }
 
     private void PlayHealVfxOnSpawnedAllies()

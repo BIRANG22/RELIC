@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
@@ -172,6 +173,43 @@ public class EventRoomController : MonoBehaviour
     private CanvasGroup eventChoiceGradationCanvasGroup;
     private Coroutine terminalChoiceFadeRoutine;
     private bool waitForEventEntranceReveal;
+
+    /// <summary>
+    /// 현재 마우스 위치에서 실제 이벤트 UI가 월드 캐릭터를 가리고 있는지 확인합니다.
+    /// DataEventRoot가 활성화되어 있다는 이유만으로 전체 영역을 차단하지 않고,
+    /// 실제 UI Raycast에 잡히는 이벤트 패널 위에서만 Character Resources 호버를 막습니다.
+    /// </summary>
+    public bool IsCharacterResourceHoverBlocked(Vector2 screenPosition)
+    {
+        if (!isActiveAndEnabled || dataEventRoot == null || !dataEventRoot.activeInHierarchy)
+            return false;
+
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem == null)
+            return false;
+
+        PointerEventData pointerData = new PointerEventData(eventSystem)
+        {
+            position = screenPosition
+        };
+
+        List<RaycastResult> raycastResults = new List<RaycastResult>();
+        eventSystem.RaycastAll(pointerData, raycastResults);
+
+        Transform eventRootTransform = dataEventRoot.transform;
+        for (int i = 0; i < raycastResults.Count; i++)
+        {
+            GameObject hitObject = raycastResults[i].gameObject;
+            if (hitObject == null)
+                continue;
+
+            Transform hitTransform = hitObject.transform;
+            if (hitTransform == eventRootTransform || hitTransform.IsChildOf(eventRootTransform))
+                return true;
+        }
+
+        return false;
+    }
 
     private void Awake()
     {
