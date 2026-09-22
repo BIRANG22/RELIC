@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using TMPro;
 using Relic.Gameplay.Data;
 
@@ -18,6 +19,12 @@ public class BattleSceneController : MonoBehaviour
     [Header("Panels")]
     [SerializeField] private BattleMapPanel battleMapPanel;
     [SerializeField] private BattleRoomMapSelectionPresenter mapSelectionPresenter;
+    [SerializeField] private GameObject erosionSelect;
+    [SerializeField] private GameObject erosionPanel;
+    [SerializeField] private Transform erosionSlotContent;
+    [SerializeField] private GameObject erosionSlotPrefab;
+
+    private readonly List<GameObject> battleErosionSlotInstances = new();
 
     [Header("Battle Scene Transition")]
     [SerializeField] private BattleDiagonalSceneTransition battleTransition;
@@ -93,6 +100,11 @@ public class BattleSceneController : MonoBehaviour
         AutoFindSharedRoomPresentationIfNeeded();
         AutoFindBattleMapIntroTextIfNeeded();
         InstallMapPanelAutoReturnWatcher();
+        AutoFindErosionSelectIfNeeded();
+        AutoFindErosionPanelIfNeeded();
+        AutoFindErosionSlotBindingsIfNeeded();
+        InstallErosionSelectClickHandler();
+        SetErosionPanelVisible(false);
 
         if (mapSelectionPresenter == null)
             mapSelectionPresenter = GetComponent<BattleRoomMapSelectionPresenter>();
@@ -120,6 +132,9 @@ public class BattleSceneController : MonoBehaviour
     {
         SteamBattleStateSynchronizer.EnsureForBattleScene(null, null);
         InitializeRuntime();
+        SetErosionSelectVisible(false);
+        RefreshErosionScoreDisplay();
+        RefreshBattleErosionSlots();
         CloseAllRooms();
 
         if (battleMapPanel != null)
@@ -129,12 +144,173 @@ public class BattleSceneController : MonoBehaviour
             !TryOpenUnclearedCurrentNodeOnStart() && !TryOpenLayerZeroNodeOnNewRun())
         {
             OpenMapPanelImmediate();
-            PlayMapIntroTextOnStart();
         }
 
         lastActiveRoomLastFrame = FindActiveRoomObject();
         wasAnyRoomActiveLastFrame = lastActiveRoomLastFrame != null;
         isStarted = true;
+    }
+
+    private void RefreshErosionScoreDisplay()
+    {
+        Transform valueTransform = FindSceneTransformByName("Erosion_Value");
+        if (valueTransform == null)
+            return;
+
+        TMP_Text valueText = valueTransform.GetComponent<TMP_Text>();
+        if (valueText == null)
+            return;
+
+        int score = 0;
+        if (DataManager.Instance != null &&
+            DataManager.Instance.LobbyRuntimeStore != null &&
+            DataManager.Instance.ErosionDatabase != null)
+        {
+            LobbyRuntimeData lobbyData = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
+            List<string> selectedIds = lobbyData.SelectedErosionDifficultyIds;
+
+            if (selectedIds != null)
+            {
+                for (int i = 0; i < selectedIds.Count; i++)
+                {
+                    string difficultyId = selectedIds[i];
+                    if (string.IsNullOrWhiteSpace(difficultyId))
+                        continue;
+
+                    if (DataManager.Instance.ErosionDatabase.TryGet(difficultyId, out ErosionData erosionData) &&
+                        erosionData != null)
+                    {
+                        score += erosionData.Score;
+                    }
+                }
+            }
+        }
+
+        valueText.text = score.ToString();
+    }
+
+    private void AutoFindErosionSlotBindingsIfNeeded()
+    {
+        AutoFindErosionPanelIfNeeded();
+        if (erosionPanel == null)
+            return;
+
+        if (erosionSlotContent == null)
+            erosionSlotContent = FindChildRecursive(erosionPanel.transform, "Content");
+
+        if (erosionSlotPrefab == null && erosionSlotContent != null)
+        {
+            Transform template = FindChildRecursive(erosionSlotContent, "ErosionSlot");
+            if (template != null)
+                erosionSlotPrefab = template.gameObject;
+        }
+
+        if (erosionSlotPrefab != null)
+            erosionSlotPrefab.SetActive(false);
+    }
+
+    private void RefreshBattleErosionSlots()
+    {
+        AutoFindErosionSlotBindingsIfNeeded();
+        ClearBattleErosionSlots();
+
+        if (erosionSlotContent == null || erosionSlotPrefab == null)
+        {
+            Debug.LogWarning("[BattleSceneController] ErosionPanel의 Content 또는 ErosionSlot 프리팹을 찾을 수 없습니다.");
+            return;
+        }
+
+        if (DataManager.Instance == null ||
+            DataManager.Instance.LobbyRuntimeStore == null ||
+            DataManager.Instance.ErosionDatabase == null)
+        {
+            return;
+        }
+
+        LobbyRuntimeData lobbyData = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
+        List<string> selectedIds = lobbyData.SelectedErosionDifficultyIds;
+        if (selectedIds == null || selectedIds.Count == 0)
+            return;
+
+        for (int i = 0; i < selectedIds.Count; i++)
+        {
+            string difficultyId = selectedIds[i];
+            if (string.IsNullOrWhiteSpace(difficultyId))
+                continue;
+
+            if (!DataManager.Instance.ErosionDatabase.TryGet(difficultyId, out ErosionData erosionData) ||
+                erosionData == null)
+            {
+                continue;
+            }
+
+            GameObject slotInstance = Instantiate(erosionSlotPrefab, erosionSlotContent);
+            slotInstance.name = $"ErosionSlot_{erosionData.DifficultyId}";
+
+            // 패널이 화면에 표시되기 전에 고정 LocalizedTMPText를 끄고
+            // 최종 번역 문자열을 먼저 적용합니다.
+            // ErosionPanel을 켠 뒤 기본 문자열 -> 번역 문자열로 바뀌는 모습이 보이지 않게 합니다.
+            PrepareBattleErosionSlotForImmediateDisplay(slotInstance.transform);
+            BindBattleErosionSlot(slotInstance.transform, erosionData);
+            slotInstance.SetActive(true);
+
+            battleErosionSlotInstances.Add(slotInstance);
+            StartCoroutine(RebindBattleErosionSlotNextFrame(slotInstance, erosionData));
+        }
+    }
+
+    private IEnumerator RebindBattleErosionSlotNextFrame(GameObject slotInstance, ErosionData erosionData)
+    {
+        yield return null;
+
+        if (slotInstance != null && erosionData != null)
+            BindBattleErosionSlot(slotInstance.transform, erosionData);
+    }
+
+    private void ClearBattleErosionSlots()
+    {
+        for (int i = 0; i < battleErosionSlotInstances.Count; i++)
+        {
+            GameObject slot = battleErosionSlotInstances[i];
+            if (slot != null)
+                Destroy(slot);
+        }
+
+        battleErosionSlotInstances.Clear();
+    }
+
+    private static void PrepareBattleErosionSlotForImmediateDisplay(Transform slotRoot)
+    {
+        if (slotRoot == null)
+            return;
+
+        // ErosionSlot은 ErosionData를 기준으로 직접 번역 문자열을 바인딩합니다.
+        // 프리팹에 남아 있는 LocalizedTMPText가 패널 활성화 시 텍스트를 다시 덮어쓰면
+        // 한 프레임 동안 기본 문자열이 보일 수 있으므로 전투 슬롯에서는 비활성화합니다.
+        LocalizedTMPText[] localizers = slotRoot.GetComponentsInChildren<LocalizedTMPText>(true);
+        for (int i = 0; i < localizers.Length; i++)
+        {
+            if (localizers[i] != null)
+                localizers[i].enabled = false;
+        }
+    }
+
+    private static void BindBattleErosionSlot(Transform slotRoot, ErosionData erosionData)
+    {
+        if (slotRoot == null || erosionData == null)
+            return;
+
+        // 배틀에서는 로비 Erosion_Catalog에 실제로 표시됐던 최종 Sprite를 그대로 사용합니다.
+        // 이렇게 하면 로비에서는 보이지만 DataManager의 ErosionIconDatabase가 null이라
+        // 배틀에서만 아이콘이 사라지는 문제를 피할 수 있습니다.
+        Sprite icon = null;
+        ErosionDifficultyCatalogUI.TryGetDisplayedErosionIcon(erosionData.DifficultyId, out icon);
+
+        // 로비 카탈로그 캐시가 없는 특수 진입 경로에서만 기존 DB 조회를 보조 fallback으로 사용합니다.
+        if (icon == null)
+            icon = ErosionDifficultyCatalogUI.ResolveErosionIcon(erosionData);
+
+        ErosionDifficultyCatalogUI.BindErosionSlotView(slotRoot, erosionData, icon);
     }
 
     private bool TryRestoreBattleRewardOnStart()
@@ -165,6 +341,7 @@ public class BattleSceneController : MonoBehaviour
     {
         CloseAllRooms();
         battleMapPanel?.Close();
+        SetErosionSelectVisible(false);
         mapSelectionPresenter?.Hide();
         CloseInventoryAndBagPanelsImmediate();
         rewardPanel?.PrepareForResumePresentation();
@@ -382,6 +559,7 @@ public class BattleSceneController : MonoBehaviour
 
         isOpeningMapFromController = true;
         battleMapPanel.Open(mapRuntime);
+        SetErosionSelectVisible(true);
         isOpeningMapFromController = false;
         sharedRoomPresentationController?.RefreshForMapSelection(
             MapRuntimeProgressUtility.FindCurrentNode(mapRuntime)?.MapId);
@@ -409,6 +587,88 @@ public class BattleSceneController : MonoBehaviour
         if (battleMapPanel != null && battleMapPanel.gameObject.activeSelf)
             battleMapPanel.gameObject.SetActive(false);
 
+        SetErosionSelectVisible(false);
+    }
+
+    private void AutoFindErosionSelectIfNeeded()
+    {
+        if (erosionSelect != null)
+            return;
+
+        Transform found = FindSceneTransformByName("ErosionSelect");
+        if (found != null)
+            erosionSelect = found.gameObject;
+    }
+
+    private void SetErosionSelectVisible(bool visible)
+    {
+        AutoFindErosionSelectIfNeeded();
+
+        if (erosionSelect != null && erosionSelect.activeSelf != visible)
+            erosionSelect.SetActive(visible);
+
+        if (!visible)
+            SetErosionPanelVisible(false);
+    }
+
+    private void AutoFindErosionPanelIfNeeded()
+    {
+        if (erosionPanel != null)
+            return;
+
+        Transform found = FindSceneTransformByName("ErosionPanel");
+        if (found != null)
+            erosionPanel = found.gameObject;
+    }
+
+    private void InstallErosionSelectClickHandler()
+    {
+        AutoFindErosionSelectIfNeeded();
+        if (erosionSelect == null)
+            return;
+
+        BattleErosionSelectClickHandler clickHandler =
+            erosionSelect.GetComponent<BattleErosionSelectClickHandler>();
+        if (clickHandler == null)
+            clickHandler = erosionSelect.AddComponent<BattleErosionSelectClickHandler>();
+
+        clickHandler.Initialize(ToggleErosionPanel);
+    }
+
+    private void ToggleErosionPanel()
+    {
+        if (erosionSelect == null || !erosionSelect.activeInHierarchy)
+            return;
+
+        AutoFindErosionPanelIfNeeded();
+        if (erosionPanel == null)
+        {
+            Debug.LogWarning("[BattleSceneController] ErosionPanel을 찾을 수 없습니다.");
+            return;
+        }
+
+        bool shouldOpen = !erosionPanel.activeSelf;
+
+        if (shouldOpen)
+        {
+            // 패널을 먼저 보여준 뒤 데이터를 바꾸면 기본 텍스트에서 번역 텍스트로
+            // 바뀌는 과정이 한 프레임 노출될 수 있습니다.
+            // 패널이 꺼진 상태에서 슬롯을 완성한 뒤 마지막에 표시합니다.
+            RefreshBattleErosionSlots();
+            SetErosionPanelVisible(true);
+        }
+        else
+        {
+            SetErosionPanelVisible(false);
+        }
+    }
+
+    private void SetErosionPanelVisible(bool visible)
+    {
+        AutoFindErosionPanelIfNeeded();
+
+        if (erosionPanel != null && erosionPanel.activeSelf != visible)
+            erosionPanel.SetActive(visible);
     }
 
     private void ActivateMapRoomForMap()
@@ -1170,6 +1430,7 @@ public class BattleSceneController : MonoBehaviour
         if (battleMapPanel != null)
             battleMapPanel.Close();
 
+        SetErosionSelectVisible(false);
         CloseInventoryAndBagPanelsImmediate();
         CloseAllRooms();
 
@@ -1652,5 +1913,23 @@ public class BattleSceneController : MonoBehaviour
         }
 
         return null;
+    }
+}
+
+public sealed class BattleErosionSelectClickHandler : MonoBehaviour, IPointerClickHandler
+{
+    private Action onClick;
+
+    public void Initialize(Action clickAction)
+    {
+        onClick = clickAction;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        onClick?.Invoke();
     }
 }

@@ -67,6 +67,18 @@ public class DataManager : Singleton<DataManager>
     public LobbyRuntimeStore LobbyRuntimeStore { get; private set; } = new();
     protected override void Awake()
     {
+        // 씬 전환 전에 살아 있는 DataManager가 DB 참조를 가지고 있지 않은 상태에서
+        // 새 씬의 DataManager가 올바른 ErosionIconDatabase를 가지고 있다면,
+        // 중복 오브젝트가 제거되기 전에 기존 싱글톤으로 참조를 넘깁니다.
+        // Resources.FindObjectsOfTypeAll 같은 에디터 임시 오브젝트 탐색은 사용하지 않습니다.
+        DataManager existing = Instance;
+        if (existing != null && existing != this &&
+            existing.erosionIconDatabase == null && erosionIconDatabase != null)
+        {
+            existing.erosionIconDatabase = erosionIconDatabase;
+            existing.erosionIconDatabase.Initialize();
+        }
+
         base.Awake();
 
         if (IsDuplicateInstance)
