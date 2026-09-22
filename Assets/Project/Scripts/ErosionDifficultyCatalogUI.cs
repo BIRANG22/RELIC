@@ -13,6 +13,11 @@ using UnityEngine.UI;
 /// </summary>
 public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 {
+    // 로비 Erosion_Catalog에 실제로 표시된 최종 아이콘을 씬 전환 후에도 재사용합니다.
+    // 배틀 ErosionSlot은 DB를 다시 추측하지 않고 이 최종 표시 결과를 우선 사용합니다.
+    private static readonly Dictionary<string, Sprite> displayedErosionIcons =
+        new(StringComparer.OrdinalIgnoreCase);
+
     [Header("Auto Bind")]
     [SerializeField] private Transform catalogGroup;
     [SerializeField] private TMP_Text erosionValueText;
@@ -123,9 +128,11 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         BindCatalog("Catalog02");
         BindCatalog("Catalog03");
 
+        RestoreSelectedErosionsFromRuntime();
         UpdateAllGroupDimStates();
         RecalculateTargetScore(false);
         RefreshAllVisuals();
+        RefreshErosionSlotInstances();
         ApplyDisplayedScoreImmediately(targetScore);
     }
 
@@ -161,6 +168,7 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         }
 
         RecalculateTargetScore(true);
+        SaveSelectedErosionsToRuntime();
         RefreshErosionSlotInstances();
     }
 
@@ -286,15 +294,6 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         if (!tooltipPanel.activeSelf)
         {
             tooltipCanvasGroup.alpha = 0f;
-            return;
-        }
-
-        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
-        {
-            tooltipCanvasGroup.alpha = 0f;
-            tooltipCanvasGroup.interactable = false;
-            tooltipCanvasGroup.blocksRaycasts = false;
-            tooltipPanel.SetActive(false);
             return;
         }
 
@@ -434,6 +433,8 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
                 groupDimmedColor,
                 hoverIconScale,
                 hoverScaleDuration);
+
+            CacheDisplayedErosionIcon(data, item.CurrentIconSprite != null ? item.CurrentIconSprite : icon);
             levelItems.Add(item);
 
             if (data == null)
@@ -441,7 +442,42 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         }
     }
 
+    private static void CacheDisplayedErosionIcon(ErosionData data, Sprite icon)
+    {
+        if (data == null || icon == null || string.IsNullOrWhiteSpace(data.DifficultyId))
+            return;
+
+        displayedErosionIcons[data.DifficultyId.Trim()] = icon;
+    }
+
+    /// <summary>
+    /// 로비 Erosion_Catalog에 실제로 표시된 최종 Sprite를 반환합니다.
+    /// 씬 전환 뒤 배틀 ErosionSlot에서 동일한 아이콘을 그대로 사용하기 위한 캐시입니다.
+    /// </summary>
+    public static bool TryGetDisplayedErosionIcon(string difficultyId, out Sprite icon)
+    {
+        icon = null;
+        if (string.IsNullOrWhiteSpace(difficultyId))
+            return false;
+
+        return displayedErosionIcons.TryGetValue(difficultyId.Trim(), out icon) && icon != null;
+    }
+
     private Sprite ResolveLevelIcon(ErosionData data, Sprite fallback)
+    {
+        // 로비 Erosion_Catalog의 Level 오브젝트에 이미 설정된 Sprite가 최종 표시 기준입니다.
+        // 정상적으로 보이는 로비 아이콘이 있다면 DataManager의 DB를 다시 조회하지 않습니다.
+        if (fallback != null)
+            return fallback;
+
+        return ResolveErosionIcon(data);
+    }
+
+    /// <summary>
+    /// 로비 카탈로그에 표시된 Sprite를 사용할 수 없는 특수 진입 경로에서만
+    /// DataManager에 연결된 ErosionIconDatabase를 보조 fallback으로 조회합니다.
+    /// </summary>
+    public static Sprite ResolveErosionIcon(ErosionData data, Sprite fallback = null)
     {
         ErosionIconDatabase iconDatabase = DataManager.Instance != null
             ? DataManager.Instance.ErosionIconDatabase
@@ -457,16 +493,30 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
                 ? iconDatabase.UnavailableIcon
                 : fallback;
 
-        if (iconDatabase != null && iconDatabase.TryGetIcon(data.GroupId, out Sprite icon))
+        if (iconDatabase != null && iconDatabase.TryGetIcon(data, out Sprite icon) && icon != null)
             return icon;
 
-        return fallback;
+        // fallback Sprite가 있으면 그대로 사용합니다. 로비/배틀에서 이미 확보한 아이콘이
+        // 있는데도 DB 누락 경고를 출력하지 않도록 합니다.
+        if (fallback != null)
+            return fallback;
+
+        string databaseInfo = iconDatabase != null
+            ? $"'{iconDatabase.name}' (Entries={iconDatabase.EntryCount})"
+            : "null";
+
+        Debug.LogWarning(
+            $"[ErosionDifficultyCatalogUI] ErosionIconDatabase에서 침식도 아이콘을 찾지 못했습니다. " +
+            $"Database={databaseInfo}, DifficultyId='{data.DifficultyId}', GroupId='{data.GroupId}'. " +
+            "Erosion_XX_YY 개별 키 또는 Group_XX 공용 키를 확인하세요.");
+
+        return iconDatabase != null && iconDatabase.UnavailableIcon != null
+            ? iconDatabase.UnavailableIcon
+            : null;
     }
 
     private void RefreshErosionSlotInstances()
     {
-        // 선택한 프레임에 슬롯 정보를 즉시 갱신합니다.
-        // 슬롯 텍스트는 BindErosionSlot에서 정적 로컬라이징의 덮어쓰기를 차단합니다.
         if (erosionSlotPrefab == null || erosionSlotContent == null)
             return;
 
@@ -513,19 +563,57 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
             if (erosionSlotInstances.TryGetValue(slotKey, out GameObject existingSlot) && existingSlot != null)
             {
                 existingSlot.name = $"ErosionSlot_{item.DifficultyId}";
+                existingSlot.SetActive(true);
                 BindErosionSlot(existingSlot.transform, item);
                 continue;
             }
 
             GameObject slotInstance = Instantiate(erosionSlotPrefab, erosionSlotContent);
             slotInstance.name = $"ErosionSlot_{item.DifficultyId}";
-            erosionSlotInstances[slotKey] = slotInstance;
+            // ErosionSlot 원본 프리팹/템플릿이 비활성 상태여도
+            // 로비의 선택 목록에 생성되는 실제 슬롯은 항상 표시합니다.
+            slotInstance.SetActive(true);
             BindErosionSlot(slotInstance.transform, item);
+            erosionSlotInstances[slotKey] = slotInstance;
+            StartCoroutine(RebindErosionSlotNextFrame(slotKey, slotInstance));
             createdNewSlot = true;
         }
 
         if (createdNewSlot)
             ScrollErosionSlotsToBottom();
+    }
+
+
+    private IEnumerator RebindErosionSlotNextFrame(string slotKey, GameObject slotInstance)
+    {
+        // 프리팹이 처음 활성화되는 프레임에는 Localization/TMP 초기화가
+        // Inspector 기본 텍스트를 다시 적용할 수 있어 다음 프레임에 최종 데이터를 재적용합니다.
+        yield return null;
+
+        if (slotInstance == null || !erosionSlotInstances.TryGetValue(slotKey, out GameObject currentSlot) ||
+            currentSlot != slotInstance)
+        {
+            yield break;
+        }
+
+        slotInstance.SetActive(true);
+
+        ErosionDifficultyLevelItemUI selectedItem = null;
+        for (int i = 0; i < levelItems.Count; i++)
+        {
+            ErosionDifficultyLevelItemUI candidate = levelItems[i];
+            if (candidate == null || !candidate.IsSelectable || !candidate.IsSelected)
+                continue;
+
+            if (string.Equals(GetErosionSlotKey(candidate), slotKey, StringComparison.OrdinalIgnoreCase))
+            {
+                selectedItem = candidate;
+                break;
+            }
+        }
+
+        if (selectedItem != null)
+            BindErosionSlot(slotInstance.transform, selectedItem);
     }
 
     private static string GetErosionSlotKey(ErosionDifficultyLevelItemUI item)
@@ -546,17 +634,9 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         if (slotRoot == null || item == null || item.DifficultyData == null)
             return;
 
-        Transform iconTransform = FindTransformRecursive(slotRoot, "Icon");
-        Image slotIcon = iconTransform != null ? iconTransform.GetComponent<Image>() : null;
-        if (slotIcon != null)
-        {
-            slotIcon.sprite = item.IconSprite;
-            slotIcon.enabled = item.IconSprite != null;
-        }
-
-        SetText(slotRoot, "Value_Text", item.ScoreValue.ToString());
-        SetText(slotRoot, "Catalog_Text", BuildCatalogDisplayName(item.DifficultyData));
-        SetText(slotRoot, "Effect_Text", GameDataLocalization.ErosionDescription(item.DifficultyData));
+        // 로비와 전투씬의 ErosionSlot이 동일한 데이터 표시 규칙을 사용하도록
+        // 공용 바인딩 함수를 통해 아이콘 / 점수 / 이름 / 효과를 적용합니다.
+        BindErosionSlotView(slotRoot, item.DifficultyData, item.IconSprite);
 
         ErosionSelectedSlotInteractionUI interaction =
             slotRoot.GetComponent<ErosionSelectedSlotInteractionUI>();
@@ -566,6 +646,28 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         Transform lineTransform = FindTransformRecursive(slotRoot, "Line");
         Graphic lineGraphic = lineTransform != null ? lineTransform.GetComponent<Graphic>() : null;
         interaction.Initialize(this, item, lineGraphic);
+    }
+
+    /// <summary>
+    /// ErosionSlot에 원본 Erosion 데이터와 아이콘을 적용합니다.
+    /// 로비와 전투씬에서 동일한 표시 규칙을 공유하기 위한 공용 함수입니다.
+    /// </summary>
+    public static void BindErosionSlotView(Transform slotRoot, ErosionData data, Sprite iconSprite)
+    {
+        if (slotRoot == null || data == null)
+            return;
+
+        Transform iconTransform = FindTransformRecursive(slotRoot, "Icon");
+        Image slotIcon = iconTransform != null ? iconTransform.GetComponent<Image>() : null;
+        if (slotIcon != null)
+        {
+            slotIcon.sprite = iconSprite;
+            slotIcon.enabled = iconSprite != null;
+        }
+
+        SetText(slotRoot, "Value_Text", data.Score.ToString());
+        SetText(slotRoot, "Catalog_Text", BuildCatalogDisplayName(data));
+        SetText(slotRoot, "Effect_Text", GameDataLocalization.ErosionDescription(data));
     }
 
     internal void OnSelectedErosionSlotClicked(ErosionDifficultyLevelItemUI item)
@@ -613,33 +715,8 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
     {
         Transform target = FindTransformRecursive(root, objectName);
         TMP_Text text = target != null ? target.GetComponent<TMP_Text>() : null;
-        if (text == null)
-            return;
-
-        EnsureDynamicSlotTextOwnership(text);
-        text.text = value ?? string.Empty;
-        text.SetAllDirty();
-    }
-
-    /// <summary>
-    /// ErosionSlot의 정보 텍스트는 선택 상태에 따라 즉시 바뀌는 동적 텍스트입니다.
-    /// 정적 로컬라이징 컴포넌트가 프리팹 활성화 직후 값을 다시 덮어쓰지 않도록
-    /// 이 UI가 해당 TMP 텍스트의 표시를 직접 관리합니다.
-    /// </summary>
-    private static void EnsureDynamicSlotTextOwnership(TMP_Text text)
-    {
-        if (text == null)
-            return;
-
-        if (text.GetComponent<LocalizationIgnore>() == null)
-            text.gameObject.AddComponent<LocalizationIgnore>();
-
-        LocalizedTMPText fixedLocalizer = text.GetComponent<LocalizedTMPText>();
-        if (fixedLocalizer != null)
-        {
-            fixedLocalizer.enabled = false;
-            Destroy(fixedLocalizer);
-        }
+        if (text != null)
+            text.text = value ?? string.Empty;
     }
 
     private List<ErosionDifficultyLevelItemUI> FindGroupPeers(string groupId)
@@ -707,6 +784,48 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
             if (handledGroups.Add(item.GroupId))
                 UpdateGroupDimStates(item.GroupId);
+        }
+    }
+
+    private void RestoreSelectedErosionsFromRuntime()
+    {
+        if (DataManager.Instance == null || DataManager.Instance.LobbyRuntimeStore == null)
+            return;
+
+        LobbyRuntimeData lobbyData = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
+        if (lobbyData.SelectedErosionDifficultyIds == null || lobbyData.SelectedErosionDifficultyIds.Count == 0)
+            return;
+
+        HashSet<string> selectedIds = new(
+            lobbyData.SelectedErosionDifficultyIds,
+            StringComparer.OrdinalIgnoreCase);
+
+        for (int i = 0; i < levelItems.Count; i++)
+        {
+            ErosionDifficultyLevelItemUI item = levelItems[i];
+            if (item == null || !item.IsSelectable || string.IsNullOrWhiteSpace(item.DifficultyId))
+                continue;
+
+            item.SetSelected(selectedIds.Contains(item.DifficultyId));
+        }
+    }
+
+    private void SaveSelectedErosionsToRuntime()
+    {
+        if (DataManager.Instance == null || DataManager.Instance.LobbyRuntimeStore == null)
+            return;
+
+        LobbyRuntimeData lobbyData = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
+        lobbyData.SelectedErosionDifficultyIds ??= new List<string>();
+        lobbyData.SelectedErosionDifficultyIds.Clear();
+
+        for (int i = 0; i < levelItems.Count; i++)
+        {
+            ErosionDifficultyLevelItemUI item = levelItems[i];
+            if (item == null || !item.IsSelectable || !item.IsSelected || string.IsNullOrWhiteSpace(item.DifficultyId))
+                continue;
+
+            lobbyData.SelectedErosionDifficultyIds.Add(item.DifficultyId.Trim());
         }
     }
 
@@ -1041,7 +1160,18 @@ public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
     public string SelectionMode => difficultyData?.SelectionMode;
     public ErosionData DifficultyData => difficultyData;
     public Sprite IconSprite => iconGraphic is Image image ? image.sprite : null;
-    public Sprite CurrentIconSprite => iconGraphic is Image image ? image.sprite : GetComponentInChildren<Image>(true)?.sprite;
+    public Sprite CurrentIconSprite
+    {
+        get
+        {
+            if (iconGraphic is Image image && image.sprite != null)
+                return image.sprite;
+
+            Transform icon = FindTransformRecursive(transform, "Icon");
+            Image iconImage = icon != null ? icon.GetComponent<Image>() : null;
+            return iconImage != null ? iconImage.sprite : null;
+        }
+    }
 
     public void Initialize(
         ErosionDifficultyCatalogUI owner,
