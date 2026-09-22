@@ -8,6 +8,7 @@ public class NodeIconFadeController : MonoBehaviour
     [SerializeField] private Image targetImage;
 
     [Header("Fade")]
+    [SerializeField, Min(0f)] private float clickDelay = 0f;
     [SerializeField, Min(0.01f)] private float fadeDuration = 0.5f;
     [SerializeField, Min(0f)] private float resetDelay = 1f;
     [SerializeField] private bool useUnscaledTime = true;
@@ -16,6 +17,7 @@ public class NodeIconFadeController : MonoBehaviour
 
     private Material runtimeMaterial;
     private Coroutine fadeCoroutine;
+    private float nextClickableTime;
 
     private void Awake()
     {
@@ -64,12 +66,19 @@ public class NodeIconFadeController : MonoBehaviour
 
     /// <summary>
     /// Button OnClick에서 호출합니다.
-    /// _Fade를 1 -> 0으로 감소시킨 뒤 resetDelay만큼 기다렸다가 다시 1로 복구합니다.
+    /// 페이드는 즉시 시작하고, clickDelay 동안 추가 클릭은 무시합니다.
+    /// Fade가 끝난 뒤 resetDelay만큼 기다렸다가 다시 1로 복구합니다.
     /// </summary>
     public void PlayFadeOut()
     {
         if (runtimeMaterial == null || !runtimeMaterial.HasProperty(FadeId))
             return;
+
+        float currentTime = useUnscaledTime ? Time.unscaledTime : Time.time;
+        if (currentTime < nextClickableTime)
+            return;
+
+        nextClickableTime = currentTime + clickDelay;
 
         if (fadeCoroutine != null)
             StopCoroutine(fadeCoroutine);
@@ -84,6 +93,8 @@ public class NodeIconFadeController : MonoBehaviour
             StopCoroutine(fadeCoroutine);
             fadeCoroutine = null;
         }
+
+        nextClickableTime = 0f;
 
         if (runtimeMaterial != null && runtimeMaterial.HasProperty(FadeId))
             runtimeMaterial.SetFloat(FadeId, 1f);
