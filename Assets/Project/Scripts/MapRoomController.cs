@@ -25,6 +25,8 @@ public class MapRoomController : MonoBehaviour
     [SerializeField] private Transform[] allySpawnPoints = new Transform[3];
     [SerializeField] private float allySpawnScale = 1f;
     [SerializeField] private bool autoFindAllySpawnPoints = true;
+    [Tooltip("지도 캐릭터 호버 시 표시할 Character Resources UI입니다. 비워두면 씬에서 자동으로 찾습니다.")]
+    [SerializeField] private BattleCharacterResourcesUI characterResourcesUI;
     [Tooltip("이 Map ID에서는 AllyRoot와 맵 선택용 아군을 사용하지 않습니다.")]
     [SerializeField] private List<string> skipAllyRootMapIds = new();
 
@@ -168,7 +170,78 @@ public class MapRoomController : MonoBehaviour
 
             if (ally.GetComponent<BattleMapSelectionCharacterMarker>() == null)
                 ally.AddComponent<BattleMapSelectionCharacterMarker>();
+
+            ConfigureCharacterResourceHover(ally, i);
         }
+    }
+
+    private void ConfigureCharacterResourceHover(GameObject ally, int partySlotIndex)
+    {
+        if (ally == null)
+            return;
+
+        ResolveCharacterResourcesUI();
+        if (characterResourcesUI == null)
+            return;
+
+        // 현재 월드 캐릭터 프리팹은 루트에 Collider2D가 있는 구조가 기본입니다.
+        // 자식 콜라이더 구조도 지원하도록 모든 콜라이더 오브젝트에 릴레이를 연결합니다.
+        bool configured = false;
+
+        Collider2D[] colliders2D = ally.GetComponentsInChildren<Collider2D>(true);
+        for (int i = 0; i < colliders2D.Length; i++)
+        {
+            Collider2D collider = colliders2D[i];
+            if (collider == null)
+                continue;
+
+            BattleMapCharacterResourceHover hover =
+                collider.GetComponent<BattleMapCharacterResourceHover>();
+            if (hover == null)
+                hover = collider.gameObject.AddComponent<BattleMapCharacterResourceHover>();
+
+            hover.Configure(
+                characterResourcesUI,
+                partySlotIndex,
+                allySpawnPoints != null && partySlotIndex < allySpawnPoints.Length ? allySpawnPoints[partySlotIndex] : ally.transform,
+                BattleCharacterResourcesUI.AnchorMode.MapEvent);
+            configured = true;
+        }
+
+        Collider[] colliders = ally.GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            Collider collider = colliders[i];
+            if (collider == null)
+                continue;
+
+            BattleMapCharacterResourceHover hover =
+                collider.GetComponent<BattleMapCharacterResourceHover>();
+            if (hover == null)
+                hover = collider.gameObject.AddComponent<BattleMapCharacterResourceHover>();
+
+            hover.Configure(
+                characterResourcesUI,
+                partySlotIndex,
+                allySpawnPoints != null && partySlotIndex < allySpawnPoints.Length ? allySpawnPoints[partySlotIndex] : ally.transform,
+                BattleCharacterResourcesUI.AnchorMode.MapEvent);
+            configured = true;
+        }
+
+        if (!configured)
+        {
+            Debug.LogWarning(
+                $"[MapRoomController] 지도 캐릭터에 Collider/Collider2D가 없어 자원 UI 호버를 연결할 수 없습니다: {ally.name}",
+                ally);
+        }
+    }
+
+    private void ResolveCharacterResourcesUI()
+    {
+        if (characterResourcesUI != null)
+            return;
+
+        characterResourcesUI = Object.FindFirstObjectByType<BattleCharacterResourcesUI>(FindObjectsInactive.Include);
     }
 
     private bool ShouldSkipAllyRoot(string mapId)
@@ -238,6 +311,7 @@ public class MapRoomController : MonoBehaviour
         }
 
         ResolveAllySpawnPoints();
+        ResolveCharacterResourcesUI();
     }
 
     private void ResolveAllySpawnPoints()
