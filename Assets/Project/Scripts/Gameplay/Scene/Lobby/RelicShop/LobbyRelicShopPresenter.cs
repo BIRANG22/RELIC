@@ -77,12 +77,23 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     private bool isPurchaseAnimating;
     private Coroutine purchaseAnimationCoroutine;
     private Coroutine initialTextRefreshCoroutine;
+    private LobbyRelicOfferButtonUI purchaseConfirmSelectedButton;
 
     private void Awake()
     {
         ownerCanvas = GetComponentInParent<Canvas>();
         EnsureShopPanelReady();
         InitializeSkillUpgradeButton(Camera.main);
+    }
+
+    private void LateUpdate()
+    {
+        // 확인창이 ESC 등 외부 경로로 닫혀도 선택 확대 상태가 남지 않게 정리합니다.
+        if (purchaseConfirmSelectedButton != null &&
+            (UIManager.Instance == null || !UIManager.Instance.IsConfirmDialogOpen))
+        {
+            ClearPurchaseConfirmSelection();
+        }
     }
 
     public void Open()
@@ -134,6 +145,8 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             initialTextRefreshCoroutine = null;
         }
 
+        ClearPurchaseConfirmSelection();
+
         if (panelRoot != null)
             panelRoot.SetActive(false);
 
@@ -152,6 +165,8 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private void OnDisable()
     {
+        ClearPurchaseConfirmSelection();
+
         if (initialTextRefreshCoroutine != null)
         {
             StopCoroutine(initialTextRefreshCoroutine);
@@ -303,18 +318,52 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             return;
 
         string confirmedRelicId = relicId.Trim();
+        LobbyRelicOfferButtonUI selectedButton = FindBoundOfferButton(confirmedRelicId);
+        SetPurchaseConfirmSelection(selectedButton);
 
         UIManager.Instance.ShowConfirmDialog(
             purchaseConfirmMessage,
             () =>
             {
                 UIManager.Instance?.HideConfirmDialog();
+                ClearPurchaseConfirmSelection();
                 ConfirmPurchase(confirmedRelicId);
             },
             () =>
             {
                 UIManager.Instance?.HideConfirmDialog();
+                ClearPurchaseConfirmSelection();
             });
+    }
+
+    private void SetPurchaseConfirmSelection(LobbyRelicOfferButtonUI selectedButton)
+    {
+        purchaseConfirmSelectedButton = selectedButton;
+
+        // CHECK가 열린 동안 구매 대상 외의 모든 유물 슬롯은 호버/클릭을 잠급니다.
+        for (int i = 0; i < buttons.Count; i++)
+        {
+            LobbyRelicOfferButtonUI offerButton = buttons[i];
+            if (offerButton == null)
+                continue;
+
+            offerButton.SetPurchaseConfirmInteractionLocked(
+                true,
+                offerButton == purchaseConfirmSelectedButton);
+        }
+    }
+
+    private void ClearPurchaseConfirmSelection()
+    {
+        // CHECK가 닫히면 모든 슬롯의 입력 잠금을 풀고 일반 호버 상태로 되돌립니다.
+        for (int i = 0; i < buttons.Count; i++)
+        {
+            LobbyRelicOfferButtonUI offerButton = buttons[i];
+            if (offerButton != null)
+                offerButton.SetPurchaseConfirmInteractionLocked(false, false);
+        }
+
+        purchaseConfirmSelectedButton = null;
     }
 
     private void ConfirmPurchase(string relicId)

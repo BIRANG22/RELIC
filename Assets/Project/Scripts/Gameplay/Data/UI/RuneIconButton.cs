@@ -13,6 +13,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private Image iconImage;
     [SerializeField] private Image backImage;
+    [SerializeField] private Image lineImage;
     [SerializeField] private GameObject valueObject;
     [SerializeField] private TMP_Text valueText;
 
@@ -51,6 +52,8 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     private bool isIconColorCached;
     private Color originalBackColor = Color.white;
     private bool isBackColorCached;
+    private Color originalLineColor = Color.white;
+    private bool isLineColorCached;
     private bool suppressClickOnce;
 
     public RuneData CurrentRuneData => currentRuneData;
@@ -64,6 +67,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         CacheOriginalScale();
         CacheOriginalIconColor();
         CacheOriginalBackColor();
+        CacheOriginalLineColor();
     }
 
     private void OnEnable()
@@ -75,6 +79,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         CacheOriginalScale();
         CacheOriginalIconColor();
         CacheOriginalBackColor();
+        CacheOriginalLineColor();
         SetBackHoverState(false);
         RefreshValueHoverState();
     }
@@ -142,6 +147,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         }
 
         SetLockedState(isLocked, this.requiredLevel);
+        ApplyLineVisualState();
         RefreshPurchaseSelectionVisual();
         ApplyIconVisualState();
         RefreshValueHoverState();
@@ -168,6 +174,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         RefreshUnlockHoverState();
         RefreshValueHoverState();
         ApplyIconVisualState();
+        ApplyLineVisualState();
     }
 
     public void SetPurchaseSelected(bool selected)
@@ -185,6 +192,13 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             Transform backTransform = transform.Find("Back") ?? FindDeepChild(transform, "Back");
             if (backTransform != null)
                 backImage = backTransform.GetComponent<Image>();
+        }
+
+        if (lineImage == null)
+        {
+            Transform lineTransform = transform.Find("Line") ?? FindDeepChild(transform, "Line");
+            if (lineTransform != null)
+                lineImage = lineTransform.GetComponent<Image>();
         }
 
         if (valueObject == null)
@@ -214,6 +228,33 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
         originalBackColor = backImage.color;
         isBackColorCached = true;
+    }
+
+    private void CacheOriginalLineColor()
+    {
+        ResolveHoverVisualReferences();
+        if (isLineColorCached || lineImage == null)
+            return;
+
+        originalLineColor = lineImage.color;
+        isLineColorCached = true;
+    }
+
+    private void ApplyLineVisualState()
+    {
+        ResolveHoverVisualReferences();
+        CacheOriginalLineColor();
+
+        if (lineImage == null)
+            return;
+
+        bool isUnavailable = isLocked || (isCommonRune && !isPurchased);
+        Color target = isUnavailable ? ParseColorOrWhite("#777777") : originalLineColor;
+        Color current = lineImage.color;
+        current.r = target.r;
+        current.g = target.g;
+        current.b = target.b;
+        lineImage.color = current;
     }
 
     private void SetBackHoverState(bool hovered)
@@ -358,6 +399,7 @@ public class RuneIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             button.interactable = currentRuneData != null;
 
         RefreshUnlockHoverState();
+        ApplyLineVisualState();
     }
 
     private void RefreshUnlockHoverState()

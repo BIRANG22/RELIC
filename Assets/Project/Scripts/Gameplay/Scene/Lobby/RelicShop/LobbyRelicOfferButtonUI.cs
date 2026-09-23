@@ -93,6 +93,8 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     private bool isHovered;
     private bool pointerHovered;
     private bool externalHovered;
+    private bool purchaseConfirmSelected;
+    private bool purchaseConfirmInteractionLocked;
     private RelicRarity currentRarity = RelicRarity.None;
 
     private bool clickListenerRegistered;
@@ -303,7 +305,8 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
         if (!originalScaleCached || hoverScaleTarget == null)
             return;
 
-        Vector3 targetScale = isHovered
+        bool keepScaled = isHovered || purchaseConfirmSelected;
+        Vector3 targetScale = keepScaled
             ? originalScale * hoverScale
             : originalScale;
 
@@ -356,7 +359,8 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
     public void RequestPurchaseFromExternal()
     {
-        if (button == null ||
+        if (purchaseConfirmInteractionLocked ||
+            button == null ||
             !button.interactable ||
             string.IsNullOrWhiteSpace(relicId))
         {
@@ -370,6 +374,44 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     {
         externalHovered = !UIPanelButton.IsMenuPanelOpen && hovered;
         UpdateHoverState();
+    }
+
+    /// <summary>
+    /// CHECK 구매 확인창이 열려 있는 동안 선택한 유물 카드의 확대 상태를 유지합니다.
+    /// 포인터가 카드 밖으로 이동해도 이 값이 true이면 원래 크기로 돌아가지 않습니다.
+    /// </summary>
+    public void SetPurchaseConfirmSelected(bool selected)
+    {
+        purchaseConfirmSelected = selected;
+    }
+
+    /// <summary>
+    /// CHECK 구매 확인창이 열린 동안 다른 유물 슬롯의 호버/클릭 입력을 잠급니다.
+    /// 선택된 슬롯은 확대 상태만 유지하고, 다른 슬롯은 호버 상태를 즉시 해제합니다.
+    /// </summary>
+    public void SetPurchaseConfirmInteractionLocked(bool locked, bool isSelectedOffer)
+    {
+        purchaseConfirmInteractionLocked = locked;
+        purchaseConfirmSelected = locked && isSelectedOffer;
+
+        if (locked)
+        {
+            pointerHovered = false;
+            externalHovered = false;
+
+            if (isHovered)
+            {
+                isHovered = false;
+                ApplyRarityRingProxyLayout();
+                UIBlurBackgroundManager.MarkReplicaDirty();
+
+                if (!string.IsNullOrWhiteSpace(relicId))
+                    hoverChanged?.Invoke(relicId, false);
+            }
+        }
+
+        if (!locked)
+            UpdateHoverState();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -387,6 +429,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     private void UpdateHoverState()
     {
         bool canHover =
+            !purchaseConfirmInteractionLocked &&
             !UIPanelButton.IsMenuPanelOpen &&
             !string.IsNullOrWhiteSpace(relicId) &&
             button != null &&
@@ -407,6 +450,8 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
 
     private void ResetHoverState()
     {
+        purchaseConfirmSelected = false;
+        purchaseConfirmInteractionLocked = false;
         pointerHovered = false;
         externalHovered = false;
 

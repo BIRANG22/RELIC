@@ -732,7 +732,8 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
         Transform lineTransform = FindTransformRecursive(slotRoot, "Line");
         Graphic lineGraphic = lineTransform != null ? lineTransform.GetComponent<Graphic>() : null;
-        interaction.Initialize(this, item, lineGraphic);
+        Transform iconTransform = FindTransformRecursive(slotRoot, "Icon");
+        interaction.Initialize(this, item, lineGraphic, iconTransform);
     }
 
     /// <summary>
@@ -1155,35 +1156,60 @@ public sealed class ErosionSelectedSlotInteractionUI : MonoBehaviour,
 {
     private static readonly Color NormalLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
     private static readonly Color HoverLineColor = Color.white;
+    private const float HoverIconScale = 1.1f;
+    private const float HoverScaleDuration = 0.12f;
 
     private ErosionDifficultyCatalogUI owner;
     private ErosionDifficultyLevelItemUI item;
     private Graphic lineGraphic;
+    private Transform iconTransform;
+    private Vector3 originalIconScale = Vector3.one;
+    private bool iconScaleCaptured;
+    private Coroutine iconScaleRoutine;
 
     public void Initialize(
         ErosionDifficultyCatalogUI owner,
         ErosionDifficultyLevelItemUI item,
-        Graphic lineGraphic)
+        Graphic lineGraphic,
+        Transform iconTransform)
     {
         this.owner = owner;
         this.item = item;
         this.lineGraphic = lineGraphic;
-        SetLineColor(NormalLineColor);
+        this.iconTransform = iconTransform;
+
+        if (!iconScaleCaptured && iconTransform != null)
+        {
+            originalIconScale = iconTransform.localScale;
+            iconScaleCaptured = true;
+        }
+
+        RestoreHoverVisuals();
     }
 
     private void OnDisable()
     {
+        if (iconScaleRoutine != null)
+        {
+            StopCoroutine(iconScaleRoutine);
+            iconScaleRoutine = null;
+        }
+
         SetLineColor(NormalLineColor);
+
+        if (iconTransform != null)
+            iconTransform.localScale = iconScaleCaptured ? originalIconScale : Vector3.one;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
         SetLineColor(HoverLineColor);
+        SetIconScale(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        SetLineColor(NormalLineColor);
+        RestoreHoverVisuals();
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -1191,14 +1217,75 @@ public sealed class ErosionSelectedSlotInteractionUI : MonoBehaviour,
         if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
             return;
 
-        SetLineColor(NormalLineColor);
+        RestoreHoverVisuals();
         owner?.OnSelectedErosionSlotClicked(item);
+    }
+
+    private void RestoreHoverVisuals()
+    {
+        SetLineColor(NormalLineColor);
+        SetIconScale(false);
     }
 
     private void SetLineColor(Color color)
     {
-        if (lineGraphic != null)
-            lineGraphic.color = color;
+        if (lineGraphic == null)
+            return;
+
+        Color result = color;
+        result.a = lineGraphic.color.a;
+        lineGraphic.color = result;
+    }
+
+    private void SetIconScale(bool hovered)
+    {
+        if (iconTransform == null)
+            return;
+
+        Vector3 baseScale = iconScaleCaptured ? originalIconScale : Vector3.one;
+        Vector3 targetScale = hovered
+            ? Vector3.Scale(baseScale, Vector3.one * HoverIconScale)
+            : baseScale;
+
+        if (iconScaleRoutine != null)
+        {
+            StopCoroutine(iconScaleRoutine);
+            iconScaleRoutine = null;
+        }
+
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy || HoverScaleDuration <= 0f)
+        {
+            iconTransform.localScale = targetScale;
+            return;
+        }
+
+        iconScaleRoutine = StartCoroutine(AnimateIconScale(targetScale));
+    }
+
+    private IEnumerator AnimateIconScale(Vector3 targetScale)
+    {
+        if (iconTransform == null)
+        {
+            iconScaleRoutine = null;
+            yield break;
+        }
+
+        Vector3 startScale = iconTransform.localScale;
+        float elapsed = 0f;
+
+        while (elapsed < HoverScaleDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / HoverScaleDuration);
+            float smoothT = t * t * (3f - 2f * t);
+            iconTransform.localScale = Vector3.LerpUnclamped(startScale, targetScale, smoothT);
+            yield return null;
+        }
+
+        if (iconTransform != null)
+            iconTransform.localScale = targetScale;
+
+        iconScaleRoutine = null;
     }
 }
 
@@ -1340,6 +1427,7 @@ public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
 
         isSelected = selected;
         RefreshVisuals();
+        ApplyHoverScale(true);
     }
 
     public void SetGroupDimmed(bool dimmed)
@@ -1430,7 +1518,7 @@ public sealed class ErosionDifficultyLevelItemUI : MonoBehaviour,
         if (iconTransform == null)
             return;
 
-        Vector3 targetScale = isSelectable && isHovered
+        Vector3 targetScale = isSelectable && (isHovered || isSelected)
             ? Vector3.Scale(originalIconScale, Vector3.one * hoverIconScale)
             : originalIconScale;
 
