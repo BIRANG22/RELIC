@@ -5,7 +5,7 @@ namespace Relic.Gameplay.Data
 {
     public class BattleRuntimeStore
     {
-        public const int StartingRemnant = 100;
+        public const int StartingRemnant = 0;
 
         private BattleRuntimeData currentRun;
 
