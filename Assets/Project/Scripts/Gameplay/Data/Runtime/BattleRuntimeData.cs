@@ -150,6 +150,7 @@ namespace Relic.Gameplay.Data
             if (lobbyRuntime != null)
             {
                 ClearLobbyEquippedRelics(lobbyRuntime.CharacterLoadouts);
+                ClearLobbyExplorationOnlySkillSlots(lobbyRuntime.CharacterLoadouts, snapshots);
 
                 // 전투 포기는 탐사 종료와 동일하게 취급합니다.
                 // 이전 탐사에서 남은 구매 잠금/리롤/제안 정보를 정리해 유물소환을 다시 사용할 수 있게 합니다.
@@ -233,6 +234,9 @@ namespace Relic.Gameplay.Data
                     NormalizeUpgradedSkillVariantsToBase(character);
                 }
 
+                // EquippedSkillIds[2], [3]은 탐사 중 획득한 전승기억 슬롯입니다.
+                // 전투를 포기하고 로비로 돌아갈 때 탐사 중 장착한 기억이 남지 않도록 비웁니다.
+                ClearExplorationOnlySkillSlots(character);
                 ClearBattleOnlyCharacterState(character);
             }
         }
@@ -292,6 +296,20 @@ namespace Relic.Gameplay.Data
             character.Direction = BattleDirection.Right;
         }
 
+        private static void ClearExplorationOnlySkillSlots(CharacterRuntimeData character)
+        {
+            if (character == null)
+                return;
+
+            character.EquippedSkillIds = CopyStringArray(character.EquippedSkillIds, EquippedSkillSlotCount);
+
+            // 0 = 해방, 1 = 특화, 2~3 = 탐사 중 획득한 전승기억 슬롯
+            character.EquippedSkillIds[0] = character.UniqueSkillId ?? string.Empty;
+            character.EquippedSkillIds[1] = character.AbilitySkillId ?? string.Empty;
+            character.EquippedSkillIds[2] = string.Empty;
+            character.EquippedSkillIds[3] = string.Empty;
+        }
+
         private static void ClearBattleOnlyCharacterState(CharacterRuntimeData character)
         {
             if (character == null)
@@ -311,6 +329,37 @@ namespace Relic.Gameplay.Data
             character.AppliedBattleEquipmentEffectIds.Clear();
         }
 
+
+        private static void ClearLobbyExplorationOnlySkillSlots(
+            IReadOnlyList<LobbyCharacterLoadoutData> loadouts,
+            IReadOnlyDictionary<string, BattleLobbyLoadoutSnapshotData> snapshots)
+        {
+            if (loadouts == null)
+                return;
+
+            for (int i = 0; i < loadouts.Count; i++)
+            {
+                LobbyCharacterLoadoutData loadout = loadouts[i];
+                if (loadout == null)
+                    continue;
+
+                loadout.EquippedSkillIds = CopyStringArray(loadout.EquippedSkillIds, EquippedSkillSlotCount);
+
+                if (!string.IsNullOrWhiteSpace(loadout.CharacterId) &&
+                    snapshots != null &&
+                    snapshots.TryGetValue(loadout.CharacterId.Trim(), out BattleLobbyLoadoutSnapshotData snapshot) &&
+                    snapshot != null)
+                {
+                    // 로비에서 사용하는 고유 스킬 슬롯은 탐사 시작 직전 상태로 복구합니다.
+                    loadout.EquippedSkillIds[0] = snapshot.UniqueSkillId ?? string.Empty;
+                    loadout.EquippedSkillIds[1] = snapshot.AbilitySkillId ?? string.Empty;
+                }
+
+                // 전승기억은 탐사 전용이므로 로비로 복귀할 때 항상 제거합니다.
+                loadout.EquippedSkillIds[2] = string.Empty;
+                loadout.EquippedSkillIds[3] = string.Empty;
+            }
+        }
 
         private static void ClearLobbyEquippedRelics(IReadOnlyList<LobbyCharacterLoadoutData> loadouts)
         {

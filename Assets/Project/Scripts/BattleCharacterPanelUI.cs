@@ -9,8 +9,8 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 /// <summary>
-/// 전투에서 현재 선택된 캐릭터의 기본 정보를 하단 통합 UI에 표시합니다.
-/// 캐릭터가 변경되면 Bind를 호출하고, 수치가 변경되면 Refresh를 호출합니다.
+/// BattleCharacterPanel의 Active 영역과 패널/BattleSlot 이동을 관리합니다.
+/// Char01~03의 상시 캐릭터 정보와 Char_Select는 BattlePartyCharacterPanelUI가 담당합니다.
 /// </summary>
 public class BattleCharacterPanelUI : MonoBehaviour
 {
@@ -24,63 +24,63 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     [Header("Selection Content")]
     [Tooltip("캐릭터가 선택되었을 때 활성화되는 Character 루트입니다.")]
-    [SerializeField] private GameObject characterRoot;
+    private GameObject characterRoot;
 
     [Tooltip("몬스터가 선택되었을 때 활성화되는 Monster 루트입니다.")]
-    [SerializeField] private GameObject monsterRoot;
+    private GameObject monsterRoot;
 
-    [SerializeField] private BattleMonsterInfoPanelUI monsterInfoPanelUI;
+    private BattleMonsterInfoPanelUI monsterInfoPanelUI;
 
     [Header("Character")]
-    [SerializeField] private Image portraitImage;
-    [SerializeField] private TMP_Text characterNameText;
+    private Image portraitImage;
+    private TMP_Text characterNameText;
 
     [Header("Passive Skill")]
-    [SerializeField] private Image passiveIconImage;
+    private Image passiveIconImage;
 
     [Header("Passive Hover Info")]
     [Tooltip("패시브 아이콘에 마우스를 올렸을 때 표시되는 PassiveBack 오브젝트입니다.")]
-    [SerializeField] private GameObject passiveBack;
+    private GameObject passiveBack;
 
     [Tooltip("PassiveBack 안의 설명 텍스트입니다. 첫째 줄은 Regeneration, 둘째 줄은 패시브 Details를 표시합니다.")]
-    [SerializeField] private TMP_Text passiveText;
+    private TMP_Text passiveText;
 
     [Header("Passive Hover Fade")]
     [Tooltip("PassiveBack이 나타나고 사라지는 데 걸리는 시간입니다.")]
-    [SerializeField, Min(0f)] private float passiveHoverFadeDuration = 0.1f;
+    private float passiveHoverFadeDuration = 0.1f;
 
     private CanvasGroup passiveBackCanvasGroup;
     private Coroutine passiveHoverFadeCoroutine;
 
     [Header("HP")]
-    [SerializeField] private Image hpIconImage;
-    [SerializeField] private TMP_Text hpValueText;
+    private Image hpIconImage;
+    private TMP_Text hpValueText;
 
     [Header("Cost")]
-    [SerializeField] private Image costIconImage;
-    [SerializeField] private TMP_Text costValueText;
+    private Image costIconImage;
+    private TMP_Text costValueText;
 
     [Header("Armor")]
-    [SerializeField] private Image armorIconImage;
-    [SerializeField] private TMP_Text armorValueText;
+    private Image armorIconImage;
+    private TMP_Text armorValueText;
 
     [Header("Cost Recovery")]
-    [SerializeField] private Image recoveryIconImage;
-    [SerializeField] private TMP_Text recoveryValueText;
+    private Image recoveryIconImage;
+    private TMP_Text recoveryValueText;
 
     [Header("Skill List")]
-    [SerializeField] private Button skill01Button;
-    [SerializeField] private Image skill01IconImage;
-    [SerializeField] private TMP_Text skill01NameText;
-    [SerializeField] private Button skill02Button;
-    [SerializeField] private Image skill02IconImage;
-    [SerializeField] private TMP_Text skill02NameText;
-    [SerializeField] private Button skill03Button;
-    [SerializeField] private Image skill03IconImage;
-    [SerializeField] private TMP_Text skill03NameText;
-    [SerializeField] private Button skill04Button;
-    [SerializeField] private Image skill04IconImage;
-    [SerializeField] private TMP_Text skill04NameText;
+    private Button skill01Button;
+    private Image skill01IconImage;
+    private TMP_Text skill01NameText;
+    private Button skill02Button;
+    private Image skill02IconImage;
+    private TMP_Text skill02NameText;
+    private Button skill03Button;
+    private Image skill03IconImage;
+    private TMP_Text skill03NameText;
+    private Button skill04Button;
+    private Image skill04IconImage;
+    private TMP_Text skill04NameText;
 
     [Header("Battle Action Controllers")]
     [Tooltip("스킬 선택과 범위 미리보기를 처리하는 전투 타임라인 컨트롤러입니다.")]
@@ -93,30 +93,30 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [SerializeField] private BattleTurnExecutor turnExecutor;
 
     [Header("Move Button")]
-    [SerializeField] private Button moveButton;
-    [SerializeField] private Image moveIconImage;
-    [SerializeField] private TMP_Text moveNameText;
+    private Button moveButton;
+    private Image moveIconImage;
+    private TMP_Text moveNameText;
 
     [Header("Item Button")]
-    [SerializeField] private Button itemButton;
-    [SerializeField] private Image itemIconImage;
-    [SerializeField] private TMP_Text itemValueText;
+    private Button itemButton;
+    private Image itemIconImage;
+    private TMP_Text itemValueText;
 
     [Header("Rune List")]
-    [SerializeField] private Image rune01Image;
-    [SerializeField] private Image rune02Image;
-    [SerializeField] private Image rune03Image;
-    [SerializeField] private Image rune04Image;
-    [SerializeField] private Image rune05Image;
-    [SerializeField] private Image rune06Image;
+    private Image rune01Image;
+    private Image rune02Image;
+    private Image rune03Image;
+    private Image rune04Image;
+    private Image rune05Image;
+    private Image rune06Image;
 
     [Header("Passive Relic List")]
-    [SerializeField] private Image relic01Image;
-    [SerializeField] private Image relic02Image;
-    [SerializeField] private Image relic03Image;
-    [SerializeField] private Image relic04Image;
-    [SerializeField] private Image relic05Image;
-    [SerializeField] private Image relic06Image;
+    private Image relic01Image;
+    private Image relic02Image;
+    private Image relic03Image;
+    private Image relic04Image;
+    private Image relic05Image;
+    private Image relic06Image;
 
     [Header("Skill Slot Visual")]
     [SerializeField] private Color skillNameColor = Color.white;
@@ -130,13 +130,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
         new Dictionary<TMP_Text, Color>();
 
     [Header("Skill Info")]
-    [SerializeField] private Image skillInfoIconImage;
-    [SerializeField] private Image skillInfoRangeImage;
-    [SerializeField] private TMP_Text skillInfoNameText;
+    private Image skillInfoIconImage;
+    private Image skillInfoRangeImage;
+    private TMP_Text skillInfoNameText;
 
     [Header("Skill Info Rarity")]
-    [SerializeField] private Image skillInfoRarityImage;
-    [SerializeField] private TMP_Text skillInfoRarityText;
+    private Image skillInfoRarityImage;
+    private TMP_Text skillInfoRarityText;
     [SerializeField] private Color commonRarityColor = Color.white;
     [SerializeField] private Color rareRarityColor = Color.white;
     [SerializeField] private Color epicRarityColor = Color.white;
@@ -144,28 +144,28 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [SerializeField] private Color exclusiveRarityColor = new Color(1f, 0.82f, 0.2f, 1f);
 
     [Header("Skill Info Cost")]
-    [SerializeField] private Image skillInfoCostIconImage;
-    [SerializeField] private TMP_Text skillInfoCostNameText;
-    [SerializeField] private TMP_Text skillInfoCostValueText;
+    private Image skillInfoCostIconImage;
+    private TMP_Text skillInfoCostNameText;
+    private TMP_Text skillInfoCostValueText;
     [SerializeField] private Sprite costResourceIcon;
     [SerializeField] private Sprite hpResourceIcon;
     [SerializeField] private Sprite uniqueResourceIcon;
     [SerializeField] private Sprite moveResourceIcon;
 
     [Header("Skill Info Details")]
-    [SerializeField] private TMP_Text skillInfoTypeText;
-    [SerializeField] private TMP_Text skillInfoDetailsText;
+    private TMP_Text skillInfoTypeText;
+    private TMP_Text skillInfoDetailsText;
 
     [Header("Skill Info Effects")]
-    [SerializeField] private GameObject skillEffect01;
-    [SerializeField] private TMP_Text skillEffect01Text;
-    [SerializeField] private TMP_Text skillEffect01Value;
-    [SerializeField] private GameObject skillEffect02;
-    [SerializeField] private TMP_Text skillEffect02Text;
-    [SerializeField] private TMP_Text skillEffect02Value;
-    [SerializeField] private GameObject skillEffect03;
-    [SerializeField] private TMP_Text skillEffect03Text;
-    [SerializeField] private TMP_Text skillEffect03Value;
+    private GameObject skillEffect01;
+    private TMP_Text skillEffect01Text;
+    private TMP_Text skillEffect01Value;
+    private GameObject skillEffect02;
+    private TMP_Text skillEffect02Text;
+    private TMP_Text skillEffect02Value;
+    private GameObject skillEffect03;
+    private TMP_Text skillEffect03Text;
+    private TMP_Text skillEffect03Value;
 
     [Header("Panel Position Animation")]
     [Tooltip("전투 진행 중 패널이 내려가 있을 Y 위치입니다.")]
@@ -217,39 +217,41 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     [Header("Number Change Animation")]
     [Tooltip("현재 표시값에서 변경된 값까지 숫자가 변하는 시간입니다.")]
-    [SerializeField, Min(0f)] private float numberChangeDuration = 0.2f;
+    private float numberChangeDuration = 0.2f;
 
     [Header("Status Effects")]
     [Tooltip("상태효과 아이콘이 생성될 부모 오브젝트입니다.")]
-    [SerializeField] private RectTransform statusEffectListRoot;
+    private RectTransform statusEffectListRoot;
 
     [Tooltip("기존 StatusEffectIcon 프리팹입니다.")]
     [SerializeField] private StatusEffectIcon statusEffectIconPrefab;
 
+    public StatusEffectIcon StatusEffectIconPrefab => statusEffectIconPrefab;
+
     [Tooltip("한 줄에 표시할 상태효과 아이콘 수입니다.")]
-    [SerializeField, Min(1)] private int statusEffectColumnCount = 6;
+    private int statusEffectColumnCount = 6;
 
     [Tooltip("상태효과 아이콘 한 칸의 크기입니다.")]
-    [SerializeField] private Vector2 statusEffectCellSize = new Vector2(40f, 40f);
+    private Vector2 statusEffectCellSize = new Vector2(40f, 40f);
 
     [Tooltip("상태효과 아이콘 사이 간격입니다.")]
-    [SerializeField] private Vector2 statusEffectSpacing = new Vector2(4f, 4f);
+    private Vector2 statusEffectSpacing = new Vector2(4f, 4f);
 
     [Header("Unique Resource Slots")]
     [Tooltip("Resource01 오브젝트")]
-    [SerializeField] private GameObject resource01;
+    private GameObject resource01;
 
     [Tooltip("Resource02 오브젝트")]
-    [SerializeField] private GameObject resource02;
+    private GameObject resource02;
 
     [Tooltip("Resource03 오브젝트")]
-    [SerializeField] private GameObject resource03;
+    private GameObject resource03;
 
     [Tooltip("Resource04 오브젝트")]
-    [SerializeField] private GameObject resource04;
+    private GameObject resource04;
 
     [Tooltip("Resource05 오브젝트")]
-    [SerializeField] private GameObject resource05;
+    private GameObject resource05;
 
     private CharacterRuntimeData boundRuntime;
     private CharacterMasterData boundMaster;
@@ -315,14 +317,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         panelRectTransform = GetComponent<RectTransform>();
         ResolveSelectionContentReferences();
-        EnsurePassiveIconHoverTarget();
-        HidePassiveHoverInfo();
-        CaptureSkillInfoRarityDefaultColors();
+        if (GetComponent<BattlePartyCharacterPanelUI>() == null)
+            gameObject.AddComponent<BattlePartyCharacterPanelUI>();
         RegisterSkillButtonListeners();
         RegisterMoveAndItemButtonListeners();
         EnsureSkillButtonHoverEffects();
         EnsureMoveAndItemButtonHoverEffects();
-        EnsureSkillDetailsNumericInteraction();
     }
 
     private void OnEnable()
@@ -335,8 +335,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
         BattleResultChecker.BattleFinished += HandleBattleFinished;
         BattleTimelineController.CharacterSelectionChanged -= HandleCharacterSelectionChanged;
         BattleTimelineController.CharacterSelectionChanged += HandleCharacterSelectionChanged;
-        MonsterUnit.MonsterInfoSelectionChanged -= HandleMonsterInfoSelectionChanged;
-        MonsterUnit.MonsterInfoSelectionChanged += HandleMonsterInfoSelectionChanged;
         BattleSceneController.BattleRoomIntroStarted -= HandleBattleRoomIntroStarted;
         BattleSceneController.BattleRoomIntroStarted += HandleBattleRoomIntroStarted;
         BattleSceneController.BattleRoomIntroCompleted -= HandleBattleRoomIntroCompleted;
@@ -369,7 +367,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
         BattleTurnExecutor.PlayerTurnReturned -= HandlePlayerTurnReturned;
         BattleResultChecker.BattleFinished -= HandleBattleFinished;
         BattleTimelineController.CharacterSelectionChanged -= HandleCharacterSelectionChanged;
-        MonsterUnit.MonsterInfoSelectionChanged -= HandleMonsterInfoSelectionChanged;
         BattleSceneController.BattleRoomIntroStarted -= HandleBattleRoomIntroStarted;
         BattleSceneController.BattleRoomIntroCompleted -= HandleBattleRoomIntroCompleted;
         BattleMapIntroText.IntroStarted -= HandleBattleMapIntroStarted;
@@ -423,36 +420,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (runtimeData != null)
         {
-            ShowCharacterContent();
-        }
-        else if (MonsterUnit.CurrentInfoSelectedMonster != null)
-        {
-            ShowMonsterContent(MonsterUnit.CurrentInfoSelectedMonster);
-        }
-        else
-        {
-            HideSelectionContent();
-        }
-
-        ScheduleSelectionPanelPositionRefresh();
-    }
-
-    private void HandleMonsterInfoSelectionChanged(MonsterUnit monster)
-    {
-        ResolveSelectionContentReferences();
-
-        if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
-        {
-            ShowMonsterContent(monster);
-        }
-        else
-        {
-            EnsureBattleTimelineController();
-
-            if (battleTimelineController != null && battleTimelineController.SelectedCharacter != null)
-                ShowCharacterContent();
+            if (boundRuntime != runtimeData)
+                Bind(runtimeData);
             else
-                HideSelectionContent();
+                Refresh();
         }
 
         ScheduleSelectionPanelPositionRefresh();
@@ -505,128 +476,87 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         EnsureBattleTimelineController();
 
-        bool hasCharacter =
-            battleTimelineController != null &&
-            battleTimelineController.SelectedCharacter != null;
-
-        bool hasMonster = MonsterUnit.CurrentInfoSelectedMonster != null;
-        return hasCharacter || hasMonster;
+        return battleTimelineController != null &&
+               battleTimelineController.SelectedCharacter != null;
     }
 
     private void ResolveSelectionContentReferences()
     {
-        if (characterRoot == null)
+        // 기존 Character/Monster 루트는 제거되었습니다.
+        // 현재 BattleCharacterPanel은 Char01~03/Char_Select와 Active만 사용합니다.
+        ResolveNewActiveReferences();
+    }
+
+    private void ResolveNewActiveReferences()
+    {
+        Transform active = FindDirectChild(transform, "Active");
+        if (active == null)
+            return;
+
+        Transform move = FindDirectChild(active, "Move");
+        Transform compound = FindDirectChild(active, "Compound");
+        Transform skill01 = FindDirectChild(active, "Skill01");
+        Transform skill02 = FindDirectChild(active, "Skill02");
+        Transform skill03 = FindDirectChild(active, "Skill03");
+        Transform ultimate = FindDirectChild(active, "Ultimate");
+
+        if (moveButton == null) moveButton = EnsureButton(move);
+        if (itemButton == null) itemButton = EnsureButton(compound);
+        if (skill01Button == null) skill01Button = EnsureButton(skill01);
+        if (skill02Button == null) skill02Button = EnsureButton(skill02);
+        if (skill03Button == null) skill03Button = EnsureButton(skill03);
+        if (skill04Button == null) skill04Button = EnsureButton(ultimate);
+
+        if (moveIconImage == null) moveIconImage = FindIconImage(move);
+        if (itemIconImage == null) itemIconImage = FindIconImage(compound);
+        if (skill01IconImage == null) skill01IconImage = FindIconImage(skill01);
+        if (skill02IconImage == null) skill02IconImage = FindIconImage(skill02);
+        if (skill03IconImage == null) skill03IconImage = FindIconImage(skill03);
+        if (skill04IconImage == null) skill04IconImage = FindIconImage(ultimate);
+    }
+
+    private static Button EnsureButton(Transform root)
+    {
+        if (root == null)
+            return null;
+
+        Button button = root.GetComponent<Button>();
+        if (button != null)
+            return button;
+
+        button = root.gameObject.AddComponent<Button>();
+        Graphic target = root.GetComponent<Graphic>();
+        if (target == null)
         {
-            Transform characterTransform = FindDirectChild(transform, "Character");
-            if (characterTransform != null)
-                characterRoot = characterTransform.gameObject;
+            Transform back = FindDirectChild(root, "Back");
+            if (back != null)
+                target = back.GetComponent<Graphic>();
         }
+        button.targetGraphic = target;
+        return button;
+    }
 
-        if (monsterRoot == null)
-        {
-            Transform monsterTransform = FindDirectChild(transform, "Monster");
-            if (monsterTransform != null)
-                monsterRoot = monsterTransform.gameObject;
-        }
+    private static Image FindIconImage(Transform root)
+    {
+        if (root == null)
+            return null;
 
-        if (characterRoot != null)
-        {
-            if (passiveBack == null)
-            {
-                Transform passiveBackTransform = FindChildRecursive(characterRoot.transform, "PassiveBack");
-                if (passiveBackTransform != null)
-                    passiveBack = passiveBackTransform.gameObject;
-            }
+        Transform icon = FindDirectChild(root, "Icon");
+        if (icon != null)
+            return icon.GetComponent<Image>();
 
-            if (passiveText == null && passiveBack != null)
-            {
-                Transform passiveTextTransform = FindChildRecursive(passiveBack.transform, "Passive_Text");
-                if (passiveTextTransform != null)
-                    passiveText = passiveTextTransform.GetComponent<TMP_Text>();
-            }
-
-            if (skillInfoRarityImage == null || skillInfoRarityText == null)
-            {
-                Transform skillRarityTransform = FindChildRecursive(characterRoot.transform, "Skill_Rarity");
-                if (skillRarityTransform != null)
-                {
-                    if (skillInfoRarityImage == null)
-                    {
-                        Transform imageTransform = FindDirectChild(skillRarityTransform, "Image");
-                        if (imageTransform != null)
-                            skillInfoRarityImage = imageTransform.GetComponent<Image>();
-                    }
-
-                    if (skillInfoRarityText == null)
-                    {
-                        Transform textTransform = FindDirectChild(skillRarityTransform, "Text");
-                        if (textTransform != null)
-                            skillInfoRarityText = textTransform.GetComponent<TMP_Text>();
-                    }
-                }
-            }
-        }
-
-        if (monsterInfoPanelUI == null && monsterRoot != null)
-        {
-            Transform monsterInfoTransform = FindChildRecursive(monsterRoot.transform, "MonsterInfo");
-            if (monsterInfoTransform != null)
-            {
-                monsterInfoPanelUI = monsterInfoTransform.GetComponent<BattleMonsterInfoPanelUI>();
-                if (monsterInfoPanelUI == null)
-                    monsterInfoPanelUI = monsterInfoTransform.gameObject.AddComponent<BattleMonsterInfoPanelUI>();
-            }
-        }
-
-        if (monsterInfoPanelUI != null)
-            monsterInfoPanelUI.ConfigureStatusEffectPrefab(statusEffectIconPrefab);
+        return root.GetComponent<Image>();
     }
 
     private void ShowCharacterContent()
     {
-        if (characterRoot != null)
-            characterRoot.SetActive(true);
-
-        if (monsterRoot != null)
-            monsterRoot.SetActive(false);
+        // 새 BattleCharacterPanel은 Char01~03과 Active를 상시 사용합니다.
+        // 기존 Character/Monster 루트 전환은 더 이상 하지 않습니다.
     }
 
     public void SelectMonsterSkillFromTimeline(MonsterUnit monster, string skillId)
     {
-        if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
-            return;
-
-        ResolveSelectionContentReferences();
-        ShowMonsterContent(monster);
-
-        if (monsterInfoPanelUI != null)
-            monsterInfoPanelUI.SelectSkillById(skillId);
-
-        ScheduleSelectionPanelPositionRefresh();
-    }
-
-    private void ShowMonsterContent(MonsterUnit monster)
-    {
-        if (characterRoot != null)
-            characterRoot.SetActive(false);
-
-        if (monsterRoot != null)
-            monsterRoot.SetActive(true);
-
-        if (monsterInfoPanelUI != null)
-            monsterInfoPanelUI.Bind(monster);
-    }
-
-    private void HideSelectionContent()
-    {
-        if (characterRoot != null)
-            characterRoot.SetActive(false);
-
-        if (monsterRoot != null)
-            monsterRoot.SetActive(false);
-
-        if (monsterInfoPanelUI != null)
-            monsterInfoPanelUI.Clear();
+        // 몬스터 정보 패널은 현재 제거된 상태입니다. 새 몬스터 UI 작업 전까지 아무 동작도 하지 않습니다.
     }
 
     private static Transform FindDirectChild(Transform root, string objectName)
@@ -1103,10 +1033,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     public void Bind(CharacterRuntimeData runtimeData)
     {
-        HidePassiveHoverInfo();
         ResolveSelectionContentReferences();
-        EnsurePassiveIconHoverTarget();
-        ShowCharacterContent();
 
         StopNumberChangeCoroutine();
         hasDisplayedStats = false;
@@ -1130,7 +1057,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
 
         Refresh();
-        ShowDefaultSkillInfo();
         ScheduleSelectionPanelPositionRefresh();
     }
 
@@ -1152,47 +1078,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
-        RefreshPortrait();
-        RefreshCharacterName();
-        RefreshPassiveSkill();
+        // Char01~03의 캐릭터 정보는 BattlePartyCharacterPanelUI가 각각 갱신합니다.
+        // 이 컴포넌트는 현재 선택 캐릭터의 Active 영역만 갱신합니다.
         RefreshSkillList();
-        RefreshRuneList();
-        RefreshPassiveRelicList();
         RefreshMoveButton();
         RefreshItemButton();
-
-        int maxHp = ResolveMaxHp();
-        int maxCost = ResolveMaxCost();
-        int maxResource = ResolveMaxResource();
-
-        SetStatVisualActive(hpIconImage, hpValueText, true);
-        SetStatVisualActive(costIconImage, costValueText, true);
-        SetStatVisualActive(armorIconImage, armorValueText, true);
-        SetStatVisualActive(recoveryIconImage, recoveryValueText, true);
-
-        int targetHp = Mathf.Clamp(boundRuntime.PreviewHP, 0, Mathf.Max(0, maxHp));
-        // 초과 마나는 숫자로 그대로 표시하고, 최대 마나(MaxCost)는 증가시키지 않는다.
-        int targetCost = Mathf.Max(0, boundRuntime.PreviewCost);
-        int targetArmor = Mathf.Max(0, boundRuntime.PreviewShield);
-        int targetRecovery = ResolveRecovery();
-        int targetResource = Mathf.Clamp(
-            boundRuntime.PreviewResource,
-            0,
-            Mathf.Max(0, maxResource)
-        );
-
-        RefreshAnimatedStats(
-            targetHp,
-            maxHp,
-            targetCost,
-            maxCost,
-            targetArmor,
-            targetRecovery,
-            targetResource,
-            maxResource
-        );
-
-        RefreshStatusEffects();
         CaptureRuntimeDisplayState();
     }
 
@@ -3401,43 +3291,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void Clear()
     {
-        if (portraitImage != null)
-        {
-            portraitImage.sprite = null;
-            portraitImage.enabled = false;
-        }
-
-        SetText(characterNameText, string.Empty);
-        HidePassiveHoverInfo();
-        ClearPassiveSkill();
-        SetText(hpValueText, string.Empty);
-        SetText(costValueText, string.Empty);
-        SetText(armorValueText, string.Empty);
-        SetText(recoveryValueText, string.Empty);
         ClearSkillList();
-        ClearRuneList();
-        ClearPassiveRelicList();
         ClearMoveAndItemButtons();
-
-        SetStatVisualActive(hpIconImage, hpValueText, false);
-        SetStatVisualActive(costIconImage, costValueText, false);
-        SetStatVisualActive(armorIconImage, armorValueText, false);
-        SetStatVisualActive(recoveryIconImage, recoveryValueText, false);
-        ClearStatusEffectIcons();
         StopNumberChangeCoroutine();
         hasDisplayedStats = false;
         ResetRuntimeDisplayState();
-        RefreshSkillInfoRarity(null);
-
-        GameObject[] slots = GetResourceSlots();
-        foreach (GameObject slot in slots)
-        {
-            if (slot == null)
-                continue;
-
-            slot.SetActive(false);
-            SetChildImageEnabled(slot, false);
-        }
     }
 
     private static void SetStatVisualActive(

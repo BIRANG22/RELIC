@@ -69,6 +69,7 @@ public class BattleRoomLoader : MonoBehaviour
     private readonly List<MonsterUnit> spawnedMonsterUnits = new();
     private readonly List<PlayerHUDSlot> playerHudSlots = new();
     private readonly List<PlayerHUDSlot> playerHudNumberOrder = new();
+    private readonly List<CharacterRuntimeData> playerPartyRuntimes = new();
     private CharacterRuntimeData selectedPlayerRuntime;
     private Coroutine openSelectedSkillListWhenReadyRoutine;
     private Coroutine loadRoutine;
@@ -232,14 +233,9 @@ public class BattleRoomLoader : MonoBehaviour
         if (currentSelection != null && !currentSelection.IsDead)
             return false;
 
-        RemoveNullPlayerHudSlots();
-        RemoveNullPlayerHudNumberOrder();
-
-        for (int i = 0; i < playerHudNumberOrder.Count; i++)
+        for (int i = 0; i < playerPartyRuntimes.Count; i++)
         {
-            PlayerHUDSlot hud = playerHudNumberOrder[i];
-            CharacterRuntimeData runtimeData = hud != null ? hud.BoundRuntime : null;
-
+            CharacterRuntimeData runtimeData = playerPartyRuntimes[i];
             if (runtimeData == null || runtimeData.IsDead)
                 continue;
 
@@ -252,18 +248,14 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void SelectPlayerCharacterByNumberIndex(int characterIndex)
     {
-        RemoveNullPlayerHudSlots();
-        RemoveNullPlayerHudNumberOrder();
-
-        if (characterIndex < 0 || characterIndex >= playerHudNumberOrder.Count)
+        if (characterIndex < 0 || characterIndex >= playerPartyRuntimes.Count)
             return;
 
-        PlayerHUDSlot hud = playerHudNumberOrder[characterIndex];
-
-        if (hud == null || hud.BoundRuntime == null)
+        CharacterRuntimeData runtimeData = playerPartyRuntimes[characterIndex];
+        if (runtimeData == null)
             return;
 
-        SelectPlayerHUD(hud.BoundRuntime);
+        SelectPlayerHUD(runtimeData);
     }
 
     /// <summary>
@@ -444,17 +436,14 @@ public class BattleRoomLoader : MonoBehaviour
 
     private CharacterRuntimeData GetSelectedOrFirstPlayerRuntime()
     {
-        RemoveNullPlayerHudSlots();
-
-        if (selectedPlayerRuntime != null && FindPlayerHudIndex(selectedPlayerRuntime) >= 0)
+        if (selectedPlayerRuntime != null && playerPartyRuntimes.Contains(selectedPlayerRuntime))
             return selectedPlayerRuntime;
 
-        for (int i = 0; i < playerHudSlots.Count; i++)
+        for (int i = 0; i < playerPartyRuntimes.Count; i++)
         {
-            PlayerHUDSlot hud = playerHudSlots[i];
-
-            if (hud != null && hud.BoundRuntime != null)
-                return hud.BoundRuntime;
+            CharacterRuntimeData runtimeData = playerPartyRuntimes[i];
+            if (runtimeData != null)
+                return runtimeData;
         }
 
         return null;
@@ -462,23 +451,23 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void SelectAdjacentPlayerCharacter(int direction)
     {
-        RemoveNullPlayerHudSlots();
-
-        if (playerHudSlots.Count <= 0)
+        if (playerPartyRuntimes.Count <= 0)
             return;
 
-        int currentIndex = FindPlayerHudIndex(selectedPlayerRuntime);
-
+        int currentIndex = selectedPlayerRuntime != null ? playerPartyRuntimes.IndexOf(selectedPlayerRuntime) : -1;
         if (currentIndex < 0)
             currentIndex = 0;
 
-        int nextIndex = WrapIndex(currentIndex + direction, playerHudSlots.Count);
-        PlayerHUDSlot nextHud = playerHudSlots[nextIndex];
+        for (int step = 1; step <= playerPartyRuntimes.Count; step++)
+        {
+            int nextIndex = WrapIndex(currentIndex + direction * step, playerPartyRuntimes.Count);
+            CharacterRuntimeData nextRuntime = playerPartyRuntimes[nextIndex];
+            if (nextRuntime == null || nextRuntime.IsDead)
+                continue;
 
-        if (nextHud == null || nextHud.BoundRuntime == null)
+            SelectPlayerHUD(nextRuntime);
             return;
-
-        SelectPlayerHUD(nextHud.BoundRuntime);
+        }
     }
 
     private int WrapIndex(int index, int count)
@@ -917,18 +906,11 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void RefreshPlayerHUDs()
     {
-        for (int i = playerHudSlots.Count - 1; i >= 0; i--)
-        {
-            PlayerHUDSlot hud = playerHudSlots[i];
-
-            if (hud == null)
-            {
-                playerHudSlots.RemoveAt(i);
-                continue;
-            }
-
-            hud.Refresh();
-        }
+        EnsureBattleCharacterPanel();
+        BattlePartyCharacterPanelUI partyPanel = battleCharacterPanel != null
+            ? battleCharacterPanel.GetComponent<BattlePartyCharacterPanelUI>()
+            : null;
+        partyPanel?.SetParty(playerPartyRuntimes);
     }
 
     private void RegisterSkillListKeepOpenRoots()
@@ -946,6 +928,7 @@ public class BattleRoomLoader : MonoBehaviour
     {
         playerHudSlots.Clear();
         playerHudNumberOrder.Clear();
+        playerPartyRuntimes.Clear();
         selectedPlayerRuntime = null;
 
         if (unitSpawner == null)
@@ -960,13 +943,19 @@ public class BattleRoomLoader : MonoBehaviour
             return;
 
         for (int i = 0; i < playerRuntimes.Count; i++)
-            CreatePlayerHUD(playerRuntimes[i], i);
+        {
+            if (playerRuntimes[i] != null)
+                playerPartyRuntimes.Add(playerRuntimes[i]);
+        }
 
-        ApplyPlayerHudAnchorOrder();
+        EnsureBattleCharacterPanel();
+        BattlePartyCharacterPanelUI partyPanel = battleCharacterPanel != null
+            ? battleCharacterPanel.GetComponent<BattlePartyCharacterPanelUI>()
+            : null;
+        if (partyPanel != null)
+            partyPanel.SetParty(playerPartyRuntimes);
 
-        // 전투방에 입장한 직후에는 아직 예약 단계가 시작되지 않았으므로
-        // 캐릭터를 선택하지 않습니다. 첫 번째 캐릭터 선택은 전투 입력이 활성화되어
-        // 예약 단계가 시작되는 시점에 처리합니다.
+        // 새 UI는 Char01~03 정보를 항상 표시하고, 예약 단계가 시작될 때 선택만 활성화합니다.
         SelectPlayerHUD(null);
 
     }
@@ -1171,21 +1160,8 @@ public class BattleRoomLoader : MonoBehaviour
         if (timelineController != null)
             timelineController.SelectCharacter(runtimeData);
 
-        for (int i = playerHudSlots.Count - 1; i >= 0; i--)
-        {
-            if (playerHudSlots[i] == null)
-                playerHudSlots.RemoveAt(i);
-        }
-
-        if (runtimeData == null || playerHudSlots.Count <= 0)
-            return;
-
-        int selectedIndex = FindPlayerHudIndex(runtimeData);
-
-        if (selectedIndex < 0)
-            return;
-
-        RefreshPlayerHudSelectionVisuals();
+        // 기존 PlayerHUD_Root 기반 선택 UI는 제거되었습니다.
+        // 선택 상태는 Char_Select와 BattleTimelineController가 관리합니다.
     }
 
     private int FindPlayerHudIndex(CharacterRuntimeData runtimeData)
