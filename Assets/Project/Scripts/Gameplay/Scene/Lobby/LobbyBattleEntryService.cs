@@ -116,6 +116,9 @@ public static class LobbyBattleEntryService
         DataManager.Instance.BattleRuntimeStore.Set(battleRuntime);
         BattleRunAbandonService.CaptureLobbyLoadoutSnapshot(DataManager.Instance);
 
+        // 로비 씬이 사라지기 전에 비활성 카탈로그까지 포함해 실제 아이콘을 캐시합니다.
+        ErosionDifficultyCatalogUI.PrepareLoadedCatalogIconCacheForBattleStart();
+
         await GameManager.Instance.StateMachine.ChangeState(GameStateType.Battle);
         return LobbyBattleEntryResult.Success();
     }

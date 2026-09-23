@@ -1082,23 +1082,45 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (readyErosionValueText == null)
             return;
 
-        int erosionValue = 0;
-        ErosionDifficultyCatalogUI[] catalogs = FindObjectsByType<ErosionDifficultyCatalogUI>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
-
-        for (int i = 0; i < catalogs.Length; i++)
-        {
-            ErosionDifficultyCatalogUI catalog = catalogs[i];
-            if (catalog == null || !catalog.gameObject.scene.IsValid())
-                continue;
-
-            erosionValue = catalog.CurrentScore;
-            break;
-        }
-
+        int erosionValue = ResolveReadyErosionScoreFromRuntime();
         readyErosionValueText.text = FormatReadyErosionValue(erosionValue);
         readyErosionValueText.SetAllDirty();
+    }
+
+    /// <summary>
+    /// Ready_Panel의 침식도 수치는 Erosion_Catalog UI의 활성화/초기화 상태에 의존하지 않고
+    /// 로비 런타임에 저장된 선택 침식도 ID를 기준으로 계산합니다.
+    /// </summary>
+    private static int ResolveReadyErosionScoreFromRuntime()
+    {
+        DataManager dataManager = DataManager.Instance;
+        if (dataManager == null ||
+            dataManager.LobbyRuntimeStore == null ||
+            dataManager.ErosionDatabase == null)
+        {
+            return 0;
+        }
+
+        LobbyRuntimeData lobbyData = dataManager.LobbyRuntimeStore.GetOrCreate();
+        List<string> selectedIds = lobbyData.SelectedErosionDifficultyIds;
+        if (selectedIds == null || selectedIds.Count == 0)
+            return 0;
+
+        int score = 0;
+        for (int i = 0; i < selectedIds.Count; i++)
+        {
+            string difficultyId = selectedIds[i];
+            if (string.IsNullOrWhiteSpace(difficultyId))
+                continue;
+
+            if (dataManager.ErosionDatabase.TryGet(difficultyId, out ErosionData erosionData) &&
+                erosionData != null)
+            {
+                score += erosionData.Score;
+            }
+        }
+
+        return score;
     }
 
     private void CaptureReadyErosionValueTemplate()

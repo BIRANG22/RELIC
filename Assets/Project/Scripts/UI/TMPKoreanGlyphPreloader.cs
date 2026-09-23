@@ -234,10 +234,15 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
         }
 
         clone.name = source.name + " Runtime Clone";
-        clone.hideFlags = HideFlags.DontSaveInBuild;
+
+        // CreateFontAsset으로 만든 런타임 객체에 DontSave 계열 HideFlags를 강제로 지정하지 않습니다.
+        // 에디터 Inspector/Tooltip이 해당 객체를 직렬화 대상으로 다루는 순간
+        // kDontSaveInEditor Assertion이 발생할 수 있으므로 일반 런타임 객체로 유지하고
+        // OnDestroy에서 명시적으로 정리합니다.
+        clone.hideFlags = HideFlags.None;
 
         if (clone.material != null)
-            clone.material.hideFlags = HideFlags.DontSaveInBuild;
+            clone.material.hideFlags = HideFlags.None;
 
         Texture2D[] runtimeAtlases = clone.atlasTextures;
         if (runtimeAtlases != null)
@@ -245,7 +250,7 @@ public sealed class TMPKoreanGlyphPreloader : MonoBehaviour
             for (int i = 0; i < runtimeAtlases.Length; i++)
             {
                 if (runtimeAtlases[i] != null)
-                    runtimeAtlases[i].hideFlags = HideFlags.DontSaveInBuild;
+                    runtimeAtlases[i].hideFlags = HideFlags.None;
             }
         }
 
