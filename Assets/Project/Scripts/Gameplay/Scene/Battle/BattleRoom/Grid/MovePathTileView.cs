@@ -153,7 +153,7 @@ public class MovePathTileView : MonoBehaviour
             runtimeMesh = new Mesh
             {
                 name = "Move Path Tile Mesh",
-                hideFlags = HideFlags.DontSaveInBuild
+                hideFlags = HideFlags.None
             };
             runtimeMesh.MarkDynamic();
         }
@@ -435,7 +435,9 @@ public class MovePathTileView : MonoBehaviour
             : new Material(shader);
 
         material.name = materialName;
-        material.hideFlags = HideFlags.DontSaveInBuild;
+        // 런타임 생성 Material은 OnDestroy에서 직접 제거하므로 DontSave 계열
+        // HideFlags를 사용하지 않습니다. 에디터 GUI 직렬화 Assertion을 피합니다.
+        material.hideFlags = HideFlags.None;
         material.renderQueue = 3000;
 
         ConfigureMaterial(material, color);

@@ -473,6 +473,77 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         return displayedErosionIcons.TryGetValue(difficultyId.Trim(), out icon) && icon != null;
     }
 
+    /// <summary>
+    /// 로비 패널을 한 번도 열지 않았더라도 전투 진입 직전에 로드된 카탈로그의
+    /// 실제 Icon Sprite를 캐시에 저장합니다. 비활성 오브젝트도 포함합니다.
+    /// </summary>
+    public static void PrepareLoadedCatalogIconCacheForBattleStart()
+    {
+        ErosionDifficultyCatalogUI[] catalogs = UnityEngine.Object.FindObjectsByType<ErosionDifficultyCatalogUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < catalogs.Length; i++)
+        {
+            ErosionDifficultyCatalogUI catalog = catalogs[i];
+            if (catalog != null)
+                catalog.PrepareIconCacheForBattleStart();
+        }
+    }
+
+    private void PrepareIconCacheForBattleStart()
+    {
+        // 전투 진입 직전에는 Erosion_Catalog이 비활성 상태일 수 있습니다.
+        // 이 경로에서는 AutoBind()를 호출하지 않습니다. AutoBind()는 슬롯 생성과
+        // 코루틴을 포함하므로 비활성 GameObject에서 실행하면 StartCoroutine 오류가 발생합니다.
+        // 대신 현재 계층에 이미 배치된 LevelXX_X 오브젝트의 Sprite만 읽어 캐시합니다.
+        Transform root = catalogGroup != null
+            ? catalogGroup
+            : FindTransformRecursive(transform, "CatalogGroup");
+
+        if (root == null || DataManager.Instance == null || DataManager.Instance.ErosionDatabase == null)
+            return;
+
+        CacheCatalogIconsWithoutBinding(root, "Catalog01");
+        CacheCatalogIconsWithoutBinding(root, "Catalog02");
+        CacheCatalogIconsWithoutBinding(root, "Catalog03");
+    }
+
+    private static void CacheCatalogIconsWithoutBinding(Transform catalogGroupRoot, string catalogName)
+    {
+        if (catalogGroupRoot == null || DataManager.Instance == null || DataManager.Instance.ErosionDatabase == null)
+            return;
+
+        Transform catalog = FindDirectChild(catalogGroupRoot, catalogName) ??
+                            FindTransformRecursive(catalogGroupRoot, catalogName);
+        if (catalog == null)
+            return;
+
+        for (int i = 0; i < catalog.childCount; i++)
+        {
+            Transform child = catalog.GetChild(i);
+            if (child == null || !child.name.StartsWith("Level", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (!DataManager.Instance.ErosionDatabase.TryGetBySlotName(child.name, out ErosionData data) || data == null)
+                continue;
+
+            Sprite icon = null;
+            ErosionDifficultyLevelItemUI item = child.GetComponent<ErosionDifficultyLevelItemUI>();
+            if (item != null)
+                icon = item.CurrentIconSprite;
+
+            if (icon == null)
+            {
+                Transform iconTransform = FindTransformRecursive(child, "Icon");
+                Image iconImage = iconTransform != null ? iconTransform.GetComponent<Image>() : null;
+                icon = iconImage != null ? iconImage.sprite : null;
+            }
+
+            CacheDisplayedErosionIcon(data, icon);
+        }
+    }
+
     private Sprite ResolveLevelIcon(ErosionData data, Sprite fallback)
     {
         // 로비 Erosion_Catalog의 Level 오브젝트에 이미 설정된 Sprite가 최종 표시 기준입니다.
@@ -487,42 +558,48 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
     /// 로비 카탈로그에 표시된 Sprite를 사용할 수 없는 특수 진입 경로에서만
     /// DataManager에 연결된 ErosionIconDatabase를 보조 fallback으로 조회합니다.
     /// </summary>
-    public static Sprite ResolveErosionIcon(ErosionData data, Sprite fallback = null)
+    public static bool TryResolveErosionIcon(ErosionData data, out Sprite icon)
     {
+        icon = null;
+
         ErosionIconDatabase iconDatabase = DataManager.Instance != null
             ? DataManager.Instance.ErosionIconDatabase
             : null;
 
-        if (data == null)
-            return iconDatabase != null && iconDatabase.UnavailableIcon != null
-                ? iconDatabase.UnavailableIcon
-                : fallback;
+        if (data == null || !data.Selectable)
+        {
+            icon = iconDatabase != null ? iconDatabase.UnavailableIcon : null;
+            return icon != null;
+        }
 
-        if (!data.Selectable)
-            return iconDatabase != null && iconDatabase.UnavailableIcon != null
-                ? iconDatabase.UnavailableIcon
-                : fallback;
+        return iconDatabase != null && iconDatabase.TryGetIcon(data, out icon) && icon != null;
+    }
 
-        if (iconDatabase != null && iconDatabase.TryGetIcon(data, out Sprite icon) && icon != null)
-            return icon;
-
-        // fallback Sprite가 있으면 그대로 사용합니다. 로비/배틀에서 이미 확보한 아이콘이
-        // 있는데도 DB 누락 경고를 출력하지 않도록 합니다.
+    public static Sprite ResolveErosionIcon(ErosionData data, Sprite fallback = null)
+    {
         if (fallback != null)
             return fallback;
 
-        string databaseInfo = iconDatabase != null
-            ? $"'{iconDatabase.name}' (Entries={iconDatabase.EntryCount})"
-            : "null";
+        if (TryResolveErosionIcon(data, out Sprite icon))
+            return icon;
 
-        Debug.LogWarning(
-            $"[ErosionDifficultyCatalogUI] ErosionIconDatabase에서 침식도 아이콘을 찾지 못했습니다. " +
-            $"Database={databaseInfo}, DifficultyId='{data.DifficultyId}', GroupId='{data.GroupId}'. " +
-            "Erosion_XX_YY 개별 키 또는 Group_XX 공용 키를 확인하세요.");
-
-        return iconDatabase != null && iconDatabase.UnavailableIcon != null
-            ? iconDatabase.UnavailableIcon
+        ErosionIconDatabase iconDatabase = DataManager.Instance != null
+            ? DataManager.Instance.ErosionIconDatabase
             : null;
+
+        if (data != null)
+        {
+            string databaseInfo = iconDatabase != null
+                ? $"'{iconDatabase.name}' (Entries={iconDatabase.EntryCount})"
+                : "null";
+
+            Debug.LogWarning(
+                $"[ErosionDifficultyCatalogUI] ErosionIconDatabase에서 침식도 아이콘을 찾지 못했습니다. " +
+                $"Database={databaseInfo}, DifficultyId='{data.DifficultyId}', GroupId='{data.GroupId}'. " +
+                "Erosion_XX_YY 개별 키 또는 Group_XX 공용 키를 확인하세요.");
+        }
+
+        return iconDatabase != null ? iconDatabase.UnavailableIcon : null;
     }
 
     private void RefreshErosionSlotInstances()

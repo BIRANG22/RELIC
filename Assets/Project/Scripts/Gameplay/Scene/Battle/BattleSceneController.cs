@@ -316,7 +316,7 @@ public class BattleSceneController : MonoBehaviour
 
         // 로비 카탈로그 캐시가 없는 특수 진입 경로에서만 기존 DB 조회를 보조 fallback으로 사용합니다.
         if (icon == null)
-            icon = ErosionDifficultyCatalogUI.ResolveErosionIcon(erosionData);
+            ErosionDifficultyCatalogUI.TryResolveErosionIcon(erosionData, out icon);
 
         ErosionDifficultyCatalogUI.BindErosionSlotView(slotRoot, erosionData, icon);
     }
