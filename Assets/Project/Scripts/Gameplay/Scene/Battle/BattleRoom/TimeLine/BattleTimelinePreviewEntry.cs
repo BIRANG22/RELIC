@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class BattleTimelinePreviewEntry
 {
+    private static bool hasWarnedMissingActionTypeIconDatabase;
+
     private static MonsterSkillIconDatabase cachedMonsterSkillIconDatabase;
     public int SlotIndex;
     public int OrderIndex;
@@ -420,26 +422,24 @@ public class BattleTimelinePreviewEntry
 
     private static Sprite GetTimelineActionIcon(TimelineActionType actionType)
     {
-        if (DataManager.Instance == null)
-        {
-            Debug.LogWarning("[TimelineIcon] DataManager°¡ ¾ø½?´Ï´Ù.");
+        DataManager dataManager = DataManager.Instance;
+        if (dataManager == null)
             return null;
-        }
 
-        if (DataManager.Instance.ActionTypeIconDatabase == null)
+        ActionTypeIconDatabase database = dataManager.ActionTypeIconDatabase;
+        if (database == null)
         {
-            Debug.LogWarning("[TimelineIcon] ActionTypeIconDatabase°¡ ¾ø½?´Ï´Ù.");
+            if (!hasWarnedMissingActionTypeIconDatabase)
+            {
+                hasWarnedMissingActionTypeIconDatabase = true;
+                Debug.LogWarning("[TimelineIcon] DataManager에 ActionTypeIconDatabase가 연결되어 있지 않습니다. 몬스터 스킬 아이콘이 없을 때 사용할 기본 행동 아이콘을 표시할 수 없습니다.");
+            }
+
             return null;
         }
 
         string key = actionType.ToString();
-
-        bool found = DataManager.Instance.ActionTypeIconDatabase.TryGetIcon(key, out Sprite icon);
-
-        if (found)
-            return icon;
-
-        return null;
+        return database.TryGetIcon(key, out Sprite icon) ? icon : null;
     }
 
     private static Sprite GetSkillIcon(string skillId)

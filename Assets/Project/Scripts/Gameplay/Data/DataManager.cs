@@ -3,6 +3,8 @@ using Relic.Gameplay.Data;
 
 public class DataManager : Singleton<DataManager>
 {
+    private static ErosionIconDatabase cachedErosionIconDatabase;
+
     [Header("Asset Databases")]
     [SerializeField] private CharacterPrefabDatabase characterPrefabDatabase;
     [SerializeField] private SkillIconDatabase skillIconDatabase;
@@ -67,22 +69,58 @@ public class DataManager : Singleton<DataManager>
     public LobbyRuntimeStore LobbyRuntimeStore { get; private set; } = new();
     protected override void Awake()
     {
-        // 씬 전환 전에 살아 있는 DataManager가 DB 참조를 가지고 있지 않은 상태에서
-        // 새 씬의 DataManager가 올바른 ErosionIconDatabase를 가지고 있다면,
-        // 중복 오브젝트가 제거되기 전에 기존 싱글톤으로 참조를 넘깁니다.
-        // Resources.FindObjectsOfTypeAll 같은 에디터 임시 오브젝트 탐색은 사용하지 않습니다.
+        // 씬 전환 과정에서 새 DataManager가 유효한 ErosionIconDatabase를 가지고 있다면
+        // 중복 오브젝트가 제거되기 전에 기존 싱글톤에 참조를 전달합니다.
+        // 한 번 확인된 유효한 DB는 정적 캐시에 보관하여 이후 씬의 DataManager 참조가
+        // 비어 있어도 전투/로비 UI에서 같은 DB를 계속 사용할 수 있게 합니다.
         DataManager existing = Instance;
-        if (existing != null && existing != this &&
-            existing.erosionIconDatabase == null && erosionIconDatabase != null)
+
+        if (erosionIconDatabase != null)
         {
-            existing.erosionIconDatabase = erosionIconDatabase;
-            existing.erosionIconDatabase.Initialize();
+            cachedErosionIconDatabase = erosionIconDatabase;
+        }
+        else if (existing != null && existing.erosionIconDatabase != null)
+        {
+            erosionIconDatabase = existing.erosionIconDatabase;
+            cachedErosionIconDatabase = existing.erosionIconDatabase;
+        }
+        else if (cachedErosionIconDatabase != null)
+        {
+            erosionIconDatabase = cachedErosionIconDatabase;
+        }
+
+        if (existing != null && existing != this && existing.erosionIconDatabase == null)
+        {
+            ErosionIconDatabase source = erosionIconDatabase != null
+                ? erosionIconDatabase
+                : cachedErosionIconDatabase;
+
+            if (source != null)
+            {
+                existing.erosionIconDatabase = source;
+                cachedErosionIconDatabase = source;
+                source.Initialize();
+            }
         }
 
         base.Awake();
 
         if (IsDuplicateInstance)
             return;
+
+        RestoreCachedErosionIconDatabase();
+    }
+
+    private void RestoreCachedErosionIconDatabase()
+    {
+        if (erosionIconDatabase == null && cachedErosionIconDatabase != null)
+            erosionIconDatabase = cachedErosionIconDatabase;
+
+        if (erosionIconDatabase == null)
+            return;
+
+        cachedErosionIconDatabase = erosionIconDatabase;
+        erosionIconDatabase.Initialize();
     }
 
     public void Initialize()
