@@ -17,6 +17,9 @@ public sealed class SteamLobbyBattleStartSynchronizer : MonoBehaviour
 
     public static SteamLobbyBattleStartSynchronizer Instance { get; private set; }
 
+#if !STEAMWORKS_NET
+#pragma warning disable CS0414
+#endif
     [SerializeField] private float sharedStateWaitTimeoutSeconds = 5f;
 
     public bool IsNetworkBattleStartActive { get; private set; }
@@ -24,6 +27,9 @@ public sealed class SteamLobbyBattleStartSynchronizer : MonoBehaviour
     private bool isEnteringBattle;
     private string pendingBattleSessionId;
     private string completedBattleSessionId;
+#if !STEAMWORKS_NET
+#pragma warning restore CS0414
+#endif
 
 #if STEAMWORKS_NET
     private CSteamID currentLobbyId;

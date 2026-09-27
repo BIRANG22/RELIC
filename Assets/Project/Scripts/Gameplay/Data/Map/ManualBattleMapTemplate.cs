@@ -214,12 +214,16 @@ namespace Relic.Gameplay.Data
     public class ManualBattleMapTemplate : ScriptableObject
     {
         private const int StartLayerIndex = 0;
-        private const int BossLayerIndex = 13;
-        private const int TotalLayerCount = 14;
+        private const int DefaultBossLayerIndex = 13;
+        private const int MinBossLayerIndex = 1;
+        private const int MaxBossLayerIndex = 13;
         private const int FixedMiddleLayerRowCount = 4;
         private const int StartNodeIndex = 0;
-        private const int BossNodeIndex = 49;
         private const string FixedShopMapId = "Map_22";
+
+        [Header("Map Length")]
+        [SerializeField, Range(MinBossLayerIndex, MaxBossLayerIndex)]
+        private int bossLayerIndex = DefaultBossLayerIndex;
 
         [Header("Layer 0")]
         [SerializeField] private ManualBattleMapFixedNodeDefinition layer0Start = new() { Type = "Special" };
@@ -249,8 +253,14 @@ namespace Relic.Gameplay.Data
         [Header("Layer 12")]
         [SerializeField] private ManualBattleMapLayerSlots layer12 = new();
 
-        [Header("Layer 13 - Boss")]
+        [Header("Boss Layer")]
         [SerializeField] private ManualBattleMapFixedNodeDefinition layer13Boss = new() { Type = "Boss" };
+
+        public int BossLayerIndex
+        {
+            get => Mathf.Clamp(bossLayerIndex, MinBossLayerIndex, MaxBossLayerIndex);
+            set => bossLayerIndex = Mathf.Clamp(value, MinBossLayerIndex, MaxBossLayerIndex);
+        }
 
         public List<ManualBattleMapNodeDefinition> Nodes => BuildDefinitions();
 
@@ -338,7 +348,7 @@ namespace Relic.Gameplay.Data
                 uint hash = 2166136261;
                 List<ManualBattleMapNodeDefinition> definitions = BuildDefinitions();
 
-                hash = AppendHash(hash, TotalLayerCount);
+                hash = AppendHash(hash, BossLayerIndex + 1);
                 hash = AppendHash(hash, definitions.Count);
 
                 for (int i = 0; i < definitions.Count; i++)
@@ -394,24 +404,39 @@ namespace Relic.Gameplay.Data
         private List<ManualBattleMapNodeDefinition> BuildDefinitions()
         {
             List<ManualBattleMapNodeDefinition> result = new();
+            int resolvedBossLayerIndex = BossLayerIndex;
 
             result.Add(CreateFixedNode(layer0Start, StartNodeIndex, StartLayerIndex, 0));
 
-            AddMiddleLayer(result, layer1, 1);
-            AddMiddleLayer(result, layer2, 2);
-            AddMiddleLayer(result, layer3, 3);
-            AddMiddleLayer(result, layer4, 4);
-            AddMiddleLayer(result, layer5, 5);
-            AddMiddleLayer(result, layer6, 6);
-            AddMiddleLayer(result, layer7, 7);
-            AddMiddleLayer(result, layer8, 8);
-            AddMiddleLayer(result, layer9, 9);
-            AddMiddleLayer(result, layer10, 10);
-            AddMiddleLayer(result, layer11, 11);
-            AddMiddleLayer(result, layer12, 12);
+            for (int layerIndex = StartLayerIndex + 1; layerIndex < resolvedBossLayerIndex; layerIndex++)
+                AddMiddleLayer(result, GetMiddleLayer(layerIndex), layerIndex);
 
-            result.Add(CreateFixedNode(layer13Boss, BossNodeIndex, BossLayerIndex, 0));
+            result.Add(CreateFixedNode(
+                layer13Boss,
+                GetReservedBossNodeIndex(resolvedBossLayerIndex),
+                resolvedBossLayerIndex,
+                0));
             return result;
+        }
+
+        private ManualBattleMapLayerSlots GetMiddleLayer(int layerIndex)
+        {
+            return layerIndex switch
+            {
+                1 => layer1,
+                2 => layer2,
+                3 => layer3,
+                4 => layer4,
+                5 => layer5,
+                6 => layer6,
+                7 => layer7,
+                8 => layer8,
+                9 => layer9,
+                10 => layer10,
+                11 => layer11,
+                12 => layer12,
+                _ => null
+            };
         }
 
         private static ManualBattleMapNodeDefinition CreateFixedNode(
@@ -471,6 +496,11 @@ namespace Relic.Gameplay.Data
         private static int GetReservedMiddleNodeIndex(int layerIndex, int rowIndex)
         {
             return 1 + ((layerIndex - 1) * FixedMiddleLayerRowCount) + rowIndex;
+        }
+
+        private static int GetReservedBossNodeIndex(int resolvedBossLayerIndex)
+        {
+            return 1 + ((resolvedBossLayerIndex - 1) * FixedMiddleLayerRowCount);
         }
 
         private bool TryValidateDefinitions(List<ManualBattleMapNodeDefinition> definitions, out HashSet<int> definedNodeIndices)
@@ -589,7 +619,7 @@ namespace Relic.Gameplay.Data
             return 1;
         }
 
-        private static bool IsStartOrBossLayer(int layerIndex)
+        private bool IsStartOrBossLayer(int layerIndex)
         {
             return layerIndex == StartLayerIndex || layerIndex == BossLayerIndex;
         }

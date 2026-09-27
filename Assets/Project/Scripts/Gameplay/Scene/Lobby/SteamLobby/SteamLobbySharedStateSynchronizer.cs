@@ -23,7 +23,13 @@ public sealed class SteamLobbySharedStateSynchronizer : MonoBehaviour
     public long AppliedRevision { get; private set; }
     public LobbySharedStateSnapshot CurrentSnapshot { get; private set; }
 
+#if !STEAMWORKS_NET
+#pragma warning disable CS0067
+#endif
     public event Action SharedStateApplied;
+#if !STEAMWORKS_NET
+#pragma warning restore CS0067
+#endif
 
     private SteamLobbyPartySynchronizer subscribedPartySynchronizer;
 

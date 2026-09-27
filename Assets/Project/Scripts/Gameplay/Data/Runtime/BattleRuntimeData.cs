@@ -43,6 +43,7 @@ namespace Relic.Gameplay.Data
         public string LastErosionRoomKey;
 
         public bool IsBattleRunInitialized;
+        public bool IsDemoBattle;
     }
 
     [System.Serializable]
