@@ -32,9 +32,6 @@ public class BattleSceneController : MonoBehaviour
 
     [Header("Battle Map Intro Text")]
     [SerializeField] private BattleMapIntroText battleMapIntroText;
-    [SerializeField] private string mapIntroMessage = "제1구역 폐허";
-    [SerializeField] private string battleRoomIntroMessage = "전투 시작";
-    [SerializeField] private string restRoomIntroMessage = "휴식 구역";
     [SerializeField] private bool playMapIntroOnStart = true;
     [SerializeField] private bool playBattleRoomIntroFromSceneController = false;
 
@@ -925,7 +922,8 @@ public class BattleSceneController : MonoBehaviour
         if (back2NameText == null)
             return;
 
-        back2NameText.text = $"턴 {Mathf.Max(1, turnNumber):D2}";
+        back2NameText.text = GameLocalization.Get(
+            "battle.back2.turn_format", "턴 {0:D2}", Mathf.Max(1, turnNumber));
     }
 
     private void RefreshBack2LocationName(GeneratedMapNodeData nodeData)
@@ -965,17 +963,17 @@ public class BattleSceneController : MonoBehaviour
         switch (backgroundName)
         {
             case "St1_00":
-                return "폐허 외곽";
+                return GameLocalization.Get("battle.location.ruins_outskirts", "폐허 외곽");
             case "St1_01":
-                return "성채 연결로";
+                return GameLocalization.Get("battle.location.citadel_passage", "성채 연결로");
             case "St1_02":
-                return "내부 광장";
+                return GameLocalization.Get("battle.location.inner_plaza", "내부 광장");
             case "Share_Restroom":
-                return "휴식";
+                return GameLocalization.Get("lobby.rest", "휴식");
         }
 
         if (string.Equals(nodeData.Type, "Rest", StringComparison.OrdinalIgnoreCase))
-            return "휴식";
+            return GameLocalization.Get("lobby.rest", "휴식");
 
         return backgroundName;
     }
@@ -1447,7 +1445,9 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Battle room start: {nodeData.MapId}");
         pendingBattleRoomUsesBossIntro = false;
-        pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
+        pendingRoomIntroMessage = playBattleRoomIntroFromSceneController
+            ? GameLocalization.Get("battle.intro.battle_start", "전투 시작")
+            : null;
         ShowRoomBackground(battleRoom, nodeData);
         SetBack2TurnNumber(1);
         OpenRoom(battleRoom, "BattleRoom");
@@ -1458,7 +1458,9 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Boss battle start: {nodeData.MapId}");
         pendingBattleRoomUsesBossIntro = true;
-        pendingRoomIntroMessage = playBattleRoomIntroFromSceneController ? battleRoomIntroMessage : null;
+        pendingRoomIntroMessage = playBattleRoomIntroFromSceneController
+            ? GameLocalization.Get("battle.intro.battle_start", "전투 시작")
+            : null;
         ShowRoomBackground(battleRoom, nodeData, true);
         SetBack2TurnNumber(1);
         OpenRoom(battleRoom, "BattleRoom");
@@ -1469,7 +1471,7 @@ public class BattleSceneController : MonoBehaviour
     {
         Debug.Log($"[BattleSceneController] Rest event start: {nodeData.MapId}");
         pendingBattleRoomUsesBossIntro = false;
-        pendingRoomIntroMessage = restRoomIntroMessage;
+        pendingRoomIntroMessage = GameLocalization.Get("battle.intro.rest_area", "휴식 구역");
         ShowRoomBackground(restRoom, nodeData);
         RefreshBack2LocationName(nodeData);
         OpenRoom(restRoom, "RestRoom");
@@ -1552,14 +1554,11 @@ public class BattleSceneController : MonoBehaviour
         if (!playMapIntroOnStart)
             return;
 
-        if (string.IsNullOrEmpty(mapIntroMessage))
-            return;
-
         if (battleMapIntroText == null)
             AutoFindBattleMapIntroTextIfNeeded();
 
         if (battleMapIntroText != null)
-            battleMapIntroText.Play(mapIntroMessage);
+            battleMapIntroText.Play(GameLocalization.Get("battle.map_intro", "제1구역 폐허"));
     }
 
     private void PlayPendingRoomIntroText()

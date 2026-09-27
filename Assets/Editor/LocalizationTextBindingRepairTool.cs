@@ -56,6 +56,16 @@ public static class LocalizationTextBindingRepairTool
         foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Project" }))
         {
             string path = AssetDatabase.GUIDToAssetPath(guid);
+            if (!LocalizationEditorSafetyPolicy.ShouldScanProjectAsset(path))
+                continue;
+
+            string prefabYaml = File.ReadAllText(path);
+            if (!LocalizationEditorSafetyPolicy.ShouldProcessLocalizationPrefab(prefabYaml))
+            {
+                Debug.LogError($"[LocalizationTextBindingRepairTool] Missing Script가 있어 저장을 건너뜁니다: {path}");
+                continue;
+            }
+
             GameObject root = PrefabUtility.LoadPrefabContents(path);
             try
             {
@@ -76,9 +86,16 @@ public static class LocalizationTextBindingRepairTool
     private static RepairSummary RepairScenes(LocalizationBindingResolver maps)
     {
         RepairSummary summary = default;
+        HashSet<string> configuredScenePaths = EditorBuildSettings.scenes
+            .Select(scene => (scene.path ?? string.Empty).Replace('\\', '/'))
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" }))
         {
             string path = AssetDatabase.GUIDToAssetPath(guid);
+            if (!LocalizationEditorSafetyPolicy.ShouldScanSceneAsset(path, configuredScenePaths))
+                continue;
+
             Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
             RepairSummary sceneSummary = default;
             foreach (GameObject root in scene.GetRootGameObjects())
@@ -111,7 +128,7 @@ public static class LocalizationTextBindingRepairTool
             LocalizeStringEvent localizer = text.GetComponent<LocalizeStringEvent>();
             string currentKey = existing != null ? existing.LocalizationKey : localizer != null
                 ? localizer.StringReference.TableEntryReference.Key : string.Empty;
-            if (resolver.Validate(normalizedSource, currentKey) == LocalizationBindingStatus.Valid)
+            if (resolver.TryGetKorean(currentKey, out _))
             {
                 summary.Matched++;
                 if (StaticLocalizationMigration.RepairTextBinding(text, currentKey))

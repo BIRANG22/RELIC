@@ -1001,10 +1001,14 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     {
         string normalized = string.IsNullOrWhiteSpace(rarity) ? string.Empty : rarity.Trim();
 
-        if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "일반";
-        if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "레어";
-        if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return "에픽";
-        if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return "유니크";
+        if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase))
+            return GameLocalization.Get("common.rarity.common", "일반");
+        if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase))
+            return GameLocalization.Get("common.rarity.rare", "레어");
+        if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase))
+            return GameLocalization.Get("common.rarity.epic", "에픽");
+        if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase))
+            return GameLocalization.Get("common.rarity.unique", "유니크");
 
         return normalized;
     }

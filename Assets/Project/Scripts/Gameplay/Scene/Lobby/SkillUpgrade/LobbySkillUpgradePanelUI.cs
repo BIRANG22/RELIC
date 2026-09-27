@@ -70,7 +70,9 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
 
         if (!CanLocalPlayerMutateHostOnlyState())
         {
-            BattleWarningUI.ShowMessage("Only the host can upgrade in multiplayer lobby.");
+            BattleWarningUI.ShowMessage(GameLocalization.Get(
+                "lobby.skill_upgrade.host_only",
+                "멀티플레이 로비에서는 호스트만 강화할 수 있습니다."));
             return;
         }
 

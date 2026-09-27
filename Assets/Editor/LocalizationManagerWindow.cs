@@ -28,10 +28,20 @@ public sealed class LocalizationManagerWindow : EditorWindow
         scanPrefabs = EditorGUILayout.ToggleLeft("Prefabs", scanPrefabs, GUILayout.Width(90));
         scanScripts = EditorGUILayout.ToggleLeft("Scripts", scanScripts, GUILayout.Width(90));
         scanGameData = EditorGUILayout.ToggleLeft("Game Data", scanGameData, GUILayout.Width(100));
-        if (GUILayout.Button("전체 검사")) Scan();
-        if (GUILayout.Button("전체 검사 및 적용")) { Scan(); ApplySafe(); }
+        bool scanRequested = GUILayout.Button("전체 검사");
+        bool scanAndApplyRequested = GUILayout.Button("전체 검사 및 적용");
         EditorGUILayout.EndHorizontal();
-        if (GUILayout.Button("전체 안전 항목 적용")) ApplySafe();
+        bool applyRequested = GUILayout.Button("전체 안전 항목 적용");
+        EditorGUILayout.HelpBox(
+            "동적 텍스트는 GameLocalization의 명시적 키와 한국어 원문을 자동 수집합니다. 번역 열과 키 없는 영어 문자열은 자동으로 채우지 않습니다.",
+            MessageType.Info);
+
+        if (scanRequested)
+            RunEditorAction("전체 검사", Scan);
+        if (scanAndApplyRequested)
+            RunEditorAction("전체 검사 및 적용", () => { Scan(); ApplySafe(); });
+        if (applyRequested)
+            RunEditorAction("전체 안전 항목 적용", ApplySafe);
         filter = EditorGUILayout.TextField("Search", filter);
         LocalizationScanSummary summary = LocalizationScanSummary.Create(candidates);
         EditorGUILayout.LabelField($"New: {summary.NewCount}  Existing: {summary.ExistingCount}  Missing Component: {summary.MissingComponentCount}  Review: {summary.ReviewCount}  Occurrences: {summary.OccurrenceCount}");
@@ -47,9 +57,26 @@ public sealed class LocalizationManagerWindow : EditorWindow
         Dictionary<string, string> known = ReadKoreanToUniqueKey();
         Dictionary<string, string> knownKoreanByKey = ReadKoreanByKey();
         HashSet<string> knownKeys = knownKoreanByKey.Keys.ToHashSet(StringComparer.Ordinal);
-        if (scanPrefabs) foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Project" })) ScanPrefab(AssetDatabase.GUIDToAssetPath(guid), known, knownKoreanByKey, knownKeys);
-        if (scanScenes) foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" })) ScanScene(AssetDatabase.GUIDToAssetPath(guid), known, knownKeys);
-        if (scanScripts) ScanScripts(known, knownKeys);
+        if (scanPrefabs)
+        {
+            foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Project" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (LocalizationEditorSafetyPolicy.ShouldScanProjectAsset(path))
+                    ScanPrefab(path, known, knownKoreanByKey, knownKeys);
+            }
+        }
+        if (scanScenes)
+        {
+            HashSet<string> configuredScenePaths = GetConfiguredScenePaths();
+            foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (LocalizationEditorSafetyPolicy.ShouldScanSceneAsset(path, configuredScenePaths))
+                    ScanScene(path, known, knownKeys);
+            }
+        }
+        if (scanScripts) ScanScripts(known, knownKoreanByKey, knownKeys);
         if (scanGameData) ScanGameData(knownKoreanByKey);
         AddRuntimeUiCandidates(knownKoreanByKey, knownKeys);
         Repaint();
@@ -164,7 +191,10 @@ public sealed class LocalizationManagerWindow : EditorWindow
             sourceChanged));
     }
 
-    private void ScanScripts(Dictionary<string, string> known, HashSet<string> knownKeys)
+    private void ScanScripts(
+        Dictionary<string, string> known,
+        IReadOnlyDictionary<string, string> knownKoreanByKey,
+        HashSet<string> knownKeys)
     {
         var matches = new System.Text.RegularExpressions.Regex("\\\"([^\\\"]*[가-힣][^\\\"]*)\\\"");
         foreach (string path in AssetDatabase.FindAssets("t:Script", new[] { "Assets/Project" }).Select(AssetDatabase.GUIDToAssetPath))
@@ -172,13 +202,32 @@ public sealed class LocalizationManagerWindow : EditorWindow
             if (path.IndexOf("/Editor/", StringComparison.OrdinalIgnoreCase) >= 0 || path.IndexOf("/Debug/", StringComparison.OrdinalIgnoreCase) >= 0)
                 continue;
             string source = LocalizationProjectScanner.RemoveComments(LocalizationProjectScanner.ReadScriptText(path));
+            HashSet<string> dynamicDisplayLiterals = LocalizationProjectScanner
+                .FindDynamicDisplayLiterals(source)
+                .ToHashSet(StringComparer.Ordinal);
+            foreach (LocalizationSourceEntry entry in LocalizationProjectScanner.FindExplicitLocalizationSources(source))
+            {
+                knownKoreanByKey.TryGetValue(entry.Key, out string currentKorean);
+                bool sourceChanged = knownKeys.Contains(entry.Key) &&
+                    !string.IsNullOrEmpty(entry.Korean) &&
+                    !string.Equals(currentKorean, entry.Korean, StringComparison.Ordinal);
+                candidates.Add(new LocalizationCandidate(
+                    path,
+                    entry.Korean,
+                    entry.Key,
+                    false,
+                    LocalizationCandidate.IsNewForKnownKeys(entry.Key, knownKeys),
+                    false,
+                    sourceChanged));
+            }
             foreach (System.Text.RegularExpressions.Match match in matches.Matches(source))
             {
                 string korean = match.Groups[1].Value;
                 if (!LocalizationProjectScanner.IsLocalizableKoreanText(korean)) continue;
                 known.TryGetValue(korean, out string key);
                 key ??= LocalizationProjectScanner.BuildSuggestedKey(path, "text", korean);
-                bool automatic = LocalizationProjectScanner.IsAutomaticScriptLiteralCandidate(korean);
+                bool automatic = dynamicDisplayLiterals.Contains(korean) ||
+                    LocalizationProjectScanner.IsAutomaticScriptLiteralCandidate(korean);
                 candidates.Add(new LocalizationCandidate(
                     path,
                     korean,
@@ -202,12 +251,11 @@ public sealed class LocalizationManagerWindow : EditorWindow
         // 씬을 열고 닫는 과정은 DontSaveInEditor 임시 오브젝트 assertion을 유발할 수 있습니다.
         // 검사만 필요한 단계에서는 Unity YAML의 TMP m_text 직렬화 값을 읽습니다.
         string source = System.IO.File.ReadAllText(path);
-        var matches = System.Text.RegularExpressions.Regex.Matches(
-            source,
-            @"(?m)^\s*m_text:\s*(?<value>.*)$");
-        foreach (System.Text.RegularExpressions.Match match in matches)
+        IEnumerable<string> serializedPlayerTexts = LocalizationProjectScanner
+            .FindUnityYamlTmpTexts(source)
+            .Concat(LocalizationProjectScanner.FindUnityYamlPlayerTextFields(source));
+        foreach (string korean in serializedPlayerTexts)
         {
-            string korean = LocalizationProjectScanner.DecodeUnityYamlText(match.Groups["value"].Value);
             if (!LocalizationProjectScanner.IsLocalizableKoreanText(korean))
                 continue;
 
@@ -229,19 +277,35 @@ public sealed class LocalizationManagerWindow : EditorWindow
             LocalizeStringEvent localizer = text.GetComponent<LocalizeStringEvent>();
             string existingKey = runtimeLocalizer != null ? runtimeLocalizer.LocalizationKey : localizer != null
                 ? localizer.StringReference.TableEntryReference.Key : null;
-            string key = !string.IsNullOrWhiteSpace(existingKey) &&
-                         knownKoreanByKey.TryGetValue(existingKey, out string tableKorean) &&
-                         LocalizationBindingSourcePolicy.DoesCurrentSourceMatchTable(text.text, tableKorean)
-                ? existingKey
-                : null;
+            string key = LocalizationBindingSourcePolicy.SelectExistingRegisteredKey(
+                existingKey,
+                knownKoreanByKey.Keys);
+            bool sourceChanged = !string.IsNullOrWhiteSpace(key) &&
+                                 knownKoreanByKey.TryGetValue(key, out string tableKorean) &&
+                                 !LocalizationBindingSourcePolicy.DoesCurrentSourceMatchTable(text.text, tableKorean);
             if (string.IsNullOrWhiteSpace(key)) known.TryGetValue(text.text, out key);
             if (string.IsNullOrWhiteSpace(key)) key = LocalizationProjectScanner.BuildSuggestedKey(path, text.gameObject.name, text.text);
-            candidates.Add(new LocalizationCandidate(path, text.text, key, localizer == null, LocalizationCandidate.IsNewForKnownKeys(key, knownKeys)));
+            candidates.Add(new LocalizationCandidate(
+                path,
+                text.text,
+                key,
+                localizer == null,
+                LocalizationCandidate.IsNewForKnownKeys(key, knownKeys),
+                false,
+                sourceChanged));
         }
     }
 
     private void ApplySafe()
     {
+        if (!LocalizationEditorSafetyPolicy.TryValidateWorkbookWritable(
+                LocalizationExcelImporter.WorkbookPath,
+                out string workbookError))
+        {
+            throw new InvalidOperationException(workbookError);
+        }
+
+        HashSet<string> retainedCandidateKeys = LocalizationEditorSafetyPolicy.CollectRetainedCandidateKeys(candidates);
         var additions = candidates.Where(candidate => candidate.IsNew && !candidate.RequiresReview).Select(candidate => new LocalizationWorkbookEntry(candidate.Key, candidate.Korean));
         var sourceUpdates = candidates.Where(candidate => candidate.NeedsSourceUpdate && !candidate.RequiresReview).Select(candidate => new LocalizationWorkbookEntry(candidate.Key, candidate.Korean));
         int templateChanges = StaticLocalizationMigration.EnsureRecordMemoryFormatTemplates();
@@ -251,17 +315,52 @@ public sealed class LocalizationManagerWindow : EditorWindow
         int explicitStaticBindings = StaticLocalizationMigration.ApplyRequiredStaticUiBindings();
         int dynamicOwnershipChanges = StaticLocalizationMigration.MigrateRecordMemoryDynamicOwnership();
         LocalizationTextBindingRepairTool.RepairAllBindings();
-        int removed = RemoveUnusedEntries();
+        int removed = RemoveUnusedEntries(retainedCandidateKeys);
         int compacted = LocalizationWorkbookWriter.CompactBlankRows(LocalizationExcelImporter.WorkbookPath);
-        if (removed > 0) LocalizationExcelImporter.Import();
+        LocalizationExcelImporter.Import(); // Final authoritative workbook-to-table sync.
         Debug.Log($"[Localization Manager] Applied {rows} new Excel rows, updated {updated} GameData sources, restored {templateChanges} Record templates, applied {explicitStaticBindings} required static bindings, changed {dynamicOwnershipChanges} dynamic TMP ownerships, removed {removed} unused keys, compacted {compacted} blank rows, and repaired TMP bindings.");
     }
 
-    private static int RemoveUnusedEntries()
+    private static HashSet<string> GetConfiguredScenePaths()
+    {
+        return EditorBuildSettings.scenes
+            .Select(scene => (scene.path ?? string.Empty).Replace('\\', '/'))
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static void RunEditorAction(string label, Action action)
+    {
+        if (!LocalizationEditorSafetyPolicy.CanRunAssetMutation(EditorApplication.isPlayingOrWillChangePlaymode))
+        {
+            Debug.LogError($"[Localization Manager] {label} 실패: Play Mode에서는 로컬리제이션 에셋을 변경할 수 없습니다.");
+            EditorUtility.DisplayDialog(
+                "Localization Manager",
+                "Play Mode를 종료한 뒤 다시 실행하세요. 런타임 텍스트 감시 중 프리팹을 저장하면 Missing Script가 생길 수 있습니다.",
+                "확인");
+            return;
+        }
+
+        try
+        {
+            action?.Invoke();
+        }
+        catch (Exception exception)
+        {
+            string message = exception is InvalidOperationException
+                ? exception.Message
+                : $"{label} 중 오류가 발생했습니다. Console의 첫 예외를 확인하세요.";
+            Debug.LogError($"[Localization Manager] {label} 실패: {exception}");
+            EditorUtility.DisplayDialog("Localization Manager", message, "확인");
+        }
+    }
+
+    private static int RemoveUnusedEntries(IEnumerable<string> retainedCandidateKeys)
     {
         HashSet<string> workbookKeys = ReadKoreanByKey().Keys.ToHashSet(StringComparer.Ordinal);
         HashSet<string> usedKeys = CollectExplicitKeyReferences(workbookKeys);
         usedKeys.UnionWith(CollectCurrentGameDataKeys());
+        usedKeys.UnionWith(retainedCandidateKeys ?? Array.Empty<string>());
         return LocalizationWorkbookWriter.RemoveEntries(
             LocalizationExcelImporter.WorkbookPath,
             workbookKeys.Where(key => !usedKeys.Contains(key)));
@@ -399,6 +498,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
             .GroupBy(row => row[key], StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.Last()[korean] ?? string.Empty, StringComparer.Ordinal);
     }
+
 }
 
 public sealed class LocalizationCandidate

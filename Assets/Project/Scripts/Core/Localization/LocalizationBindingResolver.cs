@@ -59,6 +59,18 @@ public static class LocalizationBindingSourcePolicy
             LocalizationBindingResolver.Normalize(tableKoreanSource),
             StringComparison.Ordinal);
     }
+
+    public static string SelectExistingRegisteredKey(
+        string existingKey,
+        IEnumerable<string> registeredKeys)
+    {
+        if (string.IsNullOrWhiteSpace(existingKey))
+            return null;
+
+        return (registeredKeys ?? Array.Empty<string>()).Contains(existingKey, StringComparer.Ordinal)
+            ? existingKey
+            : null;
+    }
 }
 
 /// <summary>Workbook Korean source/key relations. Duplicate Korean copy never selects an arbitrary key.</summary>

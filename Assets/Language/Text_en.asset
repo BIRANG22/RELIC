@@ -75,7 +75,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41367126123487249
-    m_Localized: Cost
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100690
@@ -95,7 +95,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100693
-    m_Localized: Recovery
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100694
@@ -250,18 +250,6 @@ MonoBehaviour:
     m_Localized: Shard
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100747
-    m_Localized: Powerful enemies appear more frequently.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100748
-    m_Localized: All enemies gain increased Attack.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100749
-    m_Localized: All enemies gain increased Health.
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100750
     m_Localized: Action Range
     m_Metadata:
@@ -307,7 +295,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100776
-    m_Localized: The bag is full. You can carry up to {0} unique items.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915657494528
@@ -2254,7 +2242,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380635
-    m_Localized: Available skill.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380637
@@ -2289,20 +2277,12 @@ MonoBehaviour:
     m_Localized: Face the boss guarding the end of the expedition.
     m_Metadata:
       m_Items: []
-  - m_Id: 41385915741380654
-    m_Localized: This rune slot is still locked.
-    m_Metadata:
-      m_Items: []
   - m_Id: 41385915741380657
     m_Localized: No Cost
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380658
-    m_Localized: HP
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380659
-    m_Localized: Move Points
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380660
@@ -2354,11 +2334,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380691
-    m_Localized: Select a unique item to discard first.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380692
-    m_Localized: The selected unique item could not be found.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380693
@@ -2382,11 +2362,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380699
-    m_Localized: Not enough HP.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380700
-    m_Localized: Not enough Cost.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380701
@@ -2441,47 +2421,16 @@ MonoBehaviour:
     m_Localized: Forming a Party
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100777
-    m_Localized: 'Area 3: Red Ruins'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100778
-    m_Localized: 'Area 7: Ashen Waterway'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100779
-    m_Localized: 'Area 12: Erosion Cave'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100780
-    m_Localized: 'Method: '
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100781
-    m_Localized: 'Cost:'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100782
-    m_Localized: Opens at character level {0}.
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100783
-    m_Localized: Character health.\nAt 0 HP, the character becomes unable to fight.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100784
-    m_Localized: A resource spent to use skills.\nSkills cannot be used without enough
-      current Cost.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100785
-    m_Localized: Cost restored at the start of the turn.\nHigher recovery gives more
-      skill options each turn.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100786
-    m_Localized: Movement skills spend 1 Cost per tile during battle.\nAt 50 or more
-      Move Points, 1 Cost moves 2 tiles.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100787
@@ -2657,6 +2606,70 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 13427954308472833
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17062766837243945
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17062766837243946
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17062766837243947
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17062766837243948
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17062766837243949
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17062766837243950
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17062766837243951
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17062766837243952
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17062766837243953
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17062766837243954
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17062766837243955
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17105354709540953
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17105354709540954
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17105354709540955
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17105354709540956
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17117632292986922
     m_Localized: 
     m_Metadata:
       m_Items: []

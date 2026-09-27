@@ -66,8 +66,6 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
     private int targetScore;
     private int displayedScore;
     private Coroutine scoreRoutine;
-    private string erosionValueTemplate = string.Empty;
-    private bool erosionValueTemplateCaptured;
     private ErosionDifficultyLevelItemUI tooltipOwnerItem;
     private CanvasGroup tooltipCanvasGroup;
     private Coroutine tooltipFadeRoutine;
@@ -104,8 +102,6 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
         if (erosionValueText == null)
             erosionValueText = FindTextAnywhereInRoot("Erosion_Value");
-
-        CaptureErosionValueTemplate();
 
         AutoBindSelectedSlotScroll();
 
@@ -978,33 +974,12 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
             erosionValueText.text = FormatErosionValueText(displayedScore);
     }
 
-    private void CaptureErosionValueTemplate()
-    {
-        if (erosionValueTemplateCaptured || erosionValueText == null)
-            return;
-
-        erosionValueTemplate = erosionValueText.text ?? string.Empty;
-        erosionValueTemplateCaptured = true;
-    }
-
     private string FormatErosionValueText(int value)
     {
-        CaptureErosionValueTemplate();
-
-        if (string.IsNullOrEmpty(erosionValueTemplate))
-            return value.ToString();
-
-        if (erosionValueTemplate.IndexOf("{0}", StringComparison.Ordinal) >= 0)
-            return erosionValueTemplate.Replace("{0}", value.ToString());
-
-        string trimmed = erosionValueTemplate.Trim();
-        if (int.TryParse(trimmed, out _))
-        {
-            int index = erosionValueTemplate.IndexOf(trimmed, StringComparison.Ordinal);
-            return erosionValueTemplate.Remove(index, trimmed.Length).Insert(index, value.ToString());
-        }
-
-        return erosionValueTemplate;
+        return GameLocalization.FormatWithFallback(
+            "lobby.erosion.reward_bonus_format",
+            "¿Á»≠ »πµÊ∑Æ +{0}% / ∞Ê«Ëƒ° »πµÊ∑Æ +{0}%",
+            value);
     }
 
     private void RefreshAllVisuals()

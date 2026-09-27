@@ -8,6 +8,15 @@ using UnityEngine.Localization.Components;
 using UnityEngine.SceneManagement;
 using TMPro;
 
+public static class LocalizationEditingLockPolicy
+{
+    /// <summary>
+    /// 편집 잠금은 에디터 표시만 제어합니다. Play Mode도 같은 직렬화 상태를 사용하므로
+    /// 런타임 로컬라이저 컴포넌트는 항상 활성 상태로 저장해야 합니다.
+    /// </summary>
+    public static bool ShouldEnableRuntimeLocalizer(bool editingLockEnabled) => true;
+}
+
 public static class LocalizationEditingLockTool
 {
     private static readonly string[] TargetScenePaths =
@@ -61,10 +70,11 @@ public static class LocalizationEditingLockTool
             if (!LocalizedTMPText.ShouldManageText(text))
                 continue;
 
-            if (localizer.enabled != enabled)
+            bool componentEnabled = LocalizationEditingLockPolicy.ShouldEnableRuntimeLocalizer(enabled);
+            if (localizer.enabled != componentEnabled)
             {
-                Undo.RecordObject(localizer, enabled ? "Enable localized text editing lock" : "Disable localized text editing lock");
-                localizer.enabled = enabled;
+                Undo.RecordObject(localizer, "Keep runtime text localization enabled");
+                localizer.enabled = componentEnabled;
                 EditorUtility.SetDirty(localizer);
                 changedCount++;
             }

@@ -509,6 +509,8 @@ public static class StaticLocalizationMigration
             serializedRuntimeLocalizer.FindProperty("koreanSource").stringValue = koreanSource;
             serializedRuntimeLocalizer.FindProperty("automaticallyRegistered").boolValue = true;
             serializedRuntimeLocalizer.ApplyModifiedPropertiesWithoutUndo();
+            if (runtimeLocalizer is Behaviour runtimeBehaviour && !runtimeBehaviour.enabled)
+                runtimeBehaviour.enabled = true;
             EditorUtility.SetDirty(runtimeLocalizer);
 
             // 런타임 표시와 빈 번역 처리의 소유자는 LocalizedTMPText입니다.
