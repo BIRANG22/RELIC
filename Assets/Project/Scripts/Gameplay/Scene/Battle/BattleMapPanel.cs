@@ -17,6 +17,7 @@ public class BattleMapPanel : MonoBehaviour
     [SerializeField] private BattleSceneController battleSceneController;
     [Header("Generation")]
     [SerializeField] private ManualBattleMapTemplate manualMapTemplate;
+    [SerializeField] private ManualBattleMapTemplate demoManualMapTemplate;
     [SerializeField] private EventMapRandomExclusionSettings eventMapRandomExclusionSettings = new();
     private MapRuntimeStore runtimeStore;
     private MapRuntimeData runtime;
@@ -70,8 +71,13 @@ public class BattleMapPanel : MonoBehaviour
             return;
         }
 
-        string manualTemplateKey = manualMapTemplate != null
-            ? manualMapTemplate.GetRuntimeKey()
+        BattleRuntimeData battleRuntime = DataManager.Instance?.BattleRuntimeStore?.Get();
+        ManualBattleMapTemplate selectedMapTemplate = BattleMapTemplateSelection.Resolve(
+            battleRuntime,
+            manualMapTemplate,
+            demoManualMapTemplate);
+        string manualTemplateKey = selectedMapTemplate != null
+            ? selectedMapTemplate.GetRuntimeKey()
             : string.Empty;
         string randomExclusionKey = eventMapRandomExclusionSettings != null
             ? eventMapRandomExclusionSettings.GetRuntimeKey()
@@ -91,7 +97,7 @@ public class BattleMapPanel : MonoBehaviour
             mapPool,
             runtime.SelectedChapterId,
             runtime.CurrentStage,
-            manualMapTemplate,
+            selectedMapTemplate,
             eventMapRandomExclusionSettings
         );
         runtime.GeneratedNodes = generationResult.Nodes;
@@ -277,6 +283,20 @@ public class BattleMapPanel : MonoBehaviour
         MapNodeIconDatabase iconDatabase = DataManager.Instance?.MapNodeIconDatabase;
         iconDatabase?.TryGetIcon(node.Type, out icon);
         nodeInfoPresenter.Show(node, icon);
+    }
+}
+
+public static class BattleMapTemplateSelection
+{
+    public static ManualBattleMapTemplate Resolve(
+        BattleRuntimeData battleRuntime,
+        ManualBattleMapTemplate regularTemplate,
+        ManualBattleMapTemplate demoTemplate)
+    {
+        if (battleRuntime?.IsDemoBattle == true && demoTemplate != null)
+            return demoTemplate;
+
+        return regularTemplate;
     }
 }
 

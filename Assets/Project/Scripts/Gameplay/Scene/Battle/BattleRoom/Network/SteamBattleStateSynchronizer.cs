@@ -2280,7 +2280,9 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
             return;
 
         List<int> remoteViewedSlots = new();
+#if STEAMWORKS_NET
         int localViewedSlot = -1;
+#endif
 
         foreach (KeyValuePair<ulong, int> pair in viewedSlotsByMember)
         {

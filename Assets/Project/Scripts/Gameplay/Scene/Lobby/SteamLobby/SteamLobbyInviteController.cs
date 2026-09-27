@@ -14,9 +14,15 @@ public class SteamLobbyInviteController : MonoBehaviour
     private const int DefaultMaxMembers = 3;
 
     [Header("Lobby")]
+#if !STEAMWORKS_NET
+#pragma warning disable CS0414
+#endif
     [SerializeField, Range(1, 250)] private int maxMembers = DefaultMaxMembers;
     [SerializeField] private bool createFriendsOnlyLobby = true;
     [SerializeField] private bool openInviteDialogAfterLobbyCreate = true;
+#if !STEAMWORKS_NET
+#pragma warning restore CS0414
+#endif
     [SerializeField] private SteamLobbyPartySynchronizer partySynchronizer;
     [SerializeField] private SteamLobbySharedStateSynchronizer sharedStateSynchronizer;
     [SerializeField] private SteamLobbyBattleStartSynchronizer battleStartSynchronizer;
@@ -31,8 +37,14 @@ public class SteamLobbyInviteController : MonoBehaviour
     [SerializeField] private TMP_InputField lobbyIdInput;
 
     private static bool steamApiInitialized;
+#if !STEAMWORKS_NET
+#pragma warning disable CS0414
+#endif
     private static bool ownsSteamApi;
     private static bool steamShutdownRegistered;
+#if !STEAMWORKS_NET
+#pragma warning restore CS0414
+#endif
 
     internal static bool IsSteamApiReady => steamApiInitialized;
 
