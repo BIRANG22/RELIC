@@ -11,7 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project/Scenes/YDM/Title.unity
     guid: 6d916c03c5463334f8e8fd149d7f5b12
-  - enabled: 0
+  - enabled: 1
     path: Assets/Project/Scenes/YDM/Lobby.unity
     guid: 13354c149dc5f134f8938d95f51b97b5
   - enabled: 1

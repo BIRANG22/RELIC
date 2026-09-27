@@ -36,15 +36,24 @@ public static class LocalizationExcelImporter
         LocalizationXlsxReader.ValidateHeaders(rows);
         string csv = LocalizationXlsxReader.ToCsv(rows);
 
-        using var reader = new StringReader(csv);
-        Csv.ImportInto(
-            reader,
-            collection,
-            createUndo: true,
-            reporter: null,
-            removeMissingEntries: RemoveMissingEntries);
+        AssetDatabase.StartAssetEditing();
+        try
+        {
+            using var reader = new StringReader(csv);
+            Csv.ImportInto(
+                reader,
+                collection,
+                createUndo: true,
+                reporter: null,
+                removeMissingEntries: RemoveMissingEntries);
 
-        AssetDatabase.SaveAssets();
+            AssetDatabase.SaveAssets();
+        }
+        finally
+        {
+            AssetDatabase.StopAssetEditing();
+        }
+
         AssetDatabase.Refresh();
     }
 }

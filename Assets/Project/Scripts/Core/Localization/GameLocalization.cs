@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using UnityEngine;
 using UnityEngine.Localization.Settings;
 
 public static class GameLocalization
@@ -24,7 +25,7 @@ public static class GameLocalization
     /// <summary>Runtime UI/system copy must identify a workbook key and must not embed Korean fallback text.</summary>
     public static string Get(string key, params object[] arguments)
     {
-        if (!LocalizationEditingLockState.IsEnabledForEditor)
+        if (!Application.isPlaying && !LocalizationEditingLockState.IsEnabledForEditor)
             return GetKoreanSourceForEditor(key, arguments);
 
         return Get(key, ResolveMissingTranslation("en"), arguments);
@@ -58,7 +59,7 @@ public static class GameLocalization
 
     public static string Get(string key, string fallback, params object[] arguments)
     {
-        if (!LocalizationEditingLockState.IsEnabledForEditor)
+        if (!Application.isPlaying && !LocalizationEditingLockState.IsEnabledForEditor)
             return fallback ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(key))
@@ -66,9 +67,20 @@ public static class GameLocalization
 
         try
         {
+            var selectedLocale = LocalizationSettings.SelectedLocale;
+            var selectedEntry = LocalizationSettings.StringDatabase.GetTableEntry(
+                TableName,
+                key,
+                selectedLocale,
+                FallbackBehavior.DontUseFallback).Entry;
+            if (!ShouldUseSelectedLocaleEntry(selectedEntry != null, selectedEntry?.Value))
+                return ResolveMissingTranslation(selectedLocale?.Identifier.Code, fallback);
+
             string localized = LocalizationSettings.StringDatabase.GetLocalizedString(
                 TableName,
                 key,
+                selectedLocale,
+                FallbackBehavior.DontUseFallback,
                 arguments ?? Array.Empty<object>());
 
             if (string.IsNullOrEmpty(localized) || IsMissingTranslationResult(localized))
@@ -80,8 +92,15 @@ public static class GameLocalization
         }
         catch (Exception)
         {
-            return fallback ?? string.Empty;
+            return ResolveMissingTranslation(
+                LocalizationSettings.SelectedLocale?.Identifier.Code,
+                fallback);
         }
+    }
+
+    public static bool ShouldUseSelectedLocaleEntry(bool entryExists, string rawValue)
+    {
+        return entryExists && !string.IsNullOrWhiteSpace(rawValue);
     }
 
     public static string ResolveMissingTranslation(string localeCode, string koreanFallback = null)

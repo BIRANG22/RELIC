@@ -4648,6 +4648,7 @@ GameObject:
   - component: {fileID: 317538323}
   - component: {fileID: 317538325}
   - component: {fileID: 317538324}
+  - component: {fileID: 317538326}
   m_Layer: 5
   m_Name: Detail
   m_TagString: Untagged
@@ -4779,6 +4780,27 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 317538322}
   m_CullTransparentMesh: 1
+--- !u!114 &317538326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 317538322}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 317538324}
+  localizationKey: ui.bootstrap.text.68023280
+  koreanSource: "\uC804\uD22C\uAC00 \uC2DC\uC791\uB418\uBA74 \uBCC0\uC774\uCCB4\uAC00
+    \uBA3C\uC800 \uC790\uC2E0\uC758 \uD589\uB3D9\uC744 \uC2AC\uB86F\uC5D0 \uC608\uC57D\uD569\uB2C8\uB2E4.\r\n\uBCC0\uC774\uCCB4\uAC00
+    \uC608\uC57D\uD55C \uD589\uB3D9\uC740 \uD558\uB2E8\uC758 \uD0C0\uC784\uB77C\uC778\uC5D0
+    \uD45C\uC2DC\uB429\uB2C8\uB2E4.\r\n\uD558\uB098\uC758 \uC2AC\uB86F\uC5D0\uB294
+    \uD55C \uC885\uB958\uC758 \uBCC0\uC774\uCCB4\uB9CC \uD589\uB3D9\uC744 \uC608\uC57D\uD560
+    \uC218 \uC788\uC2B5\uB2C8\uB2E4.\r\n"
+  automaticallyRegistered: 1
 --- !u!1 &331457601
 GameObject:
   m_ObjectHideFlags: 0
@@ -6841,6 +6863,7 @@ GameObject:
   - component: {fileID: 717904963}
   - component: {fileID: 717904965}
   - component: {fileID: 717904964}
+  - component: {fileID: 717904966}
   m_Layer: 5
   m_Name: Detail
   m_TagString: Untagged
@@ -6971,6 +6994,26 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 717904962}
   m_CullTransparentMesh: 1
+--- !u!114 &717904966
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 717904962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 717904964}
+  localizationKey: ui.bootstrap.text.609e9e2f
+  koreanSource: "\uBCC0\uC774\uCCB4\uB97C \uC120\uD0DD\uD558\uAC70\uB098 \uC608\uC57D\uB41C
+    \uD589\uB3D9\uC744 \uC120\uD0DD\uD558\uC5EC\n\uBCC0\uC5D0\uCCB4\uC758 \uC815\uBCF4\uB97C
+    \uD655\uC778\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.\r\n\uD53C\uD574\uB7C9\uACFC
+    \uD6A8\uACFC, \uBC94\uC704\uB97C \uBBF8\uB9AC \uD655\uC778\uD558\uC5EC\n\uBCC0\uC774\uCCB4\uAC00
+    \uC5B4\uB5A4 \uBC29\uC2DD\uC73C\uB85C \uACF5\uACA9\uD560\uC9C0 \uC608\uCE21\uD558\uC138\uC694."
+  automaticallyRegistered: 1
 --- !u!1 &759038630
 GameObject:
   m_ObjectHideFlags: 0
@@ -7780,6 +7823,7 @@ GameObject:
   - component: {fileID: 906263134}
   - component: {fileID: 906263136}
   - component: {fileID: 906263135}
+  - component: {fileID: 906263137}
   m_Layer: 5
   m_Name: Detail
   m_TagString: Untagged
@@ -7829,7 +7873,7 @@ MonoBehaviour:
   m_text: "\uCE90\uB9AD\uD130\uC640 \uBCC0\uC774\uCCB4\uAC00 \uC608\uC57D\uD55C \uD589\uB3D9\uC740
     \uD0C0\uC784\uB77C\uC778\uC5D0 \uD45C\uC2DC\uB41C \uC21C\uC11C\uB300\uB85C \uC2E4\uD589\uB429\uB2C8\uB2E4.\r\n\uC608\uC57D\uB41C
     \uD589\uB3D9\uC774 \uBAA8\uB450 \uC2E4\uD589\uB418\uBA74 \uB2E4\uC74C \uD134\uC73C\uB85C
-    \uB118\uC5B4\uAC00\uBA70,\v\uB2E4\uC2DC \uBCC0\uC774\uCCB4\uC758 \uD589\uB3D9\uC744
+    \uB118\uC5B4\uAC00\uBA70,\n\uB2E4\uC2DC \uBCC0\uC774\uCCB4\uC758 \uD589\uB3D9\uC744
     \uD655\uC778\uD558\uACE0 \uCE90\uB9AD\uD130\uC758 \uD589\uB3D9\uC744 \uC608\uC57D\uD560
     \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   m_isRightToLeft: 0
@@ -7911,6 +7955,27 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 906263133}
   m_CullTransparentMesh: 1
+--- !u!114 &906263137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 906263133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 906263135}
+  localizationKey: ui.bootstrap.text.7a2f57de
+  koreanSource: "\uCE90\uB9AD\uD130\uC640 \uBCC0\uC774\uCCB4\uAC00 \uC608\uC57D\uD55C
+    \uD589\uB3D9\uC740 \uD0C0\uC784\uB77C\uC778\uC5D0 \uD45C\uC2DC\uB41C \uC21C\uC11C\uB300\uB85C
+    \uC2E4\uD589\uB429\uB2C8\uB2E4.\r\n\uC608\uC57D\uB41C \uD589\uB3D9\uC774 \uBAA8\uB450
+    \uC2E4\uD589\uB418\uBA74 \uB2E4\uC74C \uD134\uC73C\uB85C \uB118\uC5B4\uAC00\uBA70,\n\uB2E4\uC2DC
+    \uBCC0\uC774\uCCB4\uC758 \uD589\uB3D9\uC744 \uD655\uC778\uD558\uACE0 \uCE90\uB9AD\uD130\uC758
+    \uD589\uB3D9\uC744 \uC608\uC57D\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
+  automaticallyRegistered: 1
 --- !u!1 &952447809
 GameObject:
   m_ObjectHideFlags: 0
@@ -10262,6 +10327,7 @@ GameObject:
   - component: {fileID: 1432872670}
   - component: {fileID: 1432872672}
   - component: {fileID: 1432872671}
+  - component: {fileID: 1432872673}
   m_Layer: 5
   m_Name: Detail
   m_TagString: Untagged
@@ -10392,6 +10458,26 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1432872669}
   m_CullTransparentMesh: 1
+--- !u!114 &1432872673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1432872669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1432872671}
+  localizationKey: ui.bootstrap.text.647c3b75
+  koreanSource: "\uAE30\uC5B5\uC740 \uC0AC\uC6A9\uD558\uB294 \uBC29\uC2DD\uC5D0 \uB530\uB77C
+    \uD06C\uAC8C \uB450 \uC885\uB958\uB85C \uB098\uB269\uB2C8\uB2E4.\r\n\uAC00 \uD3EC\uD568\uB41C
+    \uBC94\uC704\uB294 \uCE90\uB9AD\uD130\uAC00 \uBC14\uB77C\uBCF4\uB294 \uBC29\uD5A5\uC744
+    \uAE30\uC900\uC73C\uB85C \uD45C\uC2DC\uB418\uBA70,\n\uBCC4\uB3C4\uB85C \uADF8\uB9AC\uB4DC\uB97C
+    \uC120\uD0DD\uD558\uC9C0 \uC54A\uACE0 \uBC14\uB85C \uC2AC\uB86F\uC5D0 \uB4F1\uB85D\uB429\uB2C8\uB2E4.\r\n"
+  automaticallyRegistered: 1
 --- !u!1 &1452118894
 GameObject:
   m_ObjectHideFlags: 0
@@ -11017,7 +11103,6 @@ MonoBehaviour:
   confirmDialogSortingOrderOffset: 20
   lobbyQuitButtonText: "\uD0C0\uC774\uD2C0\uB85C"
   battleQuitButtonText: "\uC800\uC7A5 \uD6C4 \uC885\uB8CC"
-  giveUpConfirmMessage: "\uC815\uB9D0 \uD3EC\uAE30\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
   quitConfirmMessage: "\uAC8C\uC784\uC744 \uC885\uB8CC\uD558\uACA0\uC2B5\uB2C8\uAE4C?"
   confirmYesText: "\uC608"
   confirmNoText: "\uC544\uB2C8\uC624"
@@ -11391,6 +11476,7 @@ GameObject:
   - component: {fileID: 1607137109}
   - component: {fileID: 1607137111}
   - component: {fileID: 1607137110}
+  - component: {fileID: 1607137112}
   m_Layer: 5
   m_Name: Detail
   m_TagString: Untagged
@@ -11521,6 +11607,26 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1607137108}
   m_CullTransparentMesh: 1
+--- !u!114 &1607137112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1607137108}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1607137110}
+  localizationKey: ui.bootstrap.text.de1fae62
+  koreanSource: "\uAC00 \uD3EC\uD568\uB418\uC9C0 \uC54A\uC740 \uBC94\uC704\uB294
+    \uC804\uC7A5\uC5D0 \uD45C\uC2DC\uB418\uB294 \uBC94\uC704 \uC548\uC5D0\uC11C\n\uB4F1\uB85D\uD560
+    \uC704\uCE58\uB97C \uC120\uD0DD\uD574\uC57C \uD589\uB3D9\uC774 \uB4F1\uB85D\uB429\uB2C8\uB2E4.\r\n\uBCC0\uC774\uCCB4\uC758
+    \uD589\uB3D9\uC5D0 \uB300\uC751\uD560 \uC218 \uC788\uB3C4\uB85D \uCE90\uB9AD\uD130\uC758
+    \uD589\uB3D9\uC744 \uB4F1\uB85D\uD558\uC138\uC694."
+  automaticallyRegistered: 1
 --- !u!1 &1617615412
 GameObject:
   m_ObjectHideFlags: 0

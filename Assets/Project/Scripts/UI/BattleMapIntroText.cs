@@ -133,7 +133,7 @@ public class BattleMapIntroText : MonoBehaviour
 
     public void Play()
     {
-        Play(message);
+        Play(GameLocalization.Get("battle.intro.enter_battle_area", "전투 지역 진입"));
     }
 
     public void Play(string text)

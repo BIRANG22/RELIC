@@ -45,7 +45,6 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private string battleQuitButtonText = "저장 후 종료";
 
     [Header("Confirm Dialog Text")]
-    [SerializeField] private string giveUpConfirmMessage = "정말 포기하시겠습니까?";
     [SerializeField] private string quitConfirmMessage = "게임을 종료하겠습니까?";
     [SerializeField] private string confirmYesText = "예";
     [SerializeField] private string confirmNoText = "아니오";
@@ -437,9 +436,9 @@ public class UIManager : Singleton<UIManager>
             return;
 
         ShowConfirmDialog(
-            giveUpConfirmMessage,
-            confirmYesText,
-            confirmNoText,
+            GameLocalization.Get("ui.check.slogan", "정말로 포기하시겠습니까?"),
+            GameLocalization.Get("common.yes", confirmYesText),
+            GameLocalization.Get("common.no", confirmNoText),
             OnConfirmGiveUpToLobby,
             HideConfirmDialog);
     }

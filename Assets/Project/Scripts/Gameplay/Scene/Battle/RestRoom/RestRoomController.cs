@@ -161,7 +161,9 @@ public class RestRoomController : MonoBehaviour
 
         if (skillAwakenOptions.Count == 0)
         {
-            BattleWarningUI.ShowMessage("강화 가능한 장착 기억이 없습니다.");
+            BattleWarningUI.ShowMessage(GameLocalization.Get(
+                "battle.rest.no_upgradable_equipped_memory",
+                "강화 가능한 장착 기억이 없습니다."));
             return;
         }
 
@@ -182,7 +184,9 @@ public class RestRoomController : MonoBehaviour
 
         if (!opened)
         {
-            BattleWarningUI.ShowMessage("기억 강화 선택 패널을 열 수 없습니다.");
+            BattleWarningUI.ShowMessage(GameLocalization.Get(
+                "battle.rest.cannot_open_memory_upgrade",
+                "기억 강화 선택 패널을 열 수 없습니다."));
             if (!isRestUsed)
                 SetRestActionButtonsVisible(true);
         }

@@ -474,6 +474,7 @@ MonoBehaviour:
   nameText: {fileID: 0}
   iconImage: {fileID: 4501919877802591883}
   backImage: {fileID: 0}
+  lineImage: {fileID: 0}
   valueObject: {fileID: 0}
   valueText: {fileID: 0}
   scaleTarget: {fileID: 0}

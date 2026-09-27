@@ -2205,6 +2205,7 @@ MonoBehaviour:
   nodeInfoPresenter: {fileID: 0}
   battleSceneController: {fileID: 0}
   manualMapTemplate: {fileID: 0}
+  demoManualMapTemplate: {fileID: 0}
   eventMapRandomExclusionSettings:
     enabled: 1
     entries:
@@ -2238,88 +2239,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66c09b715519f4c47bbc61aec84d290c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterRoot: {fileID: 0}
-  monsterRoot: {fileID: 0}
-  monsterInfoPanelUI: {fileID: 0}
-  portraitImage: {fileID: 0}
-  characterNameText: {fileID: 0}
-  passiveIconImage: {fileID: 0}
-  passiveBack: {fileID: 0}
-  passiveText: {fileID: 0}
-  passiveHoverFadeDuration: 0.1
-  hpIconImage: {fileID: 1121064145}
-  hpValueText: {fileID: 936193032}
-  costIconImage: {fileID: 0}
-  costValueText: {fileID: 0}
-  armorIconImage: {fileID: 0}
-  armorValueText: {fileID: 0}
-  recoveryIconImage: {fileID: 0}
-  recoveryValueText: {fileID: 0}
-  skill01Button: {fileID: 0}
-  skill01IconImage: {fileID: 0}
-  skill01NameText: {fileID: 0}
-  skill02Button: {fileID: 0}
-  skill02IconImage: {fileID: 0}
-  skill02NameText: {fileID: 0}
-  skill03Button: {fileID: 0}
-  skill03IconImage: {fileID: 0}
-  skill03NameText: {fileID: 0}
-  skill04Button: {fileID: 0}
-  skill04IconImage: {fileID: 0}
-  skill04NameText: {fileID: 0}
   battleTimelineController: {fileID: 0}
   activeRelicTargetingController: {fileID: 0}
   turnExecutor: {fileID: 0}
-  moveButton: {fileID: 0}
-  moveIconImage: {fileID: 0}
-  moveNameText: {fileID: 0}
-  itemButton: {fileID: 0}
-  itemIconImage: {fileID: 0}
-  itemValueText: {fileID: 0}
-  rune01Image: {fileID: 0}
-  rune02Image: {fileID: 0}
-  rune03Image: {fileID: 0}
-  rune04Image: {fileID: 0}
-  rune05Image: {fileID: 0}
-  rune06Image: {fileID: 0}
-  relic01Image: {fileID: 0}
-  relic02Image: {fileID: 0}
-  relic03Image: {fileID: 0}
-  relic04Image: {fileID: 0}
-  relic05Image: {fileID: 0}
-  relic06Image: {fileID: 0}
   skillNameColor: {r: 1, g: 1, b: 1, a: 1}
   emptySkillNameColor: {r: 0.46666667, g: 0.46666667, b: 0.46666667, a: 1}
   unavailableSkillColor: {r: 0.33333334, g: 0.33333334, b: 0.33333334, a: 1}
   emptySkillName: "\uC2A4\uD0AC \uC5C6\uC74C"
-  skillInfoIconImage: {fileID: 0}
-  skillInfoRangeImage: {fileID: 0}
-  skillInfoNameText: {fileID: 0}
-  skillInfoRarityImage: {fileID: 0}
-  skillInfoRarityText: {fileID: 0}
   commonRarityColor: {r: 1, g: 1, b: 1, a: 1}
   rareRarityColor: {r: 1, g: 1, b: 1, a: 1}
   epicRarityColor: {r: 1, g: 1, b: 1, a: 1}
   uniqueRarityColor: {r: 1, g: 1, b: 1, a: 1}
   exclusiveRarityColor: {r: 1, g: 0.82, b: 0.2, a: 1}
-  skillInfoCostIconImage: {fileID: 0}
-  skillInfoCostNameText: {fileID: 0}
-  skillInfoCostValueText: {fileID: 0}
   costResourceIcon: {fileID: 21300000, guid: e9dc2d9ffcb39e645bb35dae5669cd88, type: 3}
   hpResourceIcon: {fileID: 21300000, guid: 2cd0a4f92d65d57488b0fde8624c99ce, type: 3}
   uniqueResourceIcon: {fileID: 21300000, guid: 9b940b659b022bc44a9c687bf0741c85, type: 3}
   moveResourceIcon: {fileID: 21300000, guid: e9dc2d9ffcb39e645bb35dae5669cd88, type: 3}
-  skillInfoTypeText: {fileID: 0}
-  skillInfoDetailsText: {fileID: 0}
-  skillEffect01: {fileID: 0}
-  skillEffect01Text: {fileID: 0}
-  skillEffect01Value: {fileID: 0}
-  skillEffect02: {fileID: 0}
-  skillEffect02Text: {fileID: 0}
-  skillEffect02Value: {fileID: 0}
-  skillEffect03: {fileID: 0}
-  skillEffect03Text: {fileID: 0}
-  skillEffect03Value: {fileID: 0}
   executionPositionY: 150
   reservationPositionY: 540
   battleSlotRectTransform: {fileID: 0}
@@ -2335,17 +2270,7 @@ MonoBehaviour:
   playBattleSlotDownSfx: 1
   battleSlotDownSfxId: 
   battleSlotDownSfxVolume: 1
-  numberChangeDuration: 0.2
-  statusEffectListRoot: {fileID: 0}
   statusEffectIconPrefab: {fileID: 2588654849037534649, guid: d35e4bff57f02274580c209f460926d7, type: 3}
-  statusEffectColumnCount: 6
-  statusEffectCellSize: {x: 60, y: 60}
-  statusEffectSpacing: {x: 4, y: 4}
-  resource01: {fileID: 0}
-  resource02: {fileID: 0}
-  resource03: {fileID: 0}
-  resource04: {fileID: 0}
-  resource05: {fileID: 0}
 --- !u!222 &1062553756
 CanvasRenderer:
   m_ObjectHideFlags: 0

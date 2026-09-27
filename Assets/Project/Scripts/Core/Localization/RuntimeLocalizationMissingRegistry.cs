@@ -20,6 +20,7 @@ public static class RuntimeLocalizationMissingRegistry
     {
         if (changedObject is not TMP_Text text ||
             !LocalizationTextRules.IsKoreanPlayerText(text.text) ||
+            !LocalizedTMPText.ShouldManageText(text) ||
             text.GetComponent<LocalizedTMPText>() != null ||
             !ReportedTextInstances.Add(text.GetInstanceID()))
             return;
@@ -39,9 +40,21 @@ public static class RuntimeLocalizationMissingRegistry
 
 public static class LocalizationTextRules
 {
+    private static readonly string[] MissingTranslationMarkers =
+    {
+        "미번역",
+        "Untranslated",
+        "未翻訳",
+        "未翻译",
+        "Sin traducir",
+    };
+
     public static bool IsKoreanPlayerText(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        if (IsMissingTranslationMarker(value))
             return false;
 
         foreach (char character in value)
@@ -49,6 +62,16 @@ public static class LocalizationTextRules
             if (character >= 0xAC00 && character <= 0xD7A3)
                 return true;
         }
+
+        return false;
+    }
+
+    public static bool IsMissingTranslationMarker(string value)
+    {
+        string normalized = (value ?? string.Empty).Trim();
+        foreach (string marker in MissingTranslationMarkers)
+            if (string.Equals(normalized, marker, StringComparison.OrdinalIgnoreCase))
+                return true;
 
         return false;
     }

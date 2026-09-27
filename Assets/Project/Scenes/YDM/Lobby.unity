@@ -1864,6 +1864,7 @@ GameObject:
   - component: {fileID: 53161223}
   - component: {fileID: 53161225}
   - component: {fileID: 53161224}
+  - component: {fileID: 53161226}
   m_Layer: 0
   m_Name: Storage_Text
   m_TagString: Untagged
@@ -1990,6 +1991,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 53161222}
   m_CullTransparentMesh: 1
+--- !u!114 &53161226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 53161222}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 53161224}
+  localizationKey: ui.lobby.text.ab4adb5d
+  koreanSource: "[\uBAA8\uC544\uB454 \uAC83\uB4E4\uC744 \uB2E4\uC2DC \uD655\uC778\uD574\uBCF8\uB2E4]"
+  automaticallyRegistered: 1
 --- !u!1 &53413743
 GameObject:
   m_ObjectHideFlags: 0
@@ -2192,7 +2209,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 66094691}
   localizationKey: common.skill
-  koreanSource: "\uC2A4\uD0AC"
+  koreanSource: 99
   automaticallyRegistered: 1
 --- !u!114 &66094691
 MonoBehaviour:
@@ -4235,6 +4252,7 @@ GameObject:
   - component: {fileID: 122089889}
   - component: {fileID: 122089892}
   - component: {fileID: 122089891}
+  - component: {fileID: 122089893}
   m_Layer: 0
   m_Name: Erosion_Value
   m_TagString: Untagged
@@ -4362,6 +4380,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 122089888}
   m_CullTransparentMesh: 1
+--- !u!114 &122089893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 122089888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 122089891}
+  localizationKey: ui.lobby.text.e3ca22fb
+  koreanSource: "\uC7AC\uD654 \uD68D\uB4DD\uB7C9 +999% / \uACBD\uD5D8\uCE58 \uD68D\uB4DD\uB7C9
+    +999%"
+  automaticallyRegistered: 1
 --- !u!1 &122697403
 GameObject:
   m_ObjectHideFlags: 0
@@ -5560,6 +5595,7 @@ GameObject:
   - component: {fileID: 152484764}
   - component: {fileID: 152484766}
   - component: {fileID: 152484765}
+  - component: {fileID: 152484767}
   m_Layer: 5
   m_Name: DescriptionText
   m_TagString: Untagged
@@ -5687,6 +5723,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 152484763}
   m_CullTransparentMesh: 1
+--- !u!114 &152484767
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 152484763}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 152484765}
+  localizationKey: ui.lobby.text.d03b00de
+  koreanSource: "\uD560\uBC84\uB4DC\uB97C \uB0B4\uB824\uCC0D\uC5B4 7\uC758 \uD53C\uD574\uB97C
+    \uC8FC\uACE0 1\uCE78 \uBC00\uCCD0\uB0B8\uB2E4."
+  automaticallyRegistered: 1
 --- !u!1 &152604198
 GameObject:
   m_ObjectHideFlags: 0
@@ -20410,8 +20463,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 507694173}
-  localizationKey: ui.lobby.text.de97bb9d
-  koreanSource: "\uAD6C\uD604"
+  localizationKey: ui.lobby.text.a6c6d920
+  koreanSource: "\uD2B9\uD654"
   automaticallyRegistered: 1
 --- !u!114 &507694173
 MonoBehaviour:
@@ -20680,8 +20733,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 515573489}
-  localizationKey: battle.shard
-  koreanSource: "\uD30C\uD3B8"
+  localizationKey: common.rune
+  koreanSource: "\uB8EC"
   automaticallyRegistered: 1
 --- !u!114 &515573489
 MonoBehaviour:
@@ -28679,6 +28732,7 @@ GameObject:
   - component: {fileID: 597528887}
   - component: {fileID: 597528889}
   - component: {fileID: 597528888}
+  - component: {fileID: 597528890}
   m_Layer: 0
   m_Name: ErosionSelect_Text
   m_TagString: Untagged
@@ -28806,6 +28860,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 597528886}
   m_CullTransparentMesh: 1
+--- !u!114 &597528890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 597528886}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 597528888}
+  localizationKey: ui.lobby.text.a01a7eb4
+  koreanSource: "[\uCE68\uC2DD\uC774 \uC9D9\uC5B4\uC9C8\uC218\uB85D, \uB354 \uB9CE\uC740
+    \uC794\uC7AC\uAC00 \uB0A8\uB294\uB2E4]"
+  automaticallyRegistered: 1
 --- !u!1 &603370993
 GameObject:
   m_ObjectHideFlags: 0
@@ -32468,8 +32539,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 697952470}
-  localizationKey: common.shared
-  koreanSource: "\uACF5\uC6A9"
+  localizationKey: ui.lobby.text.061bd217
+  koreanSource: "\uACF5\uC6A9 \uB8EC"
   automaticallyRegistered: 1
 --- !u!114 &697952470
 MonoBehaviour:
@@ -35927,6 +35998,7 @@ GameObject:
   - component: {fileID: 790137224}
   - component: {fileID: 790137226}
   - component: {fileID: 790137225}
+  - component: {fileID: 790137227}
   m_Layer: 0
   m_Name: ErosionSelect_Text
   m_TagString: Untagged
@@ -36054,6 +36126,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 790137223}
   m_CullTransparentMesh: 1
+--- !u!114 &790137227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 790137223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 790137225}
+  localizationKey: ui.lobby.text.f99a2f23
+  koreanSource: "[\uC62C\uBC14\uB978 \uC870\uD569\uB9CC\uC774, \uC0C8\uB85C\uC6B4
+    \uC131\uC9C8\uC744 \uB9CC\uB4E4\uC5B4\uB0B8\uB2E4]"
+  automaticallyRegistered: 1
 --- !u!1 &790710516
 GameObject:
   m_ObjectHideFlags: 0
@@ -38295,8 +38384,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 840023467}
-  localizationKey: ui.lobby.text.dae4b44d
-  koreanSource: "\uBC1C\uD604"
+  localizationKey: ui.lobby.text.2e3d6f3e
+  koreanSource: "\uD574\uBC29"
   automaticallyRegistered: 1
 --- !u!114 &840023467
 MonoBehaviour:
@@ -59289,6 +59378,7 @@ GameObject:
   - component: {fileID: 1181412109}
   - component: {fileID: 1181412112}
   - component: {fileID: 1181412111}
+  - component: {fileID: 1181412113}
   m_Layer: 5
   m_Name: Name
   m_TagString: Untagged
@@ -59415,6 +59505,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1181412108}
   m_CullTransparentMesh: 1
+--- !u!114 &1181412113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1181412108}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1181412111}
+  localizationKey: ui.lobby.text.b1bc1a93
+  koreanSource: "\uD0D0\uC0AC \uAC70\uC810"
+  automaticallyRegistered: 1
 --- !u!1 &1182663095
 GameObject:
   m_ObjectHideFlags: 0
@@ -61390,6 +61496,7 @@ GameObject:
   - component: {fileID: 1238097439}
   - component: {fileID: 1238097441}
   - component: {fileID: 1238097440}
+  - component: {fileID: 1238097442}
   m_Layer: 0
   m_Name: RelicShop_Text
   m_TagString: Untagged
@@ -61517,6 +61624,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1238097438}
   m_CullTransparentMesh: 1
+--- !u!114 &1238097442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1238097438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1238097440}
+  localizationKey: ui.lobby.text.615debb3
+  koreanSource: "[\uD758\uB824\uBCF4\uB0B8 \uD798\uC740, \uC720\uBB3C\uACFC\uC758
+    \uACF5\uBA85\uC744 \uC774\uB8EC\uB2E4]"
+  automaticallyRegistered: 1
 --- !u!1 &1240254317
 GameObject:
   m_ObjectHideFlags: 0
@@ -74927,8 +75051,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1503996709}
-  localizationKey: common.skill
-  koreanSource: "\uC2A4\uD0AC"
+  localizationKey: ui.timelinepopupprefab.nametext
+  koreanSource: "\uC2A4\uD0AC\uC774\uB984\uAE38\uC774"
   automaticallyRegistered: 1
 --- !u!1 &1504153546
 GameObject:
@@ -78290,8 +78414,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1607105169}
-  localizationKey: common.exclusive
-  koreanSource: "\uC804\uC6A9"
+  localizationKey: ui.lobby.text.2825faf2
+  koreanSource: "\uC804\uC6A9 \uB8EC"
   automaticallyRegistered: 1
 --- !u!114 &1607105169
 MonoBehaviour:

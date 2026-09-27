@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 
 public static class LocalizationWorkbookWriter
@@ -30,6 +31,12 @@ public static class LocalizationWorkbookWriter
             .ToList();
         if (additions.Count == 0)
             return 0;
+
+        foreach (LocalizationWorkbookEntry addition in additions)
+        {
+            ValidateXmlText(addition.Key, addition.Key, "Key");
+            ValidateXmlText(addition.Korean, addition.Key, "Korean(ko)");
+        }
 
         string backupPath = workbookPath + ".localization-manager.backup";
         File.Copy(workbookPath, backupPath, true);
@@ -72,9 +79,16 @@ public static class LocalizationWorkbookWriter
         if (entries == null)
             return 0;
 
+        LocalizationWorkbookEntry[] sourceEntries = entries.Where(entry => entry != null).ToArray();
+        foreach (LocalizationWorkbookEntry entry in sourceEntries)
+        {
+            ValidateXmlText(entry.Key, entry.Key, "Key");
+            ValidateXmlText(entry.Korean, entry.Key, "Korean(ko)");
+        }
+
         var rows = LocalizationXlsxReader.ReadSheet(workbookPath, LocalizationExcelImporter.WorksheetName);
         LocalizationXlsxReader.ValidateHeaders(rows);
-        IReadOnlyList<IReadOnlyList<string>> updatedRows = ApplySourceUpdatesToRows(rows, entries);
+        IReadOnlyList<IReadOnlyList<string>> updatedRows = ApplySourceUpdatesToRows(rows, sourceEntries);
         var changedKeys = rows.Skip(1)
             .Zip(updatedRows.Skip(1), (before, after) => new { before, after })
             .Where(pair => !pair.before.SequenceEqual(pair.after))
@@ -308,6 +322,28 @@ public static class LocalizationWorkbookWriter
     }
 
     private static int FindHeader(IReadOnlyList<string> headers, string header) => headers.ToList().FindIndex(value => string.Equals(value, header, StringComparison.Ordinal));
+    private static void ValidateXmlText(string value, string key, string fieldName)
+    {
+        if (string.IsNullOrEmpty(value))
+            return;
+
+        for (int index = 0; index < value.Length; index++)
+        {
+            char character = value[index];
+            if (XmlConvert.IsXmlChar(character))
+                continue;
+
+            if (index + 1 < value.Length &&
+                XmlConvert.IsXmlSurrogatePair(value[index + 1], character))
+            {
+                index++;
+                continue;
+            }
+
+            throw new InvalidDataException(
+                $"Localization key '{key}' field '{fieldName}' contains XML-invalid character U+{(int)character:X4}.");
+        }
+    }
     private static string Value(IReadOnlyList<string> row, int index) => index >= 0 && index < row.Count ? row[index] ?? string.Empty : string.Empty;
     private static IReadOnlyList<string> ReadSharedStrings(ZipArchive archive)
     {

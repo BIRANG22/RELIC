@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -42,6 +43,77 @@ public static class LocalizationProjectScanner
         return LocalizationTextRules.IsKoreanPlayerText(value);
     }
 
+    public static IReadOnlyList<LocalizationSourceEntry> FindExplicitLocalizationSources(string source)
+    {
+        string code = RemoveComments(source ?? string.Empty);
+        var results = new List<LocalizationSourceEntry>();
+        const string literal = "\"(?<value>(?:\\\\.|[^\"\\\\])*)\"";
+        var koreanOnly = new Regex(
+            @"GameLocalization\.(?:Get|FormatWithFallback)\s*\(\s*" + literal.Replace("value", "key") +
+            @"\s*,\s*" + literal.Replace("value", "korean"),
+            RegexOptions.Multiline);
+        foreach (Match match in koreanOnly.Matches(code))
+            results.Add(new LocalizationSourceEntry(
+                DecodeCSharpLiteral(match.Groups["key"].Value),
+                DecodeCSharpLiteral(match.Groups["korean"].Value)));
+
+        return results
+            .Where(entry => !string.IsNullOrWhiteSpace(entry.Key))
+            .GroupBy(entry => entry.Key, StringComparer.Ordinal)
+            .Select(group => group.First())
+            .ToArray();
+    }
+
+    /// <summary>
+    /// 번역 키 없이 동적 출력 API에 직접 전달된 한국어 리터럴을 찾습니다.
+    /// 일반 로그/내부 문자열은 자동 등록하지 않습니다.
+    /// </summary>
+    public static IReadOnlyList<string> FindDynamicDisplayLiterals(string source)
+    {
+        string code = RemoveComments(source ?? string.Empty);
+        const string literal = "\"(?<value>(?:\\\\.|[^\"\\\\])*)\"";
+        var sinkCall = new Regex(
+            @"(?:BattleWarningUI\.ShowMessage|ShowBattleWarning|BattleMapIntroText\.ShowMessage(?:AndWait)?)\s*\(\s*" + literal,
+            RegexOptions.Multiline);
+
+        return sinkCall.Matches(code)
+            .Cast<Match>()
+            .Select(match => DecodeCSharpLiteral(match.Groups["value"].Value))
+            .Where(IsLocalizableKoreanText)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    public static IReadOnlyList<string> FindUnityYamlTmpTexts(string source)
+    {
+        return Regex.Matches(
+                source ?? string.Empty,
+                "(?ms)^[ \\t]*m_text:[ \\t]*(?<value>\\\"(?:\\\\.|[^\\\"\\\\])*\\\"|[^\\r\\n]*)")
+            .Cast<Match>()
+            .Select(match => Regex.Replace(match.Groups["value"].Value.Trim(), @"\r?\n\s+", " "))
+            .Select(DecodeUnityYamlText)
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .ToArray();
+    }
+
+    public static IReadOnlyList<string> FindUnityYamlPlayerTextFields(string source)
+    {
+        return Regex.Matches(
+                source ?? string.Empty,
+                @"(?m)^\s*(?:displayName):\s*(?<value>.*)$")
+            .Cast<Match>()
+            .Select(match => DecodeUnityYamlText(match.Groups["value"].Value))
+            .Where(IsLocalizableKoreanText)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static string DecodeCSharpLiteral(string value)
+    {
+        try { return Regex.Unescape(value ?? string.Empty); }
+        catch (ArgumentException) { return value ?? string.Empty; }
+    }
+
     /// <summary>Unity YAML에 직렬화된 TMP 문자열을 스캔용 원문으로 복원합니다.</summary>
     public static string DecodeUnityYamlText(string serializedValue)
     {
@@ -54,7 +126,7 @@ public static class LocalizationProjectScanner
 
         try
         {
-            return Regex.Unescape(value);
+            return NormalizeKnownXmlControls(Regex.Unescape(value));
         }
         catch (ArgumentException)
         {
@@ -230,5 +302,22 @@ public static class LocalizationProjectScanner
             if (current != '\\') escaped = false;
         }
         return result.ToString();
+    }
+
+    public static string NormalizeKnownXmlControls(string value)
+    {
+        return (value ?? string.Empty).Replace('\v', '\n');
+    }
+}
+
+public sealed class LocalizationSourceEntry
+{
+    public string Key { get; }
+    public string Korean { get; }
+
+    public LocalizationSourceEntry(string key, string korean)
+    {
+        Key = key ?? string.Empty;
+        Korean = korean ?? string.Empty;
     }
 }
