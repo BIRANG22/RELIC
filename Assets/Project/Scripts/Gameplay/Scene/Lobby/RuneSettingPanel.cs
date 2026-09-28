@@ -29,7 +29,6 @@ public class RuneSettingPanel : MonoBehaviour
 
     [Header("Common Rune Purchase")]
     [Tooltip("미구매 공용 룬을 클릭했을 때 CHECK 확인창에 표시할 문구입니다.")]
-    [SerializeField] private string commonRunePurchaseConfirmMessage = "활성화하시겠습니까?";
     [SerializeField] private GameObject buyButtonRoot;
     [SerializeField] private Button buyButton;
     [SerializeField] private TMP_Text buyPriceText;
@@ -261,7 +260,7 @@ public class RuneSettingPanel : MonoBehaviour
         {
             ClearRuneSlotsAndLockAll();
             ClearRuneIconButtons();
-            ShowWarning("데이터를 사용할 수 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.DataUnavailable));
             return;
         }
 
@@ -269,7 +268,7 @@ public class RuneSettingPanel : MonoBehaviour
         {
             ClearRuneSlotsAndLockAll();
             ClearRuneIconButtons();
-            ShowWarning("선택된 캐릭터가 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterNotSelected));
             return;
         }
 
@@ -277,7 +276,7 @@ public class RuneSettingPanel : MonoBehaviour
         {
             ClearRuneSlotsAndLockAll();
             ClearRuneIconButtons();
-            ShowWarning(string.Format("캐릭터 데이터를 찾을 수 없다: {0}", characterId));
+            ShowWarning(GameLocalization.Format(LocalizationKeys.Warning.CharacterDataNotFoundWithId, characterId));
             return;
         }
 
@@ -287,7 +286,7 @@ public class RuneSettingPanel : MonoBehaviour
         {
             ClearRuneSlotsAndLockAll();
             ClearRuneIconButtons();
-            ShowWarning(string.Format("캐릭터 데이터를 찾을 수 없다: {0}", characterId));
+            ShowWarning(GameLocalization.Format(LocalizationKeys.Warning.CharacterDataNotFoundWithId, characterId));
             return;
         }
 
@@ -801,7 +800,7 @@ public class RuneSettingPanel : MonoBehaviour
 
             if (IsCommonRune(runeData) && IsCommonRuneEquippedByOtherCharacter(runeData))
             {
-                ShowWarning("다른 캐릭터가 장착 중인 파편입니다.");
+                ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.RuneEquippedByOtherCharacter));
                 return false;
             }
         }
@@ -992,13 +991,13 @@ public class RuneSettingPanel : MonoBehaviour
     {
         if (currentRuntimeData == null || currentMasterData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 한다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectCharacterFirst));
             return;
         }
 
         if (runeData == null)
         {
-            ShowWarning("선택된 파편이 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.NoRuneSelected));
             return;
         }
 
@@ -1012,7 +1011,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (!IsRuneValidForCurrentCharacter(runeData))
         {
-            ShowWarning("현재 캐릭터가 사용할 수 없는 파편이다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.RuneNotAvailable));
             return;
         }
 
@@ -1026,7 +1025,7 @@ public class RuneSettingPanel : MonoBehaviour
         // 현재 캐릭터가 아닌 다른 캐릭터가 이미 사용 중이면 새로 장착하지 않습니다.
         if (IsCommonRune(runeData) && IsCommonRuneEquippedByOtherCharacter(runeData))
         {
-            ShowWarning("다른 캐릭터가 장착 중인 파편입니다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.RuneEquippedByOtherCharacter));
             return;
         }
 
@@ -1034,7 +1033,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (emptySlot == null)
         {
-            ShowWarning("비어있는 파편 슬롯이 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.NoEmptyRuneSlot));
             return;
         }
 
@@ -1074,9 +1073,9 @@ public class RuneSettingPanel : MonoBehaviour
         if (locked)
         {
             if (runeData.TargetCharacterId == "All")
-                ShowWarning("플레이어 또는 계정 레벨 조건이 필요한 공용 파편이다.");
+                ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SharedRuneLevelRequired));
             else
-                ShowWarning(string.Format("캐릭터 LV.{0}에 해금되는 전용 파편이다.", requiredLevel));
+                ShowWarning(GameLocalization.Format(LocalizationKeys.Warning.CharacterRuneUnlockLevel, requiredLevel));
 
             return;
         }
@@ -1095,7 +1094,7 @@ public class RuneSettingPanel : MonoBehaviour
         if (DataManager.Instance == null || DataManager.Instance.LobbyRuntimeStore == null)
         {
             ClearSelectedPurchaseRune();
-            ShowWarning("데이터를 불러올 수 없습니다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.DataUnavailable));
             return;
         }
 
@@ -1137,12 +1136,8 @@ public class RuneSettingPanel : MonoBehaviour
             return;
 
         string confirmedRuneId = selectedPurchaseRune.RuneId;
-        string message = string.IsNullOrWhiteSpace(commonRunePurchaseConfirmMessage)
-            ? "활성화하시겠습니까?"
-            : commonRunePurchaseConfirmMessage;
-
         UIManager.Instance.ShowConfirmDialog(
-            message,
+            GameLocalization.Get(LocalizationKeys.Dialog.RuneActivateConfirm),
             () =>
             {
                 UIManager.Instance?.HideConfirmDialog();
@@ -1281,7 +1276,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (DataManager.Instance == null || DataManager.Instance.LobbyRuntimeStore == null)
         {
-            ShowWarning("데이터를 불러올 수 없습니다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.DataUnavailable));
             return;
         }
 
@@ -1407,7 +1402,7 @@ public class RuneSettingPanel : MonoBehaviour
     {
         if (runeData == null)
         {
-            ShowWarning("해체할 파편이 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.NoRuneToUnequip));
             return;
         }
 
@@ -1436,7 +1431,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (!removed)
         {
-            ShowWarning("장착 중인 파편이 아니다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.RuneNotEquipped));
             return;
         }
 
@@ -1454,7 +1449,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (slotButton == null)
         {
-            ShowWarning("파편 슬롯이 연결되지 않았다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.RuneSlotNotConnected));
             return;
         }
 
@@ -1466,7 +1461,7 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (slotButton.EquippedRune == null)
         {
-            ShowWarning("해체할 파편이 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.NoRuneToUnequip));
             return;
         }
 
@@ -1645,11 +1640,11 @@ public class RuneSettingPanel : MonoBehaviour
 
         if (runeData != null && runeData.TargetCharacterId == "All")
         {
-            ShowWarning("아직 잠겨있는 공용 파편이다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SharedRuneLocked));
             return;
         }
 
-        ShowWarning(string.Format("캐릭터 LV.{0}에 해금되는 전용 파편이다.", requiredLevel));
+        ShowWarning(GameLocalization.Format(LocalizationKeys.Warning.CharacterRuneUnlockLevel, requiredLevel));
     }
 
     private void RefreshRuneIconEquippedStates()
@@ -2098,7 +2093,7 @@ public class RuneSettingPanel : MonoBehaviour
             return;
         }
 
-        ShowWarning("아직 잠겨있는 파편 슬롯이다.");
+        ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.RuneSlotLocked));
     }
 
     private int GetRuneSlotRequiredLevel(int slotIndex)

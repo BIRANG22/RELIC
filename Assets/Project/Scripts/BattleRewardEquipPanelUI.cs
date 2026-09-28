@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
@@ -772,10 +772,10 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
         return parsedRarity switch
         {
-            RelicRarity.Common => "일반 유물",
-            RelicRarity.Rare => "레어 유물",
-            RelicRarity.Epic => "에픽 유물",
-            RelicRarity.Unique => "유니크 유물",
+            RelicRarity.Common => GameLocalization.Get("relic.rarity.common"),
+            RelicRarity.Rare => GameLocalization.Get("relic.rarity.rare"),
+            RelicRarity.Epic => GameLocalization.Get("relic.rarity.epic"),
+            RelicRarity.Unique => GameLocalization.Get("relic.rarity.unique"),
             _ => string.Empty
         };
     }

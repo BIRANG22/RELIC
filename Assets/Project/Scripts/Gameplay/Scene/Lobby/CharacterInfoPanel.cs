@@ -16,9 +16,6 @@ public class CharacterInfoPanel : MonoBehaviour
     [SerializeField] private TMP_Text hpLabelText;
     [SerializeField, FormerlySerializedAs("staminaLabelText")] private TMP_Text costLabelText;
     [SerializeField, FormerlySerializedAs("staminaRecoveryLabelText")] private TMP_Text recoveryLabelText;
-    [SerializeField] private string hpLabel = "생명력";
-    [SerializeField] private string costLabel = "마나";
-    [SerializeField] private string recoveryLabel = "마나재생량";
 
     [Header("Rune Modified Stat Display")]
     [SerializeField] private bool showModifiedStatDelta = true;
@@ -34,13 +31,8 @@ public class CharacterInfoPanel : MonoBehaviour
     [SerializeField] private string storyTooltipTitleColor = "#4E66DF";
 
     [Header("Karma Acquisition Text")]
-    [SerializeField] private string karmaAcquisitionTitle = "카르마 획득 조건";
 
     [Header("Stat Tooltip Text")]
-    [SerializeField] private string hpTooltipTitle = "생명력";
-    [SerializeField] private string costTooltipTitle = "마나";
-    [SerializeField] private string recoveryTooltipTitle = "마나재생량";
-    [SerializeField] private string karmaTooltipTitle = "카르마";
 
     [Header("Story Tooltip Timing")]
     [SerializeField, Min(0f)] private float storyTooltipRestoreDelay = 0.15f;
@@ -365,7 +357,7 @@ public class CharacterInfoPanel : MonoBehaviour
         currentStoryText = FormatStoryTooltip(
             GameLocalization.Get(
                 LocalizationKeys.CharacterSetting.KarmaAcquisitionTitle,
-                NormalizeEditableText(karmaAcquisitionTitle)),
+                GameLocalization.Get(LocalizationKeys.CharacterSetting.KarmaAcquisitionTitle)),
             NormalizeEditableText(GameDataLocalization.CharacterRegeneration(currentMasterData)),
             "");
     }
@@ -375,13 +367,13 @@ public class CharacterInfoPanel : MonoBehaviour
         switch (statType)
         {
             case CharacterStatTooltipTarget.StatType.HP:
-                return GameLocalization.Get("common.hp", NormalizeEditableText(hpTooltipTitle));
+                return GameLocalization.Get("common.hp");
             case CharacterStatTooltipTarget.StatType.Cost:
-                return GameLocalization.Get("common.cost", NormalizeEditableText(costTooltipTitle));
+                return GameLocalization.Get("common.cost");
             case CharacterStatTooltipTarget.StatType.CostRecovery:
-                return GameLocalization.Get("common.recovery", NormalizeEditableText(recoveryTooltipTitle));
+                return GameLocalization.Get("common.recovery");
             case CharacterStatTooltipTarget.StatType.Karma:
-                return GameLocalization.Get("resource.karma", NormalizeEditableText(karmaTooltipTitle));
+                return GameLocalization.Get("resource.karma");
             default:
                 return string.Empty;
         }
@@ -393,20 +385,16 @@ public class CharacterInfoPanel : MonoBehaviour
         {
             case CharacterStatTooltipTarget.StatType.HP:
                 return GameLocalization.Get(
-                    "lobby.stat.hp.description",
-                    "생명력이 0이 되면 전투불능 상태가 된다.");
+                    "lobby.stat.hp.description");
             case CharacterStatTooltipTarget.StatType.Cost:
                 return GameLocalization.Get(
-                    "lobby.stat.cost.description",
-                    "보유 마나가 부족하면 행동을 등록할 수 없다.");
+                    "lobby.stat.cost.description");
             case CharacterStatTooltipTarget.StatType.CostRecovery:
                 return GameLocalization.Get(
-                    "lobby.stat.recovery.description",
-                    "턴이 시작될 때 자동으로 회복되는 마나 수치이다.");
+                    "lobby.stat.recovery.description");
             case CharacterStatTooltipTarget.StatType.Karma:
                 return GameLocalization.Get(
-                    LocalizationKeys.CharacterSetting.KarmaDescription,
-                    "각자의 전투 방식에 따라 축적되며, 기억을 발현하는 힘이 된다.");
+                    LocalizationKeys.CharacterSetting.KarmaDescription);
             default:
                 return string.Empty;
         }
@@ -436,13 +424,13 @@ public class CharacterInfoPanel : MonoBehaviour
         AutoBindStatLabelTexts();
 
         if (hpLabelText != null)
-            hpLabelText.text = hpLabel;
+            hpLabelText.text = GameLocalization.Get("common.hp");
 
         if (costLabelText != null)
-            costLabelText.text = costLabel;
+            costLabelText.text = GameLocalization.Get("common.cost");
 
         if (recoveryLabelText != null)
-            recoveryLabelText.text = recoveryLabel;
+            recoveryLabelText.text = GameLocalization.Get("common.recovery");
     }
 
 
@@ -528,7 +516,7 @@ public class CharacterInfoPanel : MonoBehaviour
 
     private string FormatStoryTooltip(string statName, string description, string valueLine)
     {
-        string title = string.IsNullOrWhiteSpace(statName) ? "정보" : statName.Trim();
+        string title = string.IsNullOrWhiteSpace(statName) ? GameLocalization.Get("common.info") : statName.Trim();
         string body = string.IsNullOrWhiteSpace(description) ? "" : description.Trim();
         string value = string.IsNullOrWhiteSpace(valueLine) ? "" : valueLine.Trim();
 

@@ -5,7 +5,6 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 [DisallowMultipleComponent]
@@ -77,16 +76,10 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     private GameObject activeCompoundTransferEffect;
 
     public bool IsOpen => panelRoot != null && panelRoot.activeSelf;
-    private void Awake() { BindSceneObjects(); ProtectCultureStorageHeader(); BindButtons(); EnsureStorageSlots(); }
-    private void OnEnable() { BindSceneObjects(); ProtectCultureStorageHeader(); StartCoroutine(ProtectCultureStorageHeaderNextFrame()); BindButtons(); EnsureStorageSlots(); RefreshAll(); RefreshPanelText(); }
+    private void Awake() { BindSceneObjects(); BindCultureStorageHeader(); BindButtons(); EnsureStorageSlots(); }
+    private void OnEnable() { BindSceneObjects(); BindCultureStorageHeader(); BindButtons(); EnsureStorageSlots(); RefreshAll(); RefreshPanelText(); }
 
-    private IEnumerator ProtectCultureStorageHeaderNextFrame()
-    {
-        yield return null;
-        ProtectCultureStorageHeader();
-    }
-
-    private void ProtectCultureStorageHeader()
+    private void BindCultureStorageHeader()
     {
         Transform root = panelRoot != null ? panelRoot.transform : transform;
         Transform storage = Find(root, "Storage");
@@ -96,21 +89,12 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         if (nameText == null)
             return;
 
-        if (nameText.GetComponent<LocalizationIgnore>() == null)
-            nameText.gameObject.AddComponent<LocalizationIgnore>();
-
-        if (nameRoot.GetComponent<LocalizationIgnore>() == null)
-            nameRoot.gameObject.AddComponent<LocalizationIgnore>();
-
         LocalizedTMPText localizer = nameText.GetComponent<LocalizedTMPText>();
-        if (localizer != null)
-            localizer.enabled = false;
+        if (localizer == null)
+            localizer = nameText.gameObject.AddComponent<LocalizedTMPText>();
 
-        LocalizeStringEvent legacyLocalizer = nameText.GetComponent<LocalizeStringEvent>();
-        if (legacyLocalizer != null)
-            legacyLocalizer.enabled = false;
-
-        nameText.text = "재료";
+        localizer.enabled = true;
+        localizer.Configure(LocalizationKeys.Lobby.CultureMaterial, string.Empty, false);
     }
 
     private void Update()
@@ -119,15 +103,6 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             return;
 
         RefreshAll();
-    }
-
-    private void LateUpdate()
-    {
-        if (!IsOpen)
-            return;
-
-        // 외부 텍스트/로컬라이즈 갱신 이후에도 배양 패널의 고정 제목은 "재료"를 유지합니다.
-        ProtectCultureStorageHeader();
     }
 
     public void Open()
@@ -198,12 +173,12 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             bool filled = CultureTankResearchService.TryGetTank(lobby, slotId, out CultureTankResearchRuntimeData slot);
             if (row.Label != null)
                 row.Label.text = string.Format(
-                    GameLocalization.Get("lobby.culture_tank_number", "배양조 {0}"),
+                    GameLocalization.Get("lobby.culture_tank_number"),
                     i + 1);
             if (row.StateLabel != null)
                 row.StateLabel.text = filled
-                    ? GameLocalization.Get("lobby.material_inserted", "재료 투입됨")
-                    : GameLocalization.Get("lobby.empty", "비어 있음");
+                    ? GameLocalization.Get("lobby.material_inserted")
+                    : GameLocalization.Get("lobby.empty");
             Sprite icon = null;
             if (filled) DataManager.Instance?.ItemIconDatabase?.TryGetIcon(slot.ItemId, out icon);
             row.SetIcon(icon);
@@ -307,7 +282,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     {
         DataManager data = DataManager.Instance;
         if (!CultureTankResearchService.TryCombine(GetLobby(), data?.ItemDatabase, data?.CompoundDatabase, out _, out string error))
-        { BattleWarningUI.ShowMessage(GameLocalization.Get("lobby.cannot_combine", "조합할 수 없습니다.")); Debug.LogWarning($"[LobbyCultureTankPanelPresenter] {error}"); return; }
+        { BattleWarningUI.ShowMessage(GameLocalization.Get("lobby.cannot_combine")); Debug.LogWarning($"[LobbyCultureTankPanelPresenter] {error}"); return; }
         selectedSlotIndex = -1; SaveAndPublish(); RefreshAll();
     }
 

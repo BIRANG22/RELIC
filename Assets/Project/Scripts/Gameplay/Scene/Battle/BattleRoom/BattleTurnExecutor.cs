@@ -66,7 +66,6 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField, Min(0f)] private float multiHitActionInterval = 0.12f;
 
     [Header("Intro Text")]
-    [SerializeField] private string battleProgressMessage = "전투 진행";
     [SerializeField] private bool waitIntroText = false;
     [SerializeField] private float introTextTimeout = 1.5f;
 
@@ -441,13 +440,13 @@ public class BattleTurnExecutor : MonoBehaviour
 
         if (!isMonsterPlanReady || !isPlayerInputReady)
         {
-            ShowBattleWarning("아직 행동 준비가 완료되지 않았습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.ActionPreparationIncomplete));
             return;
         }
 
         if (timelineController == null)
         {
-            ShowBattleWarning("타임라인 컨트롤러를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineControllerMissing));
             return;
         }
 
@@ -1376,7 +1375,8 @@ public class BattleTurnExecutor : MonoBehaviour
     {
         PlaySfx(playBattleProgressSfx, battleProgressSfxId, battleProgressSfxVolume);
 
-        IEnumerator routine = BattleMapIntroText.ShowMessageAndWait(battleProgressMessage);
+        IEnumerator routine = BattleMapIntroText.ShowMessageAndWait(
+            GameLocalization.Get(LocalizationKeys.Battle.Progress));
 
         if (routine == null)
             yield break;

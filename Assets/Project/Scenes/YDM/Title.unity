@@ -1019,11 +1019,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99fb8c43500258c42bfe1ca5dc3df130, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  confirmMessage: "\uC815\uB9D0 \uD3EC\uAE30\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
-  confirmYesText: 
-  confirmNoText: "\uC544\uB2C8\uC624"
-  missingRunMessage: "\uD3EC\uAE30\uD560 \uD0D0\uC0AC \uC815\uBCF4\uAC00 \uC5C6\uC74C"
-  completeMessage: "\uC9C4\uD589 \uC911\uC778 \uD0D0\uC0AC\uB97C \uD3EC\uAE30\uD588\uC2B5\uB2C8\uB2E4."
   playClickSound: 0
   clickSfx: ui.normal.click
 --- !u!114 &202248588
@@ -5670,7 +5665,6 @@ MonoBehaviour:
   playTitleBgmOnStart: 1
   titleBgmRetryFrameCount: 2
   warningUI: {fileID: 757439506}
-  unavailableMessage: "\uC544\uC9C1 \uC900\uBE44\uB418\uC9C0 \uC54A\uC558\uC2B5\uB2C8\uB2E4."
   unavailableButtons: []
   startButtonObject: {fileID: 141494590}
   continueButtonObject: {fileID: 1796815589}
@@ -6924,7 +6918,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lockedImage: {fileID: 0}
-  missingContinueMessage: "\uC774\uC5B4\uC11C \uD560 \uC815\uBCF4\uAC00 \uC5C6\uC74C"
   playClickSound: 0
   clickSfx: ui.normal.click
 --- !u!114 &1796815596

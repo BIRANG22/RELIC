@@ -1109,7 +1109,7 @@ public class BattleRoomLoader : MonoBehaviour
         if (runtimeData != null &&
             !SteamBattleStateSynchronizer.CanLocalPlayerControlCharacter(runtimeData.CharacterId))
         {
-            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.other_player_character", "다른 플레이어의 캐릭터입니다."));
+            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.other_player_character"));
             return;
         }
 

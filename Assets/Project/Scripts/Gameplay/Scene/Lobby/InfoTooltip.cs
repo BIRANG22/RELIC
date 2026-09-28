@@ -269,7 +269,7 @@ public class InfoTooltip : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(runeData.Rarity))
             text += "\nRarity: " + runeData.Rarity;
 
-        return string.IsNullOrWhiteSpace(text) ? GameLocalization.Get("common.no_effect", "효과 없음") : text;
+        return string.IsNullOrWhiteSpace(text) ? GameLocalization.Get("common.no_effect") : text;
     }
 
     public static string GetSkillEffectText(SkillMasterData skillData)
@@ -278,7 +278,7 @@ public class InfoTooltip : MonoBehaviour
             return "";
 
         string text = GameDataLocalization.SkillDetails(skillData);
-        return string.IsNullOrWhiteSpace(text) ? GameLocalization.Get("common.no_effect", "효과 없음") : text;
+        return string.IsNullOrWhiteSpace(text) ? GameLocalization.Get("common.no_effect") : text;
     }
     private string HighlightNumbers(string text)
     {

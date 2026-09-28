@@ -60,7 +60,6 @@ public class BattleTimelineController : MonoBehaviour
 
     [Header("Slot Selection Lock")]
     [SerializeField] private bool showWarningWhenSlotSelectionLocked = false;
-    [SerializeField] private string slotSelectionLockedMessage = "턴 진행 중에는 슬롯을 선택할 수 없습니다.";
 
     [Header("Auto Slot Selection")]
     [SerializeField] private bool autoSelectFirstSlotWhenInputReady = true;
@@ -526,7 +525,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (playerReservationHistory.Count <= 0)
         {
-            ShowBattleWarning("되돌릴 예약이 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.NoReservationToUndo));
             return;
         }
 
@@ -854,7 +853,7 @@ public class BattleTimelineController : MonoBehaviour
         if (isSlotSelectionLocked)
         {
             if (showWarningWhenSlotSelectionLocked)
-                ShowBattleWarning(slotSelectionLockedMessage);
+                ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Battle.TimelineSelectionLocked));
 
             return;
         }
@@ -1197,7 +1196,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private void ShowPlayerLockedSlotWarning()
     {
-        ShowBattleWarning("선택할 수 없는 슬롯입니다.");
+        ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineSlotUnavailable));
     }
     public void SelectDefaultSlotWhenInputReady(bool playSelectionEffect = true)
     {
@@ -3011,7 +3010,7 @@ public class BattleTimelineController : MonoBehaviour
         if (activeSlotIndex < 0)
         {
             if (selectedSkill != null)
-                ShowBattleWarning("타임라인 슬롯을 먼저 선택해 주세요.");
+                ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectTimelineSlotFirst));
 
             return;
         }
@@ -3021,7 +3020,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (selectedCharacter == null)
         {
-            ShowBattleWarning("캐릭터를 먼저 선택해 주세요.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectCharacterFirst));
             return;
         }
 
@@ -3030,14 +3029,14 @@ public class BattleTimelineController : MonoBehaviour
 
         if (reserveSlots == null || reserveSlots.Length <= 0)
         {
-            ShowBattleWarning("타임라인 슬롯이 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineSlotMissing));
             selectedSkill = null;
             return;
         }
 
         if (activeSlotIndex >= reserveSlots.Length)
         {
-            ShowBattleWarning("선택한 타임라인 슬롯을 사용할 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineSlotUnavailable));
             selectedSkill = null;
             return;
         }
@@ -3046,7 +3045,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (slot == null)
         {
-            ShowBattleWarning("선택한 타임라인 슬롯을 사용할 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineSlotUnavailable));
             selectedSkill = null;
             return;
         }
@@ -3071,7 +3070,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (!slot.CanAcceptCharacter(selectedCharacter))
         {
-            ShowBattleWarning("이 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SlotOccupiedByOtherCharacter));
             Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
             selectedSkill = null;
             return;
@@ -3088,7 +3087,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (casterGridIndex < 0)
         {
-            ShowBattleWarning("캐릭터 위치를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterPositionMissing));
             Debug.LogWarning($"[BattleTimelineController] 캐릭터 위치를 찾을 수 없습니다: {selectedCharacter.CharacterId}");
             selectedSkill = null;
             return;
@@ -3099,7 +3098,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (playerSkillReservationController == null)
         {
-            ShowBattleWarning("스킬 예약 컨트롤러를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillReservationControllerMissing));
             Debug.LogWarning("[BattleTimelineController] PlayerSkillReservationController가 없습니다.");
             selectedSkill = null;
             return;
@@ -3143,19 +3142,19 @@ public class BattleTimelineController : MonoBehaviour
     {
         if (command == null)
         {
-            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillReservationMissing));
             return false;
         }
 
         if (reserveSlots == null || reserveSlots.Length <= 0)
         {
-            ShowBattleWarning("타임라인 슬롯이 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineSlotMissing));
             return false;
         }
 
         if (slotIndex < 0 || slotIndex >= reserveSlots.Length)
         {
-            ShowBattleWarning("선택한 타임라인 슬롯을 사용할 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineSlotUnavailable));
             return false;
         }
 
@@ -3169,13 +3168,13 @@ public class BattleTimelineController : MonoBehaviour
 
         if (slot == null)
         {
-            ShowBattleWarning("선택한 타임라인 슬롯을 사용할 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineSlotUnavailable));
             return false;
         }
 
         if (!slot.CanAcceptCharacter(command.UserRuntime))
         {
-            ShowBattleWarning("이 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SlotOccupiedByOtherCharacter));
             Debug.LogWarning("[BattleTimelineController] 이 타임라인 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
             return false;
         }
@@ -3217,7 +3216,7 @@ public class BattleTimelineController : MonoBehaviour
 
         if (!added)
         {
-            ShowBattleWarning("스킬을 예약할 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillReservationFailed));
             Debug.LogWarning("[BattleTimelineController] 예약 슬롯이 가득 찼습니다.");
             return false;
         }
@@ -3283,7 +3282,7 @@ public class BattleTimelineController : MonoBehaviour
             return string.Empty;
 
         if (BattleEquipmentEffectService.IsSlotBlockedByEquipment(runtime, slotIndex))
-            return GameLocalization.Get("battle.skill_slot_blocked", "이 슬롯에는 스킬을 등록할 수 없습니다.");
+            return GameLocalization.Get("battle.skill_slot_blocked");
 
         int maxSlotCount = BattleEquipmentEffectService.GetMaxRegistrableSlotCount(runtime);
 
@@ -3297,7 +3296,7 @@ public class BattleTimelineController : MonoBehaviour
             occupiedSlotCount++;
 
         return occupiedSlotCount > maxSlotCount
-            ? GameLocalization.FormatWithFallback("battle.skill_slot_limit", "스킬을 등록할 수 있는 슬롯은 {0}개까지입니다.", maxSlotCount)
+            ? GameLocalization.Format("battle.skill_slot_limit", maxSlotCount)
             : string.Empty;
     }
 
@@ -3426,7 +3425,7 @@ public class BattleTimelineController : MonoBehaviour
     {
         if (commands == null || commands.Count <= 0)
         {
-            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillReservationMissing));
             return false;
         }
 
@@ -3671,7 +3670,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private void ShowCombinedSlotCapacityWarning()
     {
-        ShowBattleWarning("한 슬롯에는 몬스터 행동과 캐릭터 행동을 합쳐 최대 5개만 예약할 수 있습니다.");
+        ShowBattleWarning(GameLocalization.Get("warning.timeline.combined_action_limit"));
     }
 
     public int GetPreviewReservationCostValue(
@@ -4215,10 +4214,10 @@ public class BattleTimelineController : MonoBehaviour
     private string GetReserveBlockReason(PlayerReservedCommand command)
     {
         if (command == null)
-            return GameLocalization.Get("battle.no_skill_to_reserve", "예약할 스킬 정보가 없습니다.");
+            return GameLocalization.Get("battle.no_skill_to_reserve");
 
         if (command.UserRuntime == null)
-            return GameLocalization.Get("battle.no_character_selected", "선택한 캐릭터가 없습니다.");
+            return GameLocalization.Get("battle.no_character_selected");
 
         CharacterRuntimeData runtime = command.UserRuntime;
 
@@ -4232,7 +4231,7 @@ public class BattleTimelineController : MonoBehaviour
     private string GetShortageMessage(CharacterRuntimeData runtime, PlayerReservedCommand command)
     {
         if (runtime == null || command == null)
-            return GameLocalization.Get("battle.no_skill_to_reserve", "예약할 스킬 정보가 없습니다.");
+            return GameLocalization.Get("battle.no_skill_to_reserve");
 
         if (!runtime.CanReserveHP(command.HPCost))
             return BuildShortageMessage("생명력", command.HPCost, runtime.CurrentHP - runtime.ReservedHPCost);
@@ -4244,7 +4243,7 @@ public class BattleTimelineController : MonoBehaviour
             return BuildShortageMessage("카르마", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
 
         if (!runtime.CanReserveShield(command.ShieldCost))
-            return BuildShortageMessage(GameLocalization.Get("common.armor", "방어도"), command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
+            return BuildShortageMessage(GameLocalization.Get("common.armor"), command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
 
         return string.Empty;
     }
@@ -4268,10 +4267,10 @@ public class BattleTimelineController : MonoBehaviour
                 return "Cost";
 
             case ReferenceResource.UniqueResource:
-                return GameLocalization.Get("resource.unique", "고유자원");
+                return GameLocalization.Get("resource.unique");
 
             default:
-                return GameLocalization.Get("common.resource", "자원");
+                return GameLocalization.Get("common.resource");
         }
     }
 
@@ -4847,18 +4846,18 @@ public class BattleTimelineController : MonoBehaviour
     private string NormalizeBattleWarningMessage(string message)
     {
         if (string.IsNullOrWhiteSpace(message))
-            return GameLocalization.Get("battle.cannot_reserve_now", "현재 상태에서는 예약할 수 없습니다.");
+            return GameLocalization.Get("battle.cannot_reserve_now");
 
         if (!LooksLikeBrokenKorean(message))
             return message;
 
         if (message.Contains("HP"))
-            return GameLocalization.Get("battle.hp_shortage", "생명력이 부족합니다.");
+            return GameLocalization.Get("battle.hp_shortage");
 
         if (message.Contains("Cost"))
-            return GameLocalization.Get("battle.cost_shortage", "마나가 부족합니다.");
+            return GameLocalization.Get("battle.cost_shortage");
 
-        return GameLocalization.Get("battle.cannot_reserve_now", "현재 상태에서는 예약할 수 없습니다.");
+        return GameLocalization.Get("battle.cannot_reserve_now");
     }
 
     private bool LooksLikeBrokenKorean(string message)
@@ -4880,7 +4879,7 @@ public class BattleTimelineController : MonoBehaviour
         }
         else
         {
-            ShowBattleWarning("타임라인 UI를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineUiMissing));
             Debug.LogWarning("[BattleTimelineController] active timelineBarUI가 없습니다.");
         }
 

@@ -4,15 +4,6 @@ using UnityEngine.UI;
 
 public class TitleAbandonBattleButton : MonoBehaviour
 {
-    [Header("Confirm")]
-    [SerializeField] private string confirmMessage = "정말 포기하시겠습니까?";
-    [SerializeField] private string confirmYesText = "예";
-    [SerializeField] private string confirmNoText = "아니오";
-
-    [Header("Warning")]
-    [SerializeField] private string missingRunMessage = "포기할 탐사 정보가 없음";
-    [SerializeField] private string completeMessage = "진행 중인 탐사를 포기했습니다.";
-
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
     [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
@@ -57,7 +48,7 @@ public class TitleAbandonBattleButton : MonoBehaviour
         {
             RefreshInteractable();
             TitleManager.RefreshRunButtonsInScene();
-            ShowWarning(missingRunMessage);
+            ShowWarning(GameLocalization.Get(LocalizationKeys.SystemMessage.ExpeditionMissing));
             return;
         }
 
@@ -68,9 +59,9 @@ public class TitleAbandonBattleButton : MonoBehaviour
         }
 
         UIManager.Instance.ShowConfirmDialog(
-            confirmMessage,
-            confirmYesText,
-            confirmNoText,
+            GameLocalization.Get(LocalizationKeys.Dialog.AbandonConfirm),
+            GameLocalization.Get(LocalizationKeys.Dialog.Yes),
+            GameLocalization.Get(LocalizationKeys.Dialog.No),
             ConfirmAbandonBattle,
             UIManager.Instance.HideConfirmDialog);
     }
@@ -87,14 +78,14 @@ public class TitleAbandonBattleButton : MonoBehaviour
         {
             RefreshInteractable();
             TitleManager.RefreshRunButtonsInScene();
-            ShowWarning(missingRunMessage);
+            ShowWarning(GameLocalization.Get(LocalizationKeys.SystemMessage.ExpeditionMissing));
             return;
         }
 
         if (DataManager.Instance == null)
         {
             Debug.LogWarning("[TitleAbandonBattleButton] DataManager is not ready.");
-            ShowWarning(missingRunMessage);
+            ShowWarning(GameLocalization.Get(LocalizationKeys.SystemMessage.ExpeditionMissing));
             return;
         }
 
@@ -105,7 +96,7 @@ public class TitleAbandonBattleButton : MonoBehaviour
             BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
             SaveSystem.Instance?.DeleteSaveFile();
             TitleManager.RefreshRunButtonsInScene();
-            ShowWarning(completeMessage);
+            ShowWarning(GameLocalization.Get(LocalizationKeys.SystemMessage.ExpeditionAbandoned));
         }
         finally
         {

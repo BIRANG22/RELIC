@@ -19,8 +19,6 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
     [Header("Intro Text")]
     [SerializeField] private BattleMapIntroText battleMapIntroText;
-    [SerializeField] private string battleStartMessage = "전투 시작";
-    [SerializeField] private string actionReserveMessage = "행동 예약";
     [SerializeField] private float firstMonsterCommandDelay = 0.15f;
     [SerializeField] private float monsterCommandInterval = 0.18f;
     [SerializeField] private float actionReserveMessageDelay = 0.1f;
@@ -99,7 +97,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (showBattleStart)
         {
             BattleMapIntroText.PlayRoomIntroSfx();
-            battleStartTextRoutine = StartCoroutine(ShowIntroTextAndWaitRoutine(battleStartMessage));
+            battleStartTextRoutine = StartCoroutine(ShowIntroTextAndWaitRoutine(GameLocalization.Get(LocalizationKeys.Battle.Start)));
         }
 
         if (firstMonsterCommandDelay > 0f)
@@ -282,7 +280,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (showBattleStart)
         {
             BattleMapIntroText.PlayRoomIntroSfx();
-            battleStartTextRoutine = StartCoroutine(ShowIntroTextAndWaitRoutine(battleStartMessage));
+            battleStartTextRoutine = StartCoroutine(ShowIntroTextAndWaitRoutine(GameLocalization.Get(LocalizationKeys.Battle.Start)));
         }
 
         if (firstMonsterCommandDelay > 0f)
@@ -339,7 +337,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (showBattleStart)
         {
             BattleMapIntroText.PlayRoomIntroSfx();
-            ShowIntroText(battleStartMessage);
+            ShowIntroText(GameLocalization.Get(LocalizationKeys.Battle.Start));
         }
 
         List<MonsterReservedCommandPlan> plans = BuildMonsterCommandPlans(monsterUnits);
@@ -792,13 +790,13 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     private void ShowActionReserveIntroText()
     {
         PlayActionReservationStartSfx();
-        ShowIntroText(actionReserveMessage);
+        ShowIntroText(GameLocalization.Get(LocalizationKeys.Battle.ActionReserve));
     }
 
     private IEnumerator ShowActionReserveIntroTextAndWaitRoutine()
     {
         PlayActionReservationStartSfx();
-        yield return ShowIntroTextAndWaitRoutine(actionReserveMessage);
+        yield return ShowIntroTextAndWaitRoutine(GameLocalization.Get(LocalizationKeys.Battle.ActionReserve));
     }
 
     private void PlayActionReservationStartSfx()

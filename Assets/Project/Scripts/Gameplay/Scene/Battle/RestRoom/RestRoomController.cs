@@ -163,7 +163,7 @@ public class RestRoomController : MonoBehaviour
         {
             BattleWarningUI.ShowMessage(GameLocalization.Get(
                 "battle.rest.no_upgradable_equipped_memory",
-                "강화 가능한 장착 기억이 없습니다."));
+                GameLocalization.Get("event.memory.none_upgradable")));
             return;
         }
 
@@ -185,8 +185,7 @@ public class RestRoomController : MonoBehaviour
         if (!opened)
         {
             BattleWarningUI.ShowMessage(GameLocalization.Get(
-                "battle.rest.cannot_open_memory_upgrade",
-                "기억 강화 선택 패널을 열 수 없습니다."));
+                "battle.rest.cannot_open_memory_upgrade"));
             if (!isRestUsed)
                 SetRestActionButtonsVisible(true);
         }
@@ -1123,7 +1122,7 @@ public class RestRoomController : MonoBehaviour
 
         if (!target.IsValid)
         {
-            resultMessage = "강화할 기억을 선택해야 합니다.";
+            resultMessage = GameLocalization.Get("event.memory.select_upgrade_required");
             return false;
         }
 
@@ -1326,7 +1325,7 @@ public class RestRoomController : MonoBehaviour
     private string GetCharacterDisplayName(string characterId)
     {
         if (string.IsNullOrWhiteSpace(characterId))
-            return "캐릭터";
+            return GameLocalization.Get("common.character");
 
         string normalizedId = characterId.Trim();
         if (DataManager.Instance?.CharacterDatabase != null &&
@@ -1344,7 +1343,7 @@ public class RestRoomController : MonoBehaviour
     private string GetSkillDisplayName(string skillId)
     {
         if (string.IsNullOrWhiteSpace(skillId))
-            return "기억";
+            return GameLocalization.Get("common.memory");
 
         string normalizedId = skillId.Trim();
         if (DataManager.Instance?.SkillDatabase != null &&

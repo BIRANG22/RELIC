@@ -683,15 +683,15 @@ public class SkillUpgradePanel : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(request.UpgradeSkillId))
             return request.UpgradeSkillId;
 
-        return GameLocalization.Get("common.skill", "스킬");
+        return GameLocalization.Get("common.skill");
     }
 
     private void ShowUpgradeCompleteWarning(string upgradedSkillName)
     {
         string safeName = string.IsNullOrWhiteSpace(upgradedSkillName)
-            ? GameLocalization.Get("common.skill", "스킬")
+            ? GameLocalization.Get("common.skill")
             : upgradedSkillName;
-        BattleWarningUI.ShowMessage(GameLocalization.FormatWithFallback("battle.skill_upgraded", "{0}으로 강화되었습니다.", safeName));
+        BattleWarningUI.ShowMessage(GameLocalization.Format("battle.skill_upgraded", safeName));
     }
 
     private void ClearSkillInfoTexts()

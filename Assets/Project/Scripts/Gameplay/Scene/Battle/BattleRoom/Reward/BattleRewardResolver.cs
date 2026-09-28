@@ -513,7 +513,7 @@ public class BattleRewardResolver : MonoBehaviour
         string description = GameDataLocalization.SkillDetails(skill);
 
         if (string.IsNullOrWhiteSpace(description))
-            description = GameLocalization.Get("battle.available_skill", "획득 가능한 스킬입니다.");
+            description = GameLocalization.Get("battle.available_skill");
 
         if (string.IsNullOrWhiteSpace(rarityName))
             return description;

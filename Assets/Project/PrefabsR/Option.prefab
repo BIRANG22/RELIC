@@ -4357,8 +4357,6 @@ MonoBehaviour:
   introToggle: {fileID: 1813400477785046686}
   resolutionDropdownSortingOrderOffset: 50
   languageDropdownSortingOrderOffset: 50
-  saveSuccessMessage: "\uC800\uC7A5\uB418\uC5C8\uC2B5\uB2C8\uB2E4."
-  saveFailedMessage: "\uC800\uC7A5 \uC2E4\uD328"
   saveToastDuration: 1.4
   saveToastSortingOrder: 32100
 --- !u!114 &8579519864332273703

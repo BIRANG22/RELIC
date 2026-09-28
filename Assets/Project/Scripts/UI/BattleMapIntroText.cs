@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -133,7 +133,7 @@ public class BattleMapIntroText : MonoBehaviour
 
     public void Play()
     {
-        Play(GameLocalization.Get("battle.intro.enter_battle_area", "전투 지역 진입"));
+        Play(GameLocalization.Get("battle.intro.enter_battle_area"));
     }
 
     public void Play(string text)

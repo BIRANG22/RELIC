@@ -993,7 +993,7 @@ public class SkillListPanel : MonoBehaviour
     {
         if (runtimeData == null)
         {
-            ShowBattleWarning("선택된 캐릭터가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterNotSelected));
             return;
         }
 
@@ -1005,20 +1005,20 @@ public class SkillListPanel : MonoBehaviour
     {
         if (currentRuntime == null)
         {
-            ShowBattleWarning("선택된 캐릭터가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterNotSelected));
             Debug.LogWarning("[SkillListPanel] 선택된 캐릭터가 없습니다.");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(skillId))
         {
-            ShowBattleWarning("등록된 스킬이 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.NoRegisteredSkill));
             return;
         }
 
         if (DataManager.Instance == null || DataManager.Instance.SkillDatabase == null)
         {
-            ShowBattleWarning("스킬 데이터를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillDataNotFound));
             Debug.LogWarning("[SkillListPanel] SkillDatabase가 없습니다.");
             return;
         }
@@ -1027,7 +1027,7 @@ public class SkillListPanel : MonoBehaviour
 
         if (skillData == null)
         {
-            ShowBattleWarning("스킬 데이터를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillDataNotFound));
             Debug.LogWarning($"[SkillListPanel] SkillData 없음: {skillId}");
             return;
         }
@@ -1036,7 +1036,7 @@ public class SkillListPanel : MonoBehaviour
 
         if (battleTimelineController == null)
         {
-            ShowBattleWarning("타임라인 컨트롤러를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineControllerMissing));
             Debug.LogWarning("[SkillListPanel] BattleTimelineController가 없습니다.");
             return;
         }
@@ -1049,7 +1049,7 @@ public class SkillListPanel : MonoBehaviour
     {
         if (runtimeData == null)
         {
-            ShowBattleWarning("선택된 캐릭터가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterNotSelected));
             return;
         }
 
@@ -1066,7 +1066,7 @@ public class SkillListPanel : MonoBehaviour
 
         if (currentRuntime == null)
         {
-            ShowBattleWarning("선택된 캐릭터가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterNotSelected));
             return;
         }
 
@@ -1074,13 +1074,13 @@ public class SkillListPanel : MonoBehaviour
 
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
         {
-            ShowBattleWarning("지금은 유물을 사용할 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.RelicUnavailableNow));
             return;
         }
 
         if (!EnsureActiveRelicService())
         {
-            ShowBattleWarning("유물 데이터를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.RelicDataNotFound));
             return;
         }
 
@@ -1118,7 +1118,7 @@ public class SkillListPanel : MonoBehaviour
                 currentRuntime,
                 availability))
         {
-            ShowBattleWarning("대상 선택을 시작할 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TargetSelectionUnavailable));
         }
     }
 

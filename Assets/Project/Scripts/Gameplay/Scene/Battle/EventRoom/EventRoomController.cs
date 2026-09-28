@@ -2073,7 +2073,7 @@ public class EventRoomController : MonoBehaviour
         if (equippedRelicCostOptions.Count == 0)
         {
             if (eventResultText != null)
-                eventResultText.text = "장착 중인 유물이 없습니다.";
+                eventResultText.text = GameLocalization.Get("event.relic.none_equipped");
 
             ClearEquippedRelicCostSelection();
             BindChoiceSlots(GetCurrentVisibleChoices());
@@ -2085,7 +2085,7 @@ public class EventRoomController : MonoBehaviour
         if (equippedRelicSelectionPanel == null)
         {
             if (eventResultText != null)
-                eventResultText.text = "장착 유물 선택 패널을 열 수 없습니다.";
+                eventResultText.text = GameLocalization.Get("event.relic.selection_panel_unavailable");
 
             ClearEquippedRelicCostSelection();
             BindChoiceSlots(GetCurrentVisibleChoices());
@@ -2099,7 +2099,7 @@ public class EventRoomController : MonoBehaviour
         SetChoiceSlotsInteractable(false);
 
         if (eventResultText != null)
-            eventResultText.text = "삭제할 장착 유물을 선택하세요.";
+            eventResultText.text = GameLocalization.Get("event.relic.select_remove");
 
         bool openedSelectionPanel = equippedRelicSelectionPanel.Open(
             equippedRelicCostOptions,
@@ -2109,7 +2109,7 @@ public class EventRoomController : MonoBehaviour
         if (!openedSelectionPanel)
         {
             if (eventResultText != null)
-                eventResultText.text = "장착 유물 선택 패널이 씬에 올바르게 배치되지 않았습니다.";
+                eventResultText.text = GameLocalization.Get("event.relic.selection_panel_invalid");
 
             ClearEquippedRelicCostSelection();
             BindChoiceSlots(GetCurrentVisibleChoices());
@@ -2199,7 +2199,7 @@ public class EventRoomController : MonoBehaviour
         if (skillAwakenOptions.Count == 0)
         {
             if (eventResultText != null)
-                eventResultText.text = "강화 가능한 장착 기억이 없습니다.";
+                eventResultText.text = GameLocalization.Get("event.memory.none_upgradable");
 
             ClearSkillAwakenSelection();
             BindChoiceSlots(GetCurrentVisibleChoices());
@@ -2210,7 +2210,7 @@ public class EventRoomController : MonoBehaviour
         if (skillAwakenSelectionPanel == null)
         {
             if (eventResultText != null)
-                eventResultText.text = "기억 강화 선택 패널을 찾을 수 없습니다.";
+                eventResultText.text = GameLocalization.Get("event.memory.selection_panel_missing");
 
             ClearSkillAwakenSelection();
             BindChoiceSlots(GetCurrentVisibleChoices());
@@ -2223,7 +2223,7 @@ public class EventRoomController : MonoBehaviour
         SetChoiceSlotsInteractable(false);
 
         if (eventResultText != null)
-            eventResultText.text = "강화할 장착 기억을 선택하세요.";
+            eventResultText.text = GameLocalization.Get("event.memory.select_upgrade");
 
         if (skillAwakenTransitionRoutine != null)
             StopCoroutine(skillAwakenTransitionRoutine);
@@ -2255,7 +2255,7 @@ public class EventRoomController : MonoBehaviour
         {
             SetEventTitleVisible(true);
             if (eventResultText != null)
-                eventResultText.text = "기억 강화 선택 패널이 씬에 올바르게 배치되지 않았습니다.";
+                eventResultText.text = GameLocalization.Get("event.memory.selection_panel_invalid");
 
             ClearSkillAwakenSelection();
             BindChoiceSlots(GetCurrentVisibleChoices());
@@ -2652,7 +2652,7 @@ public class EventRoomController : MonoBehaviour
 
         if (!target.IsValid)
         {
-            resultMessage = "강화할 기억을 선택해야 합니다.";
+            resultMessage = GameLocalization.Get("event.memory.select_upgrade_required");
             return false;
         }
 
@@ -2720,7 +2720,7 @@ public class EventRoomController : MonoBehaviour
         SkillInventoryEquipService.EnsureEquippedSkillArray(character);
         if (!TryRemoveCurrentSkill(character, target))
         {
-            resultMessage = "실패한 선택 기억을 제거하지 못했습니다.";
+            resultMessage = GameLocalization.Get("event.memory.remove_failed");
             return false;
         }
 
@@ -2816,7 +2816,7 @@ public class EventRoomController : MonoBehaviour
         CharacterRuntimeStore characterStore = DataManager.Instance?.CharacterRuntimeStore;
         if (characterStore == null)
         {
-            resultMessage = "이번 이벤트로 얻은 기억을 제거하지 못했습니다.";
+            resultMessage = GameLocalization.Get("event.memory.remove_acquired_failed");
             return false;
         }
 
@@ -3195,7 +3195,7 @@ public class EventRoomController : MonoBehaviour
     private string GetCharacterDisplayName(string characterId)
     {
         if (string.IsNullOrWhiteSpace(characterId))
-            return "캐릭터";
+            return GameLocalization.Get("common.character");
 
         string normalizedId = characterId.Trim();
         if (DataManager.Instance?.CharacterDatabase != null &&
@@ -3213,7 +3213,7 @@ public class EventRoomController : MonoBehaviour
     private string GetRelicDisplayName(string relicId)
     {
         if (string.IsNullOrWhiteSpace(relicId))
-            return "유물";
+            return GameLocalization.Get("common.relic");
 
         string normalizedId = relicId.Trim();
         if (DataManager.Instance?.RelicDatabase != null &&
@@ -3231,7 +3231,7 @@ public class EventRoomController : MonoBehaviour
     private string GetSkillDisplayName(string skillId)
     {
         if (string.IsNullOrWhiteSpace(skillId))
-            return "기억";
+            return GameLocalization.Get("common.memory");
 
         string normalizedId = skillId.Trim();
         if (DataManager.Instance?.SkillDatabase != null &&
@@ -3272,7 +3272,7 @@ public class EventRoomController : MonoBehaviour
             SkillType.Attack => "공격",
             SkillType.Buff => "버프",
             SkillType.Debuff => "디버프",
-            _ => "기억"
+            _ => GameLocalization.Get("common.memory")
         };
     }
 
@@ -3474,7 +3474,7 @@ public class EventRoomController : MonoBehaviour
         {
             bool hadReward = eventChoiceSessionState.AccumulatedRemnant > 0;
             eventChoiceSessionState.AccumulatedRemnant = 0;
-            return hadReward ? BuildResultSummary(choice) : "확정할 누적 보상이 없습니다.";
+            return hadReward ? BuildResultSummary(choice) : GameLocalization.Get("event.reward.none_to_confirm");
         }
 
         if (SameToken(resultType, "OpenPanel"))
@@ -3482,14 +3482,14 @@ public class EventRoomController : MonoBehaviour
             if (Contains(choice.ResultTarget, "상점") && TryOpenShopPanel())
             {
                 CacheEvent06CloseVisualAction(choice);
-                return "상점 패널을 열었습니다.";
+                return GameLocalization.Get("event.result.shop_opened");
             }
 
             return BuildResultSummary(choice);
         }
 
         if (SameToken(resultType, "EndEvent"))
-            return "이벤트를 종료합니다.";
+            return GameLocalization.Get("event.result.end");
 
         return BuildResultSummary(choice);
     }
@@ -3521,7 +3521,7 @@ public class EventRoomController : MonoBehaviour
     private string ApplyFailureResult(string failResult)
     {
         if (string.IsNullOrWhiteSpace(failResult))
-            return "실패했습니다.";
+            return GameLocalization.Get("event.result.failed");
 
         if (Contains(failResult, "현재 체력") && TryParseSignedValue(failResult, out int hpAmount))
             ModifyPartyCurrentHp(hpAmount);
@@ -3540,7 +3540,7 @@ public class EventRoomController : MonoBehaviour
         if (!ChestRelicRewardService.TryRollReward(DataManager.Instance, out ChestRelicReward reward) ||
             !ChestRelicRewardService.GrantReward(DataManager.Instance, reward))
         {
-            return "획득 가능한 유물이 없습니다.";
+            return GameLocalization.Get("event.relic.none_available");
         }
 
         string relicName = reward.Relic != null
@@ -4520,7 +4520,7 @@ public class EventRoomController : MonoBehaviour
 
         if (!TryPickRandomAvailableRelic(out ChestRelicReward reward, requireEpic ? RelicRarity.Epic : (RelicRarity?)null))
         {
-            resultMessage = requireEpic ? "획득 가능한 에픽 유물이 없습니다." : "획득 가능한 유물이 없습니다.";
+            resultMessage = requireEpic ? "획득 가능한 에픽 유물이 없습니다." : GameLocalization.Get("event.relic.none_available");
             return false;
         }
 
@@ -4617,7 +4617,7 @@ public class EventRoomController : MonoBehaviour
         if (!ChestRelicRewardService.TryRollReward(DataManager.Instance, out ChestRelicReward reward) ||
             !ChestRelicRewardService.GrantReward(DataManager.Instance, reward))
         {
-            resultMessage = "획득 가능한 유물이 없습니다.";
+            resultMessage = GameLocalization.Get("event.relic.none_available");
             return false;
         }
 

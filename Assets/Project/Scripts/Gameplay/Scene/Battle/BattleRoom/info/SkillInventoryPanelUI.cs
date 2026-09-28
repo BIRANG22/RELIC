@@ -19,7 +19,6 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
     [Header("Battle Room Lock")]
     [SerializeField] private bool lockEditInBattleRoom = true;
-    [SerializeField] private string battleRoomLockMessage = "\uC804\uD22C \uC911\uC5D0\uB294 \uC2A4\uD0AC\uC744 \uBCC0\uACBD\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.";
 
     private string selectedCharacterId;
     private int selectedEquippedSkillIndex = -1;
@@ -314,7 +313,7 @@ public class SkillInventoryPanelUI : MonoBehaviour
         if (!IsSkillEditLocked())
             return false;
 
-        BattleWarningUI.ShowMessage(battleRoomLockMessage);
+        BattleWarningUI.ShowMessage(GameLocalization.Get(LocalizationKeys.Battle.SkillChangeLocked));
         ResetSelectionState();
         return true;
     }

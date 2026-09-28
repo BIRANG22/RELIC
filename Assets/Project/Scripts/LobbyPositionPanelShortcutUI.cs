@@ -6,10 +6,11 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
+using UnityEngine.Serialization;
 
 /// <summary>
-/// BackgroundPanel/Lobby_IconÀÇ ¾ÆÀÌÄÜ ¹öÆ°°ú PositionPanel ÆĞ³ÎÀ» Inspector¿¡¼­ ¿¬°áÇØ
-/// ¿ùµå ¿ÀºêÁ§Æ®¸¦ ´Ù½Ã Å¬¸¯ÇÏÁö ¾Ê°íµµ °ø¿ë ¸ğ´Ş »çÀÌ¸¦ ÀüÈ¯ÇÕ´Ï´Ù.
+/// BackgroundPanel/Lobby_Iconì˜ ì•„ì´ì½˜ ë²„íŠ¼ê³¼ PositionPanel íŒ¨ë„ì„ Inspectorì—ì„œ ì—°ê²°í•´
+/// ì›”ë“œ ì˜¤ë¸Œì íŠ¸ë¥¼ ë‹¤ì‹œ í´ë¦­í•˜ì§€ ì•Šê³ ë„ ê³µìš© ëª¨ë‹¬ ì‚¬ì´ë¥¼ ì „í™˜í•©ë‹ˆë‹¤.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
@@ -17,34 +18,35 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
     [Serializable]
     private sealed class ShortcutEntry
     {
-        [Tooltip("Å¬¸¯ÇÒ Lobby_Icon ¹öÆ°ÀÔ´Ï´Ù. ¿¹: Icon_01")]
+        [Tooltip("í´ë¦­í•  Lobby_Icon ë²„íŠ¼ì…ë‹ˆë‹¤. ì˜ˆ: Icon_01")]
         public Button iconButton;
 
-        [Tooltip("ÀÌ ¾ÆÀÌÄÜÀ¸·Î ¿­ PositionPanelÀÇ ÆĞ³ÎÀÔ´Ï´Ù. ¿¹: ErosionSelectPanel")]
+        [Tooltip("ì´ ì•„ì´ì½˜ìœ¼ë¡œ ì—´ PositionPanelì˜ íŒ¨ë„ì…ë‹ˆë‹¤. ì˜ˆ: ErosionSelectPanel")]
         public GameObject targetPanel;
 
-        [Tooltip("Mainicon/Icon¿¡ Ç¥½ÃÇÒ ¿øº» ÀÌ¹ÌÁöÀÔ´Ï´Ù. ¿¹: Icon_01/Icon")]
+        [Tooltip("Mainicon/Iconì— í‘œì‹œí•  ì›ë³¸ ì´ë¯¸ì§€ì…ë‹ˆë‹¤. ì˜ˆ: Icon_01/Icon")]
         public Image iconImage;
 
-        [Tooltip("Mainicon/MainText¿¡ Ç¥½ÃÇÒ ÆĞ³Î ÀÌ¸§ÀÔ´Ï´Ù.")]
-        public string displayName;
+        [Tooltip("Mainicon/MainTextì— í‘œì‹œí•  ë¡œì»¬ë¼ì´ì œì´ì…˜ í‚¤ì…ë‹ˆë‹¤.")]
+        [FormerlySerializedAs("displayName")]
+        public string localizationKey;
     }
 
     [Header("Lobby Icon Shortcuts")]
     [SerializeField] private ShortcutEntry[] shortcuts = Array.Empty<ShortcutEntry>();
 
     [Header("Current Selection Display")]
-    [Tooltip("ÇöÀç ¼±ÅÃµÈ ShortcutÀÇ Sprite¸¦ Ç¥½ÃÇÒ Mainicon/Icon ÀÌ¹ÌÁöÀÔ´Ï´Ù.")]
+    [Tooltip("í˜„ì¬ ì„ íƒëœ Shortcutì˜ Spriteë¥¼ í‘œì‹œí•  Mainicon/Icon ì´ë¯¸ì§€ì…ë‹ˆë‹¤.")]
     [SerializeField] private Image mainIconImage;
-    [Tooltip("ÇöÀç ¼±ÅÃµÈ ÆĞ³Î ÀÌ¸§À» Ç¥½ÃÇÒ Mainicon/MainTextÀÔ´Ï´Ù.")]
+    [Tooltip("í˜„ì¬ ì„ íƒëœ íŒ¨ë„ ì´ë¦„ì„ í‘œì‹œí•  Mainicon/MainTextì…ë‹ˆë‹¤.")]
     [SerializeField] private TMP_Text mainText;
 
     private const float LobbyChildIconHoverSelectedScale = 1.1f;
 
     [Header("Lobby Icon Selection Scale")]
-    [Tooltip("¼±ÅÃµÈ Icon_01~05 ¹öÆ° ÀÚÃ¼ÀÇ È®´ë ¹èÀ²ÀÔ´Ï´Ù.")]
+    [Tooltip("ì„ íƒëœ Icon_01~05 ë²„íŠ¼ ìì²´ì˜ í™•ëŒ€ ë°°ìœ¨ì…ë‹ˆë‹¤.")]
     [SerializeField] private float selectedButtonScale = 1.2f;
-    [Tooltip("Lobby_IconÀÇ ¼±ÅÃ/È£¹ö ½ºÄÉÀÏ ÀüÈ¯¿¡ °É¸®´Â ½Ã°£(ÃÊ)ÀÔ´Ï´Ù.")]
+    [Tooltip("Lobby_Iconì˜ ì„ íƒ/í˜¸ë²„ ìŠ¤ì¼€ì¼ ì „í™˜ì— ê±¸ë¦¬ëŠ” ì‹œê°„(ì´ˆ)ì…ë‹ˆë‹¤.")]
     [SerializeField] private float iconScaleDuration = 0.15f;
 
     private readonly Dictionary<Button, UnityAction> boundListeners = new();
@@ -162,8 +164,8 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
     }
 
     /// <summary>
-    /// ¿ùµå ¿ÀºêÁ§Æ® ¶Ç´Â Lobby_Icon ¾î´À °æ·Î·Î ÆĞ³ÎÀ» ¿­¾îµµ
-    /// ÇØ´ç ShortcutÀÇ Inspector Display Name°ú IconÀ» °ø¿ë Mainicon¿¡ ¹İ¿µÇÕ´Ï´Ù.
+    /// ì›”ë“œ ì˜¤ë¸Œì íŠ¸ ë˜ëŠ” Lobby_Icon ì–´ëŠ ê²½ë¡œë¡œ íŒ¨ë„ì„ ì—´ì–´ë„
+    /// í•´ë‹¹ Shortcutì˜ Inspector Display Nameê³¼ Iconì„ ê³µìš© Mainiconì— ë°˜ì˜í•©ë‹ˆë‹¤.
     /// </summary>
     public static void RefreshForPanel(GameObject targetPanel)
     {
@@ -235,7 +237,13 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
             }
 
             if (mainText != null)
-                mainText.text = entry.displayName ?? string.Empty;
+            {
+                LocalizedTMPText localizer = mainText.GetComponent<LocalizedTMPText>();
+                if (localizer != null)
+                    localizer.Configure(entry.localizationKey, string.Empty, false);
+                else
+                    mainText.text = GameLocalization.Get(entry.localizationKey);
+            }
 
             selectedTargetPanel = targetPanel;
             AnimateIconSelection(targetPanel);
@@ -288,7 +296,7 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
             bool selected = entry.targetPanel == selectedTargetPanel;
             bool hovered = entry.iconButton != null && hoveredButtons.Contains(entry.iconButton);
 
-            // ±âÁ¸ È¿°ú: Icon_01~05 ¹öÆ° ÀÚÃ¼´Â ¼±ÅÃµÈ µ¿¾È 1.2¹è¸¦ À¯ÁöÇÕ´Ï´Ù.
+            // ê¸°ì¡´ íš¨ê³¼: Icon_01~05 ë²„íŠ¼ ìì²´ëŠ” ì„ íƒëœ ë™ì•ˆ 1.2ë°°ë¥¼ ìœ ì§€í•©ë‹ˆë‹¤.
             Transform buttonTransform = entry.iconButton != null
                 ? entry.iconButton.transform
                 : null;
@@ -306,7 +314,7 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
                 StartIconScaleTransition(buttonTransform, buttonTargetScale, animate);
             }
 
-            // Ãß°¡ È¿°ú: ÀÚ½Ä IconÀº È£¹ö ¶Ç´Â ¼±ÅÃ »óÅÂ¿¡¼­ 1.1¹è¸¦ À¯ÁöÇÕ´Ï´Ù.
+            // ì¶”ê°€ íš¨ê³¼: ìì‹ Iconì€ í˜¸ë²„ ë˜ëŠ” ì„ íƒ ìƒíƒœì—ì„œ 1.1ë°°ë¥¼ ìœ ì§€í•©ë‹ˆë‹¤.
             Transform iconTransform = GetShortcutChildIconTransform(entry);
             if (iconTransform == null)
                 continue;
@@ -412,8 +420,8 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
         else
             hoveredButtons.Remove(button);
 
-        // Lobby_Icon ºñÈ°¼ºÈ­ °úÁ¤¿¡¼­´Â ÀÚ½Ä HoverRelay.OnDisableÀÌ ¸ÕÀú È£ÃâµÉ ¼ö ÀÖ½À´Ï´Ù.
-        // ÀÌ ½ÃÁ¡¿¡´Â ÄÚ·çÆ¾À» ½ÃÀÛÇÏÁö ¾Ê°í ÇöÀç ¼±ÅÃ »óÅÂ¿¡ ¸ÂÃç Áï½Ã Á¤¸®ÇÕ´Ï´Ù.
+        // Lobby_Icon ë¹„í™œì„±í™” ê³¼ì •ì—ì„œëŠ” ìì‹ HoverRelay.OnDisableì´ ë¨¼ì € í˜¸ì¶œë  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+        // ì´ ì‹œì ì—ëŠ” ì½”ë£¨í‹´ì„ ì‹œì‘í•˜ì§€ ì•Šê³  í˜„ì¬ ì„ íƒ ìƒíƒœì— ë§ì¶° ì¦‰ì‹œ ì •ë¦¬í•©ë‹ˆë‹¤.
         if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
         {
             RefreshAllIconScales(false);
@@ -523,9 +531,9 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
     }
 
     /// <summary>
-    /// CharacterSettingPanelÀº Setting ÄÄÆ÷³ÍÆ®°¡ °ø¿ë BackgroundPanel°ú ÀÔ·Â Â÷´ÜÀÇ
-    /// ¼ÒÀ¯ÀÚ°¡ µÇµµ·Ï Á÷Á¢ È°¼ºÈ­ÇÕ´Ï´Ù. ShortcutUI°¡ ÀÓ½Ã ¼ÒÀ¯ÀÚ°¡ µÇ¸é
-    /// Setting.OnEnable¿¡¼­ ¼ÒÀ¯±ÇÀÌ µ¤¾î½áÁ® ´İÀ» ¶§ ÀÔ·Â Â÷´ÜÀÌ ³²À» ¼ö ÀÖ½À´Ï´Ù.
+    /// CharacterSettingPanelì€ Setting ì»´í¬ë„ŒíŠ¸ê°€ ê³µìš© BackgroundPanelê³¼ ì…ë ¥ ì°¨ë‹¨ì˜
+    /// ì†Œìœ ìê°€ ë˜ë„ë¡ ì§ì ‘ í™œì„±í™”í•©ë‹ˆë‹¤. ShortcutUIê°€ ì„ì‹œ ì†Œìœ ìê°€ ë˜ë©´
+    /// Setting.OnEnableì—ì„œ ì†Œìœ ê¶Œì´ ë®ì–´ì¨ì ¸ ë‹«ì„ ë•Œ ì…ë ¥ ì°¨ë‹¨ì´ ë‚¨ì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
     /// </summary>
     private static bool TryOpenCharacterSettingPanel(GameObject targetPanel)
     {

@@ -10,7 +10,6 @@ public class RestRoomShopPanel : MonoBehaviour
     public event Action Closed;
 
     [Header("Purchase Confirmation")]
-    [SerializeField] private string purchaseConfirmMessage = "구매하시겠습니까?";
 
     [Header("UI")]
     [SerializeField] private GameObject panelRoot;
@@ -188,7 +187,7 @@ public class RestRoomShopPanel : MonoBehaviour
             return;
 
         UIManager.Instance.ShowConfirmDialog(
-            purchaseConfirmMessage,
+            GameLocalization.Get(LocalizationKeys.Dialog.PurchaseConfirm),
             () =>
             {
                 UIManager.Instance?.HideConfirmDialog();
@@ -222,7 +221,7 @@ public class RestRoomShopPanel : MonoBehaviour
 
         if (!TryOpenEquipPanel(goods))
         {
-            ShowWarning("장착 패널을 열 수 없습니다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.EquipPanelUnavailable));
             return;
         }
 

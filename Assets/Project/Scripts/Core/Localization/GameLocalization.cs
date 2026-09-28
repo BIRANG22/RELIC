@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 
 public static class GameLocalization
@@ -62,39 +63,44 @@ public static class GameLocalization
         if (!Application.isPlaying && !LocalizationEditingLockState.IsEnabledForEditor)
             return fallback ?? string.Empty;
 
+        return GetForLocale(key, fallback, LocalizationSettings.SelectedLocale, arguments);
+    }
+
+    public static string GetForLocale(
+        string key,
+        string fallback,
+        Locale locale,
+        params object[] arguments)
+    {
+
         if (string.IsNullOrWhiteSpace(key))
             return fallback ?? string.Empty;
 
         try
         {
-            var selectedLocale = LocalizationSettings.SelectedLocale;
             var selectedEntry = LocalizationSettings.StringDatabase.GetTableEntry(
                 TableName,
                 key,
-                selectedLocale,
+                locale,
                 FallbackBehavior.DontUseFallback).Entry;
             if (!ShouldUseSelectedLocaleEntry(selectedEntry != null, selectedEntry?.Value))
-                return ResolveMissingTranslation(selectedLocale?.Identifier.Code, fallback);
+                return ResolveMissingTranslation(locale?.Identifier.Code, fallback);
 
             string localized = LocalizationSettings.StringDatabase.GetLocalizedString(
                 TableName,
                 key,
-                selectedLocale,
+                locale,
                 FallbackBehavior.DontUseFallback,
                 arguments ?? Array.Empty<object>());
 
             if (string.IsNullOrEmpty(localized) || IsMissingTranslationResult(localized))
-                return ResolveMissingTranslation(
-                    LocalizationSettings.SelectedLocale?.Identifier.Code,
-                    fallback);
+                return ResolveMissingTranslation(locale?.Identifier.Code, fallback);
 
             return localized;
         }
         catch (Exception)
         {
-            return ResolveMissingTranslation(
-                LocalizationSettings.SelectedLocale?.Identifier.Code,
-                fallback);
+            return ResolveMissingTranslation(locale?.Identifier.Code, fallback);
         }
     }
 

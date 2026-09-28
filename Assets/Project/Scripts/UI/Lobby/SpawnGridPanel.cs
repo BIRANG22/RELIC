@@ -17,10 +17,6 @@ public class SpawnGridPanel : MonoBehaviour
     [SerializeField] private bool usePartySlotDefaultDeployCells = true;
     [SerializeField] private int firstPartyDefaultDeployCellNumber = 7;
 
-    [Header("Warning")]
-    [SerializeField] private string noPartyCharacterMessage = "캐릭터를 먼저 선택하세요.";
-    [SerializeField] private string noSelectedDeployedCharacterMessage = "포지션을 변경할 캐릭터를 선택하세요.";
-
     private int selectedPartySlotIndex = -1;
     private readonly List<RaycastResult> pointerRaycastResults = new List<RaycastResult>();
 
@@ -196,17 +192,9 @@ public class SpawnGridPanel : MonoBehaviour
             : null;
 
         bool hasPartyCharacter = partyStore != null && partyStore.HasAnyCharacter;
-        string defaultMessage = hasPartyCharacter
-            ? "포지션을 변경할 캐릭터를 선택하세요."
-            : "캐릭터를 먼저 선택하세요.";
-
-        string configuredMessage = hasPartyCharacter
-            ? noSelectedDeployedCharacterMessage
-            : noPartyCharacterMessage;
-
-        string message = string.IsNullOrWhiteSpace(configuredMessage)
-            ? defaultMessage
-            : configuredMessage;
+        string message = GameLocalization.Get(hasPartyCharacter
+            ? LocalizationKeys.Warning.PartySelectDeployedCharacter
+            : LocalizationKeys.Warning.PartySelectCharacter);
 
         if (SettingWarningUI.ShowMessage(message))
             return;

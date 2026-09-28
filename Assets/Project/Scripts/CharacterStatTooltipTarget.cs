@@ -172,9 +172,8 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         int effectiveValue = GetEffectiveValue(runtimeData, masterData, resolvedStatType);
         int runeBonus = effectiveValue - baseValue;
         string valueLine = resolvedStatType == StatType.Karma
-            ? GameLocalization.FormatWithFallback(
+            ? GameLocalization.Format(
                 LocalizationKeys.CharacterSetting.StatMaximumValue,
-                "최대보유량 {0}",
                 effectiveValue)
             : FormatValueLine(baseValue, runeBonus);
 
@@ -237,15 +236,15 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         switch (resolvedStatType)
         {
             case StatType.HP:
-                return GameLocalization.Get("common.hp", "생명력");
+                return GameLocalization.Get("common.hp");
             case StatType.Cost:
-                return GameLocalization.Get("common.cost", "마나");
+                return GameLocalization.Get("common.cost");
             case StatType.CostRecovery:
-                return GameLocalization.Get("common.recovery", "마나재생량");
+                return GameLocalization.Get("common.recovery");
             case StatType.Karma:
-                return GameLocalization.Get("resource.karma", "카르마");
+                return GameLocalization.Get("resource.karma");
             default:
-                return "정보";
+                return GameLocalization.Get("common.info");
         }
     }
 
@@ -262,16 +261,13 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         {
             case StatType.HP:
                 return GameLocalization.Get(
-                    "lobby.stat.hp.description",
-                    "캐릭터의 생명력이다.\n생명력이 0이 되면 전투불능 상태가 된다.");
+                    "lobby.stat.hp.description");
             case StatType.Cost:
                 return GameLocalization.Get(
-                    "lobby.stat.cost.description",
-                    "기억을 사용할 때 소모하는 자원이다.\n현재 마나가 부족하면 기억을 사용할 수 없다.");
+                    "lobby.stat.cost.description");
             case StatType.CostRecovery:
                 return GameLocalization.Get(
-                    "lobby.stat.recovery.description",
-                    "턴이 시작될 때 회복되는 마나 수치이다.\n회복량이 높을수록 한 턴에 사용할 수 있는 기억 선택지가 늘어난다.");
+                    "lobby.stat.recovery.description");
             case StatType.Karma:
                 int maxKarma = characterInfoPanel != null && characterInfoPanel.CurrentMasterData != null
                     ? Mathf.Max(0, characterInfoPanel.CurrentMasterData.MaxResource)
@@ -329,7 +325,7 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
 
     private string FormatValueLine(int baseValue, int runeBonus)
     {
-        string baseLine = GameLocalization.FormatWithFallback("lobby.stat.base_value", "기본 수치 {0}", baseValue);
+        string baseLine = GameLocalization.Format("lobby.stat.base_value", baseValue);
 
         if (runeBonus == 0)
             return baseLine;
@@ -341,7 +337,7 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
         if (!string.IsNullOrWhiteSpace(runeColor))
             runeText = "<color=" + runeColor + ">" + runeText + "</color>";
 
-        string runeLine = GameLocalization.FormatWithFallback("lobby.stat.rune_bonus", "룬 보정 {0}", runeText);
+        string runeLine = GameLocalization.Format("lobby.stat.rune_bonus", runeText);
 
         return baseLine + "\n" + runeLine;
     }

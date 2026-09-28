@@ -771,7 +771,7 @@ public sealed class EventSkillAwakenSelectionPanelUI : MonoBehaviour
         VisibleOptionCount = 0;
 
         if (titleText != null)
-            titleText.text = "각성할 기억을 선택하세요.";
+            titleText.text = GameLocalization.Get("event.memory.select_awaken");
 
         if (emptyText != null)
             emptyText.gameObject.SetActive(entries.Count == 0);
@@ -950,7 +950,7 @@ public sealed class EventSkillAwakenSelectionPanelUI : MonoBehaviour
 
         string normalized = effectName.Replace(" ", string.Empty).ToLowerInvariant();
         if (normalized.Contains("타격") || normalized.Contains("strike"))
-            return GameLocalization.Get("common.damage", "피해");
+            return GameLocalization.Get("common.damage");
 
         return effectName;
     }

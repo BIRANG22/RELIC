@@ -1,4 +1,4 @@
-﻿using Relic.Gameplay.Data;
+using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using System;
 using System.Collections.Generic;
@@ -612,24 +612,24 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         switch (effectId.Trim())
         {
             case "E_Move":
-                return "이동";
+                return GameLocalization.Get("battle.action.move");
             case "E_Strike":
             case "E_Pierce":
-                return "피해";
+                return GameLocalization.Get("battle.action.damage");
             case "E_Knockback":
-                return "밀어냄";
+                return GameLocalization.Get("battle.action.push");
             case "E_Grab":
-                return "끌어당김";
+                return GameLocalization.Get("battle.action.pull");
             case "E_Grudge":
-                return "원한";
+                return GameLocalization.Get("battle.action.grudge");
             case "E_Corrosion":
-                return "침식";
+                return GameLocalization.Get("battle.action.erosion");
             case "E_Spawn_Spider_Egg":
-                return "거미알 생성";
+                return GameLocalization.Get("battle.action.spawn_spider_egg");
             case "E_Spawn_Spider_Web":
-                return "거미줄 생성";
+                return GameLocalization.Get("battle.action.spawn_web");
             case "E_Barrier":
-                return "장막";
+                return GameLocalization.Get("battle.action.veil");
             default:
                 return effectId.Trim();
         }

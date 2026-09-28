@@ -25,7 +25,6 @@ public class RelicEquipPanelUI : MonoBehaviour
     private RelicIconUI selectedInventoryRelicIcon;
 
     [SerializeField] private bool lockEditInBattleRoom = true;
-    [SerializeField] private string battleRoomLockMessage = "전투 중에는 유물을 변경할 수 없습니다.";
 
     private void Awake()
     {
@@ -582,7 +581,7 @@ public class RelicEquipPanelUI : MonoBehaviour
         if (!IsRelicEditLocked())
             return false;
 
-        BattleWarningUI.ShowMessage(battleRoomLockMessage);
+        BattleWarningUI.ShowMessage(GameLocalization.Get(LocalizationKeys.Battle.RelicChangeLocked));
         return true;
     }
 

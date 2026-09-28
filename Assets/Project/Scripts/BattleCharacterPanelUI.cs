@@ -1987,13 +1987,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         if (boundRuntime == null)
         {
-            ShowBattleWarning("선택된 캐릭터가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterNotSelected));
             return;
         }
 
         if (string.IsNullOrWhiteSpace(skillId))
         {
-            ShowBattleWarning("등록된 스킬이 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.NoRegisteredSkill));
             return;
         }
 
@@ -2001,14 +2001,14 @@ public class BattleCharacterPanelUI : MonoBehaviour
             !DataManager.Instance.SkillDatabase.TryGet(skillId, out SkillMasterData skillData) ||
             skillData == null)
         {
-            ShowBattleWarning("스킬 데이터를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillDataNotFound));
             return;
         }
 
         EnsureBattleTimelineController();
         if (battleTimelineController == null)
         {
-            ShowBattleWarning("타임라인 컨트롤러를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineControllerMissing));
             return;
         }
 
@@ -2033,14 +2033,14 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         if (boundRuntime == null)
         {
-            ShowBattleWarning("선택된 캐릭터가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterNotSelected));
             return;
         }
 
         EnsureTurnExecutor();
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
         {
-            ShowBattleWarning("지금은 유물을 사용할 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.RelicUnavailableNow));
             return;
         }
 
@@ -2073,7 +2073,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 availability,
                 Refresh))
         {
-            ShowBattleWarning("대상 선택을 시작할 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TargetSelectionUnavailable));
         }
     }
 
@@ -2492,7 +2492,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
 
         if (moveNameText != null)
-            moveNameText.text = GameLocalization.Get("battle.no_move", "이동 없음");
+            moveNameText.text = GameLocalization.Get("battle.no_move");
 
         if (itemButton != null)
             itemButton.interactable = false;
@@ -2675,7 +2675,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return string.Empty;
 
         if (skillData.Category == Category.Move)
-            return GameLocalization.Get("battle.skill.move_distance", "이동 거리");
+            return GameLocalization.Get("battle.skill.move_distance");
 
         BattlePlayerSkillPreview preview = GetSkillPreview(skillData);
         int cost = preview != null
@@ -2779,7 +2779,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         string normalized = effectName.Replace(" ", string.Empty).ToLowerInvariant();
 
         if (normalized.Contains("타격") || normalized.Contains("strike"))
-            return GameLocalization.Get("common.damage", "피해");
+            return GameLocalization.Get("common.damage");
 
         return effectName;
     }
@@ -2792,20 +2792,20 @@ public class BattleCharacterPanelUI : MonoBehaviour
         // 이동 스킬을 포함해 Range_All을 사용하는 스킬은 RangeType과 관계없이
         // UI에서 '전체'로 표시합니다.
         if (BattleRangeCalculator.IsAllRangeId(skillData.RangeId))
-            return GameLocalization.Get("battle.skill_type.all", "전체");
+            return GameLocalization.Get("battle.skill_type.all");
 
         // Range_Self는 RangeType과 관계없이 자기 자신을 대상으로 하는 범위이므로
         // UI에서 '개인'으로 표시합니다.
         if (string.Equals(skillData.RangeId, "Range_Self", StringComparison.OrdinalIgnoreCase))
-            return GameLocalization.Get("battle.skill_type.self", "개인");
+            return GameLocalization.Get("battle.skill_type.self");
 
         switch (skillData.RangeType)
         {
             case RangeType.Selection:
-                return GameLocalization.Get("battle.skill_type.ranged", "원거리");
+                return GameLocalization.Get("battle.skill_type.ranged");
 
             case RangeType.Direction:
-                return GameLocalization.Get("battle.skill_type.melee", "근거리");
+                return GameLocalization.Get("battle.skill_type.melee");
 
             default:
                 return string.Empty;
@@ -2820,26 +2820,26 @@ public class BattleCharacterPanelUI : MonoBehaviour
         switch (skillData.Category)
         {
             case Category.Unique:
-                return GameLocalization.Get("battle.skill_rarity.unique_memory", "발현기억");
+                return GameLocalization.Get("battle.skill_rarity.unique_memory");
 
             case Category.Ability:
-                return GameLocalization.Get("battle.skill_rarity.ability_memory", "구현기억");
+                return GameLocalization.Get("battle.skill_rarity.ability_memory");
 
             case Category.Passive:
-                return GameLocalization.Get("battle.skill_rarity.passive_memory", "본능기억");
+                return GameLocalization.Get("battle.skill_rarity.passive_memory");
 
             case Category.Move:
-                return GameLocalization.Get("battle.skill_rarity.move", "이동");
+                return GameLocalization.Get("battle.skill_rarity.move");
 
             default:
                 return skillData.Rarity switch
                 {
-                    SkillRarity.Common => GameLocalization.Get("battle.skill_rarity.common_memory", "일반기억"),
-                    SkillRarity.Rare => GameLocalization.Get("battle.skill_rarity.rare_memory", "레어기억"),
-                    SkillRarity.Epic => GameLocalization.Get("battle.skill_rarity.epic_memory", "에픽기억"),
-                    SkillRarity.Unique => GameLocalization.Get("battle.skill_rarity.unique", "유니크기억"),
-                    SkillRarity.Exclusive => GameLocalization.Get("battle.skill_rarity.exclusive", "전용기억"),
-                    SkillRarity.Move => GameLocalization.Get("battle.skill_rarity.move", "이동"),
+                    SkillRarity.Common => GameLocalization.Get("battle.skill_rarity.common_memory"),
+                    SkillRarity.Rare => GameLocalization.Get("battle.skill_rarity.rare_memory"),
+                    SkillRarity.Epic => GameLocalization.Get("battle.skill_rarity.epic_memory"),
+                    SkillRarity.Unique => GameLocalization.Get("battle.skill_rarity.unique"),
+                    SkillRarity.Exclusive => GameLocalization.Get("battle.skill_rarity.exclusive"),
+                    SkillRarity.Move => GameLocalization.Get("battle.skill_rarity.move"),
                     _ => string.Empty
                 };
         }
@@ -2871,19 +2871,19 @@ public class BattleCharacterPanelUI : MonoBehaviour
         switch (resource)
         {
             case ReferenceResource.HP:
-                return GameLocalization.Get("common.hp", "체력");
+                return GameLocalization.Get("common.hp");
 
             case ReferenceResource.UniqueResource:
                 return boundMaster != null
                     ? GetUniqueResourceDisplayName(boundMaster.ResourceType)
-                    : GameLocalization.Get("resource.unique", "고유자원");
+                    : GameLocalization.Get("resource.unique");
 
             case ReferenceResource.MovePoint:
-                return GameLocalization.Get("common.move", "이동");
+                return GameLocalization.Get("common.move");
 
             case ReferenceResource.Cost:
             default:
-                return GameLocalization.Get("common.cost", "코스트");
+                return GameLocalization.Get("common.cost");
         }
     }
 
@@ -2891,12 +2891,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         switch (resourceType)
         {
-            case ResourceType.Rage: return GameLocalization.Get("resource.rage", "분노");
-            case ResourceType.Momentum: return GameLocalization.Get("resource.momentum", "기세");
-            case ResourceType.Aether: return GameLocalization.Get("resource.aether", "에테르");
-            case ResourceType.Faith: return GameLocalization.Get("resource.faith", "신앙");
-            case ResourceType.Blood: return GameLocalization.Get("resource.blood", "혈기");
-            default: return GameLocalization.Get("resource.unique", "고유자원");
+            case ResourceType.Rage: return GameLocalization.Get("resource.rage");
+            case ResourceType.Momentum: return GameLocalization.Get("resource.momentum");
+            case ResourceType.Aether: return GameLocalization.Get("resource.aether");
+            case ResourceType.Faith: return GameLocalization.Get("resource.faith");
+            case ResourceType.Blood: return GameLocalization.Get("resource.blood");
+            default: return GameLocalization.Get("resource.unique");
         }
     }
 

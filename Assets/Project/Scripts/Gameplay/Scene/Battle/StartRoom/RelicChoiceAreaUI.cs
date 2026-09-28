@@ -539,7 +539,7 @@ public class RelicChoiceAreaUI : MonoBehaviour
         string description = GameDataLocalization.SkillDetails(skill);
 
         if (string.IsNullOrWhiteSpace(description))
-            description = GameLocalization.Get("battle.available_skill", "획득 가능한 기억입니다.");
+            description = GameLocalization.Get("battle.available_skill");
 
         return string.IsNullOrWhiteSpace(rarityName)
             ? description

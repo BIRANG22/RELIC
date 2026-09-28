@@ -350,8 +350,7 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         ShowWarning(string.Format(
             GameLocalization.Get(
-                "battle.bag_full_unique_item_limit",
-                "가방이 가득 찼습니다. 서로 다른 아이템은 최대 {0}종류까지 보유할 수 있습니다."),
+                "battle.bag_full_unique_item_limit"),
             MaxBagItemCount));
         return false;
     }
