@@ -63,7 +63,7 @@ public class BattleRewardPanelUI : MonoBehaviour
                 if (reward == null)
                     continue;
 
-                if (string.IsNullOrWhiteSpace(reward.Name) || reward.Icon == null)
+                if (ShouldPopulateRewardPresentation(reward))
                     PopulateRewardPresentation(reward);
                 currentRewards.Add(reward);
             }
@@ -226,6 +226,7 @@ public class BattleRewardPanelUI : MonoBehaviour
             return;
 
         string id = reward.RewardId.Trim();
+        reward.RewardId = id;
         switch (reward.Type)
         {
             case BattleRewardType.Item:
@@ -235,7 +236,12 @@ public class BattleRewardPanelUI : MonoBehaviour
                     reward.Name = GameDataLocalization.ItemName(item);
                     reward.Description = GameDataLocalization.ItemDescription(item);
                 }
-                DataManager.Instance.ItemIconDatabase?.TryGetIcon(id, out reward.Icon);
+                if (DataManager.Instance.ItemIconDatabase != null &&
+                    DataManager.Instance.ItemIconDatabase.TryGetIcon(id, out Sprite itemIcon) &&
+                    itemIcon != null)
+                {
+                    reward.Icon = itemIcon;
+                }
                 break;
 
             case BattleRewardType.Relic:
@@ -244,7 +250,12 @@ public class BattleRewardPanelUI : MonoBehaviour
                     reward.Name = GameDataLocalization.RelicName(relic);
                     reward.Description = GameDataLocalization.RelicEffectDescription(relic);
                 }
-                DataManager.Instance.RelicIconDatabase?.TryGetIcon(id, out reward.Icon);
+                if (DataManager.Instance.RelicIconDatabase != null &&
+                    DataManager.Instance.RelicIconDatabase.TryGetIcon(id, out Sprite relicIcon) &&
+                    relicIcon != null)
+                {
+                    reward.Icon = relicIcon;
+                }
                 break;
 
             case BattleRewardType.Skill:
@@ -252,10 +263,28 @@ public class BattleRewardPanelUI : MonoBehaviour
                 {
                     reward.Name = GameDataLocalization.SkillName(skill);
                     reward.Description = GameDataLocalization.SkillDetails(skill);
+
+                    if (skill.Icon != null)
+                        reward.Icon = skill.Icon;
                 }
-                DataManager.Instance.SkillIconDatabase?.TryGetIcon(id, out reward.Icon);
+                if (DataManager.Instance.SkillIconDatabase != null &&
+                    DataManager.Instance.SkillIconDatabase.TryGetIcon(id, out Sprite skillIcon) &&
+                    skillIcon != null)
+                {
+                    reward.Icon = skillIcon;
+                }
                 break;
         }
+    }
+
+    private static bool ShouldPopulateRewardPresentation(BattleRewardData reward)
+    {
+        if (reward == null || string.IsNullOrWhiteSpace(reward.RewardId))
+            return false;
+
+        return reward.Type == BattleRewardType.Item ||
+               reward.Type == BattleRewardType.Relic ||
+               reward.Type == BattleRewardType.Skill;
     }
 
     private void ResolveEquipPanelIfNeeded()

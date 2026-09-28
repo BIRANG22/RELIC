@@ -144,7 +144,7 @@ namespace Relic.Gameplay.Data
         }
 
         public static string RelicRarity(RelicData data) =>
-            data == null ? string.Empty : GameLocalization.GetData("Relic", data.FragmentId, "rarity", data.Rarity);
+            data == null ? string.Empty : RelicRarityUtility.GetDisplayName(data.Rarity);
 
         public static string ItemName(ItemData data) =>
             data == null ? string.Empty : GameLocalization.GetData("Item", data.ItemId, "name", data.Name);

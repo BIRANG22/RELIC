@@ -74,6 +74,9 @@ public static class RuntimeTMPTextAutoLocalizer
         if (!isReady)
             return;
 
+        if (text.GetComponentInParent<LocalizationAutoBindingIgnore>(true) != null)
+            return;
+
         DynamicLocalizedTMPText dynamicLocalizer = text.GetComponent<DynamicLocalizedTMPText>();
         if (dynamicLocalizer != null && dynamicLocalizer.IsApplyingLocalization)
             return;
@@ -115,6 +118,9 @@ public static class RuntimeTMPTextAutoLocalizer
     private static void TryAttachDynamic(TMP_Text text)
     {
         if (text == null || !isReady || text.GetComponentInParent<TMP_Dropdown>() != null)
+            return;
+
+        if (text.GetComponentInParent<LocalizationAutoBindingIgnore>(true) != null)
             return;
 
         if (text.GetComponentInParent<LocalizationIgnore>(true) == null)

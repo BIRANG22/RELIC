@@ -120,7 +120,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
                     string korean = column < row.Count ? row[column] : string.Empty;
                     bool isMonsterSkillType = string.Equals(sheet, "MonsterSkill", StringComparison.Ordinal) &&
                                               string.Equals(header.Trim(), "타입", StringComparison.Ordinal);
-                    if ((!LocalizationProjectScanner.IsPlayerFacingGameDataColumn(header) && !isMonsterSkillType) ||
+                    if ((!LocalizationProjectScanner.IsPlayerFacingGameDataColumn(sheet, header) && !isMonsterSkillType) ||
                         !LocalizationProjectScanner.IsLocalizableKoreanText(korean))
                         continue;
 
@@ -424,7 +424,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
                 for (int column = 1; column < headers.Count; column++)
                 {
                     string korean = column < row.Count ? row[column] : string.Empty;
-                    if (LocalizationProjectScanner.IsPlayerFacingGameDataColumn(headers[column]) &&
+                    if (LocalizationProjectScanner.IsPlayerFacingGameDataColumn(sheet, headers[column]) &&
                         LocalizationProjectScanner.IsLocalizableKoreanText(korean))
                     {
                         string stableKey = BuildGameDataKey(sheet, stableId, row, choiceOrderColumn, headers[column]);

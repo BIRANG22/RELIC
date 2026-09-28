@@ -665,19 +665,24 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         if (currentReward == null)
             return;
 
-        if (itemIconImage != null)
-        {
-            itemIconImage.sprite = currentReward.Icon;
-            itemIconImage.enabled = currentReward.Icon != null;
-            itemIconImage.color = Color.white;
-        }
-
-        if (itemNameText != null)
-            itemNameText.text = currentReward.GetDisplayName();
-
         if (currentReward.Type == BattleRewardType.Skill)
         {
             SkillMasterData skill = ResolveSkill(currentReward.RewardId);
+            Debug.Log(
+                $"[StartRoomRewardTrace] EquipRefresh / Id:{currentReward.RewardId} / " +
+                $"Resolved:{(skill != null)} / DbName:{skill?.Name} / Rarity:{skill?.Rarity} / " +
+                $"RewardIcon:{(currentReward.Icon != null ? currentReward.Icon.name : "null")} / " +
+                $"DbIcon:{(skill?.Icon != null ? skill.Icon.name : "null")}");
+
+            ApplyImage(
+                itemIconImage,
+                ResolveSkillRewardIcon(currentReward, skill, DataManager.Instance?.SkillIconDatabase),
+                Color.white);
+
+            if (itemNameText != null)
+                itemNameText.text = skill != null
+                    ? GameDataLocalization.SkillName(skill)
+                    : currentReward.GetDisplayName();
 
             if (itemRarityText != null)
             {
@@ -693,6 +698,16 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         else
         {
             RelicData relic = ResolveRelic(currentReward.RewardId);
+
+            ApplyImage(
+                itemIconImage,
+                ResolveRelicRewardIcon(currentReward, relic, DataManager.Instance?.RelicIconDatabase),
+                Color.white);
+
+            if (itemNameText != null)
+                itemNameText.text = relic != null
+                    ? GameDataLocalization.RelicName(relic)
+                    : currentReward.GetDisplayName();
 
             if (itemRarityText != null)
             {
@@ -750,6 +765,45 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
         // 배틀 캐릭터 패널을 찾지 못한 경우 Cost_Icon에 미리 지정된 기본 스프라이트를 사용합니다.
         return itemCostIconImage != null ? itemCostIconImage.sprite : null;
+    }
+
+    private static Sprite ResolveSkillRewardIcon(
+        BattleRewardData reward,
+        SkillMasterData skill,
+        SkillIconDatabase iconDatabase)
+    {
+        if (skill?.Icon != null)
+            return skill.Icon;
+
+        string skillId = !string.IsNullOrWhiteSpace(skill?.SkillId)
+            ? skill.SkillId.Trim()
+            : reward?.RewardId?.Trim();
+        if (!string.IsNullOrWhiteSpace(skillId) &&
+            iconDatabase != null &&
+            iconDatabase.TryGetIcon(skillId, out Sprite databaseIcon))
+        {
+            return databaseIcon;
+        }
+
+        return reward?.Icon;
+    }
+
+    private static Sprite ResolveRelicRewardIcon(
+        BattleRewardData reward,
+        RelicData relic,
+        RelicIconDatabase iconDatabase)
+    {
+        string relicId = !string.IsNullOrWhiteSpace(relic?.FragmentId)
+            ? relic.FragmentId.Trim()
+            : reward?.RewardId?.Trim();
+        if (!string.IsNullOrWhiteSpace(relicId) &&
+            iconDatabase != null &&
+            iconDatabase.TryGetIcon(relicId, out Sprite databaseIcon))
+        {
+            return databaseIcon;
+        }
+
+        return reward?.Icon;
     }
 
     private void SetItemSkillDetailVisibility(bool visible)
@@ -1305,6 +1359,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         ProtectDynamicItemText(itemNameText);
         ProtectDynamicItemText(itemRarityText);
         ProtectDynamicItemText(itemEffectText);
+        ProtectDynamicItemText(itemCostValueText);
     }
 
     private static void ProtectDynamicItemText(TMP_Text text)
@@ -1315,10 +1370,16 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         GameObject target = text.gameObject;
         if (target.GetComponent<LocalizationIgnore>() == null)
             target.AddComponent<LocalizationIgnore>();
+        if (target.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            target.AddComponent<LocalizationAutoBindingIgnore>();
 
         LocalizedTMPText localizedTmp = target.GetComponent<LocalizedTMPText>();
         if (localizedTmp != null)
             localizedTmp.enabled = false;
+
+        DynamicLocalizedTMPText dynamicLocalizedTmp = target.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicLocalizedTmp != null)
+            dynamicLocalizedTmp.enabled = false;
 
         LocalizeStringEvent legacyLocalizer = target.GetComponent<LocalizeStringEvent>();
         if (legacyLocalizer != null)

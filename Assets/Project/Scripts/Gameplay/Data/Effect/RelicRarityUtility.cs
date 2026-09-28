@@ -53,6 +53,30 @@ namespace Relic.Gameplay.Data
             return GetRevealRank(rarity) > 0;
         }
 
+        public static string GetLocalizationKey(string raw)
+        {
+            if (!TryParseChestRarity(raw, out RelicRarity rarity))
+                return string.Empty;
+
+            return rarity switch
+            {
+                RelicRarity.Common => "common.rarity.common",
+                RelicRarity.Rare => "common.rarity.rare",
+                RelicRarity.Epic => "common.rarity.epic",
+                RelicRarity.Unique => "common.rarity.unique",
+                _ => string.Empty
+            };
+        }
+
+        public static string GetDisplayName(string raw)
+        {
+            string fallback = string.IsNullOrWhiteSpace(raw) ? string.Empty : raw.Trim();
+            string key = GetLocalizationKey(raw);
+            return string.IsNullOrWhiteSpace(key)
+                ? fallback
+                : GameLocalization.Get(key, fallback);
+        }
+
         private static string Normalize(string raw)
         {
             if (string.IsNullOrWhiteSpace(raw))
