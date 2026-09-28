@@ -61,7 +61,7 @@ namespace Relic.Gameplay.Data
                 ActiveRelicEffectIds.CleanseDebuffs => ActiveRelicTargetMode.Self,
                 ActiveRelicEffectIds.MoveToGrid => ActiveRelicTargetMode.Grid,
                 ActiveRelicEffectIds.SwapAlly => ActiveRelicTargetMode.AllyGrid,
-                ActiveRelicEffectIds.TargetOutgoingDamageReductionThisTurn => ActiveRelicTargetMode.EnemyGrid,
+                ActiveRelicEffectIds.Fatigue => ActiveRelicTargetMode.EnemyGrid,
                 ActiveRelicEffectIds.RemoveGridEffect => ActiveRelicTargetMode.Grid,
                 ActiveRelicEffectIds.SpawnGridEffect => ActiveRelicTargetMode.Grid,
                 ActiveRelicEffectIds.SpawnPoisonGridEffect => ActiveRelicTargetMode.Grid,

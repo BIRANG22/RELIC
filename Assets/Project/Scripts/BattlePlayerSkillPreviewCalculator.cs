@@ -350,7 +350,7 @@ public static class BattlePlayerSkillPreviewCalculator
                 case ActiveRelicEffectIds.DamageBoostThisTurn:
                     formulaParts.Add("+100%");
                     break;
-                case ActiveRelicEffectIds.TargetOutgoingDamageReductionThisTurn:
+                case ActiveRelicEffectIds.Fatigue:
                     formulaParts.Add($"-{status.Stack}");
                     break;
                 case "E_Grit":
