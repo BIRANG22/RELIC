@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -749,10 +749,10 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     {
         string normalized = string.IsNullOrWhiteSpace(rarity) ? string.Empty : rarity.Trim();
 
-        if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return "일반 유물";
-        if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return "레어 유물";
-        if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return "에픽 유물";
-        if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return "유니크 유물";
+        if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get("relic.rarity.common");
+        if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get("relic.rarity.rare");
+        if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get("relic.rarity.epic");
+        if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get("relic.rarity.unique");
 
         return normalized;
     }

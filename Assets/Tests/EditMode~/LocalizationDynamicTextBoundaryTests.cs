@@ -5,7 +5,9 @@ using NUnit.Framework;
 public sealed class LocalizationDynamicTextBoundaryTests
 {
     private const string BattleScenePath = "Assets/Project/Scenes/YDM/Battle.unity";
+    private const string LobbyScenePath = "Assets/Project/Scenes/YDM/Lobby.unity";
     private const string LocalizationIgnoreScriptGuid = "426c88f35f804f14a7d43a9f9611e21b";
+    private const string LocalizedTmpTextScriptGuid = "700ed754fb422984990c407c26f0065c";
 
     [Test]
     public void RuntimeAutoLocalizer_RoutesIgnoredDynamicTextWithoutPermanentlySkippingSceneText()
@@ -60,6 +62,61 @@ public sealed class LocalizationDynamicTextBoundaryTests
             "BattleMapIntroText는 런타임에서 번역된 문구를 쓰는 동적 출력 루트여야 합니다.");
     }
 
+    [Test]
+    public void LobbyErosionValues_AreDynamicAndEachOutputHasItsOwnTarget()
+    {
+        string scene = File.ReadAllText(LobbyScenePath);
+        string[] erosionValues = FindGameObjectBlocksByName(scene, "Erosion_Value");
+
+        Assert.That(erosionValues, Has.Length.EqualTo(3));
+        foreach (string gameObjectBlock in erosionValues)
+        {
+            string gameObjectId = ReadObjectId(gameObjectBlock);
+            Assert.That(
+                GameObjectHasComponentScript(scene, gameObjectBlock, gameObjectId, LocalizationIgnoreScriptGuid),
+                Is.True,
+                "숫자 또는 포맷 문장을 런타임에 쓰는 Erosion_Value는 정적 키 자동 연결 대상이면 안 됩니다.");
+        }
+
+        Assert.That(scene, Does.Contain("erosionValueText: {fileID: 744195647}"),
+            "카탈로그 점수는 ErosionSelectPanel/Select/Erosion_Value에 출력해야 합니다.");
+        Assert.That(scene, Does.Contain("rewardBonusText: {fileID: 122089891}"),
+            "보상 문장은 ErosionSelectPanel 바로 아래의 문장용 TMP에 출력해야 합니다.");
+    }
+
+    [TestCase("MainText", "ui.lobby.panel.erosion")]
+    [TestCase("PlayText", "ui.lobby.play.ready")]
+    public void RequestedIdDrivenTexts_UseLocalizedTmpText(string objectName, string expectedKey)
+    {
+        string scene = File.ReadAllText(LobbyScenePath);
+        string gameObjectBlock = FindGameObjectBlockByName(scene, objectName);
+        string gameObjectId = ReadObjectId(gameObjectBlock);
+
+        Assert.That(GameObjectHasComponentScript(scene, gameObjectBlock, gameObjectId, LocalizedTmpTextScriptGuid), Is.True);
+        Assert.That(FindComponentBlockByScript(scene, gameObjectBlock, gameObjectId, LocalizedTmpTextScriptGuid),
+            Does.Contain("localizationKey: " + expectedKey));
+    }
+
+    [TestCase("301323235", "ui.lobby.culture.recipe")]
+    [TestCase("1806657410", "ui.lobby.culture.material")]
+    public void RequestedCultureTankStaticTexts_UseLocalizedTmpText(string gameObjectId, string expectedKey)
+    {
+        string scene = File.ReadAllText(LobbyScenePath);
+        string gameObjectBlock = FindBlock(scene, "--- !u!1 &" + gameObjectId);
+
+        Assert.That(GameObjectHasComponentScript(scene, gameObjectBlock, gameObjectId, LocalizedTmpTextScriptGuid), Is.True);
+        Assert.That(FindComponentBlockByScript(scene, gameObjectBlock, gameObjectId, LocalizedTmpTextScriptGuid),
+            Does.Contain("localizationKey: " + expectedKey));
+    }
+
+    [TestCase("00", 0, "0")]
+    [TestCase("00", 17, "17")]
+    [TestCase("{0}", 23, "23")]
+    public void ErosionScoreFormatter_ReplacesTheNumericTemplate(string template, int score, string expected)
+    {
+        Assert.That(ErosionScoreTextFormatter.Format(template, score), Is.EqualTo(expected));
+    }
+
     private static string FindGameObjectBlockByName(string scene, string objectName)
     {
         foreach (string block in SplitBlocks(scene))
@@ -71,6 +128,19 @@ public sealed class LocalizationDynamicTextBoundaryTests
 
         Assert.Fail($"GameObject를 찾을 수 없습니다: {objectName}");
         return string.Empty;
+    }
+
+    private static string[] FindGameObjectBlocksByName(string scene, string objectName)
+    {
+        var results = new System.Collections.Generic.List<string>();
+        foreach (string block in SplitBlocks(scene))
+        {
+            if (block.StartsWith("!u!1 &", StringComparison.Ordinal) &&
+                block.IndexOf("\n  m_Name: " + objectName + "\n", StringComparison.Ordinal) >= 0)
+                results.Add(block);
+        }
+
+        return results.ToArray();
     }
 
     private static string FindChildGameObjectBlockByName(string scene, string parentTransformId, string objectName)
@@ -106,6 +176,23 @@ public sealed class LocalizationDynamicTextBoundaryTests
         }
 
         return false;
+    }
+
+    private static string FindComponentBlockByScript(
+        string scene,
+        string gameObjectBlock,
+        string gameObjectId,
+        string scriptGuid)
+    {
+        foreach (string componentId in ReadComponentIds(gameObjectBlock))
+        {
+            string componentBlock = FindBlock(scene, "--- !u!114 &" + componentId);
+            if (componentBlock.IndexOf("m_GameObject: {fileID: " + gameObjectId + "}", StringComparison.Ordinal) >= 0 &&
+                componentBlock.IndexOf("guid: " + scriptGuid, StringComparison.Ordinal) >= 0)
+                return componentBlock;
+        }
+
+        return string.Empty;
     }
 
     private static string[] SplitBlocks(string scene) =>

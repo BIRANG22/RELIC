@@ -42,8 +42,6 @@ public class OptionPanelUI : MonoBehaviour
     [SerializeField] private int languageDropdownSortingOrderOffset = 50;
 
     [Header("Save Toast")]
-    [SerializeField] private string saveSuccessMessage = "저장되었습니다.";
-    [SerializeField] private string saveFailedMessage = "저장 실패";
     [SerializeField] private float saveToastDuration = 1.4f;
     [SerializeField] private int saveToastSortingOrder = 32100;
 
@@ -156,7 +154,9 @@ public class OptionPanelUI : MonoBehaviour
         }
 
         SaveResultToastUI.Show(
-            saved ? saveSuccessMessage : saveFailedMessage,
+            GameLocalization.Get(saved
+                ? LocalizationKeys.SystemMessage.SaveSuccess
+                : LocalizationKeys.SystemMessage.SaveFailed),
             saveToastDuration,
             saveToastSortingOrder);
     }

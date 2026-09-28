@@ -215,7 +215,7 @@ namespace Relic.Gameplay.Data
 
             if (RequiresSkillAwakenSelection(choice) && !HasAnyUpgradeableEquippedSkill(context))
             {
-                unavailableReason = "강화 가능한 장착 기억이 없습니다.";
+                unavailableReason = GameLocalization.Get("event.memory.none_upgradable");
                 return false;
             }
 
@@ -250,7 +250,7 @@ namespace Relic.Gameplay.Data
             {
                 if (!HasAnyEquippedRelic(context))
                 {
-                    unavailableReason = "장착 중인 유물이 없습니다.";
+                    unavailableReason = GameLocalization.Get("event.relic.none_equipped");
                     return false;
                 }
             }
@@ -264,7 +264,7 @@ namespace Relic.Gameplay.Data
             if (ContainsAny(choice.SelectCondition, "미각성 기억", "각성하지 않은 기억") &&
                 !HasAnyUpgradeableEquippedSkill(context))
             {
-                unavailableReason = "강화 가능한 장착 기억이 없습니다.";
+                unavailableReason = GameLocalization.Get("event.memory.none_upgradable");
                 return false;
             }
 
@@ -300,7 +300,7 @@ namespace Relic.Gameplay.Data
             if (RequiresSkillAwakenSelection(choice) &&
                 !context.SelectedSkillAwakenTarget.IsValid)
             {
-                return new EventChoiceExecutionResult(false, "강화할 기억을 선택해야 합니다.", string.Empty);
+                return new EventChoiceExecutionResult(false, GameLocalization.Get("event.memory.select_upgrade_required"), string.Empty);
             }
 
             List<string> messages = new();
@@ -500,7 +500,7 @@ namespace Relic.Gameplay.Data
 
             if (IsToken(resultType, "OpenPanel"))
                 return context.OpenShop != null && context.OpenShop()
-                    ? "상점 패널을 열었습니다."
+                    ? GameLocalization.Get("event.result.shop_opened")
                     : BuildResultSummary(choice);
 
             if (IsToken(resultType, "Awaken"))
@@ -510,7 +510,7 @@ namespace Relic.Gameplay.Data
                 return TryInvokeGrant(context.UpgradeRandomSkill, "강화 가능한 기억이 없습니다.");
 
             if (IsToken(resultType, "EndEvent"))
-                return "이벤트를 종료합니다.";
+                return GameLocalization.Get("event.result.end");
 
             return BuildResultSummary(choice);
         }
@@ -518,10 +518,10 @@ namespace Relic.Gameplay.Data
         private static string ApplyAwaken(EventData choice, EventChoiceExecutionContext context)
         {
             if (!context.SelectedSkillAwakenTarget.IsValid)
-                return "강화할 기억을 선택해야 합니다.";
+                return GameLocalization.Get("event.memory.select_upgrade_required");
 
             if (context.UpgradeSelectedSkill == null)
-                return "선택 기억 강화 처리가 준비되지 않았습니다.";
+                return GameLocalization.Get("event.memory.upgrade_unavailable");
 
             bool upgraded = context.UpgradeSelectedSkill(
                 context.SelectedSkillAwakenTarget,
@@ -553,14 +553,14 @@ namespace Relic.Gameplay.Data
                 return string.Empty;
 
             if (context.RemoveFailedSelectedSkill == null)
-                return "실패한 선택 기억 제거 처리가 준비되지 않았습니다.";
+                return GameLocalization.Get("event.memory.remove_failed_unavailable");
 
             bool removed = context.RemoveFailedSelectedSkill(
                 context.SelectedSkillAwakenTarget,
                 out string resultMessage);
 
             if (!removed && string.IsNullOrWhiteSpace(resultMessage))
-                return "실패한 선택 기억을 제거하지 못했습니다.";
+                return GameLocalization.Get("event.memory.remove_failed");
 
             return resultMessage;
         }
@@ -593,7 +593,7 @@ namespace Relic.Gameplay.Data
             awakenedTargets.Clear();
 
             if (!rolledBack && string.IsNullOrWhiteSpace(resultMessage))
-                return "이번 이벤트로 얻은 기억을 제거하지 못했습니다.";
+                return GameLocalization.Get("event.memory.remove_acquired_failed");
 
             return resultMessage;
         }
@@ -648,7 +648,7 @@ namespace Relic.Gameplay.Data
         private static string ApplyGainRandom(EventData choice, EventChoiceExecutionContext context)
         {
             if (ContainsAny(choice.ResultTarget, "유물"))
-                return TryInvokeRewardGrant(context, context.GrantRandomRelic, "획득 가능한 유물이 없습니다.");
+                return TryInvokeRewardGrant(context, context.GrantRandomRelic, GameLocalization.Get("event.relic.none_available"));
 
             if (ContainsAny(choice.ResultTarget, "기억"))
                 return TryInvokeRewardGrant(context, context.GrantRandomSkill, "획득 가능한 기억이 없습니다.");
@@ -661,7 +661,7 @@ namespace Relic.Gameplay.Data
             List<string> messages = new();
 
             if (ContainsAny(choice.ResultTarget, "유물"))
-                messages.Add(TryInvokeRewardGrant(context, context.GrantRandomRelic, "획득 가능한 유물이 없습니다."));
+                messages.Add(TryInvokeRewardGrant(context, context.GrantRandomRelic, GameLocalization.Get("event.relic.none_available")));
 
             if (ContainsAny(choice.ResultTarget, "레드 더스티움") &&
                 TryParseEffectAmount(choice.ResultValue, out int amount))
@@ -740,7 +740,7 @@ namespace Relic.Gameplay.Data
             int amount = Mathf.Max(0, context.SessionState.AccumulatedRemnant);
 
             if (amount <= 0)
-                return "확정할 누적 보상이 없습니다.";
+                return GameLocalization.Get("event.reward.none_to_confirm");
 
             string message = GrantRemnantReward(context, amount);
             context.SessionState.AccumulatedRemnant = 0;
@@ -752,7 +752,7 @@ namespace Relic.Gameplay.Data
             EventChoiceExecutionContext context)
         {
             if (string.IsNullOrWhiteSpace(failResult))
-                return "실패했습니다.";
+                return GameLocalization.Get("event.result.failed");
 
             string effectText = TrimRangePrefix(failResult);
 

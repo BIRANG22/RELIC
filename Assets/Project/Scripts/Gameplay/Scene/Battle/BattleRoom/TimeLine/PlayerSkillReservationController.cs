@@ -462,13 +462,13 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (currentUserRuntime == null)
         {
-            ShowBattleWarning("선택된 캐릭터가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterNotSelected));
             return;
         }
 
         if (currentSkillData == null)
         {
-            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillReservationMissing));
             return;
         }
 
@@ -502,7 +502,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             }
             else
             {
-                ShowBattleWarning("스킬 범위 정보를 찾을 수 없습니다.");
+                ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillRangeMissing));
             }
 
             return;
@@ -575,7 +575,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (currentGeneralSelectionSelectableIndices.Count <= 0)
         {
-            ShowBattleWarning("선택 가능한 그리드 범위를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectableGridRangeMissing));
             return;
         }
 
@@ -618,7 +618,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             if (currentMoveSelectableIndices.Count > 0)
                 return;
 
-            ShowBattleWarning("이동에 필요한 Cost가 부족합니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.InsufficientMoveCost));
             return;
         }
 
@@ -654,7 +654,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         }
 
         if (currentMoveSelectableIndices.Count <= 0)
-            ShowBattleWarning("선택 가능한 칸이 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.NoSelectableGrid));
 
         if (rangePreview != null)
             rangePreview.ShowDirectionCells(
@@ -1175,7 +1175,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         {
             if (!currentGeneralSelectionSelectableIndices.Contains(cell.Index))
             {
-                ShowBattleWarning("선택할 수 없는 칸입니다.");
+                ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.GridNotSelectable));
                 Debug.LogWarning($"[PlayerSkillReservationController] 일반 선택 스킬의 사용 가능 범위를 벗어났습니다: {cell.name}");
                 return;
             }
@@ -1186,7 +1186,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (!currentMoveSelectableIndices.Contains(cell.Index))
         {
-            ShowBattleWarning("선택할 수 없는 칸입니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.GridNotSelectable));
             Debug.LogWarning($"[PlayerSkillReservationController] 선택 가능한 이동 칸이 아닙니다: {cell.name}");
             return;
         }
@@ -1438,7 +1438,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (!isCurrentCasterGridIndex &&
             blockedDestinationGridIndices.Contains(selectedGridIndex))
         {
-            ShowBattleWarning("다른 캐릭터가 있는 위치로는 이동할 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.MoveDestinationOccupied));
             return;
         }
 
@@ -1477,13 +1477,13 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (moveOffsets == null || moveOffsets.Count <= 0)
         {
-            ShowBattleWarning("이동할 수 없는 위치입니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.MoveDestinationInvalid));
             return;
         }
 
         if (!CanReserveMovePathWithEffectiveCost(moveOffsets))
         {
-            ShowBattleWarning("선택한 위치까지 이동할 Cost가 부족합니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.InsufficientMoveCost));
             return;
         }
 
@@ -1494,7 +1494,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (commands.Count <= 0)
         {
-            ShowBattleWarning("이동 예약을 만들 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.MoveReservationFailed));
             return;
         }
 
@@ -2844,7 +2844,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (timelineController == null)
         {
-            ShowBattleWarning("타임라인 컨트롤러를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineControllerMissing));
             return false;
         }
 
@@ -2865,7 +2865,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (timelineController == null)
         {
-            ShowBattleWarning("타임라인 컨트롤러를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineControllerMissing));
             return false;
         }
 
@@ -2918,19 +2918,19 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         if (currentUserRuntime == null)
         {
-            ShowBattleWarning("선택된 캐릭터가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterNotSelected));
             return false;
         }
 
         if (currentSkillData == null)
         {
-            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillReservationMissing));
             return false;
         }
 
         if (currentSlotIndex < 0)
         {
-            ShowBattleWarning("타임라인 슬롯을 먼저 선택해주세요.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectTimelineSlotFirst));
             return false;
         }
 
@@ -2941,19 +2941,19 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         if (gridManager == null)
         {
-            ShowBattleWarning("전투 그리드를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.BattleGridMissing));
             return false;
         }
 
         if (currentSkillData == null)
         {
-            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillReservationMissing));
             return false;
         }
 
         if (DataManager.Instance == null || DataManager.Instance.RangeDatabase == null)
         {
-            ShowBattleWarning("스킬 범위 데이터를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillRangeMissing));
             return false;
         }
 

@@ -250,7 +250,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(skillData.Details))
             return GameDataLocalization.SkillDetails(skillData);
 
-        return GameLocalization.Get("common.no_effect_description", "효과 설명이 없습니다.");
+        return GameLocalization.Get("common.no_effect_description");
     }
 
     private string BuildRelicDescription(RelicData relicData)
@@ -261,7 +261,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(relicData.EffectDesc))
             return GameDataLocalization.RelicEffectDescription(relicData);
 
-        return GameLocalization.Get("common.no_effect_description", "효과 설명이 없습니다.");
+        return GameLocalization.Get("common.no_effect_description");
     }
 
     private void MoveTooltipToSlot(RectTransform hoveredSlotRect)

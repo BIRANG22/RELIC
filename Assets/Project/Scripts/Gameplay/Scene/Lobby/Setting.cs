@@ -42,7 +42,6 @@ public class Setting : MonoBehaviour
     [SerializeField] private Button testLevelDownButton;
     [SerializeField] private float testLevelHoldStartDelay = 0.35f;
     [SerializeField] private float testLevelHoldRepeatInterval = 0.08f;
-    [SerializeField] private string maxLevelWarningMessage = "최대 레벨입니다.";
 
     [Header("Test Level Cheat Keys")]
     [SerializeField] private bool enableTestLevelCheatKeys = true;
@@ -598,21 +597,21 @@ public class Setting : MonoBehaviour
         if (string.IsNullOrWhiteSpace(characterId))
         {
             Clear();
-            ShowWarning("선택된 캐릭터가 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterNotSelected));
             return;
         }
 
         if (DataManager.Instance == null)
         {
             Clear();
-            ShowWarning("데이터를 불러올 수 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.DataUnavailable));
             return;
         }
 
         if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out currentMasterData))
         {
             Clear();
-            ShowWarning("캐릭터 데이터를 찾을 수 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterDataNotFound));
             return;
         }
 
@@ -622,7 +621,7 @@ public class Setting : MonoBehaviour
         if (currentRuntimeData == null)
         {
             Clear();
-            ShowWarning("캐릭터 데이터를 찾을 수 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterDataNotFound));
             return;
         }
 
@@ -654,7 +653,7 @@ public class Setting : MonoBehaviour
         if (DataManager.Instance == null)
         {
             Clear();
-            ShowWarning("데이터를 불러올 수 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.DataUnavailable));
             return;
         }
 
@@ -668,7 +667,7 @@ public class Setting : MonoBehaviour
                 !charPick.TrySelectFirstUnassignedCharacterForSetting(out characterId))
             {
                 Clear();
-                ShowWarning("선택할 수 있는 캐릭터가 없다.");
+                ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.NoAvailableCharacter));
                 return;
             }
         }
@@ -703,7 +702,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 한다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectCharacterFirst));
             return;
         }
 
@@ -888,7 +887,7 @@ public class Setting : MonoBehaviour
         // 캐릭터 정보가 없는 잠금 버튼을 선택해도 빈칸으로 보이지 않도록
         // 기본 안내 문구와 0 수치를 표시한다.
         if (characterNameText != null)
-            characterNameText.text = "잠김";
+            characterNameText.text = GameLocalization.Get(LocalizationKeys.Character.Locked);
 
         if (characterInfoText != null)
             characterInfoText.text = "";
@@ -1028,7 +1027,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 한다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectCharacterFirst));
             return;
         }
 
@@ -1041,7 +1040,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 한다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectCharacterFirst));
             return;
         }
 
@@ -1052,7 +1051,7 @@ public class Setting : MonoBehaviour
             currentRuntimeData.Level = safeMaxLevel;
             ApplyTestExpByCurrentLevel();
             RefreshAfterLevelChanged();
-            ShowWarning(maxLevelWarningMessage);
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.MaxLevel));
             return;
         }
 
@@ -1065,7 +1064,7 @@ public class Setting : MonoBehaviour
     {
         if (currentRuntimeData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 한다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectCharacterFirst));
             return;
         }
 
@@ -1075,7 +1074,7 @@ public class Setting : MonoBehaviour
         RefreshAfterLevelChanged();
 
         if (level > safeMaxLevel)
-            ShowWarning(maxLevelWarningMessage);
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.MaxLevel));
     }
 
     private void ApplyTestExpByCurrentLevel()

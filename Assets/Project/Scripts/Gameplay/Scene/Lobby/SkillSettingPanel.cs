@@ -616,21 +616,21 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (DataManager.Instance == null)
         {
             ClearSkillSlots();
-            ShowWarning("데이터를 사용할 수 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.DataUnavailable));
             return;
         }
 
         if (string.IsNullOrWhiteSpace(characterId))
         {
             ClearSkillSlots();
-            ShowWarning("선택된 캐릭터가 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterNotSelected));
             return;
         }
 
         if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out currentMasterData))
         {
             ClearSkillSlots();
-            ShowWarning(string.Format("캐릭터 데이터를 찾을 수 없다: {0}", characterId));
+            ShowWarning(GameLocalization.Format(LocalizationKeys.Warning.CharacterDataNotFoundWithId, characterId));
             return;
         }
 
@@ -639,7 +639,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (currentRuntimeData == null)
         {
             ClearSkillSlots();
-            ShowWarning(string.Format("캐릭터 데이터를 찾을 수 없다: {0}", characterId));
+            ShowWarning(GameLocalization.Format(LocalizationKeys.Warning.CharacterDataNotFoundWithId, characterId));
             return;
         }
 
@@ -781,13 +781,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     {
         if (slotButton == null)
         {
-            ShowWarning("스킬 슬롯이 연결되지 않았다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillSlotNotConnected));
             return;
         }
 
         if (currentRuntimeData == null || currentMasterData == null)
         {
-            ShowWarning("캐릭터를 먼저 선택해야 한다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectCharacterFirst));
             return;
         }
 
@@ -832,7 +832,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             skillSlotButtons.Length == 0 ||
             skillSlotButtons[0] == null)
         {
-            ShowWarning("스킬 슬롯이 연결되지 않았다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillSlotNotConnected));
             return;
         }
 
@@ -1785,13 +1785,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     {
         if (currentSelectedSlot == null)
         {
-            ShowWarning("스킬을 장착할 슬롯을 먼저 선택해야 한다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectSkillSlotFirst));
             return;
         }
 
         if (skill == null)
         {
-            ShowWarning("선택된 스킬이 없다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.NoSkillSelected));
             return;
         }
 
@@ -1800,13 +1800,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         if (characterLevel < requiredLevel)
         {
-            ShowWarning(string.Format("아직 잠겨있는 스킬이다. 필요 레벨: LV. {0}", requiredLevel));
+            ShowWarning(GameLocalization.Format(LocalizationKeys.Warning.SkillLockedLevel, requiredLevel));
             return;
         }
 
         if (!IsSkillValidForCurrentCharacterSlot(skill, currentSelectedSlot.SlotIndex))
         {
-            ShowWarning("이 슬롯에 장착할 수 없는 스킬이다.");
+            ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillNotAvailableForSlot));
             return;
         }
 

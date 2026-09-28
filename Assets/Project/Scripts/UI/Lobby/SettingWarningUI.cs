@@ -38,42 +38,6 @@ public class SettingWarningUI : MonoBehaviour
     [SerializeField] private int topSortingOrder = MinimumTopSortingOrder;
     [SerializeField] private bool setAsLastSiblingOnShow = true;
 
-    [Header("Warning Text - General")]
-    [SerializeField] private string dataUnavailableMessage = "µ¥ÀÌÅÍ¸¦ ºÒ·¯¿Ã ¼ö ¾ø½À´Ï´Ù.";
-    [SerializeField] private string noCharacterSelectedMessage = "¼±ÅÃµÈ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.";
-    [SerializeField] private string characterDataNotFoundMessage = "Ä³¸¯ÅÍ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.";
-    [Tooltip("{0} À§Ä¡¿¡ Ä³¸¯ÅÍ ID°¡ µé¾î°©´Ï´Ù.")]
-    [SerializeField] private string characterDataNotFoundWithIdMessage = "Ä³¸¯ÅÍ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù: {0}";
-    [SerializeField] private string selectCharacterFirstMessage = "Ä³¸¯ÅÍ¸¦ ¸ÕÀú ¼±ÅÃÇØ¾ß ÇÕ´Ï´Ù.";
-    [SerializeField] private string noAvailableCharacterMessage = "¼±ÅÃÇÒ ¼ö ÀÖ´Â Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.";
-    [SerializeField] private string maxLevelMessage = "ÃÖ´ë ·¹º§ÀÔ´Ï´Ù.";
-
-    [Header("Warning Text - Skill")]
-    [SerializeField] private string skillSlotNotConnectedMessage = "½ºÅ³ ½½·ÔÀÌ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.";
-    [SerializeField] private string selectSkillSlotFirstMessage = "½ºÅ³À» ÀåÂøÇÒ ½½·ÔÀ» ¸ÕÀú ¼±ÅÃÇÏ¼¼¿ä.";
-    [SerializeField] private string noSkillSelectedMessage = "¼±ÅÃµÈ ½ºÅ³ÀÌ ¾ø½À´Ï´Ù.";
-    [Tooltip("·¹º§ÀÌ ºÎÁ·ÇÑ ±â¾ïÀ» Å¬¸¯ÇßÀ» ¶§ Ç¥½ÃÇÒ ¹®±¸ÀÔ´Ï´Ù. {0} À§Ä¡¿¡ ÇÊ¿äÇÑ ·¹º§ÀÌ µé¾î°©´Ï´Ù.")]
-    [SerializeField] private string skillMemoryUnlockLevelMessage = "Ä³¸¯ÅÍ Lv.{0}¿¡ ÇØ±ÝµË´Ï´Ù.";
-    [Tooltip("ÀÏ¹Ý ½ºÅ³ ·¹º§ Àá±Ý °æ°íÀÔ´Ï´Ù. {0} À§Ä¡¿¡ ÇÊ¿äÇÑ ·¹º§ÀÌ µé¾î°©´Ï´Ù.")]
-    [SerializeField] private string skillLockedLevelMessage = "¾ÆÁ÷ Àá°ÜÀÖ´Â ½ºÅ³ÀÔ´Ï´Ù. ÇÊ¿ä ·¹º§: LV. {0}";
-    [SerializeField] private string skillNotAvailableForSlotMessage = "ÀÌ ½½·Ô¿¡ ÀåÂøÇÒ ¼ö ¾ø´Â ½ºÅ³ÀÔ´Ï´Ù.";
-
-    [Header("Warning Text - Fragment")]
-    [SerializeField] private string noRuneSelectedMessage = "¼±ÅÃµÈ ÆÄÆíÀÌ ¾ø½À´Ï´Ù.";
-    [SerializeField] private string runeNotAvailableMessage = "ÇöÀç Ä³¸¯ÅÍ°¡ »ç¿ëÇÒ ¼ö ¾ø´Â ÆÄÆíÀÔ´Ï´Ù.";
-    [SerializeField] private string noEmptyRuneSlotMessage = "ºñ¾îÀÖ´Â ÆÄÆí ½½·ÔÀÌ ¾ø½À´Ï´Ù.";
-    [SerializeField] private string sharedRuneLevelRequiredMessage = "ÇÃ·¹ÀÌ¾î ¶Ç´Â °èÁ¤ ·¹º§ Á¶°ÇÀÌ ÇÊ¿äÇÑ °ø¿ë ÆÄÆíÀÔ´Ï´Ù.";
-    [Tooltip("{0} À§Ä¡¿¡ ÇÊ¿äÇÑ Ä³¸¯ÅÍ ·¹º§ÀÌ µé¾î°©´Ï´Ù.")]
-    [SerializeField] private string characterRuneUnlockLevelMessage = "Ä³¸¯ÅÍ LV.{0}¿¡ ÇØ±ÝµÇ´Â Àü¿ë ÆÄÆíÀÔ´Ï´Ù.";
-    [SerializeField] private string noRuneToUnequipMessage = "ÇØÃ¼ÇÒ ÆÄÆíÀÌ ¾ø½À´Ï´Ù.";
-    [SerializeField] private string runeNotEquippedMessage = "ÀåÂø ÁßÀÎ ÆÄÆíÀÌ ¾Æ´Õ´Ï´Ù.";
-    [SerializeField] private string runeSlotNotConnectedMessage = "ÆÄÆí ½½·ÔÀÌ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.";
-    [SerializeField] private string runeSlotLockedMessage = "¾ÆÁ÷ Àá°ÜÀÖ´Â ÆÄÆí ½½·ÔÀÔ´Ï´Ù.";
-    [Tooltip("{0} À§Ä¡¿¡ ÇÊ¿äÇÑ Ä³¸¯ÅÍ ·¹º§ÀÌ µé¾î°©´Ï´Ù.")]
-    [SerializeField] private string runeSlotUnlockLevelMessage = "Ä³¸¯ÅÍ Lv.{0}¿¡ ÇØ±ÝµÇ´Â ÆÄÆí ½½·ÔÀÔ´Ï´Ù.";
-    [SerializeField] private string sharedRuneLockedMessage = "¾ÆÁ÷ Àá°ÜÀÖ´Â °ø¿ë ÆÄÆíÀÔ´Ï´Ù.";
-    [SerializeField] private string insufficientBlueDustiumMessage = "ºí·ç ´õ½ºÆ¼¿òÀÌ ºÎÁ·ÇÕ´Ï´Ù.";
-
     private Canvas sortingCanvas;
     private Vector2 baseAnchoredPosition;
     private float timer;
@@ -98,8 +62,8 @@ public class SettingWarningUI : MonoBehaviour
 
     private void Start()
     {
-        // ºñÈ°¼º ¿ÀºêÁ§Æ®¿¡¼­ Ã¹ Show()·Î Awake°¡ ½ÇÇàµÈ °æ¿ì¿¡´Â
-        // ÀÌ¹Ì ½ÃÀÛµÈ Ç¥½Ã ¿äÃ»À» ´Ù½Ã ¼û±âÁö ¾Ê½À´Ï´Ù.
+        // ë¹„í™œì„± ì˜¤ë¸Œì íŠ¸ì—ì„œ ì²« Show()ë¡œ Awakeê°€ ì‹¤í–‰ëœ ê²½ìš°ì—ëŠ”
+        // ì´ë¯¸ ì‹œìž‘ëœ í‘œì‹œ ìš”ì²­ì„ ë‹¤ì‹œ ìˆ¨ê¸°ì§€ ì•ŠìŠµë‹ˆë‹¤.
         if (!isShowing)
             gameObject.SetActive(false);
     }
@@ -138,55 +102,24 @@ public class SettingWarningUI : MonoBehaviour
         return true;
     }
 
+    public static bool ShowKey(string key, params object[] arguments)
+    {
+        return ShowMessage(GameLocalization.Format(key, arguments));
+    }
+
     public static string GetSkillMemoryUnlockLevelMessage(int requiredLevel)
     {
-        SettingWarningUI warningUI = ResolveInstance();
-        string format = warningUI != null
-            ? warningUI.skillMemoryUnlockLevelMessage
-            : "Ä³¸¯ÅÍ Lv.{0}¿¡ ÇØ±ÝµË´Ï´Ù.";
-
-        if (string.IsNullOrWhiteSpace(format))
-            format = "Ä³¸¯ÅÍ Lv.{0}¿¡ ÇØ±ÝµË´Ï´Ù.";
-
-        try
-        {
-            return string.Format(format, Mathf.Max(0, requiredLevel));
-        }
-        catch (System.FormatException)
-        {
-            return format;
-        }
+        return GameLocalization.Format(LocalizationKeys.Warning.SkillMemoryUnlockLevel, Mathf.Max(0, requiredLevel));
     }
 
     public static string GetRuneSlotUnlockLevelMessage(int requiredLevel)
     {
-        SettingWarningUI warningUI = ResolveInstance();
-        string format = warningUI != null
-            ? warningUI.runeSlotUnlockLevelMessage
-            : "Ä³¸¯ÅÍ Lv.{0}¿¡ ÇØ±ÝµÇ´Â ÆÄÆí ½½·ÔÀÔ´Ï´Ù.";
-
-        if (string.IsNullOrWhiteSpace(format))
-            format = "Ä³¸¯ÅÍ Lv.{0}¿¡ ÇØ±ÝµÇ´Â ÆÄÆí ½½·ÔÀÔ´Ï´Ù.";
-
-        // ±âÁ¸ ÇÁ¸®ÆÕ/¾À¿¡ Á÷·ÄÈ­µÇ¾î ³²¾Æ ÀÖ´Â ¿¹Àü ¿ë¾îµµ ·±Å¸ÀÓ¿¡¼­ Á¤±ÔÈ­ÇÕ´Ï´Ù.
-        format = format.Replace("·é", "ÆÄÆí");
-
-        try
-        {
-            return string.Format(format, Mathf.Max(0, requiredLevel));
-        }
-        catch (System.FormatException)
-        {
-            return format;
-        }
+        return GameLocalization.Format(LocalizationKeys.Warning.RuneSlotUnlockLevel, Mathf.Max(0, requiredLevel));
     }
 
     public static string GetInsufficientBlueDustiumMessage()
     {
-        SettingWarningUI warningUI = ResolveInstance();
-        return warningUI != null && !string.IsNullOrWhiteSpace(warningUI.insufficientBlueDustiumMessage)
-            ? warningUI.insufficientBlueDustiumMessage
-            : "ºí·ç ´õ½ºÆ¼¿òÀÌ ºÎÁ·ÇÕ´Ï´Ù.";
+        return GameLocalization.Get(LocalizationKeys.Warning.InsufficientBlueDustium);
     }
 
     private static SettingWarningUI ResolveInstance()
@@ -227,8 +160,6 @@ public class SettingWarningUI : MonoBehaviour
         if (string.IsNullOrEmpty(message))
             return;
 
-        message = ResolveInspectorMessage(message);
-
         if (moveTarget != null)
             baseAnchoredPosition = moveTarget.anchoredPosition - endOffset;
 
@@ -257,161 +188,6 @@ public class SettingWarningUI : MonoBehaviour
             if (useScalePop)
                 moveTarget.localScale = startScale;
         }
-    }
-
-    private string ResolveInspectorMessage(string message)
-    {
-        if (string.IsNullOrWhiteSpace(message))
-            return message;
-
-        string trimmed = message.Trim();
-
-        if (trimmed == "ºí·ç ´õ½ºÆ¼¿òÀÌ ºÎÁ·ÇÕ´Ï´Ù.")
-            return GetConfiguredText(insufficientBlueDustiumMessage, trimmed);
-
-        if (trimmed == "µ¥ÀÌÅÍ¸¦ ºÒ·¯¿Ã ¼ö ¾ø½À´Ï´Ù." ||
-            trimmed == "µ¥ÀÌÅÍ¸¦ »ç¿ëÇÒ ¼ö ¾ø½À´Ï´Ù." ||
-            trimmed == "DataManager°¡ ¾ø½À´Ï´Ù.")
-            return GetConfiguredText(dataUnavailableMessage, trimmed);
-
-        if (trimmed == "¼±ÅÃµÈ Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.")
-            return GetConfiguredText(noCharacterSelectedMessage, trimmed);
-
-        if (trimmed == "Ä³¸¯ÅÍ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù." ||
-            trimmed.StartsWith("Ä³¸¯ÅÍ ¸¶½ºÅÍ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù:") ||
-            trimmed.StartsWith("Ä³¸¯ÅÍ ·±Å¸ÀÓ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù:"))
-            return GetConfiguredText(characterDataNotFoundMessage, trimmed);
-
-        if (trimmed.StartsWith("Ä³¸¯ÅÍ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù:"))
-        {
-            string value = trimmed.Substring("Ä³¸¯ÅÍ µ¥ÀÌÅÍ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù:".Length).Trim();
-            return FormatConfiguredText(characterDataNotFoundWithIdMessage, trimmed, value);
-        }
-
-        if (trimmed == "Ä³¸¯ÅÍ¸¦ ¸ÕÀú ¼±ÅÃÇØ¾ß ÇÕ´Ï´Ù.")
-            return GetConfiguredText(selectCharacterFirstMessage, trimmed);
-
-        if (trimmed == "¼±ÅÃÇÒ ¼ö ÀÖ´Â Ä³¸¯ÅÍ°¡ ¾ø½À´Ï´Ù.")
-            return GetConfiguredText(noAvailableCharacterMessage, trimmed);
-
-        if (trimmed == "ÃÖ´ë ·¹º§ÀÔ´Ï´Ù.")
-            return GetConfiguredText(maxLevelMessage, trimmed);
-
-        if (trimmed == "½ºÅ³ ½½·ÔÀÌ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.")
-            return GetConfiguredText(skillSlotNotConnectedMessage, trimmed);
-
-        if (trimmed == "½ºÅ³À» ÀåÂøÇÒ ½½·ÔÀ» ¸ÕÀú ¼±ÅÃÇÏ¼¼¿ä.")
-            return GetConfiguredText(selectSkillSlotFirstMessage, trimmed);
-
-        if (trimmed == "¼±ÅÃµÈ ½ºÅ³ÀÌ ¾ø½À´Ï´Ù.")
-            return GetConfiguredText(noSkillSelectedMessage, trimmed);
-
-        if (trimmed.StartsWith("¾ÆÁ÷ Àá°ÜÀÖ´Â ½ºÅ³ÀÔ´Ï´Ù. ÇÊ¿ä ·¹º§:"))
-        {
-            int requiredLevel = ExtractLastInteger(trimmed);
-            return FormatConfiguredText(skillLockedLevelMessage, trimmed, requiredLevel);
-        }
-
-        if (trimmed == "ÀÌ ½½·Ô¿¡ ÀåÂøÇÒ ¼ö ¾ø´Â ½ºÅ³ÀÔ´Ï´Ù.")
-            return GetConfiguredText(skillNotAvailableForSlotMessage, trimmed);
-
-        if (trimmed == "¼±ÅÃµÈ ÆÄÆíÀÌ ¾ø½À´Ï´Ù.")
-            return GetConfiguredText(noRuneSelectedMessage, trimmed);
-
-        if (trimmed == "ÇöÀç Ä³¸¯ÅÍ°¡ »ç¿ëÇÒ ¼ö ¾ø´Â ÆÄÆíÀÔ´Ï´Ù.")
-            return GetConfiguredText(runeNotAvailableMessage, trimmed);
-
-        if (trimmed == "ºñ¾îÀÖ´Â ÆÄÆí ½½·ÔÀÌ ¾ø½À´Ï´Ù.")
-            return GetConfiguredText(noEmptyRuneSlotMessage, trimmed);
-
-        if (trimmed == "ÇÃ·¹ÀÌ¾î ¶Ç´Â °èÁ¤ ·¹º§ Á¶°ÇÀÌ ÇÊ¿äÇÑ °ø¿ë ÆÄÆíÀÔ´Ï´Ù.")
-            return GetConfiguredText(sharedRuneLevelRequiredMessage, trimmed);
-
-        if (trimmed.StartsWith("Ä³¸¯ÅÍ LV.") && trimmed.Contains("ÇØ±ÝµÇ´Â Àü¿ë·é"))
-        {
-            int requiredLevel = ExtractLastInteger(trimmed);
-            return FormatConfiguredText(characterRuneUnlockLevelMessage, trimmed, requiredLevel);
-        }
-
-        if (trimmed == "ÇØÃ¼ÇÒ ÆÄÆíÀÌ ¾ø½À´Ï´Ù.")
-            return GetConfiguredText(noRuneToUnequipMessage, trimmed);
-
-        if (trimmed == "ÀåÂø ÁßÀÎ ÆÄÆíÀÌ ¾Æ´Õ´Ï´Ù.")
-            return GetConfiguredText(runeNotEquippedMessage, trimmed);
-
-        if (trimmed == "ÆÄÆí ½½·ÔÀÌ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.")
-            return GetConfiguredText(runeSlotNotConnectedMessage, trimmed);
-
-        if (trimmed.StartsWith("Ä³¸¯ÅÍ Lv.") && trimmed.Contains("ÇØ±ÝµÇ´Â ·é ½½·Ô"))
-        {
-            int requiredLevel = ExtractLastInteger(trimmed);
-            return FormatConfiguredText(runeSlotUnlockLevelMessage, trimmed, requiredLevel);
-        }
-
-        if (trimmed == "¾ÆÁ÷ Àá°ÜÀÖ´Â ÆÄÆí ½½·ÔÀÔ´Ï´Ù.")
-            return GetConfiguredText(runeSlotLockedMessage, trimmed);
-
-        if (trimmed == "¾ÆÁ÷ Àá°ÜÀÖ´Â °ø¿ë ÆÄÆíÀÔ´Ï´Ù.")
-            return GetConfiguredText(sharedRuneLockedMessage, trimmed);
-
-        return message;
-    }
-
-    private static string NormalizeLegacyTermText(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-            return text;
-
-        string normalized = text.Replace("·é", "ÆÄÆí");
-        normalized = normalized.Replace("ÇØÁ¦ÇÒ ÆÄÆíÀÌ ¾ø½À´Ï´Ù.", "ÇØÃ¼ÇÒ ÆÄÆíÀÌ ¾ø½À´Ï´Ù.");
-        return normalized;
-    }
-
-    private static string GetConfiguredText(string configured, string fallback)
-    {
-        string text = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
-        return NormalizeLegacyTermText(text);
-    }
-
-    private static string FormatConfiguredText(string configured, string fallback, params object[] args)
-    {
-        string format = NormalizeLegacyTermText(string.IsNullOrWhiteSpace(configured) ? fallback : configured);
-
-        try
-        {
-            return string.Format(format, args);
-        }
-        catch (System.FormatException)
-        {
-            return format;
-        }
-    }
-
-    private static int ExtractLastInteger(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-            return 0;
-
-        int value = 0;
-        int multiplier = 1;
-        bool foundDigit = false;
-
-        for (int i = text.Length - 1; i >= 0; i--)
-        {
-            char c = text[i];
-            if (char.IsDigit(c))
-            {
-                foundDigit = true;
-                value += (c - '0') * multiplier;
-                multiplier *= 10;
-                continue;
-            }
-
-            if (foundDigit)
-                break;
-        }
-
-        return value;
     }
 
     public void HideImmediate()

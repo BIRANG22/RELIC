@@ -442,6 +442,7 @@ public static class StaticLocalizationMigration
         LocalizeStringEvent localizer = text.GetComponent<LocalizeStringEvent>();
         bool bindingAlreadyValid = false;
         bool runtimeLocalizerCreated = false;
+        bool legacyLocalizerRemoved = false;
         if (localizer != null)
         {
             bool sameReference =
@@ -517,8 +518,9 @@ public static class StaticLocalizationMigration
             // 이전 LocalizeStringEvent가 남아 있으면 다른 키가 같은 TMP를 다시 덮어씁니다.
             // 표시 권한을 LocalizedTMPText 하나로 단일화합니다.
             Undo.DestroyObjectImmediate(localizer);
+            legacyLocalizerRemoved = true;
         }
-        return !bindingAlreadyValid || runtimeLocalizerCreated;
+        return !bindingAlreadyValid || runtimeLocalizerCreated || legacyLocalizerRemoved;
     }
 
     private static LocalizationBindingResolver ReadSourceToKeyMap()

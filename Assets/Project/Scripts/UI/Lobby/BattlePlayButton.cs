@@ -13,8 +13,6 @@ public class BattlePlayButton : MonoBehaviour
     [SerializeField] private LobbyEquipPanelUI readyPanel;
     [SerializeField] private LobbyTutorialController tutorialController;
     [SerializeField] private TMP_Text buttonLabel;
-    [SerializeField] private string readyButtonText = "탐사 준비";
-    [SerializeField] private string departButtonText = "출정";
 
     [Header("Direct Battle Target")]
     [Tooltip("스테이지 선택 UI를 사용하지 않을 때 PlayButton이 바로 진입할 챕터입니다.")]
@@ -29,14 +27,6 @@ public class BattlePlayButton : MonoBehaviour
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
-    [SerializeField] private string mapNotSelectedMessage = "스테이지를 선택해야 합니다.";
-    [SerializeField] private string partyEmptyMessage = "캐릭터를 편성해야 합니다.";
-    [SerializeField] private string partyNotFullMessage = "캐릭터 3명을 모두 편성해야 합니다. 현재 {0}/{1}";
-    [SerializeField] private string dataManagerMissingMessage = "데이터 매니저가 없습니다.";
-    [SerializeField] private string gameManagerMissingMessage = "게임 매니저가 없습니다.";
-    [SerializeField] private string networkClientStartBlockedMessage = "Only the host can start in multiplayer lobby.";
-    [SerializeField] private string networkBattleStartSyncFailedMessage = "Failed to synchronize battle start.";
-    [SerializeField] private string elricDialogueRequiredMessage = "엘릭과 대화를 마친 뒤 탐사를 시작해 주세요.";
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound = true;
@@ -104,7 +94,7 @@ public class BattlePlayButton : MonoBehaviour
             // Ready_Panel이 실제 열린 뒤 HandleReadyPanelStateChanged에서 출발 대사를 자동 시작합니다.
             if (questGate != null && !questGate.CanExecute() && !CanOpenReadyPanelForTutorial())
             {
-                ShowWarning(elricDialogueRequiredMessage);
+                ShowWarningKey(LocalizationKeys.Warning.ElricDialogueRequired);
                 return;
             }
 
@@ -116,7 +106,7 @@ public class BattlePlayButton : MonoBehaviour
 
         if (questGate != null && !questGate.CanExecute())
         {
-            ShowWarning(elricDialogueRequiredMessage);
+            ShowWarningKey(LocalizationKeys.Warning.ElricDialogueRequired);
             return;
         }
 
@@ -131,13 +121,13 @@ public class BattlePlayButton : MonoBehaviour
 
             if (!CanLocalPlayerStartBattle())
             {
-                ShowWarning(networkClientStartBlockedMessage);
+                ShowWarningKey(LocalizationKeys.Warning.NetworkHostOnlyStart);
                 return;
             }
 
             if (DataManager.Instance == null)
             {
-                ShowWarning(dataManagerMissingMessage);
+                ShowWarningKey(LocalizationKeys.Warning.DataUnavailable);
                 Debug.LogWarning("[BattlePlayButton] DataManager is null.");
                 return;
             }
@@ -146,7 +136,7 @@ public class BattlePlayButton : MonoBehaviour
 
             if (checkMapSelected && !IsMapSelected())
             {
-                ShowWarning(mapNotSelectedMessage);
+                ShowWarningKey(LocalizationKeys.Warning.MapNotSelected);
                 Debug.LogWarning("[BattlePlayButton] 직접 진입할 챕터/스테이지 값이 없습니다.");
                 return;
             }
@@ -156,7 +146,7 @@ public class BattlePlayButton : MonoBehaviour
 
             if (GameManager.Instance == null)
             {
-                ShowWarning(gameManagerMissingMessage);
+                ShowWarningKey(LocalizationKeys.Warning.GameManagerMissing);
                 Debug.LogWarning("[BattlePlayButton] GameManager is null.");
                 return;
             }
@@ -265,9 +255,14 @@ public class BattlePlayButton : MonoBehaviour
         if (buttonLabel == null)
             return;
 
-        buttonLabel.text = readyPanel != null && readyPanel.IsOpen
-            ? departButtonText
-            : readyButtonText;
+        string key = readyPanel != null && readyPanel.IsOpen
+            ? LocalizationKeys.Lobby.PlayDepart
+            : LocalizationKeys.Lobby.PlayReady;
+        LocalizedTMPText localizer = buttonLabel.GetComponent<LocalizedTMPText>();
+        if (localizer != null)
+            localizer.Configure(key, string.Empty, false);
+        else
+            buttonLabel.text = GameLocalization.Get(key);
     }
 
     private void PlayClickSound()
@@ -313,7 +308,7 @@ public class BattlePlayButton : MonoBehaviour
 
         if (partyStore == null)
         {
-            ShowWarning(partyEmptyMessage);
+            ShowWarningKey(LocalizationKeys.Warning.PartyEmpty);
             Debug.LogWarning("[BattlePlayButton] PartyRuntimeStore is null.");
             return false;
         }
@@ -332,7 +327,7 @@ public class BattlePlayButton : MonoBehaviour
         }
         else if (currentCount <= 0)
         {
-            ShowWarning(partyEmptyMessage);
+            ShowWarningKey(LocalizationKeys.Warning.PartyEmpty);
             Debug.LogWarning("[BattlePlayButton] 파티에 캐릭터가 없습니다.");
             return false;
         }
@@ -359,14 +354,11 @@ public class BattlePlayButton : MonoBehaviour
 
     private string FormatPartyNotFullMessage(int currentCount, int requiredCount)
     {
-        if (string.IsNullOrWhiteSpace(partyNotFullMessage))
-            return $"캐릭터 {requiredCount}명을 모두 편성해야 합니다. 현재 {currentCount}/{requiredCount}";
-
-        if (partyNotFullMessage.Contains("{0}") || partyNotFullMessage.Contains("{1}"))
-            return string.Format(partyNotFullMessage, currentCount, requiredCount);
-
-        return partyNotFullMessage;
+        return GameLocalization.Format(LocalizationKeys.Warning.PartyNotFull, requiredCount, currentCount);
     }
+
+    private void ShowWarningKey(string key, params object[] arguments) =>
+        ShowWarning(GameLocalization.Format(key, arguments));
 
     private void ShowWarning(string message)
     {
@@ -424,19 +416,19 @@ public class BattlePlayButton : MonoBehaviour
         if (battleStartSynchronizer == null ||
             !battleStartSynchronizer.IsNetworkBattleStartActive)
         {
-            ShowWarning(networkBattleStartSyncFailedMessage);
+            ShowWarningKey(LocalizationKeys.Warning.NetworkBattleStartSyncFailed);
             return false;
         }
 
         if (!battleStartSynchronizer.CanLocalPlayerStartBattle())
         {
-            ShowWarning(networkClientStartBlockedMessage);
+            ShowWarningKey(LocalizationKeys.Warning.NetworkHostOnlyStart);
             return false;
         }
 
         if (sharedStateSynchronizer == null)
         {
-            ShowWarning(networkBattleStartSyncFailedMessage);
+            ShowWarningKey(LocalizationKeys.Warning.NetworkBattleStartSyncFailed);
             return false;
         }
 
@@ -444,7 +436,7 @@ public class BattlePlayButton : MonoBehaviour
             sharedStateSynchronizer.PublishHostSnapshotNow();
         if (snapshot == null || snapshot.Revision <= 0)
         {
-            ShowWarning(networkBattleStartSyncFailedMessage);
+            ShowWarningKey(LocalizationKeys.Warning.NetworkBattleStartSyncFailed);
             return false;
         }
 
@@ -454,7 +446,7 @@ public class BattlePlayButton : MonoBehaviour
                 mapRuntime,
                 out command))
         {
-            ShowWarning(networkBattleStartSyncFailedMessage);
+            ShowWarningKey(LocalizationKeys.Warning.NetworkBattleStartSyncFailed);
             return false;
         }
 

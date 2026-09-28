@@ -4,7 +4,6 @@ using UnityEngine.UI;
 public class TitleContinueButton : MonoBehaviour
 {
     [SerializeField] private GameObject lockedImage;
-    [SerializeField] private string missingContinueMessage = "이어서 할 정보가 없음";
 
     [Header("Sound")]
     [SerializeField] private bool playClickSound;
@@ -96,11 +95,11 @@ public class TitleContinueButton : MonoBehaviour
 
         if (warningUI != null)
         {
-            warningUI.Show(missingContinueMessage);
+            warningUI.Show(GameLocalization.Get("system.continue.missing"));
             return;
         }
 
-        Debug.LogWarning($"[TitleContinueButton] {missingContinueMessage}");
+        Debug.LogWarning($"[TitleContinueButton] {GameLocalization.Get("system.continue.missing")}");
     }
 
     private void PlayClickSound()

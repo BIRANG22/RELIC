@@ -3938,6 +3938,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   catalogGroup: {fileID: 1909700779}
   erosionValueText: {fileID: 744195647}
+  rewardBonusText: {fileID: 122089891}
   autoBindOnAwake: 1
   selectedBaskColor: {r: 0.4627451, g: 0, b: 0, a: 1}
   groupDimmedColor: {r: 0.46666667, g: 0.46666667, b: 0.46666667, a: 1}
@@ -4389,14 +4390,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 122089888}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 122089891}
-  localizationKey: ui.lobby.text.e3ca22fb
-  koreanSource: "\uC7AC\uD654 \uD68D\uB4DD\uB7C9 +999% / \uACBD\uD5D8\uCE58 \uD68D\uB4DD\uB7C9
-    +999%"
-  automaticallyRegistered: 1
 --- !u!1 &122697403
 GameObject:
   m_ObjectHideFlags: 0
@@ -12602,9 +12598,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 301323238}
-  localizationKey: ui.lobby.text.738233fd
-  koreanSource: "\uC870\uD569\uC2DD"
-  automaticallyRegistered: 1
+  localizationKey: ui.lobby.culture.recipe
+  koreanSource: 
+  automaticallyRegistered: 0
 --- !u!114 &301323238
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34438,6 +34434,7 @@ GameObject:
   - component: {fileID: 744195646}
   - component: {fileID: 744195648}
   - component: {fileID: 744195647}
+  - component: {fileID: 2200000602}
   m_Layer: 0
   m_Name: Erosion_Value
   m_TagString: Untagged
@@ -35812,6 +35809,7 @@ GameObject:
   - component: {fileID: 783625598}
   - component: {fileID: 783625600}
   - component: {fileID: 783625599}
+  - component: {fileID: 2200000603}
   m_Layer: 0
   m_Name: Erosion_Value
   m_TagString: Untagged
@@ -51515,20 +51513,12 @@ MonoBehaviour:
   hpLabelText: {fileID: 0}
   costLabelText: {fileID: 0}
   recoveryLabelText: {fileID: 0}
-  hpLabel: "\uC0DD\uBA85\uB825"
-  costLabel: "\uB9C8\uB098"
-  recoveryLabel: "\uB9C8\uB098\uC7AC\uC0DD\uB7C9"
   showModifiedStatDelta: 1
   statIncreaseColor: '#4E66DF'
   statDecreaseColor: '#D94B4B'
   numberChangeDuration: 0.2
   storyText: {fileID: 0}
   storyTooltipTitleColor: '#4E66DF'
-  karmaAcquisitionTitle: "\uCE74\uB974\uB9C8 \uD68D\uB4DD \uC870\uAC74"
-  hpTooltipTitle: "\uC0DD\uBA85\uB825"
-  costTooltipTitle: "\uB9C8\uB098"
-  recoveryTooltipTitle: "\uB9C8\uB098 \uC7AC\uC0DD\uB7C9"
-  karmaTooltipTitle: "\uCE74\uB974\uB9C8"
   storyTooltipRestoreDelay: 0.15
 --- !u!222 &1108934243
 CanvasRenderer:
@@ -60163,23 +60153,23 @@ MonoBehaviour:
   - iconButton: {fileID: 407371700}
     targetPanel: {fileID: 397856608}
     iconImage: {fileID: 326712150}
-    displayName: "\uCE68\uC2DD\uB3C4"
+    localizationKey: ui.lobby.panel.erosion
   - iconButton: {fileID: 316461454}
     targetPanel: {fileID: 230010000}
     iconImage: {fileID: 1509144754}
-    displayName: "\uACF5\uBA85"
+    localizationKey: ui.lobby.panel.resonance
   - iconButton: {fileID: 1909441171}
     targetPanel: {fileID: 821549304}
     iconImage: {fileID: 480482209}
-    displayName: "\uC5F0\uC131"
+    localizationKey: ui.lobby.panel.crafting
   - iconButton: {fileID: 1979706826}
     targetPanel: {fileID: 2300000092}
     iconImage: {fileID: 1264039642}
-    displayName: "\uBCF4\uAD00\uD568"
+    localizationKey: ui.lobby.panel.storage
   - iconButton: {fileID: 1499436854}
     targetPanel: {fileID: 1880677614}
     iconImage: {fileID: 1408327043}
-    displayName: "\uC6A9\uBCD1"
+    localizationKey: ui.lobby.panel.mercenary
   mainIconImage: {fileID: 2036913836}
   mainText: {fileID: 2119781216}
   selectedButtonScale: 1.2
@@ -71160,9 +71150,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1391277538}
-  localizationKey: lobby.prepare_exploration
-  koreanSource: "\uD0D0\uC0AC \uC900\uBE44"
-  automaticallyRegistered: 1
+  localizationKey: ui.lobby.play.ready
+  koreanSource: 
+  automaticallyRegistered: 0
 --- !u!1 &1393479069
 GameObject:
   m_ObjectHideFlags: 0
@@ -83607,44 +83597,9 @@ MonoBehaviour:
   forceTopSorting: 1
   topSortingOrder: 9000
   setAsLastSiblingOnShow: 1
-  dataUnavailableMessage: "\uB370\uC774\uD130\uB97C \uBD88\uB7EC\uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4."
   noCharacterSelectedMessage: "\uC120\uD0DD\uB41C \uCE90\uB9AD\uD130\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."
-  characterDataNotFoundMessage: "\uCE90\uB9AD\uD130 \uB370\uC774\uD130\uB97C \uCC3E\uC744
-    \uC218 \uC5C6\uC2B5\uB2C8\uB2E4."
   characterDataNotFoundWithIdMessage: "\uCE90\uB9AD\uD130 \uB370\uC774\uD130\uB97C
     \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4: {0}"
-  selectCharacterFirstMessage: "\uCE90\uB9AD\uD130\uB97C \uBA3C\uC800 \uC120\uD0DD\uD574\uC57C
-    \uD569\uB2C8\uB2E4."
-  noAvailableCharacterMessage: "\uC120\uD0DD\uD560 \uC218 \uC788\uB294 \uCE90\uB9AD\uD130\uAC00
-    \uC5C6\uC2B5\uB2C8\uB2E4."
-  maxLevelMessage: "\uCD5C\uB300 \uB808\uBCA8\uC785\uB2C8\uB2E4."
-  skillSlotNotConnectedMessage: "\uC2A4\uD0AC \uC2AC\uB86F\uC774 \uC5F0\uACB0\uB418\uC9C0
-    \uC54A\uC558\uC2B5\uB2C8\uB2E4."
-  selectSkillSlotFirstMessage: "\uC2A4\uD0AC\uC744 \uC7A5\uCC29\uD560 \uC2AC\uB86F\uC744
-    \uBA3C\uC800 \uC120\uD0DD\uD558\uC138\uC694."
-  noSkillSelectedMessage: "\uC120\uD0DD\uB41C \uC2A4\uD0AC\uC774 \uC5C6\uC2B5\uB2C8\uB2E4."
-  skillMemoryUnlockLevelMessage: "\uCE90\uB9AD\uD130 Lv.{0}\uC5D0 \uD574\uAE08\uB429\uB2C8\uB2E4."
-  skillLockedLevelMessage: "\uC544\uC9C1 \uC7A0\uACA8\uC788\uB294 \uC2A4\uD0AC\uC785\uB2C8\uB2E4.
-    \uD544\uC694 \uB808\uBCA8: LV. {0}"
-  skillNotAvailableForSlotMessage: "\uC774 \uC2AC\uB86F\uC5D0 \uC7A5\uCC29\uD560
-    \uC218 \uC5C6\uB294 \uC2A4\uD0AC\uC785\uB2C8\uB2E4."
-  noRuneSelectedMessage: "\uC120\uD0DD\uB41C \uB8EC\uC774 \uC5C6\uC2B5\uB2C8\uB2E4."
-  runeNotAvailableMessage: "\uD604\uC7AC \uCE90\uB9AD\uD130\uAC00 \uC0AC\uC6A9\uD560
-    \uC218 \uC5C6\uB294 \uB8EC\uC785\uB2C8\uB2E4."
-  noEmptyRuneSlotMessage: "\uBE44\uC5B4\uC788\uB294 \uB8EC \uC2AC\uB86F\uC774 \uC5C6\uC2B5\uB2C8\uB2E4."
-  sharedRuneLevelRequiredMessage: "\uD50C\uB808\uC774\uC5B4 \uB610\uB294 \uACC4\uC815
-    \uB808\uBCA8 \uC870\uAC74\uC774 \uD544\uC694\uD55C \uACF5\uC6A9\uB8EC\uC785\uB2C8\uB2E4."
-  characterRuneUnlockLevelMessage: "\uCE90\uB9AD\uD130 LV.{0}\uC5D0 \uD574\uAE08\uB418\uB294
-    \uC804\uC6A9\uB8EC\uC785\uB2C8\uB2E4."
-  noRuneToUnequipMessage: "\uD574\uC81C\uD560 \uB8EC\uC774 \uC5C6\uC2B5\uB2C8\uB2E4."
-  runeNotEquippedMessage: "\uC7A5\uCC29 \uC911\uC778 \uB8EC\uC774 \uC544\uB2D9\uB2C8\uB2E4."
-  runeSlotNotConnectedMessage: "\uB8EC \uC2AC\uB86F\uC774 \uC5F0\uACB0\uB418\uC9C0
-    \uC54A\uC558\uC2B5\uB2C8\uB2E4."
-  runeSlotLockedMessage: "\uC544\uC9C1 \uC7A0\uACA8\uC788\uB294 \uB8EC \uC2AC\uB86F\uC785\uB2C8\uB2E4."
-  runeSlotUnlockLevelMessage: "\uCE90\uB9AD\uD130 Lv.{0}\uC5D0 \uD574\uAE08\uB418\uB294
-    \uB8EC \uC2AC\uB86F\uC785\uB2C8\uB2E4."
-  sharedRuneLockedMessage: "\uC544\uC9C1 \uC7A0\uACA8\uC788\uB294 \uACF5\uC6A9\uB8EC\uC785\uB2C8\uB2E4."
-  insufficientBlueDustiumMessage: "\uBE14\uB8E8 \uB354\uC2A4\uD2F0\uC6C0\uC774 \uBD80\uC871\uD569\uB2C8\uB2E4."
 --- !u!114 &1763934035
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -90186,9 +90141,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1806657413}
-  localizationKey: common.material
-  koreanSource: "\uC7AC\uB8CC"
-  automaticallyRegistered: 1
+  localizationKey: ui.lobby.culture.material
+  koreanSource: 
+  automaticallyRegistered: 0
 --- !u!114 &1806657413
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -95649,7 +95604,6 @@ MonoBehaviour:
   runeIconButtonSlotPrefab: {fileID: 5385952232583616059, guid: 68f3904912c93bd408c9cb3cff3a3a1f, type: 3}
   exclusiveRuneRoot: {fileID: 2040246245}
   sharedRuneRoot: {fileID: 1078178669}
-  commonRunePurchaseConfirmMessage: "\uD65C\uC131\uD654\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
   buyButtonRoot: {fileID: 0}
   buyButton: {fileID: 0}
   buyPriceText: {fileID: 0}
@@ -102309,9 +102263,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 2119781216}
-  localizationKey: ui.lobby.text.0385cd9d
-  koreanSource: "\uD604\uC7AC\uD328\uB110"
-  automaticallyRegistered: 1
+  localizationKey: ui.lobby.panel.erosion
+  koreanSource: 
+  automaticallyRegistered: 0
 --- !u!1 &2119863864
 GameObject:
   m_ObjectHideFlags: 0
@@ -108206,7 +108160,6 @@ MonoBehaviour:
   purchaseTransferEffectTexture: {fileID: 2800000, guid: f416ed12a9deb6f40ac52e708154fa95, type: 3}
   purchaseTransferEffectSize: {x: 60, y: 60}
   equipEffectTarget: {fileID: 0}
-  purchaseConfirmMessage: "\uC774 \uC720\uBB3C\uB85C \uACB0\uC815\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
   trailSpawnInterval: 0.025
   trailLifetime: 0.18
   trailStartScale: 0.78
@@ -108325,6 +108278,30 @@ MonoBehaviour:
   iconColor: {r: 0.2747864, g: 0.48681557, b: 0.8962264, a: 1}
   numberChangeDuration: 0.2
   editorPreviewValue: 0
+--- !u!114 &2200000602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 744195645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2200000603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 783625597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2300000015
 GameObject:
   m_ObjectHideFlags: 0

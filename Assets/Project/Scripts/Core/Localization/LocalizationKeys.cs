@@ -9,6 +9,123 @@ public static class LocalizationKeys
         public const string Untranslated = "common.untranslated";
     }
 
+    public static class Warning
+    {
+        public const string DataUnavailable = "warning.data.unavailable";
+        public const string CharacterNotSelected = "warning.character.not_selected";
+        public const string CharacterDataNotFound = "warning.character.data_not_found";
+        public const string CharacterDataNotFoundWithId = "warning.character.data_not_found_with_id";
+        public const string SelectCharacterFirst = "warning.character.select_first";
+        public const string NoAvailableCharacter = "warning.character.none_available";
+        public const string MaxLevel = "warning.character.max_level";
+        public const string SkillSlotNotConnected = "warning.skill.slot_not_connected";
+        public const string SelectSkillSlotFirst = "warning.skill.select_slot_first";
+        public const string NoSkillSelected = "warning.skill.not_selected";
+        public const string SkillMemoryUnlockLevel = "warning.skill.memory_unlock_level";
+        public const string SkillLockedLevel = "warning.skill.locked_level";
+        public const string SkillNotAvailableForSlot = "warning.skill.not_available_for_slot";
+        public const string NoRuneSelected = "warning.rune.not_selected";
+        public const string RuneNotAvailable = "warning.rune.not_available";
+        public const string NoEmptyRuneSlot = "warning.rune.no_empty_slot";
+        public const string SharedRuneLevelRequired = "warning.rune.shared_level_required";
+        public const string CharacterRuneUnlockLevel = "warning.rune.character_unlock_level";
+        public const string NoRuneToUnequip = "warning.rune.none_to_unequip";
+        public const string RuneNotEquipped = "warning.rune.not_equipped";
+        public const string RuneSlotNotConnected = "warning.rune.slot_not_connected";
+        public const string RuneSlotLocked = "warning.rune.slot_locked";
+        public const string RuneSlotUnlockLevel = "warning.rune.slot_unlock_level";
+        public const string SharedRuneLocked = "warning.rune.shared_locked";
+        public const string RuneEquippedByOtherCharacter = "warning.rune.equipped_by_other_character";
+        public const string InsufficientBlueDustium = "warning.currency.insufficient_blue_dustium";
+        public const string StageLocked = "warning.stage.locked";
+        public const string QuestMustComplete = "warning.quest.must_complete";
+        public const string PartySelectCharacter = "warning.party.select_character";
+        public const string PartySelectDeployedCharacter = "warning.party.select_deployed_character";
+        public const string MapNotSelected = "warning.map.not_selected";
+        public const string PartyEmpty = "warning.party.empty";
+        public const string PartyNotFull = "warning.party.not_full";
+        public const string GameManagerMissing = "warning.system.game_manager_missing";
+        public const string ElricDialogueRequired = "warning.tutorial.elric_dialogue_required";
+        public const string NetworkHostOnlyStart = "warning.network.host_only_start";
+        public const string NetworkBattleStartSyncFailed = "warning.network.battle_start_sync_failed";
+        public const string NoRegisteredSkill = "warning.skill.none_registered";
+        public const string SkillDataNotFound = "warning.skill.data_not_found";
+        public const string TimelineControllerMissing = "warning.timeline.controller_missing";
+        public const string RelicUnavailableNow = "warning.relic.unavailable_now";
+        public const string TargetSelectionUnavailable = "warning.target_selection.unavailable";
+        public const string SkillReservationMissing = "warning.skill.reservation_missing";
+        public const string SlotOccupiedByOtherCharacter = "warning.timeline.slot_occupied_by_other_character";
+        public const string SlotActionLimit = "warning.timeline.slot_action_limit";
+        public const string SkillRangeMissing = "warning.skill.range_missing";
+        public const string SelectableGridRangeMissing = "warning.grid.selectable_range_missing";
+        public const string InsufficientMoveCost = "warning.move.insufficient_cost";
+        public const string NoSelectableGrid = "warning.grid.none_selectable";
+        public const string GridNotSelectable = "warning.grid.not_selectable";
+        public const string MoveDestinationOccupied = "warning.move.destination_occupied";
+        public const string MoveDestinationInvalid = "warning.move.destination_invalid";
+        public const string MoveReservationFailed = "warning.move.reservation_failed";
+        public const string SelectTimelineSlotFirst = "warning.timeline.select_slot_first";
+        public const string BattleGridMissing = "warning.grid.battle_grid_missing";
+        public const string TimelineSlotMissing = "warning.timeline.slot_missing";
+        public const string TimelineSlotUnavailable = "warning.timeline.slot_unavailable";
+        public const string CharacterPositionMissing = "warning.character.position_missing";
+        public const string SkillReservationControllerMissing = "warning.skill.reservation_controller_missing";
+        public const string SkillReservationFailed = "warning.skill.reservation_failed";
+        public const string NoReservationToUndo = "warning.timeline.no_reservation_to_undo";
+        public const string TimelineUiMissing = "warning.timeline.ui_missing";
+        public const string ActionPreparationIncomplete = "warning.battle.action_preparation_incomplete";
+        public const string RelicDataNotFound = "warning.relic.data_not_found";
+        public const string EquipPanelUnavailable = "warning.equip.panel_unavailable";
+        public const string FeatureUnavailable = "warning.feature.unavailable";
+    }
+
+    public static class Lobby
+    {
+        public const string PlayReady = "ui.lobby.play.ready";
+        public const string PlayDepart = "ui.lobby.play.depart";
+        public const string PanelErosion = "ui.lobby.panel.erosion";
+        public const string PanelResonance = "ui.lobby.panel.resonance";
+        public const string PanelCrafting = "ui.lobby.panel.crafting";
+        public const string PanelStorage = "ui.lobby.panel.storage";
+        public const string PanelMercenary = "ui.lobby.panel.mercenary";
+        public const string CultureRecipe = "ui.lobby.culture.recipe";
+        public const string CultureMaterial = "ui.lobby.culture.material";
+    }
+
+    public static class Dialog
+    {
+        public const string Yes = "common.yes";
+        public const string No = "common.no";
+        public const string QuitConfirm = "common.confirm_quit_game";
+        public const string AbandonConfirm = "dialog.expedition.abandon_confirm";
+        public const string PurchaseConfirm = "dialog.purchase.confirm";
+        public const string RelicPurchaseConfirm = "dialog.relic.purchase_confirm";
+        public const string RuneActivateConfirm = "dialog.rune.activate_confirm";
+    }
+
+    public static class Battle
+    {
+        public const string Start = "ui.battle.start";
+        public const string ActionReserve = "ui.battle.action_reserve";
+        public const string Progress = "ui.battle.progress";
+        public const string SkillChangeLocked = "warning.battle.skill_change_locked";
+        public const string RelicChangeLocked = "warning.battle.relic_change_locked";
+        public const string TimelineSelectionLocked = "warning.battle.timeline_selection_locked";
+    }
+
+    public static class SystemMessage
+    {
+        public const string SaveSuccess = "system.save.success";
+        public const string SaveFailed = "system.save.failed";
+        public const string ExpeditionMissing = "system.expedition.missing";
+        public const string ExpeditionAbandoned = "system.expedition.abandoned";
+    }
+
+    public static class Character
+    {
+        public const string Locked = "ui.character.locked";
+    }
+
     public static class Skill
     {
         public const string Cost = "ui.skill.cost";

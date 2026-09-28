@@ -1,4 +1,4 @@
-﻿using Relic.Gameplay.Data;
+using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -92,7 +92,7 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
     {
         if (command == null)
         {
-            ShowBattleWarning("예약할 스킬 정보가 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillReservationMissing));
             return false;
         }
 
@@ -101,14 +101,14 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
             string reservedId = ReservedCharacter != null ? ReservedCharacter.CharacterId : "None";
             string newId = command.UserRuntime != null ? command.UserRuntime.CharacterId : "None";
 
-            ShowBattleWarning("이 슬롯에는 이미 다른 캐릭터의 행동이 예약되어 있습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SlotOccupiedByOtherCharacter));
             Debug.LogWarning($"[ReserveTurnSlotUI] 이 슬롯은 이미 다른 캐릭터가 사용 중입니다. Reserved:{reservedId} / New:{newId}");
             return false;
         }
 
         if (!CanAddCommand())
         {
-            ShowBattleWarning("한 슬롯에는 최대 5개의 행동만 예약할 수 있습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SlotActionLimit));
             return false;
         }
 
@@ -160,7 +160,7 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
             owner.OnTimelineSlotClicked(slotIndex);
         else
         {
-            ShowBattleWarning("타임라인 컨트롤러를 찾을 수 없습니다.");
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineControllerMissing));
             Debug.LogWarning("[ReserveTurnSlotUI] owner가 없습니다.");
         }
     }

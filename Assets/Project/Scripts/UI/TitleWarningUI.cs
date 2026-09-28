@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
 
 public class TitleWarningUI : MonoBehaviour
@@ -125,7 +125,7 @@ public class TitleWarningUI : MonoBehaviour
 
     public void ShowDefaultMessage()
     {
-        Show("아직 준비되지 않았습니다.");
+        Show(GameLocalization.Get(LocalizationKeys.Warning.FeatureUnavailable));
     }
 
     public void HideImmediate()

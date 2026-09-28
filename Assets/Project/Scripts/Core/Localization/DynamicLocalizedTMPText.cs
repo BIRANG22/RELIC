@@ -13,6 +13,7 @@ public sealed class DynamicLocalizedTMPText : MonoBehaviour
 {
     private TMP_Text target;
     private DynamicLocalizationSourceState sourceState;
+    private readonly LocalizationRefreshGate refreshGate = new();
 
     public bool IsApplyingLocalization { get; private set; }
 
@@ -21,7 +22,7 @@ public sealed class DynamicLocalizedTMPText : MonoBehaviour
         target ??= GetComponent<TMP_Text>();
         sourceState = new DynamicLocalizationSourceState(sourceResolver);
         if (sourceState.UpdateSource(koreanSource))
-            Refresh();
+            RefreshWhenReady(LocalizationSettings.SelectedLocale);
     }
 
     private void OnEnable()
@@ -29,46 +30,77 @@ public sealed class DynamicLocalizedTMPText : MonoBehaviour
         target ??= GetComponent<TMP_Text>();
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+        if (sourceState != null && !string.IsNullOrWhiteSpace(sourceState.LocalizationKey))
+            RefreshWhenReady(LocalizationSettings.SelectedLocale);
     }
 
     private void OnDisable()
     {
+        refreshGate.Invalidate();
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
     }
 
-    private async void OnLocaleChanged(UnityEngine.Localization.Locale locale)
+    private void OnLocaleChanged(UnityEngine.Localization.Locale locale)
     {
         if (!isActiveAndEnabled || sourceState == null || string.IsNullOrWhiteSpace(sourceState.LocalizationKey))
             return;
 
-        Refresh();
+        RefreshWhenReady(locale);
+    }
+
+    private async void RefreshWhenReady(UnityEngine.Localization.Locale requestedLocale)
+    {
+        int requestVersion = refreshGate.Begin();
         try
         {
+            await LocalizationSettings.InitializationOperation.Task;
+            if (!CanApplyRefresh(requestVersion))
+                return;
+
+            requestedLocale ??= LocalizationSettings.SelectedLocale;
             await LocalizationSettings.StringDatabase
-                .GetLocalizedStringAsync(GameLocalization.TableName, sourceState.LocalizationKey)
+                .GetLocalizedStringAsync(
+                    GameLocalization.TableName,
+                    sourceState.LocalizationKey,
+                    requestedLocale,
+                    UnityEngine.Localization.Settings.FallbackBehavior.DontUseFallback)
                 .Task;
-            if (isActiveAndEnabled && LocalizationSettings.SelectedLocale?.Identifier == locale.Identifier)
-                Refresh();
         }
         catch
         {
-            // 즉시 적용한 표준 fallback을 유지합니다.
+            // 아래 Refresh가 선택 언어의 표준 미번역 표기를 적용합니다.
         }
+
+        if (CanApplyRefresh(requestVersion) &&
+            (requestedLocale == null ||
+             LocalizationSettings.SelectedLocale?.Identifier == requestedLocale.Identifier))
+            RefreshForLocale(requestedLocale);
     }
 
-    private void Refresh()
+    public void RefreshForLocale(UnityEngine.Localization.Locale locale)
     {
+        target ??= GetComponent<TMP_Text>();
         if (target == null || sourceState == null || string.IsNullOrWhiteSpace(sourceState.LocalizationKey))
             return;
 
         IsApplyingLocalization = true;
         try
         {
-            target.text = GameLocalization.Get(sourceState.LocalizationKey, sourceState.KoreanSource);
+            target.text = GameLocalization.GetForLocale(
+                sourceState.LocalizationKey,
+                sourceState.KoreanSource,
+                locale);
         }
         finally
         {
             IsApplyingLocalization = false;
         }
     }
+
+    private bool CanApplyRefresh(int requestVersion) =>
+        refreshGate.IsCurrent(requestVersion) &&
+        isActiveAndEnabled &&
+        target != null &&
+        sourceState != null &&
+        !string.IsNullOrWhiteSpace(sourceState.LocalizationKey);
 }

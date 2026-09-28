@@ -144,7 +144,7 @@ public class BattleBagPanelUI : MonoBehaviour
     {
         ProtectFixedHeader(FindScrollViewHeader("Storage_Scroll View") ?? FindScrollViewHeader("Storage_ScrollView"), "재료");
         ProtectFixedHeader(FindScrollViewHeader("Compound_Scroll View") ?? FindScrollViewHeader("Compound_ScrollView"), "연성제");
-        ProtectFixedHeader(FindScrollViewHeader("Relic_Scroll View") ?? FindScrollViewHeader("Relic_ScrollView"), "유물");
+        ProtectFixedHeader(FindScrollViewHeader("Relic_Scroll View") ?? FindScrollViewHeader("Relic_ScrollView"), GameLocalization.Get("common.relic"));
     }
 
     private TMP_Text FindScrollViewHeader(string scrollViewName)
@@ -873,7 +873,7 @@ public class BattleBagPanelUI : MonoBehaviour
             else if (relic != null && !string.IsNullOrWhiteSpace(relic.EffectDesc))
                 detailDescriptionText.text = GameDataLocalization.RelicEffectDescription(relic);
             else
-                detailDescriptionText.text = GameLocalization.Get("battle.acquired_item", "획득한 아이템입니다.");
+                detailDescriptionText.text = GameLocalization.Get("battle.acquired_item");
         }
 
         // 가방 툴팁은 아이템 이름과 설명만 표시합니다.
@@ -1133,7 +1133,7 @@ public class BattleBagPanelUI : MonoBehaviour
     {
         if (IsNetworkBattleClientReadOnly())
         {
-            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.host_only_bag_change", "멀티 배틀에서는 호스트만 가방을 변경할 수 있습니다."));
+            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.host_only_bag_change"));
             return;
         }
 
@@ -1144,7 +1144,7 @@ public class BattleBagPanelUI : MonoBehaviour
 
         if (selectedSlot == null || !selectedSlot.HasItem)
         {
-            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.select_item_to_discard", "버릴 고유 아이템을 먼저 선택해 주세요."));
+            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.select_item_to_discard"));
             return;
         }
 
@@ -1157,7 +1157,7 @@ public class BattleBagPanelUI : MonoBehaviour
 
         if (!BagItemStackUtility.RemoveOne(displayedIds, removedItemId))
         {
-            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.selected_item_not_found", "선택한 고유 아이템을 찾을 수 없습니다."));
+            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.selected_item_not_found"));
             Refresh();
             return;
         }

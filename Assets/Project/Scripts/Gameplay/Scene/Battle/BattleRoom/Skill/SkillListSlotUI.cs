@@ -282,7 +282,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             skillCostImage.enabled = false;
 
         if (skillNameText != null)
-            skillNameText.text = GameLocalization.Get("battle.no_skill", "스킬 없음");
+            skillNameText.text = GameLocalization.Get("battle.no_skill");
 
         if (skillCostTypeText != null)
             skillCostTypeText.text = "";

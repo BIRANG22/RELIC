@@ -248,7 +248,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         if (currentNode != null && !string.IsNullOrWhiteSpace(currentNode.MapId))
             return currentNode.MapId;
 
-        return "탐사 기록";
+        return GameLocalization.Get("ui.exploration.record");
     }
 
     private static string ResolveStageName(
@@ -388,7 +388,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         text.AppendLine("탐사 결과");
         text.AppendLine("━━━━━━━━━━━━━━━━━\n");
         text.AppendLine($"레드 더스티움\n{value.Remnant}\n");
-        text.AppendLine("유물");
+        text.AppendLine(GameLocalization.Get("common.relic"));
         AppendRelics(text, value);
         text.AppendLine("\n전투 기술 데이터");
         AppendSkills(text, value);

@@ -436,7 +436,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
 
         if (IsTimelineSlotReservedByOtherMember(slotIndex, localSteamId))
         {
-            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.slot_reserved_by_other", "다른 플레이어가 예약한 슬롯입니다."));
+            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.slot_reserved_by_other"));
             ApplyViewedSlotsToTimeline(CurrentSnapshot);
             return;
         }
@@ -562,7 +562,7 @@ public sealed class SteamBattleStateSynchronizer : MonoBehaviour
         bool sent = TrySendLobbyChatPayload(payload);
 
         if (!sent)
-            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.network_command_failed", "네트워크 명령 전송에 실패했습니다."));
+            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.network_command_failed"));
 
         if (sent && !string.IsNullOrWhiteSpace(command.requestId))
             pendingCommandTypesByRequestId[command.requestId] =

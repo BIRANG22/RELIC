@@ -103,6 +103,38 @@ MonoBehaviour:
     }
 
     [Test]
+    public void DynamicDisplaySinkLiterals_CollectsLobbyWarningAndDirectTmpWriters()
+    {
+        const string source = @"
+            ShowWarning(""캐릭터를 먼저 선택해야 합니다."");
+            warningUI.Show(""현재 퀘스트를 먼저 완료해야 합니다."");
+            titleText.text = ""각성할 기억을 선택하세요."";
+            Debug.Log(""내부 진단 문구"");";
+
+        IReadOnlyList<string> values = LocalizationProjectScanner.FindDynamicDisplayLiterals(source);
+
+        Assert.That(values, Does.Contain("캐릭터를 먼저 선택해야 합니다."));
+        Assert.That(values, Does.Contain("현재 퀘스트를 먼저 완료해야 합니다."));
+        Assert.That(values, Does.Contain("각성할 기억을 선택하세요."));
+        Assert.That(values, Does.Not.Contain("내부 진단 문구"));
+    }
+
+    [Test]
+    public void FindSerializedPlayerTextLiterals_CollectsMessageTextAndDisplayNameFields()
+    {
+        const string source = @"
+            [SerializeField] private string lockedMessage = ""아직 잠겨있는 스테이지입니다."";
+            [SerializeField] private string readyButtonText = ""탐사 준비"";
+            [SerializeField] private string internalId = ""내부 식별자"";";
+
+        IReadOnlyList<string> values = LocalizationProjectScanner.FindSerializedPlayerTextLiterals(source);
+
+        Assert.That(values, Does.Contain("아직 잠겨있는 스테이지입니다."));
+        Assert.That(values, Does.Contain("탐사 준비"));
+        Assert.That(values, Does.Not.Contain("내부 식별자"));
+    }
+
+    [Test]
     public void FindExplicitSources_CollectsKeyedDynamicKoreanSources()
     {
         const string source = @"

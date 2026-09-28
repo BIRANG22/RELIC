@@ -90,14 +90,14 @@ public sealed class LobbyCultureTankController : MonoBehaviour
 
     private static string FormatPanelTankName(string value)
     {
-        if (string.IsNullOrWhiteSpace(value)) return GameLocalization.Get("lobby.culture_tank", "배양조");
+        if (string.IsNullOrWhiteSpace(value)) return GameLocalization.Get("lobby.culture_tank");
         const string prefix = "CultureTank";
         string trimmed = value.Trim();
         if (!trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) return trimmed;
         string suffix = trimmed[prefix.Length..].Trim();
         return string.IsNullOrEmpty(suffix)
-            ? GameLocalization.Get("lobby.culture_tank", "배양조")
-            : GameLocalization.FormatWithFallback("lobby.culture_tank_number", "배양조 {0}", suffix);
+            ? GameLocalization.Get("lobby.culture_tank")
+            : GameLocalization.Format("lobby.culture_tank_number", suffix);
     }
 
     private static bool CanLocalPlayerMutateHostOnlyState() =>

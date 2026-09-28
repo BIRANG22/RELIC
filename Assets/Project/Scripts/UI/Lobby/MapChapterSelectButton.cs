@@ -20,7 +20,6 @@ public class MapChapterSelectButton : MonoBehaviour
 
     [Header("Locked Warning")]
     [SerializeField] private SettingWarningUI warningUI;
-    [SerializeField] private string lockedMessage = "아직 잠겨있는 스테이지입니다.";
 
     [Header("Button")]
     [SerializeField] private Button button;
@@ -122,7 +121,7 @@ public class MapChapterSelectButton : MonoBehaviour
         {
             if (!suppressLockedWarning)
             {
-                ShowWarning(lockedMessage);
+                ShowWarning(GameLocalization.Get(LocalizationKeys.Warning.StageLocked));
                 Debug.Log("[MapChapterSelectButton] Locked stage.");
             }
 

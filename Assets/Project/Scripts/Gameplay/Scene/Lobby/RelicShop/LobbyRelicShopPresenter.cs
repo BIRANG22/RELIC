@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -53,10 +53,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     [SerializeField] private Vector2 purchaseTransferEffectSize = new Vector2(96f, 96f);
     [Tooltip("원형 효과가 최종적으로 들어갈 Equip 버튼 위치입니다. Equip 버튼 또는 버튼 아래의 빈 RectTransform을 직접 지정할 수 있습니다.")]
     [SerializeField] private RectTransform equipEffectTarget;
-
-    [Header("Purchase Confirmation")]
-    [Tooltip("유물을 선택했을 때 CHECK 프리팹에 표시할 확인 문구입니다.")]
-    [SerializeField] private string purchaseConfirmMessage = "이 유물로 결정하시겠습니까?";
 
     [Header("Purchase Animation Trail")]
     [Tooltip("이동 중 꼬리 잔상을 생성하는 간격입니다. 값이 작을수록 꼬리가 촘촘해집니다.")]
@@ -322,7 +318,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         SetPurchaseConfirmSelection(selectedButton);
 
         UIManager.Instance.ShowConfirmDialog(
-            purchaseConfirmMessage,
+            GameLocalization.Get(LocalizationKeys.Dialog.RelicPurchaseConfirm),
             () =>
             {
                 UIManager.Instance?.HideConfirmDialog();
@@ -1002,13 +998,13 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         string normalized = string.IsNullOrWhiteSpace(rarity) ? string.Empty : rarity.Trim();
 
         if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase))
-            return GameLocalization.Get("common.rarity.common", "일반");
+            return GameLocalization.Get("common.rarity.common");
         if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase))
-            return GameLocalization.Get("common.rarity.rare", "레어");
+            return GameLocalization.Get("common.rarity.rare");
         if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase))
-            return GameLocalization.Get("common.rarity.epic", "에픽");
+            return GameLocalization.Get("common.rarity.epic");
         if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase))
-            return GameLocalization.Get("common.rarity.unique", "유니크");
+            return GameLocalization.Get("common.rarity.unique");
 
         return normalized;
     }

@@ -73,10 +73,32 @@ public static class LocalizationProjectScanner
         string code = RemoveComments(source ?? string.Empty);
         const string literal = "\"(?<value>(?:\\\\.|[^\"\\\\])*)\"";
         var sinkCall = new Regex(
-            @"(?:BattleWarningUI\.ShowMessage|ShowBattleWarning|BattleMapIntroText\.ShowMessage(?:AndWait)?)\s*\(\s*" + literal,
+            @"(?:BattleWarningUI\.ShowMessage|SettingWarningUI\.ShowMessage|ShowBattleWarning|ShowWarning|[A-Za-z_]\w*\.Show|BattleMapIntroText\.ShowMessage(?:AndWait)?)\s*\(\s*" + literal,
+            RegexOptions.Multiline);
+
+        var directTmpWriter = new Regex(
+            @"(?:\b\w+\.text\s*=|\b\w+\.SetText\s*\()\s*" + literal,
             RegexOptions.Multiline);
 
         return sinkCall.Matches(code)
+            .Cast<Match>()
+            .Concat(directTmpWriter.Matches(code).Cast<Match>())
+            .Select(match => DecodeCSharpLiteral(match.Groups["value"].Value))
+            .Where(IsLocalizableKoreanText)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    /// <summary>인스펙터에 직렬화되어 플레이어에게 표시되는 한국어 기본값을 찾습니다.</summary>
+    public static IReadOnlyList<string> FindSerializedPlayerTextLiterals(string source)
+    {
+        string code = RemoveComments(source ?? string.Empty);
+        const string literal = "\"(?<value>(?:\\\\.|[^\"\\\\])*)\"";
+        var serializedPlayerText = new Regex(
+            @"\[SerializeField[^\]]*\][^;\r\n]*\b(?:\w*(?:Text|Message|Title|Label|Description|DisplayName|DisplayNames))\b\s*=\s*" + literal,
+            RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+        return serializedPlayerText.Matches(code)
             .Cast<Match>()
             .Select(match => DecodeCSharpLiteral(match.Groups["value"].Value))
             .Where(IsLocalizableKoreanText)

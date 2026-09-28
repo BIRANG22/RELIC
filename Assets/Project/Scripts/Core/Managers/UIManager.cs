@@ -40,15 +40,6 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private bool overrideConfirmDialogSorting = true;
     [SerializeField] private int confirmDialogSortingOrderOffset = 20;
 
-    [Header("Menu Button Text")]
-    [SerializeField] private string lobbyQuitButtonText = "타이틀로";
-    [SerializeField] private string battleQuitButtonText = "저장 후 종료";
-
-    [Header("Confirm Dialog Text")]
-    [SerializeField] private string quitConfirmMessage = "게임을 종료하겠습니까?";
-    [SerializeField] private string confirmYesText = "예";
-    [SerializeField] private string confirmNoText = "아니오";
-
     [Header("Input")]
     [SerializeField] private bool closeOptionPanelWithEscape = true;
     [SerializeField] private bool closeRecordPanelWithEscape = true;
@@ -436,9 +427,9 @@ public class UIManager : Singleton<UIManager>
             return;
 
         ShowConfirmDialog(
-            GameLocalization.Get("ui.check.slogan", "정말로 포기하시겠습니까?"),
-            GameLocalization.Get("common.yes", confirmYesText),
-            GameLocalization.Get("common.no", confirmNoText),
+            GameLocalization.Get("ui.check.slogan"),
+            GameLocalization.Get(LocalizationKeys.Dialog.Yes),
+            GameLocalization.Get(LocalizationKeys.Dialog.No),
             OnConfirmGiveUpToLobby,
             HideConfirmDialog);
     }
@@ -446,7 +437,7 @@ public class UIManager : Singleton<UIManager>
     public void ShowQuitConfirm()
     {
         ShowConfirmDialog(
-            GameLocalization.Get("common.confirm_quit_game", quitConfirmMessage),
+            GameLocalization.Get(LocalizationKeys.Dialog.QuitConfirm),
             OnConfirmQuitGame,
             HideConfirmDialog);
     }
@@ -455,8 +446,8 @@ public class UIManager : Singleton<UIManager>
     {
         ShowConfirmDialog(
             message,
-            GameLocalization.Get("common.yes", confirmYesText),
-            GameLocalization.Get("common.no", confirmNoText),
+            GameLocalization.Get(LocalizationKeys.Dialog.Yes),
+            GameLocalization.Get(LocalizationKeys.Dialog.No),
             yesAction,
             noAction);
     }
@@ -479,8 +470,8 @@ public class UIManager : Singleton<UIManager>
 
         confirmDialogUI.Configure(
             message,
-            string.IsNullOrWhiteSpace(yesText) ? GameLocalization.Get("common.yes", confirmYesText) : yesText,
-            string.IsNullOrWhiteSpace(noText) ? GameLocalization.Get("common.no", confirmNoText) : noText,
+            string.IsNullOrWhiteSpace(yesText) ? GameLocalization.Get(LocalizationKeys.Dialog.Yes) : yesText,
+            string.IsNullOrWhiteSpace(noText) ? GameLocalization.Get(LocalizationKeys.Dialog.No) : noText,
             yesAction,
             noAction);
         confirmDialogInstance.SetActive(true);
@@ -733,8 +724,8 @@ public class UIManager : Singleton<UIManager>
         if (cachedQuitText != null)
         {
             cachedQuitText.text = isLobbyScene
-                ? GameLocalization.Get(LobbyQuitButtonLocalizationKey, lobbyQuitButtonText)
-                : GameLocalization.Get(BattleQuitButtonLocalizationKey, battleQuitButtonText);
+                ? GameLocalization.Get(LobbyQuitButtonLocalizationKey)
+                : GameLocalization.Get(BattleQuitButtonLocalizationKey);
             RefreshTmpText(cachedQuitText);
         }
     }

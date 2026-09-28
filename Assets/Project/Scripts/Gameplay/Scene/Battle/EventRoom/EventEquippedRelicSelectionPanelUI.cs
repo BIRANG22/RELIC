@@ -157,7 +157,7 @@ public sealed class EventEquippedRelicSelectionPanelUI : MonoBehaviour
         VisibleOptionCount = 0;
 
         if (titleText != null)
-            titleText.text = "교환할 유물을 선택하세요.";
+            titleText.text = GameLocalization.Get("event.relic.select_exchange");
 
         if (emptyText != null)
             emptyText.gameObject.SetActive(options.Count == 0);
@@ -361,10 +361,10 @@ public sealed class EventEquippedRelicSelectionPanelUI : MonoBehaviour
 
         return parsedRarity switch
         {
-            RelicRarity.Common => "일반 유물",
-            RelicRarity.Rare => "레어 유물",
-            RelicRarity.Epic => "에픽 유물",
-            RelicRarity.Unique => "유니크 유물",
+            RelicRarity.Common => GameLocalization.Get("relic.rarity.common"),
+            RelicRarity.Rare => GameLocalization.Get("relic.rarity.rare"),
+            RelicRarity.Epic => GameLocalization.Get("relic.rarity.epic"),
+            RelicRarity.Unique => GameLocalization.Get("relic.rarity.unique"),
             _ => string.Empty
         };
     }

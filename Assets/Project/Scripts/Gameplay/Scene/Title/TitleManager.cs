@@ -20,7 +20,6 @@ public class TitleManager : MonoBehaviour
 
     [Header("Warning")]
     [SerializeField] private TitleWarningUI warningUI;
-    [SerializeField] private string unavailableMessage = "아직 준비되지 않았습니다.";
     [SerializeField] private Button[] unavailableButtons;
 
     [Header("Run Buttons")]
@@ -133,7 +132,7 @@ public class TitleManager : MonoBehaviour
             return;
         }
 
-        targetWarningUI.Show(unavailableMessage);
+        targetWarningUI.Show(GameLocalization.Get(LocalizationKeys.Warning.FeatureUnavailable));
     }
 
     public void OnClickExitGame()
