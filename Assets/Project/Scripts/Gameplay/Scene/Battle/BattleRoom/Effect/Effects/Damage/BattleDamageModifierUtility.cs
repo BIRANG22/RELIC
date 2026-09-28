@@ -16,7 +16,7 @@ public static class BattleDamageModifierUtility
     private const string ActiveDamageBoostEffectId = ActiveRelicEffectIds.DamageBoostThisTurn;
     private const string ActiveDamageReductionEffectId = ActiveRelicEffectIds.DamageReductionThisTurn;
     private const string TargetOutgoingDamageReductionEffectId =
-        ActiveRelicEffectIds.TargetOutgoingDamageReductionThisTurn;
+        ActiveRelicEffectIds.Fatigue;
 
     public static int CalculateFinalDamageToPlayer(BattleEffectContext context, int baseDamage)
     {

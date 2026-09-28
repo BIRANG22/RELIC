@@ -10,7 +10,7 @@ namespace Relic.Gameplay.Data
         public const string CleanseDebuffs = "AR_CleanseDebuffs";
         public const string MoveToGrid = "AR_MoveToGrid";
         public const string SwapAlly = "AR_SwapAlly";
-        public const string TargetOutgoingDamageReductionThisTurn = "AR_TargetOutgoingDamageReductionThisTurn";
+        public const string Fatigue = "E_Fatigue";
         public const string RemoveGridEffect = "AR_RemoveGridEffect";
         public const string SpawnGridEffect = "AR_SpawnGridEffect";
         public const string SpawnPoisonGridEffect = "AR_SpawnPoisonGridEffect";

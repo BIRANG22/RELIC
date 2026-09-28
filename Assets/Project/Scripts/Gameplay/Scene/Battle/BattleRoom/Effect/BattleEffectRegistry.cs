@@ -17,6 +17,10 @@ public class BattleEffectRegistry
 
         Register(new BleedEffect());
         Register(new PoisonEffect());
+        Register(new PoisonTriggerEffect());
+        Register(new DebuffIncreaseEffect());
+        Register(new DebuffDoubleEffect());
+        Register(new RemoveArmorEffect());
 
         Register(new BoostEffect());
         Register(new ArmorEffect());
@@ -41,6 +45,7 @@ public class BattleEffectRegistry
 
         Register(new VulnerableEffect());
         Register(new WeakenEffect());
+        Register(new FatigueEffect());
         Register(new GrudgeEffect());
         Register(new CorrosionEffect());
 

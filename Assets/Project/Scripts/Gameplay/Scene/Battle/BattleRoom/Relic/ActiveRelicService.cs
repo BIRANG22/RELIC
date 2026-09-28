@@ -198,7 +198,7 @@ public sealed class ActiveRelicService
                     out targetMessage);
                 break;
 
-            case ActiveRelicEffectIds.TargetOutgoingDamageReductionThisTurn:
+            case ActiveRelicEffectIds.Fatigue:
                 succeeded = TryApplyTargetOutgoingDamageReduction(
                     availability.RelicData,
                     gridIndex,
@@ -489,7 +489,7 @@ public sealed class ActiveRelicService
 
         AddOrStackStatus(
             monster.RuntimeData.StatusEffects,
-            ActiveRelicEffectIds.TargetOutgoingDamageReductionThisTurn,
+            ActiveRelicEffectIds.Fatigue,
             1);
         monster.ShowAndRefreshHUD();
         return true;
@@ -618,6 +618,7 @@ public sealed class ActiveRelicService
                effectId == "E_Bleed" ||
                effectId == "E_Vulnerable" ||
                effectId == "E_Weaken" ||
+               effectId == "E_Fatigue" ||
                effectId == "E_Corrosion" ||
                effectId == "E_Burn";
     }
