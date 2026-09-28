@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,5 +10,14 @@ public class SkillCutsceneView : MonoBehaviour
     {
         if (cutsceneImage != null)
             cutsceneImage.sprite = image;
+    }
+
+    public IEnumerator PlayAndWait(Sprite image)
+    {
+        gameObject.SetActive(false);
+        SetImage(image);
+        gameObject.SetActive(true);
+
+        yield return new WaitUntil(() => !gameObject.activeInHierarchy);
     }
 }

@@ -12598,8 +12598,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 301323238}
   localizationKey: ui.lobby.culture.recipe
-  koreanSource: 
-  automaticallyRegistered: 0
+  koreanSource: "\uC870\uD569\uC2DD"
+  automaticallyRegistered: 1
 --- !u!114 &301323238
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -90125,8 +90125,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 1806657413}
   localizationKey: ui.lobby.culture.material
-  koreanSource: 
-  automaticallyRegistered: 0
+  koreanSource: "\uC7AC\uB8CC"
+  automaticallyRegistered: 1
 --- !u!114 &1806657413
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -95182,6 +95182,7 @@ GameObject:
   - component: {fileID: 1936025699}
   - component: {fileID: 1936025698}
   - component: {fileID: 1936025697}
+  - component: {fileID: 1936025700}
   m_Layer: 0
   m_Name: NameText
   m_TagString: Untagged
@@ -95308,6 +95309,22 @@ RectTransform:
   m_AnchoredPosition: {x: 229, y: 80}
   m_SizeDelta: {x: 316.75, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1936025700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1936025696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1936025697}
+  localizationKey: common.untranslated
+  koreanSource: "\uBBF8\uBC88\uC5ED"
+  automaticallyRegistered: 1
 --- !u!1 &1937344542
 GameObject:
   m_ObjectHideFlags: 0
@@ -102246,8 +102263,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 2119781216}
   localizationKey: ui.lobby.panel.erosion
-  koreanSource: 
-  automaticallyRegistered: 0
+  koreanSource: "\uD604\uC7AC\uD328\uB110"
+  automaticallyRegistered: 1
 --- !u!1 &2119863864
 GameObject:
   m_ObjectHideFlags: 0

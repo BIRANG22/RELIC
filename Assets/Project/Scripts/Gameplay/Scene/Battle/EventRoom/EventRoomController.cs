@@ -755,9 +755,7 @@ public class EventRoomController : MonoBehaviour
         ResetTerminalChoiceVisuals();
 
         if (eventNameText != null)
-            eventNameText.text = string.IsNullOrWhiteSpace(definition.EventName)
-                ? definition.EventId
-                : definition.EventName;
+            eventNameText.text = GameDataLocalization.EventName(definition);
 
         if (eventTitleText != null)
             eventTitleText.text = ResolveEventTitle(definition);

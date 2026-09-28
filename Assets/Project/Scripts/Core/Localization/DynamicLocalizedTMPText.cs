@@ -22,7 +22,7 @@ public sealed class DynamicLocalizedTMPText : MonoBehaviour
         target ??= GetComponent<TMP_Text>();
         sourceState = new DynamicLocalizationSourceState(sourceResolver);
         if (sourceState.UpdateSource(koreanSource))
-            RefreshWhenReady(LocalizationSettings.SelectedLocale);
+            RefreshImmediatelyAndWhenReady(LocalizationSettings.SelectedLocale);
     }
 
     private void OnEnable()
@@ -31,7 +31,7 @@ public sealed class DynamicLocalizedTMPText : MonoBehaviour
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
         if (sourceState != null && !string.IsNullOrWhiteSpace(sourceState.LocalizationKey))
-            RefreshWhenReady(LocalizationSettings.SelectedLocale);
+            RefreshImmediatelyAndWhenReady(LocalizationSettings.SelectedLocale);
     }
 
     private void OnDisable()
@@ -45,7 +45,13 @@ public sealed class DynamicLocalizedTMPText : MonoBehaviour
         if (!isActiveAndEnabled || sourceState == null || string.IsNullOrWhiteSpace(sourceState.LocalizationKey))
             return;
 
-        RefreshWhenReady(locale);
+        RefreshImmediatelyAndWhenReady(locale);
+    }
+
+    private void RefreshImmediatelyAndWhenReady(UnityEngine.Localization.Locale requestedLocale)
+    {
+        RefreshForLocale(requestedLocale);
+        RefreshWhenReady(requestedLocale);
     }
 
     private async void RefreshWhenReady(UnityEngine.Localization.Locale requestedLocale)
