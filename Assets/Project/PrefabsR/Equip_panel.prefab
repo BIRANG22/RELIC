@@ -530,13 +530,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 364882877314852005}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 1030603030947612013}
-  localizationKey: common.rarity
-  koreanSource: "\uB808\uC5B4\uB3C4"
-  automaticallyRegistered: 1
 --- !u!1 &470891072473634554
 GameObject:
   m_ObjectHideFlags: 0
@@ -5162,13 +5158,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 5470395582494506088}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 5615449568552737218}
-  localizationKey: ui.equip_panel.name
-  koreanSource: "\uC544\uC774\uD15C\uC758 \uC774\uB984"
-  automaticallyRegistered: 1
 --- !u!1 &5477232904117293400
 GameObject:
   m_ObjectHideFlags: 0
@@ -7752,13 +7744,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 8495932129484785006}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 5473311060299315683}
-  localizationKey: ui.equip_panel.effect
-  koreanSource: "\uC544\uC774\uD15C\uC758 \uC124\uBA85"
-  automaticallyRegistered: 1
 --- !u!1 &8524097073952036371
 GameObject:
   m_ObjectHideFlags: 0

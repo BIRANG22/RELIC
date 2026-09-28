@@ -173,8 +173,21 @@ public static class LocalizationProjectScanner
 
     public static bool IsPlayerFacingGameDataColumn(string header)
     {
+        return IsPlayerFacingGameDataColumn(string.Empty, header);
+    }
+
+    public static bool IsPlayerFacingGameDataColumn(string sheetName, string header)
+    {
         if (string.IsNullOrWhiteSpace(header))
             return false;
+
+        string compactHeader = header.Replace(" ", string.Empty).Replace("\t", string.Empty);
+        if (string.Equals(sheetName, "SkillMaster", StringComparison.OrdinalIgnoreCase) &&
+            (string.Equals(compactHeader, "효과", StringComparison.Ordinal) ||
+             string.Equals(compactHeader, "Details", StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
 
         return header.Contains("이름", StringComparison.Ordinal) ||
                header.Contains("제목", StringComparison.Ordinal) ||
@@ -190,7 +203,10 @@ public static class LocalizationProjectScanner
 
     public static string BuildGameDataKey(string sheetName, string stableId, string header)
     {
-        return $"data.{NormalizeDataSegment(sheetName)}.{NormalizeDataSegment(stableId)}.{GetDataFieldName(header)}";
+        return GameLocalization.BuildDataKey(
+            sheetName,
+            stableId,
+            GetDataFieldName(sheetName, header));
     }
 
     public static string BuildUniqueGameDataKey(string sheetName, string stableId, string header, string koreanSource)
@@ -201,7 +217,7 @@ public static class LocalizationProjectScanner
     /// <summary>Event 시트의 반복 선택지를 EventId와 선택 순서로 구분하는 런타임 키입니다.</summary>
     public static string BuildEventChoiceKey(string eventId, int choiceOrder, string header)
     {
-        string field = GetDataFieldName(header);
+        string field = GetDataFieldName("Event", header);
         if (!field.StartsWith("choice_", StringComparison.Ordinal) &&
             field != "disabled_choice_description" &&
             field != "failure_description")
@@ -221,12 +237,18 @@ public static class LocalizationProjectScanner
         return BuildGameDataKey("Event", eventId, choiceField);
     }
 
-    private static string GetDataFieldName(string header)
+    private static string GetDataFieldName(string sheetName, string header)
     {
         if (string.IsNullOrWhiteSpace(header))
             return "text";
 
         string compactHeader = header.Replace(" ", string.Empty).Replace("\t", string.Empty);
+        if (string.Equals(sheetName, "SkillMaster", StringComparison.OrdinalIgnoreCase) &&
+            (string.Equals(compactHeader, "효과", StringComparison.Ordinal) ||
+             string.Equals(compactHeader, "Details", StringComparison.OrdinalIgnoreCase)))
+        {
+            return "details";
+        }
         if (compactHeader.Contains("이름", StringComparison.Ordinal))
             return "name";
         if (compactHeader.Contains("제목", StringComparison.Ordinal))
@@ -257,15 +279,6 @@ public static class LocalizationProjectScanner
         if (compactHeader == "타입")
             return "type";
         return "description";
-    }
-
-    private static string NormalizeDataSegment(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return "unknown";
-
-        string normalized = NonKeyCharacters.Replace(value.ToLowerInvariant(), "_").Trim('_');
-        return string.IsNullOrWhiteSpace(normalized) ? "unknown" : normalized;
     }
 
     public static string ReadScriptText(string path)

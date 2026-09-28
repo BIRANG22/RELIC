@@ -4758,7 +4758,7 @@ public class EventRoomController : MonoBehaviour
         SkillMasterData skill,
         EventChoiceSkillRewardFilter filter)
     {
-        if (skill == null)
+        if (skill == null || !SkillRarityUtility.IsCoreDropRarity(skill.Rarity))
             return false;
 
         return filter switch

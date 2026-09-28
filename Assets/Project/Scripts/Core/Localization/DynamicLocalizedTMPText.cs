@@ -86,7 +86,10 @@ public sealed class DynamicLocalizedTMPText : MonoBehaviour
     public void RefreshForLocale(UnityEngine.Localization.Locale locale)
     {
         target ??= GetComponent<TMP_Text>();
-        if (target == null || sourceState == null || string.IsNullOrWhiteSpace(sourceState.LocalizationKey))
+        if (target == null ||
+            target.GetComponentInParent<LocalizationAutoBindingIgnore>(true) != null ||
+            sourceState == null ||
+            string.IsNullOrWhiteSpace(sourceState.LocalizationKey))
             return;
 
         IsApplyingLocalization = true;
