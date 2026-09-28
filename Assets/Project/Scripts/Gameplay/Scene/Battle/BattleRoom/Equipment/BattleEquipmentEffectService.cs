@@ -2599,7 +2599,7 @@ public static class BattleEquipmentEffectService
 
     private static bool IsDamageEffect(string effectId)
     {
-        return effectId == "E_Strike" || effectId == "E_Pierce";
+        return effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike";
     }
 
     private static bool ShouldDoubleBuffApplication(

@@ -172,7 +172,7 @@ public class InfoTooltip : MonoBehaviour
             titleText.text = title;
 
         if (effectText != null)
-            effectText.text = HighlightNumbers(effect);
+            SkillEffectInlineIconUtility.SetText(effectText, HighlightNumbers(effect));
     }
 
     private void SetFixedText(string title, string effect)

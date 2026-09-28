@@ -161,21 +161,8 @@ public class BattleTurnExecutor : MonoBehaviour
         skillListPanel = FindFirstObjectByType<SkillListPanel>(FindObjectsInactive.Include);
     }
 
-    private void OnEnable()
-    {
-        BattleEffectUtility.OnPlayerHit -= uniqueResourceService.OnAnyPlayerDamaged;
-        BattleEffectUtility.OnPlayerHit += uniqueResourceService.OnAnyPlayerDamaged;
-        BattleEffectUtility.OnPlayerBuffApplied -= uniqueResourceService.OnPlayerBuffApplied;
-        BattleEffectUtility.OnPlayerBuffApplied += uniqueResourceService.OnPlayerBuffApplied;
-        BattleEffectUtility.OnPlayerDamagedEnemy -= uniqueResourceService.OnPlayerDamagedEnemy;
-        BattleEffectUtility.OnPlayerDamagedEnemy += uniqueResourceService.OnPlayerDamagedEnemy;
-    }
-
     private void OnDisable()
     {
-        BattleEffectUtility.OnPlayerHit -= uniqueResourceService.OnAnyPlayerDamaged;
-        BattleEffectUtility.OnPlayerBuffApplied -= uniqueResourceService.OnPlayerBuffApplied;
-        BattleEffectUtility.OnPlayerDamagedEnemy -= uniqueResourceService.OnPlayerDamagedEnemy;
 
         if (endTurnClickFeedbackCoroutine != null)
         {
@@ -509,7 +496,6 @@ public class BattleTurnExecutor : MonoBehaviour
             BattleActionBatchBuilder builder = new(gridManager);
             BattleActionSimulationService simulator = new(gridManager);
 
-            uniqueResourceService.BeginTurnExecution();
 
             simulator.Simulate(timelineController);
 
@@ -524,7 +510,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 roomLoader,
                 useSafeSequentialExecution,
                 actionRoutineTimeout,
-                uniqueResourceService.OnPlayerCommandExecuted,
+                null,
                 consecutiveActionPlan,
                 multiHitActionInterval,
                 ShowUniqueSkillCutscene
@@ -586,7 +572,6 @@ public class BattleTurnExecutor : MonoBehaviour
                 if (BattleResultChecker.Instance != null &&
                     BattleResultChecker.Instance.CheckBattleEnd())
                 {
-                    uniqueResourceService.FlushPendingUniqueResourceGains();
                     RefreshBattleHUDs();
                     yield return ReturnCameraDefaultRoutine();
                     ClearTimeline();
@@ -642,9 +627,8 @@ public class BattleTurnExecutor : MonoBehaviour
             ApplyPlayerEndTurnTriggeredEquipmentEffects();
             RefreshBattleHUDs();
 
-            // 전투 실행 중 획득한 카르마는 행동마다 즉시 반영하지 않고
-            // 모든 행동과 턴 종료 효과가 끝난 뒤 캐릭터별 합계로 한 번만 반영합니다.
-            uniqueResourceService.FlushPendingUniqueResourceGains();
+            // 카르마는 캐릭터별 조건 없이 턴 종료 시 생존 캐릭터가 1씩 회복합니다.
+            uniqueResourceService.RecoverAllAlivePlayersAtTurnEnd();
             RefreshBattleHUDs();
 
             ClearTimeline();
@@ -765,7 +749,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 roomLoader,
                 useSafeSequentialExecution,
                 actionRoutineTimeout,
-                uniqueResourceService != null ? uniqueResourceService.OnPlayerCommandExecuted : null,
+                null,
                 consecutiveActionPlan,
                 multiHitActionInterval,
                 ShowUniqueSkillCutscene

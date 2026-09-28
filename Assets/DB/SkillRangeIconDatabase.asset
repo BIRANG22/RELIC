@@ -14,102 +14,80 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - RangeId: Range_01
-    Icon: {fileID: 21300000, guid: 09e241e515293b04383e66b5fb996b53, type: 3}
+    Icon: {fileID: 21300000, guid: c33d242a873e7d745bb93d308f563a46, type: 3}
   - RangeId: Range_02
-    Icon: {fileID: 21300000, guid: 22f6812fe5cde304083ad5c528f59665, type: 3}
+    Icon: {fileID: 21300000, guid: 49b75ed3af5595246ab1047f6a8f5f44, type: 3}
   - RangeId: Range_03
-    Icon: {fileID: 21300000, guid: 690d49b71cb0098419a7dbd1c26e851c, type: 3}
+    Icon: {fileID: 21300000, guid: d0e0b06a21e5874458bf72de4e3626cd, type: 3}
   - RangeId: Range_04
-    Icon: {fileID: 21300000, guid: 27fbc99cc94818b4eb5c1bcbc7c86581, type: 3}
+    Icon: {fileID: 21300000, guid: 92553363a9cb3e34fb0752032bce372e, type: 3}
   - RangeId: Range_05
-    Icon: {fileID: 21300000, guid: 61856d842cf8218408936c53aaa072fb, type: 3}
+    Icon: {fileID: 21300000, guid: 1ecdf94b80bb6af41b7cc5171932e6f3, type: 3}
   - RangeId: Range_06
-    Icon: {fileID: 21300000, guid: b5952662067ed9440a79510f852a61db, type: 3}
+    Icon: {fileID: 21300000, guid: 09dbbe5720bf8dc49a95d4a6a685d1a5, type: 3}
   - RangeId: Range_07
-    Icon: {fileID: 21300000, guid: 7739ae2f2f2256d4881a2feb07c2614b, type: 3}
+    Icon: {fileID: 21300000, guid: b7efe149de51cdf49b5a261f8c9aa185, type: 3}
   - RangeId: Range_08
-    Icon: {fileID: 21300000, guid: fa15450a1abbdbe4da1f0333351beb67, type: 3}
+    Icon: {fileID: 21300000, guid: 01faa2f82681c9a4dbb65e97ffa1b916, type: 3}
   - RangeId: Range_09
-    Icon: {fileID: 21300000, guid: fef36f6b7bd89c24baf1e9b2cec8147a, type: 3}
+    Icon: {fileID: 21300000, guid: 483dad9dd71e17a45ac604d6bb56bc0b, type: 3}
   - RangeId: Range_10
-    Icon: {fileID: 21300000, guid: 68e424b505f7c164abab884344f3d35e, type: 3}
+    Icon: {fileID: 21300000, guid: 9d8a8cc07c6004c4cbb2981998ce2fb6, type: 3}
   - RangeId: Range_11
-    Icon: {fileID: 21300000, guid: 42c0188e0f1a88d439bc2a9e9c0f3ad3, type: 3}
+    Icon: {fileID: 21300000, guid: db3208801b9a00044b649cfd8fbbfcf3, type: 3}
   - RangeId: Range_12
-    Icon: {fileID: 21300000, guid: aa8fcdd4e7dca3d4c9238dd558f204ab, type: 3}
+    Icon: {fileID: 21300000, guid: 8296432fec8fcc8448e90dea27c4c96b, type: 3}
   - RangeId: Range_13
-    Icon: {fileID: 21300000, guid: cec8fd3923f74884381ea906d10346e6, type: 3}
+    Icon: {fileID: 21300000, guid: d71e16f659299a442b4b4beb4737ca5d, type: 3}
   - RangeId: Range_14
-    Icon: {fileID: 21300000, guid: 6b1d23c5843ca394ab864d4d972abf55, type: 3}
+    Icon: {fileID: 21300000, guid: 3afa6c9933b51864b814883307e1cac8, type: 3}
   - RangeId: Range_15
-    Icon: {fileID: 21300000, guid: f8164cccc9c95fb438b4aa9a0d9f3d7c, type: 3}
+    Icon: {fileID: 21300000, guid: b4b48c4c9202e53408bcdf11215136ab, type: 3}
   - RangeId: Range_16
-    Icon: {fileID: 21300000, guid: 0c11f667219866e46a5f99f710dd7dcf, type: 3}
+    Icon: {fileID: 21300000, guid: bce173a542865cd4e9d7a4dfe13a0486, type: 3}
   - RangeId: Range_17
-    Icon: {fileID: 21300000, guid: f6874a4af84b28e47afe697b47bcf725, type: 3}
+    Icon: {fileID: 21300000, guid: eac9fb149457a664d81cd26a1875d003, type: 3}
   - RangeId: Range_18
-    Icon: {fileID: 21300000, guid: 28056d19c7972a541ac6b4f39b585fcf, type: 3}
+    Icon: {fileID: 21300000, guid: 6418ef13726aeec40a93e494e222baa3, type: 3}
   - RangeId: Range_19
-    Icon: {fileID: 21300000, guid: b6a3a1151cd85ff4d9bd278d2da92a00, type: 3}
+    Icon: {fileID: 21300000, guid: b9804c6043d5d2b44b1b9a6d7d112f48, type: 3}
   - RangeId: Range_20
-    Icon: {fileID: 21300000, guid: aa502f0d984723f4d97f614c4a033ec2, type: 3}
+    Icon: {fileID: 21300000, guid: 199d7fb6d25d8de4bbb039d11f4642ef, type: 3}
   - RangeId: Range_21
-    Icon: {fileID: 21300000, guid: a7dd181c3f9a4c74facb0603d3d10907, type: 3}
+    Icon: {fileID: 21300000, guid: 02012925761197e4f88877fbd6584e13, type: 3}
   - RangeId: Range_22
-    Icon: {fileID: 21300000, guid: d85bcd3df82121c4fbcd4b191fcb1911, type: 3}
+    Icon: {fileID: 21300000, guid: 6083e689ae7bced4b997afcea5e5c209, type: 3}
   - RangeId: Range_23
-    Icon: {fileID: 21300000, guid: 5fc0be0ddacc3da4db1ecb70d06faab5, type: 3}
+    Icon: {fileID: 21300000, guid: 99be35e9af2fa3c4bafca2f839cd9ef4, type: 3}
   - RangeId: Range_24
-    Icon: {fileID: 21300000, guid: 9361d92202fa6b84c891f5e97c3615d8, type: 3}
-  - RangeId: Range_All
-    Icon: {fileID: 21300000, guid: fcbe972d3cbe4574fbaf14237b82626d, type: 3}
+    Icon: {fileID: 21300000, guid: 21300be2584ab964894c544e76cc449e, type: 3}
+  - RangeId: Range_25
+    Icon: {fileID: 21300000, guid: 9d75e305b168b9b4488e03f9f95b0fa0, type: 3}
+  - RangeId: Range_26
+    Icon: {fileID: 21300000, guid: 86a1c6cf947bea942a2401bc71a5a7db, type: 3}
+  - RangeId: Range_27
+    Icon: {fileID: 21300000, guid: aa9294d5274936346ab370cb24b50d4a, type: 3}
+  - RangeId: Range_28
+    Icon: {fileID: 21300000, guid: 86c89aec08dc48948afdb9d0cfe3ae98, type: 3}
   - RangeId: Range_Self
-    Icon: {fileID: 21300000, guid: 1ceb6d5346f7ba04fac2fa4de1aba721, type: 3}
+    Icon: {fileID: 21300000, guid: 75d353b8b9d5b3343be9dbe8bfce715f, type: 3}
   - RangeId: Range_Party
-    Icon: {fileID: 21300000, guid: 1a18827a62905794c9b598c19e165864, type: 3}
+    Icon: {fileID: 21300000, guid: 3dae294128778ff4da408ed6b8c58323, type: 3}
+  - RangeId: Range_All
+    Icon: {fileID: 21300000, guid: f2c6f13a5e499ba4ead8470c81ffe9e2, type: 3}
   - RangeId: Range_b_01
-    Icon: {fileID: 21300000, guid: 3e0e9440cfa507645a8b6152c0086c5c, type: 3}
+    Icon: {fileID: 21300000, guid: 88d7a36057a730c4980b2d5f01295e91, type: 3}
   - RangeId: Range_b_02
-    Icon: {fileID: 21300000, guid: dbf73734e3082dd4299de00d32fea50a, type: 3}
+    Icon: {fileID: 21300000, guid: 5296fa65634c06d4b98bb15e3415713f, type: 3}
   - RangeId: Range_b_03
-    Icon: {fileID: 21300000, guid: ec49499e258d7e34f9a537b815d739bf, type: 3}
+    Icon: {fileID: 21300000, guid: 319b2ee70b964a44f8d7422badc2938b, type: 3}
   - RangeId: Range_b_04
-    Icon: {fileID: 21300000, guid: caa420874b20ae04f8e4fbc6db160347, type: 3}
+    Icon: {fileID: 21300000, guid: ae929156b08e3c3409f6bd50fc31a77a, type: 3}
   - RangeId: Range_b_05
-    Icon: {fileID: 21300000, guid: ce4996fc10e0c50439b93a1d3fcf76c7, type: 3}
+    Icon: {fileID: 21300000, guid: 589d745ccd92b124896f470988ec2c68, type: 3}
   - RangeId: Range_b_06
-    Icon: {fileID: 21300000, guid: 14c335fff4f4a684a9aed8c0932668ce, type: 3}
+    Icon: {fileID: 21300000, guid: 874d25f1bf5273d4598c78bda749d3dd, type: 3}
   - RangeId: Range_b_07
-    Icon: {fileID: 21300000, guid: d1134878a230d78419bef13977995506, type: 3}
-  - RangeId: Range_b_09
-    Icon: {fileID: 21300000, guid: a2dd7d0c345648c4589ab326c4f2a839, type: 3}
-  - RangeId: Range_b_10
-    Icon: {fileID: 21300000, guid: 8fcffb819b7564a47aba134535c81202, type: 3}
-  - RangeId: Range_b_11
-    Icon: {fileID: 21300000, guid: 5f5d52b7173f71647b079f217b9ab141, type: 3}
-  - RangeId: Range_b_12
-    Icon: {fileID: 21300000, guid: dfb417bb3d0eff44fb5df2977611d1b8, type: 3}
-  - RangeId: Range_b_13
-    Icon: {fileID: 21300000, guid: bfd2fe32cf84e6c46bb595b34775aad8, type: 3}
-  - RangeId: Range_b_14
-    Icon: {fileID: 21300000, guid: 34237622ed76f7a40bbe01094c8886d5, type: 3}
-  - RangeId: Range_b_15
-    Icon: {fileID: 21300000, guid: 5b2ec355a9f67f3418fcd2a6ef173d02, type: 3}
-  - RangeId: Range_b_16
-    Icon: {fileID: 21300000, guid: 95610c3a539edd047a3a581e66c21a7d, type: 3}
-  - RangeId: Range_b_17
-    Icon: {fileID: 21300000, guid: 10578edce0ff5524191193e003080741, type: 3}
-  - RangeId: Range_b_18
-    Icon: {fileID: 21300000, guid: 61ff9372b7577a04ca97f1ef4a1e42d5, type: 3}
-  - RangeId: Range_b_19
-    Icon: {fileID: 21300000, guid: 427c481c4f1f62a4abc03718b5c04083, type: 3}
-  - RangeId: Range_b_20
-    Icon: {fileID: 21300000, guid: 46d3441ae18f72643a4e82e327b579fd, type: 3}
-  - RangeId: Range_b_21
-    Icon: {fileID: 21300000, guid: c91cb77cd7eb71341b18310c88a86602, type: 3}
-  - RangeId: Range_b_22
-    Icon: {fileID: 21300000, guid: 68fc02b1c6b23f743b486432cf226b26, type: 3}
-  - RangeId: Range_b_23
-    Icon: {fileID: 21300000, guid: 07a43f5ec412cf34fad224d64d9640ff, type: 3}
-  - RangeId: Range_b_24
-    Icon: {fileID: 21300000, guid: 7dfb3304b005b924bac9f6afe0c368d5, type: 3}
+    Icon: {fileID: 21300000, guid: 54c3d1fbe28ead34ca0c56e76fd10d57, type: 3}
+  - RangeId: Range_All
+    Icon: {fileID: 21300000, guid: f2c6f13a5e499ba4ead8470c81ffe9e2, type: 3}

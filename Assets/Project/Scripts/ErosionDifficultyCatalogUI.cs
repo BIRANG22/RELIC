@@ -5,6 +5,7 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 /// <summary>
@@ -74,6 +75,12 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
     private void Awake()
     {
+        // Inspector에 적힌 기본 문구가 런타임 초기화 전에 노출되지 않도록
+        // 가장 먼저 Erosion_Value의 소유권을 확보하고 0% 상태로 초기화합니다.
+        ResolveErosionValueText();
+        EnsureDynamicErosionValueTextOwnership();
+        ApplyDisplayedScoreImmediately(0);
+
         AutoBindTooltipIfNeeded();
         HideErosionTooltipImmediate();
 
@@ -83,9 +90,16 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
     private void OnEnable()
     {
+        ResolveErosionValueText();
+        EnsureDynamicErosionValueTextOwnership();
+        // 패널이 다시 켜질 때 Inspector 기본 텍스트가 잠깐 보이지 않도록 먼저 0%로 덮습니다.
+        ApplyDisplayedScoreImmediately(0);
+
         AutoBindTooltipIfNeeded();
         HideErosionTooltipImmediate();
         RefreshAllVisuals();
+
+        // AutoBind/런타임 복원 전이라면 0, 이미 복원된 상태라면 현재 선택 점수를 표시합니다.
         ApplyDisplayedScoreImmediately(targetScore);
     }
 
@@ -100,8 +114,8 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         if (catalogGroup == null)
             catalogGroup = FindTransformRecursive(transform, "CatalogGroup");
 
-        if (erosionValueText == null)
-            erosionValueText = FindTextAnywhereInRoot("Erosion_Value");
+        ResolveErosionValueText();
+        EnsureDynamicErosionValueTextOwnership();
 
         AutoBindSelectedSlotScroll();
 
@@ -1070,6 +1084,74 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         }
 
         erosionSlotInstances.Clear();
+    }
+
+    /// <summary>
+    /// Erosion_Value는 선택한 침식도의 합계에 따라 계속 바뀌는 동적 텍스트입니다.
+    /// Inspector 기본 텍스트나 정적 로컬라이징 컴포넌트가 나중에 값을 덮어쓰지 못하도록
+    /// 이 UI가 런타임 값을 전담합니다.
+    /// </summary>
+    private void EnsureDynamicErosionValueTextOwnership()
+    {
+        if (erosionValueText == null)
+            return;
+
+        GameObject target = erosionValueText.gameObject;
+
+        if (target.GetComponent<LocalizationIgnore>() == null)
+            target.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localizedTmp = target.GetComponent<LocalizedTMPText>();
+        if (localizedTmp != null)
+            localizedTmp.enabled = false;
+
+        DynamicLocalizedTMPText dynamicLocalizedTmp = target.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicLocalizedTmp != null)
+            dynamicLocalizedTmp.enabled = false;
+
+        LocalizeStringEvent localizeStringEvent = target.GetComponent<LocalizeStringEvent>();
+        if (localizeStringEvent != null)
+            localizeStringEvent.enabled = false;
+    }
+
+    private void ResolveErosionValueText()
+    {
+        Transform erosionSelectPanel = FindNamedAncestor(transform, "ErosionSelectPanel");
+        if (erosionSelectPanel == null)
+            erosionSelectPanel = FindTransformRecursive(transform.root, "ErosionSelectPanel");
+
+        if (erosionSelectPanel != null)
+        {
+            Transform valueTransform = FindTransformRecursive(erosionSelectPanel, "Erosion_Value");
+            if (valueTransform != null)
+            {
+                TMP_Text resolvedText = valueTransform.GetComponent<TMP_Text>() ??
+                                        valueTransform.GetComponentInChildren<TMP_Text>(true);
+                if (resolvedText != null)
+                {
+                    erosionValueText = resolvedText;
+                    return;
+                }
+            }
+        }
+
+        // 예전 씬 구조를 위한 최후의 fallback입니다.
+        if (erosionValueText == null)
+            erosionValueText = FindTextAnywhereInRoot("Erosion_Value");
+    }
+
+    private static Transform FindNamedAncestor(Transform start, string objectName)
+    {
+        Transform current = start;
+        while (current != null)
+        {
+            if (string.Equals(current.name, objectName, StringComparison.Ordinal))
+                return current;
+
+            current = current.parent;
+        }
+
+        return null;
     }
 
     private TMP_Text FindTextAnywhereInRoot(string objectName)

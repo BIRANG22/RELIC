@@ -257,7 +257,7 @@ public class BattleTimelinePreviewEntry
 
     private static bool IsDamageEffect(string effectId)
     {
-        return effectId == "E_Strike" || effectId == "E_Pierce";
+        return effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike";
     }
 
     private static string GetDisplayValueText(List<SkillEffectEntry> effectEntries, int payAmount)

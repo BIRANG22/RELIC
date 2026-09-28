@@ -98,6 +98,7 @@ namespace Relic.Gameplay.Data
         // 엑셀 원본 문자열: 세미콜론 구분
         public string EffectIds;
         public string ValueRate;
+        public string ScalingType;
         public string CountRate;
 
         // 스킬이 사용하는 자원의 고정 소모량

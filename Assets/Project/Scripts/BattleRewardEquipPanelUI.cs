@@ -686,7 +686,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             }
 
             if (itemEffectText != null)
-                itemEffectText.text = GetSkillDescription(skill, currentReward.Description);
+                SkillEffectInlineIconUtility.SetText(itemEffectText, GetSkillDescription(skill, currentReward.Description));
 
             RefreshItemSkillDetails(skill);
         }

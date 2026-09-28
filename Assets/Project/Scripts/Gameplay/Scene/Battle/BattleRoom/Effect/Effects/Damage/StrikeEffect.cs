@@ -42,7 +42,6 @@ public class StrikeEffect : BattleEffectBase
                     context.PlayerCaster.RuntimeData.CharacterId,
                     dealtDamage,
                     killedTarget);
-                BattleEffectUtility.OnPlayerDamagedEnemy?.Invoke(context.PlayerCaster);
             }
 
             if (killedTarget && context.PlayerCaster != null)

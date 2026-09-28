@@ -1210,7 +1210,7 @@ public class RecordPanelUI : MonoBehaviour
     private void SetDescription(string value)
     {
         if (descriptionText != null)
-            descriptionText.text = value ?? string.Empty;
+            SkillEffectInlineIconUtility.SetText(descriptionText, value ?? string.Empty);
     }
 
     private void RefreshRarityInfo(RecordIconSlotUI slot)

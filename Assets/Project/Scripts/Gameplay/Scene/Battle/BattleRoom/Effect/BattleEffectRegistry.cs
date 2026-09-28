@@ -9,6 +9,7 @@ public class BattleEffectRegistry
     {
         Register(new StrikeEffect());
         Register(new PierceEffect());
+        Register(new MissingHpStrikeEffect());
         Register(new HealEffect());
         Register(new CostRecoveryEffect());
         Register(new UniqueRecoveryEffect());
@@ -20,6 +21,10 @@ public class BattleEffectRegistry
         Register(new ArmorEffect());
         Register(new ChargeEffect());
         Register(new FocusEffect());
+        Register(new ManaEffect());
+        Register(new KarmaEffect());
+        Register(new GritEffect());
+        Register(new BondEffect());
         Register(new SwiftEffect());
         Register(new SmiteEffect());
         Register(new BarrierEffect());

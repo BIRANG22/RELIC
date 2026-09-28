@@ -318,7 +318,7 @@ public class RelicChoiceSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
             relicNameText.text = choice.Title;
 
         if (relicEffectText != null)
-            relicEffectText.text = choice.Description;
+            SkillEffectInlineIconUtility.SetText(relicEffectText, choice.Description);
     }
 
     private static Transform FindChildRecursive(Transform root, string childName)
