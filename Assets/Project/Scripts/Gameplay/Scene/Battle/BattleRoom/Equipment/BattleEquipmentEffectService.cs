@@ -1194,7 +1194,7 @@ public static class BattleEquipmentEffectService
         if (runtime == null || command == null || entry == null)
             return value;
 
-        if (entry.EffectId == "E_Heal")
+        if (entry.EffectId == "E_Cure")
         {
             // 파편 보정을 먼저 확정한 뒤 유물 보정을 적용합니다.
             value += SumConfiguredRuneTargetEffectValues(

@@ -183,18 +183,6 @@ public static class BattlePlayerSkillPreviewCalculator
                 hoveredLinkId);
         }
 
-        // E_MissingHPStrike 토큰은 전투 밖에서는 "잃은 체력의 50%"처럼 표시하지만,
-        // 전투 중에는 현재 HP와 모든 공격 보정을 반영한 실제 최종 수치로 표시합니다.
-        for (int i = 0; i < entries.Count && i < valueTexts.Length; i++)
-        {
-            SkillEffectEntry entry = entries[i];
-            if (entry == null || !string.Equals(entry.EffectId, "E_MissingHPStrike", StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            if (description.Contains("{E_MissingHPStrike}"))
-                description = description.Replace("{E_MissingHPStrike}", valueTexts[i]);
-        }
-
         // ScalingValue는 전투 중에는 설계 문구가 아니라 현재 상태/버프까지 반영된 최종 수치로 표시합니다.
         for (int i = 0; i < valueTexts.Length; i++)
         {
@@ -512,6 +500,7 @@ public static class BattlePlayerSkillPreviewCalculator
             case "E_Pierce":
             case "E_MissingHPStrike":
             case "E_Heal":
+            case "E_Cure":
             case "E_Armor":
             case "E_Boost":
             case "E_Charge":

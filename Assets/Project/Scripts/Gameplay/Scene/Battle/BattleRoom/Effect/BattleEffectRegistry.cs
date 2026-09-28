@@ -11,6 +11,7 @@ public class BattleEffectRegistry
         Register(new PierceEffect());
         Register(new MissingHpStrikeEffect());
         Register(new HealEffect());
+        Register(new CureEffect());
         Register(new CostRecoveryEffect());
         Register(new UniqueRecoveryEffect());
 

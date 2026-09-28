@@ -525,8 +525,12 @@ namespace Relic.Gameplay.Battle
                 return false;
 
             string normalized = effectId.Trim();
-            return string.Equals(normalized, "E_Focus", StringComparison.Ordinal) ||
-                   normalized.IndexOf("Heal", StringComparison.OrdinalIgnoreCase) >= 0 ||
+
+            if (string.Equals(normalized, "E_Heal", StringComparison.Ordinal))
+                return false;
+
+            return string.Equals(normalized, "E_Cure", StringComparison.Ordinal) ||
+                   string.Equals(normalized, "E_Focus", StringComparison.Ordinal) ||
                    normalized.IndexOf("Recover", StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }

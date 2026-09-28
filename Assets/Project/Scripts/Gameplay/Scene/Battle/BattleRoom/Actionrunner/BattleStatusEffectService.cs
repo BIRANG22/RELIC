@@ -266,6 +266,12 @@ public class BattleStatusEffectService
                     return playedPresentation;
             }
 
+            if (status.EffectId == "E_Heal")
+            {
+                BattleEffectUtility.HealPlayer(character, Mathf.Max(0, status.Stack));
+                playedPresentation = true;
+            }
+
             if (status.EffectId == "E_Focus")
             {
                 CharacterMasterData masterData = DataManager.Instance?.CharacterDatabase?.Get(character.RuntimeData.CharacterId);
@@ -327,6 +333,12 @@ public class BattleStatusEffectService
                     deathService.HandleMonsterDead(monster);
                     continue;
                 }
+            }
+
+            if (status.EffectId == "E_Heal")
+            {
+                BattleEffectUtility.HealMonster(monster, Mathf.Max(0, status.Stack));
+                playedPresentation = true;
             }
 
             if (status.EffectId == ExplodeEffectId)

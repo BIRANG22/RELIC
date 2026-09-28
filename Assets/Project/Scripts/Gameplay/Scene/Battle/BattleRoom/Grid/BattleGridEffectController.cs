@@ -980,8 +980,12 @@ public class BattleGridEffectController : MonoBehaviour
             return false;
 
         string normalized = effectId.Trim();
-        return normalized == "E_Focus" ||
-               normalized.IndexOf("Heal", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+
+        if (normalized == "E_Heal")
+            return false;
+
+        return normalized == "E_Cure" ||
+               normalized == "E_Focus" ||
                normalized.IndexOf("Recover", System.StringComparison.OrdinalIgnoreCase) >= 0;
     }
 

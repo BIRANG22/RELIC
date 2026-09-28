@@ -69,47 +69,6 @@ public class BattlePassiveSkillService
     {
         int appliedValue = BattleEffectUtility.GetRepeatedValue(value, count);
 
-        if (effectId == "E_Heal" && passiveSkill.SkillId == "S_Passive_07")
-        {
-            // S_Passive_07(자애심): 조건은 패시브 보유자의 카르마 최대 여부를 확인하지만,
-            // 실제 회복 대상은 최대 생명력보다 현재 생명력이 낮은 생존 아군 중
-            // 현재 생명력 수치가 가장 낮은 1명입니다. 회복은 버프가 아니라 즉시 적용합니다.
-            CharacterRuntimeData targetRuntime = FindLowestCurrentHpInjuredLivingPartyMember();
-
-            if (targetRuntime == null)
-                return;
-
-            BattleCharacter targetCharacter = FindBattleCharacter(targetRuntime);
-
-            if (targetCharacter != null)
-            {
-                int hpBefore = targetRuntime.CurrentHP;
-                BattleEffectUtility.HealPlayer(targetCharacter, appliedValue);
-                int healedValue = Mathf.Max(0, targetRuntime.CurrentHP - hpBefore);
-
-                Debug.Log(
-                    $"[Passive] Heal / Owner:{runtime.CharacterId} / Target:{targetRuntime.CharacterId} / " +
-                    $"Skill:{passiveSkill.SkillId} / Heal:+{healedValue} / CurrentHP:{targetRuntime.CurrentHP}"
-                );
-            }
-            else
-            {
-                int hpBefore = targetRuntime.CurrentHP;
-                targetRuntime.CurrentHP = Mathf.Min(
-                    targetRuntime.MaxHP,
-                    targetRuntime.CurrentHP + appliedValue);
-
-                int healedValue = Mathf.Max(0, targetRuntime.CurrentHP - hpBefore);
-
-                Debug.Log(
-                    $"[Passive] Heal / Owner:{runtime.CharacterId} / Target:{targetRuntime.CharacterId} / " +
-                    $"Skill:{passiveSkill.SkillId} / Heal:+{healedValue} / CurrentHP:{targetRuntime.CurrentHP}"
-                );
-            }
-
-            return;
-        }
-
         if (effectId == "E_Armor")
         {
             CharacterRuntimeData targetRuntime = runtime;
