@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
@@ -6,12 +6,10 @@ using Relic.Gameplay.Monster;
 public static class BattleEffectUtility
 {
     private const string BarrierEffectId = "E_Barrier";
+    private const string BondEffectId = "E_Bond";
 
     public static System.Action<BattleCharacter> OnPlayerDamaged;
-    public static System.Action<BattleCharacter> OnPlayerHit;
-    public static System.Action<BattleCharacter> OnPlayerBuffApplied;
     public static System.Action<BattleCharacter> OnPlayerHudRefreshRequested;
-    public static System.Action<BattleCharacter> OnPlayerDamagedEnemy;
 
     public static BattleCharacter GetPlayerTargetOrCaster(BattleEffectContext context)
     {
@@ -74,8 +72,8 @@ public static class BattleEffectUtility
             if (status.EffectId != effectId)
                 continue;
 
-            // ÀÏ¹İ ½ºÅ³/È¿°ú·Î ¾ò´Â »óÅÂ´Â ÆĞ½Ãºê »óÅÂ¿Í ºĞ¸®ÇØ¼­ À¯ÁöÇÕ´Ï´Ù.
-            // ÆĞ½Ãºê °»½Å ½Ã IsPassive »óÅÂ¸¸ Á¦°ÅµÇ¹Ç·Î ¼­·Î ÇÕÄ¡¸é ÀÏ¹İ ½ºÅÃµµ ÇÔ²² »ç¶óÁú ¼ö ÀÖ½À´Ï´Ù.
+            // ì¼ë°˜ ìŠ¤í‚¬/íš¨ê³¼ë¡œ ì–»ëŠ” ìƒíƒœëŠ” íŒ¨ì‹œë¸Œ ìƒíƒœì™€ ë¶„ë¦¬í•´ì„œ ìœ ì§€í•©ë‹ˆë‹¤.
+            // íŒ¨ì‹œë¸Œ ê°±ì‹  ì‹œ IsPassive ìƒíƒœë§Œ ì œê±°ë˜ë¯€ë¡œ ì„œë¡œ í•©ì¹˜ë©´ ì¼ë°˜ ìŠ¤íƒë„ í•¨ê»˜ ì‚¬ë¼ì§ˆ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
             if (status.IsPassive)
                 continue;
 
@@ -215,6 +213,29 @@ public static class BattleEffectUtility
 
     public static void DamagePlayer(BattleCharacter target, int damage, bool countDirectMonsterHit = false)
     {
+        damage = Mathf.Max(0, damage);
+
+        if (TryDistributeBondDamage(target, damage, out List<BondDamageShare> shares))
+        {
+            for (int i = 0; i < shares.Count; i++)
+            {
+                BondDamageShare share = shares[i];
+                if (share.Damage <= 0)
+                    continue;
+
+                DamagePlayerInternal(
+                    share.Target,
+                    share.Damage,
+                    countDirectMonsterHit && share.Target == target);
+            }
+            return;
+        }
+
+        DamagePlayerInternal(target, damage, countDirectMonsterHit);
+    }
+
+    private static void DamagePlayerInternal(BattleCharacter target, int damage, bool countDirectMonsterHit)
+    {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
@@ -260,7 +281,6 @@ public static class BattleEffectUtility
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
         OnPlayerDamaged?.Invoke(target);
-        OnPlayerHit?.Invoke(target);
 
         BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
 
@@ -323,6 +343,29 @@ public static class BattleEffectUtility
     }
 
     public static void PierceDamagePlayer(BattleCharacter target, int damage, bool countDirectMonsterHit = false)
+    {
+        damage = Mathf.Max(0, damage);
+
+        if (TryDistributeBondDamage(target, damage, out List<BondDamageShare> shares))
+        {
+            for (int i = 0; i < shares.Count; i++)
+            {
+                BondDamageShare share = shares[i];
+                if (share.Damage <= 0)
+                    continue;
+
+                PierceDamagePlayerInternal(
+                    share.Target,
+                    share.Damage,
+                    countDirectMonsterHit && share.Target == target);
+            }
+            return;
+        }
+
+        PierceDamagePlayerInternal(target, damage, countDirectMonsterHit);
+    }
+
+    private static void PierceDamagePlayerInternal(BattleCharacter target, int damage, bool countDirectMonsterHit)
     {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
@@ -486,6 +529,26 @@ public static class BattleEffectUtility
 
     private static void StatusDamagePlayerInternal(BattleCharacter target, int damage, bool isPoison)
     {
+        damage = Mathf.Max(0, damage);
+
+        if (TryDistributeBondDamage(target, damage, out List<BondDamageShare> shares))
+        {
+            for (int i = 0; i < shares.Count; i++)
+            {
+                BondDamageShare share = shares[i];
+                if (share.Damage <= 0)
+                    continue;
+
+                StatusDamagePlayerSingle(share.Target, share.Damage, isPoison);
+            }
+            return;
+        }
+
+        StatusDamagePlayerSingle(target, damage, isPoison);
+    }
+
+    private static void StatusDamagePlayerSingle(BattleCharacter target, int damage, bool isPoison)
+    {
         if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
             return;
 
@@ -563,6 +626,93 @@ public static class BattleEffectUtility
             animator.PlayDead();
 
         target.ShowTemporaryHUDForEffect();
+    }
+
+    private readonly struct BondDamageShare
+    {
+        public BattleCharacter Target { get; }
+        public int Damage { get; }
+
+        public BondDamageShare(BattleCharacter target, int damage)
+        {
+            Target = target;
+            Damage = Mathf.Max(0, damage);
+        }
+    }
+
+    private static bool TryDistributeBondDamage(
+        BattleCharacter originalTarget,
+        int damage,
+        out List<BondDamageShare> shares)
+    {
+        shares = null;
+
+        if (originalTarget == null ||
+            originalTarget.RuntimeData == null ||
+            originalTarget.RuntimeData.IsDead ||
+            damage <= 0 ||
+            !HasStatus(originalTarget.RuntimeData.StatusEffects, BondEffectId))
+        {
+            return false;
+        }
+
+        List<BattleCharacter> linked = new() { originalTarget };
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+            if (character == null ||
+                character == originalTarget ||
+                character.RuntimeData == null ||
+                character.RuntimeData.IsDead ||
+                !HasStatus(character.RuntimeData.StatusEffects, BondEffectId))
+            {
+                continue;
+            }
+
+            linked.Add(character);
+        }
+
+        if (linked.Count <= 1)
+            return false;
+
+        // ì›ë˜ í”¼ê²©ìëŠ” í•­ìƒ ì²« ë²ˆì§¸. ë‚˜ë¨¸ì§€ëŠ” ìºë¦­í„° ID ìˆœìœ¼ë¡œ ê³ ì •í•´ ì¬í˜„ ê°€ëŠ¥í•œ ë¶„ë°°ë¥¼ ë§Œë“­ë‹ˆë‹¤.
+        linked.Sort(1, linked.Count - 1, Comparer<BattleCharacter>.Create((a, b) =>
+            string.Compare(
+                a?.RuntimeData?.CharacterId,
+                b?.RuntimeData?.CharacterId,
+                System.StringComparison.Ordinal)));
+
+        int baseShare = damage / linked.Count;
+        int remainder = damage % linked.Count;
+        shares = new List<BondDamageShare>(linked.Count);
+
+        for (int i = 0; i < linked.Count; i++)
+        {
+            // ë‚˜ë¨¸ì§€ëŠ” ì›ë˜ í”¼ê²©ìë¶€í„° 1ì”© ë°°ë¶„í•©ë‹ˆë‹¤.
+            int assigned = baseShare + (i < remainder ? 1 : 0);
+            shares.Add(new BondDamageShare(linked[i], assigned));
+        }
+
+        return true;
+    }
+
+    private static bool HasStatus(List<StatusEffectRuntimeData> statuses, string effectId)
+    {
+        if (statuses == null || string.IsNullOrWhiteSpace(effectId))
+            return false;
+
+        for (int i = 0; i < statuses.Count; i++)
+        {
+            StatusEffectRuntimeData status = statuses[i];
+            if (status != null && status.Stack > 0 && status.EffectId == effectId)
+                return true;
+        }
+
+        return false;
     }
 
     public static void HealPlayer(BattleCharacter target, int value)

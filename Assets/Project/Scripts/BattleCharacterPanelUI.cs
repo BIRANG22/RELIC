@@ -1330,7 +1330,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             .Replace('\n', ' ')
             .Trim();
 
-        passiveText.text = regeneration + "\n" + details;
+        SkillEffectInlineIconUtility.SetText(passiveText, regeneration + "\n" + details);
         ShowPassiveHoverInfoWithFade();
     }
 

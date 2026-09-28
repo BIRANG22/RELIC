@@ -14,17 +14,6 @@ namespace Relic.Gameplay.Data
         Faith,
         Blood
     }
-    public enum ResourceTrigger
-    {
-        None,
-
-        OnAnyAllyDamaged,          // 아군 또는 자신이 피해를 받았을 때
-        OnThreeActionsInSameSlot,  // 한 슬롯에서 이동을 제외한 행동을 3회 했을 때
-        OnSpendEightCostInTurn,    // 한 턴 동안 코스트를 8 이상 소모했을 때
-        OnAllyBuffApplied,         // 아군 또는 자신이 이로운 효과를 받았을 때
-        OnDamageEnemy              // 공격으로 적에게 피해를 주었을 때
-    }
-
     [Serializable]
     public class CharacterMasterData
     {
@@ -41,7 +30,6 @@ namespace Relic.Gameplay.Data
         public int CostRecovery;
         public int MaxResource;
         public ResourceType ResourceType;
-        public ResourceTrigger ResourceTrigger;
 
         public bool IsDefaultProvided;
         public string UnlockCondition;

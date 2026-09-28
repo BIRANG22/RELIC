@@ -9,7 +9,8 @@ public static class BattleDamageModifierUtility
     private const string CorrosionEffectId = "E_Corrosion";
     private const string VulnerableEffectId = "E_Vulnerable";
     private const string GrudgeEffectId = "E_Grudge";
-    private const string FlankEffectId = "E_Flank";
+    private const string BlindsideEffectId = "E_Blindside";
+    private const string GritEffectId = "E_Grit";
     private const string MoveFirstAttackPowerEffectId = "E_Move_First_Attack_Power";
     private const string LowHpPowerEffectId = "E_Low_HP_Power";
     private const string ActiveDamageBoostEffectId = ActiveRelicEffectIds.DamageBoostThisTurn;
@@ -29,7 +30,7 @@ public static class BattleDamageModifierUtility
 
         if (context?.MonsterCaster != null &&
             context.PlayerTarget != null &&
-            HasStatus(context.MonsterCaster.RuntimeData.StatusEffects, FlankEffectId) &&
+            HasStatus(context.MonsterCaster.RuntimeData.StatusEffects, BlindsideEffectId) &&
             IsAttackingPlayerFromBehind(context.MonsterCaster, context.PlayerTarget))
         {
             damage *= 1.5f;
@@ -43,7 +44,7 @@ public static class BattleDamageModifierUtility
                 damage);
         }
 
-        return Mathf.Max(1, Mathf.CeilToInt(damage));
+        return Mathf.Max(0, Mathf.CeilToInt(damage));
     }
 
     public static int CalculateFinalDamageToMonster(BattleEffectContext context, int baseDamage)
@@ -61,10 +62,18 @@ public static class BattleDamageModifierUtility
         if (context?.MonsterCaster != null)
             damage = ApplyMonsterAttackerModifiers(damage, context.MonsterCaster.RuntimeData);
 
+        if (context?.PlayerCaster != null &&
+            context.MonsterTarget != null &&
+            HasStatus(context.PlayerCaster.RuntimeData.StatusEffects, BlindsideEffectId) &&
+            IsAttackingMonsterFromBehind(context.PlayerCaster, context.MonsterTarget))
+        {
+            damage *= 1.5f;
+        }
+
         if (context?.MonsterTarget != null)
             damage = ApplyTargetModifiers(damage, context.MonsterTarget.RuntimeData.StatusEffects);
 
-        return Mathf.Max(1, Mathf.CeilToInt(damage));
+        return Mathf.Max(0, Mathf.CeilToInt(damage));
     }
 
     private static float ApplyPlayerAttackerModifiers(
@@ -91,7 +100,7 @@ public static class BattleDamageModifierUtility
             runtime,
             isAttackSkill,
             smiteAttacksAlreadyReserved);
-        return Mathf.Max(0, Mathf.FloorToInt(value));
+        return Mathf.Max(0, Mathf.CeilToInt(value));
     }
 
     private static float ApplyPlayerAttackerModifiersInStatusOrderFloat(
@@ -133,7 +142,11 @@ public static class BattleDamageModifierUtility
                     break;
 
                 case TargetOutgoingDamageReductionEffectId:
-                    value *= 0.5f;
+                    value = Mathf.Max(0f, value - status.Stack);
+                    break;
+
+                case GritEffectId:
+                    value *= 1.3f;
                     break;
 
                 case MoveFirstAttackPowerEffectId:
@@ -187,8 +200,12 @@ public static class BattleDamageModifierUtility
         if (GetStatusStack(statuses, ActiveDamageBoostEffectId) > 0)
             damage *= 2f;
 
-        if (GetStatusStack(statuses, TargetOutgoingDamageReductionEffectId) > 0)
-            damage *= 0.5f;
+        int fatigueStack = GetStatusStack(statuses, TargetOutgoingDamageReductionEffectId);
+        if (fatigueStack > 0)
+            damage = Mathf.Max(0f, damage - fatigueStack);
+
+        if (GetStatusStack(statuses, GritEffectId) > 0)
+            damage *= 1.3f;
 
         if (isMoveFirstAttackReady &&
             GetStatusStack(statuses, MoveFirstAttackPowerEffectId) > 0)
@@ -228,6 +245,34 @@ public static class BattleDamageModifierUtility
         return damage;
     }
 
+
+    private static bool IsAttackingMonsterFromBehind(
+        BattleCharacter attacker,
+        MonsterUnit target)
+    {
+        if (attacker == null ||
+            attacker.RuntimeData == null ||
+            target == null ||
+            target.RuntimeData == null ||
+            attacker.CurrentGridIndex < 0 ||
+            target.MainGridIndex < 0)
+        {
+            return false;
+        }
+
+        GridManager gridManager = Object.FindFirstObjectByType<GridManager>();
+        if (gridManager == null)
+            return false;
+
+        Vector2Int attackerCoord = gridManager.IndexToCoord(attacker.CurrentGridIndex);
+        Vector2Int targetCoord = gridManager.IndexToCoord(target.MainGridIndex);
+        if (attackerCoord.x == targetCoord.x)
+            return false;
+
+        return target.RuntimeData.Direction == BattleDirection.Right
+            ? attackerCoord.x < targetCoord.x
+            : attackerCoord.x > targetCoord.x;
+    }
 
     private static bool IsAttackingPlayerFromBehind(
         MonsterUnit attacker,

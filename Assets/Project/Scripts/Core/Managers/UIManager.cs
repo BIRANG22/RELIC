@@ -567,9 +567,14 @@ public class UIManager : Singleton<UIManager>
 
     private void AbandonCurrentBattleRunIfPossible()
     {
-        if (DataManager.Instance != null)
-            BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
+        if (DataManager.Instance == null)
+            return;
 
+        BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
+
+        // 탐사를 포기한 직후 초기화된 상태를 즉시 저장합니다.
+        // 로비로 돌아온 뒤 강제 종료해도 이전 배틀 이어하기 세이브가 남지 않도록 합니다.
+        SaveSystem.Instance?.SaveCurrentProgress();
     }
 
     private void PlayTitleBgmIfPossible()

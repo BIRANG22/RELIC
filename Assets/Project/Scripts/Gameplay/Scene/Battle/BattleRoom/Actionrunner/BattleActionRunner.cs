@@ -2852,7 +2852,7 @@ public class BattleActionRunner
 
     private bool IsDamageHitEffect(string effectId)
     {
-        return effectId == "E_Strike" || effectId == "E_Pierce";
+        return effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike";
     }
 
     private List<int> BuildDamageableGridEffectTargets(PlayerReservedCommand command)
@@ -3195,32 +3195,20 @@ public class BattleActionRunner
         if (command == null || entry == null)
             return 1;
 
-        if (entry.EffectId == "E_Strike")
-            return BattleEquipmentEffectService.ModifyPlayerEffectValue(
-                command.UserRuntime,
-                command,
-                entry,
-                entry.ValueAmount);
-
-        if (entry.EffectId == "E_Pierce")
-            return BattleEquipmentEffectService.ModifyPlayerEffectValue(
-                command.UserRuntime,
-                command,
-                entry,
-                entry.ValueAmount);
+        int baseValue = SkillScalingUtility.ResolveBaseValue(command.UserRuntime, entry);
 
         if (entry.EffectId == "E_Knockback")
             return BattleEquipmentEffectService.ModifyPlayerKnockbackValue(
                 command.UserRuntime,
                 command,
                 entry,
-                entry.ValueAmount);
+                baseValue);
 
         return BattleEquipmentEffectService.ModifyPlayerEffectValue(
             command.UserRuntime,
             command,
             entry,
-            entry.ValueAmount);
+            baseValue);
     }
 
     private int GetPlayerEffectCount(PlayerReservedCommand command, SkillEffectEntry entry)

@@ -14,6 +14,7 @@ public static class SkillEffectParser
         return ParseInternal(
             skill.EffectIds,
             skill.ValueRate,
+            skill.ScalingType,
             skill.CountRate,
             effectDatabase
         );
@@ -29,6 +30,7 @@ public static class SkillEffectParser
         return ParseInternal(
             data.EffectIds,
             data.ValueRate,
+            "None",
             data.CountRate,
             effectDatabase
         );
@@ -44,6 +46,7 @@ public static class SkillEffectParser
         return ParseInternal(
             data.EffectIds,
             data.ValueRate,
+            "None",
             data.CountRate,
             effectDatabase
         );
@@ -59,6 +62,7 @@ public static class SkillEffectParser
         return ParseInternal(
             relic.EffectIds,
             relic.ValueRate,
+            "None",
             relic.CountRate,
             effectDatabase
         );
@@ -67,6 +71,7 @@ public static class SkillEffectParser
     private static List<SkillEffectEntry> ParseInternal(
         string effectIdsStr,
         string valuesStr,
+        string scalingTypesStr,
         string countsStr,
         EffectDatabase effectDatabase)
     {
@@ -77,6 +82,7 @@ public static class SkillEffectParser
 
         string[] effectIds = Split(effectIdsStr);
         string[] values = Split(valuesStr);
+        string[] scalingTypes = Split(scalingTypesStr);
         string[] counts = Split(countsStr);
 
         for (int i = 0; i < effectIds.Length; i++)
@@ -91,6 +97,8 @@ public static class SkillEffectParser
                 0
             );
 
+            string scalingType = GetByIndexOrFirst(scalingTypes, i, "None");
+
             int countAmount = ParseInt(
                 GetByIndexOrFirst(counts, i, "1"),
                 1
@@ -100,6 +108,7 @@ public static class SkillEffectParser
             {
                 EffectId = effectId,
                 ValueAmount = valueAmount,
+                ScalingType = string.IsNullOrWhiteSpace(scalingType) ? "None" : scalingType,
                 CountAmount = countAmount,
                 EffectData = effectDatabase != null ? effectDatabase.Get(effectId) : null
             };

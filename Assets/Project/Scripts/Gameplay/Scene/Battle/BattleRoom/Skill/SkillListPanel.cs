@@ -1298,7 +1298,7 @@ public class SkillListPanel : MonoBehaviour
             detailsBackground.SetActive(true);
 
         if (detailsText != null)
-            detailsText.text = text;
+            SkillEffectInlineIconUtility.SetText(detailsText, text);
 
         if (alignDetailsToHoveredSkillLine)
             AlignDetailToHoveredSkillLine(hoveredSkillRect);
@@ -1310,7 +1310,7 @@ public class SkillListPanel : MonoBehaviour
             detailsBackground.SetActive(false);
 
         if (detailsText != null)
-            detailsText.text = "";
+            SkillEffectInlineIconUtility.SetText(detailsText, "");
     }
 
     private void AlignDetailToHoveredSkillLine(RectTransform hoveredSkillRect)

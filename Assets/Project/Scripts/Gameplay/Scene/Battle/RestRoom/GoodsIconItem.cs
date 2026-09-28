@@ -163,7 +163,7 @@ public class GoodsIconItem : MonoBehaviour
         SetText(skillName, GameDataLocalization.SkillName(skill));
         ApplySkillRarityPresentation(skill.Rarity);
         SetText(skillCostValue, Mathf.Max(0, skill.ResourceCostValue).ToString());
-        SetText(skillDetail, GameDataLocalization.SkillDetails(skill));
+        SkillEffectInlineIconUtility.SetText(skillDetail, GameDataLocalization.SkillDetails(skill));
 
         Sprite resourceIcon = ResolveResourceIcon(skill.ReferenceResource);
         SetImage(skillCostIcon, resourceIcon);

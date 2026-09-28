@@ -1582,7 +1582,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (targetText == null)
             return;
 
-        targetText.text = NormalizeSkillInfoText(rawText);
+        SkillEffectInlineIconUtility.SetText(targetText, NormalizeSkillInfoText(rawText));
     }
 
     private string NormalizeSkillInfoText(string text)
@@ -1629,6 +1629,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         result = ReplaceIndexedHighlightedValues(result, "CountRate", countRate, colorHex);
         result = ReplaceHighlightedValue(result, "{ValueRate}", valueRate, colorHex);
         result = ReplaceHighlightedValue(result, "{CountRate}", countRate, colorHex);
+        result = SkillDescriptionFormatter.ReplaceEffectTokens(result, valueRate);
 
         return result;
     }

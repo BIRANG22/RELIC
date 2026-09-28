@@ -26,7 +26,6 @@ public abstract class BattleEffectBase
 
             if (buffTarget != null)
             {
-                BattleEffectUtility.OnPlayerBuffApplied?.Invoke(buffTarget);
                 BattleEquipmentEffectService.HandlePlayerBuffApplied(context, buffTarget);
                 BattleRunStatisticsRecorder.RecordBuffApplied(
                     context.PlayerCaster?.RuntimeData?.CharacterId,

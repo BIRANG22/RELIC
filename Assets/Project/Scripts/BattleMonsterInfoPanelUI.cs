@@ -37,8 +37,6 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
     [SerializeField] private Image actionRangeImage;
 
     [Header("Special Actions")]
-    [Tooltip("SpecialAction/Effect01 텍스트입니다.")]
-    [SerializeField] private TMP_Text specialAction1Text;
     [Tooltip("SpecialAction/Effect02 텍스트입니다.")]
     [SerializeField] private TMP_Text specialAction2Text;
 
@@ -188,9 +186,6 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
 
         SetImage(actionRangeImage, null);
 
-        if (specialAction1Text != null)
-            specialAction1Text.text = string.Empty;
-
         if (specialAction2Text != null)
             specialAction2Text.text = string.Empty;
 
@@ -287,9 +282,6 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         {
             SetImage(actionRangeImage, null);
 
-            if (specialAction1Text != null)
-                specialAction1Text.text = string.Empty;
-
             if (specialAction2Text != null)
                 specialAction2Text.text = string.Empty;
 
@@ -303,12 +295,6 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         SetImage(actionRangeImage, ResolveRangeIcon(attackRangeId));
 
         string monsterId = boundRuntime != null ? boundRuntime.MonsterId : string.Empty;
-
-        if (specialAction1Text != null)
-        {
-            string fallback = NormalizeDisplayText(GetStringMemberValue(monsterMasterData, "SpecialAction1"));
-            specialAction1Text.text = GameDataLocalization.MonsterSpecialAction(monsterId, 1, fallback);
-        }
 
         if (specialAction2Text != null)
         {
@@ -900,9 +886,6 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         Transform specialActionRoot = FindChildRecursive(transform, "SpecialAction");
         if (specialActionRoot == null)
             return;
-
-        if (specialAction1Text == null)
-            specialAction1Text = FindTextUnder(specialActionRoot, "Effect01");
 
         if (specialAction2Text == null)
             specialAction2Text = FindTextUnder(specialActionRoot, "Effect02");

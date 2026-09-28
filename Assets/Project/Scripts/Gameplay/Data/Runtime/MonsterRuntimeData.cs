@@ -25,7 +25,6 @@ namespace Relic.Gameplay.Data
         public string UniqueItemId;
         public float UniqueItemChance;
         public string AttackRangeId;
-        public string SpecialAction1;
         public string SpecialAction2;
 
         public string[] PossibleSkillIdsByActionIndex = new string[MonsterMasterData.PossibleSkillSlotCount];
@@ -66,7 +65,6 @@ namespace Relic.Gameplay.Data
             UniqueItemId = masterData.UniqueItemId;
             UniqueItemChance = masterData.UniqueItemChance;
             AttackRangeId = masterData.AttackRangeId;
-            SpecialAction1 = masterData.SpecialAction1;
             SpecialAction2 = masterData.SpecialAction2;
 
             TurnCount = 0;
@@ -313,7 +311,7 @@ namespace Relic.Gameplay.Data
             else if (MonsterId == "Mon_10")
             {
                 // 녹턴은 전투 내내 유지되는 기습 효과를 기본 특성으로 가집니다.
-                StatusEffects.Add(new StatusEffectRuntimeData("E_Flank", 1));
+                StatusEffects.Add(new StatusEffectRuntimeData("E_Blindside", 1));
             }
         }
 

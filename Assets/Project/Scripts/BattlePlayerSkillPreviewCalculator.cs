@@ -148,7 +148,7 @@ public static class BattlePlayerSkillPreviewCalculator
             return string.Empty;
 
         if (preview == null)
-            return SkillDescriptionFormatter.Format(localizedDescription, skill.ValueRate, skill.CountRate);
+            return SkillDescriptionFormatter.Format(localizedDescription, skill.ValueRate, skill.CountRate, skill.ScalingType);
 
         List<SkillEffectEntry> entries = ResolveEntries(skill);
         string description = localizedDescription;
@@ -181,6 +181,29 @@ public static class BattlePlayerSkillPreviewCalculator
                 breakdown?.Formula,
                 false,
                 hoveredLinkId);
+        }
+
+        // E_MissingHPStrike 토큰은 전투 밖에서는 "잃은 체력의 50%"처럼 표시하지만,
+        // 전투 중에는 현재 HP와 모든 공격 보정을 반영한 실제 최종 수치로 표시합니다.
+        for (int i = 0; i < entries.Count && i < valueTexts.Length; i++)
+        {
+            SkillEffectEntry entry = entries[i];
+            if (entry == null || !string.Equals(entry.EffectId, "E_MissingHPStrike", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (description.Contains("{E_MissingHPStrike}"))
+                description = description.Replace("{E_MissingHPStrike}", valueTexts[i]);
+        }
+
+        // ScalingValue는 전투 중에는 설계 문구가 아니라 현재 상태/버프까지 반영된 최종 수치로 표시합니다.
+        for (int i = 0; i < valueTexts.Length; i++)
+        {
+            string indexedScalingToken = $"{{ScalingValue{i + 1}}}";
+            if (description.Contains(indexedScalingToken))
+                description = description.Replace(indexedScalingToken, valueTexts[i]);
+
+            if (i == 0 && description.Contains("{ScalingValue}"))
+                description = description.Replace("{ScalingValue}", valueTexts[i]);
         }
 
         // 원문에 횟수 토큰이 없는 스킬에서 횟수가 2회 이상으로 증가하면
@@ -242,22 +265,22 @@ public static class BattlePlayerSkillPreviewCalculator
         if (entry == null)
             return new BattleSkillNumberBreakdown(0, "0");
 
-        int baseValue = Mathf.Max(0, entry.ValueAmount);
+        int baseValue = SkillScalingUtility.ResolveBaseValue(runtime, entry);
         int equipmentValue;
 
         if (entry.EffectId == "E_Knockback")
         {
             equipmentValue = BattleEquipmentEffectService.ModifyPlayerKnockbackValue(
-                runtime, command, entry, entry.ValueAmount);
+                runtime, command, entry, baseValue);
         }
         else if (entry.EffectId == "E_Move" || entry.EffectId == "E_Grab")
         {
-            equipmentValue = entry.ValueAmount;
+            equipmentValue = baseValue;
         }
         else
         {
             equipmentValue = BattleEquipmentEffectService.ModifyPlayerEffectValue(
-                runtime, command, entry, entry.ValueAmount);
+                runtime, command, entry, baseValue);
         }
 
         List<string> formulaParts = new() { baseValue.ToString() };
@@ -340,7 +363,10 @@ public static class BattlePlayerSkillPreviewCalculator
                     formulaParts.Add("+100%");
                     break;
                 case ActiveRelicEffectIds.TargetOutgoingDamageReductionThisTurn:
-                    formulaParts.Add("-50%");
+                    formulaParts.Add($"-{status.Stack}");
+                    break;
+                case "E_Grit":
+                    formulaParts.Add("+30%");
                     break;
                 case "E_Move_First_Attack_Power":
                     if (BattleEquipmentEffectService.IsMoveFirstAttackPowerReady(runtime))
@@ -371,23 +397,25 @@ public static class BattlePlayerSkillPreviewCalculator
         if (entry == null)
             return 0;
 
+        int baseValue = SkillScalingUtility.ResolveBaseValue(runtime, entry);
+
         if (entry.EffectId == "E_Knockback")
         {
             return BattleEquipmentEffectService.ModifyPlayerKnockbackValue(
                 runtime,
                 command,
                 entry,
-                entry.ValueAmount);
+                baseValue);
         }
 
         if (entry.EffectId == "E_Move" || entry.EffectId == "E_Grab")
-            return entry.ValueAmount;
+            return baseValue;
 
         int value = BattleEquipmentEffectService.ModifyPlayerEffectValue(
             runtime,
             command,
             entry,
-            entry.ValueAmount);
+            baseValue);
 
         if (IsDamageEffect(entry.EffectId))
         {
@@ -473,7 +501,7 @@ public static class BattlePlayerSkillPreviewCalculator
 
     private static bool IsDamageEffect(string effectId)
     {
-        return effectId == "E_Strike" || effectId == "E_Pierce";
+        return effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike";
     }
 
     private static bool ShouldShowValue(string effectId, SkillType skillType)
@@ -482,11 +510,16 @@ public static class BattlePlayerSkillPreviewCalculator
         {
             case "E_Strike":
             case "E_Pierce":
+            case "E_MissingHPStrike":
             case "E_Heal":
             case "E_Armor":
             case "E_Boost":
             case "E_Charge":
             case "E_Focus":
+            case "E_Mana":
+            case "E_Karma":
+            case "E_Grit":
+            case "E_Bond":
             case "E_Ward":
             case "E_Swift":
             case "E_Smite":
