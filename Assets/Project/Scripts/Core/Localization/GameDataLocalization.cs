@@ -20,6 +20,11 @@ namespace Relic.Gameplay.Data
         public static string EventTitle(EventDefinition data, string fallback) =>
             data == null ? fallback ?? string.Empty : GameLocalization.GetData("Event", data.EventId, "description", fallback);
 
+        public static string EventName(EventDefinition data) =>
+            data == null
+                ? string.Empty
+                : GameLocalization.GetData("Event", data.EventId, "name", data.EventName);
+
         public static string EventChoiceName(EventData data) =>
             EventChoiceText(data, "name", data?.ChoiceName);
 

@@ -1514,7 +1514,7 @@ public class BattleSceneController : MonoBehaviour
             definition != null)
         {
             if (!string.IsNullOrWhiteSpace(definition.EventName))
-                return definition.EventName.Trim();
+                return GameDataLocalization.EventName(definition);
         }
 
         Debug.LogWarning($"[BattleSceneController] EventName을 찾을 수 없습니다: {eventId}");

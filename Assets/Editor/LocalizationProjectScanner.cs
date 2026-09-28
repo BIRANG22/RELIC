@@ -80,9 +80,14 @@ public static class LocalizationProjectScanner
             @"(?:\b\w+\.text\s*=|\b\w+\.SetText\s*\()\s*" + literal,
             RegexOptions.Multiline);
 
+        var formattedReturn = new Regex(
+            @"\breturn\s+string\.Format\s*\(\s*" + literal,
+            RegexOptions.Multiline);
+
         return sinkCall.Matches(code)
             .Cast<Match>()
             .Concat(directTmpWriter.Matches(code).Cast<Match>())
+            .Concat(formattedReturn.Matches(code).Cast<Match>())
             .Select(match => DecodeCSharpLiteral(match.Groups["value"].Value))
             .Where(IsLocalizableKoreanText)
             .Distinct(StringComparer.Ordinal)

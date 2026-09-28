@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class BattleMapIntroText : MonoBehaviour
 {
+    private const string DefaultMessageKey = "battle.intro.enter_battle_area";
     private static BattleMapIntroText instance;
 
     public static int CurrentPlayCounter { get; private set; }
@@ -32,7 +33,6 @@ public class BattleMapIntroText : MonoBehaviour
 
     [Header("Text")]
     [SerializeField] private TMP_Text introText;
-    [SerializeField, TextArea(2, 5)] private string message = "전투 지역 진입";
 
     [Header("Image")]
     [SerializeField] private GameObject introImage;
@@ -133,7 +133,7 @@ public class BattleMapIntroText : MonoBehaviour
 
     public void Play()
     {
-        Play(GameLocalization.Get("battle.intro.enter_battle_area"));
+        Play(GameLocalization.Get(DefaultMessageKey));
     }
 
     public void Play(string text)
@@ -218,7 +218,9 @@ public class BattleMapIntroText : MonoBehaviour
 
     private IEnumerator PlayRoutine(string text, int version)
     {
-        introText.text = string.IsNullOrEmpty(text) ? message : text;
+        introText.text = string.IsNullOrEmpty(text)
+            ? GameLocalization.Get(DefaultMessageKey)
+            : text;
         introText.alpha = 0f;
         introText.gameObject.SetActive(true);
 

@@ -41,7 +41,7 @@ public sealed class LocalizedTMPText : MonoBehaviour
         koreanSource = fallback ?? string.Empty;
         automaticallyRegistered = registeredAutomatically;
         if (isActiveAndEnabled)
-            RefreshWhenReady(LocalizationSettings.SelectedLocale);
+            RefreshImmediatelyAndWhenReady(LocalizationSettings.SelectedLocale);
         else
             Refresh();
     }
@@ -64,7 +64,7 @@ public sealed class LocalizedTMPText : MonoBehaviour
 
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
-        RefreshWhenReady(LocalizationSettings.SelectedLocale);
+        RefreshImmediatelyAndWhenReady(LocalizationSettings.SelectedLocale);
     }
 
     private void OnDisable()
@@ -78,7 +78,13 @@ public sealed class LocalizedTMPText : MonoBehaviour
         if (!ShouldManageText(target) || !isActiveAndEnabled || string.IsNullOrWhiteSpace(localizationKey))
             return;
 
-        RefreshWhenReady(locale);
+        RefreshImmediatelyAndWhenReady(locale);
+    }
+
+    private void RefreshImmediatelyAndWhenReady(Locale requestedLocale)
+    {
+        RefreshForLocale(requestedLocale);
+        RefreshWhenReady(requestedLocale);
     }
 
     private async void RefreshWhenReady(Locale requestedLocale)

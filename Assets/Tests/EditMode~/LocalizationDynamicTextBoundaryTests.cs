@@ -63,6 +63,81 @@ public sealed class LocalizationDynamicTextBoundaryTests
     }
 
     [Test]
+    public void BattleMapIntroText_EmptyInputUsesLocalizedDefaultInsteadOfKoreanSceneFallback()
+    {
+        string source = File.ReadAllText("Assets/Project/Scripts/UI/BattleMapIntroText.cs");
+        string scene = File.ReadAllText(BattleScenePath);
+
+        Assert.That(source, Does.Contain("DefaultMessageKey = \"battle.intro.enter_battle_area\""));
+        Assert.That(source, Does.Contain("GameLocalization.Get(DefaultMessageKey)"));
+        Assert.That(source, Does.Not.Contain("private string message ="),
+            "빈 입력이 씬의 한국어 직렬화 문구로 돌아가면 안 됩니다.");
+        Assert.That(scene, Does.Not.Contain("  message:"),
+            "배틀 인트로에 한국어 표시 폴백을 직렬화해 두면 안 됩니다.");
+    }
+
+    [Test]
+    public void EventRoomIntro_UsesLocalizedEventNameInsteadOfRawKoreanData()
+    {
+        string dataLocalization = File.ReadAllText(
+            "Assets/Project/Scripts/Core/Localization/GameDataLocalization.cs");
+        string battleController = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleSceneController.cs");
+        string eventController = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/EventRoom/EventRoomController.cs");
+
+        Assert.That(dataLocalization, Does.Contain("EventName(EventDefinition data)"));
+        Assert.That(dataLocalization,
+            Does.Contain("GameLocalization.GetData(\"Event\", data.EventId, \"name\", data.EventName)"));
+        Assert.That(battleController, Does.Contain("return GameDataLocalization.EventName(definition);"));
+        Assert.That(battleController, Does.Not.Contain("return definition.EventName.Trim();"));
+        Assert.That(eventController, Does.Contain("GameDataLocalization.EventName(definition)"));
+    }
+
+    [Test]
+    public void LobbySettingOptionBack2Name_UsesLocalizedTmpTextWithoutEnglishFallback()
+    {
+        string scene = File.ReadAllText(LobbyScenePath);
+        string settingBlock = FindGameObjectBlockByName(scene, "Setting");
+        string settingTransformId = ReadFirstComponentId(settingBlock);
+        string optionBlock = FindChildGameObjectBlockByName(scene, settingTransformId, "Option");
+        string optionTransformId = ReadFirstComponentId(optionBlock);
+        string back2Block = FindChildGameObjectBlockByName(scene, optionTransformId, "Back2");
+        string back2TransformId = ReadFirstComponentId(back2Block);
+        string nameBlock = FindChildGameObjectBlockByName(scene, back2TransformId, "Name");
+        string nameId = ReadObjectId(nameBlock);
+        string localizer = FindComponentBlockByScript(
+            scene, nameBlock, nameId, LocalizedTmpTextScriptGuid);
+
+        Assert.That(localizer, Does.Contain("localizationKey: ui.lobby.text.b1bc1a93"));
+        Assert.That(localizer, Does.Contain("koreanSource:"),
+            "한국어 원문은 키 매칭과 한국어 로케일 표시용으로만 보관합니다.");
+    }
+
+    [Test]
+    public void LobbySharedModal_DoesNotOverwriteLocalizedBack2Name()
+    {
+        string source = File.ReadAllText(
+            "Assets/Project/Scripts/LobbyPositionSharedModalBackground.cs");
+
+        Assert.That(source, Does.Not.Contain("LobbyLocationDisplayName"));
+        Assert.That(source, Does.Not.Contain("ApplyLobbyLocationName("),
+            "Setting/Option/Back2/Name은 LocalizedTMPText만 작성해야 합니다.");
+    }
+
+    [Test]
+    public void RuntimeLocalizers_ApplyMissingMarkerBeforeAwaitingTableLoad()
+    {
+        string staticSource = File.ReadAllText(
+            "Assets/Project/Scripts/Core/Localization/LocalizedTMPText.cs");
+        string dynamicSource = File.ReadAllText(
+            "Assets/Project/Scripts/Core/Localization/DynamicLocalizedTMPText.cs");
+
+        Assert.That(staticSource, Does.Contain("RefreshImmediatelyAndWhenReady("));
+        Assert.That(dynamicSource, Does.Contain("RefreshImmediatelyAndWhenReady("));
+    }
+
+    [Test]
     public void LobbyErosionValues_AreDynamicAndEachOutputHasItsOwnTarget()
     {
         string scene = File.ReadAllText(LobbyScenePath);

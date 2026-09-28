@@ -91,13 +91,13 @@ public class BattleTurnExecutor : MonoBehaviour
     private readonly Dictionary<string, int> pendingNextTurnSwiftByCharacterId = new();
     private SkillCutsceneView activeSkillCutscene;
 
-    private void ShowUniqueSkillCutscene(PlayerReservedCommand command)
+    private IEnumerator PlayUniqueSkillCutscene(PlayerReservedCommand command)
     {
         if (command == null ||
             command.SkillData == null ||
             command.SkillData.Category != Category.Unique)
         {
-            return;
+            yield break;
         }
 
         Debug.Log(
@@ -111,7 +111,7 @@ public class BattleTurnExecutor : MonoBehaviour
             Debug.LogWarning(
                 $"[UniqueSkillCutscene] Missing reference / Character:{command.CharacterId} / " +
                 $"Prefab:{skillCutscenePrefab != null} / Root:{skillCutsceneRoot != null}");
-            return;
+            yield break;
         }
 
         CharacterIconDatabase iconDatabase = skillCutsceneIconDatabase != null
@@ -126,7 +126,7 @@ public class BattleTurnExecutor : MonoBehaviour
             Debug.LogWarning(
                 $"[UniqueSkillCutscene] Image lookup failed / Character:{command.CharacterId} / " +
                 $"Database:{iconDatabase != null}");
-            return;
+            yield break;
         }
 
         if (activeSkillCutscene == null)
@@ -135,10 +135,8 @@ public class BattleTurnExecutor : MonoBehaviour
             Debug.Log("[UniqueSkillCutscene] Prefab instantiated.");
         }
 
-        activeSkillCutscene.gameObject.SetActive(false);
-        activeSkillCutscene.SetImage(image);
-        activeSkillCutscene.gameObject.SetActive(true);
         Debug.Log("[UniqueSkillCutscene] Prefab activated.");
+        yield return activeSkillCutscene.PlayAndWait(image);
     }
 
     private void Start()
@@ -512,7 +510,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 null,
                 consecutiveActionPlan,
                 multiHitActionInterval,
-                ShowUniqueSkillCutscene
+                PlayUniqueSkillCutscene
             );
             SteamBattleStateSynchronizer.TryBroadcastBattleExecution(batches);
 
@@ -751,7 +749,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 null,
                 consecutiveActionPlan,
                 multiHitActionInterval,
-                ShowUniqueSkillCutscene
+                PlayUniqueSkillCutscene
             );
 
             yield return ShowBattleProgressIntroTextRoutineSafe();

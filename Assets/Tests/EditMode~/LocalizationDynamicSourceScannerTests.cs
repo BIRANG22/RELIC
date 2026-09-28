@@ -120,6 +120,19 @@ MonoBehaviour:
     }
 
     [Test]
+    public void DynamicDisplaySinkLiterals_CollectsFormattedReturnValues()
+    {
+        const string source = @"
+            return string.Format(""발현기억에 사용하는 자원이다.\n최대 보유량은 {0}이다."", maxKarma);
+            Debug.LogFormat(""내부 진단 {0}"", maxKarma);";
+
+        IReadOnlyList<string> values = LocalizationProjectScanner.FindDynamicDisplayLiterals(source);
+
+        Assert.That(values, Does.Contain("발현기억에 사용하는 자원이다.\n최대 보유량은 {0}이다."));
+        Assert.That(values, Does.Not.Contain("내부 진단 {0}"));
+    }
+
+    [Test]
     public void FindSerializedPlayerTextLiterals_CollectsMessageTextAndDisplayNameFields()
     {
         const string source = @"

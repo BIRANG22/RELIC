@@ -779,7 +779,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631969
-    m_Localized: Strike
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631970
@@ -788,7 +788,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631971
-    m_Localized: Penetration
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631972
@@ -838,7 +838,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631983
-    m_Localized: Healing
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631984
@@ -974,14 +974,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41385915707826194
     m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915707826195
-    m_Localized: Surprise
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915707826196
-    m_Localized: Damage increases by 50% when attacking from behind.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826219
@@ -2670,6 +2662,378 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17117632292986922
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100852
+    m_Localized: Cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100853
+    m_Localized: Untranslated
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100854
+    m_Localized: Abandon the current expedition?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100855
+    m_Localized: Purchase this item?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100856
+    m_Localized: Purchase this relic?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100857
+    m_Localized: Activate this fragment?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100858
+    m_Localized: Expedition abandoned.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100859
+    m_Localized: No expedition data is available.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100860
+    m_Localized: Failed to save.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100861
+    m_Localized: Saved successfully.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100862
+    m_Localized: Reserve Action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100863
+    m_Localized: Start Turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100864
+    m_Localized: Battle Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100865
+    m_Localized: Locked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100866
+    m_Localized: Materials
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100867
+    m_Localized: Recipes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100868
+    m_Localized: Crafting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100869
+    m_Localized: Erosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100870
+    m_Localized: Mercenary
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100871
+    m_Localized: Resonance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100872
+    m_Localized: Storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100873
+    m_Localized: Depart
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100874
+    m_Localized: Ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100875
+    m_Localized: Action preparation is incomplete.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100876
+    m_Localized: Relics cannot be changed during battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100877
+    m_Localized: Skills cannot be changed during battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100878
+    m_Localized: Timeline slots cannot be selected while the turn is in progress.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100879
+    m_Localized: Character data could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100880
+    m_Localized: 'Character data could not be found: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100881
+    m_Localized: Maximum level reached.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100882
+    m_Localized: No characters are available.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100883
+    m_Localized: No character is selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100884
+    m_Localized: Character position data is missing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100885
+    m_Localized: Select a character first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100886
+    m_Localized: Not enough Blue Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100887
+    m_Localized: Data is unavailable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100888
+    m_Localized: The equipment panel is unavailable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100889
+    m_Localized: This feature is currently unavailable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100890
+    m_Localized: The battle grid could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100891
+    m_Localized: No grid can be selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100892
+    m_Localized: This grid cannot be selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100893
+    m_Localized: Selectable grid range data is missing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100894
+    m_Localized: Select a map first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100895
+    m_Localized: The move destination is invalid.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100896
+    m_Localized: The destination is occupied.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100897
+    m_Localized: Not enough movement resource.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100898
+    m_Localized: Failed to reserve the move.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100899
+    m_Localized: Failed to synchronize battle start.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100900
+    m_Localized: Only the host can start the battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100901
+    m_Localized: The party has no characters.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100902
+    m_Localized: The party is not full.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100903
+    m_Localized: Select a character for the party.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100904
+    m_Localized: Select a character to deploy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100905
+    m_Localized: Complete the current quest first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100906
+    m_Localized: Relic data could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100907
+    m_Localized: This relic is currently unavailable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100908
+    m_Localized: This exclusive fragment unlocks at character Lv.{0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100909
+    m_Localized: This fragment is equipped by another character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100910
+    m_Localized: No empty fragment slot is available.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100911
+    m_Localized: No fragment can be unequipped.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100912
+    m_Localized: The current character cannot use this fragment.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100913
+    m_Localized: This fragment is not equipped.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100914
+    m_Localized: No fragment is selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100915
+    m_Localized: This shared fragment requires a player or account level.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100916
+    m_Localized: This shared fragment is still locked.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100917
+    m_Localized: This fragment slot is still locked.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100918
+    m_Localized: The fragment slot is not connected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100919
+    m_Localized: This fragment slot unlocks at character Lv.{0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100920
+    m_Localized: Skill data could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100921
+    m_Localized: 'This skill is still locked. Required level: LV. {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100922
+    m_Localized: Unlocks at character Lv.{0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100923
+    m_Localized: No skill is registered.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100924
+    m_Localized: This skill cannot be equipped in this slot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100925
+    m_Localized: No skill is selected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100926
+    m_Localized: Skill range data is missing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100927
+    m_Localized: The skill reservation controller could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100928
+    m_Localized: Failed to reserve the skill.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100929
+    m_Localized: Skill reservation data is missing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100930
+    m_Localized: Select a slot for the skill first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100931
+    m_Localized: The skill slot is not connected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100932
+    m_Localized: This stage is still locked.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100933
+    m_Localized: GameManager could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100934
+    m_Localized: Target selection is unavailable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100935
+    m_Localized: The timeline controller could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100936
+    m_Localized: There is no reservation to undo.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100937
+    m_Localized: Select a timeline slot first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100938
+    m_Localized: No more actions can be registered in this slot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100939
+    m_Localized: Timeline slot data is missing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100940
+    m_Localized: This slot is occupied by another character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100941
+    m_Localized: This timeline slot is currently unavailable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100942
+    m_Localized: The timeline UI could not be found.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 41387432259100943
+    m_Localized: Complete Elric's dialogue first.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17041964720988223
     m_Localized: 
     m_Metadata:
       m_Items: []

@@ -269,10 +269,8 @@ public class CharacterStatTooltipTarget : MonoBehaviour, IPointerEnterHandler, I
                 return GameLocalization.Get(
                     "lobby.stat.recovery.description");
             case StatType.Karma:
-                int maxKarma = characterInfoPanel != null && characterInfoPanel.CurrentMasterData != null
-                    ? Mathf.Max(0, characterInfoPanel.CurrentMasterData.MaxResource)
-                    : 0;
-                return string.Format("발현기억에 사용하는 자원이다.\n최대 보유량은 {0}이다.", maxKarma);
+                return GameLocalization.Get(
+                    LocalizationKeys.CharacterSetting.KarmaDescription);
             default:
                 return "";
         }
