@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
@@ -21,6 +21,7 @@ public class BattleProjectileVfxRenderRoutingOverride
     [Tooltip("일반 VFX와 동일한 Render Routing 설정입니다. Prefab/Flip 값은 사용하지 않고 렌더 관련 값만 복사합니다.")]
     public BattleVfxEntry renderRouting = new();
 }
+
 
 public class BattleUnitAnimator : MonoBehaviour
 {
@@ -79,7 +80,8 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private BattleVfxEntry healVfx;
 
     [Header("Status VFX")]
-    [SerializeField] private BattleStatusVfxSet statusVfx = new();
+    [Tooltip("Buff / Debuff 상태 VFX를 공용 DB에서 ID로 조회합니다.")]
+    [SerializeField] private StatusVfxDatabase statusVfxDatabase;
 
     [Header("Player Skill Presentations")]
     [SerializeField] private BattleUnitPlayerSkillPresentations playerSkillPresentations = new();
@@ -164,7 +166,6 @@ public class BattleUnitAnimator : MonoBehaviour
     {
         EnsurePlayerSkillPresentations();
         EnsureMonsterActionPresentationArray();
-        statusVfx ??= new BattleStatusVfxSet();
         vfxSortingReference = null;
         hitFlashPropertyId = Shader.PropertyToID(string.IsNullOrWhiteSpace(hitFlashPropertyName) ? "_HitFlash" : hitFlashPropertyName);
     }
@@ -262,7 +263,13 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayStatusVfx(string effectId)
     {
-        SpawnVfx(statusVfx?.Get(effectId));
+        if (statusVfxDatabase == null)
+            return;
+
+        if (!statusVfxDatabase.TryGetVfx(effectId, out BattleVfxEntry entry))
+            return;
+
+        SpawnVfx(entry);
     }
 
     public void PlaySkillReady(SkillMasterData skillData)
