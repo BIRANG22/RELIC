@@ -59,3 +59,11 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: e82d31e1779beae4194dbe3a01e8d83a, type: 3}
   - EffectId: AR_TargetOutgoingDamageReductionThisTurn
     Icon: {fileID: 21300000, guid: feb192925dc6b5b44b25e6408817d2ae, type: 3}
+  - EffectId: E_Strike
+    Icon: {fileID: 21300000, guid: 4f7c74f6d0477044bb2cdca3913fa167, type: 3}
+  - EffectId: E_Pierce
+    Icon: {fileID: 21300000, guid: 7549a0828daf972439a36e1de6779ac3, type: 3}
+  - EffectId: E_Heal
+    Icon: {fileID: 21300000, guid: ebdd4198be36e134fab99f85879d7715, type: 3}
+  - EffectId: E_Cure
+    Icon: {fileID: 21300000, guid: 3f774cff48feee248be0014dfb19fcf4, type: 3}
