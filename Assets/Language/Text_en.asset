@@ -75,7 +75,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41367126123487249
-    m_Localized: 
+    m_Localized: Mana
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100690
@@ -95,7 +95,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100693
-    m_Localized: 
+    m_Localized: Mana regeneration
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100694
@@ -607,7 +607,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631912
-    m_Localized: 
+    m_Localized: Instead of decreasing maximum HP by {ValueRate1}, maximum mana increases
+      by {ValueRate2}.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631913
