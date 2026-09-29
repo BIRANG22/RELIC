@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67b8b2d736ff91a4486a9b4e552d7ba8, type: 3}
   m_Name: Test Manual Battle Map Template
   m_EditorClassIdentifier: 
+  bossLayerIndex: 13
   layer0Start:
     Type: Special
     MapIdOverride: Map_25
