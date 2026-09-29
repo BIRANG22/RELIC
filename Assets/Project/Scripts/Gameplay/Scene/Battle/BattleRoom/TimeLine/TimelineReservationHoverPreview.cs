@@ -70,7 +70,20 @@ public class TimelineReservationHoverPreview : MonoBehaviour
             return;
         }
 
-        List<int> rangeIndices = BuildRange(command, casterGridIndex);
+        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(command.UserRuntime, command.SkillData);
+        List<int> rangeIndices;
+
+        if (BattleRangeCalculator.IsPartyRangeId(rangeId))
+        {
+            rangeIndices = timelineController.GetAlivePartyPreviewGridIndicesBeforeCommand(
+                entry.SlotIndex,
+                entry.PlayerCommandIndex
+            );
+        }
+        else
+        {
+            rangeIndices = BuildRange(command, casterGridIndex);
+        }
 
         rangePreview.ShowRangeCells(rangeIndices, GetHighlightColor(command.SkillData));
     }

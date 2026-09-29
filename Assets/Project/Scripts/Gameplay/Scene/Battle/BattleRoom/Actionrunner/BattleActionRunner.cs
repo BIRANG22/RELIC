@@ -2063,9 +2063,6 @@ public class BattleActionRunner
         if (command.ReservedMoveGridIndex >= 0)
             return;
 
-        if (command.SkillData.RangeType == RangeType.None)
-            return;
-
         if (gridManager == null || DataManager.Instance == null)
             return;
 
@@ -2075,6 +2072,37 @@ public class BattleActionRunner
 
         string rangeId =
             BattleEquipmentEffectService.GetEffectiveRangeId(attacker.RuntimeData, command.SkillData);
+
+        if (BattleRangeCalculator.IsPartyRangeId(rangeId))
+        {
+            List<int> partyGridIndices = new();
+            BattleCharacter[] partyCharacters = Object.FindObjectsByType<BattleCharacter>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None
+            );
+
+            for (int i = 0; i < partyCharacters.Length; i++)
+            {
+                BattleCharacter character = partyCharacters[i];
+
+                if (character == null ||
+                    character.RuntimeData == null ||
+                    character.RuntimeData.IsDead ||
+                    character.CurrentGridIndex < 0)
+                {
+                    continue;
+                }
+
+                if (!partyGridIndices.Contains(character.CurrentGridIndex))
+                    partyGridIndices.Add(character.CurrentGridIndex);
+            }
+
+            command.SetSimulatedRangeResult(partyGridIndices, partyGridIndices);
+            return;
+        }
+
+        if (command.SkillData.RangeType == RangeType.None)
+            return;
 
         if (!BattleRangeCalculator.IsAllRangeId(rangeId) &&
             DataManager.Instance.RangeDatabase == null)
@@ -2698,6 +2726,12 @@ public class BattleActionRunner
             string.IsNullOrWhiteSpace(command.SkillData.ValueRate))
         {
             return false;
+        }
+
+        if (command.HasDirectionalMoveDistanceOverride)
+        {
+            signedDistance = command.DirectionalMoveDistanceOverride;
+            return signedDistance != 0;
         }
 
         string[] values = command.SkillData.ValueRate.Split(';');

@@ -45,9 +45,46 @@ public class MovePathPreview : MonoBehaviour
     private readonly List<MovePathTileView> pooledTiles = new();
     private int shownStartGridIndex = -1;
     private readonly List<Vector2Int> shownSteps = new();
+    private bool shownUsesColorOverride;
+    private Color shownColorOverride = Color.white;
     private bool reportedMissingTilePrefab;
 
+    public bool CanRenderPath => tilePrefab != null;
+
     public void ShowPath(int startGridIndex, IReadOnlyList<Vector2Int> moveSteps)
+    {
+        ShowPathInternal(startGridIndex, moveSteps, false, Color.white);
+    }
+
+    public void ShowPath(int startGridIndex, IReadOnlyList<Vector2Int> moveSteps, Color colorOverride)
+    {
+        ShowPathInternal(startGridIndex, moveSteps, true, colorOverride);
+    }
+
+    public void ShowFullPath(int startGridIndex, IReadOnlyList<Vector2Int> moveSteps, Color colorOverride)
+    {
+        if (moveSteps == null || moveSteps.Count <= 0)
+        {
+            Clear();
+            return;
+        }
+
+        // 일반 이동은 최종 칸에 고스트가 표시되기 때문에 마지막 Move Path 타일을 생략합니다.
+        // 돌진/후퇴 스킬 호버는 별도 도착 고스트 없이 경로 자체가 범위 표시이므로
+        // 마지막 이동 칸까지 화살표가 보이도록 마지막 스텝을 한 번 더 붙여 렌더링합니다.
+        List<Vector2Int> fullPathSteps = new(moveSteps.Count + 1);
+        for (int i = 0; i < moveSteps.Count; i++)
+            fullPathSteps.Add(moveSteps[i]);
+
+        fullPathSteps.Add(moveSteps[moveSteps.Count - 1]);
+        ShowPathInternal(startGridIndex, fullPathSteps, true, colorOverride);
+    }
+
+    private void ShowPathInternal(
+        int startGridIndex,
+        IReadOnlyList<Vector2Int> moveSteps,
+        bool useColorOverride,
+        Color colorOverride)
     {
         if (gridManager == null ||
             startGridIndex < 0 ||
@@ -68,13 +105,15 @@ public class MovePathPreview : MonoBehaviour
 
         EnsureSpawnRoot();
 
-        if (IsSamePath(startGridIndex, moveSteps))
+        if (IsSamePath(startGridIndex, moveSteps, useColorOverride, colorOverride))
             return;
 
         Clear();
 
         shownStartGridIndex = startGridIndex;
         shownSteps.AddRange(moveSteps);
+        shownUsesColorOverride = useColorOverride;
+        shownColorOverride = colorOverride;
 
         Vector2Int currentCoord = gridManager.IndexToCoord(startGridIndex);
 
@@ -119,6 +158,7 @@ public class MovePathPreview : MonoBehaviour
                     ySortMultiplier,
                     sortingOrderOffset));
 
+            ApplyColorOverride(tile, useColorOverride, colorOverride);
             spawnedTiles.Add(tile);
         }
     }
@@ -131,6 +171,7 @@ public class MovePathPreview : MonoBehaviour
             if (tile == null)
                 continue;
 
+            ClearColorOverride(tile);
             tile.gameObject.SetActive(false);
             pooledTiles.Add(tile);
         }
@@ -138,6 +179,8 @@ public class MovePathPreview : MonoBehaviour
         spawnedTiles.Clear();
         shownStartGridIndex = -1;
         shownSteps.Clear();
+        shownUsesColorOverride = false;
+        shownColorOverride = Color.white;
     }
 
     private MovePathTileView GetOrCreateTile()
@@ -196,9 +239,19 @@ public class MovePathPreview : MonoBehaviour
             this);
     }
 
-    private bool IsSamePath(int startGridIndex, IReadOnlyList<Vector2Int> moveSteps)
+    private bool IsSamePath(
+        int startGridIndex,
+        IReadOnlyList<Vector2Int> moveSteps,
+        bool useColorOverride,
+        Color colorOverride)
     {
         if (shownStartGridIndex != startGridIndex || shownSteps.Count != moveSteps.Count)
+            return false;
+
+        if (shownUsesColorOverride != useColorOverride)
+            return false;
+
+        if (useColorOverride && shownColorOverride != colorOverride)
             return false;
 
         for (int i = 0; i < moveSteps.Count; i++)
@@ -208,6 +261,41 @@ public class MovePathPreview : MonoBehaviour
         }
 
         return true;
+    }
+
+    private static void ApplyColorOverride(
+        MovePathTileView tile,
+        bool useColorOverride,
+        Color colorOverride)
+    {
+        if (tile == null)
+            return;
+
+        MeshRenderer renderer = tile.GetComponent<MeshRenderer>();
+        if (renderer == null)
+            return;
+
+        if (!useColorOverride)
+        {
+            renderer.SetPropertyBlock(null);
+            return;
+        }
+
+        MaterialPropertyBlock block = new();
+        renderer.GetPropertyBlock(block);
+        block.SetColor("_BaseColor", colorOverride);
+        block.SetColor("_Color", colorOverride);
+        renderer.SetPropertyBlock(block);
+    }
+
+    private static void ClearColorOverride(MovePathTileView tile)
+    {
+        if (tile == null)
+            return;
+
+        MeshRenderer renderer = tile.GetComponent<MeshRenderer>();
+        if (renderer != null)
+            renderer.SetPropertyBlock(null);
     }
 
     private static bool IsSelfFlipPath(IReadOnlyList<Vector2Int> moveSteps)

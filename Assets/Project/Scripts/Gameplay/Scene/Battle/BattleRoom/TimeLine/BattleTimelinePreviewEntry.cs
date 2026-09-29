@@ -6,7 +6,6 @@ public class BattleTimelinePreviewEntry
 {
     private static bool hasWarnedMissingActionTypeIconDatabase;
 
-    private static MonsterSkillIconDatabase cachedMonsterSkillIconDatabase;
     public int SlotIndex;
     public int OrderIndex;
 
@@ -403,20 +402,24 @@ public class BattleTimelinePreviewEntry
         if (skillData == null)
             return null;
 
-        if (cachedMonsterSkillIconDatabase == null)
+        DataManager dataManager = DataManager.Instance;
+        if (dataManager != null && !string.IsNullOrWhiteSpace(skillData.SkillIcon))
         {
-            MonsterSkillIconDatabase[] databases = Resources.FindObjectsOfTypeAll<MonsterSkillIconDatabase>();
-            if (databases != null && databases.Length > 0)
-                cachedMonsterSkillIconDatabase = databases[0];
+            MonsterSkillIconDatabase iconDatabase = dataManager.MonsterSkillIconDatabase;
+            if (iconDatabase != null)
+            {
+                if (iconDatabase.TryGetIcon(skillData.SkillIcon, out Sprite skillIcon))
+                    return skillIcon;
+
+                Debug.LogWarning($"[TimelineIcon] MonsterSkillIconDatabase에서 스킬 아이콘 ID '{skillData.SkillIcon}'를 찾지 못했습니다. SkillId: {skillData.SkillId}");
+            }
+            else
+            {
+                Debug.LogWarning($"[TimelineIcon] DataManager에 MonsterSkillIconDatabase가 연결되어 있지 않습니다. SkillId: {skillData.SkillId}, SkillIcon: {skillData.SkillIcon}");
+            }
         }
 
-        if (cachedMonsterSkillIconDatabase != null &&
-            !string.IsNullOrWhiteSpace(skillData.SkillIcon) &&
-            cachedMonsterSkillIconDatabase.TryGetIcon(skillData.SkillIcon, out Sprite skillIcon))
-        {
-            return skillIcon;
-        }
-
+        // SkillIcon 값이 없거나 DB 조회에 실패한 경우에만 행동 타입 기본 아이콘을 사용합니다.
         return GetTimelineActionIcon(skillData.TimelineNotation);
     }
 

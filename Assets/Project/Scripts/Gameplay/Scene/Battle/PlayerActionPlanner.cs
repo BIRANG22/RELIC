@@ -90,7 +90,7 @@ namespace Relic.Gameplay.Battle
                 case RangeType.Selection:
                     if (TryGetValidatedRangeData(skillData, out SkillRangeData gridRangeData))
                     {
-                        ShowGridRangePreview(gridRangeData);
+                        ShowGridRangePreview(gridRangeData, skillData.RangeId);
                         SetGridSkillTargetMode(true);
                         SetMoveGridTargetSelectionActive(IsMoveSkill(skillData));
                     }
@@ -99,7 +99,7 @@ namespace Relic.Gameplay.Battle
                 case RangeType.Direction:
                     if (TryGetValidatedRangeData(skillData, out SkillRangeData directionRangeData))
                     {
-                        ShowGridRangePreview(directionRangeData);
+                        ShowGridRangePreview(directionRangeData, skillData.RangeId);
 
                         if (directionSelectUI != null && TryGetCurrentCharacterGridIndex(out int originGridIndex))
                             directionSelectUI.Show(originGridIndex);
@@ -306,13 +306,19 @@ namespace Relic.Gameplay.Battle
             return rangeData != null;
         }
 
-        private void ShowGridRangePreview(SkillRangeData rangeData)
+        private void ShowGridRangePreview(SkillRangeData rangeData, string rangeId)
         {
             ClearRangePreview();
             currentValidTargetGridIndexes.Clear();
 
             if (rangeData == null || currentCharacter == null)
                 return;
+
+            if (BattleRangeCalculator.IsPartyRangeId(rangeId))
+            {
+                ShowAlivePartyGridRangePreview();
+                return;
+            }
 
             if (!TryGetCurrentCharacterGridIndex(out int originGridIndex))
                 return;
@@ -330,6 +336,27 @@ namespace Relic.Gameplay.Battle
 
                 currentValidTargetGridIndexes.Add(index);
                 TintGridByIndex(index, rangePreviewColor);
+            }
+        }
+
+        private void ShowAlivePartyGridRangePreview()
+        {
+            BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
+
+            for (int i = 0; i < characters.Length; i++)
+            {
+                BattleCharacter character = characters[i];
+
+                if (character == null || character.RuntimeData == null)
+                    continue;
+
+                if (character.RuntimeData.IsDead || character.CurrentGridIndex < 0)
+                    continue;
+
+                currentValidTargetGridIndexes.Add(character.CurrentGridIndex);
+                TintGridByIndex(character.CurrentGridIndex, rangePreviewColor);
             }
         }
 

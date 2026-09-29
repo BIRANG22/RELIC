@@ -93,6 +93,7 @@ public class PlayerSkillReservationController : MonoBehaviour
     private readonly List<int> currentGeneralSelectionSelectableIndices = new();
     private readonly Dictionary<int, List<List<Vector2Int>>> currentMovePathCandidatesByTargetIndex = new();
     private bool isGridTargetMonsterVisualActive;
+    private bool isForcedDirectionalSkillHoverPathVisible;
     private SpriteRenderer moveHoverPingBaseInstance;
     private SpriteRenderer moveHoverPingFloatingInstance;
     private TextMeshPro moveHoverCostTextInstance;
@@ -121,6 +122,7 @@ public class PlayerSkillReservationController : MonoBehaviour
     private const float MoveHoverPingYSortMultiplier = 100f;
     private const int MoveHoverPingDefaultSortingOffset = 10;
     private const int MoveHoverPingLegacyFrontSortingOrderThreshold = 1000;
+    private static readonly Color ForcedDirectionalMovePathColor = new Color32(0xB0, 0x24, 0x24, 0xFF);
 
     private int lastRightClickSkillCancelFrame = -1;
 
@@ -182,7 +184,12 @@ public class PlayerSkillReservationController : MonoBehaviour
     private void HideBlockedGridPointerVisuals()
     {
         HideMoveHoverPing();
-        HideMovePathPreview();
+
+        // 스킬 아이콘 위에 마우스를 올린 동안에는 EventSystem이 UI 위 포인터로 판정합니다.
+        // 일반 이동용 Move Path는 숨기되, Range_Advance / Range_Retreat 스킬의
+        // 호버 범위로 표시 중인 Move Path는 UI 위에서도 유지합니다.
+        if (!isForcedDirectionalSkillHoverPathVisible)
+            HideMovePathPreview();
 
         if (IsGeneralSelectionSkillActive() && rangePreview != null)
             rangePreview.ClearRangeOnly();
@@ -273,13 +280,13 @@ public class PlayerSkillReservationController : MonoBehaviour
         SkillMasterData skillData,
         int slotIndex)
     {
-        if (rangePreview == null)
-            return;
-
         // 호버 프리뷰는 현재 선택 중인 프리뷰를 잠시 완전히 덮어쓴다.
         // Selection/Direction이 서로 다른 Highlight 머테리얼을 사용하므로
         // 기존 방향 셀까지 모두 지운 뒤 호버한 스킬의 머테리얼로 다시 표시해야 한다.
-        rangePreview.ClearAll();
+        if (rangePreview != null)
+            rangePreview.ClearAll();
+
+        HideMovePathPreview();
 
         if (userRuntime == null || skillData == null)
             return;
@@ -304,6 +311,32 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (casterGridIndex < 0)
             return;
+
+        string effectiveRangeId =
+            BattleEquipmentEffectService.GetEffectiveRangeId(userRuntime, skillData);
+
+        if (TryBuildForcedDirectionalMovePreview(
+                userRuntime,
+                skillData,
+                casterGridIndex,
+                casterDirection,
+                slotIndex,
+                out List<Vector2Int> forcedMovePath,
+                out _))
+        {
+            EnsureMovePathPreview();
+
+            if (movePathPreview != null)
+            {
+                movePathPreview.ShowFullPath(
+                    casterGridIndex,
+                    forcedMovePath,
+                    ForcedDirectionalMovePathColor);
+                isForcedDirectionalSkillHoverPathVisible = forcedMovePath.Count > 0;
+            }
+
+            return;
+        }
 
         List<int> rangeIndices = new();
 
@@ -352,7 +385,19 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
-        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(userRuntime, skillData);
+        string rangeId = effectiveRangeId;
+
+        if (BattleRangeCalculator.IsPartyRangeId(rangeId))
+        {
+            if (timelineController != null && slotIndex >= 0)
+                rangeIndices = timelineController.GetAlivePartyPreviewGridIndicesAtSlotEnd(slotIndex);
+
+            if (rangeIndices.Count <= 0)
+                rangeIndices.Add(casterGridIndex);
+
+            rangePreview.ShowRangeCells(rangeIndices, GetHighlightColor(skillData));
+            return;
+        }
 
         if (skillData.RangeType == RangeType.Direction)
         {
@@ -376,8 +421,185 @@ public class PlayerSkillReservationController : MonoBehaviour
         rangePreview.ShowRangeCells(rangeIndices, GetHighlightColor(skillData));
     }
 
+    private bool TryBuildForcedDirectionalMovePreview(
+        CharacterRuntimeData userRuntime,
+        SkillMasterData skillData,
+        int casterGridIndex,
+        BattleDirection casterDirection,
+        int slotIndex,
+        out List<Vector2Int> moveSteps,
+        out int destinationGridIndex)
+    {
+        moveSteps = null;
+        destinationGridIndex = casterGridIndex;
+
+        if (userRuntime == null || skillData == null || gridManager == null || casterGridIndex < 0)
+            return false;
+
+        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(userRuntime, skillData);
+
+        if (!TryGetForcedDirectionalMoveDefinition(
+                rangeId,
+                casterDirection,
+                out Vector2Int step,
+                out int distance))
+        {
+            return false;
+        }
+
+        moveSteps = new List<Vector2Int>(distance);
+        HashSet<int> blockedGridIndices = BuildForcedDirectionalMovePreviewBlockedGridIndices(
+            userRuntime,
+            slotIndex);
+
+        Vector2Int currentCoord = gridManager.IndexToCoord(casterGridIndex);
+
+        for (int i = 0; i < distance; i++)
+        {
+            Vector2Int nextCoord = currentCoord + step;
+
+            if (!gridManager.IsValidCoord(nextCoord))
+                break;
+
+            int nextGridIndex = gridManager.CoordToIndex(nextCoord);
+
+            if (blockedGridIndices.Contains(nextGridIndex))
+                break;
+
+            moveSteps.Add(step);
+            currentCoord = nextCoord;
+            destinationGridIndex = nextGridIndex;
+        }
+
+        return true;
+    }
+
+    private static bool TryGetForcedDirectionalMoveDefinition(
+        string rangeId,
+        BattleDirection casterDirection,
+        out Vector2Int step,
+        out int distance)
+    {
+        step = Vector2Int.zero;
+        distance = 0;
+
+        if (string.IsNullOrWhiteSpace(rangeId))
+            return false;
+
+        const string advancePrefix = "Range_Advance";
+        const string retreatPrefix = "Range_Retreat";
+
+        bool isRetreat;
+        string distanceText;
+
+        if (rangeId.StartsWith(advancePrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            isRetreat = false;
+            distanceText = rangeId.Substring(advancePrefix.Length);
+        }
+        else if (rangeId.StartsWith(retreatPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            isRetreat = true;
+            distanceText = rangeId.Substring(retreatPrefix.Length);
+        }
+        else
+        {
+            return false;
+        }
+
+        if (!int.TryParse(distanceText, out distance) || distance < 1 || distance > 6)
+            return false;
+
+        step = casterDirection == BattleDirection.Right
+            ? Vector2Int.right
+            : Vector2Int.left;
+
+        if (isRetreat)
+            step = -step;
+
+        return true;
+    }
+
+    private HashSet<int> BuildForcedDirectionalMovePreviewBlockedGridIndices(
+        CharacterRuntimeData userRuntime,
+        int slotIndex)
+    {
+        HashSet<int> blockedGridIndices = new();
+
+        if (gridManager == null)
+            return blockedGridIndices;
+
+        EnsureTimelineController();
+
+        string selfCharacterId = userRuntime != null
+            ? userRuntime.CharacterId
+            : null;
+
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
+                continue;
+
+            if (!string.IsNullOrWhiteSpace(selfCharacterId) &&
+                character.CharacterId == selfCharacterId)
+            {
+                continue;
+            }
+
+            int occupiedGridIndex = character.CurrentGridIndex;
+
+            if (timelineController != null && slotIndex >= 0)
+            {
+                int projectedGridIndex = timelineController.GetPreviewGridIndexAtSlotEnd(
+                    character.RuntimeData,
+                    slotIndex);
+
+                if (projectedGridIndex >= 0)
+                    occupiedGridIndex = projectedGridIndex;
+            }
+
+            if (IsValidMoveDestinationGridIndex(occupiedGridIndex))
+                blockedGridIndices.Add(occupiedGridIndex);
+        }
+
+        if (timelineController != null && slotIndex >= 0)
+        {
+            BattleActionSimulationService simulationService = new(gridManager);
+            bool includeCurrentSlotMonsterCommands = !BattleActionOrderUtility.HasSwift(userRuntime);
+            HashSet<int> projectedMonsterGridIndices =
+                simulationService.GetProjectedMonsterOccupiedGridIndices(
+                    timelineController,
+                    slotIndex,
+                    includeCurrentSlotMonsterCommands);
+
+            if (projectedMonsterGridIndices != null)
+            {
+                foreach (int gridIndex in projectedMonsterGridIndices)
+                {
+                    if (IsValidMoveDestinationGridIndex(gridIndex))
+                        blockedGridIndices.Add(gridIndex);
+                }
+            }
+        }
+        else
+        {
+            AddCurrentMonsterOccupiedGridIndices(blockedGridIndices);
+        }
+
+        AddBlockedGridEffectIndices(blockedGridIndices);
+        return blockedGridIndices;
+    }
+
     public void ClearSkillHoverRangePreview()
     {
+        HideMovePathPreview();
+
         if (rangePreview == null)
             return;
 
@@ -935,6 +1157,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void ShowMovePathPreview(int gridIndex)
     {
+        isForcedDirectionalSkillHoverPathVisible = false;
         EnsureMovePathPreview();
 
         if (movePathPreview == null || gridManager == null)
@@ -962,6 +1185,8 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void HideMovePathPreview()
     {
+        isForcedDirectionalSkillHoverPathVisible = false;
+
         if (movePathPreview != null)
             movePathPreview.Clear();
     }
@@ -970,6 +1195,24 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         if (movePathPreview == null)
             movePathPreview = GetComponent<MovePathPreview>();
+
+        if (movePathPreview == null || !movePathPreview.CanRenderPath)
+        {
+            MovePathPreview[] previews = FindObjectsByType<MovePathPreview>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+
+            for (int i = 0; i < previews.Length; i++)
+            {
+                MovePathPreview preview = previews[i];
+
+                if (preview == null || !preview.CanRenderPath)
+                    continue;
+
+                movePathPreview = preview;
+                break;
+            }
+        }
 
         if (movePathPreview != null)
             movePathPreview.BindGridManager(gridManager);
@@ -1324,6 +1567,18 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         if (gridManager == null || casterGridIndex < 0 || skillData == null)
             return casterGridIndex;
+
+        if (TryBuildForcedDirectionalMovePreview(
+                currentUserRuntime,
+                skillData,
+                casterGridIndex,
+                direction,
+                currentSlotIndex,
+                out _,
+                out int forcedDestinationGridIndex))
+        {
+            return forcedDestinationGridIndex;
+        }
 
         if (!TryGetDirectionalMoveBeforeFirstDamage(skillData, out int signedDistance))
             return casterGridIndex;
