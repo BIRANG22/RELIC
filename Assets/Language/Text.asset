@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5be51871efa6c3e4eae1703925c8f5ac, type: 3}
   m_Name: Text
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_SharedTableData: {fileID: 11400000, guid: 3c628c627e41ed84fb431bc1e97cdb9f, type: 2}
   m_Tables:
   - {fileID: 11400000, guid: 2a85ac20b471ffb42ad313d6db910c51, type: 2}

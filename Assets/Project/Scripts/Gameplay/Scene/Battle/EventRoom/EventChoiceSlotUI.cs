@@ -30,14 +30,14 @@ public class EventChoiceSlotUI : MonoBehaviour
 
     private void OnEnable()
     {
-        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
-        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleChanged;
         RefreshDisplayedText();
     }
 
     private void OnDisable()
     {
-        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleChanged;
     }
 
     public void Bind(

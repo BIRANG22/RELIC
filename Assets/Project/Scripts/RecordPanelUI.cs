@@ -166,7 +166,7 @@ public class RecordPanelUI : MonoBehaviour
 
     private void OnEnable()
     {
-        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleChanged;
         RecordDiscoveryService.BackfillFromCurrentState(GetDataManager());
         EnsureReferences();
         RefreshRecordCounts();
@@ -175,7 +175,7 @@ public class RecordPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
-        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleChanged;
     }
 
     private void OnLocaleChanged(Locale _)

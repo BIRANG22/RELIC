@@ -1977,7 +1977,9 @@ public class EventRoomController : MonoBehaviour
             return string.Empty;
 
         if (!string.IsNullOrWhiteSpace(choice.SuccessCondition))
-            return IsDiceSuccess(diceRoll, choice.SuccessCondition) ? "성공" : "실패";
+            return IsDiceSuccess(diceRoll, choice.SuccessCondition)
+                ? GameLocalization.Get("event.dice.success")
+                : GameLocalization.Get("event.dice.failure");
 
         if (!SameToken(choice.ResultType, "RollTable"))
             return BuildResultSummary(choice);
@@ -3379,7 +3381,9 @@ public class EventRoomController : MonoBehaviour
         else if (SameToken(choice.ChoiceType, "Chance"))
         {
             success = RollChance(choice.SuccessRate);
-            messages.Add(success ? "판정 성공" : "판정 실패");
+            messages.Add(success
+                ? GameLocalization.Get("event.dice.judgement_success")
+                : GameLocalization.Get("event.dice.judgement_failure"));
         }
 
         if (!success)

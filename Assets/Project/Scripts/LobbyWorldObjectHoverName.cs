@@ -553,20 +553,20 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 
         if (objectNameText.GetComponent<LocalizationIgnore>() == null)
             objectNameText.gameObject.AddComponent<LocalizationIgnore>();
+        if (objectNameText.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            objectNameText.gameObject.AddComponent<LocalizationAutoBindingIgnore>();
 
         LocalizedTMPText localizer = objectNameText.GetComponent<LocalizedTMPText>();
         if (localizer != null)
-        {
             localizer.enabled = false;
-            Destroy(localizer);
-        }
+
+        DynamicLocalizedTMPText dynamicLocalizer = objectNameText.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicLocalizer != null)
+            dynamicLocalizer.enabled = false;
 
         LocalizeStringEvent legacyLocalizer = objectNameText.GetComponent<LocalizeStringEvent>();
         if (legacyLocalizer != null)
-        {
             legacyLocalizer.enabled = false;
-            Destroy(legacyLocalizer);
-        }
     }
 
     private void DisablePanelRaycasts()

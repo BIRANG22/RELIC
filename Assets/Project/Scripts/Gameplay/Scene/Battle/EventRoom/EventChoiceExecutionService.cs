@@ -324,7 +324,9 @@ namespace Relic.Gameplay.Data
             else if (IsToken(choice.ChoiceType, "Chance"))
             {
                 success = RollChance(choice.SuccessRate, context);
-                messages.Add(success ? "판정 성공" : "판정 실패");
+                messages.Add(success
+                    ? GameLocalization.Get("event.dice.judgement_success")
+                    : GameLocalization.Get("event.dice.judgement_failure"));
             }
 
             if (!success)

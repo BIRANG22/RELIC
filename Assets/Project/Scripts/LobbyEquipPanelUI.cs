@@ -203,6 +203,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void OnEnable()
     {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
         ResolvePanelRoot();
         ResolveSlideTargets();
         EnsurePreparationPanelsActive();
@@ -214,6 +216,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
         StopSlideAnimation();
         bool wasOpen = isOpen || isClosing;
         isOpen = false;
@@ -227,6 +230,11 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         ClearEquipmentDragState();
         LobbyPositionModalInputBlocker.Unblock(this);
         LobbyPositionSharedModalBackground.HideAfterReadyPanel();
+    }
+
+    private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
+    {
+        RefreshCharacterData();
     }
 
     private void OnDestroy()
@@ -747,14 +755,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private static string FormatRelicRarityLabel(string rarity)
     {
-        string normalized = string.IsNullOrWhiteSpace(rarity) ? string.Empty : rarity.Trim();
-
-        if (string.Equals(normalized, "Common", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get("relic.rarity.common");
-        if (string.Equals(normalized, "Rare", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get("relic.rarity.rare");
-        if (string.Equals(normalized, "Epic", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get("relic.rarity.epic");
-        if (string.Equals(normalized, "Unique", StringComparison.OrdinalIgnoreCase)) return GameLocalization.Get("relic.rarity.unique");
-
-        return normalized;
+        return RelicRarityUtility.GetDisplayName(rarity);
     }
 
     private Color ResolveRecordRarityColor(string rarity)

@@ -169,6 +169,7 @@ public sealed class LocalizationRefreshGate
 public static class LocalizationRuntimeRefreshCoordinator
 {
     private static int refreshVersion;
+    public static event Action<Locale> LocaleTableReady;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
@@ -203,7 +204,10 @@ public static class LocalizationRuntimeRefreshCoordinator
         // 동일 프레임의 UI presenter가 한국어 원문을 다시 쓴 경우까지 최종 정리합니다.
         await Task.Yield();
         if (CanApply(requestVersion, locale))
+        {
             RefreshAllNow(locale);
+            NotifyLocaleTableReady(locale);
+        }
     }
 
     public static void RefreshAllNow(Locale locale)
@@ -229,5 +233,24 @@ public static class LocalizationRuntimeRefreshCoordinator
     {
         return requestVersion == refreshVersion &&
                (locale == null || LocalizationSettings.SelectedLocale?.Identifier == locale.Identifier);
+    }
+
+    private static void NotifyLocaleTableReady(Locale locale)
+    {
+        Delegate[] subscribers = LocaleTableReady?.GetInvocationList();
+        if (subscribers == null)
+            return;
+
+        for (int i = 0; i < subscribers.Length; i++)
+        {
+            try
+            {
+                ((Action<Locale>)subscribers[i]).Invoke(locale);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
     }
 }

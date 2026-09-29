@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
   m_Name: Text Shared Data
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   m_TableCollectionName: Text
   m_TableCollectionNameGuidString: 3c628c627e41ed84fb431bc1e97cdb9f
   m_Entries:
@@ -6993,6 +6993,442 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 17752310413033491
     m_Key: data.event.event_08_b.choice_1_disabled_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1198327168969597041
+    m_Key: battle.action.move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2479938580071356898
+    m_Key: battle.action.damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1815245148604973943
+    m_Key: battle.action.push
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6011308666597819215
+    m_Key: battle.action.pull
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2109279170591050581
+    m_Key: battle.action.grudge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2926797293511239601
+    m_Key: battle.action.erosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9072331715277446018
+    m_Key: battle.action.spawn_spider_egg
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1372802364651645927
+    m_Key: battle.action.spawn_web
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8502374025300533235
+    m_Key: battle.action.veil
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3515777830533653991
+    m_Key: common.character
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8988175409473606672
+    m_Key: common.info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2876383222199361241
+    m_Key: common.memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7944646927863960014
+    m_Key: event.memory.none_upgradable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7842845681397039739
+    m_Key: event.memory.remove_acquired_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7621334280704964936
+    m_Key: event.memory.remove_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6330937352032063273
+    m_Key: event.memory.remove_failed_unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3062261105313232713
+    m_Key: event.memory.select_awaken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3389965653777387108
+    m_Key: event.memory.select_upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4517982166064026212
+    m_Key: event.memory.select_upgrade_required
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6771787548900199738
+    m_Key: event.memory.selection_panel_invalid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4493357146796418975
+    m_Key: event.memory.selection_panel_missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7496364623015142240
+    m_Key: event.memory.upgrade_unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 746283308175497894
+    m_Key: event.relic.none_available
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7211515257215341654
+    m_Key: event.relic.none_equipped
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7619199145596990078
+    m_Key: event.relic.select_exchange
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8469015330641913822
+    m_Key: event.relic.select_remove
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6129305146811147704
+    m_Key: event.relic.selection_panel_invalid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2500228719056938362
+    m_Key: event.relic.selection_panel_unavailable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8007704390767653971
+    m_Key: event.result.end
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6205752055948751534
+    m_Key: event.result.failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1009727815439550862
+    m_Key: event.result.shop_opened
+    m_Metadata:
+      m_Items: []
+  - m_Id: 619241625050597982
+    m_Key: event.reward.none_to_confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 469011341431732811
+    m_Key: lobby.quest.setup
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5456895886818223323
+    m_Key: lobby.quest.first_expedition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5126323777902196562
+    m_Key: system.continue.missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 751297280620710114
+    m_Key: ui.exploration.record
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8567494127911121857
+    m_Key: warning.timeline.combined_action_limit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 693281930632089369
+    m_Key: event.dice.roll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7345543633474189966
+    m_Key: event.dice.confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975623
+    m_Key: event.dice.success
+    m_Metadata:
+      m_Items: []
+  - m_Id: 859814055732616816
+    m_Key: event.dice.failure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 401128678064692629
+    m_Key: event.dice.judgement_success
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2174010986223499435
+    m_Key: event.dice.judgement_failure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5863409008220764426
+    m_Key: data.event.event_01.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4694121028499998742
+    m_Key: data.event.event_01.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1412377782705612879
+    m_Key: data.event.event_01.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 234543263632935605
+    m_Key: data.event.event_01.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6843892847110667842
+    m_Key: data.event.event_01.choice_3_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1516993621310442827
+    m_Key: data.event.event_01.choice_3_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 366301968439552923
+    m_Key: data.event.event_02_a.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4183007257575879646
+    m_Key: data.event.event_02.choice_2_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7851777515788717618
+    m_Key: data.event.event_02.choice_3_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 471256255143298372
+    m_Key: data.event.event_03.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1502687638285183694
+    m_Key: data.event.event_03.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6839311368782633929
+    m_Key: data.event.event_03.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8157369155386225860
+    m_Key: data.event.event_03.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3132136105505903793
+    m_Key: data.event.event_04.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6773566239958431090
+    m_Key: data.event.event_04.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5207072927037747520
+    m_Key: data.event.event_04.choice_1_disabled_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 723936174951965771
+    m_Key: data.event.event_04.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3350931100244708237
+    m_Key: data.event.event_04.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3779652232027373274
+    m_Key: data.event.event_04.choice_2_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9109018766784685066
+    m_Key: data.event.event_04.choice_3_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1131020666467908189
+    m_Key: data.event.event_04.choice_3_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7708434753313655684
+    m_Key: data.event.event_04.choice_3_disabled_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7942702846070932500
+    m_Key: data.event.event_05.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1066244904638742005
+    m_Key: data.event.event_05.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8880124734629174917
+    m_Key: data.event.event_05.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7376026955396242218
+    m_Key: data.event.event_05.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7694138312359675067
+    m_Key: data.event.event_05.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3721565082762716577
+    m_Key: data.event.event_05.choice_2_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7574788494132873300
+    m_Key: data.event.event_05_a.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4303892491554844897
+    m_Key: data.event.event_05_a.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 440513203523676283
+    m_Key: data.event.event_05_a.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6519865707473396192
+    m_Key: data.event.event_05_a.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5134803586065558191
+    m_Key: data.event.event_05_a.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5077124150733315264
+    m_Key: data.event.event_05_a.choice_2_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1140373660090210414
+    m_Key: data.event.event_05_b.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4979858703092487424
+    m_Key: data.event.event_05_b.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2704164765463780271
+    m_Key: data.event.event_05_b.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2923135235209831980
+    m_Key: data.event.event_05_b.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6715591904196111926
+    m_Key: data.event.event_05_b.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2874087640121993689
+    m_Key: data.event.event_05_b.choice_2_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6669172291844937371
+    m_Key: data.event.event_05.choice_3_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2556604002369152360
+    m_Key: data.event.event_05.choice_3_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1279439627807590315
+    m_Key: data.event.event_06.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4870109680900071899
+    m_Key: data.event.event_06.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1699409579015027840
+    m_Key: data.event.event_07.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6657694880110203246
+    m_Key: data.event.event_07.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5557716550884525191
+    m_Key: data.event.event_07.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6441658242219189746
+    m_Key: data.event.event_07.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5073691110635321184
+    m_Key: data.event.event_08.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4362355664756125849
+    m_Key: data.event.event_08_a.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3214164033910540089
+    m_Key: data.event.event_08_b.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5183344908816568624
+    m_Key: data.event.event_09.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5948760132805896291
+    m_Key: data.event.event_09.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4406233920511849648
+    m_Key: data.event.event_09.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1226648248840221473
+    m_Key: data.event.event_09.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5738639037147259761
+    m_Key: data.event.event_09.choice_3_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5952356737448520310
+    m_Key: data.event.event_09.choice_3_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1631955850967427755
+    m_Key: lobby.world_object.workbench
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4391589186152940879
+    m_Key: lobby.world_object.statue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2243768493947962817
+    m_Key: lobby.world_object.stela
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5900419522700747322
+    m_Key: lobby.world_object.researcher_elric
+    m_Metadata:
+      m_Items: []
+  - m_Id: 587329290491091082
+    m_Key: lobby.world_object.storage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7463777631022220572
+    m_Key: lobby.character.hilt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 367250356182644820
+    m_Key: lobby.character.kaya
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8615078507091817039
+    m_Key: lobby.character.haze
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4794883933976256088
+    m_Key: lobby.character.ines
     m_Metadata:
       m_Items: []
   m_Metadata:

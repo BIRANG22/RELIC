@@ -5,6 +5,7 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 using UnityEngine.Serialization;
 
@@ -79,7 +80,22 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     {
         ownerCanvas = GetComponentInParent<Canvas>();
         EnsureShopPanelReady();
+        ProtectDynamicDescriptionTexts();
         InitializeSkillUpgradeButton(Camera.main);
+    }
+
+    private void OnEnable()
+    {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
+        EnsureShopPanelReady();
+        ProtectDynamicDescriptionTexts();
+    }
+
+    private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
+    {
+        if (panelRoot != null && panelRoot.activeInHierarchy)
+            RefreshOffers();
     }
 
     private void LateUpdate()
@@ -161,6 +177,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
     private void OnDisable()
     {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
         ClearPurchaseConfirmSelection();
 
         if (initialTextRefreshCoroutine != null)
@@ -806,9 +823,45 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             }
 
             BindDescriptionInteractions(i, root);
+            ProtectDynamicDescriptionText(relicDescriptionNameTexts[i]);
+            ProtectDynamicDescriptionText(relicDescriptionRarityTexts[i]);
+            ProtectDynamicDescriptionText(relicDescriptionBodyTexts[i]);
             // 활성/비활성 상태는 SetRelicSlotPurchasedVisual()에서만 관리한다.
             // 여기서 강제로 활성화하면 구매 완료된 relic##_info가 다시 켜질 수 있다.
         }
+    }
+
+    private void ProtectDynamicDescriptionTexts()
+    {
+        EnsureDescriptionViews();
+        for (int i = 0; i < RelicDescriptionSlotCount; i++)
+        {
+            ProtectDynamicDescriptionText(relicDescriptionNameTexts[i]);
+            ProtectDynamicDescriptionText(relicDescriptionRarityTexts[i]);
+            ProtectDynamicDescriptionText(relicDescriptionBodyTexts[i]);
+        }
+    }
+
+    private static void ProtectDynamicDescriptionText(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        GameObject target = text.gameObject;
+        if (target.GetComponent<LocalizationIgnore>() == null)
+            target.AddComponent<LocalizationIgnore>();
+        if (target.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            target.AddComponent<LocalizationAutoBindingIgnore>();
+
+        LocalizedTMPText staticWriter = target.GetComponent<LocalizedTMPText>();
+        if (staticWriter != null)
+            staticWriter.enabled = false;
+        DynamicLocalizedTMPText dynamicWriter = target.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicWriter != null)
+            dynamicWriter.enabled = false;
+        LocalizeStringEvent legacyWriter = target.GetComponent<LocalizeStringEvent>();
+        if (legacyWriter != null)
+            legacyWriter.enabled = false;
     }
 
     private void EnsurePurchasedVisualViews()
