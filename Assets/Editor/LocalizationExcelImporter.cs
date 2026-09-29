@@ -11,6 +11,23 @@ public static class LocalizationExcelImporter
     public const string WorksheetName = "Text";
     public const string TableCollectionName = "Text";
     public const bool RemoveMissingEntries = true;
+    private const string SharedTablePath = "Assets/Language/Text Shared Data.asset";
+    private const string StartupImportSessionKey = "RELIC.LocalizationExcelImporter.StartupImportQueued";
+
+    [InitializeOnLoadMethod]
+    private static void QueueImportWhenWorkbookIsNewer()
+    {
+        if (SessionState.GetBool(StartupImportSessionKey, false) ||
+            !File.Exists(WorkbookPath) ||
+            (File.Exists(SharedTablePath) &&
+             File.GetLastWriteTimeUtc(WorkbookPath) <= File.GetLastWriteTimeUtc(SharedTablePath)))
+        {
+            return;
+        }
+
+        SessionState.SetBool(StartupImportSessionKey, true);
+        EditorApplication.delayCall += ImportFromMenu;
+    }
 
     [MenuItem("Tools/Localization/Import Localization Excel")]
     public static void ImportFromMenu()

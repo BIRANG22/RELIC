@@ -6911,6 +6911,90 @@ MonoBehaviour:
     m_Key: data.battle_map.battlemap_16.description
     m_Metadata:
       m_Items: []
+  - m_Id: 17752310387867648
+    m_Key: data.event.event_02.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033472
+    m_Key: data.event.event_02.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033473
+    m_Key: data.event.event_02.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033474
+    m_Key: data.event.event_02.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033475
+    m_Key: data.event.event_02.choice_3_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033476
+    m_Key: data.event.event_02.choice_3_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033477
+    m_Key: data.event.event_02_a.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033478
+    m_Key: data.event.event_02_a.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033479
+    m_Key: data.event.event_02_f.choice_4_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033480
+    m_Key: data.event.event_02_f.choice_4_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033481
+    m_Key: data.event.event_08.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033482
+    m_Key: data.event.event_08.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033483
+    m_Key: data.event.event_08.choice_1_disabled_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033484
+    m_Key: data.event.event_08.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033485
+    m_Key: data.event.event_08.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033486
+    m_Key: data.event.event_08_a.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033487
+    m_Key: data.event.event_08_a.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033488
+    m_Key: data.event.event_08_a.choice_1_disabled_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033489
+    m_Key: data.event.event_08_b.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033490
+    m_Key: data.event.event_08_b.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17752310413033491
+    m_Key: data.event.event_08_b.choice_1_disabled_description
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
