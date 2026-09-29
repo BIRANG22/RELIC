@@ -274,7 +274,7 @@ MonoBehaviour:
     Vfx:
       prefab: {fileID: 9044696800077846840, guid: dc5d62e185ece4e47b6505194fb9b854, type: 3}
       flipType: 2
-      renderMode: 0
+      renderMode: 2
       proxyBlendMode: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
@@ -290,7 +290,7 @@ MonoBehaviour:
     Vfx:
       prefab: {fileID: 9044696800077846840, guid: d5f757d94d5f98844928588b88f2e82a, type: 3}
       flipType: 2
-      renderMode: 0
+      renderMode: 2
       proxyBlendMode: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
@@ -306,7 +306,7 @@ MonoBehaviour:
     Vfx:
       prefab: {fileID: 9044696800077846840, guid: b1b5782fdc5ab1c4e8c73719ef9c07cf, type: 3}
       flipType: 2
-      renderMode: 0
+      renderMode: 2
       proxyBlendMode: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
@@ -322,7 +322,7 @@ MonoBehaviour:
     Vfx:
       prefab: {fileID: 9044696800077846840, guid: d955c3f752a21f6409d3ecec0ad6a161, type: 3}
       flipType: 2
-      renderMode: 0
+      renderMode: 2
       proxyBlendMode: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
@@ -338,7 +338,7 @@ MonoBehaviour:
     Vfx:
       prefab: {fileID: 9044696800077846840, guid: bdd2eae41ec24004c96571234ba8b684, type: 3}
       flipType: 2
-      renderMode: 0
+      renderMode: 2
       proxyBlendMode: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
