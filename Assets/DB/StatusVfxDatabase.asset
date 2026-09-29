@@ -1,0 +1,352 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e2c4e0460de4fd3b3ad1dc075537a11, type: 3}
+  m_Name: StatusVfxDatabase
+  m_EditorClassIdentifier: 
+  buffEntries:
+  - EffectId: E_Boost
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: 7df545fb057f1074389f4b87d9d60755, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Armor
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: d6761da720c5bd1429c7e494d8059470, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Charge
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: e400344740f356d429aec4a5772c96fb, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Focus
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: 656327ef023f6c94ba855fb54867faad, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Swift
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: f14201f213e10944290847cf051a90a6, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Smite
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: 77db460f65b435f4398be1f4eb0ea7db, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Lifesteal
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: d27527c0d146912468ba48b18ce290b1, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Ward
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: ecfdbf5c6db8cb340ba57bfe5162a87d, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Grudge
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: dc87af65734e66c4794b2e8fd1d59b54, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Barrier
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: b0f4935fea5ee3747a7ec4fc2260c8c0, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Barrier
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: ac0b147ebdfd0424a936698571c462bf, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Grit
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: 0d596f80b18b4314aa894f4cb818c5e9, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Cure
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: 8b4c0bd89120a1547abdb692c09b6be4, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Fatigue
+    Vfx:
+      prefab: {fileID: 9044696800077846840, guid: d955c3f752a21f6409d3ecec0ad6a161, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: AR_DamageReductionThisTurn
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: bd2f6f09ee3c0fa4ca2c0bd59175bbf5, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Bond
+    Vfx:
+      prefab: {fileID: 886670325575884253, guid: af4ec6efd6bbb794eb8f68f4a4963822, type: 3}
+      flipType: 2
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  debuffEntries:
+  - EffectId: E_Poison
+    Vfx:
+      prefab: {fileID: 9044696800077846840, guid: dc5d62e185ece4e47b6505194fb9b854, type: 3}
+      flipType: 2
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Bleed
+    Vfx:
+      prefab: {fileID: 9044696800077846840, guid: d5f757d94d5f98844928588b88f2e82a, type: 3}
+      flipType: 2
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Vulnerable
+    Vfx:
+      prefab: {fileID: 9044696800077846840, guid: b1b5782fdc5ab1c4e8c73719ef9c07cf, type: 3}
+      flipType: 2
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Weaken
+    Vfx:
+      prefab: {fileID: 9044696800077846840, guid: d955c3f752a21f6409d3ecec0ad6a161, type: 3}
+      flipType: 2
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+  - EffectId: E_Corrosion
+    Vfx:
+      prefab: {fileID: 9044696800077846840, guid: bdd2eae41ec24004c96571234ba8b684, type: 3}
+      flipType: 2
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
