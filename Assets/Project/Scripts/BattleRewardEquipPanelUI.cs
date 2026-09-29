@@ -85,8 +85,8 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
     private void OnEnable()
     {
-        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
-        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleChanged;
         ResolveReferencesIfNeeded();
         ProtectDynamicItemTexts();
         RegisterButtonEvents();
@@ -103,7 +103,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
-        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleChanged;
         HideAllCharacterHoverSelections();
     }
 
@@ -821,17 +821,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
     private static string GetRelicRarityDisplayName(string rarity)
     {
-        if (!RelicRarityUtility.TryParseChestRarity(rarity, out RelicRarity parsedRarity))
-            return string.Empty;
-
-        return parsedRarity switch
-        {
-            RelicRarity.Common => GameLocalization.Get("relic.rarity.common"),
-            RelicRarity.Rare => GameLocalization.Get("relic.rarity.rare"),
-            RelicRarity.Epic => GameLocalization.Get("relic.rarity.epic"),
-            RelicRarity.Unique => GameLocalization.Get("relic.rarity.unique"),
-            _ => string.Empty
-        };
+        return RelicRarityUtility.GetDisplayName(rarity);
     }
 
     private void ApplyItemRarityColor(string rarity)

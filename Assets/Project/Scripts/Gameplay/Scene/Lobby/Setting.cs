@@ -135,6 +135,7 @@ public class Setting : MonoBehaviour
         BindInfoAreaIfNeeded();
         BindSkillSettingPanelIfNeeded();
         BindProfileGradtionIfNeeded();
+        ProtectDynamicCharacterName();
 
         // 탭 전환 중에도 오브젝트가 꺼지지 않도록 두 영역은 항상 활성화한다.
         if (skillArea != null)
@@ -192,9 +193,10 @@ public class Setting : MonoBehaviour
     {
         BindSkillSettingPanelIfNeeded();
         PrepareCharacterSettingFade();
+        ProtectDynamicCharacterName();
 
-        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
-        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleChanged;
 
         // CharacterSettingPanel도 다른 PositionPanel 모달과 동일하게
         // 자신이 열려 있는 동안 로비 월드 오브젝트 입력을 차단합니다.
@@ -270,7 +272,7 @@ public class Setting : MonoBehaviour
         displayedLevelCharacterId = null;
         ResetCharacterSettingFadeState();
 
-        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleChanged;
         LobbyPositionSharedModalBackground.HideForOwner(this);
         LobbyPositionModalInputBlocker.Unblock(this);
 
@@ -480,6 +482,9 @@ public class Setting : MonoBehaviour
 
     private void OnLocaleChanged(Locale _)
     {
+        if (characterNameText != null && currentMasterData != null)
+            characterNameText.text = GameDataLocalization.CharacterName(currentMasterData);
+
         switch (currentTab)
         {
             case SettingTab.Preview:
@@ -496,6 +501,24 @@ public class Setting : MonoBehaviour
                     GameLocalization.Get(LocalizationKeys.CharacterSetting.RuneInfoEmpty));
                 break;
         }
+    }
+
+    private void ProtectDynamicCharacterName()
+    {
+        if (characterNameText == null)
+            return;
+
+        if (characterNameText.GetComponent<LocalizationIgnore>() == null)
+            characterNameText.gameObject.AddComponent<LocalizationIgnore>();
+        if (characterNameText.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            characterNameText.gameObject.AddComponent<LocalizationAutoBindingIgnore>();
+
+        LocalizedTMPText staticWriter = characterNameText.GetComponent<LocalizedTMPText>();
+        if (staticWriter != null)
+            staticWriter.enabled = false;
+        DynamicLocalizedTMPText dynamicWriter = characterNameText.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicWriter != null)
+            dynamicWriter.enabled = false;
     }
 
     private void OnDestroy()

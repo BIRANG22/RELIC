@@ -41,6 +41,30 @@ public class BattleRewardPanelUI : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    private void OnEnable()
+    {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+    }
+
+    private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
+    {
+        for (int i = 0; i < currentRewards.Count; i++)
+        {
+            BattleRewardData reward = currentRewards[i];
+            if (ShouldPopulateRewardPresentation(reward))
+                PopulateRewardPresentation(reward);
+        }
+
+        for (int i = 0; i < activeSlots.Count; i++)
+            activeSlots[i]?.RefreshLocalization();
+    }
+
     public void Open(List<BattleRewardData> rewards, Action completedCallback = null)
     {
         Open(rewards, completedCallback, null);

@@ -56,10 +56,24 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
     private void Awake()
     {
         EnsureReferences();
+        ProtectDynamicTexts();
         BindRollButton();
 
         if (hideOnAwake)
             gameObject.SetActive(false);
+    }
+
+    private void OnEnable()
+    {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
+        ProtectDynamicTexts();
+        RefreshRollButtonLabel();
+    }
+
+    private void OnDisable()
+    {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
     }
 
     private void OnDestroy()
@@ -89,8 +103,8 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         SetPresenterAlphaImmediate(0f);
         BindRollButton();
         EnsureRollButtonCanvasGroup();
-        // ºñÈ°¼º Presenter°¡ Continue¿¡¼­ Ã³À½ ÄÑÁö¸é AwakeÀÇ hideOnAwake°¡ ´Ù½Ã ²ø ¼ö ÀÖ´Ù.
-        // ÂüÁ¶ ÃÊ±âÈ­°¡ ³¡³­ µÚ ÃÖÁ¾ È°¼º »óÅÂ¸¦ º¸ÀåÇÑ´Ù.
+        // ë¹„í™œì„± Presenterê°€ Continueì—ì„œ ì²˜ìŒ ì¼œì§€ë©´ Awakeì˜ hideOnAwakeê°€ ë‹¤ì‹œ ëŒ ìˆ˜ ìˆë‹¤.
+        // ì°¸ì¡° ì´ˆê¸°í™”ê°€ ëë‚œ ë’¤ ìµœì¢… í™œì„± ìƒíƒœë¥¼ ë³´ì¥í•œë‹¤.
         if (!gameObject.activeSelf)
             gameObject.SetActive(true);
     }
@@ -120,12 +134,12 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
 
         StopRollAnimation();
         ClearResultTexts();
-        SetRollButtonLabel("±¼¸®±â");
+        RefreshRollButtonLabel();
         SetRollButtonVisibleImmediate(true);
         SetRollButtonInteractable(true);
     }
 
-    // Continue º¹¿ø Àü¿ë: ÀÌ¹Ì È®Á¤µÈ ÁÖ»çÀ§ °á°ú¸¦ ¾Ö´Ï¸ŞÀÌ¼Ç/Àç±¼¸² ¾øÀÌ Ç¥½ÃÇÑ´Ù.
+    // Continue ë³µì› ì „ìš©: ì´ë¯¸ í™•ì •ëœ ì£¼ì‚¬ìœ„ ê²°ê³¼ë¥¼ ì• ë‹ˆë©”ì´ì…˜/ì¬êµ´ë¦¼ ì—†ì´ í‘œì‹œí•œë‹¤.
     public void ShowResolved(
         IReadOnlyList<int> diceFaces,
         string resultDetailText,
@@ -155,7 +169,7 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
             detailText.text = pendingDetailText;
 
         interactiveState = InteractiveState.ReadyToConfirm;
-        SetRollButtonLabel("È®ÀÎ");
+        RefreshRollButtonLabel();
         SetRollButtonVisibleImmediate(true);
         SetRollButtonInteractable(true);
     }
@@ -246,8 +260,8 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         else
             yield return null;
 
-        // Roll ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ³¡³ª¸é 0¹ø ÀÚ¼¼·Î Áï½Ã º¹±ÍÇÑ µÚ Animator¸¦ ¸ØÃä´Ï´Ù.
-        // ±× Á÷ÈÄ¿¡¸¸ ÃÖÁ¾ Face Sprite¸¦ ³Ö¾î¼­ È¸Àü ÇÁ·¹ÀÓ°ú °á°ú ´«ÀÌ ¼¯ÀÌÁö ¾Ê°Ô ÇÕ´Ï´Ù.
+        // Roll ì• ë‹ˆë©”ì´ì…˜ì´ ëë‚˜ë©´ 0ë²ˆ ìì„¸ë¡œ ì¦‰ì‹œ ë³µê·€í•œ ë’¤ Animatorë¥¼ ë©ˆì¶¥ë‹ˆë‹¤.
+        // ê·¸ ì§í›„ì—ë§Œ ìµœì¢… Face Spriteë¥¼ ë„£ì–´ì„œ íšŒì „ í”„ë ˆì„ê³¼ ê²°ê³¼ ëˆˆì´ ì„ì´ì§€ ì•Šê²Œ í•©ë‹ˆë‹¤.
         ResetRollAnimationToStartPose();
         ApplyDiceFaces(pendingDiceFaces);
 
@@ -257,12 +271,12 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         if (detailText != null)
             detailText.text = pendingDetailText;
 
-        SetRollButtonLabel("È®ÀÎ");
+        interactiveState = InteractiveState.ReadyToConfirm;
+        RefreshRollButtonLabel();
         SetRollButtonVisibleImmediate(false);
         rollButton.gameObject.SetActive(true);
         yield return FadeRollButton(0f, 1f);
 
-        interactiveState = InteractiveState.ReadyToConfirm;
         SetRollButtonInteractable(true);
         rollRoutine = null;
     }
@@ -453,7 +467,7 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
             }
         }
 
-        // Controller¿¡ ´ÜÀÏ Roll Å¬¸³¸¸ ÀÖ´Â °æ¿ì¿¡´Â ÇØ´ç ±æÀÌ¸¦ »ç¿ëÇÕ´Ï´Ù.
+        // Controllerì— ë‹¨ì¼ Roll í´ë¦½ë§Œ ìˆëŠ” ê²½ìš°ì—ëŠ” í•´ë‹¹ ê¸¸ì´ë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
         if (clips.Length == 1 && clips[0] != null)
             return clips[0].length;
 
@@ -734,6 +748,43 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
     {
         if (rollButtonText != null)
             rollButtonText.text = label ?? string.Empty;
+    }
+
+    private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
+    {
+        RefreshRollButtonLabel();
+    }
+
+    private void RefreshRollButtonLabel()
+    {
+        string key = interactiveState == InteractiveState.ReadyToConfirm
+            ? "event.dice.confirm"
+            : "event.dice.roll";
+        SetRollButtonLabel(GameLocalization.Get(key));
+    }
+
+    private void ProtectDynamicTexts()
+    {
+        ProtectDynamicText(rollButtonText);
+        ProtectDynamicText(detailText);
+    }
+
+    private static void ProtectDynamicText(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        if (text.GetComponent<LocalizationIgnore>() == null)
+            text.gameObject.AddComponent<LocalizationIgnore>();
+        if (text.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            text.gameObject.AddComponent<LocalizationAutoBindingIgnore>();
+
+        LocalizedTMPText staticWriter = text.GetComponent<LocalizedTMPText>();
+        if (staticWriter != null)
+            staticWriter.enabled = false;
+        DynamicLocalizedTMPText dynamicWriter = text.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicWriter != null)
+            dynamicWriter.enabled = false;
     }
 
     private void SetRollButtonInteractable(bool interactable)

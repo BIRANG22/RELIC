@@ -60,6 +60,23 @@ public sealed class EventEquippedRelicSelectionPanelUI : MonoBehaviour
         Close();
     }
 
+    private void OnEnable()
+    {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+    }
+
+    private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
+    {
+        if (IsOpen)
+            RefreshOptions();
+    }
+
     private void OnDestroy()
     {
         if (cancelButton != null)
@@ -356,17 +373,7 @@ public sealed class EventEquippedRelicSelectionPanelUI : MonoBehaviour
 
     private static string GetRelicRarityDisplayName(string rarity)
     {
-        if (!RelicRarityUtility.TryParseChestRarity(rarity, out RelicRarity parsedRarity))
-            return string.Empty;
-
-        return parsedRarity switch
-        {
-            RelicRarity.Common => GameLocalization.Get("relic.rarity.common"),
-            RelicRarity.Rare => GameLocalization.Get("relic.rarity.rare"),
-            RelicRarity.Epic => GameLocalization.Get("relic.rarity.epic"),
-            RelicRarity.Unique => GameLocalization.Get("relic.rarity.unique"),
-            _ => string.Empty
-        };
+        return RelicRarityUtility.GetDisplayName(rarity);
     }
 
     private static void ApplyRelicRarityColor(TMP_Text rarityText, string rarity)

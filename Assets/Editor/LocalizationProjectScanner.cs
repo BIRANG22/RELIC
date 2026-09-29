@@ -237,6 +237,15 @@ public static class LocalizationProjectScanner
         return BuildGameDataKey("Event", eventId, choiceField);
     }
 
+    public static bool IsEventChoiceField(string header)
+    {
+        string field = GetDataFieldName("Event", header);
+        return field == "choice_name" ||
+               field == "choice_description" ||
+               field == "disabled_choice_description" ||
+               field == "failure_description";
+    }
+
     private static string GetDataFieldName(string sheetName, string header)
     {
         if (string.IsNullOrWhiteSpace(header))

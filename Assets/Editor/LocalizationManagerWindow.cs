@@ -448,7 +448,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
     {
         if (string.Equals(sheet, "Event", StringComparison.Ordinal) &&
             choiceOrderColumn >= 0 &&
-            header.Contains("선택지", StringComparison.Ordinal))
+            LocalizationProjectScanner.IsEventChoiceField(header))
         {
             int choiceOrder = choiceOrderColumn < row.Count &&
                 int.TryParse(row[choiceOrderColumn], out int parsedOrder)

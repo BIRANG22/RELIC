@@ -48,6 +48,7 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
         onClick = clickCallback;
         onFocus = focusCallback;
         onExit = exitCallback;
+        ProtectDynamicNameText();
 
         if (reward == null)
         {
@@ -57,6 +58,30 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
 
         gameObject.SetActive(true);
         Refresh();
+    }
+
+    public void RefreshLocalization()
+    {
+        if (isActiveAndEnabled && reward != null)
+            Refresh();
+    }
+
+    private void ProtectDynamicNameText()
+    {
+        if (nameText == null)
+            return;
+
+        if (nameText.GetComponent<LocalizationIgnore>() == null)
+            nameText.gameObject.AddComponent<LocalizationIgnore>();
+        if (nameText.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            nameText.gameObject.AddComponent<LocalizationAutoBindingIgnore>();
+
+        LocalizedTMPText staticWriter = nameText.GetComponent<LocalizedTMPText>();
+        if (staticWriter != null)
+            staticWriter.enabled = false;
+        DynamicLocalizedTMPText dynamicWriter = nameText.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicWriter != null)
+            dynamicWriter.enabled = false;
     }
 
     public void SetClaimed()

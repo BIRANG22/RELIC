@@ -125,6 +125,8 @@ public class RuneSettingPanel : MonoBehaviour
 
     private void OnEnable()
     {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
 
@@ -144,6 +146,7 @@ public class RuneSettingPanel : MonoBehaviour
 
     private void OnDisable()
     {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
         if (runeTooltipFadeCoroutine != null)
         {
             StopCoroutine(runeTooltipFadeCoroutine);
@@ -293,6 +296,20 @@ public class RuneSettingPanel : MonoBehaviour
         RefreshCurrentRuneView();
 
         SetRuneSelectPanelVisible(true);
+    }
+
+    private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
+    {
+        if (currentRuntimeData != null)
+            RefreshCurrentRuneView();
+
+        if (currentDisplayedRune != null && runeTooltipPanel != null && runeTooltipPanel.activeInHierarchy)
+        {
+            if (runeTooltipNameText != null)
+                runeTooltipNameText.text = GameDataLocalization.RuneName(currentDisplayedRune);
+            if (runeTooltipDescriptionText != null)
+                runeTooltipDescriptionText.text = BuildRuneEffectText(currentDisplayedRune);
+        }
     }
 
     public void RefreshByCurrentLevel()

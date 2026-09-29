@@ -117,8 +117,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private void OnEnable()
     {
-        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
-        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleChanged;
 
         if (warningUI == null)
             warningUI = FindFirstObjectByType<SettingWarningUI>(FindObjectsInactive.Include);
@@ -135,7 +135,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     private void OnDisable()
     {
-        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleChanged;
     }
 
     private void OnLocaleChanged(Locale _)
