@@ -1,6 +1,8 @@
 ﻿using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 using Relic.Gameplay.Data;
 
@@ -18,10 +20,24 @@ public class EventChoiceSlotUI : MonoBehaviour
     [SerializeField] private Color disabledColor = new(0.28f, 0.28f, 0.28f, 0.65f);
 
     private bool boundSelectable;
+    private EventData boundChoice;
+    private string boundUnavailableReason;
 
     private void Awake()
     {
         EnsureReferences();
+    }
+
+    private void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+        RefreshDisplayedText();
+    }
+
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
     }
 
     public void Bind(
@@ -39,24 +55,13 @@ public class EventChoiceSlotUI : MonoBehaviour
         }
 
         boundSelectable = selectable;
+        boundChoice = choice;
+        boundUnavailableReason = unavailableReason;
 
         if (root != null)
             root.SetActive(true);
 
-        if (choiceNameText != null)
-        {
-            string order = choice.ChoiceOrder > 0 ? $"{choice.ChoiceOrder}. " : string.Empty;
-            choiceNameText.text = order + GameDataLocalization.EventChoiceName(choice);
-        }
-
-        string displayedChoiceDesc = selectable
-            ? GameDataLocalization.EventChoiceDescription(choice)
-            : (!string.IsNullOrWhiteSpace(choice.UnavailableChoiceDesc)
-                ? GameDataLocalization.EventUnavailableChoiceDescription(choice)
-                : unavailableReason);
-
-        if (choiceDescText != null)
-            choiceDescText.text = displayedChoiceDesc ?? string.Empty;
+        RefreshDisplayedText();
 
         // 선택 불가 안내는 ChoiceDescText에 표시합니다.
         // 기존 UnavailableReasonText가 씬에 남아 있어도 문구가 중복되지 않게 비웁니다.
@@ -98,6 +103,8 @@ public class EventChoiceSlotUI : MonoBehaviour
     {
         EnsureReferences();
         boundSelectable = false;
+        boundChoice = null;
+        boundUnavailableReason = null;
 
         if (button != null)
         {
@@ -150,12 +157,49 @@ public class EventChoiceSlotUI : MonoBehaviour
         if (unavailableReasonText == null)
             unavailableReasonText = FindText("UnavailableReasonText");
 
+        ProtectRuntimeManagedText(choiceNameText);
+        ProtectRuntimeManagedText(choiceDescText);
+        ProtectRuntimeManagedText(unavailableReasonText);
+
         if (disabledRoot == null)
         {
             Transform disabledTransform = FindChildRecursive(transform, "DisabledRoot");
             if (disabledTransform != null)
                 disabledRoot = disabledTransform.gameObject;
         }
+    }
+
+    private void OnLocaleChanged(Locale locale)
+    {
+        if (isActiveAndEnabled)
+            RefreshDisplayedText();
+    }
+
+    private void RefreshDisplayedText()
+    {
+        if (boundChoice == null)
+            return;
+
+        if (choiceNameText != null)
+        {
+            string order = boundChoice.ChoiceOrder > 0 ? $"{boundChoice.ChoiceOrder}. " : string.Empty;
+            choiceNameText.text = order + GameDataLocalization.EventChoiceName(boundChoice);
+        }
+
+        string displayedChoiceDesc = boundSelectable
+            ? GameDataLocalization.EventChoiceDescription(boundChoice)
+            : (!string.IsNullOrWhiteSpace(boundChoice.UnavailableChoiceDesc)
+                ? GameDataLocalization.EventUnavailableChoiceDescription(boundChoice)
+                : boundUnavailableReason);
+
+        if (choiceDescText != null)
+            choiceDescText.text = displayedChoiceDesc ?? string.Empty;
+    }
+
+    private static void ProtectRuntimeManagedText(TMP_Text text)
+    {
+        if (text != null && text.GetComponent<LocalizationIgnore>() == null)
+            text.gameObject.AddComponent<LocalizationIgnore>();
     }
 
     private TMP_Text FindText(string targetName)

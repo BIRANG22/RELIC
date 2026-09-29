@@ -34,6 +34,14 @@ namespace Relic.Gameplay.Data
         public static string EventUnavailableChoiceDescription(EventData data) =>
             EventChoiceText(data, "disabled_description", data?.UnavailableChoiceDesc);
 
+        public static string EventChoiceKey(EventData data, string field) =>
+            data == null
+                ? string.Empty
+                : GameLocalization.BuildDataKey(
+                    "Event",
+                    data.EventId,
+                    $"choice_{data.ChoiceOrder}_{field}");
+
         public static string SkillName(SkillMasterData data) =>
             data == null ? string.Empty : GameLocalization.GetData("SkillMaster", data.SkillId, "name", data.Name);
 
@@ -189,7 +197,7 @@ namespace Relic.Gameplay.Data
             if (data == null)
                 return fallback ?? string.Empty;
 
-            return GameLocalization.GetData("Event", data.EventId, $"choice_{data.ChoiceOrder}_{field}", fallback);
+            return GameLocalization.Get(EventChoiceKey(data, field), fallback);
         }
     }
 }

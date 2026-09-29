@@ -10,6 +10,23 @@ public sealed class LocalizationDynamicTextBoundaryTests
     private const string LocalizedTmpTextScriptGuid = "700ed754fb422984990c407c26f0065c";
 
     [Test]
+    public void EventChoiceKey_UsesEventIdChoiceOrderAndField()
+    {
+        var eventChoice = new Relic.Gameplay.Data.EventData
+        {
+            EventId = "Event_08_A",
+            ChoiceOrder = 1,
+        };
+
+        Assert.That(
+            GameDataLocalization.EventChoiceKey(eventChoice, "name"),
+            Is.EqualTo("data.event.event_08_a.choice_1_name"));
+        Assert.That(
+            GameDataLocalization.EventChoiceKey(eventChoice, "description"),
+            Is.EqualTo("data.event.event_08_a.choice_1_description"));
+    }
+
+    [Test]
     public void RuntimeAutoLocalizer_RoutesIgnoredDynamicTextWithoutPermanentlySkippingSceneText()
     {
         string source = File.ReadAllText(
