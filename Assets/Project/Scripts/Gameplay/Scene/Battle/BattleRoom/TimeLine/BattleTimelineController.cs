@@ -3819,6 +3819,46 @@ public class BattleTimelineController : MonoBehaviour
         return GetPreviewGridIndexBeforeCommand(runtimeData, safeSlotIndex, int.MaxValue);
     }
 
+    public List<int> GetAlivePartyPreviewGridIndicesAtSlotEnd(int targetSlotIndex)
+    {
+        return GetAlivePartyPreviewGridIndicesBeforeCommand(targetSlotIndex, int.MaxValue);
+    }
+
+    public List<int> GetAlivePartyPreviewGridIndicesBeforeCommand(
+        int targetSlotIndex,
+        int targetPlayerCommandIndex)
+    {
+        List<int> result = new();
+
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+
+            if (character == null ||
+                character.RuntimeData == null ||
+                character.RuntimeData.IsDead)
+            {
+                continue;
+            }
+
+            int gridIndex = GetPreviewGridIndexBeforeCommand(
+                character.RuntimeData,
+                targetSlotIndex,
+                targetPlayerCommandIndex
+            );
+
+            if (gridIndex >= 0 && !result.Contains(gridIndex))
+                result.Add(gridIndex);
+        }
+
+        return result;
+    }
+
     private void PrepareCommandForReservation(int slotIndex, PlayerReservedCommand command)
     {
         if (command == null)

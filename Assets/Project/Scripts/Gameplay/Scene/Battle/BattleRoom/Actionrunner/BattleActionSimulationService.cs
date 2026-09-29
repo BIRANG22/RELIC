@@ -433,7 +433,8 @@ public class BattleActionSimulationService
         int currentGrid,
         Vector2Int moveOffset,
         string selfKey,
-        out int targetGrid)
+        out int targetGrid,
+        bool blockUnitOccupancy = false)
     {
         targetGrid = currentGrid;
 
@@ -447,11 +448,23 @@ public class BattleActionSimulationService
 
         bool reachedTarget = true;
 
-        if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, selfKey))
+        if (!TryApplyPlayerMoveAxisStep(
+                ref currentCoord,
+                moveOffset.x,
+                true,
+                selfKey,
+                blockUnitOccupancy))
+        {
             reachedTarget = false;
+        }
 
         if (reachedTarget &&
-            !TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, selfKey))
+            !TryApplyPlayerMoveAxisStep(
+                ref currentCoord,
+                moveOffset.y,
+                false,
+                selfKey,
+                blockUnitOccupancy))
         {
             reachedTarget = false;
         }
@@ -503,7 +516,8 @@ public class BattleActionSimulationService
         ref Vector2Int currentCoord,
         int amount,
         bool horizontal,
-        string selfKey)
+        string selfKey,
+        bool blockUnitOccupancy = false)
     {
         int remaining = amount;
 
@@ -519,8 +533,12 @@ public class BattleActionSimulationService
 
             int gridIndex = gridManager.CoordToIndex(nextCoord);
 
-            // 유닛 점유는 예약 단계에서 이동 실패로 확정하지 않는다.
-            // 실제 실행 순간의 점유 상태로 충돌 여부를 결정한다.
+            // 일반 이동 예약은 기존 규칙대로 유닛 점유를 실행 시점에 판정합니다.
+            // 다만 Range_Advance / Range_Retreat 같은 강제 이동 스킬은 예약 고스트가
+            // 충돌 예상 지점 직전에서 멈춰야 하므로 시뮬레이션에서 유닛 점유도 검사합니다.
+            if (blockUnitOccupancy && IsOccupiedForPlayerMove(gridIndex, selfKey))
+                return false;
+
             if (IsGridEffectBlocked(gridIndex))
                 return false;
 
@@ -625,7 +643,8 @@ public class BattleActionSimulationService
             currentGrid,
             requestedMoveOffset,
             "P:" + command.CharacterId,
-            out int targetGrid);
+            out int targetGrid,
+            true);
 
         Vector2Int startCoord = gridManager.IndexToCoord(currentGrid);
         Vector2Int targetCoord = gridManager.IndexToCoord(targetGrid);

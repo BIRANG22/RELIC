@@ -224,20 +224,25 @@ namespace Relic.Gameplay.Data
                 if (character == null || string.IsNullOrWhiteSpace(character.CharacterId))
                     continue;
 
-                if (snapshots != null &&
-                    snapshots.TryGetValue(character.CharacterId.Trim(), out BattleLobbyLoadoutSnapshotData snapshot))
+                BattleLobbyLoadoutSnapshotData snapshot = null;
+                bool restoredFromLobbySnapshot = snapshots != null &&
+                    snapshots.TryGetValue(character.CharacterId.Trim(), out snapshot);
+
+                if (restoredFromLobbySnapshot)
                 {
+                    // 출발 직전 로비에서 세팅한 장착 기억을 그대로 복원합니다.
+                    // 탐사 중 획득/교체한 기억은 스냅샷에 포함되지 않으므로 이 시점에서 자연스럽게 제거됩니다.
                     RestoreSnapshot(character, snapshot);
                 }
                 else if (IsCurrentPartyCharacter(dataManager.PartyRuntimeStore, character.CharacterId))
                 {
                     RestoreBaseBattleStats(dataManager, character);
                     NormalizeUpgradedSkillVariantsToBase(character);
+
+                    // 구버전 저장 등 출발 스냅샷이 없는 경우에만 기존 안전 정리를 사용합니다.
+                    ClearExplorationOnlySkillSlots(character);
                 }
 
-                // EquippedSkillIds[2], [3]은 탐사 중 획득한 전승기억 슬롯입니다.
-                // 전투를 포기하고 로비로 돌아갈 때 탐사 중 장착한 기억이 남지 않도록 비웁니다.
-                ClearExplorationOnlySkillSlots(character);
                 ClearBattleOnlyCharacterState(character);
             }
         }
@@ -344,19 +349,21 @@ namespace Relic.Gameplay.Data
                 if (loadout == null)
                     continue;
 
-                loadout.EquippedSkillIds = CopyStringArray(loadout.EquippedSkillIds, EquippedSkillSlotCount);
-
                 if (!string.IsNullOrWhiteSpace(loadout.CharacterId) &&
                     snapshots != null &&
                     snapshots.TryGetValue(loadout.CharacterId.Trim(), out BattleLobbyLoadoutSnapshotData snapshot) &&
                     snapshot != null)
                 {
-                    // 로비에서 사용하는 고유 스킬 슬롯은 탐사 시작 직전 상태로 복구합니다.
-                    loadout.EquippedSkillIds[0] = snapshot.UniqueSkillId ?? string.Empty;
-                    loadout.EquippedSkillIds[1] = snapshot.AbilitySkillId ?? string.Empty;
+                    // 출발 직전 로비 세팅 전체를 기준으로 되돌립니다.
+                    // 따라서 출발 전에 장착했던 기억은 유지되고, 탐사 중 획득/교체한 기억만 빠집니다.
+                    loadout.EquippedSkillIds = CopyStringArray(
+                        snapshot.EquippedSkillIds,
+                        EquippedSkillSlotCount);
+                    continue;
                 }
 
-                // 전승기억은 탐사 전용이므로 로비로 복귀할 때 항상 제거합니다.
+                // 출발 스냅샷이 없는 구버전 저장은 기존 규칙으로 안전하게 정리합니다.
+                loadout.EquippedSkillIds = CopyStringArray(loadout.EquippedSkillIds, EquippedSkillSlotCount);
                 loadout.EquippedSkillIds[2] = string.Empty;
                 loadout.EquippedSkillIds[3] = string.Empty;
             }

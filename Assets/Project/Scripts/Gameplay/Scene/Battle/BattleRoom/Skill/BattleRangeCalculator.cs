@@ -69,6 +69,47 @@ public static class BattleRangeCalculator
 
         return result;
     }
+    public static bool IsDirectionalMovePathRangeId(
+        string rangeId,
+        out bool isAdvance,
+        out int maxDistance)
+    {
+        isAdvance = false;
+        maxDistance = 0;
+
+        if (string.IsNullOrWhiteSpace(rangeId))
+            return false;
+
+        string trimmed = rangeId.Trim();
+        const string advancePrefix = "Range_Advance";
+        const string retreatPrefix = "Range_Retreat";
+        string distanceText;
+
+        if (trimmed.StartsWith(advancePrefix, System.StringComparison.OrdinalIgnoreCase))
+        {
+            isAdvance = true;
+            distanceText = trimmed.Substring(advancePrefix.Length);
+        }
+        else if (trimmed.StartsWith(retreatPrefix, System.StringComparison.OrdinalIgnoreCase))
+        {
+            isAdvance = false;
+            distanceText = trimmed.Substring(retreatPrefix.Length);
+        }
+        else
+        {
+            return false;
+        }
+
+        return int.TryParse(distanceText, out maxDistance) &&
+               maxDistance >= 1 &&
+               maxDistance <= 6;
+    }
+
+    public static bool IsPartyRangeId(string rangeId)
+    {
+        return string.Equals(rangeId, "Range_Party", System.StringComparison.OrdinalIgnoreCase);
+    }
+
     public static bool IsAllRangeId(string rangeId)
     {
         return string.Equals(rangeId, "Range_All", System.StringComparison.OrdinalIgnoreCase) ||

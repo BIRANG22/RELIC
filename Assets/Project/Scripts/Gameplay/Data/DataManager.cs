@@ -9,6 +9,7 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private RelicIconDatabase relicIconDatabase;
     [SerializeField] private MonsterPrefabDatabase monsterPrefabDatabase;
     [SerializeField] private MonsterIconDatabase monsterIconDatabase;
+    [SerializeField] private MonsterSkillIconDatabase monsterSkillIconDatabase;
     [SerializeField] private ActionTypeIconDatabase actionTypeIconDatabase;
     [SerializeField] private CharacterIconDatabase characterIconDatabase;
     [SerializeField] private RuneIconDatabase runeIconDatabase;
@@ -42,6 +43,7 @@ public class DataManager : Singleton<DataManager>
     public BattleMapDatabase BattleMapDatabase => dataBootstrap.BattleMapDatabase;
     public MonsterDatabase MonsterDatabase => dataBootstrap.MonsterDatabase;
     public MonsterIconDatabase MonsterIconDatabase => monsterIconDatabase;
+    public MonsterSkillIconDatabase MonsterSkillIconDatabase => monsterSkillIconDatabase;
     public MapDatabase MapDatabase => dataBootstrap.MapDatabase;
     public EventDatabase EventDatabase => dataBootstrap.EventDatabase;
     public MonsterSkillDatabase MonsterSkillDatabase => dataBootstrap.MonsterSkillDatabase;
@@ -71,11 +73,24 @@ public class DataManager : Singleton<DataManager>
         // 기존 싱글톤의 참조만 비어 있다면 중복 오브젝트가 제거되기 전에 참조만 전달합니다.
         // 전투 침식도 아이콘은 로비에서 확보한 Sprite 캐시를 우선 사용합니다.
         DataManager existing = Instance;
-        if (existing != null && existing != this &&
-            existing.erosionIconDatabase == null && erosionIconDatabase != null)
+        if (existing != null && existing != this)
         {
-            existing.erosionIconDatabase = erosionIconDatabase;
-            existing.erosionIconDatabase.Initialize();
+            // 씬 전환 중 새 DataManager에만 연결된 DB가 있다면
+            // 삭제되기 전에 기존 싱글톤으로 넘겨 런타임 참조가 유실되지 않게 합니다.
+            if (existing.erosionIconDatabase == null && erosionIconDatabase != null)
+            {
+                existing.erosionIconDatabase = erosionIconDatabase;
+                existing.erosionIconDatabase.Initialize();
+            }
+
+            if (existing.actionTypeIconDatabase == null && actionTypeIconDatabase != null)
+            {
+                existing.actionTypeIconDatabase = actionTypeIconDatabase;
+                existing.actionTypeIconDatabase.Initialize();
+            }
+
+            if (existing.monsterSkillIconDatabase == null && monsterSkillIconDatabase != null)
+                existing.monsterSkillIconDatabase = monsterSkillIconDatabase;
         }
 
         base.Awake();

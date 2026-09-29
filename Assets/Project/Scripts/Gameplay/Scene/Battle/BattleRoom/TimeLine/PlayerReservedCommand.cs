@@ -41,6 +41,11 @@ public class PlayerReservedCommand
 
     public int ReservedMoveGridIndex { get; private set; } = -1;
 
+    // Range_AdvanceXX / Range_RetreatXX 스킬은 일반 이동 명령이 아니라
+    // 공격 스킬 안에서 이동하므로 ReservedMoveGridIndex를 사용하지 않습니다.
+    public bool HasDirectionalMoveDistanceOverride { get; private set; }
+    public int DirectionalMoveDistanceOverride { get; private set; }
+
     public string CharacterId => UserRuntime != null ? UserRuntime.CharacterId : "";
     public string SkillId => SkillData != null ? SkillData.SkillId : "";
     public string SkillName => SkillData != null ? SkillData.Name : "";
@@ -206,6 +211,12 @@ public class PlayerReservedCommand
     public void SetMoveDirection(BattleDirection direction)
     {
         Direction = direction;
+    }
+
+    public void SetDirectionalMoveDistanceOverride(int signedDistance)
+    {
+        HasDirectionalMoveDistanceOverride = signedDistance != 0;
+        DirectionalMoveDistanceOverride = signedDistance;
     }
 
     public void SetTimelineSlotIndex(int slotIndex)

@@ -654,8 +654,16 @@ public class BattleTimelineBarUI : MonoBehaviour
             return;
 
         List<int> rangeIndices = new();
+        string rangeId = BattleEquipmentEffectService.GetEffectiveRangeId(command.UserRuntime, command.SkillData);
 
-        if (command.SkillData.RangeType == RangeType.Direction)
+        if (BattleRangeCalculator.IsPartyRangeId(rangeId))
+        {
+            rangeIndices = owner.GetAlivePartyPreviewGridIndicesBeforeCommand(
+                entry.SlotIndex,
+                entry.PlayerCommandIndex
+            );
+        }
+        else if (command.SkillData.RangeType == RangeType.Direction)
         {
             rangeIndices = BattleRangeCalculator.GetDirectionRangeIndices(
                 casterGridIndex,
