@@ -1018,14 +1018,66 @@ public class BattleCharacterPanelUI : MonoBehaviour
             }
         }
 
-        ClearPartyStatusIcons(slot);
-        foreach (StatusEffectRuntimeData effect in merged.Values)
+        // HP/마나/카르마 등의 HUD 값이 갱신될 때마다 상태효과 아이콘을 Destroy/Instantiate하면
+        // 마우스가 올라가 있던 StatusEffectIcon 자체가 사라지면서 툴팁이 Hide/Show를 반복합니다.
+        // 같은 EffectId의 아이콘은 그대로 재사용하고 실제로 추가/제거된 효과만 생성/삭제합니다.
+        Dictionary<string, StatusEffectIcon> existingIcons = new(StringComparer.Ordinal);
+        for (int i = slot.SpawnedStatusIcons.Count - 1; i >= 0; i--)
         {
-            StatusEffectIcon icon = Instantiate(statusEffectIconPrefab, slot.StatusContent);
-            icon.gameObject.name = $"StatusEffect_{effect.EffectId}";
-            icon.Set(effect);
-            slot.SpawnedStatusIcons.Add(icon);
+            StatusEffectIcon icon = slot.SpawnedStatusIcons[i];
+            if (icon == null)
+            {
+                slot.SpawnedStatusIcons.RemoveAt(i);
+                continue;
+            }
+
+            string objectName = icon.gameObject.name;
+            const string prefix = "StatusEffect_";
+            string effectId = objectName.StartsWith(prefix, StringComparison.Ordinal)
+                ? objectName.Substring(prefix.Length)
+                : string.Empty;
+
+            if (string.IsNullOrWhiteSpace(effectId) || existingIcons.ContainsKey(effectId))
+            {
+                slot.SpawnedStatusIcons.RemoveAt(i);
+                Destroy(icon.gameObject);
+                continue;
+            }
+
+            existingIcons.Add(effectId, icon);
         }
+
+        List<StatusEffectIcon> refreshedIcons = new();
+        int siblingIndex = 0;
+
+        foreach (KeyValuePair<string, StatusEffectRuntimeData> pair in merged)
+        {
+            string effectId = pair.Key;
+            StatusEffectRuntimeData effect = pair.Value;
+
+            if (!existingIcons.TryGetValue(effectId, out StatusEffectIcon icon) || icon == null)
+            {
+                icon = Instantiate(statusEffectIconPrefab, slot.StatusContent);
+                icon.gameObject.name = $"StatusEffect_{effectId}";
+            }
+            else
+            {
+                existingIcons.Remove(effectId);
+            }
+
+            icon.Set(effect);
+            icon.transform.SetSiblingIndex(siblingIndex++);
+            refreshedIcons.Add(icon);
+        }
+
+        foreach (StatusEffectIcon unusedIcon in existingIcons.Values)
+        {
+            if (unusedIcon != null)
+                Destroy(unusedIcon.gameObject);
+        }
+
+        slot.SpawnedStatusIcons.Clear();
+        slot.SpawnedStatusIcons.AddRange(refreshedIcons);
     }
 
     private static int CalculatePartyRuntimeHash(CharacterRuntimeData runtime)
@@ -2306,7 +2358,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
 
         ApplyItemButtonEquippedVisual(hasRelic, canUse);
-        ConfigureButtonHover(itemButton, null, "Back2", null);
+        ConfigureButtonHover(
+            itemButton,
+            null,
+            "Back2",
+            null,
+            BattleCharacterSkillLineFeedbackMode.PersistentExternal,
+            () => activeRelicTargetingController != null && activeRelicTargetingController.IsTargeting);
     }
 
     private void ApplyItemButtonEquippedVisual(bool hasActiveRelic, bool canUse)
@@ -2406,15 +2464,42 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void EnsureMoveAndItemButtonHoverEffects()
     {
-        ConfigureButtonHover(moveButton, "Background", "Background2", ResolveSkillData(boundRuntime?.MoveSkillId));
-        ConfigureButtonHover(itemButton, null, "Back2", null);
+        ConfigureButtonHover(
+            moveButton,
+            "Background",
+            "Background2",
+            ResolveSkillData(boundRuntime?.MoveSkillId));
+
+        ConfigureButtonHover(
+            itemButton,
+            null,
+            "Back2",
+            null,
+            BattleCharacterSkillLineFeedbackMode.PersistentExternal,
+            () => activeRelicTargetingController != null && activeRelicTargetingController.IsTargeting);
+
+        ConfigureButtonHover(
+            flipButton,
+            null,
+            null,
+            null,
+            BattleCharacterSkillLineFeedbackMode.Instant);
+
+        ConfigureButtonHover(
+            resetButton,
+            null,
+            null,
+            null,
+            BattleCharacterSkillLineFeedbackMode.Instant);
     }
 
     private void ConfigureButtonHover(
         Button button,
         string normalBackgroundName,
         string hoverBackgroundName,
-        SkillMasterData previewSkillData)
+        SkillMasterData previewSkillData,
+        BattleCharacterSkillLineFeedbackMode lineFeedbackMode = BattleCharacterSkillLineFeedbackMode.AutoSkill,
+        Func<bool> persistentSelectionProvider = null)
     {
         if (button == null)
             return;
@@ -2437,6 +2522,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
             ShowSkillTooltip,
             HideSkillTooltip
         );
+
+        hover.SetLineFeedbackMode(lineFeedbackMode, persistentSelectionProvider);
     }
 
     private static Image FindChildImage(Transform root, string childName)
@@ -2591,6 +2678,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
+        flipButton?.GetComponent<BattleCharacterSkillHoverUI>()?.ShowClickSelectionFeedback();
+
         battleTimelineController.CancelSkillReservationPreviewFromSkillList(boundRuntime);
         battleTimelineController.TryReserveFacingFlip(boundRuntime, moveSkillData);
         battleTimelineController.RefocusCurrentSelectedCharacterWhenInputReady();
@@ -2609,11 +2698,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
+        resetButton?.GetComponent<BattleCharacterSkillHoverUI>()?.ShowClickSelectionFeedback();
         battleTimelineController.ClearAllPlayerReservations();
     }
 
     private void OnItemButtonClicked()
     {
+        itemButton?.GetComponent<BattleCharacterSkillHoverUI>()?.ShowClickSelectionFeedback();
         UseActiveRelicDirectly();
     }
 
@@ -4127,7 +4218,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void RefreshStatusEffects()
     {
-        ClearStatusEffectIcons();
         ConfigureStatusEffectLayout();
 
         if (statusEffectListRoot == null ||
@@ -4135,11 +4225,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
             boundRuntime == null ||
             boundRuntime.StatusEffects == null)
         {
+            ClearStatusEffectIcons();
             return;
         }
 
         Dictionary<string, StatusEffectRuntimeData> mergedStatusEffects =
-            new Dictionary<string, StatusEffectRuntimeData>();
+            new Dictionary<string, StatusEffectRuntimeData>(StringComparer.Ordinal);
 
         for (int i = 0; i < boundRuntime.StatusEffects.Count; i++)
         {
@@ -4163,20 +4254,71 @@ public class BattleCharacterPanelUI : MonoBehaviour
                     TurnCount = statusEffect.TurnCount,
                     IsPassive = statusEffect.IsPassive,
                     SourceSkillId = statusEffect.SourceSkillId
-                }
-            );
+                });
         }
 
-        foreach (StatusEffectRuntimeData statusEffect in mergedStatusEffects.Values)
+        // 현재 선택 캐릭터의 상태효과 아이콘도 Party 슬롯과 동일하게 재사용합니다.
+        // 기존 코드는 RefreshStatusEffects가 호출될 때마다 전부 Destroy/Instantiate해서
+        // 마우스가 같은 아이콘 위에 있어도 OnDisable/OnDestroy -> Hide가 반복되었습니다.
+        Dictionary<string, StatusEffectIcon> existingIcons =
+            new Dictionary<string, StatusEffectIcon>(StringComparer.Ordinal);
+
+        for (int i = spawnedStatusEffectIcons.Count - 1; i >= 0; i--)
         {
-            StatusEffectIcon icon = Instantiate(
-                statusEffectIconPrefab,
-                statusEffectListRoot
-            );
+            StatusEffectIcon icon = spawnedStatusEffectIcons[i];
+            if (icon == null)
+            {
+                spawnedStatusEffectIcons.RemoveAt(i);
+                continue;
+            }
+
+            string objectName = icon.gameObject.name;
+            const string prefix = "StatusEffect_";
+            string effectId = objectName.StartsWith(prefix, StringComparison.Ordinal)
+                ? objectName.Substring(prefix.Length)
+                : string.Empty;
+
+            if (string.IsNullOrWhiteSpace(effectId) || existingIcons.ContainsKey(effectId))
+            {
+                spawnedStatusEffectIcons.RemoveAt(i);
+                Destroy(icon.gameObject);
+                continue;
+            }
+
+            existingIcons.Add(effectId, icon);
+        }
+
+        List<StatusEffectIcon> refreshedIcons = new List<StatusEffectIcon>();
+        int siblingIndex = 0;
+
+        foreach (KeyValuePair<string, StatusEffectRuntimeData> pair in mergedStatusEffects)
+        {
+            string effectId = pair.Key;
+            StatusEffectRuntimeData statusEffect = pair.Value;
+
+            if (!existingIcons.TryGetValue(effectId, out StatusEffectIcon icon) || icon == null)
+            {
+                icon = Instantiate(statusEffectIconPrefab, statusEffectListRoot);
+                icon.gameObject.name = $"StatusEffect_{effectId}";
+            }
+            else
+            {
+                existingIcons.Remove(effectId);
+            }
 
             icon.Set(statusEffect);
-            spawnedStatusEffectIcons.Add(icon);
+            icon.transform.SetSiblingIndex(siblingIndex++);
+            refreshedIcons.Add(icon);
         }
+
+        foreach (StatusEffectIcon unusedIcon in existingIcons.Values)
+        {
+            if (unusedIcon != null)
+                Destroy(unusedIcon.gameObject);
+        }
+
+        spawnedStatusEffectIcons.Clear();
+        spawnedStatusEffectIcons.AddRange(refreshedIcons);
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(statusEffectListRoot);
     }

@@ -1,8 +1,7 @@
 using Relic.Gameplay.Data;
+using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public enum UnitStatusEffectTooltipSide
 {
@@ -10,6 +9,11 @@ public enum UnitStatusEffectTooltipSide
     Left
 }
 
+/// <summary>
+/// 상태효과 아이콘용 단일 툴팁입니다.
+/// 스킬 툴팁처럼 데이터 설정 -> 표시 -> 마우스 추적 -> 숨김만 처리합니다.
+/// 씬에 미리 배치한 UnitStatusEffectTooltipItemUI 하나를 재사용하며 Instantiate/Destroy하지 않습니다.
+/// </summary>
 public class UnitStatusEffectTooltipUI : MonoBehaviour
 {
     private static UnitStatusEffectTooltipUI instance;
@@ -18,31 +22,30 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     [SerializeField] private RectTransform panelRect;
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private RectTransform itemRoot;
-    [SerializeField] private UnitStatusEffectTooltipItemUI itemPrefab;
+    [Tooltip("EffectRoot 아래에 미리 배치한 UnitStatusEffectTooltipItemUI입니다. 비워두면 비활성 오브젝트까지 포함해 자동으로 찾습니다.")]
+    [SerializeField] private UnitStatusEffectTooltipItemUI itemView;
 
     [Header("Position")]
     [SerializeField] private Vector2 screenOffset = new Vector2(24f, 0f);
-    [SerializeField] private float screenPadding = 12f;
+    [SerializeField, Min(0f)] private float screenPadding = 12f;
+    [SerializeField] private bool followMousePosition = true;
 
-    [Header("Item Layout")]
-    [SerializeField] private float itemSpacing = 8f;
-    [SerializeField] private Vector2 fallbackItemSize = new Vector2(300f, 80f);
-    [SerializeField] private Vector2 contentPadding = Vector2.zero;
-    [SerializeField] private bool resizePanelToContent = true;
+    [Header("Fade")]
+    [SerializeField, Min(0f)] private float fadeInDuration = 0.12f;
+    [SerializeField, Min(0f)] private float fadeOutDuration = 0.05f;
+    [SerializeField] private bool useUnscaledTime = true;
 
     [Header("Sorting")]
     [SerializeField] private bool forceTooltipToFront = true;
     [SerializeField] private int sortingOrderOffset = 20;
 
-    private readonly List<UnitStatusEffectTooltipItemUI> spawnedItems = new();
     private Canvas rootCanvas;
     private RectTransform canvasRect;
     private Canvas tooltipCanvas;
+    private Coroutine fadeCoroutine;
     private Object currentOwner;
-    private IReadOnlyList<StatusEffectRuntimeData> currentStatusEffects;
-    private int currentStatusEffectsHash;
-    private Vector2 lastScreenPosition;
-    private UnitStatusEffectTooltipSide lastSide = UnitStatusEffectTooltipSide.Right;
+    private bool isVisible;
+    private UnitStatusEffectTooltipSide currentSide = UnitStatusEffectTooltipSide.Right;
 
     public static UnitStatusEffectTooltipUI GetOrCreate()
     {
@@ -52,153 +55,90 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
             return instance;
         }
 
-        instance = FindBestTooltipInScene();
+        UnitStatusEffectTooltipUI[] tooltips = FindObjectsByType<UnitStatusEffectTooltipUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
 
-        if (instance != null)
+        if (tooltips == null || tooltips.Length == 0)
+            return null;
+
+        for (int i = 0; i < tooltips.Length; i++)
         {
+            if (tooltips[i] == null)
+                continue;
+
+            instance = tooltips[i];
             instance.InitializeIfNeeded();
             return instance;
         }
 
-        Canvas canvas = FindBestCanvasInScene();
-        if (canvas == null)
-            return null;
-
-        GameObject tooltipObject = new GameObject("UnitStatusEffectTooltipUI_Auto", typeof(RectTransform), typeof(CanvasGroup), typeof(UnitStatusEffectTooltipUI));
-        tooltipObject.transform.SetParent(canvas.transform, false);
-
-        RectTransform tooltipRect = tooltipObject.GetComponent<RectTransform>();
-        tooltipRect.sizeDelta = new Vector2(300f, 80f);
-        tooltipRect.pivot = new Vector2(0f, 0.5f);
-
-        CanvasGroup group = tooltipObject.GetComponent<CanvasGroup>();
-        group.alpha = 0f;
-        group.interactable = false;
-        group.blocksRaycasts = false;
-
-        GameObject rootObject = new GameObject("EffectRoot", typeof(RectTransform));
-        rootObject.transform.SetParent(tooltipObject.transform, false);
-
-        RectTransform rootRect = rootObject.GetComponent<RectTransform>();
-        rootRect.anchorMin = new Vector2(0f, 1f);
-        rootRect.anchorMax = new Vector2(0f, 1f);
-        rootRect.pivot = new Vector2(0f, 1f);
-        rootRect.anchoredPosition = Vector2.zero;
-        rootRect.sizeDelta = Vector2.zero;
-
-        UnitStatusEffectTooltipUI tooltip = tooltipObject.GetComponent<UnitStatusEffectTooltipUI>();
-        tooltip.panelRect = tooltipRect;
-        tooltip.canvasGroup = group;
-        tooltip.itemRoot = rootRect;
-        tooltip.InitializeIfNeeded();
-        return tooltip;
-    }
-
-    private static UnitStatusEffectTooltipUI FindBestTooltipInScene()
-    {
-        UnitStatusEffectTooltipUI[] tooltips = FindObjectsByType<UnitStatusEffectTooltipUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        if (tooltips == null || tooltips.Length <= 0)
-            return null;
-
-        UnitStatusEffectTooltipUI best = null;
-        for (int i = 0; i < tooltips.Length; i++)
-        {
-            UnitStatusEffectTooltipUI tooltip = tooltips[i];
-            if (tooltip == null)
-                continue;
-
-            if (tooltip.gameObject.activeInHierarchy)
-                return tooltip;
-
-            if (best == null)
-                best = tooltip;
-        }
-
-        return best;
-    }
-
-    private static Canvas FindBestCanvasInScene()
-    {
-        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        if (canvases == null || canvases.Length <= 0)
-            return null;
-
-        Canvas best = null;
-        int bestSortingOrder = int.MinValue;
-
-        for (int i = 0; i < canvases.Length; i++)
-        {
-            Canvas canvas = canvases[i];
-            if (canvas == null || !canvas.gameObject.activeInHierarchy)
-                continue;
-
-            if (best == null || canvas.sortingOrder >= bestSortingOrder)
-            {
-                best = canvas;
-                bestSortingOrder = canvas.sortingOrder;
-            }
-        }
-
-        if (best != null)
-            return best;
-
-        return canvases[0];
+        return null;
     }
 
     private void Awake()
     {
-        if (instance == null || gameObject.activeInHierarchy)
-            instance = this;
-
+        instance = this;
         InitializeIfNeeded();
-        SetVisible(false);
+        HideImmediate();
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+            instance = null;
     }
 
     private void LateUpdate()
     {
-        if (canvasGroup == null || canvasGroup.alpha <= 0f)
+        if (!isVisible || !followMousePosition)
             return;
 
-        RefreshCurrentStatusEffectsIfChanged();
-
-        if (canvasGroup != null && canvasGroup.alpha > 0f)
-            UpdatePosition(lastScreenPosition, lastSide);
+        Vector2 mousePosition = Input.mousePosition;
+        UnitStatusEffectTooltipSide side = GetSideForScreenPosition(mousePosition);
+        UpdatePosition(mousePosition, side);
     }
 
-    public void Show(Object owner, IReadOnlyList<StatusEffectRuntimeData> statusEffects, Vector2 screenPosition)
+    public void Show(
+        Object owner,
+        IReadOnlyList<StatusEffectRuntimeData> statusEffects,
+        Vector2 screenPosition)
     {
-        Show(owner, statusEffects, screenPosition, UnitStatusEffectTooltipSide.Right);
+        Show(owner, statusEffects, screenPosition, GetSideForScreenPosition(screenPosition));
     }
 
-    public void Show(Object owner, IReadOnlyList<StatusEffectRuntimeData> statusEffects, Vector2 screenPosition, UnitStatusEffectTooltipSide side)
+    public void Show(
+        Object owner,
+        IReadOnlyList<StatusEffectRuntimeData> statusEffects,
+        Vector2 screenPosition,
+        UnitStatusEffectTooltipSide side)
     {
         InitializeIfNeeded();
 
-        if (!gameObject.activeSelf)
-            gameObject.SetActive(true);
-
-        BringToFront();
-
-        if (statusEffects == null)
+        StatusEffectRuntimeData data = GetFirstValidStatusEffect(statusEffects);
+        if (data == null || itemView == null)
         {
             Hide(owner);
             return;
         }
 
         currentOwner = owner;
-        currentStatusEffects = statusEffects;
-        lastScreenPosition = screenPosition;
-        lastSide = side;
+        currentSide = side;
 
-        if (!RebuildItems(statusEffects))
-        {
-            Hide(owner);
-            return;
-        }
+        itemView.Set(data);
+        if (!itemView.gameObject.activeSelf)
+            itemView.gameObject.SetActive(true);
 
-        currentStatusEffectsHash = CalculateStatusEffectsHash(statusEffects);
-        SetVisible(true);
-        UpdatePosition(screenPosition, side);
+        BringToFront();
+
+        Vector2 position = followMousePosition
+            ? (Vector2)Input.mousePosition
+            : screenPosition;
+        UnitStatusEffectTooltipSide positionSide = followMousePosition
+            ? GetSideForScreenPosition(position)
+            : side;
+
+        UpdatePosition(position, positionSide);
+        ShowWithFade();
     }
 
     public void Hide(Object owner)
@@ -207,15 +147,12 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
             return;
 
         currentOwner = null;
-        currentStatusEffects = null;
-        currentStatusEffectsHash = 0;
-        ClearItems();
-        SetVisible(false);
+        HideWithFade();
     }
 
     public void UpdatePosition(Vector2 screenPosition)
     {
-        UpdatePosition(screenPosition, lastSide);
+        UpdatePosition(screenPosition, GetSideForScreenPosition(screenPosition));
     }
 
     public void UpdatePosition(Vector2 screenPosition, UnitStatusEffectTooltipSide side)
@@ -225,45 +162,56 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         if (panelRect == null || canvasRect == null)
             return;
 
-        lastScreenPosition = screenPosition;
-        lastSide = side;
+        currentSide = side;
 
         Camera uiCamera = null;
         if (rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
             uiCamera = rootCanvas.worldCamera != null ? rootCanvas.worldCamera : Camera.main;
 
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPosition, uiCamera, out Vector2 anchorPoint))
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvasRect,
+                screenPosition,
+                uiCamera,
+                out Vector2 localPoint))
+        {
             return;
+        }
 
-        Vector2 panelSize = GetRectSize(panelRect, fallbackItemSize);
+        Vector2 panelSize = panelRect.rect.size;
+        if (panelSize.x <= 0f)
+            panelSize.x = Mathf.Abs(panelRect.sizeDelta.x);
+        if (panelSize.y <= 0f)
+            panelSize.y = Mathf.Abs(panelRect.sizeDelta.y);
+
         Vector2 pivot = panelRect.pivot;
         float horizontalGap = Mathf.Abs(screenOffset.x);
-        float verticalOffset = screenOffset.y;
-        Vector2 targetPosition = anchorPoint;
+        Vector2 target = localPoint;
 
         if (side == UnitStatusEffectTooltipSide.Left)
         {
-            float targetRight = anchorPoint.x - horizontalGap;
-            targetPosition.x = targetRight - panelSize.x * (1f - pivot.x);
+            float targetRight = localPoint.x - horizontalGap;
+            target.x = targetRight - panelSize.x * (1f - pivot.x);
         }
         else
         {
-            float targetLeft = anchorPoint.x + horizontalGap;
-            targetPosition.x = targetLeft + panelSize.x * pivot.x;
+            float targetLeft = localPoint.x + horizontalGap;
+            target.x = targetLeft + panelSize.x * pivot.x;
         }
 
-        targetPosition.y = anchorPoint.y + verticalOffset + panelSize.y * (pivot.y - 0.5f);
+        target.y = localPoint.y + screenOffset.y;
 
-        Rect canvasBounds = canvasRect.rect;
-        float minX = canvasBounds.xMin + screenPadding + panelSize.x * pivot.x;
-        float maxX = canvasBounds.xMax - screenPadding - panelSize.x * (1f - pivot.x);
-        float minY = canvasBounds.yMin + screenPadding + panelSize.y * pivot.y;
-        float maxY = canvasBounds.yMax - screenPadding - panelSize.y * (1f - pivot.y);
+        Rect bounds = canvasRect.rect;
+        float minX = bounds.xMin + screenPadding + panelSize.x * pivot.x;
+        float maxX = bounds.xMax - screenPadding - panelSize.x * (1f - pivot.x);
+        float minY = bounds.yMin + screenPadding + panelSize.y * pivot.y;
+        float maxY = bounds.yMax - screenPadding - panelSize.y * (1f - pivot.y);
 
-        targetPosition.x = Mathf.Clamp(targetPosition.x, minX, maxX);
-        targetPosition.y = Mathf.Clamp(targetPosition.y, minY, maxY);
+        if (minX <= maxX)
+            target.x = Mathf.Clamp(target.x, minX, maxX);
+        if (minY <= maxY)
+            target.y = Mathf.Clamp(target.y, minY, maxY);
 
-        panelRect.anchoredPosition = targetPosition;
+        panelRect.anchoredPosition = target;
     }
 
     private void InitializeIfNeeded()
@@ -277,56 +225,44 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         if (canvasGroup == null)
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
-        if (itemRoot == null)
-            itemRoot = panelRect;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
 
-        rootCanvas = FindParentCanvasForPosition();
-        if (rootCanvas != null)
+        if (itemRoot == null && panelRect != null)
         {
-            canvasRect = rootCanvas.transform as RectTransform;
+            Transform effectRoot = panelRect.Find("EffectRoot");
+            if (effectRoot != null)
+                itemRoot = effectRoot as RectTransform;
         }
-        else
+
+        if (itemView == null)
         {
-            canvasRect = transform.parent as RectTransform;
+            Transform searchRoot = itemRoot != null ? itemRoot : transform;
+            itemView = searchRoot.GetComponentInChildren<UnitStatusEffectTooltipItemUI>(true);
         }
+
+        rootCanvas = FindRootCanvasForPosition();
+        canvasRect = rootCanvas != null
+            ? rootCanvas.transform as RectTransform
+            : transform.parent as RectTransform;
 
         EnsureTooltipCanvas();
-
-        if (itemRoot != null && itemRoot != panelRect)
-        {
-            itemRoot.anchorMin = new Vector2(0f, 1f);
-            itemRoot.anchorMax = new Vector2(0f, 1f);
-            itemRoot.pivot = new Vector2(0f, 1f);
-            itemRoot.anchoredPosition = new Vector2(contentPadding.x, -contentPadding.y);
-        }
     }
 
-
-    private Canvas FindParentCanvasForPosition()
+    private Canvas FindRootCanvasForPosition()
     {
-        Transform parent = transform.parent;
-        while (parent != null)
+        Canvas[] parents = GetComponentsInParent<Canvas>(true);
+        if (parents == null || parents.Length == 0)
+            return GetComponent<Canvas>();
+
+        for (int i = parents.Length - 1; i >= 0; i--)
         {
-            Canvas canvas = parent.GetComponent<Canvas>();
-            if (canvas != null)
-                return canvas;
-
-            parent = parent.parent;
-        }
-
-        Canvas selfCanvas = GetComponent<Canvas>();
-        Canvas[] canvases = GetComponentsInParent<Canvas>(true);
-        if (canvases == null || canvases.Length <= 0)
-            return selfCanvas;
-
-        for (int i = 0; i < canvases.Length; i++)
-        {
-            Canvas canvas = canvases[i];
-            if (canvas != null && canvas != selfCanvas)
+            Canvas canvas = parents[i];
+            if (canvas != null && canvas != tooltipCanvas)
                 return canvas;
         }
 
-        return selfCanvas;
+        return parents[parents.Length - 1];
     }
 
     private void EnsureTooltipCanvas()
@@ -339,52 +275,21 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
             tooltipCanvas = gameObject.AddComponent<Canvas>();
 
         tooltipCanvas.overrideSorting = true;
-        tooltipCanvas.sortingOrder = GetHighestCanvasSortingOrder() + Mathf.Max(1, sortingOrderOffset);
     }
 
     private void BringToFront()
     {
+        transform.SetAsLastSibling();
+
         if (!forceTooltipToFront)
             return;
 
-        transform.SetAsLastSibling();
-
+        EnsureTooltipCanvas();
         if (tooltipCanvas == null)
-            tooltipCanvas = GetComponent<Canvas>();
+            return;
 
-        if (tooltipCanvas == null)
-            tooltipCanvas = gameObject.AddComponent<Canvas>();
-
-        tooltipCanvas.overrideSorting = true;
-        tooltipCanvas.sortingOrder = GetHighestCanvasSortingOrderExceptSelf() + Mathf.Max(1, sortingOrderOffset);
-    }
-
-    private int GetHighestCanvasSortingOrder()
-    {
+        int highest = 0;
         Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        if (canvases == null || canvases.Length <= 0)
-            return 0;
-
-        int highest = int.MinValue;
-        for (int i = 0; i < canvases.Length; i++)
-        {
-            Canvas canvas = canvases[i];
-            if (canvas == null)
-                continue;
-
-            highest = Mathf.Max(highest, canvas.sortingOrder);
-        }
-
-        return highest == int.MinValue ? 0 : highest;
-    }
-
-    private int GetHighestCanvasSortingOrderExceptSelf()
-    {
-        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        if (canvases == null || canvases.Length <= 0)
-            return 0;
-
-        int highest = int.MinValue;
         for (int i = 0; i < canvases.Length; i++)
         {
             Canvas canvas = canvases[i];
@@ -394,238 +299,111 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
             highest = Mathf.Max(highest, canvas.sortingOrder);
         }
 
-        return highest == int.MinValue ? 0 : highest;
+        tooltipCanvas.sortingOrder = highest + Mathf.Max(1, sortingOrderOffset);
     }
 
-    private UnitStatusEffectTooltipItemUI CreateItem()
+    private void ShowWithFade()
     {
-        if (itemPrefab != null)
-            return Instantiate(itemPrefab, itemRoot);
+        isVisible = true;
 
-        return CreateFallbackItem();
-    }
+        if (fadeCoroutine != null)
+            StopCoroutine(fadeCoroutine);
 
-    private UnitStatusEffectTooltipItemUI CreateFallbackItem()
-    {
-        if (itemRoot == null)
-            return null;
+        gameObject.SetActive(true);
 
-        GameObject itemObject = new GameObject("StatusEffectTooltipItem_Auto", typeof(RectTransform), typeof(UnitStatusEffectTooltipItemUI));
-        itemObject.transform.SetParent(itemRoot, false);
-
-        RectTransform rect = itemObject.GetComponent<RectTransform>();
-        rect.sizeDelta = fallbackItemSize;
-
-        GameObject iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-        iconObject.transform.SetParent(itemObject.transform, false);
-        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
-        iconRect.anchorMin = new Vector2(0f, 1f);
-        iconRect.anchorMax = new Vector2(0f, 1f);
-        iconRect.pivot = new Vector2(0f, 1f);
-        iconRect.anchoredPosition = new Vector2(0f, 0f);
-        iconRect.sizeDelta = new Vector2(32f, 32f);
-
-        TMP_Text titleText = CreateText("TitleText", itemObject.transform, 18f, FontStyles.Bold);
-        RectTransform titleRect = titleText.transform as RectTransform;
-        titleRect.anchorMin = new Vector2(0f, 1f);
-        titleRect.anchorMax = new Vector2(1f, 1f);
-        titleRect.pivot = new Vector2(0.5f, 1f);
-        titleRect.offsetMin = new Vector2(40f, -24f);
-        titleRect.offsetMax = new Vector2(0f, 0f);
-
-        TMP_Text bodyText = CreateText("DescriptionText", itemObject.transform, 14f, FontStyles.Normal);
-        RectTransform bodyRect = bodyText.transform as RectTransform;
-        bodyRect.anchorMin = new Vector2(0f, 0f);
-        bodyRect.anchorMax = new Vector2(1f, 1f);
-        bodyRect.pivot = new Vector2(0.5f, 0.5f);
-        bodyRect.offsetMin = new Vector2(40f, 0f);
-        bodyRect.offsetMax = new Vector2(0f, -28f);
-
-        UnitStatusEffectTooltipItemUI item = itemObject.GetComponent<UnitStatusEffectTooltipItemUI>();
-        item.BindFallbackReferences(null, iconObject.GetComponent<Image>(), titleText, bodyText);
-        return item;
-    }
-
-    private TMP_Text CreateText(string objectName, Transform parent, float fontSize, FontStyles fontStyle)
-    {
-        GameObject textObject = new GameObject(objectName, typeof(RectTransform), typeof(TextMeshProUGUI));
-        textObject.transform.SetParent(parent, false);
-
-        TextMeshProUGUI text = textObject.GetComponent<TextMeshProUGUI>();
-        text.fontSize = fontSize;
-        text.fontStyle = fontStyle;
-        text.raycastTarget = false;
-        text.textWrappingMode = TextWrappingModes.Normal;
-        text.color = Color.white;
-        return text;
-    }
-
-    private void RefreshCurrentStatusEffectsIfChanged()
-    {
-        if (currentOwner == null)
+        if (fadeInDuration <= 0f)
         {
-            Hide(null);
+            canvasGroup.alpha = 1f;
+            fadeCoroutine = null;
             return;
         }
 
-        if (currentStatusEffects == null)
-        {
-            Hide(currentOwner);
-            return;
-        }
-
-        int newHash = CalculateStatusEffectsHash(currentStatusEffects);
-        if (newHash == currentStatusEffectsHash)
-            return;
-
-        if (!RebuildItems(currentStatusEffects))
-        {
-            Hide(currentOwner);
-            return;
-        }
-
-        currentStatusEffectsHash = newHash;
-        UpdatePosition(lastScreenPosition, lastSide);
+        fadeCoroutine = StartCoroutine(FadeRoutine(1f, fadeInDuration, false));
     }
 
-    private bool RebuildItems(IReadOnlyList<StatusEffectRuntimeData> statusEffects)
+    private void HideWithFade()
     {
-        ClearItems();
+        isVisible = false;
 
+        if (fadeCoroutine != null)
+            StopCoroutine(fadeCoroutine);
+
+        if (canvasGroup == null || canvasGroup.alpha <= 0f || fadeOutDuration <= 0f)
+        {
+            HideImmediate();
+            return;
+        }
+
+        fadeCoroutine = StartCoroutine(FadeRoutine(0f, fadeOutDuration, true));
+    }
+
+    private IEnumerator FadeRoutine(float targetAlpha, float duration, bool hideItemAfter)
+    {
+        float startAlpha = canvasGroup != null ? canvasGroup.alpha : 0f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            if (canvasGroup != null)
+                canvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+
+            yield return null;
+        }
+
+        if (canvasGroup != null)
+            canvasGroup.alpha = targetAlpha;
+
+        if (hideItemAfter && itemView != null)
+            itemView.gameObject.SetActive(false);
+
+        fadeCoroutine = null;
+    }
+
+    private void HideImmediate()
+    {
+        isVisible = false;
+        currentOwner = null;
+
+        if (fadeCoroutine != null)
+        {
+            StopCoroutine(fadeCoroutine);
+            fadeCoroutine = null;
+        }
+
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = 0f;
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
+        }
+
+        if (itemView != null)
+            itemView.gameObject.SetActive(false);
+    }
+
+    private static StatusEffectRuntimeData GetFirstValidStatusEffect(
+        IReadOnlyList<StatusEffectRuntimeData> statusEffects)
+    {
         if (statusEffects == null)
-            return false;
+            return null;
 
         for (int i = 0; i < statusEffects.Count; i++)
         {
-            StatusEffectRuntimeData statusEffect = statusEffects[i];
-            if (statusEffect == null || !statusEffect.IsValid())
-                continue;
-
-            UnitStatusEffectTooltipItemUI item = CreateItem();
-            if (item == null)
-                continue;
-
-            item.Set(statusEffect);
-            spawnedItems.Add(item);
+            StatusEffectRuntimeData data = statusEffects[i];
+            if (data != null && data.IsValid())
+                return data;
         }
 
-        if (spawnedItems.Count <= 0)
-            return false;
-
-        ArrangeItemsVertically();
-        return true;
+        return null;
     }
 
-    private int CalculateStatusEffectsHash(IReadOnlyList<StatusEffectRuntimeData> statusEffects)
+    private static UnitStatusEffectTooltipSide GetSideForScreenPosition(Vector2 screenPosition)
     {
-        if (statusEffects == null)
-            return 0;
-
-        unchecked
-        {
-            int hash = 17;
-            int validCount = 0;
-
-            for (int i = 0; i < statusEffects.Count; i++)
-            {
-                StatusEffectRuntimeData statusEffect = statusEffects[i];
-                if (statusEffect == null || !statusEffect.IsValid())
-                    continue;
-
-                validCount++;
-                hash = hash * 31 + i;
-                hash = hash * 31 + (statusEffect.EffectId != null ? statusEffect.EffectId.GetHashCode() : 0);
-                hash = hash * 31 + statusEffect.Stack;
-                hash = hash * 31 + statusEffect.TurnCount;
-            }
-
-            hash = hash * 31 + validCount;
-            return hash;
-        }
-    }
-
-    private void ArrangeItemsVertically()
-    {
-        if (itemRoot == null)
-            return;
-
-        float y = 0f;
-        float maxWidth = 0f;
-
-        for (int i = 0; i < spawnedItems.Count; i++)
-        {
-            if (spawnedItems[i] == null)
-                continue;
-
-            RectTransform itemRect = spawnedItems[i].transform as RectTransform;
-            if (itemRect == null)
-                continue;
-
-            Vector2 itemSize = GetRectSize(itemRect, fallbackItemSize);
-
-            itemRect.anchorMin = new Vector2(0f, 1f);
-            itemRect.anchorMax = new Vector2(0f, 1f);
-            itemRect.pivot = new Vector2(0f, 1f);
-            itemRect.sizeDelta = itemSize;
-            itemRect.anchoredPosition = new Vector2(0f, -y);
-
-            y += itemSize.y;
-            if (i < spawnedItems.Count - 1)
-                y += Mathf.Max(0f, itemSpacing);
-
-            maxWidth = Mathf.Max(maxWidth, itemSize.x);
-        }
-
-        itemRoot.sizeDelta = new Vector2(maxWidth, y);
-
-        if (resizePanelToContent && panelRect != null)
-        {
-            panelRect.sizeDelta = new Vector2(
-                maxWidth + contentPadding.x * 2f,
-                y + contentPadding.y * 2f);
-        }
-    }
-
-    private Vector2 GetRectSize(RectTransform rect, Vector2 fallbackSize)
-    {
-        if (rect == null)
-            return fallbackSize;
-
-        Vector2 size = rect.rect.size;
-
-        if (size.x <= 0f)
-            size.x = Mathf.Abs(rect.sizeDelta.x);
-
-        if (size.y <= 0f)
-            size.y = Mathf.Abs(rect.sizeDelta.y);
-
-        if (size.x <= 0f)
-            size.x = fallbackSize.x;
-
-        if (size.y <= 0f)
-            size.y = fallbackSize.y;
-
-        return size;
-    }
-
-    private void ClearItems()
-    {
-        for (int i = 0; i < spawnedItems.Count; i++)
-        {
-            if (spawnedItems[i] != null)
-                Destroy(spawnedItems[i].gameObject);
-        }
-
-        spawnedItems.Clear();
-    }
-
-    private void SetVisible(bool visible)
-    {
-        if (canvasGroup == null)
-            return;
-
-        canvasGroup.alpha = visible ? 1f : 0f;
-        canvasGroup.interactable = false;
-        canvasGroup.blocksRaycasts = false;
+        return screenPosition.x >= Screen.width * 0.5f
+            ? UnitStatusEffectTooltipSide.Left
+            : UnitStatusEffectTooltipSide.Right;
     }
 }

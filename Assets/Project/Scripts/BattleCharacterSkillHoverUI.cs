@@ -8,15 +8,29 @@ using UnityEngine.UI;
 /// BattleCharacterPanel의 스킬 버튼 호버/선택 시각 효과를 적용합니다.
 /// 호버 시에는 Skill_Background 색상을 변경하고, Skill_Background2는 그리드 선택 중인 스킬에만 표시합니다.
 /// </summary>
+public enum BattleCharacterSkillLineFeedbackMode
+{
+    AutoSkill,
+    Instant,
+    PersistentExternal
+}
+
 public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Hover Target")]
     [SerializeField] private Image normalBackgroundImage;
     [SerializeField] private Image hoverBackgroundImage;
     [SerializeField] private RectTransform scaleTarget;
+    [SerializeField] private Image lineImage;
 
     [Header("Hover Color")]
     [SerializeField] private Color hoverNormalBackgroundColor = new Color32(0x4E, 0x66, 0xDF, 0xFF);
+
+    [Header("Selection Line")]
+    [SerializeField] private Color normalLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    [SerializeField] private Color selectedLineColor = new Color32(0x4E, 0x66, 0xDF, 0xFF);
+    [SerializeField, Min(0f)] private float skillLineClickFeedbackDuration = 0.15f;
+    [SerializeField] private BattleCharacterSkillLineFeedbackMode lineFeedbackMode = BattleCharacterSkillLineFeedbackMode.AutoSkill;
 
     [Header("Hover Scale")]
     [SerializeField, Min(1f)] private float hoverScale = 1.05f;
@@ -43,6 +57,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     private bool isPointerOver;
     private bool isSelected;
     private float directionClickFeedbackUntil = -1f;
+    private float skillLineClickFeedbackUntil = -1f;
     private PlayerSkillReservationController reservationController;
     private Color normalBackgroundOriginalColor = Color.white;
     private bool normalBackgroundColorCaptured;
@@ -51,6 +66,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     private CharacterRuntimeData previewRuntime;
     private Action<SkillMasterData> skillInfoHandler;
     private Action skillInfoExitHandler;
+    private Func<bool> persistentSelectionProvider;
     private Coroutine tooltipClickFeedbackRoutine;
 
     private void Awake()
@@ -71,6 +87,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     {
         RefreshSelectedState();
         ApplyHighlightVisual();
+        ApplySelectionLineVisual();
         ApplyScale(false);
 
         if (isSelected)
@@ -80,6 +97,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     private void OnDisable()
     {
         directionClickFeedbackUntil = -1f;
+        skillLineClickFeedbackUntil = -1f;
         if (tooltipClickFeedbackRoutine != null)
         {
             StopCoroutine(tooltipClickFeedbackRoutine);
@@ -87,6 +105,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         }
         ClearSkillRangePreview();
         ResetVisual(true);
+        ApplySelectionLineVisual();
         skillInfoExitHandler?.Invoke();
     }
 
@@ -144,15 +163,62 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     {
         PlayTooltipClickFeedback();
 
-        if (skillData != null && skillData.RangeType == RangeType.Direction)
+        // Flip / ResetButton처럼 클릭 즉시 처리되는 버튼은
+        // 일반 스킬과 동일하게 잠깐 선택색을 보여준 뒤 원래 Line 색으로 돌아옵니다.
+        if (lineFeedbackMode == BattleCharacterSkillLineFeedbackMode.Instant)
+        {
+            skillLineClickFeedbackUntil = Time.unscaledTime + skillLineClickFeedbackDuration;
+            ApplySelectionLineVisual();
+            return;
+        }
+
+        // Compound처럼 별도의 그리드 대상 선택 상태를 갖는 버튼은
+        // 선택이 끝날 때까지 Line 선택색을 유지합니다.
+        if (lineFeedbackMode == BattleCharacterSkillLineFeedbackMode.PersistentExternal)
+        {
+            isSelected = true;
+            skillLineClickFeedbackUntil = -1f;
+            ApplySelectionLineVisual();
+            return;
+        }
+
+        if (skillData == null)
+            return;
+
+        // 이동은 그리드 선택이 끝날 때까지 Line 선택색을 유지합니다.
+        if (skillData.Category == Category.Move)
+        {
+            isSelected = true;
+            skillLineClickFeedbackUntil = -1f;
+            ApplySelectionLineVisual();
+            ApplyHighlightVisual();
+            return;
+        }
+
+        // 일반 스킬은 클릭 즉시 타임라인에 등록되는 느낌만 짧게 보여주고
+        // 원래 Line 색으로 돌아옵니다.
+        skillLineClickFeedbackUntil = Time.unscaledTime + skillLineClickFeedbackDuration;
+        ApplySelectionLineVisual();
+
+        if (skillData.RangeType == RangeType.Direction)
         {
             directionClickFeedbackUntil = Time.unscaledTime + directionClickFeedbackDuration;
             ApplyHighlightVisual();
             return;
         }
 
-        isSelected = true;
         ApplyHighlightVisual();
+    }
+
+    public void SetLineFeedbackMode(
+        BattleCharacterSkillLineFeedbackMode mode,
+        Func<bool> selectionProvider = null)
+    {
+        lineFeedbackMode = mode;
+        persistentSelectionProvider = selectionProvider;
+        skillLineClickFeedbackUntil = -1f;
+        RefreshSelectedState();
+        ApplySelectionLineVisual();
     }
 
     private void PlayTooltipClickFeedback()
@@ -202,6 +268,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         ApplyNormalBackgroundHoverColor();
 
         ApplyHighlightVisual();
+        ApplySelectionLineVisual();
         ApplyScale(false);
         ShowSkillRangePreview();
         skillInfoHandler?.Invoke(skillData);
@@ -213,6 +280,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         ClearSkillRangePreview();
         RestoreNormalBackgroundColor();
         ApplyHighlightVisual();
+        ApplySelectionLineVisual();
         ApplyScale(false);
         skillInfoExitHandler?.Invoke();
     }
@@ -226,6 +294,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         if (hoverBackgroundImage != null)
             hoverBackgroundImage.gameObject.SetActive(false);
 
+        ApplySelectionLineVisual();
         ApplyScale(instant);
     }
 
@@ -287,6 +356,18 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
 
     private void RefreshSelectedState()
     {
+        if (lineFeedbackMode == BattleCharacterSkillLineFeedbackMode.PersistentExternal)
+        {
+            isSelected = persistentSelectionProvider != null && persistentSelectionProvider();
+            return;
+        }
+
+        if (lineFeedbackMode == BattleCharacterSkillLineFeedbackMode.Instant)
+        {
+            isSelected = false;
+            return;
+        }
+
         EnsureReservationController();
         isSelected = reservationController != null &&
                      reservationController.IsGridSelectionActiveFor(previewRuntime, skillData);
@@ -309,6 +390,71 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     {
         return directionClickFeedbackUntil >= 0f &&
                Time.unscaledTime < directionClickFeedbackUntil;
+    }
+
+    private bool IsSkillLineClickFeedbackActive()
+    {
+        return skillLineClickFeedbackUntil >= 0f &&
+               Time.unscaledTime < skillLineClickFeedbackUntil;
+    }
+
+    private void ApplySelectionLineVisual()
+    {
+        ResolveLineReference();
+
+        if (lineImage == null)
+            return;
+
+        // 데이터가 없거나 사용할 수 없는 슬롯의 Line 색은
+        // BattleCharacterPanelUI가 777777 / A9B1BE 규칙에 맞게 관리합니다.
+        if (!IsInteractable())
+            return;
+
+        if (lineFeedbackMode == BattleCharacterSkillLineFeedbackMode.AutoSkill && skillData == null)
+            return;
+
+        bool showSelectedLine;
+
+        if (lineFeedbackMode == BattleCharacterSkillLineFeedbackMode.Instant)
+        {
+            showSelectedLine = IsSkillLineClickFeedbackActive();
+        }
+        else if (lineFeedbackMode == BattleCharacterSkillLineFeedbackMode.PersistentExternal)
+        {
+            showSelectedLine = isSelected;
+        }
+        else
+        {
+            bool isMoveSkill = skillData != null && skillData.Category == Category.Move;
+            showSelectedLine = isMoveSkill
+                ? isSelected
+                : IsSkillLineClickFeedbackActive();
+        }
+
+        Color target = showSelectedLine ? selectedLineColor : normalLineColor;
+        Color current = lineImage.color;
+        current.r = target.r;
+        current.g = target.g;
+        current.b = target.b;
+        lineImage.color = current;
+    }
+
+    private void ResolveLineReference()
+    {
+        if (lineImage != null)
+            return;
+
+        Transform[] children = GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            Transform child = children[i];
+            if (child == null || child.name != "Line")
+                continue;
+
+            lineImage = child.GetComponent<Image>();
+            if (lineImage != null)
+                return;
+        }
     }
 
     private void EnsureReservationController()
@@ -377,6 +523,9 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
 
             if (hoverBackgroundImage == null && child.name == hoverBackgroundObjectName)
                 hoverBackgroundImage = child.GetComponent<Image>();
+
+            if (lineImage == null && child.name == "Line")
+                lineImage = child.GetComponent<Image>();
         }
 
         CaptureNormalBackgroundColor();
