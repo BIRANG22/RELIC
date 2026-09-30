@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
   m_Name: Text_ko
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   m_LocaleId:
     m_Code: ko
   m_SharedData: {fileID: 11400000, guid: 3c628c627e41ed84fb431bc1e97cdb9f, type: 2}
@@ -6723,19 +6723,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101128
-    m_Localized:
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101129
-    m_Localized:
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101130
-    m_Localized:
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101131
-    m_Localized:
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528602460160
@@ -8124,39 +8124,39 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 1631955850967427755
-    m_Localized: 연성
+    m_Localized: "\uC5F0\uC131"
     m_Metadata:
       m_Items: []
   - m_Id: 4391589186152940879
-    m_Localized: 침식도
+    m_Localized: "\uCE68\uC2DD\uB3C4"
     m_Metadata:
       m_Items: []
   - m_Id: 2243768493947962817
-    m_Localized: 공명
+    m_Localized: "\uACF5\uBA85"
     m_Metadata:
       m_Items: []
   - m_Id: 5900419522700747322
-    m_Localized: 엘릭
+    m_Localized: "\uC5D8\uB9AD"
     m_Metadata:
       m_Items: []
   - m_Id: 587329290491091082
-    m_Localized: 보관함
+    m_Localized: "\uBCF4\uAD00\uD568"
     m_Metadata:
       m_Items: []
   - m_Id: 7463777631022220572
-    m_Localized: 힐트
+    m_Localized: "\uD790\uD2B8"
     m_Metadata:
       m_Items: []
   - m_Id: 367250356182644820
-    m_Localized: 카야
+    m_Localized: "\uCE74\uC57C"
     m_Metadata:
       m_Items: []
   - m_Id: 8615078507091817039
-    m_Localized: 헤이즈
+    m_Localized: "\uD5E4\uC774\uC988"
     m_Metadata:
       m_Items: []
   - m_Id: 4794883933976256088
-    m_Localized: 이네스
+    m_Localized: "\uC774\uB124\uC2A4"
     m_Metadata:
       m_Items: []
   references:

@@ -9,11 +9,38 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 /// <summary>
-/// BattleCharacterPanel의 Active 영역과 패널/BattleSlot 이동을 관리합니다.
-/// Char01~03의 상시 캐릭터 정보와 Char_Select는 BattlePartyCharacterPanelUI가 담당합니다.
+/// BattleCharacterPanel의 Char01~03 상시 정보, Char_Select 선택, Active 영역과 패널/BattleSlot 이동을 관리합니다.
+/// Char_Select는 HUDPortraitImage / HUDSelectedPortraitImage를 사용하며 선택 상태에서는 1.25 스케일을 유지합니다.
 /// </summary>
 public class BattleCharacterPanelUI : MonoBehaviour
 {
+
+    private const int PartySlotCount = 3;
+    private static readonly Color32 PartyKarmaOnColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
+    private static readonly Color32 PartyKarmaOffColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+
+    private sealed class PartySlotView
+    {
+        public Transform Root;
+        public Image CharacterIcon;
+        public Image PassiveIcon;
+        public Image HpFill;
+        public Image CostFill;
+        public readonly Image[] Karma = new Image[5];
+        public Transform StatusContent;
+        public readonly Image[] Runes = new Image[6];
+        public readonly Image[] Artifacts = new Image[6];
+        public CharacterRuntimeData Runtime;
+        public int LastHash = int.MinValue;
+        public readonly List<StatusEffectIcon> SpawnedStatusIcons = new();
+    }
+
+    private readonly PartySlotView[] partySlots = new PartySlotView[PartySlotCount];
+    private readonly CharacterRuntimeData[] partyRuntimes = new CharacterRuntimeData[PartySlotCount];
+    private readonly BattleCharacterSelectTarget[] partySelectTargets = new BattleCharacterSelectTarget[PartySlotCount];
+    private readonly Image[] partySelectIcons = new Image[PartySlotCount];
+    private BattleRoomLoader partyRoomLoader;
+
     private const float DefaultSkillCostFontSize = 40f;
     private const float MoveSkillCostFontSize = 25f;
     private static readonly Color32 ManaResourceColor = new Color32(0x33, 0x6F, 0xC5, 0xFF);
@@ -97,9 +124,18 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private Image moveIconImage;
     private TMP_Text moveNameText;
 
+    [Header("Battle Utility Buttons")]
+    [Tooltip("현재 선택 캐릭터의 방향을 반전해 현재 타임라인 슬롯에 예약합니다. 비어 있으면 Active/Flip을 자동 탐색합니다.")]
+    [SerializeField] private Button flipButton;
+
+    [Tooltip("현재 턴에 플레이어 캐릭터가 등록한 모든 예약을 취소합니다. 비어 있으면 BattleCharacterPanel/ResetButton을 자동 탐색합니다.")]
+    [SerializeField] private Button resetButton;
+
     [Header("Item Button")]
     private Button itemButton;
     private Image itemIconImage;
+    private Image itemBackImage;
+    private Image itemLineImage;
     private TMP_Text itemValueText;
 
     [Header("Rune List")]
@@ -185,7 +221,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [SerializeField] private float battleSlotExecutionPositionY = 250f;
 
     [Tooltip("플레이어가 행동을 예약할 때 BattleSlot이 올라올 Y 위치입니다.")]
-    [SerializeField] private float battleSlotReservationPositionY = 475f;
+    [SerializeField] private float battleSlotReservationPositionY = 425f;
 
     [Tooltip("전투방 입장 및 예약 단계에서 사용하는 BattleSlot 크기입니다.")]
     [SerializeField, Min(0f)] private float battleSlotNormalScale = 1f;
@@ -317,8 +353,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         panelRectTransform = GetComponent<RectTransform>();
         ResolveSelectionContentReferences();
-        if (GetComponent<BattlePartyCharacterPanelUI>() == null)
-            gameObject.AddComponent<BattlePartyCharacterPanelUI>();
+        ResolvePartyReferences();
+        RefreshPartyFromRuntimeStore();
         RegisterSkillButtonListeners();
         RegisterMoveAndItemButtonListeners();
         EnsureSkillButtonHoverEffects();
@@ -346,6 +382,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
         SkillDetailNumericLinkHandler.DetailedModeChanged -= HandleSkillDetailsDetailedModeChanged;
         SkillDetailNumericLinkHandler.DetailedModeChanged += HandleSkillDetailsDetailedModeChanged;
 
+        ResolvePartyReferences();
+        RefreshPartyFromRuntimeStore();
+        RefreshPartySelectPortraits(battleTimelineController != null ? battleTimelineController.SelectedCharacter : null);
         ApplyCurrentBattlePhasePositionImmediate();
     }
 
@@ -426,6 +465,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 Refresh();
         }
 
+        RefreshPartySelectPortraits(runtimeData);
         ScheduleSelectionPanelPositionRefresh();
     }
 
@@ -494,6 +534,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
 
         Transform move = FindDirectChild(active, "Move");
+        Transform flip = FindDirectChild(active, "Flip");
         Transform compound = FindDirectChild(active, "Compound");
         Transform skill01 = FindDirectChild(active, "Skill01");
         Transform skill02 = FindDirectChild(active, "Skill02");
@@ -501,6 +542,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         Transform ultimate = FindDirectChild(active, "Ultimate");
 
         if (moveButton == null) moveButton = EnsureButton(move);
+        if (flipButton == null) flipButton = EnsureButton(flip);
+        if (resetButton == null) resetButton = EnsureButton(FindDirectChild(transform, "ResetButton"));
         if (itemButton == null) itemButton = EnsureButton(compound);
         if (skill01Button == null) skill01Button = EnsureButton(skill01);
         if (skill02Button == null) skill02Button = EnsureButton(skill02);
@@ -508,7 +551,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (skill04Button == null) skill04Button = EnsureButton(ultimate);
 
         if (moveIconImage == null) moveIconImage = FindIconImage(move);
-        if (itemIconImage == null) itemIconImage = FindIconImage(compound);
+        if (itemIconImage == null) itemIconImage = FindChildImage(compound, "Icon") ?? FindIconImage(compound);
+        if (itemBackImage == null) itemBackImage = FindChildImage(compound, "Back");
+        if (itemLineImage == null) itemLineImage = FindChildImage(compound, "Line");
+        if (itemValueText == null) itemValueText = FindChildComponent<TMP_Text>(compound, "Compound");
         if (skill01IconImage == null) skill01IconImage = FindIconImage(skill01);
         if (skill02IconImage == null) skill02IconImage = FindIconImage(skill02);
         if (skill03IconImage == null) skill03IconImage = FindIconImage(skill03);
@@ -546,6 +592,399 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return icon.GetComponent<Image>();
 
         return root.GetComponent<Image>();
+    }
+
+    public CharacterRuntimeData GetPartyRuntime(int index)
+    {
+        return index >= 0 && index < partyRuntimes.Length ? partyRuntimes[index] : null;
+    }
+
+    public void SetParty(IReadOnlyList<CharacterRuntimeData> runtimes)
+    {
+        ResolvePartyReferences();
+
+        for (int i = 0; i < PartySlotCount; i++)
+        {
+            CharacterRuntimeData runtime = runtimes != null && i < runtimes.Count ? runtimes[i] : null;
+            partyRuntimes[i] = runtime;
+            if (partySlots[i] != null)
+                partySlots[i].Runtime = runtime;
+            RefreshPartySlot(i);
+        }
+
+        RefreshPartySelectPortraits(battleTimelineController != null ? battleTimelineController.SelectedCharacter : null);
+    }
+
+    public bool SelectPartyIndex(int index)
+    {
+        if (index < 0 || index >= partyRuntimes.Length)
+            return false;
+
+        CharacterRuntimeData runtime = partyRuntimes[index];
+        if (runtime == null || runtime.IsDead)
+            return false;
+
+        if (!SteamBattleStateSynchronizer.CanLocalPlayerControlCharacter(runtime.CharacterId))
+        {
+            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.other_player_character", "다른 플레이어의 캐릭터입니다."));
+            return false;
+        }
+
+        ResolvePartyControllers();
+
+        if (partyRoomLoader != null)
+        {
+            partyRoomLoader.OnPlayerCharacterClicked(runtime);
+            return true;
+        }
+
+        Bind(runtime);
+        battleTimelineController?.SelectCharacter(runtime);
+        return true;
+    }
+
+    private void ResolvePartyReferences()
+    {
+        for (int i = 0; i < PartySlotCount; i++)
+        {
+            if (partySlots[i] == null)
+                partySlots[i] = BuildPartySlotView(FindDirectChild(transform, $"Char0{i + 1}"));
+
+            Transform selectRoot = FindPath(transform, $"Char_Select/Char0{i + 1}");
+            if (selectRoot == null)
+                continue;
+
+            BattleCharacterSelectTarget target = selectRoot.GetComponent<BattleCharacterSelectTarget>();
+            if (target == null)
+                target = selectRoot.gameObject.AddComponent<BattleCharacterSelectTarget>();
+
+            target.Configure(this, i);
+            partySelectTargets[i] = target;
+
+            // Char_Select/Char0X/Mask/Icon 구조에서 HUD 초상화를 찾습니다.
+            // 이전 Char0X/Icon 구조도 호환을 위해 fallback으로 유지합니다.
+            Transform selectIcon = FindPath(selectRoot, "Mask/Icon");
+            if (selectIcon == null)
+                selectIcon = FindDirectChild(selectRoot, "Icon");
+            partySelectIcons[i] = GetImage(selectIcon);
+        }
+
+        ResolvePartyControllers();
+    }
+
+    private void ResolvePartyControllers()
+    {
+        if (partyRoomLoader == null)
+            partyRoomLoader = FindFirstObjectByType<BattleRoomLoader>(FindObjectsInactive.Include);
+        EnsureBattleTimelineController();
+    }
+
+    private PartySlotView BuildPartySlotView(Transform root)
+    {
+        if (root == null)
+            return null;
+
+        PartySlotView view = new PartySlotView { Root = root };
+        view.CharacterIcon = GetImage(FindPath(root, "Icon/Mask/Image"));
+        view.PassiveIcon = GetImage(FindPath(root, "Passive/Icon"));
+        view.HpFill = GetImage(FindPath(root, "Resources/Hp/Fill"));
+        view.CostFill = GetImage(FindPath(root, "Resources/Cost/Fill"));
+        view.StatusContent = FindPath(root, "Resources/StatusEffect/Content");
+
+        for (int i = 0; i < view.Karma.Length; i++)
+            view.Karma[i] = GetImage(FindPath(root, $"Resources/Karma/Karma0{i + 1}"));
+        for (int i = 0; i < view.Runes.Length; i++)
+            view.Runes[i] = GetImage(FindPath(root, $"Rune/Rune0{i + 1}/Icon"));
+        for (int i = 0; i < view.Artifacts.Length; i++)
+            view.Artifacts[i] = GetImage(FindPath(root, $"Artifact/Artifact0{i + 1}/Icon"));
+
+        return view;
+    }
+
+    private void RefreshPartyFromRuntimeStore()
+    {
+        if (DataManager.Instance == null)
+            return;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        if (partyStore == null || DataManager.Instance.CharacterRuntimeStore == null)
+            return;
+
+        bool changed = false;
+        for (int i = 0; i < PartySlotCount; i++)
+        {
+            CharacterRuntimeData runtime = null;
+            string characterId = partyStore.GetCharacterId(i);
+            if (!string.IsNullOrWhiteSpace(characterId))
+                DataManager.Instance.CharacterRuntimeStore.TryGet(characterId, out runtime);
+
+            if (ReferenceEquals(partyRuntimes[i], runtime))
+                continue;
+
+            partyRuntimes[i] = runtime;
+            if (partySlots[i] != null)
+                partySlots[i].Runtime = runtime;
+            changed = true;
+        }
+
+        if (!changed)
+            return;
+
+        for (int i = 0; i < PartySlotCount; i++)
+            RefreshPartySlot(i);
+
+        RefreshPartySelectPortraits(battleTimelineController != null ? battleTimelineController.SelectedCharacter : null);
+    }
+
+    private void RefreshChangedPartySlots()
+    {
+        for (int i = 0; i < partySlots.Length; i++)
+        {
+            PartySlotView slot = partySlots[i];
+            if (slot == null || slot.Runtime == null)
+                continue;
+
+            int hash = CalculatePartyRuntimeHash(slot.Runtime);
+            if (hash != slot.LastHash)
+                RefreshPartySlot(i);
+        }
+    }
+
+    private void RefreshPartySlot(int index)
+    {
+        if (index < 0 || index >= partySlots.Length)
+            return;
+
+        PartySlotView slot = partySlots[index];
+        if (slot == null)
+            return;
+
+        CharacterRuntimeData runtime = partyRuntimes[index];
+        slot.Runtime = runtime;
+        slot.Root.gameObject.SetActive(runtime != null);
+
+        if (runtime == null)
+        {
+            ClearPartyStatusIcons(slot);
+            slot.LastHash = 0;
+            return;
+        }
+
+        CharacterMasterData master = null;
+        if (DataManager.Instance != null && DataManager.Instance.CharacterDatabase != null)
+            DataManager.Instance.CharacterDatabase.TryGet(runtime.CharacterId, out master);
+
+        Sprite characterIcon = master != null ? master.Icon : null;
+        if (characterIcon == null && DataManager.Instance?.CharacterIconDatabase != null)
+            DataManager.Instance.CharacterIconDatabase.TryGetIcon(runtime.CharacterId, out characterIcon);
+        ApplyPartySprite(slot.CharacterIcon, characterIcon);
+
+        Sprite passiveIcon = null;
+        if (!string.IsNullOrWhiteSpace(runtime.PassiveSkillId) && DataManager.Instance?.SkillIconDatabase != null)
+            DataManager.Instance.SkillIconDatabase.TryGetIcon(runtime.PassiveSkillId, out passiveIcon);
+        ApplyPartySprite(slot.PassiveIcon, passiveIcon);
+
+        int maxHp = Mathf.Max(0, runtime.MaxHP + runtime.RunMaxHPBonus);
+        int maxCost = Mathf.Max(0, runtime.MaxCost + runtime.RunMaxCostBonus);
+        if (slot.HpFill != null)
+            slot.HpFill.fillAmount = maxHp > 0 ? Mathf.Clamp01((float)runtime.PreviewHP / maxHp) : 0f;
+        if (slot.CostFill != null)
+            slot.CostFill.fillAmount = maxCost > 0 ? Mathf.Clamp01((float)runtime.PreviewCost / maxCost) : 0f;
+
+        int karma = Mathf.Clamp(runtime.PreviewResource, 0, 5);
+        for (int i = 0; i < slot.Karma.Length; i++)
+        {
+            if (slot.Karma[i] != null)
+                slot.Karma[i].color = i < karma ? PartyKarmaOnColor : PartyKarmaOffColor;
+        }
+
+        for (int i = 0; i < slot.Runes.Length; i++)
+        {
+            string id = runtime.EquippedRuneIds != null && i < runtime.EquippedRuneIds.Length
+                ? runtime.EquippedRuneIds[i]
+                : null;
+            Sprite icon = null;
+            if (!string.IsNullOrWhiteSpace(id) && DataManager.Instance?.RuneIconDatabase != null)
+                DataManager.Instance.RuneIconDatabase.TryGetIcon(id, out icon);
+            ApplyPartySprite(slot.Runes[i], icon);
+        }
+
+        // EquippedRelicIds[0]은 액티브 유물 슬롯이므로 상시 HUD에는 1~6번 아티팩트를 표시합니다.
+        for (int i = 0; i < slot.Artifacts.Length; i++)
+        {
+            int relicIndex = i + 1;
+            string id = runtime.EquippedRelicIds != null && relicIndex < runtime.EquippedRelicIds.Length
+                ? runtime.EquippedRelicIds[relicIndex]
+                : null;
+            Sprite icon = null;
+            if (!string.IsNullOrWhiteSpace(id) && DataManager.Instance?.RelicIconDatabase != null)
+                DataManager.Instance.RelicIconDatabase.TryGetIcon(id, out icon);
+            ApplyPartySprite(slot.Artifacts[i], icon);
+        }
+
+        RebuildPartyStatusIcons(slot, runtime.StatusEffects);
+        slot.LastHash = CalculatePartyRuntimeHash(runtime);
+    }
+
+    private void RefreshPartySelectPortraits(CharacterRuntimeData selectedRuntime)
+    {
+        CharacterIconDatabase iconDatabase = DataManager.Instance?.CharacterIconDatabase;
+        string selectedCharacterId = selectedRuntime != null ? selectedRuntime.CharacterId : null;
+
+        for (int i = 0; i < PartySlotCount; i++)
+        {
+            Image iconImage = partySelectIcons[i];
+            CharacterRuntimeData runtime = partyRuntimes[i];
+            bool selected = runtime != null &&
+                            !string.IsNullOrWhiteSpace(selectedCharacterId) &&
+                            string.Equals(runtime.CharacterId, selectedCharacterId, StringComparison.Ordinal);
+
+            partySelectTargets[i]?.SetSelected(selected);
+
+            if (iconImage == null)
+                continue;
+
+            if (runtime == null || iconDatabase == null)
+            {
+                iconImage.sprite = null;
+                iconImage.enabled = false;
+                continue;
+            }
+
+            Sprite portrait = null;
+            if (selected)
+                iconDatabase.TryGetHUDSelectedPortraitImage(runtime.CharacterId, out portrait);
+            else
+                iconDatabase.TryGetHUDPortraitImage(runtime.CharacterId, out portrait);
+
+            ApplyPartySprite(iconImage, portrait);
+        }
+    }
+
+    private void RebuildPartyStatusIcons(PartySlotView slot, List<StatusEffectRuntimeData> source)
+    {
+        if (slot.StatusContent == null || statusEffectIconPrefab == null)
+            return;
+
+        Dictionary<string, StatusEffectRuntimeData> merged = new(StringComparer.Ordinal);
+        if (source != null)
+        {
+            for (int i = 0; i < source.Count; i++)
+            {
+                StatusEffectRuntimeData effect = source[i];
+                if (effect == null || string.IsNullOrWhiteSpace(effect.EffectId))
+                    continue;
+
+                if (merged.TryGetValue(effect.EffectId, out StatusEffectRuntimeData existing))
+                {
+                    existing.Stack += effect.Stack;
+                    existing.TurnCount = Mathf.Max(existing.TurnCount, effect.TurnCount);
+                }
+                else
+                {
+                    merged.Add(effect.EffectId, new StatusEffectRuntimeData
+                    {
+                        EffectId = effect.EffectId,
+                        Stack = effect.Stack,
+                        TurnCount = effect.TurnCount,
+                        IsPassive = effect.IsPassive,
+                        SourceSkillId = effect.SourceSkillId
+                    });
+                }
+            }
+        }
+
+        ClearPartyStatusIcons(slot);
+        foreach (StatusEffectRuntimeData effect in merged.Values)
+        {
+            StatusEffectIcon icon = Instantiate(statusEffectIconPrefab, slot.StatusContent);
+            icon.gameObject.name = $"StatusEffect_{effect.EffectId}";
+            icon.Set(effect);
+            slot.SpawnedStatusIcons.Add(icon);
+        }
+    }
+
+    private static int CalculatePartyRuntimeHash(CharacterRuntimeData runtime)
+    {
+        if (runtime == null)
+            return 0;
+
+        unchecked
+        {
+            int hash = 17;
+            hash = hash * 31 + runtime.PreviewHP;
+            hash = hash * 31 + runtime.PreviewCost;
+            hash = hash * 31 + runtime.PreviewResource;
+            hash = hash * 31 + runtime.MaxHP + runtime.RunMaxHPBonus;
+            hash = hash * 31 + runtime.MaxCost + runtime.RunMaxCostBonus;
+            hash = hash * 31 + (runtime.PassiveSkillId ?? string.Empty).GetHashCode();
+
+            if (runtime.EquippedRuneIds != null)
+                for (int i = 0; i < runtime.EquippedRuneIds.Length; i++)
+                    hash = hash * 31 + (runtime.EquippedRuneIds[i] ?? string.Empty).GetHashCode();
+            if (runtime.EquippedRelicIds != null)
+                for (int i = 0; i < runtime.EquippedRelicIds.Length; i++)
+                    hash = hash * 31 + (runtime.EquippedRelicIds[i] ?? string.Empty).GetHashCode();
+            if (runtime.StatusEffects != null)
+            {
+                for (int i = 0; i < runtime.StatusEffects.Count; i++)
+                {
+                    StatusEffectRuntimeData effect = runtime.StatusEffects[i];
+                    if (effect == null)
+                        continue;
+                    hash = hash * 31 + (effect.EffectId ?? string.Empty).GetHashCode();
+                    hash = hash * 31 + effect.Stack;
+                    hash = hash * 31 + effect.TurnCount;
+                }
+            }
+
+            return hash;
+        }
+    }
+
+    private static void ClearPartyStatusIcons(PartySlotView slot)
+    {
+        if (slot == null)
+            return;
+
+        for (int i = slot.SpawnedStatusIcons.Count - 1; i >= 0; i--)
+        {
+            if (slot.SpawnedStatusIcons[i] != null)
+                Destroy(slot.SpawnedStatusIcons[i].gameObject);
+        }
+        slot.SpawnedStatusIcons.Clear();
+    }
+
+    private static void ApplyPartySprite(Image image, Sprite sprite)
+    {
+        if (image == null)
+            return;
+
+        image.sprite = sprite;
+        image.enabled = sprite != null;
+        image.preserveAspect = true;
+    }
+
+    private static Image GetImage(Transform target)
+    {
+        return target != null ? target.GetComponent<Image>() : null;
+    }
+
+    private static Transform FindPath(Transform root, string path)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(path))
+            return null;
+
+        Transform current = root;
+        string[] parts = path.Split('/');
+        for (int i = 0; i < parts.Length; i++)
+        {
+            current = FindDirectChild(current, parts[i]);
+            if (current == null)
+                return null;
+        }
+
+        return current;
     }
 
     private void ShowCharacterContent()
@@ -991,6 +1430,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void LateUpdate()
     {
+        RefreshPartyFromRuntimeStore();
+        RefreshChangedPartySlots();
+
         // 다른 UI 갱신이나 레이아웃 처리로 BattleSlot의 위치만 되돌아가는 경우를 막습니다.
         // 전투 진행 중에는 이동 애니메이션이 끝난 뒤 Y 위치만 고정하고 BattleSlot 크기는 기본 크기를 유지합니다.
         if (isBattleExecutionInProgress && panelMoveCoroutine == null)
@@ -1078,8 +1520,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
-        // Char01~03의 캐릭터 정보는 BattlePartyCharacterPanelUI가 각각 갱신합니다.
-        // 이 컴포넌트는 현재 선택 캐릭터의 Active 영역만 갱신합니다.
+        // Char01~03 / Char_Select / Active를 모두 이 컴포넌트에서 갱신합니다.
         RefreshSkillList();
         RefreshMoveButton();
         RefreshItemButton();
@@ -1737,28 +2178,46 @@ public class BattleCharacterPanelUI : MonoBehaviour
             itemValueText.text = $"{remaining}/{maxUses}";
         }
 
-        ApplyItemButtonEquippedVisual(hasRelic);
-        ConfigureButtonHover(itemButton, "Background", "Background2", null);
+        ApplyItemButtonEquippedVisual(hasRelic, canUse);
+        ConfigureButtonHover(itemButton, null, "Back2", null);
     }
 
-    private void ApplyItemButtonEquippedVisual(bool hasActiveRelic)
+    private void ApplyItemButtonEquippedVisual(bool hasActiveRelic, bool canUse)
     {
-        Image backgroundImage = itemButton != null
-            ? FindChildImage(itemButton.transform, "Background")
-            : null;
+        // 실제 프리팹 구조: Active/Compound/{Back, Icon, Compound, Line, Key}
+        // 인스펙터 연결 없이 이름으로 자동 탐색합니다.
+        Image backgroundImage = itemBackImage != null
+            ? itemBackImage
+            : (itemButton != null ? FindChildImage(itemButton.transform, "Back") : null);
+        Image lineImage = itemLineImage != null
+            ? itemLineImage
+            : (itemButton != null ? FindChildImage(itemButton.transform, "Line") : null);
+
+        itemBackImage = backgroundImage;
+        itemLineImage = lineImage;
 
         CaptureSkillSlotOriginalColor(backgroundImage);
+        CaptureSkillSlotOriginalColor(lineImage);
+        CaptureSkillSlotOriginalColor(itemIconImage);
         CaptureSkillSlotOriginalColor(itemValueText);
 
         if (!hasActiveRelic)
         {
-            SetImageRgbPreserveAlpha(backgroundImage, 0x77, 0x77, 0x77);
-            SetTextRgbPreserveAlpha(itemValueText, 0x77, 0x77, 0x77);
+            RestoreSkillSlotOriginalRgb(backgroundImage);
+            SetImageRgbPreserveAlpha(lineImage, 0x77, 0x77, 0x77);
+            SetImageRgbPreserveAlpha(itemIconImage, 0x77, 0x77, 0x77);
+            RestoreSkillSlotOriginalRgb(itemValueText);
             return;
         }
 
         RestoreSkillSlotOriginalRgb(backgroundImage);
         RestoreSkillSlotOriginalRgb(itemValueText);
+        SetImageRgbPreserveAlpha(lineImage, 0xA9, 0xB1, 0xBE);
+        SetImageRgbPreserveAlpha(
+            itemIconImage,
+            canUse ? (byte)0xFF : (byte)0x77,
+            canUse ? (byte)0xFF : (byte)0x77,
+            canUse ? (byte)0xFF : (byte)0x77);
     }
 
     private ActiveRelicAvailability GetActiveRelicAvailability()
@@ -1821,7 +2280,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private void EnsureMoveAndItemButtonHoverEffects()
     {
         ConfigureButtonHover(moveButton, "Background", "Background2", ResolveSkillData(boundRuntime?.MoveSkillId));
-        ConfigureButtonHover(itemButton, "Background", "Background2", null);
+        ConfigureButtonHover(itemButton, null, "Back2", null);
     }
 
     private void ConfigureButtonHover(
@@ -1944,6 +2403,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (moveButton != null)
             moveButton.onClick.AddListener(OnMoveButtonClicked);
 
+        if (flipButton != null)
+            flipButton.onClick.AddListener(OnFlipButtonClicked);
+
+        if (resetButton != null)
+            resetButton.onClick.AddListener(OnResetButtonClicked);
+
         if (itemButton != null)
             itemButton.onClick.AddListener(OnItemButtonClicked);
     }
@@ -1952,6 +2417,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         if (moveButton != null)
             moveButton.onClick.RemoveListener(OnMoveButtonClicked);
+
+        if (flipButton != null)
+            flipButton.onClick.RemoveListener(OnFlipButtonClicked);
+
+        if (resetButton != null)
+            resetButton.onClick.RemoveListener(OnResetButtonClicked);
 
         if (itemButton != null)
             itemButton.onClick.RemoveListener(OnItemButtonClicked);
@@ -1963,6 +2434,53 @@ public class BattleCharacterPanelUI : MonoBehaviour
             boundRuntime != null ? boundRuntime.MoveSkillId : string.Empty,
             moveButton,
             true);
+    }
+
+    private void OnFlipButtonClicked()
+    {
+        if (boundRuntime == null)
+        {
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterNotSelected));
+            return;
+        }
+
+        EnsureTurnExecutor();
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
+
+        SkillMasterData moveSkillData = ResolveSkillData(boundRuntime.MoveSkillId);
+        if (moveSkillData == null)
+        {
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillDataNotFound));
+            return;
+        }
+
+        EnsureBattleTimelineController();
+        if (battleTimelineController == null)
+        {
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineControllerMissing));
+            return;
+        }
+
+        battleTimelineController.CancelSkillReservationPreviewFromSkillList(boundRuntime);
+        battleTimelineController.TryReserveFacingFlip(boundRuntime, moveSkillData);
+        battleTimelineController.RefocusCurrentSelectedCharacterWhenInputReady();
+    }
+
+    private void OnResetButtonClicked()
+    {
+        EnsureTurnExecutor();
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
+
+        EnsureBattleTimelineController();
+        if (battleTimelineController == null)
+        {
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.TimelineControllerMissing));
+            return;
+        }
+
+        battleTimelineController.ClearAllPlayerReservations();
     }
 
     private void OnItemButtonClicked()
@@ -2226,6 +2744,35 @@ public class BattleCharacterPanelUI : MonoBehaviour
                     ? unavailableSkillColor
                     : skillNameColor;
         }
+
+        ApplySkillSlotAvailabilityVisual(button, iconImage, hasSkill, isResourceUnavailable);
+    }
+
+    private void ApplySkillSlotAvailabilityVisual(
+        Button button,
+        Image iconImage,
+        bool hasSkill,
+        bool isResourceUnavailable)
+    {
+        if (button == null)
+            return;
+
+        Image lineImage = FindChildImage(button.transform, "Line");
+        if (lineImage != null)
+        {
+            if (hasSkill)
+                SetImageRgbPreserveAlpha(lineImage, 0xA9, 0xB1, 0xBE);
+            else
+                SetImageRgbPreserveAlpha(lineImage, 0x77, 0x77, 0x77);
+        }
+
+        if (iconImage != null && hasSkill)
+        {
+            if (isResourceUnavailable)
+                SetImageRgbPreserveAlpha(iconImage, 0x77, 0x77, 0x77);
+            else
+                SetImageRgbPreserveAlpha(iconImage, 0xFF, 0xFF, 0xFF);
+        }
     }
 
     private void RefreshSkillSlotChildren(
@@ -2317,8 +2864,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
         for (int i = 0; i < children.Length; i++)
         {
             Transform child = children[i];
-            if (child != null && child.name == childName)
-                return child.GetComponent<T>();
+            if (child == null || child.name != childName)
+                continue;
+
+            T component = child.GetComponent<T>();
+            if (component != null)
+                return component;
         }
 
         return null;
@@ -2506,7 +3057,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (itemValueText != null)
             itemValueText.text = "0/0";
 
-        ApplyItemButtonEquippedVisual(false);
+        ApplyItemButtonEquippedVisual(false, false);
     }
 
     private void EnsureSkillDetailsNumericInteraction()
@@ -3400,3 +3951,121 @@ public sealed class BattleEquipmentIconHoverTarget : MonoBehaviour, IPointerEnte
             scaleTarget.localScale = Vector3.one;
     }
 }
+
+public sealed class BattleCharacterSelectTarget : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
+{
+    private const float HoverScale = 1.25f;
+    private const float ScaleLerpSpeed = 14f;
+    private static readonly Color32 SelectedLineColor = new Color32(0x4E, 0x66, 0xDF, 0xFF);
+    private static readonly Color32 DefaultLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+
+    private BattleCharacterPanelUI owner;
+    private int index;
+    private Vector3 normalScale = Vector3.one;
+    private bool scaleCaptured;
+    private bool isPointerOver;
+    private bool isSelected;
+    private Image lineImage;
+
+    public void Configure(BattleCharacterPanelUI panel, int partyIndex)
+    {
+        owner = panel;
+        index = partyIndex;
+        CaptureNormalScale();
+
+        // Char_Select는 BattleCharacterSelectTarget이 스케일을 전담합니다.
+        // 기존에 BattleCharacterSkillHoverUI가 붙어 있으면 두 Update가 서로 다른
+        // 목표 스케일을 적용해 1.05 부근에서 흔들리는 현상이 생기므로 비활성화합니다.
+        BattleCharacterSkillHoverUI skillHover = GetComponent<BattleCharacterSkillHoverUI>();
+        if (skillHover != null)
+            skillHover.enabled = false;
+
+        if (lineImage == null)
+        {
+            Transform line = transform.Find("Line");
+            if (line != null)
+                lineImage = line.GetComponent<Image>();
+        }
+        ApplyLineColor();
+
+        Graphic graphic = GetComponent<Graphic>();
+        if (graphic != null)
+            graphic.raycastTarget = true;
+    }
+
+    public void SetSelected(bool selected)
+    {
+        isSelected = selected;
+        ApplyScale(false);
+        ApplyLineColor();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        isPointerOver = true;
+        ApplyScale(false);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        isPointerOver = false;
+        ApplyScale(false);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        owner?.SelectPartyIndex(index);
+    }
+
+    private void Update()
+    {
+        ApplyScale(false);
+    }
+
+    private void OnDisable()
+    {
+        isPointerOver = false;
+        ApplyScale(true);
+    }
+
+    private void CaptureNormalScale()
+    {
+        if (scaleCaptured)
+            return;
+
+        normalScale = transform.localScale;
+        scaleCaptured = true;
+    }
+
+    private void ApplyLineColor()
+    {
+        if (lineImage == null)
+            return;
+
+        Color32 target = isSelected ? SelectedLineColor : DefaultLineColor;
+        Color32 current = lineImage.color;
+        target.a = current.a;
+        lineImage.color = target;
+    }
+
+    private void ApplyScale(bool instant)
+    {
+        CaptureNormalScale();
+
+        bool enlarged = isPointerOver || isSelected;
+        Vector3 targetScale = normalScale * (enlarged ? HoverScale : 1f);
+
+        if (instant || ScaleLerpSpeed <= 0f)
+        {
+            transform.localScale = targetScale;
+            return;
+        }
+
+        float t = 1f - Mathf.Exp(-ScaleLerpSpeed * Time.unscaledDeltaTime);
+        transform.localScale = Vector3.Lerp(transform.localScale, targetScale, t);
+    }
+}
+

@@ -1,5 +1,6 @@
 using Relic.Gameplay.Data;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -10,6 +11,11 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
 
     [Header("Click")]
     [SerializeField] private bool autoBindButtonsInChildren = true;
+
+    [Header("Slot Number Text")]
+    [Tooltip("TurnMark/Key/KeyText에 표시할 슬롯 번호 텍스트입니다. 비어 있으면 KeyText를 자동 탐색합니다.")]
+    [SerializeField] private TMP_Text keyText;
+    [SerializeField] private bool autoFindKeyText = true;
 
     private readonly List<PlayerReservedCommand> commands = new();
 
@@ -58,12 +64,42 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
         this.owner = owner;
         this.slotIndex = slotIndex;
 
+        ResolveKeyText();
+        RefreshKeyText();
         BindButtons();
     }
 
     private void Awake()
     {
+        ResolveKeyText();
         BindButtons();
+    }
+
+
+    private void ResolveKeyText()
+    {
+        if (keyText != null || !autoFindKeyText)
+            return;
+
+        Transform[] children = GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            Transform child = children[i];
+            if (child == null || child.name != "KeyText")
+                continue;
+
+            keyText = child.GetComponent<TMP_Text>();
+            if (keyText != null)
+                return;
+        }
+    }
+
+    private void RefreshKeyText()
+    {
+        ResolveKeyText();
+
+        if (keyText != null)
+            keyText.text = (slotIndex + 1).ToString();
     }
 
     private void BindButtons()

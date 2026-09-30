@@ -907,10 +907,7 @@ public class BattleRoomLoader : MonoBehaviour
     private void RefreshPlayerHUDs()
     {
         EnsureBattleCharacterPanel();
-        BattlePartyCharacterPanelUI partyPanel = battleCharacterPanel != null
-            ? battleCharacterPanel.GetComponent<BattlePartyCharacterPanelUI>()
-            : null;
-        partyPanel?.SetParty(playerPartyRuntimes);
+        battleCharacterPanel?.SetParty(playerPartyRuntimes);
     }
 
     private void RegisterSkillListKeepOpenRoots()
@@ -949,11 +946,7 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         EnsureBattleCharacterPanel();
-        BattlePartyCharacterPanelUI partyPanel = battleCharacterPanel != null
-            ? battleCharacterPanel.GetComponent<BattlePartyCharacterPanelUI>()
-            : null;
-        if (partyPanel != null)
-            partyPanel.SetParty(playerPartyRuntimes);
+        battleCharacterPanel?.SetParty(playerPartyRuntimes);
 
         // 새 UI는 Char01~03 정보를 항상 표시하고, 예약 단계가 시작될 때 선택만 활성화합니다.
         SelectPlayerHUD(null);

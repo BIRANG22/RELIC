@@ -834,6 +834,107 @@ public class BattleTimelineController : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// 이동 선택 상태에서 현재 칸을 클릭했을 때와 동일하게,
+    /// 현재 타임라인 슬롯에 제자리 방향 전환 명령을 예약합니다.
+    /// </summary>
+    public bool TryReserveFacingFlip(
+        CharacterRuntimeData runtimeData,
+        SkillMasterData moveSkillData)
+    {
+        if (runtimeData == null || moveSkillData == null || runtimeData.IsDead)
+            return false;
+
+        if (activeSlotIndex < 0 || reserveSlots == null || activeSlotIndex >= reserveSlots.Length)
+        {
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SelectTimelineSlotFirst));
+            return false;
+        }
+
+        ReserveTurnSlotUI activeSlot = reserveSlots[activeSlotIndex];
+        PlayerReservedCommand existingMoveCommand = FindMoveCommandInSlot(
+            activeSlot,
+            runtimeData.CharacterId);
+
+        // 현재 슬롯에 이동 예약이 없다면 Flip은 타임라인 행동이 아닙니다.
+        // 실제 캐릭터의 방향만 즉시 변경하고 이동 명령/쉐도우는 생성하지 않습니다.
+        if (existingMoveCommand == null)
+            return TryFlipFacingImmediately(runtimeData);
+
+        int previewGridIndex = GetPreviewGridIndexAtSlotEnd(runtimeData, activeSlotIndex);
+        if (previewGridIndex < 0)
+        {
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterPositionMissing));
+            return false;
+        }
+
+        BattleDirection currentDirection = GetPreviewDirection(runtimeData, activeSlotIndex);
+        BattleDirection flippedDirection = currentDirection == BattleDirection.Right
+            ? BattleDirection.Left
+            : BattleDirection.Right;
+
+        PlayerReservedCommand command = new PlayerReservedCommand(runtimeData, moveSkillData);
+        command.SetSelectionResult(
+            flippedDirection,
+            previewGridIndex,
+            new List<int> { previewGridIndex },
+            Vector2Int.zero);
+        command.SetMoveReservationCost(0, 1);
+        command.SetVisualMoveResult(
+            previewGridIndex,
+            Vector2Int.zero,
+            new List<Vector2Int> { Vector2Int.zero });
+
+        bool confirmed = ConfirmPlayerCommand(activeSlotIndex, command);
+        if (confirmed)
+        {
+            selectedCharacter = runtimeData;
+            lastSelectedCharacter = runtimeData;
+            selectedSkill = null;
+            ApplySelectedCharacterScaleFeedback(runtimeData);
+        }
+
+        return confirmed;
+    }
+
+
+    private bool TryFlipFacingImmediately(CharacterRuntimeData runtimeData)
+    {
+        if (runtimeData == null || runtimeData.IsDead)
+            return false;
+
+        BattleCharacter character = FindBattleCharacter(runtimeData.CharacterId);
+        if (character == null)
+        {
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterPositionMissing));
+            return false;
+        }
+
+        BattleUnitFacing facing = character.GetComponent<BattleUnitFacing>();
+        if (facing == null)
+            facing = character.GetComponentInChildren<BattleUnitFacing>(true);
+
+        if (facing == null)
+            return false;
+
+        facing.FlipOnce();
+        runtimeData.Direction = facing.GetBattleDirection();
+
+        selectedCharacter = runtimeData;
+        lastSelectedCharacter = runtimeData;
+        selectedSkill = null;
+        ApplySelectedCharacterScaleFeedback(runtimeData);
+
+        // 실제 방향이 바뀌었으므로 이후 슬롯의 범위/시뮬레이션만 다시 계산합니다.
+        // 플레이어 명령은 추가하지 않으므로 타임라인에는 이동이 등록되지 않습니다.
+        RefreshReservationSimulation();
+        RefreshTimeline();
+        RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
+
+        return true;
+    }
+
     public void ClearMonsterCommands()
     {
         if (monsterCommandsBySlot == null)
@@ -4766,6 +4867,47 @@ public class BattleTimelineController : MonoBehaviour
                 RemovePlayerReservationHistoryEntries(removedCommand);
             }
         }
+    }
+
+    /// <summary>
+    /// 현재 턴에서 플레이어 캐릭터가 등록한 예약만 모두 취소합니다.
+    /// 몬스터 예약과 현재 선택 중인 타임라인 슬롯은 유지합니다.
+    /// </summary>
+    public void ClearAllPlayerReservations()
+    {
+        if (playerSkillReservationController == null)
+            playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+
+        playerSkillReservationController?.ClearPreview();
+        playerReservationHistory.Clear();
+        reservationVersion++;
+
+        if (reserveSlots != null)
+        {
+            for (int i = 0; i < reserveSlots.Length; i++)
+            {
+                ReserveTurnSlotUI slot = reserveSlots[i];
+                if (slot == null || slot.Commands == null)
+                    continue;
+
+                for (int j = slot.Commands.Count - 1; j >= 0; j--)
+                {
+                    if (slot.RemoveCommandAt(j, out PlayerReservedCommand removedCommand))
+                        RemoveReservedCosts(removedCommand);
+                }
+
+                slot.Clear();
+            }
+        }
+
+        selectedSkill = null;
+        preserveManuallySelectedSlotForNextCharacter = false;
+
+        RecalculateAllReservedCosts();
+        RefreshReservationSimulation();
+        RefreshTimeline();
+        RefreshPlayerHUDs();
+        RefreshMoveGhostPreview();
     }
 
     public void ClearAllReservations()

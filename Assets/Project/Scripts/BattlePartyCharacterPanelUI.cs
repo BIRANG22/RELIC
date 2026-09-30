@@ -37,6 +37,7 @@ public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
     private readonly SlotView[] slots = new SlotView[PartySlotCount];
     private readonly CharacterRuntimeData[] partyRuntimes = new CharacterRuntimeData[PartySlotCount];
     private readonly BattlePartyCharacterSelectTarget[] selectTargets = new BattlePartyCharacterSelectTarget[PartySlotCount];
+    private readonly Image[] selectIcons = new Image[PartySlotCount];
     private BattleCharacterPanelUI characterPanel;
     private BattleRoomLoader roomLoader;
     private BattleTimelineController timelineController;
@@ -58,6 +59,7 @@ public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
         RefreshPartyFromRuntimeStore();
         BattleTimelineController.CharacterSelectionChanged -= HandleCharacterSelectionChanged;
         BattleTimelineController.CharacterSelectionChanged += HandleCharacterSelectionChanged;
+        RefreshSelectPortraits(timelineController != null ? timelineController.SelectedCharacter : null);
     }
 
     private void OnDisable()
@@ -93,6 +95,8 @@ public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
                 slots[i].Runtime = runtime;
             RefreshSlot(i, true);
         }
+
+        RefreshSelectPortraits(timelineController != null ? timelineController.SelectedCharacter : null);
     }
 
     public void RefreshPartyFromRuntimeStore()
@@ -125,6 +129,8 @@ public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
         {
             for (int i = 0; i < PartySlotCount; i++)
                 RefreshSlot(i, true);
+
+            RefreshSelectPortraits(timelineController != null ? timelineController.SelectedCharacter : null);
         }
     }
 
@@ -164,6 +170,43 @@ public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
     {
         if (runtime != null && characterPanel != null && characterPanel.BoundRuntime != runtime)
             characterPanel.Bind(runtime);
+
+        RefreshSelectPortraits(runtime);
+    }
+
+    private void RefreshSelectPortraits(CharacterRuntimeData selectedRuntime)
+    {
+        CharacterIconDatabase iconDatabase = DataManager.Instance?.CharacterIconDatabase;
+        string selectedCharacterId = selectedRuntime != null ? selectedRuntime.CharacterId : null;
+
+        for (int i = 0; i < PartySlotCount; i++)
+        {
+            Image iconImage = selectIcons[i];
+            CharacterRuntimeData runtime = partyRuntimes[i];
+
+            if (iconImage == null)
+                continue;
+
+            if (runtime == null || iconDatabase == null)
+            {
+                iconImage.sprite = null;
+                iconImage.enabled = false;
+                continue;
+            }
+
+            bool selected = !string.IsNullOrWhiteSpace(selectedCharacterId) &&
+                            string.Equals(runtime.CharacterId, selectedCharacterId, StringComparison.Ordinal);
+
+            selectTargets[i]?.SetSelected(selected);
+
+            Sprite portrait = null;
+            if (selected)
+                iconDatabase.TryGetHUDSelectedPortraitImage(runtime.CharacterId, out portrait);
+            else
+                iconDatabase.TryGetHUDPortraitImage(runtime.CharacterId, out portrait);
+
+            ApplySprite(iconImage, portrait);
+        }
     }
 
     private void ResolveReferences()
@@ -187,6 +230,7 @@ public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
                     target = selectRoot.gameObject.AddComponent<BattlePartyCharacterSelectTarget>();
                 target.Configure(this, i);
                 selectTargets[i] = target;
+                selectIcons[i] = GetImage(FindDirectChild(selectRoot, "Icon"));
             }
         }
 
@@ -429,19 +473,45 @@ public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
     }
 }
 
-public sealed class BattlePartyCharacterSelectTarget : MonoBehaviour, IPointerClickHandler
+public sealed class BattlePartyCharacterSelectTarget : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
+    private const float HoverScale = 1.1f;
+    private const float ScaleLerpSpeed = 14f;
+
     private BattlePartyCharacterPanelUI owner;
     private int index;
+    private Vector3 normalScale = Vector3.one;
+    private bool scaleCaptured;
+    private bool isPointerOver;
+    private bool isSelected;
 
     public void Configure(BattlePartyCharacterPanelUI panel, int partyIndex)
     {
         owner = panel;
         index = partyIndex;
+        CaptureNormalScale();
 
         Graphic graphic = GetComponent<Graphic>();
         if (graphic != null)
             graphic.raycastTarget = true;
+    }
+
+    public void SetSelected(bool selected)
+    {
+        isSelected = selected;
+        ApplyScale(false);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        isPointerOver = true;
+        ApplyScale(false);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        isPointerOver = false;
+        ApplyScale(false);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -449,5 +519,42 @@ public sealed class BattlePartyCharacterSelectTarget : MonoBehaviour, IPointerCl
         if (eventData.button != PointerEventData.InputButton.Left)
             return;
         owner?.SelectIndex(index);
+    }
+
+    private void Update()
+    {
+        ApplyScale(false);
+    }
+
+    private void OnDisable()
+    {
+        isPointerOver = false;
+        ApplyScale(true);
+    }
+
+    private void CaptureNormalScale()
+    {
+        if (scaleCaptured)
+            return;
+
+        normalScale = transform.localScale;
+        scaleCaptured = true;
+    }
+
+    private void ApplyScale(bool instant)
+    {
+        CaptureNormalScale();
+
+        bool enlarged = isPointerOver || isSelected;
+        Vector3 targetScale = normalScale * (enlarged ? HoverScale : 1f);
+
+        if (instant || ScaleLerpSpeed <= 0f)
+        {
+            transform.localScale = targetScale;
+            return;
+        }
+
+        float t = 1f - Mathf.Exp(-ScaleLerpSpeed * Time.unscaledDeltaTime);
+        transform.localScale = Vector3.Lerp(transform.localScale, targetScale, t);
     }
 }
