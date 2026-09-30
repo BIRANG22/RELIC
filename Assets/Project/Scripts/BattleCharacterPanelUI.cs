@@ -203,6 +203,55 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private TMP_Text skillEffect03Text;
     private TMP_Text skillEffect03Value;
 
+    [Header("Skill Tooltip")]
+    [SerializeField] private GameObject skillTooltipPanel;
+    [SerializeField] private TMP_Text skillTooltipNameText;
+    [SerializeField] private TMP_Text skillTooltipTypeText;
+    [SerializeField] private TMP_Text skillTooltipDetailText;
+    [SerializeField] private Image skillTooltipRangeImage;
+    [SerializeField] private Image skillTooltipResourceIconImage;
+    [SerializeField] private TMP_Text skillTooltipResourceValueText;
+    [SerializeField] private Image skillTooltipLineImage;
+
+    [Header("Skill Tooltip Resource Color")]
+    [Tooltip("TooltipPanel의 Resources_Icon이 마나(Cost)를 사용할 때 적용할 색입니다. 알파값은 기존 값을 유지합니다.")]
+    [SerializeField] private Color skillTooltipManaResourceColor = new Color32(0x33, 0x6F, 0xC5, 0xFF);
+    [Tooltip("TooltipPanel의 Resources_Icon이 생명력(HP)을 사용할 때 적용할 색입니다. 알파값은 기존 값을 유지합니다.")]
+    [SerializeField] private Color skillTooltipHpResourceColor = new Color32(0xD0, 0x36, 0x36, 0xFF);
+    [Tooltip("마나/생명력 이외의 자원을 사용할 때 Resources_Icon에 적용할 색입니다. 알파값은 기존 값을 유지합니다.")]
+    [SerializeField] private Color skillTooltipDefaultResourceColor = Color.white;
+
+    [Header("Skill Tooltip Rarity Line Color")]
+    [Tooltip("일반(Common) 스킬의 TooltipPanel/Background/Line 색입니다. 알파값은 기존 값을 유지합니다.")]
+    [SerializeField] private Color skillTooltipCommonLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    [Tooltip("레어(Rare) 스킬의 TooltipPanel/Background/Line 색입니다. 알파값은 기존 값을 유지합니다.")]
+    [SerializeField] private Color skillTooltipRareLineColor = Color.white;
+    [Tooltip("에픽(Epic) 스킬의 TooltipPanel/Background/Line 색입니다. 알파값은 기존 값을 유지합니다.")]
+    [SerializeField] private Color skillTooltipEpicLineColor = Color.white;
+    [Tooltip("유니크(Unique) 스킬의 TooltipPanel/Background/Line 색입니다. 알파값은 기존 값을 유지합니다.")]
+    [SerializeField] private Color skillTooltipUniqueLineColor = Color.white;
+    [Tooltip("전용(Exclusive) 스킬의 TooltipPanel/Background/Line 색입니다. 알파값은 기존 값을 유지합니다.")]
+    [SerializeField] private Color skillTooltipExclusiveLineColor = Color.white;
+    [Tooltip("이동(Move) 스킬의 TooltipPanel/Background/Line 색입니다. 알파값은 기존 값을 유지합니다.")]
+    [SerializeField] private Color skillTooltipMoveLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+
+    [Header("Skill Tooltip Position")]
+    [Tooltip("마우스 커서를 기준으로 TooltipPanel이 표시될 오프셋입니다.")]
+    [SerializeField] private Vector2 skillTooltipCursorOffset = new Vector2(40f, -40f);
+    [Tooltip("TooltipPanel이 화면 밖으로 빠지지 않도록 확보할 X/Y 여백입니다.")]
+    [SerializeField] private Vector2 skillTooltipScreenPadding = new Vector2(8f, 8f);
+
+    [Header("Skill Tooltip Fade")]
+    [Tooltip("TooltipPanel 페이드인 시간입니다.")]
+    [SerializeField, Min(0f)] private float skillTooltipFadeInDuration = 0.12f;
+    [Tooltip("TooltipPanel 페이드아웃 시간입니다.")]
+    [SerializeField, Min(0f)] private float skillTooltipFadeOutDuration = 0.05f;
+
+    private RectTransform skillTooltipRectTransform;
+    private CanvasGroup skillTooltipCanvasGroup;
+    private Coroutine skillTooltipFadeCoroutine;
+    private bool isSkillTooltipVisible;
+
     [Header("Panel Position Animation")]
     [Tooltip("전투 진행 중 패널이 내려가 있을 Y 위치입니다.")]
     [SerializeField] private float executionPositionY = 150f;
@@ -359,6 +408,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         RegisterMoveAndItemButtonListeners();
         EnsureSkillButtonHoverEffects();
         EnsureMoveAndItemButtonHoverEffects();
+        ResolveSkillTooltipReferences();
+        HideSkillTooltip();
     }
 
     private void OnEnable()
@@ -396,6 +447,17 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        isSkillTooltipVisible = false;
+        if (skillTooltipFadeCoroutine != null)
+        {
+            StopCoroutine(skillTooltipFadeCoroutine);
+            skillTooltipFadeCoroutine = null;
+        }
+        if (skillTooltipCanvasGroup != null)
+            skillTooltipCanvasGroup.alpha = 0f;
+        if (skillTooltipPanel != null)
+            skillTooltipPanel.SetActive(false);
+
         if (selectionPanelRefreshCoroutine != null)
         {
             StopCoroutine(selectionPanelRefreshCoroutine);
@@ -525,6 +587,68 @@ public class BattleCharacterPanelUI : MonoBehaviour
         // 기존 Character/Monster 루트는 제거되었습니다.
         // 현재 BattleCharacterPanel은 Char01~03/Char_Select와 Active만 사용합니다.
         ResolveNewActiveReferences();
+        ResolveSkillTooltipReferences();
+    }
+
+    private void ResolveSkillTooltipReferences()
+    {
+        if (skillTooltipPanel == null)
+        {
+            Transform tooltip = FindDirectChild(transform, "TooltipPanel");
+            if (tooltip != null)
+                skillTooltipPanel = tooltip.gameObject;
+        }
+
+        if (skillTooltipPanel == null)
+            return;
+
+        Transform tooltipRoot = skillTooltipPanel.transform;
+
+        if (skillTooltipNameText == null)
+            skillTooltipNameText = FindChildComponent<TMP_Text>(tooltipRoot, "Name");
+
+        if (skillTooltipTypeText == null)
+        {
+            Transform typeRoot = FindDirectChild(tooltipRoot, "Type");
+            if (typeRoot != null)
+                skillTooltipTypeText = FindChildComponent<TMP_Text>(typeRoot, "Type_text");
+        }
+
+        if (skillTooltipDetailText == null)
+            skillTooltipDetailText = FindChildComponent<TMP_Text>(tooltipRoot, "Detail");
+
+        if (skillTooltipRangeImage == null)
+        {
+            Transform range = FindDirectChild(tooltipRoot, "Range");
+            if (range != null)
+                skillTooltipRangeImage = range.GetComponent<Image>();
+        }
+
+        if (skillTooltipResourceIconImage == null)
+        {
+            Transform resourceIcon = FindDirectChild(tooltipRoot, "Resources_Icon");
+            if (resourceIcon != null)
+                skillTooltipResourceIconImage = resourceIcon.GetComponent<Image>();
+        }
+
+        if (skillTooltipResourceValueText == null)
+            skillTooltipResourceValueText = FindChildComponent<TMP_Text>(tooltipRoot, "Resources_Value");
+
+        if (skillTooltipLineImage == null)
+        {
+            Transform backgroundRoot = FindDirectChild(tooltipRoot, "Background");
+            if (backgroundRoot != null)
+            {
+                Transform line = FindDirectChild(backgroundRoot, "Line");
+                if (line != null)
+                    skillTooltipLineImage = line.GetComponent<Image>();
+            }
+        }
+
+        if (skillTooltipRectTransform == null)
+            skillTooltipRectTransform = skillTooltipPanel.GetComponent<RectTransform>();
+
+        EnsureSkillTooltipCanvasGroup();
     }
 
     private void ResolveNewActiveReferences()
@@ -1430,6 +1554,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (isSkillTooltipVisible)
+            UpdateSkillTooltipPosition();
+
         RefreshPartyFromRuntimeStore();
         RefreshChangedPartySlots();
 
@@ -2307,7 +2434,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
             button.GetComponent<RectTransform>(),
             previewSkillData,
             boundRuntime,
-            ShowSkillInfo
+            ShowSkillTooltip,
+            HideSkillTooltip
         );
     }
 
@@ -2364,7 +2492,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
             button.GetComponent<RectTransform>(),
             null,
             boundRuntime,
-            ShowSkillInfo
+            ShowSkillTooltip,
+            HideSkillTooltip
         );
     }
 
@@ -2711,7 +2840,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             {
                 hover.SetSkillRangePreview(skillData);
                 hover.SetPreviewCharacter(boundRuntime);
-                hover.SetSkillInfoHandler(ShowSkillInfo);
+                hover.SetSkillInfoHandler(ShowSkillTooltip, HideSkillTooltip);
             }
         }
 
@@ -3093,6 +3222,326 @@ public class BattleCharacterPanelUI : MonoBehaviour
         // 어느 스킬의 숫자를 눌러도 동일한 전역 상세 보기 상태를 사용합니다.
         if (displayedSkillInfoData != null)
             ShowSkillInfo(displayedSkillInfoData);
+    }
+
+    private void ShowSkillTooltip(SkillMasterData skillData)
+    {
+        if (skillData == null)
+        {
+            HideSkillTooltip();
+            return;
+        }
+
+        ResolveSkillTooltipReferences();
+        if (skillTooltipPanel == null)
+            return;
+
+        // 비활성 상태에서 텍스트를 먼저 넣으면 TooltipPanel이 활성화되는 순간
+        // Name 오브젝트의 OnEnable/로컬라이즈 처리에 의해 이전 문자열로 덮어써질 수 있습니다.
+        // 먼저 패널을 활성화한 뒤 현재 호버 중인 스킬 정보를 적용합니다.
+        if (!skillTooltipPanel.activeSelf)
+            skillTooltipPanel.SetActive(true);
+
+        // 기존 SkillInfo 데이터도 함께 최신 상태로 유지합니다.
+        ShowSkillInfo(skillData);
+
+        if (skillTooltipNameText != null)
+        {
+            string localizedSkillName = !string.IsNullOrWhiteSpace(skillData.Name)
+                ? GameDataLocalization.SkillName(skillData)
+                : skillData.SkillId;
+
+            skillTooltipNameText.SetText(localizedSkillName);
+        }
+
+        if (skillTooltipTypeText != null)
+            skillTooltipTypeText.text = GetSkillTooltipTypeDisplayName(skillData);
+
+        if (skillTooltipDetailText != null)
+        {
+            BattlePlayerSkillPreview preview = GetSkillPreview(skillData);
+            skillTooltipDetailText.text = !string.IsNullOrWhiteSpace(skillData.Details)
+                ? BattlePlayerSkillPreviewCalculator.FormatDescription(
+                    skillData,
+                    GameDataLocalization.SkillDetailsTemplate(skillData),
+                    preview,
+                    SkillDetailNumericLinkHandler.DetailedMode,
+                    string.Empty)
+                : string.Empty;
+        }
+
+        SetSkillInfoImage(skillTooltipRangeImage, ResolveSkillRangeIcon(skillData.RangeId));
+        SetSkillInfoImage(skillTooltipResourceIconImage, GetResourceIcon(skillData.ReferenceResource));
+        ApplySkillTooltipResourceIconColor(skillData.ReferenceResource);
+        ApplySkillTooltipRarityLineColor(skillData);
+
+        if (skillTooltipResourceValueText != null)
+        {
+            BattlePlayerSkillPreview preview = GetSkillPreview(skillData);
+            int resourceValue = preview != null
+                ? Mathf.Max(0, preview.PayAmount)
+                : Mathf.Max(0, skillData.ResourceCostValue);
+            skillTooltipResourceValueText.text = resourceValue.ToString();
+        }
+
+        EnsureSkillTooltipCanvasGroup();
+        isSkillTooltipVisible = true;
+
+        // 첫 프레임부터 커서 옆에 나타나도록 활성화 직후 위치를 먼저 맞춥니다.
+        UpdateSkillTooltipPosition();
+        StartSkillTooltipFade(1f, skillTooltipFadeInDuration, false);
+    }
+
+    private void HideSkillTooltip()
+    {
+        isSkillTooltipVisible = false;
+
+        if (skillTooltipPanel == null)
+            return;
+
+        EnsureSkillTooltipCanvasGroup();
+
+        if (!skillTooltipPanel.activeSelf)
+        {
+            if (skillTooltipCanvasGroup != null)
+                skillTooltipCanvasGroup.alpha = 0f;
+            return;
+        }
+
+        StartSkillTooltipFade(0f, skillTooltipFadeOutDuration, true);
+    }
+
+    private void EnsureSkillTooltipCanvasGroup()
+    {
+        if (skillTooltipPanel == null)
+            return;
+
+        if (skillTooltipCanvasGroup == null)
+            skillTooltipCanvasGroup = skillTooltipPanel.GetComponent<CanvasGroup>();
+
+        if (skillTooltipCanvasGroup == null)
+            skillTooltipCanvasGroup = skillTooltipPanel.AddComponent<CanvasGroup>();
+
+        // 툴팁이 커서의 UI Raycast를 가로채서 PointerExit가 발생하는 것을 막습니다.
+        skillTooltipCanvasGroup.interactable = false;
+        skillTooltipCanvasGroup.blocksRaycasts = false;
+    }
+
+    private void StartSkillTooltipFade(float targetAlpha, float duration, bool deactivateWhenFinished)
+    {
+        EnsureSkillTooltipCanvasGroup();
+        if (skillTooltipCanvasGroup == null)
+            return;
+
+        if (skillTooltipFadeCoroutine != null)
+        {
+            StopCoroutine(skillTooltipFadeCoroutine);
+            skillTooltipFadeCoroutine = null;
+        }
+
+        if (duration <= 0f)
+        {
+            skillTooltipCanvasGroup.alpha = targetAlpha;
+            if (deactivateWhenFinished && skillTooltipPanel != null)
+                skillTooltipPanel.SetActive(false);
+            return;
+        }
+
+        skillTooltipFadeCoroutine = StartCoroutine(
+            FadeSkillTooltipRoutine(targetAlpha, duration, deactivateWhenFinished));
+    }
+
+    private IEnumerator FadeSkillTooltipRoutine(
+        float targetAlpha,
+        float duration,
+        bool deactivateWhenFinished)
+    {
+        if (skillTooltipCanvasGroup == null)
+            yield break;
+
+        float startAlpha = skillTooltipCanvasGroup.alpha;
+        float elapsed = 0f;
+        float safeDuration = Mathf.Max(0.0001f, duration);
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+            skillTooltipCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+            yield return null;
+        }
+
+        skillTooltipCanvasGroup.alpha = targetAlpha;
+
+        if (deactivateWhenFinished && !isSkillTooltipVisible && skillTooltipPanel != null)
+            skillTooltipPanel.SetActive(false);
+
+        skillTooltipFadeCoroutine = null;
+    }
+
+    private void UpdateSkillTooltipPosition()
+    {
+        if (!isSkillTooltipVisible || skillTooltipPanel == null || !skillTooltipPanel.activeSelf)
+            return;
+
+        if (skillTooltipRectTransform == null)
+            skillTooltipRectTransform = skillTooltipPanel.GetComponent<RectTransform>();
+
+        if (skillTooltipRectTransform == null)
+            return;
+
+        RectTransform parentRect = skillTooltipRectTransform.parent as RectTransform;
+        if (parentRect == null)
+            return;
+
+        Canvas canvas = skillTooltipRectTransform.GetComponentInParent<Canvas>();
+        Camera canvasCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera
+            : null;
+
+        Vector2 desiredScreenPosition = (Vector2)Input.mousePosition + skillTooltipCursorOffset;
+
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentRect,
+                desiredScreenPosition,
+                canvasCamera,
+                out Vector2 localPoint))
+        {
+            return;
+        }
+
+        Vector3 localPosition = skillTooltipRectTransform.localPosition;
+        localPosition.x = localPoint.x;
+        localPosition.y = localPoint.y;
+        skillTooltipRectTransform.localPosition = localPosition;
+
+        // 실제 렌더링된 네 모서리를 화면 좌표로 검사해서 화면 밖으로 빠지는 만큼 다시 밀어 넣습니다.
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(skillTooltipRectTransform);
+
+        Vector3[] worldCorners = new Vector3[4];
+        skillTooltipRectTransform.GetWorldCorners(worldCorners);
+
+        float minScreenX = float.MaxValue;
+        float minScreenY = float.MaxValue;
+        float maxScreenX = float.MinValue;
+        float maxScreenY = float.MinValue;
+
+        for (int i = 0; i < worldCorners.Length; i++)
+        {
+            Vector2 cornerScreen = RectTransformUtility.WorldToScreenPoint(canvasCamera, worldCorners[i]);
+            minScreenX = Mathf.Min(minScreenX, cornerScreen.x);
+            minScreenY = Mathf.Min(minScreenY, cornerScreen.y);
+            maxScreenX = Mathf.Max(maxScreenX, cornerScreen.x);
+            maxScreenY = Mathf.Max(maxScreenY, cornerScreen.y);
+        }
+
+        float paddingX = Mathf.Max(0f, skillTooltipScreenPadding.x);
+        float paddingY = Mathf.Max(0f, skillTooltipScreenPadding.y);
+        float deltaScreenX = 0f;
+        float deltaScreenY = 0f;
+
+        if (minScreenX < paddingX)
+            deltaScreenX = paddingX - minScreenX;
+        else if (maxScreenX > Screen.width - paddingX)
+            deltaScreenX = (Screen.width - paddingX) - maxScreenX;
+
+        if (minScreenY < paddingY)
+            deltaScreenY = paddingY - minScreenY;
+        else if (maxScreenY > Screen.height - paddingY)
+            deltaScreenY = (Screen.height - paddingY) - maxScreenY;
+
+        if (Mathf.Approximately(deltaScreenX, 0f) && Mathf.Approximately(deltaScreenY, 0f))
+            return;
+
+        Vector2 currentScreenPivot = RectTransformUtility.WorldToScreenPoint(
+            canvasCamera,
+            skillTooltipRectTransform.position);
+        Vector2 correctedScreenPivot = currentScreenPivot + new Vector2(deltaScreenX, deltaScreenY);
+
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentRect,
+                correctedScreenPivot,
+                canvasCamera,
+                out Vector2 correctedLocalPoint))
+        {
+            return;
+        }
+
+        localPosition = skillTooltipRectTransform.localPosition;
+        localPosition.x = correctedLocalPoint.x;
+        localPosition.y = correctedLocalPoint.y;
+        skillTooltipRectTransform.localPosition = localPosition;
+    }
+
+    private void ApplySkillTooltipResourceIconColor(ReferenceResource resource)
+    {
+        if (skillTooltipResourceIconImage == null)
+            return;
+
+        Color targetColor = resource switch
+        {
+            ReferenceResource.HP => skillTooltipHpResourceColor,
+            ReferenceResource.Cost => skillTooltipManaResourceColor,
+            _ => skillTooltipDefaultResourceColor
+        };
+
+        SetImageColorPreserveAlpha(skillTooltipResourceIconImage, targetColor);
+    }
+
+    private void ApplySkillTooltipRarityLineColor(SkillMasterData skillData)
+    {
+        if (skillTooltipLineImage == null || skillData == null)
+            return;
+
+        Color targetColor;
+
+        if (skillData.Category == Category.Move || skillData.Rarity == SkillRarity.Move)
+        {
+            targetColor = skillTooltipMoveLineColor;
+        }
+        else
+        {
+            targetColor = skillData.Rarity switch
+            {
+                SkillRarity.Rare => skillTooltipRareLineColor,
+                SkillRarity.Epic => skillTooltipEpicLineColor,
+                SkillRarity.Unique => skillTooltipUniqueLineColor,
+                SkillRarity.Exclusive => skillTooltipExclusiveLineColor,
+                _ => skillTooltipCommonLineColor
+            };
+        }
+
+        SetImageColorPreserveAlpha(skillTooltipLineImage, targetColor);
+    }
+
+    private static void SetImageColorPreserveAlpha(Image image, Color color)
+    {
+        if (image == null)
+            return;
+
+        Color current = image.color;
+        image.color = new Color(color.r, color.g, color.b, current.a);
+    }
+
+    private static string GetSkillTooltipTypeDisplayName(SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return string.Empty;
+
+        if (skillData.Category == Category.Move || skillData.Rarity == SkillRarity.Move)
+            return "이동";
+
+        if (skillData.Category == Category.Passive)
+            return "패시브";
+
+        return skillData.SkillType switch
+        {
+            SkillType.Buff => "버프",
+            SkillType.Debuff => "디버프",
+            SkillType.Attack => "공격",
+            _ => string.Empty
+        };
     }
 
     private void ShowSkillInfo(SkillMasterData skillData)

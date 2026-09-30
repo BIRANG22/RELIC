@@ -62,15 +62,15 @@ Mon_12,아라벨라,Boss,142,0,45,55,Item_012,0.5,Range_19,S_Monster_20,S_Monste
 # SkillMaster
 스킬 ID,이름,분류,레어도,참조자원,대상,레벨,타입,효과 ID,수치계수,횟수계수,자원소모량,범위타입,범위ID,효과,상점가격
 SkillId,Name,Category,Rarity,ReferenceResource,Target,Level,SkillType,EffectIds,ValueRate,CountRate,ResourceCostValue,RangeType,RangeId,Details,RedDustiumCost
-S_Move_1,이동,Move,Move,Cost,Self,1,0,E_Move,0,1,1,Selection,Range_All,선택한 그리드로 이동한다. 이동한 칸만큼 마나를 소모한다.,0
-S_Passive_01,용린,Passive,Exclusive,Ulti,Self,0,0,E_Armor,4,1,0,Passive,Range_Self,매 턴 시작 시 {E_Armor}를 {ValueRate1} 얻는다.,0
-S_Passive_02,용혈,Passive,Exclusive,Ulti,Self,0,0,E_Lifesteal,1,1,0,Passive,Range_Self,매 턴 시작 시 {E_Lifesteal}을 {ValueRate1} 얻는다.,0
-S_Passive_03,평정심,Passive,Exclusive,Ulti,Self,0,0,E_Swift,1,1,0,Passive,Range_Self,매 턴 시작 시 {E_Swift}을 {ValueRate1} 얻는다.,0
-S_Passive_04,간파,Passive,Exclusive,Ulti,Self,0,0,E_Smite,1,1,0,Passive,Range_Self,매 턴 시작 시 {E_Smite}를 {ValueRate1} 얻는다.,0
-S_Passive_05,마나순환,Passive,Exclusive,Ulti,PlayerParty,0,0,E_Charge,1,1,0,Passive,Range_Party,매 턴 시작 시 모든 아군에게 {E_Charge}을 {ValueRate1} 부여한다.,0
-S_Passive_06,독기,Passive,Exclusive,Ulti,EnemyParty,0,0,E_Poison,1,1,0,Passive,Range_All,매 턴 시작 시 모든 적에게 {E_Poison}을 {ValueRate1} 부여한다.,0
-S_Passive_07,서약,Passive,Exclusive,Ulti,PlayerParty,0,0,E_Armor,2,1,0,Passive,Range_Party,매 턴 시작 시 모든 아군에게 {E_Armor}을 {ValueRate1} 부여한다.,0
-S_Passive_08,열망,Passive,Exclusive,Ulti,Self,0,0,E_Boost,1,1,0,Passive,Range_Self,매 턴 시작 시 {E_Boost}를 {ValueRate1} 얻는다.,0
+S_Move_1,이동,Move,Move,Cost,Self,1,Move,E_Move,0,1,1,Selection,Range_All,선택한 그리드로 이동한다. 이동한 칸만큼 마나를 소모한다.,0
+S_Passive_01,용린,Passive,Exclusive,Ulti,Self,0,Passive,E_Armor,4,1,0,Passive,Range_Self,매 턴 시작 시 {E_Armor}를 {ValueRate1} 얻는다.,0
+S_Passive_02,용혈,Passive,Exclusive,Ulti,Self,0,Passive,E_Lifesteal,1,1,0,Passive,Range_Self,매 턴 시작 시 {E_Lifesteal}을 {ValueRate1} 얻는다.,0
+S_Passive_03,평정심,Passive,Exclusive,Ulti,Self,0,Passive,E_Swift,1,1,0,Passive,Range_Self,매 턴 시작 시 {E_Swift}을 {ValueRate1} 얻는다.,0
+S_Passive_04,간파,Passive,Exclusive,Ulti,Self,0,Passive,E_Smite,1,1,0,Passive,Range_Self,매 턴 시작 시 {E_Smite}를 {ValueRate1} 얻는다.,0
+S_Passive_05,마나순환,Passive,Exclusive,Ulti,PlayerParty,0,Passive,E_Charge,1,1,0,Passive,Range_Party,매 턴 시작 시 모든 아군에게 {E_Charge}을 {ValueRate1} 부여한다.,0
+S_Passive_06,독기,Passive,Exclusive,Ulti,EnemyParty,0,Passive,E_Poison,1,1,0,Passive,Range_All,매 턴 시작 시 모든 적에게 {E_Poison}을 {ValueRate1} 부여한다.,0
+S_Passive_07,서약,Passive,Exclusive,Ulti,PlayerParty,0,Passive,E_Armor,2,1,0,Passive,Range_Party,매 턴 시작 시 모든 아군에게 {E_Armor}을 {ValueRate1} 부여한다.,0
+S_Passive_08,열망,Passive,Exclusive,Ulti,Self,0,Passive,E_Boost,1,1,0,Passive,Range_Self,매 턴 시작 시 {E_Boost}를 {ValueRate1} 얻는다.,0
 S_Passive_09,Char5_P1,Passive,Exclusive,Ulti,-,0,0,-,-,-,0,Passive,-,-,0
 S_Passive_10,Char5_P2,Passive,Exclusive,Ulti,-,0,0,-,-,-,0,Passive,-,-,0
 S_Unique_01,용의 가호,Unique,Exclusive,Ulti,PlayerParty,0,Buff,E_Armor,12,1,3,Direction,Range_Party,모든 아군에게 {E_Armor}를 {ValueRate1} 부여한다.,0
@@ -80,7 +80,7 @@ S_Unique_04,절명일섬,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Pierce,20,1
 S_Unique_05,마력상승,Unique,Exclusive,Ulti,PlayerParty,0,Buff,E_Boost,2,1,3,Direction,Range_b_04,{E_Boost}을 {ValueRate1} 부여한다.,0
 S_Unique_06,독의 범람,Unique,Exclusive,Ulti,EnemyParty,0,Debuff,E_Poison,5,1,3,Direction,Range_25,{E_Poison}을 {ValueRate1} 부여한다.,0
 S_Unique_07,구원의 기도,Unique,Exclusive,Ulti,PlayerParty,0,Buff,E_Heal,3,1,3,Direction,Range_b_01,{E_Heal}을 {ValueRate1} 부여한다.,0
-S_Unique_08,처형,Unique,Exclusive,Ulti,EnemyParty,0,Attack;Debuff,E_Strike;E_Vulnerable,14;1,1;1,3,Direction,Range_23,"{ValueRate1}의 {E_Pierce}를 주고, {E_Vulnerable}을 {ValueRate2} 부여한다.",0
+S_Unique_08,처형,Unique,Exclusive,Ulti,EnemyParty,0,Attack,E_Strike;E_Vulnerable,14;1,1;1,3,Direction,Range_23,"{ValueRate1}의 {E_Pierce}를 주고, {E_Vulnerable}을 {ValueRate2} 부여한다.",0
 S_Unique_09,Char5_U1,Unique,Exclusive,Ulti,-,0,-,-,-,-,3,Direction,-,-,0
 S_Unique_10,Char5_U2,Unique,Exclusive,Ulti,-,0,-,-,-,-,3,Direction,-,-,0
 S_Ability_01,반월참,Ability,Exclusive,Cost,EnemyParty,1,Attack,E_Strike,5,1,3,Direction,Range_18,{ValueRate1}의 {E_Strike}를 준다.,0
