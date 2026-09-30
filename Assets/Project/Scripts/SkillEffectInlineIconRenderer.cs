@@ -14,6 +14,9 @@ namespace Relic.Gameplay.Data
     public sealed class SkillEffectInlineIconRenderer : MonoBehaviour
     {
         private const string LinkPrefix = "effecticon:";
+        private const float GlobalEffectIconScale = 1.6f;
+        internal const string DefaultEffectIconSpacingTag = "<space=1em>";
+        internal const string GlobalEffectIconSpacingTag = "<space=1.6em>";
         private TMP_Text targetText;
         private readonly List<Image> spawnedIcons = new();
         private string lastText = null;
@@ -93,7 +96,7 @@ namespace Relic.Gameplay.Data
 
                 TMP_CharacterInfo character = textInfo.characterInfo[lastIndex];
                 float height = Mathf.Max(1f, character.ascender - character.descender);
-                float size = height * 0.9f;
+                float size = height * 0.9f * GlobalEffectIconScale;
                 Vector3 position = new Vector3(
                     character.topRight.x + size * 0.58f,
                     (character.ascender + character.descender) * 0.5f,
@@ -138,7 +141,19 @@ namespace Relic.Gameplay.Data
                 return;
 
             target.richText = true;
-            target.text = text ?? string.Empty;
+
+            string formattedText = text ?? string.Empty;
+            if (formattedText.Contains("effecticon:", StringComparison.Ordinal))
+            {
+                // 커진 인라인 효과 아이콘의 폭만큼 텍스트 공간도 함께 확보합니다.
+                // 따라서 도감/툴팁 등 어느 UI에서 사용해도 다음 글자와 아이콘이 겹치지 않습니다.
+                formattedText = formattedText.Replace(
+                    SkillEffectInlineIconRenderer.DefaultEffectIconSpacingTag,
+                    SkillEffectInlineIconRenderer.GlobalEffectIconSpacingTag,
+                    StringComparison.Ordinal);
+            }
+
+            target.text = formattedText;
 
             SkillEffectInlineIconRenderer renderer = target.GetComponent<SkillEffectInlineIconRenderer>();
             if (renderer == null)
