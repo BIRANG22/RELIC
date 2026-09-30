@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// BattleCharacterPanel의 스킬 버튼 호버/선택 시각 효과를 적용합니다.
-/// 호버 시에는 Skill_Background 색상만 변경하고, Skill_Background2는 그리드 선택 중인 스킬에만 표시합니다.
+/// 호버 시에는 Skill_Background 색상을 변경하고, Skill_Background2는 그리드 선택 중인 스킬에만 표시합니다.
 /// </summary>
 public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
@@ -30,6 +30,10 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     [Header("Direction Click Feedback")]
     [SerializeField, Min(0f)] private float directionClickFeedbackDuration = 0.15f;
 
+    [Header("Tooltip Click Feedback")]
+    [Tooltip("스킬 클릭 시 툴팁을 잠깐 숨겼다가 다시 표시하기까지의 시간입니다.")]
+    [SerializeField, Min(0f)] private float tooltipClickRestartDelay = 0.06f;
+
     [Header("Auto Find")]
     [SerializeField] private bool autoFindReferences = true;
     [SerializeField] private string hoverBackgroundObjectName = "Skill_Background2";
@@ -46,6 +50,8 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     private SkillMasterData skillData;
     private CharacterRuntimeData previewRuntime;
     private Action<SkillMasterData> skillInfoHandler;
+    private Action skillInfoExitHandler;
+    private Coroutine tooltipClickFeedbackRoutine;
 
     private void Awake()
     {
@@ -74,8 +80,14 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     private void OnDisable()
     {
         directionClickFeedbackUntil = -1f;
+        if (tooltipClickFeedbackRoutine != null)
+        {
+            StopCoroutine(tooltipClickFeedbackRoutine);
+            tooltipClickFeedbackRoutine = null;
+        }
         ClearSkillRangePreview();
         ResetVisual(true);
+        skillInfoExitHandler?.Invoke();
     }
 
     public void Configure(
@@ -84,7 +96,8 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         RectTransform target,
         SkillMasterData previewSkillData = null,
         CharacterRuntimeData runtimeData = null,
-        Action<SkillMasterData> onSkillHovered = null)
+        Action<SkillMasterData> onSkillHovered = null,
+        Action onSkillHoverExited = null)
     {
         if (normalBackground != null)
             normalBackgroundImage = normalBackground;
@@ -98,6 +111,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         skillData = previewSkillData;
         previewRuntime = runtimeData;
         skillInfoHandler = onSkillHovered;
+        skillInfoExitHandler = onSkillHoverExited;
 
         scaleCaptured = false;
         normalBackgroundColorCaptured = false;
@@ -128,6 +142,8 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
 
     public void ShowClickSelectionFeedback()
     {
+        PlayTooltipClickFeedback();
+
         if (skillData != null && skillData.RangeType == RangeType.Direction)
         {
             directionClickFeedbackUntil = Time.unscaledTime + directionClickFeedbackDuration;
@@ -139,9 +155,41 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         ApplyHighlightVisual();
     }
 
-    public void SetSkillInfoHandler(Action<SkillMasterData> onSkillHovered)
+    private void PlayTooltipClickFeedback()
+    {
+        if (skillData == null || skillInfoHandler == null || skillInfoExitHandler == null)
+            return;
+
+        if (tooltipClickFeedbackRoutine != null)
+            StopCoroutine(tooltipClickFeedbackRoutine);
+
+        tooltipClickFeedbackRoutine = StartCoroutine(TooltipClickFeedbackRoutine());
+    }
+
+    private System.Collections.IEnumerator TooltipClickFeedbackRoutine()
+    {
+        // 등록 클릭이 들어왔다는 느낌이 나도록 현재 툴팁을 먼저 페이드아웃합니다.
+        skillInfoExitHandler?.Invoke();
+
+        float delay = Mathf.Max(0f, tooltipClickRestartDelay);
+        float elapsed = 0f;
+        while (elapsed < delay)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        // 클릭 후에도 같은 스킬 위에 커서가 남아 있을 때만 다시 페이드인합니다.
+        if (isPointerOver && isActiveAndEnabled && IsInteractable() && skillData != null)
+            skillInfoHandler?.Invoke(skillData);
+
+        tooltipClickFeedbackRoutine = null;
+    }
+
+    public void SetSkillInfoHandler(Action<SkillMasterData> onSkillHovered, Action onSkillHoverExited = null)
     {
         skillInfoHandler = onSkillHovered;
+        skillInfoExitHandler = onSkillHoverExited;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -166,6 +214,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         RestoreNormalBackgroundColor();
         ApplyHighlightVisual();
         ApplyScale(false);
+        skillInfoExitHandler?.Invoke();
     }
 
     private void ResetVisual(bool instant)
