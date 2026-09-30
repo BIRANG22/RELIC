@@ -5,7 +5,14 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler
+/// <summary>
+/// 상태효과 아이콘 표시와 툴팁 호버를 처리합니다.
+/// 툴팁은 PointerEnter에서 한 번 표시하고 PointerMove에서는 위치만 갱신합니다.
+/// </summary>
+public class StatusEffectIcon : MonoBehaviour,
+    IPointerEnterHandler,
+    IPointerExitHandler,
+    IPointerMoveHandler
 {
     [Header("References")]
     [SerializeField] private Image iconImage;
@@ -16,30 +23,15 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
     [SerializeField] private bool showTooltipOnHover = true;
     [SerializeField] private UnitStatusEffectTooltipUI statusTooltipUI;
 
-    [Header("Hover Raycast Area")]
-    [Tooltip("StatusEffectIcon 루트 RectTransform 전체를 마우스 호버 영역으로 사용합니다.")]
-    [SerializeField] private bool ensureFullRectHoverArea = true;
-
     private readonly List<StatusEffectRuntimeData> tooltipStatusEffects = new(1);
     private StatusEffectRuntimeData currentData;
     private bool pointerInside;
-    private Graphic rootRaycastGraphic;
-
-    private void Awake()
-    {
-        EnsureFullRectHoverRaycast();
-    }
-
-    private void OnEnable()
-    {
-        EnsureFullRectHoverRaycast();
-    }
 
     public void SetTooltipEnabled(bool enabled)
     {
         showTooltipOnHover = enabled;
 
-        if (!showTooltipOnHover)
+        if (!enabled)
         {
             pointerInside = false;
             HideTooltip();
@@ -52,12 +44,14 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
         if (data == null)
         {
+            pointerInside = false;
             HideTooltip();
             gameObject.SetActive(false);
             return;
         }
 
-        gameObject.SetActive(true);
+        if (!gameObject.activeSelf)
+            gameObject.SetActive(true);
 
         if (iconImage != null)
             ApplyImage(iconImage, GetIcon(data.EffectId));
@@ -66,12 +60,9 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
             ApplyImage(typeIconImage, GetTypeIcon(data.EffectId));
 
         if (valueText != null)
-        {
-            valueText.text = data.Stack > 0
-                ? data.Stack.ToString()
-                : "";
-        }
+            valueText.text = data.Stack > 0 ? data.Stack.ToString() : string.Empty;
 
+        // 이미 마우스가 올라가 있는 상태에서 스택/턴만 갱신되면 내용만 새로 반영합니다.
         if (pointerInside)
             ShowTooltip();
     }
@@ -84,9 +75,14 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     public void OnPointerMove(PointerEventData eventData)
     {
-        // 툴팁은 StatusEffectIcon의 위치를 기준으로 고정되므로
-        // 마우스가 움직일 때마다 다시 생성할 필요가 없습니다.
-        // OnPointerEnter에서 한 번 표시하고 OnPointerExit까지 유지합니다.
+        if (!pointerInside || statusTooltipUI == null)
+            return;
+
+        Vector2 position = eventData != null
+            ? eventData.position
+            : (Vector2)Input.mousePosition;
+
+        statusTooltipUI.UpdatePosition(position);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -106,39 +102,10 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
         HideTooltip();
     }
 
-    private void EnsureFullRectHoverRaycast()
-    {
-        if (!ensureFullRectHoverArea)
-            return;
-
-        if (transform is not RectTransform)
-            return;
-
-        if (rootRaycastGraphic == null)
-            rootRaycastGraphic = GetComponent<Graphic>();
-
-        if (rootRaycastGraphic == null)
-        {
-            Image transparentImage = gameObject.AddComponent<Image>();
-            transparentImage.sprite = null;
-            transparentImage.color = new Color(1f, 1f, 1f, 0f);
-            transparentImage.type = Image.Type.Simple;
-            rootRaycastGraphic = transparentImage;
-        }
-
-        rootRaycastGraphic.raycastTarget = true;
-    }
-
     private void ShowTooltip()
     {
-        if (!showTooltipOnHover)
+        if (!showTooltipOnHover || currentData == null || !currentData.IsValid())
             return;
-
-        if (currentData == null || !currentData.IsValid())
-        {
-            HideTooltip();
-            return;
-        }
 
         if (statusTooltipUI == null)
             statusTooltipUI = UnitStatusEffectTooltipUI.GetOrCreate();
@@ -149,86 +116,33 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
         tooltipStatusEffects.Clear();
         tooltipStatusEffects.Add(currentData);
 
-        UnitStatusEffectTooltipSide side = GetTooltipSide();
-        Vector2 screenPosition = GetTooltipScreenPosition(side);
-        statusTooltipUI.Show(this, tooltipStatusEffects, screenPosition, side);
+        Vector2 mousePosition = Input.mousePosition;
+        UnitStatusEffectTooltipSide side = mousePosition.x >= Screen.width * 0.5f
+            ? UnitStatusEffectTooltipSide.Left
+            : UnitStatusEffectTooltipSide.Right;
+
+        statusTooltipUI.Show(this, tooltipStatusEffects, mousePosition, side);
     }
 
     private void HideTooltip()
     {
-        if (statusTooltipUI == null)
-            return;
-
-        statusTooltipUI.Hide(this);
-    }
-
-    private UnitStatusEffectTooltipSide GetTooltipSide()
-    {
-        RectTransform rect = transform as RectTransform;
-        if (rect == null)
-            return Input.mousePosition.x >= Screen.width * 0.5f
-                ? UnitStatusEffectTooltipSide.Left
-                : UnitStatusEffectTooltipSide.Right;
-
-        Vector2 centerScreenPosition = RectTransformUtility.WorldToScreenPoint(GetRootCanvasCamera(), rect.position);
-        return centerScreenPosition.x >= Screen.width * 0.5f
-            ? UnitStatusEffectTooltipSide.Left
-            : UnitStatusEffectTooltipSide.Right;
-    }
-
-    private Vector2 GetTooltipScreenPosition(UnitStatusEffectTooltipSide side)
-    {
-        RectTransform rect = transform as RectTransform;
-        if (rect == null)
-            return Input.mousePosition;
-
-        Vector3[] corners = new Vector3[4];
-        rect.GetWorldCorners(corners);
-
-        Camera camera = GetRootCanvasCamera();
-
-        Vector2 bottomLeft = RectTransformUtility.WorldToScreenPoint(camera, corners[0]);
-        Vector2 topRight = RectTransformUtility.WorldToScreenPoint(camera, corners[2]);
-        float centerY = (bottomLeft.y + topRight.y) * 0.5f;
-
-        if (side == UnitStatusEffectTooltipSide.Left)
-            return new Vector2(bottomLeft.x, centerY);
-
-        return new Vector2(topRight.x, centerY);
-    }
-
-    private Camera GetRootCanvasCamera()
-    {
-        Canvas canvas = GetComponentInParent<Canvas>();
-        if (canvas == null)
-            return null;
-
-        if (canvas.renderMode == RenderMode.ScreenSpaceOverlay)
-            return null;
-
-        return canvas.worldCamera != null ? canvas.worldCamera : Camera.main;
+        if (statusTooltipUI != null)
+            statusTooltipUI.Hide(this);
     }
 
     private Sprite GetIcon(string effectId)
     {
-        if (DataManager.Instance == null)
+        if (DataManager.Instance == null || DataManager.Instance.StatusEffectIconDatabase == null)
             return null;
 
-        if (DataManager.Instance.StatusEffectIconDatabase == null)
-            return null;
-
-        if (DataManager.Instance.StatusEffectIconDatabase.TryGetIcon(effectId, out Sprite icon))
-            return icon;
-
-        return null;
+        return DataManager.Instance.StatusEffectIconDatabase.TryGetIcon(effectId, out Sprite icon)
+            ? icon
+            : null;
     }
 
     private Sprite GetTypeIcon(string effectId)
     {
-        if (DataManager.Instance == null)
-            return null;
-
-        if (DataManager.Instance.StatusEffectIconDatabase == null)
+        if (DataManager.Instance == null || DataManager.Instance.StatusEffectIconDatabase == null)
             return null;
 
         if (DataManager.Instance.StatusEffectIconDatabase.TryGetTypeIcon(
@@ -244,6 +158,9 @@ public class StatusEffectIcon : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     private static void ApplyImage(Image image, Sprite sprite)
     {
+        if (image == null)
+            return;
+
         image.sprite = sprite;
         image.enabled = sprite != null;
     }
