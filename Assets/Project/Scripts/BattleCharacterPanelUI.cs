@@ -25,7 +25,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
         public Image CharacterIcon;
         public Image PassiveIcon;
         public Image HpFill;
+        public TMP_Text HpValue;
         public Image CostFill;
+        public TMP_Text CostValue;
         public readonly Image[] Karma = new Image[5];
         public Transform StatusContent;
         public readonly Image[] Runes = new Image[6];
@@ -812,7 +814,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
         view.CharacterIcon = GetImage(FindPath(root, "Icon/Mask/Image"));
         view.PassiveIcon = GetImage(FindPath(root, "Passive/Icon"));
         view.HpFill = GetImage(FindPath(root, "Resources/Hp/Fill"));
+        view.HpValue = FindPath(root, "Resources/Hp/Value")?.GetComponent<TMP_Text>();
         view.CostFill = GetImage(FindPath(root, "Resources/Cost/Fill"));
+        view.CostValue = FindPath(root, "Resources/Cost/Value")?.GetComponent<TMP_Text>();
         view.StatusContent = FindPath(root, "Resources/StatusEffect/Content");
 
         for (int i = 0; i < view.Karma.Length; i++)
@@ -907,13 +911,22 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(runtime.PassiveSkillId) && DataManager.Instance?.SkillIconDatabase != null)
             DataManager.Instance.SkillIconDatabase.TryGetIcon(runtime.PassiveSkillId, out passiveIcon);
         ApplyPartySprite(slot.PassiveIcon, passiveIcon);
+        ConfigurePartyPassiveSkillTooltip(slot);
 
         int maxHp = Mathf.Max(0, runtime.MaxHP + runtime.RunMaxHPBonus);
         int maxCost = Mathf.Max(0, runtime.MaxCost + runtime.RunMaxCostBonus);
+        int currentHp = maxHp > 0 ? Mathf.Clamp(runtime.PreviewHP, 0, maxHp) : 0;
+        int currentCost = maxCost > 0 ? Mathf.Clamp(runtime.PreviewCost, 0, maxCost) : 0;
+
         if (slot.HpFill != null)
-            slot.HpFill.fillAmount = maxHp > 0 ? Mathf.Clamp01((float)runtime.PreviewHP / maxHp) : 0f;
+            slot.HpFill.fillAmount = maxHp > 0 ? Mathf.Clamp01((float)currentHp / maxHp) : 0f;
+        if (slot.HpValue != null)
+            slot.HpValue.text = $"{currentHp}/{maxHp}";
+
         if (slot.CostFill != null)
-            slot.CostFill.fillAmount = maxCost > 0 ? Mathf.Clamp01((float)runtime.PreviewCost / maxCost) : 0f;
+            slot.CostFill.fillAmount = maxCost > 0 ? Mathf.Clamp01((float)currentCost / maxCost) : 0f;
+        if (slot.CostValue != null)
+            slot.CostValue.text = $"{currentCost}/{maxCost}";
 
         int karma = Mathf.Clamp(runtime.PreviewResource, 0, 5);
         for (int i = 0; i < slot.Karma.Length; i++)
@@ -1129,6 +1142,43 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 Destroy(slot.SpawnedStatusIcons[i].gameObject);
         }
         slot.SpawnedStatusIcons.Clear();
+    }
+
+
+    private void ConfigurePartyPassiveSkillTooltip(PartySlotView slot)
+    {
+        if (slot == null || slot.PassiveIcon == null)
+            return;
+
+        slot.PassiveIcon.raycastTarget = true;
+
+        BattlePassiveIconHoverTarget hoverTarget =
+            slot.PassiveIcon.GetComponent<BattlePassiveIconHoverTarget>();
+
+        if (hoverTarget == null)
+            hoverTarget = slot.PassiveIcon.gameObject.AddComponent<BattlePassiveIconHoverTarget>();
+
+        hoverTarget.Configure(
+            () => ShowPartyPassiveSkillTooltip(slot),
+            HideSkillTooltip);
+    }
+
+    private void ShowPartyPassiveSkillTooltip(PartySlotView slot)
+    {
+        if (slot == null || slot.Runtime == null || string.IsNullOrWhiteSpace(slot.Runtime.PassiveSkillId))
+        {
+            HideSkillTooltip();
+            return;
+        }
+
+        SkillMasterData passiveSkillData = ResolveSkillData(slot.Runtime.PassiveSkillId);
+        if (passiveSkillData == null)
+        {
+            HideSkillTooltip();
+            return;
+        }
+
+        ShowSkillTooltip(passiveSkillData);
     }
 
     private static void ApplyPartySprite(Image image, Sprite sprite)
@@ -3351,7 +3401,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (skillTooltipDetailText != null)
         {
             BattlePlayerSkillPreview preview = GetSkillPreview(skillData);
-            skillTooltipDetailText.text = !string.IsNullOrWhiteSpace(skillData.Details)
+            string tooltipDetail = !string.IsNullOrWhiteSpace(skillData.Details)
                 ? BattlePlayerSkillPreviewCalculator.FormatDescription(
                     skillData,
                     GameDataLocalization.SkillDetailsTemplate(skillData),
@@ -3359,6 +3409,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
                     SkillDetailNumericLinkHandler.DetailedMode,
                     string.Empty)
                 : string.Empty;
+
+            // TooltipPanel의 Detail도 다른 스킬 설명 UI와 동일하게
+            // effecticon 링크를 실제 상태효과 아이콘 이미지로 렌더링합니다.
+            SkillEffectInlineIconUtility.SetText(skillTooltipDetailText, tooltipDetail);
         }
 
         SetSkillInfoImage(skillTooltipRangeImage, ResolveSkillRangeIcon(skillData.RangeId));
