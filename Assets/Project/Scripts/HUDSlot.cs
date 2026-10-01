@@ -37,6 +37,8 @@ public class HUDSlot : MonoBehaviour
     private MonsterRuntimeData boundMonsterRuntime;
     private CharacterRuntimeData boundCharacterRuntime;
     private bool characterHovering;
+    private bool characterTimelineHovering;
+    private bool characterSelected;
     private float characterTemporaryVisibleUntil;
     private int lastCharacterHP;
     private int lastCharacterShield;
@@ -250,6 +252,8 @@ public class HUDSlot : MonoBehaviour
         boundMonsterRuntime = null;
         characterTemporaryVisibleUntil = 0f;
         characterHovering = false;
+        characterTimelineHovering = false;
+        characterSelected = false;
 
         if (boundCharacterRuntime == null)
         {
@@ -275,9 +279,38 @@ public class HUDSlot : MonoBehaviour
             return;
 
         characterHovering = active;
-        if (active)
+        RefreshCharacterVisibility();
+    }
+
+    public void SetCharacterTimelineHover(bool active)
+    {
+        if (boundCharacterRuntime == null)
+            return;
+
+        characterTimelineHovering = active;
+        RefreshCharacterVisibility();
+    }
+
+    public void SetCharacterSelected(bool selected)
+    {
+        if (boundCharacterRuntime == null)
+            return;
+
+        characterSelected = selected;
+        RefreshCharacterVisibility();
+    }
+
+    private void RefreshCharacterVisibility()
+    {
+        if (boundCharacterRuntime == null)
+            return;
+
+        bool temporaryVisible = characterTemporaryVisibleUntil > 0f && Time.unscaledTime < characterTemporaryVisibleUntil;
+        bool shouldShow = characterSelected || characterHovering || characterTimelineHovering || temporaryVisible;
+
+        if (shouldShow)
             Show();
-        else if (Time.unscaledTime >= characterTemporaryVisibleUntil)
+        else
             Hide();
     }
 
@@ -287,7 +320,7 @@ public class HUDSlot : MonoBehaviour
             return;
 
         characterTemporaryVisibleUntil = Mathf.Max(characterTemporaryVisibleUntil, Time.unscaledTime + Mathf.Max(0f, duration));
-        Show();
+        RefreshCharacterVisibility();
     }
 
     private void MonitorCharacterRuntime()
@@ -314,10 +347,10 @@ public class HUDSlot : MonoBehaviour
             ShowCharacterTemporary();
         }
 
-        if (!characterHovering && isVisible && characterTemporaryVisibleUntil > 0f && Time.unscaledTime >= characterTemporaryVisibleUntil)
+        if (characterTemporaryVisibleUntil > 0f && Time.unscaledTime >= characterTemporaryVisibleUntil)
         {
             characterTemporaryVisibleUntil = 0f;
-            Hide();
+            RefreshCharacterVisibility();
         }
     }
 

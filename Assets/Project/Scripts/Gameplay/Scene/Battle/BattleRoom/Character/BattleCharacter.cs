@@ -67,6 +67,20 @@ public class BattleCharacter : MonoBehaviour
         worldHud.Hide();
     }
 
+    public void ShowAndRefreshHUDFromTimeline()
+    {
+        if (worldHud == null)
+            return;
+
+        worldHud.Refresh();
+        worldHud.SetCharacterTimelineHover(true);
+    }
+
+    public void HideHUDFromTimelineIfNotSelected()
+    {
+        worldHud?.SetCharacterTimelineHover(false);
+    }
+
     public void SetGridIndex(int gridIndex)
     {
         CurrentGridIndex = gridIndex;
@@ -89,11 +103,13 @@ public class BattleCharacter : MonoBehaviour
         if (RuntimeData != null && RuntimeData.IsDead)
         {
             selectionHighlightVisible = false;
+            worldHud?.SetCharacterSelected(false);
             ApplyTimelineHoverHighlightAlpha();
             return;
         }
 
         selectionHighlightVisible = selected;
+        worldHud?.SetCharacterSelected(selected);
 
         if (selected)
             PlaySelectionReadyAnimation();
@@ -123,6 +139,8 @@ public class BattleCharacter : MonoBehaviour
     private void OnDisable()
     {
         SetTimelineHoverHighlight(false);
+        worldHud?.SetCharacterTimelineHover(false);
+        worldHud?.SetCharacterHover(false);
     }
 
     private void OnDestroy()
