@@ -254,6 +254,24 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private Coroutine skillTooltipFadeCoroutine;
     private bool isSkillTooltipVisible;
 
+    [Header("Rune / Artifact Tooltip")]
+    [Tooltip("BattleCharacterPanel/TooltipUI를 자동 탐색합니다.")]
+    [SerializeField] private GameObject equipmentTooltipUI;
+    [SerializeField] private TMP_Text equipmentTooltipNameText;
+    [SerializeField] private TMP_Text equipmentTooltipDetailText;
+    [SerializeField] private Image equipmentTooltipLineImage;
+
+    [Header("Rune / Artifact Tooltip Position")]
+    [Tooltip("마우스 커서를 기준으로 TooltipUI가 표시될 오프셋입니다. TooltipPanel과 별도로 조절됩니다.")]
+    [SerializeField] private Vector2 equipmentTooltipCursorOffset = new Vector2(40f, -40f);
+    [Tooltip("TooltipUI가 화면 밖으로 빠지지 않도록 확보할 X/Y 여백입니다. TooltipPanel과 별도로 조절됩니다.")]
+    [SerializeField] private Vector2 equipmentTooltipScreenPadding = new Vector2(8f, 8f);
+
+    private RectTransform equipmentTooltipRectTransform;
+    private CanvasGroup equipmentTooltipCanvasGroup;
+    private Coroutine equipmentTooltipFadeCoroutine;
+    private bool isEquipmentTooltipVisible;
+
     [Header("Panel Position Animation")]
     [Tooltip("전투 진행 중 패널이 내려가 있을 Y 위치입니다.")]
     [SerializeField] private float executionPositionY = 150f;
@@ -411,7 +429,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
         EnsureSkillButtonHoverEffects();
         EnsureMoveAndItemButtonHoverEffects();
         ResolveSkillTooltipReferences();
+        ResolveEquipmentTooltipReferences();
         HideSkillTooltip();
+        HideEquipmentTooltipImmediate();
     }
 
     private void OnEnable()
@@ -459,6 +479,17 @@ public class BattleCharacterPanelUI : MonoBehaviour
             skillTooltipCanvasGroup.alpha = 0f;
         if (skillTooltipPanel != null)
             skillTooltipPanel.SetActive(false);
+
+        isEquipmentTooltipVisible = false;
+        if (equipmentTooltipFadeCoroutine != null)
+        {
+            StopCoroutine(equipmentTooltipFadeCoroutine);
+            equipmentTooltipFadeCoroutine = null;
+        }
+        if (equipmentTooltipCanvasGroup != null)
+            equipmentTooltipCanvasGroup.alpha = 0f;
+        if (equipmentTooltipUI != null)
+            equipmentTooltipUI.SetActive(false);
 
         if (selectionPanelRefreshCoroutine != null)
         {
@@ -590,6 +621,45 @@ public class BattleCharacterPanelUI : MonoBehaviour
         // 현재 BattleCharacterPanel은 Char01~03/Char_Select와 Active만 사용합니다.
         ResolveNewActiveReferences();
         ResolveSkillTooltipReferences();
+        ResolveEquipmentTooltipReferences();
+    }
+
+    private void ResolveEquipmentTooltipReferences()
+    {
+        if (equipmentTooltipUI == null)
+        {
+            Transform tooltip = FindDirectChild(transform, "TooltipUI");
+            if (tooltip != null)
+                equipmentTooltipUI = tooltip.gameObject;
+        }
+
+        if (equipmentTooltipUI == null)
+            return;
+
+        Transform tooltipRoot = equipmentTooltipUI.transform;
+        if (equipmentTooltipNameText == null)
+            equipmentTooltipNameText = FindChildComponent<TMP_Text>(tooltipRoot, "Name");
+        if (equipmentTooltipDetailText == null)
+            equipmentTooltipDetailText = FindChildComponent<TMP_Text>(tooltipRoot, "Detail");
+
+        if (equipmentTooltipLineImage == null)
+        {
+            Transform background = FindDirectChild(tooltipRoot, "Background");
+            Transform line = background != null ? FindDirectChild(background, "Line") : null;
+            if (line != null)
+                equipmentTooltipLineImage = line.GetComponent<Image>();
+        }
+
+        if (equipmentTooltipRectTransform == null)
+            equipmentTooltipRectTransform = equipmentTooltipUI.GetComponent<RectTransform>();
+
+        if (equipmentTooltipCanvasGroup == null)
+            equipmentTooltipCanvasGroup = equipmentTooltipUI.GetComponent<CanvasGroup>();
+        if (equipmentTooltipCanvasGroup == null)
+            equipmentTooltipCanvasGroup = equipmentTooltipUI.AddComponent<CanvasGroup>();
+
+        equipmentTooltipCanvasGroup.interactable = false;
+        equipmentTooltipCanvasGroup.blocksRaycasts = false;
     }
 
     private void ResolveSkillTooltipReferences()
@@ -944,6 +1014,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             if (!string.IsNullOrWhiteSpace(id) && DataManager.Instance?.RuneIconDatabase != null)
                 DataManager.Instance.RuneIconDatabase.TryGetIcon(id, out icon);
             ApplyPartySprite(slot.Runes[i], icon);
+            ConfigurePartyEquipmentTooltip(slot.Runes[i], id, true);
         }
 
         // EquippedRelicIds[0]은 액티브 유물 슬롯이므로 상시 HUD에는 1~6번 아티팩트를 표시합니다.
@@ -957,10 +1028,308 @@ public class BattleCharacterPanelUI : MonoBehaviour
             if (!string.IsNullOrWhiteSpace(id) && DataManager.Instance?.RelicIconDatabase != null)
                 DataManager.Instance.RelicIconDatabase.TryGetIcon(id, out icon);
             ApplyPartySprite(slot.Artifacts[i], icon);
+            ConfigurePartyEquipmentTooltip(slot.Artifacts[i], id, false);
         }
 
         RebuildPartyStatusIcons(slot, runtime.StatusEffects);
         slot.LastHash = CalculatePartyRuntimeHash(runtime);
+    }
+
+    private void ConfigurePartyEquipmentTooltip(Image iconImage, string dataId, bool isRune)
+    {
+        if (iconImage == null)
+            return;
+
+        bool hasData = !string.IsNullOrWhiteSpace(dataId) && iconImage.sprite != null && iconImage.enabled;
+        iconImage.raycastTarget = hasData;
+
+        BattleEquipmentIconHoverTarget hoverTarget = iconImage.GetComponent<BattleEquipmentIconHoverTarget>();
+        if (hoverTarget == null)
+            hoverTarget = iconImage.gameObject.AddComponent<BattleEquipmentIconHoverTarget>();
+
+        string capturedId = dataId;
+        hoverTarget.Configure(
+            hasData
+                ? (isRune
+                    ? () => ShowPartyRuneTooltip(capturedId)
+                    : () => ShowPartyArtifactTooltip(capturedId))
+                : null,
+            HideEquipmentTooltip,
+            iconImage.transform.parent,
+            hasData);
+    }
+
+    private void ShowPartyRuneTooltip(string runeId)
+    {
+        ResolveEquipmentTooltipReferences();
+        if (equipmentTooltipUI == null ||
+            string.IsNullOrWhiteSpace(runeId) ||
+            DataManager.Instance?.RuneDatabase == null ||
+            !DataManager.Instance.RuneDatabase.TryGet(runeId, out RuneData runeData) ||
+            runeData == null)
+        {
+            HideEquipmentTooltip();
+            return;
+        }
+
+        string displayName = GameDataLocalization.RuneName(runeData);
+        string description = SkillDescriptionFormatter.Format(
+            GameDataLocalization.RuneDescription(runeData),
+            runeData.ValueRate,
+            runeData.CountRate);
+
+        ShowEquipmentTooltip(displayName, description, runeData.Rarity);
+    }
+
+    private void ShowPartyArtifactTooltip(string relicId)
+    {
+        ResolveEquipmentTooltipReferences();
+        if (equipmentTooltipUI == null ||
+            string.IsNullOrWhiteSpace(relicId) ||
+            DataManager.Instance?.RelicDatabase == null ||
+            !DataManager.Instance.RelicDatabase.TryGet(relicId, out RelicData relicData) ||
+            relicData == null)
+        {
+            HideEquipmentTooltip();
+            return;
+        }
+
+        ShowEquipmentTooltip(
+            GameDataLocalization.RelicName(relicData),
+            GameDataLocalization.RelicEffectDescription(relicData),
+            relicData.Rarity);
+    }
+
+    private void ShowEquipmentTooltip(string displayName, string description, string rarity)
+    {
+        ResolveEquipmentTooltipReferences();
+        if (equipmentTooltipUI == null)
+            return;
+
+        if (equipmentTooltipFadeCoroutine != null)
+        {
+            StopCoroutine(equipmentTooltipFadeCoroutine);
+            equipmentTooltipFadeCoroutine = null;
+        }
+
+        equipmentTooltipUI.SetActive(true);
+
+        if (equipmentTooltipNameText != null)
+            equipmentTooltipNameText.text = displayName ?? string.Empty;
+        if (equipmentTooltipDetailText != null)
+            SkillEffectInlineIconUtility.SetText(equipmentTooltipDetailText, description ?? string.Empty);
+
+        if (equipmentTooltipLineImage != null)
+        {
+            Color targetColor = equipmentTooltipLineImage.color;
+            if (RecordPanelUI.TryGetCachedRarityDisplayColor(rarity, out Color rarityColor))
+                targetColor = rarityColor;
+            else
+                targetColor = ResolveEquipmentRarityFallbackColor(rarity, targetColor);
+            SetImageColorPreserveAlpha(equipmentTooltipLineImage, targetColor);
+        }
+
+        isEquipmentTooltipVisible = true;
+        UpdateEquipmentTooltipPosition();
+        StartEquipmentTooltipFade(1f, skillTooltipFadeInDuration, false);
+    }
+
+    private Color ResolveEquipmentRarityFallbackColor(string rarity, Color fallback)
+    {
+        if (string.IsNullOrWhiteSpace(rarity))
+            return fallback;
+
+        string value = rarity.Trim().ToLowerInvariant();
+        if (value.Contains("unique") || value.Contains("유니크"))
+            return skillTooltipUniqueLineColor;
+        if (value.Contains("epic") || value.Contains("에픽"))
+            return skillTooltipEpicLineColor;
+        if (value.Contains("rare") || value.Contains("레어") || value.Contains("uncommon") || value.Contains("언커먼"))
+            return skillTooltipRareLineColor;
+        if (value.Contains("common") || value.Contains("커먼"))
+            return skillTooltipCommonLineColor;
+        return fallback;
+    }
+
+    private void HideEquipmentTooltip()
+    {
+        isEquipmentTooltipVisible = false;
+        if (equipmentTooltipUI == null)
+            return;
+
+        ResolveEquipmentTooltipReferences();
+
+        // Play 종료/씬 전환 등으로 BattleCharacterPanel이 비활성화되는 동안에는
+        // 코루틴을 시작할 수 없으므로 즉시 숨긴다.
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            HideEquipmentTooltipImmediate();
+            return;
+        }
+
+        StartEquipmentTooltipFade(0f, skillTooltipFadeOutDuration, true);
+    }
+
+    private void HideEquipmentTooltipImmediate()
+    {
+        isEquipmentTooltipVisible = false;
+        ResolveEquipmentTooltipReferences();
+        if (equipmentTooltipFadeCoroutine != null)
+        {
+            StopCoroutine(equipmentTooltipFadeCoroutine);
+            equipmentTooltipFadeCoroutine = null;
+        }
+        if (equipmentTooltipCanvasGroup != null)
+            equipmentTooltipCanvasGroup.alpha = 0f;
+        if (equipmentTooltipUI != null)
+            equipmentTooltipUI.SetActive(false);
+    }
+
+    private void StartEquipmentTooltipFade(float targetAlpha, float duration, bool deactivateWhenFinished)
+    {
+        ResolveEquipmentTooltipReferences();
+        if (equipmentTooltipCanvasGroup == null)
+            return;
+
+        // 비활성 GameObject에서는 StartCoroutine을 호출하지 않는다.
+        // 종료/씬 전환 중 호출되면 목표 상태를 즉시 반영한다.
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            equipmentTooltipFadeCoroutine = null;
+            equipmentTooltipCanvasGroup.alpha = targetAlpha;
+            if (deactivateWhenFinished && equipmentTooltipUI != null)
+                equipmentTooltipUI.SetActive(false);
+            return;
+        }
+
+        if (equipmentTooltipFadeCoroutine != null)
+        {
+            StopCoroutine(equipmentTooltipFadeCoroutine);
+            equipmentTooltipFadeCoroutine = null;
+        }
+
+        if (duration <= 0f)
+        {
+            equipmentTooltipCanvasGroup.alpha = targetAlpha;
+            if (deactivateWhenFinished && equipmentTooltipUI != null)
+                equipmentTooltipUI.SetActive(false);
+            return;
+        }
+
+        equipmentTooltipFadeCoroutine = StartCoroutine(
+            FadeEquipmentTooltipRoutine(targetAlpha, duration, deactivateWhenFinished));
+    }
+
+    private IEnumerator FadeEquipmentTooltipRoutine(float targetAlpha, float duration, bool deactivateWhenFinished)
+    {
+        if (equipmentTooltipCanvasGroup == null)
+            yield break;
+
+        float startAlpha = equipmentTooltipCanvasGroup.alpha;
+        float elapsed = 0f;
+        float safeDuration = Mathf.Max(0.0001f, duration);
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+            equipmentTooltipCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+            yield return null;
+        }
+
+        equipmentTooltipCanvasGroup.alpha = targetAlpha;
+        if (deactivateWhenFinished && !isEquipmentTooltipVisible && equipmentTooltipUI != null)
+            equipmentTooltipUI.SetActive(false);
+        equipmentTooltipFadeCoroutine = null;
+    }
+
+    private void UpdateEquipmentTooltipPosition()
+    {
+        if (!isEquipmentTooltipVisible || equipmentTooltipUI == null || !equipmentTooltipUI.activeSelf)
+            return;
+
+        if (equipmentTooltipRectTransform == null)
+            equipmentTooltipRectTransform = equipmentTooltipUI.GetComponent<RectTransform>();
+        if (equipmentTooltipRectTransform == null)
+            return;
+
+        RectTransform parentRect = equipmentTooltipRectTransform.parent as RectTransform;
+        if (parentRect == null)
+            return;
+
+        Canvas canvas = equipmentTooltipRectTransform.GetComponentInParent<Canvas>();
+        Camera canvasCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera
+            : null;
+
+        // 해상도와 Canvas Scaler 배율의 영향을 받지 않도록
+        // 마우스 화면 좌표를 먼저 부모 Canvas의 로컬 좌표로 변환한 뒤
+        // 스킬 툴팁과 동일한 UI 단위 오프셋을 적용합니다.
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentRect,
+                Input.mousePosition,
+                canvasCamera,
+                out Vector2 mouseLocalPoint))
+        {
+            return;
+        }
+
+        Vector2 desiredLocalPoint = mouseLocalPoint + equipmentTooltipCursorOffset;
+        Vector3 localPosition = equipmentTooltipRectTransform.localPosition;
+        localPosition.x = desiredLocalPoint.x;
+        localPosition.y = desiredLocalPoint.y;
+        equipmentTooltipRectTransform.localPosition = localPosition;
+
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(equipmentTooltipRectTransform);
+
+        // TooltipUI의 실제 외곽을 부모 RectTransform의 로컬 좌표로 변환하여
+        // 화면 밖으로 나간 만큼 UI 좌표계에서 보정합니다.
+        Vector3[] worldCorners = new Vector3[4];
+        equipmentTooltipRectTransform.GetWorldCorners(worldCorners);
+
+        float minLocalX = float.MaxValue;
+        float minLocalY = float.MaxValue;
+        float maxLocalX = float.MinValue;
+        float maxLocalY = float.MinValue;
+
+        for (int i = 0; i < worldCorners.Length; i++)
+        {
+            Vector3 cornerLocal3 = parentRect.InverseTransformPoint(worldCorners[i]);
+            minLocalX = Mathf.Min(minLocalX, cornerLocal3.x);
+            minLocalY = Mathf.Min(minLocalY, cornerLocal3.y);
+            maxLocalX = Mathf.Max(maxLocalX, cornerLocal3.x);
+            maxLocalY = Mathf.Max(maxLocalY, cornerLocal3.y);
+        }
+
+        Rect parentBounds = parentRect.rect;
+        float paddingX = Mathf.Max(0f, equipmentTooltipScreenPadding.x);
+        float paddingY = Mathf.Max(0f, equipmentTooltipScreenPadding.y);
+
+        float allowedMinX = parentBounds.xMin + paddingX;
+        float allowedMaxX = parentBounds.xMax - paddingX;
+        float allowedMinY = parentBounds.yMin + paddingY;
+        float allowedMaxY = parentBounds.yMax - paddingY;
+
+        float deltaLocalX = 0f;
+        float deltaLocalY = 0f;
+
+        if (minLocalX < allowedMinX)
+            deltaLocalX = allowedMinX - minLocalX;
+        else if (maxLocalX > allowedMaxX)
+            deltaLocalX = allowedMaxX - maxLocalX;
+
+        if (minLocalY < allowedMinY)
+            deltaLocalY = allowedMinY - minLocalY;
+        else if (maxLocalY > allowedMaxY)
+            deltaLocalY = allowedMaxY - maxLocalY;
+
+        if (Mathf.Approximately(deltaLocalX, 0f) && Mathf.Approximately(deltaLocalY, 0f))
+            return;
+
+        localPosition = equipmentTooltipRectTransform.localPosition;
+        localPosition.x += deltaLocalX;
+        localPosition.y += deltaLocalY;
+        equipmentTooltipRectTransform.localPosition = localPosition;
     }
 
     private void RefreshPartySelectPortraits(CharacterRuntimeData selectedRuntime)
@@ -1658,6 +2027,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         if (isSkillTooltipVisible)
             UpdateSkillTooltipPosition();
+        if (isEquipmentTooltipVisible)
+            UpdateEquipmentTooltipPosition();
 
         RefreshPartyFromRuntimeStore();
         RefreshChangedPartySlots();
@@ -3540,114 +3911,83 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
 
         Canvas canvas = skillTooltipRectTransform.GetComponentInParent<Canvas>();
-        if (canvas == null)
-            return;
-
-        Canvas rootCanvas = canvas.rootCanvas != null ? canvas.rootCanvas : canvas;
-        RectTransform canvasRect = rootCanvas.transform as RectTransform;
-        if (canvasRect == null)
-            return;
-
-        Camera canvasCamera = rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
-            ? rootCanvas.worldCamera
+        Camera canvasCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera
             : null;
 
-        // 마우스의 화면 좌표를 먼저 부모 UI 좌표로 변환한 뒤,
-        // 오프셋을 Canvas/UI 단위로 적용합니다. 해상도와 Canvas Scaler 배율에 영향을 받지 않습니다.
+        Vector2 desiredScreenPosition = (Vector2)Input.mousePosition + skillTooltipCursorOffset;
+
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 parentRect,
-                Input.mousePosition,
+                desiredScreenPosition,
                 canvasCamera,
-                out Vector2 localMousePoint))
+                out Vector2 localPoint))
         {
             return;
         }
 
-        Vector2 targetLocalPoint = localMousePoint + skillTooltipCursorOffset;
-        Vector3 targetWorldPosition = parentRect.TransformPoint(targetLocalPoint);
-        Vector3 tooltipWorldPosition = skillTooltipRectTransform.position;
-        tooltipWorldPosition.x = targetWorldPosition.x;
-        tooltipWorldPosition.y = targetWorldPosition.y;
-        skillTooltipRectTransform.position = tooltipWorldPosition;
+        Vector3 localPosition = skillTooltipRectTransform.localPosition;
+        localPosition.x = localPoint.x;
+        localPosition.y = localPoint.y;
+        skillTooltipRectTransform.localPosition = localPosition;
 
-        // 텍스트/레이아웃 갱신 후 실제 렌더링된 TooltipPanel의 네 모서리를 검사합니다.
+        // 실제 렌더링된 네 모서리를 화면 좌표로 검사해서 화면 밖으로 빠지는 만큼 다시 밀어 넣습니다.
         Canvas.ForceUpdateCanvases();
         LayoutRebuilder.ForceRebuildLayoutImmediate(skillTooltipRectTransform);
-        Canvas.ForceUpdateCanvases();
 
-        Vector3[] tooltipWorldCorners = new Vector3[4];
-        skillTooltipRectTransform.GetWorldCorners(tooltipWorldCorners);
+        Vector3[] worldCorners = new Vector3[4];
+        skillTooltipRectTransform.GetWorldCorners(worldCorners);
 
-        float tooltipMinX = float.MaxValue;
-        float tooltipMinY = float.MaxValue;
-        float tooltipMaxX = float.MinValue;
-        float tooltipMaxY = float.MinValue;
+        float minScreenX = float.MaxValue;
+        float minScreenY = float.MaxValue;
+        float maxScreenX = float.MinValue;
+        float maxScreenY = float.MinValue;
 
-        for (int i = 0; i < tooltipWorldCorners.Length; i++)
+        for (int i = 0; i < worldCorners.Length; i++)
         {
-            Vector3 cornerInCanvas = canvasRect.InverseTransformPoint(tooltipWorldCorners[i]);
-            tooltipMinX = Mathf.Min(tooltipMinX, cornerInCanvas.x);
-            tooltipMinY = Mathf.Min(tooltipMinY, cornerInCanvas.y);
-            tooltipMaxX = Mathf.Max(tooltipMaxX, cornerInCanvas.x);
-            tooltipMaxY = Mathf.Max(tooltipMaxY, cornerInCanvas.y);
+            Vector2 cornerScreen = RectTransformUtility.WorldToScreenPoint(canvasCamera, worldCorners[i]);
+            minScreenX = Mathf.Min(minScreenX, cornerScreen.x);
+            minScreenY = Mathf.Min(minScreenY, cornerScreen.y);
+            maxScreenX = Mathf.Max(maxScreenX, cornerScreen.x);
+            maxScreenY = Mathf.Max(maxScreenY, cornerScreen.y);
         }
 
-        Rect canvasBounds = canvasRect.rect;
         float paddingX = Mathf.Max(0f, skillTooltipScreenPadding.x);
         float paddingY = Mathf.Max(0f, skillTooltipScreenPadding.y);
+        float deltaScreenX = 0f;
+        float deltaScreenY = 0f;
 
-        float allowedMinX = canvasBounds.xMin + paddingX;
-        float allowedMaxX = canvasBounds.xMax - paddingX;
-        float allowedMinY = canvasBounds.yMin + paddingY;
-        float allowedMaxY = canvasBounds.yMax - paddingY;
+        if (minScreenX < paddingX)
+            deltaScreenX = paddingX - minScreenX;
+        else if (maxScreenX > Screen.width - paddingX)
+            deltaScreenX = (Screen.width - paddingX) - maxScreenX;
 
-        float deltaX = 0f;
-        float deltaY = 0f;
+        if (minScreenY < paddingY)
+            deltaScreenY = paddingY - minScreenY;
+        else if (maxScreenY > Screen.height - paddingY)
+            deltaScreenY = (Screen.height - paddingY) - maxScreenY;
 
-        float tooltipWidth = tooltipMaxX - tooltipMinX;
-        float tooltipHeight = tooltipMaxY - tooltipMinY;
-        float availableWidth = Mathf.Max(0f, allowedMaxX - allowedMinX);
-        float availableHeight = Mathf.Max(0f, allowedMaxY - allowedMinY);
-
-        // 툴팁이 Canvas보다 큰 예외 상황에서는 한쪽 경계를 계속 왕복하지 않도록
-        // 가능한 영역의 중앙에 맞춥니다. 일반적인 크기에서는 각 경계를 정확히 Clamp합니다.
-        if (tooltipWidth > availableWidth)
-        {
-            float tooltipCenterX = (tooltipMinX + tooltipMaxX) * 0.5f;
-            float allowedCenterX = (allowedMinX + allowedMaxX) * 0.5f;
-            deltaX = allowedCenterX - tooltipCenterX;
-        }
-        else if (tooltipMinX < allowedMinX)
-        {
-            deltaX = allowedMinX - tooltipMinX;
-        }
-        else if (tooltipMaxX > allowedMaxX)
-        {
-            deltaX = allowedMaxX - tooltipMaxX;
-        }
-
-        if (tooltipHeight > availableHeight)
-        {
-            float tooltipCenterY = (tooltipMinY + tooltipMaxY) * 0.5f;
-            float allowedCenterY = (allowedMinY + allowedMaxY) * 0.5f;
-            deltaY = allowedCenterY - tooltipCenterY;
-        }
-        else if (tooltipMinY < allowedMinY)
-        {
-            deltaY = allowedMinY - tooltipMinY;
-        }
-        else if (tooltipMaxY > allowedMaxY)
-        {
-            deltaY = allowedMaxY - tooltipMaxY;
-        }
-
-        if (Mathf.Approximately(deltaX, 0f) && Mathf.Approximately(deltaY, 0f))
+        if (Mathf.Approximately(deltaScreenX, 0f) && Mathf.Approximately(deltaScreenY, 0f))
             return;
 
-        // Canvas 로컬 보정량을 월드 벡터로 바꿔 적용합니다.
-        // 따라서 TooltipPanel의 pivot/anchor나 상위 오브젝트의 scale이 달라도 정확히 보정됩니다.
-        Vector3 correctionWorld = canvasRect.TransformVector(new Vector3(deltaX, deltaY, 0f));
-        skillTooltipRectTransform.position += correctionWorld;
+        Vector2 currentScreenPivot = RectTransformUtility.WorldToScreenPoint(
+            canvasCamera,
+            skillTooltipRectTransform.position);
+        Vector2 correctedScreenPivot = currentScreenPivot + new Vector2(deltaScreenX, deltaScreenY);
+
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentRect,
+                correctedScreenPivot,
+                canvasCamera,
+                out Vector2 correctedLocalPoint))
+        {
+            return;
+        }
+
+        localPosition = skillTooltipRectTransform.localPosition;
+        localPosition.x = correctedLocalPoint.x;
+        localPosition.y = correctedLocalPoint.y;
+        skillTooltipRectTransform.localPosition = localPosition;
     }
 
     private void ApplySkillTooltipResourceIconColor(ReferenceResource resource)
