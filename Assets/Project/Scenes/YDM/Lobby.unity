@@ -108172,6 +108172,8 @@ MonoBehaviour:
   purchaseTransferEffectTexture: {fileID: 2800000, guid: f416ed12a9deb6f40ac52e708154fa95, type: 3}
   purchaseTransferEffectSize: {x: 60, y: 60}
   equipEffectTarget: {fileID: 0}
+  screenSpaceTransferEffectPrefab: {fileID: 100003, guid: 13aa06f0ee8b40e2898db21ebcf3990e, type: 3}
+  purchaseTransferUiTarget: {fileID: 1979706825}
   trailSpawnInterval: 0.025
   trailLifetime: 0.18
   trailStartScale: 0.78

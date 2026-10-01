@@ -55,6 +55,12 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     [Tooltip("원형 효과가 최종적으로 들어갈 Equip 버튼 위치입니다. Equip 버튼 또는 버튼 아래의 빈 RectTransform을 직접 지정할 수 있습니다.")]
     [SerializeField] private RectTransform equipEffectTarget;
 
+    [Header("Screen Space Purchase Transfer")]
+    [Tooltip("모달 블러 위에서 재생할 범용 UI-월드 이동 구체 프리팹입니다.")]
+    [SerializeField] private ScreenSpaceTransferOrbEffect screenSpaceTransferEffectPrefab;
+    [Tooltip("유물 구매 구체가 도착할 Lobby_Icon/Icon_04(Storage) UI입니다.")]
+    [SerializeField] private RectTransform purchaseTransferUiTarget;
+
     [Header("Purchase Animation Trail")]
     [Tooltip("이동 중 꼬리 잔상을 생성하는 간격입니다. 값이 작을수록 꼬리가 촘촘해집니다.")]
     [SerializeField, Min(0.005f)] private float trailSpawnInterval = 0.025f;
@@ -430,39 +436,38 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
         // 선택된 유물의 현재 화면 위치를 먼저 저장한 뒤 상점을 바로 닫습니다.
         // 다른 유물을 숨기거나 선택 유물을 중앙으로 이동시키는 연출은 사용하지 않습니다.
-        RectTransform selectedRect = selectedButton != null
-            ? selectedButton.ButtonRectTransform
+        RectTransform selectedIconRect = selectedButton != null
+            ? selectedButton.IconRectTransform
             : null;
-        RectTransform equipButtonTarget = ResolveEquipButtonTarget();
-        Camera targetCamera = ResolveTargetUiCamera(equipButtonTarget);
-        Vector2 startScreenPosition = GetRectScreenCenter(selectedRect, targetCamera);
-        Vector2 equipScreenPosition = GetRectScreenCenter(equipButtonTarget, targetCamera);
         Color rarityColor = selectedButton != null
             ? selectedButton.CurrentRarityColor
             : Color.white;
 
-        Canvas transferCanvas = ResolveTransferEffectCanvas();
-        RectTransform transferParent = ResolveTransferEffectParent(transferCanvas);
-        RawImage transferEffect = CreateTransferEffectImage(
-            transferCanvas,
-            transferParent,
-            startScreenPosition,
-            rarityColor);
-
-        if (transferEffect != null && equipButtonTarget != null)
+        if (selectedIconRect != null &&
+            purchaseTransferUiTarget != null &&
+            screenSpaceTransferEffectPrefab != null)
         {
+            Camera sourceCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(
+                selectedIconRect,
+                Camera.main);
+            Camera targetCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(
+                purchaseTransferUiTarget,
+                Camera.main);
+            Vector2 startScreenPosition = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(
+                selectedIconRect,
+                sourceCamera);
+            Vector2 endScreenPosition = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(
+                purchaseTransferUiTarget,
+                targetCamera);
+
             PlayPurchaseTransferStartSound();
-
-            yield return AnimateUiTransferEffectRoutine(
-                transferEffect.rectTransform,
-                transferCanvas,
-                transferParent,
+            // UI 계층은 구매 후 비활성화될 수 있으므로, 현재 화면 좌표만 독립 Overlay Canvas에 넘긴다.
+            ScreenSpaceTransferOrbEffect effect = Instantiate(screenSpaceTransferEffectPrefab);
+            yield return effect.Play(
                 startScreenPosition,
-                equipScreenPosition);
+                endScreenPosition,
+                rarityColor);
         }
-
-        if (transferEffect != null)
-            Destroy(transferEffect.gameObject);
 
         FinalizePurchasePresentation(runtime);
     }
@@ -1447,21 +1452,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         RectTransform contentRoot =
             ResolutionCanvasViewportFitter.ResolveContentRoot(transferCanvas.transform);
         return contentRoot != null ? contentRoot : transferCanvas.transform as RectTransform;
-    }
-
-    private Camera ResolveTargetUiCamera(RectTransform targetRect)
-    {
-        if (targetRect != null)
-        {
-            Canvas targetCanvas = targetRect.GetComponentInParent<Canvas>();
-            if (targetCanvas != null && targetCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
-                return targetCanvas.worldCamera != null ? targetCanvas.worldCamera : Camera.main;
-        }
-
-        if (ownerCanvas != null && ownerCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
-            return ownerCanvas.worldCamera != null ? ownerCanvas.worldCamera : Camera.main;
-
-        return null;
     }
 
     private static Vector2 GetRectScreenCenter(RectTransform targetRect, Camera fallbackCamera)
