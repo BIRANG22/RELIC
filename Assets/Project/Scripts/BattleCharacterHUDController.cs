@@ -5,14 +5,15 @@ using UnityEngine;
 
 /// <summary>
 /// 배틀씬의 캐릭터 월드 HUD를 관리합니다.
-/// BattleCharacterPanel 바로 아래에 CharacterHUDSlot을 캐릭터별로 생성하고,
-/// 캐릭터를 호버하거나 클릭 선택한 동안만 해당 HUD를 표시합니다.
+/// HUD_Root 아래에 CharacterHUDSlot을 캐릭터별로 생성하고,
+/// 캐릭터 월드 오브젝트 호버 또는 HP/버프/디버프 변화 시 잠시 HUD를 표시합니다.
 /// </summary>
 public class BattleCharacterHUDController : MonoBehaviour
 {
     public static BattleCharacterHUDController Instance { get; private set; }
     [Header("References")]
     [SerializeField] private CharacterHUDSlot characterHudPrefab;
+    [SerializeField] private Transform hudRoot;
     [SerializeField] private BattleTimelineController timelineController;
     [SerializeField] private BattleTurnExecutor turnExecutor;
 
@@ -253,13 +254,23 @@ public class BattleCharacterHUDController : MonoBehaviour
 
     private Transform ResolveHudRoot()
     {
-        BattleCharacterPanelUI parentPanel = GetComponentInParent<BattleCharacterPanelUI>(true);
-        if (parentPanel != null)
-            return parentPanel.transform;
+        if (hudRoot != null)
+            return hudRoot;
 
-        BattleCharacterPanelUI scenePanel = Object.FindFirstObjectByType<BattleCharacterPanelUI>(FindObjectsInactive.Include);
-        if (scenePanel != null)
-            return scenePanel.transform;
+        Transform[] transforms = Object.FindObjectsByType<Transform>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform candidate = transforms[i];
+            if (candidate != null && candidate.name == "HUD_Root")
+            {
+                hudRoot = candidate;
+                return hudRoot;
+            }
+        }
 
         return null;
     }
@@ -322,9 +333,6 @@ public class BattleCharacterHUDController : MonoBehaviour
         }
 
         Vector3 mouseWorldPosition = GetMouseWorldPosition();
-        CharacterRuntimeData selectedRuntime = GetSelectedCharacterRuntime();
-        bool monsterInfoSelected = MonsterUnit.CurrentInfoSelectedMonster != null;
-        bool canShowSelectedHud = turnExecutor == null || turnExecutor.CanAcceptPlayerInput;
 
         for (int i = 0; i < bindings.Count; i++)
         {
@@ -348,12 +356,9 @@ public class BattleCharacterHUDController : MonoBehaviour
             bool timelineIconHovered =
                 !string.IsNullOrWhiteSpace(timelineIconHoveredCharacterId) &&
                 runtime.CharacterId == timelineIconHoveredCharacterId;
-            bool selected = canShowSelectedHud &&
-                            !monsterInfoSelected &&
-                            IsSameCharacter(runtime, selectedRuntime);
             bool hitTemporary = IsHitHudVisible(runtime.CharacterId);
 
-            bool shouldShow = hovered || timelineIconHovered || selected || hitTemporary;
+            bool shouldShow = hovered || timelineIconHovered || hitTemporary;
 
             if (shouldShow)
             {
@@ -376,26 +381,6 @@ public class BattleCharacterHUDController : MonoBehaviour
     private static bool IsBattleEnded()
     {
         return BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded;
-    }
-
-    private CharacterRuntimeData GetSelectedCharacterRuntime()
-    {
-        if (timelineController == null)
-            return null;
-
-        return timelineController.SelectedCharacter;
-    }
-
-    private static bool IsSameCharacter(CharacterRuntimeData a, CharacterRuntimeData b)
-    {
-        if (a == null || b == null)
-            return false;
-
-        if (ReferenceEquals(a, b))
-            return true;
-
-        return !string.IsNullOrWhiteSpace(a.CharacterId) &&
-               a.CharacterId == b.CharacterId;
     }
 
     private static bool IsHovered(Collider2D collider, Vector3 mouseWorldPosition)
