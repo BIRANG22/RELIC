@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 public class BattleRoomLoader : MonoBehaviour
 {
@@ -16,11 +17,13 @@ public class BattleRoomLoader : MonoBehaviour
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
 
     [Header("HUD")]
-    [SerializeField] private Transform playerHudRoot;
-    [SerializeField] private Transform monsterHudRoot;
-    [SerializeField] private PlayerHUDSlot playerHudPrefab;
-    [SerializeField] private MonsterHUDSlot monsterHudPrefab;
+    [SerializeField, FormerlySerializedAs("monsterHudRoot")] private Transform hudRoot;
+    [SerializeField, FormerlySerializedAs("monsterHudPrefab")] private HUDSlot hudSlotPrefab;
     [SerializeField] private float hudScale = 0.4f;
+
+    // Legacy character-selection HUD references. The battle world HUD now uses HUD Root + HUD Slot Prefab.
+    [HideInInspector, SerializeField] private Transform playerHudRoot;
+    [HideInInspector, SerializeField] private PlayerHUDSlot playerHudPrefab;
 
     [Header("Player HUD Position Anchors")]
     [SerializeField] private Transform[] playerHudPositionAnchors = new Transform[3];
@@ -131,7 +134,7 @@ public class BattleRoomLoader : MonoBehaviour
         if (battleCharacterPanel != null)
             battleCharacterPanel.Refresh();
 
-        MonsterHUDSlot[] monsterHuds = FindObjectsByType<MonsterHUDSlot>(
+        HUDSlot[] monsterHuds = FindObjectsByType<HUDSlot>(
             FindObjectsInactive.Include,
             FindObjectsSortMode.None
         );
@@ -947,10 +950,84 @@ public class BattleRoomLoader : MonoBehaviour
 
         EnsureBattleCharacterPanel();
         battleCharacterPanel?.SetParty(playerPartyRuntimes);
+        CreateCharacterWorldHUDs(playerPartyRuntimes);
 
         // 새 UI는 Char01~03 정보를 항상 표시하고, 예약 단계가 시작될 때 선택만 활성화합니다.
         SelectPlayerHUD(null);
 
+    }
+
+    private void CreateCharacterWorldHUDs(IReadOnlyList<CharacterRuntimeData> runtimes)
+    {
+        ClearCharacterWorldHUDSlots();
+
+        if (runtimes == null || hudRoot == null || hudSlotPrefab == null)
+            return;
+
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < runtimes.Count; i++)
+        {
+            CharacterRuntimeData runtime = runtimes[i];
+            if (runtime == null)
+                continue;
+
+            BattleCharacter character = null;
+            for (int j = 0; j < characters.Length; j++)
+            {
+                if (characters[j] != null && ReferenceEquals(characters[j].RuntimeData, runtime))
+                {
+                    character = characters[j];
+                    break;
+                }
+            }
+
+            if (character == null)
+                continue;
+
+            HUDSlot hud = Instantiate(hudSlotPrefab, hudRoot);
+            hud.Bind(runtime);
+
+            Collider2D collider2D = character.GetComponent<Collider2D>();
+            if (collider2D == null)
+                collider2D = character.GetComponentInChildren<Collider2D>();
+
+            hud.SetFollowTarget(character.transform, collider2D);
+            hud.Hide();
+
+            RectTransform rect = hud.GetComponent<RectTransform>();
+            if (rect != null)
+                rect.localScale = Vector3.one * hudScale;
+
+            WorldFollowHUD follow = hud.GetComponent<WorldFollowHUD>();
+            if (follow != null)
+            {
+                follow.Bind(
+                    character.transform,
+                    worldCamera != null ? worldCamera : Camera.main,
+                    battleCanvasRect,
+                    uiCamera,
+                    collider2D);
+            }
+
+            character.BindWorldHUD(hud);
+        }
+    }
+
+    private void ClearCharacterWorldHUDSlots()
+    {
+        if (hudRoot == null)
+            return;
+
+        for (int i = hudRoot.childCount - 1; i >= 0; i--)
+        {
+            Transform child = hudRoot.GetChild(i);
+            HUDSlot hud = child != null ? child.GetComponent<HUDSlot>() : null;
+            if (hud != null && hud.BoundCharacterRuntime != null)
+                Destroy(child.gameObject);
+        }
     }
 
     private void CreatePlayerHUD(CharacterRuntimeData runtimeData, int displayIndex)
@@ -1351,7 +1428,7 @@ public class BattleRoomLoader : MonoBehaviour
                 continue;
 
             Collider2D monsterCollider = result.MonsterTransform.GetComponentInChildren<Collider2D>();
-            MonsterHUDSlot hud = CreateMonsterHUD(result.RuntimeData, result.MonsterTransform, monsterCollider);
+            HUDSlot hud = CreateMonsterHUD(result.RuntimeData, result.MonsterTransform, monsterCollider);
             MonsterUnit monsterUnit = result.MonsterTransform.GetComponent<MonsterUnit>();
 
             if (monsterUnit != null)
@@ -1589,18 +1666,18 @@ public class BattleRoomLoader : MonoBehaviour
 
     }
 
-    private MonsterHUDSlot CreateMonsterHUD(MonsterRuntimeData runtimeData, Transform monsterTransform, Collider2D monsterCollider)
+    private HUDSlot CreateMonsterHUD(MonsterRuntimeData runtimeData, Transform monsterTransform, Collider2D monsterCollider)
     {
         if (runtimeData == null || monsterTransform == null)
             return null;
 
-        if (monsterHudPrefab == null || monsterHudRoot == null)
+        if (hudSlotPrefab == null || hudRoot == null)
         {
-            Debug.LogWarning("[BattleRoomLoader] Monster HUD reference is missing.");
+            Debug.LogWarning("[BattleRoomLoader] HUD Root / HUD Slot Prefab reference is missing.");
             return null;
         }
 
-        MonsterHUDSlot hud = Instantiate(monsterHudPrefab, monsterHudRoot);
+        HUDSlot hud = Instantiate(hudSlotPrefab, hudRoot);
         hud.Bind(runtimeData);
         hud.SetFollowTarget(monsterTransform, monsterCollider);
         hud.Hide();
@@ -1655,6 +1732,7 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         ClearMonsterHUDSlots();
+        ClearCharacterWorldHUDSlots();
         ClearPlayerHUDSlotsOnly();
         spawnedMonsterUnits.Clear();
         ClearGridEffects();
@@ -1674,6 +1752,7 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         ClearPlayerHUDSlotsOnly();
+        ClearCharacterWorldHUDSlots();
         ClearMonsterHUDSlots();
     }
 
@@ -1712,11 +1791,16 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void ClearMonsterHUDSlots()
     {
-        if (monsterHudRoot == null)
+        if (hudRoot == null)
             return;
 
-        for (int i = monsterHudRoot.childCount - 1; i >= 0; i--)
-            Destroy(monsterHudRoot.GetChild(i).gameObject);
+        for (int i = hudRoot.childCount - 1; i >= 0; i--)
+        {
+            Transform child = hudRoot.GetChild(i);
+            HUDSlot hud = child != null ? child.GetComponent<HUDSlot>() : null;
+            if (hud != null && hud.BoundMonsterRuntime != null)
+                Destroy(child.gameObject);
+        }
     }
 
     private void PrintPartyData()
@@ -1742,7 +1826,7 @@ public class BattleRoomLoader : MonoBehaviour
         Collider2D monsterCollider =
             result.MonsterTransform.GetComponentInChildren<Collider2D>();
 
-        MonsterHUDSlot hud =
+        HUDSlot hud =
             CreateMonsterHUD(result.RuntimeData, result.MonsterTransform, monsterCollider);
 
         monsterUnit.BindHUD(hud);

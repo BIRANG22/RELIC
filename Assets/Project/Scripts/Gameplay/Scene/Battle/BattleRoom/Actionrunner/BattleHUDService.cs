@@ -17,8 +17,8 @@ public class BattleHUDService
                 playerHuds[i].Refresh();
         }
 
-        MonsterHUDSlot[] monsterHuds =
-            Object.FindObjectsByType<MonsterHUDSlot>(
+        HUDSlot[] monsterHuds =
+            Object.FindObjectsByType<HUDSlot>(
                 FindObjectsInactive.Include,
                 FindObjectsSortMode.None
             );

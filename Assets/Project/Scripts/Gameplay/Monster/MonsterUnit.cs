@@ -39,7 +39,7 @@ namespace Relic.Gameplay.Monster
 
         private MonsterAIBase ai;
         private bool aiEnabled = true;
-        private MonsterHUDSlot hud;
+        private HUDSlot hud;
         private Collider2D clickCollider2D;
         private Coroutine temporaryHUDRoutine;
         private bool isTemporaryHUDVisible;
@@ -743,7 +743,7 @@ namespace Relic.Gameplay.Monster
             return clickCollider2D;
         }
 
-        public void BindHUD(MonsterHUDSlot hud)
+        public void BindHUD(HUDSlot hud)
         {
             this.hud = hud;
 

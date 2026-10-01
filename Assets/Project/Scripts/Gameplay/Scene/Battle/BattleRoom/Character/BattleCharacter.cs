@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -27,6 +27,7 @@ public class BattleCharacter : MonoBehaviour
     private Animator selectionReadyAnimator;
     private bool timelineHoverHighlightVisible;
     private bool selectionHighlightVisible;
+    private HUDSlot worldHud;
 
     public CharacterRuntimeData RuntimeData { get; private set; }
 
@@ -49,6 +50,21 @@ public class BattleCharacter : MonoBehaviour
         LoadEquippedSkills();
 
         SetTimelineHoverHighlight(false);
+    }
+
+
+    public void BindWorldHUD(HUDSlot hud)
+    {
+        worldHud = hud;
+        if (worldHud == null)
+            return;
+
+        worldHud.Bind(RuntimeData);
+        Collider2D collider2D = GetComponent<Collider2D>();
+        if (collider2D == null)
+            collider2D = GetComponentInChildren<Collider2D>();
+        worldHud.SetFollowTarget(transform, collider2D);
+        worldHud.Hide();
     }
 
     public void SetGridIndex(int gridIndex)
@@ -130,17 +146,19 @@ public class BattleCharacter : MonoBehaviour
 
         SetTimelineHoverHighlight(true);
         SetLinkedHudHover(true);
+        worldHud?.SetCharacterHover(true);
     }
 
     private void OnMouseExit()
     {
         SetTimelineHoverHighlight(false);
         SetLinkedHudHover(false);
+        worldHud?.SetCharacterHover(false);
     }
 
     /// <summary>
-    /// HUD È£¹ö¿Í ¿¬µ¿µÇ¾î Ä³¸¯ÅÍ ÇÏÀÌ¶óÀÌÆ®¸¸ º¯°æÇÕ´Ï´Ù.
-    /// ¹Ý´ëÂÊ HUD¿¡ ´Ù½Ã Àü´ÞÇÏÁö ¾Ê¾Æ È£¹ö È£ÃâÀÌ ¼øÈ¯ÇÏÁö ¾Ê½À´Ï´Ù.
+    /// HUD È£ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¶ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
+    /// ï¿½Ý´ï¿½ï¿½ï¿½ HUDï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾ï¿½ È£ï¿½ï¿½ È£ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.
     /// </summary>
     public void SetLinkedHudHoverHighlight(bool active)
     {
@@ -178,8 +196,8 @@ public class BattleCharacter : MonoBehaviour
         if (IsBattleEnded())
             return;
 
-        // ÅÏ ½ÇÇà Áß¿¡´Â Ä³¸¯ÅÍ¸¦ È£¹öÇØ¼­ HUD/Á¤º¸¸¸ È®ÀÎÇÒ ¼ö ÀÖ°í,
-        // Å¬¸¯ ¼±ÅÃÀ¸·Î Ä«¸Þ¶ó Æ÷Ä¿½º°¡ ¹ß»ýÇÏÁö ¾Êµµ·Ï ¸·½À´Ï´Ù.
+        // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß¿ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½Í¸ï¿½ È£ï¿½ï¿½ï¿½Ø¼ï¿½ HUD/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö°ï¿½,
+        // Å¬ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Êµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
         if (IsBattleExecutionActive())
             return;
 
@@ -194,7 +212,7 @@ public class BattleCharacter : MonoBehaviour
 
         if (!SteamBattleStateSynchronizer.CanLocalPlayerControlCharacter(RuntimeData.CharacterId))
         {
-            BattleWarningUI.ShowMessage("´Ù¸¥ ÇÃ·¹ÀÌ¾îÀÇ Ä³¸¯ÅÍÀÔ´Ï´Ù.");
+            BattleWarningUI.ShowMessage("ï¿½Ù¸ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½.");
             return;
         }
 
@@ -205,7 +223,7 @@ public class BattleCharacter : MonoBehaviour
 
         if (roomLoader == null)
         {
-            Debug.LogWarning("[BattleCharacter] BattleRoomLoader°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning("[BattleCharacter] BattleRoomLoaderï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
             return;
         }
 
@@ -282,7 +300,7 @@ public class BattleCharacter : MonoBehaviour
 
         if (skillData == null)
         {
-            Debug.LogWarning($"[BattleCharacter] SkillData ¾øÀ½: {skillId}");
+            Debug.LogWarning($"[BattleCharacter] SkillData ï¿½ï¿½ï¿½ï¿½: {skillId}");
             return;
         }
 
