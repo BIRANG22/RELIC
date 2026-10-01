@@ -78,6 +78,11 @@ namespace Relic.Gameplay.Data
 
         private bool CanEquipRelicInSlot(int slotIndex, string relicId)
         {
+            if (global::BattleErosionEffectService.IsRelicSlotLocked(slotIndex))
+            {
+                return false;
+            }
+
             bool isCompoundSlot = slotIndex == ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
 
             if (isCompoundSlot)

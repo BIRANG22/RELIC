@@ -1042,7 +1042,7 @@ namespace Relic.Gameplay.Data
             if (layer == TotalLayerCount - 2)
             {
                 for (int i = 0; i < nodeCount; i++)
-                    result.Add("Rest");
+                    result.Add(BattleErosionEffectService.ShouldRemoveRestRoom ? "Common" : "Rest");
 
                 return result;
             }

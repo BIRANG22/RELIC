@@ -131,6 +131,12 @@ public class MapNodeView : MonoBehaviour
         SetClickable(canClick);
     }
 
+    public void SetTypeIconHidden(bool hidden)
+    {
+        if (iconImage != null)
+            iconImage.enabled = !hidden && iconImage.sprite != null;
+    }
+
     /// <summary>
     /// NodeIndex가 0인 시작 노드는 Type과 관계없이 Start 아이콘으로 표시합니다.
     /// 실제 Type 데이터는 유지되므로 시작 노드 이벤트 처리는 그대로 동작합니다.

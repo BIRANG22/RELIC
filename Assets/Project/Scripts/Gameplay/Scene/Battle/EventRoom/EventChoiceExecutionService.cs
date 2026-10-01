@@ -315,7 +315,8 @@ namespace Relic.Gameplay.Data
             if (IsToken(choice.ChoiceType, "Dice"))
             {
                 diceFaces = RollDiceFaces(context);
-                diceRoll = SumDiceFaces(diceFaces);
+                diceRoll = Mathf.Max(0, SumDiceFaces(diceFaces) - BattleErosionEffectService.GetValue(
+                    BattleErosionEffectService.DiceDifficultyAdd));
                 messages.Add($"주사위 결과: {diceRoll}");
 
                 if (!string.IsNullOrWhiteSpace(choice.SuccessCondition))

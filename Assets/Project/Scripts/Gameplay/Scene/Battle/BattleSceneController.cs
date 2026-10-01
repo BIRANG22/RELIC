@@ -134,6 +134,12 @@ public class BattleSceneController : MonoBehaviour
     private void Start()
     {
         SteamBattleStateSynchronizer.EnsureForBattleScene(null, null);
+        BattleRuntimeData battleRuntime = DataManager.Instance?.BattleRuntimeStore?.GetOrCreate();
+        BattleErosionEffectService.ApplyPartyStartEffects(
+            DataManager.Instance?.CharacterRuntimeStore,
+            battleRuntime);
+        if (battleRuntime != null)
+            DataManager.Instance.BattleRuntimeStore.Set(battleRuntime);
         InitializeRuntime();
         SetupBattleErosionGauge();
         PrimeBack2NameBeforePresentation();

@@ -39,9 +39,10 @@ public class BattleDamageService
         int reservedDamage = command.EnsureReservedDamage();
 
         if (reservedDamage > 0)
-            return reservedDamage;
+            return BattleErosionEffectService.ModifyMonsterDamage(reservedDamage);
 
-        return RollMonsterDamage(command.SkillData);
+        return BattleErosionEffectService.ModifyMonsterDamage(
+            RollMonsterDamage(command.SkillData));
     }
 
     public bool TryGetMonsterDamageRange(MonsterReservedCommand command, out int minDamage, out int maxDamage)
@@ -64,7 +65,7 @@ public class BattleDamageService
             return false;
 
         int baseDamage = ParseFirstIntValue(skillData.ValueRate);
-        minDamage = Mathf.Max(1, baseDamage);
+        minDamage = BattleErosionEffectService.ModifyMonsterDamage(Mathf.Max(1, baseDamage));
         maxDamage = minDamage;
         return true;
     }
@@ -74,6 +75,8 @@ public class BattleDamageService
         if (skillData == null)
             return 1;
 
+        // 예약/동기화 데이터에는 침식 보정 전 기본 피해를 저장합니다.
+        // 침식 보정은 실제 피해값을 조회하는 GetMonsterDamage에서 정확히 한 번 적용합니다.
         return Mathf.Max(1, ParseFirstIntValue(skillData.ValueRate));
     }
 
@@ -189,7 +192,8 @@ public class BattleDamageService
         if (command == null || !ShouldReserveMonsterDamage(command.SkillData))
             return false;
 
-        baseDamage = command.EnsureReservedDamage();
+        baseDamage = BattleErosionEffectService.ModifyMonsterDamage(
+            command.EnsureReservedDamage());
 
         if (baseDamage <= 0)
             return false;

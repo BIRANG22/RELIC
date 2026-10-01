@@ -55,8 +55,8 @@ namespace Relic.Gameplay.Data
             DisplayName = masterData.Name;
             Grade = masterData.Grade;
 
-            MaxHP = masterData.HP;
-            CurrentHP = masterData.HP;
+            MaxHP = global::BattleErosionEffectService.ModifyMonsterMaxHP(masterData.HP);
+            CurrentHP = MaxHP;
             CurrentShield = Math.Max(0, masterData.Armor);
             RemainingInnateShield = CurrentShield;
 

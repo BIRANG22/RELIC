@@ -156,6 +156,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private Image relic05Image;
     private Image relic06Image;
 
+    [Header("Erosion Relic Lock")]
+    [SerializeField] private Sprite lockedRelicSlotSprite;
+    [SerializeField] private Color lockedRelicSlotColor = new Color(0.72f, 0.72f, 0.78f, 1f);
+
     [Header("Skill Slot Visual")]
     [SerializeField] private Color skillNameColor = Color.white;
     [SerializeField] private Color emptySkillNameColor = new Color32(0x77, 0x77, 0x77, 0xFF);
@@ -1021,14 +1025,19 @@ public class BattleCharacterPanelUI : MonoBehaviour
         for (int i = 0; i < slot.Artifacts.Length; i++)
         {
             int relicIndex = i + 1;
+            bool isLocked = BattleErosionEffectService.IsRelicSlotLocked(relicIndex);
             string id = runtime.EquippedRelicIds != null && relicIndex < runtime.EquippedRelicIds.Length
                 ? runtime.EquippedRelicIds[relicIndex]
                 : null;
             Sprite icon = null;
-            if (!string.IsNullOrWhiteSpace(id) && DataManager.Instance?.RelicIconDatabase != null)
+            if (isLocked)
+                icon = lockedRelicSlotSprite;
+            else if (!string.IsNullOrWhiteSpace(id) && DataManager.Instance?.RelicIconDatabase != null)
                 DataManager.Instance.RelicIconDatabase.TryGetIcon(id, out icon);
             ApplyPartySprite(slot.Artifacts[i], icon);
-            ConfigurePartyEquipmentTooltip(slot.Artifacts[i], id, false);
+            if (slot.Artifacts[i] != null)
+                slot.Artifacts[i].color = isLocked ? lockedRelicSlotColor : Color.white;
+            ConfigurePartyEquipmentTooltip(slot.Artifacts[i], isLocked ? null : id, false);
         }
 
         RebuildPartyStatusIcons(slot, runtime.StatusEffects);
@@ -1476,6 +1485,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             hash = hash * 31 + runtime.MaxHP + runtime.RunMaxHPBonus;
             hash = hash * 31 + runtime.MaxCost + runtime.RunMaxCostBonus;
             hash = hash * 31 + (runtime.PassiveSkillId ?? string.Empty).GetHashCode();
+            hash = hash * 31 + (BattleErosionEffectService.IsLastRelicSlotLocked ? 1 : 0);
 
             if (runtime.EquippedRuneIds != null)
                 for (int i = 0; i < runtime.EquippedRuneIds.Length; i++)
@@ -2577,7 +2587,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
         RefreshPassiveRelicSlot(relic03Image, GetEquippedPassiveRelicId(2));
         RefreshPassiveRelicSlot(relic04Image, GetEquippedPassiveRelicId(3));
         RefreshPassiveRelicSlot(relic05Image, GetEquippedPassiveRelicId(4));
-        RefreshPassiveRelicSlot(relic06Image, GetEquippedPassiveRelicId(5));
+        RefreshPassiveRelicSlot(
+            relic06Image,
+            GetEquippedPassiveRelicId(5),
+            BattleErosionEffectService.IsRelicSlotLocked(BattleErosionEffectService.LastRelicSlotIndex));
     }
 
     private string GetEquippedPassiveRelicId(int passiveSlotIndex)
@@ -2595,7 +2608,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         return boundRuntime.EquippedRelicIds[equippedRelicIndex] ?? string.Empty;
     }
 
-    private void RefreshPassiveRelicSlot(Image relicImage, string relicId)
+    private void RefreshPassiveRelicSlot(Image relicImage, string relicId, bool isLocked = false)
     {
         if (relicImage == null)
             return;
@@ -2603,24 +2616,29 @@ public class BattleCharacterPanelUI : MonoBehaviour
         Sprite relicIcon = null;
         bool hasRelic = !string.IsNullOrWhiteSpace(relicId);
 
-        if (hasRelic &&
+        if (isLocked)
+        {
+            relicIcon = lockedRelicSlotSprite;
+        }
+        else if (hasRelic &&
             DataManager.Instance != null &&
             DataManager.Instance.RelicIconDatabase != null)
         {
             DataManager.Instance.RelicIconDatabase.TryGetIcon(relicId, out relicIcon);
         }
 
-        bool showImage = hasRelic && relicIcon != null;
+        bool showImage = (isLocked || hasRelic) && relicIcon != null;
         relicImage.sprite = relicIcon;
+        relicImage.color = isLocked ? lockedRelicSlotColor : Color.white;
         relicImage.enabled = showImage;
         relicImage.gameObject.SetActive(showImage);
         relicImage.preserveAspect = true;
         relicImage.raycastTarget = showImage;
 
-        SetEquipmentSlotEmptyTextVisible(relicImage, !hasRelic);
+        SetEquipmentSlotEmptyTextVisible(relicImage, !hasRelic && !isLocked);
         EnsureEquipmentIconHoverTarget(
             relicImage,
-            showImage ? () => ShowRelicHoverInfo(relicId) : null);
+            showImage && !isLocked ? () => ShowRelicHoverInfo(relicId) : null);
     }
 
     private void ClearPassiveRelicList()
