@@ -3329,6 +3329,7 @@ public class BattleTimelineController : MonoBehaviour
 
         RefreshReservationSimulation();
         RefreshTimeline();
+        GetActiveTimelineBarUI()?.PlayPlayerReservationFeedback(slotIndex, command);
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
         selectedSkill = null;
@@ -3427,11 +3428,13 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         existingMoveCommand.MergeMoveReservation(command);
-        RecordPlayerReservation(GetSlotIndexOf(slot), existingMoveCommand);
+        int slotIndex = GetSlotIndexOf(slot);
+        RecordPlayerReservation(slotIndex, existingMoveCommand);
 
         RecalculateAllReservedCosts();
         RefreshReservationSimulation();
         RefreshTimeline();
+        GetActiveTimelineBarUI()?.PlayPlayerReservationFeedback(slotIndex, existingMoveCommand);
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
 

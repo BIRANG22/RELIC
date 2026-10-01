@@ -98,6 +98,11 @@ public class MapViewSpawner : MonoBehaviour
             }
 
             node.Setup(data, iconDatabase, null, false);
+            node.SetTypeIconHidden(
+                BattleErosionEffectService.ShouldLimitMapVision &&
+                runtime != null &&
+                !IsVisitedOrCleared(runtime, data) &&
+                data.NodeIndex != runtime.CurrentNodeIndex);
             node.SetProgressVisual(
                 IsCurrentlyAvailable(runtime, data),
                 IsVisitedOrCleared(runtime, data));

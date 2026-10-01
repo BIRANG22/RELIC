@@ -21,6 +21,8 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
     private Action<BattleRewardSlotUI> onExit;
 
     public BattleRewardData Reward => reward;
+    public RectTransform IconRectTransform => iconImage != null ? iconImage.rectTransform : null;
+    public Color CurrentIconColor => iconImage != null ? iconImage.color : Color.white;
 
     private void Awake()
     {

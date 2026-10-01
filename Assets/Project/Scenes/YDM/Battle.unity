@@ -810,6 +810,7 @@ MonoBehaviour:
   alphaBreathSpeed: 3
   directionClickFeedbackDuration: 0.15
   tooltipClickRestartDelay: 0.06
+  clickFeedbackPrefab: {fileID: 100003, guid: 392e3d51d94a4f58a96e675c36057d1e, type: 3}
   autoFindReferences: 1
   hoverBackgroundObjectName: Skill_Background2
 --- !u!1 &19879378
@@ -2171,6 +2172,7 @@ MonoBehaviour:
   alphaBreathSpeed: 3
   directionClickFeedbackDuration: 0.15
   tooltipClickRestartDelay: 0.06
+  clickFeedbackPrefab: {fileID: 100003, guid: 392e3d51d94a4f58a96e675c36057d1e, type: 3}
   autoFindReferences: 1
   hoverBackgroundObjectName: Skill_Background2
 --- !u!1 &40467455
@@ -3824,6 +3826,7 @@ MonoBehaviour:
   alphaBreathSpeed: 3
   directionClickFeedbackDuration: 0.15
   tooltipClickRestartDelay: 0.06
+  clickFeedbackPrefab: {fileID: 100003, guid: 392e3d51d94a4f58a96e675c36057d1e, type: 3}
   autoFindReferences: 1
   hoverBackgroundObjectName: Skill_Background2
 --- !u!114 &66513662
@@ -5944,6 +5947,7 @@ MonoBehaviour:
   alphaBreathSpeed: 3
   directionClickFeedbackDuration: 0.15
   tooltipClickRestartDelay: 0.06
+  clickFeedbackPrefab: {fileID: 100003, guid: 392e3d51d94a4f58a96e675c36057d1e, type: 3}
   autoFindReferences: 1
   hoverBackgroundObjectName: Skill_Background2
 --- !u!114 &107207345
@@ -6809,6 +6813,7 @@ MonoBehaviour:
   alphaBreathSpeed: 3
   directionClickFeedbackDuration: 0.15
   tooltipClickRestartDelay: 0.06
+  clickFeedbackPrefab: {fileID: 100003, guid: 392e3d51d94a4f58a96e675c36057d1e, type: 3}
   autoFindReferences: 1
   hoverBackgroundObjectName: Skill_Background2
 --- !u!114 &121841788
@@ -8073,6 +8078,7 @@ MonoBehaviour:
   alphaBreathSpeed: 3
   directionClickFeedbackDuration: 0.15
   tooltipClickRestartDelay: 0.06
+  clickFeedbackPrefab: {fileID: 100003, guid: 392e3d51d94a4f58a96e675c36057d1e, type: 3}
   autoFindReferences: 1
   hoverBackgroundObjectName: Skill_Background2
 --- !u!114 &145599316
@@ -15938,6 +15944,8 @@ MonoBehaviour:
   rewardSlotPrefab: {fileID: 3808230140245187322, guid: b8677c1b2506ee8458c9e0cecb368b4c, type: 3}
   remnantIcon: {fileID: 21300000, guid: c4d914016a1fd404bb5f81cb9d6b147e, type: 3}
   remnantIconColor: {r: 0.41960785, g: 0, b: 0, a: 1}
+  screenSpaceTransferEffectPrefab: {fileID: 100003, guid: 13aa06f0ee8b40e2898db21ebcf3990e, type: 3}
+  rewardTransferTarget: {fileID: 1051714634}
   confirmButton: {fileID: 0}
   equipPanel: {fileID: 0}
   battlePanel: {fileID: 1242706629}
@@ -16442,6 +16450,7 @@ MonoBehaviour:
   alphaBreathSpeed: 3
   directionClickFeedbackDuration: 0.15
   tooltipClickRestartDelay: 0.06
+  clickFeedbackPrefab: {fileID: 100003, guid: 392e3d51d94a4f58a96e675c36057d1e, type: 3}
   autoFindReferences: 1
   hoverBackgroundObjectName: Skill_Background2
 --- !u!1 &307506763
@@ -16741,6 +16750,7 @@ MonoBehaviour:
   alphaBreathSpeed: 3
   directionClickFeedbackDuration: 0.15
   tooltipClickRestartDelay: 0.06
+  clickFeedbackPrefab: {fileID: 100003, guid: 392e3d51d94a4f58a96e675c36057d1e, type: 3}
   autoFindReferences: 1
   hoverBackgroundObjectName: Skill_Background2
 --- !u!114 &312355722
@@ -17160,6 +17170,7 @@ MonoBehaviour:
   alphaBreathSpeed: 3
   directionClickFeedbackDuration: 0.15
   tooltipClickRestartDelay: 0.06
+  clickFeedbackPrefab: {fileID: 100003, guid: 392e3d51d94a4f58a96e675c36057d1e, type: 3}
   autoFindReferences: 1
   hoverBackgroundObjectName: Skill_Background2
 --- !u!1 &321785123
@@ -32501,6 +32512,8 @@ MonoBehaviour:
   turnExecutor: {fileID: 27159002}
   flipButton: {fileID: 0}
   resetButton: {fileID: 0}
+  lockedRelicSlotSprite: {fileID: 21300000, guid: 57cfdc60441b47046866d2ed376ecb99, type: 3}
+  lockedRelicSlotColor: {r: 0.72, g: 0.72, b: 0.78, a: 1}
   skillNameColor: {r: 1, g: 1, b: 1, a: 1}
   emptySkillNameColor: {r: 0.46666667, g: 0.46666667, b: 0.46666667, a: 1}
   unavailableSkillColor: {r: 0.33333334, g: 0.33333334, b: 0.33333334, a: 1}
@@ -52251,6 +52264,7 @@ MonoBehaviour:
   alphaBreathSpeed: 3
   directionClickFeedbackDuration: 0.15
   tooltipClickRestartDelay: 0.06
+  clickFeedbackPrefab: {fileID: 100003, guid: 392e3d51d94a4f58a96e675c36057d1e, type: 3}
   autoFindReferences: 1
   hoverBackgroundObjectName: Skill_Background2
 --- !u!1 &1080689519
@@ -60403,6 +60417,7 @@ MonoBehaviour:
   alphaBreathSpeed: 3
   directionClickFeedbackDuration: 0.15
   tooltipClickRestartDelay: 0.06
+  clickFeedbackPrefab: {fileID: 100003, guid: 392e3d51d94a4f58a96e675c36057d1e, type: 3}
   autoFindReferences: 1
   hoverBackgroundObjectName: Skill_Background2
 --- !u!114 &1233891516

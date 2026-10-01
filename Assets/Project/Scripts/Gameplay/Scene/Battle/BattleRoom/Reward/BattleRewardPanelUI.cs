@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
@@ -15,6 +16,12 @@ public class BattleRewardPanelUI : MonoBehaviour
     [SerializeField] private Sprite remnantIcon;
     [SerializeField] private Color remnantIconColor = Color.white;
 
+    [Header("Reward Transfer Effect")]
+    [Tooltip("재료 아이템과 레드 더스티움 획득 시 재생할 화면 공간 이동 효과입니다.")]
+    [SerializeField] private ScreenSpaceTransferOrbEffect screenSpaceTransferEffectPrefab;
+    [Tooltip("보상 이동 효과가 도착할 MenuRoot/BagButton입니다.")]
+    [SerializeField] private RectTransform rewardTransferTarget;
+
     [Header("Legacy Confirm Button")]
     [SerializeField] private Button confirmButton;
 
@@ -30,6 +37,7 @@ public class BattleRewardPanelUI : MonoBehaviour
     private readonly List<BattleRewardSlotUI> activeSlots = new();
     private Action onRewardFlowCompleted;
     private bool pendingEquipmentReward;
+    private bool pendingTransferReward;
 
     private void Awake()
     {
@@ -77,6 +85,7 @@ public class BattleRewardPanelUI : MonoBehaviour
         activeSlots.Clear();
         onRewardFlowCompleted = completedCallback;
         pendingEquipmentReward = false;
+        pendingTransferReward = false;
         ResolveEquipPanelIfNeeded();
 
         if (rewards != null)
@@ -164,7 +173,7 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (!CanClaimReward(reward))
             return;
 
-        if (pendingEquipmentReward)
+        if (pendingEquipmentReward || pendingTransferReward)
             return;
 
         if (reward.Type == BattleRewardType.Relic || reward.Type == BattleRewardType.Skill)
@@ -177,7 +186,68 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         ApplyReward(reward);
         PlayRewardAcquireSfx(reward);
+
+        if (TryStartRewardTransfer(slot, reward))
+            return;
+
         CompleteRewardSlot(slot, reward);
+    }
+
+    private bool TryStartRewardTransfer(BattleRewardSlotUI slot, BattleRewardData reward)
+    {
+        if (!ShouldPlayTransferEffect(reward) ||
+            slot == null ||
+            slot.IconRectTransform == null ||
+            rewardTransferTarget == null ||
+            screenSpaceTransferEffectPrefab == null)
+        {
+            return false;
+        }
+
+        Camera sourceCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(
+            slot.IconRectTransform,
+            Camera.main);
+        Camera targetCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(
+            rewardTransferTarget,
+            Camera.main);
+        Vector2 startScreenPosition = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(
+            slot.IconRectTransform,
+            sourceCamera);
+        Vector2 endScreenPosition = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(
+            rewardTransferTarget,
+            targetCamera);
+        Color iconColor = slot.CurrentIconColor;
+
+        pendingTransferReward = true;
+        slot.SetClaimed();
+        StartCoroutine(PlayRewardTransferRoutine(
+            slot,
+            reward,
+            startScreenPosition,
+            endScreenPosition,
+            iconColor));
+        return true;
+    }
+
+    private IEnumerator PlayRewardTransferRoutine(
+        BattleRewardSlotUI slot,
+        BattleRewardData reward,
+        Vector2 startScreenPosition,
+        Vector2 endScreenPosition,
+        Color color)
+    {
+        ScreenSpaceTransferOrbEffect effect = Instantiate(screenSpaceTransferEffectPrefab);
+        yield return effect.Play(startScreenPosition, endScreenPosition, color);
+
+        pendingTransferReward = false;
+        CompleteRewardSlot(slot, reward);
+    }
+
+    private static bool ShouldPlayTransferEffect(BattleRewardData reward)
+    {
+        return reward != null &&
+               (reward.Type == BattleRewardType.Item ||
+                reward.Type == BattleRewardType.Remnant);
     }
 
     private bool OpenEquipmentRewardPanel(BattleRewardSlotUI slot, BattleRewardData reward)

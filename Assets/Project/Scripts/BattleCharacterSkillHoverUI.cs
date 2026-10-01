@@ -5,8 +5,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// BattleCharacterPanelÀÇ ½ºÅ³ ¹öÆ° È£¹ö/¼±ÅÃ ½Ã°¢ È¿°ú¸¦ Àû¿ëÇÕ´Ï´Ù.
-/// È£¹ö ½Ã¿¡´Â Skill_Background »ö»óÀ» º¯°æÇÏ°í, Skill_Background2´Â ±×¸®µå ¼±ÅÃ ÁßÀÎ ½ºÅ³¿¡¸¸ Ç¥½ÃÇÕ´Ï´Ù.
+/// BattleCharacterPanelì˜ ìŠ¤í‚¬ ë²„íŠ¼ í˜¸ë²„/ì„ íƒ ì‹œê° íš¨ê³¼ë¥¼ ì ìš©í•©ë‹ˆë‹¤.
+/// í˜¸ë²„ ì‹œì—ëŠ” Skill_Background ìƒ‰ìƒì„ ë³€ê²½í•˜ê³ , Skill_Background2ëŠ” ê·¸ë¦¬ë“œ ì„ íƒ ì¤‘ì¸ ìŠ¤í‚¬ì—ë§Œ í‘œì‹œí•©ë‹ˆë‹¤.
 /// </summary>
 public enum BattleCharacterSkillLineFeedbackMode
 {
@@ -45,8 +45,11 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     [SerializeField, Min(0f)] private float directionClickFeedbackDuration = 0.15f;
 
     [Header("Tooltip Click Feedback")]
-    [Tooltip("½ºÅ³ Å¬¸¯ ½Ã ÅøÆÁÀ» Àá±ñ ¼û°å´Ù°¡ ´Ù½Ã Ç¥½ÃÇÏ±â±îÁöÀÇ ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("ìŠ¤í‚¬ í´ë¦­ ì‹œ íˆ´íŒì„ ì ê¹ ìˆ¨ê²¼ë‹¤ê°€ ë‹¤ì‹œ í‘œì‹œí•˜ê¸°ê¹Œì§€ì˜ ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0f)] private float tooltipClickRestartDelay = 0.06f;
+
+    [Header("Click Feedback")]
+    [SerializeField] private BattleUiCornerFeedback clickFeedbackPrefab;
 
     [Header("Auto Find")]
     [SerializeField] private bool autoFindReferences = true;
@@ -163,8 +166,11 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
     {
         PlayTooltipClickFeedback();
 
-        // Flip / ResetButtonÃ³·³ Å¬¸¯ Áï½Ã Ã³¸®µÇ´Â ¹öÆ°Àº
-        // ÀÏ¹İ ½ºÅ³°ú µ¿ÀÏÇÏ°Ô Àá±ñ ¼±ÅÃ»öÀ» º¸¿©ÁØ µÚ ¿ø·¡ Line »öÀ¸·Î µ¹¾Æ¿É´Ï´Ù.
+        if (skillData != null)
+            BattleUiCornerFeedback.Spawn(clickFeedbackPrefab, transform as RectTransform);
+
+        // Flip / ResetButtonì²˜ëŸ¼ í´ë¦­ ì¦‰ì‹œ ì²˜ë¦¬ë˜ëŠ” ë²„íŠ¼ì€
+        // ì¼ë°˜ ìŠ¤í‚¬ê³¼ ë™ì¼í•˜ê²Œ ì ê¹ ì„ íƒìƒ‰ì„ ë³´ì—¬ì¤€ ë’¤ ì›ë˜ Line ìƒ‰ìœ¼ë¡œ ëŒì•„ì˜µë‹ˆë‹¤.
         if (lineFeedbackMode == BattleCharacterSkillLineFeedbackMode.Instant)
         {
             skillLineClickFeedbackUntil = Time.unscaledTime + skillLineClickFeedbackDuration;
@@ -172,8 +178,8 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
             return;
         }
 
-        // CompoundÃ³·³ º°µµÀÇ ±×¸®µå ´ë»ó ¼±ÅÃ »óÅÂ¸¦ °®´Â ¹öÆ°Àº
-        // ¼±ÅÃÀÌ ³¡³¯ ¶§±îÁö Line ¼±ÅÃ»öÀ» À¯ÁöÇÕ´Ï´Ù.
+        // Compoundì²˜ëŸ¼ ë³„ë„ì˜ ê·¸ë¦¬ë“œ ëŒ€ìƒ ì„ íƒ ìƒíƒœë¥¼ ê°–ëŠ” ë²„íŠ¼ì€
+        // ì„ íƒì´ ëë‚  ë•Œê¹Œì§€ Line ì„ íƒìƒ‰ì„ ìœ ì§€í•©ë‹ˆë‹¤.
         if (lineFeedbackMode == BattleCharacterSkillLineFeedbackMode.PersistentExternal)
         {
             isSelected = true;
@@ -185,7 +191,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         if (skillData == null)
             return;
 
-        // ÀÌµ¿Àº ±×¸®µå ¼±ÅÃÀÌ ³¡³¯ ¶§±îÁö Line ¼±ÅÃ»öÀ» À¯ÁöÇÕ´Ï´Ù.
+        // ì´ë™ì€ ê·¸ë¦¬ë“œ ì„ íƒì´ ëë‚  ë•Œê¹Œì§€ Line ì„ íƒìƒ‰ì„ ìœ ì§€í•©ë‹ˆë‹¤.
         if (skillData.Category == Category.Move)
         {
             isSelected = true;
@@ -195,8 +201,8 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
             return;
         }
 
-        // ÀÏ¹İ ½ºÅ³Àº Å¬¸¯ Áï½Ã Å¸ÀÓ¶óÀÎ¿¡ µî·ÏµÇ´Â ´À³¦¸¸ Âª°Ô º¸¿©ÁÖ°í
-        // ¿ø·¡ Line »öÀ¸·Î µ¹¾Æ¿É´Ï´Ù.
+        // ì¼ë°˜ ìŠ¤í‚¬ì€ í´ë¦­ ì¦‰ì‹œ íƒ€ì„ë¼ì¸ì— ë“±ë¡ë˜ëŠ” ëŠë‚Œë§Œ ì§§ê²Œ ë³´ì—¬ì£¼ê³ 
+        // ì›ë˜ Line ìƒ‰ìœ¼ë¡œ ëŒì•„ì˜µë‹ˆë‹¤.
         skillLineClickFeedbackUntil = Time.unscaledTime + skillLineClickFeedbackDuration;
         ApplySelectionLineVisual();
 
@@ -234,7 +240,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
 
     private System.Collections.IEnumerator TooltipClickFeedbackRoutine()
     {
-        // µî·Ï Å¬¸¯ÀÌ µé¾î¿Ô´Ù´Â ´À³¦ÀÌ ³ªµµ·Ï ÇöÀç ÅøÆÁÀ» ¸ÕÀú ÆäÀÌµå¾Æ¿ôÇÕ´Ï´Ù.
+        // ë“±ë¡ í´ë¦­ì´ ë“¤ì–´ì™”ë‹¤ëŠ” ëŠë‚Œì´ ë‚˜ë„ë¡ í˜„ì¬ íˆ´íŒì„ ë¨¼ì € í˜ì´ë“œì•„ì›ƒí•©ë‹ˆë‹¤.
         skillInfoExitHandler?.Invoke();
 
         float delay = Mathf.Max(0f, tooltipClickRestartDelay);
@@ -245,7 +251,7 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
             yield return null;
         }
 
-        // Å¬¸¯ ÈÄ¿¡µµ °°Àº ½ºÅ³ À§¿¡ Ä¿¼­°¡ ³²¾Æ ÀÖÀ» ¶§¸¸ ´Ù½Ã ÆäÀÌµåÀÎÇÕ´Ï´Ù.
+        // í´ë¦­ í›„ì—ë„ ê°™ì€ ìŠ¤í‚¬ ìœ„ì— ì»¤ì„œê°€ ë‚¨ì•„ ìˆì„ ë•Œë§Œ ë‹¤ì‹œ í˜ì´ë“œì¸í•©ë‹ˆë‹¤.
         if (isPointerOver && isActiveAndEnabled && IsInteractable() && skillData != null)
             skillInfoHandler?.Invoke(skillData);
 
@@ -405,8 +411,8 @@ public class BattleCharacterSkillHoverUI : MonoBehaviour, IPointerEnterHandler, 
         if (lineImage == null)
             return;
 
-        // µ¥ÀÌÅÍ°¡ ¾ø°Å³ª »ç¿ëÇÒ ¼ö ¾ø´Â ½½·ÔÀÇ Line »öÀº
-        // BattleCharacterPanelUI°¡ 777777 / A9B1BE ±ÔÄ¢¿¡ ¸Â°Ô °ü¸®ÇÕ´Ï´Ù.
+        // ë°ì´í„°ê°€ ì—†ê±°ë‚˜ ì‚¬ìš©í•  ìˆ˜ ì—†ëŠ” ìŠ¬ë¡¯ì˜ Line ìƒ‰ì€
+        // BattleCharacterPanelUIê°€ 777777 / A9B1BE ê·œì¹™ì— ë§ê²Œ ê´€ë¦¬í•©ë‹ˆë‹¤.
         if (!IsInteractable())
             return;
 

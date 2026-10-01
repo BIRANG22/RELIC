@@ -41,19 +41,23 @@ namespace Relic.Gameplay.Data
                 string characterId = NormalizeId(entry.CharacterId);
                 string skillId = NormalizeId(entry.SkillId);
 
-                if (string.IsNullOrWhiteSpace(characterId) ||
+                if ((!entry.ApplyToAllCharacters && string.IsNullOrWhiteSpace(characterId)) ||
                     string.IsNullOrWhiteSpace(skillId) ||
                     entry.AttackSlot == SkillAttackSlot.None)
                 {
                     continue;
                 }
 
-                string key = MakeKey(characterId, skillId);
+                string key = MakeKey(
+                    entry.ApplyToAllCharacters ? string.Empty : characterId,
+                    skillId);
 
                 if (map.ContainsKey(key))
                 {
                     Debug.LogWarning(
-                        $"[SkillAttackOverrideDatabase] Duplicate override: {characterId} / {skillId}");
+                        entry.ApplyToAllCharacters
+                            ? $"[SkillAttackOverrideDatabase] Duplicate shared override: {skillId}"
+                            : $"[SkillAttackOverrideDatabase] Duplicate override: {characterId} / {skillId}");
                     continue;
                 }
 
@@ -202,8 +206,11 @@ namespace Relic.Gameplay.Data
             if (map == null)
                 Initialize();
 
+            if (map.TryGetValue(MakeKey(characterId, skillId), out entry))
+                return true;
+
             return map.TryGetValue(
-                MakeKey(characterId, skillId),
+                MakeKey(string.Empty, skillId),
                 out entry);
         }
 
@@ -225,6 +232,9 @@ namespace Relic.Gameplay.Data
     [Serializable]
     public class SkillAttackOverrideEntry
     {
+        [Tooltip("체크하면 CharacterId와 관계없이 모든 캐릭터에 적용합니다.")]
+        public bool ApplyToAllCharacters;
+
         public string CharacterId;
 
         public string SkillId;
@@ -297,10 +307,25 @@ namespace Relic.Gameplay.Data
 
                 DrawProperty(
                     property,
+                    "ApplyToAllCharacters",
+                    position.x,
+                    ref y,
+                    position.width);
+
+                UnityEditor.SerializedProperty applyToAllProperty =
+                    property.FindPropertyRelative("ApplyToAllCharacters");
+
+                UnityEditor.EditorGUI.BeginDisabledGroup(
+                    applyToAllProperty != null && applyToAllProperty.boolValue);
+
+                DrawProperty(
+                    property,
                     "CharacterId",
                     position.x,
                     ref y,
                     position.width);
+
+                UnityEditor.EditorGUI.EndDisabledGroup();
 
                 DrawProperty(
                     property,
@@ -343,6 +368,7 @@ namespace Relic.Gameplay.Data
 
             float height = lineHeight + Spacing;
 
+            height += GetHeight(property, "ApplyToAllCharacters");
             height += GetHeight(property, "CharacterId");
             height += GetHeight(property, "SkillId");
             height += GetHeight(property, "AttackSlot");

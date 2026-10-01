@@ -454,4 +454,5 @@ public class EquippedRelicSlotUI : MonoBehaviour, IPointerClickHandler, IPointer
 
         AudioManager.Instance.PlaySfx(clickSfxId);
     }
+
 }

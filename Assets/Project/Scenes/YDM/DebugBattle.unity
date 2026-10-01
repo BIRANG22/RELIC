@@ -29922,6 +29922,8 @@ MonoBehaviour:
   battleTimelineController: {fileID: 1104021720}
   activeRelicTargetingController: {fileID: 0}
   turnExecutor: {fileID: 27159002}
+  lockedRelicSlotSprite: {fileID: 21300000, guid: 57cfdc60441b47046866d2ed376ecb99, type: 3}
+  lockedRelicSlotColor: {r: 0.72, g: 0.72, b: 0.78, a: 1}
   skillNameColor: {r: 1, g: 1, b: 1, a: 1}
   emptySkillNameColor: {r: 0.46666667, g: 0.46666667, b: 0.46666667, a: 1}
   unavailableSkillColor: {r: 0.33333334, g: 0.33333334, b: 0.33333334, a: 1}

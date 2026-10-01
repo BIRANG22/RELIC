@@ -40,6 +40,8 @@ public sealed class LobbyBattleRuntimeTransferService
         battle.BagItemIds = new List<string>();
         battle.CultureTankBattleStartEffects =
             CultureTankResearchService.CopyPendingBattleStartEffects(lobby);
+        battle.SelectedErosionDifficultyIds = CopyIds(lobby.SelectedErosionDifficultyIds);
+        battle.ErosionPartyStartEffectsApplied = false;
 
         if (characters != null && lobby.CharacterLoadouts != null)
         {

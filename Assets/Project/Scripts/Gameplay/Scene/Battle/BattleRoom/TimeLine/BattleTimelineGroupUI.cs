@@ -24,6 +24,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [Header("Order Slots")]
     [SerializeField] private Image[] useSkillIconImages;
     [SerializeField] private TMP_Text[] useSkillValueTexts;
+    [SerializeField] private BattleUiCornerFeedback registrationFeedbackPrefab;
 
     [Header("Reserved Colors")]
     [SerializeField] private Color playerReservedColor = new Color32(0x0A, 0x46, 0x9E, 0xFF);
@@ -228,6 +229,27 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         SetupOwnerIconInteractionTarget(firstIconImage, firstEntry);
         SetupOwnerIconInteractionTarget(laterIconImage, laterEntry);
+    }
+
+    public void PlayPlayerReservationFeedback(PlayerReservedCommand command)
+    {
+        if (command == null || registrationFeedbackPrefab == null)
+            return;
+
+        for (int i = 0; i < currentEntries.Count; i++)
+        {
+            BattleTimelinePreviewEntry entry = currentEntries[i];
+            if (entry == null || !ReferenceEquals(entry.PlayerCommand, command))
+                continue;
+
+            if (useSkillIconImages == null || i >= useSkillIconImages.Length)
+                return;
+
+            Image icon = useSkillIconImages[i];
+            if (icon != null)
+                BattleUiCornerFeedback.Spawn(registrationFeedbackPrefab, icon.rectTransform);
+            return;
+        }
     }
 
     public void Clear()

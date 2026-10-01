@@ -640,6 +640,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
             playerTurnNumber++;
             BattleErosionRuntimeService.CountNextTurnStart();
+            BattleErosionEffectService.ApplyPeriodicRandomDebuff(playerTurnNumber);
             ApplyQueuedNextTurnSwift();
             RefreshTurnNumberText();
 
@@ -911,6 +912,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
         playerTurnNumber++;
         BattleErosionRuntimeService.CountNextTurnStart();
+        BattleErosionEffectService.ApplyPeriodicRandomDebuff(playerTurnNumber);
         ApplyQueuedNextTurnSwift();
         RefreshTurnNumberText();
 

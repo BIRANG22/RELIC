@@ -329,6 +329,15 @@ public class BattleRewardResolver : MonoBehaviour
         float rare = Mathf.Max(0f, mapData.RelicRareChance);
         float epic = Mathf.Max(0f, mapData.RelicEpicChance);
         float unique = Mathf.Max(0f, mapData.RelicUniqueChance);
+
+        if (BattleErosionEffectService.ShouldReduceRarity)
+        {
+            common += rare;
+            rare = epic;
+            epic = unique;
+            unique = 0f;
+        }
+
         float total = common + rare + epic + unique;
 
         if (total <= 0f)

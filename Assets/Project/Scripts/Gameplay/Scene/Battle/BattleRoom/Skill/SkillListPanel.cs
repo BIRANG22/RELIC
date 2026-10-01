@@ -1129,6 +1129,9 @@ public class SkillListPanel : MonoBehaviour
 
     private bool EnsureActiveRelicService()
     {
+        if (BattleErosionEffectService.IsCompoundUseBlocked)
+            return false;
+
         if (activeRelicService != null)
             return true;
 

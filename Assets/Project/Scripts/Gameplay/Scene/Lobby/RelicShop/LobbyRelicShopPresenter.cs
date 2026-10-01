@@ -443,6 +443,9 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             ? selectedButton.CurrentRarityColor
             : Color.white;
 
+        // 시작 좌표를 확보한 뒤 원본 슬롯을 즉시 숨기고 이동 효과만 남깁니다.
+        selectedButton?.SetTemporaryHidden(true);
+
         if (selectedIconRect != null &&
             purchaseTransferUiTarget != null &&
             screenSpaceTransferEffectPrefab != null)

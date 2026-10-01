@@ -167,7 +167,10 @@ public static class BattleEquipmentEffectService
         bool wasDead = runtime.CurrentHP <= 0;
         bool shouldFillHP = !wasDead && runtime.CurrentHP >= previousMaxHP;
 
-        runtime.MaxHP = Mathf.Max(1, baseMaxHP + GetMaxHPBonus(runtime, baseMaxHP));
+        runtime.MaxHP = BattleErosionEffectService.ApplyPercent(
+            Mathf.Max(1, baseMaxHP + GetMaxHPBonus(runtime, baseMaxHP)),
+            BattleErosionEffectService.GetValue(BattleErosionEffectService.PartyMaxHPPercent),
+            1);
 
         if (wasDead)
             runtime.CurrentHP = 1;
@@ -215,7 +218,10 @@ public static class BattleEquipmentEffectService
     {
         int baseMaxHP = GetRunAdjustedBaseMaxHP(runtime, masterData);
 
-        return Mathf.Max(1, baseMaxHP + GetMaxHPBonus(runtime, baseMaxHP));
+        return BattleErosionEffectService.ApplyPercent(
+            Mathf.Max(1, baseMaxHP + GetMaxHPBonus(runtime, baseMaxHP)),
+            BattleErosionEffectService.GetValue(BattleErosionEffectService.PartyMaxHPPercent),
+            1);
     }
 
     public static int GetEffectiveMaxCost(
@@ -645,6 +651,8 @@ public static class BattleEquipmentEffectService
 
             if (multiplier > 1)
                 cost *= multiplier;
+
+            cost = BattleErosionEffectService.ModifyMoveFinalCost(cost);
         }
 
         command.SetCosts(
@@ -1071,7 +1079,7 @@ public static class BattleEquipmentEffectService
 
     public static int ModifyShopPrice(int basePrice)
     {
-        int price = Mathf.Max(0, basePrice);
+        int price = BattleErosionEffectService.ModifyShopPrice(Mathf.Max(0, basePrice));
         int discountPercent = Mathf.Clamp(
             SumConfiguredPartyEffectValues(ShopPriceDiscountPercentEffectId),
             0,

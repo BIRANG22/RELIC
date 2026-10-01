@@ -65,20 +65,27 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
         if (effectRect == null || orbImage == null)
         {
             Destroy(gameObject);
-            yield break;
+            return null;
         }
 
         orbImage.color = color;
+        orbImage.rectTransform.anchoredPosition = ScreenToLocalPosition(startScreen);
+
+        return PlayRoutine(startScreen, endScreen, color);
+    }
+
+    private IEnumerator PlayRoutine(Vector2 startScreen, Vector2 endScreen, Color color)
+    {
         float elapsed = 0f;
         float trailTimer = 0f;
         float safeDuration = Mathf.Max(0.01f, duration);
+        Vector2 controlScreen = (startScreen + endScreen) * 0.5f + Vector2.up * arcHeight;
 
         while (elapsed < safeDuration)
         {
             float deltaTime = Time.unscaledDeltaTime;
             elapsed += deltaTime;
             float t = Mathf.Clamp01(elapsed / safeDuration);
-            Vector2 controlScreen = (startScreen + endScreen) * 0.5f + Vector2.up * arcHeight;
             Vector2 screenPosition = EvaluateQuadraticBezier(startScreen, controlScreen, endScreen, EaseOutCubic(t));
 
             orbImage.rectTransform.anchoredPosition = ScreenToLocalPosition(screenPosition);
