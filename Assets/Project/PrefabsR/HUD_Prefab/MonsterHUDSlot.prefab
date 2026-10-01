@@ -196,7 +196,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5754807734497614714}
   - component: {fileID: 5749335420009610297}
-  - component: {fileID: 5349390791218836963}
+  - component: {fileID: 59151757342762778}
   m_Layer: 5
   m_Name: StatusEffectParent
   m_TagString: Untagged
@@ -231,7 +231,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1253827508444211029}
   m_CullTransparentMesh: 1
---- !u!114 &5349390791218836963
+--- !u!114 &59151757342762778
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -240,7 +240,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1253827508444211029}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
+  m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
@@ -249,14 +249,12 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 0
-  m_Spacing: 1
-  m_ChildForceExpandWidth: 0
-  m_ChildForceExpandHeight: 0
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
+  m_StartCorner: 0
+  m_StartAxis: 0
+  m_CellSize: {x: 50, y: 50}
+  m_Spacing: {x: 0, y: 0}
+  m_Constraint: 1
+  m_ConstraintCount: 4
 --- !u!1 &1354915048233333011
 GameObject:
   m_ObjectHideFlags: 0
@@ -762,9 +760,10 @@ MonoBehaviour:
   hpValueText: {fileID: 7278086840193307182}
   shieldFill: {fileID: 7074225067668694720}
   shieldValueText: {fileID: 445988489934142876}
+  hpValueChangeDuration: 0.35
+  shieldValueChangeDuration: 0.35
   statusIconRoot: {fileID: 5754807734497614714}
   statusIconPrefab: {fileID: 2588654849037534649, guid: d35e4bff57f02274580c209f460926d7, type: 3}
-  statusEffectIconSpacing: 4
   useFollowPosition: 1
   followTarget: {fileID: 0}
   worldOffset: {x: 0, y: 1.8, z: 0}

@@ -106,7 +106,8 @@ public class GridEffectHoverTarget : MonoBehaviour
         if (isHovered && tooltipUI != null)
         {
             RefreshTooltipIfDurationChanged();
-            tooltipUI.SetPosition(Input.mousePosition);
+            GetTooltipWorldSideAnchors(out Vector3 leftAnchor, out Vector3 rightAnchor);
+            tooltipUI.SetWorldSideAnchors(leftAnchor, rightAnchor, mainCamera);
         }
     }
 
@@ -162,7 +163,8 @@ public class GridEffectHoverTarget : MonoBehaviour
             lastDisplayedDuration = int.MinValue;
         }
 
-        tooltipUI.Show(this, data, Input.mousePosition, remainingDuration);
+        GetTooltipWorldSideAnchors(out Vector3 leftAnchor, out Vector3 rightAnchor);
+        tooltipUI.ShowWorldAutoSide(this, data, leftAnchor, rightAnchor, mainCamera, remainingDuration);
     }
 
     private void RefreshTooltipIfDurationChanged()
@@ -184,6 +186,21 @@ public class GridEffectHoverTarget : MonoBehaviour
                gridIndex >= 0 &&
                gridEffectController.State != null &&
                gridEffectController.State.TryGetRemainingDuration(gridIndex, out remainingDuration);
+    }
+
+    private void GetTooltipWorldSideAnchors(out Vector3 leftAnchor, out Vector3 rightAnchor)
+    {
+        if (hoverCollider != null)
+        {
+            Bounds bounds = hoverCollider.bounds;
+            float z = transform.position.z;
+            leftAnchor = new Vector3(bounds.min.x, bounds.center.y, z);
+            rightAnchor = new Vector3(bounds.max.x, bounds.center.y, z);
+            return;
+        }
+
+        leftAnchor = transform.position;
+        rightAnchor = transform.position;
     }
 
     private void HideTooltip()

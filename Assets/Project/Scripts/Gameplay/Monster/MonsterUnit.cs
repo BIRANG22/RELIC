@@ -276,8 +276,10 @@ namespace Relic.Gameplay.Monster
             if (!isStatusTooltipHovering || statusTooltipUI == null)
                 return;
 
-            UnitStatusEffectTooltipSide tooltipSide = GetStatusTooltipSide();
-            statusTooltipUI.UpdatePosition(GetStatusTooltipScreenPosition(tooltipSide), tooltipSide);
+            statusTooltipUI.UpdateMonsterPrefabPosition(
+                this,
+                GetStatusTooltipScreenPosition(UnitStatusEffectTooltipSide.Right),
+                GetStatusTooltipScreenPosition(UnitStatusEffectTooltipSide.Left));
         }
 
         private void ShowStatusHoverTooltip()
@@ -297,15 +299,11 @@ namespace Relic.Gameplay.Monster
             if (statusTooltipUI == null)
                 return;
 
-            UnitStatusEffectTooltipSide tooltipSide = GetStatusTooltipSide();
-            Vector2 screenPosition = GetStatusTooltipScreenPosition(tooltipSide);
-            statusTooltipUI.Show(this, RuntimeData.StatusEffects, screenPosition, tooltipSide);
-        }
-
-        private UnitStatusEffectTooltipSide GetStatusTooltipSide()
-        {
-            // 몬스터 본체 호버 툴팁은 항상 몬스터 Collider2D의 오른쪽에 표시합니다.
-            return UnitStatusEffectTooltipSide.Right;
+            statusTooltipUI.ShowMonsterPrefab(
+                this,
+                RuntimeData.StatusEffects,
+                GetStatusTooltipScreenPosition(UnitStatusEffectTooltipSide.Right),
+                GetStatusTooltipScreenPosition(UnitStatusEffectTooltipSide.Left));
         }
 
         private Vector2 GetStatusTooltipScreenPosition(UnitStatusEffectTooltipSide side)
@@ -321,7 +319,9 @@ namespace Relic.Gameplay.Monster
             else if (!TryGetRendererBounds(out bounds))
                 bounds = new Bounds(transform.position, Vector3.zero);
 
-            float anchorX = bounds.max.x;
+            float anchorX = side == UnitStatusEffectTooltipSide.Left
+                ? bounds.min.x
+                : bounds.max.x;
             Vector3 worldPosition = new Vector3(anchorX, bounds.center.y, bounds.center.z);
             return mainCamera.WorldToScreenPoint(worldPosition);
         }
@@ -333,7 +333,7 @@ namespace Relic.Gameplay.Monster
             if (statusTooltipUI == null)
                 return;
 
-            statusTooltipUI.Hide(this);
+            statusTooltipUI.HideMonsterPrefab(this);
         }
 
         private void OnMouseDown()
