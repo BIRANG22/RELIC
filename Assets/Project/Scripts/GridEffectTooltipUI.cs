@@ -32,6 +32,12 @@ public class GridEffectTooltipUI : MonoBehaviour
     private Vector2 lastScreenPosition;
     private Coroutine fadeCoroutine;
     private bool targetVisible;
+    private bool useWorldAnchor;
+    private Vector3 lastWorldAnchor;
+    private Vector3 lastWorldLeftAnchor;
+    private Vector3 lastWorldRightAnchor;
+    private bool hasWorldSideAnchors;
+    private Camera worldAnchorCamera;
 
     /// <summary>
     /// 씬에 사용자가 직접 배치한 GridEffectTooltipUI를 반환합니다.
@@ -109,10 +115,18 @@ public class GridEffectTooltipUI : MonoBehaviour
             return;
         }
 
-        if (followMouse)
+        if (useWorldAnchor)
+        {
+            UpdateWorldAnchorPosition();
+        }
+        else if (followMouse)
+        {
             SetPosition(Input.mousePosition);
+        }
         else
+        {
             SetPosition(lastScreenPosition);
+        }
     }
 
     public void Show(Object owner, string gridEffectId, Vector2 screenPosition)
@@ -165,6 +179,9 @@ public class GridEffectTooltipUI : MonoBehaviour
             gameObject.SetActive(true);
 
         currentOwner = owner;
+        useWorldAnchor = false;
+        hasWorldSideAnchors = false;
+        worldAnchorCamera = null;
         lastScreenPosition = screenPosition;
 
         nameText.text = GameDataLocalization.GridEffectName(data);
@@ -198,36 +215,352 @@ public class GridEffectTooltipUI : MonoBehaviour
             return;
 
         currentOwner = null;
+        useWorldAnchor = false;
+        hasWorldSideAnchors = false;
+        worldAnchorCamera = null;
         SetVisible(false);
     }
 
+    /// <summary>
+    /// 월드 오브젝트 기준으로 툴팁을 표시합니다.
+    /// 월드 좌표를 매 프레임 화면 좌표로 다시 변환하므로 해상도나 화면 비율이 바뀌어도
+    /// 그리드 이펙트와 툴팁 사이의 UI 오프셋이 동일하게 유지됩니다.
+    /// </summary>
+    public void ShowWorld(Object owner, GridEffectData data, Vector3 worldAnchor, Camera sourceCamera, int? remainingDuration = null)
+    {
+        if (sourceCamera == null)
+            return;
+
+        Vector2 initialScreenPosition = sourceCamera.WorldToScreenPoint(worldAnchor);
+        Show(owner, data, initialScreenPosition, remainingDuration);
+
+        if (currentOwner != owner)
+            return;
+
+        useWorldAnchor = true;
+        hasWorldSideAnchors = false;
+        lastWorldAnchor = worldAnchor;
+        worldAnchorCamera = sourceCamera;
+        UpdateWorldAnchorPosition();
+    }
+
+    /// <summary>
+    /// 월드 오브젝트의 좌/우 기준점을 함께 전달합니다.
+    /// 기본적으로 오른쪽 기준점에 표시하고, 오른쪽 배치 시 화면 밖으로 나가면
+    /// 자동으로 왼쪽 기준점으로 전환합니다.
+    /// </summary>
+    public void ShowWorldAutoSide(
+        Object owner,
+        GridEffectData data,
+        Vector3 leftWorldAnchor,
+        Vector3 rightWorldAnchor,
+        Camera sourceCamera,
+        int? remainingDuration = null)
+    {
+        if (sourceCamera == null)
+            return;
+
+        Vector2 initialScreenPosition = sourceCamera.WorldToScreenPoint(rightWorldAnchor);
+        Show(owner, data, initialScreenPosition, remainingDuration);
+
+        if (currentOwner != owner)
+            return;
+
+        useWorldAnchor = true;
+        hasWorldSideAnchors = true;
+        lastWorldLeftAnchor = leftWorldAnchor;
+        lastWorldRightAnchor = rightWorldAnchor;
+        lastWorldAnchor = rightWorldAnchor;
+        worldAnchorCamera = sourceCamera;
+        UpdateWorldAnchorPosition();
+    }
+
+    public void SetWorldAnchor(Vector3 worldAnchor, Camera sourceCamera)
+    {
+        if (sourceCamera == null)
+            return;
+
+        useWorldAnchor = true;
+        hasWorldSideAnchors = false;
+        lastWorldAnchor = worldAnchor;
+        worldAnchorCamera = sourceCamera;
+        UpdateWorldAnchorPosition();
+    }
+
+    public void SetWorldSideAnchors(Vector3 leftWorldAnchor, Vector3 rightWorldAnchor, Camera sourceCamera)
+    {
+        if (sourceCamera == null)
+            return;
+
+        useWorldAnchor = true;
+        hasWorldSideAnchors = true;
+        lastWorldLeftAnchor = leftWorldAnchor;
+        lastWorldRightAnchor = rightWorldAnchor;
+        lastWorldAnchor = rightWorldAnchor;
+        worldAnchorCamera = sourceCamera;
+        UpdateWorldAnchorPosition();
+    }
+
     public void SetPosition(Vector2 screenPosition)
+    {
+        useWorldAnchor = false;
+        SetPositionFromScreen(screenPosition, false);
+    }
+
+    private void UpdateWorldAnchorPosition()
+    {
+        if (!useWorldAnchor || worldAnchorCamera == null)
+            return;
+
+        if (hasWorldSideAnchors)
+        {
+            SetPositionFromWorldSideAnchors();
+            return;
+        }
+
+        Vector3 screen = worldAnchorCamera.WorldToScreenPoint(lastWorldAnchor);
+        if (screen.z < 0f)
+            return;
+
+        SetPositionFromScreen(new Vector2(screen.x, screen.y), true);
+    }
+
+    private void SetPositionFromWorldSideAnchors()
+    {
+        InitializeReferences();
+
+        if (tooltipRect == null || worldAnchorCamera == null)
+            return;
+
+        RectTransform parentRect = tooltipRect.parent as RectTransform;
+        if (parentRect == null)
+            return;
+
+        Canvas canvas = tooltipRect.GetComponentInParent<Canvas>();
+        Camera uiCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera
+            : null;
+
+        Vector3 rightScreen3 = worldAnchorCamera.WorldToScreenPoint(lastWorldRightAnchor);
+        Vector3 leftScreen3 = worldAnchorCamera.WorldToScreenPoint(lastWorldLeftAnchor);
+        if (rightScreen3.z < 0f || leftScreen3.z < 0f)
+            return;
+
+        Vector2 rightScreen = new(rightScreen3.x, rightScreen3.y);
+        Vector2 leftScreen = new(leftScreen3.x, leftScreen3.y);
+
+        // screenOffset.x는 좌우 간격, screenOffset.y는 세로 오프셋으로 사용합니다.
+        float horizontalGap = Mathf.Abs(screenOffset.x);
+        float verticalOffset = screenOffset.y;
+
+        // 1) 기본적으로 오른쪽에 배치합니다. 툴팁의 실제 왼쪽 외곽을
+        //    GridEffect 오른쪽 기준점 + 간격에 맞춥니다.
+        PlaceTooltipEdgeAtScreenPoint(
+            parentRect,
+            uiCamera,
+            rightScreen,
+            horizontalGap,
+            verticalOffset,
+            placeOnRight: true);
+
+        Canvas.ForceUpdateCanvases();
+        UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
+
+        GetTooltipScreenBounds(uiCamera, out float minX, out _, out float maxX, out _);
+        float paddingX = Mathf.Max(0f, screenPadding.x);
+
+        // 2) 오른쪽 외곽이 화면을 넘으려 할 때만 왼쪽으로 전환합니다.
+        if (maxX > Screen.width - paddingX)
+        {
+            PlaceTooltipEdgeAtScreenPoint(
+                parentRect,
+                uiCamera,
+                leftScreen,
+                horizontalGap,
+                verticalOffset,
+                placeOnRight: false);
+        }
+
+        // 3) 좌/우 전환 후에도 매우 좁은 화면에서 남는 초과분만 마지막으로 보정합니다.
+        ClampRenderedRectToScreen(parentRect, uiCamera);
+    }
+
+    private void PlaceTooltipEdgeAtScreenPoint(
+        RectTransform parentRect,
+        Camera uiCamera,
+        Vector2 anchorScreen,
+        float horizontalGap,
+        float verticalOffset,
+        bool placeOnRight)
+    {
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentRect,
+                anchorScreen,
+                uiCamera,
+                out Vector2 anchorLocal))
+        {
+            return;
+        }
+
+        Vector3 localPosition = tooltipRect.localPosition;
+        localPosition.x = anchorLocal.x;
+        localPosition.y = anchorLocal.y;
+        tooltipRect.localPosition = localPosition;
+
+        Canvas.ForceUpdateCanvases();
+        UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
+
+        GetTooltipScreenBounds(uiCamera, out float minX, out _, out float maxX, out _);
+
+        float targetEdgeX = placeOnRight
+            ? anchorScreen.x + horizontalGap
+            : anchorScreen.x - horizontalGap;
+        float currentEdgeX = placeOnRight ? minX : maxX;
+        float deltaX = targetEdgeX - currentEdgeX;
+
+        Vector2 currentPivotScreen = RectTransformUtility.WorldToScreenPoint(uiCamera, tooltipRect.position);
+        Vector2 correctedPivotScreen = new(
+            currentPivotScreen.x + deltaX,
+            anchorScreen.y + verticalOffset);
+
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentRect,
+                correctedPivotScreen,
+                uiCamera,
+                out Vector2 correctedLocal))
+        {
+            return;
+        }
+
+        localPosition = tooltipRect.localPosition;
+        localPosition.x = correctedLocal.x;
+        localPosition.y = correctedLocal.y;
+        tooltipRect.localPosition = localPosition;
+    }
+
+    private void GetTooltipScreenBounds(
+        Camera uiCamera,
+        out float minX,
+        out float minY,
+        out float maxX,
+        out float maxY)
+    {
+        Vector3[] corners = new Vector3[4];
+        tooltipRect.GetWorldCorners(corners);
+
+        minX = float.MaxValue;
+        minY = float.MaxValue;
+        maxX = float.MinValue;
+        maxY = float.MinValue;
+
+        for (int i = 0; i < corners.Length; i++)
+        {
+            Vector2 screenCorner = RectTransformUtility.WorldToScreenPoint(uiCamera, corners[i]);
+            minX = Mathf.Min(minX, screenCorner.x);
+            minY = Mathf.Min(minY, screenCorner.y);
+            maxX = Mathf.Max(maxX, screenCorner.x);
+            maxY = Mathf.Max(maxY, screenCorner.y);
+        }
+    }
+
+    private void SetPositionFromScreen(Vector2 screenPosition, bool offsetInCanvasUnits)
     {
         InitializeReferences();
 
         if (tooltipRect == null)
             return;
 
-        lastScreenPosition = screenPosition;
-        Vector2 target = ClampToScreen(screenPosition + screenOffset);
+        RectTransform parentRect = tooltipRect.parent as RectTransform;
+        if (parentRect == null)
+            return;
 
-        if (rootCanvas == null || rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
+        Canvas canvas = tooltipRect.GetComponentInParent<Canvas>();
+        Camera uiCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera
+            : null;
+
+        lastScreenPosition = screenPosition;
+
+        Vector2 pointToConvert = offsetInCanvasUnits
+            ? screenPosition
+            : screenPosition + screenOffset;
+
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentRect,
+                pointToConvert,
+                uiCamera,
+                out Vector2 localPoint))
         {
-            tooltipRect.position = target;
             return;
         }
 
-        RectTransform parentRect = tooltipRect.parent as RectTransform;
+        if (offsetInCanvasUnits)
+            localPoint += screenOffset;
 
-        if (parentRect != null &&
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                parentRect,
-                target,
-                canvasCamera,
-                out Vector2 localPoint))
+        Vector3 localPosition = tooltipRect.localPosition;
+        localPosition.x = localPoint.x;
+        localPosition.y = localPoint.y;
+        tooltipRect.localPosition = localPosition;
+
+        ClampRenderedRectToScreen(parentRect, uiCamera);
+    }
+
+    private void ClampRenderedRectToScreen(RectTransform parentRect, Camera uiCamera)
+    {
+        Canvas.ForceUpdateCanvases();
+        UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
+
+        Vector3[] corners = new Vector3[4];
+        tooltipRect.GetWorldCorners(corners);
+
+        float minX = float.MaxValue;
+        float minY = float.MaxValue;
+        float maxX = float.MinValue;
+        float maxY = float.MinValue;
+
+        for (int i = 0; i < corners.Length; i++)
         {
-            tooltipRect.localPosition = localPoint;
+            Vector2 screenCorner = RectTransformUtility.WorldToScreenPoint(uiCamera, corners[i]);
+            minX = Mathf.Min(minX, screenCorner.x);
+            minY = Mathf.Min(minY, screenCorner.y);
+            maxX = Mathf.Max(maxX, screenCorner.x);
+            maxY = Mathf.Max(maxY, screenCorner.y);
         }
+
+        float paddingX = Mathf.Max(0f, screenPadding.x);
+        float paddingY = Mathf.Max(0f, screenPadding.y);
+        float deltaX = 0f;
+        float deltaY = 0f;
+
+        if (minX < paddingX)
+            deltaX = paddingX - minX;
+        else if (maxX > Screen.width - paddingX)
+            deltaX = (Screen.width - paddingX) - maxX;
+
+        if (minY < paddingY)
+            deltaY = paddingY - minY;
+        else if (maxY > Screen.height - paddingY)
+            deltaY = (Screen.height - paddingY) - maxY;
+
+        if (Mathf.Approximately(deltaX, 0f) && Mathf.Approximately(deltaY, 0f))
+            return;
+
+        Vector2 currentScreenPivot = RectTransformUtility.WorldToScreenPoint(uiCamera, tooltipRect.position);
+        Vector2 correctedScreenPivot = currentScreenPivot + new Vector2(deltaX, deltaY);
+
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentRect,
+                correctedScreenPivot,
+                uiCamera,
+                out Vector2 correctedLocalPoint))
+        {
+            return;
+        }
+
+        Vector3 correctedPosition = tooltipRect.localPosition;
+        correctedPosition.x = correctedLocalPoint.x;
+        correctedPosition.y = correctedLocalPoint.y;
+        tooltipRect.localPosition = correctedPosition;
     }
 
     private void InitializeReferences()
@@ -250,32 +583,6 @@ public class GridEffectTooltipUI : MonoBehaviour
             rootCanvas = rootCanvas.rootCanvas;
 
         canvasCamera = rootCanvas != null ? rootCanvas.worldCamera : null;
-    }
-
-    private Vector2 ClampToScreen(Vector2 screenPosition)
-    {
-        if (tooltipRect == null)
-            return screenPosition;
-
-        Vector2 size = tooltipRect.rect.size;
-        Vector3 scale = tooltipRect.lossyScale;
-        size.x *= Mathf.Abs(scale.x);
-        size.y *= Mathf.Abs(scale.y);
-
-        float minX = screenPadding.x;
-        float maxX = Mathf.Max(minX, Screen.width - screenPadding.x);
-        float minY = screenPadding.y;
-        float maxY = Mathf.Max(minY, Screen.height - screenPadding.y);
-
-        if (screenPosition.x + size.x > maxX)
-            screenPosition.x = Mathf.Max(minX, maxX - size.x);
-
-        if (screenPosition.y - size.y < minY)
-            screenPosition.y = Mathf.Min(maxY, minY + size.y);
-
-        screenPosition.x = Mathf.Clamp(screenPosition.x, minX, maxX);
-        screenPosition.y = Mathf.Clamp(screenPosition.y, minY, maxY);
-        return screenPosition;
     }
 
     private void BringToFront()

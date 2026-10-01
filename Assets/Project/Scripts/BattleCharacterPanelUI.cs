@@ -3540,83 +3540,114 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
 
         Canvas canvas = skillTooltipRectTransform.GetComponentInParent<Canvas>();
-        Camera canvasCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
-            ? canvas.worldCamera
+        if (canvas == null)
+            return;
+
+        Canvas rootCanvas = canvas.rootCanvas != null ? canvas.rootCanvas : canvas;
+        RectTransform canvasRect = rootCanvas.transform as RectTransform;
+        if (canvasRect == null)
+            return;
+
+        Camera canvasCamera = rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? rootCanvas.worldCamera
             : null;
 
-        Vector2 desiredScreenPosition = (Vector2)Input.mousePosition + skillTooltipCursorOffset;
-
+        // 마우스의 화면 좌표를 먼저 부모 UI 좌표로 변환한 뒤,
+        // 오프셋을 Canvas/UI 단위로 적용합니다. 해상도와 Canvas Scaler 배율에 영향을 받지 않습니다.
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 parentRect,
-                desiredScreenPosition,
+                Input.mousePosition,
                 canvasCamera,
-                out Vector2 localPoint))
+                out Vector2 localMousePoint))
         {
             return;
         }
 
-        Vector3 localPosition = skillTooltipRectTransform.localPosition;
-        localPosition.x = localPoint.x;
-        localPosition.y = localPoint.y;
-        skillTooltipRectTransform.localPosition = localPosition;
+        Vector2 targetLocalPoint = localMousePoint + skillTooltipCursorOffset;
+        Vector3 targetWorldPosition = parentRect.TransformPoint(targetLocalPoint);
+        Vector3 tooltipWorldPosition = skillTooltipRectTransform.position;
+        tooltipWorldPosition.x = targetWorldPosition.x;
+        tooltipWorldPosition.y = targetWorldPosition.y;
+        skillTooltipRectTransform.position = tooltipWorldPosition;
 
-        // 실제 렌더링된 네 모서리를 화면 좌표로 검사해서 화면 밖으로 빠지는 만큼 다시 밀어 넣습니다.
+        // 텍스트/레이아웃 갱신 후 실제 렌더링된 TooltipPanel의 네 모서리를 검사합니다.
         Canvas.ForceUpdateCanvases();
         LayoutRebuilder.ForceRebuildLayoutImmediate(skillTooltipRectTransform);
+        Canvas.ForceUpdateCanvases();
 
-        Vector3[] worldCorners = new Vector3[4];
-        skillTooltipRectTransform.GetWorldCorners(worldCorners);
+        Vector3[] tooltipWorldCorners = new Vector3[4];
+        skillTooltipRectTransform.GetWorldCorners(tooltipWorldCorners);
 
-        float minScreenX = float.MaxValue;
-        float minScreenY = float.MaxValue;
-        float maxScreenX = float.MinValue;
-        float maxScreenY = float.MinValue;
+        float tooltipMinX = float.MaxValue;
+        float tooltipMinY = float.MaxValue;
+        float tooltipMaxX = float.MinValue;
+        float tooltipMaxY = float.MinValue;
 
-        for (int i = 0; i < worldCorners.Length; i++)
+        for (int i = 0; i < tooltipWorldCorners.Length; i++)
         {
-            Vector2 cornerScreen = RectTransformUtility.WorldToScreenPoint(canvasCamera, worldCorners[i]);
-            minScreenX = Mathf.Min(minScreenX, cornerScreen.x);
-            minScreenY = Mathf.Min(minScreenY, cornerScreen.y);
-            maxScreenX = Mathf.Max(maxScreenX, cornerScreen.x);
-            maxScreenY = Mathf.Max(maxScreenY, cornerScreen.y);
+            Vector3 cornerInCanvas = canvasRect.InverseTransformPoint(tooltipWorldCorners[i]);
+            tooltipMinX = Mathf.Min(tooltipMinX, cornerInCanvas.x);
+            tooltipMinY = Mathf.Min(tooltipMinY, cornerInCanvas.y);
+            tooltipMaxX = Mathf.Max(tooltipMaxX, cornerInCanvas.x);
+            tooltipMaxY = Mathf.Max(tooltipMaxY, cornerInCanvas.y);
         }
 
+        Rect canvasBounds = canvasRect.rect;
         float paddingX = Mathf.Max(0f, skillTooltipScreenPadding.x);
         float paddingY = Mathf.Max(0f, skillTooltipScreenPadding.y);
-        float deltaScreenX = 0f;
-        float deltaScreenY = 0f;
 
-        if (minScreenX < paddingX)
-            deltaScreenX = paddingX - minScreenX;
-        else if (maxScreenX > Screen.width - paddingX)
-            deltaScreenX = (Screen.width - paddingX) - maxScreenX;
+        float allowedMinX = canvasBounds.xMin + paddingX;
+        float allowedMaxX = canvasBounds.xMax - paddingX;
+        float allowedMinY = canvasBounds.yMin + paddingY;
+        float allowedMaxY = canvasBounds.yMax - paddingY;
 
-        if (minScreenY < paddingY)
-            deltaScreenY = paddingY - minScreenY;
-        else if (maxScreenY > Screen.height - paddingY)
-            deltaScreenY = (Screen.height - paddingY) - maxScreenY;
+        float deltaX = 0f;
+        float deltaY = 0f;
 
-        if (Mathf.Approximately(deltaScreenX, 0f) && Mathf.Approximately(deltaScreenY, 0f))
-            return;
+        float tooltipWidth = tooltipMaxX - tooltipMinX;
+        float tooltipHeight = tooltipMaxY - tooltipMinY;
+        float availableWidth = Mathf.Max(0f, allowedMaxX - allowedMinX);
+        float availableHeight = Mathf.Max(0f, allowedMaxY - allowedMinY);
 
-        Vector2 currentScreenPivot = RectTransformUtility.WorldToScreenPoint(
-            canvasCamera,
-            skillTooltipRectTransform.position);
-        Vector2 correctedScreenPivot = currentScreenPivot + new Vector2(deltaScreenX, deltaScreenY);
-
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                parentRect,
-                correctedScreenPivot,
-                canvasCamera,
-                out Vector2 correctedLocalPoint))
+        // 툴팁이 Canvas보다 큰 예외 상황에서는 한쪽 경계를 계속 왕복하지 않도록
+        // 가능한 영역의 중앙에 맞춥니다. 일반적인 크기에서는 각 경계를 정확히 Clamp합니다.
+        if (tooltipWidth > availableWidth)
         {
-            return;
+            float tooltipCenterX = (tooltipMinX + tooltipMaxX) * 0.5f;
+            float allowedCenterX = (allowedMinX + allowedMaxX) * 0.5f;
+            deltaX = allowedCenterX - tooltipCenterX;
+        }
+        else if (tooltipMinX < allowedMinX)
+        {
+            deltaX = allowedMinX - tooltipMinX;
+        }
+        else if (tooltipMaxX > allowedMaxX)
+        {
+            deltaX = allowedMaxX - tooltipMaxX;
         }
 
-        localPosition = skillTooltipRectTransform.localPosition;
-        localPosition.x = correctedLocalPoint.x;
-        localPosition.y = correctedLocalPoint.y;
-        skillTooltipRectTransform.localPosition = localPosition;
+        if (tooltipHeight > availableHeight)
+        {
+            float tooltipCenterY = (tooltipMinY + tooltipMaxY) * 0.5f;
+            float allowedCenterY = (allowedMinY + allowedMaxY) * 0.5f;
+            deltaY = allowedCenterY - tooltipCenterY;
+        }
+        else if (tooltipMinY < allowedMinY)
+        {
+            deltaY = allowedMinY - tooltipMinY;
+        }
+        else if (tooltipMaxY > allowedMaxY)
+        {
+            deltaY = allowedMaxY - tooltipMaxY;
+        }
+
+        if (Mathf.Approximately(deltaX, 0f) && Mathf.Approximately(deltaY, 0f))
+            return;
+
+        // Canvas 로컬 보정량을 월드 벡터로 바꿔 적용합니다.
+        // 따라서 TooltipPanel의 pivot/anchor나 상위 오브젝트의 scale이 달라도 정확히 보정됩니다.
+        Vector3 correctionWorld = canvasRect.TransformVector(new Vector3(deltaX, deltaY, 0f));
+        skillTooltipRectTransform.position += correctionWorld;
     }
 
     private void ApplySkillTooltipResourceIconColor(ReferenceResource resource)

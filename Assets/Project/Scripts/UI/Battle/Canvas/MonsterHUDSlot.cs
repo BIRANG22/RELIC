@@ -25,7 +25,6 @@ public class MonsterHUDSlot : MonoBehaviour
     [Header("Status Effects")]
     [SerializeField] private Transform statusIconRoot;
     [SerializeField] private StatusEffectIcon statusIconPrefab;
-    [SerializeField] private float statusEffectIconSpacing = 4f;
 
     [Header("Follow")]
     [SerializeField] private bool useFollowPosition = true;
@@ -62,7 +61,6 @@ public class MonsterHUDSlot : MonoBehaviour
 
         canvasGroup.ignoreParentGroups = true;
 
-        ApplyStatusEffectParentLayout();
     }
 
     private void OnDisable()
@@ -141,7 +139,6 @@ public class MonsterHUDSlot : MonoBehaviour
     {
         bool runtimeChanged = !ReferenceEquals(boundRuntime, runtimeData);
         boundRuntime = runtimeData;
-        ApplyStatusEffectParentLayout();
 
         if (boundRuntime == null)
         {
@@ -401,7 +398,6 @@ public class MonsterHUDSlot : MonoBehaviour
     private void RefreshStatusEffects(List<StatusEffectRuntimeData> statusEffects)
     {
         ClearStatusEffectIcons();
-        ApplyStatusEffectParentLayout();
 
         if (statusIconRoot == null || statusIconPrefab == null || statusEffects == null)
             return;
@@ -433,16 +429,6 @@ public class MonsterHUDSlot : MonoBehaviour
 
         for (int i = statusIconRoot.childCount - 1; i >= 0; i--)
             Destroy(statusIconRoot.GetChild(i).gameObject);
-    }
-
-    private void ApplyStatusEffectParentLayout()
-    {
-        if (statusIconRoot == null)
-            return;
-
-        HorizontalLayoutGroup layout = statusIconRoot.GetComponent<HorizontalLayoutGroup>();
-        if (layout != null)
-            layout.spacing = statusEffectIconSpacing;
     }
 
     private void Clear()
