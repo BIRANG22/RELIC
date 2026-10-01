@@ -12,6 +12,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     [Header("Summary UI")]
     [SerializeField] private Image skillIconImage;
+    [SerializeField] private BattleUiCornerFeedback clickFeedbackPrefab;
 
     [SerializeField] private TMP_Text skillNameText;
     [SerializeField] private Image skillRangeImage;
@@ -363,6 +364,9 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             owner.IgnoreOutsideCloseForFrames(2);
 
         PlayClickSfx();
+        BattleUiCornerFeedback.Spawn(
+            clickFeedbackPrefab,
+            skillIconImage != null ? skillIconImage.rectTransform : rectTransform);
         owner.SelectSkillSlot(this);
         owner.SelectSkill(skillId);
         owner.ShowSkillDetail(detailText, rectTransform);

@@ -290,6 +290,14 @@ public class BattleTimelineBarUI : MonoBehaviour
             group.SetOwnerIconsVisible(false);
     }
 
+    public void PlayPlayerReservationFeedback(int slotIndex, PlayerReservedCommand command)
+    {
+        if (timelineGroups == null || slotIndex < 0 || slotIndex >= timelineGroups.Length)
+            return;
+
+        timelineGroups[slotIndex]?.PlayPlayerReservationFeedback(command);
+    }
+
     public void SetTurnMarkChildrenVisible(bool visible)
     {
         EnsureTimelineGroups();

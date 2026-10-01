@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -64,6 +65,37 @@ public sealed class ScreenSpaceTransferOrbEffectTests
     }
 
     [Test]
+    public void Play_AppliesStartScreenPositionBeforeAnimationAdvances()
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+        GameObject instance = Object.Instantiate(prefab);
+
+        try
+        {
+            ScreenSpaceTransferOrbEffect effect =
+                instance.GetComponent<ScreenSpaceTransferOrbEffect>();
+            RawImage orb = instance.GetComponentInChildren<RawImage>(true);
+            Vector2 startScreen = new(240f, 360f);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                instance.transform as RectTransform,
+                startScreen,
+                null,
+                out Vector2 expectedLocalPosition);
+
+            effect.Play(startScreen, new Vector2(1200f, 700f), Color.white);
+
+            Assert.That(orb.rectTransform.anchoredPosition.x,
+                Is.EqualTo(expectedLocalPosition.x).Within(0.001f));
+            Assert.That(orb.rectTransform.anchoredPosition.y,
+                Is.EqualTo(expectedLocalPosition.y).Within(0.001f));
+        }
+        finally
+        {
+            Object.DestroyImmediate(instance);
+        }
+    }
+
+    [Test]
     public void ResolveUiCamera_UsesNearestWorldSpaceCanvasCamera()
     {
         GameObject root = new("RootCanvas", typeof(RectTransform), typeof(Canvas));
@@ -87,5 +119,26 @@ public sealed class ScreenSpaceTransferOrbEffectTests
             Object.DestroyImmediate(root);
             Object.DestroyImmediate(cameraObject);
         }
+    }
+
+    [TestCase(BattleRewardType.Item, true)]
+    [TestCase(BattleRewardType.Remnant, true)]
+    [TestCase(BattleRewardType.Relic, false)]
+    [TestCase(BattleRewardType.Skill, false)]
+    public void BattleRewardTransferPolicy_OnlyIncludesBagRewards(
+        BattleRewardType rewardType,
+        bool expected)
+    {
+        MethodInfo policy = typeof(BattleRewardPanelUI).GetMethod(
+            "ShouldPlayTransferEffect",
+            BindingFlags.Static | BindingFlags.NonPublic);
+
+        Assert.That(policy, Is.Not.Null);
+
+        bool actual = (bool)policy.Invoke(
+            null,
+            new object[] { new BattleRewardData { Type = rewardType } });
+
+        Assert.That(actual, Is.EqualTo(expected));
     }
 }

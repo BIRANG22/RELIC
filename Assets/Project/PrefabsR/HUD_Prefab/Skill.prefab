@@ -747,6 +747,7 @@ MonoBehaviour:
   backgroundImage: {fileID: 5596298089010325680}
   button: {fileID: 7234587491961286478}
   skillIconImage: {fileID: 566498599464232165}
+  clickFeedbackPrefab: {fileID: 100003, guid: 392e3d51d94a4f58a96e675c36057d1e, type: 3}
   skillNameText: {fileID: 7227459091488681865}
   skillRangeImage: {fileID: 2283913315592726109}
   skillCostTypeText: {fileID: 5990408031063926060}
