@@ -45,12 +45,11 @@ public class BattleTurnExecutor : MonoBehaviour
     [SerializeField] private Color endTurnLineHoverColor = new Color32(0x4E, 0x66, 0xDF, 0xFF);
     [SerializeField, Min(0f)] private float endTurnClickFeedbackDuration = 0.15f;
 
-    [Header("Turn Text")]
+    [Header("End Button Turn Text")]
     [SerializeField] private TMP_Text turnNumberText;
     [SerializeField] private bool autoFindTurnNumberText = true;
-    [SerializeField] private string turnNumberTextRootObjectName = "TurnText";
-    [SerializeField] private string turnNumberTextValueObjectName = "Value";
-    [SerializeField] private string turnNumberTextObjectName = "TURN_TEXT2";
+    [SerializeField] private string turnNumberTextRootObjectName = "EndButton";
+    [SerializeField] private string turnNumberTextValueObjectName = "TurnEnd";
 
     [Header("Keyboard Input")]
     [SerializeField] private bool enableSpaceEndTurnInput = true;
@@ -1099,26 +1098,44 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private void AutoFindTurnNumberTextIfNeeded()
     {
-        if (!autoFindTurnNumberText)
+        if (!autoFindTurnNumberText || turnNumberText != null)
             return;
 
-        if (turnNumberText != null)
-            return;
+        // 현재 턴 표시는 BattleCharacterPanel > EndButton > TurnEnd만 사용합니다.
+        Transform[] transforms = FindObjectsByType<Transform>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
 
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform panel = transforms[i];
+            if (panel == null || panel.name != "BattleCharacterPanel")
+                continue;
+
+            Transform endButton = FindChildRecursive(panel, "EndButton");
+            if (endButton == null)
+                continue;
+
+            Transform turnEnd = FindChildRecursive(endButton, "TurnEnd");
+            if (turnEnd == null)
+                continue;
+
+            turnNumberText = turnEnd.GetComponent<TMP_Text>();
+            if (turnNumberText != null)
+                return;
+        }
+
+        // 인스펙터에서 이름을 변경한 경우를 위한 보조 탐색입니다.
         if (!string.IsNullOrWhiteSpace(turnNumberTextRootObjectName) &&
             !string.IsNullOrWhiteSpace(turnNumberTextValueObjectName))
         {
-            Transform[] transforms = FindObjectsByType<Transform>(
-                FindObjectsInactive.Include,
-                FindObjectsSortMode.None);
-
             for (int i = 0; i < transforms.Length; i++)
             {
                 Transform root = transforms[i];
                 if (root == null || root.name != turnNumberTextRootObjectName)
                     continue;
 
-                Transform valueTransform = root.Find(turnNumberTextValueObjectName);
+                Transform valueTransform = FindChildRecursive(root, turnNumberTextValueObjectName);
                 if (valueTransform == null)
                     continue;
 
@@ -1127,13 +1144,6 @@ public class BattleTurnExecutor : MonoBehaviour
                     return;
             }
         }
-
-        if (string.IsNullOrWhiteSpace(turnNumberTextObjectName))
-            return;
-
-        GameObject found = GameObject.Find(turnNumberTextObjectName);
-        if (found != null)
-            turnNumberText = found.GetComponent<TMP_Text>();
     }
 
     private void RefreshTurnNumberText()
@@ -1144,15 +1154,14 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
 
         int displayTurnNumber = Mathf.Max(1, playerTurnNumber);
-        turnNumberText.text = displayTurnNumber.ToString("D2");
+        turnNumberText.text = $"TURN\n{displayTurnNumber}";
     }
 
     private void RefreshBack2TurnName()
     {
-        BattleSceneController sceneController =
-            UnityEngine.Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
-
-        sceneController?.SetBack2TurnNumber(playerTurnNumber);
+        // Back2 > Name 턴 표시는 더 이상 사용하지 않습니다.
+        // 기존 호출 지점은 EndButton > TurnEnd 갱신으로 연결합니다.
+        RefreshTurnNumberText();
     }
 
     private void RefreshEndTurnButton()
