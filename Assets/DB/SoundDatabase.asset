@@ -746,6 +746,15 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  - id: skill.cutscene
+    aliases: []
+    clip: {fileID: 8300000, guid: 188ab83b8bea94aa39e1c4676fda9d0d, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
   eventSfxList:
   - id: sfx_debuff
     aliases: []
@@ -955,7 +964,7 @@ MonoBehaviour:
   - displayName: S_Unique_02
     vfxPrefab: {fileID: 5372841363813152920, guid: efbd15a5c1bcbcb4dab256d631f18d60, type: 3}
     cues:
-    - clip: {fileID: 8300000, guid: 6e0bdec41ec14d5418e3fe352d1d6e48, type: 3}
+    - clip: {fileID: 8300000, guid: 0188b7fc9322d2447afb9ffc6965b402, type: 3}
       delay: 0
       volume: 1
       pitch: 0.71
@@ -1033,12 +1042,21 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Unique_05
-    vfxPrefab: {fileID: 3857453107072273608, guid: e63bdec7a44d8e74ca2b1e69d61d3e7e, type: 3}
-    cues:
-    - clip: {fileID: 8300000, guid: e79916dd3c45d32498dc10be254c166d, type: 3}
+    - clip: {fileID: 8300000, guid: 8f9d996f5c04f4cd981d33f5ecc4e11f, type: 3}
       delay: 0
       volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+  - displayName: S_Unique_05
+    vfxPrefab: {fileID: 3657311369840355751, guid: a2bb111defe50ed44aba0c62d3eac585, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: 5d7ed6eadac15459a90c5f2c745762a1, type: 3}
+      delay: 0
+      volume: 1
       pitch: 1
       loop: 0
       playOncePerAction: 0
@@ -1055,9 +1073,18 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Unique_06
-    vfxPrefab: {fileID: 3657311369840355751, guid: a2bb111defe50ed44aba0c62d3eac585, type: 3}
+    vfxPrefab: {fileID: 3857453107072273608, guid: e63bdec7a44d8e74ca2b1e69d61d3e7e, type: 3}
     cues:
-    - clip: {fileID: 8300000, guid: 5d7ed6eadac15459a90c5f2c745762a1, type: 3}
+    - clip: {fileID: 8300000, guid: e79916dd3c45d32498dc10be254c166d, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 6afbeff885dd3d040a27489de3283a89, type: 3}
       delay: 0
       volume: 0.5
       pitch: 1
@@ -1067,6 +1094,15 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 188ab83b8bea94aa39e1c4676fda9d0d, type: 3}
+      delay: 0
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 2c2f5645a58094ea587d546cd0a8b357, type: 3}
       delay: 0
       volume: 0.5
       pitch: 1
@@ -1109,7 +1145,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 0188b7fc9322d2447afb9ffc6965b402, type: 3}
-      delay: 0.1
+      delay: 0.2
       volume: 0.5
       pitch: 1
       loop: 0
@@ -1118,7 +1154,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
     - clip: {fileID: 8300000, guid: 71edecf670ce60e4c8a6d72ff68d2f6d, type: 3}
-      delay: 0.1
+      delay: 0.2
       volume: 0.5
       pitch: 1
       loop: 0
@@ -1258,7 +1294,7 @@ MonoBehaviour:
   - displayName: S_Ability_09,10
     vfxPrefab: {fileID: 5464498477634507533, guid: 7d62d8b59c052e74f841fe794b1df8a6, type: 3}
     cues:
-    - clip: {fileID: 8300000, guid: b79f0e09b1417457ea791e32c70e243f, type: 3}
+    - clip: {fileID: 8300000, guid: e79916dd3c45d32498dc10be254c166d, type: 3}
       delay: 0
       volume: 0.5
       pitch: 1
@@ -1294,6 +1330,24 @@ MonoBehaviour:
       pitch: 1
       loop: 0
       playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: c7ecb118defccbf4fbac913c34a210ac, type: 3}
+      delay: 0.2
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
+    - clip: {fileID: 8300000, guid: 2c2f5645a58094ea587d546cd0a8b357, type: 3}
+      delay: 0.1
+      volume: 0.5
+      pitch: 1
+      loop: 0
+      playOncePerAction: 0
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
