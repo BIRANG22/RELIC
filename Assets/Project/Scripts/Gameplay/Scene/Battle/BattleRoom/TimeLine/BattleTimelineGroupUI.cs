@@ -1,4 +1,4 @@
-using Relic.Gameplay.Monster;
+ï»¿using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -140,7 +140,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             return;
         }
 
-        // ½ÇÁ¦ Ç¥½Ã ¿©ºÎ´Â SetTimelineEntries¿¡¼­ ÇöÀç ½ÇÇà ¼ø¼­¿¡ ¸ÂÃç ´Ù½Ã °è»êÇÕ´Ï´Ù.
+        // ì‹¤ì œ í‘œì‹œ ì—¬ë¶€ëŠ” SetTimelineEntriesì—ì„œ í˜„ì¬ ì‹¤í–‰ ìˆœì„œì— ë§ì¶° ë‹¤ì‹œ ê³„ì‚°í•©ë‹ˆë‹¤.
     }
 
     public void SetTimelineEntries(IReadOnlyList<BattleTimelinePreviewEntry> entries, int targetSlotIndex)
@@ -316,10 +316,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             ? ownerIconImage.transform.parent.gameObject
             : imageObject;
 
-        RegisterEnemyOwnerIconHoverEvents(imageObject, true);
+        RegisterEnemyOwnerIconHoverEvents(imageObject, true, ownerIconImage.transform);
 
         if (rootObject != imageObject)
-            RegisterEnemyOwnerIconHoverEvents(rootObject, false);
+            RegisterEnemyOwnerIconHoverEvents(rootObject, false, ownerIconImage.transform);
     }
 
     private void ClearEnemyOwnerIconHudHoverTarget(bool clearRegisteredObjects = true)
@@ -350,7 +350,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    private void RegisterEnemyOwnerIconHoverEvents(GameObject targetObject, bool isImageObject)
+    private void RegisterEnemyOwnerIconHoverEvents(GameObject targetObject, bool isImageObject, Transform scaleTarget)
     {
         if (targetObject == null)
             return;
@@ -382,7 +382,11 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             eventID = EventTriggerType.PointerEnter
         };
 
-        enterEntry.callback.AddListener(_ => ShowEnemyOwnerIconHover());
+        enterEntry.callback.AddListener(_ =>
+        {
+            CacheOwnerIconBaseScale(scaleTarget);
+            ShowEnemyOwnerIconHover();
+        });
         trigger.triggers.Add(enterEntry);
 
         EventTrigger.Entry exitEntry = new EventTrigger.Entry
@@ -390,7 +394,11 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             eventID = EventTriggerType.PointerExit
         };
 
-        exitEntry.callback.AddListener(_ => HideEnemyOwnerIconHover());
+        exitEntry.callback.AddListener(_ =>
+        {
+            CacheOwnerIconBaseScale(scaleTarget);
+            HideEnemyOwnerIconHover();
+        });
         trigger.triggers.Add(exitEntry);
 
         EventTrigger.Entry clickEntry = new EventTrigger.Entry
@@ -508,9 +516,9 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             return;
         }
 
-        // µ¿ÀÏÇÑ Å¸ÀÓ¶óÀÎ ¾ÆÀÌÄÜÀÌ °°Àº Ä³¸¯ÅÍ¸¦ °è¼Ó Ç¥½ÃÇÏ´Â µ¿¾È¿¡´Â
-        // Hover »óÅÂ¸¦ ÃÊ±âÈ­ÇÏÁö ¾Ê½À´Ï´Ù. Å¸ÀÓ¶óÀÎ °»½ÅÀº ¸Å ÇÁ·¹ÀÓ ¹ß»ıÇÒ ¼ö ÀÖÀ¸¹Ç·Î,
-        // ¿©±â¼­ Clear¸¦ ¹İº¹ÇÏ¸é CharacterHUDSlotÀÌ Hover Á÷ÈÄ ´Ù½Ã ¼û°ÜÁı´Ï´Ù.
+        // ë™ì¼í•œ íƒ€ì„ë¼ì¸ ì•„ì´ì½˜ì´ ê°™ì€ ìºë¦­í„°ë¥¼ ê³„ì† í‘œì‹œí•˜ëŠ” ë™ì•ˆì—ëŠ”
+        // Hover ìƒíƒœë¥¼ ì´ˆê¸°í™”í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. íƒ€ì„ë¼ì¸ ê°±ì‹ ì€ ë§¤ í”„ë ˆì„ ë°œìƒí•  ìˆ˜ ìˆìœ¼ë¯€ë¡œ,
+        // ì—¬ê¸°ì„œ Clearë¥¼ ë°˜ë³µí•˜ë©´ CharacterHUDSlotì´ Hover ì§í›„ ë‹¤ì‹œ ìˆ¨ê²¨ì§‘ë‹ˆë‹¤.
         if (registeredPlayerOwnerIconImageObject == ownerIconImage.gameObject &&
             playerOwnerIconCharacterId == characterId)
         {
@@ -527,10 +535,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             ? ownerIconImage.transform.parent.gameObject
             : imageObject;
 
-        RegisterPlayerOwnerIconEvents(imageObject, true);
+        RegisterPlayerOwnerIconEvents(imageObject, true, ownerIconImage.transform);
 
         if (rootObject != imageObject)
-            RegisterPlayerOwnerIconEvents(rootObject, false);
+            RegisterPlayerOwnerIconEvents(rootObject, false, ownerIconImage.transform);
     }
 
     private void ClearPlayerOwnerIconHudHoverTarget(bool clearRegisteredObjects = true)
@@ -559,7 +567,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    private void RegisterPlayerOwnerIconEvents(GameObject targetObject, bool isImageObject)
+    private void RegisterPlayerOwnerIconEvents(GameObject targetObject, bool isImageObject, Transform scaleTarget)
     {
         if (targetObject == null)
             return;
@@ -588,14 +596,22 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         {
             eventID = EventTriggerType.PointerEnter
         };
-        enterEntry.callback.AddListener(_ => ShowPlayerOwnerIconHover());
+        enterEntry.callback.AddListener(_ =>
+        {
+            CacheOwnerIconBaseScale(scaleTarget);
+            ShowPlayerOwnerIconHover();
+        });
         trigger.triggers.Add(enterEntry);
 
         EventTrigger.Entry exitEntry = new EventTrigger.Entry
         {
             eventID = EventTriggerType.PointerExit
         };
-        exitEntry.callback.AddListener(_ => HidePlayerOwnerIconHover());
+        exitEntry.callback.AddListener(_ =>
+        {
+            CacheOwnerIconBaseScale(scaleTarget);
+            HidePlayerOwnerIconHover();
+        });
         trigger.triggers.Add(exitEntry);
 
         EventTrigger.Entry clickEntry = new EventTrigger.Entry
@@ -646,10 +662,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             return;
 
         hoveredPlayerOwnerIconCharacter.SetTimelineHoverHighlight(true);
-
-        BattleCharacterHUDController hudController = Object.FindFirstObjectByType<BattleCharacterHUDController>(FindObjectsInactive.Include);
-        if (hudController != null)
-            hudController.ShowTimelineIconCharacterHUD(hoveredPlayerOwnerIconCharacter);
+        hoveredPlayerOwnerIconCharacter.ShowAndRefreshHUDFromTimeline();
     }
 
     private void HideHoveredPlayerOwnerIconHUD()
@@ -658,11 +671,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             hoveredPlayerOwnerIconCharacter = FindPlayerOwnerIconCharacter();
 
         if (hoveredPlayerOwnerIconCharacter != null)
+        {
             hoveredPlayerOwnerIconCharacter.SetTimelineHoverHighlight(false);
-
-        BattleCharacterHUDController hudController = Object.FindFirstObjectByType<BattleCharacterHUDController>(FindObjectsInactive.Include);
-        if (hudController != null)
-            hudController.HideTimelineIconCharacterHUD(hoveredPlayerOwnerIconCharacter);
+            hoveredPlayerOwnerIconCharacter.HideHUDFromTimelineIfNotSelected();
+        }
 
         hoveredPlayerOwnerIconCharacter = null;
     }
@@ -689,9 +701,9 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             ? Vector3.Scale(ownerIconBaseScale, Vector3.one * ownerIconHoverScaleMultiplier)
             : ownerIconBaseScale;
 
-        // ÀüÅõ¹æ Á¤¸® °úÁ¤¿¡¼­´Â TimelineSlotÀÌ ¸ÕÀú ºñÈ°¼ºÈ­µÉ ¼ö ÀÖ½À´Ï´Ù.
-        // ºñÈ°¼ºÈ­µÈ MonoBehaviour¿¡¼­´Â ÄÚ·çÆ¾À» ½ÃÀÛÇÒ ¼ö ¾øÀ¸¹Ç·Î
-        // ÀÌ °æ¿ì ¾Ö´Ï¸ŞÀÌ¼Ç ¾øÀÌ Áï½Ã ¸ñÇ¥ ½ºÄÉÀÏ·Î º¹¿øÇÕ´Ï´Ù.
+        // ì „íˆ¬ë°© ì •ë¦¬ ê³¼ì •ì—ì„œëŠ” TimelineSlotì´ ë¨¼ì € ë¹„í™œì„±í™”ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+        // ë¹„í™œì„±í™”ëœ MonoBehaviourì—ì„œëŠ” ì½”ë£¨í‹´ì„ ì‹œì‘í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
+        // ì´ ê²½ìš° ì• ë‹ˆë©”ì´ì…˜ ì—†ì´ ì¦‰ì‹œ ëª©í‘œ ìŠ¤ì¼€ì¼ë¡œ ë³µì›í•©ë‹ˆë‹¤.
         if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
         {
             ownerIconScaleRoutine = null;
@@ -1133,7 +1145,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                         rootImage.raycastTarget = false;
                     }
 
-                    // ¾ÆÁ÷ Çàµ¿ÀÌ µî·ÏµÇÁö ¾ÊÀº Next ½½·ÔÀÇ Order ÇÁ·¹ÀÓÀº Ç¥½ÃÇÏÁö ¾Ê½À´Ï´Ù.
+                    // ì•„ì§ í–‰ë™ì´ ë“±ë¡ë˜ì§€ ì•Šì€ Next ìŠ¬ë¡¯ì˜ Order í”„ë ˆì„ì€ í‘œì‹œí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
                     root.SetActive(false);
                 }
 
