@@ -182,7 +182,6 @@ public class BattleTimelineController : MonoBehaviour
     private int timelineSlotSlideStepIndex;
     private int activeTimelineBarIndex;
     private string lastCameraFocusedCharacterId;
-    private bool preserveManuallySelectedSlotForNextCharacter;
 
     private readonly List<MonsterReservedCommand>[] monsterCommandsBySlot =
         new List<MonsterReservedCommand>[5];
@@ -258,8 +257,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private void Update()
     {
-        HandleKeyboardSlotMoveInput();
-        HandleKeyboardUndoReservationInput();
+        HandleKeyboardSlotSelectInput();
         HandleEndButtonHoverOutsidePolling();
         HandleSelectionCancelRightClick();
         HandleCharacterSelectionOutsideGridClick();
@@ -466,6 +464,42 @@ public class BattleTimelineController : MonoBehaviour
         return false;
     }
 
+    private void HandleKeyboardSlotSelectInput()
+    {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
+        if (!isActiveAndEnabled)
+            return;
+
+        if (IsTypingInputFieldSelected())
+            return;
+
+        if (turnExecutor == null)
+            turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
+
+        int slotIndex = -1;
+
+        if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
+            slotIndex = 0;
+        else if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
+            slotIndex = 1;
+        else if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
+            slotIndex = 2;
+        else if (Input.GetKeyDown(KeyCode.Alpha4) || Input.GetKeyDown(KeyCode.Keypad4))
+            slotIndex = 3;
+        else if (Input.GetKeyDown(KeyCode.Alpha5) || Input.GetKeyDown(KeyCode.Keypad5))
+            slotIndex = 4;
+
+        if (slotIndex < 0)
+            return;
+
+        OnTimelineSlotClicked(slotIndex);
+    }
+
     private void HandleKeyboardSlotMoveInput()
     {
         if (!enableKeyboardSlotMoveInput)
@@ -604,6 +638,10 @@ public class BattleTimelineController : MonoBehaviour
         return false;
     }
 
+    public void PreserveCurrentSlotForNextCharacterSelection()
+    {
+    }
+
     public void SelectCharacter(CharacterRuntimeData runtimeData)
     {
         if (runtimeData != null)
@@ -619,20 +657,20 @@ public class BattleTimelineController : MonoBehaviour
             (selectedCharacter != null && runtimeData != null &&
              selectedCharacter.CharacterId != runtimeData.CharacterId);
 
-        bool keepCurrentSlotFromManualSelection =
-            runtimeData != null && preserveManuallySelectedSlotForNextCharacter;
+        // 캐릭터를 변경할 때는 현재 보고 있는 슬롯을 먼저 유지할 수 있는지 검사합니다.
+        // 현재 슬롯에 새 캐릭터의 행동을 등록할 수 있다면 더 앞의 빈 슬롯이 있어도 이동하지 않습니다.
+        // 현재 슬롯에 등록할 수 없는 경우에만 가장 앞의 등록 가능한 슬롯으로 자동 이동합니다.
+        bool canKeepCurrentSlot =
+            runtimeData != null && CanUseActiveSlotForCharacter(runtimeData);
 
-        // 사용자가 캐릭터를 고르기 전에 타임라인 슬롯을 직접 선택했다면
-        // 그 슬롯 선택을 이번 캐릭터 선택에서 한 번 우선합니다.
         if (runtimeData != null)
-            preserveManuallySelectedSlotForNextCharacter = false;
 
-        selectedCharacter = runtimeData;
+            selectedCharacter = runtimeData;
 
         if (runtimeData != null && !runtimeData.IsDead)
             lastSelectedCharacter = runtimeData;
 
-        if (isChangingCharacter && !keepCurrentSlotFromManualSelection)
+        if (isChangingCharacter && !canKeepCurrentSlot)
             TryAutoSelectSlotForCharacter(runtimeData);
 
         ApplySelectedCharacterScaleFeedback(runtimeData);
@@ -966,7 +1004,6 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         // 사용자가 직접 고른 슬롯은 바로 다음 캐릭터 선택에서 자동 슬롯 선택보다 우선합니다.
-        preserveManuallySelectedSlotForNextCharacter = true;
 
         if (SteamBattleStateSynchronizer.TryHandleTimelineSlotClicked(this, slotIndex))
             return;
@@ -1046,6 +1083,10 @@ public class BattleTimelineController : MonoBehaviour
         if (!CanAutoSelectSlotForCharacter())
             return false;
 
+        // 현재 슬롯을 사용할 수 있으면 그 슬롯을 그대로 유지합니다.
+        if (CanUseActiveSlotForCharacter(runtimeData))
+            return false;
+
         TimelineAutoSlotState[] slotStates = BuildAutoSlotStates(runtimeData);
         int targetSlotIndex =
             TimelineAutoSlotSelectionUtility.FindBestSlot(slotStates);
@@ -1054,6 +1095,22 @@ public class BattleTimelineController : MonoBehaviour
             return false;
 
         return SetActiveTimelineSlot(targetSlotIndex, false);
+    }
+
+    private bool CanUseActiveSlotForCharacter(CharacterRuntimeData runtimeData)
+    {
+        if (runtimeData == null || reserveSlots == null)
+            return false;
+
+        if (activeSlotIndex < 0 || activeSlotIndex >= reserveSlots.Length)
+            return false;
+
+        ReserveTurnSlotUI slot = reserveSlots[activeSlotIndex];
+        if (slot == null || !IsTimelineSlotSelectable(activeSlotIndex))
+            return false;
+
+        return slot.CanAcceptCharacter(runtimeData) &&
+               CanAddPlayerCommandToSlot(activeSlotIndex);
     }
 
     private bool CanAutoSelectSlotForCharacter()
@@ -1319,7 +1376,6 @@ public class BattleTimelineController : MonoBehaviour
         int previousSlotIndex = activeSlotIndex;
         activeSlotIndex = slotIndex;
         selectedSkill = null;
-        preserveManuallySelectedSlotForNextCharacter = false;
 
         SetActiveTimelineSlotVisual(activeSlotIndex);
 
@@ -3292,7 +3348,6 @@ public class BattleTimelineController : MonoBehaviour
             if (mergeSucceeded)
             {
                 selectedSkill = null;
-                preserveManuallySelectedSlotForNextCharacter = false;
             }
 
             return mergeSucceeded;
@@ -3333,9 +3388,50 @@ public class BattleTimelineController : MonoBehaviour
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
         selectedSkill = null;
-        preserveManuallySelectedSlotForNextCharacter = false;
+
+        TryAdvanceToNextSlotWhenCurrentSlotIsFull(slotIndex, command.UserRuntime);
 
         return true;
+    }
+
+    private void TryAdvanceToNextSlotWhenCurrentSlotIsFull(
+        int filledSlotIndex,
+        CharacterRuntimeData runtimeData)
+    {
+        if (runtimeData == null || reserveSlots == null || reserveSlots.Length <= 0)
+            return;
+
+        // 다른 경로에서 활성 슬롯이 변경된 경우에는 자동 이동하지 않습니다.
+        if (activeSlotIndex != filledSlotIndex)
+            return;
+
+        if (filledSlotIndex < 0 || filledSlotIndex >= reserveSlots.Length)
+            return;
+
+        // 아직 현재 슬롯에 행동을 더 넣을 수 있다면 그대로 유지합니다.
+        if (CanAddPlayerCommandToSlot(filledSlotIndex))
+            return;
+
+        // 가득 찬 슬롯보다 뒤쪽만 검사합니다.
+        // 마지막(5번) 슬롯에서는 앞 슬롯으로 되돌아가지 않습니다.
+        for (int nextSlotIndex = filledSlotIndex + 1;
+             nextSlotIndex < reserveSlots.Length;
+             nextSlotIndex++)
+        {
+            ReserveTurnSlotUI nextSlot = reserveSlots[nextSlotIndex];
+
+            if (nextSlot == null || !IsTimelineSlotSelectable(nextSlotIndex))
+                continue;
+
+            if (!nextSlot.CanAcceptCharacter(runtimeData))
+                continue;
+
+            if (!CanAddPlayerCommandToSlot(nextSlotIndex))
+                continue;
+
+            SetActiveTimelineSlot(nextSlotIndex, false);
+            return;
+        }
     }
 
     public bool AddPlayerCommandFromNetworkSnapshot(int slotIndex, PlayerReservedCommand command)
@@ -4904,7 +5000,6 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         selectedSkill = null;
-        preserveManuallySelectedSlotForNextCharacter = false;
 
         RecalculateAllReservedCosts();
         RefreshReservationSimulation();
@@ -5323,6 +5418,9 @@ public readonly struct TimelineAutoSlotState
 
     public bool CanUseAsSelectedCharacterSlot =>
         Exists && !IsEmpty && CanAcceptCharacter && CanAddCommand && HasSelectedCharacterCommand;
+
+    public bool CanUseForCharacter =>
+        Exists && CanAcceptCharacter && CanAddCommand;
 }
 
 public static class TimelineAutoSlotSelectionUtility
@@ -5332,14 +5430,15 @@ public static class TimelineAutoSlotSelectionUtility
         if (slots == null || slots.Count <= 0)
             return -1;
 
-        // 슬롯을 따로 고르지 않고 캐릭터를 선택한 경우에는
-        // 해당 캐릭터가 이미 예약된 슬롯에 행동을 더 넣을 수 있다면 그 슬롯을 가장 먼저 사용합니다.
-        int selectedCharacterSlot = FindFirstSelectedCharacterSlot(slots);
-        if (selectedCharacterSlot >= 0)
-            return selectedCharacterSlot;
+        // 현재 슬롯을 사용할 수 없을 때만 호출됩니다.
+        // 1번부터 순서대로 새 캐릭터가 실제로 행동을 등록할 수 있는 가장 앞 슬롯을 선택합니다.
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (slots[i].CanUseForCharacter)
+                return i;
+        }
 
-        // 기존 슬롯을 더 사용할 수 없다면 앞쪽부터 가장 빠른 빈 슬롯을 선택합니다.
-        return FindFirstEmptySlot(slots, 0, slots.Count - 1);
+        return -1;
     }
 
     private static int FindFirstEmptySlot(

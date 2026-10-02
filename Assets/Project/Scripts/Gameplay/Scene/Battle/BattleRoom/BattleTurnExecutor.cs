@@ -1156,7 +1156,7 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
 
         int displayTurnNumber = Mathf.Max(1, playerTurnNumber);
-        turnNumberText.text = $"TURN\n{displayTurnNumber}";
+        turnNumberText.text = $"TURN {displayTurnNumber}";
     }
 
     private void RefreshBack2TurnName()

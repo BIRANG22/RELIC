@@ -2033,6 +2033,81 @@ public class BattleCharacterPanelUI : MonoBehaviour
         panelMoveCoroutine = null;
     }
 
+    private void Update()
+    {
+        HandleBattleKeyboardShortcuts();
+    }
+
+    private void HandleBattleKeyboardShortcuts()
+    {
+        if (UIPanelButton.IsMenuPanelOpen)
+            return;
+
+        if (!isActiveAndEnabled || IsTypingInputFieldSelected())
+            return;
+
+        EnsureTurnExecutor();
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            OnMoveButtonClicked();
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            OnFlipButtonClicked();
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            OnItemButtonClicked();
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            OnSkill01Clicked();
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            OnSkill02Clicked();
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            OnSkill03Clicked();
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            OnSkill04Clicked();
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl))
+            OnResetButtonClicked();
+    }
+
+    private static bool IsTypingInputFieldSelected()
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        GameObject selectedObject = EventSystem.current.currentSelectedGameObject;
+        if (selectedObject == null)
+            return false;
+
+        return selectedObject.GetComponent<TMP_InputField>() != null;
+    }
+
     private void LateUpdate()
     {
         if (isSkillTooltipVisible)
