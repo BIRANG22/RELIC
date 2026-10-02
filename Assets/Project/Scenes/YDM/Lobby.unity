@@ -96828,6 +96828,7 @@ GameObject:
   - component: {fileID: 1978836621}
   - component: {fileID: 1978836620}
   - component: {fileID: 1978836623}
+  - component: {fileID: 1978836624}
   m_Layer: 5
   m_Name: Viewport
   m_TagString: Untagged
@@ -96936,6 +96937,20 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1978836624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1978836618}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c92df5cf896ba42a8d3a8dd5bd2ae2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wheelSensitivity: 0.08
+  invertDirection: 0
 --- !u!1 &1979706824
 GameObject:
   m_ObjectHideFlags: 0
@@ -107358,6 +107373,7 @@ GameObject:
   - component: {fileID: 2142506674}
   - component: {fileID: 2142506673}
   - component: {fileID: 2142506672}
+  - component: {fileID: 2142506675}
   m_Layer: 0
   m_Name: Scroll View
   m_TagString: Untagged
@@ -107454,6 +107470,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2142506670}
   m_CullTransparentMesh: 1
+--- !u!114 &2142506675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2142506670}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c92df5cf896ba42a8d3a8dd5bd2ae2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wheelSensitivity: 0.08
+  invertDirection: 0
 --- !u!1 &2143895329
 GameObject:
   m_ObjectHideFlags: 0

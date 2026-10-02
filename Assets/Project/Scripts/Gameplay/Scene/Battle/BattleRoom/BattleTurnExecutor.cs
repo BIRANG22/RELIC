@@ -515,6 +515,10 @@ public class BattleTurnExecutor : MonoBehaviour
 
             yield return ShowBattleProgressIntroTextRoutineSafe();
 
+            // 배속은 예약 전투가 실제로 진행되는 구간에만 적용합니다.
+            // TimelineBar/TurnMark 이동과 행동/피격/VFX 연출은 모두 이 구간에 포함됩니다.
+            BattleConsecutiveActionPresentationContext.BeginBattleExecution();
+
             int slidThroughSlotIndex = -1;
             for (int i = 0; i < batches.Count; i++)
             {
@@ -690,6 +694,8 @@ public class BattleTurnExecutor : MonoBehaviour
         }
         finally
         {
+            BattleConsecutiveActionPresentationContext.EndBattleExecution();
+
             // 중간 종료/예외가 발생해도 회복 팝업 대기 상태가 남지 않도록 해제합니다.
             BattleDamageTextPopupUI.EndRecoveryPopupSequence();
             executeTurnCoroutine = null;
@@ -753,6 +759,10 @@ public class BattleTurnExecutor : MonoBehaviour
             );
 
             yield return ShowBattleProgressIntroTextRoutineSafe();
+
+            // 배속은 예약 전투가 실제로 진행되는 구간에만 적용합니다.
+            // TimelineBar/TurnMark 이동과 행동/피격/VFX 연출은 모두 이 구간에 포함됩니다.
+            BattleConsecutiveActionPresentationContext.BeginBattleExecution();
 
             int slidThroughSlotIndex = -1;
             for (int i = 0; i < batches.Count; i++)
@@ -837,6 +847,7 @@ public class BattleTurnExecutor : MonoBehaviour
         }
         finally
         {
+            BattleConsecutiveActionPresentationContext.EndBattleExecution();
             executeTurnCoroutine = null;
 
             if (timelineController != null)

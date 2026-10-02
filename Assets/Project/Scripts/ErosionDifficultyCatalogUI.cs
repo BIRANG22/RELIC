@@ -21,7 +21,10 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
     [Header("Auto Bind")]
     [SerializeField] private Transform catalogGroup;
+    [Tooltip("ErosionSelectPanel/Erosion_Value입니다. 총 난이도 점수 1점당 재화/경험치 획득량이 1%씩 증가합니다.")]
     [SerializeField] private TMP_Text erosionValueText;
+    [Tooltip("ErosionSelectPanel/Select/Erosion_Value입니다. 현재 선택한 난이도 점수의 합계를 표시합니다.")]
+    [SerializeField] private TMP_Text selectedScoreValueText;
     [SerializeField] private bool autoBindOnAwake = true;
 
     [Header("Colors")]
@@ -951,7 +954,7 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
     private void EnsureScoreAnimationRunning()
     {
-        if (erosionValueText == null)
+        if (erosionValueText == null && selectedScoreValueText == null)
             return;
 
         if (scoreRoutine == null)
@@ -963,7 +966,7 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         while (displayedScore != targetScore)
         {
             displayedScore += displayedScore < targetScore ? 1 : -1;
-            erosionValueText.text = FormatErosionValueText(displayedScore);
+            ApplyErosionValueTexts(displayedScore);
 
             if (useUnscaledTime)
                 yield return new WaitForSecondsRealtime(scoreStepInterval);
@@ -985,15 +988,21 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         displayedScore = score;
 
         if (erosionValueText != null)
-            erosionValueText.text = FormatErosionValueText(displayedScore);
+            ApplyErosionValueTexts(displayedScore);
     }
 
-    private string FormatErosionValueText(int value)
+    private void ApplyErosionValueTexts(int value)
     {
-        return GameLocalization.FormatWithFallback(
-            "lobby.erosion.reward_bonus_format",
-            "재화 획득량 +{0}% / 경험치 획득량 +{0}%",
-            value);
+        if (erosionValueText != null)
+        {
+            erosionValueText.text = GameLocalization.FormatWithFallback(
+                "lobby.erosion.reward_bonus_format",
+                "재화 획득량 +{0}% / 경험치 획득량 +{0}%",
+                value);
+        }
+
+        if (selectedScoreValueText != null)
+            selectedScoreValueText.text = value.ToString();
     }
 
     private void RefreshAllVisuals()
@@ -1093,10 +1102,16 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
     /// </summary>
     private void EnsureDynamicErosionValueTextOwnership()
     {
-        if (erosionValueText == null)
+        ProtectDynamicErosionText(erosionValueText);
+        ProtectDynamicErosionText(selectedScoreValueText);
+    }
+
+    private static void ProtectDynamicErosionText(TMP_Text text)
+    {
+        if (text == null)
             return;
 
-        GameObject target = erosionValueText.gameObject;
+        GameObject target = text.gameObject;
 
         if (target.GetComponent<LocalizationIgnore>() == null)
             target.AddComponent<LocalizationIgnore>();
@@ -1122,20 +1137,33 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
 
         if (erosionSelectPanel != null)
         {
-            Transform valueTransform = FindTransformRecursive(erosionSelectPanel, "Erosion_Value");
-            if (valueTransform != null)
+            // 패널 직속 Erosion_Value = 보상 증가율 표시
+            Transform rewardValueTransform = erosionSelectPanel.Find("Erosion_Value");
+            if (rewardValueTransform != null)
             {
-                TMP_Text resolvedText = valueTransform.GetComponent<TMP_Text>() ??
-                                        valueTransform.GetComponentInChildren<TMP_Text>(true);
-                if (resolvedText != null)
-                {
-                    erosionValueText = resolvedText;
-                    return;
-                }
+                TMP_Text resolvedRewardText = rewardValueTransform.GetComponent<TMP_Text>() ??
+                                              rewardValueTransform.GetComponentInChildren<TMP_Text>(true);
+                if (resolvedRewardText != null)
+                    erosionValueText = resolvedRewardText;
+            }
+
+            // Select/Erosion_Value = 현재 선택한 난이도 점수 합계
+            Transform selectRoot = erosionSelectPanel.Find("Select") ??
+                                   FindDirectChild(erosionSelectPanel, "Select");
+            Transform scoreValueTransform = selectRoot != null
+                ? selectRoot.Find("Erosion_Value") ?? FindTransformRecursive(selectRoot, "Erosion_Value")
+                : null;
+
+            if (scoreValueTransform != null)
+            {
+                TMP_Text resolvedScoreText = scoreValueTransform.GetComponent<TMP_Text>() ??
+                                             scoreValueTransform.GetComponentInChildren<TMP_Text>(true);
+                if (resolvedScoreText != null)
+                    selectedScoreValueText = resolvedScoreText;
             }
         }
 
-        // 예전 씬 구조를 위한 최후의 fallback입니다.
+        // 예전 씬 구조를 위한 fallback입니다.
         if (erosionValueText == null)
             erosionValueText = FindTextAnywhereInRoot("Erosion_Value");
     }
