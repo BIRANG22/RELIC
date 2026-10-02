@@ -131,6 +131,7 @@ public class Setting : MonoBehaviour
     private void Awake()
     {
         BindCharacterInfoTextIfNeeded();
+        ProtectDynamicCharacterInfoText();
         BindCharacterProfileImageIfNeeded();
         BindInfoAreaIfNeeded();
         BindSkillSettingPanelIfNeeded();
@@ -192,6 +193,8 @@ public class Setting : MonoBehaviour
     private void OnEnable()
     {
         BindSkillSettingPanelIfNeeded();
+        BindCharacterInfoTextIfNeeded();
+        ProtectDynamicCharacterInfoText();
         PrepareCharacterSettingFade();
         ProtectDynamicCharacterName();
 
@@ -485,6 +488,14 @@ public class Setting : MonoBehaviour
         if (characterNameText != null && currentMasterData != null)
             characterNameText.text = GameDataLocalization.CharacterName(currentMasterData);
 
+        BindCharacterInfoTextIfNeeded();
+        ProtectDynamicCharacterInfoText();
+        if (characterInfoText != null && currentMasterData != null)
+        {
+            characterInfoText.text = FormatCharacterIntroduction(
+                GameDataLocalization.CharacterIntroduction(currentMasterData));
+        }
+
         switch (currentTab)
         {
             case SettingTab.Preview:
@@ -517,6 +528,29 @@ public class Setting : MonoBehaviour
         if (staticWriter != null)
             staticWriter.enabled = false;
         DynamicLocalizedTMPText dynamicWriter = characterNameText.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicWriter != null)
+            dynamicWriter.enabled = false;
+    }
+
+    /// <summary>
+    /// CharacterSettingPanel/InfoText는 현재 선택 캐릭터에 따라 런타임에서 직접 갱신됩니다.
+    /// 정적 로컬라이징 컴포넌트가 패널 전환 직후 이전 문구를 다시 덮어쓰지 못하게 보호합니다.
+    /// </summary>
+    private void ProtectDynamicCharacterInfoText()
+    {
+        if (characterInfoText == null)
+            return;
+
+        if (characterInfoText.GetComponent<LocalizationIgnore>() == null)
+            characterInfoText.gameObject.AddComponent<LocalizationIgnore>();
+        if (characterInfoText.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            characterInfoText.gameObject.AddComponent<LocalizationAutoBindingIgnore>();
+
+        LocalizedTMPText staticWriter = characterInfoText.GetComponent<LocalizedTMPText>();
+        if (staticWriter != null)
+            staticWriter.enabled = false;
+
+        DynamicLocalizedTMPText dynamicWriter = characterInfoText.GetComponent<DynamicLocalizedTMPText>();
         if (dynamicWriter != null)
             dynamicWriter.enabled = false;
     }
@@ -877,6 +911,7 @@ public class Setting : MonoBehaviour
     private void RefreshCharacterInfo()
     {
         BindCharacterInfoTextIfNeeded();
+        ProtectDynamicCharacterInfoText();
         BindCharacterProfileImageIfNeeded();
 
         if (currentMasterData == null || currentRuntimeData == null)
@@ -1455,10 +1490,27 @@ public class Setting : MonoBehaviour
 
     private void BindCharacterInfoTextIfNeeded()
     {
-        if (characterInfoText != null)
+        // 인스펙터 참조가 현재 CharacterSettingPanel 내부의 유효한 텍스트면 그대로 사용합니다.
+        if (characterInfoText != null && characterInfoText.transform.IsChildOf(transform))
             return;
 
-        TMP_Text[] texts = transform.root.GetComponentsInChildren<TMP_Text>(true);
+        characterInfoText = null;
+
+        // 현재 계층 구조의 실제 이름은 InfoText입니다.
+        // 다른 패널에 같은 이름의 TMP가 있어도 잘못 잡지 않도록 Setting 자신의 자식만 검색합니다.
+        TMP_Text[] texts = GetComponentsInChildren<TMP_Text>(true);
+
+        for (int i = 0; i < texts.Length; i++)
+        {
+            TMP_Text candidate = texts[i];
+            if (candidate != null && candidate.name == "InfoText")
+            {
+                characterInfoText = candidate;
+                return;
+            }
+        }
+
+        // 구 씬/프리팹 호환용 이름도 유지합니다.
         for (int i = 0; i < texts.Length; i++)
         {
             TMP_Text candidate = texts[i];

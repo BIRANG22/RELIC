@@ -193,7 +193,7 @@ public class BattleUnitAnimator : MonoBehaviour
         if (!TryResolveAnimatorStateName(moveStateName, out string resolvedStateName))
             return;
 
-        animator.speed = -BattlePresentationSpeedSettings.CurrentMultiplier;
+        animator.speed = -BattleConsecutiveActionPresentationContext.BattleExecutionSpeedMultiplier;
         animator.Play(resolvedStateName, animatorLayer, 1f);
 
         if (forceAnimatorUpdate)

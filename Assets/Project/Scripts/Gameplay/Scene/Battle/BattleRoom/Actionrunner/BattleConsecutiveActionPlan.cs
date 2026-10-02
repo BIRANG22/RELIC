@@ -347,11 +347,35 @@ public static class BattleConsecutiveActionPresentationContext
 {
     private static readonly Dictionary<Animator, float> ManagedAnimators = new();
     private static int activeGroupId = -1;
+    private static int battleExecutionDepth;
     private static BattleHitImpactFeedback suppressedStatusFeedback;
     private static bool suppressedStatusFeedbackWasEnabled;
 
     public static BattleConsecutiveActionInfo CurrentInfo { get; private set; } =
         BattleConsecutiveActionInfo.Single;
+
+    /// <summary>
+    /// 예약된 전투 진행(타임라인 이동, 행동, 피격/VFX 등)이 실제 재생 중인지 나타냅니다.
+    /// 메뉴, 툴팁, 호버 같은 일반 전투방 UI에는 배속을 적용하지 않습니다.
+    /// </summary>
+    public static bool IsBattleExecutionActive => battleExecutionDepth > 0;
+
+    public static float BattleExecutionSpeedMultiplier => IsBattleExecutionActive
+        ? BattlePresentationSpeedSettings.CurrentMultiplier
+        : 1f;
+
+    public static void BeginBattleExecution()
+    {
+        battleExecutionDepth++;
+    }
+
+    public static void EndBattleExecution()
+    {
+        battleExecutionDepth = Math.Max(0, battleExecutionDepth - 1);
+
+        if (battleExecutionDepth <= 0)
+            EndGroup();
+    }
 
     public static float SpeedMultiplier => CurrentInfo.IsGrouped
         ? CurrentInfo.SpeedMultiplier
@@ -392,19 +416,22 @@ public static class BattleConsecutiveActionPresentationContext
     // 같은 행동과 다음 행동 사이의 전환 지연만 BattleActionRunner에서 별도로 줄입니다.
     public static float ScaleDuration(float duration)
     {
-        return BattlePresentationSpeedSettings.ScaleDuration(duration);
+        float safeDuration = Mathf.Max(0f, duration);
+        return IsBattleExecutionActive
+            ? safeDuration / BattleExecutionSpeedMultiplier
+            : safeDuration;
     }
 
     public static float ScaleActionBeatDuration(float duration, float minimumGroupedDuration)
     {
         // 행동 내부 beat는 연속 행동 여부와 무관하게 원래 시간을 유지합니다.
         // minimumGroupedDuration도 더 이상 행동 내부 타이밍에 개입하지 않습니다.
-        return BattlePresentationSpeedSettings.ScaleDuration(duration);
+        return ScaleDuration(duration);
     }
 
     public static float ScaleDeltaTime(float deltaTime)
     {
-        return Mathf.Max(0f, deltaTime) * BattlePresentationSpeedSettings.CurrentMultiplier;
+        return Mathf.Max(0f, deltaTime) * BattleExecutionSpeedMultiplier;
     }
 
     public static void ApplyAnimatorSpeed(Animator animator, float localMultiplier = 1f)
@@ -413,7 +440,7 @@ public static class BattleConsecutiveActionPresentationContext
             return;
 
         float safeLocalMultiplier = Mathf.Max(0.01f, localMultiplier);
-        float presentationMultiplier = BattlePresentationSpeedSettings.CurrentMultiplier;
+        float presentationMultiplier = BattleExecutionSpeedMultiplier;
 
         if (!CurrentInfo.IsGrouped)
         {
@@ -436,7 +463,7 @@ public static class BattleConsecutiveActionPresentationContext
         if (root == null)
             return;
 
-        float multiplier = BattlePresentationSpeedSettings.CurrentMultiplier;
+        float multiplier = BattleExecutionSpeedMultiplier;
 
         ParticleSystem[] particles = root.GetComponentsInChildren<ParticleSystem>(true);
         for (int i = 0; i < particles.Length; i++)
