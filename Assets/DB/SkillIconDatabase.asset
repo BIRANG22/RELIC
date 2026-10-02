@@ -255,3 +255,11 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: b27b5953d422f0d4493a2a9c2a89138c, type: 3}
   - SkillId: S_Core_80
     Icon: {fileID: 21300000, guid: b27b5953d422f0d4493a2a9c2a89138c, type: 3}
+  - SkillId: S_Core_81
+    Icon: {fileID: 21300000, guid: f6b02b1ccbcf2124da14f1b7347a3879, type: 3}
+  - SkillId: S_Core_82
+    Icon: {fileID: 21300000, guid: f6b02b1ccbcf2124da14f1b7347a3879, type: 3}
+  - SkillId: S_Core_83
+    Icon: {fileID: 21300000, guid: 562f9eae9a6bca447aff6eeadfe7d4b6, type: 3}
+  - SkillId: S_Core_84
+    Icon: {fileID: 21300000, guid: 562f9eae9a6bca447aff6eeadfe7d4b6, type: 3}

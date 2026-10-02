@@ -238,6 +238,9 @@ public class BattleDeathService
             if (BattleOccupancyService.IsOccupiedByAnyUnit(gridIndex, null, monster))
                 continue;
 
+            if (IsBlockedByGridEffect(gridIndex))
+                continue;
+
             fallbackCandidates.Add(gridIndex);
         }
 
@@ -271,7 +274,22 @@ public class BattleDeathService
         if (BattleOccupancyService.IsOccupiedByAnyUnit(gridIndex, null, monster))
             return;
 
+        if (IsBlockedByGridEffect(gridIndex))
+            return;
+
         result.Add(gridIndex);
+    }
+
+
+    private bool IsBlockedByGridEffect(int gridIndex)
+    {
+        if (gridIndex < 0)
+            return true;
+
+        BattleGridEffectController gridEffectController =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+        return gridEffectController != null && gridEffectController.IsBlocked(gridIndex);
     }
 
     private int GetNearestMonsterCellDistance(MonsterUnit monster, int gridIndex)
