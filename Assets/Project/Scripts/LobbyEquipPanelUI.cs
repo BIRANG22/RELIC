@@ -1582,13 +1582,12 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             if (relay == null)
                 return;
 
+            // Info_Panel의 클릭 장착은 LobbyInfoPanelUI가 단독으로 처리합니다.
+            // 여기서도 PointerClick을 연결하면 LobbyInfoPanelUI가 장착한 직후
+            // 이 코드가 같은 클릭을 다시 받아 선택 없음 -> 해제로 처리해 즉시 빠지는 문제가 생깁니다.
+            // LobbyEquipPanelUI는 이 영역에서 드래그/드롭과 기존 호버 처리만 유지합니다.
             relay.Configure(
-                _ =>
-                {
-                    int partyIndex = ResolvePartySlotByCharacterId(characterId);
-                    if (partyIndex >= 0)
-                        OnInfoEquipmentSlotClicked(partyIndex, runtimeSlotIndex, isCompound);
-                },
+                null,
                 data =>
                 {
                     int partyIndex = ResolvePartySlotByCharacterId(characterId);
