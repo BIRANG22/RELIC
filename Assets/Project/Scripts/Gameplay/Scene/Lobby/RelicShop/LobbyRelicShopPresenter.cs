@@ -414,6 +414,11 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
 
         RecordDiscoveryService.RegisterRelic(DataManager.Instance, result.RelicId);
 
+        // 구매 성공 시 재화 차감과 보유 유물 변경을 즉시 저장합니다.
+        // 상점 연출 도중 종료하더라도 구매 전 상태로 되돌아가 재화를 보존하는 문제가 생기지 않게 합니다.
+        DataManager.Instance.LobbyRuntimeStore?.Set(runtime);
+        SaveSystem.Instance?.SaveCurrentProgress();
+
         if (selectedButton != null && ownerCanvas != null)
         {
             if (purchaseAnimationCoroutine != null)

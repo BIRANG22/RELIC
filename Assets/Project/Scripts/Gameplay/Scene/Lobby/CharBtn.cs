@@ -27,8 +27,6 @@ public class CharBtn : MonoBehaviour,
     [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
     [Header("Legacy Direct Register")]
-    [SerializeField] private int firstPartyDefaultDeployCellNumber = 7;
-    [SerializeField] private int maxDeployGridCount = 15;
 
     [Header("Selected Party Marker")]
     [SerializeField] private bool showSelectedPartyMarker = true;
@@ -45,7 +43,20 @@ public class CharBtn : MonoBehaviour,
     [SerializeField] private float charBtnHoverScale = 1.15f;
     [FormerlySerializedAs("jobmarkHoverTransitionDuration")]
     [SerializeField] private float charBtnHoverTransitionDuration = 0.15f;
+    [Tooltip("Info_Panel의 CharBtn Back에 마우스를 올렸을 때 사용할 색입니다.")]
     [SerializeField] private Color infoPanelHoverBackgroundColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
+
+    [Header("Info Panel Character Button")]
+    [Tooltip("Char/Image. 비워두면 새 Info_Panel 구조에서 자동으로 찾습니다.")]
+    [SerializeField] private Image infoPanelCharacterImage;
+    [Tooltip("Idle / Battle Idle 프레임은 CharacterIconDatabase에서 CharacterId 기준으로 자동으로 불러옵니다.")]
+    [SerializeField] private bool useCharacterIconDatabaseIdleFrames = true;
+    [Tooltip("Idle / Battle Idle 애니메이션의 한 프레임 유지 시간입니다.")]
+    [SerializeField, Min(0.01f)] private float infoPanelIdleFrameInterval = 0.12f;
+    [Tooltip("CharBtn/Relic. 파티 선택 전에는 비활성화되고 선택되면 활성화됩니다.")]
+    [SerializeField] private GameObject infoPanelRelicRoot;
+    [Tooltip("CharBtn/Compound. 파티 선택 전에는 비활성화되고 선택되면 활성화됩니다.")]
+    [SerializeField] private GameObject infoPanelCompoundRoot;
 
     [Header("Character Select State")]
     [SerializeField] private float viewedCharacterFixedScale = 1.2f;
@@ -75,6 +86,8 @@ public class CharBtn : MonoBehaviour,
     private bool isViewedCharacter;
     private bool isRemoteViewedCharacter;
     private int lastHandledClickFrame = -1;
+    private int suppressClickUntilFrame = -1;
+    private bool isReadyPanelCharacterDragging;
 
     private readonly List<RectTransform> viewedCharacterBorderTargets = new();
     private readonly List<Quaternion> viewedCharacterBorderOriginalRotations = new();
@@ -93,11 +106,137 @@ public class CharBtn : MonoBehaviour,
     private Image infoPanelHoverBackgroundImage;
     private Color infoPanelHoverBackgroundOriginalColor = Color.white;
     private bool hasInfoPanelHoverBackgroundOriginalColor;
+    private Coroutine infoPanelIdleAnimationCoroutine;
+    private bool infoPanelSelectedForParty;
 
     public CharacterType CharacterType => characterType;
     public string CharacterId => characterId;
     public RectTransform Rect => rect;
     public bool IsLocked => isLocked;
+    public bool IsInfoPanelReadyDragSource => IsInfoPanelPartyEditButton();
+
+
+    public bool TryGetReadyDragPreview(out Sprite sprite, out Vector2 size)
+    {
+        sprite = null;
+        size = new Vector2(96f, 96f);
+
+        if (!IsInfoPanelPartyEditButton() || isLocked || string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        AutoPrepareInfoPanelCharacterButtonReferences();
+
+        CharacterIconDatabase database = DataManager.Instance?.CharacterIconDatabase;
+        if (database == null || !database.TryGetLobbyIdleFrames(characterId, out Sprite[] frames))
+            return false;
+
+        for (int i = 0; i < frames.Length; i++)
+        {
+            if (frames[i] == null)
+                continue;
+
+            sprite = frames[i];
+            break;
+        }
+
+        if (sprite == null)
+            return false;
+
+        if (infoPanelCharacterImage != null)
+        {
+            Rect rect = infoPanelCharacterImage.rectTransform.rect;
+            if (rect.width > 0f && rect.height > 0f)
+                size = rect.size;
+        }
+
+        return true;
+    }
+
+    public bool TryGetOrRegisterPartySlotForReadyDrag(out int partySlotIndex)
+    {
+        partySlotIndex = -1;
+
+        if (!IsInfoPanelPartyEditButton() || isLocked || string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        if (charPick != null)
+            return charPick.TryGetOrRegisterPartySlotForReadyDrag(this, out partySlotIndex);
+
+        if (!PrepareCharacterForPartyAction(false) || DataManager.Instance?.PartyRuntimeStore == null)
+            return false;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        partySlotIndex = partyStore.FindCharacterSlot(characterId);
+        if (partySlotIndex >= 0)
+            return true;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            if (!string.IsNullOrWhiteSpace(partyStore.GetCharacterId(i)))
+                continue;
+
+            if (!partyStore.SetCharacter(i, characterId))
+                return false;
+
+            partySlotIndex = i;
+            RefreshPartyViews();
+            LobbyInfoPanelUI.RefreshAll();
+            LobbyEquipPanelUI.RefreshAllCharacterData();
+            LobbyPartyCharacterSettingOpenButton.RefreshAll();
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool TryRegisterToReadyGrid(int gridIndex, out int partySlotIndex)
+    {
+        partySlotIndex = -1;
+
+        if (!IsInfoPanelPartyEditButton() || isLocked || string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        if (charPick != null)
+            return charPick.TryRegisterCharacterToReadyGrid(this, gridIndex, out partySlotIndex);
+
+        if (!PrepareCharacterForPartyAction(false) || DataManager.Instance?.PartyRuntimeStore == null)
+            return false;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        partySlotIndex = partyStore.FindCharacterSlot(characterId);
+        bool newlyRegistered = partySlotIndex < 0;
+
+        if (newlyRegistered)
+        {
+            for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(partyStore.GetCharacterId(i)))
+                    continue;
+
+                if (!partyStore.SetCharacter(i, characterId))
+                    return false;
+
+                partySlotIndex = i;
+                break;
+            }
+        }
+
+        if (partySlotIndex < 0 || !partyStore.SetSpawnGridIndex(partySlotIndex, gridIndex))
+        {
+            if (newlyRegistered && partySlotIndex >= 0)
+                partyStore.ClearSlot(partySlotIndex);
+
+            partySlotIndex = -1;
+            return false;
+        }
+
+        RefreshPartyViews();
+        RefreshSelectedPartyMarker();
+        LobbyInfoPanelUI.RefreshAll();
+        LobbyEquipPanelUI.RefreshAllCharacterData();
+        LobbyPartyCharacterSettingOpenButton.RefreshAll();
+        return true;
+    }
 
     private void Awake()
     {
@@ -121,6 +260,8 @@ public class CharBtn : MonoBehaviour,
         CacheJobmarkOriginalColors();
         AutoPrepareInfoPanelHoverBackground();
         CacheInfoPanelHoverBackgroundColor();
+        AutoPrepareInfoPanelCharacterButtonReferences();
+        CacheInfoPanelIdleImage();
         CacheCharBtnOriginalScale();
         AutoPrepareViewedCharacterBorder();
         CacheViewedCharacterOriginalValues();
@@ -135,6 +276,8 @@ public class CharBtn : MonoBehaviour,
         CacheJobmarkOriginalColors();
         AutoPrepareInfoPanelHoverBackground();
         CacheInfoPanelHoverBackgroundColor();
+        AutoPrepareInfoPanelCharacterButtonReferences();
+        CacheInfoPanelIdleImage();
         CacheCharBtnOriginalScale();
         isCharBtnHovered = false;
         AutoPrepareViewedCharacterBorder();
@@ -145,6 +288,8 @@ public class CharBtn : MonoBehaviour,
 
     private void OnDisable()
     {
+        StopInfoPanelIdleAnimation();
+
         if (charBtnHoverCoroutine != null)
         {
             StopCoroutine(charBtnHoverCoroutine);
@@ -169,6 +314,8 @@ public class CharBtn : MonoBehaviour,
         AutoPrepareSelectedPartyMarkerReferences();
         AutoPrepareCharacterSelectIcon();
         AutoPrepareJobmarkReferences();
+        AutoPrepareInfoPanelHoverBackground();
+        AutoPrepareInfoPanelCharacterButtonReferences();
         AutoPrepareViewedCharacterBorder();
     }
 #endif
@@ -187,7 +334,56 @@ public class CharBtn : MonoBehaviour,
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (Time.frameCount <= suppressClickUntilFrame)
+            return;
+
+        // 새 Info_Panel에서는 CharBtn 전체가 캐릭터 선택 버튼이지만,
+        // Relic/Compound 영역 클릭은 캐릭터 선택보다 장착/해제 입력이 우선입니다.
+        // 자식 Image의 raycastTarget 설정에 따라 클릭이 CharBtn까지 올라오는 경우에도
+        // 실제 포인터 위치를 검사해 장착 슬롯 클릭으로 전달합니다.
+        if (TryHandleInfoPanelEquipmentAreaClick(eventData))
+            return;
+
         NotifyClickToCharPickOrExecuteDirect();
+    }
+
+    private bool TryHandleInfoPanelEquipmentAreaClick(PointerEventData eventData)
+    {
+        if (!IsInfoPanelPartyEditButton() || eventData == null || string.IsNullOrWhiteSpace(characterId))
+            return false;
+
+        Transform relicRoot = transform.Find("Relic");
+        if (IsPointerInsideRect(relicRoot as RectTransform, eventData))
+            return ForwardInfoEquipmentSlotClick(isCompound: false);
+
+        Transform compoundRoot = transform.Find("Compound");
+        if (IsPointerInsideRect(compoundRoot as RectTransform, eventData))
+            return ForwardInfoEquipmentSlotClick(isCompound: true);
+
+        return false;
+    }
+
+    private static bool IsPointerInsideRect(RectTransform rect, PointerEventData eventData)
+    {
+        if (rect == null || eventData == null || !rect.gameObject.activeInHierarchy)
+            return false;
+
+        Canvas canvas = rect.GetComponentInParent<Canvas>();
+        Camera eventCamera = null;
+        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            eventCamera = canvas.worldCamera != null ? canvas.worldCamera : eventData.pressEventCamera;
+
+        return RectTransformUtility.RectangleContainsScreenPoint(rect, eventData.position, eventCamera);
+    }
+
+    private bool ForwardInfoEquipmentSlotClick(bool isCompound)
+    {
+        LobbyEquipPanelUI equipPanel = GetComponentInParent<LobbyEquipPanelUI>(true);
+        if (equipPanel == null)
+            equipPanel = FindFirstObjectByType<LobbyEquipPanelUI>(FindObjectsInactive.Include);
+
+        return equipPanel != null &&
+               equipPanel.HandleInfoCharacterEquipmentSlotClick(characterId, isCompound);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -448,10 +644,15 @@ public class CharBtn : MonoBehaviour,
         }
 
         string previousCharacterId = partyStore.GetCharacterId(selectedSlot);
-        if (!string.IsNullOrWhiteSpace(previousCharacterId) &&
-            !string.Equals(previousCharacterId, characterId, System.StringComparison.Ordinal))
+        bool characterChanged = !string.IsNullOrWhiteSpace(previousCharacterId) &&
+                                !string.Equals(previousCharacterId, characterId, System.StringComparison.Ordinal);
+
+        if (characterChanged)
         {
             LobbyCharacterEquipmentReleaseUtility.ReleaseAll(previousCharacterId);
+            // 캐릭터가 교체되면 이전 캐릭터의 시작 위치를 이어받지 않습니다.
+            // 새 캐릭터는 Info_Panel에서 선택한 뒤 Ready_Panel의 Grid01~15를 직접 눌러 배치합니다.
+            partyStore.ClearSlot(selectedSlot);
         }
 
         bool success = partyStore.SetCharacter(selectedSlot, characterId);
@@ -459,56 +660,10 @@ public class CharBtn : MonoBehaviour,
         if (!success)
             return;
 
-        int defaultGridIndex = FindDefaultDeployGridIndex(selectedSlot);
-
-        if (defaultGridIndex >= 0)
-            partyStore.SetSpawnGridIndex(selectedSlot, defaultGridIndex);
-
         Debug.Log(
             $"[Party] Set Slot / CharacterId:{characterId} / " +
             $"Slot:{selectedSlot} / Grid:{partyStore.GetSpawnGridIndex(selectedSlot)}"
         );
-    }
-
-    private int FindDefaultDeployGridIndex(int partySlotIndex)
-    {
-        if (DataManager.Instance == null)
-            return -1;
-
-        int preferredGridIndex = Mathf.Max(1, firstPartyDefaultDeployCellNumber) - 1 + partySlotIndex;
-
-        if (IsAvailableDeployGridForSlot(preferredGridIndex, partySlotIndex))
-            return preferredGridIndex;
-
-        for (int i = 0; i < maxDeployGridCount; i++)
-        {
-            if (IsAvailableDeployGridForSlot(i, partySlotIndex))
-                return i;
-        }
-
-        return -1;
-    }
-
-    private bool IsAvailableDeployGridForSlot(int gridIndex, int partySlotIndex)
-    {
-        if (gridIndex < 0 || gridIndex >= maxDeployGridCount)
-            return false;
-
-        if (DataManager.Instance == null)
-            return false;
-
-        var partyStore = DataManager.Instance.PartyRuntimeStore;
-
-        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
-        {
-            if (i == partySlotIndex)
-                continue;
-
-            if (partyStore.GetSpawnGridIndex(i) == gridIndex)
-                return false;
-        }
-
-        return true;
     }
 
     private void RefreshPartyViews()
@@ -528,7 +683,6 @@ public class CharBtn : MonoBehaviour,
             if (spawnGridPanels[i] == null)
                 continue;
 
-            spawnGridPanels[i].AutoPlacePartyIfNeeded();
             spawnGridPanels[i].Refresh();
         }
 
@@ -547,14 +701,16 @@ public class CharBtn : MonoBehaviour,
         RefreshNetworkAvailability();
         RefreshNetworkViewedCharacterState(true);
 
+        int registeredSlot = FindDisplayedPartySlot();
+        bool isRegistered = registeredSlot >= 0;
+
+        RefreshInfoPanelPartyEditVisualState(isRegistered);
+
         if (!showSelectedPartyMarker)
         {
             SetSelectedPartyMarkerActive(false);
             return;
         }
-
-        int registeredSlot = FindDisplayedPartySlot();
-        bool isRegistered = registeredSlot >= 0;
 
         SetSelectedPartyMarkerActive(isRegistered);
 
@@ -741,26 +897,63 @@ public class CharBtn : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (charPick == null)
-            return;
+        isReadyPanelCharacterDragging = false;
 
-        charPick.BeginDrag(eventData);
+        if (IsInfoPanelPartyEditButton() && !isLocked && !string.IsNullOrWhiteSpace(characterId))
+        {
+            SpawnGridPanel[] panels = FindObjectsByType<SpawnGridPanel>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+
+            for (int i = 0; i < panels.Length; i++)
+            {
+                if (panels[i] != null)
+                    panels[i].BeginInfoCharacterDrag(this, eventData);
+            }
+
+            isReadyPanelCharacterDragging = true;
+        }
+
+        charPick?.BeginDrag(eventData);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (charPick == null)
-            return;
+        if (isReadyPanelCharacterDragging)
+        {
+            SpawnGridPanel[] panels = FindObjectsByType<SpawnGridPanel>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
 
-        charPick.Drag(eventData);
+            for (int i = 0; i < panels.Length; i++)
+            {
+                if (panels[i] != null)
+                    panels[i].UpdateDragPreview(eventData);
+            }
+        }
+
+        charPick?.Drag(eventData);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (charPick == null)
-            return;
+        if (isReadyPanelCharacterDragging)
+        {
+            SpawnGridPanel[] panels = FindObjectsByType<SpawnGridPanel>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
 
-        charPick.EndDrag(eventData);
+            for (int i = 0; i < panels.Length; i++)
+            {
+                if (panels[i] != null)
+                    panels[i].EndInfoCharacterDrag(this);
+            }
+
+            suppressClickUntilFrame = Time.frameCount + 1;
+            isReadyPanelCharacterDragging = false;
+        }
+
+        charPick?.EndDrag(eventData);
     }
 
     public void SetCenter(bool isCenter)
@@ -909,7 +1102,12 @@ public class CharBtn : MonoBehaviour,
         if (infoPanelHoverBackgroundImage != null || !IsInfoPanelPartyEditButton())
             return;
 
-        Transform background = transform.Find("Icon/Background");
+        // 새 Info_Panel 구조: CharacterSelect/CharBtn_0~4/Back
+        Transform background = transform.Find("Back");
+
+        // 이전 구조 호환
+        if (background == null)
+            background = transform.Find("Icon/Background");
         if (background == null)
             background = FindChildByExactName(transform, "Background");
 
@@ -936,8 +1134,227 @@ public class CharBtn : MonoBehaviour,
         if (infoPanelHoverBackgroundImage == null)
             return;
 
-        Color target = hovered ? infoPanelHoverBackgroundColor : infoPanelHoverBackgroundOriginalColor;
+        // 선택된 캐릭터는 포인터가 빠져도 Back의 선택 색상을 유지합니다.
+        // 미선택 상태에서만 호버가 끝나면 원래 색으로 돌아갑니다.
+        Color target = (hovered || infoPanelSelectedForParty)
+            ? infoPanelHoverBackgroundColor
+            : infoPanelHoverBackgroundOriginalColor;
         infoPanelHoverBackgroundImage.color = WithPreservedAlpha(target, infoPanelHoverBackgroundImage.color.a);
+    }
+
+    private void AutoPrepareInfoPanelCharacterButtonReferences()
+    {
+        if (!IsInfoPanelPartyEditButton())
+            return;
+
+        if (infoPanelCharacterImage == null)
+        {
+            Transform charRoot = transform.Find("Char");
+            Transform imageRoot = charRoot != null ? charRoot.Find("Image") : null;
+            if (imageRoot == null)
+                imageRoot = transform.Find("Image");
+
+            if (imageRoot != null)
+                infoPanelCharacterImage = imageRoot.GetComponent<Image>();
+        }
+
+        if (infoPanelRelicRoot == null)
+        {
+            Transform relic = transform.Find("Relic");
+            if (relic != null)
+                infoPanelRelicRoot = relic.gameObject;
+        }
+
+        if (infoPanelCompoundRoot == null)
+        {
+            Transform compound = transform.Find("Compound");
+            if (compound != null)
+                infoPanelCompoundRoot = compound.gameObject;
+        }
+    }
+
+    private void CacheInfoPanelIdleImage()
+    {
+        // Idle / Battle Idle 프레임은 CharacterIconDatabase에서 CharacterId 기준으로 관리합니다.
+        // CharBtn 인스펙터에는 프레임을 직접 보관하지 않습니다.
+    }
+
+    private void RefreshInfoPanelPartyEditVisualState(bool isSelectedForParty)
+    {
+        if (!IsInfoPanelPartyEditButton())
+            return;
+
+        AutoPrepareInfoPanelCharacterButtonReferences();
+        CacheInfoPanelIdleImage();
+
+        if (infoPanelRelicRoot != null)
+            infoPanelRelicRoot.SetActive(isSelectedForParty);
+
+        if (infoPanelCompoundRoot != null)
+            infoPanelCompoundRoot.SetActive(isSelectedForParty);
+
+        infoPanelSelectedForParty = isSelectedForParty;
+
+        // 선택/해제 직후 Back 색상도 즉시 동기화합니다.
+        // 선택 중이면 3C4476(기본 선택/호버 색), 해제되면 원래 색으로 복귀합니다.
+        ApplyInfoPanelHoverBackground(false);
+
+        RestartInfoPanelIdleAnimation();
+    }
+
+    private void RestartInfoPanelIdleAnimation()
+    {
+        StopInfoPanelIdleAnimation();
+
+        if (infoPanelCharacterImage == null)
+            return;
+
+        // Inspector에 임시로 들어 있던 Sprite가 남지 않도록 매번 먼저 비웁니다.
+        // 실제 CharacterDatabase에 캐릭터 데이터가 있고 Idle 프레임까지 확인된 경우에만 다시 켭니다.
+        HideInfoPanelCharacterImage();
+
+        if (!isActiveAndEnabled)
+            return;
+
+        Sprite[] frames = ResolveInfoPanelIdleFrames(infoPanelSelectedForParty);
+        Sprite firstFrame = GetFirstValidFrame(frames);
+
+        if (firstFrame == null && infoPanelSelectedForParty)
+        {
+            // Battle Idle이 비어 있으면 같은 캐릭터의 일반 Idle을 사용합니다.
+            frames = ResolveInfoPanelIdleFrames(false);
+            firstFrame = GetFirstValidFrame(frames);
+        }
+
+        if (firstFrame == null)
+            return;
+
+        if (!infoPanelCharacterImage.gameObject.activeSelf)
+            infoPanelCharacterImage.gameObject.SetActive(true);
+
+        infoPanelCharacterImage.sprite = firstFrame;
+        infoPanelCharacterImage.enabled = true;
+
+        if (CountValidFrames(frames) > 1)
+            infoPanelIdleAnimationCoroutine = StartCoroutine(PlayInfoPanelIdleAnimation(frames));
+    }
+
+    private Sprite[] ResolveInfoPanelIdleFrames(bool battleIdle)
+    {
+        if (!useCharacterIconDatabaseIdleFrames ||
+            !TryResolveInfoPanelCharacterId(out string resolvedCharacterId))
+        {
+            return null;
+        }
+
+        CharacterIconDatabase database = DataManager.Instance.CharacterIconDatabase;
+        Sprite[] frames;
+        bool found = battleIdle
+            ? database.TryGetLobbyBattleIdleFrames(resolvedCharacterId, out frames)
+            : database.TryGetLobbyIdleFrames(resolvedCharacterId, out frames);
+
+        return found ? frames : null;
+    }
+
+    private bool TryResolveInfoPanelCharacterId(out string resolvedCharacterId)
+    {
+        resolvedCharacterId = null;
+
+        if (string.IsNullOrWhiteSpace(characterId) || DataManager.Instance == null)
+            return false;
+
+        if (DataManager.Instance.CharacterDatabase == null ||
+            !DataManager.Instance.CharacterDatabase.TryGet(characterId.Trim(), out CharacterMasterData master) ||
+            master == null ||
+            string.IsNullOrWhiteSpace(master.CharacterId))
+        {
+            return false;
+        }
+
+        if (DataManager.Instance.CharacterIconDatabase == null)
+            return false;
+
+        resolvedCharacterId = master.CharacterId.Trim();
+        return true;
+    }
+
+    private void HideInfoPanelCharacterImage()
+    {
+        if (infoPanelCharacterImage == null)
+            return;
+
+        infoPanelCharacterImage.sprite = null;
+        infoPanelCharacterImage.enabled = false;
+        if (infoPanelCharacterImage.gameObject.activeSelf)
+            infoPanelCharacterImage.gameObject.SetActive(false);
+    }
+
+    private IEnumerator PlayInfoPanelIdleAnimation(Sprite[] frames)
+    {
+        int frameIndex = 0;
+        float interval = Mathf.Max(0.01f, infoPanelIdleFrameInterval);
+
+        while (isActiveAndEnabled)
+        {
+            if (frames == null || frames.Length == 0 || infoPanelCharacterImage == null)
+                yield break;
+
+            Sprite frame = frames[frameIndex % frames.Length];
+            if (frame != null)
+            {
+                if (!infoPanelCharacterImage.gameObject.activeSelf)
+                    infoPanelCharacterImage.gameObject.SetActive(true);
+
+                infoPanelCharacterImage.sprite = frame;
+                infoPanelCharacterImage.enabled = true;
+            }
+
+            frameIndex = (frameIndex + 1) % frames.Length;
+            yield return new WaitForSecondsRealtime(interval);
+        }
+    }
+
+    private void StopInfoPanelIdleAnimation()
+    {
+        if (infoPanelIdleAnimationCoroutine == null)
+            return;
+
+        StopCoroutine(infoPanelIdleAnimationCoroutine);
+        infoPanelIdleAnimationCoroutine = null;
+    }
+
+    private static bool HasAnyFrame(Sprite[] frames)
+    {
+        return GetFirstValidFrame(frames) != null;
+    }
+
+    private static Sprite GetFirstValidFrame(Sprite[] frames)
+    {
+        if (frames == null)
+            return null;
+
+        for (int i = 0; i < frames.Length; i++)
+        {
+            if (frames[i] != null)
+                return frames[i];
+        }
+
+        return null;
+    }
+
+    private static int CountValidFrames(Sprite[] frames)
+    {
+        if (frames == null)
+            return 0;
+
+        int count = 0;
+        for (int i = 0; i < frames.Length; i++)
+        {
+            if (frames[i] != null)
+                count++;
+        }
+
+        return count;
     }
 
     private static Color WithPreservedAlpha(Color rgbSource, float alpha)

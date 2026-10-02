@@ -20,12 +20,11 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private const string InfoPanelName = "Info_Panel";
     private const int CharacterCount = 3;
     private const int VisibleRelicSlotCount = 6;
-    private const int InfoPanelRelicSlotCount = 3;
+    private const int InfoPanelRelicSlotCount = 1;
     private const int VisibleSkillSlotCount = 3;
     private const int CompoundMinimumSlotCount = 15;
     private const int ReadyRelicMinimumSlotCount = 3;
     private const int ReadyCompoundMinimumSlotCount = 6;
-    private const float ReadyInventorySlotScale = 1.2f;
     private const int EquipmentDragSortingOrder = 10000;
     private const string EquipButtonDefaultText = "장착";
     private const string EquipButtonCancelText = "취소";
@@ -33,6 +32,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private static readonly Color InfoEquipmentLineHighlightColor = Color.white;
     private static readonly Color InfoEquipmentLineDisabledColor = new Color32(0x77, 0x77, 0x77, 0xFF);
     private static readonly Color InfoEquipmentBackHoverColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
+    private static readonly Color InfoRelicBackNormalColor = new Color32(0x00, 0x00, 0x00, 0xFF);
+    private static readonly Color InfoCompoundBackNormalColor = new Color32(0x00, 0x00, 0x00, 0xFF);
 
     // 로비 Equip_panel의 Skill 1~3은 교체 가능한 기억만 표시합니다.
     // Skill1 = 구현 기억(AbilitySkillId / EquippedSkillIds[1])
@@ -81,23 +82,22 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     [Tooltip("연성제가 없어도 표시할 최소 빈 슬롯 수입니다.")]
     [SerializeField, Min(1)] private int compoundMinimumSlotCount = CompoundMinimumSlotCount;
 
-    [Header("Ready Inventory Display")]
-    [Tooltip("Ready_Panel/Relic/Viewport/Content입니다. 비워두면 새 구조에서 자동 연결합니다.")]
+    [Header("Info Inventory Display")]
+    [Tooltip("Info_Panel/Relic/Viewport/Content입니다. 비워두면 새 구조에서 자동 연결합니다.")]
     [SerializeField] private Transform readyRelicContentRoot;
-    [Tooltip("Ready_Panel/Compound/Viewport/Content입니다. 비워두면 새 구조에서 자동 연결합니다.")]
+    [Tooltip("Info_Panel/Compound/Viewport/Content입니다. 비워두면 새 구조에서 자동 연결합니다.")]
     [SerializeField] private Transform readyCompoundContentRoot;
-    [Tooltip("Ready_Panel의 유물/연성제 표시용 StorageSlotUI 프리팹입니다. 비어 있으면 기존 Compound 슬롯 프리팹을 사용합니다.")]
+    [Tooltip("Info_Panel의 유물/연성제 표시용 StorageSlotUI 프리팹입니다. 비어 있으면 기존 Compound 슬롯 프리팹을 사용합니다.")]
     [SerializeField] private BattleBagItemSlotUI readyInventorySlotPrefab;
     [SerializeField, Min(1)] private int readyRelicMinimumSlotCount = ReadyRelicMinimumSlotCount;
     [SerializeField, Min(1)] private int readyCompoundMinimumSlotCount = ReadyCompoundMinimumSlotCount;
-    [SerializeField, Min(0.1f)] private float readyInventorySlotScale = ReadyInventorySlotScale;
 
-    [Header("Ready Erosion Display")]
-    [Tooltip("Ready_Panel/Select/Erosion_Value입니다. 비워두면 이름으로 자동 연결합니다.")]
+    [Header("Info Erosion Display")]
+    [Tooltip("Info_Panel/Select/Erosion_Value입니다. 비워두면 이름으로 자동 연결합니다.")]
     [SerializeField] private TMP_Text readyErosionValueText;
 
-    [Header("Ready Inventory Detail")]
-    [Tooltip("Ready_Panel/Detail입니다. 실제 유물 또는 연성제 슬롯에 마우스를 올릴 때만 활성화됩니다.")]
+    [Header("Info Inventory Detail (Optional)")]
+    [Tooltip("Info_Panel/Detail이 존재할 경우 사용합니다. 없으면 사용하지 않습니다.")]
     [SerializeField] private GameObject readyDetailRoot;
     [SerializeField] private Image readyDetailIconImage;
     [SerializeField] private TMP_Text readyDetailNameText;
@@ -212,6 +212,42 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         isPreparingOpen = false;
         isOpen = AreSlideTargetsAtOpenPosition();
         RefreshCharacterData();
+    }
+
+    private void Update()
+    {
+        if (readyDetailPinnedSlot == null || !Input.GetMouseButtonDown(0))
+            return;
+
+        RectTransform selectedRect = readyDetailPinnedSlot.transform as RectTransform;
+        if (selectedRect == null)
+        {
+            HideReadyInventoryDetail();
+            return;
+        }
+
+        Canvas canvas = selectedRect.GetComponentInParent<Canvas>();
+        Camera eventCamera = null;
+        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            eventCamera = canvas.worldCamera;
+
+        // 선택된 슬롯 자체를 다시 누른 경우에는 현재 선택을 유지합니다.
+        // 다른 곳을 누른 경우에도 같은 프레임의 UI 클릭 이벤트가 먼저 처리되어야 합니다.
+        // 즉시 선택을 해제하면 CharBtn의 Relic/Compound 클릭보다 먼저 readyDetailPinnedSlot이 비워져
+        // 클릭 장착이 실패하므로, 프레임 끝에서 아직 같은 슬롯이 선택 중일 때만 해제합니다.
+        if (!RectTransformUtility.RectangleContainsScreenPoint(selectedRect, Input.mousePosition, eventCamera))
+            StartCoroutine(ReleasePinnedInventorySelectionAfterClick(readyDetailPinnedSlot));
+    }
+
+    private IEnumerator ReleasePinnedInventorySelectionAfterClick(BattleBagItemSlotUI clickedSelection)
+    {
+        yield return new WaitForEndOfFrame();
+
+        // 같은 프레임에 다른 인벤토리 슬롯을 선택했거나, 장착 처리에서 이미 선택이 해제됐다면 건드리지 않습니다.
+        if (clickedSelection == null || readyDetailPinnedSlot != clickedSelection)
+            yield break;
+
+        HideReadyInventoryDetail();
     }
 
     private void OnDisable()
@@ -408,6 +444,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             RefreshCharacterSkills(view, runtime);
         }
 
+        RefreshNewInfoPanelCharacterEquipmentVisuals();
         UpdateRelicEquipCandidateVisuals();
         UpdateActiveCompoundCandidateVisuals();
         UpdateCharacterEquipTargetVisuals();
@@ -1022,27 +1059,29 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void ResolveReadyInventoryDisplayIfNeeded()
     {
-        ResolveSlideTargets();
-        Transform readyRoot = charterRect != null ? charterRect : ResolvePanelRoot()?.transform;
-        if (readyRoot == null)
+        // 새 구조에서는 보유 유물/연성제 목록이 Ready_Panel이 아니라 Info_Panel에 있습니다.
+        Transform infoRoot = ResolveInfoPanelTransform();
+        if (infoRoot == null)
             return;
 
-        if (readyRelicContentRoot == null)
+        if (readyRelicContentRoot == null || !readyRelicContentRoot.IsChildOf(infoRoot))
         {
-            Transform relicRoot = readyRoot.Find("Relic");
-            Transform viewport = relicRoot != null ? relicRoot.Find("Viewport") : null;
+            Transform relicRoot = infoRoot.Find("Relic");
+            Transform viewport = relicRoot != null
+                ? relicRoot.Find("Viewport") ?? relicRoot.Find("ViewPort")
+                : null;
             Transform content = viewport != null ? viewport.Find("Content") : null;
-            if (content != null)
-                readyRelicContentRoot = content;
+            readyRelicContentRoot = content;
         }
 
-        if (readyCompoundContentRoot == null)
+        if (readyCompoundContentRoot == null || !readyCompoundContentRoot.IsChildOf(infoRoot))
         {
-            Transform compoundRoot = readyRoot.Find("Compound");
-            Transform viewport = compoundRoot != null ? compoundRoot.Find("Viewport") : null;
+            Transform compoundRoot = infoRoot.Find("Compound");
+            Transform viewport = compoundRoot != null
+                ? compoundRoot.Find("Viewport") ?? compoundRoot.Find("ViewPort")
+                : null;
             Transform content = viewport != null ? viewport.Find("Content") : null;
-            if (content != null)
-                readyCompoundContentRoot = content;
+            readyCompoundContentRoot = content;
         }
 
         if (readyInventorySlotPrefab == null)
@@ -1054,20 +1093,21 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void ResolveReadyErosionDisplayIfNeeded()
     {
-        ResolveSlideTargets();
-        Transform readyRoot = charterRect != null ? charterRect : ResolvePanelRoot()?.transform;
-        if (readyRoot == null)
+        // 새 구조에서는 침식도 표시도 Info_Panel/Select 아래에 있습니다.
+        Transform infoRoot = ResolveInfoPanelTransform();
+        if (infoRoot == null)
             return;
 
-        if (readyErosionValueText == null)
+        if (readyErosionValueText == null || !readyErosionValueText.transform.IsChildOf(infoRoot))
         {
-            Transform selectRoot = readyRoot.Find("Select");
+            Transform selectRoot = infoRoot.Find("Select");
             Transform valueTransform = selectRoot != null
                 ? FindChildRecursive(selectRoot, "Erosion_Value")
-                : FindChildRecursive(readyRoot, "Erosion_Value");
+                : null;
 
-            if (valueTransform != null)
-                readyErosionValueText = valueTransform.GetComponent<TMP_Text>() ?? valueTransform.GetComponentInChildren<TMP_Text>(true);
+            readyErosionValueText = valueTransform != null
+                ? valueTransform.GetComponent<TMP_Text>() ?? valueTransform.GetComponentInChildren<TMP_Text>(true)
+                : null;
         }
 
         if (readyErosionValueText == null)
@@ -1155,16 +1195,14 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void ResolveReadyInventoryDetailIfNeeded()
     {
-        ResolveSlideTargets();
-        Transform readyRoot = charterRect != null ? charterRect : ResolvePanelRoot()?.transform;
-        if (readyRoot == null)
+        Transform infoRoot = ResolveInfoPanelTransform();
+        if (infoRoot == null)
             return;
 
-        if (readyDetailRoot == null)
+        if (readyDetailRoot == null || !readyDetailRoot.transform.IsChildOf(infoRoot))
         {
-            Transform detail = readyRoot.Find("Detail");
-            if (detail != null)
-                readyDetailRoot = detail.gameObject;
+            Transform detail = infoRoot.Find("Detail");
+            readyDetailRoot = detail != null ? detail.gameObject : null;
         }
 
         if (readyDetailRoot == null)
@@ -1178,9 +1216,6 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (readyDetailEffectText == null)
             readyDetailEffectText = FindTextByNames(detailRoot, "Effect");
 
-        // Detail의 Name/Effect는 호버 중 원본 DB 데이터로 직접 갱신되는 동적 텍스트입니다.
-        // 정적 로컬라이즈 컴포넌트가 Detail 활성화 시 Inspector 기본값(예: "아이템")으로
-        // 다시 덮어쓰지 못하도록 동적 출력 대상으로 보호합니다.
         ProtectReadyDetailText(readyDetailNameText);
         ProtectReadyDetailText(readyDetailEffectText);
 
@@ -1190,7 +1225,6 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             readyDetailRoot.SetActive(false);
         }
     }
-
 
     private static void ProtectReadyDetailText(TMP_Text text)
     {
@@ -1444,64 +1478,331 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (infoRoot == null)
             return;
 
+        // 새 Info_Panel 구조는 CharacterSelect/CharBtn_0~4 아래에
+        // 캐릭터별 Relic 1칸 / Compound 1칸을 둡니다.
+        // 장착 대상은 바인딩 시점의 파티 슬롯 번호를 고정하지 않고,
+        // 실제 클릭/드롭 순간 CharacterId로 현재 파티 슬롯을 다시 찾습니다.
+        ClearInfoPanelEquipmentTargetCache();
+
+        PartyRuntimeStore partyStore = DataManager.Instance?.PartyRuntimeStore;
+        if (partyStore == null)
+        {
+            UpdateInfoEquipmentSlotGuide();
+            return;
+        }
+
+        Transform characterSelectRoot = infoRoot.Find("CharacterSelect")
+            ?? FindChildRecursive(infoRoot, "CharacterSelect");
+        if (characterSelectRoot == null)
+        {
+            UpdateInfoEquipmentSlotGuide();
+            return;
+        }
+
         for (int partyIndex = 0; partyIndex < CharacterCount; partyIndex++)
         {
-            Transform charRoot = FindChildRecursive(infoRoot, "Char" + (partyIndex + 1));
+            string characterId = partyStore.GetCharacterId(partyIndex);
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            Transform charRoot = FindInfoCharacterButtonByCharacterId(characterSelectRoot, characterId);
             if (charRoot == null)
                 continue;
 
-            Transform relicRoot = charRoot.Find("Relic") ?? FindChildRecursive(charRoot, "Relic");
-            for (int visibleIndex = 0; visibleIndex < InfoPanelRelicSlotCount; visibleIndex++)
+            Transform relicSlot = charRoot.Find("Relic");
+            if (relicSlot != null)
             {
-                Transform slotRoot = relicRoot != null
-                    ? relicRoot.Find("Relic" + (visibleIndex + 1).ToString("00"))
-                    : null;
-                if (slotRoot == null)
-                    continue;
+                const int visibleIndex = 0;
+                const int runtimeRelicSlotIndex = 1;
 
-                int capturedParty = partyIndex;
-                int capturedVisible = visibleIndex;
-                int runtimeSlotIndex = visibleIndex + 1;
-                LobbyReadyEquipmentPointerRelay relay = GetOrAddEquipmentRelay(slotRoot.gameObject);
-                relay.Configure(
-                    _ => OnInfoEquipmentSlotClicked(capturedParty, runtimeSlotIndex, isCompound: false),
-                    data => BeginInfoEquipmentDrag(capturedParty, runtimeSlotIndex, isCompound: false, data),
-                    UpdateEquipmentDrag,
-                    EndEquipmentDrag,
-                    _ => CompleteEquipmentDrop(capturedParty, runtimeSlotIndex, isCompound: false),
-                    _ => SetInfoEquipmentSlotHover(capturedParty, capturedVisible, isCompound: false, hovered: true),
-                    _ => SetInfoEquipmentSlotHover(capturedParty, capturedVisible, isCompound: false, hovered: false));
-                infoRelicTargetRelays[partyIndex, visibleIndex] = relay;
-                infoRelicTargetLines[partyIndex, visibleIndex] = FindLineImage(slotRoot);
-                infoRelicTargetBacks[partyIndex, visibleIndex] = FindBackImage(slotRoot);
+                ConfigureInfoEquipmentInteractionTargets(
+                    relicSlot,
+                    characterId,
+                    runtimeRelicSlotIndex,
+                    isCompound: false,
+                    visibleIndex);
+
+                infoRelicTargetLines[partyIndex, visibleIndex] = FindLineImage(relicSlot);
+                infoRelicTargetBacks[partyIndex, visibleIndex] = FindBackImage(relicSlot);
                 if (infoRelicTargetBacks[partyIndex, visibleIndex] != null)
-                    infoRelicTargetBackNormalColors[partyIndex, visibleIndex] = infoRelicTargetBacks[partyIndex, visibleIndex].color;
+                {
+                    // Relic의 기본 Back 색도 항상 검정(000000)으로 고정합니다.
+                    // 호버 상태에서 재바인딩되어 선택색이 기본색으로 저장되는 것을 방지합니다.
+                    infoRelicTargetBackNormalColors[partyIndex, visibleIndex] = InfoRelicBackNormalColor;
+                }
             }
 
-            Transform compoundRoot = charRoot.Find("Compound") ?? FindChildRecursive(charRoot, "Compound");
-            Transform compoundSlot = compoundRoot != null ? compoundRoot.Find("Compound01") : null;
+            Transform compoundSlot = charRoot.Find("Compound");
             if (compoundSlot != null)
             {
-                int capturedParty = partyIndex;
                 int activeSlotIndex = ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
-                LobbyReadyEquipmentPointerRelay relay = GetOrAddEquipmentRelay(compoundSlot.gameObject);
-                relay.Configure(
-                    _ => OnInfoEquipmentSlotClicked(capturedParty, activeSlotIndex, isCompound: true),
-                    data => BeginInfoEquipmentDrag(capturedParty, activeSlotIndex, isCompound: true, data),
-                    UpdateEquipmentDrag,
-                    EndEquipmentDrag,
-                    _ => CompleteEquipmentDrop(capturedParty, activeSlotIndex, isCompound: true),
-                    _ => SetInfoEquipmentSlotHover(capturedParty, 0, isCompound: true, hovered: true),
-                    _ => SetInfoEquipmentSlotHover(capturedParty, 0, isCompound: true, hovered: false));
-                infoCompoundTargetRelays[partyIndex] = relay;
+
+                ConfigureInfoEquipmentInteractionTargets(
+                    compoundSlot,
+                    characterId,
+                    activeSlotIndex,
+                    isCompound: true,
+                    visibleIndex: 0);
+
                 infoCompoundTargetLines[partyIndex] = FindLineImage(compoundSlot);
                 infoCompoundTargetBacks[partyIndex] = FindBackImage(compoundSlot);
                 if (infoCompoundTargetBacks[partyIndex] != null)
-                    infoCompoundTargetBackNormalColors[partyIndex] = infoCompoundTargetBacks[partyIndex].color;
+                {
+                    // Compound의 기본 Back 색은 항상 검정(000000)입니다.
+                    // 호버 상태에서 재바인딩되더라도 3C4476을 기본색으로 잘못 저장하지 않습니다.
+                    infoCompoundTargetBackNormalColors[partyIndex] = InfoCompoundBackNormalColor;
+                }
             }
         }
 
         UpdateInfoEquipmentSlotGuide();
+    }
+
+    /// <summary>
+    /// Relic/Compound 루트뿐 아니라 실제 레이캐스트를 받는 Back/Icon/Line 등의 Graphic에도
+    /// 동일한 클릭/드래그/드롭 이벤트를 연결합니다.
+    /// 자식 Image가 포인터를 받더라도 장착 이벤트가 누락되지 않게 하기 위함입니다.
+    /// </summary>
+    private void ConfigureInfoEquipmentInteractionTargets(
+        Transform slotRoot,
+        string characterId,
+        int runtimeSlotIndex,
+        bool isCompound,
+        int visibleIndex)
+    {
+        if (slotRoot == null || string.IsNullOrWhiteSpace(characterId))
+            return;
+
+        void ConfigureTarget(GameObject target)
+        {
+            if (target == null)
+                return;
+
+            LobbyReadyEquipmentPointerRelay relay = GetOrAddEquipmentRelay(target);
+            if (relay == null)
+                return;
+
+            relay.Configure(
+                _ =>
+                {
+                    int partyIndex = ResolvePartySlotByCharacterId(characterId);
+                    if (partyIndex >= 0)
+                        OnInfoEquipmentSlotClicked(partyIndex, runtimeSlotIndex, isCompound);
+                },
+                data =>
+                {
+                    int partyIndex = ResolvePartySlotByCharacterId(characterId);
+                    if (partyIndex >= 0)
+                        BeginInfoEquipmentDrag(partyIndex, runtimeSlotIndex, isCompound, data);
+                },
+                UpdateEquipmentDrag,
+                EndEquipmentDrag,
+                _ =>
+                {
+                    int partyIndex = ResolvePartySlotByCharacterId(characterId);
+                    if (partyIndex >= 0)
+                        CompleteEquipmentDrop(partyIndex, runtimeSlotIndex, isCompound);
+                },
+                _ =>
+                {
+                    int partyIndex = ResolvePartySlotByCharacterId(characterId);
+                    if (partyIndex >= 0)
+                        SetInfoEquipmentSlotHover(partyIndex, visibleIndex, isCompound, hovered: true);
+                },
+                _ =>
+                {
+                    int partyIndex = ResolvePartySlotByCharacterId(characterId);
+                    if (partyIndex >= 0)
+                        SetInfoEquipmentSlotHover(partyIndex, visibleIndex, isCompound, hovered: false);
+                });
+        }
+
+        // 루트에도 유지해 두어 자식에서 이벤트가 상위로 전달되는 기존 구조를 지원합니다.
+        ConfigureTarget(slotRoot.gameObject);
+
+        Graphic[] graphics = slotRoot.GetComponentsInChildren<Graphic>(true);
+        for (int i = 0; i < graphics.Length; i++)
+        {
+            Graphic graphic = graphics[i];
+            if (graphic == null || !graphic.raycastTarget)
+                continue;
+
+            ConfigureTarget(graphic.gameObject);
+        }
+    }
+
+    /// <summary>
+    /// 새 Info_Panel의 CharacterSelect/CharBtn_0~4 장착 표시를 런타임 데이터와 동기화합니다.
+    /// Relic/Compound 모두 미장착 시 자리표시자를 표시하고, 장착 시 실제 아이콘을 표시합니다.
+    /// 캐릭터 등록이 해제된 경우 CharBtn의 선택 Back도 즉시 원래 색으로 복귀하도록 상태를 다시 동기화합니다.
+    /// </summary>
+    private void RefreshNewInfoPanelCharacterEquipmentVisuals()
+    {
+        ResolveSlideTargets();
+
+        Transform infoRoot = equipRect != null ? equipRect : ResolveInfoPanelTransform();
+        if (infoRoot == null)
+            return;
+
+        Transform characterSelectRoot = infoRoot.Find("CharacterSelect")
+            ?? FindChildRecursive(infoRoot, "CharacterSelect");
+        if (characterSelectRoot == null)
+            return;
+
+        CharBtn[] buttons = characterSelectRoot.GetComponentsInChildren<CharBtn>(true);
+        DataManager dataManager = DataManager.Instance;
+
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            CharBtn button = buttons[i];
+            if (button == null)
+                continue;
+
+            // Ready_Panel에서 등록 해제된 캐릭터는 CharBtn의 Back 선택색도 즉시 원래 색으로 돌아가야 합니다.
+            button.RefreshSelectedPartyMarker();
+
+            string characterId = button.CharacterId?.Trim();
+            CharacterRuntimeData runtime = null;
+            bool isRegistered = !string.IsNullOrWhiteSpace(characterId) &&
+                                dataManager?.PartyRuntimeStore != null &&
+                                dataManager.PartyRuntimeStore.FindCharacterSlot(characterId) >= 0 &&
+                                dataManager.CharacterRuntimeStore != null &&
+                                dataManager.CharacterRuntimeStore.TryGet(characterId, out runtime);
+
+            if (runtime != null)
+                ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
+
+            // Relic: 미장착 = Relic 자리표시자, 장착 = Icon + 실제 유물 이미지.
+            Transform relicRoot = button.transform.Find("Relic");
+            if (relicRoot != null)
+            {
+                Transform placeholderRoot = relicRoot.Find("Relic");
+                Transform iconRoot = relicRoot.Find("Icon");
+                Image iconImage = iconRoot != null
+                    ? (iconRoot.GetComponent<Image>() ?? iconRoot.GetComponentInChildren<Image>(true))
+                    : null;
+
+                string relicId = null;
+                const int runtimeRelicSlotIndex = 1;
+                if (isRegistered && runtime?.EquippedRelicIds != null &&
+                    runtimeRelicSlotIndex < runtime.EquippedRelicIds.Length)
+                {
+                    relicId = runtime.EquippedRelicIds[runtimeRelicSlotIndex]?.Trim();
+                }
+
+                bool hasRelic = !string.IsNullOrWhiteSpace(relicId);
+
+                // 유물이 해제된 상태에서는 Relic/Back을 반드시 기본 검정색으로 복원합니다.
+                if (!hasRelic)
+                {
+                    Image relicBack = FindBackImage(relicRoot);
+                    if (relicBack != null)
+                        relicBack.color = InfoRelicBackNormalColor;
+                }
+
+                if (placeholderRoot != null)
+                    placeholderRoot.gameObject.SetActive(!hasRelic);
+                if (iconRoot != null)
+                    iconRoot.gameObject.SetActive(hasRelic);
+                if (iconImage != null)
+                {
+                    iconImage.sprite = hasRelic ? ResolveRelicIcon(relicId) : null;
+                    iconImage.color = Color.white;
+                    iconImage.enabled = hasRelic && iconImage.sprite != null;
+                }
+            }
+
+            // Compound: Relic과 동일하게 미장착 = Compound 자리표시자, 장착 = Icon + 실제 연성제 이미지.
+            Transform compoundRoot = button.transform.Find("Compound");
+            if (compoundRoot != null)
+            {
+                Transform placeholderRoot = compoundRoot.Find("Compound");
+                Transform iconRoot = compoundRoot.Find("Icon");
+                Image iconImage = iconRoot != null
+                    ? (iconRoot.GetComponent<Image>() ?? iconRoot.GetComponentInChildren<Image>(true))
+                    : null;
+
+                string compoundId = null;
+                int activeSlotIndex = ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
+                if (isRegistered && runtime?.EquippedRelicIds != null &&
+                    activeSlotIndex >= 0 && activeSlotIndex < runtime.EquippedRelicIds.Length)
+                {
+                    compoundId = runtime.EquippedRelicIds[activeSlotIndex]?.Trim();
+                }
+
+                bool hasCompound = !string.IsNullOrWhiteSpace(compoundId);
+
+                // 연성제가 해제된 상태에서는 Compound/Back을 반드시 기본 검정색으로 복원합니다.
+                // 클릭 해제/드래그 해제 뒤 호버색이 남아 있는 현상을 방지합니다.
+                if (!hasCompound)
+                {
+                    Image compoundBack = FindBackImage(compoundRoot);
+                    if (compoundBack != null)
+                        compoundBack.color = InfoCompoundBackNormalColor;
+                }
+
+                if (placeholderRoot != null)
+                    placeholderRoot.gameObject.SetActive(!hasCompound);
+                if (iconRoot != null)
+                    iconRoot.gameObject.SetActive(hasCompound);
+                if (iconImage != null)
+                {
+                    iconImage.sprite = hasCompound ? ResolveRelicIcon(compoundId) : null;
+                    iconImage.color = Color.white;
+                    iconImage.enabled = hasCompound && iconImage.sprite != null;
+                }
+            }
+        }
+    }
+
+    private static int ResolvePartySlotByCharacterId(string characterId)
+    {
+        if (string.IsNullOrWhiteSpace(characterId))
+            return -1;
+
+        PartyRuntimeStore partyStore = DataManager.Instance?.PartyRuntimeStore;
+        if (partyStore == null)
+            return -1;
+
+        return partyStore.FindCharacterSlot(characterId.Trim());
+    }
+
+    private void ClearInfoPanelEquipmentTargetCache()
+    {
+        for (int partyIndex = 0; partyIndex < CharacterCount; partyIndex++)
+        {
+            for (int slotIndex = 0; slotIndex < InfoPanelRelicSlotCount; slotIndex++)
+            {
+                infoRelicTargetRelays[partyIndex, slotIndex] = null;
+                infoRelicTargetLines[partyIndex, slotIndex] = null;
+                infoRelicTargetBacks[partyIndex, slotIndex] = null;
+                infoRelicTargetBackNormalColors[partyIndex, slotIndex] = Color.white;
+            }
+
+            infoCompoundTargetRelays[partyIndex] = null;
+            infoCompoundTargetLines[partyIndex] = null;
+            infoCompoundTargetBacks[partyIndex] = null;
+            infoCompoundTargetBackNormalColors[partyIndex] = Color.white;
+        }
+    }
+
+    private static Transform FindInfoCharacterButtonByCharacterId(Transform characterSelectRoot, string characterId)
+    {
+        if (characterSelectRoot == null || string.IsNullOrWhiteSpace(characterId))
+            return null;
+
+        CharBtn[] buttons = characterSelectRoot.GetComponentsInChildren<CharBtn>(true);
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            CharBtn button = buttons[i];
+            if (button == null)
+                continue;
+
+            if (string.Equals(button.CharacterId?.Trim(), characterId.Trim(), StringComparison.OrdinalIgnoreCase))
+                return button.transform;
+        }
+
+        return null;
     }
 
     private static Image FindLineImage(Transform slotRoot)
@@ -1552,7 +1853,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
             back.color = canInteract
                 ? InfoEquipmentBackHoverColor
-                : infoCompoundTargetBackNormalColors[partyIndex];
+                : InfoCompoundBackNormalColor;
             return;
         }
 
@@ -1565,7 +1866,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
         relicBack.color = canInteract
             ? InfoEquipmentBackHoverColor
-            : infoRelicTargetBackNormalColors[partyIndex, visibleSlotIndex];
+            : InfoRelicBackNormalColor;
     }
 
     private bool IsInfoEquipmentSlotInteractable(int partyIndex, int visibleSlotIndex, bool isCompound)
@@ -1618,16 +1919,14 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         bool highlightRelic = hasSelection && !highlightCompound &&
                               IsEquipmentType(readyDetailPinnedSlot.ItemId, isCompound: false);
 
-        Color relicLineColor = !hasSelection
-            ? InfoEquipmentLineNormalColor
-            : highlightRelic
-                ? InfoEquipmentLineHighlightColor
-                : InfoEquipmentLineDisabledColor;
-        Color compoundLineColor = !hasSelection
-            ? InfoEquipmentLineNormalColor
-            : highlightCompound
-                ? InfoEquipmentLineHighlightColor
-                : InfoEquipmentLineDisabledColor;
+        // 선택한 아이템과 같은 종류의 슬롯만 흰색으로 안내합니다.
+        // 반대 종류 슬롯은 비활성 회색으로 바꾸지 않고 기본 A9B1BE를 유지합니다.
+        Color relicLineColor = highlightRelic
+            ? InfoEquipmentLineHighlightColor
+            : InfoEquipmentLineNormalColor;
+        Color compoundLineColor = highlightCompound
+            ? InfoEquipmentLineHighlightColor
+            : InfoEquipmentLineNormalColor;
 
         for (int partyIndex = 0; partyIndex < CharacterCount; partyIndex++)
         {
@@ -1653,6 +1952,25 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (relay == null)
             relay = target.AddComponent<LobbyReadyEquipmentPointerRelay>();
         return relay;
+    }
+
+    /// <summary>
+    /// Info_Panel의 CharBtn 안 Relic/Compound 영역을 직접 클릭했을 때 호출합니다.
+    /// 자식 Graphic의 Raycast 설정과 관계없이 CharacterId 기준으로 현재 파티 슬롯을 다시 찾아
+    /// 선택 중인 유물/연성제를 우선 장착하고, 선택 아이템이 없으면 기존 장착물을 해제합니다.
+    /// </summary>
+    public bool HandleInfoCharacterEquipmentSlotClick(string characterId, bool isCompound)
+    {
+        int partyIndex = ResolvePartySlotByCharacterId(characterId);
+        if (partyIndex < 0)
+            return false;
+
+        int runtimeSlotIndex = isCompound
+            ? ActiveRelicRuntimeUtility.ActiveRelicSlotIndex
+            : 1;
+
+        OnInfoEquipmentSlotClicked(partyIndex, runtimeSlotIndex, isCompound);
+        return true;
     }
 
     private void OnInfoEquipmentSlotClicked(int partyIndex, int runtimeSlotIndex, bool isCompound)
@@ -2007,7 +2325,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         equipmentDragGhostRect.anchorMax = new Vector2(0.5f, 0.5f);
         equipmentDragGhostRect.pivot = new Vector2(0.5f, 0.5f);
         equipmentDragGhostRect.sizeDelta = new Vector2(96f, 96f);
-        equipmentDragGhostRect.localScale = Vector3.one * 1.2f;
+        equipmentDragGhostRect.localScale = Vector3.one;
 
         CanvasGroup group = ghost.GetComponent<CanvasGroup>();
         group.blocksRaycasts = false;
@@ -2073,6 +2391,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     {
         HideReadyInventoryDetail();
         RefreshReadyInventoryDisplay();
+        RefreshCharacterData();
         LobbyInfoPanelUI.RefreshAll();
         RelicEquipPanelUI.RefreshAll();
     }
@@ -2123,9 +2442,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (slot == null)
             return;
 
-        float scale = Mathf.Max(0.1f, readyInventorySlotScale);
         Vector3 current = slot.transform.localScale;
-        slot.transform.localScale = new Vector3(scale, scale, Mathf.Approximately(current.z, 0f) ? 1f : current.z);
+        slot.transform.localScale = new Vector3(1f, 1f, Mathf.Approximately(current.z, 0f) ? 1f : current.z);
     }
 
     private void ResolveCompoundInventoryIfNeeded()
@@ -2600,9 +2918,12 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             return;
 
         Transform itemImageRoot = FindChildRecursive(relicRoot, "Itemimage");
-        Transform lineRoot = itemImageRoot != null
-            ? FindChildRecursive(itemImageRoot, "Line2")
-            : null;
+        // 새 Info_Panel의 Relic/Viewport/Content는 보유 유물 목록입니다.
+        // 구형 단일 유물 상세 UI(Itemimage)가 없으면 legacy OwnedRelicView로 처리하지 않습니다.
+        if (itemImageRoot == null)
+            return;
+
+        Transform lineRoot = FindChildRecursive(itemImageRoot, "Line2");
         Transform equipButtonRoot = relicRoot.Find("Button") ?? FindChildRecursive(relicRoot, "Button");
 
         ownedRelicView = new OwnedRelicView

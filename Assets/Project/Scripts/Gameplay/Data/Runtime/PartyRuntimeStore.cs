@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Relic.Gameplay.Data
@@ -41,7 +41,7 @@ namespace Relic.Gameplay.Data
             return slots[slotIndex].CharacterId;
         }
 
-        // ±âÁ¸ ÄÚµå È£È¯¿ë: ½ÃÀÛ À§Ä¡ ¹İÈ¯
+        // ê¸°ì¡´ ì½”ë“œ í˜¸í™˜ìš©: ì‹œì‘ ìœ„ì¹˜ ë°˜í™˜
         public int GetGridIndex(int slotIndex)
         {
             return GetSpawnGridIndex(slotIndex);
@@ -81,7 +81,7 @@ namespace Relic.Gameplay.Data
             return true;
         }
 
-        // ±âÁ¸ ÄÚµå È£È¯¿ë: ½ÃÀÛ À§Ä¡ ÀúÀå
+        // ê¸°ì¡´ ì½”ë“œ í˜¸í™˜ìš©: ì‹œì‘ ìœ„ì¹˜ ì €ì¥
         public bool SetGridIndex(int slotIndex, int gridIndex)
         {
             return SetSpawnGridIndex(slotIndex, gridIndex);
@@ -135,6 +135,23 @@ namespace Relic.Gameplay.Data
         {
             for (int i = 0; i < MaxPartyCount; i++)
                 slots[i].CurrentGridIndex = slots[i].SpawnGridIndex;
+        }
+
+        /// <summary>
+        /// íŒŒí‹° ìºë¦­í„°ëŠ” ìœ ì§€í•˜ê³  ì „íˆ¬ ì‹œì‘ ë°°ì¹˜ ìœ„ì¹˜ë§Œ í•´ì œí•©ë‹ˆë‹¤.
+        /// Ready_Panelì—ì„œ ë°°ì¹˜ëœ Gridë¥¼ í´ë¦­í•´ ë“±ë¡ì„ í•´ì œí•  ë•Œ ì‚¬ìš©í•©ë‹ˆë‹¤.
+        /// </summary>
+        public bool ClearSpawnGridIndex(int slotIndex)
+        {
+            if (!IsValidSlot(slotIndex))
+            {
+                Debug.LogWarning($"[PartyRuntimeStore] Invalid slot index: {slotIndex}");
+                return false;
+            }
+
+            slots[slotIndex].SpawnGridIndex = -1;
+            slots[slotIndex].CurrentGridIndex = -1;
+            return true;
         }
 
         public bool SetSlot(int slotIndex, string characterId, int gridIndex)
@@ -223,7 +240,7 @@ namespace Relic.Gameplay.Data
             return -1;
         }
 
-        // ±âÁ¸ ÄÚµå È£È¯¿ë: ½ÃÀÛ À§Ä¡ ±âÁØ
+        // ê¸°ì¡´ ì½”ë“œ í˜¸í™˜ìš©: ì‹œì‘ ìœ„ì¹˜ ì‚¬ìš© ì—¬ë¶€ í™•ì¸
         public bool IsGridUsed(int gridIndex)
         {
             for (int i = 0; i < MaxPartyCount; i++)

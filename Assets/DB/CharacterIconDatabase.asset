@@ -21,6 +21,20 @@ MonoBehaviour:
     SkillCutsceneImage: {fileID: 21300000, guid: adb220ede8a2c4a4ca43934f3d6aaafe, type: 3}
     HUDPortraitImage: {fileID: 21300000, guid: b74a0836e04ccec499c66af5221b322b, type: 3}
     HUDSelectedPortraitImage: {fileID: 21300000, guid: adb220ede8a2c4a4ca43934f3d6aaafe, type: 3}
+    LobbyIdleFrames:
+    - {fileID: 1390658027, guid: cea0a874744e18a4cb26a3b04bc4cf55, type: 3}
+    - {fileID: 1767238707, guid: cea0a874744e18a4cb26a3b04bc4cf55, type: 3}
+    - {fileID: -1366637129, guid: cea0a874744e18a4cb26a3b04bc4cf55, type: 3}
+    - {fileID: -1809908857, guid: cea0a874744e18a4cb26a3b04bc4cf55, type: 3}
+    - {fileID: 1362123887, guid: cea0a874744e18a4cb26a3b04bc4cf55, type: 3}
+    - {fileID: 1692170161, guid: cea0a874744e18a4cb26a3b04bc4cf55, type: 3}
+    LobbyBattleIdleFrames:
+    - {fileID: -1620407309, guid: 06047bad176be134a85e627c67ba203f, type: 3}
+    - {fileID: -288807337, guid: 06047bad176be134a85e627c67ba203f, type: 3}
+    - {fileID: -1085576193, guid: 06047bad176be134a85e627c67ba203f, type: 3}
+    - {fileID: -1562714137, guid: 06047bad176be134a85e627c67ba203f, type: 3}
+    - {fileID: -57624480, guid: 06047bad176be134a85e627c67ba203f, type: 3}
+    - {fileID: -1286811136, guid: 06047bad176be134a85e627c67ba203f, type: 3}
     Mark: {fileID: 21300000, guid: 80d22705c1ab33f4cbbfc2adf849d6cf, type: 3}
     Mark2: {fileID: 21300000, guid: 828f72b5901018546814c7c7d67d47d7, type: 3}
   - CharacterId: Char_02
@@ -31,6 +45,20 @@ MonoBehaviour:
     SkillCutsceneImage: {fileID: 21300000, guid: f51093b6e204d1f40b7cab30ebbc3fda, type: 3}
     HUDPortraitImage: {fileID: 21300000, guid: bbc1ed1ef0d815448936fc96a57f11da, type: 3}
     HUDSelectedPortraitImage: {fileID: 21300000, guid: f51093b6e204d1f40b7cab30ebbc3fda, type: 3}
+    LobbyIdleFrames:
+    - {fileID: 1010498033, guid: c367f1477bbf80e438206c2ba7b59eaf, type: 3}
+    - {fileID: -1133518326, guid: c367f1477bbf80e438206c2ba7b59eaf, type: 3}
+    - {fileID: 1388716399, guid: c367f1477bbf80e438206c2ba7b59eaf, type: 3}
+    - {fileID: 2092680725, guid: c367f1477bbf80e438206c2ba7b59eaf, type: 3}
+    - {fileID: -1479879830, guid: c367f1477bbf80e438206c2ba7b59eaf, type: 3}
+    - {fileID: 1422746811, guid: c367f1477bbf80e438206c2ba7b59eaf, type: 3}
+    LobbyBattleIdleFrames:
+    - {fileID: 581564002, guid: a932a7a836706a14081d9f72919a35c8, type: 3}
+    - {fileID: 1105360932, guid: a932a7a836706a14081d9f72919a35c8, type: 3}
+    - {fileID: -1568774279, guid: a932a7a836706a14081d9f72919a35c8, type: 3}
+    - {fileID: -1027459411, guid: a932a7a836706a14081d9f72919a35c8, type: 3}
+    - {fileID: -714880145, guid: a932a7a836706a14081d9f72919a35c8, type: 3}
+    - {fileID: -485692280, guid: a932a7a836706a14081d9f72919a35c8, type: 3}
     Mark: {fileID: 21300000, guid: 3d1cfdd4679cdd545a7e1541a076736e, type: 3}
     Mark2: {fileID: 21300000, guid: 5629ba53ae60fa1418479b144759d93b, type: 3}
   - CharacterId: Char_03
@@ -41,6 +69,20 @@ MonoBehaviour:
     SkillCutsceneImage: {fileID: 21300000, guid: 78d9b4bb5ab638f40a7ed763945fd732, type: 3}
     HUDPortraitImage: {fileID: 21300000, guid: a2a14fed21485f24eaf85968c366f6c8, type: 3}
     HUDSelectedPortraitImage: {fileID: 21300000, guid: 78d9b4bb5ab638f40a7ed763945fd732, type: 3}
+    LobbyIdleFrames:
+    - {fileID: -1386266176, guid: 9999ee6365369134bbd706bc29286193, type: 3}
+    - {fileID: -1607286241, guid: 9999ee6365369134bbd706bc29286193, type: 3}
+    - {fileID: -1881843386, guid: 9999ee6365369134bbd706bc29286193, type: 3}
+    - {fileID: -1919140568, guid: 9999ee6365369134bbd706bc29286193, type: 3}
+    - {fileID: -2077236023, guid: 9999ee6365369134bbd706bc29286193, type: 3}
+    - {fileID: -1234813391, guid: 9999ee6365369134bbd706bc29286193, type: 3}
+    LobbyBattleIdleFrames:
+    - {fileID: -1065917556, guid: 839e2956335efa64d97893da8fbda45f, type: 3}
+    - {fileID: -1648980922, guid: 839e2956335efa64d97893da8fbda45f, type: 3}
+    - {fileID: -1543011401, guid: 839e2956335efa64d97893da8fbda45f, type: 3}
+    - {fileID: 1096792409, guid: 839e2956335efa64d97893da8fbda45f, type: 3}
+    - {fileID: -27641316, guid: 839e2956335efa64d97893da8fbda45f, type: 3}
+    - {fileID: 951186159, guid: 839e2956335efa64d97893da8fbda45f, type: 3}
     Mark: {fileID: 21300000, guid: e27844ec0bb5fe94abcbaec30f9794e1, type: 3}
     Mark2: {fileID: 21300000, guid: 958ff319e936d6147bda8effe611d0c6, type: 3}
   - CharacterId: Char_04
@@ -51,5 +93,19 @@ MonoBehaviour:
     SkillCutsceneImage: {fileID: 21300000, guid: 2e7f22c3b155eac4a8a467e694ad7db0, type: 3}
     HUDPortraitImage: {fileID: 21300000, guid: 235e3bc7c2e71a94b9f6d7b0a6331bfe, type: 3}
     HUDSelectedPortraitImage: {fileID: 21300000, guid: 2e7f22c3b155eac4a8a467e694ad7db0, type: 3}
+    LobbyIdleFrames:
+    - {fileID: 642965823, guid: a117eb7b8f1ed2e4d9b916d6ff8b0fe2, type: 3}
+    - {fileID: -1124264600, guid: a117eb7b8f1ed2e4d9b916d6ff8b0fe2, type: 3}
+    - {fileID: 1842952630, guid: a117eb7b8f1ed2e4d9b916d6ff8b0fe2, type: 3}
+    - {fileID: 1590517296, guid: a117eb7b8f1ed2e4d9b916d6ff8b0fe2, type: 3}
+    - {fileID: 1281101753, guid: a117eb7b8f1ed2e4d9b916d6ff8b0fe2, type: 3}
+    - {fileID: 1937426371, guid: a117eb7b8f1ed2e4d9b916d6ff8b0fe2, type: 3}
+    LobbyBattleIdleFrames:
+    - {fileID: -1727947082, guid: 0ade7ee151e63bf45baaa495408f02c0, type: 3}
+    - {fileID: 47205747, guid: 0ade7ee151e63bf45baaa495408f02c0, type: 3}
+    - {fileID: 452559377, guid: 0ade7ee151e63bf45baaa495408f02c0, type: 3}
+    - {fileID: 229587353, guid: 0ade7ee151e63bf45baaa495408f02c0, type: 3}
+    - {fileID: -1916269015, guid: 0ade7ee151e63bf45baaa495408f02c0, type: 3}
+    - {fileID: -1456362603, guid: 0ade7ee151e63bf45baaa495408f02c0, type: 3}
     Mark: {fileID: 21300000, guid: 7f0c862d16fc9d04ebf2bc3a94a25113, type: 3}
     Mark2: {fileID: 21300000, guid: f1c08b480710a0346bed0a3012d03254, type: 3}

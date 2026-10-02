@@ -35,8 +35,6 @@ public class CharPick : MonoBehaviour
     [SerializeField] private float bgExpandDuration = 0.12f;
 
     [Header("Party Confirm")]
-    [SerializeField] private int firstPartyDefaultDeployCellNumber = 7;
-    [SerializeField] private int maxDeployGridCount = 15;
     [SerializeField] private bool resetPendingSelectionOnEnable = true;
     [SerializeField] private bool resetPendingSelectionOnDisable = true;
 
@@ -48,6 +46,10 @@ public class CharPick : MonoBehaviour
 
     private GameObject currentPreview;
     private string currentPreviewCharacterId;
+    // 캐릭터 프리뷰는 플레이 중 교체할 때 Destroy하지 않고 캐시해 재사용합니다.
+    // Inspector가 런타임 프리뷰를 선택하고 있어도 대상이 갑자기 사라지지 않아
+    // SerializedObjectNotCreatableException / MissingReferenceException 발생을 막습니다.
+    private readonly Dictionary<string, GameObject> previewCache = new(System.StringComparer.OrdinalIgnoreCase);
 
     private Coroutine bgAnimRoutine;
     private Vector3 previewBackgroundOriginalScale;
@@ -69,6 +71,7 @@ public class CharPick : MonoBehaviour
     private void OnEnable()
     {
         AutoBindCharButtonsIfNeeded();
+        EnsureReadyPanelGridController();
         ClampCenterIndex();
         SubscribeNetworkPartyEvents();
 
@@ -97,6 +100,7 @@ public class CharPick : MonoBehaviour
         ConfigurePreviewCanvasScaler();
         CachePreviewBackgroundScale();
         AutoBindCharButtonsIfNeeded();
+        EnsureReadyPanelGridController();
         ClampCenterIndex();
 
         for (int i = 0; i < charBtns.Count; i++)
@@ -132,6 +136,7 @@ public class CharPick : MonoBehaviour
 
     private void OnDisable()
     {
+        ReleaseEditorSelectionFromAllPreviews();
         ClearNetworkViewedCharacterOnDisable();
         UnsubscribeNetworkPartyEvents();
 
@@ -290,15 +295,160 @@ public class CharPick : MonoBehaviour
         string characterId = btn.CharacterId;
         int registeredSlot = partyStore.FindCharacterSlot(characterId);
 
+        // 이미 Ready_Panel의 Grid에 등록된 캐릭터를 다시 누르면 파티에서도 해제합니다.
         if (registeredSlot >= 0)
         {
             LobbyCharacterEquipmentReleaseUtility.ReleaseAll(characterId);
+            ClearReadyPanelPlacementSelection(registeredSlot);
             partyStore.ClearSlot(registeredSlot);
+            ClearPendingReadyPanelInfoSelection(btn);
             RefreshInfoPanelPartyEditState();
             return;
         }
 
-        ApplyCharacterToFirstEmptyInfoPanelPartySlot(btn);
+        // 아직 파티에는 등록하지 않습니다.
+        // Info_Panel 클릭은 Ready_Panel에 배치할 캐릭터를 고르는 단계이며,
+        // 실제 파티 등록과 시작 위치 저장은 Grid를 클릭하거나 드롭했을 때 함께 처리합니다.
+        SelectInfoCharacterForReadyPanelPlacement(btn);
+    }
+
+    public bool TryGetOrRegisterPartySlotForReadyDrag(CharBtn btn, out int partySlotIndex)
+    {
+        partySlotIndex = -1;
+
+        if (btn == null || btn.IsLocked || !HasUsableCharacterData(btn) ||
+            DataManager.Instance?.PartyRuntimeStore == null)
+        {
+            return false;
+        }
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        partySlotIndex = partyStore.FindCharacterSlot(btn.CharacterId);
+        if (partySlotIndex >= 0)
+            return true;
+
+        if (!btn.PrepareCharacterForPartyAction(false))
+            return false;
+
+        if (!ApplyCharacterToFirstEmptyInfoPanelPartySlot(btn))
+            return false;
+
+        partySlotIndex = partyStore.FindCharacterSlot(btn.CharacterId);
+        return partySlotIndex >= 0;
+    }
+
+    public bool TryRegisterCharacterToReadyGrid(CharBtn btn, int gridIndex, out int partySlotIndex)
+    {
+        partySlotIndex = -1;
+
+        if (btn == null || btn.IsLocked || !HasUsableCharacterData(btn) ||
+            DataManager.Instance?.PartyRuntimeStore == null)
+        {
+            return false;
+        }
+
+        if (!btn.PrepareCharacterForPartyAction(false))
+            return false;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        string characterId = btn.CharacterId;
+        partySlotIndex = partyStore.FindCharacterSlot(characterId);
+        bool newlyRegistered = partySlotIndex < 0;
+
+        if (newlyRegistered)
+        {
+            for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(partyStore.GetCharacterId(i)))
+                    continue;
+
+                if (!partyStore.SetCharacter(i, characterId))
+                    return false;
+
+                partySlotIndex = i;
+                break;
+            }
+
+            if (partySlotIndex < 0)
+            {
+                Debug.LogWarning("[Party] 빈 파티 슬롯이 없습니다.");
+                return false;
+            }
+        }
+
+        if (!partyStore.SetSpawnGridIndex(partySlotIndex, gridIndex))
+        {
+            if (newlyRegistered)
+                partyStore.ClearSlot(partySlotIndex);
+
+            partySlotIndex = -1;
+            return false;
+        }
+
+        ClearPendingReadyPanelInfoSelection(btn);
+        RefreshInfoPanelPartyEditState();
+        return true;
+    }
+
+    private static void SelectInfoCharacterForReadyPanelPlacement(CharBtn btn)
+    {
+        if (btn == null)
+            return;
+
+        SpawnGridPanel[] panels = FindObjectsByType<SpawnGridPanel>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            if (panels[i] != null)
+                panels[i].SelectInfoCharacterForPlacement(btn);
+        }
+    }
+
+    private static void ClearPendingReadyPanelInfoSelection(CharBtn btn)
+    {
+        SpawnGridPanel[] panels = FindObjectsByType<SpawnGridPanel>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            if (panels[i] != null)
+                panels[i].ClearInfoCharacterPlacementSelection(btn);
+        }
+    }
+
+    private static void SelectCharacterForReadyPanelPlacement(int partySlotIndex)
+    {
+        if (partySlotIndex < 0)
+            return;
+
+        SpawnGridPanel[] panels = FindObjectsByType<SpawnGridPanel>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            if (panels[i] != null)
+                panels[i].SelectPartySlotForPlacement(partySlotIndex);
+        }
+    }
+
+    private static void ClearReadyPanelPlacementSelection(int partySlotIndex)
+    {
+        if (partySlotIndex < 0)
+            return;
+
+        SpawnGridPanel[] panels = FindObjectsByType<SpawnGridPanel>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            if (panels[i] != null)
+                panels[i].ClearSelectionForPartySlot(partySlotIndex);
+        }
     }
 
     private void RefreshInfoPanelPartyEditState()
@@ -770,14 +920,15 @@ public class CharPick : MonoBehaviour
                 continue;
             }
 
+            bool characterChanged = !string.IsNullOrWhiteSpace(previousCharacterId) &&
+                                    !string.Equals(previousCharacterId, characterId, System.StringComparison.Ordinal);
+
+            if (characterChanged)
+                partyStore.ClearSlot(i);
+
+            // 시작 위치는 자동 지정하지 않습니다.
+            // 새로 등록된 캐릭터는 Ready_Panel의 Grid01~15에서 사용자가 직접 배치합니다.
             partyStore.SetCharacter(i, characterId);
-
-            int defaultGridIndex = GetDefaultDeployGridIndex(i);
-
-            if (IsValidDeployGridIndex(defaultGridIndex))
-                partyStore.SetSpawnGridIndex(i, defaultGridIndex);
-            else
-                Debug.LogWarning("[Party] 빈 배치 그리드가 없습니다.");
         }
     }
 
@@ -823,62 +974,15 @@ public class CharPick : MonoBehaviour
             LobbyCharacterEquipmentReleaseUtility.ReleaseAll(previousCharacterId);
         }
 
+        if (!string.IsNullOrWhiteSpace(previousCharacterId) &&
+            !string.Equals(previousCharacterId, characterId, System.StringComparison.Ordinal))
+        {
+            // 교체된 캐릭터가 기존 캐릭터의 시작 위치를 자동으로 이어받지 않도록 초기화합니다.
+            partyStore.ClearSlot(enteredSlot);
+        }
+
+        // 시작 위치는 Ready_Panel에서 직접 선택합니다.
         partyStore.SetCharacter(enteredSlot, characterId);
-
-        int defaultGridIndex = FindDefaultDeployGridIndexForSlot(enteredSlot);
-
-        if (defaultGridIndex >= 0)
-            partyStore.SetSpawnGridIndex(enteredSlot, defaultGridIndex);
-        else
-            Debug.LogWarning("[Party] 빈 배치 그리드가 없습니다.");
-    }
-
-    private int FindDefaultDeployGridIndexForSlot(int partySlotIndex)
-    {
-        int preferredGridIndex = GetDefaultDeployGridIndex(partySlotIndex);
-
-        if (IsAvailableDeployGridForSlot(preferredGridIndex, partySlotIndex))
-            return preferredGridIndex;
-
-        for (int i = 0; i < maxDeployGridCount; i++)
-        {
-            if (IsAvailableDeployGridForSlot(i, partySlotIndex))
-                return i;
-        }
-
-        return -1;
-    }
-
-    private int GetDefaultDeployGridIndex(int partySlotIndex)
-    {
-        return Mathf.Max(1, firstPartyDefaultDeployCellNumber) - 1 + partySlotIndex;
-    }
-
-    private bool IsValidDeployGridIndex(int gridIndex)
-    {
-        return gridIndex >= 0 && gridIndex < maxDeployGridCount;
-    }
-
-    private bool IsAvailableDeployGridForSlot(int gridIndex, int partySlotIndex)
-    {
-        if (!IsValidDeployGridIndex(gridIndex))
-            return false;
-
-        if (DataManager.Instance == null)
-            return false;
-
-        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
-
-        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
-        {
-            if (i == partySlotIndex)
-                continue;
-
-            if (partyStore.GetSpawnGridIndex(i) == gridIndex)
-                return false;
-        }
-
-        return true;
     }
 
     private void RefreshPartyViews()
@@ -898,7 +1002,6 @@ public class CharPick : MonoBehaviour
             if (spawnGridPanels[i] == null)
                 continue;
 
-            spawnGridPanels[i].AutoPlacePartyIfNeeded();
             spawnGridPanels[i].Refresh();
         }
     }
@@ -995,6 +1098,41 @@ public class CharPick : MonoBehaviour
     public void EndDrag(PointerEventData eventData)
     {
         // 고정형 캐릭터 버튼 목록에서는 드래그로 캐릭터를 넘기지 않는다.
+    }
+
+    private void EnsureReadyPanelGridController()
+    {
+        GameObject[] roots = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
+
+        for (int i = 0; i < roots.Length; i++)
+        {
+            Transform readyPanel = FindChildByNameRecursive(roots[i].transform, "Ready_Panel");
+            if (readyPanel == null)
+                continue;
+
+            if (readyPanel.GetComponent<SpawnGridPanel>() == null)
+                readyPanel.gameObject.AddComponent<SpawnGridPanel>();
+
+            return;
+        }
+    }
+
+    private static Transform FindChildByNameRecursive(Transform root, string targetName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(targetName))
+            return null;
+
+        if (string.Equals(root.name, targetName, System.StringComparison.OrdinalIgnoreCase))
+            return root;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform found = FindChildByNameRecursive(root.GetChild(i), targetName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 
     private void AutoBindCharButtonsIfNeeded()
@@ -1283,24 +1421,89 @@ public class CharPick : MonoBehaviour
         CharacterSelectionState.Instance.SelectCharacter(btn.CharacterType, characterId);
     }
 
+
+    /// <summary>
+    /// 플레이 중 교체되는 프리뷰를 Unity Inspector가 선택하고 있으면 Destroy 직전에
+    /// 안전한 오브젝트로 선택을 옮겨 Editor의 SerializedObject/MissingReference 오류를 방지합니다.
+    /// 빌드에는 UnityEditor 코드가 포함되지 않습니다.
+    /// </summary>
+    private void ReleaseEditorSelectionFromPreview(GameObject preview)
+    {
+#if UNITY_EDITOR
+        if (preview == null)
+            return;
+
+        GameObject selected = UnityEditor.Selection.activeGameObject;
+        if (selected == null)
+            return;
+
+        Transform selectedTransform = selected.transform;
+        Transform previewTransform = preview.transform;
+        if (selectedTransform != previewTransform && !selectedTransform.IsChildOf(previewTransform))
+            return;
+
+        GameObject safeTarget = previewRoot != null ? previewRoot.gameObject : gameObject;
+        UnityEditor.Selection.activeGameObject = safeTarget;
+#endif
+    }
+
+    private void ReleaseEditorSelectionFromAllPreviews()
+    {
+#if UNITY_EDITOR
+        GameObject selected = UnityEditor.Selection.activeGameObject;
+        if (selected == null)
+            return;
+
+        Transform selectedTransform = selected.transform;
+        foreach (KeyValuePair<string, GameObject> pair in previewCache)
+        {
+            GameObject preview = pair.Value;
+            if (preview == null)
+                continue;
+
+            Transform previewTransform = preview.transform;
+            if (selectedTransform == previewTransform || selectedTransform.IsChildOf(previewTransform))
+            {
+                UnityEditor.Selection.activeGameObject = previewRoot != null ? previewRoot.gameObject : gameObject;
+                return;
+            }
+        }
+#endif
+    }
+
     private void ShowPreview(string characterId)
     {
         if (previewRoot == null)
             return;
 
-        if (characterId == currentPreviewCharacterId && currentPreview != null)
-            return;
-
-        currentPreviewCharacterId = characterId;
-
-        if (currentPreview != null)
+        string normalizedId = string.IsNullOrWhiteSpace(characterId) ? null : characterId.Trim();
+        if (!string.IsNullOrEmpty(normalizedId) &&
+            string.Equals(normalizedId, currentPreviewCharacterId, System.StringComparison.OrdinalIgnoreCase) &&
+            currentPreview != null)
         {
-            Destroy(currentPreview);
-            currentPreview = null;
+            if (!currentPreview.activeSelf)
+                currentPreview.SetActive(true);
+            return;
         }
 
-        if (string.IsNullOrWhiteSpace(characterId))
+        if (currentPreview != null)
+            currentPreview.SetActive(false);
+
+        currentPreview = null;
+        currentPreviewCharacterId = normalizedId;
+
+        if (string.IsNullOrEmpty(normalizedId))
             return;
+
+        if (previewCache.TryGetValue(normalizedId, out GameObject cachedPreview) && cachedPreview != null)
+        {
+            currentPreview = cachedPreview;
+            currentPreview.transform.SetParent(previewRoot, false);
+            currentPreview.transform.localScale = Vector3.one * 0.4f;
+            currentPreview.SetActive(true);
+            PlayPreviewBackgroundAnim();
+            return;
+        }
 
         if (DataManager.Instance == null)
         {
@@ -1314,9 +1517,9 @@ public class CharPick : MonoBehaviour
             return;
         }
 
-        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewUIPrefab(characterId, out var prefab))
+        if (!DataManager.Instance.CharacterPrefabDatabase.TryGetPreviewUIPrefab(normalizedId, out var prefab))
         {
-            Debug.LogWarning("[CharPick] PreviewUIPrefab not found: " + characterId);
+            Debug.LogWarning("[CharPick] PreviewUIPrefab not found: " + normalizedId);
             return;
         }
 
@@ -1324,8 +1527,9 @@ public class CharPick : MonoBehaviour
             return;
 
         currentPreview = Instantiate(prefab, previewRoot, false);
-        currentPreview.name = "Preview_" + characterId;
+        currentPreview.name = "Preview_" + normalizedId;
         currentPreview.transform.localScale = Vector3.one * 0.4f;
+        previewCache[normalizedId] = currentPreview;
 
         PlayPreviewBackgroundAnim();
     }
