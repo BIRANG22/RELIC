@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.IO;
 using Relic.Gameplay.Data;
@@ -20,8 +20,8 @@ public class SaveSystem : Singleton<SaveSystem>
     private bool suppressCheckpointAutosave;
     private List<BattleRoomGridEffectSaveData> pendingBattleRoomGridEffects = new();
     private List<BattleRoomMonsterCommandSaveData> pendingBattleRoomMonsterCommands = new();
-    // Å½»çÁøÇàÀ¸·Î ÀĞÀº ÀúÀåº»À» BattleScene ÃÊ±âÈ­°¡ ³¡³¯ ¶§±îÁö À¯ÁöÇÕ´Ï´Ù.
-    // ·±Å¸ÀÓ µ¥ÀÌÅÍ Apply ÈÄ¿¡µµ ÀüÅõ¹æ 1ÅÏÀÇ È®Á¤ °á°ú(Àå¾Ö¹°/¸ó½ºÅÍ ¿¹¾à)´Â ÀÌ ½º³À¼¦¿¡¼­ º¹±¸ÇÕ´Ï´Ù.
+    // íƒì‚¬ ì§„í–‰ìœ¼ë¡œ ì½ì€ ì €ì¥ë³¸ì„ BattleScene ì´ˆê¸°í™”ê°€ ëë‚  ë•Œê¹Œì§€ ìœ ì§€í•©ë‹ˆë‹¤.
+    // ëŸ°íƒ€ì„ ë°ì´í„° Apply í›„ì—ë„ ì „íˆ¬ë°© 1í„´ì˜ í™•ì • ê²°ê³¼(ì¥ì• ë¬¼/ëª¬ìŠ¤í„° ì˜ˆì•½)ëŠ” ì´ ìŠ¤ëƒ…ìƒ·ì—ì„œ ë³µêµ¬í•©ë‹ˆë‹¤.
     private GameSaveData pendingBattleContinueSaveData;
     private ResumeData pendingResumeData;
 
@@ -38,7 +38,7 @@ public class SaveSystem : Singleton<SaveSystem>
     }
 
     /// <summary>
-    /// ÀúÀå ÆÄÀÏÀ» »èÁ¦ÇÕ´Ï´Ù. ¾ğ¾î¿Í À½·® °°Àº PlayerPrefs ¼³Á¤°ªÀº °Çµå¸®Áö ¾Ê½À´Ï´Ù.
+    /// ì €ì¥ íŒŒì¼ì„ ì‚­ì œí•©ë‹ˆë‹¤. ì–¸ì–´ì™€ ìŒëŸ‰ ê°™ì€ PlayerPrefs ì„¤ì •ê°’ì€ ê±´ë“œë¦¬ì§€ ì•ŠìŠµë‹ˆë‹¤.
     /// </summary>
     public bool DeleteSaveFile()
     {
@@ -86,6 +86,7 @@ public class SaveSystem : Singleton<SaveSystem>
         }
 
         CommitRuntimeStateContributorsForSave();
+        CaptureLobbyCharacterLoadoutsFromCurrentRuntime();
         RecordDiscoveryService.BackfillFromCurrentState(DataManager.Instance);
 
         GameSaveData saveData = CreateSaveData();
@@ -112,6 +113,7 @@ public class SaveSystem : Singleton<SaveSystem>
         }
 
         CommitRuntimeStateContributorsForSave();
+        CaptureLobbyCharacterLoadoutsFromCurrentRuntime();
         RecordDiscoveryService.BackfillFromCurrentState(DataManager.Instance);
         GameSaveData saveData = CreateSaveData();
         saveData.Resume = CloneSerializable(resumeData);
@@ -136,8 +138,8 @@ public class SaveSystem : Singleton<SaveSystem>
         battleRoomEntryCheckpointNodeIndex = map.CurrentNodeIndex;
         battleRoomEntryCheckpointMapId = map.CurrentMapId ?? string.Empty;
 
-        // ÀÌ¾îÇÏ±â·Î °°Àº ÀüÅõ¹æ¿¡ ÀçÁøÀÔÇÏ¸é BattleSceneController°¡ Ã¼Å©Æ÷ÀÎÆ®¸¦ ´Ù½Ã Àâ½À´Ï´Ù.
-        // ÀÌ¶§ ÀúÀå ÆÄÀÏ¿¡ ÀÖ´ø È®Á¤ 1ÅÏ »óÅÂ¸¦ ÀÒÁö ¾Êµµ·Ï »õ Ã¼Å©Æ÷ÀÎÆ®¿¡ Áï½Ã º´ÇÕÇÕ´Ï´Ù.
+        // ì´ì–´í•˜ê¸°ë¡œ ê°™ì€ ì „íˆ¬ë°©ì— ì¬ì§„ì…í•˜ë©´ BattleSceneControllerê°€ ì²´í¬í¬ì¸íŠ¸ë¥¼ ë‹¤ì‹œ ì¡ìŠµë‹ˆë‹¤.
+        // ì´ë•Œ ì €ì¥ íŒŒì¼ì— ìˆë˜ í™•ì • 1í„´ ìƒíƒœë¥¼ ìƒì§€ ì•Šë„ë¡ ìƒˆ ì²´í¬í¬ì¸íŠ¸ì— ì¦‰ì‹œ ë³‘í•©í•©ë‹ˆë‹¤.
         MergeResolvedBattleRoomEntryStateIntoCheckpoint(map);
     }
 
@@ -149,8 +151,8 @@ public class SaveSystem : Singleton<SaveSystem>
     }
 
     /// <summary>
-    /// ÀÌ¾îÇÏ±â Àü¿ë ÀüÅõ¹æ 1ÅÏ ½º³À¼¦°ú Ã¼Å©Æ÷ÀÎÆ® Ä³½Ã¸¦ ¸ğµÎ ºñ¿ó´Ï´Ù.
-    /// ÀüÅõ Æ÷±â ¶Ç´Â »õ Å½»ç¸¦ ½ÃÀÛÇÒ ¶§ È£ÃâÇØ ÀÌÀü Å½»çÀÇ Àå¾Ö¹°/¸ó½ºÅÍ ¿¹¾àÀÌ Àç»ç¿ëµÇÁö ¾Ê°Ô ÇÕ´Ï´Ù.
+    /// ì´ì–´í•˜ê¸° ì „ìš© ì „íˆ¬ë°© 1í„´ ìŠ¤ëƒ…ìƒ·ê³¼ ì²´í¬í¬ì¸íŠ¸ ìºì‹œë¥¼ ëª¨ë‘ ë¹„ì›ë‹ˆë‹¤.
+    /// ì „íˆ¬ í¬ê¸° ë˜ëŠ” ìƒˆ íƒì‚¬ë¥¼ ì‹œì‘í•  ë•Œ í˜¸ì¶œí•´ ì´ì „ íƒì‚¬ì˜ ì¥ì• ë¬¼/ëª¬ìŠ¤í„° ì˜ˆì•½ì´ ì¬ì‚¬ìš©ë˜ì§€ ì•Šê²Œ í•©ë‹ˆë‹¤.
     /// </summary>
     public void ClearBattleRoomResumeState()
     {
@@ -212,8 +214,8 @@ public class SaveSystem : Singleton<SaveSystem>
         if (!CanContinueBattle(saveData))
             return false;
 
-        // ApplySaveData´Â Ä¿½ºÅÒ ÀüÅõ¹æ Ã¼Å©Æ÷ÀÎÆ® ÇÊµå¸¦ ·±Å¸ÀÓ Store·Î ¿Å±âÁö ¾ÊÀ¸¹Ç·Î
-        // ¿øº» ÀúÀå ½º³À¼¦À» º°µµ·Î º¸°üÇÕ´Ï´Ù.
+        // ApplySaveDataëŠ” ì»¤ìŠ¤í…€ ì „íˆ¬ë°© ì²´í¬í¬ì¸íŠ¸ í•„ë“œë¥¼ ëŸ°íƒ€ì„ Storeë¡œ ì˜®ê¸°ì§€ ì•Šìœ¼ë¯€ë¡œ
+        // ì›ë³¸ ì €ì¥ ìŠ¤ëƒ…ìƒ·ì„ ë³„ë„ë¡œ ë³´ê´€í•©ë‹ˆë‹¤.
         pendingBattleContinueSaveData = CloneSerializable(saveData);
         pendingResumeData = CloneSerializable(saveData.Resume);
         PreparePendingResolvedBattleRoomEntryState(saveData);
@@ -252,8 +254,8 @@ public class SaveSystem : Singleton<SaveSystem>
     }
 
     /// <summary>
-    /// Å½»çÁøÇàÀ¸·Î ÀĞÀº ÀúÀåº»¿¡¼­ ÇöÀç ÀüÅõ¹æÀÇ È®Á¤µÈ 1ÅÏ ½ÃÀÛ »óÅÂ¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
-    /// pending ¸®½ºÆ®°¡ ÀÌ¹Ì ¼ÒºñµÆ´õ¶óµµ ÀúÀå ½º³À¼¦À» ÅëÇØ ´Ù½Ã ¾òÀ» ¼ö ÀÖ½À´Ï´Ù.
+    /// íƒì‚¬ì§„í–‰ìœ¼ë¡œ ì½ì€ ì €ì¥ë³¸ì—ì„œ í˜„ì¬ ì „íˆ¬ë°©ì˜ í™•ì •ëœ 1í„´ ì‹œì‘ ìƒíƒœë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
+    /// pending ë¦¬ìŠ¤íŠ¸ê°€ ì´ë¯¸ ì†Œë¹„ëë”ë¼ë„ ì €ì¥ ìŠ¤ëƒ…ìƒ·ì„ í†µí•´ ë‹¤ì‹œ ì–»ì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
     /// </summary>
     public bool TryGetResolvedBattleRoomEntryState(
         out IReadOnlyList<BattleRoomGridEffectSaveData> gridEffects,
@@ -565,6 +567,57 @@ public class SaveSystem : Singleton<SaveSystem>
             Directory.CreateDirectory(directory);
     }
 
+    /// <summary>
+    /// ë¡œë¹„ì—ì„œ ì €ì¥í•  ë•Œ í˜„ì¬ ìºë¦­í„° ëŸ°íƒ€ì„ì˜ ì¥ì°© ìƒíƒœë¥¼ ë¡œë¹„ ë¡œë“œì•„ì›ƒì— ë¨¼ì € ë°˜ì˜í•©ë‹ˆë‹¤.
+    /// ì´ë ‡ê²Œ í•´ì•¼ ì¬ì‹¤í–‰ ì‹œ ì˜¤ë˜ëœ CharacterLoadoutsê°€ ë°©ê¸ˆ ì¥ì°©í•œ ìœ ë¬¼/ì—°ì„±ì œë¥¼ ë®ì–´ì“°ì§€ ì•ŠìŠµë‹ˆë‹¤.
+    /// ë°°í‹€ ì¤‘ íšë“í•œ ì„ì‹œ ì¥ì°©ë¬¼ì´ ë¡œë¹„ ì €ì¥ì— ì„ì´ì§€ ì•Šë„ë¡ Lobby ì”¬ì—ì„œë§Œ ì‹¤í–‰í•©ë‹ˆë‹¤.
+    /// </summary>
+    private static void CaptureLobbyCharacterLoadoutsFromCurrentRuntime()
+    {
+        if (DataManager.Instance == null ||
+            !string.Equals(SceneManager.GetActiveScene().name, SceneName.Lobby, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore?.GetOrCreate();
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        CharacterRuntimeStore characterStore = DataManager.Instance.CharacterRuntimeStore;
+        if (lobby == null || partyStore == null || characterStore == null)
+            return;
+
+        lobby.CharacterLoadouts ??= new List<LobbyCharacterLoadoutData>();
+        lobby.CharacterLoadouts.Clear();
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+            if (string.IsNullOrWhiteSpace(characterId) ||
+                !characterStore.TryGet(characterId, out CharacterRuntimeData character) ||
+                character == null)
+            {
+                continue;
+            }
+
+            lobby.CharacterLoadouts.Add(new LobbyCharacterLoadoutData
+            {
+                CharacterId = string.IsNullOrWhiteSpace(character.CharacterId)
+                    ? characterId.Trim()
+                    : character.CharacterId.Trim(),
+                EquippedRelicIds = CopyStringArrayForLobbySave(character.EquippedRelicIds, EquippedRelicSlotCount),
+                EquippedSkillIds = CopyStringArrayForLobbySave(character.EquippedSkillIds, EquippedSkillSlotCount)
+            });
+        }
+    }
+
+    private static string[] CopyStringArrayForLobbySave(string[] source, int length)
+    {
+        var result = new string[length];
+        if (source != null)
+            Array.Copy(source, result, Math.Min(source.Length, length));
+        return result;
+    }
+
     private static void CommitRuntimeStateContributorsForSave()
     {
         MonoBehaviour[] behaviours = FindObjectsByType<MonoBehaviour>(
@@ -853,7 +906,7 @@ public class BattleRoomMonsterCommandSaveData
     public string RuntimeId;
     public string MonsterId;
     public int MonsterGridIndex = -1;
-    // ÀüÅõ¹æ¿¡¼­ »ı¼ºµÈ ¸ó½ºÅÍ ¸ñ·ÏÀÇ °íÁ¤ ¼ø¹øÀÔ´Ï´Ù. RuntimeId Àç¹ß±Ş°ú µ¿Á¾ ¸ó½ºÅÍ Áßº¹À» ±¸ºĞÇÕ´Ï´Ù.
+    // ì „íˆ¬ë°©ì—ì„œ ìƒì„±ëœ ëª¬ìŠ¤í„° ëª©ë¡ì˜ ê³ ì • ìˆœë²ˆì…ë‹ˆë‹¤. RuntimeId ì¬ë°œê¸‰ê³¼ ë™ì¢… ëª¬ìŠ¤í„° ì¤‘ë³µì„ êµ¬ë¶„í•©ë‹ˆë‹¤.
     public int MonsterSpawnOrder = -1;
     public string SkillId;
     public int MoveX;

@@ -53,7 +53,11 @@ public sealed class LobbyBattleRuntimeTransferService
                     continue;
 
                 character.EquippedRelicIds = CopyArray(loadout.EquippedRelicIds, RelicSlotCount);
-                character.EquippedSkillIds = CopyArray(loadout.EquippedSkillIds, SkillSlotCount);
+                character.EquippedSkillIds = CreateLobbyBattleStartSkillLoadout(character);
+
+                // 저장된 로비 로드아웃에도 이전 탐사에서 얻은 기억이 남아 있을 수 있으므로
+                // 다음 탐사 시작 직전에는 로비 기본 장착 기억만 남기도록 함께 정리합니다.
+                loadout.EquippedSkillIds = CopyArray(character.EquippedSkillIds, SkillSlotCount);
             }
         }
 
@@ -94,6 +98,21 @@ public sealed class LobbyBattleRuntimeTransferService
         }
 
         return copy;
+    }
+
+    private static string[] CreateLobbyBattleStartSkillLoadout(CharacterRuntimeData character)
+    {
+        var skills = new string[SkillSlotCount];
+        if (character == null)
+            return skills;
+
+        // 로비에서 출발할 때 유지되는 기억은 캐릭터의 고유/기본 장착 기억뿐입니다.
+        // EquippedSkillIds[2], [3] 및 탐사 중 교체된 [1] 값은 다음 탐사로 넘기지 않습니다.
+        skills[0] = character.UniqueSkillId ?? string.Empty;
+        skills[1] = character.AbilitySkillId ?? string.Empty;
+        skills[2] = string.Empty;
+        skills[3] = string.Empty;
+        return skills;
     }
 
     private static string[] CopyArray(string[] source, int length)

@@ -17,7 +17,6 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
     private const string CommandResultPrefix = "RELIC_PARTY_RESULT_V1:";
     private const string SnapshotBroadcastPrefix = "RELIC_PARTY_SNAPSHOT_V1:";
     private const int MaxLobbyChatMessageBytes = 4096;
-    private const int FirstDefaultSpawnGridIndex = 6;
 
     public static SteamLobbyPartySynchronizer Instance { get; private set; }
 
@@ -967,8 +966,9 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             if (string.IsNullOrWhiteSpace(characterId))
                 continue;
 
+            // 네트워크 파티도 시작 위치를 자동 지정하지 않습니다.
+            // Ready_Panel에서 사용자가 직접 배치한 위치만 사용합니다.
             partyStore.SetCharacter(i, characterId);
-            partyStore.SetSpawnGridIndex(i, FirstDefaultSpawnGridIndex + i);
         }
     }
 #endif
@@ -1033,7 +1033,6 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
 
         for (int i = 0; i < spawnGridPanels.Length; i++)
         {
-            spawnGridPanels[i]?.AutoPlacePartyIfNeeded();
             spawnGridPanels[i]?.Refresh();
         }
     }

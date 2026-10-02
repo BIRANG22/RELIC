@@ -78,6 +78,48 @@ namespace Relic.Gameplay.Data
             return portrait != null;
         }
 
+        public bool TryGetLobbyIdleFrames(string characterId, out Sprite[] frames)
+        {
+            frames = null;
+
+            if (map == null)
+                Initialize();
+
+            if (string.IsNullOrWhiteSpace(characterId) || !map.TryGetValue(characterId.Trim(), out var entry))
+                return false;
+
+            frames = entry.LobbyIdleFrames;
+            return HasAnySprite(frames);
+        }
+
+        public bool TryGetLobbyBattleIdleFrames(string characterId, out Sprite[] frames)
+        {
+            frames = null;
+
+            if (map == null)
+                Initialize();
+
+            if (string.IsNullOrWhiteSpace(characterId) || !map.TryGetValue(characterId.Trim(), out var entry))
+                return false;
+
+            frames = entry.LobbyBattleIdleFrames;
+            return HasAnySprite(frames);
+        }
+
+        private static bool HasAnySprite(Sprite[] frames)
+        {
+            if (frames == null)
+                return false;
+
+            for (int i = 0; i < frames.Length; i++)
+            {
+                if (frames[i] != null)
+                    return true;
+            }
+
+            return false;
+        }
+
         public bool TryGetSideImage(string characterId, out Sprite sideImage)
         {
             sideImage = null;
@@ -196,6 +238,12 @@ namespace Relic.Gameplay.Data
         [Header("Battle HUD Portraits")]
         public Sprite HUDPortraitImage;
         public Sprite HUDSelectedPortraitImage;
+
+        [Header("Lobby Character Animation")]
+        [Tooltip("Info_Panel에서 파티 미선택 상태일 때 반복 재생하는 Idle 프레임입니다.")]
+        public Sprite[] LobbyIdleFrames = new Sprite[6];
+        [Tooltip("Info_Panel에서 파티 선택 상태일 때 반복 재생하는 Battle Idle 프레임입니다.")]
+        public Sprite[] LobbyBattleIdleFrames = new Sprite[6];
 
         public Sprite Mark;
         public Sprite Mark2;
