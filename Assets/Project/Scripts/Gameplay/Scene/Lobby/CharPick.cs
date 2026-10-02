@@ -460,6 +460,17 @@ public class CharPick : MonoBehaviour
         LobbyInfoPanelUI.RefreshAll();
         LobbyEquipPanelUI.RefreshAllCharacterData();
         LobbyPartyCharacterSettingOpenButton.RefreshAll();
+        SavePartySelectionImmediately();
+    }
+
+    /// <summary>
+    /// Ready_Panel 파티 편성/배치 변경을 즉시 저장합니다.
+    /// 게임을 바로 종료해도 마지막 등록 상태가 다음 실행에서 복원되도록 합니다.
+    /// </summary>
+    private static void SavePartySelectionImmediately()
+    {
+        if (SaveSystem.Instance != null)
+            SaveSystem.Instance.SaveCurrentProgress();
     }
 
     public void ToggleButtonPartyMarker(CharBtn btn)
@@ -522,6 +533,7 @@ public class CharPick : MonoBehaviour
         ApplyPendingSelectionToRuntime();
         RefreshPartyViews();
         SyncRuntimeSnapshotFromPendingSelection();
+        SavePartySelectionImmediately();
     }
 
     private bool PendingSelectionContainsCharacter(string characterId)
