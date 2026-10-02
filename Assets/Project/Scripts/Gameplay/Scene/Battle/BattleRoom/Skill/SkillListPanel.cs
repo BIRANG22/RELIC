@@ -179,20 +179,8 @@ public class SkillListPanel : MonoBehaviour
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
             return;
 
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            MoveKeyboardSkillSelection(-1);
-            return;
-        }
-
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            MoveKeyboardSkillSelection(1);
-            return;
-        }
-
-        if (Input.GetKeyDown(KeyCode.F))
-            UseKeyboardSelectedSkill();
+        // Battle shortcut remap: W/S/F are no longer used by the legacy skill-list keyboard navigation.
+        // Skills are selected directly from BattleCharacterPanelUI with Q/W/E/R.
     }
 
     private bool IsTypingInputFieldSelected()

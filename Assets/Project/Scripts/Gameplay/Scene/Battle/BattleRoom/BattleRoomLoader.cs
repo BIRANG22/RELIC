@@ -160,8 +160,49 @@ public class BattleRoomLoader : MonoBehaviour
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
-        HandleSkillPanelToggleInput();
-        HandleCharacterNumberSelectInput();
+        HandleCharacterCycleInput();
+    }
+
+    private void HandleCharacterCycleInput()
+    {
+        if (!Input.GetKeyDown(KeyCode.Tab))
+            return;
+
+        if (IsTypingInputFieldSelected())
+            return;
+
+        if (turnExecutor == null)
+            EnsureTurnExecutor();
+
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
+
+        if (playerPartyRuntimes.Count <= 0)
+            return;
+
+        int currentIndex = -1;
+        for (int i = 0; i < playerPartyRuntimes.Count; i++)
+        {
+            if (playerPartyRuntimes[i] == selectedPlayerRuntime)
+            {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        for (int offset = 1; offset <= playerPartyRuntimes.Count; offset++)
+        {
+            int nextIndex = (currentIndex + offset + playerPartyRuntimes.Count) % playerPartyRuntimes.Count;
+            CharacterRuntimeData nextRuntime = playerPartyRuntimes[nextIndex];
+
+            if (nextRuntime == null || nextRuntime.IsDead)
+                continue;
+
+            // Tab으로 캐릭터를 바꿀 때 슬롯 유지 여부는 BattleTimelineController가 판단합니다.
+            // 현재 슬롯에 등록 가능하면 유지하고, 불가능하면 가장 앞의 등록 가능 슬롯으로 이동합니다.
+            SelectPlayerHUD(nextRuntime);
+            return;
+        }
     }
 
     private void HandleSkillPanelToggleInput()
@@ -1148,6 +1189,8 @@ public class BattleRoomLoader : MonoBehaviour
 
     public void OnPlayerCharacterClicked(CharacterRuntimeData runtimeData)
     {
+        // 마우스로 캐릭터를 변경해도 슬롯 유지 여부는 BattleTimelineController가 판단합니다.
+        // 현재 슬롯에 등록 가능하면 유지하고, 불가능하면 가장 앞의 등록 가능 슬롯으로 이동합니다.
         SelectPlayerHUD(runtimeData);
     }
 
