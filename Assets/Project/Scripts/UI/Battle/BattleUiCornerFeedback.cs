@@ -33,12 +33,27 @@ public sealed class BattleUiCornerFeedback : MaskableGraphic
     [SerializeField, Min(0.01f)] private float endScale = 1.15f;
     [SerializeField] private AnimationCurve scaleCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    private bool destroyOnDisable;
+
     public static void Spawn(BattleUiCornerFeedback prefab, RectTransform target)
     {
         if (prefab == null || target == null)
             return;
 
+        // 타임라인 아이콘은 예약 갱신 중 잠깐 비활성화될 수 있습니다.
+        // 그 순간 기존 피드백 코루틴이 중단되면 오브젝트가 남을 수 있으므로,
+        // 같은 대상에 남아 있는 이전 피드백을 먼저 정리합니다.
+        BattleUiCornerFeedback[] existingFeedbacks =
+            target.GetComponentsInChildren<BattleUiCornerFeedback>(true);
+        for (int i = 0; i < existingFeedbacks.Length; i++)
+        {
+            BattleUiCornerFeedback existing = existingFeedbacks[i];
+            if (existing != null && existing.transform.parent == target)
+                Destroy(existing.gameObject);
+        }
+
         BattleUiCornerFeedback instance = Instantiate(prefab, target, false);
+        instance.destroyOnDisable = true;
         RectTransform rect = instance.rectTransform;
         rect.anchorMin = Vector2.zero;
         rect.anchorMax = Vector2.one;
@@ -55,6 +70,16 @@ public sealed class BattleUiCornerFeedback : MaskableGraphic
         base.Awake();
         raycastTarget = false;
         canvasRenderer.SetAlpha(0f);
+    }
+
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+
+        // 부모 아이콘이 비활성화되면 코루틴이 끝까지 진행되지 못할 수 있습니다.
+        // Spawn으로 생성된 일회성 피드백은 비활성화되는 즉시 제거해 잔상을 남기지 않습니다.
+        if (destroyOnDisable && Application.isPlaying)
+            Destroy(gameObject);
     }
 
     private IEnumerator PlayRoutine()
