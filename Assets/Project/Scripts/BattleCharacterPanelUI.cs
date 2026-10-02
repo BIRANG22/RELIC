@@ -28,6 +28,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         public TMP_Text HpValue;
         public Image CostFill;
         public TMP_Text CostValue;
+        public TMP_Text NameText;
         public readonly Image[] Karma = new Image[5];
         public Transform StatusContent;
         public readonly Image[] Runes = new Image[6];
@@ -114,6 +115,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [Header("Battle Action Controllers")]
     [Tooltip("스킬 선택과 범위 미리보기를 처리하는 전투 타임라인 컨트롤러입니다.")]
     [SerializeField] private BattleTimelineController battleTimelineController;
+
+    [Header("Keyboard Skill Range Preview")]
+    [Tooltip("Q/W/E/R 단축키로 스킬을 사용할 때 범위를 먼저 보여주는 시간입니다.")]
+    [SerializeField, Min(0f)] private float keyboardSkillRangePreviewDuration = 0.08f;
+    private Coroutine keyboardSkillRangePreviewCoroutine;
 
     [Tooltip("액티브 유물의 대상 선택을 처리하는 컨트롤러입니다.")]
     [SerializeField] private ActiveRelicTargetingController activeRelicTargetingController;
@@ -499,6 +505,14 @@ public class BattleCharacterPanelUI : MonoBehaviour
         {
             StopCoroutine(selectionPanelRefreshCoroutine);
             selectionPanelRefreshCoroutine = null;
+        }
+
+        if (keyboardSkillRangePreviewCoroutine != null)
+        {
+            StopCoroutine(keyboardSkillRangePreviewCoroutine);
+            keyboardSkillRangePreviewCoroutine = null;
+            EnsureBattleTimelineController();
+            battleTimelineController?.ClearSkillHoverRangePreview();
         }
 
         BattleTurnExecutor.BattleExecutionStarted -= HandleBattleExecutionStarted;
@@ -891,6 +905,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         view.HpValue = FindPath(root, "Resources/Hp/Value")?.GetComponent<TMP_Text>();
         view.CostFill = GetImage(FindPath(root, "Resources/Cost/Fill"));
         view.CostValue = FindPath(root, "Resources/Cost/Value")?.GetComponent<TMP_Text>();
+        view.NameText = FindPath(root, "Resources/Name/Nametext")?.GetComponent<TMP_Text>()
+            ?? FindPath(root, "Resources/Name/NameText")?.GetComponent<TMP_Text>();
         view.StatusContent = FindPath(root, "Resources/StatusEffect/Content");
 
         for (int i = 0; i < view.Karma.Length; i++)
@@ -980,6 +996,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (characterIcon == null && DataManager.Instance?.CharacterIconDatabase != null)
             DataManager.Instance.CharacterIconDatabase.TryGetIcon(runtime.CharacterId, out characterIcon);
         ApplyPartySprite(slot.CharacterIcon, characterIcon);
+
+        if (slot.NameText != null)
+        {
+            slot.NameText.text = master != null && !string.IsNullOrWhiteSpace(master.Name)
+                ? GameDataLocalization.CharacterName(master)
+                : runtime.CharacterId;
+        }
 
         Sprite passiveIcon = null;
         if (!string.IsNullOrWhiteSpace(runtime.PassiveSkillId) && DataManager.Instance?.SkillIconDatabase != null)
@@ -2070,30 +2093,70 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            OnSkill01Clicked();
+            StartKeyboardSkillWithRangePreview(0, skill01Button);
             return;
         }
 
         if (Input.GetKeyDown(KeyCode.W))
         {
-            OnSkill02Clicked();
+            StartKeyboardSkillWithRangePreview(1, skill02Button);
             return;
         }
 
         if (Input.GetKeyDown(KeyCode.E))
         {
-            OnSkill03Clicked();
+            StartKeyboardSkillWithRangePreview(2, skill03Button);
             return;
         }
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            OnSkill04Clicked();
+            StartKeyboardSkillWithRangePreview(3, skill04Button);
             return;
         }
 
         if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl))
             OnResetButtonClicked();
+    }
+
+    private void StartKeyboardSkillWithRangePreview(int displaySlotIndex, Button sourceButton)
+    {
+        if (keyboardSkillRangePreviewCoroutine != null)
+        {
+            StopCoroutine(keyboardSkillRangePreviewCoroutine);
+            keyboardSkillRangePreviewCoroutine = null;
+            EnsureBattleTimelineController();
+            battleTimelineController?.ClearSkillHoverRangePreview();
+        }
+
+        keyboardSkillRangePreviewCoroutine = StartCoroutine(
+            PlayKeyboardSkillRangePreviewAndUse(displaySlotIndex, sourceButton));
+    }
+
+    private IEnumerator PlayKeyboardSkillRangePreviewAndUse(int displaySlotIndex, Button sourceButton)
+    {
+        string skillId = GetSkillIdForDisplaySlot(displaySlotIndex);
+        SkillMasterData skillData = ResolveSkillData(skillId);
+
+        EnsureBattleTimelineController();
+
+        if (boundRuntime != null && skillData != null && battleTimelineController != null)
+        {
+            battleTimelineController.ShowSkillHoverRangePreview(boundRuntime, skillData);
+
+            float duration = Mathf.Max(0f, keyboardSkillRangePreviewDuration);
+            if (duration > 0f)
+                yield return new WaitForSecondsRealtime(duration);
+            else
+                yield return null;
+        }
+
+        UseSkillSlot(displaySlotIndex, sourceButton);
+
+        // Selection 타입 스킬은 ClearSkillHoverRangePreview 내부에서 실제 선택 범위를 복원합니다.
+        // Direction/Direct 타입은 등록이 끝났으므로 키보드용 임시 범위만 사라집니다.
+        battleTimelineController?.ClearSkillHoverRangePreview();
+        keyboardSkillRangePreviewCoroutine = null;
     }
 
     private static bool IsTypingInputFieldSelected()
