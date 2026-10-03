@@ -155,10 +155,15 @@ public class TitleManager : MonoBehaviour
         ResolveRunButtons();
 
         bool hasBattleContinueSave = HasBattleContinueSave();
+        bool hasTutorialContinueSave = HasTutorialBattleContinueSave();
+        bool showNormalBattleContinueButtons = hasBattleContinueSave && !hasTutorialContinueSave;
 
-        SetActiveSafely(startButtonObject, !hasBattleContinueSave);
-        SetActiveSafely(continueButtonObject, hasBattleContinueSave);
-        SetActiveSafely(abandonBattleButtonObject, hasBattleContinueSave);
+        // 전체 튜토리얼 도중 저장 후 타이틀로 돌아온 경우에는
+        // 일반 탐사의 "탐사 진행 / 탐사 포기" 버튼으로 전환하지 않습니다.
+        // 게임 시작 버튼을 그대로 유지해 튜토리얼을 처음부터 다시 시작할 수 있게 합니다.
+        SetActiveSafely(startButtonObject, !showNormalBattleContinueButtons);
+        SetActiveSafely(continueButtonObject, showNormalBattleContinueButtons);
+        SetActiveSafely(abandonBattleButtonObject, showNormalBattleContinueButtons);
 
         if (continueButtonObject != null)
         {
@@ -182,6 +187,11 @@ public class TitleManager : MonoBehaviour
     public bool HasBattleContinueSave()
     {
         return SaveSystem.Instance != null && SaveSystem.Instance.HasBattleContinueSave();
+    }
+
+    public bool HasTutorialBattleContinueSave()
+    {
+        return SaveSystem.Instance != null && SaveSystem.Instance.HasTutorialBattleContinueSave();
     }
 
     private void QuitGameImmediately()

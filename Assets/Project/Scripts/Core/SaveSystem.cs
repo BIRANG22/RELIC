@@ -69,6 +69,21 @@ public class SaveSystem : Singleton<SaveSystem>
         return CanContinueBattle(ReadSaveData());
     }
 
+    /// <summary>
+    /// 저장된 이어하기 데이터가 전체 튜토리얼 진행 중에 만들어진 저장인지 확인합니다.
+    /// 튜토리얼 저장은 일반 탐사 이어하기/탐사 포기 UI의 대상으로 취급하지 않습니다.
+    /// </summary>
+    public bool HasTutorialBattleContinueSave()
+    {
+        if (!HasSaveFile())
+            return false;
+
+        GameSaveData saveData = ReadSaveData();
+        return CanContinueBattle(saveData) &&
+               saveData.Battle != null &&
+               saveData.Battle.IsTutorialBattle;
+    }
+
     public bool SaveCurrentProgress()
     {
         if (DataManager.Instance == null)

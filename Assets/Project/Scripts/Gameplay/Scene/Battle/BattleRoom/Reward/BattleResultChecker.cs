@@ -395,6 +395,10 @@ public class BattleResultChecker : MonoBehaviour
 
         DataManager dataManager = DataManager.Instance;
 
+        // 전투 3까지 정상 완료한 시점에만 전체 튜토리얼을 1회 완료 처리합니다.
+        // 중간 저장/종료에서는 이 값이 OFF되지 않으므로 다음 게임 시작 시 튜토리얼을 다시 시작할 수 있습니다.
+        TutorialSettings.MarkTutorialSeen();
+
         // 인트로는 새 게임 시작 직후 Title 씬에서 이미 재생되었습니다.
         // 전투 3 종료 시에는 튜토리얼 탐사 중 장착한 유물/임시 전투 상태를 정리한 뒤
         // Title로 돌아가지 않고 바로 Lobby로 이동합니다.
