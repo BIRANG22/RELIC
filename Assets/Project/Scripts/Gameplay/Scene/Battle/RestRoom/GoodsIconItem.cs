@@ -51,7 +51,19 @@ public class GoodsIconItem : MonoBehaviour
     private void Awake()
     {
         AutoBind();
+        ProtectDynamicLocalizedTexts();
         CacheOriginalVisualColors();
+    }
+
+    private void OnEnable()
+    {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
     }
 
     private void OnValidate()
@@ -191,7 +203,7 @@ public class GoodsIconItem : MonoBehaviour
         string rarityTypeText = string.IsNullOrWhiteSpace(rarityText) ? "기억" : $"{rarityText} 기억";
 
         // Plate_Text는 상품 종류만 표시하며 레어도 색상을 적용하지 않습니다.
-        SetText(plateText, "기억");
+        SetText(plateText, GameLocalization.Get("common.memory"));
         SetText(skillRarity, rarityTypeText);
         ApplyRecordRarityColor(canonicalRarity, skillRarity);
     }
@@ -203,7 +215,7 @@ public class GoodsIconItem : MonoBehaviour
         string rarityTypeText = string.IsNullOrWhiteSpace(rarityText) ? "유물" : $"{rarityText} 유물";
 
         // Plate_Text는 상품 종류만 표시하며 레어도 색상을 적용하지 않습니다.
-        SetText(plateText, "유물");
+        SetText(plateText, GameLocalization.Get("common.relic"));
         SetText(relicRarity, rarityTypeText);
         ApplyRecordRarityColor(canonicalRarity, relicRarity);
     }
@@ -231,6 +243,44 @@ public class GoodsIconItem : MonoBehaviour
             if (target != null)
                 target.color = rarityColor;
         }
+    }
+
+    private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
+    {
+        if (goods == null)
+            return;
+
+        if (goods.Kind == RestRoomShopGoodsKind.Skill && goods.Skill != null)
+            BindSkill(goods.Skill, goods.Icon);
+        else if (goods.Kind == RestRoomShopGoodsKind.Relic && goods.Relic != null)
+            BindRelic(goods.Relic, goods.Icon);
+
+        if (isPurchased)
+            ApplyPurchasedVisualState();
+    }
+
+    private void ProtectDynamicLocalizedTexts()
+    {
+        ProtectDynamicLocalizedText(plateText);
+    }
+
+    private static void ProtectDynamicLocalizedText(TMP_Text target)
+    {
+        if (target == null)
+            return;
+
+        if (target.GetComponent<LocalizationIgnore>() == null)
+            target.gameObject.AddComponent<LocalizationIgnore>();
+        if (target.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            target.gameObject.AddComponent<LocalizationAutoBindingIgnore>();
+
+        LocalizedTMPText staticWriter = target.GetComponent<LocalizedTMPText>();
+        if (staticWriter != null)
+            staticWriter.enabled = false;
+
+        DynamicLocalizedTMPText dynamicWriter = target.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicWriter != null)
+            dynamicWriter.enabled = false;
     }
 
     private string GetSkillRarityText(SkillRarity rarity)

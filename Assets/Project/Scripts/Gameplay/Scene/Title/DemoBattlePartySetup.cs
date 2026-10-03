@@ -12,7 +12,7 @@ public static class DemoBattlePartySetup
     {
         "Char_01",
         "Char_02",
-        "Char_04"
+        "Char_03"
     };
 
     public static bool TryPrepare(DataManager dataManager)

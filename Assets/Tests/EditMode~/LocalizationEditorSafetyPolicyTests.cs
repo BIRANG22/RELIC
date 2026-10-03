@@ -36,6 +36,45 @@ public sealed class LocalizationEditorSafetyPolicyTests
     }
 
     [Test]
+    public void BindingRepair_ValidatesSourceBeforePreservingExistingKey()
+    {
+        string source = File.ReadAllText("Assets/Editor/LocalizationTextBindingRepairTool.cs");
+
+        Assert.That(source, Does.Contain("resolver.Validate(source, currentKey)"));
+        Assert.That(source, Does.Not.Contain("resolver.TryGetKorean(currentKey, out _)"));
+    }
+
+    [Test]
+    public void SceneScan_CrossValidatesActualStaticTextInIsolatedPreviewScene()
+    {
+        string source = File.ReadAllText("Assets/Editor/LocalizationManagerWindow.cs");
+        int scanSceneStart = source.IndexOf("private void ScanScene", StringComparison.Ordinal);
+        int scanTextsStart = source.IndexOf("private void ScanTexts", scanSceneStart, StringComparison.Ordinal);
+        string scanScene = source.Substring(scanSceneStart, scanTextsStart - scanSceneStart);
+
+        Assert.That(scanScene, Does.Contain("OpenPreviewScene"));
+        Assert.That(scanScene, Does.Contain("ClosePreviewScene"));
+        Assert.That(scanScene, Does.Not.Contain("OpenSceneMode.Additive"));
+        Assert.That(scanScene, Does.Contain("ScanTexts("));
+        Assert.That(scanScene, Does.Not.Contain("FindUnityYamlTmpTexts"));
+    }
+
+    [Test]
+    public void ApplySafe_RemovesUnusedKeysOnceAfterAllBindingRepairs()
+    {
+        string source = File.ReadAllText("Assets/Editor/LocalizationManagerWindow.cs");
+        int repairIndex = source.IndexOf("LocalizationTextBindingRepairTool.RepairAllBindings();", StringComparison.Ordinal);
+        int cleanupIndex = source.IndexOf("int removed = RemoveUnusedEntries", StringComparison.Ordinal);
+
+        Assert.That(repairIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(cleanupIndex, Is.GreaterThan(repairIndex));
+        Assert.That(
+            source.Split(new[] { "RemoveUnusedEntries(" }, StringSplitOptions.None).Length - 1,
+            Is.EqualTo(2),
+            "메서드 선언 1회와 전체 적용 호출 1회 외에 키별 정리를 수행하면 안 됩니다.");
+    }
+
+    [Test]
     public void TryValidateWorkbookWritable_WhenExcelOwnerFileExists_ReturnsActionableFailure()
     {
         string directory = Path.Combine(Path.GetTempPath(), "RelicLocalizationPolicyTests", Guid.NewGuid().ToString("N"));

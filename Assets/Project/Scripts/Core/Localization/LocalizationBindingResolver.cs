@@ -71,6 +71,22 @@ public static class LocalizationBindingSourcePolicy
             ? existingKey
             : null;
     }
+
+    /// <summary>정적 TMP는 현재 원문과 워크북 한국어가 일치할 때만 기존 키를 유지합니다.</summary>
+    public static string SelectStaticBindingKey(
+        string currentTmpText,
+        string existingKey,
+        string generatedContextKey,
+        LocalizationBindingResolver resolver)
+    {
+        if (resolver != null &&
+            resolver.Validate(currentTmpText, existingKey) == LocalizationBindingStatus.Valid)
+        {
+            return existingKey;
+        }
+
+        return generatedContextKey;
+    }
 }
 
 /// <summary>Workbook Korean source/key relations. Duplicate Korean copy never selects an arbitrary key.</summary>

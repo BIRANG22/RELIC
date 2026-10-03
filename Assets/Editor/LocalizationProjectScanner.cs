@@ -198,6 +198,7 @@ public static class LocalizationProjectScanner
                header.Contains("타임라인표기", StringComparison.Ordinal) ||
                header.Contains("특수행동", StringComparison.Ordinal) ||
                header.Contains("선택지", StringComparison.Ordinal) ||
+               compactHeader.Contains("선택불가", StringComparison.Ordinal) ||
                header.Contains("실패결과", StringComparison.Ordinal);
     }
 
@@ -234,7 +235,7 @@ public static class LocalizationProjectScanner
             "failure_description" => $"choice_{normalizedOrder}_failure_description",
             _ => field,
         };
-        return BuildGameDataKey("Event", eventId, choiceField);
+        return GameLocalization.BuildDataKey("Event", eventId, choiceField);
     }
 
     public static bool IsEventChoiceField(string header)
@@ -258,6 +259,14 @@ public static class LocalizationProjectScanner
         {
             return "details";
         }
+        if (compactHeader.Contains("선택지이름", StringComparison.Ordinal))
+            return "choice_name";
+        if (compactHeader.Contains("선택지내용", StringComparison.Ordinal))
+            return "choice_description";
+        if (compactHeader.Contains("선택불가", StringComparison.Ordinal))
+            return "disabled_choice_description";
+        if (compactHeader.Contains("실패결과", StringComparison.Ordinal))
+            return "failure_description";
         if (compactHeader.Contains("이름", StringComparison.Ordinal))
             return "name";
         if (compactHeader.Contains("제목", StringComparison.Ordinal))
@@ -277,14 +286,6 @@ public static class LocalizationProjectScanner
             return "special_action";
         if (compactHeader.Contains("타임라인", StringComparison.Ordinal))
             return "timeline_label";
-        if (compactHeader.Contains("선택지이름", StringComparison.Ordinal))
-            return "choice_name";
-        if (compactHeader.Contains("선택지내용", StringComparison.Ordinal))
-            return "choice_description";
-        if (compactHeader.Contains("선택불가", StringComparison.Ordinal))
-            return "disabled_choice_description";
-        if (compactHeader.Contains("실패결과", StringComparison.Ordinal))
-            return "failure_description";
         if (compactHeader == "타입")
             return "type";
         return "description";

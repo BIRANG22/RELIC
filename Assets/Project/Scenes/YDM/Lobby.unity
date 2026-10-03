@@ -3870,6 +3870,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   catalogGroup: {fileID: 1909700779}
   erosionValueText: {fileID: 744195647}
+  selectedScoreValueText: {fileID: 0}
   autoBindOnAwake: 1
   selectedBaskColor: {r: 0.4627451, g: 0, b: 0, a: 1}
   groupDimmedColor: {r: 0.46666667, g: 0.46666667, b: 0.46666667, a: 1}
@@ -96949,8 +96950,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96c92df5cf896ba42a8d3a8dd5bd2ae2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wheelSensitivity: 0.08
+  wheelStep: 0.12
   invertDirection: 0
+  edgeSnapThreshold: 0.02
 --- !u!1 &1979706824
 GameObject:
   m_ObjectHideFlags: 0
@@ -107482,8 +107484,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96c92df5cf896ba42a8d3a8dd5bd2ae2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wheelSensitivity: 0.08
+  wheelStep: 0.12
   invertDirection: 0
+  edgeSnapThreshold: 0.02
 --- !u!1 &2143895329
 GameObject:
   m_ObjectHideFlags: 0
