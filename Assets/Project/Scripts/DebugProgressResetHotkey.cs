@@ -485,6 +485,7 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
         TrialUnlockProgress.ResetProgress();
         TrialSelectionState.Clear();
         IntroSettings.ResetIntroSeenState();
+        TutorialSettings.SetShouldShowTutorial(true);
 
         ResetRuntimeStores();
 

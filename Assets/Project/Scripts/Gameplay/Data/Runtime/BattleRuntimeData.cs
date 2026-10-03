@@ -46,6 +46,10 @@ namespace Relic.Gameplay.Data
 
         public bool IsBattleRunInitialized;
         public bool IsDemoBattle;
+
+        // 튜토리얼 탐사에서는 일반 지도 생성을 사용하지 않고
+        // TutorialBattleEntrySetup에서 지정한 고정 Map 노드를 그대로 사용합니다.
+        public bool IsTutorialBattle;
     }
 
     [System.Serializable]

@@ -293,15 +293,16 @@ public class OptionPanelUI : MonoBehaviour
         else
         {
             tutorialToggle.onValueChanged.RemoveListener(OnTutorialToggleChanged);
-            tutorialToggle.SetIsOnWithoutNotify(TutorialSettings.ShouldShowTutorial);
+            tutorialToggle.SetIsOnWithoutNotify(TutorialSettings.ShouldPlayTutorial);
             tutorialToggle.onValueChanged.AddListener(OnTutorialToggleChanged);
         }
 
+        // 기존 TutorialToggle2(튜토리얼 즉시 보기)는 더 이상 사용하지 않습니다.
         if (tutorialPreviewToggle != null)
         {
             tutorialPreviewToggle.onValueChanged.RemoveListener(OnTutorialPreviewToggleChanged);
             tutorialPreviewToggle.SetIsOnWithoutNotify(false);
-            tutorialPreviewToggle.onValueChanged.AddListener(OnTutorialPreviewToggleChanged);
+            tutorialPreviewToggle.gameObject.SetActive(false);
         }
     }
 
@@ -368,26 +369,14 @@ public class OptionPanelUI : MonoBehaviour
 
     private void OnTutorialToggleChanged(bool shouldShowTutorial)
     {
-        TutorialSettings.SetShouldShowTutorial(shouldShowTutorial);
+        TutorialSettings.SetShouldPlayTutorial(shouldShowTutorial);
     }
 
     private void OnTutorialPreviewToggleChanged(bool isOn)
     {
-        if (!isOn)
-            return;
-
-        BattleFirstTutorialController tutorialController = FindFirstObjectByType<BattleFirstTutorialController>(FindObjectsInactive.Include);
-        if (tutorialController == null)
-        {
-            Debug.LogWarning(
-                "[OptionPanelUI] BattleFirstTutorialController를 찾을 수 없습니다.",
-                this);
-            tutorialPreviewToggle?.SetIsOnWithoutNotify(false);
-            return;
-        }
-
-        tutorialController.StartPreviewTutorial();
-        tutorialPreviewToggle.SetIsOnWithoutNotify(false);
+        // 기존 튜토리얼 패널 즉시 보기 기능은 사용하지 않습니다.
+        if (tutorialPreviewToggle != null)
+            tutorialPreviewToggle.SetIsOnWithoutNotify(false);
     }
 
     private void SyncTutorialToggleFromSettings()
@@ -395,7 +384,7 @@ public class OptionPanelUI : MonoBehaviour
         if (tutorialToggle == null)
             return;
 
-        tutorialToggle.SetIsOnWithoutNotify(TutorialSettings.ShouldShowTutorial);
+        tutorialToggle.SetIsOnWithoutNotify(TutorialSettings.ShouldPlayTutorial);
     }
 
     private void OnResolutionChanged(int index)

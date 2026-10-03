@@ -331,6 +331,9 @@ public class BattleResultChecker : MonoBehaviour
 
         if (sceneController != null)
         {
+            if (TryContinueTutorialRoute(sceneController))
+                return;
+
             // 일반 전투의 지도 복귀에서는 캐릭터/몬스터를 여기서 먼저 정리하지 않습니다.
             // BattleSceneController가 전환 화면으로 BattleRoom을 완전히 덮은 순간
             // PrepareRoomForMapSelection()을 호출해 전투 유닛을 정리합니다.
@@ -345,6 +348,72 @@ public class BattleResultChecker : MonoBehaviour
         Debug.LogWarning("[BattleResultChecker] BattleSceneController is missing.");
     }
 
+
+    private bool TryContinueTutorialRoute(BattleSceneController sceneController)
+    {
+        if (sceneController == null || DataManager.Instance == null)
+            return false;
+
+        BattleRuntimeData battle = DataManager.Instance.BattleRuntimeStore?.Get();
+        MapRuntimeData map = DataManager.Instance.MapRuntimeStore?.Get();
+
+        if (battle?.IsTutorialBattle != true || map == null)
+            return false;
+
+        // 튜토리얼 전투 1 종료 후에는 지도로 돌아가지 않고 Map_30 이벤트방으로 바로 이동합니다.
+        if (string.Equals(map.CurrentMapId, "Map_27", System.StringComparison.OrdinalIgnoreCase))
+        {
+            sceneController.OpenTutorialMapDirect(
+                "Map_30",
+                () => SetNextButtonVisible(false));
+            return true;
+        }
+
+        // 튜토리얼 전투 2 종료 후에는 지도를 거치지 않고 Map_31 이벤트 2로 바로 이동합니다.
+        if (string.Equals(map.CurrentMapId, TutorialBattleEntrySetup.SecondTutorialMapId, System.StringComparison.OrdinalIgnoreCase))
+        {
+            sceneController.OpenTutorialMapDirect(
+                TutorialBattleEntrySetup.SecondTutorialEventMapId,
+                () => SetNextButtonVisible(false));
+            return true;
+        }
+
+        // 튜토리얼 전투 3 종료 후에는 더 이상 지도로 돌아가지 않습니다.
+        // 인트로는 새 게임 시작 시 이미 재생되었으므로 튜토리얼 상태를 정리한 뒤 바로 로비로 이동합니다.
+        if (string.Equals(map.CurrentMapId, TutorialBattleEntrySetup.ThirdTutorialMapId, System.StringComparison.OrdinalIgnoreCase))
+        {
+            CompleteTutorialAndEnterLobby();
+            return true;
+        }
+
+        return false;
+    }
+
+    private async void CompleteTutorialAndEnterLobby()
+    {
+        SetNextButtonVisible(false);
+
+        DataManager dataManager = DataManager.Instance;
+
+        // 인트로는 새 게임 시작 직후 Title 씬에서 이미 재생되었습니다.
+        // 전투 3 종료 시에는 튜토리얼 탐사 중 장착한 유물/임시 전투 상태를 정리한 뒤
+        // Title로 돌아가지 않고 바로 Lobby로 이동합니다.
+        if (dataManager != null)
+            BattleRunAbandonService.AbandonCurrentRun(dataManager);
+
+        BattleRoomCleaner cleaner =
+            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
+        cleaner?.Clean();
+
+        if (GameManager.Instance?.StateMachine == null)
+        {
+            Debug.LogError(
+                "[BattleResultChecker] GameManager/StateMachine is missing. Cannot enter Lobby after tutorial.");
+            return;
+        }
+
+        await GameManager.Instance.StateMachine.ChangeState(GameStateType.Lobby);
+    }
 
     private void ShowBossClearChoiceButtons()
     {

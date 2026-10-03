@@ -711,11 +711,13 @@ public class UIManager : Singleton<UIManager>
         }
 
         bool isLobbyScene = IsLobbyScene();
+        bool isTutorialBattle = IsTutorialBattleRun();
 
         if (cachedGiveUpButton != null)
         {
-            cachedGiveUpButton.gameObject.SetActive(!isLobbyScene);
-            cachedGiveUpButton.interactable = !isLobbyScene;
+            bool canUseGiveUp = !isLobbyScene && !isTutorialBattle;
+            cachedGiveUpButton.gameObject.SetActive(canUseGiveUp);
+            cachedGiveUpButton.interactable = canUseGiveUp;
         }
 
         if (cachedQuitText == null && cachedQuitButton != null)
@@ -728,6 +730,13 @@ public class UIManager : Singleton<UIManager>
                 : GameLocalization.Get(BattleQuitButtonLocalizationKey);
             RefreshTmpText(cachedQuitText);
         }
+    }
+
+    private static bool IsTutorialBattleRun()
+    {
+        DataManager dataManager = DataManager.Instance;
+        BattleRuntimeData battleRuntime = dataManager?.BattleRuntimeStore?.Get();
+        return battleRuntime?.IsTutorialBattle == true;
     }
 
     private static void EnsureMenuPanelTextRefresher(GameObject menuPanel)

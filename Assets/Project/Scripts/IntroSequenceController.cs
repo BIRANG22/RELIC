@@ -222,6 +222,7 @@ public class IntroSequenceController : MonoBehaviour
     private bool isPlaying;
     private bool isTransitioning;
     private bool moveToLobbyWhenFinished;
+    private bool keepTransitionClosedWhenFinished;
     private float inputUnlockTime;
     private float nextAdvanceInputTime;
     private readonly Dictionary<Transform, Coroutine> objectAnimationCoroutines = new Dictionary<Transform, Coroutine>();
@@ -330,7 +331,7 @@ public class IntroSequenceController : MonoBehaviour
     /// </summary>
     public void PlayFirstTimeIntro()
     {
-        BeginIntroWithTransition(true);
+        BeginIntroWithTransition(true, false);
     }
 
     /// <summary>
@@ -339,7 +340,16 @@ public class IntroSequenceController : MonoBehaviour
     /// </summary>
     public void ReplayIntro()
     {
-        BeginIntroWithTransition(false);
+        BeginIntroWithTransition(false, false);
+    }
+
+    /// <summary>
+    /// 인트로 종료 후 현재 화면을 다시 보여주지 않고, 닫힌 전환 상태를 유지한 채
+    /// 외부에서 다음 씬 전환을 이어서 처리할 때 사용합니다.
+    /// </summary>
+    public void PlayIntroBeforeSceneChange()
+    {
+        BeginIntroWithTransition(false, true);
     }
 
     /// <summary>
@@ -408,7 +418,7 @@ public class IntroSequenceController : MonoBehaviour
         AudioManager.Instance.PlaySfx(lineAdvanceSoundId, Mathf.Clamp01(lineAdvanceSoundVolume));
     }
 
-    private async void BeginIntroWithTransition(bool goToLobbyAfterFinish)
+    private async void BeginIntroWithTransition(bool goToLobbyAfterFinish, bool keepTransitionClosedAfterFinish)
     {
         if (isPlaying || isTransitioning)
             return;
@@ -448,6 +458,7 @@ public class IntroSequenceController : MonoBehaviour
         ResetActionObjectsToInitialState();
 
         moveToLobbyWhenFinished = goToLobbyAfterFinish;
+        keepTransitionClosedWhenFinished = keepTransitionClosedAfterFinish;
         isPlaying = true;
         isTransitioning = true;
         AudioManager.Instance?.PlayBgm(BgmState.TitleIntro);
@@ -1319,7 +1330,9 @@ public class IntroSequenceController : MonoBehaviour
         SetIntroVisible(false);
 
         bool shouldMoveToLobby = moveToLobbyWhenFinished;
+        bool shouldKeepTransitionClosed = keepTransitionClosedWhenFinished;
         moveToLobbyWhenFinished = false;
+        keepTransitionClosedWhenFinished = false;
 
         if (shouldMoveToLobby)
         {
@@ -1335,6 +1348,21 @@ public class IntroSequenceController : MonoBehaviour
             IntroFinished?.Invoke();
 
             await MoveToLobbyAsync();
+            return;
+        }
+
+        // 인트로 직후 다른 씬으로 바로 이동하는 경우에는 타이틀을 다시 열지 않습니다.
+        // 화면을 닫은 상태로 유지하고 다음 씬 로드가 이 전환을 그대로 이어받게 합니다.
+        if (shouldKeepTransitionClosed)
+        {
+            SceneFlowManager sceneFlow = SceneFlowManager.Instance;
+            if (transition != null && sceneFlow != null)
+                sceneFlow.UseAlreadyClosedTransitionForNextLoad();
+
+            isPlaying = false;
+            isTransitioning = false;
+            HideOverlayCanvasesForIntro(false);
+            IntroFinished?.Invoke();
             return;
         }
 

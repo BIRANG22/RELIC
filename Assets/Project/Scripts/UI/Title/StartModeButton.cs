@@ -9,37 +9,146 @@ public class StartModeButton : MonoBehaviour
     [SerializeField] private bool playClickSound = true;
     [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
-    public async void OnClickStartMode()
+    private bool isProcessing;
+
+    public void OnClickStartMode()
     {
+        if (isProcessing)
+            return;
+
         PlayClickSound();
         TitleManager.CloseTitleModePanelsInScene();
 
         ResetPreviousRunRuntimeState();
 
-        // 파티 편성이 완전히 비어 있는 최초 게임 시작에서만 기본 파티를 구성합니다.
-        // 이미 플레이해서 저장된 파티가 있다면 InitialDefaultPartySetup 내부에서 그대로 유지합니다.
-        InitialDefaultPartySetup.TryInitialize(DataManager.Instance);
+        if (GameManager.Instance == null || GameManager.Instance.StateMachine == null)
+        {
+            Debug.LogError("[StartModeButton] GameManager state machine is missing.", this);
+            return;
+        }
+
+        if (DataManager.Instance == null)
+        {
+            Debug.LogError("[StartModeButton] DataManager is missing.", this);
+            return;
+        }
 
         GameManager.Instance.Context.SelectedGameMode = gameMode;
 
+        // 인트로와 전체 튜토리얼은 각각 1회 예약 방식으로 동작합니다.
+        // 인트로 ON + 튜토리얼 ON  : 인트로 -> 튜토리얼
+        // 인트로 ON + 튜토리얼 OFF : 인트로 -> 로비
+        // 인트로 OFF + 튜토리얼 ON : 튜토리얼
+        // 인트로 OFF + 튜토리얼 OFF: 로비
         if (IntroSettings.ShouldPlayIntro)
         {
             IntroSequenceController introController = IntroSequenceController.Instance;
             if (introController != null)
             {
-                // IntroToggle1은 다음 게임 시작 시 인트로를 1회 재생하는 예약 토글입니다.
-                // 실제 인트로가 시작되는 시점에 예약을 소비하여 OFF 상태로 저장합니다.
-                IntroSettings.MarkIntroSeen();
-                introController.PlayFirstTimeIntro();
+                isProcessing = true;
+
+                void HandleIntroFinished()
+                {
+                    introController.IntroFinished -= HandleIntroFinished;
+                    IntroSettings.MarkIntroSeen();
+                    isProcessing = false;
+                    ContinueAfterIntro();
+                }
+
+                introController.IntroFinished += HandleIntroFinished;
+                introController.PlayIntroBeforeSceneChange();
                 return;
             }
 
             Debug.LogWarning(
-                "[StartModeButton] IntroSequenceController is missing. Skipping intro and moving to lobby.",
+                "[StartModeButton] IntroSequenceController is missing. Continuing without intro.",
                 this);
         }
 
-        await GameManager.Instance.StateMachine.ChangeState(GameStateType.Lobby);
+        ContinueAfterIntro();
+    }
+
+    private void ContinueAfterIntro()
+    {
+        if (TutorialSettings.ShouldPlayTutorial)
+        {
+            StartTutorialBattle();
+            return;
+        }
+
+        EnterLobby();
+    }
+
+    /// <summary>
+    /// 전체 튜토리얼을 시작하고 첫 전투(Map_27)로 진입합니다.
+    /// 실제 시작되는 순간 옵션의 튜토리얼 예약값을 자동으로 OFF 처리합니다.
+    /// </summary>
+    public async void StartTutorialBattle()
+    {
+        if (isProcessing)
+            return;
+
+        isProcessing = true;
+
+        try
+        {
+            ResetPreviousRunRuntimeState();
+
+            if (GameManager.Instance == null || GameManager.Instance.StateMachine == null)
+            {
+                Debug.LogError("[StartModeButton] GameManager state machine is missing.", this);
+                return;
+            }
+
+            if (DataManager.Instance == null)
+            {
+                Debug.LogError("[StartModeButton] DataManager is missing.", this);
+                return;
+            }
+
+            GameManager.Instance.Context.SelectedGameMode = gameMode;
+
+            TutorialSettings.MarkTutorialSeen();
+            BattleFirstTutorialController.ResetAutoTutorialRunState();
+
+            if (!TutorialBattleEntrySetup.TryPrepareFirstBattle(DataManager.Instance))
+            {
+                Debug.LogError("[StartModeButton] Failed to prepare tutorial battle 1.", this);
+                return;
+            }
+
+            LobbyBattleEntryResult entryResult = await LobbyBattleEntryService.EnterBattleAsync();
+            if (!entryResult.Succeeded)
+            {
+                Debug.LogError(
+                    $"[StartModeButton] Failed to enter tutorial battle 1. {entryResult.Error}",
+                    this);
+            }
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async void EnterLobby()
+    {
+        if (isProcessing)
+            return;
+
+        isProcessing = true;
+
+        try
+        {
+            if (DataManager.Instance != null)
+                InitialDefaultPartySetup.TryInitialize(DataManager.Instance);
+
+            await GameManager.Instance.StateMachine.ChangeState(GameStateType.Lobby);
+        }
+        finally
+        {
+            isProcessing = false;
+        }
     }
 
     private void ResetPreviousRunRuntimeState()
@@ -47,8 +156,6 @@ public class StartModeButton : MonoBehaviour
         if (DataManager.Instance == null)
             return;
 
-        // 타이틀에서 로비로 다시 들어오는 것만으로 저장된 로비 장착 정보를 지우면 안 됩니다.
-        // 실제 탐사 중에 타이틀로 빠져나온 경우에만 탐사 상태를 포기/복구합니다.
         BattleRuntimeData battleRuntime = DataManager.Instance.BattleRuntimeStore?.Get();
         if (battleRuntime != null && battleRuntime.IsBattleRunInitialized)
             BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
@@ -56,10 +163,7 @@ public class StartModeButton : MonoBehaviour
 
     private void PlayClickSound()
     {
-        if (!playClickSound)
-            return;
-
-        if (AudioManager.Instance == null)
+        if (!playClickSound || AudioManager.Instance == null)
             return;
 
         AudioManager.Instance.PlaySfx(clickSfx);

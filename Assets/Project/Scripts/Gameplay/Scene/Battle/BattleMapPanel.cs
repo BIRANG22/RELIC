@@ -72,6 +72,15 @@ public class BattleMapPanel : MonoBehaviour
         }
 
         BattleRuntimeData battleRuntime = DataManager.Instance?.BattleRuntimeStore?.Get();
+
+        // 튜토리얼은 TutorialBattleEntrySetup에서 Map_27 같은 고정 노드를 직접 구성합니다.
+        // 일반 지도 생성기를 실행하면 해당 노드가 Stage1 랜덤 지도로 덮어써지므로 그대로 유지합니다.
+        if (battleRuntime?.IsTutorialBattle == true &&
+            runtime.GeneratedNodes != null &&
+            runtime.GeneratedNodes.Count > 0)
+        {
+            return;
+        }
         ManualBattleMapTemplate selectedMapTemplate = BattleMapTemplateSelection.Resolve(
             battleRuntime,
             manualMapTemplate,

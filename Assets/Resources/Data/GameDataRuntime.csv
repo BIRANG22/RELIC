@@ -1330,10 +1330,11 @@ Map_23,Special7,Special,0,Event_07,Stage1,1,0
 Map_24,Special8,Special,0,Event_08,Stage1,1,0
 Map_25,Special9,Start,0,Event_09,Stage1,1,0
 Map_26,Rest,Rest,0,0,Stage1,1,0
-
-,,,
-
-
+Map_27,Tutorial_Battle1,Common,Battlemap_17,0,Stage1,1,0
+Map_28,Tutorial_Battle2,Common,Battlemap_18,0,Stage1,1,0
+Map_29,Tutorial_Battle3,Common,Battlemap_19,0,Stage1,1,0
+Map_30,Tutorial_Event1,Tutorial,0,Event_T_01,Stage1,1,0
+Map_31,Tutorial_Event2,Tutorial,0,Event_T_02,Stage1,1,0
 
 # BattleMap
 전투맵ID,몬스터ID,점유칸1,점유칸2,점유칸3,점유칸4,설명,기억 획득,유물 노말,유물 레어,유물 에픽,유물 유니크,기억 노말,기억 레어,기억 에픽,기억 유니크
@@ -1349,13 +1350,13 @@ Battlemap_03,Mon_05,31,-1,-1,-1,,,,,,,,,,
 Battlemap_03,Mon_03,28,-1,-1,-1,,,,,,,,,,,
 Battlemap_04,Mon_06,22,-1,-1,-1,"신더, 베스파, 블라이트",20,35,30,25,10,25,35,25,15
 Battlemap_04,Mon_05,34,-1,-1,-1,,,,,,,,,,
-Battlemap_04,Mon_04,26,-1,-1,-1,,,,,,,,,,
-Battlemap_05,Mon_05,25,-1,-1,-1,베스파 2마리,20,35,30,25,10,25,35,25,15,
-Battlemap_05,Mon_05,33,-1,-1,-1,,,,,,,,,,,
-Battlemap_06,Mon_07,26,-1,-1,-1,"드라우그 1마리, 바로우 1마리",20,35,30,25,10,25,35,25,15,
-Battlemap_06,Mon_08,28,-1,-1,-1,,,,,,,,,,,
-Battlemap_07,Mon_06,21,-1,-1,-1,"신더 2마리, 랜서 1마리",20,35,30,25,10,25,35,25,15
-Battlemap_07,Mon_06,23,-1,-1,-1,,,,,,,,,,
+Battlemap_04,Mon_04,26,-1,-1,-1,,,,,,,,,,,,,,,,,,,,,
+Battlemap_05,Mon_05,25,-1,-1,-1,베스파 2마리,20,35,30,25,10,25,35,25,15,,,,,,,,,,,
+Battlemap_05,Mon_05,33,-1,-1,-1,,,,,,,,,,,,,,,,,,,,,
+Battlemap_06,Mon_07,26,-1,-1,-1,"드라우그 1마리, 바로우 1마리",20,35,30,25,10,25,35,25,15,,
+Battlemap_06,Mon_08,28,-1,-1,-1,,,,,,,,,,,,
+Battlemap_07,Mon_06,21,-1,-1,-1,"신더 2마리, 랜서 1마리",20,35,30,25,10,25,35,25,15,,
+Battlemap_07,Mon_06,23,-1,-1,-1,,,,,,,,,,,,
 Battlemap_07,Mon_03,32,-1,-1,-1,,,,,,,,,,
 Battlemap_08,Mon_01,24,-1,-1,-1,"머크 1마리, 드라우그 2마리",20,35,30,25,10,25,35,25,15
 Battlemap_08,Mon_07,20,-1,-1,-1,,,,,,,,,,
@@ -1363,11 +1364,11 @@ Battlemap_08,Mon_07,28,-1,-1,-1,,,,,,,,,,
 Battlemap_09,Mon_03,27,-1,-1,-1,"바로우 2마리, 랜서 1마리",20,35,30,25,10,25,35,25,15
 Battlemap_09,Mon_08,29,-1,-1,-1,,,,,,,,,,
 Battlemap_09,Mon_08,31,-1,-1,-1,,,,,,,,,,
-Battlemap_10,Mon_04,33,-1,-1,-1,"드라우그, 바로우, 블라이트",20,35,30,25,10,25,35,25,15
-Battlemap_10,Mon_07,21,-1,-1,-1,,,,,,,,,,
+Battlemap_10,Mon_04,33,-1,-1,-1,"드라우그, 바로우, 블라이트",20,35,30,25,10,25,35,25,15,,,,,
+Battlemap_10,Mon_07,21,-1,-1,-1,,,,,,,,,,,,,,,
 Battlemap_10,Mon_08,27,-1,-1,-1,,,,,,,,,,
-Battlemap_11,Mon_09,27,-1,-1,-1,"정예 루크, 랜서",60,20,25,30,25,25,35,25,15
-Battlemap_11,Mon_03,31,-1,-1,-1,,,,,,,,,,
+Battlemap_11,Mon_09,27,-1,-1,-1,"정예 루크, 랜서",60,20,25,30,25,25,35,25,15,,,,
+Battlemap_11,Mon_03,31,-1,-1,-1,,,,,,,,,,,,,,
 Battlemap_12,Mon_09,27,-1,-1,-1,"정예 루크, 블라이트",60,20,25,30,25,25,35,25,15
 Battlemap_12,Mon_04,33,-1,-1,-1,,,,,,,,,,
 Battlemap_13,Mon_10,22,-1,-1,-1,정예 녹턴,60,20,25,30,25,25,35,25,15
@@ -1376,6 +1377,10 @@ Battlemap_14,Mon_11,28,-1,-1,-1,,,,,,,,,,,,,,,
 Battlemap_15,Mon_08,26,-1,-1,-1,"정예 모르트, 바로우",60,20,25,30,25,25,35,25,15
 Battlemap_15,Mon_11,32,-1,-1,-1,,,,,,,,,,,,,,
 Battlemap_16,Mon_12,27,-1,-1,-1,보스 아라벨라,100,5,15,50,30,25,35,25,15,,,,
+Battlemap_17,Mon_02,22,-1,-1,-1,튜토리얼(블롭 1마리),0,0,100,0,0,0,0,0,0
+Battlemap_18,Mon_07,22,-1,-1,-1,튜토리얼(드라우그 1마리),0,0,100,0,0,0,0,0,0
+Battlemap_19,Mon_01,21,-1,-1,-1,"튜토리얼(머크, 블라이트)",0,0,0,0,0,0,0,0,0
+Battlemap_19,Mon_04,28,-1,-1,-1,,,,,,,,,,
 
 # Event
 이벤트ID,이벤트 이름,제목,선택지 순서,선택지이름,선택지 내용,선택불가 내용,선택지 타입,선택 조건,비용 타입,비용 대상,비용 값,성공 조건,결과타입,결과대상,결과값,성공확률,실패결과,다음이벤트ID,실패 다음이벤트ID,다음 이벤트까지 유지,성공 시각적 객체 ID,성공 시각적 작업 ID,실패 시각적 객체 ID,실패 시 시각적 동작 ID
@@ -1456,13 +1461,10 @@ Event_08_D,공명의 비석,"""기억의 흔적은 흩어지고, 더 이상 공�
 Event_09,균열의 메아리,허공에 갈라진 균열이 모습을 드러냈다. 틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.,1,흩어진 기억을 거둔다.,무작위 일반~레어 기억 3개 획득,,Immediate,,,,,,SelectReward,일반~레어 기억,3개 제시,,,,,,event9,event_choice_01_success,event9,event_choice_01_failure
 Event_09,균열의 메아리,,2,전투의 기억을 붙잡는다.,공격 기억 2개 획득,,Immediate,,,,,,SelectReward,공격 기억,2개 제시,,,,,,event9,event_choice_02_success,event9,event_choice_02_failure
 Event_09,균열의 메아리,,3,강렬한 기억을 택한다.,에픽 기억 1개 획득,,Immediate,,,,,,SelectReward,에픽 기억,1개 제시,,,,,,event9,event_choice_03_success,event9,event_choice_03_failure
-
-,,,,,,,
-
-
-
-,,,,,,,,,
-
+Event_T_01,새로운 동행,"“나 혼자서는 좀 무서운데, 같이 가면 안 될까? 이 기억도 네가 써줘.”",1,함께 간다.,"헤이즈 합류
+공격 기억 획득",,Immediate,,,,,,SelectReward,공격 기억,1개 제시,,,,,,event_t_01,event_choice_01_success,event_t_01,event_choice_01_failure
+Event_T_02,뜻밖의 합류,길가에서 휴식을 취하고 있는 두 사람을 발견했다.,1,동행을 제안한다.,"카야 합류
+파티 생명력 회복",,Immediate,,,,,,Modify,파티 전원 현재 체력,15 회복,,,,,,event_t_02,event_choice_01_success,event_t_02,event_choice_01_failure
 
 
 
@@ -1737,7 +1739,7 @@ Erosion_02_07,레어도 감소,Level02_7,2,2,Erosion_02_07,Independent,희귀도
 Erosion_02_08,연성제 제한,Level02_8,2,2,Erosion_02_08,Independent,연성제 사용 제한,CompoundUseLimit,1,1,연성제를 사용할 수 없다.
 Erosion_03_01,강인한 변이체,Level03_1,3,3,Group_01,Exclusive,몬스터 최대 생명력 30% 증가,MonsterMaxHPPercent,30,1,변이체의 최대 생명력이 30% 증가한다.
 Erosion_03_02,흉포한 변이체,Level03_2,3,0,Group_02,Exclusive,,,,0,난이도 없음
-Erosion_03_03,쇠약한 육체,Level03_3,3,3,Group_03,Exclusive,모든 캐릭터 최대 생명력 20% 감소,PartyMaxHPPercent,-20,1,모든 캐릭터의 최대 생명력이 20% 감소한다.
+Erosion_03_03,쇠약한 육체,Level03_3,3,3,Group_03,Exclusive,모든 캐릭터 최대 생명력 20% 감소,PartyMaxHPPercent,-15,1,모든 캐릭터의 최대 생명력이 20% 감소한다.
 Erosion_03_04,불길한 징후,Level03_4,3,3,Group_04,Exclusive,3턴마다 무작위 디버프 1개 부여,PeriodicRandomDebuffTurns,3,1,3턴마다 파티에 무작위 디버프 1개를 부여한다.
 Erosion_03_05,메마른 보급,Level03_5,3,0,Group_05,Exclusive,,,,0,난이도 없음
 Erosion_03_06,뒤틀린 운명,Level03_6,3,3,Group_06,Exclusive,주사위 판정 난이도 2 증가,DiceDifficultyAdd,2,1,주사위 판정 난이도가 2 증가한다.

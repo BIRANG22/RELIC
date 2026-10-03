@@ -33,6 +33,7 @@ public class BattleFirstTutorialController : MonoBehaviour
     private bool isRunning;
     private bool isTransitioning;
     private static int lastClosedByEscapeFrame = -1;
+    private static bool autoTutorialStartedThisRun;
 
     public bool IsRunning => isRunning;
     public static bool WasClosedByEscapeThisFrame => lastClosedByEscapeFrame == Time.frameCount;
@@ -96,7 +97,12 @@ public class BattleFirstTutorialController : MonoBehaviour
 
     public bool TryStartTutorialIfNeeded()
     {
-        if (!TutorialSettings.ShouldShowTutorial)
+        bool isTutorialBattle =
+            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true;
+
+        // 기존 옵션 토글과 분리합니다. 전투 설명 패널은 전체 튜토리얼을 진행 중일 때만
+        // 해당 튜토리얼 런에서 한 번 자동으로 표시됩니다.
+        if (!isTutorialBattle || autoTutorialStartedThisRun)
         {
             HideTutorialImmediate();
             return false;
@@ -104,13 +110,14 @@ public class BattleFirstTutorialController : MonoBehaviour
 
         bool started = StartTutorial();
         if (started)
-        {
-            // TutorialToggle1은 "다음 탐사의 첫 전투에서 1회 표시" 예약값입니다.
-            // 실제 자동 튜토리얼이 열린 순간 예약을 소비하여 OFF로 저장합니다.
-            TutorialSettings.SetShouldShowTutorial(false);
-        }
+            autoTutorialStartedThisRun = true;
 
         return started;
+    }
+
+    public static void ResetAutoTutorialRunState()
+    {
+        autoTutorialStartedThisRun = false;
     }
 
     public bool StartTutorial()
