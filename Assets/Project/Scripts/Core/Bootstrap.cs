@@ -1,11 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.Localization.Settings;
 using Relic.Gameplay.Data;
 
 public class Bootstrap : MonoBehaviour
 {
-    [SerializeField] private GameStateType firstState = GameStateType.Title;
+    [SerializeField] private GameStateType firstState = GameStateType.DemoTitle;
     [SerializeField] private string defaultLanguageCode = "ko";
 
     private IEnumerator Start()

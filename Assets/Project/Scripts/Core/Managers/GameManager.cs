@@ -39,6 +39,7 @@ public class GameManager : Singleton<GameManager>
     {
         StateMachine.RegisterState(new BootstrapState(sceneFlowManager));
         StateMachine.RegisterState(new TitleState(sceneFlowManager));
+        StateMachine.RegisterState(new DemoTitleState(sceneFlowManager));
         StateMachine.RegisterState(new LobbyState(sceneFlowManager));
         StateMachine.RegisterState(new BattleSelectState(sceneFlowManager));
         StateMachine.RegisterState(new BattleState(sceneFlowManager));
