@@ -30,11 +30,11 @@ public class Settings : Singleton<Settings>
 public static class OnboardingToggleDefaults
 {
     private const string DefaultsVersionPrefsKey = "Dustium.OnboardingToggleDefaultsVersion";
-    private const int CurrentDefaultsVersion = 2;
+    private const int CurrentDefaultsVersion = 3;
 
     /// <summary>
-    /// 이 버전의 초기 안내 설정을 처음 적용할 때만 튜토리얼/인트로 예약 토글을 ON으로 맞춥니다.
-    /// 이후 실행에서는 사용자가 변경하거나 1회 실행으로 소비된 값을 그대로 유지합니다.
+    /// 새 온보딩 설정을 처음 적용할 때 인트로와 전체 튜토리얼을 ON 상태로 맞춥니다.
+    /// 이후에는 사용자가 변경하거나 1회 진행으로 소비된 값을 그대로 유지합니다.
     /// </summary>
     public static void EnsureInitialized()
     {
@@ -43,13 +43,14 @@ public static class OnboardingToggleDefaults
             return;
 
         if (appliedVersion < 1)
-        {
-            TutorialSettings.SetShouldShowTutorial(true);
             IntroSettings.SetShouldPlayIntro(true);
-        }
 
-        // 기존 빌드에서 IntroSeen 값이 남아 IntroToggle1이 OFF로 시작하던 상태를
-        // 이번 버전에서 한 번만 ON으로 보정합니다. TutorialToggle1 상태는 건드리지 않습니다.
+        // 기존 TutorialToggle1은 전투 패널 표시 설정이었지만,
+        // 버전 3부터는 새 게임에서 전체 튜토리얼을 진행할지 결정하는 설정으로 전환합니다.
+        if (appliedVersion < 3)
+            TutorialSettings.SetShouldPlayTutorial(true);
+
+        // 기존 빌드에서 IntroSeen 값 때문에 OFF로 시작하던 상태를 한 번 보정합니다.
         if (appliedVersion < 2)
             IntroSettings.SetShouldPlayIntro(true);
 
@@ -60,35 +61,44 @@ public static class OnboardingToggleDefaults
 
 public static class TutorialSettings
 {
-    public const string ShowTutorialPrefsKey = "Relic.ShowTutorial";
+    public const string TutorialSeenPrefsKey = "Dustium.TutorialSeen";
 
-    private const int ShowTutorialValue = 1;
-    private const int HideTutorialValue = 0;
+    private const int SeenValue = 1;
+    private const int NotSeenValue = 0;
+
+    public static bool HasSeenTutorial =>
+        PlayerPrefs.GetInt(TutorialSeenPrefsKey, NotSeenValue) == SeenValue;
 
     /// <summary>
-    /// TutorialToggle1 상태입니다.
-    /// ON이면 다음 전투 튜토리얼 자동 표시를 1회 예약하고,
-    /// 실제 자동 튜토리얼이 열리면 OFF로 소비됩니다.
+    /// ON이면 다음 게임 시작에서 전체 튜토리얼을 진행합니다.
+    /// 튜토리얼이 실제 시작되면 자동으로 OFF가 됩니다.
     /// </summary>
-    public static bool ShouldShowTutorial =>
-        PlayerPrefs.GetInt(ShowTutorialPrefsKey, ShowTutorialValue) == ShowTutorialValue;
+    public static bool ShouldPlayTutorial => !HasSeenTutorial;
 
-    public static void SetShouldShowTutorial(bool shouldShowTutorial)
+    public static void SetShouldPlayTutorial(bool shouldPlayTutorial)
     {
         PlayerPrefs.SetInt(
-            ShowTutorialPrefsKey,
-            shouldShowTutorial ? ShowTutorialValue : HideTutorialValue);
-
+            TutorialSeenPrefsKey,
+            shouldPlayTutorial ? NotSeenValue : SeenValue);
         PlayerPrefs.Save();
     }
 
-    /// <summary>
-    /// 기존 호출 호환용입니다. 자동 튜토리얼 예약을 소비합니다.
-    /// </summary>
-    public static void MarkTutorialShown()
+    public static void MarkTutorialSeen()
     {
-        SetShouldShowTutorial(false);
+        PlayerPrefs.SetInt(TutorialSeenPrefsKey, SeenValue);
+        PlayerPrefs.Save();
     }
+
+    public static void ResetTutorialSeenState()
+    {
+        PlayerPrefs.SetInt(TutorialSeenPrefsKey, NotSeenValue);
+        PlayerPrefs.Save();
+    }
+
+    // 기존 호출부 호환용입니다. 이제 의미는 "전체 튜토리얼을 다음 시작에 진행할지"입니다.
+    public static bool ShouldShowTutorial => ShouldPlayTutorial;
+    public static void SetShouldShowTutorial(bool shouldShowTutorial) => SetShouldPlayTutorial(shouldShowTutorial);
+    public static void MarkTutorialShown() => MarkTutorialSeen();
 }
 
 public static class IntroSettings

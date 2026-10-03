@@ -1119,6 +1119,91 @@ public class BattleSceneController : MonoBehaviour
         Debug.LogWarning($"[BattleSceneController] Map node not found: {nodeIndex}");
     }
 
+    /// <summary>
+    /// 튜토리얼 고정 루트에서 지도를 열지 않고 지정한 MapId의 방으로 바로 이동합니다.
+    /// 전투/이벤트 실행은 기존 BattleScene 기능을 그대로 사용합니다.
+    /// </summary>
+    public async void OpenTutorialMapDirect(string mapId, System.Action onCovered = null)
+    {
+        if (isChangingRoom || string.IsNullOrWhiteSpace(mapId) || DataManager.Instance == null)
+            return;
+
+        BattleRuntimeData battle = DataManager.Instance.BattleRuntimeStore?.Get();
+        if (battle?.IsTutorialBattle != true)
+        {
+            Debug.LogWarning($"[BattleSceneController] Tutorial direct route requested outside tutorial: {mapId}");
+            return;
+        }
+
+        if (DataManager.Instance.MapDatabase == null ||
+            !DataManager.Instance.MapDatabase.TryGet(mapId, out MapData mapData) ||
+            mapData == null)
+        {
+            Debug.LogError($"[BattleSceneController] Tutorial map data not found: {mapId}");
+            return;
+        }
+
+        if (mapRuntimeStore == null)
+            mapRuntimeStore = DataManager.Instance.MapRuntimeStore;
+
+        mapRuntime = mapRuntimeStore?.Get();
+        if (mapRuntime == null)
+        {
+            Debug.LogError("[BattleSceneController] Tutorial map runtime is missing.");
+            return;
+        }
+
+        int nextNodeIndex = Mathf.Max(0, mapRuntime.CurrentNodeIndex + 1);
+        var nextNode = new GeneratedMapNodeData
+        {
+            NodeIndex = nextNodeIndex,
+            LayerIndex = nextNodeIndex,
+            MapId = mapData.MapId,
+            Type = mapData.Type,
+            EventId = mapData.EventId,
+            IsMapIdOverride = true,
+            Position = Vector2.zero,
+            NextNodeIndices = new List<int>()
+        };
+
+        mapRuntime.GeneratedNodes ??= new List<GeneratedMapNodeData>();
+        mapRuntime.GeneratedNodes.RemoveAll(node => node != null && node.NodeIndex == nextNodeIndex);
+        mapRuntime.GeneratedNodes.Add(nextNode);
+        mapRuntime.CurrentMapId = nextNode.MapId;
+        mapRuntime.CurrentNodeIndex = nextNode.NodeIndex;
+        mapRuntime.CurrentStage = string.IsNullOrWhiteSpace(mapData.Stage)
+            ? mapRuntime.CurrentStage
+            : mapData.Stage.Trim();
+        mapRuntime.VisitedMapIds ??= new List<string>();
+
+        string nodeKey = nextNode.NodeIndex.ToString();
+        if (!mapRuntime.VisitedMapIds.Contains(nodeKey))
+            mapRuntime.VisitedMapIds.Add(nodeKey);
+
+        mapRuntimeStore.Set(mapRuntime);
+        CaptureRoomEntrySaveCheckpoint();
+        HideMapPanelImmediate();
+
+        Debug.Log(
+            $"[BattleSceneController] Tutorial direct room: {nextNode.MapId} / Node:{nextNode.NodeIndex} / {nextNode.Type}");
+
+        GameObject roomToKeepVisible = FindActiveRoomObject();
+        await PlayRoomToMapTransitionAsync(() =>
+        {
+            onCovered?.Invoke();
+
+            if (roomToKeepVisible == battleRoom)
+                CleanupCompletedBattleRoom();
+
+            HideMapPanelImmediate();
+            HandleSelectedMap(nextNode);
+        });
+
+        PlayPendingRoomIntroText();
+        PlayEventRoomEntranceAnimationIfNeeded();
+        UpdateLastActiveRoomState();
+    }
+
     public void ReturnToMap()
     {
         ReturnToMap(null);
@@ -1441,6 +1526,11 @@ public class BattleSceneController : MonoBehaviour
                 OpenSpecialEvent(nodeData);
                 break;
 
+            // Tutorial 타입도 기존 EventRoom을 그대로 사용합니다.
+            case "Tutorial":
+                OpenSpecialEvent(nodeData);
+                break;
+
             default:
                 Debug.LogWarning($"[BattleSceneController] Unhandled map node type: {nodeData.Type}");
                 break;
@@ -1501,7 +1591,10 @@ public class BattleSceneController : MonoBehaviour
 
         // EventRoom의 OnEnable에서 이벤트 선택지/연출이 즉시 실행될 수 있으므로
         // MapVisual을 먼저 생성한 뒤 EventRoom을 활성화한다.
+        // 이벤트방에 들어올 때 현재 PartyRuntimeStore 기준으로 동료 월드 오브젝트를 다시 생성합니다.
+        // 튜토리얼 Event_T_01에서 합류한 헤이즈도 Event_T_02 진입 시 즉시 표시됩니다.
         RefreshBack2LocationName(nodeData);
+        sharedRoomPresentationController?.RefreshForMap(nodeData.MapId);
         ApplyRoomVisual(eventRoom, nodeData);
         OpenRoom(eventRoom, "EventRoom");
     }

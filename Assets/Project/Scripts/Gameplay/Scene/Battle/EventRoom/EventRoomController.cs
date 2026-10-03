@@ -395,6 +395,12 @@ public class EventRoomController : MonoBehaviour
             SetEventTitleVisible(false);
 
             CompleteCurrentNode();
+
+            // 튜토리얼 이벤트 1은 지도로 돌아가지 않고 바로 전투 2(Map_28)로 이어집니다.
+            // 이벤트 보상 처리와 이벤트 UI는 기존 기능을 그대로 사용하고, 방 이동만 고정 루트로 전환합니다.
+            if (TryContinueTutorialRoute())
+                return;
+
             ReturnToMap(() => SetNextButtonVisible(false));
             return;
         }
@@ -409,6 +415,61 @@ public class EventRoomController : MonoBehaviour
 
         HideDiceRollPresenterImmediate();
         ReturnToMap(() => SetNextButtonVisible(false));
+    }
+
+    private bool TryContinueTutorialRoute()
+    {
+        DataManager dataManager = DataManager.Instance;
+        if (dataManager == null)
+            return false;
+
+        BattleRuntimeData battle = dataManager.BattleRuntimeStore?.Get();
+        MapRuntimeData map = dataManager.MapRuntimeStore?.Get();
+        if (battle?.IsTutorialBattle != true || map == null)
+            return false;
+
+        string nextMapId;
+
+        if (string.Equals(map.CurrentMapId, "Map_30", System.StringComparison.OrdinalIgnoreCase))
+        {
+            if (!TutorialBattleEntrySetup.TryPrepareSecondBattleParty(dataManager))
+            {
+                Debug.LogError("[EventRoomController] Failed to prepare Haze for tutorial battle 2.", this);
+                return false;
+            }
+
+            nextMapId = TutorialBattleEntrySetup.SecondTutorialMapId;
+        }
+        else if (string.Equals(map.CurrentMapId, TutorialBattleEntrySetup.SecondTutorialEventMapId, System.StringComparison.OrdinalIgnoreCase))
+        {
+            // Event_T_02의 생명력 회복은 기존 Modify 결과가 먼저 적용됩니다.
+            // 여기서는 카야를 3번째 파티 슬롯 / 그리드 13에 추가하고 전투 3으로 이동합니다.
+            if (!TutorialBattleEntrySetup.TryPrepareThirdBattleParty(dataManager))
+            {
+                Debug.LogError("[EventRoomController] Failed to prepare Kaya for tutorial battle 3.", this);
+                return false;
+            }
+
+            nextMapId = TutorialBattleEntrySetup.ThirdTutorialMapId;
+        }
+        else
+        {
+            return false;
+        }
+
+        BattleSceneController sceneController =
+            Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
+
+        if (sceneController == null)
+        {
+            Debug.LogError($"[EventRoomController] BattleSceneController is missing for tutorial transition to {nextMapId}.", this);
+            return false;
+        }
+
+        sceneController.OpenTutorialMapDirect(
+            nextMapId,
+            () => SetNextButtonVisible(false));
+        return true;
     }
 
     public void ShowRelicHoverInfo(string relicId)

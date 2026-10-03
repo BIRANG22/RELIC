@@ -503,6 +503,12 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         int slotCount = timelineController != null ? timelineController.SlotCount : 0;
 
+        // 튜토리얼 1 전투(Map_27 / Battlemap_17)는 블롭의 AI 패턴과 스킬 선택은
+        // 그대로 사용하되, 예약되는 타임라인 위치만 항상 3번 슬롯으로 고정합니다.
+        // 슬롯 인덱스는 0부터 시작하므로 3번 슬롯은 index 2입니다.
+        if (IsTutorialBattle1Map() && slotCount > 2)
+            return 2;
+
         if (slotCount <= 0)
             return -1;
 
@@ -535,6 +541,17 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             default:
                 return offsetBaseSlot;
         }
+    }
+
+    private static bool IsTutorialBattle1Map()
+    {
+        MapRuntimeData mapRuntime = DataManager.Instance?.MapRuntimeStore?.Get();
+
+        return mapRuntime != null &&
+               string.Equals(
+                   mapRuntime.CurrentMapId?.Trim(),
+                   "Map_27",
+                   System.StringComparison.OrdinalIgnoreCase);
     }
 
     private int FindEarliestSlot(
