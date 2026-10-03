@@ -1,10 +1,14 @@
 using System.Linq;
 using NUnit.Framework;
 using Relic.Gameplay.Data;
+using UnityEditor;
 using UnityEngine;
 
 public sealed class ManualBattleMapTemplateTests
 {
+    private const string DemoTemplatePath =
+        "Assets/Project/Data/MapTemplates/Test Manual Battle Map Template Demo.asset";
+
     [Test]
     public void ResolveTemplate_WhenDemoBattle_SelectsDemoTemplate()
     {
@@ -85,6 +89,28 @@ public sealed class ManualBattleMapTemplateTests
         finally
         {
             Object.DestroyImmediate(template);
+        }
+    }
+
+    [Test]
+    public void DemoTemplate_ActiveNodesFormOneCenteredLine()
+    {
+        ManualBattleMapTemplate template =
+            AssetDatabase.LoadAssetAtPath<ManualBattleMapTemplate>(DemoTemplatePath);
+
+        Assert.That(template, Is.Not.Null);
+
+        var nodes = template.Nodes.OrderBy(node => node.LayerIndex).ToList();
+
+        Assert.That(nodes.Select(node => node.LayerIndex),
+            Is.EqualTo(new[] { 0, 1, 2, 3, 4, 5 }));
+
+        foreach (var node in nodes.Where(node => node.LayerIndex > 0 && node.LayerIndex < 5))
+        {
+            Assert.That(node.UseCustomPosition, Is.True,
+                $"Layer {node.LayerIndex} must use its centered demo position.");
+            Assert.That(node.CustomPosition,
+                Is.EqualTo(new Vector2(node.LayerIndex * BattleMapLayoutUtility.LayerGap, 0f)));
         }
     }
 }

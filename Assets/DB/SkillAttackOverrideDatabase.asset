@@ -13,99 +13,123 @@ MonoBehaviour:
   m_Name: SkillAttackOverrideDatabase
   m_EditorClassIdentifier: 
   entries:
-  - CharacterId: Char_01
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_01
     SkillId: S_Unique_01
     AttackSlot: 6
     RepeatAttackSlots: 
-  - CharacterId: Char_01
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_01
     SkillId: S_Unique_02
     AttackSlot: 1
     RepeatAttackSlots: 
-  - CharacterId: Char_02
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_02
     SkillId: S_Unique_03
     AttackSlot: 1
     RepeatAttackSlots: 0200000006000000
-  - CharacterId: Char_02
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_02
     SkillId: S_Unique_04
     AttackSlot: 2
     RepeatAttackSlots: 
-  - CharacterId: Char_03
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_03
     SkillId: S_Unique_05
     AttackSlot: 2
     RepeatAttackSlots: 
-  - CharacterId: Char_03
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_03
     SkillId: S_Unique_06
     AttackSlot: 2
     RepeatAttackSlots: 
-  - CharacterId: Char_04
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
     SkillId: S_Unique_07
     AttackSlot: 2
     RepeatAttackSlots: 
-  - CharacterId: Char_04
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
     SkillId: S_Unique_08
     AttackSlot: 3
     RepeatAttackSlots: 
-  - CharacterId: Char_01
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_01
     SkillId: S_Ability_01
     AttackSlot: 2
     RepeatAttackSlots: 
-  - CharacterId: Char_01
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_01
     SkillId: S_Ability_02
     AttackSlot: 2
     RepeatAttackSlots: 
-  - CharacterId: Char_01
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_01
     SkillId: S_Ability_03
     AttackSlot: 1
     RepeatAttackSlots: 
-  - CharacterId: Char_01
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_01
     SkillId: S_Ability_04
     AttackSlot: 1
     RepeatAttackSlots: 
-  - CharacterId: Char_02
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_02
     SkillId: S_Ability_05
     AttackSlot: 2
     RepeatAttackSlots: 01000000
-  - CharacterId: Char_02
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_02
     SkillId: S_Ability_06
     AttackSlot: 2
     RepeatAttackSlots: 01000000
-  - CharacterId: Char_02
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_02
     SkillId: S_Ability_07
     AttackSlot: 1
     RepeatAttackSlots: 
-  - CharacterId: Char_02
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_02
     SkillId: S_Ability_08
     AttackSlot: 1
     RepeatAttackSlots: 
-  - CharacterId: Char_03
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_03
     SkillId: S_Ability_09
     AttackSlot: 1
     RepeatAttackSlots: 
-  - CharacterId: Char_03
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_03
     SkillId: S_Ability_10
     AttackSlot: 1
     RepeatAttackSlots: 
-  - CharacterId: Char_03
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_03
     SkillId: S_Ability_11
     AttackSlot: 1
     RepeatAttackSlots: 
-  - CharacterId: Char_03
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_03
     SkillId: S_Ability_12
     AttackSlot: 1
     RepeatAttackSlots: 
-  - CharacterId: Char_04
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
     SkillId: S_Ability_13
     AttackSlot: 6
     RepeatAttackSlots: 
-  - CharacterId: Char_04
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
     SkillId: S_Ability_14
     AttackSlot: 6
     RepeatAttackSlots: 
-  - CharacterId: Char_04
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
     SkillId: S_Ability_15
     AttackSlot: 1
     RepeatAttackSlots: 
-  - CharacterId: Char_04
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
     SkillId: S_Ability_16
     AttackSlot: 1
     RepeatAttackSlots: 

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public enum GameStateType
 {
@@ -9,4 +9,5 @@ public enum GameStateType
     CharacterSelect = 5,
     BattleSelect = 6,
     Battle = 7,
+    DemoTitle = 8,
 }

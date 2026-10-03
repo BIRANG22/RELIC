@@ -24,8 +24,8 @@ MonoBehaviour:
       Enabled: 1
       Type: Common
       MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
+      UseCustomPosition: 1
+      CustomPosition: {x: 100, y: 0}
       NextNodeIndices: 05000000
     Slot2:
       Enabled: 0
@@ -53,8 +53,8 @@ MonoBehaviour:
       Enabled: 1
       Type: Special
       MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
+      UseCustomPosition: 1
+      CustomPosition: {x: 200, y: 0}
       NextNodeIndices: 09000000
     Slot2:
       Enabled: 0
@@ -82,8 +82,8 @@ MonoBehaviour:
       Enabled: 1
       Type: Shop
       MapIdOverride: Map_22
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
+      UseCustomPosition: 1
+      CustomPosition: {x: 300, y: 0}
       NextNodeIndices: 0d000000
     Slot2:
       Enabled: 0
@@ -111,8 +111,8 @@ MonoBehaviour:
       Enabled: 1
       Type: Rest
       MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
+      UseCustomPosition: 1
+      CustomPosition: {x: 400, y: 0}
       NextNodeIndices: 11000000
     Slot2:
       Enabled: 0

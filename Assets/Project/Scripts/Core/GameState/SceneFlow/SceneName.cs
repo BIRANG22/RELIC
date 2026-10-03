@@ -1,6 +1,7 @@
 public static class SceneName
 {
     public const string Title = "Title";
+    public const string DemoTitle = "DemoTitle";
     public const string SampleScene = "SampleScene";
     public const string TestLanguage = "Test_Language";
     public const string Bootstrap = "Bootstrap";
