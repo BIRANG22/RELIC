@@ -4135,10 +4135,6 @@ MonoBehaviour:
     m_Localized: On
     m_Metadata:
       m_Items: []
-  - m_Id: 10169488443449352
-    m_Localized: View
-    m_Metadata:
-      m_Items: []
   - m_Id: 10169488443449353
     m_Localized: Kaya
     m_Metadata:
@@ -4473,10 +4469,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 10185974310510740
     m_Localized: Forbidden Ritual
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510741
-    m_Localized: Event ends
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510742
@@ -4890,142 +4882,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 10185974323093554
     m_Localized: Final Mana consumption required for movement increases by 1.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367564
-    m_Localized: Request support.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367565
-    m_Localized: Request purification.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367567
-    m_Localized: Ask for prayers.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367569
-    m_Localized: Open the Box.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367570
-    m_Localized: Rummage Inside the Box.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367571
-    m_Localized: Touch the Ritual Tool.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367573
-    m_Localized: Searching for Traces of Consciousness.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367575
-    m_Localized: '3~12: Reduces current health of all party members by 5'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367576
-    m_Localized: Leave the Place
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367577
-    m_Localized: Burn it.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367578
-    m_Localized: Investigate.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367580
-    m_Localized: pay the price
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367581
-    m_Localized: test fate
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367583
-    m_Localized: Ask for an exchange.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367585
-    m_Localized: Mining with Caution.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367586
-    m_Localized: Mining Boldly.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367588
-    m_Localized: '3~11: All accumulated red Dustium is lost.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367589
-    m_Localized: Mining with Caution.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367590
-    m_Localized: Mining Boldly.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367592
-    m_Localized: '3~11: All accumulated red Dustium is lost.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367593
-    m_Localized: Mining with Caution.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367594
-    m_Localized: Mining Boldly.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367596
-    m_Localized: '3~11: All accumulated red Dustium is lost.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367597
-    m_Localized: Quit.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367599
-    m_Localized: Look at the object.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367600
-    m_Localized: Embrace the power of life.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367601
-    m_Localized: Accept the power of Mana.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367603
-    m_Localized: It Begins to Resonate.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367604
-    m_Localized: Resonance Continues.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367605
-    m_Localized: Resonance Continues.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367606
-    m_Localized: Leave the Place
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367607
-    m_Localized: Gather scattered Memories.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367608
-    m_Localized: Hold on to the Memories of battle.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367610
-    m_Localized: Choose a strong Memory.
     m_Metadata:
       m_Items: []
   - m_Id: 10986483455893504
@@ -5513,30 +5369,6 @@ MonoBehaviour:
     m_Localized: experience
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458548838467
-    m_Localized: "3. Character behavior registration \u2160"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838470
-    m_Localized: 5. Execute the battle
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838471
-    m_Localized: Battle Basic Tutorial
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838472
-    m_Localized: "4. Character behavior registration \u2161"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838473
-    m_Localized: 2. Check variant information
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838476
-    m_Localized: 1. Schedule variant actions
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838477
     m_Localized: Shortcut key help
     m_Metadata:
@@ -5617,28 +5449,6 @@ MonoBehaviour:
     m_Localized: current panel
     m_Metadata:
       m_Items: []
-  - m_Id: 11981180450119761
-    m_Localized: Obtain 1 random artifact
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119762
-    m_Localized: 'dice decision
-
-      Reward: HP recovery
-
-      The higher it is,
-      the higher the amount of HP recovery.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119763
-    m_Localized: 'dice decision
-
-      Reward: Increased Max HP
-
-      The higher
-      it is, the higher the Max HP increase.'
-    m_Metadata:
-      m_Items: []
   - m_Id: 11981180450119764
     m_Localized: "\u201CI hope this will be of some help. Please use it with caution.\u201D"
     m_Metadata:
@@ -5650,37 +5460,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11981180450119766
     m_Localized: "\u201CMay blessings rest on your lives.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119767
-    m_Localized: Obtain 35 Red Dustium
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119768
-    m_Localized: 'Dice Roll 9
-
-      Success: Obtain 1 random artifact
-
-      Failure:
-      Party members'' current stamina reduced by 3'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119769
-    m_Localized: 'Dice Roll 11
-
-      Success: Mana regeneration increases by 1
-
-      Failure:
-      Party members'' current stamina reduced by 3'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119770
-    m_Localized: 'Dice Roll 13
-
-      Success: Obtain 1 epic artifact
-
-      Failure:
-      Party members'' current stamina reduced by 5'
     m_Metadata:
       m_Items: []
   - m_Id: 11981180450119771
@@ -5713,38 +5492,9 @@ MonoBehaviour:
     m_Localized: Caught in an unexpected explosion.
     m_Metadata:
       m_Items: []
-  - m_Id: 11981180466896902
-    m_Localized: Roll 3 six-sided dice to obtain Red Dustium.
-    m_Metadata:
-      m_Items: []
   - m_Id: 11981180466896903
     m_Localized: There are still usable items visible among the corpses, but faint
       movement can be felt inside the pile.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896904
-    m_Localized: Obtain 1 random Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896905
-    m_Localized: 'Consumes 50 Red Dustium
-
-      Obtain 1 random artifact'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896906
-    m_Localized: 'Dice Roll 11
-
-      Success: Obtain 1 random artifact
-
-      Failure:
-      HP reduced by 5'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896907
-    m_Localized: 'Consumes 1 owned artifact
-
-      Obtain 1 random artifact'
     m_Metadata:
       m_Items: []
   - m_Id: 11981180466896908
@@ -5763,46 +5513,6 @@ MonoBehaviour:
     m_Localized: "\u201CI will accept the shortfall with my life.\u201D"
     m_Metadata:
       m_Items: []
-  - m_Id: 11981180466896912
-    m_Localized: 'Dice Roll 8
-
-      Accumulated Red Dustium 15'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896913
-    m_Localized: 'Dice Roll 12
-
-      Accumulated 45 Red Dustium'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896914
-    m_Localized: 'Dice Roll 8
-
-      Accumulated Red Dustium 15'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896915
-    m_Localized: 'Dice Roll 12
-
-      Accumulated 45 Red Dustium'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896916
-    m_Localized: 'Dice Roll 8
-
-      Accumulated Red Dustium 15'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896917
-    m_Localized: 'Dice Roll 12
-
-      Accumulated 45 Red Dustium'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896918
-    m_Localized: Acquire accumulated red Dustium
-    m_Metadata:
-      m_Items: []
   - m_Id: 11981180466896919
     m_Localized: I took the Dustium I had mined so far and left.
     m_Metadata:
@@ -5815,52 +5525,9 @@ MonoBehaviour:
     m_Localized: We succeeded in securing all the Dustium before it collapsed.
     m_Metadata:
       m_Items: []
-  - m_Id: 11981180466896922
-    m_Localized: Use the store
-    m_Metadata:
-      m_Items: []
   - m_Id: 11981180466896923
     m_Localized: "\u201CI guess this is enough. I don\u2019t plan on holding on for
       long.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896924
-    m_Localized: Increases Max HP of all party members by 12
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896925
-    m_Localized: Increases maximum Mana of all party members by 2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896926
-    m_Localized: '90% chance of success
-
-      Success: Awakening 1 Memory
-
-      Failure:
-      Memory loss'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896927
-    m_Localized: '50% chance of success
-
-      Success: Awakening 1 Memory
-
-      Failure:
-      Memory loss'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896928
-    m_Localized: '30% chance of success
-
-      Success: Awakening 1 Memory
-
-      Failure:
-      Memory loss'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896929
-    m_Localized: Event ends
     m_Metadata:
       m_Items: []
   - m_Id: 11981180466896930
@@ -5870,18 +5537,6 @@ MonoBehaviour:
   - m_Id: 11981180466896931
     m_Localized: "\u201CThe traces of Memory are scattered, and it seems that they
       can no longer resonate.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896932
-    m_Localized: Obtain 3 random common to rare Memories
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896933
-    m_Localized: Acquire 2 attack Memories
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896934
-    m_Localized: Obtain 1 epic Memory
     m_Metadata:
       m_Items: []
   - m_Id: 11988550500753549
@@ -6160,60 +5815,6 @@ MonoBehaviour:
 
       Fail:
       Destroy the selected Memory.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986898
-    m_Localized: 'When combat begins, mutants first schedule their actions into slots.
-
-      The
-      actions scheduled by a mutant are displayed in the timeline at the bottom.
-
-      Only
-      one variant can be scheduled for action in a slot.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986899
-    m_Localized: 'By selecting a variant or selecting a reserved action
-
-      You
-      can check the information on the byeonche.
-
-      Check the damage amount,
-      effect, and range in advance.
-
-      Predict how mutants will attack.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986900
-    m_Localized: 'Actions scheduled by characters and mutants are executed in the
-      order shown in the timeline.
-
-      When all scheduled actions are performed,
-      it moves on to the next turn.
-
-      Again, you can check the mutant''s actions
-      and schedule your character''s actions.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986901
-    m_Localized: 'Memory is broadly divided into two types depending on how it is
-      used.
-
-      The range containing is displayed based on the direction the character
-      is facing,
-
-      It is registered directly in the slot without having to select
-      a separate grid.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986902
-    m_Localized: 'The range not included is within the range displayed on the battlefield.
-
-      You
-      must select a location to register for your action to be registered.
-
-      Register
-      your character''s actions so you can respond to the mutant''s actions.'
     m_Metadata:
       m_Items: []
   - m_Id: 17117632292986906
@@ -7229,6 +6830,635 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 4794883933976256088
     m_Localized: Ines
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975624
+    m_Localized: Request support.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975625
+    m_Localized: Obtain 1 random artifact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975626
+    m_Localized: Request purification.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975627
+    m_Localized: 'dice decision
+
+      Reward: HP recovery
+
+      The higher it is,
+      the higher the amount of HP recovery.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975628
+    m_Localized: Ask for prayers.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975629
+    m_Localized: 'dice decision
+
+      Reward: Increased Max HP
+
+      The higher
+      it is, the higher the Max HP increase.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975630
+    m_Localized: Open the Box.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975631
+    m_Localized: Obtain 35 Red Dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975632
+    m_Localized: Rummage Inside the Box.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975633
+    m_Localized: 'Dice Roll 9
+
+      Success: Obtain 1 random artifact
+
+      Failure:
+      Party members'' current stamina reduced by 3'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975634
+    m_Localized: '3~8: All party members lose 3 current HP'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975635
+    m_Localized: Touch the Ritual Tool.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975636
+    m_Localized: 'Dice Roll 11
+
+      Success: Mana regeneration increases by 1
+
+      Failure:
+      Party members'' current stamina reduced by 3'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975637
+    m_Localized: '3~10: All party members lose 3 current HP'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975638
+    m_Localized: Searching for Traces of Consciousness.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975639
+    m_Localized: 'Dice Roll 13
+
+      Success: Obtain 1 epic artifact
+
+      Failure:
+      Party members'' current stamina reduced by 5'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975640
+    m_Localized: '3~12: Reduces current health of all party members by 5'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975641
+    m_Localized: Leave the Place
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975642
+    m_Localized: Event ends
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975643
+    m_Localized: Burn it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975644
+    m_Localized: Roll 3 six-sided dice to obtain Red Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975645
+    m_Localized: Investigate.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975646
+    m_Localized: Obtain 1 random Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975647
+    m_Localized: pay the price
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975648
+    m_Localized: 'Consumes 50 Red Dustium
+
+      Obtain 1 random artifact'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975649
+    m_Localized: Not enough Red Dustium.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975650
+    m_Localized: test fate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975651
+    m_Localized: 'Dice Roll 11
+
+      Success: Obtain 1 random artifact
+
+      Failure:
+      HP reduced by 5'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975652
+    m_Localized: '3~10: All party members lose 5 current HP'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975653
+    m_Localized: Ask for an exchange.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975654
+    m_Localized: 'Consumes 1 owned artifact
+
+      Obtain 1 random artifact'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975655
+    m_Localized: No artifacts available to exchange.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975656
+    m_Localized: Mining with Caution.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975657
+    m_Localized: 'Dice Roll 8
+
+      Accumulated Red Dustium 15'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975658
+    m_Localized: '3~7: All accumulated Red Dustium is lost.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975659
+    m_Localized: Mining Boldly.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975660
+    m_Localized: 'Dice Roll 12
+
+      Accumulated 45 Red Dustium'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975661
+    m_Localized: '3~11: All accumulated red Dustium is lost.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975662
+    m_Localized: Mining with Caution.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975663
+    m_Localized: 'Dice Roll 8
+
+      Accumulated Red Dustium 15'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975664
+    m_Localized: '3~7: All accumulated Red Dustium is lost.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975665
+    m_Localized: Mining Boldly.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975666
+    m_Localized: 'Dice Roll 12
+
+      Accumulated 45 Red Dustium'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975667
+    m_Localized: '3~11: All accumulated red Dustium is lost.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975668
+    m_Localized: Mining with Caution.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975669
+    m_Localized: 'Dice Roll 8
+
+      Accumulated Red Dustium 15'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975670
+    m_Localized: '3~7: All accumulated Red Dustium is lost.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975671
+    m_Localized: Mining Boldly.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975672
+    m_Localized: 'Dice Roll 12
+
+      Accumulated 45 Red Dustium'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975673
+    m_Localized: '3~11: All accumulated red Dustium is lost.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975674
+    m_Localized: Quit.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975675
+    m_Localized: Acquire accumulated red Dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975676
+    m_Localized: Look at the object.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975677
+    m_Localized: Use the store
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975678
+    m_Localized: Embrace the power of life.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975679
+    m_Localized: Increases Max HP of all party members by 12
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975680
+    m_Localized: Accept the power of Mana.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975681
+    m_Localized: Increases maximum Mana of all party members by 2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975682
+    m_Localized: It Begins to Resonate.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975683
+    m_Localized: '90% chance of success
+
+      Success: Awakening 1 Memory
+
+      Failure:
+      Memory loss'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975684
+    m_Localized: No Memories available to awaken.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975685
+    m_Localized: The selected Memory is lost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975686
+    m_Localized: No Memories available to awaken.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975687
+    m_Localized: The selected Memory is lost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975688
+    m_Localized: Resonance Continues.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975689
+    m_Localized: '30% chance of success
+
+      Success: Awakening 1 Memory
+
+      Failure:
+      Memory loss'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975690
+    m_Localized: No Memories available to awaken.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975691
+    m_Localized: The selected Memory is lost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975692
+    m_Localized: Leave the Place
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975693
+    m_Localized: Event ends
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975694
+    m_Localized: Gather scattered Memories.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975695
+    m_Localized: Obtain 3 random common to rare Memories
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975696
+    m_Localized: Hold on to the Memories of battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975697
+    m_Localized: Acquire 2 attack Memories
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975698
+    m_Localized: Choose a strong Memory.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975699
+    m_Localized: Obtain 1 epic Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975700
+    m_Localized: Go together.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975701
+    m_Localized: 'Hayes joins
+
+      Obtain an Attack Memory'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975702
+    m_Localized: Ask them to travel together.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975703
+    m_Localized: 'Kaya joins
+
+      Restore party HP'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2876383222199361250
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2876383222199361251
+    m_Localized: Buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2876383222199361252
+    m_Localized: Debuff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060544
+    m_Localized: Type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060547
+    m_Localized: Effect Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060549
+    m_Localized: Effect Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060558
+    m_Localized: Effect Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060563
+    m_Localized: Area 1 - Threshold of Debris
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060565
+    m_Localized: Effect Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060570
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060571
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060572
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060573
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060574
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060575
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060576
+    m_Localized: Buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060577
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060578
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060579
+    m_Localized: Debuff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060580
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060581
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060582
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060583
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060584
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060585
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060586
+    m_Localized: Penetration Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060587
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060588
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060589
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060590
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060591
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060592
+    m_Localized: Placement
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060593
+    m_Localized: Placement
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060594
+    m_Localized: Buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060595
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060596
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060597
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060598
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060599
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060600
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060601
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060602
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060603
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060604
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060605
+    m_Localized: Buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060606
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060607
+    m_Localized: Penetration Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060608
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060609
+    m_Localized: Debuff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060610
+    m_Localized: Buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060611
+    m_Localized: Tutorial (1 Blob)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060612
+    m_Localized: Tutorial (1 Draugr)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060613
+    m_Localized: Tutorial (Merck, Blight)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060614
+    m_Localized: A New Companion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060615
+    m_Localized: "\u201CI'm a little scared on my own. Can I come with you? You can
+      use this Memory, too.\u201D"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060616
+    m_Localized: An Unexpected Companion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060617
+    m_Localized: You find two people resting by the roadside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19395600956530688
+    m_Localized: Effect Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19395600956530689
+    m_Localized: Effect Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19395600956530692
+    m_Localized: Heal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19395600956530693
+    m_Localized: Cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19395600956530696
+    m_Localized: Heal
     m_Metadata:
       m_Items: []
   references:

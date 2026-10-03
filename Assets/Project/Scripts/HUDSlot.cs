@@ -72,11 +72,18 @@ public class HUDSlot : MonoBehaviour
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         canvasGroup.ignoreParentGroups = true;
+        ProtectDynamicNameText();
+    }
 
+    private void OnEnable()
+    {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
     }
 
     private void OnDisable()
     {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
         StopValueAnimations();
         isVisible = false;
         hasDisplayedValues = false;
@@ -449,13 +456,38 @@ public class HUDSlot : MonoBehaviour
             {
                 CharacterMasterData data = DataManager.Instance.CharacterDatabase.Get(boundCharacterRuntime.CharacterId);
                 if (data != null && !string.IsNullOrWhiteSpace(data.Name))
-                    return data.Name;
+                    return GameDataLocalization.CharacterName(data);
             }
 
             return boundCharacterRuntime.CharacterId ?? string.Empty;
         }
 
         return string.Empty;
+    }
+
+    private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
+    {
+        if (nameText != null && (boundMonsterRuntime != null || boundCharacterRuntime != null))
+            nameText.text = GetDisplayName();
+    }
+
+    private void ProtectDynamicNameText()
+    {
+        if (nameText == null)
+            return;
+
+        if (nameText.GetComponent<LocalizationIgnore>() == null)
+            nameText.gameObject.AddComponent<LocalizationIgnore>();
+        if (nameText.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            nameText.gameObject.AddComponent<LocalizationAutoBindingIgnore>();
+
+        LocalizedTMPText staticWriter = nameText.GetComponent<LocalizedTMPText>();
+        if (staticWriter != null)
+            staticWriter.enabled = false;
+
+        DynamicLocalizedTMPText dynamicWriter = nameText.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicWriter != null)
+            dynamicWriter.enabled = false;
     }
 
     private void InitializeDisplayedValues(int hp, int shield, int maxHP)

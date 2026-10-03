@@ -2427,10 +2427,6 @@ MonoBehaviour:
     m_Key: ui.option.text_tmp
     m_Metadata:
       m_Items: []
-  - m_Id: 10169488443449352
-    m_Key: ui.option.text_tmp_1
-    m_Metadata:
-      m_Items: []
   - m_Id: 10169488443449353
     m_Key: ui.record.text_tmp
     m_Metadata:
@@ -2753,10 +2749,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 10185974310510740
     m_Key: data.event.event_02_f.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510741
-    m_Key: data.event.event_02_f.description
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510742
@@ -3161,142 +3153,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 10185974323093554
     m_Key: data.erosion.erosion_03_08.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367564
-    m_Key: data.event.event_01.name.0c830f50
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367565
-    m_Key: data.event.event_01.name.3af1914f
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367567
-    m_Key: data.event.event_01.name.b9729e84
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367569
-    m_Key: data.event.event_02.name.2022a67e
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367570
-    m_Key: data.event.event_02_a.name.86eab557
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367571
-    m_Key: data.event.event_02.name.8d0e62d4
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367573
-    m_Key: data.event.event_02.name.01d3a074
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367575
-    m_Key: data.event.event_02.failure_description.cf68bf05
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367576
-    m_Key: data.event.event_02_f.name.20da7453
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367577
-    m_Key: data.event.event_03.name.e9ce9c1d
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367578
-    m_Key: data.event.event_03.name.bee0ad3d
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367580
-    m_Key: data.event.event_04.name.08a2544d
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367581
-    m_Key: data.event.event_04.name.ac43bd5c
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367583
-    m_Key: data.event.event_04.name.f0ed8ac6
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367585
-    m_Key: data.event.event_05.name.1b47701c
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367586
-    m_Key: data.event.event_05.name.9bc4c55b
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367588
-    m_Key: data.event.event_05.failure_description.b95b07af
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367589
-    m_Key: data.event.event_05_a.name.1b47701c
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367590
-    m_Key: data.event.event_05_a.name.9bc4c55b
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367592
-    m_Key: data.event.event_05_a.failure_description.b95b07af
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367593
-    m_Key: data.event.event_05_b.name.1b47701c
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367594
-    m_Key: data.event.event_05_b.name.9bc4c55b
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367596
-    m_Key: data.event.event_05_b.failure_description.b95b07af
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367597
-    m_Key: data.event.event_05.name.0d68fa9d
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367599
-    m_Key: data.event.event_06.name.6c29e279
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367600
-    m_Key: data.event.event_07.name.24ef16a4
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367601
-    m_Key: data.event.event_07.name.faa6c01e
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367603
-    m_Key: data.event.event_08.name.160b1b0e
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367604
-    m_Key: data.event.event_08_a.name.57ec1a17
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367605
-    m_Key: data.event.event_08_b.name.57ec1a17
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367606
-    m_Key: data.event.event_08.name.20da7453
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367607
-    m_Key: data.event.event_09.name.d11fc7f1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367608
-    m_Key: data.event.event_09.name.bd3b8fc2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10187665097367610
-    m_Key: data.event.event_09.name.82deb3ac
     m_Metadata:
       m_Items: []
   - m_Id: 10986483455893504
@@ -4167,30 +4023,6 @@ MonoBehaviour:
     m_Key: ui.battle.text.e3337fd8
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458548838467
-    m_Key: ui.bootstrap.text.0f35c9dd
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838470
-    m_Key: ui.bootstrap.text.b8eec541
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838471
-    m_Key: ui.bootstrap.text.e8b0a6f1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838472
-    m_Key: ui.bootstrap.text.125ff469
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838473
-    m_Key: ui.bootstrap.text.fa07452b
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838476
-    m_Key: ui.bootstrap.text.09597077
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838477
     m_Key: ui.bootstrap.text.35e62c42
     m_Metadata:
@@ -4255,18 +4087,6 @@ MonoBehaviour:
     m_Key: ui.lobby.text.0385cd9d
     m_Metadata:
       m_Items: []
-  - m_Id: 11981180450119761
-    m_Key: data.event.event_01.choice_description.0a84ed3f
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119762
-    m_Key: data.event.event_01.choice_description.c2b50b91
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119763
-    m_Key: data.event.event_01.choice_description.f3b35683
-    m_Metadata:
-      m_Items: []
   - m_Id: 11981180450119764
     m_Key: data.event.event_01_a.description
     m_Metadata:
@@ -4277,22 +4097,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11981180450119766
     m_Key: data.event.event_01_c.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119767
-    m_Key: data.event.event_02.choice_description.a28ed6bd
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119768
-    m_Key: data.event.event_02_a.choice_description.dc6c676f
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119769
-    m_Key: data.event.event_02.choice_description.4519e302
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119770
-    m_Key: data.event.event_02.choice_description.265a2cf0
     m_Metadata:
       m_Items: []
   - m_Id: 11981180450119771
@@ -4323,28 +4127,8 @@ MonoBehaviour:
     m_Key: data.event.event_02_i.description
     m_Metadata:
       m_Items: []
-  - m_Id: 11981180466896902
-    m_Key: data.event.event_03.choice_description.8f43bd81
-    m_Metadata:
-      m_Items: []
   - m_Id: 11981180466896903
     m_Key: data.event.event_03.description.a958b0a2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896904
-    m_Key: data.event.event_03.choice_description.72643f70
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896905
-    m_Key: data.event.event_04.choice_description.fec306f4
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896906
-    m_Key: data.event.event_04.choice_description.c390d5e2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896907
-    m_Key: data.event.event_04.choice_description.b9221c68
     m_Metadata:
       m_Items: []
   - m_Id: 11981180466896908
@@ -4363,34 +4147,6 @@ MonoBehaviour:
     m_Key: data.event.event_04_d.description
     m_Metadata:
       m_Items: []
-  - m_Id: 11981180466896912
-    m_Key: data.event.event_05.choice_description.73af1899
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896913
-    m_Key: data.event.event_05.choice_description.ca6b26a1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896914
-    m_Key: data.event.event_05_a.choice_description.73af1899
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896915
-    m_Key: data.event.event_05_a.choice_description.ca6b26a1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896916
-    m_Key: data.event.event_05_b.choice_description.73af1899
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896917
-    m_Key: data.event.event_05_b.choice_description.ca6b26a1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896918
-    m_Key: data.event.event_05.choice_description.bcb7167c
-    m_Metadata:
-      m_Items: []
   - m_Id: 11981180466896919
     m_Key: data.event.event_05_c.description
     m_Metadata:
@@ -4403,36 +4159,8 @@ MonoBehaviour:
     m_Key: data.event.event_05_e.description
     m_Metadata:
       m_Items: []
-  - m_Id: 11981180466896922
-    m_Key: data.event.event_06.choice_description.478b0fc3
-    m_Metadata:
-      m_Items: []
   - m_Id: 11981180466896923
     m_Key: data.event.event_06_a.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896924
-    m_Key: data.event.event_07.choice_description.faf32be2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896925
-    m_Key: data.event.event_07.choice_description.eb5b4cdc
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896926
-    m_Key: data.event.event_08.choice_description.f5ca5d59
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896927
-    m_Key: data.event.event_08_a.choice_description.4e1c1dc5
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896928
-    m_Key: data.event.event_08_b.choice_description.a6c0012b
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896929
-    m_Key: data.event.event_08.choice_description.97db0284
     m_Metadata:
       m_Items: []
   - m_Id: 11981180466896930
@@ -4441,18 +4169,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11981180466896931
     m_Key: data.event.event_08_d.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896932
-    m_Key: data.event.event_09.choice_description.d4f3b6d8
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896933
-    m_Key: data.event.event_09.choice_description.999d991e
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896934
-    m_Key: data.event.event_09.choice_description.c0517730
     m_Metadata:
       m_Items: []
   - m_Id: 11988550500753549
@@ -4777,26 +4493,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 17117632292986897
     m_Key: ui.battle.text.ecd31f39
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986898
-    m_Key: ui.bootstrap.text.68023280
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986899
-    m_Key: ui.bootstrap.text.609e9e2f
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986900
-    m_Key: ui.bootstrap.text.7a2f57de
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986901
-    m_Key: ui.bootstrap.text.647c3b75
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986902
-    m_Key: ui.bootstrap.text.de1fae62
     m_Metadata:
       m_Items: []
   - m_Id: 17117632292986906
@@ -6817,6 +6513,574 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 4794883933976256088
     m_Key: lobby.character.ines
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975624
+    m_Key: data.event.event_01.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975625
+    m_Key: data.event.event_01.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975626
+    m_Key: data.event.event_01.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975627
+    m_Key: data.event.event_01.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975628
+    m_Key: data.event.event_01.choice_3_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975629
+    m_Key: data.event.event_01.choice_3_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975630
+    m_Key: data.event.event_02.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975631
+    m_Key: data.event.event_02.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975632
+    m_Key: data.event.event_02_a.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975633
+    m_Key: data.event.event_02_a.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975634
+    m_Key: data.event.event_02_a.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975635
+    m_Key: data.event.event_02.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975636
+    m_Key: data.event.event_02.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975637
+    m_Key: data.event.event_02.choice_2_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975638
+    m_Key: data.event.event_02.choice_3_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975639
+    m_Key: data.event.event_02.choice_3_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975640
+    m_Key: data.event.event_02.choice_3_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975641
+    m_Key: data.event.event_02_f.choice_4_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975642
+    m_Key: data.event.event_02_f.choice_4_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975643
+    m_Key: data.event.event_03.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975644
+    m_Key: data.event.event_03.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975645
+    m_Key: data.event.event_03.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975646
+    m_Key: data.event.event_03.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975647
+    m_Key: data.event.event_04.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975648
+    m_Key: data.event.event_04.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975649
+    m_Key: data.event.event_04.choice_1_disabled_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975650
+    m_Key: data.event.event_04.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975651
+    m_Key: data.event.event_04.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975652
+    m_Key: data.event.event_04.choice_2_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975653
+    m_Key: data.event.event_04.choice_3_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975654
+    m_Key: data.event.event_04.choice_3_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975655
+    m_Key: data.event.event_04.choice_3_disabled_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975656
+    m_Key: data.event.event_05.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975657
+    m_Key: data.event.event_05.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975658
+    m_Key: data.event.event_05.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975659
+    m_Key: data.event.event_05.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975660
+    m_Key: data.event.event_05.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975661
+    m_Key: data.event.event_05.choice_2_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975662
+    m_Key: data.event.event_05_a.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975663
+    m_Key: data.event.event_05_a.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975664
+    m_Key: data.event.event_05_a.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975665
+    m_Key: data.event.event_05_a.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975666
+    m_Key: data.event.event_05_a.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975667
+    m_Key: data.event.event_05_a.choice_2_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975668
+    m_Key: data.event.event_05_b.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975669
+    m_Key: data.event.event_05_b.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975670
+    m_Key: data.event.event_05_b.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975671
+    m_Key: data.event.event_05_b.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975672
+    m_Key: data.event.event_05_b.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975673
+    m_Key: data.event.event_05_b.choice_2_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975674
+    m_Key: data.event.event_05.choice_3_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975675
+    m_Key: data.event.event_05.choice_3_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975676
+    m_Key: data.event.event_06.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975677
+    m_Key: data.event.event_06.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975678
+    m_Key: data.event.event_07.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975679
+    m_Key: data.event.event_07.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975680
+    m_Key: data.event.event_07.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975681
+    m_Key: data.event.event_07.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975682
+    m_Key: data.event.event_08.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975683
+    m_Key: data.event.event_08.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975684
+    m_Key: data.event.event_08.choice_1_disabled_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975685
+    m_Key: data.event.event_08.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975686
+    m_Key: data.event.event_08_a.choice_1_disabled_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975687
+    m_Key: data.event.event_08_a.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975688
+    m_Key: data.event.event_08_b.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975689
+    m_Key: data.event.event_08_b.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975690
+    m_Key: data.event.event_08_b.choice_1_disabled_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975691
+    m_Key: data.event.event_08_b.choice_1_failure_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975692
+    m_Key: data.event.event_08.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975693
+    m_Key: data.event.event_08.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975694
+    m_Key: data.event.event_09.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975695
+    m_Key: data.event.event_09.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975696
+    m_Key: data.event.event_09.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975697
+    m_Key: data.event.event_09.choice_2_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975698
+    m_Key: data.event.event_09.choice_3_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975699
+    m_Key: data.event.event_09.choice_3_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975700
+    m_Key: data.event.event_t_01.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975701
+    m_Key: data.event.event_t_01.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975702
+    m_Key: data.event.event_t_02.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975703
+    m_Key: data.event.event_t_02.choice_1_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2876383222199361250
+    m_Key: common.attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2876383222199361251
+    m_Key: common.buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2876383222199361252
+    m_Key: common.debuff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060544
+    m_Key: ui.battle.text.457f88ae
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060547
+    m_Key: ui.battle.text.67eb2641
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060549
+    m_Key: ui.battle.text.38a2227e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060558
+    m_Key: ui.debugbattle.text.67eb2641
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060563
+    m_Key: ui.debugbattle.text.be0baf42
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060565
+    m_Key: ui.debugbattle.text.38a2227e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060570
+    m_Key: data.monster_skill.s_monster_01.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060571
+    m_Key: data.monster_skill.s_monster_02.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060572
+    m_Key: data.monster_skill.s_monster_03.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060573
+    m_Key: data.monster_skill.s_monster_04.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060574
+    m_Key: data.monster_skill.s_monster_05.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060575
+    m_Key: data.monster_skill.s_monster_06.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060576
+    m_Key: data.monster_skill.s_monster_07.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060577
+    m_Key: data.monster_skill.s_monster_08.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060578
+    m_Key: data.monster_skill.s_monster_09.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060579
+    m_Key: data.monster_skill.s_monster_10.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060580
+    m_Key: data.monster_skill.s_monster_11.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060581
+    m_Key: data.monster_skill.s_monster_12.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060582
+    m_Key: data.monster_skill.s_monster_13.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060583
+    m_Key: data.monster_skill.s_monster_14.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060584
+    m_Key: data.monster_skill.s_monster_15.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060585
+    m_Key: data.monster_skill.s_monster_16.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060586
+    m_Key: data.monster_skill.s_monster_17.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060587
+    m_Key: data.monster_skill.s_monster_18.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060588
+    m_Key: data.monster_skill.s_monster_19.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060589
+    m_Key: data.monster_skill.s_monster_20.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060590
+    m_Key: data.monster_skill.s_monster_21.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060591
+    m_Key: data.monster_skill.s_monster_22.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060592
+    m_Key: data.monster_skill.s_monster_23.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060593
+    m_Key: data.monster_skill.s_monster_24.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060594
+    m_Key: data.monster_skill.s_monster_25.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060595
+    m_Key: data.monster_skill.s_monster_26.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060596
+    m_Key: data.monster_skill.s_monster_27.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060597
+    m_Key: data.monster_skill.s_monster_28.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060598
+    m_Key: data.monster_skill.s_monster_29.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060599
+    m_Key: data.monster_skill.s_monster_30.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060600
+    m_Key: data.monster_skill.s_monster_31.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060601
+    m_Key: data.monster_skill.s_monster_32.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060602
+    m_Key: data.monster_skill.s_monster_33.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060603
+    m_Key: data.monster_skill.s_monster_34.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060604
+    m_Key: data.monster_skill.s_monster_35.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060605
+    m_Key: data.monster_skill.s_monster_36.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060606
+    m_Key: data.monster_skill.s_monster_37.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060607
+    m_Key: data.monster_skill.s_monster_38.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060608
+    m_Key: data.monster_skill.s_monster_39.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060609
+    m_Key: data.monster_skill.s_monster_40.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060610
+    m_Key: data.monster_skill.s_monster_41.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060611
+    m_Key: data.battle_map.battlemap_17.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060612
+    m_Key: data.battle_map.battlemap_18.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060613
+    m_Key: data.battle_map.battlemap_19.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060614
+    m_Key: data.event.event_t_01.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060615
+    m_Key: data.event.event_t_01.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060616
+    m_Key: data.event.event_t_02.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19388577758060617
+    m_Key: data.event.event_t_02.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19395600956530688
+    m_Key: ui.battle.roomroot.battleroom.battlehudcanvas.battlecharacterpanel.tooltippanel.detail.38a2227e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19395600956530689
+    m_Key: ui.battle.roomroot.battleroom.battlehudcanvas.battlecharacterpanel.tooltipui.detail.38a2227e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19395600956530692
+    m_Key: ui.battle.roomroot.restroom.choicecanvas.healbutton.text_tmp.0fa15c3a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19395600956530693
+    m_Key: ui.debugbattle.roomroot.battleroom.battlehudcanvas.battlecharacterpanel.character.skillinfo.skill_cost.cost_name.dd9e80a7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19395600956530696
+    m_Key: ui.debugbattle.roomroot.restroom.choicecanvas.healbutton.text_tmp.0fa15c3a
     m_Metadata:
       m_Items: []
   m_Metadata:

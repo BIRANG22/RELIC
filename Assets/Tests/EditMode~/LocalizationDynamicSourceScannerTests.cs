@@ -6,6 +6,27 @@ using NUnit.Framework;
 
 public sealed class LocalizationDynamicSourceScannerTests
 {
+    [TestCase("선택지 이름", "data.event.event_02.choice_1_name")]
+    [TestCase("선택지 내용", "data.event.event_02.choice_1_description")]
+    [TestCase("선택불가 내용", "data.event.event_02.choice_1_disabled_description")]
+    [TestCase("실패 결과", "data.event.event_02.choice_1_failure_description")]
+    public void BuildEventChoiceKey_KoreanHeadersUseChoiceOrder(
+        string header,
+        string expectedKey)
+    {
+        Assert.That(
+            LocalizationProjectScanner.BuildEventChoiceKey("Event_02", 1, header),
+            Is.EqualTo(expectedKey));
+    }
+
+    [Test]
+    public void EventUnavailableChoiceHeader_IsPlayerFacingGameData()
+    {
+        Assert.That(
+            LocalizationProjectScanner.IsPlayerFacingGameDataColumn("Event", "선택불가 내용"),
+            Is.True);
+    }
+
     [Test]
     public void FindUnityYamlTmpTexts_DecodesWrappedQuotedTextAsOneSource()
     {

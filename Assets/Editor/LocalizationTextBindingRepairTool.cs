@@ -69,7 +69,7 @@ public static class LocalizationTextBindingRepairTool
             GameObject root = PrefabUtility.LoadPrefabContents(path);
             try
             {
-                RepairSummary assetSummary = RepairHierarchy(root, maps);
+                RepairSummary assetSummary = RepairHierarchy(root, path, maps);
                 if (assetSummary.Repaired > 0)
                     PrefabUtility.SaveAsPrefabAsset(root, path);
                 summary += assetSummary;
@@ -99,7 +99,7 @@ public static class LocalizationTextBindingRepairTool
             Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
             RepairSummary sceneSummary = default;
             foreach (GameObject root in scene.GetRootGameObjects())
-                sceneSummary += RepairHierarchy(root, maps);
+                sceneSummary += RepairHierarchy(root, path, maps);
 
             if (sceneSummary.Repaired > 0)
                 EditorSceneManager.SaveScene(scene);
@@ -109,7 +109,10 @@ public static class LocalizationTextBindingRepairTool
         return summary;
     }
 
-    private static RepairSummary RepairHierarchy(GameObject root, LocalizationBindingResolver resolver)
+    private static RepairSummary RepairHierarchy(
+        GameObject root,
+        string assetPath,
+        LocalizationBindingResolver resolver)
     {
         RepairSummary summary = default;
         foreach (TMP_Text text in root.GetComponentsInChildren<TMP_Text>(true))
@@ -128,7 +131,7 @@ public static class LocalizationTextBindingRepairTool
             LocalizeStringEvent localizer = text.GetComponent<LocalizeStringEvent>();
             string currentKey = existing != null ? existing.LocalizationKey : localizer != null
                 ? localizer.StringReference.TableEntryReference.Key : string.Empty;
-            if (resolver.TryGetKorean(currentKey, out _))
+            if (resolver.Validate(source, currentKey) == LocalizationBindingStatus.Valid)
             {
                 summary.Matched++;
                 if (StaticLocalizationMigration.RepairTextBinding(text, currentKey))
@@ -136,10 +139,26 @@ public static class LocalizationTextBindingRepairTool
                 continue;
             }
 
-            LocalizationKeyResolution resolution = resolver.ResolveSource(normalizedSource);
-            if (resolution.IsUnique)
+            string generatedKey = LocalizationProjectScanner.BuildSuggestedKey(
+                assetPath,
+                GetHierarchyPath(text.transform),
+                source);
+            string serializedSceneKey = LocalizationProjectScanner.BuildSuggestedKey(
+                assetPath,
+                "text",
+                source);
+            string replacementKey;
+            if (resolver.Validate(source, generatedKey) == LocalizationBindingStatus.Valid)
+                replacementKey = generatedKey;
+            else if (resolver.Validate(source, serializedSceneKey) == LocalizationBindingStatus.Valid)
+                replacementKey = serializedSceneKey;
+            else if (string.IsNullOrWhiteSpace(currentKey))
+                replacementKey = resolver.ResolveSource(normalizedSource).Key;
+            else
+                replacementKey = string.Empty;
+            if (!string.IsNullOrWhiteSpace(replacementKey))
             {
-                if (StaticLocalizationMigration.RepairTextBinding(text, resolution.Key))
+                if (StaticLocalizationMigration.RepairTextBinding(text, replacementKey))
                     summary.Repaired++;
             }
             else
@@ -151,6 +170,14 @@ public static class LocalizationTextBindingRepairTool
         }
 
         return summary;
+    }
+
+    private static string GetHierarchyPath(Transform transform)
+    {
+        var names = new Stack<string>();
+        for (Transform current = transform; current != null; current = current.parent)
+            names.Push(current.name);
+        return string.Join("/", names);
     }
 
     private static string ReadKoreanSource(TMP_Text text)

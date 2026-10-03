@@ -23,14 +23,14 @@ public sealed class DemoBattlePartySetupTests
         Assert.That(prepared, Is.True);
         Assert.That(partyStore.GetCharacterId(0), Is.EqualTo("Char_01"));
         Assert.That(partyStore.GetCharacterId(1), Is.EqualTo("Char_02"));
-        Assert.That(partyStore.GetCharacterId(2), Is.EqualTo("Char_04"));
+        Assert.That(partyStore.GetCharacterId(2), Is.EqualTo("Char_03"));
         Assert.That(partyStore.GetSpawnGridIndex(0), Is.EqualTo(0));
         Assert.That(partyStore.GetSpawnGridIndex(1), Is.EqualTo(1));
         Assert.That(partyStore.GetSpawnGridIndex(2), Is.EqualTo(2));
 
         AssertEmptyEquipment(characterStore.Get("Char_01"));
         AssertEmptyEquipment(characterStore.Get("Char_02"));
-        AssertEmptyEquipment(characterStore.Get("Char_04"));
+        AssertEmptyEquipment(characterStore.Get("Char_03"));
 
         Assert.That(lobby.OwnedRelicIds, Is.Empty);
         Assert.That(lobby.SkillInventoryIds, Is.Empty);
@@ -75,7 +75,7 @@ public sealed class DemoBattlePartySetupTests
         {
             CreateMaster("Char_01"),
             CreateMaster("Char_02"),
-            CreateMaster("Char_04")
+            CreateMaster("Char_03")
         });
         return database;
     }

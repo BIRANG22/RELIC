@@ -57,13 +57,15 @@ public sealed class LocalizationManagerWindow : EditorWindow
         Dictionary<string, string> known = ReadKoreanToUniqueKey();
         Dictionary<string, string> knownKoreanByKey = ReadKoreanByKey();
         HashSet<string> knownKeys = knownKoreanByKey.Keys.ToHashSet(StringComparer.Ordinal);
+        var bindingResolver = new LocalizationBindingResolver(
+            knownKoreanByKey.Select(pair => new LocalizationBindingEntry(pair.Key, pair.Value)));
         if (scanPrefabs)
         {
             foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Project" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 if (LocalizationEditorSafetyPolicy.ShouldScanProjectAsset(path))
-                    ScanPrefab(path, known, knownKoreanByKey, knownKeys);
+                    ScanPrefab(path, known, knownKoreanByKey, knownKeys, bindingResolver);
             }
         }
         if (scanScenes)
@@ -73,7 +75,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 if (LocalizationEditorSafetyPolicy.ShouldScanSceneAsset(path, configuredScenePaths))
-                    ScanScene(path, known, knownKeys);
+                    ScanScene(path, known, knownKoreanByKey, knownKeys, bindingResolver);
             }
         }
         if (scanScripts) ScanScripts(known, knownKoreanByKey, knownKeys);
@@ -239,33 +241,60 @@ public sealed class LocalizationManagerWindow : EditorWindow
         }
     }
 
-    private void ScanPrefab(string path, Dictionary<string, string> known, Dictionary<string, string> knownKoreanByKey, HashSet<string> knownKeys)
+    private void ScanPrefab(
+        string path,
+        Dictionary<string, string> known,
+        Dictionary<string, string> knownKoreanByKey,
+        HashSet<string> knownKeys,
+        LocalizationBindingResolver bindingResolver)
     {
         GameObject root = PrefabUtility.LoadPrefabContents(path);
-        try { ScanTexts(root.GetComponentsInChildren<TMP_Text>(true), path, known, knownKoreanByKey, knownKeys); }
+        try { ScanTexts(root.GetComponentsInChildren<TMP_Text>(true), path, known, knownKoreanByKey, knownKeys, bindingResolver); }
         finally { PrefabUtility.UnloadPrefabContents(root); }
     }
 
-    private void ScanScene(string path, Dictionary<string, string> known, HashSet<string> knownKeys)
+    private void ScanScene(
+        string path,
+        Dictionary<string, string> known,
+        Dictionary<string, string> knownKoreanByKey,
+        HashSet<string> knownKeys,
+        LocalizationBindingResolver bindingResolver)
     {
-        // 씬을 열고 닫는 과정은 DontSaveInEditor 임시 오브젝트 assertion을 유발할 수 있습니다.
-        // 검사만 필요한 단계에서는 Unity YAML의 TMP m_text 직렬화 값을 읽습니다.
-        string source = System.IO.File.ReadAllText(path);
-        IEnumerable<string> serializedPlayerTexts = LocalizationProjectScanner
-            .FindUnityYamlTmpTexts(source)
-            .Concat(LocalizationProjectScanner.FindUnityYamlPlayerTextFields(source));
-        foreach (string korean in serializedPlayerTexts)
+        UnityEngine.SceneManagement.Scene scene =
+            UnityEngine.SceneManagement.SceneManager.GetSceneByPath(path);
+        bool openedPreviewForScan = !scene.IsValid() || !scene.isLoaded;
+        if (openedPreviewForScan)
         {
-            if (!LocalizationProjectScanner.IsLocalizableKoreanText(korean))
-                continue;
+            scene = UnityEditor.SceneManagement.EditorSceneManager.OpenPreviewScene(path);
+        }
 
-            known.TryGetValue(korean, out string key);
-            key ??= LocalizationProjectScanner.BuildSuggestedKey(path, "text", korean);
-            candidates.Add(new LocalizationCandidate(path, korean, key, true, LocalizationCandidate.IsNewForKnownKeys(key, knownKeys)));
+        try
+        {
+            foreach (GameObject root in scene.GetRootGameObjects())
+            {
+                ScanTexts(
+                    root.GetComponentsInChildren<TMP_Text>(true),
+                    path,
+                    known,
+                    knownKoreanByKey,
+                    knownKeys,
+                    bindingResolver);
+            }
+        }
+        finally
+        {
+            if (openedPreviewForScan)
+                UnityEditor.SceneManagement.EditorSceneManager.ClosePreviewScene(scene);
         }
     }
 
-    private void ScanTexts(IEnumerable<TMP_Text> texts, string path, Dictionary<string, string> known, Dictionary<string, string> knownKoreanByKey, HashSet<string> knownKeys)
+    private void ScanTexts(
+        IEnumerable<TMP_Text> texts,
+        string path,
+        Dictionary<string, string> known,
+        Dictionary<string, string> knownKoreanByKey,
+        HashSet<string> knownKeys,
+        LocalizationBindingResolver bindingResolver)
     {
         foreach (TMP_Text text in texts)
         {
@@ -277,9 +306,17 @@ public sealed class LocalizationManagerWindow : EditorWindow
             LocalizeStringEvent localizer = text.GetComponent<LocalizeStringEvent>();
             string existingKey = runtimeLocalizer != null ? runtimeLocalizer.LocalizationKey : localizer != null
                 ? localizer.StringReference.TableEntryReference.Key : null;
-            string key = LocalizationBindingSourcePolicy.SelectExistingRegisteredKey(
-                existingKey,
-                knownKoreanByKey.Keys);
+            string generatedKey = LocalizationProjectScanner.BuildSuggestedKey(
+                path,
+                GetHierarchyPath(text.transform),
+                text.text);
+            string key = !string.IsNullOrWhiteSpace(existingKey)
+                ? LocalizationBindingSourcePolicy.SelectStaticBindingKey(
+                    text.text,
+                    existingKey,
+                    generatedKey,
+                    bindingResolver)
+                : null;
             bool sourceChanged = !string.IsNullOrWhiteSpace(key) &&
                                  knownKoreanByKey.TryGetValue(key, out string tableKorean) &&
                                  !LocalizationBindingSourcePolicy.DoesCurrentSourceMatchTable(text.text, tableKorean);
@@ -294,6 +331,14 @@ public sealed class LocalizationManagerWindow : EditorWindow
                 false,
                 sourceChanged));
         }
+    }
+
+    private static string GetHierarchyPath(Transform transform)
+    {
+        var names = new Stack<string>();
+        for (Transform current = transform; current != null; current = current.parent)
+            names.Push(current.name);
+        return string.Join("/", names);
     }
 
     private void ApplySafe()

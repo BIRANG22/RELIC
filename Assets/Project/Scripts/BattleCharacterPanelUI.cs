@@ -464,6 +464,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         BattleMapIntroText.IntroCompleted += HandleBattleMapIntroCompleted;
         SkillDetailNumericLinkHandler.DetailedModeChanged -= HandleSkillDetailsDetailedModeChanged;
         SkillDetailNumericLinkHandler.DetailedModeChanged += HandleSkillDetailsDetailedModeChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= HandleLocaleTableReady;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += HandleLocaleTableReady;
 
         ResolvePartyReferences();
         RefreshPartyFromRuntimeStore();
@@ -524,6 +526,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         BattleMapIntroText.IntroStarted -= HandleBattleMapIntroStarted;
         BattleMapIntroText.IntroCompleted -= HandleBattleMapIntroCompleted;
         SkillDetailNumericLinkHandler.DetailedModeChanged -= HandleSkillDetailsDetailedModeChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= HandleLocaleTableReady;
 
         StopNumberChangeCoroutine();
         StopPanelMoveCoroutine();
@@ -4202,18 +4205,29 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return string.Empty;
 
         if (skillData.Category == Category.Move || skillData.Rarity == SkillRarity.Move)
-            return "이동";
+            return GameLocalization.Get("common.move");
 
         if (skillData.Category == Category.Passive)
-            return "패시브";
+            return GameLocalization.Get("common.passive");
 
         return skillData.SkillType switch
         {
-            SkillType.Buff => "버프",
-            SkillType.Debuff => "디버프",
-            SkillType.Attack => "공격",
+            SkillType.Buff => GameLocalization.Get("common.buff"),
+            SkillType.Debuff => GameLocalization.Get("common.debuff"),
+            SkillType.Attack => GameLocalization.Get("common.attack"),
             _ => string.Empty
         };
+    }
+
+    private void HandleLocaleTableReady(UnityEngine.Localization.Locale _)
+    {
+        if (displayedSkillInfoData == null)
+            return;
+
+        if (isSkillTooltipVisible)
+            ShowSkillTooltip(displayedSkillInfoData);
+        else
+            ShowSkillInfo(displayedSkillInfoData);
     }
 
     private void ShowSkillInfo(SkillMasterData skillData)

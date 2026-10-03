@@ -158,6 +158,40 @@ public sealed class LocalizationMissingTranslationPolicyTests
     }
 
     [Test]
+    public void StaticBinding_SourceMismatch_SelectsGeneratedContextKeyInsteadOfExistingKey()
+    {
+        var resolver = new LocalizationBindingResolver(new[]
+        {
+            new LocalizationBindingEntry("common.recovery", "마나재생량"),
+        });
+
+        Assert.That(
+            LocalizationBindingSourcePolicy.SelectStaticBindingKey(
+                "회복",
+                "common.recovery",
+                "ui.battle.rest_room.heal_button",
+                resolver),
+            Is.EqualTo("ui.battle.rest_room.heal_button"));
+    }
+
+    [Test]
+    public void StaticBinding_MatchingSource_PreservesExistingKey()
+    {
+        var resolver = new LocalizationBindingResolver(new[]
+        {
+            new LocalizationBindingEntry("common.recovery", "마나재생량"),
+        });
+
+        Assert.That(
+            LocalizationBindingSourcePolicy.SelectStaticBindingKey(
+                "마나재생량",
+                "common.recovery",
+                "ui.generated.recovery",
+                resolver),
+            Is.EqualTo("common.recovery"));
+    }
+
+    [Test]
     public void ExplicitLocaleLookup_UsesRequestedLocaleForMissingMarker()
     {
         Locale japanese = Locale.CreateLocale("ja");

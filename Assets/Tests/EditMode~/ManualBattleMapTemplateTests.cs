@@ -93,7 +93,7 @@ public sealed class ManualBattleMapTemplateTests
     }
 
     [Test]
-    public void DemoTemplate_ActiveNodesFormOneCenteredLine()
+    public void DemoTemplate_AddsCommonBattleBetweenSpecialAndShopInOneCenteredLine()
     {
         ManualBattleMapTemplate template =
             AssetDatabase.LoadAssetAtPath<ManualBattleMapTemplate>(DemoTemplatePath);
@@ -103,9 +103,13 @@ public sealed class ManualBattleMapTemplateTests
         var nodes = template.Nodes.OrderBy(node => node.LayerIndex).ToList();
 
         Assert.That(nodes.Select(node => node.LayerIndex),
-            Is.EqualTo(new[] { 0, 1, 2, 3, 4, 5 }));
+            Is.EqualTo(new[] { 0, 1, 2, 3, 4, 5, 6 }));
+        Assert.That(nodes.Select(node => node.Type),
+            Is.EqualTo(new[] { "Special", "Common", "Special", "Common", "Shop", "Rest", "Boss" }));
+        Assert.That(nodes.Single(node => node.LayerIndex == 3).MapIdOverride, Is.Empty,
+            "The inserted Common node must select a regular battle map without an override.");
 
-        foreach (var node in nodes.Where(node => node.LayerIndex > 0 && node.LayerIndex < 5))
+        foreach (var node in nodes.Where(node => node.LayerIndex > 0 && node.LayerIndex < 6))
         {
             Assert.That(node.UseCustomPosition, Is.True,
                 $"Layer {node.LayerIndex} must use its centered demo position.");
