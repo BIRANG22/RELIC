@@ -8,6 +8,7 @@ public class ResolutionManager : MonoBehaviour
 {
     private const string ResolutionIndexPrefsKey = "Relic.ResolutionIndex";
     private const string FullscreenPrefsKey = "Relic.Fullscreen";
+    private const string DisplayModePrefsKey = "Relic.DisplayMode";
     private const int DefaultResolutionIndex = 3;
     private const int LetterboxSortingOrder = 32000;
     private const int RequiredStableRefreshFrames = 3;
@@ -36,7 +37,15 @@ public class ResolutionManager : MonoBehaviour
 
     public static int CurrentResolutionIndex { get; private set; } = DefaultResolutionIndex;
     public static ResolutionOption CurrentResolution => SupportedResolutions[CurrentResolutionIndex];
-    public static bool IsFullScreen { get; private set; }
+    public enum DisplayMode
+    {
+        Windowed = 0,
+        BorderlessFullscreen = 1,
+        ExclusiveFullscreen = 2
+    }
+
+    public static DisplayMode CurrentDisplayMode { get; private set; } = DisplayMode.Windowed;
+    public static bool IsFullScreen => CurrentDisplayMode != DisplayMode.Windowed;
     public static Color LetterboxColor => letterboxColor;
 
     /// <summary>
@@ -122,7 +131,7 @@ public class ResolutionManager : MonoBehaviour
         initialized = true;
 
         CurrentResolutionIndex = GetSavedResolutionIndex();
-        IsFullScreen = PlayerPrefs.GetInt(FullscreenPrefsKey, 0) != 0;
+        CurrentDisplayMode = GetSavedDisplayMode();
 
         ApplyCurrentResolution(false);
     }
@@ -153,7 +162,7 @@ public class ResolutionManager : MonoBehaviour
     public static void ApplySavedResolution()
     {
         CurrentResolutionIndex = GetSavedResolutionIndex();
-        IsFullScreen = PlayerPrefs.GetInt(FullscreenPrefsKey, 0) != 0;
+        CurrentDisplayMode = GetSavedDisplayMode();
         ApplyCurrentResolution(false);
     }
 
@@ -173,17 +182,58 @@ public class ResolutionManager : MonoBehaviour
         ApplyCurrentResolution(false);
     }
 
-    public static void SetFullScreen(bool isFullScreen, bool saveSelection)
+    public static void SetDisplayMode(DisplayMode mode, bool saveSelection)
     {
-        IsFullScreen = isFullScreen;
+        if (!System.Enum.IsDefined(typeof(DisplayMode), mode))
+            mode = DisplayMode.Windowed;
+
+        CurrentDisplayMode = mode;
+        ApplyCursorForDisplayMode(CurrentDisplayMode);
 
         if (saveSelection)
         {
-            PlayerPrefs.SetInt(FullscreenPrefsKey, isFullScreen ? 1 : 0);
+            PlayerPrefs.SetInt(DisplayModePrefsKey, (int)mode);
+            // 구버전 옵션과의 호환을 위해 전체화면 여부도 함께 저장합니다.
+            PlayerPrefs.SetInt(FullscreenPrefsKey, mode == DisplayMode.Windowed ? 0 : 1);
             PlayerPrefs.Save();
         }
 
         ApplyCurrentResolution(false);
+    }
+
+    /// <summary>
+    /// 기존 호출부 호환용 API입니다. true는 테두리 없는 전체화면으로 처리합니다.
+    /// </summary>
+    public static void SetFullScreen(bool isFullScreen, bool saveSelection)
+    {
+        SetDisplayMode(
+            isFullScreen ? DisplayMode.BorderlessFullscreen : DisplayMode.Windowed,
+            saveSelection);
+    }
+
+    private static DisplayMode GetSavedDisplayMode()
+    {
+        if (PlayerPrefs.HasKey(DisplayModePrefsKey))
+        {
+            int saved = PlayerPrefs.GetInt(DisplayModePrefsKey, (int)DisplayMode.Windowed);
+            if (System.Enum.IsDefined(typeof(DisplayMode), saved))
+                return (DisplayMode)saved;
+        }
+
+        // 기존 버전에서 저장한 Relic.Fullscreen 값을 새 3단계 모드로 마이그레이션합니다.
+        return PlayerPrefs.GetInt(FullscreenPrefsKey, 0) != 0
+            ? DisplayMode.BorderlessFullscreen
+            : DisplayMode.Windowed;
+    }
+
+    private static FullScreenMode ToUnityFullScreenMode(DisplayMode mode)
+    {
+        return mode switch
+        {
+            DisplayMode.BorderlessFullscreen => FullScreenMode.FullScreenWindow,
+            DisplayMode.ExclusiveFullscreen => FullScreenMode.ExclusiveFullScreen,
+            _ => FullScreenMode.Windowed
+        };
     }
 
     private static void ApplyCurrentResolution(bool forceRefreshOnly)
@@ -194,11 +244,29 @@ public class ResolutionManager : MonoBehaviour
             Screen.SetResolution(
                 resolution.Width,
                 resolution.Height,
-                IsFullScreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed);
+                ToUnityFullScreenMode(CurrentDisplayMode));
         }
+
+        ApplyCursorForDisplayMode(CurrentDisplayMode);
 
         if (instance != null)
             instance.StartResolutionRefresh();
+    }
+
+
+    private static void ApplyCursorForDisplayMode(DisplayMode mode)
+    {
+        // 독점 전체화면에서는 커서가 게임 창 밖으로 빠져나가지 않도록 제한합니다.
+        // 중앙에 고정하는 Locked가 아니라 Confined를 사용하므로 게임 창 안에서는 자유롭게 움직일 수 있습니다.
+        if (mode == DisplayMode.ExclusiveFullscreen)
+        {
+            Cursor.lockState = CursorLockMode.Confined;
+            Cursor.visible = true;
+            return;
+        }
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     /// <summary>

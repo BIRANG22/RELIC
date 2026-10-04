@@ -93,6 +93,13 @@ public static class LocalizationKeys
         public const string CultureMaterial = "ui.lobby.culture.material";
     }
 
+    public static class Option
+    {
+        public const string DisplayModeWindowed = "ui.option.display_mode.windowed";
+        public const string DisplayModeBorderless = "ui.option.display_mode.borderless";
+        public const string DisplayModeFullscreen = "ui.option.display_mode.fullscreen";
+    }
+
     public static class Dialog
     {
         public const string Yes = "common.yes";

@@ -9,7 +9,13 @@ public class OptionPanelUI : MonoBehaviour
     private const string SoundContentName = "SoundContent";
     private const string LanguageContentName = "LanguageContent";
     private const string ResolutionContentName = "ResolutionContent";
+    private const string WindowedToggleName = "WindowedToggle";
+    private const string BorderlessToggleName = "BorderlessToggle";
     private const string FullscreenToggleName = "FullscreenToggle";
+
+    private const string WindowedLabelKey = "ui.option.display_mode.windowed";
+    private const string BorderlessLabelKey = "ui.option.display_mode.borderless";
+    private const string FullscreenLabelKey = "ui.option.display_mode.fullscreen";
     private const string ControlContentName = "ControlContent";
     private const string TutorialToggle1Name = "TutorialToggle1";
     private const string TutorialToggle2Name = "TutorialToggle2";
@@ -23,6 +29,8 @@ public class OptionPanelUI : MonoBehaviour
 
     [Header("Resolution")]
     [SerializeField] private TMP_Dropdown resolutionDropdown;
+    [SerializeField] private Toggle windowedToggle;
+    [SerializeField] private Toggle borderlessToggle;
     [SerializeField] private Toggle fullscreenToggle;
 
     [Header("Battle Presentation Speed")]
@@ -49,10 +57,14 @@ public class OptionPanelUI : MonoBehaviour
 
     private void OnEnable()
     {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
+
         AutoFindReferences();
         SetupLanguageDropdown();
         SetupResolutionDropdown();
-        SetupFullscreenToggle();
+        SetupDisplayModeToggles();
+        RefreshDisplayModeLabels();
         SetupTutorialToggle();
         SetupIntroToggle();
         SubscribeIntroFinished();
@@ -62,6 +74,7 @@ public class OptionPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
         UnsubscribeIntroFinished();
     }
 
@@ -69,6 +82,12 @@ public class OptionPanelUI : MonoBehaviour
     {
         if (resolutionDropdown != null)
             resolutionDropdown.onValueChanged.RemoveListener(OnResolutionChanged);
+
+        if (windowedToggle != null)
+            windowedToggle.onValueChanged.RemoveListener(OnWindowedToggleChanged);
+
+        if (borderlessToggle != null)
+            borderlessToggle.onValueChanged.RemoveListener(OnBorderlessToggleChanged);
 
         if (fullscreenToggle != null)
             fullscreenToggle.onValueChanged.RemoveListener(OnFullscreenToggleChanged);
@@ -235,21 +254,121 @@ public class OptionPanelUI : MonoBehaviour
         isResolutionDropdownReady = true;
     }
 
-    private void SetupFullscreenToggle()
+    private void SetupDisplayModeToggles()
     {
-        if (fullscreenToggle == null && resolutionContent != null)
+        if (resolutionContent == null)
+            return;
+
+        if (windowedToggle == null)
+        {
+            Transform toggleTransform = FindChildByName(resolutionContent.transform, WindowedToggleName);
+            if (toggleTransform != null)
+                windowedToggle = toggleTransform.GetComponent<Toggle>();
+        }
+
+        if (borderlessToggle == null)
+        {
+            Transform toggleTransform = FindChildByName(resolutionContent.transform, BorderlessToggleName);
+            if (toggleTransform != null)
+                borderlessToggle = toggleTransform.GetComponent<Toggle>();
+        }
+
+        if (fullscreenToggle == null)
         {
             Transform toggleTransform = FindChildByName(resolutionContent.transform, FullscreenToggleName);
             if (toggleTransform != null)
                 fullscreenToggle = toggleTransform.GetComponent<Toggle>();
         }
 
-        if (fullscreenToggle == null)
+        ConfigureDisplayModeToggleGroup();
+
+        if (windowedToggle != null)
+        {
+            windowedToggle.onValueChanged.RemoveListener(OnWindowedToggleChanged);
+            windowedToggle.SetIsOnWithoutNotify(ResolutionManager.CurrentDisplayMode == ResolutionManager.DisplayMode.Windowed);
+            windowedToggle.onValueChanged.AddListener(OnWindowedToggleChanged);
+        }
+
+        if (borderlessToggle != null)
+        {
+            borderlessToggle.onValueChanged.RemoveListener(OnBorderlessToggleChanged);
+            borderlessToggle.SetIsOnWithoutNotify(ResolutionManager.CurrentDisplayMode == ResolutionManager.DisplayMode.BorderlessFullscreen);
+            borderlessToggle.onValueChanged.AddListener(OnBorderlessToggleChanged);
+        }
+
+        if (fullscreenToggle != null)
+        {
+            fullscreenToggle.onValueChanged.RemoveListener(OnFullscreenToggleChanged);
+            fullscreenToggle.SetIsOnWithoutNotify(ResolutionManager.CurrentDisplayMode == ResolutionManager.DisplayMode.ExclusiveFullscreen);
+            fullscreenToggle.onValueChanged.AddListener(OnFullscreenToggleChanged);
+        }
+
+        RefreshDisplayModeLabels();
+    }
+
+    private void RefreshDisplayModeLabels()
+    {
+        SetDisplayModeToggleLabel(windowedToggle, WindowedLabelKey, "창화면");
+        SetDisplayModeToggleLabel(borderlessToggle, BorderlessLabelKey, "테두리없는화면");
+        SetDisplayModeToggleLabel(fullscreenToggle, FullscreenLabelKey, "전체화면");
+    }
+
+    private static void SetDisplayModeToggleLabel(Toggle toggle, string localizationKey, string koreanFallback)
+    {
+        if (toggle == null)
             return;
 
-        fullscreenToggle.onValueChanged.RemoveListener(OnFullscreenToggleChanged);
-        fullscreenToggle.SetIsOnWithoutNotify(ResolutionManager.IsFullScreen);
-        fullscreenToggle.onValueChanged.AddListener(OnFullscreenToggleChanged);
+        TMP_Text label = toggle.GetComponentInChildren<TMP_Text>(true);
+        if (label == null)
+            return;
+
+        if (label.GetComponent<LocalizationIgnore>() == null)
+            label.gameObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localizedTmp = label.GetComponent<LocalizedTMPText>();
+        if (localizedTmp != null)
+            localizedTmp.enabled = false;
+
+        UnityEngine.Localization.Components.LocalizeStringEvent localizeStringEvent =
+            label.GetComponent<UnityEngine.Localization.Components.LocalizeStringEvent>();
+        if (localizeStringEvent != null)
+            localizeStringEvent.enabled = false;
+
+        label.text = GameLocalization.Get(localizationKey, koreanFallback);
+        label.ForceMeshUpdate();
+    }
+
+    private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
+    {
+        RefreshDisplayModeLabels();
+    }
+
+    private void ConfigureDisplayModeToggleGroup()
+    {
+        ToggleGroup group = null;
+
+        if (windowedToggle != null)
+            group = windowedToggle.group;
+        if (group == null && borderlessToggle != null)
+            group = borderlessToggle.group;
+        if (group == null && fullscreenToggle != null)
+            group = fullscreenToggle.group;
+
+        if (group == null)
+        {
+            group = resolutionContent.GetComponent<ToggleGroup>();
+            if (group == null)
+                group = resolutionContent.AddComponent<ToggleGroup>();
+        }
+
+        group.allowSwitchOff = false;
+
+        if (windowedToggle != null)
+            windowedToggle.group = group;
+        if (borderlessToggle != null)
+            borderlessToggle.group = group;
+        if (fullscreenToggle != null)
+            fullscreenToggle.group = group;
     }
 
 
@@ -395,9 +514,22 @@ public class OptionPanelUI : MonoBehaviour
         ResolutionManager.ApplyResolution(index, true);
     }
 
+    private void OnWindowedToggleChanged(bool isOn)
+    {
+        if (isOn)
+            ResolutionManager.SetDisplayMode(ResolutionManager.DisplayMode.Windowed, true);
+    }
+
+    private void OnBorderlessToggleChanged(bool isOn)
+    {
+        if (isOn)
+            ResolutionManager.SetDisplayMode(ResolutionManager.DisplayMode.BorderlessFullscreen, true);
+    }
+
     private void OnFullscreenToggleChanged(bool isOn)
     {
-        ResolutionManager.SetFullScreen(isOn, true);
+        if (isOn)
+            ResolutionManager.SetDisplayMode(ResolutionManager.DisplayMode.ExclusiveFullscreen, true);
     }
 
     private void RefreshBattlePresentationSpeedLabel()
@@ -431,7 +563,7 @@ public class OptionPanelUI : MonoBehaviour
         AutoFindReferences();
         SetupLanguageDropdown();
         SetupResolutionDropdown();
-        SetupFullscreenToggle();
+        SetupDisplayModeToggles();
         SetupTutorialToggle();
         SetupIntroToggle();
 
