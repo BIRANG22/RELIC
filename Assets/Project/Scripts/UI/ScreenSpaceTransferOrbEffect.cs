@@ -15,10 +15,9 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
     [SerializeField] private Texture orbTexture;
     [SerializeField] private Vector2 orbSize = new(120f, 120f);
     [SerializeField, Min(0.01f)] private float duration = 0.6f;
-    [SerializeField, Min(0f)] private float arcHeight = 220f;
 
     [Header("Motion Randomness")]
-    [Tooltip("각 획득 연출마다 포물선 높이에 적용할 랜덤 배율 범위입니다.")]
+    [Tooltip("도착점으로 빨려 들어가는 곡선의 상승 관성에 적용할 랜덤 배율 범위입니다.")]
     [SerializeField] private Vector2 arcHeightMultiplierRange = new(0.72f, 1.28f);
     [Tooltip("진행 방향의 수직 방향으로 포물선 중심점을 랜덤하게 흔드는 화면 픽셀 범위입니다.")]
     [SerializeField, Min(0f)] private float lateralRandomness = 130f;

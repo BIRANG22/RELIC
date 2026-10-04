@@ -460,12 +460,7 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         // Presenter의 코루틴으로 기다리지 않습니다. Effect가 자기 자신에서 재생되기 때문에
         // 상점 입력, 다음 구매, 패널 닫기와 독립적으로 끝까지 재생됩니다.
         ScreenSpaceTransferOrbEffect effect = Instantiate(screenSpaceTransferEffectPrefab);
-        IEnumerator routine = effect.Play(
-            startScreenPosition,
-            endScreenPosition,
-            rarityColor);
-        if (routine != null)
-            effect.StartCoroutine(routine);
+        effect.PlayDetached(startScreenPosition, endScreenPosition, rarityColor);
     }
 
     private void PlayPurchaseTransferStartSound()

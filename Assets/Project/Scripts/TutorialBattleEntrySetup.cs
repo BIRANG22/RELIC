@@ -138,6 +138,83 @@ public static class TutorialBattleEntrySetup
         return true;
     }
 
+    /// <summary>
+    /// 튜토리얼을 완료하거나 중간에 건너뛴 뒤 로비로 돌아갈 때 사용할 최종 파티 배치를 준비합니다.
+    /// 튜토리얼 진행 시점과 관계없이 힐트 / 헤이즈 / 카야를 지정된 Ready 그리드에 등록합니다.
+    /// </summary>
+    public static bool TryPrepareLobbyPartyAfterTutorial(DataManager dataManager)
+    {
+        if (dataManager == null)
+        {
+            Debug.LogError("[TutorialBattleEntrySetup] DataManager is missing while preparing the lobby party after tutorial.");
+            return false;
+        }
+
+        dataManager.Initialize();
+
+        CharacterDatabase characterDatabase = dataManager.CharacterDatabase;
+        CharacterRuntimeStore characterStore = dataManager.CharacterRuntimeStore;
+        PartyRuntimeStore partyStore = dataManager.PartyRuntimeStore;
+
+        if (characterDatabase == null || characterStore == null || partyStore == null)
+        {
+            Debug.LogError("[TutorialBattleEntrySetup] Required character runtime stores are missing while preparing the lobby party after tutorial.");
+            return false;
+        }
+
+        string[] characterIds =
+        {
+            HiltCharacterId,
+            HazeCharacterId,
+            KayaCharacterId
+        };
+
+        int[] spawnGridIndices =
+        {
+            HiltSpawnGridIndex,
+            HazeSpawnGridIndex,
+            KayaSpawnGridIndex
+        };
+
+        for (int i = 0; i < characterIds.Length; i++)
+        {
+            string characterId = characterIds[i];
+
+            if (!characterDatabase.TryGet(characterId, out CharacterMasterData master) || master == null)
+            {
+                Debug.LogError($"[TutorialBattleEntrySetup] Character data was not found while preparing lobby party: {characterId}");
+                return false;
+            }
+
+            if (!characterStore.TryGet(characterId, out CharacterRuntimeData runtime) || runtime == null)
+            {
+                runtime = CreateCharacterRuntime(master, dataManager.RelicDatabase);
+                characterStore.AddOrUpdate(runtime);
+            }
+        }
+
+        // 튜토리얼 중간 상태에서 1~2명만 등록되어 있을 수 있으므로 최종 파티를 명시적으로 다시 구성합니다.
+        partyStore.Clear();
+
+        for (int i = 0; i < characterIds.Length; i++)
+        {
+            if (!partyStore.SetSlot(i, characterIds[i], spawnGridIndices[i]))
+            {
+                Debug.LogError(
+                    $"[TutorialBattleEntrySetup] Failed to register tutorial lobby party slot {i}: {characterIds[i]} / Grid {spawnGridIndices[i]}");
+                return false;
+            }
+        }
+
+        Debug.Log(
+            $"[TutorialBattleEntrySetup] Lobby party prepared after tutorial: " +
+            $"{HiltCharacterId}(Grid {HiltSpawnGridIndex}), " +
+            $"{HazeCharacterId}(Grid {HazeSpawnGridIndex}), " +
+            $"{KayaCharacterId}(Grid {KayaSpawnGridIndex}).");
+
+        return true;
+    }
+
     private static bool TryPrepareHiltParty(DataManager dataManager)
     {
         CharacterDatabase characterDatabase = dataManager.CharacterDatabase;

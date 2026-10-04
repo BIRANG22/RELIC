@@ -168,12 +168,6 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private bool IsGridPointerInteractionBlocked()
     {
-        if (BattleFirstTutorialController.Instance != null &&
-            BattleFirstTutorialController.Instance.IsRunning)
-        {
-            return true;
-        }
-
         if (UIPanelButton.IsMenuPanelOpen)
             return true;
 
