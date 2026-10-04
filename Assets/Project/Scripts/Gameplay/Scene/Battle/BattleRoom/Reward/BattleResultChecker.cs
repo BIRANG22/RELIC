@@ -20,6 +20,9 @@ public class BattleResultChecker : MonoBehaviour
     [SerializeField] private ExplorationResultPanelUI explorationResultPanel;
     [SerializeField] private GameObject nextButtonRoot;
 
+    [Header("Reward Canvas Sorting")]
+    [SerializeField] private int rewardCanvasSortingOrder = 500;
+
     [Header("Boss Clear Choice")]
     [SerializeField] private GameObject nextStageButtonRoot;
     [SerializeField] private GameObject returnButtonRoot;
@@ -35,11 +38,25 @@ public class BattleResultChecker : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        EnsureRewardCanvasSorting();
         BindNextButton();
         BindBossClearButtons();
         BindBossClearButtonLocalization();
         SetNextButtonVisible(false);
         SetBossClearChoiceButtonsVisible(false);
+    }
+
+
+    private void EnsureRewardCanvasSorting()
+    {
+        // BattleRewardCanvas가 BattleHUDCanvas의 BattleSlot보다 항상 앞에 그려지도록
+        // 이 패널이 속한 Canvas에 독립적인 정렬 순서를 부여합니다.
+        Canvas rewardCanvas = GetComponentInParent<Canvas>(true);
+        if (rewardCanvas == null)
+            return;
+
+        rewardCanvas.overrideSorting = true;
+        rewardCanvas.sortingOrder = rewardCanvasSortingOrder;
     }
 
     private void OnDisable()

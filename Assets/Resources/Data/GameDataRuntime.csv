@@ -22,16 +22,16 @@ Char_05,레이나,90,12,4,5,Karma,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Un
 # Monster
 몬스터ID,이름,등급,HP,방어도,최소 렘넌트,최대 렘넌트,고유아이템,고유 아이템 확률,공격범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID,보유스킬6 ID,보유스킬7 ID,보유스킬8 ID,보유스킬9 ID,보유스킬10 ID
 MonsterId,Name,Grade,HP,Armor,MinRemnant,MaxRemnant,UniqueItemId ,UniqueItemChance,AttackRange,PossSkillId01,PossSkillId02,PossSkillId03,PossSkillId04,PossSkillId05,PossSkillId06,PossSkillId07,PossSkillId08,PossSkillId09,PossSkillId10
-Mon_01,머크,Common,34,0,8,16,Item_001,0.3,Range_20,S_Monster_01,S_Monster_02,0,0,0,0,0,0,0,0
+Mon_01,머크,Common,34,0,8,16,Item_001,0.3,Range_18,S_Monster_01,S_Monster_02,0,0,0,0,0,0,0,0
 Mon_02,블롭,Common,15,0,5,10,Item_002,0.3,Range_17,S_Monster_03,S_Monster_04,0,0,0,0,0,0,0,0
-Mon_03,랜서,Common,26,0,12,18,Item_003,0.3,Range_20,S_Monster_05,S_Monster_06,S_Monster_07,0,0,0,0,0,0,0
-Mon_04,블라이트,Common,25,0,12,18,Item_004,0.3,Range_20,S_Monster_08,S_Monster_09,S_Monster_10,0,0,0,0,0,0,0
+Mon_03,랜서,Common,26,0,12,18,Item_003,0.3,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0,0,0,0,0,0
+Mon_04,블라이트,Common,25,0,12,18,Item_004,0.3,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0,0,0,0,0,0
 Mon_05,베스파,Common,38,0,18,25,Item_005,0.3,Range_19,S_Monster_11,S_Monster_12,0,0,0,0,0,0,0,0
-Mon_06,신더,Common,18,20,15,22,Item_006,0.3,Range_21,S_Monster_13,S_Monster_14,0,0,0,0,0,0,0,0
+Mon_06,신더,Common,18,20,15,22,Item_006,0.3,Range_18,S_Monster_13,S_Monster_14,0,0,0,0,0,0,0,0
 Mon_07,드라우그,Common,42,0,10,20,Item_007,0.3,Range_18,S_Monster_26,S_Monster_27,S_Monster_28,0,0,0,0,0,0,0
-Mon_08,바로우,Common,40,0,10,20,Item_008,0.3,Range_20,S_Monster_29,S_Monster_30,S_Monster_31,0,0,0,0,0,0,0
+Mon_08,바로우,Common,40,0,10,20,Item_008,0.3,Range_19,S_Monster_29,S_Monster_30,S_Monster_31,0,0,0,0,0,0,0
 Mon_09,루크,Elite,82,0,30,45,Item_009,0.2,Range_18,S_Monster_32,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,0,0,0,0,0
-Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.2,Range_21,S_Monster_15,S_Monster_16,S_Monster_17,S_Monster_18,S_Monster_19,0,0,0,0,0
+Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.2,Range_18,S_Monster_15,S_Monster_16,S_Monster_17,S_Monster_18,S_Monster_19,0,0,0,0,0
 Mon_11,모르트,Elite,77,0,35,42,Item_011,0.2,Range_19,S_Monster_37,S_Monster_38,S_Monster_39,S_Monster_40,S_Monster_41,0,0,0,0,0
 Mon_12,아라벨라,Boss,142,0,45,55,Item_012,0.5,Range_19,S_Monster_20,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,S_Monster_25,0,0,0,0
 ,,,,,,,,,,,,,,,,,,,
@@ -1068,10 +1068,10 @@ S_Monster_01,이동,Self,E_Move,0,1,0,Range_18,Move,가까운 캐릭터 주변�
 S_Monster_02,점액투척,PlayerParty,E_Strike,7,1,0,Range_m_01,Attack,범위 내에서 가까운 대상에게 {ValueRate1}의 피해를 주고 점액을 남긴다.,icon_mon_skill_002,일반피해
 S_Monster_03,이동,Self,E_Move,0,1,0,Range_17,Move,가까운 캐릭터를 향해 1칸 이동한다.,icon_mon_skill_001,이동
 S_Monster_04,덮치기,PlayerParty,E_Strike,5,1,0,Range_02,Attack,대상에게 {ValueRate1}의 피해를 준다.,icon_mon_skill_003,일반피해
-S_Monster_05,이동,Self,E_Move,0,1,0,Range_20,Move,범위 내에 캐릭터가 들어오면 2칸 도망간다.,icon_mon_skill_001,이동
+S_Monster_05,이동,Self,E_Move,0,1,0,Range_19,Move,범위 내에 캐릭터가 들어오면 2칸 도망간다.,icon_mon_skill_001,이동
 S_Monster_06,화염폭발,PlayerParty,E_Strike,8,1,0,Range_18,Attack,주변에 {ValueRate1}의 피해를 준다.,icon_mon_skill_004,일반피해
 S_Monster_07,원한의 불꽃,EnemyParty,E_Grudge,1,1,0,Range_All,Buff,모든 몬스터에게 원한을 {ValueRate1} 부여한다.,icon_mon_skill_005,버프
-S_Monster_08,이동,Self,E_Move,0,1,0,Range_20,Move,범위 내에 캐릭터가 들어오면 2칸 도망간다.,icon_mon_skill_001,이동
+S_Monster_08,이동,Self,E_Move,0,1,0,Range_19,Move,범위 내에 캐릭터가 들어오면 2칸 도망간다.,icon_mon_skill_001,이동
 S_Monster_09,침식폭발,PlayerParty,E_Strike,8,1,0,Range_18,Attack,주변에 {ValueRate1}의 피해를 준다.,icon_mon_skill_006,일반피해
 S_Monster_10,침식 확산,PlayerParty,E_Corrosion,1,1,0,Range_All,Debuff,모든 캐릭터에게 침식을 {ValueRate1} 부여한다.,icon_mon_skill_007,디버프
 S_Monster_11,이동,Self,E_Move,0,1,0,Range_19,Move,같은 라인을 맞추기 위해 이동한다.,icon_mon_skill_001,이동
