@@ -231,6 +231,26 @@ public class BattleSceneController : MonoBehaviour
         if (tutorialSkipButton != null)
             tutorialSkipButton.interactable = false;
 
+        // 스킵 처리로 런타임/파티 데이터가 바뀌기 전에 먼저 화면을 완전히 가립니다.
+        // 그래야 전투 캐릭터가 로비용 데이터로 갱신되는 과정이 플레이어에게 노출되지 않습니다.
+        CanvasMaterialSceneTransition sceneTransition = CanvasMaterialSceneTransition.Instance;
+        if (sceneTransition == null)
+        {
+            sceneTransition = Object.FindFirstObjectByType<CanvasMaterialSceneTransition>(
+                FindObjectsInactive.Include);
+        }
+
+        if (sceneTransition != null)
+        {
+            while (sceneTransition.IsPlaying)
+                await Task.Yield();
+
+            await sceneTransition.PlayCloseAsync();
+
+            // 다음 Lobby 로드는 이미 닫힌 화면에서 시작하고, 로드 후 열림 연출만 재생합니다.
+            SceneFlowManager.Instance?.UseAlreadyClosedTransitionForNextLoad();
+        }
+
         BattleFirstTutorialController.Instance?.CloseTutorial();
         TutorialSettings.MarkTutorialSeen();
 
@@ -258,6 +278,11 @@ public class BattleSceneController : MonoBehaviour
             Debug.LogError("[BattleSceneController] GameManager/StateMachine is missing. Cannot enter Lobby after tutorial skip.", this);
             isTutorialSkipProcessing = false;
             RefreshTutorialModeUI();
+
+            // 상태 전환에 실패했다면 닫힌 화면을 다시 열어 전투 화면으로 복귀합니다.
+            if (sceneTransition != null)
+                await sceneTransition.PlayOpenAsync();
+
             return;
         }
 

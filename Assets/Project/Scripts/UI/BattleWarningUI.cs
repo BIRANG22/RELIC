@@ -1,4 +1,4 @@
-using TMPro;
+ï»¿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +11,7 @@ public class BattleWarningUI : MonoBehaviour
     [SerializeField] private TMP_Text messageText;
     [SerializeField] private RectTransform moveTarget;
     [SerializeField] private Image backgroundImage;
+    [SerializeField] private GameObject lineObject;
 
     [Header("Timing")]
     [SerializeField] private float showDuration = 1.2f;
@@ -37,7 +38,7 @@ public class BattleWarningUI : MonoBehaviour
     [SerializeField] private bool setAsLastSiblingOnShow = true;
 
     [Header("Object Toggle")]
-    [Tooltip("BattleWarningUI ·çÆ®´Â Ç×»ó ÄÑµĞ »óÅÂ·Î À¯ÁöÇÏ°í, ¹è°æ ÀÌ¹ÌÁö¿Í ÅØ½ºÆ®¸¸ ÄÑ°í ²ü´Ï´Ù.")]
+    [Tooltip("BattleWarningUI ë£¨íŠ¸ëŠ” í•­ìƒ ì¼œë‘” ìƒíƒœë¡œ ìœ ì§€í•˜ê³ , ë°°ê²½ ì´ë¯¸ì§€ì™€ í…ìŠ¤íŠ¸ë§Œ ì¼œê³  ë•ë‹ˆë‹¤.")]
     [SerializeField] private bool keepRootObjectActive = true;
 
     private Canvas sortingCanvas;
@@ -58,8 +59,8 @@ public class BattleWarningUI : MonoBehaviour
 
     private void Start()
     {
-        // ºñÈ°¼º ¿ÀºêÁ§Æ®¿¡¼­ Ã¹ Show()·Î Awake°¡ ½ÇÇàµÈ °æ¿ì¿¡´Â
-        // ÀÌ¹Ì ½ÃÀÛµÈ Ç¥½Ã ¿äÃ»À» ´Ù½Ã ¼û±âÁö ¾Ê½À´Ï´Ù.
+        // ë¹„í™œì„± ì˜¤ë¸Œì íŠ¸ì—ì„œ ì²« Show()ë¡œ Awakeê°€ ì‹¤í–‰ëœ ê²½ìš°ì—ëŠ”
+        // ì´ë¯¸ ì‹œì‘ëœ í‘œì‹œ ìš”ì²­ì„ ë‹¤ì‹œ ìˆ¨ê¸°ì§€ ì•ŠìŠµë‹ˆë‹¤.
         if (!isShowing && !keepRootObjectActive)
             gameObject.SetActive(false);
     }
@@ -213,6 +214,20 @@ public class BattleWarningUI : MonoBehaviour
 
         if (backgroundImage == null)
             backgroundImage = GetComponentInChildren<Image>(true);
+
+        if (lineObject == null)
+        {
+            Transform[] children = GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < children.Length; i++)
+            {
+                Transform child = children[i];
+                if (child != null && child != transform && child.name == "Line")
+                {
+                    lineObject = child.gameObject;
+                    break;
+                }
+            }
+        }
     }
 
     private void SetWarningChildrenActive(bool active)
@@ -222,6 +237,9 @@ public class BattleWarningUI : MonoBehaviour
 
         if (messageText != null && messageText.gameObject != gameObject)
             messageText.gameObject.SetActive(active);
+
+        if (lineObject != null && lineObject != gameObject)
+            lineObject.SetActive(active);
     }
 
     private void CaptureBasePositionIfNeeded()
