@@ -26,9 +26,6 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     [SerializeField] private Button completionButton;
     [SerializeField] private Image completionIcon;
 
-    [Header("Automatic Claim")]
-    [Min(0f)][SerializeField] private float automaticClaimDelay = 1f;
-
     [Header("Ingredient Register Sound")]
     [Tooltip("Storage의 재료가 CultureTankRow에 실제로 등록되었을 때 재생할 SFX입니다.")]
     [SerializeField, SoundId(SoundCategory.Sfx)]
@@ -48,32 +45,18 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     private float compoundTransferStartSoundVolume = 0.5f;
 
     [Header("Compound Transfer Animation")]
-    [Tooltip("딜레이가 끝난 뒤 연성제 획득 이펙트가 도착할 UI 타겟입니다.")]
-    [SerializeField] private RectTransform compoundTransferTarget;
-    [Tooltip("유물/튜토리얼 파편 획득과 같은 방식으로 RawImage에 표시할 Texture2D입니다.")]
-    [SerializeField] private Texture2D compoundTransferEffectTexture;
-    [SerializeField] private Vector2 compoundTransferEffectSize = new Vector2(96f, 96f);
-    [SerializeField] private Vector2 compoundTransferBounceOffset = new Vector2(180f, 120f);
-    [SerializeField, Min(0.01f)] private float compoundTransferBounceDuration = 0.18f;
-    [SerializeField, Min(0.01f)] private float compoundTransferFlyDuration = 0.32f;
-    [Tooltip("이동 효과가 생성될 때의 크기 배율입니다. 튜토리얼 파편과 동일한 방식으로 사용합니다.")]
-    [SerializeField, Min(0.05f)] private float compoundTransferStartScale = 2.5f;
-    [SerializeField, Min(0.05f)] private float compoundTransferEndScale = 0.35f;
-
-    [Header("Compound Transfer Trail")]
-    [SerializeField, Min(0.005f)] private float compoundTrailSpawnInterval = 0.025f;
-    [SerializeField, Min(0.01f)] private float compoundTrailLifetime = 0.18f;
-    [SerializeField, Range(0.05f, 1f)] private float compoundTrailStartScale = 0.78f;
-    [SerializeField, Range(0f, 1f)] private float compoundTrailEndScale = 0.2f;
-    [SerializeField, Range(0f, 1f)] private float compoundTrailStartAlpha = 0.48f;
+    [Tooltip("조합 완료 후 completion 아이콘을 잠깐 보여준 뒤 이동 연출을 시작하기까지의 시간입니다.")]
+    [SerializeField, Min(0f)] private float compoundTransferStartDelay = 0.5f;
+    [Tooltip("로비 유물 구매 때 사용하는 것과 같은 ScreenSpaceTransferOrbEffect 프리팹입니다.")]
+    [SerializeField] private ScreenSpaceTransferOrbEffect screenSpaceTransferEffectPrefab;
+    [Tooltip("완성된 연성제가 최종적으로 들어갈 Lobby_Icon/Icon_04(Storage) UI입니다. 비어 있으면 씬에서 자동 탐색합니다.")]
+    [SerializeField] private RectTransform compoundTransferUiTarget;
 
     private readonly List<BattleBagItemSlotUI> storageSlots = new();
     private readonly List<string> storageItemOrder = new();
     private int selectedSlotIndex = -1;
     private float nextPassiveRefreshTime;
     private Coroutine automaticClaimCoroutine;
-    private bool compoundTransferInProgress;
-    private GameObject activeCompoundTransferEffect;
 
     public bool IsOpen => panelRoot != null && panelRoot.activeSelf;
     private void Awake() { BindSceneObjects(); BindCultureStorageHeader(); BindButtons(); EnsureStorageSlots(); }
@@ -136,13 +119,6 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         {
             StopCoroutine(automaticClaimCoroutine);
             automaticClaimCoroutine = null;
-        }
-
-        compoundTransferInProgress = false;
-        if (activeCompoundTransferEffect != null)
-        {
-            Destroy(activeCompoundTransferEffect);
-            activeCompoundTransferEffect = null;
         }
 
         LobbyPositionSharedModalBackground.HideForOwner(this);
@@ -231,6 +207,97 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         return SelectInventoryItem(normalizedItemId);
     }
 
+    public bool TryRegisterRecipeMaterials(string materialId1, string materialId2, string materialId3)
+    {
+        if (!CanMutate())
+            return false;
+
+        LobbyRuntimeData lobby = GetLobby();
+        if (lobby == null || !string.IsNullOrWhiteSpace(lobby.CompletedCultureTankCombinationId))
+            return false;
+
+        string[] materialIds =
+        {
+            NormalizeRecipeMaterialId(materialId1),
+            NormalizeRecipeMaterialId(materialId2),
+            NormalizeRecipeMaterialId(materialId3)
+        };
+
+        if (Array.Exists(materialIds, string.IsNullOrEmpty))
+            return false;
+
+        // 현재 배양조에 들어 있는 재료까지 포함해, 레시피 3종을 모두 보유했을 때만 한 번에 교체합니다.
+        // 재료가 부족하면 기존 배양조 상태는 건드리지 않습니다.
+        var availableCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        if (lobby.BagItemIds != null)
+        {
+            for (int i = 0; i < lobby.BagItemIds.Count; i++)
+                AddRecipeMaterialCount(availableCounts, lobby.BagItemIds[i]);
+        }
+
+        if (lobby.CultureTankResearches != null)
+        {
+            for (int i = 0; i < lobby.CultureTankResearches.Count; i++)
+                AddRecipeMaterialCount(availableCounts, lobby.CultureTankResearches[i]?.ItemId);
+        }
+
+        var requiredCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (int i = 0; i < materialIds.Length; i++)
+            AddRecipeMaterialCount(requiredCounts, materialIds[i]);
+
+        foreach (KeyValuePair<string, int> required in requiredCounts)
+        {
+            availableCounts.TryGetValue(required.Key, out int available);
+            if (available < required.Value)
+                return false;
+        }
+
+        // 검증이 끝난 뒤에만 기존 재료를 Storage로 돌려놓고 레시피 순서대로 1~3번 배양조에 등록합니다.
+        if (lobby.CultureTankResearches != null && lobby.CultureTankResearches.Count > 0)
+        {
+            for (int i = lobby.CultureTankResearches.Count - 1; i >= 0; i--)
+            {
+                CultureTankResearchRuntimeData research = lobby.CultureTankResearches[i];
+                if (research != null && !string.IsNullOrWhiteSpace(research.ItemId))
+                    lobby.BagItemIds.Add(research.ItemId.Trim());
+            }
+            lobby.CultureTankResearches.Clear();
+        }
+
+        for (int i = 0; i < materialIds.Length; i++)
+        {
+            if (!CultureTankResearchService.TryPlaceIngredient(lobby, GetSlotId(i), materialIds[i], out string error))
+            {
+                Debug.LogWarning($"[LobbyCultureTankPanelPresenter] 레시피 재료 자동 등록 실패: {error}");
+                return false;
+            }
+        }
+
+        PlayIngredientRegisterSound();
+        selectedSlotIndex = -1;
+        SaveAndPublish();
+        RefreshAll();
+        return true;
+    }
+
+    private static string NormalizeRecipeMaterialId(string itemId)
+    {
+        return string.IsNullOrWhiteSpace(itemId) ? string.Empty : itemId.Trim();
+    }
+
+    private static void AddRecipeMaterialCount(Dictionary<string, int> counts, string itemId)
+    {
+        if (counts == null)
+            return;
+
+        string normalizedId = NormalizeRecipeMaterialId(itemId);
+        if (string.IsNullOrEmpty(normalizedId))
+            return;
+
+        counts.TryGetValue(normalizedId, out int count);
+        counts[normalizedId] = count + 1;
+    }
+
     private bool SelectInventoryItem(string itemId)
     {
         LobbyRuntimeData lobby = GetLobby();
@@ -281,9 +348,22 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     private void Combine()
     {
         DataManager data = DataManager.Instance;
-        if (!CultureTankResearchService.TryCombine(GetLobby(), data?.ItemDatabase, data?.CompoundDatabase, out _, out string error))
-        { BattleWarningUI.ShowMessage(GameLocalization.Get("lobby.cannot_combine")); Debug.LogWarning($"[LobbyCultureTankPanelPresenter] {error}"); return; }
-        selectedSlotIndex = -1; SaveAndPublish(); RefreshAll();
+        if (!CultureTankResearchService.TryCombine(GetLobby(), data?.ItemDatabase, data?.CompoundDatabase, out string compoundId, out string error))
+        {
+            BattleWarningUI.ShowMessage(GameLocalization.Get("lobby.cannot_combine"));
+            Debug.LogWarning($"[LobbyCultureTankPanelPresenter] {error}");
+            return;
+        }
+
+        // 조합이 성공한 순간 도감 발견 상태와 Reference 프리팹을 즉시 갱신합니다.
+        // completion -> Storage 이동 연출은 별도로 0.5초 뒤 시작됩니다.
+        if (!string.IsNullOrWhiteSpace(compoundId) && data != null)
+            RecordDiscoveryService.RegisterCompound(data, compoundId);
+
+        selectedSlotIndex = -1;
+        SaveAndPublish();
+        RefreshAll();
+        RefreshCompoundReferenceNow();
     }
 
     private void ClaimCompletion()
@@ -294,6 +374,20 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         RecordDiscoveryService.RegisterCompound(DataManager.Instance, compoundId);
         SaveAndPublish();
         RefreshAll();
+        RefreshCompoundReferenceNow();
+    }
+
+    private static void RefreshCompoundReferenceNow()
+    {
+        LobbyCompoundReferenceUI[] references = FindObjectsByType<LobbyCompoundReferenceUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < references.Length; i++)
+        {
+            if (references[i] != null)
+                references[i].RefreshNow(true);
+        }
     }
 
     private void RefreshCompletion()
@@ -311,10 +405,10 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             if (completed && DataManager.Instance?.RelicIconDatabase != null)
                 DataManager.Instance.RelicIconDatabase.TryGetIcon(recipe.CompoundId, out icon);
             completionIcon.sprite = icon;
-            completionIcon.enabled = completed && icon != null && !compoundTransferInProgress;
+            completionIcon.enabled = completed && icon != null;
             completionIcon.preserveAspect = true;
         }
-        // 완성된 연성제는 클릭으로 즉시 획득하지 않고, 아래 자동 획득 딜레이가 끝난 뒤 수령합니다.
+        // 조합 직후 completion에 완성 아이콘을 표시한 뒤 다음 프레임에 자동으로 보관함 수령 연출을 시작합니다.
         if (completionButton != null) completionButton.interactable = false;
 
         if (completed && CanMutate())
@@ -335,9 +429,11 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
 
     private IEnumerator AutomaticClaimRoutine()
     {
-        float delay = Mathf.Max(0f, automaticClaimDelay);
-        if (delay > 0f)
-            yield return new WaitForSecondsRealtime(delay);
+        // 조합 직후 RefreshCompletion()에서 completion 아이콘을 먼저 갱신합니다.
+        // 아이콘이 눈에 들어올 정도의 짧은 시간만 보여준 뒤 Storage 이동 연출을 시작합니다.
+        float startDelay = Mathf.Max(0f, compoundTransferStartDelay);
+        if (startDelay > 0f)
+            yield return new WaitForSecondsRealtime(startDelay);
         else
             yield return null;
 
@@ -348,61 +444,35 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             yield break;
         }
 
-        // 딜레이가 끝나면 completion 위치에서 지정한 타겟으로 획득 이펙트를 이동시킵니다.
-        // 이펙트가 도착한 뒤 실제 연성제를 보관함에 넣습니다.
-        yield return PlayCompoundTransferEffectRoutine();
-
+        // 유물 구매와 동일하게 결과 데이터는 즉시 보관함에 반영하고,
+        // completion 위치에서 Storage 아이콘으로 이동하는 연출은 독립적으로 끝까지 재생합니다.
+        PlayCompoundTransferEffect();
         automaticClaimCoroutine = null;
-
-        lobby = GetLobby();
-        if (lobby == null || string.IsNullOrWhiteSpace(lobby.CompletedCultureTankCombinationId))
-            yield break;
-
         ClaimCompletion();
     }
 
-    private IEnumerator PlayCompoundTransferEffectRoutine()
+    private void PlayCompoundTransferEffect()
     {
-        if (completionIcon == null || compoundTransferTarget == null || compoundTransferEffectTexture == null)
-            yield break;
+        if (completionIcon == null ||
+            compoundTransferUiTarget == null ||
+            screenSpaceTransferEffectPrefab == null)
+        {
+            return;
+        }
 
-        Canvas transferCanvas = completionIcon.GetComponentInParent<Canvas>();
-        if (transferCanvas == null)
-            yield break;
-
-        RectTransform transferParent = ResolveTransferEffectParent(transferCanvas);
         RectTransform sourceRect = completionIcon.rectTransform;
-        Camera sourceCamera = ResolveUiCamera(sourceRect);
-        Camera targetCamera = ResolveUiCamera(compoundTransferTarget);
-        Vector2 startScreenPosition = GetRectScreenCenter(sourceRect, sourceCamera);
-        Vector2 targetScreenPosition = GetRectScreenCenter(compoundTransferTarget, targetCamera);
-
+        Camera sourceCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(sourceRect, Camera.main);
+        Camera targetCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(compoundTransferUiTarget, Camera.main);
+        Vector2 startScreenPosition = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(sourceRect, sourceCamera);
+        Vector2 endScreenPosition = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(compoundTransferUiTarget, targetCamera);
         Color rarityColor = ResolveCompletedCompoundRarityColor();
-        RawImage effectImage = CreateCompoundTransferEffect(
-            transferCanvas,
-            transferParent,
-            startScreenPosition,
-            rarityColor);
-        if (effectImage == null)
-            yield break;
 
-        activeCompoundTransferEffect = effectImage.gameObject;
-        compoundTransferInProgress = true;
-        completionIcon.enabled = false;
         PlayCompoundTransferStartSound();
 
-        yield return AnimateCompoundTransferEffect(
-            effectImage.rectTransform,
-            transferCanvas,
-            transferParent,
-            startScreenPosition,
-            targetScreenPosition);
-
-        if (effectImage != null)
-            Destroy(effectImage.gameObject);
-
-        activeCompoundTransferEffect = null;
-        compoundTransferInProgress = false;
+        // LobbyRelicShopPresenter와 동일하게 Effect 자신이 코루틴을 실행합니다.
+        // 패널 갱신/닫힘과 무관하게 Storage까지 연출이 끝까지 재생됩니다.
+        ScreenSpaceTransferOrbEffect effect = Instantiate(screenSpaceTransferEffectPrefab);
+        effect.PlayDetached(startScreenPosition, endScreenPosition, rarityColor);
     }
 
     private void PlayCompoundTransferStartSound()
@@ -448,256 +518,40 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         return rarityColor;
     }
 
-    private RawImage CreateCompoundTransferEffect(
-        Canvas transferCanvas,
-        RectTransform transferParent,
-        Vector2 screenPosition,
-        Color rarityColor)
+    private static ScreenSpaceTransferOrbEffect FindRelicShopTransferEffectPrefab()
     {
-        if (transferCanvas == null || compoundTransferEffectTexture == null)
-            return null;
+        LobbyRelicShopPresenter[] presenters = FindObjectsByType<LobbyRelicShopPresenter>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
 
-        GameObject effectObject = new GameObject(
-            "CompoundTransferEffect",
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(RawImage));
-
-        RectTransform rect = effectObject.GetComponent<RectTransform>();
-        rect.SetParent(transferParent != null ? transferParent : transferCanvas.transform, false);
-        rect.anchorMin = new Vector2(0.5f, 0.5f);
-        rect.anchorMax = new Vector2(0.5f, 0.5f);
-        rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.sizeDelta = compoundTransferEffectSize;
-        rect.localScale = Vector3.one * compoundTransferStartScale;
-        rect.anchoredPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, screenPosition);
-        rect.SetAsLastSibling();
-
-        RawImage image = effectObject.GetComponent<RawImage>();
-        image.texture = compoundTransferEffectTexture;
-        image.color = rarityColor;
-        image.raycastTarget = false;
-        return image;
-    }
-
-    private sealed class CompoundTrailGhost
-    {
-        public RectTransform Rect;
-        public RawImage Image;
-        public Vector3 StartScale;
-        public Color StartColor;
-        public float Age;
-    }
-
-    private IEnumerator AnimateCompoundTransferEffect(
-        RectTransform effect,
-        Canvas transferCanvas,
-        RectTransform transferParent,
-        Vector2 fromScreenPosition,
-        Vector2 toScreenPosition)
-    {
-        if (effect == null || transferCanvas == null)
-            yield break;
-
-        RawImage sourceImage = effect.GetComponent<RawImage>();
-        Vector2 fromPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, fromScreenPosition);
-        Vector2 toPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, toScreenPosition);
-        Vector2 bouncePosition = fromPosition + compoundTransferBounceOffset;
-        Vector3 startScale = effect.localScale;
-        Vector3 endScale = Vector3.one * compoundTransferEndScale;
-        float totalDuration = Mathf.Max(0.02f, compoundTransferBounceDuration + compoundTransferFlyDuration);
-        float bounceRatio = Mathf.Clamp01(compoundTransferBounceDuration / totalDuration);
-        Vector3 bounceScale = Vector3.LerpUnclamped(startScale, endScale, bounceRatio);
-        var trailGhosts = new List<CompoundTrailGhost>();
-        float trailTimer = 0f;
-
-        effect.SetAsLastSibling();
-
-        float elapsed = 0f;
-        float safeBounceDuration = Mathf.Max(0.01f, compoundTransferBounceDuration);
-        while (elapsed < safeBounceDuration)
+        for (int i = 0; i < presenters.Length; i++)
         {
-            float deltaTime = Time.unscaledDeltaTime;
-            elapsed += deltaTime;
-            float t = Mathf.Clamp01(elapsed / safeBounceDuration);
-            float eased = EaseInCubic(t);
-            effect.anchoredPosition = Vector2.LerpUnclamped(fromPosition, bouncePosition, eased);
-            effect.localScale = Vector3.LerpUnclamped(startScale, bounceScale, eased);
-            trailTimer += deltaTime;
-            SpawnCompoundTrailGhosts(effect, sourceImage, transferCanvas, transferParent, trailGhosts, ref trailTimer);
-            UpdateCompoundTrailGhosts(trailGhosts, deltaTime);
-            yield return null;
+            LobbyRelicShopPresenter presenter = presenters[i];
+            if (presenter != null && presenter.ScreenSpaceTransferEffectPrefab != null)
+                return presenter.ScreenSpaceTransferEffectPrefab;
         }
 
-        elapsed = 0f;
-        float safeFlyDuration = Mathf.Max(0.01f, compoundTransferFlyDuration);
-        while (elapsed < safeFlyDuration)
-        {
-            float deltaTime = Time.unscaledDeltaTime;
-            elapsed += deltaTime;
-            float t = Mathf.Clamp01(elapsed / safeFlyDuration);
-            float eased = EaseInQuint(t);
-            effect.anchoredPosition = Vector2.LerpUnclamped(bouncePosition, toPosition, eased);
-            effect.localScale = Vector3.LerpUnclamped(bounceScale, endScale, eased);
-            trailTimer += deltaTime;
-            SpawnCompoundTrailGhosts(effect, sourceImage, transferCanvas, transferParent, trailGhosts, ref trailTimer);
-            UpdateCompoundTrailGhosts(trailGhosts, deltaTime);
-            yield return null;
-        }
-
-        effect.anchoredPosition = toPosition;
-        effect.localScale = endScale;
-
-        while (trailGhosts.Count > 0)
-        {
-            UpdateCompoundTrailGhosts(trailGhosts, Time.unscaledDeltaTime);
-            yield return null;
-        }
+        return null;
     }
 
-    private void SpawnCompoundTrailGhosts(
-        RectTransform sourceRect,
-        RawImage sourceImage,
-        Canvas transferCanvas,
-        RectTransform transferParent,
-        List<CompoundTrailGhost> trailGhosts,
-        ref float trailTimer)
+    private static RectTransform FindStorageTransferTarget()
     {
-        if (sourceRect == null || sourceImage == null || sourceImage.texture == null ||
-            transferCanvas == null || trailGhosts == null)
-            return;
+        RectTransform[] rects = FindObjectsByType<RectTransform>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
 
-        float interval = Mathf.Max(0.005f, compoundTrailSpawnInterval);
-        while (trailTimer >= interval)
+        for (int i = 0; i < rects.Length; i++)
         {
-            trailTimer -= interval;
-            GameObject ghostObject = new GameObject(
-                "CompoundTransferTrail",
-                typeof(RectTransform),
-                typeof(CanvasRenderer),
-                typeof(RawImage));
-
-            RectTransform ghostRect = ghostObject.GetComponent<RectTransform>();
-            ghostRect.SetParent(transferParent != null ? transferParent : transferCanvas.transform, false);
-            ghostRect.anchorMin = sourceRect.anchorMin;
-            ghostRect.anchorMax = sourceRect.anchorMax;
-            ghostRect.pivot = sourceRect.pivot;
-            ghostRect.sizeDelta = sourceRect.sizeDelta;
-            ghostRect.anchoredPosition = sourceRect.anchoredPosition;
-            ghostRect.localRotation = sourceRect.localRotation;
-            ghostRect.localScale = sourceRect.localScale * compoundTrailStartScale;
-            ghostRect.SetSiblingIndex(Mathf.Max(0, sourceRect.GetSiblingIndex()));
-            sourceRect.SetAsLastSibling();
-
-            RawImage ghostImage = ghostObject.GetComponent<RawImage>();
-            ghostImage.texture = sourceImage.texture;
-            ghostImage.uvRect = sourceImage.uvRect;
-            Color ghostColor = sourceImage.color;
-            ghostColor.a *= compoundTrailStartAlpha;
-            ghostImage.color = ghostColor;
-            ghostImage.raycastTarget = false;
-
-            trailGhosts.Add(new CompoundTrailGhost
-            {
-                Rect = ghostRect,
-                Image = ghostImage,
-                StartScale = ghostRect.localScale,
-                StartColor = ghostColor,
-                Age = 0f
-            });
-        }
-    }
-
-    private void UpdateCompoundTrailGhosts(List<CompoundTrailGhost> trailGhosts, float deltaTime)
-    {
-        float lifetime = Mathf.Max(0.01f, compoundTrailLifetime);
-        for (int i = trailGhosts.Count - 1; i >= 0; i--)
-        {
-            CompoundTrailGhost ghost = trailGhosts[i];
-            if (ghost == null || ghost.Rect == null || ghost.Image == null)
-            {
-                trailGhosts.RemoveAt(i);
-                continue;
-            }
-
-            ghost.Age += deltaTime;
-            float t = Mathf.Clamp01(ghost.Age / lifetime);
-            ghost.Rect.localScale = Vector3.LerpUnclamped(
-                ghost.StartScale,
-                ghost.StartScale * compoundTrailEndScale,
-                t);
-            Color color = ghost.StartColor;
-            color.a = Mathf.Lerp(ghost.StartColor.a, 0f, t);
-            ghost.Image.color = color;
-
-            if (t < 1f)
+            RectTransform rect = rects[i];
+            if (rect == null || !string.Equals(rect.name, "Icon_04", StringComparison.Ordinal))
                 continue;
 
-            Destroy(ghost.Rect.gameObject);
-            trailGhosts.RemoveAt(i);
+            Transform parent = rect.parent;
+            if (parent != null && string.Equals(parent.name, "Lobby_Icon", StringComparison.Ordinal))
+                return rect;
         }
-    }
 
-    private static float EaseInCubic(float t)
-    {
-        t = Mathf.Clamp01(t);
-        return t * t * t;
-    }
-
-    private static float EaseInQuint(float t)
-    {
-        t = Mathf.Clamp01(t);
-        return t * t * t * t * t;
-    }
-
-    private static Vector2 ScreenToUiLocalPosition(Canvas canvas, RectTransform coordinateRoot, Vector2 screenPosition)
-    {
-        if (canvas == null)
-            return Vector2.zero;
-
-        RectTransform targetRect = coordinateRoot != null ? coordinateRoot : canvas.transform as RectTransform;
-        if (targetRect == null)
-            return Vector2.zero;
-
-        Camera uiCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
-        return RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            targetRect, screenPosition, uiCamera, out Vector2 localPoint)
-            ? localPoint
-            : Vector2.zero;
-    }
-
-    private static RectTransform ResolveTransferEffectParent(Canvas transferCanvas)
-    {
-        if (transferCanvas == null)
-            return null;
-
-        RectTransform resolved = ResolutionCanvasViewportFitter.ResolveContentRoot(transferCanvas.transform);
-        return resolved != null ? resolved : transferCanvas.transform as RectTransform;
-    }
-
-    private static Camera ResolveUiCamera(RectTransform rect)
-    {
-        Canvas canvas = rect != null ? rect.GetComponentInParent<Canvas>() : null;
-        if (canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay)
-            return null;
-
-        return canvas.worldCamera != null ? canvas.worldCamera : Camera.main;
-    }
-
-    private static Vector2 GetRectScreenCenter(RectTransform targetRect, Camera fallbackCamera)
-    {
-        if (targetRect == null)
-            return Vector2.zero;
-
-        Canvas targetCanvas = targetRect.GetComponentInParent<Canvas>();
-        Camera uiCamera = targetCanvas != null && targetCanvas.renderMode != RenderMode.ScreenSpaceOverlay
-            ? (targetCanvas.worldCamera != null ? targetCanvas.worldCamera : fallbackCamera)
-            : null;
-
-        Vector3[] corners = new Vector3[4];
-        targetRect.GetWorldCorners(corners);
-        Vector3 worldCenter = (corners[0] + corners[2]) * 0.5f;
-        return RectTransformUtility.WorldToScreenPoint(uiCamera, worldCenter);
+        return null;
     }
 
     private void RefreshInventory()
@@ -815,7 +669,7 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
             if (rowRect == null)
                 continue;
 
-            Camera uiCamera = ResolveUiCamera(rowRect);
+            Camera uiCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(rowRect, Camera.main);
             if (!RectTransformUtility.RectangleContainsScreenPoint(rowRect, eventData.position, uiCamera))
                 continue;
 
@@ -964,6 +818,11 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
     {
         if (panelRoot == null) panelRoot = gameObject;
         Transform root = panelRoot.transform;
+        if (compoundTransferUiTarget == null)
+            compoundTransferUiTarget = FindStorageTransferTarget();
+
+        if (screenSpaceTransferEffectPrefab == null)
+            screenSpaceTransferEffectPrefab = FindRelicShopTransferEffectPrefab();
         // 새 하이어라키에서는 CultureTankPanel 바로 아래에 MixButton, completion, CultureTankRow_1~3, Storage가 위치합니다.
         // contentRoot는 구형 하이어라키 호환용으로만 유지하며, 새 구조 바인딩에는 사용하지 않습니다.
         if (contentRoot == null) contentRoot = Find(root, "Content") as RectTransform;
