@@ -77,6 +77,7 @@ public static class LocalizationKeys
         public const string RelicDataNotFound = "warning.relic.data_not_found";
         public const string EquipPanelUnavailable = "warning.equip.panel_unavailable";
         public const string FeatureUnavailable = "warning.feature.unavailable";
+        public const string CompoundInvalidRecipe = "warning.compound.invalid_recipe";
     }
 
     public static class Lobby

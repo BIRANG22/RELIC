@@ -6,6 +6,7 @@ namespace Relic.Gameplay.Data
 {
     public static class CultureTankResearchService
     {
+        public const string InvalidRecipeError = "No compound recipe matches these ingredients.";
         public const int DefaultBattleStartEffectUses = 3;
         public const int CurrentSchemaVersion = 2;
 
@@ -92,7 +93,7 @@ namespace Relic.Gameplay.Data
 
             if (!combinationDatabase.TryGetByMaterials(first, second, third, out CompoundData recipe))
             {
-                error = "No compound recipe matches these ingredients.";
+                error = InvalidRecipeError;
                 return false;
             }
 

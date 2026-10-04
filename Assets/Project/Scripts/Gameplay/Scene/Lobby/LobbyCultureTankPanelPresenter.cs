@@ -350,7 +350,18 @@ public sealed class LobbyCultureTankPanelPresenter : MonoBehaviour
         DataManager data = DataManager.Instance;
         if (!CultureTankResearchService.TryCombine(GetLobby(), data?.ItemDatabase, data?.CompoundDatabase, out string compoundId, out string error))
         {
-            BattleWarningUI.ShowMessage(GameLocalization.Get("lobby.cannot_combine"));
+            bool invalidRecipe = string.Equals(
+                error,
+                "No compound recipe matches these ingredients.",
+                StringComparison.Ordinal);
+
+            string warningMessage = invalidRecipe
+                ? GameLocalization.Get(
+                    LocalizationKeys.Warning.CompoundInvalidRecipe,
+                    "조합식이 올바르지 않습니다.")
+                : GameLocalization.Get("lobby.cannot_combine");
+
+            SettingWarningUI.ShowMessage(warningMessage);
             Debug.LogWarning($"[LobbyCultureTankPanelPresenter] {error}");
             return;
         }
