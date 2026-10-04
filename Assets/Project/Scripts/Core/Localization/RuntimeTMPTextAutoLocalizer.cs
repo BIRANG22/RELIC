@@ -17,6 +17,8 @@ public static class RuntimeTMPTextAutoLocalizer
     private static readonly HashSet<int> ProcessingTextIds = new();
     private static bool isReady;
 
+    public static bool ShouldProcessTextChange(bool isPlaying) => isPlaying;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static async void Initialize()
     {
@@ -68,6 +70,9 @@ public static class RuntimeTMPTextAutoLocalizer
 
     private static void TryAttach(TMP_Text text)
     {
+        if (!ShouldProcessTextChange(Application.isPlaying))
+            return;
+
         if (text == null)
             return;
 

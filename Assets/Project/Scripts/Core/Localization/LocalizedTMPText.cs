@@ -98,7 +98,7 @@ public sealed class LocalizedTMPText : MonoBehaviour
                 return;
 
             requestedLocale ??= LocalizationSettings.SelectedLocale;
-            if (string.IsNullOrWhiteSpace(localizationKey))
+            if (requestedLocale == null || string.IsNullOrWhiteSpace(localizationKey))
                 return;
 
             await LocalizationSettings.StringDatabase
@@ -187,6 +187,9 @@ public static class LocalizationRuntimeRefreshCoordinator
         {
             await LocalizationSettings.InitializationOperation.Task;
             locale ??= LocalizationSettings.SelectedLocale;
+            if (locale == null)
+                return;
+
             await LocalizationSettings.StringDatabase
                 .GetTableAsync(GameLocalization.TableName, locale)
                 .Task;

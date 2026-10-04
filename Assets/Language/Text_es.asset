@@ -4433,6 +4433,26 @@ MonoBehaviour:
     m_Localized: Desventaja
     m_Metadata:
       m_Items: []
+  - m_Id: 19697779441410051
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19697779441410052
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19697779441410053
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19697779441410054
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19697779441410055
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

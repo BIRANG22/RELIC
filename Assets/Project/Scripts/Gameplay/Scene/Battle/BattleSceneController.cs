@@ -71,6 +71,10 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private Button tutorialSkipButton;
     [SerializeField] private TMP_Text tutorialSkipButtonText;
 
+    [Header("Tutorial Entry Guide")]
+    [SerializeField] private TutorialPanelController tutorialPanelPrefab;
+    [SerializeField] private Transform tutorialPanelParent;
+
     private bool isTutorialSkipProcessing;
 
     [Header("Room Change Auto Close")]
@@ -320,6 +324,7 @@ public class BattleSceneController : MonoBehaviour
             DataManager.Instance.BattleRuntimeStore.Set(battleRuntime);
         InitializeRuntime();
         RefreshTutorialModeUI();
+        TrySpawnTutorialEntryGuide();
         SetupBattleErosionGauge();
         PrimeBack2NameBeforePresentation();
         SetErosionSelectVisible(false);
@@ -339,6 +344,35 @@ public class BattleSceneController : MonoBehaviour
         lastActiveRoomLastFrame = FindActiveRoomObject();
         wasAnyRoomActiveLastFrame = lastActiveRoomLastFrame != null;
         isStarted = true;
+    }
+
+    private void TrySpawnTutorialEntryGuide()
+    {
+        BattleRuntimeData battleRuntime = DataManager.Instance?.BattleRuntimeStore?.Get();
+        if (!TutorialGuideEntryPolicy.ShouldSpawn(battleRuntime))
+        {
+            Debug.Log(
+                $"[BattleSceneController] Tutorial entry guide skipped. " +
+                $"RuntimeMissing:{battleRuntime == null}, IsDemoBattle:{battleRuntime?.IsDemoBattle == true}",
+                this);
+            return;
+        }
+
+        if (tutorialPanelPrefab == null)
+        {
+            Debug.LogError("[BattleSceneController] TutorialPanel prefab is not assigned.", this);
+            return;
+        }
+
+        if (tutorialPanelParent == null)
+        {
+            Debug.LogError("[BattleSceneController] TutorialPanel parent is not assigned.", this);
+            return;
+        }
+
+        TutorialPanelController panel = Instantiate(tutorialPanelPrefab, tutorialPanelParent, false);
+        panel.transform.SetAsLastSibling();
+        Debug.Log("[BattleSceneController] Tutorial entry guide spawned.", panel);
     }
 
     private void RefreshErosionScoreDisplay()

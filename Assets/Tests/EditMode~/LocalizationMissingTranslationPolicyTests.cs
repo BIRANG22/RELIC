@@ -12,6 +12,21 @@ using UnityEngine.Localization.Settings;
 public sealed class LocalizationMissingTranslationPolicyTests
 {
     [Test]
+    public void RuntimeTextCallbacks_DoNotProcessPrefabStageTextOutsidePlayMode()
+    {
+        Assert.That(RuntimeTMPTextAutoLocalizer.ShouldProcessTextChange(isPlaying: false), Is.False);
+        Assert.That(RuntimeTMPTextAutoLocalizer.ShouldProcessTextChange(isPlaying: true), Is.True);
+    }
+
+    [Test]
+    public void NullLocaleLookup_ReturnsFallbackWithoutQueryingStringDatabase()
+    {
+        Assert.That(
+            GameLocalization.GetForLocale("ui.test.label", "한국어 원문", locale: null),
+            Is.EqualTo("한국어 원문"));
+    }
+
+    [Test]
     public void RefreshGate_AcceptsOnlyTheLatestAsyncRequest()
     {
         var gate = new LocalizationRefreshGate();
