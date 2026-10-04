@@ -64,6 +64,9 @@ public sealed class DynamicLocalizedTMPText : MonoBehaviour
                 return;
 
             requestedLocale ??= LocalizationSettings.SelectedLocale;
+            if (requestedLocale == null)
+                return;
+
             await LocalizationSettings.StringDatabase
                 .GetLocalizedStringAsync(
                     GameLocalization.TableName,

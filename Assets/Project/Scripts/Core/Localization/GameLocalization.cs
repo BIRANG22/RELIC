@@ -72,9 +72,11 @@ public static class GameLocalization
         Locale locale,
         params object[] arguments)
     {
-
         if (string.IsNullOrWhiteSpace(key))
             return fallback ?? string.Empty;
+
+        if (locale == null)
+            return fallback ?? ResolveMissingTranslation(null);
 
         try
         {

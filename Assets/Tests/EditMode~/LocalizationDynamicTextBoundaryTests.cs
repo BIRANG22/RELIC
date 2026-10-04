@@ -26,6 +26,24 @@ public sealed class LocalizationDynamicTextBoundaryTests
             Is.EqualTo("data.event.event_08_a.choice_1_description"));
     }
 
+    [TestCase("Event_05_A")]
+    [TestCase("Event_05_B")]
+    public void EventChoiceKey_Event05DeferredExitUsesBaseChoiceTranslation(string eventId)
+    {
+        var eventChoice = new Relic.Gameplay.Data.EventData
+        {
+            EventId = eventId,
+            ChoiceOrder = 3,
+        };
+
+        Assert.That(
+            GameDataLocalization.EventChoiceKey(eventChoice, "name"),
+            Is.EqualTo("data.event.event_05.choice_3_name"));
+        Assert.That(
+            GameDataLocalization.EventChoiceKey(eventChoice, "description"),
+            Is.EqualTo("data.event.event_05.choice_3_description"));
+    }
+
     [Test]
     public void RuntimeAutoLocalizer_RoutesIgnoredDynamicTextWithoutPermanentlySkippingSceneText()
     {
