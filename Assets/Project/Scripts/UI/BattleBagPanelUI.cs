@@ -67,6 +67,8 @@ public class BattleBagPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text detailNameText;
     [SerializeField] private TMP_Text detailDescriptionText;
     [SerializeField] private TMP_Text detailValueText;
+    [Tooltip("StoragePanel/TooltipPanel/Line입니다. 비워두면 자동으로 찾습니다.")]
+    [SerializeField] private Image detailLineImage;
     [SerializeField] private Vector2 detailPanelOffset = new Vector2(12f, 0f);
 
     [Header("Detail Tooltip Fade")]
@@ -302,6 +304,13 @@ public class BattleBagPanelUI : MonoBehaviour
 
             if (detailValueText == null)
                 detailValueText = FindChildText(detailPanel.transform, "Value", "Price", "Gold", "ValueText");
+
+            if (detailLineImage == null)
+            {
+                Transform line = FindDeepChild(detailPanel.transform, "Line");
+                if (line != null)
+                    detailLineImage = line.GetComponent<Image>();
+            }
         }
 
         if (discardButton == null)
@@ -844,6 +853,11 @@ public class BattleBagPanelUI : MonoBehaviour
             }
         }
 
+        ApplyDetailLineRarityColor(
+            item != null ? item.Rarity :
+            compound != null ? compound.Rarity :
+            relic != null ? relic.Rarity : string.Empty);
+
         ShowDetailWithFade();
 
         if (detailIconImage != null && (detailPanel == null || detailIconImage.transform != detailPanel.transform))
@@ -886,6 +900,45 @@ public class BattleBagPanelUI : MonoBehaviour
         {
             detailValueText.text = "";
         }
+    }
+
+
+    private void ApplyDetailLineRarityColor(string rarity)
+    {
+        if (detailLineImage == null)
+            return;
+
+        Color current = detailLineImage.color;
+        Color rarityColor = current;
+
+        if (!string.IsNullOrWhiteSpace(rarity))
+        {
+            if (!RecordPanelUI.TryGetCachedRarityDisplayColor(rarity, out rarityColor))
+            {
+                RecordPanelUI recordPanel = FindFirstObjectByType<RecordPanelUI>(FindObjectsInactive.Include);
+                if (recordPanel != null)
+                    rarityColor = recordPanel.GetRarityDisplayColor(rarity);
+                else
+                    rarityColor = GetFallbackRarityColor(rarity);
+            }
+        }
+
+        rarityColor.a = current.a;
+        detailLineImage.color = rarityColor;
+    }
+
+    private static Color GetFallbackRarityColor(string rarity)
+    {
+        if (string.Equals(rarity, "Rare", StringComparison.OrdinalIgnoreCase))
+            return new Color32(0x45, 0x8F, 0xD6, 0xFF);
+        if (string.Equals(rarity, "Epic", StringComparison.OrdinalIgnoreCase))
+            return new Color32(0xA1, 0x62, 0xD6, 0xFF);
+        if (string.Equals(rarity, "Unique", StringComparison.OrdinalIgnoreCase))
+            return new Color32(0xD6, 0x9A, 0x45, 0xFF);
+        if (string.Equals(rarity, "Exclusive", StringComparison.OrdinalIgnoreCase))
+            return new Color32(0xFF, 0xD1, 0x53, 0xFF);
+
+        return Color.white;
     }
 
     private void MoveDetailPanelToRightOfSlot(BattleBagItemSlotUI slot)

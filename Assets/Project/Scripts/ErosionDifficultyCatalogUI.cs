@@ -215,31 +215,29 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
             return;
 
         RectTransform tooltipRect = tooltipPanel.transform as RectTransform;
-        RectTransform itemRect = item.transform as RectTransform;
-        if (tooltipRect == null || itemRect == null)
+        RectTransform parentRect = tooltipRect != null ? tooltipRect.parent as RectTransform : null;
+        if (tooltipRect == null || parentRect == null)
             return;
 
-        RectTransform parentRect = tooltipRect.parent as RectTransform;
-        if (parentRect == null)
+        // Level01_1~8 / Level02_1~8 / Level03_1~8 안의 실제 Icon을 기준점으로 사용합니다.
+        // Screen 좌표를 거치지 않고 같은 Canvas 계층의 World -> Parent Local 좌표로 직접 변환하여
+        // 해상도 및 CanvasScaler 설정이 달라져도 아이콘과 툴팁 사이의 UI 간격을 일정하게 유지합니다.
+        Transform iconTransform = FindTransformRecursive(item.transform, "Icon");
+        RectTransform anchorRect = iconTransform as RectTransform ?? item.transform as RectTransform;
+        if (anchorRect == null)
             return;
 
-        Canvas canvas = tooltipRect.GetComponentInParent<Canvas>();
-        Camera uiCamera = canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay
-            ? null
-            : canvas.worldCamera;
+        Vector3[] corners = new Vector3[4];
+        anchorRect.GetWorldCorners(corners);
 
-        Vector3 itemWorldCenter = itemRect.TransformPoint(itemRect.rect.center);
-        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(uiCamera, itemWorldCenter);
-        screenPoint += new Vector2(tooltipOffsetX, tooltipOffsetY);
+        // Icon의 오른쪽 중앙을 툴팁 기준점으로 사용합니다.
+        Vector3 anchorWorldPosition = (corners[2] + corners[3]) * 0.5f;
+        Vector3 anchorLocalPosition = parentRect.InverseTransformPoint(anchorWorldPosition);
+        anchorLocalPosition.x += tooltipOffsetX;
+        anchorLocalPosition.y += tooltipOffsetY;
+        anchorLocalPosition.z = tooltipRect.localPosition.z;
 
-        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                parentRect,
-                screenPoint,
-                uiCamera,
-                out Vector2 localPoint))
-        {
-            tooltipRect.anchoredPosition = localPoint;
-        }
+        tooltipRect.localPosition = anchorLocalPosition;
     }
 
     internal void HideErosionTooltip(ErosionDifficultyLevelItemUI item)

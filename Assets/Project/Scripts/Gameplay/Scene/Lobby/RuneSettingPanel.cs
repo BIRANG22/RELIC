@@ -59,14 +59,11 @@ public class RuneSettingPanel : MonoBehaviour
     [SerializeField] private GameObject runeTooltipPanel;
     [SerializeField] private TMP_Text runeTooltipNameText;
     [SerializeField] private TMP_Text runeTooltipDescriptionText;
-    [SerializeField] private float runeTooltipFadeInDuration = 0.12f;
+    [SerializeField] private Image runeTooltipLineImage;
+    [SerializeField] private float runeTooltipFadeInDuration = 0.25f;
     [SerializeField] private float runeTooltipFadeOutDuration = 0.05f;
     [SerializeField] private float runeTooltipOffsetX = 50f;
     [SerializeField] private float runeTooltipOffsetY = 50f;
-    [Tooltip("기본 위치에서 Screen Padding 보정이 필요할 때 사용하는 X 오프셋입니다.")]
-    [SerializeField] private float runeTooltipOverflowOffsetX = -345f;
-    [Tooltip("기본 위치에서 Screen Padding 보정이 필요할 때 사용하는 Y 오프셋입니다.")]
-    [SerializeField] private float runeTooltipOverflowOffsetY = 50f;
     [SerializeField] private float runeTooltipScreenPadding = 20f;
 
     private CanvasGroup runeTooltipCanvasGroup;
@@ -1827,6 +1824,8 @@ public class RuneSettingPanel : MonoBehaviour
         if (runeTooltipDescriptionText != null)
             runeTooltipDescriptionText.text = BuildRuneEffectText(runeData);
 
+        ApplyRuneTooltipLineColor(runeData.Rarity);
+
         if (!runeTooltipPanel.activeSelf)
             runeTooltipPanel.SetActive(true);
 
@@ -1856,61 +1855,9 @@ public class RuneSettingPanel : MonoBehaviour
         Canvas.ForceUpdateCanvases();
         LayoutRebuilder.ForceRebuildLayoutImmediate(runeTooltipRectTransform);
 
-        // 기본 위치가 Screen Padding 영역을 침범하려는 경우에는 패딩으로 밀어 넣지 않고
-        // 지정된 Overflow 위치로 통째로 옮깁니다.
-        if (WouldRuneTooltipNeedScreenPadding())
-        {
-            runeTooltipRectTransform.localPosition = new Vector3(
-                sourceLocalCenter.x + runeTooltipOverflowOffsetX,
-                sourceLocalCenter.y + runeTooltipOverflowOffsetY,
-                currentLocalPosition.z);
-
-            Canvas.ForceUpdateCanvases();
-            LayoutRebuilder.ForceRebuildLayoutImmediate(runeTooltipRectTransform);
-        }
-
-        // Overflow 위치에서도 화면을 벗어나는 특수한 해상도에 대비한 최종 안전장치입니다.
+        // 화면 밖으로 벗어나는 경우에는 별도의 Overflow 오프셋을 사용하지 않고
+        // 현재 위치를 Screen Padding 범위 안으로만 보정합니다.
         ClampRuneTooltipToCanvas(tooltipParent);
-    }
-
-    private bool WouldRuneTooltipNeedScreenPadding()
-    {
-        if (runeTooltipRectTransform == null)
-            return false;
-
-        Canvas rootCanvas = runeTooltipRectTransform.GetComponentInParent<Canvas>();
-        if (rootCanvas == null)
-            return false;
-
-        rootCanvas = rootCanvas.rootCanvas;
-        RectTransform canvasRect = rootCanvas.transform as RectTransform;
-        if (canvasRect == null)
-            return false;
-
-        Vector3[] tooltipCorners = new Vector3[4];
-        runeTooltipRectTransform.GetWorldCorners(tooltipCorners);
-
-        float minX = float.PositiveInfinity;
-        float maxX = float.NegativeInfinity;
-        float minY = float.PositiveInfinity;
-        float maxY = float.NegativeInfinity;
-
-        for (int i = 0; i < tooltipCorners.Length; i++)
-        {
-            Vector3 localCorner = canvasRect.InverseTransformPoint(tooltipCorners[i]);
-            minX = Mathf.Min(minX, localCorner.x);
-            maxX = Mathf.Max(maxX, localCorner.x);
-            minY = Mathf.Min(minY, localCorner.y);
-            maxY = Mathf.Max(maxY, localCorner.y);
-        }
-
-        Rect bounds = canvasRect.rect;
-        float padding = Mathf.Max(0f, runeTooltipScreenPadding);
-
-        return minX < bounds.xMin + padding
-            || maxX > bounds.xMax - padding
-            || minY < bounds.yMin + padding
-            || maxY > bounds.yMax - padding;
     }
 
     private void ClampRuneTooltipToCanvas(RectTransform tooltipParent)
@@ -2025,6 +1972,13 @@ public class RuneSettingPanel : MonoBehaviour
             Transform descriptionTransform = FindDeepChild(runeTooltipPanel.transform, "DescriptionText");
             if (descriptionTransform != null)
                 runeTooltipDescriptionText = descriptionTransform.GetComponent<TMP_Text>();
+        }
+
+        if (runeTooltipLineImage == null)
+        {
+            Transform lineTransform = FindDeepChild(runeTooltipPanel.transform, "Line");
+            if (lineTransform != null)
+                runeTooltipLineImage = lineTransform.GetComponent<Image>();
         }
 
         EnsureDynamicInfoTextOwnership(runeTooltipNameText);
@@ -2330,6 +2284,17 @@ public class RuneSettingPanel : MonoBehaviour
             return GameLocalization.Get(LocalizationKeys.FragmentRarity.Unique);
 
         return string.Empty;
+    }
+
+
+    private void ApplyRuneTooltipLineColor(string rarity)
+    {
+        if (runeTooltipLineImage == null)
+            return;
+
+        Color color = GetRuneInfoRarityColor(rarity);
+        color.a = runeTooltipLineImage.color.a;
+        runeTooltipLineImage.color = color;
     }
 
     private Color GetRuneInfoRarityColor(string rarity)

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 /// <summary>
@@ -35,6 +37,22 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
     [Tooltip("Info_Panel/Compound. 비워두면 이름으로 자동 연결합니다.")]
     [SerializeField] private Transform compoundInventoryRoot;
 
+    [Header("Tooltip")]
+    [Tooltip("Info_Panel/TooltipPanel. 비워두면 Info_Panel 아래에서 자동으로 찾습니다.")]
+    [SerializeField] private GameObject tooltipPanel;
+    [Tooltip("TooltipPanel/DetailNameText. 비워두면 자동으로 찾습니다.")]
+    [SerializeField] private TMP_Text tooltipNameText;
+    [Tooltip("TooltipPanel/DetailDescriptionText. 비워두면 자동으로 찾습니다.")]
+    [SerializeField] private TMP_Text tooltipDescriptionText;
+    [Tooltip("TooltipPanel/Line. 비워두면 자동으로 찾습니다.")]
+    [SerializeField] private Image tooltipLineImage;
+    [Tooltip("호버 대상의 오른쪽 중앙을 기준으로 TooltipPanel에 더할 X 위치입니다. Canvas 로컬 좌표 기준이라 해상도에 영향을 받지 않습니다.")]
+    [SerializeField] private float tooltipOffsetX = 24f;
+    [Tooltip("호버 대상의 오른쪽 중앙을 기준으로 TooltipPanel에 더할 Y 위치입니다. Canvas 로컬 좌표 기준이라 해상도에 영향을 받지 않습니다.")]
+    [SerializeField] private float tooltipOffsetY = 0f;
+    [Min(0f)][SerializeField] private float tooltipFadeInDuration = 0.25f;
+    [Min(0f)][SerializeField] private float tooltipFadeOutDuration = 0.05f;
+
     private CharPick characterPicker;
     private BattleBagItemSlotUI selectedInventorySlot;
     private string selectedItemId;
@@ -42,11 +60,21 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
 
     private readonly List<BattleBagItemSlotUI> relicInventorySlots = new();
     private readonly List<BattleBagItemSlotUI> compoundInventorySlots = new();
+    private CanvasGroup tooltipCanvasGroup;
+    private Coroutine tooltipFadeCoroutine;
+    private string tooltipOwnerKey;
+
+    // Relic/Compound Content의 슬롯은 Info_Panel이 열린 뒤에도 런타임에 새로 생성될 수 있습니다.
+    // 새 슬롯이 생성된 다음 프레임부터 바로 Hover/Click relay를 연결하기 위해 계층 변화를 계속 확인합니다.
+    private int lastRelicContentChildCount = -1;
+    private int lastCompoundContentChildCount = -1;
 
     private void Awake()
     {
         ResolveReferences();
         EnsureCharacterSelectActive();
+        BindTooltipIfNeeded();
+        HideTooltipImmediate();
         BindInventorySelectionTargets();
         BindCharacterEquipmentTargets();
     }
@@ -55,7 +83,14 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
     {
         ResolveReferences();
         EnsureCharacterSelectActive();
+        BindTooltipIfNeeded();
+        HideTooltipImmediate();
         RefreshCharacterData();
+    }
+
+    private void OnDisable()
+    {
+        HideTooltipImmediate();
     }
 
     private void Start()
@@ -63,6 +98,18 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         // LobbyEquipPanelUI가 동적으로 생성/갱신한 슬롯까지 한 번 더 연결합니다.
         BindInventorySelectionTargets();
         BindCharacterEquipmentTargets();
+        CacheInventoryContentChildCounts();
+    }
+
+    private void LateUpdate()
+    {
+        // ReadyRelicSlot / ReadyCompoundSlot 프리팹은 패널이 이미 활성화된 뒤에 생성될 수 있습니다.
+        // Content의 자식 수가 바뀐 프레임에 새 슬롯을 다시 찾아 relay를 연결합니다.
+        if (!HasInventoryContentHierarchyChanged())
+            return;
+
+        BindInventorySelectionTargets();
+        CacheInventoryContentChildCounts();
     }
 
     /// <summary>
@@ -75,6 +122,7 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         EnsureCharacterSelectActive();
         characterPicker?.RefreshFromPartyRuntime();
         BindInventorySelectionTargets();
+        CacheInventoryContentChildCounts();
         BindCharacterEquipmentTargets();
         ValidateSelectedInventorySlot();
     }
@@ -129,6 +177,30 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
 
         CollectAndBindInventorySlots(relicInventoryRoot, false, relicInventorySlots);
         CollectAndBindInventorySlots(compoundInventoryRoot, true, compoundInventorySlots);
+    }
+
+    private bool HasInventoryContentHierarchyChanged()
+    {
+        int relicChildCount = GetInventoryContentChildCount(relicInventoryRoot);
+        int compoundChildCount = GetInventoryContentChildCount(compoundInventoryRoot);
+
+        return relicChildCount != lastRelicContentChildCount ||
+               compoundChildCount != lastCompoundContentChildCount;
+    }
+
+    private void CacheInventoryContentChildCounts()
+    {
+        lastRelicContentChildCount = GetInventoryContentChildCount(relicInventoryRoot);
+        lastCompoundContentChildCount = GetInventoryContentChildCount(compoundInventoryRoot);
+    }
+
+    private static int GetInventoryContentChildCount(Transform inventoryRoot)
+    {
+        if (inventoryRoot == null)
+            return -1;
+
+        Transform content = FindChildRecursive(inventoryRoot, "Content");
+        return content != null ? content.childCount : -1;
     }
 
     private void CollectAndBindInventorySlots(
@@ -199,24 +271,25 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         // Back은 물론, 실제 장착 아이콘이 Raycast Target을 가지고 있어도
         // 같은 장착/해제 입력으로 처리합니다. Icon은 Back의 자식이 아니라
         // 형제 오브젝트이므로 Back에만 이벤트를 붙이면 Icon 클릭이 전달되지 않습니다.
-        BindEquipmentPointerRelay(back, charButton, isCompound, backImage);
+        BindEquipmentPointerRelay(back, charButton, isCompound, backImage, itemRoot);
 
         Transform icon = itemRoot.Find("Icon") ?? FindChildRecursive(itemRoot, "Icon");
         if (icon != null)
-            BindEquipmentPointerRelay(icon, charButton, isCompound, backImage);
+            BindEquipmentPointerRelay(icon, charButton, isCompound, backImage, itemRoot);
 
         // 계층에 장착 이미지를 Relic/Compound 이름으로 별도 배치한 경우에도
         // 그 이미지가 Raycast를 받으면 동일하게 클릭 해제할 수 있도록 연결합니다.
         Transform itemImage = itemRoot.Find(rootName);
         if (itemImage != null && itemImage != itemRoot)
-            BindEquipmentPointerRelay(itemImage, charButton, isCompound, backImage);
+            BindEquipmentPointerRelay(itemImage, charButton, isCompound, backImage, itemRoot);
     }
 
     private void BindEquipmentPointerRelay(
         Transform target,
         CharBtn charButton,
         bool isCompound,
-        Image backImage)
+        Image backImage,
+        Transform tooltipAnchor)
     {
         if (target == null)
             return;
@@ -229,7 +302,7 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         if (relay == null)
             relay = target.gameObject.AddComponent<LobbyInfoEquipmentTargetRelay>();
 
-        relay.Configure(this, charButton, isCompound, backImage);
+        relay.Configure(this, charButton, isCompound, backImage, tooltipAnchor);
     }
 
     internal void SelectInventorySlot(BattleBagItemSlotUI slot, bool isCompound)
@@ -324,6 +397,309 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
             return false;
 
         return HandleEquipmentTargetClick(charButton, isCompound);
+    }
+
+    internal void ShowInventoryTooltip(BattleBagItemSlotUI slot, bool isCompound)
+    {
+        if (slot == null || !slot.HasItem || string.IsNullOrWhiteSpace(slot.ItemId))
+            return;
+
+        string itemId = slot.ItemId.Trim();
+        if (!IsMatchingItemType(itemId, isCompound))
+            return;
+
+        ShowTooltipForItem(itemId, isCompound, slot.transform as RectTransform, $"inventory:{itemId}:{slot.GetInstanceID()}");
+    }
+
+    internal void HideInventoryTooltip(BattleBagItemSlotUI slot)
+    {
+        if (slot == null)
+            return;
+
+        // 이전 슬롯의 PointerExit가 새 슬롯의 PointerEnter보다 늦게 들어오는 경우가 있으므로
+        // 현재 툴팁을 실제로 연 슬롯의 ownerKey와 정확히 일치할 때만 닫습니다.
+        string itemId = slot.ItemId?.Trim() ?? string.Empty;
+        string key = $"inventory:{itemId}:{slot.GetInstanceID()}";
+        if (string.Equals(tooltipOwnerKey, key, StringComparison.Ordinal))
+            HideTooltip();
+    }
+
+    internal void ShowEquipmentTooltip(CharBtn charButton, bool isCompound, RectTransform anchorRect)
+    {
+        if (!TryGetCharacterRuntime(charButton, out CharacterRuntimeData runtime))
+            return;
+
+        ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
+        int slotIndex = isCompound ? ActiveRelicRuntimeUtility.ActiveRelicSlotIndex : 1;
+        if (runtime.EquippedRelicIds == null || slotIndex < 0 || slotIndex >= runtime.EquippedRelicIds.Length)
+            return;
+
+        string itemId = runtime.EquippedRelicIds[slotIndex]?.Trim();
+        if (string.IsNullOrWhiteSpace(itemId) || !IsMatchingItemType(itemId, isCompound))
+            return;
+
+        ShowTooltipForItem(itemId, isCompound, anchorRect, $"equip:{charButton.CharacterId}:{(isCompound ? "compound" : "relic")}");
+    }
+
+    internal void HideEquipmentTooltip(CharBtn charButton, bool isCompound)
+    {
+        if (charButton == null)
+            return;
+
+        string key = $"equip:{charButton.CharacterId}:{(isCompound ? "compound" : "relic")}";
+        if (string.Equals(tooltipOwnerKey, key, StringComparison.Ordinal))
+            HideTooltip();
+    }
+
+    private void ShowTooltipForItem(string itemId, bool isCompound, RectTransform anchorRect, string ownerKey)
+    {
+        if (string.IsNullOrWhiteSpace(itemId) || anchorRect == null || DataManager.Instance == null)
+            return;
+
+        BindTooltipIfNeeded();
+        if (tooltipPanel == null)
+            return;
+
+        // 이전 슬롯에서 시작된 페이드가 남아 있으면 새 데이터 표시를 방해할 수 있으므로
+        // 새 툴팁 데이터를 적용하기 전에 반드시 중단합니다.
+        if (tooltipFadeCoroutine != null)
+        {
+            StopCoroutine(tooltipFadeCoroutine);
+            tooltipFadeCoroutine = null;
+        }
+
+        string displayName = itemId;
+        string description = string.Empty;
+        string rarity = string.Empty;
+
+        if (isCompound)
+        {
+            if (DataManager.Instance.CompoundDatabase == null ||
+                !DataManager.Instance.CompoundDatabase.TryGet(itemId, out CompoundData compound) ||
+                compound == null)
+            {
+                return;
+            }
+
+            displayName = GameDataLocalization.CompoundName(compound);
+            description = GameDataLocalization.CompoundDescription(compound);
+            rarity = compound.Rarity;
+        }
+        else
+        {
+            if (DataManager.Instance.RelicDatabase == null ||
+                !DataManager.Instance.RelicDatabase.TryGet(itemId, out RelicData relic) ||
+                relic == null)
+            {
+                return;
+            }
+
+            displayName = GameDataLocalization.RelicName(relic);
+            description = GameDataLocalization.RelicEffectDescription(relic);
+            rarity = relic.Rarity;
+        }
+
+        tooltipOwnerKey = ownerKey;
+
+        // TooltipPanel을 먼저 활성화한 뒤 최종 텍스트를 기록합니다.
+        // 비활성 상태에서 먼저 기록하면 활성화 시 Localization 컴포넌트가 이전 문구를 다시 덮어쓸 수 있습니다.
+        if (!tooltipPanel.activeSelf)
+        {
+            if (tooltipCanvasGroup != null)
+                tooltipCanvasGroup.alpha = 0f;
+            tooltipPanel.SetActive(true);
+        }
+
+        ProtectDynamicTooltipText(tooltipNameText);
+        ProtectDynamicTooltipText(tooltipDescriptionText);
+
+        if (tooltipNameText != null)
+        {
+            tooltipNameText.text = displayName ?? string.Empty;
+            tooltipNameText.ForceMeshUpdate();
+        }
+
+        if (tooltipDescriptionText != null)
+        {
+            tooltipDescriptionText.text = description ?? string.Empty;
+            tooltipDescriptionText.ForceMeshUpdate();
+        }
+
+        ApplyTooltipRarityColor(rarity);
+        PositionTooltipBeside(anchorRect);
+        StartTooltipFade(1f, tooltipFadeInDuration, false);
+    }
+
+    private void HideTooltip()
+    {
+        tooltipOwnerKey = null;
+        if (tooltipPanel == null || !tooltipPanel.activeSelf)
+            return;
+
+        StartTooltipFade(0f, tooltipFadeOutDuration, true);
+    }
+
+    private void HideTooltipImmediate()
+    {
+        BindTooltipIfNeeded();
+        tooltipOwnerKey = null;
+
+        if (tooltipFadeCoroutine != null)
+        {
+            StopCoroutine(tooltipFadeCoroutine);
+            tooltipFadeCoroutine = null;
+        }
+
+        if (tooltipCanvasGroup != null)
+            tooltipCanvasGroup.alpha = 0f;
+        if (tooltipPanel != null)
+            tooltipPanel.SetActive(false);
+    }
+
+    private void BindTooltipIfNeeded()
+    {
+        GameObject root = ResolvePanelRoot();
+        if (root == null)
+            return;
+
+        if (tooltipPanel == null || !tooltipPanel.transform.IsChildOf(root.transform))
+        {
+            Transform found = root.transform.Find("TooltipPanel") ?? FindChildRecursive(root.transform, "TooltipPanel");
+            tooltipPanel = found != null ? found.gameObject : null;
+        }
+
+        if (tooltipPanel == null)
+            return;
+
+        if (tooltipNameText == null)
+        {
+            Transform found = FindChildRecursive(tooltipPanel.transform, "DetailNameText");
+            tooltipNameText = found != null ? found.GetComponent<TMP_Text>() : null;
+        }
+
+        if (tooltipDescriptionText == null)
+        {
+            Transform found = FindChildRecursive(tooltipPanel.transform, "DetailDescriptionText");
+            tooltipDescriptionText = found != null ? found.GetComponent<TMP_Text>() : null;
+        }
+
+        if (tooltipLineImage == null)
+        {
+            Transform found = tooltipPanel.transform.Find("Line") ?? FindChildRecursive(tooltipPanel.transform, "Line");
+            tooltipLineImage = found != null ? found.GetComponent<Image>() : null;
+        }
+
+        if (tooltipCanvasGroup == null)
+            tooltipCanvasGroup = tooltipPanel.GetComponent<CanvasGroup>() ?? tooltipPanel.AddComponent<CanvasGroup>();
+
+        tooltipCanvasGroup.interactable = false;
+        tooltipCanvasGroup.blocksRaycasts = false;
+
+        ProtectDynamicTooltipText(tooltipNameText);
+        ProtectDynamicTooltipText(tooltipDescriptionText);
+    }
+
+    private static void ProtectDynamicTooltipText(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        if (text.GetComponent<LocalizationIgnore>() == null)
+            text.gameObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText fixedLocalizer = text.GetComponent<LocalizedTMPText>();
+        if (fixedLocalizer != null)
+            fixedLocalizer.enabled = false;
+
+        DynamicLocalizedTMPText dynamicLocalizer = text.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicLocalizer != null)
+            dynamicLocalizer.enabled = false;
+
+        LocalizeStringEvent legacyLocalizer = text.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+            legacyLocalizer.enabled = false;
+    }
+
+    private void PositionTooltipBeside(RectTransform sourceRect)
+    {
+        if (sourceRect == null || tooltipPanel == null)
+            return;
+
+        RectTransform tooltipRect = tooltipPanel.transform as RectTransform;
+        RectTransform parentRect = tooltipRect != null ? tooltipRect.parent as RectTransform : null;
+        if (tooltipRect == null || parentRect == null)
+            return;
+
+        Vector3[] corners = new Vector3[4];
+        sourceRect.GetWorldCorners(corners);
+        Vector3 rightCenterWorld = (corners[2] + corners[3]) * 0.5f;
+        Vector3 local = parentRect.InverseTransformPoint(rightCenterWorld);
+        local.x += tooltipOffsetX;
+        local.y += tooltipOffsetY;
+
+        // Screen 좌표/픽셀 변환을 거치지 않고 같은 Canvas의 로컬 좌표에서 배치하므로
+        // CanvasScaler와 해상도가 달라져도 호버 대상과 TooltipPanel의 상대 간격이 유지됩니다.
+        tooltipRect.position = parentRect.TransformPoint(local);
+    }
+
+    private void ApplyTooltipRarityColor(string rarity)
+    {
+        if (tooltipLineImage == null)
+            return;
+
+        Color color = tooltipLineImage.color;
+        Color rarityColor;
+        if (!RecordPanelUI.TryGetCachedRarityDisplayColor(rarity, out rarityColor))
+        {
+            RecordPanelUI panel = FindFirstObjectByType<RecordPanelUI>(FindObjectsInactive.Include);
+            if (panel == null)
+                return;
+            rarityColor = panel.GetRarityDisplayColor(rarity);
+        }
+
+        rarityColor.a = color.a;
+        tooltipLineImage.color = rarityColor;
+    }
+
+    private void StartTooltipFade(float targetAlpha, float duration, bool deactivateAfterFade)
+    {
+        BindTooltipIfNeeded();
+        if (tooltipCanvasGroup == null)
+            return;
+
+        if (tooltipFadeCoroutine != null)
+            StopCoroutine(tooltipFadeCoroutine);
+
+        tooltipFadeCoroutine = StartCoroutine(FadeTooltipRoutine(targetAlpha, Mathf.Max(0f, duration), deactivateAfterFade));
+    }
+
+    private System.Collections.IEnumerator FadeTooltipRoutine(float targetAlpha, float duration, bool deactivateAfterFade)
+    {
+        float startAlpha = tooltipCanvasGroup != null ? tooltipCanvasGroup.alpha : targetAlpha;
+        if (duration <= 0f)
+        {
+            if (tooltipCanvasGroup != null)
+                tooltipCanvasGroup.alpha = targetAlpha;
+        }
+        else
+        {
+            float elapsed = 0f;
+            while (tooltipCanvasGroup != null && elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                tooltipCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+                yield return null;
+            }
+
+            if (tooltipCanvasGroup != null)
+                tooltipCanvasGroup.alpha = targetAlpha;
+        }
+
+        if (deactivateAfterFade && targetAlpha <= 0f && tooltipPanel != null && string.IsNullOrEmpty(tooltipOwnerKey))
+            tooltipPanel.SetActive(false);
+
+        tooltipFadeCoroutine = null;
     }
 
     private bool TryGetCharacterRuntime(CharBtn charButton, out CharacterRuntimeData runtime)
@@ -623,7 +999,7 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
 /// Info_Panel의 유물/연성제 인벤토리 슬롯 클릭을 LobbyInfoPanelUI에 전달합니다.
 /// BattleBagItemSlotUI의 기존 클릭/드래그 로직과 함께 동작합니다.
 /// </summary>
-public sealed class LobbyInfoInventorySelectionRelay : MonoBehaviour, IPointerClickHandler
+public sealed class LobbyInfoInventorySelectionRelay : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     private LobbyInfoPanelUI owner;
     private BattleBagItemSlotUI slot;
@@ -634,6 +1010,16 @@ public sealed class LobbyInfoInventorySelectionRelay : MonoBehaviour, IPointerCl
         owner = newOwner;
         slot = newSlot;
         isCompound = compound;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        owner?.ShowInventoryTooltip(slot, isCompound);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        owner?.HideInventoryTooltip(slot);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -657,6 +1043,7 @@ public sealed class LobbyInfoEquipmentTargetRelay : MonoBehaviour,
     private CharBtn charButton;
     private bool isCompound;
     private Image backImage;
+    private RectTransform tooltipAnchorRect;
     private Color normalColor = Color.white;
     private bool hasNormalColor;
 
@@ -664,12 +1051,14 @@ public sealed class LobbyInfoEquipmentTargetRelay : MonoBehaviour,
         LobbyInfoPanelUI newOwner,
         CharBtn newCharButton,
         bool compound,
-        Image targetBackImage)
+        Image targetBackImage,
+        Transform tooltipAnchor)
     {
         owner = newOwner;
         charButton = newCharButton;
         isCompound = compound;
         backImage = targetBackImage;
+        tooltipAnchorRect = tooltipAnchor as RectTransform;
 
         if (backImage != null && !hasNormalColor)
         {
@@ -680,6 +1069,8 @@ public sealed class LobbyInfoEquipmentTargetRelay : MonoBehaviour,
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        owner?.ShowEquipmentTooltip(charButton, isCompound, tooltipAnchorRect);
+
         if (backImage == null || owner == null || !owner.CanUseEquipmentTarget(charButton, isCompound))
             return;
 
@@ -689,6 +1080,7 @@ public sealed class LobbyInfoEquipmentTargetRelay : MonoBehaviour,
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        owner?.HideEquipmentTooltip(charButton, isCompound);
         RestoreColor();
     }
 
