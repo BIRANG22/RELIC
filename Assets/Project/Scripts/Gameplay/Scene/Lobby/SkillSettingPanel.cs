@@ -67,16 +67,29 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     [SerializeField] private TMP_Text skillTooltipResourceText;
     [SerializeField] private TMP_Text skillTooltipNameText;
     [SerializeField] private TMP_Text skillTooltipDescriptionText;
+    [SerializeField] private Image skillTooltipLineImage;
     [Tooltip("호버한 스킬 아이콘을 기준으로 한 툴팁 X 오프셋입니다.")]
     [SerializeField] private float skillTooltipOffsetX = 50f;
     [Tooltip("호버한 스킬 아이콘을 기준으로 한 툴팁 Y 오프셋입니다.")]
     [SerializeField] private float skillTooltipOffsetY = 50f;
+    [SerializeField, Min(0f)] private float skillTooltipFadeInDuration = 0.25f;
+    [SerializeField, Min(0f)] private float skillTooltipFadeOutDuration = 0.05f;
 
     [Header("Skill Tooltip Resource Icons")]
     [SerializeField] private Sprite skillTooltipCostResourceIcon;
     [SerializeField] private Sprite skillTooltipHpResourceIcon;
     [SerializeField] private Sprite skillTooltipUniqueResourceIcon;
     [SerializeField] private Sprite skillTooltipMoveResourceIcon;
+
+    [Header("Skill Tooltip Resource Colors")]
+    [Tooltip("Cost/MP를 사용하는 스킬의 Resources_Image 색상입니다.")]
+    [SerializeField] private Color skillTooltipCostResourceColor = Color.white;
+    [Tooltip("HP를 사용하는 스킬의 Resources_Image 색상입니다.")]
+    [SerializeField] private Color skillTooltipHpResourceColor = Color.white;
+    [Tooltip("고유자원을 사용하는 스킬의 Resources_Image 색상입니다.")]
+    [SerializeField] private Color skillTooltipUniqueResourceColor = Color.white;
+    [Tooltip("MovePoint를 사용하는 스킬의 Resources_Image 색상입니다.")]
+    [SerializeField] private Color skillTooltipMoveResourceColor = Color.white;
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
@@ -88,6 +101,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     private Coroutine[] skillSelectPanelMoveCoroutines = new Coroutine[SetupSkillSlotCount];
 
     private bool skillSelectPanelAllowed = true;
+    private CanvasGroup skillTooltipCanvasGroup;
+    private Coroutine skillTooltipFadeCoroutine;
 
     private bool IsDirectSelectionLayout => true;
 
@@ -136,6 +151,14 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     private void OnDisable()
     {
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleChanged;
+
+        if (skillTooltipFadeCoroutine != null)
+        {
+            StopCoroutine(skillTooltipFadeCoroutine);
+            skillTooltipFadeCoroutine = null;
+        }
+
+        HideSkillTooltipImmediate();
     }
 
     private void OnLocaleChanged(Locale _)
@@ -419,6 +442,16 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         skillTooltipPanel = tooltip.gameObject;
 
+        if (skillTooltipCanvasGroup == null)
+        {
+            skillTooltipCanvasGroup = skillTooltipPanel.GetComponent<CanvasGroup>();
+            if (skillTooltipCanvasGroup == null)
+                skillTooltipCanvasGroup = skillTooltipPanel.AddComponent<CanvasGroup>();
+        }
+
+        skillTooltipCanvasGroup.interactable = false;
+        skillTooltipCanvasGroup.blocksRaycasts = false;
+
         if (skillTooltipRangeImage == null)
         {
             Transform child = tooltip.Find("Range");
@@ -449,6 +482,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             if (child != null) skillTooltipDescriptionText = child.GetComponent<TMP_Text>();
         }
 
+        if (skillTooltipLineImage == null)
+        {
+            Transform child = tooltip.Find("Line");
+            if (child == null) child = FindChildByName(tooltip, "Line");
+            if (child != null) skillTooltipLineImage = child.GetComponent<Image>();
+        }
+
         EnsureDynamicTextOwnership(skillTooltipResourceText);
         EnsureDynamicTextOwnership(skillTooltipNameText);
         EnsureDynamicTextOwnership(skillTooltipDescriptionText);
@@ -465,6 +505,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         SetPlainTmpText(skillTooltipNameText, GameDataLocalization.SkillName(skill));
         SetRichTmpText(skillTooltipDescriptionText, BuildSkillDetailsText(skill));
+        ApplySkillTooltipLineColor(skill.Rarity);
 
         if (skillTooltipResourceText != null)
             SetPlainTmpText(skillTooltipResourceText, Mathf.Max(0, skill.ResourceCostValue).ToString());
@@ -488,24 +529,92 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             Sprite resourceSprite = ResolveSkillTooltipResourceIcon(skill.ReferenceResource);
             skillTooltipResourceImage.sprite = resourceSprite;
             skillTooltipResourceImage.enabled = resourceSprite != null;
+            ApplySkillTooltipResourceColor(skill.ReferenceResource);
         }
 
         PositionSkillTooltip(sourceButton.transform as RectTransform);
-        skillTooltipPanel.SetActive(true);
+
+        if (!skillTooltipPanel.activeSelf)
+        {
+            skillTooltipCanvasGroup.alpha = 0f;
+            skillTooltipPanel.SetActive(true);
+        }
+
+        StartSkillTooltipFade(1f, skillTooltipFadeInDuration, false);
     }
 
     public void HideSkillTooltip(SkillIconButton sourceButton)
     {
-        if (skillTooltipPanel == null)
+        BindSkillTooltipIfNeeded();
+        if (skillTooltipPanel == null || skillTooltipCanvasGroup == null)
             return;
 
-        skillTooltipPanel.SetActive(false);
+        if (!skillTooltipPanel.activeSelf)
+        {
+            skillTooltipCanvasGroup.alpha = 0f;
+            return;
+        }
+
+        StartSkillTooltipFade(0f, skillTooltipFadeOutDuration, true);
     }
 
     private void HideSkillTooltipImmediate()
     {
-        if (skillTooltipPanel != null)
+        BindSkillTooltipIfNeeded();
+        if (skillTooltipPanel == null || skillTooltipCanvasGroup == null)
+            return;
+
+        if (skillTooltipFadeCoroutine != null)
+        {
+            StopCoroutine(skillTooltipFadeCoroutine);
+            skillTooltipFadeCoroutine = null;
+        }
+
+        skillTooltipCanvasGroup.alpha = 0f;
+        skillTooltipPanel.SetActive(false);
+    }
+
+    private void StartSkillTooltipFade(float targetAlpha, float duration, bool deactivateWhenFinished)
+    {
+        if (skillTooltipCanvasGroup == null)
+            return;
+
+        if (skillTooltipFadeCoroutine != null)
+            StopCoroutine(skillTooltipFadeCoroutine);
+
+        skillTooltipFadeCoroutine = StartCoroutine(
+            FadeSkillTooltip(targetAlpha, Mathf.Max(0f, duration), deactivateWhenFinished));
+    }
+
+    private IEnumerator FadeSkillTooltip(float targetAlpha, float duration, bool deactivateWhenFinished)
+    {
+        if (skillTooltipCanvasGroup == null)
+            yield break;
+
+        float startAlpha = skillTooltipCanvasGroup.alpha;
+
+        if (duration <= 0f || Mathf.Approximately(startAlpha, targetAlpha))
+        {
+            skillTooltipCanvasGroup.alpha = targetAlpha;
+        }
+        else
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                skillTooltipCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+                yield return null;
+            }
+
+            skillTooltipCanvasGroup.alpha = targetAlpha;
+        }
+
+        if (deactivateWhenFinished && targetAlpha <= 0f && skillTooltipPanel != null)
             skillTooltipPanel.SetActive(false);
+
+        skillTooltipFadeCoroutine = null;
     }
 
     private void PositionSkillTooltip(RectTransform sourceRect)
@@ -528,6 +637,27 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         {
             tooltipRect.anchoredPosition = localPoint + new Vector2(skillTooltipOffsetX, skillTooltipOffsetY);
         }
+    }
+
+
+    private void ApplySkillTooltipResourceColor(ReferenceResource resource)
+    {
+        if (skillTooltipResourceImage == null)
+            return;
+
+        Color targetColor = resource switch
+        {
+            ReferenceResource.HP => skillTooltipHpResourceColor,
+            ReferenceResource.UniqueResource => skillTooltipUniqueResourceColor,
+            ReferenceResource.MovePoint => skillTooltipMoveResourceColor,
+            ReferenceResource.Cost => skillTooltipCostResourceColor,
+            _ => skillTooltipCostResourceColor,
+        };
+
+        // 프리팹에서 설정한 알파값은 유지하고 RGB만 자원 색으로 변경합니다.
+        Color currentColor = skillTooltipResourceImage.color;
+        targetColor.a = currentColor.a;
+        skillTooltipResourceImage.color = targetColor;
     }
 
     private Sprite ResolveSkillTooltipResourceIcon(ReferenceResource resource)
@@ -1697,6 +1827,17 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     {
         if (skillInfoRarityText != null)
             skillInfoRarityText.color = commonRarityColor;
+    }
+
+
+    private void ApplySkillTooltipLineColor(SkillRarity rarity)
+    {
+        if (skillTooltipLineImage == null)
+            return;
+
+        Color color = GetSkillInfoRarityColor(rarity);
+        color.a = skillTooltipLineImage.color.a;
+        skillTooltipLineImage.color = color;
     }
 
     private Color GetSkillInfoRarityColor(SkillRarity rarity)
