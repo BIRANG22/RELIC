@@ -146,6 +146,8 @@ public static class LocalizationKeys
         public const string FirstExpedition01 = "tutorial.first_expedition.01";
         public const string FirstExpedition02 = "tutorial.first_expedition.02";
         public const string FirstExpedition03 = "tutorial.first_expedition.03";
+        public const string SkipButton = "ui.tutorial.skip";
+        public const string SkipConfirm = "dialog.tutorial.skip_confirm";
     }
 
     public static class IntroStory

@@ -55,12 +55,17 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
     [SerializeField, Min(0f)] private float moveDuration = 0.35f;
     [SerializeField] private AnimationCurve moveCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     [SerializeField] private bool snapToReservePositionOnStart = true;
+    [SerializeField] private bool useUnscaledTime = true;
+
+    [Header("Application Focus Recovery")]
+    [SerializeField] private bool resyncOnApplicationFocus = true;
 
     private Coroutine moveRoutine;
     private bool cachedPositions;
     private float slide01;
     private Vector3 referenceCameraPosition;
     private bool hasReferenceCameraPosition;
+    private BattleTurnExecutor turnExecutor;
 
     private void Awake()
     {
@@ -103,6 +108,22 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
     {
         if (Instance == this)
             Instance = null;
+    }
+
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (!hasFocus || !resyncOnApplicationFocus || !isActiveAndEnabled)
+            return;
+
+        ResyncToCurrentBattleState();
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus || !resyncOnApplicationFocus || !isActiveAndEnabled)
+            return;
+
+        ResyncToCurrentBattleState();
     }
 
     public bool TryGetForegroundSorting(out int sortingLayerId, out int sortingOrder)
@@ -273,6 +294,19 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
         moveRoutine = StartCoroutine(MoveRoutine(targetSlide01));
     }
 
+    private void ResyncToCurrentBattleState()
+    {
+        if (turnExecutor == null)
+            turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Exclude);
+
+        if (turnExecutor == null)
+            return;
+
+        // 게임 창의 포커스를 잃는 동안 코루틴이나 이벤트 타이밍이 끊겨도,
+        // 현재 전투 상태를 기준으로 목표 위치를 다시 잡아 고정되는 현상을 복구합니다.
+        PlayMove(turnExecutor.IsExecuting ? 1f : 0f);
+    }
+
     private IEnumerator MoveRoutine(float targetSlide01)
     {
         float startSlide01 = slide01;
@@ -290,7 +324,7 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
         while (elapsed < duration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             float curveT = moveCurve != null ? moveCurve.Evaluate(t) : t;
 

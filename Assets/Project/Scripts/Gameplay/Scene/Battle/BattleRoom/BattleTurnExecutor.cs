@@ -1395,8 +1395,11 @@ public class BattleTurnExecutor : MonoBehaviour
     {
         PlaySfx(playBattleProgressSfx, battleProgressSfxId, battleProgressSfxVolume);
 
+        int displayTurnNumber = Mathf.Max(1, playerTurnNumber);
+        string progressText = GameLocalization.Get(LocalizationKeys.Battle.Progress);
+
         IEnumerator routine = BattleMapIntroText.ShowMessageAndWait(
-            GameLocalization.Get(LocalizationKeys.Battle.Progress));
+            $"{displayTurnNumber}{progressText}");
 
         if (routine == null)
             yield break;

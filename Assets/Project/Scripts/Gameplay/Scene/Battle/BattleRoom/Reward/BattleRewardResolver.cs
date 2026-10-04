@@ -16,6 +16,8 @@ public class BattleRewardResolver : MonoBehaviour
         if (monsters == null || DataManager.Instance == null)
             return rewards;
 
+        bool suppressMonsterLoot = IsTutorialBattle();
+
         HashSet<string> resolvedMonsterKeys = new();
         HashSet<string> uniqueItemResolvedMonsterKeys = new();
 
@@ -34,7 +36,7 @@ public class BattleRewardResolver : MonoBehaviour
                 continue;
             }
 
-            TryResolveMonster(monster, rewards, monsterKey, uniqueItemResolvedMonsterKeys);
+            TryResolveMonster(monster, rewards, monsterKey, uniqueItemResolvedMonsterKeys, suppressMonsterLoot);
         }
 
         int uniqueMonsterCount = resolvedMonsterKeys.Count;
@@ -171,15 +173,27 @@ public class BattleRewardResolver : MonoBehaviour
         MonsterRuntimeData monster,
         List<BattleRewardData> rewards,
         string monsterKey,
-        HashSet<string> uniqueItemResolvedMonsterKeys)
+        HashSet<string> uniqueItemResolvedMonsterKeys,
+        bool suppressMonsterLoot)
     {
         if (monster == null)
             return;
 
         Debug.Log($"[BattleRewardResolver] Monster:{monster.MonsterId} / Key:{monsterKey} / Remnant:{monster.MinRemnant}-{monster.MaxRemnant} / Item:{monster.UniqueItemId}({monster.UniqueItemChance})");
 
+        // 튜토리얼 전투에서는 몬스터가 주는 레드 더스티움과 고유 아이템을 획득하지 않습니다.
+        // 전투 맵 자체에서 지급되는 유물/기억 보상은 기존 규칙을 그대로 사용합니다.
+        if (suppressMonsterLoot)
+            return;
+
         AddRemnant(monster, rewards);
         AddUniqueItem(monster, rewards, monsterKey, uniqueItemResolvedMonsterKeys);
+    }
+
+    private static bool IsTutorialBattle()
+    {
+        BattleRuntimeData battle = DataManager.Instance?.BattleRuntimeStore?.Get();
+        return battle?.IsTutorialBattle == true;
     }
 
     private void AddRemnant(MonsterRuntimeData monster, List<BattleRewardData> rewards)

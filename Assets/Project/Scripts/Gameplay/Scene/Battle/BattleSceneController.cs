@@ -66,6 +66,13 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private GameObject eventRoom;
     [SerializeField] private GameObject restRoom;
 
+    [Header("Tutorial Mode UI")]
+    [SerializeField] private GameObject tutorialMode;
+    [SerializeField] private Button tutorialSkipButton;
+    [SerializeField] private TMP_Text tutorialSkipButtonText;
+
+    private bool isTutorialSkipProcessing;
+
     [Header("Room Change Auto Close")]
     [SerializeField] private bool closeInventoryAndBagOnRoomActiveChange = true;
     [SerializeField] private string[] inventoryPanelObjectNames = { "InventoryPanel" };
@@ -106,6 +113,8 @@ public class BattleSceneController : MonoBehaviour
         AutoFindErosionSlotBindingsIfNeeded();
         AutoFindBack2NameIfNeeded();
         PrepareBack2NameForDynamicUse();
+        AutoFindTutorialModeUIIfNeeded();
+        BindTutorialSkipButton();
         InstallErosionSelectClickHandler();
         SetErosionPanelVisible(false);
 
@@ -114,6 +123,139 @@ public class BattleSceneController : MonoBehaviour
 
         if (mapSelectionPresenter == null)
             mapSelectionPresenter = gameObject.AddComponent<BattleRoomMapSelectionPresenter>();
+    }
+
+    private void OnDestroy()
+    {
+        if (tutorialSkipButton != null)
+            tutorialSkipButton.onClick.RemoveListener(OnTutorialSkipButtonClicked);
+    }
+
+    private void AutoFindTutorialModeUIIfNeeded()
+    {
+        if (tutorialMode == null)
+        {
+            Transform found = FindSceneTransformByName("TutorialMode");
+            if (found != null)
+                tutorialMode = found.gameObject;
+        }
+
+        if (tutorialSkipButton == null && tutorialMode != null)
+        {
+            Transform skipTransform = FindChildRecursive(tutorialMode.transform, "SkipButton");
+            if (skipTransform != null)
+                tutorialSkipButton = skipTransform.GetComponent<Button>();
+        }
+
+        if (tutorialSkipButtonText == null && tutorialSkipButton != null)
+            tutorialSkipButtonText = tutorialSkipButton.GetComponentInChildren<TMP_Text>(true);
+
+        ConfigureTutorialSkipButtonLocalization();
+    }
+
+    private void ConfigureTutorialSkipButtonLocalization()
+    {
+        if (tutorialSkipButtonText == null)
+            return;
+
+        LocalizedTMPText localizer = tutorialSkipButtonText.GetComponent<LocalizedTMPText>();
+        if (localizer == null)
+            localizer = tutorialSkipButtonText.gameObject.AddComponent<LocalizedTMPText>();
+
+        localizer.Configure(
+            LocalizationKeys.Tutorial.SkipButton,
+            "튜토리얼 스킵",
+            false);
+    }
+
+    private void BindTutorialSkipButton()
+    {
+        AutoFindTutorialModeUIIfNeeded();
+
+        if (tutorialSkipButton == null)
+            return;
+
+        tutorialSkipButton.onClick.RemoveListener(OnTutorialSkipButtonClicked);
+        tutorialSkipButton.onClick.AddListener(OnTutorialSkipButtonClicked);
+    }
+
+    private void RefreshTutorialModeUI()
+    {
+        AutoFindTutorialModeUIIfNeeded();
+
+        bool isTutorialBattle =
+            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true;
+
+        if (tutorialMode != null)
+            tutorialMode.SetActive(isTutorialBattle);
+
+        if (tutorialSkipButton != null)
+            tutorialSkipButton.interactable = isTutorialBattle && !isTutorialSkipProcessing;
+    }
+
+    private void OnTutorialSkipButtonClicked()
+    {
+        if (isTutorialSkipProcessing)
+            return;
+
+        bool isTutorialBattle =
+            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true;
+        if (!isTutorialBattle)
+            return;
+
+        if (UIManager.Instance == null)
+        {
+            Debug.LogWarning("[BattleSceneController] 튜토리얼 스킵 확인창을 표시할 UIManager를 찾을 수 없습니다.", this);
+            return;
+        }
+
+        if (UIManager.Instance.IsConfirmDialogOpen)
+            return;
+
+        UIManager.Instance.ShowConfirmDialog(
+            GameLocalization.Get(
+                LocalizationKeys.Tutorial.SkipConfirm,
+                "튜토리얼을 건너뛰시겠습니까?"),
+            ConfirmSkipTutorial,
+            CancelSkipTutorial);
+    }
+
+    private async void ConfirmSkipTutorial()
+    {
+        if (isTutorialSkipProcessing)
+            return;
+
+        isTutorialSkipProcessing = true;
+        UIManager.Instance?.HideConfirmDialog();
+
+        if (tutorialSkipButton != null)
+            tutorialSkipButton.interactable = false;
+
+        BattleFirstTutorialController.Instance?.CloseTutorial();
+        TutorialSettings.MarkTutorialSeen();
+
+        DataManager dataManager = DataManager.Instance;
+        if (dataManager != null)
+            BattleRunAbandonService.AbandonCurrentRun(dataManager);
+
+        BattleRoomCleaner cleaner =
+            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
+        cleaner?.Clean();
+
+        if (GameManager.Instance?.StateMachine == null)
+        {
+            Debug.LogError("[BattleSceneController] GameManager/StateMachine is missing. Cannot enter Lobby after tutorial skip.", this);
+            isTutorialSkipProcessing = false;
+            RefreshTutorialModeUI();
+            return;
+        }
+
+        await GameManager.Instance.StateMachine.ChangeState(GameStateType.Lobby);
+    }
+
+    private void CancelSkipTutorial()
+    {
+        UIManager.Instance?.HideConfirmDialog();
     }
 
     private void HideSharedNextButtonOnSceneStart()
@@ -141,6 +283,7 @@ public class BattleSceneController : MonoBehaviour
         if (battleRuntime != null)
             DataManager.Instance.BattleRuntimeStore.Set(battleRuntime);
         InitializeRuntime();
+        RefreshTutorialModeUI();
         SetupBattleErosionGauge();
         PrimeBack2NameBeforePresentation();
         SetErosionSelectVisible(false);
