@@ -54,14 +54,18 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
             compoundSprite,
             compoundDiscovered ? () => GameDataLocalization.CompoundName(compound) : null,
             tooltip);
+
         bool material1Discovered = ApplyMaterial(dataManager, compound.MaterialId1, material1Icon, material1Question, tooltip);
         bool material2Discovered = ApplyMaterial(dataManager, compound.MaterialId2, material2Icon, material2Question, tooltip);
         bool material3Discovered = ApplyMaterial(dataManager, compound.MaterialId3, material3Icon, material3Question, tooltip);
 
+        Transform compoundRoot = transform.Find("Compound");
+        ConfigureCompoundInteraction(compoundRoot, compound, compoundDiscovered, tooltip);
+
         Transform materials = transform.Find("Materials");
-        ConfigureMaterialInteraction(materials?.Find("Material1"), compound.MaterialId1, material1Discovered);
-        ConfigureMaterialInteraction(materials?.Find("Material2"), compound.MaterialId2, material2Discovered);
-        ConfigureMaterialInteraction(materials?.Find("Material3"), compound.MaterialId3, material3Discovered);
+        ConfigureMaterialInteraction(materials?.Find("Material1"), compound.MaterialId1, material1Discovered, material1Icon, tooltip, dataManager);
+        ConfigureMaterialInteraction(materials?.Find("Material2"), compound.MaterialId2, material2Discovered, material2Icon, tooltip, dataManager);
+        ConfigureMaterialInteraction(materials?.Find("Material3"), compound.MaterialId3, material3Discovered, material3Icon, tooltip, dataManager);
     }
 
     private static bool ApplyMaterial(
@@ -128,7 +132,50 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
     }
 
 
-    private void ConfigureMaterialInteraction(Transform materialRoot, string itemId, bool discovered)
+    private void ConfigureCompoundInteraction(
+        Transform compoundRoot,
+        CompoundData compound,
+        bool discovered,
+        CompoundReferenceNameTooltip tooltip)
+    {
+        if (compoundRoot == null || compound == null)
+            return;
+
+        Image back = compoundRoot.Find("Back")?.GetComponent<Image>();
+        if (back == null)
+            back = compoundRoot.Find("back")?.GetComponent<Image>();
+
+        if (back != null)
+            back.raycastTarget = true;
+
+        string materialId1 = string.IsNullOrWhiteSpace(compound.MaterialId1) ? string.Empty : compound.MaterialId1.Trim();
+        string materialId2 = string.IsNullOrWhiteSpace(compound.MaterialId2) ? string.Empty : compound.MaterialId2.Trim();
+        string materialId3 = string.IsNullOrWhiteSpace(compound.MaterialId3) ? string.Empty : compound.MaterialId3.Trim();
+        bool canRegisterRecipe = discovered
+            && !string.IsNullOrEmpty(materialId1)
+            && !string.IsNullOrEmpty(materialId2)
+            && !string.IsNullOrEmpty(materialId3);
+
+        CompoundRecipeMaterialInteraction interaction = compoundRoot.GetComponent<CompoundRecipeMaterialInteraction>();
+        if (interaction == null)
+            interaction = compoundRoot.gameObject.AddComponent<CompoundRecipeMaterialInteraction>();
+
+        interaction.Configure(
+            back,
+            canRegisterRecipe,
+            () => TryRegisterRecipeMaterials(materialId1, materialId2, materialId3),
+            tooltip,
+            compoundIcon != null ? compoundIcon.rectTransform : compoundRoot as RectTransform,
+            discovered ? () => GameDataLocalization.CompoundName(compound) : null);
+    }
+
+    private void ConfigureMaterialInteraction(
+        Transform materialRoot,
+        string itemId,
+        bool discovered,
+        Image icon,
+        CompoundReferenceNameTooltip tooltip,
+        DataManager dataManager)
     {
         if (materialRoot == null)
             return;
@@ -140,15 +187,45 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
         if (back != null)
             back.raycastTarget = true;
 
+        string normalizedItemId = string.IsNullOrWhiteSpace(itemId) ? string.Empty : itemId.Trim();
+        System.Func<string> displayNameProvider = discovered && !string.IsNullOrEmpty(normalizedItemId)
+            ? () => GetItemDisplayName(dataManager, normalizedItemId)
+            : null;
+
         CompoundRecipeMaterialInteraction interaction = materialRoot.GetComponent<CompoundRecipeMaterialInteraction>();
         if (interaction == null)
             interaction = materialRoot.gameObject.AddComponent<CompoundRecipeMaterialInteraction>();
 
-        string normalizedItemId = string.IsNullOrWhiteSpace(itemId) ? string.Empty : itemId.Trim();
         interaction.Configure(
             back,
             discovered && !string.IsNullOrEmpty(normalizedItemId),
-            () => TryRegisterRecipeMaterial(normalizedItemId));
+            () => TryRegisterRecipeMaterial(normalizedItemId),
+            tooltip,
+            icon != null ? icon.rectTransform : materialRoot as RectTransform,
+            displayNameProvider);
+    }
+
+    private static void ConfigureNameHoverArea(
+        Transform root,
+        RectTransform targetRect,
+        bool enabled,
+        System.Func<string> displayNameProvider,
+        CompoundReferenceNameTooltip tooltip)
+    {
+        if (root == null)
+            return;
+
+        Image back = root.Find("Back")?.GetComponent<Image>();
+        if (back == null)
+            back = root.Find("back")?.GetComponent<Image>();
+        if (back != null)
+            back.raycastTarget = true;
+
+        CompoundReferenceAreaHover hover = root.GetComponent<CompoundReferenceAreaHover>();
+        if (hover == null)
+            hover = root.gameObject.AddComponent<CompoundReferenceAreaHover>();
+
+        hover.Configure(tooltip, targetRect != null ? targetRect : root as RectTransform, enabled, displayNameProvider);
     }
 
     private void TryRegisterRecipeMaterial(string itemId)
@@ -156,10 +233,20 @@ public sealed class CompoundRecipeSlotUI : MonoBehaviour
         if (string.IsNullOrWhiteSpace(itemId))
             return;
 
+        ResolveCultureTankPresenter();
+        cultureTankPresenter?.TryRegisterRecipeMaterial(itemId);
+    }
+
+    private void TryRegisterRecipeMaterials(string materialId1, string materialId2, string materialId3)
+    {
+        ResolveCultureTankPresenter();
+        cultureTankPresenter?.TryRegisterRecipeMaterials(materialId1, materialId2, materialId3);
+    }
+
+    private void ResolveCultureTankPresenter()
+    {
         if (cultureTankPresenter == null)
             cultureTankPresenter = FindFirstObjectByType<LobbyCultureTankPanelPresenter>(FindObjectsInactive.Include);
-
-        cultureTankPresenter?.TryRegisterRecipeMaterial(itemId);
     }
 
     private static string GetItemDisplayName(DataManager dataManager, string itemId)
@@ -288,16 +375,29 @@ internal sealed class CompoundRecipeMaterialInteraction : MonoBehaviour,
     private bool pointerPressed;
     private bool clickCanceledByExit;
     private Action onClick;
+    private CompoundReferenceNameTooltip nameTooltip;
+    private RectTransform nameTarget;
+    private System.Func<string> displayNameProvider;
 
-    public void Configure(Image targetBack, bool enabled, Action clickAction)
+    public void Configure(
+        Image targetBack,
+        bool enabled,
+        Action clickAction,
+        CompoundReferenceNameTooltip tooltip,
+        RectTransform tooltipTarget,
+        System.Func<string> nameProvider)
     {
         back = targetBack;
         interactionEnabled = enabled;
         onClick = clickAction;
+        nameTooltip = tooltip;
+        nameTarget = tooltipTarget;
+        displayNameProvider = nameProvider;
         pointerInside = false;
         pointerPressed = false;
         clickCanceledByExit = false;
         ApplyRgb(NormalColor);
+        nameTooltip?.Hide();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -307,6 +407,8 @@ internal sealed class CompoundRecipeMaterialInteraction : MonoBehaviour,
 
         pointerInside = true;
         ApplyRgb(HoverColor);
+        if (nameTooltip != null && nameTarget != null && displayNameProvider != null)
+            nameTooltip.Show(nameTarget, displayNameProvider);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -319,6 +421,7 @@ internal sealed class CompoundRecipeMaterialInteraction : MonoBehaviour,
             clickCanceledByExit = true;
 
         ApplyRgb(NormalColor);
+        nameTooltip?.Hide();
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -360,5 +463,39 @@ internal sealed class CompoundRecipeMaterialInteraction : MonoBehaviour,
 
         float alpha = back.color.a;
         back.color = new Color(rgb.r / 255f, rgb.g / 255f, rgb.b / 255f, alpha);
+    }
+}
+
+
+[DisallowMultipleComponent]
+internal sealed class CompoundReferenceAreaHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    private CompoundReferenceNameTooltip tooltip;
+    private RectTransform targetRect;
+    private bool hoverEnabled;
+    private System.Func<string> displayNameProvider;
+
+    public void Configure(CompoundReferenceNameTooltip targetTooltip, RectTransform target, bool enabled, System.Func<string> nameProvider)
+    {
+        tooltip = targetTooltip;
+        targetRect = target;
+        hoverEnabled = enabled;
+        displayNameProvider = nameProvider;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (hoverEnabled && tooltip != null && targetRect != null && displayNameProvider != null)
+            tooltip.Show(targetRect, displayNameProvider);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        tooltip?.Hide();
+    }
+
+    private void OnDisable()
+    {
+        tooltip?.Hide();
     }
 }

@@ -18,6 +18,7 @@ public sealed class CompoundReferenceNameTooltip : MonoBehaviour
 
     private RectTransform rectTransform;
     private RectTransform currentTarget;
+    private System.Func<string> currentDisplayNameProvider;
 
     private void Awake()
     {
@@ -38,11 +39,18 @@ public sealed class CompoundReferenceNameTooltip : MonoBehaviour
             return;
         }
 
+        RefreshDisplayedName();
         UpdatePosition();
     }
 
     public void Show(RectTransform targetIcon, string displayName)
     {
+        Show(targetIcon, () => displayName);
+    }
+
+    public void Show(RectTransform targetIcon, System.Func<string> displayNameProvider)
+    {
+        string displayName = displayNameProvider?.Invoke() ?? string.Empty;
         if (targetIcon == null || string.IsNullOrWhiteSpace(displayName))
         {
             Hide();
@@ -55,9 +63,8 @@ public sealed class CompoundReferenceNameTooltip : MonoBehaviour
             return;
 
         currentTarget = targetIcon;
-
-        if (nameText != null)
-            nameText.text = displayName;
+        currentDisplayNameProvider = displayNameProvider;
+        RefreshDisplayedName();
 
         gameObject.SetActive(true);
         transform.SetAsLastSibling();
@@ -66,9 +73,20 @@ public sealed class CompoundReferenceNameTooltip : MonoBehaviour
         UpdatePosition();
     }
 
+    private void RefreshDisplayedName()
+    {
+        if (nameText == null)
+            return;
+
+        string displayName = currentDisplayNameProvider?.Invoke() ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(displayName) && !string.Equals(nameText.text, displayName, System.StringComparison.Ordinal))
+            nameText.text = displayName;
+    }
+
     public void Hide()
     {
         currentTarget = null;
+        currentDisplayNameProvider = null;
 
         if (gameObject.activeSelf)
             gameObject.SetActive(false);
@@ -118,7 +136,11 @@ public sealed class CompoundReferenceNameTooltip : MonoBehaviour
     private void ResolveReferences()
     {
         rectTransform ??= transform as RectTransform;
-        nameText ??= GetComponentInChildren<TMP_Text>(true);
+        if (nameText == null)
+        {
+            Transform exactName = transform.Find("Name");
+            nameText = exactName != null ? exactName.GetComponent<TMP_Text>() : GetComponentInChildren<TMP_Text>(true);
+        }
     }
 
     private void MarkNameTextAsDynamic()
@@ -177,11 +199,8 @@ public sealed class CompoundReferenceIconHover : MonoBehaviour, IPointerEnterHan
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        string displayName = displayNameProvider?.Invoke() ?? string.Empty;
-        if (tooltip != null && targetIcon != null && !string.IsNullOrWhiteSpace(displayName))
-        {
-            tooltip.Show(targetIcon, displayName);
-        }
+        if (tooltip != null && targetIcon != null && displayNameProvider != null)
+            tooltip.Show(targetIcon, displayNameProvider);
     }
 
     public void OnPointerExit(PointerEventData eventData)

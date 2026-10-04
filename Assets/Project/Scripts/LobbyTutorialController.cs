@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -67,33 +68,12 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float fragmentTransferStartSoundVolume = 0.5f;
 
     [Header("Fragment Transfer Animation")]
-    [Tooltip("튜토리얼 종료 후 Fragment01~03이 날아갈 SettingButton 위치입니다. 비워두면 이름이 SettingButton인 오브젝트를 자동으로 찾습니다.")]
-    [SerializeField] private RectTransform fragmentTransferTarget;
-    [Tooltip("유물 구매 이동 연출과 동일하게 사용할 RelicPurchaseTransferEffect Texture2D입니다. Texture Type은 Default를 사용할 수 있습니다.")]
-    [SerializeField] private Texture2D fragmentTransferEffectTexture;
-    [Tooltip("생성되는 RelicPurchaseTransferEffect의 크기입니다.")]
-    [SerializeField] private Vector2 fragmentTransferEffectSize = new Vector2(96f, 96f);
-    [Tooltip("파편이 처음 오른쪽 위로 튀어 오르는 UI 이동량입니다.")]
-    [SerializeField] private Vector2 fragmentTransferBounceOffset = new Vector2(180f, 120f);
-    [Tooltip("파편이 처음 튀어 오르는 시간입니다.")]
-    [SerializeField, Min(0.01f)] private float fragmentTransferBounceDuration = 0.18f;
-    [Tooltip("튀어 오른 뒤 SettingButton까지 이동하는 시간입니다.")]
-    [SerializeField, Min(0.01f)] private float fragmentTransferFlyDuration = 0.32f;
-    [Tooltip("Fragment01~03이 RelicPurchaseTransferEffect로 촤라락 교체되는 간격입니다.")]
-    [SerializeField, Min(0f)] private float fragmentTransferSwapInterval = 0.08f;
-    [Tooltip("각 RelicPurchaseTransferEffect가 SettingButton으로 출발하는 간격입니다. 앞 효과가 이동 중이어도 다음 효과가 출발합니다.")]
+    [Tooltip("튜토리얼에서 획득한 룬이 날아갈 캐릭터 월드 오브젝트입니다. 비워두면 Cha_01_idle_0 오브젝트를 자동으로 찾습니다.")]
+    [SerializeField] private Transform fragmentTransferWorldTarget;
+    [Tooltip("유물/연성제 획득과 동일한 공용 이동 이펙트입니다. 비워두면 LobbyRelicShopPresenter에 연결된 프리팹을 자동으로 사용합니다.")]
+    [SerializeField] private ScreenSpaceTransferOrbEffect fragmentTransferEffectPrefab;
+    [Tooltip("각 룬 이동 효과가 순서대로 출발하는 간격입니다. 앞 효과가 이동 중이어도 다음 효과가 출발합니다.")]
     [SerializeField, Min(0f)] private float fragmentTransferLaunchInterval = 0.12f;
-    [Tooltip("RelicPurchaseTransferEffect가 생성될 때의 크기 배율입니다.")]
-    [SerializeField, Min(0.05f)] private float fragmentTransferStartScale = 1f;
-    [Tooltip("SettingButton에 도착할 때 RelicPurchaseTransferEffect의 최종 크기 배율입니다.")]
-    [SerializeField, Min(0.05f)] private float fragmentTransferEndScale = 0.35f;
-
-    [Header("Fragment Transfer Trail")]
-    [SerializeField, Min(0.005f)] private float fragmentTrailSpawnInterval = 0.025f;
-    [SerializeField, Min(0.01f)] private float fragmentTrailLifetime = 0.18f;
-    [SerializeField, Range(0.05f, 1f)] private float fragmentTrailStartScale = 0.78f;
-    [SerializeField, Range(0f, 1f)] private float fragmentTrailEndScale = 0.2f;
-    [SerializeField, Range(0f, 1f)] private float fragmentTrailStartAlpha = 0.48f;
 
     [Header("Tutorial Dialogue Text")]
     [Tooltip("Initial Lobby dialogue localization keys, played in order.")]
@@ -678,328 +658,109 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     private IEnumerator PlayFragmentTransferRoutine(List<FragmentTransferSnapshot> snapshots)
     {
-        ResolveFragmentTransferTarget();
-        Canvas transferCanvas = ResolveFragmentTransferCanvas();
+        ResolveFragmentTransferWorldTarget();
+        ResolveFragmentTransferEffectPrefab();
 
-        if (fragmentTransferTarget == null || transferCanvas == null || fragmentTransferEffectTexture == null)
+        if (fragmentTransferWorldTarget == null || fragmentTransferEffectPrefab == null)
         {
-            if (fragmentTransferTarget == null)
-                Debug.LogWarning("[LobbyTutorialController] Fragment 이동 효과의 SettingButton 목표를 찾지 못했습니다.", this);
+            if (fragmentTransferWorldTarget == null)
+                Debug.LogWarning("[LobbyTutorialController] Fragment 이동 효과의 Cha_01_idle_0 목표를 찾지 못했습니다.", this);
 
-            if (fragmentTransferEffectTexture == null)
-                Debug.LogWarning("[LobbyTutorialController] Fragment Transfer Effect Texture가 지정되지 않았습니다.", this);
+            if (fragmentTransferEffectPrefab == null)
+                Debug.LogWarning("[LobbyTutorialController] Fragment 이동 효과에 사용할 ScreenSpaceTransferOrbEffect 프리팹을 찾지 못했습니다.", this);
 
             SetTutorialDisplay(false);
             fragmentTransferCoroutine = null;
             yield break;
         }
 
-        RectTransform transferParent = ResolveTransferEffectParent(transferCanvas);
-        Camera targetCamera = ResolveUiCamera(fragmentTransferTarget);
-        Vector2 targetScreenPosition = GetRectScreenCenter(fragmentTransferTarget, targetCamera);
+        Camera worldCamera = Camera.main;
+        Vector3 targetWorldPosition = fragmentTransferWorldTarget.position;
 
-        var preparedEffects = new List<(RawImage EffectImage, FragmentTransferSnapshot Snapshot)>();
+        // 캐릭터 스프라이트의 중심으로 들어가도록 Renderer bounds를 우선 사용합니다.
+        Renderer targetRenderer = fragmentTransferWorldTarget.GetComponent<Renderer>();
+        if (targetRenderer == null)
+            targetRenderer = fragmentTransferWorldTarget.GetComponentInChildren<Renderer>(true);
 
-        // 먼저 Fragment01 -> 02 -> 03 순서로 촤라락 Effect로 교체합니다.
-        // 이 단계에서는 아직 SettingButton으로 출발하지 않습니다.
+        if (targetRenderer != null)
+        {
+            targetWorldPosition = targetRenderer.bounds.center;
+        }
+        else
+        {
+            Collider2D targetCollider = fragmentTransferWorldTarget.GetComponent<Collider2D>();
+            if (targetCollider == null)
+                targetCollider = fragmentTransferWorldTarget.GetComponentInChildren<Collider2D>(true);
+            if (targetCollider != null)
+                targetWorldPosition = targetCollider.bounds.center;
+        }
+
+        Vector2 targetScreenPosition = worldCamera != null
+            ? (Vector2)worldCamera.WorldToScreenPoint(targetWorldPosition)
+            : (Vector2)targetWorldPosition;
+
         for (int i = 0; i < snapshots.Count; i++)
         {
             FragmentTransferSnapshot snapshot = snapshots[i];
             if (snapshot == null || snapshot.SourceImage == null)
                 continue;
 
-            RawImage effectImage = CreateFragmentTransferEffect(transferCanvas, transferParent, snapshot);
-            if (effectImage == null)
-                continue;
-
             snapshot.SourceImage.gameObject.SetActive(false);
-            preparedEffects.Add((effectImage, snapshot));
-
-            if (i < snapshots.Count - 1 && fragmentTransferSwapInterval > 0f)
-                yield return new WaitForSecondsRealtime(fragmentTransferSwapInterval);
-        }
-
-        // 원본 Fragment는 모두 Effect로 교체되었으므로 TutorialDisplay는 정리합니다.
-        // Effect는 별도의 Canvas에 생성되어 있으므로 계속 화면에 남아 이동합니다.
-        SetTutorialDisplay(false);
-
-        // Effect01이 이동 중일 때 Effect02, Effect03도 순차적으로 출발하도록 겹쳐 재생합니다.
-        var runningTransfers = new List<Coroutine>();
-        for (int i = 0; i < preparedEffects.Count; i++)
-        {
-            RawImage effectImage = preparedEffects[i].EffectImage;
-            FragmentTransferSnapshot snapshot = preparedEffects[i].Snapshot;
-            if (effectImage == null || snapshot == null)
-                continue;
-
             PlayFragmentTransferStartSound();
 
-            Coroutine transfer = StartCoroutine(AnimateAndDestroyFragmentTransfer(
-                effectImage,
-                transferCanvas,
-                transferParent,
-                snapshot,
-                targetScreenPosition));
-            runningTransfers.Add(transfer);
+            ScreenSpaceTransferOrbEffect effect = Instantiate(fragmentTransferEffectPrefab);
+            effect.PlayDetached(snapshot.ScreenPosition, targetScreenPosition, snapshot.Color);
 
-            if (i < preparedEffects.Count - 1 && fragmentTransferLaunchInterval > 0f)
+            if (i < snapshots.Count - 1 && fragmentTransferLaunchInterval > 0f)
                 yield return new WaitForSecondsRealtime(fragmentTransferLaunchInterval);
         }
 
-        // 이미 동시에 진행 중인 이동들이 모두 끝날 때까지만 기다립니다.
-        for (int i = 0; i < runningTransfers.Count; i++)
-        {
-            if (runningTransfers[i] != null)
-                yield return runningTransfers[i];
-        }
-
+        SetTutorialDisplay(false);
         fragmentTransferCoroutine = null;
     }
 
-
     private void PlayFragmentTransferStartSound()
     {
-        if (string.IsNullOrWhiteSpace(fragmentTransferStartSoundId) || AudioManager.Instance == null)
+        if (string.IsNullOrWhiteSpace(fragmentTransferStartSoundId))
             return;
 
-        AudioManager.Instance.PlaySfx(
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager == null)
+            return;
+
+        audioManager.PlaySfx(
             fragmentTransferStartSoundId,
             Mathf.Clamp01(fragmentTransferStartSoundVolume));
     }
 
-    private IEnumerator AnimateAndDestroyFragmentTransfer(
-        RawImage effectImage,
-        Canvas transferCanvas,
-        RectTransform transferParent,
-        FragmentTransferSnapshot snapshot,
-        Vector2 targetScreenPosition)
+    private void ResolveFragmentTransferWorldTarget()
     {
-        if (effectImage == null)
-            yield break;
-
-        yield return AnimateSingleFragmentTransfer(
-            effectImage.rectTransform,
-            transferCanvas,
-            transferParent,
-            snapshot,
-            targetScreenPosition);
-
-        if (effectImage != null)
-            Destroy(effectImage.gameObject);
-    }
-
-    private RawImage CreateFragmentTransferEffect(
-        Canvas transferCanvas,
-        RectTransform transferParent,
-        FragmentTransferSnapshot snapshot)
-    {
-        if (transferCanvas == null || snapshot == null || fragmentTransferEffectTexture == null)
-            return null;
-
-        GameObject effectObject = new GameObject(
-            "RelicPurchaseTransferEffect",
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(RawImage));
-
-        RectTransform rect = effectObject.GetComponent<RectTransform>();
-        rect.SetParent(transferParent != null ? transferParent : transferCanvas.transform, false);
-        rect.anchorMin = new Vector2(0.5f, 0.5f);
-        rect.anchorMax = new Vector2(0.5f, 0.5f);
-        rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.sizeDelta = fragmentTransferEffectSize;
-        rect.localScale = Vector3.one * fragmentTransferStartScale;
-        rect.anchoredPosition = ScreenToUiLocalPosition(
-            transferCanvas,
-            transferParent,
-            snapshot.ScreenPosition);
-        rect.SetAsLastSibling();
-
-        RawImage image = effectObject.GetComponent<RawImage>();
-        image.texture = fragmentTransferEffectTexture;
-        image.color = snapshot.Color;
-        image.raycastTarget = false;
-        return image;
-    }
-
-    private IEnumerator AnimateSingleFragmentTransfer(
-        RectTransform effect,
-        Canvas transferCanvas,
-        RectTransform transferParent,
-        FragmentTransferSnapshot snapshot,
-        Vector2 targetScreenPosition)
-    {
-        if (effect == null || snapshot == null)
-            yield break;
-
-        Vector2 targetPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, targetScreenPosition);
-        Vector2 startPosition = ScreenToUiLocalPosition(transferCanvas, transferParent, snapshot.ScreenPosition);
-        Vector2 bouncePosition = startPosition + fragmentTransferBounceOffset;
-        Vector3 startScale = effect.localScale;
-        Vector3 endScale = Vector3.one * fragmentTransferEndScale;
-        float totalDuration = Mathf.Max(0.02f, fragmentTransferBounceDuration + fragmentTransferFlyDuration);
-        float bounceRatio = Mathf.Clamp01(fragmentTransferBounceDuration / totalDuration);
-        Vector3 bounceScale = Vector3.LerpUnclamped(startScale, endScale, bounceRatio);
-        RawImage sourceImage = effect.GetComponent<RawImage>();
-        var trailGhosts = new List<FragmentTransferTrailGhost>();
-        float trailTimer = 0f;
-
-        float elapsed = 0f;
-        float safeBounceDuration = Mathf.Max(0.01f, fragmentTransferBounceDuration);
-        while (elapsed < safeBounceDuration)
-        {
-            float deltaTime = Time.unscaledDeltaTime;
-            elapsed += deltaTime;
-            float eased = EaseInCubic(Mathf.Clamp01(elapsed / safeBounceDuration));
-
-            effect.anchoredPosition = Vector2.LerpUnclamped(startPosition, bouncePosition, eased);
-            effect.localScale = Vector3.LerpUnclamped(startScale, bounceScale, eased);
-            trailTimer += deltaTime;
-            SpawnFragmentTrailGhostsIfNeeded(
-                effect, sourceImage, transferCanvas, transferParent, trailGhosts, ref trailTimer);
-            UpdateFragmentTrailGhosts(trailGhosts, deltaTime);
-
-            yield return null;
-        }
-
-        elapsed = 0f;
-        float safeFlyDuration = Mathf.Max(0.01f, fragmentTransferFlyDuration);
-        while (elapsed < safeFlyDuration)
-        {
-            float deltaTime = Time.unscaledDeltaTime;
-            elapsed += deltaTime;
-            float eased = EaseInQuint(Mathf.Clamp01(elapsed / safeFlyDuration));
-
-            effect.anchoredPosition = Vector2.LerpUnclamped(bouncePosition, targetPosition, eased);
-            effect.localScale = Vector3.LerpUnclamped(bounceScale, endScale, eased);
-            trailTimer += deltaTime;
-            SpawnFragmentTrailGhostsIfNeeded(
-                effect, sourceImage, transferCanvas, transferParent, trailGhosts, ref trailTimer);
-            UpdateFragmentTrailGhosts(trailGhosts, deltaTime);
-
-            yield return null;
-        }
-
-        effect.anchoredPosition = targetPosition;
-        effect.localScale = endScale;
-
-        while (trailGhosts.Count > 0)
-        {
-            UpdateFragmentTrailGhosts(trailGhosts, Time.unscaledDeltaTime);
-            yield return null;
-        }
-    }
-
-    private void SpawnFragmentTrailGhostsIfNeeded(
-        RectTransform sourceRect,
-        RawImage sourceImage,
-        Canvas transferCanvas,
-        RectTransform transferParent,
-        List<FragmentTransferTrailGhost> trailGhosts,
-        ref float trailTimer)
-    {
-        if (sourceRect == null || sourceImage == null || sourceImage.texture == null ||
-            transferCanvas == null || trailGhosts == null)
-        {
-            return;
-        }
-
-        float safeInterval = Mathf.Max(0.005f, fragmentTrailSpawnInterval);
-        while (trailTimer >= safeInterval)
-        {
-            trailTimer -= safeInterval;
-            FragmentTransferTrailGhost ghost = CreateFragmentTrailGhost(
-                sourceRect, sourceImage, transferCanvas, transferParent);
-            if (ghost != null)
-                trailGhosts.Add(ghost);
-        }
-    }
-
-    private FragmentTransferTrailGhost CreateFragmentTrailGhost(
-        RectTransform sourceRect,
-        RawImage sourceImage,
-        Canvas transferCanvas,
-        RectTransform transferParent)
-    {
-        GameObject ghostObject = new GameObject(
-            "FragmentTransferTrail",
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(RawImage));
-
-        RectTransform ghostRect = ghostObject.GetComponent<RectTransform>();
-        ghostRect.SetParent(transferParent != null ? transferParent : transferCanvas.transform, false);
-        ghostRect.anchorMin = sourceRect.anchorMin;
-        ghostRect.anchorMax = sourceRect.anchorMax;
-        ghostRect.pivot = sourceRect.pivot;
-        ghostRect.sizeDelta = sourceRect.sizeDelta;
-        ghostRect.anchoredPosition = sourceRect.anchoredPosition;
-        ghostRect.localRotation = sourceRect.localRotation;
-        ghostRect.localScale = sourceRect.localScale * fragmentTrailStartScale;
-
-        int sourceSiblingIndex = sourceRect.GetSiblingIndex();
-        ghostRect.SetSiblingIndex(Mathf.Max(0, sourceSiblingIndex));
-        sourceRect.SetAsLastSibling();
-
-        RawImage ghostImage = ghostObject.GetComponent<RawImage>();
-        ghostImage.texture = sourceImage.texture;
-        ghostImage.uvRect = sourceImage.uvRect;
-        Color ghostColor = sourceImage.color;
-        ghostColor.a *= fragmentTrailStartAlpha;
-        ghostImage.color = ghostColor;
-        ghostImage.raycastTarget = false;
-
-        return new FragmentTransferTrailGhost
-        {
-            Rect = ghostRect,
-            Image = ghostImage,
-            StartScale = ghostRect.localScale,
-            StartColor = ghostColor,
-            Age = 0f
-        };
-    }
-
-    private void UpdateFragmentTrailGhosts(List<FragmentTransferTrailGhost> trailGhosts, float deltaTime)
-    {
-        if (trailGhosts == null)
+        if (fragmentTransferWorldTarget != null)
             return;
 
-        float safeLifetime = Mathf.Max(0.01f, fragmentTrailLifetime);
-        for (int i = trailGhosts.Count - 1; i >= 0; i--)
+        Transform[] allTransforms = FindObjectsByType<Transform>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < allTransforms.Length; i++)
         {
-            FragmentTransferTrailGhost ghost = trailGhosts[i];
-            if (ghost == null || ghost.Rect == null || ghost.Image == null)
-            {
-                trailGhosts.RemoveAt(i);
-                continue;
-            }
-
-            ghost.Age += deltaTime;
-            float t = Mathf.Clamp01(ghost.Age / safeLifetime);
-            Color color = ghost.StartColor;
-            color.a = ghost.StartColor.a * (1f - t);
-            ghost.Image.color = color;
-
-            float scaleMultiplier = Mathf.Lerp(fragmentTrailStartScale, fragmentTrailEndScale, t) /
-                                    Mathf.Max(0.0001f, fragmentTrailStartScale);
-            ghost.Rect.localScale = ghost.StartScale * scaleMultiplier;
-
-            if (t < 1f)
+            Transform candidate = allTransforms[i];
+            if (candidate == null || !string.Equals(candidate.name, "Cha_01_idle_0", StringComparison.Ordinal))
                 continue;
 
-            Destroy(ghost.Rect.gameObject);
-            trailGhosts.RemoveAt(i);
+            fragmentTransferWorldTarget = candidate;
+            return;
         }
     }
 
-    private void ResolveFragmentTransferTarget()
+    private void ResolveFragmentTransferEffectPrefab()
     {
-        if (fragmentTransferTarget != null)
+        if (fragmentTransferEffectPrefab != null)
             return;
 
-        GameObject target = FindSceneObject("SettingButton");
-        if (target != null)
-            fragmentTransferTarget = target.transform as RectTransform;
+        LobbyRelicShopPresenter relicShop = FindFirstObjectByType<LobbyRelicShopPresenter>(FindObjectsInactive.Include);
+        if (relicShop != null)
+            fragmentTransferEffectPrefab = relicShop.ScreenSpaceTransferEffectPrefab;
     }
 
     private Canvas ResolveFragmentTransferCanvas()
@@ -1008,8 +769,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
         if (canvas != null)
             return canvas;
 
-        if (fragmentTransferTarget != null)
-            return fragmentTransferTarget.GetComponentInParent<Canvas>();
+        if (fragmentTransferWorldTarget is RectTransform targetRect)
+            return targetRect.GetComponentInParent<Canvas>();
 
         return null;
     }
@@ -1414,7 +1175,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
         }
 
         AutoBindFragmentImages();
-        ResolveFragmentTransferTarget();
+        ResolveFragmentTransferWorldTarget();
+        ResolveFragmentTransferEffectPrefab();
     }
 
     private void AutoBindFragmentImages()
