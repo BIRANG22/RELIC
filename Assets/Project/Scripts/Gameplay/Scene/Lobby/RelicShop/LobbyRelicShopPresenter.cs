@@ -58,7 +58,6 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     [Header("Screen Space Purchase Transfer")]
     [Tooltip("모달 블러 위에서 재생할 범용 UI-월드 이동 구체 프리팹입니다.")]
     [SerializeField] private ScreenSpaceTransferOrbEffect screenSpaceTransferEffectPrefab;
-
     public ScreenSpaceTransferOrbEffect ScreenSpaceTransferEffectPrefab => screenSpaceTransferEffectPrefab;
     [Tooltip("유물 구매 구체가 도착할 Lobby_Icon/Icon_04(Storage) UI입니다.")]
     [SerializeField] private RectTransform purchaseTransferUiTarget;

@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 {
+    public bool IsStorageWorldObject => hoverNameType == HoverNameType.Storage;
+
     public enum HoverNameType
     {
         Research,
