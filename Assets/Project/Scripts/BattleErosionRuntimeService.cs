@@ -83,9 +83,9 @@ public static class BattleErosionRuntimeService
         runtime.LastErosionRoomKey = roomKey;
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
 
-        // Layer 0은 탐사를 시작하는 최초 이벤트방입니다.
-        // 탐사 시작값은 0이어야 하므로 이 방 진입에서는 침식도를 올리지 않습니다.
-        if (nodeData.LayerIndex == 0)
+        // 일반 탐사는 Layer 0의 최초 이벤트방에서 침식도를 올리지 않아 시작값 0을 유지합니다.
+        // 튜토리얼 전투는 첫 진입부터 침식도 1로 시작해야 하므로 Layer 0도 방 진입으로 계산합니다.
+        if (nodeData.LayerIndex == 0 && !runtime.IsTutorialBattle)
             return;
 
         Add(1, $"RoomEntry:{roomKey}");

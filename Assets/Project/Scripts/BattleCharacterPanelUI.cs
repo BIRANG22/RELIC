@@ -42,6 +42,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private readonly CharacterRuntimeData[] partyRuntimes = new CharacterRuntimeData[PartySlotCount];
     private readonly BattleCharacterSelectTarget[] partySelectTargets = new BattleCharacterSelectTarget[PartySlotCount];
     private readonly Image[] partySelectIcons = new Image[PartySlotCount];
+    private readonly GameObject[] partySelectNoneIcons = new GameObject[PartySlotCount];
     private BattleRoomLoader partyRoomLoader;
 
     private const float DefaultSkillCostFontSize = 40f;
@@ -862,10 +863,22 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void ResolvePartyReferences()
     {
+        Transform charHudRoot = FindDirectChild(transform, "CharHUD");
+
         for (int i = 0; i < PartySlotCount; i++)
         {
             if (partySlots[i] == null)
-                partySlots[i] = BuildPartySlotView(FindDirectChild(transform, $"Char0{i + 1}"));
+            {
+                // 현재 구조: BattleCharacterPanel/CharHUD/Char01~03
+                // 이전 구조도 호환할 수 있도록 BattleCharacterPanel/Char01~03을 fallback으로 유지합니다.
+                Transform slotRoot = charHudRoot != null
+                    ? FindDirectChild(charHudRoot, $"Char0{i + 1}")
+                    : null;
+                if (slotRoot == null)
+                    slotRoot = FindDirectChild(transform, $"Char0{i + 1}");
+
+                partySlots[i] = BuildPartySlotView(slotRoot);
+            }
 
             Transform selectRoot = FindPath(transform, $"Char_Select/Char0{i + 1}");
             if (selectRoot == null)
@@ -884,6 +897,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
             if (selectIcon == null)
                 selectIcon = FindDirectChild(selectRoot, "Icon");
             partySelectIcons[i] = GetImage(selectIcon);
+
+            Transform noneIcon = FindDirectChild(selectRoot, "NoneIcon");
+            partySelectNoneIcons[i] = noneIcon != null ? noneIcon.gameObject : null;
         }
 
         ResolvePartyControllers();
@@ -1371,6 +1387,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         CharacterIconDatabase iconDatabase = DataManager.Instance?.CharacterIconDatabase;
         string selectedCharacterId = selectedRuntime != null ? selectedRuntime.CharacterId : null;
+        bool isTutorialBattle = IsTutorialBattleRun();
 
         for (int i = 0; i < PartySlotCount; i++)
         {
@@ -1380,7 +1397,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
                             !string.IsNullOrWhiteSpace(selectedCharacterId) &&
                             string.Equals(runtime.CharacterId, selectedCharacterId, StringComparison.Ordinal);
 
+            partySelectTargets[i]?.SetAvailable(runtime != null);
             partySelectTargets[i]?.SetSelected(selected);
+
+            // 일반 전투에서는 NoneIcon을 사용하지 않습니다.
+            // 튜토리얼 전투에서 아직 캐릭터가 없는 슬롯만 NoneIcon을 표시합니다.
+            if (partySelectNoneIcons[i] != null)
+                partySelectNoneIcons[i].SetActive(isTutorialBattle && runtime == null);
 
             if (iconImage == null)
                 continue;
@@ -1400,6 +1423,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
             ApplyPartySprite(iconImage, portrait);
         }
+    }
+
+    private static bool IsTutorialBattleRun()
+    {
+        BattleRuntimeData battleRuntime = DataManager.Instance?.BattleRuntimeStore?.Get();
+        return battleRuntime?.IsTutorialBattle == true;
     }
 
     private void RebuildPartyStatusIcons(PartySlotView slot, List<StatusEffectRuntimeData> source)
@@ -5151,6 +5180,7 @@ public sealed class BattleCharacterSelectTarget : MonoBehaviour, IPointerClickHa
     private bool scaleCaptured;
     private bool isPointerOver;
     private bool isSelected;
+    private bool isAvailable = true;
     private Image lineImage;
 
     public void Configure(BattleCharacterPanelUI panel, int partyIndex)
@@ -5179,15 +5209,32 @@ public sealed class BattleCharacterSelectTarget : MonoBehaviour, IPointerClickHa
             graphic.raycastTarget = true;
     }
 
+    public void SetAvailable(bool available)
+    {
+        isAvailable = available;
+
+        if (!isAvailable)
+        {
+            isPointerOver = false;
+            isSelected = false;
+        }
+
+        ApplyScale(!isAvailable);
+        ApplyLineColor();
+    }
+
     public void SetSelected(bool selected)
     {
-        isSelected = selected;
+        isSelected = isAvailable && selected;
         ApplyScale(false);
         ApplyLineColor();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (!isAvailable)
+            return;
+
         isPointerOver = true;
         ApplyScale(false);
     }
@@ -5200,7 +5247,7 @@ public sealed class BattleCharacterSelectTarget : MonoBehaviour, IPointerClickHa
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (eventData.button != PointerEventData.InputButton.Left)
+        if (!isAvailable || eventData.button != PointerEventData.InputButton.Left)
             return;
 
         owner?.SelectPartyIndex(index);
@@ -5241,7 +5288,7 @@ public sealed class BattleCharacterSelectTarget : MonoBehaviour, IPointerClickHa
     {
         CaptureNormalScale();
 
-        bool enlarged = isPointerOver || isSelected;
+        bool enlarged = isAvailable && (isPointerOver || isSelected);
         Vector3 targetScale = normalScale * (enlarged ? HoverScale : 1f);
 
         if (instant || ScaleLerpSpeed <= 0f)

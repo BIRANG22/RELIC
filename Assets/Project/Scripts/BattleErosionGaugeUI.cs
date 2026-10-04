@@ -2,13 +2,17 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Localization.Components;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public sealed class BattleErosionGaugeUI : MonoBehaviour
+public sealed class BattleErosionGaugeUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Image fillImage;
     [SerializeField] private TMP_Text valueText;
     [SerializeField] private float animationDuration = 0.35f;
+
+    [Header("Hover")]
+    [SerializeField] private bool showValueOnlyOnHover = true;
 
     private Coroutine animationCoroutine;
     private float displayedValue;
@@ -18,6 +22,7 @@ public sealed class BattleErosionGaugeUI : MonoBehaviour
     {
         AutoBind();
         EnsureValueTextRuntimeOwnership();
+        RefreshValueVisibility(false);
     }
 
     private void OnEnable()
@@ -28,11 +33,13 @@ public sealed class BattleErosionGaugeUI : MonoBehaviour
         BattleErosionRuntimeService.ValueChanged -= HandleValueChanged;
         BattleErosionRuntimeService.ValueChanged += HandleValueChanged;
         SetImmediate(BattleErosionRuntimeService.CurrentValue);
+        RefreshValueVisibility(false);
     }
 
     private void OnDisable()
     {
         BattleErosionRuntimeService.ValueChanged -= HandleValueChanged;
+        RefreshValueVisibility(false);
 
         if (animationCoroutine != null)
         {
@@ -93,6 +100,31 @@ public sealed class BattleErosionGaugeUI : MonoBehaviour
         LocalizeStringEvent legacyLocalizer = target.GetComponent<LocalizeStringEvent>();
         if (legacyLocalizer != null)
             legacyLocalizer.enabled = false;
+    }
+
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        RefreshValueVisibility(true);
+        SetImmediate(BattleErosionRuntimeService.CurrentValue);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        RefreshValueVisibility(false);
+    }
+
+    private void RefreshValueVisibility(bool hovered)
+    {
+        if (valueText == null)
+            AutoBind();
+
+        if (valueText == null)
+            return;
+
+        bool shouldShow = !showValueOnlyOnHover || hovered;
+        if (valueText.gameObject.activeSelf != shouldShow)
+            valueText.gameObject.SetActive(shouldShow);
     }
 
     private void HandleValueChanged(int before, int after)
