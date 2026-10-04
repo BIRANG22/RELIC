@@ -550,8 +550,41 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         return mapRuntime != null &&
                string.Equals(
                    mapRuntime.CurrentMapId?.Trim(),
-                   "Map_27",
+                   TutorialBattleEntrySetup.FirstTutorialMapId,
                    System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// 튜토리얼 전투 2/3에서는 플레이어가 먼저 행동을 예약할 시간을 확보하기 위해
+    /// 몬스터가 타임라인 1~2번 슬롯을 사용하지 않습니다.
+    /// 허용 슬롯은 3~5번(index 2~4)뿐입니다.
+    /// </summary>
+    private static bool IsTutorialBattleWithDelayedMonsterSlots()
+    {
+        MapRuntimeData mapRuntime = DataManager.Instance?.MapRuntimeStore?.Get();
+        string currentMapId = mapRuntime?.CurrentMapId?.Trim();
+
+        if (string.IsNullOrWhiteSpace(currentMapId))
+            return false;
+
+        return string.Equals(
+                   currentMapId,
+                   TutorialBattleEntrySetup.SecondTutorialMapId,
+                   System.StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(
+                   currentMapId,
+                   TutorialBattleEntrySetup.ThirdTutorialMapId,
+                   System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private int GetMonsterMinimumSlotIndex()
+    {
+        if (!IsTutorialBattleWithDelayedMonsterSlots())
+            return 0;
+
+        return timelineController != null && timelineController.SlotCount > 2
+            ? 2
+            : 0;
     }
 
     private int FindEarliestSlot(
@@ -561,16 +594,18 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (timelineController == null || runtime == null)
             return -1;
 
-        // 1~5번 슬롯을 앞에서부터 확인합니다.
+        int minimumSlotIndex = GetMonsterMinimumSlotIndex();
+
+        // 일반 전투는 1~5번 슬롯, 튜토리얼 전투 2/3은 3~5번 슬롯만 앞에서부터 확인합니다.
         // 가능하면 다른 행동과 겹치지 않는 가장 빠른 빈 슬롯을 우선 사용합니다.
-        for (int i = 0; i < timelineController.SlotCount; i++)
+        for (int i = minimumSlotIndex; i < timelineController.SlotCount; i++)
         {
             if (IsSlotCompletelyEmpty(i, pendingPlans))
                 return i;
         }
 
         // 빈 슬롯이 없다면 같은 몬스터 행동과 공유 가능한 가장 빠른 슬롯을 사용합니다.
-        for (int i = 0; i < timelineController.SlotCount; i++)
+        for (int i = minimumSlotIndex; i < timelineController.SlotCount; i++)
         {
             if (IsSlotAvailableForMonster(runtime, i, pendingPlans))
                 return i;
@@ -586,18 +621,19 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (timelineController == null || runtime == null)
             return -1;
 
-        int limit = Mathf.Min(2, timelineController.SlotCount);
+        int minimumSlotIndex = GetMonsterMinimumSlotIndex();
+        int limit = Mathf.Min(minimumSlotIndex + 2, timelineController.SlotCount);
 
-        // 철옹성처럼 FirstTwo를 사용하는 행동은 가능하면 1/2번 슬롯을
-        // 다른 행동과 공유하지 않고 단독으로 사용합니다.
-        for (int i = 0; i < limit; i++)
+        // 일반 전투의 FirstTwo는 1/2번 슬롯을 사용합니다.
+        // 튜토리얼 전투 2/3에서는 같은 의미를 허용 범위의 앞 두 슬롯인 3/4번으로 옮깁니다.
+        for (int i = minimumSlotIndex; i < limit; i++)
         {
             if (IsSlotCompletelyEmpty(i, pendingPlans))
                 return i;
         }
 
-        // 앞 두 슬롯이 이미 사용 중이라면, 같은 몬스터 행동과의 공유는 허용합니다.
-        for (int i = 0; i < limit; i++)
+        // 앞 두 허용 슬롯이 이미 사용 중이라면, 같은 몬스터 행동과의 공유는 허용합니다.
+        for (int i = minimumSlotIndex; i < limit; i++)
         {
             if (IsSlotAvailableForMonster(runtime, i, pendingPlans))
                 return i;
@@ -636,7 +672,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
     private int FindBackSlot(List<MonsterReservedCommandPlan> pendingPlans)
     {
-        for (int i = timelineController.SlotCount - 1; i >= 0; i--)
+        int minimumSlotIndex = GetMonsterMinimumSlotIndex();
+
+        for (int i = timelineController.SlotCount - 1; i >= minimumSlotIndex; i--)
         {
             var commands = timelineController.GetMonsterCommands(i);
 
@@ -671,9 +709,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         List<int> candidates = new List<int>();
 
-        for (int i = 0; i < timelineController.SlotCount; i++)
-        {
+        int minimumSlotIndex = GetMonsterMinimumSlotIndex();
 
+        for (int i = minimumSlotIndex; i < timelineController.SlotCount; i++)
+        {
             if (!CanPlacePlanAtBaseSlot(runtime, i, pendingPlans, actions))
                 continue;
             bool hasCommand = false;
@@ -758,8 +797,11 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             if (action.SlotPreference == MonsterAISlotPreference.NextSlot)
                 requiredSlot += 1;
 
-            if (requiredSlot < 0 || requiredSlot >= timelineController.SlotCount)
+            if (requiredSlot < GetMonsterMinimumSlotIndex() ||
+                requiredSlot >= timelineController.SlotCount)
+            {
                 return false;
+            }
 
             if (!IsSlotAvailableForMonster(runtime, requiredSlot, pendingPlans))
                 return false;

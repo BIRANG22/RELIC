@@ -96,6 +96,10 @@ public class BattleRewardPanelUI : MonoBehaviour
                 if (reward == null)
                     continue;
 
+                // 이전 저장 데이터에 튜토리얼 몬스터 보상이 남아 있어도 표시하거나 획득하지 않습니다.
+                if (ShouldSuppressTutorialMonsterLoot(reward))
+                    continue;
+
                 if (ShouldPopulateRewardPresentation(reward))
                     PopulateRewardPresentation(reward);
                 currentRewards.Add(reward);
@@ -394,6 +398,9 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (reward == null || DataManager.Instance == null)
             return;
 
+        if (ShouldSuppressTutorialMonsterLoot(reward))
+            return;
+
         BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
 
         runtime.BagItemIds ??= new List<string>();
@@ -433,6 +440,18 @@ public class BattleRewardPanelUI : MonoBehaviour
         }
 
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
+    }
+
+    private static bool ShouldSuppressTutorialMonsterLoot(BattleRewardData reward)
+    {
+        if (reward == null ||
+            (reward.Type != BattleRewardType.Remnant && reward.Type != BattleRewardType.Item))
+        {
+            return false;
+        }
+
+        BattleRuntimeData battle = DataManager.Instance?.BattleRuntimeStore?.Get();
+        return battle?.IsTutorialBattle == true;
     }
 
     private void PlayRewardAcquireSfx(BattleRewardData reward)

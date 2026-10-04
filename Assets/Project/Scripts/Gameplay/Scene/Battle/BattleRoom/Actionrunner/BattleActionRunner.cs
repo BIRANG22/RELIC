@@ -1857,7 +1857,10 @@ public class BattleActionRunner
 
             BattleUnitAnimator attackerAnimator = attacker.GetComponent<BattleUnitAnimator>();
 
-            BeginAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane, playerPlaneAttackType);
+            BeginAttackPlaneFeedbackIfNeeded(
+                shouldControlAttackPlane,
+                playerPlaneAttackType,
+                HasPlayerAttackPlaneRecipient(attacker, command));
 
             if (ShouldPlayerSkillTargetPlayerParty(command))
             {
@@ -4014,7 +4017,10 @@ public class BattleActionRunner
             }
 
             ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
-            BeginAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane, monsterPlaneAttackType);
+            BeginAttackPlaneFeedbackIfNeeded(
+                shouldControlAttackPlane,
+                monsterPlaneAttackType,
+                HasAliveMonsterSkillTarget(monster, command));
 
             try
             {
@@ -4081,7 +4087,10 @@ public class BattleActionRunner
         }
 
         ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
-        BeginAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane, monsterPlaneAttackType);
+        BeginAttackPlaneFeedbackIfNeeded(
+            shouldControlAttackPlane,
+            monsterPlaneAttackType,
+            HasAliveMonsterSkillTarget(monster, command));
 
         try
         {
@@ -4548,15 +4557,53 @@ public class BattleActionRunner
 
     private void BeginAttackPlaneFeedbackIfNeeded(
         bool shouldControlAttackPlane,
-        PlaneAttackType attackType)
+        PlaneAttackType attackType,
+        bool hasRecipient)
     {
-        if (!shouldControlAttackPlane)
+        // BattleEffect의 upper/under 기울기 연출은 실제 타격을 받는 대상이 있을 때만 재생합니다.
+        // 빈 칸을 공격하거나 대상이 이미 사라진 경우에는 공격 모션만 재생합니다.
+        if (!shouldControlAttackPlane || !hasRecipient)
             return;
 
-        if (activeActionInfo.IsGrouped && !activeActionInfo.IsGroupStart)
-            return;
-
+        // 연속 행동 중 앞 행동은 빗나가고 뒤 행동만 명중할 수도 있으므로 그룹 시작 여부로 막지 않습니다.
+        // 이미 연출 중이라면 BattleEffectPlaneRotation에서 중복 시작을 무시합니다.
         BattleEffectPlaneRotation.BeginAttackRotationFeedback(attackType);
+    }
+
+    private bool HasPlayerAttackPlaneRecipient(
+        BattleCharacter attacker,
+        PlayerReservedCommand command)
+    {
+        if (attacker == null || command == null || command.SkillData == null)
+            return false;
+
+        if (ShouldPlayerSkillTargetSelf(command))
+            return attacker.RuntimeData != null && !attacker.RuntimeData.IsDead;
+
+        if (ShouldPlayerSkillTargetPlayerParty(command))
+            return HasPlayerPartyTarget(command);
+
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+
+            if (monster == null ||
+                monster.RuntimeData == null ||
+                monster.RuntimeData.IsDead)
+            {
+                continue;
+            }
+
+            if (IsMonsterInRange(monster, command))
+                return true;
+        }
+
+        return false;
     }
 
     private void EndAttackPlaneFeedbackIfNeeded(bool shouldControlAttackPlane)
