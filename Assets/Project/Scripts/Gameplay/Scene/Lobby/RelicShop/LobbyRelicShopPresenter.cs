@@ -419,28 +419,15 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
         DataManager.Instance.LobbyRuntimeStore?.Set(runtime);
         SaveSystem.Instance?.SaveCurrentProgress();
 
-        if (selectedButton != null && ownerCanvas != null)
-        {
-            if (purchaseAnimationCoroutine != null)
-                StopCoroutine(purchaseAnimationCoroutine);
-
-            purchaseAnimationCoroutine =
-                StartCoroutine(PlayPurchaseAnimationRoutine(runtime, selectedButton));
-            return;
-        }
-
+        // 구매 결과는 연출과 기다리지 않고 즉시 UI/저장 데이터에 반영합니다.
+        // 이동 연출은 생성된 Effect 자신의 코루틴에서 독립적으로 재생되므로,
+        // 연출이 진행 중이어도 곧바로 다음 유물을 연속 구매할 수 있습니다.
+        PlayPurchaseTransferEffect(selectedButton);
         FinalizePurchasePresentation(runtime);
     }
 
-    private IEnumerator PlayPurchaseAnimationRoutine(
-        LobbyRuntimeData runtime,
-        LobbyRelicOfferButtonUI selectedButton)
+    private void PlayPurchaseTransferEffect(LobbyRelicOfferButtonUI selectedButton)
     {
-        isPurchaseAnimating = true;
-        SetCloseButtonInteractable(false);
-
-        // 선택된 유물의 현재 화면 위치를 먼저 저장한 뒤 상점을 바로 닫습니다.
-        // 다른 유물을 숨기거나 선택 유물을 중앙으로 이동시키는 연출은 사용하지 않습니다.
         RectTransform selectedIconRect = selectedButton != null
             ? selectedButton.IconRectTransform
             : null;
@@ -448,36 +435,37 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
             ? selectedButton.CurrentRarityColor
             : Color.white;
 
-        // 시작 좌표를 확보한 뒤 원본 슬롯을 즉시 숨기고 이동 효과만 남깁니다.
-        selectedButton?.SetTemporaryHidden(true);
-
-        if (selectedIconRect != null &&
-            purchaseTransferUiTarget != null &&
-            screenSpaceTransferEffectPrefab != null)
+        if (selectedIconRect == null ||
+            purchaseTransferUiTarget == null ||
+            screenSpaceTransferEffectPrefab == null)
         {
-            Camera sourceCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(
-                selectedIconRect,
-                Camera.main);
-            Camera targetCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(
-                purchaseTransferUiTarget,
-                Camera.main);
-            Vector2 startScreenPosition = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(
-                selectedIconRect,
-                sourceCamera);
-            Vector2 endScreenPosition = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(
-                purchaseTransferUiTarget,
-                targetCamera);
-
-            PlayPurchaseTransferStartSound();
-            // UI 계층은 구매 후 비활성화될 수 있으므로, 현재 화면 좌표만 독립 Overlay Canvas에 넘긴다.
-            ScreenSpaceTransferOrbEffect effect = Instantiate(screenSpaceTransferEffectPrefab);
-            yield return effect.Play(
-                startScreenPosition,
-                endScreenPosition,
-                rarityColor);
+            return;
         }
 
-        FinalizePurchasePresentation(runtime);
+        Camera sourceCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(
+            selectedIconRect,
+            Camera.main);
+        Camera targetCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(
+            purchaseTransferUiTarget,
+            Camera.main);
+        Vector2 startScreenPosition = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(
+            selectedIconRect,
+            sourceCamera);
+        Vector2 endScreenPosition = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(
+            purchaseTransferUiTarget,
+            targetCamera);
+
+        PlayPurchaseTransferStartSound();
+
+        // Presenter의 코루틴으로 기다리지 않습니다. Effect가 자기 자신에서 재생되기 때문에
+        // 상점 입력, 다음 구매, 패널 닫기와 독립적으로 끝까지 재생됩니다.
+        ScreenSpaceTransferOrbEffect effect = Instantiate(screenSpaceTransferEffectPrefab);
+        IEnumerator routine = effect.Play(
+            startScreenPosition,
+            endScreenPosition,
+            rarityColor);
+        if (routine != null)
+            effect.StartCoroutine(routine);
     }
 
     private void PlayPurchaseTransferStartSound()

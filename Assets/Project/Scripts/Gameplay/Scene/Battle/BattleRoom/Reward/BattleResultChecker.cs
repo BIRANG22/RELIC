@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -36,6 +37,7 @@ public class BattleResultChecker : MonoBehaviour
         Instance = this;
         BindNextButton();
         BindBossClearButtons();
+        BindBossClearButtonLocalization();
         SetNextButtonVisible(false);
         SetBossClearChoiceButtonsVisible(false);
     }
@@ -446,6 +448,7 @@ public class BattleResultChecker : MonoBehaviour
     private void BindBossClearButtons()
     {
         EnsureBossClearButtonRoots();
+        BindBossClearButtonLocalization();
 
         if (nextStageButton != null)
         {
@@ -465,6 +468,51 @@ public class BattleResultChecker : MonoBehaviour
             nextStageButtonAnimation.SetInteractionEnabled(false);
 
         ApplyNextStageUnavailableVisual();
+    }
+
+    private void BindBossClearButtonLocalization()
+    {
+        ConfigureButtonTextLocalization(
+            nextStageButtonRoot,
+            LocalizationKeys.Battle.NextStage);
+
+        ConfigureButtonTextLocalization(
+            returnButtonRoot,
+            LocalizationKeys.Battle.Return);
+    }
+
+    private static void ConfigureButtonTextLocalization(GameObject buttonRoot, string localizationKey)
+    {
+        if (buttonRoot == null || string.IsNullOrWhiteSpace(localizationKey))
+            return;
+
+        TMP_Text target = null;
+        TMP_Text[] texts = buttonRoot.GetComponentsInChildren<TMP_Text>(true);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            TMP_Text candidate = texts[i];
+            if (candidate == null)
+                continue;
+
+            if (string.Equals(candidate.transform.name, "Text (TMP)", System.StringComparison.OrdinalIgnoreCase))
+            {
+                target = candidate;
+                break;
+            }
+
+            if (target == null)
+                target = candidate;
+        }
+
+        if (target == null)
+            return;
+
+        LocalizedTMPText localizer = target.GetComponent<LocalizedTMPText>();
+        if (localizer == null)
+            localizer = target.gameObject.AddComponent<LocalizedTMPText>();
+
+        string koreanFallback = target.text ?? string.Empty;
+        localizer.Configure(localizationKey, koreanFallback, false);
     }
 
     private void ApplyNextStageUnavailableVisual()

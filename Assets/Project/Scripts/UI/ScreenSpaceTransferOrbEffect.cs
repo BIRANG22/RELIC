@@ -16,6 +16,27 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
     [SerializeField] private Vector2 orbSize = new(120f, 120f);
     [SerializeField, Min(0.01f)] private float duration = 0.6f;
     [SerializeField, Min(0f)] private float arcHeight = 220f;
+
+    [Header("Motion Randomness")]
+    [Tooltip("각 획득 연출마다 포물선 높이에 적용할 랜덤 배율 범위입니다.")]
+    [SerializeField] private Vector2 arcHeightMultiplierRange = new(0.72f, 1.28f);
+    [Tooltip("진행 방향의 수직 방향으로 포물선 중심점을 랜덤하게 흔드는 화면 픽셀 범위입니다.")]
+    [SerializeField, Min(0f)] private float lateralRandomness = 130f;
+    [Tooltip("각 연출의 전체 이동 시간에 적용할 랜덤 배율 범위입니다.")]
+    [SerializeField] private Vector2 durationMultiplierRange = new(0.9f, 1.08f);
+
+    [Header("Launch And Suck")]
+    [Tooltip("시작점에서 도착점 반대 대각선 방향으로 먼저 튀어 오르는 가로 거리 범위입니다.")]
+    [SerializeField] private Vector2 oppositeKickHorizontalRange = new(85f, 155f);
+    [Tooltip("반대 대각선 방향으로 튀어 오를 때의 세로 상승 거리 범위입니다.")]
+    [SerializeField] private Vector2 oppositeKickVerticalRange = new(120f, 210f);
+    [Tooltip("첫 튀어 오름에 추가되는 좌우 랜덤 흔들림입니다.")]
+    [SerializeField, Min(0f)] private float oppositeKickSideRandomness = 30f;
+    [Tooltip("전체 연출 시간 중 시작점에서 반대 대각선으로 튀어 오르는 구간의 비율입니다.")]
+    [SerializeField, Range(0.12f, 0.55f)] private float kickDurationRatio = 0.32f;
+    [Tooltip("도착점으로 빨려 들어갈 때 곡선에 남길 상승 관성의 크기입니다.")]
+    [SerializeField, Min(0f)] private float suckCurveLift = 75f;
+
     [Tooltip("로비의 블러/상단 UI Canvas(현재 최대 10001)보다 앞에 표시할 정렬 순서입니다.")]
     [SerializeField, Min(10002)] private int sortingOrder = 20000;
 
@@ -28,6 +49,7 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
     private readonly List<TrailGhost> trailGhosts = new();
     private Canvas effectCanvas;
     private RectTransform effectRect;
+    private float trailTimer;
 
     private sealed class TrailGhost
     {
@@ -57,6 +79,16 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
         }
     }
 
+
+    /// <summary>
+    /// 호출한 UI가 닫히거나 비활성화되어도 연출이 끝까지 재생되도록
+    /// 이 효과 오브젝트 자신이 코루틴을 실행합니다.
+    /// </summary>
+    public void PlayDetached(Vector2 startScreen, Vector2 endScreen, Color color)
+    {
+        StartCoroutine(Play(startScreen, endScreen, color));
+    }
+
     /// <summary>
     /// UI 계층 상태와 무관하게 재생할 수 있도록, 호출자가 구매 직후 확보한 화면 좌표만 받습니다.
     /// </summary>
@@ -76,24 +108,62 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
 
     private IEnumerator PlayRoutine(Vector2 startScreen, Vector2 endScreen, Color color)
     {
-        float elapsed = 0f;
-        float trailTimer = 0f;
-        float safeDuration = Mathf.Max(0.01f, duration);
-        Vector2 controlScreen = (startScreen + endScreen) * 0.5f + Vector2.up * arcHeight;
+        trailTimer = 0f;
 
-        while (elapsed < safeDuration)
-        {
-            float deltaTime = Time.unscaledDeltaTime;
-            elapsed += deltaTime;
-            float t = Mathf.Clamp01(elapsed / safeDuration);
-            Vector2 screenPosition = EvaluateQuadraticBezier(startScreen, controlScreen, endScreen, EaseOutCubic(t));
+        float durationMultiplier = Random.Range(
+            Mathf.Min(durationMultiplierRange.x, durationMultiplierRange.y),
+            Mathf.Max(durationMultiplierRange.x, durationMultiplierRange.y));
+        float safeDuration = Mathf.Max(0.01f, duration * durationMultiplier);
 
-            orbImage.rectTransform.anchoredPosition = ScreenToLocalPosition(screenPosition);
-            trailTimer += deltaTime;
-            SpawnTrailGhosts(color, ref trailTimer);
-            UpdateTrailGhosts(deltaTime);
-            yield return null;
-        }
+        float kickRatio = Mathf.Clamp(kickDurationRatio, 0.12f, 0.55f);
+        float kickDuration = safeDuration * kickRatio;
+        float suckDuration = Mathf.Max(0.01f, safeDuration - kickDuration);
+
+        Vector2 travel = endScreen - startScreen;
+        Vector2 travelDirection = travel.sqrMagnitude > 0.001f ? travel.normalized : Vector2.right;
+        Vector2 perpendicular = new(-travelDirection.y, travelDirection.x);
+
+        float horizontalKick = Random.Range(
+            Mathf.Min(oppositeKickHorizontalRange.x, oppositeKickHorizontalRange.y),
+            Mathf.Max(oppositeKickHorizontalRange.x, oppositeKickHorizontalRange.y));
+        float verticalKick = Random.Range(
+            Mathf.Min(oppositeKickVerticalRange.x, oppositeKickVerticalRange.y),
+            Mathf.Max(oppositeKickVerticalRange.x, oppositeKickVerticalRange.y));
+
+        // 도착지가 시작점의 오른쪽이면 왼쪽 위, 왼쪽이면 오른쪽 위로 먼저 튀어 오릅니다.
+        // 거의 수직 방향일 때는 좌우 중 한 방향을 랜덤하게 선택합니다.
+        float oppositeHorizontalSign;
+        if (Mathf.Abs(travel.x) > 1f)
+            oppositeHorizontalSign = -Mathf.Sign(travel.x);
+        else
+            oppositeHorizontalSign = Random.value < 0.5f ? -1f : 1f;
+
+        float randomSide = Random.Range(-oppositeKickSideRandomness, oppositeKickSideRandomness);
+        Vector2 kickPoint = startScreen
+            + new Vector2(oppositeHorizontalSign * horizontalKick, verticalKick)
+            + perpendicular * randomSide;
+
+        // 시작점에서 도착점 반대 대각선으로 먼저 튕겨 올라갑니다.
+        yield return AnimateSegment(
+            kickDuration,
+            t => Vector2.LerpUnclamped(startScreen, kickPoint, EaseOutCubic(t)),
+            color);
+
+        // 튀어 오른 관성을 살짝 남긴 채, 도착점으로 갈수록 강하게 가속되어 빨려 들어갑니다.
+        float randomArcMultiplier = Random.Range(
+            Mathf.Min(arcHeightMultiplierRange.x, arcHeightMultiplierRange.y),
+            Mathf.Max(arcHeightMultiplierRange.x, arcHeightMultiplierRange.y));
+        float curveSide = Random.Range(-lateralRandomness, lateralRandomness) * 0.35f;
+        Vector2 suckControl = Vector2.Lerp(kickPoint, endScreen, 0.35f)
+            + Vector2.up * (suckCurveLift * randomArcMultiplier)
+            + perpendicular * curveSide;
+
+        yield return AnimateSegment(
+            suckDuration,
+            t => EvaluateQuadraticBezier(kickPoint, suckControl, endScreen, EaseInCubic(t)),
+            color);
+
+        orbImage.rectTransform.anchoredPosition = ScreenToLocalPosition(endScreen);
 
         while (trailGhosts.Count > 0)
         {
@@ -102,6 +172,29 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
         }
 
         Destroy(gameObject);
+    }
+
+    private IEnumerator AnimateSegment(
+        float segmentDuration,
+        System.Func<float, Vector2> positionEvaluator,
+        Color color)
+    {
+        float elapsed = 0f;
+        float safeSegmentDuration = Mathf.Max(0.01f, segmentDuration);
+
+        while (elapsed < safeSegmentDuration)
+        {
+            float deltaTime = Time.unscaledDeltaTime;
+            elapsed += deltaTime;
+            float t = Mathf.Clamp01(elapsed / safeSegmentDuration);
+            Vector2 screenPosition = positionEvaluator(t);
+
+            orbImage.rectTransform.anchoredPosition = ScreenToLocalPosition(screenPosition);
+            trailTimer += deltaTime;
+            SpawnTrailGhosts(color, ref trailTimer);
+            UpdateTrailGhosts(deltaTime);
+            yield return null;
+        }
     }
 
     private void SpawnTrailGhosts(Color color, ref float timer)
@@ -210,4 +303,11 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
         float inverse = 1f - t;
         return 1f - inverse * inverse * inverse;
     }
+
+    private static float EaseInCubic(float t)
+    {
+        t = Mathf.Clamp01(t);
+        return t * t * t;
+    }
+
 }
