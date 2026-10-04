@@ -67,7 +67,6 @@ public class BattleRoomLoader : MonoBehaviour
     [SerializeField] private BattleGridEffectController gridEffectController;
 
     [Header("Tutorial")]
-    [SerializeField] private BattleFirstTutorialController firstBattleTutorialController;
 
     private readonly List<MonsterUnit> spawnedMonsterUnits = new();
     private readonly List<PlayerHUDSlot> playerHudSlots = new();
@@ -109,21 +108,6 @@ public class BattleRoomLoader : MonoBehaviour
 
         playerSkillReservationController = Object.FindFirstObjectByType<PlayerSkillReservationController>(
             FindObjectsInactive.Include);
-    }
-
-    private void EnsureFirstBattleTutorialController()
-    {
-        // Battle 씬에 남아 있는 예전 SerializeField 참조나 임의 검색 결과를 사용하지 않습니다.
-        // Bootstrap/UIManager 아래에서 정상 UI 참조를 가진 컨트롤러가 등록한 Instance만 사용합니다.
-        firstBattleTutorialController = BattleFirstTutorialController.Instance;
-
-        if (firstBattleTutorialController == null)
-        {
-            Debug.LogWarning(
-                "[BattleTutorial] Bootstrap BattleFirstTutorialController.Instance가 없습니다. " +
-                "UIManager 아래 Tutorial 오브젝트의 Tutorial Root / Steps 참조를 확인해 주세요.",
-                this);
-        }
     }
 
     public void RefreshBattleHUDs()
@@ -1549,25 +1533,6 @@ public class BattleRoomLoader : MonoBehaviour
             SelectPlayerHUD(initialSelectedRuntime);
             OpenSelectedCharacterSkillListWhenInputReady();
         }
-
-        EnsureFirstBattleTutorialController();
-
-        Debug.Log(
-            $"[BattleTutorial] Controller found: {firstBattleTutorialController != null}",
-            this);
-        Debug.Log(
-            $"[BattleTutorial] TutorialToggle1 value: {TutorialSettings.ShouldShowTutorial}",
-            this);
-
-        bool tutorialStarted = false;
-        if (firstBattleTutorialController != null)
-            tutorialStarted = firstBattleTutorialController.TryStartTutorialIfNeeded();
-
-        Debug.Log($"[BattleTutorial] TryStart result: {tutorialStarted}", this);
-        Debug.Log(
-            $"[BattleTutorial] Tutorial_Panel active: " +
-            $"{(firstBattleTutorialController != null && firstBattleTutorialController.IsTutorialRootActive)}",
-            this);
 
         if (restoringResolvedBattleRoomEntryState)
         {

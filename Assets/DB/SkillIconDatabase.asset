@@ -216,13 +216,13 @@ MonoBehaviour:
   - SkillId: S_Core_60
     Icon: {fileID: 21300000, guid: 7b77a9d5610c0104ca705ddee7e8694e, type: 3}
   - SkillId: S_Core_61
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: cf58f308725b71341a304338ebcd0bb3, type: 3}
   - SkillId: S_Core_62
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: cf58f308725b71341a304338ebcd0bb3, type: 3}
   - SkillId: S_Core_63
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: cf58f308725b71341a304338ebcd0bb3, type: 3}
   - SkillId: S_Core_64
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: cf58f308725b71341a304338ebcd0bb3, type: 3}
   - SkillId: S_Core_65
     Icon: {fileID: 21300000, guid: f9349f66c07555a4b95d257f571bdc47, type: 3}
   - SkillId: S_Core_66

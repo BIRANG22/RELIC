@@ -236,7 +236,18 @@ public class BattleSceneController : MonoBehaviour
 
         DataManager dataManager = DataManager.Instance;
         if (dataManager != null)
+        {
             BattleRunAbandonService.AbandonCurrentRun(dataManager);
+
+            // 튜토리얼을 어느 시점에서 건너뛰더라도, 정상 완료했을 때와 동일하게
+            // 힐트 / 헤이즈 / 카야를 로비 Ready 그리드에 등록해 둡니다.
+            if (!TutorialBattleEntrySetup.TryPrepareLobbyPartyAfterTutorial(dataManager))
+            {
+                Debug.LogWarning(
+                    "[BattleSceneController] 튜토리얼 스킵 후 로비 파티 배치를 복원하지 못했습니다.",
+                    this);
+            }
+        }
 
         BattleRoomCleaner cleaner =
             Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);

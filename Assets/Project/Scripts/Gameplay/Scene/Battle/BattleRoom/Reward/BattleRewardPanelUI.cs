@@ -37,7 +37,6 @@ public class BattleRewardPanelUI : MonoBehaviour
     private readonly List<BattleRewardSlotUI> activeSlots = new();
     private Action onRewardFlowCompleted;
     private bool pendingEquipmentReward;
-    private bool pendingTransferReward;
 
     private void Awake()
     {
@@ -85,7 +84,6 @@ public class BattleRewardPanelUI : MonoBehaviour
         activeSlots.Clear();
         onRewardFlowCompleted = completedCallback;
         pendingEquipmentReward = false;
-        pendingTransferReward = false;
         ResolveEquipPanelIfNeeded();
 
         if (rewards != null)
@@ -177,7 +175,7 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (!CanClaimReward(reward))
             return;
 
-        if (pendingEquipmentReward || pendingTransferReward)
+        if (pendingEquipmentReward)
             return;
 
         if (reward.Type == BattleRewardType.Relic || reward.Type == BattleRewardType.Skill)
@@ -222,29 +220,15 @@ public class BattleRewardPanelUI : MonoBehaviour
             targetCamera);
         Color iconColor = slot.CurrentIconColor;
 
-        pendingTransferReward = true;
         slot.SetClaimed();
-        StartCoroutine(PlayRewardTransferRoutine(
-            slot,
-            reward,
-            startScreenPosition,
-            endScreenPosition,
-            iconColor));
-        return true;
-    }
 
-    private IEnumerator PlayRewardTransferRoutine(
-        BattleRewardSlotUI slot,
-        BattleRewardData reward,
-        Vector2 startScreenPosition,
-        Vector2 endScreenPosition,
-        Color color)
-    {
+        // 획득 연출은 보상 처리와 완전히 분리합니다.
+        // 연출이 재생되는 동안에도 다른 보상을 즉시 선택하거나 다음 행동을 진행할 수 있습니다.
         ScreenSpaceTransferOrbEffect effect = Instantiate(screenSpaceTransferEffectPrefab);
-        yield return effect.Play(startScreenPosition, endScreenPosition, color);
+        effect.PlayDetached(startScreenPosition, endScreenPosition, iconColor);
 
-        pendingTransferReward = false;
         CompleteRewardSlot(slot, reward);
+        return true;
     }
 
     private static bool ShouldPlayTransferEffect(BattleRewardData reward)

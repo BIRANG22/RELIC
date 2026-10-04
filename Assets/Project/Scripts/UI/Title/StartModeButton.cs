@@ -117,10 +117,8 @@ public class StartModeButton : MonoBehaviour
 
             GameManager.Instance.Context.SelectedGameMode = gameMode;
 
-            // 새 튜토리얼 시작 시 첫 전투 안내 상태만 초기화합니다.
-            // 저장된 튜토리얼 이어하기가 있는 경우에는 OnClickStartMode에서 먼저 복원하므로
-            // 여기서는 진행 저장을 삭제하지 않습니다.
-            BattleFirstTutorialController.ResetAutoTutorialRunState();
+            // 새 튜토리얼 시작 시 전투 진입 데이터만 준비합니다.
+            // 구형 BattleFirstTutorialController의 자동 실행 상태는 더 이상 사용하지 않습니다.
 
             if (!TutorialBattleEntrySetup.TryPrepareFirstBattle(DataManager.Instance))
             {
