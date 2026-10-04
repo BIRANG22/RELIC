@@ -218,11 +218,17 @@ public class BattleMapIntroText : MonoBehaviour
 
     private IEnumerator PlayRoutine(string text, int version)
     {
-        introText.text = string.IsNullOrEmpty(text)
+        string message = string.IsNullOrEmpty(text)
             ? GameLocalization.Get(DefaultMessageKey)
             : text;
+
+        // IntroText를 활성화할 때 같은 오브젝트의 로컬라이징 컴포넌트가
+        // OnEnable에서 인스펙터 기본 문구를 다시 넣을 수 있습니다.
+        // 먼저 오브젝트를 활성화한 뒤 이번에 표시할 문구를 마지막으로 적용합니다.
         introText.alpha = 0f;
         introText.gameObject.SetActive(true);
+        introText.text = message;
+        introText.ForceMeshUpdate();
 
         if (introImage != null)
             introImage.SetActive(true);
