@@ -455,6 +455,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         BattleResultChecker.BattleFinished += HandleBattleFinished;
         BattleTimelineController.CharacterSelectionChanged -= HandleCharacterSelectionChanged;
         BattleTimelineController.CharacterSelectionChanged += HandleCharacterSelectionChanged;
+        MonsterUnit.MonsterInfoSelectionChanged -= HandleMonsterInfoSelectionChanged;
+        MonsterUnit.MonsterInfoSelectionChanged += HandleMonsterInfoSelectionChanged;
         BattleSceneController.BattleRoomIntroStarted -= HandleBattleRoomIntroStarted;
         BattleSceneController.BattleRoomIntroStarted += HandleBattleRoomIntroStarted;
         BattleSceneController.BattleRoomIntroCompleted -= HandleBattleRoomIntroCompleted;
@@ -522,6 +524,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         BattleTurnExecutor.PlayerTurnReturned -= HandlePlayerTurnReturned;
         BattleResultChecker.BattleFinished -= HandleBattleFinished;
         BattleTimelineController.CharacterSelectionChanged -= HandleCharacterSelectionChanged;
+        MonsterUnit.MonsterInfoSelectionChanged -= HandleMonsterInfoSelectionChanged;
         BattleSceneController.BattleRoomIntroStarted -= HandleBattleRoomIntroStarted;
         BattleSceneController.BattleRoomIntroCompleted -= HandleBattleRoomIntroCompleted;
         BattleMapIntroText.IntroStarted -= HandleBattleMapIntroStarted;
@@ -586,6 +589,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
         ScheduleSelectionPanelPositionRefresh();
     }
 
+    private void HandleMonsterInfoSelectionChanged(MonsterUnit monster)
+    {
+        ScheduleSelectionPanelPositionRefresh();
+    }
+
     private void ScheduleSelectionPanelPositionRefresh()
     {
         if (!isActiveAndEnabled)
@@ -633,8 +641,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         EnsureBattleTimelineController();
 
-        return battleTimelineController != null &&
-               battleTimelineController.SelectedCharacter != null;
+        bool hasCharacterSelection = battleTimelineController != null &&
+                                     battleTimelineController.SelectedCharacter != null;
+
+        return hasCharacterSelection || MonsterUnit.CurrentInfoSelectedMonster != null;
     }
 
     private void ResolveSelectionContentReferences()

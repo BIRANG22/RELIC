@@ -2423,10 +2423,6 @@ MonoBehaviour:
     m_Key: ui.option.introlabel
     m_Metadata:
       m_Items: []
-  - m_Id: 10169488443449351
-    m_Key: ui.option.text_tmp
-    m_Metadata:
-      m_Items: []
   - m_Id: 10169488443449353
     m_Key: ui.record.text_tmp
     m_Metadata:
@@ -4505,10 +4501,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 17117632292986914
     m_Key: ui.debugbattle.text.79f07349
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986918
-    m_Key: ui.lobby.text.d03b00de
     m_Metadata:
       m_Items: []
   - m_Id: 17117632292986919
@@ -7117,6 +7109,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 19697779441410055
     m_Key: tutorial.battle_guide.05
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19995735533035520
+    m_Key: ui.option.windowedlabel.6bf30300
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19995735554007040
+    m_Key: ui.option.borderlesslabel.d52fad65
     m_Metadata:
       m_Items: []
   m_Metadata:

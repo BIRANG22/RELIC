@@ -22,6 +22,9 @@ public sealed class TutorialPanelController : MonoBehaviour
     [SerializeField] private TMP_Text descText;
     [SerializeField] private Sprite[] pageImages = new Sprite[PageCount];
 
+    [Header("Page Indicators")]
+    [SerializeField] private GameObject[] pageIndicatorBacks = new GameObject[PageCount];
+
     [Header("Navigation")]
     [SerializeField] private Button leftButton;
     [SerializeField] private Button rightButton;
@@ -71,6 +74,17 @@ public sealed class TutorialPanelController : MonoBehaviour
 
         if (descText != null)
             descText.text = GameLocalization.Get(GetPageKey(currentPageIndex));
+
+        if (pageIndicatorBacks != null)
+        {
+            for (int i = 0; i < pageIndicatorBacks.Length; i++)
+            {
+                GameObject indicatorBack = pageIndicatorBacks[i];
+                if (indicatorBack != null)
+                    indicatorBack.SetActive(i == currentPageIndex);
+            }
+        }
+
         if (leftButton != null)
             leftButton.interactable = currentPageIndex > 0;
         if (rightButton != null)
