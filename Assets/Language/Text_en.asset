@@ -4131,10 +4131,6 @@ MonoBehaviour:
     m_Localized: Play Intro
     m_Metadata:
       m_Items: []
-  - m_Id: 10169488443449351
-    m_Localized: On
-    m_Metadata:
-      m_Items: []
   - m_Id: 10169488443449353
     m_Localized: Kaya
     m_Metadata:
@@ -5890,10 +5886,6 @@ MonoBehaviour:
       can check buffs/debuffs by hovering over the icon on the character HUD.'
     m_Metadata:
       m_Items: []
-  - m_Id: 17117632292986918
-    m_Localized: Slashes the halberd, dealing 7 damage and pushing back 1 space.
-    m_Metadata:
-      m_Items: []
   - m_Id: 17117632292986919
     m_Localized: '[The deeper the Erosion, the more debris is left behind]'
     m_Metadata:
@@ -7462,23 +7454,28 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 19697779441410051
-    m_Localized: one
+    m_Localized: "In this demo, you\u2019ll follow a single path with a preset party.\\nOvercome
+      battles and events to complete your journey."
     m_Metadata:
       m_Items: []
   - m_Id: 19697779441410052
-    m_Localized: two
+    m_Localized: "Register your party\u2019s actions to execute them in timeline
+      order.\\nDefeat all enemies to win the battle."
     m_Metadata:
       m_Items: []
   - m_Id: 19697779441410053
-    m_Localized: three
+    m_Localized: Select a character and skill to register an action.\nActions are
+      executed from left to right on the timeline.
     m_Metadata:
       m_Items: []
   - m_Id: 19697779441410054
-    m_Localized: four
+    m_Localized: Select a monster or one of its actions on the timeline.\nYou can
+      preview its next skill and attack range.
     m_Metadata:
       m_Items: []
   - m_Id: 19697779441410055
-    m_Localized: five
+    m_Localized: Win battles to earn rewards for the journey ahead.\nStrengthen your
+      party, then proceed to the next area.
     m_Metadata:
       m_Items: []
   references:
