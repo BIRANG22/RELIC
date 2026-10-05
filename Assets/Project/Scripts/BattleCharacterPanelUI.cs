@@ -429,6 +429,31 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 캐릭터 선택이 해제되어 BattleCharacterPanel과 BattleSlot이 모두
+    /// 아래쪽 기본 위치까지 이동을 완료했는지 반환합니다.
+    /// 몬스터 정보 패널은 이 값이 true가 된 뒤에 표시됩니다.
+    /// </summary>
+    public bool IsAtDefaultPosition
+    {
+        get
+        {
+            if (panelRectTransform == null)
+                panelRectTransform = GetComponent<RectTransform>();
+
+            if (panelRectTransform == null || panelMoveCoroutine != null)
+                return false;
+
+            bool panelAtDefault =
+                Mathf.Abs(panelRectTransform.anchoredPosition.y - executionPositionY) <= 0.01f;
+
+            bool battleSlotAtDefault = battleSlotRectTransform == null ||
+                Mathf.Abs(battleSlotRectTransform.anchoredPosition.y - battleSlotDefaultPositionY) <= 0.01f;
+
+            return panelAtDefault && battleSlotAtDefault;
+        }
+    }
+
     private void Awake()
     {
         panelRectTransform = GetComponent<RectTransform>();
@@ -641,10 +666,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         EnsureBattleTimelineController();
 
-        bool hasCharacterSelection = battleTimelineController != null &&
-                                     battleTimelineController.SelectedCharacter != null;
-
-        return hasCharacterSelection || MonsterUnit.CurrentInfoSelectedMonster != null;
+        // BattleCharacterPanel/BattleSlot은 오직 플레이어 캐릭터가 선택되어 있을 때만
+        // 예약 위치로 올라옵니다. 몬스터 정보 선택은 별도의 MonsterInfoPanel에서
+        // 처리하므로 캐릭터 선택으로 취급하지 않습니다.
+        return battleTimelineController != null &&
+               battleTimelineController.SelectedCharacter != null;
     }
 
     private void ResolveSelectionContentReferences()

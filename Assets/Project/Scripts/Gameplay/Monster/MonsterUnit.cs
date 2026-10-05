@@ -370,9 +370,9 @@ namespace Relic.Gameplay.Monster
             infoSelectedMonster = this;
             BattleTimelineController.ClearCurrentCharacterSelection();
 
-            BattleCameraController cameraController = BattleCameraController.Instance;
-            if (cameraController != null)
-                cameraController.FocusOnCharacterSelection(transform, MainGridIndex);
+            // 몬스터 정보 선택 시 기존 캐릭터 선택용 카메라 포커스를 실행하지 않습니다.
+            // MonsterInfoCanvas가 패널 표시 시점에 전용 카메라 포커스를 처리하므로,
+            // 여기서 카메라를 움직이면 두 이동이 겹쳐 포커스 위치가 다시 변경됩니다.
 
             // 클릭으로 선택한 몬스터는 마우스가 빠져도 HUD와 행동 범위를 유지합니다.
             SetSelected(true);
@@ -636,9 +636,9 @@ namespace Relic.Gameplay.Monster
             infoSelectedMonster = this;
             BattleTimelineController.ClearCurrentCharacterSelection();
 
-            BattleCameraController cameraController = BattleCameraController.Instance;
-            if (cameraController != null)
-                cameraController.FocusOnCharacterSelection(transform, MainGridIndex);
+            // 몬스터 정보 선택 시 기존 캐릭터 선택용 카메라 포커스를 실행하지 않습니다.
+            // MonsterInfoCanvas가 패널 표시 시점에 전용 카메라 포커스를 처리하므로,
+            // 여기서 카메라를 움직이면 두 이동이 겹쳐 포커스 위치가 다시 변경됩니다.
 
             SetSelected(true);
             ShowAttackRangePreview();

@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using Relic.Gameplay.Data;
 
 public class DataManager : Singleton<DataManager>
@@ -42,6 +42,7 @@ public class DataManager : Singleton<DataManager>
     public MapNodeIconDatabase MapNodeIconDatabase => mapNodeIconDatabase;
     public BattleMapDatabase BattleMapDatabase => dataBootstrap.BattleMapDatabase;
     public MonsterDatabase MonsterDatabase => dataBootstrap.MonsterDatabase;
+    public MonsterPrefabDatabase MonsterPrefabDatabase => monsterPrefabDatabase;
     public MonsterIconDatabase MonsterIconDatabase => monsterIconDatabase;
     public MonsterSkillIconDatabase MonsterSkillIconDatabase => monsterSkillIconDatabase;
     public MapDatabase MapDatabase => dataBootstrap.MapDatabase;
@@ -69,14 +70,14 @@ public class DataManager : Singleton<DataManager>
     public LobbyRuntimeStore LobbyRuntimeStore { get; private set; } = new();
     protected override void Awake()
     {
-        // ¾À ÀüÈ¯ Áß »õ DataManager°¡ À¯È¿ÇÑ ErosionIconDatabase¸¦ °¡Áö°í ÀÖ°í
-        // ±âÁ¸ ½Ì±ÛÅæÀÇ ÂüÁ¶¸¸ ºñ¾î ÀÖ´Ù¸é Áßº¹ ¿ÀºêÁ§Æ®°¡ Á¦°ÅµÇ±â Àü¿¡ ÂüÁ¶¸¸ Àü´ŞÇÕ´Ï´Ù.
-        // ÀüÅõ Ä§½Äµµ ¾ÆÀÌÄÜÀº ·Îºñ¿¡¼­ È®º¸ÇÑ Sprite Ä³½Ã¸¦ ¿ì¼± »ç¿ëÇÕ´Ï´Ù.
+        // ì”¬ ì „í™˜ ì¤‘ ìƒˆ DataManagerê°€ ìœ íš¨í•œ ErosionIconDatabaseë¥¼ ê°€ì§€ê³  ìˆê³ 
+        // ê¸°ì¡´ ì‹±ê¸€í†¤ì˜ ì°¸ì¡°ë§Œ ë¹„ì–´ ìˆë‹¤ë©´ ì¤‘ë³µ ì˜¤ë¸Œì íŠ¸ê°€ ì œê±°ë˜ê¸° ì „ì— ì°¸ì¡°ë§Œ ì „ë‹¬í•©ë‹ˆë‹¤.
+        // ì „íˆ¬ ì¹¨ì‹ë„ ì•„ì´ì½˜ì€ ë¡œë¹„ì—ì„œ í™•ë³´í•œ Sprite ìºì‹œë¥¼ ìš°ì„  ì‚¬ìš©í•©ë‹ˆë‹¤.
         DataManager existing = Instance;
         if (existing != null && existing != this)
         {
-            // ¾À ÀüÈ¯ Áß »õ DataManager¿¡¸¸ ¿¬°áµÈ DB°¡ ÀÖ´Ù¸é
-            // »èÁ¦µÇ±â Àü¿¡ ±âÁ¸ ½Ì±ÛÅæÀ¸·Î ³Ñ°Ü ·±Å¸ÀÓ ÂüÁ¶°¡ À¯½ÇµÇÁö ¾Ê°Ô ÇÕ´Ï´Ù.
+            // ì”¬ ì „í™˜ ì¤‘ ìƒˆ DataManagerì—ë§Œ ì—°ê²°ëœ DBê°€ ìˆë‹¤ë©´
+            // ì‚­ì œë˜ê¸° ì „ì— ê¸°ì¡´ ì‹±ê¸€í†¤ìœ¼ë¡œ ë„˜ê²¨ ëŸ°íƒ€ì„ ì°¸ì¡°ê°€ ìœ ì‹¤ë˜ì§€ ì•Šê²Œ í•©ë‹ˆë‹¤.
             if (existing.erosionIconDatabase == null && erosionIconDatabase != null)
             {
                 existing.erosionIconDatabase = erosionIconDatabase;
