@@ -200,11 +200,10 @@ public class GoodsIconItem : MonoBehaviour
     {
         string canonicalRarity = SkillRarityUtility.GetCanonicalName(rarity);
         string rarityText = GetSkillRarityText(rarity);
-        string rarityTypeText = string.IsNullOrWhiteSpace(rarityText) ? "기억" : $"{rarityText} 기억";
 
         // Plate_Text는 상품 종류만 표시하며 레어도 색상을 적용하지 않습니다.
         SetText(plateText, GameLocalization.Get("common.memory"));
-        SetText(skillRarity, rarityTypeText);
+        SetText(skillRarity, rarityText);
         ApplyRecordRarityColor(canonicalRarity, skillRarity);
     }
 
@@ -212,7 +211,10 @@ public class GoodsIconItem : MonoBehaviour
     {
         string canonicalRarity = GetRelicCanonicalRarity(relic);
         string rarityText = GetRelicRarityText(relic);
-        string rarityTypeText = string.IsNullOrWhiteSpace(rarityText) ? "유물" : $"{rarityText} 유물";
+        string relicTypeText = GameLocalization.Get("common.relic");
+        string rarityTypeText = string.IsNullOrWhiteSpace(rarityText)
+            ? relicTypeText
+            : $"{rarityText} {relicTypeText}";
 
         // Plate_Text는 상품 종류만 표시하며 레어도 색상을 적용하지 않습니다.
         SetText(plateText, GameLocalization.Get("common.relic"));
@@ -285,29 +287,15 @@ public class GoodsIconItem : MonoBehaviour
 
     private string GetSkillRarityText(SkillRarity rarity)
     {
-        return rarity switch
-        {
-            SkillRarity.Common => "일반",
-            SkillRarity.Rare => "레어",
-            SkillRarity.Epic => "에픽",
-            SkillRarity.Unique => "유니크",
-            _ => string.Empty
-        };
+        return SkillRarityUtility.GetDisplayName(rarity);
     }
 
     private string GetRelicRarityText(RelicData relic)
     {
-        if (relic == null || !RelicRarityUtility.TryParseChestRarity(relic.Rarity, out RelicRarity rarity))
+        if (relic == null || !RelicRarityUtility.TryParseChestRarity(relic.Rarity, out _))
             return string.IsNullOrWhiteSpace(relic?.Rarity) ? string.Empty : relic.Rarity;
 
-        return rarity switch
-        {
-            RelicRarity.Common => "일반",
-            RelicRarity.Rare => "레어",
-            RelicRarity.Epic => "에픽",
-            RelicRarity.Unique => "유니크",
-            _ => string.Empty
-        };
+        return RelicRarityUtility.GetDisplayName(relic.Rarity);
     }
 
     private string GetRelicCanonicalRarity(RelicData relic)

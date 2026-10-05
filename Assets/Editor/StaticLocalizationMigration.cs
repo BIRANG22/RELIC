@@ -295,10 +295,13 @@ public static class StaticLocalizationMigration
     {
         const string battlePath = "Assets/Project/Scenes/YDM/Battle.unity";
         const string checkPrefabPath = "Assets/Project/PrefabsR/Check.prefab";
+        const string tutorialPanelPrefabPath = "Assets/Project/PrefabsR/TutorialPanel.prefab";
         const string characterKey = "ui.battle.equip_panel.character_text";
         const string characterSource = "장착할 캐릭터를 선택하세요.";
         const string sloganKey = "ui.check.slogan";
         const string sloganSource = "정말로 포기하시겠습니까?";
+        const string confirmKey = "common.confirm";
+        const string confirmSource = "확인";
 
         SceneSetup[] originalSetup = EditorSceneManager.GetSceneManagerSetup();
         int changed = 0;
@@ -332,6 +335,21 @@ public static class StaticLocalizationMigration
                 }
             }
             finally { PrefabUtility.UnloadPrefabContents(checkRoot); }
+
+            GameObject tutorialPanelRoot = PrefabUtility.LoadPrefabContents(tutorialPanelPrefabPath);
+            try
+            {
+                TMP_Text checkText = tutorialPanelRoot.GetComponentsInChildren<TMP_Text>(true)
+                    .FirstOrDefault(text => text.gameObject.name == "CheckText");
+                if (checkText != null)
+                {
+                    checkText.text = confirmSource;
+                    if (ConfigureText(checkText, confirmKey, true))
+                        changed++;
+                    PrefabUtility.SaveAsPrefabAsset(tutorialPanelRoot, tutorialPanelPrefabPath);
+                }
+            }
+            finally { PrefabUtility.UnloadPrefabContents(tutorialPanelRoot); }
 
             AssetDatabase.SaveAssets();
             return changed;

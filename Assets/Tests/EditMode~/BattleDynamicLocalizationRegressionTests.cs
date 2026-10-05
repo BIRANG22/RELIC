@@ -52,6 +52,20 @@ public sealed class BattleDynamicLocalizationRegressionTests
     }
 
     [Test]
+    public void ShopGoodsRarity_UsesLocalizedUtilitiesWithoutKoreanLiteralComposition()
+    {
+        string source = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/RestRoom/GoodsIconItem.cs");
+
+        Assert.That(source, Does.Contain("SkillRarityUtility.GetDisplayName(rarity)"));
+        Assert.That(source, Does.Contain("RelicRarityUtility.GetDisplayName(relic.Rarity)"));
+        Assert.That(source, Does.Not.Contain("$\"{rarityText} 기억\""));
+        Assert.That(source, Does.Not.Contain("$\"{rarityText} 유물\""));
+        Assert.That(source, Does.Not.Contain("SkillRarity.Common => \"일반\""));
+        Assert.That(source, Does.Not.Contain("RelicRarity.Common => \"일반\""));
+    }
+
+    [Test]
     public void LocalizationWorkbook_ContainsCompleteBattleSkillTypeLabels()
     {
         IReadOnlyList<IReadOnlyList<string>> rows =

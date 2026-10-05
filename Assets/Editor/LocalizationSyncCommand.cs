@@ -217,6 +217,11 @@ public static class LocalizationSyncCommand
         E(LocalizationKeys.Tutorial.FirstExpedition01, "\uC900\uBE44\uB97C \uB9C8\uCE58\uC168\uAD70\uC694."),
         E(LocalizationKeys.Tutorial.FirstExpedition02, "\uCCAB \uD0D0\uC0AC\uC9C0\uB294 \uB85C\uB370\uB978 \uD3D0\uD5C8\uC785\uB2C8\uB2E4."),
         E(LocalizationKeys.Tutorial.FirstExpedition03, "\uADF8\uACF3\uC5D0\uC11C \uC5F0\uAD6C\uC5D0 \uD544\uC694\uD55C \uC7AC\uB8CC\uB97C \uD655\uBCF4\uD574 \uC640 \uC8FC\uC138\uC694."),
+        E(LocalizationKeys.Tutorial.BattleGuide01, string.Empty),
+        E(LocalizationKeys.Tutorial.BattleGuide02, string.Empty),
+        E(LocalizationKeys.Tutorial.BattleGuide03, string.Empty),
+        E(LocalizationKeys.Tutorial.BattleGuide04, string.Empty),
+        E(LocalizationKeys.Tutorial.BattleGuide05, string.Empty),
     };
     private static IReadOnlyList<LocalizationWorkbookEntry> IntroStoryEntries() => new[]
     {

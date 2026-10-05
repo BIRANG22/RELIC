@@ -18,7 +18,8 @@ public static class RuntimeLocalizationMissingRegistry
 
     private static void OnTextChanged(UnityEngine.Object changedObject)
     {
-        if (changedObject is not TMP_Text text ||
+        if (!RuntimeTMPTextAutoLocalizer.ShouldProcessTextChange(Application.isPlaying) ||
+            changedObject is not TMP_Text text ||
             !LocalizationTextRules.IsKoreanPlayerText(text.text) ||
             !LocalizedTMPText.ShouldManageText(text) ||
             text.GetComponent<LocalizedTMPText>() != null ||
