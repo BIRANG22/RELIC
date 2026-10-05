@@ -3,11 +3,16 @@ using UnityEngine;
 
 public class BattleDebugKillAllMonsters : MonoBehaviour
 {
+    private static readonly bool CheatEnabled = true;
+
     [SerializeField] private KeyCode killKey = KeyCode.K;
     [SerializeField] private int debugPlayerDamage = 1;
 
     private void Update()
     {
+        if (!CheatEnabled)
+            return;
+
         if (Input.GetKeyDown(killKey))
             KillAllMonstersForDebug();
     }
