@@ -12,18 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67b8b2d736ff91a4486a9b4e552d7ba8, type: 3}
   m_Name: Test Manual Battle Map Template Demo
   m_EditorClassIdentifier: 
-  bossLayerIndex: 6
+  bossLayerIndex: 5
   layer0Start:
-    Type: Special
-    MapIdOverride: Map_25
+    Type: Common
+    MapIdOverride:
     UseCustomPosition: 0
     CustomPosition: {x: 0, y: 0}
     NextNodeIndices: 01000000
   layer1:
     Slot1:
       Enabled: 1
-      Type: Common
-      MapIdOverride: 
+      Type: Special
+      MapIdOverride:
       UseCustomPosition: 1
       CustomPosition: {x: 100, y: 0}
       NextNodeIndices: 05000000
@@ -51,7 +51,7 @@ MonoBehaviour:
   layer2:
     Slot1:
       Enabled: 1
-      Type: Special
+      Type: Common
       MapIdOverride: 
       UseCustomPosition: 1
       CustomPosition: {x: 200, y: 0}
@@ -80,8 +80,8 @@ MonoBehaviour:
   layer3:
     Slot1:
       Enabled: 1
-      Type: Common
-      MapIdOverride:
+      Type: Shop
+      MapIdOverride: Map_22
       UseCustomPosition: 1
       CustomPosition: {x: 300, y: 0}
       NextNodeIndices: 0d000000
@@ -109,8 +109,8 @@ MonoBehaviour:
   layer4:
     Slot1:
       Enabled: 1
-      Type: Shop
-      MapIdOverride: Map_22
+      Type: Rest
+      MapIdOverride:
       UseCustomPosition: 1
       CustomPosition: {x: 400, y: 0}
       NextNodeIndices: 11000000
@@ -137,12 +137,12 @@ MonoBehaviour:
       NextNodeIndices: 
   layer5:
     Slot1:
-      Enabled: 1
-      Type: Rest
+      Enabled: 0
+      Type: Common
       MapIdOverride: 
-      UseCustomPosition: 1
-      CustomPosition: {x: 500, y: 0}
-      NextNodeIndices: 15000000
+      UseCustomPosition: 0
+      CustomPosition: {x: 0, y: 0}
+      NextNodeIndices:
     Slot2:
       Enabled: 0
       Type: Common
