@@ -1,9 +1,9 @@
-using Relic.Gameplay.Monster;
+﻿using Relic.Gameplay.Monster;
 using UnityEngine;
 
 public class BattleDebugKillAllMonsters : MonoBehaviour
 {
-    private static readonly bool CheatEnabled = true;
+    private static readonly bool CheatEnabled = false;
 
     [SerializeField] private KeyCode killKey = KeyCode.K;
     [SerializeField] private int debugPlayerDamage = 1;

@@ -93,7 +93,7 @@ public sealed class ManualBattleMapTemplateTests
     }
 
     [Test]
-    public void DemoTemplate_AddsCommonBattleBetweenSpecialAndShopInOneCenteredLine()
+    public void DemoTemplate_RemovesFixedOpeningMapAndShiftsRemainingPathForward()
     {
         ManualBattleMapTemplate template =
             AssetDatabase.LoadAssetAtPath<ManualBattleMapTemplate>(DemoTemplatePath);
@@ -103,13 +103,26 @@ public sealed class ManualBattleMapTemplateTests
         var nodes = template.Nodes.OrderBy(node => node.LayerIndex).ToList();
 
         Assert.That(nodes.Select(node => node.LayerIndex),
-            Is.EqualTo(new[] { 0, 1, 2, 3, 4, 5, 6 }));
+            Is.EqualTo(new[] { 0, 1, 2, 3, 4, 5 }));
         Assert.That(nodes.Select(node => node.Type),
-            Is.EqualTo(new[] { "Special", "Common", "Special", "Common", "Shop", "Rest", "Boss" }));
-        Assert.That(nodes.Single(node => node.LayerIndex == 3).MapIdOverride, Is.Empty,
-            "The inserted Common node must select a regular battle map without an override.");
+            Is.EqualTo(new[] { "Common", "Special", "Common", "Shop", "Rest", "Boss" }));
+        Assert.That(nodes[0].MapIdOverride, Is.Empty,
+            "The removed fixed opening map must not remain as a map override.");
+        Assert.That(nodes.Select(node => node.NodeIndex),
+            Is.EqualTo(new[] { 0, 1, 5, 9, 13, 17 }));
 
-        foreach (var node in nodes.Where(node => node.LayerIndex > 0 && node.LayerIndex < 6))
+        for (int index = 0; index < nodes.Count - 1; index++)
+        {
+            Assert.That(nodes[index].NextNodeIndices,
+                Is.EqualTo(new[] { nodes[index + 1].NodeIndex }),
+                $"Layer {nodes[index].LayerIndex} must connect only to the next node.");
+        }
+
+        Assert.That(nodes[^1].NextNodeIndices, Is.Empty);
+
+        Assert.That(nodes[0].CustomPosition, Is.EqualTo(Vector2.zero));
+
+        foreach (var node in nodes.Where(node => node.LayerIndex > 0 && node.LayerIndex < 5))
         {
             Assert.That(node.UseCustomPosition, Is.True,
                 $"Layer {node.LayerIndex} must use its centered demo position.");
