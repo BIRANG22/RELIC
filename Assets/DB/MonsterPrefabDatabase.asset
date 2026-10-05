@@ -15,25 +15,137 @@ MonoBehaviour:
   entries:
   - monsterId: Mon_01
     prefab: {fileID: 1235534776104369310, guid: 7cc58717bc8f99245a0a0ed88fbc5412, type: 3}
+    idlePreviewSprites:
+    - {fileID: 735654725, guid: abf27688d7a83c448a004a3d2706c035, type: 3}
+    - {fileID: 2091098603, guid: abf27688d7a83c448a004a3d2706c035, type: 3}
+    - {fileID: 936156877, guid: abf27688d7a83c448a004a3d2706c035, type: 3}
+    - {fileID: -662101703, guid: abf27688d7a83c448a004a3d2706c035, type: 3}
+    - {fileID: 349054865, guid: abf27688d7a83c448a004a3d2706c035, type: 3}
+    - {fileID: -494344578, guid: abf27688d7a83c448a004a3d2706c035, type: 3}
+    previewSize: {x: 400, y: 400}
+    previewFramesPerSecond: 6
   - monsterId: Mon_02
     prefab: {fileID: 4325625955674003563, guid: b2acdec95c18f1e4f86fa531c5fb912d, type: 3}
+    idlePreviewSprites:
+    - {fileID: -261072233, guid: 7d70b03338c509846abd0ab5f65fb275, type: 3}
+    - {fileID: -2035462340, guid: 7d70b03338c509846abd0ab5f65fb275, type: 3}
+    - {fileID: 1860514052, guid: 7d70b03338c509846abd0ab5f65fb275, type: 3}
+    - {fileID: 142926135, guid: 7d70b03338c509846abd0ab5f65fb275, type: 3}
+    - {fileID: 719732926, guid: 7d70b03338c509846abd0ab5f65fb275, type: 3}
+    - {fileID: -328396640, guid: 7d70b03338c509846abd0ab5f65fb275, type: 3}
+    previewSize: {x: 350, y: 350}
+    previewFramesPerSecond: 6
   - monsterId: Mon_03
     prefab: {fileID: 8626733832829211505, guid: 5632025e1603472489015b0fae2c4ec2, type: 3}
+    idlePreviewSprites:
+    - {fileID: 1324366343, guid: e79e541f169acb4469ae939a1d47dfa4, type: 3}
+    - {fileID: -2045190579, guid: e79e541f169acb4469ae939a1d47dfa4, type: 3}
+    - {fileID: -1060274446, guid: e79e541f169acb4469ae939a1d47dfa4, type: 3}
+    - {fileID: -1238266529, guid: e79e541f169acb4469ae939a1d47dfa4, type: 3}
+    - {fileID: 1402465324, guid: e79e541f169acb4469ae939a1d47dfa4, type: 3}
+    - {fileID: 2054673978, guid: e79e541f169acb4469ae939a1d47dfa4, type: 3}
+    - {fileID: -1557889639, guid: e79e541f169acb4469ae939a1d47dfa4, type: 3}
+    - {fileID: -86751533, guid: e79e541f169acb4469ae939a1d47dfa4, type: 3}
+    previewSize: {x: 600, y: 600}
+    previewFramesPerSecond: 8
   - monsterId: Mon_04
     prefab: {fileID: 2714778586373151725, guid: eb648143a760b884699d049b21ecb7bd, type: 3}
+    idlePreviewSprites:
+    - {fileID: -546141795, guid: bb780ececbbd3414bb4a8d389a8c5339, type: 3}
+    - {fileID: -1772766043, guid: bb780ececbbd3414bb4a8d389a8c5339, type: 3}
+    - {fileID: 2022628842, guid: bb780ececbbd3414bb4a8d389a8c5339, type: 3}
+    - {fileID: -2061005945, guid: bb780ececbbd3414bb4a8d389a8c5339, type: 3}
+    - {fileID: -1701238212, guid: bb780ececbbd3414bb4a8d389a8c5339, type: 3}
+    - {fileID: 904813723, guid: bb780ececbbd3414bb4a8d389a8c5339, type: 3}
+    - {fileID: -2053023030, guid: bb780ececbbd3414bb4a8d389a8c5339, type: 3}
+    - {fileID: 1996634681, guid: bb780ececbbd3414bb4a8d389a8c5339, type: 3}
+    previewSize: {x: 600, y: 600}
+    previewFramesPerSecond: 8
   - monsterId: Mon_05
     prefab: {fileID: 5574107069964105487, guid: 457cee0b1eb54f847a1c291219c9813a, type: 3}
+    idlePreviewSprites:
+    - {fileID: -1797916159, guid: 1d4b8f5caacbbeb429bb9d2271dfe6ee, type: 3}
+    - {fileID: -380786659, guid: 1d4b8f5caacbbeb429bb9d2271dfe6ee, type: 3}
+    - {fileID: 1328812750, guid: 1d4b8f5caacbbeb429bb9d2271dfe6ee, type: 3}
+    - {fileID: 677164954, guid: 1d4b8f5caacbbeb429bb9d2271dfe6ee, type: 3}
+    - {fileID: -1957666253, guid: 1d4b8f5caacbbeb429bb9d2271dfe6ee, type: 3}
+    - {fileID: 1840984055, guid: 1d4b8f5caacbbeb429bb9d2271dfe6ee, type: 3}
+    previewSize: {x: 800, y: 800}
+    previewFramesPerSecond: 6
   - monsterId: Mon_06
     prefab: {fileID: 5089267951778699808, guid: e0b5f7fcaa5e49c4fa1bbadd87e56e29, type: 3}
+    idlePreviewSprites:
+    - {fileID: -1485158936, guid: cbe82a696f38e1c4e90b6653b04aa306, type: 3}
+    - {fileID: 1401715037, guid: cbe82a696f38e1c4e90b6653b04aa306, type: 3}
+    - {fileID: 1238600608, guid: cbe82a696f38e1c4e90b6653b04aa306, type: 3}
+    - {fileID: 2135531186, guid: cbe82a696f38e1c4e90b6653b04aa306, type: 3}
+    - {fileID: -508240771, guid: cbe82a696f38e1c4e90b6653b04aa306, type: 3}
+    - {fileID: 692777986, guid: cbe82a696f38e1c4e90b6653b04aa306, type: 3}
+    previewSize: {x: 500, y: 500}
+    previewFramesPerSecond: 6
   - monsterId: Mon_07
     prefab: {fileID: 5089267951778699808, guid: 8d87094afeb1557448ad9e565f734c58, type: 3}
+    idlePreviewSprites:
+    - {fileID: 1367797345, guid: 8497a55cc86d69a42839e7d04272d68c, type: 3}
+    - {fileID: 1649455196, guid: 8497a55cc86d69a42839e7d04272d68c, type: 3}
+    - {fileID: -1653568728, guid: 8497a55cc86d69a42839e7d04272d68c, type: 3}
+    - {fileID: 1275983166, guid: 8497a55cc86d69a42839e7d04272d68c, type: 3}
+    - {fileID: -1821588385, guid: 8497a55cc86d69a42839e7d04272d68c, type: 3}
+    - {fileID: 2020391976, guid: 8497a55cc86d69a42839e7d04272d68c, type: 3}
+    previewSize: {x: 900, y: 900}
+    previewFramesPerSecond: 6
   - monsterId: Mon_08
     prefab: {fileID: 5089267951778699808, guid: af33594025d785b41b52dad4a24af3b4, type: 3}
+    idlePreviewSprites:
+    - {fileID: -1070661380, guid: f7411ce5acff21a4ba30b22540eb0339, type: 3}
+    - {fileID: -788433367, guid: f7411ce5acff21a4ba30b22540eb0339, type: 3}
+    - {fileID: -233498319, guid: f7411ce5acff21a4ba30b22540eb0339, type: 3}
+    - {fileID: -44593098, guid: f7411ce5acff21a4ba30b22540eb0339, type: 3}
+    - {fileID: 1151137702, guid: f7411ce5acff21a4ba30b22540eb0339, type: 3}
+    - {fileID: -1459209354, guid: f7411ce5acff21a4ba30b22540eb0339, type: 3}
+    previewSize: {x: 900, y: 900}
+    previewFramesPerSecond: 6
   - monsterId: Mon_09
     prefab: {fileID: 5089267951778699808, guid: 495aec57f056c2c448b337692c68afca, type: 3}
+    idlePreviewSprites:
+    - {fileID: 1260267404, guid: 7b0751884616ac844a81a91f4b869d9c, type: 3}
+    - {fileID: -1371195049, guid: 7b0751884616ac844a81a91f4b869d9c, type: 3}
+    - {fileID: 515525214, guid: 7b0751884616ac844a81a91f4b869d9c, type: 3}
+    - {fileID: 993635227, guid: 7b0751884616ac844a81a91f4b869d9c, type: 3}
+    - {fileID: -1972381535, guid: 7b0751884616ac844a81a91f4b869d9c, type: 3}
+    - {fileID: 1715348971, guid: 7b0751884616ac844a81a91f4b869d9c, type: 3}
+    previewSize: {x: 1000, y: 1000}
+    previewFramesPerSecond: 6
   - monsterId: Mon_10
     prefab: {fileID: 1910251976348132752, guid: 69f02f80bdce5664b89b099b867d6b4e, type: 3}
+    idlePreviewSprites:
+    - {fileID: -421441253, guid: 88d1c6881430cac45a223b7a6f48a393, type: 3}
+    - {fileID: -403181540, guid: 88d1c6881430cac45a223b7a6f48a393, type: 3}
+    - {fileID: 902121267, guid: 88d1c6881430cac45a223b7a6f48a393, type: 3}
+    - {fileID: -1722086621, guid: 88d1c6881430cac45a223b7a6f48a393, type: 3}
+    - {fileID: 1676460331, guid: 88d1c6881430cac45a223b7a6f48a393, type: 3}
+    - {fileID: -2043570242, guid: 88d1c6881430cac45a223b7a6f48a393, type: 3}
+    previewSize: {x: 1200, y: 1200}
+    previewFramesPerSecond: 6
   - monsterId: Mon_11
     prefab: {fileID: 5089267951778699808, guid: 4ef514e68769a0444a2085e9b7e228b3, type: 3}
+    idlePreviewSprites:
+    - {fileID: -1811993203, guid: c665b30e715210d46813ca6966826441, type: 3}
+    - {fileID: 645274696, guid: c665b30e715210d46813ca6966826441, type: 3}
+    - {fileID: 1936133333, guid: c665b30e715210d46813ca6966826441, type: 3}
+    - {fileID: -1958665364, guid: c665b30e715210d46813ca6966826441, type: 3}
+    - {fileID: 1653332820, guid: c665b30e715210d46813ca6966826441, type: 3}
+    - {fileID: -1449199175, guid: c665b30e715210d46813ca6966826441, type: 3}
+    previewSize: {x: 700, y: 700}
+    previewFramesPerSecond: 6
   - monsterId: Mon_12
     prefab: {fileID: 1910251976348132752, guid: 8df1171d9a06f794999c80c154f147eb, type: 3}
+    idlePreviewSprites:
+    - {fileID: -1025079184, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
+    - {fileID: 1567153515, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
+    - {fileID: 1077968526, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
+    - {fileID: 201591197, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
+    - {fileID: -218839707, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
+    - {fileID: 884133443, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
+    previewSize: {x: 900, y: 900}
+    previewFramesPerSecond: 6

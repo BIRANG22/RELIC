@@ -101,6 +101,25 @@ public class BattleMenuEscapeInputController : MonoBehaviour
             if (UIManager.Instance != null && UIManager.Instance.TryHideOptionIfOpen(true))
                 return;
 
+            // MenuPanel이 이미 열려 있다면 ESC의 최우선 대상은 MenuPanel입니다.
+            // MonsterInfoPanel이 뒤에 열려 있더라도 이번 ESC에서는 닫지 않습니다.
+            if (IsMenuPanelOpen())
+            {
+                if (lastHandledEscapeFrame == Time.frameCount)
+                    return;
+
+                lastHandledEscapeFrame = Time.frameCount;
+                ClickMenuButton();
+                return;
+            }
+
+            // MenuPanel이 닫혀 있을 때만 MonsterInfoPanel이 ESC 우선 대상이 됩니다.
+            // MonsterInfo 쪽 Update가 먼저 실행된 경우와 Menu 쪽 Update가 먼저 실행된 경우를
+            // 모두 처리하여 같은 ESC 입력으로 MenuPanel까지 열리지 않게 합니다.
+            if (BattleMonsterInfoCanvasUI.WasClosedByEscapeThisFrame ||
+                BattleMonsterInfoCanvasUI.TryHandleEscapeIfOpen())
+                return;
+
             // 배틀 공용 캔버스와 방별 캔버스에 이 컨트롤러가 함께 있어도
             // 같은 ESC 입력으로 MenuButton이 두 번 토글되지 않도록 한 프레임에 한 번만 처리합니다.
             if (lastHandledEscapeFrame == Time.frameCount)
