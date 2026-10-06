@@ -95,24 +95,8 @@ MonoBehaviour:
     m_Key: common.recovery
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100694
-    m_Key: common.active
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100695
     m_Key: common.passive
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100696
-    m_Key: common.unique
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100697
-    m_Key: common.shared
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100698
-    m_Key: common.exclusive
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100700
@@ -121,10 +105,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100701
     m_Key: common.material
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100702
-    m_Key: common.equipment
     m_Metadata:
       m_Items: []
   - m_Id: 41367126123487264
@@ -2409,10 +2389,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 10169488443449347
     m_Key: ui.erosionslot.effect_text
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449348
-    m_Key: ui.inventorypanel.passive
     m_Metadata:
       m_Items: []
   - m_Id: 10169488443449349
@@ -7113,6 +7089,122 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 20392658173698054
     m_Key: ui.battle.name.0f7c69b0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429560193024
+    m_Key: ui.battle.text.8bb824d4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164544
+    m_Key: data.effect.e_armor_strike.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164545
+    m_Key: data.effect.e_armor_strike.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164546
+    m_Key: data.effect.e_miss_self_damage.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164547
+    m_Key: data.effect.e_miss_self_damage.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164548
+    m_Key: data.effect.e_value_up_on_kill.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164549
+    m_Key: data.effect.e_value_up_on_kill.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164550
+    m_Key: data.effect.e_value_up_on_hit.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164551
+    m_Key: data.effect.e_value_up_on_hit.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164552
+    m_Key: data.effect.e_damage_up_if_bleeding.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164553
+    m_Key: data.effect.e_damage_up_if_bleeding.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164554
+    m_Key: data.effect.e_rush.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164555
+    m_Key: data.effect.e_rush.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164556
+    m_Key: data.effect.e_bondage.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164557
+    m_Key: data.effect.e_bondage.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164558
+    m_Key: data.effect.e_poison_by_target_poison.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164559
+    m_Key: data.effect.e_poison_by_target_poison.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164560
+    m_Key: data.effect.e_trigger_poison.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164561
+    m_Key: data.effect.e_trigger_poison.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164562
+    m_Key: data.effect.e_restore_mana_per_hit_target.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164563
+    m_Key: data.effect.e_restore_mana_per_hit_target.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164564
+    m_Key: data.effect.e_random_strike.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164565
+    m_Key: data.effect.e_random_strike.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164566
+    m_Key: data.effect.e_strike_by_vulnerable.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164567
+    m_Key: data.effect.e_strike_by_vulnerable.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164568
+    m_Key: data.effect.e_strike_count_by_buff.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164569
+    m_Key: data.effect.e_strike_count_by_buff.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164570
+    m_Key: data.effect.e_strike_count_by_debuff.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164571
+    m_Key: data.effect.e_strike_count_by_debuff.tooltip
     m_Metadata:
       m_Items: []
   m_Metadata:

@@ -253,11 +253,6 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         RebuildStatusEffects();
         lastStatusSignature = CalculateStatusSignature(boundRuntime.StatusEffects);
 
-        // MonsterSkill / MonsterStatus는 런타임에 생성되므로 기존 블러 복제본에는
-        // 새 자식 구조가 포함되지 않을 수 있습니다. 동적 UI 생성이 끝난 뒤
-        // MonsterInfoCanvas의 복제본을 무효화하고 즉시 다시 구성합니다.
-        RefreshBlurReplica();
-
         StopRevealCoroutine();
         if (isActiveAndEnabled)
         {
@@ -267,6 +262,8 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         {
             if (monsterInfoPanel != null)
                 monsterInfoPanel.SetActive(true);
+            Canvas.ForceUpdateCanvases();
+            RefreshBlurReplica();
             StartPreviewAnimation();
             SetCanvasGroupVisibleImmediate();
         }
@@ -327,6 +324,10 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
         if (monsterInfoPanel != null)
             monsterInfoPanel.SetActive(true);
+
+        // 동적 스킬/상태 UI는 패널이 활성화된 뒤에만 블러 복제본에 정상 반영된다.
+        Canvas.ForceUpdateCanvases();
+        RefreshBlurReplica();
 
         StartPreviewAnimation();
 

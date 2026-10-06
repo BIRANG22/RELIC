@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using UnityEngine;
 
 public class BattlePassiveSkillService
@@ -32,7 +33,7 @@ public class BattlePassiveSkillService
 
         SkillMasterData passiveSkill = GetPassiveSkill(runtime);
 
-        if (passiveSkill == null || !IsPassiveConditionMet(runtime))
+        if (!ShouldApplyPassive(passiveSkill, runtime))
         {
             BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
             return;
@@ -60,6 +61,13 @@ public class BattlePassiveSkillService
         BattleEquipmentEffectService.ApplyPassiveExtras(runtime);
     }
 
+    public static bool ShouldApplyPassive(
+        SkillMasterData passiveSkill,
+        CharacterRuntimeData runtime)
+    {
+        return passiveSkill != null && runtime != null;
+    }
+
     private static void ApplyPassiveEffect(
         CharacterRuntimeData runtime,
         SkillMasterData passiveSkill,
@@ -68,34 +76,23 @@ public class BattlePassiveSkillService
         int count)
     {
         int appliedValue = BattleEffectUtility.GetRepeatedValue(value, count);
+        BattlePassiveTargetGroup targetGroup = BattlePassiveTargetPolicy.Resolve(passiveSkill.Target);
+
+        if (targetGroup == BattlePassiveTargetGroup.Monsters)
+        {
+            ApplyStatusToAllLivingMonsters(runtime, passiveSkill, effectId, appliedValue);
+            return;
+        }
+
+        if (targetGroup == BattlePassiveTargetGroup.Players)
+        {
+            ApplyEffectToAllLivingPlayers(runtime, passiveSkill, effectId, appliedValue);
+            return;
+        }
 
         if (effectId == "E_Armor")
         {
-            CharacterRuntimeData targetRuntime = runtime;
-
-            // S_Passive_06(결심): 조건은 패시브 보유자의 카르마 최대 여부를 확인하지만,
-            // 실제 방어도는 현재 생명력 수치가 가장 낮은 살아있는 아군 1명에게 부여합니다.
-            if (passiveSkill.SkillId == "S_Passive_06")
-            {
-                targetRuntime = FindLowestCurrentHpLivingPartyMember();
-                if (targetRuntime == null)
-                    return;
-            }
-
-            int finalValue =
-                BattleEquipmentEffectService.ModifyPassiveEffectStack(targetRuntime, effectId, appliedValue);
-
-            if (finalValue <= 0)
-                return;
-
-            targetRuntime.CurrentShield += finalValue;
-            BattleDamageTextPopupUI.ShowArmorGain(targetRuntime.CharacterId, finalValue);
-
-            Debug.Log(
-                $"[Passive] Armor / Owner:{runtime.CharacterId} / Target:{targetRuntime.CharacterId} / " +
-                $"Skill:{passiveSkill.SkillId} / Shield:+{finalValue} / CurrentShield:{targetRuntime.CurrentShield}"
-            );
-
+            ApplyArmorToPlayer(runtime, runtime, passiveSkill, appliedValue);
             return;
         }
 
@@ -124,6 +121,100 @@ public class BattlePassiveSkillService
             $"Skill:{passiveSkill.SkillId} / Effect:{effectId} / " +
             $"Stack:{finalStack} / Turn:1"
         );
+    }
+
+    private static void ApplyStatusToAllLivingMonsters(
+        CharacterRuntimeData ownerRuntime,
+        SkillMasterData passiveSkill,
+        string effectId,
+        int appliedValue)
+    {
+        int finalStack = BattleEquipmentEffectService.ModifyPassiveEffectStack(
+            ownerRuntime,
+            effectId,
+            appliedValue);
+
+        if (finalStack <= 0)
+            return;
+
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+            if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
+                continue;
+
+            BattleEffectUtility.AddStatusToMonster(monster, effectId, finalStack, 1);
+
+            Debug.Log(
+                $"[Passive] EnemyParty / Owner:{ownerRuntime.CharacterId} / " +
+                $"Target:{monster.RuntimeData.RuntimeId} / Skill:{passiveSkill.SkillId} / " +
+                $"Effect:{effectId} / Stack:{finalStack}");
+        }
+    }
+
+    private static void ApplyEffectToAllLivingPlayers(
+        CharacterRuntimeData ownerRuntime,
+        SkillMasterData passiveSkill,
+        string effectId,
+        int appliedValue)
+    {
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+            CharacterRuntimeData targetRuntime = character != null ? character.RuntimeData : null;
+
+            if (targetRuntime == null || targetRuntime.IsDead)
+                continue;
+
+            if (effectId == "E_Armor")
+            {
+                ApplyArmorToPlayer(ownerRuntime, targetRuntime, passiveSkill, appliedValue);
+                continue;
+            }
+
+            int finalStack = BattleEquipmentEffectService.ModifyPassiveEffectStack(
+                targetRuntime,
+                effectId,
+                appliedValue);
+
+            if (finalStack <= 0)
+                continue;
+
+            BattleEffectUtility.AddStatusToPlayer(character, effectId, finalStack, 1);
+        }
+    }
+
+    private static void ApplyArmorToPlayer(
+        CharacterRuntimeData ownerRuntime,
+        CharacterRuntimeData targetRuntime,
+        SkillMasterData passiveSkill,
+        int appliedValue)
+    {
+        if (targetRuntime == null || targetRuntime.IsDead)
+            return;
+
+        int finalValue = BattleEquipmentEffectService.ModifyPassiveEffectStack(
+            targetRuntime,
+            "E_Armor",
+            appliedValue);
+
+        if (finalValue <= 0)
+            return;
+
+        targetRuntime.CurrentShield += finalValue;
+        BattleDamageTextPopupUI.ShowArmorGain(targetRuntime.CharacterId, finalValue);
+
+        Debug.Log(
+            $"[Passive] Armor / Owner:{ownerRuntime.CharacterId} / Target:{targetRuntime.CharacterId} / " +
+            $"Skill:{passiveSkill.SkillId} / Shield:+{finalValue} / CurrentShield:{targetRuntime.CurrentShield}");
     }
 
 
@@ -299,22 +390,6 @@ public class BattlePassiveSkillService
         }
 
         return best;
-    }
-
-    private static bool IsPassiveConditionMet(CharacterRuntimeData runtime)
-    {
-        if (runtime == null || DataManager.Instance == null)
-            return false;
-
-        CharacterMasterData characterData =
-            DataManager.Instance.CharacterDatabase.Get(runtime.CharacterId);
-
-        if (characterData == null)
-            return false;
-
-        int maxResource = Mathf.Max(0, characterData.MaxResource);
-
-        return maxResource > 0 && runtime.CurrentResource >= maxResource;
     }
 
     private static SkillMasterData GetPassiveSkill(CharacterRuntimeData runtime)
