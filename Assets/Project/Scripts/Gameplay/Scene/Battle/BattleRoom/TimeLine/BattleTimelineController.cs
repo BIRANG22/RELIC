@@ -1012,6 +1012,26 @@ public class BattleTimelineController : MonoBehaviour
             TryRestoreLastSelectedCharacterForTimelineSlot();
     }
 
+    /// <summary>
+    /// 몬스터 정보 패널을 닫은 뒤, 몬스터를 보기 직전에 마지막으로 선택했던
+    /// 플레이어 캐릭터를 다시 선택합니다. 튜토리얼 포커스가 패널 상승보다
+    /// 먼저 시작되지 않도록 외부에서 복원 완료를 기다릴 수 있습니다.
+    /// </summary>
+    public bool RestoreLastSelectedCharacterAfterMonsterInfo()
+    {
+        if (Relic.Gameplay.Monster.MonsterUnit.CurrentInfoSelectedMonster != null)
+            return false;
+
+        if (selectedCharacter != null && !selectedCharacter.IsDead)
+            return true;
+
+        if (lastSelectedCharacter == null || lastSelectedCharacter.IsDead)
+            return false;
+
+        SelectCharacter(lastSelectedCharacter);
+        return selectedCharacter != null && !selectedCharacter.IsDead;
+    }
+
     private void TryRestoreLastSelectedCharacterForTimelineSlot()
     {
         if (selectedCharacter != null)

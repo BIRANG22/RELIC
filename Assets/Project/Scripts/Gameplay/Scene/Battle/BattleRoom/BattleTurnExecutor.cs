@@ -376,6 +376,14 @@ public class BattleTurnExecutor : MonoBehaviour
 
     public void ExecuteTurn()
     {
+        if (!BattleFirstTutorialController.CanExecuteEndTurn)
+            return;
+
+        if (!CanAcceptPlayerInput)
+            return;
+
+        BattleFirstTutorialController.NotifyEndTurnRequested();
+
         if (SteamBattleStateSynchronizer.TryHandleExecuteTurnRequest(this))
             return;
 

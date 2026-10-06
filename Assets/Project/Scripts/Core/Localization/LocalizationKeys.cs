@@ -163,6 +163,13 @@ public static class LocalizationKeys
         public const string BattleGuide03 = "tutorial.battle_guide.03";
         public const string BattleGuide04 = "tutorial.battle_guide.04";
         public const string BattleGuide05 = "tutorial.battle_guide.05";
+        public const string Battle1MonsterInfo = "tutorial.battle1.turn1.monster_info";
+        public const string Battle1Move = "tutorial.battle1.turn1.move";
+        public const string Battle1MoveGrid = "tutorial.battle1.turn1.move_grid";
+        public const string Battle1Skill01 = "tutorial.battle1.turn1.skill01";
+        public const string Battle1EndTurn = "tutorial.battle1.turn1.end_turn";
+        public const string Battle1Skill01Repeat = "tutorial.battle1.turn2.skill01_repeat";
+        public const string Battle1EndTurnRepeat = "tutorial.battle1.turn2.end_turn";
     }
 
     public static class IntroStory

@@ -623,6 +623,12 @@ public class BattleTimelineBarUI : MonoBehaviour
 
     public void OnOrderClicked(int slotIndex, int orderIndex)
     {
+        // 첫 전투 튜토리얼에서 등록 위치를 2초간 보여주는 동안에는
+        // 사용자가 타임라인을 클릭해 방금 등록한 행동을 제거하지 못하게 합니다.
+        // 안내가 끝난 뒤에는 기존 클릭 제거 동작을 그대로 사용합니다.
+        if (BattleFirstTutorialController.IsTimelineRegisteredSkillPreviewLocked)
+            return;
+
         if (owner != null)
             owner.RemoveCommand(slotIndex, orderIndex);
     }
@@ -633,6 +639,9 @@ public class BattleTimelineBarUI : MonoBehaviour
             return;
 
         if (!entry.IsPlayer)
+            return;
+
+        if (BattleFirstTutorialController.IsTimelineRegisteredSkillPreviewLocked)
             return;
 
         if (owner != null)
