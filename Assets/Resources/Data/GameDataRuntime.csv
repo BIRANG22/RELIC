@@ -1144,7 +1144,7 @@ E_Ward,가호,Beneficial,Decrease,피해를 받을 때 수치만큼 피해를 �
 E_Grudge,원한,Beneficial,Maintain,공격 수치가 수치만큼 증가한다. 턴 종료 시 사라지지 않는다.,,S_Monster_07
 E_Barrier,장막,Beneficial,Decrease,받는 피해를 1회 무시한다. 발동 시 사라진다. 턴 종료 시 수치가 1씩 감소한다.,,S_Monster_25
 E_Poison,중독,Harmful,Decrease,턴 종료 시 수치만큼 피해를 받는다. 턴 종료 시 수치가 1씩 감소한다.,,SkillMaster: 8개 / GR_Poisson
-E_Bleed,출혈,Harmful,Decrease,이동 시 수치만큼 피해를 받는다. 턴 종료 시 수치가 1씩 감소한다.,,SkillMaster: 8개 / S_Monster_40
+E_Bleed,출혈,Harmful,DecreaseOnTrigger,이동 시 수치만큼 피해를 받는다.이동 시 수치가 1씩 감소한다.,,SkillMaster: 8개 / S_Monster_40
 E_Vulnerable,취약,Harmful,Decrease,받는 피해를 30% 증가시킨다. 턴 종료 시 수치가 1씩 감소한다.,,SkillMaster: 10개
 E_Weaken,약화,Harmful,Decrease,주는 피해를 15% 감소시킨다. 턴 종료 시 수치가 1씩 감소한다.,,SkillMaster: 9개
 E_Corrosion,침식,Harmful,Maintain,받는 모든 피해가 수치만큼 증가한다. 턴 종료 시 사라지지 않는다.,,S_Monster_10
