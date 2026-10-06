@@ -152,6 +152,9 @@ public class BattleSceneController : MonoBehaviour
         if (tutorialSkipButtonText == null && tutorialSkipButton != null)
             tutorialSkipButtonText = tutorialSkipButton.GetComponentInChildren<TMP_Text>(true);
 
+        if (tutorialMode != null && tutorialMode.GetComponent<BattleFirstTutorialController>() == null)
+            tutorialMode.AddComponent<BattleFirstTutorialController>();
+
         ConfigureTutorialSkipButtonLocalization();
     }
 

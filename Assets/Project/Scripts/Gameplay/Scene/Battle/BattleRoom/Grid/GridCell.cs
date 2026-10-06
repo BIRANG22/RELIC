@@ -84,8 +84,13 @@ public class GridCell : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (!BattleFirstTutorialController.CanClickGrid(Index))
+            return;
+
         if (owner != null)
             owner.NotifyCellClicked(this);
+
+        BattleFirstTutorialController.NotifyGridClicked(Index);
     }
 
     private void OnMouseEnter()

@@ -546,6 +546,378 @@ Shader "Vefects/SH_Vefects_URP_Zone_Indicator_Light_01"
 			ENDHLSL
 		}
 
+Pass
+		{
+			
+			Name "Universal2D"
+			Tags { "LightMode"="Universal2D" }
+
+			Blend [_Src] [_Dst], One OneMinusSrcAlpha
+			ZWrite [_ZWrite]
+			ZTest [_ZTest]
+			Offset 0 , 0
+			ColorMask RGBA
+
+			
+
+			HLSLPROGRAM
+
+			#pragma multi_compile_instancing
+			#pragma instancing_options renderinglayer
+			#define _SURFACE_TYPE_TRANSPARENT 1
+			#pragma multi_compile_local _RECEIVE_SHADOWS_OFF
+			#define ASE_VERSION 19904
+			#define ASE_SRP_VERSION 170003
+			#define REQUIRE_DEPTH_TEXTURE 1
+
+
+			#pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3
+
+			#pragma multi_compile_fragment _ DEBUG_DISPLAY
+
+			#pragma vertex vert
+			#pragma fragment frag
+
+			#define SHADERPASS SHADERPASS_UNLIT
+
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+            #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DBuffer.hlsl"
+			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
+
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Debug/Debugging3D.hlsl"
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/SurfaceData.hlsl"
+
+			#if defined(LOD_FADE_CROSSFADE)
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+            #endif
+
+			#define ASE_NEEDS_TEXTURE_COORDINATES0
+			#define ASE_NEEDS_FRAG_TEXTURE_COORDINATES0
+			#define ASE_NEEDS_FRAG_COLOR
+			#define ASE_NEEDS_FRAG_SCREEN_POSITION_NORMALIZED
+
+
+			#if defined(ASE_EARLY_Z_DEPTH_OPTIMIZE) && (SHADER_TARGET >= 45)
+				#define ASE_SV_DEPTH SV_DepthLessEqual
+				#define ASE_SV_POSITION_QUALIFIERS linear noperspective centroid
+			#else
+				#define ASE_SV_DEPTH SV_Depth
+				#define ASE_SV_POSITION_QUALIFIERS
+			#endif
+
+			struct Attributes
+			{
+				float4 positionOS : POSITION;
+				half3 normalOS : NORMAL;
+				float4 ase_color : COLOR;
+				float4 ase_texcoord : TEXCOORD0;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+			};
+
+			struct PackedVaryings
+			{
+				ASE_SV_POSITION_QUALIFIERS float4 positionCS : SV_POSITION;
+				float4 positionWSAndFogFactor : TEXCOORD0;
+				half3 normalWS : TEXCOORD1;
+				float4 ase_color : COLOR;
+				float4 ase_texcoord2 : TEXCOORD2;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+				UNITY_VERTEX_OUTPUT_STEREO
+			};
+
+			CBUFFER_START(UnityPerMaterial)
+			float2 _MainTextureUVPanSpeed;
+			float2 _MainTextureUVScale;
+			float2 _DistortionUVPanSpeed;
+			float2 _DistortionUVScale;
+			float _Dst;
+			float _ZWrite;
+			float _ZTest;
+			float _Cull;
+			float _Src;
+			float _LUTPanSpeed;
+			float _DistortionAmount;
+			float _LUTAmplitude;
+			float _LUTOffset;
+			float _DepthFade;
+			float _IsAdd;
+			float _Emission;
+			#ifdef ASE_TESSELLATION
+				float _TessPhongStrength;
+				float _TessValue;
+				float _TessMin;
+				float _TessMax;
+				float _TessEdgeLength;
+				float _TessMaxDisp;
+			#endif
+			CBUFFER_END
+
+			sampler2D _LUT;
+			sampler2D _MainTexture;
+			sampler2D _DistortionTexture;
+
+
+			
+			PackedVaryings VertexFunction( Attributes input  )
+			{
+				PackedVaryings output = (PackedVaryings)0;
+				UNITY_SETUP_INSTANCE_ID(input);
+				UNITY_TRANSFER_INSTANCE_ID(input, output);
+				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+
+				output.ase_color = input.ase_color;
+				output.ase_texcoord2 = input.ase_texcoord;
+
+				#ifdef ASE_ABSOLUTE_VERTEX_POS
+					float3 defaultVertexValue = input.positionOS.xyz;
+				#else
+					float3 defaultVertexValue = float3(0, 0, 0);
+				#endif
+
+				float3 vertexValue = defaultVertexValue;
+
+				#ifdef ASE_ABSOLUTE_VERTEX_POS
+					input.positionOS.xyz = vertexValue;
+				#else
+					input.positionOS.xyz += vertexValue;
+				#endif
+
+				input.normalOS = input.normalOS;
+
+				VertexPositionInputs vertexInput = GetVertexPositionInputs( input.positionOS.xyz );
+				VertexNormalInputs normalInput = GetVertexNormalInputs( input.normalOS );
+
+				float fogFactor = 0;
+				#if defined(ASE_FOG) && !defined(_FOG_FRAGMENT)
+					fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
+				#endif
+
+				output.positionCS = vertexInput.positionCS;
+				output.positionWSAndFogFactor = float4( vertexInput.positionWS, fogFactor );
+				output.normalWS = normalInput.normalWS;
+				return output;
+			}
+
+			#if defined(ASE_TESSELLATION)
+			struct VertexControl
+			{
+				float4 positionOS : INTERNALTESSPOS;
+				half3 normalOS : NORMAL;
+				float4 ase_color : COLOR;
+				float4 ase_texcoord : TEXCOORD0;
+
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+			};
+
+			struct TessellationFactors
+			{
+				float edge[3] : SV_TessFactor;
+				float inside : SV_InsideTessFactor;
+			};
+
+			VertexControl vert ( Attributes input )
+			{
+				VertexControl output;
+				UNITY_SETUP_INSTANCE_ID(input);
+				UNITY_TRANSFER_INSTANCE_ID(input, output);
+				output.positionOS = input.positionOS;
+				output.normalOS = input.normalOS;
+				output.ase_color = input.ase_color;
+				output.ase_texcoord = input.ase_texcoord;
+				return output;
+			}
+
+			TessellationFactors TessellationFunction (InputPatch<VertexControl,3> input)
+			{
+				TessellationFactors output;
+				float4 tf = 1;
+				float tessValue = _TessValue; float tessMin = _TessMin; float tessMax = _TessMax;
+				float edgeLength = _TessEdgeLength; float tessMaxDisp = _TessMaxDisp;
+				#if defined(ASE_FIXED_TESSELLATION)
+				tf = FixedTess( tessValue );
+				#elif defined(ASE_DISTANCE_TESSELLATION)
+				tf = DistanceBasedTess(input[0].positionOS, input[1].positionOS, input[2].positionOS, tessValue, tessMin, tessMax, GetObjectToWorldMatrix(), _WorldSpaceCameraPos );
+				#elif defined(ASE_LENGTH_TESSELLATION)
+				tf = EdgeLengthBasedTess(input[0].positionOS, input[1].positionOS, input[2].positionOS, edgeLength, GetObjectToWorldMatrix(), _WorldSpaceCameraPos, _ScreenParams );
+				#elif defined(ASE_LENGTH_CULL_TESSELLATION)
+				tf = EdgeLengthBasedTessCull(input[0].positionOS, input[1].positionOS, input[2].positionOS, edgeLength, tessMaxDisp, GetObjectToWorldMatrix(), _WorldSpaceCameraPos, _ScreenParams, unity_CameraWorldClipPlanes );
+				#endif
+				output.edge[0] = tf.x; output.edge[1] = tf.y; output.edge[2] = tf.z; output.inside = tf.w;
+				return output;
+			}
+
+			[domain("tri")]
+			[partitioning("fractional_odd")]
+			[outputtopology("triangle_cw")]
+			[patchconstantfunc("TessellationFunction")]
+			[outputcontrolpoints(3)]
+			VertexControl HullFunction(InputPatch<VertexControl, 3> patch, uint id : SV_OutputControlPointID)
+			{
+				return patch[id];
+			}
+
+			[domain("tri")]
+			PackedVaryings DomainFunction(TessellationFactors factors, OutputPatch<VertexControl, 3> patch, float3 bary : SV_DomainLocation)
+			{
+				Attributes output = (Attributes) 0;
+				output.positionOS = patch[0].positionOS * bary.x + patch[1].positionOS * bary.y + patch[2].positionOS * bary.z;
+				output.normalOS = patch[0].normalOS * bary.x + patch[1].normalOS * bary.y + patch[2].normalOS * bary.z;
+				output.ase_color = patch[0].ase_color * bary.x + patch[1].ase_color * bary.y + patch[2].ase_color * bary.z;
+				output.ase_texcoord = patch[0].ase_texcoord * bary.x + patch[1].ase_texcoord * bary.y + patch[2].ase_texcoord * bary.z;
+				#if defined(ASE_PHONG_TESSELLATION)
+				float3 pp[3];
+				for (int i = 0; i < 3; ++i)
+					pp[i] = output.positionOS.xyz - patch[i].normalOS * (dot(output.positionOS.xyz, patch[i].normalOS) - dot(patch[i].positionOS.xyz, patch[i].normalOS));
+				float phongStrength = _TessPhongStrength;
+				output.positionOS.xyz = phongStrength * (pp[0]*bary.x + pp[1]*bary.y + pp[2]*bary.z) + (1.0f-phongStrength) * output.positionOS.xyz;
+				#endif
+				UNITY_TRANSFER_INSTANCE_ID(patch[0], output);
+				return VertexFunction(output);
+			}
+			#else
+			PackedVaryings vert ( Attributes input )
+			{
+				return VertexFunction( input );
+			}
+			#endif
+
+			half4 frag ( PackedVaryings input
+						#if defined( ASE_DEPTH_WRITE_ON )
+						,out float outputDepth : ASE_SV_DEPTH
+						#endif
+						#ifdef _WRITE_RENDERING_LAYERS
+						, out float4 outRenderingLayers : SV_Target1
+						#endif
+						 ) : SV_Target
+			{
+				UNITY_SETUP_INSTANCE_ID(input);
+				UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+
+				#if defined( _SURFACE_TYPE_TRANSPARENT )
+					const bool isTransparent = true;
+				#else
+					const bool isTransparent = false;
+				#endif
+
+				#if defined(LOD_FADE_CROSSFADE)
+					LODFadeCrossFade( input.positionCS );
+				#endif
+
+				#if defined(MAIN_LIGHT_CALCULATE_SHADOWS)
+					float4 shadowCoord = TransformWorldToShadowCoord( input.positionWSAndFogFactor.xyz );
+				#else
+					float4 shadowCoord = float4(0, 0, 0, 0);
+				#endif
+
+				float3 PositionWS = input.positionWSAndFogFactor.xyz;
+				float3 PositionRWS = GetCameraRelativePositionWS( PositionWS );
+				half3 ViewDirWS = GetWorldSpaceNormalizeViewDir( PositionWS );
+				float4 ShadowCoord = shadowCoord;
+				float4 ScreenPosNorm = float4( GetNormalizedScreenSpaceUV( input.positionCS ), input.positionCS.zw );
+				float4 ClipPos = ComputeClipSpacePosition( ScreenPosNorm.xy, input.positionCS.z ) * input.positionCS.w;
+				float4 ScreenPos = ComputeScreenPos( ClipPos );
+				half3 NormalWS = normalize( input.normalWS );
+
+				float2 temp_cast_0 = (_LUTPanSpeed).xx;
+				float eros129 = input.ase_texcoord2.w;
+				float2 texCoord102 = input.ase_texcoord2.xy * float2( 1,1 ) + float2( 0,0 );
+				float2 panner106 = ( 1.0 * _Time.y * _MainTextureUVPanSpeed + ( texCoord102 * _MainTextureUVScale ));
+				float2 texCoord92 = input.ase_texcoord2.xy * float2( 1,1 ) + float2( 0,0 );
+				float2 panner94 = ( 1.0 * _Time.y * _DistortionUVPanSpeed + ( texCoord92 * _DistortionUVScale ));
+				float2 temp_output_83_0 = ( (tex2D( _DistortionTexture, panner94 ).rgb).xy * _DistortionAmount );
+				float2 texCoord147 = input.ase_texcoord2.xy * float2( 1,1 ) + float2( 0,0 );
+				float2 panner149 = ( 1.0 * _Time.y * ( _MainTextureUVPanSpeed / float2( 1.7,1.7 ) ) + ( texCoord147 * ( _MainTextureUVScale * float2( 2,1 ) ) ));
+				float lerpResult137 = lerp( tex2D( _MainTexture, ( panner149 + temp_output_83_0 ) ).r , 1.0 , 0.75);
+				float2 texCoord152 = input.ase_texcoord2.xy * float2( 1,1 ) + float2( 0,0 );
+				float2 panner154 = ( 1.0 * _Time.y * ( _MainTextureUVPanSpeed * float2( -1,0 ) ) + ( texCoord152 * _MainTextureUVScale ));
+				float saferPower142 = abs( ( 1.0 - saturate( ( ( 1.0 - ( tex2D( _MainTexture, ( panner106 + temp_output_83_0 ) ).r * lerpResult137 ) ) * ( 1.0 - tex2D( _MainTexture, ( panner154 + temp_output_83_0 ) ).g ) ) ) ) );
+				float smoothstepResult143 = smoothstep( eros129 , ( eros129 + 1.0 ) , pow( saferPower142 , 2.0 ));
+				float temp_output_145_0 = saturate( smoothstepResult143 );
+				float2 temp_cast_1 = (( ( temp_output_145_0 * _LUTAmplitude ) + _LUTOffset )).xx;
+				float2 panner42 = ( 1.0 * _Time.y * temp_cast_0 + temp_cast_1);
+				float4 temp_output_36_0 = ( input.ase_color * float4( tex2D( _LUT, panner42 ).rgb , 0.0 ) );
+				float screenDepth26 = LinearEyeDepth(SHADERGRAPH_SAMPLE_SCENE_DEPTH( ScreenPosNorm.xy ),_ZBufferParams);
+				float distanceDepth26 = saturate( ( screenDepth26 - LinearEyeDepth( ScreenPosNorm.z,_ZBufferParams ) ) / ( _DepthFade ) );
+				float temp_output_18_0 = saturate( ( saturate( ( temp_output_145_0 * input.ase_color.a ) ) * distanceDepth26 ) );
+				float4 lerpResult44 = lerp( temp_output_36_0 , ( temp_output_36_0 * temp_output_18_0 ) , _IsAdd);
+				float emi125 = input.ase_texcoord2.z;
+				
+				float3 BakedAlbedo = 0;
+				float3 BakedEmission = 0;
+				float3 Color = ( lerpResult44 * ( _Emission * emi125 ) ).rgb;
+				float Alpha = temp_output_18_0;
+				float AlphaClipThreshold = 0.5;
+				float AlphaClipThresholdShadow = 0.5;
+
+				#if defined( ASE_DEPTH_WRITE_ON )
+					float DeviceDepth = input.positionCS.z;
+				#endif
+
+				#if defined( _ALPHATEST_ON )
+					AlphaDiscard( Alpha, AlphaClipThreshold );
+				#endif
+
+				#if defined(MAIN_LIGHT_CALCULATE_SHADOWS) && defined(ASE_CHANGES_WORLD_POS)
+					ShadowCoord = TransformWorldToShadowCoord( PositionWS );
+				#endif
+
+				InputData inputData = (InputData)0;
+				inputData.positionWS = PositionWS;
+				inputData.positionCS = float4( input.positionCS.xy, ClipPos.zw / ClipPos.w );
+				inputData.normalizedScreenSpaceUV = ScreenPosNorm.xy;
+				inputData.normalWS = NormalWS;
+				inputData.viewDirectionWS = ViewDirWS;
+
+				#if defined(_SCREEN_SPACE_OCCLUSION) && !defined(_SURFACE_TYPE_TRANSPARENT)
+					float2 normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
+					AmbientOcclusionFactor aoFactor = GetScreenSpaceAmbientOcclusion(normalizedScreenSpaceUV);
+					Color.rgb *= aoFactor.directAmbientOcclusion;
+				#endif
+
+				#ifdef ASE_FOG
+					inputData.fogCoord = InitializeInputDataFog(float4(inputData.positionWS, 1.0), input.positionWSAndFogFactor.w);
+				#endif
+
+				#if defined(_DBUFFER)
+					ApplyDecalToBaseColor(input.positionCS, Color);
+				#endif
+
+				#ifdef ASE_FOG
+					#ifdef TERRAIN_SPLAT_ADDPASS
+						Color.rgb = MixFogColor(Color.rgb, half3(0,0,0), inputData.fogCoord);
+					#else
+						Color.rgb = MixFog(Color.rgb, inputData.fogCoord);
+					#endif
+				#endif
+
+				#if defined( ASE_DEPTH_WRITE_ON )
+					outputDepth = DeviceDepth;
+				#endif
+
+				#ifdef _WRITE_RENDERING_LAYERS
+					uint renderingLayers = GetMeshRenderingLayer();
+					outRenderingLayers = float4( EncodeMeshRenderingLayer( renderingLayers ), 0, 0, 0 );
+				#endif
+
+				#if defined( ASE_OPAQUE_KEEP_ALPHA )
+					return half4( Color, Alpha );
+				#else
+					return half4( Color, OutputAlpha( Alpha, isTransparent ) );
+				#endif
+			}
+			ENDHLSL
+		}
+
 		
 		Pass
 		{
