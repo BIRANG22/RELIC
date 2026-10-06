@@ -20,9 +20,42 @@ public class BattleStatusEffectService
         this.deathService = deathService;
     }
 
+    public static bool TryConsumeOnTrigger(
+        List<StatusEffectRuntimeData> statuses,
+        string effectId,
+        System.Func<string, EffectMasterData> effectResolver = null)
+    {
+        if (statuses == null || string.IsNullOrWhiteSpace(effectId))
+            return false;
+
+        effectResolver ??= ResolveEffect;
+        EffectMasterData effect = effectResolver(effectId);
+        if (effect == null || effect.DecreaseRule != EffectValueDecreaseRule.DecreaseOnTrigger)
+            return false;
+
+        for (int i = statuses.Count - 1; i >= 0; i--)
+        {
+            StatusEffectRuntimeData status = statuses[i];
+            if (status == null || !string.Equals(status.EffectId, effectId, System.StringComparison.Ordinal))
+                continue;
+
+            status.Stack = Mathf.Max(0, status.Stack - 1);
+            if (status.Stack <= 0)
+                statuses.RemoveAt(i);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static EffectMasterData ResolveEffect(string effectId)
+    {
+        return DataManager.Instance?.EffectDatabase?.Get(effectId);
+    }
+
     /// <summary>
-    /// ¸ó½ºÅÍ°¡ ½ÇÁ¦ ÇÇÇØ Å¸°ÝÀ» ¹ÞÀ» ¶§ ºÐ¿­ ¼öÄ¡¸¦ 1 °¨¼Ò½ÃÅµ´Ï´Ù.
-    /// ¼öÄ¡°¡ 0ÀÌ µÇ¾úÀ» ¶§ »ì¾Æ ÀÖ´Ù¸é true¸¦ ¹ÝÈ¯ÇÕ´Ï´Ù.
+    /// ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ð¿ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ 1 ï¿½ï¿½ï¿½Ò½ï¿½Åµï¿½Ï´ï¿½.
+    /// ï¿½ï¿½Ä¡ï¿½ï¿½ 0ï¿½ï¿½ ï¿½Ç¾ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ö´Ù¸ï¿½ trueï¿½ï¿½ ï¿½ï¿½È¯ï¿½Õ´Ï´ï¿½.
     /// </summary>
     public bool ApplySplitHitAndCheckTrigger(MonsterUnit monster)
     {
@@ -414,6 +447,7 @@ public class BattleStatusEffectService
                 break;
 
             case EndTurn.Maintain:
+            case EndTurn.DecreaseOnTrigger:
                 break;
         }
     }

@@ -124,6 +124,7 @@ GameObject:
   - component: {fileID: 2490248926580101802}
   - component: {fileID: 1943677218881751782}
   - component: {fileID: 3891811534509471248}
+  - component: {fileID: 7222315516883045943}
   m_Layer: 0
   m_Name: TypeText
   m_TagString: Untagged
@@ -250,6 +251,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7222315516883045943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1746751744661947644}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 3891811534509471248}
+  localizationKey: ui.monsterskill.typetext.d76003b9
+  koreanSource: "\uC2A4\uD0AC\uD6A8\uACFC"
+  automaticallyRegistered: 1
 --- !u!1 &2069835510033200047
 GameObject:
   m_ObjectHideFlags: 0
@@ -592,6 +609,7 @@ GameObject:
   - component: {fileID: 8711954195261270328}
   - component: {fileID: 7576171781066573606}
   - component: {fileID: 8631680392579827773}
+  - component: {fileID: 6482289662499842547}
   m_Layer: 0
   m_Name: Name
   m_TagString: Untagged
@@ -718,6 +736,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &6482289662499842547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5736551157257617418}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 8631680392579827773}
+  localizationKey: ui.monsterskill.name.f50b42ad
+  koreanSource: "\uC2A4\uD0AC\uC774\uB984"
+  automaticallyRegistered: 1
 --- !u!1 &7245133209595192704
 GameObject:
   m_ObjectHideFlags: 0
@@ -804,6 +838,7 @@ GameObject:
   - component: {fileID: 1813709201914894544}
   - component: {fileID: 4693168348317788649}
   - component: {fileID: 1535703030280932260}
+  - component: {fileID: 7978909620359634639}
   m_Layer: 0
   m_Name: Detail
   m_TagString: Untagged
@@ -931,6 +966,23 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7978909620359634639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7528049146046319630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1535703030280932260}
+  localizationKey: ui.monsterskill.detail.75591ba6
+  koreanSource: "\uCE90\uB9AD\uD130\uC640 \uAC19\uC740 \uB77C\uC778\uC744 \uB9DE\uCD94\uAE30
+    \uC704\uD5741\uCE78 \uB610\uB294 2\uCE78 \uCD5C\uB300 2\uD68C \uC774\uB3D9\uD55C\uB2E4.\r\n"
+  automaticallyRegistered: 1
 --- !u!1 &8609521944622611887
 GameObject:
   m_ObjectHideFlags: 0

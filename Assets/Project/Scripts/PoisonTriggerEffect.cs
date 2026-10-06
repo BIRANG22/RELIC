@@ -4,15 +4,25 @@ using UnityEngine;
 
 public class PoisonTriggerEffect : BattleEffectBase
 {
-    public override string EffectId => "E_PoisonTrigger";
+    private readonly string effectId;
+    private readonly bool addValueBeforeTrigger;
+    public override string EffectId => effectId;
     private const string PoisonEffectId = "E_Poison";
+
+    public PoisonTriggerEffect(string effectId = "E_PoisonTrigger")
+    {
+        this.effectId = string.IsNullOrWhiteSpace(effectId) ? "E_PoisonTrigger" : effectId.Trim();
+        addValueBeforeTrigger = this.effectId == "E_PoisonTrigger";
+    }
 
     protected override void Apply(BattleEffectContext context)
     {
         if (context == null)
             return;
 
-        int addValue = BattleEffectUtility.GetRepeatedValue(context);
+        int addValue = addValueBeforeTrigger
+            ? BattleEffectUtility.GetRepeatedValue(context)
+            : 0;
 
         if (context.PlayerTarget != null)
         {

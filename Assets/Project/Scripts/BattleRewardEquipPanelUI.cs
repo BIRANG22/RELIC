@@ -221,6 +221,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
         RefreshItemInfo();
         RefreshCharacterViews();
+        SelectInitialRewardCharacter();
         RefreshDeleteButton();
         RefreshSelectionVisuals();
         RefreshConfirmButton();
@@ -388,6 +389,13 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         if (view == null || string.IsNullOrWhiteSpace(view.CharacterId))
             return;
 
+        if (currentReward.Type == BattleRewardType.Skill)
+        {
+            SkillMasterData rewardSkill = ResolveSkill(currentReward.RewardId);
+            if (!BattleRewardEquipSelectionPolicy.CanSelectCharacter(rewardSkill, view.CharacterId))
+                return;
+        }
+
         selectedCharacterIndex = characterIndex;
         selectedSkillViewIndex = -1;
         selectedRelicRuntimeSlotIndex = -1;
@@ -437,7 +445,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         SkillMasterData nextSkill = ResolveSkill(currentReward.RewardId);
         string previousSkillId = GetEquippedSkillId(character, runtimeSkillIndex);
         if (character == null ||
-            !SkillRarityUtility.CanEquipToFreeSlot(nextSkill) ||
+            !BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(nextSkill, view.CharacterId) ||
             !CanReplaceRewardSkill(runtimeSkillIndex, previousSkillId))
         {
             SelectCharacter(characterIndex);
@@ -566,7 +574,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             return;
 
         SkillMasterData nextSkill = ResolveSkill(currentReward.RewardId);
-        if (!SkillRarityUtility.CanEquipToFreeSlot(nextSkill))
+        if (!BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(nextSkill, view.CharacterId))
             return;
 
         if (!CanReplaceRewardSkill(runtimeSkillIndex, previousSkillId))
@@ -856,8 +864,19 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             view.CharacterName = string.Empty;
 
             bool hasCharacter = !string.IsNullOrWhiteSpace(characterId);
+            bool canSelectCharacter = hasCharacter;
+            if (canSelectCharacter && currentReward != null && currentReward.Type == BattleRewardType.Skill)
+            {
+                SkillMasterData rewardSkill = ResolveSkill(currentReward.RewardId);
+                canSelectCharacter = BattleRewardEquipSelectionPolicy.CanSelectCharacter(
+                    rewardSkill,
+                    characterId);
+            }
+
             if (view.Root != null)
                 view.Root.gameObject.SetActive(hasCharacter);
+            if (view.CharacterButton != null)
+                view.CharacterButton.interactable = canSelectCharacter;
 
             if (!hasCharacter)
                 continue;
@@ -907,7 +926,18 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             SkillUpgradeMarkStyle.ApplyShared(slot.IconImage, skillId);
 
             if (slot.Button != null)
-                slot.Button.interactable = currentReward != null;
+            {
+                bool canSelect = currentReward != null;
+                if (canSelect && currentReward.Type == BattleRewardType.Skill)
+                {
+                    SkillMasterData rewardSkill = ResolveSkill(currentReward.RewardId);
+                    canSelect = BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(
+                        rewardSkill,
+                        view.CharacterId);
+                }
+
+                slot.Button.interactable = canSelect;
+            }
         }
     }
 
@@ -948,6 +978,28 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
             ApplyImage(image, icon);
         }
+    }
+
+    private void SelectInitialRewardCharacter()
+    {
+        if (currentReward == null || currentReward.Type != BattleRewardType.Skill)
+            return;
+
+        SkillMasterData rewardSkill = ResolveSkill(currentReward.RewardId);
+        string[] partyCharacterIds = new string[characterViews.Length];
+        for (int i = 0; i < characterViews.Length; i++)
+            partyCharacterIds[i] = characterViews[i]?.CharacterId;
+
+        int compatibleIndex = BattleRewardEquipSelectionPolicy.FindFirstCompatibleCharacterIndex(
+            rewardSkill,
+            partyCharacterIds);
+        if (compatibleIndex < 0)
+            return;
+
+        selectedCharacterIndex = compatibleIndex;
+        selectedSkillViewIndex = -1;
+        selectedRelicRuntimeSlotIndex = -1;
+        TrySelectSkillDestination(characterViews[compatibleIndex].CharacterId);
     }
 
     private void RefreshDeleteButton()
@@ -1067,7 +1119,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
     {
         CharacterRuntimeData character = GetCharacterRuntime(characterId);
         SkillMasterData nextSkill = ResolveSkill(currentReward?.RewardId);
-        if (!SkillRarityUtility.CanEquipToFreeSlot(nextSkill))
+        if (!BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(nextSkill, characterId))
             return false;
 
         if (!BattleRewardEquipSelectionPolicy.TryFindSkillViewIndex(
@@ -1090,7 +1142,8 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         int runtimeSkillIndex = RuntimeSkillSlotIndices[selectedSkillViewIndex];
         CharacterRuntimeData character = GetCharacterRuntime(characterId);
         SkillMasterData nextSkill = ResolveSkill(currentReward?.RewardId);
-        if (character == null || !SkillRarityUtility.CanEquipToFreeSlot(nextSkill))
+        if (character == null ||
+            !BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(nextSkill, characterId))
             return false;
 
         SkillInventoryEquipService.EnsureEquippedSkillArray(character);

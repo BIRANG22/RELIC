@@ -67,6 +67,7 @@ public static class RestRoomShopService
         IReadOnlyList<RelicData> allRelics,
         IEnumerable<string> unavailableSkillIds,
         IEnumerable<string> unavailableRelicIds,
+        IEnumerable<string> partyCharacterIds,
         ISkillRewardRandom random,
         float commonWeight = DefaultCommonWeight,
         float rareWeight = DefaultRareWeight,
@@ -80,7 +81,7 @@ public static class RestRoomShopService
         HashSet<string> selectedSkillIds = new(StringComparer.OrdinalIgnoreCase);
         HashSet<string> selectedRelicIds = new(StringComparer.OrdinalIgnoreCase);
 
-        // 4°³°¡ ÀüºÎ °°Àº Á¾·ù°¡ µÇÁö ¾Êµµ·Ï ±â¾ï °³¼ö¸¦ 1~3°³ Áß ÇÏ³ª·Î ¸ÕÀú °áÁ¤ÇÕ´Ï´Ù.
+        // 4ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Êµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 1~3ï¿½ï¿½ ï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         int skillCount = random.Range(1, DefaultTotalGoodsCount);
         int relicCount = DefaultTotalGoodsCount - skillCount;
 
@@ -493,7 +494,10 @@ public static class RestRoomShopService
                !string.IsNullOrWhiteSpace(skill.SkillId) &&
                skill.Category == Category.Core &&
                SkillRarityUtility.IsCoreDropRarity(skill.Rarity) &&
-               SkillRarityUtility.IsBaseSkillVariant(skill.SkillId);
+               SkillRarityUtility.IsBaseSkillVariant(skill.SkillId) &&
+               SkillOwnershipPolicy.CanRewardToParty(
+                   skill,
+                   SkillOwnershipPolicy.GetPartyCharacterIds(DataManager.Instance?.PartyRuntimeStore));
     }
 
     private static void Shuffle<T>(IList<T> list, ISkillRewardRandom random)

@@ -15611,13 +15611,10 @@ MonoBehaviour:
   eventRoom: {fileID: 1268787443}
   restRoom: {fileID: 1231175799}
   closeInventoryAndBagOnRoomActiveChange: 1
-  inventoryPanelObjectNames:
-  - InventoryPanel
   bagPanelObjectNames:
   - BattleBagPanel
   - BagPanel
   - BagPanelUI
-  inventoryClosedY: 1080
   bagClosedX: 1100
 --- !u!4 &324115086
 Transform:
@@ -24294,22 +24291,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 517977044}
   m_CullTransparentMesh: 1
---- !u!224 &518729658 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-  m_PrefabInstance: {fileID: 1746622251}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &518729662 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7750299052846745677, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-  m_PrefabInstance: {fileID: 1746622251}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5dcfe5b1ab3c3948a105b7ea35e3743, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &519270898
 GameObject:
   m_ObjectHideFlags: 0
@@ -52537,7 +52518,6 @@ RectTransform:
   - {fileID: 81926681}
   - {fileID: 1710542868}
   - {fileID: 1493534706}
-  - {fileID: 518729658}
   - {fileID: 761655139}
   - {fileID: 1855287308}
   m_Father: {fileID: 742669610}
@@ -81721,112 +81701,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1745941236}
   m_CullTransparentMesh: 1
---- !u!1001 &1746622251
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 1137809861}
-    m_Modifications:
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_Pivot.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_Pivot.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_AnchorMin.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 1920
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 1080
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 1080
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1772713423640916789, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8039761072046674852, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-      propertyPath: m_Name
-      value: InventoryPanel
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 4875487406099642240, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-    - {fileID: 292581725218424753, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-    - {fileID: 7883208302549646260, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-    - {fileID: 6818084232885587677, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-    - {fileID: 6682586495043228395, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-    - {fileID: 3648857222054767028, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-    - {fileID: 3076537308408568150, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-    - {fileID: 1523500371103692893, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-    - {fileID: 4050002032046650970, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 0a507e024825bfc4da47bb4c3e123a0a, type: 3}
 --- !u!1 &1747625213
 GameObject:
   m_ObjectHideFlags: 0
@@ -86128,18 +86002,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 518729662}
-        m_TargetAssemblyTypeName: InventoryPanelSelectionResetter, Assembly-CSharp
-        m_MethodName: ResetSelectionState
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
       - m_Target: {fileID: 1137359715}
         m_TargetAssemblyTypeName: StartRoomController, Assembly-CSharp
         m_MethodName: HideRelicSettingGuideText
@@ -86206,7 +86068,7 @@ MonoBehaviour:
   ignoreSpriteClickWhenMoved: 1
   panelToOpen: {fileID: 0}
   panelsToClose: []
-  panelToMove: {fileID: 518729658}
+  panelToMove: {fileID: 0}
   moveOffset: {x: 0, y: -1080}
   moveDuration: 0.2
   toggleMove: 1

@@ -76,8 +76,6 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
     [Header("Open Animation")]
     [Tooltip("BattleCharacterPanel/BattleSlot 이동이 끝난 뒤 MonsterInfoPanel이 나타나는 페이드 시간입니다.")]
     [SerializeField, Min(0f)] private float fadeInDuration = 0.15f;
-    [Tooltip("BattleCharacterPanel의 이동 완료를 기다리는 최대 시간입니다. 비정상 상황에서도 패널이 영구적으로 숨겨지지 않도록 합니다.")]
-    [SerializeField, Min(0f)] private float maxWaitForBattleUi = 1f;
 
     [Header("Skill List")]
     [SerializeField] private Transform skillContent;
@@ -319,36 +317,12 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
     private IEnumerator RevealAfterBattleUiMovementRoutine()
     {
-        // MonsterUnit 선택 이벤트와 BattleCharacterPanel의 위치 갱신이 같은 프레임에 발생하므로
-        // 한 프레임 기다린 뒤 실제 이동 완료를 확인합니다.
-        yield return null;
-
-        EnsureBattleCharacterPanel();
-
-        float waited = 0f;
-        while (battleCharacterPanel != null &&
-               !battleCharacterPanel.IsAtDefaultPosition &&
-               waited < maxWaitForBattleUi)
-        {
-            float delta = Time.unscaledDeltaTime;
-            waited += delta;
-            yield return null;
-        }
-
-        // 이동이 끝난 뒤에야 MonsterInfoPanel 자체를 활성화합니다.
-        // 따라서 이동 중에는 패널의 배경/텍스트가 전혀 보이지 않습니다.
         if (boundMonster == null || boundRuntime == null || boundRuntime.IsDead)
         {
             revealCoroutine = null;
             yield break;
         }
 
-        // 카메라 포커스는 몬스터를 클릭한 시점부터 이미 진행 중입니다.
-        // 여기서는 BattleCharacterPanel/BattleSlot이 내려간 뒤 패널 표시만 시작합니다.
-
-        // 기존 Erosion은 Overlay Canvas 아래에 있어 Screen Space - Camera인
-        // MonsterInfoCanvas보다 항상 앞에 그려집니다. 정보 패널이 실제로 표시되는 동안에는
-        // Erosion의 시각/레이캐스트만 잠시 숨겨 MonsterInfoPanel 뒤에 있는 것처럼 처리합니다.
         HideErosionVisual();
 
         if (monsterInfoPanel != null)
@@ -386,7 +360,6 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         SetCanvasGroupVisibleImmediate();
         revealCoroutine = null;
     }
-
     /// <summary>
     /// MonsterInfoCanvas 아래에 런타임으로 생성된 Skill/Status UI가
     /// 블러용 복제 hierarchy에도 반영되도록 복제본을 다시 만듭니다.

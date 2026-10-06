@@ -9,6 +9,9 @@ public class BattleEffectRegistry
     {
         Register(new StrikeEffect());
         Register(new PierceEffect());
+        Register(new ArmorStrikeEffect());
+        Register(new RandomStrikeEffect());
+        Register(new StrikeByVulnerableEffect());
         Register(new MissingHpStrikeEffect());
         Register(new HealEffect());
         Register(new CureEffect());
@@ -18,6 +21,9 @@ public class BattleEffectRegistry
         Register(new BleedEffect());
         Register(new PoisonEffect());
         Register(new PoisonTriggerEffect());
+        Register(new PoisonTriggerEffect("E_TriggerPoison"));
+        Register(new PoisonByTargetPoisonEffect());
+        Register(new BondageEffect());
         Register(new DebuffIncreaseEffect());
         Register(new DebuffDoubleEffect());
         Register(new RemoveArmorEffect());
@@ -58,7 +64,14 @@ public class BattleEffectRegistry
         Register(new SpawnSpiderEggEffect());
         Register(new SpawnSpiderWebEffect());
         Register(new SpawnSoldierEffect());
-        Register(new LogOnlyEffect("E_Rush"));
+        Register(new MissSelfDamageEffect());
+        Register(new RestoreManaPerHitTargetEffect());
+        Register(new ValueUpOnKillEffect());
+        Register(new ValueUpOnHitEffect());
+        Register(new DamageUpIfBleedingEffect());
+        Register(new StrikeCountByBuffEffect());
+        Register(new StrikeCountByDebuffEffect());
+        Register(new RushEffect());
         Register(new CrashEffect());
     }
 

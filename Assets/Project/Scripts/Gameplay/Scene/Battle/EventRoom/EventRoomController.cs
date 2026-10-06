@@ -4873,6 +4873,11 @@ public class EventRoomController : MonoBehaviour
             if (unavailableIds.Contains(skillId))
                 continue;
 
+            if (!SkillOwnershipPolicy.CanRewardToParty(
+                    skill,
+                    SkillOwnershipPolicy.GetPartyCharacterIds(DataManager.Instance.PartyRuntimeStore)))
+                continue;
+
             candidates.Add(skill);
         }
 

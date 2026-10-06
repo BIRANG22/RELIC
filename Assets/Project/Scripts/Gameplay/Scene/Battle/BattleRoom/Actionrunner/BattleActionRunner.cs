@@ -2214,7 +2214,8 @@ public class BattleActionRunner
                 yield return ExecutePlayerDirectionalMoveEffect(
                     caster,
                     command,
-                    directionalMoveDistance);
+                    directionalMoveDistance,
+                    effectId);
 
                 RefreshPlayerMonsterTargetsAfterDirectionalMove(
                     caster,
@@ -2226,6 +2227,9 @@ public class BattleActionRunner
 
             int value = GetPlayerEffectValue(command, entry);
             int count = GetPlayerEffectCount(command, entry);
+
+            if (IsPostResolutionEffect(effectId))
+                continue;
 
             if (IsDamageHitEffect(effectId))
             {
@@ -2274,6 +2278,8 @@ public class BattleActionRunner
             if (effectId == "E_Knockback" || effectId == "E_Grab")
                 hasForcedMoveVisual = true;
         }
+
+        ExecutePlayerPostResolutionEffects(caster, command);
 
         // 드라우그 반격은 공격 스킬의 모든 효과가 끝난 뒤 실행합니다.
         // 넉백/그랩이 포함된 경우 강제이동과 충돌 처리가 먼저 끝나므로,
@@ -2394,7 +2400,17 @@ public class BattleActionRunner
         BattleUnitAnimator attackerAnimator,
         HashSet<MonsterUnit> draugrCounterCandidates)
     {
-        int hitCount = Mathf.Max(1, count);
+        int hitCount = Mathf.Max(
+            1,
+            NewSkillEffectRules.ResolveDirectDamageHitCount(effectId, count));
+        if (effectId == "E_StrikeCountByDebuff")
+            hitCount = NewSkillEffectRules.ResolveConditionalHitCount(
+                count,
+                GetMaximumTargetHarmfulEffectTypes(monsterTargets));
+
+        int effectParameterCount = NewSkillEffectRules.ResolveDirectDamageParameterCount(
+            effectId,
+            count);
         bool isMultiHit = hitCount > 1;
         float multiHitAnimationSpeed = GetMultiHitAnimationSpeed(hitCount);
 
@@ -2447,12 +2463,25 @@ public class BattleActionRunner
             List<Transform> feedbackTargets = new();
             bool appliedAnyHit = false;
 
+            MonsterUnit randomTarget = effectId == "E_RandomStrike"
+                ? PickRandomAliveMonster(monsterTargets)
+                : null;
+
             for (int i = 0; i < monsterTargets.Count; i++)
             {
                 MonsterUnit monster = monsterTargets[i];
 
                 if (!IsAliveMonsterTarget(monster))
                     continue;
+                if (randomTarget != null && monster != randomTarget)
+                    continue;
+                if (effectId == "E_StrikeCountByDebuff" &&
+                    hitIndex >= NewSkillEffectRules.ResolveConditionalHitCount(
+                        count,
+                        CountHarmfulEffectTypes(monster.RuntimeData?.StatusEffects)))
+                {
+                    continue;
+                }
 
                 FaceMonsterToAttacker(monster, caster);
 
@@ -2462,7 +2491,7 @@ public class BattleActionRunner
                     command,
                     effectId,
                     value,
-                    1);
+                    effectParameterCount);
 
                 int hpBeforeHit = monster.RuntimeData != null
                     ? monster.RuntimeData.CurrentHP
@@ -2724,7 +2753,8 @@ public class BattleActionRunner
         if (command == null ||
             command.SkillData == null ||
             command.SkillData.RangeType != RangeType.Direction ||
-            !string.Equals(effectId, "E_Move", StringComparison.Ordinal) ||
+            (!string.Equals(effectId, "E_Move", StringComparison.Ordinal) &&
+             !string.Equals(effectId, "E_Rush", StringComparison.Ordinal)) ||
             effectIndex < 0 ||
             string.IsNullOrWhiteSpace(command.SkillData.ValueRate))
         {
@@ -2752,13 +2782,23 @@ public class BattleActionRunner
     private IEnumerator ExecutePlayerDirectionalMoveEffect(
         BattleCharacter caster,
         PlayerReservedCommand command,
-        int signedDistance)
+        int signedDistance,
+        string effectId)
     {
         if (caster == null || command == null || caster.RuntimeData == null)
             yield break;
 
         if (caster.RuntimeData.IsDead || caster.CurrentGridIndex < 0 || gridManager == null)
             yield break;
+
+        if (HasStatus(caster.RuntimeData.StatusEffects, "E_Bondage"))
+        {
+            BattleStatusEffectService.TryConsumeOnTrigger(
+                caster.RuntimeData.StatusEffects,
+                "E_Bondage",
+                id => DataManager.Instance?.EffectDatabase?.Get(id));
+            yield break;
+        }
 
         if (signedDistance == 0)
             yield break;
@@ -2783,9 +2823,21 @@ public class BattleActionRunner
             yield break;
         }
 
+        if (command.ExecutionResult != null)
+        {
+            command.ExecutionResult.RushDestinationGridIndex = targetGridIndex;
+            command.ExecutionResult.RushCollisionGridIndex =
+                blockingUnitGridIndices.Count > 0 ? blockingUnitGridIndices[0] : -1;
+            command.ExecutionResult.RushCollisionRuntimeId =
+                ResolveCollisionRuntimeId(
+                    command.ExecutionResult.RushCollisionGridIndex,
+                    command.CharacterId);
+        }
+
         if (targetGridIndex == startGridIndex)
         {
-            ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
+            if (NewSkillEffectRules.ShouldApplyMoveCollisionEffect(effectId))
+                ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
             yield break;
         }
 
@@ -2822,7 +2874,8 @@ public class BattleActionRunner
         ApplyGridEffectsToPlayer(enteredGridIndices, caster);
         statusEffectService.ApplyBleedDamageToPlayerOnMove(caster);
 
-        ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
+        if (NewSkillEffectRules.ShouldApplyMoveCollisionEffect(effectId))
+            ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
 
         if (facing != null)
         {
@@ -2869,6 +2922,31 @@ public class BattleActionRunner
         }
     }
 
+    private static string ResolveCollisionRuntimeId(int gridIndex, string movingCharacterId)
+    {
+        if (gridIndex < 0)
+            return null;
+
+        if (BattleOccupancyService.TryGetMonsterAtGrid(
+                gridIndex,
+                out MonsterUnit monster) &&
+            monster?.RuntimeData != null)
+        {
+            return monster.RuntimeData.RuntimeId;
+        }
+
+        if (BattleOccupancyService.TryGetCharacterAtGrid(
+                gridIndex,
+                out BattleCharacter character,
+                movingCharacterId) &&
+            character?.RuntimeData != null)
+        {
+            return character.RuntimeData.CharacterId;
+        }
+
+        return null;
+    }
+
     private BattleEffectContext CreatePlayerMonsterEffectContext(
         BattleCharacter caster,
         MonsterUnit monsterTarget,
@@ -2889,13 +2967,79 @@ public class BattleActionRunner
 
             EffectId = effectId,
             Value = value,
-            Count = count
+            Count = count,
+            ExecutionResult = command.ExecutionResult
         };
     }
 
     private bool IsDamageHitEffect(string effectId)
     {
-        return effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike";
+        return effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike" ||
+               effectId == "E_ArmorStrike" || effectId == "E_RandomStrike" ||
+               effectId == "E_StrikeByVulnerable" ||
+               effectId == "E_DamageUpIfBleeding" ||
+               effectId == "E_StrikeCountByBuff" ||
+               effectId == "E_StrikeCountByDebuff";
+    }
+
+    private static bool IsPostResolutionEffect(string effectId)
+    {
+        return effectId == "E_MissSelfDamage" ||
+               effectId == "E_RestoreManaPerHitTarget" ||
+               effectId == "E_ValueUpOnKill" ||
+               effectId == "E_ValueUpOnHit";
+    }
+
+    private void ExecutePlayerPostResolutionEffects(
+        BattleCharacter caster,
+        PlayerReservedCommand command)
+    {
+        if (command?.SkillData?.EffectEntries == null)
+            return;
+
+        for (int i = 0; i < command.SkillData.EffectEntries.Count; i++)
+        {
+            SkillEffectEntry entry = command.SkillData.EffectEntries[i];
+            if (entry == null || !IsPostResolutionEffect(entry.EffectId))
+                continue;
+
+            ExecutePlayerPostResolutionEffect(
+                caster,
+                command,
+                entry.EffectId,
+                GetPlayerEffectValue(command, entry));
+        }
+    }
+
+    private void ExecutePlayerPostResolutionEffect(
+        BattleCharacter caster,
+        PlayerReservedCommand command,
+        string effectId,
+        int value)
+    {
+        effectExecutor.Execute(effectId, new BattleEffectContext
+        {
+            PlayerCaster = caster,
+            PlayerSkillData = command.SkillData,
+            PlayerCommand = command,
+            Direction = command.Direction,
+            GridManager = gridManager,
+            EffectId = effectId,
+            Value = value,
+            Count = 1,
+            ExecutionResult = command.ExecutionResult
+        });
+    }
+
+    private MonsterUnit PickRandomAliveMonster(List<MonsterUnit> targets)
+    {
+        if (targets == null)
+            return null;
+        List<MonsterUnit> alive = new();
+        for (int i = 0; i < targets.Count; i++)
+            if (IsAliveMonsterTarget(targets[i]))
+                alive.Add(targets[i]);
+        return BattleRandom.Pick(alive);
     }
 
     private List<int> BuildDamageableGridEffectTargets(PlayerReservedCommand command)
@@ -3096,7 +3240,8 @@ public class BattleActionRunner
 
                 EffectId = effectId,
                 Value = GetPlayerEffectValue(command, entry),
-                Count = GetPlayerEffectCount(command, entry)
+                Count = GetPlayerEffectCount(command, entry),
+                ExecutionResult = command.ExecutionResult
             };
 
             if (IsDamageHitEffect(effectId))
@@ -3162,7 +3307,8 @@ public class BattleActionRunner
 
                 EffectId = effectId,
                 Value = GetPlayerEffectValue(command, entry),
-                Count = GetPlayerEffectCount(command, entry)
+                Count = GetPlayerEffectCount(command, entry),
+                ExecutionResult = command.ExecutionResult
             };
 
             if (IsDamageHitEffect(effectId))
@@ -3238,7 +3384,18 @@ public class BattleActionRunner
         if (command == null || entry == null)
             return 1;
 
-        int baseValue = SkillScalingUtility.ResolveBaseValue(command.UserRuntime, entry);
+        int entryIndex = command.SkillData?.EffectEntries?.IndexOf(entry) ?? -1;
+        int baseValue = entryIndex >= 0 && entryIndex < command.ResolvedEffectValues.Count
+            ? command.ResolvedEffectValues[entryIndex]
+            : SkillScalingUtility.ResolveBaseValue(command.UserRuntime, entry);
+
+        if (IsFirstDirectDamageEntry(command.SkillData, entryIndex) && DataManager.Instance != null)
+        {
+            baseValue += SkillRuntimeValueBonusResolver.GetTotalValueBonus(
+                DataManager.Instance.SkillRuntimeStore,
+                command.CharacterId,
+                command.SkillData.SkillId);
+        }
 
         if (entry.EffectId == "E_Knockback")
             return BattleEquipmentEffectService.ModifyPlayerKnockbackValue(
@@ -3259,11 +3416,109 @@ public class BattleActionRunner
         if (command == null || entry == null)
             return 1;
 
+        int entryIndex = command.SkillData?.EffectEntries?.IndexOf(entry) ?? -1;
+        int baseCount = entryIndex >= 0 && entryIndex < command.ResolvedEffectCounts.Count
+            ? command.ResolvedEffectCounts[entryIndex]
+            : entry.CountAmount;
+
+        if (IsDamageHitEffect(entry.EffectId) &&
+            HasSkillEffect(command.SkillData, "E_StrikeCountByBuff"))
+        {
+            baseCount += CountBeneficialEffectTypes(command.UserRuntime?.StatusEffects);
+        }
+
         return BattleEquipmentEffectService.ModifyPlayerEffectCount(
             command.UserRuntime,
             command,
             entry,
-            entry.CountAmount);
+            baseCount);
+    }
+
+    private static bool IsFirstDirectDamageEntry(SkillMasterData skill, int entryIndex)
+    {
+        if (skill?.EffectEntries == null || entryIndex < 0)
+            return false;
+        for (int i = 0; i < skill.EffectEntries.Count; i++)
+        {
+            string id = skill.EffectEntries[i]?.EffectId;
+            if (id == "E_Strike" || id == "E_ArmorStrike" ||
+                id == "E_RandomStrike" || id == "E_StrikeByVulnerable" ||
+                id == "E_DamageUpIfBleeding" || id == "E_StrikeCountByBuff" ||
+                id == "E_StrikeCountByDebuff")
+                return i == entryIndex;
+        }
+        return false;
+    }
+
+    private static bool HasSkillEffect(SkillMasterData skill, string effectId)
+    {
+        if (skill?.EffectEntries == null)
+            return false;
+        for (int i = 0; i < skill.EffectEntries.Count; i++)
+            if (skill.EffectEntries[i]?.EffectId == effectId)
+                return true;
+        return false;
+    }
+
+    private static int CountBeneficialEffectTypes(List<StatusEffectRuntimeData> statuses)
+    {
+        if (statuses == null || DataManager.Instance?.EffectDatabase == null)
+            return 0;
+        HashSet<string> ids = new(StringComparer.Ordinal);
+        for (int i = 0; i < statuses.Count; i++)
+        {
+            StatusEffectRuntimeData status = statuses[i];
+            EffectMasterData master = status != null
+                ? DataManager.Instance.EffectDatabase.Get(status.EffectId)
+                : null;
+            if (status != null && status.Stack > 0 && master?.EffectType == EffectType.Beneficial)
+                ids.Add(status.EffectId);
+        }
+        return ids.Count;
+    }
+
+    private static int CountHarmfulEffectTypes(List<StatusEffectRuntimeData> statuses)
+    {
+        if (statuses == null || DataManager.Instance?.EffectDatabase == null)
+            return 0;
+
+        HashSet<string> ids = new(StringComparer.Ordinal);
+        for (int i = 0; i < statuses.Count; i++)
+        {
+            StatusEffectRuntimeData status = statuses[i];
+            EffectMasterData master = status != null
+                ? DataManager.Instance.EffectDatabase.Get(status.EffectId)
+                : null;
+            if (status != null && status.Stack > 0 && master?.EffectType == EffectType.Harmful)
+                ids.Add(status.EffectId);
+        }
+        return ids.Count;
+    }
+
+    private static int GetMaximumTargetHarmfulEffectTypes(List<MonsterUnit> targets)
+    {
+        int maximum = 0;
+        if (targets == null)
+            return maximum;
+
+        for (int i = 0; i < targets.Count; i++)
+        {
+            MonsterUnit target = targets[i];
+            if (target?.RuntimeData == null || target.RuntimeData.IsDead)
+                continue;
+            maximum = Mathf.Max(maximum, CountHarmfulEffectTypes(target.RuntimeData.StatusEffects));
+        }
+        return maximum;
+    }
+
+    private static bool HasStatus(List<StatusEffectRuntimeData> statuses, string effectId)
+    {
+        if (statuses == null)
+            return false;
+        for (int i = 0; i < statuses.Count; i++)
+            if (statuses[i] != null && statuses[i].Stack > 0 && statuses[i].EffectId == effectId)
+                return true;
+        return false;
     }
 
     private bool IsDeadMonsterCommand(MonsterReservedCommand command)
@@ -3300,6 +3555,15 @@ public class BattleActionRunner
 
         if (monster == null)
             yield break;
+
+        if (HasStatus(monster.RuntimeData?.StatusEffects, "E_Bondage"))
+        {
+            BattleStatusEffectService.TryConsumeOnTrigger(
+                monster.RuntimeData.StatusEffects,
+                "E_Bondage",
+                id => DataManager.Instance?.EffectDatabase?.Get(id));
+            yield break;
+        }
 
         int currentGridIndex = monster.MainGridIndex;
 

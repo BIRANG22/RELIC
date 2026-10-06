@@ -8,6 +8,8 @@ namespace Relic.Gameplay.Data
 
         public int Level = 1;
         public int Exp = 0;
+        public int PermanentValueBonus;
+        public int BattleValueBonus;
 
         public bool IsUnlocked;
         public bool IsNew;

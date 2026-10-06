@@ -3267,131 +3267,131 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839844
-    m_Localized: Rise of War Spirit
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839845
-    m_Localized: Rise of War +
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839846
-    m_Localized: Shield
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839847
-    m_Localized: Shield+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839848
-    m_Localized: Flow of Magic
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839849
-    m_Localized: Magical Flow+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839850
-    m_Localized: Counterattack Posture
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839851
-    m_Localized: Counterattack Posture+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839852
-    m_Localized: Thirst
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839853
-    m_Localized: Thirst+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839854
-    m_Localized: Concentration
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839855
-    m_Localized: Mental Concentration+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839856
-    m_Localized: Fighting Instinct
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839857
-    m_Localized: Battle Instinct+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839858
-    m_Localized: Spotting Gaps
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839859
-    m_Localized: Spotting Gaps+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839860
-    m_Localized: Thorn Armor
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839861
-    m_Localized: Thorn Armor+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839862
-    m_Localized: Cost of Life
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839863
-    m_Localized: Price of Life+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839864
-    m_Localized: Charge Order
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839865
-    m_Localized: Charge Order+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839866
-    m_Localized: Regeneration
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839867
-    m_Localized: Regeneration+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839868
-    m_Localized: Concentration of Firepower
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839869
-    m_Localized: Concentrate Firepower+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839870
-    m_Localized: Breath of Life
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839871
-    m_Localized: Breath of Life+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839872
-    m_Localized: Quick Decision
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839873
-    m_Localized: Quick Version Handan+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839874
-    m_Localized: Community of Destiny
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839875
-    m_Localized: Community of Destiny+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100944
@@ -3532,567 +3532,515 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100992
-    m_Localized: Give {E_Boost} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100993
-    m_Localized: Give {E_Boost} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100994
-    m_Localized: Grants {E_Armor} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100995
-    m_Localized: Grants {E_Armor} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100996
-    m_Localized: '{E_Mana}cast{ValueRate1}Restore.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100997
-    m_Localized: '{E_Mana}cast{ValueRate1}Restore.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100998
-    m_Localized: Grant {E_Ward} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100999
-    m_Localized: Grant {E_Ward} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101000
-    m_Localized: '{E_Lifesteal}second{ValueRate1}get'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101001
-    m_Localized: '{E_Lifesteal}second{ValueRate1}get'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101002
-    m_Localized: '{E_Karma} gets {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101003
-    m_Localized: '{E_Karma} gets {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101004
-    m_Localized: '{E_Grit} gets {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101005
-    m_Localized: '{E_Grit} gets {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101006
-    m_Localized: '{E_Blindside} gets {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101007
-    m_Localized: '{E_Blindside} gets {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101008
-    m_Localized: Get {E_Armor} {ValueRate1}, get {E_Ward} {ValueRate2}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101009
-    m_Localized: Get {E_Armor} {ValueRate1}, get {E_Ward} {ValueRate2}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101010
-    m_Localized: Get {E_Armor} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101011
-    m_Localized: Get {E_Armor} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101012
-    m_Localized: Give {E_Boost} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101013
-    m_Localized: Give {E_Boost} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101014
-    m_Localized: '{E_Cure} is given as {ValueRate1}, and {E_Armor} is given as {ValueRate2}.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101015
-    m_Localized: '{E_Cure} is given as {ValueRate1}, and {E_Armor} is given as {ValueRate2}.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101016
-    m_Localized: '{E_Boost} is given as {ValueRate1}, and {E_Smite} is given as {ValueRate2}.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101017
-    m_Localized: '{E_Boost} is given as {ValueRate1}, and {E_Smite} is given as {ValueRate2}.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101018
-    m_Localized: Grants {E_Heal} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101019
-    m_Localized: Grants {E_Heal} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101020
-    m_Localized: Grants {E_Swift} {ValueRate1} to all allies.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101021
-    m_Localized: Grants {E_Swift} {ValueRate1} to all allies.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101022
-    m_Localized: Grants {E_Bond} {ValueRate1} to all allies.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101023
-    m_Localized: Grants {E_Bond} {ValueRate1} to all allies.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101024
-    m_Localized: Poke at Weakness
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101025
-    m_Localized: Grant {E_Vulnerable} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101026
-    m_Localized: Strike Weakness+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101027
-    m_Localized: Grant {E_Vulnerable} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101028
-    m_Localized: Neutralize
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101029
-    m_Localized: Give {E_Weaken} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101030
-    m_Localized: Neutralize+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101031
-    m_Localized: Give {E_Weaken} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101032
-    m_Localized: Toxic Fog
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101033
-    m_Localized: Gives {E_Poison} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101034
-    m_Localized: Toxic Fog+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101035
-    m_Localized: Gives {E_Poison} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101036
-    m_Localized: Blade Trace
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101037
-    m_Localized: Give {E_Bleed} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101038
-    m_Localized: Blade Trail+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101039
-    m_Localized: Give {E_Bleed} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101040
-    m_Localized: Burst of Light
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101041
-    m_Localized: Give {E_Fatigue} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101042
-    m_Localized: Burst of Light+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101043
-    m_Localized: Give {E_Fatigue} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101044
-    m_Localized: Poisonous Ignition
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101045
-    m_Localized: Grants {E_Poison} {ValueRate1} and activates the poisoning effect
-      once.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101046
-    m_Localized: Poison Ignition+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101047
-    m_Localized: Grants {E_Poison} {ValueRate1} and activates the poisoning effect
-      once.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101048
-    m_Localized: Charge Release
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101049
-    m_Localized: '{E_Vulnerable} is given as {ValueRate1}, and {E_Weaken} is given
-      as {ValueRate2}.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101050
-    m_Localized: Charge Release+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101051
-    m_Localized: '{E_Vulnerable} is given as {ValueRate1}, and {E_Weaken} is given
-      as {ValueRate2}.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101052
-    m_Localized: Overcurrent
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101053
-    m_Localized: Increases the value of all debuffs by {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101054
-    m_Localized: Overcurrent+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101055
-    m_Localized: Increases the value of all debuffs by {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101056
-    m_Localized: Echo of Pain
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101057
-    m_Localized: Increases the value of the debuff with the highest value by {ValueRate1}
-      times.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101058
-    m_Localized: Echo of Pain+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101059
-    m_Localized: Increases the value of the debuff with the highest value by {ValueRate1}
-      times.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101060
-    m_Localized: Overload
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101061
-    m_Localized: Removes armor.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101062
-    m_Localized: Overload+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101063
-    m_Localized: Removes armor.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101064
-    m_Localized: Shockwave
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101065
-    m_Localized: Inflicts {ValueRate1} {E_Strike}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101066
-    m_Localized: Shockwave+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101067
-    m_Localized: Inflicts {ValueRate1} {E_Strike}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101068
-    m_Localized: Thunderbolt
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101069
-    m_Localized: Inflicts {ValueRate1} {E_Strike}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101070
-    m_Localized: Thunderbolt+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101071
-    m_Localized: Inflicts {ValueRate1} {E_Strike}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101072
-    m_Localized: Piercing Light
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101073
-    m_Localized: Inflicts {ValueRate1} {E_Pierce}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101074
-    m_Localized: Piercing Light+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101075
-    m_Localized: Inflicts {ValueRate1} {E_Pierce}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101076
-    m_Localized: Arrow Barrage
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101077
-    m_Localized: Inflicts {ValueRate1} {E_Strike} {CountRate1} times.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101078
-    m_Localized: Arrow Barrage+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101079
-    m_Localized: Inflicts {ValueRate1} {E_Strike} {CountRate1} times.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101080
-    m_Localized: Mobile Strike
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101081
-    m_Localized: Inflicts {ValueRate1} {E_Strike}, then retreats {ValueRate2} tiles.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101082
-    m_Localized: Mobile Strike+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101083
-    m_Localized: Inflicts {ValueRate1} {E_Strike}, then retreats {ValueRate2} tiles.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101084
-    m_Localized: Advancing Strike
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101085
-    m_Localized: Advances {ValueRate1} tiles, then inflicts {ValueRate2} {E_Strike}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101086
-    m_Localized: Advancing Strike+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101087
-    m_Localized: Advances {ValueRate1} tiles, then inflicts {ValueRate2} {E_Strike}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101088
-    m_Localized: Whirlwind
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101089
-    m_Localized: Inflicts {ValueRate1} {E_Strike} and {E_Knockback}s the target {ValueRate2}
-      tiles.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101090
-    m_Localized: Whirlwind+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101091
-    m_Localized: Inflicts {ValueRate1} {E_Strike} and {E_Knockback}s the target {ValueRate2}
-      tiles.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101092
-    m_Localized: Backdraft
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101093
-    m_Localized: Inflicts {ValueRate1} {E_Strike} and {E_Grab}s the target {ValueRate2}
-      tiles.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101094
-    m_Localized: Backdraft+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101095
-    m_Localized: Inflicts {ValueRate1} {E_Strike} and {E_Grab}s the target {ValueRate2}
-      tiles.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101096
-    m_Localized: Rupture
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101097
-    m_Localized: Inflicts {ValueRate1} {E_Strike}. If the attack misses, take 5 damage.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101098
-    m_Localized: Rupture+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101099
-    m_Localized: Inflicts {ValueRate1} {E_Strike}. If the attack misses, take 3 damage.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101100
-    m_Localized: Blood Pierce
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101101
-    m_Localized: Inflicts {ValueRate1} {E_Pierce}. Recover 1 Mana when it hits at
-      maximum range.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101102
-    m_Localized: Blood Pierce+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101103
-    m_Localized: Inflicts {ValueRate1} {E_Pierce}. Recover 2 Mana when it hits at
-      maximum range.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101104
-    m_Localized: Meteor Shower
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101105
-    m_Localized: Inflicts {ValueRate1} {E_Strike}. Each attack targets a random enemy
-      within the area.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101106
-    m_Localized: Meteor Shower+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101107
-    m_Localized: Inflicts {ValueRate1} {E_Strike}. Each attack targets a random enemy
-      within the area.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101108
-    m_Localized: Sky Barrage
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101109
-    m_Localized: Inflicts {ValueRate1} {E_Pierce}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101110
-    m_Localized: Sky Barrage+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101111
-    m_Localized: Inflicts {ValueRate1} {E_Pierce}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101112
-    m_Localized: Crimson Harvest
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101113
-    m_Localized: Inflicts {ValueRate1} {E_Strike}. Its value increases by 1 on each
-      hit and resets after battle.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101114
-    m_Localized: Crimson Harvest+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101115
-    m_Localized: Inflicts {ValueRate1} {E_Strike}. Its value increases by 1 on each
-      hit and resets after battle.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101116
-    m_Localized: Chain Explosion
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101117
-    m_Localized: Inflicts {ValueRate1} {E_Strike} {CountRate1} times. Gains 1 additional
-      hit for each debuff on the target.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101118
-    m_Localized: Chain Explosion+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101119
-    m_Localized: Inflicts {ValueRate1} {E_Strike} {CountRate1} times. Gains 1 additional
-      hit for each debuff on the target.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101120
-    m_Localized: Instant Strike
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101121
-    m_Localized: Inflicts {ValueRate1} {E_Strike}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101122
-    m_Localized: Instant Strike+
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101123
-    m_Localized: Inflicts {ValueRate1} {E_Strike}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101124
-    m_Localized: Reckless Charge
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101125
-    m_Localized: Charges 3 tiles. On collision, inflicts {ValueRate1} damage and
-      {E_Knockback}s the target {ValueRate2} tiles.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101126
-    m_Localized: Reckless Charge+
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101127
-    m_Localized: Charges 5 tiles. On collision, inflicts {ValueRate1} damage and
-      {E_Knockback}s the target {ValueRate2} tiles.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101128

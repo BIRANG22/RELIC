@@ -79,9 +79,7 @@ public class BattleSceneController : MonoBehaviour
 
     [Header("Room Change Auto Close")]
     [SerializeField] private bool closeInventoryAndBagOnRoomActiveChange = true;
-    [SerializeField] private string[] inventoryPanelObjectNames = { "InventoryPanel" };
     [SerializeField] private string[] bagPanelObjectNames = { "BattleBagPanel", "BagPanel", "BagPanelUI" };
-    [SerializeField] private float inventoryClosedY = 1080f;
     [SerializeField] private float bagClosedX = 1100f;
 
     private MapRuntimeStore mapRuntimeStore;
@@ -2124,27 +2122,7 @@ public class BattleSceneController : MonoBehaviour
             return;
 
         InventoryPanelSelectionResetter.ResetAllSelectionsExcept(null);
-        CloseInventoryPanelsImmediate();
         CloseBagPanelsImmediate();
-    }
-
-    private void CloseInventoryPanelsImmediate()
-    {
-        GameObject[] inventoryPanels = FindObjectsByNames(inventoryPanelObjectNames);
-
-        for (int i = 0; i < inventoryPanels.Length; i++)
-        {
-            GameObject inventoryPanel = inventoryPanels[i];
-
-            if (inventoryPanel == null)
-                continue;
-
-            RectTransform rect = inventoryPanel.GetComponent<RectTransform>();
-            if (rect != null)
-                rect.anchoredPosition = new Vector2(0f, inventoryClosedY);
-
-            ClearSelectedObjectIfChildOf(inventoryPanel);
-        }
     }
 
     private void CloseBagPanelsImmediate()

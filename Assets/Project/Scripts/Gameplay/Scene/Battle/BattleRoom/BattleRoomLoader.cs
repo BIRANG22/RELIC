@@ -810,6 +810,8 @@ public class BattleRoomLoader : MonoBehaviour
         if (DataManager.Instance == null)
             return;
 
+        DataManager.Instance.SkillRuntimeStore?.ResetBattleValueBonuses();
+
         PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
         var battleStartCharacters = new List<CharacterRuntimeData>();
 

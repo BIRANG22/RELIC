@@ -86,6 +86,7 @@ namespace Relic.Gameplay.Data
     public class SkillMasterData
     {
         public string SkillId;
+        public string CharacterId;
         public string Name;
         public Category Category;
         public ReferenceResource ReferenceResource;
@@ -103,6 +104,7 @@ namespace Relic.Gameplay.Data
 
         // 스킬이 사용하는 자원의 고정 소모량
         public int ResourceCostValue;
+        public string ResourceCostFormula;
 
         public int GridMove;
         public RangeType RangeType;

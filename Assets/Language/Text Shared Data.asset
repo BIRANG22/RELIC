@@ -5603,38 +5603,6 @@ MonoBehaviour:
     m_Key: data.skill_master.s_core_80.details
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259101120
-    m_Key: data.skill_master.s_core_81.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101121
-    m_Key: data.skill_master.s_core_81.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101122
-    m_Key: data.skill_master.s_core_82.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101123
-    m_Key: data.skill_master.s_core_82.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101124
-    m_Key: data.skill_master.s_core_83.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101125
-    m_Key: data.skill_master.s_core_83.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101126
-    m_Key: data.skill_master.s_core_84.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101127
-    m_Key: data.skill_master.s_core_84.details
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259101128
     m_Key: data.skill_master.s_core_85.name
     m_Metadata:
@@ -7075,10 +7043,6 @@ MonoBehaviour:
     m_Key: ui.debugbattle.roomroot.restroom.choicecanvas.healbutton.text_tmp.0fa15c3a
     m_Metadata:
       m_Items: []
-  - m_Id: 19697779416244224
-    m_Key: ui.tutorialpanel.checktext.7e9116d8
-    m_Metadata:
-      m_Items: []
   - m_Id: 19697779441410048
     m_Key: ui.battle.text_tmp.e0dc5150
     m_Metadata:
@@ -7117,6 +7081,38 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 19995735554007040
     m_Key: ui.option.borderlesslabel.d52fad65
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658152726528
+    m_Key: ui.monsterskill.name.f50b42ad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658173698048
+    m_Key: ui.monsterskill.detail.75591ba6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658173698049
+    m_Key: ui.monsterskill.typetext.d76003b9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658173698050
+    m_Key: ui.monsterstatus.name.897a2005
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658173698051
+    m_Key: ui.monsterstatus.detail.54afa935
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658173698052
+    m_Key: ui.battle.monstername.9454ddb5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658173698053
+    m_Key: ui.battle.name.2022f8c7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658173698054
+    m_Key: ui.battle.name.0f7c69b0
     m_Metadata:
       m_Items: []
   m_Metadata:
