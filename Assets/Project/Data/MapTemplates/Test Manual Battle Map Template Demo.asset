@@ -15,7 +15,7 @@ MonoBehaviour:
   bossLayerIndex: 5
   layer0Start:
     Type: Common
-    MapIdOverride:
+    MapIdOverride: Map_01
     UseCustomPosition: 0
     CustomPosition: {x: 0, y: 0}
     NextNodeIndices: 01000000
@@ -23,7 +23,7 @@ MonoBehaviour:
     Slot1:
       Enabled: 1
       Type: Special
-      MapIdOverride:
+      MapIdOverride: 
       UseCustomPosition: 1
       CustomPosition: {x: 100, y: 0}
       NextNodeIndices: 05000000
@@ -33,7 +33,7 @@ MonoBehaviour:
       MapIdOverride: 
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
-      NextNodeIndices:
+      NextNodeIndices: 
     Slot3:
       Enabled: 0
       Type: Common
@@ -47,7 +47,7 @@ MonoBehaviour:
       MapIdOverride: 
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
-      NextNodeIndices:
+      NextNodeIndices: 
   layer2:
     Slot1:
       Enabled: 1
@@ -69,14 +69,14 @@ MonoBehaviour:
       MapIdOverride: 
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
-      NextNodeIndices:
+      NextNodeIndices: 
     Slot4:
       Enabled: 0
       Type: Common
       MapIdOverride: 
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
-      NextNodeIndices:
+      NextNodeIndices: 
   layer3:
     Slot1:
       Enabled: 1
@@ -98,19 +98,19 @@ MonoBehaviour:
       MapIdOverride: 
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
-      NextNodeIndices:
+      NextNodeIndices: 
     Slot4:
       Enabled: 0
       Type: Common
       MapIdOverride: 
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
-      NextNodeIndices:
+      NextNodeIndices: 
   layer4:
     Slot1:
       Enabled: 1
       Type: Rest
-      MapIdOverride:
+      MapIdOverride: 
       UseCustomPosition: 1
       CustomPosition: {x: 400, y: 0}
       NextNodeIndices: 11000000
@@ -120,7 +120,7 @@ MonoBehaviour:
       MapIdOverride: 
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
-      NextNodeIndices:
+      NextNodeIndices: 
     Slot3:
       Enabled: 0
       Type: Common
@@ -142,21 +142,21 @@ MonoBehaviour:
       MapIdOverride: 
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
-      NextNodeIndices:
+      NextNodeIndices: 
     Slot2:
       Enabled: 0
       Type: Common
       MapIdOverride: 
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
-      NextNodeIndices:
+      NextNodeIndices: 
     Slot3:
       Enabled: 0
       Type: Special
       MapIdOverride: 
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
-      NextNodeIndices:
+      NextNodeIndices: 
     Slot4:
       Enabled: 0
       Type: Common

@@ -378,6 +378,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private Coroutine panelMoveCoroutine;
     private Coroutine selectionPanelRefreshCoroutine;
     private bool isBattleExecutionInProgress;
+    private bool isMonsterInfoSelectionActive;
     private RectTransform panelRectTransform;
     private bool hasDisplayedStats;
     private int displayedHp;
@@ -616,7 +617,17 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void HandleMonsterInfoSelectionChanged(MonsterUnit monster)
     {
-        ScheduleSelectionPanelPositionRefresh();
+        isMonsterInfoSelectionActive = monster != null;
+        StopSelectionPanelPositionRefresh();
+    }
+
+    private void StopSelectionPanelPositionRefresh()
+    {
+        if (selectionPanelRefreshCoroutine == null)
+            return;
+
+        StopCoroutine(selectionPanelRefreshCoroutine);
+        selectionPanelRefreshCoroutine = null;
     }
 
     private void ScheduleSelectionPanelPositionRefresh()
@@ -641,6 +652,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void RefreshSelectionPanelPosition()
     {
+        // 몬스터 정보 패널을 열 때는 BattleCharacterPanel/BattleSlot의 현재 위치를 유지합니다.
+        // 캐릭터 선택 해제로 예약된 이전 프레임의 갱신도 위 이벤트 처리에서 취소됩니다.
+        if (isMonsterInfoSelectionActive)
+            return;
+
         if (isBattleExecutionInProgress || IsIntroBlockingPanel())
             return;
 
