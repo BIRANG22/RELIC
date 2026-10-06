@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// MonsterStatus ÇÁ¸®ÆÕ ÇÑ Ä­ÀÇ Ç¥½Ã¸¦ ´ã´çÇÕ´Ï´Ù.
-/// Icon/StatusIcon¿¡´Â È¿°ú ¾ÆÀÌÄÜ, Name¿¡´Â "È¿°ú¸í ¼öÄ¡", Detail¿¡´Â È¿°ú ¼³¸íÀ» Ç¥½ÃÇÕ´Ï´Ù.
+/// MonsterStatus í”„ë¦¬íŒ¹ í•œ ì¹¸ì˜ í‘œì‹œë¥¼ ë‹´ë‹¹í•©ë‹ˆë‹¤.
+/// Icon/StatusIconì—ëŠ” íš¨ê³¼ ì•„ì´ì½˜, Nameì—ëŠ” "íš¨ê³¼ëª… ìˆ˜ì¹˜", Detailì—ëŠ” íš¨ê³¼ ì„¤ëª…ì„ í‘œì‹œí•©ë‹ˆë‹¤.
 /// </summary>
 public sealed class MonsterInfoStatusItemUI : MonoBehaviour
 {
@@ -34,9 +34,9 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
         if (statusIconImage != null)
             SetImage(statusIconImage, ResolveStatusIcon(statusData.EffectId));
 
-        string effectName = effectData != null
-            ? GameDataLocalization.EffectName(effectData)
-            : statusData.EffectId.Trim();
+        string effectName = MonsterInfoDataNameResolver.ResolveEffectName(
+            effectData,
+            statusData.EffectId);
 
         if (nameText != null)
         {

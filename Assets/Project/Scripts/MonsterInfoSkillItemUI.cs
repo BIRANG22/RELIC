@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// MonsterSkill ÇÁ¸®ÆÕ ÇÑ Ä­ÀÇ Ç¥½Ã¸¦ ´ã´çÇÕ´Ï´Ù.
-/// ÇÁ¸®ÆÕ ±¸Á¶ÀÇ Icon/SkillIcon, Name, Detail, Range, Type/TypeText¸¦ ÀÌ¸§À¸·Î ÀÚµ¿ ¿¬°áÇÕ´Ï´Ù.
+/// MonsterSkill í”„ë¦¬íŒ¹ í•œ ì¹¸ì˜ í‘œì‹œë¥¼ ë‹´ë‹¹í•©ë‹ˆë‹¤.
+/// í”„ë¦¬íŒ¹ êµ¬ì¡°ì˜ Icon/SkillIcon, Name, Detail, Range, Type/TypeTextë¥¼ ì´ë¦„ìœ¼ë¡œ ìë™ ì—°ê²°í•©ë‹ˆë‹¤.
 /// </summary>
 public sealed class MonsterInfoSkillItemUI : MonoBehaviour
 {
@@ -36,7 +36,7 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
             SetImage(skillIconImage, ResolveSkillIcon(skillData));
 
         if (nameText != null)
-            nameText.text = GameDataLocalization.MonsterSkillName(skillData);
+            nameText.text = MonsterInfoDataNameResolver.ResolveSkillName(skillData);
 
         if (detailText != null)
         {

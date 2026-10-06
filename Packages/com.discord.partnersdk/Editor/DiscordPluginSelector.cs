@@ -18,6 +18,7 @@ public class DiscordPluginSelector
     public int callbackOrder => 0;
 
     private const string PluginsRoot = "Packages/com.discord.partnersdk/Runtime/Plugins";
+    private static bool editorPluginRestoreScheduled;
 
     private static readonly string[] KrispModelFileNames = new[] {
         "krisp-vad-o-v2.kef",
@@ -84,11 +85,25 @@ public class DiscordPluginSelector
             CopyKrispModelsToStandaloneBuild(
               report.summary.outputPath, report.summary.platform, isDevelopment);
         }
-        SetPluginConfig(true);
+        ScheduleEditorPluginRestore();
     }
 
     [InitializeOnLoadMethod]
     private static void OnEditorLoad() { SetPluginConfig(true); }
+
+    private static void ScheduleEditorPluginRestore() {
+        if (editorPluginRestoreScheduled) {
+            return;
+        }
+
+        editorPluginRestoreScheduled = true;
+        EditorApplication.delayCall += RestoreEditorPluginConfig;
+    }
+
+    private static void RestoreEditorPluginConfig() {
+        editorPluginRestoreScheduled = false;
+        SetPluginConfig(true);
+    }
 
     private static void SetPluginConfig(bool useDebug) {
         string pluginsRoot = Path.GetFullPath(PluginsRoot);

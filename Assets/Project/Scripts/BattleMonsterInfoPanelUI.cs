@@ -338,7 +338,7 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
             }
 
             if (skillNameText != null)
-                skillNameText.text = GameDataLocalization.MonsterSkillName(skillData);
+                skillNameText.text = MonsterInfoDataNameResolver.ResolveSkillName(skillData);
 
             if (firstValidSkillIndex < 0)
                 firstValidSkillIndex = i;
@@ -418,7 +418,7 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
 
         if (skillInfoNameText != null)
         {
-            skillInfoNameText.text = GameDataLocalization.MonsterSkillName(skillData);
+            skillInfoNameText.text = MonsterInfoDataNameResolver.ResolveSkillName(skillData);
         }
 
         if (skillInfoTypeText != null)
@@ -609,30 +609,13 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         if (string.IsNullOrWhiteSpace(effectId))
             return string.Empty;
 
-        switch (effectId.Trim())
-        {
-            case "E_Move":
-                return GameLocalization.Get("battle.action.move");
-            case "E_Strike":
-            case "E_Pierce":
-                return GameLocalization.Get("battle.action.damage");
-            case "E_Knockback":
-                return GameLocalization.Get("battle.action.push");
-            case "E_Grab":
-                return GameLocalization.Get("battle.action.pull");
-            case "E_Grudge":
-                return GameLocalization.Get("battle.action.grudge");
-            case "E_Corrosion":
-                return GameLocalization.Get("battle.action.erosion");
-            case "E_Spawn_Spider_Egg":
-                return GameLocalization.Get("battle.action.spawn_spider_egg");
-            case "E_Spawn_Spider_Web":
-                return GameLocalization.Get("battle.action.spawn_web");
-            case "E_Barrier":
-                return GameLocalization.Get("battle.action.veil");
-            default:
-                return effectId.Trim();
-        }
+        string normalizedEffectId = effectId.Trim();
+        EffectMasterData effectData = null;
+
+        if (DataManager.Instance != null && DataManager.Instance.EffectDatabase != null)
+            DataManager.Instance.EffectDatabase.TryGet(normalizedEffectId, out effectData);
+
+        return MonsterInfoDataNameResolver.ResolveEffectName(effectData, normalizedEffectId);
     }
 
     private void ClearSkillListAndInfo()

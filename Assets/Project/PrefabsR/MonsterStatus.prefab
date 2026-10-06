@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6902598696307448982}
   - component: {fileID: 5816752892458428258}
   - component: {fileID: 7336622495706912009}
-  - component: {fileID: 3505962155119947573}
   m_Layer: 0
   m_Name: Name
   m_TagString: Untagged
@@ -66,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uD6A8\uACFC\uC774\uB984 99"
+  m_text: ''
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
@@ -138,22 +137,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &3505962155119947573
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1793001285769340167}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 7336622495706912009}
-  localizationKey: ui.monsterstatus.name.897a2005
-  koreanSource: "\uD6A8\uACFC\uC774\uB984 99"
-  automaticallyRegistered: 1
 --- !u!1 &3243545815769879802
 GameObject:
   m_ObjectHideFlags: 0
@@ -416,7 +399,6 @@ GameObject:
   - component: {fileID: 5893065189767213308}
   - component: {fileID: 3426986072802800731}
   - component: {fileID: 880687849804241157}
-  - component: {fileID: 6389252021535242119}
   m_Layer: 0
   m_Name: Detail
   m_TagString: Untagged
@@ -545,24 +527,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &6389252021535242119
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8209085372985012239}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 880687849804241157}
-  localizationKey: ui.monsterstatus.detail.54afa935
-  koreanSource: "\uC774\uBC88 \uD134\uC5D0 \uC0AC\uB9DD\uD55C \uBCC0\uC774\uCCB4
-    \uD558\uB098\uB97C \uB2E4\uC74C \uD134 \uC2DC\uC791 \uC2DC 30%\uC758 \uC0DD\uBA85\uB825\uC73C\uB85C
-    \uB418\uC0B4\uB9B0\uB2E4.\r\n"
-  automaticallyRegistered: 1
 --- !u!1 &8531245451883109617
 GameObject:
   m_ObjectHideFlags: 0

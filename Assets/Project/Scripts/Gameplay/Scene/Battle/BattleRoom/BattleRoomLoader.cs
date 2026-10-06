@@ -676,6 +676,7 @@ public class BattleRoomLoader : MonoBehaviour
 
         SpawnPlayersAndHUD();
         SpawnMonstersAndHUD(false);
+        RefreshBattleStartPassives();
 
         // 튜토리얼 전투에서는 기존 전투방의 랜덤 장애물/초기 그리드 효과를 생성하지 않습니다.
         // 전투 중 스킬/유물로 새로 생성되는 그리드 효과는 기존 시스템을 그대로 사용합니다.
@@ -846,8 +847,12 @@ public class BattleRoomLoader : MonoBehaviour
                 continue;
 
             BattleEquipmentEffectService.ApplyBattleStartEffects(runtimeData, masterData);
-            BattlePassiveSkillService.RefreshRuntimePassiveEffects(runtimeData);
         }
+    }
+
+    private static void RefreshBattleStartPassives()
+    {
+        new BattlePassiveSkillService().RefreshAllPlayerPassives();
     }
 
     public void RecoverPlayerCostsToMax()
