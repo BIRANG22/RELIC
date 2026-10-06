@@ -2141,6 +2141,23 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
             return;
 
+        if (BattleFirstTutorialController.IsInputRestricted)
+        {
+            if (Input.GetKeyDown(KeyCode.A) && BattleFirstTutorialController.CanSelectMove)
+            {
+                OnMoveButtonClicked();
+                return;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Q) && BattleFirstTutorialController.CanSelectSkill01)
+            {
+                StartKeyboardSkillWithRangePreview(0, skill01Button);
+                return;
+            }
+
+            return;
+        }
+
         if (Input.GetKeyDown(KeyCode.A))
         {
             OnMoveButtonClicked();
@@ -3291,6 +3308,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void OnMoveButtonClicked()
     {
+        if (!BattleFirstTutorialController.CanSelectMove)
+            return;
+
         SelectSkillDirectly(
             boundRuntime != null ? boundRuntime.MoveSkillId : string.Empty,
             moveButton,
@@ -3360,6 +3380,12 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void UseSkillSlot(int displaySlotIndex, Button sourceButton)
     {
+        if (BattleFirstTutorialController.IsInputRestricted)
+        {
+            if (displaySlotIndex != 0 || !BattleFirstTutorialController.CanSelectSkill01)
+                return;
+        }
+
         SelectSkillDirectly(GetSkillIdForDisplaySlot(displaySlotIndex), sourceButton);
     }
 
@@ -3410,6 +3436,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
         // BattleCharacterPanel의 스킬 버튼을 눌러도 현재 선택 캐릭터의
         // 카메라 포커스가 기본 위치로 풀리지 않도록 다시 고정합니다.
         battleTimelineController.RefocusCurrentSelectedCharacterWhenInputReady();
+
+        if (toggleMoveSelection)
+            BattleFirstTutorialController.NotifyMoveSelected();
+        else if (sourceButton == skill01Button)
+            BattleFirstTutorialController.NotifySkill01Selected();
     }
 
     private void UseActiveRelicDirectly()

@@ -338,6 +338,9 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseDown()
         {
+            if (!BattleFirstTutorialController.CanClickMonster(this))
+                return;
+
             // 턴 실행 중에는 몬스터 클릭 선택과 카메라 포커스를 막습니다.
             // 호버 HUD/범위/상태 정보는 OnMouseEnter에서 계속 표시합니다.
             if (IsBattleExecutionActive())
