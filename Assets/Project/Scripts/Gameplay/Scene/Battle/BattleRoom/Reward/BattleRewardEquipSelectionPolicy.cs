@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
 
 public static class BattleRewardEquipSelectionPolicy
@@ -7,6 +8,33 @@ public static class BattleRewardEquipSelectionPolicy
     private const int FirstRewardRuntimeSkillSlotIndex = 1;
     private const int FirstFreeRuntimeSkillSlotIndex = 2;
     private const int LastRewardRuntimeSkillSlotIndex = 3;
+
+    public static bool CanEquipRewardSkill(SkillMasterData skill, string characterId)
+    {
+        return SkillRarityUtility.CanEquipToFreeSlot(skill) &&
+               SkillOwnershipPolicy.CanEquip(skill, characterId);
+    }
+
+    public static bool CanSelectCharacter(SkillMasterData skill, string characterId)
+    {
+        return CanEquipRewardSkill(skill, characterId);
+    }
+
+    public static int FindFirstCompatibleCharacterIndex(
+        SkillMasterData skill,
+        IReadOnlyList<string> partyCharacterIds)
+    {
+        if (skill == null || partyCharacterIds == null)
+            return -1;
+
+        for (int i = 0; i < partyCharacterIds.Count; i++)
+        {
+            if (CanSelectCharacter(skill, partyCharacterIds[i]))
+                return i;
+        }
+
+        return -1;
+    }
 
     public static bool TryFindSkillViewIndex(
         CharacterRuntimeData character,
@@ -19,7 +47,7 @@ public static class BattleRewardEquipSelectionPolicy
 
         SkillInventoryEquipService.EnsureEquippedSkillArray(character);
 
-        // ºó ½½·ÔÀ» ¿ì¼± ¼±ÅÃÇÕ´Ï´Ù. skill1µµ ºñ¾î ÀÖ´Ù¸é ÀåÂø ´ë»óÀÌ µÉ ¼ö ÀÖ½À´Ï´Ù.
+        // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ì¼± ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½. skill1ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ö´Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½.
         for (int runtimeIndex = FirstRewardRuntimeSkillSlotIndex;
              runtimeIndex <= LastRewardRuntimeSkillSlotIndex;
              runtimeIndex++)
@@ -34,7 +62,7 @@ public static class BattleRewardEquipSelectionPolicy
         if (resolveSkill == null)
             return false;
 
-        // ±âÁ¸ ÀÚÀ¯ ½½·Ô(skill2/skill3)ÀÇ ±³Ã¼ °¡´É ±â¾ïÀ» ¸ÕÀú ¼±ÅÃÇÕ´Ï´Ù.
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(skill2/skill3)ï¿½ï¿½ ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         for (int runtimeIndex = FirstFreeRuntimeSkillSlotIndex;
              runtimeIndex <= LastRewardRuntimeSkillSlotIndex;
              runtimeIndex++)
@@ -47,7 +75,7 @@ public static class BattleRewardEquipSelectionPolicy
             return true;
         }
 
-        // ÀÚÀ¯ ½½·Ô¿¡ ´ë»óÀÌ ¾øÀ¸¸é skill1µµ ±³Ã¼ ´ë»óÀ¸·Î ¼±ÅÃÇÒ ¼ö ÀÖ½À´Ï´Ù.
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ô¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ skill1ï¿½ï¿½ ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½Ï´ï¿½.
         if (!string.IsNullOrWhiteSpace(character.EquippedSkillIds[AbilityRuntimeSkillSlotIndex]))
         {
             skillViewIndex = ToSkillViewIndex(AbilityRuntimeSkillSlotIndex);

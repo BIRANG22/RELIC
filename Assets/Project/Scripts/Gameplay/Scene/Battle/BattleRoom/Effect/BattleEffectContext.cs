@@ -20,4 +20,5 @@ public class BattleEffectContext
     public string EffectId;
     public int Value;
     public int Count;
+    public SkillExecutionResult ExecutionResult;
 }

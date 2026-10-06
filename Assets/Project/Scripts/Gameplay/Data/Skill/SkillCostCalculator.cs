@@ -44,7 +44,17 @@ public static class SkillCostCalculator
             return false;
 
         int available = GetPreviewResource(caster, skill.ReferenceResource);
-        payAmount = Mathf.Max(0, skill.ResourceCostValue);
+        string formula = string.IsNullOrWhiteSpace(skill.ResourceCostFormula)
+            ? skill.ResourceCostValue.ToString()
+            : skill.ResourceCostFormula;
+        if (!SkillNumericExpression.TryParse(formula, out SkillNumericExpression expression))
+            return false;
+
+        int resolvedX = expression.ResolveMaximumX(available);
+        if (expression.UsesX && resolvedX <= 0)
+            return false;
+
+        payAmount = expression.Resolve(available, resolvedX);
         return available >= payAmount;
     }
 }

@@ -17,6 +17,13 @@ public class PlayerReservedCommand
     public int Cost { get; private set; }
     public int ResourceCost { get; private set; }
     public int ShieldCost { get; private set; }
+    public int ResolvedX { get; private set; }
+    public int ResolvedResourceCost { get; private set; }
+    public IReadOnlyList<int> ResolvedEffectValues => resolvedEffectValues;
+    public IReadOnlyList<int> ResolvedEffectCounts => resolvedEffectCounts;
+    public SkillExecutionResult ExecutionResult { get; }
+    private readonly List<int> resolvedEffectValues = new();
+    private readonly List<int> resolvedEffectCounts = new();
 
     public int BaseHPCost { get; private set; }
     public int BaseCost { get; private set; }
@@ -41,8 +48,8 @@ public class PlayerReservedCommand
 
     public int ReservedMoveGridIndex { get; private set; } = -1;
 
-    // Range_AdvanceXX / Range_RetreatXX ½ºÅ³Àº ÀÏ¹Ý ÀÌµ¿ ¸í·ÉÀÌ ¾Æ´Ï¶ó
-    // °ø°Ý ½ºÅ³ ¾È¿¡¼­ ÀÌµ¿ÇÏ¹Ç·Î ReservedMoveGridIndex¸¦ »ç¿ëÇÏÁö ¾Ê½À´Ï´Ù.
+    // Range_AdvanceXX / Range_RetreatXX ï¿½ï¿½Å³ï¿½ï¿½ ï¿½Ï¹ï¿½ ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´Ï¶ï¿½
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å³ ï¿½È¿ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ï¿½Ï¹Ç·ï¿½ ReservedMoveGridIndexï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.
     public bool HasDirectionalMoveDistanceOverride { get; private set; }
     public int DirectionalMoveDistanceOverride { get; private set; }
 
@@ -167,6 +174,11 @@ public class PlayerReservedCommand
     {
         UserRuntime = userRuntime;
         SkillData = skillData;
+        ExecutionResult = new SkillExecutionResult
+        {
+            CasterCharacterId = userRuntime?.CharacterId,
+            SkillId = skillData?.SkillId
+        };
 
         CalculateCosts(skillData);
     }
@@ -182,11 +194,11 @@ public class PlayerReservedCommand
     public int EffectiveMoveGridIndex =>
         HasSimulatedResult ? SimulatedMoveGridIndex : ReservedMoveGridIndex;
 
-    // ¿¹¾àÇü ÀüÅõ¿¡¼­´Â ½ÇÇà ½ÃÁ¡¿¡ ¿¹¾àÇÑ ÀÌµ¿ ÀÚÃ¼¸¦ ½ÃµµÇØ¾ß ÇÑ´Ù.
-    // ½Ã¹Ä·¹ÀÌ¼Ç °á°ú´Â ÈÄ¼Ó ¿¹¾à Ç¥½Ã¸¦ À§ÇÑ Âü°í°ªÀÏ »Ó, ½ÇÁ¦ ÀÌµ¿·®À» ¹Ù²ÙÁö ¾Ê´Â´Ù.
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½Ãµï¿½ï¿½Ø¾ï¿½ ï¿½Ñ´ï¿½.
+    // ï¿½Ã¹Ä·ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ä¼ï¿½ ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½Ã¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½ï¿½ï¿½ ï¿½Ê´Â´ï¿½.
     public Vector2Int ExecutionMoveOffset => MoveOffset;
 
-    // °í½ºÆ®´Â ÇöÀç Á¡À¯ »óÅÂ·Î ¼º°ø/½ÇÆÐ¸¦ ¿¹ÃøÇÏÁö ¾Ê°í »ç¿ëÀÚ°¡ ¿¹¾àÇÑ ¸ñÀûÁö¸¦ Ç¥½ÃÇÑ´Ù.
+    // ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½Ð¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê°ï¿½ ï¿½ï¿½ï¿½ï¿½Ú°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ï¿½Ñ´ï¿½.
     public int PreviewMoveGridIndex =>
         ReservedMoveGridIndex >= 0 ? ReservedMoveGridIndex : EffectiveMoveGridIndex;
 
@@ -518,6 +530,8 @@ public class PlayerReservedCommand
             return;
 
         int cost = GetCostValue(skillData);
+        ResolvedResourceCost = cost;
+        ResolveEffectExpressions(skillData);
 
         switch (skillData.ReferenceResource)
         {
@@ -543,8 +557,57 @@ public class PlayerReservedCommand
 
     private int GetCostValue(SkillMasterData skillData)
     {
-        return skillData == null
-            ? 0
-            : Mathf.Max(0, skillData.ResourceCostValue);
+        if (skillData == null)
+            return 0;
+
+        string formula = string.IsNullOrWhiteSpace(skillData.ResourceCostFormula)
+            ? skillData.ResourceCostValue.ToString()
+            : skillData.ResourceCostFormula;
+        if (!SkillNumericExpression.TryParse(formula, out SkillNumericExpression expression))
+            return 0;
+
+        int available = SkillCostCalculator.GetPreviewResource(UserRuntime, skillData.ReferenceResource);
+        ResolvedX = expression.ResolveMaximumX(available);
+        if (expression.UsesX && ResolvedX <= 0)
+            return 0;
+
+        return expression.Resolve(available, ResolvedX);
+    }
+
+    private void ResolveEffectExpressions(SkillMasterData skillData)
+    {
+        resolvedEffectValues.Clear();
+        resolvedEffectCounts.Clear();
+        string[] values = SplitExpressions(skillData?.ValueRate);
+        string[] counts = SplitExpressions(skillData?.CountRate);
+        int effectCount = SplitExpressions(skillData?.EffectIds).Length;
+
+        for (int i = 0; i < effectCount; i++)
+        {
+            resolvedEffectValues.Add(ResolveEffectExpression(GetExpression(values, i, "0"), 0));
+            resolvedEffectCounts.Add(ResolveEffectExpression(GetExpression(counts, i, "1"), 1));
+        }
+    }
+
+    private int ResolveEffectExpression(string source, int fallback)
+    {
+        if (!SkillNumericExpression.TryParse(source, out SkillNumericExpression expression))
+            return fallback;
+
+        return expression.UsesX ? expression.Resolve(0, ResolvedX) : expression.UnitValue;
+    }
+
+    private static string[] SplitExpressions(string source)
+    {
+        return string.IsNullOrWhiteSpace(source) ? System.Array.Empty<string>() : source.Split(';');
+    }
+
+    private static string GetExpression(string[] values, int index, string fallback)
+    {
+        if (values == null || values.Length == 0)
+            return fallback;
+        if (index >= 0 && index < values.Length && !string.IsNullOrWhiteSpace(values[index]))
+            return values[index].Trim();
+        return string.IsNullOrWhiteSpace(values[0]) ? fallback : values[0].Trim();
     }
 }

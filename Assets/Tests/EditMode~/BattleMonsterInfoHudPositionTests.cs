@@ -1,55 +1,45 @@
-using System;
-using System.IO;
 using NUnit.Framework;
 
 public sealed class BattleMonsterInfoHudPositionTests
 {
     [Test]
-    public void MonsterInfoSelection_KeepsBattleHudPositionWhenSelectionIsCleared()
+    public void MonsterInfoOpened_MovesBattleHudDown()
     {
-        string source = File.ReadAllText("Assets/Project/Scripts/BattleCharacterPanelUI.cs");
+        BattleHudMonsterInfoPosition target = BattleMonsterInfoHudPositionPolicy.Resolve(
+            monsterInfoOpen: true,
+            canAcceptPlayerInput: true,
+            introBlocking: false,
+            battleEnded: false);
 
-        int handlerStart = source.IndexOf(
-            "private void HandleMonsterInfoSelectionChanged(MonsterUnit monster)",
-            StringComparison.Ordinal);
-        int handlerEnd = source.IndexOf(
-            "private void ScheduleSelectionPanelPositionRefresh()",
-            handlerStart,
-            StringComparison.Ordinal);
-        string handler = source.Substring(handlerStart, handlerEnd - handlerStart);
-
-        Assert.That(handler, Does.Contain("isMonsterInfoSelectionActive = monster != null"));
-        Assert.That(handler, Does.Contain("StopSelectionPanelPositionRefresh"));
-        Assert.That(handler, Does.Not.Contain("ScheduleSelectionPanelPositionRefresh"));
-
-        int refreshStart = source.IndexOf(
-            "private void RefreshSelectionPanelPosition()",
-            StringComparison.Ordinal);
-        int refreshEnd = source.IndexOf(
-            "private bool HasAnyInfoSelection()",
-            refreshStart,
-            StringComparison.Ordinal);
-        string refresh = source.Substring(refreshStart, refreshEnd - refreshStart);
-
-        Assert.That(refresh, Does.Contain("if (isMonsterInfoSelectionActive)"));
+        Assert.That(target, Is.EqualTo(BattleHudMonsterInfoPosition.Down));
     }
 
     [Test]
-    public void MonsterInfoPanel_ShowsWithoutWaitingForBattleHudToMoveDown()
+    public void MonsterInfoClosed_DuringPlayerInput_MovesBattleHudUp()
     {
-        string source = File.ReadAllText("Assets/Project/Scripts/BattleMonsterInfoCanvasUI.cs");
+        BattleHudMonsterInfoPosition target = BattleMonsterInfoHudPositionPolicy.Resolve(
+            monsterInfoOpen: false,
+            canAcceptPlayerInput: true,
+            introBlocking: false,
+            battleEnded: false);
 
-        int methodStart = source.IndexOf(
-            "private IEnumerator RevealAfterBattleUiMovementRoutine()",
-            StringComparison.Ordinal);
-        int methodEnd = source.IndexOf(
-            "private void RefreshBlurReplica()",
-            methodStart,
-            StringComparison.Ordinal);
-        string method = source.Substring(methodStart, methodEnd - methodStart);
+        Assert.That(target, Is.EqualTo(BattleHudMonsterInfoPosition.Up));
+    }
 
-        Assert.That(method, Does.Not.Contain("IsAtDefaultPosition"));
-        Assert.That(method, Does.Not.Contain("maxWaitForBattleUi"));
-        Assert.That(method, Does.Contain("monsterInfoPanel.SetActive(true)"));
+    [TestCase(false, false, false)]
+    [TestCase(true, true, false)]
+    [TestCase(true, false, true)]
+    public void MonsterInfoClosed_WhenHudCannotReturnUp_KeepsBattleHudDown(
+        bool canAcceptPlayerInput,
+        bool introBlocking,
+        bool battleEnded)
+    {
+        BattleHudMonsterInfoPosition target = BattleMonsterInfoHudPositionPolicy.Resolve(
+            monsterInfoOpen: false,
+            canAcceptPlayerInput: canAcceptPlayerInput,
+            introBlocking: introBlocking,
+            battleEnded: battleEnded);
+
+        Assert.That(target, Is.EqualTo(BattleHudMonsterInfoPosition.Down));
     }
 }

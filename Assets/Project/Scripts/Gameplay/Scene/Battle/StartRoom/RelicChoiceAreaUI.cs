@@ -481,7 +481,8 @@ public class RelicChoiceAreaUI : MonoBehaviour
             StartRoomSkillRewardSelectionUtility.CollectAvailableCoreSkillRewards(
                 allSkills,
                 skillType,
-                unavailableSkillIds);
+                unavailableSkillIds,
+                SkillOwnershipPolicy.GetPartyCharacterIds(DataManager.Instance.PartyRuntimeStore));
 
         if (candidates.Count < rewardCount)
         {
@@ -782,7 +783,8 @@ public static class StartRoomSkillRewardSelectionUtility
     public static List<SkillMasterData> CollectAvailableCoreSkillRewards(
         IReadOnlyList<SkillMasterData> allSkills,
         SkillType requiredSkillType,
-        ISet<string> unavailableSkillIds)
+        ISet<string> unavailableSkillIds,
+        IEnumerable<string> partyCharacterIds)
     {
         List<SkillMasterData> result = new();
 
@@ -809,6 +811,9 @@ public static class StartRoomSkillRewardSelectionUtility
                 continue;
 
             if (normalizedUnavailableIds.Contains(skillId))
+                continue;
+
+            if (!SkillOwnershipPolicy.CanRewardToParty(skill, partyCharacterIds))
                 continue;
 
             result.Add(skill);

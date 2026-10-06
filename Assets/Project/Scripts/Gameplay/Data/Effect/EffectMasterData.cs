@@ -6,6 +6,16 @@ namespace Relic.Gameplay.Data
         Remove,
         Decrease,
         Maintain,
+        DecreaseOnTrigger,
+    }
+
+    public enum EffectValueDecreaseRule
+    {
+        None = EndTurn.None,
+        Remove = EndTurn.Remove,
+        Decrease = EndTurn.Decrease,
+        Maintain = EndTurn.Maintain,
+        DecreaseOnTrigger = EndTurn.DecreaseOnTrigger
     }
 
     public enum EffectType
@@ -23,6 +33,7 @@ namespace Relic.Gameplay.Data
 
         public EffectType EffectType;
         public EndTurn EndTurn;
+        public EffectValueDecreaseRule DecreaseRule => (EffectValueDecreaseRule)EndTurn;
 
         public string ToolTip;
     }

@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class BattleDebugKillAllMonsters : MonoBehaviour
 {
-    private static readonly bool CheatEnabled = false;
+    private static readonly bool CheatEnabled = true;
 
     [SerializeField] private KeyCode killKey = KeyCode.K;
     [SerializeField] private int debugPlayerDamage = 1;

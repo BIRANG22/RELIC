@@ -216,14 +216,7 @@ public class SkillInventoryPanelUI : MonoBehaviour
             FindObjectsSortMode.None);
 
         if (panels == null || panels.Length == 0)
-        {
-            SkillInventoryPanelUI panel = EnsureScenePanel();
-
-            if (panel != null)
-                panel.Refresh();
-
             return;
-        }
 
         for (int i = 0; i < panels.Length; i++)
         {
@@ -650,21 +643,6 @@ public class SkillInventoryPanelUI : MonoBehaviour
 
         if (tooltipPanelOwner == null)
             tooltipPanelOwner = FindFirstObjectByType<EquippedSkillPanelUI>(FindObjectsInactive.Include);
-    }
-
-    private static SkillInventoryPanelUI EnsureScenePanel()
-    {
-        GameObject root = GameObject.Find("SkillInventory");
-
-        if (root == null)
-            return null;
-
-        SkillInventoryPanelUI panel = root.GetComponent<SkillInventoryPanelUI>();
-
-        if (panel == null)
-            panel = root.AddComponent<SkillInventoryPanelUI>();
-
-        return panel;
     }
 
     private IInventoryRuntimeContext ResolveRuntimeContext()

@@ -41,6 +41,7 @@ namespace Relic.Gameplay.Data
         public static bool TryRoll(
             BattleMapData mapData,
             IReadOnlyList<SkillMasterData> allSkills,
+            IEnumerable<string> partyCharacterIds,
             ISkillRewardRandom random,
             out SkillMasterData reward)
         {
@@ -55,7 +56,11 @@ namespace Relic.Gameplay.Data
             if (!TryRollRarity(mapData, random, out SkillRarity rarity))
                 return false;
 
-            List<SkillMasterData> candidates = GetCandidates(allSkills, rarity, true);
+            List<SkillMasterData> candidates = GetCandidates(
+                allSkills,
+                rarity,
+                true,
+                partyCharacterIds);
 
             if (candidates.Count == 0)
                 return false;
@@ -118,10 +123,11 @@ namespace Relic.Gameplay.Data
             return true;
         }
 
-        private static List<SkillMasterData> GetCandidates(
+        public static List<SkillMasterData> GetCandidates(
             IReadOnlyList<SkillMasterData> allSkills,
             SkillRarity rarity,
-            bool baseOnly)
+            bool baseOnly,
+            IEnumerable<string> partyCharacterIds)
         {
             List<SkillMasterData> candidates = new();
 
@@ -142,6 +148,9 @@ namespace Relic.Gameplay.Data
                     continue;
 
                 if (baseOnly && !SkillRarityUtility.IsBaseSkillVariant(skill.SkillId))
+                    continue;
+
+                if (!SkillOwnershipPolicy.CanRewardToParty(skill, partyCharacterIds))
                     continue;
 
                 candidates.Add(skill);

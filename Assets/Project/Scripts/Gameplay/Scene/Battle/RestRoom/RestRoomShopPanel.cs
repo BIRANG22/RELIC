@@ -94,6 +94,7 @@ public class RestRoomShopPanel : MonoBehaviour
             DataManager.Instance.RelicDatabase.GetAll(),
             GetUnavailableSkillIds(),
             GetUnavailableRelicIds(),
+            SkillOwnershipPolicy.GetPartyCharacterIds(DataManager.Instance.PartyRuntimeStore),
             random,
             commonRarityWeight,
             rareRarityWeight,

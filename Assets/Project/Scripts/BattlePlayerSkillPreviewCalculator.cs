@@ -82,6 +82,13 @@ public static class BattlePlayerSkillPreviewCalculator
 
     public static BattlePlayerSkillPreview CreatePreview(PlayerReservedCommand command)
     {
+        return CreatePreview(command, DataManager.Instance?.SkillRuntimeStore);
+    }
+
+    public static BattlePlayerSkillPreview CreatePreview(
+        PlayerReservedCommand command,
+        SkillRuntimeStore skillRuntimeStore)
+    {
         SkillMasterData skill = command?.SkillData;
         CharacterRuntimeData runtime = command?.UserRuntime;
 
@@ -97,8 +104,15 @@ public static class BattlePlayerSkillPreviewCalculator
         for (int i = 0; i < entries.Count; i++)
         {
             SkillEffectEntry entry = entries[i];
-            BattleSkillNumberBreakdown valueBreakdown = BuildEffectValueBreakdown(runtime, command, skill, entry);
-            BattleSkillNumberBreakdown countBreakdown = BuildEffectCountBreakdown(runtime, command, entry);
+            BattleSkillNumberBreakdown valueBreakdown = BuildEffectValueBreakdown(
+                runtime,
+                command,
+                skill,
+                entry,
+                i,
+                entries,
+                skillRuntimeStore);
+            BattleSkillNumberBreakdown countBreakdown = BuildEffectCountBreakdown(runtime, command, entry, i);
             values.Add(valueBreakdown.FinalValue);
             counts.Add(countBreakdown.FinalValue);
             valueBreakdowns.Add(valueBreakdown);
@@ -248,31 +262,46 @@ public static class BattlePlayerSkillPreviewCalculator
         CharacterRuntimeData runtime,
         PlayerReservedCommand command,
         SkillMasterData skill,
-        SkillEffectEntry entry)
+        SkillEffectEntry entry,
+        int entryIndex,
+        IReadOnlyList<SkillEffectEntry> entries,
+        SkillRuntimeStore skillRuntimeStore)
     {
         if (entry == null)
             return new BattleSkillNumberBreakdown(0, "0");
 
-        int baseValue = SkillScalingUtility.ResolveBaseValue(runtime, entry);
+        int baseValue = command != null &&
+                        entryIndex >= 0 &&
+                        entryIndex < command.ResolvedEffectValues.Count
+            ? command.ResolvedEffectValues[entryIndex]
+            : SkillScalingUtility.ResolveBaseValue(runtime, entry);
+        int runtimeValueBonus = IsFirstDirectDamageEntry(entries, entryIndex)
+            ? SkillRuntimeValueBonusResolver.GetTotalValueBonus(
+                skillRuntimeStore,
+                command?.CharacterId ?? runtime?.CharacterId,
+                skill?.SkillId)
+            : 0;
+        int valueBeforeEquipment = baseValue + runtimeValueBonus;
         int equipmentValue;
 
         if (entry.EffectId == "E_Knockback")
         {
             equipmentValue = BattleEquipmentEffectService.ModifyPlayerKnockbackValue(
-                runtime, command, entry, baseValue);
+                runtime, command, entry, valueBeforeEquipment);
         }
         else if (entry.EffectId == "E_Move" || entry.EffectId == "E_Grab")
         {
-            equipmentValue = baseValue;
+            equipmentValue = valueBeforeEquipment;
         }
         else
         {
             equipmentValue = BattleEquipmentEffectService.ModifyPlayerEffectValue(
-                runtime, command, entry, baseValue);
+                runtime, command, entry, valueBeforeEquipment);
         }
 
         List<string> formulaParts = new() { baseValue.ToString() };
-        AppendDelta(formulaParts, equipmentValue - baseValue);
+        AppendDelta(formulaParts, runtimeValueBonus);
+        AppendDelta(formulaParts, equipmentValue - valueBeforeEquipment);
 
         int finalValue = Mathf.Max(0, equipmentValue);
         if (IsDamageEffect(entry.EffectId))
@@ -297,16 +326,38 @@ public static class BattlePlayerSkillPreviewCalculator
         return new BattleSkillNumberBreakdown(finalValue, string.Join(string.Empty, formulaParts));
     }
 
+    private static bool IsFirstDirectDamageEntry(
+        IReadOnlyList<SkillEffectEntry> entries,
+        int entryIndex)
+    {
+        if (entries == null || entryIndex < 0 || entryIndex >= entries.Count ||
+            !IsDamageEffect(entries[entryIndex]?.EffectId))
+            return false;
+
+        for (int i = 0; i < entryIndex; i++)
+        {
+            if (IsDamageEffect(entries[i]?.EffectId))
+                return false;
+        }
+
+        return true;
+    }
+
     private static BattleSkillNumberBreakdown BuildEffectCountBreakdown(
         CharacterRuntimeData runtime,
         PlayerReservedCommand command,
-        SkillEffectEntry entry)
+        SkillEffectEntry entry,
+        int entryIndex)
     {
         if (entry == null)
             return new BattleSkillNumberBreakdown(1, "1");
 
-        int baseCount = Mathf.Max(1, entry.CountAmount);
-        int finalCount = CalculateEffectCount(runtime, command, entry);
+        int baseCount = command != null &&
+                        entryIndex >= 0 &&
+                        entryIndex < command.ResolvedEffectCounts.Count
+            ? Mathf.Max(1, command.ResolvedEffectCounts[entryIndex])
+            : Mathf.Max(1, entry.CountAmount);
+        int finalCount = CalculateEffectCount(runtime, command, entry, baseCount);
         List<string> formulaParts = new() { baseCount.ToString() };
         AppendDelta(formulaParts, finalCount - baseCount);
         return new BattleSkillNumberBreakdown(finalCount, string.Join(string.Empty, formulaParts));
@@ -424,7 +475,8 @@ public static class BattlePlayerSkillPreviewCalculator
     private static int CalculateEffectCount(
         CharacterRuntimeData runtime,
         PlayerReservedCommand command,
-        SkillEffectEntry entry)
+        SkillEffectEntry entry,
+        int resolvedBaseCount)
     {
         if (entry == null)
             return 1;
@@ -435,7 +487,7 @@ public static class BattlePlayerSkillPreviewCalculator
                 runtime,
                 command,
                 entry,
-                entry.CountAmount));
+                resolvedBaseCount));
     }
 
     private static int GetPayAmount(PlayerReservedCommand command)
@@ -489,7 +541,10 @@ public static class BattlePlayerSkillPreviewCalculator
 
     private static bool IsDamageEffect(string effectId)
     {
-        return effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike";
+        return effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike" ||
+               effectId == "E_ArmorStrike" || effectId == "E_RandomStrike" ||
+               effectId == "E_StrikeByVulnerable" || effectId == "E_DamageUpIfBleeding" ||
+               effectId == "E_StrikeCountByBuff" || effectId == "E_StrikeCountByDebuff";
     }
 
     private static bool ShouldShowValue(string effectId, SkillType skillType)

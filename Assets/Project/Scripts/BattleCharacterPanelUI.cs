@@ -379,6 +379,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private Coroutine selectionPanelRefreshCoroutine;
     private bool isBattleExecutionInProgress;
     private bool isMonsterInfoSelectionActive;
+    private bool restoreHudAfterMonsterInfoClosed;
     private RectTransform panelRectTransform;
     private bool hasDisplayedStats;
     private int displayedHp;
@@ -619,6 +620,16 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         isMonsterInfoSelectionActive = monster != null;
         StopSelectionPanelPositionRefresh();
+
+        if (isMonsterInfoSelectionActive)
+        {
+            restoreHudAfterMonsterInfoClosed = false;
+            ApplyMonsterInfoHudPosition(monsterInfoOpen: true);
+            return;
+        }
+
+        restoreHudAfterMonsterInfoClosed = true;
+        ScheduleSelectionPanelPositionRefresh();
     }
 
     private void StopSelectionPanelPositionRefresh()
@@ -652,10 +663,15 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void RefreshSelectionPanelPosition()
     {
-        // 몬스터 정보 패널을 열 때는 BattleCharacterPanel/BattleSlot의 현재 위치를 유지합니다.
-        // 캐릭터 선택 해제로 예약된 이전 프레임의 갱신도 위 이벤트 처리에서 취소됩니다.
         if (isMonsterInfoSelectionActive)
             return;
+
+        if (restoreHudAfterMonsterInfoClosed)
+        {
+            restoreHudAfterMonsterInfoClosed = false;
+            ApplyMonsterInfoHudPosition(monsterInfoOpen: false);
+            return;
+        }
 
         if (isBattleExecutionInProgress || IsIntroBlockingPanel())
             return;
@@ -676,6 +692,22 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (turnExecutor != null && turnExecutor.CanAcceptPlayerInput)
             MovePanelToY(reservationPositionY);
+    }
+
+    private void ApplyMonsterInfoHudPosition(bool monsterInfoOpen)
+    {
+        EnsureTurnExecutor();
+
+        BattleHudMonsterInfoPosition target = BattleMonsterInfoHudPositionPolicy.Resolve(
+            monsterInfoOpen,
+            turnExecutor != null && turnExecutor.CanAcceptPlayerInput,
+            IsIntroBlockingPanel(),
+            BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded);
+
+        if (target == BattleHudMonsterInfoPosition.Up)
+            MovePanelToY(reservationPositionY);
+        else
+            MovePanelAndBattleSlotToDefault(returnCameraToDefault: !monsterInfoOpen);
     }
 
     private bool HasAnyInfoSelection()
@@ -1747,17 +1779,18 @@ public class BattleCharacterPanelUI : MonoBehaviour
         return null;
     }
 
-    private void MovePanelAndBattleSlotToDefault()
+    private void MovePanelAndBattleSlotToDefault(bool returnCameraToDefault = true)
     {
         if (panelRectTransform == null)
             panelRectTransform = GetComponent<RectTransform>();
 
         StopPanelMoveCoroutine();
-        ReturnCameraToDefaultForPanelDown();
+        if (returnCameraToDefault)
+            ReturnCameraToDefaultForPanelDown();
 
         if (!isActiveAndEnabled || panelMoveDuration <= 0f)
         {
-            SetPanelAndBattleSlotDefaultImmediate();
+            SetPanelAndBattleSlotDefaultImmediate(returnCameraToDefault);
             return;
         }
 
@@ -2039,10 +2072,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
     }
 
-    private void SetPanelAndBattleSlotDefaultImmediate()
+    private void SetPanelAndBattleSlotDefaultImmediate(bool returnCameraToDefault = true)
     {
         StopPanelMoveCoroutine();
-        ReturnCameraToDefaultForPanelDown();
+        if (returnCameraToDefault)
+            ReturnCameraToDefaultForPanelDown();
 
         if (panelRectTransform == null)
             panelRectTransform = GetComponent<RectTransform>();

@@ -61,6 +61,14 @@ public class SkillInventoryEquipService
         if (!SkillRarityUtility.CanEquipToFreeSlot(nextSkill))
             return false;
 
+        if (!SkillOwnershipPolicy.CanEquip(nextSkill, character.CharacterId))
+        {
+            Debug.LogWarning(
+                $"[SkillInventoryEquipService] 캐릭터와 호환되지 않는 스킬: " +
+                $"Character:{character.CharacterId} / Skill:{skillId}");
+            return false;
+        }
+
         string previousSkillId = character.EquippedSkillIds[equippedSkillIndex];
 
         if (!string.IsNullOrWhiteSpace(previousSkillId) &&

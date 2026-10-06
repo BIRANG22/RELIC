@@ -397,6 +397,7 @@ public class BattleRewardResolver : MonoBehaviour
         if (!SkillRewardRoller.TryRoll(
                 dropSettings,
                 candidates,
+                GetPartyCharacterIds(),
                 new BattleSkillRewardRandom(),
                 out SkillMasterData skill))
         {
@@ -496,8 +497,8 @@ public class BattleRewardResolver : MonoBehaviour
 
                 for (int i = 0; i < character.EquippedSkillIds.Length; i++)
                     AddSkillId(ids, character.EquippedSkillIds[i]);
-            }
         }
+    }
 
         if (pendingRewards != null)
         {
@@ -513,6 +514,21 @@ public class BattleRewardResolver : MonoBehaviour
         }
 
         return ids;
+    }
+
+    private static IEnumerable<string> GetPartyCharacterIds()
+    {
+        PartyRuntimeStore partyStore = DataManager.Instance?.PartyRuntimeStore;
+        if (partyStore == null)
+            yield break;
+
+        IReadOnlyList<PartySlotRuntimeData> slots = partyStore.Slots;
+        for (int i = 0; i < slots.Count; i++)
+        {
+            string characterId = slots[i]?.CharacterId;
+            if (!string.IsNullOrWhiteSpace(characterId))
+                yield return characterId;
+        }
     }
 
     private void AddSkillId(HashSet<string> ids, string skillId)
