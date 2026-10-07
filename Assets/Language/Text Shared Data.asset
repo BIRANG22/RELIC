@@ -7059,20 +7059,12 @@ MonoBehaviour:
     m_Key: ui.option.borderlesslabel.d52fad65
     m_Metadata:
       m_Items: []
-  - m_Id: 20392658152726528
-    m_Key: ui.monsterskill.name.f50b42ad
-    m_Metadata:
-      m_Items: []
   - m_Id: 20392658173698048
     m_Key: ui.monsterskill.detail.75591ba6
     m_Metadata:
       m_Items: []
   - m_Id: 20392658173698049
     m_Key: ui.monsterskill.typetext.d76003b9
-    m_Metadata:
-      m_Items: []
-  - m_Id: 20392658173698050
-    m_Key: ui.monsterstatus.name.897a2005
     m_Metadata:
       m_Items: []
   - m_Id: 20392658173698051

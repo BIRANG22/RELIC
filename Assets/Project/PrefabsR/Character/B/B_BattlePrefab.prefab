@@ -723,9 +723,9 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra2:
-      prepareStateName: 
+      prepareStateName: Ready
       prepareDuration: 0.15
-      stateName: 
+      stateName: AttackAction5
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -754,9 +754,9 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra3:
-      prepareStateName: 
+      prepareStateName: Ready
       prepareDuration: 0.15
-      stateName: 
+      stateName: Guard
       vfx:
         prefab: {fileID: 0}
         flipType: 0
@@ -785,9 +785,9 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra4:
-      prepareStateName: 
+      prepareStateName: Ready
       prepareDuration: 0.15
-      stateName: 
+      stateName: Move
       vfx:
         prefab: {fileID: 0}
         flipType: 0

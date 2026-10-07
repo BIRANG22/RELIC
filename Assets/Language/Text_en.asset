@@ -3134,15 +3134,15 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536458645506
-    m_Localized: Detection
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839808
-    m_Localized: Mana Circulation
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839809
-    m_Localized: Miasma
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839810
@@ -3154,7 +3154,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839815
-    m_Localized: Strike of Fury
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839816
@@ -3162,15 +3162,15 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839817
-    m_Localized: One Day at a Time
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839818
-    m_Localized: Increased Horsepower
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839819
-    m_Localized: Flood of Poison
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839820
@@ -3182,19 +3182,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839824
-    m_Localized: Banwol Cham
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839825
-    m_Localized: Half Moon Charm+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839826
-    m_Localized: Falling Dragon Attack
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839827
-    m_Localized: Falling Dragon Strike+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839828
@@ -3222,11 +3222,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839834
-    m_Localized: Addiction Imprint
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839835
-    m_Localized: Addiction Mark+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839836
