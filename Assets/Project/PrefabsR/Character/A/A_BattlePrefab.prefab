@@ -615,7 +615,7 @@ MonoBehaviour:
     extra2:
       prepareStateName: 
       prepareDuration: 0.15
-      stateName: 
+      stateName: AttackAction4
       vfx:
         prefab: {fileID: 0}
         flipType: 0
