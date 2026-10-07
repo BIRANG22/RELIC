@@ -4481,6 +4481,21 @@ public class BattleTimelineController : MonoBehaviour
 
         CharacterRuntimeData runtime = command.UserRuntime;
 
+        if (!command.IsSkillCostResolved)
+        {
+            int available = SkillCostCalculator.GetPreviewResource(
+                runtime,
+                command.SkillData != null
+                    ? command.SkillData.ReferenceResource
+                    : ReferenceResource.Cost);
+            return BuildShortageMessage(
+                GetCostLabel(command.SkillData != null
+                    ? command.SkillData.ReferenceResource
+                    : ReferenceResource.Cost),
+                command.MinimumSkillCost,
+                available);
+        }
+
         string shortageMessage = GetShortageMessage(runtime, command);
         if (!string.IsNullOrEmpty(shortageMessage))
             return shortageMessage;

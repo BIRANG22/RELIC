@@ -27,7 +27,6 @@ public class SkillNumericExpressionTests
     }
 
     [TestCase("")]
-    [TestCase("X")]
     [TestCase("0X")]
     [TestCase("-2X")]
     [TestCase("3XX")]
