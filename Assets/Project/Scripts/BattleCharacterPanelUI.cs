@@ -3933,6 +3933,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return false;
 
         BattlePlayerSkillPreview preview = GetSkillPreview(skillData);
+        if (preview?.Command != null && !preview.Command.IsSkillCostResolved)
+            return false;
+
         int requiredAmount = preview != null
             ? preview.PayAmount
             : Mathf.Max(0, skillData.ResourceCostValue);

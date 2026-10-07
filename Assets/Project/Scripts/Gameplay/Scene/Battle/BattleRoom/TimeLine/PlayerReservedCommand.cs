@@ -19,6 +19,8 @@ public class PlayerReservedCommand
     public int ShieldCost { get; private set; }
     public int ResolvedX { get; private set; }
     public int ResolvedResourceCost { get; private set; }
+    public bool IsSkillCostResolved { get; private set; } = true;
+    public int MinimumSkillCost { get; private set; }
     public IReadOnlyList<int> ResolvedEffectValues => resolvedEffectValues;
     public IReadOnlyList<int> ResolvedEffectCounts => resolvedEffectCounts;
     public SkillExecutionResult ExecutionResult { get; }
@@ -525,6 +527,8 @@ public class PlayerReservedCommand
         BaseCost = 0;
         BaseResourceCost = 0;
         BaseShieldCost = 0;
+        IsSkillCostResolved = true;
+        MinimumSkillCost = 0;
 
         if (skillData == null)
             return;
@@ -564,12 +568,19 @@ public class PlayerReservedCommand
             ? skillData.ResourceCostValue.ToString()
             : skillData.ResourceCostFormula;
         if (!SkillNumericExpression.TryParse(formula, out SkillNumericExpression expression))
+        {
+            IsSkillCostResolved = false;
             return 0;
+        }
 
         int available = SkillCostCalculator.GetPreviewResource(UserRuntime, skillData.ReferenceResource);
+        MinimumSkillCost = expression.UnitValue;
         ResolvedX = expression.ResolveMaximumX(available);
         if (expression.UsesX && ResolvedX <= 0)
+        {
+            IsSkillCostResolved = false;
             return 0;
+        }
 
         return expression.Resolve(available, ResolvedX);
     }
