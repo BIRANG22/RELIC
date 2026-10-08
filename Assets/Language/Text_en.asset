@@ -3130,7 +3130,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536458645505
-    m_Localized: Composure
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536458645506
@@ -3378,104 +3378,55 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100945
-    m_Localized: At the start of each turn, gain {E_Armor} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100946
-    m_Localized: At the start of each turn, gain {E_Lifesteal} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100947
-    m_Localized: At the start of each turn, gain {E_Swift} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100948
-    m_Localized: At the start of each turn, get {E_Smite} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100949
-    m_Localized: At the start of each turn, grants {E_Charge} {ValueRate1} to all
-      allies.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100950
-    m_Localized: At the start of each turn, {E_Poison} is given {ValueRate1} to all
-      enemies.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100951
-    m_Localized: At the start of each turn, grants {E_Armor} {ValueRate1} to all
-      allies.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100952
-    m_Localized: At the start of each turn, get {E_Boost} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100957
-    m_Localized: Grants {E_Armor} {ValueRate1} to all allies.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100958
-    m_Localized: '{E_MissingHPStrike}of{E_Strike}gives.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100959
-    m_Localized: '{ValueRate1}of{E_Strike}cast{CountRate1}Give me sashimi.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100960
-    m_Localized: '{ValueRate1}of{E_Pierce}gives.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100961
-    m_Localized: Give {E_Boost} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100962
-    m_Localized: Gives {E_Poison} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100963
-    m_Localized: Grants {E_Heal} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100964
-    m_Localized: '{ValueRate1}of{E_Pierce}give,{E_Vulnerable}second{ValueRate2}Grant.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100969
-    m_Localized: '{ValueRate1}of{E_Strike}gives.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100970
-    m_Localized: '{ValueRate1}of{E_Strike}gives.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100971
-    m_Localized: '{ValueRate1}of{E_Strike}give,{ValueRate2}Cannes{E_Knockback}I order
-      it.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100972
-    m_Localized: '{ValueRate1}of{E_Strike}give,{ValueRate2}Cannes{E_Knockback}I order
-      it.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100973
-    m_Localized: '{ValueRate1}of{E_Strike}cast{CountRate1}Give me sashimi.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100974
-    m_Localized: '{ValueRate1}of{E_Strike}cast{CountRate1}Give me sashimi.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100975
-    m_Localized: '{ValueRate1}of{E_Pierce}gives.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100976
-    m_Localized: '{ValueRate1}of{E_Pierce}gives.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100977
@@ -3523,22 +3474,6 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100995
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100996
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100997
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100998
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100999
     m_Localized: 
     m_Metadata:
       m_Items: []
@@ -3627,14 +3562,6 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101021
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101022
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101023
     m_Localized: 
     m_Metadata:
       m_Items: []
@@ -3738,15 +3665,7 @@ MonoBehaviour:
     m_Localized: 
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259101049
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259101050
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101051
     m_Localized: 
     m_Metadata:
       m_Items: []
@@ -3882,15 +3801,7 @@ MonoBehaviour:
     m_Localized: 
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259101085
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259101086
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101087
     m_Localized: 
     m_Metadata:
       m_Items: []
@@ -3930,15 +3841,7 @@ MonoBehaviour:
     m_Localized: 
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259101097
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259101098
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101099
     m_Localized: 
     m_Metadata:
       m_Items: []
@@ -6380,7 +6283,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626067
-    m_Localized: Fatigue
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626068
