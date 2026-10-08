@@ -346,10 +346,9 @@ public class EventRoomController : MonoBehaviour
 
     public void OnNextButtonClicked()
     {
-        // Shared button click must come from a genuine pointer press/release.
-        EnsureRewardPanelReference();
-        if (nextButton == null || rewardPanel == null ||
-            !rewardPanel.ConsumeNextButtonPointerClick()) return;
+        // Event continuation is handled by this button's onClick event.
+        // Battle reward pointer tracking must not block event continuation.
+        if (nextButton == null || !nextButton.interactable) return;
         if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
             return;
 

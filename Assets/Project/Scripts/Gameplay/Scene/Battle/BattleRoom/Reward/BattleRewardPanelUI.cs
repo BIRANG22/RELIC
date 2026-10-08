@@ -601,14 +601,42 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private bool OpenEquipmentRewardPanel(BattleRewardSlotUI slot, BattleRewardData reward)
     {
+        if (slot != null && reward != null && reward.Type == BattleRewardType.Skill)
+        {
+            BattleRewardSkillPanelUI skillPanel = BattleRewardSkillPanelUI.FindPanel();
+            if (skillPanel != null)
+            {
+                pendingEquipmentReward = true;
+                UpdateGainButton();
+                if (skillPanel.Open(reward, () => OnEquipmentRewardResolved(slot, reward)))
+                {
+                    PlayRewardAcquireSfx(reward);
+                    return true;
+                }
+                pendingEquipmentReward = false;
+                UpdateGainButton();
+            }
+        }
         ResolveEquipPanelIfNeeded();
 
-        if (equipPanel == null || slot == null || reward == null)
+        if (slot == null || reward == null)
+            return false;
+        if (equipPanel == null && (reward.Type != BattleRewardType.Relic ||
+            Object.FindFirstObjectByType<BattleRewardRelicPanelUI>(FindObjectsInactive.Include) == null))
             return false;
 
         pendingEquipmentReward = true;
         UpdateGainButton();
         PlayRewardAcquireSfx(reward);
+        if (reward.Type == BattleRewardType.Relic)
+        {
+            BattleRewardRelicPanelUI relicPanel = Object.FindFirstObjectByType<BattleRewardRelicPanelUI>(FindObjectsInactive.Include);
+            if (relicPanel != null)
+            {
+                relicPanel.Open(reward, () => OnEquipmentRewardResolved(slot, reward));
+                return true;
+            }
+        }
         equipPanel.Open(reward, () => OnEquipmentRewardResolved(slot, reward));
         return true;
     }
