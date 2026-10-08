@@ -20,6 +20,7 @@ public class DataManager : Singleton<DataManager>
     [SerializeField] private GridEffectSpriteDatabase gridEffectSpriteDatabase;
     [SerializeField] private SkillAttackOverrideDatabase skillAttackOverrideDatabase;
     [SerializeField] private SkillVfxDatabase skillVfxDatabase;
+    [SerializeField] private SkillRewardPoolDatabase skillRewardPoolDatabase;
     [SerializeField] private MapVisualDatabase mapVisualDatabase;
     [SerializeField] private ErosionIconDatabase erosionIconDatabase;
 
@@ -57,6 +58,7 @@ public class DataManager : Singleton<DataManager>
     public GridEffectSpriteDatabase GridEffectSpriteDatabase => gridEffectSpriteDatabase;
     public SkillAttackOverrideDatabase SkillAttackOverrideDatabase => skillAttackOverrideDatabase;
     public SkillVfxDatabase SkillVfxDatabase => skillVfxDatabase;
+    public SkillRewardPoolDatabase SkillRewardPoolDatabase => skillRewardPoolDatabase;
     public MapVisualDatabase MapVisualDatabase => mapVisualDatabase;
     public ErosionDatabase ErosionDatabase => dataBootstrap.ErosionDatabase;
     public ErosionIconDatabase ErosionIconDatabase => erosionIconDatabase;

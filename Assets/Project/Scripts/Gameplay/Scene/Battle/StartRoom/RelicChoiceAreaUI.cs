@@ -483,6 +483,9 @@ public class RelicChoiceAreaUI : MonoBehaviour
                 skillType,
                 unavailableSkillIds,
                 SkillOwnershipPolicy.GetPartyCharacterIds(DataManager.Instance.PartyRuntimeStore));
+        candidates = SkillRewardPoolPolicy.FilterCandidates(
+            candidates,
+            DataManager.Instance.SkillRewardPoolDatabase);
 
         if (candidates.Count < rewardCount)
         {
