@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using System;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -13,29 +15,66 @@ public static class ExcelToBytesConverter
     [MenuItem("Tools/Data/Convert GameData Excel To Runtime CSV")]
     public static void Convert()
     {
-        if (!File.Exists(SourcePath))
+        try
         {
-            Debug.LogError($"[ExcelToBytesConverter] Source not found: {SourcePath}");
-            return;
+            ConvertOrThrow();
+            AssetDatabase.Refresh();
+            Debug.Log($"[ExcelToBytesConverter] Converted: {SourcePath} -> {OutputPath}");
         }
-
-        if (!File.Exists(ConverterScriptPath))
+        catch (Exception exception)
         {
-            Debug.LogError($"[ExcelToBytesConverter] Converter script not found: {ConverterScriptPath}");
-            return;
+            Debug.LogError($"[ExcelToBytesConverter] CSV conversion failed: {exception.Message}");
         }
+    }
 
+    public static void ConvertOrThrow(
+        string sourcePath = SourcePath,
+        string outputPath = OutputPath)
+    {
         string projectRoot = Directory.GetParent(Application.dataPath)?.FullName;
         if (string.IsNullOrWhiteSpace(projectRoot))
-        {
-            Debug.LogError("[ExcelToBytesConverter] Project root could not be resolved.");
-            return;
-        }
+            throw new InvalidOperationException("Project root could not be resolved.");
 
-        string sourceFullPath = Path.GetFullPath(Path.Combine(projectRoot, SourcePath));
-        string outputFullPath = Path.GetFullPath(Path.Combine(projectRoot, OutputPath));
+        string sourceFullPath = ResolvePath(projectRoot, sourcePath);
+        string outputFullPath = ResolvePath(projectRoot, outputPath);
         string scriptFullPath = Path.GetFullPath(Path.Combine(projectRoot, ConverterScriptPath));
+        if (!File.Exists(sourceFullPath))
+            throw new FileNotFoundException("GameData source workbook was not found.", sourceFullPath);
+        if (!File.Exists(scriptFullPath))
+            throw new FileNotFoundException("GameData converter script was not found.", scriptFullPath);
 
+        string outputDirectory = Path.GetDirectoryName(outputFullPath);
+        if (string.IsNullOrWhiteSpace(outputDirectory))
+            throw new InvalidOperationException("GameData output directory could not be resolved.");
+        Directory.CreateDirectory(outputDirectory);
+
+        string temporaryOutputPath = Path.Combine(
+            outputDirectory,
+            $".{Path.GetFileName(outputFullPath)}.{Guid.NewGuid():N}.tmp");
+
+        try
+        {
+            RunConverterProcess(scriptFullPath, sourceFullPath, temporaryOutputPath);
+            if (!File.Exists(temporaryOutputPath))
+                throw new IOException($"GameData converter did not create the output file: {temporaryOutputPath}");
+
+            if (File.Exists(outputFullPath))
+                File.Replace(temporaryOutputPath, outputFullPath, null);
+            else
+                File.Move(temporaryOutputPath, outputFullPath);
+        }
+        finally
+        {
+            if (File.Exists(temporaryOutputPath))
+                File.Delete(temporaryOutputPath);
+        }
+    }
+
+    private static void RunConverterProcess(
+        string scriptFullPath,
+        string sourceFullPath,
+        string outputFullPath)
+    {
         var startInfo = new ProcessStartInfo
         {
             FileName = "powershell.exe",
@@ -50,23 +89,37 @@ public static class ExcelToBytesConverter
 
         using Process process = Process.Start(startInfo);
         if (process == null)
+            throw new InvalidOperationException("Failed to start the GameData CSV converter.");
+
+        Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+        Task<string> errorTask = process.StandardError.ReadToEndAsync();
+        if (!process.WaitForExit(120000))
         {
-            Debug.LogError("[ExcelToBytesConverter] Failed to start CSV converter.");
-            return;
+            Exception killException = null;
+            try { process.Kill(); }
+            catch (Exception exception) { killException = exception; }
+
+            process.WaitForExit(5000);
+            throw new TimeoutException(
+                "GameData CSV conversion exceeded 120 seconds.",
+                killException);
         }
 
-        string standardOutput = process.StandardOutput.ReadToEnd();
-        string standardError = process.StandardError.ReadToEnd();
-        process.WaitForExit();
+        Task.WaitAll(outputTask, errorTask);
+        string standardError = errorTask.Result;
 
         if (process.ExitCode != 0)
-        {
-            Debug.LogError($"[ExcelToBytesConverter] CSV conversion failed: {standardError}");
-            return;
-        }
+            throw new InvalidOperationException(
+                $"GameData CSV conversion failed (exit {process.ExitCode}): {standardError.Trim()}");
+    }
 
-        AssetDatabase.Refresh();
+    private static string ResolvePath(string projectRoot, string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ArgumentException("Path is required.", nameof(path));
 
-        Debug.Log($"[ExcelToBytesConverter] {standardOutput.Trim()}");
+        return Path.GetFullPath(Path.IsPathRooted(path)
+            ? path
+            : Path.Combine(projectRoot, path));
     }
 }

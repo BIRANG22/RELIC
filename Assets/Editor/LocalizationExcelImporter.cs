@@ -64,7 +64,12 @@ public static class LocalizationExcelImporter
                 reporter: null,
                 removeMissingEntries: RemoveMissingEntries);
 
-            AssetDatabase.SaveAssets();
+            // 전체 프로젝트의 dirty 에셋을 저장하지 않고, 이번 Import가 갱신한
+            // String Table Collection 구성 요소만 저장한다.
+            AssetDatabase.SaveAssetIfDirty(collection);
+            AssetDatabase.SaveAssetIfDirty(collection.SharedData);
+            foreach (var table in collection.StringTables)
+                AssetDatabase.SaveAssetIfDirty(table);
         }
         finally
         {

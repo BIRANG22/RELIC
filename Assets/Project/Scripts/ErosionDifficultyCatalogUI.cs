@@ -412,14 +412,31 @@ public sealed class ErosionDifficultyCatalogUI : MonoBehaviour
         if (tooltipErosionText == null)
             return;
 
-        if (tooltipErosionText.GetComponent<LocalizationIgnore>() == null)
-            tooltipErosionText.gameObject.AddComponent<LocalizationIgnore>();
+        GameObject target = tooltipErosionText.gameObject;
+        if (target.GetComponent<LocalizationIgnore>() == null)
+            target.AddComponent<LocalizationIgnore>();
+        if (target.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            target.AddComponent<LocalizationAutoBindingIgnore>();
 
-        LocalizedTMPText fixedLocalizer = tooltipErosionText.GetComponent<LocalizedTMPText>();
+        LocalizedTMPText fixedLocalizer = target.GetComponent<LocalizedTMPText>();
         if (fixedLocalizer != null)
         {
             fixedLocalizer.enabled = false;
             Destroy(fixedLocalizer);
+        }
+
+        DynamicLocalizedTMPText dynamicLocalizer = target.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicLocalizer != null)
+        {
+            dynamicLocalizer.enabled = false;
+            Destroy(dynamicLocalizer);
+        }
+
+        LocalizeStringEvent legacyLocalizer = target.GetComponent<LocalizeStringEvent>();
+        if (legacyLocalizer != null)
+        {
+            legacyLocalizer.enabled = false;
+            Destroy(legacyLocalizer);
         }
     }
 

@@ -12,5 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a527e450b1d44739a9916100de49ca20, type: 3}
   m_Name: SkillRewardPoolDatabase
   m_EditorClassIdentifier: 
-  restrictRewards: 0
-  allowedSkillIds: []
+  restrictRewards: 1
+  allowedSkillIds:
+  - S_Core_01
+  - S_Core_03
+  - S_Core_05
+  - S_Core_07
+  - S_Core_09
+  - S_Core_11
+  - S_Core_13
+  - S_Core_15
+  - S_Core_17
+  - S_Core_19
