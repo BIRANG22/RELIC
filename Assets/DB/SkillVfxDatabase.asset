@@ -100,7 +100,7 @@ MonoBehaviour:
   - SkillId: S_Unique_03
     Vfx:
       prefab: {fileID: 6453203898449280538, guid: d2549dd471998d54d97cc0c61d413305, type: 3}
-      flipType: 2
+      flipType: 0
       renderMode: 2
       proxyBlendMode: 1
       scaleDirectWorldRendererToProxyHeight: 0
@@ -1528,7 +1528,7 @@ MonoBehaviour:
   - SkillId: S_Core_13
     Vfx:
       prefab: {fileID: 6808545895853519640, guid: 39da642f5e0e7664bb39abf6d1c2597d, type: 3}
-      flipType: 2
+      flipType: 0
       renderMode: 2
       proxyBlendMode: 1
       scaleDirectWorldRendererToProxyHeight: 0
@@ -1570,7 +1570,7 @@ MonoBehaviour:
   - SkillId: S_Core_14
     Vfx:
       prefab: {fileID: 6808545895853519640, guid: 39da642f5e0e7664bb39abf6d1c2597d, type: 3}
-      flipType: 2
+      flipType: 0
       renderMode: 2
       proxyBlendMode: 1
       scaleDirectWorldRendererToProxyHeight: 0
@@ -1612,7 +1612,7 @@ MonoBehaviour:
   - SkillId: S_Core_15
     Vfx:
       prefab: {fileID: 1116342728058327303, guid: 754d458df7c9a7e42bc850ca318430f8, type: 3}
-      flipType: 0
+      flipType: 2
       renderMode: 2
       proxyBlendMode: 1
       scaleDirectWorldRendererToProxyHeight: 0
@@ -1654,7 +1654,7 @@ MonoBehaviour:
   - SkillId: S_Core_16
     Vfx:
       prefab: {fileID: 1116342728058327303, guid: 754d458df7c9a7e42bc850ca318430f8, type: 3}
-      flipType: 0
+      flipType: 2
       renderMode: 2
       proxyBlendMode: 1
       scaleDirectWorldRendererToProxyHeight: 0
@@ -1696,7 +1696,7 @@ MonoBehaviour:
   - SkillId: S_Core_17
     Vfx:
       prefab: {fileID: 6808545895853519640, guid: 3541f3da60188cc43be31cc70dd5e87b, type: 3}
-      flipType: 2
+      flipType: 0
       renderMode: 2
       proxyBlendMode: 1
       scaleDirectWorldRendererToProxyHeight: 0
@@ -1738,7 +1738,7 @@ MonoBehaviour:
   - SkillId: S_Core_18
     Vfx:
       prefab: {fileID: 6808545895853519640, guid: 3541f3da60188cc43be31cc70dd5e87b, type: 3}
-      flipType: 2
+      flipType: 0
       renderMode: 2
       proxyBlendMode: 1
       scaleDirectWorldRendererToProxyHeight: 0
@@ -2451,8 +2451,8 @@ MonoBehaviour:
       proxyYMultiplier: 100
   - SkillId: S_Core_35
     Vfx:
-      prefab: {fileID: 3037673656474629809, guid: 3011e706563e25248a4d594cb215ba35, type: 3}
-      flipType: 2
+      prefab: {fileID: 3037673656474629809, guid: 5f90bf965e5e41c408421ff73a22d48a, type: 3}
+      flipType: 0
       renderMode: 2
       proxyBlendMode: 1
       scaleDirectWorldRendererToProxyHeight: 0
@@ -2493,8 +2493,8 @@ MonoBehaviour:
       proxyYMultiplier: 100
   - SkillId: S_Core_36
     Vfx:
-      prefab: {fileID: 3037673656474629809, guid: 3011e706563e25248a4d594cb215ba35, type: 3}
-      flipType: 2
+      prefab: {fileID: 3037673656474629809, guid: 5f90bf965e5e41c408421ff73a22d48a, type: 3}
+      flipType: 0
       renderMode: 2
       proxyBlendMode: 1
       scaleDirectWorldRendererToProxyHeight: 0
@@ -2535,8 +2535,8 @@ MonoBehaviour:
       proxyYMultiplier: 100
   - SkillId: S_Core_37
     Vfx:
-      prefab: {fileID: 3037673656474629809, guid: 43ddc712efc6245478562f6fbff52cf6, type: 3}
-      flipType: 0
+      prefab: {fileID: 3037673656474629809, guid: 3011e706563e25248a4d594cb215ba35, type: 3}
+      flipType: 2
       renderMode: 2
       proxyBlendMode: 1
       scaleDirectWorldRendererToProxyHeight: 0
@@ -2577,8 +2577,8 @@ MonoBehaviour:
       proxyYMultiplier: 100
   - SkillId: S_Core_38
     Vfx:
-      prefab: {fileID: 3037673656474629809, guid: 43ddc712efc6245478562f6fbff52cf6, type: 3}
-      flipType: 0
+      prefab: {fileID: 3037673656474629809, guid: 3011e706563e25248a4d594cb215ba35, type: 3}
+      flipType: 2
       renderMode: 2
       proxyBlendMode: 1
       scaleDirectWorldRendererToProxyHeight: 0
@@ -2619,7 +2619,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
   - SkillId: S_Core_39
     Vfx:
-      prefab: {fileID: 3037673656474629809, guid: 5f90bf965e5e41c408421ff73a22d48a, type: 3}
+      prefab: {fileID: 3037673656474629809, guid: 43ddc712efc6245478562f6fbff52cf6, type: 3}
       flipType: 0
       renderMode: 2
       proxyBlendMode: 1
@@ -2661,7 +2661,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
   - SkillId: S_Core_40
     Vfx:
-      prefab: {fileID: 3037673656474629809, guid: 5f90bf965e5e41c408421ff73a22d48a, type: 3}
+      prefab: {fileID: 3037673656474629809, guid: 43ddc712efc6245478562f6fbff52cf6, type: 3}
       flipType: 0
       renderMode: 2
       proxyBlendMode: 1

@@ -44,7 +44,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Main:
-        m_Texture: {fileID: 2800000, guid: 88fb16c935c920c49a4487dc4d4c1ad3, type: 3}
+        m_Texture: {fileID: 2800000, guid: bcec5d7749ce70a46b57b7e8fc65506c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -139,3 +139,4 @@ Material:
     - _StretchUVDes: {r: 0, g: 0, b: 0, a: 0}
     - _Tiling: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1

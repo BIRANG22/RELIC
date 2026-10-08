@@ -316,12 +316,12 @@ MonoBehaviour:
   - ApplyToAllCharacters: 0
     CharacterId: Char_02
     SkillId: S_Core_37
-    AttackSlot: 1
+    AttackSlot: 9
     RepeatAttackSlots: 
   - ApplyToAllCharacters: 0
     CharacterId: Char_02
     SkillId: S_Core_38
-    AttackSlot: 1
+    AttackSlot: 9
     RepeatAttackSlots: 
   - ApplyToAllCharacters: 0
     CharacterId: Char_02
