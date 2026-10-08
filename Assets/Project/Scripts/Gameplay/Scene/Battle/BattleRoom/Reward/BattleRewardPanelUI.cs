@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using TMPro;
 using Object = UnityEngine.Object;
 
 public class BattleRewardPanelUI : MonoBehaviour
@@ -13,14 +15,35 @@ public class BattleRewardPanelUI : MonoBehaviour
     [Header("Reward List")]
     [SerializeField] private Transform rewardRoot;
     [SerializeField] private BattleRewardSlotUI rewardSlotPrefab;
+    [Tooltip("보상 슬롯을 하나씩 생성할 때의 간격(초)입니다.")]
+    [Min(0f)][SerializeField] private float rewardSpawnInterval = 0.15f;
+    [Header("Reward Reveal Animation")]
+    [Tooltip("각 보상 슬롯이 완전히 나타날 때까지 걸리는 시간(초)입니다.")]
+    [Min(0f)][SerializeField] private float rewardRevealDuration = 0.35f;
+    [Tooltip("보상 슬롯 내용이 아래에서 시작하는 거리(UI 단위)입니다.")]
+    [Min(0f)][SerializeField] private float rewardStartOffsetY = 40f;
+    [Tooltip("아래에서 위로 등장할 때 사용할 이동 곡선입니다.")]
+    [SerializeField] private AnimationCurve rewardRevealCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     [SerializeField] private Sprite remnantIcon;
     [SerializeField] private Color remnantIconColor = Color.white;
+    [Tooltip("유물 보상에 공통으로 표시할 아이콘입니다.")]
+    [SerializeField] private Sprite relicRewardIcon;
+    [Tooltip("기억 보상에 공통으로 표시할 아이콘입니다.")]
+    [SerializeField] private Sprite memoryRewardIcon;
 
     [Header("Reward Transfer Effect")]
     [Tooltip("재료 아이템과 레드 더스티움 획득 시 재생할 화면 공간 이동 효과입니다.")]
     [SerializeField] private ScreenSpaceTransferOrbEffect screenSpaceTransferEffectPrefab;
     [Tooltip("보상 이동 효과가 도착할 MenuRoot/BagButton입니다.")]
     [SerializeField] private RectTransform rewardTransferTarget;
+
+    [Header("Gain Button")]
+    [Tooltip("자동 획득 시 보상 사이의 간격(초)입니다.")]
+    [Min(0f)][SerializeField] private float gainInterval = 0.2f;
+    [Tooltip("한 번 누르면 남은 보상을 순서대로 모두 수령하는 버튼입니다.")]
+    [SerializeField] private Button gainButton;
+    [Tooltip("GainButton 하위의 Text (TMP)입니다.")]
+    [SerializeField] private TMP_Text gainButtonText;
 
     [Header("Legacy Confirm Button")]
     [SerializeField] private Button confirmButton;
@@ -37,10 +60,94 @@ public class BattleRewardPanelUI : MonoBehaviour
     private readonly List<BattleRewardSlotUI> activeSlots = new();
     private Action onRewardFlowCompleted;
     private bool pendingEquipmentReward;
+    private Coroutine rewardSpawnCoroutine;
+    private Coroutine autoGainCoroutine;
+    private bool autoGaining;
+    private bool gainButtonUsed;
+    private bool continueWithGainButton = true;
+    private bool awaitingContinue;
+    private bool continueTransitionStarted;
+    private bool pointerPressedOnNextButton;
+    private bool validNextButtonClick;
+    private int validNextButtonClickFrame = -1;
+
+    public Button SharedNextButton => gainButton;
+
+    public void HideNextButtonAfterCover()
+    {
+        if (gainButton == null) return;
+        gainButton.interactable = false;
+        gainButton.gameObject.SetActive(false);
+    }
+
+
+    // A release outside the button never counts as a click. The flag is armed
+    // only by a real pointer down/up pair, not by hover/exit or UI Submit.
+    public bool ConsumeNextButtonPointerClick()
+    {
+        bool valid = validNextButtonClick && validNextButtonClickFrame == Time.frameCount;
+        validNextButtonClick = false;
+        return valid;
+    }
+
+    private void BindNextButtonPointerEvents()
+    {
+        if (gainButton == null) return;
+        EventTrigger trigger = gainButton.GetComponent<EventTrigger>();
+        if (trigger == null) trigger = gainButton.gameObject.AddComponent<EventTrigger>();
+        AddPointerListener(trigger, EventTriggerType.PointerDown, data =>
+        {
+            var pointer = data as PointerEventData;
+            pointerPressedOnNextButton = pointer != null && pointer.button == PointerEventData.InputButton.Left;
+            validNextButtonClick = false;
+        });
+        AddPointerListener(trigger, EventTriggerType.PointerUp, data =>
+        {
+            var pointer = data as PointerEventData;
+            validNextButtonClick = pointerPressedOnNextButton && pointer != null &&
+                pointer.button == PointerEventData.InputButton.Left &&
+                pointer.pointerCurrentRaycast.gameObject != null &&
+                (pointer.pointerCurrentRaycast.gameObject == gainButton.gameObject ||
+                 pointer.pointerCurrentRaycast.gameObject.transform.IsChildOf(gainButton.transform));
+            validNextButtonClickFrame = Time.frameCount;
+            pointerPressedOnNextButton = false;
+        });
+        AddPointerListener(trigger, EventTriggerType.PointerExit, data =>
+        {
+            pointerPressedOnNextButton = false;
+            validNextButtonClick = false;
+        });
+    }
+
+    private static void AddPointerListener(EventTrigger trigger, EventTriggerType type,
+        UnityEngine.Events.UnityAction<BaseEventData> callback)
+    {
+        var entry = new EventTrigger.Entry { eventID = type };
+        entry.callback.AddListener(callback);
+        trigger.triggers.Add(entry);
+    }
+
+    public void SetContinueWithGainButton(bool enabled)
+    {
+        continueWithGainButton = enabled;
+    }
 
     private void Awake()
     {
         ResolveEquipPanelIfNeeded();
+        if (gainButton == null)
+        {
+            Transform found = transform.Find("GainButton");
+            if (found != null) gainButton = found.GetComponent<Button>();
+        }
+        if (gainButton != null)
+        {
+            gainButton.gameObject.SetActive(false);
+            if (gainButtonText == null)
+                gainButtonText = gainButton.GetComponentInChildren<TMP_Text>(true);
+            BindNextButtonPointerEvents();
+            gainButton.onClick.AddListener(OnClickGainButton);
+        }
 
         if (confirmButton != null)
             confirmButton.gameObject.SetActive(false);
@@ -56,7 +163,16 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        StopRewardSpawn();
+        StopAutoGain();
+        pointerPressedOnNextButton = false;
+        validNextButtonClick = false;
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        if (gainButton != null)
+        {
+            gainButton.interactable = false;
+            gainButton.gameObject.SetActive(false);
+        }
     }
 
     private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
@@ -79,6 +195,14 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     public void Open(List<BattleRewardData> rewards, Action completedCallback, ResumeData resumeData)
     {
+        StopAutoGain();
+        StopRewardSpawn();
+        gainButtonUsed = false;
+        awaitingContinue = false;
+        continueTransitionStarted = false;
+        pointerPressedOnNextButton = false;
+        validNextButtonClick = false;
+        if (gainButton != null) gainButton.gameObject.SetActive(true);
         currentRewards.Clear();
         claimedRewards.Clear();
         activeSlots.Clear();
@@ -113,8 +237,9 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         EnsureVerticalRewardLayout();
         Refresh();
+        UpdateGainButton();
 
-        if (activeSlots.Count <= 0)
+        if (currentRewards.Count <= 0)
         {
             FinishRewardFlow();
             return;
@@ -141,29 +266,265 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private void Refresh()
     {
+        StopRewardSpawn();
+
         if (rewardRoot == null || rewardSlotPrefab == null)
+        {
+            UpdateGainButton();
             return;
+        }
 
         for (int i = rewardRoot.childCount - 1; i >= 0; i--)
             Destroy(rewardRoot.GetChild(i).gameObject);
 
         activeSlots.Clear();
+        rewardSpawnCoroutine = StartCoroutine(SpawnRewardSlotsSequentially());
+        UpdateGainButton();
+    }
 
+    private IEnumerator SpawnRewardSlotsSequentially()
+    {
+        // The first reward appears immediately. Subsequent rewards use the inspector interval.
+        bool firstSlot = true;
         for (int i = 0; i < currentRewards.Count; i++)
         {
             BattleRewardData reward = currentRewards[i];
-
             if (reward == null || claimedRewards.Contains(reward))
                 continue;
 
+            if (!firstSlot && rewardSpawnInterval > 0f)
+                yield return new WaitForSecondsRealtime(rewardSpawnInterval);
+
+            if (rewardRoot == null || rewardSlotPrefab == null)
+                break;
+
+            if (claimedRewards.Contains(reward))
+                continue;
+
             BattleRewardSlotUI slot = Instantiate(rewardSlotPrefab, rewardRoot);
-            slot.Setup(reward, remnantIcon, remnantIconColor, OnClickRewardSlot, null, null);
+            slot.Setup(reward, remnantIcon, remnantIconColor, relicRewardIcon, memoryRewardIcon, OnClickRewardSlot, null, null);
             activeSlots.Add(slot);
+            // Animate the direct visual children, not the layout-controlled slot root.
+            StartCoroutine(RevealRewardSlot(slot));
+            UpdateGainButton();
+            firstSlot = false;
         }
+
+        rewardSpawnCoroutine = null;
+    }
+
+    private IEnumerator RevealRewardSlot(BattleRewardSlotUI slot)
+    {
+        if (slot == null)
+            yield break;
+
+        CanvasGroup group = slot.GetComponent<CanvasGroup>();
+        if (group == null)
+            group = slot.gameObject.AddComponent<CanvasGroup>();
+
+        // Use the slot root only for alpha. VerticalLayoutGroup owns its position.
+        group.alpha = 0f;
+        group.interactable = false;
+        group.blocksRaycasts = false;
+
+        var visuals = new List<RectTransform>();
+        var originalPositions = new List<Vector2>();
+        Transform root = slot.transform;
+        for (int i = 0; i < root.childCount; i++)
+        {
+            if (root.GetChild(i) is RectTransform childRect)
+            {
+                visuals.Add(childRect);
+                originalPositions.Add(childRect.anchoredPosition);
+            }
+        }
+
+        float duration = Mathf.Max(0f, rewardRevealDuration);
+        float elapsed = 0f;
+        while (slot != null && elapsed < duration)
+        {
+            float t = Mathf.Clamp01(elapsed / duration);
+            float eased = rewardRevealCurve != null ? rewardRevealCurve.Evaluate(t) : t;
+            group.alpha = t;
+            for (int i = 0; i < visuals.Count; i++)
+            {
+                if (visuals[i] != null)
+                    visuals[i].anchoredPosition = originalPositions[i] + Vector2.down * (rewardStartOffsetY * (1f - eased));
+            }
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (slot == null)
+            yield break;
+
+        for (int i = 0; i < visuals.Count; i++)
+        {
+            if (visuals[i] != null)
+                visuals[i].anchoredPosition = originalPositions[i];
+        }
+        group.alpha = 1f;
+        group.interactable = true;
+        group.blocksRaycasts = true;
+        UpdateGainButton();
+    }
+
+    private void StopRewardSpawn()
+    {
+        if (rewardSpawnCoroutine == null)
+            return;
+
+        StopCoroutine(rewardSpawnCoroutine);
+        rewardSpawnCoroutine = null;
+    }
+
+    private void OnClickGainButton()
+    {
+        // Event rooms share this button; do not consume their click when this panel is closed.
+        if (!isActiveAndEnabled)
+            return;
+
+        // Require actual press and release on the button (not pointer exit).
+        if (!ConsumeNextButtonPointerClick())
+            return;
+
+        if (awaitingContinue)
+        {
+            if (continueTransitionStarted) return;
+            continueTransitionStarted = true;
+            continueWithGainButton = false;
+            FinishRewardFlow();
+            return;
+        }
+
+        if (autoGaining || pendingEquipmentReward || currentRewards.Count == claimedRewards.Count)
+            return;
+
+        autoGaining = true;
+        gainButtonUsed = true;
+        if (gainButton != null) gainButton.gameObject.SetActive(false);
+        UpdateGainButton();
+        autoGainCoroutine = StartCoroutine(AutoGainRewards());
+    }
+
+    private IEnumerator AutoGainRewards()
+    {
+        while (claimedRewards.Count < currentRewards.Count)
+        {
+            // Wait for a slot to finish its entrance animation or for an equip panel.
+            if (pendingEquipmentReward)
+            {
+                yield return null;
+                continue;
+            }
+
+            BattleRewardSlotUI nextSlot = null;
+            for (int i = 0; i < activeSlots.Count; i++)
+            {
+                BattleRewardSlotUI candidate = activeSlots[i];
+                if (candidate == null || candidate.Reward == null || claimedRewards.Contains(candidate.Reward))
+                    continue;
+                nextSlot = candidate;
+                break;
+            }
+
+            if (nextSlot == null)
+            {
+                if (rewardSpawnCoroutine == null)
+                    break; // No more slots are being created; avoid waiting forever.
+                yield return null;
+                continue;
+            }
+
+            CanvasGroup group = nextSlot.GetComponent<CanvasGroup>();
+            if (group != null && !group.interactable)
+            {
+                yield return null;
+                continue;
+            }
+
+            BattleRewardData reward = nextSlot.Reward;
+            if (!CanClaimReward(reward))
+                break; // Bag full or another requirement failed: leave this reward unclaimed.
+
+            OnClickRewardSlot(nextSlot, true);
+
+            // Equipment selection remains interactive. Resume when its completion callback fires.
+            while (pendingEquipmentReward)
+                yield return null;
+
+            if (!claimedRewards.Contains(reward))
+                break; // The acquisition was blocked; do not retry indefinitely.
+
+            if (claimedRewards.Count < currentRewards.Count && gainInterval > 0f)
+                yield return new WaitForSecondsRealtime(gainInterval);
+        }
+
+        autoGainCoroutine = null;
+        autoGaining = false;
+        UpdateGainButton();
+    }
+
+    private void StopAutoGain()
+    {
+        if (autoGainCoroutine != null)
+        {
+            StopCoroutine(autoGainCoroutine);
+            autoGainCoroutine = null;
+        }
+        autoGaining = false;
+    }
+
+    private void UpdateGainButton()
+    {
+        if (gainButton == null)
+            return;
+
+        int remaining = Mathf.Max(0, currentRewards.Count - claimedRewards.Count);
+        if (awaitingContinue)
+        {
+            gainButton.gameObject.SetActive(true);
+            if (gainButtonText != null) gainButtonText.text = "진행";
+            gainButton.interactable = true;
+            return;
+        }
+        // Automatic collection uses a one-shot button; never reveal it again during collection.
+        if (gainButtonUsed || autoGaining || remaining <= 0)
+        {
+            gainButton.gameObject.SetActive(false);
+            gainButton.interactable = false;
+            return;
+        }
+
+        gainButton.gameObject.SetActive(true);
+        if (gainButtonText != null)
+            gainButtonText.text = $"획득 {remaining}";
+
+        bool hasReadySlot = false;
+        if (!pendingEquipmentReward)
+        {
+            for (int i = 0; i < activeSlots.Count; i++)
+            {
+                BattleRewardSlotUI slot = activeSlots[i];
+                if (slot == null || slot.Reward == null || claimedRewards.Contains(slot.Reward))
+                    continue;
+                CanvasGroup group = slot.GetComponent<CanvasGroup>();
+                hasReadySlot = group != null && group.interactable;
+                break;
+            }
+        }
+        gainButton.interactable = !gainButtonUsed && !autoGaining && remaining > 0 && hasReadySlot;
     }
 
     private void OnClickRewardSlot(BattleRewardSlotUI slot)
     {
+        OnClickRewardSlot(slot, false);
+    }
+
+    private void OnClickRewardSlot(BattleRewardSlotUI slot, bool fromAutoGain)
+    {
+        if (autoGaining && !fromAutoGain)
+            return;
         if (slot == null || slot.Reward == null)
             return;
 
@@ -246,6 +607,7 @@ public class BattleRewardPanelUI : MonoBehaviour
             return false;
 
         pendingEquipmentReward = true;
+        UpdateGainButton();
         PlayRewardAcquireSfx(reward);
         equipPanel.Open(reward, () => OnEquipmentRewardResolved(slot, reward));
         return true;
@@ -267,6 +629,8 @@ public class BattleRewardPanelUI : MonoBehaviour
             activeSlots.Remove(slot);
             Destroy(slot.gameObject);
         }
+
+        UpdateGainButton();
 
         if (claimedRewards.Count >= currentRewards.Count)
         {
@@ -613,7 +977,25 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private void FinishRewardFlow()
     {
-        gameObject.SetActive(false);
+        if (continueWithGainButton && !awaitingContinue)
+        {
+            StopAutoGain();
+            awaitingContinue = true;
+            UpdateGainButton();
+            return;
+        }
+
+        StopAutoGain();
+        // Keep the visible "진행" button on screen until the destination transition
+        // handles panel teardown. Lock further clicks without hiding its visuals.
+        if (gainButton != null)
+        {
+            gainButton.interactable = false;
+            if (!continueTransitionStarted)
+                gainButton.gameObject.SetActive(false);
+        }
+        if (!continueTransitionStarted)
+            gameObject.SetActive(false);
 
         Action completedCallback = onRewardFlowCompleted;
         onRewardFlowCompleted = null;
@@ -630,17 +1012,7 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (verticalLayout == null)
             verticalLayout = rewardRoot.gameObject.AddComponent<VerticalLayoutGroup>();
 
-        verticalLayout.childAlignment = TextAnchor.UpperCenter;
-        verticalLayout.childControlWidth = true;
-        verticalLayout.childControlHeight = true;
-        verticalLayout.childForceExpandWidth = false;
-        verticalLayout.childForceExpandHeight = false;
-
-        ContentSizeFitter fitter = rewardRoot.GetComponent<ContentSizeFitter>();
-
-        if (fitter == null)
-            fitter = rewardRoot.gameObject.AddComponent<ContentSizeFitter>();
-
-        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        // Respect the VerticalLayoutGroup values configured on Contant in the Inspector.
+        // No automatic ContentSizeFitter: the designer owns Contant sizing/anchors.
     }
 }
