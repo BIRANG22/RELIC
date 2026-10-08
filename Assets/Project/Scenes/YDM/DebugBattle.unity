@@ -102276,3 +102276,68 @@ SceneRoots:
   - {fileID: 1571638088}
   - {fileID: 324115086}
   - {fileID: 910050502}
+  - {fileID: 910000202}
+--- !u!1 &910000201
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 910000202}
+  - component: {fileID: 910000203}
+  m_Layer: 5
+  m_Name: BattleSkillTextPopupUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &910000202
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910000201}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &910000203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910000201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d923d31abc44bb780f5e9bb67ad4a52, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  targetCanvas: {fileID: 742669609}
+  canvasRect: {fileID: 742669610}
+  worldCamera: {fileID: 1610817905}
+  uiCamera: {fileID: 0}
+  worldOffset: {x: 0, y: 0.5, z: 0}
+  randomScreenOffset: {x: 26, y: 12}
+  randomDisappearCanvasOffset: {x: 12, y: 8}
+  holdDuration: 0.3
+  duration: 0.55
+  horizontalCanvasMoveRange: {x: -34, y: 34}
+  upwardCanvasMove: 18
+  arcCanvasHeight: 20
+  startScale: 1
+  endScale: 0.68
+  fontAsset: {fileID: 0}
+  fontMaterial: {fileID: 0}
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  fontSize: 44
+  useBoldText: 1
+  textBoxSize: {x: 420, y: 165}
