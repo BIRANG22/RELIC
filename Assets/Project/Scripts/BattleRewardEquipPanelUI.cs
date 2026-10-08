@@ -132,6 +132,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
 
     public static bool TryOpenRelicReward(string relicId, Action resolvedCallback = null)
     {
+        if (BattleRewardRelicPanelUI.TryOpenRelicReward(relicId, resolvedCallback)) return true;
         return TryOpenExternalReward(BattleRewardType.Relic, relicId, resolvedCallback);
     }
 
@@ -146,7 +147,7 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             return false;
 
         BattleRewardEquipPanelUI panel = UnityEngine.Object.FindFirstObjectByType<BattleRewardEquipPanelUI>(FindObjectsInactive.Include);
-        if (panel == null || panel.currentReward != null)
+        if (panel != null && panel.currentReward != null)
             return false;
 
         rewardId = rewardId.Trim();
@@ -196,6 +197,14 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
             return false;
         }
 
+        if (type == BattleRewardType.Skill)
+        {
+            BattleRewardSkillPanelUI skillPanel = BattleRewardSkillPanelUI.FindPanel();
+            if (skillPanel != null && skillPanel.Open(reward, resolvedCallback))
+                return true;
+        }
+        if (panel == null)
+            return false;
         panel.Open(reward, resolvedCallback);
         return true;
     }
