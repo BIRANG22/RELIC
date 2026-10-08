@@ -74,7 +74,7 @@ public static class RestRoomShopService
         float epicWeight = DefaultEpicWeight,
         float uniqueWeight = DefaultUniqueWeight)
     {
-        random ??= new UnitySkillRewardRandom();
+        random ??= new BattleSkillRewardRandom();
 
         HashSet<string> blockedSkillIds = BuildIdSet(unavailableSkillIds);
         HashSet<string> blockedRelicIds = BuildIdSet(unavailableRelicIds);

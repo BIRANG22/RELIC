@@ -33,7 +33,8 @@ public static class LocalizationTextBindingRepairTool
             {
                 RepairSummary summary = RepairPrefabs(maps);
                 summary += RepairScenes(maps);
-                AssetDatabase.SaveAssets();
+                // 변경된 프리팹과 씬은 각 저장 API로 이미 저장했다. 전역 SaveAssets는
+                // 검사 중 갱신된 Dynamic TMP 아틀라스까지 저장 대상으로 끌어들일 수 있다.
                 Debug.Log(
                     $"[LocalizationTextBindingRepairTool] 검사 완료: 검사 {summary.Checked}, " +
                     $"정상 {summary.Matched}, 복구 {summary.Repaired}, " +

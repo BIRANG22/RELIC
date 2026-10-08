@@ -79,6 +79,68 @@ public sealed class LocalizationComprehensiveCoverageTests
     }
 
     [Test]
+    public void RecordCatalogData_HasLocalizationKeysForEveryPlayerFacingField()
+    {
+        IReadOnlyList<IReadOnlyList<string>> localizationRows =
+            LocalizationXlsxReader.ReadSheet("Assets/ExcelSource/Localization.xlsx", "Text");
+        string[] localizationKeys = localizationRows.Skip(1)
+            .Where(row => row.Count > 0 && !string.IsNullOrWhiteSpace(row[0]))
+            .Select(row => row[0])
+            .ToArray();
+        string[] duplicateLocalizationKeys = localizationKeys
+            .GroupBy(key => key, StringComparer.Ordinal)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToArray();
+        Assert.That(duplicateLocalizationKeys, Is.Empty,
+            "Localization.xlsx에 중복 키가 있으면 기록서가 어떤 번역을 사용할지 결정적이지 않습니다.");
+
+        HashSet<string> keys = localizationKeys.ToHashSet(StringComparer.Ordinal);
+        var generatedKeys = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (string sheet in new[] { "SkillMaster", "Rune", "Relic" })
+        {
+            IReadOnlyList<IReadOnlyList<string>> rows =
+                LocalizationXlsxReader.ReadSheet("Assets/ExcelSource/GameData.xlsx", sheet);
+            IReadOnlyList<string> headers = rows[0];
+
+            foreach (IReadOnlyList<string> row in rows.Skip(2))
+            {
+                if (row.Count == 0 || string.IsNullOrWhiteSpace(row[0]))
+                    continue;
+
+                for (int column = 1; column < headers.Count && column < row.Count; column++)
+                {
+                    if (!LocalizationProjectScanner.IsPlayerFacingGameDataColumn(sheet, headers[column]) ||
+                        !LocalizationProjectScanner.IsLocalizableKoreanText(row[column]))
+                    {
+                        continue;
+                    }
+
+                    string key = LocalizationProjectScanner.BuildGameDataKey(sheet, row[0], headers[column]);
+                    Assert.That(generatedKeys.Add(key), Is.True,
+                        $"GameData의 안정 ID/필드가 충돌합니다: {sheet}/{row[0]}/{headers[column]} -> {key}");
+                    Assert.That(keys, Does.Contain(key), $"{sheet}/{row[0]}/{headers[column]}");
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void RuntimeGameData_ContainsLatestManaRiseValueRates()
+    {
+        string[] matchingRows = File.ReadAllLines("Assets/Resources/Data/GameDataRuntime.csv")
+            .Where(line => line.StartsWith("S_Unique_05,", StringComparison.Ordinal))
+            .ToArray();
+        Assert.That(matchingRows, Has.Length.EqualTo(1));
+
+        string[] columns = matchingRows[0].Split(',');
+        Assert.That(columns[9], Is.EqualTo("E_Grit;E_Charge"));
+        Assert.That(columns[10], Is.EqualTo("1;2"));
+        Assert.That(columns[15], Does.Contain("{ValueRate2}"));
+    }
+
+    [Test]
     public void EventChoiceCanonicalKeys_CoverEveryLocalizedChoiceField()
     {
         IReadOnlyList<IReadOnlyList<string>> gameRows =

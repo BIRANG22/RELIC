@@ -4891,7 +4891,9 @@ public class EventRoomController : MonoBehaviour
             candidates.Add(skill);
         }
 
-        return candidates;
+        return SkillRewardPoolPolicy.FilterCandidates(
+            candidates,
+            DataManager.Instance.SkillRewardPoolDatabase);
     }
 
     private HashSet<string> CollectUnavailableSkillIds()
