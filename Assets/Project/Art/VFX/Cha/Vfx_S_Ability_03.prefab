@@ -4722,7 +4722,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &6713382233788637114
 Transform:
   m_ObjectHideFlags: 0
@@ -19431,7 +19431,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &644980837462994875
 Transform:
   m_ObjectHideFlags: 0
@@ -19637,7 +19637,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1, g: 0.14244922, b: 0, a: 1}
+      maxColor: {r: 0, g: 0, b: 0, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -29271,7 +29271,7 @@ Transform:
   m_GameObject: {fileID: 3303112475357664902}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 7.23, y: -1.07, z: 0}
+  m_LocalPosition: {x: 6.07, y: -4.33, z: 0}
   m_LocalScale: {x: 0.64846987, y: 0.64846987, z: 0.64846987}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -29473,7 +29473,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.93333334, g: 0.39316055, b: 0.25882357, a: 1}
+      maxColor: {r: 0.4867924, g: 0.4867924, b: 0.4867924, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -34364,7 +34364,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 0.7373225, b: 0.45588237, a: 1}
-      maxColor: {r: 0.4641509, g: 0.052895, b: 0, a: 1}
+      maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -39283,7 +39283,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.735849, g: 0.021965642, b: 0, a: 1}
+      maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -49113,7 +49113,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.4415095, g: 0.044362202, b: 0, a: 0.94509804}
+      maxColor: {r: 1, g: 1, b: 1, a: 0.94509804}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -53819,7 +53819,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.03417319, y: -0.15774843, z: -0.51682436, w: 0.84073794}
   m_LocalPosition: {x: -1.97, y: 2.21, z: -0.39}
-  m_LocalScale: {x: 1.65503, y: 1.5979602, z: 1.6550298}
+  m_LocalScale: {x: 2.2986712, y: 2.219407, z: 2.298671}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6835435721982293348}
@@ -54051,7 +54051,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.5849056, g: 0, b: 0.012770769, a: 1}
+      maxColor: {r: 0.5320754, g: 0.5320754, b: 0.5320754, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -58748,7 +58748,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1896343230159029902
 Transform:
   m_ObjectHideFlags: 0
@@ -58954,7 +58954,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.9607843, g: 0.16701896, b: 0.050980415, a: 1}
+      maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -68738,7 +68738,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.6377357, g: 0.005001849, b: 0, a: 1}
+      maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
