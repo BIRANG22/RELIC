@@ -351,7 +351,7 @@ public static class StaticLocalizationMigration
             }
             finally { PrefabUtility.UnloadPrefabContents(tutorialPanelRoot); }
 
-            AssetDatabase.SaveAssets();
+            // 씬과 프리팹은 위의 전용 저장 API로 이미 저장했다.
             return changed;
         }
         finally { EditorSceneManager.RestoreSceneManagerSetup(originalSetup); }
@@ -401,7 +401,7 @@ public static class StaticLocalizationMigration
                     changed++;
                 }
             }
-            AssetDatabase.SaveAssets();
+            // 변경된 프리팹과 씬은 각 전용 저장 API로 이미 저장했다.
             Debug.Log($"[StaticLocalizationMigration] 전체 프로젝트 안전 적용 Asset {changed}개.");
         }
         finally { EditorSceneManager.RestoreSceneManagerSetup(originalSetup); }
@@ -417,7 +417,6 @@ public static class StaticLocalizationMigration
             int prefabCount = ApplyToPrefabs(sourceToKey);
             int sceneCount = ApplyToScenes(sourceToKey);
 
-            AssetDatabase.SaveAssets();
             Debug.Log(
                 $"[StaticLocalizationMigration] 연결 완료: 프리팹 텍스트 {prefabCount}개, " +
                 $"씬 텍스트 {sceneCount}개. 등록되지 않은 텍스트는 변경하지 않았습니다.");
