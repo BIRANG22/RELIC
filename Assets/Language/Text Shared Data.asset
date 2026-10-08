@@ -4975,18 +4975,6 @@ MonoBehaviour:
     m_Key: data.skill_master.s_unique_01.details
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100958
-    m_Key: data.skill_master.s_unique_02.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100959
-    m_Key: data.skill_master.s_unique_03.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100960
-    m_Key: data.skill_master.s_unique_04.details
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100961
     m_Key: data.skill_master.s_unique_05.details
     m_Metadata:
@@ -5001,38 +4989,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100964
     m_Key: data.skill_master.s_unique_08.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100969
-    m_Key: data.skill_master.s_ability_01.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100970
-    m_Key: data.skill_master.s_ability_02.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100971
-    m_Key: data.skill_master.s_ability_03.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100972
-    m_Key: data.skill_master.s_ability_04.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100973
-    m_Key: data.skill_master.s_ability_05.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100974
-    m_Key: data.skill_master.s_ability_06.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100975
-    m_Key: data.skill_master.s_ability_07.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100976
-    m_Key: data.skill_master.s_ability_08.details
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100977
@@ -5081,22 +5037,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100995
     m_Key: data.skill_master.s_core_04.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100996
-    m_Key: data.skill_master.s_core_05.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100997
-    m_Key: data.skill_master.s_core_06.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100998
-    m_Key: data.skill_master.s_core_07.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100999
-    m_Key: data.skill_master.s_core_08.details
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101000
@@ -5185,14 +5125,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259101021
     m_Key: data.skill_master.s_core_30.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101022
-    m_Key: data.skill_master.s_core_31.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101023
-    m_Key: data.skill_master.s_core_32.details
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101024
@@ -5295,16 +5227,8 @@ MonoBehaviour:
     m_Key: data.skill_master.s_core_45.name
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259101049
-    m_Key: data.skill_master.s_core_45.details
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259101050
     m_Key: data.skill_master.s_core_46.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101051
-    m_Key: data.skill_master.s_core_46.details
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101052
@@ -5439,16 +5363,8 @@ MonoBehaviour:
     m_Key: data.skill_master.s_core_63.name
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259101085
-    m_Key: data.skill_master.s_core_63.details
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259101086
     m_Key: data.skill_master.s_core_64.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101087
-    m_Key: data.skill_master.s_core_64.details
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101088
@@ -5487,16 +5403,8 @@ MonoBehaviour:
     m_Key: data.skill_master.s_core_69.name
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259101097
-    m_Key: data.skill_master.s_core_69.details
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259101098
     m_Key: data.skill_master.s_core_70.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101099
-    m_Key: data.skill_master.s_core_70.details
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101100
