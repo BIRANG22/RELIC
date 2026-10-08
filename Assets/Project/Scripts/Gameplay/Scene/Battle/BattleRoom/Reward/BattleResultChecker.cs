@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using TMPro;
@@ -26,7 +26,7 @@ public class BattleResultChecker : MonoBehaviour
     [Header("Boss Clear Choice")]
     [SerializeField] private GameObject nextStageButtonRoot;
     [SerializeField] private GameObject returnButtonRoot;
-    [SerializeField] private string nextStageUnavailableMessage = "¾ÆÁ÷ ÀÔÀåÇÒ ¼ö ¾ø´Â ±¸¿ªÀÔ´Ï´Ù.";
+    [SerializeField] private string nextStageUnavailableMessage = "ì•„ì§ ì…ì¥í•  ìˆ˜ ì—†ëŠ” êµ¬ì—­ì…ë‹ˆë‹¤.";
 
     private bool battleEnded;
     private Button nextButton;
@@ -49,8 +49,8 @@ public class BattleResultChecker : MonoBehaviour
 
     private void EnsureRewardCanvasSorting()
     {
-        // BattleRewardCanvas°¡ BattleHUDCanvasÀÇ BattleSlotº¸´Ù Ç×»ó ¾Õ¿¡ ±×·ÁÁöµµ·Ï
-        // ÀÌ ÆĞ³ÎÀÌ ¼ÓÇÑ Canvas¿¡ µ¶¸³ÀûÀÎ Á¤·Ä ¼ø¼­¸¦ ºÎ¿©ÇÕ´Ï´Ù.
+        // BattleRewardCanvasê°€ BattleHUDCanvasì˜ BattleSlotë³´ë‹¤ í•­ìƒ ì•ì— ê·¸ë ¤ì§€ë„ë¡
+        // ì´ íŒ¨ë„ì´ ì†í•œ Canvasì— ë…ë¦½ì ì¸ ì •ë ¬ ìˆœì„œë¥¼ ë¶€ì—¬í•©ë‹ˆë‹¤.
         Canvas rewardCanvas = GetComponentInParent<Canvas>(true);
         if (rewardCanvas == null)
             return;
@@ -147,12 +147,12 @@ public class BattleResultChecker : MonoBehaviour
 
     private static void PrepareBattleFinishedPresentation()
     {
-        // ¸¶Áö¸· Çàµ¿ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ³²¾Æ ÀÖÁö ¾Êµµ·Ï »ıÁ¸ À¯´ÖÀ» Áï½Ã Idle·Î º¹±Í½ÃÅµ´Ï´Ù.
+        // ë§ˆì§€ë§‰ í–‰ë™ ì• ë‹ˆë©”ì´ì…˜ì´ ë‚¨ì•„ ìˆì§€ ì•Šë„ë¡ ìƒì¡´ ìœ ë‹›ì„ ì¦‰ì‹œ Idleë¡œ ë³µê·€ì‹œí‚µë‹ˆë‹¤.
         BattleHUDService hudService = new BattleHUDService();
         hudService.PlayAllAliveIdle();
 
-        // ÀüÅõ ½ÇÇà Áß ¼û°ÜÁ³´ø MenuRoot´Â ´ÙÀ½ ÇÃ·¹ÀÌ¾î ÅÏÀÌ ¿ÀÁö ¾ÊÀ¸¸é
-        // ±âÁ¸ º¹±¸ Á¶°ÇÀ» Åë°úÇÏÁö ¸øÇÏ¹Ç·Î ÀüÅõ Á¾·á ½Ã ¸í½ÃÀûÀ¸·Î ´Ù½Ã Ç¥½ÃÇÕ´Ï´Ù.
+        // ì „íˆ¬ ì‹¤í–‰ ì¤‘ ìˆ¨ê²¨ì¡Œë˜ MenuRootëŠ” ë‹¤ìŒ í”Œë ˆì´ì–´ í„´ì´ ì˜¤ì§€ ì•Šìœ¼ë©´
+        // ê¸°ì¡´ ë³µêµ¬ ì¡°ê±´ì„ í†µê³¼í•˜ì§€ ëª»í•˜ë¯€ë¡œ ì „íˆ¬ ì¢…ë£Œ ì‹œ ëª…ì‹œì ìœ¼ë¡œ ë‹¤ì‹œ í‘œì‹œí•©ë‹ˆë‹¤.
         BattleTurnExecutor[] executors = Object.FindObjectsByType<BattleTurnExecutor>(
             FindObjectsInactive.Include,
             FindObjectsSortMode.None);
@@ -239,6 +239,8 @@ public class BattleResultChecker : MonoBehaviour
 
         ResumeData resume = CreateBattleRewardResume(rewards);
         SaveSystem.Instance?.SaveCheckpoint(resume);
+        rewardPanel.SetContinueWithGainButton(onRewardFlowCompleted == null);
+        SetNextButtonVisible(false);
         rewardPanel.Open(rewards, () => OnBattleRewardPanelCompleted(onRewardFlowCompleted), resume);
         return true;
     }
@@ -273,7 +275,9 @@ public class BattleResultChecker : MonoBehaviour
 
         return resume;
     }
-    // Continue º¹¿ø Àü¿ë: º¸»ó ¼ö·É ¿Ï·á µÚ Á¤»ó ÀüÅõ Á¾·á¿Í °°Àº Next/º¸½º ¼±ÅÃ UI¸¦ Àç±¸¼ºÇÑ´Ù.
+    // Continue ë³µì› ì „ìš©: ë³´ìƒ ìˆ˜ë ¹ ì™„ë£Œ ë’¤ ì •ìƒ ì „íˆ¬ ì¢…ë£Œì™€ ê°™ì€ Next/ë³´ìŠ¤ ì„ íƒ UIë¥¼ ì¬êµ¬ì„±í•œë‹¤.
+    public bool IsBossRewardNodeForPresentation() => IsCurrentNodeBoss();
+
     public void RestoreBattleRewardCompletionPresentation()
     {
         if (IsCurrentNodeBoss())
@@ -282,33 +286,20 @@ public class BattleResultChecker : MonoBehaviour
             return;
         }
 
-        OnBattleRewardPanelCompleted(null);
+        pendingRewardFlowCompletedCallback = null;
+        SetNextButtonVisible(false);
+        CompletePendingBattleRewardFlow();
     }
     private void OnBattleRewardPanelCompleted(System.Action completedCallback)
     {
         pendingRewardFlowCompletedCallback = completedCallback;
-
         if (BattleRewardCollector.Instance != null)
             BattleRewardCollector.Instance.Clear();
 
-        // º¸½ºÀüÀº °ø¿ë NextButtonÀ» °ÅÄ¡Áö ¾Ê°í º¸»ó Á¾·á Áï½Ã
-        // ´ÙÀ½ ±¸¿ª / °ÅÁ¡ ±ÍÈ¯ ¼±ÅÃ ¹öÆ°À¸·Î ÀüÈ¯ÇÕ´Ï´Ù.
-        if (completedCallback != null)
-        {
-            CompletePendingBattleRewardFlow();
-            return;
-        }
-
-        BindNextButton();
-
-        if (nextButtonRoot == null || nextButton == null)
-        {
-            Debug.LogWarning("[BattleResultChecker] NextButton is missing; completing reward flow immediately.");
-            CompletePendingBattleRewardFlow();
-            return;
-        }
-
-        SetNextButtonVisible(true);
+        // Do not hide the shared button before the transition covers the room.
+        // The GainButton already confirmed continuation for normal battles.
+        // Boss battles use their existing completion callback and choice buttons.
+        CompletePendingBattleRewardFlow();
     }
 
     private void OnBattleRewardContinueClicked()
@@ -324,8 +315,8 @@ public class BattleResultChecker : MonoBehaviour
         System.Action completedCallback = pendingRewardFlowCompletedCallback;
         pendingRewardFlowCompletedCallback = null;
 
-        // º¸½ºÀü µî º°µµ ¿Ï·á Äİ¹é °æ·Î´Â ±âÁ¸Ã³·³ Áï½Ã ¹öÆ°À» ¼û±é´Ï´Ù.
-        // ÀÏ¹İ ÀüÅõÀÇ Áöµµ º¹±Í´Â ÀüÈ¯ È­¸éÀÌ ¿ÏÀüÈ÷ µ¤ÀÎ µÚ ¼û°Ü ±ôºıÀÓÀ» ¹æÁöÇÕ´Ï´Ù.
+        // ë³´ìŠ¤ì „ ë“± ë³„ë„ ì™„ë£Œ ì½œë°± ê²½ë¡œëŠ” ê¸°ì¡´ì²˜ëŸ¼ ì¦‰ì‹œ ë²„íŠ¼ì„ ìˆ¨ê¹ë‹ˆë‹¤.
+        // ì¼ë°˜ ì „íˆ¬ì˜ ì§€ë„ ë³µê·€ëŠ” ì „í™˜ í™”ë©´ì´ ì™„ì „íˆ ë®ì¸ ë’¤ ìˆ¨ê²¨ ê¹œë¹¡ì„ì„ ë°©ì§€í•©ë‹ˆë‹¤.
         if (completedCallback != null)
             SetNextButtonVisible(false);
 
@@ -338,9 +329,9 @@ public class BattleResultChecker : MonoBehaviour
 
         if (completedCallback != null)
         {
-            // º¸½ºÀüÀº º¸»ó Á¾·á ÈÄ¿¡µµ BattleRoom À§¿¡¼­ ´ÙÀ½ ±¸¿ª / °ÅÁ¡ ±ÍÈ¯ ¼±ÅÃ UI¸¦ º¸¿©Áİ´Ï´Ù.
-            // ÀÌ ½ÃÁ¡¿¡ BattleRoomCleaner¸¦ ½ÇÇàÇÏ¸é »ì¾ÆÀÖ´Â Ä³¸¯ÅÍ±îÁö Á¦°ÅµÇ¾î ¼±ÅÃ È­¸é¿¡¼­ º¸ÀÌÁö ¾ÊÀ¸¹Ç·Î,
-            // ½ÇÁ¦ È­¸é ÀüÈ¯ÀÌ ½ÃÀÛµÇ±â Àü±îÁö ÀüÅõ À¯´ÖÀ» À¯ÁöÇÕ´Ï´Ù.
+            // ë³´ìŠ¤ì „ì€ ë³´ìƒ ì¢…ë£Œ í›„ì—ë„ BattleRoom ìœ„ì—ì„œ ë‹¤ìŒ êµ¬ì—­ / ê±°ì  ê·€í™˜ ì„ íƒ UIë¥¼ ë³´ì—¬ì¤ë‹ˆë‹¤.
+            // ì´ ì‹œì ì— BattleRoomCleanerë¥¼ ì‹¤í–‰í•˜ë©´ ì‚´ì•„ìˆëŠ” ìºë¦­í„°ê¹Œì§€ ì œê±°ë˜ì–´ ì„ íƒ í™”ë©´ì—ì„œ ë³´ì´ì§€ ì•Šìœ¼ë¯€ë¡œ,
+            // ì‹¤ì œ í™”ë©´ ì „í™˜ì´ ì‹œì‘ë˜ê¸° ì „ê¹Œì§€ ì „íˆ¬ ìœ ë‹›ì„ ìœ ì§€í•©ë‹ˆë‹¤.
             completedCallback.Invoke();
             return;
         }
@@ -353,14 +344,14 @@ public class BattleResultChecker : MonoBehaviour
             if (TryContinueTutorialRoute(sceneController))
                 return;
 
-            // ÀÏ¹İ ÀüÅõÀÇ Áöµµ º¹±Í¿¡¼­´Â Ä³¸¯ÅÍ/¸ó½ºÅÍ¸¦ ¿©±â¼­ ¸ÕÀú Á¤¸®ÇÏÁö ¾Ê½À´Ï´Ù.
-            // BattleSceneController°¡ ÀüÈ¯ È­¸éÀ¸·Î BattleRoomÀ» ¿ÏÀüÈ÷ µ¤Àº ¼ø°£
-            // PrepareRoomForMapSelection()À» È£ÃâÇØ ÀüÅõ À¯´ÖÀ» Á¤¸®ÇÕ´Ï´Ù.
+            // ì¼ë°˜ ì „íˆ¬ì˜ ì§€ë„ ë³µê·€ì—ì„œëŠ” ìºë¦­í„°/ëª¬ìŠ¤í„°ë¥¼ ì—¬ê¸°ì„œ ë¨¼ì € ì •ë¦¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+            // BattleSceneControllerê°€ ì „í™˜ í™”ë©´ìœ¼ë¡œ BattleRoomì„ ì™„ì „íˆ ë®ì€ ìˆœê°„
+            // PrepareRoomForMapSelection()ì„ í˜¸ì¶œí•´ ì „íˆ¬ ìœ ë‹›ì„ ì •ë¦¬í•©ë‹ˆë‹¤.
             sceneController.ReturnToMap(() => SetNextButtonVisible(false));
             return;
         }
 
-        // SceneController°¡ ¾ø´Â ¿¹¿Ü »óÈ²¿¡¼­´Â ±âÁ¸Ã³·³ Áï½Ã Á¤¸®ÇÕ´Ï´Ù.
+        // SceneControllerê°€ ì—†ëŠ” ì˜ˆì™¸ ìƒí™©ì—ì„œëŠ” ê¸°ì¡´ì²˜ëŸ¼ ì¦‰ì‹œ ì •ë¦¬í•©ë‹ˆë‹¤.
         BattleRoomCleaner fallbackCleaner =
             Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
         fallbackCleaner?.PrepareForMapSelection();
@@ -379,7 +370,7 @@ public class BattleResultChecker : MonoBehaviour
         if (battle?.IsTutorialBattle != true || map == null)
             return false;
 
-        // Æ©Åä¸®¾ó ÀüÅõ 1 Á¾·á ÈÄ¿¡´Â Áöµµ·Î µ¹¾Æ°¡Áö ¾Ê°í Map_30 ÀÌº¥Æ®¹æÀ¸·Î ¹Ù·Î ÀÌµ¿ÇÕ´Ï´Ù.
+        // íŠœí† ë¦¬ì–¼ ì „íˆ¬ 1 ì¢…ë£Œ í›„ì—ëŠ” ì§€ë„ë¡œ ëŒì•„ê°€ì§€ ì•Šê³  Map_30 ì´ë²¤íŠ¸ë°©ìœ¼ë¡œ ë°”ë¡œ ì´ë™í•©ë‹ˆë‹¤.
         if (string.Equals(map.CurrentMapId, "Map_27", System.StringComparison.OrdinalIgnoreCase))
         {
             sceneController.OpenTutorialMapDirect(
@@ -388,7 +379,7 @@ public class BattleResultChecker : MonoBehaviour
             return true;
         }
 
-        // Æ©Åä¸®¾ó ÀüÅõ 2 Á¾·á ÈÄ¿¡´Â Áöµµ¸¦ °ÅÄ¡Áö ¾Ê°í Map_31 ÀÌº¥Æ® 2·Î ¹Ù·Î ÀÌµ¿ÇÕ´Ï´Ù.
+        // íŠœí† ë¦¬ì–¼ ì „íˆ¬ 2 ì¢…ë£Œ í›„ì—ëŠ” ì§€ë„ë¥¼ ê±°ì¹˜ì§€ ì•Šê³  Map_31 ì´ë²¤íŠ¸ 2ë¡œ ë°”ë¡œ ì´ë™í•©ë‹ˆë‹¤.
         if (string.Equals(map.CurrentMapId, TutorialBattleEntrySetup.SecondTutorialMapId, System.StringComparison.OrdinalIgnoreCase))
         {
             sceneController.OpenTutorialMapDirect(
@@ -397,8 +388,8 @@ public class BattleResultChecker : MonoBehaviour
             return true;
         }
 
-        // Æ©Åä¸®¾ó ÀüÅõ 3 Á¾·á ÈÄ¿¡´Â ´õ ÀÌ»ó Áöµµ·Î µ¹¾Æ°¡Áö ¾Ê½À´Ï´Ù.
-        // ÀÎÆ®·Î´Â »õ °ÔÀÓ ½ÃÀÛ ½Ã ÀÌ¹Ì Àç»ıµÇ¾úÀ¸¹Ç·Î Æ©Åä¸®¾ó »óÅÂ¸¦ Á¤¸®ÇÑ µÚ ¹Ù·Î ·Îºñ·Î ÀÌµ¿ÇÕ´Ï´Ù.
+        // íŠœí† ë¦¬ì–¼ ì „íˆ¬ 3 ì¢…ë£Œ í›„ì—ëŠ” ë” ì´ìƒ ì§€ë„ë¡œ ëŒì•„ê°€ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // ì¸íŠ¸ë¡œëŠ” ìƒˆ ê²Œì„ ì‹œì‘ ì‹œ ì´ë¯¸ ì¬ìƒë˜ì—ˆìœ¼ë¯€ë¡œ íŠœí† ë¦¬ì–¼ ìƒíƒœë¥¼ ì •ë¦¬í•œ ë’¤ ë°”ë¡œ ë¡œë¹„ë¡œ ì´ë™í•©ë‹ˆë‹¤.
         if (string.Equals(map.CurrentMapId, TutorialBattleEntrySetup.ThirdTutorialMapId, System.StringComparison.OrdinalIgnoreCase))
         {
             CompleteTutorialAndEnterLobby();
@@ -414,13 +405,13 @@ public class BattleResultChecker : MonoBehaviour
 
         DataManager dataManager = DataManager.Instance;
 
-        // ÀüÅõ 3±îÁö Á¤»ó ¿Ï·áÇÑ ½ÃÁ¡¿¡¸¸ ÀüÃ¼ Æ©Åä¸®¾óÀ» 1È¸ ¿Ï·á Ã³¸®ÇÕ´Ï´Ù.
-        // Áß°£ ÀúÀå/Á¾·á¿¡¼­´Â ÀÌ °ªÀÌ OFFµÇÁö ¾ÊÀ¸¹Ç·Î ´ÙÀ½ °ÔÀÓ ½ÃÀÛ ½Ã Æ©Åä¸®¾óÀ» ´Ù½Ã ½ÃÀÛÇÒ ¼ö ÀÖ½À´Ï´Ù.
+        // ì „íˆ¬ 3ê¹Œì§€ ì •ìƒ ì™„ë£Œí•œ ì‹œì ì—ë§Œ ì „ì²´ íŠœí† ë¦¬ì–¼ì„ 1íšŒ ì™„ë£Œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
+        // ì¤‘ê°„ ì €ì¥/ì¢…ë£Œì—ì„œëŠ” ì´ ê°’ì´ OFFë˜ì§€ ì•Šìœ¼ë¯€ë¡œ ë‹¤ìŒ ê²Œì„ ì‹œì‘ ì‹œ íŠœí† ë¦¬ì–¼ì„ ë‹¤ì‹œ ì‹œì‘í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
         TutorialSettings.MarkTutorialSeen();
 
-        // ÀÎÆ®·Î´Â »õ °ÔÀÓ ½ÃÀÛ Á÷ÈÄ Title ¾À¿¡¼­ ÀÌ¹Ì Àç»ıµÇ¾ú½À´Ï´Ù.
-        // ÀüÅõ 3 Á¾·á ½Ã¿¡´Â Æ©Åä¸®¾ó Å½»ç Áß ÀåÂøÇÑ À¯¹°/ÀÓ½Ã ÀüÅõ »óÅÂ¸¦ Á¤¸®ÇÑ µÚ
-        // Title·Î µ¹¾Æ°¡Áö ¾Ê°í ¹Ù·Î Lobby·Î ÀÌµ¿ÇÕ´Ï´Ù.
+        // ì¸íŠ¸ë¡œëŠ” ìƒˆ ê²Œì„ ì‹œì‘ ì§í›„ Title ì”¬ì—ì„œ ì´ë¯¸ ì¬ìƒë˜ì—ˆìŠµë‹ˆë‹¤.
+        // ì „íˆ¬ 3 ì¢…ë£Œ ì‹œì—ëŠ” íŠœí† ë¦¬ì–¼ íƒì‚¬ ì¤‘ ì¥ì°©í•œ ìœ ë¬¼/ì„ì‹œ ì „íˆ¬ ìƒíƒœë¥¼ ì •ë¦¬í•œ ë’¤
+        // Titleë¡œ ëŒì•„ê°€ì§€ ì•Šê³  ë°”ë¡œ Lobbyë¡œ ì´ë™í•©ë‹ˆë‹¤.
         if (dataManager != null)
             BattleRunAbandonService.AbandonCurrentRun(dataManager);
 
@@ -479,8 +470,8 @@ public class BattleResultChecker : MonoBehaviour
             returnButton.onClick.AddListener(OnReturnButtonClicked);
         }
 
-        // 2±¸¿ªÀº ¾ÆÁ÷ ±¸Çö ÀüÀÌ¹Ç·Î NextStageButtonÀº Å¬¸¯ ÀÚÃ¼´Â ¹ŞµÇ
-        // ButtonAnimationCoroutineÀÇ Hover/Click ¿¬Ãâ°ú SFX´Â ÁøÇàÇÏÁö ¾Ê½À´Ï´Ù.
+        // 2êµ¬ì—­ì€ ì•„ì§ êµ¬í˜„ ì „ì´ë¯€ë¡œ NextStageButtonì€ í´ë¦­ ìì²´ëŠ” ë°›ë˜
+        // ButtonAnimationCoroutineì˜ Hover/Click ì—°ì¶œê³¼ SFXëŠ” ì§„í–‰í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         if (nextStageButtonAnimation != null)
             nextStageButtonAnimation.SetInteractionEnabled(false);
 
@@ -544,8 +535,8 @@ public class BattleResultChecker : MonoBehaviour
             if (graphic == null)
                 continue;
 
-            // NextStageButton/ back ¿ÀºêÁ§Æ®´Â ºñÈ°¼º »óÅÂ¿¡¼­µµ ¿ø·¡ »öÀ» À¯ÁöÇÕ´Ï´Ù.
-            // back (1), back (2), front, Text (TMP) µî ³ª¸ÓÁö ±×·¡ÇÈ¸¸ #777777·Î Ç¥½ÃÇÕ´Ï´Ù.
+            // NextStageButton/ back ì˜¤ë¸Œì íŠ¸ëŠ” ë¹„í™œì„± ìƒíƒœì—ì„œë„ ì›ë˜ ìƒ‰ì„ ìœ ì§€í•©ë‹ˆë‹¤.
+            // back (1), back (2), front, Text (TMP) ë“± ë‚˜ë¨¸ì§€ ê·¸ë˜í”½ë§Œ #777777ë¡œ í‘œì‹œí•©ë‹ˆë‹¤.
             if (string.Equals(graphic.transform.name, "back", System.StringComparison.OrdinalIgnoreCase))
                 continue;
 
@@ -600,40 +591,22 @@ public class BattleResultChecker : MonoBehaviour
             returnButtonRoot.SetActive(visible);
     }
 
+    // NextButton is now owned exclusively by BattleRewardPanelUI.
+    // It replaces the old GainButton and must not receive the legacy continue listener.
     private void BindNextButton()
     {
-        EnsureNextButtonRoot();
-
-        if (nextButton == null)
-            return;
-
-        nextButton.onClick.RemoveListener(OnBattleRewardContinueClicked);
-        nextButton.onClick.AddListener(OnBattleRewardContinueClicked);
     }
 
     private void EnsureNextButtonRoot()
     {
-        if (nextButtonRoot == null)
-        {
-            Transform nextButtonTransform = FindChildRecursive(transform, "NextButton");
-
-            if (nextButtonTransform != null)
-                nextButtonRoot = nextButtonTransform.gameObject;
-        }
-
-        if (nextButtonRoot == null)
-            return;
-
-        if (nextButton == null || nextButton.gameObject != nextButtonRoot)
-            nextButton = nextButtonRoot.GetComponent<Button>();
     }
 
     private void SetNextButtonVisible(bool visible)
     {
-        EnsureNextButtonRoot();
-
-        if (nextButtonRoot != null)
-            nextButtonRoot.SetActive(visible);
+        // The shared button is shown by the reward panel when rewards are ready.
+        // Hide it at transition coverage, or while initializing the next room.
+        if (!visible && rewardPanel != null)
+            rewardPanel.HideNextButtonAfterCover();
     }
 
     private static Transform FindChildRecursive(Transform root, string childName)

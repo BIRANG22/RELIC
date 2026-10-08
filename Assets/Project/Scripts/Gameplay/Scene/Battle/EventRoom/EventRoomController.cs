@@ -129,6 +129,7 @@ public class EventRoomController : MonoBehaviour
     private bool isEventResolved;
     private bool isEventRewardPanelOpen;
     private Coroutine eventRewardPanelDelayRoutine;
+    private Coroutine eventDirectRewardRoutine;
     private Coroutine dustiumAcquireRoutine;
     private int pendingDustiumAcquireAmount;
     private bool hasDustiumAcquireOriginalState;
@@ -247,6 +248,11 @@ public class EventRoomController : MonoBehaviour
 
         HideDiceRollPresenterImmediate();
         StopEventRewardPanelDelay();
+        if (eventDirectRewardRoutine != null)
+        {
+            StopCoroutine(eventDirectRewardRoutine);
+            eventDirectRewardRoutine = null;
+        }
         StopDustiumAcquireAnimation(true);
         pendingDustiumAcquireAmount = 0;
         StopEvent01RewardTransition();
@@ -340,6 +346,10 @@ public class EventRoomController : MonoBehaviour
 
     public void OnNextButtonClicked()
     {
+        // Shared button click must come from a genuine pointer press/release.
+        EnsureRewardPanelReference();
+        if (nextButton == null || rewardPanel == null ||
+            !rewardPanel.ConsumeNextButtonPointerClick()) return;
         if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
             return;
 
@@ -5091,13 +5101,7 @@ public class EventRoomController : MonoBehaviour
         if (pendingEventRewards.Count <= 0)
             return false;
 
-        EnsureRewardPanelReference();
-
-        if (rewardPanel == null)
-        {
-            Debug.LogWarning("[EventRoomController] Shared BattleRewardPanelUI not found for event rewards.");
-            return false;
-        }
+        // Event rewards are handled directly; the battle reward slot panel is not used.
 
         isEventRewardPanelOpen = true;
         SetNextButtonVisible(false);
@@ -5138,7 +5142,75 @@ public class EventRoomController : MonoBehaviour
     private void OpenPendingEventRewardPanelNow(List<BattleRewardData> rewards)
     {
         eventRewardPanelDelayRoutine = null;
-        rewardPanel.Open(rewards, OnEventRewardPanelCompleted);
+        if (eventDirectRewardRoutine != null)
+            StopCoroutine(eventDirectRewardRoutine);
+        eventDirectRewardRoutine = StartCoroutine(GrantEventRewardsDirectly(rewards));
+    }
+
+    private IEnumerator GrantEventRewardsDirectly(List<BattleRewardData> rewards)
+    {
+        foreach (BattleRewardData reward in rewards)
+        {
+            if (reward == null)
+                continue;
+
+            if (reward.Type == BattleRewardType.Relic || reward.Type == BattleRewardType.Skill)
+            {
+                bool resolved = false;
+                bool opened = reward.Type == BattleRewardType.Relic
+                    ? BattleRewardEquipPanelUI.TryOpenRelicReward(reward.RewardId, () => resolved = true)
+                    : BattleRewardEquipPanelUI.TryOpenSkillReward(reward.RewardId, () => resolved = true);
+
+                if (!opened)
+                {
+                    Debug.LogError($"[EventRoomController] Cannot open event equipment reward: {reward.Type} / {reward.RewardId}");
+                    eventDirectRewardRoutine = null;
+                    yield break; // Keep event progression blocked rather than silently losing the reward.
+                }
+
+                while (!resolved)
+                    yield return null;
+                continue;
+            }
+
+            DataManager manager = DataManager.Instance;
+            if (manager == null || manager.BattleRuntimeStore == null)
+            {
+                Debug.LogError("[EventRoomController] Runtime data unavailable for event reward.");
+                eventDirectRewardRoutine = null;
+                yield break;
+            }
+
+            BattleRuntimeData runtime = manager.BattleRuntimeStore.GetOrCreate();
+            if (reward.Type == BattleRewardType.Remnant)
+            {
+                runtime.Remnant += Mathf.Max(0, reward.Amount);
+                manager.BattleRuntimeStore.Set(runtime);
+                BattleGoldHudUI.RefreshAll();
+            }
+            else if (reward.Type == BattleRewardType.Item)
+            {
+                runtime.BagItemIds ??= new List<string>();
+                string itemId = reward.RewardId?.Trim();
+                int amount = Mathf.Max(1, reward.Amount);
+                if (string.IsNullOrWhiteSpace(itemId) ||
+                    !BagItemStackUtility.CanAddItem(runtime.BagItemIds, itemId, 8))
+                {
+                    BattleWarningUI.ShowMessage(GameLocalization.Get("battle.bag_full_unique_item_limit"));
+                    Debug.LogWarning($"[EventRoomController] Cannot grant event item: {itemId}");
+                    eventDirectRewardRoutine = null;
+                    yield break;
+                }
+                for (int i = 0; i < amount; i++)
+                    runtime.BagItemIds.Add(itemId);
+                RecordDiscoveryService.RegisterItem(manager, itemId);
+                manager.BattleRuntimeStore.Set(runtime);
+                BattleBagPanelUI.RefreshAll();
+            }
+        }
+
+        eventDirectRewardRoutine = null;
+        OnEventRewardPanelCompleted();
     }
 
     private void StopEventRewardPanelDelay()
@@ -5967,18 +6039,25 @@ public class EventRoomController : MonoBehaviour
 
     private void EnsureNextButtonRoot()
     {
+        // Use the single shared button currently assigned to BattleRewardPanelUI.
+        EnsureRewardPanelReference();
+        Button sharedButton = rewardPanel != null ? rewardPanel.SharedNextButton : null;
+        if (sharedButton != null)
+        {
+            nextButtonRoot = sharedButton.gameObject;
+            nextButton = sharedButton;
+            return;
+        }
+
+        // Fallback for scene variants where the reward panel is not present.
         if (nextButtonRoot == null)
         {
             Transform nextButtonTransform = FindChildRecursive(transform, "NextButton");
-
             if (nextButtonTransform != null)
                 nextButtonRoot = nextButtonTransform.gameObject;
         }
 
-        if (nextButtonRoot == null)
-            return;
-
-        if (nextButton == null || nextButton.gameObject != nextButtonRoot)
+        if (nextButtonRoot != null && (nextButton == null || nextButton.gameObject != nextButtonRoot))
             nextButton = nextButtonRoot.GetComponent<Button>();
     }
 
@@ -6025,7 +6104,17 @@ public class EventRoomController : MonoBehaviour
         EnsureNextButtonRoot();
 
         if (nextButtonRoot != null)
+        {
+            if (visible && nextButton != null)
+            {
+                TMP_Text label = nextButton.GetComponentInChildren<TMP_Text>(true);
+                if (label != null)
+                    label.text = "진행";
+                nextButton.interactable = true;
+                BindNextButton();
+            }
             nextButtonRoot.SetActive(visible);
+        }
 
         // NextButton이 표시되는 시점에는 선택지 배경 그라데이션이 남지 않도록 정리합니다.
         if (visible)

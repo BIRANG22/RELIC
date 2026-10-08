@@ -556,6 +556,8 @@ public class BattleSceneController : MonoBehaviour
         }
 
         PrepareBattleRewardResumePresentation(rewardPanel);
+        BattleResultChecker checker = Object.FindFirstObjectByType<BattleResultChecker>(FindObjectsInactive.Include);
+        rewardPanel.SetContinueWithGainButton(checker == null || !checker.IsBossRewardNodeForPresentation());
         rewardPanel.OpenSavedRewards(resume, RestoreBattleRewardCompletionPresentation);
         SaveSystem.Instance.ClearPendingResumeData();
         SaveSystem.Instance.CompleteCheckpointAutosaveRestore();
