@@ -33,7 +33,7 @@ public class RestRoomShopPanel : MonoBehaviour
     [SerializeField] private float epicRarityWeight = RestRoomShopService.DefaultEpicWeight;
     [SerializeField] private float uniqueRarityWeight = RestRoomShopService.DefaultUniqueWeight;
 
-    private readonly ISkillRewardRandom random = new UnitySkillRewardRandom();
+    private readonly ISkillRewardRandom random = new BattleSkillRewardRandom();
     private readonly List<RestRoomShopGoods> currentStock = new();
     private Coroutine panelFadeRoutine;
 
@@ -89,8 +89,11 @@ public class RestRoomShopPanel : MonoBehaviour
             return;
         }
 
-        List<RestRoomShopGoods> stock = RestRoomShopService.CreateStock(
+        List<SkillMasterData> allowedSkills = SkillRewardPoolPolicy.FilterCandidates(
             DataManager.Instance.SkillDatabase.GetAll(),
+            DataManager.Instance.SkillRewardPoolDatabase);
+        List<RestRoomShopGoods> stock = RestRoomShopService.CreateStock(
+            allowedSkills,
             DataManager.Instance.RelicDatabase.GetAll(),
             GetUnavailableSkillIds(),
             GetUnavailableRelicIds(),
@@ -128,7 +131,9 @@ public class RestRoomShopPanel : MonoBehaviour
             {
                 ResumeShopGoodsSaveData saved = savedStock[i];
                 if (saved == null || string.IsNullOrWhiteSpace(saved.Id)) continue;
-                if (saved.Kind == RestRoomShopGoodsKind.Skill && DataManager.Instance.SkillDatabase.TryGet(saved.Id, out SkillMasterData skill))
+                if (saved.Kind == RestRoomShopGoodsKind.Skill &&
+                    SkillRewardPoolPolicy.IsAllowed(saved.Id, DataManager.Instance.SkillRewardPoolDatabase) &&
+                    DataManager.Instance.SkillDatabase.TryGet(saved.Id, out SkillMasterData skill))
                     currentStock.Add(new RestRoomShopGoods(saved.Kind, saved.Id, GameDataLocalization.SkillName(skill), GameDataLocalization.SkillDetails(skill), saved.Price, skill.Rarity, skill));
                 else if (saved.Kind == RestRoomShopGoodsKind.Relic && DataManager.Instance.RelicDatabase.TryGet(saved.Id, out RelicData relic))
                     currentStock.Add(new RestRoomShopGoods(saved.Kind, saved.Id, GameDataLocalization.RelicName(relic), GameDataLocalization.RelicEffectDescription(relic), saved.Price, relic: relic));

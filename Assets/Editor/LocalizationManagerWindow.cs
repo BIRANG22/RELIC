@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Localization.Components;
+using UnityEngine.SceneManagement;
 
 public sealed class LocalizationManagerWindow : EditorWindow
 {
@@ -37,11 +39,11 @@ public sealed class LocalizationManagerWindow : EditorWindow
             MessageType.Info);
 
         if (scanRequested)
-            RunEditorAction("전체 검사", Scan);
+            RunEditorAction("전체 검사", Scan, scanScenes);
         if (scanAndApplyRequested)
-            RunEditorAction("전체 검사 및 적용", () => { Scan(); ApplySafe(); });
+            RunEditorAction("전체 검사 및 적용", () => { Scan(); ApplySafe(); }, true);
         if (applyRequested)
-            RunEditorAction("전체 안전 항목 적용", ApplySafe);
+            RunEditorAction("전체 안전 항목 적용", ApplySafe, true);
         filter = EditorGUILayout.TextField("Search", filter);
         LocalizationScanSummary summary = LocalizationScanSummary.Create(candidates);
         EditorGUILayout.LabelField($"New: {summary.NewCount}  Existing: {summary.ExistingCount}  Missing Component: {summary.MissingComponentCount}  Review: {summary.ReviewCount}  Occurrences: {summary.OccurrenceCount}");
@@ -70,12 +72,20 @@ public sealed class LocalizationManagerWindow : EditorWindow
         }
         if (scanScenes)
         {
-            HashSet<string> configuredScenePaths = GetConfiguredScenePaths();
-            foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" }))
+            SceneSetup[] originalSetup = EditorSceneManager.GetSceneManagerSetup();
+            try
             {
-                string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (LocalizationEditorSafetyPolicy.ShouldScanSceneAsset(path, configuredScenePaths))
-                    ScanScene(path, known, knownKoreanByKey, knownKeys, bindingResolver);
+                HashSet<string> configuredScenePaths = GetConfiguredScenePaths();
+                foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" }))
+                {
+                    string path = AssetDatabase.GUIDToAssetPath(guid);
+                    if (LocalizationEditorSafetyPolicy.ShouldScanSceneAsset(path, configuredScenePaths))
+                        ScanScene(path, known, knownKoreanByKey, knownKeys, bindingResolver);
+                }
+            }
+            finally
+            {
+                EditorSceneManager.RestoreSceneManagerSetup(originalSetup);
             }
         }
         if (scanScripts) ScanScripts(known, knownKoreanByKey, knownKeys);
@@ -260,31 +270,18 @@ public sealed class LocalizationManagerWindow : EditorWindow
         HashSet<string> knownKeys,
         LocalizationBindingResolver bindingResolver)
     {
-        UnityEngine.SceneManagement.Scene scene =
-            UnityEngine.SceneManagement.SceneManager.GetSceneByPath(path);
-        bool openedPreviewForScan = !scene.IsValid() || !scene.isLoaded;
-        if (openedPreviewForScan)
+        // Preview Scene은 현재 씬과 Light2D 등록 범위를 공유해 Global Light 충돌을 만든다.
+        // 검사 대상만 Single 모드로 열고 Scan()이 전체 Scene Setup을 복원한다.
+        Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+        foreach (GameObject root in scene.GetRootGameObjects())
         {
-            scene = UnityEditor.SceneManagement.EditorSceneManager.OpenPreviewScene(path);
-        }
-
-        try
-        {
-            foreach (GameObject root in scene.GetRootGameObjects())
-            {
-                ScanTexts(
-                    root.GetComponentsInChildren<TMP_Text>(true),
-                    path,
-                    known,
-                    knownKoreanByKey,
-                    knownKeys,
-                    bindingResolver);
-            }
-        }
-        finally
-        {
-            if (openedPreviewForScan)
-                UnityEditor.SceneManagement.EditorSceneManager.ClosePreviewScene(scene);
+            ScanTexts(
+                root.GetComponentsInChildren<TMP_Text>(true),
+                path,
+                known,
+                knownKoreanByKey,
+                knownKeys,
+                bindingResolver);
         }
     }
 
@@ -350,6 +347,9 @@ public sealed class LocalizationManagerWindow : EditorWindow
             throw new InvalidOperationException(workbookError);
         }
 
+        ExcelToBytesConverter.ConvertOrThrow();
+        AssetDatabase.ImportAsset("Assets/Resources/Data/GameDataRuntime.csv", ImportAssetOptions.ForceUpdate);
+
         HashSet<string> retainedCandidateKeys = LocalizationEditorSafetyPolicy.CollectRetainedCandidateKeys(candidates);
         var additions = candidates.Where(candidate => candidate.IsNew && !candidate.RequiresReview).Select(candidate => new LocalizationWorkbookEntry(candidate.Key, candidate.Korean));
         var sourceUpdates = candidates.Where(candidate => candidate.NeedsSourceUpdate && !candidate.RequiresReview).Select(candidate => new LocalizationWorkbookEntry(candidate.Key, candidate.Korean));
@@ -363,7 +363,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
         int removed = RemoveUnusedEntries(retainedCandidateKeys);
         int compacted = LocalizationWorkbookWriter.CompactBlankRows(LocalizationExcelImporter.WorkbookPath);
         LocalizationExcelImporter.Import(); // Final authoritative workbook-to-table sync.
-        Debug.Log($"[Localization Manager] Applied {rows} new Excel rows, updated {updated} GameData sources, restored {templateChanges} Record templates, applied {explicitStaticBindings} required static bindings, changed {dynamicOwnershipChanges} dynamic TMP ownerships, removed {removed} unused keys, compacted {compacted} blank rows, and repaired TMP bindings.");
+        Debug.Log($"[Localization Manager] Synced GameData runtime CSV, applied {rows} new Excel rows, updated {updated} GameData sources, restored {templateChanges} Record templates, applied {explicitStaticBindings} required static bindings, changed {dynamicOwnershipChanges} dynamic TMP ownerships, removed {removed} unused keys, compacted {compacted} blank rows, and repaired TMP bindings.");
     }
 
     private static HashSet<string> GetConfiguredScenePaths()
@@ -374,7 +374,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
-    private static void RunEditorAction(string label, Action action)
+    private static void RunEditorAction(string label, Action action, bool requiresSceneSave)
     {
         if (!LocalizationEditorSafetyPolicy.CanRunAssetMutation(EditorApplication.isPlayingOrWillChangePlaymode))
         {
@@ -386,9 +386,13 @@ public sealed class LocalizationManagerWindow : EditorWindow
             return;
         }
 
+        if (requiresSceneSave && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            return;
+
         try
         {
-            action?.Invoke();
+            using (LocalizationEditorFontMutationGuard.ProtectAllProjectFonts())
+                action?.Invoke();
         }
         catch (Exception exception)
         {

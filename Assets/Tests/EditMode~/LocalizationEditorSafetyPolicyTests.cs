@@ -45,15 +45,16 @@ public sealed class LocalizationEditorSafetyPolicyTests
     }
 
     [Test]
-    public void SceneScan_CrossValidatesActualStaticTextInIsolatedPreviewScene()
+    public void SceneScan_CrossValidatesActualStaticTextOneSceneAtATime()
     {
         string source = File.ReadAllText("Assets/Editor/LocalizationManagerWindow.cs");
         int scanSceneStart = source.IndexOf("private void ScanScene", StringComparison.Ordinal);
         int scanTextsStart = source.IndexOf("private void ScanTexts", scanSceneStart, StringComparison.Ordinal);
         string scanScene = source.Substring(scanSceneStart, scanTextsStart - scanSceneStart);
 
-        Assert.That(scanScene, Does.Contain("OpenPreviewScene"));
-        Assert.That(scanScene, Does.Contain("ClosePreviewScene"));
+        Assert.That(scanScene, Does.Contain("OpenScene(path, OpenSceneMode.Single)"));
+        Assert.That(scanScene, Does.Not.Contain("OpenPreviewScene"));
+        Assert.That(scanScene, Does.Not.Contain("ClosePreviewScene"));
         Assert.That(scanScene, Does.Not.Contain("OpenSceneMode.Additive"));
         Assert.That(scanScene, Does.Contain("ScanTexts("));
         Assert.That(scanScene, Does.Not.Contain("FindUnityYamlTmpTexts"));

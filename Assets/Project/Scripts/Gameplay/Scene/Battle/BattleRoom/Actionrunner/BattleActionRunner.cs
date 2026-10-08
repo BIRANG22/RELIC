@@ -1824,6 +1824,13 @@ public class BattleActionRunner
         if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
             yield break;
 
+        if (BattleSkillNamePopupPresentation.ShouldShow(command))
+        {
+            BattleSkillTextPopupUI.Show(
+                attacker.transform,
+                BattleSkillNamePopupPresentation.GetDisplayName(command));
+        }
+
         if (onPlayerSkillStarted != null)
         {
             IEnumerator skillStartPresentation = onPlayerSkillStarted.Invoke(command);
@@ -4255,6 +4262,13 @@ public class BattleActionRunner
 
         if (monster == null)
             yield break;
+
+        if (BattleSkillNamePopupPresentation.ShouldShow(command))
+        {
+            BattleSkillTextPopupUI.Show(
+                monster.transform,
+                BattleSkillNamePopupPresentation.GetDisplayName(command));
+        }
 
         bool shouldControlAttackPlane = ShouldControlAttackPlaneForMonsterSkill(command);
         PlaneAttackType monsterPlaneAttackType = ShouldSkipMonsterSkillCamera(command)
