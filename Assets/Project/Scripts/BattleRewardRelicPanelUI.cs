@@ -19,6 +19,38 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     [SerializeField] private Color epicColor = new Color32(165, 107, 221, 255);
     [SerializeField] private Color uniqueColor = new Color32(233, 177, 69, 255);
 
+    [Serializable]
+    private sealed class CharacterReferences
+    {
+        public Transform root;
+        public Image characterIcon;
+        public TMP_Text characterName;
+        public GameObject select;
+        public Image relic01Icon;
+        public Image relic02Icon;
+        public Image relic03Icon;
+        public Image relic04Icon;
+        public Image relic05Icon;
+        public Image relic06Icon;
+
+        public Image GetRelicIcon(int index)
+        {
+            switch (index)
+            {
+                case 0: return relic01Icon;
+                case 1: return relic02Icon;
+                case 2: return relic03Icon;
+                case 3: return relic04Icon;
+                case 4: return relic05Icon;
+                case 5: return relic06Icon;
+                default: return null;
+            }
+        }
+    }
+
+    [Header("content / Char1~3 - inspector references")]
+    [SerializeField] private CharacterReferences[] characters = new CharacterReferences[3];
+
     private readonly CharacterEntry[] entries = new CharacterEntry[3];
     private BattleRewardData current;
     private Action onResolved;
@@ -64,10 +96,20 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         current = reward;
         onResolved = callback;
         resolving = false;
-        Refresh();
         BattleUIBlurRootCollector.ConfigureForPanel(gameObject);
         gameObject.SetActive(true);
+        // 활성화 후에도 새 하이어라키의 텍스트를 다시 연결하여 갱신합니다.
+        Bind();
+        Refresh();
         transform.SetAsLastSibling();
+    }
+
+    private static TMP_Text FindText(Transform target)
+    {
+        if (target == null) return null;
+        TMP_Text text = target.GetComponent<TMP_Text>();
+        // TMP SubMeshUI is not a primary text label. Do not bind a submesh as Name.
+        return text != null ? text : target.GetComponentInChildren<TextMeshProUGUI>(true);
     }
 
     private void Bind()
@@ -75,21 +117,25 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         Transform item = transform.Find("item");
         rarityLine = rarityLine != null ? rarityLine : item?.Find("Background/Line2")?.GetComponent<Image>();
         rewardIcon = rewardIcon != null ? rewardIcon : item?.Find("Itemimage/Icon")?.GetComponent<Image>();
-        rewardName = rewardName != null ? rewardName : item?.Find("Name")?.GetComponent<TMP_Text>();
-        rewardRarity = rewardRarity != null ? rewardRarity : item?.Find("Rarity")?.GetComponent<TMP_Text>();
-        rewardEffect = rewardEffect != null ? rewardEffect : item?.Find("Effect")?.GetComponent<TMP_Text>();
-        content = content != null ? content : transform.Find("Contant");
+        rewardName = rewardName != null ? rewardName : FindText(item?.Find("Name"));
+        rewardRarity = rewardRarity != null ? rewardRarity : FindText(item?.Find("Rarity"));
+        rewardEffect = rewardEffect != null ? rewardEffect : FindText(item?.Find("Effect"));
+        // Support both the old Contant hierarchy and the renamed content hierarchy.
+        // 이전 프리팹에서 직렬화된 참조가 남아 있을 수 있어 현재 하이어라키를 우선합니다.
+        Transform currentContent = transform.Find("content") ?? transform.Find("Contant") ?? transform.Find("Content");
+        if (currentContent != null) content = currentContent;
         if (content == null) return;
         for (int i = 0; i < 3; i++)
         {
-            Transform root = content.Find("Char" + (i + 1));
+            CharacterReferences refs = characters != null && i < characters.Length ? characters[i] : null;
+            Transform root = refs?.root != null ? refs.root : content.Find("Char" + (i + 1));
             if (root == null) continue;
             CharacterEntry e = entries[i] ?? new CharacterEntry();
             entries[i] = e;
             e.root = root.gameObject;
-            e.icon = root.Find("Icon/Mask/Image")?.GetComponent<Image>();
-            e.name = root.Find("Name")?.GetComponent<TMP_Text>();
-            e.select = root.Find("Select")?.gameObject;
+            e.icon = refs?.characterIcon != null ? refs.characterIcon : root.Find("Icon/Mask/Image")?.GetComponent<Image>();
+            e.name = refs?.characterName != null ? refs.characterName : FindText(root.Find("Name"));
+            e.select = refs?.select != null ? refs.select : root.Find("Select")?.gameObject;
             e.button = root.GetComponent<Button>();
             if (e.button == null) e.button = root.gameObject.AddComponent<Button>();
             e.button.transition = Selectable.Transition.None;
@@ -102,7 +148,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             if (e.select != null)
                 foreach (Graphic graphic in e.select.GetComponentsInChildren<Graphic>(true)) graphic.raycastTarget = false;
             Transform relicRoot = root.Find("Relic");
-            for (int j = 0; j < 6; j++) e.relics[j] = relicRoot?.Find("Relic" + (j + 1).ToString("00") + "/Icon")?.GetComponent<Image>();
+            for (int j = 0; j < 6; j++) e.relics[j] = refs?.GetRelicIcon(j) != null ? refs.GetRelicIcon(j) : relicRoot?.Find("Relic" + (j + 1).ToString("00") + "/Icon")?.GetComponent<Image>();
         }
     }
 
@@ -142,7 +188,14 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             if (!present) continue;
             if (e.select != null) e.select.SetActive(false);
             CharacterMasterData master = DataManager.Instance.CharacterDatabase?.Get(e.id);
-            if (e.name != null) e.name.text = master != null ? GameDataLocalization.CharacterName(master) : e.id;
+            // TMP SubMesh가 아니라 Name의 원본 TMP에 직접 이름을 기록합니다.
+            Transform nameRoot = content.Find("Char" + (i + 1) + "/Name");
+            e.name = FindText(nameRoot);
+            string displayName = master != null ? GameDataLocalization.CharacterName(master) : null;
+            if (string.IsNullOrWhiteSpace(displayName)) displayName = master != null ? master.Name : null;
+            if (string.IsNullOrWhiteSpace(displayName)) displayName = e.id;
+            if (e.name != null) { e.name.text = displayName; e.name.SetAllDirty(); }
+            else Debug.LogWarning("[BattleRewardRelicPanelUI] Char" + (i + 1) + "/Name TMP_Text를 찾지 못했습니다.", e.root);
             Sprite portrait = null;
             DataManager.Instance.CharacterIconDatabase?.TryGetIcon(e.id, out portrait);
             SetIcon(e.icon, portrait);

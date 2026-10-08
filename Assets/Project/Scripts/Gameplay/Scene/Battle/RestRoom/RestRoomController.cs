@@ -36,6 +36,8 @@ public class RestRoomController : MonoBehaviour
 
     [Header("Progression")]
     [SerializeField] private GameObject nextButtonRoot;
+    private Button nextButton;
+    private bool nextTransitionStarted;
 
     [Header("Player HUD")]
     [SerializeField] private Transform playerHudRoot;
@@ -75,6 +77,7 @@ public class RestRoomController : MonoBehaviour
     private void OnEnable()
     {
         isRestUsed = false;
+        nextTransitionStarted = false;
         hasPendingSkillAwakenResult = false;
         pendingSkillAwakenResultTarget = default;
 
@@ -96,6 +99,7 @@ public class RestRoomController : MonoBehaviour
 
     private void OnDisable()
     {
+        UnbindNextButton();
         SetNextButtonVisible(false);
 
         if (skillAwakenResultRoutine != null)
@@ -218,22 +222,28 @@ public class RestRoomController : MonoBehaviour
         if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
             return;
 
-        if (!isRestUsed)
+        if (!isRestUsed || nextTransitionStarted)
             return;
 
         EnsureNextButtonRoot();
         if (nextButtonRoot == null || !nextButtonRoot.activeInHierarchy)
             return;
 
+        nextTransitionStarted = true;
+        if (nextButton != null) nextButton.interactable = false;
         CompleteCurrentNode();
 
         BattleSceneController sceneController =
             Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
 
         if (sceneController != null)
-            sceneController.ReturnToMap();
+            sceneController.ReturnToMap(() => SetNextButtonVisible(false));
         else
+        {
+            nextTransitionStarted = false;
+            if (nextButton != null) nextButton.interactable = true;
             Debug.LogWarning("[RestRoomController] BattleSceneController not found");
+        }
     }
 
     private void RecoverAllPartyHPByRatio(float ratio)
@@ -653,21 +663,53 @@ public class RestRoomController : MonoBehaviour
 
     private void EnsureNextButtonRoot()
     {
-        if (nextButtonRoot != null)
+        // The reward, event and rest rooms share the same NextButton.
+        BattleRewardPanelUI rewardPanel = Object.FindFirstObjectByType<BattleRewardPanelUI>(FindObjectsInactive.Include);
+        Button sharedButton = rewardPanel != null ? rewardPanel.SharedNextButton : null;
+        if (sharedButton != null)
+        {
+            if (nextButton != null && nextButton != sharedButton)
+                nextButton.onClick.RemoveListener(OnNextButtonClicked);
+            nextButton = sharedButton;
+            nextButtonRoot = sharedButton.gameObject;
             return;
+        }
 
-        Transform nextButtonTransform = FindSceneTransformByName("NextButton");
+        if (nextButtonRoot == null)
+        {
+            Transform found = FindSceneTransformByName("NextButton");
+            if (found != null) nextButtonRoot = found.gameObject;
+        }
+        if (nextButtonRoot != null)
+            nextButton = nextButtonRoot.GetComponent<Button>();
+    }
 
-        if (nextButtonTransform != null)
-            nextButtonRoot = nextButtonTransform.gameObject;
+    private void BindNextButton()
+    {
+        EnsureNextButtonRoot();
+        if (nextButton == null) return;
+        nextButton.onClick.RemoveListener(OnNextButtonClicked);
+        nextButton.onClick.AddListener(OnNextButtonClicked);
+    }
+
+    private void UnbindNextButton()
+    {
+        if (nextButton != null)
+            nextButton.onClick.RemoveListener(OnNextButtonClicked);
     }
 
     private void SetNextButtonVisible(bool visible)
     {
         EnsureNextButtonRoot();
-
-        if (nextButtonRoot != null)
-            nextButtonRoot.SetActive(visible);
+        if (nextButtonRoot == null) return;
+        if (visible)
+        {
+            BindNextButton();
+            if (nextButton != null) nextButton.interactable = !nextTransitionStarted;
+            TMP_Text label = nextButtonRoot.GetComponentInChildren<TMP_Text>(true);
+            if (label != null) label.text = "진행";
+        }
+        nextButtonRoot.SetActive(visible);
     }
 
     private void SetRestActionButtonsVisible(bool visible)

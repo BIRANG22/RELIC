@@ -20,6 +20,40 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     [SerializeField] private Sprite mpIcon;
     [SerializeField] private Sprite karmaIcon;
 
+    [Serializable]
+    private sealed class SkillCardReferences
+    {
+        public Transform root;
+        public Image rarityLine;
+        public TMP_Text typeText;
+        public Image skillIcon;
+        public TMP_Text skillName;
+        public Image rangeIcon;
+        public TMP_Text detailText;
+        public Image resourceIcon;
+        public TMP_Text resourceValue;
+        public Image characterSideIcon;
+        public GameObject select;
+    }
+
+    [Serializable]
+    private sealed class PartyCardReferences
+    {
+        public Transform root;
+        public Image characterIcon;
+        public TMP_Text characterName;
+        public Image skill01Icon;
+        public Image skill02Icon;
+        public Image skill03Icon;
+    }
+
+    [Header("Skill_content - inspector references")]
+    [SerializeField] private Transform skillContent;
+    [SerializeField] private SkillCardReferences[] skillCards = new SkillCardReferences[3];
+    [Header("Char_content - inspector references")]
+    [SerializeField] private Transform charContent;
+    [SerializeField] private PartyCardReferences[] partyCards = new PartyCardReferences[3];
+
     private BattleRewardData reward;
     private Action completed;
     private bool processing;
@@ -41,21 +75,23 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         reward = data;
         completed = onCompleted;
         processing = false;
-        Transform content = FindChild(transform, "Skill_content");
+        Transform content = skillContent != null ? skillContent : FindChild(transform, "Skill_content");
         if (content == null) { reward = null; completed = null; return false; }
-        List<SkillMasterData> offers = BuildOffers(skill);
+        List<SkillMasterData> offers = BuildOffers(skill, data);
+        Debug.Log($"[BattleRewardSkillPanelUI] Reward rarity: {skill.Rarity}, offers: {offers.Count} / {string.Join(", ", offers.ConvertAll(x => x.SkillId))}");
         for (int i = 0; i < 3; i++)
         {
             int index = i;
-            Transform card = FindChild(content, "Skill0" + (i + 1));
+            Transform card = SkillRef(i)?.root != null ? SkillRef(i).root : FindChild(content, "Skill0" + (i + 1));
             offeredSkills[i] = i < offers.Count ? offers[i] : null;
             characterIds[i] = null;
             if (card == null) continue;
+            ClearCard(card);
             SkillMasterData choice = offeredSkills[i];
             card.gameObject.SetActive(choice != null);
             if (choice == null) continue;
             characterIds[i] = ResolveOwner(choice);
-            BindCard(card, choice.CharacterId, choice, data);
+            BindCard(card, string.IsNullOrWhiteSpace(choice.CharacterId) || string.Equals(choice.CharacterId, "ALL", StringComparison.OrdinalIgnoreCase) ? characterIds[i] : choice.CharacterId, choice, data);
             Button button = card.GetComponent<Button>();
             if (button == null) button = card.gameObject.AddComponent<Button>();
             button.onClick.RemoveAllListeners();
@@ -64,7 +100,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             button.interactable = !string.IsNullOrEmpty(characterIds[i]) &&
                 BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(choice, characterIds[i]) &&
                 HasFreeSlot(characterIds[i]);
-            Transform select = FindChild(card, "Select");
+            Transform select = SkillRef(i)?.select != null ? SkillRef(i).select.transform : FindChild(card, "Select");
             if (select != null)
             {
                 select.gameObject.SetActive(false);
@@ -85,12 +121,12 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     // 파티의 현재 장착 기억을 Char_content에 표시합니다. 이 영역은 정보 표시 전용입니다.
     private void BindPartyContent()
     {
-        Transform content = FindChild(transform, "Char_content");
+        Transform content = charContent != null ? charContent : FindChild(transform, "Char_content");
         if (content == null) return;
         DataManager dm = DataManager.Instance;
         for (int i = 0; i < 3; i++)
         {
-            Transform card = FindChild(content, "Char" + (i + 1));
+            Transform card = PartyRef(i)?.root != null ? PartyRef(i).root : FindChild(content, "Char" + (i + 1));
             if (card == null) continue;
             string characterId = dm?.PartyRuntimeStore?.GetCharacterId(i);
             CharacterRuntimeData character = null;
@@ -111,7 +147,11 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             string characterName = characterId;
             if (dm.CharacterDatabase != null &&
                 dm.CharacterDatabase.TryGet(characterId, out CharacterMasterData master))
-                characterName = GameDataLocalization.CharacterName(master);
+            {
+                string localizedName = GameDataLocalization.CharacterName(master);
+                if (!string.IsNullOrWhiteSpace(localizedName)) characterName = localizedName;
+                else if (!string.IsNullOrWhiteSpace(master.Name)) characterName = master.Name;
+            }
             SetText(card, "Name", characterName);
 
             SkillInventoryEquipService.EnsureEquippedSkillArray(character);
@@ -179,6 +219,19 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         callback?.Invoke();
     }
 
+    private void ClearCard(Transform card)
+    {
+        if (card == null) return;
+        SetText(card, "Type/Type_text", string.Empty);
+        SetText(card, "Name", string.Empty);
+        SetText(card, "Detail", string.Empty);
+        SetText(card, "Resources/Value", string.Empty);
+        SetSprite(GetImage(card, "Icon/Icon"), null);
+        SetSprite(GetImage(card, "Range"), null);
+        SetSprite(GetImage(card, "Resources/Icon"), null);
+        SetSprite(GetImage(card, "Character/Mask/Icon"), null);
+    }
+
     private void BindCard(Transform card, string characterId, SkillMasterData skill, BattleRewardData data)
     {
         Image line = GetImage(card, "Background/Line2");
@@ -188,18 +241,26 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(characterId))
             DataManager.Instance.CharacterIconDatabase?.TryGetSideImage(characterId, out side);
         SetSprite(portrait, side);
-        string typeName = skill.TimelineNotation == TimelineActionType.Move ? "이동" :
-            skill.SkillType == SkillType.Buff ? "버프" :
-            skill.SkillType == SkillType.Debuff ? "디버프" :
-            skill.SkillType == SkillType.Attack ? "공격" : "패시브";
+        string typeName = skill.TimelineNotation == TimelineActionType.Move
+            ? GameLocalization.Get("common.move")
+            : skill.Category == Category.Passive
+                ? GameLocalization.Get("common.passive")
+                : skill.SkillType == SkillType.Buff
+                    ? GameLocalization.Get("common.buff")
+                    : skill.SkillType == SkillType.Debuff
+                        ? GameLocalization.Get("common.debuff")
+                        : skill.SkillType == SkillType.Attack
+                            ? GameLocalization.Get("common.attack")
+                            : GameLocalization.Get("common.passive");
         SetText(card, "Type/Type_text", typeName);
-        Sprite icon = skill.Icon;
-        if (icon == null && DataManager.Instance.SkillIconDatabase != null)
+        Sprite icon = null;
+        if (DataManager.Instance.SkillIconDatabase != null)
             DataManager.Instance.SkillIconDatabase.TryGetIcon(skill.SkillId, out icon);
+        if (icon == null) icon = skill.Icon;
         SetSprite(GetImage(card, "Icon/Icon"), icon);
         SetText(card, "Name", GameDataLocalization.SkillName(skill));
-        SetText(card, "Detail", GameDataLocalization.SkillDetails(skill));
-        Image range = GetImage(card, "Range");
+        SetDetailText(card, skill);
+        Image range = GetImage(card, "Range") ?? GetImage(card, "Range/Icon");
         Sprite rangeIcon = null;
         if (!string.IsNullOrWhiteSpace(skill.RangeId) && DataManager.Instance.SkillRangeIconDatabase != null)
             DataManager.Instance.SkillRangeIconDatabase.TryGetIcon(skill.RangeId.Trim(), out rangeIcon);
@@ -217,50 +278,87 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         }
         SetSprite(cost, resource);
         if (cost != null) cost.color = color;
-        if (value != null) { value.text = skill.ResourceCostValue.ToString(); value.color = color; }
+        if (value != null) { SetDynamicText(value, skill.ResourceCostValue.ToString()); value.color = color; }
     }
 
-    private List<SkillMasterData> BuildOffers(SkillMasterData first)
+    // Collect eligible memories from all registered party members, then draw three unique IDs.
+    // The event reward source carries the selection filter; a random memory is not
+    // restricted to the rarity of the placeholder skill selected by the event system.
+    private List<SkillMasterData> BuildOffers(SkillMasterData rewardSkill, BattleRewardData rewardData)
     {
-        List<SkillMasterData> result = new List<SkillMasterData>();
-        if (first == null) return result;
-        result.Add(first);
-        var dm = DataManager.Instance;
-        if (dm?.SkillDatabase == null) return result;
-        List<SkillMasterData> candidates = new List<SkillMasterData>();
-        List<SkillMasterData> all = dm.SkillDatabase.GetAll();
-        HashSet<string> blocked = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        blocked.Add(first.SkillId.Trim());
-        BattleRuntimeData battle = dm.BattleRuntimeStore?.GetOrCreate();
-        if (battle?.AcquiredSkillIds != null)
-            foreach (string id in battle.AcquiredSkillIds)
-                if (!string.IsNullOrWhiteSpace(id)) blocked.Add(id.Trim());
+        List<SkillMasterData> offers = new List<SkillMasterData>();
+        DataManager dm = DataManager.Instance;
+        if (dm?.SkillDatabase == null || dm.PartyRuntimeStore == null) return offers;
+
+        HashSet<string> party = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        for (int i = 0; i < 3; i++)
+        {
+            string id = dm.PartyRuntimeStore.GetCharacterId(i)?.Trim();
+            if (!string.IsNullOrWhiteSpace(id) && dm.CharacterRuntimeStore != null &&
+                dm.CharacterRuntimeStore.TryGet(id, out CharacterRuntimeData character) && character != null)
+                party.Add(id);
+        }
+        if (party.Count == 0) return offers;
+
+        HashSet<string> acquired = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        BattleRuntimeData runtime = dm.BattleRuntimeStore?.GetOrCreate();
+        if (runtime?.AcquiredSkillIds != null)
+            foreach (string id in runtime.AcquiredSkillIds) BlockSkillAndVariant(acquired, id);
+        if (runtime?.SkillInventoryIds != null)
+            foreach (string id in runtime.SkillInventoryIds) BlockSkillAndVariant(acquired, id);
         if (dm.CharacterRuntimeStore != null)
-        {
-            var runtimes = dm.CharacterRuntimeStore.GetAll();
-            foreach (CharacterRuntimeData character in runtimes.Values)
+            foreach (CharacterRuntimeData character in dm.CharacterRuntimeStore.GetAll().Values)
             {
-                if (character?.EquippedSkillIds == null) continue;
-                foreach (string id in character.EquippedSkillIds)
-                    if (!string.IsNullOrWhiteSpace(id)) blocked.Add(id.Trim());
+                if (character == null) continue;
+                if (character.EquippedSkillIds != null)
+                    foreach (string id in character.EquippedSkillIds) BlockSkillAndVariant(acquired, id);
             }
-        }
-        foreach (SkillMasterData candidate in all)
+
+        string source = rewardData?.SourceKey ?? string.Empty;
+        bool allRarities = source.Contains("|AnyRarity|") || source.Contains("|Attack|") ||
+            source.Contains("|Buff|") || source.Contains("|Debuff|");
+        bool commonRare = source.Contains("|CommonToRare|");
+        SkillType? typeFilter = source.Contains("|Attack|") ? SkillType.Attack :
+            source.Contains("|Buff|") ? SkillType.Buff :
+            source.Contains("|Debuff|") ? SkillType.Debuff : (SkillType?)null;
+
+        List<SkillMasterData> candidates = new List<SkillMasterData>();
+        HashSet<string> seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (SkillMasterData skill in dm.SkillDatabase.GetAll())
         {
-            if (candidate == null || string.IsNullOrWhiteSpace(candidate.SkillId) ||
-                candidate.Category != Category.Core || candidate.Rarity != first.Rarity ||
-                !SkillRarityUtility.IsBaseSkillVariant(candidate.SkillId) ||
-                blocked.Contains(candidate.SkillId.Trim()) || ResolveOwner(candidate) == null ||
-                !SkillRewardPoolPolicy.IsAllowed(candidate.SkillId, dm.SkillRewardPoolDatabase)) continue;
-            candidates.Add(candidate);
+            if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId) || skill.Category != Category.Core ||
+                !SkillRarityUtility.IsCoreDropRarity(skill.Rarity) ||
+                !SkillRarityUtility.IsBaseSkillVariant(skill.SkillId) ||
+                acquired.Contains(skill.SkillId.Trim()) || !seen.Add(skill.SkillId.Trim())) continue;
+            if (typeFilter.HasValue && skill.SkillType != typeFilter.Value) continue;
+            if (commonRare)
+            {
+                if (skill.Rarity != SkillRarity.Common && skill.Rarity != SkillRarity.Rare) continue;
+            }
+            else if (!allRarities && skill.Rarity != rewardSkill.Rarity) continue;
+
+            string owner = skill.CharacterId?.Trim();
+            if (!string.Equals(owner, "ALL", StringComparison.OrdinalIgnoreCase) &&
+                (string.IsNullOrWhiteSpace(owner) || !party.Contains(owner))) continue;
+            if (ResolveOwner(skill) == null) continue;
+            candidates.Add(skill);
         }
-        while (result.Count < 3 && candidates.Count > 0)
+        Debug.Log($"[BattleRewardSkillPanelUI] Source={source}, Rarity={rewardSkill.Rarity}, Party={string.Join(",", party)}, Pool={candidates.Count}");
+        while (offers.Count < 3 && candidates.Count > 0)
         {
             int index = UnityEngine.Random.Range(0, candidates.Count);
-            result.Add(candidates[index]);
+            offers.Add(candidates[index]);
             candidates.RemoveAt(index);
         }
-        return result;
+        return offers;
+    }
+
+    private static void BlockSkillAndVariant(HashSet<string> blocked, string skillId)
+    {
+        if (string.IsNullOrWhiteSpace(skillId)) return;
+        string id = skillId.Trim();
+        blocked.Add(id);
+        if (SkillRarityUtility.TryGetPairedVariantId(id, out string paired)) blocked.Add(paired);
     }
 
     private string ResolveOwner(SkillMasterData skill)
@@ -300,10 +398,104 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             default: return commonColor;
         }
     }
-    private static Transform FindChild(Transform parent, string path) { return parent != null ? parent.Find(path) : null; }
-    private static Image GetImage(Transform root, string path) { var t = FindChild(root, path); return t != null ? t.GetComponent<Image>() : null; }
-    private static TMP_Text GetText(Transform root, string path) { var t = FindChild(root, path); return t != null ? t.GetComponent<TMP_Text>() : null; }
-    private static void SetText(Transform root, string path, string text) { var t = GetText(root, path); if (t != null) t.text = text ?? string.Empty; }
+    private SkillCardReferences SkillRef(int index) =>
+        skillCards != null && index >= 0 && index < skillCards.Length ? skillCards[index] : null;
+
+    private PartyCardReferences PartyRef(int index) =>
+        partyCards != null && index >= 0 && index < partyCards.Length ? partyCards[index] : null;
+
+    private static Transform FindChild(Transform parent, string path) => parent != null ? parent.Find(path) : null;
+
+    private Image GetImage(Transform root, string path)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            SkillCardReferences s = SkillRef(i);
+            if (s != null && s.root == root)
+            {
+                switch (path)
+                {
+                    case "Background/Line2": if (s.rarityLine != null) return s.rarityLine; break;
+                    case "Icon/Icon": if (s.skillIcon != null) return s.skillIcon; break;
+                    case "Range": case "Range/Icon": if (s.rangeIcon != null) return s.rangeIcon; break;
+                    case "Resources/Icon": if (s.resourceIcon != null) return s.resourceIcon; break;
+                    case "Character/Mask/Icon": if (s.characterSideIcon != null) return s.characterSideIcon; break;
+                }
+            }
+            PartyCardReferences p = PartyRef(i);
+            if (p != null && p.root == root && path == "Icon/Mask/Image" && p.characterIcon != null)
+                return p.characterIcon;
+            if (p != null && p.root != null && root != null && root.IsChildOf(p.root) && path == "Icon")
+            {
+                Transform slots = p.root.Find("Skill");
+                if (slots != null)
+                {
+                    if (root == slots.Find("Skill01") && p.skill01Icon != null) return p.skill01Icon;
+                    if (root == slots.Find("Skill02") && p.skill02Icon != null) return p.skill02Icon;
+                    if (root == slots.Find("Skill03") && p.skill03Icon != null) return p.skill03Icon;
+                }
+            }
+        }
+        Transform t = FindChild(root, path);
+        return t != null ? t.GetComponent<Image>() : null;
+    }
+
+    private TMP_Text GetText(Transform root, string path)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            SkillCardReferences s = SkillRef(i);
+            if (s != null && s.root == root)
+            {
+                switch (path)
+                {
+                    case "Type/Type_text": if (s.typeText != null) return s.typeText; break;
+                    case "Name": if (s.skillName != null) return s.skillName; break;
+                    case "Detail": if (s.detailText != null) return s.detailText; break;
+                    case "Resources/Value": if (s.resourceValue != null) return s.resourceValue; break;
+                }
+            }
+            PartyCardReferences p = PartyRef(i);
+            if (p != null && p.root == root && path == "Name" && p.characterName != null)
+                return p.characterName;
+        }
+        Transform target = FindChild(root, path);
+        if (target == null) return null;
+        TMP_Text direct = target.GetComponent<TMP_Text>();
+        return direct != null ? direct : target.GetComponentInChildren<TextMeshProUGUI>(true);
+    }
+
+    private void SetDetailText(Transform card, SkillMasterData skill)
+    {
+        TMP_Text target = GetText(card, "Detail");
+        if (target == null) return;
+        DisableStaticLocalization(target);
+        SkillEffectInlineIconUtility.SetText(target,
+            skill != null ? GameDataLocalization.SkillDetails(skill) : string.Empty);
+    }
+
+    private void SetText(Transform root, string path, string text)
+    {
+        TMP_Text label = GetText(root, path);
+        if (label != null) SetDynamicText(label, text);
+        else Debug.LogWarning($"[BattleRewardSkillPanelUI] Missing TMP_Text: {root?.name}/{path}", root);
+    }
+    // Dynamic reward text is controlled by this panel, not by prefab localization keys.
+    private static void DisableStaticLocalization(TMP_Text label)
+    {
+        if (label == null) return;
+        LocalizedTMPText localization = label.GetComponent<LocalizedTMPText>();
+        if (localization != null && localization.enabled)
+            localization.enabled = false;
+    }
+
+    private static void SetDynamicText(TMP_Text label, string value)
+    {
+        if (label == null) return;
+        DisableStaticLocalization(label);
+        label.text = value ?? string.Empty;
+    }
+
     private static void SetSprite(Image image, Sprite sprite) { if (image == null) return; image.sprite = sprite; image.enabled = sprite != null; }
 }
 

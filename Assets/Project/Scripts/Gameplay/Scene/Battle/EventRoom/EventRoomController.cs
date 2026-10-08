@@ -4621,9 +4621,10 @@ public class EventRoomController : MonoBehaviour
         }
 
         string skillId = skill.SkillId.Trim();
-        QueueEventReward(EventRoomRewardFlowUtility.CreateSkillReward(
-            skill,
-            GetSkillSprite(skillId, skill)));
+        BattleRewardData memoryReward = EventRoomRewardFlowUtility.CreateSkillReward(
+            skill, GetSkillSprite(skillId, skill));
+        memoryReward.SourceKey += "|AnyRarity|";
+        QueueEventReward(memoryReward);
 
         resultMessage = $"기억 획득: {GameDataLocalization.SkillName(skill)}";
         return true;
@@ -4660,9 +4661,10 @@ public class EventRoomController : MonoBehaviour
                 continue;
 
             string skillId = skill.SkillId.Trim();
-            QueueEventReward(EventRoomRewardFlowUtility.CreateSkillReward(
-                skill,
-                GetSkillSprite(skillId, skill)));
+            BattleRewardData memoryReward = EventRoomRewardFlowUtility.CreateSkillReward(
+                skill, GetSkillSprite(skillId, skill));
+            memoryReward.SourceKey += "|" + filter.ToString() + "|";
+            QueueEventReward(memoryReward);
         }
 
         resultMessage = $"{GetSkillRewardFilterDisplayName(filter)} 기억 {rewardCount}개 제시";
