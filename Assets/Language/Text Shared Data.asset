@@ -39,10 +39,6 @@ MonoBehaviour:
     m_Key: common.no
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100678
-    m_Key: common.delete
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100679
     m_Key: common.exit
     m_Metadata:
@@ -7105,6 +7101,54 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 20540429581164571
     m_Key: data.effect.e_strike_count_by_debuff.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721856557056
+    m_Key: ui.rewardslot.text.82ec02da
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694400
+    m_Key: ui.battle.canvas.battlerewardcanvas.nextbutton.text_tmp.e393d35f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694401
+    m_Key: ui.battle.detail.cf6589bc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694402
+    m_Key: ui.battle.text_tmp.7929f1e0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694403
+    m_Key: ui.battle.name.9516c5ee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694404
+    m_Key: ui.battle.detail.98b7d37a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694405
+    m_Key: ui.battle.name.f50b42ad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694406
+    m_Key: battle.action.move.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694407
+    m_Key: battle.action.move.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694408
+    m_Key: battle.action.flip.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694409
+    m_Key: battle.action.flip.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694410
+    m_Key: battle.intro.battle_end
     m_Metadata:
       m_Items: []
   m_Metadata:

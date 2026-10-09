@@ -42,10 +42,6 @@ MonoBehaviour:
     m_Localized: No
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100678
-    m_Localized: Eliminar
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100679
     m_Localized: Salir
     m_Metadata:

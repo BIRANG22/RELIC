@@ -91,8 +91,8 @@ S_Ability_05,질풍검 3식,Ability,Exclusive,Cost,EnemyParty,1,Char_02,Attack,E
 S_Ability_06,질풍검 3식+,Ability,Exclusive,Cost,EnemyParty,2,Char_02,Attack,E_Strike,2,4,3,Direction,Range_11,{E_Strike} {ValueRate1}{CountRate1},0
 S_Ability_07,질풍검 1식,Ability,Exclusive,Cost,EnemyParty,1,Char_02,Attack,E_Pierce,8,1,3,Direction,Range_03,{E_Pierce} {ValueRate1},0
 S_Ability_08,질풍검 1식+,Ability,Exclusive,Cost,EnemyParty,2,Char_02,Attack,E_Pierce,10,1,3,Direction,Range_04,{E_Pierce} {ValueRate1},0
-S_Ability_09,날카로운 빛,Ability,Exclusive,Cost,PlayerParty,1,Char_03,Buff,E_Smite,1,1,5,Direction,Range_b_02,{E_Smite}를 {ValueRate1} 부여한다.,0
-S_Ability_10,날카로운 빛+,Ability,Exclusive,Cost,PlayerParty,2,Char_03,Buff,E_Smite,1,1,4,Direction,Range_b_04,{E_Smite}를 {ValueRate1} 부여한다.,0
+S_Ability_09,찬란한 빛,Ability,Exclusive,Cost,PlayerParty,1,Char_03,Buff,E_Boost,1,1,5,Direction,Range_b_02,{E_Boost}를 {ValueRate1} 부여한다.,0
+S_Ability_10,찬란한 빛+,Ability,Exclusive,Cost,PlayerParty,2,Char_03,Buff,E_Boost,1,1,4,Direction,Range_b_04,{E_Boost}를 {ValueRate1} 부여한다.,0
 S_Ability_11,베놈,Ability,Exclusive,Cost,EnemyParty,1,Char_03,Debuff,E_Poison,2,1,4,Direction,Range_22,{E_Poison}을 {ValueRate1} 부여한다.,0
 S_Ability_12,베놈+,Ability,Exclusive,Cost,EnemyParty,2,Char_03,Debuff,E_Poison,2,1,3,Direction,Range_23,{E_Poison}을 {ValueRate1} 부여한다.,0
 S_Ability_13,치유의 손길,Ability,Exclusive,Cost,PlayerParty,1,Char_04,Buff,E_Cure,3,1,5,Direction,Range_b_03,{E_Cure}를 {ValueRate1} 부여한다.,0
@@ -139,10 +139,10 @@ S_Core_33,혈맥 찌르기,Core,Epic,Ulti,EnemyParty,1,Char_02,Attack,E_Pierce;E
 S_Core_34,혈맥 찌르기+,Core,Epic,Ulti,EnemyParty,2,Char_02,Attack,E_Pierce;E_Bleed,8;4,1;1,2,Direction,Range_03,{E_Pierce} {ValueRate1} / 최대 사거리 적중 시 {E_Bleed} {ValueRate2} 부여,
 S_Core_35,혈화만개,Core,Epic,Cost,EnemyParty,1,Char_02,Attack,E_DamageUpIfBleeding,8,1,3,Direction,Range_11,{E_Strike} {ValueRate1} / {E_Bleed}을 보유한 적에게 피해량 50% 증가,
 S_Core_36,혈화만개+,Core,Epic,Cost,EnemyParty,2,Char_02,Attack,E_DamageUpIfBleeding,10,1,3,Direction,Range_12,{E_Strike} {ValueRate1} / {E_Bleed}을 보유한 적에게 피해량 50% 증가,
-S_Core_37,발현검무,Core,Unique,Cost,EnemyParty,1,Char_02,Attack,E_StrikeCountByBuff,2,1,5,Direction,Range_14,{E_Strike} {ValueRate1}x{CountRate1} / 보유한 버프 1종마다 횟수 1 증가,
-S_Core_38,발현검무+,Core,Unique,Cost,EnemyParty,2,Char_02,Attack,E_StrikeCountByBuff,3,1,5,Direction,Range_15,{E_Strike} {ValueRate1}x{CountRate1} / 보유한 버프 1종마다 횟수 1 증가,
-S_Core_39,끝없는 검세,Core,Unique,Cost,EnemyParty,1,Char_02,Attack,E_Pierce;E_ValueUpOnHit,4;1,1;1,4,Direction,Range_10,{E_Pierce} {ValueRate1} / 적중 시 이번 전투동안 수치 {ValueRate2} 증가,
-S_Core_40,끝없는 검세+,Core,Unique,Cost,EnemyParty,2,Char_02,Attack,E_Pierce;E_ValueUpOnHit,7;2,1;1,4,Direction,Range_11,{E_Pierce} {ValueRate1} / 적중 시 이번 전투동안 수치 {ValueRate2} 증가,
+S_Core_37,환영검무,Core,Unique,Cost,EnemyParty,1,Char_02,Attack,E_StrikeCountByBuff,2,1,5,Direction,Range_14,{E_Strike} {ValueRate1}x{CountRate1} / 보유한 버프 1종마다 횟수 1 증가,
+S_Core_38,환영검무+,Core,Unique,Cost,EnemyParty,2,Char_02,Attack,E_StrikeCountByBuff,3,1,5,Direction,Range_15,{E_Strike} {ValueRate1}x{CountRate1} / 보유한 버프 1종마다 횟수 1 증가,
+S_Core_39,공단참,Core,Unique,Cost,EnemyParty,1,Char_02,Attack,E_Pierce;E_ValueUpOnHit,4;1,1;1,4,Direction,Range_10,{E_Pierce} {ValueRate1} / 적중 시 이번 전투동안 수치 {ValueRate2} 증가,
+S_Core_40,공단참+,Core,Unique,Cost,EnemyParty,2,Char_02,Attack,E_Pierce;E_ValueUpOnHit,7;2,1;1,4,Direction,Range_11,{E_Pierce} {ValueRate1} / 적중 시 이번 전투동안 수치 {ValueRate2} 증가,
 S_Core_41,등불의 광휘,Core,Common,Cost,PlayerParty,1,Char_02,Buff,E_Smite,1,1,5,Direction,Range_b_02,{E_Smite} {ValueRate1} 부여,
 S_Core_42,등불의 광휘+,Core,Common,Cost,PlayerParty,2,Char_02,Buff,E_Smite,1,1,4,Direction,Range_b_04,{E_Smite} {ValueRate1} 부여,
 S_Core_43,마나 스파크,Core,Common,Cost,PlayerParty,1,Char_03,Buff,E_Charge,2,1,4,Direction,Range_b_06,{E_Charge} {ValueRate1} 부여,
@@ -1457,9 +1457,9 @@ Event_08_D,공명의 비석,"""기억의 흔적은 흩어지고, 더 이상 공�
 Event_09,균열의 메아리,허공에 갈라진 균열이 모습을 드러냈다. 틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.,1,흩어진 기억을 거둔다.,무작위 일반~레어 기억 3개 획득,,Immediate,,,,,,SelectReward,일반~레어 기억,3개 제시,,,,,,event9,event_choice_01_success,event9,event_choice_01_failure
 Event_09,균열의 메아리,,2,전투의 기억을 붙잡는다.,공격 기억 2개 획득,,Immediate,,,,,,SelectReward,공격 기억,2개 제시,,,,,,event9,event_choice_02_success,event9,event_choice_02_failure
 Event_09,균열의 메아리,,3,강렬한 기억을 택한다.,에픽 기억 1개 획득,,Immediate,,,,,,SelectReward,에픽 기억,1개 제시,,,,,,event9,event_choice_03_success,event9,event_choice_03_failure
-Event_T_01,새로운 동행,"“나 혼자서는 좀 무서운데, 같이 가면 안 될까? 이 기억도 네가 써줘.”",1,함께 간다.,"헤이즈 합류
+Event_T_01,새로운 동행,"“나 혼자서는 좀 무서운데, 같이 가면 안 될까?”",1,함께 간다.,"헤이즈 합류
 공격 기억 획득",,Immediate,,,,,,SelectReward,공격 기억,1개 제시,,,,,,event_t_01,event_choice_01_success,event_t_01,event_choice_01_failure
-Event_T_02,뜻밖의 합류,길가에서 휴식을 취하고 있는 두 사람을 발견했다.,1,동행을 제안한다.,"카야 합류
+Event_T_02,뜻밖의 합류,길가에서 휴식을 취하고 있는 낯선 이를 발견했다.,1,함께 휴식한다.,"카야 합류
 파티 생명력 회복",,Immediate,,,,,,Modify,파티 전원 현재 체력,15 회복,,,,,,event_t_02,event_choice_01_success,event_t_02,event_choice_01_failure
 
 

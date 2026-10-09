@@ -42,10 +42,6 @@ MonoBehaviour:
     m_Localized: No
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100678
-    m_Localized: Delete
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100679
     m_Localized: Exit
     m_Metadata:
@@ -3214,11 +3210,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839832
-    m_Localized: Sharp Light
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839833
-    m_Localized: Sharp Light+
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839834
@@ -3430,11 +3426,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100977
-    m_Localized: Grant {E_Smite} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100978
-    m_Localized: Grant {E_Smite} {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100979
@@ -7021,7 +7017,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975702
-    m_Localized: Ask them to travel together.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975703
@@ -7247,8 +7243,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 19388577758060615
-    m_Localized: "\u201CI'm a little scared on my own. Can I come with you? You can
-      use this Memory, too.\u201D"
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 19388577758060616
@@ -7256,7 +7251,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 19388577758060617
-    m_Localized: You find two people resting by the roadside.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 19395600956530688
