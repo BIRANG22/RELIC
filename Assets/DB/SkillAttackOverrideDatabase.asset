@@ -116,12 +116,12 @@ MonoBehaviour:
   - ApplyToAllCharacters: 0
     CharacterId: Char_04
     SkillId: S_Ability_13
-    AttackSlot: 6
+    AttackSlot: 4
     RepeatAttackSlots: 
   - ApplyToAllCharacters: 0
     CharacterId: Char_04
     SkillId: S_Ability_14
-    AttackSlot: 6
+    AttackSlot: 4
     RepeatAttackSlots: 
   - ApplyToAllCharacters: 0
     CharacterId: Char_04
@@ -432,4 +432,74 @@ MonoBehaviour:
     CharacterId: Char_03
     SkillId: S_Core_60
     AttackSlot: 2
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_61
+    AttackSlot: 4
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_62
+    AttackSlot: 4
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_63
+    AttackSlot: 1
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_64
+    AttackSlot: 1
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_65
+    AttackSlot: 4
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_66
+    AttackSlot: 4
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_67
+    AttackSlot: 4
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_68
+    AttackSlot: 4
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_69
+    AttackSlot: 2
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_70
+    AttackSlot: 2
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_71
+    AttackSlot: 4
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_72
+    AttackSlot: 4
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_73
+    AttackSlot: 4
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_74
+    AttackSlot: 4
     RepeatAttackSlots: 
