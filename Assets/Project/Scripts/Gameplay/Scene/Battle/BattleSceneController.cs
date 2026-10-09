@@ -111,14 +111,12 @@ public class BattleSceneController : MonoBehaviour
         AutoFindBattleMapIntroTextIfNeeded();
         InstallMapPanelAutoReturnWatcher();
         AutoFindErosionSelectIfNeeded();
-        AutoFindErosionPanelIfNeeded();
-        AutoFindErosionSlotBindingsIfNeeded();
         AutoFindBack2NameIfNeeded();
         PrepareBack2NameForDynamicUse();
         AutoFindTutorialModeUIIfNeeded();
         BindTutorialSkipButton();
+        InstallErosionLevelList();
         InstallErosionSelectClickHandler();
-        SetErosionPanelVisible(false);
 
         if (mapSelectionPresenter == null)
             mapSelectionPresenter = GetComponent<BattleRoomMapSelectionPresenter>();
@@ -330,7 +328,6 @@ public class BattleSceneController : MonoBehaviour
         PrimeBack2NameBeforePresentation();
         SetErosionSelectVisible(false);
         RefreshErosionScoreDisplay();
-        RefreshBattleErosionSlots();
         CloseAllRooms();
 
         if (battleMapPanel != null)
@@ -441,7 +438,6 @@ public class BattleSceneController : MonoBehaviour
 
         if (erosionSlotContent == null || erosionSlotPrefab == null)
         {
-            Debug.LogWarning("[BattleSceneController] ErosionPanel의 Content 또는 ErosionSlot 프리팹을 찾을 수 없습니다.");
             return;
         }
 
@@ -834,9 +830,14 @@ public class BattleSceneController : MonoBehaviour
 
         if (erosionSelect != null && erosionSelect.activeSelf != visible)
             erosionSelect.SetActive(visible);
+        else if (visible && erosionSelect != null)
+        {
+            BattleErosionSelectedLevelsUI list = erosionSelect.GetComponent<BattleErosionSelectedLevelsUI>();
+            if (list != null) list.HideImmediate();
+        }
 
-        if (!visible)
-            SetErosionPanelVisible(false);
+        if (visible)
+            InstallErosionSelectClickHandler();
     }
 
     private void AutoFindErosionPanelIfNeeded()
@@ -849,54 +850,42 @@ public class BattleSceneController : MonoBehaviour
             erosionPanel = found.gameObject;
     }
 
+    private void InstallErosionLevelList()
+    {
+        AutoFindErosionSelectIfNeeded();
+        if (erosionSelect == null) return;
+        if (erosionSelect.GetComponent<BattleErosionSelectedLevelsUI>() == null)
+            erosionSelect.AddComponent<BattleErosionSelectedLevelsUI>();
+    }
+
     private void InstallErosionSelectClickHandler()
     {
         AutoFindErosionSelectIfNeeded();
         if (erosionSelect == null)
             return;
 
-        BattleErosionSelectClickHandler clickHandler =
-            erosionSelect.GetComponent<BattleErosionSelectClickHandler>();
-        if (clickHandler == null)
-            clickHandler = erosionSelect.AddComponent<BattleErosionSelectClickHandler>();
+        // The root observes the Back rectangle directly; no Button is required.
+        Transform back = erosionSelect.transform.Find("Back");
+        if (back != null)
+        {
+            Graphic graphic = back.GetComponent<Graphic>();
+            if (graphic != null) graphic.raycastTarget = true;
+            BattleErosionSelectClickHandler obsolete = back.GetComponent<BattleErosionSelectClickHandler>();
+            if (obsolete != null) Destroy(obsolete);
+        }
 
-        clickHandler.Initialize(ToggleErosionPanel);
+        BattleErosionSelectClickHandler handler = erosionSelect.GetComponent<BattleErosionSelectClickHandler>();
+        if (handler == null)
+            handler = erosionSelect.AddComponent<BattleErosionSelectClickHandler>();
+        handler.Initialize(ToggleErosionLevelList, back != null ? back.GetComponent<RectTransform>() : null);
     }
 
-    private void ToggleErosionPanel()
+    private void ToggleErosionLevelList()
     {
         if (erosionSelect == null || !erosionSelect.activeInHierarchy)
             return;
-
-        AutoFindErosionPanelIfNeeded();
-        if (erosionPanel == null)
-        {
-            Debug.LogWarning("[BattleSceneController] ErosionPanel을 찾을 수 없습니다.");
-            return;
-        }
-
-        bool shouldOpen = !erosionPanel.activeSelf;
-
-        if (shouldOpen)
-        {
-            // 패널을 먼저 보여준 뒤 데이터를 바꾸면 기본 텍스트에서 번역 텍스트로
-            // 바뀌는 과정이 한 프레임 노출될 수 있습니다.
-            // 패널이 꺼진 상태에서 슬롯을 완성한 뒤 마지막에 표시합니다.
-            RefreshBattleErosionSlots();
-            SetErosionPanelVisible(true);
-        }
-        else
-        {
-            SetErosionPanelVisible(false);
-        }
-    }
-
-    private void SetErosionPanelVisible(bool visible)
-    {
-        AutoFindErosionPanelIfNeeded();
-
-        if (erosionPanel != null && erosionPanel.activeSelf != visible)
-            erosionPanel.SetActive(visible);
+        BattleErosionSelectedLevelsUI list = erosionSelect.GetComponent<BattleErosionSelectedLevelsUI>();
+        if (list != null) list.Toggle();
     }
 
     private void ActivateMapRoomForMap()
@@ -2378,20 +2367,53 @@ public class BattleSceneController : MonoBehaviour
     }
 }
 
-public sealed class BattleErosionSelectClickHandler : MonoBehaviour, IPointerClickHandler
+public sealed class BattleErosionSelectClickHandler : MonoBehaviour
 {
     private Action onClick;
+    private RectTransform hoverArea;
+    private Image lineImage;
+    private Color normalLineColor;
+    private bool hasNormalLineColor;
+    private bool hovering;
 
-    public void Initialize(Action clickAction)
+    public void Initialize(Action clickAction, RectTransform backRect)
     {
         onClick = clickAction;
+        hoverArea = backRect != null ? backRect : transform as RectTransform;
+        Transform line = transform.Find("Line");
+        lineImage = line != null ? line.GetComponent<Image>() : null;
+        if (lineImage != null && !hasNormalLineColor)
+        {
+            normalLineColor = lineImage.color;
+            hasNormalLineColor = true;
+        }
+        SetHover(false);
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    private void Update()
     {
-        if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+        if (hoverArea == null)
             return;
 
-        onClick?.Invoke();
+        Canvas canvas = hoverArea.GetComponentInParent<Canvas>();
+        Camera eventCamera = canvas != null && canvas.rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.rootCanvas.worldCamera : null;
+        bool inside = RectTransformUtility.RectangleContainsScreenPoint(hoverArea, Input.mousePosition, eventCamera);
+        SetHover(inside);
+        if (inside && Input.GetMouseButtonDown(0))
+            onClick?.Invoke();
+    }
+
+    private void OnDisable()
+    {
+        SetHover(false);
+    }
+
+    private void SetHover(bool value)
+    {
+        if (hovering == value) return;
+        hovering = value;
+        if (lineImage != null)
+            lineImage.color = hovering ? Color.white : normalLineColor;
     }
 }

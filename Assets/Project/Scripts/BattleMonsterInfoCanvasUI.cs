@@ -345,7 +345,8 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
             yield break;
         }
 
-        HideErosionVisual();
+        // Keep the battle Erosion gauge visible while inspecting a monster.
+        RestoreErosionVisual();
 
         if (monsterInfoPanel != null)
             monsterInfoPanel.SetActive(true);

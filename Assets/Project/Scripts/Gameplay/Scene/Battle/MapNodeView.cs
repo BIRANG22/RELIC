@@ -46,6 +46,8 @@ public class MapNodeView : MonoBehaviour
     private Action<GeneratedMapNodeData> onClicked;
     private Coroutine clickRoutine;
     private bool isClickProcessing;
+    private bool typeIconHiddenByVision;
+    private bool typeIconHiddenByCheckAnimation;
     private bool currentCanClick;
     private bool currentAvailable;
     private bool currentVisited;
@@ -71,6 +73,8 @@ public class MapNodeView : MonoBehaviour
 
     private void OnDisable()
     {
+        typeIconHiddenByCheckAnimation = false;
+        ApplyTypeIconVisibility();
         ResetHoverScale();
         ResetCategoryIconScale();
     }
@@ -102,6 +106,8 @@ public class MapNodeView : MonoBehaviour
         currentVisited = false;
         isCategoryHighlighted = false;
         isClickProcessing = false;
+        typeIconHiddenByVision = false;
+        typeIconHiddenByCheckAnimation = false;
         CaptureBaseScale();
         CaptureBaseIconScale();
         ResetHoverScale();
@@ -124,17 +130,28 @@ public class MapNodeView : MonoBehaviour
             iconDatabase.TryGetIcon(displayType, out Sprite icon))
         {
             iconImage.sprite = icon;
-            iconImage.enabled = true;
         }
 
+        ApplyTypeIconVisibility();
         ApplyPersistentCheckSpriteFromRuntime();
         SetClickable(canClick);
     }
 
     public void SetTypeIconHidden(bool hidden)
     {
-        if (iconImage != null)
-            iconImage.enabled = !hidden && iconImage.sprite != null;
+        typeIconHiddenByVision = hidden;
+        ApplyTypeIconVisibility();
+    }
+
+    private void ApplyTypeIconVisibility()
+    {
+        if (iconImage == null)
+            return;
+
+        // Keep the deliberate map-vision and check-animation hiding independent.
+        iconImage.enabled = iconImage.sprite != null &&
+                            !typeIconHiddenByVision &&
+                            !typeIconHiddenByCheckAnimation;
     }
 
     /// <summary>
@@ -271,8 +288,8 @@ public class MapNodeView : MonoBehaviour
         if (button != null)
             button.interactable = false;
 
-        if (hideIconDuringCheckAnimation && iconImage != null)
-            iconImage.enabled = false;
+        typeIconHiddenByCheckAnimation = hideIconDuringCheckAnimation;
+        ApplyTypeIconVisibility();
 
         EnsureCheckAnimationImage();
         PlayCheckAnimationSfx();
@@ -312,8 +329,8 @@ public class MapNodeView : MonoBehaviour
         else
             HideCheckImage();
 
-        if (hideIconDuringCheckAnimation && iconImage != null)
-            iconImage.enabled = true;
+        typeIconHiddenByCheckAnimation = false;
+        ApplyTypeIconVisibility();
 
         clickRoutine = null;
         onCompleted?.Invoke();
