@@ -966,8 +966,8 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
             if (string.IsNullOrWhiteSpace(characterId))
                 continue;
 
-            // ³×Æ®¿öÅ© ÆÄÆ¼µµ ½ÃÀÛ À§Ä¡¸¦ ÀÚµ¿ ÁöÁ¤ÇÏÁö ¾Ê½À´Ï´Ù.
-            // Ready_Panel¿¡¼­ »ç¿ëÀÚ°¡ Á÷Á¢ ¹èÄ¡ÇÑ À§Ä¡¸¸ »ç¿ëÇÕ´Ï´Ù.
+            // ë„¤íŠ¸ì›Œí¬ íŒŒí‹°ë„ ì‹œì‘ ìœ„ì¹˜ë¥¼ ìë™ ì§€ì •í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+            // Ready_Panelì—ì„œ ì‚¬ìš©ìê°€ ì§ì ‘ ë°°ì¹˜í•œ ìœ„ì¹˜ë§Œ ì‚¬ìš©í•©ë‹ˆë‹¤.
             partyStore.SetCharacter(i, characterId);
         }
     }
@@ -995,13 +995,6 @@ public sealed class SteamLobbyPartySynchronizer : MonoBehaviour
 
     private static void RefreshPartyViews()
     {
-        PartySlot[] partySlots = FindObjectsByType<PartySlot>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
-
-        for (int i = 0; i < partySlots.Length; i++)
-            partySlots[i]?.RefreshFromRuntime();
-
         LobbyPartyStatusIconPresenter[] presenters =
             FindObjectsByType<LobbyPartyStatusIconPresenter>(
                 FindObjectsInactive.Include,

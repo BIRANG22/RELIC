@@ -999,14 +999,6 @@ public class CharPick : MonoBehaviour
 
     private void RefreshPartyViews()
     {
-        PartySlot[] partySlots = FindObjectsByType<PartySlot>(FindObjectsSortMode.None);
-
-        for (int i = 0; i < partySlots.Length; i++)
-        {
-            if (partySlots[i] != null)
-                partySlots[i].RefreshFromRuntime();
-        }
-
         SpawnGridPanel[] spawnGridPanels = FindObjectsByType<SpawnGridPanel>(FindObjectsSortMode.None);
 
         for (int i = 0; i < spawnGridPanels.Length; i++)
