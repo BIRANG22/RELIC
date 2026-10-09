@@ -61925,7 +61925,7 @@ MonoBehaviour:
   - {fileID: 1195802682}
   fragmentTransferStartSoundId: effect_get
   fragmentTransferStartSoundVolume: 0.5
-  fragmentTransferWorldTarget: {fileID: 0}
+  fragmentTransferWorldTarget: {fileID: 2087226202}
   fragmentTransferEffectPrefab: {fileID: 0}
   fragmentTransferLaunchInterval: 0.12
   introDialogue:
@@ -105660,6 +105660,7 @@ MonoBehaviour:
   skillTooltipResourceText: {fileID: 66094691}
   skillTooltipNameText: {fileID: 1503996709}
   skillTooltipDescriptionText: {fileID: 0}
+  skillTooltipTypeText: {fileID: 0}
   skillTooltipLineImage: {fileID: 0}
   skillTooltipOffsetX: 1020
   skillTooltipOffsetY: -475

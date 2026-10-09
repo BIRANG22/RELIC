@@ -81,44 +81,24 @@ public static class RestRoomShopService
         HashSet<string> selectedSkillIds = new(StringComparer.OrdinalIgnoreCase);
         HashSet<string> selectedRelicIds = new(StringComparer.OrdinalIgnoreCase);
 
-        // 4���� ���� ���� ������ ���� �ʵ��� ��� ������ 1~3�� �� �ϳ��� ���� �����մϴ�.
-        int skillCount = random.Range(1, DefaultTotalGoodsCount);
-        int relicCount = DefaultTotalGoodsCount - skillCount;
-
-        List<RestRoomShopGoodsKind> kinds = new(DefaultTotalGoodsCount);
-        for (int i = 0; i < skillCount; i++)
-            kinds.Add(RestRoomShopGoodsKind.Skill);
-        for (int i = 0; i < relicCount; i++)
-            kinds.Add(RestRoomShopGoodsKind.Relic);
-
-        Shuffle(kinds, random);
-
+        // 상점에는 유물만 등장합니다. 중복 및 보유 제한과 등급별 가중치는 유지합니다.
         List<RestRoomShopGoods> stock = new(DefaultTotalGoodsCount);
-
-        for (int i = 0; i < kinds.Count; i++)
+        for (int i = 0; i < DefaultTotalGoodsCount; i++)
         {
-            RestRoomShopGoods goods = kinds[i] == RestRoomShopGoodsKind.Skill
-                ? TryCreateSkillGoods(
-                    allSkills,
-                    blockedSkillIds,
-                    selectedSkillIds,
-                    random,
-                    commonWeight,
-                    rareWeight,
-                    epicWeight,
-                    uniqueWeight)
-                : TryCreateRelicGoods(
-                    allRelics,
-                    blockedRelicIds,
-                    selectedRelicIds,
-                    random,
-                    commonWeight,
-                    rareWeight,
-                    epicWeight,
-                    uniqueWeight);
+            RestRoomShopGoods goods = TryCreateRelicGoods(
+                allRelics,
+                blockedRelicIds,
+                selectedRelicIds,
+                random,
+                commonWeight,
+                rareWeight,
+                epicWeight,
+                uniqueWeight);
 
-            if (goods != null)
-                stock.Add(goods);
+            if (goods == null)
+                break;
+
+            stock.Add(goods);
         }
 
         return stock;

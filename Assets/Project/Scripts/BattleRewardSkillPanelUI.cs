@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
@@ -57,6 +58,9 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private BattleRewardData reward;
     private Action completed;
     private bool processing;
+    [Header("Equip Close Delay")]
+    [SerializeField, Min(0f)] private float equipCloseDelay = 1f;
+    private Coroutine equipCloseCoroutine;
     private readonly Button[] buttons = new Button[3];
     private readonly string[] characterIds = new string[3];
     private readonly SkillMasterData[] offeredSkills = new SkillMasterData[3];
@@ -75,6 +79,11 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         reward = data;
         completed = onCompleted;
         processing = false;
+        if (equipCloseCoroutine != null)
+        {
+            StopCoroutine(equipCloseCoroutine);
+            equipCloseCoroutine = null;
+        }
         Transform content = skillContent != null ? skillContent : FindChild(transform, "Skill_content");
         if (content == null) { reward = null; completed = null; return false; }
         List<SkillMasterData> offers = BuildOffers(skill, data);
@@ -204,6 +213,16 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         if (!runtime.AcquiredSkillIds.Contains(skill.SkillId)) runtime.AcquiredSkillIds.Add(skill.SkillId);
         dm.BattleRuntimeStore.Set(runtime);
         RecordDiscoveryService.RegisterSkill(dm, skill.SkillId);
+        BindPartyContent(); // Refresh equipped skill icons while the panel is still visible.
+        foreach (Button choiceButton in buttons)
+            if (choiceButton != null) choiceButton.interactable = false;
+        equipCloseCoroutine = StartCoroutine(CloseAfterEquippedPreview());
+    }
+
+    private IEnumerator CloseAfterEquippedPreview()
+    {
+        yield return new WaitForSecondsRealtime(Mathf.Max(0f, equipCloseDelay));
+        equipCloseCoroutine = null;
         Finish();
     }
 

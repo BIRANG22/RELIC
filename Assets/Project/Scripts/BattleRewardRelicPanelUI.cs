@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
@@ -56,6 +57,10 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private Action onResolved;
     private bool resolving;
 
+    [Header("Equip Close Delay")]
+    [SerializeField, Min(0f)] private float equipCloseDelay = 1f;
+    private Coroutine equipCloseCoroutine;
+
     private sealed class CharacterEntry
     {
         public GameObject root;
@@ -96,6 +101,11 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         current = reward;
         onResolved = callback;
         resolving = false;
+        if (equipCloseCoroutine != null)
+        {
+            StopCoroutine(equipCloseCoroutine);
+            equipCloseCoroutine = null;
+        }
         BattleUIBlurRootCollector.ConfigureForPanel(gameObject);
         gameObject.SetActive(true);
         // 활성화 후에도 새 하이어라키의 텍스트를 다시 연결하여 갱신합니다.
@@ -237,6 +247,14 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         runtime.EquippedRelicIds[empty] = current.RewardId.Trim();
         if (active) ActiveRelicRuntimeUtility.ResetUses(runtime, relic);
         DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(runtime);
+        Refresh(); // Show the equipped relic in the destination slot before closing.
+        equipCloseCoroutine = StartCoroutine(CloseAfterEquippedPreview());
+    }
+
+    private IEnumerator CloseAfterEquippedPreview()
+    {
+        yield return new WaitForSecondsRealtime(Mathf.Max(0f, equipCloseDelay));
+        equipCloseCoroutine = null;
         Action callback = onResolved;
         onResolved = null;
         current = null;

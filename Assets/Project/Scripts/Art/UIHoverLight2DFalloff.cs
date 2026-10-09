@@ -1,6 +1,8 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using System.Collections.Generic;
 using UnityEngine.Rendering.Universal;
 
 public class UIHoverLight2DFalloff : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
@@ -43,6 +45,30 @@ public class UIHoverLight2DFalloff : MonoBehaviour, IPointerEnterHandler, IPoint
     [Tooltip("게임이 일시정지되어도 효과가 작동하도록 합니다.")]
     [SerializeField] private bool useUnscaledTime = true;
 
+    // Shared check for UI panels covering a world-space lobby character.
+    public static bool IsPointerBlockedByUI()
+    {
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem == null)
+            return false;
+
+        var pointer = new PointerEventData(eventSystem) { position = Input.mousePosition };
+        var results = new List<RaycastResult>();
+        eventSystem.RaycastAll(pointer, results);
+        for (int i = 0; i < results.Count; i++)
+        {
+            if (results[i].module is GraphicRaycaster)
+                return true;
+        }
+        return false;
+    }
+
+    private bool IsWorldCharacter => GetComponentInParent<LobbyWorldCharacterClickRelay>() != null ||
+        GetComponent<LobbyWorldCharacterClickRelay>() != null;
+
+    private bool IsHoverBlocked => IsWorldCharacter &&
+        (IsPointerBlockedByUI() || UIPanelButton.IsMenuPanelOpen || LobbyPositionModalInputBlocker.IsBlocked);
+
     private RectTransform rectTransform;
     private Canvas parentCanvas;
 
@@ -80,7 +106,15 @@ public class UIHoverLight2DFalloff : MonoBehaviour, IPointerEnterHandler, IPoint
 
     private void Update()
     {
-        DetectUIHoverDirectly();
+        if (IsHoverBlocked)
+        {
+            wasRectHovered = false;
+            SetHoverState(false);
+        }
+        else
+        {
+            DetectUIHoverDirectly();
+        }
         UpdateFalloffStrength();
     }
 
@@ -89,7 +123,7 @@ public class UIHoverLight2DFalloff : MonoBehaviour, IPointerEnterHandler, IPoint
     /// </summary>
     public void OnPointerEnter(PointerEventData eventData)
     {
-        SetHoverState(true);
+        SetHoverState(!IsHoverBlocked);
     }
 
     /// <summary>
@@ -105,7 +139,7 @@ public class UIHoverLight2DFalloff : MonoBehaviour, IPointerEnterHandler, IPoint
     /// </summary>
     private void OnMouseEnter()
     {
-        SetHoverState(true);
+        SetHoverState(!IsHoverBlocked);
     }
 
     /// <summary>
@@ -149,6 +183,9 @@ public class UIHoverLight2DFalloff : MonoBehaviour, IPointerEnterHandler, IPoint
     /// </summary>
     private void SetHoverState(bool hovered)
     {
+        if (hovered && IsHoverBlocked)
+            hovered = false;
+
         if (isHovered == hovered)
         {
             return;

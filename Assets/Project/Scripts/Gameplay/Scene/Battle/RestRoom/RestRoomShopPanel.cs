@@ -83,17 +83,13 @@ public class RestRoomShopPanel : MonoBehaviour
 
 
         if (DataManager.Instance == null ||
-            DataManager.Instance.SkillDatabase == null ||
             DataManager.Instance.RelicDatabase == null)
         {
             return;
         }
 
-        List<SkillMasterData> allowedSkills = SkillRewardPoolPolicy.FilterCandidates(
-            DataManager.Instance.SkillDatabase.GetAll(),
-            DataManager.Instance.SkillRewardPoolDatabase);
         List<RestRoomShopGoods> stock = RestRoomShopService.CreateStock(
-            allowedSkills,
+            null,
             DataManager.Instance.RelicDatabase.GetAll(),
             GetUnavailableSkillIds(),
             GetUnavailableRelicIds(),
@@ -131,11 +127,8 @@ public class RestRoomShopPanel : MonoBehaviour
             {
                 ResumeShopGoodsSaveData saved = savedStock[i];
                 if (saved == null || string.IsNullOrWhiteSpace(saved.Id)) continue;
-                if (saved.Kind == RestRoomShopGoodsKind.Skill &&
-                    SkillRewardPoolPolicy.IsAllowed(saved.Id, DataManager.Instance.SkillRewardPoolDatabase) &&
-                    DataManager.Instance.SkillDatabase.TryGet(saved.Id, out SkillMasterData skill))
-                    currentStock.Add(new RestRoomShopGoods(saved.Kind, saved.Id, GameDataLocalization.SkillName(skill), GameDataLocalization.SkillDetails(skill), saved.Price, skill.Rarity, skill));
-                else if (saved.Kind == RestRoomShopGoodsKind.Relic && DataManager.Instance.RelicDatabase.TryGet(saved.Id, out RelicData relic))
+                // 이전 저장 데이터에 기억 상품이 남아 있더라도 복원하지 않습니다.
+                if (saved.Kind == RestRoomShopGoodsKind.Relic && DataManager.Instance.RelicDatabase.TryGet(saved.Id, out RelicData relic))
                     currentStock.Add(new RestRoomShopGoods(saved.Kind, saved.Id, GameDataLocalization.RelicName(relic), GameDataLocalization.RelicEffectDescription(relic), saved.Price, relic: relic));
             }
         }

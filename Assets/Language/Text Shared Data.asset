@@ -4279,10 +4279,6 @@ MonoBehaviour:
     m_Key: ui.battle.text.db564fd4
     m_Metadata:
       m_Items: []
-  - m_Id: 17041964720988169
-    m_Key: ui.battle.text.4956ebcc
-    m_Metadata:
-      m_Items: []
   - m_Id: 17041964720988183
     m_Key: ui.debugbattle.text.54ede4df
     m_Metadata:
@@ -6711,170 +6707,6 @@ MonoBehaviour:
     m_Key: ui.debugbattle.text.38a2227e
     m_Metadata:
       m_Items: []
-  - m_Id: 19388577758060570
-    m_Key: data.monster_skill.s_monster_01.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060571
-    m_Key: data.monster_skill.s_monster_02.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060572
-    m_Key: data.monster_skill.s_monster_03.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060573
-    m_Key: data.monster_skill.s_monster_04.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060574
-    m_Key: data.monster_skill.s_monster_05.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060575
-    m_Key: data.monster_skill.s_monster_06.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060576
-    m_Key: data.monster_skill.s_monster_07.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060577
-    m_Key: data.monster_skill.s_monster_08.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060578
-    m_Key: data.monster_skill.s_monster_09.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060579
-    m_Key: data.monster_skill.s_monster_10.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060580
-    m_Key: data.monster_skill.s_monster_11.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060581
-    m_Key: data.monster_skill.s_monster_12.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060582
-    m_Key: data.monster_skill.s_monster_13.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060583
-    m_Key: data.monster_skill.s_monster_14.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060584
-    m_Key: data.monster_skill.s_monster_15.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060585
-    m_Key: data.monster_skill.s_monster_16.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060586
-    m_Key: data.monster_skill.s_monster_17.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060587
-    m_Key: data.monster_skill.s_monster_18.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060588
-    m_Key: data.monster_skill.s_monster_19.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060589
-    m_Key: data.monster_skill.s_monster_20.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060590
-    m_Key: data.monster_skill.s_monster_21.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060591
-    m_Key: data.monster_skill.s_monster_22.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060592
-    m_Key: data.monster_skill.s_monster_23.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060593
-    m_Key: data.monster_skill.s_monster_24.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060594
-    m_Key: data.monster_skill.s_monster_25.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060595
-    m_Key: data.monster_skill.s_monster_26.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060596
-    m_Key: data.monster_skill.s_monster_27.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060597
-    m_Key: data.monster_skill.s_monster_28.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060598
-    m_Key: data.monster_skill.s_monster_29.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060599
-    m_Key: data.monster_skill.s_monster_30.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060600
-    m_Key: data.monster_skill.s_monster_31.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060601
-    m_Key: data.monster_skill.s_monster_32.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060602
-    m_Key: data.monster_skill.s_monster_33.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060603
-    m_Key: data.monster_skill.s_monster_34.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060604
-    m_Key: data.monster_skill.s_monster_35.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060605
-    m_Key: data.monster_skill.s_monster_36.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060606
-    m_Key: data.monster_skill.s_monster_37.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060607
-    m_Key: data.monster_skill.s_monster_38.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060608
-    m_Key: data.monster_skill.s_monster_39.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060609
-    m_Key: data.monster_skill.s_monster_40.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060610
-    m_Key: data.monster_skill.s_monster_41.type
-    m_Metadata:
-      m_Items: []
   - m_Id: 19388577758060611
     m_Key: data.battle_map.battlemap_17.description
     m_Metadata:
@@ -7119,10 +6951,6 @@ MonoBehaviour:
     m_Key: ui.battle.text_tmp.7929f1e0
     m_Metadata:
       m_Items: []
-  - m_Id: 21435721902694403
-    m_Key: ui.battle.name.9516c5ee
-    m_Metadata:
-      m_Items: []
   - m_Id: 21435721902694404
     m_Key: ui.battle.detail.98b7d37a
     m_Metadata:
@@ -7149,6 +6977,178 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 21435721902694410
     m_Key: battle.intro.battle_end
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785237061632
+    m_Key: ui.battle.text_tmp.5f26e4c5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785270616064
+    m_Key: ui.battle.name.9516c5ee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785270616065
+    m_Key: data.monster_skill.s_monster_01.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785270616066
+    m_Key: data.monster_skill.s_monster_02.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785270616067
+    m_Key: data.monster_skill.s_monster_03.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785270616068
+    m_Key: data.monster_skill.s_monster_04.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785270616069
+    m_Key: data.monster_skill.s_monster_05.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785270616070
+    m_Key: data.monster_skill.s_monster_06.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785270616071
+    m_Key: data.monster_skill.s_monster_07.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785270616072
+    m_Key: data.monster_skill.s_monster_08.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785270616073
+    m_Key: data.monster_skill.s_monster_09.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810368
+    m_Key: data.monster_skill.s_monster_10.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810369
+    m_Key: data.monster_skill.s_monster_11.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810370
+    m_Key: data.monster_skill.s_monster_12.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810371
+    m_Key: data.monster_skill.s_monster_13.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810372
+    m_Key: data.monster_skill.s_monster_14.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810373
+    m_Key: data.monster_skill.s_monster_15.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810374
+    m_Key: data.monster_skill.s_monster_16.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810375
+    m_Key: data.monster_skill.s_monster_17.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810376
+    m_Key: data.monster_skill.s_monster_18.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810377
+    m_Key: data.monster_skill.s_monster_19.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810378
+    m_Key: data.monster_skill.s_monster_20.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810379
+    m_Key: data.monster_skill.s_monster_21.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810380
+    m_Key: data.monster_skill.s_monster_22.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810381
+    m_Key: data.monster_skill.s_monster_23.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810382
+    m_Key: data.monster_skill.s_monster_24.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810383
+    m_Key: data.monster_skill.s_monster_25.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810384
+    m_Key: data.monster_skill.s_monster_26.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810385
+    m_Key: data.monster_skill.s_monster_27.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810386
+    m_Key: data.monster_skill.s_monster_28.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810387
+    m_Key: data.monster_skill.s_monster_29.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810388
+    m_Key: data.monster_skill.s_monster_30.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810389
+    m_Key: data.monster_skill.s_monster_31.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810390
+    m_Key: data.monster_skill.s_monster_32.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810391
+    m_Key: data.monster_skill.s_monster_33.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810392
+    m_Key: data.monster_skill.s_monster_34.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810393
+    m_Key: data.monster_skill.s_monster_35.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810394
+    m_Key: data.monster_skill.s_monster_36.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810395
+    m_Key: data.monster_skill.s_monster_37.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810396
+    m_Key: data.monster_skill.s_monster_38.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810397
+    m_Key: data.monster_skill.s_monster_39.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810398
+    m_Key: data.monster_skill.s_monster_40.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785274810399
+    m_Key: data.monster_skill.s_monster_41.type
     m_Metadata:
       m_Items: []
   m_Metadata:

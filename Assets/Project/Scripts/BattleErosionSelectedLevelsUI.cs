@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
+using UnityEngine.Localization.Components;
 
 /// <summary>
 /// ErosionSelect를 클릭하면 선택된 침식도 난이도를 5개씩 배치하고 순차적으로 표시합니다.
@@ -27,9 +31,24 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
     [Min(0.01f)][SerializeField] private float hideDuration = 0.15f;
     [Min(0f)][SerializeField] private float hideOffsetY = 40f;
 
+    [Header("Erosion Tooltip")]
+    [SerializeField] private RectTransform erosionTooltip;
+    [SerializeField] private TMP_Text tooltipName;
+    [SerializeField] private TMP_Text tooltipDetail;
+    [SerializeField] private Vector2 tooltipOffset = new Vector2(20f, 0f);
+    [Min(0.01f)][SerializeField] private float tooltipFadeIn = 0.12f;
+    [Min(0.01f)][SerializeField] private float tooltipFadeOut = 0.05f;
+
+    private CanvasGroup tooltipGroup;
+    private Entry hoveredEntry;
+    private float tooltipAlpha;
+    private bool tooltipVisible;
+
     private sealed class Entry
     {
         public GameObject gameObject;
+        public RectTransform rect;
+        public ErosionData data;
         public CanvasGroup group;
         public RectTransform[] visuals;
         public Vector2[] origins;
@@ -40,6 +59,17 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
     private bool isOpen;
 
     private void Awake() { Bind(); }
+
+    private void Update()
+    {
+        UpdateTooltipHover();
+        UpdateTooltipFade();
+    }
+
+    private void HandleLocaleChanged(Locale locale)
+    {
+        if (hoveredEntry != null) SetTooltipText(hoveredEntry.data);
+    }
 
     private void OnEnable()
     {
@@ -132,7 +162,7 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
             group.alpha = 0f;
             group.blocksRaycasts = false;
             group.interactable = false;
-            entries.Add(new Entry { gameObject = item, group = group });
+            entries.Add(new Entry { gameObject = item, rect = item.transform as RectTransform, data = data, group = group });
         }
 
         // 모든 셀을 먼저 배치하여 등장 도중 줄/열이 바뀌지 않도록 합니다.
@@ -288,5 +318,147 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
             if (found != null) erosionLevelPrefab = found.gameObject;
         }
         if (erosionLevelPrefab != null) erosionLevelPrefab.SetActive(false);
+        if (erosionTooltip == null)
+        {
+            Transform root = transform.parent != null ? transform.parent : transform;
+            Transform found = root.Find("ErosionTooltip");
+            if (found != null) erosionTooltip = found as RectTransform;
+        }
+        if (erosionTooltip != null)
+        {
+            if (tooltipName == null)
+            {
+                Transform name = erosionTooltip.Find("Name");
+                if (name != null) tooltipName = name.GetComponent<TMP_Text>();
+            }
+            if (tooltipDetail == null)
+            {
+                Transform detail = erosionTooltip.Find("Detail");
+                if (detail != null) tooltipDetail = detail.GetComponent<TMP_Text>();
+            }
+            tooltipGroup = erosionTooltip.GetComponent<CanvasGroup>();
+            if (tooltipGroup == null) tooltipGroup = erosionTooltip.gameObject.AddComponent<CanvasGroup>();
+            tooltipGroup.blocksRaycasts = false;
+            tooltipGroup.interactable = false;
+            if (!tooltipVisible)
+            {
+                tooltipAlpha = 0f;
+                tooltipGroup.alpha = 0f;
+                erosionTooltip.gameObject.SetActive(false);
+            }
+            DisableFixedLocalizer(tooltipName);
+            DisableFixedLocalizer(tooltipDetail);
+        }
     }
+    private static void DisableFixedLocalizer(TMP_Text text)
+    {
+        if (text == null) return;
+        if (text.GetComponent<LocalizationIgnore>() == null)
+            text.gameObject.AddComponent<LocalizationIgnore>();
+        LocalizedTMPText localizer = text.GetComponent<LocalizedTMPText>();
+        if (localizer != null) localizer.enabled = false;
+        LocalizeStringEvent legacy = text.GetComponent<LocalizeStringEvent>();
+        if (legacy != null) legacy.enabled = false;
+    }
+
+    private void UpdateTooltipHover()
+    {
+        if (!isOpen || erosionTooltip == null)
+        {
+            if (hoveredEntry != null) HideTooltip(false);
+            return;
+        }
+
+        Canvas canvas = content != null ? content.GetComponentInParent<Canvas>() : null;
+        Camera cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+        Entry target = null;
+        for (int i = 0; i < entries.Count; i++)
+        {
+            Entry e = entries[i];
+            if (e.rect == null || e.group == null || !e.group.blocksRaycasts || e.group.alpha < 0.99f) continue;
+            if (RectTransformUtility.RectangleContainsScreenPoint(e.rect, Input.mousePosition, cam))
+            {
+                target = e;
+                break;
+            }
+        }
+        if (target != hoveredEntry)
+        {
+            hoveredEntry = target;
+            if (target == null) HideTooltip(false);
+            else
+            {
+                tooltipVisible = true;
+                erosionTooltip.gameObject.SetActive(true);
+                // Populate after activation so fixed localizers and enable hooks cannot
+                // overwrite the selected difficulty on the first presentation.
+                DisableFixedLocalizer(tooltipName);
+                DisableFixedLocalizer(tooltipDetail);
+                SetTooltipText(target.data);
+            }
+        }
+        if (hoveredEntry != null)
+        {
+            // Protect dynamically generated tooltip text from late localization
+            // initialization while keeping locale changes handled normally.
+            SetTooltipText(hoveredEntry.data);
+            PositionTooltip(hoveredEntry.rect);
+        }
+    }
+
+    private void SetTooltipText(ErosionData data)
+    {
+        if (data == null) return;
+        string name = GameDataLocalization.ErosionName(data);
+        if (string.IsNullOrWhiteSpace(name)) name = data.ErosionName;
+        int tier = 0;
+        string[] parts = (data.DifficultyId ?? string.Empty).Split('_');
+        if (parts.Length > 1) int.TryParse(parts[1], out tier);
+        if (tier < 1 || tier > 3) tier = data.Tier;
+        string roman = tier == 1 ? "I" : tier == 2 ? "II" : tier == 3 ? "III" : string.Empty;
+        if (tooltipName != null) tooltipName.text = string.IsNullOrEmpty(roman) ? name : name.Trim() + " " + roman;
+        if (tooltipDetail != null) tooltipDetail.text = GameDataLocalization.ErosionDescription(data);
+    }
+
+    private void PositionTooltip(RectTransform source)
+    {
+        if (source == null || erosionTooltip == null) return;
+        RectTransform parent = erosionTooltip.parent as RectTransform;
+        if (parent == null) return;
+        Canvas sourceCanvas = source.GetComponentInParent<Canvas>();
+        Canvas targetCanvas = erosionTooltip.GetComponentInParent<Canvas>();
+        Camera sourceCam = sourceCanvas != null && sourceCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? sourceCanvas.worldCamera : null;
+        Camera targetCam = targetCanvas != null && targetCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? targetCanvas.worldCamera : null;
+        Vector3[] corners = new Vector3[4];
+        source.GetWorldCorners(corners);
+        Vector3 rightCenter = (corners[2] + corners[3]) * 0.5f;
+        Vector2 screen = RectTransformUtility.WorldToScreenPoint(sourceCam, rightCenter);
+        if (!RectTransformUtility.ScreenPointToWorldPointInRectangle(parent, screen, targetCam, out Vector3 world)) return;
+        Vector3 localOffset = parent.TransformVector(new Vector3(tooltipOffset.x, tooltipOffset.y, 0f));
+        erosionTooltip.position = world + localOffset;
+    }
+
+    private void HideTooltip(bool immediate)
+    {
+        hoveredEntry = null;
+        tooltipVisible = false;
+        if (immediate)
+        {
+            tooltipAlpha = 0f;
+            if (tooltipGroup != null) tooltipGroup.alpha = 0f;
+            if (erosionTooltip != null) erosionTooltip.gameObject.SetActive(false);
+        }
+    }
+
+    private void UpdateTooltipFade()
+    {
+        if (tooltipGroup == null || erosionTooltip == null) return;
+        float duration = tooltipVisible ? tooltipFadeIn : tooltipFadeOut;
+        float target = tooltipVisible ? 1f : 0f;
+        tooltipAlpha = Mathf.MoveTowards(tooltipAlpha, target, Time.unscaledDeltaTime / Mathf.Max(0.01f, duration));
+        tooltipGroup.alpha = tooltipAlpha;
+        if (!tooltipVisible && tooltipAlpha <= 0f && erosionTooltip.gameObject.activeSelf)
+            erosionTooltip.gameObject.SetActive(false);
+    }
+
 }
