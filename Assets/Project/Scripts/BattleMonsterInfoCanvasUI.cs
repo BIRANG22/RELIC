@@ -4,6 +4,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,6 +18,23 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 {
     private static BattleMonsterInfoCanvasUI activeInstance;
     private static int lastClosedByEscapeFrame = -1;
+    private static int lastClosedByRightClickFrame = -1;
+
+    public static bool WasClosedByRightClickThisFrame => lastClosedByRightClickFrame == Time.frameCount;
+
+    public static bool TryHandleRightClickIfOpen()
+    {
+        if (WasClosedByRightClickThisFrame)
+            return true;
+        if (activeInstance == null || !activeInstance.HasPanelContextActive())
+            return false;
+        if (activeInstance.IsMenuPanelOpen())
+            return false;
+
+        lastClosedByRightClickFrame = Time.frameCount;
+        activeInstance.Close();
+        return true;
+    }
 
     /// <summary>
     /// 같은 프레임의 ESC 입력이 BattleMenu까지 전달되지 않도록 사용합니다.
@@ -131,6 +150,8 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
     private void OnEnable()
     {
         activeInstance = this;
+        LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
+        LocalizationSettings.SelectedLocaleChanged += HandleLocaleChanged;
         MonsterUnit.MonsterInfoSelectionChanged -= HandleMonsterInfoSelectionChanged;
         MonsterUnit.MonsterInfoSelectionChanged += HandleMonsterInfoSelectionChanged;
 
@@ -141,6 +162,7 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
     private void OnDisable()
     {
+        LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
         if (activeInstance == this)
             activeInstance = null;
         MonsterUnit.MonsterInfoSelectionChanged -= HandleMonsterInfoSelectionChanged;
@@ -168,6 +190,9 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         // BattleCharacterPanel/BattleSlot 이동 완료를 기다리는 중이라면
         // MonsterInfo가 열리는 과정으로 간주합니다.
         if (!HasPanelContextActive())
+            return;
+
+        if (Input.GetMouseButtonDown(1) && TryHandleRightClickIfOpen())
             return;
 
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -694,6 +719,12 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
         previewImage.sprite = null;
         previewImage.enabled = false;
+    }
+
+    private void HandleLocaleChanged(Locale _)
+    {
+        if (HasPanelContextActive() && boundRuntime != null)
+            RebuildSkills();
     }
 
     private void RebuildSkills()

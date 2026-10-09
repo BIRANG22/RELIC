@@ -25,6 +25,7 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
     public void Bind(MonsterSkillData skillData)
     {
         ResolveReferences();
+        ProtectDynamicTexts();
 
         if (skillData == null)
         {
@@ -53,6 +54,27 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
 
         if (typeText != null)
             typeText.text = GameDataLocalization.MonsterSkillType(skillData);
+    }
+
+    // These texts are filled from the selected monster skill, not a fixed UI key.
+    // Keep their existing localization components from replacing runtime values.
+    private void ProtectDynamicTexts()
+    {
+        ProtectDynamicText(detailText);
+        ProtectDynamicText(typeText);
+    }
+
+    private static void ProtectDynamicText(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        if (text.GetComponent<LocalizationIgnore>() == null)
+            text.gameObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText localized = text.GetComponent<LocalizedTMPText>();
+        if (localized != null)
+            localized.enabled = false;
     }
 
     private void Clear()
