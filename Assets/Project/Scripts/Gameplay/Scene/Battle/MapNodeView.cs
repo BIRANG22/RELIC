@@ -201,6 +201,7 @@ public class MapNodeView : MonoBehaviour
     {
         currentAvailable = available;
         currentVisited = visited;
+        ApplyTypeIconVisibility();
         ApplyNodeColor();
     }
 

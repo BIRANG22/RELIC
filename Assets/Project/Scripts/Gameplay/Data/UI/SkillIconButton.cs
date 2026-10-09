@@ -49,6 +49,7 @@ public class SkillIconButton : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private Coroutine hoverScaleCoroutine;
 
     public SkillMasterData CurrentSkillData => currentSkillData;
+    public bool IsPointerInside => isPointerInside;
 
     private void Awake()
     {

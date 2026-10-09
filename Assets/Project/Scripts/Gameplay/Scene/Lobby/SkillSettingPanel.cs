@@ -67,6 +67,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     [SerializeField] private TMP_Text skillTooltipResourceText;
     [SerializeField] private TMP_Text skillTooltipNameText;
     [SerializeField] private TMP_Text skillTooltipDescriptionText;
+    [SerializeField] private TMP_Text skillTooltipTypeText;
     [SerializeField] private Image skillTooltipLineImage;
     [Tooltip("호버한 스킬 아이콘을 기준으로 한 툴팁 X 오프셋입니다.")]
     [SerializeField] private float skillTooltipOffsetX = 50f;
@@ -103,6 +104,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     private bool skillSelectPanelAllowed = true;
     private CanvasGroup skillTooltipCanvasGroup;
     private Coroutine skillTooltipFadeCoroutine;
+    private SkillIconButton hoveredTooltipSource;
 
     private bool IsDirectSelectionLayout => true;
 
@@ -165,6 +167,8 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     {
         if (currentDisplayedSkillInfo != null)
             ShowSkillInfo(currentDisplayedSkillInfo);
+        if (hoveredTooltipSource != null && hoveredTooltipSource.CurrentSkillData != null)
+            ShowSkillTooltip(hoveredTooltipSource, hoveredTooltipSource.CurrentSkillData);
     }
 
     private void InitSkillSlotButtons()
@@ -489,6 +493,14 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             if (child != null) skillTooltipLineImage = child.GetComponent<Image>();
         }
 
+        if (skillTooltipTypeText == null)
+        {
+            Transform type = tooltip.Find("Type/Type_text");
+            if (type == null) type = FindChildByName(tooltip, "Type_text");
+            if (type != null) skillTooltipTypeText = type.GetComponent<TMP_Text>();
+        }
+
+        EnsureDynamicTextOwnership(skillTooltipTypeText);
         EnsureDynamicTextOwnership(skillTooltipResourceText);
         EnsureDynamicTextOwnership(skillTooltipNameText);
         EnsureDynamicTextOwnership(skillTooltipDescriptionText);
@@ -503,7 +515,9 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (skillTooltipPanel == null)
             return;
 
+        hoveredTooltipSource = sourceButton;
         SetPlainTmpText(skillTooltipNameText, GameDataLocalization.SkillName(skill));
+        SetPlainTmpText(skillTooltipTypeText, GetSkillTooltipTypeDisplayName(skill));
         SetRichTmpText(skillTooltipDescriptionText, BuildSkillDetailsText(skill));
         ApplySkillTooltipLineColor(skill.Rarity);
 
@@ -538,6 +552,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         {
             skillTooltipCanvasGroup.alpha = 0f;
             skillTooltipPanel.SetActive(true);
+            // Enable-time static localizers must not overwrite dynamic skill data.
+            EnsureDynamicTextOwnership(skillTooltipTypeText);
+            EnsureDynamicTextOwnership(skillTooltipNameText);
+            EnsureDynamicTextOwnership(skillTooltipDescriptionText);
+            SetPlainTmpText(skillTooltipNameText, GameDataLocalization.SkillName(skill));
+            SetPlainTmpText(skillTooltipTypeText, GetSkillTooltipTypeDisplayName(skill));
+            SetRichTmpText(skillTooltipDescriptionText, BuildSkillDetailsText(skill));
         }
 
         StartSkillTooltipFade(1f, skillTooltipFadeInDuration, false);
@@ -545,6 +566,9 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
     public void HideSkillTooltip(SkillIconButton sourceButton)
     {
+        if (sourceButton != null && hoveredTooltipSource != sourceButton)
+            return;
+        hoveredTooltipSource = null;
         BindSkillTooltipIfNeeded();
         if (skillTooltipPanel == null || skillTooltipCanvasGroup == null)
             return;
@@ -1272,6 +1296,16 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         if (appliedDefaultSkill && currentRuntimeData != null && DataManager.Instance != null)
             DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(currentRuntimeData);
+
+        // Refresh the tooltip even when the cursor never leaves the same button.
+        if (hoveredTooltipSource != null)
+        {
+            SkillMasterData hoveredSkill = hoveredTooltipSource.CurrentSkillData;
+            if (hoveredSkill != null)
+                ShowSkillTooltip(hoveredTooltipSource, hoveredSkill);
+            else
+                HideSkillTooltip(hoveredTooltipSource);
+        }
     }
 
     private void SetAllDirectSkillPanelsVisible()
@@ -1728,6 +1762,22 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             .Replace("<br />", "\n");
     }
 
+    private static string GetSkillTooltipTypeDisplayName(SkillMasterData skill)
+    {
+        if (skill == null) return string.Empty;
+        if (skill.Category == Category.Move || skill.Rarity == SkillRarity.Move)
+            return GameLocalization.Get("common.move");
+        if (skill.Category == Category.Passive)
+            return GameLocalization.Get("common.passive");
+        switch (skill.SkillType)
+        {
+            case SkillType.Attack: return GameLocalization.Get("common.attack");
+            case SkillType.Buff: return GameLocalization.Get("common.buff");
+            case SkillType.Debuff: return GameLocalization.Get("common.debuff");
+            default: return string.Empty;
+        }
+    }
+
     private string BuildSkillDetailsText(SkillMasterData skill)
     {
         if (skill == null)
@@ -1756,15 +1806,15 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         string colorHex = ColorUtility.ToHtmlStringRGB(valueHighlightColor);
 
         result = ReplaceIndexedHighlightedValues(result, "ValueRate", valueRate, colorHex);
-        result = ReplaceIndexedHighlightedValues(result, "CountRate", countRate, colorHex);
+        result = ReplaceIndexedHighlightedValues(result, "CountRate", countRate, colorHex, true);
         result = ReplaceHighlightedValue(result, "{ValueRate}", valueRate, colorHex);
-        result = ReplaceHighlightedValue(result, "{CountRate}", countRate, colorHex);
+        result = ReplaceHighlightedValue(result, "{CountRate}", countRate, colorHex, true);
         result = SkillDescriptionFormatter.ReplaceEffectTokens(result, valueRate);
 
         return result;
     }
 
-    private static string ReplaceIndexedHighlightedValues(string source, string tokenName, string values, string colorHex)
+    private static string ReplaceIndexedHighlightedValues(string source, string tokenName, string values, string colorHex, bool isCount = false)
     {
         if (string.IsNullOrEmpty(source) || string.IsNullOrWhiteSpace(tokenName))
             return source;
@@ -1780,18 +1830,20 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
                 continue;
 
             string displayValue = GetHighlightedDisplayRateValue(splitValues[i]);
+            if (isCount && displayValue != "?") displayValue = "x" + displayValue;
             source = source.Replace(token, $"<color=#{colorHex}>{displayValue}</color>");
         }
 
         return source;
     }
 
-    private static string ReplaceHighlightedValue(string source, string token, string value, string colorHex)
+    private static string ReplaceHighlightedValue(string source, string token, string value, string colorHex, bool isCount = false)
     {
         if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(token) || !source.Contains(token))
             return source;
 
         string displayValue = GetHighlightedDisplayRateValue(value);
+        if (isCount && displayValue != "?") displayValue = "x" + displayValue;
         return source.Replace(token, $"<color=#{colorHex}>{displayValue}</color>");
     }
 

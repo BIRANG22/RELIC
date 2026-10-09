@@ -97,7 +97,7 @@ public sealed class LobbyWorldCharacterSettingOpenObject : MonoBehaviour
     /// </summary>
     public void OpenCharacter(string characterId)
     {
-        if (UIPanelButton.IsMenuPanelOpen)
+        if (UIPanelButton.IsMenuPanelOpen || UIHoverLight2DFalloff.IsPointerBlockedByUI())
             return;
 
         // 다른 전면 모달이 열린 상태에서 뒤쪽 캐릭터가 눌리는 것을 막습니다.

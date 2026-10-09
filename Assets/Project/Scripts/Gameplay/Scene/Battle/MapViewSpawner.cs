@@ -11,6 +11,10 @@ public class MapViewSpawner : MonoBehaviour
     [SerializeField] private RectTransform nodeRoot;
     [SerializeField] private RectTransform lineRoot;
 
+    [Header("Map Vision Limit Fog")]
+    [Tooltip("시야제한 효과가 활성화되었을 때 표시할 MapPanel/Fog입니다. 비워두면 계층에서 자동으로 찾습니다.")]
+    [SerializeField] private GameObject visionLimitFog;
+
     [Header("Node Layout")]
     [SerializeField, Min(0f)] private float nodeGapX = 200f;
     [SerializeField, Min(0f)] private float nodeGapY = 80f;
@@ -29,6 +33,31 @@ public class MapViewSpawner : MonoBehaviour
     private Action<GeneratedMapNodeData, Sprite> lastOnNodeHovered;
     private Action lastOnNodeHoverExited;
 
+    private void ApplyMapVisionFog()
+    {
+        if (visionLimitFog == null)
+            visionLimitFog = FindFogInMapPanel();
+
+        if (visionLimitFog != null)
+            visionLimitFog.SetActive(BattleErosionEffectService.ShouldLimitMapVision);
+    }
+
+    private GameObject FindFogInMapPanel()
+    {
+        // MapViewSpawner가 Map, ViewPort 또는 MapArea 아래에 있어도 MapPanel/Fog를 찾습니다.
+        Transform current = nodeRoot != null ? nodeRoot : transform;
+        while (current != null)
+        {
+            if (current.name == "MapPanel")
+            {
+                Transform fog = current.Find("Fog");
+                return fog != null ? fog.gameObject : null;
+            }
+            current = current.parent;
+        }
+        return null;
+    }
+
     public void Spawn(
         List<GeneratedMapNodeData> nodes,
         Action<GeneratedMapNodeData> onNodeClicked)
@@ -46,6 +75,7 @@ public class MapViewSpawner : MonoBehaviour
         lastOnNodeHovered = onNodeHovered;
         lastOnNodeHoverExited = onNodeHoverExited;
 
+        ApplyMapVisionFog();
         ApplyMapWidth();
 
         MapRuntimeData runtime = DataManager.Instance?.MapRuntimeStore?.Get();
@@ -98,11 +128,8 @@ public class MapViewSpawner : MonoBehaviour
             }
 
             node.Setup(data, iconDatabase, null, false);
-            node.SetTypeIconHidden(
-                BattleErosionEffectService.ShouldLimitMapVision &&
-                runtime != null &&
-                !IsVisitedOrCleared(runtime, data) &&
-                data.NodeIndex != runtime.CurrentNodeIndex);
+            // 시야제한은 개별 아이콘을 끄지 않고 MapArea/Fog로 표현합니다.
+            node.SetTypeIconHidden(false);
             node.SetProgressVisual(
                 IsCurrentlyAvailable(runtime, data),
                 IsVisitedOrCleared(runtime, data));
