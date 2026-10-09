@@ -7,8 +7,8 @@ using UnityEngine.UI;
 namespace Relic.Gameplay.Data
 {
     /// <summary>
-    /// SkillDescriptionFormatter가 만든 effecticon 링크 위치에 상태효과 아이콘을 겹쳐 표시합니다.
-    /// Sprite는 기존 StatusEffectIconDatabase에서 직접 가져옵니다.
+    /// SkillDescriptionFormatter가 생성한 effecticon 링크 위치에 상태 효과 아이콘을 표시합니다.
+    /// Sprite는 공용 StatusEffectIconDatabase에서 자동으로 불러옵니다.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class SkillEffectInlineIconRenderer : MonoBehaviour
@@ -21,6 +21,14 @@ namespace Relic.Gameplay.Data
         private readonly List<Image> spawnedIcons = new();
         private string lastText = null;
         private bool refreshRequested;
+        private bool underlineIcons;
+
+        public void SetUnderlineIcons(bool enabled)
+        {
+            if (underlineIcons == enabled) return;
+            underlineIcons = enabled;
+            RequestRefresh();
+        }
 
         public void Bind(TMP_Text text)
         {
@@ -118,6 +126,7 @@ namespace Relic.Gameplay.Data
                 image.preserveAspect = true;
                 image.raycastTarget = false;
                 spawnedIcons.Add(image);
+
             }
         }
 
@@ -145,8 +154,8 @@ namespace Relic.Gameplay.Data
             string formattedText = text ?? string.Empty;
             if (formattedText.Contains("effecticon:", StringComparison.Ordinal))
             {
-                // 커진 인라인 효과 아이콘의 폭만큼 텍스트 공간도 함께 확보합니다.
-                // 따라서 도감/툴팁 등 어느 UI에서 사용해도 다음 글자와 아이콘이 겹치지 않습니다.
+                // 커진 인라인 효과 아이콘 크기에 맞춰 텍스트 간격도 함께 확장합니다.
+                // 일반 설명과 다른 UI에서도 효과 아이콘과 글자가 겹치지 않도록 간격을 조정합니다.
                 formattedText = formattedText.Replace(
                     SkillEffectInlineIconRenderer.DefaultEffectIconSpacingTag,
                     SkillEffectInlineIconRenderer.GlobalEffectIconSpacingTag,

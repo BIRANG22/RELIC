@@ -55,6 +55,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     private Coroutine fadeCoroutine;
     private Object currentOwner;
     private bool isVisible;
+    private bool pinnedToOwner;
     private UnitStatusEffectTooltipSide currentSide = UnitStatusEffectTooltipSide.Right;
     private Object monsterPrefabOwner;
     private readonly List<UnitStatusEffectTooltipItemUI> monsterItemInstances = new();
@@ -105,7 +106,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (!isVisible || !followMousePosition)
+        if (!isVisible || !followMousePosition || pinnedToOwner)
             return;
 
         Vector2 mousePosition = Input.mousePosition;
@@ -119,6 +120,49 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         Vector2 screenPosition)
     {
         Show(owner, statusEffects, screenPosition, GetSideForScreenPosition(screenPosition));
+    }
+
+    // Only this owner's tooltip uses a fixed location; other status tooltips still follow the mouse.
+    public void ShowPinned(Object owner, IReadOnlyList<StatusEffectRuntimeData> statusEffects, Vector2 screenPosition)
+    {
+        Show(owner, statusEffects, screenPosition);
+        if (currentOwner != owner)
+            return;
+        pinnedToOwner = true;
+        UpdatePinnedPosition(owner, screenPosition);
+    }
+
+    // Convert an offset expressed in this tooltip canvas's UI units to screen pixels.
+    // The caller first computes the effect's screen position, then adds this offset.
+    public Vector2 GetPinnedOffsetInScreenPixels(Vector2 uiOffset)
+    {
+        InitializeIfNeeded();
+        float scale = rootCanvas != null ? rootCanvas.scaleFactor : 1f;
+        return uiOffset * Mathf.Max(0.0001f, scale);
+    }
+
+    public void UpdatePinnedPosition(Object owner, Vector2 screenPosition)
+    {
+        if (!pinnedToOwner || currentOwner != owner || !isVisible)
+            return;
+        // 고정 효과 툴팁은 실제 화면 좌표를 EffectRoot 평면으로 변환합니다.
+        // anchoredPosition에 로컬 좌표를 직접 넣으면 부모 Anchor 기준에 따라
+        // 해상도별 간격이 달라질 수 있으므로 월드 위치로 피벗을 맞춥니다.
+        InitializeIfNeeded();
+        if (itemRect == null || itemParentRect == null)
+            return;
+
+        Camera uiCamera = null;
+        if (rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            uiCamera = rootCanvas.worldCamera != null ? rootCanvas.worldCamera : Camera.main;
+
+        if (!RectTransformUtility.ScreenPointToWorldPointInRectangle(
+                itemParentRect, screenPosition, uiCamera, out Vector3 worldPoint))
+            return;
+
+        itemRect.position = worldPoint;
+        Canvas.ForceUpdateCanvases();
+        ClampItemInsideCanvas();
     }
 
     public void Show(
@@ -136,6 +180,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
             return;
         }
 
+        pinnedToOwner = false;
         currentOwner = owner;
         currentSide = side;
 
@@ -442,6 +487,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
             return;
 
         currentOwner = null;
+        pinnedToOwner = false;
         HideWithFade();
     }
 
@@ -703,6 +749,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     {
         isVisible = false;
         currentOwner = null;
+        pinnedToOwner = false;
 
         if (fadeCoroutine != null)
         {
