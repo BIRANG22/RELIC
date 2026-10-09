@@ -135,7 +135,10 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         MonsterUnit.MonsterInfoSelectionChanged += HandleMonsterInfoSelectionChanged;
         BattleTurnExecutor.PlayerTurnReturned -= HandlePlayerTurnReturned;
         BattleTurnExecutor.PlayerTurnReturned += HandlePlayerTurnReturned;
+        LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
         LocalizationSettings.SelectedLocaleChanged += HandleLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= HandleLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += HandleLocaleChanged;
     }
 
     private void OnDisable()
@@ -143,6 +146,7 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         MonsterUnit.MonsterInfoSelectionChanged -= HandleMonsterInfoSelectionChanged;
         BattleTurnExecutor.PlayerTurnReturned -= HandlePlayerTurnReturned;
         LocalizationSettings.SelectedLocaleChanged -= HandleLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= HandleLocaleChanged;
 
         if (focusAnimationCoroutine != null)
         {
@@ -769,6 +773,8 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
                 tutorialText = textTransform.GetComponent<TMP_Text>();
         }
 
+        EnsureTutorialTextHasSingleWriter();
+
         SetGraphicRaycastState(topOverlay, true);
         SetGraphicRaycastState(bottomOverlay, true);
         SetGraphicRaycastState(leftOverlay, true);
@@ -873,6 +879,7 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         if (tutorialTooltip != null)
         {
             tutorialTooltip.gameObject.SetActive(true);
+            RefreshTutorialText();
             PositionTooltip(revealRect, tooltipOnRight);
         }
     }
@@ -1299,6 +1306,28 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
 
         currentLocalizationKey = string.Empty;
         currentFallbackText = string.Empty;
+    }
+
+    // This TMP is localized by the current tutorial step, not by a fixed inspector key.
+    // Prevent both static and automatic dynamic localization from writing over it.
+    private void EnsureTutorialTextHasSingleWriter()
+    {
+        if (tutorialText == null)
+            return;
+
+        GameObject textObject = tutorialText.gameObject;
+        if (textObject.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            textObject.AddComponent<LocalizationAutoBindingIgnore>();
+        if (textObject.GetComponent<LocalizationIgnore>() == null)
+            textObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText staticLocalizer = textObject.GetComponent<LocalizedTMPText>();
+        if (staticLocalizer != null)
+            staticLocalizer.enabled = false;
+
+        DynamicLocalizedTMPText dynamicLocalizer = textObject.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicLocalizer != null)
+            dynamicLocalizer.enabled = false;
     }
 
     private void RefreshTutorialText()
