@@ -1,32 +1,61 @@
 using System.Collections;
+using System.Collections.Generic;
+using Relic.Gameplay.Data;
 using UnityEngine;
 
 /// <summary>
-/// Lobby > Character ºÎ¸ğ¿¡ ÇÏ³ª¸¸ ºÙ¿© »ç¿ëÇÕ´Ï´Ù.
-/// ÀÚ½ÄÀÇ Cha_01_idle_0 ~ Cha_04_idle_0 ¿ùµå ¿ÀºêÁ§Æ®¸¦ ÀÚµ¿À¸·Î Ã£¾Æ
-/// Å¬¸¯ÇÑ Ä³¸¯ÅÍ¸¦ CharacterSettingPanel¿¡¼­ ¼±ÅÃµÈ »óÅÂ·Î ¿±´Ï´Ù.
+/// Lobby > Character ë¶€ëª¨ì— í•˜ë‚˜ë§Œ ë¶™ì—¬ ì‚¬ìš©í•©ë‹ˆë‹¤.
+/// ìì‹ì˜ Cha_01_idle_0 ~ Cha_04_idle_0 ì›”ë“œ ì˜¤ë¸Œì íŠ¸ë¥¼ ìë™ìœ¼ë¡œ ì°¾ì•„
+/// í´ë¦­í•œ ìºë¦­í„°ë¥¼ CharacterSettingPanelì—ì„œ ì„ íƒëœ ìƒíƒœë¡œ ì—½ë‹ˆë‹¤.
 ///
-/// °¢ Ä³¸¯ÅÍ ÂÊ¿¡´Â Å¬¸¯ ÆÇÁ¤À» À§ÇÑ Collider2D¸¸ ÀÖÀ¸¸é µË´Ï´Ù.
+/// ê° ìºë¦­í„° ìª½ì—ëŠ” í´ë¦­ íŒì •ì„ ìœ„í•œ Collider2Dë§Œ ìˆìœ¼ë©´ ë©ë‹ˆë‹¤.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class LobbyWorldCharacterSettingOpenObject : MonoBehaviour
 {
+    [Header("DB Lobby Characters")]
+    [SerializeField] private List<LobbyWorldCharacterSpawnDefinition> spawnDefinitions = new();
+
     [Header("Optional Reference")]
-    [Tooltip("ºñ¿öµÎ¸é ¾ÀÀÇ CharacterSettingPanel¿¡ ºÙÀº SettingÀ» ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("ë¹„ì›Œë‘ë©´ ì”¬ì˜ CharacterSettingPanelì— ë¶™ì€ Settingì„ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private Setting setting;
 
     [Header("Auto Binding")]
-    [Tooltip("È°¼ºÈ­ÇÏ¸é ÀÚ½Ä Collider2D¸¦ ÀÚµ¿À¸·Î Ã£¾Æ Å¬¸¯ ¿¬°áÀ» ±¸¼ºÇÕ´Ï´Ù.")]
+    [Tooltip("í™œì„±í™”í•˜ë©´ ìì‹ Collider2Dë¥¼ ìë™ìœ¼ë¡œ ì°¾ì•„ í´ë¦­ ì—°ê²°ì„ êµ¬ì„±í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool autoBindChildren = true;
 
     private Coroutine selectRoutine;
+    private readonly List<GameObject> spawnedCharacters = new();
 
     private void Awake()
     {
+        SpawnCharactersFromDatabase();
         ResolveSettingIfNeeded();
 
         if (autoBindChildren)
             BindCharacterChildren();
+    }
+
+    private void SpawnCharactersFromDatabase()
+    {
+        if (spawnDefinitions == null || spawnDefinitions.Count == 0)
+            return;
+
+        CharacterPrefabDatabase database = DataManager.Instance != null
+            ? DataManager.Instance.CharacterPrefabDatabase
+            : null;
+
+        if (database == null)
+        {
+            Debug.LogWarning("[LobbyWorldCharacterSettingOpenObject] CharacterPrefabDBë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.", this);
+            return;
+        }
+
+        LobbyWorldCharacterSpawner.ReplaceSpawned(
+            transform,
+            spawnDefinitions,
+            characterId => database.TryGetLobbyPrefab(characterId, out GameObject prefab) ? prefab : null,
+            spawnedCharacters);
     }
 
     private void OnEnable()
@@ -38,8 +67,8 @@ public sealed class LobbyWorldCharacterSettingOpenObject : MonoBehaviour
     }
 
     /// <summary>
-    /// Character ºÎ¸ğ ¾Æ·¡ÀÇ Collider2D¸¦ Ã£¾Æ Ä³¸¯ÅÍ Å¬¸¯ ¸±·¹ÀÌ¸¦ ÀÚµ¿ µî·ÏÇÕ´Ï´Ù.
-    /// Cha_01_idle_0 °°Àº Ä³¸¯ÅÍ ·çÆ® ÀÌ¸§Àº Char_01·Î ÀÚµ¿ º¯È¯ÇÕ´Ï´Ù.
+    /// Character ë¶€ëª¨ ì•„ë˜ì˜ Collider2Dë¥¼ ì°¾ì•„ ìºë¦­í„° í´ë¦­ ë¦´ë ˆì´ë¥¼ ìë™ ë“±ë¡í•©ë‹ˆë‹¤.
+    /// Cha_01_idle_0 ê°™ì€ ìºë¦­í„° ë£¨íŠ¸ ì´ë¦„ì€ Char_01ë¡œ ìë™ ë³€í™˜í•©ë‹ˆë‹¤.
     /// </summary>
     public void BindCharacterChildren()
     {
@@ -64,14 +93,14 @@ public sealed class LobbyWorldCharacterSettingOpenObject : MonoBehaviour
     }
 
     /// <summary>
-    /// ÀÚµ¿ µî·ÏµÈ ÀÚ½Ä Å¬¸¯ ¸±·¹ÀÌ¿¡¼­ È£ÃâÇÕ´Ï´Ù.
+    /// ìë™ ë“±ë¡ëœ ìì‹ í´ë¦­ ë¦´ë ˆì´ì—ì„œ í˜¸ì¶œí•©ë‹ˆë‹¤.
     /// </summary>
     public void OpenCharacter(string characterId)
     {
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
-        // ´Ù¸¥ Àü¸é ¸ğ´ŞÀÌ ¿­¸° »óÅÂ¿¡¼­ µÚÂÊ Ä³¸¯ÅÍ°¡ ´­¸®´Â °ÍÀ» ¸·½À´Ï´Ù.
+        // ë‹¤ë¥¸ ì „ë©´ ëª¨ë‹¬ì´ ì—´ë¦° ìƒíƒœì—ì„œ ë’¤ìª½ ìºë¦­í„°ê°€ ëˆŒë¦¬ëŠ” ê²ƒì„ ë§‰ìŠµë‹ˆë‹¤.
         if (LobbyPositionModalInputBlocker.IsBlocked)
             return;
 
@@ -83,21 +112,21 @@ public sealed class LobbyWorldCharacterSettingOpenObject : MonoBehaviour
         if (setting == null)
         {
             Debug.LogWarning(
-                "[LobbyWorldCharacterSettingOpenObject] CharacterSettingPanelÀÇ SettingÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù.",
+                "[LobbyWorldCharacterSettingOpenObject] CharacterSettingPanelì˜ Settingì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.",
                 this);
             return;
         }
 
         GameObject characterSettingPanel = setting.gameObject;
 
-        // ÀÌ¹Ì CharacterSettingPanelÀÌ ¿­·Á ÀÖ´Ù¸é ÆĞ³ÎÀ» ´Ù½Ã ¿­Áö ¾Ê°í Ä³¸¯ÅÍ¸¸ º¯°æÇÕ´Ï´Ù.
+        // ì´ë¯¸ CharacterSettingPanelì´ ì—´ë ¤ ìˆë‹¤ë©´ íŒ¨ë„ì„ ë‹¤ì‹œ ì—´ì§€ ì•Šê³  ìºë¦­í„°ë§Œ ë³€ê²½í•©ë‹ˆë‹¤.
         if (characterSettingPanel.activeInHierarchy)
         {
             ApplyCharacterSelection(characterId);
             return;
         }
 
-        // ´Ù¸¥ PositionPanel ¸ğ´ŞÀÌ ¿­·Á ÀÖ´Ù¸é ±âÁ¸ °ø¿ë ÆĞ³Î ÀüÈ¯ ±ÔÄ¢À¸·Î Á¤¸®ÇÕ´Ï´Ù.
+        // ë‹¤ë¥¸ PositionPanel ëª¨ë‹¬ì´ ì—´ë ¤ ìˆë‹¤ë©´ ê¸°ì¡´ ê³µìš© íŒ¨ë„ ì „í™˜ ê·œì¹™ìœ¼ë¡œ ì •ë¦¬í•©ë‹ˆë‹¤.
         if (!LobbyPositionSharedModalBackground.PrepareForPanelSwitch(characterSettingPanel))
             return;
 
@@ -107,7 +136,7 @@ public sealed class LobbyWorldCharacterSettingOpenObject : MonoBehaviour
         if (selectRoutine != null)
             StopCoroutine(selectRoutine);
 
-        // Setting.OnEnable ¹× CharacterSettingPanel ³»ºÎ ÃÊ±âÈ­°¡ ³¡³­ ´ÙÀ½ Ä³¸¯ÅÍ¸¦ ¼±ÅÃÇÕ´Ï´Ù.
+        // Setting.OnEnable ë° CharacterSettingPanel ë‚´ë¶€ ì´ˆê¸°í™”ê°€ ëë‚œ ë‹¤ìŒ ìºë¦­í„°ë¥¼ ì„ íƒí•©ë‹ˆë‹¤.
         selectRoutine = StartCoroutine(ApplyCharacterSelectionNextFrame(characterId));
     }
 
@@ -129,7 +158,7 @@ public sealed class LobbyWorldCharacterSettingOpenObject : MonoBehaviour
             if (!charPick.SelectViewedCharacterForSetting(characterId))
             {
                 Debug.LogWarning(
-                    "[LobbyWorldCharacterSettingOpenObject] CharacterSelect¿¡¼­ Ä³¸¯ÅÍ¸¦ ¼±ÅÃÇÒ ¼ö ¾ø½À´Ï´Ù: " + characterId,
+                    "[LobbyWorldCharacterSettingOpenObject] CharacterSelectì—ì„œ ìºë¦­í„°ë¥¼ ì„ íƒí•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤: " + characterId,
                     this);
                 return;
             }
@@ -166,7 +195,8 @@ public sealed class LobbyWorldCharacterSettingOpenObject : MonoBehaviour
         for (int i = 1; i <= 99; i++)
         {
             string number = i.ToString("00");
-            if (!objectName.Contains("Cha_" + number))
+            if (!objectName.Contains("Cha_" + number) &&
+                !objectName.Contains("Char_" + number))
                 continue;
 
             characterId = "Char_" + number;
@@ -207,8 +237,8 @@ public sealed class LobbyWorldCharacterSettingOpenObject : MonoBehaviour
 }
 
 /// <summary>
-/// ºÎ¸ğ LobbyWorldCharacterSettingOpenObject°¡ ·±Å¸ÀÓ¿¡ ÀÚ½Ä Collider2D¿¡ ÀÚµ¿À¸·Î ºÙÀÌ´Â Å¬¸¯ Àü´Ş¿ë ÄÄÆ÷³ÍÆ®ÀÔ´Ï´Ù.
-/// Inspector¿¡¼­ Á÷Á¢ Ãß°¡ÇÒ ÇÊ¿ä°¡ ¾ø½À´Ï´Ù.
+/// ë¶€ëª¨ LobbyWorldCharacterSettingOpenObjectê°€ ëŸ°íƒ€ì„ì— ìì‹ Collider2Dì— ìë™ìœ¼ë¡œ ë¶™ì´ëŠ” í´ë¦­ ì „ë‹¬ìš© ì»´í¬ë„ŒíŠ¸ì…ë‹ˆë‹¤.
+/// Inspectorì—ì„œ ì§ì ‘ ì¶”ê°€í•  í•„ìš”ê°€ ì—†ìŠµë‹ˆë‹¤.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class LobbyWorldCharacterClickRelay : MonoBehaviour

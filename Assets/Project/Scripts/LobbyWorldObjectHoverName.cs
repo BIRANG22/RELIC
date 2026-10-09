@@ -23,6 +23,11 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     [Header("Hover Name")]
     [SerializeField] private HoverNameType hoverNameType = HoverNameType.Research;
 
+    public void Configure(HoverNameType type)
+    {
+        hoverNameType = type;
+    }
+
     [Header("Storage Interaction")]
     [Tooltip("Storage 월드 오브젝트 클릭 시 BackgroundPanel과 함께 활성화할 StoragePanel입니다. 비워두면 씬의 StoragePanel을 자동으로 찾습니다.")]
     [SerializeField] private GameObject storagePanel;

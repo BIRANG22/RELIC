@@ -494,9 +494,9 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra1:
-      prepareStateName: 
+      prepareStateName: Ready
       prepareDuration: 0.15
-      stateName: 
+      stateName: Ready
       vfx:
         prefab: {fileID: 0}
         flipType: 0

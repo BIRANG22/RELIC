@@ -51,6 +51,12 @@ public class UIHoverLight2DFalloff : MonoBehaviour, IPointerEnterHandler, IPoint
     private bool isHovered;
     private bool wasRectHovered;
 
+    public void Configure(Light2D light)
+    {
+        targetLight = light;
+        SetNormalValueImmediately();
+    }
+
     private void Awake()
     {
         FindReferences();
