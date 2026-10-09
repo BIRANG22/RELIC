@@ -268,6 +268,10 @@ public class BattleTimelineController : MonoBehaviour
         if (!Input.GetMouseButtonDown(1) || UIPanelButton.IsMenuPanelOpen)
             return;
 
+        // MonsterInfo close takes priority over undoing a timeline reservation.
+        if (BattleMonsterInfoCanvasUI.TryHandleRightClickIfOpen())
+            return;
+
         if (playerSkillReservationController == null)
         {
             playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(
