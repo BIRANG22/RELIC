@@ -153,7 +153,7 @@ namespace Relic.Gameplay.Data
             {
                 string token = $"{{{tokenName}{i + 1}}}";
                 if (source.Contains(token))
-                    source = source.Replace(token, GetDisplayValue(splitValues[i]));
+                    source = source.Replace(token, FormatReplacementValue(tokenName, splitValues[i]));
             }
             return source;
         }
@@ -164,7 +164,18 @@ namespace Relic.Gameplay.Data
                 return source;
 
             string first = GetByIndexOrFirst(Split(values), 0, string.Empty);
-            return source.Replace(token, GetDisplayValue(first));
+            return source.Replace(token, token == "{CountRate}" ? FormatCountValue(first) : GetDisplayValue(first));
+        }
+
+        private static string FormatReplacementValue(string tokenName, string value)
+        {
+            return tokenName == "CountRate" ? FormatCountValue(value) : GetDisplayValue(value);
+        }
+
+        private static string FormatCountValue(string value)
+        {
+            string display = GetDisplayValue(value);
+            return display == "?" ? display : "x" + display;
         }
 
         private static string[] Split(string text)
