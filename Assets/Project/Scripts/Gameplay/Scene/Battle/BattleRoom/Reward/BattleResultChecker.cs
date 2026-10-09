@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using TMPro;
@@ -28,6 +29,7 @@ public class BattleResultChecker : MonoBehaviour
     [SerializeField] private GameObject returnButtonRoot;
     [SerializeField] private string nextStageUnavailableMessage = "아직 입장할 수 없는 구역입니다.";
 
+    private Coroutine battleWinPresentationRoutine;
     private bool battleEnded;
     private Button nextButton;
     private Button nextStageButton;
@@ -73,6 +75,11 @@ public class BattleResultChecker : MonoBehaviour
 
     public void ResetBattle()
     {
+        if (battleWinPresentationRoutine != null)
+        {
+            StopCoroutine(battleWinPresentationRoutine);
+            battleWinPresentationRoutine = null;
+        }
         battleEnded = false;
         pendingRewardFlowCompletedCallback = null;
         SetNextButtonVisible(false);
@@ -89,6 +96,7 @@ public class BattleResultChecker : MonoBehaviour
 
         battleEnded = true;
         PrepareBattleFinishedPresentation();
+        ResetBattleEffectOnFinish();
         BattleFinished?.Invoke();
         Debug.Log("[BattleResultChecker] Exploration failed: Erosion reached 100.");
         OpenDefeatExplorationResultPanel();
@@ -103,6 +111,7 @@ public class BattleResultChecker : MonoBehaviour
         {
             battleEnded = true;
             PrepareBattleFinishedPresentation();
+            ResetBattleEffectOnFinish();
             BattleFinished?.Invoke();
             Debug.Log("[BattleResultChecker] Battle Lose");
             OpenDefeatExplorationResultPanel();
@@ -113,6 +122,7 @@ public class BattleResultChecker : MonoBehaviour
         {
             battleEnded = true;
             PrepareBattleFinishedPresentation();
+            ResetBattleEffectOnFinish();
             BattleFinished?.Invoke();
             Debug.Log("[BattleResultChecker] Battle Win");
             BattleEquipmentEffectService.ApplyBattleEndHealToParty();
@@ -128,21 +138,50 @@ public class BattleResultChecker : MonoBehaviour
             if (isBossNode)
             {
                 MapRuntimeData runtime = DataManager.Instance?.MapRuntimeStore?.Get();
-                TrialUnlockProgress.RecordBossClear(
-                    runtime,
-                    TrialSelectionState.SelectedMask);
+                TrialUnlockProgress.RecordBossClear(runtime, TrialSelectionState.SelectedMask);
+            }
 
-                if (!OpenRewardPanel(ShowBossClearChoiceButtons))
-                    ShowBossClearChoiceButtons();
-            }
-            else
-            {
-                OpenRewardPanel();
-            }
+            battleWinPresentationRoutine = StartCoroutine(ShowBattleEndThenReward(isBossNode));
             return true;
         }
 
         return false;
+    }
+
+    private IEnumerator ShowBattleEndThenReward(bool isBossNode)
+    {
+        // Wait for the battle-end text to finish before opening the rewards.
+        yield return BattleMapIntroText.ShowMessageAndWait(
+            GameLocalization.Get("battle.intro.battle_end", "전투 종료"));
+
+        if (!battleEnded)
+            yield break;
+
+        battleWinPresentationRoutine = null;
+        if (isBossNode)
+        {
+            if (!OpenRewardPanel(ShowBossClearChoiceButtons))
+                ShowBossClearChoiceButtons();
+        }
+        else
+        {
+            OpenRewardPanel();
+        }
+    }
+
+    private static void ResetBattleEffectOnFinish()
+    {
+        BattleEffectPlaneRotation[] rotations = Object.FindObjectsByType<BattleEffectPlaneRotation>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (BattleEffectPlaneRotation rotation in rotations)
+            if (rotation != null)
+                rotation.StopHitEffect();
+
+        BattleEffectPlaneSlideController[] slides = Object.FindObjectsByType<BattleEffectPlaneSlideController>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (BattleEffectPlaneSlideController slide in slides)
+            if (slide != null)
+                slide.ForceResetToReservePositionInstant();
     }
 
     private static void PrepareBattleFinishedPresentation()

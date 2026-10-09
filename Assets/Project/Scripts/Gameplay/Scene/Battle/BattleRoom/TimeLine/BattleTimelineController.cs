@@ -265,10 +265,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private void HandleSelectionCancelRightClick()
     {
-        if (!Input.GetMouseButtonDown(1))
-            return;
-
-        if (UIPanelButton.IsMenuPanelOpen)
+        if (!Input.GetMouseButtonDown(1) || UIPanelButton.IsMenuPanelOpen)
             return;
 
         if (playerSkillReservationController == null)
@@ -277,29 +274,35 @@ public class BattleTimelineController : MonoBehaviour
                 FindObjectsInactive.Include);
         }
 
-        // 같은 우클릭으로 스킬 선택과 캐릭터 선택이 동시에 해제되지 않게 합니다.
-        // 스킬 예약 컨트롤러가 이번 프레임에 우클릭 취소를 처리했다면
-        // 현재 캐릭터/몬스터 선택은 다음 우클릭까지 유지합니다.
+        // First right click cancels the current move/skill selection, never a reservation.
+        // This is handled here as well as in PlayerSkillReservationController so that
+        // the outcome does not depend on which MonoBehaviour.Update runs first.
         if (playerSkillReservationController != null)
         {
-            if (playerSkillReservationController.IsSkillSelectionActive() ||
-                playerSkillReservationController.WasSkillSelectionCancelledByRightClickThisFrame)
+            if (playerSkillReservationController.WasSkillSelectionCancelledByRightClickThisFrame)
+                return;
+
+            if (playerSkillReservationController.IsSkillSelectionActive())
             {
+                playerSkillReservationController.ClearPreview();
                 return;
             }
         }
 
-        if (ShouldKeepInfoSelectionDuringReservation())
+        // Nothing is being selected: undo one most recently registered player action.
+        // UndoLastPlayerReservation already repairs the timeline and predicted state.
+        if (isSlotSelectionLocked)
             return;
 
-        bool hasCharacterSelection = selectedCharacter != null;
-        bool hasMonsterSelection = Relic.Gameplay.Monster.MonsterUnit.CurrentInfoSelectedMonster != null;
+        if (turnExecutor == null)
+            turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
 
-        if (hasCharacterSelection)
-            ClearCharacterSelection();
+        if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
+            return;
 
-        if (hasMonsterSelection)
-            Relic.Gameplay.Monster.MonsterUnit.ClearMonsterInfoSelection();
+        PruneInvalidPlayerReservationHistory();
+        if (playerReservationHistory.Count > 0)
+            UndoLastPlayerReservation();
     }
 
     private void HandleCharacterSelectionOutsideGridClick()
@@ -1080,6 +1083,11 @@ public class BattleTimelineController : MonoBehaviour
             return false;
 
         int previousSlotIndex = activeSlotIndex;
+        // 슬롯을 실제로 변경할 때만 현재 진행 중인 타겟 선택을 취소합니다.
+        // 이미 등록된 행동에는 영향을 주지 않습니다.
+        if (previousSlotIndex != slotIndex)
+            CancelPendingActionSelection();
+
         activeSlotIndex = slotIndex;
 
         SetActiveTimelineSlotVisual(activeSlotIndex);
@@ -3161,6 +3169,26 @@ public class BattleTimelineController : MonoBehaviour
 
         if (playerSkillReservationController != null)
             playerSkillReservationController.ClearSkillHoverRangePreview();
+    }
+
+    /// <summary>
+    /// 현재 선택 중인 이동/스킬 예약만 취소합니다. 타임라인에 확정된 행동은 유지합니다.
+    /// 우클릭과 ESC, 슬롯 변경에서 공통으로 사용합니다.
+    /// </summary>
+    public bool CancelPendingActionSelection()
+    {
+        if (playerSkillReservationController == null)
+            playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+
+        bool hadSelection = selectedSkill != null ||
+                            (playerSkillReservationController != null &&
+                             playerSkillReservationController.IsSkillSelectionActive());
+        if (!hadSelection)
+            return false;
+
+        playerSkillReservationController?.ClearPreview();
+        selectedSkill = null;
+        return true;
     }
 
     public void CancelSkillReservationPreviewFromSkillList(CharacterRuntimeData runtimeData)

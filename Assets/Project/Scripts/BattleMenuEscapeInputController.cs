@@ -113,6 +113,18 @@ public class BattleMenuEscapeInputController : MonoBehaviour
                 return;
             }
 
+            // 행동 선택 중이면 ESC 첫 입력은 우클릭과 동일하게 선택/프리뷰만 취소합니다.
+            // MenuPanel이 이미 열려 있을 때는 기존 메뉴 닫기 우선순위를 유지합니다.
+            if (lastHandledEscapeFrame != Time.frameCount)
+            {
+                BattleTimelineController timeline = FindFirstObjectByType<BattleTimelineController>();
+                if (timeline != null && timeline.CancelPendingActionSelection())
+                {
+                    lastHandledEscapeFrame = Time.frameCount;
+                    return;
+                }
+            }
+
             // MenuPanel이 닫혀 있을 때만 MonsterInfoPanel이 ESC 우선 대상이 됩니다.
             // MonsterInfo 쪽 Update가 먼저 실행된 경우와 Menu 쪽 Update가 먼저 실행된 경우를
             // 모두 처리하여 같은 ESC 입력으로 MenuPanel까지 열리지 않게 합니다.

@@ -1717,7 +1717,8 @@ public class PlayerSkillReservationController : MonoBehaviour
             bool selfFlipConfirmed = ConfirmCommands(selfFlipCommands);
 
             KeepSkillListOpenForThisClick();
-            if (!selfFlipConfirmed || !RefreshContinuousGridSelection())
+            // A completed move is a single action selection. Do not keep move mode active.
+            if (selfFlipConfirmed)
                 ClearPreview();
             return;
         }
@@ -1750,7 +1751,9 @@ public class PlayerSkillReservationController : MonoBehaviour
         bool confirmed = ConfirmCommands(commands);
 
         KeepSkillListOpenForThisClick();
-        if (!confirmed || !RefreshContinuousGridSelection())
+        // After a successful move reservation, exit move selection immediately.
+        // An invalid/failed move keeps its selection so the player can retry.
+        if (confirmed)
             ClearPreview();
     }
 
