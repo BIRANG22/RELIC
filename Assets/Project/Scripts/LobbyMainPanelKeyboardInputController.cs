@@ -1262,17 +1262,6 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         if (button != null && (!allowInactiveSlotObject || button.gameObject.activeInHierarchy))
             return InvokeButton(button);
 
-        PartySlotButton partySlotButton = slotObject.GetComponent<PartySlotButton>();
-
-        if (partySlotButton == null)
-            partySlotButton = slotObject.GetComponentInChildren<PartySlotButton>(true);
-
-        if (partySlotButton != null && (allowInactiveSlotObject || partySlotButton.gameObject.activeInHierarchy))
-        {
-            partySlotButton.Execute();
-            return true;
-        }
-
         if (allowInactiveSlotObject)
             return false;
 
