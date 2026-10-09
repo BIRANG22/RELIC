@@ -7,6 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// BattleCharacterPanel의 Char01~03 상시 정보, Char_Select 선택, Active 영역과 패널/BattleSlot 이동을 관리합니다.
@@ -249,10 +250,23 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [SerializeField] private Color skillTooltipMoveLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
 
     [Header("Skill Tooltip Position")]
-    [Tooltip("마우스 커서를 기준으로 TooltipPanel이 표시될 오프셋입니다.")]
-    [SerializeField] private Vector2 skillTooltipCursorOffset = new Vector2(40f, -40f);
+    [Tooltip("Skill01~03 및 Ultimate 툴팁의 기준입니다. 비어 있으면 BattleCharacterPanel/Active를 자동 탐색합니다.")]
+    [SerializeField] private RectTransform skillTooltipActiveAnchor;
+    [Tooltip("Active 중심을 기준으로 Skill01~03 및 Ultimate 툴팁을 이동할 X/Y 오프셋입니다.")]
+    [FormerlySerializedAs("skillTooltipFixedPosition")]
+    [SerializeField] private Vector2 skillTooltipActiveOffset = Vector2.zero;
+    [Tooltip("각 캐릭터 Passive 버튼의 오른쪽 끝 중앙을 기준으로 하는 X/Y 오프셋입니다.")]
+    [FormerlySerializedAs("skillTooltipButtonOffset")]
+    [FormerlySerializedAs("skillTooltipCursorOffset")]
+    [SerializeField] private Vector2 passiveTooltipButtonOffset = new Vector2(40f, -40f);
     [Tooltip("TooltipPanel이 화면 밖으로 빠지지 않도록 확보할 X/Y 여백입니다.")]
     [SerializeField] private Vector2 skillTooltipScreenPadding = new Vector2(8f, 8f);
+
+    [Header("Skill Effect Tooltip Position")]
+    [Tooltip("TooltipPanel 내부 효과 설명 툴팁의 기준입니다. 비어 있으면 TooltipPanel을 사용합니다.")]
+    [SerializeField] private RectTransform skillEffectTooltipAnchor;
+    [Tooltip("기준 RectTransform의 중앙에서 이동할 X/Y UI 좌표입니다. 해상도에 따라 Canvas와 함께 이동합니다.")]
+    [SerializeField] private Vector2 skillEffectTooltipOffset = new Vector2(120f, 0f);
 
     [Header("Skill Tooltip Fade")]
     [Tooltip("TooltipPanel 페이드인 시간입니다.")]
@@ -264,6 +278,17 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private CanvasGroup skillTooltipCanvasGroup;
     private Coroutine skillTooltipFadeCoroutine;
     private bool isSkillTooltipVisible;
+    // TooltipPanel/Detail: effecticon links are hoverable descriptions.
+    private string hoveredDetailEffectId;
+    private int hoveredDetailEffectLinkIndex = -1;
+    private UnitStatusEffectTooltipUI detailEffectTooltip;
+    private readonly List<StatusEffectRuntimeData> detailEffectPreview = new List<StatusEffectRuntimeData>(1);
+
+    // TooltipPanel은 실제 Back 영역과 버튼-패널 사이의 이동 경로로만 유지합니다.
+    // 시간 기반 유예는 사용하지 않습니다.
+    private RectTransform skillTooltipAnchor;
+    private bool isPassiveSkillTooltip;
+    private Button hoveredActiveSkillButton;
 
     [Header("Rune / Artifact Tooltip")]
     [Tooltip("BattleCharacterPanel/TooltipUI를 자동 탐색합니다.")]
@@ -273,8 +298,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [SerializeField] private Image equipmentTooltipLineImage;
 
     [Header("Rune / Artifact Tooltip Position")]
-    [Tooltip("마우스 커서를 기준으로 TooltipUI가 표시될 오프셋입니다. TooltipPanel과 별도로 조절됩니다.")]
-    [SerializeField] private Vector2 equipmentTooltipCursorOffset = new Vector2(40f, -40f);
+    [Tooltip("마우스를 올린 Move/Flip/Compound/유물/룬 버튼의 오른쪽 끝(세로 중앙)을 기준으로 한 TooltipUI의 X/Y 위치 오프셋입니다.")]
+    [FormerlySerializedAs("equipmentTooltipCursorOffset")]
+    [SerializeField] private Vector2 equipmentTooltipButtonOffset = new Vector2(40f, -40f);
     [Tooltip("TooltipUI가 화면 밖으로 빠지지 않도록 확보할 X/Y 여백입니다. TooltipPanel과 별도로 조절됩니다.")]
     [SerializeField] private Vector2 equipmentTooltipScreenPadding = new Vector2(8f, 8f);
 
@@ -282,6 +308,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private CanvasGroup equipmentTooltipCanvasGroup;
     private Coroutine equipmentTooltipFadeCoroutine;
     private bool isEquipmentTooltipVisible;
+    private RectTransform equipmentTooltipAnchor;
 
     [Header("Panel Position Animation")]
     [Tooltip("전투 진행 중 패널이 내려가 있을 Y 위치입니다.")]
@@ -1186,8 +1213,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         hoverTarget.Configure(
             hasData
                 ? (isRune
-                    ? () => ShowPartyRuneTooltip(capturedId)
-                    : () => ShowPartyArtifactTooltip(capturedId))
+                    ? () => { equipmentTooltipAnchor = iconImage.rectTransform; ShowPartyRuneTooltip(capturedId); }
+        : () => { equipmentTooltipAnchor = iconImage.rectTransform; ShowPartyArtifactTooltip(capturedId); })
                 : null,
             HideEquipmentTooltip,
             iconImage.transform.parent,
@@ -1233,6 +1260,45 @@ public class BattleCharacterPanelUI : MonoBehaviour
             GameDataLocalization.RelicName(relicData),
             GameDataLocalization.RelicEffectDescription(relicData),
             relicData.Rarity);
+    }
+
+    // The simple button tooltips share TooltipUI with rune and artifact tooltips.
+    // Localization keys can be added to the UI string table; Korean is the fallback.
+    private void ShowActionButtonTooltip(int action)
+    {
+        string name;
+        string detail;
+        switch (action)
+        {
+            case 0:
+                name = GameLocalization.Get("battle.action.move.name", "이동");
+                detail = GameLocalization.Get("battle.action.move.detail", "캐릭터의 이동 행동을 예약합니다.");
+                break;
+            case 1:
+                name = GameLocalization.Get("battle.action.flip.name", "전환");
+                detail = GameLocalization.Get("battle.action.flip.detail", "캐릭터가 바라보는 방향을 전환합니다.");
+                break;
+            default:
+                // Read the equipped compound for the currently selected character.
+                // Availability can exist even when the compound has no remaining uses.
+                ActiveRelicAvailability availability = GetActiveRelicAvailability();
+                CompoundData compound = availability?.RelicData as CompoundData;
+                if (compound == null)
+                {
+                    HideEquipmentTooltip();
+                    return;
+                }
+                name = GameDataLocalization.CompoundName(compound);
+                detail = SkillDescriptionFormatter.Format(
+                    GameDataLocalization.CompoundDescription(compound),
+                    compound.ValueRate,
+                    compound.CountRate);
+                ShowEquipmentTooltip(name, detail, compound.Rarity);
+                return;
+        }
+        ShowEquipmentTooltip(name, detail, string.Empty);
+        if (equipmentTooltipLineImage != null)
+            SetImageColorPreserveAlpha(equipmentTooltipLineImage, skillTooltipCommonLineColor);
     }
 
     private void ShowEquipmentTooltip(string displayName, string description, string rarity)
@@ -1377,6 +1443,24 @@ public class BattleCharacterPanelUI : MonoBehaviour
         equipmentTooltipFadeCoroutine = null;
     }
 
+    // 버튼 중심(스킬) 또는 오른쪽 끝 중앙(TooltipUI)을 부모 로컬 좌표로 변환합니다.
+    // 커서 좌표는 위치 계산에 사용하지 않습니다.
+    private static bool TryGetTooltipAnchorPoint(RectTransform anchor, RectTransform parentRect,
+        Camera canvasCamera, out Vector2 anchorLocalPoint, bool useRightEdge = false)
+    {
+        anchorLocalPoint = Vector2.zero;
+        if (anchor == null || !anchor.gameObject.activeInHierarchy || parentRect == null)
+            return false;
+
+        Vector2 pointOnButton = useRightEdge
+            ? new Vector2(anchor.rect.xMax, anchor.rect.center.y)
+            : anchor.rect.center;
+        Vector3 worldCenter = anchor.TransformPoint(pointOnButton);
+        Vector2 screenCenter = RectTransformUtility.WorldToScreenPoint(canvasCamera, worldCenter);
+        return RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            parentRect, screenCenter, canvasCamera, out anchorLocalPoint);
+    }
+
     private void UpdateEquipmentTooltipPosition()
     {
         if (!isEquipmentTooltipVisible || equipmentTooltipUI == null || !equipmentTooltipUI.activeSelf)
@@ -1396,19 +1480,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
             ? canvas.worldCamera
             : null;
 
-        // 해상도와 Canvas Scaler 배율의 영향을 받지 않도록
-        // 마우스 화면 좌표를 먼저 부모 Canvas의 로컬 좌표로 변환한 뒤
-        // 스킬 툴팁과 동일한 UI 단위 오프셋을 적용합니다.
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                parentRect,
-                Input.mousePosition,
-                canvasCamera,
-                out Vector2 mouseLocalPoint))
-        {
+        if (!TryGetTooltipAnchorPoint(equipmentTooltipAnchor, parentRect, canvasCamera,
+                out Vector2 anchorLocalPoint, useRightEdge: true))
             return;
-        }
 
-        Vector2 desiredLocalPoint = mouseLocalPoint + equipmentTooltipCursorOffset;
+        Vector2 desiredLocalPoint = anchorLocalPoint + equipmentTooltipButtonOffset;
         Vector3 localPosition = equipmentTooltipRectTransform.localPosition;
         localPosition.x = desiredLocalPoint.x;
         localPosition.y = desiredLocalPoint.y;
@@ -1696,6 +1772,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
+        skillTooltipAnchor = slot.PassiveIcon != null ? slot.PassiveIcon.rectTransform : null;
+        isPassiveSkillTooltip = true;
         ShowSkillTooltip(passiveSkillData);
     }
 
@@ -2308,6 +2386,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void LateUpdate()
     {
+        UpdateSkillTooltipHoverRetention();
+        UpdateSkillDetailEffectHover();
         if (isSkillTooltipVisible)
             UpdateSkillTooltipPosition();
         if (isEquipmentTooltipVisible)
@@ -2408,6 +2488,41 @@ public class BattleCharacterPanelUI : MonoBehaviour
         RefreshMoveButton();
         RefreshItemButton();
         CaptureRuntimeDisplayState();
+        RefreshHoveredSkillTooltip();
+    }
+
+    private void RefreshHoveredSkillTooltip()
+    {
+        if (!isSkillTooltipVisible || isPassiveSkillTooltip || hoveredActiveSkillButton == null)
+            return;
+
+        Button button = hoveredActiveSkillButton;
+        int slot = button == skill01Button ? 0 : button == skill02Button ? 1 :
+                   button == skill03Button ? 2 : button == skill04Button ? 3 : -1;
+        if (slot < 0 || boundRuntime == null)
+        {
+            HideSkillTooltip();
+            return;
+        }
+
+        SkillMasterData currentSkill = ResolveSkillData(GetSkillIdForDisplaySlot(slot));
+        if (currentSkill == null)
+        {
+            HideSkillTooltip();
+            return;
+        }
+
+        skillTooltipAnchor = null;
+        isPassiveSkillTooltip = false;
+        ShowSkillTooltip(currentSkill);
+    }
+
+    private void ShowHoveredActiveSkillTooltip(Button button, SkillMasterData skillData)
+    {
+        hoveredActiveSkillButton = button;
+        skillTooltipAnchor = null;
+        isPassiveSkillTooltip = false;
+        ShowSkillTooltip(skillData);
     }
 
     private bool HasRuntimeDisplayChanged()
@@ -3225,14 +3340,23 @@ public class BattleCharacterPanelUI : MonoBehaviour
         Image normalBackground = FindChildImage(button.transform, normalBackgroundName);
         Image hoverBackground = FindChildImage(button.transform, hoverBackgroundName);
 
+        // Move / Flip / Compound use the simple TooltipUI instead of TooltipPanel.
+        bool isMove = button == moveButton;
+        bool isFlip = button == flipButton;
+        bool isCompound = button == itemButton;
         hover.Configure(
             normalBackground,
             hoverBackground,
             button.GetComponent<RectTransform>(),
             previewSkillData,
             boundRuntime,
-            ShowSkillTooltip,
-            HideSkillTooltip
+            data =>
+            {
+                if (!isMove && !isFlip && !isCompound) return;
+                equipmentTooltipAnchor = button.GetComponent<RectTransform>();
+                ShowActionButtonTooltip(isMove ? 0 : isFlip ? 1 : 2);
+            },
+            (isMove || isFlip || isCompound) ? (Action)HideEquipmentTooltip : null
         );
 
         hover.SetLineFeedbackMode(lineFeedbackMode, persistentSelectionProvider);
@@ -3291,7 +3415,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             button.GetComponent<RectTransform>(),
             null,
             boundRuntime,
-            ShowSkillTooltip,
+            data => ShowHoveredActiveSkillTooltip(button, data),
             HideSkillTooltip
         );
     }
@@ -3657,7 +3781,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             {
                 hover.SetSkillRangePreview(skillData);
                 hover.SetPreviewCharacter(boundRuntime);
-                hover.SetSkillInfoHandler(ShowSkillTooltip, HideSkillTooltip);
+                hover.SetSkillInfoHandler(data => ShowHoveredActiveSkillTooltip(button, data), HideSkillTooltip);
             }
         }
 
@@ -4091,7 +4215,17 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
             // TooltipPanel의 Detail도 다른 스킬 설명 UI와 동일하게
             // effecticon 링크를 실제 상태효과 아이콘 이미지로 렌더링합니다.
+            // Only this detail field receives underlined effect links; icon layout remains unchanged.
+            tooltipDetail = System.Text.RegularExpressions.Regex.Replace(
+                tooltipDetail,
+                "(<link=\"effecticon:[^\"]+\">)(.*?)(</link>)",
+                "$1<u>$2</u>$3",
+                System.Text.RegularExpressions.RegexOptions.Singleline);
             SkillEffectInlineIconUtility.SetText(skillTooltipDetailText, tooltipDetail);
+            SkillEffectInlineIconRenderer inlineRenderer = skillTooltipDetailText.GetComponent<SkillEffectInlineIconRenderer>();
+            if (inlineRenderer != null)
+                inlineRenderer.SetUnderlineIcons(true);
+            HideSkillDetailEffectHover();
         }
 
         SetSkillInfoImage(skillTooltipRangeImage, ResolveSkillRangeIcon(skillData.RangeId));
@@ -4111,14 +4245,302 @@ public class BattleCharacterPanelUI : MonoBehaviour
         EnsureSkillTooltipCanvasGroup();
         isSkillTooltipVisible = true;
 
-        // 첫 프레임부터 커서 옆에 나타나도록 활성화 직후 위치를 먼저 맞춥니다.
+        // 첫 프레임부터 호버한 버튼의 중심을 기준으로 위치를 배치합니다.
         UpdateSkillTooltipPosition();
         StartSkillTooltipFade(1f, skillTooltipFadeInDuration, false);
     }
 
     private void HideSkillTooltip()
     {
+        // 버튼에서 패널로 향하는 경로에 있을 때만 계속 표시합니다.
+        if (IsPointerInSkillTooltipHoverArea())
+            return;
+
+        HideSkillTooltipNow();
+    }
+
+    private void UpdateSkillTooltipHoverRetention()
+    {
+        if (!isSkillTooltipVisible || skillTooltipPanel == null || !skillTooltipPanel.activeInHierarchy)
+            return;
+
+        if (!IsPointerInSkillTooltipHoverArea())
+            HideSkillTooltipNow();
+    }
+
+    private bool IsPointerInSkillTooltipHoverArea()
+    {
+        if (!isSkillTooltipVisible || skillTooltipPanel == null || !skillTooltipPanel.activeInHierarchy)
+            return false;
+
+        if (IsPointerOverSkillTooltipSource() || IsPointerOverSkillTooltip())
+            return true;
+
+        RectTransform source = GetSkillTooltipSourceRect();
+        RectTransform back = GetSkillTooltipBackRect();
+        if (source == null || back == null || !source.gameObject.activeInHierarchy)
+            return false;
+
+        return IsPointerInsideTooltipBridge(source, back, Input.mousePosition);
+    }
+
+    private RectTransform GetSkillTooltipSourceRect()
+    {
+        return isPassiveSkillTooltip ? skillTooltipAnchor :
+            hoveredActiveSkillButton != null ? hoveredActiveSkillButton.GetComponent<RectTransform>() : null;
+    }
+
+    private RectTransform GetSkillTooltipBackRect()
+    {
+        if (skillTooltipPanel == null)
+            return null;
+        Transform back = skillTooltipPanel.transform.Find("Background/Back");
+        return back != null ? back as RectTransform : skillTooltipRectTransform;
+    }
+
+    private bool IsPointerOverSkillTooltip()
+    {
+        RectTransform back = GetSkillTooltipBackRect();
+        if (back == null || !back.gameObject.activeInHierarchy)
+            return false;
+        Canvas canvas = back.GetComponentInParent<Canvas>();
+        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+        return RectTransformUtility.RectangleContainsScreenPoint(back, Input.mousePosition, camera);
+    }
+
+    // 두 UI 사이의 빈 공간 중 직접 연결되는 부분만 통과 영역으로 허용합니다.
+    // 타이머 대신 실제 커서 위치를 검사하므로 다른 방향으로 나가면 즉시 닫힙니다.
+    private static bool IsPointerInsideTooltipBridge(RectTransform source, RectTransform target, Vector2 pointer)
+    {
+        Rect a = GetRectOnScreen(source);
+        Rect b = GetRectOnScreen(target);
+        if (a.width <= 0f || a.height <= 0f || b.width <= 0f || b.height <= 0f)
+            return false;
+
+        Vector2 p0, p1, p2, p3;
+        if (a.xMax <= b.xMin)
+        {
+            p0 = new Vector2(a.xMax, a.yMin); p1 = new Vector2(a.xMax, a.yMax);
+            p2 = new Vector2(b.xMin, b.yMax); p3 = new Vector2(b.xMin, b.yMin);
+        }
+        else if (b.xMax <= a.xMin)
+        {
+            p0 = new Vector2(b.xMax, b.yMin); p1 = new Vector2(b.xMax, b.yMax);
+            p2 = new Vector2(a.xMin, a.yMax); p3 = new Vector2(a.xMin, a.yMin);
+        }
+        else if (a.yMax <= b.yMin)
+        {
+            p0 = new Vector2(a.xMin, a.yMax); p1 = new Vector2(a.xMax, a.yMax);
+            p2 = new Vector2(b.xMax, b.yMin); p3 = new Vector2(b.xMin, b.yMin);
+        }
+        else if (b.yMax <= a.yMin)
+        {
+            p0 = new Vector2(b.xMin, b.yMax); p1 = new Vector2(b.xMax, b.yMax);
+            p2 = new Vector2(a.xMax, a.yMin); p3 = new Vector2(a.xMin, a.yMin);
+        }
+        else
+        {
+            return false; // 겹치는 경우 두 Rect 자체로 판정합니다.
+        }
+        return PointInTriangle(pointer, p0, p1, p2) || PointInTriangle(pointer, p0, p2, p3);
+    }
+
+    private static Rect GetRectOnScreen(RectTransform rect)
+    {
+        Canvas canvas = rect.GetComponentInParent<Canvas>();
+        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+        Vector3[] corners = new Vector3[4];
+        rect.GetWorldCorners(corners);
+        Vector2 min = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
+        Vector2 max = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
+        for (int i = 0; i < corners.Length; i++)
+        {
+            Vector2 point = RectTransformUtility.WorldToScreenPoint(camera, corners[i]);
+            min = Vector2.Min(min, point);
+            max = Vector2.Max(max, point);
+        }
+        return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+    }
+
+    private static bool PointInTriangle(Vector2 p, Vector2 a, Vector2 b, Vector2 c)
+    {
+        float ab = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+        float bc = (c.x - b.x) * (p.y - b.y) - (c.y - b.y) * (p.x - b.x);
+        float ca = (a.x - c.x) * (p.y - c.y) - (a.y - c.y) * (p.x - c.x);
+        return (ab >= 0f && bc >= 0f && ca >= 0f) || (ab <= 0f && bc <= 0f && ca <= 0f);
+    }
+
+    private bool IsPointerOverSkillTooltipSource()
+    {
+        RectTransform source = GetSkillTooltipSourceRect();
+        if (source == null || !source.gameObject.activeInHierarchy)
+            return false;
+        Canvas canvas = source.GetComponentInParent<Canvas>();
+        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+        return RectTransformUtility.RectangleContainsScreenPoint(source, Input.mousePosition, camera);
+    }
+
+    // Each effect link is anchored to its own rendered text and icon, not the whole panel.
+    private Vector2 GetSkillDetailEffectTooltipScreenPosition(int linkIndex)
+    {
+        TMP_Text text = skillTooltipDetailText;
+        if (text == null)
+            return Input.mousePosition;
+
+        text.ForceMeshUpdate();
+        TMP_TextInfo info = text.textInfo;
+        if (linkIndex < 0 || linkIndex >= info.linkCount)
+            return Input.mousePosition;
+
+        TMP_LinkInfo link = info.linkInfo[linkIndex];
+        float right = float.NegativeInfinity;
+        float top = float.NegativeInfinity;
+        float bottom = float.PositiveInfinity;
+        for (int i = link.linkTextfirstCharacterIndex;
+             i < link.linkTextfirstCharacterIndex + link.linkTextLength && i < info.characterCount; i++)
+        {
+            TMP_CharacterInfo ch = info.characterInfo[i];
+            right = Mathf.Max(right, ch.topRight.x);
+            top = Mathf.Max(top, ch.ascender);
+            bottom = Mathf.Min(bottom, ch.descender);
+        }
+
+        // The icon is a separate UI Image, positioned by SkillEffectInlineIconRenderer.
+        string iconName = "EffectIcon_" + link.GetLinkID().Substring("effecticon:".Length);
+        RectTransform iconRect = FindSkillDetailEffectIcon(iconName);
+        if (iconRect != null)
+        {
+            Vector3[] corners = new Vector3[4];
+            iconRect.GetWorldCorners(corners);
+            for (int i = 0; i < corners.Length; i++)
+            {
+                Vector3 local = text.rectTransform.InverseTransformPoint(corners[i]);
+                right = Mathf.Max(right, local.x);
+                top = Mathf.Max(top, local.y);
+                bottom = Mathf.Min(bottom, local.y);
+            }
+        }
+
+        if (float.IsNegativeInfinity(right))
+            return Input.mousePosition;
+
+        Canvas canvas = text.canvas;
+        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? (canvas.worldCamera != null ? canvas.worldCamera : Camera.main) : null;
+        // Convert the actual effect boundary into screen coordinates first.
+        // Applying a UI-space offset here would scale it by the Detail text canvas,
+        // which can differ from the status tooltip canvas after resolution changes.
+        Vector3 localAnchor = new Vector3(right, (top + bottom) * 0.5f, 0f);
+        return RectTransformUtility.WorldToScreenPoint(camera, text.rectTransform.TransformPoint(localAnchor));
+    }
+
+    private RectTransform FindSkillDetailEffectIcon(string iconName)
+    {
+        if (skillTooltipDetailText == null)
+            return null;
+        RectTransform root = skillTooltipDetailText.rectTransform;
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child.name == iconName)
+                return child as RectTransform;
+        }
+        return null;
+    }
+
+    private void UpdateSkillDetailEffectHover()
+    {
+        if (!isSkillTooltipVisible || skillTooltipDetailText == null ||
+            !skillTooltipDetailText.gameObject.activeInHierarchy)
+        {
+            HideSkillDetailEffectHover();
+            return;
+        }
+
+        Canvas canvas = skillTooltipDetailText.canvas;
+        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? (canvas.worldCamera != null ? canvas.worldCamera : Camera.main) : null;
+        skillTooltipDetailText.ForceMeshUpdate();
+        TMP_TextInfo info = skillTooltipDetailText.textInfo;
+        int index = TMP_TextUtilities.FindIntersectingLink(skillTooltipDetailText, Input.mousePosition, camera);
+
+        // Images drawn beside the TMP links must also be hover targets.
+        if (index < 0)
+        {
+            for (int i = 0; i < info.linkCount; i++)
+            {
+                string id = info.linkInfo[i].GetLinkID();
+                if (string.IsNullOrEmpty(id) || !id.StartsWith("effecticon:", StringComparison.Ordinal))
+                    continue;
+                RectTransform icon = FindSkillDetailEffectIcon("EffectIcon_" + id.Substring("effecticon:".Length));
+                if (icon != null && RectTransformUtility.RectangleContainsScreenPoint(icon, Input.mousePosition, camera))
+                {
+                    index = i;
+                    break;
+                }
+            }
+        }
+
+        string effectId = null;
+        if (index >= 0 && index < info.linkCount)
+        {
+            string linkId = info.linkInfo[index].GetLinkID();
+            if (!string.IsNullOrEmpty(linkId) && linkId.StartsWith("effecticon:", StringComparison.Ordinal))
+                effectId = linkId.Substring("effecticon:".Length);
+        }
+
+        if (string.IsNullOrEmpty(effectId))
+        {
+            HideSkillDetailEffectHover();
+            return;
+        }
+
+        if (detailEffectTooltip == null)
+            detailEffectTooltip = UnitStatusEffectTooltipUI.GetOrCreate();
+        if (detailEffectTooltip == null)
+            return;
+
+        Vector2 position = GetSkillDetailEffectTooltipScreenPosition(index)
+            + detailEffectTooltip.GetPinnedOffsetInScreenPixels(skillEffectTooltipOffset);
+        if (effectId == hoveredDetailEffectId && index == hoveredDetailEffectLinkIndex)
+        {
+            if (detailEffectTooltip != null)
+                detailEffectTooltip.UpdatePinnedPosition(this, position);
+            return;
+        }
+
+        HideSkillDetailEffectHover();
+        DataManager manager = DataManager.Instance;
+        if (manager == null || manager.EffectDatabase == null ||
+            !manager.EffectDatabase.TryGet(effectId, out EffectMasterData effect) || effect == null)
+            return;
+
+        detailEffectTooltip = UnitStatusEffectTooltipUI.GetOrCreate();
+        if (detailEffectTooltip == null)
+            return;
+
+        hoveredDetailEffectId = effectId;
+        hoveredDetailEffectLinkIndex = index;
+        detailEffectPreview.Clear();
+        detailEffectPreview.Add(new StatusEffectRuntimeData(effectId, 1));
+        detailEffectTooltip.ShowPinned(this, detailEffectPreview, position);
+    }
+
+    private void HideSkillDetailEffectHover()
+    {
+        if (hoveredDetailEffectId == null)
+            return;
+        hoveredDetailEffectId = null;
+        hoveredDetailEffectLinkIndex = -1;
+        if (detailEffectTooltip != null)
+            detailEffectTooltip.Hide(this);
+    }
+
+    private void HideSkillTooltipNow()
+    {
+        HideSkillDetailEffectHover();
         isSkillTooltipVisible = false;
+        hoveredActiveSkillButton = null;
 
         if (skillTooltipPanel == null)
             return;
@@ -4146,9 +4568,49 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (skillTooltipCanvasGroup == null)
             skillTooltipCanvasGroup = skillTooltipPanel.AddComponent<CanvasGroup>();
 
-        // 툴팁이 커서의 UI Raycast를 가로채서 PointerExit가 발생하는 것을 막습니다.
-        skillTooltipCanvasGroup.interactable = false;
-        skillTooltipCanvasGroup.blocksRaycasts = false;
+        // 효과 아이콘의 링크/호버 이벤트를 받을 수 있도록 Raycast를 허용합니다.
+        skillTooltipCanvasGroup.interactable = true;
+        skillTooltipCanvasGroup.blocksRaycasts = true;
+        EnsureSkillTooltipRaycastPriority();
+    }
+
+    // TooltipPanel 뒤에 겹치는 Char_Select 등의 버튼으로 클릭이 통과하지 않도록
+    // TooltipPanel에 별도의 최상위 UI Raycaster를 둡니다.
+    private void EnsureSkillTooltipRaycastPriority()
+    {
+        if (skillTooltipPanel == null)
+            return;
+
+        Canvas tooltipCanvas = skillTooltipPanel.GetComponent<Canvas>();
+        if (tooltipCanvas == null)
+            tooltipCanvas = skillTooltipPanel.AddComponent<Canvas>();
+
+        Canvas parentCanvas = skillTooltipPanel.transform.parent != null
+            ? skillTooltipPanel.transform.parent.GetComponentInParent<Canvas>() : null;
+        tooltipCanvas.overrideSorting = true;
+        if (parentCanvas != null)
+        {
+            tooltipCanvas.sortingLayerID = parentCanvas.sortingLayerID;
+            tooltipCanvas.sortingOrder = Mathf.Min(32767, parentCanvas.sortingOrder + 1);
+        }
+        else
+        {
+            tooltipCanvas.sortingOrder = 1;
+        }
+
+        if (skillTooltipPanel.GetComponent<GraphicRaycaster>() == null)
+            skillTooltipPanel.AddComponent<GraphicRaycaster>();
+
+        // Back이 패널 전체 크기를 담당하며, Detail은 별도의 효과 호버에 사용합니다.
+        Transform backTransform = skillTooltipPanel.transform.Find("Background/Back");
+        if (backTransform != null)
+        {
+            Graphic backGraphic = backTransform.GetComponent<Graphic>();
+            if (backGraphic != null)
+                backGraphic.raycastTarget = true;
+        }
+        if (skillTooltipDetailText != null)
+            skillTooltipDetailText.raycastTarget = true;
     }
 
     private void StartSkillTooltipFade(float targetAlpha, float duration, bool deactivateWhenFinished)
@@ -4223,15 +4685,23 @@ public class BattleCharacterPanelUI : MonoBehaviour
             ? canvas.worldCamera
             : null;
 
-        Vector2 desiredScreenPosition = (Vector2)Input.mousePosition + skillTooltipCursorOffset;
-
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                parentRect,
-                desiredScreenPosition,
-                canvasCamera,
-                out Vector2 localPoint))
+        Vector2 localPoint;
+        if (isPassiveSkillTooltip)
         {
-            return;
+            if (!TryGetTooltipAnchorPoint(skillTooltipAnchor, parentRect, canvasCamera,
+                    out Vector2 anchorLocalPoint, useRightEdge: true))
+                return;
+            localPoint = anchorLocalPoint + passiveTooltipButtonOffset;
+        }
+        else
+        {
+            // All four active skill buttons use the same Active RectTransform reference.
+            if (skillTooltipActiveAnchor == null)
+                skillTooltipActiveAnchor = FindDirectChild(transform, "Active") as RectTransform;
+            if (!TryGetTooltipAnchorPoint(skillTooltipActiveAnchor, parentRect, canvasCamera,
+                    out Vector2 anchorLocalPoint))
+                return;
+            localPoint = anchorLocalPoint + skillTooltipActiveOffset;
         }
 
         Vector3 localPosition = skillTooltipRectTransform.localPosition;
@@ -4370,6 +4840,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void HandleLocaleTableReady(UnityEngine.Localization.Locale _)
     {
+        if (isEquipmentTooltipVisible && equipmentTooltipAnchor != null &&
+            itemButton != null && equipmentTooltipAnchor == itemButton.GetComponent<RectTransform>())
+            ShowActionButtonTooltip(2);
+
         if (displayedSkillInfoData == null)
             return;
 
