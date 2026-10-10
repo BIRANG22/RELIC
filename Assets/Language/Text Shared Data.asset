@@ -95,10 +95,6 @@ MonoBehaviour:
     m_Key: common.passive
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100700
-    m_Key: common.item
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100701
     m_Key: common.material
     m_Metadata:
@@ -209,10 +205,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100740
     m_Key: battle.event
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100741
-    m_Key: battle.loot
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100742
@@ -361,10 +353,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41385915678466129
     m_Key: data.skill_master.s_unique_01.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915678466130
-    m_Key: data.skill_master.s_unique_01.tooltip
     m_Metadata:
       m_Items: []
   - m_Id: 41385915682660423
@@ -2467,10 +2455,6 @@ MonoBehaviour:
     m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.5353c929
     m_Metadata:
       m_Items: []
-  - m_Id: 10173380895973513
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.4934ecf5
-    m_Metadata:
-      m_Items: []
   - m_Id: 10173380895973531
     m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.d4b36394
     m_Metadata:
@@ -3843,62 +3827,6 @@ MonoBehaviour:
     m_Key: intro.story.09
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458540449803
-    m_Key: ui.ydh.battletest.text.ec102afe
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449805
-    m_Key: ui.ydh.battletest.text.5f705503
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449808
-    m_Key: ui.ydh.battletest.text.034bd9f3
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449810
-    m_Key: ui.ydh.battletest.text.1750c8ef
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449812
-    m_Key: ui.ydh.battletest.text.f69cb1d1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449813
-    m_Key: ui.ydh.battletest.text.1814ebc6
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449815
-    m_Key: ui.ydh.battletest.text.c609c9dc
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449816
-    m_Key: ui.ydh.battletest.text.714b08dd
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449818
-    m_Key: ui.ydh.battletest.text.e86594de
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449819
-    m_Key: ui.ydh.battletest.text.38901857
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449820
-    m_Key: ui.ydh.battletest.text.3281ec84
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838401
-    m_Key: ui.ydh.battletest.text.c8756a72
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838403
-    m_Key: ui.ydh.battletest.text.e63f4bdf
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838404
-    m_Key: ui.ydh.battletest.text.086f8fd2
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838412
     m_Key: ui.battle.text.891c006d
     m_Metadata:
@@ -4265,10 +4193,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 13436147038191730
     m_Key: ui.lobby.text.ce00b05e
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13732721542946842
-    m_Key: ui.ydh.battletest.text.75dd6a4a
     m_Metadata:
       m_Items: []
   - m_Id: 13732721542946865
@@ -6419,14 +6343,6 @@ MonoBehaviour:
     m_Key: data.event.event_02.choice_3_failure_description
     m_Metadata:
       m_Items: []
-  - m_Id: 9164888147097975641
-    m_Key: data.event.event_02_f.choice_4_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975642
-    m_Key: data.event.event_02_f.choice_4_description
-    m_Metadata:
-      m_Items: []
   - m_Id: 9164888147097975643
     m_Key: data.event.event_03.choice_1_name
     m_Metadata:
@@ -7149,6 +7065,174 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 21535785274810399
     m_Key: data.monster_skill.s_monster_41.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353311506432
+    m_Key: data.skill_master.s_core_69.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866560
+    m_Key: data.skill_master.s_core_70.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866561
+    m_Key: data.effect.e_strike_by_target_poison.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866562
+    m_Key: data.effect.e_strike_by_target_poison.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866563
+    m_Key: data.effect.e_rune_turn1_ward.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866564
+    m_Key: data.effect.e_rune_turn1_ward.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866565
+    m_Key: data.effect.e_rune_armor10_smite.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866566
+    m_Key: data.effect.e_rune_armor10_smite.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866567
+    m_Key: data.effect.e_rune_turn_start_lose_hp_boost.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866568
+    m_Key: data.effect.e_rune_turn_start_lose_hp_boost.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866569
+    m_Key: data.effect.e_rune_low_hp_damage_percent.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866570
+    m_Key: data.effect.e_rune_low_hp_damage_percent.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866571
+    m_Key: data.effect.e_rune_first_registered_skill_attack_count.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866572
+    m_Key: data.effect.e_rune_first_registered_skill_attack_count.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866573
+    m_Key: data.effect.e_rune_consecutive_attack_final_pierce.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866574
+    m_Key: data.effect.e_rune_consecutive_attack_final_pierce.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866575
+    m_Key: data.effect.e_rune_multi_hit_damage_delta.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866576
+    m_Key: data.effect.e_rune_multi_hit_damage_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866577
+    m_Key: data.effect.e_rune_pierce_hit_bleed.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866578
+    m_Key: data.effect.e_rune_pierce_hit_bleed.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866579
+    m_Key: data.effect.e_rune_single_target_damage_delta.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866580
+    m_Key: data.effect.e_rune_single_target_damage_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866581
+    m_Key: data.effect.e_rune_status_apply_armor.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866582
+    m_Key: data.effect.e_rune_status_apply_armor.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866583
+    m_Key: data.effect.e_rune_adjacent_ally_buff_delta.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866584
+    m_Key: data.effect.e_rune_adjacent_ally_buff_delta.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866585
+    m_Key: data.effect.e_rune_debuff_apply_poison.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866586
+    m_Key: data.effect.e_rune_debuff_apply_poison.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866587
+    m_Key: data.effect.e_rune_zero_mana_next_first_skill_free.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866588
+    m_Key: data.effect.e_rune_zero_mana_next_first_skill_free.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866589
+    m_Key: data.effect.e_rune_turn_start_adjacent_ally_heal.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060864
+    m_Key: data.effect.e_rune_turn_start_adjacent_ally_heal.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060865
+    m_Key: data.effect.e_rune_kill_unique_resource.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060866
+    m_Key: data.effect.e_rune_kill_unique_resource.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060867
+    m_Key: data.effect.e_rune_high_hp_heal_remove_first_debuff.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060868
+    m_Key: data.effect.e_rune_high_hp_heal_remove_first_debuff.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060869
+    m_Key: data.effect.e_rune_vulnerable_bonus_percent.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060870
+    m_Key: data.effect.e_rune_vulnerable_bonus_percent.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060871
+    m_Key: data.effect.e_rune_max_unique_resource_all_enemy_vulnerable.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060872
+    m_Key: data.effect.e_rune_max_unique_resource_all_enemy_vulnerable.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060873
+    m_Key: data.event.event_02_f.choice_2_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060874
+    m_Key: data.event.event_02_f.choice_2_description
     m_Metadata:
       m_Items: []
   m_Metadata:

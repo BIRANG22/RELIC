@@ -98,10 +98,6 @@ MonoBehaviour:
     m_Localized: Passive
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100700
-    m_Localized: Item
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100701
     m_Localized: Material
     m_Metadata:
@@ -212,10 +208,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100740
     m_Localized: Event
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100741
-    m_Localized: Loot
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100742
@@ -366,10 +358,6 @@ MonoBehaviour:
     m_Localized: Dragon's Protection
     m_Metadata:
       m_Items: []
-  - m_Id: 41385915678466130
-    m_Localized: Grants 6 armor to you and your allies with the power of the dragon.
-    m_Metadata:
-      m_Items: []
   - m_Id: 41385915682660423
     m_Localized: Crescent Swing+
     m_Metadata:
@@ -379,7 +367,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048992
-    m_Localized: Recovers {ValueRate1} Karma when exploration begins.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048993
@@ -387,8 +375,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048994
-    m_Localized: When Karma reaches maximum, gain {ValueRate1} Amplification next
-      turn.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048995
@@ -396,8 +383,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048996
-    m_Localized: The Armor granted by Dragon's Protection increases by {ValueRate1}
-      times.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048997
@@ -405,8 +391,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048998
-    m_Localized: The damage of Earth Cleave increases by {ValueRate1}, and the knockback
-      is changed to {ValueRate2}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048999
@@ -414,7 +399,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691049000
-    m_Localized: Damage from swings and slashes increases by {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691049001
@@ -422,7 +407,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631872
-    m_Localized: Recovers {ValueRate1} Karma when exploration begins.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631873
@@ -430,7 +415,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631874
-    m_Localized: When Karma reaches maximum, you get a Smash {ValueRate1} next turn.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631875
@@ -438,8 +423,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631876
-    m_Localized: The number of attacks of Swift Sword Smoke increases by {ValueRate1}
-      times.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631877
@@ -447,7 +431,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631878
-    m_Localized: The damage of the flurry of swords increases by {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631879
@@ -455,8 +439,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631880
-    m_Localized: Damage from 3 types of Swift Sword and 1 type of Swift Sword increases
-      by {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631881
@@ -464,7 +447,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631882
-    m_Localized: Recovers {ValueRate1} Karma when exploration begins.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631883
@@ -472,8 +455,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631884
-    m_Localized: When Karma reaches maximum, Mana is recovered {ValueRate1} in the
-      next turn.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631885
@@ -481,7 +463,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631886
-    m_Localized: The damage of sharp light increases by {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631887
@@ -489,7 +471,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631888
-    m_Localized: The Amplification granted by the Will of Light increases by {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631889
@@ -497,7 +479,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631890
-    m_Localized: The range of Nia's Miasma and Nia's Flash increases.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631891
@@ -505,7 +487,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631892
-    m_Localized: Recovers {ValueRate1} Karma when exploration begins.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631893
@@ -513,8 +495,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631894
-    m_Localized: When Karma reaches maximum, grants {ValueRate1} armor to yourself
-      and the ally with the lowest HP in the next turn.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631895
@@ -522,7 +503,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631896
-    m_Localized: HP recovered through prayers of salvation increases by {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631897
@@ -530,7 +511,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631898
-    m_Localized: Holy Strike damage increases by {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631899
@@ -538,8 +519,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631900
-    m_Localized: The Mana consumption of regime control and attack and defense is
-      reduced by {ValueRate1}.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631901
@@ -4025,10 +4005,6 @@ MonoBehaviour:
     m_Localized: I have no Memories of any possible enhancements.
     m_Metadata:
       m_Items: []
-  - m_Id: 10173380895973513
-    m_Localized: Buff
-    m_Metadata:
-      m_Items: []
   - m_Id: 10173380895973531
     m_Localized: current stamina
     m_Metadata:
@@ -5037,62 +5013,6 @@ MonoBehaviour:
     m_Localized: One by one they gathered there.
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458540449803
-    m_Localized: Select skill
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449805
-    m_Localized: Slot movement
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449808
-    m_Localized: resource 6
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449810
-    m_Localized: Open/Close Skill
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449812
-    m_Localized: turn end
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449813
-    m_Localized: Skill movement
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449815
-    m_Localized: maintenance
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449816
-    m_Localized: character selection
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449818
-    m_Localized: Character HUD Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449819
-    m_Localized: Cancel registration
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458540449820
-    m_Localized: Timeline Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838401
-    m_Localized: Skill List Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838403
-    m_Localized: ability
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838404
-    m_Localized: grid description
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838412
     m_Localized: 3. Hold on to the Memories of battle.
     m_Metadata:
@@ -5471,10 +5391,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 13436147038191730
     m_Localized: active
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13732721542946842
-    m_Localized: Spider Queen
     m_Metadata:
       m_Items: []
   - m_Id: 13732721542946865
@@ -6733,14 +6649,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 9164888147097975640
     m_Localized: '3~12: Reduces current health of all party members by 5'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975641
-    m_Localized: Leave the Place
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975642
-    m_Localized: Event ends
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975643

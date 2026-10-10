@@ -98,10 +98,6 @@ MonoBehaviour:
     m_Localized: Pasivo
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100700
-    m_Localized: Objeto
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100701
     m_Localized: Material
     m_Metadata:
@@ -212,10 +208,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100740
     m_Localized: Evento
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100741
-    m_Localized: "Bot\xEDn"
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100742
@@ -364,10 +356,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41385915678466129
     m_Localized: "Protecci\xF3n del Drag\xF3n"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915678466130
-    m_Localized: "Te otorga 6 armaduras a ti y a tus aliados con el poder del drag\xF3n."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915682660423
@@ -4017,14 +4005,6 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975640
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975641
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975642
     m_Localized: 
     m_Metadata:
       m_Items: []
