@@ -256,7 +256,8 @@ public class BattleTimelinePreviewEntry
 
     private static bool IsDamageEffect(string effectId)
     {
-        return effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike";
+        return effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike" ||
+               effectId == "E_StrikeByTargetPoison";
     }
 
     private static string GetDisplayValueText(List<SkillEffectEntry> effectEntries, int payAmount)
@@ -324,6 +325,7 @@ public class BattleTimelinePreviewEntry
         {
             case "E_Strike":
             case "E_Pierce":
+            case "E_StrikeByTargetPoison":
             case "E_Poison":
             case "E_Bleed":
             case "E_Ward":

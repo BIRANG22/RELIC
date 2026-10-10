@@ -12,6 +12,7 @@ public class BattleEffectRegistry
         Register(new ArmorStrikeEffect());
         Register(new RandomStrikeEffect());
         Register(new StrikeByVulnerableEffect());
+        Register(new StrikeByTargetPoisonEffect());
         Register(new MissingHpStrikeEffect());
         Register(new HealEffect());
         Register(new CureEffect());

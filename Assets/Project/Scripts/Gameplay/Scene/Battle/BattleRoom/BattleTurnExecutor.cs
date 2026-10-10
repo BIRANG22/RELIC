@@ -504,6 +504,7 @@ public class BattleTurnExecutor : MonoBehaviour
             simulator.Simulate(timelineController);
 
             List<BattleActionBatch> batches = builder.Build(timelineController);
+            BattleEquipmentEffectService.PrepareConsecutiveAttackRune(batches);
             BattleConsecutiveActionPlan consecutiveActionPlan =
                 BattleConsecutiveActionPlan.Build(
                     batches,
@@ -750,7 +751,9 @@ public class BattleTurnExecutor : MonoBehaviour
 
             yield return ReturnCameraDefaultRoutine();
 
+            BattleEquipmentEffectService.PrepareConsecutiveAttackRune(batches);
             BattleConsecutiveActionPlan consecutiveActionPlan =
+
                 BattleConsecutiveActionPlan.Build(
                     batches,
                     consecutiveActionSpeedMultiplier);

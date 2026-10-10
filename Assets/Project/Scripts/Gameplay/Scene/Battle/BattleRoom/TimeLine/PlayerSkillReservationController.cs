@@ -1673,7 +1673,8 @@ public class PlayerSkillReservationController : MonoBehaviour
     private static bool IsDamageEffectForPreview(string effectId)
     {
         return string.Equals(effectId, "E_Strike", StringComparison.Ordinal) ||
-               string.Equals(effectId, "E_Pierce", StringComparison.Ordinal);
+               string.Equals(effectId, "E_Pierce", StringComparison.Ordinal) ||
+               string.Equals(effectId, "E_StrikeByTargetPoison", StringComparison.Ordinal);
     }
 
     private void ConfirmMoveReservation(int selectedGridIndex)

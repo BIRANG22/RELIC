@@ -155,8 +155,8 @@ S_Core_49,짙은 그림자,Core,Rare,Cost,EnemyParty,1,Char_03,Debuff,E_Fatigue,
 S_Core_50,짙은 그림자+,Core,Rare,Cost,EnemyParty,2,Char_03,Debuff,E_Fatigue,3,1,4,Direction,Range_28,{E_Fatigue} {ValueRate1} 부여,
 S_Core_51,영혼 흡수,Core,Rare,Cost,EnemyParty,1,Char_03,Attack,E_Strike;E_RestoreManaPerHitTarge,6;1,1;1,5,Direction,Range_27,{E_Strike} {ValueRate1} / 적중한 적의 수만큼 마나 회복,
 S_Core_52,영혼 흡수+,Core,Rare,Cost,EnemyParty,2,Char_03,Attack,E_Strike;E_RestoreManaPerHitTarge,8;1,1;1,4,Direction,Range_27,{E_Strike} {ValueRate1} / 적중한 적의 수만큼 마나 회복,
-S_Core_53,독성발현,Core,Epic,Cost,EnemyParty,1,Char_03,Attack,,1,1,6,Direction,Range_20,대상이 보유한 {E_Poison} 수치만큼 {E_Strike}를 입힘,
-S_Core_54,독성발현+,Core,Epic,Cost,EnemyParty,2,Char_03,Attack,,1,1,5,Direction,Range_21,대상이 보유한 {E_Poison} 수치만큼 {E_Strike}를 입힘,
+S_Core_53,독성발현,Core,Epic,Cost,EnemyParty,1,Char_03,Attack,E_StrikeByTargetPoison,1,1,6,Direction,Range_20,대상이 보유한 {E_Poison} 수치만큼 {E_Strike}를 입힘,
+S_Core_54,독성발현+,Core,Epic,Cost,EnemyParty,2,Char_03,Attack,E_StrikeByTargetPoison,1,1,5,Direction,Range_21,대상이 보유한 {E_Poison} 수치만큼 {E_Strike}를 입힘,
 S_Core_55,니아의 불꽃,Core,Epic,Ulti,EnemyParty,1,Char_03,Debuff,E_Bondage,1,1,1,Direction,Range_03,{E_Bondage} {ValueRate1} 부여,
 S_Core_56,니아의 불꽃+,Core,Epic,Ulti,EnemyParty,2,Char_03,Debuff,E_Bondage,1,1,1,Direction,Range_06,{E_Bondage} {ValueRate1} 부여,
 S_Core_57,니아의 속삭임,Core,Unique,Cost,PlayerParty,1,Char_03,Buff,E_Swift,1,1,8,Direction,Range_Party,{E_Swift} {ValueRate1} 부여,
@@ -171,8 +171,8 @@ S_Core_65,수호의 기도,Core,Common,Cost,PlayerParty,1,Char_04,Buff,E_Armor;E
 S_Core_66,수호의 기도+,Core,Common,Cost,PlayerParty,2,Char_04,Buff,E_Armor;E_Ward,5;2,1;1,3,Direction,Range_b_02,{E_Armor} {ValueRate1} / {E_Ward} {ValueRate1} 부여,
 S_Core_67,메디테이션,Core,Rare,Cost,Self,1,Char_04,Buff,E_Karma,1,1,5,Direction,Range_Self,{E_Karma}  {ValueRate1} 획득,
 S_Core_68,메디테이션+,Core,Rare,Cost,Self,2,Char_04,Buff,E_Karma,1,1,4,Direction,Range_Self,{E_Karma}  {ValueRate1} 획득,
-S_Core_69,제네시스,Core,Rare,Cost,EnemyParty,1,Char_04,Attack,E_Strike,1,3,4,Direction,Range_20,{E_Strike} {ValueRate1}{CountRate1},
-S_Core_70,제네시스+,Core,Rare,Cost,EnemyParty,2,Char_04,Attack,E_Strike,1,4,4,Direction,Range_21,{E_Strike} {ValueRate1}{CountRate1},
+S_Core_69,제네시스,Core,Rare,Cost,EnemyParty,1,Char_04,Attack,E_RandomStrike,8,3,12,Direction,Range_20,무작위 적{E_Strike} {ValueRate1}{CountRate1},
+S_Core_70,제네시스+,Core,Rare,Cost,EnemyParty,2,Char_04,Attack,E_RandomStrike,8,4,12,Direction,Range_21,무작위 적{E_Strike} {ValueRate1}{CountRate1},
 S_Core_71,파멸의 낙인,Core,Rare,Ulti,EnemyParty,1,Char_04,Debuff,E_Vulnerable,2,1,1,Direction,Range_22,{E_Vulnerable} {ValueRate1} 부여,
 S_Core_72,파멸의 낙인+,Core,Rare,Ulti,EnemyParty,2,Char_04,Debuff,E_Vulnerable,3,1,1,Direction,Range_22,{E_Vulnerable} {ValueRate1} 부여,
 S_Core_73,결속,Core,Epic,Cost,PlayerParty,1,Char_04,Buff,E_Bond,1,1,7,Direction,Range_Party,{E_Bond} {ValueRate1} 부여,
@@ -1286,16 +1286,25 @@ E_RandomStrike,무작위 연속 타격,Neutral,0,범위 내 살아 있는 적을
 E_StrikeByVulnerable,취약 비례 피해,Neutral,0,기본 피해에 대상 취약 수치와 횟수계수의 곱을 더한다.,,SkillMaster: S_Core_75~76
 E_StrikeCountByBuff,버프 종류 비례 타격,Neutral,0,시전자의 서로 다른 이로운 효과 종류 수만큼 타격 횟수가 증가한다.,,확장 효과
 E_StrikeCountByDebuff,디버프 종류 비례 타격,Neutral,0,대상의 서로 다른 해로운 효과 종류 수만큼 타격 횟수가 증가한다.,,SkillMaster: S_Core_31~32
-
-
-
-
-
-
-
-
-
-
+E_StrikeByTargetPoison,중독 비례 피해,Neutral,0,대상이 보유한 중독 수치만큼 피해를 준다.,,SkillMaster: S_Core_53~54
+E_Rune_Turn1_Ward,1턴 시작 시 장막을 수치 획득한다.,Neutral,0,1턴 시작 시 장막을 {ValueRate1} 획득한다.,,Rune_51
+E_Rune_Armor10_Smite,턴 시작 시 방어도가 수치 이상이라면 강타 1을 획득한다.,Neutral,0,턴 시작 시 방어도가 {ValueRate1} 이상이라면 강타 1을 획득한다.,,Rune_53
+E_Rune_Turn_Start_Lose_HP_Boost,매 턴 시작 시 생명력 3을 잃고 증폭 수치을 획득한다.,Neutral,0,매 턴 시작 시 생명력 3을 잃고 증폭 {ValueRate1}을 획득한다.,,Rune_54
+E_Rune_Low_HP_Damage_Percent,현재 생명력이 50% 이하라면 주는 피해가 수치% 증가한다.,Neutral,0,현재 생명력이 50% 이하라면 주는 피해가 {ValueRate1}% 증가한다.,,Rune_55
+E_Rune_First_Registered_Skill_Attack_Count,전투에서 처음 등록한 공격 기억의 공격 횟수가 수치회 증가한다.,Neutral,0,전투에서 처음 등록한 공격 기억의 공격 횟수가 {ValueRate1}회 증가한다.,,Rune_56
+E_Rune_Consecutive_Attack_Final_Pierce,연속 등록한 공격 수만큼 마지막 공격 뒤에 관통 피해를 준다.,Neutral,0,연속 등록한 공격 수만큼 마지막 공격 뒤에 관통 피해를 준다.,,Rune_57
+E_Rune_Multi_Hit_Damage_Delta,공격 횟수가 횟수회 이상인 기억의 피해가 수치 증가한다.,Neutral,0,공격 횟수가 {CountRate1}회 이상인 기억의 피해가 {ValueRate1} 증가한다.,,Rune_58
+E_Rune_Pierce_Hit_Bleed,관통 피해 적중 시 대상에게 출혈을 수치 부여한다.,Neutral,0,관통 피해 적중 시 대상에게 출혈을 {ValueRate1} 부여한다.,,Rune_59
+E_Rune_Single_Target_Damage_Delta,공격 대상이 적 1명뿐이라면 피해가 수치 증가한다.,Neutral,0,공격 대상이 적 1명뿐이라면 피해가 {ValueRate1} 증가한다.,,Rune_60
+E_Rune_Status_Apply_Armor,버프 또는 디버프 부여 시 실제 부여한 수치만큼 방어도를 획득한다.,Neutral,0,버프 또는 디버프 부여 시 실제 부여한 수치만큼 방어도를 획득한다.,,Rune_62
+E_Rune_Adjacent_Ally_Buff_Delta,자신과 인접한 아군에게 부여하는 버프 수치가 수치 증가한다.,Neutral,0,자신과 인접한 아군에게 부여하는 버프 수치가 {ValueRate1} 증가한다.,,Rune_63
+E_Rune_Debuff_Apply_Poison,적에게 디버프 부여 시 추가로 중독을 수치 부여한다.,Neutral,0,적에게 디버프 부여 시 추가로 중독을 {ValueRate1} 부여한다.,,Rune_64
+E_Rune_Zero_Mana_Next_First_Skill_Free,턴 종료 시 마나가 0이면 다음 턴 첫 등록 기억의 마나 소모가 0이 된다.,Neutral,0,턴 종료 시 마나가 0이면 다음 턴 첫 등록 기억의 마나 소모가 0이 된다.,,Rune_65
+E_Rune_Turn_Start_Adjacent_Ally_Heal,매 턴 시작 시 인접한 아군에게 재생을 수치 부여한다.,Neutral,0,매 턴 시작 시 인접한 아군에게 재생을 {ValueRate1} 부여한다.,,Rune_66
+E_Rune_Kill_Unique_Resource,처치한 적 1명당 카르마를 수치 획득한다.,Neutral,0,처치한 적 1명당 카르마를 {ValueRate1} 획득한다.,,Rune_67
+E_Rune_High_HP_Heal_Remove_First_Debuff,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 수치 감소한다.,Neutral,0,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 {ValueRate1} 감소한다.,,Rune_68
+E_Rune_Vulnerable_Bonus_Percent,자신이 공격할 때 취약의 피해 증가율이 수치%로 증가한다.,Neutral,0,자신이 공격할 때 취약의 피해 증가율이 {ValueRate1}%로 증가한다.,,Rune_69
+E_Rune_Max_Unique_Resource_All_Enemy_Vulnerable,카르마가 최대치에 도달하면 모든 적에게 취약을 수치 부여한다.,Neutral,0,카르마가 최대치에 도달하면 모든 적에게 취약을 {ValueRate1} 부여한다.,,Rune_70
 
 # Map
 맵ID,이름,타입,전투맵ID,이벤트ID,스테이지 맵,등장가중치,전투난이도
@@ -1530,26 +1539,26 @@ Range_Retreat06,-,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 # Rune
 룬ID,이름,대상캐릭터ID,대상스킬ID,효과ID,수치계수,횟수계수,해금가격,해금레벨,효과설명,레어도
 RuneId,Name,TargetCharacterId,TargetSkillId,EffectIds,ValueRate,CountRate,BlueDustiumCost,UnlockLevel,EffectDesc,Rarity
-Rune_51,용린·분기,Char_01,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복한다.,Exclusive
-Rune_52,용린·격앙,Char_01,0,E_Unique_Resource_Max_Reached_Boost,2,1,0,12,카르마가 최대에 도달하면 다음 턴에 증폭을 {ValueRate1} 얻는다.,Exclusive
-Rune_53,용린·수호,Char_01,S_Unique_01,E_Rune_Target_Armor_Multiplier,2,1,0,6,용의 가호로 부여하는 방어도가 {ValueRate1}배로 증가한다.,Exclusive
-Rune_54,용린·격진,Char_01,S_Unique_02,E_Rune_Target_Damage_Value_Delta;E_Rune_Target_Knockback_Value_Delta,2;3,1;1,0,15,"대지 가르기의 피해량이 {ValueRate1} 증가하고, 넉백이 {ValueRate2}칸으로 변경된다.",Exclusive
-Rune_55,용린·맹격,Char_01,S_Ability_01;S_Ability_02;S_Ability_03;S_Ability_04,E_Rune_Target_Damage_Value_Delta,1,1,0,3,휘두르기와 내려찍기의 피해량이 {ValueRate1} 증가한다.,Exclusive
-Rune_56,검심·예기,Char_02,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복한다.,Exclusive
-Rune_57,검심·절정,Char_02,0,E_Unique_Resource_Max_Reached_Smite,2,1,0,12,카르마가 최대에 도달하면 다음 턴에 강타를 {ValueRate1} 얻는다.,Exclusive
-Rune_58,검심·연무,Char_02,S_Unique_03,E_Rune_Target_Attack_Count_Delta,1,1,0,6,질풍검 연무의 공격 횟수가 {ValueRate1}회 증가한다.,Exclusive
-Rune_59,검심·일섬,Char_02,S_Unique_04,E_Rune_Target_Damage_Value_Delta,3,1,0,15,질풍검 일섬의 피해량이 {ValueRate1} 증가한다.,Exclusive
-Rune_60,검심·질풍,Char_02,S_Ability_05;S_Ability_06;S_Ability_07;S_Ability_08,E_Rune_Target_Damage_Value_Delta,1,1,0,3,질풍검 3식과 질풍검 1식의 피해량이 {ValueRate1} 증가한다.,Exclusive
-Rune_61,불씨·점화,Char_03,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복한다.,Exclusive
-Rune_62,불씨·온기,Char_03,0,E_Unique_Resource_Max_Reached_Cost_Recovery,2,1,0,12,카르마가 최대에 도달하면 다음 턴에 마나를 {ValueRate1} 회복한다.,Exclusive
-Rune_63,불씨·광휘,Char_03,S_Unique_05,E_Rune_Target_Damage_Value_Delta,2,1,0,6,날카로운 빛의 피해량이 {ValueRate1} 증가한다.,Exclusive
-Rune_64,불씨·의지,Char_03,S_Unique_06,E_Rune_Target_Boost_Value_Delta,1,1,0,15,빛의 의지로 부여하는 증폭이 {ValueRate1} 증가한다.,Exclusive
-Rune_65,불씨·확산,Char_03,S_Ability_09;S_Ability_10;S_Ability_11;S_Ability_12,E_Rune_Target_Range_Expand,1,1,0,3,니아의 독기와 니아의 섬광의 범위가 증가한다.,Exclusive
-Rune_66,은총·신심,Char_04,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복한다.,Exclusive
-Rune_67,은총·가호,Char_04,0,E_Unique_Resource_Max_Reached_Self_Lowest_Ally_Armor,5,1,0,12,카르마가 최대에 도달하면 다음 턴에 자신과 생명력이 가장 낮은 아군에게 방어도를 {ValueRate1} 부여한다.,Exclusive
-Rune_68,은총·구원,Char_04,S_Unique_07,E_Rune_Target_Heal_Value_Delta,1,1,0,6,구원의 기도로 회복하는 생명력이 {ValueRate1} 증가한다.,Exclusive
-Rune_69,은총·심판,Char_04,S_Unique_08,E_Rune_Target_Damage_Value_Delta,2,1,0,15,신성한 일격의 피해량이 {ValueRate1} 증가한다.,Exclusive
-Rune_70,은총·헌신,Char_04,S_Ability_13;S_Ability_14;S_Ability_15;S_Ability_16,E_Rune_Target_Skill_Cost_Delta,-1,1,0,3,정권 지르기와 공방일체의 마나 소모량이 {ValueRate1} 감소한다.,Exclusive
+Rune_51,용린·분기,Char_01,0,E_Rune_Turn1_Ward,1,1,0,9,1턴 시작 시 장막을 {ValueRate1} 획득한다.,Exclusive
+Rune_52,용린·격앙,Char_01,0,E_Overheal_To_Armor,1,1,0,12,생명력 회복 시 초과한 수치만큼 방어도를 획득한다.,Exclusive
+Rune_53,용린·수호,Char_01,0,E_Rune_Armor10_Smite,10,1,0,6,턴 시작 시 방어도가 {ValueRate1} 이상이라면 강타 1을 획득한다.,Exclusive
+Rune_54,용린·격진,Char_01,0,E_Rune_Turn_Start_Lose_HP_Boost,1,1,0,15,매 턴 시작 시 생명력 3을 잃고 증폭 {ValueRate1}을 획득한다.,Exclusive
+Rune_55,용린·맹격,Char_01,0,E_Rune_Low_HP_Damage_Percent,30,1,0,3,현재 생명력이 50% 이하라면 주는 피해가 {ValueRate1}% 증가한다.,Exclusive
+Rune_56,검심·예기,Char_02,0,E_Rune_First_Registered_Skill_Attack_Count,1,1,0,9,전투에서 처음 등록한 공격 기억의 공격 횟수가 {ValueRate1}회 증가한다.,Exclusive
+Rune_57,검심·절정,Char_02,0,E_Rune_Consecutive_Attack_Final_Pierce,1,1,0,12,연속 등록한 공격 수만큼 마지막 공격 뒤에 관통 피해를 준다.,Exclusive
+Rune_58,검심·연무,Char_02,0,E_Rune_Multi_Hit_Damage_Delta,1,3,0,6,공격 횟수가 {CountRate1}회 이상인 기억의 피해가 {ValueRate1} 증가한다.,Exclusive
+Rune_59,검심·일섬,Char_02,0,E_Rune_Pierce_Hit_Bleed,2,1,0,15,관통 피해 적중 시 대상에게 출혈을 {ValueRate1} 부여한다.,Exclusive
+Rune_60,검심·질풍,Char_02,0,E_Rune_Single_Target_Damage_Delta,1,1,0,3,공격 대상이 적 1명뿐이라면 피해가 {ValueRate1} 증가한다.,Exclusive
+Rune_61,불씨·점화,Char_03,0,E_Turn_Start_All_Enemy_Weaken,1,1,0,9,1턴 시작 시 모든 적에게 약화를 {ValueRate1} 부여한다.,Exclusive
+Rune_62,불씨·온기,Char_03,0,E_Rune_Status_Apply_Armor,1,1,0,12,버프 또는 디버프 부여 시 실제 부여한 수치만큼 방어도를 획득한다.,Exclusive
+Rune_63,불씨·광휘,Char_03,0,E_Rune_Adjacent_Ally_Buff_Delta,1,1,0,6,자신과 인접한 아군에게 부여하는 버프 수치가 {ValueRate1} 증가한다.,Exclusive
+Rune_64,불씨·의지,Char_03,0,E_Rune_Debuff_Apply_Poison,1,1,0,15,적에게 디버프 부여 시 추가로 중독을 {ValueRate1} 부여한다.,Exclusive
+Rune_65,불씨·확산,Char_03,0,E_Rune_Zero_Mana_Next_First_Skill_Free,1,1,0,3,턴 종료 시 마나가 0이면 다음 턴 첫 등록 기억의 마나 소모가 0이 된다.,Exclusive
+Rune_66,은총·신심,Char_04,0,E_Rune_Turn_Start_Adjacent_Ally_Heal,1,1,0,9,매 턴 시작 시 인접한 아군에게 재생을 {ValueRate1} 부여한다.,Exclusive
+Rune_67,은총·가호,Char_04,0,E_Rune_Kill_Unique_Resource,1,1,0,12,처치한 적 1명당 카르마를 {ValueRate1} 획득한다.,Exclusive
+Rune_68,은총·구원,Char_04,0,E_Rune_High_HP_Heal_Remove_First_Debuff,1,1,0,6,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 {ValueRate1} 감소한다.,Exclusive
+Rune_69,은총·심판,Char_04,0,E_Rune_Vulnerable_Bonus_Percent,75,1,0,15,자신이 공격할 때 취약의 피해 증가율이 {ValueRate1}%로 증가한다.,Exclusive
+Rune_70,은총·헌신,Char_04,0,E_Rune_Max_Unique_Resource_All_Enemy_Vulnerable,1,1,0,3,카르마가 최대치에 도달하면 모든 적에게 취약을 {ValueRate1} 부여한다.,Exclusive
 Rune_71,해방·갈증,Char_05,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복한다.,Exclusive
 Rune_72,해방·격정,Char_05,0,E_Unique_Resource_Max_Reached_Armor,5,1,0,12,카르마가 최대에 도달하면 다음 턴에 방어도를 {ValueRate1} 얻는다.,Exclusive
 Rune_73,해방·사신,Char_05,S_Unique_09,E_Rune_Target_Damage_Value_Delta,3,1,0,6,데스사이드의 피해량이 {ValueRate1} 증가한다.,Exclusive

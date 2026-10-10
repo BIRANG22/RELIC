@@ -543,7 +543,8 @@ public static class BattlePlayerSkillPreviewCalculator
     {
         return effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike" ||
                effectId == "E_ArmorStrike" || effectId == "E_RandomStrike" ||
-               effectId == "E_StrikeByVulnerable" || effectId == "E_DamageUpIfBleeding" ||
+               effectId == "E_StrikeByVulnerable" || effectId == "E_StrikeByTargetPoison" ||
+               effectId == "E_DamageUpIfBleeding" ||
                effectId == "E_StrikeCountByBuff" || effectId == "E_StrikeCountByDebuff";
     }
 
