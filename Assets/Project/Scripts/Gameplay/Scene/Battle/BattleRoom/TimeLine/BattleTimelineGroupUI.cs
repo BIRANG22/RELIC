@@ -957,6 +957,31 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             owner.OnTimelineSlotClicked(slotIndex);
     }
 
+    // The first order is drawn underneath later siblings in some TimelineSlot
+    // prefabs. Ignore the later monster's raycast where an earlier player order
+    // occupies the same screen area, so the player's reservation receives the click.
+    public bool IsEarlierPlayerOrderAtPosition(int orderIndex, Vector2 screenPoint, Camera eventCamera)
+    {
+        if (orderIndex < 0 || orderIndex >= currentEntries.Count ||
+            currentEntries[orderIndex] == null || !currentEntries[orderIndex].IsMonster)
+            return false;
+
+        for (int i = 0; i < orderIndex; i++)
+        {
+            BattleTimelinePreviewEntry earlier = currentEntries[i];
+            if (earlier == null || !earlier.IsPlayer)
+                continue;
+
+            Transform earlierOrder = FindChildRecursive(transform, "Order" + (i + 1).ToString("00"));
+            RectTransform earlierRect = earlierOrder as RectTransform;
+            if (earlierRect != null && earlierRect.gameObject.activeInHierarchy &&
+                RectTransformUtility.RectangleContainsScreenPoint(earlierRect, screenPoint, eventCamera))
+                return true;
+        }
+
+        return false;
+    }
+
     public void OnOrderClicked(int orderIndex)
     {
         if (IsBattleEnded())
@@ -985,54 +1010,13 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         TimelineReservationHoverPreview.HideCurrent();
 
+        // Monster orders are display-only. Open the monster information panel
+        // using TurnMark or the monster in the battle scene instead.
         if (entry.IsMonster)
-        {
-            SelectMonsterOrderSkill(entry);
             return;
-        }
 
         if (owner != null)
             owner.OnEntryClicked(entry);
-    }
-
-    private void SelectMonsterOrderSkill(BattleTimelinePreviewEntry entry)
-    {
-        if (entry == null || !entry.IsMonster || entry.MonsterSkillData == null)
-            return;
-
-        MonsterUnit monster = FindMonsterByRuntimeId(entry.MonsterRuntimeId);
-        if (monster == null)
-            return;
-
-        monster.SelectForInfoFromTimeline();
-
-        BattleCharacterPanelUI panel = Object.FindFirstObjectByType<BattleCharacterPanelUI>(
-            FindObjectsInactive.Include);
-
-        if (panel != null)
-            panel.SelectMonsterSkillFromTimeline(monster, entry.MonsterSkillData.SkillId);
-    }
-
-    private MonsterUnit FindMonsterByRuntimeId(string runtimeId)
-    {
-        if (string.IsNullOrWhiteSpace(runtimeId))
-            return null;
-
-        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
-            FindObjectsInactive.Exclude,
-            FindObjectsSortMode.None);
-
-        for (int i = 0; i < monsters.Length; i++)
-        {
-            MonsterUnit monster = monsters[i];
-            if (monster == null || monster.RuntimeData == null)
-                continue;
-
-            if (monster.RuntimeData.RuntimeId == runtimeId)
-                return monster;
-        }
-
-        return null;
     }
 
     private void AutoFindReferences()
