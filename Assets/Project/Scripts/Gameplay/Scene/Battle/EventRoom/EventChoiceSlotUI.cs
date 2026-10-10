@@ -192,6 +192,19 @@ public class EventChoiceSlotUI : MonoBehaviour
                 ? GameDataLocalization.EventUnavailableChoiceDescription(boundChoice)
                 : boundUnavailableReason);
 
+        // Event_02_A / Event_02_F contain choices carried into the same UI from
+        // different event rows. A localization lookup based on choice order can
+        // resolve a description belonging to an earlier Event_02 choice.
+        // Use each row's own description rather than an unrelated choice's text.
+        string eventId = EventIdUtility.Normalize(boundChoice.EventId);
+        if (boundSelectable &&
+            (string.Equals(eventId, "Event_02_A", System.StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(eventId, "Event_02_F", System.StringComparison.OrdinalIgnoreCase)) &&
+            !string.IsNullOrWhiteSpace(boundChoice.ChoiceDesc))
+        {
+            displayedChoiceDesc = boundChoice.ChoiceDesc;
+        }
+
         if (choiceDescText != null)
             choiceDescText.text = displayedChoiceDesc ?? string.Empty;
     }

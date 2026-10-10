@@ -1414,7 +1414,7 @@ Event_02_B,금단의 의식,의식 도구에 남아 있던 힘이 몸 안으로 
 Event_02_C,금단의 의식,흔적을 헤집자 안쪽에서 강한 힘을 머금은 유물이 모습을 드러냈다.,,,,,,,,,,,,,,,,,,,event2,event_choice_04_success,event2,event_choice_04_failure
 Event_02_D,금단의 의식,의식 도구에 손을 대는 순간 불길한 기운이 역류한다.,,,,,,,,,,,,,,,,,,,event2,event_choice_03_success,event2,event_choice_03_failure
 Event_02_E,금단의 의식,흔적을 훼손한 순간 억눌려 있던 힘이 폭발한다.,,,,,,,,,,,,,,,,,,,event2,event_choice_04_success,event2,event_choice_04_failure
-Event_02_F,금단의 의식,,4,자리를 떠난다.,이벤트 종료,,Exit,,,,,,EndEvent,,,,,Event_02_G,,1,event2,event_choice_05_success,event2,event_choice_05_failure
+Event_02_F,금단의 의식,,2,자리를 떠난다.,이벤트 종료,,Exit,,,,,,EndEvent,,,,,Event_02_G,,1,event2,event_choice_05_success,event2,event_choice_05_failure
 Event_02_G,금단의 의식,"더 이상 손대지 않기로 하고, 조용히 자리를 떠난다.",,,,,,,,,,,,,,,,,,,event2,event_choice_05_success,event2,event_choice_05_failure
 Event_02_H,금단의 의식,뜻밖의 수확을 얻었다. 더 이상 손댈 것은 없어 보인다.,,,,,,,,,,,,,,,,,,,event2,event_choice_02_success,event2,event_choice_02_failure
 Event_02_I,금단의 의식,예상치 못한 폭발에 휘말렸다.,,,,,,,,,,,,,,,,,,,event2,event_choice_02_success,event2,event_choice_02_failure
