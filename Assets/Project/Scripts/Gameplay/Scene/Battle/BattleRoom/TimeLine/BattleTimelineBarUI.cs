@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+ï»¿using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -623,9 +623,9 @@ public class BattleTimelineBarUI : MonoBehaviour
 
     public void OnOrderClicked(int slotIndex, int orderIndex)
     {
-        // Ã¹ ÀüÅõ Æ©Åä¸®¾ó¿¡¼­ µî·Ï À§Ä¡¸¦ 2ÃÊ°£ º¸¿©ÁÖ´Â µ¿¾È¿¡´Â
-        // »ç¿ëÀÚ°¡ Å¸ÀÓ¶óÀÎÀ» Å¬¸¯ÇØ ¹æ±Ý µî·ÏÇÑ Çàµ¿À» Á¦°ÅÇÏÁö ¸øÇÏ°Ô ÇÕ´Ï´Ù.
-        // ¾È³»°¡ ³¡³­ µÚ¿¡´Â ±âÁ¸ Å¬¸¯ Á¦°Å µ¿ÀÛÀ» ±×´ë·Î »ç¿ëÇÕ´Ï´Ù.
+        // Ã¹ ï¿½ï¿½ï¿½ï¿½ Æ©ï¿½ä¸®ï¿½ó¿¡¼ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ 2ï¿½Ê°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½È¿ï¿½ï¿½ï¿½
+        // ï¿½ï¿½ï¿½ï¿½Ú°ï¿½ Å¸ï¿½Ó¶ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½àµ¿ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Õ´Ï´ï¿½.
+        // ï¿½È³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ú¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×´ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         if (BattleFirstTutorialController.IsTimelineRegisteredSkillPreviewLocked)
             return;
 

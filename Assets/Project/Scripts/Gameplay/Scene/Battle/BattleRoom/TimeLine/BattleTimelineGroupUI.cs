@@ -45,6 +45,14 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private float selectedTurnMarkColorSpeed = 4f;
 
     private readonly List<BattleTimelinePreviewEntry> currentEntries = new();
+    [Header("Order Value Change (Execution Only)")]
+    [SerializeField, Min(1f)] private float orderValuePulseScale = 1.1f;
+    [SerializeField, Min(0.01f)] private float orderValuePulseDuration = 0.24f;
+
+    private BattleTurnExecutor cachedTurnExecutor;
+    private readonly Dictionary<TMP_Text, string> displayedOrderValues = new();
+    private readonly Dictionary<TMP_Text, Coroutine> orderValuePulseRoutines = new();
+    private readonly Dictionary<TMP_Text, Vector3> orderValueBaseScales = new();
     private readonly List<bool> currentEntryOwnerDeadStates = new();
     private BattleTimelinePreviewEntry firstOwnerEntry;
     private BattleTimelinePreviewEntry laterOwnerEntry;
@@ -105,6 +113,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         UpdateTurnMarkSelectedAnimation();
         UpdateDeadReservationVisuals();
+        RefreshExecutingOrderValues();
     }
 
     public void Init(BattleTimelineBarUI owner, int slotIndex)
@@ -254,6 +263,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     public void Clear()
     {
+        ResetOrderValueAnimations();
         currentEntries.Clear();
         currentEntryOwnerDeadStates.Clear();
         firstOwnerEntry = null;
@@ -824,6 +834,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     {
         HideHoveredEnemyOwnerIconHUD();
         HideHoveredPlayerOwnerIconHUD();
+        ResetOrderValueAnimations();
     }
 
     private void SetupEnemySkillHoverTarget(Image skillImage, BattleTimelinePreviewEntry entry)
@@ -1710,13 +1721,97 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             return;
 
         TMP_Text text = texts[index];
-
         if (text == null)
             return;
 
         bool show = !string.IsNullOrWhiteSpace(valueText);
         text.text = show ? valueText : "";
         text.gameObject.SetActive(show);
+        displayedOrderValues[text] = text.text;
+        if (!orderValueBaseScales.ContainsKey(text))
+            orderValueBaseScales[text] = text.rectTransform.localScale;
+    }
+
+    // The existing preview calculator includes unconditional equipment bonuses.
+    // Only recalculate a displayed order while the actual turn is executing:
+    // do not predict status effects from earlier reserved slots.
+    private void RefreshExecutingOrderValues()
+    {
+        if (cachedTurnExecutor == null)
+            cachedTurnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+        if (cachedTurnExecutor == null || !cachedTurnExecutor.IsExecuting ||
+            useSkillValueTexts == null)
+            return;
+
+        int count = Mathf.Min(currentEntries.Count, useSkillValueTexts.Length);
+        for (int i = 0; i < count; i++)
+        {
+            BattleTimelinePreviewEntry entry = currentEntries[i];
+            TMP_Text label = useSkillValueTexts[i];
+            if (entry == null || label == null || !label.gameObject.activeInHierarchy)
+                continue;
+
+            string newValue = entry.SkillValueText ?? "";
+            if (!displayedOrderValues.TryGetValue(label, out string oldValue))
+            {
+                displayedOrderValues[label] = newValue;
+                label.text = newValue;
+                continue;
+            }
+
+            if (oldValue == newValue)
+                continue;
+
+            displayedOrderValues[label] = newValue;
+            label.text = newValue;
+            if (!string.IsNullOrEmpty(oldValue) && !string.IsNullOrEmpty(newValue))
+                PlayOrderValuePulse(label);
+        }
+    }
+
+    private void PlayOrderValuePulse(TMP_Text label)
+    {
+        if (orderValuePulseRoutines.TryGetValue(label, out Coroutine oldRoutine) && oldRoutine != null)
+            StopCoroutine(oldRoutine);
+
+        if (!orderValueBaseScales.TryGetValue(label, out Vector3 baseScale))
+        {
+            baseScale = label.rectTransform.localScale;
+            orderValueBaseScales[label] = baseScale;
+        }
+        label.rectTransform.localScale = baseScale;
+        orderValuePulseRoutines[label] = StartCoroutine(PulseOrderValue(label, baseScale));
+    }
+
+    private IEnumerator PulseOrderValue(TMP_Text label, Vector3 baseScale)
+    {
+        float duration = Mathf.Max(0.01f, orderValuePulseDuration);
+        float elapsed = 0f;
+        while (elapsed < duration && label != null)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float phase = Mathf.Clamp01(elapsed / duration);
+            float multiplier = Mathf.Lerp(1f, orderValuePulseScale, Mathf.Sin(phase * Mathf.PI));
+            label.rectTransform.localScale = baseScale * multiplier;
+            yield return null;
+        }
+        if (label != null)
+        {
+            label.rectTransform.localScale = baseScale;
+            orderValuePulseRoutines.Remove(label);
+        }
+    }
+
+    private void ResetOrderValueAnimations()
+    {
+        foreach (KeyValuePair<TMP_Text, Coroutine> pair in orderValuePulseRoutines)
+            if (pair.Value != null)
+                StopCoroutine(pair.Value);
+        orderValuePulseRoutines.Clear();
+        foreach (KeyValuePair<TMP_Text, Vector3> pair in orderValueBaseScales)
+            if (pair.Key != null)
+                pair.Key.rectTransform.localScale = pair.Value;
+        displayedOrderValues.Clear();
     }
 
     private void ClearSkillValueTexts(TMP_Text[] texts)
