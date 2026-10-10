@@ -39,6 +39,8 @@ public class PlayerReservedCommand
     public bool HadEarlierMoveInSlot { get; private set; }
     public int SameSlotMoveCostBeforeCommand { get; private set; }
     public int EarlierAttackReservationCount { get; private set; }
+    public int ConsecutiveAttackCountIfSequenceEnd { get; private set; }
+    public bool RuneFinalPierceApplied { get; private set; }
     public bool AllyBuffChargeApplied { get; private set; }
     public int MoveReservationCostMultiplier { get; private set; } = 1;
 
@@ -251,6 +253,20 @@ public class PlayerReservedCommand
     public void SetEarlierAttackReservationCount(int count)
     {
         EarlierAttackReservationCount = Mathf.Max(0, count);
+    }
+
+    public void SetConsecutiveAttackCountIfSequenceEnd(int count)
+    {
+        ConsecutiveAttackCountIfSequenceEnd = Mathf.Max(0, count);
+    }
+
+    public bool TryMarkRuneFinalPierceApplied()
+    {
+        if (RuneFinalPierceApplied)
+            return false;
+
+        RuneFinalPierceApplied = true;
+        return true;
     }
 
     public bool TryMarkAllyBuffChargeApplied()

@@ -2984,6 +2984,7 @@ public class BattleActionRunner
         return effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike" ||
                effectId == "E_ArmorStrike" || effectId == "E_RandomStrike" ||
                effectId == "E_StrikeByVulnerable" ||
+               effectId == "E_StrikeByTargetPoison" ||
                effectId == "E_DamageUpIfBleeding" ||
                effectId == "E_StrikeCountByBuff" ||
                effectId == "E_StrikeCountByDebuff";
@@ -3450,6 +3451,7 @@ public class BattleActionRunner
             string id = skill.EffectEntries[i]?.EffectId;
             if (id == "E_Strike" || id == "E_ArmorStrike" ||
                 id == "E_RandomStrike" || id == "E_StrikeByVulnerable" ||
+                id == "E_StrikeByTargetPoison" ||
                 id == "E_DamageUpIfBleeding" || id == "E_StrikeCountByBuff" ||
                 id == "E_StrikeCountByDebuff")
                 return i == entryIndex;

@@ -15,7 +15,12 @@ public abstract class BattleEffectBase
         if (BattleEquipmentEffectService.ShouldBlockSelfBuff(context))
             return;
 
+        int originalValue = context.Value;
+        context.Value = BattleEquipmentEffectService.ModifyContextualPlayerEffectValue(context);
+
         Apply(context);
+
+        BattleEquipmentEffectService.HandlePlayerEffectApplied(context);
 
         if (context.PlayerSkillData != null &&
             context.PlayerSkillData.SkillType == Relic.Gameplay.Data.SkillType.Buff)
@@ -32,6 +37,8 @@ public abstract class BattleEffectBase
                     BattleEffectUtility.GetRepeatedValue(context));
             }
         }
+
+        context.Value = originalValue;
     }
 
     protected abstract void Apply(BattleEffectContext context);
