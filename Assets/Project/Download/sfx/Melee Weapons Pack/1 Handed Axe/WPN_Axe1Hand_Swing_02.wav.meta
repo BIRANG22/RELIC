@@ -1,8 +1,15 @@
 fileFormatVersion: 2
 guid: 05528b052e0a4ba4a8004a5d700d83ba
+AssetOrigin:
+  serializedVersion: 1
+  productId: 342322
+  packageName: Complete Melee Weapon Sounds Pack
+  packageVersion: 1.0
+  assetPath: Assets/Melee Weapons Pack/1 Handed Axe/WPN_Axe1Hand_Swing_02.wav
+  uploadId: 812188
 AudioImporter:
   externalObjects: {}
-  serializedVersion: 7
+  serializedVersion: 8
   defaultSettings:
     serializedVersion: 2
     loadType: 0
@@ -13,7 +20,7 @@ AudioImporter:
     conversionMode: 0
     preloadAudioData: 0
   platformSettingOverrides: {}
-  forceToMono: 0
+  forceToMono: 1
   normalize: 1
   loadInBackground: 0
   ambisonic: 0
@@ -21,10 +28,3 @@ AudioImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 342322
-  packageName: Complete Melee Weapon Sounds Pack
-  packageVersion: 1.0
-  assetPath: Assets/Melee Weapons Pack/1 Handed Axe/WPN_Axe1Hand_Swing_02.wav
-  uploadId: 812188

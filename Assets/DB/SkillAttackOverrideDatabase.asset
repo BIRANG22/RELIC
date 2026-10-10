@@ -486,12 +486,12 @@ MonoBehaviour:
   - ApplyToAllCharacters: 0
     CharacterId: Char_04
     SkillId: S_Core_71
-    AttackSlot: 4
+    AttackSlot: 2
     RepeatAttackSlots: 
   - ApplyToAllCharacters: 0
     CharacterId: Char_04
     SkillId: S_Core_72
-    AttackSlot: 4
+    AttackSlot: 2
     RepeatAttackSlots: 
   - ApplyToAllCharacters: 0
     CharacterId: Char_04
@@ -502,4 +502,34 @@ MonoBehaviour:
     CharacterId: Char_04
     SkillId: S_Core_74
     AttackSlot: 4
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_75
+    AttackSlot: 2
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_76
+    AttackSlot: 2
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_77
+    AttackSlot: 4
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_78
+    AttackSlot: 4
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_79
+    AttackSlot: 6
+    RepeatAttackSlots: 
+  - ApplyToAllCharacters: 0
+    CharacterId: Char_04
+    SkillId: S_Core_80
+    AttackSlot: 6
     RepeatAttackSlots: 
