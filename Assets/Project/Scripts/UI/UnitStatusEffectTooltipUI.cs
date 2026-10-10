@@ -2,6 +2,7 @@ using Relic.Gameplay.Data;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum UnitStatusEffectTooltipSide
 {
@@ -30,6 +31,13 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     [SerializeField] private UnitStatusEffectTooltipItemUI monsterItemPrefab;
     [Tooltip("몬스터 상태효과 툴팁 항목 사이의 세로 간격입니다.")]
     [SerializeField, Min(0f)] private float monsterItemVerticalSpacing = 8f;
+
+    [Header("Skill / Passive Effect Prefab List")]
+    [SerializeField] private UnitStatusEffectTooltipItemUI skillEffectItemPrefab;
+    [SerializeField, Min(0f)] private float skillEffectVerticalSpacing = 8f;
+    private Object skillEffectOwner;
+    private readonly List<UnitStatusEffectTooltipItemUI> skillEffectItems = new();
+    private readonly List<RectTransform> skillEffectRects = new();
 
     [Header("Status Tooltip Position")]
     [SerializeField] private float statusTooltipCursorOffsetX = 215f;
@@ -207,6 +215,103 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
     /// 씬에 미리 배치된 itemView는 사용하지 않고,
     /// 유효한 상태효과 개수만큼 monsterItemPrefab을 EffectRoot 아래에 생성합니다.
     /// </summary>
+    // Skill and passive tooltips use independent prefab instances, stacked vertically.
+    // The existing scene ItemUI stays available for other single-effect tooltips.
+    /// <summary>
+    /// 스킬/패시브 TooltipPanel 위에 모든 효과를 세로로 배치합니다.
+    /// 마지막 효과가 패널 바로 위, 첫 번째 효과가 가장 위에 옵니다.
+    /// </summary>
+    public void ShowSkillEffectList(Object owner, IReadOnlyList<StatusEffectRuntimeData> effects,
+        RectTransform tooltipPanel, RectTransform customAnchor, Vector2 offset, float verticalSpacing = -1f)
+    {
+        InitializeIfNeeded();
+        List<StatusEffectRuntimeData> valid = GetValidStatusEffects(effects);
+        UnitStatusEffectTooltipItemUI prefab = skillEffectItemPrefab != null
+            ? skillEffectItemPrefab : monsterItemPrefab;
+        if (prefab == null || itemRoot == null || tooltipPanel == null || valid.Count == 0)
+        {
+            HideSkillEffectList(owner);
+            return;
+        }
+
+        HideSkillEffectList(null);
+        skillEffectOwner = owner;
+        if (itemView != null)
+            itemView.gameObject.SetActive(false);
+        foreach (StatusEffectRuntimeData effect in valid)
+        {
+            UnitStatusEffectTooltipItemUI item = Instantiate(prefab, itemRoot, false);
+            item.Set(effect);
+            item.transform.SetAsLastSibling();
+            skillEffectItems.Add(item);
+            skillEffectRects.Add(item.transform as RectTransform);
+        }
+        BringToFront();
+        gameObject.SetActive(true);
+        if (canvasGroup != null)
+            canvasGroup.alpha = 1f;
+        UpdateSkillEffectListPosition(owner, tooltipPanel, customAnchor, offset, verticalSpacing);
+    }
+
+    public void UpdateSkillEffectListPosition(Object owner, RectTransform tooltipPanel, RectTransform customAnchor, Vector2 offset, float verticalSpacing = -1f)
+    {
+        if (skillEffectOwner != owner || skillEffectRects.Count == 0 ||
+            itemRoot == null || tooltipPanel == null)
+            return;
+
+        InitializeIfNeeded();
+        Canvas.ForceUpdateCanvases();
+        // Inspector의 별도 Anchor가 없으면 스킬 TooltipPanel 왼쪽 상단을 사용합니다.
+        // 오프셋은 기준 RectTransform의 로컬 UI 단위로 적용하여 해상도에 따라 함께 이동합니다.
+        RectTransform anchor = customAnchor != null ? customAnchor : tooltipPanel;
+        Canvas anchorCanvas = anchor.GetComponentInParent<Canvas>();
+        Camera anchorCamera = anchorCanvas != null && anchorCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? anchorCanvas.worldCamera : null;
+        Camera effectCamera = rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? rootCanvas.worldCamera : null;
+        Vector3[] anchorCorners = new Vector3[4];
+        anchor.GetWorldCorners(anchorCorners);
+        Vector3 targetWorld = anchorCorners[1] + anchor.TransformVector(new Vector3(offset.x, offset.y, 0f));
+        Vector2 topLeftScreen = RectTransformUtility.WorldToScreenPoint(anchorCamera, targetWorld);
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                itemRoot, topLeftScreen, effectCamera, out Vector2 topLeftLocal))
+            return;
+
+        float spacing = verticalSpacing >= 0f ? verticalSpacing : skillEffectVerticalSpacing;
+        float bottomY = topLeftLocal.y + spacing;
+        float leftX = topLeftLocal.x;
+        Vector3[] itemCorners = new Vector3[4];
+        // 역순 배치: 마지막 효과(3번)가 TooltipPanel과 가장 가깝고, 1번이 맨 위입니다.
+        for (int i = skillEffectRects.Count - 1; i >= 0; i--)
+        {
+            RectTransform rect = skillEffectRects[i];
+            if (rect == null)
+                continue;
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+            rect.GetWorldCorners(itemCorners);
+            Vector3 bottomLeft = itemRoot.InverseTransformPoint(itemCorners[0]);
+            Vector3 topLeft = itemRoot.InverseTransformPoint(itemCorners[1]);
+            float height = topLeft.y - bottomLeft.y;
+            Vector3 delta = itemRoot.TransformVector(new Vector3(
+                leftX - bottomLeft.x, bottomY - bottomLeft.y, 0f));
+            rect.position += delta;
+            bottomY += height + spacing;
+        }
+    }
+
+    public void HideSkillEffectList(Object owner)
+    {
+        if (owner != null && skillEffectOwner != owner)
+            return;
+        skillEffectOwner = null;
+        foreach (UnitStatusEffectTooltipItemUI item in skillEffectItems)
+            if (item != null) Destroy(item.gameObject);
+        skillEffectItems.Clear();
+        skillEffectRects.Clear();
+        if (!isVisible && monsterItemInstances.Count == 0 && canvasGroup != null)
+            canvasGroup.alpha = 0f;
+    }
+
     public void ShowMonsterPrefab(
         Object owner,
         IReadOnlyList<StatusEffectRuntimeData> statusEffects,

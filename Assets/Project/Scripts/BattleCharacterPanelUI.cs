@@ -288,8 +288,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [Header("Skill Effect Tooltip Position")]
     [Tooltip("TooltipPanel 내부 효과 설명 툴팁의 기준입니다. 비어 있으면 TooltipPanel을 사용합니다.")]
     [SerializeField] private RectTransform skillEffectTooltipAnchor;
-    [Tooltip("기준 RectTransform의 중앙에서 이동할 X/Y UI 좌표입니다. 해상도에 따라 Canvas와 함께 이동합니다.")]
+    [Tooltip("TooltipPanel(또는 지정한 Anchor)의 왼쪽 상단에서 이동할 X/Y UI 좌표입니다. 해상도 변경에도 기준을 유지합니다.")]
     [SerializeField] private Vector2 skillEffectTooltipOffset = new Vector2(120f, 0f);
+    [Tooltip("스킬/패시브 효과 툴팁 사이와 TooltipPanel 사이의 세로 간격입니다.")]
+    [SerializeField, Min(0f)] private float skillEffectTooltipVerticalSpacing = 8f;
 
     [Header("Skill Tooltip Fade")]
     [Tooltip("TooltipPanel 페이드인 시간입니다.")]
@@ -310,8 +312,6 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private Button pendingSkillReservationButton;
     private bool isSkillTooltipVisible;
     // TooltipPanel/Detail: effecticon links are hoverable descriptions.
-    private string hoveredDetailEffectId;
-    private int hoveredDetailEffectLinkIndex = -1;
     private UnitStatusEffectTooltipUI detailEffectTooltip;
     private readonly List<StatusEffectRuntimeData> detailEffectPreview = new List<StatusEffectRuntimeData>(1);
 
@@ -2621,7 +2621,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private void LateUpdate()
     {
         UpdateSkillTooltipHoverRetention();
-        UpdateSkillDetailEffectHover();
+        UpdateAllSkillEffectTooltips();
         if (isSkillTooltipVisible)
             UpdateSkillTooltipPosition();
         if (isEquipmentTooltipVisible)
@@ -4560,8 +4560,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void HideSkillTooltip()
     {
-        // 버튼에서 패널로 향하는 경로에 있을 때만 계속 표시합니다.
-        if (IsPointerInSkillTooltipHoverArea())
+        // Only the original skill/passive slot can keep this tooltip open.
+        if (IsPointerOverSkillTooltipSource())
             return;
 
         HideSkillTooltipNow();
@@ -4581,18 +4581,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private bool IsPointerInSkillTooltipHoverArea()
     {
-        if (!isSkillTooltipVisible || skillTooltipPanel == null || !skillTooltipPanel.activeInHierarchy)
-            return false;
-
-        if (IsPointerOverSkillTooltipSource() || IsPointerOverSkillTooltip())
-            return true;
-
-        RectTransform source = GetSkillTooltipSourceRect();
-        RectTransform back = GetSkillTooltipBackRect();
-        if (source == null || back == null || !source.gameObject.activeInHierarchy)
-            return false;
-
-        return IsPointerInsideTooltipBridge(source, back, Input.mousePosition);
+        return isSkillTooltipVisible && IsPointerOverSkillTooltipSource();
     }
 
     private RectTransform GetSkillTooltipSourceRect()
@@ -4759,92 +4748,71 @@ public class BattleCharacterPanelUI : MonoBehaviour
         return null;
     }
 
-    private void UpdateSkillDetailEffectHover()
+    private string activeSkillEffectSignature;
+
+    // Display all distinct linked effects at once; no hover over the detail text is needed.
+    private void UpdateAllSkillEffectTooltips()
     {
-        if (!isSkillTooltipVisible || skillTooltipDetailText == null ||
+        if (!isSkillTooltipVisible || skillReservationTooltipRestarting ||
+            !IsPointerOverSkillTooltipSource() || skillTooltipDetailText == null ||
             !skillTooltipDetailText.gameObject.activeInHierarchy)
         {
             HideSkillDetailEffectHover();
             return;
         }
 
-        Canvas canvas = skillTooltipDetailText.canvas;
-        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
-            ? (canvas.worldCamera != null ? canvas.worldCamera : Camera.main) : null;
         skillTooltipDetailText.ForceMeshUpdate();
         TMP_TextInfo info = skillTooltipDetailText.textInfo;
-        int index = TMP_TextUtilities.FindIntersectingLink(skillTooltipDetailText, Input.mousePosition, camera);
-
-        // Images drawn beside the TMP links must also be hover targets.
-        if (index < 0)
+        List<string> ids = new List<string>();
+        for (int i = 0; i < info.linkCount; i++)
         {
-            for (int i = 0; i < info.linkCount; i++)
-            {
-                string id = info.linkInfo[i].GetLinkID();
-                if (string.IsNullOrEmpty(id) || !id.StartsWith("effecticon:", StringComparison.Ordinal))
-                    continue;
-                RectTransform icon = FindSkillDetailEffectIcon("EffectIcon_" + id.Substring("effecticon:".Length));
-                if (icon != null && RectTransformUtility.RectangleContainsScreenPoint(icon, Input.mousePosition, camera))
-                {
-                    index = i;
-                    break;
-                }
-            }
+            string id = info.linkInfo[i].GetLinkID();
+            if (string.IsNullOrEmpty(id) || !id.StartsWith("effecticon:", StringComparison.Ordinal))
+                continue;
+            string effectId = id.Substring("effecticon:".Length);
+            if (string.IsNullOrEmpty(effectId) || ids.Contains(effectId))
+                continue;
+            ids.Add(effectId);
         }
 
-        string effectId = null;
-        if (index >= 0 && index < info.linkCount)
-        {
-            string linkId = info.linkInfo[index].GetLinkID();
-            if (!string.IsNullOrEmpty(linkId) && linkId.StartsWith("effecticon:", StringComparison.Ordinal))
-                effectId = linkId.Substring("effecticon:".Length);
-        }
-
-        if (string.IsNullOrEmpty(effectId))
+        if (ids.Count == 0)
         {
             HideSkillDetailEffectHover();
             return;
         }
-
         if (detailEffectTooltip == null)
             detailEffectTooltip = UnitStatusEffectTooltipUI.GetOrCreate();
         if (detailEffectTooltip == null)
             return;
 
-        Vector2 position = GetSkillDetailEffectTooltipScreenPosition(index)
-            + detailEffectTooltip.GetPinnedOffsetInScreenPixels(skillEffectTooltipOffset);
-        if (effectId == hoveredDetailEffectId && index == hoveredDetailEffectLinkIndex)
+        string signature = string.Join("|", ids);
+        if (skillTooltipRectTransform == null && skillTooltipPanel != null)
+            skillTooltipRectTransform = skillTooltipPanel.GetComponent<RectTransform>();
+        if (skillTooltipRectTransform == null)
+            return;
+        if (activeSkillEffectSignature == signature)
         {
-            if (detailEffectTooltip != null)
-                detailEffectTooltip.UpdatePinnedPosition(this, position);
+            detailEffectTooltip.UpdateSkillEffectListPosition(this, skillTooltipRectTransform, skillEffectTooltipAnchor, skillEffectTooltipOffset, skillEffectTooltipVerticalSpacing);
             return;
         }
 
-        HideSkillDetailEffectHover();
-        DataManager manager = DataManager.Instance;
-        if (manager == null || manager.EffectDatabase == null ||
-            !manager.EffectDatabase.TryGet(effectId, out EffectMasterData effect) || effect == null)
-            return;
-
-        detailEffectTooltip = UnitStatusEffectTooltipUI.GetOrCreate();
-        if (detailEffectTooltip == null)
-            return;
-
-        hoveredDetailEffectId = effectId;
-        hoveredDetailEffectLinkIndex = index;
         detailEffectPreview.Clear();
-        detailEffectPreview.Add(new StatusEffectRuntimeData(effectId, 1));
-        detailEffectTooltip.ShowPinned(this, detailEffectPreview, position);
+        DataManager manager = DataManager.Instance;
+        foreach (string id in ids)
+        {
+            if (manager != null && manager.EffectDatabase != null &&
+                manager.EffectDatabase.TryGet(id, out EffectMasterData effect) && effect != null)
+                detailEffectPreview.Add(new StatusEffectRuntimeData(id, 1));
+        }
+        detailEffectTooltip.ShowSkillEffectList(this, detailEffectPreview, skillTooltipRectTransform, skillEffectTooltipAnchor, skillEffectTooltipOffset, skillEffectTooltipVerticalSpacing);
+        activeSkillEffectSignature = signature;
     }
 
     private void HideSkillDetailEffectHover()
     {
-        if (hoveredDetailEffectId == null)
-            return;
-        hoveredDetailEffectId = null;
-        hoveredDetailEffectLinkIndex = -1;
+        activeSkillEffectSignature = null;
         if (detailEffectTooltip != null)
-            detailEffectTooltip.Hide(this);
+            detailEffectTooltip.HideSkillEffectList(this);
     }
 
     private void HideSkillTooltipNow()

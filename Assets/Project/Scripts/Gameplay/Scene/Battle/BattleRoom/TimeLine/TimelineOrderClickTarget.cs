@@ -1,8 +1,9 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
-public class TimelineOrderClickTarget : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
+public class TimelineOrderClickTarget : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler, ICanvasRaycastFilter
 {
     [SerializeField, Min(1f)] private float hoverScaleMultiplier = 1.1f;
     [SerializeField, Min(0f)] private float hoverScaleDuration = 0.12f;
@@ -28,6 +29,13 @@ public class TimelineOrderClickTarget : MonoBehaviour, IPointerClickHandler, IPo
         this.owner = owner;
         this.orderIndex = orderIndex;
         CacheBaseScale();
+    }
+
+    // When two order graphics overlap, the later monster order must not intercept
+    // a click on the earlier player's action (including child Image raycasts).
+    public bool IsRaycastLocationValid(Vector2 screenPoint, Camera eventCamera)
+    {
+        return owner == null || !owner.IsEarlierPlayerOrderAtPosition(orderIndex, screenPoint, eventCamera);
     }
 
     public void OnPointerClick(PointerEventData eventData)
