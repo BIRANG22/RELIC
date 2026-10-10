@@ -14,8 +14,11 @@ public static class NewSkillEffectRules
     public static int ResolvePoisonByTargetPoison(int poison, int divisor) =>
         divisor > 0 ? Mathf.Max(0, poison) / divisor : 0;
 
+    public static int ResolveTargetPoisonStrikeDamage(int poison) =>
+        Mathf.Max(0, poison);
+
     public static int ResolveDirectDamageHitCount(string effectId, int configuredCount) =>
-        effectId == "E_StrikeByVulnerable"
+        effectId == "E_StrikeByVulnerable" || effectId == "E_StrikeByTargetPoison"
             ? 1
             : Mathf.Max(0, configuredCount);
 

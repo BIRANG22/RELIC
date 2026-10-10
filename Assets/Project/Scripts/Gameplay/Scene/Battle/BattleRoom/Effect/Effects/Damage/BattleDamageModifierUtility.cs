@@ -38,7 +38,7 @@ public static class BattleDamageModifierUtility
 
         if (context?.PlayerTarget != null)
         {
-            damage = ApplyTargetModifiers(damage, context.PlayerTarget.RuntimeData.StatusEffects);
+            damage = ApplyTargetModifiers(damage, context.PlayerTarget.RuntimeData.StatusEffects, context.PlayerCaster?.RuntimeData);
             damage = BattleEquipmentEffectService.ModifyIncomingDamageToPlayer(
                 context.PlayerTarget.RuntimeData,
                 damage);
@@ -71,7 +71,7 @@ public static class BattleDamageModifierUtility
         }
 
         if (context?.MonsterTarget != null)
-            damage = ApplyTargetModifiers(damage, context.MonsterTarget.RuntimeData.StatusEffects);
+            damage = ApplyTargetModifiers(damage, context.MonsterTarget.RuntimeData.StatusEffects, context.PlayerCaster?.RuntimeData);
 
         return Mathf.Max(0, Mathf.CeilToInt(damage));
     }
@@ -134,7 +134,7 @@ public static class BattleDamageModifierUtility
                     break;
 
                 case WeakenEffectId:
-                    value *= 0.85f;
+                    value = RuneEffectRules.ApplyWeaken(value);
                     break;
 
                 case ActiveDamageBoostEffectId:
@@ -195,7 +195,7 @@ public static class BattleDamageModifierUtility
         bool isMoveFirstAttackReady)
     {
         if (GetStatusStack(statuses, WeakenEffectId) > 0)
-            damage *= 0.85f;
+            damage = RuneEffectRules.ApplyWeaken(damage);
 
         if (GetStatusStack(statuses, ActiveDamageBoostEffectId) > 0)
             damage *= 2f;
@@ -230,10 +230,16 @@ public static class BattleDamageModifierUtility
 
     private static float ApplyTargetModifiers(
         float damage,
-        List<StatusEffectRuntimeData> statuses)
+        List<StatusEffectRuntimeData> statuses,
+        CharacterRuntimeData playerAttackerRuntime)
     {
         if (GetStatusStack(statuses, VulnerableEffectId) > 0)
-            damage *= 1.3f;
+        {
+            bool enhanced = BattleEquipmentEffectService.HasConfiguredEffect(
+                playerAttackerRuntime,
+                "E_Rune_Vulnerable_Bonus_Percent");
+            damage = RuneEffectRules.ApplyVulnerable(damage, enhanced);
+        }
 
         if (GetStatusStack(statuses, ActiveDamageReductionEffectId) > 0)
             damage *= 0.5f;

@@ -15,6 +15,7 @@ public class NewSkillEffectRegistryTests
     [TestCase("E_RestoreManaPerHitTarget")]
     [TestCase("E_RandomStrike")]
     [TestCase("E_StrikeByVulnerable")]
+    [TestCase("E_StrikeByTargetPoison")]
     [TestCase("E_StrikeCountByBuff")]
     [TestCase("E_StrikeCountByDebuff")]
     public void Registry_ContainsEveryNewSkillEffectId(string effectId)

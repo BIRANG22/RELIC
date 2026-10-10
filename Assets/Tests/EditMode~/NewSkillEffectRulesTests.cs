@@ -33,7 +33,18 @@ public class NewSkillEffectRulesTests
             Is.EqualTo(expected));
     }
 
+    [TestCase(7, 7)]
+    [TestCase(0, 0)]
+    [TestCase(-3, 0)]
+    public void TargetPoisonStrike_UsesNonNegativeTargetPoison(int poison, int expected)
+    {
+        Assert.That(
+            NewSkillEffectRules.ResolveTargetPoisonStrikeDamage(poison),
+            Is.EqualTo(expected));
+    }
+
     [TestCase("E_StrikeByVulnerable", 3, 1)]
+    [TestCase("E_StrikeByTargetPoison", 3, 1)]
     [TestCase("E_DamageUpIfBleeding", 3, 3)]
     [TestCase("E_StrikeCountByBuff", 3, 3)]
     public void ResolveDirectDamageHitCount_PreservesEffectSpecificCountMeaning(
