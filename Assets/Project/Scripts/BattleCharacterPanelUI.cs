@@ -26,12 +26,24 @@ public class BattleCharacterPanelUI : MonoBehaviour
         public Image CharacterIcon;
         public Image PassiveIcon;
         public Image HpFill;
+        public Image HpFillBefore;
+        public float HpFillTarget;
+        public float HpFillBeforeTarget;
+        public float CostFillTarget;
+        public float CostFillBeforeTarget;
+        public bool HasFillTargets;
+        public Image HpBack;
         public TMP_Text HpValue;
         public Image CostFill;
+        public Image CostFillBefore;
         public TMP_Text CostValue;
         public TMP_Text NameText;
         public readonly Image[] Karma = new Image[5];
         public Transform StatusContent;
+        public RectTransform RuneRoot;
+        public CanvasGroup RuneCanvasGroup;
+        public Vector2 RuneVisiblePosition;
+        public bool RunePositionCaptured;
         public readonly Image[] Runes = new Image[6];
         public readonly Image[] Artifacts = new Image[6];
         public CharacterRuntimeData Runtime;
@@ -39,12 +51,23 @@ public class BattleCharacterPanelUI : MonoBehaviour
         public readonly List<StatusEffectIcon> SpawnedStatusIcons = new();
     }
 
+    [Header("CharHUD Resource Fill Animation")]
+    [Tooltip("HP와 Cost의 Fill 및 FillBefore가 목표 값으로 부드럽게 이동하는 시간입니다.")]
+    [SerializeField, Min(0f)] private float partyResourceFillSmoothTime = 0.2f;
+
     private readonly PartySlotView[] partySlots = new PartySlotView[PartySlotCount];
     private readonly CharacterRuntimeData[] partyRuntimes = new CharacterRuntimeData[PartySlotCount];
     private readonly BattleCharacterSelectTarget[] partySelectTargets = new BattleCharacterSelectTarget[PartySlotCount];
     private readonly Image[] partySelectIcons = new Image[PartySlotCount];
     private readonly GameObject[] partySelectNoneIcons = new GameObject[PartySlotCount];
     private BattleRoomLoader partyRoomLoader;
+
+    [Header("Selected Character Rune Animation")]
+    [SerializeField, Min(0f)] private float selectedRuneSlideDistance = 90f;
+    [SerializeField, Min(0f)] private float selectedRuneSlideDuration = 0.25f;
+    private readonly Coroutine[] runeSlideCoroutines = new Coroutine[PartySlotCount];
+    private readonly bool?[] runeSelectionStates = new bool?[PartySlotCount];
+
 
     private const float DefaultSkillCostFontSize = 40f;
     private const float MoveSkillCostFontSize = 25f;
@@ -277,6 +300,14 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private RectTransform skillTooltipRectTransform;
     private CanvasGroup skillTooltipCanvasGroup;
     private Coroutine skillTooltipFadeCoroutine;
+    [Header("Skill Reservation Tooltip Feedback")]
+    [Tooltip("스킬이 타임라인에 등록된 뒤 툴팁을 잠시 숨기는 시간입니다.")]
+    [SerializeField, Min(0f)] private float skillReservationTooltipPause = 0.09f;
+    private Coroutine skillReservationTooltipCoroutine;
+    private bool skillReservationTooltipRestarting;
+    private int pendingSkillReservationVersion = -1;
+    private float pendingSkillReservationUntil;
+    private Button pendingSkillReservationButton;
     private bool isSkillTooltipVisible;
     // TooltipPanel/Detail: effecticon links are hoverable descriptions.
     private string hoveredDetailEffectId;
@@ -538,6 +569,21 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        if (skillReservationTooltipCoroutine != null)
+            StopCoroutine(skillReservationTooltipCoroutine);
+        skillReservationTooltipCoroutine = null;
+        skillReservationTooltipRestarting = false;
+        pendingSkillReservationVersion = -1;
+        pendingSkillReservationButton = null;
+        isSkillTooltipVisible = false; for (int i = 0; i < PartySlotCount; i++)
+        {
+            if (runeSlideCoroutines[i] != null)
+            {
+                StopCoroutine(runeSlideCoroutines[i]);
+                runeSlideCoroutines[i] = null;
+            }
+            runeSelectionStates[i] = null;
+        }
         isSkillTooltipVisible = false;
         if (skillTooltipFadeCoroutine != null)
         {
@@ -937,7 +983,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
             CharacterRuntimeData runtime = runtimes != null && i < runtimes.Count ? runtimes[i] : null;
             partyRuntimes[i] = runtime;
             if (partySlots[i] != null)
+            {
                 partySlots[i].Runtime = runtime;
+                partySlots[i].HasFillTargets = false;
+            }
             RefreshPartySlot(i);
         }
 
@@ -991,6 +1040,25 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 partySlots[i] = BuildPartySlotView(slotRoot);
             }
 
+            // CharHUD의 Back 이미지를 클릭하면 기존 캐릭터 선택 흐름을 실행합니다.
+            // 선택 표시와 카메라 포커스는 SelectPartyIndex에서 처리합니다.
+            if (partySlots[i]?.Root != null)
+            {
+                Transform back = FindDirectChild(partySlots[i].Root, "Back");
+                if (back != null)
+                {
+                    Image backImage = back.GetComponent<Image>();
+                    if (backImage != null)
+                    {
+                        backImage.raycastTarget = true;
+                        BattlePartyHudClickTarget clickTarget = back.GetComponent<BattlePartyHudClickTarget>();
+                        if (clickTarget == null)
+                            clickTarget = back.gameObject.AddComponent<BattlePartyHudClickTarget>();
+                        clickTarget.Configure(this, i);
+                    }
+                }
+            }
+
             Transform selectRoot = FindPath(transform, $"Char_Select/Char0{i + 1}");
             if (selectRoot == null)
                 continue;
@@ -1032,12 +1100,23 @@ public class BattleCharacterPanelUI : MonoBehaviour
         view.CharacterIcon = GetImage(FindPath(root, "Icon/Mask/Image"));
         view.PassiveIcon = GetImage(FindPath(root, "Passive/Icon"));
         view.HpFill = GetImage(FindPath(root, "Resources/Hp/Fill"));
+        view.HpFillBefore = GetImage(FindPath(root, "Resources/Hp/FillBefore"));
+        view.HpBack = GetImage(FindPath(root, "Resources/Hp/Back"));
         view.HpValue = FindPath(root, "Resources/Hp/Value")?.GetComponent<TMP_Text>();
         view.CostFill = GetImage(FindPath(root, "Resources/Cost/Fill"));
+        view.CostFillBefore = GetImage(FindPath(root, "Resources/Cost/FillBefore"));
         view.CostValue = FindPath(root, "Resources/Cost/Value")?.GetComponent<TMP_Text>();
         view.NameText = FindPath(root, "Resources/Name/Nametext")?.GetComponent<TMP_Text>()
             ?? FindPath(root, "Resources/Name/NameText")?.GetComponent<TMP_Text>();
         view.StatusContent = FindPath(root, "Resources/StatusEffect/Content");
+        Transform runeRoot = FindDirectChild(root, "Rune");
+        view.RuneRoot = runeRoot as RectTransform;
+        view.RuneCanvasGroup = runeRoot != null ? runeRoot.GetComponent<CanvasGroup>() : null;
+        if (view.RuneRoot != null)
+        {
+            view.RuneVisiblePosition = view.RuneRoot.anchoredPosition;
+            view.RunePositionCaptured = true;
+        }
 
         for (int i = 0; i < view.Karma.Length; i++)
             view.Karma[i] = GetImage(FindPath(root, $"Resources/Karma/Karma0{i + 1}"));
@@ -1084,6 +1163,29 @@ public class BattleCharacterPanelUI : MonoBehaviour
         RefreshPartySelectPortraits(battleTimelineController != null ? battleTimelineController.SelectedCharacter : null);
     }
 
+    // 방어도가 소멸한 즉시 +0 표시를 제거하고 HP 배경색을 원래대로 돌립니다.
+    // 다른 HUD 값의 변경 여부와 무관하게 실제 방어도 수치를 확인합니다.
+    private static void UpdatePartyHpShieldVisual(PartySlotView slot, CharacterRuntimeData runtime)
+    {
+        if (slot == null || runtime == null)
+            return;
+
+        int maxHp = Mathf.Max(0, runtime.MaxHP + runtime.RunMaxHPBonus);
+        int currentHp = maxHp > 0 ? Mathf.Clamp(runtime.PreviewHP, 0, maxHp) : 0;
+        int shield = Mathf.Max(0, runtime.PreviewShield);
+        Color targetBackColor = shield > 0
+            ? new Color32(0xFF, 0xFF, 0xFF, 0xFF)
+            : new Color32(0x14, 0x14, 0x14, 0xFF);
+        string targetHpText = shield > 0
+            ? $"{currentHp}/{maxHp} +{shield}"
+            : $"{currentHp}/{maxHp}";
+
+        if (slot.HpBack != null && slot.HpBack.color != targetBackColor)
+            slot.HpBack.color = targetBackColor;
+        if (slot.HpValue != null && slot.HpValue.text != targetHpText)
+            slot.HpValue.text = targetHpText;
+    }
+
     private void RefreshChangedPartySlots()
     {
         for (int i = 0; i < partySlots.Length; i++)
@@ -1092,10 +1194,44 @@ public class BattleCharacterPanelUI : MonoBehaviour
             if (slot == null || slot.Runtime == null)
                 continue;
 
+            UpdatePartyHpShieldVisual(slot, slot.Runtime);
             int hash = CalculatePartyRuntimeHash(slot.Runtime);
             if (hash != slot.LastHash)
                 RefreshPartySlot(i);
         }
+    }
+
+    private static void SetPartyFillImmediately(PartySlotView slot)
+    {
+        if (slot.HpFill != null) slot.HpFill.fillAmount = slot.HpFillTarget;
+        if (slot.HpFillBefore != null) slot.HpFillBefore.fillAmount = slot.HpFillBeforeTarget;
+        if (slot.CostFill != null) slot.CostFill.fillAmount = slot.CostFillTarget;
+        if (slot.CostFillBefore != null) slot.CostFillBefore.fillAmount = slot.CostFillBeforeTarget;
+    }
+
+    private void AnimatePartyResourceFills()
+    {
+        float duration = Mathf.Max(0f, partyResourceFillSmoothTime);
+        float blend = duration <= 0f ? 1f : 1f - Mathf.Exp(-Time.unscaledDeltaTime * 4f / duration);
+        for (int i = 0; i < partySlots.Length; i++)
+        {
+            PartySlotView slot = partySlots[i];
+            if (slot == null || slot.Runtime == null || !slot.HasFillTargets)
+                continue;
+
+            AnimateFill(slot.HpFill, slot.HpFillTarget, blend);
+            AnimateFill(slot.HpFillBefore, slot.HpFillBeforeTarget, blend);
+            AnimateFill(slot.CostFill, slot.CostFillTarget, blend);
+            AnimateFill(slot.CostFillBefore, slot.CostFillBeforeTarget, blend);
+        }
+    }
+
+    private static void AnimateFill(Image image, float target, float blend)
+    {
+        if (image == null)
+            return;
+        float next = Mathf.Lerp(image.fillAmount, target, blend);
+        image.fillAmount = Mathf.Abs(next - target) < 0.0005f ? target : next;
     }
 
     private void RefreshPartySlot(int index)
@@ -1114,6 +1250,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (runtime == null)
         {
             ClearPartyStatusIcons(slot);
+            slot.HasFillTargets = false;
             slot.LastHash = 0;
             return;
         }
@@ -1145,13 +1282,21 @@ public class BattleCharacterPanelUI : MonoBehaviour
         int currentHp = maxHp > 0 ? Mathf.Clamp(runtime.PreviewHP, 0, maxHp) : 0;
         int currentCost = maxCost > 0 ? Mathf.Clamp(runtime.PreviewCost, 0, maxCost) : 0;
 
-        if (slot.HpFill != null)
-            slot.HpFill.fillAmount = maxHp > 0 ? Mathf.Clamp01((float)currentHp / maxHp) : 0f;
-        if (slot.HpValue != null)
-            slot.HpValue.text = $"{currentHp}/{maxHp}";
-
-        if (slot.CostFill != null)
-            slot.CostFill.fillAmount = maxCost > 0 ? Mathf.Clamp01((float)currentCost / maxCost) : 0f;
+        // Fill은 예약된 예상 자원, FillBefore는 실제 자원을 따로 추적합니다.
+        // 목표값만 갱신하고 화면의 Fill은 LateUpdate에서 부드럽게 이동시킵니다.
+        slot.HpFillTarget = maxHp > 0 ? Mathf.Clamp01((float)currentHp / maxHp) : 0f;
+        slot.HpFillBeforeTarget = maxHp > 0
+            ? Mathf.Clamp01((float)runtime.CurrentHP / maxHp) : 0f;
+        slot.CostFillTarget = maxCost > 0 ? Mathf.Clamp01((float)currentCost / maxCost) : 0f;
+        slot.CostFillBeforeTarget = maxCost > 0
+            ? Mathf.Clamp01((float)runtime.CurrentCost / maxCost) : 0f;
+        if (!slot.HasFillTargets)
+        {
+            // 최초 표시에서는 비어 있는 Fill에서 시작하지 않고 현재 값으로 초기화합니다.
+            SetPartyFillImmediately(slot);
+            slot.HasFillTargets = true;
+        }
+        UpdatePartyHpShieldVisual(slot, runtime);
         if (slot.CostValue != null)
             slot.CostValue.text = $"{currentCost}/{maxCost}";
 
@@ -1557,6 +1702,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
                             !string.IsNullOrWhiteSpace(selectedCharacterId) &&
                             string.Equals(runtime.CharacterId, selectedCharacterId, StringComparison.Ordinal);
 
+            UpdateSelectedRuneVisual(i, selected);
+
             partySelectTargets[i]?.SetAvailable(runtime != null);
             partySelectTargets[i]?.SetSelected(selected);
 
@@ -1583,6 +1730,90 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
             ApplyPartySprite(iconImage, portrait);
         }
+    }
+
+    // 선택된 캐릭터의 Rune만 오른쪽에서 등장하고, 해제 시 오른쪽으로 퇴장합니다.
+    // 룬 아이콘과 툴팁 오브젝트는 재생성하지 않습니다.
+    private void UpdateSelectedRuneVisual(int index, bool selected)
+    {
+        PartySlotView slot = partySlots[index];
+        if (slot == null || slot.RuneRoot == null || slot.RuneCanvasGroup == null)
+            return;
+
+        if (!slot.RunePositionCaptured)
+        {
+            slot.RuneVisiblePosition = slot.RuneRoot.anchoredPosition;
+            slot.RunePositionCaptured = true;
+        }
+
+        if (runeSelectionStates[index].HasValue && runeSelectionStates[index].Value == selected)
+            return;
+
+        bool firstUpdate = !runeSelectionStates[index].HasValue;
+        runeSelectionStates[index] = selected;
+
+        if (runeSlideCoroutines[index] != null)
+        {
+            StopCoroutine(runeSlideCoroutines[index]);
+            runeSlideCoroutines[index] = null;
+        }
+
+        if (firstUpdate)
+            SetRuneVisualImmediate(slot, false);
+
+        if ((firstUpdate && !selected) || !isActiveAndEnabled || selectedRuneSlideDuration <= 0f)
+        {
+            SetRuneVisualImmediate(slot, selected);
+            return;
+        }
+
+        slot.RuneRoot.gameObject.SetActive(true);
+        runeSlideCoroutines[index] = StartCoroutine(AnimateSelectedRune(index, slot, selected));
+    }
+
+    private void SetRuneVisualImmediate(PartySlotView slot, bool selected)
+    {
+        slot.RuneRoot.anchoredPosition = slot.RuneVisiblePosition +
+            (selected ? Vector2.zero : Vector2.right * selectedRuneSlideDistance);
+        slot.RuneCanvasGroup.alpha = selected ? 1f : 0f;
+        slot.RuneCanvasGroup.blocksRaycasts = selected;
+        slot.RuneCanvasGroup.interactable = selected;
+        slot.RuneRoot.gameObject.SetActive(selected);
+    }
+
+    private IEnumerator AnimateSelectedRune(int index, PartySlotView slot, bool selected)
+    {
+        RectTransform rect = slot.RuneRoot;
+        CanvasGroup group = slot.RuneCanvasGroup;
+        Vector2 from = rect.anchoredPosition;
+        Vector2 to = slot.RuneVisiblePosition +
+            (selected ? Vector2.zero : Vector2.right * selectedRuneSlideDistance);
+        float fromAlpha = group.alpha;
+        float toAlpha = selected ? 1f : 0f;
+        // 슬라이드 중에는 룬 아이콘이 포인터를 받지 않도록 합니다.
+        // 등장/퇴장 애니메이션이 끝난 뒤 선택된 룬만 호버를 허용합니다.
+        group.blocksRaycasts = false;
+        group.interactable = false;
+
+        float elapsed = 0f;
+        float duration = Mathf.Max(0.0001f, selectedRuneSlideDuration);
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            t = t * t * (3f - 2f * t);
+            rect.anchoredPosition = Vector2.LerpUnclamped(from, to, t);
+            group.alpha = Mathf.Lerp(fromAlpha, toAlpha, t);
+            yield return null;
+        }
+
+        rect.anchoredPosition = to;
+        group.alpha = toAlpha;
+        group.blocksRaycasts = selected;
+        group.interactable = selected;
+        if (!selected)
+            rect.gameObject.SetActive(false);
+        runeSlideCoroutines[index] = null;
     }
 
     private static bool IsTutorialBattleRun()
@@ -1695,7 +1926,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
         {
             int hash = 17;
             hash = hash * 31 + runtime.PreviewHP;
+            hash = hash * 31 + runtime.CurrentHP;
+            hash = hash * 31 + runtime.PreviewShield;
             hash = hash * 31 + runtime.PreviewCost;
+            hash = hash * 31 + runtime.CurrentCost;
             hash = hash * 31 + runtime.PreviewResource;
             hash = hash * 31 + runtime.MaxHP + runtime.RunMaxHPBonus;
             hash = hash * 31 + runtime.MaxCost + runtime.RunMaxCostBonus;
@@ -2395,6 +2629,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         RefreshPartyFromRuntimeStore();
         RefreshChangedPartySlots();
+        AnimatePartyResourceFills();
 
         // 다른 UI 갱신이나 레이아웃 처리로 BattleSlot의 위치만 되돌아가는 경우를 막습니다.
         // 전투 진행 중에는 이동 애니메이션이 끝난 뒤 Y 위치만 고정하고 BattleSlot 크기는 기본 크기를 유지합니다.
@@ -2410,6 +2645,22 @@ public class BattleCharacterPanelUI : MonoBehaviour
         int reservationVersion = battleTimelineController != null
             ? battleTimelineController.ReservationVersion
             : -1;
+        if (pendingSkillReservationVersion >= 0)
+        {
+            if (reservationVersion != pendingSkillReservationVersion)
+            {
+                Button registeredButton = pendingSkillReservationButton;
+                pendingSkillReservationVersion = -1;
+                pendingSkillReservationButton = null;
+                RestartSkillTooltipAfterReservation(registeredButton);
+            }
+            else if (Time.unscaledTime >= pendingSkillReservationUntil)
+            {
+                pendingSkillReservationVersion = -1;
+                pendingSkillReservationButton = null;
+            }
+        }
+
         if (activeSlotIndex != lastPreviewTimelineSlotIndex ||
             reservationVersion != lastPreviewReservationVersion)
         {
@@ -2493,6 +2744,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void RefreshHoveredSkillTooltip()
     {
+        if (skillReservationTooltipRestarting)
+            return;
+
         if (!isSkillTooltipVisible || isPassiveSkillTooltip || hoveredActiveSkillButton == null)
             return;
 
@@ -3595,6 +3849,13 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
+        if (!toggleMoveSelection && sourceButton != null)
+        {
+            pendingSkillReservationVersion = battleTimelineController.ReservationVersion;
+            pendingSkillReservationUntil = Time.unscaledTime + 8f;
+            pendingSkillReservationButton = sourceButton;
+        }
+
         BattleCharacterSkillHoverUI clickedHover =
             sourceButton != null ? sourceButton.GetComponent<BattleCharacterSkillHoverUI>() : null;
         clickedHover?.ShowClickSelectionFeedback();
@@ -4168,8 +4429,55 @@ public class BattleCharacterPanelUI : MonoBehaviour
             ShowSkillInfo(displayedSkillInfoData);
     }
 
+    private void RestartSkillTooltipAfterReservation(Button sourceButton)
+    {
+        if (!isActiveAndEnabled || !isSkillTooltipVisible || isPassiveSkillTooltip ||
+            skillTooltipPanel == null || sourceButton == null ||
+            hoveredActiveSkillButton != sourceButton)
+            return;
+
+        if (skillReservationTooltipCoroutine != null)
+            StopCoroutine(skillReservationTooltipCoroutine);
+        skillReservationTooltipCoroutine = StartCoroutine(RestartSkillTooltipAfterReservationRoutine(sourceButton));
+    }
+
+    private IEnumerator RestartSkillTooltipAfterReservationRoutine(Button sourceButton)
+    {
+        skillReservationTooltipRestarting = true;
+        if (skillTooltipFadeCoroutine != null)
+        {
+            StopCoroutine(skillTooltipFadeCoroutine);
+            skillTooltipFadeCoroutine = null;
+        }
+        EnsureSkillTooltipCanvasGroup();
+        HideSkillDetailEffectHover();
+        if (skillTooltipCanvasGroup != null)
+            skillTooltipCanvasGroup.alpha = 0f;
+        if (skillTooltipPanel != null)
+            skillTooltipPanel.SetActive(false);
+
+        yield return new WaitForSecondsRealtime(Mathf.Max(0f, skillReservationTooltipPause));
+        skillReservationTooltipRestarting = false;
+        skillReservationTooltipCoroutine = null;
+
+        if (!isActiveAndEnabled || sourceButton == null ||
+            hoveredActiveSkillButton != sourceButton || !isSkillTooltipVisible)
+            yield break;
+
+        int slot = sourceButton == skill01Button ? 0 : sourceButton == skill02Button ? 1 :
+            sourceButton == skill03Button ? 2 : sourceButton == skill04Button ? 3 : -1;
+        if (slot < 0)
+            yield break;
+        SkillMasterData currentSkill = ResolveSkillData(GetSkillIdForDisplaySlot(slot));
+        if (currentSkill != null)
+            ShowSkillTooltip(currentSkill);
+    }
+
     private void ShowSkillTooltip(SkillMasterData skillData)
     {
+        if (skillReservationTooltipRestarting)
+            return;
+
         if (skillData == null)
         {
             HideSkillTooltip();
@@ -4261,6 +4569,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void UpdateSkillTooltipHoverRetention()
     {
+        if (skillReservationTooltipRestarting)
+            return;
+
         if (!isSkillTooltipVisible || skillTooltipPanel == null || !skillTooltipPanel.activeInHierarchy)
             return;
 
@@ -4538,6 +4849,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private void HideSkillTooltipNow()
     {
+        if (skillReservationTooltipCoroutine != null)
+            StopCoroutine(skillReservationTooltipCoroutine);
+        skillReservationTooltipCoroutine = null;
+        skillReservationTooltipRestarting = false;
         HideSkillDetailEffectHover();
         isSkillTooltipVisible = false;
         hoveredActiveSkillButton = null;
@@ -5896,3 +6211,27 @@ public sealed class BattleCharacterSelectTarget : MonoBehaviour, IPointerClickHa
     }
 }
 
+
+
+/// <summary>
+/// CharHUD/Char01~03/Back의 클릭을 기존 파티 캐릭터 선택에 전달합니다.
+/// </summary>
+public sealed class BattlePartyHudClickTarget : MonoBehaviour, IPointerClickHandler
+{
+    private BattleCharacterPanelUI owner;
+    private int partyIndex;
+
+    public void Configure(BattleCharacterPanelUI panel, int index)
+    {
+        owner = panel;
+        partyIndex = index;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        owner?.SelectPartyIndex(partyIndex);
+    }
+}
