@@ -11,6 +11,7 @@ using UnityEngine.SceneManagement;
 
 public sealed class LocalizationManagerWindow : EditorWindow
 {
+    private const string KoreanGuiFontPath = "Assets/TextMesh Pro/Fonts/DungGeunMo.otf";
     private readonly List<LocalizationCandidate> candidates = new();
     private Vector2 scroll;
     private bool scanScenes = true;
@@ -18,24 +19,44 @@ public sealed class LocalizationManagerWindow : EditorWindow
     private bool scanScripts = true;
     private bool scanGameData = true;
     private string filter = string.Empty;
+    private int currentPage;
+    private bool actionQueued;
+    private GUIStyle candidateLabelStyle;
 
     [MenuItem("Tools/Localization/Localization Manager")]
     public static void Open() => GetWindow<LocalizationManagerWindow>("Localization Manager");
 
+    private void OnEnable()
+    {
+        Font koreanGuiFont = AssetDatabase.LoadAssetAtPath<Font>(KoreanGuiFontPath);
+        candidateLabelStyle = new GUIStyle(EditorStyles.wordWrappedLabel)
+        {
+            font = koreanGuiFont != null ? koreanGuiFont : EditorStyles.wordWrappedLabel.font
+        };
+    }
+
     private void OnGUI()
     {
         EditorGUILayout.LabelField("Localization Manager", EditorStyles.boldLabel);
-        EditorGUILayout.BeginHorizontal();
-        scanScenes = EditorGUILayout.ToggleLeft("Scenes", scanScenes, GUILayout.Width(90));
-        scanPrefabs = EditorGUILayout.ToggleLeft("Prefabs", scanPrefabs, GUILayout.Width(90));
-        scanScripts = EditorGUILayout.ToggleLeft("Scripts", scanScripts, GUILayout.Width(90));
-        scanGameData = EditorGUILayout.ToggleLeft("Game Data", scanGameData, GUILayout.Width(100));
-        bool scanRequested = GUILayout.Button("전체 검사");
-        bool scanAndApplyRequested = GUILayout.Button("전체 검사 및 적용");
-        EditorGUILayout.EndHorizontal();
-        bool applyRequested = GUILayout.Button("전체 안전 항목 적용");
+        bool scanRequested;
+        bool scanAndApplyRequested;
+        bool applyRequested;
+        using (new EditorGUI.DisabledScope(actionQueued))
+        {
+            EditorGUILayout.BeginHorizontal();
+            scanScenes = EditorGUILayout.ToggleLeft("Scenes", scanScenes, GUILayout.Width(90));
+            scanPrefabs = EditorGUILayout.ToggleLeft("Prefabs", scanPrefabs, GUILayout.Width(90));
+            scanScripts = EditorGUILayout.ToggleLeft("Scripts", scanScripts, GUILayout.Width(90));
+            scanGameData = EditorGUILayout.ToggleLeft("Game Data", scanGameData, GUILayout.Width(100));
+            scanRequested = GUILayout.Button("Full Scan");
+            scanAndApplyRequested = GUILayout.Button("Full Scan and Apply");
+            EditorGUILayout.EndHorizontal();
+            applyRequested = GUILayout.Button("Apply Safe Items");
+        }
         EditorGUILayout.HelpBox(
-            "동적 텍스트는 GameLocalization의 명시적 키와 한국어 원문을 자동 수집합니다. 번역 열과 키 없는 영어 문자열은 자동으로 채우지 않습니다.",
+            actionQueued
+                ? "Localization operation is queued or running."
+                : "Dynamic text sources are collected automatically. Translation columns and unkeyed English strings are not auto-filled.",
             MessageType.Info);
 
         if (scanRequested)
@@ -44,13 +65,66 @@ public sealed class LocalizationManagerWindow : EditorWindow
             RunEditorAction("전체 검사 및 적용", () => { Scan(); ApplySafe(); }, true);
         if (applyRequested)
             RunEditorAction("전체 안전 항목 적용", ApplySafe, true);
+        EditorGUI.BeginChangeCheck();
         filter = EditorGUILayout.TextField("Search", filter);
+        if (EditorGUI.EndChangeCheck())
+            currentPage = 0;
         LocalizationScanSummary summary = LocalizationScanSummary.Create(candidates);
         EditorGUILayout.LabelField($"New: {summary.NewCount}  Existing: {summary.ExistingCount}  Missing Component: {summary.MissingComponentCount}  Review: {summary.ReviewCount}  Occurrences: {summary.OccurrenceCount}");
+        List<LocalizationCandidate> filteredCandidates = candidates
+            .Where(candidate => string.IsNullOrEmpty(filter) ||
+                                candidate.Key.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                candidate.Korean.Contains(filter))
+            .ToList();
+        DrawPagination(filteredCandidates.Count);
+        LocalizationManagerPresentationPolicy.GetPageBounds(
+            filteredCandidates.Count,
+            currentPage,
+            out int pageStart,
+            out int pageEnd);
         scroll = EditorGUILayout.BeginScrollView(scroll);
-        foreach (LocalizationCandidate candidate in candidates.Where(c => string.IsNullOrEmpty(filter) || c.Key.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0 || c.Korean.Contains(filter)))
-            EditorGUILayout.LabelField($"[{(candidate.RequiresReview ? "Review" : candidate.IsNew ? "New" : "Reuse")}] {candidate.Key} = {candidate.Korean}\n{candidate.AssetPath}", EditorStyles.wordWrappedLabel);
+        for (int index = pageStart; index < pageEnd; index++)
+        {
+            LocalizationCandidate candidate = filteredCandidates[index];
+            EditorGUILayout.LabelField(
+                $"[{(candidate.RequiresReview ? "Review" : candidate.IsNew ? "New" : "Reuse")}] {candidate.Key} = {candidate.Korean}\n{candidate.AssetPath}",
+                candidateLabelStyle ?? EditorStyles.wordWrappedLabel);
+        }
         EditorGUILayout.EndScrollView();
+    }
+
+    private void DrawPagination(int totalCount)
+    {
+        int pageCount = Mathf.Max(
+            1,
+            Mathf.CeilToInt(totalCount / (float)LocalizationManagerPresentationPolicy.PageSize));
+        currentPage = Mathf.Clamp(currentPage, 0, pageCount - 1);
+
+        EditorGUILayout.BeginHorizontal();
+        using (new EditorGUI.DisabledScope(currentPage <= 0))
+        {
+            if (GUILayout.Button("Previous", GUILayout.Width(80)))
+            {
+                currentPage--;
+                scroll = Vector2.zero;
+            }
+        }
+
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.LabelField(
+            $"Page {currentPage + 1} / {pageCount} ({totalCount})",
+            GUILayout.Width(150));
+        GUILayout.FlexibleSpace();
+
+        using (new EditorGUI.DisabledScope(currentPage >= pageCount - 1))
+        {
+            if (GUILayout.Button("Next", GUILayout.Width(80)))
+            {
+                currentPage++;
+                scroll = Vector2.zero;
+            }
+        }
+        EditorGUILayout.EndHorizontal();
     }
 
     private void Scan()
@@ -374,8 +448,11 @@ public sealed class LocalizationManagerWindow : EditorWindow
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
-    private static void RunEditorAction(string label, Action action, bool requiresSceneSave)
+    private void RunEditorAction(string label, Action action, bool requiresSceneSave)
     {
+        if (actionQueued)
+            return;
+
         if (!LocalizationEditorSafetyPolicy.CanRunAssetMutation(EditorApplication.isPlayingOrWillChangePlaymode))
         {
             Debug.LogError($"[Localization Manager] {label} 실패: Play Mode에서는 로컬리제이션 에셋을 변경할 수 없습니다.");
@@ -386,22 +463,36 @@ public sealed class LocalizationManagerWindow : EditorWindow
             return;
         }
 
-        if (requiresSceneSave && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-            return;
+        actionQueued = true;
+        Repaint();
+        EditorApplication.delayCall += () =>
+        {
+            try
+            {
+                if (requiresSceneSave && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                    return;
 
-        try
-        {
-            using (LocalizationEditorFontMutationGuard.ProtectAllProjectFonts())
-                action?.Invoke();
-        }
-        catch (Exception exception)
-        {
-            string message = exception is InvalidOperationException
-                ? exception.Message
-                : $"{label} 중 오류가 발생했습니다. Console의 첫 예외를 확인하세요.";
-            Debug.LogError($"[Localization Manager] {label} 실패: {exception}");
-            EditorUtility.DisplayDialog("Localization Manager", message, "확인");
-        }
+                using (LocalizationEditorFontMutationGuard.ProtectAllProjectFonts())
+                    action?.Invoke();
+            }
+            catch (Exception exception)
+            {
+                string message = exception is InvalidOperationException
+                    ? exception.Message
+                    : $"{label} 중 오류가 발생했습니다. Console의 첫 예외를 확인하세요.";
+                Debug.LogError($"[Localization Manager] {label} 실패: {exception}");
+                EditorUtility.DisplayDialog("Localization Manager", message, "확인");
+            }
+            finally
+            {
+                if (this != null)
+                {
+                    actionQueued = false;
+                    currentPage = 0;
+                    Repaint();
+                }
+            }
+        };
     }
 
     private static int RemoveUnusedEntries(IEnumerable<string> retainedCandidateKeys)
