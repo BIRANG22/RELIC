@@ -181,7 +181,7 @@ namespace Relic.Gameplay.Data
                 allIds,
                 mapPool,
                 map => map != null && IsNormalRandomEventMap(map),
-                map => map.MapId);
+                map => EventIdUtility.Normalize(map.EventId));
 
             List<MapData> available = FilterMaps(events, map => !usedIds.Contains(EventIdUtility.Normalize(map.EventId)));
             if (available.Count == 0)
