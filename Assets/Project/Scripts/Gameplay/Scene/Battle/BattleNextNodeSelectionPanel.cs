@@ -10,19 +10,20 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
     [Serializable]
     private class ChoiceLayoutSet
     {
-        [Tooltip("해당 선택지 개수에서 NextNodeChoice_1, 2, 3 순서로 적용할 UI 위치입니다.")]
+        [Tooltip("해당 선택지 개수에서 NextNodeChoice_1, 2, 3, 4 순서로 적용할 UI 위치입니다.")]
         public Vector2[] anchoredPositions = Array.Empty<Vector2>();
 
-        [Tooltip("해당 선택지 개수에서 NextNodeChoice_1, 2, 3 순서로 적용할 로컬 스케일입니다.")]
+        [Tooltip("해당 선택지 개수에서 NextNodeChoice_1, 2, 3, 4 순서로 적용할 로컬 스케일입니다.")]
         public Vector3[] localScales = Array.Empty<Vector3>();
     }
 
     [SerializeField] private BattleNextNodeChoiceButton[] choices;
     [SerializeField] private BattleNextNodeChoiceButton choicePrefab;
-    [SerializeField, Min(1)] private int maxChoiceCount = 3;
+    [SerializeField, Min(1)] private int maxChoiceCount = 4;
 
     [Header("Choice Layout - 1개 표시")]
-    [SerializeField] private ChoiceLayoutSet oneChoiceLayout = new()
+    [SerializeField]
+    private ChoiceLayoutSet oneChoiceLayout = new()
     {
         anchoredPositions = new[]
         {
@@ -35,7 +36,8 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
     };
 
     [Header("Choice Layout - 2개 표시")]
-    [SerializeField] private ChoiceLayoutSet twoChoiceLayout = new()
+    [SerializeField]
+    private ChoiceLayoutSet twoChoiceLayout = new()
     {
         anchoredPositions = new[]
         {
@@ -50,7 +52,8 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
     };
 
     [Header("Choice Layout - 3개 표시")]
-    [SerializeField] private ChoiceLayoutSet threeChoiceLayout = new()
+    [SerializeField]
+    private ChoiceLayoutSet threeChoiceLayout = new()
     {
         anchoredPositions = new[]
         {
@@ -66,12 +69,33 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
         }
     };
 
+    [Header("Choice Layout - 4개 표시")]
+    [SerializeField]
+    private ChoiceLayoutSet fourChoiceLayout = new()
+    {
+        anchoredPositions = new[]
+        {
+            Vector2.zero,
+            Vector2.zero,
+            Vector2.zero,
+            Vector2.zero
+        },
+        localScales = new[]
+        {
+            Vector3.one,
+            Vector3.one,
+            Vector3.one,
+            Vector3.one
+        }
+    };
+
     [Header("Choice Hover Scale")]
     [Tooltip("생성된 NextNodeChoice에 마우스를 올렸을 때 기본 스케일에 곱해지는 값입니다. 예: 1.1은 10% 확대됩니다.")]
     [SerializeField] private Vector3 hoverScaleMultiplier = new(1.1f, 1.1f, 1.1f);
 
     private readonly List<int> visibleNodeIndices = new();
     private Coroutine layoutApplyRoutine;
+    private Action<int, bool> onNodeHoverChanged;
 
     public IReadOnlyList<int> VisibleNodeIndices => visibleNodeIndices;
 
@@ -87,10 +111,13 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
             StopCoroutine(layoutApplyRoutine);
             layoutApplyRoutine = null;
         }
+        ClearChoiceHover();
     }
 
-    public void Open(MapRuntimeData runtime, Action<int> onSelected)
+    public void Open(MapRuntimeData runtime, Action<int> onSelected, Action<int, bool> hoverCallback = null)
     {
+        ClearChoiceHover();
+        onNodeHoverChanged = hoverCallback;
         ResolveChoices();
         visibleNodeIndices.Clear();
 
@@ -113,7 +140,7 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
             if (i < nodes.Count)
             {
                 GeneratedMapNodeData node = nodes[i];
-                choice.Bind(node, onSelected);
+                choice.Bind(node, onSelected, OnChoiceNodeHoverChanged);
                 visibleNodeIndices.Add(node.NodeIndex);
             }
             else
@@ -134,8 +161,23 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
         layoutApplyRoutine = StartCoroutine(ReapplyLayoutAfterUiUpdate(visibleChoiceCount));
     }
 
+    private void OnChoiceNodeHoverChanged(int nodeIndex, bool highlighted)
+    {
+        onNodeHoverChanged?.Invoke(nodeIndex, highlighted);
+    }
+
+    private void ClearChoiceHover()
+    {
+        if (visibleNodeIndices.Count == 0 || onNodeHoverChanged == null)
+            return;
+
+        foreach (int index in visibleNodeIndices)
+            onNodeHoverChanged(index, false);
+    }
+
     public void Close()
     {
+        ClearChoiceHover();
         if (layoutApplyRoutine != null)
         {
             StopCoroutine(layoutApplyRoutine);
@@ -160,8 +202,8 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
             }
         }
 
-        // 이름에 붙은 번호를 우선 사용해서 Inspector의 1/2/3 설정과
-        // 실제 NextNodeChoice_1/2/3이 항상 같은 순서로 대응되도록 합니다.
+        // 이름에 붙은 번호를 우선 사용해서 Inspector의 1/2/3/4 설정과
+        // 실제 NextNodeChoice_1/2/3/4가 항상 같은 순서로 대응되도록 합니다.
         resolved.Sort(CompareChoiceOrder);
 
         for (int i = 0; i < resolved.Count; i++)
@@ -269,7 +311,8 @@ public class BattleNextNodeSelectionPanel : MonoBehaviour
             1 => oneChoiceLayout,
             2 => twoChoiceLayout,
             3 => threeChoiceLayout,
-            _ => threeChoiceLayout
+            4 => fourChoiceLayout,
+            _ => fourChoiceLayout
         };
     }
 

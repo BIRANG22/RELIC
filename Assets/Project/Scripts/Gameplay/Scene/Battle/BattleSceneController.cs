@@ -1782,17 +1782,27 @@ public class BattleSceneController : MonoBehaviour
 
     private void OpenSpecialEvent(GeneratedMapNodeData nodeData)
     {
-        Debug.Log($"[BattleSceneController] Special event start: {nodeData.MapId} / Event:{nodeData.EventId}");
+        // 시작방 Map_25는 Map 시트의 EventId가 0이지만,
+        // 기존 시작 이벤트는 Event_09 데이터로 진행됩니다.
+        // 일반 이벤트와 수동 지정한 이벤트 ID는 변경하지 않습니다.
+        string eventId = EventIdUtility.Normalize(nodeData.EventId);
+        if (string.Equals(nodeData.Type, "Start", StringComparison.OrdinalIgnoreCase) &&
+            string.IsNullOrWhiteSpace(eventId))
+        {
+            eventId = "Event_09";
+        }
+
+        Debug.Log($"[BattleSceneController] Special event start: {nodeData.MapId} / Event:{eventId}");
         pendingBattleRoomUsesBossIntro = false;
 
-        pendingRoomIntroMessage = ResolveEventRoomIntroMessage(nodeData);
+        pendingRoomIntroMessage = ResolveEventRoomIntroMessage(nodeData, eventId);
         EventRoomController eventController =
             eventRoom != null
                 ? eventRoom.GetComponentInChildren<EventRoomController>(true)
                 : null;
 
         if (eventController != null)
-            eventController.SetEventId(nodeData.EventId);
+            eventController.SetEventId(eventId);
 
         // EventRoom의 OnEnable에서 이벤트 선택지/연출이 즉시 실행될 수 있으므로
         // MapVisual을 먼저 생성한 뒤 EventRoom을 활성화한다.
@@ -1804,12 +1814,12 @@ public class BattleSceneController : MonoBehaviour
         OpenRoom(eventRoom, "EventRoom");
     }
 
-    private static string ResolveEventRoomIntroMessage(GeneratedMapNodeData nodeData)
+    private static string ResolveEventRoomIntroMessage(GeneratedMapNodeData nodeData, string eventIdOverride = null)
     {
         if (nodeData == null)
             return string.Empty;
 
-        string eventId = EventIdUtility.Normalize(nodeData.EventId);
+        string eventId = EventIdUtility.Normalize(eventIdOverride ?? nodeData.EventId);
         if (string.IsNullOrWhiteSpace(eventId))
             return string.Empty;
 

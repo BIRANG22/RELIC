@@ -6110,9 +6110,19 @@ public class EventRoomController : MonoBehaviour
         {
             if (visible && nextButton != null)
             {
-                TMP_Text label = nextButton.GetComponentInChildren<TMP_Text>(true);
+                // The shared NextButton is also used by the battle reward screen.
+                // Find its actual caption, not an arbitrary TMP component in the button.
+                Transform captionTransform = FindChildRecursive(nextButton.transform, "Text (TMP)");
+                TMP_Text label = captionTransform != null
+                    ? captionTransform.GetComponent<TMP_Text>()
+                    : nextButton.GetComponentInChildren<TMP_Text>(true);
                 if (label != null)
+                {
+                    // The caption is controlled by the active screen. A static localizer
+                    // must not restore the reward label after the event sets 'Continue'.
+                    DisableStaticLocalizedText(label);
                     label.text = "진행";
+                }
                 nextButton.interactable = true;
                 BindNextButton();
             }

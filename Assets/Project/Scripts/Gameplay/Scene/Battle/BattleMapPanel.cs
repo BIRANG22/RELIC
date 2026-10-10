@@ -40,7 +40,7 @@ public class BattleMapPanel : MonoBehaviour
         partyInfoPresenter?.RefreshFromRuntime();
 
         if (nextNodeSelectionPanel != null)
-            nextNodeSelectionPanel.Open(runtime, OnNextNodeSelected);
+            nextNodeSelectionPanel.Open(runtime, OnNextNodeSelected, OnNextChoiceNodeHoverChanged);
     }
 
     public void Prepare(MapRuntimeData mapRuntime)
@@ -208,6 +208,11 @@ public class BattleMapPanel : MonoBehaviour
         }
 
         battleSceneController.OnMapNodeSelected(nodeData);
+    }
+
+    private void OnNextChoiceNodeHoverChanged(int nodeIndex, bool highlighted)
+    {
+        mapViewSpawner?.SetNextChoiceNodeHighlighted(nodeIndex, highlighted);
     }
 
     private void OnNextNodeSelected(int nodeIndex)

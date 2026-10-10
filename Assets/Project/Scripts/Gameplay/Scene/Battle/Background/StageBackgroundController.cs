@@ -104,51 +104,39 @@ public class StageBackgroundController : MonoBehaviour
         int row = layerIndex + 1;
         BackgroundRange range = FindRange(mapId, row);
 
-        if (range == null || range.Prefab == null)
+        // 보스 타입으로 진입한 경우 기존 마지막 레이어 범위 설정과 관계없이
+        // 지정된 보스 배경을 사용합니다. 현재 스테이지의 보스는 Layer 9입니다.
+        GameObject targetPrefab = playBossReveal && st1BossPrefab != null
+            ? st1BossPrefab
+            : range != null ? range.Prefab : null;
+
+        if (targetPrefab == null)
         {
             ClearCurrentBackground();
-
             Debug.LogWarning(
-                $"[StageBackgroundController] " +
-                $"No background is configured for row {row}.",
-                this
-            );
-
+                $"[StageBackgroundController] No background is configured for row {row}.",
+                this);
             return;
         }
 
         // 같은 배경이 이미 생성되어 있다면 다시 생성하지 않음
-        if (currentPrefab == range.Prefab &&
-            currentInstance != null)
+        if (currentPrefab == targetPrefab && currentInstance != null)
         {
-            if (playBossReveal && range.Prefab == st1BossPrefab)
+            if (playBossReveal && targetPrefab == st1BossPrefab)
                 PlaySt1BossRevealSequence();
-
             return;
         }
 
         ClearCurrentBackground();
 
-        Transform parent = spawnRoot != null
-            ? spawnRoot
-            : transform;
+        Transform parent = spawnRoot != null ? spawnRoot : transform;
+        currentInstance = Instantiate(targetPrefab, parent, false);
+        currentInstance.name = targetPrefab.name;
+        currentPrefab = targetPrefab;
 
-        currentInstance = Instantiate(
-            range.Prefab,
-            parent,
-            false
-        );
-
-        currentInstance.name = range.Prefab.name;
-        currentPrefab = range.Prefab;
-
-        // St1_boss 프리팹이 생성됐을 때만 순차 등장 연출 실행
-        if (playBossReveal && range.Prefab == st1BossPrefab)
-        {
+        if (playBossReveal && targetPrefab == st1BossPrefab)
             PlaySt1BossRevealSequence();
-        }
     }
-
     /// <summary>
     /// 현재 행에 해당하는 배경 범위를 찾습니다.
     /// </summary>

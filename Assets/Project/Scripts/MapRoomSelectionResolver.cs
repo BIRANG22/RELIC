@@ -1,34 +1,28 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using Relic.Gameplay.Battle;
 
 namespace Relic.Gameplay.Data
 {
     /// <summary>
-    /// ½ÇÁ¦·Î ³ëµå¸¦ ¹æ¹®ÇÏ´Â ¼ø°£ ¹æ ³»¿ëÀ» È®Á¤ÇÕ´Ï´Ù.
-    /// Áöµµ¿¡ »ı¼º¸¸ µÇ°í ¼±ÅÃÇÏÁö ¾ÊÀº ¹æÀº »ç¿ë ÀÌ·Â¿¡ Æ÷ÇÔÇÏÁö ¾Ê½À´Ï´Ù.
+    /// ì‹¤ì œë¡œ ë…¸ë“œë¥¼ ë°©ë¬¸í•˜ëŠ” ìˆœê°„ ë°© ë‚´ìš©ì„ í™•ì •í•©ë‹ˆë‹¤.
+    /// ì§€ë„ì— ìƒì„±ë§Œ ë˜ê³  ì„ íƒí•˜ì§€ ì•Šì€ ë°©ì€ ì‚¬ìš© ì´ë ¥ì— í¬í•¨í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
     /// </summary>
     public static class MapRoomSelectionResolver
     {
-        private static readonly HashSet<string> NormalEventMapIds = new(StringComparer.Ordinal)
+        private static readonly HashSet<string> TutorialCombatMapIds = new(StringComparer.OrdinalIgnoreCase)
         {
-            "Map_17",
-            "Map_18",
-            "Map_20",
-            "Map_21",
-            "Map_23",
-            "Map_24"
+            "Map_27", "Map_28", "Map_29"
         };
-
-        private const float MidHardChance = 0.10f;
-        private const float LateUnvisitedWeakChance = 0.10f;
 
         public static bool IsNormalRandomEventMap(MapData map)
         {
-            if (map == null || !Same(map.Type, "Special"))
-                return false;
+            return map != null && Same(map.Type, "Special");
+        }
 
-            return NormalEventMapIds.Contains(map.MapId?.Trim() ?? string.Empty);
+        public static bool IsTutorialCombatMap(MapData map)
+        {
+            return map != null && TutorialCombatMapIds.Contains(map.MapId?.Trim() ?? string.Empty);
         }
 
         public static MapData ResolveForVisit(
@@ -76,7 +70,7 @@ namespace Relic.Gameplay.Data
             MapRuntimeData runtime,
             IReadOnlyList<MapData> mapPool)
         {
-            List<MapData> allCommon = CollectByType(mapPool, stage, "Common");
+            List<MapData> allCommon = FilterMaps(CollectByType(mapPool, stage, "Common"), map => !IsTutorialCombatMap(map));
             if (allCommon.Count == 0)
                 return null;
 
@@ -125,6 +119,14 @@ namespace Relic.Gameplay.Data
                     allGroups.Add(group);
             }
 
+            HashSet<string> eliteIds = CollectMapIds(elites);
+            HashSet<string> visitedEliteIds = CollectCurrentCycleUsedKeys(
+                runtime, eliteIds, mapPool,
+                map => map != null && Same(map.Type, "Elite"), map => map.MapId);
+            List<MapData> unusedElites = FilterMaps(elites, map => !visitedEliteIds.Contains(map.MapId));
+            if (unusedElites.Count > 0)
+                elites = unusedElites;
+
             if (allGroups.Count == 0)
                 return PickByWeight(elites);
 
@@ -162,7 +164,7 @@ namespace Relic.Gameplay.Data
                 if (map == null || !Same(map.Stage, stage) || !Same(map.Type, "Special"))
                     continue;
 
-                if (!NormalEventMapIds.Contains(map.MapId?.Trim() ?? string.Empty))
+                if (!IsNormalRandomEventMap(map))
                     continue;
 
                 events.Add(map);
@@ -171,15 +173,17 @@ namespace Relic.Gameplay.Data
             if (events.Count == 0)
                 return null;
 
-            HashSet<string> allIds = CollectMapIds(events);
+            HashSet<string> allIds = new(StringComparer.OrdinalIgnoreCase);
+            foreach (MapData map in events)
+                allIds.Add(EventIdUtility.Normalize(map.EventId));
             HashSet<string> usedIds = CollectCurrentCycleUsedKeys(
                 runtime,
                 allIds,
                 mapPool,
-                map => map != null && Same(map.Type, "Special") && NormalEventMapIds.Contains(map.MapId?.Trim() ?? string.Empty),
+                map => map != null && IsNormalRandomEventMap(map),
                 map => map.MapId);
 
-            List<MapData> available = FilterMaps(events, map => !usedIds.Contains(map.MapId));
+            List<MapData> available = FilterMaps(events, map => !usedIds.Contains(EventIdUtility.Normalize(map.EventId)));
             if (available.Count == 0)
                 available = events;
 
@@ -192,50 +196,36 @@ namespace Relic.Gameplay.Data
             bool hasNormal = HasGroup(candidates, "Normal");
             bool hasHard = HasGroup(candidates, "Hard");
 
-            if (layerIndex <= 1)
-                return hasWeak ? "Weak" : FirstAvailableGroup(hasNormal, hasHard);
-
-            if (layerIndex <= 3)
-                return PickGroupByChance(
-                    ("Weak", hasWeak, 0.50f),
-                    ("Normal", hasNormal, 0.50f));
-
-            if (layerIndex <= 5)
-                return PickGroupByChance(
-                    ("Weak", hasWeak, 0.45f),
-                    ("Normal", hasNormal, 0.45f),
-                    ("Hard", hasHard, MidHardChance));
-
-            if (hasWeak)
+            // í™•ë¥ ì€ í•´ë‹¹ ë ˆì´ì–´ì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ ë¯¸ë°©ë¬¸ ê·¸ë£¹ì—ë§Œ ì ìš©í•©ë‹ˆë‹¤.
+            // Normal ë§µì„ ëª¨ë‘ ë°©ë¬¸í–ˆë‹¤ë©´ Layer 5~7ì—ì„œëŠ” Hardë§Œ ì„ íƒí•©ë‹ˆë‹¤.
+            switch (layerIndex)
             {
-                return PickGroupByChance(
-                    ("Weak", true, LateUnvisitedWeakChance),
-                    ("Normal", hasNormal, 0.45f),
-                    ("Hard", hasHard, 0.45f));
+                case 1:
+                    return PickGroupByChance(("Weak", hasWeak, 0.80f), ("Normal", hasNormal, 0.20f));
+                case 2:
+                    return PickGroupByChance(("Weak", hasWeak, 0.50f), ("Normal", hasNormal, 0.50f));
+                case 3:
+                    return PickGroupByChance(("Normal", hasNormal, 0.90f), ("Hard", hasHard, 0.10f));
+                case 5:
+                    return PickGroupByChance(("Normal", hasNormal, 0.60f), ("Hard", hasHard, 0.40f));
+                case 6:
+                    return PickGroupByChance(("Normal", hasNormal, 0.50f), ("Hard", hasHard, 0.50f));
+                case 7:
+                    return PickGroupByChance(("Normal", hasNormal, 0.40f), ("Hard", hasHard, 0.60f));
+                default:
+                    // ì¹¨ì‹ë„ë¡œ êµì²´ëœ ë°© ë“±: í•´ë‹¹ êµ¬ê°„ì—ì„œ ê°€ê¹Œìš´ í™•ë¥ ì„ ì‚¬ìš©í•©ë‹ˆë‹¤.
+                    return layerIndex < 3
+                        ? PickGroupByChance(("Weak", hasWeak, 0.50f), ("Normal", hasNormal, 0.50f))
+                        : PickGroupByChance(("Normal", hasNormal, 0.50f), ("Hard", hasHard, 0.50f));
             }
-
-            return PickGroupByChance(
-                ("Normal", hasNormal, 0.50f),
-                ("Hard", hasHard, 0.50f));
         }
 
         private static bool IsCommonGroupEligible(int layerIndex, string battleGroup, List<MapData> candidates)
         {
             string group = NormalizeGroup(battleGroup);
-
-            if (layerIndex <= 1)
-                return group == "Weak";
-
-            if (layerIndex <= 3)
-                return group == "Weak" || group == "Normal";
-
-            if (layerIndex <= 5)
-                return group == "Weak" || group == "Normal" || group == "Hard";
-
-            if (group == "Normal" || group == "Hard")
-                return true;
-
-            return group == "Weak" && HasGroup(candidates, "Weak");
+            if (layerIndex == 1 || layerIndex == 2)
+                return Same(group, "Weak") || Same(group, "Normal");
+            return Same(group, "Normal") || Same(group, "Hard");
         }
 
         private static string PickGroupByChance(params (string group, bool available, float weight)[] options)
@@ -302,8 +292,8 @@ namespace Relic.Gameplay.Data
                 string group = availableGroups[i];
                 int weight = 0;
 
-                // °°Àº BattleGroup¿¡ ¸ÊÀÌ ¿©·¯ °³ ÀÖ¾îµµ °°Àº ¿¤¸®Æ® ÇÑ Á¾·ù·Î Ãë±ŞÇÕ´Ï´Ù.
-                // ±×·ìÀÇ È®·üÀÌ ¸Ê °³¼ö ¶§¹®¿¡ Ä¿ÁöÁö ¾Êµµ·Ï ±×·ì ³»ºÎ ÃÖ´ë °¡ÁßÄ¡¸¸ »ç¿ëÇÕ´Ï´Ù.
+                // ê°™ì€ BattleGroupì— ë§µì´ ì—¬ëŸ¬ ê°œ ìˆì–´ë„ ê°™ì€ ì—˜ë¦¬íŠ¸ í•œ ì¢…ë¥˜ë¡œ ì·¨ê¸‰í•©ë‹ˆë‹¤.
+                // ê·¸ë£¹ì˜ í™•ë¥ ì´ ë§µ ê°œìˆ˜ ë•Œë¬¸ì— ì»¤ì§€ì§€ ì•Šë„ë¡ ê·¸ë£¹ ë‚´ë¶€ ìµœëŒ€ ê°€ì¤‘ì¹˜ë§Œ ì‚¬ìš©í•©ë‹ˆë‹¤.
                 for (int j = 0; j < elites.Count; j++)
                 {
                     if (Same(elites[j].BattleGroup, group))

@@ -325,6 +325,15 @@ public class MapViewSpawner : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 다음 방 선택지에 마우스를 올리면 해당 지도 노드만 카테고리 숨쉬기 효과를 적용합니다.
+    /// </summary>
+    public void SetNextChoiceNodeHighlighted(int nodeIndex, bool highlighted)
+    {
+        if (spawnedNodes.TryGetValue(nodeIndex, out MapNodeView nodeView) && nodeView != null)
+            nodeView.SetCategoryHighlighted(highlighted);
+    }
+
     public void ClearCategoryHighlight()
     {
         foreach (MapNodeView nodeView in spawnedNodes.Values)
