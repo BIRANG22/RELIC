@@ -18,6 +18,7 @@ public static class BattleErosionEffectService
     public const string ShopPricePercent = "ShopPricePercent";
     public const string DiceDifficultyAdd = "DiceDifficultyAdd";
     public const string RemoveRestRoom = "RemoveRestRoom";
+    public const string RemoveShopRoom = "RemoveShopRoom";
     public const string MapVisionLimit = "MapVisionLimit";
     public const string RarityChanceReduction = "RarityChanceReduction";
     public const string CompoundUseLimit = "CompoundUseLimit";
@@ -66,6 +67,7 @@ public static class BattleErosionEffectService
     public static int ModifyMoveFinalCost(int baseValue) =>
         Mathf.Max(0, baseValue + GetValue(MoveFinalManaCostAdd));
     public static bool ShouldRemoveRestRoom => GetValue(RemoveRestRoom) > 0;
+    public static bool ShouldRemoveShopRoom => GetValue(RemoveShopRoom) > 0;
     public static bool ShouldLimitMapVision => GetValue(MapVisionLimit) > 0;
     public static bool ShouldReduceRarity => GetValue(RarityChanceReduction) > 0;
     public static bool IsCompoundUseBlocked => GetValue(CompoundUseLimit) > 0;

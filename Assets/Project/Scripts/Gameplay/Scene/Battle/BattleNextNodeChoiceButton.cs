@@ -2,8 +2,9 @@ using System;
 using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class BattleNextNodeChoiceButton : MonoBehaviour
+public class BattleNextNodeChoiceButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("UI")]
     [SerializeField] private Button button;
@@ -21,6 +22,8 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
 
     private int nodeIndex = -1;
     private Action<int> onSelected;
+    private Action<int, bool> onNodeHoverChanged;
+    private bool pointerHovered;
 
     private AnimatorOverrideController overrideController;
     private AnimationClip originalClip;
@@ -105,10 +108,13 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
 
     public void Bind(
         GeneratedMapNodeData node,
-        Action<int> selectionCallback)
+        Action<int> selectionCallback,
+        Action<int, bool> hoverCallback = null)
     {
+        ResetNodeHover();
         nodeIndex = node != null ? node.NodeIndex : -1;
         onSelected = selectionCallback;
+        onNodeHoverChanged = hoverCallback;
 
         if (hoverScale == null)
             hoverScale = GetComponent<BattleNextNodeChoiceHoverScale>();
@@ -167,6 +173,8 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
 
     public void Clear()
     {
+        ResetNodeHover();
+        onNodeHoverChanged = null;
         nodeIndex = -1;
         onSelected = null;
         pendingClip = null;
@@ -176,6 +184,35 @@ public class BattleNextNodeChoiceButton : MonoBehaviour
 
         hoverScale?.SetSelected(false);
         gameObject.SetActive(false);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (nodeIndex < 0 || UIPanelButton.IsMenuPanelOpen)
+            return;
+
+        pointerHovered = true;
+        onNodeHoverChanged?.Invoke(nodeIndex, true);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        ResetNodeHover();
+    }
+
+    private void OnDisable()
+    {
+        ResetNodeHover();
+    }
+
+    private void ResetNodeHover()
+    {
+        if (!pointerHovered)
+            return;
+
+        pointerHovered = false;
+        if (nodeIndex >= 0)
+            onNodeHoverChanged?.Invoke(nodeIndex, false);
     }
 
     public void Select()

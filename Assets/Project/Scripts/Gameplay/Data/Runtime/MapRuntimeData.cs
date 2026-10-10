@@ -38,25 +38,10 @@ namespace Relic.Gameplay.Data
             if (!runtime.IsRunInitialized || !hasGeneratedNodes)
                 return true;
 
-            string requestedGenerationKey = generationKey?.Trim() ?? string.Empty;
-            string existingGenerationKey = runtime.MapGenerationKey?.Trim() ?? string.Empty;
-
-            if (!string.IsNullOrWhiteSpace(existingGenerationKey))
-                return !string.Equals(
-                    existingGenerationKey,
-                    requestedGenerationKey,
-                    StringComparison.Ordinal);
-
-            if (string.IsNullOrWhiteSpace(requestedGenerationKey))
-                return false;
-
-            if (!runtime.IsManualMapTemplate)
-                return true;
-
-            return !string.Equals(
-                runtime.ManualMapTemplateKey?.Trim(),
-                requestedGenerationKey,
-                StringComparison.Ordinal);
+            // 이미 생성된 탐사 지도는 저장 시점의 노드 구성을 유지합니다.
+            // 템플릿이나 생성 버전이 변경되어도 저장된 지도를 재추첨하지 않습니다.
+            // 새 탐사는 IsRunInitialized=false인 새 MapRuntimeData에서 생성합니다.
+            return false;
         }
 
         public static void ResetProgressForRegeneratedMap(MapRuntimeData runtime)
