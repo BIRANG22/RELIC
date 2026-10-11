@@ -11,8 +11,10 @@ public class RecordIconSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExi
 {
     [Header("UI References")]
     [SerializeField] private Image borderImage;
+    [SerializeField] private Image backImage;
     [SerializeField] private Image iconImage;
     [SerializeField] private GameObject selectObject;
+    [SerializeField] private GameObject unconfirmedObject;
 
     [Header("Border Colors")]
     [SerializeField] private Color normalColor = Color.white;
@@ -52,8 +54,22 @@ public class RecordIconSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExi
                 iconImage.gameObject.SetActive(showIcon && icon != null);
         }
 
+        if (unconfirmedObject != null)
+            unconfirmedObject.SetActive(!showIcon);
+
         SetSelectVisible(false);
         RefreshBorderColor();
+    }
+
+    public void SetBackColor(Color rarityColor)
+    {
+        EnsureReferences();
+        if (backImage == null)
+            return;
+
+        // Preserve the original opacity set on the Back image.
+        rarityColor.a = backImage.color.a;
+        backImage.color = rarityColor;
     }
 
     public void SetSelected(bool selected)
@@ -92,6 +108,12 @@ public class RecordIconSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     private void EnsureReferences()
     {
+        if (backImage == null)
+        {
+            Transform backTransform = transform.Find("Back");
+            if (backTransform != null)
+                backImage = backTransform.GetComponent<Image>();
+        }
         if (borderImage == null)
             borderImage = GetComponentInChildren<Image>(true);
 
@@ -107,6 +129,13 @@ public class RecordIconSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExi
             Transform selectTransform = transform.Find("Select");
             if (selectTransform != null)
                 selectObject = selectTransform.gameObject;
+        }
+
+        if (unconfirmedObject == null)
+        {
+            Transform unconfirmedTransform = transform.Find("Unconfirmed");
+            if (unconfirmedTransform != null)
+                unconfirmedObject = unconfirmedTransform.gameObject;
         }
     }
 

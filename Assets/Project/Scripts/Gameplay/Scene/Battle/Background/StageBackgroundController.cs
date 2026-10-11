@@ -79,6 +79,38 @@ public class StageBackgroundController : MonoBehaviour
     [Tooltip("연출 스크립트 오브젝트가 꺼져 있으면 자동으로 활성화")]
     [SerializeField] private bool activateSequenceObject = true;
 
+    [Header("Tutorial Background")]
+    [Tooltip("튜토리얼 전투에서 항상 사용할 배경입니다. 비워두면 배경 목록에서 St1_00을 자동으로 찾습니다.")]
+    [SerializeField] private GameObject tutorialBackgroundPrefab;
+
+    private const string TutorialBackgroundPrefabName = "St1_00";
+
+    private static bool IsTutorialBattle()
+    {
+        return DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true;
+    }
+
+    private GameObject ResolveTutorialBackground()
+    {
+        // Ignore a previously assigned St1_01 prefab left in the Inspector.
+        // Tutorials must always use St1_00.
+        if (tutorialBackgroundPrefab != null &&
+            string.Equals(tutorialBackgroundPrefab.name, TutorialBackgroundPrefabName, StringComparison.OrdinalIgnoreCase))
+            return tutorialBackgroundPrefab;
+
+        if (backgroundRanges == null)
+            return null;
+
+        foreach (BackgroundRange range in backgroundRanges)
+        {
+            if (range?.Prefab != null &&
+                string.Equals(range.Prefab.name, TutorialBackgroundPrefabName, StringComparison.OrdinalIgnoreCase))
+                return range.Prefab;
+        }
+
+        return null;
+    }
+
     private GameObject currentPrefab;
     private GameObject currentInstance;
 
@@ -106,9 +138,20 @@ public class StageBackgroundController : MonoBehaviour
 
         // 보스 타입으로 진입한 경우 기존 마지막 레이어 범위 설정과 관계없이
         // 지정된 보스 배경을 사용합니다. 현재 스테이지의 보스는 Layer 9입니다.
-        GameObject targetPrefab = playBossReveal && st1BossPrefab != null
-            ? st1BossPrefab
-            : range != null ? range.Prefab : null;
+        // 튜토리얼에서는 모든 전투에서 동일한 St1_00 배경을 사용합니다.
+        GameObject targetPrefab;
+        if (IsTutorialBattle())
+        {
+            targetPrefab = ResolveTutorialBackground();
+            if (targetPrefab == null)
+                Debug.LogError("[StageBackgroundController] 튜토리얼 배경 St1_00을 찾을 수 없습니다. Tutorial Background Prefab을 지정하세요.", this);
+        }
+        else
+        {
+            targetPrefab = playBossReveal && st1BossPrefab != null
+                ? st1BossPrefab
+                : range != null ? range.Prefab : null;
+        }
 
         if (targetPrefab == null)
         {
@@ -142,6 +185,12 @@ public class StageBackgroundController : MonoBehaviour
     /// </summary>
     public string ResolveBackgroundPrefabName(string mapId, int layerIndex)
     {
+        if (IsTutorialBattle())
+        {
+            GameObject tutorialPrefab = ResolveTutorialBackground();
+            return tutorialPrefab != null ? tutorialPrefab.name : string.Empty;
+        }
+
         BackgroundRange range = FindRange(mapId, layerIndex + 1);
         return range != null && range.Prefab != null
             ? range.Prefab.name

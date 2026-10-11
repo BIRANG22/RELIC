@@ -36,5 +36,8 @@ namespace Relic.Gameplay.Data
         public EffectValueDecreaseRule DecreaseRule => (EffectValueDecreaseRule)EndTurn;
 
         public string ToolTip;
+
+        // Effect sheet: 1 = visible in Record Effect tab.
+        public int Mark;
     }
 }
