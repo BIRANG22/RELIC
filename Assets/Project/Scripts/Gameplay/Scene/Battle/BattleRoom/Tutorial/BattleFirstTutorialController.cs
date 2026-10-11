@@ -113,7 +113,6 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
     private Coroutine restoreCharacterCoroutine;
     private Coroutine registeredSkillPreviewCoroutine;
     private string currentLocalizationKey;
-    private string currentFallbackText;
     private Canvas battleSkillTooltipCanvas;
 
     private void Awake()
@@ -454,8 +453,7 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         ShowFocus(
             Expand(monsterRect, focusPadding),
             Expand(monsterRect, highlightPadding),
-            LocalizationKeys.Tutorial.Battle1MonsterInfo,
-            "변이체를 클릭하여 정보를 파악할 수 있습니다.");
+            LocalizationKeys.Tutorial.Battle1MonsterInfo);
     }
 
     private void BeginMoveStep()
@@ -467,8 +465,7 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         currentStep = TutorialStep.Move;
         ShowUiFocus(
             moveTarget,
-            LocalizationKeys.Tutorial.Battle1Move,
-            "클릭하거나 A를 눌러 이동을 선택합니다.");
+            LocalizationKeys.Tutorial.Battle1Move);
     }
 
     private void BeginMoveGridStep()
@@ -491,8 +488,7 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         ShowFocus(
             Expand(revealRect, focusPadding),
             Expand(highlightRect, highlightPadding),
-            LocalizationKeys.Tutorial.Battle1MoveGrid,
-            "그리드를 클릭하여 이동을 진행합니다.");
+            LocalizationKeys.Tutorial.Battle1MoveGrid);
     }
 
     private void BeginSkill01Turn1Step()
@@ -504,8 +500,7 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         currentStep = TutorialStep.Skill01Turn1;
         ShowUiFocus(
             skill01Target,
-            LocalizationKeys.Tutorial.Battle1Skill01,
-            "클릭하거나 Q를 사용하여 공격을 예약합니다.");
+            LocalizationKeys.Tutorial.Battle1Skill01);
     }
 
     private void BeginRegisteredSkillPreview(bool secondTurn)
@@ -542,8 +537,7 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         {
             ShowUiFocus(
                 registeredSkillImage,
-                string.Empty,
-                "예약한 행동은 타임라인에 등록됩니다.",
+                LocalizationKeys.Tutorial.Battle1Timeline,
                 true);
 
             float duration = Mathf.Max(0.05f, registeredSkillPreviewDuration);
@@ -627,8 +621,7 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         currentStep = TutorialStep.EndTurn1;
         ShowUiFocus(
             endButtonTarget,
-            LocalizationKeys.Tutorial.Battle1EndTurn,
-            "턴 엔드 버튼 또는 Space를 눌러 예약을 종료합니다.");
+            LocalizationKeys.Tutorial.Battle1EndTurn);
     }
 
     private void BeginSkill01Turn2Step()
@@ -648,10 +641,9 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         currentStep = TutorialStep.Skill01Turn2;
         ShowUiFocus(
             skill01Target,
-            LocalizationKeys.Tutorial.Battle1Skill01Repeat,
             secondTurnSkill01SelectCount <= 0
-                ? "같은 공격을 연속으로 예약할 수 있습니다. 공격을 두 번 예약해 보세요."
-                : "같은 공격을 한 번 더 예약해 보세요.");
+                ? LocalizationKeys.Tutorial.Battle1Skill01Repeat
+                : LocalizationKeys.Tutorial.Battle1Skill01RepeatAgain);
     }
 
     private void BeginEndTurn2Step()
@@ -663,8 +655,7 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         currentStep = TutorialStep.EndTurn2;
         ShowUiFocus(
             endButtonTarget,
-            LocalizationKeys.Tutorial.Battle1EndTurnRepeat,
-            "턴 엔드 버튼 또는 Space를 눌러 예약을 종료합니다.");
+            LocalizationKeys.Tutorial.Battle1EndTurnRepeat);
     }
 
     private bool CanBeginTutorial()
@@ -837,23 +828,23 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         battleSkillTooltipCanvas.sortingOrder = tutorialCanvas.sortingOrder + Mathf.Max(10, battleTooltipSortingOffset);
     }
 
-    private void ShowUiFocus(RectTransform target, string localizationKey, string fallback, bool tooltipOnRight = false)
+    private void ShowUiFocus(RectTransform target, string localizationKey, bool tooltipOnRight = false)
     {
         if (target == null || !TryGetUiRect(target, out Rect rect))
             return;
 
-        ShowFocus(Expand(rect, focusPadding), Expand(rect, highlightPadding), localizationKey, fallback, tooltipOnRight);
+        ShowFocus(Expand(rect, focusPadding), Expand(rect, highlightPadding), localizationKey, tooltipOnRight);
     }
 
-    private void ShowWorldFocus(GameObject target, string localizationKey, string fallback)
+    private void ShowWorldFocus(GameObject target, string localizationKey)
     {
         if (target == null || !TryGetWorldRect(target, out Rect rect))
             return;
 
-        ShowFocus(Expand(rect, focusPadding), Expand(rect, highlightPadding), localizationKey, fallback);
+        ShowFocus(Expand(rect, focusPadding), Expand(rect, highlightPadding), localizationKey);
     }
 
-    private void ShowFocus(Rect revealRect, Rect highlightRect, string localizationKey, string fallback, bool tooltipOnRight = false)
+    private void ShowFocus(Rect revealRect, Rect highlightRect, string localizationKey, bool tooltipOnRight = false)
     {
         ResolveUiReferences();
         if (!IsConfigured)
@@ -861,7 +852,6 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
 
         EnsureBattleSkillTooltipAboveFocus();
         currentLocalizationKey = localizationKey;
-        currentFallbackText = fallback;
         RefreshTutorialText();
 
         if (focusAnimationCoroutine != null)
@@ -1305,7 +1295,6 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
             tutorialTooltip.gameObject.SetActive(false);
 
         currentLocalizationKey = string.Empty;
-        currentFallbackText = string.Empty;
     }
 
     // This TMP is localized by the current tutorial step, not by a fixed inspector key.
@@ -1335,7 +1324,7 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         if (tutorialText == null)
             return;
 
-        tutorialText.text = GameLocalization.Get(currentLocalizationKey, currentFallbackText);
+        tutorialText.text = GameLocalization.Get(currentLocalizationKey);
     }
 
     private void HandleLocaleChanged(Locale _)

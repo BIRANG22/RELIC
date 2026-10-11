@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
+using TMPro;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 public sealed class LocalizationEditorSafetyPolicyTests
 {
@@ -215,5 +219,105 @@ public sealed class LocalizationEditorSafetyPolicyTests
         Assert.That(finallyBlock, Is.GreaterThan(import));
         Assert.That(stop, Is.GreaterThan(finallyBlock));
         Assert.That(refresh, Is.GreaterThan(stop));
+    }
+
+    [Test]
+    public void ConfigureOptionalDynamicTextsByPath_AllTargetsMissing_SkipsMigration()
+    {
+        var root = new GameObject("Record");
+        try
+        {
+            int changed = StaticLocalizationMigration.ConfigureOptionalDynamicTextsByPath(
+                root,
+                new[] { "Info/Memory/method", "Info/Memory/consumption", "Info/Memory/Point" },
+                "Record memory");
+
+            Assert.That(changed, Is.Zero);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void ConfigureOptionalDynamicTextsByPath_PartialTargets_SkipsWithoutPartialMutation()
+    {
+        var root = new GameObject("Record");
+        var info = new GameObject("Info");
+        var memory = new GameObject("Memory");
+        var method = new GameObject("method");
+        info.transform.SetParent(root.transform);
+        memory.transform.SetParent(info.transform);
+        method.transform.SetParent(memory.transform);
+        TMP_Text methodText = method.AddComponent<TextMeshProUGUI>();
+
+        try
+        {
+            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("Record memory.*consumption.*Point"));
+
+            int changed = StaticLocalizationMigration.ConfigureOptionalDynamicTextsByPath(
+                root,
+                new[] { "Info/Memory/method", "Info/Memory/consumption", "Info/Memory/Point" },
+                "Record memory");
+
+            Assert.That(changed, Is.Zero);
+            Assert.That(methodText.GetComponent<LocalizationIgnore>(), Is.Null);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void ConfigureOptionalDynamicTextsByPath_AllTargetsPresent_ConfiguresEveryText()
+    {
+        var root = new GameObject("Record");
+        var info = new GameObject("Info");
+        var memory = new GameObject("Memory");
+        info.transform.SetParent(root.transform);
+        memory.transform.SetParent(info.transform);
+        string[] names = { "method", "consumption", "Point" };
+        foreach (string name in names)
+        {
+            var target = new GameObject(name);
+            target.transform.SetParent(memory.transform);
+            target.AddComponent<TextMeshProUGUI>();
+        }
+
+        try
+        {
+            int changed = StaticLocalizationMigration.ConfigureOptionalDynamicTextsByPath(
+                root,
+                names.Select(name => "Info/Memory/" + name),
+                "Record memory");
+
+            Assert.That(changed, Is.EqualTo(names.Length));
+            foreach (string name in names)
+                Assert.That(memory.transform.Find(name).GetComponent<LocalizationIgnore>(), Is.Not.Null);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void TryRunOptionalMigration_Exception_ReturnsFalseInsteadOfThrowing()
+    {
+        LogAssert.Expect(
+            LogType.Error,
+            new System.Text.RegularExpressions.Regex(
+                "Broken migration.*expected failure",
+                System.Text.RegularExpressions.RegexOptions.Singleline));
+
+        bool succeeded = StaticLocalizationMigration.TryRunOptionalMigration(
+            "Broken migration",
+            () => throw new InvalidOperationException("expected failure"),
+            out int changed);
+
+        Assert.That(succeeded, Is.False);
+        Assert.That(changed, Is.Zero);
     }
 }

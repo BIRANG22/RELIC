@@ -4656,6 +4656,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   onLogo: {fileID: 795231885}
   offLogo: {fileID: 1605403324}
+  titleStartAnimations: []
   playTitleBgmOnStart: 1
   titleBgmRetryFrameCount: 2
   warningUI: {fileID: 757439506}

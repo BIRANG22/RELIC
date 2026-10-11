@@ -167,22 +167,11 @@ public static class LocalizationKeys
         public const string Battle1Move = "tutorial.battle1.turn1.move";
         public const string Battle1MoveGrid = "tutorial.battle1.turn1.move_grid";
         public const string Battle1Skill01 = "tutorial.battle1.turn1.skill01";
+        public const string Battle1Timeline = "tutorial.battle1.turn1.timeline";
         public const string Battle1EndTurn = "tutorial.battle1.turn1.end_turn";
         public const string Battle1Skill01Repeat = "tutorial.battle1.turn2.skill01_repeat";
+        public const string Battle1Skill01RepeatAgain = "tutorial.battle1.turn2.skill01_repeat_again";
         public const string Battle1EndTurnRepeat = "tutorial.battle1.turn2.end_turn";
-    }
-
-    public static class IntroStory
-    {
-        public const string Line01 = "intro.story.01";
-        public const string Line02 = "intro.story.02";
-        public const string Line03 = "intro.story.03";
-        public const string Line04 = "intro.story.04";
-        public const string Line05 = "intro.story.05";
-        public const string Line06 = "intro.story.06";
-        public const string Line07 = "intro.story.07";
-        public const string Line08 = "intro.story.08";
-        public const string Line09 = "intro.story.09";
     }
 
     public static class Rune

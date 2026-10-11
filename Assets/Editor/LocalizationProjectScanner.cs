@@ -202,6 +202,23 @@ public static class LocalizationProjectScanner
                header.Contains("실패결과", StringComparison.Ordinal);
     }
 
+    public static bool ShouldCollectGameDataLocalizationValue(string sheetName, string header, string value)
+    {
+        if (!IsPlayerFacingGameDataColumn(sheetName, header) || string.IsNullOrWhiteSpace(value))
+            return false;
+
+        string trimmed = value.Trim();
+        if (trimmed == "-")
+            return false;
+        if (IsLocalizableKoreanText(trimmed))
+            return true;
+
+        string compactHeader = header.Replace(" ", string.Empty).Replace("\t", string.Empty);
+        return string.Equals(sheetName, "SkillMaster", StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(compactHeader, "Details", StringComparison.OrdinalIgnoreCase) &&
+               Regex.IsMatch(trimmed, @"\{(?:E_[A-Za-z0-9_]+|ValueRate\d+)\}");
+    }
+
     public static string BuildGameDataKey(string sheetName, string stableId, string header)
     {
         return GameLocalization.BuildDataKey(
@@ -370,4 +387,22 @@ public sealed class LocalizationSourceEntry
         Key = key ?? string.Empty;
         Korean = korean ?? string.Empty;
     }
+}
+
+public static class LocalizationRuntimeSourceCatalog
+{
+    public static IReadOnlyList<LocalizationWorkbookEntry> BattleFirstTutorialEntries { get; } = new[]
+    {
+        Entry(LocalizationKeys.Tutorial.Battle1MonsterInfo, "변이체를 클릭하여 정보를 파악할 수 있습니다."),
+        Entry(LocalizationKeys.Tutorial.Battle1Move, "클릭하거나 A를 눌러 이동을 선택합니다."),
+        Entry(LocalizationKeys.Tutorial.Battle1MoveGrid, "그리드를 클릭하여 이동을 진행합니다."),
+        Entry(LocalizationKeys.Tutorial.Battle1Skill01, "클릭하거나 Q를 사용하여 공격을 예약합니다."),
+        Entry(LocalizationKeys.Tutorial.Battle1Timeline, "예약한 행동은 타임라인에 등록됩니다."),
+        Entry(LocalizationKeys.Tutorial.Battle1EndTurn, "턴 엔드 버튼 또는 Space를 눌러 예약을 종료합니다."),
+        Entry(LocalizationKeys.Tutorial.Battle1Skill01Repeat, "같은 공격을 연속으로 예약할 수 있습니다. 공격을 두 번 예약해 보세요."),
+        Entry(LocalizationKeys.Tutorial.Battle1Skill01RepeatAgain, "같은 공격을 한 번 더 예약해 보세요."),
+        Entry(LocalizationKeys.Tutorial.Battle1EndTurnRepeat, "턴 엔드 버튼 또는 Space를 눌러 예약을 종료합니다."),
+    };
+
+    private static LocalizationWorkbookEntry Entry(string key, string korean) => new(key, korean);
 }

@@ -44,36 +44,7 @@ public class StartModeButton : MonoBehaviour
 
         GameManager.Instance.Context.SelectedGameMode = gameMode;
 
-        // 인트로와 전체 튜토리얼은 각각 1회 예약 방식으로 동작합니다.
-        // 인트로 ON + 튜토리얼 ON  : 인트로 -> 튜토리얼
-        // 인트로 ON + 튜토리얼 OFF : 인트로 -> 로비
-        // 인트로 OFF + 튜토리얼 ON : 튜토리얼
-        // 인트로 OFF + 튜토리얼 OFF: 로비
-        if (IntroSettings.ShouldPlayIntro)
-        {
-            IntroSequenceController introController = IntroSequenceController.Instance;
-            if (introController != null)
-            {
-                isProcessing = true;
-
-                void HandleIntroFinished()
-                {
-                    introController.IntroFinished -= HandleIntroFinished;
-                    IntroSettings.MarkIntroSeen();
-                    isProcessing = false;
-                    ContinueAfterIntro();
-                }
-
-                introController.IntroFinished += HandleIntroFinished;
-                introController.PlayIntroBeforeSceneChange();
-                return;
-            }
-
-            Debug.LogWarning(
-                "[StartModeButton] IntroSequenceController is missing. Continuing without intro.",
-                this);
-        }
-
+        // 튜토리얼 예약 여부에 따라 튜토리얼 전투 또는 로비로 진입합니다.
         ContinueAfterIntro();
     }
 

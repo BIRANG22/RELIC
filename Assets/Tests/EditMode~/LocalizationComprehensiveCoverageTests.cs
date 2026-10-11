@@ -79,6 +79,49 @@ public sealed class LocalizationComprehensiveCoverageTests
     }
 
     [Test]
+    public void TokenOnlySkillDetails_AreCollectedButPlaceholdersAreNot()
+    {
+        Assert.That(LocalizationProjectScanner.ShouldCollectGameDataLocalizationValue(
+            "SkillMaster", "Details", "{E_Strike} {ValueRate1}"), Is.True);
+        Assert.That(LocalizationProjectScanner.ShouldCollectGameDataLocalizationValue(
+            "SkillMaster", "Details", "-"), Is.False);
+        Assert.That(LocalizationProjectScanner.ShouldCollectGameDataLocalizationValue(
+            "SkillMaster", "EffectIds", "E_Strike"), Is.False);
+    }
+
+    [Test]
+    public void BattleFirstTutorial_UsesKeysOnlyAndWorkbookContainsEveryKey()
+    {
+        string source = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Tutorial/BattleFirstTutorialController.cs");
+        Assert.That(source, Does.Not.Contain("currentFallbackText"));
+        Assert.That(LocalizationProjectScanner.RemoveComments(source), Does.Not.Match("[가-힣]"));
+        Assert.That(source, Does.Contain("GameLocalization.Get(currentLocalizationKey)"));
+
+        IReadOnlyList<IReadOnlyList<string>> rows =
+            LocalizationXlsxReader.ReadSheet("Assets/ExcelSource/Localization.xlsx", "Text");
+        Dictionary<string, IReadOnlyList<string>> byKey = rows.Skip(1)
+            .Where(row => row.Count > 0 && !string.IsNullOrWhiteSpace(row[0]))
+            .ToDictionary(row => row[0], row => row, StringComparer.Ordinal);
+        foreach (string key in LocalizationRuntimeSourceCatalog.BattleFirstTutorialEntries.Select(entry => entry.Key))
+        {
+            Assert.That(byKey, Does.ContainKey(key), key);
+            Assert.That(byKey[key].Count, Is.GreaterThan(3), key);
+            Assert.That(byKey[key][2], Is.Not.Empty, $"{key}:ko");
+            Assert.That(byKey[key][3], Is.Not.Empty, $"{key}:en");
+        }
+    }
+
+    [Test]
+    public void RuntimeGameData_DoesNotContainMisspelledEffectIds()
+    {
+        string source = File.ReadAllText("Assets/Resources/Data/GameDataRuntime.csv");
+        Assert.That(source, Does.Not.Contain("E_Chargeana"));
+        Assert.That(source, Does.Not.Contain("E_RestoreManaPerHitTarge,"));
+        Assert.That(source, Does.Contain("E_RestoreManaPerHitTarget"));
+    }
+
+    [Test]
     public void RecordCatalogData_HasLocalizationKeysForEveryPlayerFacingField()
     {
         IReadOnlyList<IReadOnlyList<string>> localizationRows =
