@@ -200,7 +200,7 @@ Transform:
   m_GameObject: {fileID: 1153719841995183424}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0.60745466, w: 0.7943544}
-  m_LocalPosition: {x: -7.68, y: -7.42, z: 3.7399998}
+  m_LocalPosition: {x: -7.68, y: -9, z: 6.39}
   m_LocalScale: {x: 0.8275987, y: 0.8275987, z: 0.8275987}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -400,7 +400,8 @@ GameObject:
   - component: {fileID: 2208486691650415900}
   - component: {fileID: 2312383194292943798}
   - component: {fileID: 3356919898945391839}
-  - component: {fileID: 6735209360592712040}
+  - component: {fileID: 8409420904706635338}
+  - component: {fileID: 4853102937436685561}
   m_Layer: 0
   m_Name: appear
   m_TagString: Untagged
@@ -417,9 +418,9 @@ Transform:
   m_GameObject: {fileID: 1629081435391479274}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.039, y: -0.712, z: 7.47}
-  m_LocalScale: {x: 0.39189, y: 0.39189, z: 0.39189}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 2.77, y: 1.33, z: 7.47}
+  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 6812817004988079300}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -467,8 +468,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 5
-  m_Sprite: {fileID: 35238404, guid: f9e61a5343eafe34aa4f4b5947debeb0, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Sprite: {fileID: 353394419, guid: da7b3bdf9c51d4e48864c425bcc6e2e8, type: 3}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -488,7 +489,7 @@ Animator:
   m_GameObject: {fileID: 1629081435391479274}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 71296635a57b0c149addac7e73308415, type: 2}
+  m_Controller: {fileID: 9100000, guid: 5779c511a89ffde48aa57af9019710e7, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -500,7 +501,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &6735209360592712040
+--- !u!114 &8409420904706635338
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -509,16 +510,561 @@ MonoBehaviour:
   m_GameObject: {fileID: 1629081435391479274}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2a59db48c1030841a54f59443c0c514, type: 3}
+  m_Script: {fileID: 11500000, guid: 52e744b237785164eafa539277294dd9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 3356919898945391839}
-  idleState: appear_idle
-  idleRepeatCount: 2
-  state1: 1
-  state2: 2
-  state3: 3
-  postSequenceDelay: 1
+  target: {fileID: 2208486691650415900}
+  spriteRenderer: {fileID: 0}
+  animator: {fileID: 0}
+  useLocalTransform: 1
+  enableSceneCamera: 1
+  restoreCameraOnFinish: 1
+  cameraRestoreDuration: 0.4
+  cameraRestoreEasing:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  playOnEnable: 1
+  loop: 0
+  useUnscaledTime: 0
+  applyFirstStepImmediately: 1
+  deactivateOnFinish: 1
+  deactivateDelay: 5
+  steps:
+  - name: start
+    position: {x: 9.72, y: -3.99, z: 7.47}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    flipX: 1
+    flipY: 1
+    flipAtStart: 0
+    color: {r: 0, g: 0, b: 0, a: 1}
+    animationClip: {fileID: 0}
+    delay: 0
+    duration: 1
+    easing:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 0
+      m_PostInfinity: 0
+      m_RotationOrder: 4
+    enableCameraMotion: 1
+    cameraMotions:
+    - name: 
+      enabled: 1
+      positionMode: 0
+      position: {x: 0, y: 1.41, z: -20}
+      animatePosition: 1
+      animateRotation: 0
+      rotation: {x: 0, y: 0, z: 0}
+      animateOrthographicSize: 0
+      orthographicSize: 0
+      delay: 0
+      duration: 0
+      easing:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 0
+        m_PostInfinity: 0
+        m_RotationOrder: 0
+      shake: 0
+      shakeStrength: 0
+      shakeFrequency: 0
+    bossTitle:
+      enabled: 0
+      bossName: BOSS NAME
+      subtitle: 
+      delay: 0
+      fadeInDuration: 0.4
+      holdDuration: 1.2
+      fadeOutDuration: 0.4
+      entrance: 1
+      entranceDistance: 45
+      initialScale: 0.85
+      easing:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      nameColor: {r: 0.95, g: 0.9, b: 0.82, a: 1}
+      subtitleColor: {r: 0.7, g: 0.64, b: 0.61, a: 1}
+      nameFontSize: 65
+      subtitleFontSize: 22
+      waitForCompletion: 0
+  - name: go_left
+    position: {x: -11.94, y: -3.99, z: 7.47}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}
+    flipX: 1
+    flipY: 1
+    flipAtStart: 0
+    color: {r: 0, g: 0, b: 0, a: 1}
+    animationClip: {fileID: 0}
+    delay: 0.5
+    duration: 1
+    easing:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 0
+      m_PostInfinity: 0
+      m_RotationOrder: 4
+    enableCameraMotion: 0
+    cameraMotions: []
+    bossTitle:
+      enabled: 0
+      bossName: BOSS NAME
+      subtitle: 
+      delay: 0
+      fadeInDuration: 0.4
+      holdDuration: 1.2
+      fadeOutDuration: 0.4
+      entrance: 1
+      entranceDistance: 45
+      initialScale: 0.85
+      easing:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      nameColor: {r: 0.95, g: 0.9, b: 0.82, a: 1}
+      subtitleColor: {r: 0.7, g: 0.64, b: 0.61, a: 1}
+      nameFontSize: 65
+      subtitleFontSize: 22
+      waitForCompletion: 0
+  - name: up
+    position: {x: -8.46, y: -1.31, z: 7.47}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 0.5, y: 0.5, z: 0.5}
+    flipX: 0
+    flipY: 0
+    flipAtStart: 0
+    color: {r: 0, g: 0, b: 0, a: 1}
+    animationClip: {fileID: 0}
+    delay: 0.5
+    duration: 0
+    easing:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 0
+      m_PostInfinity: 0
+      m_RotationOrder: 4
+    enableCameraMotion: 0
+    cameraMotions: []
+    bossTitle:
+      enabled: 0
+      bossName: BOSS NAME
+      subtitle: 
+      delay: 0
+      fadeInDuration: 0.4
+      holdDuration: 1.2
+      fadeOutDuration: 0.4
+      entrance: 1
+      entranceDistance: 45
+      initialScale: 0.85
+      easing:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      nameColor: {r: 0.95, g: 0.9, b: 0.82, a: 1}
+      subtitleColor: {r: 0.7, g: 0.64, b: 0.61, a: 1}
+      nameFontSize: 65
+      subtitleFontSize: 22
+      waitForCompletion: 0
+  - name: go_light
+    position: {x: 10.85, y: -1.31, z: 7.47}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 0.5, y: 0.5, z: 0.5}
+    flipX: 0
+    flipY: 0
+    flipAtStart: 0
+    color: {r: 0, g: 0, b: 0, a: 1}
+    animationClip: {fileID: 0}
+    delay: 0
+    duration: 1
+    easing:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 0
+      m_PostInfinity: 0
+      m_RotationOrder: 4
+    enableCameraMotion: 0
+    cameraMotions: []
+    bossTitle:
+      enabled: 0
+      bossName: BOSS NAME
+      subtitle: 
+      delay: 0
+      fadeInDuration: 0.4
+      holdDuration: 1.2
+      fadeOutDuration: 0.4
+      entrance: 1
+      entranceDistance: 45
+      initialScale: 0.85
+      easing:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      nameColor: {r: 0.95, g: 0.9, b: 0.82, a: 1}
+      subtitleColor: {r: 0.7, g: 0.64, b: 0.61, a: 1}
+      nameFontSize: 65
+      subtitleFontSize: 22
+      waitForCompletion: 0
+  - name: center
+    position: {x: 2.77, y: 1.33, z: 7.47}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 0.4, y: 0.4, z: 0.4}
+    flipX: 0
+    flipY: 0
+    flipAtStart: 0
+    color: {r: 0, g: 0, b: 0, a: 1}
+    animationClip: {fileID: 0}
+    delay: 0.5
+    duration: 0
+    easing:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 0
+      m_PostInfinity: 0
+      m_RotationOrder: 4
+    enableCameraMotion: 0
+    cameraMotions: []
+    bossTitle:
+      enabled: 0
+      bossName: BOSS NAME
+      subtitle: 
+      delay: 0
+      fadeInDuration: 0.4
+      holdDuration: 1.2
+      fadeOutDuration: 0.4
+      entrance: 1
+      entranceDistance: 45
+      initialScale: 0.85
+      easing:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      nameColor: {r: 0.95, g: 0.9, b: 0.82, a: 1}
+      subtitleColor: {r: 0.7, g: 0.64, b: 0.61, a: 1}
+      nameFontSize: 65
+      subtitleFontSize: 22
+      waitForCompletion: 0
+  - name: down
+    position: {x: 2.77, y: -1.2, z: 7.47}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 0.4, y: 0.4, z: 0.4}
+    flipX: 1
+    flipY: 0
+    flipAtStart: 1
+    color: {r: 0.4113207, g: 0.4113207, b: 0.4113207, a: 1}
+    animationClip: {fileID: 7400000, guid: 66db965639d6b4841a6aa13951d32f46, type: 2}
+    delay: 0
+    duration: 1
+    easing:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 0
+      m_PostInfinity: 0
+      m_RotationOrder: 4
+    enableCameraMotion: 1
+    cameraMotions:
+    - name: zoom_in
+      enabled: 1
+      positionMode: 0
+      position: {x: 1, y: 3, z: -12}
+      animatePosition: 1
+      animateRotation: 0
+      rotation: {x: 0, y: 0, z: 0}
+      animateOrthographicSize: 0
+      orthographicSize: 0
+      delay: 0
+      duration: 1
+      easing:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 0
+        m_PostInfinity: 0
+        m_RotationOrder: 0
+      shake: 0
+      shakeStrength: 0
+      shakeFrequency: 0
+    bossTitle:
+      enabled: 0
+      bossName: BOSS NAME
+      subtitle: 
+      delay: 0
+      fadeInDuration: 0.4
+      holdDuration: 1.2
+      fadeOutDuration: 0.4
+      entrance: 1
+      entranceDistance: 45
+      initialScale: 0.85
+      easing:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      nameColor: {r: 0.95, g: 0.9, b: 0.82, a: 1}
+      subtitleColor: {r: 0.7, g: 0.64, b: 0.61, a: 1}
+      nameFontSize: 65
+      subtitleFontSize: 22
+      waitForCompletion: 0
+  - name: appear
+    position: {x: 3.085, y: -4.345, z: 7.47}
+    rotation: {x: 0, y: 0, z: 0}
+    scale: {x: 0.4, y: 0.4, z: 0.4}
+    flipX: 1
+    flipY: 0
+    flipAtStart: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    animationClip: {fileID: 7400000, guid: 7084e6d47cafabe439b603b98029f56a, type: 2}
+    delay: 2
+    duration: 0.5
+    easing:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 0
+      m_PostInfinity: 0
+      m_RotationOrder: 4
+    enableCameraMotion: 0
+    cameraMotions:
+    - name: 
+      enabled: 0
+      positionMode: 0
+      position: {x: 0, y: 1.41, z: -20}
+      animatePosition: 0
+      animateRotation: 0
+      rotation: {x: 0, y: 0, z: 0}
+      animateOrthographicSize: 0
+      orthographicSize: 0
+      delay: 0
+      duration: 1
+      easing:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 0
+        m_PostInfinity: 0
+        m_RotationOrder: 0
+      shake: 0
+      shakeStrength: 0
+      shakeFrequency: 0
+    bossTitle:
+      enabled: 0
+      bossName: BOSS NAME
+      subtitle: 
+      delay: 0
+      fadeInDuration: 0.4
+      holdDuration: 1.2
+      fadeOutDuration: 0.4
+      entrance: 1
+      entranceDistance: 45
+      initialScale: 0.85
+      easing:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      nameColor: {r: 0.95, g: 0.9, b: 0.82, a: 1}
+      subtitleColor: {r: 0.7, g: 0.64, b: 0.61, a: 1}
+      nameFontSize: 65
+      subtitleFontSize: 22
+      waitForCompletion: 0
+--- !u!114 &4853102937436685561
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1629081435391479274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69beb381e244f92449b8c4cf954630e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TrackedObjects:
+  - rid: 1241052017425383603
+  references:
+    version: 2
+    RefIds:
+    - rid: 1241052017425383603
+      type: {class: TrackedMonoBehaviourObject, ns: UnityEngine.Localization.PropertyVariants.TrackedObjects, asm: Unity.Localization}
+      data:
+        m_Target: {fileID: 8409420904706635338}
+        m_TrackedProperties:
+          items:
+          - rid: 1241052017425383604
+        m_UpdateType: 1
+        m_Changed:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 1241052017425383604
+      type: {class: LocalizedStringProperty, ns: UnityEngine.Localization.PropertyVariants.TrackedProperties, asm: Unity.Localization}
+      data:
+        m_Localized:
+          m_TableReference:
+            m_TableCollectionName: 
+          m_TableEntryReference:
+            m_KeyId: 0
+            m_Key: 
+          m_FallbackState: 0
+          m_WaitForCompletion: 0
+          m_LocalVariables: []
+        m_PropertyPath: steps.Array.data[6].cameraMotions.Array.data[0].name
 --- !u!1 &1686361430049348054
 GameObject:
   m_ObjectHideFlags: 0
@@ -545,7 +1091,7 @@ Transform:
   m_GameObject: {fileID: 1686361430049348054}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0.4582706, w: 0.8888128}
-  m_LocalPosition: {x: 6.03, y: -7.73, z: 3.7399998}
+  m_LocalPosition: {x: 6.03, y: -9, z: 6.39}
   m_LocalScale: {x: 0.8275987, y: 0.8275987, z: 0.8275987}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -991,7 +1537,7 @@ Transform:
   m_GameObject: {fileID: 3027851181139146405}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.6200004, y: -7.62, z: 3.7399998}
+  m_LocalPosition: {x: -6.6200004, y: -9, z: 6.39}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -1078,7 +1624,7 @@ Transform:
   m_GameObject: {fileID: 3100946170050236415}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.1, y: -7.62, z: 3.7399998}
+  m_LocalPosition: {x: 6.1, y: -9, z: 6.39}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -2735,7 +3281,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6812817004988079300}
-  - component: {fileID: 802875941089601218}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -2752,7 +3297,7 @@ Transform:
   m_GameObject: {fileID: 8368861717085725342}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2, z: -16.3}
+  m_LocalPosition: {x: 0, y: 3.5, z: -8.67}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2762,24 +3307,6 @@ Transform:
   - {fileID: 2208486691650415900}
   m_Father: {fileID: 2197605981041873600}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &802875941089601218
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8368861717085725342}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f2d07b47f6971647b39d4cb80588b10, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  positionA: {x: 0, y: 1.6, z: -16.3}
-  positionB: {x: 0, y: 4.44, z: -8.67}
-  waitTime: 3
-  moveDuration: 1
-  playOnEnable: 1
-  useLocalPosition: 0
 --- !u!1 &8375781041956622155
 GameObject:
   m_ObjectHideFlags: 0
@@ -3066,7 +3593,7 @@ Transform:
   m_GameObject: {fileID: 9072075952983028609}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -1.79, z: 3.74}
+  m_LocalPosition: {x: 0, y: -1.56, z: 3.48}
   m_LocalScale: {x: 0.40034828, y: 0.40034828, z: 0.40034828}
   m_ConstrainProportionsScale: 0
   m_Children: []
