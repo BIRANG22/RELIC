@@ -3818,6 +3818,9 @@ public class BattleTimelineController : MonoBehaviour
             RecalculateAllReservedCosts();
             RefreshReservationSimulation();
             RefreshTimeline();
+            // 취소된 행동이 속한 슬롯을 다시 선택합니다.
+            // 선택 UI의 Select 페이드 애니메이션은 기존 선택 처리에 맡깁니다.
+            SetActiveTimelineSlot(entry.SlotIndex, false, false);
             RefreshPlayerHUDs();
             RefreshMoveGhostPreview();
 
@@ -4974,6 +4977,8 @@ public class BattleTimelineController : MonoBehaviour
         RecalculateAllReservedCosts();
         RefreshReservationSimulation();
         RefreshTimeline();
+        // 타임라인 클릭으로 예약을 취소한 경우에도 해당 슬롯의 선택 표시를 갱신합니다.
+        SetActiveTimelineSlot(slotIndex, false, false);
         RefreshPlayerHUDs();
         RefreshMoveGhostPreview();
 
