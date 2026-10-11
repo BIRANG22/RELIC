@@ -126,6 +126,12 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private int lastRightClickSkillCancelFrame = -1;
 
+    // Keep the timeline visible, but let world-grid clicks pass through it while moving.
+    private CanvasGroup battleSlotRaycastGroup;
+    private bool battleSlotOriginalBlocksRaycasts;
+    private bool battleSlotRaycastOverrideActive;
+
+
     public bool WasSkillSelectionCancelledByRightClickThisFrame =>
         lastRightClickSkillCancelFrame == Time.frameCount;
 
@@ -141,6 +147,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void OnDisable()
     {
+        RestoreBattleSlotRaycasts();
         ClearNocturnPortalDestinationIndicators();
         HideMoveHoverPing();
         HideMovePathPreview();
@@ -156,6 +163,7 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void Update()
     {
+        UpdateBattleSlotRaycasts();
         if (IsGridPointerInteractionBlocked())
         {
             HideBlockedGridPointerVisuals();
@@ -164,6 +172,52 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         HandleGridSelectionCancelInput();
         UpdateMoveHoverPingFloatingAnimation();
+    }
+
+    private void UpdateBattleSlotRaycasts()
+    {
+        bool isMoving = IsMoveSkillSelectionActive() && !UIPanelButton.IsMenuPanelOpen;
+        if (!isMoving)
+        {
+            RestoreBattleSlotRaycasts();
+            return;
+        }
+
+        if (battleSlotRaycastGroup == null)
+        {
+            BattleTimelineController timeline = timelineController != null
+                ? timelineController
+                : FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+            if (timeline == null)
+                return;
+
+            Transform root = timeline.transform.root;
+            Transform[] all = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < all.Length; i++)
+            {
+                if (all[i].name != "BattleSlot" ||
+                    all[i].GetComponentInParent<Canvas>() == null)
+                    continue;
+                battleSlotRaycastGroup = all[i].GetComponent<CanvasGroup>();
+                if (battleSlotRaycastGroup == null)
+                    battleSlotRaycastGroup = all[i].gameObject.AddComponent<CanvasGroup>();
+                break;
+            }
+        }
+
+        if (battleSlotRaycastGroup == null || battleSlotRaycastOverrideActive)
+            return;
+
+        battleSlotOriginalBlocksRaycasts = battleSlotRaycastGroup.blocksRaycasts;
+        battleSlotRaycastGroup.blocksRaycasts = false;
+        battleSlotRaycastOverrideActive = true;
+    }
+
+    private void RestoreBattleSlotRaycasts()
+    {
+        if (battleSlotRaycastOverrideActive && battleSlotRaycastGroup != null)
+            battleSlotRaycastGroup.blocksRaycasts = battleSlotOriginalBlocksRaycasts;
+        battleSlotRaycastOverrideActive = false;
     }
 
     private bool IsGridPointerInteractionBlocked()
@@ -1714,9 +1768,6 @@ public class PlayerSkillReservationController : MonoBehaviour
 
             if (selfFlipCommands.Count <= 0)
                 return;
-
-            for (int i = 0; i < selfFlipCommands.Count; i++)
-                selfFlipCommands[i]?.SetFacingFlipCommand();
 
             bool selfFlipConfirmed = ConfirmCommands(selfFlipCommands);
 

@@ -534,7 +534,14 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             eventID = EventTriggerType.PointerClick
         };
 
-        clickEntry.callback.AddListener(_ => SelectEnemyOwnerIcon());
+        clickEntry.callback.AddListener(eventData =>
+        {
+            if (eventData is PointerEventData pointerData &&
+                pointerData.button == PointerEventData.InputButton.Left)
+            {
+                SelectEnemyOwnerIcon();
+            }
+        });
         trigger.triggers.Add(clickEntry);
     }
 
@@ -1099,6 +1106,12 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         return false;
     }
 
+    public bool HasOrderEntry(int orderIndex)
+    {
+        return orderIndex >= 0 && orderIndex < currentEntries.Count &&
+               currentEntries[orderIndex] != null;
+    }
+
     public void OnOrderClicked(int orderIndex)
     {
         if (IsBattleEnded())
@@ -1107,28 +1120,22 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (orderIndex < 0)
             return;
 
-        if (orderIndex >= currentEntries.Count)
-        {
-            if (owner != null)
-                owner.OnTimelineSlotClicked(slotIndex);
+        if (owner != null)
+            owner.OnTimelineSlotClicked(slotIndex);
 
+        if (orderIndex >= currentEntries.Count)
             return;
-        }
 
         BattleTimelinePreviewEntry entry = currentEntries[orderIndex];
 
         if (entry == null)
-        {
-            if (owner != null)
-                owner.OnTimelineSlotClicked(slotIndex);
-
             return;
-        }
 
         TimelineReservationHoverPreview.HideCurrent();
 
-        // Monster orders are display-only. Open the monster information panel
-        // using TurnMark or the monster in the battle scene instead.
+        // Monster orders are display-only. They now still select the owning
+        // timeline slot so the player can inspect/track the turn position,
+        // but they do not trigger player reservation cancellation.
         if (entry.IsMonster)
             return;
 
@@ -1781,7 +1788,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         {
             rootImage.color = emptyUseSkillColor;
             rootImage.enabled = true;
-            rootImage.raycastTarget = false;
+            // Keep empty order frames clickable without enabling skill hover visuals.
+            rootImage.raycastTarget = true;
         }
     }
 

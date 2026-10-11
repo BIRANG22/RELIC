@@ -258,7 +258,7 @@ namespace Relic.Gameplay.Data
                 ? GetInstanceID().ToString(CultureInfo.InvariantCulture)
                 : name.Trim();
 
-            return $"ManualBattleMapTemplate:RoomSequenceV5_TwoEliteRoutePossible:{templateName}:{CalculateContentHash():X8}";
+            return $"ManualBattleMapTemplate:RoomSequenceV6_OptionalEliteRoute:{templateName}:{CalculateContentHash():X8}";
         }
 
         public bool TryBuildNodes(
@@ -317,7 +317,7 @@ namespace Relic.Gameplay.Data
             }
             if (definitions == null)
             {
-                Debug.LogError("[ManualBattleMapTemplate] Could not generate a valid 10-layer layout with 2-3 elite rooms in distinct slots, no connected elites, a Layer 1 battle, mixed battle/event layers (3 slots), and no three consecutive battles/events. Check manual overrides and available maps.");
+                Debug.LogError("[ManualBattleMapTemplate] Could not generate a valid 10-layer layout with 2-3 elite rooms in distinct slots, an elite-free path, no connected elites, a Layer 1 battle, mixed battle/event layers (3 slots), and no three consecutive battles/events. Check manual overrides and available maps.");
                 return false;
             }
 
@@ -668,6 +668,11 @@ namespace Relic.Gameplay.Data
                     return false;
             }
 
+            // Always offer at least one connected route from the start to the boss
+            // that does not pass through any elite room. Elite rooms remain optional.
+            if (!HasEliteFreeRoute(next, types, layers))
+                return false;
+
             // A two-elite route is possible only across Layers 5 -> 6 -> 7.
             // Layer 6 must be a non-elite room, so elites are never consecutive.
             if (requireTwoEliteRoute)
@@ -711,6 +716,43 @@ namespace Relic.Gameplay.Data
                         return false;
             }
             return true;
+        }
+
+        private static bool HasEliteFreeRoute(
+            Dictionary<int, List<int>> next,
+            Dictionary<int, string> types,
+            Dictionary<int, int> layers)
+        {
+            Queue<int> pending = new();
+            HashSet<int> visited = new();
+            foreach (KeyValuePair<int, int> entry in layers)
+            {
+                if (entry.Value != StartLayerIndex || Same(types[entry.Key], "Elite"))
+                    continue;
+
+                pending.Enqueue(entry.Key);
+                visited.Add(entry.Key);
+            }
+
+            while (pending.Count > 0)
+            {
+                int current = pending.Dequeue();
+                if (layers[current] == DefaultBossLayerIndex)
+                    return true;
+
+                if (!next.TryGetValue(current, out List<int> targets))
+                    continue;
+
+                foreach (int target in targets)
+                {
+                    if (Same(types[target], "Elite") || !visited.Add(target))
+                        continue;
+
+                    pending.Enqueue(target);
+                }
+            }
+
+            return false;
         }
 
         // Only adjacent slot numbers may connect between multi-node layers.
