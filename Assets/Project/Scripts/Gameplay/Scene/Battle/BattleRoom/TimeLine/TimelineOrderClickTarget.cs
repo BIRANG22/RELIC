@@ -46,7 +46,8 @@ public class TimelineOrderClickTarget : MonoBehaviour, IPointerClickHandler, IPo
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        AnimateScale(true);
+        if (owner != null && owner.HasOrderEntry(orderIndex))
+            AnimateScale(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)

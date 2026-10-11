@@ -3472,12 +3472,15 @@ public class BattleCharacterPanelUI : MonoBehaviour
             RestoreSkillSlotOriginalRgb(backgroundImage);
             SetImageRgbPreserveAlpha(lineImage, 0x77, 0x77, 0x77);
             SetImageRgbPreserveAlpha(itemIconImage, 0x77, 0x77, 0x77);
-            RestoreSkillSlotOriginalRgb(itemValueText);
+            SetTextRgbPreserveAlpha(itemValueText, 0x77, 0x77, 0x77);
             return;
         }
 
         RestoreSkillSlotOriginalRgb(backgroundImage);
-        RestoreSkillSlotOriginalRgb(itemValueText);
+        if (canUse)
+            RestoreSkillSlotOriginalRgb(itemValueText);
+        else
+            SetTextRgbPreserveAlpha(itemValueText, 0x77, 0x77, 0x77);
         SetImageRgbPreserveAlpha(lineImage, 0xA9, 0xB1, 0xBE);
         SetImageRgbPreserveAlpha(
             itemIconImage,
