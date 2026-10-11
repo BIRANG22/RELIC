@@ -367,7 +367,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048992
-    m_Localized: 
+    m_Localized: At the start of turn 1, gain {ValueRate1} Ward.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048993
@@ -375,7 +375,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048994
-    m_Localized: 
+    m_Localized: When healing, gain Armor equal to the excess healing.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048995
@@ -383,7 +383,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048996
-    m_Localized: 
+    m_Localized: At the start of the turn, if you have at least {ValueRate1} Armor,
+      gain 1 Smite.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048997
@@ -391,7 +392,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048998
-    m_Localized: 
+    m_Localized: At the start of each turn, lose 3 HP and gain {ValueRate1} Boost.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048999
@@ -399,7 +400,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691049000
-    m_Localized: 
+    m_Localized: Deal {ValueRate1}% more damage while at 50% HP or less.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691049001
@@ -407,7 +408,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631872
-    m_Localized: 
+    m_Localized: The first attack Memory queued in battle gains {ValueRate1} additional
+      hit(s).
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631873
@@ -415,7 +417,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631874
-    m_Localized: 
+    m_Localized: After the last attack, deal Pierce damage once for each consecutively
+      queued attack.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631875
@@ -423,7 +426,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631876
-    m_Localized: 
+    m_Localized: Memories with at least {CountRate1} hits deal {ValueRate1} more
+      damage.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631877
@@ -431,7 +435,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631878
-    m_Localized: 
+    m_Localized: When Pierce damage hits, apply {ValueRate1} Bleed to the target.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631879
@@ -439,7 +443,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631880
-    m_Localized: 
+    m_Localized: If the attack targets only one enemy, increase its damage by {ValueRate1}.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631881
@@ -447,7 +451,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631882
-    m_Localized: 
+    m_Localized: At the start of turn 1, apply {ValueRate1} Weaken to all enemies.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631883
@@ -455,7 +459,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631884
-    m_Localized: 
+    m_Localized: When applying a buff or debuff, gain Armor equal to the amount actually
+      applied.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631885
@@ -463,7 +468,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631886
-    m_Localized: 
+    m_Localized: Increase buffs applied to adjacent allies by {ValueRate1}.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631887
@@ -471,7 +476,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631888
-    m_Localized: 
+    m_Localized: When applying a debuff to an enemy, also apply {ValueRate1} Poison.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631889
@@ -479,7 +484,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631890
-    m_Localized: 
+    m_Localized: If you have 0 Mana at the end of the turn, the first Memory queued
+      next turn costs 0 Mana.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631891
@@ -487,7 +493,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631892
-    m_Localized: 
+    m_Localized: At the start of each turn, apply {ValueRate1} Regeneration to adjacent
+      allies.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631893
@@ -495,7 +502,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631894
-    m_Localized: 
+    m_Localized: Gain {ValueRate1} Karma for each enemy defeated.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631895
@@ -503,7 +510,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631896
-    m_Localized: 
+    m_Localized: When healed at 75% HP or more, reduce the earliest applied debuff
+      by {ValueRate1}.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631897
@@ -511,7 +519,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631898
-    m_Localized: 
+    m_Localized: When you attack, Vulnerable increases damage taken by {ValueRate1}%.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631899
@@ -519,7 +527,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631900
-    m_Localized: 
+    m_Localized: When Karma reaches its maximum, apply {ValueRate1} Vulnerable to
+      all enemies.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631901
@@ -896,7 +905,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826182
-    m_Localized: 
+    m_Localized: Take damage equal to the value when moving. The value decreases
+      by 1 each time you move.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826183
@@ -3106,19 +3116,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536458645505
-    m_Localized: 
+    m_Localized: Intuition
     m_Metadata:
       m_Items: []
   - m_Id: 11677536458645506
-    m_Localized: 
+    m_Localized: Momentum
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839808
-    m_Localized: 
+    m_Localized: Cycle
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839809
-    m_Localized: 
+    m_Localized: Toxic Aura
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839810
@@ -3130,7 +3140,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839815
-    m_Localized: 
+    m_Localized: Blood Slash
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839816
@@ -3138,15 +3148,15 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839817
-    m_Localized: 
+    m_Localized: Moonshadow
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839818
-    m_Localized: 
+    m_Localized: Arcane Surge
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839819
-    m_Localized: 
+    m_Localized: Poison Overflow
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839820
@@ -3158,19 +3168,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839824
-    m_Localized: 
+    m_Localized: Whirlwind Slash
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839825
-    m_Localized: 
+    m_Localized: Whirlwind Slash+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839826
-    m_Localized: 
+    m_Localized: Ground Slam
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839827
-    m_Localized: 
+    m_Localized: Ground Slam+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839828
@@ -3190,19 +3200,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839832
-    m_Localized: 
+    m_Localized: Radiant Light
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839833
-    m_Localized: 
+    m_Localized: Radiant Light+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839834
-    m_Localized: 
+    m_Localized: Venom
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839835
-    m_Localized: 
+    m_Localized: Venom+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839836
@@ -3222,131 +3232,131 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839844
-    m_Localized: 
+    m_Localized: Guardian's Aura
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839845
-    m_Localized: 
+    m_Localized: Guardian's Aura+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839846
-    m_Localized: 
+    m_Localized: Blood Armor
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839847
-    m_Localized: 
+    m_Localized: Blood Armor+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839848
-    m_Localized: 
+    m_Localized: Tail Sweep
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839849
-    m_Localized: 
+    m_Localized: Tail Sweep+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839850
-    m_Localized: 
+    m_Localized: Armor Break
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839851
-    m_Localized: 
+    m_Localized: Armor Break+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839852
-    m_Localized: 
+    m_Localized: Thorn Armor
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839853
-    m_Localized: 
+    m_Localized: Thorn Armor+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839854
-    m_Localized: 
+    m_Localized: Battle Momentum
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839855
-    m_Localized: 
+    m_Localized: Battle Momentum+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839856
-    m_Localized: 
+    m_Localized: Reckless Strike
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839857
-    m_Localized: 
+    m_Localized: Reckless Strike+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839858
-    m_Localized: 
+    m_Localized: Thirst
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839859
-    m_Localized: 
+    m_Localized: Thirst+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839860
-    m_Localized: 
+    m_Localized: Ironclad Charge
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839861
-    m_Localized: 
+    m_Localized: Ironclad Charge+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839862
-    m_Localized: 
+    m_Localized: Crimson Harvest
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839863
-    m_Localized: 
+    m_Localized: Crimson Harvest+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839864
-    m_Localized: 
+    m_Localized: Insight
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839865
-    m_Localized: 
+    m_Localized: Insight+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839866
-    m_Localized: 
+    m_Localized: Soaring Blade
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839867
-    m_Localized: 
+    m_Localized: Soaring Blade+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839868
-    m_Localized: 
+    m_Localized: Flying Swallow Blade
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839869
-    m_Localized: 
+    m_Localized: Flying Swallow Blade+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839870
-    m_Localized: 
+    m_Localized: Battle Instinct
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839871
-    m_Localized: 
+    m_Localized: Battle Instinct+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839872
-    m_Localized: 
+    m_Localized: Scar Slash
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839873
-    m_Localized: 
+    m_Localized: Scar Slash+
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839874
-    m_Localized: 
+    m_Localized: Flash Slash
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839875
-    m_Localized: 
+    m_Localized: Flash Slash+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100944
@@ -3354,63 +3364,65 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100945
-    m_Localized: 
+    m_Localized: At the start of each turn, apply {E_Armor} {ValueRate1} to self
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100946
-    m_Localized: 
+    m_Localized: At the start of each turn, apply {E_Lifesteal} {ValueRate1} to self
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100947
-    m_Localized: 
+    m_Localized: At the start of each turn, apply {E_Swift} {ValueRate1} to self
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100948
-    m_Localized: 
+    m_Localized: At the start of each turn, apply {E_Smite} {ValueRate1} to self
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100949
-    m_Localized: 
+    m_Localized: At the start of each turn, apply {E_Charge} {ValueRate1} to all
+      allies
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100950
-    m_Localized: 
+    m_Localized: At the start of each turn, apply {E_Poison} {ValueRate1} to all
+      enemies
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100951
-    m_Localized: 
+    m_Localized: At the start of each turn, apply {E_Armor} {ValueRate1} to all allies
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100952
-    m_Localized: 
+    m_Localized: At the start of each turn, apply {E_Boost} {ValueRate1} to self
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100957
-    m_Localized: 
+    m_Localized: Apply {E_Armor} {ValueRate1} to all allies
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100961
-    m_Localized: 
+    m_Localized: Apply {E_Grit} {ValueRate1} / {E_Charge} {ValueRate2}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100962
-    m_Localized: 
+    m_Localized: Apply {E_Poison} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100963
-    m_Localized: 
+    m_Localized: Apply {E_Heal} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100964
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1} / Apply {E_Vulnerable} {ValueRate2}'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100977
-    m_Localized: 
+    m_Localized: Apply {E_Boost} {ValueRate1}.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100978
-    m_Localized: 
+    m_Localized: Apply {E_Boost} {ValueRate1}.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100979
@@ -3438,483 +3450,481 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100992
-    m_Localized: 
+    m_Localized: Apply {E_Armor} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100993
-    m_Localized: 
+    m_Localized: Apply {E_Armor} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100994
-    m_Localized: 
+    m_Localized: Apply {E_Armor} {ValueRate1} to self
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100995
-    m_Localized: 
+    m_Localized: Apply {E_Armor} {ValueRate1} to self
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101000
-    m_Localized: 
+    m_Localized: Apply {E_Ward} {ValueRate1} to self
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101001
-    m_Localized: 
+    m_Localized: Apply {E_Ward} {ValueRate1} to self
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101002
-    m_Localized: 
+    m_Localized: Apply {E_Smite} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101003
-    m_Localized: 
+    m_Localized: Apply {E_Smite} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101004
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1} / Lose {ValueRate2} HP if the attack misses'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101005
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1} / Lose {ValueRate2} HP if the attack misses'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101006
-    m_Localized: 
+    m_Localized: Apply {E_Lifesteal} {ValueRate1} / {E_Boost} {ValueRate2}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101007
-    m_Localized: 
+    m_Localized: Apply {E_Lifesteal} {ValueRate1} / {E_Boost} {ValueRate2}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101008
-    m_Localized: 
+    m_Localized: Charge and deal {E_Strike} {E_ArmorStrike} to the enemy collided
+      with
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101009
-    m_Localized: 
+    m_Localized: Charge and deal {E_Strike} {E_ArmorStrike} to the enemy collided
+      with
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101010
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1} / On kill, permanently increase the value
+      by {ValueRate2}'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101011
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1} / On kill, permanently increase the value
+      by {ValueRate2}'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101012
-    m_Localized: 
+    m_Localized: Apply {E_Blindside} {ValueRate1} to self
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101013
-    m_Localized: 
+    m_Localized: Apply {E_Blindside} {ValueRate1} to self
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101014
-    m_Localized: 
+    m_Localized: Advance {ValueRate1} tile(s), then {E_Strike} {ValueRate2}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101015
-    m_Localized: 
+    m_Localized: Advance {ValueRate1} tile(s), then {E_Strike} {ValueRate2}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101016
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1}, then retreat {ValueRate2} tile(s)'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101017
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1}, then retreat {ValueRate2} tile(s)'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101018
-    m_Localized: 
+    m_Localized: Apply {E_Boost} {ValueRate1} to self
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101019
-    m_Localized: 
+    m_Localized: Apply {E_Boost} {ValueRate1} to self
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101020
-    m_Localized: 
+    m_Localized: Apply {E_Bleed} {ValueRate1} / {E_Weaken} {ValueRate2}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101021
-    m_Localized: 
+    m_Localized: Apply {E_Bleed} {ValueRate1} / {E_Weaken} {ValueRate2}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101024
-    m_Localized: 
+    m_Localized: Bloodline Thrust
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101025
-    m_Localized: 
+    m_Localized: '{E_Pierce} {ValueRate1} / Apply {E_Bleed} {ValueRate2} when hitting
+      at maximum range'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101026
-    m_Localized: 
+    m_Localized: Bloodline Thrust+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101027
-    m_Localized: 
+    m_Localized: '{E_Pierce} {ValueRate1} / Apply {E_Bleed} {ValueRate2} when hitting
+      at maximum range'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101028
-    m_Localized: 
+    m_Localized: Blood Blossom
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101029
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1} / Deal 50% more damage to enemies with
+      {E_Bleed}'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101030
-    m_Localized: 
+    m_Localized: Blood Blossom+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101031
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1} / Deal 50% more damage to enemies with
+      {E_Bleed}'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101032
-    m_Localized: 
+    m_Localized: Phantom Blade Dance
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101033
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1}x{CountRate1} / Gain 1 hit for each different
+      buff you have'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101034
-    m_Localized: 
+    m_Localized: Phantom Blade Dance+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101035
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1}x{CountRate1} / Gain 1 hit for each different
+      buff you have'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101036
-    m_Localized: 
+    m_Localized: Void Sever
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101037
-    m_Localized: 
+    m_Localized: '{E_Pierce} {ValueRate1} / On hit, increase the value by {ValueRate2}
+      for this battle'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101038
-    m_Localized: 
+    m_Localized: Void Sever+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101039
-    m_Localized: 
+    m_Localized: '{E_Pierce} {ValueRate1} / On hit, increase the value by {ValueRate2}
+      for this battle'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101040
-    m_Localized: 
+    m_Localized: Lantern's Radiance
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101041
-    m_Localized: 
+    m_Localized: Apply {E_Smite} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101042
-    m_Localized: 
+    m_Localized: Lantern's Radiance+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101043
-    m_Localized: 
+    m_Localized: Apply {E_Smite} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101044
-    m_Localized: 
+    m_Localized: Mana Spark
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101045
-    m_Localized: 
+    m_Localized: Apply {E_Charge} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101046
-    m_Localized: 
+    m_Localized: Mana Spark+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101047
-    m_Localized: 
+    m_Localized: Apply {E_Charge} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101048
-    m_Localized: 
+    m_Localized: Razor Flash
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101050
-    m_Localized: 
+    m_Localized: Razor Flash+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101052
-    m_Localized: 
+    m_Localized: Paralytic Poison
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101053
-    m_Localized: 
+    m_Localized: Apply {E_Poison} {ValueRate1} / {E_Weaken} {ValueRate2}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101054
-    m_Localized: 
+    m_Localized: Paralytic Poison+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101055
-    m_Localized: 
+    m_Localized: Apply {E_Poison} {ValueRate1} / {E_Weaken} {ValueRate2}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101056
-    m_Localized: 
+    m_Localized: Deep Shadow
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101057
-    m_Localized: 
+    m_Localized: Apply {E_Fatigue} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101058
-    m_Localized: 
+    m_Localized: Deep Shadow+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101059
-    m_Localized: 
+    m_Localized: Apply {E_Fatigue} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101060
-    m_Localized: 
+    m_Localized: Soul Drain
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101061
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1} / Restore Mana for each enemy hit'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101062
-    m_Localized: 
+    m_Localized: Soul Drain+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101063
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1} / Restore Mana for each enemy hit'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101064
-    m_Localized: 
+    m_Localized: Toxic Manifestation
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101065
-    m_Localized: 
+    m_Localized: Deal {E_Strike} equal to the target's {E_Poison}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101066
-    m_Localized: 
+    m_Localized: Toxic Manifestation+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101067
-    m_Localized: 
+    m_Localized: Deal {E_Strike} equal to the target's {E_Poison}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101068
-    m_Localized: 
+    m_Localized: Nia's Flame
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101069
-    m_Localized: 
+    m_Localized: Apply {E_Bondage} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101070
-    m_Localized: 
+    m_Localized: Nia's Flame+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101071
-    m_Localized: 
+    m_Localized: Apply {E_Bondage} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101072
-    m_Localized: 
+    m_Localized: Nia's Whisper
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101073
-    m_Localized: 
+    m_Localized: Apply {E_Swift} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101074
-    m_Localized: 
+    m_Localized: Nia's Whisper+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101075
-    m_Localized: 
+    m_Localized: Apply {E_Swift} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101076
-    m_Localized: 
+    m_Localized: Virulent Poison
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101077
-    m_Localized: 
+    m_Localized: Apply {E_Poison} {ValueRate1} / Trigger Poison once immediately
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101078
-    m_Localized: 
+    m_Localized: Virulent Poison+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101079
-    m_Localized: 
+    m_Localized: Apply {E_Poison} {ValueRate1} / Trigger Poison once immediately
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101080
-    m_Localized: 
+    m_Localized: Grace
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101081
-    m_Localized: 
+    m_Localized: Apply {E_Armor} {ValueRate1} / {E_Cure} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101082
-    m_Localized: 
+    m_Localized: Grace+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101083
-    m_Localized: 
+    m_Localized: Apply {E_Armor} {ValueRate1} / {E_Cure} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101084
-    m_Localized: 
+    m_Localized: Guidance of Sin
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101086
-    m_Localized: 
+    m_Localized: Guidance of Sin+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101088
-    m_Localized: 
+    m_Localized: Prayer of Protection
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101089
-    m_Localized: 
+    m_Localized: Apply {E_Armor} {ValueRate1} / {E_Ward} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101090
-    m_Localized: 
+    m_Localized: Prayer of Protection+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101091
-    m_Localized: 
+    m_Localized: Apply {E_Armor} {ValueRate1} / {E_Ward} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101092
-    m_Localized: 
+    m_Localized: Meditation
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101093
-    m_Localized: 
+    m_Localized: Gain {E_Karma} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101094
-    m_Localized: 
+    m_Localized: Meditation+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101095
-    m_Localized: 
+    m_Localized: Gain {E_Karma} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101096
-    m_Localized: 
+    m_Localized: Genesis
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101098
-    m_Localized: 
+    m_Localized: Genesis+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101100
-    m_Localized: 
+    m_Localized: Mark of Ruin
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101101
-    m_Localized: 
+    m_Localized: Apply {E_Vulnerable} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101102
-    m_Localized: 
+    m_Localized: Mark of Ruin+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101103
-    m_Localized: 
+    m_Localized: Apply {E_Vulnerable} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101104
-    m_Localized: 
+    m_Localized: Bond
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101105
-    m_Localized: 
+    m_Localized: Apply {E_Bond} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101106
-    m_Localized: 
+    m_Localized: Bond+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101107
-    m_Localized: 
+    m_Localized: Apply {E_Bond} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101108
-    m_Localized: 
+    m_Localized: Judgment
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101109
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1} / Increase damage by the target''s {E_Vulnerable}
+      value'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101110
-    m_Localized: 
+    m_Localized: Judgment+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101111
-    m_Localized: 
+    m_Localized: '{E_Strike} {ValueRate1} / Increase damage by the target''s {E_Vulnerable}
+      value'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101112
-    m_Localized: 
+    m_Localized: Confession
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101113
-    m_Localized: 
+    m_Localized: Double the value of the target's highest-value debuff
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101114
-    m_Localized: 
+    m_Localized: Confession+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101115
-    m_Localized: 
+    m_Localized: Double the value of the target's highest-value debuff
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101116
-    m_Localized: 
+    m_Localized: Spike of Condemnation
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101117
-    m_Localized: 
+    m_Localized: Remove the target's Armor
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101118
-    m_Localized: 
+    m_Localized: Spike of Condemnation+
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101119
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101128
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101129
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101130
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259101131
-    m_Localized: 
+    m_Localized: Remove the target's Armor
     m_Metadata:
       m_Items: []
   - m_Id: 10169488443449346
@@ -3933,28 +3943,8 @@ MonoBehaviour:
     m_Localized: Play Intro
     m_Metadata:
       m_Items: []
-  - m_Id: 10169488443449353
-    m_Localized: Kaya
-    m_Metadata:
-      m_Items: []
   - m_Id: 10169488443449354
     m_Localized: 'Effect: {0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449355
-    m_Localized: 'Used For: Grid'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449356
-    m_Localized: 'Number of uses: 9'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449357
-    m_Localized: Recipe
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449358
-    m_Localized: 'Acquisition condition: Self'
     m_Metadata:
       m_Items: []
   - m_Id: 10169488443449359
@@ -4453,38 +4443,6 @@ MonoBehaviour:
     m_Localized: Homunculus Broome
     m_Metadata:
       m_Items: []
-  - m_Id: 10185974318899336
-    m_Localized: Additional Softener 01
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974318899337
-    m_Localized: Additional Softener 02
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974318899338
-    m_Localized: Additional Softener 03
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974318899339
-    m_Localized: Additional Softener 04
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974318899340
-    m_Localized: Additional Softener 05
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974323093504
-    m_Localized: Quest 1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974323093505
-    m_Localized: Quest 2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974323093506
-    m_Localized: Quest 3
-    m_Metadata:
-      m_Items: []
   - m_Id: 10185974323093507
     m_Localized: Strong Mutant
     m_Metadata:
@@ -4962,55 +4920,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11699293039108096
     m_Localized: luminosity
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11751459711885317
-    m_Localized: 'Effect of the item
-
-      Effect of the item
-
-      Effect of the
-      item'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11753938784624640
-    m_Localized: Dustium condensed excessively, creating an Erosion zone.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11753938788818944
-    m_Localized: An unidentified mutant appeared in the eroded land,
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11753938788818945
-    m_Localized: It gradually became a dangerous place where it was difficult to
-      enter.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11753938788818946
-    m_Localized: The society aims to identify the causes of Erosion and study the
-      phenomenon.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11753938788818947
-    m_Localized: It was decided to investigate the Erosion area.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11753938788818948
-    m_Localized: After some time, a request to recruit exploration personnel was
-      issued.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11753938788818949
-    m_Localized: People with different reasons picked up the request.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11753938788818950
-    m_Localized: An exploration base was established at the border of the Erosion
-      zone;
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11753938788818951
-    m_Localized: One by one they gathered there.
     m_Metadata:
       m_Items: []
   - m_Id: 11938458548838412
@@ -5554,42 +5463,6 @@ MonoBehaviour:
       pushes you back 1 space.'
     m_Metadata:
       m_Items: []
-  - m_Id: 17117632292986912
-    m_Localized: '================================
-
-
-      Thank you for playing
-      the demo version.
-
-
-      What is implemented in the current version
-
-
-      -
-      Map creation
-
-      - Character organization
-
-      - Battle system
-
-      -
-      Monster AI
-
-      - Skills and status abnormalities
-
-      - Turn reservation
-      system
-
-
-      Boss battles and late-game content
-
-      Development is in
-      progress.
-
-
-      ================================'
-    m_Metadata:
-      m_Items: []
   - m_Id: 17117632292986914
     m_Localized: '1. Select one of five slots.
 
@@ -6036,14 +5909,6 @@ MonoBehaviour:
     m_Localized: Deals {ValueRate} damage to the target.
     m_Metadata:
       m_Items: []
-  - m_Id: 17531528627626029
-    m_Localized: Poison
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626030
-    m_Localized: Gives poison {ValueRate} to the target.
-    m_Metadata:
-      m_Items: []
   - m_Id: 17531528627626031
     m_Localized: Mucus
     m_Metadata:
@@ -6191,7 +6056,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626067
-    m_Localized: 
+    m_Localized: Fatigue
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626068
@@ -6921,7 +6786,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975702
-    m_Localized: 
+    m_Localized: Rest together.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975703
@@ -6983,7 +6848,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 19388577758060615
-    m_Localized: 
+    m_Localized: "\u201CI'm a little scared to go alone. Can I come with you?\u201D"
     m_Metadata:
       m_Items: []
   - m_Id: 19388577758060616
@@ -6991,7 +6856,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 19388577758060617
-    m_Localized: 
+    m_Localized: You found a stranger resting by the roadside.
     m_Metadata:
       m_Items: []
   - m_Id: 19395600956530688
@@ -7037,6 +6902,620 @@ MonoBehaviour:
   - m_Id: 19697779441410055
     m_Localized: Win battles to earn rewards for the journey ahead.\nStrengthen your
       party, then proceed to the next area.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19697779441410048
+    m_Localized: Skip Tutorial
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19697779441410049
+    m_Localized: Next Area
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19697779441410050
+    m_Localized: Return
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19995735533035520
+    m_Localized: Windowed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19995735554007040
+    m_Localized: Borderless
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658173698048
+    m_Localized: 'Moves 1 or 2 tiles up to twice to align with the character.
+
+'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658173698049
+    m_Localized: Skill Effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658173698051
+    m_Localized: 'At the start of the next turn, revives one Mutant that died this
+      turn with 30% HP.
+
+'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658173698052
+    m_Localized: Monster Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658173698053
+    m_Localized: Action
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20392658173698054
+    m_Localized: Status
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429560193024
+    m_Localized: Tutorial Text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164544
+    m_Localized: Armor-Scaling Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164545
+    m_Localized: Deals damage equal to the caster's current Armor multiplied by the
+      value coefficient.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164546
+    m_Localized: Miss Self-Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164547
+    m_Localized: If no valid enemy is hit, deal damage to self equal to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164548
+    m_Localized: Permanent Damage on Kill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164549
+    m_Localized: For each enemy defeated by this skill, increase its damage value
+      from the next use onward.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164550
+    m_Localized: Battle Damage on Hit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164551
+    m_Localized: For each successful hit, increase its damage value from the next
+      use for this battle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164552
+    m_Localized: Damage vs. Bleeding Targets
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164553
+    m_Localized: Deal 50% more damage to targets with Bleed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164554
+    m_Localized: Charge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164555
+    m_Localized: Advance the specified number of tiles and stop before the first
+      target collided with.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164556
+    m_Localized: Bind
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164557
+    m_Localized: Blocks the next movement attempt, then decreases the value by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164558
+    m_Localized: Poison-Scaling Poison
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164559
+    m_Localized: Apply additional Poison equal to the target's Poison divided by
+      the value coefficient, rounded down.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164560
+    m_Localized: Poisoning Starts Immediately
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164561
+    m_Localized: Immediately deal damage equal to the current Poison value, then
+      reduce Poison by 1.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164562
+    m_Localized: Mana Recovery per Hit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164563
+    m_Localized: Restore Mana based on the total number of successful hits.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164564
+    m_Localized: Random Multi-Hit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164565
+    m_Localized: For each hit, randomly select a living enemy in range and deal damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164566
+    m_Localized: Vulnerable-Scaling Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164567
+    m_Localized: Adds the target's Vulnerable multiplied by the count coefficient
+      to the base damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164568
+    m_Localized: Buff-Type Scaling Hits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164569
+    m_Localized: Increase the number of hits by the number of different buffs on
+      the caster.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164570
+    m_Localized: Debuff-Type Scaling Hits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20540429581164571
+    m_Localized: Increase the number of hits by the number of different debuffs on
+      the target.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721856557056
+    m_Localized: Item Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694400
+    m_Localized: Obtain
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694401
+    m_Localized: Select a mercenary to equip.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694402
+    m_Localized: '- Select -'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694404
+    m_Localized: Select one Memory to manifest.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694405
+    m_Localized: Skill Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694406
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694407
+    m_Localized: Queue the character's movement action.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694408
+    m_Localized: Flip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694409
+    m_Localized: Flip the direction the character is facing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21435721902694410
+    m_Localized: Battle End
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21535785237061632
+    m_Localized: A dense fog has engulfed the area, making it impossible to see ahead.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353311506432
+    m_Localized: Random enemy {E_Strike} {ValueRate1}{CountRate1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866560
+    m_Localized: Random enemy {E_Strike} {ValueRate1}{CountRate1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866561
+    m_Localized: Poison-Scaling Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866562
+    m_Localized: Deal damage equal to the target's Poison value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866563
+    m_Localized: At the start of turn 1, gain Ward equal to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866564
+    m_Localized: At the start of turn 1, gain {ValueRate1} Ward.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866565
+    m_Localized: At the start of the turn, if Armor is at least the value, gain 1
+      Smite.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866566
+    m_Localized: At the start of the turn, if you have at least {ValueRate1} Armor,
+      gain 1 Smite.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866567
+    m_Localized: At the start of each turn, lose 3 HP and gain Boost equal to the
+      value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866568
+    m_Localized: At the start of each turn, lose 3 HP and gain {ValueRate1} Boost.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866569
+    m_Localized: Deal value% more damage while at 50% HP or less.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866570
+    m_Localized: Deal {ValueRate1}% more damage while at 50% HP or less.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866571
+    m_Localized: The first attack Memory queued in battle gains value additional
+      hits.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866572
+    m_Localized: The first attack Memory queued in battle gains {ValueRate1} additional
+      hit(s).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866573
+    m_Localized: After the last attack, deal Pierce damage once for each consecutively
+      queued attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866574
+    m_Localized: After the last attack, deal Pierce damage once for each consecutively
+      queued attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866575
+    m_Localized: Memories with at least count hits deal value more damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866576
+    m_Localized: Memories with at least {CountRate1} hits deal {ValueRate1} more
+      damage.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866577
+    m_Localized: When Pierce damage hits, apply Bleed equal to the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866578
+    m_Localized: When Pierce damage hits, apply {ValueRate1} Bleed to the target.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866579
+    m_Localized: If the attack targets only one enemy, increase its damage by the
+      value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866580
+    m_Localized: If the attack targets only one enemy, increase its damage by {ValueRate1}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866581
+    m_Localized: When applying a buff or debuff, gain Armor equal to the amount actually
+      applied.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866582
+    m_Localized: When applying a buff or debuff, gain Armor equal to the amount actually
+      applied.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866583
+    m_Localized: Increase buffs applied to adjacent allies by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866584
+    m_Localized: Increase buffs applied to adjacent allies by {ValueRate1}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866585
+    m_Localized: When applying a debuff to an enemy, also apply Poison equal to the
+      value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866586
+    m_Localized: When applying a debuff to an enemy, also apply {ValueRate1} Poison.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866587
+    m_Localized: If you have 0 Mana at the end of the turn, the first Memory queued
+      next turn costs 0 Mana.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866588
+    m_Localized: If you have 0 Mana at the end of the turn, the first Memory queued
+      next turn costs 0 Mana.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353340866589
+    m_Localized: At the start of each turn, apply Regeneration equal to the value
+      to adjacent allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060864
+    m_Localized: At the start of each turn, apply {ValueRate1} Regeneration to adjacent
+      allies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060865
+    m_Localized: Gain Karma equal to the value for each enemy defeated.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060866
+    m_Localized: Gain {ValueRate1} Karma for each enemy defeated.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060867
+    m_Localized: When healed at 75% HP or more, reduce the earliest applied debuff
+      by the value.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060868
+    m_Localized: When healed at 75% HP or more, reduce the earliest applied debuff
+      by {ValueRate1}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060869
+    m_Localized: When you attack, Vulnerable's damage increase becomes value%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060870
+    m_Localized: When you attack, Vulnerable increases damage taken by {ValueRate1}%.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060871
+    m_Localized: When Karma reaches its maximum, apply Vulnerable equal to the value
+      to all enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060872
+    m_Localized: When Karma reaches its maximum, apply {ValueRate1} Vulnerable to
+      all enemies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060873
+    m_Localized: Leave the Place
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21894353345060874
+    m_Localized: Event ends
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627908460544
+    m_Localized: Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627929432064
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627929432065
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627929432066
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627929432067
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627929432068
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627929432069
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627929432070
+    m_Localized: Buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627929432071
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627929432072
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627929432073
+    m_Localized: Debuff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626368
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626369
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626370
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626371
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626372
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626373
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626374
+    m_Localized: Penetration Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626375
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626376
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626377
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626378
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626379
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626380
+    m_Localized: Deploy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626381
+    m_Localized: Deploy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626382
+    m_Localized: Buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626383
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626384
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626385
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626386
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626387
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626388
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626389
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626390
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626391
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626392
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626393
+    m_Localized: Buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626394
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626395
+    m_Localized: Penetration Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626396
+    m_Localized: Normal Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626397
+    m_Localized: Debuff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22134627933626398
+    m_Localized: Buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22145802691944468
+    m_Localized: Click the mutant to view its information.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22145802691944469
+    m_Localized: Click or press A to select Move.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22145802691944470
+    m_Localized: Click a grid cell to move.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22145802691944471
+    m_Localized: Click or press Q to queue an attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22145802691944472
+    m_Localized: Queued actions appear on the timeline.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22145802691944473
+    m_Localized: Press End Turn or Space to finish queuing actions.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22145802691944474
+    m_Localized: You can queue the same attack consecutively. Queue the attack twice.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22145802691944475
+    m_Localized: Queue the same attack one more time.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22145802691944476
+    m_Localized: Press End Turn or Space to finish queuing actions.
     m_Metadata:
       m_Items: []
   references:

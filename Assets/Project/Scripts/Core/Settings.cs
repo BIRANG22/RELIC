@@ -42,17 +42,10 @@ public static class OnboardingToggleDefaults
         if (appliedVersion >= CurrentDefaultsVersion)
             return;
 
-        if (appliedVersion < 1)
-            IntroSettings.SetShouldPlayIntro(true);
-
         // 기존 TutorialToggle1은 전투 패널 표시 설정이었지만,
         // 버전 3부터는 새 게임에서 전체 튜토리얼을 진행할지 결정하는 설정으로 전환합니다.
         if (appliedVersion < 3)
             TutorialSettings.SetShouldPlayTutorial(true);
-
-        // 기존 빌드에서 IntroSeen 값 때문에 OFF로 시작하던 상태를 한 번 보정합니다.
-        if (appliedVersion < 2)
-            IntroSettings.SetShouldPlayIntro(true);
 
         PlayerPrefs.SetInt(DefaultsVersionPrefsKey, CurrentDefaultsVersion);
         PlayerPrefs.Save();
@@ -99,37 +92,4 @@ public static class TutorialSettings
     public static bool ShouldShowTutorial => ShouldPlayTutorial;
     public static void SetShouldShowTutorial(bool shouldShowTutorial) => SetShouldPlayTutorial(shouldShowTutorial);
     public static void MarkTutorialShown() => MarkTutorialSeen();
-}
-
-public static class IntroSettings
-{
-    public const string IntroSeenPrefsKey = "Dustium.IntroSeen";
-
-    private const int SeenValue = 1;
-    private const int NotSeenValue = 0;
-
-    public static bool HasSeenIntro =>
-        PlayerPrefs.GetInt(IntroSeenPrefsKey, NotSeenValue) == SeenValue;
-
-    public static bool ShouldPlayIntro => !HasSeenIntro;
-
-    public static void SetShouldPlayIntro(bool shouldPlayIntro)
-    {
-        PlayerPrefs.SetInt(
-            IntroSeenPrefsKey,
-            shouldPlayIntro ? NotSeenValue : SeenValue);
-        PlayerPrefs.Save();
-    }
-
-    public static void MarkIntroSeen()
-    {
-        PlayerPrefs.SetInt(IntroSeenPrefsKey, SeenValue);
-        PlayerPrefs.Save();
-    }
-
-    public static void ResetIntroSeenState()
-    {
-        PlayerPrefs.SetInt(IntroSeenPrefsKey, NotSeenValue);
-        PlayerPrefs.Save();
-    }
 }

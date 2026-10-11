@@ -11,20 +11,19 @@ public enum SoundCategory
 
 public enum BgmState
 {
-    TitleMain,
-    TitleIntro,
-    LobbyMain,
-    Lobby1,
-    Lobby2,
-    Lobby3,
-    BattleMain,
-    Battle1,
-    Battle2,
-    Battle3,
-    Event1,
-    Event2,
-    Shop,
-    Rest
+    TitleMain = 0,
+    LobbyMain = 2,
+    Lobby1 = 3,
+    Lobby2 = 4,
+    Lobby3 = 5,
+    BattleMain = 6,
+    Battle1 = 7,
+    Battle2 = 8,
+    Battle3 = 9,
+    Event1 = 10,
+    Event2 = 11,
+    Shop = 12,
+    Rest = 13
 }
 
 [AttributeUsage(AttributeTargets.Field)]

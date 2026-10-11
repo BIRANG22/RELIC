@@ -206,8 +206,8 @@ public sealed class LocalizationManagerWindow : EditorWindow
                     string korean = column < row.Count ? row[column] : string.Empty;
                     bool isMonsterSkillType = string.Equals(sheet, "MonsterSkill", StringComparison.Ordinal) &&
                                               string.Equals(header.Trim(), "타입", StringComparison.Ordinal);
-                    if ((!LocalizationProjectScanner.IsPlayerFacingGameDataColumn(sheet, header) && !isMonsterSkillType) ||
-                        !LocalizationProjectScanner.IsLocalizableKoreanText(korean))
+                    if ((!LocalizationProjectScanner.ShouldCollectGameDataLocalizationValue(sheet, header, korean) && !isMonsterSkillType) ||
+                        (isMonsterSkillType && !LocalizationProjectScanner.IsLocalizableKoreanText(korean)))
                         continue;
 
                     string stableKey = BuildGameDataKey(sheet, stableId, row, choiceOrderColumn, header);
@@ -254,6 +254,8 @@ public sealed class LocalizationManagerWindow : EditorWindow
         AddRuntimeUiCandidate("battle.skill_rarity.epic_memory", "에픽기억", knownKoreanByKey, knownKeys);
         AddRuntimeUiCandidate("battle.skill_rarity.unique", "유니크기억", knownKoreanByKey, knownKeys);
         AddRuntimeUiCandidate("battle.skill_rarity.exclusive", "전용기억", knownKoreanByKey, knownKeys);
+        foreach (LocalizationWorkbookEntry entry in LocalizationRuntimeSourceCatalog.BattleFirstTutorialEntries)
+            AddRuntimeUiCandidate(entry.Key, entry.Korean, knownKoreanByKey, knownKeys);
     }
 
     private void AddRuntimeUiCandidate(
@@ -431,13 +433,30 @@ public sealed class LocalizationManagerWindow : EditorWindow
         int updated = LocalizationWorkbookWriter.UpdateExistingEntries(LocalizationExcelImporter.WorkbookPath, sourceUpdates);
         int rows = LocalizationWorkbookWriter.MergeNewEntries(LocalizationExcelImporter.WorkbookPath, additions);
         if (rows > 0 || updated > 0 || templateChanges > 0) LocalizationExcelImporter.Import();
-        int explicitStaticBindings = StaticLocalizationMigration.ApplyRequiredStaticUiBindings();
-        int dynamicOwnershipChanges = StaticLocalizationMigration.MigrateRecordMemoryDynamicOwnership();
-        LocalizationTextBindingRepairTool.RepairAllBindings();
+        int optionalMigrationFailures = 0;
+        if (!StaticLocalizationMigration.TryRunOptionalMigration(
+                "Required static UI bindings",
+                StaticLocalizationMigration.ApplyRequiredStaticUiBindings,
+                out int explicitStaticBindings))
+            optionalMigrationFailures++;
+        if (!StaticLocalizationMigration.TryRunOptionalMigration(
+                "Record memory dynamic ownership",
+                StaticLocalizationMigration.MigrateRecordMemoryDynamicOwnership,
+                out int dynamicOwnershipChanges))
+            optionalMigrationFailures++;
+        if (!StaticLocalizationMigration.TryRunOptionalMigration(
+                "TMP binding repair",
+                () =>
+                {
+                    LocalizationTextBindingRepairTool.RepairAllBindings();
+                    return 0;
+                },
+                out _))
+            optionalMigrationFailures++;
         int removed = RemoveUnusedEntries(retainedCandidateKeys);
         int compacted = LocalizationWorkbookWriter.CompactBlankRows(LocalizationExcelImporter.WorkbookPath);
         LocalizationExcelImporter.Import(); // Final authoritative workbook-to-table sync.
-        Debug.Log($"[Localization Manager] Synced GameData runtime CSV, applied {rows} new Excel rows, updated {updated} GameData sources, restored {templateChanges} Record templates, applied {explicitStaticBindings} required static bindings, changed {dynamicOwnershipChanges} dynamic TMP ownerships, removed {removed} unused keys, compacted {compacted} blank rows, and repaired TMP bindings.");
+        Debug.Log($"[Localization Manager] Synced GameData runtime CSV, applied {rows} new Excel rows, updated {updated} GameData sources, restored {templateChanges} Record templates, applied {explicitStaticBindings} required static bindings, changed {dynamicOwnershipChanges} dynamic TMP ownerships, skipped {optionalMigrationFailures} failed optional migrations, removed {removed} unused keys, compacted {compacted} blank rows, and completed TMP binding repair stage.");
     }
 
     private static HashSet<string> GetConfiguredScenePaths()
@@ -564,8 +583,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
                 for (int column = 1; column < headers.Count; column++)
                 {
                     string korean = column < row.Count ? row[column] : string.Empty;
-                    if (LocalizationProjectScanner.IsPlayerFacingGameDataColumn(sheet, headers[column]) &&
-                        LocalizationProjectScanner.IsLocalizableKoreanText(korean))
+                    if (LocalizationProjectScanner.ShouldCollectGameDataLocalizationValue(sheet, headers[column], korean))
                     {
                         string stableKey = BuildGameDataKey(sheet, stableId, row, choiceOrderColumn, headers[column]);
                         keys.Add(scannedKeys.Add(stableKey)

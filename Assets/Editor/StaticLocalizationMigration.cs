@@ -230,6 +230,76 @@ public static class StaticLocalizationMigration
             .Count(ConfigureDynamicText);
     }
 
+    /// <summary>
+    /// 과거 프리팹 계층을 대상으로 하는 선택적 마이그레이션을 안전하게 적용합니다.
+    /// 대상이 전부 사라졌다면 마이그레이션이 더 이상 필요하지 않은 것으로 간주하고,
+    /// 일부만 남았다면 부분 변경 없이 누락 경로를 진단합니다.
+    /// </summary>
+    public static int ConfigureOptionalDynamicTextsByPath(
+        GameObject root,
+        IEnumerable<string> targetPaths,
+        string migrationName)
+    {
+        if (root == null)
+            throw new ArgumentNullException(nameof(root));
+
+        string[] paths = (targetPaths ?? Array.Empty<string>())
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        if (paths.Length == 0)
+            return 0;
+
+        var resolved = paths
+            .Select(path => new
+            {
+                Path = path,
+                Text = root.transform.Find(path)?.GetComponent<TMP_Text>(),
+            })
+            .ToArray();
+        int foundCount = resolved.Count(item => item.Text != null);
+        if (foundCount == 0)
+            return 0;
+
+        if (foundCount != resolved.Length)
+        {
+            string missingPaths = string.Join(", ", resolved
+                .Where(item => item.Text == null)
+                .Select(item => item.Path));
+            Debug.LogWarning(
+                $"[StaticLocalizationMigration] {migrationName} skipped because only part of its legacy layout remains. " +
+                $"Missing TMP paths: {missingPaths}",
+                root);
+            return 0;
+        }
+
+        return ConfigureDynamicTexts(resolved.Select(item => item.Text));
+    }
+
+    /// <summary>선택적인 씬·프리팹 보정 단계의 실패를 전체 로컬리제이션 적용과 격리합니다.</summary>
+    public static bool TryRunOptionalMigration(
+        string migrationName,
+        Func<int> migration,
+        out int changed)
+    {
+        if (migration == null)
+            throw new ArgumentNullException(nameof(migration));
+
+        try
+        {
+            changed = migration();
+            return true;
+        }
+        catch (Exception exception)
+        {
+            changed = 0;
+            Debug.LogError(
+                $"[StaticLocalizationMigration] Optional migration '{migrationName}' failed and was skipped. " +
+                $"The remaining localization apply steps will continue.\n{exception}");
+            return false;
+        }
+    }
+
     /// <summary>Record 기억 상세의 값은 RecordPanelUI가 조합하므로 정적 로컬라이저가 소유하면 안 됩니다.</summary>
     public static int MigrateRecordMemoryDynamicOwnership()
     {
@@ -238,11 +308,7 @@ public static class StaticLocalizationMigration
         GameObject root = PrefabUtility.LoadPrefabContents(prefabPath);
         try
         {
-            TMP_Text[] texts = paths.Select(path => root.transform.Find(path)?.GetComponent<TMP_Text>()).ToArray();
-            if (texts.Any(text => text == null))
-                throw new InvalidOperationException("Record memory dynamic TMP binding could not be found.");
-
-            int changed = ConfigureDynamicTexts(texts);
+            int changed = ConfigureOptionalDynamicTextsByPath(root, paths, "Record memory dynamic ownership");
             if (changed > 0)
                 PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             return changed;

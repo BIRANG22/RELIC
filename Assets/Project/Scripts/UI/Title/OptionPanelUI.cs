@@ -19,7 +19,6 @@ public class OptionPanelUI : MonoBehaviour
     private const string ControlContentName = "ControlContent";
     private const string TutorialToggle1Name = "TutorialToggle1";
     private const string TutorialToggle2Name = "TutorialToggle2";
-    private const string IntroToggleName = "IntroToggle1";
 
     [Header("Contents")]
     [SerializeField] private GameObject soundContent;
@@ -39,9 +38,6 @@ public class OptionPanelUI : MonoBehaviour
     [Header("Tutorial")]
     [SerializeField] private Toggle tutorialToggle;
     [SerializeField] private Toggle tutorialPreviewToggle;
-
-    [Header("Intro")]
-    [SerializeField] private Toggle introToggle;
 
     [Header("Resolution Template Sorting")]
     [SerializeField] private int resolutionDropdownSortingOrderOffset = 50;
@@ -66,8 +62,6 @@ public class OptionPanelUI : MonoBehaviour
         SetupDisplayModeToggles();
         RefreshDisplayModeLabels();
         SetupTutorialToggle();
-        SetupIntroToggle();
-        SubscribeIntroFinished();
         ShowAllContents();
         RefreshBattlePresentationSpeedLabel();
     }
@@ -75,7 +69,6 @@ public class OptionPanelUI : MonoBehaviour
     private void OnDisable()
     {
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
-        UnsubscribeIntroFinished();
     }
 
     private void OnDestroy()
@@ -99,10 +92,6 @@ public class OptionPanelUI : MonoBehaviour
         if (tutorialPreviewToggle != null)
             tutorialPreviewToggle.onValueChanged.RemoveListener(OnTutorialPreviewToggleChanged);
 
-        if (introToggle != null)
-            introToggle.onValueChanged.RemoveListener(OnIntroToggleChanged);
-
-        UnsubscribeIntroFinished();
     }
 
     private void ShowAllContents()
@@ -113,7 +102,6 @@ public class OptionPanelUI : MonoBehaviour
         SetContentActive(controlContent, true);
 
         SyncTutorialToggleFromSettings();
-        SyncIntroToggleFromSettings();
     }
 
     public void ShowSound()
@@ -138,25 +126,6 @@ public class OptionPanelUI : MonoBehaviour
     {
         ShowSingleContent(controlContent);
         SyncTutorialToggleFromSettings();
-        SyncIntroToggleFromSettings();
-    }
-
-    /// <summary>
-    /// 설정창의 인트로 다시보기 버튼에서 호출합니다.
-    /// 현재 진행 상태를 변경하지 않고 인트로만 다시 재생합니다.
-    /// </summary>
-    public void ReplayIntro()
-    {
-        IntroSequenceController introController = IntroSequenceController.Instance;
-        if (introController == null)
-        {
-            Debug.LogWarning(
-                "[OptionPanelUI] IntroSequenceController를 찾을 수 없습니다.",
-                this);
-            return;
-        }
-
-        introController.ReplayIntro();
     }
 
     public void SaveProgress()
@@ -426,66 +395,6 @@ public class OptionPanelUI : MonoBehaviour
     }
 
 
-    private void SetupIntroToggle()
-    {
-        if (controlContent == null)
-            controlContent = FindChildGameObject(ControlContentName);
-
-        if (introToggle == null && controlContent != null)
-        {
-            Transform introToggleTransform = FindChildByName(controlContent.transform, IntroToggleName);
-            if (introToggleTransform != null)
-                introToggle = introToggleTransform.GetComponent<Toggle>();
-        }
-
-        if (introToggle == null)
-        {
-            Debug.LogWarning(
-                "[OptionPanelUI] IntroToggle is not assigned in the Option prefab.",
-                this);
-            return;
-        }
-
-        introToggle.onValueChanged.RemoveListener(OnIntroToggleChanged);
-        introToggle.SetIsOnWithoutNotify(IntroSettings.ShouldPlayIntro);
-        introToggle.onValueChanged.AddListener(OnIntroToggleChanged);
-    }
-
-    private void OnIntroToggleChanged(bool isOn)
-    {
-        IntroSettings.SetShouldPlayIntro(isOn);
-    }
-
-    private void SubscribeIntroFinished()
-    {
-        IntroSequenceController introController = IntroSequenceController.Instance;
-        if (introController == null)
-            return;
-
-        introController.IntroFinished -= HandleIntroFinished;
-        introController.IntroFinished += HandleIntroFinished;
-    }
-
-    private void UnsubscribeIntroFinished()
-    {
-        IntroSequenceController introController = IntroSequenceController.Instance;
-        if (introController == null)
-            return;
-
-        introController.IntroFinished -= HandleIntroFinished;
-    }
-
-    private void HandleIntroFinished()
-    {
-        SyncIntroToggleFromSettings();
-    }
-
-    private void SyncIntroToggleFromSettings()
-    {
-        if (introToggle != null)
-            introToggle.SetIsOnWithoutNotify(IntroSettings.ShouldPlayIntro);
-    }
-
     private void OnTutorialToggleChanged(bool shouldShowTutorial)
     {
         TutorialSettings.SetShouldPlayTutorial(shouldShowTutorial);
@@ -565,8 +474,6 @@ public class OptionPanelUI : MonoBehaviour
         SetupResolutionDropdown();
         SetupDisplayModeToggles();
         SetupTutorialToggle();
-        SetupIntroToggle();
-
         SetContentActive(soundContent, soundContent == activeContent);
         SetContentActive(languageContent, languageContent == activeContent);
         SetContentActive(resolutionContent, resolutionContent == activeContent);
