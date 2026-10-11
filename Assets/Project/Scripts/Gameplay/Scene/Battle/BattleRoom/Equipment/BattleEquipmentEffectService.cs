@@ -1541,6 +1541,10 @@ public static class BattleEquipmentEffectService
         if (command == null)
             return false;
 
+        // Flip은 타임라인에 독립 행동으로 등록되지만 실제 이동 행동은 아닙니다.
+        if (command.IsFacingFlipCommand)
+            return false;
+
         if (command.ReservedMoveGridIndex >= 0)
             return true;
 

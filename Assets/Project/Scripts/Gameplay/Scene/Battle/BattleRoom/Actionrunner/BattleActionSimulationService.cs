@@ -151,6 +151,15 @@ public class BattleActionSimulationService
 
     private void SimulatePlayerMove(PlayerReservedCommand command, int currentGrid)
     {
+        if (command.IsFacingFlipCommand)
+        {
+            BattleDirection flippedDirection = GetOppositeDirection(GetPlayerDirection(command));
+            playerDirections[command.CharacterId] = flippedDirection;
+            command.SetMoveDirection(flippedDirection);
+            command.SetSimulatedMoveResult(false, currentGrid, Vector2Int.zero);
+            return;
+        }
+
         ReplanPlayerMovePath(command, currentGrid);
 
         BattleDirection direction = GetDirectionAfterMoveSteps(

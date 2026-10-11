@@ -1715,6 +1715,9 @@ public class PlayerSkillReservationController : MonoBehaviour
             if (selfFlipCommands.Count <= 0)
                 return;
 
+            for (int i = 0; i < selfFlipCommands.Count; i++)
+                selfFlipCommands[i]?.SetFacingFlipCommand();
+
             bool selfFlipConfirmed = ConfirmCommands(selfFlipCommands);
 
             KeepSkillListOpenForThisClick();

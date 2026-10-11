@@ -35,6 +35,7 @@ public class PlayerReservedCommand
     public int TimelineSlotIndex { get; private set; } = -1;
     public bool ReservationCostModifiersApplied { get; private set; }
     public bool IsMoveContinuationCommand { get; private set; }
+    public bool IsFacingFlipCommand { get; private set; }
     public bool IsFirstSkillInSlot { get; private set; } = true;
     public bool HadEarlierMoveInSlot { get; private set; }
     public int SameSlotMoveCostBeforeCommand { get; private set; }
@@ -227,6 +228,11 @@ public class PlayerReservedCommand
     public void SetMoveDirection(BattleDirection direction)
     {
         Direction = direction;
+    }
+
+    public void SetFacingFlipCommand(bool isFacingFlip = true)
+    {
+        IsFacingFlipCommand = isFacingFlip;
     }
 
     public void SetDirectionalMoveDistanceOverride(int signedDistance)

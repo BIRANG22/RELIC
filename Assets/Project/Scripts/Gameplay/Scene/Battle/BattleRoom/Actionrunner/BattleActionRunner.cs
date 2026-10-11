@@ -2021,27 +2021,8 @@ public class BattleActionRunner
                 yield break;
             }
 
-            if (hitTargets.Count <= 0 &&
-                gridEffectTargets.Count <= 0 &&
-                !HasDirectionalMoveBeforeFirstDamage(command))
-            {
-                if (command.SkillData.SkillType == SkillType.Attack)
-                    BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
-
-                if (attackerAnimator != null)
-                {
-                    attackerAnimator.PlaySkillAction(command);
-                    yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
-                }
-
-                hudService.RefreshHUDs();
-                yield return new WaitForSeconds(GetActiveActionBeatDelay());
-
-                yield return ReturnCameraAfterActiveActionIfNeeded();
-
-                yield break;
-            }
-
+            // 대상이 없는 공격도 효과 처리 루틴을 실행해야 Count만큼의
+            // 공격 모션을 모두 재생할 수 있습니다.
             yield return ExecutePlayerSkillEffectsToMonsters(
                 attacker,
                 hitTargets,
@@ -2428,16 +2409,6 @@ public class BattleActionRunner
 
         for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
         {
-            if (!HasAliveMonsterTarget(monsterTargets) &&
-                !HasDamageableGridEffectTarget(gridEffectTargets))
-            {
-                BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
-
-                if (isMultiHit && attackerAnimator != null)
-                    attackerAnimator.RestorePlaybackSpeed();
-
-                yield break;
-            }
 
             if (attackerAnimator != null)
             {
@@ -2544,17 +2515,14 @@ public class BattleActionRunner
 
             hudService.RefreshHUDs();
 
-            if (!appliedAnyHit)
+            if (!appliedAnyHit && hitIndex == 0)
             {
+                // 빈 공간 공격도 연타 모션은 끝까지 재생하되,
+                // 공격 빗나감 보상은 한 공격 행동에 한 번만 적용합니다.
                 BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
-
-                if (isMultiHit && attackerAnimator != null)
-                    attackerAnimator.RestorePlaybackSpeed();
-
-                yield break;
             }
 
-            bool playCameraImpact = ShouldPlayCameraImpactForHit(hitIndex, hitCount);
+            bool playCameraImpact = appliedAnyHit && ShouldPlayCameraImpactForHit(hitIndex, hitCount);
             bool playPushFeedback = ShouldPlayExternalImpactForHit(hitIndex, hitCount);
 
             if (playCameraImpact)

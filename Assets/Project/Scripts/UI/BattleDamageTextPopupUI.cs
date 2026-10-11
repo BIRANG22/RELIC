@@ -32,6 +32,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     [SerializeField] private float holdDuration = 0.3f;
     [SerializeField] private float duration = 0.55f;
     [SerializeField] private float upwardCanvasMove = 18f;
+    [SerializeField, Min(0f)] private float screenEdgePadding = 12f;
 
     [Header("Popup Timing")]
     [Tooltip("HUD가 먼저 보인 뒤 팝업이 시작되기까지의 지연 시간입니다.")]
@@ -614,7 +615,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.sizeDelta = GetDigitPopupSize(value.Length, popupType);
-        rect.anchoredPosition = anchoredPosition;
+        rect.anchoredPosition = ClampPopupPosition(rect, anchoredPosition);
         rect.localScale = Vector3.one * startScale;
 
         HorizontalLayoutGroup layoutGroup = rootObject.AddComponent<HorizontalLayoutGroup>();
@@ -826,7 +827,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.sizeDelta = new Vector2(330f, 165f);
-        rect.anchoredPosition = anchoredPosition;
+        rect.anchoredPosition = ClampPopupPosition(rect, anchoredPosition);
         rect.localScale = Vector3.one;
 
         TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
@@ -858,7 +859,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.sizeDelta = new Vector2(420f, 165f);
-        rect.anchoredPosition = anchoredPosition;
+        rect.anchoredPosition = ClampPopupPosition(rect, anchoredPosition);
         rect.localScale = Vector3.one;
 
         TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
@@ -910,7 +911,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         {
             holdElapsed += Time.unscaledDeltaTime;
             targetCanvasPosition = RefreshTargetCanvasPosition(target, screenOffset, targetCanvasPosition);
-            rect.anchoredPosition = targetCanvasPosition;
+            rect.anchoredPosition = ClampPopupPosition(rect, targetCanvasPosition);
             yield return null;
         }
 
@@ -923,12 +924,41 @@ public class BattleDamageTextPopupUI : MonoBehaviour
 
             targetCanvasPosition = RefreshTargetCanvasPosition(target, screenOffset, targetCanvasPosition);
             text.fontSize = Mathf.Lerp(popupStartFontSize, popupEndFontSize, eased);
-            rect.anchoredPosition = targetCanvasPosition + GetAnimatedOffset(endOffset, eased, popupType);
+            rect.anchoredPosition = ClampPopupPosition(rect, targetCanvasPosition + GetAnimatedOffset(endOffset, eased, popupType));
             canvasGroup.alpha = Mathf.Lerp(1f, 0f, t);
             yield return null;
         }
 
         Destroy(rect.gameObject);
+    }
+
+    private Vector2 ClampPopupPosition(RectTransform popupRect, Vector2 position)
+    {
+        if (popupRect == null || canvasRect == null)
+            return position;
+
+        Rect canvasBounds = canvasRect.rect;
+        Vector3 scale = popupRect.localScale;
+        float halfWidth = popupRect.rect.width * Mathf.Abs(scale.x) * 0.5f;
+        float halfHeight = popupRect.rect.height * Mathf.Abs(scale.y) * 0.5f;
+        float padding = Mathf.Max(0f, screenEdgePadding);
+
+        float minX = canvasBounds.xMin + halfWidth + padding;
+        float maxX = canvasBounds.xMax - halfWidth - padding;
+        float minY = canvasBounds.yMin + halfHeight + padding;
+        float maxY = canvasBounds.yMax - halfHeight - padding;
+
+        if (minX > maxX)
+            position.x = canvasBounds.center.x;
+        else
+            position.x = Mathf.Clamp(position.x, minX, maxX);
+
+        if (minY > maxY)
+            position.y = canvasBounds.center.y;
+        else
+            position.y = Mathf.Clamp(position.y, minY, maxY);
+
+        return position;
     }
 
     private Vector2 GetRandomScreenOffset()
@@ -1076,7 +1106,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         {
             holdElapsed += Time.unscaledDeltaTime;
             targetCanvasPosition = RefreshTargetCanvasPosition(target, screenOffset, targetCanvasPosition);
-            rect.anchoredPosition = targetCanvasPosition;
+            rect.anchoredPosition = ClampPopupPosition(rect, targetCanvasPosition);
             yield return null;
         }
 
@@ -1090,7 +1120,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
 
             targetCanvasPosition = RefreshTargetCanvasPosition(target, screenOffset, targetCanvasPosition);
             rect.localScale = Vector3.Lerp(startScaleVector, endScaleVector, eased);
-            rect.anchoredPosition = targetCanvasPosition + GetAnimatedOffset(endOffset, eased, popupType);
+            rect.anchoredPosition = ClampPopupPosition(rect, targetCanvasPosition + GetAnimatedOffset(endOffset, eased, popupType));
             canvasGroup.alpha = Mathf.Lerp(1f, 0f, t);
 
             yield return null;
@@ -1121,7 +1151,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         {
             holdElapsed += Time.unscaledDeltaTime;
             targetCanvasPosition = RefreshTargetCanvasPosition(target, screenOffset, targetCanvasPosition);
-            rect.anchoredPosition = targetCanvasPosition;
+            rect.anchoredPosition = ClampPopupPosition(rect, targetCanvasPosition);
             yield return null;
         }
 
@@ -1135,7 +1165,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
 
             targetCanvasPosition = RefreshTargetCanvasPosition(target, screenOffset, targetCanvasPosition);
             text.fontSize = Mathf.Lerp(GetEffectiveStartFontSize(), GetEffectiveEndFontSize(), eased);
-            rect.anchoredPosition = targetCanvasPosition + GetAnimatedOffset(endOffset, eased, popupType);
+            rect.anchoredPosition = ClampPopupPosition(rect, targetCanvasPosition + GetAnimatedOffset(endOffset, eased, popupType));
             canvasGroup.alpha = Mathf.Lerp(1f, 0f, t);
 
             yield return null;

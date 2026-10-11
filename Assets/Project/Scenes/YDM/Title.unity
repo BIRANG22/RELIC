@@ -4424,9 +4424,9 @@ MonoBehaviour:
   titleBgmRetryFrameCount: 2
   warningUI: {fileID: 0}
   unavailableButtons: []
-  startButtonObject: {fileID: 0}
-  continueButtonObject: {fileID: 0}
-  abandonBattleButtonObject: {fileID: 0}
+  startButtonObject: {fileID: 141494590}
+  continueButtonObject: {fileID: 1796815589}
+  abandonBattleButtonObject: {fileID: 202248581}
   autoFindRunButtons: 1
   startButtonName: StartButton
   continueButtonName: ContinueButton
