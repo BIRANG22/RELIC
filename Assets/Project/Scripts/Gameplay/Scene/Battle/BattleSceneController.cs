@@ -948,6 +948,26 @@ public class BattleSceneController : MonoBehaviour
         // 이 시점 이후 Event/Battle의 확정 결과 checkpoint는 저장 가능해야 한다.
         SaveSystem.Instance?.CompleteCheckpointAutosaveRestore();
         HideMapPanelImmediate();
+
+        // A resumed boss encounter bypasses the normal map-to-room transition.
+        // Start the reveal from the same temporary Y = 1.5 framing as a normal
+        // boss entrance. The intro-completion callback later restores map Y = 0
+        // BEFORE the regular battle character-focus sequence begins.
+        if (string.Equals(currentNode.Type, "Boss", StringComparison.OrdinalIgnoreCase))
+        {
+            ResetCameraForMap();
+            BattleCameraController cameraController = BattleCameraController.Instance;
+            if (cameraController != null)
+                cameraController.ForceReturnPanelDownImmediate();
+            else if (Camera.main != null)
+            {
+                Transform cameraTransform = Camera.main.transform;
+                Vector3 position = cameraTransform.position;
+                position.y = 1.5f;
+                cameraTransform.position = position;
+            }
+        }
+
         HandleSelectedMap(currentNode);
         PlayPendingRoomIntroText();
         PlayEventRoomEntranceAnimationIfNeeded();
@@ -2021,6 +2041,13 @@ public class BattleSceneController : MonoBehaviour
 
     private void HandleBattleRoomIntroCompletedAndLoad()
     {
+        bool finishedBossIntro = pendingBattleRoomUsesBossIntro;
+
+        // Reset the temporary boss-intro framing BEFORE the battle loader
+        // starts any character-focus or default-return camera animations.
+        if (finishedBossIntro && BattleCameraController.Instance != null)
+            BattleCameraController.Instance.ForceReturnSceneStartPositionImmediate();
+
         LoadBattleRoomNow();
         SetBattleRoomIntroPlaying(false);
     }

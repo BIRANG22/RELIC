@@ -99,6 +99,18 @@ public class EventChoiceSlotUI : MonoBehaviour
             buttonAnimation.SetInteractionEnabled(effectiveInteractable);
     }
 
+    // Trigger the same validated Button.onClick path used by a mouse click.
+    public void InvokeShortcut()
+    {
+        EnsureReferences();
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy ||
+            !boundSelectable || boundChoice == null ||
+            button == null || !button.IsActive() || !button.IsInteractable())
+            return;
+
+        button.onClick.Invoke();
+    }
+
     public void Clear()
     {
         EnsureReferences();

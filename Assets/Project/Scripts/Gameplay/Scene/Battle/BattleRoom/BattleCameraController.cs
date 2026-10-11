@@ -648,6 +648,19 @@ public class BattleCameraController : MonoBehaviour
                timelineController.SelectedCharacter != null;
     }
 
+    // Boss intro camera framing is temporary. Resume camera focus calculations
+    // from the map's baseline Y rather than the temporary panel-down Y.
+    public void ForceReturnSceneStartPositionImmediate()
+    {
+        ForceReturnDefaultImmediate();
+
+        // A resumed scene may initialize the camera controller while the camera
+        // is already at the panel-down height. Do not cache that as the baseline.
+        defaultPosition.y = mapPosition.y;
+        if (targetCamera != null)
+            targetCamera.transform.position = defaultPosition;
+    }
+
     public void ForceReturnDefaultImmediate()
     {
         if (targetCamera == null)

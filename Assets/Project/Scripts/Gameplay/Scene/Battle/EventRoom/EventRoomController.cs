@@ -225,6 +225,27 @@ public class EventRoomController : MonoBehaviour
         HideRelicFlyObjects();
     }
 
+    private void Update()
+    {
+        // Choice shortcuts only apply while the regular event choices are available.
+        if (!isDataEventActive || isEventResolved || waitForEventEntranceReveal ||
+            isEventRewardPanelOpen || isSelectingEquippedRelicCost || isSelectingSkillAwaken ||
+            waitingForEvent06ShopClose || pendingEvent06ShopOpen)
+            return;
+
+        int index = Input.GetKeyDown(KeyCode.Alpha1) ? 0 :
+                    Input.GetKeyDown(KeyCode.Alpha2) ? 1 :
+                    Input.GetKeyDown(KeyCode.Alpha3) ? 2 : -1;
+        if (index < 0)
+            return;
+
+        EnsureChoiceSlots();
+        if (choiceSlots == null || index >= choiceSlots.Length)
+            return;
+
+        choiceSlots[index]?.InvokeShortcut();
+    }
+
     public void SetEventId(string eventId)
     {
         pendingEventId = EventIdUtility.Normalize(eventId);

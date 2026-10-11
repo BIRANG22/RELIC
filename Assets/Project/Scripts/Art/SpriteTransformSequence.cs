@@ -96,7 +96,7 @@ public sealed class SpriteTransformSequence : MonoBehaviour
     [SerializeField] private bool enableSceneCamera = true;
     [Tooltip("연출을 중단하거나 완전히 끝냈을 때 최초 카메라 위치/회전/줌으로 복구합니다.")]
     [SerializeField] private bool restoreCameraOnFinish = true;
-    [Min(0f)] [SerializeField] private float cameraRestoreDuration = 0.4f;
+    [Min(0f)][SerializeField] private float cameraRestoreDuration = 0.4f;
     [SerializeField] private AnimationCurve cameraRestoreEasing = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("재생")]
@@ -107,7 +107,7 @@ public sealed class SpriteTransformSequence : MonoBehaviour
     [Tooltip("마지막 단계, 보스 이름 연출 및 카메라 복귀가 모두 끝나면 이 오브젝트를 비활성화합니다. Loop가 켜져 있으면 반복이 끝나기 전까지 비활성화하지 않습니다.")]
     [SerializeField] private bool deactivateOnFinish = true;
     [Tooltip("모든 연출과 카메라 복귀가 끝난 후 오브젝트를 비활성화하기까지 기다리는 시간(초)입니다.")]
-    [Min(0f)] [SerializeField] private float deactivateDelay = 0f;
+    [Min(0f)][SerializeField] private float deactivateDelay = 0f;
 
     [Header("단계별 목표값 (Size로 단계 추가)")]
     [SerializeField] private List<TransformStep> steps = new List<TransformStep>();
@@ -367,7 +367,7 @@ public sealed class SpriteTransformSequence : MonoBehaviour
         rect.sizeDelta = size;
         TextMeshProUGUI result = obj.GetComponent<TextMeshProUGUI>();
         result.alignment = TextAlignmentOptions.Center;
-        result.enableWordWrapping = false;
+        result.textWrappingMode = TextWrappingModes.NoWrap;
         result.overflowMode = TextOverflowModes.Ellipsis;
         result.raycastTarget = false;
         return result;
