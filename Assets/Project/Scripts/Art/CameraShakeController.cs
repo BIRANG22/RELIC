@@ -1,135 +1,105 @@
-using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// í˜„ì¬ ì¹´ë©”ë¼ ì´ë™ì„ ìœ ì§€í•˜ë©´ì„œ í”ë“¤ë¦¼ ì˜¤í”„ì…‹ë§Œ ì ìš©í•©ë‹ˆë‹¤.
+/// BattleCameraControllerì˜ LateUpdate ì´í›„ì— í”ë“¤ë¦¼ì„ ì ìš©í•©ë‹ˆë‹¤.
+/// </summary>
+[DefaultExecutionOrder(1000)]
 public class CameraShakeController : MonoBehaviour
 {
-    [Header("±âº» Èçµé¸² ¼³Á¤")]
-    [Tooltip("Èçµé¸²ÀÌ Áö¼ÓµÇ´Â ½Ã°£")]
-    [Min(0f)]
-    [SerializeField] private float defaultDuration = 0.2f;
+    [Header("ê¸°ë³¸ í”ë“¤ë¦¼ ì„¤ì •")]
+    [Tooltip("í”ë“¤ë¦¼ì´ ì§€ì†ë˜ëŠ” ì‹œê°„(ì´ˆ)")]
+    [Min(0f)] [SerializeField] private float defaultDuration = 0.2f;
 
-    [Tooltip("Ä«¸Ş¶ó°¡ Èçµé¸®´Â À§Ä¡ ¹üÀ§")]
-    [Min(0f)]
-    [SerializeField] private float defaultStrength = 0.15f;
+    [Tooltip("ì¹´ë©”ë¼ í”ë“¤ë¦¼ì˜ ìµœëŒ€ ì´ë™ ê±°ë¦¬")]
+    [Min(0f)] [SerializeField] private float defaultStrength = 0.15f;
 
-    [Tooltip("Èçµé¸²ÀÇ ºü¸£±â")]
-    [Min(0f)]
-    [SerializeField] private float defaultFrequency = 30f;
+    [Tooltip("í”ë“¤ë¦¼ì˜ ë¹ ë¥´ê¸°")]
+    [Min(0f)] [SerializeField] private float defaultFrequency = 30f;
 
-    [Header("Ãà ¼³Á¤")]
+    [Header("ì¶• ì„¤ì •")]
     [SerializeField] private bool shakeX = true;
     [SerializeField] private bool shakeY = true;
     [SerializeField] private bool shakeZ = false;
 
-    [Header("½Ã°£ ¼³Á¤")]
-    [Tooltip("Time ScaleÀÌ 0ÀÌ¾îµµ Èçµé¸²À» ½ÇÇà")]
+    [Header("ì‹œê°„ ì„¤ì •")]
+    [Tooltip("Time Scaleì´ 0ì´ì–´ë„ í”ë“¤ë¦¼ì„ ì§„í–‰í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool useUnscaledTime = false;
 
-    private Coroutine shakeCoroutine;
-    private Vector3 originalLocalPosition;
+    private bool isShaking;
+    private float elapsed;
+    private float duration;
+    private float strength;
+    private float frequency;
+    private float seedX;
+    private float seedY;
+    private float seedZ;
+    private Vector3 appliedLocalOffset;
 
-    private void Awake()
-    {
-        originalLocalPosition = transform.localPosition;
-    }
-
-    /// <summary>
-    /// ÀÎ½ºÆåÅÍ¿¡¼­ ¼³Á¤ÇÑ ±âº»°ªÀ¸·Î Èçµì´Ï´Ù.
-    /// </summary>
     public void Shake()
     {
         Shake(defaultDuration, defaultStrength, defaultFrequency);
     }
 
-    /// <summary>
-    /// Àü´Ş¹ŞÀº ¼³Á¤À¸·Î Èçµì´Ï´Ù.
-    /// </summary>
-    public void Shake(
-        float duration,
-        float strength,
-        float frequency)
+    public void Shake(float requestedDuration, float requestedStrength, float requestedFrequency)
     {
-        StopShake();
+        // í”ë“¤ë¦¼ ì¤‘ì— ìƒˆ ìš”ì²­ì´ ì™€ë„ í˜„ì¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•˜ê±°ë‚˜ ì›ìœ„ì¹˜ë¡œ ê°•ì œ ì´ë™í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        RemoveAppliedOffset();
 
-        originalLocalPosition = transform.localPosition;
-
-        shakeCoroutine = StartCoroutine(
-            ShakeRoutine(
-                Mathf.Max(0f, duration),
-                Mathf.Max(0f, strength),
-                Mathf.Max(0f, frequency)
-            )
-        );
+        duration = Mathf.Max(0f, requestedDuration);
+        strength = Mathf.Max(0f, requestedStrength);
+        frequency = Mathf.Max(0f, requestedFrequency);
+        elapsed = 0f;
+        seedX = Random.Range(0f, 1000f);
+        seedY = Random.Range(0f, 1000f);
+        seedZ = Random.Range(0f, 1000f);
+        isShaking = duration > 0f && strength > 0f;
     }
 
-    private IEnumerator ShakeRoutine(
-        float duration,
-        float strength,
-        float frequency)
+    private void LateUpdate()
     {
-        float elapsedTime = 0f;
-        float randomSeedX = Random.Range(0f, 100f);
-        float randomSeedY = Random.Range(0f, 100f);
-        float randomSeedZ = Random.Range(0f, 100f);
+        // ë‹¤ë¥¸ ì¹´ë©”ë¼ ì‹œìŠ¤í…œì´ ì´ë²ˆ í”„ë ˆì„ì— ì´ë™ì‹œí‚¨ ìœ„ì¹˜ë¥¼ ê·¸ëŒ€ë¡œ ìœ ì§€í•©ë‹ˆë‹¤.
+        // ì „ í”„ë ˆì„ì˜ í”ë“¤ë¦¼ ì„±ë¶„ë§Œ ì œê±°í•˜ê³  ìƒˆë¡œìš´ í”ë“¤ë¦¼ì„ ë”í•©ë‹ˆë‹¤.
+        RemoveAppliedOffset();
+        if (!isShaking)
+            return;
 
-        while (elapsedTime < duration)
+        elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+        float progress = Mathf.Clamp01(elapsed / duration);
+        if (progress >= 1f)
         {
-            elapsedTime += GetDeltaTime();
-
-            float progress = duration > 0f
-                ? Mathf.Clamp01(elapsedTime / duration)
-                : 1f;
-
-            // Èçµé¸²ÀÌ ³¡³¯¼ö·Ï ¼¼±â¸¦ ÁÙÀÓ
-            float currentStrength =
-                strength * (1f - progress);
-
-            float noiseTime = elapsedTime * frequency;
-
-            float offsetX = shakeX
-                ? GetNoise(randomSeedX, noiseTime) * currentStrength
-                : 0f;
-
-            float offsetY = shakeY
-                ? GetNoise(randomSeedY, noiseTime) * currentStrength
-                : 0f;
-
-            float offsetZ = shakeZ
-                ? GetNoise(randomSeedZ, noiseTime) * currentStrength
-                : 0f;
-
-            transform.localPosition =
-                originalLocalPosition +
-                new Vector3(offsetX, offsetY, offsetZ);
-
-            yield return null;
+            isShaking = false;
+            return;
         }
 
-        transform.localPosition = originalLocalPosition;
-        shakeCoroutine = null;
+        float amount = strength * (1f - progress);
+        float time = elapsed * frequency;
+        appliedLocalOffset = new Vector3(
+            shakeX ? Noise(seedX, time) * amount : 0f,
+            shakeY ? Noise(seedY, time) * amount : 0f,
+            shakeZ ? Noise(seedZ, time) * amount : 0f
+        );
+        transform.localPosition += appliedLocalOffset;
     }
 
-    private float GetNoise(float seed, float time)
+    private static float Noise(float seed, float time)
     {
         return Mathf.PerlinNoise(seed, time) * 2f - 1f;
     }
 
-    private float GetDeltaTime()
+    private void RemoveAppliedOffset()
     {
-        return useUnscaledTime
-            ? Time.unscaledDeltaTime
-            : Time.deltaTime;
+        if (appliedLocalOffset == Vector3.zero)
+            return;
+
+        transform.localPosition -= appliedLocalOffset;
+        appliedLocalOffset = Vector3.zero;
     }
 
     public void StopShake()
     {
-        if (shakeCoroutine != null)
-        {
-            StopCoroutine(shakeCoroutine);
-            shakeCoroutine = null;
-        }
-
-        transform.localPosition = originalLocalPosition;
+        isShaking = false;
+        RemoveAppliedOffset();
     }
 
     private void OnDisable()
