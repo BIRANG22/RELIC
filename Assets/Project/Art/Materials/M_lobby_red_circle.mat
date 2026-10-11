@@ -101,7 +101,7 @@ Material:
     - _edgecolor: {r: 0.3882353, g: 0.039215688, b: 0.039215688, a: 0}
     - _edgecolor_1: {r: 0.29411766, g: 0, b: 0, a: 0}
     - _edgecolor_2: {r: 0.18431373, g: 0, b: 0, a: 0}
-    - _noiseflow: {r: 0.01, g: 0.01, b: 0, a: 0}
+    - _noiseflow: {r: -0.01, g: -0.01, b: 0, a: 0}
     - _noiseoffset: {r: 0, g: 0, b: 0, a: 0}
     - _noisetiling: {r: 0.3, g: 0.5, b: 0, a: 0}
   m_BuildTextureStacks: []

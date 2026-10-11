@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,6 +13,10 @@ public class TitleManager : MonoBehaviour
     [Header("Logo")]
     [SerializeField] private GameObject onLogo;
     [SerializeField] private GameObject offLogo;
+
+    [Header("Title Start Animations")]
+    [Tooltip("타이틀 씬 시작 시 Play()를 호출할 애니메이션을 지정합니다. 오브젝트를 활성화하지 않습니다.")]
+    [SerializeField] private AppearSlideAnimation[] titleStartAnimations;
 
     [Header("BGM")]
     [SerializeField] private bool playTitleBgmOnStart = true;
@@ -69,7 +73,19 @@ public class TitleManager : MonoBehaviour
     {
         RefreshLogoDefaultState();
         RefreshRunButtons();
+        PlayTitleStartAnimations();
         StartTitleBgmRetry();
+    }
+
+    private void PlayTitleStartAnimations()
+    {
+        if (titleStartAnimations == null) return;
+
+        foreach (AppearSlideAnimation animation in titleStartAnimations)
+        {
+            if (animation != null && animation.gameObject.activeInHierarchy)
+                animation.Play();
+        }
     }
 
     private IEnumerator RefreshRunButtonsRetryRoutine()
