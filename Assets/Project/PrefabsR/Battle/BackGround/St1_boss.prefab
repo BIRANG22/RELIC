@@ -552,8 +552,8 @@ MonoBehaviour:
   deactivateDelay: 5
   steps:
   - name: start
-    position: {x: 9.72, y: -3.99, z: 7.47}
-    rotation: {x: 0, y: 0, z: 0}
+    position: {x: 9.72, y: -11, z: 7.47}
+    rotation: {x: 180, y: 0, z: 0}
     scale: {x: 1, y: 1, z: 1}
     flipX: 1
     flipY: 1
@@ -631,8 +631,8 @@ MonoBehaviour:
       subtitleFontSize: 22
       waitForCompletion: 0
   - name: go_left
-    position: {x: -11.94, y: -3.99, z: 7.47}
-    rotation: {x: 0, y: 0, z: 0}
+    position: {x: -11.94, y: -11, z: 7.47}
+    rotation: {x: 180, y: 0, z: 0}
     scale: {x: 1, y: 1, z: 1}
     flipX: 1
     flipY: 1
@@ -690,8 +690,8 @@ MonoBehaviour:
       subtitleFontSize: 22
       waitForCompletion: 0
   - name: up
-    position: {x: -8.46, y: -1.31, z: 7.47}
-    rotation: {x: 0, y: 0, z: 0}
+    position: {x: -8.46, y: 2.5, z: 7.47}
+    rotation: {x: 180, y: 0, z: 0}
     scale: {x: 0.5, y: 0.5, z: 0.5}
     flipX: 0
     flipY: 0
@@ -749,8 +749,8 @@ MonoBehaviour:
       subtitleFontSize: 22
       waitForCompletion: 0
   - name: go_light
-    position: {x: 10.85, y: -1.31, z: 7.47}
-    rotation: {x: 0, y: 0, z: 0}
+    position: {x: 10.85, y: 2.5, z: 7.47}
+    rotation: {x: 180, y: 0, z: 0}
     scale: {x: 0.5, y: 0.5, z: 0.5}
     flipX: 0
     flipY: 0
@@ -808,7 +808,7 @@ MonoBehaviour:
       subtitleFontSize: 22
       waitForCompletion: 0
   - name: center
-    position: {x: 2.77, y: 1.33, z: 7.47}
+    position: {x: 2.77, y: 2, z: 7.47}
     rotation: {x: 0, y: 0, z: 0}
     scale: {x: 0.4, y: 0.4, z: 0.4}
     flipX: 0
@@ -867,7 +867,7 @@ MonoBehaviour:
       subtitleFontSize: 22
       waitForCompletion: 0
   - name: down
-    position: {x: 2.77, y: -1.2, z: 7.47}
+    position: {x: 2.77, y: -0.5, z: 7.47}
     rotation: {x: 0, y: 0, z: 0}
     scale: {x: 0.4, y: 0.4, z: 0.4}
     flipX: 1
