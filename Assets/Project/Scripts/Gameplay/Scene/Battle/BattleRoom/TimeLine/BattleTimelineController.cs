@@ -21,11 +21,16 @@ public class BattleTimelineController : MonoBehaviour
     [SerializeField] private BattleTimelineBarUI timelineBarUI2;
     [SerializeField] private ReserveTurnSlotUI[] reserveSlots;
 
+    [Header("Flip Timeline Icon")]
+    [Tooltip("Flip 행동을 타임라인에 표시할 때 사용하는 전용 이미지입니다.")]
+    [SerializeField] private Sprite flipTimelineIcon;
+
     [Header("Reservation Preview")]
     [SerializeField] private PlayerSkillReservationController playerSkillReservationController;
 
     [Header("MoveGhostPreview")]
     [SerializeField] private MoveGhostPreview moveGhostPreview;
+    private readonly HashSet<string> stationaryFlipPreviewCharacters = new HashSet<string>();
 
     [Header("Grid")]
     [SerializeField] private GridManager gridManager;
@@ -216,10 +221,13 @@ public class BattleTimelineController : MonoBehaviour
             timelineGrindVfxLifeTime = 0f;
 
         resolvedStandbyTimelineBarOffsetX = Mathf.Abs(standbyTimelineBarOffsetX);
+        if (Application.isPlaying)
+            BattleTimelinePreviewEntry.FlipTimelineIcon = flipTimelineIcon;
     }
 
     private void Awake()
     {
+        BattleTimelinePreviewEntry.FlipTimelineIcon = flipTimelineIcon;
         InitializeMonsterCommandSlots();
         AutoFindSelectedSlotValueTextIfNeeded();
         AutoFindSelectedSlotEffectIfNeeded();
@@ -897,15 +905,23 @@ public class BattleTimelineController : MonoBehaviour
         }
 
         ReserveTurnSlotUI activeSlot = reserveSlots[activeSlotIndex];
-        PlayerReservedCommand existingMoveCommand = FindMoveCommandInSlot(
-            activeSlot,
-            runtimeData.CharacterId);
 
-        // 현재 슬롯에 이동 예약이 없다면 Flip은 타임라인 행동이 아닙니다.
-        // 실제 캐릭터의 방향만 즉시 변경하고 이동 명령/쉐도우는 생성하지 않습니다.
-        if (existingMoveCommand == null)
-            return TryFlipFacingImmediately(runtimeData);
+        // 마지막 행동이 Flip이면 같은 버튼을 다시 누를 때 예약을 취소합니다.
+        // 후속 행동이 없는 상태에서 Flip 명령을 연속으로 쌓지 않습니다.
+        if (activeSlot != null && activeSlot.Commands != null && activeSlot.Commands.Count > 0)
+        {
+            int lastIndex = activeSlot.Commands.Count - 1;
+            PlayerReservedCommand lastCommand = activeSlot.Commands[lastIndex];
+            if (lastCommand != null && lastCommand.IsFacingFlipCommand &&
+                lastCommand.UserRuntime != null &&
+                lastCommand.UserRuntime.CharacterId == runtimeData.CharacterId)
+            {
+                return RemoveCommandFromNetwork(activeSlotIndex, lastIndex);
+            }
+        }
 
+        // Flip은 이동 예약 여부와 관계없이 독립된 타임라인 행동으로 등록합니다.
+        // 그래야 같은 슬롯에서 Flip 전/후에 등록한 행동이 서로 다른 방향을 유지할 수 있습니다.
         int previewGridIndex = GetPreviewGridIndexAtSlotEnd(runtimeData, activeSlotIndex);
         if (previewGridIndex < 0)
         {
@@ -924,6 +940,7 @@ public class BattleTimelineController : MonoBehaviour
             previewGridIndex,
             new List<int> { previewGridIndex },
             Vector2Int.zero);
+        command.SetFacingFlipCommand();
         command.SetMoveReservationCost(0, 1);
         command.SetVisualMoveResult(
             previewGridIndex,
@@ -942,43 +959,6 @@ public class BattleTimelineController : MonoBehaviour
         return confirmed;
     }
 
-
-    private bool TryFlipFacingImmediately(CharacterRuntimeData runtimeData)
-    {
-        if (runtimeData == null || runtimeData.IsDead)
-            return false;
-
-        BattleCharacter character = FindBattleCharacter(runtimeData.CharacterId);
-        if (character == null)
-        {
-            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.CharacterPositionMissing));
-            return false;
-        }
-
-        BattleUnitFacing facing = character.GetComponent<BattleUnitFacing>();
-        if (facing == null)
-            facing = character.GetComponentInChildren<BattleUnitFacing>(true);
-
-        if (facing == null)
-            return false;
-
-        facing.FlipOnce();
-        runtimeData.Direction = facing.GetBattleDirection();
-
-        selectedCharacter = runtimeData;
-        lastSelectedCharacter = runtimeData;
-        selectedSkill = null;
-        ApplySelectedCharacterScaleFeedback(runtimeData);
-
-        // 실제 방향이 바뀌었으므로 이후 슬롯의 범위/시뮬레이션만 다시 계산합니다.
-        // 플레이어 명령은 추가하지 않으므로 타임라인에는 이동이 등록되지 않습니다.
-        RefreshReservationSimulation();
-        RefreshTimeline();
-        RefreshPlayerHUDs();
-        RefreshMoveGhostPreview();
-
-        return true;
-    }
 
     public void ClearMonsterCommands()
     {
@@ -3557,7 +3537,7 @@ public class BattleTimelineController : MonoBehaviour
     {
         mergeSucceeded = false;
 
-        if (!IsMoveCommand(command) || slot == null || slot.Commands == null)
+        if (!IsMoveCommand(command) || command.IsFacingFlipCommand || slot == null || slot.Commands == null)
             return false;
 
         PlayerReservedCommand existingMoveCommand =
@@ -5003,7 +4983,9 @@ public class BattleTimelineController : MonoBehaviour
 
     private bool IsMoveCommand(PlayerReservedCommand command)
     {
-        return command != null && command.ReservedMoveGridIndex >= 0;
+        return command != null &&
+               command.ReservedMoveGridIndex >= 0 &&
+               !command.IsFacingFlipCommand;
     }
 
     private void RemoveFollowingMoveCommands(
@@ -5310,6 +5292,8 @@ public class BattleTimelineController : MonoBehaviour
 
     private void RefreshMoveGhostPreview()
     {
+        RefreshStationaryFlipBodyFacing();
+
         if (moveGhostPreview == null)
             moveGhostPreview = FindFirstObjectByType<MoveGhostPreview>(FindObjectsInactive.Include);
 
@@ -5334,15 +5318,103 @@ public class BattleTimelineController : MonoBehaviour
 
             Sprite sprite = GetCharacterSprite(command.UserRuntime.CharacterId);
 
+            // 이동 후 예약된 Flip은 현재 위치의 본체가 아닌 이동 Shadow에 반영합니다.
+            // 마지막 이동 이후 Flip이 있을 경우에만 전체 예약 결과 방향을 적용합니다.
+            BattleDirection ghostDirection = command.PreviewMoveDirection;
+            if (HasFlipAfterLastGhostMove(command.UserRuntime.CharacterId, command))
+                ghostDirection = GetPreviewDirection(command.UserRuntime, reserveSlots.Length - 1);
+
             moveGhostPreview.Show(
                 command.UserRuntime.CharacterId,
                 sprite,
                 command.PreviewMoveGridIndex,
-                command.PreviewMoveDirection
+                ghostDirection
             );
         }
 
         moveGhostPreview.ClearExcept(lastMoveCommands.Keys);
+    }
+
+    private bool HasFlipAfterLastGhostMove(string characterId, PlayerReservedCommand lastMove)
+    {
+        if (lastMove == null || reserveSlots == null)
+            return false;
+
+        bool afterLastMove = false;
+        bool hasFlip = false;
+        for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            foreach (PlayerReservedCommand command in slot.Commands)
+            {
+                if (command == null || command.CharacterId != characterId)
+                    continue;
+
+                if (ReferenceEquals(command, lastMove))
+                {
+                    afterLastMove = true;
+                    hasFlip = false;
+                }
+                else if (afterLastMove && command.IsFacingFlipCommand)
+                {
+                    hasFlip = true;
+                }
+            }
+        }
+        return hasFlip;
+    }
+
+    private void RefreshStationaryFlipBodyFacing()
+    {
+        if (reserveSlots == null)
+            return;
+
+        // 예약 중에는 RuntimeData.Direction을 바꾸지 않습니다.
+        // 실행 때 사용할 원래 방향은 유지하며, 시각적 본체만 갱신합니다.
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (BattleCharacter character in characters)
+        {
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            string characterId = character.CharacterId;
+            bool hasFlip = false;
+            bool hasActualMove = false;
+            for (int slotIndex = 0; slotIndex < reserveSlots.Length; slotIndex++)
+            {
+                ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+                if (slot == null || slot.Commands == null)
+                    continue;
+                foreach (PlayerReservedCommand command in slot.Commands)
+                {
+                    if (command == null || command.CharacterId != characterId)
+                        continue;
+                    hasFlip |= command.IsFacingFlipCommand;
+                    hasActualMove |= IsGhostMoveCommandForRuntime(command, characterId);
+                }
+            }
+
+            // 위치 이동 예약이 있는 경우에는 기존 이동 프리뷰가 방향을 담당합니다.
+            BattleUnitFacing facing = character.GetComponent<BattleUnitFacing>();
+            if (facing == null)
+                continue;
+
+            if (hasFlip && !hasActualMove)
+            {
+                facing.FaceRight(GetPreviewDirection(character.RuntimeData, reserveSlots.Length - 1)
+                    == BattleDirection.Right);
+                stationaryFlipPreviewCharacters.Add(characterId);
+            }
+            else if (stationaryFlipPreviewCharacters.Remove(characterId))
+            {
+                // 마지막 Flip 취소 또는 Reset 시 원래 방향으로 복원합니다.
+                facing.FaceRight(character.RuntimeData.Direction == BattleDirection.Right);
+            }
+        }
     }
 
     private Dictionary<string, PlayerReservedCommand> GetLastMoveGhostCommandsByCharacter()
@@ -5378,7 +5450,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private bool IsGhostMoveCommandForRuntime(PlayerReservedCommand command, string characterId)
     {
-        if (command == null || command.UserRuntime == null)
+        if (command == null || command.UserRuntime == null || command.IsFacingFlipCommand)
             return false;
 
         if (command.PreviewMoveGridIndex < 0)

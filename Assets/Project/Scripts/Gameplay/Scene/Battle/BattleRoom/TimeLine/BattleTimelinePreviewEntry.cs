@@ -5,6 +5,7 @@ using UnityEngine;
 public class BattleTimelinePreviewEntry
 {
     private static bool hasWarnedMissingActionTypeIconDatabase;
+    public static Sprite FlipTimelineIcon { get; set; }
 
     public int SlotIndex;
     public int OrderIndex;
@@ -54,6 +55,9 @@ public class BattleTimelinePreviewEntry
         {
             if (IsMonster && MonsterSkillData != null)
                 return GetMonsterSkillIcon(MonsterSkillData);
+
+            if (IsPlayer && PlayerCommand != null && PlayerCommand.IsFacingFlipCommand)
+                return GetFlipIcon();
 
             if (IsPlayer && PlayerSkillData != null)
                 return GetSkillIcon(PlayerSkillData.SkillId);
@@ -445,6 +449,12 @@ public class BattleTimelinePreviewEntry
 
         string key = actionType.ToString();
         return database.TryGetIcon(key, out Sprite icon) ? icon : null;
+    }
+
+    private static Sprite GetFlipIcon()
+    {
+        // BattleTimelineController의 Inspector에서 지정한 Flip 전용 이미지를 사용합니다.
+        return FlipTimelineIcon;
     }
 
     private static Sprite GetSkillIcon(string skillId)
