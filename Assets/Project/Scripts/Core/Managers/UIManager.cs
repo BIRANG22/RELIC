@@ -40,6 +40,9 @@ public class UIManager : Singleton<UIManager>
     [SerializeField] private bool overrideConfirmDialogSorting = true;
     [SerializeField] private int confirmDialogSortingOrderOffset = 20;
 
+    [Header("Title Modal Background")]
+    [SerializeField] private GameObject titleBackPanel;
+
     [Header("Input")]
     [SerializeField] private bool closeOptionPanelWithEscape = true;
     [SerializeField] private bool closeRecordPanelWithEscape = true;
@@ -196,6 +199,56 @@ public class UIManager : Singleton<UIManager>
         confirmDialogInstance.SetActive(false);
     }
 
+    private GameObject ResolveTitleBackPanel()
+    {
+        if (!IsTitleScene())
+            return null;
+
+        if (titleBackPanel != null && titleBackPanel.scene.IsValid() &&
+            titleBackPanel.scene == UnityEngine.SceneManagement.SceneManager.GetActiveScene())
+            return titleBackPanel;
+
+        // UIManager may persist across scenes, so never retain a panel from an old scene.
+        titleBackPanel = null;
+        TitleManager title = FindFirstObjectByType<TitleManager>(FindObjectsInactive.Include);
+        if (title == null)
+            return null;
+
+        foreach (GameObject root in title.gameObject.scene.GetRootGameObjects())
+        {
+            Transform[] children = root.GetComponentsInChildren<Transform>(true);
+            foreach (Transform child in children)
+            {
+                if (child.name == "BackPanel" && child.GetComponent<RectTransform>() != null)
+                {
+                    titleBackPanel = child.gameObject;
+                    return titleBackPanel;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void RefreshTitleBackPanel(bool opening = false)
+    {
+        GameObject background = ResolveTitleBackPanel();
+        if (background == null)
+            return;
+
+        bool visible = opening || IsOptionPanelOpen || IsRecordPanelOpen;
+        background.SetActive(visible);
+        if (visible)
+        {
+            // Keep the background behind both modal prefabs in the same Canvas.
+            if (optionPanelInstance != null && optionPanelInstance.activeInHierarchy &&
+                optionPanelInstance.transform.parent == background.transform.parent)
+                optionPanelInstance.transform.SetAsLastSibling();
+            if (recordPanelInstance != null && recordPanelInstance.activeInHierarchy &&
+                recordPanelInstance.transform.parent == background.transform.parent)
+                recordPanelInstance.transform.SetAsLastSibling();
+        }
+    }
+
     public void ShowOption()
     {
         if (optionPanelInstance == null)
@@ -211,6 +264,7 @@ public class UIManager : Singleton<UIManager>
             }
 
             ApplyOptionPanelScale();
+            RefreshTitleBackPanel(true);
             optionPanelInstance.SetActive(true);
             BringOptionPanelToFront();
             optionPanelTransition.PlayOpen();
@@ -250,6 +304,7 @@ public class UIManager : Singleton<UIManager>
         if (recordPanelUI != null)
             recordPanelUI.SetDebugRevealAll(revealAll);
 
+        RefreshTitleBackPanel(true);
         recordPanelInstance.transform.localScale = Vector3.one;
         recordPanelInstance.SetActive(true);
         BringRecordPanelToFront();
@@ -275,6 +330,7 @@ public class UIManager : Singleton<UIManager>
         if (immediate || !recordPanelInstance.activeInHierarchy)
         {
             recordPanelInstance.SetActive(false);
+            RefreshTitleBackPanel();
             return;
         }
 
@@ -289,6 +345,7 @@ public class UIManager : Singleton<UIManager>
         {
             if (recordPanelInstance != null)
                 recordPanelInstance.SetActive(false);
+            RefreshTitleBackPanel();
         });
     }
 
@@ -605,6 +662,7 @@ public class UIManager : Singleton<UIManager>
         if (immediate || !optionPanelInstance.activeInHierarchy)
         {
             optionPanelInstance.SetActive(false);
+            RefreshTitleBackPanel();
             return;
         }
 
@@ -619,6 +677,7 @@ public class UIManager : Singleton<UIManager>
         {
             if (optionPanelInstance != null)
                 optionPanelInstance.SetActive(false);
+            RefreshTitleBackPanel();
         });
     }
 
