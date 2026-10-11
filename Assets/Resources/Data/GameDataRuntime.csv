@@ -1122,189 +1122,189 @@ GR_nocturn_portal_preview,그림자,1,0,-1,0,1,1,Monster,0,None,그림자가 머
 ,,,,,,,,,
 
 # Effect
-효과ID,이름,효과타입,턴종료제거,툴팁,,사용처
-EffectId,Name,EffectType,EndTurn,ToolTip,,Usage
-E_Max_HP,최대   HP,Neutral,0,생명력 자원,,"Rune: 6개 / Relic_P_01, Relic_P_04, Relic_P_05"
-E_Max_Cost,최대 Cost,Neutral,0,기억사용에 필요한 자원,,"Rune_01, Rune_03, Rune_05, Rune_07, Rune_09 / Relic_P_02, Relic_P_04"
-E_Strike,피해,Neutral,0,일반적인 피해를 준다. 대상의 방어도가 있으면 방어도부터 감소시킨다.,,"SkillMaster: 45개 / MonsterSkill: 18개 / GridEffect: GR_thorn, GR_Residue"
-E_Pierce,관통피해,Neutral,0,방어도를 무시하고 대상의 생명력에 직접 피해를 준다.,,"SkillMaster: 8개 / S_Monster_17, S_Monster_38"
-E_Heal,재생,Beneficial,Decrease,턴 종료 시 수치만큼 생명력을 회복한다. 턴 종료 시 수치가 1씩 감소한다.,,SkillMaster: 6개
-E_Move,이동,Neutral,0,이동 효과입니다.,,SkillMaster: 7개 / MonsterSkill: 13개
-E_Knockback,넉백,Neutral,0,대상을 시전자와 멀어지는 방향으로 밀어낸다.,,"SkillMaster: 7개 / S_Monster_12, S_Monster_33, S_Monster_34"
-E_Grab,그랩,Neutral,0,대상을 시전자와 가까워지는 방향으로 당겨온다.,,SkillMaster: 6개 / S_Monster_19
-E_Crash,충돌,Neutral,0,이동 중 유닛 또는 장애물에 막히면 2의 고정 피해를 받는다.,,코드: 충돌 처리 (BattleActionRunner /   Knockback / Grab)
-E_Boost,증폭,Beneficial,Remove,이번 턴 동안 공격 수치가 수치만큼 증가한다. 턴 종료 시 증폭 수치는 사라진다.,,SkillMaster: 9개
-E_Armor,방어도,Beneficial,Remove,번 턴 동안 수치만큼 피해를 막는다. 턴 종료 시 방어도 수치는 사라진다.,,SkillMaster: 16개 / MonsterSkill: S_Monster_36
-E_Charge,충전,Beneficial,Remove,턴 종료 시 마나를 수치만큼 회복한다.,,SkillMaster: 7개
-E_Focus,집중,Beneficial,Remove,턴 종료 시 카르마를 수치만큼 획득한다.,,SkillMaster: 6개
-E_Swift,신속,Beneficial,Decrease,몬스터보다 먼저 행동을 진행할 수 있다. 턴 종료 시 수치가 1씩 감소한다.,,"S_Passive_04, /  S_Core_51, S_Core_52, S_Core_79, S_Core_80"
-E_Smite,강타,Beneficial,Decrease,첫 공격의 피해가 50% 증가한다. 턴 종료 시 수치가 1씩 감소한다.,,S_Passive_08
-E_Lifesteal,흡혈,Beneficial,Decrease,준 피해의 30%만큼 체력을 회복한다. 턴 종료 시 수치가 1씩 감소한다.,,S_Passive_09
-E_Ward,가호,Beneficial,Decrease,피해를 받을 때 수치만큼 피해를 준다. 턴 종료 시 수치가 1씩 감소한다.,,"S_Core_13,   S_Core_14, S_Core_49, S_Core_50"
-E_Grudge,원한,Beneficial,Maintain,공격 수치가 수치만큼 증가한다. 턴 종료 시 사라지지 않는다.,,S_Monster_07
-E_Barrier,장막,Beneficial,Decrease,받는 피해를 1회 무시한다. 발동 시 사라진다. 턴 종료 시 수치가 1씩 감소한다.,,S_Monster_25
-E_Poison,중독,Harmful,Decrease,턴 종료 시 수치만큼 피해를 받는다. 턴 종료 시 수치가 1씩 감소한다.,,SkillMaster: 8개 / GR_Poisson
-E_Bleed,출혈,Harmful,DecreaseOnTrigger,이동 시 수치만큼 피해를 받는다.이동 시 수치가 1씩 감소한다.,,SkillMaster: 8개 / S_Monster_40
-E_Vulnerable,취약,Harmful,Decrease,받는 피해를 30% 증가시킨다. 턴 종료 시 수치가 1씩 감소한다.,,SkillMaster: 10개
-E_Weaken,약화,Harmful,Decrease,주는 피해를 15% 감소시킨다. 턴 종료 시 수치가 1씩 감소한다.,,SkillMaster: 9개
-E_Corrosion,침식,Harmful,Maintain,받는 모든 피해가 수치만큼 증가한다. 턴 종료 시 사라지지 않는다.,,S_Monster_10
-E_Split,분열,Neutral,Maintain,피해횟수에 따라 수치가 1 감소한다. 0이 되었을 때 살아 있다면 블롭 2마리로 분열한다.,,코드: Mon_01 머크 기본 분열 상태
-E_Explode,폭발,Neutral,Decrease,턴 종료 시 수치가 1 감소합니다. 수치가 0이 되면 대폭발을 사용한다.,,코드: Mon_06 신더 기본 폭발 상태
-E_Blindside,기습,Beneficial,Decrease,뒤를 공격할 때 피해가 50% 증가한다.,,코드: Mon_10 녹턴 기본 기습 상태
-E_Spider_Web,뒤얽힘,Neutral,Maintain,이동에 사용하는 마나 소모량이 2배가 된다.,,GridEffect: GR_spider_web
-E_Spawn_Spider_Egg,거미알 생성,Neutral,None,선택한 그리드에 거미알을 생성한다.,,S_Monster_23
-E_Spawn_Spider_Web,거미줄 생성,Neutral,None,선택한 그리드에 거미줄을 생성한다.,,S_Monster_24
-E_Spawn_Soldier,사령술,Neutral,None,지정된 위치에 죽었던 병사를 다시 생성한다.,,S_Monster_41
-E_Cost_Recovery_Delta,코스트 회복량 변화,Neutral,0,마나 재생량을 수치만큼 변화시킨다.,,"Rune_02, Rune_05, Rune_08, Rune_09 / Relic_P_03, Relic_P_05, Relic_P_17"
-E_UniqueResource_Overflow_To_Cost,고유자원 초과 코스트 회복,Neutral,0,카르마가 최대일 때 카르마를 회복하면 수치 배율만큼 마나를 회복한다.,,Relic_P_57
-E_UniqueResource_Max_Skill_Cost_Delta,고유자원 최대 스킬 코스트 변화,Neutral,0,카르마가 최대일 때 모든 스킬 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_58
-E_First_Move_Cost_Delta,첫 이동 코스트 변화,Neutral,0,첫 이동의 마나 사용량을 수치만큼 변화시킨다.,,Rune_10
-E_Attack_Cost_Delta,공격 스킬 코스트 변화,Neutral,0,공격타입 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_06
-E_Debuff_Cost_Delta,디버프 스킬 코스트 변화,Neutral,0,디버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_08
-E_Move_Cost_Zero,이동 코스트 제거,Neutral,0,이동이 코스트를 소모하지 않는다.,,Relic_P_18
-E_Blocked_Slot_Mask,등록 금지 슬롯 마스크,Neutral,0,마스크에 포함된 슬롯에 기억을 등록할 수 없다.,,Relic_P_17
-E_Max_Registrable_Slot_Count,등록 가능 슬롯 수 제한,Neutral,0,기억을 등록할 수 있는 슬롯 수를 수치로 제한한다.,,Relic_P_18
-E_No_Move_In_Slot_Buff_Cost_Delta,이동 없음 슬롯 버프 코스트 변화,Neutral,0,해당 슬롯에서 이동하지 않았다면 버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_31
-E_After_Move_Debuff_Cost_Delta,이동 후 디버프 코스트 변화,Neutral,0,해당 슬롯에서 이동한 뒤 등록하는 디버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_32
-E_Slot1_First_Skill_Cost_Delta,1번 슬롯 첫 스킬 코스트 변화,Neutral,0,1번 슬롯에 등록하는 첫 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_09
-E_Slot5_Skill_Cost_Delta,5번 슬롯 스킬 코스트 변화,Neutral,0,5번 슬롯에 등록하는 모든 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_13
-E_Low_HP_Skill_Cost_Delta,낮은 체력 스킬 코스트 변화,Neutral,0,현재 체력이 30% 이하라면 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_44
-E_High_HP_Cost_Recovery_Delta,높은 체력 코스트 회복 변화,Neutral,0,현재 체력이 90% 이상이라면 마나 재생량을 수치만큼 변화시킨다.,,Relic_P_47
-E_High_HP_Buff_Cost_Delta,높은 체력 버프 코스트 변화,Neutral,0,현재 체력이 90% 이상이라면 버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,,Relic_P_48
-E_Attack_Value_Delta,공격 스킬 피해량 변화,Neutral,0,공격타입 기억의 피해량을 수치만큼 변화시킨다.,,"Rune_11 / Relic_P_06, Relic_P_07"
-E_Attack_Count_Delta,공격 스킬 횟수 변화,Neutral,0,공격타입 기억의 피해 횟수를 수치만큼 변화시킨다.,,Relic_P_07
-E_Debuff_Value_Delta,디버프 스킬 수치 변화,Neutral,0,디버프타입 기억의 효과 수치를 수치만큼 변화시킨다.,,Relic_P_08
-E_Heal_Value_Delta,기억 치유량 변화,Neutral,0,기억으로 회복하는 생명력을 수치만큼 변화시킨다.,,Rune_12
-E_Skill_Armor_Value_Delta,기억 방어도 변화,Neutral,0,기억으로 부여하는 방어도를 수치만큼 변화시킨다.,,Rune_13
-E_Poison_Value_Delta,기억 중독 부여량 변화,Neutral,0,기억으로 부여하는 중독 수치를 수치만큼 변화시킨다.,,Rune_14
-E_Bleed_Value_Delta,기억 출혈 부여량 변화,Neutral,0,기억으로 부여하는 출혈 수치를 수치만큼 변화시킨다.,,Rune_15
-E_Armor_Gain_Percent,방어도 획득량 퍼센트 변화,Neutral,0,방어도 획득량을 퍼센트로 변화시킨다.,,Relic_P_40
-E_After_Move_Debuff_Value_Delta,이동 후 디버프 수치 변화,Neutral,0,해당 슬롯에서 이동한 뒤 등록하는 디버프타입 기억의 효과수치를 수치만큼 변화시킨다.,,Relic_P_33
-E_After_Move_Attack_Value_Per_Cost,이동 후 공격 소모 코스트 비례 피해,Neutral,0,해당 슬롯에서 이동에 소모한 마나만큼 공격 피해량을 증가시킨다.,,Relic_P_34
-E_Slot1_Attack_Value_Delta,1번 슬롯 공격 수치 변화,Neutral,0,1번 슬롯 공격타입 기억의 피해량을 수치만큼 변화시킨다.,,Relic_P_10
-E_Slot1_Buff_Value_Delta,1번 슬롯 버프 수치 변화,Neutral,0,1번 슬롯 버프타입 기억의 효과수치를 수치만큼 변화시킨다.,,Relic_P_12
-E_Slot5_Attack_Value_Delta,5번 슬롯 공격 수치 변화,Neutral,0,5번 슬롯 공격타입 기억의 피해량을 수치만큼 변화시킨다.,,Relic_P_14
-E_Low_HP_Attack_Value_Delta,낮은 체력 공격 피해 변화,Neutral,0,현재 체력이 30% 이하라면 공격타입 기억의 피해량을 수치만큼 변화시킨다.,,Relic_P_45
-E_Self_Buff_Blocked_Buff_Value_Delta,자신 버프 차단 버프 수치 변화,Neutral,0,자신에게 버프를 부여할 수 없는 대신 버프타입 기억의 효과수치를 수치만큼 증가시킨다.,,Relic_P_54
-E_Full_HP_Buff_Value_Delta,최대 체력 버프 수치 변화,Neutral,0,체력이 최대라면 버프타입 기억의 효과수치를 수치만큼 변화시킨다.,,Relic_P_55
-E_Unique_Skill_Value_Percent,발현 기억 수치 퍼센트 변화,Neutral,0,발현 기억의 효과 수치를 퍼센트로 변화시킨다.,,Relic_P_60
-E_Unique_Skill_Count_Delta,발현 기억 횟수 변화,Neutral,0,발현 기억의 횟수를 수치만큼 변화시킨다.,,Relic_P_61
-E_Slot5_Attack_Pierce,5번 슬롯 공격 관통 변경,Neutral,0,5번 슬롯 공격타입 기억의의 피해를 관통 피해로 변경한다.,,Relic_P_16
-E_Slot1_Attack_Kill_Focus,1번 슬롯 공격 처치 집중,Neutral,0,1번 슬롯 공격타입 기억으로 적 처치 시 집중을 수치만큼 얻는다.,,Relic_P_11
-E_Slot5_Attack_Kill_Cost_Refund,5번 슬롯 공격 처치 코스트 반환,Neutral,0,5번 슬롯 공격타입 기억으로 적 처치 시 해당 스킬 사용 마나를 돌려받는다.,,Relic_P_15
-E_Unique_Skill_Kill_Focus,발현 기억 처치 집중,Neutral,0,발현 기억으로 적 처치 시 집중을 수치만큼 얻는다.,,Relic_P_59
-E_Damage_Poisoned_Fixed,중독 대상 추가 고정피해,Neutral,0,중독이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.,,Relic_P_49
-E_Damage_Bleeding_Fixed,출혈 대상 추가 고정피해,Neutral,0,출혈이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.,,Relic_P_50
-E_Damage_Vulnerable_Armor,취약 대상 피해 방어도 획득,Neutral,0,취약이 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.,,Relic_P_51
-E_Damage_Weakened_Armor,약화 대상 피해 방어도 획득,Neutral,0,약화가 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.,,Relic_P_52
-E_Damage_Non_Poisoned_Apply_Poison,비중독 대상 피해 중독 부여,Neutral,0,중독이 부여되지 않은 적에게 피해를 주면 중독을 수치만큼 부여한다.,,Relic_P_53
-E_Ally_Buff_Charge,아군 버프 충전 획득,Neutral,0,자신을 제외한 아군에게 버프를 부여하면 충전을 수치만큼 얻는다.,,Relic_P_56
-E_Low_HP_Damage_Reduction_Percent,낮은 체력 피해 감소,Neutral,0,현재 체력이 30% 이하라면 받는 피해를 퍼센트로 감소시킨다.,,Relic_P_46
-E_Forced_Move_Immune,강제이동 면역,Neutral,0,넉백과 그랩으로 이동하지 않는다.,,Relic_P_35
-E_Crash_Damage_Immune,충돌 피해 면역,Neutral,0,충돌로 인한 피해를 받지 않는다.,,Relic_P_36
-E_Grid_Effect_Immune,그리드 효과 면역,Neutral,0,그리드 효과를 받지 않는다.,,Relic_P_37
-E_Overheal_To_Armor,최대 체력 회복 방어도 전환,Neutral,0,최대 체력에서 회복되면 회복량에 비례해 방어도를 얻는다.,,Relic_P_38
-E_Healing_Blocked,회복 차단,Neutral,0,체력을 회복할 수 없다.,,Relic_P_40
-E_No_Damage_Previous_Turn_Smite,피해 없음 다음 턴 강타,Neutral,0,이전 턴 동안 피해를 받지 않았다면 턴 시작 시 강타를 수치만큼 얻는다.,,Relic_P_39
-E_Once_Battle_End_Turn_Zero_Cost_Charge,턴 종료 마나 0 회복,Neutral,0,턴 종료 시 남은 마나가 0이면 마나를 수치만큼 회복한다.,,Relic_P_62
-E_Once_Battle_Attack_Miss_Charge,공격 실패 마나 회복,Neutral,0,공격이 적중하지 않았을 때마다 마나를 수치만큼 회복한다.,,Relic_P_63
-E_Once_Battle_Full_HP_Target_Damage_Percent,최대 생명력 대상 피해 배율,Neutral,0,생명력이 최대인 적에게 피해를 줄 때 피해량을 수치 배로 적용한다.,,Relic_P_64
-E_Turn_Start_Cost_Recovery,지정 턴 마나 회복,Neutral,0,지정 턴 시작 시 마나를 수치만큼 회복한다.,,Relic_P_28
-E_Turn_Start_Unique_Resource_Recovery,지정 턴 카르마 회복,Neutral,0,지정 턴 시작 시 카르마를 수치만큼 회복한다. 최대치를 초과하지 않는다.,,Relic_P_28
-E_Turn_Start_Armor,지정 턴 방어도,Neutral,0,지정 턴 시작 시 방어도를 수치만큼 얻는다.,,Relic_P_27
-E_Turn_Start_Armor_Per_Used_Slot,등록 슬롯 비례 방어도,Neutral,0,등록된 슬롯 수에 비례해 방어도를 얻는다.,,Relic_P_19
-E_Turn_Start_Armor_Per_Empty_Slot,빈 슬롯 비례 방어도,Neutral,0,비어 있는 슬롯 수에 비례해 방어도를 얻는다.,,Relic_P_20
-E_Turn_Start_Swift,지정 턴 신속,Neutral,0,지정 턴 시작 시 신속을 수치만큼 얻는다.,,Rune_16 / Relic_P_29
-E_Turn_Start_Boost,지정 턴 증폭,Neutral,0,지정 턴 시작 시 증폭을 수치만큼 얻는다.,,Rune_18 / Relic_P_29
-E_Turn_Start_Smite,지정 턴 강타,Neutral,0,지정 턴 시작 시 강타를 수치만큼 얻는다.,,Rune_17 / Relic_P_30
-E_Turn_Start_Lifesteal,지정 턴 흡혈,Neutral,0,지정 턴 시작 시 흡혈을 수치만큼 얻는다.,,Relic_P_30
-E_Turn_Start_Smite_If_Slots_Empty_Mask,빈 슬롯 조건 강타,Neutral,0,마스크에 포함된 슬롯이 모두 비어 있으면 강타를 수치만큼 얻는다.,,Relic_P_21
-E_Turn_Start_Boost_If_Slots_Empty_Mask,빈 슬롯 조건 증폭,Neutral,0,마스크에 포함된 슬롯이 모두 비어 있으면 증폭을 수치만큼 얻는다.,,Relic_P_22
-E_Turn_Start_Boost_If_One_Attack_Command,공격 하나 조건 증폭,Neutral,0,등록한 공격타입 기억이 하나뿐이면 증폭을 수치만큼 얻는다.,,Relic_P_23
-E_Turn_Start_Boost_If_Attack_Command_Count_At_Least,공격 수 조건 증폭,Neutral,0,등록한 공격타입 기억의 수가 기준 이상이면 증폭을 수치만큼 얻는다.,,Relic_P_24
-E_Turn_Start_All_Enemy_Vulnerable,지정 턴 전체 적 취약,Neutral,0,지정 턴 시작 시 모든 적에게 취약을 수치만큼 부여한다.,,Relic_P_25
-E_Turn_Start_All_Enemy_Weaken,지정 턴 전체 적 약화,Neutral,0,지정 턴 시작 시 모든 적에게 약화를 수치만큼 부여한다.,,Relic_P_25
-E_Turn_Start_All_Enemy_Poison,지정 턴 전체 적 중독,Neutral,0,지정 턴 시작 시 모든 적에게 중독을 수치만큼 부여한다.,,Relic_P_26
-E_Turn_Start_All_Enemy_Bleed,지정 턴 전체 적 출혈,Neutral,0,지정 턴 시작 시 모든 적에게 출혈을 수치만큼 부여한다.,,Relic_P_26
-E_Collision_Target_Damage_Delta,충돌 상대 피해 변화,Neutral,0,자신과 충돌한 상대가 받는 피해를 수치만큼 변화시킨다.,,Relic_P_41
-E_Collision_Charge,충돌 충전 획득,Neutral,0,자신과 충돌이 발생하면 충전을 수치만큼 얻는다.,,Relic_P_42
-E_Collision_Kill_Focus,충돌 처치 집중,Neutral,0,자신과 충돌한 상대가 사망하면 집중을 수치만큼 얻는다.,,Relic_P_43
-E_Rest_Heal_Percent_Bonus,휴식 회복량 증가,Neutral,0,휴식으로 회복하는 회복량을 퍼센트로 증가시킨다.,,Relic_P_65
-E_Shop_Price_Discount_Percent,상점 가격 할인,Neutral,0,상점 판매 가격을 퍼센트로 감소시킨다.,,Relic_P_66
-E_Battle_Reward_Currency_Percent,전투 보상 재화 증가,Neutral,0,전투 보상 재화 획득량을 퍼센트로 증가시킨다.,,Rune_19 / Relic_P_67
-E_Battle_End_Heal,전투 종료 회복,Neutral,0,전투 종료 후 체력을 수치만큼 회복한다.,,"Rune_04, Rune_20 / Relic_P_68"
-E_Exploration_Start_Unique_Resource,탐사 시작 카르마 회복,Neutral,0,탐사 시작 시 1회 카르마를 수치만큼 회복한다.,,"Rune_51, Rune_56, Rune_61, Rune_66, Rune_71"
-E_Unique_Resource_Max_Reached_Boost,카르마 최대 도달 증폭,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 증폭을 수치만큼 얻는다.,,Rune_52
-E_Unique_Resource_Max_Reached_Smite,카르마 최대 도달 강타,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 강타를 수치만큼 얻는다.,,Rune_57
-E_Unique_Resource_Max_Reached_Cost_Recovery,카르마 최대 도달 마나 회복,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 마나를 수치만큼 회복한다.,,Rune_62
-E_Unique_Resource_Max_Reached_Armor,카르마 최대 도달 방어도,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 방어도를 수치만큼 얻는다.,,Rune_72
-E_Unique_Resource_Max_Reached_Self_Lowest_Ally_Armor,카르마 최대 도달 아군 방어도,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 자신과 생명력 비율이 가장 낮은 다른 아군에게 방어도를 수치만큼 부여한다.,,Rune_67
-E_Rune_Target_Damage_Value_Delta,룬 대상 기억 피해 변화,Neutral,0,룬의 대상 기억이 주는 피해를 수치만큼 변화시킨다.,,Rune: 9개
-E_Rune_Target_Attack_Count_Delta,룬 대상 기억 공격 횟수 변화,Neutral,0,룬의 대상 기억 공격 횟수를 수치만큼 변화시킨다.,,Rune_58
-E_Rune_Target_Skill_Cost_Delta,룬 대상 기억 마나 소모 변화,Neutral,0,룬의 대상 기억 마나 소모량을 수치만큼 변화시킨다.,,Rune_70
-E_Rune_Target_Armor_Multiplier,룬 대상 기억 방어도 배율,Neutral,0,룬의 대상 기억이 부여하는 방어도를 수치 배율로 적용한다.,,Rune_53
-E_Rune_Target_Boost_Value_Delta,룬 대상 기억 증폭 변화,Neutral,0,룬의 대상 기억이 부여하는 증폭을 수치만큼 변화시킨다.,,Rune_64
-E_Rune_Target_Heal_Value_Delta,룬 대상 기억 치유 변화,Neutral,0,룬의 대상 기억이 회복하는 생명력을 수치만큼 변화시킨다.,,Rune_68
-E_Rune_Target_Knockback_Value_Delta,룬 대상 기억 넉백 변화,Neutral,0,룬의 대상 기억이 부여하는 넉백 거리를 수치만큼 변화시킨다.,,Rune_54
-E_Rune_Target_Range_Expand,룬 대상 기억 범위 확장,Neutral,0,룬의 대상 기억 범위를 한 단계 확장한다.,,Rune_65
-AR_DamageBoostThisTurn,힘,Beneficial,Decrease,이번 턴 동안 주는 피해가 100% 증가한다.,,Compound_01
-AR_DamageReductionThisTurn,경화,Beneficial,Decrease,이번 턴 동안 받는 피해가 50% 감소한다.,,Compound_02
-AR_RecoverUniqueResourceToMax,응축된 카르마,Neutral,0,카르마를 3 회복한다.,,Compound_03
-AR_RecoverCostToMax,마력 플라스크,Neutral,0,마나를 10 회복한다.,,Compound_04
-AR_GrantSwift,각성,Neutral,0,신속을 2 부여한다.,,Compound_05
-AR_CleanseDebuffs,맑은 물,Neutral,0,모든 디버프를 제거한다.,,Compound_06
-AR_MoveToGrid,위치 이동,Neutral,0,선택한 빈 그리드로 이동한다.,,Compound_07
-AR_SwapAlly,위치 변경,Neutral,0,선택한 그리드의 아군과 위치를 교환한다.,,Compound_08
-AR_SpawnPoisonGridEffect,독 장판 생성,Neutral,0,선택한 그리드에 독 장판을 생성한다.,,Compound_09
-AR_SpawnThornGridEffect,가시 생성,Neutral,0,선택한 그리드에 가시를 생성한다.,,Compound_10
-E_Fatigue,쇠약,Harmful,Decrease,수치 1마다 공격 수치 -1,,Compound_11
-AR_SpawnObstacleGridEffect,잔해 생성,Neutral,0,선택한 그리드에 잔해를 생성한다.,,Compound_12
-AR_RemoveGridEffect,장애물 제거,Neutral,0,선택한 그리드의 장애물을 제거한다.,,Compound_13
-AR_SpawnDummyGridEffect,호문쿨루스 루어,Neutral,0,선택한 빈 그리드에 루어를 생성한다.,,Compound_14
-AR_SpawnExplosiveDollGridEffect,호문쿨루스 브룸,Neutral,0,선택한 빈 그리드에 브룸을 생성한다.,,Compound_15
-E_MissingHPStrike,잃은 체력 비례 피해,Neutral,0,잃은 체력의 ValueRate%만큼 피해 계산
-E_Grit,투지,Beneficial,Decrease,공격 수치 +30%
-E_Bond,유대,Beneficial,Decrease,피해를 받을 때 연결된 아군과 피해 분담
-E_Mana,마나,Neutral,0,마나를 즉시 수치만큼 획득
-E_Karma,카르마,Neutral,0,카르마를 즉시 수치만큼 획득
-E_Cure,치유,Neutral,0,생명력을 수치만큼 즉시 회복한다.
-E_PoisonTrigger,중독 즉시 발동,Neutral,0,중독을 ValueRate 부여한 뒤 중독 효과를 즉시 1회 발동
-E_DebuffIncrease,디버프 수치 증가,Neutral,0,대상이 현재 보유한 모든 Harmful 디버프 수치를 ValueRate만큼 증가
-E_DebuffDouble,디버프 증폭,Neutral,0,대상이 보유한 디버프 중 현재 수치가 가장 높은 1종의 수치를 2배
-E_RemoveArmor,방어도 제거,Neutral,0,현재 방어도와 동일한 양의 방어도 피해를 주어 방어도를 0으로 만듦
-E_ArmorStrike,방어도 비례 피해,Neutral,0,시전자의 현재 방어도에 수치계수를 곱한 피해를 준다.,,SkillMaster: S_Core_15~16
-E_MissSelfDamage,빗나감 자해,Neutral,0,유효한 적을 맞히지 못하면 자신에게 수치만큼 피해를 준다.,,SkillMaster: S_Core_17~18
-E_ValueUpOnKill,처치 시 영구 피해 증가,Neutral,0,이 스킬로 처치한 적 하나당 다음 사용부터 피해 수치가 증가한다.,,SkillMaster: S_Core_19~20
-E_ValueUpOnHit,명중 시 전투 피해 증가,Neutral,0,성공한 타격마다 이 전투 동안 다음 사용부터 피해 수치가 증가한다.,,SkillMaster: S_Core_39~40
-E_DamageUpIfBleeding,출혈 대상 피해 증가,Neutral,0,출혈이 있는 대상에게 주는 피해가 50% 증가한다.,,SkillMaster: S_Core_29~30
-E_Rush,돌진,Neutral,0,지정 칸만큼 전진하며 첫 충돌 대상 앞에서 멈춘다.,,SkillMaster: S_Core_15~16
-E_Bondage,속박,Harmful,DecreaseOnTrigger,다음 이동 시도 1회를 막고 수치가 1 감소한다.,,"SkillMaster: S_Core_53~54, S_Core_65~66"
-E_PoisonByTargetPoison,중독 비례 중독,Harmful,0,대상의 중독 수치를 수치계수로 나눈 몫만큼 중독을 추가한다.,,SkillMaster: S_Core_55~56
-E_TriggerPoison,중독 즉시 발동,Neutral,0,현재 중독 수치만큼 즉시 피해를 주고 중독 수치를 1 감소시킨다.,,SkillMaster: S_Core_57~58
-E_RestoreManaPerHitTarget,타격당 마나 회복,Neutral,0,성공한 총 타격 수에 비례해 마나를 회복한다.,,SkillMaster: S_Core_59~60
-E_RandomStrike,무작위 연속 타격,Neutral,0,범위 내 살아 있는 적을 매 타격마다 다시 추첨해 피해를 준다.,,SkillMaster: S_Core_73~74
-E_StrikeByVulnerable,취약 비례 피해,Neutral,0,기본 피해에 대상 취약 수치와 횟수계수의 곱을 더한다.,,SkillMaster: S_Core_75~76
-E_StrikeCountByBuff,버프 종류 비례 타격,Neutral,0,시전자의 서로 다른 이로운 효과 종류 수만큼 타격 횟수가 증가한다.,,확장 효과
-E_StrikeCountByDebuff,디버프 종류 비례 타격,Neutral,0,대상의 서로 다른 해로운 효과 종류 수만큼 타격 횟수가 증가한다.,,SkillMaster: S_Core_31~32
-E_StrikeByTargetPoison,중독 비례 피해,Neutral,0,대상이 보유한 중독 수치만큼 피해를 준다.,,SkillMaster: S_Core_53~54
-E_Rune_Turn1_Ward,1턴 시작 시 장막을 수치 획득한다.,Neutral,0,1턴 시작 시 장막을 {ValueRate1} 획득한다.,,Rune_51
-E_Rune_Armor10_Smite,턴 시작 시 방어도가 수치 이상이라면 강타 1을 획득한다.,Neutral,0,턴 시작 시 방어도가 {ValueRate1} 이상이라면 강타 1을 획득한다.,,Rune_53
-E_Rune_Turn_Start_Lose_HP_Boost,매 턴 시작 시 생명력 3을 잃고 증폭 수치을 획득한다.,Neutral,0,매 턴 시작 시 생명력 3을 잃고 증폭 {ValueRate1}을 획득한다.,,Rune_54
-E_Rune_Low_HP_Damage_Percent,현재 생명력이 50% 이하라면 주는 피해가 수치% 증가한다.,Neutral,0,현재 생명력이 50% 이하라면 주는 피해가 {ValueRate1}% 증가한다.,,Rune_55
-E_Rune_First_Registered_Skill_Attack_Count,전투에서 처음 등록한 공격 기억의 공격 횟수가 수치회 증가한다.,Neutral,0,전투에서 처음 등록한 공격 기억의 공격 횟수가 {ValueRate1}회 증가한다.,,Rune_56
-E_Rune_Consecutive_Attack_Final_Pierce,연속 등록한 공격 수만큼 마지막 공격 뒤에 관통 피해를 준다.,Neutral,0,연속 등록한 공격 수만큼 마지막 공격 뒤에 관통 피해를 준다.,,Rune_57
-E_Rune_Multi_Hit_Damage_Delta,공격 횟수가 횟수회 이상인 기억의 피해가 수치 증가한다.,Neutral,0,공격 횟수가 {CountRate1}회 이상인 기억의 피해가 {ValueRate1} 증가한다.,,Rune_58
-E_Rune_Pierce_Hit_Bleed,관통 피해 적중 시 대상에게 출혈을 수치 부여한다.,Neutral,0,관통 피해 적중 시 대상에게 출혈을 {ValueRate1} 부여한다.,,Rune_59
-E_Rune_Single_Target_Damage_Delta,공격 대상이 적 1명뿐이라면 피해가 수치 증가한다.,Neutral,0,공격 대상이 적 1명뿐이라면 피해가 {ValueRate1} 증가한다.,,Rune_60
-E_Rune_Status_Apply_Armor,버프 또는 디버프 부여 시 실제 부여한 수치만큼 방어도를 획득한다.,Neutral,0,버프 또는 디버프 부여 시 실제 부여한 수치만큼 방어도를 획득한다.,,Rune_62
-E_Rune_Adjacent_Ally_Buff_Delta,자신과 인접한 아군에게 부여하는 버프 수치가 수치 증가한다.,Neutral,0,자신과 인접한 아군에게 부여하는 버프 수치가 {ValueRate1} 증가한다.,,Rune_63
-E_Rune_Debuff_Apply_Poison,적에게 디버프 부여 시 추가로 중독을 수치 부여한다.,Neutral,0,적에게 디버프 부여 시 추가로 중독을 {ValueRate1} 부여한다.,,Rune_64
-E_Rune_Zero_Mana_Next_First_Skill_Free,턴 종료 시 마나가 0이면 다음 턴 첫 등록 기억의 마나 소모가 0이 된다.,Neutral,0,턴 종료 시 마나가 0이면 다음 턴 첫 등록 기억의 마나 소모가 0이 된다.,,Rune_65
-E_Rune_Turn_Start_Adjacent_Ally_Heal,매 턴 시작 시 인접한 아군에게 재생을 수치 부여한다.,Neutral,0,매 턴 시작 시 인접한 아군에게 재생을 {ValueRate1} 부여한다.,,Rune_66
-E_Rune_Kill_Unique_Resource,처치한 적 1명당 카르마를 수치 획득한다.,Neutral,0,처치한 적 1명당 카르마를 {ValueRate1} 획득한다.,,Rune_67
-E_Rune_High_HP_Heal_Remove_First_Debuff,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 수치 감소한다.,Neutral,0,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 {ValueRate1} 감소한다.,,Rune_68
-E_Rune_Vulnerable_Bonus_Percent,자신이 공격할 때 취약의 피해 증가율이 수치%로 증가한다.,Neutral,0,자신이 공격할 때 취약의 피해 증가율이 {ValueRate1}%로 증가한다.,,Rune_69
-E_Rune_Max_Unique_Resource_All_Enemy_Vulnerable,카르마가 최대치에 도달하면 모든 적에게 취약을 수치 부여한다.,Neutral,0,카르마가 최대치에 도달하면 모든 적에게 취약을 {ValueRate1} 부여한다.,,Rune_70
+효과ID,이름,효과타입,턴종료제거,툴팁,표시유무,사용처
+EffectId,Name,EffectType,EndTurn,ToolTip,Mark,Usage
+E_Max_HP,최대   HP,Neutral,0,생명력 자원,0,"Rune: 6개 / Relic_P_01, Relic_P_04, Relic_P_05"
+E_Max_Cost,최대 Cost,Neutral,0,기억사용에 필요한 자원,0,"Rune_01, Rune_03, Rune_05, Rune_07, Rune_09 / Relic_P_02, Relic_P_04"
+E_Strike,피해,Neutral,0,일반적인 피해를 준다. 대상의 방어도가 있으면 방어도부터 감소시킨다.,1,"SkillMaster: 45개 / MonsterSkill: 18개 / GridEffect: GR_thorn, GR_Residue"
+E_Pierce,관통피해,Neutral,0,방어도를 무시하고 대상의 생명력에 직접 피해를 준다.,1,"SkillMaster: 8개 / S_Monster_17, S_Monster_38"
+E_Heal,재생,Beneficial,Decrease,턴 종료 시 수치만큼 생명력을 회복한다. 턴 종료 시 수치가 1씩 감소한다.,1,SkillMaster: 6개
+E_Move,이동,Neutral,0,이동 효과입니다.,0,SkillMaster: 7개 / MonsterSkill: 13개
+E_Knockback,넉백,Neutral,0,대상을 시전자와 멀어지는 방향으로 밀어낸다.,1,"SkillMaster: 7개 / S_Monster_12, S_Monster_33, S_Monster_34"
+E_Grab,그랩,Neutral,0,대상을 시전자와 가까워지는 방향으로 당겨온다.,1,SkillMaster: 6개 / S_Monster_19
+E_Crash,충돌,Neutral,0,이동 중 유닛 또는 장애물에 막히면 2의 고정 피해를 받는다.,1,코드: 충돌 처리 (BattleActionRunner /   Knockback / Grab)
+E_Boost,증폭,Beneficial,Remove,이번 턴 동안 공격 수치가 수치만큼 증가한다. 턴 종료 시 증폭 수치는 사라진다.,1,SkillMaster: 9개
+E_Armor,방어도,Beneficial,Remove,번 턴 동안 수치만큼 피해를 막는다. 턴 종료 시 방어도 수치는 사라진다.,1,SkillMaster: 16개 / MonsterSkill: S_Monster_36
+E_Charge,충전,Beneficial,Remove,턴 종료 시 마나를 수치만큼 회복한다.,1,SkillMaster: 7개
+E_Focus,집중,Beneficial,Remove,턴 종료 시 카르마를 수치만큼 획득한다.,1,SkillMaster: 6개
+E_Swift,신속,Beneficial,Decrease,몬스터보다 먼저 행동을 진행할 수 있다. 턴 종료 시 수치가 1씩 감소한다.,1,"S_Passive_04, /  S_Core_51, S_Core_52, S_Core_79, S_Core_80"
+E_Smite,강타,Beneficial,Decrease,첫 공격의 피해가 50% 증가한다. 턴 종료 시 수치가 1씩 감소한다.,1,S_Passive_08
+E_Lifesteal,흡혈,Beneficial,Decrease,준 피해의 30%만큼 체력을 회복한다. 턴 종료 시 수치가 1씩 감소한다.,1,S_Passive_09
+E_Ward,가호,Beneficial,Decrease,피해를 받을 때 수치만큼 피해를 준다. 턴 종료 시 수치가 1씩 감소한다.,1,"S_Core_13,   S_Core_14, S_Core_49, S_Core_50"
+E_Grudge,원한,Beneficial,Maintain,공격 수치가 수치만큼 증가한다. 턴 종료 시 사라지지 않는다.,1,S_Monster_07
+E_Barrier,장막,Beneficial,Decrease,받는 피해를 1회 무시한다. 발동 시 사라진다. 턴 종료 시 수치가 1씩 감소한다.,1,S_Monster_25
+E_Poison,중독,Harmful,Decrease,턴 종료 시 수치만큼 피해를 받는다. 턴 종료 시 수치가 1씩 감소한다.,1,SkillMaster: 8개 / GR_Poisson
+E_Bleed,출혈,Harmful,DecreaseOnTrigger,이동 시 수치만큼 피해를 받는다.이동 시 수치가 1씩 감소한다.,1,SkillMaster: 8개 / S_Monster_40
+E_Vulnerable,취약,Harmful,Decrease,받는 피해를 30% 증가시킨다. 턴 종료 시 수치가 1씩 감소한다.,1,SkillMaster: 10개
+E_Weaken,약화,Harmful,Decrease,주는 피해를 15% 감소시킨다. 턴 종료 시 수치가 1씩 감소한다.,1,SkillMaster: 9개
+E_Corrosion,침식,Harmful,Maintain,받는 모든 피해가 수치만큼 증가한다. 턴 종료 시 사라지지 않는다.,1,S_Monster_10
+E_Split,분열,Neutral,Maintain,피해횟수에 따라 수치가 1 감소한다. 0이 되었을 때 살아 있다면 블롭 2마리로 분열한다.,1,코드: Mon_01 머크 기본 분열 상태
+E_Explode,폭발,Neutral,Decrease,턴 종료 시 수치가 1 감소합니다. 수치가 0이 되면 대폭발을 사용한다.,1,코드: Mon_06 신더 기본 폭발 상태
+E_Blindside,기습,Beneficial,Decrease,뒤를 공격할 때 피해가 50% 증가한다.,1,코드: Mon_10 녹턴 기본 기습 상태
+E_Spider_Web,뒤얽힘,Neutral,Maintain,이동에 사용하는 마나 소모량이 2배가 된다.,1,GridEffect: GR_spider_web
+E_Spawn_Spider_Egg,거미알 생성,Neutral,None,선택한 그리드에 거미알을 생성한다.,None,S_Monster_23
+E_Spawn_Spider_Web,거미줄 생성,Neutral,None,선택한 그리드에 거미줄을 생성한다.,None,S_Monster_24
+E_Spawn_Soldier,사령술,Neutral,None,지정된 위치에 죽었던 병사를 다시 생성한다.,1,S_Monster_41
+E_Cost_Recovery_Delta,코스트 회복량 변화,Neutral,0,마나 재생량을 수치만큼 변화시킨다.,0,"Rune_02, Rune_05, Rune_08, Rune_09 / Relic_P_03, Relic_P_05, Relic_P_17"
+E_UniqueResource_Overflow_To_Cost,고유자원 초과 코스트 회복,Neutral,0,카르마가 최대일 때 카르마를 회복하면 수치 배율만큼 마나를 회복한다.,0,Relic_P_57
+E_UniqueResource_Max_Skill_Cost_Delta,고유자원 최대 스킬 코스트 변화,Neutral,0,카르마가 최대일 때 모든 스킬 마나 사용량을 수치만큼 변화시킨다.,0,Relic_P_58
+E_First_Move_Cost_Delta,첫 이동 코스트 변화,Neutral,0,첫 이동의 마나 사용량을 수치만큼 변화시킨다.,0,Rune_10
+E_Attack_Cost_Delta,공격 스킬 코스트 변화,Neutral,0,공격타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0,Relic_P_06
+E_Debuff_Cost_Delta,디버프 스킬 코스트 변화,Neutral,0,디버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0,Relic_P_08
+E_Move_Cost_Zero,이동 코스트 제거,Neutral,0,이동이 코스트를 소모하지 않는다.,0,Relic_P_18
+E_Blocked_Slot_Mask,등록 금지 슬롯 마스크,Neutral,0,마스크에 포함된 슬롯에 기억을 등록할 수 없다.,0,Relic_P_17
+E_Max_Registrable_Slot_Count,등록 가능 슬롯 수 제한,Neutral,0,기억을 등록할 수 있는 슬롯 수를 수치로 제한한다.,0,Relic_P_18
+E_No_Move_In_Slot_Buff_Cost_Delta,이동 없음 슬롯 버프 코스트 변화,Neutral,0,해당 슬롯에서 이동하지 않았다면 버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0,Relic_P_31
+E_After_Move_Debuff_Cost_Delta,이동 후 디버프 코스트 변화,Neutral,0,해당 슬롯에서 이동한 뒤 등록하는 디버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0,Relic_P_32
+E_Slot1_First_Skill_Cost_Delta,1번 슬롯 첫 스킬 코스트 변화,Neutral,0,1번 슬롯에 등록하는 첫 기억의 마나 사용량을 수치만큼 변화시킨다.,0,Relic_P_09
+E_Slot5_Skill_Cost_Delta,5번 슬롯 스킬 코스트 변화,Neutral,0,5번 슬롯에 등록하는 모든 기억의 마나 사용량을 수치만큼 변화시킨다.,0,Relic_P_13
+E_Low_HP_Skill_Cost_Delta,낮은 체력 스킬 코스트 변화,Neutral,0,현재 체력이 30% 이하라면 기억의 마나 사용량을 수치만큼 변화시킨다.,0,Relic_P_44
+E_High_HP_Cost_Recovery_Delta,높은 체력 코스트 회복 변화,Neutral,0,현재 체력이 90% 이상이라면 마나 재생량을 수치만큼 변화시킨다.,0,Relic_P_47
+E_High_HP_Buff_Cost_Delta,높은 체력 버프 코스트 변화,Neutral,0,현재 체력이 90% 이상이라면 버프타입 기억의 마나 사용량을 수치만큼 변화시킨다.,0,Relic_P_48
+E_Attack_Value_Delta,공격 스킬 피해량 변화,Neutral,0,공격타입 기억의 피해량을 수치만큼 변화시킨다.,0,"Rune_11 / Relic_P_06, Relic_P_07"
+E_Attack_Count_Delta,공격 스킬 횟수 변화,Neutral,0,공격타입 기억의 피해 횟수를 수치만큼 변화시킨다.,0,Relic_P_07
+E_Debuff_Value_Delta,디버프 스킬 수치 변화,Neutral,0,디버프타입 기억의 효과 수치를 수치만큼 변화시킨다.,0,Relic_P_08
+E_Heal_Value_Delta,기억 치유량 변화,Neutral,0,기억으로 회복하는 생명력을 수치만큼 변화시킨다.,0,Rune_12
+E_Skill_Armor_Value_Delta,기억 방어도 변화,Neutral,0,기억으로 부여하는 방어도를 수치만큼 변화시킨다.,0,Rune_13
+E_Poison_Value_Delta,기억 중독 부여량 변화,Neutral,0,기억으로 부여하는 중독 수치를 수치만큼 변화시킨다.,0,Rune_14
+E_Bleed_Value_Delta,기억 출혈 부여량 변화,Neutral,0,기억으로 부여하는 출혈 수치를 수치만큼 변화시킨다.,0,Rune_15
+E_Armor_Gain_Percent,방어도 획득량 퍼센트 변화,Neutral,0,방어도 획득량을 퍼센트로 변화시킨다.,0,Relic_P_40
+E_After_Move_Debuff_Value_Delta,이동 후 디버프 수치 변화,Neutral,0,해당 슬롯에서 이동한 뒤 등록하는 디버프타입 기억의 효과수치를 수치만큼 변화시킨다.,0,Relic_P_33
+E_After_Move_Attack_Value_Per_Cost,이동 후 공격 소모 코스트 비례 피해,Neutral,0,해당 슬롯에서 이동에 소모한 마나만큼 공격 피해량을 증가시킨다.,0,Relic_P_34
+E_Slot1_Attack_Value_Delta,1번 슬롯 공격 수치 변화,Neutral,0,1번 슬롯 공격타입 기억의 피해량을 수치만큼 변화시킨다.,0,Relic_P_10
+E_Slot1_Buff_Value_Delta,1번 슬롯 버프 수치 변화,Neutral,0,1번 슬롯 버프타입 기억의 효과수치를 수치만큼 변화시킨다.,0,Relic_P_12
+E_Slot5_Attack_Value_Delta,5번 슬롯 공격 수치 변화,Neutral,0,5번 슬롯 공격타입 기억의 피해량을 수치만큼 변화시킨다.,0,Relic_P_14
+E_Low_HP_Attack_Value_Delta,낮은 체력 공격 피해 변화,Neutral,0,현재 체력이 30% 이하라면 공격타입 기억의 피해량을 수치만큼 변화시킨다.,0,Relic_P_45
+E_Self_Buff_Blocked_Buff_Value_Delta,자신 버프 차단 버프 수치 변화,Neutral,0,자신에게 버프를 부여할 수 없는 대신 버프타입 기억의 효과수치를 수치만큼 증가시킨다.,0,Relic_P_54
+E_Full_HP_Buff_Value_Delta,최대 체력 버프 수치 변화,Neutral,0,체력이 최대라면 버프타입 기억의 효과수치를 수치만큼 변화시킨다.,0,Relic_P_55
+E_Unique_Skill_Value_Percent,발현 기억 수치 퍼센트 변화,Neutral,0,발현 기억의 효과 수치를 퍼센트로 변화시킨다.,0,Relic_P_60
+E_Unique_Skill_Count_Delta,발현 기억 횟수 변화,Neutral,0,발현 기억의 횟수를 수치만큼 변화시킨다.,0,Relic_P_61
+E_Slot5_Attack_Pierce,5번 슬롯 공격 관통 변경,Neutral,0,5번 슬롯 공격타입 기억의의 피해를 관통 피해로 변경한다.,0,Relic_P_16
+E_Slot1_Attack_Kill_Focus,1번 슬롯 공격 처치 집중,Neutral,0,1번 슬롯 공격타입 기억으로 적 처치 시 집중을 수치만큼 얻는다.,0,Relic_P_11
+E_Slot5_Attack_Kill_Cost_Refund,5번 슬롯 공격 처치 코스트 반환,Neutral,0,5번 슬롯 공격타입 기억으로 적 처치 시 해당 스킬 사용 마나를 돌려받는다.,0,Relic_P_15
+E_Unique_Skill_Kill_Focus,발현 기억 처치 집중,Neutral,0,발현 기억으로 적 처치 시 집중을 수치만큼 얻는다.,0,Relic_P_59
+E_Damage_Poisoned_Fixed,중독 대상 추가 고정피해,Neutral,0,중독이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.,0,Relic_P_49
+E_Damage_Bleeding_Fixed,출혈 대상 추가 고정피해,Neutral,0,출혈이 부여된 적에게 피해를 주면 고정피해를 수치만큼 준다.,0,Relic_P_50
+E_Damage_Vulnerable_Armor,취약 대상 피해 방어도 획득,Neutral,0,취약이 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.,0,Relic_P_51
+E_Damage_Weakened_Armor,약화 대상 피해 방어도 획득,Neutral,0,약화가 부여된 적에게 피해를 주면 방어도를 수치만큼 얻는다.,0,Relic_P_52
+E_Damage_Non_Poisoned_Apply_Poison,비중독 대상 피해 중독 부여,Neutral,0,중독이 부여되지 않은 적에게 피해를 주면 중독을 수치만큼 부여한다.,0,Relic_P_53
+E_Ally_Buff_Charge,아군 버프 충전 획득,Neutral,0,자신을 제외한 아군에게 버프를 부여하면 충전을 수치만큼 얻는다.,0,Relic_P_56
+E_Low_HP_Damage_Reduction_Percent,낮은 체력 피해 감소,Neutral,0,현재 체력이 30% 이하라면 받는 피해를 퍼센트로 감소시킨다.,0,Relic_P_46
+E_Forced_Move_Immune,강제이동 면역,Neutral,0,넉백과 그랩으로 이동하지 않는다.,0,Relic_P_35
+E_Crash_Damage_Immune,충돌 피해 면역,Neutral,0,충돌로 인한 피해를 받지 않는다.,0,Relic_P_36
+E_Grid_Effect_Immune,그리드 효과 면역,Neutral,0,그리드 효과를 받지 않는다.,0,Relic_P_37
+E_Overheal_To_Armor,최대 체력 회복 방어도 전환,Neutral,0,최대 체력에서 회복되면 회복량에 비례해 방어도를 얻는다.,0,Relic_P_38
+E_Healing_Blocked,회복 차단,Neutral,0,체력을 회복할 수 없다.,0,Relic_P_40
+E_No_Damage_Previous_Turn_Smite,피해 없음 다음 턴 강타,Neutral,0,이전 턴 동안 피해를 받지 않았다면 턴 시작 시 강타를 수치만큼 얻는다.,0,Relic_P_39
+E_Once_Battle_End_Turn_Zero_Cost_Charge,턴 종료 마나 0 회복,Neutral,0,턴 종료 시 남은 마나가 0이면 마나를 수치만큼 회복한다.,0,Relic_P_62
+E_Once_Battle_Attack_Miss_Charge,공격 실패 마나 회복,Neutral,0,공격이 적중하지 않았을 때마다 마나를 수치만큼 회복한다.,0,Relic_P_63
+E_Once_Battle_Full_HP_Target_Damage_Percent,최대 생명력 대상 피해 배율,Neutral,0,생명력이 최대인 적에게 피해를 줄 때 피해량을 수치 배로 적용한다.,0,Relic_P_64
+E_Turn_Start_Cost_Recovery,지정 턴 마나 회복,Neutral,0,지정 턴 시작 시 마나를 수치만큼 회복한다.,0,Relic_P_28
+E_Turn_Start_Unique_Resource_Recovery,지정 턴 카르마 회복,Neutral,0,지정 턴 시작 시 카르마를 수치만큼 회복한다. 최대치를 초과하지 않는다.,0,Relic_P_28
+E_Turn_Start_Armor,지정 턴 방어도,Neutral,0,지정 턴 시작 시 방어도를 수치만큼 얻는다.,0,Relic_P_27
+E_Turn_Start_Armor_Per_Used_Slot,등록 슬롯 비례 방어도,Neutral,0,등록된 슬롯 수에 비례해 방어도를 얻는다.,0,Relic_P_19
+E_Turn_Start_Armor_Per_Empty_Slot,빈 슬롯 비례 방어도,Neutral,0,비어 있는 슬롯 수에 비례해 방어도를 얻는다.,0,Relic_P_20
+E_Turn_Start_Swift,지정 턴 신속,Neutral,0,지정 턴 시작 시 신속을 수치만큼 얻는다.,0,Rune_16 / Relic_P_29
+E_Turn_Start_Boost,지정 턴 증폭,Neutral,0,지정 턴 시작 시 증폭을 수치만큼 얻는다.,0,Rune_18 / Relic_P_29
+E_Turn_Start_Smite,지정 턴 강타,Neutral,0,지정 턴 시작 시 강타를 수치만큼 얻는다.,0,Rune_17 / Relic_P_30
+E_Turn_Start_Lifesteal,지정 턴 흡혈,Neutral,0,지정 턴 시작 시 흡혈을 수치만큼 얻는다.,0,Relic_P_30
+E_Turn_Start_Smite_If_Slots_Empty_Mask,빈 슬롯 조건 강타,Neutral,0,마스크에 포함된 슬롯이 모두 비어 있으면 강타를 수치만큼 얻는다.,0,Relic_P_21
+E_Turn_Start_Boost_If_Slots_Empty_Mask,빈 슬롯 조건 증폭,Neutral,0,마스크에 포함된 슬롯이 모두 비어 있으면 증폭을 수치만큼 얻는다.,0,Relic_P_22
+E_Turn_Start_Boost_If_One_Attack_Command,공격 하나 조건 증폭,Neutral,0,등록한 공격타입 기억이 하나뿐이면 증폭을 수치만큼 얻는다.,0,Relic_P_23
+E_Turn_Start_Boost_If_Attack_Command_Count_At_Least,공격 수 조건 증폭,Neutral,0,등록한 공격타입 기억의 수가 기준 이상이면 증폭을 수치만큼 얻는다.,0,Relic_P_24
+E_Turn_Start_All_Enemy_Vulnerable,지정 턴 전체 적 취약,Neutral,0,지정 턴 시작 시 모든 적에게 취약을 수치만큼 부여한다.,0,Relic_P_25
+E_Turn_Start_All_Enemy_Weaken,지정 턴 전체 적 약화,Neutral,0,지정 턴 시작 시 모든 적에게 약화를 수치만큼 부여한다.,0,Relic_P_25
+E_Turn_Start_All_Enemy_Poison,지정 턴 전체 적 중독,Neutral,0,지정 턴 시작 시 모든 적에게 중독을 수치만큼 부여한다.,0,Relic_P_26
+E_Turn_Start_All_Enemy_Bleed,지정 턴 전체 적 출혈,Neutral,0,지정 턴 시작 시 모든 적에게 출혈을 수치만큼 부여한다.,0,Relic_P_26
+E_Collision_Target_Damage_Delta,충돌 상대 피해 변화,Neutral,0,자신과 충돌한 상대가 받는 피해를 수치만큼 변화시킨다.,0,Relic_P_41
+E_Collision_Charge,충돌 충전 획득,Neutral,0,자신과 충돌이 발생하면 충전을 수치만큼 얻는다.,0,Relic_P_42
+E_Collision_Kill_Focus,충돌 처치 집중,Neutral,0,자신과 충돌한 상대가 사망하면 집중을 수치만큼 얻는다.,0,Relic_P_43
+E_Rest_Heal_Percent_Bonus,휴식 회복량 증가,Neutral,0,휴식으로 회복하는 회복량을 퍼센트로 증가시킨다.,0,Relic_P_65
+E_Shop_Price_Discount_Percent,상점 가격 할인,Neutral,0,상점 판매 가격을 퍼센트로 감소시킨다.,0,Relic_P_66
+E_Battle_Reward_Currency_Percent,전투 보상 재화 증가,Neutral,0,전투 보상 재화 획득량을 퍼센트로 증가시킨다.,0,Rune_19 / Relic_P_67
+E_Battle_End_Heal,전투 종료 회복,Neutral,0,전투 종료 후 체력을 수치만큼 회복한다.,0,"Rune_04, Rune_20 / Relic_P_68"
+E_Exploration_Start_Unique_Resource,탐사 시작 카르마 회복,Neutral,0,탐사 시작 시 1회 카르마를 수치만큼 회복한다.,0,"Rune_51, Rune_56, Rune_61, Rune_66, Rune_71"
+E_Unique_Resource_Max_Reached_Boost,카르마 최대 도달 증폭,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 증폭을 수치만큼 얻는다.,0,Rune_52
+E_Unique_Resource_Max_Reached_Smite,카르마 최대 도달 강타,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 강타를 수치만큼 얻는다.,0,Rune_57
+E_Unique_Resource_Max_Reached_Cost_Recovery,카르마 최대 도달 마나 회복,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 마나를 수치만큼 회복한다.,0,Rune_62
+E_Unique_Resource_Max_Reached_Armor,카르마 최대 도달 방어도,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 방어도를 수치만큼 얻는다.,0,Rune_72
+E_Unique_Resource_Max_Reached_Self_Lowest_Ally_Armor,카르마 최대 도달 아군 방어도,Neutral,0,카르마가 최대치에 도달하면 다음 턴 시작 시 자신과 생명력 비율이 가장 낮은 다른 아군에게 방어도를 수치만큼 부여한다.,0,Rune_67
+E_Rune_Target_Damage_Value_Delta,룬 대상 기억 피해 변화,Neutral,0,룬의 대상 기억이 주는 피해를 수치만큼 변화시킨다.,0,Rune: 9개
+E_Rune_Target_Attack_Count_Delta,룬 대상 기억 공격 횟수 변화,Neutral,0,룬의 대상 기억 공격 횟수를 수치만큼 변화시킨다.,0,Rune_58
+E_Rune_Target_Skill_Cost_Delta,룬 대상 기억 마나 소모 변화,Neutral,0,룬의 대상 기억 마나 소모량을 수치만큼 변화시킨다.,0,Rune_70
+E_Rune_Target_Armor_Multiplier,룬 대상 기억 방어도 배율,Neutral,0,룬의 대상 기억이 부여하는 방어도를 수치 배율로 적용한다.,0,Rune_53
+E_Rune_Target_Boost_Value_Delta,룬 대상 기억 증폭 변화,Neutral,0,룬의 대상 기억이 부여하는 증폭을 수치만큼 변화시킨다.,0,Rune_64
+E_Rune_Target_Heal_Value_Delta,룬 대상 기억 치유 변화,Neutral,0,룬의 대상 기억이 회복하는 생명력을 수치만큼 변화시킨다.,0,Rune_68
+E_Rune_Target_Knockback_Value_Delta,룬 대상 기억 넉백 변화,Neutral,0,룬의 대상 기억이 부여하는 넉백 거리를 수치만큼 변화시킨다.,0,Rune_54
+E_Rune_Target_Range_Expand,룬 대상 기억 범위 확장,Neutral,0,룬의 대상 기억 범위를 한 단계 확장한다.,0,Rune_65
+AR_DamageBoostThisTurn,힘,Beneficial,Decrease,이번 턴 동안 주는 피해가 100% 증가한다.,1,Compound_01
+AR_DamageReductionThisTurn,경화,Beneficial,Decrease,이번 턴 동안 받는 피해가 50% 감소한다.,1,Compound_02
+AR_RecoverUniqueResourceToMax,응축된 카르마,Neutral,0,카르마를 3 회복한다.,0,Compound_03
+AR_RecoverCostToMax,마력 플라스크,Neutral,0,마나를 10 회복한다.,0,Compound_04
+AR_GrantSwift,각성,Neutral,0,신속을 2 부여한다.,0,Compound_05
+AR_CleanseDebuffs,맑은 물,Neutral,0,모든 디버프를 제거한다.,0,Compound_06
+AR_MoveToGrid,위치 이동,Neutral,0,선택한 빈 그리드로 이동한다.,0,Compound_07
+AR_SwapAlly,위치 변경,Neutral,0,선택한 그리드의 아군과 위치를 교환한다.,0,Compound_08
+AR_SpawnPoisonGridEffect,독 장판 생성,Neutral,0,선택한 그리드에 독 장판을 생성한다.,0,Compound_09
+AR_SpawnThornGridEffect,가시 생성,Neutral,0,선택한 그리드에 가시를 생성한다.,0,Compound_10
+E_Fatigue,쇠약,Harmful,Decrease,수치 1마다 공격 수치 -1,1,Compound_11
+AR_SpawnObstacleGridEffect,잔해 생성,Neutral,0,선택한 그리드에 잔해를 생성한다.,0,Compound_12
+AR_RemoveGridEffect,장애물 제거,Neutral,0,선택한 그리드의 장애물을 제거한다.,0,Compound_13
+AR_SpawnDummyGridEffect,호문쿨루스 루어,Neutral,0,선택한 빈 그리드에 루어를 생성한다.,0,Compound_14
+AR_SpawnExplosiveDollGridEffect,호문쿨루스 브룸,Neutral,0,선택한 빈 그리드에 브룸을 생성한다.,0,Compound_15
+E_MissingHPStrike,잃은 체력 비례 피해,Neutral,0,잃은 체력의 ValueRate%만큼 피해 계산,0
+E_Grit,투지,Beneficial,Decrease,공격 수치 +30%,1
+E_Bond,유대,Beneficial,Decrease,피해를 받을 때 연결된 아군과 피해 분담,1
+E_Mana,마나,Neutral,0,마나를 즉시 수치만큼 획득,0
+E_Karma,카르마,Neutral,0,카르마를 즉시 수치만큼 획득,0
+E_Cure,치유,Neutral,0,생명력을 수치만큼 즉시 회복한다.,1
+E_PoisonTrigger,중독 즉시 발동,Neutral,0,중독을 ValueRate 부여한 뒤 중독 효과를 즉시 1회 발동,0
+E_DebuffIncrease,디버프 수치 증가,Neutral,0,대상이 현재 보유한 모든 Harmful 디버프 수치를 ValueRate만큼 증가,0
+E_DebuffDouble,디버프 증폭,Neutral,0,대상이 보유한 디버프 중 현재 수치가 가장 높은 1종의 수치를 2배,0
+E_RemoveArmor,방어도 제거,Neutral,0,현재 방어도와 동일한 양의 방어도 피해를 주어 방어도를 0으로 만듦,0
+E_ArmorStrike,방어도 비례 피해,Neutral,0,시전자의 현재 방어도에 수치계수를 곱한 피해를 준다.,0,SkillMaster: S_Core_15~16
+E_MissSelfDamage,빗나감 자해,Neutral,0,유효한 적을 맞히지 못하면 자신에게 수치만큼 피해를 준다.,0,SkillMaster: S_Core_17~18
+E_ValueUpOnKill,처치 시 영구 피해 증가,Neutral,0,이 스킬로 처치한 적 하나당 다음 사용부터 피해 수치가 증가한다.,0,SkillMaster: S_Core_19~20
+E_ValueUpOnHit,명중 시 전투 피해 증가,Neutral,0,성공한 타격마다 이 전투 동안 다음 사용부터 피해 수치가 증가한다.,0,SkillMaster: S_Core_39~40
+E_DamageUpIfBleeding,출혈 대상 피해 증가,Neutral,0,출혈이 있는 대상에게 주는 피해가 50% 증가한다.,0,SkillMaster: S_Core_29~30
+E_Rush,돌진,Neutral,0,지정 칸만큼 전진하며 첫 충돌 대상 앞에서 멈춘다.,0,SkillMaster: S_Core_15~16
+E_Bondage,속박,Harmful,DecreaseOnTrigger,다음 이동 시도 1회를 막고 수치가 1 감소한다.,1,"SkillMaster: S_Core_53~54, S_Core_65~66"
+E_PoisonByTargetPoison,중독 비례 중독,Harmful,0,대상의 중독 수치를 수치계수로 나눈 몫만큼 중독을 추가한다.,0,SkillMaster: S_Core_55~56
+E_TriggerPoison,중독 즉시 발동,Neutral,0,현재 중독 수치만큼 즉시 피해를 주고 중독 수치를 1 감소시킨다.,0,SkillMaster: S_Core_57~58
+E_RestoreManaPerHitTarget,타격당 마나 회복,Neutral,0,성공한 총 타격 수에 비례해 마나를 회복한다.,0,SkillMaster: S_Core_59~60
+E_RandomStrike,무작위 연속 타격,Neutral,0,범위 내 살아 있는 적을 매 타격마다 다시 추첨해 피해를 준다.,0,SkillMaster: S_Core_73~74
+E_StrikeByVulnerable,취약 비례 피해,Neutral,0,기본 피해에 대상 취약 수치와 횟수계수의 곱을 더한다.,0,SkillMaster: S_Core_75~76
+E_StrikeCountByBuff,버프 종류 비례 타격,Neutral,0,시전자의 서로 다른 이로운 효과 종류 수만큼 타격 횟수가 증가한다.,0,확장 효과
+E_StrikeCountByDebuff,디버프 종류 비례 타격,Neutral,0,대상의 서로 다른 해로운 효과 종류 수만큼 타격 횟수가 증가한다.,0,SkillMaster: S_Core_31~32
+E_StrikeByTargetPoison,중독 비례 피해,Neutral,0,대상이 보유한 중독 수치만큼 피해를 준다.,0,SkillMaster: S_Core_53~54
+E_Rune_Turn1_Ward,1턴 시작 시 장막을 수치 획득한다.,Neutral,0,1턴 시작 시 장막을 {ValueRate1} 획득한다.,0,Rune_51
+E_Rune_Armor10_Smite,턴 시작 시 방어도가 수치 이상이라면 강타 1을 획득한다.,Neutral,0,턴 시작 시 방어도가 {ValueRate1} 이상이라면 강타 1을 획득한다.,0,Rune_53
+E_Rune_Turn_Start_Lose_HP_Boost,매 턴 시작 시 생명력 3을 잃고 증폭 수치을 획득한다.,Neutral,0,매 턴 시작 시 생명력 3을 잃고 증폭 {ValueRate1}을 획득한다.,0,Rune_54
+E_Rune_Low_HP_Damage_Percent,현재 생명력이 50% 이하라면 주는 피해가 수치% 증가한다.,Neutral,0,현재 생명력이 50% 이하라면 주는 피해가 {ValueRate1}% 증가한다.,0,Rune_55
+E_Rune_First_Registered_Skill_Attack_Count,전투에서 처음 등록한 공격 기억의 공격 횟수가 수치회 증가한다.,Neutral,0,전투에서 처음 등록한 공격 기억의 공격 횟수가 {ValueRate1}회 증가한다.,0,Rune_56
+E_Rune_Consecutive_Attack_Final_Pierce,연속 등록한 공격 수만큼 마지막 공격 뒤에 관통 피해를 준다.,Neutral,0,연속 등록한 공격 수만큼 마지막 공격 뒤에 관통 피해를 준다.,0,Rune_57
+E_Rune_Multi_Hit_Damage_Delta,공격 횟수가 횟수회 이상인 기억의 피해가 수치 증가한다.,Neutral,0,공격 횟수가 {CountRate1}회 이상인 기억의 피해가 {ValueRate1} 증가한다.,0,Rune_58
+E_Rune_Pierce_Hit_Bleed,관통 피해 적중 시 대상에게 출혈을 수치 부여한다.,Neutral,0,관통 피해 적중 시 대상에게 출혈을 {ValueRate1} 부여한다.,0,Rune_59
+E_Rune_Single_Target_Damage_Delta,공격 대상이 적 1명뿐이라면 피해가 수치 증가한다.,Neutral,0,공격 대상이 적 1명뿐이라면 피해가 {ValueRate1} 증가한다.,0,Rune_60
+E_Rune_Status_Apply_Armor,버프 또는 디버프 부여 시 실제 부여한 수치만큼 방어도를 획득한다.,Neutral,0,버프 또는 디버프 부여 시 실제 부여한 수치만큼 방어도를 획득한다.,0,Rune_62
+E_Rune_Adjacent_Ally_Buff_Delta,자신과 인접한 아군에게 부여하는 버프 수치가 수치 증가한다.,Neutral,0,자신과 인접한 아군에게 부여하는 버프 수치가 {ValueRate1} 증가한다.,0,Rune_63
+E_Rune_Debuff_Apply_Poison,적에게 디버프 부여 시 추가로 중독을 수치 부여한다.,Neutral,0,적에게 디버프 부여 시 추가로 중독을 {ValueRate1} 부여한다.,0,Rune_64
+E_Rune_Zero_Mana_Next_First_Skill_Free,턴 종료 시 마나가 0이면 다음 턴 첫 등록 기억의 마나 소모가 0이 된다.,Neutral,0,턴 종료 시 마나가 0이면 다음 턴 첫 등록 기억의 마나 소모가 0이 된다.,0,Rune_65
+E_Rune_Turn_Start_Adjacent_Ally_Heal,매 턴 시작 시 인접한 아군에게 재생을 수치 부여한다.,Neutral,0,매 턴 시작 시 인접한 아군에게 재생을 {ValueRate1} 부여한다.,0,Rune_66
+E_Rune_Kill_Unique_Resource,처치한 적 1명당 카르마를 수치 획득한다.,Neutral,0,처치한 적 1명당 카르마를 {ValueRate1} 획득한다.,0,Rune_67
+E_Rune_High_HP_Heal_Remove_First_Debuff,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 수치 감소한다.,Neutral,0,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 {ValueRate1} 감소한다.,0,Rune_68
+E_Rune_Vulnerable_Bonus_Percent,자신이 공격할 때 취약의 피해 증가율이 수치%로 증가한다.,Neutral,0,자신이 공격할 때 취약의 피해 증가율이 {ValueRate1}%로 증가한다.,0,Rune_69
+E_Rune_Max_Unique_Resource_All_Enemy_Vulnerable,카르마가 최대치에 도달하면 모든 적에게 취약을 수치 부여한다.,Neutral,0,카르마가 최대치에 도달하면 모든 적에게 취약을 {ValueRate1} 부여한다.,0,Rune_70
 
 # Map
 맵ID,이름,타입,전투맵ID,이벤트ID,스테이지 맵,등장가중치,전투난이도
@@ -1675,11 +1675,6 @@ Compound_12,응고 발포제,Common,AR_SpawnObstacleGridEffect,1,1,Grid,3,선택
 Compound_13,분해 용해제,Common,AR_RemoveGridEffect,1,1,Grid,3,선택한 그리드의 장애물을 제거한다.,Item_004,Item_007,Item_008
 Compound_14,호문쿨루스 루어,Rare,AR_SpawnDummyGridEffect,1,1,Grid,3,선택한 빈 그리드에 루어를 생성한다.,Item_002,Item_006,Item_007
 Compound_15,호문쿨루스 브룸,Rare,AR_SpawnExplosiveDollGridEffect,4,1,Grid,3,선택한 빈 그리드에 브룸을 생성한다.,Item_001,Item_003,Item_006
-Compound_16,추가연성제01,Common,,,,,,,,,
-Compound_17,추가연성제02,Common,,,,,,,,,
-Compound_18,추가연성제03,Rare,,,,,,,,,
-Compound_19,추가연성제04,Rare,,,,,,,,,
-Compound_20,추가연성제05,Epic,,,,,,,,,
 
 # Item
 아이템ID,레어도,이름,설명
@@ -1696,33 +1691,9 @@ Item_009,Rare,방패 조각,루크의 방패에서 떨어져 나온 파편. 작�
 Item_010,Rare,그림자 갑주,녹턴의 갑주에서 떨어져 나온 검은 조각. 빛을 받으면 표면의 그림자가 미세하게 흔들린다.
 Item_011,Rare,혼령석,모르트의 사령술과 연관된 힘이 응축된 결정. 가까이 두면 희미한 울림이 느껴진다.
 Item_012,Epic,부서진 왕관,아라벨라가 지니고 있던 왕관의 파편. 강한 침식의 흔적을 품고 있다.
-Item_013,Common,2S-1,
-Item_014,Common,2S-2,
-Item_015,Common,2S-3,
-Item_016,Common,2S-4,
-Item_017,Common,2S-5,
-Item_018,Common,2S-6,
-Item_019,Common,2S-7,
-Item_020,Common,2S-8,
-Item_021,Rare,2S-9,
-Item_022,Rare,2S-10,
-Item_023,Rare,2S-11,
-Item_024,Epic,2S-12,
-Item_025,Common,3S-1,
-Item_026,Common,3S-2,
-Item_027,Common,3S-3,
-Item_028,Common,3S-4,
-Item_029,Common,3S-5,
-Item_030,Common,3S-6,,
-Item_031,Common,3S-7,,
-Item_032,Common,3S-8,,
-Item_033,Rare,3S-9,
-Item_034,Rare,3S-10,
-Item_035,Rare,3S-11,
-Item_036,Epic,3S-12,
-Item_037,Unique,퀘스트1,
-Item_038,Unique,퀘스트2,
-Item_039,Unique,퀘스트3,
+,,,,
+,,,,
+,,,,
 
 # Erosion
 난이도 ID,난이도이름,UI 슬롯,단계,점수,선택 그룹,선택 방식,효과 항목,효과 타입,효과 수치,선택 가능,설명
