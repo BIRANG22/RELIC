@@ -34,6 +34,16 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [Header("Empty Use Skill Slots")]
     [SerializeField] private Color emptyUseSkillColor = new Color32(0xFF, 0xFF, 0xFF, 0x05);
 
+    [Header("Selected Slot Overlay")]
+    [SerializeField] private GameObject selectedSlotObject;
+    [SerializeField, Min(0f)] private float selectFadeInDuration = 0.2f;
+    [SerializeField, Min(0f)] private float selectFadeOutDuration = 0.12f;
+
+    private CanvasGroup selectedSlotCanvasGroup;
+    private Coroutine selectedSlotFadeRoutine;
+    private bool selectedSlotFadeTarget;
+    private bool selectedSlotVisualInitialized;
+
     [Header("Selected Turn Mark")]
     [SerializeField] private Transform turnMarkTransform;
     [SerializeField] private Image turnMarkImage;
@@ -98,6 +108,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         CacheTurnMarkNormalVisual();
         CacheTrailingVisualDefaults();
         ApplyTurnMarkSelectedVisual(false);
+        RefreshSelectedSlotObject(true);
     }
 
     private void Update()
@@ -125,6 +136,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         CacheTurnMarkNormalVisual();
         CacheTrailingVisualDefaults();
         ApplyTurnMarkSelectedVisual(isActive);
+        RefreshSelectedSlotObject();
         ApplyTurnText();
     }
 
@@ -135,6 +147,90 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         isActive = active;
         ApplyTurnMarkSelectedVisual(active);
+        RefreshSelectedSlotObject();
+    }
+
+    private void RefreshSelectedSlotObject(bool instant = false)
+    {
+        if (selectedSlotObject == null)
+        {
+            Transform child = transform.Find("Select");
+            if (child != null)
+                selectedSlotObject = child.gameObject;
+        }
+
+        if (selectedSlotObject == null)
+            return;
+
+        if (selectedSlotCanvasGroup == null || selectedSlotCanvasGroup.gameObject != selectedSlotObject)
+        {
+            selectedSlotCanvasGroup = selectedSlotObject.GetComponent<CanvasGroup>();
+            if (selectedSlotCanvasGroup == null)
+                selectedSlotCanvasGroup = selectedSlotObject.AddComponent<CanvasGroup>();
+
+            selectedSlotCanvasGroup.interactable = false;
+            selectedSlotCanvasGroup.blocksRaycasts = false;
+            selectedSlotVisualInitialized = false;
+        }
+
+        if (instant || !selectedSlotVisualInitialized || !gameObject.activeInHierarchy)
+        {
+            if (selectedSlotFadeRoutine != null)
+            {
+                StopCoroutine(selectedSlotFadeRoutine);
+                selectedSlotFadeRoutine = null;
+            }
+
+            selectedSlotVisualInitialized = true;
+            selectedSlotCanvasGroup.alpha = isActive ? 1f : 0f;
+            selectedSlotObject.SetActive(isActive);
+            return;
+        }
+
+        if (selectedSlotFadeRoutine != null && selectedSlotFadeTarget == isActive)
+            return;
+
+        if (isActive)
+        {
+            if (selectedSlotObject.activeSelf && selectedSlotCanvasGroup.alpha >= 0.999f)
+                return;
+        }
+        else if (!selectedSlotObject.activeSelf)
+        {
+            return;
+        }
+
+        if (selectedSlotFadeRoutine != null)
+            StopCoroutine(selectedSlotFadeRoutine);
+
+        selectedSlotFadeTarget = isActive;
+        selectedSlotFadeRoutine = StartCoroutine(FadeSelectedSlot(isActive));
+    }
+
+    private IEnumerator FadeSelectedSlot(bool show)
+    {
+        selectedSlotObject.SetActive(true);
+        float from = selectedSlotCanvasGroup.alpha;
+        float target = show ? 1f : 0f;
+        float duration = show ? selectFadeInDuration : selectFadeOutDuration;
+        float elapsed = 0f;
+
+        if (duration > 0f)
+        {
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = t * t * (3f - 2f * t);
+                selectedSlotCanvasGroup.alpha = Mathf.Lerp(from, target, t);
+                yield return null;
+            }
+        }
+
+        selectedSlotCanvasGroup.alpha = target;
+        if (!show)
+            selectedSlotObject.SetActive(false);
+        selectedSlotFadeRoutine = null;
     }
 
     public void SetOwnerIconsVisible(bool visible)
@@ -832,6 +928,16 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     private void OnDisable()
     {
+        if (selectedSlotFadeRoutine != null)
+        {
+            StopCoroutine(selectedSlotFadeRoutine);
+            selectedSlotFadeRoutine = null;
+        }
+        if (selectedSlotCanvasGroup != null)
+        {
+            selectedSlotCanvasGroup.alpha = isActive ? 1f : 0f;
+            selectedSlotObject.SetActive(isActive);
+        }
         HideHoveredEnemyOwnerIconHUD();
         HideHoveredPlayerOwnerIconHUD();
         ResetOrderValueAnimations();
