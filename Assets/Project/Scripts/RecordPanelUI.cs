@@ -46,6 +46,12 @@ public sealed class RecordPanelUI : MonoBehaviour
 
     private readonly List<RecordIconSlotUI> createdSlots = new();
     private readonly Dictionary<Button, ColorBlock> originalButtonColors = new();
+    [Header("Name Tooltip")]
+    [SerializeField] private RectTransform nameTooltip;
+    [SerializeField] private TMP_Text nameTooltipText;
+    [SerializeField] private float tooltipOffset = 8f;
+
+    private RecordIconSlotUI hoveredSlot;
     private RecordIconSlotUI runtimeIconSlotTemplate;
     private RecordTab currentTab = RecordTab.Skill;
     private bool initialized;
@@ -70,8 +76,11 @@ public sealed class RecordPanelUI : MonoBehaviour
             CacheButtonColors();
             initialized = true;
         }
+        HideNameTooltip();
         ShowSkillTab();
     }
+
+    private void OnDisable() => HideNameTooltip();
 
     public void Close()
     {
@@ -97,6 +106,21 @@ public sealed class RecordPanelUI : MonoBehaviour
 
     private void ResolveReferences()
     {
+        if (nameTooltip == null)
+            nameTooltip = transform.Find("NameTooltip") as RectTransform;
+        if (nameTooltipText == null && nameTooltip != null)
+        {
+            Transform label = nameTooltip.Find("Name");
+            if (label != null) nameTooltipText = label.GetComponent<TMP_Text>();
+        }
+        // NameTooltip/Name is a dynamic label. A prefab's static localization key
+        // would overwrite the hovered item's name when the tooltip is enabled.
+        if (nameTooltipText != null)
+        {
+            LocalizedTMPText staticLocalization = nameTooltipText.GetComponent<LocalizedTMPText>();
+            if (staticLocalization != null && staticLocalization.enabled)
+                staticLocalization.enabled = false;
+        }
         if (recordGridContent == null)
             recordGridContent = transform.Find("Scroll View/Viewport/Content") as RectTransform;
         if (recordScrollRect == null)
@@ -374,8 +398,58 @@ public sealed class RecordPanelUI : MonoBehaviour
         }
     }
 
+    private void HideNameTooltip()
+    {
+        hoveredSlot = null;
+        if (nameTooltip != null) nameTooltip.gameObject.SetActive(false);
+    }
+
+    private void HandleSlotHover(RecordIconSlotUI slot, bool entered)
+    {
+        if (!entered)
+        {
+            if (hoveredSlot == slot) HideNameTooltip();
+            return;
+        }
+        if (slot == null) return;
+        ResolveReferences();
+        if (nameTooltip == null) return;
+        hoveredSlot = slot;
+        // 툴팁의 이미지와 텍스트가 슬롯의 포인터 이벤트를 가로채지 않게 합니다.
+        foreach (Graphic graphic in nameTooltip.GetComponentsInChildren<Graphic>(true))
+            graphic.raycastTarget = false;
+        nameTooltip.gameObject.SetActive(true);
+        // Apply after activation as well, so no OnEnable writer can replace it.
+        if (nameTooltipText != null) nameTooltipText.text = slot.DisplayName;
+        nameTooltip.SetAsLastSibling();
+        PositionNameTooltip(slot);
+    }
+
+    private void LateUpdate()
+    {
+        if (hoveredSlot != null && nameTooltip != null && nameTooltip.gameObject.activeSelf)
+            PositionNameTooltip(hoveredSlot);
+    }
+
+    private void PositionNameTooltip(RecordIconSlotUI slot)
+    {
+        RectTransform parent = nameTooltip.parent as RectTransform;
+        RectTransform slotRect = slot.transform as RectTransform;
+        if (parent == null || slotRect == null) return;
+        Canvas canvas = nameTooltip.GetComponentInParent<Canvas>();
+        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+        Vector3[] corners = new Vector3[4];
+        slotRect.GetWorldCorners(corners);
+        Vector3 bottomCenter = (corners[0] + corners[3]) * 0.5f;
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(camera, bottomCenter);
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, screenPoint, camera, out Vector2 localPoint)) return;
+        nameTooltip.pivot = new Vector2(0.5f, 1f);
+        nameTooltip.position = parent.TransformPoint(localPoint + Vector2.down * tooltipOffset);
+    }
+
     private void ClearSlots()
     {
+        HideNameTooltip();
         foreach (RecordIconSlotUI slot in createdSlots)
             if (slot != null) Destroy(slot.gameObject);
         createdSlots.Clear();
@@ -385,7 +459,7 @@ public sealed class RecordPanelUI : MonoBehaviour
     {
         RecordIconSlotUI slot = Instantiate(iconSlotPrefab, recordGridContent, false);
         slot.gameObject.SetActive(true);
-        slot.Initialize(discovered ? icon : null, discovered ? displayName : "???", null, discovered);
+        slot.Initialize(discovered ? icon : null, discovered ? displayName : "미발견", null, discovered, HandleSlotHover);
         if (!string.IsNullOrWhiteSpace(rarity))
             slot.SetBackColor(GetRarityDisplayColor(rarity));
         createdSlots.Add(slot);
