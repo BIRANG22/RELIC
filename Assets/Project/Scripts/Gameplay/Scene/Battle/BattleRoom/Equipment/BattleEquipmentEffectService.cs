@@ -1690,7 +1690,7 @@ public static class BattleEquipmentEffectService
                 continue;
             }
 
-            if (TryApplyEnemyTurnStartStatusEffect(entry, effect.SourceId))
+            if (TryApplyEnemyTurnStartStatusEffect(entry, effect.SourceId, playerTurnNumber))
                 continue;
 
             if (TryApplyConditionalUniqueResourceTurnStartEffect(runtime, entry))
@@ -1965,7 +1965,8 @@ public static class BattleEquipmentEffectService
 
     private static bool TryApplyEnemyTurnStartStatusEffect(
         SkillEffectEntry entry,
-        string sourceId)
+        string sourceId,
+        int playerTurnNumber)
     {
         string statusEffectId = ResolveEnemyTurnStartStatusEffectId(entry?.EffectId);
 
@@ -1981,6 +1982,7 @@ public static class BattleEquipmentEffectService
             FindObjectsInactive.Exclude,
             FindObjectsSortMode.None);
 
+        bool applied = false;
         for (int i = 0; i < monsters.Length; i++)
         {
             MonsterUnit monster = monsters[i];
@@ -1989,7 +1991,11 @@ public static class BattleEquipmentEffectService
                 continue;
 
             BattleEffectUtility.AddStatusToMonster(monster, statusEffectId, stack, 1);
+            applied = true;
         }
+
+        if (applied)
+            BattleEffectInfoFeed.NotifyEnemyWideEquipmentStatus(sourceId, statusEffectId, playerTurnNumber);
 
         return true;
     }

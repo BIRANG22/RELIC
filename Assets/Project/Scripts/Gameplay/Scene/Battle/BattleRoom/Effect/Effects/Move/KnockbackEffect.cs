@@ -41,6 +41,7 @@ public class KnockbackEffect : BattleEffectBase
                         context.GridManager,
                         out int blockingUnitGridIndex))
                 {
+                    BattleEffectInfoFeed.ShowCollision(context.MonsterCaster != null);
                     if (blockingUnitGridIndex >= 0)
                         HandlePlayerUnitCollision(playerTarget, blockingUnitGridIndex, context.GridManager);
                     else
@@ -63,6 +64,7 @@ public class KnockbackEffect : BattleEffectBase
                         context.GridManager,
                         out int blockingUnitGridIndex))
                 {
+                    BattleEffectInfoFeed.ShowCollision(context.MonsterCaster != null || context.PlayerCaster == null);
                     if (blockingUnitGridIndex >= 0)
                         HandleMonsterUnitCollision(monsterTarget, blockingUnitGridIndex, context.GridManager);
                     else
