@@ -2758,7 +2758,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: muck.missile
-    vfxPrefab: {fileID: 7625895887722065679, guid: 46f6c725fd762724d94b566b0d4f508e, type: 3}
+    vfxPrefab: {fileID: 1554735761749976267, guid: c9eb4dfd9497ee14790a1f27d664d476, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 05d8a2a02bfa4422e96e236f7ceb4781, type: 3}
       delay: 0.1
@@ -2770,7 +2770,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: muck.attack
-    vfxPrefab: {fileID: 3362751810309854143, guid: 10bad5f4be8c97b4fa38a4fb131738e7, type: 3}
+    vfxPrefab: {fileID: 3362751810309854143, guid: 46f6c725fd762724d94b566b0d4f508e, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 9b02f295ba2434817a92492a2aed4b88, type: 3}
       delay: 0

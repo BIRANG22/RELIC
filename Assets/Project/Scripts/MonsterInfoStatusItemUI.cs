@@ -1,5 +1,7 @@
 using Relic.Gameplay.Data;
 using TMPro;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,14 +16,50 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text detailText;
 
+    private StatusEffectRuntimeData boundStatus;
+
     private void Awake()
     {
         ResolveReferences();
+        DisableFixedLocalizationWriters();
+    }
+
+    private void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+        DisableFixedLocalizationWriters();
+    }
+
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+    }
+
+    private void OnLocaleChanged(Locale locale)
+    {
+        if (boundStatus != null)
+            Bind(boundStatus);
+    }
+
+    private void DisableFixedLocalizationWriters()
+    {
+        DisableFixedWriter(nameText);
+        DisableFixedWriter(detailText);
+    }
+
+    private static void DisableFixedWriter(TMP_Text text)
+    {
+        if (text == null) return;
+        LocalizedTMPText writer = text.GetComponent<LocalizedTMPText>();
+        if (writer != null) writer.enabled = false;
     }
 
     public void Bind(StatusEffectRuntimeData statusData)
     {
         ResolveReferences();
+        DisableFixedLocalizationWriters();
+        boundStatus = statusData;
 
         if (statusData == null || string.IsNullOrWhiteSpace(statusData.EffectId))
         {
