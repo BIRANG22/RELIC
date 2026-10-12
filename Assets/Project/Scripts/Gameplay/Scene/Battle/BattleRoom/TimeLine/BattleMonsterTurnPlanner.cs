@@ -848,12 +848,17 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
     private void ShowActionReserveIntroText()
     {
+        BattleEffectInfoFeed.ShowTurnStart(Mathf.Max(1, plannedBattleTurn));
+        StartCoroutine(BattleEffectInfoFeed.FlushInitialEffectsAndWait());
         PlayActionReservationStartSfx();
         ShowIntroText(GameLocalization.Get(LocalizationKeys.Battle.ActionReserve));
     }
 
-    private IEnumerator ShowActionReserveIntroTextAndWaitRoutine()
+    private IEnumerator ShowActionReserveIntroTextAndWaitRoutine(bool showTurnHeading = true)
     {
+        if (showTurnHeading)
+            BattleEffectInfoFeed.ShowTurnStart(Mathf.Max(1, plannedBattleTurn));
+        StartCoroutine(BattleEffectInfoFeed.FlushInitialEffectsAndWait());
         PlayActionReservationStartSfx();
         yield return ShowIntroTextAndWaitRoutine(GameLocalization.Get(LocalizationKeys.Battle.ActionReserve));
     }

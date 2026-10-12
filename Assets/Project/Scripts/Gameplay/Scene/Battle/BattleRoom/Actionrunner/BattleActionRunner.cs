@@ -238,7 +238,7 @@ public class BattleActionRunner
 
             actionRoutines.Add(CreateActionRoutine(
                 $"Monster:{command.RuntimeId}:{command.SkillId}",
-                ExecuteMonsterCommand(command),
+                ShowMonsterEffectInfoAndExecute(command),
                 GetPresentationInfo(command)));
         }
 
@@ -294,6 +294,8 @@ public class BattleActionRunner
         if (command == null || command.UserRuntime == null || command.UserRuntime.IsDead)
             yield break;
 
+        BattleEffectInfoFeed.ShowPlayer(command);
+
         bool consumeSmiteAfterAttack = ShouldConsumeSmite(command);
 
         if (actionRoutine != null)
@@ -307,6 +309,15 @@ public class BattleActionRunner
 
         if (command != null && command.UserRuntime != null && !command.UserRuntime.IsDead)
             onPlayerCommandExecuted?.Invoke(command, timelineSlotIndex);
+    }
+
+    private IEnumerator ShowMonsterEffectInfoAndExecute(MonsterReservedCommand command)
+    {
+        if (command == null || command.UserRuntime == null || command.UserRuntime.IsDead)
+            yield break;
+
+        BattleEffectInfoFeed.ShowMonster(command);
+        yield return ExecuteMonsterCommand(command);
     }
 
     private static bool ShouldConsumeSmite(PlayerReservedCommand command)
@@ -2629,6 +2640,8 @@ public class BattleActionRunner
             counterCommand.SetForcedDirection(counterDirection);
             counterCommand.SetExplicitRangeResult(counterRange, counterRange);
 
+            // Display reactive monster actions that are not on the timeline.
+            BattleEffectInfoFeed.ShowMonster(counterCommand);
             yield return ExecuteMonsterSkill(counterCommand);
 
             if (caster.RuntimeData.IsDead)
@@ -3840,6 +3853,7 @@ public class BattleActionRunner
         if (moveResolution.BlockedByGridEffect &&
             moveResolution.BlockingGridEffectGridIndex >= 0)
         {
+            BattleEffectInfoFeed.ShowCollision(true);
             ApplyCrashToMonster(monster);
 
             BattleGridEffectController controller = ResolveGridEffectController();
@@ -4130,6 +4144,7 @@ public class BattleActionRunner
                 out BattleCharacter blockingCharacter,
                 movingCharacterId))
         {
+            BattleEffectInfoFeed.ShowCollision(movingMonster != null);
             int damageToMovingUnit = baseCrashDamage +
                 BattleEquipmentEffectService.GetCollisionTargetDamageDelta(blockingCharacter.RuntimeData);
             int damageToBlockingCharacter = baseCrashDamage +
@@ -4162,6 +4177,7 @@ public class BattleActionRunner
                 out MonsterUnit blockingMonster,
                 movingMonster))
         {
+            BattleEffectInfoFeed.ShowCollision(movingMonster != null);
             int damageToBlockingMonster = baseCrashDamage +
                 BattleEquipmentEffectService.GetCollisionTargetDamageDelta(
                     movingCharacter != null ? movingCharacter.RuntimeData : null);

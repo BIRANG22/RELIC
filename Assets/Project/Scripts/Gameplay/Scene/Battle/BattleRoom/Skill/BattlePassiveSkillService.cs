@@ -92,7 +92,9 @@ public class BattlePassiveSkillService
 
         if (effectId == "E_Armor")
         {
+            int beforeShield = runtime.CurrentShield;
             ApplyArmorToPlayer(runtime, runtime, passiveSkill, appliedValue);
+            BattleEffectInfoFeed.ShowPassiveGain(passiveSkill, runtime.CurrentShield - beforeShield, false, false, false);
             return;
         }
 
@@ -115,6 +117,7 @@ public class BattlePassiveSkillService
             runtime.StatusEffects = new System.Collections.Generic.List<StatusEffectRuntimeData>();
 
         runtime.StatusEffects.Add(status);
+        BattleEffectInfoFeed.ShowPassiveGain(passiveSkill, finalStack, false, false, false);
 
         Debug.Log(
             $"[Passive] Status / Character:{runtime.CharacterId} / " +
@@ -141,6 +144,10 @@ public class BattlePassiveSkillService
             FindObjectsInactive.Exclude,
             FindObjectsSortMode.None);
 
+        int appliedCount = 0;
+        int livingCount = 0;
+        for (int i = 0; i < monsters.Length; i++)
+            if (monsters[i] != null && monsters[i].RuntimeData != null && !monsters[i].RuntimeData.IsDead) livingCount++;
         for (int i = 0; i < monsters.Length; i++)
         {
             MonsterUnit monster = monsters[i];
@@ -148,12 +155,15 @@ public class BattlePassiveSkillService
                 continue;
 
             BattleEffectUtility.AddStatusToMonster(monster, effectId, finalStack, 1);
+            appliedCount++;
 
             Debug.Log(
                 $"[Passive] EnemyParty / Owner:{ownerRuntime.CharacterId} / " +
                 $"Target:{monster.RuntimeData.RuntimeId} / Skill:{passiveSkill.SkillId} / " +
                 $"Effect:{effectId} / Stack:{finalStack}");
         }
+        if (appliedCount > 0)
+            BattleEffectInfoFeed.ShowPassiveGain(passiveSkill, finalStack, false, true, appliedCount == livingCount);
     }
 
     private static void ApplyEffectToAllLivingPlayers(
@@ -166,6 +176,13 @@ public class BattlePassiveSkillService
             FindObjectsInactive.Exclude,
             FindObjectsSortMode.None);
 
+        int livingCount = 0;
+        int appliedCount = 0;
+        int commonGain = -1;
+        bool sameGain = true;
+        System.Collections.Generic.List<int> gains = new System.Collections.Generic.List<int>();
+        for (int j = 0; j < characters.Length; j++)
+            if (characters[j] != null && characters[j].RuntimeData != null && !characters[j].RuntimeData.IsDead) livingCount++;
         for (int i = 0; i < characters.Length; i++)
         {
             BattleCharacter character = characters[i];
@@ -176,7 +193,10 @@ public class BattlePassiveSkillService
 
             if (effectId == "E_Armor")
             {
+                int beforeShield = targetRuntime.CurrentShield;
                 ApplyArmorToPlayer(ownerRuntime, targetRuntime, passiveSkill, appliedValue);
+                int gainedArmor = targetRuntime.CurrentShield - beforeShield;
+                if (gainedArmor > 0) { appliedCount++; gains.Add(gainedArmor); if (commonGain >= 0 && commonGain != gainedArmor) sameGain = false; commonGain = gainedArmor; }
                 continue;
             }
 
@@ -189,7 +209,15 @@ public class BattlePassiveSkillService
                 continue;
 
             BattleEffectUtility.AddStatusToPlayer(character, effectId, finalStack, 1);
+            appliedCount++; gains.Add(finalStack);
+            if (commonGain >= 0 && commonGain != finalStack) sameGain = false;
+            commonGain = finalStack;
         }
+        if (appliedCount == livingCount && appliedCount > 0 && sameGain)
+            BattleEffectInfoFeed.ShowPassiveGain(passiveSkill, commonGain, true, false, true);
+        else
+            for (int i = 0; i < gains.Count; i++)
+                BattleEffectInfoFeed.ShowPassiveGain(passiveSkill, gains[i], false, false, false);
     }
 
     private static void ApplyArmorToPlayer(

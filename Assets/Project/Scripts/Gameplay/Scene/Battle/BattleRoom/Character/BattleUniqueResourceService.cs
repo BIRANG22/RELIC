@@ -25,12 +25,13 @@ public class BattleUniqueResourceService
 
             ApplyUniqueResourceGainNow(character.RuntimeData, TurnEndResourceGainAmount);
         }
+        BattleEffectInfoFeed.ShowPartyKarmaRecovery(TurnEndResourceGainAmount);
     }
 
-    private void ApplyUniqueResourceGainNow(CharacterRuntimeData runtime, int amount)
+    private int ApplyUniqueResourceGainNow(CharacterRuntimeData runtime, int amount)
     {
         if (runtime == null || amount <= 0)
-            return;
+            return 0;
 
         CharacterMasterData masterData = GetMasterData(runtime.CharacterId);
 
@@ -51,12 +52,13 @@ public class BattleUniqueResourceService
 
         int gainedAmount = Mathf.Max(0, runtime.CurrentResource - previousResource);
         if (gainedAmount <= 0)
-            return;
+            return 0;
 
         RefreshPlayerHUDs();
         ShowUniqueResourcePopup(runtime, masterData, gainedAmount);
 
         Debug.Log($"[UniqueResource] TurnEnd / {runtime.CharacterId} +{gainedAmount} / {runtime.CurrentResource}/{maxResource}");
+        return gainedAmount;
     }
 
     private void ShowUniqueResourcePopup(

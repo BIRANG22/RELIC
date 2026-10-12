@@ -748,6 +748,7 @@ public static class BattleEffectUtility
             {
                 PlayHealVfx(ResolveUnitAnimator(target));
                 BattleDamageTextPopupUI.ShowHealthRecovery(target.transform, healedValue);
+                BattleEffectInfoFeed.ShowHealthRecovery(healedValue);
             }
 
             OnPlayerHudRefreshRequested?.Invoke(target);
@@ -763,6 +764,7 @@ public static class BattleEffectUtility
         {
             PlayHealVfx(ResolveUnitAnimator(target));
             BattleDamageTextPopupUI.ShowHealthRecovery(target.transform, healedAmount);
+            BattleEffectInfoFeed.ShowHealthRecovery(healedAmount);
         }
 
         OnPlayerHudRefreshRequested?.Invoke(target);
@@ -783,6 +785,7 @@ public static class BattleEffectUtility
         {
             PlayHealVfx(ResolveUnitAnimator(target));
             BattleDamageTextPopupUI.ShowHealthRecovery(target.transform, healedValue);
+            BattleEffectInfoFeed.ShowHealthRecovery(healedValue);
         }
 
         target.ShowTemporaryHUDForEffect();

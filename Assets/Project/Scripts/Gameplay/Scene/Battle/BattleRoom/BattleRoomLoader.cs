@@ -674,9 +674,13 @@ public class BattleRoomLoader : MonoBehaviour
         if (monsterTurnPlanner != null)
             monsterTurnPlanner.ResetBattleStartIntroState();
 
+        // Collect first-turn effects until the battle-start intro has finished.
+        BattleEffectInfoFeed.BeginInitialEffects();
         SpawnPlayersAndHUD();
         SpawnMonstersAndHUD(false);
+        BattleEffectInfoFeed.BeginPassiveCapture();
         RefreshBattleStartPassives();
+        BattleEffectInfoFeed.EndPassiveCapture();
 
         // 튜토리얼 전투에서는 기존 전투방의 랜덤 장애물/초기 그리드 효과를 생성하지 않습니다.
         // 전투 중 스킬/유물로 새로 생성되는 그리드 효과는 기존 시스템을 그대로 사용합니다.
@@ -861,7 +865,6 @@ public class BattleRoomLoader : MonoBehaviour
             return;
 
         PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
-
         for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
         {
             string characterId = partyStore.GetCharacterId(i);

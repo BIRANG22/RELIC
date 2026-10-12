@@ -667,11 +667,13 @@ public class BattleTurnExecutor : MonoBehaviour
                 // 카르마/마나/체력 회복값이 모두 확정된 뒤 순차 팝업 재생을 시작합니다.
                 BattleDamageTextPopupUI.EndRecoveryPopupSequence();
 
+                BattleEffectInfoFeed.BeginPassiveCapture();
                 passiveSkillService.ClearAllPlayerPassiveEffects();
 
                 yield return roomLoader.PlanNextMonsterTurnsRoutine();
 
                 passiveSkillService.RefreshAllPlayerPassives();
+                BattleEffectInfoFeed.EndPassiveCapture();
 
                 roomLoader.RefreshBattleHUDs();
             }
@@ -1331,9 +1333,11 @@ public class BattleTurnExecutor : MonoBehaviour
                 continue;
             }
 
+            var equipmentEffects = BattleEffectInfoFeed.CaptureStatusSnapshot();
             BattleEquipmentEffectService.ApplyPlayerTurnStartEffects(
                 runtime,
                 playerTurnNumber);
+            BattleEffectInfoFeed.ShowNewStatusEffects(equipmentEffects);
         }
     }
 
