@@ -15264,7 +15264,7 @@ GameObject:
   - component: {fileID: 7307852094683397141}
   - component: {fileID: 2248637442559790051}
   m_Layer: 0
-  m_Name: Vfx_guard
+  m_Name: Vfx_guard_ruke
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
