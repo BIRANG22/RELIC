@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using Relic.Gameplay.Data;
 using TMPro;
@@ -8,7 +9,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 도감의 6개 탭과 단일 Content에 표시되는 아이콘 목록을 관리합니다.
-/// 상세 정보 UI는 별도로 구현할 예정이므로 이 스크립트에서는 다루지 않습니다.
+/// 아이콘 선택 시 Info 패널을 열고 닫는 기능을 제공합니다.
 /// </summary>
 public sealed class RecordPanelUI : MonoBehaviour
 {
@@ -45,11 +46,20 @@ public sealed class RecordPanelUI : MonoBehaviour
     private static Color cachedExclusiveRarityColor;
 
     private readonly List<RecordIconSlotUI> createdSlots = new();
+    private readonly HashSet<RecordIconSlotUI> clickableInfoSlots = new();
     private readonly Dictionary<Button, ColorBlock> originalButtonColors = new();
     [Header("Name Tooltip")]
     [SerializeField] private RectTransform nameTooltip;
     [SerializeField] private TMP_Text nameTooltipText;
     [SerializeField] private float tooltipOffset = 8f;
+
+    [Header("Record Info Popup")]
+    [SerializeField] private GameObject infoPanel;
+    [SerializeField] private Button infoCancelButton;
+
+    public bool IsInfoOpen => infoPanel != null && infoPanel.activeInHierarchy;
+
+    private RecordIconSlotUI selectedInfoSlot;
 
     private RecordIconSlotUI hoveredSlot;
     private RecordIconSlotUI runtimeIconSlotTemplate;
@@ -63,6 +73,7 @@ public sealed class RecordPanelUI : MonoBehaviour
         ResolveReferences();
         BindButtons();
         CacheButtonColors();
+        BindInfoCancelButton();
         initialized = true;
     }
 
@@ -76,11 +87,17 @@ public sealed class RecordPanelUI : MonoBehaviour
             CacheButtonColors();
             initialized = true;
         }
+        BindInfoCancelButton();
+        HideInfo();
         HideNameTooltip();
         ShowSkillTab();
     }
 
-    private void OnDisable() => HideNameTooltip();
+    private void OnDisable()
+    {
+        HideInfo();
+        HideNameTooltip();
+    }
 
     public void Close()
     {
@@ -104,8 +121,72 @@ public sealed class RecordPanelUI : MonoBehaviour
     public void ShowItemTab() => ShowTab(RecordTab.Item);
     public void ShowEffectTab() => ShowTab(RecordTab.Effect);
 
+    public void OpenInfo()
+    {
+        OpenInfoForSlot(null);
+    }
+
+    private void OpenInfoForSlot(RecordIconSlotUI slot)
+    {
+        ResolveReferences();
+        if (infoPanel == null) return;
+        BindInfoCancelButton();
+        HideNameTooltip();
+
+        if (selectedInfoSlot != null && selectedInfoSlot != slot)
+            selectedInfoSlot.SetSelected(false);
+        selectedInfoSlot = slot;
+        if (selectedInfoSlot != null)
+            selectedInfoSlot.SetSelected(true);
+
+        // Show immediately. Reset any CanvasGroup left by older fade versions.
+        CanvasGroup group = infoPanel.GetComponent<CanvasGroup>();
+        if (group != null)
+        {
+            group.alpha = 1f;
+            group.interactable = true;
+            group.blocksRaycasts = true;
+        }
+        infoPanel.SetActive(true);
+        infoPanel.transform.SetAsLastSibling();
+    }
+
+    public void HideInfo()
+    {
+        if (selectedInfoSlot != null)
+            selectedInfoSlot.SetSelected(false);
+        selectedInfoSlot = null;
+        if (infoPanel == null) return;
+        infoPanel.SetActive(false);
+    }
+
+    public bool TryCloseInfo()
+    {
+        if (!IsInfoOpen) return false;
+        HideInfo();
+        return true;
+    }
+
+    private void BindInfoCancelButton()
+    {
+        ResolveReferences();
+        if (infoCancelButton == null) return;
+        infoCancelButton.onClick.RemoveListener(HideInfo);
+        infoCancelButton.onClick.AddListener(HideInfo);
+    }
+
     private void ResolveReferences()
     {
+        if (infoPanel == null)
+        {
+            Transform info = transform.Find("Info");
+            if (info != null) infoPanel = info.gameObject;
+        }
+        if (infoCancelButton == null && infoPanel != null)
+        {
+            Transform cancel = infoPanel.transform.Find("Cancel");
+            if (cancel != null) infoCancelButton = cancel.GetComponent<Button>();
+        }
         if (nameTooltip == null)
             nameTooltip = transform.Find("NameTooltip") as RectTransform;
         if (nameTooltipText == null && nameTooltip != null)
@@ -196,6 +277,7 @@ public sealed class RecordPanelUI : MonoBehaviour
     private void ShowTab(RecordTab tab)
     {
         ResolveReferences();
+        HideInfo();
         currentTab = tab;
         RefreshSelectedButton();
         if (recordGridContent == null)
@@ -398,6 +480,13 @@ public sealed class RecordPanelUI : MonoBehaviour
         }
     }
 
+    private void HandleSlotClicked(RecordIconSlotUI slot, string itemName)
+    {
+        // Undiscovered entries have no detail data and must not open Info.
+        if (slot == null || !clickableInfoSlots.Contains(slot)) return;
+        OpenInfoForSlot(slot);
+    }
+
     private void HideNameTooltip()
     {
         hoveredSlot = null;
@@ -449,6 +538,8 @@ public sealed class RecordPanelUI : MonoBehaviour
 
     private void ClearSlots()
     {
+        HideInfo();
+        clickableInfoSlots.Clear();
         HideNameTooltip();
         foreach (RecordIconSlotUI slot in createdSlots)
             if (slot != null) Destroy(slot.gameObject);
@@ -459,7 +550,8 @@ public sealed class RecordPanelUI : MonoBehaviour
     {
         RecordIconSlotUI slot = Instantiate(iconSlotPrefab, recordGridContent, false);
         slot.gameObject.SetActive(true);
-        slot.Initialize(discovered ? icon : null, discovered ? displayName : "미발견", null, discovered, HandleSlotHover);
+        slot.Initialize(discovered ? icon : null, discovered ? displayName : "미발견", discovered ? HandleSlotClicked : null, discovered, HandleSlotHover);
+        if (discovered) clickableInfoSlots.Add(slot);
         if (!string.IsNullOrWhiteSpace(rarity))
             slot.SetBackColor(GetRarityDisplayColor(rarity));
         createdSlots.Add(slot);

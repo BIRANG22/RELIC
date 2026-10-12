@@ -10,6 +10,7 @@ using UnityEngine.UI;
 public class BattleMenuEscapeInputController : MonoBehaviour
 {
     private static int lastHandledEscapeFrame = -1;
+    private static int lastHandledRightClickFrame = -1;
 
     [Header("Input")]
     [SerializeField] private bool enableEscapeInput = true;
@@ -85,6 +86,26 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
     private void Update()
     {
+        // 우클릭은 전면 팝업을 먼저 닫고, 그 다음 입력에서 배틀 메뉴를 닫습니다.
+        // 메뉴가 닫혀 있을 때는 우클릭으로 메뉴를 새로 열지 않습니다.
+        if (WasRightMousePressedThisFrame() && !IsTypingInputFieldSelected() &&
+            !UIManager.WasModalPanelClosedByBackInputThisFrame &&
+            lastHandledRightClickFrame != Time.frameCount)
+        {
+            UIManager ui = UIManager.Instance;
+            if (ui != null && ui.TryHideConfirmDialogIfOpen())
+                lastHandledRightClickFrame = Time.frameCount;
+            else if (ui != null && ui.TryHideRecordIfOpen())
+                lastHandledRightClickFrame = Time.frameCount;
+            else if (ui != null && ui.TryHideOptionIfOpen())
+                lastHandledRightClickFrame = Time.frameCount;
+            else if (IsMenuPanelOpen())
+            {
+                lastHandledRightClickFrame = Time.frameCount;
+                ClickMenuButton();
+            }
+        }
+
         if (enableEscapeInput && WasEscapePressedThisFrame() && !IsTypingInputFieldSelected())
         {
             if (UIManager.WasConfirmDialogClosedByEscapeThisFrame ||
@@ -518,6 +539,19 @@ public class BattleMenuEscapeInputController : MonoBehaviour
             return;
 
         menuRootBlockerGraphic.raycastTarget = enabled;
+    }
+
+    private bool WasRightMousePressedThisFrame()
+    {
+#if ENABLE_INPUT_SYSTEM
+        if (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame)
+            return true;
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        return Input.GetMouseButtonDown(1);
+#else
+        return false;
+#endif
     }
 
     private bool WasEscapePressedThisFrame()

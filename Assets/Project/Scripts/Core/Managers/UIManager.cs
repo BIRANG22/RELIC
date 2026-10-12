@@ -70,6 +70,9 @@ public class UIManager : Singleton<UIManager>
 
     public static bool WasOptionPanelClosedByEscapeThisFrame => lastOptionClosedByEscapeFrame == Time.frameCount;
     public static bool WasRecordPanelClosedByEscapeThisFrame => lastRecordClosedByEscapeFrame == Time.frameCount;
+    public static bool WasModalPanelClosedByBackInputThisFrame =>
+        WasRecordPanelClosedByEscapeThisFrame || WasOptionPanelClosedByEscapeThisFrame ||
+        WasConfirmDialogClosedByEscapeThisFrame;
     public static bool WasConfirmDialogClosedByEscapeThisFrame => lastConfirmClosedByEscapeFrame == Time.frameCount;
 
     public bool IsOptionPanelOpen => optionPanelInstance != null && optionPanelInstance.activeInHierarchy;
@@ -99,9 +102,16 @@ public class UIManager : Singleton<UIManager>
         if (IsTypingInputFieldSelected())
             return;
 
-        if (!WasEscapePressedThisFrame())
+        bool escapePressed = WasEscapePressedThisFrame();
+        bool rightClickPressed = WasRightMousePressedThisFrame();
+        if (!escapePressed && !rightClickPressed)
             return;
 
+        if (WasModalPanelClosedByBackInputThisFrame)
+            return;
+
+        // Both inputs dismiss one foreground modal per press. Right-click must
+        // never open the title quit dialog or fall through to the lobby menu.
         if (closeConfirmDialogWithEscape && TryHideConfirmDialogIfOpen(true))
             return;
 
@@ -109,6 +119,9 @@ public class UIManager : Singleton<UIManager>
             return;
 
         if (closeOptionPanelWithEscape && TryHideOptionIfOpen(true))
+            return;
+
+        if (rightClickPressed)
             return;
 
         if (IsTitleScene())
@@ -353,6 +366,14 @@ public class UIManager : Singleton<UIManager>
     {
         if (!IsRecordPanelOpen)
             return false;
+
+        // Info가 열려 있으면 Record 자체는 유지하고 Info만 먼저 닫습니다.
+        RecordPanelUI recordPanel = recordPanelInstance.GetComponent<RecordPanelUI>();
+        if (recordPanel != null && recordPanel.TryCloseInfo())
+        {
+            lastRecordClosedByEscapeFrame = Time.frameCount;
+            return true;
+        }
 
         HideRecord();
 
@@ -888,6 +909,19 @@ public class UIManager : Singleton<UIManager>
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
             SceneName.Title,
             System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool WasRightMousePressedThisFrame()
+    {
+#if ENABLE_INPUT_SYSTEM
+        if (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame)
+            return true;
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        return Input.GetMouseButtonDown(1);
+#else
+        return false;
+#endif
     }
 
     private bool WasEscapePressedThisFrame()
