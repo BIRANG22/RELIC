@@ -247,7 +247,7 @@ MonoBehaviour:
     proxySortingWorldYOffset: 0
     proxyYMultiplier: 100
   guardVfx:
-    prefab: {fileID: 8802234492492066749, guid: 0beedeb423fa0d84585fcbbb3397e1d8, type: 3}
+    prefab: {fileID: 8802234492492066749, guid: 1bb812ec5c7fdf746a782cddae1b02d2, type: 3}
     flipType: 2
     renderMode: 2
     proxyBlendMode: 0
@@ -256,13 +256,13 @@ MonoBehaviour:
     renderTextureHeight: 512
     renderCameraOrthographicSize: 5
     proxyWorldHeight: 10
-    proxyWorldOffset: {x: 0.3, y: 0.8, z: 0}
+    proxyWorldOffset: {x: 3, y: 1.5, z: 0}
     proxySortingLayerName: Unit
     proxySortingOrderOffset: 0
     proxySortingWorldYOffset: 0
     proxyYMultiplier: 100
   hitVfx:
-    prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
+    prefab: {fileID: 1117934107437797500, guid: a6f07256a45086045bd938e2675d5ed1, type: 3}
     flipType: 2
     renderMode: 2
     proxyBlendMode: 0
@@ -607,7 +607,7 @@ MonoBehaviour:
   skillVfxDatabase: {fileID: 0}
   gridManager: {fileID: 0}
   monsterActionPresentations:
-  - prepareStateName: 
+  - prepareStateName: Idle
     prepareDuration: 0.15
     stateName: AttackAction1
     vfx:
@@ -637,7 +637,7 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - prepareStateName: 
+  - prepareStateName: Idle
     prepareDuration: 0.15
     stateName: AttackAction2
     vfx:
@@ -667,7 +667,7 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - prepareStateName: 
+  - prepareStateName: Idle
     prepareDuration: 0.15
     stateName: AttackAction3
     vfx:
