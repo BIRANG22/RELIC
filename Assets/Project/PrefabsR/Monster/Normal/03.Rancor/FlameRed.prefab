@@ -547,7 +547,7 @@ MonoBehaviour:
     proxySortingWorldYOffset: 0
     proxyYMultiplier: 100
   guardVfx:
-    prefab: {fileID: 8802234492492066749, guid: 0beedeb423fa0d84585fcbbb3397e1d8, type: 3}
+    prefab: {fileID: 8802234492492066749, guid: 9b23ef61d3b6c0c4b8a836f24463506c, type: 3}
     flipType: 2
     renderMode: 2
     proxyBlendMode: 0
@@ -562,7 +562,7 @@ MonoBehaviour:
     proxySortingWorldYOffset: 0
     proxyYMultiplier: 100
   hitVfx:
-    prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
+    prefab: {fileID: 1117934107437797500, guid: 1714dbfc79d53d34c845cc3560477330, type: 3}
     flipType: 2
     renderMode: 2
     proxyBlendMode: 0
