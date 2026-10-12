@@ -362,8 +362,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: battle.boss.reveal.impact.low
     aliases: []
-    clip: {fileID: 8300000, guid: f68655a8e56c446688345b346d8decac, type: 3}
-    volume: 0.5
+    clip: {fileID: 8300000, guid: 4198f6bb24a8ff54f9c3372eb1ded9cb, type: 3}
+    volume: 1
     pitch: 0.8
     loop: 0
     useRandomPitch: 1
@@ -731,7 +731,25 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: skill.cutscene
     aliases: []
-    clip: {fileID: 8300000, guid: 0839dd8ee6fdd9148a7a0743a291495a, type: 3}
+    clip: {fileID: 8300000, guid: d57d4d048867f48c192a6e51fc46e403, type: 3}
+    volume: 0.5
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: skill.cutscene2
+    aliases: []
+    clip: {fileID: 8300000, guid: a125a2873ab4e4d5593071c06702e9a2, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.5
+    randomPitchMax: 1
+  - id: boss_arabella1
+    aliases: []
+    clip: {fileID: 8300000, guid: 33c49cb6b00d24185b02d6dc75ad09f4, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0

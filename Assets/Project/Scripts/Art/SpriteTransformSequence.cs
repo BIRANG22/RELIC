@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
-using UnityEngine.UI;
-using TMPro;
 
 /// <summary>
 /// 스프라이트 오브젝트의 위치, 회전, 크기, 색상과 반전 상태를 단계별로 연출합니다.
@@ -37,28 +35,13 @@ public sealed class SpriteTransformSequence : MonoBehaviour
         [Min(0f)] public float shakeFrequency = 25f;
     }
 
-    public enum BossTitleEntrance { None, SlideUp, ScaleUp }
-
     [Serializable]
-    public sealed class BossTitleSettings
+    public sealed class VfxActivation
     {
-        public bool enabled;
-        public string bossName = "BOSS NAME";
-        public string subtitle = "";
+        [Tooltip("활성화할 VFX 오브젝트를 지정합니다. 프리팹의 비활성 자식 오브젝트를 연결할 수 있습니다.")]
+        public GameObject vfxObject;
+        [Tooltip("해당 Step이 시작된 시점부터 VFX를 활성화하기까지의 대기 시간(초)")]
         [Min(0f)] public float delay = 0f;
-        [Min(0f)] public float fadeInDuration = 0.4f;
-        [Min(0f)] public float holdDuration = 1.2f;
-        [Min(0f)] public float fadeOutDuration = 0.4f;
-        public BossTitleEntrance entrance = BossTitleEntrance.SlideUp;
-        [Min(0f)] public float entranceDistance = 45f;
-        [Min(0.01f)] public float initialScale = 0.85f;
-        public AnimationCurve easing = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-        public Color nameColor = new Color(0.95f, 0.9f, 0.82f, 1f);
-        public Color subtitleColor = new Color(0.7f, 0.64f, 0.61f, 1f);
-        [Min(1f)] public float nameFontSize = 65f;
-        [Min(1f)] public float subtitleFontSize = 22f;
-        [Tooltip("체크하면 보스 이름 연출이 끝날 때까지 다음 Step으로 이동하지 않습니다.")]
-        public bool waitForCompletion = false;
     }
 
     [Serializable]
@@ -81,8 +64,8 @@ public sealed class SpriteTransformSequence : MonoBehaviour
         [Header("카메라 연출 (순서대로 재생)")]
         public bool enableCameraMotion;
         public List<CameraMotion> cameraMotions = new List<CameraMotion>();
-        [Header("보스 이름 연출")]
-        public BossTitleSettings bossTitle = new BossTitleSettings();
+        [Header("VFX 활성화 (Step 시작 기준)")]
+        public List<VfxActivation> vfxObjects = new List<VfxActivation>();
     }
 
     [Header("대상")]
@@ -104,7 +87,7 @@ public sealed class SpriteTransformSequence : MonoBehaviour
     [SerializeField] private bool loop = false;
     [SerializeField] private bool useUnscaledTime = false;
     [SerializeField] private bool applyFirstStepImmediately = false;
-    [Tooltip("마지막 단계, 보스 이름 연출 및 카메라 복귀가 모두 끝나면 이 오브젝트를 비활성화합니다. Loop가 켜져 있으면 반복이 끝나기 전까지 비활성화하지 않습니다.")]
+    [Tooltip("마지막 단계와 카메라 복귀가 모두 끝나면 이 오브젝트를 비활성화합니다. Loop가 켜져 있으면 반복이 끝나기 전까지 비활성화하지 않습니다.")]
     [SerializeField] private bool deactivateOnFinish = true;
     [Tooltip("모든 연출과 카메라 복귀가 끝난 후 오브젝트를 비활성화하기까지 기다리는 시간(초)입니다.")]
     [Min(0f)][SerializeField] private float deactivateDelay = 0f;
@@ -119,17 +102,10 @@ public sealed class SpriteTransformSequence : MonoBehaviour
     private Quaternion originalCameraRotation;
     private float originalCameraSize;
     private bool cameraSnapshotTaken;
-    private Canvas titleCanvas;
-    private RectTransform titleRoot;
-    private CanvasGroup titleGroup;
-    private TextMeshProUGUI titleNameText;
-    private TextMeshProUGUI titleSubtitleText;
-    private Coroutine titleCoroutine;
-    private int titleVersion;
-    private bool titlePlaying;
+    private readonly List<Coroutine> activeVfxCoroutines = new List<Coroutine>();
+    private int pendingVfxCount;
 
-
-    private Transform Target => target != null ? target : transform;
+private Transform Target => target != null ? target : transform;
 
     private SpriteRenderer SpriteTarget => spriteRenderer != null
         ? spriteRenderer
@@ -166,7 +142,7 @@ public sealed class SpriteTransformSequence : MonoBehaviour
         }
 
         StopStepClip();
-        CancelBossTitle();
+        StopVfxActivations();
         if (restoreCameraOnFinish)
             RestoreCameraImmediately();
         else
@@ -189,11 +165,9 @@ public sealed class SpriteTransformSequence : MonoBehaviour
             {
                 ApplyStep(steps[0]);
                 PlayStepClip(steps[0]);
-                StartBossTitle(steps[0]);
+                StartStepVfx(steps[0]);
                 if (HasCameraMotions(steps[0]))
                     yield return PlayCameraMotions(steps[0]);
-                if (WaitForBossTitle(steps[0]))
-                    while (titlePlaying) yield return null;
                 startIndex = 1;
             }
 
@@ -211,7 +185,7 @@ public sealed class SpriteTransformSequence : MonoBehaviour
                 }
 
                 PlayStepClip(step);
-                StartBossTitle(step);
+                StartStepVfx(step);
 
                 Transform current = Target;
                 Vector3 fromPosition = GetPosition(current);
@@ -229,8 +203,6 @@ public sealed class SpriteTransformSequence : MonoBehaviour
                     ApplyStep(step);
                     if (cameraRoutine != null)
                         yield return cameraRoutine;
-                    if (WaitForBossTitle(step))
-                        while (titlePlaying) yield return null;
                     continue;
                 }
 
@@ -264,14 +236,15 @@ public sealed class SpriteTransformSequence : MonoBehaviour
                 }
 
                 ApplyStep(step);
-                if (WaitForBossTitle(step))
-                    while (titlePlaying) yield return null;
             }
         }
         while (loop && isActiveAndEnabled);
 
-        // 마지막 Step의 이름 연출은 완료 후 UI가 정리되도록 기다립니다.
-        while (titlePlaying) yield return null;
+        // 마지막 Step에서 예약한 VFX가 아직 대기 중이라면 활성화될 때까지 기다립니다.
+        while (pendingVfxCount > 0)
+            yield return null;
+        activeVfxCoroutines.Clear();
+
         if (restoreCameraOnFinish && cameraSnapshotTaken)
             yield return RestoreCameraSmoothly();
         else
@@ -296,135 +269,48 @@ public sealed class SpriteTransformSequence : MonoBehaviour
             gameObject.SetActive(false);
     }
 
-    private static bool WaitForBossTitle(TransformStep step)
+    private void StartStepVfx(TransformStep step)
     {
-        return step != null && step.bossTitle != null && step.bossTitle.enabled && step.bossTitle.waitForCompletion;
-    }
+        if (step == null || step.vfxObjects == null)
+            return;
 
-    private void StartBossTitle(TransformStep step)
-    {
-        BossTitleSettings settings = step != null ? step.bossTitle : null;
-        if (settings == null || !settings.enabled) return;
-        CancelBossTitle();
-        EnsureTitleUI();
-        titlePlaying = true;
-        titleCoroutine = StartCoroutine(PlayBossTitle(settings, titleVersion));
-    }
-
-    private void CancelBossTitle()
-    {
-        titleVersion++;
-        if (titleCoroutine != null)
+        foreach (VfxActivation entry in step.vfxObjects)
         {
-            StopCoroutine(titleCoroutine);
-            titleCoroutine = null;
+            if (entry == null || entry.vfxObject == null)
+                continue;
+
+            // 코루틴을 시작하기 전에 수를 증가시켜, Delay가 0이어도 정확히 집계합니다.
+            pendingVfxCount++;
+            Coroutine coroutine = StartCoroutine(ActivateVfxAfterDelay(entry.vfxObject, entry.delay));
+            if (coroutine != null)
+                activeVfxCoroutines.Add(coroutine);
         }
-        titlePlaying = false;
-        if (titleCanvas != null)
-            Destroy(titleCanvas.gameObject);
-        titleCanvas = null;
-        titleRoot = null;
-        titleGroup = null;
-        titleNameText = null;
-        titleSubtitleText = null;
     }
 
-    private void EnsureTitleUI()
+    private IEnumerator ActivateVfxAfterDelay(GameObject vfxObject, float delay)
     {
-        GameObject canvasObject = new GameObject("Sequence Boss Title Canvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-        titleCanvas = canvasObject.GetComponent<Canvas>();
-        titleCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        titleCanvas.sortingOrder = 30000;
-        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-        scaler.matchWidthOrHeight = 0.5f;
-        canvasObject.GetComponent<GraphicRaycaster>().enabled = false;
-
-        GameObject rootObject = new GameObject("Boss Title", typeof(RectTransform), typeof(CanvasGroup));
-        rootObject.transform.SetParent(canvasObject.transform, false);
-        titleRoot = rootObject.GetComponent<RectTransform>();
-        titleRoot.anchorMin = new Vector2(0.5f, 0.5f);
-        titleRoot.anchorMax = new Vector2(0.5f, 0.5f);
-        titleRoot.pivot = new Vector2(0.5f, 0.5f);
-        titleRoot.sizeDelta = new Vector2(1500f, 240f);
-        titleGroup = rootObject.GetComponent<CanvasGroup>();
-        titleGroup.alpha = 0f;
-        titleGroup.blocksRaycasts = false;
-        titleGroup.interactable = false;
-
-        titleNameText = CreateTitleText("Boss Name", titleRoot, new Vector2(0f, 30f), new Vector2(1450f, 125f));
-        titleSubtitleText = CreateTitleText("Boss Subtitle", titleRoot, new Vector2(0f, -65f), new Vector2(1450f, 55f));
-    }
-
-    private static TextMeshProUGUI CreateTitleText(string label, Transform parent, Vector2 position, Vector2 size)
-    {
-        GameObject obj = new GameObject(label, typeof(RectTransform), typeof(TextMeshProUGUI));
-        obj.transform.SetParent(parent, false);
-        RectTransform rect = obj.GetComponent<RectTransform>();
-        rect.anchoredPosition = position;
-        rect.sizeDelta = size;
-        TextMeshProUGUI result = obj.GetComponent<TextMeshProUGUI>();
-        result.alignment = TextAlignmentOptions.Center;
-        result.textWrappingMode = TextWrappingModes.NoWrap;
-        result.overflowMode = TextOverflowModes.Ellipsis;
-        result.raycastTarget = false;
-        return result;
-    }
-
-    private IEnumerator PlayBossTitle(BossTitleSettings settings, int version)
-    {
-        titleNameText.text = settings.bossName ?? "";
-        titleNameText.fontSize = settings.nameFontSize;
-        titleNameText.color = settings.nameColor;
-        titleSubtitleText.text = settings.subtitle ?? "";
-        titleSubtitleText.fontSize = settings.subtitleFontSize;
-        titleSubtitleText.color = settings.subtitleColor;
-        titleSubtitleText.gameObject.SetActive(!string.IsNullOrEmpty(settings.subtitle));
-        titleGroup.alpha = 0f;
-        float delay = Mathf.Max(0f, settings.delay);
-        while (delay > 0f) { yield return null; delay -= DeltaTime; }
-
-        float fadeIn = Mathf.Max(0f, settings.fadeInDuration);
-        float elapsed = 0f;
-        while (elapsed < fadeIn)
+        float remaining = Mathf.Max(0f, delay);
+        while (remaining > 0f)
         {
-            elapsed += DeltaTime;
-            float t = Mathf.Clamp01(elapsed / fadeIn);
-            float eased = settings.easing != null && settings.easing.length > 0 ? settings.easing.Evaluate(t) : t;
-            titleGroup.alpha = Mathf.Clamp01(t);
-            ApplyTitleEntrance(settings, eased);
             yield return null;
+            remaining -= DeltaTime;
         }
-        titleGroup.alpha = 1f;
-        ApplyTitleEntrance(settings, 1f);
-        float hold = Mathf.Max(0f, settings.holdDuration);
-        while (hold > 0f) { yield return null; hold -= DeltaTime; }
-        float fadeOut = Mathf.Max(0f, settings.fadeOutDuration);
-        elapsed = 0f;
-        while (elapsed < fadeOut)
-        {
-            elapsed += DeltaTime;
-            titleGroup.alpha = 1f - Mathf.Clamp01(elapsed / fadeOut);
-            yield return null;
-        }
-        if (version == titleVersion)
-        {
-            titlePlaying = false;
-            titleCoroutine = null;
-            if (titleCanvas != null) Destroy(titleCanvas.gameObject);
-            titleCanvas = null;
-        }
+
+        if (vfxObject != null)
+            vfxObject.SetActive(true);
+
+        pendingVfxCount = Mathf.Max(0, pendingVfxCount - 1);
     }
 
-    private void ApplyTitleEntrance(BossTitleSettings settings, float t)
+    private void StopVfxActivations()
     {
-        titleRoot.anchoredPosition = settings.entrance == BossTitleEntrance.SlideUp
-            ? new Vector2(0f, Mathf.LerpUnclamped(-settings.entranceDistance, 0f, t)) : Vector2.zero;
-        float scale = settings.entrance == BossTitleEntrance.ScaleUp
-            ? Mathf.LerpUnclamped(settings.initialScale, 1f, t) : 1f;
-        titleRoot.localScale = Vector3.one * scale;
+        foreach (Coroutine coroutine in activeVfxCoroutines)
+        {
+            if (coroutine != null)
+                StopCoroutine(coroutine);
+        }
+        activeVfxCoroutines.Clear();
+        pendingVfxCount = 0;
     }
 
     private static bool HasCameraMotions(TransformStep step)
