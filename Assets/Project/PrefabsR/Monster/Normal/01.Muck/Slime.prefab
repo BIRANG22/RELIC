@@ -579,7 +579,7 @@ MonoBehaviour:
     prepareDuration: 0.15
     stateName: AttackAction1
     vfx:
-      prefab: {fileID: 3362751810309854143, guid: 10bad5f4be8c97b4fa38a4fb131738e7, type: 3}
+      prefab: {fileID: 3362751810309854143, guid: 46f6c725fd762724d94b566b0d4f508e, type: 3}
       flipType: 2
       renderMode: 2
       proxyBlendMode: 0
@@ -596,7 +596,7 @@ MonoBehaviour:
     spawnVfxOnEachTargetGrid: 0
     projectileVfx:
       missilePrefab: {fileID: 1554735761749976267, guid: c9eb4dfd9497ee14790a1f27d664d476, type: 3}
-      impactPrefab: {fileID: 7625895887722065679, guid: 46f6c725fd762724d94b566b0d4f508e, type: 3}
+      impactPrefab: {fileID: 7625895887722065679, guid: 58cfcede373537a47ac7d0e5330ca8fa, type: 3}
       missileFlipType: 1
       impactFlipType: 1
       launchDelay: 0
