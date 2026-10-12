@@ -533,7 +533,7 @@ MonoBehaviour:
   defaultHitFlashValue: 0
   autoFindHitFlashRenderers: 1
   moveVfx:
-    prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
+    prefab: {fileID: 4145361429921181282, guid: c28c0959627b1674693c7eb7301160f1, type: 3}
     flipType: 2
     renderMode: 2
     proxyBlendMode: 0

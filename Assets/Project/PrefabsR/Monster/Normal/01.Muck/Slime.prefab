@@ -200,7 +200,7 @@ MonoBehaviour:
   defaultHitFlashValue: 0
   autoFindHitFlashRenderers: 1
   moveVfx:
-    prefab: {fileID: 4145361429921181282, guid: 64eec7862f4d94a4198ea5d201af5b88, type: 3}
+    prefab: {fileID: 4145361429921181282, guid: 14446538ebfd3ff4890ea1f5dd834341, type: 3}
     flipType: 2
     renderMode: 2
     proxyBlendMode: 0
@@ -582,7 +582,7 @@ MonoBehaviour:
       prefab: {fileID: 3362751810309854143, guid: 10bad5f4be8c97b4fa38a4fb131738e7, type: 3}
       flipType: 2
       renderMode: 2
-      proxyBlendMode: 1
+      proxyBlendMode: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512
       renderTextureHeight: 512
@@ -604,7 +604,7 @@ MonoBehaviour:
       arrivalDistance: 0.05
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
-      impactOffset: {x: 0, y: 0, z: 0}
+      impactOffset: {x: 0, y: 1, z: 0}
   - prepareStateName: 
     prepareDuration: 0.15
     stateName: 
