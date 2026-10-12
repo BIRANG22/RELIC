@@ -25,6 +25,7 @@ public class RecordIconSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExi
     private bool isSelected;
     private bool isPointerInside;
     private Action<RecordIconSlotUI, string> clickedCallback;
+    private Action<RecordIconSlotUI, bool> hoverCallback;
 
     public string DisplayName => displayName;
     public bool IsSelected => isSelected;
@@ -35,12 +36,13 @@ public class RecordIconSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExi
         SetSelectVisible(false);
     }
 
-    public void Initialize(Sprite icon, string itemName, Action<RecordIconSlotUI, string> onClicked, bool showIcon = true)
+    public void Initialize(Sprite icon, string itemName, Action<RecordIconSlotUI, string> onClicked, bool showIcon = true, Action<RecordIconSlotUI, bool> onHover = null)
     {
         EnsureReferences();
 
         displayName = itemName ?? string.Empty;
         clickedCallback = onClicked;
+        hoverCallback = onHover;
         isSelected = false;
         isPointerInside = false;
 
@@ -83,12 +85,14 @@ public class RecordIconSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExi
     {
         isPointerInside = true;
         RefreshBorderColor();
+        hoverCallback?.Invoke(this, true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         isPointerInside = false;
         RefreshBorderColor();
+        hoverCallback?.Invoke(this, false);
     }
 
     public void OnPointerClick(PointerEventData eventData)
