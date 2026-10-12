@@ -7,29 +7,29 @@ public class LobbyMenuController : MonoBehaviour
     private const string SettingButtonObjectName = "SettingButton";
 
     [Header("Menu Panel")]
-    [Tooltip("���� ���� �κ� �޴� �г��Դϴ�.")]
+    [Tooltip("로비 메뉴 패널입니다.")]
     [SerializeField] private GameObject menuPanel;
 
     [Header("Menu Button")]
-    [Tooltip("���� MenuButton�Դϴ�. ESC�� �޴��� �� �� �� ��ư�� Ŭ���� �Ͱ� ���� �帧�� Ÿ�� �� �� �ֽ��ϴ�.")]
+    [Tooltip("로비의 MenuButton입니다. ESC로 메뉴를 열 때 버튼 클릭과 동일한 흐름을 사용합니다.")]
     [SerializeField] private Button menuButton;
     [SerializeField] private string menuButtonObjectName = "MenuButton";
     [SerializeField] private bool autoFindMenuButton = true;
-    [Tooltip("���� ������ ESC�� �� �� MenuButton Ŭ�� �̺�Ʈ�� �����մϴ�. ���� UIPanelButton ���¿� ���� ������� ���� ���� ����մϴ�.")]
+    [Tooltip("메뉴를 열 때 MenuButton 클릭 이벤트를 실행합니다. 기존 UIPanelButton 동작과 동일한 방식으로 메뉴를 엽니다.")]
     [SerializeField] private bool openByClickingMenuButton = true;
 
-    [Tooltip("���� ������ MenuButton�� ���� ���� �޴��� ������ ���� �κ� �Ͻ����� ���·� ����մϴ�.")]
+    [Tooltip("MenuButton으로 열린 메뉴의 상태를 로비 메뉴 컨트롤러와 동기화합니다.")]
     [SerializeField] private bool bindMenuButtonOpenState = true;
 
     [Header("Continue Button")]
-    [Tooltip("�޴� �г� ���� Continue ��ư�Դϴ�. �� ��ư�� ������ ���� CloseMenu�� ���� ������� ������ �մϴ�.")]
+    [Tooltip("메뉴 패널의 Continue 버튼입니다. 클릭하면 CloseMenu를 통해 메뉴를 닫습니다.")]
     [SerializeField] private Button continueButton;
     [SerializeField] private string continueButtonObjectName = "ContinueButton";
     [SerializeField] private bool autoFindContinueButton = true;
     [SerializeField] private bool bindContinueButtonClick = true;
 
     [Header("Open Option")]
-    [Tooltip("�޴��� �� �� �޴� ���� ù ��° ���� ������ ��ư�� EventSystem ���� ������� �����մϴ�.")]
+    [Tooltip("메뉴를 열면 첫 번째로 선택할 버튼을 EventSystem 선택 대상으로 지정합니다.")]
     [SerializeField] private bool selectFirstButtonOnOpen = true;
 
     public GameObject MenuPanel => menuPanel;
@@ -101,12 +101,18 @@ public class LobbyMenuController : MonoBehaviour
     {
         FindReferencesIfNeeded();
 
-        // ESC�� ���� ���� ���� ���� �� �ִ� �����պ��� �ݽ��ϴ�.
-        // Ȯ��â/����â�� �� �ִ� ���¿��� MenuPanel���� ���� ������ �ʵ��� ������ �и��մϴ�.
-        if (UIManager.WasConfirmDialogClosedByEscapeThisFrame || UIManager.WasOptionPanelClosedByEscapeThisFrame)
+        // ESC 또는 우클릭으로 이미 닫힌 팝업이 있다면 같은 입력으로 메뉴까지 닫지 않습니다.
+        // 확인창, 도감, 설정창이 열려 있으면 메뉴보다 해당 창을 먼저 닫습니다.
+        if (UIManager.WasModalPanelClosedByBackInputThisFrame)
             return;
 
         if (UIManager.Instance != null && UIManager.Instance.TryHideConfirmDialogIfOpen(true))
+        {
+            ClearSelectionIfInsideMenu();
+            return;
+        }
+
+        if (UIManager.Instance != null && UIManager.Instance.TryHideRecordIfOpen(true))
         {
             ClearSelectionIfInsideMenu();
             return;

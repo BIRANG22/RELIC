@@ -526,6 +526,9 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
 
         if (Input.GetKeyDown(backKey) || Input.GetMouseButtonDown(1))
         {
+            if (UIManager.WasModalPanelClosedByBackInputThisFrame)
+                return;
+
             CloseMenuPanel();
             BlockInputForCooldown();
         }
