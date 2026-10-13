@@ -10,6 +10,7 @@ public class NewSkillEffectRegistryTests
     [TestCase("E_Rush")]
     [TestCase("E_Bondage")]
     [TestCase("E_PoisonByTargetPoison")]
+    [TestCase("E_PoisonEqualTargetPoison")]
     [TestCase("E_TriggerPoison")]
     [TestCase("E_PoisonTrigger")]
     [TestCase("E_RestoreManaPerHitTarget")]

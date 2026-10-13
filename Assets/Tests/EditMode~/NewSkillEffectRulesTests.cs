@@ -36,6 +36,16 @@ public class NewSkillEffectRulesTests
     [TestCase(7, 7)]
     [TestCase(0, 0)]
     [TestCase(-3, 0)]
+    public void EqualTargetPoison_UsesNonNegativeTargetPoison(int poison, int expected)
+    {
+        Assert.That(
+            NewSkillEffectRules.ResolveEqualTargetPoison(poison),
+            Is.EqualTo(expected));
+    }
+
+    [TestCase(7, 7)]
+    [TestCase(0, 0)]
+    [TestCase(-3, 0)]
     public void TargetPoisonStrike_UsesNonNegativeTargetPoison(int poison, int expected)
     {
         Assert.That(

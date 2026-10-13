@@ -24,6 +24,7 @@ public class BattleEffectRegistry
         Register(new PoisonTriggerEffect());
         Register(new PoisonTriggerEffect("E_TriggerPoison"));
         Register(new PoisonByTargetPoisonEffect());
+        Register(new PoisonEqualTargetPoisonEffect());
         Register(new BondageEffect());
         Register(new DebuffIncreaseEffect());
         Register(new DebuffDoubleEffect());
