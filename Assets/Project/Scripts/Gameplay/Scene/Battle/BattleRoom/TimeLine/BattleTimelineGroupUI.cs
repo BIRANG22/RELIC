@@ -47,12 +47,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [Header("Selected Turn Mark")]
     [SerializeField] private Transform turnMarkTransform;
     [SerializeField] private Image turnMarkImage;
-    [SerializeField] private Color selectedTurnMarkColorA = new Color32(0x00, 0x00, 0x00, 0xFF);
-    [SerializeField] private Color selectedTurnMarkColorB = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
-    [SerializeField] private float selectedTurnMarkScale = 1.2f;
-    [SerializeField] private float selectedTurnMarkBreathScale = 0.06f;
-    [SerializeField] private float selectedTurnMarkBreathSpeed = 3f;
-    [SerializeField] private float selectedTurnMarkColorSpeed = 4f;
+    [SerializeField] private Sprite selectedTurnMarkSprite;
 
     private readonly List<BattleTimelinePreviewEntry> currentEntries = new();
     [Header("Order Value Change (Execution Only)")]
@@ -123,7 +118,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             return;
         }
 
-        UpdateTurnMarkSelectedAnimation();
         UpdateDeadReservationVisuals();
         RefreshExecutingOrderValues();
     }
@@ -1294,6 +1288,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                     }
 
                     // 아직 행동이 등록되지 않은 Next 슬롯의 Order 프레임은 표시하지 않습니다.
+                    SetSkillLineColor(root, Color.white, false);
                     root.SetActive(false);
                 }
 
@@ -1324,51 +1319,23 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         hasCachedTurnMarkVisual = true;
     }
 
-    private void UpdateTurnMarkSelectedAnimation()
-    {
-        if (turnMarkTransform == null)
-            return;
-
-        if (!isActive)
-            return;
-
-        float breath = (Mathf.Sin(Time.unscaledTime * selectedTurnMarkBreathSpeed) + 1f) * 0.5f;
-        float scale = selectedTurnMarkScale + (breath * selectedTurnMarkBreathScale);
-        turnMarkTransform.localScale = turnMarkNormalScale * scale;
-
-        ApplyTurnMarkSelectedBlinkColor();
-    }
-
     private void ApplyTurnMarkSelectedVisual(bool selected)
     {
         CacheTurnMarkNormalVisual();
-
-        if (turnMarkTransform == null)
-            return;
-
-        if (selected)
-            ApplyTurnMarkSelectedBlinkColor();
-        else
-        {
-            if (turnMarkImage != null)
-                turnMarkImage.color = turnMarkNormalImageColor;
-        }
-
-        if (!selected)
-            turnMarkTransform.localScale = turnMarkNormalScale;
-        else
-            turnMarkTransform.localScale = turnMarkNormalScale * selectedTurnMarkScale;
-    }
-
-    private void ApplyTurnMarkSelectedBlinkColor()
-    {
-        float t = (Mathf.Sin(Time.unscaledTime * selectedTurnMarkColorSpeed) + 1f) * 0.5f;
-        Color blinkColor = Color.Lerp(selectedTurnMarkColorA, selectedTurnMarkColorB, t);
+        CacheTrailingVisualDefaults();
 
         if (turnMarkImage != null)
-            turnMarkImage.color = blinkColor;
-    }
+        {
+            // Preserve the prefab's original image when the selection moves to another slot.
+            turnMarkImage.sprite = selected && selectedTurnMarkSprite != null
+                ? selectedTurnMarkSprite
+                : turnMarkNormalSprite;
+            turnMarkImage.color = turnMarkNormalImageColor;
+        }
 
+        if (turnMarkTransform != null)
+            turnMarkTransform.localScale = turnMarkNormalScale;
+    }
 
     public ReserveTurnSlotUI GetOrCreateReserveTurnSlot(BattleTimelineController controller, int targetSlotIndex)
     {
@@ -1524,6 +1491,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             Transform root = FindSizeRoot(orderIndex, size);
             if (root == null) continue;
             RestoreSizeRootAppearance(root);
+            SetSkillLineColor(root.gameObject, Color.white, false);
             ClearSkillHoverComponents(root.gameObject);
             TMP_Text value = FindUseSkillText(root);
             if (value != null) { value.text = ""; value.gameObject.SetActive(false); }
@@ -1545,6 +1513,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         Transform selectedRoot = FindSizeRoot(orderIndex, size);
         if (selectedRoot == null) return fallback;
         RestoreSizeRootAppearance(selectedRoot);
+        SetSkillLineColor(selectedRoot.gameObject, Color.white, false);
         selectedRoot.gameObject.SetActive(true);
         return FindUseSkillImage(selectedRoot) ?? fallback;
     }
@@ -1795,7 +1764,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         GameObject root = GetSkillHoverObject(skillImage);
         if (root != null)
-            SetRootImageColor(root, rootColor);
+            SetSkillLineColor(root, rootColor, true);
 
         skillImage.color = contentColor;
     }
@@ -1875,7 +1844,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         if (hoverObject != null)
         {
-            SetRootImageColor(hoverObject, show ? borderColor : emptyUseSkillColor);
+            SetSkillLineColor(hoverObject, borderColor, show);
             hoverObject.SetActive(show);
 
             Image rootImage = hoverObject.GetComponent<Image>();
@@ -1897,6 +1866,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             return;
 
         useSkillRoot.SetActive(true);
+        SetSkillLineColor(useSkillRoot, Color.white, false);
 
         Image rootImage = useSkillRoot.GetComponent<Image>();
 
@@ -2057,6 +2027,21 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             texts[i].text = "";
             texts[i].gameObject.SetActive(false);
         }
+    }
+
+    // Only the child line indicates the reservation owner; keep the authored frame tint.
+    private void SetSkillLineColor(GameObject root, Color color, bool visible)
+    {
+        if (root == null) return;
+        Transform line = root.transform.Find("line");
+        if (line == null) return;
+        Image lineImage = line.GetComponent<Image>();
+        if (lineImage != null)
+        {
+            lineImage.color = color;
+            lineImage.enabled = visible;
+        }
+        line.gameObject.SetActive(visible);
     }
 
     private void SetRootImageColor(GameObject root, Color color)
