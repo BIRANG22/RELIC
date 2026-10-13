@@ -116,7 +116,8 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
             for (int order = 0; order < OrderCountPerSlot; order++)
             {
                 Transform orderRoot = FindOrderRoot(timelineSlot, order);
-                Transform useSkillRoot = FindChildRecursive(orderRoot, "Use_skill");
+                Transform useSkillRoot = FindChildRecursive(orderRoot, "Use_skill1");
+                if (useSkillRoot == null) useSkillRoot = FindChildRecursive(orderRoot, "Use_skill");
                 Image useSkillImage = FindBestUseSkillImage(useSkillRoot);
                 useSkillImages[GetUseSkillIndex(slot, order)] = useSkillImage;
                 RegisterTarget(useSkillImage, useSkillRoot != null ? useSkillRoot.gameObject : null);
@@ -304,7 +305,27 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
         if (useSkillImages == null || index < 0 || index >= useSkillImages.Length)
             yield break;
 
-        yield return PlayImageRoutineSafe(useSkillImages[index], useSkillFrames);
+        Image target = useSkillImages[index];
+        int slot = index / OrderCountPerSlot;
+        int order = index % OrderCountPerSlot;
+        Transform slotRoot = FindTimelineSlot(slot);
+        Transform orderRoot = FindOrderRoot(slotRoot, order);
+        if (orderRoot != null)
+        {
+            for (int size = 1; size <= 3; size++)
+            {
+                Transform root = orderRoot.Find("Use_skill" + size);
+                if (root == null || !root.gameObject.activeInHierarchy) continue;
+                Image candidate = FindBestUseSkillImage(root);
+                if (candidate != null)
+                {
+                    target = candidate;
+                    RegisterTarget(target, root.gameObject);
+                    break;
+                }
+            }
+        }
+        yield return PlayImageRoutineSafe(target, useSkillFrames);
     }
 
     private IEnumerator PlayImageRoutineSafe(Image image, Sprite[] frames)

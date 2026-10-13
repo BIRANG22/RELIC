@@ -596,17 +596,22 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
             if (order == null || !order.gameObject.activeInHierarchy)
                 continue;
 
-            Transform useSkill = FindChildRecursive(order, "Use_skill");
-            if (useSkill == null || !useSkill.gameObject.activeInHierarchy)
-                continue;
+            for (int size = 1; size <= 3; size++)
+            {
+                Transform useSkill = order.Find("Use_skill" + size);
+                if (useSkill == null && size == 1)
+                    useSkill = order.Find("Use_skill");
+                if (useSkill == null || !useSkill.gameObject.activeInHierarchy)
+                    continue;
 
-            Transform skillImageTransform = FindChildRecursive(useSkill, "Skill_Image");
-            if (skillImageTransform == null || !skillImageTransform.gameObject.activeInHierarchy)
-                continue;
+                Transform skillImageTransform = FindChildRecursive(useSkill, "Skill_Image");
+                if (skillImageTransform == null || !skillImageTransform.gameObject.activeInHierarchy)
+                    continue;
 
-            Image image = skillImageTransform.GetComponent<Image>();
-            if (image != null && image.enabled && image.sprite != null && image.color.a > 0.001f)
-                return skillImageTransform as RectTransform;
+                Image image = skillImageTransform.GetComponent<Image>();
+                if (image != null && image.enabled && image.sprite != null && image.color.a > 0.001f)
+                    return skillImageTransform as RectTransform;
+            }
         }
 
         return null;

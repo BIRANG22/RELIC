@@ -37,7 +37,7 @@ public sealed class BattleUiCornerFeedback : MaskableGraphic
 
     public static void Spawn(BattleUiCornerFeedback prefab, RectTransform target)
     {
-        if (prefab == null || target == null)
+        if (prefab == null || target == null || !target.gameObject.activeInHierarchy)
             return;
 
         // 타임라인 아이콘은 예약 갱신 중 잠깐 비활성화될 수 있습니다.
@@ -54,6 +54,14 @@ public sealed class BattleUiCornerFeedback : MaskableGraphic
 
         BattleUiCornerFeedback instance = Instantiate(prefab, target, false);
         instance.destroyOnDisable = true;
+        // A disabled prefab stays disabled after Instantiate; activate before starting the coroutine.
+        if (!instance.gameObject.activeSelf)
+            instance.gameObject.SetActive(true);
+        if (!instance.gameObject.activeInHierarchy)
+        {
+            Destroy(instance.gameObject);
+            return;
+        }
         RectTransform rect = instance.rectTransform;
         rect.anchorMin = Vector2.zero;
         rect.anchorMax = Vector2.one;

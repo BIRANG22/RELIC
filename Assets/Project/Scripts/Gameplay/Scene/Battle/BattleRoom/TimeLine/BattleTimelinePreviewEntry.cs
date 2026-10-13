@@ -9,6 +9,7 @@ public class BattleTimelinePreviewEntry
 
     public int SlotIndex;
     public int OrderIndex;
+    public int OccupiedOrders = 1;
 
     public bool IsPlayer;
     public bool IsMonster;
@@ -167,6 +168,7 @@ public class BattleTimelinePreviewEntry
             SlotIndex = slotIndex,
             OrderIndex = orderIndex,
             PlayerCommandIndex = playerCommandIndex,
+            OccupiedOrders = command.TimelineEntryCost,
             IsPlayer = true,
             IsMonster = false,
             CharacterRuntime = command.UserRuntime,

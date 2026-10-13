@@ -92,6 +92,8 @@ namespace Relic.Gameplay.Data
         public ReferenceResource ReferenceResource;
         public TargetType Target;
         public int Level;
+        // Number of timeline orders occupied by this skill (SkillMaster.Entry).
+        public int Entry = 1;
         public SkillRarity Rarity;
         public SkillType SkillType;
         public TimelineActionType TimelineNotation;
