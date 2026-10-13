@@ -83,3 +83,7 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: 50d322c28e4e9184e93ed16b839407ff, type: 3}
   - EffectId: E_Repeat
     Icon: {fileID: 21300000, guid: b42c3944cb34a75429029fe0762ee4af, type: 3}
+  - EffectId: E_Spider_Web
+    Icon: {fileID: 21300000, guid: 40a5a3f273dd76f4790f7af79c115b6b, type: 3}
+  - EffectId: E_Bondage
+    Icon: {fileID: 21300000, guid: 194788d492c944d4081be93737bdaf0c, type: 3}
