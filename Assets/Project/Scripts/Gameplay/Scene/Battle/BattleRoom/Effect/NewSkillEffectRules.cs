@@ -14,6 +14,9 @@ public static class NewSkillEffectRules
     public static int ResolvePoisonByTargetPoison(int poison, int divisor) =>
         divisor > 0 ? Mathf.Max(0, poison) / divisor : 0;
 
+    public static int ResolveEqualTargetPoison(int poison) =>
+        Mathf.Max(0, poison);
+
     public static int ResolveTargetPoisonStrikeDamage(int poison) =>
         Mathf.Max(0, poison);
 
