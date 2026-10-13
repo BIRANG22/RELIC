@@ -59,6 +59,12 @@ public class PlayerReservedCommand
     public int DirectionalMoveDistanceOverride { get; private set; }
 
     public string CharacterId => UserRuntime != null ? UserRuntime.CharacterId : "";
+    // A reservation occupies Entry orders but executes only once.
+    public int TimelineEntryCost => IsFacingFlipCommand || IsMoveContinuationCommand ||
+        (SkillData != null && SkillData.Category == Category.Move)
+        ? 1 : SkillData != null && SkillData.Category == Category.Passive
+            ? 0 : Mathf.Clamp(SkillData != null ? SkillData.Entry : 1, 1, 3);
+
     public string SkillId => SkillData != null ? SkillData.SkillId : "";
     public string SkillName => SkillData != null ? SkillData.Name : "";
 

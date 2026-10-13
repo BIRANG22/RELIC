@@ -1575,6 +1575,54 @@ public class BattleTimelineController : MonoBehaviour
         return runtimeData != null && !runtimeData.IsDead;
     }
 
+    // Stop at the original fixed X coordinate of the command's starting order.
+    // Entry only determines the next occupied order; it never changes this position.
+    public IEnumerator MoveTimelineToOrderBeforeActionRoutine(int slotIndex, int orderIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= OrderGrindPositions.Length ||
+            orderIndex < 0 || orderIndex >= OrderGrindPositions[slotIndex].Length)
+            yield break;
+
+        float stopX = GetActionOrderStopPositionX(slotIndex, orderIndex);
+        yield return MoveTimelineSlotToGrindPositionRoutine(
+            slotIndex, stopX, GetUseSkillGrindDuration());
+    }
+
+    // Play the icon animation after the action resolves, not before it.
+    public IEnumerator PlayTimelineIconsAfterActionRoutine(int slotIndex, IReadOnlyList<int> orderIndices)
+    {
+        AutoFindTimelineSpriteAnimationControllerIfNeeded();
+        ConfigureTimelineSpriteAnimationRootForActiveBar();
+
+        if (orderIndices == null)
+            yield break;
+
+        for (int i = 0; i < orderIndices.Count; i++)
+        {
+            int orderIndex = orderIndices[i];
+            if (orderIndex < 0 || orderIndex >= 5)
+                continue;
+
+            // The executor has already moved the timeline to this order and stopped.
+            // Do not issue a second movement command while playing the icon animation.
+            PlayTimelineGearTickSfx();
+            if (timelineSpriteAnimationController != null)
+            {
+                SpawnTimelineGrindVfx();
+                yield return timelineSpriteAnimationController.PlayUseSkillRoutine(slotIndex, orderIndex);
+            }
+        }
+    }
+
+    // Move through unused orders after the last action in a slot has finished.
+    public IEnumerator MoveTimelineToOrderAfterActionRoutine(int slotIndex, int orderIndex)
+    {
+        yield return MoveTimelineSlotToGrindPositionRoutine(
+            slotIndex,
+            GetActionOrderStopPositionX(slotIndex, orderIndex),
+            GetUseSkillGrindDuration());
+    }
+
     public IEnumerator PlayTimelineActionAnimationsForOrdersRoutine(
         int slotIndex,
         IReadOnlyList<int> orderIndices,
@@ -1596,7 +1644,7 @@ public class BattleTimelineController : MonoBehaviour
                 continue;
 
             float animationDuration = GetUseSkillGrindDuration();
-            float targetX = GetOrderGrindPositionX(slotIndex, orderIndex);
+            float targetX = GetActionOrderStopPositionX(slotIndex, orderIndex);
 
             // 사망한 예약 행동의 Order 위치에는 멈추지 않고,
             // 실제 실행되는 다음 Order 위치까지 한 번에 이동합니다.
@@ -1644,7 +1692,7 @@ public class BattleTimelineController : MonoBehaviour
                 yield break;
 
             float animationDuration = GetUseSkillGrindDuration();
-            float targetX = GetOrderGrindPositionX(slotIndex, orderIndex);
+            float targetX = GetActionOrderStopPositionX(slotIndex, orderIndex);
 
             // 각 Order가 지정된 X 위치에 도달한 뒤 Use_skill 갈림 연출을 재생합니다.
             yield return MoveTimelineSlotToGrindPositionRoutine(
@@ -1686,6 +1734,16 @@ public class BattleTimelineController : MonoBehaviour
             case 4: return -1620f;
             default: return -1620f;
         }
+    }
+
+    // Stop just before the registered icon: order 1 uses TurnMark, subsequent
+    // orders use the preceding order's fixed grind position.
+    private static float GetActionOrderStopPositionX(int slotIndex, int orderIndex)
+    {
+        int safeOrderIndex = Mathf.Clamp(orderIndex, 0, 4);
+        return safeOrderIndex == 0
+            ? GetTurnMarkGrindPositionX(slotIndex)
+            : GetOrderGrindPositionX(slotIndex, safeOrderIndex - 1);
     }
 
     private static float GetOrderGrindPositionX(int slotIndex, int orderIndex)

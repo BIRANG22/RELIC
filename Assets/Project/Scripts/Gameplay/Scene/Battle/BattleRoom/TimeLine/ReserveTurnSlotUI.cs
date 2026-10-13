@@ -25,7 +25,17 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
     public int SlotIndex => slotIndex;
     public IReadOnlyList<PlayerReservedCommand> Commands => commands;
     public int CommandCount => commands.Count;
-    public int RemainingCommandCapacity => Mathf.Max(0, MaxCommandCount - commands.Count);
+    public int OccupiedOrderCount
+    {
+        get
+        {
+            int total = 0;
+            foreach (PlayerReservedCommand command in commands)
+                if (command != null) total += command.TimelineEntryCost;
+            return total;
+        }
+    }
+    public int RemainingCommandCapacity => Mathf.Max(0, MaxCommandCount - OccupiedOrderCount);
 
     public CharacterRuntimeData ReservedCharacter
     {
@@ -124,6 +134,12 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
         return RemainingCommandCapacity > 0;
     }
 
+    public bool CanAddCommand(PlayerReservedCommand command)
+    {
+        return command != null && command.TimelineEntryCost > 0 &&
+               RemainingCommandCapacity >= command.TimelineEntryCost;
+    }
+
     public bool AddCommand(PlayerReservedCommand command)
     {
         if (command == null)
@@ -142,7 +158,7 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
             return false;
         }
 
-        if (!CanAddCommand())
+        if (!CanAddCommand(command))
         {
             ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SlotActionLimit));
             return false;

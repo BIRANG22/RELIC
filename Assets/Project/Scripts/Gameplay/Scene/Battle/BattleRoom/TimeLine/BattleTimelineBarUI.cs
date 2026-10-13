@@ -228,7 +228,7 @@ public class BattleTimelineBarUI : MonoBehaviour
                 if (entry != null)
                     entries.Add(entry);
 
-                orderIndex++;
+                orderIndex += Mathf.Max(1, command.TimelineEntryCost);
             }
 
             if (monsterCommandsBySlot != null &&
@@ -262,7 +262,7 @@ public class BattleTimelineBarUI : MonoBehaviour
                 if (entry != null)
                     entries.Add(entry);
 
-                orderIndex++;
+                orderIndex += Mathf.Max(1, command.TimelineEntryCost);
             }
 
             bool hasEntry = entries.Count > 0;

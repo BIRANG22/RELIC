@@ -107,6 +107,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         AutoFindReferences();
         CacheTurnMarkNormalVisual();
         CacheTrailingVisualDefaults();
+        Clear(); // Hide all pre-enabled skill templates before any timeline data arrives.
         ApplyTurnMarkSelectedVisual(false);
         RefreshSelectedSlotObject(true);
     }
@@ -135,6 +136,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         AutoFindReferences();
         CacheTurnMarkNormalVisual();
         CacheTrailingVisualDefaults();
+        Clear(); // Reset prefab templates at initialization; entries are populated later.
         ApplyTurnMarkSelectedVisual(isActive);
         RefreshSelectedSlotObject();
         ApplyTurnText();
@@ -273,12 +275,19 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             if (entry == null)
                 continue;
 
-            if (visibleIndex >= maxOrderCount)
+            if (entry.OrderIndex >= maxOrderCount)
                 break;
 
-            currentEntries.Add(entry);
+            // Preserve the real 0-based order index, including reserved continuation cells.
+            while (currentEntries.Count <= entry.OrderIndex)
+            {
+                currentEntries.Add(null);
+                currentEntryOwnerDeadStates.Add(false);
+            }
+            currentEntries[entry.OrderIndex] = entry;
             bool ownerDead = IsEntryOwnerDead(entry);
-            currentEntryOwnerDeadStates.Add(ownerDead);
+            currentEntryOwnerDeadStates[entry.OrderIndex] = ownerDead;
+            visibleIndex = entry.OrderIndex;
 
             if (entry.IsMonster && firstMonsterEntry == null)
             {
@@ -297,9 +306,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             {
                 Image useSkillImage = useSkillIconImages[visibleIndex];
 
+                useSkillImage = ResolveEntrySizeImage(visibleIndex, entry.OccupiedOrders, useSkillImage);
                 SetSkillImage(useSkillImage, entry.SkillIcon, true, reservedColor);
                 ApplySkillReservationColor(useSkillImage, entry, ownerDead);
-                SetSkillValueText(useSkillValueTexts, visibleIndex, entry.SkillValueText);
+                SetSkillValueTextForEntry(visibleIndex, entry.OccupiedOrders, entry.SkillValueText);
 
                 if (entry.IsMonster)
                     SetupEnemySkillHoverTarget(useSkillImage, entry);
@@ -307,7 +317,12 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                     SetupPlayerSkillHoverTarget(useSkillImage, entry);
             }
 
-            visibleIndex++;
+        }
+
+        for (int i = 0; i < 5; i++)
+        {
+            if (IsOccupiedContinuation(i))
+                HideAllSizeRoots(i);
         }
 
         BattleTimelinePreviewEntry firstEntry = null;
@@ -347,11 +362,14 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             if (entry == null || !ReferenceEquals(entry.PlayerCommand, command))
                 continue;
 
-            if (useSkillIconImages == null || i >= useSkillIconImages.Length)
+            int orderIndex = entry.OrderIndex;
+            if (useSkillIconImages == null || orderIndex >= useSkillIconImages.Length)
                 return;
 
-            Image icon = useSkillIconImages[i];
-            if (icon != null)
+            // Feedback must not call ResolveEntrySizeImage: that method resets size roots.
+            Transform activeRoot = FindSizeRoot(orderIndex, Mathf.Clamp(entry.OccupiedOrders, 1, 3));
+            Image icon = activeRoot != null ? FindUseSkillImage(activeRoot) : useSkillIconImages[orderIndex];
+            if (icon != null && icon.gameObject.activeInHierarchy)
                 BattleUiCornerFeedback.Spawn(registrationFeedbackPrefab, icon.rectTransform);
             return;
         }
@@ -374,12 +392,11 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         ClearEnemyOwnerIconHudHoverTarget();
         ClearPlayerOwnerIconHudHoverTarget();
 
-        if (useSkillIconImages != null)
+        for (int i = 0; i < 5; i++)
         {
-            for (int i = 0; i < useSkillIconImages.Length; i++)
-            {
-                ClearSkillImage(useSkillIconImages[i]);
-            }
+            HideAllSizeRoots(i);
+            if (useSkillIconImages != null && i < useSkillIconImages.Length)
+                ClearSkillHoverTarget(useSkillIconImages[i]);
         }
 
         ClearSkillValueTexts(useSkillValueTexts);
@@ -1182,11 +1199,12 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (enemyIconImage == null)
             enemyIconImage = FindImage("Enemy_Icon", "image");
 
-        if (useSkillIconImages == null || useSkillIconImages.Length == 0)
-            useSkillIconImages = FindOrderUseSkillImages();
-
-        if (useSkillValueTexts == null || useSkillValueTexts.Length == 0)
-            useSkillValueTexts = FindOrderUseSkillTexts();
+        // The prefab hierarchy may have changed since serialized references were assigned.
+        useSkillIconImages = FindOrderUseSkillImages();
+        useSkillValueTexts = FindOrderUseSkillTexts();
+        for (int orderIndex = 0; orderIndex < 5; orderIndex++)
+            for (int size = 1; size <= 3; size++)
+                CacheSizeRootAppearance(FindSizeRoot(orderIndex, size));
 
         EnsureButton();
         SetupTurnMarkClickTarget();
@@ -1466,6 +1484,101 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         }
     }
 
+    // Each order contains Use_skill1, Use_skill2, and/or Use_skill3.
+    // Only the starting order hosts the action; subsequent orders are occupied.
+    private Transform FindSizeRoot(int orderIndex, int size)
+    {
+        Transform order = FindChildRecursive(transform, "Order" + (orderIndex + 1).ToString("00"));
+        return order != null ? order.Find("Use_skill" + size) : null;
+    }
+
+    // Store the authored frame sprite for each size separately. The skill icon
+    // (Skill_Image) is dynamic, but Use_skill1/2/3 are prefab-owned frames.
+    private readonly Dictionary<Image, Sprite> originalSizeRootSprites = new Dictionary<Image, Sprite>();
+    private readonly Dictionary<Image, Color> originalSizeRootColors = new Dictionary<Image, Color>();
+
+    private void CacheSizeRootAppearance(Transform root)
+    {
+        if (root == null) return;
+        Image frame = root.GetComponent<Image>();
+        if (frame == null || originalSizeRootSprites.ContainsKey(frame)) return;
+        originalSizeRootSprites.Add(frame, frame.sprite);
+        originalSizeRootColors.Add(frame, frame.color);
+    }
+
+    private void RestoreSizeRootAppearance(Transform root)
+    {
+        if (root == null) return;
+        Image frame = root.GetComponent<Image>();
+        if (frame == null) return;
+        CacheSizeRootAppearance(root);
+        frame.sprite = originalSizeRootSprites[frame];
+        frame.color = originalSizeRootColors[frame];
+        frame.enabled = true;
+    }
+
+    private void HideAllSizeRoots(int orderIndex)
+    {
+        for (int size = 1; size <= 3; size++)
+        {
+            Transform root = FindSizeRoot(orderIndex, size);
+            if (root == null) continue;
+            RestoreSizeRootAppearance(root);
+            ClearSkillHoverComponents(root.gameObject);
+            TMP_Text value = FindUseSkillText(root);
+            if (value != null) { value.text = ""; value.gameObject.SetActive(false); }
+            Image skillImage = FindUseSkillImage(root);
+            if (skillImage != null)
+            {
+                skillImage.sprite = null;
+                skillImage.enabled = false;
+                skillImage.raycastTarget = false;
+            }
+            root.gameObject.SetActive(false);
+        }
+    }
+
+    private Image ResolveEntrySizeImage(int orderIndex, int occupiedOrders, Image fallback)
+    {
+        int size = Mathf.Clamp(occupiedOrders, 1, 3);
+        HideAllSizeRoots(orderIndex);
+        Transform selectedRoot = FindSizeRoot(orderIndex, size);
+        if (selectedRoot == null) return fallback;
+        RestoreSizeRootAppearance(selectedRoot);
+        selectedRoot.gameObject.SetActive(true);
+        return FindUseSkillImage(selectedRoot) ?? fallback;
+    }
+
+    private void SetSkillValueTextForEntry(int orderIndex, int occupiedOrders, string text)
+    {
+        Transform root = FindSizeRoot(orderIndex, Mathf.Clamp(occupiedOrders, 1, 3));
+        TMP_Text label = root != null ? FindUseSkillText(root) : null;
+        if (label == null)
+        {
+            SetSkillValueText(useSkillValueTexts, orderIndex, text);
+            return;
+        }
+        bool show = !string.IsNullOrWhiteSpace(text);
+        label.text = show ? text : "";
+        label.gameObject.SetActive(show);
+        displayedOrderValues[label] = label.text;
+        if (!orderValueBaseScales.ContainsKey(label))
+            orderValueBaseScales[label] = label.rectTransform.localScale;
+    }
+
+    private bool IsOccupiedContinuation(int orderIndex)
+    {
+        for (int i = 0; i < currentEntries.Count; i++)
+        {
+            BattleTimelinePreviewEntry entry = currentEntries[i];
+            if (entry == null) continue;
+            if (entry.OrderIndex < orderIndex &&
+                entry.OrderIndex + Mathf.Max(1, entry.OccupiedOrders) > orderIndex)
+                return true;
+        }
+        return false;
+    }
+
     private Image[] FindOrderUseSkillImages()
     {
         List<Image> images = new();
@@ -1513,7 +1626,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (order == null)
             return null;
 
-        return FindChildRecursive(order, "Use_skill");
+        return order.Find("Use_skill1") ?? order.Find("Use_skill");
     }
 
     private Image FindUseSkillImage(Transform root)
@@ -1632,7 +1745,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
                 currentEntryOwnerDeadStates.Add(false);
 
             currentEntryOwnerDeadStates[i] = ownerDead;
-            ApplySkillReservationColor(useSkillIconImages[i], entry, ownerDead);
+            if (entry == null) continue;
+            Transform activeSizeRoot = FindSizeRoot(i, Mathf.Clamp(entry.OccupiedOrders, 1, 3));
+            Image activeIcon = activeSizeRoot != null ? FindUseSkillImage(activeSizeRoot) : useSkillIconImages[i];
+            ApplySkillReservationColor(activeIcon, entry, ownerDead);
         }
 
         bool firstDead = IsEntryOwnerDead(firstOwnerEntry);
@@ -1760,7 +1876,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (hoverObject != null)
         {
             SetRootImageColor(hoverObject, show ? borderColor : emptyUseSkillColor);
-            hoverObject.SetActive(true);
+            hoverObject.SetActive(show);
 
             Image rootImage = hoverObject.GetComponent<Image>();
 
@@ -1808,10 +1924,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (useSkillIconImages == null)
             return;
 
-        int usedCount = Mathf.Clamp(currentEntries.Count, 0, useSkillIconImages.Length);
-
-        for (int i = usedCount; i < useSkillIconImages.Length; i++)
+        for (int i = 0; i < useSkillIconImages.Length; i++)
         {
+            if ((i < currentEntries.Count && currentEntries[i] != null) || IsOccupiedContinuation(i))
+                continue;
             Image image = useSkillIconImages[i];
 
             if (image == null)

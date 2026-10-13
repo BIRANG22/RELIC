@@ -565,17 +565,29 @@ public class BattleTurnExecutor : MonoBehaviour
                         runner,
                         consecutiveActionPlan);
 
-                yield return runner.RunBatch(batch, keepCameraAfterBatch);
-
                 bool hasNextBatchInSameTimelineSlot = HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
 
-                if (timelineController != null && executableOrderIndices.Count > 0)
+
+                // Stop at the starting order before the action begins.
+                if (timelineController != null)
+                    yield return timelineController.MoveTimelineToOrderBeforeActionRoutine(
+                        currentSlotIndex, executableOrderIndices[0]);
+
+                // The action plays while the timeline is stopped at its order.
+                yield return runner.RunBatch(batch, keepCameraAfterBatch);
+
+                // Only after the action finishes do we play its icon animation.
+                if (timelineController != null)
+                    yield return timelineController.PlayTimelineIconsAfterActionRoutine(
+                        currentSlotIndex, executableOrderIndices);
+
+                // Travel across unused trailing orders only after the final action has executed.
+                if (!hasNextBatchInSameTimelineSlot && timelineController != null &&
+                    executableOrderIndices.Count > 0)
                 {
-                    yield return timelineController.PlayTimelineActionAnimationsForOrdersRoutine(
-                        currentSlotIndex,
-                        executableOrderIndices,
-                        !hasNextBatchInSameTimelineSlot
-                    );
+                    int lastOrder = executableOrderIndices[executableOrderIndices.Count - 1];
+                    if (lastOrder < 4)
+                        yield return timelineController.MoveTimelineToOrderAfterActionRoutine(currentSlotIndex, 4);
                 }
 
                 if (BattleResultChecker.Instance != null &&
@@ -812,17 +824,30 @@ public class BattleTurnExecutor : MonoBehaviour
                         runner,
                         consecutiveActionPlan);
 
-                yield return runner.RunBatch(batch, keepCameraAfterBatch);
-
                 bool hasNextBatchInSameTimelineSlot =
                     HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
 
-                if (timelineController != null && executableOrderIndices.Count > 0)
+
+                // Stop at the starting order before the action begins.
+                if (timelineController != null)
+                    yield return timelineController.MoveTimelineToOrderBeforeActionRoutine(
+                        currentSlotIndex, executableOrderIndices[0]);
+
+                // The action plays while the timeline is stopped at its order.
+                yield return runner.RunBatch(batch, keepCameraAfterBatch);
+
+                // Only after the action finishes do we play its icon animation.
+                if (timelineController != null)
+                    yield return timelineController.PlayTimelineIconsAfterActionRoutine(
+                        currentSlotIndex, executableOrderIndices);
+
+                // Travel across unused trailing orders only after the final action has executed.
+                if (!hasNextBatchInSameTimelineSlot && timelineController != null &&
+                    executableOrderIndices.Count > 0)
                 {
-                    yield return timelineController.PlayTimelineActionAnimationsForOrdersRoutine(
-                        currentSlotIndex,
-                        executableOrderIndices,
-                        !hasNextBatchInSameTimelineSlot);
+                    int lastOrder = executableOrderIndices[executableOrderIndices.Count - 1];
+                    if (lastOrder < 4)
+                        yield return timelineController.MoveTimelineToOrderAfterActionRoutine(currentSlotIndex, 4);
                 }
 
                 if (hasNextBatchInSameTimelineSlot)
@@ -1582,7 +1607,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 if (ReferenceEquals(command, targetCommand))
                     return orderIndex;
 
-                orderIndex++;
+                orderIndex += Mathf.Max(1, command.TimelineEntryCost);
             }
         }
 
@@ -1600,7 +1625,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 if (ReferenceEquals(command, targetCommand))
                     return orderIndex;
 
-                orderIndex++;
+                orderIndex += Mathf.Max(1, command.TimelineEntryCost);
             }
         }
 
@@ -1627,7 +1652,7 @@ public class BattleTurnExecutor : MonoBehaviour
             {
                 PlayerReservedCommand command = playerCommands[i];
                 if (command != null && BattleActionOrderUtility.HasSwift(command))
-                    orderIndex++;
+                    orderIndex += Mathf.Max(1, command.TimelineEntryCost);
             }
         }
 
