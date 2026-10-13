@@ -191,6 +191,7 @@ public class BattleTimelinePreviewEntry
         {
             SlotIndex = slotIndex,
             OrderIndex = orderIndex,
+            OccupiedOrders = command.TimelineEntryCost,
             IsPlayer = false,
             IsMonster = true,
             MonsterRuntime = command.UserRuntime,

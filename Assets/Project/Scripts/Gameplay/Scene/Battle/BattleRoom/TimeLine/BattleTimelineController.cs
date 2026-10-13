@@ -3452,7 +3452,10 @@ public class BattleTimelineController : MonoBehaviour
             return false;
         }
 
-        if (!CanAddPlayerCommandToSlot(slotIndex, ignoreNetworkViewedSlotLock))
+        if (!CanAddPlayerCommandToSlot(
+                slotIndex,
+                command.TimelineEntryCost,
+                ignoreNetworkViewedSlotLock))
         {
             ShowCombinedSlotCapacityWarning();
             return false;
@@ -3536,7 +3539,11 @@ public class BattleTimelineController : MonoBehaviour
 
         if (slot == null ||
             !slot.CanAcceptCharacter(command.UserRuntime) ||
-            !slot.CanAddCommand())
+            !slot.CanAddCommand(command) ||
+            !CanAddPlayerCommandToSlot(
+                slotIndex,
+                command.TimelineEntryCost,
+                ignoreNetworkViewedSlotLock: true))
         {
             return false;
         }
@@ -3909,6 +3916,17 @@ public class BattleTimelineController : MonoBehaviour
         int slotIndex,
         bool ignoreNetworkViewedSlotLock = false)
     {
+        return CanAddPlayerCommandToSlot(
+            slotIndex,
+            requestedOccupiedOrders: 1,
+            ignoreNetworkViewedSlotLock: ignoreNetworkViewedSlotLock);
+    }
+
+    private bool CanAddPlayerCommandToSlot(
+        int slotIndex,
+        int requestedOccupiedOrders,
+        bool ignoreNetworkViewedSlotLock = false)
+    {
         if (reserveSlots == null)
             return false;
 
@@ -3923,33 +3941,38 @@ public class BattleTimelineController : MonoBehaviour
         if (slot == null)
             return false;
 
-        return slot.CanAddCommand() && GetRemainingCombinedCommandCapacity(slotIndex) > 0;
+        return slot.CanAddCommand() && BattleTimelineCapacityPolicy.CanFit(
+            ReserveTurnSlotUI.MaxCommandCount,
+            GetCombinedOccupiedOrderCount(slotIndex),
+            requestedOccupiedOrders);
     }
 
     private int GetRemainingCombinedCommandCapacity(int slotIndex)
     {
-        if (slotIndex < 0)
-            return 0;
-
-        int playerCommandCount = GetPlayerCommandCount(slotIndex);
-        int monsterCommandCount = GetMonsterCommandCount(slotIndex);
-
-        return Mathf.Max(
-            0,
-            ReserveTurnSlotUI.MaxCommandCount - playerCommandCount - monsterCommandCount);
+        return BattleTimelineCapacityPolicy.GetRemainingCapacity(
+            ReserveTurnSlotUI.MaxCommandCount,
+            GetCombinedOccupiedOrderCount(slotIndex));
     }
 
-    private int GetPlayerCommandCount(int slotIndex)
+    private int GetCombinedOccupiedOrderCount(int slotIndex)
+    {
+        if (slotIndex < 0)
+            return ReserveTurnSlotUI.MaxCommandCount;
+
+        return GetPlayerOccupiedOrderCount(slotIndex) + GetMonsterOccupiedOrderCount(slotIndex);
+    }
+
+    private int GetPlayerOccupiedOrderCount(int slotIndex)
     {
         if (reserveSlots == null || slotIndex < 0 || slotIndex >= reserveSlots.Length)
             return 0;
 
         ReserveTurnSlotUI slot = reserveSlots[slotIndex];
 
-        return slot != null ? slot.CommandCount : 0;
+        return slot != null ? slot.OccupiedOrderCount : 0;
     }
 
-    private int GetMonsterCommandCount(int slotIndex)
+    private int GetMonsterOccupiedOrderCount(int slotIndex)
     {
         InitializeMonsterCommandSlots();
 
@@ -3958,7 +3981,19 @@ public class BattleTimelineController : MonoBehaviour
 
         List<MonsterReservedCommand> commands = monsterCommandsBySlot[slotIndex];
 
-        return commands != null ? commands.Count : 0;
+        if (commands == null)
+            return 0;
+
+        int occupiedOrders = 0;
+
+        for (int i = 0; i < commands.Count; i++)
+        {
+            MonsterReservedCommand command = commands[i];
+            if (command != null)
+                occupiedOrders += command.TimelineEntryCost;
+        }
+
+        return occupiedOrders;
     }
 
     private void ShowCombinedSlotCapacityWarning()
@@ -4868,33 +4903,36 @@ public class BattleTimelineController : MonoBehaviour
         if (preferredSlotIndex >= monsterSlotCount)
             preferredSlotIndex = monsterSlotCount - 1;
 
-        if (CanMonsterUseSlot(preferredSlotIndex, command.RuntimeId))
+        if (CanMonsterUseSlot(preferredSlotIndex, command))
             return preferredSlotIndex;
 
         for (int i = preferredSlotIndex + 1; i < monsterSlotCount; i++)
         {
-            if (CanMonsterUseSlot(i, command.RuntimeId))
+            if (CanMonsterUseSlot(i, command))
                 return i;
         }
 
         for (int i = preferredSlotIndex - 1; i >= 0; i--)
         {
-            if (CanMonsterUseSlot(i, command.RuntimeId))
+            if (CanMonsterUseSlot(i, command))
                 return i;
         }
 
         return -1;
     }
 
-    private bool CanMonsterUseSlot(int slotIndex, string runtimeId)
+    private bool CanMonsterUseSlot(int slotIndex, MonsterReservedCommand requestedCommand)
     {
         if (slotIndex < 0 || slotIndex >= GetMonsterReservationSlotCount())
             return false;
 
-        if (string.IsNullOrWhiteSpace(runtimeId))
+        if (requestedCommand == null || string.IsNullOrWhiteSpace(requestedCommand.RuntimeId))
             return false;
 
-        if (GetRemainingCombinedCommandCapacity(slotIndex) <= 0)
+        if (!BattleTimelineCapacityPolicy.CanFit(
+                ReserveTurnSlotUI.MaxCommandCount,
+                GetCombinedOccupiedOrderCount(slotIndex),
+                requestedCommand.TimelineEntryCost))
             return false;
 
         List<MonsterReservedCommand> commands = monsterCommandsBySlot[slotIndex];
@@ -4909,7 +4947,7 @@ public class BattleTimelineController : MonoBehaviour
         {
             MonsterReservedCommand command = commands[i];
 
-            if (command == null || command.RuntimeId != runtimeId)
+            if (command == null || command.RuntimeId != requestedCommand.RuntimeId)
                 return false;
         }
 
