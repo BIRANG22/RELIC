@@ -10,6 +10,8 @@ public class MonsterReservedCommand
     public string RuntimeId => UserRuntime != null ? UserRuntime.RuntimeId : "";
     public string MonsterId => UserRuntime != null ? UserRuntime.MonsterId : "";
     public string SkillId => SkillData != null ? SkillData.SkillId : "";
+    public int TimelineEntryCost => BattleTimelineCapacityPolicy.NormalizeOccupiedOrders(
+        SkillData != null ? SkillData.TimelineEntryCost : 1);
 
     public Vector2Int MoveOffset { get; private set; } = Vector2Int.zero;
 

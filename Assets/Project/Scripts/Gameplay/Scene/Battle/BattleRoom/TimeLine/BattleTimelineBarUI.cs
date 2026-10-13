@@ -245,7 +245,7 @@ public class BattleTimelineBarUI : MonoBehaviour
                     if (entry != null)
                         entries.Add(entry);
 
-                    orderIndex++;
+                    orderIndex += Mathf.Max(1, monsterCommands[j].TimelineEntryCost);
                 }
             }
 

@@ -20,6 +20,8 @@ namespace Relic.Gameplay.Data
 
         public TimelineActionType TimelineNotation;
 
+        public int TimelineEntryCost = 1;
+
         public string EffectDesc;
 
         // GameData MonsterSkill 시트의 SkillIcon 문자열 키입니다.
