@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Relic.Gameplay.Data;
@@ -54,7 +55,7 @@ public sealed class ManualBattleMapTemplateTests
     }
 
     [Test]
-    public void Nodes_DefaultTemplate_UsesLayer13AsBoss()
+    public void Nodes_DefaultTemplate_UsesLayer9AsBoss()
     {
         ManualBattleMapTemplate template = ScriptableObject.CreateInstance<ManualBattleMapTemplate>();
 
@@ -62,8 +63,8 @@ public sealed class ManualBattleMapTemplateTests
         {
             var nodes = template.Nodes;
 
-            Assert.That(nodes.Max(node => node.LayerIndex), Is.EqualTo(13));
-            Assert.That(nodes.Single(node => node.Type == "Boss").NodeIndex, Is.EqualTo(49));
+            Assert.That(nodes.Max(node => node.LayerIndex), Is.EqualTo(9));
+            Assert.That(nodes.Single(node => node.Type == "Boss").NodeIndex, Is.EqualTo(33));
         }
         finally
         {
@@ -72,19 +73,19 @@ public sealed class ManualBattleMapTemplateTests
     }
 
     [Test]
-    public void Nodes_WhenBossLayerIs11_EndsAtLayer11WithReservedBossNodeIndex()
+    public void Nodes_WhenBossLayerIs5_EndsAtLayer5WithReservedBossNodeIndex()
     {
         ManualBattleMapTemplate template = ScriptableObject.CreateInstance<ManualBattleMapTemplate>();
 
         try
         {
-            template.BossLayerIndex = 11;
+            template.BossLayerIndex = 5;
 
             var nodes = template.Nodes;
 
-            Assert.That(nodes.Max(node => node.LayerIndex), Is.EqualTo(11));
-            Assert.That(nodes.Any(node => node.LayerIndex == 12 || node.LayerIndex == 13), Is.False);
-            Assert.That(nodes.Single(node => node.Type == "Boss").NodeIndex, Is.EqualTo(41));
+            Assert.That(nodes.Max(node => node.LayerIndex), Is.EqualTo(5));
+            Assert.That(nodes.Any(node => node.LayerIndex > 5), Is.False);
+            Assert.That(nodes.Single(node => node.Type == "Boss").NodeIndex, Is.EqualTo(17));
         }
         finally
         {
@@ -93,12 +94,14 @@ public sealed class ManualBattleMapTemplateTests
     }
 
     [Test]
-    public void DemoTemplate_RemovesFixedOpeningMapAndShiftsRemainingPathForward()
+    public void DemoTemplate_UsesExistingSixLayerAuthoredPath()
     {
         ManualBattleMapTemplate template =
-            AssetDatabase.LoadAssetAtPath<ManualBattleMapTemplate>(DemoTemplatePath);
+            UnityEditor.AssetDatabase.LoadAssetAtPath<ManualBattleMapTemplate>(DemoTemplatePath);
 
         Assert.That(template, Is.Not.Null);
+        Assert.That(template.GenerationPolicy, Is.EqualTo(ManualBattleMapGenerationPolicy.AuthoredLayout));
+        Assert.That(template.BossLayerIndex, Is.EqualTo(5));
 
         var nodes = template.Nodes.OrderBy(node => node.LayerIndex).ToList();
 
@@ -106,8 +109,8 @@ public sealed class ManualBattleMapTemplateTests
             Is.EqualTo(new[] { 0, 1, 2, 3, 4, 5 }));
         Assert.That(nodes.Select(node => node.Type),
             Is.EqualTo(new[] { "Common", "Special", "Common", "Shop", "Rest", "Boss" }));
-        Assert.That(nodes[0].MapIdOverride, Is.Empty,
-            "The removed fixed opening map must not remain as a map override.");
+        Assert.That(nodes[0].MapIdOverride, Is.EqualTo("Map_01"),
+            "The authored demo must keep its existing fixed opening battle map.");
         Assert.That(nodes.Select(node => node.NodeIndex),
             Is.EqualTo(new[] { 0, 1, 5, 9, 13, 17 }));
 
@@ -129,5 +132,33 @@ public sealed class ManualBattleMapTemplateTests
             Assert.That(node.CustomPosition,
                 Is.EqualTo(new Vector2(node.LayerIndex * BattleMapLayoutUtility.LayerGap, 0f)));
         }
+    }
+
+    [Test]
+    public void TryBuildNodes_DemoAuthoredLayout_BuildsExistingSixLayerPath()
+    {
+        ManualBattleMapTemplate template =
+            UnityEditor.AssetDatabase.LoadAssetAtPath<ManualBattleMapTemplate>(DemoTemplatePath);
+        var mapPool = new List<MapData>
+        {
+            new() { MapId = "Map_01", Type = "Common", Stage = "Stage1", SpawnWeight = 1 },
+            new() { MapId = "Map_Common", Type = "Common", Stage = "Stage1", SpawnWeight = 1 },
+            new() { MapId = "Map_Event", Type = "Special", EventId = "Event_01", Stage = "Stage1", SpawnWeight = 1 },
+            new() { MapId = "Map_22", Type = "Shop", Stage = "Stage1", SpawnWeight = 1 },
+            new() { MapId = "Map_Rest", Type = "Rest", Stage = "Stage1", SpawnWeight = 1 },
+            new() { MapId = "Map_Boss", Type = "Boss", Stage = "Stage1", SpawnWeight = 1 }
+        };
+
+        bool success = template.TryBuildNodes(
+            mapPool,
+            "Chapter1",
+            "Stage1",
+            out List<GeneratedMapNodeData> nodes);
+
+        Assert.That(success, Is.True);
+        Assert.That(nodes.Select(node => node.LayerIndex), Is.EqualTo(new[] { 0, 1, 2, 3, 4, 5 }));
+        Assert.That(nodes.Select(node => node.Type),
+            Is.EqualTo(new[] { "Common", "Special", "Common", "Shop", "Rest", "Boss" }));
+        Assert.That(nodes[^1].NextNodeIndices, Is.Empty);
     }
 }

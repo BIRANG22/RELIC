@@ -211,6 +211,12 @@ namespace Relic.Gameplay.Data
         }
     }
 
+    public enum ManualBattleMapGenerationPolicy
+    {
+        StandardExpedition = 0,
+        AuthoredLayout = 1
+    }
+
     [CreateAssetMenu(menuName = "Relic/Data/Manual Battle Map Template")]
     public class ManualBattleMapTemplate : ScriptableObject
     {
@@ -220,6 +226,12 @@ namespace Relic.Gameplay.Data
         private const int MaxBossLayerIndex = 9;
         private const int FixedMiddleLayerRowCount = 4;
         private const int StartNodeIndex = 0;
+
+        [Header("Generation")]
+        [SerializeField] private ManualBattleMapGenerationPolicy generationPolicy =
+            ManualBattleMapGenerationPolicy.StandardExpedition;
+        [SerializeField, Range(MinBossLayerIndex, MaxBossLayerIndex)]
+        private int bossLayerIndex = DefaultBossLayerIndex;
 
         [Header("Layer 0")]
         [SerializeField] private ManualBattleMapFixedNodeDefinition layer0Start = new() { Type = "Special" };
@@ -246,9 +258,11 @@ namespace Relic.Gameplay.Data
 
         public int BossLayerIndex
         {
-            get => DefaultBossLayerIndex;
-            set { }
+            get => Mathf.Clamp(bossLayerIndex, MinBossLayerIndex, MaxBossLayerIndex);
+            set => bossLayerIndex = Mathf.Clamp(value, MinBossLayerIndex, MaxBossLayerIndex);
         }
+
+        public ManualBattleMapGenerationPolicy GenerationPolicy => generationPolicy;
 
         public List<ManualBattleMapNodeDefinition> Nodes => BuildDefinitions();
 
@@ -258,7 +272,7 @@ namespace Relic.Gameplay.Data
                 ? GetInstanceID().ToString(CultureInfo.InvariantCulture)
                 : name.Trim();
 
-            return $"ManualBattleMapTemplate:RoomSequenceV6_OptionalEliteRoute:{templateName}:{CalculateContentHash():X8}";
+            return $"ManualBattleMapTemplate:RoomSequenceV7_VariableLayout:{templateName}:{CalculateContentHash():X8}";
         }
 
         public bool TryBuildNodes(
@@ -278,29 +292,26 @@ namespace Relic.Gameplay.Data
             out List<GeneratedMapNodeData> generatedNodes)
         {
             generatedNodes = new List<GeneratedMapNodeData>();
-            // Roll invalid random layouts again instead of creating disconnected nodes.
             List<ManualBattleMapNodeDefinition> definitions = null;
             List<(int from, int to)> connections = null;
-            // Some expeditions must offer a route through two non-adjacent elite rooms.
-            // Other expeditions retain unrestricted valid paths for map variety.
-            bool requireTwoEliteRoute = BattleRandom.Value() < 0.5f;
-            for (int attempt = 0; attempt < 4096; attempt++)
+
+            if (generationPolicy == ManualBattleMapGenerationPolicy.AuthoredLayout)
             {
-                List<ManualBattleMapNodeDefinition> candidate = BuildRuntimeDefinitions();
-                if (candidate.Count == 0 || !TryValidateDefinitions(candidate, out _))
-                    continue;
-                if (!TryBuildAdjacentConnections(candidate, out List<(int from, int to)> candidateConnections))
-                    continue;
-                if (!IsRoomSequenceValid(candidate, candidateConnections, mapPool, stage, requireTwoEliteRoute))
-                    continue;
-                definitions = candidate;
-                connections = candidateConnections;
-                break;
+                List<ManualBattleMapNodeDefinition> candidate = BuildDefinitions();
+                if (candidate.Count > 0 &&
+                    TryValidateDefinitions(candidate, out _) &&
+                    TryBuildAdjacentConnections(candidate, out List<(int from, int to)> candidateConnections))
+                {
+                    definitions = candidate;
+                    connections = candidateConnections;
+                }
             }
-            // If no two-elite layout exists with the current manual overrides,
-            // do not prevent map generation: use any layout satisfying the base rules.
-            if (definitions == null && requireTwoEliteRoute)
+            else
             {
+                // Roll invalid random layouts again instead of creating disconnected nodes.
+                // Some expeditions must offer a route through two non-adjacent elite rooms.
+                // Other expeditions retain unrestricted valid paths for map variety.
+                bool requireTwoEliteRoute = BattleRandom.Value() < 0.5f;
                 for (int attempt = 0; attempt < 4096; attempt++)
                 {
                     List<ManualBattleMapNodeDefinition> candidate = BuildRuntimeDefinitions();
@@ -308,16 +319,50 @@ namespace Relic.Gameplay.Data
                         continue;
                     if (!TryBuildAdjacentConnections(candidate, out List<(int from, int to)> candidateConnections))
                         continue;
-                    if (!IsRoomSequenceValid(candidate, candidateConnections, mapPool, stage, false))
+                    if (!IsRoomSequenceValid(
+                        candidate,
+                        candidateConnections,
+                        mapPool,
+                        stage,
+                        requireTwoEliteRoute,
+                        BossLayerIndex))
                         continue;
                     definitions = candidate;
                     connections = candidateConnections;
                     break;
                 }
+
+                // If no two-elite layout exists with the current manual overrides,
+                // do not prevent map generation: use any layout satisfying the base rules.
+                if (definitions == null && requireTwoEliteRoute)
+                {
+                    for (int attempt = 0; attempt < 4096; attempt++)
+                    {
+                        List<ManualBattleMapNodeDefinition> candidate = BuildRuntimeDefinitions();
+                        if (candidate.Count == 0 || !TryValidateDefinitions(candidate, out _))
+                            continue;
+                        if (!TryBuildAdjacentConnections(candidate, out List<(int from, int to)> candidateConnections))
+                            continue;
+                        if (!IsRoomSequenceValid(
+                            candidate,
+                            candidateConnections,
+                            mapPool,
+                            stage,
+                            false,
+                            BossLayerIndex))
+                            continue;
+                        definitions = candidate;
+                        connections = candidateConnections;
+                        break;
+                    }
+                }
             }
             if (definitions == null)
             {
-                Debug.LogError("[ManualBattleMapTemplate] Could not generate a valid 10-layer layout with 2-3 elite rooms in distinct slots, an elite-free path, no connected elites, a Layer 1 battle, mixed battle/event layers (3 slots), and no three consecutive battles/events. Check manual overrides and available maps.");
+                string requirements = generationPolicy == ManualBattleMapGenerationPolicy.AuthoredLayout
+                    ? $"authored {BossLayerIndex + 1}-layer layout with a connected node in every layer"
+                    : $"standard {BossLayerIndex + 1}-layer layout with 2-3 elite rooms in distinct slots, an elite-free path, no connected elites, a Layer 1 battle, mixed battle/event layers (3 slots), and no three consecutive battles/events";
+                Debug.LogError($"[ManualBattleMapTemplate] Could not generate a valid {requirements}. Check manual overrides and available maps.");
                 return false;
             }
 
@@ -388,6 +433,7 @@ namespace Relic.Gameplay.Data
                 uint hash = 2166136261;
                 List<ManualBattleMapNodeDefinition> definitions = BuildDefinitions();
 
+                hash = AppendHash(hash, (int)generationPolicy);
                 hash = AppendHash(hash, BossLayerIndex + 1);
                 hash = AppendHash(hash, definitions.Count);
 
@@ -595,7 +641,8 @@ namespace Relic.Gameplay.Data
             List<(int from, int to)> edges,
             List<MapData> mapPool,
             string stage,
-            bool requireTwoEliteRoute)
+            bool requireTwoEliteRoute,
+            int bossLayerIndex)
         {
             Dictionary<int, string> types = new();
             Dictionary<int, int> layers = new();
@@ -670,7 +717,7 @@ namespace Relic.Gameplay.Data
 
             // Always offer at least one connected route from the start to the boss
             // that does not pass through any elite room. Elite rooms remain optional.
-            if (!HasEliteFreeRoute(next, types, layers))
+            if (!HasEliteFreeRoute(next, types, layers, bossLayerIndex))
                 return false;
 
             // A two-elite route is possible only across Layers 5 -> 6 -> 7.
@@ -721,7 +768,8 @@ namespace Relic.Gameplay.Data
         private static bool HasEliteFreeRoute(
             Dictionary<int, List<int>> next,
             Dictionary<int, string> types,
-            Dictionary<int, int> layers)
+            Dictionary<int, int> layers,
+            int bossLayerIndex)
         {
             Queue<int> pending = new();
             HashSet<int> visited = new();
@@ -737,7 +785,7 @@ namespace Relic.Gameplay.Data
             while (pending.Count > 0)
             {
                 int current = pending.Dequeue();
-                if (layers[current] == DefaultBossLayerIndex)
+                if (layers[current] == bossLayerIndex)
                     return true;
 
                 if (!next.TryGetValue(current, out List<int> targets))
@@ -758,7 +806,7 @@ namespace Relic.Gameplay.Data
         // Only adjacent slot numbers may connect between multi-node layers.
         // Single-node special layers represent central hubs and connect to adjacent nodes.
         // Select a non-crossing set of edges that covers every node on both sides.
-        private static bool TryBuildAdjacentConnections(
+        private bool TryBuildAdjacentConnections(
             List<ManualBattleMapNodeDefinition> definitions,
             out List<(int from, int to)> connections)
         {
@@ -773,7 +821,7 @@ namespace Relic.Gameplay.Data
                 }
                 group.Add(node);
             }
-            for (int layerIndex = StartLayerIndex; layerIndex < DefaultBossLayerIndex; layerIndex++)
+            for (int layerIndex = StartLayerIndex; layerIndex < BossLayerIndex; layerIndex++)
             {
                 if (!layers.TryGetValue(layerIndex, out var from) ||
                     !layers.TryGetValue(layerIndex + 1, out var to) ||
