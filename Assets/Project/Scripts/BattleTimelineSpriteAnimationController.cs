@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// BattleSlot 오브젝트에 붙여서 타임라인의 TurnMark 5개와 Use_skill 25개를 한 번에 관리하는 UI 스프라이트 프레임 애니메이션 컨트롤러입니다.
@@ -28,27 +29,24 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
     [Tooltip("TimelineSlot01~05 안의 Order01~05 Use_skill Image입니다. 순서는 Slot01 Order01~05, Slot02 Order01~05 순서입니다.")]
     [SerializeField] private Image[] useSkillImages = new Image[TotalUseSkillCount];
 
-    [Header("TurnMark 프레임")]
-    [Tooltip("TurnMark가 톱니에 갈릴 때 순서대로 교체할 스프라이트 프레임입니다.")]
-    [SerializeField] private Sprite[] turnMarkFrames;
+    [Header("마커 페이드아웃")]
+    [SerializeField, Min(0.01f)] private float turnMarkFadeDuration = 0.2f;
 
-    [Header("Use_skill 프레임")]
-    [Tooltip("Use_skill이 톱니에 갈릴 때 순서대로 교체할 스프라이트 프레임입니다.")]
-    [SerializeField] private Sprite[] useSkillFrames;
-
-    [Header("재생 설정")]
-    [Tooltip("프레임 하나가 유지되는 시간입니다.")]
-    [SerializeField] private float secondsPerFrame = 0.08f;
-
-    [Tooltip("이전 버전 호환용 값입니다. 현재 TurnMark/Use_skill 개별 이동은 하지 않고 TimelineBar 전체 이동은 BattleTimelineController가 처리합니다.")]
-    [SerializeField] private float moveLeftDistance = 70f;
-
-    [Tooltip("Time.timeScale의 영향을 받지 않고 UI 애니메이션을 재생합니다.")]
+    [Header("오더 행동 애니메이션")]
+    [SerializeField, Min(1f)] private float actionScale = 1.2f;
+    [SerializeField, Min(0.01f)] private float scaleUpDuration = 0.12f;
+    [SerializeField, Min(0.01f)] private float scaleDownDuration = 0.12f;
+    [SerializeField, Min(0.01f)] private float fadeOutDuration = 0.2f;
+    [FormerlySerializedAs("moveLeftDistance")]
+    [SerializeField, Min(0f)] private float moveUpDistance = 70f;
     [SerializeField] private bool useUnscaledTime = true;
-
-    [Tooltip("비활성화된 Use_skill은 재생하지 않습니다. 실제 등록된 행동만 갈리는 연출을 줄 때 켜두는 것을 권장합니다.")]
     [SerializeField] private bool playOnlyActiveImages = true;
 
+    private readonly Dictionary<RectTransform, Vector3> originalScales = new Dictionary<RectTransform, Vector3>();
+    private readonly Dictionary<RectTransform, Vector2> originalPositions = new Dictionary<RectTransform, Vector2>();
+    private readonly Dictionary<RectTransform, CanvasGroup> fadeGroups = new Dictionary<RectTransform, CanvasGroup>();
+    private readonly Dictionary<RectTransform, bool> addedFadeGroups = new Dictionary<RectTransform, bool>();
+    private readonly Dictionary<Image, Color> originalMarkColors = new Dictionary<Image, Color>();
     private readonly Dictionary<Image, Coroutine> runningCoroutines = new Dictionary<Image, Coroutine>();
     private readonly Dictionary<Image, GameObject> imageHideRoots = new Dictionary<Image, GameObject>();
     private readonly Dictionary<Image, Sprite> originalSprites = new Dictionary<Image, Sprite>();
@@ -71,11 +69,8 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
         if (useSkillImages == null || useSkillImages.Length != TotalUseSkillCount)
             System.Array.Resize(ref useSkillImages, TotalUseSkillCount);
 
-        if (secondsPerFrame < 0.001f)
-            secondsPerFrame = 0.001f;
-
-        if (moveLeftDistance < 0f)
-            moveLeftDistance = 0f;
+        if (moveUpDistance < 0f)
+            moveUpDistance = 0f;
 
     }
 #endif
@@ -133,11 +128,46 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
     public IEnumerator PlayTurnMarkRoutine(int slotIndex)
     {
         EnsureTargetsIfNeeded();
-
-        if (!IsValidSlotIndex(slotIndex))
+        if (!IsValidSlotIndex(slotIndex) || turnMarkImages == null || slotIndex >= turnMarkImages.Length)
             yield break;
 
-        yield return PlayImageRoutineSafe(turnMarkImages[slotIndex], turnMarkFrames);
+        Image marker = turnMarkImages[slotIndex];
+        if (marker == null || (playOnlyActiveImages && !marker.gameObject.activeInHierarchy))
+            yield break;
+
+        if (runningCoroutines.TryGetValue(marker, out Coroutine previous) && previous != null)
+            StopCoroutine(previous);
+
+        if (!originalMarkColors.ContainsKey(marker))
+            originalMarkColors[marker] = marker.color;
+
+        Coroutine running = StartCoroutine(FadeTurnMarkRoutine(marker));
+        runningCoroutines[marker] = running;
+        yield return running;
+        runningCoroutines.Remove(marker);
+    }
+
+    // Ensure a marker that the timeline has already passed never reappears at an order.
+    public void CompletePassedTurnMarkFade(int slotIndex)
+    {
+        EnsureTargetsIfNeeded();
+        if (!IsValidSlotIndex(slotIndex) || turnMarkImages == null || slotIndex >= turnMarkImages.Length)
+            return;
+
+        Image marker = turnMarkImages[slotIndex];
+        if (marker == null)
+            return;
+
+        if (runningCoroutines.TryGetValue(marker, out Coroutine running) && running != null)
+            StopCoroutine(running);
+        runningCoroutines.Remove(marker);
+
+        if (!originalMarkColors.ContainsKey(marker))
+            originalMarkColors[marker] = marker.color;
+
+        Color color = marker.color;
+        color.a = 0f;
+        marker.color = color;
     }
 
     public void PlayUseSkill(int slotIndex, int orderIndex)
@@ -212,23 +242,9 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
     }
 
 
-    public float GetTurnMarkAnimationDuration()
-    {
-        return GetFrameAnimationDuration(turnMarkFrames);
-    }
-
-    public float GetUseSkillAnimationDuration()
-    {
-        return GetFrameAnimationDuration(useSkillFrames);
-    }
-
-    public float GetFrameAnimationDuration(Sprite[] frames)
-    {
-        if (frames == null || frames.Length <= 0)
-            return 0f;
-
-        return Mathf.Max(0.001f, secondsPerFrame) * Mathf.Max(1, frames.Length);
-    }
+    public float GetTurnMarkAnimationDuration() => turnMarkFadeDuration;
+    public float GetUseSkillAnimationDuration() => scaleUpDuration + scaleDownDuration + fadeOutDuration;
+    public float GetFrameAnimationDuration(Sprite[] frames) => 0f;
 
     public void StopAllAnimations(bool resetPositions)
     {
@@ -258,46 +274,21 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
 
     public void ResetAllTargetPositions()
     {
-        // TurnMark와 Use_skill 개별 오브젝트는 더 이상 이동하지 않습니다.
-        // 전체 라인 이동과 원위치 복구는 BattleTimelineController가 TimelineBar RectTransform으로 처리합니다.
+        foreach (var entry in originalScales)
+            if (entry.Key != null) entry.Key.localScale = entry.Value;
+        foreach (var entry in originalPositions)
+            if (entry.Key != null) entry.Key.anchoredPosition = entry.Value;
+        foreach (var entry in fadeGroups)
+            if (entry.Value != null) entry.Value.alpha = 1f;
+        foreach (var entry in originalMarkColors)
+            if (entry.Key != null) entry.Key.color = entry.Value;
     }
 
-    public void ResetTurnMarksForNextTurn()
-    {
-        ResetTimelineSpritesForNextTurn();
-    }
+    public void ResetTurnMarksForNextTurn() => ResetTimelineSpritesForNextTurn();
 
     public void ResetTimelineSpritesForNextTurn()
     {
-        EnsureTargetsIfNeeded();
-        ResetAllTargetPositions();
-        RestoreAllHiddenChildren();
-
-        ResetImageArrayToOriginalSprites(turnMarkImages);
-        ResetImageArrayToOriginalSprites(useSkillImages);
-    }
-
-    private void ResetImageArrayToOriginalSprites(Image[] images)
-    {
-        if (images == null)
-            return;
-
-        for (int i = 0; i < images.Length; i++)
-        {
-            Image image = images[i];
-
-            if (image == null)
-                continue;
-
-            GameObject root = GetHideRoot(image);
-
-            if (root != null)
-                root.SetActive(true);
-
-            RestoreHiddenChildren(root);
-            RestoreOriginalSprite(image);
-            image.enabled = true;
-        }
+        StopAllAnimations(true);
     }
 
     private IEnumerator PlayUseSkillByLinearIndexRoutine(int index)
@@ -325,73 +316,93 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
                 }
             }
         }
-        yield return PlayImageRoutineSafe(target, useSkillFrames);
+        yield return PlayImageRoutineSafe(target);
     }
 
-    private IEnumerator PlayImageRoutineSafe(Image image, Sprite[] frames)
+    private IEnumerator PlayImageRoutineSafe(Image image)
     {
-        if (image == null || frames == null || frames.Length <= 0)
-            yield break;
+        if (image == null) yield break;
+        GameObject root = GetHideRoot(image);
+        if (root == null || (playOnlyActiveImages && !root.activeInHierarchy)) yield break;
+        RectTransform rect = root.GetComponent<RectTransform>();
+        if (rect == null) yield break;
 
-        GameObject hideRoot = GetHideRoot(image);
+        if (runningCoroutines.TryGetValue(image, out Coroutine previous) && previous != null)
+            StopCoroutine(previous);
 
-        if (playOnlyActiveImages && hideRoot != null && !hideRoot.activeInHierarchy)
-            yield break;
-
-        if (playOnlyActiveImages && hideRoot == null && !image.gameObject.activeInHierarchy)
-            yield break;
-
-        if (runningCoroutines.TryGetValue(image, out Coroutine oldCoroutine) && oldCoroutine != null)
-            StopCoroutine(oldCoroutine);
-
-        HideChildrenForAnimation(hideRoot);
-
-        Coroutine newCoroutine = StartCoroutine(PlayImageRoutine(image, frames));
-        runningCoroutines[image] = newCoroutine;
-        yield return newCoroutine;
-    }
-
-    private IEnumerator PlayImageRoutine(Image image, Sprite[] frames)
-    {
-        if (image == null)
-            yield break;
-
-        int frameCount = Mathf.Max(1, frames.Length);
-        float totalDuration = Mathf.Max(0.001f, secondsPerFrame * frameCount);
-        float elapsed = 0f;
-        int lastFrameIndex = -1;
-
-        image.enabled = true;
-
-        if (frames[0] != null)
-            image.sprite = frames[0];
-
-        while (elapsed < totalDuration)
+        if (!originalScales.ContainsKey(rect)) originalScales[rect] = rect.localScale;
+        if (!originalPositions.ContainsKey(rect)) originalPositions[rect] = rect.anchoredPosition;
+        if (!fadeGroups.TryGetValue(rect, out CanvasGroup group) || group == null)
         {
-            float deltaTime = useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
-            elapsed += deltaTime;
+            group = root.GetComponent<CanvasGroup>();
+            bool added = group == null;
+            if (added) group = root.AddComponent<CanvasGroup>();
+            fadeGroups[rect] = group;
+            addedFadeGroups[rect] = added;
+        }
+        rect.localScale = originalScales[rect];
+        rect.anchoredPosition = originalPositions[rect];
+        group.alpha = 1f;
+        Coroutine running = StartCoroutine(PlayOrderAnimation(rect, group));
+        runningCoroutines[image] = running;
+        yield return running;
+        runningCoroutines.Remove(image);
+    }
 
-            float t = Mathf.Clamp01(elapsed / totalDuration);
-            int frameIndex = Mathf.Clamp(Mathf.FloorToInt(t * frameCount), 0, frameCount - 1);
-
-            if (frameIndex != lastFrameIndex)
-            {
-                if (frames[frameIndex] != null)
-                    image.sprite = frames[frameIndex];
-
-                lastFrameIndex = frameIndex;
-            }
-
+    private IEnumerator FadeTurnMarkRoutine(Image marker)
+    {
+        // 마커는 위치 및 크기를 유지하고 투명도만 변경합니다.
+        Color startColor = marker.color;
+        float elapsed = 0f;
+        while (elapsed < turnMarkFadeDuration)
+        {
+            elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.01f, turnMarkFadeDuration));
+            if (marker == null) yield break;
+            Color color = startColor;
+            color.a = Mathf.Lerp(startColor.a, 0f, t);
+            marker.color = color;
             yield return null;
         }
-
-        if (frames[frameCount - 1] != null)
-            image.sprite = frames[frameCount - 1];
-
-        if (image != null)
-            runningCoroutines.Remove(image);
+        if (marker != null)
+        {
+            Color color = marker.color;
+            color.a = 0f;
+            marker.color = color;
+        }
     }
 
+    private IEnumerator PlayOrderAnimation(RectTransform rect, CanvasGroup group)
+    {
+        Vector3 baseScale = originalScales[rect];
+        Vector2 basePosition = originalPositions[rect];
+        yield return AnimateScale(rect, baseScale, baseScale * actionScale, scaleUpDuration);
+        yield return AnimateScale(rect, baseScale * actionScale, baseScale, scaleDownDuration);
+        float elapsed = 0f;
+        while (elapsed < fadeOutDuration)
+        {
+            elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.01f, fadeOutDuration));
+            rect.anchoredPosition = basePosition + Vector2.up * (moveUpDistance * t);
+            group.alpha = 1f - t;
+            yield return null;
+        }
+        rect.anchoredPosition = basePosition + Vector2.up * moveUpDistance;
+        group.alpha = 0f;
+    }
+
+    private IEnumerator AnimateScale(RectTransform rect, Vector3 from, Vector3 to, float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.01f, duration));
+            rect.localScale = Vector3.LerpUnclamped(from, to, t);
+            yield return null;
+        }
+        rect.localScale = to;
+    }
 
     private void HideChildrenForAnimation(GameObject root)
     {
@@ -461,15 +472,6 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
         }
 
         hiddenChildOriginalActiveStates.Clear();
-    }
-
-    private void RestoreOriginalSprite(Image image)
-    {
-        if (image == null)
-            return;
-
-        if (originalSprites.TryGetValue(image, out Sprite originalSprite) && originalSprite != null)
-            image.sprite = originalSprite;
     }
 
     private void RegisterTarget(Image image, GameObject hideRoot)

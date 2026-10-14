@@ -573,13 +573,18 @@ public class BattleTurnExecutor : MonoBehaviour
                     yield return timelineController.MoveTimelineToOrderBeforeActionRoutine(
                         currentSlotIndex, executableOrderIndices[0]);
 
-                // The action plays while the timeline is stopped at its order.
+                // Start the order animation on the same frame as the action.
+                // The animation runs independently while the gameplay action resolves.
+                Coroutine orderAnimation = timelineController != null
+                    ? StartCoroutine(timelineController.PlayTimelineIconsAfterActionRoutine(
+                        currentSlotIndex, executableOrderIndices))
+                    : null;
+
                 yield return runner.RunBatch(batch, keepCameraAfterBatch);
 
-                // Only after the action finishes do we play its icon animation.
-                if (timelineController != null)
-                    yield return timelineController.PlayTimelineIconsAfterActionRoutine(
-                        currentSlotIndex, executableOrderIndices);
+                // Do not advance the timeline until both the action and its visual finish.
+                if (orderAnimation != null)
+                    yield return orderAnimation;
 
                 // Travel across unused trailing orders only after the final action has executed.
                 if (!hasNextBatchInSameTimelineSlot && timelineController != null &&
@@ -833,13 +838,18 @@ public class BattleTurnExecutor : MonoBehaviour
                     yield return timelineController.MoveTimelineToOrderBeforeActionRoutine(
                         currentSlotIndex, executableOrderIndices[0]);
 
-                // The action plays while the timeline is stopped at its order.
+                // Start the order animation on the same frame as the action.
+                // The animation runs independently while the gameplay action resolves.
+                Coroutine orderAnimation = timelineController != null
+                    ? StartCoroutine(timelineController.PlayTimelineIconsAfterActionRoutine(
+                        currentSlotIndex, executableOrderIndices))
+                    : null;
+
                 yield return runner.RunBatch(batch, keepCameraAfterBatch);
 
-                // Only after the action finishes do we play its icon animation.
-                if (timelineController != null)
-                    yield return timelineController.PlayTimelineIconsAfterActionRoutine(
-                        currentSlotIndex, executableOrderIndices);
+                // Do not advance the timeline until both the action and its visual finish.
+                if (orderAnimation != null)
+                    yield return orderAnimation;
 
                 // Travel across unused trailing orders only after the final action has executed.
                 if (!hasNextBatchInSameTimelineSlot && timelineController != null &&
