@@ -1939,16 +1939,20 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     {
         if (cachedTurnExecutor == null)
             cachedTurnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
-        if (cachedTurnExecutor == null || !cachedTurnExecutor.IsExecuting ||
-            useSkillValueTexts == null)
+        if (cachedTurnExecutor == null || !cachedTurnExecutor.IsExecuting)
             return;
 
-        int count = Mathf.Min(currentEntries.Count, useSkillValueTexts.Length);
-        for (int i = 0; i < count; i++)
+        // Resolve the Value text from the currently displayed skill size.
+        // The cached useSkillValueTexts array only references Use_skill1.
+        for (int i = 0; i < currentEntries.Count; i++)
         {
             BattleTimelinePreviewEntry entry = currentEntries[i];
-            TMP_Text label = useSkillValueTexts[i];
-            if (entry == null || label == null || !label.gameObject.activeInHierarchy)
+            if (entry == null)
+                continue;
+
+            Transform sizeRoot = FindSizeRoot(i, Mathf.Clamp(entry.OccupiedOrders, 1, 3));
+            TMP_Text label = sizeRoot != null ? FindUseSkillText(sizeRoot) : null;
+            if (label == null || !label.gameObject.activeInHierarchy)
                 continue;
 
             string newValue = entry.SkillValueText ?? "";

@@ -6,6 +6,7 @@ public static class BattleErosionRuntimeService
 {
     public const int MinValue = 0;
     public const int MaxValue = 100;
+    public const int RoomEntryAmount = 3;
 
     public static event Action<int, int> ValueChanged;
 
@@ -83,12 +84,9 @@ public static class BattleErosionRuntimeService
         runtime.LastErosionRoomKey = roomKey;
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
 
-        // 일반 탐사는 Layer 0의 최초 이벤트방에서 침식도를 올리지 않아 시작값 0을 유지합니다.
-        // 튜토리얼 전투는 첫 진입부터 침식도 1로 시작해야 하므로 Layer 0도 방 진입으로 계산합니다.
-        if (nodeData.LayerIndex == 0 && !runtime.IsTutorialBattle)
-            return;
-
-        Add(1, $"RoomEntry:{roomKey}");
+        // 일반 탐사의 Layer 0 시작방을 포함하여 모든 방 진입 시 침식도가 3 증가합니다.
+        // 방 진입 처리는 씬 전환 후 해당 방이 표시되는 시점에 호출합니다.
+        Add(RoomEntryAmount, $"RoomEntry:{roomKey}");
     }
 
     public static void CountDirectMonsterHit()
