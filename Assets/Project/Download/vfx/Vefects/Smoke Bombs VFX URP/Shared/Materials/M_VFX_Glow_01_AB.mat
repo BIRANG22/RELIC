@@ -48,11 +48,11 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _Noise01Texture:
         m_Texture: {fileID: 2800000, guid: 301564cad965bbb4da5072b5cf9406cb, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Scale: {x: 0, y: 0}
         m_Offset: {x: 0, y: 0}
     - _Noise02Texture:
         m_Texture: {fileID: 2800000, guid: 2f822f6dfbe26f44eadb94a1b925409d, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Scale: {x: 0, y: 0}
         m_Offset: {x: 0, y: 0}
     - _NoiseDistortion_Texture:
         m_Texture: {fileID: 2800000, guid: 02b0d0a96eedb3d4fa5664350b35ba23, type: 3}
@@ -182,9 +182,9 @@ Material:
     - _MaskUVScale: {r: 1, g: 1, b: 0, a: 0}
     - _Mask_Offset: {r: 0, g: 0, b: 0, a: 0}
     - _Mask_Scale: {r: 1, g: 1, b: 0, a: 0}
-    - _Noise01PanSpeed: {r: 0.5, g: 0.5, b: 0, a: 0}
-    - _Noise01UVScale: {r: 0.8, g: 0.8, b: 0, a: 0}
-    - _Noise02PanSpeed: {r: -0.2, g: 0.4, b: 0, a: 0}
+    - _Noise01PanSpeed: {r: 0, g: 0, b: 0, a: 0}
+    - _Noise01UVScale: {r: 1, g: 1, b: 0, a: 0}
+    - _Noise02PanSpeed: {r: 0, g: 0, b: 0, a: 0}
     - _Noise02UVScale: {r: 1, g: 1, b: 0, a: 0}
     - _NoiseDistortionPanSpeed: {r: 0.2, g: 0.25, b: 0, a: 0}
     - _NoiseDistortionUVScale: {r: 1, g: 1, b: 0, a: 0}
