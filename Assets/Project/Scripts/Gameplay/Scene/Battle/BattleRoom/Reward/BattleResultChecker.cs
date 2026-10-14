@@ -19,6 +19,7 @@ public class BattleResultChecker : MonoBehaviour
     [SerializeField] private BattleRewardResolver rewardResolver;
     [SerializeField] private BattleRewardPanelUI rewardPanel;
     [SerializeField] private ExplorationResultPanelUI explorationResultPanel;
+    [SerializeField] private BattleDefeatPresentation defeatPresentation;
     [SerializeField] private GameObject nextButtonRoot;
 
     [Header("Reward Canvas Sorting")]
@@ -99,7 +100,7 @@ public class BattleResultChecker : MonoBehaviour
         ResetBattleEffectOnFinish();
         BattleFinished?.Invoke();
         Debug.Log("[BattleResultChecker] Exploration failed: Erosion reached 100.");
-        StartCoroutine(ShowDefeatAfterCameraReturn());
+        StartCoroutine(ShowDefeatAfterCameraReturn(playPresentation: false));
     }
 
     public bool CheckBattleEnd()
@@ -114,7 +115,7 @@ public class BattleResultChecker : MonoBehaviour
             ResetBattleEffectOnFinish();
             BattleFinished?.Invoke();
             Debug.Log("[BattleResultChecker] Battle Lose");
-            StartCoroutine(ShowDefeatAfterCameraReturn());
+            StartCoroutine(ShowDefeatAfterCameraReturn(playPresentation: true));
             return true;
         }
 
@@ -172,11 +173,30 @@ public class BattleResultChecker : MonoBehaviour
         }
     }
 
-    private IEnumerator ShowDefeatAfterCameraReturn()
+    private IEnumerator ShowDefeatAfterCameraReturn(bool playPresentation)
     {
         yield return ReturnBattleEndCamera();
-        if (battleEnded)
+        if (!battleEnded)
+            yield break;
+
+        if (!playPresentation)
+        {
             OpenDefeatExplorationResultPanel();
+            yield break;
+        }
+
+        defeatPresentation ??= Object.FindFirstObjectByType<BattleDefeatPresentation>(
+            FindObjectsInactive.Include);
+
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        if (defeatPresentation == null ||
+            !defeatPresentation.Play(characters, OpenDefeatExplorationResultPanel))
+        {
+            OpenDefeatExplorationResultPanel();
+        }
     }
 
     private static IEnumerator ReturnBattleEndCamera()
@@ -257,17 +277,7 @@ public class BattleResultChecker : MonoBehaviour
         if (BattleRewardCollector.Instance != null)
             BattleRewardCollector.Instance.Clear();
 
-        CleanBattleRoom();
         explorationResultPanel.OpenDefeat(DefeatRewardMultiplier);
-    }
-
-    private static void CleanBattleRoom()
-    {
-        BattleRoomCleaner cleaner =
-            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
-
-        if (cleaner != null)
-            cleaner.Clean();
     }
 
     private static bool IsCurrentNodeBoss()
