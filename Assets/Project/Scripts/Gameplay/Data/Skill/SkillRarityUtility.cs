@@ -7,12 +7,7 @@ namespace Relic.Gameplay.Data
     {
         public static bool CanUpgrade(SkillMasterData skill)
         {
-            if (skill == null)
-                return false;
-
-            return skill.Category == Category.Ability ||
-                   skill.Category == Category.Public ||
-                   skill.Category == Category.Core;
+            return false;
         }
 
         public static bool CanUnequip(SkillMasterData skill)
@@ -39,21 +34,12 @@ namespace Relic.Gameplay.Data
 
         public static bool IsBaseSkillVariant(string skillId)
         {
-            if (IsUnpairedNumberedSkill(skillId))
-                return true;
-
-            if (!TryGetTrailingNumber(skillId, out int number))
-                return true;
-
-            return number % 2 != 0;
+            return true;
         }
 
         public static bool IsUpgradeSkillVariant(string skillId)
         {
-            if (IsUnpairedNumberedSkill(skillId))
-                return false;
-
-            return TryGetTrailingNumber(skillId, out int number) && number % 2 == 0;
+            return false;
         }
 
         public static Color GetSkillIconColor(string skillId)
@@ -69,33 +55,7 @@ namespace Relic.Gameplay.Data
         public static bool TryGetPairedVariantId(string skillId, out string pairedSkillId)
         {
             pairedSkillId = null;
-
-            if (string.IsNullOrWhiteSpace(skillId))
-                return false;
-
-            skillId = skillId.Trim();
-
-            if (IsUnpairedNumberedSkill(skillId))
-                return false;
-
-            int underscoreIndex = skillId.LastIndexOf('_');
-
-            if (underscoreIndex < 0 || underscoreIndex >= skillId.Length - 1)
-                return false;
-
-            string prefix = skillId.Substring(0, underscoreIndex + 1);
-            string numberText = skillId.Substring(underscoreIndex + 1);
-
-            if (!int.TryParse(numberText, out int number))
-                return false;
-
-            int pairedNumber = number % 2 == 0 ? number - 1 : number + 1;
-
-            if (pairedNumber <= 0)
-                return false;
-
-            pairedSkillId = prefix + pairedNumber.ToString(new string('0', numberText.Length));
-            return true;
+            return false;
         }
 
         public static string GetCanonicalName(SkillRarity rarity)
@@ -183,31 +143,6 @@ namespace Relic.Gameplay.Data
             };
         }
 
-        private static bool TryGetTrailingNumber(string id, out int number)
-        {
-            number = 0;
-
-            if (string.IsNullOrWhiteSpace(id))
-                return false;
-
-            int underscoreIndex = id.LastIndexOf('_');
-
-            if (underscoreIndex < 0 || underscoreIndex >= id.Length - 1)
-                return false;
-
-            string numberText = id.Substring(underscoreIndex + 1);
-            return int.TryParse(numberText, out number);
-        }
-
-        private static bool IsUnpairedNumberedSkill(string skillId)
-        {
-            if (string.IsNullOrWhiteSpace(skillId))
-                return false;
-
-            string normalizedSkillId = skillId.Trim();
-            return normalizedSkillId.StartsWith("S_Passive_", StringComparison.OrdinalIgnoreCase) ||
-                   normalizedSkillId.StartsWith("S_Unique_", StringComparison.OrdinalIgnoreCase);
-        }
     }
 
 }

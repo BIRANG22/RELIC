@@ -661,21 +661,10 @@ public sealed class LobbyRelicShopPresenter : MonoBehaviour
     private void InitializeSkillUpgradeButton(Camera camera)
     {
         Transform upgradeButton = transform.Find("SkillUpgradeOpenButton");
-        if (upgradeButton == null || ownerCanvas == null || camera == null)
+        if (upgradeButton == null)
             return;
 
-        WorldAnchorCanvasFollower follower = upgradeButton.GetComponent<WorldAnchorCanvasFollower>();
-        if (follower == null)
-            follower = upgradeButton.gameObject.AddComponent<WorldAnchorCanvasFollower>();
-
-        Transform depthAnchor = worldAnchors != null && worldAnchors.Length > 0
-            ? worldAnchors[worldAnchors.Length - 1]
-            : null;
-        follower.InitializeAtCanvasPosition(
-            skillUpgradeButtonStartPosition,
-            depthAnchor,
-            ownerCanvas,
-            camera);
+        upgradeButton.gameObject.SetActive(false);
     }
 
     private void ShowAllEmpty()

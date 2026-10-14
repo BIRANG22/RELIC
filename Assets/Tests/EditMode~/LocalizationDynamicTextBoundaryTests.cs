@@ -14,16 +14,16 @@ public sealed class LocalizationDynamicTextBoundaryTests
     {
         var eventChoice = new Relic.Gameplay.Data.EventData
         {
-            EventId = "Event_08_A",
+            EventId = "Event_09_A",
             ChoiceOrder = 1,
         };
 
         Assert.That(
             GameDataLocalization.EventChoiceKey(eventChoice, "name"),
-            Is.EqualTo("data.event.event_08_a.choice_1_name"));
+            Is.EqualTo("data.event.event_09_a.choice_1_name"));
         Assert.That(
             GameDataLocalization.EventChoiceKey(eventChoice, "description"),
-            Is.EqualTo("data.event.event_08_a.choice_1_description"));
+            Is.EqualTo("data.event.event_09_a.choice_1_description"));
     }
 
     [TestCase("Event_05_A")]

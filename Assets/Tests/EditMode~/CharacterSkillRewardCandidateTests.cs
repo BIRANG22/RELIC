@@ -5,7 +5,7 @@ using Relic.Gameplay.Data;
 public class CharacterSkillRewardCandidateTests
 {
     [Test]
-    public void GetCandidates_FiltersByCoreRarityBaseVariantAndPartyCompatibility()
+    public void GetCandidates_FiltersByCoreRarityAndPartyCompatibilityWithoutVariantParity()
     {
         List<SkillMasterData> skills = new()
         {
@@ -19,7 +19,6 @@ public class CharacterSkillRewardCandidateTests
         IReadOnlyList<SkillMasterData> result = SkillRewardRoller.GetCandidates(
             skills,
             SkillRarity.Common,
-            true,
             new[] { "Char_01" });
 
         Assert.That(result.Count, Is.EqualTo(2));

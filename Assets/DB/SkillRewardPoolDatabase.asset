@@ -15,12 +15,12 @@ MonoBehaviour:
   restrictRewards: 1
   allowedSkillIds:
   - S_Core_01
+  - S_Core_02
   - S_Core_03
+  - S_Core_04
   - S_Core_05
+  - S_Core_06
   - S_Core_07
+  - S_Core_08
   - S_Core_09
-  - S_Core_11
-  - S_Core_13
-  - S_Core_15
-  - S_Core_17
-  - S_Core_19
+  - S_Core_10

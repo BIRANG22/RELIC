@@ -1,11 +1,11 @@
 # Character
 캐릭터ID,이름,최대 HP,최대 Cost,Cost 회복량,자원최대치,자원타입,기본지급여부,해금조건,패시브스킬1,패시브스킬2,고유스킬1,고유스킬2,캐릭터스킬1,캐릭터스킬2,공유스킬1,공유스킬2,룬1,룬2,룬3,룬4,룬5,캐릭터소개
 CharacterId,Name,MaxHP,MaxCost,CostRecovery,MaxResource,ResourceType,IsDefaultProvided,UnlockCondition,PassiveSkill1,PassiveSkill2,UniqueSkill1,UniqueSkill2,CharacterSkill1,CharacterSkill2,CommonSkill1,CommonSkill2,Rune1,Rune2,Rune3,Rune4,Rune5,introduction
-Char_01,힐트,104,10,4,5,Karma,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_03,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,“강한 놈들이 득실거린다며? 그럼 내가 가야지.”
-Char_02,카야,98,11,4,5,Karma,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_05,S_Ability_07,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,“임무라면 완수한다. 그뿐이야.”
-Char_03,헤이즈,92,14,4,5,Karma,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_09,S_Ability_11,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,“정말 제가 가야 하는 건가요?”
-Char_04,이네스,100,10,4,5,Karma,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_13,S_Ability_15,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,“걱정하지 마세요. 모두 무사히 돌아갈 수 있도록 할게요.”
-Char_05,레이나,90,12,4,5,Karma,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Unique_10,S_Ability_17,S_Ability_19,S_Public_17,S_Public_19,Rune_71,Rune_72,Rune_73,Rune_74,Rune_75,“그냥 내가 가고 싶어서 가는 거야.”
+Char_01,힐트,104,10,4,5,Karma,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_02,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,“강한 놈들이 득실거린다며? 그럼 내가 가야지.”
+Char_02,카야,98,11,4,5,Karma,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_03,S_Ability_04,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,“임무라면 완수한다. 그뿐이야.”
+Char_03,헤이즈,92,14,4,5,Karma,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_05,S_Ability_06,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,“정말 제가 가야 하는 건가요?”
+Char_04,이네스,100,10,4,5,Karma,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_07,S_Ability_08,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,“걱정하지 마세요. 모두 무사히 돌아갈 수 있도록 할게요.”
+Char_05,레이나,90,12,4,5,Karma,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Unique_10,S_Ability_09,S_Ability_10,S_Public_17,S_Public_19,Rune_71,Rune_72,Rune_73,Rune_74,Rune_75,“그냥 내가 가고 싶어서 가는 거야.”
 ,,,,,,,,
 ,,,,,,,,
 ,,,,,,,,
@@ -22,17 +22,17 @@ Char_05,레이나,90,12,4,5,Karma,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Un
 # Monster
 몬스터ID,이름,등급,HP,방어도,최소 렘넌트,최대 렘넌트,고유아이템,고유 아이템 확률,공격범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID,보유스킬6 ID,보유스킬7 ID,보유스킬8 ID,보유스킬9 ID,보유스킬10 ID
 MonsterId,Name,Grade,HP,Armor,MinRemnant,MaxRemnant,UniqueItemId ,UniqueItemChance,AttackRange,PossSkillId01,PossSkillId02,PossSkillId03,PossSkillId04,PossSkillId05,PossSkillId06,PossSkillId07,PossSkillId08,PossSkillId09,PossSkillId10
-Mon_01,머크,Common,34,0,8,16,Item_001,0.3,Range_18,S_Monster_01,S_Monster_02,0,0,0,0,0,0,0,0
-Mon_02,블롭,Common,15,0,5,10,Item_002,0.3,Range_17,S_Monster_03,S_Monster_04,0,0,0,0,0,0,0,0
-Mon_03,랜서,Common,26,0,12,18,Item_003,0.3,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0,0,0,0,0,0
-Mon_04,블라이트,Common,25,0,12,18,Item_004,0.3,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0,0,0,0,0,0
-Mon_05,베스파,Common,38,0,18,25,Item_005,0.3,Range_19,S_Monster_11,S_Monster_12,0,0,0,0,0,0,0,0
-Mon_06,신더,Common,18,20,15,22,Item_006,0.3,Range_18,S_Monster_13,S_Monster_14,0,0,0,0,0,0,0,0
-Mon_07,드라우그,Common,42,0,10,20,Item_007,0.3,Range_18,S_Monster_26,S_Monster_27,S_Monster_28,0,0,0,0,0,0,0
-Mon_08,바로우,Common,40,0,10,20,Item_008,0.3,Range_19,S_Monster_29,S_Monster_30,S_Monster_31,0,0,0,0,0,0,0
-Mon_09,루크,Elite,82,0,30,45,Item_009,0.2,Range_18,S_Monster_32,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,0,0,0,0,0
-Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.2,Range_18,S_Monster_15,S_Monster_16,S_Monster_17,S_Monster_18,S_Monster_19,0,0,0,0,0
-Mon_11,모르트,Elite,77,0,35,42,Item_011,0.2,Range_19,S_Monster_37,S_Monster_38,S_Monster_39,S_Monster_40,S_Monster_41,0,0,0,0,0
+Mon_01,머크,Common,34,0,8,16,Item_001,0.29999999999999999,Range_18,S_Monster_01,S_Monster_02,0,0,0,0,0,0,0,0
+Mon_02,블롭,Common,15,0,5,10,Item_002,0.29999999999999999,Range_17,S_Monster_03,S_Monster_04,0,0,0,0,0,0,0,0
+Mon_03,랜서,Common,26,0,12,18,Item_003,0.29999999999999999,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0,0,0,0,0,0
+Mon_04,블라이트,Common,25,0,12,18,Item_004,0.29999999999999999,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0,0,0,0,0,0
+Mon_05,베스파,Common,38,0,18,25,Item_005,0.29999999999999999,Range_19,S_Monster_11,S_Monster_12,0,0,0,0,0,0,0,0
+Mon_06,신더,Common,18,20,15,22,Item_006,0.29999999999999999,Range_18,S_Monster_13,S_Monster_14,0,0,0,0,0,0,0,0
+Mon_07,드라우그,Common,42,0,10,20,Item_007,0.29999999999999999,Range_18,S_Monster_26,S_Monster_27,S_Monster_28,0,0,0,0,0,0,0
+Mon_08,바로우,Common,40,0,10,20,Item_008,0.29999999999999999,Range_19,S_Monster_29,S_Monster_30,S_Monster_31,0,0,0,0,0,0,0
+Mon_09,루크,Elite,82,0,30,45,Item_009,0.20000000000000001,Range_18,S_Monster_32,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,0,0,0,0,0
+Mon_10,녹턴,Elite,94,0,36,48,Item_010,0.20000000000000001,Range_18,S_Monster_15,S_Monster_16,S_Monster_17,S_Monster_18,S_Monster_19,0,0,0,0,0
+Mon_11,모르트,Elite,77,0,35,42,Item_011,0.20000000000000001,Range_19,S_Monster_37,S_Monster_38,S_Monster_39,S_Monster_40,S_Monster_41,0,0,0,0,0
 Mon_12,아라벨라,Boss,142,0,45,55,Item_012,0.5,Range_19,S_Monster_20,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,S_Monster_25,0,0,0,0
 ,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,
@@ -83,106 +83,56 @@ S_Unique_07,구원의 기도,Unique,Exclusive,Ulti,PlayerParty,0,3,Char_04,Buff,
 S_Unique_08,처형,Unique,Exclusive,Ulti,EnemyParty,0,3,Char_04,Attack,E_Strike;E_Vulnerable,14;1,1;1,3,Direction,Range_23,{E_Strike} {ValueRate1} / {E_Vulnerable} {ValueRate2} 부여,0
 S_Unique_09,Char5_U1,Unique,Exclusive,Ulti,-,0,3,Char_05,-,-,-,-,3,Direction,-,-,0
 S_Unique_10,Char5_U2,Unique,Exclusive,Ulti,-,0,3,Char_05,-,-,-,-,3,Direction,-,-,0
-S_Ability_01,회전참,Ability,Exclusive,Cost,EnemyParty,1,2,Char_01,Attack,E_Strike,6,1,3,Direction,Range_18,{E_Strike} {ValueRate1},0
-S_Ability_02,회전참+,Ability,Exclusive,Cost,EnemyParty,2,2,Char_01,Attack,E_Strike,8,1,3,Direction,Range_20,{E_Strike} {ValueRate1},0
-S_Ability_03,지면 강타,Ability,Exclusive,Cost,EnemyParty,1,2,Char_01,Attack,E_Strike;E_Knockback,7;1,1;1,3,Direction,Range_15,{E_Strike} {ValueRate1} / {E_Knockback} {ValueRate2},0
-S_Ability_04,지면 강타+,Ability,Exclusive,Cost,EnemyParty,2,2,Char_01,Attack,E_Strike;E_Knockback,9;1,1;1,3,Direction,Range_16,{E_Strike} {ValueRate1} / {E_Knockback} {ValueRate2},0
-S_Ability_05,질풍검 3식,Ability,Exclusive,Cost,EnemyParty,1,2,Char_02,Attack,E_Strike,2,3,3,Direction,Range_10,{E_Strike} {ValueRate1}{CountRate1},0
-S_Ability_06,질풍검 3식+,Ability,Exclusive,Cost,EnemyParty,2,2,Char_02,Attack,E_Strike,2,4,3,Direction,Range_11,{E_Strike} {ValueRate1}{CountRate1},0
-S_Ability_07,질풍검 1식,Ability,Exclusive,Cost,EnemyParty,1,2,Char_02,Attack,E_Pierce,8,1,3,Direction,Range_03,{E_Pierce} {ValueRate1},0
-S_Ability_08,질풍검 1식+,Ability,Exclusive,Cost,EnemyParty,2,2,Char_02,Attack,E_Pierce,10,1,3,Direction,Range_04,{E_Pierce} {ValueRate1},0
-S_Ability_09,찬란한 빛,Ability,Exclusive,Cost,PlayerParty,1,2,Char_03,Buff,E_Boost,1,1,5,Direction,Range_b_02,{E_Boost}를 {ValueRate1} 부여한다.,0
-S_Ability_10,찬란한 빛+,Ability,Exclusive,Cost,PlayerParty,2,2,Char_03,Buff,E_Boost,1,1,4,Direction,Range_b_04,{E_Boost}를 {ValueRate1} 부여한다.,0
-S_Ability_11,베놈,Ability,Exclusive,Cost,EnemyParty,1,2,Char_03,Debuff,E_Poison,4,1,4,Direction,Range_22,{E_Poison}을 {ValueRate1} 부여한다.,0
-S_Ability_12,베놈+,Ability,Exclusive,Cost,EnemyParty,2,2,Char_03,Debuff,E_Poison,4,1,3,Direction,Range_23,{E_Poison}을 {ValueRate1} 부여한다.,0
-S_Ability_13,치유의 손길,Ability,Exclusive,Cost,PlayerParty,1,3,Char_04,Buff,E_Cure,3,1,5,Direction,Range_b_03,{E_Cure}를 {ValueRate1} 부여한다.,0
-S_Ability_14,치유의 손길+,Ability,Exclusive,Cost,PlayerParty,2,3,Char_04,Buff,E_Cure,3,1,4,Direction,Range_b_04,{E_Cure}를 {ValueRate1} 부여한다.,0
-S_Ability_15,응징,Ability,Exclusive,Cost,EnemyParty,1,2,Char_04,Attack,E_Strike;E_Vulnerable,5;1,1;1,3,Direction,Range_11,{ValueRate1}의 {E_Strike}를 준다.,0
-S_Ability_16,응징+,Ability,Exclusive,Cost,EnemyParty,2,2,Char_04,Attack,E_Strike;E_Vulnerable,7;1,1;1,3,Direction,Range_12,{ValueRate1}의 {E_Strike}를 준다.,0
-S_Ability_17,Char5_A1,Ability,Exclusive,Cost,-,1,2,Char_05,-,-,-,-,-,Direction,-,-,0
-S_Ability_18,Char5_A1+,Ability,Exclusive,Cost,-,2,2,Char_05,-,-,-,-,-,Direction,-,-,0
-S_Ability_19,Char5_A2,Ability,Exclusive,Cost,-,1,2,Char_05,-,-,-,-,-,Direction,-,-,0
-S_Ability_20,Char5_A2+,Ability,Exclusive,Cost,-,2,2,Char_05,-,-,-,-,-,Direction,-,-,0
-S_Core_01,수호의 기운,Core,Common,Cost,PlayerParty,1,2,Char_01,Buff,E_Armor,6,1,3,Direction,Range_b_01,{E_Armor} {ValueRate1} 부여,
-S_Core_02,수호의 기운+,Core,Common,Cost,PlayerParty,2,2,Char_01,Buff,E_Armor,8,1,3,Direction,Range_b_02,{E_Armor} {ValueRate1} 부여,
-S_Core_03,피의 갑주,Core,Common,Hp,Self,1,2,Char_01,Buff,E_Armor,12,1,5,Direction,Range_Self,자신에게 {E_Armor} {ValueRate1} 부여,
-S_Core_04,피의 갑주+,Core,Common,Hp,Self,2,2,Char_01,Buff,E_Armor,15,1,5,Direction,Range_Self,자신에게 {E_Armor} {ValueRate1} 부여,
-S_Core_05,꼬리 쓸기,Core,Common,Cost,EnemyParty,1,1,Char_01,Attack,E_Strike;E_Knockback,2;1,1;1,2,Direction,Range_02,{E_Strike} {ValueRate1} / {E_Knockback} {ValueRate2},
-S_Core_06,꼬리 쓸기+,Core,Common,Cost,EnemyParty,2,1,Char_01,Attack,E_Strike;E_Knockback,4;1,1;1,2,Direction,Range_08,{E_Strike} {ValueRate1} / {E_Knockback} {ValueRate2},
-S_Core_07,갑주 파쇄,Core,Rare,Cost,EnemyParty,1,2,Char_01,Attack,E_Strike;E_Vulnerable,6;1,1;1,3,Direction,Range_09,{E_Strike} {ValueRate1} / {E_Vulnerable} {ValueRate2},
-S_Core_08,갑주 파쇄+,Core,Rare,Cost,EnemyParty,2,2,Char_01,Attack,E_Strike;E_Vulnerable,8;2,1;1,3,Direction,Range_11,{E_Strike} {ValueRate1} / {E_Vulnerable} {ValueRate2},
-S_Core_09,가시갑옷,Core,Rare,Cost,Self,1,2,Char_01,Buff,E_Ward,3,1,3,Direction,Range_Self,자신에게 {E_Ward} {ValueRate1} 부여,
-S_Core_10,가시갑옷+,Core,Rare,Cost,Self,2,2,Char_01,Buff,E_Ward,5,1,3,Direction,Range_Self,자신에게 {E_Ward} {ValueRate1} 부여,
-S_Core_11,전투의 기세,Core,Rare,Cost,PlayerParty,1,3,Char_01,Buff,E_Smite,1,1,5,Direction,Range_b_01,{E_Smite} {ValueRate1} 부여,
-S_Core_12,전투의 기세+,Core,Rare,Cost,PlayerParty,2,3,Char_01,Buff,E_Smite,2,1,5,Direction,Range_b_01,{E_Smite} {ValueRate1} 부여,
-S_Core_13,무모한 일격,Core,Epic,Cost,EnemyParty,1,2,Char_01,Attack,E_Strike;E_MissSelfDamage,10;5,1;1,2,Direction,Range_01,{E_Strike} {ValueRate1} / 적중 실패 시 생명력 -{ValueRate2},
-S_Core_14,무모한 일격+,Core,Epic,Cost,EnemyParty,2,2,Char_01,Attack,E_Strike;E_MissSelfDamage,13;4,1;1,2,Direction,Range_02,{E_Strike} {ValueRate1} / 적중 실패 시 생명력 -{ValueRate2},
-S_Core_15,갈증,Core,Epic,Hp,Self,1,2,Char_01,Buff,E_Lifesteal;E_Boost,1;1,1;1,4,Direction,Range_Self,{E_Lifesteal} {ValueRate1} / {E_Boost} {ValueRate2} 부여,
-S_Core_16,갈증+,Core,Epic,Hp,Self,2,2,Char_01,Buff,E_Lifesteal;E_Boost,1;2,1;1,4,Direction,Range_Self,{E_Lifesteal} {ValueRate1} / {E_Boost} {ValueRate2} 부여,
-S_Core_17,철갑돌진,Core,Unique,Cost,EnemyParty,1,2,Char_01,Attack,E_Rush;E_ArmorStrike,1;1,1;1,5,Direction,Range_03,돌진하여 충돌한 적에게 {E_Strike} {E_ArmorStrike},
-S_Core_18,철갑돌진+,Core,Unique,Cost,EnemyParty,2,2,Char_01,Attack,E_Rush;E_ArmorStrike,1;1,1;1,4,Direction,Range_05,돌진하여 충돌한 적에게 {E_Strike} {E_ArmorStrike},
-S_Core_19,핏빛 수확,Core,Unique,Cost,EnemyParty,1,3,Char_01,Attack,E_Strike;E_ValueUpOnKill,3;1,1;1,5,Direction,Range_02,{E_Strike} {ValueRate1} / 처치 시 영구히 수치 {ValueRate2} 증가,
-S_Core_20,핏빛 수확+,Core,Unique,Cost,EnemyParty,2,3,Char_01,Attack,E_Strike;E_ValueUpOnKill,3;2,1;1,5,Direction,Range_02,{E_Strike} {ValueRate1} / 처치 시 영구히 수치 {ValueRate2} 증가,
-S_Core_21,간파,Core,Common,Cost,Self,1,1,Char_02,Buff,E_Blindside,1,1,5,Direction,Range_Self,자신에게 {E_Blindside} {ValueRate1} 부여,
-S_Core_22,간파+,Core,Common,Cost,Self,2,1,Char_02,Buff,E_Blindside,1,1,4,Direction,Range_Self,자신에게 {E_Blindside} {ValueRate1} 부여,
-S_Core_23,비상검,Core,Common,Cost,EnemyParty,1,2,Char_02,Attack,E_Move;E_Strike,1;8,1;1,3,Direction,Range_10,{ValueRate1}칸 전진 후 {E_Strike} {ValueRate2},
-S_Core_24,비상검+,Core,Common,Cost,EnemyParty,2,2,Char_02,Attack,E_Move;E_Strike,1;10,1;1,3,Direction,Range_15,{ValueRate1}칸 전진 후 {E_Strike} {ValueRate2},
-S_Core_25,비연검,Core,Common,Cost,EnemyParty,1,2,Char_02,Attack,E_Strike;E_Move,8;-1,1;1,3,Direction,Range_14,{E_Strike} {ValueRate1} 이후 {ValueRate2}칸 후퇴,
-S_Core_26,비연검+,Core,Common,Cost,EnemyParty,2,2,Char_02,Attack,E_Strike;E_Move,10;-1,1;1,3,Direction,Range_15,{E_Strike} {ValueRate1} 이후 {ValueRate2}칸 후퇴,
-S_Core_27,전투감각,Core,Rare,Ulti,Self,1,2,Char_02,Buff,E_Boost,1,1;1,1,Direction,Range_Self,자신에게 {E_Boost} {ValueRate1} 부여,
-S_Core_28,전투감각+,Core,Rare,Ulti,Self,2,2,Char_02,Buff,E_Boost,2,1;1,1,Direction,Range_Self,자신에게 {E_Boost} {ValueRate1} 부여,
-S_Core_29,상흔베기,Core,Rare,Cost,EnemyParty,1,2,Char_02,Debuff,E_Bleed;E_Weaken,2;1,1;1,4,Direction,Range_07,{E_Bleed} {ValueRate1} / {E_Weaken} {ValueRate2} 부여,
-S_Core_30,상흔베기+,Core,Rare,Cost,EnemyParty,2,2,Char_02,Debuff,E_Bleed;E_Weaken,3;1,1;1,4,Direction,Range_08,{E_Bleed} {ValueRate1} / {E_Weaken} {ValueRate2} 부여,
-S_Core_31,일섬,Core,Rare,Cost,EnemyParty,1,1,Char_02,Attack,E_Strike,3,1,2,Direction,Range_09,{E_Strike} {ValueRate1},
-S_Core_32,일섬+,Core,Rare,Cost,EnemyParty,2,1,Char_02,Attack,E_Strike,3,1,1,Direction,Range_10,{E_Strike} {ValueRate1},
-S_Core_33,혈맥 찌르기,Core,Epic,Cost,EnemyParty,1,1,Char_02,Attack,E_Pierce;E_Bleed,6;3,1;1,2,Direction,Range_03,{E_Pierce} {ValueRate1} / 최대 사거리 적중 시 {E_Bleed} {ValueRate2} 부여,
-S_Core_34,혈맥 찌르기+,Core,Epic,Cost,EnemyParty,2,1,Char_02,Attack,E_Pierce;E_Bleed,8;4,1;1,2,Direction,Range_03,{E_Pierce} {ValueRate1} / 최대 사거리 적중 시 {E_Bleed} {ValueRate2} 부여,
-S_Core_35,혈화만개,Core,Epic,Cost,EnemyParty,1,2,Char_02,Attack,E_DamageUpIfBleeding,8,1,3,Direction,Range_11,{E_Strike} {ValueRate1} / {E_Bleed}을 보유한 적에게 피해량 50% 증가,
-S_Core_36,혈화만개+,Core,Epic,Cost,EnemyParty,2,2,Char_02,Attack,E_DamageUpIfBleeding,10,1,3,Direction,Range_12,{E_Strike} {ValueRate1} / {E_Bleed}을 보유한 적에게 피해량 50% 증가,
-S_Core_37,환영검무,Core,Unique,Cost,EnemyParty,1,3,Char_02,Attack,E_StrikeCountByBuff,2,1,5,Direction,Range_14,{E_Strike} {ValueRate1}x{CountRate1} / 보유한 버프 1종마다 횟수 1 증가,
-S_Core_38,환영검무+,Core,Unique,Cost,EnemyParty,2,3,Char_02,Attack,E_StrikeCountByBuff,3,1,5,Direction,Range_15,{E_Strike} {ValueRate1}x{CountRate1} / 보유한 버프 1종마다 횟수 1 증가,
-S_Core_39,공단참,Core,Unique,Cost,EnemyParty,1,2,Char_02,Attack,E_Pierce;E_ValueUpOnHit,4;1,1;1,4,Direction,Range_10,{E_Pierce} {ValueRate1} / 적중 시 이번 전투동안 수치 {ValueRate2} 증가,
-S_Core_40,공단참+,Core,Unique,Cost,EnemyParty,2,2,Char_02,Attack,E_Pierce;E_ValueUpOnHit,7;2,1;1,4,Direction,Range_11,{E_Pierce} {ValueRate1} / 적중 시 이번 전투동안 수치 {ValueRate2} 증가,
-S_Core_41,등불의 광휘,Core,Common,Cost,PlayerParty,1,2,Char_02,Buff,E_Smite,1,1,5,Direction,Range_b_02,{E_Smite} {ValueRate1} 부여,
-S_Core_42,등불의 광휘+,Core,Common,Cost,PlayerParty,2,2,Char_02,Buff,E_Smite,1,1,4,Direction,Range_b_04,{E_Smite} {ValueRate1} 부여,
-S_Core_43,마나 스파크,Core,Common,Cost,PlayerParty,1,3,Char_03,Buff,E_Charge,2,1,4,Direction,Range_b_06,{E_Charge} {ValueRate1} 부여,
-S_Core_44,마나 스파크+,Core,Common,Cost,PlayerParty,2,3,Char_03,Buff,E_Charge,3,1,4,Direction,Range_b_06,{E_Charge} {ValueRate1} 부여,
-S_Core_45,날카로운 섬광,Core,Common,Cost,EnemyParty,1,2,Char_03,Attack,E_Strike,7,1,3,Direction,Range_22,{E_Strike} {ValueRate1},
-S_Core_46,날카로운 섬광+,Core,Common,Cost,EnemyParty,2,2,Char_03,Attack,E_Strike,9,1,3,Direction,Range_23,{E_Strike} {ValueRate1},
-S_Core_47,마비독,Core,Rare,Cost,EnemyParty,1,1,Char_03,Debuff,E_Poison;E_Weaken,3;1,1;1,4,Direction,Range_24,{E_Poison} {ValueRate1} / {E_Weaken} {ValueRate2} 부여,
-S_Core_48,마비독+,Core,Rare,Cost,EnemyParty,2,1,Char_03,Debuff,E_Poison;E_Weaken,4;1,1;1,4,Direction,Range_24,{E_Poison} {ValueRate1} / {E_Weaken} {ValueRate2} 부여,
-S_Core_49,짙은 그림자,Core,Rare,Cost,EnemyParty,1,2,Char_03,Debuff,E_Fatigue,2,1,4,Direction,Range_28,{E_Fatigue} {ValueRate1} 부여,
-S_Core_50,짙은 그림자+,Core,Rare,Cost,EnemyParty,2,2,Char_03,Debuff,E_Fatigue,3,1,4,Direction,Range_28,{E_Fatigue} {ValueRate1} 부여,
-S_Core_51,영혼 흡수,Core,Rare,Cost,EnemyParty,1,2,Char_03,Attack,E_Strike;E_RestoreManaPerHitTarge,6;1,1;1,5,Direction,Range_27,{E_Strike} {ValueRate1} / 적중한 적의 수만큼 마나 회복,
-S_Core_52,영혼 흡수+,Core,Rare,Cost,EnemyParty,2,2,Char_03,Attack,E_Strike;E_RestoreManaPerHitTarge,8;1,1;1,4,Direction,Range_27,{E_Strike} {ValueRate1} / 적중한 적의 수만큼 마나 회복,
-S_Core_53,독성발현,Core,Epic,Cost,EnemyParty,1,4,Char_03,Debuff,E_PoisonEqualTargetPoison,1,1,8,Direction,Range_20,대상이 보유한 {E_Poison} 수치만큼 {E_Poison}부여,
-S_Core_54,독성발현+,Core,Epic,Cost,EnemyParty,2,4,Char_03,Debuff,E_PoisonEqualTargetPoison,1,1,6,Direction,Range_21,대상이 보유한 {E_Poison} 수치만큼 {E_Poison}부여,
-S_Core_55,니아의 불꽃,Core,Epic,Ulti,EnemyParty,1,4,Char_03,Debuff,E_Bondage,1,1,1,Direction,Range_03,{E_Bondage} {ValueRate1} 부여,
-S_Core_56,니아의 불꽃+,Core,Epic,Ulti,EnemyParty,2,4,Char_03,Debuff,E_Bondage,1,1,1,Direction,Range_06,{E_Bondage} {ValueRate1} 부여,
-S_Core_57,니아의 속삭임,Core,Unique,Cost,PlayerParty,1,3,Char_03,Buff,E_Swift,1,1,8,Direction,Range_Party,{E_Swift} {ValueRate1} 부여,
-S_Core_58,니아의 속삭임+,Core,Unique,Cost,PlayerParty,2,3,Char_03,Buff,E_Swift,1,1,6,Direction,Range_Party,{E_Swift} {ValueRate1} 부여,
-S_Core_59,극성맹독,Core,Unique,Cost,EnemyParty,1,3,Char_03,Debuff,E_Poison;E_TriggerPoison,3;1,1;1,6,Direction,Range_22,{E_Poison} {ValueRate1} / 중독을 즉시 1회 발동,
-S_Core_60,극성맹독+,Core,Unique,Cost,EnemyParty,2,3,Char_03,Debuff,E_Poison;E_TriggerPoison,5;1,1;1,6,Direction,Range_24,{E_Poison} {ValueRate1} / 중독을 즉시 1회 발동,
-S_Core_61,은총,Core,Common,Hp,PlayerParty,1,2,Char_03,Buff,E_Armor;E_Cure,4;1,1;1,3,Direction,Range_b_06,{E_Armor} {ValueRate1} / {E_Cure} {ValueRate1} 부여,
-S_Core_62,은총+,Core,Common,Hp,PlayerParty,2,2,Char_03,Buff,E_Armor;E_Cure,6;2,1;1,3,Direction,Range_b_07,{E_Armor} {ValueRate1} / {E_Cure} {ValueRate1} 부여,
-S_Core_63,죄의 인도,Core,Common,Cost,EnemyParty,1,2,Char_04,Attack,E_Strike;E_Grab,6;1,1;1,3,Direction,Range_07,{E_Strike} {ValueRate1} / {E_Grab} {ValueRate2},
-S_Core_64,죄의 인도+,Core,Common,Cost,EnemyParty,2,2,Char_04,Attack,E_Strike;E_Grab,8;1,1;1,3,Direction,Range_08,{E_Strike} {ValueRate1} / {E_Grab} {ValueRate2},
-S_Core_65,수호의 기도,Core,Common,Cost,PlayerParty,1,2,Char_04,Buff,E_Armor;E_Ward,3;1,1;1,3,Direction,Range_b_01,{E_Armor} {ValueRate1} / {E_Ward} {ValueRate1} 부여,
-S_Core_66,수호의 기도+,Core,Common,Cost,PlayerParty,2,2,Char_04,Buff,E_Armor;E_Ward,5;2,1;1,3,Direction,Range_b_02,{E_Armor} {ValueRate1} / {E_Ward} {ValueRate1} 부여,
-S_Core_67,메디테이션,Core,Rare,Cost,Self,1,3,Char_04,Buff,E_Karma,1,1,5,Direction,Range_Self,{E_Karma}  {ValueRate1} 획득,
-S_Core_68,메디테이션+,Core,Rare,Cost,Self,2,3,Char_04,Buff,E_Karma,1,1,4,Direction,Range_Self,{E_Karma}  {ValueRate1} 획득,
-S_Core_69,제네시스,Core,Rare,Ulti,EnemyParty,1,2,Char_04,Attack,E_RandomStrike,8,X,X,Direction,Range_20,무작위 적{E_Strike} {ValueRate1}{CountRate1},
-S_Core_70,제네시스+,Core,Rare,Ulti,EnemyParty,2,2,Char_04,Attack,E_RandomStrike,10,X,X,Direction,Range_21,무작위 적{E_Strike} {ValueRate1}{CountRate1},
-S_Core_71,파멸의 낙인,Core,Rare,Cost,EnemyParty,1,3,Char_04,Debuff,E_Vulnerable,2,1,4,Direction,Range_22,{E_Vulnerable} {ValueRate1} 부여,
-S_Core_72,파멸의 낙인+,Core,Rare,Cost,EnemyParty,2,3,Char_04,Debuff,E_Vulnerable,3,1,4,Direction,Range_22,{E_Vulnerable} {ValueRate1} 부여,
-S_Core_73,결속,Core,Epic,Cost,PlayerParty,1,3,Char_04,Buff,E_Bond,1,1,7,Direction,Range_Party,{E_Bond} {ValueRate1} 부여,
-S_Core_74,결속+,Core,Epic,Cost,PlayerParty,2,3,Char_04,Buff,E_Bond,1,1,5,Direction,Range_Party,{E_Bond} {ValueRate1} 부여,
-S_Core_75,심판 집행,Core,Epic,Cost,EnemyParty,1,2,Char_04,Attack,E_Strike;E_StrikeByVulnerable,3;1,1;1,5,Direction,Range_08,{E_Strike} {ValueRate1} / 대상이 보유한 {E_Vulnerable} 수치만큼 피해수치 증가,
-S_Core_76,심판 집행+,Core,Epic,Cost,EnemyParty,2,2,Char_04,Attack,E_Strike;E_StrikeByVulnerable,3;1,1;1,4,Direction,Range_13,{E_Strike} {ValueRate1} / 대상이 보유한 {E_Vulnerable} 수치만큼 피해수치 증가,
-S_Core_77,고해성사,Core,Unique,Cost,EnemyParty,1,3,Char_04,Debuff,E_DebuffDouble,2,1,10,Direction,Range_11,대상이 보유한 가장 높은 수치의 디버프 1종의 수치 2배 증가,
-S_Core_78,고해성사+,Core,Unique,Cost,EnemyParty,2,3,Char_04,Debuff,E_DebuffDouble,2,1,8,Direction,Range_12,대상이 보유한 가장 높은 수치의 디버프 1종의 수치 2배 증가,
-S_Core_79,단죄의 쐐기,Core,Unique,Ulti,EnemyParty,1,1,Char_04,Attack,E_RemoveArmor,1,1,2,Direction,Range_02,대상의 방어도 제거,
-S_Core_80,단죄의 쐐기+,Core,Unique,Ulti,EnemyParty,2,1,Char_04,Attack,E_RemoveArmor,1,1,2,Direction,Range_10,대상의 방어도 제거,
+S_Ability_01,회전참,Ability,Exclusive,Cost,EnemyParty,1,2,Char_01,Attack,E_Strike,8,1,3,Direction,Range_20,{E_Strike} {ValueRate1},0
+S_Ability_02,지면 강타,Ability,Exclusive,Cost,EnemyParty,1,2,Char_01,Attack,E_Strike;E_Knockback,9;1,1;1,3,Direction,Range_16,{E_Strike} {ValueRate1} / {E_Knockback} {ValueRate2},0
+S_Ability_03,질풍검 3식,Ability,Exclusive,Cost,EnemyParty,1,2,Char_02,Attack,E_Strike,2,4,3,Direction,Range_11,{E_Strike} {ValueRate1}{CountRate1},0
+S_Ability_04,질풍검 1식,Ability,Exclusive,Cost,EnemyParty,1,2,Char_02,Attack,E_Pierce,10,1,3,Direction,Range_04,{E_Pierce} {ValueRate1},0
+S_Ability_05,찬란한 빛,Ability,Exclusive,Cost,PlayerParty,1,2,Char_03,Buff,E_Boost,1,1,4,Direction,Range_b_04,{E_Boost}를 {ValueRate1} 부여한다.,0
+S_Ability_06,베놈,Ability,Exclusive,Cost,EnemyParty,1,2,Char_03,Debuff,E_Poison,4,1,3,Direction,Range_23,{E_Poison}을 {ValueRate1} 부여한다.,0
+S_Ability_07,치유의 손길,Ability,Exclusive,Cost,PlayerParty,1,3,Char_04,Buff,E_Cure,3,1,4,Direction,Range_b_04,{E_Cure}를 {ValueRate1} 부여한다.,0
+S_Ability_08,응징,Ability,Exclusive,Cost,EnemyParty,1,2,Char_04,Attack,E_Strike;E_Vulnerable,7;1,1;1,3,Direction,Range_12,{ValueRate1}의 {E_Strike}를 준다.,0
+S_Ability_09,Char5_A1,Ability,Exclusive,Cost,-,1,2,Char_05,-,-,-,-,-,Direction,-,-,0
+S_Ability_10,Char5_A2,Ability,Exclusive,Cost,-,1,2,Char_05,-,-,-,-,-,Direction,-,-,0
+S_Core_01,수호의 기운,Core,Common,Cost,PlayerParty,1,2,Char_01,Buff,E_Armor,8,1,3,Direction,Range_b_02,{E_Armor} {ValueRate1} 부여,
+S_Core_02,피의 갑주,Core,Common,Hp,Self,1,2,Char_01,Buff,E_Armor,15,1,5,Direction,Range_Self,자신에게 {E_Armor} {ValueRate1} 부여,
+S_Core_03,꼬리 쓸기,Core,Common,Cost,EnemyParty,1,1,Char_01,Attack,E_Strike;E_Knockback,4;1,1;1,2,Direction,Range_08,{E_Strike} {ValueRate1} / {E_Knockback} {ValueRate2},
+S_Core_04,갑주 파쇄,Core,Rare,Cost,EnemyParty,1,2,Char_01,Attack,E_Strike;E_Vulnerable,8;2,1;1,3,Direction,Range_11,{E_Strike} {ValueRate1} / {E_Vulnerable} {ValueRate2},
+S_Core_05,가시갑옷,Core,Rare,Cost,Self,1,2,Char_01,Buff,E_Ward,5,1,3,Direction,Range_Self,자신에게 {E_Ward} {ValueRate1} 부여,
+S_Core_06,전투의 기세,Core,Rare,Cost,PlayerParty,1,3,Char_01,Buff,E_Smite,2,1,5,Direction,Range_b_01,{E_Smite} {ValueRate1} 부여,
+S_Core_07,무모한 일격,Core,Epic,Cost,EnemyParty,1,2,Char_01,Attack,E_Strike;E_MissSelfDamage,13;4,1;1,2,Direction,Range_02,{E_Strike} {ValueRate1} / 적중 실패 시 생명력 -{ValueRate2},
+S_Core_08,갈증,Core,Epic,Hp,Self,1,2,Char_01,Buff,E_Lifesteal;E_Boost,1;2,1;1,4,Direction,Range_Self,{E_Lifesteal} {ValueRate1} / {E_Boost} {ValueRate2} 부여,
+S_Core_09,철갑돌진,Core,Unique,Cost,EnemyParty,1,2,Char_01,Attack,E_Rush;E_ArmorStrike,1;1,1;1,4,Direction,Range_05,돌진하여 충돌한 적에게 {E_Strike} {E_ArmorStrike},
+S_Core_10,핏빛 수확,Core,Unique,Cost,EnemyParty,1,3,Char_01,Attack,E_Strike;E_ValueUpOnKill,3;2,1;1,5,Direction,Range_02,{E_Strike} {ValueRate1} / 처치 시 영구히 수치 {ValueRate2} 증가,
+S_Core_11,간파,Core,Common,Cost,Self,1,1,Char_02,Buff,E_Blindside,1,1,4,Direction,Range_Self,자신에게 {E_Blindside} {ValueRate1} 부여,
+S_Core_12,비상검,Core,Common,Cost,EnemyParty,1,2,Char_02,Attack,E_Move;E_Strike,1;10,1;1,3,Direction,Range_15,{ValueRate1}칸 전진 후 {E_Strike} {ValueRate2},
+S_Core_13,비연검,Core,Common,Cost,EnemyParty,1,2,Char_02,Attack,E_Strike;E_Move,10;-1,1;1,3,Direction,Range_15,{E_Strike} {ValueRate1} 이후 {ValueRate2}칸 후퇴,
+S_Core_14,전투감각,Core,Rare,Ulti,Self,1,2,Char_02,Buff,E_Boost,2,1;1,1,Direction,Range_Self,자신에게 {E_Boost} {ValueRate1} 부여,
+S_Core_15,상흔베기,Core,Rare,Cost,EnemyParty,1,2,Char_02,Debuff,E_Bleed;E_Weaken,3;1,1;1,4,Direction,Range_08,{E_Bleed} {ValueRate1} / {E_Weaken} {ValueRate2} 부여,
+S_Core_16,일섬,Core,Rare,Cost,EnemyParty,1,1,Char_02,Attack,E_Strike,3,1,1,Direction,Range_10,{E_Strike} {ValueRate1},
+S_Core_17,혈맥 찌르기,Core,Epic,Cost,EnemyParty,1,1,Char_02,Attack,E_Pierce;E_Bleed,8;4,1;1,2,Direction,Range_03,{E_Pierce} {ValueRate1} / 최대 사거리 적중 시 {E_Bleed} {ValueRate2} 부여,
+S_Core_18,혈화만개,Core,Epic,Cost,EnemyParty,1,2,Char_02,Attack,E_DamageUpIfBleeding,10,1,3,Direction,Range_12,{E_Strike} {ValueRate1} / {E_Bleed}을 보유한 적에게 피해량 50% 증가,
+S_Core_19,환영검무,Core,Unique,Cost,EnemyParty,1,3,Char_02,Attack,E_StrikeCountByBuff,3,1,5,Direction,Range_15,{E_Strike} {ValueRate1}x{CountRate1} / 보유한 버프 1종마다 횟수 1 증가,
+S_Core_20,공단참,Core,Unique,Cost,EnemyParty,1,2,Char_02,Attack,E_Pierce;E_ValueUpOnHit,7;2,1;1,4,Direction,Range_11,{E_Pierce} {ValueRate1} / 적중 시 이번 전투동안 수치 {ValueRate2} 증가,
+S_Core_21,등불의 광휘,Core,Common,Cost,PlayerParty,1,2,Char_02,Buff,E_Smite,1,1,4,Direction,Range_b_04,{E_Smite} {ValueRate1} 부여,
+S_Core_22,마나 스파크,Core,Common,Cost,PlayerParty,1,3,Char_03,Buff,E_Charge,3,1,4,Direction,Range_b_06,{E_Charge} {ValueRate1} 부여,
+S_Core_23,날카로운 섬광,Core,Common,Cost,EnemyParty,1,2,Char_03,Attack,E_Strike,9,1,3,Direction,Range_23,{E_Strike} {ValueRate1},
+S_Core_24,마비독,Core,Rare,Cost,EnemyParty,1,1,Char_03,Debuff,E_Poison;E_Weaken,4;1,1;1,4,Direction,Range_24,{E_Poison} {ValueRate1} / {E_Weaken} {ValueRate2} 부여,
+S_Core_25,짙은 그림자,Core,Rare,Cost,EnemyParty,1,2,Char_03,Debuff,E_Fatigue,3,1,4,Direction,Range_28,{E_Fatigue} {ValueRate1} 부여,
+S_Core_26,영혼 흡수,Core,Rare,Cost,EnemyParty,1,2,Char_03,Attack,E_Strike;E_RestoreManaPerHitTarge,8;1,1;1,4,Direction,Range_27,{E_Strike} {ValueRate1} / 적중한 적의 수만큼 마나 회복,
+S_Core_27,독성발현,Core,Epic,Cost,EnemyParty,1,3,Char_03,Debuff,E_PoisonEqualTargetPoison,1,1,6,Direction,Range_21,대상이 보유한 {E_Poison} 수치만큼 {E_Poison}부여,
+S_Core_28,니아의 불꽃,Core,Epic,Ulti,EnemyParty,1,4,Char_03,Debuff,E_Bondage,1,1,1,Direction,Range_06,{E_Bondage} {ValueRate1} 부여,
+S_Core_29,니아의 속삭임,Core,Unique,Cost,PlayerParty,1,3,Char_03,Buff,E_Swift,1,1,6,Direction,Range_Party,{E_Swift} {ValueRate1} 부여,
+S_Core_30,극성맹독,Core,Unique,Cost,EnemyParty,1,3,Char_03,Debuff,E_Poison;E_TriggerPoison,5;1,1;1,6,Direction,Range_24,{E_Poison} {ValueRate1} / 중독을 즉시 1회 발동,
+S_Core_31,은총,Core,Common,Hp,PlayerParty,1,2,Char_03,Buff,E_Armor;E_Cure,6;2,1;1,3,Direction,Range_b_07,{E_Armor} {ValueRate1} / {E_Cure} {ValueRate1} 부여,
+S_Core_32,죄의 인도,Core,Common,Cost,EnemyParty,1,2,Char_04,Attack,E_Strike;E_Grab,8;1,1;1,3,Direction,Range_08,{E_Strike} {ValueRate1} / {E_Grab} {ValueRate2},
+S_Core_33,수호의 기도,Core,Common,Cost,PlayerParty,1,2,Char_04,Buff,E_Armor;E_Ward,5;2,1;1,3,Direction,Range_b_02,{E_Armor} {ValueRate1} / {E_Ward} {ValueRate1} 부여,
+S_Core_34,메디테이션,Core,Rare,Cost,Self,1,3,Char_04,Buff,E_Karma,1,1,4,Direction,Range_Self,{E_Karma}  {ValueRate1} 획득,
+S_Core_35,제네시스,Core,Rare,Ulti,EnemyParty,1,2,Char_04,Attack,E_RandomStrike,10,X,X,Direction,Range_21,무작위 적{E_Strike} {ValueRate1}{CountRate1},
+S_Core_36,파멸의 낙인,Core,Rare,Cost,EnemyParty,1,3,Char_04,Debuff,E_Vulnerable,3,1,4,Direction,Range_22,{E_Vulnerable} {ValueRate1} 부여,
+S_Core_37,결속,Core,Epic,Cost,PlayerParty,1,3,Char_04,Buff,E_Bond,1,1,5,Direction,Range_Party,{E_Bond} {ValueRate1} 부여,
+S_Core_38,심판 집행,Core,Epic,Cost,EnemyParty,1,2,Char_04,Attack,E_Strike;E_StrikeByVulnerable,3;1,1;1,4,Direction,Range_13,{E_Strike} {ValueRate1} / 대상이 보유한 {E_Vulnerable} 수치만큼 피해수치 증가,
+S_Core_39,고해성사,Core,Unique,Cost,EnemyParty,1,3,Char_04,Debuff,E_DebuffDouble,2,1,8,Direction,Range_12,대상이 보유한 가장 높은 수치의 디버프 1종의 수치 2배 증가,
+S_Core_40,단죄의 쐐기,Core,Unique,Ulti,EnemyParty,1,4,Char_04,Attack,E_RemoveArmor,1,1,2,Direction,Range_10,대상의 방어도 제거,
 ,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,
@@ -1056,6 +1006,56 @@ S_Core_80,단죄의 쐐기+,Core,Unique,Ulti,EnemyParty,2,1,Char_04,Attack,E_Rem
 ,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # MonsterSkill
 스킬ID,이름,대상,점유칸,효과ID,수치계수,횟수계수,그리드이동,범위ID,타임라인표기,효과설명,아이콘,타입
@@ -1137,10 +1137,10 @@ E_Boost,증폭,Beneficial,Remove,이번 턴 동안 공격 수치가 수치만큼
 E_Armor,방어도,Beneficial,Remove,번 턴 동안 수치만큼 피해를 막는다. 턴 종료 시 방어도 수치는 사라진다.,1,SkillMaster: 16개 / MonsterSkill: S_Monster_36
 E_Charge,충전,Beneficial,Remove,턴 종료 시 마나를 수치만큼 회복한다.,1,SkillMaster: 7개
 E_Focus,집중,Beneficial,Remove,턴 종료 시 카르마를 수치만큼 획득한다.,1,SkillMaster: 6개
-E_Swift,신속,Beneficial,Decrease,몬스터보다 먼저 행동을 진행할 수 있다. 턴 종료 시 수치가 1씩 감소한다.,1,"S_Passive_04, /  S_Core_51, S_Core_52, S_Core_79, S_Core_80"
+E_Swift,신속,Beneficial,Decrease,몬스터보다 먼저 행동을 진행할 수 있다. 턴 종료 시 수치가 1씩 감소한다.,1,"S_Passive_04, /  S_Core_26, S_Core_26, S_Core_40, S_Core_40"
 E_Smite,강타,Beneficial,Decrease,첫 공격의 피해가 50% 증가한다. 턴 종료 시 수치가 1씩 감소한다.,1,S_Passive_08
 E_Lifesteal,흡혈,Beneficial,Decrease,준 피해의 30%만큼 체력을 회복한다. 턴 종료 시 수치가 1씩 감소한다.,1,S_Passive_09
-E_Ward,가호,Beneficial,Decrease,피해를 받을 때 수치만큼 피해를 준다. 턴 종료 시 수치가 1씩 감소한다.,1,"S_Core_13,   S_Core_14, S_Core_49, S_Core_50"
+E_Ward,가호,Beneficial,Decrease,피해를 받을 때 수치만큼 피해를 준다. 턴 종료 시 수치가 1씩 감소한다.,1,"S_Core_07,   S_Core_07, S_Core_25, S_Core_25"
 E_Grudge,원한,Beneficial,Maintain,공격 수치가 수치만큼 증가한다. 턴 종료 시 사라지지 않는다.,1,S_Monster_07
 E_Barrier,장막,Beneficial,Decrease,받는 피해를 1회 무시한다. 발동 시 사라진다. 턴 종료 시 수치가 1씩 감소한다.,1,S_Monster_25
 E_Poison,중독,Harmful,Decrease,턴 종료 시 수치만큼 피해를 받는다. 턴 종료 시 수치가 1씩 감소한다.,1,SkillMaster: 8개 / GR_Poisson
@@ -1272,21 +1272,21 @@ E_PoisonTrigger,중독 즉시 발동,Neutral,0,중독을 ValueRate 부여한 뒤
 E_DebuffIncrease,디버프 수치 증가,Neutral,0,대상이 현재 보유한 모든 Harmful 디버프 수치를 ValueRate만큼 증가,0
 E_DebuffDouble,디버프 증폭,Neutral,0,대상이 보유한 디버프 중 현재 수치가 가장 높은 1종의 수치를 2배,0
 E_RemoveArmor,방어도 제거,Neutral,0,현재 방어도와 동일한 양의 방어도 피해를 주어 방어도를 0으로 만듦,0
-E_ArmorStrike,방어도 비례 피해,Neutral,0,시전자의 현재 방어도에 수치계수를 곱한 피해를 준다.,0,SkillMaster: S_Core_15~16
-E_MissSelfDamage,빗나감 자해,Neutral,0,유효한 적을 맞히지 못하면 자신에게 수치만큼 피해를 준다.,0,SkillMaster: S_Core_17~18
-E_ValueUpOnKill,처치 시 영구 피해 증가,Neutral,0,이 스킬로 처치한 적 하나당 다음 사용부터 피해 수치가 증가한다.,0,SkillMaster: S_Core_19~20
-E_ValueUpOnHit,명중 시 전투 피해 증가,Neutral,0,성공한 타격마다 이 전투 동안 다음 사용부터 피해 수치가 증가한다.,0,SkillMaster: S_Core_39~40
-E_DamageUpIfBleeding,출혈 대상 피해 증가,Neutral,0,출혈이 있는 대상에게 주는 피해가 50% 증가한다.,0,SkillMaster: S_Core_29~30
-E_Rush,돌진,Neutral,0,지정 칸만큼 전진하며 첫 충돌 대상 앞에서 멈춘다.,0,SkillMaster: S_Core_15~16
-E_Bondage,속박,Harmful,DecreaseOnTrigger,다음 이동 시도 1회를 막고 수치가 1 감소한다.,1,"SkillMaster: S_Core_53~54, S_Core_65~66"
-E_PoisonByTargetPoison,중독 비례 중독,Harmful,0,대상의 중독 수치를 수치계수로 나눈 몫만큼 중독을 추가한다.,0,SkillMaster: S_Core_55~56
-E_TriggerPoison,중독 즉시 발동,Neutral,0,현재 중독 수치만큼 즉시 피해를 주고 중독 수치를 1 감소시킨다.,0,SkillMaster: S_Core_57~58
-E_RestoreManaPerHitTarget,타격당 마나 회복,Neutral,0,성공한 총 타격 수에 비례해 마나를 회복한다.,0,SkillMaster: S_Core_59~60
-E_RandomStrike,무작위 연속 타격,Neutral,0,범위 내 살아 있는 적을 매 타격마다 다시 추첨해 피해를 준다.,0,SkillMaster: S_Core_73~74
-E_StrikeByVulnerable,취약 비례 피해,Neutral,0,기본 피해에 대상 취약 수치와 횟수계수의 곱을 더한다.,0,SkillMaster: S_Core_75~76
+E_ArmorStrike,방어도 비례 피해,Neutral,0,시전자의 현재 방어도에 수치계수를 곱한 피해를 준다.,0,SkillMaster: S_Core_08
+E_MissSelfDamage,빗나감 자해,Neutral,0,유효한 적을 맞히지 못하면 자신에게 수치만큼 피해를 준다.,0,SkillMaster: S_Core_09
+E_ValueUpOnKill,처치 시 영구 피해 증가,Neutral,0,이 스킬로 처치한 적 하나당 다음 사용부터 피해 수치가 증가한다.,0,SkillMaster: S_Core_10
+E_ValueUpOnHit,명중 시 전투 피해 증가,Neutral,0,성공한 타격마다 이 전투 동안 다음 사용부터 피해 수치가 증가한다.,0,SkillMaster: S_Core_20
+E_DamageUpIfBleeding,출혈 대상 피해 증가,Neutral,0,출혈이 있는 대상에게 주는 피해가 50% 증가한다.,0,SkillMaster: S_Core_15
+E_Rush,돌진,Neutral,0,지정 칸만큼 전진하며 첫 충돌 대상 앞에서 멈춘다.,0,SkillMaster: S_Core_08
+E_Bondage,속박,Harmful,DecreaseOnTrigger,다음 이동 시도 1회를 막고 수치가 1 감소한다.,1,"SkillMaster: S_Core_27, S_Core_33"
+E_PoisonByTargetPoison,중독 비례 중독,Harmful,0,대상의 중독 수치를 수치계수로 나눈 몫만큼 중독을 추가한다.,0,SkillMaster: S_Core_28
+E_TriggerPoison,중독 즉시 발동,Neutral,0,현재 중독 수치만큼 즉시 피해를 주고 중독 수치를 1 감소시킨다.,0,SkillMaster: S_Core_29
+E_RestoreManaPerHitTarget,타격당 마나 회복,Neutral,0,성공한 총 타격 수에 비례해 마나를 회복한다.,0,SkillMaster: S_Core_30
+E_RandomStrike,무작위 연속 타격,Neutral,0,범위 내 살아 있는 적을 매 타격마다 다시 추첨해 피해를 준다.,0,SkillMaster: S_Core_37
+E_StrikeByVulnerable,취약 비례 피해,Neutral,0,기본 피해에 대상 취약 수치와 횟수계수의 곱을 더한다.,0,SkillMaster: S_Core_38
 E_StrikeCountByBuff,버프 종류 비례 타격,Neutral,0,시전자의 서로 다른 이로운 효과 종류 수만큼 타격 횟수가 증가한다.,0,확장 효과
-E_StrikeCountByDebuff,디버프 종류 비례 타격,Neutral,0,대상의 서로 다른 해로운 효과 종류 수만큼 타격 횟수가 증가한다.,0,SkillMaster: S_Core_31~32
-E_StrikeByTargetPoison,중독 비례 피해,Neutral,0,대상이 보유한 중독 수치만큼 피해를 준다.,0,SkillMaster: S_Core_53~54
+E_StrikeCountByDebuff,디버프 종류 비례 타격,Neutral,0,대상의 서로 다른 해로운 효과 종류 수만큼 타격 횟수가 증가한다.,0,SkillMaster: S_Core_16
+E_StrikeByTargetPoison,중독 비례 피해,Neutral,0,대상이 보유한 중독 수치만큼 피해를 준다.,0,SkillMaster: S_Core_27
 E_Rune_Turn1_Ward,1턴 시작 시 장막을 수치 획득한다.,Neutral,0,1턴 시작 시 장막을 {ValueRate1} 획득한다.,0,Rune_51
 E_Rune_Armor10_Smite,턴 시작 시 방어도가 수치 이상이라면 강타 1을 획득한다.,Neutral,0,턴 시작 시 방어도가 {ValueRate1} 이상이라면 강타 1을 획득한다.,0,Rune_53
 E_Rune_Turn_Start_Lose_HP_Boost,매 턴 시작 시 생명력 3을 잃고 증폭 수치을 획득한다.,Neutral,0,매 턴 시작 시 생명력 3을 잃고 증폭 {ValueRate1}을 획득한다.,0,Rune_54
@@ -1305,7 +1305,7 @@ E_Rune_Kill_Unique_Resource,처치한 적 1명당 카르마를 수치 획득한�
 E_Rune_High_HP_Heal_Remove_First_Debuff,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 수치 감소한다.,Neutral,0,생명력 75% 이상에서 회복 시 가장 먼저 부여된 디버프 수치가 {ValueRate1} 감소한다.,0,Rune_68
 E_Rune_Vulnerable_Bonus_Percent,자신이 공격할 때 취약의 피해 증가율이 수치%로 증가한다.,Neutral,0,자신이 공격할 때 취약의 피해 증가율이 {ValueRate1}%로 증가한다.,0,Rune_69
 E_Rune_Max_Unique_Resource_All_Enemy_Vulnerable,카르마가 최대치에 도달하면 모든 적에게 취약을 수치 부여한다.,Neutral,0,카르마가 최대치에 도달하면 모든 적에게 취약을 {ValueRate1} 부여한다.,0,Rune_70
-E_PoisonEqualTargetPoison,대상 중독만큼 중독 부여,Harmful,0,대상이 보유한 중독 수치만큼 중독을 추가로 부여한다.,0,SkillMaster: S_Core_53~54
+E_PoisonEqualTargetPoison,대상 중독만큼 중독 부여,Harmful,0,대상이 보유한 중독 수치만큼 중독을 추가로 부여한다.,0,SkillMaster: S_Core_27
 
 # Map
 맵ID,이름,타입,전투맵ID,이벤트ID,스테이지 맵,등장가중치,전투난이도
@@ -1333,7 +1333,6 @@ Map_20,Special4,Special,0,Event_04,Stage1,1,0
 Map_21,Special5,Special,0,Event_05,Stage1,1,0
 Map_22,Shop,Shop,0,Event_06,Stage1,1,0
 Map_23,Special7,Special,0,Event_07,Stage1,1,0
-Map_24,Special8,Special,0,Event_08,Stage1,1,0
 Map_25,Start,Start,0,Event_09,Stage1,1,0
 Map_26,Rest,Rest,0,0,Stage1,1,0
 Map_27,Tutorial_Battle1,Common,Battlemap_17,0,Stage1,1,0
@@ -1452,18 +1451,6 @@ Event_06,그림자 상인,“이런 곳에서 손님을 만날 줄이야. 마침
 Event_06_A,그림자 상인,“이 정도면 됐겠지. 오래 붙잡아 둘 생각은 없어.”,,,,,,,,,,,,,,,,,,,event6,event_choice_01_success,event6,event_choice_01_failure
 Event_07,안식의 샘,고요한 물소리와 함께 분수에서 희미한 빛이 흘러나온다. 분수에 남은 힘은 한 번만 사용할 수 있을 것 같다.,1,생명의 힘을 받아들인다.,파티 전원의 최대 생명력 12 증가,,Immediate,,,,,,Modify,파티 전원 최대 생명력,+12,,,,,,event7,event_choice_01_success,event7,event_choice_01_failure
 Event_07,안식의 샘,,2,마나의 힘을 받아들인다.,파티 전원의 최대 마나 2 증가,,Immediate,,,,,,Modify,파티 전원 최대 마나,+2,,,,,,event7,event_choice_02_success,event7,event_choice_02_failure
-Event_08,공명의 비석,“비석에 새겨진 문자가 기억에 반응해 희미하게 빛난다. 잠든 기억의 힘을 깨울 수 있을 것 같다.”,1,공명을 시작한다.,"성공 확률 90%
-성공: 기억 1개 각성
-실패: 기억 소멸",각성할 수 있는 기억이 없습니다.,Chance,미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,90%,선택한 기억 소멸,Event_08_A,Event_08_D,1274,event8,event_choice_01_success,event8,event_choice_01_failure
-Event_08_A,공명의 비석,“아직 남아 있는 힘을 한층 더 끌어낼 수 있을 것 같다.”,1,공명을 이어간다.,"성공 확률 50%
-성공: 기억 1개 각성
-실패: 기억 소멸",각성할 수 있는 기억이 없습니다.,Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,50%,선택한 기억 소멸,Event_08_B,Event_08_D,1274,event8,event_choice_02_success,event8,event_choice_02_failure
-Event_08_B,공명의 비석,"""남은 힘을 마지막으로 깨울 수 있을 것 같다.”",1,공명을 이어간다.,"성공 확률 30%
-성공: 기억 1개 각성
-실패: 기억 소멸",각성할 수 있는 기억이 없습니다.,Chance,다른 미각성 기억 1개 이상,,,,,Awaken,선택 기억,각성,30%,선택한 기억 소멸,Event_08_C,Event_08_D,1274,event8,event_choice_03_success,event8,event_choice_03_failure
-Event_08,공명의 비석,,2,자리를 떠난다.,이벤트 종료,,Exit,,,,,,EndEvent,,,,,,,1,event8,event_choice_04_success,event8,event_choice_04_failure
-Event_08_C,공명의 비석,"""더 이상 끌어낼 힘은 남아 있지 않은 듯하다.”",,,,,,,,,,,,,,,,,,,event8,event_choice_02_success,event8,event_choice_02_failure
-Event_08_D,공명의 비석,"""기억의 흔적은 흩어지고, 더 이상 공명을 이어갈 수 없을 것 같다.”",,,,,,,,,,,,,,,,,,,event8,event_choice_03_success,event8,event_choice_03_failure
 Event_09,균열의 메아리,허공에 갈라진 균열이 모습을 드러냈다. 틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.,1,흩어진 기억을 거둔다.,무작위 일반~레어 기억 3개 획득,,Immediate,,,,,,SelectReward,일반~레어 기억,3개 제시,,,,,,event9,event_choice_01_success,event9,event_choice_01_failure
 Event_09,균열의 메아리,,2,전투의 기억을 붙잡는다.,공격 기억 2개 획득,,Immediate,,,,,,SelectReward,공격 기억,2개 제시,,,,,,event9,event_choice_02_success,event9,event_choice_02_failure
 Event_09,균열의 메아리,,3,강렬한 기억을 택한다.,에픽 기억 1개 획득,,Immediate,,,,,,SelectReward,에픽 기억,1개 제시,,,,,,event9,event_choice_03_success,event9,event_choice_03_failure
@@ -1471,6 +1458,7 @@ Event_T_01,새로운 동행,"“나 혼자서는 좀 무서운데, 같이 가면
 공격 기억 획득",,Immediate,,,,,,SelectReward,공격 기억,1개 제시,,,,,,event_t_01,event_choice_01_success,event_t_01,event_choice_01_failure
 Event_T_02,뜻밖의 합류,길가에서 휴식을 취하고 있는 낯선 이를 발견했다.,1,함께 휴식한다.,"카야 합류
 파티 생명력 회복",,Immediate,,,,,,Modify,파티 전원 현재 체력,15 회복,,,,,,event_t_02,event_choice_01_success,event_t_02,event_choice_01_failure
+
 
 
 
@@ -1564,7 +1552,7 @@ Rune_71,해방·갈증,Char_05,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐
 Rune_72,해방·격정,Char_05,0,E_Unique_Resource_Max_Reached_Armor,5,1,0,12,카르마가 최대에 도달하면 다음 턴에 방어도를 {ValueRate1} 얻는다.,Exclusive
 Rune_73,해방·사신,Char_05,S_Unique_09,E_Rune_Target_Damage_Value_Delta,3,1,0,6,데스사이드의 피해량이 {ValueRate1} 증가한다.,Exclusive
 Rune_74,해방·혈화,Char_05,S_Unique_10,E_Rune_Target_Damage_Value_Delta,2,1,0,15,스칼렛노바의 피해량이 {ValueRate1} 증가한다.,Exclusive
-Rune_75,해방·참월,Char_05,S_Ability_17;S_Ability_18;S_Ability_19;S_Ability_20,E_Rune_Target_Damage_Value_Delta,1,1,0,3,크림슨체인과 크레센트스윙의 피해량이 {ValueRate1} 증가한다.,Exclusive
+Rune_75,해방·참월,Char_05,S_Ability_09;S_Ability_10,E_Rune_Target_Damage_Value_Delta,1,1,0,3,크림슨체인과 크레센트스윙의 피해량이 {ValueRate1} 증가한다.,Exclusive
 Rune_01,각인·불안정한 원천,All,0,E_Max_HP;E_Max_Cost,-3;1,1;1,60,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 최대 마나가 {ValueRate2} 증가한다.",Common
 Rune_02,각인·메마른 고동,All,0,E_Max_HP;E_Cost_Recovery_Delta,-5;1,1;1,80,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 마나 재생량이 {ValueRate2} 증가한다.",Common
 Rune_03,각인·굳어진 육신,All,0,E_Max_Cost;E_Max_HP,-1;4,1;1,65,0,"최대 마나가 {ValueRate1} 감소하는 대신, 최대 생명력이 {ValueRate2} 증가한다.",Common

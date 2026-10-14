@@ -1,9 +1,7 @@
 public class SwiftEffect : BattleEffectBase
 {
-    private const string TimeDistortionSkillId = "S_Core_51";
-    private const string TimeDistortionPlusSkillId = "S_Core_52";
-    private const string SpeedsterSkillId = "S_Core_79";
-    private const string SpeedsterPlusSkillId = "S_Core_80";
+    private const string TimeDistortionSkillId = "S_Core_26";
+    private const string SpeedsterSkillId = "S_Core_40";
 
     public override string EffectId => "E_Swift";
 
@@ -60,9 +58,6 @@ public class SwiftEffect : BattleEffectBase
     {
         string skillId = context?.PlayerSkillData?.SkillId;
 
-        return skillId == TimeDistortionSkillId ||
-               skillId == TimeDistortionPlusSkillId ||
-               skillId == SpeedsterSkillId ||
-               skillId == SpeedsterPlusSkillId;
+        return skillId == TimeDistortionSkillId || skillId == SpeedsterSkillId;
     }
 }
