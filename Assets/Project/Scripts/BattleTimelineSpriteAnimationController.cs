@@ -29,9 +29,6 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
     [Tooltip("TimelineSlot01~05 안의 Order01~05 Use_skill Image입니다. 순서는 Slot01 Order01~05, Slot02 Order01~05 순서입니다.")]
     [SerializeField] private Image[] useSkillImages = new Image[TotalUseSkillCount];
 
-    [Header("마커 페이드아웃")]
-    [SerializeField, Min(0.01f)] private float turnMarkFadeDuration = 0.2f;
-
     [Header("오더 행동 애니메이션")]
     [SerializeField, Min(1f)] private float actionScale = 1.2f;
     [SerializeField, Min(0.01f)] private float scaleUpDuration = 0.12f;
@@ -46,7 +43,6 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
     private readonly Dictionary<RectTransform, Vector2> originalPositions = new Dictionary<RectTransform, Vector2>();
     private readonly Dictionary<RectTransform, CanvasGroup> fadeGroups = new Dictionary<RectTransform, CanvasGroup>();
     private readonly Dictionary<RectTransform, bool> addedFadeGroups = new Dictionary<RectTransform, bool>();
-    private readonly Dictionary<Image, Color> originalMarkColors = new Dictionary<Image, Color>();
     private readonly Dictionary<Image, Coroutine> runningCoroutines = new Dictionary<Image, Coroutine>();
     private readonly Dictionary<Image, GameObject> imageHideRoots = new Dictionary<Image, GameObject>();
     private readonly Dictionary<Image, Sprite> originalSprites = new Dictionary<Image, Sprite>();
@@ -125,49 +121,75 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
         StartCoroutine(PlayTurnMarkRoutine(slotIndex));
     }
 
-    public IEnumerator PlayTurnMarkRoutine(int slotIndex)
+    [SerializeField, Min(0f)] private float turnMarkFadeDuration = 0.2f;
+    private readonly Dictionary<int, Coroutine> turnMarkFadeCoroutines = new Dictionary<int, Coroutine>();
+    private readonly HashSet<int> passedTurnMarks = new HashSet<int>();
+
+    public void BeginPassedTurnMarkFade(int slotIndex)
     {
         EnsureTargetsIfNeeded();
-        if (!IsValidSlotIndex(slotIndex) || turnMarkImages == null || slotIndex >= turnMarkImages.Length)
-            yield break;
+        if (!IsValidSlotIndex(slotIndex) || !passedTurnMarks.Add(slotIndex))
+            return;
 
-        Image marker = turnMarkImages[slotIndex];
-        if (marker == null || (playOnlyActiveImages && !marker.gameObject.activeInHierarchy))
-            yield break;
-
-        if (runningCoroutines.TryGetValue(marker, out Coroutine previous) && previous != null)
-            StopCoroutine(previous);
-
-        if (!originalMarkColors.ContainsKey(marker))
-            originalMarkColors[marker] = marker.color;
-
-        Coroutine running = StartCoroutine(FadeTurnMarkRoutine(marker));
-        runningCoroutines[marker] = running;
-        yield return running;
-        runningCoroutines.Remove(marker);
+        if (turnMarkFadeCoroutines.TryGetValue(slotIndex, out Coroutine old) && old != null)
+            StopCoroutine(old);
+        turnMarkFadeCoroutines[slotIndex] = StartCoroutine(FadePassedTurnMark(slotIndex));
     }
 
-    // Ensure a marker that the timeline has already passed never reappears at an order.
     public void CompletePassedTurnMarkFade(int slotIndex)
     {
         EnsureTargetsIfNeeded();
-        if (!IsValidSlotIndex(slotIndex) || turnMarkImages == null || slotIndex >= turnMarkImages.Length)
+        if (!IsValidSlotIndex(slotIndex))
             return;
+        passedTurnMarks.Add(slotIndex);
+        if (turnMarkFadeCoroutines.TryGetValue(slotIndex, out Coroutine old) && old != null)
+            StopCoroutine(old);
+        turnMarkFadeCoroutines.Remove(slotIndex);
+        CanvasGroup group = GetTurnMarkCanvasGroup(slotIndex);
+        if (group != null)
+            group.alpha = 0f;
+    }
 
-        Image marker = turnMarkImages[slotIndex];
-        if (marker == null)
-            return;
+    private IEnumerator FadePassedTurnMark(int slotIndex)
+    {
+        CanvasGroup group = GetTurnMarkCanvasGroup(slotIndex);
+        if (group == null)
+            yield break;
+        float startAlpha = group.alpha;
+        float duration = Mathf.Max(0.001f, turnMarkFadeDuration);
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            group.alpha = Mathf.Lerp(startAlpha, 0f, Mathf.Clamp01(elapsed / duration));
+            yield return null;
+        }
+        group.alpha = 0f;
+        turnMarkFadeCoroutines.Remove(slotIndex);
+    }
 
-        if (runningCoroutines.TryGetValue(marker, out Coroutine running) && running != null)
-            StopCoroutine(running);
-        runningCoroutines.Remove(marker);
+    private CanvasGroup GetTurnMarkCanvasGroup(int slotIndex)
+    {
+        Transform slot = FindTimelineSlot(slotIndex);
+        Transform mark = slot != null ? FindChildRecursive(slot, "TurnMark") : null;
+        if (mark == null)
+            return null;
+        CanvasGroup group = mark.GetComponent<CanvasGroup>();
+        if (group == null)
+            group = mark.gameObject.AddComponent<CanvasGroup>();
+        return group;
+    }
 
-        if (!originalMarkColors.ContainsKey(marker))
-            originalMarkColors[marker] = marker.color;
-
-        Color color = marker.color;
-        color.a = 0f;
-        marker.color = color;
+    public IEnumerator PlayTurnMarkRoutine(int slotIndex)
+    {
+        BeginPassedTurnMarkFade(slotIndex);
+        float duration = Mathf.Max(0f, turnMarkFadeDuration);
+        if (duration > 0f)
+        {
+            if (useUnscaledTime) yield return new WaitForSecondsRealtime(duration);
+            else yield return new WaitForSeconds(duration);
+        }
+        CompletePassedTurnMarkFade(slotIndex);
     }
 
     public void PlayUseSkill(int slotIndex, int orderIndex)
@@ -280,8 +302,6 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
             if (entry.Key != null) entry.Key.anchoredPosition = entry.Value;
         foreach (var entry in fadeGroups)
             if (entry.Value != null) entry.Value.alpha = 1f;
-        foreach (var entry in originalMarkColors)
-            if (entry.Key != null) entry.Key.color = entry.Value;
     }
 
     public void ResetTurnMarksForNextTurn() => ResetTimelineSpritesForNextTurn();
@@ -289,6 +309,15 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
     public void ResetTimelineSpritesForNextTurn()
     {
         StopAllAnimations(true);
+        foreach (Coroutine routine in turnMarkFadeCoroutines.Values)
+            if (routine != null) StopCoroutine(routine);
+        turnMarkFadeCoroutines.Clear();
+        passedTurnMarks.Clear();
+        for (int i = 0; i < TimelineSlotCount; i++)
+        {
+            CanvasGroup marker = GetTurnMarkCanvasGroup(i);
+            if (marker != null) marker.alpha = 1f;
+        }
     }
 
     private IEnumerator PlayUseSkillByLinearIndexRoutine(int index)
@@ -347,29 +376,6 @@ public class BattleTimelineSpriteAnimationController : MonoBehaviour
         runningCoroutines[image] = running;
         yield return running;
         runningCoroutines.Remove(image);
-    }
-
-    private IEnumerator FadeTurnMarkRoutine(Image marker)
-    {
-        // 마커는 위치 및 크기를 유지하고 투명도만 변경합니다.
-        Color startColor = marker.color;
-        float elapsed = 0f;
-        while (elapsed < turnMarkFadeDuration)
-        {
-            elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.01f, turnMarkFadeDuration));
-            if (marker == null) yield break;
-            Color color = startColor;
-            color.a = Mathf.Lerp(startColor.a, 0f, t);
-            marker.color = color;
-            yield return null;
-        }
-        if (marker != null)
-        {
-            Color color = marker.color;
-            color.a = 0f;
-            marker.color = color;
-        }
     }
 
     private IEnumerator PlayOrderAnimation(RectTransform rect, CanvasGroup group)

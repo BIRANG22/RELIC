@@ -21,6 +21,7 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
 
     private BattleTimelineController owner;
     private int slotIndex;
+    private bool keyTextVisible = true;
 
     public int SlotIndex => slotIndex;
     public IReadOnlyList<PlayerReservedCommand> Commands => commands;
@@ -104,12 +105,20 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
         }
     }
 
+    public void SetKeyTextVisible(bool visible)
+    {
+        keyTextVisible = visible;
+        RefreshKeyText();
+    }
+
     private void RefreshKeyText()
     {
         ResolveKeyText();
 
         if (keyText != null)
-            keyText.text = (slotIndex + 1).ToString();
+        {
+            keyText.text = keyTextVisible ? (slotIndex + 1).ToString() : string.Empty;
+        }
     }
 
     private void BindButtons()

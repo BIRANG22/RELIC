@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+ï»¿using Relic.Gameplay.Data;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -28,7 +28,7 @@ public class BattleUnitSpawner : MonoBehaviour
         {
             string characterId = partyStore.GetCharacterId(slotIndex);
             int gridIndex = useCurrentGridPositions ? partyStore.GetCurrentGridIndex(slotIndex) : partyStore.GetSpawnGridIndex(slotIndex);
-            if (gridIndex < 0)
+            if (useCurrentGridPositions && (gridIndex < 0 || gridIndex >= playerGridCount))
                 gridIndex = partyStore.GetSpawnGridIndex(slotIndex);
 
             if (string.IsNullOrWhiteSpace(characterId))
@@ -42,7 +42,7 @@ public class BattleUnitSpawner : MonoBehaviour
 
             if (!dm.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtimeData))
             {
-                Debug.LogWarning($"[BattleUnitSpawner] CharacterRuntimeData ¾øÀ½: {characterId}");
+                Debug.LogWarning($"[BattleUnitSpawner] CharacterRuntimeData ï¿½ï¿½ï¿½ï¿½: {characterId}");
                 continue;
             }
 
@@ -50,13 +50,13 @@ public class BattleUnitSpawner : MonoBehaviour
 
             if (characterData == null)
             {
-                Debug.LogWarning($"[BattleUnitSpawner] CharacterData ¾øÀ½: {characterId}");
+                Debug.LogWarning($"[BattleUnitSpawner] CharacterData ï¿½ï¿½ï¿½ï¿½: {characterId}");
                 continue;
             }
 
             if (characterData.BattlePrefab == null)
             {
-                Debug.LogWarning($"[BattleUnitSpawner] BattlePrefab ¾øÀ½: {characterId}");
+                Debug.LogWarning($"[BattleUnitSpawner] BattlePrefab ï¿½ï¿½ï¿½ï¿½: {characterId}");
                 continue;
             }
 
@@ -90,7 +90,7 @@ public class BattleUnitSpawner : MonoBehaviour
 
         if (!dm.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtimeData))
         {
-            Debug.LogWarning($"[BattleUnitSpawner] CharacterRuntimeData ¾øÀ½: {characterId}");
+            Debug.LogWarning($"[BattleUnitSpawner] CharacterRuntimeData ï¿½ï¿½ï¿½ï¿½: {characterId}");
             return;
         }
 
@@ -98,13 +98,13 @@ public class BattleUnitSpawner : MonoBehaviour
 
         if (characterData == null)
         {
-            Debug.LogWarning($"[BattleUnitSpawner] CharacterData ¾øÀ½: {characterId}");
+            Debug.LogWarning($"[BattleUnitSpawner] CharacterData ï¿½ï¿½ï¿½ï¿½: {characterId}");
             return;
         }
 
         if (characterData.BattlePrefab == null)
         {
-            Debug.LogWarning($"[BattleUnitSpawner] BattlePrefab ¾øÀ½: {characterId}");
+            Debug.LogWarning($"[BattleUnitSpawner] BattlePrefab ï¿½ï¿½ï¿½ï¿½: {characterId}");
             return;
         }
 
@@ -125,7 +125,7 @@ public class BattleUnitSpawner : MonoBehaviour
 
         if (spawnGrid == null)
         {
-            Debug.LogWarning($"[BattleUnitSpawner] Grid ¿ÀºêÁ§Æ® ¾øÀ½: Grid_{gridIndex:00}");
+            Debug.LogWarning($"[BattleUnitSpawner] Grid ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½: Grid_{gridIndex:00}");
             return null;
         }
 
@@ -152,8 +152,8 @@ public class BattleUnitSpawner : MonoBehaviour
             battleCharacter.Initialize(runtimeData);
             battleCharacter.SetGridIndex(gridIndex);
 
-            // »õ ÀüÅõ¹æ¿¡¼­´Â ÀÌÀü ÀüÅõ¿¡¼­ ³²Àº ¹æÇâ »óÅÂ¸¦ »ç¿ëÇÏÁö ¾Ê½À´Ï´Ù.
-            // È­¸éÀÇ ¹Ù¶óº¸´Â ¹æÇâ°ú RuntimeData.DirectionÀ» Ç×»ó ¿À¸¥ÂÊÀ¸·Î µ¿±âÈ­ÇÕ´Ï´Ù.
+            // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½æ¿¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.
+            // È­ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¶óº¸´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ RuntimeData.Directionï¿½ï¿½ ï¿½×»ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­ï¿½Õ´Ï´ï¿½.
             BattleUnitFacing facing = unit.GetComponent<BattleUnitFacing>();
             if (facing != null)
             {
@@ -173,7 +173,7 @@ public class BattleUnitSpawner : MonoBehaviour
     {
         if (gridRoot == null)
         {
-            Debug.LogError("[BattleUnitSpawner] gridRoot°¡ ¿¬°áµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+            Debug.LogError("[BattleUnitSpawner] gridRootï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½.");
             return null;
         }
 
@@ -200,7 +200,7 @@ public class BattleUnitSpawner : MonoBehaviour
         if (point != null)
             return point;
 
-        Debug.LogWarning($"[BattleUnitSpawner] {grid.name} ¾È¿¡ {spawnPointName} ¿ÀºêÁ§Æ®°¡ ¾ø½À´Ï´Ù. Grid À§Ä¡¸¦ ´ë½Å »ç¿ëÇÕ´Ï´Ù.");
+        Debug.LogWarning($"[BattleUnitSpawner] {grid.name} ï¿½È¿ï¿½ {spawnPointName} ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½. Grid ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.");
         return null;
     }
 }

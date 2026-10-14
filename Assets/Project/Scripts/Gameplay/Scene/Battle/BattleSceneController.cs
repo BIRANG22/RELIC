@@ -567,14 +567,24 @@ public class BattleSceneController : MonoBehaviour
         SetErosionSelectVisible(false);
         mapSelectionPresenter?.Hide();
         CloseInventoryAndBagPanelsImmediate();
-        // Resume the completed battle visually, without restarting any combat.
-        SetSharedPartyPresentationVisible(false);
+
+        // A reward resume must show the completed battle grid, not the shared
+        // map/event party. Recreate only character visuals at saved grid indices.
+        // Do not restart the battle or spawn monsters.
         if (battleRoom != null)
         {
+            GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
+            if (currentNode != null)
+            {
+                ShowRoomBackground(battleRoom, currentNode);
+                ApplyRoomVisual(battleRoom, currentNode);
+            }
+            SetSharedPartyPresentationVisible(false);
             battleRoom.SetActive(true);
             BattleRoomLoader loader = battleRoom.GetComponentInChildren<BattleRoomLoader>(true);
-            loader?.RestoreBattleRewardCharacters();
+            loader?.RestoreCompletedBattleCharacters();
         }
+
         rewardPanel?.PrepareForResumePresentation();
     }
 
@@ -1698,38 +1708,26 @@ public class BattleSceneController : MonoBehaviour
 
     private void CaptureRoomEntrySaveCheckpoint()
     {
-        // 침식도 증가는 방 표시 후 처리하며, 체크포인트 저장 시점에는 적용하지 않습니다.
+        // 방 선택 시점에는 체크포인트만 저장합니다. 침식도는 화면 공개 후 증가합니다.
         SaveSystem.Instance?.CaptureBattleRoomEntryCheckpoint();
     }
 
     private void CountPresentedRoomEntry(GeneratedMapNodeData nodeData)
     {
-        if (nodeData == null)
-            return;
-
-        BattleRuntimeData battle = DataManager.Instance?.BattleRuntimeStore?.Get();
-        if (battle?.IsTutorialBattle == true)
-        {
-            StartCoroutine(CountTutorialRoomEntryAfterReveal(nodeData));
-            return;
-        }
-
-        BattleErosionRuntimeService.CountRoomEntry(nodeData);
+        if (nodeData != null)
+            StartCoroutine(CountRoomEntryAfterReveal(nodeData));
     }
 
-    private IEnumerator CountTutorialRoomEntryAfterReveal(GeneratedMapNodeData nodeData)
+    private IEnumerator CountRoomEntryAfterReveal(GeneratedMapNodeData nodeData)
     {
-        // 튜토리얼은 씬 전환이 끝나고 방이 실제로 표시된 뒤 +3 연출을 실행합니다.
+        // 씬 전환 및 튜토리얼 입장 연출이 끝난 다음 프레임에 +3을 표시합니다.
         yield return null;
-
-        SceneFlowManager sceneFlow = SceneFlowManager.Instance;
-        while (sceneFlow != null && sceneFlow.IsLoading)
+        SceneFlowManager flow = SceneFlowManager.Instance;
+        while (flow != null && flow.IsLoading)
             yield return null;
-
-        CanvasMaterialSceneTransition sceneTransition = CanvasMaterialSceneTransition.Instance;
-        while (sceneTransition != null && sceneTransition.IsPlaying)
+        CanvasMaterialSceneTransition transition = CanvasMaterialSceneTransition.Instance;
+        while (transition != null && transition.IsPlaying)
             yield return null;
-
         yield return null;
         BattleErosionRuntimeService.CountRoomEntry(nodeData);
     }
