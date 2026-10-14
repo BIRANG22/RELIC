@@ -47,7 +47,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [Header("Selected Turn Mark")]
     [SerializeField] private Transform turnMarkTransform;
     [SerializeField] private Image turnMarkImage;
-    [SerializeField] private Sprite selectedTurnMarkSprite;
+    [SerializeField] private GameObject turnMarkFront;
+    [SerializeField] private GameObject turnMarkLine;
 
     private readonly List<BattleTimelinePreviewEntry> currentEntries = new();
     [Header("Order Value Change (Execution Only)")]
@@ -69,10 +70,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     private bool isActive;
     private bool emptyUseSkillSlotsVisible = false;
 
-    private Vector3 turnMarkNormalScale = Vector3.one;
     private bool hasCachedTurnMarkVisual;
-    private Color turnMarkNormalImageColor = Color.white;
-    private Sprite turnMarkNormalSprite;
     private Sprite[] useSkillRootNormalSprites;
     private Color[] useSkillRootNormalColors;
     private bool hasCachedTrailingVisualDefaults;
@@ -120,6 +118,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         UpdateDeadReservationVisuals();
         RefreshExecutingOrderValues();
+        // Keep the marker line in sync with the same slot state as the Select overlay.
+        ApplyTurnMarkSelectedVisual(isActive);
     }
 
     public void Init(BattleTimelineBarUI owner, int slotIndex)
@@ -142,12 +142,15 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             active = false;
 
         isActive = active;
-        ApplyTurnMarkSelectedVisual(active);
         RefreshSelectedSlotObject();
     }
 
     private void RefreshSelectedSlotObject(bool instant = false)
     {
+        // All selection paths (number keys, marker clicks, order clicks) reach this
+        // method through SetActiveTimelineSlot. Use the exact same state for Line.
+        ApplyTurnMarkSelectedVisual(isActive);
+
         if (selectedSlotObject == null)
         {
             Transform child = transform.Find("Select");
@@ -1210,9 +1213,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (hasCachedTrailingVisualDefaults)
             return;
 
-        if (turnMarkImage != null)
-            turnMarkNormalSprite = turnMarkImage.sprite;
-
         int count = useSkillIconImages != null ? useSkillIconImages.Length : 0;
         useSkillRootNormalSprites = new Sprite[count];
         useSkillRootNormalColors = new Color[count];
@@ -1245,17 +1245,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (turnMarkTransform != null)
             turnMarkTransform.gameObject.SetActive(true);
 
-        if (turnMarkImage != null)
-        {
-            if (turnMarkNormalSprite != null)
-                turnMarkImage.sprite = turnMarkNormalSprite;
-
-            Color color = turnMarkNormalImageColor;
-            color.a = 1f;
-            turnMarkImage.color = color;
-            turnMarkImage.enabled = true;
-            turnMarkImage.raycastTarget = false;
-        }
+        // Keep the authored TurnMark image color and alpha unchanged.
+        ApplyTurnMarkSelectedVisual(false);
 
         if (useSkillIconImages != null)
         {
@@ -1311,11 +1302,6 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (turnMarkTransform == null)
             return;
 
-        turnMarkNormalScale = turnMarkTransform.localScale;
-
-        if (turnMarkImage != null)
-            turnMarkNormalImageColor = turnMarkImage.color;
-
         hasCachedTurnMarkVisual = true;
     }
 
@@ -1324,17 +1310,28 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         CacheTurnMarkNormalVisual();
         CacheTrailingVisualDefaults();
 
-        if (turnMarkImage != null)
+        if (turnMarkTransform == null)
+            return;
+
+        if (turnMarkFront == null)
         {
-            // Preserve the prefab's original image when the selection moves to another slot.
-            turnMarkImage.sprite = selected && selectedTurnMarkSprite != null
-                ? selectedTurnMarkSprite
-                : turnMarkNormalSprite;
-            turnMarkImage.color = turnMarkNormalImageColor;
+            Transform front = turnMarkTransform.Find("Front");
+            if (front != null) turnMarkFront = front.gameObject;
         }
 
-        if (turnMarkTransform != null)
-            turnMarkTransform.localScale = turnMarkNormalScale;
+        if (turnMarkLine == null || !turnMarkLine.transform.IsChildOf(turnMarkTransform))
+        {
+            Transform line = turnMarkTransform.Find("Line");
+            if (line == null)
+                line = FindChildRecursive(turnMarkTransform, "Line");
+            turnMarkLine = line != null ? line.gameObject : null;
+        }
+
+        if (turnMarkFront != null && !turnMarkFront.activeSelf)
+            turnMarkFront.SetActive(true);
+
+        if (turnMarkLine != null && turnMarkLine.activeSelf != selected)
+            turnMarkLine.SetActive(selected);
     }
 
     public ReserveTurnSlotUI GetOrCreateReserveTurnSlot(BattleTimelineController controller, int targetSlotIndex)
@@ -1939,20 +1936,16 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     {
         if (cachedTurnExecutor == null)
             cachedTurnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
-        if (cachedTurnExecutor == null || !cachedTurnExecutor.IsExecuting)
+        if (cachedTurnExecutor == null || !cachedTurnExecutor.IsExecuting ||
+            useSkillValueTexts == null)
             return;
 
-        // Resolve the Value text from the currently displayed skill size.
-        // The cached useSkillValueTexts array only references Use_skill1.
-        for (int i = 0; i < currentEntries.Count; i++)
+        int count = Mathf.Min(currentEntries.Count, useSkillValueTexts.Length);
+        for (int i = 0; i < count; i++)
         {
             BattleTimelinePreviewEntry entry = currentEntries[i];
-            if (entry == null)
-                continue;
-
-            Transform sizeRoot = FindSizeRoot(i, Mathf.Clamp(entry.OccupiedOrders, 1, 3));
-            TMP_Text label = sizeRoot != null ? FindUseSkillText(sizeRoot) : null;
-            if (label == null || !label.gameObject.activeInHierarchy)
+            TMP_Text label = useSkillValueTexts[i];
+            if (entry == null || label == null || !label.gameObject.activeInHierarchy)
                 continue;
 
             string newValue = entry.SkillValueText ?? "";

@@ -40,6 +40,13 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
     [SerializeField, Range(0f, 8f)] private float glowStrength = 4f;
     [SerializeField, Range(0f, 2f)] private float baseBrightness = 2f;
 
+    [Header("TurnMark Line Mode")]
+    [Tooltip("TurnMark에서는 선택 상태를 변경하지 않으며 GlowImage에 설정한 머티리얼과 값을 그대로 사용합니다.")]
+    [SerializeField] private bool turnMarkLineMode;
+
+    private bool IsTurnMarkLineMode => turnMarkLineMode ||
+        (transform.name == "Line" && transform.parent != null && transform.parent.name == "TurnMark");
+
     private Material runtimeMaterial;
 
     private static readonly int GlowColorId = Shader.PropertyToID("_GlowColor");
@@ -50,8 +57,11 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
 
     private void Awake()
     {
-        EnsureRuntimeMaterial();
-        ApplyMaterialValues();
+        if (!IsTurnMarkLineMode)
+            EnsureRuntimeMaterial();
+
+        if (!IsTurnMarkLineMode)
+            ApplyMaterialValues();
         ApplySelectedState();
     }
 
@@ -59,8 +69,19 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
 
     private void OnEnable()
     {
-        EnsureRuntimeMaterial();
-        ApplyMaterialValues();
+        if (!IsTurnMarkLineMode)
+            EnsureRuntimeMaterial();
+
+        if (!IsTurnMarkLineMode)
+            ApplyMaterialValues();
+
+        if (IsTurnMarkLineMode)
+        {
+            // BattleTimelineGroupUI가 Line 활성화를 관리합니다. 머티리얼은 변경하지 않습니다.
+            if (glowImage != null)
+                glowImage.enabled = true;
+            return;
+        }
 
         selected = false;
         ApplySelectedState();
@@ -98,7 +119,7 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
             GameObject currentObject = EventSystem.current.currentSelectedGameObject;
             for (int i = 0; i < group.Length; i++)
             {
-                if (group[i] != null && group[i].gameObject == currentObject)
+                if (group[i] != null && !group[i].IsTurnMarkLineMode && group[i].gameObject == currentObject)
                 {
                     current = group[i];
                     break;
@@ -133,7 +154,7 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
         for (int i = 0; i < group.Length; i++)
         {
             SelectedButtonBorderGlow glow = group[i];
-            if (glow != null && glow.isActiveAndEnabled && glow.selectedOnEnable)
+            if (glow != null && !glow.IsTurnMarkLineMode && glow.isActiveAndEnabled && glow.selectedOnEnable)
                 return glow;
         }
 
@@ -144,7 +165,7 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
         for (int i = 0; i < group.Length; i++)
         {
             SelectedButtonBorderGlow glow = group[i];
-            if (glow == null || !glow.isActiveAndEnabled)
+            if (glow == null || glow.IsTurnMarkLineMode || !glow.isActiveAndEnabled)
                 continue;
 
             int siblingIndex = glow.transform.GetSiblingIndex();
@@ -166,6 +187,9 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
             initializeSelectionCoroutine = null;
         }
 
+        if (IsTurnMarkLineMode)
+            return;
+
         selected = false;
         ApplySelectedState();
     }
@@ -175,12 +199,18 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
         if (!Application.isPlaying)
             return;
 
-        ApplyMaterialValues();
-        ApplySelectedState();
+        if (!IsTurnMarkLineMode)
+        {
+            ApplyMaterialValues();
+            ApplySelectedState();
+        }
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (IsTurnMarkLineMode)
+            return;
+
         if (!selectOnClick)
             return;
 
@@ -192,6 +222,8 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
 
     public void OnSelect(BaseEventData eventData)
     {
+        if (IsTurnMarkLineMode)
+            return;
         SelectExclusive();
     }
 
@@ -201,6 +233,9 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
 
     public void SetSelected(bool value)
     {
+        if (IsTurnMarkLineMode)
+            return;
+
         selected = value;
         ApplySelectedState();
     }
@@ -220,6 +255,9 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
 
     private void SelectExclusive()
     {
+        if (IsTurnMarkLineMode)
+            return;
+
         Transform root = selectionGroupRoot != null ? selectionGroupRoot : transform.parent;
 
         if (root != null)
@@ -257,20 +295,34 @@ public class SelectedButtonBorderGlow : MonoBehaviour,
 
     private void ApplyMaterialValues()
     {
-        if (runtimeMaterial == null)
+        // TurnMark의 GlowImage는 Inspector에서 지정한 Glow_Material을
+        // 그대로 사용합니다. 공용 머티리얼의 속성 또한 덮어쓰지 않습니다.
+        if (IsTurnMarkLineMode || runtimeMaterial == null)
             return;
 
-        runtimeMaterial.SetColor(GlowColorId, glowColor);
-        runtimeMaterial.SetFloat(SpeedId, flowSpeed);
-        runtimeMaterial.SetFloat(GlowWidthId, glowWidth);
-        runtimeMaterial.SetFloat(GlowStrengthId, glowStrength);
-        runtimeMaterial.SetFloat(BaseBrightnessId, baseBrightness);
+        if (runtimeMaterial.HasProperty(GlowColorId))
+            runtimeMaterial.SetColor(GlowColorId, glowColor);
+        if (runtimeMaterial.HasProperty(SpeedId))
+            runtimeMaterial.SetFloat(SpeedId, flowSpeed);
+        if (runtimeMaterial.HasProperty(GlowWidthId))
+            runtimeMaterial.SetFloat(GlowWidthId, glowWidth);
+        if (runtimeMaterial.HasProperty(GlowStrengthId))
+            runtimeMaterial.SetFloat(GlowStrengthId, glowStrength);
+        if (runtimeMaterial.HasProperty(BaseBrightnessId))
+            runtimeMaterial.SetFloat(BaseBrightnessId, baseBrightness);
     }
 
     private void ApplySelectedState()
     {
         if (glowImage == null)
             return;
+
+        // TurnMark 모드는 부모 Line의 활성화만 따릅니다.
+        if (IsTurnMarkLineMode)
+        {
+            glowImage.enabled = true;
+            return;
+        }
 
         if (hideWhenUnselected)
         {
