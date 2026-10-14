@@ -113,7 +113,7 @@ Transform:
   m_GameObject: {fileID: 1808460895738577915}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.01, y: -0.42, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -135,7 +135,7 @@ MonoBehaviour:
   m_LightType: 1
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 1
-  m_Color: {r: 0.85490197, g: 0.29411766, b: 0.27058825, a: 1}
+  m_Color: {r: 0.16470589, g: 0.30588236, b: 0.6156863, a: 1}
   m_Intensity: 2
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
@@ -155,8 +155,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: -0.39545, y: -3.48945, z: 0}
-    m_Extent: {x: 1.01685, y: 1.0989499, z: 0}
+    m_Center: {x: -0.37820002, y: -3.4660501, z: 0}
+    m_Extent: {x: 0.9826, y: 1.1239501, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -167,11 +167,12 @@ MonoBehaviour:
   m_ShapeLightFalloffSize: 0.5
   m_ShapeLightFalloffOffset: {x: 0, y: 0}
   m_ShapePath:
-  - {x: -0.07555032, y: -3.7142844, z: 0}
-  - {x: 0.121667325, y: -2.8909023, z: 0}
+  - {x: -0.11639678, y: -3.607946, z: 0}
+  - {x: -0.14522828, y: -3.404084, z: 0}
+  - {x: 0.10564286, y: -2.8427954, z: 0}
   - {x: -0.10674852, y: -3.0143127, z: 0}
-  - {x: -0.28729498, y: -3.5435343, z: 0}
-  - {x: -0.9135089, y: -3.9207125, z: 0}
+  - {x: -0.3080967, y: -3.5372477, z: 0}
+  - {x: -0.8619816, y: -3.9644642, z: 0}
   - {x: -0.7722908, y: -4.091193, z: 0}
 --- !u!1 &4870018469340769920
 GameObject:
@@ -381,7 +382,7 @@ MonoBehaviour:
   m_LightType: 1
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 1
-  m_Color: {r: 0.85490197, g: 0.29411766, b: 0.27058825, a: 1}
+  m_Color: {r: 0.16470589, g: 0.30588236, b: 0.6156863, a: 1}
   m_Intensity: 2
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
@@ -401,8 +402,8 @@ MonoBehaviour:
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
-    m_Center: {x: 1.0613999, y: -2.1176, z: 0}
-    m_Extent: {x: 1.0544, y: 2.3238, z: 0}
+    m_Center: {x: 0.94979995, y: -2.58615, z: 0}
+    m_Extent: {x: 0.9443, y: 2.2767498, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
   m_PointLightInnerRadius: 0
@@ -413,24 +414,27 @@ MonoBehaviour:
   m_ShapeLightFalloffSize: 0.5
   m_ShapeLightFalloffOffset: {x: 0, y: 0}
   m_ShapePath:
-  - {x: 1.1134998, y: -3.941532, z: 0}
-  - {x: 1.6168545, y: -3.8065574, z: 0}
-  - {x: 1.5806824, y: -3.273948, z: 0}
-  - {x: 1.3657799, y: -3.4376318, z: 0}
-  - {x: 1.1026007, y: -3.5046499, z: 0}
-  - {x: 0.9646599, y: -3.3408532, z: 0}
-  - {x: 0.83640563, y: -3.2226412, z: 0}
-  - {x: 1.2410198, y: -0.6811277, z: 0}
-  - {x: 0.6926882, y: -0.29362023, z: 0}
-  - {x: 0.9098997, y: -0.7088048, z: 0}
-  - {x: 0.8411666, y: -0.9851811, z: 0}
-  - {x: 0.6614717, y: -1.1707895, z: 0}
-  - {x: 0.5061542, y: -1.7040963, z: 0}
-  - {x: 0.7027252, y: -1.8468198, z: 0}
-  - {x: 0.6095289, y: -2.199076, z: 0}
-  - {x: 0.5577563, y: -2.3802066, z: 0}
-  - {x: 0.51631284, y: -2.652184, z: 0}
-  - {x: 0.5893911, y: -2.907621, z: 0}
+  - {x: 1.0370075, y: -4.3631086, z: 0}
+  - {x: 1.2617865, y: -4.2744455, z: 0}
+  - {x: 1.1272643, y: -3.8200183, z: 0}
+  - {x: 1.3806709, y: -3.7628677, z: 0}
+  - {x: 1.3945435, y: -3.5249383, z: 0}
+  - {x: 1.1900053, y: -3.3968594, z: 0}
+  - {x: 0.833127, y: -3.3587909, z: 0}
+  - {x: 0.64474887, y: -2.953333, z: 0}
+  - {x: 0.868314, y: -2.722254, z: 0}
+  - {x: 1.0791705, y: -1.0998933, z: 0}
+  - {x: 0.53690714, y: -0.80734074, z: 0}
+  - {x: 0.84678435, y: -1.1981308, z: 0}
+  - {x: 0.82249814, y: -1.4456213, z: 0}
+  - {x: 0.6708184, y: -1.7014139, z: 0}
+  - {x: 0.5078261, y: -1.8922586, z: 0}
+  - {x: 0.5052376, y: -2.0918908, z: 0}
+  - {x: 0.63492525, y: -2.1733124, z: 0}
+  - {x: 0.7004305, y: -2.3150008, z: 0}
+  - {x: 0.6100926, y: -2.4160204, z: 0}
+  - {x: 0.5361208, y: -2.6523707, z: 0}
+  - {x: 0.55831957, y: -2.9323168, z: 0}
   - {x: 0.5280318, y: -3.0964081, z: 0}
-  - {x: 0.75190455, y: -3.3113735, z: 0}
-  - {x: 0.99807924, y: -3.5184445, z: 0}
+  - {x: 0.58315843, y: -3.6354465, z: 0}
+  - {x: 0.778197, y: -3.849168, z: 0}
