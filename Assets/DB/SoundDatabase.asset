@@ -1190,7 +1190,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Ability_01,02
+  - displayName: S_Ability_01
     vfxPrefab: {fileID: 9032009973510874767, guid: e60bee9487d55684db191b1b1c1eb04d, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1220,7 +1220,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Ability_03,04
+  - displayName: S_Ability_02
     vfxPrefab: {fileID: 7311764206653381872, guid: cd098c4abf4c0094b9c18e2d5c90dfe0, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1250,7 +1250,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Ability_05,06
+  - displayName: S_Ability_03
     vfxPrefab: {fileID: 6814607968632299061, guid: d9e677191abd37b4ea44b0c2a095d363, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: cf61ffb1f8ecb496886da1d7eaeb3082, type: 3}
@@ -1280,7 +1280,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Ability_07,08
+  - displayName: S_Ability_04
     vfxPrefab: {fileID: 1211211539450989031, guid: ad2188fbf0e2d7745911825db1f2644e, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 69ff91372fde648479a99dbb0c3e5d7b, type: 3}
@@ -1310,7 +1310,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Ability_09,10
+  - displayName: S_Ability_05
     vfxPrefab: {fileID: 5464498477634507533, guid: 7d62d8b59c052e74f841fe794b1df8a6, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -1331,7 +1331,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Ability_11,12
+  - displayName: S_Ability_06
     vfxPrefab: {fileID: 2841605795099109794, guid: 69ccb2bf4a2fae641bfda27160ed0dd5, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -1361,7 +1361,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Ability_13,14
+  - displayName: S_Ability_07
     vfxPrefab: {fileID: 7054004222324287659, guid: 9fcd410c3ce6f064ba77b97fa3cdcd5a, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -1382,7 +1382,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Ability_15,16
+  - displayName: S_Ability_08
     vfxPrefab: {fileID: 529139466995848897, guid: 4021fb98fe8fe3c4da30a2071dd71f02, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1412,7 +1412,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_01,02
+  - displayName: S_Core_01
     vfxPrefab: {fileID: 1116342728058327303, guid: 367d94d8ab01f964392daf5c85890ca0, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -1433,7 +1433,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_03,04
+  - displayName: S_Core_02
     vfxPrefab: {fileID: 1116342728058327303, guid: 1396847cc4c493340a193e57c9610278, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -1463,7 +1463,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_05,06
+  - displayName: S_Core_03
     vfxPrefab: {fileID: 8776789016844861869, guid: b9ce7c7e10f3c9846ab377c3b72c10d8, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1493,7 +1493,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_07,08
+  - displayName: S_Core_04
     vfxPrefab: {fileID: 7311764206653381872, guid: 9544ed4635c375b4fab0378b5c0ec3dc, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1523,7 +1523,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_09,10
+  - displayName: S_Core_05
     vfxPrefab: {fileID: 1116342728058327303, guid: 9f7a13bd0e5ea184c885f64f2da268b3, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -1553,7 +1553,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_11,12
+  - displayName: S_Core_06
     vfxPrefab: {fileID: 1116342728058327303, guid: 4d81eb16844a76545bda148609ebb89b, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -1583,7 +1583,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_13,14
+  - displayName: S_Core_07
     vfxPrefab: {fileID: 6808545895853519640, guid: 39da642f5e0e7664bb39abf6d1c2597d, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1613,7 +1613,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_15,16
+  - displayName: S_Core_08
     vfxPrefab: {fileID: 1116342728058327303, guid: 754d458df7c9a7e42bc850ca318430f8, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -1652,7 +1652,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_17,18
+  - displayName: S_Core_09
     vfxPrefab: {fileID: 6808545895853519640, guid: 3541f3da60188cc43be31cc70dd5e87b, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1682,7 +1682,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_19,20
+  - displayName: S_Core_10
     vfxPrefab: {fileID: 3037673656474629809, guid: eb32e8c619f0eef42b3b29ef659cf51b, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1712,7 +1712,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_21,22
+  - displayName: S_Core_11
     vfxPrefab: {fileID: 3037673656474629809, guid: 9e18f56771367644ca81a14eb366d36a, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -1742,7 +1742,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_23,24
+  - displayName: S_Core_12
     vfxPrefab: {fileID: 3037673656474629809, guid: aef80a47534469a4fa5eb4854dd04006, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1781,7 +1781,7 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 0.7
       randomPitchMax: 1.2
-  - displayName: S_Core_25,26
+  - displayName: S_Core_13
     vfxPrefab: {fileID: 3037673656474629809, guid: c186fa3d9a8fd614195ffcf8daa063cf, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1820,7 +1820,7 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 0.7
       randomPitchMax: 1.2
-  - displayName: S_Core_27,28
+  - displayName: S_Core_14
     vfxPrefab: {fileID: 3037673656474629809, guid: 2671d1872102b8d429dfb946aea22d7f, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -1850,7 +1850,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_29,30
+  - displayName: S_Core_15
     vfxPrefab: {fileID: 3037673656474629809, guid: 5f38b39647333cd42b503d58e1afd238, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1889,7 +1889,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_30,31
+  - displayName: S_Core_16
     vfxPrefab: {fileID: 3037673656474629809, guid: bd1a8d3272d706a45a98caec35340a3d, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1928,7 +1928,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_33,34
+  - displayName: S_Core_17
     vfxPrefab: {fileID: 3037673656474629809, guid: 38821a95a46a84947bdc362959b21023, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -1967,7 +1967,7 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 1
       randomPitchMax: 1.5
-  - displayName: S_Core_35,36
+  - displayName: S_Core_18
     vfxPrefab: {fileID: 3037673656474629809, guid: 5f90bf965e5e41c408421ff73a22d48a, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2006,7 +2006,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_37,38
+  - displayName: S_Core_19
     vfxPrefab: {fileID: 3037673656474629809, guid: 3011e706563e25248a4d594cb215ba35, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2045,7 +2045,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
-  - displayName: S_Core_39,40
+  - displayName: S_Core_20
     vfxPrefab: {fileID: 3037673656474629809, guid: 43ddc712efc6245478562f6fbff52cf6, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2084,7 +2084,7 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 1
       randomPitchMax: 1.2
-  - displayName: S_Core_41,42
+  - displayName: S_Core_21
     vfxPrefab: {fileID: 2841605795099109794, guid: 9df08a715c4b0ee41be518ebeeb393f1, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -2114,7 +2114,7 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 1
       randomPitchMax: 1.5
-  - displayName: S_Core_43,44
+  - displayName: S_Core_22
     vfxPrefab: {fileID: 2841605795099109794, guid: 69a71cc3541ad8f41bb4a3c5967dd89b, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2144,7 +2144,7 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_45,46
+  - displayName: S_Core_23
     vfxPrefab: {fileID: 2841605795099109794, guid: 317110988f56ddf48b82b27becfd0c1e, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2174,7 +2174,7 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_47,48
+  - displayName: S_Core_24
     vfxPrefab: {fileID: 3857453107072273608, guid: d65b00fe6ce90bd408afef19be55b670, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2204,7 +2204,7 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_49,50
+  - displayName: S_Core_25
     vfxPrefab: {fileID: 3857453107072273608, guid: b4e43286312e66640b47860b694e7b62, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2234,7 +2234,7 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_51,52
+  - displayName: S_Core_26
     vfxPrefab: {fileID: 3857453107072273608, guid: 1ccc5bbb344bab0459d9ac19719dcf22, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2264,7 +2264,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_53,54
+  - displayName: S_Core_27
     vfxPrefab: {fileID: 2841605795099109794, guid: 5c5f90f9d5668b1438bc02039c0c1e81, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2294,7 +2294,7 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_55,56
+  - displayName: S_Core_28
     vfxPrefab: {fileID: 2841605795099109794, guid: 4f34edcfb523dbb44b46060c9965450b, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2324,7 +2324,7 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_57,58
+  - displayName: S_Core_29
     vfxPrefab: {fileID: 5464498477634507533, guid: 5ede49eb0835e01488d72a82c7797da4, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2345,7 +2345,7 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_59,60
+  - displayName: S_Core_30
     vfxPrefab: {fileID: 3857453107072273608, guid: 4e85f126ab5e4a54bb592421160659ee, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2384,7 +2384,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_61,62
+  - displayName: S_Core_31
     vfxPrefab: {fileID: 7054004222324287659, guid: 880a28b0f013b334eaeea0eeaad452a9, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -2405,7 +2405,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_63,64
+  - displayName: S_Core_32
     vfxPrefab: {fileID: 529139466995848897, guid: ba706f8505d4b8c4c9c7e7bbc05fbba1, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: a9d2efe49badf4f95b320ff0b0f84f6f, type: 3}
@@ -2444,7 +2444,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_65,66
+  - displayName: S_Core_33
     vfxPrefab: {fileID: 7054004222324287659, guid: 5d210d5ff92f8f04bb563133c0655223, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -2465,7 +2465,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_67,68
+  - displayName: S_Core_34
     vfxPrefab: {fileID: 7054004222324287659, guid: 02bb4d048a058b448aca02adeaed9e68, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -2486,7 +2486,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_69,70
+  - displayName: S_Core_35
     vfxPrefab: {fileID: 5022181577685763610, guid: 86511d6cfc9f08c418b18b579e1f018a, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2552,7 +2552,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
-  - displayName: S_Core_71,72
+  - displayName: S_Core_36
     vfxPrefab: {fileID: 7054004222324287659, guid: 93f08a2249a956445b89e13d3bf5e66f, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2573,7 +2573,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1.2
-  - displayName: S_Core_73,74
+  - displayName: S_Core_37
     vfxPrefab: {fileID: 7054004222324287659, guid: d7cb20a941d51084cbbbd4a625dfa25e, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
@@ -2594,7 +2594,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
-  - displayName: S_Core_75,76
+  - displayName: S_Core_38
     vfxPrefab: {fileID: 7054004222324287659, guid: b47ba35bb845e9247a5eb7138cfda125, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2642,7 +2642,7 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1.5
-  - displayName: S_Core_77,78
+  - displayName: S_Core_39
     vfxPrefab: {fileID: 7054004222324287659, guid: 6bf2ec8d3febe3b43aebc59e98b00d56, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
@@ -2672,7 +2672,7 @@ MonoBehaviour:
       useRandomPitch: 1
       randomPitchMin: 1
       randomPitchMax: 1.5
-  - displayName: S_Core_79,80
+  - displayName: S_Core_40
     vfxPrefab: {fileID: 7054004222324287659, guid: d37afe0d8f2e42c4d9ed6d5fc834b40c, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}

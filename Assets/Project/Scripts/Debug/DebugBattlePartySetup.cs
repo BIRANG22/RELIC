@@ -10,7 +10,7 @@ public static class DebugBattlePartySetup
 
     private const string DefaultMoveSkillId = "S_Move_1";
     private const string SkillVfxTestCharacterId = "Char_03";
-    private const string SkillVfxTestSkillId = "S_Ability_11";
+    private const string SkillVfxTestSkillId = "S_Ability_06";
     private const int SkillVfxTestPreferredSlotIndex = 3;
 
     public static bool TryCreateDefaultParty(DataManager dataManager)

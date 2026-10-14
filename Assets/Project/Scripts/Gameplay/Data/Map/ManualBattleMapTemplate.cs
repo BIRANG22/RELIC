@@ -124,7 +124,6 @@ namespace Relic.Gameplay.Data
                 new() { EventId = "Event_05" },
                 new() { EventId = "Event_06" },
                 new() { EventId = "Event_07" },
-                new() { EventId = "Event_08" },
                 new() { EventId = "Event_09" }
             };
         }

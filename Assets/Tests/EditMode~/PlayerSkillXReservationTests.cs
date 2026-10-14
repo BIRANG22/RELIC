@@ -110,7 +110,7 @@ public class PlayerSkillXReservationTests
         CharacterRuntimeData caster = new() { CharacterId = "Char_04", CurrentCost = 11 };
         SkillMasterData skill = new()
         {
-            SkillId = "S_Core_73",
+            SkillId = "S_Core_37",
             ReferenceResource = ReferenceResource.Cost,
             ResourceCostFormula = "3X",
             EffectIds = "E_RandomStrike",

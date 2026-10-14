@@ -24,7 +24,6 @@ public class CharacterSkillRewardAndEffectsIntegrationTests
         IReadOnlyList<SkillMasterData> candidates = SkillRewardRoller.GetCandidates(
             new[] { skill },
             SkillRarity.Common,
-            true,
             new[] { "Char_01" });
         Assert.That(candidates, Has.Count.EqualTo(1));
 

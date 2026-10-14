@@ -856,12 +856,9 @@ public class EventRoomController : MonoBehaviour
 
         if (IsEvent01TitleOnlyTerminal(definition.EventId) || IsEvent02TitleOnlyTerminal(definition.EventId) ||
             IsEvent04TitleOnlyTerminal(definition.EventId) || IsEvent05TitleOnlyTerminal(definition.EventId) ||
-            IsEvent06TitleOnlyTerminal(definition.EventId) || IsEvent08TitleOnlyTerminal(definition.EventId))
+            IsEvent06TitleOnlyTerminal(definition.EventId))
         {
             // 결과 Title만 보여주는 종료 상태입니다.
-            if (IsEvent08TitleOnlyTerminal(definition.EventId))
-                persistentEventChoices.Clear();
-
             BindChoiceSlots(null);
             isEventResolved = true;
             SetNextButtonVisible(true);
@@ -898,12 +895,6 @@ public class EventRoomController : MonoBehaviour
     private static bool IsEvent06TitleOnlyTerminal(string eventId)
     {
         return EventIdUtility.Normalize(eventId) == "Event_06_A";
-    }
-
-    private static bool IsEvent08TitleOnlyTerminal(string eventId)
-    {
-        string normalized = EventIdUtility.Normalize(eventId);
-        return normalized == "Event_08_C" || normalized == "Event_08_D";
     }
 
     private static bool IsEvent05TitleOnlyTerminal(string eventId)

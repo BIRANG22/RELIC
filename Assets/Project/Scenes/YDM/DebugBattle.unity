@@ -24957,8 +24957,6 @@ MonoBehaviour:
       Disabled: 0
     - EventId: Event_07
       Disabled: 0
-    - EventId: Event_08
-      Disabled: 0
     - EventId: Event_09
       Disabled: 0
 --- !u!1 &514979358

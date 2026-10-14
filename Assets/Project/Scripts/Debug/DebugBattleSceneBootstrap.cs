@@ -139,7 +139,7 @@ public sealed class DebugBattleSceneRunner : MonoBehaviour
 
 public static class DebugBattleSkillCastUtility
 {
-    public const string DefaultSkillId = "S_Ability_11";
+    public const string DefaultSkillId = "S_Ability_06";
     public const int DefaultTimelineSlotIndex = 0;
     public const int DefaultDebugTargetGridIndex = 23;
 

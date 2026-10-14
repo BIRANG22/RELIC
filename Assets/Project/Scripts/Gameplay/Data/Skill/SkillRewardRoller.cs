@@ -59,7 +59,6 @@ namespace Relic.Gameplay.Data
             List<SkillMasterData> candidates = GetCandidates(
                 allSkills,
                 rarity,
-                true,
                 partyCharacterIds);
 
             if (candidates.Count == 0)
@@ -126,7 +125,6 @@ namespace Relic.Gameplay.Data
         public static List<SkillMasterData> GetCandidates(
             IReadOnlyList<SkillMasterData> allSkills,
             SkillRarity rarity,
-            bool baseOnly,
             IEnumerable<string> partyCharacterIds)
         {
             List<SkillMasterData> candidates = new();
@@ -145,9 +143,6 @@ namespace Relic.Gameplay.Data
                     continue;
 
                 if (skill.Rarity != rarity)
-                    continue;
-
-                if (baseOnly && !SkillRarityUtility.IsBaseSkillVariant(skill.SkillId))
                     continue;
 
                 if (!SkillOwnershipPolicy.CanRewardToParty(skill, partyCharacterIds))
