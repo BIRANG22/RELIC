@@ -6,6 +6,7 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
     private static readonly bool CheatEnabled = true;
 
     [SerializeField] private KeyCode killKey = KeyCode.K;
+    [SerializeField] private KeyCode killPlayersKey = KeyCode.J;
     [SerializeField] private int debugPlayerDamage = 1;
 
     private void Update()
@@ -15,6 +16,9 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
 
         if (Input.GetKeyDown(killKey))
             KillAllMonstersForDebug();
+
+        if (Input.GetKeyDown(killPlayersKey))
+            KillAllPlayersForDebug();
     }
 
     public void KillAllMonstersForDebug()
@@ -79,6 +83,43 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
 
         if (BattleResultChecker.Instance != null)
             BattleResultChecker.Instance.CheckBattleEnd();
+    }
+
+    public void KillAllPlayersForDebug()
+    {
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
+
+        KillPlayersForDebug(characters);
+        PrepareBattleStateForDebugWin();
+        new BattleHUDService().RefreshHUDs();
+
+        if (BattleResultChecker.Instance != null)
+            BattleResultChecker.Instance.CheckBattleEnd();
+    }
+
+    private static void KillPlayersForDebug(BattleCharacter[] characters)
+    {
+        if (characters == null)
+            return;
+
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+            if (character == null || character.RuntimeData == null)
+                continue;
+
+            if (!character.RuntimeData.IsDead)
+                character.RuntimeData.HandleDeath();
+
+            BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
+            if (animator != null)
+                animator.PlayDead();
+
+            Debug.Log($"[DebugKill] Player:{character.RuntimeData.CharacterId}");
+        }
     }
 
     private void PrepareBattleStateForDebugWin()
