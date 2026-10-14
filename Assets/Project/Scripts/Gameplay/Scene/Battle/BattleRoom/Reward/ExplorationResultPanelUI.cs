@@ -475,6 +475,11 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
         BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
         SaveSystem.Instance?.SaveCurrentProgress();
+
+        BattleRoomCleaner cleaner =
+            Object.FindFirstObjectByType<BattleRoomCleaner>(FindObjectsInactive.Include);
+        cleaner?.Clean();
+
         await GameManager.Instance.StateMachine.ChangeState(GameStateType.Lobby);
     }
 

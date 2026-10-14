@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1d4d9911a264e71a4ac5543ba688001, type: 3}
+  m_Name: LocaleFontDatabase
+  m_EditorClassIdentifier: 
+  profiles:
+  - localeCode: ko
+    defaultFont: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+    roleFonts:
+    - roleId: body
+      font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+    - roleId: title
+      font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+    - roleId: number
+      font: {fileID: 11400000, guid: 15f0f3445fd0bf947b79b40fad359512, type: 2}
+  - localeCode: en
+    defaultFont: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+    roleFonts:
+    - roleId: body
+      font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+    - roleId: title
+      font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+    - roleId: number
+      font: {fileID: 11400000, guid: 15f0f3445fd0bf947b79b40fad359512, type: 2}
+  - localeCode: es
+    defaultFont: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+    roleFonts:
+    - roleId: body
+      font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+    - roleId: title
+      font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+    - roleId: number
+      font: {fileID: 11400000, guid: 15f0f3445fd0bf947b79b40fad359512, type: 2}
+  - localeCode: ja
+    defaultFont: {fileID: 11400000, guid: a6605d9ebc2b0ea4b97bf1645c0e71e4, type: 2}
+    roleFonts:
+    - roleId: body
+      font: {fileID: 11400000, guid: a6605d9ebc2b0ea4b97bf1645c0e71e4, type: 2}
+    - roleId: title
+      font: {fileID: 11400000, guid: a6605d9ebc2b0ea4b97bf1645c0e71e4, type: 2}
+    - roleId: number
+      font: {fileID: 11400000, guid: 15f0f3445fd0bf947b79b40fad359512, type: 2}
+  - localeCode: zh-Hans
+    defaultFont: {fileID: 11400000, guid: 9f6b6789430707045bb3e91deb0f5425, type: 2}
+    roleFonts:
+    - roleId: body
+      font: {fileID: 11400000, guid: 9f6b6789430707045bb3e91deb0f5425, type: 2}
+    - roleId: title
+      font: {fileID: 11400000, guid: 9f6b6789430707045bb3e91deb0f5425, type: 2}
+    - roleId: number
+      font: {fileID: 11400000, guid: 15f0f3445fd0bf947b79b40fad359512, type: 2}

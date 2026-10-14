@@ -230,6 +230,14 @@ public static class LocalizationRuntimeRefreshCoordinator
             if (localizer != null)
                 localizer.RefreshForLocale(locale);
         }
+
+        foreach (LocalizedTMPFont localizer in UnityEngine.Object.FindObjectsByType<LocalizedTMPFont>(
+                     FindObjectsInactive.Include,
+                     FindObjectsSortMode.None))
+        {
+            if (localizer != null)
+                localizer.RefreshForLocale(locale);
+        }
     }
 
     private static bool CanApply(int requestVersion, Locale locale)
