@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public sealed class BattleDefeatPresentation : MonoBehaviour
 {
@@ -29,6 +30,9 @@ public sealed class BattleDefeatPresentation : MonoBehaviour
     [SerializeField, Min(0f)] private float resultDelay = 1.5f;
 
     [Header("Rendering")]
+    [SerializeField] private string presentationLayerName = "DefeatPresentation";
+    [SerializeField] private string presentationSortingLayerName = "DefeatPresentation";
+    [SerializeField] private int fogSortingOrder;
     [SerializeField] private int characterSortingOrder = 22000;
 
     private Coroutine routine;
@@ -101,13 +105,13 @@ public sealed class BattleDefeatPresentation : MonoBehaviour
             UpdateFog(elapsed, fogStart, fogEnd);
             UpdateCharacters(elapsed, characters, characterStarts, anchorIndices);
             UpdateText(elapsed);
+
             yield return null;
         }
 
         UpdateFog(float.MaxValue, fogStart, fogEnd);
         UpdateCharacters(float.MaxValue, characters, characterStarts, anchorIndices);
         UpdateText(float.MaxValue);
-
         if (resultDelay > 0f)
             yield return new WaitForSecondsRealtime(resultDelay);
 
@@ -119,11 +123,25 @@ public sealed class BattleDefeatPresentation : MonoBehaviour
 
     private void PreparePresentation(IReadOnlyList<BattleCharacter> characters)
     {
+        int presentationLayer = LayerMask.NameToLayer(presentationLayerName);
+        int presentationSortingLayer = SortingLayer.NameToID(presentationSortingLayerName);
+
         if (presentationRoot != null)
             presentationRoot.SetActive(true);
 
         if (fogRoot != null && fogStartAnchor != null)
             fogRoot.position = fogStartAnchor.position;
+
+        if (fogRoot != null)
+        {
+            ApplyLayerRecursively(fogRoot.gameObject, presentationLayer);
+            Renderer[] fogRenderers = fogRoot.GetComponentsInChildren<Renderer>(true);
+            for (int i = 0; i < fogRenderers.Length; i++)
+            {
+                fogRenderers[i].sortingLayerID = presentationSortingLayer;
+                fogRenderers[i].sortingOrder = fogSortingOrder;
+            }
+        }
 
         if (defeatText != null)
             defeatText.text = GameLocalization.Get("battle.result.exploration_failed", "탐사 실패");
@@ -137,6 +155,7 @@ public sealed class BattleDefeatPresentation : MonoBehaviour
         for (int i = 0; i < characters.Count; i++)
         {
             BattleCharacter character = characters[i];
+            ApplyLayerRecursively(character.gameObject, presentationLayer);
             character.SetTimelineHoverHighlight(false);
             character.HideHUDFromTimelineIfNotSelected();
 
@@ -155,6 +174,14 @@ public sealed class BattleDefeatPresentation : MonoBehaviour
                     ? rendererIndex
                     : renderers[rendererIndex].sortingOrder - minimumOrder;
                 renderers[rendererIndex].sortingOrder = characterSortingOrder + relativeOrder;
+                renderers[rendererIndex].sortingLayerID = presentationSortingLayer;
+            }
+
+            SortingGroup[] sortingGroups = character.GetComponentsInChildren<SortingGroup>(true);
+            for (int groupIndex = 0; groupIndex < sortingGroups.Length; groupIndex++)
+            {
+                sortingGroups[groupIndex].sortingLayerID = presentationSortingLayer;
+                sortingGroups[groupIndex].sortingOrder = characterSortingOrder;
             }
         }
     }
@@ -206,6 +233,17 @@ public sealed class BattleDefeatPresentation : MonoBehaviour
         defeatTextCanvasGroup.alpha = textFadeDuration <= 0f
             ? 1f
             : Mathf.Clamp01((elapsed - textDelay) / textFadeDuration);
+    }
+
+    private static void ApplyLayerRecursively(GameObject root, int layer)
+    {
+        if (root == null || layer < 0)
+            return;
+
+        root.layer = layer;
+        Transform transform = root.transform;
+        for (int i = 0; i < transform.childCount; i++)
+            ApplyLayerRecursively(transform.GetChild(i).gameObject, layer);
     }
 
     private static Vector3[] CaptureCharacterPositions(IReadOnlyList<BattleCharacter> characters)

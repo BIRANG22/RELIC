@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using NUnit.Framework;
 using Relic.Gameplay.Data;
 using UnityEngine;
@@ -82,7 +83,8 @@ public sealed class BattleDefeatPresentationTests
     [Test]
     public void BattleScene_HasWiredDefeatPresentationHierarchy()
     {
-        string scene = File.ReadAllText("Assets/Project/Scenes/YDM/Battle.unity");
+        string scene = File.ReadAllText("Assets/Project/Scenes/YDM/Battle.unity")
+            .Replace("\r\n", "\n");
 
         Assert.That(scene, Does.Contain("m_Name: BattleDefeatPresentation"));
         Assert.That(scene, Does.Contain("m_Name: BlackFog"));
@@ -105,6 +107,86 @@ public sealed class BattleDefeatPresentationTests
         Assert.That(disableBody, Does.Contain("completion = null"));
     }
 
+    [Test]
+    public void ApplyLayerRecursively_MovesWholeCharacterHierarchyToPresentationLayer()
+    {
+        GameObject root = CreateObject("CharacterRoot");
+        GameObject child = CreateObject("CharacterChild");
+        child.transform.SetParent(root.transform);
+        root.layer = 0;
+        child.layer = 9;
+
+        MethodInfo applyLayerMethod = typeof(BattleDefeatPresentation).GetMethod(
+            "ApplyLayerRecursively",
+            BindingFlags.Static | BindingFlags.NonPublic);
+
+        Assert.That(applyLayerMethod, Is.Not.Null);
+        applyLayerMethod.Invoke(null, new object[] { root, 12 });
+
+        Assert.That(root.layer, Is.EqualTo(12));
+        Assert.That(child.layer, Is.EqualTo(12));
+    }
+
+    [Test]
+    public void PreparePresentation_MovesCharacterToPresentationSortingLayer()
+    {
+        GameObject presenterObject = CreateObject("Presenter");
+        BattleDefeatPresentation presenter = presenterObject.AddComponent<BattleDefeatPresentation>();
+        BattleCharacter character = CreateCharacter("C_Selected", 0f);
+        SpriteRenderer renderer = character.gameObject.AddComponent<SpriteRenderer>();
+        renderer.sortingLayerID = SortingLayer.NameToID("Unit");
+        int presentationSortingLayerId = SortingLayer.NameToID("DefeatPresentation");
+
+        MethodInfo prepareMethod = typeof(BattleDefeatPresentation).GetMethod(
+            "PreparePresentation",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.That(prepareMethod, Is.Not.Null);
+        prepareMethod.Invoke(presenter, new object[] { new[] { character } });
+
+        Assert.That(renderer.sortingLayerID, Is.EqualTo(presentationSortingLayerId));
+    }
+
+    [Test]
+    public void BattleScene_WiresDefeatOverlayCameraAndCoveredUiRoots()
+    {
+        string scene = File.ReadAllText("Assets/Project/Scenes/YDM/Battle.unity")
+            .Replace("\r\n", "\n");
+        string tags = File.ReadAllText("ProjectSettings/TagManager.asset");
+
+        Assert.That(tags, Does.Contain("- DefeatPresentation"));
+        Assert.That(scene, Does.Contain("m_Name: DefeatOverlayCamera"));
+        Assert.That(scene, Does.Contain("m_CameraType: 1"));
+        Assert.That(scene, Does.Contain("m_Cameras:\n  - {fileID: 900000000000000103}"));
+        Assert.That(scene, Does.Contain("- {fileID: 1585080120}"));
+        Assert.That(scene, Does.Contain("m_Name: DefeatPresentationLight"));
+        Assert.That(scene, Does.Contain("m_ApplyToSortingLayers: 5a4eaa67"));
+
+        int fogStart = scene.IndexOf("m_Name: BlackFog", System.StringComparison.Ordinal);
+        int nextObject = scene.IndexOf("\n--- !u!1", fogStart, System.StringComparison.Ordinal);
+        string fogBlock = scene.Substring(fogStart, nextObject - fogStart);
+        Assert.That(fogBlock, Does.Contain("m_Color: {r: 0, g: 0, b: 0, a: 1}"));
+    }
+
+    [Test]
+    public void DefeatFog_WritesDepthAndUsesDedicatedMaterial()
+    {
+        string shader = File.ReadAllText("Assets/Project/Shaders/DefeatFogDepth.shader");
+        string scene = File.ReadAllText("Assets/Project/Scenes/YDM/Battle.unity")
+            .Replace("\r\n", "\n");
+
+        Assert.That(shader, Does.Contain("ZWrite On"));
+        Assert.That(shader, Does.Contain("ZTest Always"));
+        Assert.That(shader, Does.Contain("_EdgeWidth"));
+        Assert.That(shader, Does.Contain("_NoiseStrength"));
+        Assert.That(shader, Does.Contain("_NoiseSpeed"));
+        Assert.That(shader, Does.Contain("smoothstep"));
+        Assert.That(shader, Does.Contain("Blend SrcAlpha OneMinusSrcAlpha"));
+        Assert.That(scene, Does.Contain(
+            "m_Materials:\n  - {fileID: 2100000, guid: d1e7fa70000000000000000000000002, type: 2}"));
+        Assert.That(scene, Does.Contain("m_LocalPosition: {x: 0, y: 15, z: 0.5}"));
+    }
+
     private BattleCharacter CreateCharacter(string characterId, float x)
     {
         var gameObject = new GameObject(characterId);
@@ -114,5 +196,12 @@ public sealed class BattleDefeatPresentationTests
         BattleCharacter character = gameObject.AddComponent<BattleCharacter>();
         character.Initialize(new CharacterRuntimeData { CharacterId = characterId, CurrentHP = 0 });
         return character;
+    }
+
+    private GameObject CreateObject(string name)
+    {
+        var gameObject = new GameObject(name);
+        createdObjects.Add(gameObject);
+        return gameObject;
     }
 }
