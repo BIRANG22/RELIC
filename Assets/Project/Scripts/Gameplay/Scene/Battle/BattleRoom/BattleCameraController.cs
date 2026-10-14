@@ -153,7 +153,8 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera != null)
         {
             defaultSize = targetCamera.orthographicSize;
-            defaultPosition = targetCamera.transform.position;
+            // 씬 복원 시 임시 지도/연출 카메라 위치를 전투 포커스 기준으로 저장하지 않습니다.
+            defaultPosition = mapPosition;
         }
     }
 
@@ -689,6 +690,62 @@ public class BattleCameraController : MonoBehaviour
         hasActiveCombatZoom = false;
         ResetCombatFocusTracking();
         ResetDamageImpactRotationSequence();
+        hasActiveMonsterInfoFocus = false;
+    }
+
+    /// <summary>
+    /// 전투 종료 시 씬 기본 카메라 위치로 부드럽게 돌아갑니다.
+    /// 인트로 텍스트와 결과 패널은 이 코루틴 종료 후 표시합니다.
+    /// </summary>
+    public IEnumerator ReturnSceneStartSmooth()
+    {
+        if (targetCamera == null)
+            targetCamera = Camera.main;
+        if (targetCamera == null)
+            yield break;
+
+        if (panelDownReturnRoutine != null)
+        {
+            StopCoroutine(panelDownReturnRoutine);
+            panelDownReturnRoutine = null;
+        }
+
+        RemoveMouseParallax();
+        EndZoomFollowTarget();
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+
+        ClearImpactOffset();
+        ResetDamageImpactRotationSequence();
+
+        // 전투 종료 처리는 카메라의 일반 이동 코루틴(routine)에 종속시키지 않습니다.
+        // 다른 포커스 동작이 해당 코루틴을 중단해도 보상 흐름은 계속되어야 합니다.
+        Vector3 startPosition = targetCamera.transform.position;
+        float startSize = targetCamera.orthographicSize;
+        Vector3 destination = mapPosition;
+        if (!usePositionZZoom)
+            destination.z = startPosition.z;
+
+        float duration = Mathf.Max(0f, returnDuration);
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float eased = EvaluateZoomCurve(t);
+            targetCamera.transform.position = Vector3.Lerp(startPosition, destination, eased);
+            targetCamera.orthographicSize = Mathf.Lerp(startSize, defaultSize, eased);
+            yield return null;
+        }
+
+        targetCamera.transform.position = mapPosition;
+        targetCamera.transform.rotation = Quaternion.identity;
+        targetCamera.orthographicSize = defaultSize;
+        hasActiveCombatZoom = false;
+        ResetCombatFocusTracking();
         hasActiveMonsterInfoFocus = false;
     }
 

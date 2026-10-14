@@ -17,7 +17,7 @@ public class BattleUnitSpawner : MonoBehaviour
     [SerializeField] private float unitSpawnZOffset = 0.01f;
     [SerializeField] private float unitSpawnYOffset = 0.1f;
 
-    public List<CharacterRuntimeData> SpawnFromRuntimeData()
+    public List<CharacterRuntimeData> SpawnFromRuntimeData(bool useCurrentGridPositions = false)
     {
         List<CharacterRuntimeData> spawnedRuntimes = new();
 
@@ -27,7 +27,9 @@ public class BattleUnitSpawner : MonoBehaviour
         for (int slotIndex = 0; slotIndex < partyStore.MaxPartyCountValue; slotIndex++)
         {
             string characterId = partyStore.GetCharacterId(slotIndex);
-            int gridIndex = partyStore.GetSpawnGridIndex(slotIndex);
+            int gridIndex = useCurrentGridPositions ? partyStore.GetCurrentGridIndex(slotIndex) : partyStore.GetSpawnGridIndex(slotIndex);
+            if (gridIndex < 0)
+                gridIndex = partyStore.GetSpawnGridIndex(slotIndex);
 
             if (string.IsNullOrWhiteSpace(characterId))
                 continue;

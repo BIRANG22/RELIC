@@ -567,6 +567,14 @@ public class BattleSceneController : MonoBehaviour
         SetErosionSelectVisible(false);
         mapSelectionPresenter?.Hide();
         CloseInventoryAndBagPanelsImmediate();
+        // Resume the completed battle visually, without restarting any combat.
+        SetSharedPartyPresentationVisible(false);
+        if (battleRoom != null)
+        {
+            battleRoom.SetActive(true);
+            BattleRoomLoader loader = battleRoom.GetComponentInChildren<BattleRoomLoader>(true);
+            loader?.RestoreBattleRewardCharacters();
+        }
         rewardPanel?.PrepareForResumePresentation();
     }
 
@@ -969,6 +977,7 @@ public class BattleSceneController : MonoBehaviour
         }
 
         HandleSelectedMap(currentNode);
+        CountPresentedRoomEntry(currentNode);
         PlayPendingRoomIntroText();
         PlayEventRoomEntranceAnimationIfNeeded();
         return true;
@@ -1086,6 +1095,7 @@ public class BattleSceneController : MonoBehaviour
         }
 
         HandleSelectedMap(entryNode);
+        CountPresentedRoomEntry(entryNode);
         PlayPendingRoomIntroText();
         PlayEventRoomEntranceAnimationIfNeeded();
     }
@@ -1323,6 +1333,7 @@ public class BattleSceneController : MonoBehaviour
             HandleSelectedMap(nodeData);
         });
 
+        CountPresentedRoomEntry(nodeData);
         PlayEventRoomEntranceAnimationIfNeeded();
     }
 
@@ -1424,6 +1435,7 @@ public class BattleSceneController : MonoBehaviour
             HandleSelectedMap(nextNode);
         });
 
+        CountPresentedRoomEntry(nextNode);
         PlayPendingRoomIntroText();
         PlayEventRoomEntranceAnimationIfNeeded();
         UpdateLastActiveRoomState();
@@ -1671,6 +1683,7 @@ public class BattleSceneController : MonoBehaviour
                 CaptureRoomEntrySaveCheckpoint();
                 HideMapPanelImmediate();
                 HandleSelectedMap(currentNode);
+                CountPresentedRoomEntry(currentNode);
                 PlayPendingRoomIntroText();
                 PlayEventRoomEntranceAnimationIfNeeded();
                 UpdateLastActiveRoomState();
@@ -1685,9 +1698,40 @@ public class BattleSceneController : MonoBehaviour
 
     private void CaptureRoomEntrySaveCheckpoint()
     {
-        GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
-        BattleErosionRuntimeService.CountRoomEntry(currentNode);
+        // 침식도 증가는 방 표시 후 처리하며, 체크포인트 저장 시점에는 적용하지 않습니다.
         SaveSystem.Instance?.CaptureBattleRoomEntryCheckpoint();
+    }
+
+    private void CountPresentedRoomEntry(GeneratedMapNodeData nodeData)
+    {
+        if (nodeData == null)
+            return;
+
+        BattleRuntimeData battle = DataManager.Instance?.BattleRuntimeStore?.Get();
+        if (battle?.IsTutorialBattle == true)
+        {
+            StartCoroutine(CountTutorialRoomEntryAfterReveal(nodeData));
+            return;
+        }
+
+        BattleErosionRuntimeService.CountRoomEntry(nodeData);
+    }
+
+    private IEnumerator CountTutorialRoomEntryAfterReveal(GeneratedMapNodeData nodeData)
+    {
+        // 튜토리얼은 씬 전환이 끝나고 방이 실제로 표시된 뒤 +3 연출을 실행합니다.
+        yield return null;
+
+        SceneFlowManager sceneFlow = SceneFlowManager.Instance;
+        while (sceneFlow != null && sceneFlow.IsLoading)
+            yield return null;
+
+        CanvasMaterialSceneTransition sceneTransition = CanvasMaterialSceneTransition.Instance;
+        while (sceneTransition != null && sceneTransition.IsPlaying)
+            yield return null;
+
+        yield return null;
+        BattleErosionRuntimeService.CountRoomEntry(nodeData);
     }
 
     private void SetupBattleErosionGauge()

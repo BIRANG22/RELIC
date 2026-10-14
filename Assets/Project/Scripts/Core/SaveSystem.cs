@@ -132,6 +132,21 @@ public class SaveSystem : Singleton<SaveSystem>
         RecordDiscoveryService.BackfillFromCurrentState(DataManager.Instance);
         GameSaveData saveData = CreateSaveData();
         saveData.Resume = CloneSerializable(resumeData);
+
+        // 전투 시작 상태를 별도로 확정해 둔 경우 일반 체크포인트에도 보존합니다.
+        // 그렇지 않으면 이후 이어하기에서 장애물을 다시 무작위 생성할 수 있습니다.
+        MapRuntimeData currentMap = DataManager.Instance.MapRuntimeStore?.Get();
+        if (battleRoomEntryCheckpoint != null &&
+            battleRoomEntryCheckpoint.HasResolvedBattleRoomEntryState &&
+            currentMap != null &&
+            currentMap.CurrentNodeIndex == battleRoomEntryCheckpointNodeIndex &&
+            string.Equals(currentMap.CurrentMapId ?? string.Empty,
+                battleRoomEntryCheckpointMapId, StringComparison.Ordinal))
+        {
+            saveData.HasResolvedBattleRoomEntryState = true;
+            saveData.BattleRoomGridEffects = CloneGridEffectSaves(battleRoomEntryCheckpoint.BattleRoomGridEffects);
+            saveData.BattleRoomMonsterCommands = CloneMonsterCommandSaves(battleRoomEntryCheckpoint.BattleRoomMonsterCommands);
+        }
         return WriteSaveData(saveData);
     }
 
@@ -350,12 +365,28 @@ public class SaveSystem : Singleton<SaveSystem>
     {
         ClearPendingResolvedBattleRoomEntryState();
 
-        if (saveData == null || !saveData.HasResolvedBattleRoomEntryState)
+        if (saveData == null)
+            return;
+
+        if (saveData.HasResolvedBattleRoomEntryState)
+        {
+            hasPendingResolvedBattleRoomEntryState = true;
+            pendingBattleRoomGridEffects = CloneGridEffectSaves(saveData.BattleRoomGridEffects);
+            pendingBattleRoomMonsterCommands = CloneMonsterCommandSaves(saveData.BattleRoomMonsterCommands);
+            return;
+        }
+
+        // 이전 형식에서는 확정 배치가 Resume.BattleEntry에만 들어있을 수 있습니다.
+        ResumeData resume = saveData.Resume;
+        if (resume == null || resume.Phase != ResumePhase.BattleEntry || saveData.Map == null ||
+            resume.NodeIndex != saveData.Map.CurrentNodeIndex ||
+            !string.Equals(resume.MapId ?? string.Empty, saveData.Map.CurrentMapId ?? string.Empty,
+                StringComparison.Ordinal) || resume.InitialGridEffects == null)
             return;
 
         hasPendingResolvedBattleRoomEntryState = true;
-        pendingBattleRoomGridEffects = CloneGridEffectSaves(saveData.BattleRoomGridEffects);
-        pendingBattleRoomMonsterCommands = CloneMonsterCommandSaves(saveData.BattleRoomMonsterCommands);
+        pendingBattleRoomGridEffects = CloneGridEffectSaves(resume.InitialGridEffects);
+        pendingBattleRoomMonsterCommands = CloneMonsterCommandSaves(resume.InitialMonsterCommands);
     }
 
     private void ClearPendingResolvedBattleRoomEntryState()

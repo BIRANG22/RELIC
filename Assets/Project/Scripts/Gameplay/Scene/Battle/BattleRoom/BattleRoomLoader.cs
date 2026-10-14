@@ -970,7 +970,16 @@ public class BattleRoomLoader : MonoBehaviour
             skillListPanel.RegisterKeepOpenClickRoot(playerHudRootRect);
     }
 
-    private void SpawnPlayersAndHUD()
+    public void RestoreBattleRewardCharacters()
+    {
+        // Reward resume is presentation-only: do not restart combat or reset party grid positions.
+        if (unitSpawner == null)
+            return;
+
+        SpawnPlayersAndHUD(true);
+    }
+
+    private void SpawnPlayersAndHUD(bool useCurrentGridPositions = false)
     {
         playerHudSlots.Clear();
         playerHudNumberOrder.Clear();
@@ -983,7 +992,7 @@ public class BattleRoomLoader : MonoBehaviour
             return;
         }
 
-        List<CharacterRuntimeData> playerRuntimes = unitSpawner.SpawnFromRuntimeData();
+        List<CharacterRuntimeData> playerRuntimes = unitSpawner.SpawnFromRuntimeData(useCurrentGridPositions);
 
         if (playerRuntimes == null)
             return;

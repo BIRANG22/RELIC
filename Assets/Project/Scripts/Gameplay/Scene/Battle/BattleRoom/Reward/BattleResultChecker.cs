@@ -99,7 +99,7 @@ public class BattleResultChecker : MonoBehaviour
         ResetBattleEffectOnFinish();
         BattleFinished?.Invoke();
         Debug.Log("[BattleResultChecker] Exploration failed: Erosion reached 100.");
-        OpenDefeatExplorationResultPanel();
+        StartCoroutine(ShowDefeatAfterCameraReturn());
     }
 
     public bool CheckBattleEnd()
@@ -114,7 +114,7 @@ public class BattleResultChecker : MonoBehaviour
             ResetBattleEffectOnFinish();
             BattleFinished?.Invoke();
             Debug.Log("[BattleResultChecker] Battle Lose");
-            OpenDefeatExplorationResultPanel();
+            StartCoroutine(ShowDefeatAfterCameraReturn());
             return true;
         }
 
@@ -150,6 +150,9 @@ public class BattleResultChecker : MonoBehaviour
 
     private IEnumerator ShowBattleEndThenReward(bool isBossNode)
     {
+        // 카메라가 전투 기본 위치로 부드럽게 복귀한 다음 종료 텍스트를 표시합니다.
+        yield return ReturnBattleEndCamera();
+
         // Wait for the battle-end text to finish before opening the rewards.
         yield return BattleMapIntroText.ShowMessageAndWait(
             GameLocalization.Get("battle.intro.battle_end", "전투 종료"));
@@ -167,6 +170,20 @@ public class BattleResultChecker : MonoBehaviour
         {
             OpenRewardPanel();
         }
+    }
+
+    private IEnumerator ShowDefeatAfterCameraReturn()
+    {
+        yield return ReturnBattleEndCamera();
+        if (battleEnded)
+            OpenDefeatExplorationResultPanel();
+    }
+
+    private static IEnumerator ReturnBattleEndCamera()
+    {
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController != null && cameraController.isActiveAndEnabled)
+            yield return cameraController.ReturnSceneStartSmooth();
     }
 
     private static void ResetBattleEffectOnFinish()
@@ -198,6 +215,9 @@ public class BattleResultChecker : MonoBehaviour
 
         for (int i = 0; i < executors.Length; i++)
             executors[i]?.RestoreBattleExecutionUiAfterRoomEnd();
+
+        // 카메라 복귀는 결과 패널을 표시하기 전 코루틴에서 진행합니다.
+        // 선택 캐릭터 상태는 변경하지 않습니다.
     }
 
     private void OpenExplorationResultPanel()
