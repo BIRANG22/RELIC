@@ -14309,7 +14309,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 2
+      scalar: 0.5
       minScalar: 1.1
       maxCurve:
         serializedVersion: 2
@@ -14865,7 +14865,7 @@ ParticleSystem:
     donutRadius: 0.2
     m_Position: {x: 0, y: 0, z: 0}
     m_Rotation: {x: 0, y: 0, z: 0}
-    m_Scale: {x: 2, y: 2, z: 0.2}
+    m_Scale: {x: 2, y: 0.59, z: 0.2}
     placementMode: 0
     m_MeshMaterialIndex: 0
     m_MeshNormalOffset: 0
@@ -15891,7 +15891,7 @@ ParticleSystem:
     orbitalY:
       serializedVersion: 2
       minMaxState: 0
-      scalar: -1
+      scalar: -7.01
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -17039,7 +17039,7 @@ ParticleSystem:
     scrollSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.5
+      scalar: 0.1
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -23802,13 +23802,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6037950104473591069}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: 0.88205445, w: 0.4711476}
-  m_LocalPosition: {x: 5.76, y: 2.03, z: -2.18}
+  m_LocalRotation: {x: -0, y: -0, z: 0.9258898, w: 0.37779376}
+  m_LocalPosition: {x: 6.134, y: 2.264, z: -2.18}
   m_LocalScale: {x: 1.4655552, y: 1.4655552, z: 1.4655552}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3936172895079091019}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 123.782}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 135.606}
 --- !u!1 &8737536375779436337
 GameObject:
   m_ObjectHideFlags: 0
