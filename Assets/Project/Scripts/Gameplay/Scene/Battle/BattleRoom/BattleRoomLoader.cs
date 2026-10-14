@@ -970,13 +970,17 @@ public class BattleRoomLoader : MonoBehaviour
             skillListPanel.RegisterKeepOpenClickRoot(playerHudRootRect);
     }
 
-    public void RestoreBattleRewardCharacters()
+    // Restore only the already-completed battle's character presentation.
+    // Never invoke LoadBattle here: it resets party positions and restarts combat.
+    public void RestoreCompletedBattleCharacters()
     {
-        // Reward resume is presentation-only: do not restart combat or reset party grid positions.
         if (unitSpawner == null)
+        {
+            Debug.LogWarning("[BattleRoomLoader] Cannot restore completed battle: UnitSpawner is missing.");
             return;
-
+        }
         SpawnPlayersAndHUD(true);
+        RefreshBattleHUDs();
     }
 
     private void SpawnPlayersAndHUD(bool useCurrentGridPositions = false)

@@ -84,8 +84,6 @@ public static class BattleErosionRuntimeService
         runtime.LastErosionRoomKey = roomKey;
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
 
-        // 일반 탐사의 Layer 0 시작방을 포함하여 모든 방 진입 시 침식도가 3 증가합니다.
-        // 방 진입 처리는 씬 전환 후 해당 방이 표시되는 시점에 호출합니다.
         Add(RoomEntryAmount, $"RoomEntry:{roomKey}");
     }
 

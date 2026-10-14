@@ -49,6 +49,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private Image turnMarkImage;
     [SerializeField] private GameObject turnMarkFront;
     [SerializeField] private GameObject turnMarkLine;
+    [Header("TurnMark Glow (Assign In Inspector)")]
+    [SerializeField] private GameObject turnMarkGlowImage;
 
     private readonly List<BattleTimelinePreviewEntry> currentEntries = new();
     [Header("Order Value Change (Execution Only)")]
@@ -69,6 +71,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     private int slotIndex;
     private bool isActive;
     private bool emptyUseSkillSlotsVisible = false;
+    private bool endOrdersCleared;
 
     private bool hasCachedTurnMarkVisual;
     private Sprite[] useSkillRootNormalSprites;
@@ -95,12 +98,34 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     public int SlotIndex => slotIndex;
 
+    private void OnEnable()
+    {
+        BattleResultChecker.BattleFinished -= HandleBattleFinished;
+        BattleResultChecker.BattleFinished += HandleBattleFinished;
+        if (IsBattleEnded())
+            HandleBattleFinished();
+    }
+
+    private void HandleBattleFinished()
+    {
+        if (endOrdersCleared)
+            return;
+
+        endOrdersCleared = true;
+        Clear();
+        SetOrderContainersActive(false);
+        isActive = false;
+        ApplyTurnMarkSelectedVisual(false);
+        RefreshSelectedSlotObject(true);
+    }
+
     private void Awake()
     {
         AutoFindReferences();
         CacheTurnMarkNormalVisual();
         CacheTrailingVisualDefaults();
         Clear(); // Hide all pre-enabled skill templates before any timeline data arrives.
+        isActive = false;
         ApplyTurnMarkSelectedVisual(false);
         RefreshSelectedSlotObject(true);
     }
@@ -109,17 +134,14 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     {
         if (IsBattleEnded())
         {
-            if (isActive)
-                SetActiveTimelineSlot(false);
-
-            UpdateDeadReservationVisuals();
+            HandleBattleFinished();
             return;
         }
 
+        endOrdersCleared = false;
+
         UpdateDeadReservationVisuals();
         RefreshExecutingOrderValues();
-        // Keep the marker line in sync with the same slot state as the Select overlay.
-        ApplyTurnMarkSelectedVisual(isActive);
     }
 
     public void Init(BattleTimelineBarUI owner, int slotIndex)
@@ -128,9 +150,12 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         this.slotIndex = slotIndex;
 
         AutoFindReferences();
+        SetOrderContainersActive(true);
         CacheTurnMarkNormalVisual();
         CacheTrailingVisualDefaults();
         Clear(); // Reset prefab templates at initialization; entries are populated later.
+        endOrdersCleared = IsBattleEnded();
+        if (endOrdersCleared) SetOrderContainersActive(false);
         ApplyTurnMarkSelectedVisual(isActive);
         RefreshSelectedSlotObject();
         ApplyTurnText();
@@ -140,6 +165,9 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     {
         if (IsBattleEnded())
             active = false;
+
+        if (isActive == active)
+            return;
 
         isActive = active;
         RefreshSelectedSlotObject();
@@ -253,6 +281,9 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         Clear();
         slotIndex = targetSlotIndex;
         ApplyTurnText();
+
+        if (IsBattleEnded())
+            return;
 
         if (entries == null || entries.Count <= 0)
             return;
@@ -369,6 +400,16 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             if (icon != null && icon.gameObject.activeInHierarchy)
                 BattleUiCornerFeedback.Spawn(registrationFeedbackPrefab, icon.rectTransform);
             return;
+        }
+    }
+
+    private void SetOrderContainersActive(bool active)
+    {
+        for (int i = 1; i <= 5; i++)
+        {
+            Transform order = transform.Find("Order" + i.ToString("00"));
+            if (order != null && order.gameObject.activeSelf != active)
+                order.gameObject.SetActive(active);
         }
     }
 
@@ -949,6 +990,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     private void OnDisable()
     {
+        BattleResultChecker.BattleFinished -= HandleBattleFinished;
+        isActive = false;
+        // Keep Line visible; only the selected-slot glow is hidden.
+        ApplyTurnMarkSelectedVisual(false);
         if (selectedSlotFadeRoutine != null)
         {
             StopCoroutine(selectedSlotFadeRoutine);
@@ -1322,16 +1367,24 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (turnMarkLine == null || !turnMarkLine.transform.IsChildOf(turnMarkTransform))
         {
             Transform line = turnMarkTransform.Find("Line");
-            if (line == null)
-                line = FindChildRecursive(turnMarkTransform, "Line");
             turnMarkLine = line != null ? line.gameObject : null;
         }
 
         if (turnMarkFront != null && !turnMarkFront.activeSelf)
             turnMarkFront.SetActive(true);
 
-        if (turnMarkLine != null && turnMarkLine.activeSelf != selected)
-            turnMarkLine.SetActive(selected);
+        // Line is the permanent border. Only its GlowImage follows Select overlay.
+        if (turnMarkLine == null)
+            return;
+
+        if (!turnMarkLine.activeSelf)
+            turnMarkLine.SetActive(true);
+
+        // GlowImage is explicitly assigned on each TimelineSlot in the Inspector.
+        // Do not search children or change the GlowImage material.
+        bool showGlow = selected && isActive && isActiveAndEnabled && !IsBattleEnded();
+        if (turnMarkGlowImage != null && turnMarkGlowImage.activeSelf != showGlow)
+            turnMarkGlowImage.SetActive(showGlow);
     }
 
     public ReserveTurnSlotUI GetOrCreateReserveTurnSlot(BattleTimelineController controller, int targetSlotIndex)
@@ -1936,26 +1989,27 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     {
         if (cachedTurnExecutor == null)
             cachedTurnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
-        if (cachedTurnExecutor == null || !cachedTurnExecutor.IsExecuting ||
-            useSkillValueTexts == null)
+        if (cachedTurnExecutor == null || !cachedTurnExecutor.IsExecuting)
             return;
 
-        int count = Mathf.Min(currentEntries.Count, useSkillValueTexts.Length);
-        for (int i = 0; i < count; i++)
+        // Find the Value under the actual occupied Use_skill1/2/3 object.
+        // Serialized useSkillValueTexts may point at an inactive size variant.
+        for (int i = 0; i < currentEntries.Count; i++)
         {
             BattleTimelinePreviewEntry entry = currentEntries[i];
-            TMP_Text label = useSkillValueTexts[i];
-            if (entry == null || label == null || !label.gameObject.activeInHierarchy)
+            if (entry == null)
+                continue;
+
+            Transform sizeRoot = FindSizeRoot(i, Mathf.Clamp(entry.OccupiedOrders, 1, 3));
+            TMP_Text label = sizeRoot != null ? FindUseSkillText(sizeRoot) : null;
+            if (label == null && useSkillValueTexts != null && i < useSkillValueTexts.Length)
+                label = useSkillValueTexts[i];
+            if (label == null || !label.gameObject.activeInHierarchy)
                 continue;
 
             string newValue = entry.SkillValueText ?? "";
-            if (!displayedOrderValues.TryGetValue(label, out string oldValue))
-            {
-                displayedOrderValues[label] = newValue;
-                label.text = newValue;
-                continue;
-            }
-
+            string oldValue = displayedOrderValues.TryGetValue(label, out string cachedValue)
+                ? cachedValue : label.text;
             if (oldValue == newValue)
                 continue;
 

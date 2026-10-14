@@ -72,6 +72,7 @@ public class BattleTimelineBarUI : MonoBehaviour
                 continue;
 
             result[i] = group.GetOrCreateReserveTurnSlot(controller, i);
+            result[i].SetKeyTextVisible(true);
         }
 
         return result;
@@ -133,6 +134,7 @@ public class BattleTimelineBarUI : MonoBehaviour
                 ConfigureTrailingAsDecoration(group);
                 group.PrepareTrailingDecorationVisuals();
                 ClearTrailingTurnText(group);
+                HideTrailingKeyText(group);
             }
         }
 
@@ -521,6 +523,7 @@ public class BattleTimelineBarUI : MonoBehaviour
             ConfigureTrailingAsDecoration(group);
             group.PrepareTrailingDecorationVisuals();
             ClearTrailingTurnText(group);
+            HideTrailingKeyText(group);
             groups.Add(group);
         }
 
@@ -562,6 +565,22 @@ public class BattleTimelineBarUI : MonoBehaviour
         canvasGroup.blocksRaycasts = false;
     }
 
+    private static void HideTrailingKeyText(BattleTimelineGroupUI group)
+    {
+        if (group == null) return;
+        ReserveTurnSlotUI slot = group.GetComponent<ReserveTurnSlotUI>();
+        if (slot != null) slot.SetKeyTextVisible(false);
+        else
+        {
+            Transform key = FindChildRecursive(group.transform, "KeyText");
+            if (key != null)
+            {
+                TMPro.TMP_Text text = key.GetComponent<TMPro.TMP_Text>();
+                if (text != null) text.text = string.Empty;
+            }
+        }
+    }
+
     private void ClearTrailingTurnText(BattleTimelineGroupUI group)
     {
         if (group == null)
@@ -600,26 +619,6 @@ public class BattleTimelineBarUI : MonoBehaviour
         }
     }
 
-    private Transform FindChildRecursive(Transform root, string childName)
-    {
-        if (root == null)
-            return null;
-
-        for (int i = 0; i < root.childCount; i++)
-        {
-            Transform child = root.GetChild(i);
-
-            if (child.name == childName)
-                return child;
-
-            Transform found = FindChildRecursive(child, childName);
-
-            if (found != null)
-                return found;
-        }
-
-        return null;
-    }
 
     public void OnOrderClicked(int slotIndex, int orderIndex)
     {
@@ -711,6 +710,24 @@ public class BattleTimelineBarUI : MonoBehaviour
     {
         if (rangePreview != null)
             rangePreview.Clear();
+    }
+    private static Transform FindChildRecursive(Transform root, string childName)
+    {
+        if (root == null || string.IsNullOrEmpty(childName))
+            return null;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child.name == childName)
+                return child;
+
+            Transform found = FindChildRecursive(child, childName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
     }
 }
 public class BattleTimelineLockedSlotOverlay : MonoBehaviour

@@ -1584,18 +1584,15 @@ public class BattleTimelineController : MonoBehaviour
             yield break;
 
         float stopX = GetActionOrderStopPositionX(slotIndex, orderIndex);
-        yield return MoveTimelineSlotToGrindPositionRoutine(
-            slotIndex, stopX, GetUseSkillGrindDuration());
-
-        // The marker sits before Order01. Once the timeline reaches an order,
-        // every marker along the path must already be fully faded out.
         AutoFindTimelineSpriteAnimationControllerIfNeeded();
         ConfigureTimelineSpriteAnimationRootForActiveBar();
-        if (timelineSpriteAnimationController != null)
-        {
-            for (int passedSlot = 0; passedSlot <= slotIndex; passedSlot++)
-                timelineSpriteAnimationController.CompletePassedTurnMarkFade(passedSlot);
-        }
+        // The marker is already behind the playhead when an order begins.
+        if (orderIndex == 0 && timelineSpriteAnimationController != null)
+            timelineSpriteAnimationController.BeginPassedTurnMarkFade(slotIndex);
+        yield return MoveTimelineSlotToGrindPositionRoutine(
+            slotIndex, stopX, GetUseSkillGrindDuration());
+        if (orderIndex == 0 && timelineSpriteAnimationController != null)
+            timelineSpriteAnimationController.CompletePassedTurnMarkFade(slotIndex);
     }
 
     // Play the icon animation after the action resolves, not before it.

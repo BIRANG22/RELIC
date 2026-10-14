@@ -522,7 +522,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7204229091740485005
 RectTransform:
   m_ObjectHideFlags: 0
@@ -563,7 +563,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 2100000, guid: 55e1f16da21c7294dac92ae48f2ee8b4, type: 2}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.78431374}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.5882353}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2022,7 +2022,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.24528301, g: 0.24528301, b: 0.24528301, a: 0.78431374}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3733,8 +3733,8 @@ RectTransform:
   m_LocalScale: {x: 1.5, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8892201400886339357}
   - {fileID: 3094381947457237543}
+  - {fileID: 8892201400886339357}
   - {fileID: 5454478912255376601}
   - {fileID: 7221914446837252054}
   m_Father: {fileID: 1823635061237560869}
@@ -5037,8 +5037,9 @@ MonoBehaviour:
   selectFadeOutDuration: 0.12
   turnMarkTransform: {fileID: 8178560658155989601}
   turnMarkImage: {fileID: 5840027580829242886}
-  turnMarkFront: {fileID: 0}
-  turnMarkLine: {fileID: 0}
+  turnMarkFront: {fileID: 4979701311912786871}
+  turnMarkLine: {fileID: 2793501172467233148}
+  turnMarkGlowImage: {fileID: 507808836587625279}
   orderValuePulseScale: 1.1
   orderValuePulseDuration: 0.24
   ownerIconHoverScaleMultiplier: 1.1
