@@ -94,7 +94,7 @@ ParticleSystem:
   startDelay:
     serializedVersion: 2
     minMaxState: 0
-    scalar: 0.4
+    scalar: 0
     minScalar: 0
     maxCurve:
       serializedVersion: 2
@@ -4985,7 +4985,7 @@ ParticleSystem:
   startDelay:
     serializedVersion: 2
     minMaxState: 0
-    scalar: 0.4
+    scalar: 0
     minScalar: 0
     maxCurve:
       serializedVersion: 2
@@ -9876,7 +9876,7 @@ ParticleSystem:
   startDelay:
     serializedVersion: 2
     minMaxState: 0
-    scalar: 0.4
+    scalar: 0
     minScalar: 0
     maxCurve:
       serializedVersion: 2
@@ -14722,6 +14722,7 @@ GameObject:
   - component: {fileID: 48660819553434873}
   - component: {fileID: 7239057485550896188}
   - component: {fileID: 3002106314267983857}
+  - component: {fileID: -8771770687330497710}
   m_Layer: 5
   m_Name: Vfx_memory_rare
   m_TagString: Untagged
@@ -14795,3 +14796,25 @@ MonoBehaviour:
   m_UseCustomView: 0
   m_CustomViewSize: 10
   m_TimeScaleMultiplier: 1
+--- !u!114 &-8771770687330497710
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8628763350527882483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: skill.root
+  volume: 1
+  playDelay: 0
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
