@@ -39,6 +39,14 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     [SerializeField, Min(0.01f)] private float clickedScale = 1.15f;
     [SerializeField, Min(0f)] private float scaleTransitionSpeed = 12f;
 
+    [Header("Equipped Skill VFX")]
+    [Tooltip("VFX prefab played over the actual equipped skill icon in Char_content.")]
+    [SerializeField] private GameObject equippedSkillVfxPrefab;
+    [Tooltip("Local position offset from the equipped skill icon.")]
+    [SerializeField] private Vector3 equippedSkillVfxOffset = Vector3.zero;
+    [Tooltip("Local scale applied to the spawned VFX.")]
+    [SerializeField] private Vector3 equippedSkillVfxScale = Vector3.one;
+
     [Header("Rarity VFX Prefabs")]
     [SerializeField] private GameObject commonVfxPrefab;
     [SerializeField] private GameObject rareVfxPrefab;
@@ -86,9 +94,30 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private BattleRewardData reward;
     private Action completed;
     private bool processing;
+    private int pendingReplacementCard = -1;
+    private string pendingReplacementCharacterId;
+    private readonly List<RewardSkillEquippedSlotClick> replacementSlotHandlers = new List<RewardSkillEquippedSlotClick>();
     [Header("Equip Close Delay")]
     [SerializeField, Min(0f)] private float equipCloseDelay = 1f;
     private Coroutine equipCloseCoroutine;
+    [Header("Skill Panel Close Fade")]
+    [Tooltip("Duration for the whole Skill_panel to fade out before it is disabled.")]
+    [SerializeField, Min(0f)] private float skillPanelCloseFadeDuration = 0.5f;
+    private CanvasGroup skillPanelCloseCanvasGroup;
+
+    [Header("Unselected Card Mask Dissolve")]
+    [Tooltip("Duration for the two unselected cards to dissolve after selecting a reward.")]
+    [SerializeField, Min(0f)] private float unselectedCardDissolveDuration = 0.6f;
+
+    [Header("Selected Card Fade Out")]
+    [Tooltip("Time for the selected card contents to fade out after selection.")]
+    [SerializeField, Min(0f)] private float selectedCardFadeDuration = 0.6f;
+    private Coroutine selectedCardFadeCoroutine;
+    private readonly CanvasGroup[] selectedCardFadeGroups = new CanvasGroup[3];
+
+    private Coroutine selectionDissolveCoroutine;
+    private readonly CardUIStencilDissolveMaskController[] selectionDissolveMasks = new CardUIStencilDissolveMaskController[3];
+    private GameObject activeEquippedSkillVfx;
     private readonly Transform[] scaleCardRoots = new Transform[3];
     private readonly Vector3[] baseCardScales = new Vector3[3];
     private readonly bool[] cardHovered = new bool[3];
@@ -122,14 +151,23 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         reward = data;
         completed = onCompleted;
         processing = false;
+        CancelReplacementSelection();
         if (equipCloseCoroutine != null)
         {
             StopCoroutine(equipCloseCoroutine);
             equipCloseCoroutine = null;
         }
+        StopSelectedCardFade();
+        ResetSkillPanelCloseFade();
+        if (selectionDissolveCoroutine != null)
+        {
+            StopCoroutine(selectionDissolveCoroutine);
+            selectionDissolveCoroutine = null;
+        }
         Transform content = skillContent != null ? skillContent : FindChild(transform, "Skill_content");
         if (content == null) { reward = null; completed = null; return false; }
         ResetAllCardScales();
+        ClearEquippedSkillVfx();
         clickedCardIndex = -1;
         List<SkillMasterData> offers = BuildOffers(skill, data);
         Debug.Log($"[BattleRewardSkillPanelUI] Reward rarity: {skill.Rarity}, offers: {offers.Count} / {string.Join(", ", offers.ConvertAll(x => x.SkillId))}");
@@ -144,6 +182,14 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             StopSkillReveal(i);
             if (card == null) continue;
             scaleCardRoots[i] = card;
+            Transform fadeRoot = FindChild(card, "Mask") ?? card;
+            CanvasGroup fadeGroup = fadeRoot.GetComponent<CanvasGroup>();
+            if (fadeGroup == null) fadeGroup = fadeRoot.gameObject.AddComponent<CanvasGroup>();
+            selectedCardFadeGroups[i] = fadeGroup;
+            fadeGroup.alpha = 1f;
+            selectionDissolveMasks[i] = FindSelectionDissolveMask(card);
+            if (selectionDissolveMasks[i] != null)
+                selectionDissolveMasks[i].ResetDissolve();
             baseCardScales[i] = card.localScale;
             cardHovered[i] = false;
             cardInteractionReady[i] = false;
@@ -167,8 +213,9 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             button.onClick.AddListener(index == 0 ? SelectFirst : index == 1 ? SelectSecond : SelectThird);
             button.interactable = cardInteractionReady[i] && !string.IsNullOrEmpty(characterIds[i]) &&
                 BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(choice, characterIds[i]) &&
-                HasFreeSlot(characterIds[i]);
-            Transform select = SkillRef(i)?.select != null ? SkillRef(i).select.transform : FindChild(card, "Select");
+                true;
+            Transform select = FindChild(card, "Mask/Skill/Select") ?? FindChild(card, "Skill/Select") ?? FindChild(card, "Select");
+            if (select == null && SkillRef(i)?.select != null) select = SkillRef(i).select.transform;
             if (select != null)
             {
                 select.gameObject.SetActive(false);
@@ -209,6 +256,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         for (int i = 0; i < 3; i++)
         {
             if (offeredSkills[i] == null) continue;
+            SetCardDissolveAmount(i, 0f);
             if (cardDissolveMaterials[i] != null && cardDissolveImages[i] != null && cardDissolveImages[i].isActiveAndEnabled)
                 cardDissolveCoroutines[i] = StartCoroutine(AnimateCardDissolve(i, GetCardDissolveStartDelay(i)));
             else
@@ -350,6 +398,18 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
                         skillIcon = masterSkill.Icon;
                 }
                 SetSprite(GetImage(skillSlot, "Icon"), skillIcon);
+                RewardSkillEquippedSlotClick click = skillSlot.GetComponent<RewardSkillEquippedSlotClick>();
+                if (click == null) click = skillSlot.gameObject.AddComponent<RewardSkillEquippedSlotClick>();
+                click.Configure(this, characterId, runtimeIndex, !string.IsNullOrWhiteSpace(skillId));
+                if (!replacementSlotHandlers.Contains(click)) replacementSlotHandlers.Add(click);
+                // Ensure the slot itself can receive UI raycasts even if the icon has none.
+                Image hitArea = skillSlot.GetComponent<Image>();
+                if (hitArea == null)
+                {
+                    hitArea = skillSlot.gameObject.AddComponent<Image>();
+                    hitArea.color = new Color(1f, 1f, 1f, 0f);
+                }
+                hitArea.raycastTarget = true;
             }
         }
     }
@@ -372,36 +432,338 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         int target = -1;
         for (int i = 1; i <= 3 && i < character.EquippedSkillIds.Length; i++)
             if (string.IsNullOrWhiteSpace(character.EquippedSkillIds[i])) { target = i; break; }
-        if (target < 0) return;
+        if (target < 0)
+        {
+            // All active slots are occupied. Wait for the player to click an
+            // equipped slot belonging to the selected skill's character.
+            pendingReplacementCard = index;
+            pendingReplacementCharacterId = id;
+            clickedCardIndex = index;
+            // While waiting for the equipped slot choice, dissolve only the other cards.
+            // The selected card remains visible until replacement is actually confirmed.
+            PlaySelectionCardEffects(index, false);
+            RefreshReplacementSlotHovers();
+            return;
+        }
+        ConfirmSkillSelection(index, id, skill.SkillId.Trim(), character, target);
+    }
+
+    internal bool CanShowReplacementHover(string characterId, int equippedIndex)
+    {
+        return reward != null && !processing && pendingReplacementCard >= 0 &&
+            equippedIndex >= 1 && equippedIndex <= 3 &&
+            string.Equals(characterId, pendingReplacementCharacterId, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void RefreshReplacementSlotHovers()
+    {
+        foreach (RewardSkillEquippedSlotClick handler in replacementSlotHandlers)
+            if (handler != null) handler.RefreshHover();
+    }
+
+    internal void OnEquippedSlotClicked(string characterId, int equippedIndex)
+    {
+        if (processing || reward == null || pendingReplacementCard < 0 ||
+            !string.Equals(characterId, pendingReplacementCharacterId, StringComparison.OrdinalIgnoreCase) ||
+            equippedIndex < 1 || equippedIndex > 3) return;
+        int cardIndex = pendingReplacementCard;
+        SkillMasterData skill = offeredSkills[cardIndex];
+        DataManager dm = DataManager.Instance;
+        if (skill == null || dm?.CharacterRuntimeStore == null ||
+            !dm.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData character) || character == null ||
+            !BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(skill, characterId)) return;
+        SkillInventoryEquipService.EnsureEquippedSkillArray(character);
+        if (character.EquippedSkillIds == null || equippedIndex >= character.EquippedSkillIds.Length) return;
+        // Replacement is restricted to an existing equipped skill, not a passive slot.
+        if (string.IsNullOrWhiteSpace(character.EquippedSkillIds[equippedIndex])) return;
+        ConfirmSkillSelection(cardIndex, characterId, skill.SkillId.Trim(), character, equippedIndex);
+    }
+
+    private void ConfirmSkillSelection(int index, string id, string skillId, CharacterRuntimeData character, int target)
+    {
+        // Replacement mode already started the unselected-card dissolve.
+        // Fade the selected card only after the player confirms the replacement slot.
+        bool isReplacement = pendingReplacementCard == index;
+        pendingReplacementCard = -1;
+        pendingReplacementCharacterId = null;
+        RefreshReplacementSlotHovers();
         processing = true;
-        clickedCardIndex = index;
-        // Confirmed selection uses its own scale until the panel closes.
-        if (scaleCardRoots[index] != null)
-            scaleCardRoots[index].localScale = baseCardScales[index] * clickedScale;
-        character.EquippedSkillIds[target] = skill.SkillId.Trim();
+        if (isReplacement)
+            StartSelectedCardFade(index);
+        else
+            PlaySelectionCardEffects(index, true);
+        EquipSelectedSkill(id, skillId, character, target);
+    }
+
+    private void PlaySelectionCardEffects(int selectedIndex, bool fadeSelectedCard)
+    {
+        clickedCardIndex = selectedIndex;
+        if (scaleCardRoots[selectedIndex] != null)
+            scaleCardRoots[selectedIndex].localScale = baseCardScales[selectedIndex] * clickedScale;
+
+        // Keep all three SkillPanel roots active to avoid LayoutGroup repositioning.
+        foreach (Button choiceButton in buttons)
+            if (choiceButton != null) choiceButton.interactable = false;
+        for (int i = 0; i < scaleCardRoots.Length; i++)
+        {
+            if (i == selectedIndex || scaleCardRoots[i] == null) continue;
+            cardHovered[i] = false;
+            SetCardAudioEnabled(scaleCardRoots[i], false);
+        }
+        if (fadeSelectedCard)
+            StartSelectedCardFade(selectedIndex);
+        if (selectionDissolveCoroutine != null)
+            StopCoroutine(selectionDissolveCoroutine);
+        selectionDissolveCoroutine = StartCoroutine(DissolveUnselectedCards(selectedIndex));
+    }
+
+    private void StartSelectedCardFade(int index)
+    {
+        if (selectedCardFadeCoroutine != null)
+        {
+            StopCoroutine(selectedCardFadeCoroutine);
+            selectedCardFadeCoroutine = null;
+        }
+        selectedCardFadeCoroutine = StartCoroutine(FadeSelectedCard(index));
+    }
+
+    private IEnumerator FadeSelectedCard(int index)
+    {
+        CanvasGroup group = selectedCardFadeGroups[index];
+        if (group == null) yield break;
+        group.alpha = 1f;
+        float duration = Mathf.Max(0f, selectedCardFadeDuration);
+        if (duration > 0f)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration && reward != null)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                group.alpha = 1f - Mathf.Clamp01(elapsed / duration);
+                yield return null;
+            }
+        }
+        if (reward != null && group != null) group.alpha = 0f;
+        selectedCardFadeCoroutine = null;
+    }
+
+    private void StopSelectedCardFade()
+    {
+        if (selectedCardFadeCoroutine != null)
+        {
+            StopCoroutine(selectedCardFadeCoroutine);
+            selectedCardFadeCoroutine = null;
+        }
+        for (int i = 0; i < selectedCardFadeGroups.Length; i++)
+        {
+            if (selectedCardFadeGroups[i] != null) selectedCardFadeGroups[i].alpha = 1f;
+            selectedCardFadeGroups[i] = null;
+        }
+    }
+
+    private static CardUIStencilDissolveMaskController FindSelectionDissolveMask(Transform card)
+    {
+        if (card == null) return null;
+        Transform mask = card.Find("Mask");
+        if (mask != null)
+        {
+            CardUIStencilDissolveMaskController direct = mask.GetComponent<CardUIStencilDissolveMaskController>();
+            if (direct != null) return direct;
+        }
+        return card.GetComponentInChildren<CardUIStencilDissolveMaskController>(true);
+    }
+
+    // Rebind each unselected card's own Mask each time a choice is made.
+    // Never touch the selected Mask; it must remain visible until the slot is replaced.
+    private CardUIStencilDissolveMaskController GetUnselectedDissolveMask(int index)
+    {
+        if (index < 0 || index >= scaleCardRoots.Length) return null;
+        Transform card = scaleCardRoots[index];
+        if (card == null) return null;
+        Transform maskRoot = card.Find("Mask");
+        CardUIStencilDissolveMaskController controller = maskRoot != null
+            ? maskRoot.GetComponent<CardUIStencilDissolveMaskController>() : null;
+        if (controller == null)
+            controller = FindSelectionDissolveMask(card);
+        selectionDissolveMasks[index] = controller;
+        if (controller == null)
+            Debug.LogWarning($"[BattleRewardSkillPanelUI] Missing CardUIStencilDissolveMaskController on {card.name}/Mask.", card);
+        return controller;
+    }
+
+    private IEnumerator DissolveUnselectedCards(int selectedIndex)
+    {
+        // Only the two unselected Mask controllers dissolve. Never animate their alpha.
+        // The Mask Image must use Dustium/UI/Card Stencil Dissolve Mask.
+        // Its material uses procedural noise by default, so no texture is required.
+        CardUIStencilDissolveMaskController[] targets = new CardUIStencilDissolveMaskController[3];
+        for (int i = 0; i < targets.Length; i++)
+        {
+            if (i == selectedIndex || scaleCardRoots[i] == null ||
+                !scaleCardRoots[i].gameObject.activeInHierarchy) continue;
+
+            targets[i] = GetUnselectedDissolveMask(i);
+            if (targets[i] != null)
+            {
+                targets[i].enabled = true;
+                targets[i].ResetDissolve();
+            }
+
+            // Do not fade or disable the Mask root: that would bypass the dissolve
+            // and would move remaining panels if a LayoutGroup is in use.
+            CanvasGroup maskGroup = selectedCardFadeGroups[i];
+            if (maskGroup != null)
+            {
+                maskGroup.alpha = 1f;
+                maskGroup.interactable = false;
+                maskGroup.blocksRaycasts = false;
+            }
+            ClearRarityVfx(i);
+        }
+
+        float duration = Mathf.Max(0f, unselectedCardDissolveDuration);
+        float elapsed = 0f;
+        while (elapsed < duration && reward != null)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float amount = duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration);
+            for (int i = 0; i < targets.Length; i++)
+                if (i != selectedIndex && targets[i] != null)
+                    targets[i].SetDissolveAmount(amount);
+            yield return null;
+        }
+
+        if (reward == null) yield break;
+        for (int i = 0; i < targets.Length; i++)
+            if (i != selectedIndex && targets[i] != null)
+                targets[i].SetDissolveAmount(1f);
+        selectionDissolveCoroutine = null;
+    }
+
+    private void EquipSelectedSkill(string characterId, string skillId,
+        CharacterRuntimeData character, int targetSlot)
+    {
+        if (reward == null || !gameObject.activeInHierarchy) return;
+        var dm = DataManager.Instance;
+        if (dm == null || character == null) return;
+        character.EquippedSkillIds[targetSlot] = skillId;
         dm.CharacterRuntimeStore.AddOrUpdate(character);
         BattleRuntimeData runtime = dm.BattleRuntimeStore.GetOrCreate();
         runtime.AcquiredSkillIds ??= new List<string>();
-        if (!runtime.AcquiredSkillIds.Contains(skill.SkillId)) runtime.AcquiredSkillIds.Add(skill.SkillId);
+        if (!runtime.AcquiredSkillIds.Contains(skillId)) runtime.AcquiredSkillIds.Add(skillId);
         dm.BattleRuntimeStore.Set(runtime);
-        RecordDiscoveryService.RegisterSkill(dm, skill.SkillId);
-        BindPartyContent(); // Refresh equipped skill icons while the panel is still visible.
-        foreach (Button choiceButton in buttons)
-            if (choiceButton != null) choiceButton.interactable = false;
+        RecordDiscoveryService.RegisterSkill(dm, skillId);
+        BindPartyContent();
+        // Equip VFX plays as soon as the skill appears in the target slot.
+        PlayEquippedSkillVfx(characterId, targetSlot);
         equipCloseCoroutine = StartCoroutine(CloseAfterEquippedPreview());
+    }
+
+    private void PlayEquippedSkillVfx(string characterId, int equippedIndex)
+    {
+        ClearEquippedSkillVfx();
+        if (equippedSkillVfxPrefab == null || string.IsNullOrWhiteSpace(characterId)) return;
+
+        Transform content = charContent != null ? charContent : FindChild(transform, "Char_content");
+        DataManager dm = DataManager.Instance;
+        if (content == null || dm?.PartyRuntimeStore == null) return;
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (!string.Equals(dm.PartyRuntimeStore.GetCharacterId(i), characterId, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            Transform partyCard = PartyRef(i)?.root != null ? PartyRef(i).root : FindChild(content, "Char" + (i + 1));
+            if (partyCard == null) return;
+            Transform skillSlot = FindChild(partyCard, "Skill/Skill0" + equippedIndex);
+            if (skillSlot == null) return;
+
+            // Center the effect on the icon; fall back to its slot if no icon exists.
+            Transform parent = FindChild(skillSlot, "Icon") ?? skillSlot;
+            activeEquippedSkillVfx = Instantiate(equippedSkillVfxPrefab, parent, false);
+            activeEquippedSkillVfx.name = equippedSkillVfxPrefab.name + "_EquipVFX";
+            activeEquippedSkillVfx.transform.localPosition = equippedSkillVfxOffset;
+            activeEquippedSkillVfx.transform.localRotation = Quaternion.identity;
+            activeEquippedSkillVfx.transform.localScale = equippedSkillVfxScale;
+            activeEquippedSkillVfx.SetActive(true);
+            return;
+        }
+    }
+
+    private void ClearEquippedSkillVfx()
+    {
+        if (activeEquippedSkillVfx == null) return;
+        activeEquippedSkillVfx.SetActive(false);
+        Destroy(activeEquippedSkillVfx);
+        activeEquippedSkillVfx = null;
     }
 
     private IEnumerator CloseAfterEquippedPreview()
     {
-        yield return new WaitForSecondsRealtime(Mathf.Max(0f, equipCloseDelay));
+        // Wait until the selected-card fade, other-card dissolves, and equipped preview finish.
+        float previewDelay = Mathf.Max(0f, equipCloseDelay, unselectedCardDissolveDuration, selectedCardFadeDuration);
+        if (previewDelay > 0f)
+            yield return new WaitForSecondsRealtime(previewDelay);
+
+        CanvasGroup group = GetSkillPanelCloseCanvasGroup();
+        float duration = Mathf.Max(0f, skillPanelCloseFadeDuration);
+        if (group != null && duration > 0f)
+        {
+            float startAlpha = group.alpha;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                group.alpha = Mathf.Lerp(startAlpha, 0f, Mathf.Clamp01(elapsed / duration));
+                yield return null;
+            }
+            group.alpha = 0f;
+        }
         equipCloseCoroutine = null;
         Finish();
     }
 
+    private CanvasGroup GetSkillPanelCloseCanvasGroup()
+    {
+        if (skillPanelCloseCanvasGroup == null)
+        {
+            skillPanelCloseCanvasGroup = GetComponent<CanvasGroup>();
+            if (skillPanelCloseCanvasGroup == null)
+                skillPanelCloseCanvasGroup = gameObject.AddComponent<CanvasGroup>();
+        }
+        return skillPanelCloseCanvasGroup;
+    }
+
+    private void ResetSkillPanelCloseFade()
+    {
+        CanvasGroup group = GetSkillPanelCloseCanvasGroup();
+        if (group != null) group.alpha = 1f;
+    }
+
     public void DiscardReward() { if (reward != null && !processing) { processing = true; Finish(); } }
+
+    private void CancelReplacementSelection()
+    {
+        pendingReplacementCard = -1;
+        pendingReplacementCharacterId = null;
+        foreach (RewardSkillEquippedSlotClick handler in replacementSlotHandlers)
+            if (handler != null) handler.Configure(null, null, -1, false);
+        replacementSlotHandlers.Clear();
+    }
 
     private void Finish()
     {
+        CancelReplacementSelection();
+        ResetSkillPanelCloseFade();
+        StopSelectedCardFade();
+        if (selectionDissolveCoroutine != null)
+        {
+            StopCoroutine(selectionDissolveCoroutine);
+            selectionDissolveCoroutine = null;
+        }
+        for (int i = 0; i < selectionDissolveMasks.Length; i++)
+            if (selectionDissolveMasks[i] != null) selectionDissolveMasks[i].ResetDissolve();
+        ClearEquippedSkillVfx();
         ResetAllCardScales();
         for (int i = 0; i < activeRarityVfx.Length; i++)
         {
@@ -449,7 +811,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             buttons[index].interactable = !string.IsNullOrEmpty(characterIds[index]) &&
                 offeredSkills[index] != null &&
                 BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(offeredSkills[index], characterIds[index]) &&
-                HasFreeSlot(characterIds[index]);
+                true;
     }
 
     private void PrepareCardDissolve(int index, Transform card, SkillRarity rarity)
@@ -472,27 +834,47 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         cardDissolveImages[index] = target;
         target.material = instance;
         target.SetMaterialDirty();
+        SetCardDissolveAmount(index, 0f);
+    }
+
+    // Unity UI Mask creates a separate stencil material for child graphics.
+    // Update that rendered material as well as the Image's own material.
+    private void SetCardDissolveAmount(int index, float amount)
+    {
+        if (index < 0 || index >= cardDissolveMaterials.Length) return;
+        Material instance = cardDissolveMaterials[index];
+        if (instance == null) return;
+
+        amount = Mathf.Clamp01(amount);
+        instance.SetFloat(DissolveAmountId, amount);
+
+        Image image = cardDissolveImages[index];
+        if (image == null || !image.isActiveAndEnabled) return;
+
+        // materialForRendering contains the stencil variant generated by Mask.
+        Material rendered = image.materialForRendering;
+        if (rendered != null && rendered != instance && rendered.HasProperty(DissolveAmountId))
+            rendered.SetFloat(DissolveAmountId, amount);
     }
 
     private IEnumerator AnimateCardDissolve(int index, float startDelay)
     {
-        Material material = cardDissolveMaterials[index];
-        if (material == null) yield break;
-        material.SetFloat(DissolveAmountId, 0f);
+        if (cardDissolveMaterials[index] == null) yield break;
+        SetCardDissolveAmount(index, 0f);
         if (startDelay > 0f)
             yield return new WaitForSecondsRealtime(startDelay);
         float duration = Mathf.Max(0f, dissolveDuration);
         if (duration > 0f)
         {
             float elapsed = 0f;
-            while (elapsed < duration && material != null)
+            while (elapsed < duration && cardDissolveMaterials[index] != null)
             {
                 elapsed += Time.unscaledDeltaTime;
-                material.SetFloat(DissolveAmountId, Mathf.Clamp01(elapsed / duration));
+                SetCardDissolveAmount(index, elapsed / duration);
                 yield return null;
             }
         }
-        if (material != null) material.SetFloat(DissolveAmountId, 1f);
+        SetCardDissolveAmount(index, 1f);
         cardDissolveCoroutines[index] = null;
         UnlockCardInteraction(index);
     }
@@ -519,6 +901,8 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        StopSelectedCardFade();
+        ClearEquippedSkillVfx();
         ResetAllCardScales();
         for (int i = 0; i < cardDissolveMaterials.Length; i++)
         {
@@ -773,14 +1157,37 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private PartyCardReferences PartyRef(int index) =>
         partyCards != null && index >= 0 && index < partyCards.Length ? partyCards[index] : null;
 
-    private static Transform FindChild(Transform parent, string path) => parent != null ? parent.Find(path) : null;
+    private static Transform FindChild(Transform parent, string path)
+    {
+        if (parent == null || string.IsNullOrEmpty(path)) return null;
+        Transform found = parent.Find(path);
+        if (found != null) return found;
+        // SkillPanel now contains Mask/Skill and Mask/Card.
+        Transform mask = parent.Find("Mask");
+        if (mask == null) return null;
+        if (path == "Select") return mask.Find("Skill/Select");
+        if (path == "Skill" || path == "Card" || path.StartsWith("Skill/") || path.StartsWith("Card/"))
+            return mask.Find(path);
+        return null;
+    }
 
     private Image GetImage(Transform root, string path)
     {
-        if (root != null && (root.Find("Skill") != null || root.Find("Card") != null))
+        if (root != null)
         {
-            Transform nested = root.Find(path == "Card/Cardimage" ? path : "Skill/" + path);
-            if (nested != null) return nested.GetComponent<Image>();
+            Transform skill = FindChild(root, "Skill");
+            Transform cardImage = FindChild(root, "Card/Cardimage");
+            if (skill != null || cardImage != null)
+            {
+                Transform nested = path == "Card/Cardimage" ? cardImage : FindChild(root, "Skill/" + path);
+                // Both Skill/Icon (Image) and Skill/Icon/Icon are supported.
+                if (nested == null && path == "Icon/Icon") nested = FindChild(root, "Skill/Icon");
+                if (nested != null)
+                {
+                    Image image = nested.GetComponent<Image>();
+                    if (image != null) return image;
+                }
+            }
         }
         for (int i = 0; i < 3; i++)
         {
@@ -816,9 +1223,9 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private TMP_Text GetText(Transform root, string path)
     {
-        if (root != null && root.Find("Skill") != null)
+        if (root != null && FindChild(root, "Skill") != null)
         {
-            Transform nested = root.Find("Skill/" + path);
+            Transform nested = FindChild(root, "Skill/" + path);
             if (nested != null)
             {
                 TMP_Text label = nested.GetComponent<TMP_Text>();
@@ -915,5 +1322,76 @@ public sealed class RewardSkillCardHover : MonoBehaviour, IPointerEnterHandler, 
     {
         if (selection != null) selection.SetActive(false);
         if (panel != null) panel.SetCardHovered(cardIndex, false);
+    }
+}
+
+// Click an already equipped active memory in Char_content to replace it.
+// Passive slot (index 0) is never selectable.
+public sealed class RewardSkillEquippedSlotClick : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
+{
+    private BattleRewardSkillPanelUI panel;
+    private string characterId;
+    private int equippedIndex = -1;
+    private bool occupied;
+    private bool pointerInside;
+    private Transform hoverRoot;
+    private TMP_Text hoverText;
+    private CanvasGroup hoverCanvasGroup;
+
+    public void Configure(BattleRewardSkillPanelUI owner, string id, int index, bool hasSkill)
+    {
+        panel = owner;
+        characterId = id;
+        equippedIndex = index;
+        occupied = hasSkill;
+        hoverRoot = transform.Find("Hover");
+        hoverText = hoverRoot != null ? hoverRoot.Find("Text")?.GetComponent<TMP_Text>() : null;
+        if (hoverText == null && hoverRoot != null)
+            hoverText = hoverRoot.GetComponentInChildren<TMP_Text>(true);
+        if (hoverRoot != null)
+        {
+            hoverCanvasGroup = hoverRoot.GetComponent<CanvasGroup>();
+            if (hoverCanvasGroup == null)
+                hoverCanvasGroup = hoverRoot.gameObject.AddComponent<CanvasGroup>();
+            hoverCanvasGroup.interactable = false;
+            hoverCanvasGroup.blocksRaycasts = false;
+            // A label inside Hover must never swallow the slot's click/hover.
+            foreach (Graphic graphic in hoverRoot.GetComponentsInChildren<Graphic>(true))
+                graphic.raycastTarget = false;
+            hoverRoot.gameObject.SetActive(true);
+        }
+        RefreshHover();
+    }
+
+    public void RefreshHover()
+    {
+        bool visible = pointerInside && occupied && panel != null &&
+            panel.CanShowReplacementHover(characterId, equippedIndex);
+        if (hoverText != null) hoverText.text = visible ? "교체" : string.Empty;
+        if (hoverCanvasGroup != null) hoverCanvasGroup.alpha = visible ? 1f : 0f;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        pointerInside = true;
+        RefreshHover();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        pointerInside = false;
+        RefreshHover();
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button == PointerEventData.InputButton.Left && occupied)
+            panel?.OnEquippedSlotClicked(characterId, equippedIndex);
+    }
+
+    private void OnDisable()
+    {
+        pointerInside = false;
+        RefreshHover();
     }
 }
