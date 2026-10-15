@@ -79,6 +79,9 @@ public class BattleUnitAnimator : MonoBehaviour
     [Header("Heal VFX")]
     [SerializeField] private BattleVfxEntry healVfx;
 
+    [Header("Death VFX")]
+    [SerializeField] private BattleVfxEntry deathVfx;
+
     [Header("Status VFX")]
     [Tooltip("Buff / Debuff 상태 VFX를 공용 DB에서 ID로 조회합니다.")]
     [SerializeField] private StatusVfxDatabase statusVfxDatabase;
@@ -134,6 +137,7 @@ public class BattleUnitAnimator : MonoBehaviour
     private MaterialPropertyBlock hitFlashPropertyBlock;
     private int hitFlashPropertyId;
     private Coroutine hitFlashCoroutine;
+    private bool deathPresentationPlayed;
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
     public float LastScheduledPrepareWaitDuration { get; private set; }
@@ -247,8 +251,13 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayDead()
     {
+        if (deathPresentationPlayed)
+            return;
+
+        deathPresentationPlayed = true;
         ApplyPresentationPlaybackSpeed();
         PlayState(deadStateName);
+        SpawnVfx(deathVfx);
     }
 
     public void PlayBuff()
