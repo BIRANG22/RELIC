@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: f1e4534023a1f754ba79ebde921cb184
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 375712
+  packageName: Game VFX - UI & Interaction Effects Bundle
+  packageVersion: 1.03
+  assetPath: Assets/Eric VFX Studio/Resource/Shader/Builtin_AdditiveFlow.shader
+  uploadId: 992282

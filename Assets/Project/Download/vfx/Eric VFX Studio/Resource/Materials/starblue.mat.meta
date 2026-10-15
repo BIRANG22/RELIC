@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: b4b299458aeb03a4db9b836339e33ef7
+timeCreated: 1532863748
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 375712
+  packageName: Game VFX - UI & Interaction Effects Bundle
+  packageVersion: 1.03
+  assetPath: Assets/Eric VFX Studio/Resource/Materials/starblue.mat
+  uploadId: 992282

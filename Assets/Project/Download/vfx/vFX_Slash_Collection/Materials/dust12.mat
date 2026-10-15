@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: dust12
-  m_Shader: {fileID: 4800000, guid: 2b02ff58d507c6a478f8b1a00964a56d, type: 3}
+  m_Shader: {fileID: 4800000, guid: 00f3c70d32d97ee47ac72d2ffef81b21, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -23,6 +23,14 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _DissolveTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DistortionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Flow:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -39,22 +47,50 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _OverlayTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _texcoord:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AlphaCutoff: 0
+    - _Brightness: 2
     - _CullMode: 0
     - _Depthpower: 1
+    - _DissolveAmount: 0
+    - _DissolveEdgeWidth: 0.05
+    - _DistortFrequency: 2
+    - _DistortSpeed: 1
+    - _DistortStrength: 0
+    - _DistortionPower: 0
     - _Emission: 2
+    - _FresnelIntensity: 5
+    - _FresnelMasksTexture: 0
+    - _FresnelPower: 1
+    - _FresnelWidth: 5
     - _InvFade: 1
     - _Opacity: 1
+    - _SoftParticlesDistance: 1
+    - _SoftParticlesEnabled: 0
+    - _UseAlphaDissolve: 0
+    - _UseFresnel: 0
+    - _UseParticleAlphaDissolve: 0
     - _Usecenterglow: 0
     - _Usedepth: 0
+    - _VertexAlphaRef: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _DissolveEdgeColor: {r: 1, g: 0, b: 0, a: 1}
+    - _DistortionSpeed: {r: 0, g: 0, b: 0, a: 0}
     - _DistortionSpeedXYPowerZ: {r: 0, g: 0, b: 0, a: 0}
+    - _FlowSpeed: {r: 0, g: 0, b: 0, a: 0}
+    - _FresnelColor: {r: 1, g: 1, b: 1, a: 1}
+    - _OverlayColor: {r: 1, g: 1, b: 1, a: 1}
+    - _OverlayFlowSpeed: {r: 0, g: 0, b: 0, a: 0}
     - _SpeedMainTexUVNoiseZW: {r: 0, g: 0, b: 0, a: 0}
     - _TintColor: {r: 1, g: 1, b: 1, a: 0.384}
   m_BuildTextureStacks: []

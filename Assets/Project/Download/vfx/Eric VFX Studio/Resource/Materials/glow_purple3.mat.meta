@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: f896e2fc888d5bd4088153155ea40e11
+timeCreated: 1528712453
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 375712
+  packageName: Game VFX - UI & Interaction Effects Bundle
+  packageVersion: 1.03
+  assetPath: Assets/Eric VFX Studio/Resource/Materials/glow_purple3.mat
+  uploadId: 992282

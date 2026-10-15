@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 4aa6aae31e605764e9332349d9c336d2
+timeCreated: 1533548819
+licenseType: Store
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 375712
+  packageName: Game VFX - UI & Interaction Effects Bundle
+  packageVersion: 1.03
+  assetPath: Assets/Eric VFX Studio/Resource/Materials/Particle_Portal_blue_01.mat
+  uploadId: 992282
