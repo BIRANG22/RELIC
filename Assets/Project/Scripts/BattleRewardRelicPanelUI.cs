@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using Relic.Gameplay.Data;
 using TMPro;
@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
-// ÀüÅõ ¹× ÀÌº¥Æ®¿¡¼­ È¹µæÇÑ À¯¹°À» Ä³¸¯ÅÍ¿¡°Ô Á÷Á¢ ÀåÂøÇÏ´Â ÆĞ³ÎÀÔ´Ï´Ù.
+// ì „íˆ¬ ë° ì´ë²¤íŠ¸ì—ì„œ íšë“í•œ ìœ ë¬¼ì„ ìºë¦­í„°ì—ê²Œ ì§ì ‘ ì¥ì°©í•˜ëŠ” íŒ¨ë„ì…ë‹ˆë‹¤.
 public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 {
     [SerializeField] private Image rarityLine;
@@ -79,25 +79,15 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private Action onResolved;
     private bool resolving;
 
-    [Header("Equip Flight Animation")]
-    [SerializeField] private RectTransform flyingItem;
-    [SerializeField, Min(0f)] private float gatherDuration = 0.18f;
-    [SerializeField, Min(0f)] private float riseDuration = 0.13f;
-    [SerializeField, Min(0f)] private float dropDuration = 0.19f;
-    [Tooltip("Extra world-space distance above the Canvas top edge before the item returns.")]
-    [SerializeField, Min(0f)] private float riseHeight = 80f;
-    [SerializeField, Range(0.01f, 1f)] private float condensedItemWidth = 0.008f;
-    [SerializeField, Range(0.01f, 1f)] private float condensedItemHeight = 0.9f;
-    private Vector3 itemOriginalPosition;
-    private Vector3 itemOriginalScale;
-    private CanvasGroup itemCanvasGroup;
-    private float itemOriginalAlpha = 1f;
-    private bool itemFlightActive;
+    [Header("Relic Equip VFX")]
+    [Tooltip("VFX played at the destination relic slot when equipment is applied.")]
+    [SerializeField] private GameObject equippedSlotVfxPrefab;
+    [SerializeField] private Vector3 equippedSlotVfxOffset = Vector3.zero;
+    [SerializeField] private Vector3 equippedSlotVfxScale = Vector3.one;
+    [SerializeField, Min(0f)] private float equipVfxDelay = 0f;
+    [SerializeField, Min(0f)] private float slotVfxLifetime = 2f;
+    private readonly System.Collections.Generic.List<GameObject> spawnedEquipVfx = new System.Collections.Generic.List<GameObject>();
 
-    [Header("Equip Movement Line")]
-    [SerializeField] private GameObject equipMovement;
-    [SerializeField, Min(0f)] private float movementFadeInDuration = 0.14f;
-    private CanvasGroup movementCanvasGroup;
 
     [Header("Equip Close Delay")]
     [SerializeField, Min(0f)] private float equipCloseDelay = 1f;
@@ -170,7 +160,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             equipCloseCoroutine = null;
         }
         lockedEquipCharacterIndex = -1;
-        RestoreFlyingItem();
+        ClearEquipVfx();
         if (panelCanvasGroup != null)
         {
             panelCanvasGroup.alpha = 1f;
@@ -204,14 +194,14 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             StopCoroutine(equipCloseCoroutine);
             equipCloseCoroutine = null;
         }
-        RestoreFlyingItem();
+        ClearEquipVfx();
         EnsurePanelCanvasGroup();
         panelCanvasGroup.alpha = 1f;
         panelCanvasGroup.interactable = true;
         panelCanvasGroup.blocksRaycasts = true;
         BattleUIBlurRootCollector.ConfigureForPanel(gameObject);
         gameObject.SetActive(true);
-        // È°¼ºÈ­ ÈÄ¿¡µµ »õ ÇÏÀÌ¾î¶óÅ°ÀÇ ÅØ½ºÆ®¸¦ ´Ù½Ã ¿¬°áÇÏ¿© °»½ÅÇÕ´Ï´Ù.
+        // í™œì„±í™” í›„ì—ë„ ìƒˆ í•˜ì´ì–´ë¼í‚¤ì˜ í…ìŠ¤íŠ¸ë¥¼ ë‹¤ì‹œ ì—°ê²°í•˜ì—¬ ê°±ì‹ í•©ë‹ˆë‹¤.
         Bind();
         Refresh();
         transform.SetAsLastSibling();
@@ -228,17 +218,13 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private void Bind()
     {
         Transform item = transform.Find("item");
-        if (flyingItem == null)
-            flyingItem = item as RectTransform;
-        if (equipMovement == null)
-            equipMovement = item?.Find("Movement")?.gameObject;
         rarityLine = rarityLine != null ? rarityLine : item?.Find("Background/Line2")?.GetComponent<Image>();
         rewardIcon = rewardIcon != null ? rewardIcon : item?.Find("Itemimage/Icon")?.GetComponent<Image>();
         rewardName = rewardName != null ? rewardName : FindText(item?.Find("Name"));
         rewardRarity = rewardRarity != null ? rewardRarity : FindText(item?.Find("Rarity"));
         rewardEffect = rewardEffect != null ? rewardEffect : FindText(item?.Find("Effect"));
         // Support both the old Contant hierarchy and the renamed content hierarchy.
-        // ÀÌÀü ÇÁ¸®ÆÕ¿¡¼­ Á÷·ÄÈ­µÈ ÂüÁ¶°¡ ³²¾Æ ÀÖÀ» ¼ö ÀÖ¾î ÇöÀç ÇÏÀÌ¾î¶óÅ°¸¦ ¿ì¼±ÇÕ´Ï´Ù.
+        // ì´ì „ í”„ë¦¬íŒ¹ì—ì„œ ì§ë ¬í™”ëœ ì°¸ì¡°ê°€ ë‚¨ì•„ ìˆì„ ìˆ˜ ìˆì–´ í˜„ì¬ í•˜ì´ì–´ë¼í‚¤ë¥¼ ìš°ì„ í•©ë‹ˆë‹¤.
         Transform currentContent = transform.Find("content") ?? transform.Find("Contant") ?? transform.Find("Content");
         if (currentContent != null) content = currentContent;
         if (tooltipUI == null)
@@ -352,14 +338,14 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             if (!present) continue;
             if (e.select != null) e.select.SetActive(true);
             CharacterMasterData master = DataManager.Instance.CharacterDatabase?.Get(e.id);
-            // TMP SubMesh°¡ ¾Æ´Ï¶ó NameÀÇ ¿øº» TMP¿¡ Á÷Á¢ ÀÌ¸§À» ±â·ÏÇÕ´Ï´Ù.
+            // TMP SubMeshê°€ ì•„ë‹ˆë¼ Nameì˜ ì›ë³¸ TMPì— ì§ì ‘ ì´ë¦„ì„ ê¸°ë¡í•©ë‹ˆë‹¤.
             Transform nameRoot = content.Find("Char" + (i + 1) + "/Name");
             e.name = FindText(nameRoot);
             string displayName = master != null ? GameDataLocalization.CharacterName(master) : null;
             if (string.IsNullOrWhiteSpace(displayName)) displayName = master != null ? master.Name : null;
             if (string.IsNullOrWhiteSpace(displayName)) displayName = e.id;
             if (e.name != null) { e.name.text = displayName; e.name.SetAllDirty(); }
-            else Debug.LogWarning("[BattleRewardRelicPanelUI] Char" + (i + 1) + "/Name TMP_Text¸¦ Ã£Áö ¸øÇß½À´Ï´Ù.", e.root);
+            else Debug.LogWarning("[BattleRewardRelicPanelUI] Char" + (i + 1) + "/Name TMP_Textë¥¼ ì°¾ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.", e.root);
             Sprite portrait = null;
             DataManager.Instance.CharacterIconDatabase?.TryGetIcon(e.id, out portrait);
             SetIcon(e.icon, portrait);
@@ -368,7 +354,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             if (runtime != null)
             {
                 ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
-                // 0¹øÀº È°¼º À¯¹° ½½·ÔÀÌ¹Ç·Î ÀÏ¹İ À¯¹° Ç¥½Ã¿¡¼­´Â Á¦¿ÜÇÕ´Ï´Ù.
+                // 0ë²ˆì€ í™œì„± ìœ ë¬¼ ìŠ¬ë¡¯ì´ë¯€ë¡œ ì¼ë°˜ ìœ ë¬¼ í‘œì‹œì—ì„œëŠ” ì œì™¸í•©ë‹ˆë‹¤.
                 for (int j = 1; j < runtime.EquippedRelicIds.Length && visible < 6; j++)
                 {
                     string id = runtime.EquippedRelicIds[j];
@@ -441,7 +427,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         {
             TMP_Text label = e.slotHoverLabels[i];
             if (label == null) continue;
-            label.text = i == highlighted ? (i == firstEmpty ? "ÀåÂø" : "±³Ã¼") : string.Empty;
+            label.text = i == highlighted ? (i == firstEmpty ? "ì¥ì°©" : "êµì²´") : string.Empty;
             label.SetAllDirty();
             Transform hoverRoot = label.transform.parent;
             if (hoverRoot != null)
@@ -707,9 +693,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         if (destination < 0) return;
         resolving = true;
         LockEquippingCharacter(index);
-        // Keep the destination empty visually until the item has landed.
-        // Also defer the actual replacement until then.
-        equipCloseCoroutine = StartCoroutine(PlayEquipFlight(runtime, relic, destination, index, active));
+        equipCloseCoroutine = StartCoroutine(PlayEquipVfxAndCommit(runtime, relic, destination, index, active));
     }
 
     private void LockEquippingCharacter(int selectedIndex)
@@ -727,68 +711,43 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         }
     }
 
-    private IEnumerator PlayEquipFlight(CharacterRuntimeData runtime, RelicData relic,
+    private IEnumerator PlayEquipVfxAndCommit(CharacterRuntimeData runtime, RelicData relic,
         int destination, int characterIndex, bool active)
     {
         HideEquippedRelicTooltip();
-        RectTransform target = null;
-        CharacterEntry entry = entries[characterIndex];
-        if (entry != null)
+
+        if (equipVfxDelay > 0f)
+            yield return new WaitForSecondsRealtime(equipVfxDelay);
+
+        if (current == null || DataManager.Instance == null)
         {
-            int visualSlot = active ? 0 : destination - 1;
-            if (visualSlot >= 0 && visualSlot < entry.relics.Length && entry.relics[visualSlot] != null)
-                target = entry.relics[visualSlot].transform.parent as RectTransform;
+            equipCloseCoroutine = null;
+            yield break;
         }
 
-        if (flyingItem != null && target != null)
-        {
-            itemFlightActive = true;
-            itemOriginalPosition = flyingItem.position;
-            itemOriginalScale = flyingItem.localScale;
-            itemCanvasGroup = flyingItem.GetComponent<CanvasGroup>();
-            if (itemCanvasGroup == null)
-                itemCanvasGroup = flyingItem.gameObject.AddComponent<CanvasGroup>();
-            itemOriginalAlpha = itemCanvasGroup.alpha;
-            itemCanvasGroup.blocksRaycasts = false;
-            PrepareMovementLine();
-
-            // Use world positions of UI rects so nested canvases and canvas scaling work.
-            // Collapse around the item's own position, not the screen center.
-            Vector3 start = itemOriginalPosition;
-            Vector3 landing = target.TransformPoint(target.rect.center);
-            Vector3 thin = Vector3.Scale(itemOriginalScale,
-                new Vector3(condensedItemWidth, condensedItemHeight, 1f));
-
-            // Keep the full thin item outside the visible root Canvas before
-            // changing its X coordinate. It then drops from offscreen at the
-            // destination slot's X position (no visible sideways travel).
-            float offscreenY = GetFlyingItemOffscreenTop(thin, start.y, landing.y);
-            Vector3 riseTop = new Vector3(start.x, offscreenY, start.z);
-            Vector3 targetAbove = new Vector3(landing.x, offscreenY, landing.z);
-
-            // Stay in place while narrowing into a very thin vertical streak.
-            yield return AnimateFlyingItem(start, start, itemOriginalScale, thin, gatherDuration, false, true);
-            // Rush upward with a fast start, then travel horizontally only offscreen.
-            yield return AnimateFlyingItem(start, riseTop, thin, thin, riseDuration, false);
-            flyingItem.position = targetAbove;
-            // Drop hard into the destination, accelerating toward the slot.
-            yield return AnimateFlyingItem(targetAbove, landing, thin, thin, dropDuration, true);
-            HideMovementLine();
-            itemCanvasGroup.alpha = 0f;
-        }
-
-        // Replace only after the streak reaches the slot.
+        // Update the actual equipped slot before playing its VFX.
         runtime.EquippedRelicIds[destination] = current.RewardId.Trim();
         if (active) ActiveRelicRuntimeUtility.ResetUses(runtime, relic);
         DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(runtime);
         Refresh();
-        yield return new WaitForSecondsRealtime(Mathf.Max(0f, equipCloseDelay));
+
+        CharacterEntry entry = entries[characterIndex];
+        int visualSlot = active ? 0 : destination - 1;
+        Transform slot = null;
+        if (entry != null && visualSlot >= 0 && visualSlot < entry.relics.Length &&
+            entry.relics[visualSlot] != null)
+            slot = entry.relics[visualSlot].transform.parent;
+        SpawnEquipVfx(equippedSlotVfxPrefab, slot, equippedSlotVfxOffset,
+            equippedSlotVfxScale, slotVfxLifetime);
+
+        if (equipCloseDelay > 0f)
+            yield return new WaitForSecondsRealtime(equipCloseDelay);
         EnsurePanelCanvasGroup();
         panelCanvasGroup.interactable = false;
         panelCanvasGroup.blocksRaycasts = false;
         yield return FadeOutPanel();
         equipCloseCoroutine = null;
-        RestoreFlyingItem();
+        ClearEquipVfx();
         Action callback = onResolved;
         onResolved = null;
         current = null;
@@ -796,96 +755,30 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         callback?.Invoke();
     }
 
-    private float GetFlyingItemOffscreenTop(Vector3 thinScale, float centerY, float landingY)
+    private void SpawnEquipVfx(GameObject prefab, Transform anchor, Vector3 offset,
+        Vector3 size, float lifetime)
     {
-        Canvas canvas = GetComponentInParent<Canvas>();
-        RectTransform canvasRect = canvas != null && canvas.rootCanvas != null
-            ? canvas.rootCanvas.transform as RectTransform
-            : null;
-
-        float canvasTopY = Mathf.Max(centerY, landingY);
-        if (canvasRect != null)
-        {
-            Vector3[] corners = new Vector3[4];
-            canvasRect.GetWorldCorners(corners);
-            canvasTopY = Mathf.Max(corners[1].y, corners[2].y);
-        }
-
-        // UI scale is in local space; account for parent Canvas scaling as well.
-        float currentScaleY = Mathf.Abs(flyingItem.localScale.y);
-        float scaleRatio = currentScaleY > 0.0001f
-            ? Mathf.Abs(thinScale.y / currentScaleY)
-            : 1f;
-        float halfItemHeight = flyingItem.rect.height *
-                               Mathf.Abs(flyingItem.lossyScale.y) * scaleRatio * 0.5f;
-
-        return canvasTopY + halfItemHeight + riseHeight;
+        if (prefab == null || anchor == null) return;
+        // Keep the VFX out of any Mask on the item/slot and preserve its UI position.
+        RectTransform anchorRect = anchor as RectTransform;
+        Vector3 center = anchorRect != null ? anchorRect.TransformPoint(anchorRect.rect.center) : anchor.position;
+        GameObject vfx = Instantiate(prefab, transform, false);
+        vfx.name = prefab.name + "_RelicEquipVFX";
+        vfx.transform.position = center + transform.TransformVector(offset);
+        vfx.transform.localRotation = Quaternion.identity;
+        vfx.transform.localScale = size;
+        vfx.transform.SetAsLastSibling();
+        vfx.SetActive(true);
+        spawnedEquipVfx.Add(vfx);
+        if (lifetime > 0f)
+            Destroy(vfx, lifetime);
     }
 
-    private IEnumerator AnimateFlyingItem(Vector3 from, Vector3 to,
-        Vector3 fromScale, Vector3 toScale, float duration, bool accelerate = false,
-        bool revealMovement = false)
+    private void ClearEquipVfx()
     {
-        if (flyingItem == null) yield break;
-        float elapsed = 0f;
-        duration = Mathf.Max(0.001f, duration);
-        while (elapsed < duration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            t = accelerate ? t * t * t : 1f - Mathf.Pow(1f - t, 3f);
-            flyingItem.position = Vector3.LerpUnclamped(from, to, t);
-            flyingItem.localScale = Vector3.LerpUnclamped(fromScale, toScale, t);
-            if (revealMovement && movementCanvasGroup != null)
-                movementCanvasGroup.alpha = Mathf.SmoothStep(0f, 1f,
-                    movementFadeInDuration <= 0f ? 1f : Mathf.Clamp01(elapsed / movementFadeInDuration));
-            yield return null;
-        }
-        flyingItem.position = to;
-        flyingItem.localScale = toScale;
-        if (revealMovement && movementCanvasGroup != null)
-            movementCanvasGroup.alpha = 1f;
-    }
-
-    private void PrepareMovementLine()
-    {
-        if (equipMovement == null && flyingItem != null)
-            equipMovement = flyingItem.Find("Movement")?.gameObject;
-        if (equipMovement == null)
-            return;
-
-        movementCanvasGroup = equipMovement.GetComponent<CanvasGroup>();
-        if (movementCanvasGroup == null)
-            movementCanvasGroup = equipMovement.AddComponent<CanvasGroup>();
-        movementCanvasGroup.alpha = 0f;
-        movementCanvasGroup.interactable = false;
-        movementCanvasGroup.blocksRaycasts = false;
-        equipMovement.SetActive(true);
-    }
-
-    private void HideMovementLine()
-    {
-        if (movementCanvasGroup != null)
-            movementCanvasGroup.alpha = 0f;
-        if (equipMovement != null)
-            equipMovement.SetActive(false);
-    }
-
-    private void RestoreFlyingItem()
-    {
-        HideMovementLine();
-        if (!itemFlightActive) return;
-        itemFlightActive = false;
-        if (flyingItem != null)
-        {
-            flyingItem.position = itemOriginalPosition;
-            flyingItem.localScale = itemOriginalScale;
-            if (itemCanvasGroup != null)
-            {
-                itemCanvasGroup.alpha = itemOriginalAlpha;
-                itemCanvasGroup.blocksRaycasts = false;
-            }
-        }
+        for (int i = 0; i < spawnedEquipVfx.Count; i++)
+            if (spawnedEquipVfx[i] != null) Destroy(spawnedEquipVfx[i]);
+        spawnedEquipVfx.Clear();
     }
 
     private static RelicRarity ParseRarity(string raw)
@@ -901,7 +794,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     }
 }
 
-// È£¹ö È¿°ú´Â ÀåÂø ÀÔ·Â°ú ºĞ¸®ÇÕ´Ï´Ù.
+// í˜¸ë²„ íš¨ê³¼ëŠ” ì¥ì°© ì…ë ¥ê³¼ ë¶„ë¦¬í•©ë‹ˆë‹¤.
 public sealed class RelicHoverRelay : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Select Slide / Fade")]
