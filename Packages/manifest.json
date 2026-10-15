@@ -9,6 +9,7 @@
     }
   ],
   "dependencies": {
+    "com.coffee.ui-particle": "https://github.com/mob-sakai/ParticleEffectForUGUI.git",
     "com.rlabrecque.steamworks.net": "2025.163.0",
     "com.unity.2d.animation": "10.2.3",
     "com.unity.2d.sprite": "1.0.0",
