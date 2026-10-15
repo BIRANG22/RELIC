@@ -70,7 +70,7 @@ Shader "Eric/URP_AlphaBlendFlow"
             Varyings output;
             float3 wPos = TransformObjectToWorld(input.positionOS.xyz);
             #ifdef _VERTEX_DISTORT_ON
-                input.positionOS.xyz += input.normalOS * sin(_Time.y * _DistortSpeed + (wPos.x + wPos.y + wPos.z) * _DistortFrequency) * _DistortStrength;
+                input.positionOS.xyz += input.normalOS * sin((wPos.x + wPos.y + wPos.z) * _DistortFrequency) * _DistortStrength;
             #endif
             output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
             output.screenPos = ComputeScreenPos(output.positionCS);
@@ -105,17 +105,19 @@ Shader "Eric/URP_AlphaBlendFlow"
                 softFade = saturate((sceneZ - partZ) / max(0.01, _SoftParticlesFadeDistance));
             #endif
 
-            float2 uvOff = (SAMPLE_TEXTURE2D(_DistortionMap, sampler_DistortionMap, input.uv * _DistortionMap_ST.xy + _DistortionMap_ST.zw + _DistortionSpeed.xy * _Time.y).rg * 2.0 - 1.0) * _DistortionPower;
-            float4 tex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv * _MainTex_ST.xy + _MainTex_ST.zw + _FlowSpeed.xy * _Time.y + uvOff);
-            float4 over = SAMPLE_TEXTURE2D(_OverlayTex, sampler_OverlayTex, input.uv * _OverlayTex_ST.xy + _OverlayTex_ST.zw + _OverlayFlowSpeed.xy * _Time.y + uvOff) * _OverlayColor;
+            float2 uvOff = (SAMPLE_TEXTURE2D(_DistortionMap, sampler_DistortionMap, input.uv * _DistortionMap_ST.xy + _DistortionMap_ST.zw).rg * 2.0 - 1.0) * _DistortionPower;
+            float4 tex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv * _MainTex_ST.xy + _MainTex_ST.zw + uvOff);
+            float4 over = SAMPLE_TEXTURE2D(_OverlayTex, sampler_OverlayTex, input.uv * _OverlayTex_ST.xy + _OverlayTex_ST.zw + uvOff) * _OverlayColor;
 
             float dAmt = _DissolveAmount;
             #ifdef _USEPARTICLEALPHADISSOLVE_ON
                 dAmt = saturate(_DissolveAmount + (1.0 - saturate(input.color.a / max(0.001, _VertexAlphaRef))));
             #endif
             float dVal = SAMPLE_TEXTURE2D(_DissolveTex, sampler_DissolveTex, input.uv * _DissolveTex_ST.xy + _DissolveTex_ST.zw).r;
-            float dMask = step(dAmt, dVal) * tex.a; 
-            float eMask = saturate(step(dAmt - _DissolveEdgeWidth, dVal) - step(dAmt, dVal)) * tex.a * saturate(dAmt * 100.0);
+            // Reverse dissolve: 0 = hidden, 1 = fully visible.
+            float reverseAmount = 1.0 - saturate(dAmt);
+            float dMask = step(reverseAmount, dVal) * tex.a;
+            float eMask = saturate(step(reverseAmount - _DissolveEdgeWidth, dVal) - step(reverseAmount, dVal)) * tex.a * saturate(reverseAmount * 100.0);
 
             float3 fresnelRGB = 0; float fAlphaMul = 1.0;
             #ifdef _FRESNEL_ON

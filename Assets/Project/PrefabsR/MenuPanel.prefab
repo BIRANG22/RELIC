@@ -1859,7 +1859,7 @@ MonoBehaviour:
   playHoverSound: 1
   hoverSfx: ui.title.hover
   playClickSound: 1
-  clickSfx: ui.normal.click
+  clickSfx: ui.title.click
 --- !u!114 &1990317457075970235
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2897,7 +2897,7 @@ MonoBehaviour:
   playHoverSound: 1
   hoverSfx: ui.title.hover
   playClickSound: 1
-  clickSfx: ui.record.open
+  clickSfx: ui.title.click
 --- !u!114 &1273450708057846878
 MonoBehaviour:
   m_ObjectHideFlags: 0

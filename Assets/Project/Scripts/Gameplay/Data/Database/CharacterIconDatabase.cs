@@ -120,6 +120,17 @@ namespace Relic.Gameplay.Data
             return false;
         }
 
+        public bool TryGetCardImage(string characterId, out Sprite cardImage)
+        {
+            cardImage = null;
+            if (map == null)
+                Initialize();
+            if (string.IsNullOrWhiteSpace(characterId) || !map.TryGetValue(characterId.Trim(), out var entry))
+                return false;
+            cardImage = entry.CardImage;
+            return cardImage != null;
+        }
+
         public bool TryGetSideImage(string characterId, out Sprite sideImage)
         {
             sideImage = null;
@@ -231,6 +242,9 @@ namespace Relic.Gameplay.Data
         public Sprite TimelineIcon;
         [FormerlySerializedAs("CharBackImage")]
         public Sprite SideImage;
+
+        [Header("Reward Card Image")]
+        public Sprite CardImage;
 
         [Header("Battle Skill Cutscene")]
         public Sprite SkillCutsceneImage;

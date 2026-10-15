@@ -1,4 +1,4 @@
-using System;
+ÔªøÔªøusing System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-// ¿¸≈ı/¿Ã∫•∆Æ ±‚æÔ ∫∏ªÛ ¿¸øÎ ∆–≥Œ. ƒ´µÂ 1~3¿∫ º≠∑Œ ¥Ÿ∏• ±‚æÔ »ƒ∫∏¿‘¥œ¥Ÿ.
+// Ï†ÑÌà¨/Ïù¥Î≤§Ìä∏ Í∏∞Ïñµ Î≥¥ÏÉÅ Ï†ÑÏö© Ìå®ÎÑê. Ïπ¥Îìú 1~3ÏùÄ ÏÑúÎ°ú Îã§Î•∏ Í∏∞Ïñµ ÌõÑÎ≥¥ÏûÖÎãàÎã§.
 public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 {
     [SerializeField] private Color commonColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
@@ -20,6 +20,31 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     [SerializeField] private Sprite hpIcon;
     [SerializeField] private Sprite mpIcon;
     [SerializeField] private Sprite karmaIcon;
+
+    [Header("Card Image Dissolve")]
+    [Tooltip("Delay before SkillPanel1 dissolve starts (seconds).")]
+    [SerializeField, Min(0f)] private float dissolveDelay = 0f;
+    [Tooltip("Additional delay from SkillPanel1 start to SkillPanel2 start (seconds).")]
+    [SerializeField, Min(0f)] private float skillPanel2DissolveDelay = 0.5f;
+    [Tooltip("Additional delay from SkillPanel2 start to SkillPanel3 start (seconds).")]
+    [SerializeField, Min(0f)] private float skillPanel3DissolveDelay = 0.5f;
+    [SerializeField, Min(0f)] private float dissolveDuration = 2f;
+
+    [Header("Skill Details Reveal")]
+    [SerializeField, Min(0f)] private float skillRevealDelay = 1f;
+
+    [Header("Skill Card Scale")]
+    [SerializeField, Min(0.01f)] private float normalScale = 1f;
+    [SerializeField, Min(0.01f)] private float hoverScale = 1.1f;
+    [SerializeField, Min(0.01f)] private float clickedScale = 1.15f;
+    [SerializeField, Min(0f)] private float scaleTransitionSpeed = 12f;
+
+    [Header("Rarity VFX Prefabs")]
+    [SerializeField] private GameObject commonVfxPrefab;
+    [SerializeField] private GameObject rareVfxPrefab;
+    [SerializeField] private GameObject epicVfxPrefab;
+    [SerializeField] private GameObject uniqueVfxPrefab;
+
 
     [Serializable]
     private sealed class SkillCardReferences
@@ -35,6 +60,9 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         public TMP_Text resourceValue;
         public Image characterSideIcon;
         public GameObject select;
+        [Tooltip("Parent for this card's rarity VFX. Defaults to the card root.")]
+        public Transform rarityVfxRoot;
+
     }
 
     [Serializable]
@@ -61,9 +89,24 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     [Header("Equip Close Delay")]
     [SerializeField, Min(0f)] private float equipCloseDelay = 1f;
     private Coroutine equipCloseCoroutine;
+    private readonly Transform[] scaleCardRoots = new Transform[3];
+    private readonly Vector3[] baseCardScales = new Vector3[3];
+    private readonly bool[] cardHovered = new bool[3];
+    private readonly bool[] cardInteractionReady = new bool[3];
+    private int clickedCardIndex = -1;
     private readonly Button[] buttons = new Button[3];
     private readonly string[] characterIds = new string[3];
     private readonly SkillMasterData[] offeredSkills = new SkillMasterData[3];
+    private readonly GameObject[] activeRarityVfx = new GameObject[3];
+    private readonly Coroutine[] pendingRarityVfx = new Coroutine[3];
+    private readonly Coroutine[] pendingSkillReveal = new Coroutine[3];
+    private static readonly int DissolveAmountId = Shader.PropertyToID("_DissolveAmount");
+    private static readonly int DissolveEdgeColorId = Shader.PropertyToID("_DissolveEdgeColor");
+    private readonly Material[] cardDissolveMaterials = new Material[3];
+    private readonly Image[] cardDissolveImages = new Image[3];
+    private readonly Material[] originalCardMaterials = new Material[3];
+    private readonly Coroutine[] cardDissolveCoroutines = new Coroutine[3];
+
 
     public static BattleRewardSkillPanelUI FindPanel()
     {
@@ -86,27 +129,43 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         }
         Transform content = skillContent != null ? skillContent : FindChild(transform, "Skill_content");
         if (content == null) { reward = null; completed = null; return false; }
+        ResetAllCardScales();
+        clickedCardIndex = -1;
         List<SkillMasterData> offers = BuildOffers(skill, data);
         Debug.Log($"[BattleRewardSkillPanelUI] Reward rarity: {skill.Rarity}, offers: {offers.Count} / {string.Join(", ", offers.ConvertAll(x => x.SkillId))}");
         for (int i = 0; i < 3; i++)
         {
             int index = i;
-            Transform card = SkillRef(i)?.root != null ? SkillRef(i).root : FindChild(content, "Skill0" + (i + 1));
+            Transform card = GetSkillCardRoot(content, i);
             offeredSkills[i] = i < offers.Count ? offers[i] : null;
             characterIds[i] = null;
+            ClearRarityVfx(i);
+            ReleaseCardDissolve(i);
+            StopSkillReveal(i);
             if (card == null) continue;
+            scaleCardRoots[i] = card;
+            baseCardScales[i] = card.localScale;
+            cardHovered[i] = false;
+            cardInteractionReady[i] = false;
+            SetCardAudioEnabled(card, false);
+            card.localScale = baseCardScales[i] * normalScale;
+            Transform skillRoot = FindChild(card, "Skill");
+            if (skillRoot != null) skillRoot.gameObject.SetActive(false);
+            card.gameObject.SetActive(false);
             ClearCard(card);
             SkillMasterData choice = offeredSkills[i];
-            card.gameObject.SetActive(choice != null);
             if (choice == null) continue;
             characterIds[i] = ResolveOwner(choice);
             BindCard(card, string.IsNullOrWhiteSpace(choice.CharacterId) || string.Equals(choice.CharacterId, "ALL", StringComparison.OrdinalIgnoreCase) ? characterIds[i] : choice.CharacterId, choice, data);
+            // Assign the sprite and initialize the material before the card becomes visible.
+            PrepareCardDissolve(i, card, choice.Rarity);
+            card.gameObject.SetActive(true);
             Button button = card.GetComponent<Button>();
             if (button == null) button = card.gameObject.AddComponent<Button>();
             button.onClick.RemoveAllListeners();
             buttons[i] = button;
             button.onClick.AddListener(index == 0 ? SelectFirst : index == 1 ? SelectSecond : SelectThird);
-            button.interactable = !string.IsNullOrEmpty(characterIds[i]) &&
+            button.interactable = cardInteractionReady[i] && !string.IsNullOrEmpty(characterIds[i]) &&
                 BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(choice, characterIds[i]) &&
                 HasFreeSlot(characterIds[i]);
             Transform select = SkillRef(i)?.select != null ? SkillRef(i).select.transform : FindChild(card, "Select");
@@ -117,17 +176,124 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
                     graphic.raycastTarget = false;
                 RewardSkillCardHover hover = card.GetComponent<RewardSkillCardHover>();
                 if (hover == null) hover = card.gameObject.AddComponent<RewardSkillCardHover>();
-                hover.Configure(select.gameObject);
+                hover.Configure(select.gameObject, this, i);
             }
         }
         BindPartyContent();
         BattleUIBlurRootCollector.ConfigureForPanel(gameObject);
         gameObject.SetActive(true);
         transform.SetAsLastSibling();
+        for (int i = 0; i < 3; i++)
+        {
+            if (offeredSkills[i] == null) continue;
+            Transform card = GetSkillCardRoot(content, i);
+            if (card == null || !card.gameObject.activeInHierarchy) continue;
+            float startDelay = GetCardDissolveStartDelay(i);
+            if (startDelay <= 0f)
+                ShowRarityVfx(i, card, offeredSkills[i].Rarity);
+            else
+                pendingRarityVfx[i] = StartCoroutine(ShowRarityVfxAfterDissolveDelay(i, card, offeredSkills[i].Rarity, startDelay));
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            if (offeredSkills[i] == null) continue;
+            Transform card = GetSkillCardRoot(content, i);
+            if (card == null) continue;
+            Transform skillRoot = FindChild(card, "Skill");
+            if (skillRoot == null) continue;
+            // Skill information reveal is timed independently from the card dissolve sequence.
+            float revealDelay = Mathf.Max(0f, skillRevealDelay);
+            if (revealDelay <= 0f) skillRoot.gameObject.SetActive(true);
+            else pendingSkillReveal[i] = StartCoroutine(RevealSkillAfterDelay(i, skillRoot, revealDelay));
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            if (offeredSkills[i] == null) continue;
+            if (cardDissolveMaterials[i] != null && cardDissolveImages[i] != null && cardDissolveImages[i].isActiveAndEnabled)
+                cardDissolveCoroutines[i] = StartCoroutine(AnimateCardDissolve(i, GetCardDissolveStartDelay(i)));
+            else
+            {
+                Debug.LogWarning($"[BattleRewardSkillPanelUI] No dissolve material for SkillPanel{i + 1}; enabling interaction after its configured timing.", this);
+                cardDissolveCoroutines[i] = StartCoroutine(UnlockAfterConfiguredTime(i));
+            }
+        }
         return true;
     }
 
-    // ∆ƒ∆º¿« «ˆ¿Á ¿Â¬¯ ±‚æÔ¿ª Char_contentø° «•Ω√«’¥œ¥Ÿ. ¿Ã øµø™¿∫ ¡§∫∏ «•Ω√ ¿¸øÎ¿‘¥œ¥Ÿ.
+    // ÌååÌã∞Ïùò ÌòÑÏû¨ Ïû•Ï∞© Í∏∞ÏñµÏùÑ Char_contentÏóê ÌëúÏãúÌï©ÎãàÎã§. Ïù¥ ÏòÅÏó≠ÏùÄ Ï†ïÎ≥¥ ÌëúÏãú Ï†ÑÏö©ÏûÖÎãàÎã§.
+    // Prefer the matching card in the actual Skill_content hierarchy. Inspector refs are fallback.
+    private Transform GetSkillCardRoot(Transform content, int index)
+    {
+        if (content == null || index < 0 || index >= 3) return null;
+        Transform card = FindChild(content, "SkillPanel" + (index + 1));
+        if (card == null) card = FindChild(content, "Skill0" + (index + 1));
+        if (card == null) card = SkillRef(index)?.root;
+        return card;
+    }
+
+    private float GetCardDissolveStartDelay(int index)
+    {
+        float delay = Mathf.Max(0f, dissolveDelay);
+        if (index >= 1) delay += Mathf.Max(0f, skillPanel2DissolveDelay);
+        if (index >= 2) delay += Mathf.Max(0f, skillPanel3DissolveDelay);
+        return delay;
+    }
+
+    private IEnumerator RevealSkillAfterDelay(int index, Transform skillRoot, float delay)
+    {
+        yield return new WaitForSecondsRealtime(Mathf.Max(0f, delay));
+        pendingSkillReveal[index] = null;
+        if (reward != null && skillRoot != null && gameObject.activeInHierarchy &&
+            skillRoot.parent != null && skillRoot.parent.gameObject.activeInHierarchy)
+            skillRoot.gameObject.SetActive(true);
+    }
+
+    private void StopSkillReveal(int index)
+    {
+        if (pendingSkillReveal[index] != null)
+        {
+            StopCoroutine(pendingSkillReveal[index]);
+            pendingSkillReveal[index] = null;
+        }
+    }
+
+    public void SetCardHovered(int index, bool hovered)
+    {
+        if (index < 0 || index >= cardHovered.Length) return;
+        cardHovered[index] = cardInteractionReady[index] && hovered;
+    }
+
+    private void LateUpdate()
+    {
+        if (reward == null) return;
+        float blend = scaleTransitionSpeed <= 0f
+            ? 1f : 1f - Mathf.Exp(-scaleTransitionSpeed * Time.unscaledDeltaTime);
+        for (int i = 0; i < scaleCardRoots.Length; i++)
+        {
+            Transform card = scaleCardRoots[i];
+            if (card == null || offeredSkills[i] == null) continue;
+            float multiplier = !cardInteractionReady[i] ? normalScale
+                : clickedCardIndex == i ? clickedScale
+                : (clickedCardIndex >= 0 ? normalScale
+                : (cardHovered[i] ? hoverScale : normalScale));
+            card.localScale = Vector3.Lerp(card.localScale, baseCardScales[i] * multiplier, blend);
+        }
+    }
+
+    private void ResetAllCardScales()
+    {
+        for (int i = 0; i < scaleCardRoots.Length; i++)
+        {
+            if (scaleCardRoots[i] != null)
+                scaleCardRoots[i].localScale = baseCardScales[i];
+            SetCardAudioEnabled(scaleCardRoots[i], false);
+            scaleCardRoots[i] = null;
+            cardHovered[i] = false;
+            cardInteractionReady[i] = false;
+        }
+        clickedCardIndex = -1;
+    }
+
     private void BindPartyContent()
     {
         Transform content = charContent != null ? charContent : FindChild(transform, "Char_content");
@@ -147,7 +313,9 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
             Sprite portrait = null;
             if (dm.CharacterIconDatabase != null)
+            {
                 dm.CharacterIconDatabase.TryGetIcon(characterId, out portrait);
+            }
             if (portrait == null && dm.CharacterDatabase != null &&
                 dm.CharacterDatabase.TryGet(characterId, out CharacterMasterData portraitData))
                 portrait = portraitData.Icon;
@@ -168,7 +336,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             {
                 Transform skillSlot = FindChild(card, "Skill/Skill0" + (slot + 1));
                 if (skillSlot == null) continue;
-                // ¿Â¬¯ ±‚æÔ¿« ∑±≈∏¿” ¿Œµ¶Ω∫¥¬ 1~3¿Ã∞Ì, 0¿∫ ∆–Ω√∫Í ΩΩ∑‘¿‘¥œ¥Ÿ.
+                // Ïû•Ï∞© Í∏∞ÏñµÏùò Îü∞ÌÉÄÏûÑ Ïù∏Îç±Ïä§Îäî 1~3Ïù¥Í≥†, 0ÏùÄ Ìå®ÏãúÎ∏å Ïä¨Î°ØÏûÖÎãàÎã§.
                 int runtimeIndex = slot + 1;
                 string skillId = character.EquippedSkillIds != null && runtimeIndex < character.EquippedSkillIds.Length
                     ? character.EquippedSkillIds[runtimeIndex] : null;
@@ -192,7 +360,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private void Select(int index)
     {
-        if (processing || reward == null || index < 0 || index >= characterIds.Length) return;
+        if (processing || reward == null || index < 0 || index >= characterIds.Length || !cardInteractionReady[index]) return;
         string id = characterIds[index];
         SkillMasterData skill = offeredSkills[index];
         if (string.IsNullOrWhiteSpace(id) || skill == null) return;
@@ -200,12 +368,16 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         if (dm == null || !BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(skill, id)) return;
         if (!dm.CharacterRuntimeStore.TryGet(id, out CharacterRuntimeData character) || character == null) return;
         SkillInventoryEquipService.EnsureEquippedSkillArray(character);
-        // ¿”¿«¿« ¿Â¬¯ ±‚æÔ ±≥√º∏¶ «««œ±‚ ¿ß«ÿ ∫ÒæÓ ¿÷¥¬ ΩΩ∑‘ø°∏∏ ¿Â¬¯«’¥œ¥Ÿ.
+        // ÏûÑÏùòÏùò Ïû•Ï∞© Í∏∞Ïñµ ÍµêÏ≤¥Î•º ÌîºÌïòÍ∏∞ ÏúÑÌï¥ ÎπÑÏñ¥ ÏûàÎäî Ïä¨Î°ØÏóêÎßå Ïû•Ï∞©Ìï©ÎãàÎã§.
         int target = -1;
         for (int i = 1; i <= 3 && i < character.EquippedSkillIds.Length; i++)
             if (string.IsNullOrWhiteSpace(character.EquippedSkillIds[i])) { target = i; break; }
         if (target < 0) return;
         processing = true;
+        clickedCardIndex = index;
+        // Confirmed selection uses its own scale until the panel closes.
+        if (scaleCardRoots[index] != null)
+            scaleCardRoots[index].localScale = baseCardScales[index] * clickedScale;
         character.EquippedSkillIds[target] = skill.SkillId.Trim();
         dm.CharacterRuntimeStore.AddOrUpdate(character);
         BattleRuntimeData runtime = dm.BattleRuntimeStore.GetOrCreate();
@@ -230,12 +402,130 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private void Finish()
     {
+        ResetAllCardScales();
+        for (int i = 0; i < activeRarityVfx.Length; i++)
+        {
+            ClearRarityVfx(i);
+            ReleaseCardDissolve(i);
+            StopSkillReveal(i);
+        }
         Action callback = completed;
         reward = null;
         completed = null;
         gameObject.SetActive(false);
         processing = false;
         callback?.Invoke();
+    }
+
+    public bool IsCardInteractionReady(int index)
+    {
+        return index >= 0 && index < cardInteractionReady.Length &&
+               reward != null && !processing && cardInteractionReady[index];
+    }
+
+    private static void SetCardAudioEnabled(Transform card, bool allow)
+    {
+        if (card == null) return;
+        foreach (DBAudioSource audio in card.GetComponentsInChildren<DBAudioSource>(true))
+            audio.SetInteractionEnabled(allow);
+    }
+
+    private IEnumerator UnlockAfterConfiguredTime(int index)
+    {
+        float delay = GetCardDissolveStartDelay(index) + Mathf.Max(0f, dissolveDuration);
+        if (delay > 0f) yield return new WaitForSecondsRealtime(delay);
+        cardDissolveCoroutines[index] = null;
+        UnlockCardInteraction(index);
+    }
+
+    private void UnlockCardInteraction(int index)
+    {
+        if (index < 0 || index >= cardInteractionReady.Length || reward == null || processing) return;
+        Transform card = scaleCardRoots[index];
+        if (card == null || !card.gameObject.activeInHierarchy) return;
+        cardInteractionReady[index] = true;
+        SetCardAudioEnabled(card, true);
+        if (buttons[index] != null)
+            buttons[index].interactable = !string.IsNullOrEmpty(characterIds[index]) &&
+                offeredSkills[index] != null &&
+                BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(offeredSkills[index], characterIds[index]) &&
+                HasFreeSlot(characterIds[index]);
+    }
+
+    private void PrepareCardDissolve(int index, Transform card, SkillRarity rarity)
+    {
+        Image target = GetImage(card, "Card/Cardimage");
+        if (target == null || target.material == null) return;
+        Material source = target.material;
+        if (!source.HasProperty(DissolveAmountId))
+        {
+            Debug.LogWarning($"[BattleRewardSkillPanelUI] Character/Icon material has no _DissolveAmount: {card.name}", target);
+            return;
+        }
+        originalCardMaterials[index] = source;
+        Material instance = new Material(source);
+        instance.name = source.name + " (Reward Card " + (index + 1) + ")";
+        instance.SetFloat(DissolveAmountId, 0f);
+        if (instance.HasProperty(DissolveEdgeColorId))
+            instance.SetColor(DissolveEdgeColorId, RarityColor(rarity));
+        cardDissolveMaterials[index] = instance;
+        cardDissolveImages[index] = target;
+        target.material = instance;
+        target.SetMaterialDirty();
+    }
+
+    private IEnumerator AnimateCardDissolve(int index, float startDelay)
+    {
+        Material material = cardDissolveMaterials[index];
+        if (material == null) yield break;
+        material.SetFloat(DissolveAmountId, 0f);
+        if (startDelay > 0f)
+            yield return new WaitForSecondsRealtime(startDelay);
+        float duration = Mathf.Max(0f, dissolveDuration);
+        if (duration > 0f)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration && material != null)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                material.SetFloat(DissolveAmountId, Mathf.Clamp01(elapsed / duration));
+                yield return null;
+            }
+        }
+        if (material != null) material.SetFloat(DissolveAmountId, 1f);
+        cardDissolveCoroutines[index] = null;
+        UnlockCardInteraction(index);
+    }
+
+    private void ReleaseCardDissolve(int index)
+    {
+        if (cardDissolveCoroutines[index] != null)
+        {
+            StopCoroutine(cardDissolveCoroutines[index]);
+            cardDissolveCoroutines[index] = null;
+        }
+        if (cardDissolveImages[index] != null && cardDissolveMaterials[index] != null &&
+            cardDissolveImages[index].material == cardDissolveMaterials[index])
+        {
+            cardDissolveImages[index].material = originalCardMaterials[index];
+            cardDissolveImages[index].SetMaterialDirty();
+        }
+        if (cardDissolveMaterials[index] != null)
+            Destroy(cardDissolveMaterials[index]);
+        cardDissolveMaterials[index] = null;
+        cardDissolveImages[index] = null;
+        originalCardMaterials[index] = null;
+    }
+
+    private void OnDestroy()
+    {
+        ResetAllCardScales();
+        for (int i = 0; i < cardDissolveMaterials.Length; i++)
+        {
+            ClearRarityVfx(i);
+            ReleaseCardDissolve(i);
+            StopSkillReveal(i);
+        }
     }
 
     private void ClearCard(Transform card)
@@ -248,17 +538,25 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         SetSprite(GetImage(card, "Icon/Icon"), null);
         SetSprite(GetImage(card, "Range"), null);
         SetSprite(GetImage(card, "Resources/Icon"), null);
-        SetSprite(GetImage(card, "Character/Mask/Icon"), null);
+        SetSprite(GetImage(card, "Card/Cardimage"), null);
     }
 
     private void BindCard(Transform card, string characterId, SkillMasterData skill, BattleRewardData data)
     {
         Image line = GetImage(card, "Background/Line2");
         if (line != null) line.color = RarityColor(skill.Rarity);
-        Image portrait = GetImage(card, "Character/Mask/Icon");
+        Image portrait = GetImage(card, "Card/Cardimage");
         Sprite side = null;
         if (!string.IsNullOrWhiteSpace(characterId))
-            DataManager.Instance.CharacterIconDatabase?.TryGetSideImage(characterId, out side);
+        {
+            var iconDatabase = DataManager.Instance.CharacterIconDatabase;
+            if (iconDatabase != null)
+            {
+                iconDatabase.TryGetCardImage(characterId, out side);
+                if (side == null)
+                    iconDatabase.TryGetSideImage(characterId, out side);
+            }
+        }
         SetSprite(portrait, side);
         string typeName = skill.TimelineNotation == TimelineActionType.Move
             ? GameLocalization.Get("common.move")
@@ -407,6 +705,58 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         return false;
     }
 
+    private GameObject GetRarityVfxPrefab(SkillRarity rarity)
+    {
+        switch (rarity)
+        {
+            case SkillRarity.Rare: return rareVfxPrefab;
+            case SkillRarity.Epic: return epicVfxPrefab;
+            case SkillRarity.Unique: return uniqueVfxPrefab;
+            default: return commonVfxPrefab;
+        }
+    }
+
+    private IEnumerator ShowRarityVfxAfterDissolveDelay(int index, Transform card, SkillRarity rarity, float startDelay)
+    {
+        yield return new WaitForSecondsRealtime(Mathf.Max(0f, startDelay));
+        pendingRarityVfx[index] = null;
+        if (reward != null && card != null && card.gameObject.activeInHierarchy && gameObject.activeInHierarchy)
+            ShowRarityVfx(index, card, rarity);
+    }
+
+    private void ShowRarityVfx(int index, Transform card, SkillRarity rarity)
+    {
+        ClearRarityVfx(index);
+        GameObject prefab = GetRarityVfxPrefab(rarity);
+        if (prefab == null || card == null) return;
+
+        Transform parent = SkillRef(index)?.rarityVfxRoot;
+        if (parent == null || (parent != card && !parent.IsChildOf(card)))
+            parent = card;
+
+        GameObject instance = Instantiate(prefab, parent, false);
+        instance.name = prefab.name + "_RarityVFX";
+        instance.transform.localPosition = Vector3.zero;
+        instance.transform.localRotation = Quaternion.identity;
+        instance.transform.localScale = Vector3.one;
+        activeRarityVfx[index] = instance;
+        instance.SetActive(true);
+    }
+
+    private void ClearRarityVfx(int index)
+    {
+        if (index < 0 || index >= activeRarityVfx.Length) return;
+        if (pendingRarityVfx[index] != null)
+        {
+            StopCoroutine(pendingRarityVfx[index]);
+            pendingRarityVfx[index] = null;
+        }
+        if (activeRarityVfx[index] == null) return;
+        activeRarityVfx[index].SetActive(false);
+        Destroy(activeRarityVfx[index]);
+        activeRarityVfx[index] = null;
+    }
+
     private Color RarityColor(SkillRarity rarity)
     {
         switch (rarity)
@@ -427,6 +777,11 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private Image GetImage(Transform root, string path)
     {
+        if (root != null && (root.Find("Skill") != null || root.Find("Card") != null))
+        {
+            Transform nested = root.Find(path == "Card/Cardimage" ? path : "Skill/" + path);
+            if (nested != null) return nested.GetComponent<Image>();
+        }
         for (int i = 0; i < 3; i++)
         {
             SkillCardReferences s = SkillRef(i);
@@ -438,7 +793,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
                     case "Icon/Icon": if (s.skillIcon != null) return s.skillIcon; break;
                     case "Range": case "Range/Icon": if (s.rangeIcon != null) return s.rangeIcon; break;
                     case "Resources/Icon": if (s.resourceIcon != null) return s.resourceIcon; break;
-                    case "Character/Mask/Icon": if (s.characterSideIcon != null) return s.characterSideIcon; break;
+                    case "Character/Icon": if (s.characterSideIcon != null) return s.characterSideIcon; break;
                 }
             }
             PartyCardReferences p = PartyRef(i);
@@ -461,6 +816,15 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private TMP_Text GetText(Transform root, string path)
     {
+        if (root != null && root.Find("Skill") != null)
+        {
+            Transform nested = root.Find("Skill/" + path);
+            if (nested != null)
+            {
+                TMP_Text label = nested.GetComponent<TMP_Text>();
+                return label != null ? label : nested.GetComponentInChildren<TextMeshProUGUI>(true);
+            }
+        }
         for (int i = 0; i < 3; i++)
         {
             SkillCardReferences s = SkillRef(i);
@@ -518,12 +882,38 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private static void SetSprite(Image image, Sprite sprite) { if (image == null) return; image.sprite = sprite; image.enabled = sprite != null; }
 }
 
-// ƒ´µÂ¿« »£πˆ «•Ω√∏∏ ¥„¥Á«’¥œ¥Ÿ. ∫∏ªÛ º±≈√¿∫ Button.onClickø°º≠∏∏ Ω««‡µÀ¥œ¥Ÿ.
+// Ïπ¥ÎìúÏùò Ìò∏Î≤Ñ ÌëúÏãúÎßå Îã¥ÎãπÌï©ÎãàÎã§. Î≥¥ÏÉÅ ÏÑ†ÌÉùÏùÄ Button.onClickÏóêÏÑúÎßå Ïã§ÌñâÎê©ÎãàÎã§.
 public sealed class RewardSkillCardHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     private GameObject selection;
-    public void Configure(GameObject target) { selection = target; if (selection != null) selection.SetActive(false); }
-    public void OnPointerEnter(PointerEventData eventData) { if (selection != null) selection.SetActive(true); }
-    public void OnPointerExit(PointerEventData eventData) { if (selection != null) selection.SetActive(false); }
-    private void OnDisable() { if (selection != null) selection.SetActive(false); }
+    private BattleRewardSkillPanelUI panel;
+    private int cardIndex = -1;
+
+    public void Configure(GameObject target, BattleRewardSkillPanelUI owner, int index)
+    {
+        selection = target;
+        panel = owner;
+        cardIndex = index;
+        if (selection != null) selection.SetActive(false);
+        if (panel != null) panel.SetCardHovered(cardIndex, false);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (panel == null || !panel.IsCardInteractionReady(cardIndex)) return;
+        if (selection != null) selection.SetActive(true);
+        panel.SetCardHovered(cardIndex, true);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (selection != null) selection.SetActive(false);
+        if (panel != null) panel.SetCardHovered(cardIndex, false);
+    }
+
+    private void OnDisable()
+    {
+        if (selection != null) selection.SetActive(false);
+        if (panel != null) panel.SetCardHovered(cardIndex, false);
+    }
 }

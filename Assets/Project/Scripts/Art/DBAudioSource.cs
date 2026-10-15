@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -51,6 +51,18 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
     [SerializeField, Range(0f, 1f)]
     private float clickVolume = 1f;
 
+    private bool interactionEnabled = true;
+
+    public void SetInteractionEnabled(bool allow)
+    {
+        interactionEnabled = allow;
+        if (!allow)
+        {
+            CancelDelayedPlay();
+            StopLoopSounds();
+        }
+    }
+
     private Coroutine delayedPlayCoroutine;
     private readonly List<AudioSource> activeLoopSources = new();
 
@@ -73,7 +85,7 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!playOnHover)
+        if (!interactionEnabled || !playOnHover)
             return;
 
         PlaySound(hoverSoundId, hoverVolume);
@@ -81,7 +93,7 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (!playOnClick)
+        if (!interactionEnabled || !playOnClick)
             return;
 
         PlaySound(clickSoundId, clickVolume);
@@ -142,7 +154,7 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
 
     private void PlaySound(string targetSoundId, float targetVolume)
     {
-        if (string.IsNullOrWhiteSpace(targetSoundId))
+        if (!interactionEnabled || string.IsNullOrWhiteSpace(targetSoundId))
             return;
 
         if (playDelay <= 0f)
@@ -159,7 +171,7 @@ public class DBAudioSource : MonoBehaviour, IPointerEnterHandler, IPointerClickH
     {
         yield return new WaitForSecondsRealtime(playDelay);
         delayedPlayCoroutine = null;
-        PlayImmediate(targetSoundId, targetVolume);
+        if (interactionEnabled) PlayImmediate(targetSoundId, targetVolume);
     }
 
     private void PlayImmediate(string targetSoundId, float targetVolume)
