@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BattleMapIntroText : MonoBehaviour
 {
@@ -25,6 +26,9 @@ public class BattleMapIntroText : MonoBehaviour
         if (target.introText != null && target.introText.gameObject.activeInHierarchy && target.introText.alpha > 0.001f)
             return true;
 
+        if (target.maskImage != null && target.useSkillMask && target.maskImage.gameObject.activeInHierarchy)
+            return true;
+
         if (target.introImage != null && target.introImage.activeInHierarchy)
             return true;
 
@@ -44,6 +48,8 @@ public class BattleMapIntroText : MonoBehaviour
     [SerializeField] private bool playRoomIntroSfx = true;
     [SerializeField, SoundId(SoundCategory.Sfx)] private string roomIntroSfxId;
     [SerializeField, Range(0f, 1f)] private float roomIntroSfxVolume = 1f;
+    [Tooltip("PlayRoomIntroSfx 호출 시점을 기준으로 SFX 재생을 늦추는 시간(초).")]
+    [SerializeField, Min(0f)] private float roomIntroSfxDelay;
 
     [Header("Timing")]
     [SerializeField] private bool playOnStart;
@@ -58,9 +64,39 @@ public class BattleMapIntroText : MonoBehaviour
     [SerializeField] private Vector2 startOffset = new Vector2(0f, -20f);
     [SerializeField] private Vector2 endOffset = Vector2.zero;
 
+    [Header("Skill Mask (MaskImage > IntroText)")]
+    [SerializeField] private bool useSkillMask = true;
+    [SerializeField] private RectTransform maskImage;
+    [SerializeField] private Graphic maskGraphic;
+    [SerializeField] private Material skillMaskMaterial;
+    [SerializeField] private bool useUnscaledTime = true;
+    [SerializeField] private AnimationCurve maskCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+    [Header("Mask Position A / B / C")]
+    [SerializeField] private Vector2 maskPositionA;
+    [SerializeField] private Vector2 maskPositionB;
+    [SerializeField] private Vector2 maskPositionC;
+    [SerializeField, Min(0f)] private float positionAToBDelay;
+    [SerializeField, Min(0f)] private float positionAToBDuration = 0.5f;
+    [SerializeField, Min(0f)] private float positionBHoldDelay = 0.5f;
+    [SerializeField, Min(0f)] private float positionBToCDelay;
+    [SerializeField, Min(0f)] private float positionBToCDuration = 0.5f;
+
+    [Header("Mask Height A / B / C")]
+    [SerializeField, Min(0f)] private float maskHeightA;
+    [SerializeField, Min(0f)] private float maskHeightB = 120f;
+    [SerializeField, Min(0f)] private float maskHeightC;
+    [SerializeField, Min(0f)] private float heightAToBDelay;
+    [SerializeField, Min(0f)] private float heightAToBDuration = 0.5f;
+    [SerializeField, Min(0f)] private float heightBHoldDelay = 0.5f;
+    [SerializeField, Min(0f)] private float heightBToCDelay;
+    [SerializeField, Min(0f)] private float heightBToCDuration = 0.5f;
+    [SerializeField, Min(0f)] private float maskDeactivateDelay;
+
     private RectTransform rectTransform;
     private Vector2 baseAnchoredPosition;
     private Coroutine playRoutine;
+    private Coroutine delayedRoomSfxRoutine;
     private int playVersion;
     private bool isInitialized;
 
@@ -77,6 +113,7 @@ public class BattleMapIntroText : MonoBehaviour
 
     private void OnDestroy()
     {
+        CancelDelayedRoomSfx();
         if (instance == this)
             instance = null;
     }
@@ -116,7 +153,31 @@ public class BattleMapIntroText : MonoBehaviour
     public static void PlayRoomIntroSfx()
     {
         BattleMapIntroText target = FindTarget();
-        target?.PlayConfiguredRoomIntroSfx();
+        target?.ScheduleRoomIntroSfx();
+    }
+
+    private void ScheduleRoomIntroSfx()
+    {
+        CancelDelayedRoomSfx();
+        if (!playRoomIntroSfx || string.IsNullOrWhiteSpace(roomIntroSfxId)) return;
+        if (roomIntroSfxDelay <= 0f)
+            PlayConfiguredRoomIntroSfx();
+        else
+            delayedRoomSfxRoutine = StartCoroutine(PlayRoomSfxAfterDelay());
+    }
+
+    private IEnumerator PlayRoomSfxAfterDelay()
+    {
+        yield return WaitDuration(roomIntroSfxDelay, useUnscaledTime);
+        delayedRoomSfxRoutine = null;
+        PlayConfiguredRoomIntroSfx();
+    }
+
+    private void CancelDelayedRoomSfx()
+    {
+        if (delayedRoomSfxRoutine == null) return;
+        StopCoroutine(delayedRoomSfxRoutine);
+        delayedRoomSfxRoutine = null;
     }
 
     private void PlayConfiguredRoomIntroSfx()
@@ -184,6 +245,12 @@ public class BattleMapIntroText : MonoBehaviour
 
     public float GetTotalPlayDuration()
     {
+        if (useSkillMask && maskImage != null)
+        {
+            float positionLength = positionAToBDelay + positionAToBDuration + positionBHoldDelay + positionBToCDelay + positionBToCDuration;
+            float heightLength = heightAToBDelay + heightAToBDuration + heightBHoldDelay + heightBToCDelay + heightBToCDuration;
+            return Mathf.Max(0f, startDelay) + Mathf.Max(positionLength, heightLength) + Mathf.Max(0f, maskDeactivateDelay);
+        }
         return Mathf.Max(0f, startDelay) +
                Mathf.Max(0f, fadeInDuration) +
                Mathf.Max(0f, stayDuration) +
@@ -202,6 +269,13 @@ public class BattleMapIntroText : MonoBehaviour
 
         if (introImage != null)
             introImage.SetActive(false);
+
+        if (maskImage != null)
+        {
+            maskImage.gameObject.SetActive(false);
+            SetMaskPosition(maskPositionA);
+            SetMaskHeight(maskHeightA);
+        }
 
         if (rectTransform != null)
             rectTransform.anchoredPosition = baseAnchoredPosition + startOffset;
@@ -225,26 +299,58 @@ public class BattleMapIntroText : MonoBehaviour
         // IntroText를 활성화할 때 같은 오브젝트의 로컬라이징 컴포넌트가
         // OnEnable에서 인스펙터 기본 문구를 다시 넣을 수 있습니다.
         // 먼저 오브젝트를 활성화한 뒤 이번에 표시할 문구를 마지막으로 적용합니다.
+        bool maskMode = useSkillMask && maskImage != null && introText.transform.IsChildOf(maskImage);
+        if (useSkillMask && !maskMode)
+            Debug.LogWarning("[BattleMapIntroText] MaskImage must be an ancestor of IntroText. Using legacy fade.", this);
+
+        if (maskMode)
+        {
+            SetMaskPosition(maskPositionA);
+            SetMaskHeight(maskHeightA);
+            maskImage.gameObject.SetActive(true);
+            if (maskGraphic != null && skillMaskMaterial != null)
+                maskGraphic.material = skillMaskMaterial;
+        }
+
         introText.alpha = 0f;
         introText.gameObject.SetActive(true);
         introText.text = message;
         introText.ForceMeshUpdate();
 
-        if (introImage != null)
+        if (introImage != null && (!maskMode || introImage != maskImage.gameObject))
             introImage.SetActive(true);
 
-        if (rectTransform != null)
+        if (rectTransform != null && !maskMode)
             rectTransform.anchoredPosition = baseAnchoredPosition + startOffset;
 
         if (startDelay > 0f)
-            yield return new WaitForSeconds(startDelay);
+            yield return WaitDuration(startDelay, maskMode && useUnscaledTime);
 
-        yield return FadeAndMove(0f, 1f, fadeInDuration, startOffset, endOffset);
-
-        if (stayDuration > 0f)
-            yield return new WaitForSeconds(stayDuration);
-
-        yield return FadeAndMove(1f, 0f, fadeOutDuration, endOffset, endOffset);
+        if (maskMode)
+        {
+            introText.alpha = 1f;
+            // Position and height advance independently, matching the skill cutscene animation.
+            float duration = Mathf.Max(
+                positionAToBDelay + positionAToBDuration + positionBHoldDelay + positionBToCDelay + positionBToCDuration,
+                heightAToBDelay + heightAToBDuration + heightBHoldDelay + heightBToCDelay + heightBToCDuration);
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                ApplyMaskAtTime(elapsed);
+                elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+                yield return null;
+            }
+            ApplyMaskAtTime(duration);
+            if (maskDeactivateDelay > 0f)
+                yield return WaitDuration(maskDeactivateDelay, useUnscaledTime);
+        }
+        else
+        {
+            yield return FadeAndMove(0f, 1f, fadeInDuration, startOffset, endOffset);
+            if (stayDuration > 0f)
+                yield return new WaitForSeconds(stayDuration);
+            yield return FadeAndMove(1f, 0f, fadeOutDuration, endOffset, endOffset);
+        }
 
         if (version == playVersion)
         {
@@ -252,6 +358,8 @@ public class BattleMapIntroText : MonoBehaviour
 
             if (introImage != null)
                 introImage.SetActive(false);
+            if (maskMode)
+                maskImage.gameObject.SetActive(false);
 
             playRoutine = null;
             IntroCompleted?.Invoke();
@@ -302,6 +410,19 @@ public class BattleMapIntroText : MonoBehaviour
 
         BindIntroImageIfNeeded();
 
+        if (maskImage == null)
+        {
+            Transform found = transform.Find("MaskImage");
+            if (found != null)
+                maskImage = found as RectTransform;
+        }
+        if (maskImage != null && maskGraphic == null)
+            maskGraphic = maskImage.GetComponent<Graphic>();
+        if (maskImage != null && maskImage.GetComponent<RectMask2D>() == null)
+        {
+            // RectMask2D is required for children to be clipped. Add via Inspector.
+        }
+
         rectTransform = introText != null ? introText.rectTransform : null;
 
         if (!isInitialized && rectTransform != null)
@@ -337,6 +458,58 @@ public class BattleMapIntroText : MonoBehaviour
 
         instance = FindFirstObjectByType<BattleMapIntroText>(FindObjectsInactive.Include);
         return instance;
+    }
+
+    private IEnumerator WaitDuration(float duration, bool unscaled)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += unscaled ? Time.unscaledDeltaTime : Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    private void ApplyMaskAtTime(float time)
+    {
+        float posBStart = positionAToBDelay;
+        float posBEnd = posBStart + positionAToBDuration;
+        float posCStart = posBEnd + positionBHoldDelay + positionBToCDelay;
+        Vector2 position = time < posBStart ? maskPositionA
+            : time < posBEnd ? Vector2.LerpUnclamped(maskPositionA, maskPositionB, Curve01(time - posBStart, positionAToBDuration))
+            : time < posCStart ? maskPositionB
+            : Vector2.LerpUnclamped(maskPositionB, maskPositionC, Curve01(time - posCStart, positionBToCDuration));
+
+        float heightBStart = heightAToBDelay;
+        float heightBEnd = heightBStart + heightAToBDuration;
+        float heightCStart = heightBEnd + heightBHoldDelay + heightBToCDelay;
+        float height = time < heightBStart ? maskHeightA
+            : time < heightBEnd ? Mathf.LerpUnclamped(maskHeightA, maskHeightB, Curve01(time - heightBStart, heightAToBDuration))
+            : time < heightCStart ? maskHeightB
+            : Mathf.LerpUnclamped(maskHeightB, maskHeightC, Curve01(time - heightCStart, heightBToCDuration));
+        SetMaskPosition(position);
+        SetMaskHeight(height);
+    }
+
+    private float Curve01(float elapsed, float duration)
+    {
+        float t = duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration);
+        return maskCurve != null ? maskCurve.Evaluate(t) : t;
+    }
+
+    private void SetMaskPosition(Vector2 value)
+    {
+        if (maskImage == null) return;
+        Vector3 pos = maskImage.localPosition;
+        pos.x = value.x;
+        pos.y = value.y;
+        maskImage.localPosition = pos;
+    }
+
+    private void SetMaskHeight(float value)
+    {
+        if (maskImage != null)
+            maskImage.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(0f, value));
     }
 
     private static float EaseOutCubic(float t)

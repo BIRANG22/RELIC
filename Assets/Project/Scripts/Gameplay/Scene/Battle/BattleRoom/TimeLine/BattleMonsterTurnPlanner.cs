@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
@@ -309,8 +309,8 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (actionReserveMessageDelay > 0f)
             yield return new WaitForSeconds(actionReserveMessageDelay);
 
-        // 첫 전투 진입 연출에서는 행동 예약 안내까지 이 코루틴이 직접 기다립니다.
-        // BattleRoomLoader가 전역 표시 상태를 폴링하지 않아도 정확한 종료 시점을 알 수 있습니다.
+        // 전투 시작 안내만 기다리고 행동 예약 문구는 표시하지 않습니다.
+        // 턴 시작 문구는 BattleTurnExecutor가 예약 입력 가능 시점에 표시합니다.
         if (showBattleStart)
             yield return ShowActionReserveIntroTextAndWaitRoutine();
         else
@@ -940,7 +940,8 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         BattleEffectInfoFeed.ShowTurnStart(Mathf.Max(1, plannedBattleTurn));
         StartCoroutine(BattleEffectInfoFeed.FlushInitialEffectsAndWait());
         PlayActionReservationStartSfx();
-        ShowIntroText(GameLocalization.Get(LocalizationKeys.Battle.ActionReserve));
+        // 예약 단계 안내 문구는 출력하지 않습니다.
+        // BattleTurnExecutor가 플레이어 입력 가능 시점에 'N턴 시작'을 표시합니다.
     }
 
     private IEnumerator ShowActionReserveIntroTextAndWaitRoutine(bool showTurnHeading = true)
@@ -949,7 +950,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             BattleEffectInfoFeed.ShowTurnStart(Mathf.Max(1, plannedBattleTurn));
         StartCoroutine(BattleEffectInfoFeed.FlushInitialEffectsAndWait());
         PlayActionReservationStartSfx();
-        yield return ShowIntroTextAndWaitRoutine(GameLocalization.Get(LocalizationKeys.Battle.ActionReserve));
+        // 문구 대기 대신 예약 준비만 마치고 즉시 반환합니다.
+        // 최초 전투 시작 인트로는 위의 battleStartTextRoutine에서 이미 기다립니다.
+        yield break;
     }
 
     private void PlayActionReservationStartSfx()

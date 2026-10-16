@@ -293,7 +293,12 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         if (sharedCanvas != null && sharedBackground != null)
             return;
 
-        GameObject canvasObject = new(SharedCanvasName, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+        GameObject canvasObject = new(
+            SharedCanvasName,
+            typeof(RectTransform),
+            typeof(Canvas),
+            typeof(CanvasScaler),
+            typeof(ResolutionCanvasFitOptOut));
         canvasObject.transform.SetParent(transform, false);
         sharedCanvas = canvasObject.GetComponent<Canvas>();
         sharedCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -347,7 +352,12 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         if (blurReplicaCanvas != null)
             return;
 
-        GameObject canvasObject = new(BlurReplicaRootName, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+        GameObject canvasObject = new(
+            BlurReplicaRootName,
+            typeof(RectTransform),
+            typeof(Canvas),
+            typeof(CanvasScaler),
+            typeof(ResolutionCanvasFitOptOut));
         canvasObject.layer = UIBlurLayer;
         canvasObject.transform.SetParent(transform, false);
 
