@@ -70,8 +70,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
         DataManager manager = DataManager.Instance;
         if (icon == null && manager != null && manager.SkillIconDatabase != null)
             manager.SkillIconDatabase.TryGetIcon(skill.SkillId, out icon);
-        string name = string.IsNullOrWhiteSpace(skill.Name) ? skill.SkillId : skill.Name;
-        string prefix = entireGroup ? (allies ? "아군 전체 " : enemies ? "적 전체 " : "") : "";
+        string name = GameDataLocalization.SkillName(skill);
         feed.Spawn(name, icon, enemies);
     }
 
@@ -79,7 +78,8 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
     {
         if (amount <= 0) return;
         BattleEffectInfoFeed feed = FindFeed();
-        if (feed != null) feed.Spawn("체력 회복", feed.healthRecoveryIcon);
+        if (feed != null)
+            feed.Spawn(GameLocalization.Get("battle.effect_info.health_recovery", "체력 회복"), feed.healthRecoveryIcon);
     }
 
     public static void BeginInitialEffects()
@@ -169,14 +169,14 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
             Sprite flipActionIcon = feed.flipIcon;
             if (flipActionIcon == null && DataManager.Instance != null && DataManager.Instance.ActionTypeIconDatabase != null)
                 DataManager.Instance.ActionTypeIconDatabase.TryGetIcon("Flip", out flipActionIcon);
-            feed.Spawn("전환", flipActionIcon);
+            feed.Spawn(GameLocalization.Get("battle.action.flip.name", "전환"), flipActionIcon);
             return;
         }
 
         bool move = command.ReservedMoveGridIndex >= 0;
         if (move)
         {
-            feed.Spawn("이동", feed.GetMoveIcon());
+            feed.Spawn(GameLocalization.Get("common.move", "이동"), feed.GetMoveIcon());
             return;
         }
 
@@ -187,7 +187,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
             DataManager.Instance.SkillIconDatabase != null)
             DataManager.Instance.SkillIconDatabase.TryGetIcon(skill.SkillId, out icon);
 
-        string label = string.IsNullOrWhiteSpace(skill.Name) ? skill.SkillId : skill.Name;
+        string label = GameDataLocalization.SkillName(skill);
 
         feed.Spawn(label, icon);
     }
@@ -210,8 +210,9 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
             dataManager.ActionTypeIconDatabase.TryGetIcon(skill.TimelineNotation.ToString(), out icon);
         if (move && icon == null) icon = feed.GetMoveIcon();
 
-        string label = move ? "이동" :
-            (string.IsNullOrWhiteSpace(skill.Name) ? skill.SkillId : skill.Name);
+        string label = move
+            ? GameLocalization.Get("common.move", "이동")
+            : GameDataLocalization.MonsterSkillName(skill);
         feed.Spawn(label, icon, true);
     }
 
@@ -225,7 +226,11 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
         if (amount <= 0) return;
         BattleEffectInfoFeed feed = FindFeed();
         if (feed == null) return;
-        string label = mana ? "마나 회복" : (party ? "파티 카르마 회복" : "카르마 회복");
+        string label = mana
+            ? GameLocalization.Get("battle.effect_info.mana_recovery", "마나 회복")
+            : party
+                ? GameLocalization.Get("battle.effect_info.party_karma_recovery", "파티 카르마 회복")
+                : GameLocalization.Get("battle.effect_info.karma_recovery", "카르마 회복");
         feed.Spawn(label, mana ? feed.manaRecoveryIcon : feed.karmaRecoveryIcon);
     }
 
@@ -234,7 +239,10 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
     {
         if (amount <= 0) return;
         BattleEffectInfoFeed feed = FindFeed();
-        if (feed != null) feed.Spawn("파티 카르마 회복", feed.karmaRecoveryIcon);
+        if (feed != null)
+            feed.Spawn(
+                GameLocalization.Get("battle.effect_info.party_karma_recovery", "파티 카르마 회복"),
+                feed.karmaRecoveryIcon);
     }
 
     // Capture runtime stacks to avoid reporting passive refreshes as new gains.
@@ -323,7 +331,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
             {
                 if (manager.EffectDatabase != null &&
                     manager.EffectDatabase.TryGet(effectId, out EffectMasterData effectData) && effectData != null &&
-                    !string.IsNullOrWhiteSpace(effectData.Name)) effectName = effectData.Name;
+                    !string.IsNullOrWhiteSpace(effectData.Name)) effectName = GameDataLocalization.EffectName(effectData);
                 if (manager.StatusEffectIconDatabase != null)
                     manager.StatusEffectIconDatabase.TryGetIcon(effectId, out icon);
             }
@@ -394,7 +402,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
         Sprite icon = null;
         if (manager.RuneIconDatabase != null)
             manager.RuneIconDatabase.TryGetIcon(rune.RuneId, out icon);
-        feed.Spawn(string.IsNullOrWhiteSpace(rune.Name) ? rune.RuneId : rune.Name, icon, enemy, false, 0);
+        feed.Spawn(GameDataLocalization.RuneName(rune), icon, enemy, false, 0);
     }
 
     // Identify the equipped relic only when the recorded source matches that relic.
@@ -448,7 +456,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
         Sprite icon = null;
         if (manager.RelicIconDatabase != null)
             manager.RelicIconDatabase.TryGetIcon(relic.FragmentId, out icon);
-        feed.Spawn(string.IsNullOrWhiteSpace(relic.Name) ? relic.FragmentId : relic.Name, icon, enemy, false, 1);
+        feed.Spawn(GameDataLocalization.RelicName(relic), icon, enemy, false, 1);
     }
 
     private static bool IsEnemyStatusKey(string key)
@@ -479,7 +487,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
     {
         BattleEffectInfoFeed feed = FindFeed();
         if (feed == null) return;
-        feed.Spawn("충돌", feed.collisionIcon, enemy, false, 3);
+        feed.Spawn(GameLocalization.Get("battle.effect_info.collision", "충돌"), feed.collisionIcon, enemy, false, 3);
     }
 
     public static void ShowTurnStart(int turnNumber)
@@ -489,7 +497,17 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
         // Turn headings must not be captured as an initial passive effect.
         bool wasDeferred = deferInitialEffects;
         deferInitialEffects = false;
-        try { feed.Spawn($"{turnNumber}턴 시작", feed.turnStartIcon, false, true); }
+        try
+        {
+            feed.Spawn(
+                GameLocalization.FormatWithFallback(
+                    "battle.effect_info.turn_start_format",
+                    "{0}턴 시작",
+                    turnNumber),
+                feed.turnStartIcon,
+                false,
+                true);
+        }
         finally { deferInitialEffects = wasDeferred; }
     }
 

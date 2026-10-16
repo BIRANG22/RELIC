@@ -873,6 +873,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (skillTooltipDetailText == null)
             skillTooltipDetailText = FindChildComponent<TMP_Text>(tooltipRoot, "Detail");
 
+        LocalizedTMPText.ProtectDynamicOwnership(skillTooltipDetailText);
+
         if (skillTooltipRangeImage == null)
         {
             Transform range = FindDirectChild(tooltipRoot, "Range");

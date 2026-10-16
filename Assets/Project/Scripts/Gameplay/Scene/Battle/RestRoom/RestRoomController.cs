@@ -707,7 +707,8 @@ public class RestRoomController : MonoBehaviour
             BindNextButton();
             if (nextButton != null) nextButton.interactable = !nextTransitionStarted;
             TMP_Text label = nextButtonRoot.GetComponentInChildren<TMP_Text>(true);
-            if (label != null) label.text = "진행";
+            if (label != null)
+                label.text = GameLocalization.Get("common.proceed", "진행");
         }
         nextButtonRoot.SetActive(visible);
     }

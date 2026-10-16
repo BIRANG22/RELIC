@@ -28,6 +28,23 @@ public sealed class LocalizedTMPText : MonoBehaviour
                text.GetComponentInParent<LocalizationIgnore>(true) == null;
     }
 
+    public static void ProtectDynamicOwnership(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        if (text.GetComponent<LocalizationIgnore>() == null)
+            text.gameObject.AddComponent<LocalizationIgnore>();
+
+        LocalizedTMPText staticWriter = text.GetComponent<LocalizedTMPText>();
+        if (staticWriter != null)
+            staticWriter.enabled = false;
+
+        LocalizeStringEvent legacyWriter = text.GetComponent<LocalizeStringEvent>();
+        if (legacyWriter != null)
+            legacyWriter.enabled = false;
+    }
+
     public static string ResolveText(string key, string koreanFallback)
     {
         return string.IsNullOrWhiteSpace(key)

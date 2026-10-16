@@ -914,12 +914,16 @@ namespace Relic.Gameplay.Data
                     return string.Empty;
 
                 return string.IsNullOrWhiteSpace(resultMessage)
-                    ? $"레드 더스티움 {amount} 획득"
+                    ? GameLocalization.Format(
+                        "event.result.red_dustium_acquired_format",
+                        amount)
                     : resultMessage;
             }
 
             AddRemnant(context, amount);
-            return $"레드 더스티움 {amount} 획득";
+            return GameLocalization.Format(
+                "event.result.red_dustium_acquired_format",
+                amount);
         }
 
         private static bool HasAnyOwnedRelic(EventChoiceExecutionContext context)

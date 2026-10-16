@@ -425,9 +425,11 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
             skillInfoTypeText.text = GameDataLocalization.MonsterSkillType(skillData);
 
         if (skillInfoDetailsText != null)
-            skillInfoDetailsText.text = FormatMonsterEffectDescription(
-                GameDataLocalization.MonsterSkillDescription(skillData),
-                skillData);
+            SkillEffectInlineIconUtility.SetText(
+                skillInfoDetailsText,
+                FormatMonsterEffectDescription(
+                    GameDataLocalization.MonsterSkillDescription(skillData),
+                    skillData));
 
         RefreshMonsterSkillEffects(skillData);
     }

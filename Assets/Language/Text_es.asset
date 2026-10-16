@@ -4167,6 +4167,50 @@ MonoBehaviour:
     m_Localized: Elimina la armadura del objetivo.
     m_Metadata:
       m_Items: []
+  - m_Id: 9164888147097975800
+    m_Localized: "Recuperaci\xF3n de PV"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975801
+    m_Localized: "Recuperaci\xF3n de man\xE1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975802
+    m_Localized: "Recuperaci\xF3n de karma"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975803
+    m_Localized: "Recuperaci\xF3n de karma del grupo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975804
+    m_Localized: "Colisi\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975805
+    m_Localized: Inicio del turno {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975806
+    m_Localized: Obtener {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975807
+    m_Localized: Has obtenido {0} de Dustium rojo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975808
+    m_Localized: 'Reliquia obtenida: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975809
+    m_Localized: Dustium rojo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975810
+    m_Localized: Reliquia obtenida
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

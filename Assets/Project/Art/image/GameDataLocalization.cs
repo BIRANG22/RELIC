@@ -47,7 +47,8 @@ namespace Relic.Gameplay.Data
         }
 
         public static string SkillName(SkillMasterData data) =>
-            data == null ? string.Empty : GameLocalization.GetData("SkillMaster", data.SkillId, "name", data.Name);
+            data == null ? string.Empty : ResolveLocalizedOrSource(
+                GameLocalization.GetData("SkillMaster", data.SkillId, "name", data.Name), data.Name);
 
         public static string SkillDetails(SkillMasterData data)
         {
@@ -58,17 +59,27 @@ namespace Relic.Gameplay.Data
 
         /// <summary>Returns the locale-specific template before UI-owned token and RichText formatting.</summary>
         public static string SkillDetailsTemplate(SkillMasterData data) =>
-            data == null ? string.Empty : GameLocalization.GetData("SkillMaster", data.SkillId, "details", data.Details);
+            data == null ? string.Empty : ResolveLocalizedOrSource(
+                GameLocalization.GetData("SkillMaster", data.SkillId, "details", data.Details), data.Details);
+
+        public static string ResolveLocalizedOrSource(string localized, string source)
+        {
+            return LocalizationTextRules.IsMissingTranslationMarker(localized) || string.IsNullOrWhiteSpace(localized)
+                ? source ?? string.Empty
+                : localized;
+        }
 
         public static string MonsterSkillName(MonsterSkillData data)
         {
             if (data == null)
                 return string.Empty;
-            return GameLocalization.GetData("MonsterSkill", data.SkillId, "name", data.Name);
+            return ResolveLocalizedOrSource(
+                GameLocalization.GetData("MonsterSkill", data.SkillId, "name", data.Name), data.Name);
         }
 
         public static string MonsterSkillDescription(MonsterSkillData data) =>
-            data == null ? string.Empty : GameLocalization.GetData("MonsterSkill", data.SkillId, "effect_description", data.EffectDesc);
+            data == null ? string.Empty : ResolveLocalizedOrSource(
+                GameLocalization.GetData("MonsterSkill", data.SkillId, "effect_description", data.EffectDesc), data.EffectDesc);
 
         public static string MonsterSkillType(MonsterSkillData data) =>
             data == null ? string.Empty : GameLocalization.GetData("MonsterSkill", data.SkillId, "type", data.SkillType);
@@ -179,7 +190,8 @@ namespace Relic.Gameplay.Data
         public static string EffectName(EffectMasterData data) =>
             data == null
                 ? string.Empty
-                : GameLocalization.GetData("Effect", data.EffectId, "name", data.Name);
+                : ResolveLocalizedOrSource(
+                    GameLocalization.GetData("Effect", data.EffectId, "name", data.Name), data.Name);
 
         public static string EffectTooltip(EffectMasterData data) =>
             data == null

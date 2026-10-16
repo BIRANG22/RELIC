@@ -8,7 +8,7 @@ public static class MonsterInfoDataNameResolver
             return string.Empty;
 
         if (!string.IsNullOrWhiteSpace(skillData.Name))
-            return skillData.Name.Trim();
+            return GameDataLocalization.MonsterSkillName(skillData).Trim();
 
         return string.IsNullOrWhiteSpace(skillData.SkillId)
             ? string.Empty
@@ -18,7 +18,7 @@ public static class MonsterInfoDataNameResolver
     public static string ResolveEffectName(EffectMasterData effectData, string effectId)
     {
         if (effectData != null && !string.IsNullOrWhiteSpace(effectData.Name))
-            return effectData.Name.Trim();
+            return GameDataLocalization.EffectName(effectData).Trim();
 
         if (effectData != null && !string.IsNullOrWhiteSpace(effectData.EffectId))
             return effectData.EffectId.Trim();

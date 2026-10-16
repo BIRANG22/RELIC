@@ -77,17 +77,27 @@ public static class LocalizationProjectScanner
             RegexOptions.Multiline);
 
         var directTmpWriter = new Regex(
-            @"(?:\b\w+\.text\s*=|\b\w+\.SetText\s*\()\s*" + literal,
+            @"(?:\b\w+\.text\s*=|\b\w+\.SetText\s*\()\s*\$?" + literal,
             RegexOptions.Multiline);
 
         var formattedReturn = new Regex(
             @"\breturn\s+string\.Format\s*\(\s*" + literal,
             RegexOptions.Multiline);
 
+        var interpolatedResultAssignment = new Regex(
+            @"\b(?:resultMessage|displayText|message)\s*=\s*\$" + literal,
+            RegexOptions.Multiline);
+
+        var interpolatedReturn = new Regex(
+            @"\breturn\s+\$" + literal,
+            RegexOptions.Multiline);
+
         return sinkCall.Matches(code)
             .Cast<Match>()
             .Concat(directTmpWriter.Matches(code).Cast<Match>())
             .Concat(formattedReturn.Matches(code).Cast<Match>())
+            .Concat(interpolatedResultAssignment.Matches(code).Cast<Match>())
+            .Concat(interpolatedReturn.Matches(code).Cast<Match>())
             .Select(match => DecodeCSharpLiteral(match.Groups["value"].Value))
             .Where(IsLocalizableKoreanText)
             .Distinct(StringComparer.Ordinal)
