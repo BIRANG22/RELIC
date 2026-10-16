@@ -22,9 +22,9 @@ MonoBehaviour:
     NextNodeIndices: 
   layer1:
     Slot1:
-      Enabled: 0
-      Type: 
-      MapIdOverride: 
+      Enabled: 1
+      Type: Common
+      MapIdOverride: Map_32
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
       NextNodeIndices: 

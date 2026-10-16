@@ -12,11 +12,11 @@ namespace Relic.Gameplay.Monster
     /// </summary>
     public class NocturnAI : MonsterAIBase
     {
-        private const string MoveSkillId = "S_Monster_15";
-        private const string PortalSkillId = "S_Monster_16";
-        private const string ThrustSkillId = "S_Monster_17";
-        private const string SlashSkillId = "S_Monster_18";
-        private const string PullSkillId = "S_Monster_19";
+        private const string MoveSkillId = "S_Monster_25";
+        private const string PortalSkillId = "S_Monster_25";
+        private const string ThrustSkillId = "S_Monster_26";
+        private const string SlashSkillId = "S_Monster_27";
+        private const string PullSkillId = "S_Monster_28";
 
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {

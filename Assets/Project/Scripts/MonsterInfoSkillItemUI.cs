@@ -1,5 +1,7 @@
 using Relic.Gameplay.Data;
 using TMPro;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,6 +18,24 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
     [SerializeField] private Image rangeImage;
     [SerializeField] private TMP_Text rangeText;
     [SerializeField] private TMP_Text typeText;
+
+    private MonsterSkillData boundSkill;
+
+    private void OnEnable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+    }
+
+    private void OnLocaleChanged(Locale locale)
+    {
+        if (boundSkill != null) Bind(boundSkill);
+    }
 
     private void Awake()
     {
@@ -43,6 +63,7 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
         {
             string localizedDescription = GameDataLocalization.MonsterSkillDescription(skillData);
             detailText.text = MonsterSkillDescriptionFormatter.Format(localizedDescription, skillData);
+            EnsureInlineIcons(detailText);
         }
 
         Sprite rangeSprite = ResolveRangeIcon(skillData.RangeId);
@@ -54,6 +75,14 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
 
         if (typeText != null)
             typeText.text = GameDataLocalization.MonsterSkillType(skillData);
+    }
+
+    private static void EnsureInlineIcons(TMP_Text text)
+    {
+        if (text == null) return;
+        SkillEffectInlineIconRenderer renderer = text.GetComponent<SkillEffectInlineIconRenderer>();
+        if (renderer == null) renderer = text.gameObject.AddComponent<SkillEffectInlineIconRenderer>();
+        renderer.Bind(text);
     }
 
     // These texts are filled from the selected monster skill, not a fixed UI key.

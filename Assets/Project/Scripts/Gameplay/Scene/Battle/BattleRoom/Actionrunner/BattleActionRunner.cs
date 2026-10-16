@@ -54,23 +54,23 @@ public class BattleActionRunner
     private const string CinderMonsterId = "Mon_06";
     private const string CinderExplodeSkillId = "S_Monster_14";
     private const string DraugrMonsterId = "Mon_07";
-    private const string DraugrMoveSkillId = "S_Monster_26";
-    private const string DraugrAttackSkillId = "S_Monster_27";
+    private const string DraugrMoveSkillId = "S_Monster_15";
+    private const string DraugrAttackSkillId = "S_Monster_16";
     private const string BarrowMonsterId = "Mon_08";
-    private const string BarrowMoveSkillId = "S_Monster_29";
-    private const string BarrowDirectShotSkillId = "S_Monster_30";
-    private const string BarrowArcShotSkillId = "S_Monster_31";
+    private const string BarrowMoveSkillId = "S_Monster_18";
+    private const string BarrowDirectShotSkillId = "S_Monster_19";
+    private const string BarrowArcShotSkillId = "S_Monster_20";
     private const string RookMonsterId = "Mon_09";
-    private const string RookMoveSkillId = "S_Monster_32";
-    private const string RookBashSkillId = "S_Monster_34";
-    private const string RookEarthquakeSkillId = "S_Monster_35";
+    private const string RookMoveSkillId = "S_Monster_21";
+    private const string RookBashSkillId = "S_Monster_23";
+    private const string RookEarthquakeSkillId = "S_Monster_24";
     private const string NocturnMonsterId = "Mon_10";
-    private const string NocturnMoveSkillId = "S_Monster_15";
+    private const string NocturnMoveSkillId = "S_Monster_25";
     private const string MortMonsterId = "Mon_11";
-    private const string MortMoveSkillId = "S_Monster_37";
-    private const string MortWraithRushSkillId = "S_Monster_38";
-    private const string ArabellaMonsterId = "Mon_12";
-    private const string ArabellaMoveSkillId = "S_Monster_20";
+    private const string MortMoveSkillId = "S_Monster_29";
+    private const string MortWraithRushSkillId = "S_Monster_30";
+    private const string ArabellaMonsterId = "Mon_12_1";
+    private const string ArabellaMoveSkillId = "S_Monster_33";
     private static readonly HashSet<string> RangedMonsterAttackSkillIds = new(StringComparer.Ordinal)
     {
         "S_Monster_02",
@@ -81,9 +81,9 @@ public class BattleActionRunner
         "S_Monster_38",
         "S_Monster_39"
     };
-    private const string NocturnThrustSkillId = "S_Monster_17";
-    private const string NocturnSlashSkillId = "S_Monster_18";
-    private const string NocturnPullSkillId = "S_Monster_19";
+    private const string NocturnThrustSkillId = "S_Monster_26";
+    private const string NocturnSlashSkillId = "S_Monster_27";
+    private const string NocturnPullSkillId = "S_Monster_28";
     private const string ResidueGridEffectId = "GR_Residue";
     private static readonly Color ExecutionRangeColor = Color.red;
     public const float MoveAnimationDuration = 0.15f;
@@ -2502,7 +2502,7 @@ public class BattleActionRunner
                 if (receivedDamage &&
                     monster.RuntimeData != null &&
                     !monster.RuntimeData.IsDead &&
-                    string.Equals(monster.RuntimeData.MonsterId, "Mon_07", StringComparison.Ordinal))
+                    HasActiveMonsterCounter(monster.RuntimeData))
                 {
                     draugrCounterCandidates.Add(monster);
                 }
@@ -2567,6 +2567,21 @@ public class BattleActionRunner
 
     }
 
+    // 몬스터가 E_Counter 상태를 보유할 때만 피격 후 반격을 수행합니다.
+    private static bool HasActiveMonsterCounter(MonsterRuntimeData runtime)
+    {
+        if (runtime?.StatusEffects == null)
+            return false;
+
+        foreach (StatusEffectRuntimeData status in runtime.StatusEffects)
+        {
+            if (status != null && status.EffectId == "E_Counter" && status.Stack > 0 && status.TurnCount > 0)
+                return true;
+        }
+
+        return false;
+    }
+
     private IEnumerator ExecuteDraugrCounters(
         BattleCharacter caster,
         HashSet<MonsterUnit> counterCandidates)
@@ -2582,11 +2597,11 @@ public class BattleActionRunner
         }
 
         MonsterSkillData counterSkill =
-            DataManager.Instance?.MonsterSkillDatabase?.Get("S_Monster_28");
+            DataManager.Instance?.MonsterSkillDatabase?.Get("S_Monster_17");
 
         if (counterSkill == null)
         {
-            Debug.LogWarning("[DraugrAI] 반격 스킬 S_Monster_28 데이터를 찾을 수 없습니다.");
+            Debug.LogWarning("[DraugrAI] 내려찍기 스킬 S_Monster_17 데이터를 찾을 수 없습니다.");
             yield break;
         }
 
@@ -2595,6 +2610,7 @@ public class BattleActionRunner
             if (draugr == null ||
                 draugr.RuntimeData == null ||
                 draugr.RuntimeData.IsDead ||
+                !HasActiveMonsterCounter(draugr.RuntimeData) ||
                 draugr.MainGridIndex < 0 ||
                 caster.RuntimeData.IsDead ||
                 caster.CurrentGridIndex < 0)
@@ -4270,7 +4286,7 @@ public class BattleActionRunner
         }
 
         if (command.SkillData.SkillId == "S_Monster_12" ||
-            command.SkillData.SkillId == "S_Monster_33")
+            command.SkillData.SkillId == "S_Monster_22")
         {
             // 베스파 돌진은 실행 순간의 실제 위치를 범위 원점으로 사용합니다.
             // 선행 이동이 충돌로 실패하거나 일부만 성공해도 예약 당시 예상 위치를 표시하지 않습니다.
@@ -5454,7 +5470,7 @@ public class BattleActionRunner
             : facing == null || facing.IsFacingRight;
 
         int dirX = facingRight ? 1 : -1;
-        int maxMove = command.SkillData.SkillId == "S_Monster_33"
+        int maxMove = command.SkillData.SkillId == "S_Monster_22"
             ? 6
             : gridManager.Width;
 

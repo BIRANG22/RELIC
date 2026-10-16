@@ -39,7 +39,8 @@ namespace Relic.Gameplay.Monster
                 case "Mon_11":
                     return new MortAI();
 
-                case "Mon_12":
+                case "Mon_12_1":
+                case "Mon_12_2":
                     return new EliseAI();
 
                 default:

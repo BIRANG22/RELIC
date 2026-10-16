@@ -16,10 +16,10 @@ namespace Relic.Gameplay.Monster
     /// </summary>
     public class MortAI : MonsterAIBase
     {
-        private const string MoveSkillId = "S_Monster_37";
-        private const string WraithRushSkillId = "S_Monster_38";
-        private const string SpiritExplosionSkillId = "S_Monster_39";
-        private const string BloodCurseSkillId = "S_Monster_40";
+        private const string MoveSkillId = "S_Monster_29";
+        private const string WraithRushSkillId = "S_Monster_30";
+        private const string SpiritExplosionSkillId = "S_Monster_31";
+        private const string BloodCurseSkillId = "S_Monster_32";
         private const string NecromancySkillId = "S_Monster_41";
 
         private static readonly Vector2Int[] EscapeOffsets =
@@ -59,15 +59,7 @@ namespace Relic.Gameplay.Monster
             int priority = 0;
 
             // 죽은 병사가 있다면 사령술을 조건부 행동으로 예약합니다.
-            if (MortNecromancyTracker.HasReadySoldier(runtime.RuntimeId, runtime.TurnCount))
-            {
-                plan.Add(new MonsterAIAction(
-                    NecromancySkillId,
-                    Vector2Int.zero,
-                    MonsterAISlotPreference.FirstTwo,
-                    -1,
-                    priority++));
-            }
+
 
             List<BattleCharacter> currentRangeTargets = FindPlayersInAttackRange(
                 monsterUnit.MainGridIndex,

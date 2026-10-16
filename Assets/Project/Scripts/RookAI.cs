@@ -16,10 +16,10 @@ namespace Relic.Gameplay.Monster
     /// </summary>
     public class RookAI : MonsterAIBase
     {
-        private const string MoveSkillId = "S_Monster_32";
-        private const string DashSkillId = "S_Monster_33";
-        private const string BashSkillId = "S_Monster_34";
-        private const string EarthquakeSkillId = "S_Monster_35";
+        private const string MoveSkillId = "S_Monster_21";
+        private const string DashSkillId = "S_Monster_22";
+        private const string BashSkillId = "S_Monster_23";
+        private const string EarthquakeSkillId = "S_Monster_24";
         private const string FortressSkillId = "S_Monster_36";
         private const int DashMaxDistance = 6;
 
@@ -54,12 +54,7 @@ namespace Relic.Gameplay.Monster
 
             // 철옹성은 다른 행동과 같은 슬롯에 있어도 되고 단독이어도 됩니다.
             // 단, 가능한 한 1번/2번 슬롯 중 앞쪽에 배치합니다.
-            plan.Add(new MonsterAIAction(
-                FortressSkillId,
-                Vector2Int.zero,
-                MonsterAISlotPreference.FirstTwo,
-                -1,
-                0));
+
 
             int battleTurn = context != null && context.CurrentTurn > 0
                 ? context.CurrentTurn
