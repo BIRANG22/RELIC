@@ -186,10 +186,23 @@ public class GridEffectTooltipUI : MonoBehaviour
 
         nameText.text = GameDataLocalization.GridEffectName(data);
         toolTipText.text = FormatToolTip(data, remainingDuration);
+        EnsureInlineIcons(toolTipText);
 
         BringToFront();
         SetVisible(true);
         SetPosition(screenPosition);
+    }
+
+    private static void EnsureInlineIcons(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        SkillEffectInlineIconRenderer renderer = text.GetComponent<SkillEffectInlineIconRenderer>();
+        if (renderer == null)
+            renderer = text.gameObject.AddComponent<SkillEffectInlineIconRenderer>();
+
+        renderer.Bind(text);
     }
 
     private static string FormatToolTip(GridEffectData data, int? remainingDuration)
