@@ -154,6 +154,21 @@ MonoBehaviour:
     }
 
     [Test]
+    public void DynamicDisplaySinkLiterals_CollectsInterpolatedAssignmentsAndReturns()
+    {
+        const string source = @"
+            label.text = $""획득 {remaining}"";
+            resultMessage = $""레드 더스티움 {amount} 획득"";
+            return $""유물 획득: {relicName}"";";
+
+        IReadOnlyList<string> values = LocalizationProjectScanner.FindDynamicDisplayLiterals(source);
+
+        Assert.That(values, Does.Contain("획득 {remaining}"));
+        Assert.That(values, Does.Contain("레드 더스티움 {amount} 획득"));
+        Assert.That(values, Does.Contain("유물 획득: {relicName}"));
+    }
+
+    [Test]
     public void FindSerializedPlayerTextLiterals_CollectsMessageTextAndDisplayNameFields()
     {
         const string source = @"

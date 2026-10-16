@@ -484,7 +484,8 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (awaitingContinue)
         {
             gainButton.gameObject.SetActive(true);
-            if (gainButtonText != null) gainButtonText.text = "진행";
+            if (gainButtonText != null)
+                gainButtonText.text = GameLocalization.Get("common.proceed", "진행");
             gainButton.interactable = true;
             return;
         }
@@ -498,7 +499,10 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         gainButton.gameObject.SetActive(true);
         if (gainButtonText != null)
-            gainButtonText.text = $"획득 {remaining}";
+            gainButtonText.text = GameLocalization.FormatWithFallback(
+                "battle.reward.acquire_count_format",
+                "획득 {0}",
+                remaining);
 
         bool hasReadySlot = false;
         if (!pendingEquipmentReward)

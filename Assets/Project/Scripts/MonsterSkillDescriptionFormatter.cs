@@ -43,7 +43,7 @@ namespace Relic.Gameplay.Data
             if (!string.IsNullOrWhiteSpace(legacyValue))
                 result = ReplaceToken(result, LegacyValueToken, legacyValue);
 
-            return result;
+            return SkillDescriptionFormatter.ReplaceEffectTokens(result, skillData.ValueRate);
         }
 
         private static string[] SplitValues(string values)

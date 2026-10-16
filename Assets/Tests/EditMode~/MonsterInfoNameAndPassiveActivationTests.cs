@@ -10,6 +10,60 @@ using TMPro;
 public sealed class MonsterInfoNameAndPassiveActivationTests
 {
     [Test]
+    public void PlayerSkillHoverDescription_UsesExcelSourceWhenLocalizationIsMissing()
+    {
+        Assert.That(
+            GameDataLocalization.ResolveLocalizedOrSource("미번역", "{E_Strike} {ValueRate1}"),
+            Is.EqualTo("{E_Strike} {ValueRate1}"));
+    }
+
+    [Test]
+    public void OptionalStructuredSkillSentence_MissingKeyKeepsEmptyFallback()
+    {
+        Assert.That(GameLocalization.ResolveMissingTranslation("ko", string.Empty), Is.Empty);
+        Assert.That(GameLocalization.ResolveMissingTranslation("en", string.Empty), Is.Empty);
+        Assert.That(GameLocalization.ResolveMissingTranslation("ko", null), Is.EqualTo("미번역"));
+    }
+
+    [Test]
+    public void DynamicSkillTooltipDetail_DisablesStaticLocalizationWriter()
+    {
+        GameObject root = new GameObject("TooltipDetail", typeof(RectTransform));
+        try
+        {
+            TMP_Text text = root.AddComponent<TextMeshProUGUI>();
+            LocalizedTMPText staticWriter = root.AddComponent<LocalizedTMPText>();
+
+            LocalizedTMPText.ProtectDynamicOwnership(text);
+
+            Assert.That(root.GetComponent<LocalizationIgnore>(), Is.Not.Null);
+            Assert.That(staticWriter.enabled, Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void MonsterSkillDescription_ReplacesEffectIdWithInlineEffectLink()
+    {
+        MonsterSkillData skill = new MonsterSkillData
+        {
+            EffectIds = "E_Strike",
+            ValueRate = "5",
+            CountRate = "1"
+        };
+
+        string formatted = MonsterSkillDescriptionFormatter.Format(
+            "전방에 {E_Strike}를 {ValueRate1}만큼 준다.", skill);
+
+        Assert.That(formatted, Does.Not.Contain("{E_Strike}"));
+        Assert.That(formatted, Does.Contain("<link=\"effecticon:E_Strike\">"));
+        Assert.That(formatted, Does.Contain("5"));
+    }
+
+    [Test]
     public void ResolveSkillName_UsesExcelLoadedNameBeforeSkillId()
     {
         MonsterSkillData skill = new MonsterSkillData

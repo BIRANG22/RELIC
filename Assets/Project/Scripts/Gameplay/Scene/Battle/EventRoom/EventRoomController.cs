@@ -3631,7 +3631,9 @@ public class EventRoomController : MonoBehaviour
             ? GameDataLocalization.RelicName(reward.Relic)
             : reward.RelicId;
 
-        return $"유물 획득: {relicName}";
+        return GameLocalization.Format(
+            "event.result.relic_acquired_format",
+            relicName);
     }
 
     private int ModifyPartyCurrentHp(int amount)
@@ -4143,7 +4145,9 @@ public class EventRoomController : MonoBehaviour
 
         // 레드 더스티움은 RewardPanel에 넣지 않고 Dustium -> GoldHud 전용 연출로 처리합니다.
         pendingDustiumAcquireAmount += safeAmount;
-        resultMessage = $"레드 더스티움 {safeAmount} 획득";
+        resultMessage = GameLocalization.Format(
+            "event.result.red_dustium_acquired_format",
+            safeAmount);
         return true;
     }
 
@@ -4616,7 +4620,9 @@ public class EventRoomController : MonoBehaviour
             reward.Relic,
             GetRelicSprite(reward.RelicId)));
 
-        resultMessage = $"유물 획득: {relicName}";
+        resultMessage = GameLocalization.Format(
+            "event.result.relic_acquired_format",
+            relicName);
         return true;
     }
 
@@ -4711,7 +4717,9 @@ public class EventRoomController : MonoBehaviour
             ? GameDataLocalization.RelicName(reward.Relic)
             : reward.RelicId;
 
-        resultMessage = $"유물 획득: {relicName}";
+        resultMessage = GameLocalization.Format(
+            "event.result.relic_acquired_format",
+            relicName);
         return true;
     }
 
@@ -6133,7 +6141,7 @@ public class EventRoomController : MonoBehaviour
                     // The caption is controlled by the active screen. A static localizer
                     // must not restore the reward label after the event sets 'Continue'.
                     DisableStaticLocalizedText(label);
-                    label.text = "진행";
+                    label.text = GameLocalization.Get("common.proceed", "진행");
                 }
                 nextButton.interactable = true;
                 BindNextButton();

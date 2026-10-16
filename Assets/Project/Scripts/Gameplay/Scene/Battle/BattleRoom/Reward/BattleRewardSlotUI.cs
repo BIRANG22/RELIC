@@ -122,7 +122,7 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
             case BattleRewardType.Remnant:
                 icon = remnantIcon != null ? remnantIcon : reward.Icon;
                 iconColor = remnantIconColor;
-                displayText = $"∑πµÂ ¥ıΩ∫∆ºøÚ\n{Mathf.Max(0, reward.Amount)}";
+                displayText = $"{GameLocalization.Get("battle.reward.red_dustium", "Î†àÎìú ÎçîÏä§Ìã∞ÏõÄ")}\n{Mathf.Max(0, reward.Amount)}";
                 break;
             case BattleRewardType.Item:
                 // Item icon and localized item name are populated by BattleRewardPanelUI.
@@ -130,11 +130,11 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
                 break;
             case BattleRewardType.Relic:
                 icon = relicRewardIcon;
-                displayText = "¿Øπ∞ »πµÊ";
+                displayText = GameLocalization.Get("battle.reward.relic_acquired", "Ïú†Î¨º ÌöçÎìù");
                 break;
             case BattleRewardType.Skill:
                 icon = memoryRewardIcon;
-                displayText = "±‚æÔ πﬂ«ˆ";
+                displayText = "Í∏∞Ïñµ Î∞úÌòÑ";
                 break;
             default:
                 displayText = reward.GetDisplayName();

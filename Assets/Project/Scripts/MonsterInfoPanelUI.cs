@@ -368,7 +368,7 @@ public class MonsterInfoPanelUI : MonoBehaviour
     private static string GetSkillName(string skillId, MonsterSkillData skillData)
     {
         if (skillData != null && !string.IsNullOrWhiteSpace(skillData.Name))
-            return skillData.Name.Trim();
+            return GameDataLocalization.MonsterSkillName(skillData).Trim();
 
         return string.IsNullOrWhiteSpace(skillId) ? string.Empty : skillId.Trim();
     }
@@ -379,7 +379,8 @@ public class MonsterInfoPanelUI : MonoBehaviour
             return patternInfo.SkillInfo.Trim();
 
         if (skillData != null && !string.IsNullOrWhiteSpace(skillData.EffectDesc))
-            return FormatMonsterEffectDescription(skillData.EffectDesc, skillData);
+            return FormatMonsterEffectDescription(
+                GameDataLocalization.MonsterSkillDescription(skillData), skillData);
 
         return string.Empty;
     }

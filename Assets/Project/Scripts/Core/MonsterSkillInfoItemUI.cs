@@ -1,4 +1,5 @@
 using TMPro;
+using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -43,7 +44,7 @@ public class MonsterSkillInfoItemUI : MonoBehaviour
             legacySkillNameText.text = safeName;
 
         if (descriptionText != null)
-            descriptionText.text = safeDescription;
+            SkillEffectInlineIconUtility.SetText(descriptionText, safeDescription);
 
         if (legacyDescriptionText != null)
             legacyDescriptionText.text = safeDescription;

@@ -113,6 +113,11 @@ public static class GameLocalization
 
     public static string ResolveMissingTranslation(string localeCode, string koreanFallback = null)
     {
+        // An explicit empty fallback is used by optional/template probes.
+        // Missing optional keys must remain empty so callers can use their authored data path.
+        if (koreanFallback != null && koreanFallback.Length == 0)
+            return string.Empty;
+
         if (!string.IsNullOrWhiteSpace(localeCode) &&
             localeCode.StartsWith("ko", StringComparison.OrdinalIgnoreCase) &&
             !string.IsNullOrWhiteSpace(koreanFallback))

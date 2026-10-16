@@ -7059,6 +7059,50 @@ MonoBehaviour:
     m_Key: skill.sentence.effect.e_removearmor
     m_Metadata:
       m_Items: []
+  - m_Id: 9164888147097975800
+    m_Key: battle.effect_info.health_recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975801
+    m_Key: battle.effect_info.mana_recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975802
+    m_Key: battle.effect_info.karma_recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975803
+    m_Key: battle.effect_info.party_karma_recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975804
+    m_Key: battle.effect_info.collision
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975805
+    m_Key: battle.effect_info.turn_start_format
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975806
+    m_Key: battle.reward.acquire_count_format
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975807
+    m_Key: event.result.red_dustium_acquired_format
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975808
+    m_Key: event.result.relic_acquired_format
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975809
+    m_Key: battle.reward.red_dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975810
+    m_Key: battle.reward.relic_acquired
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

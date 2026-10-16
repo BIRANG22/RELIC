@@ -3160,11 +3160,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839825
-    m_Localized: 
+    m_Localized: Crescent Slash
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839827
-    m_Localized: Ground Slam
+    m_Localized: '-'
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839829
@@ -3439,7 +3439,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101067
-    m_Localized: 
+    m_Localized: Inflict {E_Poison} equal to the target's current {E_Poison}.
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101070
@@ -7332,6 +7332,118 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 8700601600000000209
     m_Localized: "Remove the target\u2019s Armor."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975800
+    m_Localized: HP Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975801
+    m_Localized: Mana Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975802
+    m_Localized: Karma Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975803
+    m_Localized: Party Karma Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975804
+    m_Localized: Collision
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975805
+    m_Localized: Turn {0} Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975806
+    m_Localized: Obtain {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975807
+    m_Localized: Acquired {0} Red Dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975808
+    m_Localized: 'Relic Acquired: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975809
+    m_Localized: Red Dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975810
+    m_Localized: Relic Acquired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22221673343754240
+    m_Localized: Effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22221673364725760
+    m_Localized: Replace
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22221673364725761
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548317810688
+    m_Localized: Effect Name 11
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365120
+    m_Localized: Undiscovered
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365121
+    m_Localized: Exploration Failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365122
+    m_Localized: Crescent Swing+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365123
+    m_Localized: Crescent Swing+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365124
+    m_Localized: Crescent Swing+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365125
+    m_Localized: Crescent Swing+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365126
+    m_Localized: Crescent Swing+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365127
+    m_Localized: Crescent Swing+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365128
+    m_Localized: Crescent Swing+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365129
+    m_Localized: Crescent Swing+
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365130
+    m_Localized: Exploration Failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365131
+    m_Localized: Inflict Poison Equal to Target's Poison
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365132
+    m_Localized: Inflict additional Poison equal to the target's current Poison.
     m_Metadata:
       m_Items: []
   references:
