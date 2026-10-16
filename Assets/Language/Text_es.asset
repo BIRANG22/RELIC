@@ -4092,6 +4092,81 @@ MonoBehaviour:
     m_Localized: Si falla el ataque, la vida disminuye en {0}.
     m_Metadata:
       m_Items: []
+  - m_Id: 8700601600000000001
+    m_Localized: '{0} veces'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000002
+    m_Localized: "Avanza {1} casillas y luego inflige {2} de da\xF1o{3}."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000003
+    m_Localized: "Inflige {1} de da\xF1o{3} y luego retrocede {2} casillas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000004
+    m_Localized: "Inflige {1} de da\xF1o{3}. El da\xF1o aumenta un 50% contra enemigos
+      con {5}."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000005
+    m_Localized: "Inflige {1} de da\xF1o{3}. A\xF1ade un golpe por cada tipo de mejora
+      que tengas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000006
+    m_Localized: "Inflige {1} de da\xF1o perforante{3}. Al impactar, el da\xF1o de
+      esta habilidad aumenta {2} durante el combate."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000007
+    m_Localized: "Inflige {1} de da\xF1o perforante{3}. Al impactar al alcance m\xE1ximo,
+      aplica {2} de {5}."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000200
+    m_Localized: Otorga {1} de armadura y restaura {2} PV.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000201
+    m_Localized: "Inflige {1} de da\xF1o{3} y atrae al objetivo {2} casillas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000202
+    m_Localized: Otorga {1} de armadura y {2} de espinas.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000203
+    m_Localized: "Obt\xE9n {1} de karma."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000204
+    m_Localized: "Inflige {1} de da\xF1o{3} en posiciones de enemigos elegidas al
+      azar dentro del alcance."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000205
+    m_Localized: Aplica {1} de Vulnerabilidad.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000206
+    m_Localized: "Otorga {1} de v\xEDnculo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000207
+    m_Localized: "Inflige {1} de da\xF1o{3}. Aumenta el da\xF1o seg\xFAn las acumulaciones
+      de Vulnerabilidad del objetivo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000208
+    m_Localized: "Multiplica por {1} el efecto negativo con m\xE1s acumulaciones
+      del objetivo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000209
+    m_Localized: Elimina la armadura del objetivo.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

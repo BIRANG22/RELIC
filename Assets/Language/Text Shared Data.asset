@@ -6987,6 +6987,78 @@ MonoBehaviour:
     m_Key: skill.sentence.special.miss_penalty
     m_Metadata:
       m_Items: []
+  - m_Id: 8700601600000000000
+    m_Key: skill.sentence.count.single
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000001
+    m_Key: skill.sentence.count.multiple
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000002
+    m_Key: skill.sentence.effect.e_move.e_strike
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000003
+    m_Key: skill.sentence.effect.e_strike.e_move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000004
+    m_Key: skill.sentence.effect.e_damageupifbleeding
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000005
+    m_Key: skill.sentence.effect.e_strikecountbybuff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000006
+    m_Key: skill.sentence.effect.e_pierce.e_valueuponhit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000007
+    m_Key: skill.sentence.effect.e_pierce.e_bleed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000200
+    m_Key: skill.sentence.effect.e_armor.e_cure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000201
+    m_Key: skill.sentence.effect.e_strike.e_grab
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000202
+    m_Key: skill.sentence.effect.e_armor.e_ward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000203
+    m_Key: skill.sentence.effect.e_karma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000204
+    m_Key: skill.sentence.effect.e_randomstrike
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000205
+    m_Key: skill.sentence.effect.e_vulnerable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000206
+    m_Key: skill.sentence.effect.e_bond
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000207
+    m_Key: skill.sentence.effect.e_strike.e_strikebyvulnerable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000208
+    m_Key: skill.sentence.effect.e_debuffdouble
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000209
+    m_Key: skill.sentence.effect.e_removearmor
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

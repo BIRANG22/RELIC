@@ -51,6 +51,12 @@ namespace Relic.Gameplay.Data
             if (string.IsNullOrWhiteSpace(description))
                 return string.Empty;
 
+            // Prefer complete localized effect-combination templates when available.
+            // Existing generic formatting remains the fallback for other effects.
+            string structured = FormatStructuredEffect(description, valueRate, countRate, effectIds);
+            if (structured != null)
+                return ReplaceEffectTokens(structured, valueRate);
+
             string result = FormatAutoEffectSentences(description, valueRate, countRate, runtimeValues, effectIds);
             result = ReplaceScalingIndexed(result, scalingType, valueRate);
             result = ReplaceIndexed(result, "ValueRate", valueRate);
@@ -68,6 +74,54 @@ namespace Relic.Gameplay.Data
         /// {E_Armor} 같은 EffectId 토큰을 로컬라이징된 효과명 + 인라인 아이콘 예약 영역으로 변환합니다.
         /// 실제 아이콘 Sprite는 SkillEffectInlineIconRenderer가 StatusEffectIconDatabase에서 가져옵니다.
         /// </summary>
+        /// <summary>
+        /// Resolve an effect-combination sentence from the existing Text table.
+        /// This does not parse Korean words or branch on character/skill IDs.
+        /// The authored description is preserved if a translation key is absent.
+        /// </summary>
+        private static string FormatStructuredEffect(string description, string values, string counts, string effectIds)
+        {
+            if (string.IsNullOrWhiteSpace(effectIds) || string.IsNullOrWhiteSpace(description))
+                return null;
+
+            string[] effects = Split(effectIds);
+            if (effects.Length == 0)
+                return null;
+
+            string key = "skill.sentence.effect." + string.Join(".", effects).ToLowerInvariant();
+            string template = global::GameLocalization.Get(key, string.Empty);
+            if (string.IsNullOrWhiteSpace(template))
+                return null;
+
+            string[] valueParts = Split(values);
+            string[] countParts = Split(counts);
+            string firstCount = GetByIndexOrFirst(countParts, 0, "1");
+            string countPlain = TmpTagRegex.Replace(firstCount, string.Empty);
+            int hitCount;
+            if (!int.TryParse(countPlain, out hitCount) || hitCount < 1)
+                hitCount = 1;
+
+            string countSuffix = string.Empty;
+            if (hitCount > 1)
+            {
+                string countFormat = global::GameLocalization.Get("skill.sentence.count.multiple", string.Empty);
+                if (string.IsNullOrWhiteSpace(countFormat))
+                    return null;
+                countSuffix = global::GameLocalization.ApplyFormatTemplate(countFormat, hitCount);
+            }
+
+            // Argument layout is defined by the existing Localization workbook:
+            // {0} strike icon/name, {1} first value, {2} second value,
+            // {3} localized hit-count suffix, {4} pierce icon/name, {5} bleed icon/name.
+            // For E_Move;E_Strike, the second rate is the attack damage.
+            string first = GetDisplayValue(GetByIndexOrFirst(valueParts, 0, "0"));
+            string second = GetDisplayValue(GetByIndexOrFirst(valueParts, 1, "0"));
+            return global::GameLocalization.ApplyFormatTemplate(template,
+                "{E_Strike}", first, second, countSuffix, "{E_Pierce}", "{E_Bleed}",
+                "{E_Armor}", "{E_Cure}", "{E_Grab}", "{E_Ward}",
+                "{E_Karma}", "{E_Vulnerable}", "{E_Bond}");
+        }
+
         private static string FormatAutoEffectSentences(string source, string values, string counts, bool runtimeValues, string effectIds)
         {
             if (!source.Contains("{ValueRate") && !ArmorAutoRegex.IsMatch(source))
