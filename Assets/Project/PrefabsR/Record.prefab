@@ -613,8 +613,6 @@ MonoBehaviour:
   tooltipOffset: 0
   infoPanel: {fileID: 1007728399252082131}
   infoCancelButton: {fileID: 897147303073036595}
-  infoFadeInDuration: 0
-  infoFadeOutDuration: 0
 --- !u!1 &669638972174297389
 GameObject:
   m_ObjectHideFlags: 0
@@ -3775,6 +3773,7 @@ GameObject:
   - component: {fileID: 475728910388560764}
   - component: {fileID: 6733307250522336400}
   - component: {fileID: 6429153325560765274}
+  - component: {fileID: 1230216124760757483}
   m_Layer: 5
   m_Name: Name
   m_TagString: Untagged
@@ -3901,6 +3900,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &1230216124760757483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5539146386457762975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 6429153325560765274}
+  localizationKey: ui.record.name.2a030ed7
+  koreanSource: "\uBBF8\uBC1C\uACAC"
+  automaticallyRegistered: 1
 --- !u!1 &5676587274551887251
 GameObject:
   m_ObjectHideFlags: 0

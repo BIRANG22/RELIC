@@ -291,10 +291,6 @@ MonoBehaviour:
     m_Key: data.character.char_04.introduction
     m_Metadata:
       m_Items: []
-  - m_Id: 41385915678466055
-    m_Key: data.character.char_05.name
-    m_Metadata:
-      m_Items: []
   - m_Id: 41385915678466056
     m_Key: data.character.char_05.introduction
     m_Metadata:
@@ -353,10 +349,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41385915678466129
     m_Key: data.skill_master.s_unique_01.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915682660423
-    m_Key: data.skill_master.s_ability_10.name
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048991
@@ -2783,38 +2775,6 @@ MonoBehaviour:
     m_Key: data.event.event_07.description
     m_Metadata:
       m_Items: []
-  - m_Id: 10185974310510771
-    m_Key: data.event.event_08.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510772
-    m_Key: data.event.event_08.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510774
-    m_Key: data.event.event_08_a.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510775
-    m_Key: data.event.event_08_a.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510777
-    m_Key: data.event.event_08_b.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510778
-    m_Key: data.event.event_08_b.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510780
-    m_Key: data.event.event_08_c.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510781
-    m_Key: data.event.event_08_d.name
-    m_Metadata:
-      m_Items: []
   - m_Id: 10185974310510782
     m_Key: data.event.event_09.name
     m_Metadata:
@@ -3375,10 +3335,6 @@ MonoBehaviour:
     m_Key: data.event.event_05_b.name.ac67bf45
     m_Metadata:
       m_Items: []
-  - m_Id: 11639695972245624
-    m_Key: data.event.event_08.name.761bd4a4
-    m_Metadata:
-      m_Items: []
   - m_Id: 11639695972245648
     m_Key: data.compound.compound_02.effect_description
     m_Metadata:
@@ -3869,14 +3825,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11981180466896923
     m_Key: data.event.event_06_a.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896930
-    m_Key: data.event.event_08_c.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896931
-    m_Key: data.event.event_08_d.description
     m_Metadata:
       m_Items: []
   - m_Id: 11988550500753549
@@ -4697,38 +4645,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100957
     m_Key: data.skill_master.s_unique_01.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100961
-    m_Key: data.skill_master.s_unique_05.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100962
-    m_Key: data.skill_master.s_unique_06.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100963
-    m_Key: data.skill_master.s_unique_07.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100964
-    m_Key: data.skill_master.s_unique_08.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100978
-    m_Key: data.skill_master.s_ability_05.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100980
-    m_Key: data.skill_master.s_ability_06.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100982
-    m_Key: data.skill_master.s_ability_07.details
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100984
-    m_Key: data.skill_master.s_ability_08.details
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100993
@@ -5595,14 +5511,6 @@ MonoBehaviour:
     m_Key: data.battle_map.battlemap_16.description
     m_Metadata:
       m_Items: []
-  - m_Id: 17752310413033486
-    m_Key: data.event.event_08_a.choice_1_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17752310413033487
-    m_Key: data.event.event_08_a.choice_1_description
-    m_Metadata:
-      m_Items: []
   - m_Id: 1198327168969597041
     m_Key: battle.action.move
     m_Metadata:
@@ -6033,54 +5941,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 9164888147097975681
     m_Key: data.event.event_07.choice_2_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975682
-    m_Key: data.event.event_08.choice_1_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975683
-    m_Key: data.event.event_08.choice_1_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975684
-    m_Key: data.event.event_08.choice_1_disabled_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975685
-    m_Key: data.event.event_08.choice_1_failure_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975686
-    m_Key: data.event.event_08_a.choice_1_disabled_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975687
-    m_Key: data.event.event_08_a.choice_1_failure_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975688
-    m_Key: data.event.event_08_b.choice_1_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975689
-    m_Key: data.event.event_08_b.choice_1_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975690
-    m_Key: data.event.event_08_b.choice_1_disabled_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975691
-    m_Key: data.event.event_08_b.choice_1_failure_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975692
-    m_Key: data.event.event_08.choice_2_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975693
-    m_Key: data.event.event_08.choice_2_description
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975694
@@ -6813,6 +6673,62 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 22221673364725761
     m_Key: ui.debugbattle.roomroot.democanvas.bossdemopanel.text_tmp.aa86a49a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548317810688
+    m_Key: ui.battleeffectinfo.name.81668bb5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365120
+    m_Key: ui.record.name.2a030ed7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365121
+    m_Key: ui.battle.explorationfailedtext.898e253f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365122
+    m_Key: ui.battle.roomroot.eventroom.canvas.shoppanel.shop.content.goods01.skill.name.b505760f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365123
+    m_Key: ui.battle.roomroot.eventroom.canvas.shoppanel.shop.content.goods01.relic.name.b505760f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365124
+    m_Key: ui.battle.roomroot.eventroom.canvas.shoppanel.shop.content.goods02.skill.name.b505760f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365125
+    m_Key: ui.battle.roomroot.eventroom.canvas.shoppanel.shop.content.goods02.relic.name.b505760f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365126
+    m_Key: ui.battle.roomroot.eventroom.canvas.shoppanel.shop.content.goods03.skill.name.b505760f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365127
+    m_Key: ui.battle.roomroot.eventroom.canvas.shoppanel.shop.content.goods03.relic.name.b505760f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365128
+    m_Key: ui.battle.roomroot.eventroom.canvas.shoppanel.shop.content.goods04.skill.name.b505760f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365129
+    m_Key: ui.battle.roomroot.eventroom.canvas.shoppanel.shop.content.goods04.relic.name.b505760f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365130
+    m_Key: battle.result.exploration_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365131
+    m_Key: data.effect.e_poison_equal_target_poison.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23949548351365132
+    m_Key: data.effect.e_poison_equal_target_poison.tooltip
     m_Metadata:
       m_Items: []
   m_Metadata:

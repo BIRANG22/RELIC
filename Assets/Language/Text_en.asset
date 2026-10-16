@@ -294,10 +294,6 @@ MonoBehaviour:
     m_Localized: "\u201CDon\u2019t worry. I\u2019ll make sure everyone returns safely.\u201D"
     m_Metadata:
       m_Items: []
-  - m_Id: 41385915678466055
-    m_Localized: Raina
-    m_Metadata:
-      m_Items: []
   - m_Id: 41385915678466056
     m_Localized: "\u201CI\u2019m just going because I want to go.\u201D"
     m_Metadata:
@@ -356,10 +352,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41385915678466129
     m_Localized: Dragon's Protection
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915682660423
-    m_Localized: Crescent Swing
     m_Metadata:
       m_Items: []
   - m_Id: 41385915691048991
@@ -3168,7 +3160,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839825
-    m_Localized: Whirlwind Slash
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839827
@@ -3264,77 +3256,43 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100944
-    m_Localized: Move to the selected grid. Consumes Mana equal to the space moved.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100945
-    m_Localized: At the start of each turn, apply {E_Armor} {ValueRate1} to self
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100946
-    m_Localized: At the start of each turn, apply {E_Lifesteal} {ValueRate1} to self
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100947
-    m_Localized: At the start of each turn, apply {E_Swift} {ValueRate1} to self
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100948
-    m_Localized: At the start of each turn, apply {E_Smite} {ValueRate1} to self
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100949
-    m_Localized: At the start of each turn, apply {E_Charge} {ValueRate1} to all
-      allies
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100950
-    m_Localized: At the start of each turn, apply {E_Poison} {ValueRate1} to all
-      enemies
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100951
-    m_Localized: At the start of each turn, apply {E_Armor} {ValueRate1} to all allies
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100952
-    m_Localized: At the start of each turn, apply {E_Boost} {ValueRate1} to self
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100957
-    m_Localized: Apply {E_Armor} {ValueRate1} to all allies
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100961
-    m_Localized: Apply {E_Grit} {ValueRate1} / {E_Charge} {ValueRate2}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100962
-    m_Localized: Apply {E_Poison} {ValueRate1}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100963
-    m_Localized: Apply {E_Heal} {ValueRate1}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100964
-    m_Localized: '{E_Strike} {ValueRate1} / Apply {E_Vulnerable} {ValueRate2}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100978
-    m_Localized: Apply {E_Boost} {ValueRate1}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100980
-    m_Localized: Gives {E_Poison} {ValueRate1}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100982
-    m_Localized: '{E_Cure} is given {ValueRate1}.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100984
-    m_Localized: '{ValueRate1}of{E_Strike}gives.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100993
@@ -3480,7 +3438,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101067
-    m_Localized: Deal {E_Strike} equal to the target's {E_Poison}
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101070
@@ -4014,39 +3972,6 @@ MonoBehaviour:
       water. It seems like the remaining power in the fountain can only be used once.
     m_Metadata:
       m_Items: []
-  - m_Id: 10185974310510771
-    m_Localized: Tombstone of Resonance
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510772
-    m_Localized: "\u201CThe letters engraved on the tombstone glow faintly in response
-      to Memories. I think I can awaken the sleeping power of Memories.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510774
-    m_Localized: Tombstone of Resonance
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510775
-    m_Localized: "\u201CI think I can bring out even more of my remaining strength.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510777
-    m_Localized: Tombstone of Resonance
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510778
-    m_Localized: "\u201CI think I can finally awaken my remaining strength.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510780
-    m_Localized: Tombstone of Resonance
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510781
-    m_Localized: Tombstone of Resonance
-    m_Metadata:
-      m_Items: []
   - m_Id: 10185974310510782
     m_Localized: Echo of the Rift
     m_Metadata:
@@ -4461,10 +4386,6 @@ MonoBehaviour:
     m_Localized: Dustium Deposit
     m_Metadata:
       m_Items: []
-  - m_Id: 11639695972245624
-    m_Localized: Tombstone of Resonance
-    m_Metadata:
-      m_Items: []
   - m_Id: 11639695972245648
     m_Localized: Damage received during this turn is reduced by 50%.
     m_Metadata:
@@ -4828,15 +4749,6 @@ MonoBehaviour:
   - m_Id: 11981180466896923
     m_Localized: "\u201CI guess this is enough. I don\u2019t plan on holding on for
       long.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896930
-    m_Localized: "\u201CIt seems like there is no strength left to pull out any more.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896931
-    m_Localized: "\u201CThe traces of Memory are scattered, and it seems that they
-      can no longer resonate.\u201D"
     m_Metadata:
       m_Items: []
   - m_Id: 11988550500753549
@@ -5855,19 +5767,6 @@ MonoBehaviour:
     m_Localized: Boss Arabella
     m_Metadata:
       m_Items: []
-  - m_Id: 17752310413033486
-    m_Localized: Resonance Continues.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17752310413033487
-    m_Localized: '50% chance of success
-
-      Success: Awakening 1 Memory
-
-      Failure:
-      Memory loss'
-    m_Metadata:
-      m_Items: []
   - m_Id: 2479938580071356898
     m_Localized: Damage
     m_Metadata:
@@ -6344,64 +6243,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 9164888147097975681
     m_Localized: Increases maximum Mana of all party members by 2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975682
-    m_Localized: It Begins to Resonate.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975683
-    m_Localized: '90% chance of success
-
-      Success: Awakening 1 Memory
-
-      Failure:
-      Memory loss'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975684
-    m_Localized: No Memories available to awaken.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975685
-    m_Localized: The selected Memory is lost
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975686
-    m_Localized: No Memories available to awaken.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975687
-    m_Localized: The selected Memory is lost
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975688
-    m_Localized: Resonance Continues.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975689
-    m_Localized: '30% chance of success
-
-      Success: Awakening 1 Memory
-
-      Failure:
-      Memory loss'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975690
-    m_Localized: No Memories available to awaken.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975691
-    m_Localized: The selected Memory is lost
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975692
-    m_Localized: Leave the Place
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975693
-    m_Localized: Event ends
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975694
