@@ -86,6 +86,7 @@ GameObject:
   - component: {fileID: 5665181871591627562}
   - component: {fileID: 8358293436359463535}
   - component: {fileID: 1922495201005023623}
+  - component: {fileID: 2247186020746896442}
   m_Layer: 0
   m_Name: Name
   m_TagString: Untagged
@@ -212,6 +213,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2247186020746896442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3803989209629203403}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1922495201005023623}
+  localizationKey: ui.battleeffectinfo.name.81668bb5
+  koreanSource: "\uD6A8\uACFC\uC774\uB984 11"
+  automaticallyRegistered: 1
 --- !u!1 &5231764963992516706
 GameObject:
   m_ObjectHideFlags: 0

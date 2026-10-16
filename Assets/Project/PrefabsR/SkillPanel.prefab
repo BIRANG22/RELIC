@@ -1773,7 +1773,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 653330409689886531}
   localizationKey: ui.monsterskill.typetext.d76003b9
-  koreanSource: "\uC2A4\uD0AC\uD6A8\uACFC"
+  koreanSource: "\uC2A4\uD0AC\uD6A8\uACFC\n"
   automaticallyRegistered: 1
 --- !u!1 &7276242936680714527
 GameObject:
