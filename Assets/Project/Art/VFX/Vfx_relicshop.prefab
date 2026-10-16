@@ -4903,7 +4903,7 @@ GameObject:
   - component: {fileID: 6294900251884843602}
   - component: {fileID: 3959970228989842014}
   m_Layer: 0
-  m_Name: Vfx_root_relic
+  m_Name: Vfx_relicshop
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
