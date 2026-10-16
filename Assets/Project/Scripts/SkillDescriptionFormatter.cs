@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Relic.Gameplay.Data
@@ -11,6 +12,13 @@ namespace Relic.Gameplay.Data
     public static class SkillDescriptionFormatter
     {
         private static readonly Regex EffectTokenRegex = new(@"\{(?<id>E_[A-Za-z0-9_]+)\}", RegexOptions.Compiled);
+        // Matches only authored effect/value pairs. Other descriptions remain untouched.
+        private static readonly Regex AutoEffectRegex = new(
+            @"\{(?<id>E_[A-Za-z0-9_]+)\}\s+\{ValueRate(?<index>\d+)\}", RegexOptions.Compiled);
+        private static readonly Regex MissingHpAutoRegex = new(
+            @"\{E_Strike\}\s+\{E_MissingHPStrike\}\s+\{ValueRate1\}", RegexOptions.Compiled);
+        private static readonly Regex TmpTagRegex = new(@"<[^>]+>", RegexOptions.Compiled);
+
 
         public static string Format(SkillMasterData data)
         {
@@ -27,10 +35,16 @@ namespace Relic.Gameplay.Data
 
         public static string Format(string description, string valueRate, string countRate, string scalingType)
         {
+            return Format(description, valueRate, countRate, scalingType, false);
+        }
+
+        public static string Format(string description, string valueRate, string countRate,
+            string scalingType, bool runtimeValues)
+        {
             if (string.IsNullOrWhiteSpace(description))
                 return string.Empty;
 
-            string result = description;
+            string result = FormatAutoEffectSentences(description, valueRate, countRate, runtimeValues);
             result = ReplaceScalingIndexed(result, scalingType, valueRate);
             result = ReplaceIndexed(result, "ValueRate", valueRate);
             result = ReplaceIndexed(result, "CountRate", countRate);
@@ -47,6 +61,143 @@ namespace Relic.Gameplay.Data
         /// {E_Armor} 같은 EffectId 토큰을 로컬라이징된 효과명 + 인라인 아이콘 예약 영역으로 변환합니다.
         /// 실제 아이콘 Sprite는 SkillEffectInlineIconRenderer가 StatusEffectIconDatabase에서 가져옵니다.
         /// </summary>
+        private static string FormatAutoEffectSentences(string source, string values, string counts, bool runtimeValues)
+        {
+            // Do not affect manually worded or older CountRate-based descriptions.
+            if (!source.Contains("{ValueRate"))
+                return source;
+
+            bool missingHp = MissingHpAutoRegex.IsMatch(source);
+            string work = missingHp ? MissingHpAutoRegex.Replace(source, "{E_Strike} {ValueRate1}") : source;
+            MatchCollection matches = AutoEffectRegex.Matches(work);
+            if (matches.Count == 0)
+                return source;
+            // Existing prose with a manually authored ending must keep its meaning.
+            string tail = work.Substring(matches[matches.Count - 1].Index + matches[matches.Count - 1].Length).Trim();
+            if (tail.Length > 0)
+                return source;
+
+            string[] valueParts = Split(values);
+            string[] countParts = Split(counts);
+            StringBuilder builder = new StringBuilder();
+            int previous = 0;
+            for (int i = 0; i < matches.Count; i++)
+            {
+                Match match = matches[i];
+                builder.Append(work, previous, match.Index - previous);
+                string id = match.Groups["id"].Value;
+                int index;
+                if (!int.TryParse(match.Groups["index"].Value, out index) || index < 1)
+                    index = 1;
+                string value = GetByIndexOrFirst(valueParts, index - 1, "0");
+                string count = GetByIndexOrFirst(countParts, index - 1, "1");
+                int parsedCount;
+                bool multiple = int.TryParse(TmpTagRegex.Replace(count, ""), out parsedCount) && parsedCount > 1;
+                bool last = i == matches.Count - 1;
+                string verb = GetEffectVerb(id, last);
+                string particle = GetEffectParticle(id);
+                string amount = GetEffectUnit(id);
+                string extraCount = multiple ? " " + parsedCount + "회" : "";
+
+                // Preserve the {E_xxx} token so the existing inline-icon renderer still works.
+                if (missingHp && id == "E_Strike" && !runtimeValues)
+                {
+                    builder.Append("{E_Strike}를 잃은 생명력의 ").Append(value).Append("%만큼")
+                        .Append(extraCount).Append(' ').Append(verb);
+                }
+                else
+                {
+                    builder.Append('{').Append(id).Append('}').Append(particle).Append(' ')
+                        .Append(value).Append(amount).Append(extraCount).Append(' ').Append(verb);
+                }
+                previous = match.Index + match.Length;
+                if (!last)
+                {
+                    string between = work.Substring(previous, matches[i + 1].Index - previous);
+                    // Only automatically connect directly adjacent effect/value pairs.
+                    if (string.IsNullOrWhiteSpace(between))
+                    {
+                        builder.Append(", ");
+                        previous = matches[i + 1].Index;
+                    }
+                }
+            }
+            builder.Append(work, previous, work.Length - previous);
+            return builder.ToString().TrimEnd() + (work.TrimEnd().EndsWith(".") ? "" : ".");
+        }
+
+        private static string GetEffectParticle(string id)
+        {
+            // Resolve the Korean particle from the localized effect name, not from
+            // a numeric value. A final Hangul syllable with jongseong takes '을'.
+            string name = null;
+            DataManager manager = DataManager.Instance;
+            if (manager?.EffectDatabase != null &&
+                manager.EffectDatabase.TryGet(id, out EffectMasterData effect) && effect != null)
+                name = GameDataLocalization.EffectName(effect);
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                char last = name.TrimEnd()[name.TrimEnd().Length - 1];
+                if (last >= 0xAC00 && last <= 0xD7A3)
+                    return ((last - 0xAC00) % 28) == 0 ? "를" : "을";
+            }
+
+            switch (id)
+            {
+                case "E_Strike":
+                case "E_Armor":
+                case "E_Mana":
+                case "E_Karma":
+                case "E_Smite":
+                case "E_Grit":
+                case "E_Heal":
+                case "E_Cure":
+                    return "를";
+                default:
+                    return "을";
+            }
+        }
+
+        private static string GetEffectUnit(string id)
+        {
+            return id == "E_Knockback" || id == "E_Grab" ? "칸" : "만큼";
+        }
+
+        private static string GetEffectVerb(string id, bool last)
+        {
+            string verb;
+            switch (id)
+            {
+                case "E_Strike":
+                case "E_Pierce":
+                case "E_MissingHPStrike":
+                    verb = "주"; break;
+                case "E_Knockback":
+                case "E_Grab":
+                    verb = "적용하"; break;
+                case "E_Heal":
+                case "E_Cure":
+                    verb = "회복하"; break;
+                case "E_Boost":
+                case "E_Grit":
+                case "E_Charge":
+                case "E_Smite":
+                case "E_Swift":
+                case "E_Lifesteal":
+                case "E_Karma":
+                case "E_Mana":
+                    verb = "획득하"; break;
+                default:
+                    verb = "부여하"; break;
+            }
+            if (verb == "주") return last ? "준다" : "주고";
+            if (verb == "적용하") return last ? "적용한다" : "적용하고";
+            if (verb == "회복하") return last ? "회복한다" : "회복하고";
+            if (verb == "획득하") return last ? "획득한다" : "획득하고";
+            return last ? "부여한다" : "부여하고";
+        }
+
         public static string ReplaceEffectTokens(string source)
         {
             return ReplaceEffectTokens(source, null);
