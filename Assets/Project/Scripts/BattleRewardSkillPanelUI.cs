@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -46,6 +46,17 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     [SerializeField] private Vector3 equippedSkillVfxOffset = Vector3.zero;
     [Tooltip("Local scale applied to the spawned VFX.")]
     [SerializeField] private Vector3 equippedSkillVfxScale = Vector3.one;
+
+    [Header("Skill Slot Hover Preview VFX")]
+    [Tooltip("Preview VFX shown on the destination empty slot when hovering a reward card, or on an occupied slot while choosing a replacement.")]
+    [SerializeField] private GameObject skillSlotPreviewVfxPrefab;
+    [SerializeField] private Vector3 skillSlotPreviewVfxOffset = Vector3.zero;
+    [SerializeField] private Vector3 skillSlotPreviewVfxScale = Vector3.one;
+    private GameObject activeSkillSlotPreviewVfx;
+    private string previewCharacterId;
+    private int previewEquippedIndex = -1;
+    private bool previewFromReplacement;
+    private int previewOfferedCardIndex = -1;
 
     [Header("Rarity VFX Prefabs")]
     [SerializeField] private GameObject commonVfxPrefab;
@@ -172,6 +183,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         reward = data;
         completed = onCompleted;
         processing = false;
+        ClearSkillSlotPreviewVfx();
         CancelReplacementSelection();
         if (equipCloseCoroutine != null)
         {
@@ -343,6 +355,10 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     {
         if (index < 0 || index >= cardHovered.Length) return;
         cardHovered[index] = clickedCardIndex < 0 && pendingReplacementCard < 0 && !processing && cardInteractionReady[index] && hovered;
+        if (cardHovered[index])
+            ShowPreviewForOfferedCard(index);
+        else if (!hovered && !previewFromReplacement && previewOfferedCardIndex == index)
+            ClearSkillSlotPreviewVfx();
     }
 
     private void LateUpdate()
@@ -448,6 +464,88 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         }
     }
 
+    // A reward-card hover previews the first free slot of the memory's owner.
+    // When all three slots are occupied, the preview is shown on the chosen
+    // replacement slot instead (see RewardSkillEquippedSlotClick).
+    private void ShowPreviewForOfferedCard(int cardIndex)
+    {
+        if (cardIndex < 0 || cardIndex >= characterIds.Length ||
+            clickedCardIndex >= 0 || pendingReplacementCard >= 0 || processing)
+            return;
+        string id = characterIds[cardIndex];
+        DataManager dm = DataManager.Instance;
+        if (string.IsNullOrWhiteSpace(id) || dm?.CharacterRuntimeStore == null ||
+            !dm.CharacterRuntimeStore.TryGet(id, out CharacterRuntimeData character) || character == null)
+            return;
+        SkillInventoryEquipService.EnsureEquippedSkillArray(character);
+        if (character.EquippedSkillIds == null) return;
+        for (int slot = 1; slot <= 3 && slot < character.EquippedSkillIds.Length; slot++)
+        {
+            if (!string.IsNullOrWhiteSpace(character.EquippedSkillIds[slot])) continue;
+            ShowSkillSlotPreviewVfx(id, slot, false, cardIndex);
+            return;
+        }
+        ClearSkillSlotPreviewVfx();
+    }
+
+    internal void SetReplacementSlotPreview(string characterId, int equippedIndex, bool hovering)
+    {
+        bool eligible = hovering && CanShowReplacementHover(characterId, equippedIndex);
+        if (eligible)
+            ShowSkillSlotPreviewVfx(characterId, equippedIndex, true, -1);
+        else if (previewFromReplacement && previewEquippedIndex == equippedIndex &&
+                 string.Equals(previewCharacterId, characterId, StringComparison.OrdinalIgnoreCase))
+            ClearSkillSlotPreviewVfx();
+    }
+
+    private void ShowSkillSlotPreviewVfx(string characterId, int equippedIndex,
+        bool replacement, int cardIndex)
+    {
+        if (skillSlotPreviewVfxPrefab == null) return;
+        if (activeSkillSlotPreviewVfx != null &&
+            previewEquippedIndex == equippedIndex && previewFromReplacement == replacement &&
+            string.Equals(previewCharacterId, characterId, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        ClearSkillSlotPreviewVfx();
+        RectTransform slotRect = FindEquippedSkillIconRect(characterId, equippedIndex);
+        if (slotRect == null || !slotRect.gameObject.activeInHierarchy) return;
+        GameObject instance = Instantiate(skillSlotPreviewVfxPrefab, transform, false);
+        instance.name = skillSlotPreviewVfxPrefab.name + "_SkillSlotPreviewVFX";
+        instance.transform.position = slotRect.TransformPoint(slotRect.rect.center) +
+            transform.TransformVector(skillSlotPreviewVfxOffset);
+        instance.transform.localRotation = Quaternion.identity;
+        instance.transform.localScale = skillSlotPreviewVfxScale;
+        instance.transform.SetAsLastSibling();
+        // An overlaid preview must never block the pointer from reaching the slot.
+        CanvasGroup group = instance.GetComponent<CanvasGroup>();
+        if (group == null) group = instance.AddComponent<CanvasGroup>();
+        group.interactable = false;
+        group.blocksRaycasts = false;
+        foreach (Graphic graphic in instance.GetComponentsInChildren<Graphic>(true))
+            graphic.raycastTarget = false;
+        instance.SetActive(true);
+        activeSkillSlotPreviewVfx = instance;
+        previewCharacterId = characterId;
+        previewEquippedIndex = equippedIndex;
+        previewFromReplacement = replacement;
+        previewOfferedCardIndex = cardIndex;
+    }
+
+    private void ClearSkillSlotPreviewVfx()
+    {
+        if (activeSkillSlotPreviewVfx != null)
+        {
+            activeSkillSlotPreviewVfx.SetActive(false);
+            Destroy(activeSkillSlotPreviewVfx);
+        }
+        activeSkillSlotPreviewVfx = null;
+        previewCharacterId = null;
+        previewEquippedIndex = -1;
+        previewFromReplacement = false;
+        previewOfferedCardIndex = -1;
+    }
+
     private void SelectFirst() { Select(0); }
     private void SelectSecond() { Select(1); }
     private void SelectThird() { Select(2); }
@@ -459,6 +557,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         // equipped slot is clicked. Do not allow reselecting or cancelling it.
         if (pendingReplacementCard >= 0) return;
         string id = characterIds[index];
+        ClearSkillSlotPreviewVfx();
         SkillMasterData skill = offeredSkills[index];
         if (string.IsNullOrWhiteSpace(id) || skill == null) return;
         var dm = DataManager.Instance;
@@ -518,6 +617,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private void ConfirmSkillSelection(int index, string id, string skillId, CharacterRuntimeData character, int target)
     {
+        ClearSkillSlotPreviewVfx();
         // Replacement mode already started the unselected-card dissolve.
         // Fade the selected card only after the player confirms the replacement slot.
         bool isReplacement = pendingReplacementCard == index;
@@ -558,24 +658,21 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
         ScreenSpaceTransferOrbEffect effect = Instantiate(skillEquipOrbEffectPrefab);
         effect.gameObject.SetActive(true);
-        SkillRarity rarity = offeredSkills[selectedIndex] != null
-            ? offeredSkills[selectedIndex].Rarity : SkillRarity.Common;
-        ScreenSpaceTransferOrbEffect.OrbRarity orbRarity = ScreenSpaceTransferOrbEffect.OrbRarity.Common;
-        switch (rarity)
-        {
-            case SkillRarity.Rare: orbRarity = ScreenSpaceTransferOrbEffect.OrbRarity.Rare; break;
-            case SkillRarity.Epic: orbRarity = ScreenSpaceTransferOrbEffect.OrbRarity.Epic; break;
-            case SkillRarity.Unique: orbRarity = ScreenSpaceTransferOrbEffect.OrbRarity.Unique; break;
-        }
+        // Preserve the transfer VFX prefab's original particle colors regardless of skill rarity.
         orbTransferPending = true;
         effect.ReachedDestination += () =>
         {
             if (!orbTransferPending) return;
             orbTransferPending = false;
-            if (this != null && gameObject.activeInHierarchy)
+            if (this != null && reward != null && gameObject.activeInHierarchy)
+            {
+                // The equipped icon must appear on the exact frame the orb arrives.
+                // Before this callback, Char_content still displays its previous state.
+                BindPartyContent();
                 PlayEquippedSkillVfx(characterId, equippedSlot);
+            }
         };
-        effect.PlayDetached(startScreen, endScreen, orbRarity);
+        effect.PlayDetachedOriginalColors(startScreen, endScreen);
         return true;
     }
 
@@ -911,10 +1008,14 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         if (!runtime.AcquiredSkillIds.Contains(skillId)) runtime.AcquiredSkillIds.Add(skillId);
         dm.BattleRuntimeStore.Set(runtime);
         RecordDiscoveryService.RegisterSkill(dm, skillId);
-        BindPartyContent();
-        // Orb flight completes first; the destination VFX is triggered on arrival.
-        // If the Orb prefab is unassigned, retain immediate equip VFX behavior.
-        if (!orbStarted) PlayEquippedSkillVfx(characterId, targetSlot);
+        // Keep the current slot image (or empty slot) visible during orb travel.
+        // Updating Char_content here would reveal the new equipped skill too early.
+        // Without an orb, equip and show the icon immediately as before.
+        if (!orbStarted)
+        {
+            BindPartyContent();
+            PlayEquippedSkillVfx(characterId, targetSlot);
+        }
         equipCloseCoroutine = StartCoroutine(CloseAfterEquippedPreview());
     }
 
@@ -967,7 +1068,13 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             orbWait += Time.unscaledDeltaTime;
             yield return null;
         }
-        orbTransferPending = false;
+        if (orbTransferPending)
+        {
+            // Safety fallback: if the orb is interrupted, do not leave the
+            // newly equipped icon hidden indefinitely.
+            orbTransferPending = false;
+            if (reward != null) BindPartyContent();
+        }
         // Wait until the selected-card fade, other-card dissolves, and equipped preview finish.
         float previewDelay = Mathf.Max(0f, equipCloseDelay, unselectedCardDissolveDuration,
             (selectionUsedCenterMove ? selectedCardMoveDuration : 0f) +
@@ -1023,6 +1130,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private void Finish()
     {
+        ClearSkillSlotPreviewVfx();
         orbTransferPending = false;
         CancelReplacementSelection();
         ResetSelectedCardMovement();
@@ -1193,6 +1301,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        ClearSkillSlotPreviewVfx();
         StopSelectedCardFade();
         ResetSelectedCardMovement();
         ClearEquippedSkillVfx();
@@ -1657,9 +1766,6 @@ public sealed class RewardSkillEquippedSlotClick : MonoBehaviour, IPointerClickH
     private int equippedIndex = -1;
     private bool occupied;
     private bool pointerInside;
-    private Transform hoverRoot;
-    private TMP_Text hoverText;
-    private CanvasGroup hoverCanvasGroup;
 
     public void Configure(BattleRewardSkillPanelUI owner, string id, int index, bool hasSkill)
     {
@@ -1667,31 +1773,16 @@ public sealed class RewardSkillEquippedSlotClick : MonoBehaviour, IPointerClickH
         characterId = id;
         equippedIndex = index;
         occupied = hasSkill;
-        hoverRoot = transform.Find("Hover");
-        hoverText = hoverRoot != null ? hoverRoot.Find("Text")?.GetComponent<TMP_Text>() : null;
-        if (hoverText == null && hoverRoot != null)
-            hoverText = hoverRoot.GetComponentInChildren<TMP_Text>(true);
-        if (hoverRoot != null)
-        {
-            hoverCanvasGroup = hoverRoot.GetComponent<CanvasGroup>();
-            if (hoverCanvasGroup == null)
-                hoverCanvasGroup = hoverRoot.gameObject.AddComponent<CanvasGroup>();
-            hoverCanvasGroup.interactable = false;
-            hoverCanvasGroup.blocksRaycasts = false;
-            // A label inside Hover must never swallow the slot's click/hover.
-            foreach (Graphic graphic in hoverRoot.GetComponentsInChildren<Graphic>(true))
-                graphic.raycastTarget = false;
-            hoverRoot.gameObject.SetActive(true);
-        }
+        // The old Hover/Text label is no longer used. Keep it hidden.
+        Transform oldHover = transform.Find("Hover");
+        if (oldHover != null) oldHover.gameObject.SetActive(false);
         RefreshHover();
     }
 
     public void RefreshHover()
     {
-        bool visible = pointerInside && occupied && panel != null &&
-            panel.CanShowReplacementHover(characterId, equippedIndex);
-        if (hoverText != null) hoverText.text = visible ? "교체" : string.Empty;
-        if (hoverCanvasGroup != null) hoverCanvasGroup.alpha = visible ? 1f : 0f;
+        if (panel != null)
+            panel.SetReplacementSlotPreview(characterId, equippedIndex, pointerInside && occupied);
     }
 
     public void OnPointerEnter(PointerEventData eventData)

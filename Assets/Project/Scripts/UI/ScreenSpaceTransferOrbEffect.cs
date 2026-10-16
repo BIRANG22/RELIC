@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -87,6 +87,13 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
     {
         if (!started && isActiveAndEnabled)
             StartCoroutine(Play(startScreen, endScreen, color));
+    }
+
+    /// <summary>Play using the VFX prefab's own colors, ignoring rarity and tint settings.</summary>
+    public void PlayDetachedOriginalColors(Vector2 startScreen, Vector2 endScreen)
+    {
+        if (!started && isActiveAndEnabled)
+            StartCoroutine(PlayInternal(startScreen, endScreen, Color.white, false));
     }
 
     /// <summary>Rarity-based API. Always applies the inspector rarity color.</summary>

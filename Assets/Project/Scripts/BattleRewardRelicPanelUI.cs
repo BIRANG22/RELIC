@@ -34,10 +34,6 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private Coroutine tooltipFadeCoroutine;
     private Vector2Int lastTooltipScreenSize;
 
-    [Header("Equipped Relic Slot Hover")]
-    [SerializeField, Min(1f)] private float relicSlotHoverScale = 1.1f;
-    [SerializeField, Min(0f)] private float relicSlotHoverDuration = 0.2f;
-
     [Header("Equipped Relic Slot Lines")]
     [SerializeField] private Color equippedRelicLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
     [SerializeField] private Color emptyRelicLineColor = new Color32(0x77, 0x77, 0x77, 0xFF);
@@ -80,7 +76,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private bool resolving;
 
     [Header("Relic Equip VFX")]
-    [Tooltip("VFX played at the destination relic slot when equipment is applied.")]
+    [Tooltip("VFX appears at the center of the relic slot in content/Char1~3/Relic after equip or replacement.")]
     [SerializeField] private GameObject equippedSlotVfxPrefab;
     [SerializeField] private Vector3 equippedSlotVfxOffset = Vector3.zero;
     [SerializeField] private Vector3 equippedSlotVfxScale = Vector3.one;
@@ -88,12 +84,65 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     [SerializeField, Min(0f)] private float slotVfxLifetime = 2f;
     private readonly System.Collections.Generic.List<GameObject> spawnedEquipVfx = new System.Collections.Generic.List<GameObject>();
 
+    [Header("Relic Slot Hover Preview VFX")]
+    [Tooltip("Separate VFX shown on the content slot displaying Equip or Replace on hover.")]
+    [SerializeField] private GameObject slotPreviewVfxPrefab;
+    [SerializeField] private Vector3 slotPreviewVfxOffset = Vector3.zero;
+    [SerializeField] private Vector3 slotPreviewVfxScale = Vector3.one;
+    private GameObject activeSlotPreviewVfx;
+    private int previewCharacterIndex = -1;
+    private int previewSlotIndex = -1;
+
+
+
+    [Header("Item Intro Animation")]
+    [Tooltip("Time item stays at the center of the screen before moving to its original position.")]
+    [SerializeField, Min(0f)] private float itemCenterHoldDuration = 0.5f;
+    [Tooltip("Time item takes to move from the screen center to its original position.")]
+    [SerializeField, Min(0f)] private float itemReturnMoveDuration = 0.5f;
+    [Header("Item Intro Fade In")]
+    [Tooltip("Duration for the complete item (including its intro VFX) to fade in at screen center.")]
+    [SerializeField, Min(0f)] private float itemIntroFadeInDuration = 0.35f;
+    private CanvasGroup introItemCanvasGroup;
+    private float introItemOriginalAlpha = 1f;
+    private bool introItemOriginalInteractable = true;
+    private bool introItemOriginalBlocksRaycasts = true;
+    [Header("Item Image Intro VFX")]
+    [Tooltip("VFX spawned when item/Itemimage/Icon appears at screen center.")]
+    [SerializeField] private GameObject itemImageIntroVfxPrefab;
+    [SerializeField] private Vector3 itemImageIntroVfxOffset = Vector3.zero;
+    [SerializeField] private Vector3 itemImageIntroVfxScale = Vector3.one;
+    [SerializeField, Min(0f)] private float itemImageIntroVfxLifetime = 2f;
+    [Tooltip("Apply the relic rarity color to all ParticleSystems in the intro VFX prefab.")]
+    [SerializeField] private bool tintItemIntroParticlesByRarity = true;
+    [Header("Other Panels Fade In")]
+    [Tooltip("Fade duration for other panels after the item reaches its original position.")]
+    [SerializeField, Min(0f)] private float otherPanelsFadeInDuration = 0.35f;
+    private readonly System.Collections.Generic.List<CanvasGroup> introOtherCanvasGroups =
+        new System.Collections.Generic.List<CanvasGroup>();
+    private readonly System.Collections.Generic.List<float> introOtherOriginalAlphas =
+        new System.Collections.Generic.List<float>();
+    private readonly System.Collections.Generic.List<bool> introOtherOriginalInteractables = new System.Collections.Generic.List<bool>();
+    private readonly System.Collections.Generic.List<bool> introOtherOriginalRaycasts = new System.Collections.Generic.List<bool>();
+    private GameObject activeItemImageIntroVfx;
+    private Coroutine itemIntroCoroutine;
+    private RectTransform introItemRect;
+    private Vector3 introItemOriginalWorldPosition;
+    private Vector2 introItemOriginalAnchoredPosition;
+    private readonly System.Collections.Generic.List<GameObject> introHiddenObjects =
+        new System.Collections.Generic.List<GameObject>();
 
     [Header("Equip Close Delay")]
     [SerializeField, Min(0f)] private float equipCloseDelay = 1f;
     [Header("Panel Close Fade")]
     [SerializeField, Min(0f)] private float panelFadeOutDuration = 0.25f;
     [SerializeField] private CanvasGroup panelCanvasGroup;
+    [Header("Equipped Relic Icon Pop")]
+    [SerializeField, Min(1f)] private float equippedIconStartScale = 1.25f;
+    [SerializeField, Min(0f)] private float equippedIconScaleDuration = 0.2f;
+    private Coroutine equippedIconScaleCoroutine;
+    private Image animatedEquippedIcon;
+    private Vector3 animatedIconOriginalScale;
     private Coroutine equipCloseCoroutine;
     private int lockedEquipCharacterIndex = -1;
 
@@ -108,7 +157,6 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         public Image[] relics = new Image[6];
         public Image[] relicLines = new Image[6];
         public BattleRelicSlotTooltipHover[] tooltipHovers = new BattleRelicSlotTooltipHover[6];
-        public TMP_Text[] slotHoverLabels = new TMP_Text[6];
         public int hoveredSlot = -1;
         public bool characterHovered;
     }
@@ -154,6 +202,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        ResetItemIntro();
         if (equipCloseCoroutine != null)
         {
             StopCoroutine(equipCloseCoroutine);
@@ -161,6 +210,8 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         }
         lockedEquipCharacterIndex = -1;
         ClearEquipVfx();
+        ClearSlotPreviewVfx();
+        RestoreEquippedIconScale();
         if (panelCanvasGroup != null)
         {
             panelCanvasGroup.alpha = 1f;
@@ -194,7 +245,9 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             StopCoroutine(equipCloseCoroutine);
             equipCloseCoroutine = null;
         }
+        ResetItemIntro();
         ClearEquipVfx();
+        ClearSlotPreviewVfx();
         EnsurePanelCanvasGroup();
         panelCanvasGroup.alpha = 1f;
         panelCanvasGroup.interactable = true;
@@ -205,6 +258,239 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         Bind();
         Refresh();
         transform.SetAsLastSibling();
+        BeginItemIntro();
+    }
+
+    // Preserve the original active state of the other direct children.
+    // Their active states are restored after the item reaches its original position.
+    private void BeginItemIntro()
+    {
+        introItemRect = transform.Find("item") as RectTransform;
+        if (introItemRect == null)
+        {
+            Debug.LogWarning("[BattleRewardRelicPanelUI] item RectTransform not found; intro skipped.", this);
+            return;
+        }
+
+        Canvas.ForceUpdateCanvases();
+        introItemOriginalWorldPosition = introItemRect.position;
+        introItemOriginalAnchoredPosition = introItemRect.anchoredPosition;
+
+        RectTransform parentRect = introItemRect.parent as RectTransform;
+        Canvas canvas = GetComponentInParent<Canvas>();
+        Canvas rootCanvas = canvas != null ? canvas.rootCanvas : null;
+        Camera camera = rootCanvas == null || rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay
+            ? null : rootCanvas.worldCamera;
+        Vector3 centerWorld;
+        if (parentRect == null || !RectTransformUtility.ScreenPointToWorldPointInRectangle(
+                parentRect, new Vector2(Screen.width * 0.5f, Screen.height * 0.5f), camera, out centerWorld))
+        {
+            centerWorld = introItemOriginalWorldPosition;
+        }
+
+        introHiddenObjects.Clear();
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            GameObject child = transform.GetChild(i).gameObject;
+            if (child == introItemRect.gameObject || !child.activeSelf) continue;
+            introHiddenObjects.Add(child);
+            child.SetActive(false);
+        }
+
+        // Display the complete item hierarchy from the start of the intro.
+        // Keep every other panel hidden until the item finishes returning.
+        introItemRect.gameObject.SetActive(true);
+        introItemCanvasGroup = introItemRect.GetComponent<CanvasGroup>();
+        if (introItemCanvasGroup == null)
+            introItemCanvasGroup = introItemRect.gameObject.AddComponent<CanvasGroup>();
+        introItemOriginalAlpha = introItemCanvasGroup.alpha;
+        introItemOriginalInteractable = introItemCanvasGroup.interactable;
+        introItemOriginalBlocksRaycasts = introItemCanvasGroup.blocksRaycasts;
+        introItemCanvasGroup.alpha = 0f;
+        introItemCanvasGroup.interactable = false;
+        introItemCanvasGroup.blocksRaycasts = false;
+        introItemRect.position = centerWorld;
+        SpawnItemImageIntroVfx();
+        panelCanvasGroup.interactable = false;
+        panelCanvasGroup.blocksRaycasts = false;
+        itemIntroCoroutine = StartCoroutine(AnimateItemIntro(centerWorld));
+    }
+
+    private IEnumerator AnimateItemIntro(Vector3 centerWorld)
+    {
+        // Fade in the whole item while it rests at screen center. If the configured
+        // hold is shorter than the fade, finish the fade before moving.
+        float fadeDuration = Mathf.Max(0f, itemIntroFadeInDuration);
+        float centerDuration = Mathf.Max(0f, itemCenterHoldDuration, fadeDuration);
+        float centerElapsed = 0f;
+        while (centerElapsed < centerDuration)
+        {
+            centerElapsed += Time.unscaledDeltaTime;
+            float progress = fadeDuration <= 0f ? 1f : Mathf.Clamp01(centerElapsed / fadeDuration);
+            progress = progress * progress * (3f - 2f * progress);
+            if (introItemCanvasGroup != null)
+                introItemCanvasGroup.alpha = introItemOriginalAlpha * progress;
+            yield return null;
+        }
+        if (introItemCanvasGroup != null)
+            introItemCanvasGroup.alpha = introItemOriginalAlpha;
+
+        // Keep the rest of the panel hidden throughout the movement.
+        float duration = Mathf.Max(0f, itemReturnMoveDuration);
+        if (introItemRect != null && duration > 0f)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = t * t * (3f - 2f * t);
+                introItemRect.position = Vector3.LerpUnclamped(centerWorld, introItemOriginalWorldPosition, t);
+                yield return null;
+            }
+        }
+        if (introItemRect != null)
+            introItemRect.anchoredPosition = introItemOriginalAnchoredPosition;
+        // Reveal other UI only when the item has reached its final position.
+        yield return FadeInOtherIntroObjects();
+        panelCanvasGroup.interactable = true;
+        panelCanvasGroup.blocksRaycasts = true;
+        RestoreIntroItemCanvasGroup();
+        introItemRect = null;
+        itemIntroCoroutine = null;
+        RefreshSlotPreviewVfx();
+    }
+
+    private IEnumerator FadeInOtherIntroObjects()
+    {
+        RestoreOtherIntroAlpha();
+        for (int i = 0; i < introHiddenObjects.Count; i++)
+        {
+            GameObject child = introHiddenObjects[i];
+            if (child == null) continue;
+            CanvasGroup group = child.GetComponent<CanvasGroup>();
+            if (group == null) group = child.AddComponent<CanvasGroup>();
+            introOtherCanvasGroups.Add(group);
+            introOtherOriginalAlphas.Add(group.alpha);
+            introOtherOriginalInteractables.Add(group.interactable);
+            introOtherOriginalRaycasts.Add(group.blocksRaycasts);
+            group.alpha = 0f;
+            group.blocksRaycasts = false;
+            group.interactable = false;
+            child.SetActive(true);
+        }
+        introHiddenObjects.Clear();
+
+        float duration = Mathf.Max(0f, otherPanelsFadeInDuration);
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            t = t * t * (3f - 2f * t);
+            for (int i = 0; i < introOtherCanvasGroups.Count; i++)
+                if (introOtherCanvasGroups[i] != null)
+                    introOtherCanvasGroups[i].alpha = introOtherOriginalAlphas[i] * t;
+            yield return null;
+        }
+        RestoreOtherIntroAlpha();
+    }
+
+    private void RestoreOtherIntroAlpha()
+    {
+        for (int i = 0; i < introOtherCanvasGroups.Count; i++)
+        {
+            CanvasGroup group = introOtherCanvasGroups[i];
+            if (group == null) continue;
+            group.alpha = introOtherOriginalAlphas[i];
+            group.interactable = introOtherOriginalInteractables[i];
+            group.blocksRaycasts = introOtherOriginalRaycasts[i];
+        }
+        introOtherCanvasGroups.Clear();
+        introOtherOriginalAlphas.Clear();
+        introOtherOriginalInteractables.Clear();
+        introOtherOriginalRaycasts.Clear();
+    }
+
+    private void RestoreOtherIntroObjects()
+    {
+        RestoreOtherIntroAlpha();
+        foreach (GameObject child in introHiddenObjects)
+            if (child != null) child.SetActive(true);
+        introHiddenObjects.Clear();
+    }
+
+    private void SpawnItemImageIntroVfx()
+    {
+        if (itemImageIntroVfxPrefab == null || introItemRect == null) return;
+        // Spawn at the complete item's visual center, outside any child Mask.
+        Vector3 center = introItemRect.TransformPoint(introItemRect.rect.center);
+        activeItemImageIntroVfx = Instantiate(itemImageIntroVfxPrefab, introItemRect, false);
+        activeItemImageIntroVfx.name = itemImageIntroVfxPrefab.name + "_ItemIntroVFX";
+        activeItemImageIntroVfx.transform.position = center + introItemRect.TransformVector(itemImageIntroVfxOffset);
+        activeItemImageIntroVfx.transform.localRotation = Quaternion.identity;
+        activeItemImageIntroVfx.transform.localScale = itemImageIntroVfxScale;
+        activeItemImageIntroVfx.transform.SetAsLastSibling();
+        if (tintItemIntroParticlesByRarity)
+            ApplyIntroParticleRarityColor(activeItemImageIntroVfx);
+        activeItemImageIntroVfx.SetActive(true);
+        if (itemImageIntroVfxLifetime > 0f)
+            Destroy(activeItemImageIntroVfx, itemImageIntroVfxLifetime);
+    }
+
+    private void ApplyIntroParticleRarityColor(GameObject vfx)
+    {
+        if (vfx == null || current == null || DataManager.Instance?.RelicDatabase == null)
+            return;
+
+        if (!DataManager.Instance.RelicDatabase.TryGet(current.RewardId, out RelicData relic) || relic == null)
+            return;
+
+        Color rarityColor;
+        switch (RelicRarityUtility.GetRevealRank(ParseRarity(relic.Rarity)))
+        {
+            case 2: rarityColor = rareColor; break;
+            case 3: rarityColor = epicColor; break;
+            case 4: rarityColor = uniqueColor; break;
+            default: rarityColor = commonColor; break;
+        }
+
+        // Change only the instantiated VFX. Keep the prefab asset unchanged.
+        foreach (ParticleSystem particles in vfx.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            ParticleSystem.MainModule main = particles.main;
+            main.startColor = new ParticleSystem.MinMaxGradient(rarityColor);
+        }
+    }
+
+    private void RestoreIntroItemCanvasGroup()
+    {
+        if (introItemCanvasGroup == null) return;
+        introItemCanvasGroup.alpha = introItemOriginalAlpha;
+        introItemCanvasGroup.interactable = introItemOriginalInteractable;
+        introItemCanvasGroup.blocksRaycasts = introItemOriginalBlocksRaycasts;
+        introItemCanvasGroup = null;
+    }
+
+    private void ResetItemIntro()
+    {
+        if (activeItemImageIntroVfx != null)
+        {
+            Destroy(activeItemImageIntroVfx);
+            activeItemImageIntroVfx = null;
+        }
+        if (itemIntroCoroutine != null)
+        {
+            StopCoroutine(itemIntroCoroutine);
+            itemIntroCoroutine = null;
+        }
+        RestoreIntroItemCanvasGroup();
+        if (introItemRect != null)
+        {
+            introItemRect.anchoredPosition = introItemOriginalAnchoredPosition;
+            introItemRect = null;
+        }
+        RestoreOtherIntroObjects();
     }
 
     private static TMP_Text FindText(Transform target)
@@ -279,7 +565,15 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
                     if (hover == null) hover = relicSlot.gameObject.AddComponent<BattleRelicSlotTooltipHover>();
                     hover.Configure(this, relicSlot as RectTransform, index, j);
                     Transform hoverRoot = relicSlot.Find("Hover");
-                    e.slotHoverLabels[j] = FindText(hoverRoot);
+                    // Hover label is no longer used; preview VFX is the only equip hint.
+                    if (hoverRoot != null)
+                    {
+                        foreach (TMP_Text text in hoverRoot.GetComponentsInChildren<TMP_Text>(true))
+                        {
+                            text.text = string.Empty;
+                            text.enabled = false;
+                        }
+                    }
                     if (hoverRoot != null)
                     {
                         hoverRoot.gameObject.SetActive(true);
@@ -411,31 +705,74 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 
     private void RefreshSlotHoverLabels(int characterIndex)
     {
-        CharacterEntry e = entries[characterIndex];
-        if (e == null) return;
-        int firstEmpty = FindFirstEmptyRelicSlot(e);
-        int highlighted = -1;
-        if (lockedEquipCharacterIndex < 0 && (e.characterHovered || e.hoveredSlot >= 0))
+        // Keep the preview VFX behavior; no Equip/Replace text is displayed.
+        RefreshSlotPreviewVfx();
+    }
+
+    // Mirror the same slot that currently displays the Equip/Replace hover label.
+    private void RefreshSlotPreviewVfx()
+    {
+        int selectedCharacter = -1;
+        int selectedSlot = -1;
+        if (current != null && !resolving && lockedEquipCharacterIndex < 0 &&
+            itemIntroCoroutine == null && slotPreviewVfxPrefab != null)
         {
-            if (e.hoveredSlot >= 0 && e.hoveredSlot < 6 &&
-                e.tooltipHovers[e.hoveredSlot] != null && e.tooltipHovers[e.hoveredSlot].HasRelic)
-                highlighted = e.hoveredSlot;
-            else
-                highlighted = firstEmpty;
-        }
-        for (int i = 0; i < 6; i++)
-        {
-            TMP_Text label = e.slotHoverLabels[i];
-            if (label == null) continue;
-            label.text = i == highlighted ? (i == firstEmpty ? "장착" : "교체") : string.Empty;
-            label.SetAllDirty();
-            Transform hoverRoot = label.transform.parent;
-            if (hoverRoot != null)
+            for (int i = 0; i < entries.Length; i++)
             {
-                CanvasGroup group = hoverRoot.GetComponent<CanvasGroup>();
-                if (group != null) group.alpha = i == highlighted ? 1f : 0f;
+                CharacterEntry entry = entries[i];
+                if (entry == null || entry.root == null || !entry.root.activeInHierarchy)
+                    continue;
+                int firstEmpty = FindFirstEmptyRelicSlot(entry);
+                int highlighted = -1;
+                if (entry.characterHovered || entry.hoveredSlot >= 0)
+                {
+                    if (entry.hoveredSlot >= 0 && entry.hoveredSlot < 6 &&
+                        entry.tooltipHovers[entry.hoveredSlot] != null &&
+                        entry.tooltipHovers[entry.hoveredSlot].HasRelic)
+                        highlighted = entry.hoveredSlot;
+                    else
+                        highlighted = firstEmpty;
+                }
+                if (highlighted < 0) continue;
+                selectedCharacter = i;
+                selectedSlot = highlighted;
+                // An explicitly hovered slot takes priority over character hover.
+                if (entry.hoveredSlot >= 0) break;
             }
         }
+
+        if (selectedCharacter == previewCharacterIndex && selectedSlot == previewSlotIndex &&
+            activeSlotPreviewVfx != null)
+            return;
+
+        ClearSlotPreviewVfx();
+        if (selectedCharacter < 0 || selectedSlot < 0) return;
+        Transform slot = FindEquippedContentSlot(selectedCharacter, selectedSlot);
+        if (slot == null) return;
+        Canvas.ForceUpdateCanvases();
+        RectTransform rect = slot as RectTransform;
+        Vector3 center = rect != null ? rect.TransformPoint(rect.rect.center) : slot.position;
+        activeSlotPreviewVfx = Instantiate(slotPreviewVfxPrefab, transform, false);
+        activeSlotPreviewVfx.name = slotPreviewVfxPrefab.name + "_RelicSlotPreviewVFX";
+        activeSlotPreviewVfx.transform.position = center + slot.TransformVector(slotPreviewVfxOffset);
+        activeSlotPreviewVfx.transform.localRotation = Quaternion.identity;
+        activeSlotPreviewVfx.transform.localScale = slotPreviewVfxScale;
+        activeSlotPreviewVfx.transform.SetAsLastSibling();
+        activeSlotPreviewVfx.SetActive(true);
+        previewCharacterIndex = selectedCharacter;
+        previewSlotIndex = selectedSlot;
+    }
+
+    private void ClearSlotPreviewVfx()
+    {
+        if (activeSlotPreviewVfx != null)
+        {
+            activeSlotPreviewVfx.SetActive(false);
+            Destroy(activeSlotPreviewVfx);
+            activeSlotPreviewVfx = null;
+        }
+        previewCharacterIndex = -1;
+        previewSlotIndex = -1;
     }
 
     internal void EquipRelicSlot(int characterIndex, int slotIndex)
@@ -582,9 +919,6 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         tooltipUI.anchoredPosition += new Vector2(parentDelta.x, parentDelta.y);
     }
 
-    internal float RelicSlotHoverScale => relicSlotHoverScale;
-    internal float RelicSlotHoverDuration => relicSlotHoverDuration;
-
     internal void HideEquippedRelicTooltip()
     {
         activeTooltipSlot = null;
@@ -699,6 +1033,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private void LockEquippingCharacter(int selectedIndex)
     {
         lockedEquipCharacterIndex = selectedIndex;
+        ClearSlotPreviewVfx();
         for (int i = 0; i < entries.Length; i++)
         {
             CharacterEntry entry = entries[i];
@@ -731,14 +1066,22 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(runtime);
         Refresh();
 
-        CharacterEntry entry = entries[characterIndex];
+        // Animate only the newly equipped icon, not its slot or other content.
+        int animatedVisualSlot = active ? 0 : destination - 1;
+        CharacterEntry animatedEntry = entries[characterIndex];
+        if (animatedEntry != null && animatedVisualSlot >= 0 && animatedVisualSlot < animatedEntry.relics.Length)
+            PlayEquippedIconScale(animatedEntry.relics[animatedVisualSlot]);
+
+        // Find the actual displayed slot after Refresh() has updated its icons.
+        // Keep the original six-slot visual order for both equip and replacement.
         int visualSlot = active ? 0 : destination - 1;
-        Transform slot = null;
-        if (entry != null && visualSlot >= 0 && visualSlot < entry.relics.Length &&
-            entry.relics[visualSlot] != null)
-            slot = entry.relics[visualSlot].transform.parent;
-        SpawnEquipVfx(equippedSlotVfxPrefab, slot, equippedSlotVfxOffset,
-            equippedSlotVfxScale, slotVfxLifetime);
+        Transform slot = FindEquippedContentSlot(characterIndex, visualSlot);
+        if (slot != null)
+            SpawnEquipVfx(equippedSlotVfxPrefab, slot, equippedSlotVfxOffset,
+                equippedSlotVfxScale, slotVfxLifetime);
+        else if (equippedSlotVfxPrefab != null)
+            Debug.LogWarning("[BattleRewardRelicPanelUI] Equipped VFX slot not found: Char" +
+                (characterIndex + 1) + "/Relic/Relic" + (visualSlot + 1).ToString("00"), this);
 
         if (equipCloseDelay > 0f)
             yield return new WaitForSecondsRealtime(equipCloseDelay);
@@ -755,16 +1098,73 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         callback?.Invoke();
     }
 
+    private void PlayEquippedIconScale(Image icon)
+    {
+        RestoreEquippedIconScale();
+        if (icon == null || icon.sprite == null || !icon.enabled) return;
+        animatedEquippedIcon = icon;
+        animatedIconOriginalScale = icon.rectTransform.localScale;
+        if (equippedIconScaleDuration <= 0f || equippedIconStartScale <= 1f) return;
+        icon.rectTransform.localScale = animatedIconOriginalScale * equippedIconStartScale;
+        equippedIconScaleCoroutine = StartCoroutine(AnimateEquippedIconScale(icon.rectTransform));
+    }
+
+    private IEnumerator AnimateEquippedIconScale(RectTransform icon)
+    {
+        Vector3 start = animatedIconOriginalScale * equippedIconStartScale;
+        float elapsed = 0f;
+        while (elapsed < equippedIconScaleDuration && icon != null)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / equippedIconScaleDuration);
+            t = t * t * (3f - 2f * t);
+            icon.localScale = Vector3.LerpUnclamped(start, animatedIconOriginalScale, t);
+            yield return null;
+        }
+        if (icon != null) icon.localScale = animatedIconOriginalScale;
+        equippedIconScaleCoroutine = null;
+        animatedEquippedIcon = null;
+    }
+
+    private void RestoreEquippedIconScale()
+    {
+        if (equippedIconScaleCoroutine != null)
+        {
+            StopCoroutine(equippedIconScaleCoroutine);
+            equippedIconScaleCoroutine = null;
+        }
+        if (animatedEquippedIcon != null)
+            animatedEquippedIcon.rectTransform.localScale = animatedIconOriginalScale;
+        animatedEquippedIcon = null;
+    }
+
+    private Transform FindEquippedContentSlot(int characterIndex, int slotIndex)
+    {
+        if (characterIndex < 0 || characterIndex >= entries.Length || slotIndex < 0 || slotIndex >= 6)
+            return null;
+
+        // Resolve the current hierarchy first, not potentially stale inspector references.
+        Transform root = content != null ? content.Find("Char" + (characterIndex + 1)) : null;
+        Transform slot = root != null ? root.Find("Relic/Relic" + (slotIndex + 1).ToString("00")) : null;
+        if (slot != null) return slot;
+
+        CharacterEntry entry = entries[characterIndex];
+        Image icon = entry != null ? entry.relics[slotIndex] : null;
+        return icon != null ? icon.transform.parent : null;
+    }
+
     private void SpawnEquipVfx(GameObject prefab, Transform anchor, Vector3 offset,
         Vector3 size, float lifetime)
     {
         if (prefab == null || anchor == null) return;
-        // Keep the VFX out of any Mask on the item/slot and preserve its UI position.
+        // Rebuild UI before sampling the equipped slot's final center.
+        Canvas.ForceUpdateCanvases();
+        // Spawn outside slot masks without moving the slot or changing LayoutGroup order.
         RectTransform anchorRect = anchor as RectTransform;
         Vector3 center = anchorRect != null ? anchorRect.TransformPoint(anchorRect.rect.center) : anchor.position;
         GameObject vfx = Instantiate(prefab, transform, false);
         vfx.name = prefab.name + "_RelicEquipVFX";
-        vfx.transform.position = center + transform.TransformVector(offset);
+        vfx.transform.position = center + anchor.TransformVector(offset);
         vfx.transform.localRotation = Quaternion.identity;
         vfx.transform.localScale = size;
         vfx.transform.SetAsLastSibling();
@@ -954,24 +1354,13 @@ public sealed class BattleRelicSlotTooltipHover : MonoBehaviour, IPointerEnterHa
     private int characterIndex;
     private int slotIndex;
     public bool HasRelic => !string.IsNullOrWhiteSpace(relicId);
-    private Coroutine scaleCoroutine;
-    private Vector3 originalScale = Vector3.one;
-    private bool hasOriginalScale;
 
     public void Configure(BattleRewardRelicPanelUI tooltipPanel, RectTransform targetSlot, int character, int index)
     {
         panel = tooltipPanel;
         characterIndex = character;
         slotIndex = index;
-        if (slot != targetSlot || !hasOriginalScale)
-        {
-            slot = targetSlot;
-            if (slot != null)
-            {
-                originalScale = slot.localScale;
-                hasOriginalScale = true;
-            }
-        }
+        slot = targetSlot;
     }
 
     public void SetRelicId(string value)
@@ -982,12 +1371,10 @@ public sealed class BattleRelicSlotTooltipHover : MonoBehaviour, IPointerEnterHa
         if (string.IsNullOrWhiteSpace(relicId))
         {
             panel?.HideEquippedRelicTooltip();
-            AnimateScale(false);
         }
         else
         {
             panel?.ShowEquippedRelicTooltip(slot, relicId);
-            AnimateScale(true);
         }
     }
 
@@ -997,7 +1384,6 @@ public sealed class BattleRelicSlotTooltipHover : MonoBehaviour, IPointerEnterHa
         panel?.SetRelicSlotHover(characterIndex, slotIndex, true);
         if (string.IsNullOrWhiteSpace(relicId)) return;
         panel?.ShowEquippedRelicTooltip(slot, relicId);
-        AnimateScale(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -1005,7 +1391,6 @@ public sealed class BattleRelicSlotTooltipHover : MonoBehaviour, IPointerEnterHa
         isHovered = false;
         panel?.SetRelicSlotHover(characterIndex, slotIndex, false);
         panel?.HideEquippedRelicTooltip();
-        AnimateScale(false);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -1014,52 +1399,9 @@ public sealed class BattleRelicSlotTooltipHover : MonoBehaviour, IPointerEnterHa
             panel?.EquipRelicSlot(characterIndex, slotIndex);
     }
 
-    private void AnimateScale(bool enlarged)
-    {
-        if (slot == null || !hasOriginalScale) return;
-        if (scaleCoroutine != null)
-        {
-            StopCoroutine(scaleCoroutine);
-            scaleCoroutine = null;
-        }
-        float multiplier = enlarged && !string.IsNullOrWhiteSpace(relicId)
-            ? (panel != null ? panel.RelicSlotHoverScale : 1.1f)
-            : 1f;
-        Vector3 destination = originalScale * multiplier;
-        float duration = panel != null ? panel.RelicSlotHoverDuration : 0.2f;
-        if (!isActiveAndEnabled || duration <= 0f)
-        {
-            slot.localScale = destination;
-            return;
-        }
-        scaleCoroutine = StartCoroutine(AnimateScaleRoutine(destination, duration));
-    }
-
-    private IEnumerator AnimateScaleRoutine(Vector3 destination, float duration)
-    {
-        Vector3 start = slot.localScale;
-        float elapsed = 0f;
-        while (elapsed < duration && slot != null)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            t = t * t * (3f - 2f * t);
-            slot.localScale = Vector3.LerpUnclamped(start, destination, t);
-            yield return null;
-        }
-        if (slot != null) slot.localScale = destination;
-        scaleCoroutine = null;
-    }
-
     private void OnDisable()
     {
         isHovered = false;
-        if (scaleCoroutine != null)
-        {
-            StopCoroutine(scaleCoroutine);
-            scaleCoroutine = null;
-        }
-        if (slot != null && hasOriginalScale) slot.localScale = originalScale;
         panel?.HideEquippedRelicTooltip();
     }
 }
