@@ -7261,6 +7261,79 @@ MonoBehaviour:
     m_Localized: On miss, lose {0} HP.
     m_Metadata:
       m_Items: []
+  - m_Id: 8700601600000000001
+    m_Localized: '{0} times'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000002
+    m_Localized: Advance {1} tile(s), then deal {2} damage{3}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000003
+    m_Localized: Deal {1} damage{3}, then retreat {2} tile(s).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000004
+    m_Localized: Deal {1} damage{3}. Deal 50% more damage to enemies affected by
+      {5}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000005
+    m_Localized: Deal {1} damage{3}. Gain one additional hit for each different buff
+      you have.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000006
+    m_Localized: "Deal {1} piercing damage{3}. On hit, increase this skill\u2019s
+      damage by {2} for the rest of the battle."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000007
+    m_Localized: Deal {1} piercing damage{3}. On a hit at maximum range, apply {2}
+      {5}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000200
+    m_Localized: Grant {1} Armor and restore {2} HP.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000201
+    m_Localized: Deal {1} damage{3} and pull the target {2} tile(s).
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000202
+    m_Localized: Grant {1} Armor and {2} Thorns.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000203
+    m_Localized: Gain {1} Karma.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000204
+    m_Localized: Deal {1} damage{3} to randomly selected enemy positions within range.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000205
+    m_Localized: Apply {1} Vulnerable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000206
+    m_Localized: Grant {1} Bond.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000207
+    m_Localized: "Deal {1} damage{3}. Increase damage by the target\u2019s Vulnerable
+      stacks."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000208
+    m_Localized: Multiply the highest-stack debuff on the target by {1}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8700601600000000209
+    m_Localized: "Remove the target\u2019s Armor."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

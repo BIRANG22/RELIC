@@ -172,6 +172,11 @@ public static class BattlePlayerSkillPreviewCalculator
         for (int i = 0; i < valueTexts.Length; i++)
         {
             int value = preview.EffectValues[i];
+            // Negative E_Move values indicate retreat distance. The combat preview
+            // clamps effect values to zero; description text needs the authored distance.
+            if (i < entries.Count && entries[i] != null && entries[i].EffectId == "E_Move" &&
+                value == 0 && entries[i].ValueAmount < 0)
+                value = Mathf.Abs(entries[i].ValueAmount);
             BattleSkillNumberBreakdown breakdown = i < preview.EffectValueBreakdowns.Count
                 ? preview.EffectValueBreakdowns[i]
                 : null;
