@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -115,8 +115,29 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private Coroutine selectedCardFadeCoroutine;
     private readonly CanvasGroup[] selectedCardFadeGroups = new CanvasGroup[3];
 
+    [Header("Selected Card Equip Shrink")]
+    [Tooltip("Seconds for the selected Mask width and height to contract toward the center when equipped.")]
+    [SerializeField, Min(0f)] private float selectedCardEquipShrinkDuration = 0.18f;
+    [Tooltip("Final width/height ratio for the selected Mask. 0 collapses into its center.")]
+    [SerializeField, Range(0f, 1f)] private float selectedCardEquipEndScale = 0f;
+
+    [Header("Selected Card Move To Center")]
+    [Tooltip("Seconds for the chosen card's visual contents to slide to SkillPanel2 while other cards dissolve. The three SkillPanel layout objects stay active.")]
+    [SerializeField, Min(0f)] private float selectedCardMoveDuration = 0.6f;
+    private Coroutine selectedCardMoveCoroutine;
+    private bool selectionUsedCenterMove;
+    private readonly Transform[] selectedCardVisualRoots = new Transform[3];
+    private readonly Vector3[] selectedCardVisualBasePositions = new Vector3[3];
+    private readonly Vector3[] selectedCardVisualBaseScales = new Vector3[3];
+    private readonly Vector2[] selectedCardMaskBaseSizeDeltas = new Vector2[3];
+    private bool orbTransferPending;
+
     private Coroutine selectionDissolveCoroutine;
     private readonly CardUIStencilDissolveMaskController[] selectionDissolveMasks = new CardUIStencilDissolveMaskController[3];
+    [Header("Skill Equip Transfer Orb")]
+    [Tooltip("Prefab containing ScreenSpaceTransferOrbEffect. Its own VFX prefab and rarity colors are used.")]
+    [SerializeField] private ScreenSpaceTransferOrbEffect skillEquipOrbEffectPrefab;
+
     private GameObject activeEquippedSkillVfx;
     private readonly Transform[] scaleCardRoots = new Transform[3];
     private readonly Vector3[] baseCardScales = new Vector3[3];
@@ -158,6 +179,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             equipCloseCoroutine = null;
         }
         StopSelectedCardFade();
+        ResetSelectedCardMovement();
         ResetSkillPanelCloseFade();
         if (selectionDissolveCoroutine != null)
         {
@@ -183,10 +205,22 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             if (card == null) continue;
             scaleCardRoots[i] = card;
             Transform fadeRoot = FindChild(card, "Mask") ?? card;
+            // Move only the visual Mask child, never the LayoutGroup-controlled SkillPanel.
+            // Record the original position so the next reward opens correctly.
+            selectedCardVisualRoots[i] = fadeRoot != card ? fadeRoot : null;
+            if (selectedCardVisualRoots[i] != null)
+            {
+                selectedCardVisualBasePositions[i] = selectedCardVisualRoots[i].localPosition;
+                selectedCardVisualBaseScales[i] = selectedCardVisualRoots[i].localScale;
+                if (selectedCardVisualRoots[i] is RectTransform maskRect)
+                    selectedCardMaskBaseSizeDeltas[i] = maskRect.sizeDelta;
+            }
             CanvasGroup fadeGroup = fadeRoot.GetComponent<CanvasGroup>();
             if (fadeGroup == null) fadeGroup = fadeRoot.gameObject.AddComponent<CanvasGroup>();
             selectedCardFadeGroups[i] = fadeGroup;
             fadeGroup.alpha = 1f;
+            fadeGroup.interactable = true;
+            fadeGroup.blocksRaycasts = true;
             selectionDissolveMasks[i] = FindSelectionDissolveMask(card);
             if (selectionDissolveMasks[i] != null)
                 selectionDissolveMasks[i].ResetDissolve();
@@ -308,7 +342,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     public void SetCardHovered(int index, bool hovered)
     {
         if (index < 0 || index >= cardHovered.Length) return;
-        cardHovered[index] = cardInteractionReady[index] && hovered;
+        cardHovered[index] = clickedCardIndex < 0 && pendingReplacementCard < 0 && !processing && cardInteractionReady[index] && hovered;
     }
 
     private void LateUpdate()
@@ -421,6 +455,9 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private void Select(int index)
     {
         if (processing || reward == null || index < 0 || index >= characterIds.Length || !cardInteractionReady[index]) return;
+        // Once replacement mode begins, the offered skill is locked until an
+        // equipped slot is clicked. Do not allow reselecting or cancelling it.
+        if (pendingReplacementCard >= 0) return;
         string id = characterIds[index];
         SkillMasterData skill = offeredSkills[index];
         if (string.IsNullOrWhiteSpace(id) || skill == null) return;
@@ -492,7 +529,72 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             StartSelectedCardFade(index);
         else
             PlaySelectionCardEffects(index, true);
-        EquipSelectedSkill(id, skillId, character, target);
+        bool orbStarted = PlaySkillEquipTransferOrb(index, id, target);
+        EquipSelectedSkill(id, skillId, character, target, orbStarted);
+    }
+
+    // The transfer effect owns an independent Overlay Canvas and remains alive
+    // after the reward panel closes. Screen coordinates are captured at equip time.
+    private bool PlaySkillEquipTransferOrb(int selectedIndex, string characterId, int equippedSlot)
+    {
+        if (skillEquipOrbEffectPrefab == null || !skillEquipOrbEffectPrefab.HasMovingVfxPrefab ||
+            selectedIndex < 0 || selectedIndex >= scaleCardRoots.Length)
+            return false;
+
+        Transform source = selectedCardVisualRoots[selectedIndex] != null
+            ? selectedCardVisualRoots[selectedIndex] : scaleCardRoots[selectedIndex];
+        RectTransform startRect = source as RectTransform;
+        RectTransform destinationRect = FindEquippedSkillIconRect(characterId, equippedSlot);
+        if (startRect == null || destinationRect == null)
+        {
+            Debug.LogWarning("[BattleRewardSkillPanelUI] Could not resolve the transfer orb's source card or destination slot.", this);
+            return false;
+        }
+
+        Camera startCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(startRect, Camera.main);
+        Camera endCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(destinationRect, Camera.main);
+        Vector2 startScreen = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(startRect, startCamera);
+        Vector2 endScreen = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(destinationRect, endCamera);
+
+        ScreenSpaceTransferOrbEffect effect = Instantiate(skillEquipOrbEffectPrefab);
+        effect.gameObject.SetActive(true);
+        SkillRarity rarity = offeredSkills[selectedIndex] != null
+            ? offeredSkills[selectedIndex].Rarity : SkillRarity.Common;
+        ScreenSpaceTransferOrbEffect.OrbRarity orbRarity = ScreenSpaceTransferOrbEffect.OrbRarity.Common;
+        switch (rarity)
+        {
+            case SkillRarity.Rare: orbRarity = ScreenSpaceTransferOrbEffect.OrbRarity.Rare; break;
+            case SkillRarity.Epic: orbRarity = ScreenSpaceTransferOrbEffect.OrbRarity.Epic; break;
+            case SkillRarity.Unique: orbRarity = ScreenSpaceTransferOrbEffect.OrbRarity.Unique; break;
+        }
+        orbTransferPending = true;
+        effect.ReachedDestination += () =>
+        {
+            if (!orbTransferPending) return;
+            orbTransferPending = false;
+            if (this != null && gameObject.activeInHierarchy)
+                PlayEquippedSkillVfx(characterId, equippedSlot);
+        };
+        effect.PlayDetached(startScreen, endScreen, orbRarity);
+        return true;
+    }
+
+    private RectTransform FindEquippedSkillIconRect(string characterId, int equippedSlot)
+    {
+        if (string.IsNullOrWhiteSpace(characterId) || equippedSlot < 1 || equippedSlot > 3)
+            return null;
+        Transform content = charContent != null ? charContent : FindChild(transform, "Char_content");
+        DataManager dm = DataManager.Instance;
+        if (content == null || dm?.PartyRuntimeStore == null) return null;
+        for (int i = 0; i < 3; i++)
+        {
+            if (!string.Equals(dm.PartyRuntimeStore.GetCharacterId(i), characterId,
+                StringComparison.OrdinalIgnoreCase)) continue;
+            Transform owner = PartyRef(i)?.root != null ? PartyRef(i).root : FindChild(content, "Char" + (i + 1));
+            Transform slot = FindChild(owner, "Skill/Skill0" + equippedSlot);
+            return (FindChild(slot, "Icon") ?? slot) as RectTransform;
+        }
+        return null;
     }
 
     private void PlaySelectionCardEffects(int selectedIndex, bool fadeSelectedCard)
@@ -501,20 +603,142 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         if (scaleCardRoots[selectedIndex] != null)
             scaleCardRoots[selectedIndex].localScale = baseCardScales[selectedIndex] * clickedScale;
 
+        // Hide hover selection immediately: PointerExit may not occur when clicks lock the cards.
+        for (int i = 0; i < scaleCardRoots.Length; i++)
+        {
+            cardHovered[i] = false;
+            if (scaleCardRoots[i] != null)
+            {
+                RewardSkillCardHover hover = scaleCardRoots[i].GetComponent<RewardSkillCardHover>();
+                if (hover != null) hover.HideSelection();
+            }
+        }
+
         // Keep all three SkillPanel roots active to avoid LayoutGroup repositioning.
-        foreach (Button choiceButton in buttons)
-            if (choiceButton != null) choiceButton.interactable = false;
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            if (buttons[i] == null) continue;
+            // Lock every card as soon as a choice is made, including while
+            // waiting for an occupied equipped slot to be replaced.
+            buttons[i].interactable = false;
+        }
         for (int i = 0; i < scaleCardRoots.Length; i++)
         {
             if (i == selectedIndex || scaleCardRoots[i] == null) continue;
             cardHovered[i] = false;
             SetCardAudioEnabled(scaleCardRoots[i], false);
         }
+        if (selectedCardMoveCoroutine != null)
+        {
+            StopCoroutine(selectedCardMoveCoroutine);
+            selectedCardMoveCoroutine = null;
+        }
+        // Only replacement mode moves its selected card to the center.
+        // Immediate equip keeps the original panel position.
+        selectionUsedCenterMove = !fadeSelectedCard;
+        if (selectionUsedCenterMove)
+            selectedCardMoveCoroutine = StartCoroutine(MoveSelectedCardToCenter(selectedIndex));
         if (fadeSelectedCard)
             StartSelectedCardFade(selectedIndex);
         if (selectionDissolveCoroutine != null)
             StopCoroutine(selectionDissolveCoroutine);
         selectionDissolveCoroutine = StartCoroutine(DissolveUnselectedCards(selectedIndex));
+    }
+
+    private void RestorePendingReplacementChoice()
+    {
+        ResetSelectedCardMovement();
+        if (selectionDissolveCoroutine != null)
+        {
+            StopCoroutine(selectionDissolveCoroutine);
+            selectionDissolveCoroutine = null;
+        }
+        pendingReplacementCard = -1;
+        pendingReplacementCharacterId = null;
+        clickedCardIndex = -1;
+        for (int i = 0; i < scaleCardRoots.Length; i++)
+        {
+            Transform card = scaleCardRoots[i];
+            if (card == null || offeredSkills[i] == null) continue;
+            CardUIStencilDissolveMaskController mask = GetUnselectedDissolveMask(i);
+            if (mask != null) mask.ResetDissolve();
+            CanvasGroup group = selectedCardFadeGroups[i];
+            if (group != null)
+            {
+                group.alpha = 1f;
+                group.interactable = true;
+                group.blocksRaycasts = true;
+            }
+            card.localScale = baseCardScales[i] * normalScale;
+            cardHovered[i] = false;
+            SetCardAudioEnabled(card, cardInteractionReady[i]);
+            if (buttons[i] != null)
+                buttons[i].interactable = cardInteractionReady[i] &&
+                    !string.IsNullOrEmpty(characterIds[i]) &&
+                    BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(offeredSkills[i], characterIds[i]);
+        }
+        RefreshReplacementSlotHovers();
+    }
+
+    private IEnumerator MoveSelectedCardToCenter(int selectedIndex)
+    {
+        Transform visual = selectedCardVisualRoots[selectedIndex];
+        Transform centerCard = scaleCardRoots[1];
+        if (visual == null || centerCard == null || selectedIndex == 1)
+        {
+            selectedCardMoveCoroutine = null;
+            yield break;
+        }
+
+        RectTransform centerRect = centerCard as RectTransform;
+        RectTransform visualRect = visual as RectTransform;
+        Vector3 startingWorldPosition = visual.position;
+        float duration = Mathf.Max(0f, selectedCardMoveDuration);
+        float elapsed = 0f;
+        while (elapsed < duration && reward != null && visual != null && centerCard != null)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            t = t * t * (3f - 2f * t);
+            // Convert both centers into world space; safe with CanvasScaler and
+            // nested UI transforms. The original panel layout slots never move.
+            Vector3 targetCenter = centerRect != null
+                ? centerRect.TransformPoint(centerRect.rect.center) : centerCard.position;
+            Vector3 visualCenterOffset = visualRect != null
+                ? visual.TransformPoint(visualRect.rect.center) - visual.position : Vector3.zero;
+            Vector3 destination = targetCenter - visualCenterOffset;
+            visual.position = Vector3.Lerp(startingWorldPosition, destination, t);
+            yield return null;
+        }
+        if (reward != null && visual != null && centerCard != null)
+        {
+            Vector3 center = centerRect != null
+                ? centerRect.TransformPoint(centerRect.rect.center) : centerCard.position;
+            Vector3 offset = visualRect != null
+                ? visual.TransformPoint(visualRect.rect.center) - visual.position : Vector3.zero;
+            visual.position = center - offset;
+        }
+        selectedCardMoveCoroutine = null;
+    }
+
+    private void ResetSelectedCardMovement()
+    {
+        selectionUsedCenterMove = false;
+        if (selectedCardMoveCoroutine != null)
+        {
+            StopCoroutine(selectedCardMoveCoroutine);
+            selectedCardMoveCoroutine = null;
+        }
+        for (int i = 0; i < selectedCardVisualRoots.Length; i++)
+        {
+            if (selectedCardVisualRoots[i] != null)
+            {
+                selectedCardVisualRoots[i].localPosition = selectedCardVisualBasePositions[i];
+                selectedCardVisualRoots[i].localScale = selectedCardVisualBaseScales[i];
+                if (selectedCardVisualRoots[i] is RectTransform maskRect)
+                    maskRect.sizeDelta = selectedCardMaskBaseSizeDeltas[i];
+            }
+        }
     }
 
     private void StartSelectedCardFade(int index)
@@ -529,21 +753,55 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private IEnumerator FadeSelectedCard(int index)
     {
+        // Let the selected card complete its travel to SkillPanel2 first.
+        while (selectedCardMoveCoroutine != null && reward != null)
+            yield return null;
+
         CanvasGroup group = selectedCardFadeGroups[index];
-        if (group == null) yield break;
-        group.alpha = 1f;
-        float duration = Mathf.Max(0f, selectedCardFadeDuration);
-        if (duration > 0f)
+        Transform visual = selectedCardVisualRoots[index];
+        if (group == null)
         {
-            float elapsed = 0f;
-            while (elapsed < duration && reward != null)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                group.alpha = 1f - Mathf.Clamp01(elapsed / duration);
-                yield return null;
-            }
+            selectedCardFadeCoroutine = null;
+            yield break;
         }
-        if (reward != null && group != null) group.alpha = 0f;
+
+        RectTransform maskRect = visual as RectTransform;
+        Vector2 originalSize = maskRect != null ? maskRect.rect.size : Vector2.zero;
+        float endRatio = Mathf.Clamp01(selectedCardEquipEndScale);
+        // Keep the geometric center fixed even when the RectTransform pivot is not 0.5.
+        Vector3 fixedCenter = maskRect != null
+            ? maskRect.TransformPoint(maskRect.rect.center) : Vector3.zero;
+        group.alpha = 1f;
+        float shrinkDuration = Mathf.Max(0f, selectedCardEquipShrinkDuration);
+        float fadeDuration = Mathf.Max(0f, selectedCardFadeDuration);
+        float totalDuration = Mathf.Max(shrinkDuration, fadeDuration);
+        float elapsed = 0f;
+        while (elapsed < totalDuration && reward != null)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            if (maskRect != null)
+            {
+                float t = shrinkDuration <= 0f ? 1f : Mathf.Clamp01(elapsed / shrinkDuration);
+                t = t * t * (3f - 2f * t);
+                Vector2 targetSize = Vector2.LerpUnclamped(originalSize, originalSize * endRatio, t);
+                // SetSizeWithCurrentAnchors changes the actual rect, not localScale.
+                maskRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetSize.x);
+                maskRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, targetSize.y);
+                maskRect.position += fixedCenter - maskRect.TransformPoint(maskRect.rect.center);
+            }
+            group.alpha = fadeDuration <= 0f ? 0f : 1f - Mathf.Clamp01(elapsed / fadeDuration);
+            yield return null;
+        }
+        if (reward != null)
+        {
+            if (maskRect != null)
+            {
+                maskRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, originalSize.x * endRatio);
+                maskRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, originalSize.y * endRatio);
+                maskRect.position += fixedCenter - maskRect.TransformPoint(maskRect.rect.center);
+            }
+            group.alpha = 0f;
+        }
         selectedCardFadeCoroutine = null;
     }
 
@@ -641,7 +899,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     }
 
     private void EquipSelectedSkill(string characterId, string skillId,
-        CharacterRuntimeData character, int targetSlot)
+        CharacterRuntimeData character, int targetSlot, bool orbStarted)
     {
         if (reward == null || !gameObject.activeInHierarchy) return;
         var dm = DataManager.Instance;
@@ -654,8 +912,9 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         dm.BattleRuntimeStore.Set(runtime);
         RecordDiscoveryService.RegisterSkill(dm, skillId);
         BindPartyContent();
-        // Equip VFX plays as soon as the skill appears in the target slot.
-        PlayEquippedSkillVfx(characterId, targetSlot);
+        // Orb flight completes first; the destination VFX is triggered on arrival.
+        // If the Orb prefab is unassigned, retain immediate equip VFX behavior.
+        if (!orbStarted) PlayEquippedSkillVfx(characterId, targetSlot);
         equipCloseCoroutine = StartCoroutine(CloseAfterEquippedPreview());
     }
 
@@ -700,8 +959,19 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private IEnumerator CloseAfterEquippedPreview()
     {
+        // Keep the panel open until the orb reaches the equipped slot.
+        // A safety timeout avoids locking the reward panel if the effect is interrupted.
+        float orbWait = 0f;
+        while (orbTransferPending && orbWait < 10f)
+        {
+            orbWait += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        orbTransferPending = false;
         // Wait until the selected-card fade, other-card dissolves, and equipped preview finish.
-        float previewDelay = Mathf.Max(0f, equipCloseDelay, unselectedCardDissolveDuration, selectedCardFadeDuration);
+        float previewDelay = Mathf.Max(0f, equipCloseDelay, unselectedCardDissolveDuration,
+            (selectionUsedCenterMove ? selectedCardMoveDuration : 0f) +
+            Mathf.Max(selectedCardFadeDuration, selectedCardEquipShrinkDuration));
         if (previewDelay > 0f)
             yield return new WaitForSecondsRealtime(previewDelay);
 
@@ -753,7 +1023,9 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private void Finish()
     {
+        orbTransferPending = false;
         CancelReplacementSelection();
+        ResetSelectedCardMovement();
         ResetSkillPanelCloseFade();
         StopSelectedCardFade();
         if (selectionDissolveCoroutine != null)
@@ -762,7 +1034,18 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             selectionDissolveCoroutine = null;
         }
         for (int i = 0; i < selectionDissolveMasks.Length; i++)
+        {
             if (selectionDissolveMasks[i] != null) selectionDissolveMasks[i].ResetDissolve();
+            // These were blocked while the losing cards dissolved. Restore for
+            // the next reward; otherwise only the previously chosen card works.
+            CanvasGroup group = selectedCardFadeGroups[i];
+            if (group != null)
+            {
+                group.alpha = 1f;
+                group.interactable = true;
+                group.blocksRaycasts = true;
+            }
+        }
         ClearEquippedSkillVfx();
         ResetAllCardScales();
         for (int i = 0; i < activeRarityVfx.Length; i++)
@@ -782,7 +1065,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     public bool IsCardInteractionReady(int index)
     {
         return index >= 0 && index < cardInteractionReady.Length &&
-               reward != null && !processing && cardInteractionReady[index];
+               reward != null && !processing && clickedCardIndex < 0 && pendingReplacementCard < 0 && cardInteractionReady[index];
     }
 
     private static void SetCardAudioEnabled(Transform card, bool allow)
@@ -812,6 +1095,15 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
                 offeredSkills[index] != null &&
                 BattleRewardEquipSelectionPolicy.CanEquipRewardSkill(offeredSkills[index], characterIds[index]) &&
                 true;
+
+        // The pointer may have entered while the card was still locked by the
+        // reveal animation. In that case Unity will not send another Enter event.
+        // Refresh the hover immediately after unlocking without requiring an exit/re-enter.
+        if (buttons[index] != null && buttons[index].interactable)
+        {
+            RewardSkillCardHover hover = card.GetComponent<RewardSkillCardHover>();
+            if (hover != null) hover.RefreshPointerAfterUnlock();
+        }
     }
 
     private void PrepareCardDissolve(int index, Transform card, SkillRarity rarity)
@@ -902,6 +1194,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private void OnDestroy()
     {
         StopSelectedCardFade();
+        ResetSelectedCardMovement();
         ClearEquippedSkillVfx();
         ResetAllCardScales();
         for (int i = 0; i < cardDissolveMaterials.Length; i++)
@@ -1305,9 +1598,39 @@ public sealed class RewardSkillCardHover : MonoBehaviour, IPointerEnterHandler, 
         if (panel != null) panel.SetCardHovered(cardIndex, false);
     }
 
+    public void HideSelection()
+    {
+        if (selection != null) selection.SetActive(false);
+        if (panel != null) panel.SetCardHovered(cardIndex, false);
+    }
+
+    // A card can become selectable without the mouse moving. Detect the pointer
+    // already over its rectangle when the reveal animation finishes.
+    public void RefreshPointerAfterUnlock()
+    {
+        if (panel == null || !panel.IsCardInteractionReady(cardIndex))
+        {
+            HideSelection();
+            return;
+        }
+
+        RectTransform rect = transform as RectTransform;
+        if (rect == null) return;
+        Canvas canvas = GetComponentInParent<Canvas>();
+        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera : null;
+        bool overCard = RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition, camera);
+        if (selection != null) selection.SetActive(overCard);
+        panel.SetCardHovered(cardIndex, overCard);
+    }
+
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (panel == null || !panel.IsCardInteractionReady(cardIndex)) return;
+        if (panel == null || !panel.IsCardInteractionReady(cardIndex))
+        {
+            HideSelection();
+            return;
+        }
         if (selection != null) selection.SetActive(true);
         panel.SetCardHovered(cardIndex, true);
     }

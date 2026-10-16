@@ -73,16 +73,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91a8250554524a44b7949a725532142a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  orbImage: {fileID: 200003}
-  orbTexture: {fileID: 2800000, guid: f416ed12a9deb6f40ac52e708154fa95, type: 3}
-  orbSize: {x: 120, y: 120}
+  commonVfxColor: {r: 0.78431374, g: 0.8156863, b: 0.8509804, a: 1}
+  rareVfxColor: {r: 0.39607844, g: 0.6, b: 0.8117647, a: 1}
+  epicVfxColor: {r: 0.7411765, g: 0.4627451, b: 0.8980392, a: 1}
+  uniqueVfxColor: {r: 0.9254902, g: 0.41568628, b: 0.42352942, a: 1}
+  vfxPrefab: {fileID: 4671743514916339104, guid: e4093da82de88464da3c237f1f0c1e1a, type: 3}
+  vfxLocalOffset: {x: 0, y: 0, z: 0}
+  vfxLocalScale: {x: 1, y: 1, z: 1}
+  tintParticleStartColor: 0
   duration: 0.6
-  arcHeight: 220
+  arcHeightMultiplierRange: {x: 0.72, y: 1.28}
+  lateralRandomness: 130
+  durationMultiplierRange: {x: 0.9, y: 1.08}
+  oppositeKickHorizontalRange: {x: 85, y: 155}
+  oppositeKickVerticalRange: {x: 120, y: 210}
+  oppositeKickSideRandomness: 30
+  kickDurationRatio: 0.32
+  suckCurveLift: 75
   sortingOrder: 20000
-  trailSpawnInterval: 0.025
-  trailLifetime: 0.22
-  trailStartAlpha: 0.55
-  trailEndScale: 0.2
+  maxParticleFinishWait: 3
 --- !u!1 &200000
 GameObject:
   m_ObjectHideFlags: 0
@@ -100,7 +109,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &200001
 RectTransform:
   m_ObjectHideFlags: 0
