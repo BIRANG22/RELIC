@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -81,6 +81,8 @@ public class BattleTurnExecutor : MonoBehaviour
     private Coroutine executeTurnCoroutine;
     private Coroutine endTurnClickFeedbackCoroutine;
     private int playerTurnNumber = 1;
+    private int lastAnnouncedReservationTurn = 0;
+    private Coroutine reservationIntroCoroutine;
     private Color endTurnLineDefaultColor = Color.white;
     private bool endTurnVisualFeedbackInitialized;
     private CharacterRuntimeData selectedCharacterBeforeExecution;
@@ -236,11 +238,20 @@ public class BattleTurnExecutor : MonoBehaviour
 
         if (ready && timelineController != null)
             timelineController.SelectDefaultSlotWhenInputReady();
+
+        if (ready)
+            RequestReservationTurnIntro();
     }
 
     public void ResetBattleTurnState()
     {
         playerTurnNumber = 1;
+        lastAnnouncedReservationTurn = 0;
+        if (reservationIntroCoroutine != null)
+        {
+            StopCoroutine(reservationIntroCoroutine);
+            reservationIntroCoroutine = null;
+        }
         pendingNextTurnSwiftByCharacterId.Clear();
         RefreshTurnNumberText();
         RefreshBack2TurnName();
@@ -254,6 +265,11 @@ public class BattleTurnExecutor : MonoBehaviour
             executeTurnCoroutine = null;
         }
 
+        if (reservationIntroCoroutine != null)
+        {
+            StopCoroutine(reservationIntroCoroutine);
+            reservationIntroCoroutine = null;
+        }
         isExecuting = false;
         isMonsterPlanReady = false;
         isPlayerInputReady = false;
@@ -369,6 +385,8 @@ public class BattleTurnExecutor : MonoBehaviour
     public void SetPlayerInputReady(bool ready)
     {
         isPlayerInputReady = ready;
+        if (ready)
+            RequestReservationTurnIntro();
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
         RefreshBattleExecutionUiVisibility();
@@ -522,7 +540,8 @@ public class BattleTurnExecutor : MonoBehaviour
             );
             SteamBattleStateSynchronizer.TryBroadcastBattleExecution(batches);
 
-            yield return ShowBattleProgressIntroTextRoutineSafe();
+            // 턴 실행 시에는 인트로 문구를 출력하지 않습니다.
+            // 턴 번호 문구는 다음 행동 예약이 가능해질 때 표시합니다.
 
             // 배속은 예약 전투가 실제로 진행되는 구간에만 적용합니다.
             // TimelineBar/TurnMark 이동과 행동/피격/VFX 연출은 모두 이 구간에 포함됩니다.
@@ -757,6 +776,9 @@ public class BattleTurnExecutor : MonoBehaviour
             if (CanAcceptPlayerInput)
                 RefreshBack2TurnName();
 
+            if (CanAcceptPlayerInput)
+                RequestReservationTurnIntro();
+
             PlayerTurnReturned?.Invoke();
         }
     }
@@ -788,7 +810,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 PlayUniqueSkillCutscene
             );
 
-            yield return ShowBattleProgressIntroTextRoutineSafe();
+            // 턴 실행 시에는 인트로 문구를 출력하지 않습니다.
+            // 턴 번호 문구는 다음 행동 예약이 가능해질 때 표시합니다.
 
             // 배속은 예약 전투가 실제로 진행되는 구간에만 적용합니다.
             // TimelineBar/TurnMark 이동과 행동/피격/VFX 연출은 모두 이 구간에 포함됩니다.
@@ -931,6 +954,9 @@ public class BattleTurnExecutor : MonoBehaviour
 
             if (CanAcceptPlayerInput)
                 RefreshBack2TurnName();
+
+            if (CanAcceptPlayerInput)
+                RequestReservationTurnIntro();
 
             PlayerTurnReturned?.Invoke();
         }
@@ -1441,44 +1467,43 @@ public class BattleTurnExecutor : MonoBehaviour
         }
     }
 
-    private IEnumerator ShowBattleProgressIntroTextRoutineSafe()
+    private void RequestReservationTurnIntro()
     {
-        PlaySfx(playBattleProgressSfx, battleProgressSfxId, battleProgressSfxVolume);
+        if (!CanAcceptPlayerInput || playerTurnNumber <= lastAnnouncedReservationTurn ||
+            reservationIntroCoroutine != null)
+            return;
 
-        int displayTurnNumber = Mathf.Max(1, playerTurnNumber);
-        string progressText = GameLocalization.Get(LocalizationKeys.Battle.Progress);
-
-        IEnumerator routine = BattleMapIntroText.ShowMessageAndWait(
-            $"{displayTurnNumber}{progressText}");
-
-        if (routine == null)
-            yield break;
-
-        if (!waitIntroText)
-        {
-            StartCoroutine(routine);
-            yield break;
-        }
-
-        bool isIntroTextFinished = false;
-        StartCoroutine(RunBattleProgressIntroTextRoutine(routine, () => isIntroTextFinished = true));
-
-        float elapsed = 0f;
-        float timeout = Mathf.Max(0f, introTextTimeout);
-
-        while (!isIntroTextFinished && elapsed < timeout)
-        {
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
+        reservationIntroCoroutine = StartCoroutine(ShowReservationTurnIntroWhenReady());
     }
 
-    private IEnumerator RunBattleProgressIntroTextRoutine(IEnumerator routine, Action onFinished)
+    private IEnumerator ShowReservationTurnIntroWhenReady()
     {
-        if (routine != null)
-            yield return routine;
+        int requestedTurn = playerTurnNumber;
 
-        onFinished?.Invoke();
+        // 전투방 진입 인트로가 재생 중이라면 끝난 다음 턴 문구를 표시합니다.
+        // 무한 대기를 피하기 위해 최대 10초까지만 기다립니다.
+        float elapsed = 0f;
+        while (BattleMapIntroText.IsAnyPlayingOrVisible() && elapsed < 10f)
+        {
+            if (!CanAcceptPlayerInput || requestedTurn != playerTurnNumber)
+            {
+                reservationIntroCoroutine = null;
+                yield break;
+            }
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (CanAcceptPlayerInput && requestedTurn == playerTurnNumber &&
+            requestedTurn > lastAnnouncedReservationTurn)
+        {
+            lastAnnouncedReservationTurn = requestedTurn;
+            PlaySfx(playBattleProgressSfx, battleProgressSfxId, battleProgressSfxVolume);
+            string progressText = GameLocalization.Get(LocalizationKeys.Battle.Progress);
+            BattleTurnIntroText.ShowMessage($"{requestedTurn}{progressText}");
+        }
+
+        reservationIntroCoroutine = null;
     }
 
     private int GetNextExecutableBatchIndex(List<BattleActionBatch> batches, int startIndex)
