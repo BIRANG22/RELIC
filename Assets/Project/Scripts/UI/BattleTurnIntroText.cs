@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
-/// Turn banner: inactive Image (with child IntroText) is enabled on play,
-/// moves left-to-center-to-right, then fades out and becomes inactive again.
-/// Keep this component on the active BattleTurnIntroText parent, not on Image.
+/// Turn intro with a RectMask2D wipe. The Mask clips back, line and IntroText together.
+/// Keep this component active on BattleTurnIntroText; the Mask child may start inactive.
 /// </summary>
 public class BattleTurnIntroText : MonoBehaviour
 {
@@ -18,47 +18,64 @@ public class BattleTurnIntroText : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private TMP_Text introText;
-    [SerializeField, HideInInspector] private RectTransform animatedRoot;
-    [SerializeField, HideInInspector] private CanvasGroup canvasGroup;
-    [Header("VFX Prefab (Project Asset)")]
-    [Tooltip("Project 창의 VFX 프리팹을 연결합니다. 미연결 시 텍스트만 표시합니다.")]
-    [SerializeField] private GameObject textAppearVfxPrefab;
-    [Tooltip("VFX 생성 부모. 비워두면 BattleTurnIntroText 밑에 생성합니다.")]
-    [SerializeField] private Transform vfxSpawnParent;
-    [SerializeField] private Vector3 vfxLocalPositionOffset;
-    [Tooltip("켜면 VFX가 텍스트와 함께 이동합니다. VFX 자체에 이동 애니메이션이 있으면 끄세요.")]
-    [SerializeField] private bool moveVfxWithText = true;
-    [SerializeField] private bool restartParticleSystems = true;
-    private GameObject spawnedVfx;
+    [Tooltip("The Mask RectTransform containing back, line and IntroText.")]
+    [SerializeField] private RectTransform mask;
+    [Tooltip("CanvasGroup on Mask; used to fade all children in together.")]
+    [SerializeField] private CanvasGroup canvasGroup;
+
+    [Header("Turn Intro SFX")]
+    [Tooltip("턴 시작 인트로가 등장할 때 SFX를 재생합니다.")]
+    [SerializeField] private bool playTurnIntroSfx = true;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string turnIntroSfxId;
+    [SerializeField, Range(0f, 1f)] private float turnIntroSfxVolume = 1f;
+    [Tooltip("턴 인트로 등장 시작 시점을 기준으로 SFX 재생을 늦추는 시간(초).")]
+    [SerializeField, Min(0f)] private float turnIntroSfxDelay;
 
     [Header("Play On Start")]
     [SerializeField] private bool playOnStart;
     [SerializeField] private bool ignorePlayOnStart = true;
     [SerializeField, Min(1)] private int previewTurn = 1;
 
-    [Header("Motion")]
-    [SerializeField] private bool useMoveEffect = true;
-    [SerializeField] private Vector2 startOffset = new Vector2(-200f, 0f);
-    [SerializeField] private Vector2 centerOffset = Vector2.zero;
-    [SerializeField] private Vector2 exitOffset = new Vector2(200f, 0f);
+    [Header("Timing")]
     [SerializeField, Min(0f)] private float startDelay;
     [SerializeField, Min(0f)] private float enterDuration = 0.45f;
     [SerializeField, Min(0f)] private float holdDuration = 0.65f;
     [SerializeField, Min(0f)] private float exitDuration = 0.45f;
-    [SerializeField] private AnimationCurve enterCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-    [SerializeField] private AnimationCurve exitCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     [SerializeField] private bool useUnscaledTime = true;
 
-    [Header("Fade (Image + Child Text)")]
+    [Header("Mask Width Wipe")]
+    [Tooltip("0 = use the width set on the Mask RectTransform in the editor.")]
+    [SerializeField, Min(0f)] private float fullMaskWidth;
+    [Tooltip("Reveal the contents from RIGHT to LEFT by expanding the Mask while keeping its right edge fixed.")]
+    [SerializeField] private bool revealByWidthOnEnter = true;
+    [Tooltip("At exit, narrow the Mask from LEFT to RIGHT while the whole banner moves right.")]
+    [SerializeField] private bool wipeLeftToRightOnExit = true;
+    [SerializeField] private AnimationCurve enterCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [SerializeField] private AnimationCurve exitCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+    [Header("Banner Slide (whole Mask)")]
+    [Tooltip("Move the whole Mask left -> center -> right while clipping its children.")]
+    [SerializeField] private bool moveBanner = true;
+    [SerializeField] private Vector2 enterStartOffset = new Vector2(-200f, 0f);
+    [SerializeField] private Vector2 centerOffset = Vector2.zero;
+    [Tooltip("Distance the entire banner drifts to the right during the middle hold phase. X=30 means 30 UI units to the right.")]
+    [SerializeField] private Vector2 holdMoveOffset = new Vector2(30f, 0f);
+    [SerializeField] private Vector2 exitEndOffset = new Vector2(200f, 0f);
+
+    [Header("Fade")]
     [SerializeField] private bool useFade = true;
-    [SerializeField, Range(0f, 1f)] private float startAlpha = 0f;
+    [SerializeField, Range(0f, 1f)] private float startAlpha;
     [SerializeField, Range(0f, 1f)] private float middleAlpha = 1f;
-    [SerializeField, Range(0f, 1f)] private float endAlpha = 0f;
+    [SerializeField, Range(0f, 1f)] private float endAlpha;
+    [Tooltip("Fade out the entire banner while it moves right and the Mask narrows.")]
+    [SerializeField] private bool fadeOutDuringWipe = true;
 
     private Coroutine playRoutine;
+    private Coroutine delayedSfxRoutine;
     private int playVersion;
-    private Vector2 basePosition;
-    private bool positionCaptured;
+    private Vector2 originalMaskPosition;
+    private float originalMaskWidth;
+    private bool originalRectCaptured;
 
     private void Awake()
     {
@@ -76,16 +93,15 @@ public class BattleTurnIntroText : MonoBehaviour
 
     private void OnDestroy()
     {
-        CleanupVfx();
-        if (instance == this)
-            instance = null;
+        CancelDelayedSfx();
+        if (instance == this) instance = null;
     }
 
     public static bool IsAnyPlayingOrVisible()
     {
         BattleTurnIntroText target = FindTarget();
         return target != null && (target.playRoutine != null ||
-                                  (target.animatedRoot != null && target.animatedRoot.gameObject.activeInHierarchy));
+                                  (target.mask != null && target.mask.gameObject.activeInHierarchy));
     }
 
     public static void ShowMessage(string message)
@@ -157,23 +173,20 @@ public class BattleTurnIntroText : MonoBehaviour
 
     public void HideImmediate()
     {
+        CancelDelayedSfx();
         InitializeReferences();
-        CleanupVfx();
         if (canvasGroup != null) canvasGroup.alpha = 0f;
-        if (animatedRoot != null)
-        {
-            animatedRoot.anchoredPosition = basePosition + startOffset;
-            animatedRoot.gameObject.SetActive(false);
-        }
+        RestoreOriginalMaskRect();
+        if (mask != null) mask.gameObject.SetActive(false);
     }
 
     private bool PreparePlay()
     {
         if (!gameObject.activeSelf) gameObject.SetActive(true);
         InitializeReferences();
-        if (introText == null || animatedRoot == null || canvasGroup == null)
+        if (introText == null || mask == null || canvasGroup == null)
         {
-            Debug.LogWarning("[BattleTurnIntroText] IntroText (TMP) 설정을 확인하세요.", this);
+            Debug.LogWarning("[BattleTurnIntroText] Mask / IntroText reference is missing.", this);
             return false;
         }
 
@@ -182,33 +195,91 @@ public class BattleTurnIntroText : MonoBehaviour
             StopCoroutine(playRoutine);
             playRoutine = null;
         }
+        CancelDelayedSfx();
         return true;
+    }
+
+    private void ScheduleTurnIntroSfx()
+    {
+        CancelDelayedSfx();
+        if (!playTurnIntroSfx || string.IsNullOrWhiteSpace(turnIntroSfxId)) return;
+        if (turnIntroSfxDelay <= 0f)
+            PlayConfiguredTurnIntroSfx();
+        else
+            delayedSfxRoutine = StartCoroutine(PlayTurnSfxAfterDelay());
+    }
+
+    private IEnumerator PlayTurnSfxAfterDelay()
+    {
+        yield return WaitDuration(turnIntroSfxDelay);
+        delayedSfxRoutine = null;
+        PlayConfiguredTurnIntroSfx();
+    }
+
+    private void CancelDelayedSfx()
+    {
+        if (delayedSfxRoutine == null) return;
+        StopCoroutine(delayedSfxRoutine);
+        delayedSfxRoutine = null;
+    }
+
+    private void PlayConfiguredTurnIntroSfx()
+    {
+        if (!playTurnIntroSfx || string.IsNullOrWhiteSpace(turnIntroSfxId))
+            return;
+
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager == null)
+            return;
+
+        audioManager.PlaySfx(turnIntroSfxId, Mathf.Clamp01(turnIntroSfxVolume));
     }
 
     private IEnumerator PlayRoutine(string message, int version)
     {
-        // Activate the text before assigning the message. Localizer OnEnable may overwrite it,
-        // so assign the requested message after activation.
-        animatedRoot.gameObject.SetActive(true);
+        RestoreOriginalMaskRect();
+        mask.gameObject.SetActive(true);
         introText.gameObject.SetActive(true);
+        // Localize components may assign their own text on enable.
         introText.text = string.IsNullOrEmpty(message) ? BuildTurnMessage(1) : message;
-        // A previous implementation left TMP_Text.alpha at zero. Restore it explicitly;
-        // CanvasGroup alone must control the opacity of both Image and text.
         introText.alpha = 1f;
         introText.ForceMeshUpdate();
 
-        animatedRoot.anchoredPosition = basePosition + (useMoveEffect ? startOffset : centerOffset);
-        canvasGroup.alpha = useFade ? startAlpha : middleAlpha;
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
+        canvasGroup.alpha = useFade ? startAlpha : middleAlpha;
 
+        float fullWidth = GetFullWidth();
+        float enterWidth = revealByWidthOnEnter ? 0f : fullWidth;
+        Vector2 start = moveBanner ? enterStartOffset : Vector2.zero;
+        Vector2 center = moveBanner ? centerOffset : Vector2.zero;
+        Vector2 end = moveBanner ? exitEndOffset : Vector2.zero;
+        Vector2 holdEnd = center + (moveBanner && holdDuration > 0f ? holdMoveOffset : Vector2.zero);
+
+        // Fix the RIGHT edge while expanding: visible area opens right -> left.
+        SetMaskAt(fullWidth, enterWidth, true, start);
         if (startDelay > 0f) yield return WaitDuration(startDelay);
-        SpawnVfx();
-        yield return Animate(enterDuration, startOffset, centerOffset,
-            useFade ? startAlpha : middleAlpha, middleAlpha, enterCurve);
-        if (holdDuration > 0f) yield return WaitDuration(holdDuration);
-        yield return Animate(exitDuration, centerOffset, exitOffset,
-            middleAlpha, useFade ? endAlpha : middleAlpha, exitCurve);
+
+        ScheduleTurnIntroSfx();
+
+        yield return Animate(enterDuration, fullWidth,
+            enterWidth, fullWidth, start, center,
+            useFade ? startAlpha : middleAlpha, middleAlpha,
+            enterCurve, true);
+
+        // Keep drifting slowly right while the banner remains fully visible.
+        // Full mask width and opacity stay unchanged during this interval.
+        if (holdDuration > 0f)
+            yield return Animate(holdDuration, fullWidth,
+                fullWidth, fullWidth, center, holdEnd,
+                middleAlpha, middleAlpha, AnimationCurve.Linear(0f, 0f, 1f, 1f), true);
+
+        // Keep right edge fixed when narrowing to erase from left -> right.
+        yield return Animate(exitDuration, fullWidth,
+            fullWidth, wipeLeftToRightOnExit ? 0f : fullWidth,
+            holdEnd, end, middleAlpha,
+            useFade && fadeOutDuringWipe ? endAlpha : middleAlpha,
+            exitCurve, wipeLeftToRightOnExit);
 
         if (version == playVersion)
         {
@@ -218,28 +289,46 @@ public class BattleTurnIntroText : MonoBehaviour
         }
     }
 
-    private IEnumerator Animate(float duration, Vector2 from, Vector2 to,
-        float alphaFrom, float alphaTo, AnimationCurve curve)
+    private IEnumerator Animate(float duration, float fullWidth,
+        float fromWidth, float toWidth, Vector2 fromOffset, Vector2 toOffset,
+        float fromAlpha, float toAlpha, AnimationCurve curve, bool anchorRight)
     {
-        float elapsed = 0f;
         if (duration <= 0f)
         {
-            if (useMoveEffect) animatedRoot.anchoredPosition = basePosition + to;
-            canvasGroup.alpha = alphaTo;
+            SetMaskAt(fullWidth, toWidth, anchorRight, toOffset);
+            canvasGroup.alpha = toAlpha;
             yield break;
         }
+
+        float elapsed = 0f;
         while (elapsed < duration)
         {
             elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             float eased = curve != null ? curve.Evaluate(t) : t;
-            if (useMoveEffect)
-                animatedRoot.anchoredPosition = basePosition + Vector2.LerpUnclamped(from, to, eased);
-            canvasGroup.alpha = Mathf.LerpUnclamped(alphaFrom, alphaTo, eased);
+            SetMaskAt(fullWidth, Mathf.LerpUnclamped(fromWidth, toWidth, eased),
+                anchorRight, Vector2.LerpUnclamped(fromOffset, toOffset, eased));
+            canvasGroup.alpha = Mathf.LerpUnclamped(fromAlpha, toAlpha, eased);
             yield return null;
         }
-        if (useMoveEffect) animatedRoot.anchoredPosition = basePosition + to;
-        canvasGroup.alpha = alphaTo;
+        SetMaskAt(fullWidth, toWidth, anchorRight, toOffset);
+        canvasGroup.alpha = toAlpha;
+    }
+
+    /// <summary>
+    /// Keep the right edge fixed during right-to-left reveal and left-to-right erase.
+    /// Movement offset is applied to the ENTIRE mask concurrently with the width wipe.
+    /// </summary>
+    private void SetMaskAt(float fullWidth, float newWidth, bool anchorRight, Vector2 offset)
+    {
+        if (mask == null) return;
+        float width = Mathf.Clamp(newWidth, 0f, fullWidth);
+        float pivot = mask.pivot.x;
+        float edgeOffset = anchorRight
+            ? (fullWidth - width) * (1f - pivot)
+            : -(fullWidth - width) * pivot;
+        mask.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+        mask.anchoredPosition = originalMaskPosition + offset + new Vector2(edgeOffset, 0f);
     }
 
     private IEnumerator WaitDuration(float duration)
@@ -252,76 +341,46 @@ public class BattleTurnIntroText : MonoBehaviour
         }
     }
 
-    private void SpawnVfx()
+    private float GetFullWidth()
     {
-        CleanupVfx();
-        if (textAppearVfxPrefab == null) return;
-
-        Transform parent = vfxSpawnParent != null ? vfxSpawnParent : transform;
-        spawnedVfx = Instantiate(textAppearVfxPrefab, parent, false);
-        Transform vfxTransform = spawnedVfx.transform;
-
-        // Follow mode uses the TMP RectTransform as parent, matching its motion.
-        if (moveVfxWithText && animatedRoot != null)
-        {
-            vfxTransform.SetParent(animatedRoot, false);
-            vfxTransform.localPosition = vfxLocalPositionOffset;
-        }
-        else if (animatedRoot != null)
-        {
-            // Position independent VFX at the text's initial location.
-            vfxTransform.position = animatedRoot.TransformPoint(vfxLocalPositionOffset);
-        }
-        else
-        {
-            vfxTransform.localPosition = vfxLocalPositionOffset;
-        }
-
-        spawnedVfx.SetActive(true);
-        if (restartParticleSystems)
-        {
-            ParticleSystem[] systems = spawnedVfx.GetComponentsInChildren<ParticleSystem>(true);
-            for (int i = 0; i < systems.Length; i++)
-            {
-                if (systems[i] == null) continue;
-                systems[i].Clear(true);
-                systems[i].Play(true);
-            }
-        }
+        return Mathf.Max(0f, fullMaskWidth > 0f ? fullMaskWidth : originalMaskWidth);
     }
 
-    private void CleanupVfx()
+    private void RestoreOriginalMaskRect()
     {
-        if (spawnedVfx == null) return;
-        GameObject target = spawnedVfx;
-        spawnedVfx = null;
-        // Ensure a stopped animation cannot remain visible during the frame before Destroy.
-        target.SetActive(false);
-        Destroy(target);
+        if (mask == null || !originalRectCaptured) return;
+        mask.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, originalMaskWidth);
+        mask.anchoredPosition = originalMaskPosition;
     }
 
     private void InitializeReferences()
     {
         if (instance == null) instance = this;
+        if (mask == null)
+        {
+            Transform found = transform.Find("Mask");
+            if (found != null) mask = found as RectTransform;
+        }
+        if (introText == null && mask != null)
+            introText = mask.GetComponentInChildren<TMP_Text>(true);
         if (introText == null)
             introText = GetComponentInChildren<TMP_Text>(true);
 
-        // Never retain an old serialized Image as the Animated Root.
-        // The text is the only animated UI now.
-        if (introText != null)
-            animatedRoot = introText.rectTransform;
+        if (mask == null) return;
 
-        if (animatedRoot == null) return;
+        if (mask.GetComponent<RectMask2D>() == null)
+            mask.gameObject.AddComponent<RectMask2D>();
 
-        if (canvasGroup == null || canvasGroup.transform != animatedRoot)
-            canvasGroup = animatedRoot.GetComponent<CanvasGroup>();
+        if (canvasGroup == null || canvasGroup.transform != mask)
+            canvasGroup = mask.GetComponent<CanvasGroup>();
         if (canvasGroup == null)
-            canvasGroup = animatedRoot.gameObject.AddComponent<CanvasGroup>();
+            canvasGroup = mask.gameObject.AddComponent<CanvasGroup>();
 
-        if (!positionCaptured)
+        if (!originalRectCaptured)
         {
-            basePosition = animatedRoot.anchoredPosition;
-            positionCaptured = true;
+            originalMaskPosition = mask.anchoredPosition;
+            originalMaskWidth = mask.rect.width;
+            originalRectCaptured = true;
         }
     }
 

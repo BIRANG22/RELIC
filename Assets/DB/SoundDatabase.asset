@@ -83,7 +83,7 @@ MonoBehaviour:
   sfxList:
   - id: ui.normal.hover
     aliases: []
-    clip: {fileID: 8300000, guid: 07fe07f2e50cda84989b87a004ffaf86, type: 3}
+    clip: {fileID: 8300000, guid: 0ce8dd481d865cb47afde2e711e20bd3, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -92,8 +92,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.normal.click
     aliases: []
-    clip: {fileID: 8300000, guid: dcadae76e7c9eab4ba5c5d57acec1a0e, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: ba9b33c5a3af041c2843642be5e7fc4c, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -101,7 +101,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.title.hover
     aliases: []
-    clip: {fileID: 8300000, guid: f9d5713932856a4428b61e8e73bf475f, type: 3}
+    clip: {fileID: 8300000, guid: 0ce8dd481d865cb47afde2e711e20bd3, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -110,8 +110,8 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.title.click
     aliases: []
-    clip: {fileID: 8300000, guid: d1b406fafa9c5a94cba08d4b8a670abb, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: ba9b33c5a3af041c2843642be5e7fc4c, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -119,7 +119,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.move.hover
     aliases: []
-    clip: {fileID: 8300000, guid: f9d5713932856a4428b61e8e73bf475f, type: 3}
+    clip: {fileID: 8300000, guid: 0ce8dd481d865cb47afde2e711e20bd3, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -128,8 +128,8 @@ MonoBehaviour:
     randomPitchMax: 1.2
   - id: ui.move.click
     aliases: []
-    clip: {fileID: 8300000, guid: d53dced6c63f85245a0b07a4bb99d2de, type: 3}
-    volume: 1
+    clip: {fileID: 8300000, guid: ba9b33c5a3af041c2843642be5e7fc4c, type: 3}
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -137,7 +137,7 @@ MonoBehaviour:
     randomPitchMax: 1.2
   - id: ui.confirm
     aliases: []
-    clip: {fileID: 8300000, guid: d53dced6c63f85245a0b07a4bb99d2de, type: 3}
+    clip: {fileID: 8300000, guid: ba9b33c5a3af041c2843642be5e7fc4c, type: 3}
     volume: 0.3
     pitch: 1
     loop: 0
@@ -171,15 +171,6 @@ MonoBehaviour:
     useRandomPitch: 1
     randomPitchMin: 0.7
     randomPitchMax: 0.9
-  - id: ui.logo.click
-    aliases: []
-    clip: {fileID: 8300000, guid: e3a0b60ac751f420193e42de32eb175c, type: 3}
-    volume: 0.6
-    pitch: 0.8
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
   - id: ui.box.open
     aliases: []
     clip: {fileID: 8300000, guid: 3b21ea75963842c428923e1ed0ad2910, type: 3}
@@ -300,7 +291,7 @@ MonoBehaviour:
   - id: battle.timeline.slot.rotate
     aliases: []
     clip: {fileID: 8300000, guid: 328ec450d560b47bf8832924754ea87b, type: 3}
-    volume: 0.2
+    volume: 0.3
     pitch: 1
     loop: 0
     useRandomPitch: 1
@@ -308,7 +299,7 @@ MonoBehaviour:
     randomPitchMax: 1.3
   - id: battle.timeline.slot.slide
     aliases: []
-    clip: {fileID: 8300000, guid: 8e87c8c82bb034a478a331d8ab94c1bd, type: 3}
+    clip: {fileID: 8300000, guid: 1ebefb365039949caac7a07b5d46ff41, type: 3}
     volume: 0.2
     pitch: 1
     loop: 0
@@ -333,24 +324,6 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
-  - id: battle.skill.list.open
-    aliases: []
-    clip: {fileID: 8300000, guid: 55426547c0ee0324787f7a5db6bcdfcd, type: 3}
-    volume: 0.4
-    pitch: 1
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
-  - id: battle.skill.list.close
-    aliases: []
-    clip: {fileID: 8300000, guid: a4bd1740484f2064fa0b21baa659acbc, type: 3}
-    volume: 0.4
-    pitch: 1
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
   - id: battle.event.dice.roll
     aliases: []
     clip: {fileID: 8300000, guid: f2cea4ad5318749b09c3a483e56dde97, type: 3}
@@ -369,36 +342,9 @@ MonoBehaviour:
     useRandomPitch: 1
     randomPitchMin: 0.8
     randomPitchMax: 1.2
-  - id: battle.reward.panel.open
-    aliases: []
-    clip: {fileID: 8300000, guid: 4f3e7bb757e76489aa06b31f83c573c9, type: 3}
-    volume: 0.5
-    pitch: 0.9
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
-  - id: ui.record.page.turn
-    aliases: []
-    clip: {fileID: 8300000, guid: 487af83246b5e462f97f3c1cf691dc70, type: 3}
-    volume: 0.5
-    pitch: 0.7
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
   - id: ui.book.open
     aliases: []
     clip: {fileID: 8300000, guid: c4e48431d7aa6431dbf6ef1c89293b4a, type: 3}
-    volume: 0.5
-    pitch: 0.7
-    loop: 0
-    useRandomPitch: 0
-    randomPitchMin: 1
-    randomPitchMax: 1
-  - id: ui.title.in
-    aliases: []
-    clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
     volume: 0.5
     pitch: 0.7
     loop: 0
@@ -561,7 +507,7 @@ MonoBehaviour:
   - id: Slot_up
     aliases: []
     clip: {fileID: 8300000, guid: c134991fbb1464f8f9db1f3a3c9b5479, type: 3}
-    volume: 0.5
+    volume: 0.3
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -570,15 +516,15 @@ MonoBehaviour:
   - id: Slot_down
     aliases: []
     clip: {fileID: 8300000, guid: ecbe7c48e275f45e99797fe799cfbc60, type: 3}
-    volume: 0.5
-    pitch: 0.8
+    volume: 0.3
+    pitch: 1
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
   - id: Action_Start
     aliases: []
-    clip: {fileID: 8300000, guid: f4c66d76b0374432693168267057ad1d, type: 3}
+    clip: {fileID: 8300000, guid: 67e2ddd7fddf94481a4c7d6f74c4ed09, type: 3}
     volume: 0.5
     pitch: 0.8
     loop: 0
@@ -587,13 +533,22 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: Room Intro
     aliases: []
-    clip: {fileID: 8300000, guid: 9f24e65fb42424c2d8f2f2cdb008e663, type: 3}
+    clip: {fileID: 8300000, guid: 602ba08c3a1834cefa18cc796ff63c89, type: 3}
     volume: 0.5
     pitch: 0.8
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 1
     randomPitchMax: 1
+  - id: Turn text
+    aliases: []
+    clip: {fileID: 8300000, guid: 298c1f2857d3b436cafa8060eb48e969, type: 3}
+    volume: 0.3
+    pitch: 0.8
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.7
+    randomPitchMax: 1.3
   - id: skill.cutscene
     aliases: []
     clip: {fileID: 8300000, guid: d57d4d048867f48c192a6e51fc46e403, type: 3}
@@ -628,6 +583,42 @@ MonoBehaviour:
     pitch: 1
     loop: 0
     useRandomPitch: 1
+    randomPitchMin: 0.7
+    randomPitchMax: 1.3
+  - id: skill.equip
+    aliases: []
+    clip: {fileID: 8300000, guid: 93268fbceed07284e8fc26a0294b9741, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.7
+    randomPitchMax: 1.3
+  - id: relic.root
+    aliases: []
+    clip: {fileID: 8300000, guid: 9ebd67a496e154865b4cb3db7e72cc55, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.7
+    randomPitchMax: 1.3
+  - id: relic.equip
+    aliases: []
+    clip: {fileID: 8300000, guid: 1916835e7b6e5b04f90e789a29b9532d, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.7
+    randomPitchMax: 1.3
+  - id: orbeffect
+    aliases: []
+    clip: {fileID: 8300000, guid: 500188b708bd94797bb05491bf9778ef, type: 3}
+    volume: 0.2
+    pitch: 1.2
+    loop: 0
+    useRandomPitch: 0
     randomPitchMin: 0.7
     randomPitchMax: 1.3
   eventSfxList:
