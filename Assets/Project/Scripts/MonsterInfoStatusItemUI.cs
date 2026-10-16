@@ -78,7 +78,9 @@ public sealed class MonsterInfoStatusItemUI : MonoBehaviour
 
         if (nameText != null)
         {
-            nameText.text = statusData.Stack > 0
+            nameText.text = statusData.IsPassive
+                ? $"{effectName} ∞"
+                : statusData.Stack > 0
                 ? $"{effectName} {statusData.Stack}"
                 : effectName;
         }

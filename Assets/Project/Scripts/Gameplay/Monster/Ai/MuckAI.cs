@@ -1,5 +1,7 @@
 using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Relic.Gameplay.Monster
@@ -12,14 +14,9 @@ namespace Relic.Gameplay.Monster
 
         private static readonly Vector2Int[] MoveDirections =
         {
-            Vector2Int.up,
-            Vector2Int.down,
-            Vector2Int.left,
-            Vector2Int.right,
-            new Vector2Int(-1, 1),
-            new Vector2Int(1, 1),
-            new Vector2Int(-1, -1),
-            new Vector2Int(1, -1)
+            Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right,
+            new Vector2Int(-1, 1), new Vector2Int(1, 1),
+            new Vector2Int(-1, -1), new Vector2Int(1, -1)
         };
 
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
@@ -27,203 +24,99 @@ namespace Relic.Gameplay.Monster
             return AttackSkillId;
         }
 
-        public override MonsterAIPlan CreatePlan(
-            MonsterUnit monsterUnit,
-            BattleContext context,
-            GridManager gridManager)
+        public override MonsterAIPlan CreatePlan(MonsterUnit monsterUnit, BattleContext context, GridManager gridManager)
         {
             MonsterAIPlan plan = new();
-
             if (monsterUnit == null || monsterUnit.RuntimeData == null || gridManager == null)
                 return plan;
 
-            string attackRangeId = monsterUnit.RuntimeData.AttackRangeId;
-            bool usesRangedAttackOrigin =
-                !string.IsNullOrWhiteSpace(attackRangeId) &&
-                attackRangeId.Trim() != "0";
-            MonsterSkillData attackSkill = usesRangedAttackOrigin
-                ? DataManager.Instance?.MonsterSkillDatabase.Get(AttackSkillId)
-                : null;
+            int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
+            if (targetGridIndex < 0)
+                return plan;
 
-            BattleGridEffectController gridEffectController =
-                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+            BattleGridEffectController gridEffects =
+                UnityEngine.Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+            Vector2Int moveOffset = GetApproachMove(monsterUnit, gridManager, targetGridIndex, gridEffects);
+            const int group = 1;
 
-            int currentAttackOrigin = -1;
-
-            if (usesRangedAttackOrigin)
-            {
-                currentAttackOrigin = FindRangedAttackOrigin(
-                    monsterUnit,
-                    monsterUnit.MainGridIndex,
-                    attackSkill,
-                    attackRangeId,
-                    gridManager);
-            }
-
-            // 현재 위치에서 이미 공격이 가능하면 굳이 이동하지 않습니다.
-            // 공격할 수 없을 때만 가장 가까운 캐릭터 쪽으로 1칸 이동을 시도합니다.
-            Vector2Int moveOffset = currentAttackOrigin >= 0
-                ? Vector2Int.zero
-                : GetBestOneTileMoveTowardNearestPlayer(
-                    monsterUnit,
-                    gridManager,
-                    attackSkill,
-                    attackRangeId,
-                    usesRangedAttackOrigin,
-                    gridEffectController);
-
-            bool canMove = moveOffset != Vector2Int.zero &&
-                           CanMonsterMove(monsterUnit, gridManager, moveOffset);
-
-            int group = 1;
-
-            if (canMove)
+            if (moveOffset != Vector2Int.zero)
             {
                 plan.Add(new MonsterAIAction(
-                    MoveSkillId,
-                    moveOffset,
-                    MonsterAISlotPreference.Front,
-                    group,
-                    0
-                ));
+                    MoveSkillId, moveOffset, MonsterAISlotPreference.Front, group, 0));
             }
 
-            int projectedMainGridIndex = canMove
-                ? GetProjectedMainGridIndex(monsterUnit, gridManager, moveOffset)
-                : monsterUnit.MainGridIndex;
-
-            int rangeOriginGridIndex = -1;
-
-            if (usesRangedAttackOrigin)
-            {
-                rangeOriginGridIndex = currentAttackOrigin >= 0 && !canMove
-                    ? currentAttackOrigin
-                    : FindRangedAttackOrigin(
-                        monsterUnit,
-                        projectedMainGridIndex,
-                        attackSkill,
-                        attackRangeId,
-                        gridManager);
-
-                // 계획 단계에서 이동 후에도 공격 범위가 닿지 않는다면 이동만 예약합니다.
-                // 이미 타임라인에 등록된 공격은 실행 단계에서 이동 실패 여부와 관계없이 실행됩니다.
-                if (rangeOriginGridIndex < 0)
-                    return plan;
-            }
-
+            // The projectile targets the nearest character's tile, regardless of attack range.
+            // Keep the attack reserved even when no approach move is possible.
             plan.Add(new MonsterAIAction(
                 AttackSkillId,
                 Vector2Int.zero,
                 MonsterAISlotPreference.SameSlot,
                 group,
                 1,
-                rangeOriginGridIndex,
-                rangeOriginCasterGridIndex: projectedMainGridIndex
-            ));
+                explicitRangeGridIndices: new List<int> { targetGridIndex }));
 
             return plan;
         }
 
-        private Vector2Int GetBestOneTileMoveTowardNearestPlayer(
+        private Vector2Int GetApproachMove(
             MonsterUnit monsterUnit,
             GridManager gridManager,
-            MonsterSkillData attackSkill,
-            string attackRangeId,
-            bool usesRangedAttackOrigin,
-            BattleGridEffectController gridEffectController)
+            int targetGridIndex,
+            BattleGridEffectController gridEffects)
         {
-            int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
-
-            if (targetGridIndex < 0 ||
-                monsterUnit.MainGridIndex < 0)
-            {
+            if (monsterUnit.MainGridIndex < 0)
                 return Vector2Int.zero;
-            }
 
-            Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+            Vector2Int current = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            Vector2Int target = gridManager.IndexToCoord(targetGridIndex);
+            int currentDistance = Mathf.Max(Mathf.Abs(target.x - current.x), Mathf.Abs(target.y - current.y));
 
-            Vector2Int bestOffset = Vector2Int.zero;
-            int bestPriorityRank = int.MaxValue;
-            int bestChebyshevDistance = int.MaxValue;
-            int bestManhattanDistance = int.MaxValue;
+            // Do not approach further once adjacent: Muck is not trying to collide.
+            if (currentDistance <= 1)
+                return Vector2Int.zero;
 
-            for (int i = 0; i < MoveDirections.Length; i++)
+            Vector2Int best = Vector2Int.zero;
+            int bestRisk = int.MaxValue;
+            int bestDistance = currentDistance;
+            int bestManhattan = int.MaxValue;
+
+            foreach (Vector2Int offset in MoveDirections)
             {
-                Vector2Int offset = MoveDirections[i];
-
                 if (!CanMonsterMove(monsterUnit, gridManager, offset))
                     continue;
 
-                int projectedMainGridIndex =
-                    GetProjectedMainGridIndex(monsterUnit, gridManager, offset);
-
-                bool candidateCanAttack = !usesRangedAttackOrigin ||
-                                          FindRangedAttackOrigin(
-                                              monsterUnit,
-                                              projectedMainGridIndex,
-                                              attackSkill,
-                                              attackRangeId,
-                                              gridManager) >= 0;
-
-                bool isRiskyDestination = IsRiskyGridEffectDestination(
-                    projectedMainGridIndex,
-                    gridEffectController);
-
-                // 공격 가능한 빈칸 > 공격 가능한 위험지형 > 빈칸 > 위험지형 순으로 선택합니다.
-                // 위험지형을 밟아야만 공격할 수 있다면 공격을 위해 진입할 수 있습니다.
-                int attackRank = candidateCanAttack ? 0 : 2;
-                int priorityRank = attackRank + (isRiskyDestination ? 1 : 0);
-
-                Vector2Int projectedCoord = currentCoord + offset;
-                int deltaX = Mathf.Abs(targetCoord.x - projectedCoord.x);
-                int deltaY = Mathf.Abs(targetCoord.y - projectedCoord.y);
-                int chebyshevDistance = Mathf.Max(deltaX, deltaY);
-                int manhattanDistance = deltaX + deltaY;
-
-                if (priorityRank > bestPriorityRank)
+                int destination = GetProjectedMainGridIndex(monsterUnit, gridManager, offset);
+                if (destination < 0)
                     continue;
 
-                if (priorityRank == bestPriorityRank &&
-                    chebyshevDistance > bestChebyshevDistance)
-                {
+                Vector2Int next = current + offset;
+                int distance = Mathf.Max(Mathf.Abs(target.x - next.x), Mathf.Abs(target.y - next.y));
+                if (distance >= currentDistance)
                     continue;
-                }
 
-                if (priorityRank == bestPriorityRank &&
-                    chebyshevDistance == bestChebyshevDistance &&
-                    manhattanDistance >= bestManhattanDistance)
-                {
+                int risk = IsRiskyDestination(destination, gridEffects) ? 1 : 0;
+                int manhattan = Mathf.Abs(target.x - next.x) + Mathf.Abs(target.y - next.y);
+                if (risk > bestRisk || (risk == bestRisk && distance > bestDistance) ||
+                    (risk == bestRisk && distance == bestDistance && manhattan >= bestManhattan))
                     continue;
-                }
 
-                bestPriorityRank = priorityRank;
-                bestChebyshevDistance = chebyshevDistance;
-                bestManhattanDistance = manhattanDistance;
-                bestOffset = offset;
+                best = offset;
+                bestRisk = risk;
+                bestDistance = distance;
+                bestManhattan = manhattan;
             }
 
-            return bestOffset;
+            return best;
         }
 
-        private static bool IsRiskyGridEffectDestination(
-            int gridIndex,
-            BattleGridEffectController gridEffectController)
+        private static bool IsRiskyDestination(int gridIndex, BattleGridEffectController controller)
         {
-            if (gridIndex < 0 || gridEffectController == null)
+            if (gridIndex < 0 || controller == null ||
+                !controller.State.TryGetEffectId(gridIndex, out string effectId) ||
+                string.IsNullOrWhiteSpace(effectId))
                 return false;
 
-            if (!gridEffectController.State.TryGetEffectId(gridIndex, out string gridEffectId) ||
-                string.IsNullOrWhiteSpace(gridEffectId))
-            {
-                return false;
-            }
-
-            // 머크가 만드는 점액은 몬스터에게 적용되지 않으므로 위험지형으로 취급하지 않습니다.
-            return !string.Equals(
-                gridEffectId,
-                ResidueGridEffectId,
-                System.StringComparison.OrdinalIgnoreCase);
+            return !string.Equals(effectId, ResidueGridEffectId, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

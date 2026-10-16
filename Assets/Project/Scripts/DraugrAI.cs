@@ -10,12 +10,12 @@ namespace Relic.Gameplay.Monster
     /// - 행동 범위: MonsterMasterData의 AttackRange(Range_02)
     /// - 이동: 주변 8방향 중 가장 가까운 캐릭터에게 가까워지는 방향으로 1칸
     /// - 기본 공격: 전방 2열 x 3칸 가로베기
-    /// - 반격: BattleActionRunner에서 공격 스킬 피격 후 S_Monster_28을 즉시 실행
+    /// - 반격: BattleActionRunner에서 공격 스킬 피격 후 S_Monster_17을 즉시 실행
     /// </summary>
     public class DraugrAI : MonsterAIBase
     {
-        private const string MoveSkillId = "S_Monster_26";
-        private const string AttackSkillId = "S_Monster_27";
+        private const string MoveSkillId = "S_Monster_15";
+        private const string AttackSkillId = "S_Monster_16";
 
         private static readonly Vector2Int[] MoveDirections =
         {

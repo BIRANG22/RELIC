@@ -10,6 +10,8 @@ namespace Relic.Gameplay.Data
         public int TurnCount;
 
         public bool IsPassive;
+        // Monster innate traits are neither buffs nor debuffs in the status UI.
+        public bool IsMonsterInnateTrait;
         public string SourceSkillId;
         public StatusEffectRuntimeData()
         {

@@ -14,9 +14,9 @@ namespace Relic.Gameplay.Monster
     /// </summary>
     public class BarrowAI : MonsterAIBase
     {
-        private const string MoveSkillId = "S_Monster_29";
-        private const string DirectShotSkillId = "S_Monster_30";
-        private const string ArcShotSkillId = "S_Monster_31";
+        private const string MoveSkillId = "S_Monster_18";
+        private const string DirectShotSkillId = "S_Monster_19";
+        private const string ArcShotSkillId = "S_Monster_20";
 
         private static readonly Vector2Int[] EscapeOffsets =
         {

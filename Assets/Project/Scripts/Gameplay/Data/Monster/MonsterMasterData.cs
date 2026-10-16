@@ -11,6 +11,7 @@ namespace Relic.Gameplay.Data
         public const int PossibleSkillSlotCount = 10;
 
         public string MonsterId;
+        public int Phase;
         public string Name;
         public string Grade;
         [FormerlySerializedAs("Health")]

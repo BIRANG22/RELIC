@@ -715,7 +715,7 @@ namespace Relic.Gameplay.Monster
 
     public static class EliseSlotLockService
     {
-        public const string EliseMonsterId = "Mon_12";
+        public const string EliseMonsterId = "Mon_12_1";
 
         public static int RollLockedSlotIndex(
             IReadOnlyList<MonsterUnit> monsterUnits,

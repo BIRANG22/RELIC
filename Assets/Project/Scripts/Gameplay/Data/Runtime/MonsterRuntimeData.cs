@@ -9,6 +9,7 @@ namespace Relic.Gameplay.Data
     {
         public string RuntimeId;
         public string MonsterId;
+        public int Phase;
         public string Name;
         public string DisplayName;
         public string Grade;
@@ -51,6 +52,7 @@ namespace Relic.Gameplay.Data
             }
 
             MonsterId = masterData.MonsterId;
+            Phase = masterData.Phase;
             Name = masterData.Name;
             DisplayName = masterData.Name;
             Grade = masterData.Grade;
@@ -300,19 +302,30 @@ namespace Relic.Gameplay.Data
             if (StatusEffects == null)
                 StatusEffects = new List<StatusEffectRuntimeData>();
 
-            if (MonsterId == "Mon_01")
+            string traitId = null;
+            int stacks = 1;
+            bool infinite = true;
+            switch (MonsterId)
             {
-                StatusEffects.Add(new StatusEffectRuntimeData("E_Split", 5));
+                case "Mon_01": traitId = "E_Split"; stacks = 5; infinite = false; break;
+                case "Mon_02": traitId = "E_Trail"; break;
+                case "Mon_05": traitId = "E_DoubleMove"; break;
+                case "Mon_06": traitId = "E_Explode"; stacks = 2; infinite = false; break;
+                case "Mon_07": traitId = "E_Counter"; break;
+                case "Mon_08": traitId = "E_Targeting"; break;
+                case "Mon_09": traitId = "E_Fortress"; break;
+                case "Mon_10": traitId = "E_Ambush"; break;
+                case "Mon_11": traitId = "E_Necromancy"; break;
+                case "Mon_12_1": traitId = "E_WebCreation"; break;
+                case "Mon_12_2": traitId = "E_Entanglement"; break;
             }
-            else if (MonsterId == "Mon_06")
-            {
-                StatusEffects.Add(new StatusEffectRuntimeData("E_Explode", 2));
-            }
-            else if (MonsterId == "Mon_10")
-            {
-                // 녹턴은 전투 내내 유지되는 기습 효과를 기본 특성으로 가집니다.
-                StatusEffects.Add(new StatusEffectRuntimeData("E_Blindside", 1));
-            }
+
+            if (!string.IsNullOrEmpty(traitId))
+                StatusEffects.Add(new StatusEffectRuntimeData(traitId, stacks)
+                {
+                    IsPassive = infinite,
+                    IsMonsterInnateTrait = true
+                });
         }
 
         private void InitializePossibleSkills(MonsterMasterData masterData)

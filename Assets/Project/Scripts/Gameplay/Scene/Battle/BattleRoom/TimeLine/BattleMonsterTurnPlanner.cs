@@ -485,11 +485,100 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 if (slotIndex < 0 || slotIndex >= timelineController.SlotCount)
                     continue;
 
+                // Prevent voluntary monster movement from crossing another reserved route.
+                // Forced displacement (knockback/grab) and portal moves are not affected.
+                if (!action.IsPortalMove &&
+                    skillData.TimelineNotation == TimelineActionType.Move &&
+                    action.MoveOffset != Vector2Int.zero &&
+                    WouldVoluntaryMoveCollide(monsterUnit, action.MoveOffset, monsterUnits, plans))
+                    continue;
+
                 plans.Add(new MonsterReservedCommandPlan(slotIndex, command));
             }
         }
 
         return plans;
+    }
+
+    // Conservatively reserve the swept footprint of previously planned voluntary moves.
+    // This also catches diagonal crossings and routes through occupied starting cells.
+    private bool WouldVoluntaryMoveCollide(
+        MonsterUnit movingUnit,
+        Vector2Int offset,
+        List<MonsterUnit> allUnits,
+        List<MonsterReservedCommandPlan> pendingPlans)
+    {
+        if (movingUnit == null || gridManager == null)
+            return true;
+
+        HashSet<int> proposed = BuildSweptFootprint(movingUnit, offset);
+        if (proposed.Count == 0)
+            return true;
+
+        // Never voluntarily enter or pass through another monster's current footprint.
+        if (allUnits != null)
+        {
+            foreach (MonsterUnit other in allUnits)
+            {
+                if (other == null || other == movingUnit || other.RuntimeData == null ||
+                    other.RuntimeData.IsDead)
+                    continue;
+
+                foreach (int occupiedIndex in other.OccupiedGridIndices)
+                    if (proposed.Contains(occupiedIndex))
+                        return true;
+            }
+        }
+
+        if (pendingPlans == null || allUnits == null)
+            return false;
+
+        foreach (MonsterReservedCommandPlan pending in pendingPlans)
+        {
+            MonsterReservedCommand previous = pending.Command;
+            if (previous == null || previous.UserRuntime == null ||
+                previous.UserRuntime == movingUnit.RuntimeData ||
+                previous.IsPortalMove || previous.MoveOffset == Vector2Int.zero ||
+                previous.SkillData == null ||
+                previous.SkillData.TimelineNotation != TimelineActionType.Move)
+                continue;
+
+            MonsterUnit previousUnit = allUnits.Find(u =>
+                u != null && u.RuntimeData == previous.UserRuntime);
+            if (previousUnit == null)
+                continue;
+
+            HashSet<int> reserved = BuildSweptFootprint(previousUnit, previous.MoveOffset);
+            reserved.IntersectWith(proposed);
+            if (reserved.Count > 0)
+                return true;
+        }
+        return false;
+    }
+
+    private HashSet<int> BuildSweptFootprint(MonsterUnit unit, Vector2Int offset)
+    {
+        HashSet<int> indices = new HashSet<int>();
+        if (unit == null || gridManager == null || unit.OccupiedGridIndices == null)
+            return indices;
+
+        // Cover both axis orders for diagonal moves: a corner-cut must not bypass a unit.
+        int minX = Mathf.Min(0, offset.x);
+        int maxX = Mathf.Max(0, offset.x);
+        int minY = Mathf.Min(0, offset.y);
+        int maxY = Mathf.Max(0, offset.y);
+        foreach (int startIndex in unit.OccupiedGridIndices)
+        {
+            Vector2Int start = gridManager.IndexToCoord(startIndex);
+            for (int x = minX; x <= maxX; x++)
+                for (int y = minY; y <= maxY; y++)
+                {
+                    Vector2Int cell = start + new Vector2Int(x, y);
+                    if (gridManager.IsValidCoord(cell))
+                        indices.Add(gridManager.CoordToIndex(cell));
+                }
+        }
+        return indices;
     }
 
     private int ResolveMonsterActionSlot(

@@ -57,10 +57,10 @@ public class StatusEffectIcon : MonoBehaviour,
             ApplyImage(iconImage, GetIcon(data.EffectId));
 
         if (typeIconImage != null)
-            ApplyImage(typeIconImage, GetTypeIcon(data.EffectId));
+            ApplyImage(typeIconImage, data.IsMonsterInnateTrait ? null : GetTypeIcon(data.EffectId));
 
         if (valueText != null)
-            valueText.text = data.Stack > 0 ? data.Stack.ToString() : string.Empty;
+            valueText.text = data.IsPassive ? "∞" : (data.Stack > 0 ? data.Stack.ToString() : string.Empty);
 
         // 이미 마우스가 올라가 있는 상태에서 스택/턴만 갱신되면 내용만 새로 반영합니다.
         if (pointerInside)
