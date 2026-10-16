@@ -48,6 +48,8 @@ public class BattleMapIntroText : MonoBehaviour
     [SerializeField] private bool playRoomIntroSfx = true;
     [SerializeField, SoundId(SoundCategory.Sfx)] private string roomIntroSfxId;
     [SerializeField, Range(0f, 1f)] private float roomIntroSfxVolume = 1f;
+    [Tooltip("PlayRoomIntroSfx 호출 시점을 기준으로 SFX 재생을 늦추는 시간(초).")]
+    [SerializeField, Min(0f)] private float roomIntroSfxDelay;
 
     [Header("Timing")]
     [SerializeField] private bool playOnStart;
@@ -94,6 +96,7 @@ public class BattleMapIntroText : MonoBehaviour
     private RectTransform rectTransform;
     private Vector2 baseAnchoredPosition;
     private Coroutine playRoutine;
+    private Coroutine delayedRoomSfxRoutine;
     private int playVersion;
     private bool isInitialized;
 
@@ -110,6 +113,7 @@ public class BattleMapIntroText : MonoBehaviour
 
     private void OnDestroy()
     {
+        CancelDelayedRoomSfx();
         if (instance == this)
             instance = null;
     }
@@ -149,7 +153,31 @@ public class BattleMapIntroText : MonoBehaviour
     public static void PlayRoomIntroSfx()
     {
         BattleMapIntroText target = FindTarget();
-        target?.PlayConfiguredRoomIntroSfx();
+        target?.ScheduleRoomIntroSfx();
+    }
+
+    private void ScheduleRoomIntroSfx()
+    {
+        CancelDelayedRoomSfx();
+        if (!playRoomIntroSfx || string.IsNullOrWhiteSpace(roomIntroSfxId)) return;
+        if (roomIntroSfxDelay <= 0f)
+            PlayConfiguredRoomIntroSfx();
+        else
+            delayedRoomSfxRoutine = StartCoroutine(PlayRoomSfxAfterDelay());
+    }
+
+    private IEnumerator PlayRoomSfxAfterDelay()
+    {
+        yield return WaitDuration(roomIntroSfxDelay, useUnscaledTime);
+        delayedRoomSfxRoutine = null;
+        PlayConfiguredRoomIntroSfx();
+    }
+
+    private void CancelDelayedRoomSfx()
+    {
+        if (delayedRoomSfxRoutine == null) return;
+        StopCoroutine(delayedRoomSfxRoutine);
+        delayedRoomSfxRoutine = null;
     }
 
     private void PlayConfiguredRoomIntroSfx()

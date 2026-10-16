@@ -1,4 +1,4 @@
-using Relic.Gameplay.Data;
+﻿using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using System;
 using System.Collections;
@@ -387,6 +387,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     [Tooltip("BattleSlot 하강 SFX 볼륨 배율입니다.")]
     [SerializeField, Range(0f, 1f)] private float battleSlotDownSfxVolume = 1f;
+
+    [Header("Battle Slot SFX Duplicate Prevention")]
+    [Tooltip("동일한 SFX ID를 다시 재생할 수 있기까지의 최소 시간(초)입니다.")]
+    [SerializeField, Min(0f)] private float battleSlotSfxCooldown = 1f;
+    private readonly Dictionary<string, float> lastBattleSlotSfxPlayTimes = new(StringComparer.Ordinal);
 
 
     [Header("Number Change Animation")]
@@ -2474,7 +2479,16 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
+        // 같은 ID가 짧은 시간 안에 다시 호출되더라도 중복 재생하지 않습니다.
+        // unscaledTime을 사용해 게임 일시정지/배속 상태와 무관하게 실제 시간 기준으로 처리합니다.
+        float now = Time.unscaledTime;
+        if (battleSlotSfxCooldown > 0f &&
+            lastBattleSlotSfxPlayTimes.TryGetValue(sfxId, out float lastPlayedAt) &&
+            now - lastPlayedAt < battleSlotSfxCooldown)
+            return;
+
         audioManager.PlaySfx(sfxId, Mathf.Clamp01(volume));
+        lastBattleSlotSfxPlayTimes[sfxId] = now;
     }
 
     private void StopPanelMoveCoroutine()
