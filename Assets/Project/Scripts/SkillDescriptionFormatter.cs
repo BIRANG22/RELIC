@@ -18,8 +18,6 @@ namespace Relic.Gameplay.Data
         private static readonly Regex MissingHpAutoRegex = new(
             @"\{E_Strike\}\s+\{E_MissingHPStrike\}\s+\{ValueRate1\}", RegexOptions.Compiled);
         private static readonly Regex ArmorAutoRegex = new(@"\{E_Strike\}\s+\{E_ArmorStrike\}", RegexOptions.Compiled);
-        private static readonly Regex KillBonusRegex = new(@"처치\s*시\s*영구히\s*피해량\s*\{ValueRate(?<index>\d+)\}", RegexOptions.Compiled);
-        private static readonly Regex MissPenaltyRegex = new(@"적중\s*실패\s*시\s*생명력\s*-\s*\{ValueRate(?<index>\d+)\}", RegexOptions.Compiled);
         private static readonly Regex TmpTagRegex = new(@"<[^>]+>", RegexOptions.Compiled);
 
 
@@ -28,7 +26,7 @@ namespace Relic.Gameplay.Data
             if (data == null)
                 return string.Empty;
 
-            return Format(data.Details, data.ValueRate, data.CountRate, data.ScalingType);
+            return Format(data.Details, data.ValueRate, data.CountRate, data.ScalingType, false, data.EffectIds);
         }
 
         public static string Format(string description, string valueRate, string countRate)
@@ -38,16 +36,22 @@ namespace Relic.Gameplay.Data
 
         public static string Format(string description, string valueRate, string countRate, string scalingType)
         {
-            return Format(description, valueRate, countRate, scalingType, false);
+            return Format(description, valueRate, countRate, scalingType, false, null);
         }
 
         public static string Format(string description, string valueRate, string countRate,
             string scalingType, bool runtimeValues)
         {
+            return Format(description, valueRate, countRate, scalingType, runtimeValues, null);
+        }
+
+        public static string Format(string description, string valueRate, string countRate,
+            string scalingType, bool runtimeValues, string effectIds)
+        {
             if (string.IsNullOrWhiteSpace(description))
                 return string.Empty;
 
-            string result = FormatAutoEffectSentences(description, valueRate, countRate, runtimeValues);
+            string result = FormatAutoEffectSentences(description, valueRate, countRate, runtimeValues, effectIds);
             result = ReplaceScalingIndexed(result, scalingType, valueRate);
             result = ReplaceIndexed(result, "ValueRate", valueRate);
             result = ReplaceIndexed(result, "CountRate", countRate);
@@ -64,7 +68,7 @@ namespace Relic.Gameplay.Data
         /// {E_Armor} 같은 EffectId 토큰을 로컬라이징된 효과명 + 인라인 아이콘 예약 영역으로 변환합니다.
         /// 실제 아이콘 Sprite는 SkillEffectInlineIconRenderer가 StatusEffectIconDatabase에서 가져옵니다.
         /// </summary>
-        private static string FormatAutoEffectSentences(string source, string values, string counts, bool runtimeValues)
+        private static string FormatAutoEffectSentences(string source, string values, string counts, bool runtimeValues, string effectIds)
         {
             if (!source.Contains("{ValueRate") && !ArmorAutoRegex.IsMatch(source))
                 return source;
@@ -73,6 +77,8 @@ namespace Relic.Gameplay.Data
             string[] countParts = Split(counts);
             bool missingHp = MissingHpAutoRegex.IsMatch(source);
             bool armor = ArmorAutoRegex.IsMatch(source);
+            bool killBonus = HasEffect(effectIds, "E_ValueUpOnKill");
+            bool missPenalty = HasEffect(effectIds, "E_MissSelfDamage");
             // 특수 계산식은 효과 아이콘의 위치를 유지하면서 일반 피해 문장으로 조립합니다.
             string work = missingHp ? MissingHpAutoRegex.Replace(source, "{E_Strike} {ValueRate1}") : source;
             if (armor)
@@ -96,7 +102,7 @@ namespace Relic.Gameplay.Data
                 bool multiple = int.TryParse(TmpTagRegex.Replace(count, ""), out int parsedCount) && parsedCount > 1;
                 bool isLastEffect = i == matches.Count - 1;
                 string remainder = isLastEffect ? work.Substring(match.Index + match.Length).Trim() : "";
-                bool conditionalTail = isLastEffect && (KillBonusRegex.IsMatch(remainder) || MissPenaltyRegex.IsMatch(remainder));
+                bool conditionalTail = isLastEffect && (killBonus || missPenalty);
                 string effectToken = "{" + id + "}";
                 string unit = id == "E_Knockback" || id == "E_Grab" ? "tile" : "amount";
                 string action = GetEffectAction(id);
@@ -121,24 +127,41 @@ namespace Relic.Gameplay.Data
                 }
             }
             string suffix = work.Substring(previous);
-            if (KillBonusRegex.IsMatch(suffix) || MissPenaltyRegex.IsMatch(suffix))
+            if (killBonus || missPenalty)
             {
+                // The authored tail is replaced as a whole. This avoids parsing Korean
+                // prose and works for localized Details in every supported language.
+                int specialIndex = FindSpecialEffectIndex(effectIds,
+                    killBonus ? "E_ValueUpOnKill" : "E_MissSelfDamage");
+                string specialValue = GetDisplayValue(GetByIndexOrFirst(valueParts, specialIndex, "0"));
                 builder.Append(global::GameLocalization.Get("skill.sentence.break", ". "));
-                suffix = KillBonusRegex.Replace(suffix.Trim(), m =>
-                    global::GameLocalization.FormatWithFallback("skill.sentence.special.kill_bonus",
-                        "처치 시 영구히 피해량이 {0} 증가한다.",
-                        GetDisplayValue(GetByIndexOrFirst(valueParts, int.Parse(m.Groups["index"].Value) - 1, "0"))));
-                suffix = MissPenaltyRegex.Replace(suffix, m =>
-                    global::GameLocalization.FormatWithFallback("skill.sentence.special.miss_penalty",
-                        "적중 실패 시 생명력이 {0} 감소한다.",
-                        GetDisplayValue(GetByIndexOrFirst(valueParts, int.Parse(m.Groups["index"].Value) - 1, "0"))));
-                builder.Append(suffix);
+                builder.Append(killBonus
+                    ? global::GameLocalization.FormatWithFallback("skill.sentence.special.kill_bonus",
+                        "처치 시 영구히 피해량이 {0} 증가한다.", specialValue)
+                    : global::GameLocalization.FormatWithFallback("skill.sentence.special.miss_penalty",
+                        "적중 실패 시 생명력이 {0} 감소한다.", specialValue));
             }
             else
                 builder.Append(suffix);
             string result = builder.ToString().Trim();
             string end = global::GameLocalization.Get("skill.sentence.end", ".");
             return result.EndsWith(end, StringComparison.Ordinal) ? result : result + end;
+        }
+
+        private static bool HasEffect(string effectIds, string target)
+        {
+            return FindSpecialEffectIndex(effectIds, target) >= 0;
+        }
+
+        private static int FindSpecialEffectIndex(string effectIds, string target)
+        {
+            if (string.IsNullOrWhiteSpace(effectIds))
+                return -1;
+            string[] ids = effectIds.Split(';');
+            for (int i = 0; i < ids.Length; i++)
+                if (string.Equals(ids[i].Trim(), target, StringComparison.OrdinalIgnoreCase))
+                    return i;
+            return -1;
         }
 
         private static string GetEffectParticle(string id)

@@ -162,7 +162,7 @@ public static class BattlePlayerSkillPreviewCalculator
             return string.Empty;
 
         if (preview == null)
-            return SkillDescriptionFormatter.Format(localizedDescription, skill.ValueRate, skill.CountRate, skill.ScalingType);
+            return SkillDescriptionFormatter.Format(localizedDescription, skill.ValueRate, skill.CountRate, skill.ScalingType, false, skill.EffectIds);
 
         List<SkillEffectEntry> entries = ResolveEntries(skill);
         string description = localizedDescription;
@@ -204,7 +204,8 @@ public static class BattlePlayerSkillPreviewCalculator
             string.Join(";", valueTexts),
             string.Join(";", countTexts),
             skill.ScalingType,
-            preview.Command?.UserRuntime != null);
+            preview.Command?.UserRuntime != null,
+            skill.EffectIds);
     }
 
     private static string BuildNumericLink(
