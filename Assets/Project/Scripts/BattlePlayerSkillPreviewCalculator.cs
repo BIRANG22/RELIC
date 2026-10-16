@@ -270,6 +270,13 @@ public static class BattlePlayerSkillPreviewCalculator
         AppendDelta(formulaParts, equipmentValue - valueBeforeEquipment);
 
         int finalValue = Mathf.Max(0, equipmentValue);
+        // 철갑돌진: E_ArmorStrike는 현재 방어도 x 계수로 실제 피해를 계산합니다.
+        if (entry.EffectId == "E_ArmorStrike" && runtime != null)
+        {
+            finalValue = NewSkillEffectRules.ResolveArmorStrikeDamage(runtime.CurrentShield, finalValue);
+            formulaParts.Insert(0, runtime.CurrentShield + "x(");
+            formulaParts.Add(")");
+        }
         if (IsDamageEffect(entry.EffectId))
         {
             int smiteAttacksAlreadyReserved = command != null

@@ -3053,75 +3053,78 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100944
-    m_Localized: 
+    m_Localized: "Mu\xE9vete a la casilla seleccionada. Consume Man\xE1 seg\xFAn
+      el n\xFAmero de casillas recorridas."
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100945
-    m_Localized: 
+    m_Localized: Al comienzo de cada turno, para ti {E_Armor} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100946
-    m_Localized: 
+    m_Localized: Al comienzo de cada turno, para ti {E_Lifesteal} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100947
-    m_Localized: 
+    m_Localized: Al comienzo de cada turno, para ti {E_Swift} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100948
-    m_Localized: 
+    m_Localized: Al comienzo de cada turno, para ti {E_Smite} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100949
-    m_Localized: 
+    m_Localized: Al comienzo de cada turno, para todos los aliados {E_Charge} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100950
-    m_Localized: 
+    m_Localized: Al comienzo de cada turno, para todos los enemigos {E_Poison} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100951
-    m_Localized: 
+    m_Localized: Al comienzo de cada turno, para todos los aliados {E_Armor} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100952
-    m_Localized: 
+    m_Localized: Al comienzo de cada turno, para ti {E_Boost} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100957
-    m_Localized: 
+    m_Localized: Para todos los aliados, {E_Armor} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100993
-    m_Localized: 
+    m_Localized: '{E_Armor} {ValueRate1}'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100995
-    m_Localized: 
+    m_Localized: Para ti, {E_Armor} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101001
-    m_Localized: 
+    m_Localized: Para ti, {E_Ward} {ValueRate1}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101003
-    m_Localized: 
+    m_Localized: '{E_Smite} {ValueRate1}'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101005
-    m_Localized: 
+    m_Localized: "{E_Strike} {ValueRate1} \uC801\uC911 \uC2E4\uD328 \uC2DC \uC0DD\uBA85\uB825
+      -{ValueRate2}"
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101007
-    m_Localized: 
+    m_Localized: '{E_Lifesteal} {ValueRate1} {E_Boost} {ValueRate2}'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101009
-    m_Localized: 
+    m_Localized: Carga y alcanza a los enemigos con los que chocas {E_Strike} {E_ArmorStrike}
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101011
-    m_Localized: 
+    m_Localized: "{E_Strike} {ValueRate1} \uCC98\uCE58 \uC2DC \uC601\uAD6C\uD788
+      \uD53C\uD574\uB7C9 {ValueRate2}"
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101013
@@ -3830,6 +3833,263 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 19697779441410055
     m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218222092288
+    m_Localized: '{E_Strike} {E_MissingHPStrike} {ValueRate1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452416
+    m_Localized: '{E_Strike} {ValueRate1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452417
+    m_Localized: '{E_Pierce} {ValueRate1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452418
+    m_Localized: '{E_Grit} {ValueRate1} {E_Charge} {ValueRate2}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452419
+    m_Localized: '{E_Poison} {ValueRate1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452420
+    m_Localized: '{E_Heal} {ValueRate1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452421
+    m_Localized: '{E_Strike} {ValueRate1} {E_Vulnerable} {ValueRate2}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452422
+    m_Localized: '{E_Strike} {ValueRate1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452423
+    m_Localized: '{E_Strike} {ValueRate1} {E_Knockback} {ValueRate2}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452424
+    m_Localized: '{E_Strike} {ValueRate1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452425
+    m_Localized: '{E_Pierce} {ValueRate1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452426
+    m_Localized: '{E_Boost} {ValueRate1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452427
+    m_Localized: '{E_Poison} {ValueRate1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452428
+    m_Localized: '{E_Cure} {ValueRate1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452429
+    m_Localized: '{E_Strike} {ValueRate1} {E_Vulnerable} {ValueRate2}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452430
+    m_Localized: '{E_Strike} {ValueRate1} {E_Knockback} {ValueRate2}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452431
+    m_Localized: '{E_Strike} {ValueRate1} {E_Vulnerable} {ValueRate2}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452432
+    m_Localized: "Inflige {2} de da\xF1o."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452433
+    m_Localized: "Inflige {2} de da\xF1o y"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452434
+    m_Localized: "Inflige {2} de da\xF1o en {3} ocasiones."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452435
+    m_Localized: "Inflige {2} de da\xF1o en {3} ocasiones y"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452436
+    m_Localized: "Inflige {2} de da\xF1o."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452437
+    m_Localized: "Inflige {2} de da\xF1o y"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452438
+    m_Localized: "Inflige {2} de da\xF1o en {3} ocasiones."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452439
+    m_Localized: "Inflige {2} de da\xF1o en {3} ocasiones y"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452440
+    m_Localized: Aplica {2} de {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452441
+    m_Localized: Aplica {2} de {0} y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452442
+    m_Localized: Aplica {2} de {0} en {3} ocasiones.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452443
+    m_Localized: Aplica {2} de {0} en {3} ocasiones y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452444
+    m_Localized: Aplica {2} de {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452445
+    m_Localized: Aplica {2} de {0} y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452446
+    m_Localized: Aplica {2} de {0} en {3} ocasiones.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452447
+    m_Localized: Aplica {2} de {0} en {3} ocasiones y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452448
+    m_Localized: Otorga {2} de {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452449
+    m_Localized: Otorga {2} de {0} y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452450
+    m_Localized: Otorga {2} de {0} en {3} ocasiones.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452451
+    m_Localized: Otorga {2} de {0} en {3} ocasiones y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452452
+    m_Localized: Otorga {2} de {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452453
+    m_Localized: Otorga {2} de {0} y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452454
+    m_Localized: Otorga {2} de {0} en {3} ocasiones.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452455
+    m_Localized: Otorga {2} de {0} en {3} ocasiones y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452456
+    m_Localized: Obtiene {2} de {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452457
+    m_Localized: Obtiene {2} de {0} y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452458
+    m_Localized: Obtiene {2} de {0} en {3} ocasiones.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452459
+    m_Localized: Obtiene {2} de {0} en {3} ocasiones y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452460
+    m_Localized: Obtiene {2} de {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452461
+    m_Localized: Obtiene {2} de {0} y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452462
+    m_Localized: Obtiene {2} de {0} en {3} ocasiones.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452463
+    m_Localized: Obtiene {2} de {0} en {3} ocasiones y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452464
+    m_Localized: Restaura {2} de {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452465
+    m_Localized: Restaura {2} de {0} y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452466
+    m_Localized: Restaura {2} de {0} en {3} ocasiones.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452467
+    m_Localized: Restaura {2} de {0} en {3} ocasiones y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452468
+    m_Localized: Restaura {2} de {0}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452469
+    m_Localized: Restaura {2} de {0} y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452470
+    m_Localized: Restaura {2} de {0} en {3} ocasiones.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452471
+    m_Localized: Restaura {2} de {0} en {3} ocasiones y
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452472
+    m_Localized: ','
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452473
+    m_Localized: .
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452474
+    m_Localized: .
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452475
+    m_Localized: "Inflige da\xF1o igual al {2}% de la vida perdida."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452476
+    m_Localized: "Inflige da\xF1o seg\xFAn la armadura actual."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452477
+    m_Localized: "Al eliminar a un enemigo, el da\xF1o aumenta permanentemente en
+      {0}."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452478
+    m_Localized: Si falla el ataque, la vida disminuye en {0}.
     m_Metadata:
       m_Items: []
   references:
