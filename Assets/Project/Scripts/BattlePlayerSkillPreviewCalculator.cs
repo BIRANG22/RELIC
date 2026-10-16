@@ -197,48 +197,14 @@ public static class BattlePlayerSkillPreviewCalculator
                 hoveredLinkId);
         }
 
-        // ScalingValue는 전투 중에는 설계 문구가 아니라 현재 상태/버프까지 반영된 최종 수치로 표시합니다.
-        for (int i = 0; i < valueTexts.Length; i++)
-        {
-            string indexedScalingToken = $"{{ScalingValue{i + 1}}}";
-            if (description.Contains(indexedScalingToken))
-                description = description.Replace(indexedScalingToken, valueTexts[i]);
-
-            if (i == 0 && description.Contains("{ScalingValue}"))
-                description = description.Replace("{ScalingValue}", valueTexts[i]);
-        }
-
-        // 원문에 횟수 토큰이 없는 스킬에서 횟수가 2회 이상으로 증가하면
-        // ValueRate 위치에 8X2 같은 형태로 표시합니다. 상세 모드에서는 각 수치의 계산식도 함께 표시합니다.
-        for (int i = 0; i < entries.Count && i < preview.EffectValues.Count; i++)
-        {
-            SkillEffectEntry entry = entries[i];
-            if (entry == null || !ShouldShowValue(entry.EffectId, skill.SkillType))
-                continue;
-
-            int count = i < preview.EffectCounts.Count ? Mathf.Max(1, preview.EffectCounts[i]) : 1;
-            if (count <= 1)
-                continue;
-
-            string indexedCountToken = $"{{CountRate{i + 1}}}";
-            bool hasCountToken = description.Contains(indexedCountToken) ||
-                                 (i == 0 && description.Contains("{CountRate}"));
-            if (hasCountToken)
-                continue;
-
-            string indexedValueToken = $"{{ValueRate{i + 1}}}";
-            string repeated = $"{valueTexts[i]}X{countTexts[i]}";
-
-            if (description.Contains(indexedValueToken))
-                description = description.Replace(indexedValueToken, repeated);
-            else if (i == 0 && description.Contains("{ValueRate}"))
-                description = description.Replace("{ValueRate}", repeated);
-        }
-
+        // The sentence formatter handles 2+ hits using the final per-effect count.
+        // Keep each ValueRate number separate instead of replacing it with 8X2.
         return SkillDescriptionFormatter.Format(
             description,
             string.Join(";", valueTexts),
-            string.Join(";", countTexts));
+            string.Join(";", countTexts),
+            skill.ScalingType,
+            preview.Command?.UserRuntime != null);
     }
 
     private static string BuildNumericLink(
