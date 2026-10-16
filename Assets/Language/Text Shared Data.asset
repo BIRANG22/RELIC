@@ -6731,6 +6731,262 @@ MonoBehaviour:
     m_Key: data.effect.e_poison_equal_target_poison.tooltip
     m_Metadata:
       m_Items: []
+  - m_Id: 23980218222092288
+    m_Key: data.skill_master.s_unique_02.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452416
+    m_Key: data.skill_master.s_unique_03.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452417
+    m_Key: data.skill_master.s_unique_04.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452418
+    m_Key: data.skill_master.s_unique_05.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452419
+    m_Key: data.skill_master.s_unique_06.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452420
+    m_Key: data.skill_master.s_unique_07.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452421
+    m_Key: data.skill_master.s_unique_08.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452422
+    m_Key: data.skill_master.s_ability_01.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452423
+    m_Key: data.skill_master.s_ability_02.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452424
+    m_Key: data.skill_master.s_ability_03.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452425
+    m_Key: data.skill_master.s_ability_04.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452426
+    m_Key: data.skill_master.s_ability_05.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452427
+    m_Key: data.skill_master.s_ability_06.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452428
+    m_Key: data.skill_master.s_ability_07.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452429
+    m_Key: data.skill_master.s_ability_08.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452430
+    m_Key: data.skill_master.s_core_03.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452431
+    m_Key: data.skill_master.s_core_04.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452432
+    m_Key: skill.sentence.deal.amount.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452433
+    m_Key: skill.sentence.deal.amount.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452434
+    m_Key: skill.sentence.deal.amount.multiple.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452435
+    m_Key: skill.sentence.deal.amount.multiple.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452436
+    m_Key: skill.sentence.deal.tile.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452437
+    m_Key: skill.sentence.deal.tile.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452438
+    m_Key: skill.sentence.deal.tile.multiple.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452439
+    m_Key: skill.sentence.deal.tile.multiple.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452440
+    m_Key: skill.sentence.apply.amount.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452441
+    m_Key: skill.sentence.apply.amount.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452442
+    m_Key: skill.sentence.apply.amount.multiple.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452443
+    m_Key: skill.sentence.apply.amount.multiple.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452444
+    m_Key: skill.sentence.apply.tile.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452445
+    m_Key: skill.sentence.apply.tile.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452446
+    m_Key: skill.sentence.apply.tile.multiple.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452447
+    m_Key: skill.sentence.apply.tile.multiple.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452448
+    m_Key: skill.sentence.grant.amount.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452449
+    m_Key: skill.sentence.grant.amount.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452450
+    m_Key: skill.sentence.grant.amount.multiple.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452451
+    m_Key: skill.sentence.grant.amount.multiple.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452452
+    m_Key: skill.sentence.grant.tile.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452453
+    m_Key: skill.sentence.grant.tile.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452454
+    m_Key: skill.sentence.grant.tile.multiple.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452455
+    m_Key: skill.sentence.grant.tile.multiple.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452456
+    m_Key: skill.sentence.gain.amount.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452457
+    m_Key: skill.sentence.gain.amount.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452458
+    m_Key: skill.sentence.gain.amount.multiple.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452459
+    m_Key: skill.sentence.gain.amount.multiple.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452460
+    m_Key: skill.sentence.gain.tile.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452461
+    m_Key: skill.sentence.gain.tile.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452462
+    m_Key: skill.sentence.gain.tile.multiple.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452463
+    m_Key: skill.sentence.gain.tile.multiple.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452464
+    m_Key: skill.sentence.restore.amount.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452465
+    m_Key: skill.sentence.restore.amount.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452466
+    m_Key: skill.sentence.restore.amount.multiple.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452467
+    m_Key: skill.sentence.restore.amount.multiple.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452468
+    m_Key: skill.sentence.restore.tile.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452469
+    m_Key: skill.sentence.restore.tile.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452470
+    m_Key: skill.sentence.restore.tile.multiple.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452471
+    m_Key: skill.sentence.restore.tile.multiple.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452472
+    m_Key: skill.sentence.join
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452473
+    m_Key: skill.sentence.break
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452474
+    m_Key: skill.sentence.end
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452475
+    m_Key: skill.sentence.special.missing_hp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452476
+    m_Key: skill.sentence.special.armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452477
+    m_Key: skill.sentence.special.kill_bonus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23980218251452478
+    m_Key: skill.sentence.special.miss_penalty
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
