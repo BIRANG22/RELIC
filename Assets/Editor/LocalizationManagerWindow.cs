@@ -171,14 +171,8 @@ public sealed class LocalizationManagerWindow : EditorWindow
     private void ScanGameData(IReadOnlyDictionary<string, string> knownKoreanByKey)
     {
         const string gameDataWorkbook = "Assets/ExcelSource/GameData.xlsx";
-        string[] sheets =
-        {
-            "Character", "Monster", "SkillMaster", "MonsterSkill", "GridEffect", "Effect",
-            "Map", "BattleMap", "Event", "SkillRange", "Rune", "Relic", "Compound", "Item", "Erosion",
-        };
-
         var scannedGameDataKeys = new HashSet<string>(StringComparer.Ordinal);
-        foreach (string sheet in sheets)
+        foreach (string sheet in LocalizationGameDataSourceSynchronizer.ManagedSheets)
         {
             IReadOnlyList<IReadOnlyList<string>> rows;
             try { rows = LocalizationXlsxReader.ReadSheet(gameDataWorkbook, sheet); }
@@ -193,7 +187,8 @@ public sealed class LocalizationManagerWindow : EditorWindow
 
             IReadOnlyList<string> headers = rows[0];
             int choiceOrderColumn = FindHeaderIndex(headers, "ChoiceOrder", "선택지 순서");
-            for (int rowIndex = 1; rowIndex < rows.Count; rowIndex++)
+            // Row 2 contains runtime/schema field names, not game data.
+            for (int rowIndex = 2; rowIndex < rows.Count; rowIndex++)
             {
                 IReadOnlyList<string> row = rows[rowIndex];
                 string stableId = row.Count > 0 ? row[0] : string.Empty;
@@ -557,14 +552,9 @@ public sealed class LocalizationManagerWindow : EditorWindow
     private static HashSet<string> CollectCurrentGameDataKeys()
     {
         const string gameDataWorkbook = "Assets/ExcelSource/GameData.xlsx";
-        string[] sheets =
-        {
-            "Character", "Monster", "SkillMaster", "MonsterSkill", "GridEffect", "Effect",
-            "Map", "BattleMap", "Event", "SkillRange", "Rune", "Relic", "Compound", "Item", "Erosion",
-        };
         var keys = new HashSet<string>(StringComparer.Ordinal);
         var scannedKeys = new HashSet<string>(StringComparer.Ordinal);
-        foreach (string sheet in sheets)
+        foreach (string sheet in LocalizationGameDataSourceSynchronizer.ManagedSheets)
         {
             IReadOnlyList<IReadOnlyList<string>> rows;
             try { rows = LocalizationXlsxReader.ReadSheet(gameDataWorkbook, sheet); }
@@ -574,7 +564,8 @@ public sealed class LocalizationManagerWindow : EditorWindow
 
             IReadOnlyList<string> headers = rows[0];
             int choiceOrderColumn = FindHeaderIndex(headers, "ChoiceOrder", "선택지 순서");
-            for (int rowIndex = 1; rowIndex < rows.Count; rowIndex++)
+            // Row 2 contains runtime/schema field names, not game data.
+            for (int rowIndex = 2; rowIndex < rows.Count; rowIndex++)
             {
                 IReadOnlyList<string> row = rows[rowIndex];
                 string stableId = row.Count > 0 ? row[0] : string.Empty;

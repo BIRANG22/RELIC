@@ -34,8 +34,12 @@ public static class LocalizationExcelImporter
     {
         try
         {
+            LocalizationGameDataSourceSynchronizer.SyncResult sync =
+                LocalizationGameDataSourceSynchronizer.Synchronize();
             Import();
-            Debug.Log($"[LocalizationExcelImporter] Imported '{WorkbookPath}' into '{TableCollectionName}'.");
+            Debug.Log($"[LocalizationExcelImporter] Synced GameData sources " +
+                      $"(updated {sync.SourceUpdates}, added {sync.Additions}, removed {sync.Removals}) and " +
+                      $"imported '{WorkbookPath}' into '{TableCollectionName}'.");
         }
         catch (Exception exception)
         {

@@ -162,6 +162,74 @@ public sealed class RewardDataLocalizationKeyTests
             Is.EqualTo(expected));
     }
 
+    [Test]
+    public void GameDataLocalizationSources_MatchCurrentManagedGameData()
+    {
+        LocalizationGameDataSourceSynchronizer.SyncResult audit =
+            LocalizationGameDataSourceSynchronizer.Audit();
+
+        Assert.That(audit.SourceUpdates, Is.Zero, "변경된 GameData 원문이 Localization에 반영되지 않았습니다.");
+        Assert.That(audit.Additions, Is.Zero, "새 GameData 현지화 키가 누락되었습니다.");
+        Assert.That(audit.Removals, Is.Zero, "삭제된 GameData 현지화 키가 남아 있습니다.");
+    }
+
+    [Test]
+    public void GameDataLocalizationSynchronizer_CoversEveryManagerGameDataSheet()
+    {
+        string[] expected =
+        {
+            "Character", "Monster", "SkillMaster", "MonsterSkill", "GridEffect", "Effect",
+            "Map", "BattleMap", "Event", "SkillRange", "Rune", "Relic", "Compound", "Item", "Erosion",
+        };
+
+        Assert.That(LocalizationGameDataSourceSynchronizer.ManagedSheets, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void GameDataLocalizationSynchronizer_RemovesOnlyInactiveManagedKeys()
+    {
+        string[] removals = LocalizationGameDataSourceSynchronizer.FindRemovedManagedKeys(
+            new[]
+            {
+                "data.skill_master.active.name",
+                "data.skill_master.stale.name",
+                "common.rarity.rare",
+            },
+            new[] { "data.skill_master.active.name" });
+
+        Assert.That(removals, Is.EqualTo(new[] { "data.skill_master.stale.name" }));
+    }
+
+    [Test]
+    public void LobbySkillDetails_UseEffectIdAwareSentenceFormatter()
+    {
+        string localizationSource = File.ReadAllText("Assets/Project/Art/Image/GameDataLocalization.cs");
+        string lobbySource = File.ReadAllText("Assets/Project/Scripts/Gameplay/Scene/Lobby/SkillSettingPanel.cs");
+
+        Assert.That(localizationSource, Does.Contain("data.EffectIds"));
+        Assert.That(lobbySource, Does.Contain("skill.EffectIds"));
+        Assert.That(lobbySource, Does.Contain("SkillDescriptionFormatter.Format"));
+    }
+
+    [Test]
+    public void LobbySkillDetails_NumericHighlightPreservesTmpTagAttributes()
+    {
+        MethodInfo method = typeof(SkillSettingPanel).GetMethod(
+            "HighlightNumericTextPreservingRichTextTags",
+            BindingFlags.Static | BindingFlags.NonPublic);
+
+        Assert.That(method, Is.Not.Null);
+        string result = (string)method.Invoke(null, new object[]
+        {
+            "<link=\"effecticon:E_Strike\">타격</link><space=1em> 25",
+            "FFCC00",
+        });
+
+        Assert.That(result, Does.Contain("<space=1em>"));
+        Assert.That(result, Does.Not.Contain("<space=<color"));
+        Assert.That(result, Does.EndWith("<color=#FFCC00>25</color>"));
+    }
+
     [TestCase("효과")]
     [TestCase("Details")]
     public void SkillMasterDetailsColumn_IsPlayerFacingAndUsesDetailsField(string header)
@@ -172,6 +240,18 @@ public sealed class RewardDataLocalizationKeyTests
         Assert.That(
             LocalizationProjectScanner.BuildGameDataKey("SkillMaster", "S_Core_01", header),
             Is.EqualTo("data.skill_master.s_core_01.details"));
+    }
+
+    [TestCase("효과")]
+    [TestCase("Details")]
+    public void SkillMasterDetailsColumn_CollectsTokenOnlyDescriptions(string header)
+    {
+        Assert.That(
+            LocalizationProjectScanner.ShouldCollectGameDataLocalizationValue(
+                "SkillMaster",
+                header,
+                "{E_Strike} {ValueRate1}"),
+            Is.True);
     }
 
     [TestCase("Common", "common.rarity.common")]

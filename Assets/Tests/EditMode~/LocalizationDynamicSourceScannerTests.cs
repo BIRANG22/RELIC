@@ -6,6 +6,49 @@ using NUnit.Framework;
 
 public sealed class LocalizationDynamicSourceScannerTests
 {
+    [Test]
+    public void ApplySourceUpdatesToRows_DoesNotPadUnchangedRows()
+    {
+        IReadOnlyList<IReadOnlyList<string>> rows = new IReadOnlyList<string>[]
+        {
+            new[] { "Key", "Id", "Korean(ko)", "English(en)" },
+            new[] { "unchanged.key", "1", "같은 원문" },
+        };
+
+        IReadOnlyList<IReadOnlyList<string>> result =
+            LocalizationWorkbookWriter.ApplySourceUpdatesToRows(
+                rows,
+                new[] { new LocalizationWorkbookEntry("other.key", "다른 원문") });
+
+        Assert.That(result[1], Is.EqualTo(rows[1]));
+    }
+
+    [Test]
+    public void SynchronizeEntries_WhenMutationFails_PreservesOriginalWorkbook()
+    {
+        string tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".xlsx");
+        string backupPath = tempPath + ".localization-manager.backup";
+        File.Copy("Assets/ExcelSource/Localization.xlsx", tempPath);
+        byte[] before = File.ReadAllBytes(tempPath);
+
+        try
+        {
+            Assert.Throws<InvalidDataException>(() =>
+                LocalizationWorkbookWriter.SynchronizeEntries(
+                    tempPath,
+                    Array.Empty<LocalizationWorkbookEntry>(),
+                    new[] { new LocalizationWorkbookEntry("test.invalid_control", "테스트\0문자") },
+                    Array.Empty<string>()));
+
+            Assert.That(File.ReadAllBytes(tempPath), Is.EqualTo(before));
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+            if (File.Exists(backupPath)) File.Delete(backupPath);
+        }
+    }
+
     [TestCase("선택지 이름", "data.event.event_02.choice_1_name")]
     [TestCase("선택지 내용", "data.event.event_02.choice_1_description")]
     [TestCase("선택불가 내용", "data.event.event_02.choice_1_disabled_description")]
