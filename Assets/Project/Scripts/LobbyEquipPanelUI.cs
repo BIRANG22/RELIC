@@ -381,9 +381,13 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void BindReadyPanelBackButton()
     {
-        RectTransform target = ResolveMovingPanel();
-        if (target == null) return;
-        Transform found = target.Find("BackButton");
+        ResolveSlideTargets();
+        Transform found = charterRect != null ? charterRect.Find("BackButton") : null;
+        if (found == null)
+        {
+            RectTransform target = ResolveMovingPanel();
+            found = target != null ? target.Find("BackButton") : null;
+        }
         if (found == null) return;
         Button button = found.GetComponent<Button>();
         if (button == null) return;
