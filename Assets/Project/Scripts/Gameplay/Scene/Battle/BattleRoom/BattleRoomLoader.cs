@@ -1219,10 +1219,14 @@ public class BattleRoomLoader : MonoBehaviour
     /// </summary>
     public void OnPlayerWorldCharacterClicked(CharacterRuntimeData runtimeData)
     {
+        if (BattleCharacter.WasMoveGridClickedThisFrame)
+            return;
+
         EnsurePlayerSkillReservationController();
 
         if (playerSkillReservationController != null &&
-            playerSkillReservationController.IsGridSelectionActive())
+            (playerSkillReservationController.IsGridSelectionActive() ||
+             playerSkillReservationController.IsMoveSkillSelectionActive()))
         {
             return;
         }
@@ -1542,6 +1546,10 @@ public class BattleRoomLoader : MonoBehaviour
             Debug.LogWarning("[BattleRoomLoader] MonsterTurnPlanner is missing.");
         }
 
+        // After entry cinematics and monster planning, but before the first
+        // player reservation input becomes available, play innate free actions.
+        yield return BattleStatusEffectService.PlayMonsterTurnStartTraitsRoutine();
+
         if (turnExecutor != null)
         {
             turnExecutor.SetBattleInputReady(true);
@@ -1708,6 +1716,9 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         yield return monsterTurnPlanner.PlanMonsterTurnsAndWait(spawnedMonsterUnits);
+
+        // Each following round: play the trait before opening player reservation.
+        yield return BattleStatusEffectService.PlayMonsterTurnStartTraitsRoutine();
 
         if (turnExecutor != null)
             turnExecutor.SetBattleInputReady(true);

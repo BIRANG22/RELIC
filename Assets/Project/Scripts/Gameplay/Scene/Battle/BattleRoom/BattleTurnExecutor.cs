@@ -1003,6 +1003,7 @@ public class BattleTurnExecutor : MonoBehaviour
             timelineController.StopTimelineMotionEffects();
         }
 
+        yield return BattleStatusEffectService.PlayMonsterTurnStartTraitsRoutine();
         SteamBattleStateSynchronizer.TryRefreshIdleSnapshotAfterNetworkExecution();
         RefreshBattleHUDs();
     }

@@ -9,7 +9,7 @@ namespace Relic.Gameplay.Monster
     /// 드라우그 AI
     /// - 행동 범위: MonsterMasterData의 AttackRange(Range_02)
     /// - 이동: 주변 8방향 중 가장 가까운 캐릭터에게 가까워지는 방향으로 1칸
-    /// - 기본 공격: 전방 2열 x 3칸 가로베기
+    /// - 기본 공격: 전방 첫 열 3칸과 둘째 열 중앙 1칸 가로베기
     /// - 반격: BattleActionRunner에서 공격 스킬 피격 후 S_Monster_17을 즉시 실행
     /// </summary>
     public class DraugrAI : MonsterAIBase
@@ -44,49 +44,94 @@ namespace Relic.Gameplay.Monster
                 monsterUnit.MainGridIndex < 0)
                 return plan;
 
+            // A nearby character on the same horizontal line is a counter opportunity.
+            // Stay in place, turn toward that character, and reserve the sweep.
+            // Do this before considering any movement or another preferred target.
+            int counterTarget = FindCounterTargetOnCurrentRow(monsterUnit.MainGridIndex, gridManager);
+            if (counterTarget >= 0)
+            {
+                Vector2Int self = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+                Vector2Int other = gridManager.IndexToCoord(counterTarget);
+                BattleDirection direction = other.x < self.x
+                    ? BattleDirection.Left : BattleDirection.Right;
+                SetFacingForReservedAttack(monsterUnit, direction);
+                List<int> range = BuildSweepRange(
+                    monsterUnit.MainGridIndex, gridManager,
+                    direction == BattleDirection.Left ? -1 : 1);
+                plan.Add(new MonsterAIAction(
+                    AttackSkillId, Vector2Int.zero, MonsterAISlotPreference.Front,
+                    1, 0, monsterUnit.MainGridIndex, false, direction, false, 0, range));
+                return plan;
+            }
+
             int targetIndex = FindPreferredTarget(monsterUnit.MainGridIndex, gridManager);
             if (targetIndex < 0)
                 return plan;
 
-            bool canAttackNow = TryBuildAttackForTarget(
-                monsterUnit.MainGridIndex, targetIndex, gridManager,
-                out BattleDirection currentDirection, out List<int> currentRange);
-
-            // 공격할 수 있어도 안전한 접근 위치가 있으면 먼저 한 칸 이동합니다.
+            // Always reserve the sweep, even when the player is currently outside its range.
+            // The player may enter the predicted area during the reservation phase.
             Vector2Int moveOffset = GetBestSafeOneTileMoveTowardTarget(
                 monsterUnit, gridManager, targetIndex);
+            int attackOrigin = monsterUnit.MainGridIndex;
             if (moveOffset != Vector2Int.zero)
             {
-                const int group = 1;
-                int projectedGridIndex = GetProjectedMainGridIndex(monsterUnit, gridManager, moveOffset);
-                bool canAttackAfterMove = TryBuildAttackForTarget(
-                    projectedGridIndex, targetIndex, gridManager,
-                    out BattleDirection movedDirection, out List<int> movedRange);
+                attackOrigin = GetProjectedMainGridIndex(monsterUnit, gridManager, moveOffset);
+                plan.Add(new MonsterAIAction(
+                    MoveSkillId, moveOffset, MonsterAISlotPreference.Front, 1, 0));
+            }
 
-                // 현재 공격할 수 있는 대상을 이동 때문에 놓치지 않습니다.
-                if (canAttackAfterMove || !canAttackNow)
+            // Facing is determined from the target, not from a successful hit test.
+            Vector2Int originCoord = gridManager.IndexToCoord(attackOrigin);
+            Vector2Int targetCoord = gridManager.IndexToCoord(targetIndex);
+            BattleDirection attackDirection = targetCoord.x < originCoord.x
+                ? BattleDirection.Left : targetCoord.x > originCoord.x
+                    ? BattleDirection.Right
+                    : GetCurrentFacing(monsterUnit);
+            List<int> attackRange = BuildSweepRange(
+                attackOrigin, gridManager,
+                attackDirection == BattleDirection.Left ? -1 : 1);
+
+            if (moveOffset == Vector2Int.zero)
+                SetFacingForReservedAttack(monsterUnit, attackDirection);
+
+            plan.Add(new MonsterAIAction(
+                AttackSkillId, Vector2Int.zero,
+                moveOffset == Vector2Int.zero
+                    ? MonsterAISlotPreference.Front
+                    : MonsterAISlotPreference.SameSlot,
+                1, moveOffset == Vector2Int.zero ? 0 : 1,
+                attackOrigin, moveOffset != Vector2Int.zero,
+                attackDirection, false, 0, attackRange));
+            return plan;
+        }
+
+        private int FindCounterTargetOnCurrentRow(int originIndex, GridManager gridManager)
+        {
+            Vector2Int origin = gridManager.IndexToCoord(originIndex);
+            int best = -1;
+            int bestDistance = int.MaxValue;
+            foreach (int index in FindCharacterTargetGridIndices())
+            {
+                if (index < 0 || gridManager.GetCellByIndex(index) == null)
+                    continue;
+                Vector2Int target = gridManager.IndexToCoord(index);
+                int distance = Mathf.Abs(target.x - origin.x);
+                if (target.y != origin.y || distance < 1 || distance > 2)
+                    continue;
+                if (distance < bestDistance)
                 {
-                    plan.Add(new MonsterAIAction(
-                        MoveSkillId, moveOffset, MonsterAISlotPreference.Front, group, 0));
-                    if (canAttackAfterMove)
-                    {
-                        plan.Add(new MonsterAIAction(
-                            AttackSkillId, Vector2Int.zero, MonsterAISlotPreference.SameSlot,
-                            group, 1, projectedGridIndex, true, movedDirection, false, 0, movedRange));
-                    }
-                    return plan;
+                    best = index;
+                    bestDistance = distance;
                 }
             }
+            return best;
+        }
 
-            if (canAttackNow)
-            {
-                SetFacingForReservedAttack(monsterUnit, currentDirection);
-                plan.Add(new MonsterAIAction(
-                    AttackSkillId, Vector2Int.zero, MonsterAISlotPreference.Front,
-                    1, 0, monsterUnit.MainGridIndex, false,
-                    currentDirection, false, 0, currentRange));
-            }
-            return plan;
+        private static BattleDirection GetCurrentFacing(MonsterUnit unit)
+        {
+            return unit != null && unit.RuntimeData != null &&
+                   unit.RuntimeData.Direction == BattleDirection.Left
+                ? BattleDirection.Left : BattleDirection.Right;
         }
 
         private int FindPreferredTarget(int originIndex, GridManager gridManager)
@@ -130,9 +175,23 @@ namespace Relic.Gameplay.Monster
             Vector2Int target = gridManager.IndexToCoord(targetIndex);
             int currentDistance = Mathf.Max(Mathf.Abs(target.x - origin.x),
                                             Mathf.Abs(target.y - origin.y));
+            // Counter (S_Monster_17) only reaches two cells along the same row.
+            // When a character is already in that row and within counter range,
+            // hold position to encourage the counter instead of stepping away.
+            foreach (int characterIndex in FindCharacterTargetGridIndices())
+            {
+                if (characterIndex < 0 || gridManager.GetCellByIndex(characterIndex) == null)
+                    continue;
+                Vector2Int character = gridManager.IndexToCoord(characterIndex);
+                if (character.y == origin.y && Mathf.Abs(character.x - origin.x) >= 1 &&
+                    Mathf.Abs(character.x - origin.x) <= 2)
+                    return Vector2Int.zero;
+            }
             Vector2Int best = Vector2Int.zero;
-            int bestDistance = currentDistance;
+            int bestSafety = int.MaxValue;
+            int bestDistance = int.MaxValue;
             int bestSecondary = int.MaxValue;
+            int bestRowOffset = int.MaxValue;
             BattleGridEffectController effects =
                 Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
 
@@ -144,20 +203,52 @@ namespace Relic.Gameplay.Monster
                 if (!gridManager.IsValidCoord(next))
                     continue;
                 int nextIndex = gridManager.CoordToIndex(next);
-                // 통과 가능한 그리드 효과도 불필요한 위험이므로 피합니다.
-                if (effects != null && effects.HasEffect(nextIndex))
+                // Never plan a move into a character's tile, even when occupancy
+                // objects have not yet been synchronized for this reservation.
+                if (nextIndex == targetIndex ||
+                    BattleOccupancyService.IsOccupiedByAnyUnit(nextIndex, null, monsterUnit))
                     continue;
+
+                // Check every occupied cell of larger monsters at the projected destination.
+                bool destinationBlocked = false;
+                foreach (int occupiedIndex in monsterUnit.OccupiedGridIndices)
+                {
+                    Vector2Int occupiedCoord = gridManager.IndexToCoord(occupiedIndex) + offset;
+                    if (!gridManager.IsValidCoord(occupiedCoord) ||
+                        BattleOccupancyService.IsOccupiedByAnyUnit(
+                            gridManager.CoordToIndex(occupiedCoord), null, monsterUnit))
+                    {
+                        destinationBlocked = true;
+                        break;
+                    }
+                }
+                if (destinationBlocked)
+                    continue;
+
+                int safety = effects != null && effects.HasEffect(nextIndex) ? 1 : 0;
                 int distance = Mathf.Max(Mathf.Abs(target.x - next.x),
                                          Mathf.Abs(target.y - next.y));
                 int secondary = Mathf.Abs(target.x - next.x) + Mathf.Abs(target.y - next.y);
-                if (distance < bestDistance ||
-                    (distance == bestDistance && best != Vector2Int.zero && secondary < bestSecondary))
+                // Prefer lining up the counter with a character, then closing distance.
+                // An aligned counter opportunity is preferred over sweep coverage.
+                int rowOffset = Mathf.Abs(target.y - next.y);
+                if (rowOffset < bestRowOffset ||
+                    (rowOffset == bestRowOffset && distance < bestDistance) ||
+                    (rowOffset == bestRowOffset && distance == bestDistance && secondary < bestSecondary) ||
+                    (rowOffset == bestRowOffset && distance == bestDistance &&
+                     secondary == bestSecondary && safety < bestSafety))
                 {
+                    bestRowOffset = rowOffset;
+                    bestSafety = safety;
                     bestDistance = distance;
                     bestSecondary = secondary;
                     best = offset;
                 }
             }
+            // Do not move away purely for the sake of moving when already in reach.
+            if (best != Vector2Int.zero && bestDistance > currentDistance &&
+                bestRowOffset >= Mathf.Abs(target.y - origin.y))
+                return Vector2Int.zero;
             return best;
         }
 
@@ -335,6 +426,10 @@ namespace Relic.Gameplay.Monster
             {
                 for (int y = -1; y <= 1; y++)
                 {
+                    // The sweep has three cells in its first column and
+                    // only the middle cell in its second column (four total).
+                    if (x == 2 && y != 0)
+                        continue;
                     Vector2Int coord = origin + new Vector2Int(horizontalSign * x, y);
 
                     if (!gridManager.IsValidCoord(coord))

@@ -5,6 +5,24 @@ using UnityEngine.EventSystems;
 
 public class BattleCharacter : MonoBehaviour
 {
+    // The grid click may finish move selection before the same mouse click reaches a character.
+    private static int lastMoveGridClickFrame = -1;
+
+    public static void MarkMoveGridClicked()
+    {
+        lastMoveGridClickFrame = Time.frameCount;
+    }
+
+    private static bool IsMoveGridClickFrame => lastMoveGridClickFrame == Time.frameCount;
+    public static bool WasMoveGridClickedThisFrame => IsMoveGridClickFrame;
+
+    private static bool IsMoveGridSelectionActive()
+    {
+        PlayerSkillReservationController controller =
+            FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+        return controller != null && controller.IsMoveSkillSelectionActive();
+    }
+
     private static readonly Color CharacterSelectedHighlightColor = new Color32(0x0C, 0x58, 0xC5, 0xFF);
     private static readonly Color CharacterHoverHighlightColor = new Color32(0xEE, 0xEE, 0xEE, 0xFF);
     public const string SelectionReadyAnimationStateName = "battle_ready";
@@ -133,6 +151,17 @@ public class BattleCharacter : MonoBehaviour
             return;
         }
 
+        if (IsMoveGridSelectionActive())
+        {
+            if (!selectionHighlightVisible && timelineHoverHighlightVisible)
+            {
+                SetTimelineHoverHighlight(false);
+                SetLinkedHudHover(false);
+                worldHud?.SetCharacterHover(false);
+            }
+            return;
+        }
+
         SyncTimelineHoverHighlightAnimation();
     }
 
@@ -150,6 +179,9 @@ public class BattleCharacter : MonoBehaviour
 
     private void OnMouseEnter()
     {
+        if (IsMoveGridSelectionActive() || IsMoveGridClickFrame)
+            return;
+
         if (IsBattleEnded())
             return;
 
@@ -223,6 +255,14 @@ public class BattleCharacter : MonoBehaviour
             return;
 
         if (RuntimeData == null)
+            return;
+
+        // 이동 목적지 그리드를 선택하는 동안 월드 캐릭터 클릭은 무시합니다.
+        // 같은 클릭이 그리드 이동 예약과 캐릭터 변경을 동시에 실행하지 않도록 합니다.
+        PlayerSkillReservationController reservationController =
+            FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+        if (IsMoveGridClickFrame ||
+            (reservationController != null && reservationController.IsMoveSkillSelectionActive()))
             return;
 
         if (RuntimeData.IsDead)
