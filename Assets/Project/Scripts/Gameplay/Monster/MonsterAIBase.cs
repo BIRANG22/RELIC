@@ -7,6 +7,13 @@ namespace Relic.Gameplay.Monster
 {
     public abstract class MonsterAIBase
     {
+        // Distance for selecting nearest/farthest targets on the 8-direction grid.
+        // This is not a pathfinding cost or a skill range check.
+        protected static int TargetGridDistance(Vector2Int a, Vector2Int b)
+        {
+            return Mathf.Max(Mathf.Abs(a.x - b.x), Mathf.Abs(a.y - b.y));
+        }
+
         public virtual MonsterAIPlan CreatePlan(
             MonsterUnit monsterUnit,
             BattleContext context,
@@ -164,8 +171,7 @@ namespace Relic.Gameplay.Monster
 
                 Vector2Int targetCoord = gridManager.IndexToCoord(gridIndex);
                 int distance =
-                    Mathf.Abs(targetCoord.x - monsterCoord.x) +
-                    Mathf.Abs(targetCoord.y - monsterCoord.y);
+                    TargetGridDistance(targetCoord, monsterCoord);
 
                 if (distance >= nearestDistance)
                     continue;
@@ -212,8 +218,7 @@ namespace Relic.Gameplay.Monster
 
                 Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
                 int distance =
-                    Mathf.Abs(playerCoord.x - monsterCoord.x) +
-                    Mathf.Abs(playerCoord.y - monsterCoord.y);
+                    TargetGridDistance(playerCoord, monsterCoord);
 
                 if (distance < nearestDistance)
                 {
@@ -329,8 +334,7 @@ namespace Relic.Gameplay.Monster
 
                 Vector2Int targetCandidateCoord = gridManager.IndexToCoord(gridIndex);
                 int distance =
-                    Mathf.Abs(targetCandidateCoord.x - originCoord.x) +
-                    Mathf.Abs(targetCandidateCoord.y - originCoord.y);
+                    TargetGridDistance(targetCandidateCoord, originCoord);
 
                 if (distance < nearestDistance)
                 {
@@ -371,8 +375,7 @@ namespace Relic.Gameplay.Monster
 
                 Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
                 int distance =
-                    Mathf.Abs(playerCoord.x - monsterCoord.x) +
-                    Mathf.Abs(playerCoord.y - monsterCoord.y);
+                    TargetGridDistance(playerCoord, monsterCoord);
 
                 if (distance > farthestDistance)
                 {
@@ -535,8 +538,7 @@ namespace Relic.Gameplay.Monster
                 Vector2Int movedCoord = currentCoord + offset;
 
                 int distance =
-                    Mathf.Abs(targetCoord.x - movedCoord.x) +
-                    Mathf.Abs(targetCoord.y - movedCoord.y);
+                    TargetGridDistance(targetCoord, movedCoord);
 
                 if (distance < bestDistance)
                 {
@@ -596,8 +598,7 @@ namespace Relic.Gameplay.Monster
                 Vector2Int movedCoord = currentCoord + offset;
 
                 int distance =
-                    Mathf.Abs(targetCoord.x - movedCoord.x) +
-                    Mathf.Abs(targetCoord.y - movedCoord.y);
+                    TargetGridDistance(targetCoord, movedCoord);
 
                 if (distance > bestDistance)
                 {
