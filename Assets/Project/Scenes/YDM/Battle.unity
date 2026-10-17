@@ -649,6 +649,7 @@ MonoBehaviour:
   rareVfxPrefab: {fileID: 8628763350527882483, guid: df504970cc4ef9f49b5148f001557264, type: 3}
   epicVfxPrefab: {fileID: 56414410164601602, guid: 6cb0698eeee5fce4d95fdb9c8cf408ba, type: 3}
   uniqueVfxPrefab: {fileID: 8645310167189749857, guid: c467fb44a03011d458a00b75a246ac5d, type: 3}
+  panelTitleText: {fileID: 416538621}
   skillContent: {fileID: 2009402866}
   skillCards:
   - root: {fileID: 0}

@@ -3110,8 +3110,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101005
-    m_Localized: "{E_Strike} {ValueRate1} \uC801\uC911 \uC2E4\uD328 \uC2DC \uC0DD\uBA85\uB825
-      -{ValueRate2}"
+    m_Localized: '{E_Strike} {ValueRate1} / Al fallar, pierde {ValueRate2} de PS'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101007
@@ -3123,8 +3122,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101011
-    m_Localized: "{E_Strike} {ValueRate1} \uCC98\uCE58 \uC2DC \uC601\uAD6C\uD788
-      \uD53C\uD574\uB7C9 {ValueRate2}"
+    m_Localized: "{E_Strike} {ValueRate1} / Al matar, aumenta permanentemente el
+      da\xF1o en {ValueRate2}"
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101013
@@ -4188,7 +4187,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975805
-    m_Localized: Inicio del turno {0}
+    m_Localized: Turno {0}
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975806
@@ -4209,6 +4208,18 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 9164888147097975810
     m_Localized: Reliquia obtenida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975811
+    m_Localized: Memoria
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975812
+    m_Localized: Memoria adquirida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975813
+    m_Localized: 'Memoria adquirida: {0}'
     m_Metadata:
       m_Items: []
   references:

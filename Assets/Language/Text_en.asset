@@ -3313,8 +3313,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101005
-    m_Localized: "{E_Strike} {ValueRate1} \uC801\uC911 \uC2E4\uD328 \uC2DC \uC0DD\uBA85\uB825
-      -{ValueRate2}"
+    m_Localized: '{E_Strike} {ValueRate1} / On miss, lose {ValueRate2} HP'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101007
@@ -3326,8 +3325,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101011
-    m_Localized: "{E_Strike} {ValueRate1} \uCC98\uCE58 \uC2DC \uC601\uAD6C\uD788
-      \uD53C\uD574\uB7C9 {ValueRate2}"
+    m_Localized: '{E_Strike} {ValueRate1} / On kill, permanently increase damage
+      by {ValueRate2}'
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101013
@@ -7355,7 +7354,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975805
-    m_Localized: Turn {0} Start
+    m_Localized: Turn {0}
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975806
@@ -7444,6 +7443,18 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 23949548351365132
     m_Localized: Inflict additional Poison equal to the target's current Poison.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975811
+    m_Localized: Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975812
+    m_Localized: Memory Acquired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975813
+    m_Localized: 'Memory Acquired: {0}'
     m_Metadata:
       m_Items: []
   references:

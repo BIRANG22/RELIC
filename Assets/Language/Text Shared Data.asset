@@ -7103,6 +7103,18 @@ MonoBehaviour:
     m_Key: battle.reward.relic_acquired
     m_Metadata:
       m_Items: []
+  - m_Id: 9164888147097975811
+    m_Key: battle.reward.skill_panel_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975812
+    m_Key: battle.reward.skill_acquired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975813
+    m_Key: event.result.memory_acquired_format
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -1499,8 +1499,7 @@ public class BattleTurnExecutor : MonoBehaviour
         {
             lastAnnouncedReservationTurn = requestedTurn;
             PlaySfx(playBattleProgressSfx, battleProgressSfxId, battleProgressSfxVolume);
-            string progressText = GameLocalization.Get(LocalizationKeys.Battle.Progress);
-            BattleTurnIntroText.ShowMessage($"{requestedTurn}{progressText}");
+            BattleTurnIntroText.ShowTurnStart(requestedTurn);
         }
 
         reservationIntroCoroutine = null;

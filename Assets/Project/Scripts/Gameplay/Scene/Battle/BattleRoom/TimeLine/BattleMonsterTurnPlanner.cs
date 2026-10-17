@@ -941,7 +941,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         StartCoroutine(BattleEffectInfoFeed.FlushInitialEffectsAndWait());
         PlayActionReservationStartSfx();
         // 예약 단계 안내 문구는 출력하지 않습니다.
-        // BattleTurnExecutor가 플레이어 입력 가능 시점에 'N턴 시작'을 표시합니다.
+        // BattleTurnExecutor가 플레이어 입력 가능 시점에 'N턴'을 표시합니다.
     }
 
     private IEnumerator ShowActionReserveIntroTextAndWaitRoutine(bool showTurnHeading = true)
