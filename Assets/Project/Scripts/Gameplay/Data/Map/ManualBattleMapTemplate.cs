@@ -227,7 +227,8 @@ namespace Relic.Gameplay.Data
         private const int StartNodeIndex = 0;
 
         [Header("Generation")]
-        [SerializeField] private ManualBattleMapGenerationPolicy generationPolicy =
+        [SerializeField]
+        private ManualBattleMapGenerationPolicy generationPolicy =
             ManualBattleMapGenerationPolicy.StandardExpedition;
         [SerializeField, Range(MinBossLayerIndex, MaxBossLayerIndex)]
         private int bossLayerIndex = DefaultBossLayerIndex;
@@ -518,7 +519,16 @@ namespace Relic.Gameplay.Data
                     continue;
 
                 List<ManualBattleMapNodeDefinition> existing = definitions.FindAll(n => n.LayerIndex == layer);
-                int count = singleRoom ? 1 : BattleRandom.Range(2, 4);
+                // Keep every explicitly assigned map in procedural layers. Unassigned
+                // slots are candidates for fresh procedural rooms, not authored types.
+                int fixedMapCount = randomLayer
+                    ? existing.FindAll(n => !string.IsNullOrWhiteSpace(n.MapIdOverride)).Count
+                    : 0;
+                // A layer with manually assigned map IDs uses precisely its enabled slots.
+                // Untouched layers retain the standard procedural 2-3 room layout.
+                int count = singleRoom ? 1 :
+                    randomLayer && fixedMapCount > 0 ? existing.Count :
+                    BattleRandom.Range(2, 4);
                 if (singleRoom && existing.Count == 0)
                 {
                     Debug.LogWarning($"[ManualBattleMapTemplate] Layer {layer}: enable one slot and set its room type/map ID.");
@@ -529,6 +539,8 @@ namespace Relic.Gameplay.Data
                 definitions.RemoveAll(n => n.LayerIndex == layer);
                 if (replaceShop || replaceRest)
                     existing.Clear();
+                else if (randomLayer && fixedMapCount == 0)
+                    existing.RemoveAll(n => string.IsNullOrWhiteSpace(n.MapIdOverride));
 
                 // Prioritize manually assigned IDs and types when limiting four slots.
                 existing.Sort((left, right) =>
@@ -545,16 +557,12 @@ namespace Relic.Gameplay.Data
                     if (count == 2 &&
                         ((source.RowIndex == 0 && usedRows.Contains(3)) ||
                          (source.RowIndex == 3 && usedRows.Contains(0))))
-                        continue;
-
-                    // A procedural layer can retain explicit test IDs, but inherited room
-                    // types from older serialized templates must not force Shop/Rest/Boss.
-                    // Map IDs are intentionally not cleared unless erosion removes the room.
-                    if (randomLayer && string.IsNullOrWhiteSpace(source.MapIdOverride) &&
-                        !IsAllowedRandomRoomType(source.Type, layer))
                     {
-                        source.Type = PickRandomRoomType(layer, false);
+                        // Both outer slots cannot form a valid two-room layout.
+                        // Retry with an extra generated room instead of losing a fixed map.
+                        count = 3;
                     }
+
                     definitions.Add(source);
                     usedRows.Add(source.RowIndex);
                 }
@@ -655,7 +663,9 @@ namespace Relic.Gameplay.Data
                 {
                     if (!TryFindMapById(mapPool, node.MapIdOverride.Trim(), stage, out MapData map))
                         return false;
-                    type = map.Type?.Trim();
+                    // Explicit slot Type controls map icon/prefab even if the
+                    // selected test map has a distinct database category.
+                    type = node.Type?.Trim();
                 }
                 types[node.NodeIndex] = type;
                 layers[node.NodeIndex] = node.LayerIndex;
@@ -1136,13 +1146,12 @@ namespace Relic.Gameplay.Data
             {
                 string overrideId = definition.MapIdOverride.Trim();
 
-                // MapIdOverride DB    ϴ ̹Ƿ
-                // ø ȭǾ  ִ Type  ġ ʿ䰡 .
-                //   Ÿ DB MapData.Type ״ Ѵ.
+                // Resolve map content by ID; retain the manually selected room Type.
+                // This also allows test maps to use Common visuals and routing.
                 if (TryFindMapById(mapPool, overrideId, stage, out MapData overrideMap))
                 {
                     mapId = overrideMap.MapId;
-                    resolvedType = overrideMap.Type;
+                    resolvedType = type;
                     eventId = EventIdUtility.Normalize(overrideMap.EventId);
                     return true;
                 }
