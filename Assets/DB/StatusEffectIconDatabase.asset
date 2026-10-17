@@ -82,24 +82,24 @@ MonoBehaviour:
   - EffectId: E_Split
     Icon: {fileID: 21300000, guid: 7595960e252916e4db13b80a202e4a13, type: 3}
   - EffectId: E_Trail
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: 66260ff11ffdfc9408d65b6994223b7b, type: 3}
   - EffectId: E_DoubleMove
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: 51fced0ba8d8a6b4aa6481e83b331de8, type: 3}
   - EffectId: E_Explode
     Icon: {fileID: 21300000, guid: 01261e3bf0e77994d8f7976d499f2ab8, type: 3}
   - EffectId: E_Counter
     Icon: {fileID: 21300000, guid: 819767379bd23924bba4663ed0d19fe6, type: 3}
   - EffectId: E_Targeting
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: 6a13bd7df2b0f904ab536b93c22bdb61, type: 3}
   - EffectId: E_Fortress
     Icon: {fileID: 21300000, guid: d233529da27939c4587db9e7f06b9d3a, type: 3}
   - EffectId: E_Ambush
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: 6cc647b7fd84ea04e8cf3f8f1d6f1acb, type: 3}
   - EffectId: E_Necromancy
     Icon: {fileID: 21300000, guid: ffaa7e4755362b94b9a37153bbfbc776, type: 3}
   - EffectId: E_WebCreation
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: 6158e9284ba32e74c81bb45530b7431b, type: 3}
   - EffectId: E_Entanglement
-    Icon: {fileID: 0}
+    Icon: {fileID: 21300000, guid: b7073d1e0946dad41821fb5c08feee21, type: 3}
   - EffectId: E_Spider_Web
     Icon: {fileID: 21300000, guid: 40a5a3f273dd76f4790f7af79c115b6b, type: 3}
