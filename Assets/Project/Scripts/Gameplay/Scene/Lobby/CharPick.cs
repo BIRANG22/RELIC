@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -295,21 +295,49 @@ public class CharPick : MonoBehaviour
         string characterId = btn.CharacterId;
         int registeredSlot = partyStore.FindCharacterSlot(characterId);
 
-        // 이미 Ready_Panel의 Grid에 등록된 캐릭터를 다시 누르면 파티에서도 해제합니다.
+        // First click selects the character for placement. Clicking the same
+        // already-deployed character again removes it from the party.
         if (registeredSlot >= 0)
         {
-            LobbyCharacterEquipmentReleaseUtility.ReleaseAll(characterId);
-            ClearReadyPanelPlacementSelection(registeredSlot);
-            partyStore.ClearSlot(registeredSlot);
-            ClearPendingReadyPanelInfoSelection(btn);
-            RefreshInfoPanelPartyEditState();
+            if (IsInfoCharacterPendingForReadyPanelPlacement(btn))
+            {
+                LobbyCharacterEquipmentReleaseUtility.ReleaseAll(characterId);
+                ClearReadyPanelPlacementSelection(registeredSlot);
+                partyStore.ClearSlot(registeredSlot);
+                ClearPendingReadyPanelInfoSelection(btn);
+                RefreshInfoPanelPartyEditState();
+                return;
+            }
+
+            SelectInfoCharacterForReadyPanelPlacement(btn);
             return;
         }
 
-        // 아직 파티에는 등록하지 않습니다.
-        // Info_Panel 클릭은 Ready_Panel에 배치할 캐릭터를 고르는 단계이며,
-        // 실제 파티 등록과 시작 위치 저장은 Grid를 클릭하거나 드롭했을 때 함께 처리합니다.
+        // A second click on an unregistered selection cancels selection.
+        if (IsInfoCharacterPendingForReadyPanelPlacement(btn))
+        {
+            ClearPendingReadyPanelInfoSelection(btn);
+            return;
+        }
+
         SelectInfoCharacterForReadyPanelPlacement(btn);
+    }
+
+    private static bool IsInfoCharacterPendingForReadyPanelPlacement(CharBtn btn)
+    {
+        if (btn == null)
+            return false;
+
+        SpawnGridPanel[] panels = FindObjectsByType<SpawnGridPanel>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        for (int i = 0; i < panels.Length; i++)
+        {
+            if (panels[i] != null && panels[i].IsInfoCharacterSelectedForPlacement(btn))
+                return true;
+        }
+
+        return false;
     }
 
     public bool TryGetOrRegisterPartySlotForReadyDrag(CharBtn btn, out int partySlotIndex)
