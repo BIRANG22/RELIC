@@ -87,6 +87,12 @@ public class GridCell : MonoBehaviour
         if (!BattleFirstTutorialController.CanClickGrid(Index))
             return;
 
+        // Record the click before reservation is confirmed and move-selection is cleared.
+        PlayerSkillReservationController moveController =
+            FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+        if (moveController != null && moveController.IsMoveSkillSelectionActive())
+            BattleCharacter.MarkMoveGridClicked();
+
         if (owner != null)
             owner.NotifyCellClicked(this);
 

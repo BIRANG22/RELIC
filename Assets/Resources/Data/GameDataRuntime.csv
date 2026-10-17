@@ -152,14 +152,14 @@ S_Monster_12,들이받기,PlayerParty,1,E_Strike;E_Knockback,12;1,1,6,Range_06,A
 S_Monster_13,이동,Self,1,E_Move,0,1,0,Range_18,Move,가까운 캐릭터 주변으로 1칸 이동한다.,icon_mon_skill_001,이동,
 S_Monster_14,대폭발,PlayerParty,2,E_Strike,25,1,0,Range_21,Attack,범위 내 대상에게 {E_Strike}를 {ValueRate1}만큼 주고 사망한다.,icon_mon_skill_009,공격,
 S_Monster_15,이동,Self,1,E_Move,0,1,0,Range_18,Move,가장 가까운 캐릭터의 전방으로 1칸 이동한다.,icon_mon_skill_001,이동,
-S_Monster_16,횡베기,PlayerParty,1,E_Strike,9,1,0,Range_11,Attack,범위에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_010,공격,
+S_Monster_16,횡베기,PlayerParty,1,E_Strike,9,1,0,Range_10,Attack,범위에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_010,공격,
 S_Monster_17,내려찍기,PlayerParty,1,E_Strike,6,1,0,Range_02,Attack,전방에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_011,공격,
 S_Monster_18,이동,Self,1,E_Move,0,1,0,Range_19,Move,가장 가까운 캐릭터에게서 최대 2칸 멀어진다.,icon_mon_skill_001,이동,
 S_Monster_19,직사,PlayerParty,1,E_Strike,8,1,0,Range_06,Attack,전방의 첫 대상에게 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_012,공격,
 S_Monster_20,곡사,PlayerParty,1,E_Strike,5,2,0,Range_m_02,Attack,가장 먼 대상의 위치에 {E_Strike}를 {ValueRate1}만큼 {CountRate1}회 준다.,icon_mon_skill_013,공격,
 S_Monster_21,이동,Self,1,E_Move,0,1,0,Range_18,Move,가까운 캐릭터를 향해 1칸 이동한다.,icon_mon_skill_001,이동,
 S_Monster_22,방패돌진,PlayerParty,1,E_Strike;E_Knockback,15;6,1,6,Range_06,Attack,"돌진하여 대상에게 {E_Strike}를 {ValueRate1}만큼 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",icon_mon_skill_014,공격,
-S_Monster_23,방패강타,PlayerParty,1,E_Strike;E_Knockback,12;1,1,0,Range_10,Attack,"범위에 {E_Strike}를 {ValueRate1}만큼 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",icon_mon_skill_015,공격,
+S_Monster_23,방패강타,PlayerParty,1,E_Strike;E_Knockback,12;1,1,0,Range_16,Attack,"범위에 {E_Strike}를 {ValueRate1}만큼 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",icon_mon_skill_015,공격,
 S_Monster_24,대지진,PlayerParty,1,E_Strike,4,1,0,Range_All,Attack,모든 범위에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_016,공격,
 S_Monster_25,그림자걸음,Self,1,E_Move,0,1,0,Range_All,Move,그림자의 위치로 순간이동한다.,icon_mon_skill_017,이동,
 S_Monster_26,심연 찌르기,PlayerParty,1,E_Pierce,10,1,0,Range_03,Attack,전방에 {E_Pierce}를 {ValueRate1}만큼 준다.,icon_mon_skill_018,공격,
@@ -639,8 +639,8 @@ Battlemap_17,Mon_02,22,-1,-1,-1,튜토리얼(블롭 1마리),0,0,100,0,0,0,0,0,0
 Battlemap_18,Mon_07,22,-1,-1,-1,튜토리얼(드라우그 1마리),0,0,100,0,0,0,0,0,0
 Battlemap_19,Mon_01,21,-1,-1,-1,"튜토리얼(머크, 블라이트)",0,0,0,0,0,0,0,0,0
 Battlemap_19,Mon_04,28,-1,-1,-1,,,,,,,,,,
-Battlemap_20,Mon_07,22,-1,-1,-1,테스트,100,25,25,25,25,25,25,25,25
-Battlemap_20,Mon_08,25,-1,-1,-1,테스트,,,,,,,,,
+Battlemap_20,Mon_09,22,-1,-1,-1,테스트,100,25,25,25,25,25,25,25,25
+,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,
 
 # Event

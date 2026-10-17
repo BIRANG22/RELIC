@@ -3480,6 +3480,11 @@ public class BattleTimelineController : MonoBehaviour
         BattleEquipmentEffectService.TryApplyAndConsumeSpiderWebMoveCostPenalty(command);
         RecordPlayerReservation(slotIndex, command);
 
+        // 앞 슬롯에 새 이동을 등록하면 뒤 슬롯의 기존 공격 범위/방향이 달라집니다.
+        // 이동을 등록한 캐릭터의 후속 공격 예약만 취소합니다.
+        if (IsMoveCommand(command))
+            CancelFollowingAttackReservations(slotIndex, command.CharacterId);
+
         RecalculateAllReservedCosts();
 
         RefreshReservationSimulation();
@@ -3630,6 +3635,7 @@ public class BattleTimelineController : MonoBehaviour
         existingMoveCommand.MergeMoveReservation(command);
         int slotIndex = GetSlotIndexOf(slot);
         RecordPlayerReservation(slotIndex, existingMoveCommand);
+        CancelFollowingAttackReservations(slotIndex, existingMoveCommand.CharacterId);
 
         RecalculateAllReservedCosts();
         RefreshReservationSimulation();
@@ -5087,6 +5093,36 @@ public class BattleTimelineController : MonoBehaviour
 
         Debug.Log($"[BattleTimelineController] 예약 취소 / Slot:{slotIndex} / Order:{orderIndex}");
         return true;
+    }
+
+    private void CancelFollowingAttackReservations(int moveSlotIndex, string characterId)
+    {
+        if (reserveSlots == null || string.IsNullOrEmpty(characterId))
+            return;
+
+        for (int slotIndex = moveSlotIndex + 1; slotIndex < reserveSlots.Length; slotIndex++)
+        {
+            ReserveTurnSlotUI slot = reserveSlots[slotIndex];
+            if (slot == null || slot.Commands == null)
+                continue;
+
+            for (int orderIndex = slot.Commands.Count - 1; orderIndex >= 0; orderIndex--)
+            {
+                PlayerReservedCommand reserved = slot.Commands[orderIndex];
+                if (reserved == null || reserved.CharacterId != characterId || reserved.SkillData == null)
+                    continue;
+
+                if (reserved.SkillData.SkillType != SkillType.Attack &&
+                    reserved.SkillData.TimelineNotation != TimelineActionType.Attack)
+                    continue;
+
+                if (slot.RemoveCommandAt(orderIndex, out PlayerReservedCommand removed))
+                {
+                    RemoveReservedCosts(removed);
+                    RemovePlayerReservationHistoryEntries(removed);
+                }
+            }
+        }
     }
 
     private bool IsMoveCommand(PlayerReservedCommand command)

@@ -1,10 +1,68 @@
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class BattleStatusEffectService
 {
+    private const string FortressEffectId = "E_Fortress";
+    private const int FortressPresentationIndex = 4;
+    private const int FortressShieldPerTurn = 10;
+    private const float FortressPresentationDelay = 0.65f;
+
+    // This is a free, non-timeline action. Keep the former skill's action
+    // presentation (including its configured VFX) before granting armor.
+    public static IEnumerator PlayMonsterTurnStartTraitsRoutine()
+    {
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        foreach (MonsterUnit monster in monsters)
+        {
+            if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
+                continue;
+
+            List<StatusEffectRuntimeData> statuses = monster.RuntimeData.StatusEffects;
+            if (statuses == null)
+                continue;
+
+            bool hasFortress = false;
+            foreach (StatusEffectRuntimeData status in statuses)
+            {
+                if (status != null && status.IsMonsterInnateTrait &&
+                    string.Equals(status.EffectId, FortressEffectId, System.StringComparison.Ordinal))
+                {
+                    hasFortress = true;
+                    break;
+                }
+            }
+
+            if (!hasFortress)
+                continue;
+
+            BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+            if (animator != null)
+            {
+                // The fortress trait is not a MonsterSkill row. Play the legacy
+                // Rook action presentation directly without booking a timeline slot.
+                animator.PlayMonsterActionPresentation(FortressPresentationIndex);
+                yield return new WaitForSeconds(FortressPresentationDelay);
+                // Free action presentations do not pass through the timeline's
+                // normal animation-completion path, so restore the idle state.
+                if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
+                    animator.PlayIdle();
+            }
+
+            if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
+                continue;
+
+            monster.RuntimeData.AddTemporaryShield(FortressShieldPerTurn);
+            BattleDamageTextPopupUI.ShowArmorGain(monster.transform, FortressShieldPerTurn);
+            monster.ShowAndRefreshHUD();
+        }
+    }
+
     private const string SplitEffectId = "E_Split";
     private const string SpiderWebEffectId = "E_Spider_Web";
     private const string ExplodeEffectId = "E_Explode";

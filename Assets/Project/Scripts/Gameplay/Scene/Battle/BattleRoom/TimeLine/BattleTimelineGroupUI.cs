@@ -52,6 +52,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     [Header("TurnMark Glow (Assign In Inspector)")]
     [SerializeField] private GameObject turnMarkGlowImage;
 
+    [Header("Cancelled Order Animation")]
+    [SerializeField, Min(0f)] private float cancelledOrderMoveDown = 70f;
+    [SerializeField, Min(0.01f)] private float cancelledOrderFadeDuration = 0.2f;
+
     private readonly List<BattleTimelinePreviewEntry> currentEntries = new();
     [Header("Order Value Change (Execution Only)")]
     [SerializeField, Min(1f)] private float orderValuePulseScale = 1.1f;
@@ -276,8 +280,128 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         // 실제 표시 여부는 SetTimelineEntries에서 현재 실행 순서에 맞춰 다시 계산합니다.
     }
 
+    private sealed class CancelledOrderRoot
+    {
+        public RectTransform Rect;
+        public CanvasGroup Group;
+        public Vector2 OriginalPosition;
+        public float OriginalAlpha;
+    }
+
+    private Coroutine cancelledOrderRoutine;
+    private readonly List<CancelledOrderRoot> cancelledOrderRoots = new();
+    private bool applyingCancelledRefresh;
+    private List<BattleTimelinePreviewEntry> pendingCancelledEntries;
+    private int pendingCancelledSlotIndex;
+
+    private void RestoreCancelledOrderRoots()
+    {
+        foreach (CancelledOrderRoot item in cancelledOrderRoots)
+        {
+            if (item.Rect != null) item.Rect.anchoredPosition = item.OriginalPosition;
+            if (item.Group != null) item.Group.alpha = item.OriginalAlpha;
+        }
+        cancelledOrderRoots.Clear();
+    }
+
+    private bool BeginCancelledOrderAnimation(IReadOnlyList<BattleTimelinePreviewEntry> nextEntries, int targetSlotIndex)
+    {
+        if (slotIndex != targetSlotIndex || !isActiveAndEnabled || IsBattleEnded()) return false;
+        for (int i = 0; i < currentEntries.Count; i++)
+        {
+            BattleTimelinePreviewEntry previous = currentEntries[i];
+            if (previous == null || !previous.IsPlayer || previous.PlayerCommand == null) continue;
+            bool stillReserved = false;
+            if (nextEntries != null)
+            {
+                for (int j = 0; j < nextEntries.Count; j++)
+                {
+                    BattleTimelinePreviewEntry current = nextEntries[j];
+                    if (current != null && current.IsPlayer &&
+                        ReferenceEquals(current.PlayerCommand, previous.PlayerCommand))
+                    {
+                        stillReserved = true;
+                        break;
+                    }
+                }
+            }
+            if (stillReserved) continue;
+            // Animate the containing Order01~05, not the Use_skill1~3 child.
+            int actualOrderIndex = previous.OrderIndex;
+            if (actualOrderIndex < 0 || actualOrderIndex >= 5) continue;
+            Transform skillRoot = FindSizeRoot(actualOrderIndex, Mathf.Clamp(previous.OccupiedOrders, 1, 3));
+            if (skillRoot == null || !skillRoot.gameObject.activeInHierarchy) continue;
+            Transform order = transform.Find("Order" + (actualOrderIndex + 1).ToString("00"));
+            if (order == null || !order.gameObject.activeInHierarchy) continue;
+            RectTransform rect = order as RectTransform;
+            if (rect == null) continue;
+            bool alreadyAdded = false;
+            foreach (CancelledOrderRoot item in cancelledOrderRoots)
+            {
+                if (item.Rect == rect) { alreadyAdded = true; break; }
+            }
+            if (alreadyAdded) continue;
+            CanvasGroup group = order.GetComponent<CanvasGroup>();
+            if (group == null) group = order.gameObject.AddComponent<CanvasGroup>();
+            cancelledOrderRoots.Add(new CancelledOrderRoot
+            {
+                Rect = rect,
+                Group = group,
+                OriginalPosition = rect.anchoredPosition,
+                OriginalAlpha = group.alpha
+            });
+        }
+        return cancelledOrderRoots.Count > 0;
+    }
+
+    private IEnumerator AnimateOriginalCancelledOrders()
+    {
+        float duration = Mathf.Max(0.01f, cancelledOrderFadeDuration);
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            foreach (CancelledOrderRoot item in cancelledOrderRoots)
+            {
+                if (item.Rect != null)
+                    item.Rect.anchoredPosition = item.OriginalPosition + Vector2.down * (cancelledOrderMoveDown * t);
+                if (item.Group != null)
+                    item.Group.alpha = item.OriginalAlpha * (1f - t);
+            }
+            yield return null;
+        }
+        RestoreCancelledOrderRoots();
+        cancelledOrderRoutine = null;
+        var latestEntries = pendingCancelledEntries;
+        int latestSlot = pendingCancelledSlotIndex;
+        pendingCancelledEntries = null;
+        applyingCancelledRefresh = true;
+        try { SetTimelineEntries(latestEntries, latestSlot); }
+        finally { applyingCancelledRefresh = false; }
+    }
+
     public void SetTimelineEntries(IReadOnlyList<BattleTimelinePreviewEntry> entries, int targetSlotIndex)
     {
+        // Preserve the original Order UI until its cancellation animation finishes.
+        // Refreshes may arrive every frame; they must not abort an active fade.
+        if (cancelledOrderRoutine != null)
+        {
+            pendingCancelledEntries = entries != null
+                ? new List<BattleTimelinePreviewEntry>(entries)
+                : new List<BattleTimelinePreviewEntry>();
+            pendingCancelledSlotIndex = targetSlotIndex;
+            return;
+        }
+        if (!applyingCancelledRefresh && BeginCancelledOrderAnimation(entries, targetSlotIndex))
+        {
+            pendingCancelledEntries = entries != null
+                ? new List<BattleTimelinePreviewEntry>(entries)
+                : new List<BattleTimelinePreviewEntry>();
+            pendingCancelledSlotIndex = targetSlotIndex;
+            cancelledOrderRoutine = StartCoroutine(AnimateOriginalCancelledOrders());
+            return;
+        }
         Clear();
         slotIndex = targetSlotIndex;
         ApplyTurnText();
@@ -990,6 +1114,13 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     private void OnDisable()
     {
+        if (cancelledOrderRoutine != null)
+        {
+            StopCoroutine(cancelledOrderRoutine);
+            cancelledOrderRoutine = null;
+        }
+        RestoreCancelledOrderRoots();
+        pendingCancelledEntries = null;
         BattleResultChecker.BattleFinished -= HandleBattleFinished;
         isActive = false;
         // Keep Line visible; only the selected-slot glow is hidden.

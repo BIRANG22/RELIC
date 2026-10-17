@@ -4365,8 +4365,14 @@ public class BattleActionRunner
 
         // 강제 방향이 없는 일반 AI 행동만 실제 명중 대상 쪽으로 회전합니다.
         // 사슬 후속 공격처럼 방향이 예약된 행동은 앞에서 지정한 방향을 유지합니다.
+        // Draugr stationary sweep follows the actual facing after any hit-induced flip.
+        // A move-then-sweep retains its reserved direction through HasForcedDirection.
+        bool isDraugrSweep =
+            string.Equals(command.MonsterId, DraugrMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, DraugrAttackSkillId, System.StringComparison.Ordinal);
         if (!command.HasForcedDirection &&
             !isNocturnDirectionalAttack &&
+            !isDraugrSweep &&
             firstPlayerTarget != null &&
             facing != null)
         {
