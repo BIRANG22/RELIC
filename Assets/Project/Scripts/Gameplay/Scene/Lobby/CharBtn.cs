@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -899,11 +899,9 @@ public class CharBtn : MonoBehaviour,
 
             for (int i = 0; i < panels.Length; i++)
             {
-                if (panels[i] != null)
-                    panels[i].BeginInfoCharacterDrag(this, eventData);
+                if (panels[i] != null && panels[i].isActiveAndEnabled)
+                    isReadyPanelCharacterDragging |= panels[i].BeginInfoCharacterDrag(this, eventData);
             }
-
-            isReadyPanelCharacterDragging = true;
         }
 
         charPick?.BeginDrag(eventData);
@@ -938,7 +936,7 @@ public class CharBtn : MonoBehaviour,
             for (int i = 0; i < panels.Length; i++)
             {
                 if (panels[i] != null)
-                    panels[i].EndInfoCharacterDrag(this);
+                    panels[i].EndInfoCharacterDrag(this, eventData);
             }
 
             suppressClickUntilFrame = Time.frameCount + 1;

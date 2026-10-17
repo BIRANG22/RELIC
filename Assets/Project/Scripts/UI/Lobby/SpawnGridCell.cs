@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -9,26 +9,26 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [SerializeField] private Button button;
 
     [Header("Ready Panel Grid Hierarchy")]
-    [Tooltip("GridXX/Select. Info_Panel¿¡¼­ Ä³¸¯ÅÍ°¡ ¼±ÅÃµÇ¸é ºñ¾î ÀÖ´Â Grid¿¡¼­ È°¼ºÈ­µË´Ï´Ù.")]
+    [Tooltip("GridXX/Select. Info_Panelì—ì„œ ìºë¦­í„°ê°€ ì„ íƒë˜ë©´ ë¹„ì–´ ìˆëŠ” Gridì—ì„œ í™œì„±í™”ë©ë‹ˆë‹¤.")]
     [SerializeField] private GameObject selectObject;
-    [Tooltip("GridXX/Back. ºñ¿öµÎ¸é ÀÚµ¿ ¿¬°áÇÕ´Ï´Ù.")]
+    [Tooltip("GridXX/Back. ë¹„ì›Œë‘ë©´ ìë™ ì—°ê²°í•©ë‹ˆë‹¤.")]
     [SerializeField] private Image backImage;
-    [Tooltip("GridXX/Line. ºñ¿öµÎ¸é ÀÚµ¿ ¿¬°áÇÕ´Ï´Ù.")]
+    [Tooltip("GridXX/Line. ë¹„ì›Œë‘ë©´ ìë™ ì—°ê²°í•©ë‹ˆë‹¤.")]
     [SerializeField] private GameObject lineObject;
-    [Tooltip("GridXX/Char. ¹èÄ¡µÈ Ä³¸¯ÅÍÀÇ Battle Idle ¾Ö´Ï¸ŞÀÌ¼ÇÀ» Ç¥½ÃÇÕ´Ï´Ù.")]
+    [Tooltip("GridXX/Char. ë°°ì¹˜ëœ ìºë¦­í„°ì˜ Battle Idle ì• ë‹ˆë©”ì´ì…˜ì„ í‘œì‹œí•©ë‹ˆë‹¤.")]
     [SerializeField] private Image characterImage;
-    [Tooltip("Battle Idle ¾Ö´Ï¸ŞÀÌ¼ÇÀÇ ÇÑ ÇÁ·¹ÀÓ À¯Áö ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("Battle Idle ì• ë‹ˆë©”ì´ì…˜ì˜ í•œ í”„ë ˆì„ ìœ ì§€ ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField, Min(0.01f)] private float battleIdleFrameInterval = 0.12f;
 
     [Header("Colors")]
-    [Tooltip("ÀÌÀü SpawnGrid »ö»ó º¯°æ ¹æ½ÄÀ» »ç¿ëÇÒ ¶§¸¸ ÄÕ´Ï´Ù. »õ Ready_Panel¿¡¼­´Â Back ¿ø·¡ »öÀ» À¯ÁöÇÕ´Ï´Ù.")]
+    [Tooltip("ì´ì „ SpawnGrid ìƒ‰ìƒ ë³€ê²½ ë°©ì‹ì„ ì‚¬ìš©í•  ë•Œë§Œ ì¼­ë‹ˆë‹¤. ìƒˆ Ready_Panelì—ì„œëŠ” Back ì›ë˜ ìƒ‰ì„ ìœ ì§€í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool useLegacyCellColors = false;
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color occupiedColor = Color.red;
     [SerializeField] private Color selectedColor = Color.blue;
 
     [Header("Ready Panel Occupied Back")]
-    [Tooltip("Ä³¸¯ÅÍ°¡ ¹èÄ¡µÈ GridÀÇ Back¿¡ À¯ÁöÇÒ »ö»óÀÔ´Ï´Ù.")]
+    [Tooltip("ìºë¦­í„°ê°€ ë°°ì¹˜ëœ Gridì˜ Backì— ìœ ì§€í•  ìƒ‰ìƒì…ë‹ˆë‹¤.")]
     [SerializeField] private Color occupiedBackColor = new Color32(0x3C, 0x44, 0x76, 0xFF);
 
     private Image cellImage;
@@ -42,6 +42,7 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     private bool isPointerHovering;
     private bool isGridDragging;
     private int suppressClickUntilFrame = -1;
+    private int lastExecutedFrame = -1;
 
     public int GridIndex => gridIndex;
 
@@ -57,8 +58,8 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (button == null)
             button = GetComponent<Button>();
 
-        // Ready Grid´Â Inspector¿¡¼­ Á÷Á¢ ¿¬°áÇÑ Button¸¸ »ç¿ëÇÕ´Ï´Ù.
-        // ÇÃ·¹ÀÌ Áß AddComponent·Î Inspector ´ë»ó ±¸Á¶¸¦ º¯°æÇÏÁö ¾Ê½À´Ï´Ù.
+        // Ready GridëŠ” Inspectorì—ì„œ ì§ì ‘ ì—°ê²°í•œ Buttonë§Œ ì‚¬ìš©í•©ë‹ˆë‹¤.
+        // í”Œë ˆì´ ì¤‘ AddComponentë¡œ Inspector ëŒ€ìƒ êµ¬ì¡°ë¥¼ ë³€ê²½í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         if (button != null)
         {
             if (button.targetGraphic == null && backImage != null)
@@ -134,7 +135,7 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         bool hasPartySlot = partySlotIndex >= 0;
         bool isSelected = owner != null && owner.IsSelectedGrid(gridIndex);
 
-        // Info_Panel¿¡¼­ Ä³¸¯ÅÍ°¡ ¼±ÅÃµÈ µ¿¾È¿¡´Â Ä³¸¯ÅÍ°¡ ¾ø´Â Grid¸¸ Select¸¦ Ç¥½ÃÇÕ´Ï´Ù.
+        // Info_Panelì—ì„œ ìºë¦­í„°ê°€ ì„ íƒëœ ë™ì•ˆì—ëŠ” ìºë¦­í„°ê°€ ì—†ëŠ” Gridë§Œ Selectë¥¼ í‘œì‹œí•©ë‹ˆë‹¤.
         bool canPlaceHere = owner != null && owner.IsPlacementCandidateGrid(gridIndex);
         if (selectObject != null)
             selectObject.SetActive(canPlaceHere);
@@ -143,8 +144,8 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         RefreshCharacterImage(partySlotIndex, hasPartySlot);
 
-        // LineÀº GridÀÇ ±âº» Å×µÎ¸®ÀÌ¹Ç·Î ·±Å¸ÀÓ¿¡¼­ È°¼º/ºñÈ°¼º »óÅÂ¸¦ º¯°æÇÏÁö ¾Ê½À´Ï´Ù.
-        // ¹èÄ¡ °¡´É ¿©ºÎ Ç¥½Ã´Â Select ¿ÀºêÁ§Æ®¸¸ »ç¿ëÇÕ´Ï´Ù.
+        // Lineì€ Gridì˜ ê¸°ë³¸ í…Œë‘ë¦¬ì´ë¯€ë¡œ ëŸ°íƒ€ì„ì—ì„œ í™œì„±/ë¹„í™œì„± ìƒíƒœë¥¼ ë³€ê²½í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // ë°°ì¹˜ ê°€ëŠ¥ ì—¬ë¶€ í‘œì‹œëŠ” Select ì˜¤ë¸Œì íŠ¸ë§Œ ì‚¬ìš©í•©ë‹ˆë‹¤.
     }
 
 
@@ -191,8 +192,8 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         CacheOriginalBackColor();
 
-        // Ä³¸¯ÅÍ°¡ ¹èÄ¡µÈ Grid´Â Ç×»ó ¼±ÅÃ »öÀ» À¯ÁöÇÕ´Ï´Ù.
-        // ºó Grid´Â ÇöÀç ¹èÄ¡ °¡´ÉÇÑ »óÅÂ(Select È°¼º)ÀÏ ¶§¸¸ È£¹ö »öÀ» Ç¥½ÃÇÕ´Ï´Ù.
+        // ìºë¦­í„°ê°€ ë°°ì¹˜ëœ GridëŠ” í•­ìƒ ì„ íƒ ìƒ‰ì„ ìœ ì§€í•©ë‹ˆë‹¤.
+        // ë¹ˆ GridëŠ” í˜„ì¬ ë°°ì¹˜ ê°€ëŠ¥í•œ ìƒíƒœ(Select í™œì„±)ì¼ ë•Œë§Œ í˜¸ë²„ ìƒ‰ì„ í‘œì‹œí•©ë‹ˆë‹¤.
         bool showHighlight = hasPartySlot || (canPlaceHere && isPointerHovering);
         Color target = showHighlight ? occupiedBackColor : originalBackColor;
         cellImage.color = WithPreservedAlpha(target, cellImage.color.a);
@@ -278,7 +279,7 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         characterId = characterId.Trim();
 
-        // ½ÇÁ¦ Ä³¸¯ÅÍ ¸¶½ºÅÍ µ¥ÀÌÅÍ°¡ Á¸ÀçÇÏ´Â °æ¿ì¿¡¸¸ Ready_Panel¿¡ Ç¥½ÃÇÕ´Ï´Ù.
+        // ì‹¤ì œ ìºë¦­í„° ë§ˆìŠ¤í„° ë°ì´í„°ê°€ ì¡´ì¬í•˜ëŠ” ê²½ìš°ì—ë§Œ Ready_Panelì— í‘œì‹œí•©ë‹ˆë‹¤.
         if (!DataManager.Instance.CharacterDatabase.TryGet(characterId, out var characterMaster) || characterMaster == null)
         {
             ClearCharacterImage();

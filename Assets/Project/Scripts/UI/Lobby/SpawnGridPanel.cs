@@ -74,6 +74,40 @@ public class SpawnGridPanel : MonoBehaviour
         ClearSelection();
     }
 
+    // UI event dispatch can miss OnEndDrag if a drag begins on a child graphic
+    // or the pointer leaves the Canvas. Finish the drag on the input release too.
+    private void LateUpdate()
+    {
+        if (activeGridDragSourceIndex < 0)
+            return;
+
+        bool released = Mouse.current != null && Mouse.current.leftButton.wasReleasedThisFrame;
+        if (!released && Touchscreen.current != null)
+            released = Touchscreen.current.primaryTouch.press.wasReleasedThisFrame;
+        if (!released)
+            return;
+
+        if (EventSystem.current == null)
+        {
+            EndGridDrag(activeGridDragSourceIndex, null);
+            return;
+        }
+
+        Vector2 screenPosition;
+        if (Mouse.current != null)
+            screenPosition = Mouse.current.position.ReadValue();
+        else if (Touchscreen.current != null)
+            screenPosition = Touchscreen.current.primaryTouch.position.ReadValue();
+        else
+            return;
+
+        PointerEventData pointer = new PointerEventData(EventSystem.current)
+        {
+            position = screenPosition
+        };
+        EndGridDrag(activeGridDragSourceIndex, pointer);
+    }
+
     private void InitializeCells()
     {
         if (cells == null)
@@ -274,7 +308,8 @@ public class SpawnGridPanel : MonoBehaviour
 
         // Ready_Panel에 파티 3명이 모두 배치된 상태에서는
         // Info_Panel에서 새 캐릭터 홀드 드래그를 시작하지 않습니다.
-        if (IsReadyPartyFull())
+        if (IsReadyPartyFull() &&
+            (DataManager.Instance?.PartyRuntimeStore?.FindCharacterSlot(sourceButton.CharacterId) ?? -1) < 0)
             return false;
 
         infoDragSourceButton = sourceButton;
@@ -289,7 +324,18 @@ public class SpawnGridPanel : MonoBehaviour
 
     public void EndInfoCharacterDrag(CharBtn sourceButton)
     {
+        EndInfoCharacterDrag(sourceButton, null);
+    }
+
+    // Resolve the drop from screen position as a fallback for warped UI Graphics,
+    // where Unity's IDropHandler may not receive the event.
+    public void EndInfoCharacterDrag(CharBtn sourceButton, PointerEventData eventData)
+    {
         if (infoDragSourceButton != sourceButton)
+            return;
+
+        int targetIndex = FindGridIndexAtPointer(eventData);
+        if (targetIndex >= 0 && TryDropInfoCharacter(sourceButton, targetIndex))
             return;
 
         infoDragSourceButton = null;
@@ -320,16 +366,18 @@ public class SpawnGridPanel : MonoBehaviour
 
     public void EndGridDrag(int sourceGridIndex, PointerEventData eventData)
     {
-        // 다른 Grid에 정상 드롭되었다면 HandleDrop에서 이미 드래그 상태를 종료합니다.
+        // A successful UI drop already ends the drag in TryDropGridCell.
         if (activeGridDragSourceIndex != sourceGridIndex)
             return;
 
-        int partySlotIndex = FindPartySlotByGridIndex(sourceGridIndex);
-        bool pointerOverReadyGrid = IsPointerOverAnyReadyGrid(eventData);
+        int targetGridIndex = FindGridIndexAtPointer(eventData);
+        if (targetGridIndex >= 0 && TryDropGridCell(sourceGridIndex, targetGridIndex))
+            return;
 
-        // Grid01~15 바깥으로 드롭한 경우에는 캐릭터 등록 자체를 해제합니다.
-        // 다른 Grid 위에 드롭했지만 해당 칸이 이미 사용 중이어서 이동에 실패한 경우에는
-        // 기존 배치를 그대로 유지합니다.
+        int partySlotIndex = FindPartySlotByGridIndex(sourceGridIndex);
+        bool pointerOverReadyGrid = targetGridIndex >= 0;
+
+        // Outside the board: remove character. Occupied grid: preserve placement.
         if (!pointerOverReadyGrid && partySlotIndex >= 0)
             UnregisterPartySlot(partySlotIndex);
 
@@ -624,6 +672,11 @@ public class SpawnGridPanel : MonoBehaviour
         ShowNoSelectedCharacterWarning();
     }
 
+    public bool IsInfoCharacterSelectedForPlacement(CharBtn sourceButton)
+    {
+        return sourceButton != null && pendingInfoPlacementButton == sourceButton;
+    }
+
     public void SelectInfoCharacterForPlacement(CharBtn sourceButton)
     {
         if (sourceButton == null || sourceButton.IsLocked || !sourceButton.IsInfoPanelReadyDragSource)
@@ -674,6 +727,8 @@ public class SpawnGridPanel : MonoBehaviour
         LobbyInfoPanelUI.RefreshAll();
         LobbyEquipPanelUI.RefreshAllCharacterData();
         LobbyPartyCharacterSettingOpenButton.RefreshAll();
+        if (SaveSystem.Instance != null)
+            SaveSystem.Instance.SaveCurrentProgress();
     }
 
     public void SelectPartySlotForPlacement(int partySlotIndex)
@@ -723,6 +778,49 @@ public class SpawnGridPanel : MonoBehaviour
         return deployedCount >= partyStore.MaxPartyCountValue;
     }
 
+    private int FindGridIndexAtPointer(PointerEventData eventData)
+    {
+        if (eventData == null || cells == null)
+            return -1;
+
+        // Prefer the actual UI raycast result, including graphic children.
+        if (EventSystem.current != null)
+        {
+            pointerRaycastResults.Clear();
+            var pointer = new PointerEventData(EventSystem.current) { position = eventData.position };
+            EventSystem.current.RaycastAll(pointer, pointerRaycastResults);
+            for (int i = 0; i < pointerRaycastResults.Count; i++)
+            {
+                GameObject hit = pointerRaycastResults[i].gameObject;
+                SpawnGridCell cell = hit != null ? hit.GetComponentInParent<SpawnGridCell>() : null;
+                if (cell == null || !cell.transform.IsChildOf(transform))
+                    continue;
+                int index = cell.GridIndex;
+                if (IsValidGridIndex(index) && cells[index] == cell)
+                    return index;
+            }
+        }
+
+        // If the warped UI image doesn't raycast, use each cell's RectTransform.
+        // This also handles drag previews and transparent visuals.
+        for (int i = 0; i < cells.Length; i++)
+        {
+            SpawnGridCell cell = cells[i];
+            if (cell == null || !cell.gameObject.activeInHierarchy)
+                continue;
+            RectTransform rect = cell.transform as RectTransform;
+            if (rect == null)
+                continue;
+            Canvas canvas = rect.GetComponentInParent<Canvas>();
+            Camera camera = canvas == null || canvas.renderMode == RenderMode.ScreenSpaceOverlay
+                ? null
+                : (canvas.worldCamera != null ? canvas.worldCamera : eventData.pressEventCamera);
+            if (RectTransformUtility.RectangleContainsScreenPoint(rect, eventData.position, camera))
+                return i;
+        }
+        return -1;
+    }
+
     private bool IsPointerOverAnyReadyGrid(PointerEventData eventData)
     {
         if (eventData == null || EventSystem.current == null)
@@ -763,6 +861,8 @@ public class SpawnGridPanel : MonoBehaviour
             LobbyCharacterEquipmentReleaseUtility.ReleaseAll(characterId);
 
         partyStore.ClearSlot(partySlotIndex);
+        if (SaveSystem.Instance != null)
+            SaveSystem.Instance.SaveCurrentProgress();
         pendingInfoPlacementButton = null;
         infoDragSourceButton = null;
     }
