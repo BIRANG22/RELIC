@@ -8,9 +8,9 @@ namespace Relic.Gameplay.Monster
     /// <summary>
     /// 바로우 AI
     /// - 행동 범위: MonsterMasterData의 AttackRange(Range_20)
-    /// - 이동: 가까운 캐릭터가 행동 범위 안에 있으면 상/하/좌/우로 정확히 2칸 거리를 벌립니다.
+    /// - 이동: 공격 후 주변 8칸에 캐릭터가 있거나 기존 행동 범위 조건을 만족하면 최대 2칸 도주를 시도합니다.
     /// - 직사: 같은 가로 라인에 캐릭터가 있으면 정면 일직선으로 공격합니다.
-    /// - 곡사: 같은 가로 라인에 캐릭터가 없으면 가장 먼 캐릭터의 예약 시점 위치와 주변 8칸을 공격합니다.
+    /// - 곡사: 같은 가로 라인에 캐릭터가 없으면 가장 먼 캐릭터의 위치를 중심으로 게임데이터의 범위를 공격합니다.
     /// </summary>
     public class BarrowAI : MonsterAIBase
     {
@@ -42,96 +42,99 @@ namespace Relic.Gameplay.Monster
                 return plan;
 
             const int group = 1;
-            Vector2Int moveOffset = Vector2Int.zero;
+            int attackOrigin = monsterUnit.MainGridIndex;
+            if (attackOrigin < 0)
+                return plan;
 
-            int nearbyTargetGridIndex = FindNearestCharacterTargetInActionRange(monsterUnit, gridManager);
-
-            // 캐릭터가 Range_20 안으로 접근했을 때만 거리를 벌립니다.
-            if (nearbyTargetGridIndex >= 0)
+            // Determine the attack from the current position, before escaping.
+            if (TryBuildDirectShot(
+                    attackOrigin,
+                    gridManager,
+                    out BattleDirection directDirection,
+                    out List<int> directRange))
             {
-                moveOffset = GetBestEscapeMove(
-                    monsterUnit,
-                    gridManager);
+                SetFacingForReservedAttack(monsterUnit, directDirection);
+                plan.Add(new MonsterAIAction(
+                    DirectShotSkillId,
+                    Vector2Int.zero,
+                    MonsterAISlotPreference.Front,
+                    group,
+                    0,
+                    attackOrigin,
+                    false,
+                    directDirection,
+                    false,
+                    0,
+                    directRange));
+            }
+            else
+            {
+                BattleCharacter farthestPlayer = FindFarthestPlayerFromGrid(attackOrigin, gridManager);
+                if (farthestPlayer == null || farthestPlayer.CurrentGridIndex < 0)
+                    return plan;
 
+                List<int> arcRange = BuildArcShotRange(
+                    farthestPlayer.CurrentGridIndex,
+                    gridManager);
+                if (arcRange.Count <= 0)
+                    return plan;
+
+                plan.Add(new MonsterAIAction(
+                    ArcShotSkillId,
+                    Vector2Int.zero,
+                    MonsterAISlotPreference.Front,
+                    group,
+                    0,
+                    attackOrigin,
+                    false,
+                    BattleDirection.Right,
+                    false,
+                    0,
+                    arcRange));
+            }
+
+            // Escaping is a follow-up action, never an action preceding the shot.
+            // Use the same slot, with the next order, so both fit when possible.
+            if (HasCharacterInAdjacentEightCells(monsterUnit, gridManager) ||
+                FindNearestCharacterTargetInActionRange(monsterUnit, gridManager) >= 0)
+            {
+                Vector2Int moveOffset = GetBestEscapeMove(monsterUnit, gridManager);
                 if (moveOffset != Vector2Int.zero)
                 {
                     plan.Add(new MonsterAIAction(
                         MoveSkillId,
                         moveOffset,
-                        MonsterAISlotPreference.Front,
+                        MonsterAISlotPreference.SameSlot,
                         group,
-                        0));
+                        1));
                 }
             }
 
-            int projectedGridIndex = GetExpectedEscapeGridIndex(
-                monsterUnit,
-                gridManager,
-                moveOffset);
+            return plan;
+        }
 
-            // 상/하로 다른 라인으로 도망친 경우에는 직사로 다시 전환하지 않고 곡사를 사용합니다.
-            // 제자리 또는 좌/우 도망인 경우에만 같은 가로 라인의 캐릭터를 찾아 직사를 예약합니다.
-            bool escapedToDifferentLine = moveOffset.y != 0;
+        // 공격을 받지 않았더라도 주변 8칸에 캐릭터가 있으면 도주를 시도합니다.
+        private bool HasCharacterInAdjacentEightCells(MonsterUnit monsterUnit, GridManager gridManager)
+        {
+            if (monsterUnit == null || gridManager == null || monsterUnit.MainGridIndex < 0)
+                return false;
 
-            if (!escapedToDifferentLine &&
-                TryBuildDirectShot(
-                    projectedGridIndex,
-                    gridManager,
-                    out BattleDirection directDirection,
-                    out List<int> directRange))
+            Vector2Int origin = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            BattleCharacter[] players = FindPlayers();
+            for (int i = 0; i < players.Length; i++)
             {
-                // 이동 없이 직사만 예약할 때는 예약 시점의 목표 방향을 바라보게 합니다.
-                // 이후 피격 등으로 Facing이 바뀌면 실행 시점의 현재 Facing을 사용합니다.
-                if (moveOffset == Vector2Int.zero)
-                    SetFacingForReservedAttack(monsterUnit, directDirection);
+                BattleCharacter player = players[i];
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
+                    continue;
 
-                plan.Add(new MonsterAIAction(
-                    DirectShotSkillId,
-                    Vector2Int.zero,
-                    moveOffset != Vector2Int.zero
-                        ? MonsterAISlotPreference.SameSlot
-                        : MonsterAISlotPreference.Front,
-                    group,
-                    1,
-                    projectedGridIndex,
-                    moveOffset != Vector2Int.zero,
-                    directDirection,
-                    false,
-                    0,
-                    directRange));
-
-                return plan;
+                Vector2Int position = gridManager.IndexToCoord(player.CurrentGridIndex);
+                int dx = Mathf.Abs(position.x - origin.x);
+                int dy = Mathf.Abs(position.y - origin.y);
+                if (dx <= 1 && dy <= 1 && (dx != 0 || dy != 0))
+                    return true;
             }
 
-            // 같은 가로 라인에 캐릭터가 없다면 가장 먼 캐릭터의 현재 그리드를 중심으로 곡사를 예약합니다.
-            BattleCharacter farthestPlayer = FindFarthestPlayerFromGrid(projectedGridIndex, gridManager);
-
-            if (farthestPlayer == null || farthestPlayer.CurrentGridIndex < 0)
-                return plan;
-
-            List<int> arcRange = BuildThreeByThreeRange(
-                farthestPlayer.CurrentGridIndex,
-                gridManager);
-
-            if (arcRange.Count <= 0)
-                return plan;
-
-            plan.Add(new MonsterAIAction(
-                ArcShotSkillId,
-                Vector2Int.zero,
-                moveOffset != Vector2Int.zero
-                    ? MonsterAISlotPreference.SameSlot
-                    : MonsterAISlotPreference.Front,
-                group,
-                1,
-                projectedGridIndex,
-                false,
-                BattleDirection.Right,
-                false,
-                0,
-                arcRange));
-
-            return plan;
+            return false;
         }
 
         private int FindNearestCharacterTargetInActionRange(
@@ -184,8 +187,7 @@ namespace Relic.Gameplay.Monster
 
                 Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
                 int distance =
-                    Mathf.Abs(playerCoord.x - monsterCoord.x) +
-                    Mathf.Abs(playerCoord.y - monsterCoord.y);
+                    TargetGridDistance(playerCoord, monsterCoord);
 
                 if (distance >= nearestDistance)
                     continue;
@@ -209,11 +211,13 @@ namespace Relic.Gameplay.Monster
 
             Vector2Int bestOffset = Vector2Int.zero;
             bool bestIsHorizontal = false;
+            int bestSafetyScore = int.MinValue;
             int bestMinDistance = int.MinValue;
             int bestTotalDistance = int.MinValue;
 
             Vector2Int bestCollisionOffset = Vector2Int.zero;
             bool bestCollisionIsHorizontal = false;
+            int bestCollisionSafetyScore = int.MinValue;
             int bestCollisionMinDistance = int.MinValue;
             int bestCollisionTotalDistance = int.MinValue;
 
@@ -237,6 +241,7 @@ namespace Relic.Gameplay.Monster
                     ? currentCoord + step
                     : currentCoord + offset;
                 bool isHorizontal = offset.y == 0;
+                int safetyScore = GetEscapeSpaceScore(monsterUnit, gridManager, movedCoord);
                 bool candidateGetsCloserToAnyPlayer = false;
                 int candidateMinDistance = int.MaxValue;
                 int candidateTotalDistance = 0;
@@ -253,11 +258,9 @@ namespace Relic.Gameplay.Monster
                     Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
 
                     int currentDistance =
-                        Mathf.Abs(playerCoord.x - currentCoord.x) +
-                        Mathf.Abs(playerCoord.y - currentCoord.y);
+                        TargetGridDistance(playerCoord, currentCoord);
                     int candidateDistance =
-                        Mathf.Abs(playerCoord.x - movedCoord.x) +
-                        Mathf.Abs(playerCoord.y - movedCoord.y);
+                        TargetGridDistance(playerCoord, movedCoord);
 
                     // 완전히 비어 있는 도망은 어느 캐릭터에게도 가까워지지 않는 방향을 우선합니다.
                     // 두 번째 칸 충돌 후보도 전체 거리 점수는 끝까지 계산해야 합니다.
@@ -277,14 +280,17 @@ namespace Relic.Gameplay.Monster
                 if (secondCellStopsEarly)
                 {
                     bool collisionBetter =
-                        (isHorizontal && !bestCollisionIsHorizontal) ||
-                        (isHorizontal == bestCollisionIsHorizontal && candidateMinDistance > bestCollisionMinDistance) ||
-                        (isHorizontal == bestCollisionIsHorizontal &&
+                        safetyScore > bestCollisionSafetyScore ||
+                        (safetyScore == bestCollisionSafetyScore && isHorizontal && !bestCollisionIsHorizontal) ||
+                        (safetyScore == bestCollisionSafetyScore && isHorizontal == bestCollisionIsHorizontal &&
+                         candidateMinDistance > bestCollisionMinDistance) ||
+                        (safetyScore == bestCollisionSafetyScore && isHorizontal == bestCollisionIsHorizontal &&
                          candidateMinDistance == bestCollisionMinDistance &&
                          candidateTotalDistance > bestCollisionTotalDistance);
 
                     if (collisionBetter)
                     {
+                        bestCollisionSafetyScore = safetyScore;
                         bestCollisionIsHorizontal = isHorizontal;
                         bestCollisionMinDistance = candidateMinDistance;
                         bestCollisionTotalDistance = candidateTotalDistance;
@@ -294,23 +300,27 @@ namespace Relic.Gameplay.Monster
                     continue;
                 }
 
-                // 완전히 비어 있는 도망에서는 어느 캐릭터에게도 가까워지지 않는 후보만 사용합니다.
+                // 이동 가능한 도주 후보는 캐릭터에게 가까워지더라도 제외하지 않습니다.
+                // 충돌하는 이동보다 정상적으로 빠져나갈 수 있는 방향을 우선하고,
+                // 가까워지는 정도는 후보 사이의 점수 비교에만 반영합니다.
                 if (candidateGetsCloserToAnyPlayer)
-                    continue;
+                    safetyScore -= 80;
 
-                // 직사를 유지할 수 있도록 좌/우 2칸 도망을 최우선으로 합니다.
-                // 같은 축 후보끼리는 가장 가까운 캐릭터와의 거리를 먼저 벌리고,
-                // 동률이면 모든 캐릭터와의 총거리가 더 큰 방향을 선택합니다.
+                // 막다른 길을 피하는 것이 공격 방향 유지보다 우선입니다.
+                // 탈출 공간이 같을 때만 좌/우 방향, 캐릭터와의 거리를 비교합니다.
                 bool better =
-                    (isHorizontal && !bestIsHorizontal) ||
-                    (isHorizontal == bestIsHorizontal && candidateMinDistance > bestMinDistance) ||
-                    (isHorizontal == bestIsHorizontal &&
+                    safetyScore > bestSafetyScore ||
+                    (safetyScore == bestSafetyScore && isHorizontal && !bestIsHorizontal) ||
+                    (safetyScore == bestSafetyScore && isHorizontal == bestIsHorizontal &&
+                     candidateMinDistance > bestMinDistance) ||
+                    (safetyScore == bestSafetyScore && isHorizontal == bestIsHorizontal &&
                      candidateMinDistance == bestMinDistance &&
                      candidateTotalDistance > bestTotalDistance);
 
                 if (!better)
                     continue;
 
+                bestSafetyScore = safetyScore;
                 bestIsHorizontal = isHorizontal;
                 bestMinDistance = candidateMinDistance;
                 bestTotalDistance = candidateTotalDistance;
@@ -321,6 +331,115 @@ namespace Relic.Gameplay.Monster
                 return bestOffset;
 
             return bestCollisionOffset;
+        }
+
+        // 도주 도착 지점의 실제 탈출 가능성을 평가합니다.
+        // 장애물뿐 아니라 캐릭터 점유 칸, 캐릭터에 의해 좁아진 통로도 반영합니다.
+        private int GetEscapeSpaceScore(
+            MonsterUnit monsterUnit,
+            GridManager gridManager,
+            Vector2Int destination)
+        {
+            BattleGridEffectController effects =
+                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+            BattleCharacter[] players = FindPlayers();
+            Vector2Int original = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            HashSet<Vector2Int> visited = new HashSet<Vector2Int> { destination };
+            Queue<Vector2Int> frontier = new Queue<Vector2Int>();
+            frontier.Enqueue(destination);
+            int immediateExits = 0;
+            int secondStepExits = 0;
+            int safeImmediateExits = 0;
+            int nearbyPlayers = 0;
+            int closestPlayerDistance = int.MaxValue;
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                BattleCharacter player = players[i];
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
+                    continue;
+
+                Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
+                int distance = Mathf.Max(Mathf.Abs(playerCoord.x - destination.x),
+                    Mathf.Abs(playerCoord.y - destination.y));
+                closestPlayerDistance = Mathf.Min(closestPlayerDistance, distance);
+                if (distance <= 1)
+                    nearbyPlayers++;
+            }
+
+            for (int depth = 0; depth < 2; depth++)
+            {
+                int levelCount = frontier.Count;
+                for (int i = 0; i < levelCount; i++)
+                {
+                    Vector2Int origin = frontier.Dequeue();
+                    for (int direction = 0; direction < EscapeOffsets.Length; direction++)
+                    {
+                        Vector2Int delta = EscapeOffsets[direction] / 2;
+                        Vector2Int next = origin + delta;
+                        if (!gridManager.IsValidCoord(next) || visited.Contains(next))
+                            continue;
+
+                        // 원래 서 있던 칸을 탈출 경로로 계산하면 구석의 탈출 가능성을 과대평가합니다.
+                        if (next == original)
+                            continue;
+
+                        int index = gridManager.CoordToIndex(next);
+                        if (BattleOccupancyService.IsOccupiedByAnyUnit(index, null, monsterUnit) ||
+                            (effects != null && effects.IsBlocked(index)))
+                            continue;
+
+                        visited.Add(next);
+                        if (depth == 0)
+                        {
+                            immediateExits++;
+                            bool adjacentToPlayer = false;
+                            for (int p = 0; p < players.Length; p++)
+                            {
+                                BattleCharacter player = players[p];
+                                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
+                                    continue;
+                                Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
+                                if (Mathf.Max(Mathf.Abs(playerCoord.x - next.x),
+                                    Mathf.Abs(playerCoord.y - next.y)) <= 1)
+                                {
+                                    adjacentToPlayer = true;
+                                    break;
+                                }
+                            }
+                            if (!adjacentToPlayer)
+                                safeImmediateExits++;
+                        }
+                        else
+                        {
+                            secondStepExits++;
+                        }
+                        frontier.Enqueue(next);
+                    }
+                }
+            }
+
+            // 탈출 방향이 하나도 없거나 캐릭터에 둘러싸인 지점은 강하게 감점합니다.
+            int score = immediateExits * 12 + safeImmediateExits * 14 + secondStepExits * 2;
+            if (immediateExits == 0)
+                score -= 100;
+            else if (immediateExits == 1)
+                score -= 28;
+            if (safeImmediateExits == 0)
+                score -= 30;
+
+            // A corner with its only exits controlled by a nearby character is a trap.
+            // Do not let the second-step open-space bonus outweigh that risk.
+            // Keep it as a last-resort candidate if no safer escape exists.
+            if (nearbyPlayers > 0 && safeImmediateExits == 0)
+                score -= 2000;
+            else if (nearbyPlayers > 0 && immediateExits <= 1)
+                score -= 1000;
+
+            score -= nearbyPlayers * 35;
+            if (closestPlayerDistance == 2)
+                score -= 8;
+            return score;
         }
 
         private bool CanReserveTwoTileEscape(
@@ -538,8 +657,7 @@ namespace Relic.Gameplay.Monster
 
                 Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
                 int distance =
-                    Mathf.Abs(playerCoord.x - origin.x) +
-                    Mathf.Abs(playerCoord.y - origin.y);
+                    TargetGridDistance(playerCoord, origin);
 
                 if (distance <= farthestDistance)
                     continue;
@@ -551,31 +669,22 @@ namespace Relic.Gameplay.Monster
             return farthest;
         }
 
-        private static List<int> BuildThreeByThreeRange(
+        private static List<int> BuildArcShotRange(
             int centerGridIndex,
             GridManager gridManager)
         {
-            List<int> result = new();
-
             if (centerGridIndex < 0 || gridManager == null)
-                return result;
+                return new List<int>();
 
-            Vector2Int center = gridManager.IndexToCoord(centerGridIndex);
-
-            for (int y = -1; y <= 1; y++)
-            {
-                for (int x = -1; x <= 1; x++)
-                {
-                    Vector2Int coord = center + new Vector2Int(x, y);
-
-                    if (!gridManager.IsValidCoord(coord))
-                        continue;
-
-                    result.Add(gridManager.CoordToIndex(coord));
-                }
-            }
-
-            return result;
+            // Read the area-of-effect offsets from the game data rather than
+            // constructing a fixed 3x3 square.
+            const string arcShotRangeId = "Range_m_02";
+            RangeDatabase rangeDatabase = DataManager.Instance?.RangeDatabase;
+            return BattleRangeCalculator.GetSelectionRangeIndices(
+                centerGridIndex,
+                arcShotRangeId,
+                rangeDatabase,
+                gridManager);
         }
     }
 }

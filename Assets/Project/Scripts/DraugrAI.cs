@@ -40,154 +40,150 @@ namespace Relic.Gameplay.Monster
             GridManager gridManager)
         {
             MonsterAIPlan plan = new();
-
-            if (monsterUnit == null || monsterUnit.RuntimeData == null || gridManager == null)
+            if (monsterUnit == null || monsterUnit.RuntimeData == null || gridManager == null ||
+                monsterUnit.MainGridIndex < 0)
                 return plan;
 
-            // 현재 위치에서 공격 가능하더라도 캐릭터와 같은 가로 라인이 아니라면
-            // 반격 적중 가능성을 높이기 위해 계속 이동합니다.
-            if (TryBuildAttack(
-                    monsterUnit.MainGridIndex,
-                    gridManager,
-                    out BattleDirection currentDirection,
-                    out List<int> currentRange) &&
-                HasAttackableTargetOnSameHorizontalLine(monsterUnit.MainGridIndex, gridManager))
+            int targetIndex = FindPreferredTarget(monsterUnit.MainGridIndex, gridManager);
+            if (targetIndex < 0)
+                return plan;
+
+            bool canAttackNow = TryBuildAttackForTarget(
+                monsterUnit.MainGridIndex, targetIndex, gridManager,
+                out BattleDirection currentDirection, out List<int> currentRange);
+
+            // 공격할 수 있어도 안전한 접근 위치가 있으면 먼저 한 칸 이동합니다.
+            Vector2Int moveOffset = GetBestSafeOneTileMoveTowardTarget(
+                monsterUnit, gridManager, targetIndex);
+            if (moveOffset != Vector2Int.zero)
             {
-                // 공격만 예약하는 경우에는 예약 시점의 공격 대상 방향으로 Facing을 맞춰 둡니다.
-                // 실행 전 피격 등으로 Facing이 바뀌면 BattleActionRunner가 현재 Facing을 사용하므로
-                // 최종 공격 방향도 자연스럽게 변경됩니다.
+                const int group = 1;
+                int projectedGridIndex = GetProjectedMainGridIndex(monsterUnit, gridManager, moveOffset);
+                bool canAttackAfterMove = TryBuildAttackForTarget(
+                    projectedGridIndex, targetIndex, gridManager,
+                    out BattleDirection movedDirection, out List<int> movedRange);
+
+                // 현재 공격할 수 있는 대상을 이동 때문에 놓치지 않습니다.
+                if (canAttackAfterMove || !canAttackNow)
+                {
+                    plan.Add(new MonsterAIAction(
+                        MoveSkillId, moveOffset, MonsterAISlotPreference.Front, group, 0));
+                    if (canAttackAfterMove)
+                    {
+                        plan.Add(new MonsterAIAction(
+                            AttackSkillId, Vector2Int.zero, MonsterAISlotPreference.SameSlot,
+                            group, 1, projectedGridIndex, true, movedDirection, false, 0, movedRange));
+                    }
+                    return plan;
+                }
+            }
+
+            if (canAttackNow)
+            {
                 SetFacingForReservedAttack(monsterUnit, currentDirection);
-
                 plan.Add(new MonsterAIAction(
-                    AttackSkillId,
-                    Vector2Int.zero,
-                    MonsterAISlotPreference.Front,
-                    1,
-                    0,
-                    monsterUnit.MainGridIndex,
-                    false,
-                    currentDirection,
-                    false,
-                    0,
-                    currentRange));
-
-                return plan;
+                    AttackSkillId, Vector2Int.zero, MonsterAISlotPreference.Front,
+                    1, 0, monsterUnit.MainGridIndex, false,
+                    currentDirection, false, 0, currentRange));
             }
-
-            // 공격할 수 없다면 가장 가까운 캐릭터를 향해 주변 8방향 중 1칸 이동합니다.
-            Vector2Int moveOffset = GetBestOneTileMoveTowardNearestTarget(monsterUnit, gridManager);
-
-            if (moveOffset == Vector2Int.zero)
-                return plan;
-
-            const int group = 1;
-
-            plan.Add(new MonsterAIAction(
-                MoveSkillId,
-                moveOffset,
-                MonsterAISlotPreference.Front,
-                group,
-                0));
-
-            int projectedGridIndex = GetProjectedMainGridIndex(monsterUnit, gridManager, moveOffset);
-
-            // 이동을 마친 새 위치에서 다시 실제 공격 가능 여부를 판정합니다.
-            if (TryBuildAttack(
-                    projectedGridIndex,
-                    gridManager,
-                    out BattleDirection movedDirection,
-                    out List<int> movedRange))
-            {
-                plan.Add(new MonsterAIAction(
-                    AttackSkillId,
-                    Vector2Int.zero,
-                    MonsterAISlotPreference.SameSlot,
-                    group,
-                    1,
-                    projectedGridIndex,
-                    true,
-                    movedDirection,
-                    false,
-                    0,
-                    movedRange));
-            }
-
             return plan;
         }
 
-        private Vector2Int GetBestOneTileMoveTowardNearestTarget(
-            MonsterUnit monsterUnit,
-            GridManager gridManager)
+        private int FindPreferredTarget(int originIndex, GridManager gridManager)
         {
-            if (monsterUnit.MainGridIndex < 0)
-                return Vector2Int.zero;
+            List<int> targets = FindCharacterTargetGridIndices();
+            Vector2Int origin = gridManager.IndexToCoord(originIndex);
+            int bestIndex = -1;
+            int bestDistance = int.MaxValue;
+            bool bestAttackable = false;
+            int bestSecondaryDistance = int.MaxValue;
 
-            List<int> targetGridIndices = FindCharacterTargetGridIndices();
-
-            if (targetGridIndices == null || targetGridIndices.Count == 0)
-                return Vector2Int.zero;
-
-            Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            Vector2Int bestOffset = Vector2Int.zero;
-            int bestSameLineCount = -1;
-            int bestAttackableCount = -1;
-            int bestVerticalDistance = int.MaxValue;
-            int bestChebyshevDistance = int.MaxValue;
-            int bestManhattanDistance = int.MaxValue;
-
-            for (int i = 0; i < MoveDirections.Length; i++)
+            foreach (int target in targets)
             {
-                Vector2Int offset = MoveDirections[i];
+                if (target < 0 || gridManager.GetCellByIndex(target) == null)
+                    continue;
+                Vector2Int coord = gridManager.IndexToCoord(target);
+                int dx = Mathf.Abs(coord.x - origin.x);
+                int dy = Mathf.Abs(coord.y - origin.y);
+                int distance = Mathf.Max(dx, dy);
+                bool attackable = TryBuildAttackForTarget(
+                    originIndex, target, gridManager, out _, out _);
+                int secondary = dx + dy;
+                if (distance < bestDistance ||
+                    (distance == bestDistance && attackable && !bestAttackable) ||
+                    (distance == bestDistance && attackable == bestAttackable &&
+                     secondary < bestSecondaryDistance))
+                {
+                    bestIndex = target;
+                    bestDistance = distance;
+                    bestAttackable = attackable;
+                    bestSecondaryDistance = secondary;
+                }
+            }
+            return bestIndex;
+        }
 
+        private Vector2Int GetBestSafeOneTileMoveTowardTarget(
+            MonsterUnit monsterUnit, GridManager gridManager, int targetIndex)
+        {
+            Vector2Int origin = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            Vector2Int target = gridManager.IndexToCoord(targetIndex);
+            int currentDistance = Mathf.Max(Mathf.Abs(target.x - origin.x),
+                                            Mathf.Abs(target.y - origin.y));
+            Vector2Int best = Vector2Int.zero;
+            int bestDistance = currentDistance;
+            int bestSecondary = int.MaxValue;
+            BattleGridEffectController effects =
+                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+            foreach (Vector2Int offset in MoveDirections)
+            {
                 if (!CanMonsterMove(monsterUnit, gridManager, offset))
                     continue;
-
-                Vector2Int movedCoord = currentCoord + offset;
-                int movedGridIndex = gridManager.CoordToIndex(movedCoord);
-                int sameLineCount = CountTargetsOnSameHorizontalLine(movedCoord, targetGridIndices, gridManager);
-                int attackableCount = CountAttackableTargets(movedGridIndex, targetGridIndices, gridManager);
-
-                int verticalDistance = int.MaxValue;
-                int chebyshevDistance = int.MaxValue;
-                int manhattanDistance = int.MaxValue;
-
-                for (int targetIndex = 0; targetIndex < targetGridIndices.Count; targetIndex++)
-                {
-                    Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndices[targetIndex]);
-                    int dx = Mathf.Abs(targetCoord.x - movedCoord.x);
-                    int dy = Mathf.Abs(targetCoord.y - movedCoord.y);
-                    int candidateChebyshev = Mathf.Max(dx, dy);
-                    int candidateManhattan = dx + dy;
-
-                    if (dy < verticalDistance ||
-                        (dy == verticalDistance && candidateChebyshev < chebyshevDistance) ||
-                        (dy == verticalDistance && candidateChebyshev == chebyshevDistance && candidateManhattan < manhattanDistance))
-                    {
-                        verticalDistance = dy;
-                        chebyshevDistance = candidateChebyshev;
-                        manhattanDistance = candidateManhattan;
-                    }
-                }
-
-                bool better =
-                    sameLineCount > bestSameLineCount ||
-                    (sameLineCount == bestSameLineCount && verticalDistance < bestVerticalDistance) ||
-                    (sameLineCount == bestSameLineCount && verticalDistance == bestVerticalDistance && attackableCount > bestAttackableCount) ||
-                    (sameLineCount == bestSameLineCount && verticalDistance == bestVerticalDistance && attackableCount == bestAttackableCount && chebyshevDistance < bestChebyshevDistance) ||
-                    (sameLineCount == bestSameLineCount && verticalDistance == bestVerticalDistance && attackableCount == bestAttackableCount && chebyshevDistance == bestChebyshevDistance && manhattanDistance < bestManhattanDistance);
-
-                if (!better)
+                Vector2Int next = origin + offset;
+                if (!gridManager.IsValidCoord(next))
                     continue;
-
-                bestSameLineCount = sameLineCount;
-                bestAttackableCount = attackableCount;
-                bestVerticalDistance = verticalDistance;
-                bestChebyshevDistance = chebyshevDistance;
-                bestManhattanDistance = manhattanDistance;
-                bestOffset = offset;
+                int nextIndex = gridManager.CoordToIndex(next);
+                // 통과 가능한 그리드 효과도 불필요한 위험이므로 피합니다.
+                if (effects != null && effects.HasEffect(nextIndex))
+                    continue;
+                int distance = Mathf.Max(Mathf.Abs(target.x - next.x),
+                                         Mathf.Abs(target.y - next.y));
+                int secondary = Mathf.Abs(target.x - next.x) + Mathf.Abs(target.y - next.y);
+                if (distance < bestDistance ||
+                    (distance == bestDistance && best != Vector2Int.zero && secondary < bestSecondary))
+                {
+                    bestDistance = distance;
+                    bestSecondary = secondary;
+                    best = offset;
+                }
             }
+            return best;
+        }
 
-            return bestOffset;
+        private bool TryBuildAttackForTarget(
+            int originGridIndex, int targetGridIndex, GridManager gridManager,
+            out BattleDirection direction, out List<int> rangeGridIndices)
+        {
+            direction = BattleDirection.Right;
+            rangeGridIndices = new List<int>();
+            if (originGridIndex < 0 || targetGridIndex < 0 || gridManager == null)
+                return false;
+            List<int> right = BuildSweepRange(originGridIndex, gridManager, 1);
+            List<int> left = BuildSweepRange(originGridIndex, gridManager, -1);
+            if (right.Contains(targetGridIndex))
+            {
+                direction = BattleDirection.Right;
+                rangeGridIndices = right;
+                return true;
+            }
+            if (left.Contains(targetGridIndex))
+            {
+                direction = BattleDirection.Left;
+                rangeGridIndices = left;
+                return true;
+            }
+            return false;
         }
 
         private bool HasAttackableTargetOnSameHorizontalLine(
