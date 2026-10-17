@@ -57,8 +57,9 @@ public class BattleTimelineBarUI : MonoBehaviour
 
     public ReserveTurnSlotUI[] GetOrCreateReserveSlots(BattleTimelineController controller)
     {
+        // Initialized in Awake/Init (and explicitly on timeline promotion).
+        // Reinitializing here clears reserved Order visuals during normal play.
         EnsureTimelineGroups();
-        InitGroups();
 
         if (timelineGroups == null || timelineGroups.Length == 0)
             return System.Array.Empty<ReserveTurnSlotUI>();
@@ -186,8 +187,9 @@ public class BattleTimelineBarUI : MonoBehaviour
         ReserveTurnSlotUI[] reserveSlots,
         IReadOnlyList<MonsterReservedCommand>[] monsterCommandsBySlot)
     {
+        // Do not call InitGroups here. Group.Init clears the existing Order UI,
+        // which would erase cancelled orders before their fade-out can start.
         EnsureTimelineGroups();
-        InitGroups();
 
         if (timelineGroups == null)
         {
