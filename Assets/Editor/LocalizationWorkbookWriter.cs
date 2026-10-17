@@ -13,6 +13,40 @@ public static class LocalizationWorkbookWriter
     private static readonly XNamespace OfficeRelationship = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
     private static readonly XNamespace PackageRelationship = "http://schemas.openxmlformats.org/package/2006/relationships";
 
+    public static void SynchronizeEntries(
+        string workbookPath,
+        IEnumerable<LocalizationWorkbookEntry> updates,
+        IEnumerable<LocalizationWorkbookEntry> additions,
+        IEnumerable<string> removals)
+    {
+        string transactionPath = workbookPath + $".sync-{Guid.NewGuid():N}.tmp";
+        string transactionBackupPath = transactionPath + ".localization-manager.backup";
+        string backupPath = workbookPath + ".localization-manager.backup";
+
+        File.Copy(workbookPath, transactionPath, true);
+        try
+        {
+            UpdateExistingEntries(transactionPath, updates);
+            MergeNewEntries(transactionPath, additions);
+            RemoveEntries(transactionPath, removals);
+
+            IReadOnlyList<IReadOnlyList<string>> rows = LocalizationXlsxReader.ReadSheet(
+                transactionPath,
+                LocalizationExcelImporter.WorksheetName);
+            LocalizationXlsxReader.ValidateHeaders(rows);
+
+            File.Copy(workbookPath, backupPath, true);
+            File.Replace(transactionPath, workbookPath, null, true);
+        }
+        finally
+        {
+            if (File.Exists(transactionPath))
+                File.Delete(transactionPath);
+            if (File.Exists(transactionBackupPath))
+                File.Delete(transactionBackupPath);
+        }
+    }
+
     public static int MergeNewEntries(string workbookPath, IEnumerable<LocalizationWorkbookEntry> entries)
     {
         if (entries == null)
@@ -151,12 +185,12 @@ public static class LocalizationWorkbookWriter
         foreach (IReadOnlyList<string> sourceRow in rows.Skip(1))
         {
             var row = sourceRow.ToList();
-            while (row.Count < headers.Count)
-                row.Add(string.Empty);
-
             if (sourcesByKey.TryGetValue(Value(row, keyIndex), out string korean) &&
                 !string.Equals(Value(row, koreanIndex), korean, StringComparison.Ordinal))
             {
+                while (row.Count < headers.Count)
+                    row.Add(string.Empty);
+
                 row[koreanIndex] = korean;
                 for (int column = 0; column < headers.Count; column++)
                 {

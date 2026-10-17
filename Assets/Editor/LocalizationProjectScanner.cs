@@ -225,7 +225,8 @@ public static class LocalizationProjectScanner
 
         string compactHeader = header.Replace(" ", string.Empty).Replace("\t", string.Empty);
         return string.Equals(sheetName, "SkillMaster", StringComparison.OrdinalIgnoreCase) &&
-               string.Equals(compactHeader, "Details", StringComparison.OrdinalIgnoreCase) &&
+               (string.Equals(compactHeader, "효과", StringComparison.Ordinal) ||
+                string.Equals(compactHeader, "Details", StringComparison.OrdinalIgnoreCase)) &&
                Regex.IsMatch(trimmed, @"\{(?:E_[A-Za-z0-9_]+|ValueRate\d+)\}");
     }
 

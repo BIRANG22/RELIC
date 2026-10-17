@@ -326,10 +326,6 @@ MonoBehaviour:
     m_Localized: 
     m_Metadata:
       m_Items: []
-  - m_Id: 41385915678466076
-    m_Localized: 0
-    m_Metadata:
-      m_Items: []
   - m_Id: 41385915678466078
     m_Localized: 
     m_Metadata:
@@ -344,10 +340,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41385915678466087
     m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915678466090
-    m_Localized: Arabela
     m_Metadata:
       m_Items: []
   - m_Id: 41385915678466129
@@ -735,8 +727,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631970
-    m_Localized: "Causa da\xF1o normal. Si el objetivo tiene armadura, \xE9sta se
-      reduce primero."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631971
@@ -752,7 +743,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631974
-    m_Localized: Empuja al objetivo lejos del lanzador.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631975
@@ -760,7 +751,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631976
-    m_Localized: "Tira del objetivo en una direcci\xF3n m\xE1s cercana al lanzador."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631977
@@ -768,8 +759,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631978
-    m_Localized: "Si eres bloqueado por una unidad u obst\xE1culo mientras te mueves,
-      recibes 2 da\xF1os fijos."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631979
@@ -777,8 +767,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631980
-    m_Localized: "Durante este turno, el valor de ataque aumenta en este valor. Al
-      final del turno, el valor de amplificaci\xF3n desaparece."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631981
@@ -786,7 +775,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631982
-    m_Localized: turnos. Al final del turno, el valor de la armadura desaparece.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631983
@@ -818,8 +807,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631994
-    m_Localized: Puedes proceder con acciones antes que el monstruo. Al final del
-      turno, el valor disminuye en 1.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631995
@@ -827,8 +815,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631996
-    m_Localized: "El da\xF1o del primer ataque aumenta en un 50%. Al final del turno,
-      el valor disminuye en 1."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631997
@@ -836,17 +823,15 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631998
-    m_Localized: "Recupera resistencia equivalente al 30% del da\xF1o infligido.
-      Al final del turno, el valor disminuye en 1."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703631999
-    m_Localized: "Protecci\xF3n"
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703632000
-    m_Localized: "Al recibir da\xF1o, inflige da\xF1o igual al valor. Al final del
-      turno, el valor disminuye en 1."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915703632001
@@ -854,8 +839,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826176
-    m_Localized: El valor del ataque aumenta en cantidad. No desaparece al final
-      del turno.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826177
@@ -863,8 +847,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826178
-    m_Localized: "Ignora el da\xF1o recibido una vez. Desaparece cuando se activa.
-      Al final del turno, el valor disminuye en 1."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826179
@@ -872,8 +855,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826180
-    m_Localized: "Al final del turno, recibes un da\xF1o igual a este valor. Al final
-      del turno, el valor disminuye en 1."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826181
@@ -889,8 +871,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826184
-    m_Localized: "Aumenta el da\xF1o recibido en un 30%. Al final del turno, el valor
-      disminuye en 1."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826185
@@ -898,8 +879,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826186
-    m_Localized: "Reduce el da\xF1o infligido en un 15%. Al final del turno, el valor
-      disminuye en 1."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826187
@@ -907,8 +887,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826188
-    m_Localized: "Todo el da\xF1o recibido aumenta en este valor. No desaparece al
-      final del turno."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915707826191
@@ -1517,7 +1496,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797791
-    m_Localized: Este es un efecto de movimiento.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797794
@@ -1525,7 +1504,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797795
-    m_Localized: "Crea huevos de ara\xF1a en la cuadr\xEDcula seleccionada."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797796
@@ -1533,7 +1512,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797797
-    m_Localized: "Crea una telara\xF1a en la cuadr\xEDcula seleccionada."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797798
@@ -3094,7 +3073,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100993
-    m_Localized: '{E_Armor} {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100995
@@ -3106,7 +3085,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101003
-    m_Localized: '{E_Smite} {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101005
@@ -3114,7 +3093,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101007
-    m_Localized: '{E_Lifesteal} {ValueRate1} {E_Boost} {ValueRate2}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101009
@@ -3835,71 +3814,71 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 23980218222092288
-    m_Localized: '{E_Strike} {E_MissingHPStrike} {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452416
-    m_Localized: '{E_Strike} {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452417
-    m_Localized: '{E_Pierce} {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452418
-    m_Localized: '{E_Grit} {ValueRate1} {E_Charge} {ValueRate2}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452419
-    m_Localized: '{E_Poison} {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452420
-    m_Localized: '{E_Heal} {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452421
-    m_Localized: '{E_Strike} {ValueRate1} {E_Vulnerable} {ValueRate2}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452422
-    m_Localized: '{E_Strike} {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452423
-    m_Localized: '{E_Strike} {ValueRate1} {E_Knockback} {ValueRate2}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452424
-    m_Localized: '{E_Strike} {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452425
-    m_Localized: '{E_Pierce} {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452426
-    m_Localized: '{E_Boost} {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452427
-    m_Localized: '{E_Poison} {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452428
-    m_Localized: '{E_Cure} {ValueRate1}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452429
-    m_Localized: '{E_Strike} {ValueRate1} {E_Vulnerable} {ValueRate2}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452430
-    m_Localized: '{E_Strike} {ValueRate1} {E_Knockback} {ValueRate2}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452431
-    m_Localized: '{E_Strike} {ValueRate1} {E_Vulnerable} {ValueRate2}'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452432
