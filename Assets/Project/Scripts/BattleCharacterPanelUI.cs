@@ -24,6 +24,10 @@ public class BattleCharacterPanelUI : MonoBehaviour
     {
         public Transform Root;
         public Image CharacterIcon;
+        public RectTransform CharacterMask;
+        public GameObject SelectionVfx;
+        public CanvasGroup SelectionVfxCanvasGroup;
+        public Coroutine SelectionVfxFadeCoroutine;
         public Image PassiveIcon;
         public Image HpFill;
         public Image HpFillBefore;
@@ -54,6 +58,18 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [Header("CharHUD Resource Fill Animation")]
     [Tooltip("HP와 Cost의 Fill 및 FillBefore가 목표 값으로 부드럽게 이동하는 시간입니다.")]
     [SerializeField, Min(0f)] private float partyResourceFillSmoothTime = 0.2f;
+
+    [Header("Selected Character VFX")]
+    [Tooltip("선택된 캐릭터의 CharHUD/Char01~03 위치에 표시할 UI VFX 프리팹입니다. Screen Space Overlay에서는 UI 호환 VFX를 사용하세요.")]
+    [SerializeField] private GameObject selectedCharacterVfxPrefab;
+    [Tooltip("각 Char 루트 중심 기준 VFX 위치 보정값입니다.")]
+    [SerializeField] private Vector2 selectedCharacterVfxOffset = Vector2.zero;
+    [Tooltip("VFX 크기 배율입니다.")]
+    [SerializeField, Min(0f)] private float selectedCharacterVfxScale = 1f;
+    [Tooltip("선택 변경 시 VFX의 파티클을 처음부터 재생합니다.")]
+    [SerializeField] private bool restartSelectedCharacterVfx = true;
+    [Tooltip("선택 VFX가 투명도 0에서 1로 나타나는 시간(초)입니다.")]
+    [SerializeField, Min(0f)] private float selectedCharacterVfxFadeInDuration = 0.25f;
 
     private readonly PartySlotView[] partySlots = new PartySlotView[PartySlotCount];
     private readonly CharacterRuntimeData[] partyRuntimes = new CharacterRuntimeData[PartySlotCount];
@@ -588,6 +604,19 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 runeSlideCoroutines[i] = null;
             }
             runeSelectionStates[i] = null;
+            PartySlotView slot = partySlots[i];
+            if (slot != null)
+            {
+                if (slot.SelectionVfxFadeCoroutine != null)
+                {
+                    StopCoroutine(slot.SelectionVfxFadeCoroutine);
+                    slot.SelectionVfxFadeCoroutine = null;
+                }
+                if (slot.SelectionVfxCanvasGroup != null)
+                    slot.SelectionVfxCanvasGroup.alpha = 0f;
+                if (slot.SelectionVfx != null)
+                    slot.SelectionVfx.SetActive(false);
+            }
         }
         isSkillTooltipVisible = false;
         if (skillTooltipFadeCoroutine != null)
@@ -1105,6 +1134,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         PartySlotView view = new PartySlotView { Root = root };
         view.CharacterIcon = GetImage(FindPath(root, "Icon/Mask/Image"));
+        view.CharacterMask = FindPath(root, "Icon/Mask") as RectTransform;
         view.PassiveIcon = GetImage(FindPath(root, "Passive/Icon"));
         view.HpFill = GetImage(FindPath(root, "Resources/Hp/Fill"));
         view.HpFillBefore = GetImage(FindPath(root, "Resources/Hp/FillBefore"));
@@ -1709,6 +1739,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
                             !string.IsNullOrWhiteSpace(selectedCharacterId) &&
                             string.Equals(runtime.CharacterId, selectedCharacterId, StringComparison.Ordinal);
 
+            UpdateSelectedCharacterVfx(i, selected);
             UpdateSelectedRuneVisual(i, selected);
 
             partySelectTargets[i]?.SetAvailable(runtime != null);
@@ -1737,6 +1768,109 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
             ApplyPartySprite(iconImage, portrait);
         }
+    }
+
+    // 각 Char01~03을 기준으로 생성하고, 항상 해당 Char의 첫 번째 자식에 배치합니다.
+    // Mask 하위에 두지 않아 마스킹에 의해 효과가 잘리지 않습니다.
+    private void UpdateSelectedCharacterVfx(int index, bool selected)
+    {
+        PartySlotView slot = partySlots[index];
+        if (slot == null || slot.Root == null)
+            return;
+
+        bool shouldShow = selected && slot.Runtime != null && !slot.Runtime.IsDead &&
+                          selectedCharacterVfxPrefab != null;
+        if (!shouldShow)
+        {
+            if (slot.SelectionVfxFadeCoroutine != null)
+            {
+                StopCoroutine(slot.SelectionVfxFadeCoroutine);
+                slot.SelectionVfxFadeCoroutine = null;
+            }
+            if (slot.SelectionVfxCanvasGroup != null)
+                slot.SelectionVfxCanvasGroup.alpha = 0f;
+            if (slot.SelectionVfx != null)
+                slot.SelectionVfx.SetActive(false);
+            return;
+        }
+
+        if (slot.SelectionVfx == null)
+        {
+            slot.SelectionVfx = Instantiate(selectedCharacterVfxPrefab, slot.Root, false);
+            slot.SelectionVfx.name = "SelectionVFX";
+            foreach (Graphic graphic in slot.SelectionVfx.GetComponentsInChildren<Graphic>(true))
+                graphic.raycastTarget = false;
+        }
+
+        // 첫 번째 자식으로 배치해 Char 내부의 다른 UI보다 뒤에 렌더링합니다.
+        slot.SelectionVfx.transform.SetAsFirstSibling();
+        if (slot.SelectionVfxCanvasGroup == null)
+        {
+            slot.SelectionVfxCanvasGroup = slot.SelectionVfx.GetComponent<CanvasGroup>();
+            if (slot.SelectionVfxCanvasGroup == null)
+                slot.SelectionVfxCanvasGroup = slot.SelectionVfx.AddComponent<CanvasGroup>();
+        }
+        slot.SelectionVfxCanvasGroup.interactable = false;
+        slot.SelectionVfxCanvasGroup.blocksRaycasts = false;
+
+        RectTransform charRect = slot.Root as RectTransform;
+        RectTransform effectRect = slot.SelectionVfx.transform as RectTransform;
+        if (effectRect != null)
+        {
+            effectRect.anchorMin = new Vector2(0.5f, 0.5f);
+            effectRect.anchorMax = new Vector2(0.5f, 0.5f);
+            effectRect.pivot = new Vector2(0.5f, 0.5f);
+            effectRect.anchoredPosition = (charRect != null ? charRect.rect.center : Vector2.zero)
+                + selectedCharacterVfxOffset;
+            if (charRect != null)
+                effectRect.sizeDelta = charRect.rect.size;
+            effectRect.localRotation = Quaternion.identity;
+            effectRect.localScale = Vector3.one * selectedCharacterVfxScale;
+        }
+        else
+        {
+            Vector3 center = charRect != null ? (Vector3)charRect.rect.center : Vector3.zero;
+            slot.SelectionVfx.transform.localPosition = center + (Vector3)selectedCharacterVfxOffset;
+            slot.SelectionVfx.transform.localRotation = Quaternion.identity;
+            slot.SelectionVfx.transform.localScale = Vector3.one * selectedCharacterVfxScale;
+        }
+
+        bool wasActive = slot.SelectionVfx.activeSelf;
+        if (!wasActive)
+        {
+            if (slot.SelectionVfxFadeCoroutine != null)
+            {
+                StopCoroutine(slot.SelectionVfxFadeCoroutine);
+                slot.SelectionVfxFadeCoroutine = null;
+            }
+            slot.SelectionVfxCanvasGroup.alpha = selectedCharacterVfxFadeInDuration > 0f ? 0f : 1f;
+            slot.SelectionVfx.SetActive(true);
+            if (restartSelectedCharacterVfx)
+                foreach (ParticleSystem particle in slot.SelectionVfx.GetComponentsInChildren<ParticleSystem>(true))
+                {
+                    particle.Clear(true);
+                    particle.Play(true);
+                }
+            if (selectedCharacterVfxFadeInDuration > 0f && isActiveAndEnabled)
+                slot.SelectionVfxFadeCoroutine = StartCoroutine(FadeInSelectedCharacterVfx(slot));
+        }
+    }
+
+    private IEnumerator FadeInSelectedCharacterVfx(PartySlotView slot)
+    {
+        float elapsed = 0f;
+        float duration = Mathf.Max(0.0001f, selectedCharacterVfxFadeInDuration);
+        while (elapsed < duration)
+        {
+            if (slot.SelectionVfx == null || !slot.SelectionVfx.activeSelf)
+                yield break;
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            slot.SelectionVfxCanvasGroup.alpha = t * t * (3f - 2f * t);
+            yield return null;
+        }
+        slot.SelectionVfxCanvasGroup.alpha = 1f;
+        slot.SelectionVfxFadeCoroutine = null;
     }
 
     // 선택된 캐릭터의 Rune만 오른쪽에서 등장하고, 해제 시 오른쪽으로 퇴장합니다.
