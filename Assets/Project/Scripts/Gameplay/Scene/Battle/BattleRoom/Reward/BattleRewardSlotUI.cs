@@ -134,7 +134,7 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
                 break;
             case BattleRewardType.Skill:
                 icon = memoryRewardIcon;
-                displayText = "기억 발현";
+                displayText = GameLocalization.Get("battle.reward.skill_acquired", "기억 획득");
                 break;
             default:
                 displayText = reward.GetDisplayName();

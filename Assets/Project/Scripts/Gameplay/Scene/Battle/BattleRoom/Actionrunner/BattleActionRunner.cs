@@ -87,6 +87,7 @@ public class BattleActionRunner
     private const string ResidueGridEffectId = "GR_Residue";
     private static readonly Color ExecutionRangeColor = Color.red;
     public const float MoveAnimationDuration = 0.15f;
+    private const float GridEffectResumeDelay = 0.65f;
 
     private class ActionRoutine
     {
@@ -1149,29 +1150,6 @@ public class BattleActionRunner
             target.Add(index);
     }
 
-    private void TryPlaceMuckProjectileResidue(MonsterReservedCommand command)
-    {
-        if (command == null)
-            return;
-
-        int targetGridIndex = command.RangeOriginGridIndex;
-
-        if (targetGridIndex < 0 && command.TargetGridIndices != null && command.TargetGridIndices.Count > 0)
-            targetGridIndex = command.TargetGridIndices[0];
-
-        BattleGridEffectController controller = ResolveGridEffectController();
-
-        if (controller == null || !controller.TryPlaceEffect(targetGridIndex, ResidueGridEffectId))
-            return;
-
-        // 머크의 투사체 피해와 잔여물 피해는 별도의 타격으로 처리합니다.
-        // 목표 그리드에 캐릭터가 있다면 잔여물 생성 직후 GR_Residue 피해를 따로 적용합니다.
-        BattleCharacter character = FindPlayerAtGrid(targetGridIndex);
-
-        if (character != null)
-            controller.ApplyToPlayer(targetGridIndex, character);
-    }
-
     private void TryPlaceResidue(int gridIndex)
     {
         if (gridIndex < 0)
@@ -1189,6 +1167,75 @@ public class BattleActionRunner
     {
         BattleGridEffectController controller = ResolveGridEffectController();
         return controller != null && controller.IsBlocked(gridIndex);
+    }
+
+    /// <summary>
+    /// 장애물 효과가 발생하는 칸에서만 이동을 멈추고, 효과 연출 후 남은 경로를 이동합니다.
+    /// 장애물 사이의 이동은 기존 전체 이동 시간에 비례하여 연속적으로 처리합니다.
+    /// </summary>
+    private IEnumerator MovePlayerThroughEnteredGrids(
+        BattleCharacter character,
+        string characterId,
+        IReadOnlyList<int> enteredGridIndices)
+    {
+        if (character == null || character.RuntimeData == null ||
+            enteredGridIndices == null || enteredGridIndices.Count == 0)
+            yield break;
+
+        BattleGridEffectController controller = ResolveGridEffectController();
+        BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
+        int startGridIndex = character.CurrentGridIndex;
+        int segmentStart = 0;
+        int totalSteps = enteredGridIndices.Count;
+
+        for (int i = 0; i < totalSteps; i++)
+        {
+            if (character.RuntimeData == null || character.RuntimeData.IsDead)
+                yield break;
+
+            int gridIndex = enteredGridIndices[i];
+            bool hasEffect = controller != null && controller.HasEffect(gridIndex);
+            bool atDestination = i == totalSteps - 1;
+            if (!hasEffect && !atDestination)
+                continue;
+
+            int previousGridIndex = character.CurrentGridIndex;
+            if (gridIndex != previousGridIndex)
+            {
+                Vector2Int previousCoord = gridManager.IndexToCoord(previousGridIndex);
+                Vector2Int nextCoord = gridManager.IndexToCoord(gridIndex);
+                // The original movement duration applies to the entire path, not each grid.
+                float segmentDuration = MoveAnimationDuration *
+                    (i - segmentStart + 1) / (float)totalSteps;
+                yield return MoveTransformSmooth(
+                    character.transform,
+                    character.transform.position,
+                    gridManager.GetWorldPositionByIndex(gridIndex),
+                    segmentDuration);
+
+                character.SetGridIndex(gridIndex);
+                character.RuntimeData.SetLastMoveOffset(nextCoord - previousCoord);
+                BattleEquipmentEffectService.MarkMovedBeforeNextAttack(character.RuntimeData);
+                UpdatePartyGridIndex(characterId, gridIndex);
+            }
+
+            segmentStart = i + 1;
+            if (!hasEffect)
+                continue;
+
+            // ApplyToPlayer plays the hit animation itself when damage occurs.
+            BattleGridEffectApplyResult result = controller.ApplyToPlayer(gridIndex, character);
+            if (character.RuntimeData == null || character.RuntimeData.IsDead)
+                yield break;
+
+            if (result != null && result.Applied && i < totalSteps - 1)
+            {
+                // Allow the obstacle's hit/status feedback to appear before moving again.
+                yield return new WaitForSeconds(GridEffectResumeDelay / GetActivePresentationSpeed());
+                if (animator != null)
+                    animator.PlayMove();
+            }
+        }
     }
 
     private void ApplyGridEffectsToPlayer(
@@ -1344,26 +1391,14 @@ public class BattleActionRunner
                 yield break;
             }
 
-            Vector3 pos = gridManager.GetWorldPositionByIndex(targetGridIndex);
-
             BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
-
             if (animator != null)
                 animator.PlayMove();
 
-            yield return MoveTransformSmooth(
-                character.transform,
-                character.transform.position,
-                pos,
-                MoveAnimationDuration
-            );
-
-            character.SetGridIndex(targetGridIndex);
-            character.RuntimeData.SetLastMoveOffset(actualMoveOffset);
-            BattleEquipmentEffectService.MarkMovedBeforeNextAttack(character.RuntimeData);
-            UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
-            ApplyGridEffectsToPlayer(enteredGridIndices, character);
-            statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
+            // Apply each grid effect only after the character visibly reaches that tile.
+            yield return MovePlayerThroughEnteredGrids(character, command.CharacterId, enteredGridIndices);
+            if (character.RuntimeData != null && !character.RuntimeData.IsDead)
+                statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
 
             ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
 
@@ -1429,22 +1464,11 @@ public class BattleActionRunner
             if (animator != null)
                 animator.PlayMove();
 
-            Vector3 pos = gridManager.GetWorldPositionByIndex(targetGridIndex);
-
-            yield return MoveTransformSmooth(
-                character.transform,
-                character.transform.position,
-                pos,
-                MoveAnimationDuration
-            );
-
-            character.SetGridIndex(targetGridIndex);
-            character.RuntimeData.SetLastMoveOffset(actualOffset);
-            BattleEquipmentEffectService.MarkMovedBeforeNextAttack(character.RuntimeData);
-            UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
-            ApplyGridEffectsToPlayer(enteredGridIndices, character);
-            currentGridIndex = targetGridIndex;
-            executedDistance += GetMoveDistance(actualOffset);
+            yield return MovePlayerThroughEnteredGrids(character, command.CharacterId, enteredGridIndices);
+            int reachedGridIndex = character.CurrentGridIndex;
+            executedDistance += GetMoveDistance(
+                gridManager.IndexToCoord(reachedGridIndex) - currentCoord);
+            currentGridIndex = reachedGridIndex;
 
             ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
 
@@ -2863,20 +2887,9 @@ public class BattleActionRunner
         if (animator != null)
             animator.PlayMove();
 
-        Vector3 targetPosition = gridManager.GetWorldPositionByIndex(targetGridIndex);
-
-        yield return MoveTransformSmooth(
-            caster.transform,
-            caster.transform.position,
-            targetPosition,
-            MoveAnimationDuration);
-
-        caster.SetGridIndex(targetGridIndex);
-        caster.RuntimeData.SetLastMoveOffset(actualMoveOffset);
-        BattleEquipmentEffectService.MarkMovedBeforeNextAttack(caster.RuntimeData);
-        UpdatePartyGridIndex(command.CharacterId, targetGridIndex);
-        ApplyGridEffectsToPlayer(enteredGridIndices, caster);
-        statusEffectService.ApplyBleedDamageToPlayerOnMove(caster);
+        yield return MovePlayerThroughEnteredGrids(caster, command.CharacterId, enteredGridIndices);
+        if (caster.RuntimeData != null && !caster.RuntimeData.IsDead)
+            statusEffectService.ApplyBleedDamageToPlayerOnMove(caster);
 
         if (NewSkillEffectRules.ShouldApplyMoveCollisionEffect(effectId))
             ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
@@ -4409,11 +4422,6 @@ public class BattleActionRunner
                 else
                     yield return new WaitForSeconds(GetActiveActionBeatDelay());
             }
-
-            // 머크의 투사체는 명중 여부와 관계없이 예약된 목표 그리드에 잔여물을 생성합니다.
-            // 투사체 피해와 잔여물 피해는 분리하며, 생성 순간에는 잔여물 피해를 즉시 적용하지 않습니다.
-            if (string.Equals(command.SkillData.SkillId, MuckProjectileSkillId, System.StringComparison.Ordinal))
-                TryPlaceMuckProjectileResidue(command);
 
             // 신더의 자폭은 공격 효과 적용이 끝난 후 자신을 제거합니다.
             // 일반 처치가 아니므로 분열 등 고유 사망 시 효과와 처치 보상은 발생하지 않습니다.

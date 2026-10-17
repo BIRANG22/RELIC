@@ -1791,27 +1791,36 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (string.IsNullOrWhiteSpace(details))
             return "";
 
-        return FormatHighlightedEffectDescription(
-            NormalizeSkillInfoText(details),
-            skill.ValueRate,
-            skill.CountRate);
+        return FormatHighlightedEffectDescription(NormalizeSkillInfoText(details), skill);
     }
 
-    private string FormatHighlightedEffectDescription(string description, string valueRate, string countRate)
+    private string FormatHighlightedEffectDescription(string description, SkillMasterData skill)
     {
-        if (string.IsNullOrWhiteSpace(description))
+        if (string.IsNullOrWhiteSpace(description) || skill == null)
             return string.Empty;
 
-        string result = description;
+        string result = SkillDescriptionFormatter.Format(
+            description,
+            skill.ValueRate,
+            skill.CountRate,
+            skill.ScalingType,
+            false,
+            skill.EffectIds);
         string colorHex = ColorUtility.ToHtmlStringRGB(valueHighlightColor);
+        return HighlightNumericTextPreservingRichTextTags(result, colorHex);
+    }
 
-        result = ReplaceIndexedHighlightedValues(result, "ValueRate", valueRate, colorHex);
-        result = ReplaceIndexedHighlightedValues(result, "CountRate", countRate, colorHex, true);
-        result = ReplaceHighlightedValue(result, "{ValueRate}", valueRate, colorHex);
-        result = ReplaceHighlightedValue(result, "{CountRate}", countRate, colorHex, true);
-        result = SkillDescriptionFormatter.ReplaceEffectTokens(result, valueRate);
+    private static string HighlightNumericTextPreservingRichTextTags(string source, string colorHex)
+    {
+        if (string.IsNullOrEmpty(source))
+            return source ?? string.Empty;
 
-        return result;
+        return System.Text.RegularExpressions.Regex.Replace(
+            source,
+            @"<[^>]+>|(?<![#A-Za-z0-9])[-+]?\d+(?:\.\d+)?%?",
+            match => match.Value[0] == '<'
+                ? match.Value
+                : $"<color=#{colorHex}>{match.Value}</color>");
     }
 
     private static string ReplaceIndexedHighlightedValues(string source, string tokenName, string values, string colorHex, bool isCount = false)

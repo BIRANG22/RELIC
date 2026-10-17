@@ -54,7 +54,13 @@ namespace Relic.Gameplay.Data
         {
             return data == null
                 ? string.Empty
-                : SkillDescriptionFormatter.Format(SkillDetailsTemplate(data), data.ValueRate, data.CountRate, data.ScalingType);
+                : SkillDescriptionFormatter.Format(
+                    SkillDetailsTemplate(data),
+                    data.ValueRate,
+                    data.CountRate,
+                    data.ScalingType,
+                    false,
+                    data.EffectIds);
         }
 
         /// <summary>Returns the locale-specific template before UI-owned token and RichText formatting.</summary>

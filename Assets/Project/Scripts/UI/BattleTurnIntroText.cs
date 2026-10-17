@@ -127,7 +127,10 @@ public class BattleTurnIntroText : MonoBehaviour
     public static string BuildTurnMessage(int turnNumber)
     {
         int number = Mathf.Max(1, turnNumber);
-        return $"{number}{GameLocalization.Get(LocalizationKeys.Battle.Progress)}";
+        return GameLocalization.FormatWithFallback(
+            "battle.effect_info.turn_start_format",
+            "{0}턴",
+            number);
     }
 
     public void PlayTurn(int turnNumber) => Play(BuildTurnMessage(turnNumber));

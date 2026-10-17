@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
@@ -96,6 +97,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     }
 
     [Header("Skill_content - inspector references")]
+    [SerializeField] private TMP_Text panelTitleText;
     [SerializeField] private Transform skillContent;
     [SerializeField] private SkillCardReferences[] skillCards = new SkillCardReferences[3];
     [Header("Char_content - inspector references")]
@@ -168,6 +170,25 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private readonly Material[] originalCardMaterials = new Material[3];
     private readonly Coroutine[] cardDissolveCoroutines = new Coroutine[3];
 
+    private void OnEnable()
+    {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+    }
+
+    private void OnLocaleTableReady(Locale _)
+    {
+        if (reward == null)
+            return;
+
+        RefreshLocalizedText();
+    }
+
 
     public static BattleRewardSkillPanelUI FindPanel()
     {
@@ -200,6 +221,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         }
         Transform content = skillContent != null ? skillContent : FindChild(transform, "Skill_content");
         if (content == null) { reward = null; completed = null; return false; }
+        RefreshPanelTitle();
         ResetAllCardScales();
         ClearEquippedSkillVfx();
         clickedCardIndex = -1;
@@ -1344,18 +1366,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             }
         }
         SetSprite(portrait, side);
-        string typeName = skill.TimelineNotation == TimelineActionType.Move
-            ? GameLocalization.Get("common.move")
-            : skill.Category == Category.Passive
-                ? GameLocalization.Get("common.passive")
-                : skill.SkillType == SkillType.Buff
-                    ? GameLocalization.Get("common.buff")
-                    : skill.SkillType == SkillType.Debuff
-                        ? GameLocalization.Get("common.debuff")
-                        : skill.SkillType == SkillType.Attack
-                            ? GameLocalization.Get("common.attack")
-                            : GameLocalization.Get("common.passive");
-        SetText(card, "Type/Type_text", typeName);
+        SetText(card, "Type/Type_text", GetSkillTypeName(skill));
         Sprite icon = null;
         if (DataManager.Instance.SkillIconDatabase != null)
             DataManager.Instance.SkillIconDatabase.TryGetIcon(skill.SkillId, out icon);
@@ -1382,6 +1393,45 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         SetSprite(cost, resource);
         if (cost != null) cost.color = color;
         if (value != null) { SetDynamicText(value, skill.ResourceCostValue.ToString()); value.color = color; }
+    }
+
+    private static string GetSkillTypeName(SkillMasterData skill)
+    {
+        return skill.TimelineNotation == TimelineActionType.Move
+            ? GameLocalization.Get("common.move")
+            : skill.Category == Category.Passive
+                ? GameLocalization.Get("common.passive")
+                : skill.SkillType == SkillType.Buff
+                    ? GameLocalization.Get("common.buff")
+                    : skill.SkillType == SkillType.Debuff
+                        ? GameLocalization.Get("common.debuff")
+                        : skill.SkillType == SkillType.Attack
+                            ? GameLocalization.Get("common.attack")
+                            : GameLocalization.Get("common.passive");
+    }
+
+    private void RefreshPanelTitle()
+    {
+        SetDynamicText(panelTitleText, GameLocalization.Get("battle.reward.skill_panel_title", "기억"));
+    }
+
+    private void RefreshLocalizedText()
+    {
+        RefreshPanelTitle();
+        Transform content = skillContent != null ? skillContent : FindChild(transform, "Skill_content");
+        for (int i = 0; i < offeredSkills.Length; i++)
+        {
+            SkillMasterData skill = offeredSkills[i];
+            Transform card = GetSkillCardRoot(content, i);
+            if (skill == null || card == null)
+                continue;
+
+            SetText(card, "Type/Type_text", GetSkillTypeName(skill));
+            SetText(card, "Name", GameDataLocalization.SkillName(skill));
+            SetDetailText(card, skill);
+        }
+
+        BindPartyContent();
     }
 
     // Collect eligible memories from all registered party members, then draw three unique IDs.

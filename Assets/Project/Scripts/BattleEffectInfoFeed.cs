@@ -502,7 +502,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
             feed.Spawn(
                 GameLocalization.FormatWithFallback(
                     "battle.effect_info.turn_start_format",
-                    "{0}턴 시작",
+                    "{0}턴",
                     turnNumber),
                 feed.turnStartIcon,
                 false,
