@@ -509,8 +509,20 @@ public class BattleGridEffectController : MonoBehaviour
             return BattleGridEffectApplyResult.None;
 
         int hpBefore = monster.RuntimeData.CurrentHP;
+        int shieldBefore = monster.RuntimeData.CurrentShield;
         BattleGridEffectApplyResult result =
             service.ApplyToMonster(state, gridIndex, monster.RuntimeData);
+
+        int hpDamage = Mathf.Max(0, hpBefore - monster.RuntimeData.CurrentHP);
+        int shieldDamage = Mathf.Max(0, shieldBefore - monster.RuntimeData.CurrentShield);
+        int shownDamage = hpDamage + shieldDamage;
+
+        // 그리드 효과로 받은 몬스터 피해도 일반 피해와 같은 팝업으로 표시합니다.
+        if (shownDamage > 0)
+        {
+            BattleDamageTextPopupUI.PrepareTargetHud(monster.transform);
+            BattleDamageTextPopupUI.Show(monster.transform, shownDamage);
+        }
 
         PresentAppliedEffects(monster, result, monster.RuntimeData.CurrentHP > hpBefore);
         RemoveViewIfConsumed(result);

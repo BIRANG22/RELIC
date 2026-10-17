@@ -223,21 +223,26 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
             lastMaxHp = boundRuntime.MaxHP;
         }
 
-        if (force || lastArmor != boundRuntime.CurrentShield)
+        int currentArmor = Mathf.Max(0, boundRuntime.CurrentShield);
+        bool showArmor = currentArmor > 0;
+        if (force || lastArmor != currentArmor)
         {
             if (armorText != null)
-                armorText.text = Mathf.Max(0, boundRuntime.CurrentShield).ToString();
+                armorText.text = currentArmor.ToString();
 
-            if (armorObject != null)
-                armorObject.SetActive(boundRuntime.CurrentShield > 0);
-
-            lastArmor = boundRuntime.CurrentShield;
+            lastArmor = currentArmor;
         }
 
+        // ArmorInfo may be inactive in the prefab; keep its visibility in sync
+        // even when the shield value has not changed.
+        if (armorObject != null && armorObject.activeSelf != showArmor)
+            armorObject.SetActive(showArmor);
+
         int statusHash = CalculateStatusHash(boundRuntime.StatusEffects);
+        statusHash = unchecked(statusHash * 31 + currentArmor);
         if (force || statusHash != lastStatusHash)
         {
-            RebuildStatusEffects(boundRuntime.StatusEffects);
+            RebuildStatusEffects(boundRuntime.StatusEffects, currentArmor);
             lastStatusHash = statusHash;
         }
     }
@@ -801,17 +806,32 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         skillListenersRegistered = false;
     }
 
-    private void RebuildStatusEffects(List<StatusEffectRuntimeData> statusEffects)
+    private void RebuildStatusEffects(List<StatusEffectRuntimeData> statusEffects, int currentArmor)
     {
         ClearStatusEffects();
 
-        if (statusEffectListRoot == null || statusEffectIconPrefab == null || statusEffects == null)
+        if (statusEffectListRoot == null || statusEffectIconPrefab == null)
+            return;
+
+        // Armor is a runtime resource, not a stored status. Render it as an
+        // E_Armor icon without mutating the monster status effects.
+        if (currentArmor > 0)
+        {
+            StatusEffectIcon armorIcon = Instantiate(statusEffectIconPrefab, statusEffectListRoot);
+            armorIcon.gameObject.name = "StatusEffect_E_Armor";
+            armorIcon.transform.localScale = Vector3.one;
+            armorIcon.Set(new StatusEffectRuntimeData("E_Armor", currentArmor, 1));
+            spawnedStatusEffectIcons.Add(armorIcon);
+        }
+
+        if (statusEffects == null)
             return;
 
         for (int i = 0; i < statusEffects.Count; i++)
         {
             StatusEffectRuntimeData statusEffect = statusEffects[i];
-            if (statusEffect == null || !statusEffect.IsValid())
+            if (statusEffect == null || !statusEffect.IsValid() ||
+                string.Equals(statusEffect.EffectId, "E_Armor", StringComparison.OrdinalIgnoreCase))
                 continue;
 
             StatusEffectIcon icon = Instantiate(statusEffectIconPrefab, statusEffectListRoot);
@@ -845,21 +865,51 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         if (hpText == null)
             hpText = FindText("HpInfo");
 
-        if (armorText == null)
-            armorText = FindText("ArmorInfo");
+        ResolveArmorReferences();
 
         ResolveActionRangeAndSpecialActionReferences();
 
-        if (statusEffectListRoot == null)
+        // Always spawn monster status icons under StatusEffectList/Content.
+        // Older inspector references can point to StatusEffectList itself;
+        // normalize them so the layout and visibility match existing effects.
+        Transform statusList = FindChildRecursive(transform, "StatusEffectList");
+        if (statusList != null)
         {
-            Transform statusRoot = FindChildRecursive(transform, "StatusEffectList");
-            if (statusRoot != null)
-                statusEffectListRoot = statusRoot as RectTransform;
+            Transform content = FindChildRecursive(statusList, "Content");
+            if (content is RectTransform contentRect)
+                statusEffectListRoot = contentRect;
+            else if (statusEffectListRoot == null)
+                statusEffectListRoot = statusList as RectTransform;
         }
 
         ResolveSkillListReferences();
         ResolveSkillInfoReferences();
         ResolveSkillEffectReferences();
+    }
+
+    private void ResolveArmorReferences()
+    {
+        Transform armorRoot = FindChildRecursive(transform, "ArmorInfo");
+        if (armorRoot == null)
+            return;
+
+        // Prefer the actual ArmorInfo hierarchy over an unassigned reference.
+        if (armorObject == null)
+            armorObject = armorRoot.gameObject;
+
+        if (armorText == null)
+        {
+            armorText = armorRoot.GetComponent<TMP_Text>();
+            if (armorText == null)
+                armorText = armorRoot.GetComponentInChildren<TMP_Text>(true);
+        }
+
+        if (armorIconImage == null)
+        {
+            armorIconImage = armorRoot.GetComponent<Image>();
+            if (armorIconImage == null)
+                armorIconImage = armorRoot.GetComponentInChildren<Image>(true);
+        }
     }
 
     private void ResolveActionRangeAndSpecialActionReferences()

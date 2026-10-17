@@ -43,17 +43,57 @@ namespace Relic.Gameplay.Monster
                 10
             ));
 
-            // 캐릭터 접근은 도주 조건이 아닙니다. 플레이어 효과가 적용된 경우에만 도주합니다.
-            if (!monsterUnit.RuntimeData.PendingPlayerEffectEscape)
-                return plan;
-
             int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
             if (targetGridIndex < 0)
                 return plan;
 
+            // 플레이어 효과를 받았거나 주변 8칸에 캐릭터가 있으면 공격 후 도주합니다.
+            // 주변 8칸은 대각선을 포함하며, 공격 스킬의 사거리와는 별개입니다.
+            bool wasAffectedByPlayer = monsterUnit.RuntimeData.PendingPlayerEffectEscape;
+            Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            bool hasAdjacentCharacter = false;
+            int adjacentTargetGridIndex = -1;
+            int closestAdjacentDistance = int.MaxValue;
+            List<int> characterGridIndices = FindCharacterTargetGridIndices();
+            for (int i = 0; i < characterGridIndices.Count; i++)
+            {
+                int characterGridIndex = characterGridIndices[i];
+                if (characterGridIndex < 0 || gridManager.GetCellByIndex(characterGridIndex) == null)
+                    continue;
+
+                Vector2Int characterCoord = gridManager.IndexToCoord(characterGridIndex);
+                int dx = Mathf.Abs(characterCoord.x - monsterCoord.x);
+                int dy = Mathf.Abs(characterCoord.y - monsterCoord.y);
+                if (dx <= 1 && dy <= 1 && (dx != 0 || dy != 0))
+                {
+                    hasAdjacentCharacter = true;
+                    // 주변에서 실제로 감지한 캐릭터를 도주 방향 계산에 사용합니다.
+                    int distance = dx + dy;
+                    if (distance < closestAdjacentDistance)
+                    {
+                        closestAdjacentDistance = distance;
+                        adjacentTargetGridIndex = characterGridIndex;
+                    }
+                }
+            }
+
+            if (!wasAffectedByPlayer && !hasAdjacentCharacter)
+                return plan;
+
+            // 가장 앞 슬롯에서 공격한 다음 같은 슬롯에서 도주합니다.
+            const int attackEscapeGroup = 1;
+            // 공격 범위는 GameData의 스킬 범위(Range_20)를 그대로 사용합니다.
+            plan.Add(new MonsterAIAction(
+                AttackSkillId,
+                Vector2Int.zero,
+                MonsterAISlotPreference.Earliest,
+                attackEscapeGroup,
+                0
+            ));
+
             Vector2Int moveOffset = GetBestTwoTileEscapeMove(
                 monsterUnit,
-                targetGridIndex,
+                hasAdjacentCharacter ? adjacentTargetGridIndex : targetGridIndex,
                 gridManager);
 
             if (moveOffset != Vector2Int.zero)
@@ -61,9 +101,9 @@ namespace Relic.Gameplay.Monster
                 plan.Add(new MonsterAIAction(
                     MoveSkillId,
                     moveOffset,
-                    MonsterAISlotPreference.Front,
-                    -1,
-                    0
+                    MonsterAISlotPreference.SameSlot,
+                    attackEscapeGroup,
+                    1
                 ));
                 monsterUnit.RuntimeData.PendingPlayerEffectEscape = false;
             }
@@ -347,8 +387,10 @@ namespace Relic.Gameplay.Monster
                 {
                     Vector2Int nextCoord = occupiedCoords[i] + step;
 
+                    // 첫 칸이 맵 밖이면 이동할 수 없지만, 두 번째 칸만 맵 밖인 경우에는
+                    // 2칸 이동을 예약하고 실제 실행 중 맵 경계에서 멈추게 합니다.
                     if (!gridManager.IsValidCoord(nextCoord))
-                        return false;
+                        return moveStep > 0;
 
                     int nextGridIndex = gridManager.CoordToIndex(nextCoord);
 
@@ -383,11 +425,20 @@ namespace Relic.Gameplay.Monster
                 return -1;
             }
 
-            Vector2Int destination =
-                gridManager.IndexToCoord(monsterUnit.MainGridIndex) + moveOffset;
+            Vector2Int start = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            Vector2Int destination = start + moveOffset;
 
+            // 경계 밖으로 향하는 2칸 이동은 실행 시 마지막 유효 칸에서 멈춥니다.
+            // 경계 밖 좌표 대신 실제 도착 가능한 칸으로 주변 공간을 평가합니다.
             if (!gridManager.IsValidCoord(destination))
-                return -1;
+            {
+                Vector2Int step = new Vector2Int(
+                    moveOffset.x == 0 ? 0 : (moveOffset.x > 0 ? 1 : -1),
+                    moveOffset.y == 0 ? 0 : (moveOffset.y > 0 ? 1 : -1));
+                destination = start + step;
+                if (!gridManager.IsValidCoord(destination))
+                    return -1;
+            }
 
             Vector2Int[] directions =
             {

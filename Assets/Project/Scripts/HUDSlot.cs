@@ -419,7 +419,23 @@ public class HUDSlot : MonoBehaviour
 
     private List<StatusEffectRuntimeData> GetStatusEffects()
     {
-        if (boundMonsterRuntime != null) return boundMonsterRuntime.StatusEffects;
+        if (boundMonsterRuntime != null)
+        {
+            List<StatusEffectRuntimeData> result = new();
+            List<StatusEffectRuntimeData> statuses = boundMonsterRuntime.StatusEffects;
+            if (statuses != null)
+            {
+                for (int i = 0; i < statuses.Count; i++)
+                {
+                    StatusEffectRuntimeData status = statuses[i];
+                    if (status != null && status.IsValid() && status.EffectId != "E_Armor")
+                        result.Add(status);
+                }
+            }
+            if (boundMonsterRuntime.CurrentShield > 0)
+                result.Add(new StatusEffectRuntimeData("E_Armor", boundMonsterRuntime.CurrentShield, 1));
+            return result;
+        }
         if (boundCharacterRuntime != null) return boundCharacterRuntime.StatusEffects;
         return null;
     }
