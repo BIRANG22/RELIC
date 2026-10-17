@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -49,23 +49,10 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     [SerializeField] private RectTransform equipRect;
     [SerializeField] private RectTransform charterRect;
 
-    [Header("Slide Position")]
-    [Tooltip("Info_Panel의 대기 위치 X입니다.")]
-    [SerializeField] private float equipStartX = -1350f;
-    [Tooltip("탐사 준비 시 Info_Panel이 도착할 X입니다.")]
-    [SerializeField] private float equipEndX = -350f;
-    [Tooltip("Ready_Panel의 대기 위치 X입니다.")]
-    [SerializeField] private float charterStartX = 1350f;
-    [Tooltip("탐사 준비 시 Ready_Panel이 도착할 X입니다.")]
-    [SerializeField] private float charterEndX = 350f;
-
-    [Header("Slide Animation")]
-    [SerializeField, Min(0f)] private float slideDuration = 0.35f;
-    [SerializeField]
-    private AnimationCurve slideCurve = new AnimationCurve(
-        new Keyframe(0f, 0f, 0f, 2f),
-        new Keyframe(1f, 1f, 0f, 0f));
-
+    [Header("Ready Transition / Panel Movement")]
+    [SerializeField] private ReadyTransitionProgressUI readyTransition;
+    [Tooltip("Ready/Panel: parent of Info_Panel and Ready_Panel.")]
+    [SerializeField] private RectTransform movingPanel;
 
     [Header("Opened Panel")]
     [SerializeField] private bool bringToFront = true;
@@ -148,8 +135,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private RectTransform equipmentDragGhostRect;
     private Image equipmentDragGhostImage;
 
-    private Coroutine slideAnimationCoroutine;
     private RectTransform toggleButtonRect;
+    private Button readyPanelBackButton;
     private bool isOpen;
     private bool isClosing;
     private bool isPreparingOpen;
@@ -210,7 +197,9 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         EnsurePreparationPanelsActive();
         isClosing = false;
         isPreparingOpen = false;
-        isOpen = AreSlideTargetsAtOpenPosition();
+        ResolveReadyTransition();
+        BindReadyPanelBackButton();
+        isOpen = readyTransition != null && readyTransition.IsPanelAtOpenPosition(ResolveMovingPanel());
         RefreshCharacterData();
     }
 
@@ -253,7 +242,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private void OnDisable()
     {
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
-        StopSlideAnimation();
+        UnbindReadyPanelBackButton();
+        StopPanelMovement();
         bool wasOpen = isOpen || isClosing;
         isOpen = false;
         isClosing = false;
@@ -341,7 +331,11 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                 charterRect.SetAsLastSibling();
         }
 
-        StopSlideAnimation();
+        // Keep the shared BackButton above the two panel graphics for UI raycasts.
+        BindReadyPanelBackButton();
+        BringReadyBackButtonToFront();
+
+        StopPanelMovement();
         isClosing = false;
         isOpen = true;
         OpenStateChanged?.Invoke(true);
@@ -352,7 +346,78 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         ResolveCompoundSelectionViewIfNeeded();
         RefreshCharacterData();
 
-        slideAnimationCoroutine = StartCoroutine(PlaySlideAnimation(true));
+        ResolveReadyTransition();
+        if (readyTransition != null && readyTransition.isActiveAndEnabled)
+            readyTransition.OpenPanel(ResolveMovingPanel());
+        else
+            Debug.LogWarning("[LobbyEquipPanelUI] ReadyTransitionProgressUI is not assigned or enabled.", this);
+    }
+
+    private RectTransform ResolveMovingPanel()
+    {
+        // Do not move the two child panels separately.
+        if (movingPanel != null && movingPanel.gameObject.name == "Panel")
+            return movingPanel;
+
+        ResolveSlideTargets();
+        if (equipRect != null && charterRect != null &&
+            equipRect.parent == charterRect.parent && equipRect.parent.name == "Panel")
+        {
+            movingPanel = equipRect.parent as RectTransform;
+            return movingPanel;
+        }
+
+        GameObject ready = FindSceneObject("Ready");
+        Transform candidate = ready != null ? ready.transform.Find("Panel") : null;
+        movingPanel = candidate as RectTransform;
+        return movingPanel;
+    }
+
+    private void ResolveReadyTransition()
+    {
+        if (readyTransition == null)
+            readyTransition = FindFirstObjectByType<ReadyTransitionProgressUI>(FindObjectsInactive.Include);
+    }
+
+    private void BindReadyPanelBackButton()
+    {
+        RectTransform target = ResolveMovingPanel();
+        if (target == null) return;
+        Transform found = target.Find("BackButton");
+        if (found == null) return;
+        Button button = found.GetComponent<Button>();
+        if (button == null) return;
+        if (readyPanelBackButton != null && readyPanelBackButton != button)
+            readyPanelBackButton.onClick.RemoveListener(HandleReadyBackClick);
+        readyPanelBackButton = button;
+        readyPanelBackButton.onClick.RemoveListener(HandleReadyBackClick);
+        readyPanelBackButton.onClick.AddListener(HandleReadyBackClick);
+    }
+
+    private void BringReadyBackButtonToFront()
+    {
+        if (readyPanelBackButton != null)
+            readyPanelBackButton.transform.SetAsLastSibling();
+    }
+
+    private void HandleReadyBackClick()
+    {
+        Debug.Log("[LobbyEquipPanelUI] Ready BackButton click received.", this);
+        Close();
+    }
+
+    private void UnbindReadyPanelBackButton()
+    {
+        if (readyPanelBackButton != null)
+            readyPanelBackButton.onClick.RemoveListener(HandleReadyBackClick);
+        readyPanelBackButton = null;
+    }
+
+    private void StopPanelMovement()
+    {
+        ResolveReadyTransition();
+        if (readyTransition != null)
+            readyTransition.StopPanelSequence();
     }
 
     public void Close()
@@ -361,21 +426,35 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         if (root == null)
             return;
 
-        if (!isOpen && !isClosing && !isPreparingOpen)
+        // The parent Panel can be visible even if OnEnable reset the cached state.
+        ResolveReadyTransition();
+        RectTransform currentPanel = ResolveMovingPanel();
+        bool visuallyOpen = readyTransition != null &&
+            readyTransition.IsPanelAwayFromClosedPosition(currentPanel);
+        if (!isOpen && !isClosing && !isPreparingOpen && !visuallyOpen)
+            return;
+        if (isClosing)
             return;
 
         isPreparingOpen = false;
 
         ResetOwnedRelicSelection();
         ResetCompoundSelection();
-        StopSlideAnimation();
+        StopPanelMovement();
 
         isOpen = false;
         isClosing = true;
         OpenStateChanged?.Invoke(false);
 
         EnsurePreparationPanelsActive();
-        slideAnimationCoroutine = StartCoroutine(PlaySlideAnimation(false));
+        ResolveReadyTransition();
+        if (readyTransition != null && readyTransition.isActiveAndEnabled)
+            readyTransition.ClosePanel(ResolveMovingPanel(), FinishClose);
+        else
+        {
+            Debug.LogWarning("[LobbyEquipPanelUI] ReadyTransitionProgressUI is not assigned or enabled.", this);
+            FinishClose();
+        }
     }
 
     /// <summary>
@@ -464,65 +543,15 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         }
     }
 
-    private IEnumerator PlaySlideAnimation(bool opening)
-    {
-        ResolveSlideTargets();
-
-        float equipFromX = equipRect != null ? equipRect.anchoredPosition.x : (opening ? equipStartX : equipEndX);
-        float charterFromX = charterRect != null ? charterRect.anchoredPosition.x : (opening ? charterStartX : charterEndX);
-        float equipToX = opening ? equipEndX : equipStartX;
-        float charterToX = opening ? charterEndX : charterStartX;
-
-        if (slideDuration <= 0f)
-        {
-            SetAnchoredX(equipRect, equipToX);
-            SetAnchoredX(charterRect, charterToX);
-            FinishSlide(opening);
-            yield break;
-        }
-
-        float elapsed = 0f;
-        while (elapsed < slideDuration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float normalized = Mathf.Clamp01(elapsed / slideDuration);
-            float curveValue = slideCurve != null ? slideCurve.Evaluate(normalized) : normalized;
-
-            SetAnchoredX(equipRect, Mathf.LerpUnclamped(equipFromX, equipToX, curveValue));
-            SetAnchoredX(charterRect, Mathf.LerpUnclamped(charterFromX, charterToX, curveValue));
-            yield return null;
-        }
-
-        SetAnchoredX(equipRect, equipToX);
-        SetAnchoredX(charterRect, charterToX);
-        FinishSlide(opening);
-    }
-
-    private void FinishSlide(bool opening)
-    {
-        slideAnimationCoroutine = null;
-
-        if (opening)
-        {
-            isOpen = true;
-            isClosing = false;
-            return;
-        }
-
-        FinishClose();
-    }
-
     private void FinishClose()
     {
-        slideAnimationCoroutine = null;
         isOpen = false;
         isClosing = false;
         LobbyPositionModalInputBlocker.Unblock(this);
         LobbyPositionSharedModalBackground.HideAfterReadyPanel();
         Closed?.Invoke();
 
-        // Equip_panel 자체는 비활성화하지 않습니다.
-        // 닫힘 상태는 Equip=-1350, Charter=1350 위치로만 표현합니다.
+        // The parent Ready/Panel is moved; the two child panels keep their own positions.
     }
 
     private void RefreshOwnedRelicData()
@@ -1002,22 +1031,6 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         return RectTransformUtility.RectangleContainsScreenPoint(rect, screenPosition, eventCamera);
     }
 
-    private void StopSlideAnimation()
-    {
-        if (slideAnimationCoroutine == null)
-            return;
-
-        StopCoroutine(slideAnimationCoroutine);
-        slideAnimationCoroutine = null;
-    }
-
-    private void ResetSlidePositions()
-    {
-        ResolveSlideTargets();
-        SetAnchoredX(equipRect, equipStartX);
-        SetAnchoredX(charterRect, charterStartX);
-    }
-
     private void ResolveSlideTargets()
     {
         // 새 로비 구조에서는 Info_Panel과 Ready_Panel이 PositionPanel의 형제 오브젝트입니다.
@@ -1046,15 +1059,6 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             charterRect.gameObject.SetActive(true);
 
         LobbyInfoPanelUI.RefreshAll();
-    }
-
-    private bool AreSlideTargetsAtOpenPosition()
-    {
-        const float tolerance = 0.5f;
-
-        bool infoOpen = equipRect == null || Mathf.Abs(equipRect.anchoredPosition.x - equipEndX) <= tolerance;
-        bool readyOpen = charterRect == null || Mathf.Abs(charterRect.anchoredPosition.x - charterEndX) <= tolerance;
-        return infoOpen && readyOpen;
     }
 
     private void ResolveReadyInventoryDisplayIfNeeded()
@@ -3263,15 +3267,6 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         return null;
     }
 
-    private static void SetAnchoredX(RectTransform target, float x)
-    {
-        if (target == null)
-            return;
-
-        Vector2 position = target.anchoredPosition;
-        position.x = x;
-        target.anchoredPosition = position;
-    }
 
     private static TMP_Text FindTextByNames(Transform root, params string[] names)
     {

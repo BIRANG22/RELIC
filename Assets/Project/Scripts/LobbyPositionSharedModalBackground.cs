@@ -392,9 +392,8 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
 
     private void HideAfterReadyPanelInternal()
     {
+        // Ready close does not toggle the shared background.
         RestoreReadyPresentationInternal();
-        if (activePanel == null && backgroundRoot != null && backgroundRoot.activeSelf)
-            backgroundRoot.SetActive(false);
     }
 
     private void ApplyReadyPresentationInternal()
@@ -402,9 +401,7 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
         ResolveReferences();
         ResolveReadyPresentationRoots();
 
-        if (backgroundRoot != null && !backgroundRoot.activeSelf)
-            backgroundRoot.SetActive(true);
-
+        // Ready open does not toggle the shared background.
         if (!readyPresentationActive)
         {
             readyBackWasActive = readyBackRoot != null && readyBackRoot.activeSelf;
@@ -430,9 +427,7 @@ public sealed class LobbyPositionSharedModalBackground : MonoBehaviour
         ResolveReferences();
         ResolveReadyPresentationRoots();
 
-        if (backgroundRoot != null && !backgroundRoot.activeSelf)
-            backgroundRoot.SetActive(true);
-
+        // Ready restore does not toggle the shared background.
         SetActiveIfNeeded(readyBackRoot, readyBackWasActive);
         SetActiveIfNeeded(backButton != null ? backButton.gameObject : null, readySharedBackButtonWasActive);
         SetActiveIfNeeded(infoBackButton != null ? infoBackButton.gameObject : null, false);
