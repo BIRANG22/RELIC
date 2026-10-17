@@ -21,7 +21,7 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
     [SerializeField] private float initialProgress = 0f;
     [SerializeField] private float playProgress = -2f;
     [SerializeField] private float backProgress = 0f;
-    [Min(0f)] [SerializeField] private float duration = 0.6f;
+    [Min(0f)][SerializeField] private float duration = 0.6f;
     [SerializeField] private AnimationCurve easing = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     [SerializeField] private bool useUnscaledTime = true;
 
@@ -35,7 +35,8 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
 
     [Header("Panel Movement Animation")]
     [SerializeField, Min(0f)] private float slideDuration = 0.35f;
-    [SerializeField] private AnimationCurve slideCurve = new AnimationCurve(
+    [SerializeField]
+    private AnimationCurve slideCurve = new AnimationCurve(
         new Keyframe(0f, 0f, 0f, 2f),
         new Keyframe(1f, 1f, 0f, 0f));
     [Tooltip("Delay from the start of opening Progress until Panel starts moving.")]
@@ -44,11 +45,11 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
     private static readonly int ProgressId = Shader.PropertyToID("_progress");
     private Material instanceMaterial;
     private Material originalMaterial;
-    private Coroutine animation;
+    private Coroutine progressAnimation;
     private Coroutine panelSequence;
     private float currentProgress;
 
-    public bool IsAnimating => animation != null || panelSequence != null;
+    public bool IsAnimating => progressAnimation != null || panelSequence != null;
 
     private void Awake()
     {
@@ -136,10 +137,10 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
             StopCoroutine(panelSequence);
             panelSequence = null;
         }
-        if (animation != null)
+        if (progressAnimation != null)
         {
-            StopCoroutine(animation);
-            animation = null;
+            StopCoroutine(progressAnimation);
+            progressAnimation = null;
         }
     }
 
@@ -154,7 +155,7 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         if (slideEnterDelay > 0f)
             yield return WaitSeconds(slideEnterDelay);
         yield return MovePanel(true);
-        while (animation != null)
+        while (progressAnimation != null)
             yield return null;
         panelSequence = null;
     }
@@ -163,7 +164,7 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
     {
         yield return MovePanel(false);
         AnimateTo(backProgress);
-        while (animation != null)
+        while (progressAnimation != null)
             yield return null;
         panelSequence = null;
         onComplete?.Invoke();
@@ -216,8 +217,8 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
     private void AnimateTo(float target)
     {
         if (instanceMaterial == null || !isActiveAndEnabled) return;
-        if (animation != null) StopCoroutine(animation);
-        animation = StartCoroutine(AnimateProgress(target));
+        if (progressAnimation != null) StopCoroutine(progressAnimation);
+        progressAnimation = StartCoroutine(AnimateProgress(target));
     }
 
     private IEnumerator AnimateProgress(float target)
@@ -235,7 +236,7 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
             }
         }
         SetProgress(target);
-        animation = null;
+        progressAnimation = null;
     }
 
     private void SetProgress(float value)

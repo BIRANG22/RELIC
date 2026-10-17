@@ -39,6 +39,21 @@ namespace Relic.Gameplay.Monster
             Vector2Int moveOffset = GetApproachMove(monsterUnit, gridManager, targetGridIndex, gridEffects);
             const int group = 1;
 
+            // Face the reserved target even when no movement is needed.
+            // For movement, keep the movement direction as the facing priority.
+            // When the target is directly above or below, retain the current facing.
+            Vector2Int current = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            Vector2Int target = gridManager.IndexToCoord(targetGridIndex);
+            int horizontal = moveOffset.x != 0 ? moveOffset.x : target.x - current.x;
+            if (horizontal != 0)
+            {
+                BattleDirection direction = horizontal > 0 ? BattleDirection.Right : BattleDirection.Left;
+                BattleUnitFacing facing = monsterUnit.GetComponentInChildren<BattleUnitFacing>(true);
+                if (facing != null)
+                    facing.FaceRight(direction == BattleDirection.Right);
+                monsterUnit.RuntimeData.Direction = direction;
+            }
+
             if (moveOffset != Vector2Int.zero)
             {
                 plan.Add(new MonsterAIAction(

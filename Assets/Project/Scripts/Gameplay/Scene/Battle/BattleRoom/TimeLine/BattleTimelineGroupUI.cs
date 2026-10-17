@@ -116,8 +116,9 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             return;
 
         endOrdersCleared = true;
-        Clear();
-        SetOrderContainersActive(false);
+        ClearImmediate();
+        // The Order parents are structural containers. Only their skill variants are cleared.
+        SetOrderContainersActive(true);
         isActive = false;
         ApplyTurnMarkSelectedVisual(false);
         RefreshSelectedSlotObject(true);
@@ -128,7 +129,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         AutoFindReferences();
         CacheTurnMarkNormalVisual();
         CacheTrailingVisualDefaults();
-        Clear(); // Hide all pre-enabled skill templates before any timeline data arrives.
+        ClearImmediate(); // Hide all pre-enabled skill templates before any timeline data arrives.
+        SetOrderContainersActive(true);
         isActive = false;
         ApplyTurnMarkSelectedVisual(false);
         RefreshSelectedSlotObject(true);
@@ -157,9 +159,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         SetOrderContainersActive(true);
         CacheTurnMarkNormalVisual();
         CacheTrailingVisualDefaults();
-        Clear(); // Reset prefab templates at initialization; entries are populated later.
+        ClearImmediate(); // Reset prefab templates at initialization; entries are populated later.
         endOrdersCleared = IsBattleEnded();
-        if (endOrdersCleared) SetOrderContainersActive(false);
+        // Order containers stay active even when the battle ends.
+        SetOrderContainersActive(true);
         ApplyTurnMarkSelectedVisual(isActive);
         RefreshSelectedSlotObject();
         ApplyTurnText();
@@ -343,6 +346,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             if (alreadyAdded) continue;
             CanvasGroup group = order.GetComponent<CanvasGroup>();
             if (group == null) group = order.gameObject.AddComponent<CanvasGroup>();
+            if (group.alpha <= 0.001f) group.alpha = 1f;
             cancelledOrderRoots.Add(new CancelledOrderRoot
             {
                 Rect = rect,
@@ -383,6 +387,16 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     public void SetTimelineEntries(IReadOnlyList<BattleTimelinePreviewEntry> entries, int targetSlotIndex)
     {
+        // The previous battle hides Order01~05 at battle completion. A new room
+        // reuses these timeline groups without calling Init on every Refresh.
+        // Restore the parent Order objects before populating reservation icons.
+        // Do not reinitialize the group here: Init/Clear would erase cancellation visuals.
+        if (!IsBattleEnded())
+        {
+            endOrdersCleared = false;
+            // Individual order containers must remain enabled during reservation editing.
+            SetOrderContainersActive(true);
+        }
         // Preserve the original Order UI until its cancellation animation finishes.
         // Refreshes may arrive every frame; they must not abort an active fade.
         if (cancelledOrderRoutine != null)
@@ -402,7 +416,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             cancelledOrderRoutine = StartCoroutine(AnimateOriginalCancelledOrders());
             return;
         }
-        Clear();
+        ClearImmediate();
+        SetOrderContainersActive(true);
         slotIndex = targetSlotIndex;
         ApplyTurnText();
 
@@ -410,7 +425,10 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
             return;
 
         if (entries == null || entries.Count <= 0)
+        {
+            SetEmptyUseSkillSlotsVisible(emptyUseSkillSlotsVisible);
             return;
+        }
 
         BattleTimelinePreviewEntry firstPlayerEntry = null;
         BattleTimelinePreviewEntry firstMonsterEntry = null;
@@ -501,6 +519,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
         SetupOwnerIconInteractionTarget(firstIconImage, firstEntry);
         SetupOwnerIconInteractionTarget(laterIconImage, laterEntry);
+        // Restore the empty size-1 template only where no command occupies the order.
+        SetEmptyUseSkillSlotsVisible(emptyUseSkillSlotsVisible);
     }
 
     public void PlayPlayerReservationFeedback(PlayerReservedCommand command)
@@ -538,6 +558,24 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     }
 
     public void Clear()
+    {
+        // An explicit Clear is a full timeline reset, not a player command cancellation.
+        // Never animate every previously registered Order as if it was cancelled.
+        if (cancelledOrderRoutine != null)
+        {
+            StopCoroutine(cancelledOrderRoutine);
+            cancelledOrderRoutine = null;
+        }
+        RestoreCancelledOrderRoots();
+        pendingCancelledEntries = null;
+        applyingCancelledRefresh = false;
+        ClearImmediate();
+        // Clear resets skill templates, never the Order01~05 parent objects.
+        SetOrderContainersActive(true);
+        SetEmptyUseSkillSlotsVisible(emptyUseSkillSlotsVisible);
+    }
+
+    private void ClearImmediate()
     {
         ResetOrderValueAnimations();
         currentEntries.Clear();

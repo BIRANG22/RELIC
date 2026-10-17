@@ -39,25 +39,17 @@ namespace Relic.Gameplay.Monster
 
             // 블롭은 단순히 가장 가까운 캐릭터보다 이번 행동에서 실제로 좌우 공격을
             // 성공시킬 수 있는 캐릭터를 우선 타겟으로 고정합니다.
-            int targetGridIndex = FindBestBlobTargetGridIndex(
-                monsterUnit,
-                attackSkill,
-                gridManager);
-
-            if (targetGridIndex < 0)
-                return plan;
-
             BattleGridEffectController gridEffectController =
                 Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
 
-            // 블롭은 이동한 자리에 점액을 남기는 몬스터이므로 매 턴 이동을 우선 시도합니다.
-            // 공격 가능한 위치가 여러 곳이라면 위험 지형이 없는 칸을 우선합니다.
-            Vector2Int moveOffset = GetBestCardinalMove(
-                monsterUnit,
-                targetGridIndex,
-                attackSkill,
-                gridManager,
-                gridEffectController);
+            // Choose a character with a reachable horizontal attack position.
+            // Distance alone can cause endless oscillation around a blocked attack lane.
+            int targetGridIndex = FindReachableBlobTarget(
+                monsterUnit, attackSkill, gridManager, gridEffectController,
+                out Vector2Int moveOffset);
+
+            if (targetGridIndex < 0)
+                return plan;
 
             int plannedMoveGridIndex = GetProjectedMainGridIndex(
                 monsterUnit,
@@ -128,6 +120,161 @@ namespace Relic.Gameplay.Monster
             ));
 
             return plan;
+        }
+
+        private int FindReachableBlobTarget(
+            MonsterUnit monsterUnit,
+            MonsterSkillData attackSkill,
+            GridManager gridManager,
+            BattleGridEffectController gridEffectController,
+            out Vector2Int moveOffset)
+        {
+            moveOffset = Vector2Int.zero;
+            if (monsterUnit == null || attackSkill == null || gridManager == null ||
+                monsterUnit.MainGridIndex < 0)
+                return -1;
+
+            List<int> targets = FindCharacterTargetGridIndices();
+            int chosen = -1;
+            int lowestCost = int.MaxValue;
+            List<int> tiedTargets = new();
+            List<Vector2Int> tiedMoves = new();
+
+            for (int i = 0; i < targets.Count; i++)
+            {
+                int target = targets[i];
+                if (target < 0 || gridManager.GetCellByIndex(target) == null)
+                    continue;
+
+                if (!TryFindAttackRoute(monsterUnit, target, attackSkill, gridManager,
+                        gridEffectController, out Vector2Int step, out int cost))
+                    continue;
+
+                if (cost < lowestCost)
+                {
+                    lowestCost = cost;
+                    tiedTargets.Clear();
+                    tiedMoves.Clear();
+                }
+                if (cost == lowestCost)
+                {
+                    tiedTargets.Add(target);
+                    tiedMoves.Add(step);
+                }
+            }
+
+            if (tiedTargets.Count > 0)
+            {
+                int pick = BattleRandom.Range(0, tiedTargets.Count);
+                chosen = tiedTargets[pick];
+                moveOffset = tiedMoves[pick];
+                return chosen;
+            }
+
+            // A blocked target must not keep the Blob bouncing between cells.
+            // If there is no reachable attacking lane, move once to spread residue,
+            // without locking onto an impossible character.
+            List<Vector2Int> validSteps = new();
+            for (int i = 0; i < MoveDirections.Length; i++)
+                if (CanMonsterMove(monsterUnit, gridManager, MoveDirections[i]))
+                    validSteps.Add(MoveDirections[i]);
+
+            if (validSteps.Count > 0)
+                moveOffset = validSteps[BattleRandom.Range(0, validSteps.Count)];
+
+            // Preserve the existing forward attack reservation even without a target route.
+            // Prefer an actual candidate as the facing reference.
+            return targets.Count > 0 ? targets[BattleRandom.Range(0, targets.Count)] : -1;
+        }
+
+        private bool TryFindAttackRoute(
+            MonsterUnit monsterUnit, int targetGridIndex, MonsterSkillData attackSkill,
+            GridManager gridManager, BattleGridEffectController gridEffectController,
+            out Vector2Int firstMove, out int routeCost)
+        {
+            firstMove = Vector2Int.zero;
+            routeCost = int.MaxValue;
+            int count = gridManager.Width * gridManager.Height;
+            int origin = monsterUnit.MainGridIndex;
+            if (origin < 0 || origin >= count || targetGridIndex < 0 ||
+                targetGridIndex >= count)
+                return false;
+
+            // A character one step ahead is a valid collision destination.
+            Vector2Int sourceCoord = gridManager.IndexToCoord(origin);
+            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+            Vector2Int delta = targetCoord - sourceCoord;
+            if (delta.y == 0 && Mathf.Abs(delta.x) == 1 &&
+                IsCharacterCollisionMoveCandidate(monsterUnit, targetGridIndex,
+                    targetGridIndex, gridEffectController))
+            {
+                firstMove = delta;
+                routeCost = 1;
+                return true;
+            }
+
+            int[] costs = new int[count];
+            Vector2Int[] initialSteps = new Vector2Int[count];
+            bool[] done = new bool[count];
+            for (int i = 0; i < count; i++) costs[i] = int.MaxValue;
+            costs[origin] = 0;
+
+            for (int iteration = 0; iteration < count; iteration++)
+            {
+                int current = -1;
+                for (int i = 0; i < count; i++)
+                    if (!done[i] && costs[i] != int.MaxValue &&
+                        (current < 0 || costs[i] < costs[current])) current = i;
+                if (current < 0) break;
+                done[current] = true;
+
+                if (CanAttackTargetFromGrid(monsterUnit, current, targetGridIndex,
+                    attackSkill, gridManager))
+                {
+                    // Even when already in attack range, Blob still attempts to move.
+                    // Try an adjacent safe step (and attack from the new position).
+                    if (current == origin)
+                    {
+                        List<Vector2Int> options = new();
+                        for (int d = 0; d < MoveDirections.Length; d++)
+                            if (CanMonsterMove(monsterUnit, gridManager, MoveDirections[d]))
+                                options.Add(MoveDirections[d]);
+                        if (options.Count > 0)
+                        {
+                            firstMove = options[BattleRandom.Range(0, options.Count)];
+                            routeCost = 2;
+                            return true;
+                        }
+                        return false;
+                    }
+                    firstMove = initialSteps[current];
+                    routeCost = costs[current];
+                    return true;
+                }
+
+                Vector2Int currentCoord = gridManager.IndexToCoord(current);
+                for (int d = 0; d < MoveDirections.Length; d++)
+                {
+                    Vector2Int direction = MoveDirections[d];
+                    Vector2Int nextCoord = currentCoord + direction;
+                    if (!gridManager.IsValidCoord(nextCoord)) continue;
+                    int next = gridManager.CoordToIndex(nextCoord);
+                    if (next < 0 || next >= count || done[next] ||
+                        gridManager.GetCellByIndex(next) == null ||
+                        (gridEffectController != null && gridEffectController.IsBlocked(next)) ||
+                        BattleOccupancyService.IsOccupiedByAnyUnit(next, null, monsterUnit))
+                        continue;
+                    if (current == origin && !CanMonsterMove(monsterUnit, gridManager, direction))
+                        continue;
+
+                    int cost = costs[current] + 10 +
+                        (IsRiskyGridEffectDestination(next, gridEffectController) ? 1000 : 0);
+                    if (cost >= costs[next]) continue;
+                    costs[next] = cost;
+                    initialSteps[next] = current == origin ? direction : initialSteps[current];
+                }
+            }
+            return false;
         }
 
         private int FindBestBlobTargetGridIndex(
@@ -257,6 +404,9 @@ namespace Relic.Gameplay.Monster
 
             Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
             Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+
+            // 블롭은 출발 위치에 점액을 남기기 위해 공격 가능 여부와 무관하게 이동을 시도합니다.
+            // 정면의 캐릭터가 자리를 지키면 해당 칸으로 이동을 예약해 충돌하게 됩니다.
 
             // 타겟이 좌/우에 있으면 후퇴하거나 다른 방향으로 공격각을 만들지 않습니다.
             // 타겟 쪽으로 계속 접근하며, 바로 앞을 타겟이 막고 있으면 충돌을 시도합니다.
@@ -481,7 +631,94 @@ namespace Relic.Gameplay.Monster
                 bestTargetDistance = targetDistance;
             }
 
+            // The strict non-retreat rule can strand a Blob behind another monster.
+            // When no normal step is possible, allow a safe detour toward a tile
+            // from which its one-cell forward attack can actually reach the target.
+            if (bestOffset == Vector2Int.zero)
+                return FindAttackPositionDetour(monsterUnit, targetGridIndex,
+                    attackSkill, gridManager, gridEffectController);
+
             return bestOffset;
+        }
+
+        private Vector2Int FindAttackPositionDetour(
+            MonsterUnit monsterUnit,
+            int targetGridIndex,
+            MonsterSkillData attackSkill,
+            GridManager gridManager,
+            BattleGridEffectController gridEffectController)
+        {
+            if (monsterUnit == null || attackSkill == null || gridManager == null)
+                return Vector2Int.zero;
+
+            int cellCount = gridManager.Width * gridManager.Height;
+            int[] cost = new int[cellCount];
+            Vector2Int[] firstStep = new Vector2Int[cellCount];
+            bool[] visited = new bool[cellCount];
+            for (int i = 0; i < cellCount; i++)
+                cost[i] = int.MaxValue;
+
+            int origin = monsterUnit.MainGridIndex;
+            if (origin < 0 || origin >= cellCount)
+                return Vector2Int.zero;
+
+            cost[origin] = 0;
+            for (int iteration = 0; iteration < cellCount; iteration++)
+            {
+                int current = -1;
+                for (int i = 0; i < cellCount; i++)
+                {
+                    if (visited[i] || cost[i] == int.MaxValue ||
+                        (current >= 0 && cost[i] >= cost[current]))
+                        continue;
+                    current = i;
+                }
+                if (current < 0)
+                    break;
+                visited[current] = true;
+
+                if (current != origin && firstStep[current] != Vector2Int.zero &&
+                    CanAttackTargetFromGrid(monsterUnit, current, targetGridIndex,
+                        attackSkill, gridManager))
+                    return firstStep[current];
+
+                Vector2Int coord = gridManager.IndexToCoord(current);
+                for (int d = 0; d < MoveDirections.Length; d++)
+                {
+                    Vector2Int step = MoveDirections[d];
+                    Vector2Int nextCoord = coord + step;
+                    if (!gridManager.IsValidCoord(nextCoord))
+                        continue;
+
+                    int next = gridManager.CoordToIndex(nextCoord);
+                    if (next < 0 || next >= cellCount || visited[next] ||
+                        gridManager.GetCellByIndex(next) == null ||
+                        (gridEffectController != null && gridEffectController.IsBlocked(next)))
+                        continue;
+
+                    if (BattleOccupancyService.TryGetCharacterAtGrid(next, out BattleCharacter character) &&
+                        character != null && character.RuntimeData != null && !character.RuntimeData.IsDead)
+                        continue;
+
+                    bool occupiedByMonster = BattleOccupancyService.IsOccupiedByMonster(next, monsterUnit);
+                    if (current == origin &&
+                        (occupiedByMonster || !CanMonsterMove(monsterUnit, gridManager, step)))
+                        continue;
+
+                    // Another monster may vacate its cell on a subsequent turn.
+                    // Penalize that future route, but never move into it right now.
+                    int stepCost = 10 + (occupiedByMonster ? 100 : 0) +
+                        (IsRiskyGridEffectDestination(next, gridEffectController) ? 1000 : 0);
+                    int newCost = cost[current] + stepCost;
+                    if (newCost >= cost[next])
+                        continue;
+
+                    cost[next] = newCost;
+                    firstStep[next] = current == origin ? step : firstStep[current];
+                }
+            }
+
+            return Vector2Int.zero;
         }
 
         private int GetAttackSetupDistance(

@@ -14,6 +14,21 @@ namespace Relic.Gameplay.Monster
             return Mathf.Max(Mathf.Abs(a.x - b.x), Mathf.Abs(a.y - b.y));
         }
 
+        // Compare target distances consistently: 8-direction distance first,
+        // then horizontal + vertical distance to resolve equal primary distances.
+        // Negative means a is nearer, positive means b is nearer.
+        protected static int CompareTargetDistance(Vector2Int origin, Vector2Int a, Vector2Int b)
+        {
+            int aPrimary = TargetGridDistance(origin, a);
+            int bPrimary = TargetGridDistance(origin, b);
+            if (aPrimary != bPrimary)
+                return aPrimary.CompareTo(bPrimary);
+
+            int aSecondary = Mathf.Abs(origin.x - a.x) + Mathf.Abs(origin.y - a.y);
+            int bSecondary = Mathf.Abs(origin.x - b.x) + Mathf.Abs(origin.y - b.y);
+            return aSecondary.CompareTo(bSecondary);
+        }
+
         public virtual MonsterAIPlan CreatePlan(
             MonsterUnit monsterUnit,
             BattleContext context,
@@ -160,8 +175,7 @@ namespace Relic.Gameplay.Monster
             List<int> targets = FindCharacterTargetGridIndices();
             Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
             int nearestGridIndex = -1;
-            int nearestDistance = int.MaxValue;
-
+            int equalDistanceCount = 0;
             for (int i = 0; i < targets.Count; i++)
             {
                 int gridIndex = targets[i];
@@ -170,14 +184,24 @@ namespace Relic.Gameplay.Monster
                     continue;
 
                 Vector2Int targetCoord = gridManager.IndexToCoord(gridIndex);
-                int distance =
-                    TargetGridDistance(targetCoord, monsterCoord);
+                if (nearestGridIndex >= 0)
+                {
+                    int comparison = CompareTargetDistance(monsterCoord, targetCoord,
+                        gridManager.IndexToCoord(nearestGridIndex));
+                    if (comparison > 0)
+                        continue;
+                    if (comparison == 0)
+                    {
+                        // Reservoir sampling: every equally near target has the same chance.
+                        equalDistanceCount++;
+                        if (BattleRandom.Range(0, equalDistanceCount) == 0)
+                            nearestGridIndex = gridIndex;
+                        continue;
+                    }
+                }
 
-                if (distance >= nearestDistance)
-                    continue;
-
-                nearestDistance = distance;
                 nearestGridIndex = gridIndex;
+                equalDistanceCount = 1;
             }
 
             return nearestGridIndex;
@@ -207,8 +231,7 @@ namespace Relic.Gameplay.Monster
             Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
 
             BattleCharacter nearest = null;
-            int nearestDistance = int.MaxValue;
-
+            int equalDistanceCount = 0;
             for (int i = 0; i < players.Length; i++)
             {
                 BattleCharacter player = players[i];
@@ -217,13 +240,25 @@ namespace Relic.Gameplay.Monster
                     continue;
 
                 Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
-                int distance =
-                    TargetGridDistance(playerCoord, monsterCoord);
-
-                if (distance < nearestDistance)
+                if (nearest == null)
                 {
-                    nearestDistance = distance;
                     nearest = player;
+                    equalDistanceCount = 1;
+                    continue;
+                }
+
+                int comparison = CompareTargetDistance(monsterCoord, playerCoord,
+                    gridManager.IndexToCoord(nearest.CurrentGridIndex));
+                if (comparison < 0)
+                {
+                    nearest = player;
+                    equalDistanceCount = 1;
+                }
+                else if (comparison == 0)
+                {
+                    equalDistanceCount++;
+                    if (BattleRandom.Range(0, equalDistanceCount) == 0)
+                        nearest = player;
                 }
             }
 
@@ -323,8 +358,7 @@ namespace Relic.Gameplay.Monster
             List<int> targets = FindCharacterTargetGridIndices();
             Vector2Int originCoord = gridManager.IndexToCoord(originGridIndex);
             int nearestGridIndex = -1;
-            int nearestDistance = int.MaxValue;
-
+            int equalDistanceCount = 0;
             for (int i = 0; i < targets.Count; i++)
             {
                 int gridIndex = targets[i];
@@ -333,13 +367,25 @@ namespace Relic.Gameplay.Monster
                     continue;
 
                 Vector2Int targetCandidateCoord = gridManager.IndexToCoord(gridIndex);
-                int distance =
-                    TargetGridDistance(targetCandidateCoord, originCoord);
-
-                if (distance < nearestDistance)
+                if (nearestGridIndex < 0)
                 {
-                    nearestDistance = distance;
                     nearestGridIndex = gridIndex;
+                    equalDistanceCount = 1;
+                    continue;
+                }
+
+                int comparison = CompareTargetDistance(originCoord, targetCandidateCoord,
+                    gridManager.IndexToCoord(nearestGridIndex));
+                if (comparison < 0)
+                {
+                    nearestGridIndex = gridIndex;
+                    equalDistanceCount = 1;
+                }
+                else if (comparison == 0)
+                {
+                    equalDistanceCount++;
+                    if (BattleRandom.Range(0, equalDistanceCount) == 0)
+                        nearestGridIndex = gridIndex;
                 }
             }
 
@@ -364,8 +410,7 @@ namespace Relic.Gameplay.Monster
             Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
 
             BattleCharacter farthest = null;
-            int farthestDistance = -1;
-
+            int equalDistanceCount = 0;
             for (int i = 0; i < players.Length; i++)
             {
                 BattleCharacter player = players[i];
@@ -374,13 +419,25 @@ namespace Relic.Gameplay.Monster
                     continue;
 
                 Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
-                int distance =
-                    TargetGridDistance(playerCoord, monsterCoord);
-
-                if (distance > farthestDistance)
+                if (farthest == null)
                 {
-                    farthestDistance = distance;
                     farthest = player;
+                    equalDistanceCount = 1;
+                    continue;
+                }
+
+                int comparison = CompareTargetDistance(monsterCoord, playerCoord,
+                    gridManager.IndexToCoord(farthest.CurrentGridIndex));
+                if (comparison > 0)
+                {
+                    farthest = player;
+                    equalDistanceCount = 1;
+                }
+                else if (comparison == 0)
+                {
+                    equalDistanceCount++;
+                    if (BattleRandom.Range(0, equalDistanceCount) == 0)
+                        farthest = player;
                 }
             }
 
