@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Stopwatch = System.Diagnostics.Stopwatch;
 using System.Collections.Generic;
 using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
@@ -32,6 +33,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
     [Tooltip("행동 예약 시작 SFX 볼륨 배율입니다.")]
     [SerializeField, Range(0f, 1f)] private float actionReservationStartSfxVolume = 1f;
+
+    [Header("Reservation Performance Diagnostics")]
+    [SerializeField] private bool logReservationPerformance = false;
+    [SerializeField, Min(0f)] private float slowMonsterThresholdMs = 1f;
 
     private Coroutine planRoutine;
     private Coroutine battleStartTextRoutine;
@@ -286,19 +291,42 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (firstMonsterCommandDelay > 0f)
             yield return new WaitForSeconds(firstMonsterCommandDelay);
 
+        Stopwatch buildWatch = logReservationPerformance ? Stopwatch.StartNew() : null;
         List<MonsterReservedCommandPlan> plans = BuildMonsterCommandPlans(monsterUnits);
+        if (buildWatch != null)
+        {
+            buildWatch.Stop();
+            UnityEngine.Debug.Log($"[MonsterReservationPerf] Turn:{plannedBattleTurn} BuildAll:{buildWatch.Elapsed.TotalMilliseconds:F2}ms Commands:{plans.Count}", this);
+        }
 
+        double registerTotalMs = 0d;
+        double registerMaxMs = 0d;
+        int registeredCount = 0;
         for (int i = 0; i < plans.Count; i++)
         {
             if (plans[i].SlotIndex < 0 || plans[i].SlotIndex >= timelineController.SlotCount)
                 continue;
 
+            Stopwatch registerWatch = logReservationPerformance ? Stopwatch.StartNew() : null;
             timelineController.AddMonsterCommand(plans[i].SlotIndex, plans[i].Command);
             ShowNocturnPortalDestinationIndicator(plans[i].Command);
+            if (registerWatch != null)
+            {
+                registerWatch.Stop();
+                double elapsed = registerWatch.Elapsed.TotalMilliseconds;
+                registerTotalMs += elapsed;
+                registerMaxMs = System.Math.Max(registerMaxMs, elapsed);
+                registeredCount++;
+                if (elapsed >= slowMonsterThresholdMs)
+                    UnityEngine.Debug.Log($"[MonsterReservationPerf] Register Slot:{plans[i].SlotIndex + 1} Skill:{plans[i].Command.SkillData?.SkillId} Time:{elapsed:F2}ms", this);
+            }
 
             if (monsterCommandInterval > 0f && i < plans.Count - 1)
                 yield return new WaitForSeconds(monsterCommandInterval);
         }
+
+        if (logReservationPerformance)
+            UnityEngine.Debug.Log($"[MonsterReservationPerf] RegisterAll:{registerTotalMs:F2}ms MaxSingle:{registerMaxMs:F2}ms Count:{registeredCount} Interval:{monsterCommandInterval:F2}s (intentional)", this);
 
         if (battleStartTextRoutine != null)
         {
@@ -430,7 +458,14 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             if (runtime.IsDead)
                 continue;
 
+            Stopwatch aiWatch = logReservationPerformance ? Stopwatch.StartNew() : null;
             MonsterAIPlan plan = monsterUnit.CreateAIPlan(context, gridManager);
+            if (aiWatch != null)
+            {
+                aiWatch.Stop();
+                if (aiWatch.Elapsed.TotalMilliseconds >= slowMonsterThresholdMs)
+                    UnityEngine.Debug.Log($"[MonsterReservationPerf] AI Monster:{runtime.MonsterId} Grid:{monsterUnit.MainGridIndex} Time:{aiWatch.Elapsed.TotalMilliseconds:F2}ms Actions:{plan?.Actions?.Count ?? 0}", this);
+            }
 
             if (plan == null || plan.Actions == null || plan.Actions.Count <= 0)
                 continue;

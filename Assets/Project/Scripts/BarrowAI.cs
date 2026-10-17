@@ -173,8 +173,7 @@ namespace Relic.Gameplay.Monster
             Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
 
             int nearestGridIndex = -1;
-            int nearestDistance = int.MaxValue;
-
+            int tiedCount = 0;
             for (int i = 0; i < players.Length; i++)
             {
                 BattleCharacter player = players[i];
@@ -186,13 +185,24 @@ namespace Relic.Gameplay.Monster
                     continue;
 
                 Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
-                int distance =
-                    TargetGridDistance(playerCoord, monsterCoord);
+                if (nearestGridIndex >= 0)
+                {
+                    int comparison = CompareTargetDistance(monsterCoord, playerCoord,
+                        gridManager.IndexToCoord(nearestGridIndex));
+                    if (comparison > 0)
+                        continue;
+                    if (comparison == 0)
+                    {
+                        tiedCount++;
+                        if (BattleRandom.Range(0, tiedCount) != 0)
+                            continue;
+                    }
+                    else
+                        tiedCount = 1;
+                }
+                else
+                    tiedCount = 1;
 
-                if (distance >= nearestDistance)
-                    continue;
-
-                nearestDistance = distance;
                 nearestGridIndex = player.CurrentGridIndex;
             }
 
@@ -646,8 +656,7 @@ namespace Relic.Gameplay.Monster
             Vector2Int origin = gridManager.IndexToCoord(originGridIndex);
 
             BattleCharacter farthest = null;
-            int farthestDistance = -1;
-
+            int tiedCount = 0;
             for (int i = 0; i < players.Length; i++)
             {
                 BattleCharacter player = players[i];
@@ -656,13 +665,24 @@ namespace Relic.Gameplay.Monster
                     continue;
 
                 Vector2Int playerCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
-                int distance =
-                    TargetGridDistance(playerCoord, origin);
+                if (farthest != null)
+                {
+                    int comparison = CompareTargetDistance(origin, playerCoord,
+                        gridManager.IndexToCoord(farthest.CurrentGridIndex));
+                    if (comparison < 0)
+                        continue;
+                    if (comparison == 0)
+                    {
+                        tiedCount++;
+                        if (BattleRandom.Range(0, tiedCount) != 0)
+                            continue;
+                    }
+                    else
+                        tiedCount = 1;
+                }
+                else
+                    tiedCount = 1;
 
-                if (distance <= farthestDistance)
-                    continue;
-
-                farthestDistance = distance;
                 farthest = player;
             }
 
