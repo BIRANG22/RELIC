@@ -64,10 +64,6 @@ public class BattleTurnExecutor : MonoBehaviour
     [Header("Multi Hit Presentation")]
     [SerializeField, Min(0f)] private float multiHitActionInterval = 0.12f;
 
-    [Header("Intro Text")]
-    [SerializeField] private bool waitIntroText = false;
-    [SerializeField] private float introTextTimeout = 1.5f;
-
     [Header("SFX")]
     [SerializeField] private bool playBattleProgressSfx = true;
     [SerializeField, SoundId(SoundCategory.Sfx)] private string battleProgressSfxId = AudioIds.Sfx.BattleProgressText;

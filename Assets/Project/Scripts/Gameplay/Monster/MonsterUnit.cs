@@ -181,16 +181,31 @@ namespace Relic.Gameplay.Monster
 
         public void MoveOccupiedCells(Vector2Int moveOffset, GridManager gridManager)
         {
-            if (gridManager == null)
+            if (gridManager == null || moveOffset == Vector2Int.zero)
                 return;
 
+            // 모든 점유 칸이 유효한 경우에만 이동을 확정합니다.
+            // 맵 밖 좌표를 인덱스로 변환하면 공격 판정과 화면 위치가 어긋날 수 있습니다.
+            List<int> nextIndices = new List<int>(occupiedGridIndices.Count);
             for (int i = 0; i < occupiedGridIndices.Count; i++)
             {
-                Vector2Int coord = gridManager.IndexToCoord(occupiedGridIndices[i]);
-                Vector2Int moved = coord + moveOffset;
+                int currentIndex = occupiedGridIndices[i];
+                if (gridManager.GetCellByIndex(currentIndex) == null)
+                    return;
 
-                occupiedGridIndices[i] = gridManager.CoordToIndex(moved);
+                Vector2Int nextCoord = gridManager.IndexToCoord(currentIndex) + moveOffset;
+                if (!gridManager.IsValidCoord(nextCoord))
+                    return;
+
+                int nextIndex = gridManager.CoordToIndex(nextCoord);
+                if (gridManager.GetCellByIndex(nextIndex) == null)
+                    return;
+
+                nextIndices.Add(nextIndex);
             }
+
+            for (int i = 0; i < nextIndices.Count; i++)
+                occupiedGridIndices[i] = nextIndices[i];
         }
 
         private void OnDisable()
@@ -287,7 +302,25 @@ namespace Relic.Gameplay.Monster
             if (!showStatusTooltipOnHover)
                 return;
 
-            if (RuntimeData == null || RuntimeData.StatusEffects == null || RuntimeData.StatusEffects.Count <= 0)
+            if (RuntimeData == null)
+            {
+                HideStatusHoverTooltip();
+                return;
+            }
+
+            List<StatusEffectRuntimeData> displayStatuses = new();
+            if (RuntimeData.StatusEffects != null)
+            {
+                foreach (StatusEffectRuntimeData status in RuntimeData.StatusEffects)
+                {
+                    if (status != null && status.IsValid() &&
+                        !string.Equals(status.EffectId, "E_Armor", System.StringComparison.OrdinalIgnoreCase))
+                        displayStatuses.Add(status);
+                }
+            }
+            if (RuntimeData.CurrentShield > 0)
+                displayStatuses.Add(new StatusEffectRuntimeData("E_Armor", RuntimeData.CurrentShield, 1));
+            if (displayStatuses.Count == 0)
             {
                 HideStatusHoverTooltip();
                 return;
@@ -301,7 +334,7 @@ namespace Relic.Gameplay.Monster
 
             statusTooltipUI.ShowMonsterPrefab(
                 this,
-                RuntimeData.StatusEffects,
+                displayStatuses,
                 GetStatusTooltipScreenPosition(UnitStatusEffectTooltipSide.Right),
                 GetStatusTooltipScreenPosition(UnitStatusEffectTooltipSide.Left));
         }

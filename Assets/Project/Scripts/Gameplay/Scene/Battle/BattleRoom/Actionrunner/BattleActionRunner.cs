@@ -3645,7 +3645,17 @@ public class BattleActionRunner
 
             Vector2Int mainCoord = gridManager.IndexToCoord(currentGridIndex);
             Vector2Int movedMainCoord = mainCoord + moveResolution.ActualOffset;
+            // 예약은 2칸이어도 실제 이동 결과는 반드시 맵 내부여야 합니다.
+            // 잘못된 좌표를 전투 데이터에 기록하거나 엉뚱한 인덱스로 래핑하지 않습니다.
+            if (!gridManager.IsValidCoord(movedMainCoord))
+            {
+                Debug.LogWarning($"[BattleActionRunner] Invalid monster move destination: {movedMainCoord}");
+                yield break;
+            }
+
             int movedMainIndex = gridManager.CoordToIndex(movedMainCoord);
+            if (gridManager.GetCellByIndex(movedMainIndex) == null)
+                yield break;
 
             Vector3 pos = gridManager.GetWorldPositionByIndex(movedMainIndex);
 

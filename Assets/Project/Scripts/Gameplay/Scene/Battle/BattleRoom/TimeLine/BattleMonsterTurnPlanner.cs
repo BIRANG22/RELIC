@@ -442,6 +442,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             if (baseSlotIndex < 0)
                 continue;
 
+            // Keep linked actions in the same resolved slot even when the first
+            // action explicitly requests the earliest available slot.
+            Dictionary<int, int> resolvedGroupSlots = new Dictionary<int, int>();
+
             for (int actionIndex = 0; actionIndex < plan.Actions.Count; actionIndex++)
             {
                 MonsterAIAction action = plan.Actions[actionIndex];
@@ -481,8 +485,17 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 }
 
                 int slotIndex = ResolveMonsterActionSlot(baseSlotIndex, action, plans, runtime);
+                if (action.SameSlotGroup >= 0 &&
+                    action.SlotPreference == MonsterAISlotPreference.SameSlot &&
+                    resolvedGroupSlots.TryGetValue(action.SameSlotGroup, out int groupedSlot))
+                {
+                    slotIndex = groupedSlot;
+                }
 
                 if (slotIndex < 0 || slotIndex >= timelineController.SlotCount)
+                    continue;
+
+                if (!IsSlotAvailableForMonster(runtime, slotIndex, plans))
                     continue;
 
                 // Prevent voluntary monster movement from crossing another reserved route.
@@ -494,6 +507,8 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                     continue;
 
                 plans.Add(new MonsterReservedCommandPlan(slotIndex, command));
+                if (action.SameSlotGroup >= 0 && !resolvedGroupSlots.ContainsKey(action.SameSlotGroup))
+                    resolvedGroupSlots.Add(action.SameSlotGroup, slotIndex);
             }
         }
 

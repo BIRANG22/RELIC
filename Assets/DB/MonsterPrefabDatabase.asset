@@ -138,7 +138,7 @@ MonoBehaviour:
     - {fileID: -1449199175, guid: c665b30e715210d46813ca6966826441, type: 3}
     previewSize: {x: 700, y: 700}
     previewFramesPerSecond: 6
-  - monsterId: Mon_12
+  - monsterId: Mon_12_1
     prefab: {fileID: 1910251976348132752, guid: 8df1171d9a06f794999c80c154f147eb, type: 3}
     idlePreviewSprites:
     - {fileID: -1025079184, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}

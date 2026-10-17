@@ -218,7 +218,7 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
             return;
         }
 
-        int statusSignature = CalculateStatusSignature(boundRuntime.StatusEffects);
+        int statusSignature = CalculateStatusSignature(boundRuntime.StatusEffects, boundRuntime.CurrentShield);
         if (statusSignature != lastStatusSignature)
         {
             RebuildStatusEffects();
@@ -276,7 +276,7 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
         RebuildSkills();
         RebuildStatusEffects();
-        lastStatusSignature = CalculateStatusSignature(boundRuntime.StatusEffects);
+        lastStatusSignature = CalculateStatusSignature(boundRuntime.StatusEffects, boundRuntime.CurrentShield);
 
         StopRevealCoroutine();
         if (isActiveAndEnabled)
@@ -763,7 +763,7 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         if (boundRuntime == null || statusContent == null || monsterStatusPrefab == null)
             return;
 
-        List<StatusEffectRuntimeData> mergedStatuses = MergeStatusEffects(boundRuntime.StatusEffects);
+        List<StatusEffectRuntimeData> mergedStatuses = BuildDisplayStatuses(boundRuntime.StatusEffects, boundRuntime.CurrentShield);
 
         for (int i = 0; i < mergedStatuses.Count; i++)
         {
@@ -814,6 +814,18 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         result.Add(normalizedId);
     }
 
+    // Shield is stored as a combat resource. Add a display-only effect without
+    // changing the actual status list or affecting shield calculations.
+    private static List<StatusEffectRuntimeData> BuildDisplayStatuses(
+        List<StatusEffectRuntimeData> statuses, int currentShield)
+    {
+        List<StatusEffectRuntimeData> result = MergeStatusEffects(statuses);
+        result.RemoveAll(status => string.Equals(status.EffectId, "E_Armor", StringComparison.OrdinalIgnoreCase));
+        if (currentShield > 0)
+            result.Add(new StatusEffectRuntimeData("E_Armor", currentShield, 1));
+        return result;
+    }
+
     private static List<StatusEffectRuntimeData> MergeStatusEffects(List<StatusEffectRuntimeData> source)
     {
         List<StatusEffectRuntimeData> result = new();
@@ -850,14 +862,15 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         return result;
     }
 
-    private static int CalculateStatusSignature(List<StatusEffectRuntimeData> statuses)
+    private static int CalculateStatusSignature(List<StatusEffectRuntimeData> statuses, int currentShield)
     {
         if (statuses == null || statuses.Count == 0)
-            return 0;
+            return currentShield;
 
         unchecked
         {
             int hash = 17;
+            hash = hash * 31 + currentShield;
             hash = hash * 31 + statuses.Count;
 
             for (int i = 0; i < statuses.Count; i++)
