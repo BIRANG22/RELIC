@@ -1,3 +1,4 @@
+using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,6 +7,8 @@ using UnityEngine;
 public class BattleDeathService
 {
     private const float DefaultMonsterDeathDestroyDelay = 0.6f;
+    private const float SplitArcHeight = 0.85f;
+    private const string SplitEffectId = "E_Split";
 
     private readonly GridManager gridManager;
     private readonly BattleMonsterSpawner monsterSpawner;
@@ -40,21 +43,106 @@ public class BattleDeathService
     /// </summary>
     public void HandleMuckSplit(MonsterUnit muck)
     {
-        if (muck == null || muck.RuntimeData == null)
+        if (muck == null || muck.RuntimeData == null || muck.RuntimeData.IsDeathHandled)
             return;
 
-        if (muck.RuntimeData.IsDeathHandled)
-            return;
+        // 분열은 처치가 아니라 몬스터 교체 연출입니다.
+        ShowSplitEffectName(muck);
 
+        // Split is not a normal kill: no kill rewards or death tracking.
         muck.RuntimeData.CurrentHP = 0;
         muck.RuntimeData.IsDeathHandled = true;
 
-        SpawnBlobsFromMuck(muck);
+        BattleUnitAnimator animator = muck.GetComponent<BattleUnitAnimator>();
+        MonsterDeathDissolve dissolve = muck.GetComponent<MonsterDeathDissolve>();
+        if (animator != null)
+            animator.PlayDead();
+        float animationDuration = animator != null ? animator.DeadAnimationDuration : 0f;
+        if (dissolve != null)
+            dissolve.PlayAfter(animationDuration);
 
         if (roomLoader != null)
             roomLoader.UnregisterRuntimeMonster(muck);
 
+        // 승리 판정이 분열 연출 도중 실행되어도 블롭을 살아 있는 몬스터로 인식하도록
+        // 연출 대기 전에 먼저 생성하고 전투에 등록합니다.
+        bool animate = CoroutineHost.Instance != null && Application.isPlaying;
+        List<MonsterUnit> spawned = SpawnBlobsFromMuck(muck);
+        float deathDuration = GetMonsterDeathDestroyDelay(muck);
+        if (animate)
+        {
+            CoroutineHost.Instance.StartCoroutine(AnimateMuckSplit(muck, spawned, deathDuration));
+        }
+        else
+        {
+            ApplySpawnGridEffects(spawned);
+            RemoveDeadMonster(muck);
+        }
+    }
+
+    private IEnumerator AnimateMuckSplit(MonsterUnit muck, List<MonsterUnit> spawned, float deathDuration)
+    {
+        if (muck == null)
+            yield break;
+
+        // 생성 및 등록은 이미 끝났고, 이 코루틴에서는 화면 연출만 처리합니다.
+        float emergeDelay = Mathf.Min(0.18f, deathDuration * 0.25f);
+        float travelDuration = Mathf.Max(0.18f, Mathf.Min(0.4f, deathDuration - emergeDelay));
+        Vector3[] destinations = new Vector3[spawned.Count];
+        Vector3[] origins = new Vector3[spawned.Count];
+        for (int i = 0; i < spawned.Count; i++)
+        {
+            if (spawned[i] == null)
+                continue;
+            destinations[i] = spawned[i].transform.position;
+            origins[i] = muck.transform.position;
+            origins[i].z = destinations[i].z;
+            spawned[i].transform.position = origins[i];
+        }
+
+        if (emergeDelay > 0f)
+            yield return new WaitForSeconds(emergeDelay);
+
+        float elapsed = 0f;
+        while (elapsed < travelDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / travelDuration));
+            for (int i = 0; i < spawned.Count; i++)
+                if (spawned[i] != null)
+                {
+                    Vector3 position = Vector3.LerpUnclamped(origins[i], destinations[i], t);
+                    // 시작점과 도착점에서는 0, 이동 중간에는 최고점인 포물선.
+                    position.y += 4f * SplitArcHeight * t * (1f - t);
+                    spawned[i].transform.position = position;
+                }
+            yield return null;
+        }
+        for (int i = 0; i < spawned.Count; i++)
+            if (spawned[i] != null)
+                spawned[i].transform.position = destinations[i];
+
+        // 분열된 블롭이 목적지 칸에 도착하면 이동 가능한 지형 효과를 적용합니다.
+        ApplySpawnGridEffects(spawned);
+
+        float remaining = deathDuration - emergeDelay - elapsed;
+        if (remaining > 0f)
+            yield return new WaitForSeconds(remaining);
         RemoveDeadMonster(muck);
+    }
+
+    private static void ShowSplitEffectName(MonsterUnit muck)
+    {
+        if (muck == null)
+            return;
+
+        EffectMasterData effect = DataManager.Instance?.EffectDatabase?.Get(SplitEffectId);
+        if (effect == null)
+            return;
+
+        string localizedName = GameDataLocalization.EffectName(effect);
+        if (!string.IsNullOrWhiteSpace(localizedName))
+            BattleSkillTextPopupUI.Show(muck.transform, localizedName);
     }
 
     private void HandleMonsterDead(MonsterUnit monster, bool collectReward)
@@ -171,22 +259,55 @@ public class BattleDeathService
         BattleRewardCollector.Instance.CollectMonsterReward(monster.RuntimeData);
     }
 
-    private void SpawnBlobsFromMuck(MonsterUnit muck)
+    private List<MonsterUnit> SpawnBlobsFromMuck(MonsterUnit muck)
     {
+        List<MonsterUnit> spawned = new List<MonsterUnit>();
         if (muck == null || monsterSpawner == null || gridManager == null)
-            return;
+            return spawned;
 
         List<int> spawnCells = FindEmptyCellsAroundMonster(muck, 2);
-
         for (int i = 0; i < spawnCells.Count; i++)
         {
             SpawnedMonsterResult result = monsterSpawner.SpawnRuntimeMonster(
-                "Mon_02",
-                new List<int> { spawnCells[i] }
-            );
+                "Mon_02", new List<int> { spawnCells[i] });
+            if (result == null)
+                continue;
 
             if (roomLoader != null)
                 roomLoader.RegisterRuntimeMonster(result);
+            if (result.MonsterTransform != null &&
+                result.MonsterTransform.TryGetComponent(out MonsterUnit blob))
+                spawned.Add(blob);
+        }
+        return spawned;
+    }
+
+    private void ApplySpawnGridEffects(List<MonsterUnit> spawned)
+    {
+        if (spawned == null || spawned.Count == 0)
+            return;
+
+        BattleGridEffectController controller =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+        if (controller == null)
+            return;
+
+        for (int i = 0; i < spawned.Count; i++)
+        {
+            MonsterUnit blob = spawned[i];
+            if (blob == null || blob.RuntimeData == null || blob.RuntimeData.IsDead)
+                continue;
+
+            // 생성 과정에서 기록된 실제 점유 그리드를 사용합니다.
+            for (int j = 0; j < blob.OccupiedGridIndices.Count; j++)
+            {
+                controller.ApplyToMonster(blob.OccupiedGridIndices[j], blob);
+                if (blob.RuntimeData.IsDead)
+                {
+                    HandleMonsterDead(blob);
+                    break;
+                }
+            }
         }
     }
 

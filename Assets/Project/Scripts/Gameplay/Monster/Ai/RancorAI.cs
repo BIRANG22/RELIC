@@ -43,24 +43,13 @@ namespace Relic.Gameplay.Monster
                 10
             ));
 
-            int targetGridIndex = FindNearestCharacterTargetInActionRange(
-                monsterUnit,
-                gridManager);
-
-            // 행동범위 안에 캐릭터 또는 Character 타입 그리드 오브젝트가 없다면 공격하거나 이동하지 않습니다.
-            if (targetGridIndex < 0)
+            // 캐릭터 접근은 도주 조건이 아닙니다. 플레이어 효과가 적용된 경우에만 도주합니다.
+            if (!monsterUnit.RuntimeData.PendingPlayerEffectEscape)
                 return plan;
 
-            int group = 1;
-
-            // 캐릭터가 행동범위 안에 있다면 먼저 주변 8칸 공격을 실행합니다.
-            plan.Add(new MonsterAIAction(
-                AttackSkillId,
-                Vector2Int.zero,
-                MonsterAISlotPreference.Front,
-                group,
-                0
-            ));
+            int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
+            if (targetGridIndex < 0)
+                return plan;
 
             Vector2Int moveOffset = GetBestTwoTileEscapeMove(
                 monsterUnit,
@@ -69,95 +58,17 @@ namespace Relic.Gameplay.Monster
 
             if (moveOffset != Vector2Int.zero)
             {
-                // 공격과 같은 행동 묶음에 등록하되 우선순위를 뒤로 두어 공격 후 이동합니다.
                 plan.Add(new MonsterAIAction(
                     MoveSkillId,
                     moveOffset,
-                    MonsterAISlotPreference.SameSlot,
-                    group,
-                    1
+                    MonsterAISlotPreference.Front,
+                    -1,
+                    0
                 ));
+                monsterUnit.RuntimeData.PendingPlayerEffectEscape = false;
             }
 
             return plan;
-        }
-
-        private int FindNearestCharacterTargetInActionRange(
-            MonsterUnit monsterUnit,
-            GridManager gridManager)
-        {
-            if (monsterUnit == null ||
-                monsterUnit.RuntimeData == null ||
-                gridManager == null ||
-                monsterUnit.MainGridIndex < 0)
-            {
-                return -1;
-            }
-
-            string actionRangeId = monsterUnit.RuntimeData.AttackRangeId;
-
-            if (string.IsNullOrWhiteSpace(actionRangeId) || actionRangeId.Trim() == "0")
-                return -1;
-
-            RangeDatabase rangeDatabase = DataManager.Instance?.RangeDatabase;
-
-            if (rangeDatabase == null)
-                return -1;
-
-            List<int> actionRange = BattleRangeCalculator.GetSelectionRangeIndices(
-                monsterUnit.MainGridIndex,
-                actionRangeId,
-                rangeDatabase,
-                gridManager);
-
-            if (actionRange == null || actionRange.Count <= 0)
-                return -1;
-
-            HashSet<int> actionRangeSet = new(actionRange);
-            List<int> targets = FindCharacterTargetGridIndices();
-            Vector2Int monsterCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            int nearestGridIndex = -1;
-            int nearestDistance = int.MaxValue;
-            int bestEscapeSpaceScore = int.MinValue;
-
-            BattleGridEffectController gridEffectController =
-                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
-
-            for (int i = 0; i < targets.Count; i++)
-            {
-                int gridIndex = targets[i];
-
-                if (gridIndex < 0 || !actionRangeSet.Contains(gridIndex))
-                    continue;
-
-                Vector2Int targetCoord = gridManager.IndexToCoord(gridIndex);
-                int distance =
-                    Mathf.Abs(targetCoord.x - monsterCoord.x) +
-                    Mathf.Abs(targetCoord.y - monsterCoord.y);
-
-                if (distance > nearestDistance)
-                    continue;
-
-                Vector2Int escapeOffset = GetBestTwoTileEscapeMove(
-                    monsterUnit,
-                    gridIndex,
-                    gridManager);
-
-                int escapeSpaceScore = GetEscapeOpenSpaceScore(
-                    monsterUnit,
-                    gridManager,
-                    escapeOffset,
-                    gridEffectController);
-
-                if (distance == nearestDistance && escapeSpaceScore <= bestEscapeSpaceScore)
-                    continue;
-
-                nearestDistance = distance;
-                bestEscapeSpaceScore = escapeSpaceScore;
-                nearestGridIndex = gridIndex;
-            }
-
-            return nearestGridIndex;
         }
 
         private Vector2Int GetBestTwoTileEscapeMove(

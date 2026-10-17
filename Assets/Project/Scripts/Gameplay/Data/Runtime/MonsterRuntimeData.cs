@@ -38,6 +38,9 @@ namespace Relic.Gameplay.Data
         public bool IsExplodeReady;
         public bool SuppressDeathReward;
 
+        // 플레이어의 효과를 받은 뒤 다음 행동 계획에서 도주하도록 기록합니다.
+        public bool PendingPlayerEffectEscape;
+
         public BattleDirection Direction = BattleDirection.Left;
 
         public MonsterRuntimeData(string runtimeId, MonsterMasterData masterData)

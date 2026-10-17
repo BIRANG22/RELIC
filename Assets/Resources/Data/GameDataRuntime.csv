@@ -22,17 +22,17 @@ Char_05,Char_05,88,12,4,5,Karma,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Uniq
 # Monster
 몬스터ID,페이즈,이름,등급,HP,방어도,최소 렘넌트,최대 렘넌트,고유아이템,고유 아이템 확률,이동범위,보유스킬1 ID,보유스킬2 ID,보유스킬3 ID,보유스킬4 ID,보유스킬5 ID,보유스킬6 ID,보유스킬7 ID,보유스킬8 ID,보유스킬9 ID,보유스킬10 ID
 MonsterId,Phase,Name,Grade,HP,Armor,MinRemnant,MaxRemnant,UniqueItemId ,UniqueItemChance,AttackRange,PossSkillId01,PossSkillId02,PossSkillId03,PossSkillId04,PossSkillId05,PossSkillId06,PossSkillId07,PossSkillId08,PossSkillId09,PossSkillId10
-Mon_01,0,머크,Common,48,0,24,32,Item_001,0.29999999999999999,Range_18,S_Monster_01,S_Monster_02,0,0,0,0,0,0,0,0
-Mon_02,0,블롭,Common,26,0,10,16,Item_002,0.29999999999999999,Range_17,S_Monster_03,S_Monster_04,0,0,0,0,0,0,0,0
-Mon_03,0,랜서,Common,35,0,18,24,Item_003,0.29999999999999999,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0,0,0,0,0,0
-Mon_04,0,블라이트,Common,38,0,18,24,Item_004,0.29999999999999999,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0,0,0,0,0,0
-Mon_05,0,베스파,Common,52,0,25,30,Item_005,0.29999999999999999,Range_19,S_Monster_11,S_Monster_12,0,0,0,0,0,0,0,0
-Mon_06,0,신더,Common,25,20,20,25,Item_006,0.29999999999999999,Range_18,S_Monster_13,S_Monster_14,0,0,0,0,0,0,0,0
-Mon_07,0,드라우그,Common,60,0,30,35,Item_007,0.29999999999999999,Range_18,S_Monster_15,S_Monster_16,S_Monster_17,0,0,0,0,0,0,0
-Mon_08,0,바로우,Common,55,0,30,35,Item_008,0.29999999999999999,Range_19,S_Monster_18,S_Monster_19,S_Monster_20,0,0,0,0,0,0,0
-Mon_09,0,루크,Elite,102,0,55,65,Item_009,0.20000000000000001,Range_18,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,0,0,0,0,0,0
-Mon_10,0,녹턴,Elite,94,0,60,70,Item_010,0.20000000000000001,Range_18,S_Monster_25,S_Monster_26,S_Monster_27,S_Monster_28,0,0,0,0,0,0
-Mon_11,0,모르트,Elite,82,0,50,60,Item_011,0.20000000000000001,Range_19,S_Monster_29,S_Monster_30,S_Monster_31,S_Monster_32,0,0,0,0,0,0
+Mon_01,0,머크,Common,48,0,24,32,Item_001,0.3,Range_18,S_Monster_01,S_Monster_02,0,0,0,0,0,0,0,0
+Mon_02,0,블롭,Common,26,0,10,16,Item_002,0.3,Range_17,S_Monster_03,S_Monster_04,0,0,0,0,0,0,0,0
+Mon_03,0,랜서,Common,35,0,18,24,Item_003,0.3,Range_19,S_Monster_05,S_Monster_06,S_Monster_07,0,0,0,0,0,0,0
+Mon_04,0,블라이트,Common,38,0,18,24,Item_004,0.3,Range_19,S_Monster_08,S_Monster_09,S_Monster_10,0,0,0,0,0,0,0
+Mon_05,0,베스파,Common,52,0,25,30,Item_005,0.3,Range_19,S_Monster_11,S_Monster_12,0,0,0,0,0,0,0,0
+Mon_06,0,신더,Common,25,20,20,25,Item_006,0.3,Range_18,S_Monster_13,S_Monster_14,0,0,0,0,0,0,0,0
+Mon_07,0,드라우그,Common,60,0,30,35,Item_007,0.3,Range_18,S_Monster_15,S_Monster_16,S_Monster_17,0,0,0,0,0,0,0
+Mon_08,0,바로우,Common,55,0,30,35,Item_008,0.3,Range_19,S_Monster_18,S_Monster_19,S_Monster_20,0,0,0,0,0,0,0
+Mon_09,0,루크,Elite,102,0,55,65,Item_009,0.2,Range_18,S_Monster_21,S_Monster_22,S_Monster_23,S_Monster_24,0,0,0,0,0,0
+Mon_10,0,녹턴,Elite,94,0,60,70,Item_010,0.2,Range_18,S_Monster_25,S_Monster_26,S_Monster_27,S_Monster_28,0,0,0,0,0,0
+Mon_11,0,모르트,Elite,82,0,50,60,Item_011,0.2,Range_19,S_Monster_29,S_Monster_30,S_Monster_31,S_Monster_32,0,0,0,0,0,0
 Mon_12_1,1,아라벨라,Boss,105,0,0,0,0,0,Range_19,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,S_Monster_37,0,0,0,0,0
 Mon_12_2,2,각성 아라벨라,Boss,80,0,80,95,Item_012,0.5,Range_38,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_39,S_Monster_40,0,0,0,0,0
 ,,,,,,,,,,,,,,,,,,,,
@@ -592,7 +592,7 @@ Map_28,Tutorial_Battle2,Common,Battlemap_18,0,Stage1,1,0
 Map_29,Tutorial_Battle3,Common,Battlemap_19,0,Stage1,1,0
 Map_30,Tutorial_Event1,Tutorial,0,Event_T_01,Stage1,1,0
 Map_31,Tutorial_Event2,Tutorial,0,Event_T_02,Stage1,1,0
-Map_32,Test,Test,Battlemap_20,0,Stage1,1,Weak
+Map_32,Test,Common,Battlemap_20,0,Stage1,1,Weak
 
 # BattleMap
 전투맵ID,몬스터ID,점유칸1,점유칸2,점유칸3,점유칸4,설명,기억 획득,유물 노말,유물 레어,유물 에픽,유물 유니크,기억 노말,기억 레어,기억 에픽,기억 유니크
@@ -639,7 +639,7 @@ Battlemap_17,Mon_02,22,-1,-1,-1,튜토리얼(블롭 1마리),0,0,100,0,0,0,0,0,0
 Battlemap_18,Mon_07,22,-1,-1,-1,튜토리얼(드라우그 1마리),0,0,100,0,0,0,0,0,0
 Battlemap_19,Mon_01,21,-1,-1,-1,"튜토리얼(머크, 블라이트)",0,0,0,0,0,0,0,0,0
 Battlemap_19,Mon_04,28,-1,-1,-1,,,,,,,,,,
-Battlemap_20,Mon_01,22,-1,-1,-1,테스트,100,25,25,25,25,25,25,25,25
+Battlemap_20,Mon_03,22,-1,-1,-1,테스트,100,25,25,25,25,25,25,25,25
 
 # Event
 이벤트ID,이벤트 이름,제목,선택지 순서,선택지이름,선택지 내용,선택불가 내용,선택지 타입,선택 조건,비용 타입,비용 대상,비용 값,성공 조건,결과타입,결과대상,결과값,성공확률,실패결과,다음이벤트ID,실패 다음이벤트ID,다음 이벤트까지 유지,성공 시각적 객체 ID,성공 시각적 작업 ID,실패 시각적 객체 ID,실패 시 시각적 동작 ID
