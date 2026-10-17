@@ -4644,7 +4644,9 @@ public class EventRoomController : MonoBehaviour
         memoryReward.SourceKey += "|AnyRarity|";
         QueueEventReward(memoryReward);
 
-        resultMessage = $"기억 획득: {GameDataLocalization.SkillName(skill)}";
+        resultMessage = GameLocalization.Format(
+            "event.result.memory_acquired_format",
+            GameDataLocalization.SkillName(skill));
         return true;
     }
 
@@ -4753,7 +4755,9 @@ public class EventRoomController : MonoBehaviour
 
         RecordDiscoveryService.RegisterSkill(DataManager.Instance, skillId);
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
-        resultMessage = $"기억 획득: {GameDataLocalization.SkillName(skill)}";
+        resultMessage = GameLocalization.Format(
+            "event.result.memory_acquired_format",
+            GameDataLocalization.SkillName(skill));
         return true;
     }
 
