@@ -103,14 +103,24 @@ namespace Relic.Gameplay.Monster
 
             if (attackCandidate != null)
             {
-                AddMoveActions(plan, attackCandidate.State.Steps);
-
                 Vector2Int targetCoord = gridManager.IndexToCoord(attackCandidate.TargetGridIndex);
                 BattleDirection attackDirection = GetHorizontalAttackDirection(
                     attackCandidate.State.Coord,
                     targetCoord,
                     monsterUnit.RuntimeData.Direction);
+
+                // 수직 이동부터 시작한다면 돌진 방향을 미리 바라보도록 합니다.
+                AddMoveActions(plan, attackCandidate.State.Steps, monsterUnit, attackDirection);
                 int projectedGridIndex = gridManager.CoordToIndex(attackCandidate.State.Coord);
+
+                // When the charge is the first action, face its travel direction now.
+                if (attackCandidate.State.Steps.Count == 0)
+                {
+                    BattleUnitFacing facing = monsterUnit.GetComponentInChildren<BattleUnitFacing>(true);
+                    if (facing != null)
+                        facing.FaceRight(attackDirection == BattleDirection.Right);
+                    monsterUnit.RuntimeData.Direction = attackDirection;
+                }
 
                 plan.Add(new MonsterAIAction(
                     AttackSkillId,
@@ -144,7 +154,7 @@ namespace Relic.Gameplay.Monster
                 blockedGridEffectIndices);
 
             if (fallbackState != null)
-                AddMoveActions(plan, fallbackState.Steps);
+                AddMoveActions(plan, fallbackState.Steps, monsterUnit);
 
             return plan;
         }
@@ -714,21 +724,64 @@ namespace Relic.Gameplay.Monster
             return isCardinal && distance >= 1 && distance <= 2;
         }
 
-        private static void AddMoveActions(MonsterAIPlan plan, List<Vector2Int> moveSteps)
+        private static void AddMoveActions(
+            MonsterAIPlan plan,
+            List<Vector2Int> moveSteps,
+            MonsterUnit monsterUnit,
+            BattleDirection? pendingChargeDirection = null)
         {
             if (plan == null || moveSteps == null)
                 return;
 
+            BattleDirection direction = monsterUnit != null && monsterUnit.RuntimeData != null
+                ? monsterUnit.RuntimeData.Direction
+                : BattleDirection.Right;
+
+            // 첫 이동이 수직이라면 뒤이어 사용할 돌진 방향을 미리 보여 줍니다.
+            // 첫 이동이 수평이면 실제 첫 이동 방향을 우선합니다.
+            if (moveSteps.Count > 0)
+            {
+                if (moveSteps[0].x != 0)
+                    direction = moveSteps[0].x > 0 ? BattleDirection.Right : BattleDirection.Left;
+                else if (pendingChargeDirection.HasValue)
+                    direction = pendingChargeDirection.Value;
+                else
+                {
+                    for (int i = 1; i < moveSteps.Count; i++)
+                    {
+                        if (moveSteps[i].x == 0)
+                            continue;
+                        direction = moveSteps[i].x > 0 ? BattleDirection.Right : BattleDirection.Left;
+                        break;
+                    }
+                }
+
+                if (monsterUnit != null && monsterUnit.RuntimeData != null)
+                {
+                    BattleUnitFacing facing = monsterUnit.GetComponentInChildren<BattleUnitFacing>(true);
+                    if (facing != null)
+                        facing.FaceRight(direction == BattleDirection.Right);
+                    monsterUnit.RuntimeData.Direction = direction;
+                }
+            }
+
             for (int i = 0; i < moveSteps.Count; i++)
             {
+                Vector2Int offset = moveSteps[i];
+                if (offset.x != 0)
+                    direction = offset.x > 0 ? BattleDirection.Right : BattleDirection.Left;
+
                 plan.Add(new MonsterAIAction(
                     MoveSkillId,
-                    moveSteps[i],
+                    offset,
                     i == 0
                         ? MonsterAISlotPreference.Front
                         : MonsterAISlotPreference.NextSlot,
                     1,
-                    i));
+                    i,
+                    -1,
+                    true,
+                    direction));
             }
         }
 

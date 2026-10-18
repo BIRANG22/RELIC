@@ -45,13 +45,12 @@ namespace Relic.Gameplay.Monster
             Vector2Int current = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
             Vector2Int target = gridManager.IndexToCoord(targetGridIndex);
             int horizontal = moveOffset.x != 0 ? moveOffset.x : target.x - current.x;
-            if (horizontal != 0)
+            BattleDirection reservedDirection = monsterUnit.RuntimeData.Direction;
+            bool hasReservedDirection = horizontal != 0;
+            if (hasReservedDirection)
             {
-                BattleDirection direction = horizontal > 0 ? BattleDirection.Right : BattleDirection.Left;
-                BattleUnitFacing facing = monsterUnit.GetComponentInChildren<BattleUnitFacing>(true);
-                if (facing != null)
-                    facing.FaceRight(direction == BattleDirection.Right);
-                monsterUnit.RuntimeData.Direction = direction;
+                reservedDirection = horizontal > 0 ? BattleDirection.Right : BattleDirection.Left;
+                SetFacingForReservation(monsterUnit, reservedDirection);
             }
 
             if (moveOffset != Vector2Int.zero)
@@ -68,6 +67,8 @@ namespace Relic.Gameplay.Monster
                 MonsterAISlotPreference.SameSlot,
                 group,
                 1,
+                hasForcedDirection: hasReservedDirection,
+                forcedDirection: reservedDirection,
                 explicitRangeGridIndices: new List<int> { targetGridIndex }));
 
             return plan;
@@ -122,6 +123,19 @@ namespace Relic.Gameplay.Monster
             }
 
             return best;
+        }
+
+        private static void SetFacingForReservation(MonsterUnit monsterUnit, BattleDirection direction)
+        {
+            if (monsterUnit == null)
+                return;
+
+            BattleUnitFacing facing = monsterUnit.GetComponentInChildren<BattleUnitFacing>(true);
+            if (facing != null)
+                facing.FaceRight(direction == BattleDirection.Right);
+
+            if (monsterUnit.RuntimeData != null)
+                monsterUnit.RuntimeData.Direction = direction;
         }
 
         private static bool IsRiskyDestination(int gridIndex, BattleGridEffectController controller)

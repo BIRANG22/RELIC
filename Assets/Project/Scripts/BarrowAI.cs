@@ -53,6 +53,7 @@ namespace Relic.Gameplay.Monster
                     out BattleDirection directDirection,
                     out List<int> directRange))
             {
+                // 직사는 예약 시 목표 방향으로 예고하지만 실행 직전의 피격 방향을 존중합니다.
                 SetFacingForReservedAttack(monsterUnit, directDirection);
                 plan.Add(new MonsterAIAction(
                     DirectShotSkillId,
@@ -79,6 +80,15 @@ namespace Relic.Gameplay.Monster
                 if (arcRange.Count <= 0)
                     return plan;
 
+                Vector2Int originCoord = gridManager.IndexToCoord(attackOrigin);
+                Vector2Int targetCoord = gridManager.IndexToCoord(farthestPlayer.CurrentGridIndex);
+                BattleDirection arcDirection = targetCoord.x < originCoord.x
+                    ? BattleDirection.Left
+                    : targetCoord.x > originCoord.x
+                        ? BattleDirection.Right
+                        : GetCurrentFacing(monsterUnit);
+                SetFacingForReservedAttack(monsterUnit, arcDirection);
+
                 plan.Add(new MonsterAIAction(
                     ArcShotSkillId,
                     Vector2Int.zero,
@@ -87,7 +97,7 @@ namespace Relic.Gameplay.Monster
                     0,
                     attackOrigin,
                     false,
-                    BattleDirection.Right,
+                    arcDirection,
                     false,
                     0,
                     arcRange));
@@ -604,6 +614,14 @@ namespace Relic.Gameplay.Monster
             return rangeGridIndices.Count > 0;
         }
 
+
+        private static BattleDirection GetCurrentFacing(MonsterUnit monsterUnit)
+        {
+            return monsterUnit != null && monsterUnit.RuntimeData != null &&
+                   monsterUnit.RuntimeData.Direction == BattleDirection.Left
+                ? BattleDirection.Left
+                : BattleDirection.Right;
+        }
 
         private static void SetFacingForReservedAttack(
             MonsterUnit monsterUnit,

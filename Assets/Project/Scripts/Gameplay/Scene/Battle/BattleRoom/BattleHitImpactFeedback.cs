@@ -10,18 +10,28 @@ public class BattleHitImpactFeedback : MonoBehaviour
 
     [Header("Damage Hit Push")]
     [SerializeField] private bool enableDamageHitPush = true;
-    [SerializeField] private float damageHitPushDistance = 0.5f;           //ë°€ë¦¬ëŠ”ê±°ë¦¬
+    [SerializeField] private float damageHitPushDistance = 0.5f;           //¹Ğ¸®´Â°Å¸®
     [SerializeField] private float attackerPushMultiplier = 0.65f;
     [SerializeField] private float targetPushMultiplier = 1f;
-    [SerializeField] private float damageHitPushOutDuration = 0.8f;        //ë°€ë¦¬ëŠ”ì‹œê°„
-    [SerializeField] private float damageHitPushHoldDuration = 0.1f;        //ì •ì§€ì‹œê°„
-    [SerializeField] private float damageHitPushReturnDuration = 0.06f;     //ëŒì•„ì˜¤ëŠ” ì‹œê°„
+    [SerializeField] private float damageHitPushOutDuration = 0.8f;        //¹Ğ¸®´Â½Ã°£
+    [SerializeField] private float damageHitPushHoldDuration = 0.1f;        //Á¤Áö½Ã°£
+    [SerializeField] private float damageHitPushReturnDuration = 0.06f;     //µ¹¾Æ¿À´Â ½Ã°£
     [SerializeField] private AnimationCurve damageHitPushCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+    [Header("Buff Debuff Pulse")]
+    [SerializeField] private bool enableStatusPulse = true;
+    [SerializeField] private float statusPulseScale = 1.12f;
+    [SerializeField] private float statusPulseOutDuration = 0.055f;
+    [SerializeField] private float statusPulseHoldDuration = 0.1f;
+    [SerializeField] private float statusPulseReturnDuration = 0.1f;
+    [SerializeField] private AnimationCurve statusPulseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Header("Camera")]
     [SerializeField] private bool playDamageCameraImpact = true;
 
     private readonly Dictionary<Transform, TransformVectorState> activePositionStates = new();
+    private readonly Dictionary<Transform, TransformVectorState> activeScaleStates = new();
+    private readonly Dictionary<Transform, Coroutine> statusPulseRoutines = new();
 
     private sealed class TransformVectorState
     {
@@ -71,6 +81,46 @@ public class BattleHitImpactFeedback : MonoBehaviour
             targets,
             fallbackHorizontalDirection,
             includeTargetPush);
+    }
+
+    // Mon_03 / Mon_04 use a non-directional scale pulse instead of hit movement.
+    public static IEnumerator PlayNonDirectionalMonsterAttack(Transform attacker)
+    {
+        BattleHitImpactFeedback feedback = GetOrCreateInstance();
+        if (feedback == null)
+            yield break;
+
+        IEnumerator cameraRoutine = feedback.playDamageCameraImpact && BattleCameraController.Instance != null
+            ? BattleCameraController.Instance.PlayDamageImpact()
+            : null;
+        yield return feedback.RunTogether(cameraRoutine, feedback.PlayNonDirectionalAttackScale(attacker));
+    }
+
+    private IEnumerator PlayNonDirectionalAttackScale(Transform attacker)
+    {
+        if (attacker == null)
+            yield break;
+
+        Vector3 original = AcquireOriginalValue(activeScaleStates, attacker, attacker.localScale);
+        try
+        {
+            yield return AnimateScale(attacker, original, original * 1.10f, 0.08f);
+            yield return AnimateScale(attacker, original * 1.10f, original, 0.10f);
+        }
+        finally
+        {
+            ReleaseOriginalValue(activeScaleStates, attacker, value => { if (attacker != null) attacker.localScale = value; });
+        }
+    }
+
+    public static void PlayStatusHitFeedback(Transform target)
+    {
+        BattleHitImpactFeedback feedback = GetOrCreateInstance();
+
+        if (feedback == null)
+            return;
+
+        feedback.StartStatusPulse(target);
     }
 
     public static int ResolveHorizontalDirection(
@@ -303,6 +353,70 @@ public class BattleHitImpactFeedback : MonoBehaviour
         }
     }
 
+    private void StartStatusPulse(Transform target)
+    {
+        if (!enableStatusPulse || target == null || !isActiveAndEnabled)
+            return;
+
+        if (statusPulseRoutines.TryGetValue(target, out Coroutine routine) && routine != null)
+        {
+            StopCoroutine(routine);
+            ReleaseOriginalValue(activeScaleStates, target, value => target.localScale = value);
+        }
+
+        statusPulseRoutines[target] = StartCoroutine(PlayStatusPulse(target));
+    }
+
+    private IEnumerator PlayStatusPulse(Transform target)
+    {
+        if (target == null)
+            yield break;
+
+        Vector3 originalScale = AcquireOriginalValue(activeScaleStates, target, target.localScale);
+        Vector3 peakScale = originalScale * Mathf.Max(0.01f, statusPulseScale);
+
+        try
+        {
+            yield return AnimateScale(target, originalScale, peakScale, statusPulseOutDuration);
+            yield return WaitUnscaledWithVfxPause(statusPulseHoldDuration);
+            yield return AnimateScale(target, peakScale, originalScale, statusPulseReturnDuration);
+        }
+        finally
+        {
+            statusPulseRoutines.Remove(target);
+            ReleaseOriginalValue(activeScaleStates, target, value => target.localScale = value);
+        }
+    }
+
+    private IEnumerator AnimateScale(Transform target, Vector3 from, Vector3 to, float duration)
+    {
+        if (target == null)
+            yield break;
+
+        if (duration <= 0f)
+        {
+            target.localScale = to;
+            yield break;
+        }
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            if (target == null)
+                yield break;
+
+            elapsed += GetPresentationDeltaTime(Time.unscaledDeltaTime);
+            float t = Mathf.Clamp01(elapsed / duration);
+            float eased = EvaluateCurve(statusPulseCurve, t);
+            target.localScale = Vector3.Lerp(from, to, eased);
+            yield return null;
+        }
+
+        if (target != null)
+            target.localScale = to;
+    }
+
     private static IEnumerator WaitUnscaled(float duration)
     {
         if (duration <= 0f)
@@ -402,6 +516,10 @@ public class BattleHitImpactFeedback : MonoBehaviour
         damageHitPushOutDuration = Mathf.Max(0f, damageHitPushOutDuration);
         damageHitPushHoldDuration = Mathf.Max(0f, damageHitPushHoldDuration);
         damageHitPushReturnDuration = Mathf.Max(0f, damageHitPushReturnDuration);
+        statusPulseScale = Mathf.Max(0.01f, statusPulseScale);
+        statusPulseOutDuration = Mathf.Max(0f, statusPulseOutDuration);
+        statusPulseHoldDuration = Mathf.Max(0f, statusPulseHoldDuration);
+        statusPulseReturnDuration = Mathf.Max(0f, statusPulseReturnDuration);
     }
 #endif
 }

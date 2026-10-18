@@ -34,18 +34,15 @@ namespace Relic.Gameplay.Monster
             if (monsterUnit == null || monsterUnit.RuntimeData == null || gridManager == null)
                 return plan;
 
-            // 침식 확산은 자동 효과가 아니라 블라이트가 직접 사용하는 스킬입니다.
-            plan.Add(new MonsterAIAction(
-                DebuffSkillId,
-                Vector2Int.zero,
-                MonsterAISlotPreference.Back,
-                -1,
-                10
-            ));
+            // 행동 예약으로 플립이 확정되면, 광역 스킬도 그 방향을 유지합니다.
+            BattleDirection originalDirection = monsterUnit.RuntimeData.Direction;
 
             int targetGridIndex = FindNearestCharacterTargetGridIndex(monsterUnit, gridManager);
             if (targetGridIndex < 0)
+            {
+                AddAreaEffectAction(plan);
                 return plan;
+            }
 
             // 플레이어 효과를 받았거나 주변 8칸에 캐릭터가 있으면 공격 후 도주합니다.
             // 주변 8칸은 대각선을 포함하며, 공격 스킬의 사거리와는 별개입니다.
@@ -78,11 +75,32 @@ namespace Relic.Gameplay.Monster
             }
 
             if (!wasAffectedByPlayer && !hasAdjacentCharacter)
+            {
+                AddAreaEffectAction(plan);
                 return plan;
+            }
 
-            // 가장 앞 슬롯에서 공격한 다음 같은 슬롯에서 도주합니다.
+            // 도주 방향을 예약 시 미리 표시하지만 공격은 실행 시점의 현재 방향을 유지합니다.
+            Vector2Int moveOffset = GetBestTwoTileEscapeMove(
+                monsterUnit,
+                hasAdjacentCharacter ? adjacentTargetGridIndex : targetGridIndex,
+                gridManager);
+
+            // 세로 이동에는 좌우 방향이 없으므로 기존 방향을 유지합니다.
+            BattleDirection escapeDirection = moveOffset.x < 0
+                ? BattleDirection.Left
+                : moveOffset.x > 0
+                    ? BattleDirection.Right
+                    : originalDirection;
+
+            if (moveOffset.x != 0)
+                SetFacingForReservation(monsterUnit, escapeDirection);
+
+            // 광역 버프/디버프에는 방향을 강제하지 않습니다.
+            AddAreaEffectAction(plan);
+
             const int attackEscapeGroup = 1;
-            // 공격 범위는 GameData의 스킬 범위(Range_20)를 그대로 사용합니다.
+            // 공격은 좌우 대칭이며 피격으로 변경된 현재 방향을 유지합니다.
             plan.Add(new MonsterAIAction(
                 AttackSkillId,
                 Vector2Int.zero,
@@ -91,11 +109,6 @@ namespace Relic.Gameplay.Monster
                 0
             ));
 
-            Vector2Int moveOffset = GetBestTwoTileEscapeMove(
-                monsterUnit,
-                hasAdjacentCharacter ? adjacentTargetGridIndex : targetGridIndex,
-                gridManager);
-
             if (moveOffset != Vector2Int.zero)
             {
                 plan.Add(new MonsterAIAction(
@@ -103,12 +116,39 @@ namespace Relic.Gameplay.Monster
                     moveOffset,
                     MonsterAISlotPreference.SameSlot,
                     attackEscapeGroup,
-                    1
+                    1,
+                    hasForcedDirection: true,
+                    forcedDirection: escapeDirection
                 ));
                 monsterUnit.RuntimeData.PendingPlayerEffectEscape = false;
             }
 
             return plan;
+        }
+
+        private static void AddAreaEffectAction(MonsterAIPlan plan)
+        {
+            // 현재 바라보는 방향으로 광역 효과를 사용하며 방향을 강제하지 않습니다.
+            plan.Add(new MonsterAIAction(
+                DebuffSkillId,
+                Vector2Int.zero,
+                MonsterAISlotPreference.Back,
+                -1,
+                10
+            ));
+        }
+
+        private static void SetFacingForReservation(MonsterUnit monsterUnit, BattleDirection direction)
+        {
+            if (monsterUnit == null)
+                return;
+
+            BattleUnitFacing facing = monsterUnit.GetComponentInChildren<BattleUnitFacing>(true);
+            if (facing != null)
+                facing.FaceRight(direction == BattleDirection.Right);
+
+            if (monsterUnit.RuntimeData != null)
+                monsterUnit.RuntimeData.Direction = direction;
         }
 
         private Vector2Int GetBestTwoTileEscapeMove(

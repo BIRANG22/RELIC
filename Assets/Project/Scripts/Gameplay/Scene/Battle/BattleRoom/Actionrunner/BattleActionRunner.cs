@@ -3623,7 +3623,15 @@ public class BattleActionRunner
 
             // 첫 이동 칸이 이미 다른 유닛에게 점유되어 있다면 한 칸도 이동하지 않고 즉시 충돌합니다.
             // 이동자와 해당 칸을 점유한 유닛 모두 충돌 고정 피해를 받습니다.
-            if (TryHandleImmediateMonsterUnitCollision(monster, moveOffset))
+            // 신더의 대각선 이동은 가로/세로 중 통과 가능한 순서를 선택해야 합니다.
+            // 즉시 충돌 검사에서는 가로 첫 칸만 확인하므로 빈 대각선 목적지에도
+            // 캐릭터가 옆에 있다는 이유로 충돌할 수 있습니다. 해당 경우는
+            // ResolveMonsterMove의 양쪽 경로 비교에 맡깁니다.
+            bool isCinderDiagonalMove =
+                string.Equals(command.MonsterId, CinderMonsterId, System.StringComparison.Ordinal) &&
+                string.Equals(command.SkillId, "S_Monster_13", System.StringComparison.Ordinal) &&
+                moveOffset.x != 0 && moveOffset.y != 0;
+            if (!isCinderDiagonalMove && TryHandleImmediateMonsterUnitCollision(monster, moveOffset))
             {
                 hudService.RefreshHUDs();
                 yield return new WaitForSeconds(GetActiveActionBeatDelay());
@@ -4344,7 +4352,10 @@ public class BattleActionRunner
 
         // 녹턴의 연계 공격은 예약된 방향을 유지하지만, 공격만 예약된 행동은 현재 Facing을 사용합니다.
         // 그림자걸음이 실패한 경우에는 위에서 ForcedDirection을 해제했으므로 실제 현재 방향으로 공격합니다.
-        if (command.HasForcedDirection)
+        bool barrowDirectUsesLiveFacing =
+            string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BarrowDirectShotSkillId, System.StringComparison.Ordinal);
+        if (command.HasForcedDirection && !barrowDirectUsesLiveFacing)
         {
             if (facing != null)
                 facing.FaceRight(command.ForcedDirection == BattleDirection.Right);
@@ -4363,6 +4374,11 @@ public class BattleActionRunner
 
         BattleUnitAnimator monsterAnimator = monster.GetComponent<BattleUnitAnimator>();
 
+        // 바로우 직사는 피격 후 바뀐 현재 방향으로 발사합니다.
+        // 곡사는 예약한 목표 방향을 유지합니다.
+        bool isBarrowDirectFacing =
+            string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, BarrowDirectShotSkillId, System.StringComparison.Ordinal);
         // 강제 방향이 없는 일반 AI 행동만 실제 명중 대상 쪽으로 회전합니다.
         // 사슬 후속 공격처럼 방향이 예약된 행동은 앞에서 지정한 방향을 유지합니다.
         // Draugr stationary sweep follows the actual facing after any hit-induced flip.
@@ -4370,9 +4386,23 @@ public class BattleActionRunner
         bool isDraugrSweep =
             string.Equals(command.MonsterId, DraugrMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, DraugrAttackSkillId, System.StringComparison.Ordinal);
+        // 랜서와 블라이트의 공격/광역 효과는 좌우 대칭입니다.
+        // 피격으로 변경된 현재 방향을 공격 전에 다시 타깃 쪽으로 돌리지 않습니다.
+        // 도주 이동은 이동 실행 시 MoveOffset 방향으로 별도 플립합니다.
+        bool keepsCurrentFacing =
+            string.Equals(command.MonsterId, RancorMonsterId, System.StringComparison.Ordinal) ||
+            string.Equals(command.MonsterId, BlightMonsterId, System.StringComparison.Ordinal);
+        // 신더의 대폭발은 전방 지정 공격이 아닙니다.
+        // 피격이나 직전 이동으로 변경된 방향을 공격 시 그대로 사용합니다.
+        bool isCinderOmnidirectionalExplosion =
+            string.Equals(command.MonsterId, CinderMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, CinderExplodeSkillId, System.StringComparison.Ordinal);
         if (!command.HasForcedDirection &&
             !isNocturnDirectionalAttack &&
             !isDraugrSweep &&
+            !isBarrowDirectFacing &&
+            !keepsCurrentFacing &&
+            !isCinderOmnidirectionalExplosion &&
             firstPlayerTarget != null &&
             facing != null)
         {
@@ -4506,10 +4536,25 @@ public class BattleActionRunner
                 }
                 else if (playPushFeedback)
                 {
-                    yield return PlayDamageHitFeedback(
-                        monster != null ? monster.transform : null,
-                        feedbackTargets,
-                        GetMonsterImpactFallbackDirection(monster));
+                    bool nonDirectionalMonsterAttack =
+                        string.Equals(command.MonsterId, RancorMonsterId, System.StringComparison.Ordinal) ||
+                        string.Equals(command.MonsterId, BlightMonsterId, System.StringComparison.Ordinal) ||
+                        (string.Equals(command.MonsterId, CinderMonsterId, System.StringComparison.Ordinal) &&
+                         string.Equals(command.SkillId, CinderExplodeSkillId, System.StringComparison.Ordinal));
+
+                    if (nonDirectionalMonsterAttack)
+                    {
+                        // 좌우 대칭 공격: 타깃 방향으로 밀지 않고 제자리에서 10% 확대합니다.
+                        yield return BattleHitImpactFeedback.PlayNonDirectionalMonsterAttack(
+                            monster != null ? monster.transform : null);
+                    }
+                    else
+                    {
+                        yield return PlayDamageHitFeedback(
+                            monster != null ? monster.transform : null,
+                            feedbackTargets,
+                            GetMonsterImpactFallbackDirection(monster));
+                    }
                 }
                 else
                 {
@@ -4664,9 +4709,11 @@ public class BattleActionRunner
             // 이동 연계처럼 방향이 예약된 공격은 예약 방향을 유지합니다.
             // 녹턴의 제자리 공격 또는 실패한 그림자걸음의 후속 공격은 ForcedDirection이 없으므로
             // 피격 등으로 바뀐 실행 직전의 실제 Facing을 그대로 사용합니다.
-            facingRight = command.HasForcedDirection
-                ? command.ForcedDirection == BattleDirection.Right
-                : facing.IsFacingRight;
+            facingRight = isBarrowDirectShot
+                ? facing.IsFacingRight
+                : command.HasForcedDirection
+                    ? command.ForcedDirection == BattleDirection.Right
+                    : facing.IsFacingRight;
         }
         else
         {
@@ -4691,6 +4738,43 @@ public class BattleActionRunner
                 command.SkillData,
                 rangeGridIndices
             );
+
+        if (isBarrowDirectShot && gridManager != null)
+        {
+            // 장애물은 관통하되, 발사 방향에서 가장 먼저 만나는 살아 있는 캐릭터만 타격합니다.
+            // 이동 후 위치와 피격에 따른 실제 방향을 기준으로 매 실행 시 갱신합니다.
+            int origin = monster.MainGridIndex;
+            if (origin >= 0)
+            {
+                Vector2Int originCoord = gridManager.IndexToCoord(origin);
+                BattleCharacter[] characters = UnityEngine.Object.FindObjectsByType<BattleCharacter>(
+                    FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+                int closestGrid = -1;
+                int closestDistance = int.MaxValue;
+                for (int i = 0; i < characters.Length; i++)
+                {
+                    BattleCharacter character = characters[i];
+                    if (character == null || character.RuntimeData == null ||
+                        character.RuntimeData.IsDead || character.CurrentGridIndex < 0)
+                        continue;
+
+                    Vector2Int coordinate = gridManager.IndexToCoord(character.CurrentGridIndex);
+                    int dx = coordinate.x - originCoord.x;
+                    if (coordinate.y != originCoord.y ||
+                        (facingRight ? dx <= 0 : dx >= 0))
+                        continue;
+                    int distance = Mathf.Abs(dx);
+                    if (distance >= closestDistance || !rangeGridIndices.Contains(character.CurrentGridIndex))
+                        continue;
+                    closestDistance = distance;
+                    closestGrid = character.CurrentGridIndex;
+                }
+
+                targetGridIndices.Clear();
+                if (closestGrid >= 0)
+                    targetGridIndices.Add(closestGrid);
+            }
+        }
 
         command.SetRangeResult(rangeGridIndices, targetGridIndices);
     }
@@ -5329,6 +5413,15 @@ public class BattleActionRunner
         // 원래 MoveOffset으로 진입을 시도해 ResolveMonsterMove에서 실제 충돌을 처리합니다.
         if (string.Equals(command.MonsterId, MuckMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, MuckMoveSkillId, System.StringComparison.Ordinal) &&
+            command.MoveOffset != Vector2Int.zero)
+        {
+            return command.MoveOffset;
+        }
+
+        // 신더는 이동 예약 후 다른 유닛이 목적지에 들어와도 이동 시도를 유지합니다.
+        // 충돌은 실행 시점의 실제 점유 상태로 판단합니다.
+        if (string.Equals(command.MonsterId, CinderMonsterId, System.StringComparison.Ordinal) &&
+            string.Equals(command.SkillId, "S_Monster_13", System.StringComparison.Ordinal) &&
             command.MoveOffset != Vector2Int.zero)
         {
             return command.MoveOffset;

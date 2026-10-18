@@ -508,6 +508,12 @@ public class BattleGridEffectController : MonoBehaviour
         if (!EnsureDependencies())
             return BattleGridEffectApplyResult.None;
 
+        // 베스파는 공중 유닛이므로 통과 가능한 지상 그리드 효과를 받지 않습니다.
+        // 통과 불가 지형은 기존 이동 및 돌진 경로 검사에서 계속 차단합니다.
+        if (string.Equals(monster.RuntimeData.MonsterId, "Mon_05", System.StringComparison.OrdinalIgnoreCase) &&
+            !service.IsBlocked(state, gridIndex))
+            return BattleGridEffectApplyResult.None;
+
         int hpBefore = monster.RuntimeData.CurrentHP;
         int shieldBefore = monster.RuntimeData.CurrentShield;
         BattleGridEffectApplyResult result =
