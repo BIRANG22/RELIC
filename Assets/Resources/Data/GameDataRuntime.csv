@@ -6,7 +6,7 @@ Char_02,카야,100,12,4,5,Karma,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Uniq
 Char_03,헤이즈,95,14,4,5,Karma,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_05,S_Ability_06,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,“정말 제가 가야 하는 건가요?”
 Char_04,이네스,105,11,4,5,Karma,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_07,S_Ability_08,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,“걱정하지 마세요. 모두 무사히 돌아갈 수 있도록 할게요.”
 Char_05,Char_05,88,12,4,5,Karma,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Unique_10,S_Ability_09,S_Ability_10,S_Public_17,S_Public_19,Rune_71,Rune_72,Rune_73,Rune_74,Rune_75,“그냥 내가 가고 싶어서 가는 거야.”
-,,,,,,,,
+Char_06,Char_06,,,,,,,
 ,,,,,,,,
 ,,,,,,,,
 ,,,,,,,,

@@ -113,6 +113,33 @@ namespace Relic.Gameplay.Data
             return true;
         }
 
+        /// <summary>
+        /// 이미 편성된 두 캐릭터의 시작 위치를 서로 교환합니다.
+        /// 캐릭터 등록 및 장착 정보는 변경하지 않습니다.
+        /// </summary>
+        public bool TrySwapSpawnGridIndices(int firstSlotIndex, int secondSlotIndex)
+        {
+            if (!IsValidSlot(firstSlotIndex) || !IsValidSlot(secondSlotIndex) ||
+                firstSlotIndex == secondSlotIndex)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(GetCharacterId(firstSlotIndex)) ||
+                string.IsNullOrWhiteSpace(GetCharacterId(secondSlotIndex)))
+                return false;
+
+            int firstGrid = GetSpawnGridIndex(firstSlotIndex);
+            int secondGrid = GetSpawnGridIndex(secondSlotIndex);
+            if (!IsValidGrid(firstGrid) || !IsValidGrid(secondGrid))
+                return false;
+
+            // 직접 교환하므로 잠깐 동일한 Grid가 중복되는 중간 상태가 없습니다.
+            slots[firstSlotIndex].SpawnGridIndex = secondGrid;
+            slots[firstSlotIndex].CurrentGridIndex = secondGrid;
+            slots[secondSlotIndex].SpawnGridIndex = firstGrid;
+            slots[secondSlotIndex].CurrentGridIndex = firstGrid;
+            return true;
+        }
+
         public bool SetCurrentGridIndex(int slotIndex, int gridIndex)
         {
             if (!IsValidSlot(slotIndex))

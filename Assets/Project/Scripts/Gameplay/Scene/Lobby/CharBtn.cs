@@ -256,11 +256,26 @@ public class CharBtn : MonoBehaviour,
         return true;
     }
 
+    private void DisableLockedButtonEffects()
+    {
+        if (!isLocked)
+            return;
+
+        // 잠긴 캐릭터는 별도 버튼 애니메이션과 사운드도 재생하지 않습니다.
+        ButtonAnimationCoroutine[] animations = GetComponentsInChildren<ButtonAnimationCoroutine>(true);
+        for (int i = 0; i < animations.Length; i++)
+        {
+            if (animations[i] != null)
+                animations[i].SetInteractionEnabled(false);
+        }
+    }
+
     private void Awake()
     {
         rect = GetComponent<RectTransform>();
         canvasGroup = GetComponent<CanvasGroup>();
         characterButton = GetComponent<Button>();
+        DisableLockedButtonEffects();
 
         if (characterButton != null)
         {
@@ -288,6 +303,7 @@ public class CharBtn : MonoBehaviour,
 
     private void OnEnable()
     {
+        DisableLockedButtonEffects();
         AutoPrepareCharacterSelectIcon();
         RefreshCharacterSelectIcon();
         AutoPrepareJobmarkReferences();
@@ -354,6 +370,9 @@ public class CharBtn : MonoBehaviour,
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (isLocked)
+            return;
+
         if (Time.frameCount <= suppressClickUntilFrame)
             return;
 
@@ -422,6 +441,9 @@ public class CharBtn : MonoBehaviour,
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        if (isLocked)
+            return;
+
         if (IsInfoPanelPartyEditButton())
             ApplyInfoPanelHoverBackground(false);
         else
@@ -451,6 +473,9 @@ public class CharBtn : MonoBehaviour,
 
     private void NotifyClickToCharPickOrExecuteDirect(bool playClickSoundBeforeAction)
     {
+        if (isLocked)
+            return;
+
         if (lastHandledClickFrame == Time.frameCount)
             return;
 
@@ -520,7 +545,8 @@ public class CharBtn : MonoBehaviour,
 
     private void PlayClickSound()
     {
-        if (!playClickSound)
+        // 잠금 캐릭터는 클릭 입력과 함께 자체 클릭 사운드도 차단합니다.
+        if (isLocked || !playClickSound)
             return;
 
         UIPanelButton panelButton = GetComponent<UIPanelButton>();
@@ -909,6 +935,9 @@ public class CharBtn : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (isLocked)
+            return;
+
         isReadyPanelCharacterDragging = false;
 
         if (IsInfoPanelPartyEditButton() && !isLocked && !string.IsNullOrWhiteSpace(characterId))
@@ -929,6 +958,9 @@ public class CharBtn : MonoBehaviour,
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (isLocked)
+            return;
+
         if (isReadyPanelCharacterDragging)
         {
             SpawnGridPanel[] panels = FindObjectsByType<SpawnGridPanel>(
@@ -947,6 +979,9 @@ public class CharBtn : MonoBehaviour,
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (isLocked)
+            return;
+
         if (isReadyPanelCharacterDragging)
         {
             SpawnGridPanel[] panels = FindObjectsByType<SpawnGridPanel>(
