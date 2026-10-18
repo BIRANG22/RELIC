@@ -30,6 +30,9 @@ public class UISoundTrigger : MonoBehaviour, IPointerEnterHandler, IPointerDownH
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (IsLockedCharacterButton())
+            return;
+
         if (!playHoverSound || !CanPlaySound())
             return;
 
@@ -38,6 +41,9 @@ public class UISoundTrigger : MonoBehaviour, IPointerEnterHandler, IPointerDownH
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        if (IsLockedCharacterButton())
+            return;
+
         if (!playClickSound || !CanPlaySound() || eventData.button != PointerEventData.InputButton.Left)
             return;
 
@@ -63,6 +69,12 @@ public class UISoundTrigger : MonoBehaviour, IPointerEnterHandler, IPointerDownH
         // Pointer events can reach UISoundTrigger even if Unity UI Button is disabled.
         Button parentButton = GetComponentInParent<Button>();
         return parentButton != null && (!parentButton.isActiveAndEnabled || !parentButton.interactable);
+    }
+
+    private bool IsLockedCharacterButton()
+    {
+        CharBtn charButton = GetComponentInParent<CharBtn>();
+        return charButton != null && charButton.IsLocked;
     }
 
     private void PlaySfx(string soundId, float volume)

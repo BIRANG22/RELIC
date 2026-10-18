@@ -306,12 +306,6 @@ public class SpawnGridPanel : MonoBehaviour
         if (sourceButton == null || !sourceButton.IsInfoPanelReadyDragSource || sourceButton.IsLocked)
             return false;
 
-        // Ready_Panel에 파티 3명이 모두 배치된 상태에서는
-        // Info_Panel에서 새 캐릭터 홀드 드래그를 시작하지 않습니다.
-        if (IsReadyPartyFull() &&
-            (DataManager.Instance?.PartyRuntimeStore?.FindCharacterSlot(sourceButton.CharacterId) ?? -1) < 0)
-            return false;
-
         infoDragSourceButton = sourceButton;
         selectedPartySlotIndex = -1;
 
@@ -417,9 +411,6 @@ public class SpawnGridPanel : MonoBehaviour
         if (sourceButton == null || !IsValidGridIndex(targetGridIndex))
             return false;
 
-        if (FindPartySlotByGridIndex(targetGridIndex) >= 0)
-            return false;
-
         if (!sourceButton.TryRegisterToReadyGrid(targetGridIndex, out _))
             return false;
 
@@ -443,11 +434,11 @@ public class SpawnGridPanel : MonoBehaviour
             return false;
 
         int targetPartySlotIndex = FindPartySlotByGridIndex(targetGridIndex);
-        if (targetPartySlotIndex >= 0 && targetPartySlotIndex != partySlotIndex)
-            return false;
-
         PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
-        if (!partyStore.SetSpawnGridIndex(partySlotIndex, targetGridIndex))
+        bool success = targetPartySlotIndex >= 0 && targetPartySlotIndex != partySlotIndex
+            ? partyStore.TrySwapSpawnGridIndices(partySlotIndex, targetPartySlotIndex)
+            : partyStore.SetSpawnGridIndex(partySlotIndex, targetGridIndex);
+        if (!success)
             return false;
 
         activeGridDragSourceIndex = -1;
@@ -634,9 +625,6 @@ public class SpawnGridPanel : MonoBehaviour
         // 빈 Grid를 클릭하는 순간 캐릭터 등록과 시작 위치 저장을 한 번에 완료합니다.
         if (pendingInfoPlacementButton != null)
         {
-            if (clickedPartySlotIndex >= 0)
-                return;
-
             CharBtn sourceButton = pendingInfoPlacementButton;
             if (!sourceButton.TryRegisterToReadyGrid(gridIndex, out _))
                 return;
@@ -650,10 +638,9 @@ public class SpawnGridPanel : MonoBehaviour
         // 이미 등록된 캐릭터를 위치 변경 대상으로 선택한 경우에는 위치만 변경합니다.
         if (selectedPartySlotIndex >= 0)
         {
-            if (clickedPartySlotIndex >= 0 && clickedPartySlotIndex != selectedPartySlotIndex)
-                return;
-
-            bool success = partyStore.SetSpawnGridIndex(selectedPartySlotIndex, gridIndex);
+            bool success = clickedPartySlotIndex >= 0 && clickedPartySlotIndex != selectedPartySlotIndex
+                ? partyStore.TrySwapSpawnGridIndices(selectedPartySlotIndex, clickedPartySlotIndex)
+                : partyStore.SetSpawnGridIndex(selectedPartySlotIndex, gridIndex);
             if (!success)
                 return;
 

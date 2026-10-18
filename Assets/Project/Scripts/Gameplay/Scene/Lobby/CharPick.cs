@@ -377,34 +377,82 @@ public class CharPick : MonoBehaviour
         partySlotIndex = partyStore.FindCharacterSlot(characterId);
         bool newlyRegistered = partySlotIndex < 0;
 
-        if (newlyRegistered)
+        int occupiedSlot = -1;
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
         {
-            for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+            if (!string.IsNullOrWhiteSpace(partyStore.GetCharacterId(i)) &&
+                partyStore.GetSpawnGridIndex(i) == gridIndex)
             {
-                if (!string.IsNullOrWhiteSpace(partyStore.GetCharacterId(i)))
-                    continue;
-
-                if (!partyStore.SetCharacter(i, characterId))
-                    return false;
-
-                partySlotIndex = i;
+                occupiedSlot = i;
                 break;
-            }
-
-            if (partySlotIndex < 0)
-            {
-                Debug.LogWarning("[Party] 빈 파티 슬롯이 없습니다.");
-                return false;
             }
         }
 
-        if (!partyStore.SetSpawnGridIndex(partySlotIndex, gridIndex))
+        // 이미 편성된 캐릭터를 다른 편성 캐릭터의 Grid에 놓으면
+        // 파티 구성과 장비는 유지하고 두 캐릭터의 시작 위치만 교환합니다.
+        if (occupiedSlot >= 0 && occupiedSlot != partySlotIndex && !newlyRegistered)
+        {
+            if (!partyStore.TrySwapSpawnGridIndices(partySlotIndex, occupiedSlot))
+                return false;
+
+            ClearPendingReadyPanelInfoSelection(btn);
+            RefreshInfoPanelPartyEditState();
+            return true;
+        }
+
+        // 아직 등록되지 않은 캐릭터는 기존의 파티원 교체 규칙을 유지합니다.
+        if (occupiedSlot >= 0 && occupiedSlot != partySlotIndex)
+        {
+            string previousCharacterId = partyStore.GetCharacterId(occupiedSlot);
+            int previousGridIndex = partyStore.GetSpawnGridIndex(occupiedSlot);
+            partyStore.ClearSlot(occupiedSlot);
+
+            if (!partyStore.SetCharacter(occupiedSlot, characterId) ||
+                !partyStore.SetSpawnGridIndex(occupiedSlot, gridIndex))
+            {
+                partyStore.ClearSlot(occupiedSlot);
+                if (!string.IsNullOrWhiteSpace(previousCharacterId))
+                {
+                    partyStore.SetCharacter(occupiedSlot, previousCharacterId);
+                    if (previousGridIndex >= 0)
+                        partyStore.SetSpawnGridIndex(occupiedSlot, previousGridIndex);
+                }
+                partySlotIndex = -1;
+                return false;
+            }
+
+            partySlotIndex = occupiedSlot;
+            if (!string.IsNullOrWhiteSpace(previousCharacterId))
+                LobbyCharacterEquipmentReleaseUtility.ReleaseAll(previousCharacterId);
+        }
+        else
         {
             if (newlyRegistered)
-                partyStore.ClearSlot(partySlotIndex);
+            {
+                for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+                {
+                    if (!string.IsNullOrWhiteSpace(partyStore.GetCharacterId(i)))
+                        continue;
 
-            partySlotIndex = -1;
-            return false;
+                    if (!partyStore.SetCharacter(i, characterId))
+                        return false;
+
+                    partySlotIndex = i;
+                    break;
+                }
+
+                if (partySlotIndex < 0)
+                    return false;
+            }
+
+            if (!partyStore.SetSpawnGridIndex(partySlotIndex, gridIndex))
+            {
+                if (newlyRegistered)
+                    partyStore.ClearSlot(partySlotIndex);
+
+                partySlotIndex = -1;
+                return false;
+            }
         }
 
         ClearPendingReadyPanelInfoSelection(btn);
