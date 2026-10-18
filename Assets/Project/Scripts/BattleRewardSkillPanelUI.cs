@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -104,6 +104,10 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     [SerializeField] private Transform charContent;
     [SerializeField] private PartyCardReferences[] partyCards = new PartyCardReferences[3];
 
+    [Header("Skip Reward Button")]
+    [Tooltip("Assign Skill_panel/SkipButton. If empty, the direct child SkipButton is found automatically.")]
+    [SerializeField] private Button skipButton;
+
     private BattleRewardData reward;
     private Action completed;
     private bool processing;
@@ -174,11 +178,28 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     {
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
+        BindSkipButton();
     }
 
     private void OnDisable()
     {
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        if (skipButton != null)
+            skipButton.onClick.RemoveListener(DiscardReward);
+    }
+
+    private void BindSkipButton()
+    {
+        if (skipButton == null)
+        {
+            Transform target = transform.Find("SkipButton");
+            if (target != null)
+                skipButton = target.GetComponent<Button>();
+        }
+
+        if (skipButton == null) return;
+        skipButton.onClick.RemoveListener(DiscardReward);
+        skipButton.onClick.AddListener(DiscardReward);
     }
 
     private void OnLocaleTableReady(Locale _)
@@ -1136,10 +1157,47 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private void ResetSkillPanelCloseFade()
     {
         CanvasGroup group = GetSkillPanelCloseCanvasGroup();
-        if (group != null) group.alpha = 1f;
+        if (group != null)
+        {
+            group.alpha = 1f;
+            group.interactable = true;
+            group.blocksRaycasts = true;
+        }
+        if (skipButton != null) skipButton.interactable = true;
     }
 
-    public void DiscardReward() { if (reward != null && !processing) { processing = true; Finish(); } }
+    // Skip the offered memory without equipping or registering it. Finish invokes
+    // the reward completion callback so the existing reward flow can continue.
+    public void DiscardReward()
+    {
+        if (reward == null || processing || !gameObject.activeInHierarchy) return;
+        processing = true;
+        ClearSkillSlotPreviewVfx();
+        if (skipButton != null) skipButton.interactable = false;
+        StartCoroutine(CloseAfterSkippedReward());
+    }
+
+    private IEnumerator CloseAfterSkippedReward()
+    {
+        // Use the same close-fade duration as the equip completion flow.
+        CanvasGroup group = GetSkillPanelCloseCanvasGroup();
+        float duration = Mathf.Max(0f, skillPanelCloseFadeDuration);
+        if (group != null)
+        {
+            group.interactable = false;
+            group.blocksRaycasts = false;
+            float startAlpha = group.alpha;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                group.alpha = Mathf.Lerp(startAlpha, 0f, Mathf.Clamp01(elapsed / duration));
+                yield return null;
+            }
+            group.alpha = 0f;
+        }
+        Finish();
+    }
 
     private void CancelReplacementSelection()
     {
