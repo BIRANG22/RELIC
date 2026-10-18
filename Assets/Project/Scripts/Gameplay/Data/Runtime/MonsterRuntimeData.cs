@@ -63,7 +63,10 @@ namespace Relic.Gameplay.Data
             MaxHP = global::BattleErosionEffectService.ModifyMonsterMaxHP(masterData.HP);
             CurrentHP = MaxHP;
             CurrentShield = Math.Max(0, masterData.Armor);
-            RemainingInnateShield = CurrentShield;
+            // 신더의 시작 방어도는 일반 방어도이므로 턴 종료 시 함께 소멸합니다.
+            RemainingInnateShield = string.Equals(MonsterId, "Mon_06", StringComparison.OrdinalIgnoreCase)
+                ? 0
+                : CurrentShield;
 
             MinRemnant = masterData.MinRemnant;
             MaxRemnant = masterData.MaxRemnant;

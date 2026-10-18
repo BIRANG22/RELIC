@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using Stopwatch = System.Diagnostics.Stopwatch;
 using System.Collections.Generic;
+using System.Linq;
 using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
@@ -458,8 +459,14 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             if (runtime.IsDead)
                 continue;
 
+            // 앞서 이동 예약한 몬스터가 비우는 칸을 신더의 후보에 포함합니다.
+            // 실제 예약 승인 시에는 슬롯 순서를 다시 검사합니다.
+            CinderAI.SetPreviouslyVacatedCells(GetPreviouslyVacatedMonsterCells(monsterUnits, plans));
+            CinderAI.SetReservedDestinationCells(GetPreviouslyReservedMonsterDestinations(monsterUnits, plans));
             Stopwatch aiWatch = logReservationPerformance ? Stopwatch.StartNew() : null;
             MonsterAIPlan plan = monsterUnit.CreateAIPlan(context, gridManager);
+            CinderAI.SetPreviouslyVacatedCells(null);
+            CinderAI.SetReservedDestinationCells(null);
             if (aiWatch != null)
             {
                 aiWatch.Stop();
@@ -533,13 +540,102 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 if (!IsSlotAvailableForMonster(runtime, slotIndex, plans))
                     continue;
 
-                // Prevent voluntary monster movement from crossing another reserved route.
-                // Forced displacement (knockback/grab) and portal moves are not affected.
-                if (!action.IsPortalMove &&
+                // 일반 몬스터는 다른 몬스터의 현재 위치 및 예약 이동 경로와 겹치는 이동을 방지합니다.
+                // 블롭(Mon_02)은 캐릭터가 비운 칸으로 양쪽에서 진입할 수 있으므로
+                // 예약 자체를 버리지 않고 실행 시점의 점유 검사 및 충돌 처리에 맡깁니다.
+                // 포탈 이동과 강제 이동의 기존 규칙은 그대로 유지합니다.
+                bool isBlobMove =
+                    string.Equals(runtime.MonsterId, "Mon_02", System.StringComparison.Ordinal) &&
+                    string.Equals(skillData.SkillId, "S_Monster_03", System.StringComparison.Ordinal);
+                bool isCinderMove =
+                    string.Equals(runtime.MonsterId, "Mon_06", System.StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(skillData.SkillId, "S_Monster_13", System.StringComparison.Ordinal);
+                // 신더는 첫 이동 후보가 거절되어도 다른 빈칸을 찾아 재예약합니다.
+                // 대체 계획은 기존 AI의 폭발 범위/팀 배치 평가를 그대로 사용합니다.
+                if (isCinderMove && action.MoveOffset != Vector2Int.zero)
+                {
+                    HashSet<int> rejected = new HashSet<int>();
+                    for (int attempt = 0; attempt < 8 &&
+                         WouldCinderDestinationConflict(monsterUnit, action.MoveOffset,
+                             slotIndex, monsterUnits, plans); attempt++)
+                    {
+                        Vector2Int blockedCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex) + action.MoveOffset;
+                        if (gridManager.IsValidCoord(blockedCoord))
+                            rejected.Add(gridManager.CoordToIndex(blockedCoord));
+
+                        CinderAI.SetPreviouslyVacatedCells(GetPreviouslyVacatedMonsterCells(monsterUnits, plans));
+                        CinderAI.SetReservedDestinationCells(GetPreviouslyReservedMonsterDestinations(monsterUnits, plans));
+                        CinderAI.SetRejectedDestinationCells(rejected);
+                        MonsterAIPlan alternative;
+                        try
+                        {
+                            alternative = monsterUnit.CreateAIPlan(context, gridManager);
+                        }
+                        finally
+                        {
+                            CinderAI.SetRejectedDestinationCells(null);
+                            CinderAI.SetPreviouslyVacatedCells(null);
+                            CinderAI.SetReservedDestinationCells(null);
+                        }
+
+                        MonsterAIAction alternativeMove = alternative?.Actions?.Find(
+                            candidate => candidate != null && candidate.SkillId == "S_Monster_13" &&
+                                         candidate.MoveOffset != Vector2Int.zero);
+                        if (alternativeMove == null)
+                            break;
+
+                        action.MoveOffset = alternativeMove.MoveOffset;
+                        action.HasForcedDirection = alternativeMove.HasForcedDirection;
+                        action.ForcedDirection = alternativeMove.ForcedDirection;
+                        command.SetMoveOffset(action.MoveOffset);
+                        if (action.HasForcedDirection)
+                            command.SetForcedDirection(action.ForcedDirection);
+                        else
+                            command.ClearForcedDirection();
+
+                        for (int nextIndex = actionIndex + 1; nextIndex < plan.Actions.Count; nextIndex++)
+                        {
+                            MonsterAIAction explosion = plan.Actions[nextIndex];
+                            if (explosion == null || explosion.SkillId != "S_Monster_14") continue;
+                            Vector2Int center = gridManager.IndexToCoord(monsterUnit.MainGridIndex) + action.MoveOffset;
+                            if (!gridManager.IsValidCoord(center)) continue;
+                            int index = gridManager.CoordToIndex(center);
+                            explosion.RangeOriginGridIndex = index;
+                            explosion.RangeOriginCasterGridIndex = index;
+                        }
+                    }
+                }
+
+                if (!isBlobMove &&
+                    !action.IsPortalMove &&
                     skillData.TimelineNotation == TimelineActionType.Move &&
                     action.MoveOffset != Vector2Int.zero &&
-                    WouldVoluntaryMoveCollide(monsterUnit, action.MoveOffset, monsterUnits, plans))
+                    (isCinderMove
+                        ? WouldCinderDestinationConflict(monsterUnit, action.MoveOffset, slotIndex, monsterUnits, plans)
+                        : WouldVoluntaryMoveCollide(monsterUnit, action.MoveOffset, monsterUnits, plans)))
+                {
+                    if (isCinderMove)
+                    {
+                        // 이동이 취소됐을 때 대폭발 중심점도 실제 현재 칸으로 되돌립니다.
+                        for (int nextIndex = actionIndex + 1; nextIndex < plan.Actions.Count; nextIndex++)
+                        {
+                            MonsterAIAction nextAction = plan.Actions[nextIndex];
+                            if (nextAction == null || nextAction.SkillId != "S_Monster_14") continue;
+                            nextAction.RangeOriginGridIndex = monsterUnit.MainGridIndex;
+                            nextAction.RangeOriginCasterGridIndex = monsterUnit.MainGridIndex;
+                        }
+                    }
                     continue;
+                }
+
+                // 신더는 실제 이동이 예약된 경우에만 방향을 미리 바꿉니다.
+                if (isCinderMove && action.MoveOffset.x != 0)
+                {
+                    BattleUnitFacing facing = monsterUnit.GetComponentInChildren<BattleUnitFacing>(true);
+                    if (facing != null) facing.FaceRight(action.MoveOffset.x > 0);
+                    runtime.Direction = action.MoveOffset.x > 0
+                        ? BattleDirection.Right : BattleDirection.Left;
+                }
 
                 plans.Add(new MonsterReservedCommandPlan(slotIndex, command));
                 if (action.SameSlotGroup >= 0 && !resolvedGroupSlots.ContainsKey(action.SameSlotGroup))
@@ -548,6 +644,151 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         }
 
         return plans;
+    }
+
+    private HashSet<int> GetPreviouslyReservedMonsterDestinations(
+        List<MonsterUnit> units, List<MonsterReservedCommandPlan> plans)
+    {
+        HashSet<int> destinations = new HashSet<int>();
+        if (units == null || plans == null || gridManager == null) return destinations;
+        foreach (MonsterReservedCommandPlan planned in plans)
+        {
+            MonsterReservedCommand cmd = planned.Command;
+            if (cmd == null || cmd.UserRuntime == null || cmd.MoveOffset == Vector2Int.zero ||
+                cmd.IsPortalMove || cmd.SkillData == null ||
+                cmd.SkillData.TimelineNotation != TimelineActionType.Move) continue;
+            MonsterUnit moving = units.Find(u => u != null && u.RuntimeData == cmd.UserRuntime);
+            if (moving == null || moving.MainGridIndex < 0) continue;
+            foreach (int source in moving.OccupiedGridIndices)
+            {
+                Vector2Int destination = gridManager.IndexToCoord(source) + cmd.MoveOffset;
+                if (gridManager.IsValidCoord(destination))
+                    destinations.Add(gridManager.CoordToIndex(destination));
+            }
+        }
+        return destinations;
+    }
+
+    private HashSet<int> GetPreviouslyVacatedMonsterCells(
+        List<MonsterUnit> units, List<MonsterReservedCommandPlan> plans)
+    {
+        HashSet<int> result = new HashSet<int>();
+        if (units == null || plans == null) return result;
+        foreach (MonsterReservedCommandPlan planned in plans)
+        {
+            MonsterReservedCommand cmd = planned.Command;
+            if (cmd == null || cmd.UserRuntime == null || cmd.MoveOffset == Vector2Int.zero ||
+                cmd.IsPortalMove || cmd.SkillData == null ||
+                cmd.SkillData.TimelineNotation != TimelineActionType.Move) continue;
+            MonsterUnit moving = units.Find(u => u != null && u.RuntimeData == cmd.UserRuntime);
+            if (moving == null) continue;
+            foreach (int index in moving.OccupiedGridIndices)
+                result.Add(index);
+        }
+        return result;
+    }
+
+    // 앞 몬스터가 더 이른 슬롯에서 이동해 비우는 자리로만 진입을 허용합니다.
+    private bool CanCinderEnterEarlierVacatedCell(
+        MonsterUnit unit, Vector2Int offset, int slotIndex,
+        List<MonsterUnit> units, List<MonsterReservedCommandPlan> plans)
+    {
+        if (unit == null || gridManager == null || units == null || plans == null ||
+            unit.MainGridIndex < 0) return false;
+        Vector2Int destination = gridManager.IndexToCoord(unit.MainGridIndex) + offset;
+        if (!gridManager.IsValidCoord(destination)) return false;
+        int destinationIndex = gridManager.CoordToIndex(destination);
+        MonsterUnit blocker = units.Find(u => u != null && u != unit &&
+            u.RuntimeData != null && !u.RuntimeData.IsDead &&
+            u.OccupiedGridIndices.Contains(destinationIndex));
+        if (blocker == null) return false;
+
+        bool vacatesEarlier = false;
+        foreach (MonsterReservedCommandPlan earlier in plans)
+        {
+            MonsterReservedCommand cmd = earlier.Command;
+            if (cmd == null || cmd.UserRuntime == null || cmd.MoveOffset == Vector2Int.zero ||
+                cmd.IsPortalMove || cmd.SkillData == null ||
+                cmd.SkillData.TimelineNotation != TimelineActionType.Move) continue;
+            if (cmd.UserRuntime == blocker.RuntimeData && earlier.SlotIndex < slotIndex)
+            {
+                Vector2Int blockerDestination = gridManager.IndexToCoord(blocker.MainGridIndex) + cmd.MoveOffset;
+                if (gridManager.IsValidCoord(blockerDestination) &&
+                    gridManager.CoordToIndex(blockerDestination) != destinationIndex)
+                    vacatesEarlier = true;
+            }
+            if (cmd.UserRuntime != blocker.RuntimeData)
+            {
+                MonsterUnit other = units.Find(u => u != null && u.RuntimeData == cmd.UserRuntime);
+                if (other != null && other.MainGridIndex >= 0)
+                {
+                    Vector2Int otherEnd = gridManager.IndexToCoord(other.MainGridIndex) + cmd.MoveOffset;
+                    if (gridManager.IsValidCoord(otherEnd) &&
+                        gridManager.CoordToIndex(otherEnd) == destinationIndex)
+                        return false;
+                }
+            }
+        }
+        return vacatesEarlier;
+    }
+
+    // 신더는 출발 칸을 포함하는 넓은 충돌 영역 대신 실제 도착 칸을 기준으로 예약합니다.
+    // 다른 몬스터가 더 이른 슬롯에서 해당 칸을 비우는 경우에만 진입을 허용합니다.
+    private bool WouldCinderDestinationConflict(
+        MonsterUnit movingUnit, Vector2Int offset, int slotIndex,
+        List<MonsterUnit> allUnits, List<MonsterReservedCommandPlan> pendingPlans)
+    {
+        if (movingUnit == null || gridManager == null || movingUnit.MainGridIndex < 0)
+            return true;
+
+        Vector2Int destination = gridManager.IndexToCoord(movingUnit.MainGridIndex) + offset;
+        if (!gridManager.IsValidCoord(destination))
+            return true;
+        int destinationIndex = gridManager.CoordToIndex(destination);
+
+        if (BattleOccupancyService.IsOccupiedByCharacter(destinationIndex))
+            return true;
+
+        // 예약 시 이미 캐릭터가 점유한 칸으로는 자발적으로 이동하지 않습니다.
+        // 이후 캐릭터가 예약 목적지로 이동하는 경우는 실행 시 충돌 규칙에 맡깁니다.
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(FindObjectsSortMode.None);
+        foreach (BattleCharacter character in characters)
+        {
+            if (character != null && character.CurrentGridIndex == destinationIndex)
+                return true;
+        }
+
+        // 이미 예약한 도착 칸과 겹치면 무조건 다른 목적지를 선택해야 합니다.
+        if (pendingPlans != null && allUnits != null)
+        {
+            foreach (MonsterReservedCommandPlan pending in pendingPlans)
+            {
+                MonsterReservedCommand previous = pending.Command;
+                if (previous == null || previous.UserRuntime == null ||
+                    previous.UserRuntime == movingUnit.RuntimeData ||
+                    previous.IsPortalMove || previous.MoveOffset == Vector2Int.zero ||
+                    previous.SkillData == null ||
+                    previous.SkillData.TimelineNotation != TimelineActionType.Move)
+                    continue;
+                MonsterUnit other = allUnits.Find(u => u != null && u.RuntimeData == previous.UserRuntime);
+                if (other == null || other.MainGridIndex < 0) continue;
+                Vector2Int otherDestination = gridManager.IndexToCoord(other.MainGridIndex) + previous.MoveOffset;
+                if (gridManager.IsValidCoord(otherDestination) &&
+                    gridManager.CoordToIndex(otherDestination) == destinationIndex)
+                    return true;
+            }
+        }
+
+        if (allUnits == null) return false;
+        foreach (MonsterUnit other in allUnits)
+        {
+            if (other == null || other == movingUnit || other.RuntimeData == null || other.RuntimeData.IsDead ||
+                !other.OccupiedGridIndices.Contains(destinationIndex))
+                continue;
+            if (!CanCinderEnterEarlierVacatedCell(movingUnit, offset, slotIndex, allUnits, pendingPlans))
+                return true;
+        }
+        return false;
     }
 
     // Conservatively reserve the swept footprint of previously planned voluntary moves.

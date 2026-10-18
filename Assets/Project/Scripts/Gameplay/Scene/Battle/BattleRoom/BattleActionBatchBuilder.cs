@@ -337,7 +337,19 @@ public class BattleActionBatchBuilder
         if (isTimelineMove)
         {
             info.IsMove = true;
-            AddMonsterMoveTargetCells(info, monster, command.EffectiveMoveOffset);
+            // Blob may reserve a collision move into a character-occupied cell.
+            // Its simulated EffectiveMoveOffset can be zero even though the move
+            // executes with the original MoveOffset. Use that destination when
+            // grouping actions so two blobs converging on one cell do not move
+            // simultaneously and bypass runtime monster-to-monster collision.
+            Vector2Int batchMoveOffset =
+                command.SkillData != null &&
+                (command.SkillData.SkillId == "S_Monster_03" ||
+                 command.SkillData.SkillId == "S_Monster_13") &&
+                command.MoveOffset != Vector2Int.zero
+                    ? command.MoveOffset
+                    : command.EffectiveMoveOffset;
+            AddMonsterMoveTargetCells(info, monster, batchMoveOffset);
         }
         else if (isDashAttack)
         {

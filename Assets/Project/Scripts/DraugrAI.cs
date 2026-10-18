@@ -44,8 +44,8 @@ namespace Relic.Gameplay.Monster
                 monsterUnit.MainGridIndex < 0)
                 return plan;
 
-            // A nearby character on the same horizontal line is a counter opportunity.
-            // Stay in place, turn toward that character, and reserve the sweep.
+            // A character directly beside this monster can be attacked without moving.
+            // Do not stop for targets that merely fall inside the wider attack range.
             // Do this before considering any movement or another preferred target.
             int counterTarget = FindCounterTargetOnCurrentRow(monsterUnit.MainGridIndex, gridManager);
             if (counterTarget >= 0)
@@ -91,8 +91,13 @@ namespace Relic.Gameplay.Monster
                 attackOrigin, gridManager,
                 attackDirection == BattleDirection.Left ? -1 : 1);
 
-            if (moveOffset == Vector2Int.zero)
-                SetFacingForReservedAttack(monsterUnit, attackDirection);
+            BattleDirection reservationDirection = attackDirection;
+            if (moveOffset.x < 0)
+                reservationDirection = BattleDirection.Left;
+            else if (moveOffset.x > 0)
+                reservationDirection = BattleDirection.Right;
+
+            SetFacingForReservedAttack(monsterUnit, reservationDirection);
 
             plan.Add(new MonsterAIAction(
                 AttackSkillId, Vector2Int.zero,
@@ -116,7 +121,7 @@ namespace Relic.Gameplay.Monster
                     continue;
                 Vector2Int target = gridManager.IndexToCoord(index);
                 int distance = Mathf.Abs(target.x - origin.x);
-                if (target.y != origin.y || distance < 1 || distance > 2)
+                if (target.y != origin.y || distance != 1)
                     continue;
                 if (distance < bestDistance)
                 {
@@ -175,16 +180,14 @@ namespace Relic.Gameplay.Monster
             Vector2Int target = gridManager.IndexToCoord(targetIndex);
             int currentDistance = Mathf.Max(Mathf.Abs(target.x - origin.x),
                                             Mathf.Abs(target.y - origin.y));
-            // Counter (S_Monster_17) only reaches two cells along the same row.
-            // When a character is already in that row and within counter range,
-            // hold position to encourage the counter instead of stepping away.
+            // Only remain stationary when a character is directly in front (one tile).
+            // Being within the broader attack area must not stop the approach.
             foreach (int characterIndex in FindCharacterTargetGridIndices())
             {
                 if (characterIndex < 0 || gridManager.GetCellByIndex(characterIndex) == null)
                     continue;
                 Vector2Int character = gridManager.IndexToCoord(characterIndex);
-                if (character.y == origin.y && Mathf.Abs(character.x - origin.x) >= 1 &&
-                    Mathf.Abs(character.x - origin.x) <= 2)
+                if (character.y == origin.y && Mathf.Abs(character.x - origin.x) == 1)
                     return Vector2Int.zero;
             }
             Vector2Int best = Vector2Int.zero;

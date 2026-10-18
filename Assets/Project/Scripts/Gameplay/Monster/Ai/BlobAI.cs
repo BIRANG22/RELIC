@@ -11,6 +11,9 @@ namespace Relic.Gameplay.Monster
         private const string AttackSkillId = "S_Monster_04";
         private const string ResidueGridEffectId = "GR_Residue";
 
+        // 같은 예약 턴에서 먼저 계획한 블롭의 목표를 공유합니다.
+        private static readonly Dictionary<MonsterUnit, int> reservedTargets = new();
+
         private static readonly Vector2Int[] MoveDirections =
         {
             Vector2Int.up,
@@ -119,6 +122,9 @@ namespace Relic.Gameplay.Monster
                 rangeOriginCasterGridIndex: projectedGridIndex
             ));
 
+            // 예약에 사용한 공격 방향을 전투 화면에도 즉시 반영합니다.
+            SetFacingForReservation(monsterUnit, attackDirection);
+
             return plan;
         }
 
@@ -171,20 +177,34 @@ namespace Relic.Gameplay.Monster
                 return chosen;
             }
 
-            // A blocked target must not keep the Blob bouncing between cells.
-            // If there is no reachable attacking lane, move once to spread residue,
-            // without locking onto an impossible character.
-            List<Vector2Int> validSteps = new();
-            for (int i = 0; i < MoveDirections.Length; i++)
-                if (CanMonsterMove(monsterUnit, gridManager, MoveDirections[i]))
-                    validSteps.Add(MoveDirections[i]);
-
-            if (validSteps.Count > 0)
-                moveOffset = validSteps[BattleRandom.Range(0, validSteps.Count)];
-
-            // Preserve the existing forward attack reservation even without a target route.
-            // Prefer an actual candidate as the facing reference.
-            return targets.Count > 0 ? targets[BattleRandom.Range(0, targets.Count)] : -1;
+            // 공격 경로를 찾지 못한 경우에도 무작위로 헤매지 않고
+            // 가장 가까운 캐릭터와 같은 행을 맞출 수 있는 이동을 선택합니다.
+            int bestFallbackCost = int.MaxValue;
+            for (int i = 0; i < targets.Count; i++)
+            {
+                int target = targets[i];
+                if (target < 0 || gridManager.GetCellByIndex(target) == null)
+                    continue;
+                Vector2Int targetCoord = gridManager.IndexToCoord(target);
+                Vector2Int currentCoord = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+                int currentScore = Mathf.Abs(targetCoord.y - currentCoord.y) * 10 +
+                                   Mathf.Abs(targetCoord.x - currentCoord.x);
+                for (int d = 0; d < MoveDirections.Length; d++)
+                {
+                    Vector2Int step = MoveDirections[d];
+                    if (!CanMonsterMove(monsterUnit, gridManager, step)) continue;
+                    int next = GetProjectedMainGridIndex(monsterUnit, gridManager, step);
+                    if (next < 0 || IsRiskyGridEffectDestination(next, gridEffectController)) continue;
+                    Vector2Int nextCoord = gridManager.IndexToCoord(next);
+                    int score = Mathf.Abs(targetCoord.y - nextCoord.y) * 10 +
+                                Mathf.Abs(targetCoord.x - nextCoord.x);
+                    if (score >= currentScore || score >= bestFallbackCost) continue;
+                    bestFallbackCost = score;
+                    chosen = target;
+                    moveOffset = step;
+                }
+            }
+            return chosen;
         }
 
         private bool TryFindAttackRoute(
@@ -231,21 +251,12 @@ namespace Relic.Gameplay.Monster
                 if (CanAttackTargetFromGrid(monsterUnit, current, targetGridIndex,
                     attackSkill, gridManager))
                 {
-                    // Even when already in attack range, Blob still attempts to move.
-                    // Try an adjacent safe step (and attack from the new position).
+                    // 이미 좌우 공격이 가능하면 자리를 유지하여 공격 기회를 확보합니다.
                     if (current == origin)
                     {
-                        List<Vector2Int> options = new();
-                        for (int d = 0; d < MoveDirections.Length; d++)
-                            if (CanMonsterMove(monsterUnit, gridManager, MoveDirections[d]))
-                                options.Add(MoveDirections[d]);
-                        if (options.Count > 0)
-                        {
-                            firstMove = options[BattleRandom.Range(0, options.Count)];
-                            routeCost = 2;
-                            return true;
-                        }
-                        return false;
+                        firstMove = Vector2Int.zero;
+                        routeCost = 0;
+                        return true;
                     }
                     firstMove = initialSteps[current];
                     routeCost = costs[current];
@@ -960,6 +971,16 @@ namespace Relic.Gameplay.Monster
             return facing == null || facing.IsFacingRight
                 ? BattleDirection.Right
                 : BattleDirection.Left;
+        }
+
+        private static void SetFacingForReservation(MonsterUnit monsterUnit, BattleDirection direction)
+        {
+            if (monsterUnit == null) return;
+            BattleUnitFacing facing = monsterUnit.GetComponentInChildren<BattleUnitFacing>(true);
+            if (facing != null)
+                facing.FaceRight(direction == BattleDirection.Right);
+            if (monsterUnit.RuntimeData != null)
+                monsterUnit.RuntimeData.Direction = direction;
         }
     }
 }

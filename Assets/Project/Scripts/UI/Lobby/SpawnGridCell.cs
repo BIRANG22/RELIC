@@ -42,7 +42,6 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     private bool isPointerHovering;
     private bool isGridDragging;
     private int suppressClickUntilFrame = -1;
-    private int lastExecutedFrame = -1;
 
     public int GridIndex => gridIndex;
 

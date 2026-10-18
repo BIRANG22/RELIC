@@ -83,6 +83,36 @@ public class BattleHitImpactFeedback : MonoBehaviour
             includeTargetPush);
     }
 
+    // Mon_03 / Mon_04 use a non-directional scale pulse instead of hit movement.
+    public static IEnumerator PlayNonDirectionalMonsterAttack(Transform attacker)
+    {
+        BattleHitImpactFeedback feedback = GetOrCreateInstance();
+        if (feedback == null)
+            yield break;
+
+        IEnumerator cameraRoutine = feedback.playDamageCameraImpact && BattleCameraController.Instance != null
+            ? BattleCameraController.Instance.PlayDamageImpact()
+            : null;
+        yield return feedback.RunTogether(cameraRoutine, feedback.PlayNonDirectionalAttackScale(attacker));
+    }
+
+    private IEnumerator PlayNonDirectionalAttackScale(Transform attacker)
+    {
+        if (attacker == null)
+            yield break;
+
+        Vector3 original = AcquireOriginalValue(activeScaleStates, attacker, attacker.localScale);
+        try
+        {
+            yield return AnimateScale(attacker, original, original * 1.10f, 0.08f);
+            yield return AnimateScale(attacker, original * 1.10f, original, 0.10f);
+        }
+        finally
+        {
+            ReleaseOriginalValue(activeScaleStates, attacker, value => { if (attacker != null) attacker.localScale = value; });
+        }
+    }
+
     public static void PlayStatusHitFeedback(Transform target)
     {
         BattleHitImpactFeedback feedback = GetOrCreateInstance();
