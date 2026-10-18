@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
@@ -39,6 +40,73 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
     [Min(0.01f)][SerializeField] private float tooltipFadeIn = 0.12f;
     [Min(0.01f)][SerializeField] private float tooltipFadeOut = 0.05f;
 
+    [Header("Lobby Ready Panel (Optional)")]
+    [Tooltip("Ready 패널에서 선택한 침식도 아이콘을 항상 표시하고 변경 시 자동 갱신합니다. 배틀씬에서는 비활성 상태로 둡니다.")]
+    [SerializeField] private bool alwaysShowInLobby;
+
+    private string displayedSelectionSignature = string.Empty;
+    private LobbyEquipPanelUI lobbyReadyPanel;
+
+    private bool IsLobbySelect => gameObject.scene.name.ToLowerInvariant().Contains("lobby");
+
+    [Header("Lobby Select Hover (Optional)")]
+    [SerializeField] private Image selectHoverLine;
+    [SerializeField] private Color selectLineNormalColor = new Color32(0x83, 0x87, 0x8E, 0xFF);
+    [SerializeField] private Color selectLineHoveredColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    private bool lobbyBackHovered;
+
+    internal void HandleLobbyBackPointerEnter()
+    {
+        if (IsLobbySelect) SetLobbySelectHover(true);
+    }
+
+    internal void HandleLobbyBackPointerExit()
+    {
+        if (IsLobbySelect) SetLobbySelectHover(false);
+    }
+
+    internal void HandleLobbyBackPointerClick(PointerEventData eventData)
+    {
+        if (IsLobbySelect && eventData != null && eventData.button == PointerEventData.InputButton.Left)
+            Toggle();
+    }
+
+    private void SetLobbySelectHover(bool hovered)
+    {
+        lobbyBackHovered = hovered;
+        RefreshLobbySelectLine();
+    }
+
+    private void RefreshLobbySelectLine()
+    {
+        if (!IsLobbySelect) return;
+        if (selectHoverLine == null)
+        {
+            Transform line = transform.Find("Line");
+            if (line != null) selectHoverLine = line.GetComponent<Image>();
+        }
+        if (selectHoverLine != null)
+            selectHoverLine.color = (isOpen || lobbyBackHovered) ? new Color32(0xA9, 0xB1, 0xBE, 0xFF) : selectLineNormalColor;
+    }
+
+    private void EnsureLobbyClickTarget()
+    {
+        if (!IsLobbySelect) return;
+
+        // Only the Back image should receive pointer input in the Ready panel.
+        Image selectImage = GetComponent<Image>();
+        if (selectImage != null) selectImage.raycastTarget = false;
+
+        Transform back = transform.Find("Back");
+        if (back == null) return;
+        Image backImage = back.GetComponent<Image>();
+        if (backImage == null) return;
+        backImage.raycastTarget = true;
+
+        ErosionLobbyBackPointerRelay relay = back.GetComponent<ErosionLobbyBackPointerRelay>();
+        if (relay == null) relay = back.gameObject.AddComponent<ErosionLobbyBackPointerRelay>();
+        relay.Bind(this);
+    }
     private CanvasGroup tooltipGroup;
     private Entry hoveredEntry;
     private float tooltipAlpha;
@@ -58,7 +126,7 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
     private Coroutine animationRoutine;
     private bool isOpen;
 
-    private void Awake() { Bind(); }
+    private void Awake() { Bind(); EnsureLobbyClickTarget(); if (IsLobbySelect) SetLobbySelectHover(false); }
 
     private void Update()
     {
@@ -74,13 +142,42 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
     private void OnEnable()
     {
         Bind();
+        EnsureLobbyClickTarget();
+        if (IsLobbySelect) SetLobbySelectHover(false);
         ResetList();
+        BindLobbyReadyPanel();
     }
 
     private void OnDisable()
     {
+        if (IsLobbySelect) SetLobbySelectHover(false);
+        UnbindLobbyReadyPanel();
         StopAnimation();
         ResetList();
+    }
+
+    private void BindLobbyReadyPanel()
+    {
+        if (!IsLobbySelect || lobbyReadyPanel != null) return;
+        lobbyReadyPanel = GetComponentInParent<LobbyEquipPanelUI>();
+        if (lobbyReadyPanel == null)
+            lobbyReadyPanel = FindFirstObjectByType<LobbyEquipPanelUI>();
+        if (lobbyReadyPanel != null)
+            lobbyReadyPanel.OpenStateChanged += HandleLobbyReadyOpenStateChanged;
+    }
+
+    private void UnbindLobbyReadyPanel()
+    {
+        if (lobbyReadyPanel == null) return;
+        lobbyReadyPanel.OpenStateChanged -= HandleLobbyReadyOpenStateChanged;
+        lobbyReadyPanel = null;
+    }
+
+    private void HandleLobbyReadyOpenStateChanged(bool opened)
+    {
+        // Ready 패널이 닫히기 시작하면 목록과 툴팁을 즉시 닫습니다.
+        // 다음에 Ready 패널을 열어도 Select는 클릭 전까지 닫힌 상태입니다.
+        if (!opened) HideImmediate();
     }
 
     // Previous external callers may still request a data refresh.
@@ -100,6 +197,7 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
     public void HideImmediate()
     {
         StopAnimation();
+        HideTooltip(true);
         ResetList();
     }
 
@@ -112,15 +210,19 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
 
         DataManager manager = DataManager.Instance;
         if (manager == null || manager.ErosionDatabase == null) return;
-        List<string> ids = manager.BattleRuntimeStore?.Get()?.SelectedErosionDifficultyIds;
-        if (ids == null || ids.Count == 0)
+        List<string> ids = IsLobbySelect
+            ? manager.LobbyRuntimeStore?.GetOrCreate()?.SelectedErosionDifficultyIds
+            : manager.BattleRuntimeStore?.Get()?.SelectedErosionDifficultyIds;
+        if ((ids == null || ids.Count == 0) && !IsLobbySelect)
             ids = manager.LobbyRuntimeStore?.GetOrCreate()?.SelectedErosionDifficultyIds;
         if (ids == null) return;
 
         // 템플릿은 Grid Layout Group에서 제외하고 복제본만 셀로 계산합니다.
         erosionLevelPrefab.SetActive(false);
         GridLayoutGroup grid = content.GetComponent<GridLayoutGroup>();
-        if (grid != null)
+        // In the lobby, respect the GridLayoutGroup configuration authored in the Inspector.
+        // Battle keeps its established five-per-column arrangement.
+        if (grid != null && !IsLobbySelect)
         {
             grid.startCorner = GridLayoutGroup.Corner.LowerLeft;
             grid.startAxis = GridLayoutGroup.Axis.Vertical;
@@ -183,9 +285,18 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
             }
         }
         isOpen = true;
+        RefreshLobbySelectLine();
         animationRoutine = StartCoroutine(AnimateShow());
     }
 
+
+    private string GetLobbySelectionSignature()
+    {
+        DataManager manager = DataManager.Instance;
+        if (manager == null) return string.Empty;
+        List<string> ids = manager.LobbyRuntimeStore?.GetOrCreate()?.SelectedErosionDifficultyIds;
+        return ids == null ? string.Empty : string.Join("|", ids.ToArray());
+    }
 
     private Sprite ResolveSelectedIcon(ErosionData data)
     {
@@ -250,6 +361,7 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
     {
         StopAnimation();
         isOpen = false;
+        RefreshLobbySelectLine();
         animationRoutine = StartCoroutine(AnimateHide());
     }
 
@@ -300,6 +412,7 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
     private void ResetList()
     {
         isOpen = false;
+        RefreshLobbySelectLine();
         foreach (Entry entry in entries)
             if (entry.gameObject != null) Destroy(entry.gameObject);
         entries.Clear();
@@ -461,4 +574,16 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
             erosionTooltip.gameObject.SetActive(false);
     }
 
+}
+
+// Pointer events are routed solely through Select/Back, not the Select root.
+public sealed class ErosionLobbyBackPointerRelay : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
+{
+    private BattleErosionSelectedLevelsUI owner;
+
+    public void Bind(BattleErosionSelectedLevelsUI target) => owner = target;
+
+    public void OnPointerEnter(PointerEventData eventData) => owner?.HandleLobbyBackPointerEnter();
+    public void OnPointerExit(PointerEventData eventData) => owner?.HandleLobbyBackPointerExit();
+    public void OnPointerClick(PointerEventData eventData) => owner?.HandleLobbyBackPointerClick(eventData);
 }

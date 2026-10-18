@@ -6985,7 +6985,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1d4d9911a264e71a4ac5543ba688005, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  database: {fileID: 0}
+  database: {fileID: 11400000, guid: f1d4d9911a264e71a4ac5543ba688002, type: 2}
   roleId: number
   target: {fileID: 7001000000000000013}
 --- !u!1 &7001000000000000014

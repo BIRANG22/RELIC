@@ -31,8 +31,6 @@ public class SpawnGridPanel : MonoBehaviour
     [SerializeField, Min(0.1f)] private float dragPreviewScale = 4f;
     [Tooltip("드래그 복사 이미지의 투명도입니다.")]
     [SerializeField, Range(0f, 1f)] private float dragPreviewAlpha = 0.6f;
-    [Tooltip("Info_Panel / Ready_Panel(9010)보다 앞에 표시할 드래그 복사 Canvas의 Sorting Order입니다.")]
-    [SerializeField] private int dragPreviewSortingOrder = 9015;
     [Tooltip("드래그 복사 이미지가 마우스보다 위에서 따라오도록 더할 UI 위치 오프셋입니다.")]
     [SerializeField] private Vector2 dragPreviewPositionOffset = new Vector2(0f, 120f);
     private RectTransform dragPreviewRect;
@@ -110,6 +108,7 @@ public class SpawnGridPanel : MonoBehaviour
 
     private void InitializeCells()
     {
+        AutoBindReadyGridIfNeeded();
         if (cells == null)
             return;
 
@@ -303,6 +302,7 @@ public class SpawnGridPanel : MonoBehaviour
 
     public bool BeginInfoCharacterDrag(CharBtn sourceButton, PointerEventData eventData)
     {
+        InitializeCells();
         if (sourceButton == null || !sourceButton.IsInfoPanelReadyDragSource || sourceButton.IsLocked)
             return false;
 
@@ -345,6 +345,7 @@ public class SpawnGridPanel : MonoBehaviour
 
     public bool BeginGridDrag(int sourceGridIndex, PointerEventData eventData)
     {
+        InitializeCells();
         int partySlotIndex = FindPartySlotByGridIndex(sourceGridIndex);
         if (partySlotIndex < 0)
             return false;
@@ -508,7 +509,7 @@ public class SpawnGridPanel : MonoBehaviour
         if (dragPreviewCanvas != null)
         {
             dragPreviewCanvas.overrideSorting = true;
-            dragPreviewCanvas.sortingOrder = dragPreviewSortingOrder;
+            dragPreviewCanvas.sortingOrder = 10010;
         }
 
         float scale = Mathf.Max(0.1f, dragPreviewScale);
@@ -552,7 +553,7 @@ public class SpawnGridPanel : MonoBehaviour
         dragPreviewCanvas = canvasObject.GetComponent<Canvas>();
         dragPreviewCanvas.overrideSorting = true;
         dragPreviewCanvas.sortingLayerID = rootCanvas.sortingLayerID;
-        dragPreviewCanvas.sortingOrder = dragPreviewSortingOrder;
+        dragPreviewCanvas.sortingOrder = 10010;
         dragPreviewCanvas.additionalShaderChannels = rootCanvas.additionalShaderChannels;
 
         CanvasGroup group = canvasObject.GetComponent<CanvasGroup>();
@@ -608,6 +609,12 @@ public class SpawnGridPanel : MonoBehaviour
     {
         if (dragPreviewImage != null)
             dragPreviewImage.gameObject.SetActive(false);
+    }
+
+    private bool IsBoundReadyGridCell(SpawnGridCell cell)
+    {
+        return cell != null && IsValidGridIndex(cell.GridIndex) &&
+               cells[cell.GridIndex] == cell;
     }
 
     private bool IsValidGridIndex(int gridIndex)
@@ -793,7 +800,7 @@ public class SpawnGridPanel : MonoBehaviour
             {
                 GameObject hit = pointerRaycastResults[i].gameObject;
                 SpawnGridCell cell = hit != null ? hit.GetComponentInParent<SpawnGridCell>() : null;
-                if (cell == null || !cell.transform.IsChildOf(transform))
+                if (cell == null || !IsBoundReadyGridCell(cell))
                     continue;
                 int index = cell.GridIndex;
                 if (IsValidGridIndex(index) && cells[index] == cell)
@@ -843,7 +850,7 @@ public class SpawnGridPanel : MonoBehaviour
             SpawnGridCell hitCell = hitObject.GetComponent<SpawnGridCell>()
                 ?? hitObject.GetComponentInParent<SpawnGridCell>();
 
-            if (hitCell != null && hitCell.transform.IsChildOf(transform))
+            if (hitCell != null && IsBoundReadyGridCell(hitCell))
                 return true;
         }
 

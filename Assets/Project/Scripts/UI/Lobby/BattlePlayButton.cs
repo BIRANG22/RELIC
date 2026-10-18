@@ -32,7 +32,26 @@ public class BattlePlayButton : MonoBehaviour
     [SerializeField] private bool playClickSound = true;
     [SerializeField, SoundId(SoundCategory.Sfx)] private string clickSfx = AudioIds.Sfx.NormalButtonClick;
 
+    [Header("Ready Transition - Button Lock")]
+    [SerializeField] private ReadyTransitionProgressUI readyTransition;
+    [SerializeField] private Graphic buttonLeftGraphic;
+    [SerializeField] private Graphic buttonRightGraphic;
+    [SerializeField] private Graphic playTextGraphic;
+    [SerializeField] private Color transitionLockedColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+    [SerializeField, Min(0f)] private float transitionColorFadeDuration = 0.25f;
+
     private bool isProcessing;
+    private bool waitingForReadyTransition;
+    private bool transitionVisualLocked;
+    private Color leftOriginalColor;
+    private Color rightOriginalColor;
+    private Color textOriginalColor;
+    private float colorFadeElapsed;
+    private Color leftFadeStart;
+    private Color rightFadeStart;
+    private Color textFadeStart;
+    private bool colorFadeActive;
+
 
     private void Awake()
     {
@@ -41,6 +60,7 @@ public class BattlePlayButton : MonoBehaviour
 
         ResolveReadyPanel();
         ResolveButtonLabel();
+        ResolveTransitionVisuals();
         BindReadyPanelState();
         RefreshButtonLabel();
 
@@ -67,6 +87,7 @@ public class BattlePlayButton : MonoBehaviour
     {
         ResolveReadyPanel();
         ResolveButtonLabel();
+        ResolveTransitionVisuals();
         BindReadyPanelState();
         RefreshButtonLabel();
     }
@@ -74,6 +95,22 @@ public class BattlePlayButton : MonoBehaviour
     private void OnDisable()
     {
         UnbindReadyPanelState();
+        waitingForReadyTransition = false;
+        ApplyTransitionButtonLock(false);
+    }
+
+    private void Update()
+    {
+        UpdateTransitionColors();
+        if (!waitingForReadyTransition)
+            return;
+
+        ResolveTransitionVisuals();
+        if (readyTransition == null || !readyTransition.IsAnimating)
+        {
+            waitingForReadyTransition = false;
+            ApplyTransitionButtonLock(false);
+        }
     }
 
     private void OnValidate()
@@ -84,7 +121,7 @@ public class BattlePlayButton : MonoBehaviour
 
     public async void OnClickPlay()
     {
-        if (isProcessing)
+        if (isProcessing || waitingForReadyTransition)
             return;
 
         ResolveReadyPanel();
@@ -170,7 +207,7 @@ public class BattlePlayButton : MonoBehaviour
             isProcessing = false;
 
             if (button != null)
-                button.interactable = true;
+                button.interactable = !waitingForReadyTransition;
         }
     }
 
@@ -213,19 +250,33 @@ public class BattlePlayButton : MonoBehaviour
 
         readyPanel.OpenStateChanged -= HandleReadyPanelStateChanged;
         readyPanel.OpenStateChanged += HandleReadyPanelStateChanged;
+        readyPanel.OpenTransitionCompleted -= HandleReadyPanelTransitionCompleted;
+        readyPanel.OpenTransitionCompleted += HandleReadyPanelTransitionCompleted;
     }
 
     private void UnbindReadyPanelState()
     {
         if (readyPanel != null)
+        {
             readyPanel.OpenStateChanged -= HandleReadyPanelStateChanged;
+            readyPanel.OpenTransitionCompleted -= HandleReadyPanelTransitionCompleted;
+        }
     }
 
     private void HandleReadyPanelStateChanged(bool opened)
     {
+        // The open/close notification precedes the visual transition.
+        waitingForReadyTransition = true;
+        ResolveTransitionVisuals();
+        ApplyTransitionButtonLock(true);
         RefreshButtonLabel();
+    }
 
-        if (!opened)
+    private void HandleReadyPanelTransitionCompleted()
+    {
+        waitingForReadyTransition = false;
+        ApplyTransitionButtonLock(false);
+        if (readyPanel == null || !readyPanel.IsOpen)
             return;
 
         ResolveTutorialController();
@@ -247,6 +298,73 @@ public class BattlePlayButton : MonoBehaviour
             return;
 
         tutorialController = FindFirstObjectByType<LobbyTutorialController>(FindObjectsInactive.Include);
+    }
+
+    private void ResolveTransitionVisuals()
+    {
+        if (readyTransition == null)
+            readyTransition = FindFirstObjectByType<ReadyTransitionProgressUI>(FindObjectsInactive.Include);
+
+        if (buttonLeftGraphic == null)
+        {
+            Transform child = transform.Find("Button_l");
+            if (child != null) buttonLeftGraphic = child.GetComponent<Graphic>();
+        }
+        if (buttonRightGraphic == null)
+        {
+            Transform child = transform.Find("Button_r");
+            if (child != null) buttonRightGraphic = child.GetComponent<Graphic>();
+        }
+        if (playTextGraphic == null)
+        {
+            Transform child = transform.Find("PlayText");
+            if (child != null) playTextGraphic = child.GetComponent<Graphic>();
+        }
+    }
+
+    private void ApplyTransitionButtonLock(bool locked)
+    {
+        if (transitionVisualLocked == locked)
+            return;
+
+        ResolveTransitionVisuals();
+        if (locked)
+        {
+            if (buttonLeftGraphic != null) leftOriginalColor = buttonLeftGraphic.color;
+            if (buttonRightGraphic != null) rightOriginalColor = buttonRightGraphic.color;
+            if (playTextGraphic != null) textOriginalColor = playTextGraphic.color;
+        }
+
+        transitionVisualLocked = locked;
+        // Lock the Button as well as the handler so rapid successive input cannot start a battle.
+        if (button != null) button.interactable = !locked && !isProcessing;
+        leftFadeStart = buttonLeftGraphic != null ? buttonLeftGraphic.color : Color.white;
+        rightFadeStart = buttonRightGraphic != null ? buttonRightGraphic.color : Color.white;
+        textFadeStart = playTextGraphic != null ? playTextGraphic.color : Color.white;
+        colorFadeElapsed = 0f;
+        colorFadeActive = true;
+        if (transitionColorFadeDuration <= 0f)
+            UpdateTransitionColors(true);
+    }
+
+    private void UpdateTransitionColors(bool completeImmediately = false)
+    {
+        if (!colorFadeActive)
+            return;
+
+        colorFadeElapsed += Time.unscaledDeltaTime;
+        float t = completeImmediately || transitionColorFadeDuration <= 0f
+            ? 1f
+            : Mathf.Clamp01(colorFadeElapsed / transitionColorFadeDuration);
+        t = t * t * (3f - 2f * t);
+        if (buttonLeftGraphic != null)
+            buttonLeftGraphic.color = Color.Lerp(leftFadeStart, transitionVisualLocked ? transitionLockedColor : leftOriginalColor, t);
+        if (buttonRightGraphic != null)
+            buttonRightGraphic.color = Color.Lerp(rightFadeStart, transitionVisualLocked ? transitionLockedColor : rightOriginalColor, t);
+        if (playTextGraphic != null)
+            playTextGraphic.color = Color.Lerp(textFadeStart, transitionVisualLocked ? transitionLockedColor : textOriginalColor, t);
+        if (t >= 1f)
+            colorFadeActive = false;
     }
 
     private void RefreshButtonLabel()

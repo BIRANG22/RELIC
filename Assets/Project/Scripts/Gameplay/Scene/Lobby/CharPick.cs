@@ -295,21 +295,15 @@ public class CharPick : MonoBehaviour
         string characterId = btn.CharacterId;
         int registeredSlot = partyStore.FindCharacterSlot(characterId);
 
-        // First click selects the character for placement. Clicking the same
-        // already-deployed character again removes it from the party.
+        // 이미 배치된 캐릭터를 CharacterSelect에서 클릭하면 즉시 편성 해제합니다.
+        // 다른 Grid를 선택하기 위한 대기 상태로 바꾸지 않습니다.
         if (registeredSlot >= 0)
         {
-            if (IsInfoCharacterPendingForReadyPanelPlacement(btn))
-            {
-                LobbyCharacterEquipmentReleaseUtility.ReleaseAll(characterId);
-                ClearReadyPanelPlacementSelection(registeredSlot);
-                partyStore.ClearSlot(registeredSlot);
-                ClearPendingReadyPanelInfoSelection(btn);
-                RefreshInfoPanelPartyEditState();
-                return;
-            }
-
-            SelectInfoCharacterForReadyPanelPlacement(btn);
+            LobbyCharacterEquipmentReleaseUtility.ReleaseAll(characterId);
+            ClearReadyPanelPlacementSelection(registeredSlot);
+            partyStore.ClearSlot(registeredSlot);
+            ClearPendingReadyPanelInfoSelection(btn);
+            RefreshInfoPanelPartyEditState();
             return;
         }
 

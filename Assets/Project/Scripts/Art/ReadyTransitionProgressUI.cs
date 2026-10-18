@@ -39,6 +39,10 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
     [SerializeField] private Button playButton;
     [SerializeField] private Button backButton;
 
+    [Header("Ready Panel BackButton Fade")]
+    [Tooltip("CanvasGroup on Ready/Panel/Ready_Panel/BackButton. Automatically found when empty.")]
+    [SerializeField] private CanvasGroup readyBackButtonCanvasGroup;
+
     [Header("Transition Background")]
     [Tooltip("Optional. PositionPanel/BackgroundPanel is found automatically when left empty.")]
     [SerializeField] private GameObject backgroundPanel;
@@ -57,28 +61,44 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
     [SerializeField] private bool useUnscaledTime = true;
 
     [Header("Play Button - Transition")]
-    [SerializeField] private ProgressAnimationSettings playTransition = new ProgressAnimationSettings
+    [SerializeField]
+    private ProgressAnimationSettings playTransition = new ProgressAnimationSettings
     {
-        from = 0f, to = -2f, duration = 0.6f, startDelay = 0f
+        from = 0f,
+        to = -2f,
+        duration = 0.6f,
+        startDelay = 0f
     };
 
     [Header("Play Button - Panel Movement")]
-    [SerializeField] private PanelAnimationSettings playPanel = new PanelAnimationSettings
+    [SerializeField]
+    private PanelAnimationSettings playPanel = new PanelAnimationSettings
     {
-        fromX = 1350f, toX = 0f, duration = 0.35f, startDelay = 0.18f
+        fromX = 1350f,
+        toX = 0f,
+        duration = 0.35f,
+        startDelay = 0.18f
     };
 
     [Header("Back Button - Panel Movement")]
-    [SerializeField] private PanelAnimationSettings backPanel = new PanelAnimationSettings
+    [SerializeField]
+    private PanelAnimationSettings backPanel = new PanelAnimationSettings
     {
-        fromX = 0f, toX = 1350f, duration = 0.35f, startDelay = 0f
+        fromX = 0f,
+        toX = 1350f,
+        duration = 0.35f,
+        startDelay = 0f
     };
 
     [Header("Back Button - Transition")]
     [Tooltip("Start Delay is measured from the Back sequence start. 0.35 means after the default slide.")]
-    [SerializeField] private ProgressAnimationSettings backTransition = new ProgressAnimationSettings
+    [SerializeField]
+    private ProgressAnimationSettings backTransition = new ProgressAnimationSettings
     {
-        from = -2f, to = 0f, duration = 0.6f, startDelay = 0.35f
+        from = -2f,
+        to = 0f,
+        duration = 0.6f,
+        startDelay = 0.35f
     };
 
     private static readonly int ProgressId = Shader.PropertyToID("_progress");
@@ -110,6 +130,8 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         instanceMaterial.name = originalMaterial.name + " (Ready Transition Instance)";
         transitionGraphic.material = instanceMaterial;
         SetProgress(initialProgress);
+        ResolveReadyBackButtonCanvasGroup();
+        SetReadyBackButtonAlpha(0f, false);
         if (hideParticleOnAwake) SetReadyParticleActive(false);
     }
 
@@ -138,13 +160,15 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
     public void Play() => OpenPanel(panel);
     public void Back() => ClosePanel(panel, null);
 
-    public void OpenPanel(RectTransform panelRect)
+    public void OpenPanel(RectTransform panelRect, Action onComplete = null)
     {
         if (!isActiveAndEnabled) return;
         CachePanel(panelRect);
         StopPanelSequence();
+        ResolveReadyBackButtonCanvasGroup();
+        SetReadyBackButtonAlpha(readyBackButtonCanvasGroup != null ? readyBackButtonCanvasGroup.alpha : 0f, false);
         SetReadyParticleActive(true);
-        panelSequence = StartCoroutine(RunSequence(playTransition, playPanel, null));
+        panelSequence = StartCoroutine(RunSequence(playTransition, playPanel, onComplete));
     }
 
     public void ClosePanel(RectTransform panelRect, Action onComplete)
@@ -157,6 +181,8 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
 
         CachePanel(panelRect);
         StopPanelSequence();
+        ResolveReadyBackButtonCanvasGroup();
+        SetReadyBackButtonAlpha(readyBackButtonCanvasGroup != null ? readyBackButtonCanvasGroup.alpha : 1f, false);
         SetReadyParticleActive(false);
         panelSequence = StartCoroutine(RunSequence(backTransition, backPanel, onComplete));
     }
@@ -203,6 +229,27 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
             readyUiParticle.SetActive(active);
     }
 
+    private void ResolveReadyBackButtonCanvasGroup()
+    {
+        if (readyBackButtonCanvasGroup != null) return;
+        Transform target = panel != null ? panel.Find("Ready_Panel/BackButton") : null;
+        if (target == null)
+        {
+            Transform ready = transform.Find("Panel/Ready_Panel/BackButton");
+            target = ready;
+        }
+        if (target != null)
+            readyBackButtonCanvasGroup = target.GetComponent<CanvasGroup>();
+    }
+
+    private void SetReadyBackButtonAlpha(float alpha, bool interactable)
+    {
+        if (readyBackButtonCanvasGroup == null) return;
+        readyBackButtonCanvasGroup.alpha = Mathf.Clamp01(alpha);
+        readyBackButtonCanvasGroup.interactable = interactable;
+        readyBackButtonCanvasGroup.blocksRaycasts = interactable;
+    }
+
     private void CachePanel(RectTransform panelRect)
     {
         if (panelRect != null) panel = panelRect;
@@ -223,6 +270,10 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
             : movement.fromX;
         float elapsed = 0f;
         bool backgroundHidden = false;
+        bool opening = ReferenceEquals(movement, playPanel);
+        float backButtonFrom = readyBackButtonCanvasGroup != null ? readyBackButtonCanvasGroup.alpha : (opening ? 0f : 1f);
+        float backButtonTo = opening ? 1f : 0f;
+        SetReadyBackButtonAlpha(backButtonFrom, false);
 
         if (!progress.useCurrentValueAsStart) SetProgress(progress.from);
         if (panel != null && !movement.useCurrentPositionAsStart) SetAnchoredX(panel, movement.fromX);
@@ -250,6 +301,7 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
                 float t = movement.duration <= 0f ? 1f : Mathf.Clamp01((elapsed - movement.startDelay) / movement.duration);
                 float eased = movement.easing != null ? movement.easing.Evaluate(t) : t;
                 SetAnchoredX(panel, Mathf.LerpUnclamped(panelFrom, movement.toX, eased));
+                SetReadyBackButtonAlpha(Mathf.LerpUnclamped(backButtonFrom, backButtonTo, eased), false);
             }
 
             yield return null;
@@ -258,6 +310,7 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         SetProgress(progress.to);
         if (!backgroundHidden) HideBackgroundPanel();
         if (panel != null) SetAnchoredX(panel, movement.toX);
+        SetReadyBackButtonAlpha(backButtonTo, opening);
         panelSequence = null;
         onComplete?.Invoke();
     }
