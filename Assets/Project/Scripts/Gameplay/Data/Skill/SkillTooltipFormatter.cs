@@ -159,7 +159,7 @@ namespace Relic.Gameplay.Data
 
         private static string GetDescriptionSource(SkillMasterData skill)
         {
-            return skill?.Details ?? string.Empty;
+            return GameDataLocalization.SkillDetailsTemplate(skill);
         }
 
         // ValueRate / CountRate 토큰은 SkillDescriptionFormatter에서 처리합니다.

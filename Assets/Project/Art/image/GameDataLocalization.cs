@@ -70,9 +70,27 @@ namespace Relic.Gameplay.Data
 
         public static string ResolveLocalizedOrSource(string localized, string source)
         {
-            return LocalizationTextRules.IsMissingTranslationMarker(localized) || string.IsNullOrWhiteSpace(localized)
+            return ResolveLocalizedOrSource(
+                localized,
+                source,
+                UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code);
+        }
+
+        public static string ResolveLocalizedOrSource(string localized, string source, string localeCode)
+        {
+            if (!LocalizationTextRules.IsMissingTranslationMarker(localized) &&
+                !string.IsNullOrWhiteSpace(localized))
+            {
+                return localized;
+            }
+
+            bool useKoreanSource = string.IsNullOrWhiteSpace(localeCode) ||
+                                   localeCode.StartsWith(
+                                       "ko",
+                                       System.StringComparison.OrdinalIgnoreCase);
+            return useKoreanSource
                 ? source ?? string.Empty
-                : localized;
+                : localized ?? string.Empty;
         }
 
         public static string MonsterSkillName(MonsterSkillData data)

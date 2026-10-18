@@ -7,6 +7,17 @@ using System.Text.RegularExpressions;
 
 public sealed class LocalizationComprehensiveCoverageTests
 {
+    private static readonly Regex LocalizationTokenRegex = new Regex(
+        @"\{[^{}]+\}",
+        RegexOptions.Compiled);
+
+    private static readonly HashSet<string> StructuredSentencePrefixExceptions =
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            "skill.sentence.special.missing_hp",
+            "skill.sentence.special.armor",
+        };
+
     private static readonly string[] RequiredRuntimeKeys =
     {
         "battle.action.move", "battle.action.damage", "battle.action.push", "battle.action.pull",
@@ -46,6 +57,81 @@ public sealed class LocalizationComprehensiveCoverageTests
             Assert.That(byKey, Does.ContainKey(key), key);
             Assert.That(byKey[key].Count, Is.GreaterThan(3), key);
             Assert.That(byKey[key][3], Is.Not.Empty, key);
+        }
+    }
+
+    [Test]
+    public void LocalizationWorkbook_KoreanEntriesHaveEnglishTranslationsWithMatchingTokens()
+    {
+        IReadOnlyList<IReadOnlyList<string>> rows =
+            LocalizationXlsxReader.ReadSheet("Assets/ExcelSource/Localization.xlsx", "Text");
+
+        foreach (IReadOnlyList<string> row in rows.Skip(1))
+        {
+            if (row.Count <= 3 || string.IsNullOrWhiteSpace(row[0]) || string.IsNullOrWhiteSpace(row[2]))
+                continue;
+
+            string key = row[0];
+            string korean = row[2];
+            string english = row[3];
+
+            Assert.That(english, Is.Not.Empty, $"{key}:en");
+            if (StructuredSentencePrefixExceptions.Contains(key))
+                continue;
+
+            string[] koreanTokens = LocalizationTokenRegex.Matches(korean)
+                .Select(match => match.Value)
+                .Where(token => !key.StartsWith("skill.sentence.", StringComparison.Ordinal) || token != "{1}")
+                .ToArray();
+            CollectionAssert.AreEquivalent(
+                koreanTokens,
+                LocalizationTokenRegex.Matches(english).Select(match => match.Value).ToArray(),
+                $"{key}의 영어 번역은 한국어 원문의 치환 토큰을 동일하게 보존해야 합니다.");
+        }
+    }
+
+    [Test]
+    public void BattleRelicExtractionButton_HasEnglishTranslation()
+    {
+        const string extractionButtonKey =
+            "ui.battle.canvas.relic_panel.extractbutton.text_tmp.b5d536cd";
+        IReadOnlyList<IReadOnlyList<string>> rows =
+            LocalizationXlsxReader.ReadSheet("Assets/ExcelSource/Localization.xlsx", "Text");
+        IReadOnlyList<string> row = rows.Skip(1).Single(candidate =>
+            candidate.Count > 0 && candidate[0] == extractionButtonKey);
+
+        Assert.That(row.Count, Is.GreaterThan(3));
+        Assert.That(row[3], Is.EqualTo("Extract"));
+    }
+
+    [Test]
+    public void RuntimeSkillSentenceCatalog_CoversEverySentenceKeyGeneratedByCurrentSkills()
+    {
+        IReadOnlyList<IReadOnlyList<string>> gameRows =
+            LocalizationXlsxReader.ReadSheet("Assets/ExcelSource/GameData.xlsx", "SkillMaster");
+        HashSet<string> catalogKeys = LocalizationRuntimeSourceCatalog.SkillSentenceEntries
+            .Select(entry => entry.Key)
+            .ToHashSet(StringComparer.Ordinal);
+
+        foreach (string key in CollectGeneratedSkillSentenceKeys(gameRows))
+            Assert.That(catalogKeys, Does.Contain(key), key);
+    }
+
+    [Test]
+    public void LocalizationWorkbook_RuntimeSkillSentenceKeysHaveKoreanAndEnglishTemplates()
+    {
+        IReadOnlyList<IReadOnlyList<string>> localizationRows =
+            LocalizationXlsxReader.ReadSheet("Assets/ExcelSource/Localization.xlsx", "Text");
+        Dictionary<string, IReadOnlyList<string>> byKey = localizationRows.Skip(1)
+            .Where(row => row.Count > 0 && !string.IsNullOrWhiteSpace(row[0]))
+            .ToDictionary(row => row[0], row => row, StringComparer.Ordinal);
+
+        foreach (LocalizationWorkbookEntry entry in LocalizationRuntimeSourceCatalog.SkillSentenceEntries)
+        {
+            Assert.That(byKey, Does.ContainKey(entry.Key), entry.Key);
+            Assert.That(byKey[entry.Key].Count, Is.GreaterThan(3), entry.Key);
+            Assert.That(byKey[entry.Key][2], Is.Not.Empty, $"{entry.Key}:ko");
+            Assert.That(byKey[entry.Key][3], Is.Not.Empty, $"{entry.Key}:en");
         }
     }
 
@@ -290,6 +376,52 @@ public sealed class LocalizationComprehensiveCoverageTests
 
         Assert.That(source, Does.Contain("LocalizationRuntimeRefreshCoordinator.LocaleTableReady"));
         Assert.That(source, Does.Contain("ProtectDynamicDescriptionTexts"));
+    }
+
+    private static IEnumerable<string> CollectGeneratedSkillSentenceKeys(
+        IReadOnlyList<IReadOnlyList<string>> rows)
+    {
+        IReadOnlyList<string> headers = rows[1];
+        int detailsColumn = FindHeader(headers, "Details");
+        int countRateColumn = FindHeader(headers, "CountRate");
+        var effectRegex = new Regex(@"\{(?<id>E_[A-Za-z0-9_]+)\}\s+\{ValueRate(?<index>\d+)\}");
+
+        foreach (IReadOnlyList<string> row in rows.Skip(2))
+        {
+            string details = detailsColumn < row.Count ? row[detailsColumn] : string.Empty;
+            string[] counts = countRateColumn < row.Count
+                ? row[countRateColumn].Split(';')
+                : Array.Empty<string>();
+            MatchCollection matches = effectRegex.Matches(details ?? string.Empty);
+            for (int matchIndex = 0; matchIndex < matches.Count; matchIndex++)
+            {
+                string effectId = matches[matchIndex].Groups["id"].Value;
+                int valueIndex = int.Parse(matches[matchIndex].Groups["index"].Value) - 1;
+                string count = valueIndex >= 0 && valueIndex < counts.Length
+                    ? counts[valueIndex]
+                    : counts.FirstOrDefault() ?? "1";
+                bool multiple = int.TryParse(Regex.Replace(count, "<[^>]+>", string.Empty), out int parsed) &&
+                                parsed > 1;
+                string action = ResolveSentenceAction(effectId);
+                string unit = effectId == "E_Knockback" || effectId == "E_Grab" ? "tile" : "amount";
+                string position = matchIndex == matches.Count - 1 ? "final" : "linked";
+                yield return $"skill.sentence.{action}.{unit}.{(multiple ? "multiple" : "single")}.{position}";
+            }
+        }
+    }
+
+    private static string ResolveSentenceAction(string effectId)
+    {
+        if (effectId == "E_Strike" || effectId == "E_Pierce" || effectId == "E_MissingHPStrike")
+            return "deal";
+        if (effectId == "E_Knockback" || effectId == "E_Grab")
+            return "apply";
+        if (effectId == "E_Heal" || effectId == "E_Cure")
+            return "restore";
+        if (new[] { "E_Boost", "E_Grit", "E_Charge", "E_Smite", "E_Swift", "E_Lifesteal", "E_Karma", "E_Mana" }
+            .Contains(effectId))
+            return "gain";
+        return "grant";
     }
 
     private static int FindHeader(IReadOnlyList<string> headers, params string[] names)
