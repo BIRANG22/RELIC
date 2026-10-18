@@ -169,17 +169,11 @@ public sealed class LobbyTutorialController : MonoBehaviour
         if (dialoguePanel == null)
             return;
 
-        // DialoguePanel은 별도 Canvas(9050)를 사용하므로 자체 GraphicRaycaster가 있어야
-        // 9049의 TutorialInputBlocker보다 위에서 실제 포인터 입력을 받을 수 있습니다.
+        // DialoguePanel의 Canvas 정렬 설정은 프리팹 인스펙터 값을 그대로 사용합니다.
+        // 입력 블로커의 정렬 순서는 이 Canvas의 현재 Sorting Order를 기준으로 계산합니다.
         Canvas dialogueCanvas = dialoguePanel.GetComponent<Canvas>();
-        if (dialogueCanvas != null)
-        {
-            dialogueCanvas.overrideSorting = true;
-            dialogueCanvas.sortingOrder = 9050;
-
-            if (dialoguePanel.GetComponent<GraphicRaycaster>() == null)
-                dialoguePanel.AddComponent<GraphicRaycaster>();
-        }
+        if (dialogueCanvas != null && dialoguePanel.GetComponent<GraphicRaycaster>() == null)
+            dialoguePanel.AddComponent<GraphicRaycaster>();
 
         // 패널의 빈 영역도 클릭 대상으로 만들기 위해 완전 투명 Image를 사용합니다.
         // 기존 자식 UI의 표시에는 영향을 주지 않으며 Raycast만 받습니다.

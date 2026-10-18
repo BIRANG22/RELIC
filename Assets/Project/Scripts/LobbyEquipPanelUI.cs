@@ -25,7 +25,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private const int CompoundMinimumSlotCount = 15;
     private const int ReadyRelicMinimumSlotCount = 3;
     private const int ReadyCompoundMinimumSlotCount = 6;
-    private const int EquipmentDragSortingOrder = 10000;
+    private const int EquipmentDragSortingOrder = 10010;
     private const string EquipButtonDefaultText = "장착";
     private const string EquipButtonCancelText = "취소";
     private static readonly Color InfoEquipmentLineNormalColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
@@ -120,6 +120,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private readonly LobbyReadyEquipmentPointerRelay[] infoCompoundTargetRelays = new LobbyReadyEquipmentPointerRelay[CharacterCount];
     private readonly Image[,] infoRelicTargetLines = new Image[CharacterCount, InfoPanelRelicSlotCount];
     private readonly Image[] infoCompoundTargetLines = new Image[CharacterCount];
+    private readonly Image[] infoRelicTargetLabels = new Image[CharacterCount];
+    private readonly Image[] infoCompoundTargetLabels = new Image[CharacterCount];
     private readonly Image[,] infoRelicTargetBacks = new Image[CharacterCount, InfoPanelRelicSlotCount];
     private readonly Color[,] infoRelicTargetBackNormalColors = new Color[CharacterCount, InfoPanelRelicSlotCount];
     private readonly Image[] infoCompoundTargetBacks = new Image[CharacterCount];
@@ -141,8 +143,26 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private bool isClosing;
     private bool isPreparingOpen;
 
+    // Ready 화면이 열리거나 전환 중이면 월드 오브젝트 입력을 차단합니다.
+    private static readonly HashSet<LobbyEquipPanelUI> ActiveReadyPanels = new HashSet<LobbyEquipPanelUI>();
+
+    public static bool IsAnyReadyPanelBlockingWorldInput
+    {
+        get
+        {
+            foreach (LobbyEquipPanelUI panel in ActiveReadyPanels)
+            {
+                if (panel != null && panel.isActiveAndEnabled &&
+                    (panel.isPreparingOpen || panel.isOpen || panel.isClosing))
+                    return true;
+            }
+            return false;
+        }
+    }
+
     public bool IsOpen => isOpen && !isClosing;
     public event Action<bool> OpenStateChanged;
+    public event Action OpenTransitionCompleted;
     public event Action Closed;
 
     /// <summary>
@@ -190,6 +210,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void OnEnable()
     {
+        ActiveReadyPanels.Add(this);
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
         ResolvePanelRoot();
@@ -241,6 +262,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        ActiveReadyPanels.Remove(this);
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
         UnbindReadyPanelBackButton();
         StopPanelMovement();
@@ -348,9 +370,18 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
         ResolveReadyTransition();
         if (readyTransition != null && readyTransition.isActiveAndEnabled)
-            readyTransition.OpenPanel(ResolveMovingPanel());
+            readyTransition.OpenPanel(ResolveMovingPanel(), HandleOpenTransitionCompleted);
         else
+        {
             Debug.LogWarning("[LobbyEquipPanelUI] ReadyTransitionProgressUI is not assigned or enabled.", this);
+            HandleOpenTransitionCompleted();
+        }
+    }
+
+    private void HandleOpenTransitionCompleted()
+    {
+        if (this != null && IsOpen)
+            OpenTransitionCompleted?.Invoke();
     }
 
     private RectTransform ResolveMovingPanel()
@@ -1531,6 +1562,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                     visibleIndex);
 
                 infoRelicTargetLines[partyIndex, visibleIndex] = FindLineImage(relicSlot);
+                Transform relicLabel = relicSlot.Find("Relic");
+                infoRelicTargetLabels[partyIndex] = relicLabel != null ? relicLabel.GetComponent<Image>() : null;
                 infoRelicTargetBacks[partyIndex, visibleIndex] = FindBackImage(relicSlot);
                 if (infoRelicTargetBacks[partyIndex, visibleIndex] != null)
                 {
@@ -1553,6 +1586,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                     visibleIndex: 0);
 
                 infoCompoundTargetLines[partyIndex] = FindLineImage(compoundSlot);
+                Transform compoundLabel = compoundSlot.Find("Compound");
+                infoCompoundTargetLabels[partyIndex] = compoundLabel != null ? compoundLabel.GetComponent<Image>() : null;
                 infoCompoundTargetBacks[partyIndex] = FindBackImage(compoundSlot);
                 if (infoCompoundTargetBacks[partyIndex] != null)
                 {
@@ -1786,6 +1821,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
                 infoRelicTargetBackNormalColors[partyIndex, slotIndex] = Color.white;
             }
 
+            infoRelicTargetLabels[partyIndex] = null;
+            infoCompoundTargetLabels[partyIndex] = null;
             infoCompoundTargetRelays[partyIndex] = null;
             infoCompoundTargetLines[partyIndex] = null;
             infoCompoundTargetBacks[partyIndex] = null;
@@ -1918,7 +1955,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void UpdateInfoEquipmentSlotGuide()
     {
-        bool hasSelection = readyDetailPinnedSlot != null &&
+        bool hasSelection = !equipmentDragFromInfo &&
+                            readyDetailPinnedSlot != null &&
                             readyDetailPinnedSlot.HasItem &&
                             !string.IsNullOrWhiteSpace(readyDetailPinnedSlot.ItemId);
 
@@ -1947,6 +1985,15 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             Image compoundLine = infoCompoundTargetLines[partyIndex];
             if (compoundLine != null)
                 compoundLine.color = compoundLineColor;
+
+            // 선택 중인 장비 종류의 내부 심볼도 Line과 함께 강조합니다.
+            Image relicLabel = infoRelicTargetLabels[partyIndex];
+            if (relicLabel != null)
+                relicLabel.color = highlightRelic ? InfoEquipmentLineHighlightColor : InfoEquipmentLineDisabledColor;
+
+            Image compoundLabel = infoCompoundTargetLabels[partyIndex];
+            if (compoundLabel != null)
+                compoundLabel.color = highlightCompound ? InfoEquipmentLineHighlightColor : InfoEquipmentLineDisabledColor;
         }
     }
 
@@ -2156,6 +2203,10 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             return;
         }
 
+        // A drag originating from an equipped character slot must not select
+        // an inventory item or leave its Select_Line highlighted.
+        HideReadyInventoryDetail();
+
         equipmentDragItemId = itemId;
         equipmentDragIsCompound = isCompound;
         equipmentDragFromInfo = true;
@@ -2210,6 +2261,10 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             return;
 
         equipmentDragHandled = true;
+        // The source slot can be rebound during RefreshAfterEquipmentChange,
+        // so its OnEndDrag callback is not guaranteed to run after a successful drop.
+        // Clean up the drag preview here, without waiting for the source event.
+        ClearEquipmentDragState();
         RefreshAfterEquipmentChange();
     }
 
@@ -2373,9 +2428,15 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     private void DestroyEquipmentDragGhost()
     {
         if (equipmentDragCanvasObject != null)
+        {
+            equipmentDragCanvasObject.SetActive(false);
             Destroy(equipmentDragCanvasObject);
+        }
         else if (equipmentDragGhostRect != null)
+        {
+            equipmentDragGhostRect.gameObject.SetActive(false);
             Destroy(equipmentDragGhostRect.gameObject);
+        }
 
         equipmentDragCanvasObject = null;
         equipmentDragCanvas = null;

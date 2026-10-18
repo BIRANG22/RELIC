@@ -249,7 +249,8 @@ public static class LobbyPositionModalInputBlocker
     private static object owner;
 
     public static bool IsBlocked =>
-        owner != null || PanelCameraMover.IsAnyTargetPanelOpen();
+        owner != null || PanelCameraMover.IsAnyTargetPanelOpen() ||
+        LobbyEquipPanelUI.IsAnyReadyPanelBlockingWorldInput;
 
     public static void Block(object ownerToken)
     {
@@ -272,6 +273,7 @@ public static class LobbyPositionModalInputBlocker
 
     public static bool IsBlockedByAnother(object ownerToken)
     {
-        return owner != null && !ReferenceEquals(owner, ownerToken);
+        return (owner != null && !ReferenceEquals(owner, ownerToken)) ||
+            (LobbyEquipPanelUI.IsAnyReadyPanelBlockingWorldInput && !(ownerToken is LobbyEquipPanelUI));
     }
 }

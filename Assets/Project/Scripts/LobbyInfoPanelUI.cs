@@ -50,6 +50,10 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
     [SerializeField] private float tooltipOffsetX = 24f;
     [Tooltip("호버 대상의 오른쪽 중앙을 기준으로 TooltipPanel에 더할 Y 위치입니다. Canvas 로컬 좌표 기준이라 해상도에 영향을 받지 않습니다.")]
     [SerializeField] private float tooltipOffsetY = 0f;
+    [Header("Tooltip Screen Bounds")]
+    [SerializeField] private bool keepTooltipInsideScreen = true;
+    [Min(0f)][SerializeField] private float tooltipScreenPadding = 12f;
+
     [Min(0f)][SerializeField] private float tooltipFadeInDuration = 0.25f;
     [Min(0f)][SerializeField] private float tooltipFadeOutDuration = 0.05f;
 
@@ -640,6 +644,62 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         // Screen 좌표/픽셀 변환을 거치지 않고 같은 Canvas의 로컬 좌표에서 배치하므로
         // CanvasScaler와 해상도가 달라져도 호버 대상과 TooltipPanel의 상대 간격이 유지됩니다.
         tooltipRect.position = parentRect.TransformPoint(local);
+        if (keepTooltipInsideScreen)
+            ClampTooltipToCanvas(tooltipRect);
+
+    }
+
+    private void ClampTooltipToCanvas(RectTransform tooltipRect)
+    {
+        Canvas canvas = tooltipRect.GetComponentInParent<Canvas>();
+        if (canvas == null || canvas.rootCanvas == null)
+            return;
+
+        RectTransform canvasRect = canvas.rootCanvas.transform as RectTransform;
+        if (canvasRect == null)
+            return;
+
+        // Force layout calculation before reading the tooltip dimensions.
+        LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
+        Vector3[] tooltipCorners = new Vector3[4];
+        tooltipRect.GetWorldCorners(tooltipCorners);
+
+        float left = float.PositiveInfinity;
+        float right = float.NegativeInfinity;
+        float bottom = float.PositiveInfinity;
+        float top = float.NegativeInfinity;
+        for (int i = 0; i < tooltipCorners.Length; i++)
+        {
+            Vector3 corner = canvasRect.InverseTransformPoint(tooltipCorners[i]);
+            left = Mathf.Min(left, corner.x);
+            right = Mathf.Max(right, corner.x);
+            bottom = Mathf.Min(bottom, corner.y);
+            top = Mathf.Max(top, corner.y);
+        }
+
+        Rect bounds = canvasRect.rect;
+        float minX = bounds.xMin + tooltipScreenPadding;
+        float maxX = bounds.xMax - tooltipScreenPadding;
+        float minY = bounds.yMin + tooltipScreenPadding;
+        float maxY = bounds.yMax - tooltipScreenPadding;
+
+        float dx = 0f;
+        float dy = 0f;
+        if (right - left > maxX - minX)
+            dx = (minX + maxX - left - right) * 0.5f;
+        else if (left < minX)
+            dx = minX - left;
+        else if (right > maxX)
+            dx = maxX - right;
+
+        if (top - bottom > maxY - minY)
+            dy = (minY + maxY - bottom - top) * 0.5f;
+        else if (bottom < minY)
+            dy = minY - bottom;
+        else if (top > maxY)
+            dy = maxY - top;
+
+        tooltipRect.position += canvasRect.TransformVector(new Vector3(dx, dy, 0f));
     }
 
     private void ApplyTooltipRarityColor(string rarity)

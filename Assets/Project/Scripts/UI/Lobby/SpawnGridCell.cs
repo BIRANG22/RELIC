@@ -53,6 +53,7 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         AutoBindReadyPanelHierarchy();
         cellImage = backImage != null ? backImage : GetComponent<Image>();
         CacheOriginalBackColor();
+        EnsureGridPointerRaycast();
 
         if (button == null)
             button = GetComponent<Button>();
@@ -69,6 +70,27 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         }
 
         Refresh();
+    }
+
+    // Keep the Ready grid itself as the pointer target. Decorative child images
+    // must not intercept clicks and drags intended for SpawnGridCell.
+    private void EnsureGridPointerRaycast()
+    {
+        Image rootImage = GetComponent<Image>();
+        if (rootImage == null)
+        {
+            rootImage = gameObject.AddComponent<Image>();
+            rootImage.color = new Color(1f, 1f, 1f, 0f);
+        }
+        rootImage.raycastTarget = true;
+
+        Graphic[] childGraphics = GetComponentsInChildren<Graphic>(true);
+        for (int i = 0; i < childGraphics.Length; i++)
+        {
+            Graphic graphic = childGraphics[i];
+            if (graphic != null && graphic.transform != transform)
+                graphic.raycastTarget = false;
+        }
     }
 
     private void OnDisable()

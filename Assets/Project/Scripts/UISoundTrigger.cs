@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 /// <summary>
 /// UI 오브젝트의 호버 및 클릭 사운드만 담당하는 독립 컴포넌트입니다.
@@ -29,7 +30,7 @@ public class UISoundTrigger : MonoBehaviour, IPointerEnterHandler, IPointerDownH
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!playHoverSound)
+        if (!playHoverSound || !CanPlaySound())
             return;
 
         PlaySfx(hoverSoundId, hoverSoundVolume);
@@ -37,10 +38,31 @@ public class UISoundTrigger : MonoBehaviour, IPointerEnterHandler, IPointerDownH
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (!playClickSound || eventData.button != PointerEventData.InputButton.Left)
+        if (!playClickSound || !CanPlaySound() || eventData.button != PointerEventData.InputButton.Left)
             return;
 
         PlaySfx(clickSoundId, clickSoundVolume);
+    }
+
+    private bool CanPlaySound()
+    {
+        if (IsDisabledButton())
+            return false;
+
+        // Ready relic/compound inventory slots share a prefab. Empty slots
+        // can receive pointer events, but must never play hover/click SFX.
+        BattleBagItemSlotUI itemSlot = GetComponentInParent<BattleBagItemSlotUI>();
+        if (itemSlot != null && !itemSlot.HasItem)
+            return false;
+
+        return true;
+    }
+
+    private bool IsDisabledButton()
+    {
+        // Pointer events can reach UISoundTrigger even if Unity UI Button is disabled.
+        Button parentButton = GetComponentInParent<Button>();
+        return parentButton != null && (!parentButton.isActiveAndEnabled || !parentButton.interactable);
     }
 
     private void PlaySfx(string soundId, float volume)

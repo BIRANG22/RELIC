@@ -58,6 +58,24 @@ public class CharBtn : MonoBehaviour,
     [Tooltip("CharBtn/Compound. 파티 선택 전에는 비활성화되고 선택되면 활성화됩니다.")]
     [SerializeField] private GameObject infoPanelCompoundRoot;
 
+    [Header("Ready Equipment Slot Fade")]
+    [SerializeField, Min(0.01f)] private float equipmentSlotFadeDuration = 0.25f;
+    [SerializeField, Min(0f)] private float equipmentSlotSlideOffset = 24f;
+
+    private sealed class EquipmentSlotVisual
+    {
+        public GameObject Root;
+        public RectTransform Rect;
+        public CanvasGroup Group;
+        public Vector3 BasePosition;
+        public Coroutine Routine;
+        public bool Initialized;
+        public bool TargetVisible;
+    }
+
+    private readonly EquipmentSlotVisual relicSlotVisual = new EquipmentSlotVisual();
+    private readonly EquipmentSlotVisual compoundSlotVisual = new EquipmentSlotVisual();
+
     [Header("Character Select State")]
     [SerializeField] private float viewedCharacterFixedScale = 1.2f;
     [SerializeField] private Image jobmarkImage;
@@ -288,6 +306,8 @@ public class CharBtn : MonoBehaviour,
 
     private void OnDisable()
     {
+        ResetEquipmentSlotVisual(relicSlotVisual);
+        ResetEquipmentSlotVisual(compoundSlotVisual);
         StopInfoPanelIdleAnimation();
 
         if (charBtnHoverCoroutine != null)
@@ -1177,11 +1197,8 @@ public class CharBtn : MonoBehaviour,
         AutoPrepareInfoPanelCharacterButtonReferences();
         CacheInfoPanelIdleImage();
 
-        if (infoPanelRelicRoot != null)
-            infoPanelRelicRoot.SetActive(isSelectedForParty);
-
-        if (infoPanelCompoundRoot != null)
-            infoPanelCompoundRoot.SetActive(isSelectedForParty);
+        UpdateEquipmentSlotVisual(relicSlotVisual, infoPanelRelicRoot, isSelectedForParty);
+        UpdateEquipmentSlotVisual(compoundSlotVisual, infoPanelCompoundRoot, isSelectedForParty);
 
         infoPanelSelectedForParty = isSelectedForParty;
 
@@ -1190,6 +1207,106 @@ public class CharBtn : MonoBehaviour,
         ApplyInfoPanelHoverBackground(false);
 
         RestartInfoPanelIdleAnimation();
+    }
+
+    private void UpdateEquipmentSlotVisual(EquipmentSlotVisual visual, GameObject root, bool visible)
+    {
+        if (root == null)
+            return;
+
+        if (visual.Root != root)
+        {
+            visual.Root = root;
+            visual.Rect = root.GetComponent<RectTransform>();
+            visual.Group = root.GetComponent<CanvasGroup>();
+            if (visual.Group == null)
+                visual.Group = root.AddComponent<CanvasGroup>();
+            visual.BasePosition = visual.Rect != null ? visual.Rect.localPosition : Vector3.zero;
+            visual.Initialized = false;
+        }
+
+        if (!visual.Initialized || !isActiveAndEnabled)
+        {
+            if (visual.Routine != null)
+            {
+                StopCoroutine(visual.Routine);
+                visual.Routine = null;
+            }
+            visual.Initialized = true;
+            visual.TargetVisible = visible;
+            root.SetActive(visible);
+            visual.Group.alpha = visible ? 1f : 0f;
+            visual.Group.interactable = visible;
+            visual.Group.blocksRaycasts = visible;
+            if (visual.Rect != null)
+                visual.Rect.localPosition = visual.BasePosition;
+            return;
+        }
+
+        if (visual.TargetVisible == visible)
+            return;
+
+        visual.TargetVisible = visible;
+        if (visual.Routine != null)
+            StopCoroutine(visual.Routine);
+        root.SetActive(true);
+        visual.Group.interactable = visible;
+        visual.Group.blocksRaycasts = visible;
+        visual.Routine = StartCoroutine(AnimateEquipmentSlotVisual(visual, visible));
+    }
+
+    private IEnumerator AnimateEquipmentSlotVisual(EquipmentSlotVisual visual, bool showing)
+    {
+        // Fade in: above -> base. Fade out: current -> above.
+        float duration = Mathf.Max(0.01f, equipmentSlotFadeDuration);
+        float fromAlpha = visual.Group.alpha;
+        float toAlpha = showing ? 1f : 0f;
+        Vector3 startPosition = visual.Rect != null ? visual.Rect.localPosition : Vector3.zero;
+        Vector3 targetPosition = visual.BasePosition + (showing ? Vector3.zero : Vector3.up * equipmentSlotSlideOffset);
+        if (showing && fromAlpha <= 0.001f)
+        {
+            startPosition = visual.BasePosition + Vector3.up * equipmentSlotSlideOffset;
+            if (visual.Rect != null)
+                visual.Rect.localPosition = startPosition;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            t = t * t * (3f - 2f * t);
+            visual.Group.alpha = Mathf.Lerp(fromAlpha, toAlpha, t);
+            if (visual.Rect != null)
+                visual.Rect.localPosition = Vector3.LerpUnclamped(startPosition, targetPosition, t);
+            yield return null;
+        }
+
+        visual.Group.alpha = toAlpha;
+        if (visual.Rect != null)
+            visual.Rect.localPosition = visual.BasePosition;
+        if (!showing)
+            visual.Root.SetActive(false);
+        visual.Routine = null;
+    }
+
+    private void ResetEquipmentSlotVisual(EquipmentSlotVisual visual)
+    {
+        if (visual.Routine != null)
+        {
+            StopCoroutine(visual.Routine);
+            visual.Routine = null;
+        }
+        if (visual.Rect != null)
+            visual.Rect.localPosition = visual.BasePosition;
+        if (visual.Group != null)
+        {
+            visual.Group.alpha = visual.TargetVisible ? 1f : 0f;
+            visual.Group.interactable = visual.TargetVisible;
+            visual.Group.blocksRaycasts = visual.TargetVisible;
+        }
+        if (visual.Root != null)
+            visual.Root.SetActive(visual.TargetVisible);
     }
 
     private void RestartInfoPanelIdleAnimation()

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 /// <summary>
 /// 버튼에 마우스를 올리거나 클릭했을 때 위치/크기 애니메이션을 적용하고,
@@ -169,8 +170,22 @@ public class ButtonAnimationCoroutine :
     /// </summary>
     private bool IsInteractionBlocked()
     {
-        return !interactionEnabled ||
-               (startImageObject != null && startImageObject.activeInHierarchy);
+        if (!interactionEnabled ||
+            (startImageObject != null && startImageObject.activeInHierarchy))
+        {
+            return true;
+        }
+
+        // ButtonAnimationCoroutine receives pointer events independently of Button.onClick.
+        // Do not play hover/click sounds while the owning button is disabled.
+        Button owningButton = GetComponent<Button>();
+        if (owningButton == null)
+        {
+            owningButton = GetComponentInParent<Button>();
+        }
+
+        return owningButton != null &&
+               (!owningButton.isActiveAndEnabled || !owningButton.interactable);
     }
 
     /// <summary>
