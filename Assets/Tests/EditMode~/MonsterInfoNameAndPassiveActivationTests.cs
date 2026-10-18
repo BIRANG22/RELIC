@@ -13,8 +13,30 @@ public sealed class MonsterInfoNameAndPassiveActivationTests
     public void PlayerSkillHoverDescription_UsesExcelSourceWhenLocalizationIsMissing()
     {
         Assert.That(
-            GameDataLocalization.ResolveLocalizedOrSource("미번역", "{E_Strike} {ValueRate1}"),
+            GameDataLocalization.ResolveLocalizedOrSource("미번역", "{E_Strike} {ValueRate1}", "ko"),
             Is.EqualTo("{E_Strike} {ValueRate1}"));
+    }
+
+    [Test]
+    public void EnglishMissingSkillTranslation_DoesNotFallBackToKoreanSource()
+    {
+        Assert.That(
+            GameDataLocalization.ResolveLocalizedOrSource(
+                "Untranslated",
+                "한국어 스킬 원문",
+                "en"),
+            Is.EqualTo("Untranslated"));
+    }
+
+    [Test]
+    public void KoreanMissingSkillTranslation_UsesKoreanSource()
+    {
+        Assert.That(
+            GameDataLocalization.ResolveLocalizedOrSource(
+                "미번역",
+                "한국어 스킬 원문",
+                "ko"),
+            Is.EqualTo("한국어 스킬 원문"));
     }
 
     [Test]

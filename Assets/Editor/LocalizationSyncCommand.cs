@@ -212,7 +212,7 @@ public static class LocalizationSyncCommand
         E(LocalizationKeys.Tutorial.BattleGuide03, string.Empty),
         E(LocalizationKeys.Tutorial.BattleGuide04, string.Empty),
         E(LocalizationKeys.Tutorial.BattleGuide05, string.Empty),
-    }.Concat(LocalizationRuntimeSourceCatalog.BattleFirstTutorialEntries).ToArray();
+    }.Concat(LocalizationRuntimeSourceCatalog.AllEntries).ToArray();
     private static IReadOnlyList<LocalizationWorkbookEntry> SkillSettingEntries() => new[]
     {
         E(LocalizationKeys.SkillInfo.Cost, "소모 : {0}"), E(LocalizationKeys.SkillInfo.Type, "방식 : {0}"), E(LocalizationKeys.SkillInfo.Effect, "효과 : {0}"),

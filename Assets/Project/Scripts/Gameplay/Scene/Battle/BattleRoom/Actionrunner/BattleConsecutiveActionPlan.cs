@@ -348,8 +348,6 @@ public static class BattleConsecutiveActionPresentationContext
     private static readonly Dictionary<Animator, float> ManagedAnimators = new();
     private static int activeGroupId = -1;
     private static int battleExecutionDepth;
-    private static BattleHitImpactFeedback suppressedStatusFeedback;
-    private static bool suppressedStatusFeedbackWasEnabled;
 
     public static BattleConsecutiveActionInfo CurrentInfo { get; private set; } =
         BattleConsecutiveActionInfo.Single;
@@ -384,9 +382,6 @@ public static class BattleConsecutiveActionPresentationContext
     public static bool ShouldPlayExternalImpact =>
         CurrentInfo.ShouldPlayExternalImpact;
 
-    public static bool ShouldPlayStatusPulse =>
-        CurrentInfo.ShouldPlayExternalImpact;
-
     public static void BeginAction(BattleConsecutiveActionInfo info)
     {
         if (!info.IsGrouped)
@@ -401,7 +396,6 @@ public static class BattleConsecutiveActionPresentationContext
 
         activeGroupId = info.GroupId;
         CurrentInfo = info;
-        SetStatusPulseSuppressed(!info.ShouldPlayExternalImpact);
     }
 
     public static void CompleteAction(
@@ -483,8 +477,6 @@ public static class BattleConsecutiveActionPresentationContext
 
     public static void EndGroup()
     {
-        RestoreStatusPulseFeedback();
-
         foreach (KeyValuePair<Animator, float> pair in ManagedAnimators)
         {
             if (pair.Key != null)
@@ -496,38 +488,4 @@ public static class BattleConsecutiveActionPresentationContext
         CurrentInfo = BattleConsecutiveActionInfo.Single;
     }
 
-    private static void SetStatusPulseSuppressed(bool suppressed)
-    {
-        if (!suppressed)
-        {
-            RestoreStatusPulseFeedback();
-            return;
-        }
-
-        if (suppressedStatusFeedback != null)
-            return;
-
-        // 기존 상태 펄스 진입점을 수정하지 않고도 중간 그룹 행동만 억제하기 위해
-        // 자동 인스턴스를 확보한 뒤 Behaviour 활성 상태를 그룹 경계 동안 보존합니다.
-        BattleHitImpactFeedback.PlayStatusHitFeedback(null);
-        BattleHitImpactFeedback feedback =
-            UnityEngine.Object.FindFirstObjectByType<BattleHitImpactFeedback>(
-                FindObjectsInactive.Include);
-
-        if (feedback == null)
-            return;
-
-        suppressedStatusFeedback = feedback;
-        suppressedStatusFeedbackWasEnabled = feedback.enabled;
-        feedback.enabled = false;
-    }
-
-    private static void RestoreStatusPulseFeedback()
-    {
-        if (suppressedStatusFeedback != null)
-            suppressedStatusFeedback.enabled = suppressedStatusFeedbackWasEnabled;
-
-        suppressedStatusFeedback = null;
-        suppressedStatusFeedbackWasEnabled = false;
-    }
 }

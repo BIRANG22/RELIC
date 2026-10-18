@@ -415,5 +415,21 @@ public static class LocalizationRuntimeSourceCatalog
         Entry(LocalizationKeys.Tutorial.Battle1EndTurnRepeat, "턴 엔드 버튼 또는 Space를 눌러 예약을 종료합니다."),
     };
 
+    public static IReadOnlyList<LocalizationWorkbookEntry> SkillSentenceEntries { get; } = new[]
+    {
+        Entry("skill.sentence.apply.tile.single.final", "{0}{1} {2}칸 적용한다"),
+        Entry("skill.sentence.deal.amount.multiple.final", "{0}{1} {2}만큼 {3}회 피해를 준다"),
+        Entry("skill.sentence.deal.amount.single.final", "{0}{1} {2}만큼 피해를 준다"),
+        Entry("skill.sentence.deal.amount.single.linked", "{0}{1} {2}만큼 피해를 주고"),
+        Entry("skill.sentence.gain.amount.single.final", "{0}{1} {2}만큼 획득한다"),
+        Entry("skill.sentence.gain.amount.single.linked", "{0}{1} {2}만큼 획득하고"),
+        Entry("skill.sentence.grant.amount.single.final", "{0}{1} {2}만큼 부여한다"),
+        Entry("skill.sentence.grant.amount.single.linked", "{0}{1} {2}만큼 부여하고"),
+        Entry("skill.sentence.restore.amount.single.final", "{0}{1} {2}만큼 회복한다"),
+    };
+
+    public static IReadOnlyList<LocalizationWorkbookEntry> AllEntries { get; } =
+        BattleFirstTutorialEntries.Concat(SkillSentenceEntries).ToArray();
+
     private static LocalizationWorkbookEntry Entry(string key, string korean) => new(key, korean);
 }

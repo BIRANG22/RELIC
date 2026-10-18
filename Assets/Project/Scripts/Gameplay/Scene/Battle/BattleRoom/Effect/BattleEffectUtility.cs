@@ -148,7 +148,6 @@ public static class BattleEffectUtility
         if (AddOrStackStatus(target.RuntimeData.StatusEffects, effectId, stack, count))
         {
             PlayStatusVfx(ResolveUnitAnimator(target), effectId);
-            BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
             OnPlayerHudRefreshRequested?.Invoke(target);
             return true;
         }
@@ -170,7 +169,6 @@ public static class BattleEffectUtility
         if (applied)
         {
             PlayStatusVfx(ResolveUnitAnimator(target), effectId);
-            BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
         }
 
         target.ShowTemporaryHUDForEffect();
@@ -806,7 +804,6 @@ public static class BattleEffectUtility
         target.RuntimeData.CurrentShield += shieldValue;
         BattleDamageTextPopupUI.ShowArmorGain(target.transform, shieldValue);
         PlayStatusVfx(ResolveUnitAnimator(target), "E_Armor");
-        BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
         OnPlayerHudRefreshRequested?.Invoke(target);
     }
 
@@ -823,7 +820,6 @@ public static class BattleEffectUtility
         target.RuntimeData.AddTemporaryShield(shieldValue);
         BattleDamageTextPopupUI.ShowArmorGain(target.transform, shieldValue);
         PlayStatusVfx(ResolveUnitAnimator(target), "E_Armor");
-        BattleHitImpactFeedback.PlayStatusHitFeedback(target.transform);
         target.ShowTemporaryHUDForEffect();
     }
 }
