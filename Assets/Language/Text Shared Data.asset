@@ -6571,10 +6571,6 @@ MonoBehaviour:
     m_Key: ui.record.text_tmp.0857d871
     m_Metadata:
       m_Items: []
-  - m_Id: 22221673364725760
-    m_Key: ui.battle.hover.8f3edee1
-    m_Metadata:
-      m_Items: []
   - m_Id: 22221673364725761
     m_Key: ui.debugbattle.roomroot.democanvas.bossdemopanel.text_tmp.aa86a49a
     m_Metadata:
@@ -6635,166 +6631,6 @@ MonoBehaviour:
     m_Key: data.effect.e_poison_equal_target_poison.tooltip
     m_Metadata:
       m_Items: []
-  - m_Id: 23980218251452432
-    m_Key: skill.sentence.deal.amount.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452433
-    m_Key: skill.sentence.deal.amount.single.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452434
-    m_Key: skill.sentence.deal.amount.multiple.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452435
-    m_Key: skill.sentence.deal.amount.multiple.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452436
-    m_Key: skill.sentence.deal.tile.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452437
-    m_Key: skill.sentence.deal.tile.single.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452438
-    m_Key: skill.sentence.deal.tile.multiple.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452439
-    m_Key: skill.sentence.deal.tile.multiple.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452440
-    m_Key: skill.sentence.apply.amount.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452441
-    m_Key: skill.sentence.apply.amount.single.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452442
-    m_Key: skill.sentence.apply.amount.multiple.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452443
-    m_Key: skill.sentence.apply.amount.multiple.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452444
-    m_Key: skill.sentence.apply.tile.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452445
-    m_Key: skill.sentence.apply.tile.single.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452446
-    m_Key: skill.sentence.apply.tile.multiple.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452447
-    m_Key: skill.sentence.apply.tile.multiple.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452448
-    m_Key: skill.sentence.grant.amount.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452449
-    m_Key: skill.sentence.grant.amount.single.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452450
-    m_Key: skill.sentence.grant.amount.multiple.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452451
-    m_Key: skill.sentence.grant.amount.multiple.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452452
-    m_Key: skill.sentence.grant.tile.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452453
-    m_Key: skill.sentence.grant.tile.single.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452454
-    m_Key: skill.sentence.grant.tile.multiple.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452455
-    m_Key: skill.sentence.grant.tile.multiple.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452456
-    m_Key: skill.sentence.gain.amount.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452457
-    m_Key: skill.sentence.gain.amount.single.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452458
-    m_Key: skill.sentence.gain.amount.multiple.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452459
-    m_Key: skill.sentence.gain.amount.multiple.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452460
-    m_Key: skill.sentence.gain.tile.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452461
-    m_Key: skill.sentence.gain.tile.single.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452462
-    m_Key: skill.sentence.gain.tile.multiple.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452463
-    m_Key: skill.sentence.gain.tile.multiple.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452464
-    m_Key: skill.sentence.restore.amount.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452465
-    m_Key: skill.sentence.restore.amount.single.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452466
-    m_Key: skill.sentence.restore.amount.multiple.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452467
-    m_Key: skill.sentence.restore.amount.multiple.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452468
-    m_Key: skill.sentence.restore.tile.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452469
-    m_Key: skill.sentence.restore.tile.single.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452470
-    m_Key: skill.sentence.restore.tile.multiple.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452471
-    m_Key: skill.sentence.restore.tile.multiple.linked
-    m_Metadata:
-      m_Items: []
   - m_Id: 23980218251452472
     m_Key: skill.sentence.join
     m_Metadata:
@@ -6829,70 +6665,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 8700601600000000001
     m_Key: skill.sentence.count.multiple
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000002
-    m_Key: skill.sentence.effect.e_move.e_strike
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000003
-    m_Key: skill.sentence.effect.e_strike.e_move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000004
-    m_Key: skill.sentence.effect.e_damageupifbleeding
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000005
-    m_Key: skill.sentence.effect.e_strikecountbybuff
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000006
-    m_Key: skill.sentence.effect.e_pierce.e_valueuponhit
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000007
-    m_Key: skill.sentence.effect.e_pierce.e_bleed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000200
-    m_Key: skill.sentence.effect.e_armor.e_cure
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000201
-    m_Key: skill.sentence.effect.e_strike.e_grab
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000202
-    m_Key: skill.sentence.effect.e_armor.e_ward
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000203
-    m_Key: skill.sentence.effect.e_karma
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000204
-    m_Key: skill.sentence.effect.e_randomstrike
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000205
-    m_Key: skill.sentence.effect.e_vulnerable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000206
-    m_Key: skill.sentence.effect.e_bond
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000207
-    m_Key: skill.sentence.effect.e_strike.e_strikebyvulnerable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000208
-    m_Key: skill.sentence.effect.e_debuffdouble
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000209
-    m_Key: skill.sentence.effect.e_removearmor
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975800
@@ -7173,6 +6945,150 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259101107
     m_Key: data.skill_master.s_core_37.details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556565897216
+    m_Key: ui.battle.canvas.bossintroduceui.st1.name.ab20c109
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868736
+    m_Key: ui.battle.canvas.relic_panel.extractbutton.text_tmp.b5d536cd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868737
+    m_Key: ui.battle.canvas.relic_panel.skipbutton.text_tmp.bb0d2d9f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868738
+    m_Key: ui.battle.canvas.skill_panel.skipbutton.text_tmp.bb0d2d9f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868739
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.9ddc6e95
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868740
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventchoiceexecutionservice.text.58e2d632
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868741
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventchoiceexecutionservice.text.36031b66
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868742
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventchoiceexecutionservice.text.b7cce655
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868743
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventchoiceexecutionservice.text.74be75ca
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868744
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventchoiceexecutionservice.text.fd8a25ea
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868745
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventchoiceexecutionservice.text.d660ecbc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868746
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.60bb48f9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868747
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.83484339
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868748
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.d443df0e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868749
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.1c66c422
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868750
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.acfcf3e6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868751
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.b7cce655
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868752
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.74be75ca
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868753
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.fd8a25ea
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868754
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.2ae040b8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868755
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.58e2d632
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868756
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.36031b66
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868757
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.896dbb2c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868758
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.3d1018df
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868759
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.d6d95e18
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868760
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.cfadc92e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24680556586868761
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.restroom.restroomcontroller.text.d443df0e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975832
+    m_Key: skill.sentence.apply.tile.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975833
+    m_Key: skill.sentence.deal.amount.multiple.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975834
+    m_Key: skill.sentence.deal.amount.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975835
+    m_Key: skill.sentence.deal.amount.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975836
+    m_Key: skill.sentence.gain.amount.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975837
+    m_Key: skill.sentence.gain.amount.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975838
+    m_Key: skill.sentence.grant.amount.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975839
+    m_Key: skill.sentence.grant.amount.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9164888147097975840
+    m_Key: skill.sentence.restore.amount.single.final
     m_Metadata:
       m_Items: []
   m_Metadata:

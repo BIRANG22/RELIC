@@ -249,7 +249,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
         AddRuntimeUiCandidate("battle.skill_rarity.epic_memory", "에픽기억", knownKoreanByKey, knownKeys);
         AddRuntimeUiCandidate("battle.skill_rarity.unique", "유니크기억", knownKoreanByKey, knownKeys);
         AddRuntimeUiCandidate("battle.skill_rarity.exclusive", "전용기억", knownKoreanByKey, knownKeys);
-        foreach (LocalizationWorkbookEntry entry in LocalizationRuntimeSourceCatalog.BattleFirstTutorialEntries)
+        foreach (LocalizationWorkbookEntry entry in LocalizationRuntimeSourceCatalog.AllEntries)
             AddRuntimeUiCandidate(entry.Key, entry.Korean, knownKoreanByKey, knownKeys);
     }
 
@@ -514,6 +514,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
         HashSet<string> workbookKeys = ReadKoreanByKey().Keys.ToHashSet(StringComparer.Ordinal);
         HashSet<string> usedKeys = CollectExplicitKeyReferences(workbookKeys);
         usedKeys.UnionWith(CollectCurrentGameDataKeys());
+        usedKeys.UnionWith(LocalizationRuntimeSourceCatalog.AllEntries.Select(entry => entry.Key));
         usedKeys.UnionWith(retainedCandidateKeys ?? Array.Empty<string>());
         return LocalizationWorkbookWriter.RemoveEntries(
             LocalizationExcelImporter.WorkbookPath,

@@ -66,7 +66,9 @@ public class PlayerReservedCommand
             ? 0 : Mathf.Clamp(SkillData != null ? SkillData.Entry : 1, 1, 3);
 
     public string SkillId => SkillData != null ? SkillData.SkillId : "";
-    public string SkillName => SkillData != null ? SkillData.Name : "";
+    public string SkillName => SkillData != null
+        ? GameDataLocalization.SkillName(SkillData)
+        : "";
 
     public Vector2Int MoveOffset { get; private set; } = Vector2Int.zero;
 

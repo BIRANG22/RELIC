@@ -350,7 +350,7 @@ public static class RestRoomShopService
         return new RestRoomShopGoods(
             RestRoomShopGoodsKind.Skill,
             skill.SkillId,
-            string.IsNullOrWhiteSpace(skill.Name) ? skill.SkillId : skill.Name,
+            string.IsNullOrWhiteSpace(skill.Name) ? skill.SkillId : GameDataLocalization.SkillName(skill),
             description,
             BattleEquipmentEffectService.ModifyShopPrice(skill.RedDustiumCost),
             skill.Rarity,
