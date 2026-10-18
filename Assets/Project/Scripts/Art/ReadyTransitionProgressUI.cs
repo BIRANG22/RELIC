@@ -39,6 +39,10 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
     [SerializeField] private Button playButton;
     [SerializeField] private Button backButton;
 
+    [Header("Transition Background")]
+    [Tooltip("Optional. PositionPanel/BackgroundPanel is found automatically when left empty.")]
+    [SerializeField] private GameObject backgroundPanel;
+
     [Header("Ready UI Particle")]
     [Tooltip("Assign Ready/Panel/UIParticle. Activated when opening and deactivated when closing.")]
     [SerializeField] private GameObject readyUiParticle;
@@ -176,6 +180,23 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         panelSequence = null;
     }
 
+    private void HideBackgroundPanel()
+    {
+        if (backgroundPanel == null)
+        {
+            Transform positionPanel = transform.parent;
+            if (positionPanel != null)
+            {
+                Transform found = positionPanel.Find("BackgroundPanel");
+                if (found != null)
+                    backgroundPanel = found.gameObject;
+            }
+        }
+
+        if (backgroundPanel != null && backgroundPanel.activeSelf)
+            backgroundPanel.SetActive(false);
+    }
+
     private void SetReadyParticleActive(bool active)
     {
         if (readyUiParticle != null && readyUiParticle.activeSelf != active)
@@ -201,6 +222,7 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
             ? (movement.useCurrentPositionAsStart ? panel.anchoredPosition.x : movement.fromX)
             : movement.fromX;
         float elapsed = 0f;
+        bool backgroundHidden = false;
 
         if (!progress.useCurrentValueAsStart) SetProgress(progress.from);
         if (panel != null && !movement.useCurrentPositionAsStart) SetAnchoredX(panel, movement.fromX);
@@ -214,6 +236,13 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
                 float t = progress.duration <= 0f ? 1f : Mathf.Clamp01((elapsed - progress.startDelay) / progress.duration);
                 float eased = progress.easing != null ? progress.easing.Evaluate(t) : t;
                 SetProgress(Mathf.LerpUnclamped(progressFrom, progress.to, eased));
+
+                // Hide the background when the shader transition actually begins.
+                if (!backgroundHidden)
+                {
+                    HideBackgroundPanel();
+                    backgroundHidden = true;
+                }
             }
 
             if (panel != null && elapsed >= movement.startDelay)
@@ -227,6 +256,7 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         }
 
         SetProgress(progress.to);
+        if (!backgroundHidden) HideBackgroundPanel();
         if (panel != null) SetAnchoredX(panel, movement.toX);
         panelSequence = null;
         onComplete?.Invoke();

@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 // 전투 및 이벤트에서 획득한 유물을 캐릭터에게 직접 장착하는 패널입니다.
 public sealed class BattleRewardRelicPanelUI : MonoBehaviour
@@ -146,6 +147,78 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private Coroutine equipCloseCoroutine;
     private int lockedEquipCharacterIndex = -1;
 
+    [Header("Reward Action Buttons")]
+    [SerializeField] private Button extractButton;
+    [SerializeField] private Button skipButton;
+    [Header("Relic Extraction - Red Dustium")]
+    [SerializeField, Min(0)] private int commonExtraction = 10;
+    [SerializeField, Min(0)] private int rareExtraction = 20;
+    [SerializeField, Min(0)] private int epicExtraction = 30;
+    [SerializeField, Min(0)] private int uniqueExtraction = 50;
+    [Tooltip("Bind a project currency service method that adds and persists Red Dustium. Extraction is blocked until a handler is connected.")]
+    [SerializeField] private UnityEvent<int> onExtractRedDustium = new UnityEvent<int>();
+    private Coroutine rewardActionCloseCoroutine;
+
+    private void BindRewardActionButtons()
+    {
+        if (extractButton == null) extractButton = transform.Find("ExtractButton")?.GetComponent<Button>();
+        if (skipButton == null) skipButton = transform.Find("SkipButton")?.GetComponent<Button>();
+        if (extractButton != null)
+        {
+            extractButton.onClick.RemoveListener(ExtractReward);
+            extractButton.onClick.AddListener(ExtractReward);
+        }
+        if (skipButton != null)
+        {
+            skipButton.onClick.RemoveListener(SkipReward);
+            skipButton.onClick.AddListener(SkipReward);
+        }
+    }
+
+    public void SkipReward()
+    {
+        if (current == null || resolving || itemIntroCoroutine != null) return;
+        resolving = true;
+        rewardActionCloseCoroutine = StartCoroutine(CloseWithoutEquip());
+    }
+
+    public void ExtractReward()
+    {
+        if (current == null || resolving || itemIntroCoroutine != null) return;
+        if (DataManager.Instance?.RelicDatabase == null ||
+            !DataManager.Instance.RelicDatabase.TryGet(current.RewardId, out RelicData relic) || relic == null)
+            return;
+        // Do not consume the reward without a connected currency persistence handler.
+        if (onExtractRedDustium == null || onExtractRedDustium.GetPersistentEventCount() == 0)
+        {
+            Debug.LogError("[BattleRewardRelicPanelUI] ExtractButton requires a persistent Red Dustium add/save handler.", this);
+            return;
+        }
+        int rank = RelicRarityUtility.GetRevealRank(ParseRarity(relic.Rarity));
+        int amount = rank == 4 ? uniqueExtraction : rank == 3 ? epicExtraction :
+            rank == 2 ? rareExtraction : commonExtraction;
+        resolving = true;
+        onExtractRedDustium.Invoke(amount);
+        rewardActionCloseCoroutine = StartCoroutine(CloseWithoutEquip());
+    }
+
+    private IEnumerator CloseWithoutEquip()
+    {
+        HideEquippedRelicTooltip();
+        ClearSlotPreviewVfx();
+        EnsurePanelCanvasGroup();
+        panelCanvasGroup.interactable = false;
+        panelCanvasGroup.blocksRaycasts = false;
+        yield return FadeOutPanel();
+        rewardActionCloseCoroutine = null;
+        Action callback = onResolved;
+        onResolved = null;
+        current = null;
+        gameObject.SetActive(false);
+        callback?.Invoke();
+    }
+
+
     private sealed class CharacterEntry
     {
         public GameObject root;
@@ -164,6 +237,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private void Awake()
     {
         Bind();
+        BindRewardActionButtons();
         EnsurePanelCanvasGroup();
     }
 
@@ -203,6 +277,11 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private void OnDisable()
     {
         ResetItemIntro();
+        if (rewardActionCloseCoroutine != null)
+        {
+            StopCoroutine(rewardActionCloseCoroutine);
+            rewardActionCloseCoroutine = null;
+        }
         if (equipCloseCoroutine != null)
         {
             StopCoroutine(equipCloseCoroutine);
@@ -256,6 +335,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         gameObject.SetActive(true);
         // 활성화 후에도 새 하이어라키의 텍스트를 다시 연결하여 갱신합니다.
         Bind();
+        BindRewardActionButtons();
         Refresh();
         transform.SetAsLastSibling();
         BeginItemIntro();
