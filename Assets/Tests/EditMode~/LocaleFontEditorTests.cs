@@ -56,6 +56,23 @@ public sealed class LocaleFontEditorTests
         Assert.That(Count(prefab, localizerGuid), Is.GreaterThan(0));
     }
 
+    [Test]
+    public void GlobalFontApplicator_HooksSceneLocaleAndRuntimeTmpChanges()
+    {
+        const string path = "Assets/Project/Scripts/Core/Localization/GlobalLocalizedTMPFontApplicator.cs";
+        Assert.That(File.Exists(path), Is.True);
+
+        string source = File.ReadAllText(path);
+        Assert.That(source, Does.Contain("SceneManager.sceneLoaded"));
+        Assert.That(source, Does.Contain("LocalizationSettings.SelectedLocaleChanged"));
+        Assert.That(source, Does.Contain("TMPro_EventManager.TEXT_CHANGED_EVENT"));
+        Assert.That(source, Does.Contain("FindObjectsInactive.Include"));
+        Assert.That(source, Does.Contain("LocaleFontDatabase.BodyRoleId"));
+        Assert.That(source, Does.Contain("Application.onBeforeRender"));
+        Assert.That(source, Does.Contain("RuntimeInitializeLoadType.SubsystemRegistration"));
+        Assert.That(source, Does.Contain("ShouldProcessRuntimeCallback(Application.isPlaying)"));
+    }
+
     private static int Count(string source, string value) =>
         source.Split(new[] { value }, System.StringSplitOptions.None).Length - 1;
 }

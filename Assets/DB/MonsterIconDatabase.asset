@@ -50,5 +50,5 @@ MonoBehaviour:
     Icon: {fileID: 21300000, guid: aa5613ce62b70ca46a237d16245ca727, type: 3}
     TimelineIcon: {fileID: 21300000, guid: 9595e5aea3670a942a7049a5f66e4d9e, type: 3}
   - MonsterId: Mon_12_2
-    Icon: {fileID: 21300000, guid: f1e876a57134d3c4588b33a51df3b162, type: 3}
-    TimelineIcon: {fileID: 21300000, guid: f241eacfc954c9543b19231a24e0eaab, type: 3}
+    Icon: {fileID: 21300000, guid: aa5613ce62b70ca46a237d16245ca727, type: 3}
+    TimelineIcon: {fileID: 21300000, guid: 9595e5aea3670a942a7049a5f66e4d9e, type: 3}

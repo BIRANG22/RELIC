@@ -152,11 +152,11 @@ MonoBehaviour:
   - monsterId: Mon_12_2
     prefab: {fileID: 1910251976348132752, guid: 8df1171d9a06f794999c80c154f147eb, type: 3}
     idlePreviewSprites:
-    - {fileID: 1507871695, guid: 41f98d6e9ed61c140a27cdf0d9c6ec88, type: 3}
-    - {fileID: -1782718868, guid: 41f98d6e9ed61c140a27cdf0d9c6ec88, type: 3}
-    - {fileID: 978252406, guid: 41f98d6e9ed61c140a27cdf0d9c6ec88, type: 3}
-    - {fileID: -1854330234, guid: 41f98d6e9ed61c140a27cdf0d9c6ec88, type: 3}
-    - {fileID: 307902891, guid: 41f98d6e9ed61c140a27cdf0d9c6ec88, type: 3}
-    - {fileID: -712740556, guid: 41f98d6e9ed61c140a27cdf0d9c6ec88, type: 3}
+    - {fileID: -1025079184, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
+    - {fileID: 1567153515, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
+    - {fileID: 1077968526, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
+    - {fileID: 201591197, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
+    - {fileID: -218839707, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
+    - {fileID: 884133443, guid: 2d9350cca0ae5d847930110bb3edac81, type: 3}
     previewSize: {x: 900, y: 900}
     previewFramesPerSecond: 6
