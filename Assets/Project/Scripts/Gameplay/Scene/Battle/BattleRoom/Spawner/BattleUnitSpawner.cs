@@ -17,6 +17,8 @@ public class BattleUnitSpawner : MonoBehaviour
     [SerializeField] private float unitSpawnZOffset = 0.01f;
     [SerializeField] private float unitSpawnYOffset = 0.1f;
 
+    public Transform PlayerRoot => playerRoot;
+
     public List<CharacterRuntimeData> SpawnFromRuntimeData(bool useCurrentGridPositions = false)
     {
         List<CharacterRuntimeData> spawnedRuntimes = new();

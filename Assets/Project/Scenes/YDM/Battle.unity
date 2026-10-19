@@ -19535,6 +19535,7 @@ GameObject:
   - component: {fileID: 324115087}
   - component: {fileID: 324115088}
   - component: {fileID: 324115089}
+  - component: {fileID: 920000000000000006}
   m_Layer: 0
   m_Name: BattleSceneController
   m_TagString: Untagged
@@ -19561,6 +19562,7 @@ MonoBehaviour:
   erosionSlotContent: {fileID: 0}
   erosionSlotPrefab: {fileID: 3296938323315150739, guid: deaa115a27303914890bd8dc3512da61, type: 3}
   battleTransition: {fileID: 1141413086}
+  sharedPartyTransitionPresenter: {fileID: 920000000000000006}
   battleMapIntroText: {fileID: 98804244}
   playMapIntroOnStart: 1
   playBattleRoomIntroFromSceneController: 0
@@ -162786,9 +162788,27 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   entryOffset: {x: -8, y: 0, z: 0}
   exitOffset: {x: 8, y: 0, z: 0}
-  entryDelay: 0.3
-  entryDuration: 0.35
-  exitDuration: 0.3
+  entryDelay: 1
+  entryDuration: 0.55
+  exitDuration: 0.6
+  fadeCharacters: 1
+--- !u!114 &920000000000000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 324115084}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d499ccbff0a94fdc8a0705da2ad6cf93, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  entryOffset: {x: -8, y: 0, z: 0}
+  exitOffset: {x: 8, y: 0, z: 0}
+  entryDelay: 0.05
+  entryDuration: 0.55
+  exitDuration: 0.6
   fadeCharacters: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

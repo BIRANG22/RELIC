@@ -3,35 +3,35 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Áöµµ È­¸é¿¡ Ç¥½ÃµÇ´Â Àü¿ë MapRoomÀ» °»½ÅÇÕ´Ï´Ù.
-/// Á÷Àü¿¡ ÁøÇàÇÑ ¸Ê ³ëµåÀÇ LayerIndex¿¡ ¸Â´Â ¹è°æÀ» StageBackgroundController·Î Ç¥½ÃÇÏ°í,
-/// ÇöÀç ÆÄÆ¼ 0~2¹ø Ä³¸¯ÅÍ¸¦ EventAllyPoint0~2¿¡ ¹èÄ¡ÇÕ´Ï´Ù.
+/// ì§€ë„ í™”ë©´ì— í‘œì‹œë˜ëŠ” ì „ìš© MapRoomì„ ê°±ì‹ í•©ë‹ˆë‹¤.
+/// ì§ì „ì— ì§„í–‰í•œ ë§µ ë…¸ë“œì˜ LayerIndexì— ë§ëŠ” ë°°ê²½ì„ StageBackgroundControllerë¡œ í‘œì‹œí•˜ê³ ,
+/// í˜„ì¬ íŒŒí‹° 0~2ë²ˆ ìºë¦­í„°ë¥¼ EventAllyPoint0~2ì— ë°°ì¹˜í•©ë‹ˆë‹¤.
 /// </summary>
 public class MapRoomController : MonoBehaviour
 {
     [Header("Map Panel")]
-    [Tooltip("Áöµµ ÆĞ³ÎÀÔ´Ï´Ù. ºñ¿öµÎ¸é BattleMapPanelÀ» ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("ì§€ë„ íŒ¨ë„ì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ BattleMapPanelì„ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private BattleMapPanel battleMapPanel;
 
     [Header("Background")]
-    [Tooltip("MapRoom Àü¿ë StageBackgroundControllerÀÔ´Ï´Ù. Background/Stage_01 ÂÊ¿¡ ºÙÀÎ ÄÄÆ÷³ÍÆ®¸¦ ¿¬°áÇÏ¼¼¿ä.")]
+    [Tooltip("MapRoom ì „ìš© StageBackgroundControllerì…ë‹ˆë‹¤. Background/Stage_01 ìª½ì— ë¶™ì¸ ì»´í¬ë„ŒíŠ¸ë¥¼ ì—°ê²°í•˜ì„¸ìš”.")]
     [SerializeField] private StageBackgroundController stageBackgroundController;
-    [Tooltip("ÇöÀç ³ëµå Á¤º¸¸¦ Ã£À» ¼ö ¾øÀ» ¶§ Ç¥½ÃÇÒ ±âº» LayerIndexÀÔ´Ï´Ù. 0ÀÌ¸é Ã¹ ¹øÂ° Áö¿ªÀÔ´Ï´Ù.")]
+    [Tooltip("í˜„ì¬ ë…¸ë“œ ì •ë³´ë¥¼ ì°¾ì„ ìˆ˜ ì—†ì„ ë•Œ í‘œì‹œí•  ê¸°ë³¸ LayerIndexì…ë‹ˆë‹¤. 0ì´ë©´ ì²« ë²ˆì§¸ ì§€ì—­ì…ë‹ˆë‹¤.")]
     [SerializeField] private int fallbackLayerIndex = 0;
 
     [Header("Party Allies")]
-    [Tooltip("EventAllyPoint0~2°¡ µé¾î ÀÖ´Â AllyRootÀÔ´Ï´Ù.")]
+    [Tooltip("EventAllyPoint0~2ê°€ ë“¤ì–´ ìˆëŠ” AllyRootì…ë‹ˆë‹¤.")]
     [SerializeField] private Transform allyRoot;
     [SerializeField] private Transform[] allySpawnPoints = new Transform[3];
     [SerializeField] private float allySpawnScale = 1f;
     [SerializeField] private bool autoFindAllySpawnPoints = true;
-    [Tooltip("Áöµµ Ä³¸¯ÅÍ È£¹ö ½Ã Ç¥½ÃÇÒ Character Resources UIÀÔ´Ï´Ù. ºñ¿öµÎ¸é ¾À¿¡¼­ ÀÚµ¿À¸·Î Ã£½À´Ï´Ù.")]
+    [Tooltip("ì§€ë„ ìºë¦­í„° í˜¸ë²„ ì‹œ í‘œì‹œí•  Character Resources UIì…ë‹ˆë‹¤. ë¹„ì›Œë‘ë©´ ì”¬ì—ì„œ ìë™ìœ¼ë¡œ ì°¾ìŠµë‹ˆë‹¤.")]
     [SerializeField] private BattleCharacterResourcesUI characterResourcesUI;
-    [Tooltip("ÀÌ Map ID¿¡¼­´Â AllyRoot¿Í ¸Ê ¼±ÅÃ¿ë ¾Æ±ºÀ» »ç¿ëÇÏÁö ¾Ê½À´Ï´Ù.")]
+    [Tooltip("ì´ Map IDì—ì„œëŠ” AllyRootì™€ ë§µ ì„ íƒìš© ì•„êµ°ì„ ì‚¬ìš©í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.")]
     [SerializeField] private List<string> skipAllyRootMapIds = new();
 
     [Header("Refresh")]
-    [Tooltip("Áöµµ ÆĞ³ÎÀÌ ºñÈ°¼º -> È°¼ºÀ¸·Î ¹Ù²ğ ¶§ ÀÚµ¿À¸·Î ´Ù½Ã °»½ÅÇÕ´Ï´Ù.")]
+    [Tooltip("ì§€ë„ íŒ¨ë„ì´ ë¹„í™œì„± -> í™œì„±ìœ¼ë¡œ ë°”ë€” ë•Œ ìë™ìœ¼ë¡œ ë‹¤ì‹œ ê°±ì‹ í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool refreshWhenMapOpens = true;
 
     private bool wasMapOpen;
@@ -168,8 +168,12 @@ public class MapRoomController : MonoBehaviour
             ally.transform.localRotation = Quaternion.identity;
             ally.transform.localScale = Vector3.one * Mathf.Max(0f, allySpawnScale);
 
-            if (ally.GetComponent<BattleMapSelectionCharacterMarker>() == null)
-                ally.AddComponent<BattleMapSelectionCharacterMarker>();
+            BattleMapSelectionCharacterMarker marker =
+                ally.GetComponent<BattleMapSelectionCharacterMarker>();
+            if (marker == null)
+                marker = ally.AddComponent<BattleMapSelectionCharacterMarker>();
+            if (prefabDatabase.TryGetBattlePrefab(characterId, out GameObject battlePrefab))
+                marker.ConfigureTransitionAnimator(battlePrefab);
 
             ConfigureCharacterResourceHover(ally, i);
         }
@@ -184,8 +188,8 @@ public class MapRoomController : MonoBehaviour
         if (characterResourcesUI == null)
             return;
 
-        // ÇöÀç ¿ùµå Ä³¸¯ÅÍ ÇÁ¸®ÆÕÀº ·çÆ®¿¡ Collider2D°¡ ÀÖ´Â ±¸Á¶°¡ ±âº»ÀÔ´Ï´Ù.
-        // ÀÚ½Ä Äİ¶óÀÌ´õ ±¸Á¶µµ Áö¿øÇÏµµ·Ï ¸ğµç Äİ¶óÀÌ´õ ¿ÀºêÁ§Æ®¿¡ ¸±·¹ÀÌ¸¦ ¿¬°áÇÕ´Ï´Ù.
+        // í˜„ì¬ ì›”ë“œ ìºë¦­í„° í”„ë¦¬íŒ¹ì€ ë£¨íŠ¸ì— Collider2Dê°€ ìˆëŠ” êµ¬ì¡°ê°€ ê¸°ë³¸ì…ë‹ˆë‹¤.
+        // ìì‹ ì½œë¼ì´ë” êµ¬ì¡°ë„ ì§€ì›í•˜ë„ë¡ ëª¨ë“  ì½œë¼ì´ë” ì˜¤ë¸Œì íŠ¸ì— ë¦´ë ˆì´ë¥¼ ì—°ê²°í•©ë‹ˆë‹¤.
         bool configured = false;
 
         Collider2D[] colliders2D = ally.GetComponentsInChildren<Collider2D>(true);
@@ -203,7 +207,11 @@ public class MapRoomController : MonoBehaviour
             hover.Configure(
                 characterResourcesUI,
                 partySlotIndex,
-                allySpawnPoints != null && partySlotIndex < allySpawnPoints.Length ? allySpawnPoints[partySlotIndex] : ally.transform,
+                ResolveMovingCharacterAnchor(
+                    ally,
+                    allySpawnPoints != null && partySlotIndex < allySpawnPoints.Length
+                        ? allySpawnPoints[partySlotIndex]
+                        : null),
                 BattleCharacterResourcesUI.AnchorMode.MapEvent);
             configured = true;
         }
@@ -223,7 +231,11 @@ public class MapRoomController : MonoBehaviour
             hover.Configure(
                 characterResourcesUI,
                 partySlotIndex,
-                allySpawnPoints != null && partySlotIndex < allySpawnPoints.Length ? allySpawnPoints[partySlotIndex] : ally.transform,
+                ResolveMovingCharacterAnchor(
+                    ally,
+                    allySpawnPoints != null && partySlotIndex < allySpawnPoints.Length
+                        ? allySpawnPoints[partySlotIndex]
+                        : null),
                 BattleCharacterResourcesUI.AnchorMode.MapEvent);
             configured = true;
         }
@@ -231,9 +243,14 @@ public class MapRoomController : MonoBehaviour
         if (!configured)
         {
             Debug.LogWarning(
-                $"[MapRoomController] Áöµµ Ä³¸¯ÅÍ¿¡ Collider/Collider2D°¡ ¾ø¾î ÀÚ¿ø UI È£¹ö¸¦ ¿¬°áÇÒ ¼ö ¾ø½À´Ï´Ù: {ally.name}",
+                $"[MapRoomController] ì§€ë„ ìºë¦­í„°ì— Collider/Collider2Dê°€ ì—†ì–´ ìì› UI í˜¸ë²„ë¥¼ ì—°ê²°í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤: {ally.name}",
                 ally);
         }
+    }
+
+    public static Transform ResolveMovingCharacterAnchor(GameObject character, Transform fallback)
+    {
+        return character != null ? character.transform : fallback;
     }
 
     private void ResolveCharacterResourcesUI()

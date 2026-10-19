@@ -677,8 +677,14 @@ public class BattleRoomLoader : MonoBehaviour
 
         // Collect first-turn effects until the battle-start intro has finished.
         BattleEffectInfoFeed.BeginInitialEffects();
+        Transform playerRoot = unitSpawner != null ? unitSpawner.PlayerRoot : null;
+        bool reactivatePlayerRootForEntry =
+            playerRoot != null && playerRoot.gameObject.activeSelf;
+        if (reactivatePlayerRootForEntry)
+            playerRoot.gameObject.SetActive(false);
+
         SpawnPlayersAndHUD();
-        StartPartyEntryTransition();
+        StartPartyEntryTransition(reactivatePlayerRootForEntry);
         SpawnMonstersAndHUD(false);
         BattleEffectInfoFeed.BeginPassiveCapture();
         RefreshBattleStartPassives();
@@ -1580,15 +1586,23 @@ public class BattleRoomLoader : MonoBehaviour
         initialMonsterPlanRoutine = null;
     }
 
-    private void StartPartyEntryTransition()
+    private void StartPartyEntryTransition(bool reactivatePlayerRootForEntry = false)
     {
         if (partyTransitionPresenter == null)
             partyTransitionPresenter = GetComponentInChildren<BattleRoomPartyTransitionPresenter>(true);
 
         if (partyTransitionPresenter == null)
+        {
+            if (reactivatePlayerRootForEntry && unitSpawner?.PlayerRoot != null)
+                unitSpawner.PlayerRoot.gameObject.SetActive(true);
             return;
+        }
 
-        partyTransitionPresenter.PrepareEntry();
+        partyTransitionPresenter.PrepareEntry(unitSpawner != null ? unitSpawner.PlayerRoot : transform);
+
+        if (reactivatePlayerRootForEntry && unitSpawner?.PlayerRoot != null)
+            unitSpawner.PlayerRoot.gameObject.SetActive(true);
+
         _ = partyTransitionPresenter.PlayPreparedEntryAsync();
     }
 

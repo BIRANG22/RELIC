@@ -163,4 +163,72 @@ public class BattleRoomMapSelectionPresenter : MonoBehaviour
 
 public sealed class BattleMapSelectionCharacterMarker : MonoBehaviour
 {
+    private const string MoveStateName = "Move";
+
+    private Animator characterAnimator;
+    private BattleUnitAnimator unitAnimator;
+    private BattleUnitAnimator transitionVfxSource;
+    private RuntimeAnimatorController originalController;
+    private RuntimeAnimatorController transitionController;
+    private bool isUsingTransitionController;
+
+    public void ConfigureTransitionAnimator(GameObject battlePrefab)
+    {
+        Animator battleAnimator = battlePrefab != null
+            ? battlePrefab.GetComponentInChildren<Animator>(true)
+            : null;
+        transitionVfxSource = battlePrefab != null
+            ? battlePrefab.GetComponentInChildren<BattleUnitAnimator>(true)
+            : null;
+        ConfigureTransitionAnimator(battleAnimator != null ? battleAnimator.runtimeAnimatorController : null);
+    }
+
+    public void ConfigureTransitionAnimator(RuntimeAnimatorController controller)
+    {
+        ResolveAnimators();
+        transitionController = controller;
+    }
+
+    public bool PlayTransitionMove()
+    {
+        ResolveAnimators();
+        if (characterAnimator == null || transitionController == null)
+            return false;
+
+        if (!isUsingTransitionController)
+            originalController = characterAnimator.runtimeAnimatorController;
+
+        characterAnimator.runtimeAnimatorController = transitionController;
+        isUsingTransitionController = true;
+        characterAnimator.speed = 1f;
+        characterAnimator.Play(MoveStateName, 0, 0f);
+        characterAnimator.Update(0f);
+        unitAnimator?.PlayMoveVfxFrom(transitionVfxSource, transform);
+        return true;
+    }
+
+    public void RestoreTransitionIdle()
+    {
+        ResolveAnimators();
+        if (characterAnimator == null || !isUsingTransitionController)
+            return;
+
+        characterAnimator.runtimeAnimatorController = originalController;
+        characterAnimator.speed = 1f;
+        isUsingTransitionController = false;
+        unitAnimator?.PlayIdle();
+    }
+
+    private void ResolveAnimators()
+    {
+        if (characterAnimator == null)
+            characterAnimator = GetComponentInChildren<Animator>(true);
+        if (unitAnimator == null)
+            unitAnimator = GetComponentInChildren<BattleUnitAnimator>(true);
+    }
+
+    private void OnDisable()
+    {
+        RestoreTransitionIdle();
+    }
 }

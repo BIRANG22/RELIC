@@ -130,6 +130,26 @@ public sealed class BattlePresentationLocalizationRegressionTests
         Assert.That(row[3], Is.EqualTo(expectedEnglish));
     }
 
+    [TestCase("skill.sentence.deal.amount.multiple.final", "{0}{1} {2}만큼 {3}회 준다")]
+    [TestCase("skill.sentence.deal.amount.single.final", "{0}{1} {2}만큼 준다")]
+    [TestCase("skill.sentence.deal.amount.single.linked", "{0}{1} {2}만큼 주고")]
+    public void StrikeSentence_DoesNotRepeatDamageNoun(string key, string expectedKorean)
+    {
+        IReadOnlyList<IReadOnlyList<string>> rows =
+            LocalizationXlsxReader.ReadSheet("Assets/ExcelSource/Localization.xlsx", "Text");
+        IReadOnlyList<string> row = rows.Skip(1).Single(candidate => candidate[0] == key);
+
+        Assert.That(row[2], Is.EqualTo(expectedKorean));
+
+        string shared = File.ReadAllText("Assets/Language/Text Shared Data.asset");
+        string id = row[1];
+        Assert.That(ReadLocaleValue("Assets/Language/Text_ko.asset", id), Is.EqualTo(expectedKorean));
+
+        string scannerSource = File.ReadAllText("Assets/Editor/LocalizationProjectScanner.cs");
+        Assert.That(scannerSource, Does.Contain($"Entry(\"{key}\", \"{expectedKorean}\")"));
+        Assert.That(shared, Does.Contain($"m_Key: {key}"));
+    }
+
     [Test]
     public void RewardLocalization_WorkbookAndRuntimeTablesStaySynchronized()
     {

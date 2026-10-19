@@ -181,15 +181,23 @@ public class StartRoomController : MonoBehaviour
             ally.transform.localRotation = Quaternion.identity;
             ally.transform.localScale = Vector3.one;
 
-            if (ally.GetComponent<BattleMapSelectionCharacterMarker>() == null)
-                ally.AddComponent<BattleMapSelectionCharacterMarker>();
+            BattleMapSelectionCharacterMarker marker =
+                ally.GetComponent<BattleMapSelectionCharacterMarker>();
+            if (marker == null)
+                marker = ally.AddComponent<BattleMapSelectionCharacterMarker>();
+            if (prefabDatabase.TryGetBattlePrefab(characterId, out GameObject battlePrefab))
+                marker.ConfigureTransitionAnimator(battlePrefab);
         }
     }
 
     private void ClearPoint(Transform point)
     {
         for (int i = point.childCount - 1; i >= 0; i--)
-            Destroy(point.GetChild(i).gameObject);
+        {
+            GameObject child = point.GetChild(i).gameObject;
+            child.SetActive(false);
+            Destroy(child);
+        }
     }
 
     public void OnNpcClicked()
@@ -251,7 +259,7 @@ public class StartRoomController : MonoBehaviour
         if (sceneController != null)
             sceneController.ReturnToMap();
         else
-            Debug.LogWarning("[StartRoomController] BattleSceneController æ¯¿Ω");
+            Debug.LogWarning("[StartRoomController] BattleSceneController ÏóÜÏùå");
     }
 
     private void CompleteCurrentNode()
@@ -323,7 +331,7 @@ public class StartRoomController : MonoBehaviour
         if (sceneController != null)
             sceneController.ReturnToMap();
         else
-            Debug.LogWarning("[StartRoomController] BattleSceneController æ¯¿Ω");
+            Debug.LogWarning("[StartRoomController] BattleSceneController ÏóÜÏùå");
     }
 
     public void HideRelicSettingGuideText()
