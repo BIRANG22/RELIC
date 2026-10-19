@@ -264,7 +264,14 @@ public class BattleCharacterPanelUI : MonoBehaviour
     [SerializeField] private Image skillTooltipRangeImage;
     [SerializeField] private Image skillTooltipResourceIconImage;
     [SerializeField] private TMP_Text skillTooltipResourceValueText;
+    private TMP_Text skillTooltipResourceValueOriginalText;
+    private float skillTooltipResourceValueOriginalFontSize;
+    private bool skillTooltipResourceValueOriginalAutoSizing;
+    private bool skillTooltipResourceValueStyleCaptured;
     [SerializeField] private Image skillTooltipLineImage;
+    private readonly Image[] skillTooltipEntryBackImages = new Image[3];
+    private static readonly Color32 SkillTooltipEntryUsedColor = new Color32(0xEE, 0xEE, 0xEE, 0xFF);
+    private static readonly Color32 SkillTooltipEntryUnusedColor = new Color32(0x11, 0x11, 0x11, 0xFF);
 
     [Header("Skill Tooltip Resource Color")]
     [Tooltip("TooltipPanel의 Resources_Icon이 마나(Cost)를 사용할 때 적용할 색입니다. 알파값은 기존 값을 유지합니다.")]
@@ -889,6 +896,15 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         Transform tooltipRoot = skillTooltipPanel.transform;
 
+        // Entry_Slot의 Back 이미지를 탐색합니다. 세 칸 모두 표시하고 색상만 변경합니다.
+        Transform entryRoot = FindDirectChild(tooltipRoot, "Entry_Slot");
+        for (int i = 0; i < skillTooltipEntryBackImages.Length; i++)
+        {
+            Transform entry = entryRoot != null ? FindDirectChild(entryRoot, "Entry0" + (i + 1)) : null;
+            Transform back = entry != null ? FindDirectChild(entry, "Back") : null;
+            skillTooltipEntryBackImages[i] = back != null ? back.GetComponent<Image>() : null;
+        }
+
         if (skillTooltipNameText == null)
             skillTooltipNameText = FindChildComponent<TMP_Text>(tooltipRoot, "Name");
 
@@ -920,6 +936,17 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (skillTooltipResourceValueText == null)
             skillTooltipResourceValueText = FindChildComponent<TMP_Text>(tooltipRoot, "Resources_Value");
+
+        // 일반 스킬에서 사용할 기본 글자 크기와 자동 크기 설정을 보존합니다.
+        if (skillTooltipResourceValueText != null &&
+            (!skillTooltipResourceValueStyleCaptured ||
+             skillTooltipResourceValueOriginalText != skillTooltipResourceValueText))
+        {
+            skillTooltipResourceValueOriginalText = skillTooltipResourceValueText;
+            skillTooltipResourceValueOriginalFontSize = skillTooltipResourceValueText.fontSize;
+            skillTooltipResourceValueOriginalAutoSizing = skillTooltipResourceValueText.enableAutoSizing;
+            skillTooltipResourceValueStyleCaptured = true;
+        }
 
         if (skillTooltipLineImage == null)
         {
@@ -4647,6 +4674,19 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (!skillTooltipPanel.activeSelf)
             skillTooltipPanel.SetActive(true);
 
+        // SkillMaster.Entry에 따라 사용 칸은 #EEEEEE, 나머지는 #111111로 표시합니다.
+        int occupiedEntries = Mathf.Clamp(skillData.Entry, 0, 3);
+        for (int i = 0; i < skillTooltipEntryBackImages.Length; i++)
+        {
+            Image back = skillTooltipEntryBackImages[i];
+            if (back == null)
+                continue;
+
+            if (!back.gameObject.activeSelf)
+                back.gameObject.SetActive(true);
+            back.color = i < occupiedEntries ? SkillTooltipEntryUsedColor : SkillTooltipEntryUnusedColor;
+        }
+
         // 기존 SkillInfo 데이터도 함께 최신 상태로 유지합니다.
         ShowSkillInfo(skillData);
 
@@ -4690,8 +4730,19 @@ public class BattleCharacterPanelUI : MonoBehaviour
         }
 
         SetSkillInfoImage(skillTooltipRangeImage, ResolveSkillRangeIcon(skillData.RangeId));
-        SetSkillInfoImage(skillTooltipResourceIconImage, GetResourceIcon(skillData.ReferenceResource));
-        ApplySkillTooltipResourceIconColor(skillData.ReferenceResource);
+        bool isPassiveTooltipSkill = isPassiveSkillTooltip || skillData.Category == Category.Passive;
+        if (isPassiveTooltipSkill)
+        {
+            if (skillTooltipResourceIconImage != null)
+                skillTooltipResourceIconImage.gameObject.SetActive(false);
+        }
+        else
+        {
+            if (skillTooltipResourceIconImage != null)
+                skillTooltipResourceIconImage.gameObject.SetActive(true);
+            SetSkillInfoImage(skillTooltipResourceIconImage, GetResourceIcon(skillData.ReferenceResource));
+            ApplySkillTooltipResourceIconColor(skillData.ReferenceResource);
+        }
         ApplySkillTooltipRarityLineColor(skillData);
 
         if (skillTooltipResourceValueText != null)
@@ -4700,7 +4751,21 @@ public class BattleCharacterPanelUI : MonoBehaviour
             int resourceValue = preview != null
                 ? Mathf.Max(0, preview.PayAmount)
                 : Mathf.Max(0, skillData.ResourceCostValue);
-            skillTooltipResourceValueText.text = resourceValue.ToString();
+            if (isPassiveTooltipSkill)
+            {
+                skillTooltipResourceValueText.enableAutoSizing = false;
+                skillTooltipResourceValueText.fontSize = 20f;
+                skillTooltipResourceValueText.text = "지속";
+            }
+            else
+            {
+                if (skillTooltipResourceValueStyleCaptured)
+                {
+                    skillTooltipResourceValueText.fontSize = skillTooltipResourceValueOriginalFontSize;
+                    skillTooltipResourceValueText.enableAutoSizing = skillTooltipResourceValueOriginalAutoSizing;
+                }
+                skillTooltipResourceValueText.text = resourceValue.ToString();
+            }
         }
 
         EnsureSkillTooltipCanvasGroup();

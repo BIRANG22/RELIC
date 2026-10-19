@@ -105,6 +105,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
     private CanvasGroup skillTooltipCanvasGroup;
     private Coroutine skillTooltipFadeCoroutine;
     private SkillIconButton hoveredTooltipSource;
+    private readonly Image[] skillTooltipEntryBacks = new Image[3];
+    private static readonly Color SkillTooltipEntryUsedColor = new Color32(0xEE, 0xEE, 0xEE, 0xFF);
+    private static readonly Color SkillTooltipEntryUnusedColor = new Color32(0x11, 0x11, 0x11, 0xFF);
+    private TMP_Text skillTooltipOriginalResourceText;
+    private float skillTooltipOriginalResourceFontSize;
+    private bool skillTooltipOriginalResourceAutoSize;
+
 
     private bool IsDirectSelectionLayout => true;
 
@@ -500,6 +507,23 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             if (type != null) skillTooltipTypeText = type.GetComponent<TMP_Text>();
         }
 
+        Transform entrySlot = tooltip.Find("Entry_Slot");
+        if (entrySlot == null)
+            entrySlot = FindChildByName(tooltip, "Entry_Slot");
+        for (int i = 0; i < skillTooltipEntryBacks.Length; i++)
+        {
+            Transform entry = entrySlot != null ? entrySlot.Find($"Entry{i + 1:00}") : null;
+            Transform back = entry != null ? entry.Find("Back") : null;
+            skillTooltipEntryBacks[i] = back != null ? back.GetComponent<Image>() : null;
+        }
+
+        if (skillTooltipResourceText != null && skillTooltipOriginalResourceText != skillTooltipResourceText)
+        {
+            skillTooltipOriginalResourceText = skillTooltipResourceText;
+            skillTooltipOriginalResourceFontSize = skillTooltipResourceText.fontSize;
+            skillTooltipOriginalResourceAutoSize = skillTooltipResourceText.enableAutoSizing;
+        }
+
         EnsureDynamicTextOwnership(skillTooltipTypeText);
         EnsureDynamicTextOwnership(skillTooltipResourceText);
         EnsureDynamicTextOwnership(skillTooltipNameText);
@@ -521,8 +545,31 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         SetRichTmpText(skillTooltipDescriptionText, BuildSkillDetailsText(skill));
         ApplySkillTooltipLineColor(skill.Rarity);
 
+        int occupiedEntries = Mathf.Clamp(skill.Entry, 0, skillTooltipEntryBacks.Length);
+        for (int i = 0; i < skillTooltipEntryBacks.Length; i++)
+        {
+            Image back = skillTooltipEntryBacks[i];
+            if (back == null) continue;
+            if (!back.gameObject.activeSelf) back.gameObject.SetActive(true);
+            back.color = i < occupiedEntries ? SkillTooltipEntryUsedColor : SkillTooltipEntryUnusedColor;
+        }
+
+        bool isPassiveSkill = skill.Category == Category.Passive;
         if (skillTooltipResourceText != null)
-            SetPlainTmpText(skillTooltipResourceText, Mathf.Max(0, skill.ResourceCostValue).ToString());
+        {
+            if (isPassiveSkill)
+            {
+                skillTooltipResourceText.enableAutoSizing = false;
+                skillTooltipResourceText.fontSize = 20f;
+                SetPlainTmpText(skillTooltipResourceText, "지속");
+            }
+            else
+            {
+                skillTooltipResourceText.fontSize = skillTooltipOriginalResourceFontSize;
+                skillTooltipResourceText.enableAutoSizing = skillTooltipOriginalResourceAutoSize;
+                SetPlainTmpText(skillTooltipResourceText, Mathf.Max(0, skill.ResourceCostValue).ToString());
+            }
+        }
 
         if (skillTooltipRangeImage != null)
         {
@@ -540,10 +587,14 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 
         if (skillTooltipResourceImage != null)
         {
-            Sprite resourceSprite = ResolveSkillTooltipResourceIcon(skill.ReferenceResource);
-            skillTooltipResourceImage.sprite = resourceSprite;
-            skillTooltipResourceImage.enabled = resourceSprite != null;
-            ApplySkillTooltipResourceColor(skill.ReferenceResource);
+            skillTooltipResourceImage.gameObject.SetActive(!isPassiveSkill);
+            if (!isPassiveSkill)
+            {
+                Sprite resourceSprite = ResolveSkillTooltipResourceIcon(skill.ReferenceResource);
+                skillTooltipResourceImage.sprite = resourceSprite;
+                skillTooltipResourceImage.enabled = resourceSprite != null;
+                ApplySkillTooltipResourceColor(skill.ReferenceResource);
+            }
         }
 
         PositionSkillTooltip(sourceButton.transform as RectTransform);
