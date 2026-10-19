@@ -4480,6 +4480,15 @@ public class BattleActionRunner
                 deathService.HandleMonsterDeadWithoutReward(monster);
             }
 
+            // 녹턴의 26/27 공격 모션 완료 후 Idle로 돌아와 다음 행동을 시작합니다.
+            if (monsterAnimator != null &&
+                string.Equals(command.MonsterId, "Mon_10", System.StringComparison.Ordinal) &&
+                (string.Equals(command.SkillId, "S_Monster_26", System.StringComparison.Ordinal) ||
+                 string.Equals(command.SkillId, "S_Monster_27", System.StringComparison.Ordinal)))
+            {
+                yield return monsterAnimator.WaitForAttackReturnToIdle();
+            }
+
             yield return ReturnCameraAfterActiveActionIfNeeded();
         }
         finally

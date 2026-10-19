@@ -180,6 +180,36 @@ public class BattleUnitAnimator : MonoBehaviour
         PlayState(idleStateName);
     }
 
+    /// <summary>
+    /// 연속 공격 사이에 현재 공격 애니메이션이 종료될 때까지 기다린 뒤 Idle로 돌아갑니다.
+    /// 애니메이터 전환 오류로 무한 대기하지 않도록 최대 대기 시간을 제한합니다.
+    /// </summary>
+    public IEnumerator WaitForAttackReturnToIdle(float maxWaitSeconds = 2f)
+    {
+        if (!EnsureAnimator())
+            yield break;
+
+        float elapsed = 0f;
+        // 행동 직후 Animator 상태가 반영되도록 한 프레임 기다립니다.
+        yield return null;
+        while (elapsed < maxWaitSeconds)
+        {
+            if (animator == null || !animator.isActiveAndEnabled)
+                yield break;
+
+            AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(0);
+            bool isIdle = state.IsName(idleStateName);
+            if (isIdle || (!animator.IsInTransition(0) && state.normalizedTime >= 1f))
+                break;
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        PlayIdle();
+        // Idle 상태가 갱신된 뒤 다음 공격이 시작되게 합니다.
+        yield return null;
+    }
+
     public void PlayMove()
     {
         ApplyPresentationPlaybackSpeed();
@@ -954,6 +984,23 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
 
         PlayPresentation(GetMonsterActionPresentation(actionIndex));
+    }
+
+    /// <summary>
+    /// 지정한 몬스터 행동의 애니메이션만 재생합니다.
+    /// 해당 행동에 연결된 VFX와 투사체는 생성하지 않습니다.
+    /// </summary>
+    public void PlayMonsterActionAnimationOnly(int actionIndex)
+    {
+        if (!IsValidMonsterActionIndex(actionIndex))
+            return;
+
+        BattleUnitActionPresentation presentation = GetMonsterActionPresentation(actionIndex);
+        if (presentation == null)
+            return;
+
+        ApplyPresentationPlaybackSpeed();
+        PlayState(presentation.stateName);
     }
 
     private BattleUnitActionPresentation GetMonsterActionPresentation(int actionIndex)

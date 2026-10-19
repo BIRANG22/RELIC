@@ -18,6 +18,19 @@ public class BattleStatusEffectService
         MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
             FindObjectsInactive.Exclude, FindObjectsSortMode.None);
 
+        // 타임라인의 첫 행동을 기준으로 녹턴의 방향을 먼저 맞춥니다.
+        // 포털 연출이 시작되기 전에도 올바른 방향을 바라보도록 합니다.
+        BattleMonsterTurnPlanner nocturnPlanner = Object.FindFirstObjectByType<BattleMonsterTurnPlanner>(
+            FindObjectsInactive.Include);
+        if (nocturnPlanner != null)
+        {
+            foreach (MonsterUnit monster in monsters)
+            {
+                if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
+                    nocturnPlanner.ApplyNocturnFirstReservedActionFacing(monster);
+            }
+        }
+
         foreach (MonsterUnit monster in monsters)
         {
             if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
@@ -60,6 +73,61 @@ public class BattleStatusEffectService
             monster.RuntimeData.AddTemporaryShield(FortressShieldPerTurn);
             BattleDamageTextPopupUI.ShowArmorGain(monster.transform, FortressShieldPerTurn);
             monster.ShowAndRefreshHUD();
+        }
+
+        yield return PlayNocturnPortalPresentationsRoutine(monsters);
+    }
+
+    private const string NocturnPortalPresentationSkillId = "S_Monster_28";
+    private const float NocturnPortalPresentationDelay = 0.65f;
+
+    private static IEnumerator PlayNocturnPortalPresentationsRoutine(MonsterUnit[] monsters)
+    {
+        BattleMonsterTurnPlanner planner = Object.FindFirstObjectByType<BattleMonsterTurnPlanner>(
+            FindObjectsInactive.Include);
+        if (planner == null || monsters == null)
+            yield break;
+
+        foreach (MonsterUnit monster in monsters)
+        {
+            if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
+                continue;
+
+            string runtimeId = monster.RuntimeData.RuntimeId;
+            if (!planner.HasNocturnPortalReservation(runtimeId))
+                continue;
+
+            // 포털 설치 연출 중에는 이동할 포털을 바라봅니다.
+            // 공격 방향은 연출 후 첫 예약 행동 및 실행 시점에 다시 적용합니다.
+            planner.ApplyNocturnPortalPresentationFacing(monster);
+
+            BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+            if (animator != null)
+            {
+                int actionIndex = monster.RuntimeData.GetPresentationActionIndexForSkill(
+                    NocturnPortalPresentationSkillId);
+                if (actionIndex > 0)
+                {
+                    animator.PlayMonsterActionAnimationOnly(actionIndex);
+                    // 행동 애니메이션이 시작되는 즉시 예약된 목적지에 포털을 표시합니다.
+                    planner.ShowNocturnPortalIndicatorsForRuntime(runtimeId);
+                    yield return new WaitForSeconds(NocturnPortalPresentationDelay);
+                    if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
+                    {
+                        animator.PlayIdle();
+                        // 다음에 실행할 공격은 포털 방향과 다를 수 있습니다.
+                        planner.ApplyNocturnFirstReservedActionFacing(monster);
+                    }
+                    continue;
+                }
+            }
+
+            // 애니메이션 컴포넌트가 없어도 예약된 포털은 표시합니다.
+            if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
+            {
+                planner.ShowNocturnPortalIndicatorsForRuntime(runtimeId);
+                planner.ApplyNocturnFirstReservedActionFacing(monster);
+            }
         }
     }
 

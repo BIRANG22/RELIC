@@ -1548,6 +1548,17 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
             if (charRoot == null)
                 continue;
 
+            // 캐릭터 초상화의 드롭 판정은 Char/Image가 아닌 Char 영역을 사용합니다.
+            Transform characterDropArea = charRoot.Find("Char");
+            if (characterDropArea != null)
+            {
+                LobbyReadyCharacterEquipmentDropTarget target =
+                    characterDropArea.GetComponent<LobbyReadyCharacterEquipmentDropTarget>();
+                if (target == null)
+                    target = characterDropArea.gameObject.AddComponent<LobbyReadyCharacterEquipmentDropTarget>();
+                target.Configure(this, characterId);
+            }
+
             Transform relicSlot = charRoot.Find("Relic");
             if (relicSlot != null)
             {
@@ -2233,6 +2244,33 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         }
 
         ClearEquipmentDragState();
+    }
+
+    // Char 영역으로 드롭할 때는 드래그 중인 장비 종류에 맞는 슬롯으로 보냅니다.
+    // 개별 Relic/Compound 슬롯 위에 드롭하는 기존 동작은 변경하지 않습니다.
+    public void CompleteEquipmentDropOnCharacter(string characterId)
+    {
+        if (string.IsNullOrWhiteSpace(equipmentDragItemId) || string.IsNullOrWhiteSpace(characterId))
+            return;
+
+        int partyIndex = ResolvePartySlotByCharacterId(characterId);
+        if (partyIndex < 0 || !TryGetCharacterRuntime(partyIndex, out CharacterRuntimeData runtime))
+            return;
+
+        int runtimeSlotIndex;
+        if (equipmentDragIsCompound)
+        {
+            runtimeSlotIndex = ActiveRelicRuntimeUtility.ActiveRelicSlotIndex;
+        }
+        else
+        {
+            runtimeSlotIndex = FirstEmptyRelicRuntimeSlotIndex(runtime);
+            // 빈 슬롯이 없으면 기존 첫 번째 유물 슬롯을 대상으로 합니다.
+            if (runtimeSlotIndex < 0)
+                runtimeSlotIndex = 1;
+        }
+
+        CompleteEquipmentDrop(partyIndex, runtimeSlotIndex, equipmentDragIsCompound);
     }
 
     private void CompleteEquipmentDrop(int targetPartyIndex, int targetRuntimeSlotIndex, bool isCompound)
@@ -3480,3 +3518,38 @@ public sealed class LobbyReadyEquipmentPointerRelay : MonoBehaviour,
     public void OnDrop(PointerEventData eventData) => onDrop?.Invoke(eventData);
 }
 
+
+/// <summary>
+/// Ready 패널 캐릭터의 Char 영역에서만 장비 드롭을 받습니다.
+/// 드래그 시작 이벤트를 구현하지 않아 기존 CharBtn 드래그를 방해하지 않습니다.
+/// </summary>
+public sealed class LobbyReadyCharacterEquipmentDropTarget : MonoBehaviour, IDropHandler
+{
+    private LobbyEquipPanelUI owner;
+    private string characterId;
+
+    public void Configure(LobbyEquipPanelUI panel, string id)
+    {
+        owner = panel;
+        characterId = id;
+    }
+
+    public void OnDrop(PointerEventData eventData)
+    {
+        if (owner == null || eventData == null)
+            return;
+
+        RectTransform area = transform as RectTransform;
+        if (area == null)
+            return;
+
+        Canvas canvas = GetComponentInParent<Canvas>();
+        Camera cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? (canvas.worldCamera != null ? canvas.worldCamera : eventData.enterEventCamera)
+            : null;
+        if (!RectTransformUtility.RectangleContainsScreenPoint(area, eventData.position, cam))
+            return;
+
+        owner.CompleteEquipmentDropOnCharacter(characterId);
+    }
+}
