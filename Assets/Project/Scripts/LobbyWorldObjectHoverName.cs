@@ -302,6 +302,12 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 
         screenPoint.y += screenYOffset;
 
+        // Collider2D 하단 중앙 기준으로 캐릭터별 이름 패널 X 위치를 보정합니다.
+        if (hoverNameType == HoverNameType.Ines)
+            screenPoint.x += 70f;
+        else if (hoverNameType == HoverNameType.Hilt)
+            screenPoint.x += 15f;
+
         Camera uiCamera = targetCanvas.renderMode == RenderMode.ScreenSpaceOverlay
             ? null
             : targetCanvas.worldCamera;

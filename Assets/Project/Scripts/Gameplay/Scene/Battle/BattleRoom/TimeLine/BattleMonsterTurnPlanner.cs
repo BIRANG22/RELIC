@@ -159,7 +159,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 }
 
                 timelineController.AddMonsterCommand(saved.SlotIndex, command);
-                ShowNocturnPortalDestinationIndicator(command);
+                // 포털은 턴 시작 행동 애니메이션과 동시에 표시합니다.
                 restoredCount++;
 
                 if (monsterCommandInterval > 0f && i < savedCommands.Count - 1)
@@ -310,7 +310,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
             Stopwatch registerWatch = logReservationPerformance ? Stopwatch.StartNew() : null;
             timelineController.AddMonsterCommand(plans[i].SlotIndex, plans[i].Command);
-            ShowNocturnPortalDestinationIndicator(plans[i].Command);
+            // 포털은 턴 시작 행동 애니메이션과 동시에 표시합니다.
             if (registerWatch != null)
             {
                 registerWatch.Stop();
@@ -377,13 +377,156 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 continue;
 
             timelineController.AddMonsterCommand(plans[i].SlotIndex, plans[i].Command);
-            ShowNocturnPortalDestinationIndicator(plans[i].Command);
+            // 포털은 턴 시작 행동 애니메이션과 동시에 표시합니다.
         }
 
         if (showActionReserve)
             ShowActionReserveIntroText();
     }
 
+
+    /// <summary>
+    /// 녹턴의 첫 예약 행동을 기준으로 턴 시작 시 바라보는 방향을 설정합니다.
+    /// 공격은 예약 방향, 순간이동은 포털 미리보기의 위치를 사용합니다.
+    /// </summary>
+    public void ApplyNocturnFirstReservedActionFacing(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null ||
+            !string.Equals(monster.RuntimeData.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase) ||
+            timelineController == null)
+            return;
+
+        string runtimeId = monster.RuntimeData.RuntimeId;
+        for (int slot = 0; slot < timelineController.SlotCount; slot++)
+        {
+            var commands = timelineController.GetMonsterCommands(slot);
+            if (commands == null)
+                continue;
+
+            foreach (MonsterReservedCommand command in commands)
+            {
+                if (command == null || command.RuntimeId != runtimeId)
+                    continue;
+
+                BattleDirection direction;
+                if (command.IsPortalMove && command.RangeOriginGridIndex >= 0 && gridManager != null)
+                {
+                    Vector2Int from = gridManager.IndexToCoord(monster.MainGridIndex);
+                    Vector2Int to = gridManager.IndexToCoord(command.RangeOriginGridIndex);
+                    if (from.x == to.x)
+                        return; // 같은 열이면 기존 좌우 방향을 유지합니다.
+                    direction = to.x > from.x ? BattleDirection.Right : BattleDirection.Left;
+                }
+                else if (command.HasForcedDirection)
+                {
+                    direction = command.ForcedDirection;
+                }
+                else if (command.MoveOffset.x != 0)
+                {
+                    direction = command.MoveOffset.x > 0 ? BattleDirection.Right : BattleDirection.Left;
+                }
+                else
+                {
+                    return;
+                }
+
+                BattleUnitFacing facing = monster.GetComponentInChildren<BattleUnitFacing>(true);
+                if (facing != null)
+                    facing.FaceRight(direction == BattleDirection.Right);
+                monster.RuntimeData.Direction = direction;
+                return;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 포털 생성 연출 중에는 첫 번째 포털의 목적지를 바라봅니다.
+    /// 연출이 끝나면 첫 예약 행동의 방향을 다시 적용합니다.
+    /// </summary>
+    public void ApplyNocturnPortalPresentationFacing(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null || gridManager == null ||
+            timelineController == null || monster.MainGridIndex < 0 ||
+            !string.Equals(monster.RuntimeData.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase))
+            return;
+
+        string runtimeId = monster.RuntimeData.RuntimeId;
+        Vector2Int current = gridManager.IndexToCoord(monster.MainGridIndex);
+        for (int slot = 0; slot < timelineController.SlotCount; slot++)
+        {
+            IReadOnlyList<MonsterReservedCommand> commands = timelineController.GetMonsterCommands(slot);
+            if (commands == null)
+                continue;
+
+            foreach (MonsterReservedCommand command in commands)
+            {
+                if (command == null || command.RuntimeId != runtimeId ||
+                    !command.IsPortalMove || command.RangeOriginGridIndex < 0)
+                    continue;
+
+                Vector2Int destination = gridManager.IndexToCoord(command.RangeOriginGridIndex);
+                if (destination.x == current.x)
+                    return; // 같은 열의 포털이면 좌우 방향을 유지합니다.
+
+                BattleDirection direction = destination.x > current.x
+                    ? BattleDirection.Right : BattleDirection.Left;
+                BattleUnitFacing facing = monster.GetComponentInChildren<BattleUnitFacing>(true);
+                if (facing != null)
+                    facing.FaceRight(direction == BattleDirection.Right);
+                monster.RuntimeData.Direction = direction;
+                return;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 지정한 몬스터에게 유효한 포털 이동 예약이 있는지 확인합니다.
+    /// </summary>
+    public bool HasNocturnPortalReservation(string runtimeId)
+    {
+        if (timelineController == null || string.IsNullOrEmpty(runtimeId))
+            return false;
+
+        for (int slot = 0; slot < timelineController.SlotCount; slot++)
+        {
+            IReadOnlyList<MonsterReservedCommand> commands = timelineController.GetMonsterCommands(slot);
+            if (commands == null)
+                continue;
+
+            foreach (MonsterReservedCommand command in commands)
+            {
+                if (command != null && command.IsPortalMove &&
+                    command.RangeOriginGridIndex >= 0 &&
+                    string.Equals(command.RuntimeId, runtimeId, System.StringComparison.Ordinal))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 녹턴의 행동 애니메이션 시작과 동시에 예약된 위치에 포털을 표시합니다.
+    /// </summary>
+    public void ShowNocturnPortalIndicatorsForRuntime(string runtimeId)
+    {
+        if (timelineController == null || string.IsNullOrEmpty(runtimeId))
+            return;
+
+        for (int slot = 0; slot < timelineController.SlotCount; slot++)
+        {
+            IReadOnlyList<MonsterReservedCommand> commands = timelineController.GetMonsterCommands(slot);
+            if (commands == null)
+                continue;
+
+            foreach (MonsterReservedCommand command in commands)
+            {
+                if (command != null &&
+                    string.Equals(command.RuntimeId, runtimeId, System.StringComparison.Ordinal))
+                    ShowNocturnPortalDestinationIndicator(command);
+            }
+        }
+    }
 
     private void ShowNocturnPortalDestinationIndicator(MonsterReservedCommand command)
     {
@@ -534,7 +677,8 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                     slotIndex = groupedSlot;
                 }
 
-                if (slotIndex < 0 || slotIndex >= timelineController.SlotCount)
+                if (slotIndex < 0 || slotIndex >= timelineController.SlotCount ||
+                    (string.Equals(runtime.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase) && slotIndex >= 4))
                     continue;
 
                 if (!IsSlotAvailableForMonster(runtime, slotIndex, plans))
@@ -894,6 +1038,14 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         int offsetBaseSlot = baseSlotIndex + action.SlotOffset;
 
+        // 녹턴은 1~3번 슬롯에서 시작하며 후속 행동은 4번 슬롯을 넘지 않습니다.
+        // 후속 간격이 끝을 넘어가도 시작 슬롯 후보가 배제되지 않도록 조정합니다.
+        if (string.Equals(runtime?.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase) &&
+            action.SlotOffset > 0)
+        {
+            offsetBaseSlot = Mathf.Min(offsetBaseSlot, 3);
+        }
+
         switch (action.SlotPreference)
         {
             case MonsterAISlotPreference.Earliest:
@@ -1091,7 +1243,11 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         int minimumSlotIndex = GetMonsterMinimumSlotIndex();
 
-        for (int i = minimumSlotIndex; i < timelineController.SlotCount; i++)
+        int maximumSlotExclusive = string.Equals(runtime.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase)
+            ? Mathf.Min(3, timelineController.SlotCount)
+            : timelineController.SlotCount;
+
+        for (int i = minimumSlotIndex; i < maximumSlotExclusive; i++)
         {
             if (!CanPlacePlanAtBaseSlot(runtime, i, pendingPlans, actions))
                 continue;
@@ -1140,6 +1296,28 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (candidates.Count <= 0)
             return -1;
 
+        // 녹턴은 앞 슬롯 중심으로 예약합니다. 다른 몬스터의 확률은 변경하지 않습니다.
+        // 시작 슬롯은 1~3번(60/30/10)이며, 후속 슬롯은 2~4번만 사용합니다.
+        if (string.Equals(runtime.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase))
+        {
+            int[] frontWeights = { 60, 30, 10 };
+            int totalWeight = 0;
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                int index = candidates[i];
+                totalWeight += index >= 0 && index < frontWeights.Length ? frontWeights[index] : 1;
+            }
+
+            int roll = BattleRandom.Range(0, totalWeight);
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                int index = candidates[i];
+                roll -= index >= 0 && index < frontWeights.Length ? frontWeights[index] : 1;
+                if (roll < 0)
+                    return index;
+            }
+        }
+
         int randomIndex = BattleRandom.Range(0, candidates.Count);
         return candidates[randomIndex];
     }
@@ -1174,11 +1352,18 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
             int requiredSlot = baseSlotIndex + action.SlotOffset;
 
+            if (string.Equals(runtime.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase) &&
+                action.SlotOffset > 0)
+            {
+                requiredSlot = Mathf.Min(requiredSlot, 3);
+            }
+
             if (action.SlotPreference == MonsterAISlotPreference.NextSlot)
                 requiredSlot += 1;
 
             if (requiredSlot < GetMonsterMinimumSlotIndex() ||
-                requiredSlot >= timelineController.SlotCount)
+                requiredSlot >= timelineController.SlotCount ||
+                (string.Equals(runtime.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase) && requiredSlot >= 4))
             {
                 return false;
             }

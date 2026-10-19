@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   beneficialIcon: {fileID: 21300000, guid: 798a3a3789e1e0347a58398fb326c24a, type: 3}
   harmfulIcon: {fileID: 21300000, guid: 36d608472137217409758ce24740596c, type: 3}
+  innateTraitColor: {r: 0.6627451, g: 0.69411767, b: 0.74509805, a: 1}
+  beneficialColor: {r: 0.44705883, g: 0.58431375, b: 0.8392157, a: 1}
+  harmfulColor: {r: 0.8509804, g: 0.5411765, b: 0.49411765, a: 1}
   entries:
   - EffectId: E_Move
     Icon: {fileID: 21300000, guid: 50d322c28e4e9184e93ed16b839407ff, type: 3}

@@ -18,343 +18,378 @@ namespace Relic.Gameplay.Monster
         private const string SlashSkillId = "S_Monster_27";
         private const string PullSkillId = "S_Monster_28";
 
+        /// <summary>
+        /// 녹턴의 두 번째 행동은 가까운 슬롯을 우선하되 3칸 뒤까지 선택합니다.
+        /// 실제 사용 가능한 슬롯인지 여부는 예약 플래너가 최종 검증합니다.
+        /// </summary>
+        private static int PickForwardSlotOffset()
+        {
+            int roll = BattleRandom.Range(0, 100);
+            if (roll < 45) return 1;
+            if (roll < 80) return 2;
+            return 3;
+        }
+
         public override string SelectSkill(MonsterRuntimeData monster, BattleContext context)
         {
             return ThrustSkillId;
         }
 
+        /// <summary>
+        /// 녹턴은 두 슬롯에 각 두 행동을 예약합니다.
+        /// 허용 패턴: 25-공격 / 28-공격, 공격-공격 / 25-공격,
+        /// 28-공격 / 25-공격. 완성할 수 없는 패턴은 예약하지 않습니다.
+        /// </summary>
         public override MonsterAIPlan CreatePlan(
             MonsterUnit monsterUnit,
             BattleContext context,
             GridManager gridManager)
         {
-            MonsterAIPlan plan = new();
+            if (monsterUnit == null || monsterUnit.RuntimeData == null ||
+                gridManager == null || monsterUnit.MainGridIndex < 0)
+                return new MonsterAIPlan();
 
-            if (monsterUnit == null ||
-                monsterUnit.RuntimeData == null ||
-                gridManager == null ||
-                monsterUnit.MainGridIndex < 0)
+            // 패턴마다 처음부터 두 슬롯의 네 행동을 모두 구성합니다.
+            // 우선 패턴을 무작위로 선택하고, 불가능한 경우에만 다른 패턴을 시도합니다.
+            int firstPattern = BattleRandom.Range(0, 3);
+            for (int attempt = 0; attempt < 3; attempt++)
             {
-                return plan;
-            }
-
-            List<BattleCharacter> playersInActionRange =
-                FindPlayersInActionRange(monsterUnit, gridManager);
-            List<BattleCharacter> playersInPortalRange =
-                FindPlayersInSkillRange(PortalSkillId, monsterUnit.MainGridIndex, gridManager);
-
-            bool canUsePull = TryFindSafePullTarget(
-                monsterUnit,
-                monsterUnit.MainGridIndex,
-                gridManager,
-                out BattleCharacter pullTarget,
-                out BattleDirection pullDirection);
-
-            // 당기기와 후방 재배치는 녹턴의 핵심 연계 행동입니다.
-            // 후방이 1칸이면 일반 이동, 그보다 멀면 그림자걸음을 사용합니다.
-            bool hasRearPortalTarget = TryFindPortalTarget(
-                monsterUnit,
-                playersInPortalRange,
-                gridManager,
-                out _,
-                out Vector2Int preferredRearPortalOffset,
-                out int preferredRearPortalGridIndex,
-                out BattleDirection preferredRearAttackDirection,
-                out bool preferredRearUseRegularMove);
-
-            bool usePullFirst = canUsePull &&
-                                (!hasRearPortalTarget || BattleRandom.Range(0, 2) == 0);
-
-            if (usePullFirst)
-            {
-                AddPullCombo(plan, pullDirection, 0, 0);
-
-                int laterSlotOffset = BattleRandom.Range(1, 3);
-
-                // 당기기 후의 예상 위치와 예상 방향을 기준으로 후방 재배치를 계산합니다.
-                if (TryFindPortalTargetAfterPull(
-                        monsterUnit,
-                        pullTarget,
-                        pullDirection,
-                        gridManager,
-                        out Vector2Int pulledPortalOffset,
-                        out int pulledPortalGridIndex,
-                        out BattleDirection pulledPortalAttackDirection,
-                        out bool pulledUseRegularMove))
+                int pattern = (firstPattern + attempt) % 3;
+                MonsterAIPlan candidate = new();
+                int nextOffset = PickForwardSlotOffset();
+                bool built;
+                switch (pattern)
                 {
-                    AddRearRepositionCombo(
-                        plan,
-                        pulledPortalOffset,
-                        pulledPortalGridIndex,
-                        pulledPortalAttackDirection,
-                        pulledUseRegularMove,
-                        laterSlotOffset,
-                        2,
-                        true);
-                    return plan;
+                    case 0:
+                        built = TryBuildMoveAttackThenPullAttack(
+                            candidate, monsterUnit, gridManager, nextOffset);
+                        break;
+                    case 1:
+                        built = TryBuildDoubleAttackThenMoveAttack(
+                            candidate, monsterUnit, gridManager, nextOffset);
+                        break;
+                    default:
+                        built = TryBuildPullAttackThenMoveAttack(
+                            candidate, monsterUnit, gridManager, nextOffset);
+                        break;
                 }
 
-                // 당긴 대상과 연계할 수 없어도 다른 대상의 후방이 열려 있으면 재배치 후 공격을 예약합니다.
-                if (TryFindPortalTarget(
-                        monsterUnit,
-                        playersInPortalRange,
-                        gridManager,
-                        out _,
-                        out Vector2Int laterPortalOffset,
-                        out int laterPortalGridIndex,
-                        out BattleDirection laterPortalAttackDirection,
-                        out bool laterUseRegularMove))
+                if (built && IsCompleteNocturnPlan(candidate))
+                    return candidate;
+            }
+
+            // 유효한 포털 위치나 공격 대상이 없다면 불완전한 28 단독 행동은 금지합니다.
+            // 이 상황은 AI 예약 검증 로그에서 별도로 진단할 수 있습니다.
+            return new MonsterAIPlan();
+        }
+
+        private bool TryBuildMoveAttackThenPullAttack(
+            MonsterAIPlan plan, MonsterUnit monsterUnit,
+            GridManager gridManager, int nextOffset)
+        {
+            List<BattleCharacter> targets = FindPlayersInSkillRange(
+                PortalSkillId, monsterUnit.MainGridIndex, gridManager);
+            if (!TryFindPortalTarget(monsterUnit, targets, gridManager,
+                    out _, out Vector2Int offset, out int destination,
+                    out BattleDirection attackDirection, out _))
+                return false;
+
+            if (!TryFindSafePullTarget(monsterUnit, destination, gridManager,
+                    out _, out BattleDirection pullDirection))
+                return false;
+
+            AddPortalCombo(plan, offset, destination, attackDirection, 0, 0);
+            AddPullCombo(plan, monsterUnit, destination, gridManager,
+                pullDirection, nextOffset, 0);
+            return true;
+        }
+
+        private bool TryBuildDoubleAttackThenMoveAttack(
+            MonsterAIPlan plan, MonsterUnit monsterUnit,
+            GridManager gridManager, int nextOffset)
+        {
+            if (!TryPickAttackFromOrigin(monsterUnit.MainGridIndex, gridManager,
+                    out string skill, out BattleDirection direction))
+                return false;
+
+            List<BattleCharacter> targets = FindPlayersInSkillRange(
+                PortalSkillId, monsterUnit.MainGridIndex, gridManager);
+            if (!TryFindPortalTarget(monsterUnit, targets, gridManager,
+                    out _, out Vector2Int offset, out int destination,
+                    out BattleDirection attackDirection, out _))
+                return false;
+
+            const int attackGroup = 90;
+            plan.Add(new MonsterAIAction(skill, Vector2Int.zero,
+                MonsterAISlotPreference.Front, attackGroup, 0,
+                monsterUnit.MainGridIndex, true, direction));
+            plan.Add(new MonsterAIAction(skill, Vector2Int.zero,
+                MonsterAISlotPreference.SameSlot, attackGroup, 1,
+                monsterUnit.MainGridIndex, true, direction));
+            AddPortalCombo(plan, offset, destination, attackDirection, nextOffset, 0);
+            return true;
+        }
+
+        private bool TryBuildPullAttackThenMoveAttack(
+            MonsterAIPlan plan, MonsterUnit monsterUnit,
+            GridManager gridManager, int nextOffset)
+        {
+            if (!TryFindSafePullTarget(monsterUnit, monsterUnit.MainGridIndex,
+                    gridManager, out BattleCharacter target,
+                    out BattleDirection direction))
+                return false;
+
+            if (!TryFindPortalTargetAfterPull(monsterUnit, target, direction,
+                    gridManager, out Vector2Int offset, out int destination,
+                    out BattleDirection attackDirection, out _))
+                return false;
+
+            AddPullCombo(plan, monsterUnit, monsterUnit.MainGridIndex,
+                gridManager, direction, 0, 0);
+            AddPortalCombo(plan, offset, destination, attackDirection, nextOffset, 0, true);
+            return true;
+        }
+
+        private static bool IsCompleteNocturnPlan(MonsterAIPlan plan)
+        {
+            if (plan == null || plan.Actions.Count != 4)
+                return false;
+
+            int firstOffset = plan.Actions[0].SlotOffset;
+            int secondOffset = -1;
+            int firstCount = 0;
+            int secondCount = 0;
+            int moveCount = 0;
+            foreach (MonsterAIAction action in plan.Actions)
+            {
+                if (action == null) return false;
+                if (action.SkillId == PortalSkillId) moveCount++;
+                if (action.SlotOffset == firstOffset)
                 {
-                    AddRearRepositionCombo(
-                        plan,
-                        laterPortalOffset,
-                        laterPortalGridIndex,
-                        laterPortalAttackDirection,
-                        laterUseRegularMove,
-                        laterSlotOffset,
-                        2);
+                    firstCount++;
                 }
                 else
                 {
-                    AddAdditionalAttack(
-                        plan,
-                        monsterUnit.MainGridIndex,
-                        gridManager,
-                        21,
-                        laterSlotOffset,
-                        pullDirection);
+                    if (secondOffset < 0) secondOffset = action.SlotOffset;
+                    if (action.SlotOffset != secondOffset) return false;
+                    secondCount++;
                 }
+            }
+            return firstCount == 2 && secondCount == 2 && moveCount == 1 &&
+                   firstOffset == 0 && secondOffset > firstOffset && secondOffset <= 3;
+        }
 
-                return plan;
+        /// <summary>
+        /// 녹턴의 매 턴 행동에는 반드시 이동을 포함합니다.
+        /// 공격/당기기를 먼저 예약했으면 뒤 슬롯에 이동과 후속 공격을 시도합니다.
+        /// 이동 가능한 칸이 전혀 없을 때는 불가능한 이동을 강제로 예약하지 않습니다.
+        /// </summary>
+        private MonsterAIPlan CompletePlanWithRequiredMove(
+            MonsterAIPlan plan, MonsterUnit monsterUnit, GridManager gridManager)
+        {
+            if (plan == null || monsterUnit == null || gridManager == null)
+                return EnsureTwoActionSlots(plan, monsterUnit, gridManager);
+
+            foreach (MonsterAIAction action in plan.Actions)
+            {
+                if (action != null && action.SkillId == MoveSkillId)
+                    return EnsureTwoActionSlots(plan, monsterUnit, gridManager);
             }
 
-            if (hasRearPortalTarget)
+            int nextOffset = 1;
+            foreach (MonsterAIAction action in plan.Actions)
             {
-                AddRearRepositionCombo(
-                    plan,
-                    preferredRearPortalOffset,
-                    preferredRearPortalGridIndex,
-                    preferredRearAttackDirection,
-                    preferredRearUseRegularMove,
-                    0,
-                    0);
-
-                AddAdditionalAttack(
-                    plan,
-                    preferredRearPortalGridIndex,
-                    gridManager,
-                    12,
-                    BattleRandom.Range(1, 3),
-                    preferredRearAttackDirection);
-
-                return plan;
+                if (action != null && action.SlotOffset >= nextOffset)
+                    nextOffset = action.SlotOffset + 1;
             }
+            // 앞 슬롯에 이미 공격 2회가 있으면 이동은 다음 슬롯부터 시작합니다.
+            // 예약 슬롯이 5개이므로 존재하지 않는 슬롯은 생성하지 않습니다.
+            if (nextOffset > 4)
+                return EnsureTwoActionSlots(plan, monsterUnit, gridManager);
 
-            // 그림자 소용돌이와 그림자걸음을 모두 사용할 수 없을 때는 가장 가까운 캐릭터에게 접근합니다.
-            if (BattleRandom.Range(0, 2) == 0 &&
-                TryAddRegularMoveCombo(plan, monsterUnit, gridManager))
+            bool hasPull = false;
+            BattleDirection pullDirection = BattleDirection.Right;
+            foreach (MonsterAIAction action in plan.Actions)
             {
-                return plan;
-            }
-
-            // 그랩 범위에도 없고 행동 범위에도 대상이 없으면 가장 가까운 캐릭터에게 1칸 이동합니다.
-            if (playersInActionRange.Count <= 0)
-            {
-                Vector2Int moveOffset = GetOneTileMoveTowardNearestPlayer(
-                    monsterUnit,
-                    gridManager);
-
-                if (moveOffset != Vector2Int.zero)
+                if (action != null && action.SkillId == PullSkillId)
                 {
-                    const int moveGroup = 5;
+                    hasPull = true;
+                    pullDirection = action.ForcedDirection;
+                }
+            }
 
-                    plan.Add(new MonsterAIAction(
-                        MoveSkillId,
-                        moveOffset,
-                        MonsterAISlotPreference.Front,
-                        moveGroup,
-                        0));
+            if (hasPull && TryFindSafePullTarget(
+                    monsterUnit, monsterUnit.MainGridIndex, gridManager,
+                    out BattleCharacter pulledTarget, out BattleDirection predictedDirection) &&
+                TryFindPortalTargetAfterPull(
+                    monsterUnit, pulledTarget, pullDirection, gridManager,
+                    out Vector2Int afterPullOffset, out int afterPullIndex,
+                    out BattleDirection afterPullAttackDirection, out bool afterPullRegular))
+            {
+                AddRearRepositionCombo(plan, afterPullOffset, afterPullIndex,
+                    afterPullAttackDirection, afterPullRegular, nextOffset, 0, true);
+                return EnsureTwoActionSlots(plan, monsterUnit, gridManager);
+            }
 
-                    int destinationGridIndex = GetDestinationGridIndex(
-                        monsterUnit,
-                        moveOffset,
-                        gridManager);
+            List<BattleCharacter> portalCandidates =
+                FindPlayersInSkillRange(PortalSkillId, monsterUnit.MainGridIndex, gridManager);
+            if (!hasPull && TryFindPortalTarget(
+                    monsterUnit, portalCandidates, gridManager, out _,
+                    out Vector2Int portalOffset, out int portalIndex,
+                    out BattleDirection portalAttackDirection, out bool regularMove))
+            {
+                AddRearRepositionCombo(plan, portalOffset, portalIndex,
+                    portalAttackDirection, regularMove, nextOffset, 0);
+                return EnsureTwoActionSlots(plan, monsterUnit, gridManager);
+            }
 
-                    // 이동 후에는 새 위치에서 그랩 가능 여부를 먼저 다시 판단합니다.
-                    if (TryFindSafePullTarget(
-                            monsterUnit,
-                            destinationGridIndex,
-                            gridManager,
-                            out _,
-                            out BattleDirection movedPullDirection))
+            // 당기기 후에는 원래 점유 정보만으로 포털 목적지를 추정하면
+            // 끌려온 캐릭터가 포털을 막을 수 있으므로 위험한 포털 이동을 제외합니다.
+            if (!hasPull)
+            {
+                Vector2Int step = GetOneTileMoveTowardNearestPlayer(monsterUnit, gridManager);
+                if (step != Vector2Int.zero)
+                {
+                    int destination = GetDestinationGridIndex(monsterUnit, step, gridManager);
+                    const int moveGroup = 96;
+                    plan.Add(new MonsterAIAction(MoveSkillId, step,
+                        MonsterAISlotPreference.Front, moveGroup, 0,
+                        destination, false, BattleDirection.Right, true, nextOffset));
+                    if (TryPickAttackFromOrigin(destination, gridManager,
+                            out string followSkill, out BattleDirection followDirection))
+                        plan.Add(new MonsterAIAction(followSkill, Vector2Int.zero,
+                            MonsterAISlotPreference.SameSlot, moveGroup, 1,
+                            destination, true, followDirection, false, nextOffset));
+                }
+            }
+            return EnsureTwoActionSlots(plan, monsterUnit, gridManager);
+        }
+
+        /// <summary>
+        /// 녹턴은 두 개의 서로 다른 슬롯을 사용합니다.
+        /// 첫 슬롯만 계획된 경우 다음 슬롯에 유효한 당기기 또는 공격을 추가합니다.
+        /// </summary>
+        private MonsterAIPlan EnsureTwoActionSlots(
+            MonsterAIPlan plan, MonsterUnit monsterUnit, GridManager gridManager)
+        {
+            if (plan == null || monsterUnit == null || gridManager == null || plan.Actions.Count == 0)
+                return CompleteSoloAttackSlots(plan);
+
+            HashSet<int> used = new();
+            int lastOffset = 0;
+            int attackOrigin = monsterUnit.MainGridIndex;
+            foreach (MonsterAIAction action in plan.Actions)
+            {
+                if (action == null) continue;
+                used.Add(action.SlotOffset);
+                lastOffset = Mathf.Max(lastOffset, action.SlotOffset);
+                if (action.SkillId == MoveSkillId && action.RangeOriginGridIndex >= 0)
+                    attackOrigin = action.RangeOriginGridIndex;
+            }
+            if (used.Count >= 2 || lastOffset >= 4)
+                return CompleteSoloAttackSlots(plan);
+
+            int followingOffset = lastOffset + 1;
+            // 포털 이동이 먼저 실행된 경우에는 다음 슬롯에 26/27 단독 공격을
+            // 보충하지 않습니다. 캐릭터가 이동했을 가능성이 있기 때문입니다.
+            bool movedInEarlierSlot = false;
+            foreach (MonsterAIAction action in plan.Actions)
+            {
+                if (action != null && action.SkillId == MoveSkillId &&
+                    action.SlotOffset < followingOffset)
+                {
+                    movedInEarlierSlot = true;
+                    break;
+                }
+            }
+
+            if (TryFindSafePullTarget(monsterUnit, attackOrigin, gridManager,
+                    out _, out BattleDirection pullDirection))
+            {
+                AddPullCombo(plan, monsterUnit, attackOrigin, gridManager,
+                    pullDirection, followingOffset, 0);
+            }
+            else if (!movedInEarlierSlot &&
+                     TryPickAttackFromOrigin(attackOrigin, gridManager,
+                         out string skill, out BattleDirection direction))
+            {
+                const int followGroup = 198;
+                plan.Add(new MonsterAIAction(skill, Vector2Int.zero,
+                    MonsterAISlotPreference.Front, followGroup, 0,
+                    attackOrigin, true, direction, false, followingOffset));
+            }
+            else
+            {
+                // 공격 대상이 현재 사거리 밖이라면 다음 슬롯에는 위치 제어 스킬을 예약합니다.
+                // 유효 타겟이 없어도 무효 이동을 강제하는 것보다 안전합니다.
+                plan.Add(new MonsterAIAction(PullSkillId, Vector2Int.zero,
+                    MonsterAISlotPreference.Front, 199, 0,
+                    attackOrigin, true,
+                    GetDirectionTowardNearestPlayer(attackOrigin, gridManager),
+                    false, followingOffset));
+            }
+            return CompleteSoloAttackSlots(plan);
+        }
+
+        /// <summary>
+        /// 26/27 공격만 단독으로 예약된 슬롯은 동일 공격을 한 번 더 사용합니다.
+        /// 이동/당기기/다른 공격과 같은 슬롯에 있는 경우에는 추가하지 않습니다.
+        /// </summary>
+        private static MonsterAIPlan CompleteSoloAttackSlots(MonsterAIPlan plan)
+        {
+            if (plan == null || plan.Actions.Count == 0)
+                return plan;
+
+            // 플래너의 SameSlotGroup 및 SlotOffset이 동일한 행동은 같은 슬롯에서 실행됩니다.
+            List<MonsterAIAction> extra = new();
+            for (int i = 0; i < plan.Actions.Count; i++)
+            {
+                MonsterAIAction action = plan.Actions[i];
+                if (action == null ||
+                    (action.SkillId != ThrustSkillId && action.SkillId != SlashSkillId))
+                    continue;
+
+                bool hasCompanion = false;
+                for (int j = 0; j < plan.Actions.Count; j++)
+                {
+                    if (i == j) continue;
+                    MonsterAIAction other = plan.Actions[j];
+                    if (other != null &&
+                        other.SameSlotGroup == action.SameSlotGroup &&
+                        other.SlotOffset == action.SlotOffset)
                     {
-                        plan.Add(new MonsterAIAction(
-                            PullSkillId,
-                            Vector2Int.zero,
-                            MonsterAISlotPreference.SameSlot,
-                            moveGroup,
-                            1,
-                            destinationGridIndex,
-                            true,
-                            movedPullDirection));
-
-                        if (TryPickAttackFromOrigin(
-                                destinationGridIndex,
-                                gridManager,
-                                out string movedAttackSkill,
-                                out BattleDirection movedAttackDirection))
-                        {
-                            plan.Add(new MonsterAIAction(
-                                movedAttackSkill,
-                                Vector2Int.zero,
-                                MonsterAISlotPreference.SameSlot,
-                                moveGroup,
-                                2,
-                                destinationGridIndex,
-                                true,
-                                movedAttackDirection));
-                        }
+                        hasCompanion = true;
+                        break;
                     }
-                    else if (TryPickAttackFromOrigin(
-                            destinationGridIndex,
-                            gridManager,
-                            out string followUpSkillId,
-                            out BattleDirection followUpDirection))
+                }
+                if (hasCompanion)
+                    continue;
+
+                // 이동 이후 슬롯의 일반 공격은 연속 공격으로 확장하지 않습니다.
+                // 이동 전 슬롯에서의 공격 2회 패턴은 그대로 유지합니다.
+                bool hadEarlierMove = false;
+                for (int j = 0; j < plan.Actions.Count; j++)
+                {
+                    MonsterAIAction previous = plan.Actions[j];
+                    if (previous != null && previous.SkillId == MoveSkillId &&
+                        previous.SlotOffset < action.SlotOffset)
                     {
-                        plan.Add(new MonsterAIAction(
-                            followUpSkillId,
-                            Vector2Int.zero,
-                            MonsterAISlotPreference.SameSlot,
-                            moveGroup,
-                            1,
-                            destinationGridIndex,
-                            true,
-                            followUpDirection));
+                        hadEarlierMove = true;
+                        break;
                     }
                 }
+                if (hadEarlierMove)
+                    continue;
 
-                return plan;
+                extra.Add(new MonsterAIAction(
+                    action.SkillId, Vector2Int.zero, MonsterAISlotPreference.SameSlot,
+                    action.SameSlotGroup, action.Priority + 1,
+                    action.RangeOriginGridIndex, action.HasForcedDirection,
+                    action.ForcedDirection, false, action.SlotOffset,
+                    action.ExplicitRangeGridIndices, action.RangeOriginCasterGridIndex));
             }
-
-            // 공격 가능한 상태에서는 일정 확률로 15/16 공격을 연속 등록합니다.
-            // 두 공격 모두 실제 적중 인원을 다시 계산해 선택하므로 16번 광역 공격도 적극적으로 사용합니다.
-            if (BattleRandom.Range(0, 3) == 0 &&
-                TryPickAttackFromOrigin(
-                    monsterUnit.MainGridIndex,
-                    gridManager,
-                    out string firstAttackSkill,
-                    out BattleDirection firstAttackDirection))
-            {
-                plan.Add(new MonsterAIAction(
-                    firstAttackSkill,
-                    Vector2Int.zero,
-                    MonsterAISlotPreference.Front,
-                    40,
-                    0,
-                    monsterUnit.MainGridIndex,
-                    false,
-                    firstAttackDirection));
-
-                if (TryPickAttackFromOrigin(
-                        monsterUnit.MainGridIndex,
-                        gridManager,
-                        out string secondAttackSkill,
-                        out BattleDirection secondAttackDirection))
-                {
-                    plan.Add(new MonsterAIAction(
-                        secondAttackSkill,
-                        Vector2Int.zero,
-                        MonsterAISlotPreference.Front,
-                        41,
-                        1,
-                        monsterUnit.MainGridIndex,
-                        false,
-                        secondAttackDirection,
-                        false,
-                        BattleRandom.Range(1, 3)));
-                }
-
-                return plan;
-            }
-
-            // 그랩은 불가능하지만 대상의 후방이 비어 있다면 거리별로 일반 이동 또는 그림자걸음 후 공격합니다.
-            if (TryFindPortalTarget(
-                    monsterUnit,
-                    playersInPortalRange,
-                    gridManager,
-                    out _,
-                    out Vector2Int portalOffset,
-                    out int portalGridIndex,
-                    out BattleDirection portalAttackDirection,
-                    out bool portalUseRegularMove))
-            {
-                AddRearRepositionCombo(
-                    plan,
-                    portalOffset,
-                    portalGridIndex,
-                    portalAttackDirection,
-                    portalUseRegularMove,
-                    0,
-                    0);
-
-                // 재배치 공격 뒤에는 다른 슬롯에서도 한 번 더 공격해 엘리트의 압박을 유지합니다.
-                AddAdditionalAttack(
-                    plan,
-                    portalGridIndex,
-                    gridManager,
-                    12,
-                    BattleRandom.Range(1, 3),
-                    portalAttackDirection);
-
-                return plan;
-            }
-
-            // 사용할 수 있는 연계가 없으면 가장 가까운 캐릭터에게 이동합니다.
-            Vector2Int fallbackMoveOffset = GetOneTileMoveTowardNearestPlayer(
-                monsterUnit,
-                gridManager);
-
-            if (fallbackMoveOffset != Vector2Int.zero)
-            {
-                const int fallbackMoveGroup = 30;
-
-                plan.Add(new MonsterAIAction(
-                    MoveSkillId,
-                    fallbackMoveOffset,
-                    MonsterAISlotPreference.Front,
-                    fallbackMoveGroup,
-                    0));
-
-                int fallbackDestinationGridIndex = GetDestinationGridIndex(
-                    monsterUnit,
-                    fallbackMoveOffset,
-                    gridManager);
-
-                if (TryPickAttackFromOrigin(
-                        fallbackDestinationGridIndex,
-                        gridManager,
-                        out string fallbackAttackSkillId,
-                        out BattleDirection fallbackAttackDirection))
-                {
-                    plan.Add(new MonsterAIAction(
-                        fallbackAttackSkillId,
-                        Vector2Int.zero,
-                        MonsterAISlotPreference.SameSlot,
-                        fallbackMoveGroup,
-                        1,
-                        fallbackDestinationGridIndex,
-                        true,
-                        fallbackAttackDirection));
-
-                    AddAdditionalAttack(
-                        plan,
-                        fallbackDestinationGridIndex,
-                        gridManager,
-                        31,
-                        BattleRandom.Range(1, 4),
-                        fallbackAttackDirection);
-                }
-            }
+            for (int i = 0; i < extra.Count; i++)
+                plan.Add(extra[i]);
 
             return plan;
         }
@@ -389,7 +424,8 @@ namespace Relic.Gameplay.Monster
                 moveOffset,
                 MonsterAISlotPreference.Front,
                 moveGroup,
-                0));
+                0,
+                destinationGridIndex, false, BattleDirection.Right, true));
 
             // 이동 방향을 공격 방향으로 재사용하지 않습니다.
             // 이동 완료 위치에서 실제로 맞힐 수 있는 대상을 다시 찾고, 그 대상이 있는 방향으로만 공격합니다.
@@ -409,13 +445,6 @@ namespace Relic.Gameplay.Monster
                     true,
                     movedAttackDirection));
 
-                AddAdditionalAttack(
-                    plan,
-                    destinationGridIndex,
-                    gridManager,
-                    moveGroup + 1,
-                    BattleRandom.Range(1, 4),
-                    movedAttackDirection);
             }
 
             return true;
@@ -561,61 +590,9 @@ namespace Relic.Gameplay.Monster
             int priorityBase,
             bool keepPredictedAttackDirection = false)
         {
-            if (!useRegularMove)
-            {
-                AddPortalCombo(
-                    plan,
-                    moveOffset,
-                    destinationGridIndex,
-                    attackDirection,
-                    slotOffset,
-                    priorityBase,
-                    keepPredictedAttackDirection);
-                return;
-            }
-
-            if (plan == null)
-                return;
-
-            const int moveGroup = 11;
-
-            plan.Add(new MonsterAIAction(
-                MoveSkillId,
-                moveOffset,
-                MonsterAISlotPreference.Front,
-                moveGroup,
-                priorityBase,
-                -1,
-                false,
-                BattleDirection.Right,
-                false,
-                slotOffset));
-
-            string followUpSkill = PickFollowUpAttack();
-            BattleDirection finalAttackDirection = attackDirection;
-
-            if (!keepPredictedAttackDirection &&
-                TryPickAttackFromOrigin(
-                    destinationGridIndex,
-                    Object.FindFirstObjectByType<GridManager>(),
-                    out string selectedAttack,
-                    out BattleDirection selectedDirection))
-            {
-                followUpSkill = selectedAttack;
-                finalAttackDirection = selectedDirection;
-            }
-
-            plan.Add(new MonsterAIAction(
-                followUpSkill,
-                Vector2Int.zero,
-                MonsterAISlotPreference.SameSlot,
-                moveGroup,
-                priorityBase + 1,
-                destinationGridIndex,
-                true,
-                finalAttackDirection,
-                false,
-                slotOffset));
+            // 목적지가 바로 옆 칸이어도 녹턴은 항상 포털로 순간이동합니다.
+            AddPortalCombo(plan, moveOffset, destinationGridIndex, attackDirection,
+                slotOffset, priorityBase, keepPredictedAttackDirection);
         }
 
         private static bool IsOneTileOrthogonalMove(Vector2Int moveOffset)
@@ -649,22 +626,14 @@ namespace Relic.Gameplay.Monster
                 true,
                 slotOffset));
 
-            string portalAttackSkill = PickFollowUpAttack();
+            // 포탈 이동 후의 첫 공격은 포탈 목적지를 선택한 후방 대상에게 고정합니다.
+            // 다른 캐릭터가 옆에 있더라도 공격 방향을 반대로 바꾸지 않습니다.
+            string portalAttackSkill = PickAttackInFixedDirection(
+                portalGridIndex,
+                Object.FindFirstObjectByType<GridManager>(),
+                attackDirection,
+                keepPredictedAttackDirection);
             BattleDirection finalPortalDirection = attackDirection;
-
-            // 일반 포탈은 현재 배치에서 공격 가능한 대상을 다시 확인합니다.
-            // 당기기 후 포탈은 아직 실행되지 않은 당기기의 예상 위치를 기준으로 계산했으므로,
-            // 현재 배치를 다시 탐색하지 않고 미리 계산한 공격 방향을 그대로 유지합니다.
-            if (!keepPredictedAttackDirection &&
-                TryPickAttackFromOrigin(
-                    portalGridIndex,
-                    Object.FindFirstObjectByType<GridManager>(),
-                    out string selectedPortalAttack,
-                    out BattleDirection selectedPortalDirection))
-            {
-                portalAttackSkill = selectedPortalAttack;
-                finalPortalDirection = selectedPortalDirection;
-            }
 
             plan.Add(new MonsterAIAction(
                 portalAttackSkill,
@@ -681,6 +650,9 @@ namespace Relic.Gameplay.Monster
 
         private void AddPullCombo(
             MonsterAIPlan plan,
+            MonsterUnit monsterUnit,
+            int originGridIndex,
+            GridManager gridManager,
             BattleDirection pullDirection,
             int slotOffset,
             int priorityBase)
@@ -689,30 +661,172 @@ namespace Relic.Gameplay.Monster
                 return;
 
             const int pullGroup = 20;
-
             plan.Add(new MonsterAIAction(
-                PullSkillId,
-                Vector2Int.zero,
-                MonsterAISlotPreference.Front,
-                pullGroup,
-                priorityBase,
-                -1,
-                true,
-                pullDirection,
-                false,
-                slotOffset));
+                PullSkillId, Vector2Int.zero, MonsterAISlotPreference.Front,
+                pullGroup, priorityBase, originGridIndex, true,
+                pullDirection, false, slotOffset));
 
+            // 28 이후 이동한 캐릭터의 예상 좌표를 사용해야 26의 빗나감을 줄일 수 있습니다.
+            // 다음 공격은 당기기와 같은 슬롯에 항상 예약합니다.
+            // 당기기 이후 예상 적중이 0이어도 캐릭터가 이전 슬롯에서 이동할 수 있으므로
+            // 26/27을 생략하지 않고 해당 방향의 공격으로 연계합니다.
+            string attackSkill = PickAttackAfterPullOrFallback(
+                monsterUnit, originGridIndex, gridManager, pullDirection);
             plan.Add(new MonsterAIAction(
-                PickFollowUpAttack(),
-                Vector2Int.zero,
-                MonsterAISlotPreference.SameSlot,
-                pullGroup,
-                priorityBase + 1,
-                -1,
-                true,
-                pullDirection,
-                false,
-                slotOffset));
+                attackSkill, Vector2Int.zero, MonsterAISlotPreference.SameSlot,
+                pullGroup, priorityBase + 1, originGridIndex, true,
+                pullDirection, false, slotOffset));
+        }
+
+        private void AddPostRepositionCombo(
+            MonsterAIPlan plan, MonsterUnit monsterUnit,
+            int originGridIndex, GridManager gridManager,
+            int slotOffset, BattleDirection fallbackDirection)
+        {
+            // 이동 후에도 당기기를 독립적인 위치 제어 후보로 평가합니다.
+            // 후속 공격이 지금 적중하지 않더라도, 캐릭터의 이동을 제한할 수 있습니다.
+            // 이동 후 후속 슬롯에는 일반 공격 연속 2회를 사용하지 않습니다.
+            // 유효한 끌어당기기 대상이 있으면 28을 우선 예약하고,
+            // 당긴 뒤의 예상 위치에서 적중 가능한 경우에만 26/27을 이어서 예약합니다.
+            if (TryFindSafePullTarget(monsterUnit, originGridIndex, gridManager,
+                    out _, out BattleDirection pullDirection))
+            {
+                const int group = 71;
+                plan.Add(new MonsterAIAction(
+                    PullSkillId, Vector2Int.zero, MonsterAISlotPreference.Front,
+                    group, 0, originGridIndex, true, pullDirection, false, slotOffset));
+                // 이동 후 후속 슬롯에서도 28 다음에는 26/27을 반드시 예약합니다.
+                string skill = PickAttackAfterPullOrFallback(
+                    monsterUnit, originGridIndex, gridManager, pullDirection);
+                plan.Add(new MonsterAIAction(
+                    skill, Vector2Int.zero, MonsterAISlotPreference.SameSlot,
+                    group, 1, originGridIndex, true, pullDirection, false, slotOffset));
+                return;
+            }
+
+            // 이동 후 다음 슬롯에서 당기기가 불가능하다면 추가 일반 공격을 예약하지 않습니다.
+            // 캐릭터는 이동할 수 있으므로 이동 시점의 위치만으로
+            // 후속 슬롯에 26/27 연속 공격을 확정하지 않습니다.
+        }
+
+        /// <summary>
+        /// 당기기 이후 적중 예측이 불확실하더라도 같은 방향의 후속 공격을 선택합니다.
+        /// 예측된 적중 대상이 있으면 그 결과를 우선하고, 없으면 현재 범위를 비교합니다.
+        /// </summary>
+        private string PickAttackAfterPullOrFallback(
+            MonsterUnit monsterUnit, int originGridIndex, GridManager gridManager,
+            BattleDirection pullDirection)
+        {
+            if (TryPickAttackAfterPull(monsterUnit, originGridIndex, gridManager,
+                    pullDirection, out string skill, out _))
+                return skill;
+
+            return PickAttackInFixedDirection(
+                originGridIndex, gridManager, pullDirection, false);
+        }
+
+        private bool TryPickAttackAfterPull(
+            MonsterUnit monsterUnit, int originGridIndex, GridManager gridManager,
+            BattleDirection pullDirection, out string skillId,
+            out BattleDirection attackDirection)
+        {
+            skillId = string.Empty;
+            attackDirection = pullDirection;
+            Dictionary<int, int> predicted = PredictPullPositions(
+                monsterUnit, originGridIndex, gridManager, pullDirection);
+            if (predicted.Count == 0)
+                return false;
+
+            // 당겨진 대상과의 연계 공격은 당긴 방향을 유지합니다.
+            // 반대편의 다른 캐릭터가 더 많이 맞는다는 이유로 방향을 바꾸지 않습니다.
+            int thrustHits = CountPredictedHitsInDirection(
+                ThrustSkillId, originGridIndex, gridManager, pullDirection, predicted);
+            int slashHits = CountPredictedHitsInDirection(
+                SlashSkillId, originGridIndex, gridManager, pullDirection, predicted);
+            if (thrustHits <= 0 && slashHits <= 0)
+                return false;
+
+            skillId = slashHits > thrustHits ? SlashSkillId
+                : thrustHits > slashHits ? ThrustSkillId
+                : BattleRandom.Range(0, 2) == 0 ? SlashSkillId : ThrustSkillId;
+            return true;
+        }
+
+        private int CountPredictedHitsInDirection(
+            string skillId, int originGridIndex, GridManager gridManager,
+            BattleDirection direction, Dictionary<int, int> predictedPositions)
+        {
+            MonsterSkillData skillData = DataManager.Instance?.MonsterSkillDatabase?.Get(skillId);
+            RangeDatabase rangeDatabase = DataManager.Instance?.RangeDatabase;
+            if (skillData == null || rangeDatabase == null || gridManager == null ||
+                string.IsNullOrWhiteSpace(skillData.RangeId))
+                return 0;
+
+            List<int> range = BattleRangeCalculator.GetDirectionRangeIndices(
+                originGridIndex, skillData.RangeId, direction, rangeDatabase, gridManager);
+            if (range == null || range.Count == 0)
+                return 0;
+
+            HashSet<int> cells = new(range);
+            int hits = 0;
+            foreach (BattleCharacter player in FindPlayers())
+            {
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
+                    continue;
+
+                int position = predictedPositions != null &&
+                               predictedPositions.TryGetValue(player.CurrentGridIndex, out int next)
+                    ? next : player.CurrentGridIndex;
+                if (cells.Contains(position))
+                    hits++;
+            }
+            return hits;
+        }
+
+        private Dictionary<int, int> PredictPullPositions(
+            MonsterUnit monsterUnit, int originGridIndex, GridManager gridManager,
+            BattleDirection direction)
+        {
+            Dictionary<int, int> predicted = new();
+            if (monsterUnit == null || originGridIndex < 0 || gridManager == null)
+                return predicted;
+
+            MonsterSkillData pullData = DataManager.Instance?.MonsterSkillDatabase?.Get(PullSkillId);
+            RangeDatabase rangeDatabase = DataManager.Instance?.RangeDatabase;
+            if (pullData == null || rangeDatabase == null || string.IsNullOrWhiteSpace(pullData.RangeId))
+                return predicted;
+
+            List<int> range = BattleRangeCalculator.GetDirectionRangeIndices(
+                originGridIndex, pullData.RangeId, direction, rangeDatabase, gridManager);
+            if (range == null)
+                return predicted;
+
+            HashSet<int> affected = new(range);
+            Vector2Int delta = direction == BattleDirection.Left
+                ? Vector2Int.right : Vector2Int.left;
+            BattleCharacter[] players = FindPlayers();
+            foreach (BattleCharacter player in players)
+            {
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0 ||
+                    !affected.Contains(player.CurrentGridIndex))
+                    continue;
+
+                Vector2Int nextCoord = gridManager.IndexToCoord(player.CurrentGridIndex) + delta;
+                if (!gridManager.IsValidCoord(nextCoord))
+                    continue;
+                int next = gridManager.CoordToIndex(nextCoord);
+                // 이미 차지된 칸이나 녹턴의 점유 칸으로는 당겨지지 않는 것으로 예측합니다.
+                // 실제 GrabEffect와 동일하게 장애물과 유닛 점유를 검사합니다.
+                // 이동 불가 그리드 효과가 있으면 당기기는 실패하며 원래 칸을 유지합니다.
+                if (BattleOccupancyService.IsOccupiedByAnyUnit(next, player.CharacterId) ||
+                    IsGridEffectBlocked(next) ||
+                    BattleEquipmentEffectService.IsForcedMoveImmune(player.RuntimeData) ||
+                    WouldPullTargetIntoNocturn(monsterUnit, originGridIndex,
+                        player.CurrentGridIndex, direction, gridManager))
+                    continue;
+                predicted[player.CurrentGridIndex] = next;
+            }
+            return predicted;
         }
 
         private int GetDestinationGridIndex(
@@ -735,11 +849,64 @@ namespace Relic.Gameplay.Monster
                 : -1;
         }
 
+        private string PickAttackInFixedDirection(
+            int originGridIndex,
+            GridManager gridManager,
+            BattleDirection attackDirection,
+            bool usePredictedPlacement)
+        {
+            // 후방 진입 후에는 방향을 새로 탐색하지 않고 그 방향에서만 스킬을 비교합니다.
+            // 끌어당기기 후 위치 예측은 별도의 연계 단계에서 처리합니다.
+            if (usePredictedPlacement || originGridIndex < 0 || gridManager == null)
+                return SlashSkillId;
+
+            int thrustHits = CountHitsInDirection(
+                ThrustSkillId, originGridIndex, gridManager, attackDirection);
+            int slashHits = CountHitsInDirection(
+                SlashSkillId, originGridIndex, gridManager, attackDirection);
+
+            if (slashHits > thrustHits)
+                return SlashSkillId;
+            if (thrustHits > slashHits)
+                return ThrustSkillId;
+            return BattleRandom.Range(0, 2) == 0 ? SlashSkillId : ThrustSkillId;
+        }
+
+        private int CountHitsInDirection(
+            string skillId,
+            int originGridIndex,
+            GridManager gridManager,
+            BattleDirection direction)
+        {
+            MonsterSkillData skillData =
+                DataManager.Instance?.MonsterSkillDatabase?.Get(skillId);
+            RangeDatabase rangeDatabase = DataManager.Instance?.RangeDatabase;
+            if (skillData == null || rangeDatabase == null ||
+                string.IsNullOrWhiteSpace(skillData.RangeId) || skillData.RangeId == "0")
+                return 0;
+
+            List<int> indices = BattleRangeCalculator.GetDirectionRangeIndices(
+                originGridIndex, skillData.RangeId, direction, rangeDatabase, gridManager);
+            if (indices == null || indices.Count == 0)
+                return 0;
+
+            HashSet<int> hitCells = new(indices);
+            int hits = 0;
+            foreach (BattleCharacter player in FindPlayers())
+            {
+                if (IsAlivePlayer(player) && player.CurrentGridIndex >= 0 &&
+                    hitCells.Contains(player.CurrentGridIndex))
+                    hits++;
+            }
+            return hits;
+        }
+
         private bool TryPickAttackFromOrigin(
             int originGridIndex,
             GridManager gridManager,
             out string selectedSkillId,
-            out BattleDirection selectedDirection)
+            out BattleDirection selectedDirection,
+            Dictionary<int, int> predictedPositions = null)
         {
             selectedSkillId = string.Empty;
             selectedDirection = BattleDirection.Right;
@@ -751,13 +918,13 @@ namespace Relic.Gameplay.Monster
                 ThrustSkillId,
                 originGridIndex,
                 gridManager,
-                out BattleDirection thrustDirection);
+                out BattleDirection thrustDirection, predictedPositions);
 
             int slashBestHits = GetBestHitCount(
                 SlashSkillId,
                 originGridIndex,
                 gridManager,
-                out BattleDirection slashDirection);
+                out BattleDirection slashDirection, predictedPositions);
 
             if (thrustBestHits <= 0 && slashBestHits <= 0)
                 return false;
@@ -788,7 +955,8 @@ namespace Relic.Gameplay.Monster
             string skillId,
             int originGridIndex,
             GridManager gridManager,
-            out BattleDirection selectedDirection)
+            out BattleDirection selectedDirection,
+            Dictionary<int, int> predictedPositions = null)
         {
             selectedDirection = BattleDirection.Right;
 
@@ -830,11 +998,14 @@ namespace Relic.Gameplay.Monster
                 {
                     BattleCharacter player = players[j];
 
-                    if (IsAlivePlayer(player) && player.CurrentGridIndex >= 0 &&
-                        rangeSet.Contains(player.CurrentGridIndex))
-                    {
+                    if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
+                        continue;
+                    int playerIndex = player.CurrentGridIndex;
+                    if (predictedPositions != null && predictedPositions.TryGetValue(
+                            playerIndex, out int predictedIndex))
+                        playerIndex = predictedIndex;
+                    if (rangeSet.Contains(playerIndex))
                         hitCount++;
-                    }
                 }
 
                 if (hitCount > bestHits)
@@ -1289,25 +1460,13 @@ namespace Relic.Gameplay.Monster
                 return false;
             }
 
-            Vector2Int pullMoveOffset = pullDirection == BattleDirection.Left
-                ? Vector2Int.right
-                : Vector2Int.left;
-            Vector2Int currentPulledTargetCoord =
-                gridManager.IndexToCoord(pullTarget.CurrentGridIndex);
-            Vector2Int predictedPulledTargetCoord = currentPulledTargetCoord + pullMoveOffset;
-
-            if (!gridManager.IsValidCoord(predictedPulledTargetCoord))
+            Dictionary<int, int> predictedPositions = PredictPullPositions(
+                monsterUnit, monsterUnit.MainGridIndex, gridManager, pullDirection);
+            if (!predictedPositions.TryGetValue(
+                    pullTarget.CurrentGridIndex, out int predictedPulledTargetGridIndex))
                 return false;
-
-            int predictedPulledTargetGridIndex = gridManager.CoordToIndex(predictedPulledTargetCoord);
-
-            if (BattleOccupancyService.IsOccupiedByAnyUnit(
-                    predictedPulledTargetGridIndex,
-                    pullTarget.CharacterId,
-                    monsterUnit))
-            {
-                return false;
-            }
+            Vector2Int predictedPulledTargetCoord =
+                gridManager.IndexToCoord(predictedPulledTargetGridIndex);
 
             MonsterSkillData portalSkillData =
                 DataManager.Instance?.MonsterSkillDatabase?.Get(PortalSkillId);
@@ -1343,9 +1502,10 @@ namespace Relic.Gameplay.Monster
                 if (!IsAlivePlayer(candidate) || candidate.CurrentGridIndex < 0)
                     continue;
 
-                Vector2Int candidateCoord = candidate == pullTarget
-                    ? predictedPulledTargetCoord
-                    : gridManager.IndexToCoord(candidate.CurrentGridIndex);
+                int predictedCandidateIndex = predictedPositions.TryGetValue(
+                    candidate.CurrentGridIndex, out int nextCandidateIndex)
+                    ? nextCandidateIndex : candidate.CurrentGridIndex;
+                Vector2Int candidateCoord = gridManager.IndexToCoord(predictedCandidateIndex);
                 int candidateGridIndex = gridManager.CoordToIndex(candidateCoord);
 
                 if (!portalRangeSet.Contains(candidateGridIndex))
@@ -1385,7 +1545,7 @@ namespace Relic.Gameplay.Monster
                 if (!IsPortalDestinationAvailableAfterPull(
                         monsterUnit,
                         pullTarget,
-                        predictedPulledTargetGridIndex,
+                        predictedPositions,
                         behindGridIndex))
                 {
                     continue;
@@ -1419,37 +1579,33 @@ namespace Relic.Gameplay.Monster
             destinationGridIndex = farthestBehindGridIndices[selectedIndex];
             attackDirection = farthestAttackDirections[selectedIndex];
 
-            // 당기기 이후 예상 배치에서 후방이 바로 1칸이라면 포탈을 낭비하지 않고 일반 이동을 사용합니다.
-            useRegularMove = IsOneTileOrthogonalMove(moveOffset) &&
-                             (destinationGridIndex == pullTarget.CurrentGridIndex ||
-                              CanMonsterMove(monsterUnit, gridManager, moveOffset));
+            // 당기기 이후 후방이 1칸 거리라도 포털 이동을 사용합니다.
+            useRegularMove = false;
             return true;
         }
 
         private bool IsPortalDestinationAvailableAfterPull(
             MonsterUnit monsterUnit,
             BattleCharacter pullTarget,
-            int predictedPulledTargetGridIndex,
+            Dictionary<int, int> predictedPositions,
             int destinationGridIndex)
         {
-            if (monsterUnit == null || pullTarget == null || destinationGridIndex < 0)
+            if (monsterUnit == null || pullTarget == null || destinationGridIndex < 0 ||
+                predictedPositions == null)
                 return false;
 
             if (destinationGridIndex == monsterUnit.MainGridIndex ||
-                destinationGridIndex == predictedPulledTargetGridIndex ||
-                IsGridEffectBlocked(destinationGridIndex))
-            {
+                IsGridEffectBlocked(destinationGridIndex) ||
+                predictedPositions.ContainsValue(destinationGridIndex))
                 return false;
-            }
 
-            // 당겨질 대상의 현재 칸은 그림자 소용돌이가 먼저 실행되면 비게 되므로 예약할 수 있습니다.
-            if (destinationGridIndex == pullTarget.CurrentGridIndex)
+            // 실제로 당겨져 비워질 칸만 예외로 인정합니다.
+            // 다른 캐릭터가 당겨져 목적지를 차지한다면 포털 후보에서 제외합니다.
+            if (predictedPositions.ContainsKey(destinationGridIndex))
                 return true;
 
             return !BattleOccupancyService.IsOccupiedByAnyUnit(
-                destinationGridIndex,
-                null,
-                monsterUnit);
+                destinationGridIndex, null, monsterUnit);
         }
 
         private bool TryFindPortalTarget(
@@ -1533,9 +1689,8 @@ namespace Relic.Gameplay.Monster
             destinationGridIndex = validBehindGridIndices[selectedIndex];
             attackDirection = validAttackDirections[selectedIndex];
 
-            // 가장 먼 대상의 후방이 일반 이동 1회로 도달 가능한 칸이면 그림자걸음 대신 일반 이동을 사용합니다.
-            useRegularMove = IsOneTileOrthogonalMove(moveOffset) &&
-                             CanMonsterMove(monsterUnit, gridManager, moveOffset);
+            // 이동 거리에 상관없이 그림자걸음 포털로 이동합니다.
+            useRegularMove = false;
             return true;
         }
 
