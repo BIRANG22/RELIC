@@ -122,9 +122,156 @@ public sealed class LocaleFontDatabaseTests
         }
     }
 
+    [Test]
+    public void GlobalApplicator_UsesBodyRoleForTextWithoutExplicitOwner()
+    {
+        var gameObject = new GameObject("Global Font Test", typeof(RectTransform));
+        TextMeshProUGUI text = gameObject.AddComponent<TextMeshProUGUI>();
+
+        try
+        {
+            bool applied = GlobalLocalizedTMPFontApplicator.ApplyToText(
+                text,
+                database,
+                Locale.CreateLocale("ko"));
+
+            Assert.That(applied, Is.True);
+            Assert.That(text.font, Is.SameAs(koreanBody));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(gameObject);
+        }
+    }
+
+    [Test]
+    public void GlobalApplicator_PreservesLegacyStyledTextWhenSourceMappingRequestsIt()
+    {
+        TMP_FontAsset legacyNumberFont = ScriptableObject.CreateInstance<TMP_FontAsset>();
+        TMP_FontAsset numberFont = ScriptableObject.CreateInstance<TMP_FontAsset>();
+        SetProfiles(CreateProfile(
+            "ko",
+            null,
+            CreateRole("body", koreanBody),
+            CreateRole("number", numberFont)));
+        SetSourceFontRoles(CreateSourceFontRole(legacyNumberFont, "number", true));
+
+        var gameObject = new GameObject("Legacy Number Font Test", typeof(RectTransform));
+        TextMeshProUGUI text = gameObject.AddComponent<TextMeshProUGUI>();
+        text.font = legacyNumberFont;
+
+        try
+        {
+            Assert.That(
+                database.TryGetRoleIdForSourceFont(
+                    legacyNumberFont,
+                    out string mappedRoleId,
+                    out bool preserveSourceFont),
+                Is.True);
+            Assert.That(mappedRoleId, Is.EqualTo("number"));
+            Assert.That(preserveSourceFont, Is.True);
+
+            bool applied = GlobalLocalizedTMPFontApplicator.ApplyToText(
+                text,
+                database,
+                Locale.CreateLocale("ko"));
+
+            Assert.That(applied, Is.True);
+            Assert.That(text.font, Is.SameAs(legacyNumberFont));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(gameObject);
+            UnityEngine.Object.DestroyImmediate(legacyNumberFont);
+            UnityEngine.Object.DestroyImmediate(numberFont);
+        }
+    }
+
+    [Test]
+    public void GlobalApplicator_PreservesExplicitRoleOwner()
+    {
+        TMP_FontAsset numberFont = ScriptableObject.CreateInstance<TMP_FontAsset>();
+        SetProfiles(CreateProfile(
+            "ko",
+            null,
+            CreateRole("body", koreanBody),
+            CreateRole("number", numberFont)));
+
+        var gameObject = new GameObject("Explicit Font Role Test", typeof(RectTransform));
+        TextMeshProUGUI text = gameObject.AddComponent<TextMeshProUGUI>();
+
+        try
+        {
+            LocalizedTMPFont localizer = gameObject.AddComponent<LocalizedTMPFont>();
+            localizer.Configure(database, "number", text);
+
+            bool applied = GlobalLocalizedTMPFontApplicator.ApplyToText(
+                text,
+                database,
+                Locale.CreateLocale("ko"));
+
+            Assert.That(applied, Is.True);
+            Assert.That(text.font, Is.SameAs(numberFont));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(gameObject);
+            UnityEngine.Object.DestroyImmediate(numberFont);
+        }
+    }
+
+    [Test]
+    public void GlobalApplicator_MissingLocaleLeavesCurrentFontUntouched()
+    {
+        TMP_FontAsset original = ScriptableObject.CreateInstance<TMP_FontAsset>();
+        var gameObject = new GameObject("Missing Locale Font Test", typeof(RectTransform));
+        TextMeshProUGUI text = gameObject.AddComponent<TextMeshProUGUI>();
+        text.font = original;
+
+        try
+        {
+            bool applied = GlobalLocalizedTMPFontApplicator.ApplyToText(
+                text,
+                database,
+                Locale.CreateLocale("ja"));
+
+            Assert.That(applied, Is.False);
+            Assert.That(text.font, Is.SameAs(original));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(gameObject);
+            UnityEngine.Object.DestroyImmediate(original);
+        }
+    }
+
+    [Test]
+    public void GlobalApplicator_RuntimeCallbacksOnlyRunDuringPlayMode()
+    {
+        Assert.That(GlobalLocalizedTMPFontApplicator.ShouldProcessRuntimeCallback(false), Is.False);
+        Assert.That(GlobalLocalizedTMPFontApplicator.ShouldProcessRuntimeCallback(true), Is.True);
+    }
+
     private void SetProfiles(params LocaleFontDatabase.LocaleFontProfile[] profiles)
     {
         SetField(database, "profiles", profiles);
+    }
+
+    private void SetSourceFontRoles(params LocaleFontDatabase.SourceFontRoleEntry[] entries)
+    {
+        SetField(database, "sourceFontRoles", entries);
+    }
+
+    private static LocaleFontDatabase.SourceFontRoleEntry CreateSourceFontRole(
+        TMP_FontAsset sourceFont,
+        string roleId,
+        bool preserveSourceFont)
+    {
+        var entry = new LocaleFontDatabase.SourceFontRoleEntry();
+        SetField(entry, "sourceFont", sourceFont);
+        SetField(entry, "roleId", roleId);
+        SetField(entry, "preserveSourceFont", preserveSourceFont);
+        return entry;
     }
 
     private static LocaleFontDatabase.LocaleFontProfile CreateProfile(

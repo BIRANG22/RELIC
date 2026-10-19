@@ -11,8 +11,51 @@ public sealed class LocaleFontDatabase : ScriptableObject
     public const string NumberRoleId = "number";
 
     [SerializeField] private LocaleFontProfile[] profiles = Array.Empty<LocaleFontProfile>();
+    [SerializeField] private SourceFontRoleEntry[] sourceFontRoles = Array.Empty<SourceFontRoleEntry>();
 
     public IReadOnlyList<LocaleFontProfile> Profiles => profiles;
+
+    public bool TryGetRoleIdForSourceFont(
+        TMP_FontAsset sourceFont,
+        out string roleId,
+        out bool preserveSourceFont)
+    {
+        roleId = string.Empty;
+        preserveSourceFont = false;
+        if (sourceFont == null)
+            return false;
+
+        for (int i = 0; i < sourceFontRoles.Length; i++)
+        {
+            SourceFontRoleEntry entry = sourceFontRoles[i];
+            if (entry != null && entry.SourceFont == sourceFont)
+            {
+                roleId = Normalize(entry.RoleId);
+                preserveSourceFont = entry.PreserveSourceFont;
+                return !string.IsNullOrEmpty(roleId);
+            }
+        }
+
+        for (int profileIndex = 0; profileIndex < profiles.Length; profileIndex++)
+        {
+            LocaleFontProfile profile = profiles[profileIndex];
+            if (profile?.RoleFonts == null)
+                continue;
+
+            IReadOnlyList<RoleFontEntry> entries = profile.RoleFonts;
+            for (int roleIndex = 0; roleIndex < entries.Count; roleIndex++)
+            {
+                RoleFontEntry entry = entries[roleIndex];
+                if (entry != null && entry.Font == sourceFont)
+                {
+                    roleId = Normalize(entry.RoleId);
+                    return !string.IsNullOrEmpty(roleId);
+                }
+            }
+        }
+
+        return false;
+    }
 
     public bool TryResolve(string localeCode, string roleId, out TMP_FontAsset font)
     {
@@ -212,6 +255,18 @@ public sealed class LocaleFontDatabase : ScriptableObject
 
         public string RoleId => roleId;
         public TMP_FontAsset Font => font;
+    }
+
+    [Serializable]
+    public sealed class SourceFontRoleEntry
+    {
+        [SerializeField] private TMP_FontAsset sourceFont;
+        [SerializeField, LocaleFontRole] private string roleId = BodyRoleId;
+        [SerializeField] private bool preserveSourceFont;
+
+        public TMP_FontAsset SourceFont => sourceFont;
+        public string RoleId => roleId;
+        public bool PreserveSourceFont => preserveSourceFont;
     }
 
     public readonly struct ValidationIssue
