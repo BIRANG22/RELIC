@@ -219,6 +219,52 @@ public class BattleUnitAnimator : MonoBehaviour
     }
 
     /// <summary>
+    /// 다른 프리팹에 설정된 이동 VFX를 현재 캐릭터의 VFX 기준점에서 재생합니다.
+    /// 이벤트/휴식 캐릭터처럼 자체 이동 VFX가 없는 표시 프리팹의 전환 연출에 사용합니다.
+    /// </summary>
+    public bool PlayMoveVfxFrom(BattleUnitAnimator source)
+    {
+        return PlayMoveVfxFrom(source, null);
+    }
+
+    public bool PlayMoveVfxFrom(BattleUnitAnimator source, Transform targetAnchor)
+    {
+        if (source == null || !HasVfx(source.moveVfx))
+            return false;
+
+        Transform targetSpawn = targetAnchor != null
+            ? targetAnchor
+            : GetVfxSpawnTransform();
+
+        if (source.moveVfx.renderMode == BattleVfxRenderMode.DirectWorldRenderer)
+        {
+            Vector3 scaleMultiplier = CalculateMoveVfxScaleMultiplier(
+                source.GetVfxSpawnTransform().lossyScale,
+                targetSpawn.lossyScale);
+            return TrySpawnDirectWorldVfx(
+                source.moveVfx,
+                targetSpawn,
+                vfxLifeTime,
+                allowPlayOncePerActionCues: true,
+                localScaleMultiplier: scaleMultiplier,
+                resetLocalPosition: true);
+        }
+
+        SpawnVfx(source.moveVfx);
+        return true;
+    }
+
+    public static Vector3 CalculateMoveVfxScaleMultiplier(
+        Vector3 sourceSpawnScale,
+        Vector3 targetSpawnScale)
+    {
+        return new Vector3(
+            CalculateScaleRatio(sourceSpawnScale.x, targetSpawnScale.x),
+            CalculateScaleRatio(sourceSpawnScale.y, targetSpawnScale.y),
+            CalculateScaleRatio(sourceSpawnScale.z, targetSpawnScale.z));
+    }
+
+    /// <summary>
     /// Move 상태를 마지막 프레임부터 역방향으로 재생합니다.
     /// 포탈 도착 연출처럼 같은 이동 애니메이션을 반대로 보여줄 때 사용합니다.
     /// </summary>
@@ -1801,13 +1847,21 @@ public class BattleUnitAnimator : MonoBehaviour
         BattleVfxEntry entry,
         Transform spawn,
         float lifeTime,
-        bool allowPlayOncePerActionCues = true)
+        bool allowPlayOncePerActionCues = true,
+        Vector3? localScaleMultiplier = null,
+        bool resetLocalPosition = false)
     {
         if (entry.renderMode != BattleVfxRenderMode.DirectWorldRenderer)
             return false;
 
         GameObject vfx = Instantiate(entry.prefab, spawn, false);
-        vfx.transform.localPosition += entry.proxyWorldOffset;
+        vfx.transform.localPosition = resetLocalPosition
+            ? Vector3.zero
+            : vfx.transform.localPosition + entry.proxyWorldOffset;
+        if (localScaleMultiplier.HasValue)
+            vfx.transform.localScale = Vector3.Scale(
+                vfx.transform.localScale,
+                localScaleMultiplier.Value);
         ConfigureDirectWorldVfxInstance(
             vfx,
             entry,
@@ -1820,6 +1874,15 @@ public class BattleUnitAnimator : MonoBehaviour
                 0.01f,
                 BattleConsecutiveActionPresentationContext.ScaleDuration(lifeTime)));
         return true;
+    }
+
+    private static float CalculateScaleRatio(float sourceScale, float targetScale)
+    {
+        float safeTargetScale = Mathf.Abs(targetScale);
+        if (safeTargetScale <= 0.0001f)
+            return 1f;
+
+        return Mathf.Abs(sourceScale) / safeTargetScale;
     }
 
     private void ConfigureDirectWorldVfxInstance(

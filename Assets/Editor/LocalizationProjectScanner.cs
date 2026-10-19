@@ -418,9 +418,9 @@ public static class LocalizationRuntimeSourceCatalog
     public static IReadOnlyList<LocalizationWorkbookEntry> SkillSentenceEntries { get; } = new[]
     {
         Entry("skill.sentence.apply.tile.single.final", "{0}{1} {2}칸 적용한다"),
-        Entry("skill.sentence.deal.amount.multiple.final", "{0}{1} {2}만큼 {3}회 피해를 준다"),
-        Entry("skill.sentence.deal.amount.single.final", "{0}{1} {2}만큼 피해를 준다"),
-        Entry("skill.sentence.deal.amount.single.linked", "{0}{1} {2}만큼 피해를 주고"),
+        Entry("skill.sentence.deal.amount.multiple.final", "{0}{1} {2}만큼 {3}회 준다"),
+        Entry("skill.sentence.deal.amount.single.final", "{0}{1} {2}만큼 준다"),
+        Entry("skill.sentence.deal.amount.single.linked", "{0}{1} {2}만큼 주고"),
         Entry("skill.sentence.gain.amount.single.final", "{0}{1} {2}만큼 획득한다"),
         Entry("skill.sentence.gain.amount.single.linked", "{0}{1} {2}만큼 획득하고"),
         Entry("skill.sentence.grant.amount.single.final", "{0}{1} {2}만큼 부여한다"),

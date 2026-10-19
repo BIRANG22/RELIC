@@ -25,8 +25,13 @@ public sealed class BattleRoomPartyTransitionPresenter : MonoBehaviour
 
     public void PrepareEntry()
     {
+        PrepareEntry(transform);
+    }
+
+    public void PrepareEntry(params Transform[] actorRoots)
+    {
         CancelAndRestore(true);
-        CaptureActors();
+        CaptureActors(actorRoots);
 
         for (int i = 0; i < actors.Count; i++)
         {
@@ -48,8 +53,13 @@ public sealed class BattleRoomPartyTransitionPresenter : MonoBehaviour
 
     public Task PlayExitAsync()
     {
+        return PlayExitAsync(transform);
+    }
+
+    public Task PlayExitAsync(params Transform[] actorRoots)
+    {
         CancelAndRestore(false);
-        CaptureActors();
+        CaptureActors(actorRoots);
 
         for (int i = 0; i < actors.Count; i++)
         {
@@ -79,7 +89,9 @@ public sealed class BattleRoomPartyTransitionPresenter : MonoBehaviour
                 actor.Transform.position = actor.FinalPosition;
 
             RestoreColors(actor);
-            if (actor.Animator != null)
+            if (actor.Marker != null)
+                actor.Marker.RestoreTransitionIdle();
+            else if (actor.Animator != null)
                 actor.Animator.PlayIdle();
         }
 
@@ -116,6 +128,9 @@ public sealed class BattleRoomPartyTransitionPresenter : MonoBehaviour
 
         for (int i = 0; i < actors.Count; i++)
         {
+            if (actors[i].Marker != null && actors[i].Marker.PlayTransitionMove())
+                continue;
+
             if (actors[i].Animator != null)
                 actors[i].Animator.PlayMove();
         }
@@ -163,7 +178,9 @@ public sealed class BattleRoomPartyTransitionPresenter : MonoBehaviour
 
             if (entering)
                 RestoreColors(actor);
-            if (actor.Animator != null)
+            if (actor.Marker != null)
+                actor.Marker.RestoreTransitionIdle();
+            else if (actor.Animator != null)
                 actor.Animator.PlayIdle();
         }
 
@@ -171,34 +188,69 @@ public sealed class BattleRoomPartyTransitionPresenter : MonoBehaviour
         CompletePendingTask();
     }
 
-    private void CaptureActors()
+    private void CaptureActors(Transform[] actorRoots)
     {
         actors.Clear();
-        BattleCharacter[] characters = GetComponentsInChildren<BattleCharacter>(false);
+        if (actorRoots == null || actorRoots.Length == 0)
+            return;
+
+        var capturedTransforms = new HashSet<Transform>();
+        for (int rootIndex = 0; rootIndex < actorRoots.Length; rootIndex++)
+            CaptureActors(actorRoots[rootIndex], capturedTransforms);
+    }
+
+    private void CaptureActors(Transform actorRoot, HashSet<Transform> capturedTransforms)
+    {
+        if (actorRoot == null)
+            return;
+
+        BattleCharacter[] characters = actorRoot.GetComponentsInChildren<BattleCharacter>(true);
 
         for (int i = 0; i < characters.Length; i++)
         {
             BattleCharacter character = characters[i];
-            if (character == null || !character.gameObject.activeInHierarchy ||
+            if (character == null || !character.gameObject.activeSelf ||
                 character.RuntimeData?.IsDead == true)
             {
                 continue;
             }
 
-            SpriteRenderer[] renderers = character.GetComponentsInChildren<SpriteRenderer>(true);
-            var colors = new Color[renderers.Length];
-            for (int rendererIndex = 0; rendererIndex < renderers.Length; rendererIndex++)
-                colors[rendererIndex] = renderers[rendererIndex] != null ? renderers[rendererIndex].color : Color.white;
-
-            actors.Add(new ActorState
-            {
-                Transform = character.transform,
-                FinalPosition = character.transform.position,
-                Renderers = renderers,
-                OriginalColors = colors,
-                Animator = character.GetComponentInChildren<BattleUnitAnimator>(true)
-            });
+            CaptureActor(character.transform, capturedTransforms);
         }
+
+        BattleMapSelectionCharacterMarker[] markers =
+            actorRoot.GetComponentsInChildren<BattleMapSelectionCharacterMarker>(true);
+        for (int i = 0; i < markers.Length; i++)
+        {
+            BattleMapSelectionCharacterMarker marker = markers[i];
+            if (marker == null || !marker.gameObject.activeSelf)
+                continue;
+
+            CaptureActor(marker.transform, capturedTransforms);
+        }
+    }
+
+    private void CaptureActor(Transform actorTransform, HashSet<Transform> capturedTransforms)
+    {
+        if (actorTransform == null || !capturedTransforms.Add(actorTransform))
+            return;
+
+        SpriteRenderer[] renderers = actorTransform.GetComponentsInChildren<SpriteRenderer>(true);
+        var colors = new Color[renderers.Length];
+        for (int rendererIndex = 0; rendererIndex < renderers.Length; rendererIndex++)
+            colors[rendererIndex] = renderers[rendererIndex] != null
+                ? renderers[rendererIndex].color
+                : Color.white;
+
+        actors.Add(new ActorState
+        {
+            Transform = actorTransform,
+            FinalPosition = actorTransform.position,
+            Renderers = renderers,
+            OriginalColors = colors,
+            Animator = actorTransform.GetComponentInChildren<BattleUnitAnimator>(true),
+            Marker = actorTransform.GetComponent<BattleMapSelectionCharacterMarker>()
+        });
     }
 
     private static void ApplyAlpha(ActorState actor, float alpha)
@@ -245,5 +297,6 @@ public sealed class BattleRoomPartyTransitionPresenter : MonoBehaviour
         public SpriteRenderer[] Renderers;
         public Color[] OriginalColors;
         public BattleUnitAnimator Animator;
+        public BattleMapSelectionCharacterMarker Marker;
     }
 }

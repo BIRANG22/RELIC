@@ -333,10 +333,17 @@ public class RestRoomController : MonoBehaviour
             ally.transform.localRotation = Quaternion.identity;
             ally.transform.localScale = Vector3.one * Mathf.Max(0f, allySpawnScale);
 
-            if (ally.GetComponent<BattleMapSelectionCharacterMarker>() == null)
-                ally.AddComponent<BattleMapSelectionCharacterMarker>();
+            BattleMapSelectionCharacterMarker marker =
+                ally.GetComponent<BattleMapSelectionCharacterMarker>();
+            if (marker == null)
+                marker = ally.AddComponent<BattleMapSelectionCharacterMarker>();
+            if (prefabDatabase.TryGetBattlePrefab(characterId, out GameObject battlePrefab))
+                marker.ConfigureTransitionAnimator(battlePrefab);
 
-            ConfigureCharacterResourceHover(ally, i, point);
+            ConfigureCharacterResourceHover(
+                ally,
+                i,
+                MapRoomController.ResolveMovingCharacterAnchor(ally, point));
             spawnedAllyAnimators[i] = ally.GetComponentInChildren<BattleUnitAnimator>(true);
         }
     }
@@ -640,7 +647,11 @@ public class RestRoomController : MonoBehaviour
     private void ClearPoint(Transform point)
     {
         for (int i = point.childCount - 1; i >= 0; i--)
-            Destroy(point.GetChild(i).gameObject);
+        {
+            GameObject child = point.GetChild(i).gameObject;
+            child.SetActive(false);
+            Destroy(child);
+        }
     }
 
     private void EnsureShopPanelSpawner()

@@ -29,6 +29,7 @@ public class BattleSceneController : MonoBehaviour
 
     [Header("Battle Scene Transition")]
     [SerializeField] private BattleDiagonalSceneTransition battleTransition;
+    [SerializeField] private BattleRoomPartyTransitionPresenter sharedPartyTransitionPresenter;
 
     [Header("Battle Map Intro Text")]
     [SerializeField] private BattleMapIntroText battleMapIntroText;
@@ -56,6 +57,7 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private MapVisualController sharedMapVisualController;
     [SerializeField] private GameObject sharedPartyPresentationRoot;
     [SerializeField] private MapRoomController sharedRoomPresentationController;
+    private bool sharedPartyEntryPrepared;
 
     [Header("Runtime Default")]
     [SerializeField] private string defaultChapterId = "Chapter1";
@@ -329,6 +331,9 @@ public class BattleSceneController : MonoBehaviour
         SetErosionSelectVisible(false);
         RefreshErosionScoreDisplay();
         CloseAllRooms();
+        // 첫 노드의 위치 안내가 끝나기 전에는 공용 파티를 노출하지 않습니다.
+        // 첫 Event를 열 때 OpenRoom이 입장 시작 위치를 준비한 뒤에만 다시 활성화합니다.
+        SetSharedPartyPresentationVisible(false);
 
         if (battleMapPanel != null)
             battleMapPanel.Prepare(mapRuntime);
@@ -987,6 +992,7 @@ public class BattleSceneController : MonoBehaviour
         }
 
         HandleSelectedMap(currentNode);
+        StartSharedPartyEntryTransitionIfNeeded();
         CountPresentedRoomEntry(currentNode);
         PlayPendingRoomIntroText();
         PlayEventRoomEntranceAnimationIfNeeded();
@@ -1105,6 +1111,7 @@ public class BattleSceneController : MonoBehaviour
         }
 
         HandleSelectedMap(entryNode);
+        StartSharedPartyEntryTransitionIfNeeded();
         CountPresentedRoomEntry(entryNode);
         PlayPendingRoomIntroText();
         PlayEventRoomEntranceAnimationIfNeeded();
@@ -1341,6 +1348,7 @@ public class BattleSceneController : MonoBehaviour
         {
             CleanupCompletedBattleRoom();
             HandleSelectedMap(nodeData);
+            StartSharedPartyEntryTransitionIfNeeded();
         });
 
         CountPresentedRoomEntry(nodeData);
@@ -1443,6 +1451,7 @@ public class BattleSceneController : MonoBehaviour
 
             HideMapPanelImmediate();
             HandleSelectedMap(nextNode);
+            StartSharedPartyEntryTransitionIfNeeded();
         });
 
         CountPresentedRoomEntry(nextNode);
@@ -1615,8 +1624,11 @@ public class BattleSceneController : MonoBehaviour
     {
         isChangingRoom = true;
 
+        Task mapPartyExitTask = PlaySharedPartyExitAsync();
+
         if (battleTransition == null)
         {
+            await mapPartyExitTask;
             onCovered?.Invoke();
             PlayPendingRoomIntroText();
             isChangingRoom = false;
@@ -1624,7 +1636,9 @@ public class BattleSceneController : MonoBehaviour
             return;
         }
 
-        await battleTransition.PlayMapToRoomAsync(onCovered);
+        await Task.WhenAll(
+            battleTransition.PlayMapToRoomAsync(onCovered),
+            mapPartyExitTask);
         PlayPendingRoomIntroText();
         isChangingRoom = false;
         UpdateLastActiveRoomState();
@@ -1634,11 +1648,7 @@ public class BattleSceneController : MonoBehaviour
     {
         isChangingRoom = true;
 
-        BattleRoomPartyTransitionPresenter partyTransitionPresenter =
-            ResolveActiveBattleRoomPartyTransitionPresenter();
-        Task partyExitTask = partyTransitionPresenter != null
-            ? partyTransitionPresenter.PlayExitAsync()
-            : Task.CompletedTask;
+        Task partyExitTask = PlayActiveRoomPartyExitAsync();
 
         if (battleTransition == null)
         {
@@ -1662,6 +1672,80 @@ public class BattleSceneController : MonoBehaviour
             return null;
 
         return battleRoom.GetComponentInChildren<BattleRoomPartyTransitionPresenter>(true);
+    }
+
+    private Task PlayActiveRoomPartyExitAsync()
+    {
+        BattleRoomPartyTransitionPresenter battlePresenter =
+            ResolveActiveBattleRoomPartyTransitionPresenter();
+        if (battlePresenter != null)
+            return battlePresenter.PlayExitAsync(battleRoom.transform);
+
+        return PlaySharedPartyExitAsync();
+    }
+
+    private Task PlaySharedPartyExitAsync()
+    {
+        sharedPartyEntryPrepared = false;
+        AutoFindSharedRoomPresentationIfNeeded();
+        if (sharedPartyTransitionPresenter == null)
+        {
+            return Task.CompletedTask;
+        }
+
+        Transform activeRoomRoot = FindActiveRoomObject()?.transform;
+        bool hasSharedParty = sharedPartyPresentationRoot != null &&
+                              sharedPartyPresentationRoot.activeInHierarchy;
+        bool hasRoomParty = activeRoomRoot != null && activeRoomRoot.gameObject.activeInHierarchy;
+        if (!hasSharedParty && !hasRoomParty)
+            return Task.CompletedTask;
+
+        return sharedPartyTransitionPresenter.PlayExitAsync(
+            hasSharedParty ? sharedPartyPresentationRoot.transform : null,
+            hasRoomParty ? activeRoomRoot : null);
+    }
+
+    private void StartSharedPartyEntryTransitionIfNeeded()
+    {
+        if (battleRoom != null && battleRoom.activeInHierarchy)
+            return;
+
+        if (!sharedPartyEntryPrepared)
+            PrepareSharedPartyEntryIfNeeded();
+
+        if (sharedPartyTransitionPresenter == null ||
+            !sharedPartyEntryPrepared ||
+            sharedPartyTransitionPresenter.IsPlaying)
+        {
+            return;
+        }
+
+        sharedPartyEntryPrepared = false;
+        _ = sharedPartyTransitionPresenter.PlayPreparedEntryAsync();
+    }
+
+    private void PrepareSharedPartyEntryIfNeeded()
+    {
+        if (battleRoom != null && battleRoom.activeInHierarchy)
+            return;
+
+        AutoFindSharedRoomPresentationIfNeeded();
+        if (sharedPartyTransitionPresenter == null)
+        {
+            return;
+        }
+
+        Transform activeRoomRoot = FindActiveRoomObject()?.transform;
+        bool hasSharedParty = sharedPartyPresentationRoot != null &&
+                              sharedPartyPresentationRoot.activeInHierarchy;
+        bool hasRoomParty = activeRoomRoot != null && activeRoomRoot.gameObject.activeInHierarchy;
+        if (!hasSharedParty && !hasRoomParty)
+            return;
+
+        sharedPartyTransitionPresenter.PrepareEntry(
+            hasSharedParty ? sharedPartyPresentationRoot.transform : null,
+            hasRoomParty ? activeRoomRoot : null);
+        sharedPartyEntryPrepared = true;
     }
 
     private async Task PlayRoomToMapAlreadyCoveredTransitionAsync(System.Action onCovered)
@@ -1710,6 +1794,7 @@ public class BattleSceneController : MonoBehaviour
                 CaptureRoomEntrySaveCheckpoint();
                 HideMapPanelImmediate();
                 HandleSelectedMap(currentNode);
+                StartSharedPartyEntryTransitionIfNeeded();
                 CountPresentedRoomEntry(currentNode);
                 PlayPendingRoomIntroText();
                 PlayEventRoomEntranceAnimationIfNeeded();
@@ -1854,8 +1939,8 @@ public class BattleSceneController : MonoBehaviour
         pendingRoomIntroMessage = GameLocalization.Get("battle.intro.rest_area");
         ShowRoomBackground(restRoom, nodeData);
         RefreshBack2LocationName(nodeData);
-        OpenRoom(restRoom, "RestRoom");
         sharedRoomPresentationController?.RefreshForMap(nodeData.MapId);
+        OpenRoom(restRoom, "RestRoom");
         ApplyRoomVisual(restRoom, nodeData);
     }
 
@@ -2005,7 +2090,15 @@ public class BattleSceneController : MonoBehaviour
         SetSharedPartyPresentationVisible(!isBattleRoom);
 
         if (isBattleRoom)
+        {
+            sharedPartyEntryPrepared = false;
             SetBattleRoomIntroPlaying(true);
+        }
+        else
+        {
+            // 방의 OnEnable 전에 원위치 렌더러를 먼저 숨겨 첫 프레임 노출을 차단합니다.
+            PrepareSharedPartyEntryIfNeeded();
+        }
 
         roomObject.SetActive(true);
 

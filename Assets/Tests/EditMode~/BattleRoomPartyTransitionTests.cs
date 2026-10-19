@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEditor;
 
 public sealed class BattleRoomPartyTransitionTests
 {
@@ -80,6 +81,237 @@ public sealed class BattleRoomPartyTransitionTests
         finally
         {
             Object.DestroyImmediate(root);
+        }
+    }
+
+    [Test]
+    public void PrepareEntry_UsesExplicitRootOutsidePresenterHierarchy()
+    {
+        var presenterObject = new GameObject("Presenter");
+        var actorRoot = new GameObject("ActorRoot");
+        BattleRoomPartyTransitionPresenter presenter =
+            presenterObject.AddComponent<BattleRoomPartyTransitionPresenter>();
+        SetField(presenter, "entryOffset", new Vector3(-5f, 0f, 0f));
+        BattleCharacter character = CreateCharacter(
+            actorRoot.transform,
+            "Player",
+            new Vector3(2f, 3f, 0f),
+            4);
+
+        try
+        {
+            presenter.PrepareEntry(actorRoot.transform);
+
+            Assert.That(character.transform.position, Is.EqualTo(new Vector3(-3f, 3f, 0f)));
+        }
+        finally
+        {
+            Object.DestroyImmediate(presenterObject);
+            Object.DestroyImmediate(actorRoot);
+        }
+    }
+
+    [Test]
+    public void PrepareEntry_CapturesActorsFromAllProvidedRoots()
+    {
+        var presenterObject = new GameObject("Presenter");
+        var sharedRoot = new GameObject("SharedRoot");
+        var roomRoot = new GameObject("RoomRoot");
+        BattleRoomPartyTransitionPresenter presenter =
+            presenterObject.AddComponent<BattleRoomPartyTransitionPresenter>();
+        SetField(presenter, "entryOffset", new Vector3(-5f, 0f, 0f));
+        BattleCharacter sharedCharacter = CreateCharacter(
+            sharedRoot.transform, "SharedPlayer", new Vector3(2f, 0f, 0f), 1);
+        BattleCharacter roomCharacter = CreateCharacter(
+            roomRoot.transform, "RoomPlayer", new Vector3(4f, 0f, 0f), 2);
+
+        try
+        {
+            presenter.PrepareEntry(sharedRoot.transform, roomRoot.transform);
+
+            Assert.That(sharedCharacter.transform.position, Is.EqualTo(new Vector3(-3f, 0f, 0f)));
+            Assert.That(roomCharacter.transform.position, Is.EqualTo(new Vector3(-1f, 0f, 0f)));
+        }
+        finally
+        {
+            Object.DestroyImmediate(presenterObject);
+            Object.DestroyImmediate(sharedRoot);
+            Object.DestroyImmediate(roomRoot);
+        }
+    }
+
+    [Test]
+    public void PrepareEntry_CapturesActorsUnderAnInactiveSpawnRoot()
+    {
+        var presenterObject = new GameObject("Presenter");
+        var spawnRoot = new GameObject("InactiveSpawnRoot");
+        BattleRoomPartyTransitionPresenter presenter =
+            presenterObject.AddComponent<BattleRoomPartyTransitionPresenter>();
+        SetField(presenter, "entryOffset", new Vector3(-5f, 0f, 0f));
+        BattleCharacter character = CreateCharacter(
+            spawnRoot.transform, "Player", new Vector3(3f, 2f, 0f), 1);
+        spawnRoot.SetActive(false);
+
+        try
+        {
+            presenter.PrepareEntry(spawnRoot.transform);
+
+            Assert.That(character.transform.position, Is.EqualTo(new Vector3(-2f, 2f, 0f)));
+        }
+        finally
+        {
+            Object.DestroyImmediate(presenterObject);
+            Object.DestroyImmediate(spawnRoot);
+        }
+    }
+
+    [Test]
+    public void PrepareEntry_CapturesMapSelectionMarkerWithoutBattleCharacter()
+    {
+        var presenterObject = new GameObject("Presenter");
+        var actorRoot = new GameObject("ActorRoot");
+        BattleRoomPartyTransitionPresenter presenter =
+            presenterObject.AddComponent<BattleRoomPartyTransitionPresenter>();
+        SetField(presenter, "entryOffset", new Vector3(-4f, 0f, 0f));
+
+        var markedActor = new GameObject("MarkedActor");
+        markedActor.transform.SetParent(actorRoot.transform);
+        markedActor.transform.position = new Vector3(3f, 1f, 0f);
+        markedActor.AddComponent<SpriteRenderer>();
+        markedActor.AddComponent<BattleMapSelectionCharacterMarker>();
+
+        try
+        {
+            presenter.PrepareEntry(actorRoot.transform);
+
+            Assert.That(markedActor.transform.position, Is.EqualTo(new Vector3(-1f, 1f, 0f)));
+        }
+        finally
+        {
+            Object.DestroyImmediate(presenterObject);
+            Object.DestroyImmediate(actorRoot);
+        }
+    }
+
+    [Test]
+    public void MapSelectionMarker_UsesBattleMoveControllerThenRestoresEventController()
+    {
+        const string eventPrefabPath =
+            "Assets/Project/PrefabsR/Character/A/Cha_01_idle_0.prefab";
+        const string battlePrefabPath =
+            "Assets/Project/PrefabsR/Character/A/A_BattlePrefab.prefab";
+
+        GameObject eventPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(eventPrefabPath);
+        GameObject battlePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(battlePrefabPath);
+        Assert.That(eventPrefab, Is.Not.Null);
+        Assert.That(battlePrefab, Is.Not.Null);
+
+        GameObject instance = Object.Instantiate(eventPrefab);
+        try
+        {
+            Animator eventAnimator = instance.GetComponentInChildren<Animator>(true);
+            Animator battleAnimator = battlePrefab.GetComponentInChildren<Animator>(true);
+            RuntimeAnimatorController eventController = eventAnimator.runtimeAnimatorController;
+            RuntimeAnimatorController battleController = battleAnimator.runtimeAnimatorController;
+            BattleMapSelectionCharacterMarker marker =
+                instance.AddComponent<BattleMapSelectionCharacterMarker>();
+
+            marker.ConfigureTransitionAnimator(battleController);
+
+            Assert.That(marker.PlayTransitionMove(), Is.True);
+            Assert.That(eventAnimator.runtimeAnimatorController, Is.SameAs(battleController));
+
+            marker.RestoreTransitionIdle();
+            Assert.That(eventAnimator.runtimeAnimatorController, Is.SameAs(eventController));
+        }
+        finally
+        {
+            Object.DestroyImmediate(instance);
+        }
+    }
+
+    [Test]
+    public void PlayMoveVfxFrom_UsesExplicitCharacterRootInsteadOfDefaultVfxAnchor()
+    {
+        var sourceObject = new GameObject("MoveVfxTemplate");
+        var characterObject = new GameObject("CurrentCharacter");
+        var anchorObject = new GameObject("CharacterVfxAnchor");
+        var characterRoot = new GameObject("CharacterRoot");
+        var vfxPrefab = new GameObject("TransitionMoveVfx");
+        anchorObject.transform.SetParent(characterObject.transform, false);
+        anchorObject.transform.localPosition = new Vector3(1f, 2f, 3f);
+        characterRoot.transform.position = new Vector3(7f, 8f, 9f);
+        vfxPrefab.transform.localPosition = new Vector3(-3f, -5.09f, 0f);
+
+        BattleUnitAnimator source = sourceObject.AddComponent<BattleUnitAnimator>();
+        BattleUnitAnimator character = characterObject.AddComponent<BattleUnitAnimator>();
+        SetField(source, "moveVfx", new BattleVfxEntry
+        {
+            prefab = vfxPrefab,
+            renderMode = BattleVfxRenderMode.DirectWorldRenderer
+        });
+        SetField(character, "vfxSpawnPoint", anchorObject.transform);
+
+        GameObject spawned = null;
+        try
+        {
+            Assert.That(character.PlayMoveVfxFrom(source, characterRoot.transform), Is.True);
+
+            Transform spawnedTransform = characterRoot.transform.Find("TransitionMoveVfx(Clone)");
+            Assert.That(spawnedTransform, Is.Not.Null);
+            Assert.That(spawnedTransform.position, Is.EqualTo(characterRoot.transform.position));
+            Assert.That(spawnedTransform.localPosition, Is.EqualTo(Vector3.zero));
+            spawned = spawnedTransform.gameObject;
+        }
+        finally
+        {
+            if (spawned != null)
+                Object.DestroyImmediate(spawned);
+            Object.DestroyImmediate(sourceObject);
+            Object.DestroyImmediate(characterObject);
+            Object.DestroyImmediate(characterRoot);
+            Object.DestroyImmediate(vfxPrefab);
+        }
+    }
+
+    [Test]
+    public void CalculateMoveVfxScaleMultiplier_MatchesBattleSpawnScale()
+    {
+        Vector3 multiplier = BattleUnitAnimator.CalculateMoveVfxScaleMultiplier(
+            new Vector3(0.18f, 0.18f, 0.18f),
+            new Vector3(2f, 3f, 4f));
+
+        Assert.That(multiplier.x, Is.EqualTo(0.09f).Within(0.0001f));
+        Assert.That(multiplier.y, Is.EqualTo(0.06f).Within(0.0001f));
+        Assert.That(multiplier.z, Is.EqualTo(0.045f).Within(0.0001f));
+    }
+
+    [Test]
+    public void MoveCharacterVfx_PreservesBattleRootPositionOffset()
+    {
+        const string vfxPrefabPath = "Assets/Project/Art/VFX/Cha/Vfx_move_cha.prefab";
+        GameObject vfxPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(vfxPrefabPath);
+
+        Assert.That(vfxPrefab, Is.Not.Null);
+        Assert.That(vfxPrefab.transform.localPosition, Is.EqualTo(new Vector3(-3f, -5.09f, 0f)));
+    }
+
+    [Test]
+    public void ResolveMovingCharacterAnchor_PrefersCharacterTransform()
+    {
+        var ally = new GameObject("Ally");
+        var spawnPoint = new GameObject("SpawnPoint");
+
+        try
+        {
+            Assert.That(
+                MapRoomController.ResolveMovingCharacterAnchor(ally, spawnPoint.transform),
+                Is.SameAs(ally.transform));
+        }
+        finally
+        {
+            Object.DestroyImmediate(ally);
+            Object.DestroyImmediate(spawnPoint);
         }
     }
 
