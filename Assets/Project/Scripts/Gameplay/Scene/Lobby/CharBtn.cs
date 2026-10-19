@@ -93,6 +93,23 @@ public class CharBtn : MonoBehaviour,
     [SerializeField] private float viewedCharacterScale = 1.2f;
     [SerializeField] private float viewedCharacterTransitionDuration = 0.2f;
 
+    private static readonly Color CharacterHoverLineColor = new Color32(0xEE, 0xEE, 0xEE, 0xFF);
+    private static readonly Color CharacterNormalLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    private Image characterHoverLine;
+
+    private void UpdateCharacterHoverLine(bool hovering)
+    {
+        if (characterHoverLine == null)
+        {
+            Transform line = transform.Find("Line");
+            if (line != null) characterHoverLine = line.GetComponent<Image>();
+        }
+        if (characterHoverLine == null) return;
+        Color color = hovering && !isLocked ? CharacterHoverLineColor : CharacterNormalLineColor;
+        color.a = characterHoverLine.color.a;
+        characterHoverLine.color = color;
+    }
+
     private CharPick charPick;
     private RectTransform rect;
     private CanvasGroup canvasGroup;
@@ -304,6 +321,7 @@ public class CharBtn : MonoBehaviour,
     private void OnEnable()
     {
         DisableLockedButtonEffects();
+        UpdateCharacterHoverLine(false);
         AutoPrepareCharacterSelectIcon();
         RefreshCharacterSelectIcon();
         AutoPrepareJobmarkReferences();
@@ -322,6 +340,7 @@ public class CharBtn : MonoBehaviour,
 
     private void OnDisable()
     {
+        UpdateCharacterHoverLine(false);
         ResetEquipmentSlotVisual(relicSlotVisual);
         ResetEquipmentSlotVisual(compoundSlotVisual);
         StopInfoPanelIdleAnimation();
@@ -427,6 +446,7 @@ public class CharBtn : MonoBehaviour,
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        UpdateCharacterHoverLine(true);
         if (isLocked)
             return;
 
@@ -441,6 +461,7 @@ public class CharBtn : MonoBehaviour,
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        UpdateCharacterHoverLine(false);
         if (isLocked)
             return;
 

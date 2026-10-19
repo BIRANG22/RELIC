@@ -95,6 +95,8 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     private void OnDisable()
     {
+        isPointerHovering = false;
+        if (lineObject != null) lineObject.SetActive(false);
         StopBattleIdleAnimation();
     }
 
@@ -164,9 +166,7 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         ApplyBackVisual(hasPartySlot, isSelected, canPlaceHere);
 
         RefreshCharacterImage(partySlotIndex, hasPartySlot);
-
-        // Line은 Grid의 기본 테두리이므로 런타임에서 활성/비활성 상태를 변경하지 않습니다.
-        // 배치 가능 여부 표시는 Select 오브젝트만 사용합니다.
+        RefreshOccupiedHoverLine(hasPartySlot);
     }
 
 
@@ -174,12 +174,22 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         isPointerHovering = true;
         RefreshBackVisualOnly();
+        RefreshOccupiedHoverLine(GetPartySlotIndexOnThisGrid() >= 0);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         isPointerHovering = false;
         RefreshBackVisualOnly();
+        RefreshOccupiedHoverLine(GetPartySlotIndexOnThisGrid() >= 0);
+    }
+
+    // 배치된 캐릭터의 그리드에서만 호버 테두리를 표시합니다.
+    private void RefreshOccupiedHoverLine(bool occupied)
+    {
+        if (lineObject == null) AutoBindReadyPanelHierarchy();
+        if (lineObject != null)
+            lineObject.SetActive(isPointerHovering && occupied);
     }
 
     private void RefreshBackVisualOnly()

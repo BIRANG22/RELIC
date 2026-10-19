@@ -263,9 +263,12 @@ public sealed class SpawnGridUIWarpController : MonoBehaviour
             gridPanel = FindFirstObjectByType<SpawnGridPanel>(FindObjectsInactive.Include);
         if (gridPanel == null || !gridPanel.UnregisterReadyPartyCharacter(characterId)) return;
 
+        int occupiedBeforeRemoval = placementOrder.Count;
         placementOrder.RemoveAt(index);
-        // 선택한 카드 오브젝트를 마지막 빈 자리로 보내 기존 카드가 앞쪽으로 당겨집니다.
-        MovePartyCard(clickedCard, partyCards.Count - 1);
+        // 마지막으로 등록된 캐릭터를 해제하면 다른 카드의 순서가 바뀌지 않습니다.
+        // 뒤에 등록된 캐릭터가 있는 경우에만 빈 자리를 메우도록 카드를 이동합니다.
+        if (index < occupiedBeforeRemoval - 1)
+            MovePartyCard(clickedCard, occupiedBeforeRemoval - 1);
         partyCards.Sort((a, b) => a.GetSiblingIndex().CompareTo(b.GetSiblingIndex()));
         for (int i = 0; i < partyCards.Count && i < partyPortraitImages.Length; i++)
         {
@@ -412,8 +415,11 @@ public sealed class SpawnGridUIWarpController : MonoBehaviour
 }
 
 /// <summary>Ready 파티 카드의 Mask에 자동으로 부착되는 드래그 핸들러입니다.</summary>
-public sealed class ReadyPartyCardDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
+public sealed class ReadyPartyCardDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
+    private static readonly Color HoverLineColor = new Color32(0xEE, 0xEE, 0xEE, 0xFF);
+    private static readonly Color NormalLineColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    private Image hoverLine;
     private SpawnGridUIWarpController controller;
     private RectTransform card;
     private RectTransform root;
@@ -431,6 +437,20 @@ public sealed class ReadyPartyCardDrag : MonoBehaviour, IBeginDragHandler, IDrag
     {
         controller = owner;
         card = target;
+        Transform line = card != null ? card.Find("Line") : null;
+        hoverLine = line != null ? line.GetComponent<Image>() : null;
+        SetHoverLine(false);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData) => SetHoverLine(true);
+    public void OnPointerExit(PointerEventData eventData) => SetHoverLine(false);
+
+    private void SetHoverLine(bool hovering)
+    {
+        if (hoverLine == null) return;
+        Color color = hovering ? HoverLineColor : NormalLineColor;
+        color.a = hoverLine.color.a;
+        hoverLine.color = color;
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -473,6 +493,7 @@ public sealed class ReadyPartyCardDrag : MonoBehaviour, IBeginDragHandler, IDrag
         cardCanvas.alpha = 0.18f;
         pointerOffset = card.position - ScreenWorldPosition(eventData);
         dragging = true;
+        SetHoverLine(false);
         suppressNextClick = false;
         FollowPointer(eventData);
     }
@@ -520,6 +541,7 @@ public sealed class ReadyPartyCardDrag : MonoBehaviour, IBeginDragHandler, IDrag
     {
         suppressNextClick = true;
         dragging = false;
+        SetHoverLine(false);
         if (preview != null) Destroy(preview.gameObject);
         preview = null;
         if (cardCanvas != null)
@@ -548,5 +570,6 @@ public sealed class ReadyPartyCardDrag : MonoBehaviour, IBeginDragHandler, IDrag
     private void OnDisable()
     {
         if (dragging) EndDrag(false);
+        SetHoverLine(false);
     }
 }
