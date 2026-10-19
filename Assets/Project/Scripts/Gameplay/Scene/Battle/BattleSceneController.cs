@@ -1634,17 +1634,34 @@ public class BattleSceneController : MonoBehaviour
     {
         isChangingRoom = true;
 
+        BattleRoomPartyTransitionPresenter partyTransitionPresenter =
+            ResolveActiveBattleRoomPartyTransitionPresenter();
+        Task partyExitTask = partyTransitionPresenter != null
+            ? partyTransitionPresenter.PlayExitAsync()
+            : Task.CompletedTask;
+
         if (battleTransition == null)
         {
+            await partyExitTask;
             onCovered?.Invoke();
             isChangingRoom = false;
             UpdateLastActiveRoomState();
             return;
         }
 
-        await battleTransition.PlayRoomToMapAsync(onCovered);
+        await Task.WhenAll(
+            battleTransition.PlayRoomToMapAsync(onCovered),
+            partyExitTask);
         isChangingRoom = false;
         UpdateLastActiveRoomState();
+    }
+
+    private BattleRoomPartyTransitionPresenter ResolveActiveBattleRoomPartyTransitionPresenter()
+    {
+        if (battleRoom == null || !battleRoom.activeInHierarchy)
+            return null;
+
+        return battleRoom.GetComponentInChildren<BattleRoomPartyTransitionPresenter>(true);
     }
 
     private async Task PlayRoomToMapAlreadyCoveredTransitionAsync(System.Action onCovered)

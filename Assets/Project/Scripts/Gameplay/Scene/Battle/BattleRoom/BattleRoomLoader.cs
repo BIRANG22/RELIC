@@ -15,6 +15,7 @@ public class BattleRoomLoader : MonoBehaviour
     [Header("Spawner")]
     [SerializeField] private BattleUnitSpawner unitSpawner;
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
+    [SerializeField] private BattleRoomPartyTransitionPresenter partyTransitionPresenter;
 
     [Header("HUD")]
     [SerializeField, FormerlySerializedAs("monsterHudRoot")] private Transform hudRoot;
@@ -677,6 +678,7 @@ public class BattleRoomLoader : MonoBehaviour
         // Collect first-turn effects until the battle-start intro has finished.
         BattleEffectInfoFeed.BeginInitialEffects();
         SpawnPlayersAndHUD();
+        StartPartyEntryTransition();
         SpawnMonstersAndHUD(false);
         BattleEffectInfoFeed.BeginPassiveCapture();
         RefreshBattleStartPassives();
@@ -1550,6 +1552,9 @@ public class BattleRoomLoader : MonoBehaviour
         // player reservation input becomes available, play innate free actions.
         yield return BattleStatusEffectService.PlayMonsterTurnStartTraitsRoutine();
 
+        while (partyTransitionPresenter != null && partyTransitionPresenter.IsPlaying)
+            yield return null;
+
         if (turnExecutor != null)
         {
             turnExecutor.SetBattleInputReady(true);
@@ -1573,6 +1578,18 @@ public class BattleRoomLoader : MonoBehaviour
         }
 
         initialMonsterPlanRoutine = null;
+    }
+
+    private void StartPartyEntryTransition()
+    {
+        if (partyTransitionPresenter == null)
+            partyTransitionPresenter = GetComponentInChildren<BattleRoomPartyTransitionPresenter>(true);
+
+        if (partyTransitionPresenter == null)
+            return;
+
+        partyTransitionPresenter.PrepareEntry();
+        _ = partyTransitionPresenter.PlayPreparedEntryAsync();
     }
 
     private static bool IsTutorialBattleRun()
