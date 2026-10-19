@@ -242,6 +242,60 @@ namespace Relic.Gameplay.Data
             );
         }
 
+        /// <summary>
+        /// Ready 패널에서 확정한 캐릭터 표시 순서를 실제 파티 슬롯 순서에 반영합니다.
+        /// 캐릭터와 시작/현재 그리드 좌표를 함께 옮기므로 배치 위치는 바뀌지 않습니다.
+        /// 그리드에 배치되지 않은 파티원 슬롯은 그대로 유지합니다.
+        /// </summary>
+        /// <summary>
+        /// 등록 해제한 캐릭터를 제거하고 뒤의 파티 슬롯을 앞으로 당깁니다.
+        /// 남은 캐릭터의 시작 및 현재 그리드 좌표는 그대로 따라갑니다.
+        /// </summary>
+        public bool RemoveCharacterAndCompact(string characterId)
+        {
+            int removedIndex = FindCharacterSlot(characterId);
+            if (removedIndex < 0) return false;
+            for (int i = removedIndex; i < MaxPartyCount - 1; i++)
+                slots[i] = slots[i + 1];
+            slots[MaxPartyCount - 1] = new PartySlotRuntimeData();
+            return true;
+        }
+
+        public bool ReorderPlacedCharacters(IList<string> orderedCharacterIds)
+        {
+            if (orderedCharacterIds == null)
+                return false;
+
+            var placedSlots = new List<int>(MaxPartyCount);
+            var byCharacterId = new Dictionary<string, PartySlotRuntimeData>(System.StringComparer.Ordinal);
+            for (int i = 0; i < MaxPartyCount; i++)
+            {
+                PartySlotRuntimeData slot = slots[i];
+                if (string.IsNullOrWhiteSpace(slot.CharacterId) || slot.SpawnGridIndex < 0)
+                    continue;
+                if (byCharacterId.ContainsKey(slot.CharacterId))
+                    return false;
+                placedSlots.Add(i);
+                byCharacterId.Add(slot.CharacterId, slot);
+            }
+
+            if (placedSlots.Count != orderedCharacterIds.Count)
+                return false;
+
+            var reordered = new PartySlotRuntimeData[placedSlots.Count];
+            var seen = new HashSet<string>(System.StringComparer.Ordinal);
+            for (int i = 0; i < reordered.Length; i++)
+            {
+                string id = orderedCharacterIds[i];
+                if (string.IsNullOrWhiteSpace(id) || !seen.Add(id) || !byCharacterId.TryGetValue(id, out reordered[i]))
+                    return false;
+            }
+
+            for (int i = 0; i < reordered.Length; i++)
+                slots[placedSlots[i]] = reordered[i];
+            return true;
+        }
+
         public int FindCharacterSlot(string characterId)
         {
             if (string.IsNullOrWhiteSpace(characterId))

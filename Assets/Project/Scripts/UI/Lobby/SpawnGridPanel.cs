@@ -613,6 +613,23 @@ public class SpawnGridPanel : MonoBehaviour
         return cells != null && gridIndex >= 0 && gridIndex < cells.Length && cells[gridIndex] != null;
     }
 
+    // Ready 파티 카드의 클릭 해제에도 그리드 클릭과 같은 후처리를 적용합니다.
+    public bool UnregisterReadyPartyCharacter(string characterId)
+    {
+        PartyRuntimeStore partyStore = DataManager.Instance?.PartyRuntimeStore;
+        if (partyStore == null || string.IsNullOrWhiteSpace(characterId)) return false;
+        int slotIndex = partyStore.FindCharacterSlot(characterId);
+        if (slotIndex < 0 || partyStore.GetSpawnGridIndex(slotIndex) < 0) return false;
+
+        LobbyCharacterEquipmentReleaseUtility.ReleaseAll(characterId);
+        if (!partyStore.RemoveCharacterAndCompact(characterId)) return false;
+        selectedPartySlotIndex = -1;
+        pendingInfoPlacementButton = null;
+        infoDragSourceButton = null;
+        RefreshAllInfoAndReadyViews();
+        return true;
+    }
+
     public void OnClickCell(int gridIndex)
     {
         if (DataManager.Instance == null || DataManager.Instance.PartyRuntimeStore == null)
