@@ -120,7 +120,7 @@ S_Core_24,마비독,Core,Rare,Cost,EnemyParty,1,1,Char_03,Debuff,E_Poison;E_Weak
 S_Core_25,짙은 그림자,Core,Rare,Ulti,EnemyParty,1,2,Char_03,Debuff,E_Fatigue,3,1,1,Direction,Range_29,{E_Fatigue} {ValueRate1},
 S_Core_26,영혼 흡수,Core,Rare,Cost,EnemyParty,1,2,Char_03,Attack,E_Strike;E_RestoreManaPerHitTarget,8;1,1;1,4,Direction,Range_27,{E_Strike} {ValueRate1} 적중한 적의 수만큼 마나 회복
 S_Core_27,독성발현,Core,Epic,Cost,EnemyParty,1,3,Char_03,Debuff,E_PoisonEqualTargetPoison,1,1,6,Direction,Range_21,대상이 보유한 {E_Poison} 수치만큼 {E_Poison}
-S_Core_28,니아의 불꽃,Core,Epic,Ulti,EnemyParty,1,4,Char_03,Debuff,E_Bondage,1,1,1,Direction,Range_06,{E_Bondage} {ValueRate1}
+S_Core_28,니아의 불꽃,Core,Epic,Ulti,EnemyParty,1,3,Char_03,Debuff,E_Bondage,1,1,1,Direction,Range_06,{E_Bondage} {ValueRate1}
 S_Core_29,니아의 속삭임,Core,Unique,Cost,PlayerParty,1,3,Char_03,Buff,E_Swift,1,1,8,Direction,Range_Party,{E_Swift} {ValueRate1}
 S_Core_30,극성맹독,Core,Unique,Cost,EnemyParty,1,2,Char_03,Debuff,E_Poison;E_TriggerPoison,3;1,1;1,5,Direction,Range_24,{E_Poison} {ValueRate1} 중독을 즉시 1회 발동
 S_Core_31,은총,Core,Common,Hp,PlayerParty,1,2,Char_04,Buff,E_Armor;E_Cure,5;2,1;1,4,Direction,Range_b_07,{E_Armor} {ValueRate1} {E_Cure} {ValueRate2}
@@ -132,7 +132,7 @@ S_Core_36,파멸의 낙인,Core,Rare,Cost,EnemyParty,1,3,Char_04,Debuff,E_Vulner
 S_Core_37,결속,Core,Epic,Cost,PlayerParty,1,3,Char_04,Buff,E_Bond,1,1,5,Direction,Range_Party,{E_Bond} {ValueRate1}
 S_Core_38,심판 집행,Core,Epic,Cost,EnemyParty,1,2,Char_04,Attack,E_Strike;E_StrikeByVulnerable,5;1,1;1,4,Direction,Range_13,{E_Strike} {ValueRate1} 대상이 보유한 {E_Vulnerable} 수치만큼 피해량 증가
 S_Core_39,고해성사,Core,Unique,Cost,EnemyParty,1,3,Char_04,Debuff,E_DebuffDouble,2,1,8,Direction,Range_12,대상이 보유한 가장 높은 수치의 디버프 1종의 수치 {ValueRate1}배
-S_Core_40,단죄의 쐐기,Core,Unique,Ulti,EnemyParty,1,4,Char_04,Attack,E_RemoveArmor,1,1,2,Direction,Range_11,대상의 {E_Armor} 제거
+S_Core_40,단죄의 쐐기,Core,Unique,Ulti,EnemyParty,1,3,Char_04,Attack,E_RemoveArmor,1,1,2,Direction,Range_11,대상의 {E_Armor} 제거
 
 # MonsterSkill
 스킬ID,이름,대상,점유칸,효과ID,수치계수,횟수계수,그리드이동,범위ID,타임라인표기,효과설명,아이콘,타입
