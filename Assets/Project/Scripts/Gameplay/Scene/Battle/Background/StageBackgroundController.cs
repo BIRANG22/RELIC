@@ -131,7 +131,11 @@ public class StageBackgroundController : MonoBehaviour
     /// <summary>
     /// Map ID에 연결된 배경이 있으면 우선 표시하고, 없으면 레이어 범위 배경을 표시합니다.
     /// </summary>
-    public void ShowForMap(string mapId, int layerIndex, bool playBossReveal = false)
+    public void ShowForMap(
+        string mapId,
+        int layerIndex,
+        bool useBossBackground = false,
+        bool playBossRevealImmediately = true)
     {
         int row = layerIndex + 1;
         BackgroundRange range = FindRange(mapId, row);
@@ -148,7 +152,7 @@ public class StageBackgroundController : MonoBehaviour
         }
         else
         {
-            targetPrefab = playBossReveal && st1BossPrefab != null
+            targetPrefab = useBossBackground && st1BossPrefab != null
                 ? st1BossPrefab
                 : range != null ? range.Prefab : null;
         }
@@ -165,7 +169,7 @@ public class StageBackgroundController : MonoBehaviour
         // 같은 배경이 이미 생성되어 있다면 다시 생성하지 않음
         if (currentPrefab == targetPrefab && currentInstance != null)
         {
-            if (playBossReveal && targetPrefab == st1BossPrefab)
+            if (useBossBackground && playBossRevealImmediately && targetPrefab == st1BossPrefab)
                 PlaySt1BossRevealSequence();
             return;
         }
@@ -177,7 +181,7 @@ public class StageBackgroundController : MonoBehaviour
         currentInstance.name = targetPrefab.name;
         currentPrefab = targetPrefab;
 
-        if (playBossReveal && targetPrefab == st1BossPrefab)
+        if (useBossBackground && playBossRevealImmediately && targetPrefab == st1BossPrefab)
             PlaySt1BossRevealSequence();
     }
     /// <summary>
@@ -228,10 +232,17 @@ public class StageBackgroundController : MonoBehaviour
         return null;
     }
 
+    public bool PlayCurrentBossReveal()
+    {
+        return currentPrefab == st1BossPrefab &&
+               currentInstance != null &&
+               PlaySt1BossRevealSequence();
+    }
+
     /// <summary>
     /// St1_boss 전용 순차 등장 연출을 실행합니다.
     /// </summary>
-    private void PlaySt1BossRevealSequence()
+    private bool PlaySt1BossRevealSequence()
     {
         if (timedObjectRevealSequence == null)
         {
@@ -241,7 +252,7 @@ public class StageBackgroundController : MonoBehaviour
                 this
             );
 
-            return;
+            return false;
         }
 
         GameObject sequenceObject =
@@ -264,10 +275,11 @@ public class StageBackgroundController : MonoBehaviour
                 this
             );
 
-            return;
+            return false;
         }
 
         timedObjectRevealSequence.Play();
+        return true;
     }
 
     /// <summary>

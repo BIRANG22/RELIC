@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using UnityEngine;
 using UnityEngine.VFX;
 
@@ -125,6 +126,7 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private int animatorLayer = 0;
     [SerializeField] private float crossFadeDuration = 0f;
     [SerializeField] private float deadAnimationDuration = 0.6f;
+    [SerializeField, Min(0f)] private float arabellaPhaseTransitionDuration = 3.34f;
     [SerializeField] private bool forceAnimatorUpdate = true;
     [SerializeField] private bool autoFindAnimatorInChildren = true;
 
@@ -138,6 +140,7 @@ public class BattleUnitAnimator : MonoBehaviour
     private MaterialPropertyBlock hitFlashPropertyBlock;
     private int hitFlashPropertyId;
     private Coroutine hitFlashCoroutine;
+    private Coroutine arabellaPhaseTransitionCoroutine;
     private bool deathPresentationPlayed;
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
@@ -162,6 +165,12 @@ public class BattleUnitAnimator : MonoBehaviour
         {
             StopCoroutine(hitFlashCoroutine);
             hitFlashCoroutine = null;
+        }
+
+        if (arabellaPhaseTransitionCoroutine != null)
+        {
+            StopCoroutine(arabellaPhaseTransitionCoroutine);
+            arabellaPhaseTransitionCoroutine = null;
         }
 
         SetHitFlash(defaultHitFlashValue);
@@ -299,6 +308,39 @@ public class BattleUnitAnimator : MonoBehaviour
         ApplyPresentationPlaybackSpeed();
         PlayState(deadStateName);
         SpawnVfx(deathVfx);
+    }
+
+    public void PlayArabellaPhaseTransition()
+    {
+        ApplyPresentationPlaybackSpeed();
+        PlayOptionalState("2phase");
+
+        if (arabellaPhaseTransitionCoroutine != null)
+            StopCoroutine(arabellaPhaseTransitionCoroutine);
+
+        if (isActiveAndEnabled)
+        {
+            arabellaPhaseTransitionCoroutine =
+                StartCoroutine(ReturnToIdleAfterArabellaPhaseTransition());
+        }
+        else
+        {
+            PlayIdle();
+        }
+    }
+
+    private IEnumerator ReturnToIdleAfterArabellaPhaseTransition()
+    {
+        float playbackSpeed = Mathf.Max(
+            0.01f,
+            BattleConsecutiveActionPresentationContext.BattleExecutionSpeedMultiplier);
+        float waitDuration = Mathf.Max(0f, arabellaPhaseTransitionDuration) / playbackSpeed;
+
+        if (waitDuration > 0f)
+            yield return new WaitForSeconds(waitDuration);
+
+        arabellaPhaseTransitionCoroutine = null;
+        PlayIdle();
     }
 
     public void PlayBuff()
@@ -2386,6 +2428,8 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void PlayState(string stateName)
     {
+        stateName = ResolveRuntimeStateName(stateName);
+
         if (!TryResolveAnimatorStateName(stateName, out string resolvedStateName))
             return;
 
@@ -2394,6 +2438,8 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void PlayOptionalState(string stateName)
     {
+        stateName = ResolveRuntimeStateName(stateName);
+
         if (!TryResolveAnimatorStateName(stateName, out string resolvedStateName))
             return;
 
@@ -2402,7 +2448,27 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private bool CanPlayOptionalState(string stateName)
     {
-        return TryResolveAnimatorStateName(stateName, out _);
+        return TryResolveAnimatorStateName(ResolveRuntimeStateName(stateName), out _);
+    }
+
+    private string ResolveRuntimeStateName(string stateName)
+    {
+        MonsterUnit monster = GetComponent<MonsterUnit>();
+        if (monster?.RuntimeData == null ||
+            !string.Equals(
+                monster.RuntimeData.MonsterId,
+                ArabellaPhaseTransition.PhaseTwoMonsterId,
+                System.StringComparison.Ordinal))
+        {
+            return stateName;
+        }
+
+        string phaseTwoStateName =
+            ArabellaPhaseTransition.ResolvePhaseTwoAnimationState(stateName);
+
+        return TryResolveAnimatorStateName(phaseTwoStateName, out _)
+            ? phaseTwoStateName
+            : stateName;
     }
 
     /// <summary>

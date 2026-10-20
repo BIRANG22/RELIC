@@ -99,7 +99,7 @@ namespace Relic.Gameplay.Monster
             gameObject.name = $"{displayName}_{RuntimeData.RuntimeId}";
 
             if (hud != null)
-                hud.Refresh();
+                hud.Bind(RuntimeData);
         }
 
         public MonsterAIPlan CreateAIPlan(

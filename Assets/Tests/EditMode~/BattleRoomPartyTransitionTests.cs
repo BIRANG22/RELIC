@@ -10,6 +10,149 @@ using UnityEditor;
 public sealed class BattleRoomPartyTransitionTests
 {
     [Test]
+    public async Task MapToRoomTransition_InvokesUncoverStartedImmediatelyBeforeUncoverPlayback()
+    {
+        var transitionObject = new GameObject("BattlePanelTransition");
+        BattleDiagonalSceneTransition transition =
+            transitionObject.AddComponent<BattleDiagonalSceneTransition>();
+        var callbacks = new List<string>();
+
+        try
+        {
+            SetPrivateField(transition, "coverDuration", 0f);
+            SetPrivateField(transition, "uncoverDuration", 0f);
+            SetPrivateField(transition, "coveredHoldDuration", 0f);
+
+            await transition.PlayMapToRoomAsync(
+                () => callbacks.Add("covered"),
+                () => callbacks.Add("uncover"));
+
+            CollectionAssert.AreEqual(new[] { "covered", "uncover" }, callbacks);
+        }
+        finally
+        {
+            Object.DestroyImmediate(transitionObject);
+        }
+    }
+
+    [Test]
+    public void BattleRoomLoader_ExposesPreparedEntryPlaybackAndDeferredMonsterCompletion()
+    {
+        Assert.That(
+            typeof(BattleRoomLoader).GetMethod("PlayPreparedPartyEntry", BindingFlags.Instance | BindingFlags.Public),
+            Is.Not.Null);
+        Assert.That(
+            typeof(BattleRoomLoader).GetMethod("CompleteDeferredMonsterSpawn", BindingFlags.Instance | BindingFlags.Public),
+            Is.Not.Null);
+    }
+
+    [Test]
+    public void BossEntry_LoadsPartyBeforeDeferredRevealAndWaitsForWalkCompletion()
+    {
+        string controllerPath = Path.Combine(
+            Application.dataPath,
+            "Project/Scripts/Gameplay/Scene/Battle/BattleSceneController.cs");
+        string source = File.ReadAllText(controllerPath);
+
+        StringAssert.Contains(
+            "ShowRoomBackground(battleRoom, nodeData, true, false);",
+            source);
+        StringAssert.Contains(
+            "LoadBattleRoomNow();\n            deferredBossIntroRoutine = StartCoroutine(PlayDeferredBossIntroRoutine());",
+            source.Replace("\r\n", "\n"));
+
+        int routineStart = source.IndexOf(
+            "private IEnumerator PlayDeferredBossIntroRoutine",
+            System.StringComparison.Ordinal);
+        int routineEnd = source.IndexOf(
+            "private void CompleteDeferredBossIntro",
+            routineStart,
+            System.StringComparison.Ordinal);
+        string routine = source.Substring(routineStart, routineEnd - routineStart);
+        int waitForLoad = routine.IndexOf("!loader.IsLoaded", System.StringComparison.Ordinal);
+        int waitForWalk = routine.IndexOf("partyPresenter.IsPlaying", System.StringComparison.Ordinal);
+        int playReveal = routine.IndexOf("PlayCurrentBossReveal", System.StringComparison.Ordinal);
+
+        Assert.That(waitForLoad, Is.GreaterThanOrEqualTo(0));
+        Assert.That(waitForWalk, Is.GreaterThan(waitForLoad));
+        Assert.That(playReveal, Is.GreaterThan(waitForWalk));
+
+        int completionStart = routineEnd;
+        int completionEnd = source.IndexOf(
+            "private void HandleBattleRoomIntroCompletedAndLoad",
+            completionStart,
+            System.StringComparison.Ordinal);
+        string completion = source.Substring(completionStart, completionEnd - completionStart);
+        int spawnBoss = completion.IndexOf("CompleteDeferredMonsterSpawn", System.StringComparison.Ordinal);
+        int releaseIntro = completion.IndexOf("SetBattleRoomIntroPlaying(false)", System.StringComparison.Ordinal);
+
+        Assert.That(spawnBoss, Is.GreaterThanOrEqualTo(0));
+        Assert.That(releaseIntro, Is.GreaterThan(spawnBoss));
+    }
+
+    [Test]
+    public void MapSelection_StartsBattlePartyEntryFromUncoverCallbackOnly()
+    {
+        string controllerPath = Path.Combine(
+            Application.dataPath,
+            "Project/Scripts/Gameplay/Scene/Battle/BattleSceneController.cs");
+        string source = File.ReadAllText(controllerPath);
+        int selectionStart = source.IndexOf(
+            "public async void OnMapNodeSelected(GeneratedMapNodeData nodeData)",
+            System.StringComparison.Ordinal);
+        int selectionEnd = source.IndexOf(
+            "public void OnMapNodeSelectedByIndex",
+            selectionStart,
+            System.StringComparison.Ordinal);
+        string selection = source.Substring(selectionStart, selectionEnd - selectionStart);
+
+        int openRoom = selection.IndexOf("HandleSelectedMap(nodeData);", System.StringComparison.Ordinal);
+        int uncoverCallback = selection.IndexOf(
+            "PlayPreparedBattleRoomPartyEntry();",
+            System.StringComparison.Ordinal);
+
+        Assert.That(openRoom, Is.GreaterThanOrEqualTo(0));
+        Assert.That(uncoverCallback, Is.GreaterThan(openRoom));
+        StringAssert.Contains("if (!isBattleNode)", selection);
+    }
+
+    private static void SetPrivateField<T>(object target, string fieldName, T value)
+    {
+        FieldInfo field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null, $"Missing field: {fieldName}");
+        field.SetValue(target, value);
+    }
+
+    [Test]
+    public void StageEntryRoutine_StartsRoomAndPartyEntryBeforePositionPanelFade()
+    {
+        string controllerPath = Path.Combine(
+            Application.dataPath,
+            "Project/Scripts/Gameplay/Scene/Battle/BattleSceneController.cs");
+        string source = File.ReadAllText(controllerPath);
+        int routineStart = source.IndexOf(
+            "private IEnumerator PlayStageEntryThenOpenNodeRoutine",
+            System.StringComparison.Ordinal);
+        int routineEnd = source.IndexOf(
+            "private void AutoFindBack2NameIfNeeded",
+            routineStart,
+            System.StringComparison.Ordinal);
+        string routine = source.Substring(routineStart, routineEnd - routineStart);
+
+        int openRoom = routine.IndexOf("HandleSelectedMap(entryNode);", System.StringComparison.Ordinal);
+        int startWalk = routine.IndexOf("StartSharedPartyEntryTransitionIfNeeded();", System.StringComparison.Ordinal);
+        int fade = routine.IndexOf("float fadeDuration", System.StringComparison.Ordinal);
+        int hidePanel = routine.IndexOf("positionPanel.SetActive(false);", System.StringComparison.Ordinal);
+        int continueIntro = routine.IndexOf("CountPresentedRoomEntry(entryNode);", System.StringComparison.Ordinal);
+
+        Assert.That(openRoom, Is.GreaterThanOrEqualTo(0));
+        Assert.That(startWalk, Is.GreaterThan(openRoom));
+        Assert.That(fade, Is.GreaterThan(startWalk));
+        Assert.That(hidePanel, Is.GreaterThan(fade));
+        Assert.That(continueIntro, Is.GreaterThan(hidePanel));
+    }
+
+    [Test]
     public void CharacterHudVisibilitySuppression_ShowsOnlySelectedHudAfterRelease()
     {
         var hudRoot = new GameObject("HUDRoot");
@@ -48,20 +191,28 @@ public sealed class BattleRoomPartyTransitionTests
     }
 
     [Test]
-    public void BattleScene_TransitionOffsetsUseOneThirdTravelDistance()
+    public void BattleScene_TransitionUsesDoubleDistanceAndDurationForVisibleWalkLoop()
     {
         string scenePath = Path.Combine(Application.dataPath, "Project/Scenes/YDM/Battle.unity");
         string sceneYaml = File.ReadAllText(scenePath);
 
         MatchCollection entryOffsets = Regex.Matches(
             sceneYaml,
-            @"entryOffset: \{x: -2\.6666667, y: 0, z: 0\}");
+            @"entryOffset: \{x: -5\.3333335, y: 0, z: 0\}");
         MatchCollection exitOffsets = Regex.Matches(
             sceneYaml,
-            @"exitOffset: \{x: 2\.6666667, y: 0, z: 0\}");
+            @"exitOffset: \{x: 5\.3333335, y: 0, z: 0\}");
+        MatchCollection entryDurations = Regex.Matches(sceneYaml, @"entryDuration: 1\.1");
+        MatchCollection exitDurations = Regex.Matches(sceneYaml, @"exitDuration: 1\.2");
+        MatchCollection immediateBattleEntries = Regex.Matches(sceneYaml, @"entryDelay: 0(?:\r?\n)");
+        MatchCollection sharedRoomEntryDelays = Regex.Matches(sceneYaml, @"entryDelay: 0\.05");
 
         Assert.That(entryOffsets.Count, Is.EqualTo(2));
         Assert.That(exitOffsets.Count, Is.EqualTo(2));
+        Assert.That(entryDurations.Count, Is.EqualTo(2));
+        Assert.That(exitDurations.Count, Is.EqualTo(2));
+        Assert.That(immediateBattleEntries.Count, Is.EqualTo(1));
+        Assert.That(sharedRoomEntryDelays.Count, Is.EqualTo(1));
     }
 
     [Test]
