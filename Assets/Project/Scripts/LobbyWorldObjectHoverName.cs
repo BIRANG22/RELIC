@@ -302,12 +302,6 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
 
         screenPoint.y += screenYOffset;
 
-        // Collider2D 하단 중앙 기준으로 캐릭터별 이름 패널 X 위치를 보정합니다.
-        if (hoverNameType == HoverNameType.Ines)
-            screenPoint.x += 70f;
-        else if (hoverNameType == HoverNameType.Hilt)
-            screenPoint.x += 15f;
-
         Camera uiCamera = targetCanvas.renderMode == RenderMode.ScreenSpaceOverlay
             ? null
             : targetCanvas.worldCamera;
@@ -321,8 +315,17 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
             return;
         }
 
-        // ObjectName의 로컬 X/Y는 건드리지 않고 부모 패널만 콜라이더 하단으로 이동합니다.
-        worldObjectNamePanelRect.position = worldPoint;
+        // 캐릭터별 X 보정은 화면 픽셀이 아니라 Canvas 좌표 단위로 적용합니다.
+        // Canvas Scaler가 해상도를 조절해도 이네스 +20, 힐트 +15 간격을 유지합니다.
+        float canvasXOffset = hoverNameType switch
+        {
+            HoverNameType.Ines => 5f,
+            HoverNameType.Hilt => 15f,
+            _ => 0f
+        };
+
+        // ObjectName의 로컬 X/Y는 건드리지 않고 부모 패널만 이동합니다.
+        worldObjectNamePanelRect.position = worldPoint + positionRoot.TransformVector(new Vector3(canvasXOffset, 0f, 0f));
     }
 
     private void SetNameVisible(bool visible)
