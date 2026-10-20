@@ -20479,7 +20479,7 @@ MonoBehaviour:
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 0.5
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 0.4
+  m_Intensity: 0.8
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
   m_ApplyToSortingLayers: 73b4a1eb4ded6082efe1d92b0000000057ba385fc38ee3fc
@@ -63818,7 +63818,6 @@ MonoBehaviour:
   recoveryTooltipIcon: {fileID: 2004288939}
   statsTooltipPanel: {fileID: 734269960}
   statsTooltipText: {fileID: 1152676062}
-  statsTooltipOffset: {x: 0, y: 0}
   storyTooltipRestoreDelay: 0.15
 --- !u!222 &1108934243
 CanvasRenderer:
