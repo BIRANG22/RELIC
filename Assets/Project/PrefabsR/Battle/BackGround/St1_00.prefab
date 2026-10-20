@@ -1244,9 +1244,25 @@ PrefabInstance:
       propertyPath: m_Name
       value: vfxgraph_StylizedSmoke_v1_Fire
       objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555382, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_SortingOrder
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
       propertyPath: m_PropertySheet.m_Vector3f.m_Array.Array.data[0].m_Value.z
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_PropertySheet.m_Gradient.m_Array.Array.data[0].m_Value.key0.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_PropertySheet.m_Gradient.m_Array.Array.data[0].m_Value.key0.g
+      value: 0.34566635
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_PropertySheet.m_Gradient.m_Array.Array.data[0].m_Value.key0.r
+      value: 1.4352669
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1339,6 +1355,18 @@ PrefabInstance:
       propertyPath: m_PropertySheet.m_Vector3f.m_Array.Array.data[0].m_Value.z
       value: 0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_PropertySheet.m_Gradient.m_Array.Array.data[0].m_Value.key0.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_PropertySheet.m_Gradient.m_Array.Array.data[0].m_Value.key0.g
+      value: 0.34566635
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_PropertySheet.m_Gradient.m_Array.Array.data[0].m_Value.key0.r
+      value: 1.4352669
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1408,6 +1436,18 @@ PrefabInstance:
     - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
       propertyPath: m_PropertySheet.m_Vector3f.m_Array.Array.data[0].m_Value.z
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_PropertySheet.m_Gradient.m_Array.Array.data[0].m_Value.key0.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_PropertySheet.m_Gradient.m_Array.Array.data[0].m_Value.key0.g
+      value: 0.34566635
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_PropertySheet.m_Gradient.m_Array.Array.data[0].m_Value.key0.r
+      value: 1.4352669
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1533,9 +1573,25 @@ PrefabInstance:
       propertyPath: m_Name
       value: vfxgraph_StylizedSmoke_v1_Fire (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555382, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_SortingOrder
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
       propertyPath: m_PropertySheet.m_Vector3f.m_Array.Array.data[0].m_Value.z
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_PropertySheet.m_Gradient.m_Array.Array.data[0].m_Value.key0.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_PropertySheet.m_Gradient.m_Array.Array.data[0].m_Value.key0.g
+      value: 0.34566635
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555383, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_PropertySheet.m_Gradient.m_Array.Array.data[0].m_Value.key0.r
+      value: 1.4352669
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
