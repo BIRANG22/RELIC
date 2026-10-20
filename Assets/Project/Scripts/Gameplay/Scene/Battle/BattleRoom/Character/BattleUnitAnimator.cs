@@ -529,22 +529,20 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
         }
 
+        // 스킬 ID를 설정한 몬스터는 배열 순서가 아닌 정확한 SkillId로 연출을 찾습니다.
+        // 기존 프리팹처럼 ID를 하나도 설정하지 않았다면 ActionIndex 방식으로 호환합니다.
+        if (TryGetMonsterActionPresentation(command, out BattleUnitActionPresentation monsterPresentation) &&
+            HasPresentation(monsterPresentation))
+        {
+            PlayPresentation(monsterPresentation, command);
+            return;
+        }
+
+        // 별도 연출이 없는 실제 이동은 공통 이동 연출을 사용합니다.
         if (IsActualMonsterMove(command))
         {
             PlayMove();
             return;
-        }
-
-        if (IsValidMonsterActionIndex(command.ActionIndex))
-        {
-            BattleUnitActionPresentation monsterPresentation =
-                GetMonsterActionPresentation(command.ActionIndex);
-
-            if (HasPresentation(monsterPresentation))
-            {
-                PlayPresentation(monsterPresentation, command);
-                return;
-            }
         }
 
         // 몬스터 전용 슬롯이 비어 있는 공격 행동은 기존 공용 Attack 1~3 연출로 보정합니다.
@@ -1069,8 +1067,29 @@ public class BattleUnitAnimator : MonoBehaviour
         out BattleUnitActionPresentation presentation)
     {
         presentation = null;
+        if (command == null || command.SkillData == null)
+            return false;
 
-        if (command == null || !IsValidMonsterActionIndex(command.ActionIndex))
+        EnsureMonsterActionPresentationArray();
+        bool hasSkillIdAssignments = false;
+        string requestedSkillId = command.SkillId?.Trim();
+        for (int i = 0; i < monsterActionPresentations.Length; i++)
+        {
+            BattleUnitActionPresentation entry = monsterActionPresentations[i];
+            if (entry == null || string.IsNullOrWhiteSpace(entry.monsterSkillId))
+                continue;
+
+            hasSkillIdAssignments = true;
+            if (!string.IsNullOrEmpty(requestedSkillId) &&
+                string.Equals(entry.monsterSkillId.Trim(), requestedSkillId, System.StringComparison.OrdinalIgnoreCase))
+            {
+                presentation = entry;
+                return true;
+            }
+        }
+
+        // ID 지정이 시작된 프리팹에서는 잘못된 순서 기반 연출로 돌아가지 않습니다.
+        if (hasSkillIdAssignments || !IsValidMonsterActionIndex(command.ActionIndex))
             return false;
 
         presentation = GetMonsterActionPresentation(command.ActionIndex);
