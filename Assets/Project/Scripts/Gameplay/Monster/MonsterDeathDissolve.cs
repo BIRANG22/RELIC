@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,10 +6,7 @@ namespace Relic.Gameplay.Monster
 {
     public sealed class MonsterDeathDissolve : MonoBehaviour
     {
-        private static readonly int DissolveProgressId = Shader.PropertyToID("_DissolveProgress");
-        private static readonly int EdgeColorId = Shader.PropertyToID("_EdgeColor");
-        private static readonly int EdgeWidthId = Shader.PropertyToID("_EdgeWidth");
-        private static readonly int NoiseScaleId = Shader.PropertyToID("_NoiseScale");
+        private static readonly int DissolveProgressId = Shader.PropertyToID("_Dissolve");
 
         [Header("Dissolve Exclusions")]
         [Tooltip("사망 연출 시 디졸브하지 않고 즉시 비활성화할 자식 오브젝트입니다. 나머지 SpriteRenderer는 기존 디졸브를 사용합니다.")]
@@ -18,9 +15,6 @@ namespace Relic.Gameplay.Monster
         [Header("Death Dissolve")]
         [SerializeField, Min(0f)] private float duration = 0.4f;
         [SerializeField] private Material dissolveMaterial;
-        [SerializeField, ColorUsage(true, true)] private Color edgeColor = new(0.5f, 0.15f, 1f, 1f);
-        [SerializeField, Range(0.001f, 0.25f)] private float edgeWidth = 0.06f;
-        [SerializeField, Range(1f, 64f)] private float noiseScale = 16f;
 
         private readonly List<Material> runtimeMaterials = new();
         private Coroutine routine;
@@ -116,9 +110,6 @@ namespace Relic.Gameplay.Monster
 
                 Material runtimeMaterial = new(dissolveMaterial);
                 runtimeMaterial.SetFloat(DissolveProgressId, 0f);
-                runtimeMaterial.SetColor(EdgeColorId, edgeColor);
-                runtimeMaterial.SetFloat(EdgeWidthId, edgeWidth);
-                runtimeMaterial.SetFloat(NoiseScaleId, noiseScale);
                 renderer.material = runtimeMaterial;
                 runtimeMaterials.Add(runtimeMaterial);
             }
