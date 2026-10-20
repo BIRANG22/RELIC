@@ -1715,6 +1715,10 @@ public class BattleSceneController : MonoBehaviour
 
     private Task PlayActiveRoomPartyExitAsync()
     {
+        // Rest rooms change scenes without the party walking off screen.
+        if (restRoom != null && restRoom.activeInHierarchy)
+            return Task.CompletedTask;
+
         BattleRoomPartyTransitionPresenter battlePresenter =
             ResolveActiveBattleRoomPartyTransitionPresenter();
         if (battlePresenter != null)

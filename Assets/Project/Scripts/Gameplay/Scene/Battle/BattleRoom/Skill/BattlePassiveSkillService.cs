@@ -16,6 +16,31 @@ public class BattlePassiveSkillService
             RefreshPassiveEffects(characters[i]);
     }
 
+    public void ScheduleInitialPlayerPassives(System.Action refreshHud)
+    {
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+            CharacterRuntimeData runtime = character != null ? character.RuntimeData : null;
+            if (runtime == null || runtime.IsDead) continue;
+            SkillMasterData passiveSkill = GetPassiveSkill(runtime);
+            if (passiveSkill == null || passiveSkill.EffectEntries == null || passiveSkill.EffectEntries.Count == 0)
+            {
+                RefreshRuntimePassiveEffects(runtime);
+                continue;
+            }
+            CharacterRuntimeData capturedRuntime = runtime;
+            BattleEffectInfoFeed.ScheduleInitialPassive(passiveSkill, () =>
+            {
+                // Do not queue another duplicate passive notification when the effect applies.
+                RefreshRuntimePassiveEffects(capturedRuntime);
+                refreshHud?.Invoke();
+            });
+        }
+    }
+
     public void RefreshPassiveEffects(BattleCharacter character)
     {
         if (character == null || character.RuntimeData == null)

@@ -61,6 +61,22 @@ public sealed class BattleRoomPartyTransitionPresenter : MonoBehaviour
         CancelAndRestore(false);
         CaptureActors(actorRoots);
 
+        // Face the exit direction before starting the walk animation.
+        for (int i = 0; i < actors.Count; i++)
+        {
+            ActorState actor = actors[i];
+            if (actor.Transform == null)
+                continue;
+
+            BattleUnitFacing facing = actor.Transform.GetComponentInChildren<BattleUnitFacing>(true);
+            if (facing != null)
+                facing.FaceRight(true);
+
+            BattleCharacter character = actor.Transform.GetComponent<BattleCharacter>();
+            if (character != null && character.RuntimeData != null)
+                character.RuntimeData.Direction = BattleDirection.Right;
+        }
+
         for (int i = 0; i < actors.Count; i++)
         {
             ActorState actor = actors[i];

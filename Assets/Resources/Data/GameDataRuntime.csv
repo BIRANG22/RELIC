@@ -34,7 +34,7 @@ Mon_09,0,루크,Elite,102,0,55,65,Item_009,0.2,Range_18,S_Monster_21,S_Monster_2
 Mon_10,0,녹턴,Elite,94,0,60,70,Item_010,0.2,Range_18,S_Monster_25,S_Monster_26,S_Monster_27,S_Monster_28,0,0,0,0,0,0
 Mon_11,0,모르트,Elite,82,0,50,60,Item_011,0.2,Range_19,S_Monster_29,S_Monster_30,S_Monster_31,S_Monster_32,0,0,0,0,0,0
 Mon_12_1,1,아라벨라,Boss,80,0,0,0,0,0,Range_19,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_36,S_Monster_37,0,0,0,0,0
-Mon_12_2,2,각성 아라벨라,Boss,105,0,80,95,Item_012,0.5,Range_38,S_Monster_33,S_Monster_34,S_Monster_35,S_Monster_39,S_Monster_40,0,0,0,0,0
+Mon_12_2,2,각성 아라벨라,Boss,105,0,80,95,Item_012,0.5,Range_18,S_Monster_38,S_Monster_34,S_Monster_35,S_Monster_39,S_Monster_40,0,0,0,0,0
 ,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,
@@ -175,8 +175,8 @@ S_Monster_35,사방 찢기,PlayerParty,1,E_Strike,10,1,0,Range_18,Attack,주변�
 S_Monster_36,거미줄 갑주,Self,1,E_Barrier,1,1,0,Range_Self,Buff,자신에게 {E_Barrier}를 {ValueRate1} 부여한다.,icon_mon_skill_026,버프,
 S_Monster_37,고치 심기,Self,2,E_Spawn_Spider_Egg,1,1,0,Range_m_01,Debuff,주변에 {E_Spawn_Spider_Egg}을 {ValueRate1}개 설치한다.,icon_mon_skill_027,설치,
 S_Monster_38,이동,Self,1,E_Move,0,1,0,Range_18,Move,가까운 캐릭터를 향해 1칸 이동한다.,icon_mon_skill_001,이동,
-S_Monster_39,Phase 2_1,PlayerParty,1,E_Strike,15,1,0,Range_16,Attack,범위에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_028,공격,
-S_Monster_40,Phase 2_2,PlayerParty,1,E_Strike,5,2,0,Range_m_02,Attack,가장 먼 대상의 위치에 {E_Strike}를 {ValueRate1}만큼 {CountRate1}회 준다.,icon_mon_skill_029,공격,
+S_Monster_39,사냥 강습,PlayerParty,1,E_Strike;E_Knockback,15;1,1;1,0,Range_18,Attack,"낙인에 도약하여 {E_Strike}를 {ValueRate1}만큼 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",icon_mon_skill_028,공격,
+S_Monster_40,맹독 세례,PlayerParty,1,E_Strike;E_Poison,3;3,1;1,0,Range_m_02,Attack,"가장 먼 대상의 위치에 {E_Strike}를 {ValueRate1}만큼 주고, {E_Poison}을 {ValueRate2} 부여한다.",icon_mon_skill_029,공격,
 ,,,,,,,,,,,,,
 ,,,,,,,,,,,,,
 ,,,,,,,,,,,,,
@@ -197,7 +197,7 @@ GR_spider_egg,고치,0,0,-1,0,1,2,Summon,8,Object,{Duration}턴 후 신더가 �
 GR_spider_web,거미줄,1,0,E_Spider_Web,2,1,2,Monster,0,None,이동에 필요한 마나 소모량이 {ValueRate1}배가 된다.
 GR_nocturn_portal_preview,그림자,1,0,-1,0,1,1,Monster,0,None,어둠이 깃든 공간.
 GR_Skull_bone,유골,0,0,-1,0,1,0,Monster,30,Object,이동을 방해하는 뼈 무더기.
-,,,,,,,,,
+GR_Stigma,낙인,1,0,-1,0,1,1,Monster,0,None,사냥감에게 드리운 포식의 징조.
 ,,,,,,,,,
 ,,,,,,,,,
 ,,,,,,,,,

@@ -68,6 +68,6 @@ MonoBehaviour:
   - iconId: icon_mon_skill_027
     sprite: {fileID: 21300000, guid: f40dbb61013bf0846ac80a4076f8e7f6, type: 3}
   - iconId: icon_mon_skill_028
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: 24767afb43851bf4da7e10b8fbe1468e, type: 3}
   - iconId: icon_mon_skill_029
-    sprite: {fileID: 0}
+    sprite: {fileID: 21300000, guid: de2c6e442f798d149b41e7cd1ae5af7a, type: 3}

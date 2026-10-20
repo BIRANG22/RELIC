@@ -63,6 +63,8 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     [SerializeField] private Sprite costRecoveryIcon;
     [Tooltip("카르마 회복 숫자 앞에 표시할 아이콘입니다.")]
     [SerializeField] private Sprite uniqueResourceIcon;
+    [Tooltip("방어도 획득 숫자 앞에 표시할 아이콘입니다.")]
+    [SerializeField] private Sprite armorGainIcon;
     [SerializeField] private Vector2 recoveryIconSize = new Vector2(52f, 52f);
     [SerializeField] private float recoveryPrefixSpacing = 2f;
 
@@ -348,17 +350,39 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     {
         while (!recoverySequenceHeld && recoveryPopupQueue.Count > 0)
         {
-            RecoveryPopupRequest request = recoveryPopupQueue[0];
+            RecoveryPopupRequest first = recoveryPopupQueue[0];
             recoveryPopupQueue.RemoveAt(0);
 
-            if (request != null && request.Target != null && request.Value > 0)
+            // 턴 종료 시 카르마와 마나는 자원 종류별로 모든 캐릭터에게 동시에 표시합니다.
+            // 체력 회복은 기존처럼 개별 팝업으로 처리합니다.
+            List<RecoveryPopupRequest> batch = new() { first };
+            if (first != null &&
+                (first.PopupType == PopupType.UniqueResource || first.PopupType == PopupType.CostRecovery))
             {
-                ShowTargetHudImmediately(request.Target);
+                while (recoveryPopupQueue.Count > 0 &&
+                       recoveryPopupQueue[0] != null &&
+                       recoveryPopupQueue[0].PopupType == first.PopupType)
+                {
+                    batch.Add(recoveryPopupQueue[0]);
+                    recoveryPopupQueue.RemoveAt(0);
+                }
+            }
 
-                if (popupStartDelay > 0f)
-                    yield return new WaitForSecondsRealtime(popupStartDelay);
+            for (int i = 0; i < batch.Count; i++)
+            {
+                RecoveryPopupRequest request = batch[i];
+                if (request != null && request.Target != null && request.Value > 0)
+                    ShowTargetHudImmediately(request.Target);
+            }
 
-                if (request.Target != null)
+            if (popupStartDelay > 0f)
+                yield return new WaitForSecondsRealtime(popupStartDelay);
+
+            // 같은 배치의 팝업은 같은 프레임에 생성되어 동시에 등장합니다.
+            for (int i = 0; i < batch.Count; i++)
+            {
+                RecoveryPopupRequest request = batch[i];
+                if (request != null && request.Target != null && request.Value > 0)
                     ShowInternal(request.Target, request.Value, request.PopupType);
             }
 
@@ -685,7 +709,8 @@ public class BattleDamageTextPopupUI : MonoBehaviour
 
     private bool ShouldShowRecoveryPrefix(PopupType popupType)
     {
-        return popupType == PopupType.CostRecovery ||
+        return popupType == PopupType.ArmorGain ||
+               popupType == PopupType.CostRecovery ||
                popupType == PopupType.UniqueResource ||
                popupType == PopupType.HealthRecovery;
     }
@@ -694,6 +719,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     {
         return popupType switch
         {
+            PopupType.ArmorGain => armorGainIcon,
             PopupType.CostRecovery => costRecoveryIcon,
             PopupType.UniqueResource => uniqueResourceIcon,
             PopupType.HealthRecovery => healthRecoveryIcon,

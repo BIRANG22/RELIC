@@ -873,6 +873,14 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
             itemView.gameObject.SetActive(false);
     }
 
+    // 기본 피해(E_Strike)는 효과 설명 항목만 생략합니다.
+    // 스킬 피해 수치와 실제 전투 효과에는 영향을 주지 않습니다.
+    private static bool IsBasicStrikeTooltipEffect(StatusEffectRuntimeData data)
+    {
+        return data != null &&
+               string.Equals(data.EffectId, "E_Strike", System.StringComparison.OrdinalIgnoreCase);
+    }
+
     private static List<StatusEffectRuntimeData> GetValidStatusEffects(
         IReadOnlyList<StatusEffectRuntimeData> statusEffects)
     {
@@ -883,7 +891,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         for (int i = 0; i < statusEffects.Count; i++)
         {
             StatusEffectRuntimeData data = statusEffects[i];
-            if (data != null && data.IsValid())
+            if (data != null && data.IsValid() && !IsBasicStrikeTooltipEffect(data))
                 result.Add(data);
         }
 
@@ -899,7 +907,7 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         for (int i = 0; i < statusEffects.Count; i++)
         {
             StatusEffectRuntimeData data = statusEffects[i];
-            if (data != null && data.IsValid())
+            if (data != null && data.IsValid() && !IsBasicStrikeTooltipEffect(data))
                 return data;
         }
 

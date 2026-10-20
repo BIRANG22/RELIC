@@ -87,6 +87,7 @@ public class BattleRoomLoader : MonoBehaviour
     private bool partyEntryPlaybackRequested;
     private bool deferMonsterSpawn;
     private bool monsterSpawnDeferred;
+    private bool initialPassivesScheduled;
     private string loadedMapId;
     private string debugTargetMonsterId;
     private int debugTargetGridIndex = -1;
@@ -699,6 +700,7 @@ public class BattleRoomLoader : MonoBehaviour
         if (monsterTurnPlanner != null)
             monsterTurnPlanner.ResetBattleStartIntroState();
 
+        initialPassivesScheduled = false;
         // Collect first-turn effects until the battle-start intro has finished.
         BattleEffectInfoFeed.BeginInitialEffects();
         Transform playerRoot = unitSpawner != null ? unitSpawner.PlayerRoot : null;
@@ -784,6 +786,7 @@ public class BattleRoomLoader : MonoBehaviour
         isLoaded = false;
         isLoading = false;
         deferPartyEntryPlayback = false;
+        initialPassivesScheduled = false;
         partyEntryPrepared = false;
         partyEntryPlaybackRequested = false;
         deferMonsterSpawn = false;
@@ -1569,6 +1572,16 @@ public class BattleRoomLoader : MonoBehaviour
         while (BattleSceneController.IsBattleRoomIntroPlaying)
             yield return null;
 
+        // Entry must visually finish before any initial passive status is applied.
+        while (monsterSpawnDeferred || (deferPartyEntryPlayback && !partyEntryPlaybackRequested) ||
+               (partyTransitionPresenter != null && partyTransitionPresenter.IsPlaying))
+            yield return null;
+        if (!initialPassivesScheduled)
+        {
+            initialPassivesScheduled = true;
+            passiveSkillService.ScheduleInitialPlayerPassives(RefreshBattleHUDs);
+        }
+
         if (monsterTurnPlanner != null)
         {
             // 이어하기에서는 전투방에 처음 입장했을 때 확정된 1턴 예약을 그대로 복원합니다.
@@ -1673,9 +1686,8 @@ public class BattleRoomLoader : MonoBehaviour
     private void SpawnMonstersAndRefreshBattleStartPassives()
     {
         SpawnMonstersAndHUD(false);
-        BattleEffectInfoFeed.BeginPassiveCapture();
-        RefreshBattleStartPassives();
-        BattleEffectInfoFeed.EndPassiveCapture();
+        // Passives are queued after the entry movement ends, then applied when
+        // their Effect_Info entries actually appear during the initial feed flush.
     }
 
     public static void SetCharacterWorldHudVisibilitySuppressed(Transform root, bool suppressed)

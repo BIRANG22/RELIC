@@ -8,6 +8,7 @@ namespace Relic.Gameplay.Monster
     public class EliseAI : MonsterAIBase
     {
         private const string MoveSkillId = "S_Monster_33";
+        private const string PhaseTwoMoveSkillId = "S_Monster_38";
         private const string PositionPressureSkillId = "S_Monster_34";
         private const string MeleeAttackSkillId = "S_Monster_35";
         private const string BarrierSkillId = "S_Monster_36";
@@ -66,70 +67,194 @@ namespace Relic.Gameplay.Monster
             GridManager gridManager)
         {
             MonsterAIPlan plan = new();
-
             if (monsterUnit == null || monsterUnit.RuntimeData == null || gridManager == null)
                 return plan;
 
             MonsterRuntimeData runtime = monsterUnit.RuntimeData;
             BattleCharacter[] players = FindPlayers();
-            int priority = 0;
+            int turn = Mathf.Max(1, context != null ? context.CurrentTurn : runtime.TurnCount + 1);
 
-            bool hasPlayerInAttackRange = HasPlayerInAttackRange(monsterUnit, players, gridManager);
-
-            if (hasPlayerInAttackRange && !HasStatus(runtime, BarrierEffectId))
-            {
-                plan.Add(new MonsterAIAction(
-                    BarrierSkillId,
-                    Vector2Int.zero,
-                    MonsterAISlotPreference.Earliest,
-                    -1,
-                    priority++));
-            }
-
-            // A nearby player is the reason Arabella retreats. Attack first, then escape.
-            if (hasPlayerInAttackRange)
-            {
-                plan.Add(new MonsterAIAction(
-                    MeleeAttackSkillId,
-                    Vector2Int.zero,
-                    MonsterAISlotPreference.Front,
-                    -1,
-                    priority++));
-
-                Vector2Int moveOffset = ResolveEscapeMove(monsterUnit, players, gridManager);
-
-                if (moveOffset != Vector2Int.zero)
-                {
-                    plan.Add(new MonsterAIAction(
-                        MoveSkillId,
-                        moveOffset,
-                        MonsterAISlotPreference.NextSlot,
-                        -1,
-                        priority++));
-                }
-            }
-
-            AddSpiderSpawnAction(plan, monsterUnit, players, gridManager, priority++);
-            AddPositionPressureActions(plan, players, priority);
-
-            if (runtime.Phase >= 2)
-            {
-                plan.Add(new MonsterAIAction(
-                    PhaseTwoAttackSkillId01,
-                    Vector2Int.zero,
-                    MonsterAISlotPreference.Center,
-                    -1,
-                    priority++));
-                plan.Add(new MonsterAIAction(
-                    PhaseTwoAttackSkillId02,
-                    Vector2Int.zero,
-                    MonsterAISlotPreference.Last,
-                    -1,
-                    priority));
-            }
+            if (runtime.MonsterId == ArabellaPhaseTransition.PhaseTwoMonsterId)
+                CreatePhaseTwoPlan(plan, monsterUnit, players, gridManager);
+            else
+                CreatePhaseOnePlan(plan, monsterUnit, players, gridManager, turn);
 
             RemoveSkillsNotOwnedByRuntime(plan, runtime);
             return plan;
+        }
+
+        private void CreatePhaseOnePlan(
+            MonsterAIPlan plan, MonsterUnit unit, BattleCharacter[] players,
+            GridManager gridManager, int turn)
+        {
+            int priority = 0;
+            if (turn % 2 == 0)
+            {
+                plan.Add(new MonsterAIAction(
+                    BarrierSkillId, Vector2Int.zero,
+                    MonsterAISlotPreference.Earliest, -1, priority++));
+            }
+
+            bool nearby = HasPlayerInAttackRange(unit, players, gridManager);
+            if (nearby)
+            {
+                // 첫 행동인 사방 찢기는 뒤에 예약될 이동 방향을 따라가지 않습니다.
+                // 현재 위치에서 가장 가까운 살아있는 캐릭터를 기준으로 방향을 고정합니다.
+                BattleCharacter attackTarget = FindNearestPlayer(unit, gridManager);
+                bool hasAttackDirection = IsAlivePlayer(attackTarget) &&
+                    attackTarget.CurrentGridIndex >= 0 && unit.MainGridIndex >= 0 &&
+                    gridManager.IndexToCoord(attackTarget.CurrentGridIndex).x !=
+                    gridManager.IndexToCoord(unit.MainGridIndex).x;
+                bool attackRight = hasAttackDirection &&
+                    gridManager.IndexToCoord(attackTarget.CurrentGridIndex).x >
+                    gridManager.IndexToCoord(unit.MainGridIndex).x;
+                plan.Add(new MonsterAIAction(
+                    MeleeAttackSkillId, Vector2Int.zero,
+                    MonsterAISlotPreference.Front, -1, priority++, -1,
+                    hasForcedDirection: hasAttackDirection,
+                    forcedDirection: attackRight ? BattleDirection.Right : BattleDirection.Left));
+            }
+
+            Vector2Int escape = ResolveEscapeMove(unit, players, gridManager);
+            if (escape != Vector2Int.zero)
+            {
+                plan.Add(new MonsterAIAction(
+                    MoveSkillId, escape,
+                    nearby ? MonsterAISlotPreference.NextSlot : MonsterAISlotPreference.Front,
+                    -1, priority++));
+            }
+
+            if (turn % 2 != 0)
+                AddSpiderSpawnAction(plan, unit, players, gridManager, priority++);
+
+            AddPositionPressureActions(plan, players, priority);
+        }
+
+        private void CreatePhaseTwoPlan(
+            MonsterAIPlan plan, MonsterUnit unit, BattleCharacter[] players,
+            GridManager gridManager)
+        {
+            int priority = 0;
+            // Reserve the leap target. Physical landing movement must be handled
+            // separately in the action executor.
+            BattleCharacter nearest = FindNearestPlayer(unit, gridManager);
+            int leapGrid = IsAlivePlayer(nearest) ? nearest.CurrentGridIndex : -1;
+            if (leapGrid >= 0 && unit.MainGridIndex >= 0)
+            {
+                Vector2Int from = gridManager.IndexToCoord(unit.MainGridIndex);
+                Vector2Int to = gridManager.IndexToCoord(leapGrid);
+                bool hasDirection = from.x != to.x;
+                plan.Add(new MonsterAIAction(
+                    PhaseTwoAttackSkillId01, Vector2Int.zero,
+                    MonsterAISlotPreference.FirstTwo, -1, priority++, leapGrid,
+                    hasForcedDirection: hasDirection,
+                    forcedDirection: to.x > from.x ? BattleDirection.Right : BattleDirection.Left));
+            }
+
+            // Move then melee in the same slot (orders 1 and 2).
+            int projectedOrigin = leapGrid >= 0 ? leapGrid : unit.MainGridIndex;
+            Vector2Int approach = ResolveApproachMove(unit, players, gridManager, projectedOrigin);
+            if (approach != Vector2Int.zero)
+            {
+                const int moveAttackGroup = 1202;
+                plan.Add(new MonsterAIAction(
+                    PhaseTwoMoveSkillId, approach,
+                    MonsterAISlotPreference.NextSlot, moveAttackGroup, priority++));
+
+                if (HasPlayerInAttackRangeAfterMove(unit, players, gridManager, approach, projectedOrigin))
+                {
+                    Vector2Int projectedCoord = gridManager.IndexToCoord(projectedOrigin) + approach;
+                    int attackOrigin = gridManager.CoordToIndex(projectedCoord);
+                    plan.Add(new MonsterAIAction(
+                        MeleeAttackSkillId, Vector2Int.zero,
+                        MonsterAISlotPreference.SameSlot, moveAttackGroup, priority++,
+                        attackOrigin, approach.x != 0,
+                        approach.x >= 0 ? BattleDirection.Right : BattleDirection.Left));
+                }
+            }
+
+            BattleCharacter farthest = FindFarthestPlayer(unit, players, gridManager);
+            if (IsAlivePlayer(farthest) && farthest.CurrentGridIndex >= 0)
+                plan.Add(new MonsterAIAction(
+                    PhaseTwoAttackSkillId02, Vector2Int.zero,
+                    MonsterAISlotPreference.Center, -1, priority++, farthest.CurrentGridIndex));
+
+            AddPositionPressureActions(plan, players, priority);
+        }
+
+        private Vector2Int ResolveApproachMove(
+            MonsterUnit unit, BattleCharacter[] players, GridManager gridManager, int originIndex = -1)
+        {
+            if (unit.MainGridIndex < 0) return Vector2Int.zero;
+            int startIndex = originIndex >= 0 ? originIndex : unit.MainGridIndex;
+            Vector2Int origin = gridManager.IndexToCoord(startIndex);
+            int currentDistance = GetNearestPlayerDistance(origin, players, gridManager);
+            int bestDistance = currentDistance;
+            Vector2Int best = Vector2Int.zero;
+            foreach (Vector2Int offset in CardinalOffsets)
+            {
+                Vector2Int nextCoord = origin + offset;
+                if (!gridManager.IsValidCoord(nextCoord)) continue;
+                int nextIndex = gridManager.CoordToIndex(nextCoord);
+                if (startIndex == unit.MainGridIndex)
+                {
+                    if (!CanMonsterMove(unit, gridManager, offset)) continue;
+                }
+                else
+                {
+                    if (BattleOccupancyService.IsOccupiedByAnyUnit(nextIndex, null, unit)) continue;
+                    BattleGridEffectController controller = Object.FindFirstObjectByType<BattleGridEffectController>(
+                        FindObjectsInactive.Include);
+                    if (controller != null && controller.IsBlocked(nextIndex)) continue;
+                }
+                int distance = GetNearestPlayerDistance(nextCoord, players, gridManager);
+                if (distance >= bestDistance) continue;
+                bestDistance = distance;
+                best = offset;
+            }
+            return best;
+        }
+
+        private bool HasPlayerInAttackRangeAfterMove(
+            MonsterUnit unit, BattleCharacter[] players, GridManager gridManager,
+            Vector2Int offset, int originIndex = -1)
+        {
+            if (unit.MainGridIndex < 0 || players == null) return false;
+            RangeDatabase ranges = DataManager.Instance?.RangeDatabase;
+            if (ranges == null) return false;
+            Vector2Int destination = gridManager.IndexToCoord(
+                originIndex >= 0 ? originIndex : unit.MainGridIndex) + offset;
+            if (!gridManager.IsValidCoord(destination)) return false;
+            int gridIndex = gridManager.CoordToIndex(destination);
+            bool facingRight = offset.x != 0
+                ? offset.x > 0
+                : unit.RuntimeData.Direction == BattleDirection.Right;
+            List<int> indices = MonsterSkillRangeService.BuildRangeGridIndices(
+                unit, "Range_18", gridManager, facingRight, gridIndex, ranges);
+            if (indices == null) return false;
+            foreach (BattleCharacter player in players)
+                if (IsAlivePlayer(player) && indices.Contains(player.CurrentGridIndex))
+                    return true;
+            return false;
+        }
+
+        private BattleCharacter FindFarthestPlayer(
+            MonsterUnit unit, BattleCharacter[] players, GridManager gridManager)
+        {
+            if (unit.MainGridIndex < 0 || players == null) return null;
+            Vector2Int origin = gridManager.IndexToCoord(unit.MainGridIndex);
+            BattleCharacter farthest = null;
+            int best = int.MinValue;
+            foreach (BattleCharacter player in players)
+            {
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0) continue;
+                Vector2Int pos = gridManager.IndexToCoord(player.CurrentGridIndex);
+                int distance = Mathf.Abs(origin.x - pos.x) + Mathf.Abs(origin.y - pos.y);
+                if (distance <= best) continue;
+                best = distance;
+                farthest = player;
+            }
+            return farthest;
         }
 
         private void AddSpiderSpawnAction(
@@ -139,24 +264,18 @@ namespace Relic.Gameplay.Monster
             GridManager gridManager,
             int priority)
         {
-            bool hasEgg = CountGridEffects(SpiderEggGridEffectId) > 0;
-            bool hasCinder = HasAliveCinder();
-
-            if (!hasEgg && !hasCinder)
+            // 홀수 턴마다 유효한 설치 칸이 있으면 고치를 심습니다.
+            // 이전 턴에 설치한 고치가 남아 있더라도 이번 턴의 설치를 막지 않습니다.
+            int eggGridIndex = FindSafestEggGridAroundArabella(monsterUnit, players, gridManager);
+            if (eggGridIndex >= 0)
             {
-                int eggGridIndex = FindSafestEggGridAroundArabella(monsterUnit, players, gridManager);
-
-                if (eggGridIndex >= 0)
-                {
-                    plan.Add(new MonsterAIAction(
-                        SpawnEggSkillId,
-                        Vector2Int.zero,
-                        MonsterAISlotPreference.Back,
-                        -1,
-                        priority,
-                        eggGridIndex));
-                    return;
-                }
+                plan.Add(new MonsterAIAction(
+                    SpawnEggSkillId,
+                    Vector2Int.zero,
+                    MonsterAISlotPreference.Center,
+                    -1,
+                    priority,
+                    eggGridIndex));
             }
 
         }

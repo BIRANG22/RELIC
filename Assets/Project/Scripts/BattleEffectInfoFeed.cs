@@ -45,6 +45,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
     // Priority: rune (0), relic (1), other notifications (2).
     private readonly System.Collections.Generic.List<System.Tuple<string, Sprite, bool, bool, int>> queuedEntries =
         new System.Collections.Generic.List<System.Tuple<string, Sprite, bool, bool, int>>();
+    private readonly System.Collections.Generic.Dictionary<System.Tuple<string, Sprite, bool, bool, int>, System.Collections.Generic.Queue<System.Action>> entryCallbacks = new();
     private Coroutine queueRoutine;
     private int activeEntryCount;
     private float nextEntryTime;
@@ -53,9 +54,54 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
     private static BattleEffectInfoFeed instance;
     private static bool deferInitialEffects;
     private static bool capturePassiveEffects;
+    private static readonly System.Collections.Generic.List<System.Action> pendingInitialActions = new();
     private static readonly System.Collections.Generic.List<int> pendingInitialPriorities = new System.Collections.Generic.List<int>();
     private static readonly System.Collections.Generic.List<System.Tuple<string, Sprite, bool>> pendingInitialEffects =
         new System.Collections.Generic.List<System.Tuple<string, Sprite, bool>>();
+
+    // Queue an initial passive without applying it until its visible info entry is created.
+    public static void ScheduleInitialPassive(SkillMasterData skill, System.Action apply)
+    {
+        if (apply == null) return;
+        BattleEffectInfoFeed feed = FindFeed();
+        if (feed == null || skill == null)
+        {
+            apply();
+            return;
+        }
+        Sprite icon = skill.Icon;
+        DataManager manager = DataManager.Instance;
+        if (icon == null && manager?.SkillIconDatabase != null)
+            manager.SkillIconDatabase.TryGetIcon(skill.SkillId, out icon);
+        string label = GameDataLocalization.SkillName(skill);
+        if (deferInitialEffects)
+        {
+            pendingInitialEffects.Add(System.Tuple.Create(label, icon, false));
+            pendingInitialPriorities.Add(2);
+            pendingInitialActions.Add(apply);
+        }
+        else
+            feed.SpawnWithCallback(label, icon, false, 2, apply);
+    }
+
+    private void SpawnWithCallback(string label, Sprite icon, bool enemy, int priority, System.Action callback)
+    {
+        if (battleEffectInfoPrefab == null)
+        {
+            callback?.Invoke();
+            return;
+        }
+        var entry = System.Tuple.Create(label, icon, enemy, false, priority);
+        if (!entryCallbacks.TryGetValue(entry, out var callbacks))
+        {
+            callbacks = new System.Collections.Generic.Queue<System.Action>();
+            entryCallbacks.Add(entry, callbacks);
+        }
+        callbacks.Enqueue(callback);
+        queuedEntries.Add(entry);
+        if (queueRoutine == null && isActiveAndEnabled)
+            queueRoutine = StartCoroutine(ProcessEntryQueue());
+    }
 
     public static void BeginPassiveCapture() { capturePassiveEffects = true; }
     public static void EndPassiveCapture() { capturePassiveEffects = false; }
@@ -88,6 +134,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
         suppressedEquipmentStatuses.Clear();
         pendingInitialEffects.Clear();
         pendingInitialPriorities.Clear();
+        pendingInitialActions.Clear();
         deferInitialEffects = true;
     }
 
@@ -107,12 +154,17 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
                 {
                     if (pendingInitialPriorities[i] != priority) continue;
                     var entry = pendingInitialEffects[i];
-                    feed.Spawn(entry.Item1, entry.Item2, entry.Item3, false, priority);
+                    System.Action callback = i < pendingInitialActions.Count ? pendingInitialActions[i] : null;
+                    if (callback != null)
+                        feed.SpawnWithCallback(entry.Item1, entry.Item2, entry.Item3, priority, callback);
+                    else
+                        feed.Spawn(entry.Item1, entry.Item2, entry.Item3, false, priority);
                 }
             }
         }
         pendingInitialEffects.Clear();
         pendingInitialPriorities.Clear();
+        pendingInitialActions.Clear();
         if (feed != null && count > 0)
         {
             // Wait for all queued introductions AND their exit animations.
@@ -130,6 +182,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
     private void OnDisable()
     {
         queuedEntries.Clear();
+        entryCallbacks.Clear();
         queueRoutine = null;
         activeEntryCount = 0;
         nextEntryTime = 0f;
@@ -138,6 +191,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
     private void OnDestroy()
     {
         queuedEntries.Clear();
+        entryCallbacks.Clear();
         if (instance == this) instance = null;
     }
 
@@ -517,6 +571,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
         {
             pendingInitialEffects.Add(System.Tuple.Create(label, icon, enemy));
             pendingInitialPriorities.Add(initialPriority);
+            pendingInitialActions.Add(null);
             return;
         }
         if (battleEffectInfoPrefab == null) return;
@@ -552,6 +607,12 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
             var entry = queuedEntries[index];
             queuedEntries.RemoveAt(index);
             CreateEntry(entry.Item1, entry.Item2, entry.Item3, entry.Item4, entry.Item5);
+            if (entryCallbacks.TryGetValue(entry, out var callbacks) && callbacks.Count > 0)
+            {
+                System.Action onShown = callbacks.Dequeue();
+                if (callbacks.Count == 0) entryCallbacks.Remove(entry);
+                onShown?.Invoke();
+            }
             nextEntryTime = Time.unscaledTime + entryInterval;
         }
         queueRoutine = null;
