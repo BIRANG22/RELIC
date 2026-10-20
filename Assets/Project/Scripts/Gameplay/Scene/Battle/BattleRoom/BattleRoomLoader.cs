@@ -684,6 +684,7 @@ public class BattleRoomLoader : MonoBehaviour
             playerRoot.gameObject.SetActive(false);
 
         SpawnPlayersAndHUD();
+        SetCharacterWorldHudVisibilitySuppressed(hudRoot, true);
         StartPartyEntryTransition(reactivatePlayerRootForEntry);
         SpawnMonstersAndHUD(false);
         BattleEffectInfoFeed.BeginPassiveCapture();
@@ -1576,6 +1577,8 @@ public class BattleRoomLoader : MonoBehaviour
             OpenSelectedCharacterSkillListWhenInputReady();
         }
 
+        SetCharacterWorldHudVisibilitySuppressed(hudRoot, false);
+
         if (restoringResolvedBattleRoomEntryState)
         {
             SaveSystem.Instance?.ConsumePendingResolvedBattleRoomEntryState();
@@ -1604,6 +1607,20 @@ public class BattleRoomLoader : MonoBehaviour
             unitSpawner.PlayerRoot.gameObject.SetActive(true);
 
         _ = partyTransitionPresenter.PlayPreparedEntryAsync();
+    }
+
+    public static void SetCharacterWorldHudVisibilitySuppressed(Transform root, bool suppressed)
+    {
+        if (root == null)
+            return;
+
+        HUDSlot[] hudSlots = root.GetComponentsInChildren<HUDSlot>(true);
+        for (int i = 0; i < hudSlots.Length; i++)
+        {
+            HUDSlot hud = hudSlots[i];
+            if (hud != null && hud.BoundCharacterRuntime != null)
+                hud.gameObject.SetActive(!suppressed);
+        }
     }
 
     private static bool IsTutorialBattleRun()

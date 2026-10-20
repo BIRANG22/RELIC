@@ -6,8 +6,8 @@ using UnityEngine;
 public sealed class BattleRoomPartyTransitionPresenter : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private Vector3 entryOffset = new(-8f, 0f, 0f);
-    [SerializeField] private Vector3 exitOffset = new(8f, 0f, 0f);
+    [SerializeField] private Vector3 entryOffset = new(-2.6666667f, 0f, 0f);
+    [SerializeField] private Vector3 exitOffset = new(2.6666667f, 0f, 0f);
     [SerializeField, Min(0f)] private float entryDelay = 0.3f;
     [SerializeField, Min(0f)] private float entryDuration = 0.35f;
     [SerializeField, Min(0f)] private float exitDuration = 0.35f;
@@ -128,11 +128,11 @@ public sealed class BattleRoomPartyTransitionPresenter : MonoBehaviour
 
         for (int i = 0; i < actors.Count; i++)
         {
-            if (actors[i].Marker != null && actors[i].Marker.PlayTransitionMove())
+            if (actors[i].Marker != null && actors[i].Marker.PlayTransitionWalk())
                 continue;
 
             if (actors[i].Animator != null)
-                actors[i].Animator.PlayMove();
+                actors[i].Animator.PlayWalk();
         }
 
         float safeDuration = Mathf.Max(0f, duration);

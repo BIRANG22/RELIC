@@ -10,6 +10,61 @@ using UnityEditor;
 public sealed class BattleRoomPartyTransitionTests
 {
     [Test]
+    public void CharacterHudVisibilitySuppression_ShowsOnlySelectedHudAfterRelease()
+    {
+        var hudRoot = new GameObject("HUDRoot");
+        var selectedObject = new GameObject("SelectedHUD");
+        var unselectedObject = new GameObject("UnselectedHUD");
+        selectedObject.transform.SetParent(hudRoot.transform);
+        unselectedObject.transform.SetParent(hudRoot.transform);
+        HUDSlot selectedHud = selectedObject.AddComponent<HUDSlot>();
+        HUDSlot unselectedHud = unselectedObject.AddComponent<HUDSlot>();
+        selectedHud.Bind(new Relic.Gameplay.Data.CharacterRuntimeData
+            { CharacterId = "Selected", MaxHP = 10, CurrentHP = 10 });
+        unselectedHud.Bind(new Relic.Gameplay.Data.CharacterRuntimeData
+            { CharacterId = "Unselected", MaxHP = 10, CurrentHP = 10 });
+        selectedHud.Hide();
+        unselectedHud.Hide();
+
+        try
+        {
+            BattleRoomLoader.SetCharacterWorldHudVisibilitySuppressed(hudRoot.transform, true);
+            selectedHud.SetCharacterSelected(true);
+
+            Assert.That(selectedObject.activeSelf, Is.False);
+            Assert.That(unselectedObject.activeSelf, Is.False);
+
+            BattleRoomLoader.SetCharacterWorldHudVisibilitySuppressed(hudRoot.transform, false);
+
+            Assert.That(selectedObject.activeSelf, Is.True);
+            Assert.That(unselectedObject.activeSelf, Is.True);
+            Assert.That(selectedObject.GetComponent<CanvasGroup>().alpha, Is.EqualTo(1f));
+            Assert.That(unselectedObject.GetComponent<CanvasGroup>().alpha, Is.Zero);
+        }
+        finally
+        {
+            Object.DestroyImmediate(hudRoot);
+        }
+    }
+
+    [Test]
+    public void BattleScene_TransitionOffsetsUseOneThirdTravelDistance()
+    {
+        string scenePath = Path.Combine(Application.dataPath, "Project/Scenes/YDM/Battle.unity");
+        string sceneYaml = File.ReadAllText(scenePath);
+
+        MatchCollection entryOffsets = Regex.Matches(
+            sceneYaml,
+            @"entryOffset: \{x: -2\.6666667, y: 0, z: 0\}");
+        MatchCollection exitOffsets = Regex.Matches(
+            sceneYaml,
+            @"exitOffset: \{x: 2\.6666667, y: 0, z: 0\}");
+
+        Assert.That(entryOffsets.Count, Is.EqualTo(2));
+        Assert.That(exitOffsets.Count, Is.EqualTo(2));
+    }
+
+    [Test]
     public void BattleSceneYaml_HasUniqueLocalObjectIdentifiers()
     {
         string scenePath = Path.Combine(Application.dataPath, "Project/Scenes/YDM/Battle.unity");
@@ -194,7 +249,7 @@ public sealed class BattleRoomPartyTransitionTests
     }
 
     [Test]
-    public void MapSelectionMarker_UsesBattleMoveControllerThenRestoresEventController()
+    public void MapSelectionMarker_UsesBattleWalkControllerThenRestoresEventController()
     {
         const string eventPrefabPath =
             "Assets/Project/PrefabsR/Character/A/Cha_01_idle_0.prefab";
@@ -218,8 +273,9 @@ public sealed class BattleRoomPartyTransitionTests
 
             marker.ConfigureTransitionAnimator(battleController);
 
-            Assert.That(marker.PlayTransitionMove(), Is.True);
+            Assert.That(marker.PlayTransitionWalk(), Is.True);
             Assert.That(eventAnimator.runtimeAnimatorController, Is.SameAs(battleController));
+            Assert.That(eventAnimator.GetCurrentAnimatorStateInfo(0).IsName("walk"), Is.True);
 
             marker.RestoreTransitionIdle();
             Assert.That(eventAnimator.runtimeAnimatorController, Is.SameAs(eventController));
@@ -231,69 +287,29 @@ public sealed class BattleRoomPartyTransitionTests
     }
 
     [Test]
-    public void PlayMoveVfxFrom_UsesExplicitCharacterRootInsteadOfDefaultVfxAnchor()
+    public void PlayWalk_DoesNotSpawnConfiguredMoveVfx()
     {
-        var sourceObject = new GameObject("MoveVfxTemplate");
-        var characterObject = new GameObject("CurrentCharacter");
-        var anchorObject = new GameObject("CharacterVfxAnchor");
-        var characterRoot = new GameObject("CharacterRoot");
+        var characterObject = new GameObject("TransitionCharacter");
         var vfxPrefab = new GameObject("TransitionMoveVfx");
-        anchorObject.transform.SetParent(characterObject.transform, false);
-        anchorObject.transform.localPosition = new Vector3(1f, 2f, 3f);
-        characterRoot.transform.position = new Vector3(7f, 8f, 9f);
-        vfxPrefab.transform.localPosition = new Vector3(-3f, -5.09f, 0f);
 
-        BattleUnitAnimator source = sourceObject.AddComponent<BattleUnitAnimator>();
         BattleUnitAnimator character = characterObject.AddComponent<BattleUnitAnimator>();
-        SetField(source, "moveVfx", new BattleVfxEntry
+        SetField(character, "moveVfx", new BattleVfxEntry
         {
             prefab = vfxPrefab,
-            renderMode = BattleVfxRenderMode.DirectWorldRenderer
+            renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture
         });
-        SetField(character, "vfxSpawnPoint", anchorObject.transform);
 
-        GameObject spawned = null;
         try
         {
-            Assert.That(character.PlayMoveVfxFrom(source, characterRoot.transform), Is.True);
+            character.PlayWalk();
 
-            Transform spawnedTransform = characterRoot.transform.Find("TransitionMoveVfx(Clone)");
-            Assert.That(spawnedTransform, Is.Not.Null);
-            Assert.That(spawnedTransform.position, Is.EqualTo(characterRoot.transform.position));
-            Assert.That(spawnedTransform.localPosition, Is.EqualTo(Vector3.zero));
-            spawned = spawnedTransform.gameObject;
+            Assert.That(characterObject.transform.Find("TransitionMoveVfx(Clone)"), Is.Null);
         }
         finally
         {
-            if (spawned != null)
-                Object.DestroyImmediate(spawned);
-            Object.DestroyImmediate(sourceObject);
             Object.DestroyImmediate(characterObject);
-            Object.DestroyImmediate(characterRoot);
             Object.DestroyImmediate(vfxPrefab);
         }
-    }
-
-    [Test]
-    public void CalculateMoveVfxScaleMultiplier_MatchesBattleSpawnScale()
-    {
-        Vector3 multiplier = BattleUnitAnimator.CalculateMoveVfxScaleMultiplier(
-            new Vector3(0.18f, 0.18f, 0.18f),
-            new Vector3(2f, 3f, 4f));
-
-        Assert.That(multiplier.x, Is.EqualTo(0.09f).Within(0.0001f));
-        Assert.That(multiplier.y, Is.EqualTo(0.06f).Within(0.0001f));
-        Assert.That(multiplier.z, Is.EqualTo(0.045f).Within(0.0001f));
-    }
-
-    [Test]
-    public void MoveCharacterVfx_PreservesBattleRootPositionOffset()
-    {
-        const string vfxPrefabPath = "Assets/Project/Art/VFX/Cha/Vfx_move_cha.prefab";
-        GameObject vfxPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(vfxPrefabPath);
-
-        Assert.That(vfxPrefab, Is.Not.Null);
-        Assert.That(vfxPrefab.transform.localPosition, Is.EqualTo(new Vector3(-3f, -5.09f, 0f)));
     }
 
     [Test]
