@@ -190,6 +190,11 @@ namespace Relic.Gameplay.Monster
                 if (character.y == origin.y && Mathf.Abs(character.x - origin.x) == 1)
                     return Vector2Int.zero;
             }
+            // 아군이 경로를 막아도 공격 위치까지 갈 수 있는 안전한 우회로를 우선합니다.
+            Vector2Int routeStep = FindSafeRouteStepToAttack(monsterUnit, gridManager);
+            if (routeStep != Vector2Int.zero)
+                return routeStep;
+
             Vector2Int best = Vector2Int.zero;
             int bestSafety = int.MaxValue;
             int bestDistance = int.MaxValue;
@@ -253,6 +258,74 @@ namespace Relic.Gameplay.Monster
                 bestRowOffset >= Mathf.Abs(target.y - origin.y))
                 return Vector2Int.zero;
             return best;
+        }
+
+        /// <summary>
+        /// 아군 몬스터가 앞을 막고 있어도 돌아서 캐릭터를 공격할 위치를 찾습니다.
+        /// 첫 이동은 실제 이동 가능 여부를 확인하고, 이후 경로도 전체 점유 칸을 검사합니다.
+        /// </summary>
+        private Vector2Int FindSafeRouteStepToAttack(MonsterUnit unit, GridManager gridManager)
+        {
+            List<int> targets = FindCharacterTargetGridIndices();
+            if (targets.Count == 0 || unit.OccupiedGridIndices == null)
+                return Vector2Int.zero;
+
+            Vector2Int origin = gridManager.IndexToCoord(unit.MainGridIndex);
+            Queue<Vector2Int> open = new();
+            HashSet<Vector2Int> visited = new();
+            Dictionary<Vector2Int, Vector2Int> firstSteps = new();
+            BattleGridEffectController effects =
+                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+            open.Enqueue(Vector2Int.zero);
+            visited.Add(Vector2Int.zero);
+            firstSteps[Vector2Int.zero] = Vector2Int.zero;
+
+            while (open.Count > 0)
+            {
+                Vector2Int offset = open.Dequeue();
+                if (offset != Vector2Int.zero)
+                {
+                    int projected = gridManager.CoordToIndex(origin + offset);
+                    for (int i = 0; i < targets.Count; i++)
+                    {
+                        if (TryBuildAttackForTarget(projected, targets[i], gridManager,
+                                out _, out _))
+                            return firstSteps[offset];
+                    }
+                }
+
+                foreach (Vector2Int direction in MoveDirections)
+                {
+                    Vector2Int nextOffset = offset + direction;
+                    if (!visited.Add(nextOffset))
+                        continue;
+                    if (offset == Vector2Int.zero && !CanMonsterMove(unit, gridManager, direction))
+                        continue;
+                    bool blocked = false;
+                    foreach (int occupied in unit.OccupiedGridIndices)
+                    {
+                        Vector2Int nextCoord = gridManager.IndexToCoord(occupied) + nextOffset;
+                        if (!gridManager.IsValidCoord(nextCoord))
+                        {
+                            blocked = true;
+                            break;
+                        }
+                        int cell = gridManager.CoordToIndex(nextCoord);
+                        if (BattleOccupancyService.IsOccupiedByAnyUnit(cell, null, unit) ||
+                            (effects != null && effects.HasEffect(cell)))
+                        {
+                            blocked = true;
+                            break;
+                        }
+                    }
+                    if (blocked)
+                        continue;
+                    firstSteps[nextOffset] = offset == Vector2Int.zero
+                        ? direction : firstSteps[offset];
+                    open.Enqueue(nextOffset);
+                }
+            }
+            return Vector2Int.zero;
         }
 
         private bool TryBuildAttackForTarget(
