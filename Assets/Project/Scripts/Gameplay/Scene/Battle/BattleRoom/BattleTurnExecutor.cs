@@ -543,6 +543,9 @@ public class BattleTurnExecutor : MonoBehaviour
             // TimelineBar/TurnMark 이동과 행동/피격/VFX 연출은 모두 이 구간에 포함됩니다.
             BattleConsecutiveActionPresentationContext.BeginBattleExecution();
 
+            ArabellaPhaseTransition.ResetSkippedReservations();
+            int phaseVersion = ArabellaPhaseTransition.TurnInterruptVersion;
+            bool skipRemainingPhaseActions = false;
             int slidThroughSlotIndex = -1;
             for (int i = 0; i < batches.Count; i++)
             {
@@ -595,7 +598,20 @@ public class BattleTurnExecutor : MonoBehaviour
                         currentSlotIndex, executableOrderIndices))
                     : null;
 
-                yield return runner.RunBatch(batch, keepCameraAfterBatch);
+                if (!skipRemainingPhaseActions)
+                    yield return runner.RunBatch(batch, keepCameraAfterBatch);
+
+                if (!skipRemainingPhaseActions && ArabellaPhaseTransition.TurnInterruptVersion != phaseVersion)
+                {
+                    // 현재 스킬을 끝까지 처리한 후 전환하고, 이후 예약은 회색으로 지나갑니다.
+                    RestoreIdleAnimationsBeforeArabellaTransition();
+                    if (orderAnimation != null)
+                        yield return orderAnimation;
+                    yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
+                    skipRemainingPhaseActions = true;
+                    ArabellaPhaseTransition.MarkRemainingReservationsSkipped();
+                    orderAnimation = null;
+                }
 
                 // Do not advance the timeline until both the action and its visual finish.
                 if (orderAnimation != null)
@@ -651,9 +667,24 @@ public class BattleTurnExecutor : MonoBehaviour
             // 턴 종료 회복 팝업은 모두 모은 뒤 카르마 -> 마나 -> 체력 순으로 차례대로 표시합니다.
             BattleDamageTextPopupUI.BeginRecoveryPopupSequence();
 
+            int phaseVersionBeforeEndEffects = ArabellaPhaseTransition.TurnInterruptVersion;
             yield return runner.ApplyTurnEndEffectsRoutine();
 
+            // 중독처럼 턴 종료 효과로 HP가 0이 된 경우에도 전환을 완료합니다.
+            // 이 시점에는 예약 타임라인이 이미 마지막까지 진행되었습니다.
+            if (ArabellaPhaseTransition.TurnInterruptVersion != phaseVersionBeforeEndEffects)
+            {
+                RestoreIdleAnimationsBeforeArabellaTransition();
+                yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
+            }
+
+            int phaseVersionBeforeGridEffects = ArabellaPhaseTransition.TurnInterruptVersion;
             ResolveTurnEndGridEffects();
+            if (ArabellaPhaseTransition.TurnInterruptVersion != phaseVersionBeforeGridEffects)
+            {
+                RestoreIdleAnimationsBeforeArabellaTransition();
+                yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
+            }
             AdvanceGridEffectDurations();
             ClearActiveRelicTurnScopedStatuses();
             ClearAllShield();
@@ -813,6 +844,9 @@ public class BattleTurnExecutor : MonoBehaviour
             // TimelineBar/TurnMark 이동과 행동/피격/VFX 연출은 모두 이 구간에 포함됩니다.
             BattleConsecutiveActionPresentationContext.BeginBattleExecution();
 
+            ArabellaPhaseTransition.ResetSkippedReservations();
+            int phaseVersion = ArabellaPhaseTransition.TurnInterruptVersion;
+            bool skipRemainingPhaseActions = false;
             int slidThroughSlotIndex = -1;
             for (int i = 0; i < batches.Count; i++)
             {
@@ -864,7 +898,20 @@ public class BattleTurnExecutor : MonoBehaviour
                         currentSlotIndex, executableOrderIndices))
                     : null;
 
-                yield return runner.RunBatch(batch, keepCameraAfterBatch);
+                if (!skipRemainingPhaseActions)
+                    yield return runner.RunBatch(batch, keepCameraAfterBatch);
+
+                if (!skipRemainingPhaseActions && ArabellaPhaseTransition.TurnInterruptVersion != phaseVersion)
+                {
+                    // 현재 스킬을 끝까지 처리한 후 전환하고, 이후 예약은 회색으로 지나갑니다.
+                    RestoreIdleAnimationsBeforeArabellaTransition();
+                    if (orderAnimation != null)
+                        yield return orderAnimation;
+                    yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
+                    skipRemainingPhaseActions = true;
+                    ArabellaPhaseTransition.MarkRemainingReservationsSkipped();
+                    orderAnimation = null;
+                }
 
                 // Do not advance the timeline until both the action and its visual finish.
                 if (orderAnimation != null)
@@ -955,6 +1002,38 @@ public class BattleTurnExecutor : MonoBehaviour
                 RequestReservationTurnIntro();
 
             PlayerTurnReturned?.Invoke();
+        }
+    }
+
+    // 현재 행동이 끝난 뒤 페이즈 전환으로 남은 예약을 생략하는 경우에도
+    // 행동한 유닛의 애니메이션이 공격 상태에 멈춰 있지 않도록 복귀시킵니다.
+    private static void RestoreIdleAnimationsBeforeArabellaTransition()
+    {
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (BattleCharacter character in characters)
+        {
+            if (character == null || character.RuntimeData == null ||
+                character.RuntimeData.CurrentHP <= 0)
+                continue;
+
+            BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
+            if (animator != null)
+                animator.PlayIdle();
+        }
+
+        MonsterUnit[] monsters = FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (MonsterUnit monster in monsters)
+        {
+            if (monster == null || monster.RuntimeData == null ||
+                monster.RuntimeData.IsDead ||
+                ArabellaPhaseTransition.IsTransitionPending(monster))
+                continue;
+
+            BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+            if (animator != null)
+                animator.PlayIdle();
         }
     }
 
@@ -1827,6 +1906,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private void ClearTimeline()
     {
+        ArabellaPhaseTransition.ResetSkippedReservations();
         if (timelineController != null)
             timelineController.ClearAllReservations();
     }

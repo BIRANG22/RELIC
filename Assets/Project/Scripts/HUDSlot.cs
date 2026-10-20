@@ -59,6 +59,10 @@ public class HUDSlot : MonoBehaviour
     private int targetShield;
     private bool hasDisplayedValues;
     private bool isVisible;
+    private bool phaseTransitionHPFillActive;
+    private bool phaseTransitionPresentationActive;
+    private bool hideAfterPhaseTransitionHPFill;
+    private bool hideAfterValueAnimations;
     private Camera cachedMainCamera;
 
     private void Awake()
@@ -86,6 +90,10 @@ public class HUDSlot : MonoBehaviour
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
         StopValueAnimations();
         isVisible = false;
+        phaseTransitionHPFillActive = false;
+        phaseTransitionPresentationActive = false;
+        hideAfterPhaseTransitionHPFill = false;
+        hideAfterValueAnimations = false;
         hasDisplayedValues = false;
     }
 
@@ -172,10 +180,83 @@ public class HUDSlot : MonoBehaviour
         if (runtimeChanged)
         {
             StopValueAnimations();
+            phaseTransitionHPFillActive = false;
+            hideAfterPhaseTransitionHPFill = false;
+            hideAfterValueAnimations = false;
             hasDisplayedValues = false;
         }
 
         Refresh();
+    }
+
+    // 페이즈 전환 애니메이션이 끝날 때까지 HUD 숨김을 방지합니다.
+    public void BeginPhaseTransitionPresentation()
+    {
+        phaseTransitionPresentationActive = true;
+        Show();
+    }
+
+    public void EndPhaseTransitionPresentation()
+    {
+        phaseTransitionPresentationActive = false;
+        // 기존에 요청된 숨김은 수치 애니메이션이 끝난 다음에만 적용합니다.
+        HideWhenValueAnimationsComplete();
+    }
+
+    // 2페이즈 전환 연출에서만 사용합니다. 실제 HP는 건드리지 않고 표시만 0부터 채웁니다.
+    public void BeginPhaseTransitionHPFill(float duration)
+    {
+        if (boundMonsterRuntime == null)
+            return;
+
+        if (hpValueRoutine != null)
+        {
+            StopCoroutine(hpValueRoutine);
+            hpValueRoutine = null;
+        }
+
+        phaseTransitionHPFillActive = duration > 0f;
+        hideAfterPhaseTransitionHPFill = false;
+        hideAfterValueAnimations = false;
+        displayedMaxHP = Mathf.Max(1, boundMonsterRuntime.MaxHP);
+        targetHP = Mathf.Clamp(boundMonsterRuntime.CurrentHP, 0, displayedMaxHP);
+        displayedHP = 0f;
+        hasDisplayedValues = true;
+        ApplyHPDisplay(0f, displayedMaxHP);
+        Show();
+
+        if (duration <= 0f)
+        {
+            displayedHP = targetHP;
+            ApplyHPDisplay(displayedHP, displayedMaxHP);
+        }
+        else
+        {
+            hpValueRoutine = StartCoroutine(AnimateHPValueForDuration(0f, targetHP, duration));
+        }
+    }
+
+    private IEnumerator AnimateHPValueForDuration(float startValue, int endValue, float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            displayedHP = Mathf.Lerp(startValue, endValue, Mathf.Clamp01(elapsed / duration));
+            ApplyHPDisplay(displayedHP, displayedMaxHP);
+            yield return null;
+        }
+
+        displayedHP = endValue;
+        ApplyHPDisplay(displayedHP, displayedMaxHP);
+        hpValueRoutine = null;
+        phaseTransitionHPFillActive = false;
+        if (hideAfterPhaseTransitionHPFill)
+        {
+            hideAfterPhaseTransitionHPFill = false;
+            hideAfterValueAnimations = true;
+        }
+        HideWhenValueAnimationsComplete();
     }
 
     public void Show()
@@ -184,6 +265,7 @@ public class HUDSlot : MonoBehaviour
             UpdateFollowPosition();
 
         isVisible = true;
+        hideAfterValueAnimations = false;
         canvasGroup.alpha = 1f;
         canvasGroup.interactable = true;
         canvasGroup.blocksRaycasts = true;
@@ -194,12 +276,54 @@ public class HUDSlot : MonoBehaviour
 
     public void Hide()
     {
+        // 수치 변화 중에는 표시를 유지하고, 모든 수치 애니메이션이 끝난 뒤 숨깁니다.
+        if (phaseTransitionPresentationActive || phaseTransitionHPFillActive || hpValueRoutine != null || shieldValueRoutine != null)
+        {
+            hideAfterValueAnimations = true;
+            return;
+        }
+
+        HideImmediately();
+    }
+
+    private void HideImmediately()
+    {
+        hideAfterValueAnimations = false;
+        hideAfterPhaseTransitionHPFill = false;
         isVisible = false;
         StopValueAnimations();
-
         canvasGroup.alpha = 0f;
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
+    }
+
+    private void HideWhenValueAnimationsComplete()
+    {
+        if (!hideAfterValueAnimations || phaseTransitionPresentationActive || phaseTransitionHPFillActive ||
+            hpValueRoutine != null || shieldValueRoutine != null)
+            return;
+
+        // 캐릭터의 호버/선택 또는 임시 표시가 유지 중이면 닫지 않습니다.
+        if (boundCharacterRuntime != null &&
+            (characterHovering || characterTimelineHovering || characterSelected ||
+             (characterTemporaryVisibleUntil > 0f && Time.unscaledTime < characterTemporaryVisibleUntil)))
+        {
+            hideAfterValueAnimations = false;
+            return;
+        }
+
+        HideImmediately();
+    }
+
+    private void ShowForValueChange()
+    {
+        if (useFollowPosition)
+            UpdateFollowPosition();
+        isVisible = true;
+        hideAfterValueAnimations = false;
+        canvasGroup.alpha = 1f;
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
     }
 
     public void Refresh()
@@ -229,8 +353,12 @@ public class HUDSlot : MonoBehaviour
             if (targetHP != newTargetHP)
             {
                 targetHP = newTargetHP;
-                if (isVisible)
-                    StartHPAnimation();
+                if (!isVisible)
+                {
+                    ShowForValueChange();
+                    hideAfterValueAnimations = true;
+                }
+                StartHPAnimation();
             }
             else
             {
@@ -240,8 +368,12 @@ public class HUDSlot : MonoBehaviour
             if (targetShield != newTargetShield)
             {
                 targetShield = newTargetShield;
-                if (isVisible)
-                    StartShieldAnimation();
+                if (!isVisible)
+                {
+                    ShowForValueChange();
+                    hideAfterValueAnimations = true;
+                }
+                StartShieldAnimation();
             }
             else
             {
@@ -564,6 +696,7 @@ public class HUDSlot : MonoBehaviour
         displayedHP = endValue;
         ApplyHPDisplay(displayedHP, displayedMaxHP);
         hpValueRoutine = null;
+        HideWhenValueAnimationsComplete();
     }
 
     private void StartShieldAnimation()
@@ -599,6 +732,7 @@ public class HUDSlot : MonoBehaviour
         displayedShield = endValue;
         ApplyShieldDisplay(displayedShield, displayedMaxHP);
         shieldValueRoutine = null;
+        HideWhenValueAnimationsComplete();
     }
 
     private void StopValueAnimations()

@@ -30,8 +30,8 @@ public class BattleDeathService
     }
 
     /// <summary>
-    /// 일반 처치 보상을 지급하지 않고 몬스터의 사망 연출과 제거만 처리합니다.
-    /// 신더의 자폭처럼 플레이어가 처치한 것으로 취급하지 않는 경우에 사용합니다.
+    /// 일반 처치 보상을 지급하지 않고 몬스터의 사망 처리를 진행합니다.
+    /// 플레이어가 직접 처치한 것으로 처리하지 않아야 하는 경우에 사용합니다.
     /// </summary>
     public void HandleMonsterDeadWithoutReward(MonsterUnit monster)
     {
@@ -39,14 +39,14 @@ public class BattleDeathService
     }
 
     /// <summary>
-    /// 머크를 일반 사망 보상 없이 제거하고 블롭 2마리로 분열시킵니다.
+    /// 머크의 일반 사망 처리를 생략하고 블롭 2마리로 분열시킵니다.
     /// </summary>
     public void HandleMuckSplit(MonsterUnit muck)
     {
         if (muck == null || muck.RuntimeData == null || muck.RuntimeData.IsDeathHandled)
             return;
 
-        // 분열은 처치가 아니라 몬스터 교체 연출입니다.
+        // 분열은 처치가 아니라 몬스터의 형태가 바뀌는 과정입니다.
         ShowSplitEffectName(muck);
 
         // Split is not a normal kill: no kill rewards or death tracking.
@@ -64,8 +64,8 @@ public class BattleDeathService
         if (roomLoader != null)
             roomLoader.UnregisterRuntimeMonster(muck);
 
-        // 승리 판정이 분열 연출 도중 실행되어도 블롭을 살아 있는 몬스터로 인식하도록
-        // 연출 대기 전에 먼저 생성하고 전투에 등록합니다.
+        // 분열 직후 새 몬스터가 이동 연출 중이더라도 살아 있는 몬스터로 인식하도록
+        // 먼저 생성 및 등록 처리를 완료한 뒤 연출을 진행합니다.
         bool animate = CoroutineHost.Instance != null && Application.isPlaying;
         List<MonsterUnit> spawned = SpawnBlobsFromMuck(muck);
         float deathDuration = GetMonsterDeathDestroyDelay(muck);
@@ -85,7 +85,7 @@ public class BattleDeathService
         if (muck == null)
             yield break;
 
-        // 생성 및 등록은 이미 끝났고, 이 코루틴에서는 화면 연출만 처리합니다.
+        // 새로운 블롭은 이미 생성되었으며, 이 코루틴에서는 등장 연출만 처리합니다.
         float emergeDelay = Mathf.Min(0.18f, deathDuration * 0.25f);
         float travelDuration = Mathf.Max(0.18f, Mathf.Min(0.4f, deathDuration - emergeDelay));
         Vector3[] destinations = new Vector3[spawned.Count];
@@ -112,7 +112,7 @@ public class BattleDeathService
                 if (spawned[i] != null)
                 {
                     Vector3 position = Vector3.LerpUnclamped(origins[i], destinations[i], t);
-                    // 시작점과 도착점에서는 0, 이동 중간에는 최고점인 포물선.
+                    // 시작점과 도착점의 높이 차이에 더해 이동 중 포물선 효과를 적용합니다.
                     position.y += 4f * SplitArcHeight * t * (1f - t);
                     spawned[i].transform.position = position;
                 }
@@ -122,7 +122,7 @@ public class BattleDeathService
             if (spawned[i] != null)
                 spawned[i].transform.position = destinations[i];
 
-        // 분열된 블롭이 목적지 칸에 도착하면 이동 가능한 지형 효과를 적용합니다.
+        // 분열한 블롭의 최종 위치를 확정한 뒤 해당 칸의 그리드 효과를 적용합니다.
         ApplySpawnGridEffects(spawned);
 
         float remaining = deathDuration - emergeDelay - elapsed;
@@ -195,7 +195,7 @@ public class BattleDeathService
 
         monster.RuntimeData.IsDeathHandled = true;
 
-        // 모르트와 함께 전투 중인 드라우그/바로우의 사망 위치와 사망 턴을 기록합니다.
+        // 모르트와 함께 등장한 병사의 사망 정보를 네크로맨시 추적기에 기록합니다.
         MortNecromancyTracker.RecordSoldierDeath(monster, gridManager);
 
         if (monster.RuntimeData.MonsterId == "Mon_11")
@@ -228,6 +228,10 @@ public class BattleDeathService
         if (monster == null || monster.RuntimeData == null)
             return false;
 
+        // 전환 대기 중에는 HP 0 상태를 유지하여 추가 피해를 받지 않습니다.
+        if (ArabellaPhaseTransition.IsTransitionPending(monster))
+            return true;
+
         MonsterMasterData phaseTwoMaster =
             DataManager.Instance?.MonsterDatabase?.Get(ArabellaPhaseTransition.PhaseTwoMonsterId);
 
@@ -239,18 +243,15 @@ public class BattleDeathService
             return false;
         }
 
-        monster.Initialize(phaseTwoRuntime);
-
-        BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
-        animator?.PlayArabellaPhaseTransition();
+        ArabellaPhaseTransition.QueuePhaseTwo(monster, phaseTwoRuntime);
         return true;
     }
 
     private const string SkullBoneGridEffectId = "GR_Skull_bone";
 
     /// <summary>
-    /// 드라우그와 바로우의 사망 연출이 끝나면 사망 위치에 유골을 남깁니다.
-    /// 머크 분열과 다른 몬스터 사망에는 적용하지 않습니다.
+    /// 몬스터의 사망 처리를 마무리하고 필요한 경우 뼈 오브젝트를 배치합니다.
+    /// 머크의 분열 등 특수한 사망 처리와는 구분하여 실행합니다.
     /// </summary>
     private void FinishMonsterDeathAndPlaceBones(MonsterUnit monster)
     {
@@ -361,7 +362,7 @@ public class BattleDeathService
             if (blob == null || blob.RuntimeData == null || blob.RuntimeData.IsDead)
                 continue;
 
-            // 생성 과정에서 기록된 실제 점유 그리드를 사용합니다.
+            // 새로 생성된 블롭이 점유한 모든 그리드에 효과를 적용합니다.
             for (int j = 0; j < blob.OccupiedGridIndices.Count; j++)
             {
                 controller.ApplyToMonster(blob.OccupiedGridIndices[j], blob);
@@ -411,7 +412,7 @@ public class BattleDeathService
             }
         }
 
-        // 인접 칸이 모두 막혔으면 머크에서 가까운 빈 그리드부터 찾습니다.
+        // 주변 칸에 배치할 수 없으면 머크의 위치를 기준으로 다른 그리드를 탐색합니다.
         List<int> fallbackCandidates = new();
 
         for (int gridIndex = 0; gridIndex < gridManager.Width * gridManager.Height; gridIndex++)

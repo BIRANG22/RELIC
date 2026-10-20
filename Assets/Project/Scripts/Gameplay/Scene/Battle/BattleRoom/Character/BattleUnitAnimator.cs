@@ -127,6 +127,7 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private float crossFadeDuration = 0f;
     [SerializeField] private float deadAnimationDuration = 0.6f;
     [SerializeField, Min(0f)] private float arabellaPhaseTransitionDuration = 3.34f;
+    public float ArabellaPhaseTransitionDuration => arabellaPhaseTransitionDuration;
     [SerializeField] private bool forceAnimatorUpdate = true;
     [SerializeField] private bool autoFindAnimatorInChildren = true;
 
