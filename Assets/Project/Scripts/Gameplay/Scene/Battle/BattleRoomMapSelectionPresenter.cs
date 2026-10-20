@@ -163,11 +163,10 @@ public class BattleRoomMapSelectionPresenter : MonoBehaviour
 
 public sealed class BattleMapSelectionCharacterMarker : MonoBehaviour
 {
-    private const string MoveStateName = "Move";
+    private const string WalkStateName = "walk";
 
     private Animator characterAnimator;
     private BattleUnitAnimator unitAnimator;
-    private BattleUnitAnimator transitionVfxSource;
     private RuntimeAnimatorController originalController;
     private RuntimeAnimatorController transitionController;
     private bool isUsingTransitionController;
@@ -176,9 +175,6 @@ public sealed class BattleMapSelectionCharacterMarker : MonoBehaviour
     {
         Animator battleAnimator = battlePrefab != null
             ? battlePrefab.GetComponentInChildren<Animator>(true)
-            : null;
-        transitionVfxSource = battlePrefab != null
-            ? battlePrefab.GetComponentInChildren<BattleUnitAnimator>(true)
             : null;
         ConfigureTransitionAnimator(battleAnimator != null ? battleAnimator.runtimeAnimatorController : null);
     }
@@ -189,7 +185,7 @@ public sealed class BattleMapSelectionCharacterMarker : MonoBehaviour
         transitionController = controller;
     }
 
-    public bool PlayTransitionMove()
+    public bool PlayTransitionWalk()
     {
         ResolveAnimators();
         if (characterAnimator == null || transitionController == null)
@@ -201,9 +197,8 @@ public sealed class BattleMapSelectionCharacterMarker : MonoBehaviour
         characterAnimator.runtimeAnimatorController = transitionController;
         isUsingTransitionController = true;
         characterAnimator.speed = 1f;
-        characterAnimator.Play(MoveStateName, 0, 0f);
+        characterAnimator.Play(WalkStateName, 0, 0f);
         characterAnimator.Update(0f);
-        unitAnimator?.PlayMoveVfxFrom(transitionVfxSource, transform);
         return true;
     }
 

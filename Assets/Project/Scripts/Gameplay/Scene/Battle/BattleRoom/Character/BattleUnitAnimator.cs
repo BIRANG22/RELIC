@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using Relic.Gameplay.Monster;
 using UnityEngine;
 using UnityEngine.VFX;
 
@@ -33,6 +34,7 @@ public class BattleUnitAnimator : MonoBehaviour
     [Header("State Names")]
     [SerializeField] private string idleStateName = "Idle";
     [SerializeField] private string moveStateName = "Move";
+    [SerializeField] private string walkStateName = "walk";
     [SerializeField] private string guardStateName = "Guard";
     [SerializeField] private string hitStateName = "Hit";
     [SerializeField] private string healStateName = "";
@@ -124,6 +126,7 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private int animatorLayer = 0;
     [SerializeField] private float crossFadeDuration = 0f;
     [SerializeField] private float deadAnimationDuration = 0.6f;
+    [SerializeField, Min(0f)] private float arabellaPhaseTransitionDuration = 3.34f;
     [SerializeField] private bool forceAnimatorUpdate = true;
     [SerializeField] private bool autoFindAnimatorInChildren = true;
 
@@ -137,6 +140,7 @@ public class BattleUnitAnimator : MonoBehaviour
     private MaterialPropertyBlock hitFlashPropertyBlock;
     private int hitFlashPropertyId;
     private Coroutine hitFlashCoroutine;
+    private Coroutine arabellaPhaseTransitionCoroutine;
     private bool deathPresentationPlayed;
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
@@ -161,6 +165,12 @@ public class BattleUnitAnimator : MonoBehaviour
         {
             StopCoroutine(hitFlashCoroutine);
             hitFlashCoroutine = null;
+        }
+
+        if (arabellaPhaseTransitionCoroutine != null)
+        {
+            StopCoroutine(arabellaPhaseTransitionCoroutine);
+            arabellaPhaseTransitionCoroutine = null;
         }
 
         SetHitFlash(defaultHitFlashValue);
@@ -219,49 +229,13 @@ public class BattleUnitAnimator : MonoBehaviour
     }
 
     /// <summary>
-    /// 다른 프리팹에 설정된 이동 VFX를 현재 캐릭터의 VFX 기준점에서 재생합니다.
-    /// 이벤트/휴식 캐릭터처럼 자체 이동 VFX가 없는 표시 프리팹의 전환 연출에 사용합니다.
+    /// 방 진입·퇴장과 지도 선택 전환에서 VFX 없이 걷기 애니메이션만 재생합니다.
+    /// 실제 전투 이동의 Move 상태와 이동 VFX는 PlayMove()가 계속 담당합니다.
     /// </summary>
-    public bool PlayMoveVfxFrom(BattleUnitAnimator source)
+    public void PlayWalk()
     {
-        return PlayMoveVfxFrom(source, null);
-    }
-
-    public bool PlayMoveVfxFrom(BattleUnitAnimator source, Transform targetAnchor)
-    {
-        if (source == null || !HasVfx(source.moveVfx))
-            return false;
-
-        Transform targetSpawn = targetAnchor != null
-            ? targetAnchor
-            : GetVfxSpawnTransform();
-
-        if (source.moveVfx.renderMode == BattleVfxRenderMode.DirectWorldRenderer)
-        {
-            Vector3 scaleMultiplier = CalculateMoveVfxScaleMultiplier(
-                source.GetVfxSpawnTransform().lossyScale,
-                targetSpawn.lossyScale);
-            return TrySpawnDirectWorldVfx(
-                source.moveVfx,
-                targetSpawn,
-                vfxLifeTime,
-                allowPlayOncePerActionCues: true,
-                localScaleMultiplier: scaleMultiplier,
-                resetLocalPosition: true);
-        }
-
-        SpawnVfx(source.moveVfx);
-        return true;
-    }
-
-    public static Vector3 CalculateMoveVfxScaleMultiplier(
-        Vector3 sourceSpawnScale,
-        Vector3 targetSpawnScale)
-    {
-        return new Vector3(
-            CalculateScaleRatio(sourceSpawnScale.x, targetSpawnScale.x),
-            CalculateScaleRatio(sourceSpawnScale.y, targetSpawnScale.y),
-            CalculateScaleRatio(sourceSpawnScale.z, targetSpawnScale.z));
+        ApplyPresentationPlaybackSpeed();
+        PlayState(walkStateName);
     }
 
     /// <summary>
@@ -334,6 +308,39 @@ public class BattleUnitAnimator : MonoBehaviour
         ApplyPresentationPlaybackSpeed();
         PlayState(deadStateName);
         SpawnVfx(deathVfx);
+    }
+
+    public void PlayArabellaPhaseTransition()
+    {
+        ApplyPresentationPlaybackSpeed();
+        PlayOptionalState("2phase");
+
+        if (arabellaPhaseTransitionCoroutine != null)
+            StopCoroutine(arabellaPhaseTransitionCoroutine);
+
+        if (isActiveAndEnabled)
+        {
+            arabellaPhaseTransitionCoroutine =
+                StartCoroutine(ReturnToIdleAfterArabellaPhaseTransition());
+        }
+        else
+        {
+            PlayIdle();
+        }
+    }
+
+    private IEnumerator ReturnToIdleAfterArabellaPhaseTransition()
+    {
+        float playbackSpeed = Mathf.Max(
+            0.01f,
+            BattleConsecutiveActionPresentationContext.BattleExecutionSpeedMultiplier);
+        float waitDuration = Mathf.Max(0f, arabellaPhaseTransitionDuration) / playbackSpeed;
+
+        if (waitDuration > 0f)
+            yield return new WaitForSeconds(waitDuration);
+
+        arabellaPhaseTransitionCoroutine = null;
+        PlayIdle();
     }
 
     public void PlayBuff()
@@ -1876,15 +1883,6 @@ public class BattleUnitAnimator : MonoBehaviour
         return true;
     }
 
-    private static float CalculateScaleRatio(float sourceScale, float targetScale)
-    {
-        float safeTargetScale = Mathf.Abs(targetScale);
-        if (safeTargetScale <= 0.0001f)
-            return 1f;
-
-        return Mathf.Abs(sourceScale) / safeTargetScale;
-    }
-
     private void ConfigureDirectWorldVfxInstance(
         GameObject vfx,
         BattleVfxEntry entry,
@@ -2430,6 +2428,8 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void PlayState(string stateName)
     {
+        stateName = ResolveRuntimeStateName(stateName);
+
         if (!TryResolveAnimatorStateName(stateName, out string resolvedStateName))
             return;
 
@@ -2438,6 +2438,8 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void PlayOptionalState(string stateName)
     {
+        stateName = ResolveRuntimeStateName(stateName);
+
         if (!TryResolveAnimatorStateName(stateName, out string resolvedStateName))
             return;
 
@@ -2446,7 +2448,27 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private bool CanPlayOptionalState(string stateName)
     {
-        return TryResolveAnimatorStateName(stateName, out _);
+        return TryResolveAnimatorStateName(ResolveRuntimeStateName(stateName), out _);
+    }
+
+    private string ResolveRuntimeStateName(string stateName)
+    {
+        MonsterUnit monster = GetComponent<MonsterUnit>();
+        if (monster?.RuntimeData == null ||
+            !string.Equals(
+                monster.RuntimeData.MonsterId,
+                ArabellaPhaseTransition.PhaseTwoMonsterId,
+                System.StringComparison.Ordinal))
+        {
+            return stateName;
+        }
+
+        string phaseTwoStateName =
+            ArabellaPhaseTransition.ResolvePhaseTwoAnimationState(stateName);
+
+        return TryResolveAnimatorStateName(phaseTwoStateName, out _)
+            ? phaseTwoStateName
+            : stateName;
     }
 
     /// <summary>

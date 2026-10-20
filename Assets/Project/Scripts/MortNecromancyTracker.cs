@@ -15,6 +15,8 @@ public static class MortNecromancyTracker
         public int ReadyMortTurnCount;
     }
 
+    private const string SkullBoneGridEffectId = "GR_Skull_bone";
+
     private static readonly Dictionary<string, List<SoldierDeathRecord>> recordsByMortRuntimeId = new();
     private static readonly HashSet<string> revivedSoldierRuntimeIds = new();
 
@@ -42,6 +44,49 @@ public static class MortNecromancyTracker
             OccupiedGridIndices = new List<int>(soldier.OccupiedGridIndices),
             ReadyMortTurnCount = mort.RuntimeData.TurnCount + 1
         });
+    }
+
+    /// <summary>
+    /// 몬스터 행동 예약 전에 사령술 특성으로 준비된 병사를 부활시킵니다.
+    /// 부활 몬스터는 룸 등록까지 마친 후 일반 몬스터와 함께 행동을 예약합니다.
+    /// </summary>
+    public static int RespawnAtTurnStart(System.Collections.Generic.List<MonsterUnit> monsters, GridManager gridManager)
+    {
+        if (monsters == null || gridManager == null)
+            return 0;
+
+        int revived = 0;
+        // 부활 중 몬스터 목록에 개체가 추가되므로 최초 목록만 순회합니다.
+        MonsterUnit[] snapshot = monsters.ToArray();
+        foreach (MonsterUnit mort in snapshot)
+        {
+            if (mort == null || mort.RuntimeData == null || mort.RuntimeData.IsDead ||
+                mort.RuntimeData.MonsterId != "Mon_11" || !HasNecromancyTrait(mort.RuntimeData))
+                continue;
+
+            // 준비된 유골이 여러 개라면 모두 처리합니다. 실패한 항목은 다음 턴에 재시도합니다.
+            int attempts = recordsByMortRuntimeId.TryGetValue(mort.RuntimeData.RuntimeId, out var records)
+                ? records.Count : 0;
+            for (int i = 0; i < attempts; i++)
+            {
+                if (!HasReadySoldier(mort.RuntimeData.RuntimeId, mort.RuntimeData.TurnCount))
+                    break;
+                if (!TryRespawnReadySoldier(mort, gridManager))
+                    break;
+                revived++;
+            }
+        }
+        return revived;
+    }
+
+    private static bool HasNecromancyTrait(Relic.Gameplay.Data.MonsterRuntimeData runtime)
+    {
+        if (runtime?.StatusEffects == null)
+            return false;
+        foreach (var status in runtime.StatusEffects)
+            if (status != null && status.EffectId == "E_Necromancy")
+                return true;
+        return false;
     }
 
     public static bool HasReadySoldier(string mortRuntimeId, int mortTurnCount)
@@ -101,10 +146,31 @@ public static class MortNecromancyTracker
         if (spawner == null)
             return false;
 
+        // 유골은 부활 위치를 막는 장애물이므로 소환 직전에 해당 유골만 제거합니다.
+        // 소환이 실패하면 제거한 유골을 원래 위치에 복구합니다.
+        BattleGridEffectController boneController =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+        List<int> removedBoneCells = new();
+        if (boneController != null)
+        {
+            for (int i = 0; i < spawnCells.Count; i++)
+            {
+                int cell = spawnCells[i];
+                if (boneController.State.TryGetEffectId(cell, out string effectId) &&
+                    effectId == SkullBoneGridEffectId && boneController.TryRemoveEffect(cell))
+                    removedBoneCells.Add(cell);
+            }
+        }
+
         SpawnedMonsterResult result = spawner.SpawnRuntimeMonster(record.MonsterId, spawnCells);
 
         if (result == null || result.RuntimeData == null)
+        {
+            if (boneController != null)
+                for (int i = 0; i < removedBoneCells.Count; i++)
+                    boneController.TryPlaceEffect(removedBoneCells[i], SkullBoneGridEffectId);
             return false;
+        }
 
         // 사령술로 부활한 병사는 최대 체력의 30% 체력으로 돌아옵니다.
         // HUD/룸 등록 전에 체력을 먼저 적용해 처음부터 부활 체력으로 표시되게 합니다.
@@ -203,7 +269,7 @@ public static class MortNecromancyTracker
             {
                 int gridIndex = record.OccupiedGridIndices[i];
 
-                if (!IsSpawnableGrid(gridIndex, gridManager))
+                if (!IsSpawnableGrid(gridIndex, gridManager, true))
                 {
                     allFree = false;
                     break;
@@ -249,7 +315,7 @@ public static class MortNecromancyTracker
         return result;
     }
 
-    private static bool IsSpawnableGrid(int gridIndex, GridManager gridManager)
+    private static bool IsSpawnableGrid(int gridIndex, GridManager gridManager, bool allowSkullBone = false)
     {
         if (gridIndex < 0 || gridManager == null || gridManager.GetCellByIndex(gridIndex) == null)
             return false;
@@ -260,6 +326,12 @@ public static class MortNecromancyTracker
         BattleGridEffectController gridEffectController =
             Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
 
-        return gridEffectController == null || !gridEffectController.IsBlocked(gridIndex);
+        if (gridEffectController == null || !gridEffectController.IsBlocked(gridIndex))
+            return true;
+
+        // 사령술은 유골이 있는 원래 칸에서 부활할 수 있습니다.
+        return allowSkullBone &&
+               gridEffectController.State.TryGetEffectId(gridIndex, out string effectId) &&
+               effectId == SkullBoneGridEffectId;
     }
 }

@@ -45,10 +45,27 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
             Debug.Log($"[DebugKill] Monster:{monster.RuntimeData.MonsterId}");
         }
 
-        PrepareBattleStateForDebugWin();
+        if (AreAllMonstersDead())
+            PrepareBattleStateForDebugWin();
 
         if (BattleResultChecker.Instance != null)
             BattleResultChecker.Instance.CheckBattleEnd();
+    }
+
+    private static bool AreAllMonstersDead()
+    {
+        MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            MonsterUnit monster = monsters[i];
+            if (monster?.RuntimeData != null && !monster.RuntimeData.IsDead)
+                return false;
+        }
+
+        return true;
     }
 
     public void DamagePlayersForDebug()

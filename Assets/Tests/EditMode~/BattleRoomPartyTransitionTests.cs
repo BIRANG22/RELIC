@@ -10,6 +10,212 @@ using UnityEditor;
 public sealed class BattleRoomPartyTransitionTests
 {
     [Test]
+    public async Task MapToRoomTransition_InvokesUncoverStartedImmediatelyBeforeUncoverPlayback()
+    {
+        var transitionObject = new GameObject("BattlePanelTransition");
+        BattleDiagonalSceneTransition transition =
+            transitionObject.AddComponent<BattleDiagonalSceneTransition>();
+        var callbacks = new List<string>();
+
+        try
+        {
+            SetPrivateField(transition, "coverDuration", 0f);
+            SetPrivateField(transition, "uncoverDuration", 0f);
+            SetPrivateField(transition, "coveredHoldDuration", 0f);
+
+            await transition.PlayMapToRoomAsync(
+                () => callbacks.Add("covered"),
+                () => callbacks.Add("uncover"));
+
+            CollectionAssert.AreEqual(new[] { "covered", "uncover" }, callbacks);
+        }
+        finally
+        {
+            Object.DestroyImmediate(transitionObject);
+        }
+    }
+
+    [Test]
+    public void BattleRoomLoader_ExposesPreparedEntryPlaybackAndDeferredMonsterCompletion()
+    {
+        Assert.That(
+            typeof(BattleRoomLoader).GetMethod("PlayPreparedPartyEntry", BindingFlags.Instance | BindingFlags.Public),
+            Is.Not.Null);
+        Assert.That(
+            typeof(BattleRoomLoader).GetMethod("CompleteDeferredMonsterSpawn", BindingFlags.Instance | BindingFlags.Public),
+            Is.Not.Null);
+    }
+
+    [Test]
+    public void BossEntry_LoadsPartyBeforeDeferredRevealAndWaitsForWalkCompletion()
+    {
+        string controllerPath = Path.Combine(
+            Application.dataPath,
+            "Project/Scripts/Gameplay/Scene/Battle/BattleSceneController.cs");
+        string source = File.ReadAllText(controllerPath);
+
+        StringAssert.Contains(
+            "ShowRoomBackground(battleRoom, nodeData, true, false);",
+            source);
+        StringAssert.Contains(
+            "LoadBattleRoomNow();\n            deferredBossIntroRoutine = StartCoroutine(PlayDeferredBossIntroRoutine());",
+            source.Replace("\r\n", "\n"));
+
+        int routineStart = source.IndexOf(
+            "private IEnumerator PlayDeferredBossIntroRoutine",
+            System.StringComparison.Ordinal);
+        int routineEnd = source.IndexOf(
+            "private void CompleteDeferredBossIntro",
+            routineStart,
+            System.StringComparison.Ordinal);
+        string routine = source.Substring(routineStart, routineEnd - routineStart);
+        int waitForLoad = routine.IndexOf("!loader.IsLoaded", System.StringComparison.Ordinal);
+        int waitForWalk = routine.IndexOf("partyPresenter.IsPlaying", System.StringComparison.Ordinal);
+        int playReveal = routine.IndexOf("PlayCurrentBossReveal", System.StringComparison.Ordinal);
+
+        Assert.That(waitForLoad, Is.GreaterThanOrEqualTo(0));
+        Assert.That(waitForWalk, Is.GreaterThan(waitForLoad));
+        Assert.That(playReveal, Is.GreaterThan(waitForWalk));
+
+        int completionStart = routineEnd;
+        int completionEnd = source.IndexOf(
+            "private void HandleBattleRoomIntroCompletedAndLoad",
+            completionStart,
+            System.StringComparison.Ordinal);
+        string completion = source.Substring(completionStart, completionEnd - completionStart);
+        int spawnBoss = completion.IndexOf("CompleteDeferredMonsterSpawn", System.StringComparison.Ordinal);
+        int releaseIntro = completion.IndexOf("SetBattleRoomIntroPlaying(false)", System.StringComparison.Ordinal);
+
+        Assert.That(spawnBoss, Is.GreaterThanOrEqualTo(0));
+        Assert.That(releaseIntro, Is.GreaterThan(spawnBoss));
+    }
+
+    [Test]
+    public void MapSelection_StartsBattlePartyEntryFromUncoverCallbackOnly()
+    {
+        string controllerPath = Path.Combine(
+            Application.dataPath,
+            "Project/Scripts/Gameplay/Scene/Battle/BattleSceneController.cs");
+        string source = File.ReadAllText(controllerPath);
+        int selectionStart = source.IndexOf(
+            "public async void OnMapNodeSelected(GeneratedMapNodeData nodeData)",
+            System.StringComparison.Ordinal);
+        int selectionEnd = source.IndexOf(
+            "public void OnMapNodeSelectedByIndex",
+            selectionStart,
+            System.StringComparison.Ordinal);
+        string selection = source.Substring(selectionStart, selectionEnd - selectionStart);
+
+        int openRoom = selection.IndexOf("HandleSelectedMap(nodeData);", System.StringComparison.Ordinal);
+        int uncoverCallback = selection.IndexOf(
+            "PlayPreparedBattleRoomPartyEntry();",
+            System.StringComparison.Ordinal);
+
+        Assert.That(openRoom, Is.GreaterThanOrEqualTo(0));
+        Assert.That(uncoverCallback, Is.GreaterThan(openRoom));
+        StringAssert.Contains("if (!isBattleNode)", selection);
+    }
+
+    private static void SetPrivateField<T>(object target, string fieldName, T value)
+    {
+        FieldInfo field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null, $"Missing field: {fieldName}");
+        field.SetValue(target, value);
+    }
+
+    [Test]
+    public void StageEntryRoutine_StartsRoomAndPartyEntryBeforePositionPanelFade()
+    {
+        string controllerPath = Path.Combine(
+            Application.dataPath,
+            "Project/Scripts/Gameplay/Scene/Battle/BattleSceneController.cs");
+        string source = File.ReadAllText(controllerPath);
+        int routineStart = source.IndexOf(
+            "private IEnumerator PlayStageEntryThenOpenNodeRoutine",
+            System.StringComparison.Ordinal);
+        int routineEnd = source.IndexOf(
+            "private void AutoFindBack2NameIfNeeded",
+            routineStart,
+            System.StringComparison.Ordinal);
+        string routine = source.Substring(routineStart, routineEnd - routineStart);
+
+        int openRoom = routine.IndexOf("HandleSelectedMap(entryNode);", System.StringComparison.Ordinal);
+        int startWalk = routine.IndexOf("StartSharedPartyEntryTransitionIfNeeded();", System.StringComparison.Ordinal);
+        int fade = routine.IndexOf("float fadeDuration", System.StringComparison.Ordinal);
+        int hidePanel = routine.IndexOf("positionPanel.SetActive(false);", System.StringComparison.Ordinal);
+        int continueIntro = routine.IndexOf("CountPresentedRoomEntry(entryNode);", System.StringComparison.Ordinal);
+
+        Assert.That(openRoom, Is.GreaterThanOrEqualTo(0));
+        Assert.That(startWalk, Is.GreaterThan(openRoom));
+        Assert.That(fade, Is.GreaterThan(startWalk));
+        Assert.That(hidePanel, Is.GreaterThan(fade));
+        Assert.That(continueIntro, Is.GreaterThan(hidePanel));
+    }
+
+    [Test]
+    public void CharacterHudVisibilitySuppression_ShowsOnlySelectedHudAfterRelease()
+    {
+        var hudRoot = new GameObject("HUDRoot");
+        var selectedObject = new GameObject("SelectedHUD");
+        var unselectedObject = new GameObject("UnselectedHUD");
+        selectedObject.transform.SetParent(hudRoot.transform);
+        unselectedObject.transform.SetParent(hudRoot.transform);
+        HUDSlot selectedHud = selectedObject.AddComponent<HUDSlot>();
+        HUDSlot unselectedHud = unselectedObject.AddComponent<HUDSlot>();
+        selectedHud.Bind(new Relic.Gameplay.Data.CharacterRuntimeData
+            { CharacterId = "Selected", MaxHP = 10, CurrentHP = 10 });
+        unselectedHud.Bind(new Relic.Gameplay.Data.CharacterRuntimeData
+            { CharacterId = "Unselected", MaxHP = 10, CurrentHP = 10 });
+        selectedHud.Hide();
+        unselectedHud.Hide();
+
+        try
+        {
+            BattleRoomLoader.SetCharacterWorldHudVisibilitySuppressed(hudRoot.transform, true);
+            selectedHud.SetCharacterSelected(true);
+
+            Assert.That(selectedObject.activeSelf, Is.False);
+            Assert.That(unselectedObject.activeSelf, Is.False);
+
+            BattleRoomLoader.SetCharacterWorldHudVisibilitySuppressed(hudRoot.transform, false);
+
+            Assert.That(selectedObject.activeSelf, Is.True);
+            Assert.That(unselectedObject.activeSelf, Is.True);
+            Assert.That(selectedObject.GetComponent<CanvasGroup>().alpha, Is.EqualTo(1f));
+            Assert.That(unselectedObject.GetComponent<CanvasGroup>().alpha, Is.Zero);
+        }
+        finally
+        {
+            Object.DestroyImmediate(hudRoot);
+        }
+    }
+
+    [Test]
+    public void BattleScene_TransitionUsesDoubleDistanceAndDurationForVisibleWalkLoop()
+    {
+        string scenePath = Path.Combine(Application.dataPath, "Project/Scenes/YDM/Battle.unity");
+        string sceneYaml = File.ReadAllText(scenePath);
+
+        MatchCollection entryOffsets = Regex.Matches(
+            sceneYaml,
+            @"entryOffset: \{x: -5\.3333335, y: 0, z: 0\}");
+        MatchCollection exitOffsets = Regex.Matches(
+            sceneYaml,
+            @"exitOffset: \{x: 5\.3333335, y: 0, z: 0\}");
+        MatchCollection entryDurations = Regex.Matches(sceneYaml, @"entryDuration: 1\.1");
+        MatchCollection exitDurations = Regex.Matches(sceneYaml, @"exitDuration: 1\.2");
+        MatchCollection immediateBattleEntries = Regex.Matches(sceneYaml, @"entryDelay: 0(?:\r?\n)");
+        MatchCollection sharedRoomEntryDelays = Regex.Matches(sceneYaml, @"entryDelay: 0\.05");
+
+        Assert.That(entryOffsets.Count, Is.EqualTo(2));
+        Assert.That(exitOffsets.Count, Is.EqualTo(2));
+        Assert.That(entryDurations.Count, Is.EqualTo(2));
+        Assert.That(exitDurations.Count, Is.EqualTo(2));
+        Assert.That(immediateBattleEntries.Count, Is.EqualTo(1));
+        Assert.That(sharedRoomEntryDelays.Count, Is.EqualTo(1));
+    }
+
+    [Test]
     public void BattleSceneYaml_HasUniqueLocalObjectIdentifiers()
     {
         string scenePath = Path.Combine(Application.dataPath, "Project/Scenes/YDM/Battle.unity");
@@ -194,7 +400,7 @@ public sealed class BattleRoomPartyTransitionTests
     }
 
     [Test]
-    public void MapSelectionMarker_UsesBattleMoveControllerThenRestoresEventController()
+    public void MapSelectionMarker_UsesBattleWalkControllerThenRestoresEventController()
     {
         const string eventPrefabPath =
             "Assets/Project/PrefabsR/Character/A/Cha_01_idle_0.prefab";
@@ -218,8 +424,9 @@ public sealed class BattleRoomPartyTransitionTests
 
             marker.ConfigureTransitionAnimator(battleController);
 
-            Assert.That(marker.PlayTransitionMove(), Is.True);
+            Assert.That(marker.PlayTransitionWalk(), Is.True);
             Assert.That(eventAnimator.runtimeAnimatorController, Is.SameAs(battleController));
+            Assert.That(eventAnimator.GetCurrentAnimatorStateInfo(0).IsName("walk"), Is.True);
 
             marker.RestoreTransitionIdle();
             Assert.That(eventAnimator.runtimeAnimatorController, Is.SameAs(eventController));
@@ -231,69 +438,29 @@ public sealed class BattleRoomPartyTransitionTests
     }
 
     [Test]
-    public void PlayMoveVfxFrom_UsesExplicitCharacterRootInsteadOfDefaultVfxAnchor()
+    public void PlayWalk_DoesNotSpawnConfiguredMoveVfx()
     {
-        var sourceObject = new GameObject("MoveVfxTemplate");
-        var characterObject = new GameObject("CurrentCharacter");
-        var anchorObject = new GameObject("CharacterVfxAnchor");
-        var characterRoot = new GameObject("CharacterRoot");
+        var characterObject = new GameObject("TransitionCharacter");
         var vfxPrefab = new GameObject("TransitionMoveVfx");
-        anchorObject.transform.SetParent(characterObject.transform, false);
-        anchorObject.transform.localPosition = new Vector3(1f, 2f, 3f);
-        characterRoot.transform.position = new Vector3(7f, 8f, 9f);
-        vfxPrefab.transform.localPosition = new Vector3(-3f, -5.09f, 0f);
 
-        BattleUnitAnimator source = sourceObject.AddComponent<BattleUnitAnimator>();
         BattleUnitAnimator character = characterObject.AddComponent<BattleUnitAnimator>();
-        SetField(source, "moveVfx", new BattleVfxEntry
+        SetField(character, "moveVfx", new BattleVfxEntry
         {
             prefab = vfxPrefab,
-            renderMode = BattleVfxRenderMode.DirectWorldRenderer
+            renderMode = BattleVfxRenderMode.IndividualWorldRenderTexture
         });
-        SetField(character, "vfxSpawnPoint", anchorObject.transform);
 
-        GameObject spawned = null;
         try
         {
-            Assert.That(character.PlayMoveVfxFrom(source, characterRoot.transform), Is.True);
+            character.PlayWalk();
 
-            Transform spawnedTransform = characterRoot.transform.Find("TransitionMoveVfx(Clone)");
-            Assert.That(spawnedTransform, Is.Not.Null);
-            Assert.That(spawnedTransform.position, Is.EqualTo(characterRoot.transform.position));
-            Assert.That(spawnedTransform.localPosition, Is.EqualTo(Vector3.zero));
-            spawned = spawnedTransform.gameObject;
+            Assert.That(characterObject.transform.Find("TransitionMoveVfx(Clone)"), Is.Null);
         }
         finally
         {
-            if (spawned != null)
-                Object.DestroyImmediate(spawned);
-            Object.DestroyImmediate(sourceObject);
             Object.DestroyImmediate(characterObject);
-            Object.DestroyImmediate(characterRoot);
             Object.DestroyImmediate(vfxPrefab);
         }
-    }
-
-    [Test]
-    public void CalculateMoveVfxScaleMultiplier_MatchesBattleSpawnScale()
-    {
-        Vector3 multiplier = BattleUnitAnimator.CalculateMoveVfxScaleMultiplier(
-            new Vector3(0.18f, 0.18f, 0.18f),
-            new Vector3(2f, 3f, 4f));
-
-        Assert.That(multiplier.x, Is.EqualTo(0.09f).Within(0.0001f));
-        Assert.That(multiplier.y, Is.EqualTo(0.06f).Within(0.0001f));
-        Assert.That(multiplier.z, Is.EqualTo(0.045f).Within(0.0001f));
-    }
-
-    [Test]
-    public void MoveCharacterVfx_PreservesBattleRootPositionOffset()
-    {
-        const string vfxPrefabPath = "Assets/Project/Art/VFX/Cha/Vfx_move_cha.prefab";
-        GameObject vfxPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(vfxPrefabPath);
-
-        Assert.That(vfxPrefab, Is.Not.Null);
-        Assert.That(vfxPrefab.transform.localPosition, Is.EqualTo(new Vector3(-3f, -5.09f, 0f)));
     }
 
     [Test]

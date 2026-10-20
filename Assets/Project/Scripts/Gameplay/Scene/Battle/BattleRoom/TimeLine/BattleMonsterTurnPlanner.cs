@@ -386,14 +386,17 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
 
     /// <summary>
-    /// 녹턴의 첫 예약 행동을 기준으로 턴 시작 시 바라보는 방향을 설정합니다.
+    /// 녹턴과 모르트의 첫 예약 행동을 기준으로 턴 시작 시 바라보는 방향을 설정합니다.
     /// 공격은 예약 방향, 순간이동은 포털 미리보기의 위치를 사용합니다.
     /// </summary>
     public void ApplyNocturnFirstReservedActionFacing(MonsterUnit monster)
     {
-        if (monster == null || monster.RuntimeData == null ||
-            !string.Equals(monster.RuntimeData.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase) ||
-            timelineController == null)
+        if (monster == null || monster.RuntimeData == null || timelineController == null)
+            return;
+
+        bool isNocturn = string.Equals(monster.RuntimeData.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase);
+        bool isMort = string.Equals(monster.RuntimeData.MonsterId, "Mon_11", System.StringComparison.OrdinalIgnoreCase);
+        if (!isNocturn && !isMort)
             return;
 
         string runtimeId = monster.RuntimeData.RuntimeId;
@@ -425,9 +428,22 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 {
                     direction = command.MoveOffset.x > 0 ? BattleDirection.Right : BattleDirection.Left;
                 }
+                else if (isMort && command.SkillId == "S_Monster_31" &&
+                         command.RangeOriginGridIndex >= 0 && gridManager != null)
+                {
+                    // 대상 중심 스킬은 효과 범위는 유지하고, 시선만 대상에게 맞춥니다.
+                    Vector2Int from = gridManager.IndexToCoord(monster.MainGridIndex);
+                    Vector2Int to = gridManager.IndexToCoord(command.RangeOriginGridIndex);
+                    if (from.x == to.x)
+                        continue;
+                    direction = to.x > from.x ? BattleDirection.Right : BattleDirection.Left;
+                }
                 else
                 {
-                    return;
+                    // 수직 이동처럼 좌우 방향이 없는 행동은 다음 예약 행동을 확인합니다.
+                    if (!isMort)
+                        return;
+                    continue;
                 }
 
                 BattleUnitFacing facing = monster.GetComponentInChildren<BattleUnitFacing>(true);
@@ -620,12 +636,29 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             if (plan == null || plan.Actions == null || plan.Actions.Count <= 0)
                 continue;
 
-            plan.Actions.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+            // 녹턴은 하나의 슬롯에서 2개 행동을 순서대로 실행해야 합니다.
+            // Priority만 정렬하면 두 슬롯의 행동이 서로 끼어들 수 있습니다.
+            if (string.Equals(runtime.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase))
+            {
+                plan.Actions.Sort((a, b) =>
+                {
+                    int slotOrder = a.SlotOffset.CompareTo(b.SlotOffset);
+                    return slotOrder != 0 ? slotOrder : a.Priority.CompareTo(b.Priority);
+                });
+            }
+            else
+            {
+                plan.Actions.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+            }
 
             int baseSlotIndex = FindAvailableMonsterSlot(runtime, plans, plan.Actions);
 
             if (baseSlotIndex < 0)
+            {
+                if (runtime.MonsterId == "Mon_08" || runtime.MonsterId == "Mon_11")
+                    UnityEngine.Debug.LogWarning($"[MonsterMoveReservation] {runtime.MonsterId}: 예약 가능한 시작 슬롯 없음");
                 continue;
+            }
 
             // Keep linked actions in the same resolved slot even when the first
             // action explicitly requests the earliest available slot.
@@ -758,6 +791,8 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                         ? WouldCinderDestinationConflict(monsterUnit, action.MoveOffset, slotIndex, monsterUnits, plans)
                         : WouldVoluntaryMoveCollide(monsterUnit, action.MoveOffset, monsterUnits, plans)))
                 {
+                    if ((runtime.MonsterId == "Mon_08" || runtime.MonsterId == "Mon_11") && action.MoveOffset != Vector2Int.zero)
+                        UnityEngine.Debug.LogWarning($"[MonsterMoveReservation] {runtime.MonsterId}: 이동 예약 충돌 거부, Offset={action.MoveOffset}, Slot={slotIndex + 1}");
                     if (isCinderMove)
                     {
                         // 이동이 취소됐을 때 대폭발 중심점도 실제 현재 칸으로 되돌립니다.
@@ -1297,10 +1332,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             return -1;
 
         // 녹턴은 앞 슬롯 중심으로 예약합니다. 다른 몬스터의 확률은 변경하지 않습니다.
-        // 시작 슬롯은 1~3번(60/30/10)이며, 후속 슬롯은 2~4번만 사용합니다.
+        // 시작 슬롯은 1~3번(60/35/5)이며, 후속 슬롯은 2~4번만 사용합니다.
         if (string.Equals(runtime.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase))
         {
-            int[] frontWeights = { 60, 30, 10 };
+            int[] frontWeights = { 60, 35, 5 };
             int totalWeight = 0;
             for (int i = 0; i < candidates.Count; i++)
             {

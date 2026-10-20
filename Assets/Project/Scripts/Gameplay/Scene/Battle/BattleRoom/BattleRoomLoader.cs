@@ -82,11 +82,18 @@ public class BattleRoomLoader : MonoBehaviour
     private bool initialMonsterPlanStarted;
     private bool isLoaded;
     private bool isLoading;
+    private bool deferPartyEntryPlayback;
+    private bool partyEntryPrepared;
+    private bool partyEntryPlaybackRequested;
+    private bool deferMonsterSpawn;
+    private bool monsterSpawnDeferred;
     private string loadedMapId;
     private string debugTargetMonsterId;
     private int debugTargetGridIndex = -1;
 
     private readonly BattlePassiveSkillService passiveSkillService = new();
+
+    public bool IsLoaded => isLoaded;
 
     public void ConfigureDebugTargetMonster(string monsterId, int gridIndex)
     {
@@ -572,9 +579,26 @@ public class BattleRoomLoader : MonoBehaviour
         loadRoutine = StartCoroutine(LoadBattleWhenDataManagerReady());
     }
 
-    public void LoadBattleFromSceneController(bool forceReload = false)
+    public void LoadBattleFromSceneController(
+        bool forceReload = false,
+        bool deferPartyEntry = false,
+        bool deferMonsters = false)
     {
-        RequestLoadBattle(forceReload);
+        if (forceReload)
+        {
+            if (loadRoutine != null)
+            {
+                StopCoroutine(loadRoutine);
+                loadRoutine = null;
+            }
+
+            ResetLoadedStateForNextBattle(true);
+        }
+
+        deferPartyEntryPlayback = deferPartyEntry;
+        partyEntryPlaybackRequested = !deferPartyEntry;
+        deferMonsterSpawn = deferMonsters;
+        RequestLoadBattle();
     }
 
     private void OnDisable()
@@ -684,11 +708,19 @@ public class BattleRoomLoader : MonoBehaviour
             playerRoot.gameObject.SetActive(false);
 
         SpawnPlayersAndHUD();
-        StartPartyEntryTransition(reactivatePlayerRootForEntry);
-        SpawnMonstersAndHUD(false);
-        BattleEffectInfoFeed.BeginPassiveCapture();
-        RefreshBattleStartPassives();
-        BattleEffectInfoFeed.EndPassiveCapture();
+        SetCharacterWorldHudVisibilitySuppressed(hudRoot, true);
+        PreparePartyEntryTransition(reactivatePlayerRootForEntry);
+        if (partyEntryPlaybackRequested || !deferPartyEntryPlayback)
+            PlayPreparedPartyEntry();
+
+        if (deferMonsterSpawn)
+        {
+            monsterSpawnDeferred = true;
+        }
+        else
+        {
+            SpawnMonstersAndRefreshBattleStartPassives();
+        }
 
         // 튜토리얼 전투에서는 기존 전투방의 랜덤 장애물/초기 그리드 효과를 생성하지 않습니다.
         // 전투 중 스킬/유물로 새로 생성되는 그리드 효과는 기존 시스템을 그대로 사용합니다.
@@ -751,6 +783,11 @@ public class BattleRoomLoader : MonoBehaviour
         initialMonsterPlanStarted = false;
         isLoaded = false;
         isLoading = false;
+        deferPartyEntryPlayback = false;
+        partyEntryPrepared = false;
+        partyEntryPlaybackRequested = false;
+        deferMonsterSpawn = false;
+        monsterSpawnDeferred = false;
         loadedMapId = null;
 
         if (clearSpawnedObjects)
@@ -1529,6 +1566,9 @@ public class BattleRoomLoader : MonoBehaviour
         if (turnExecutor != null)
             turnExecutor.SetBattleInputReady(false);
 
+        while (BattleSceneController.IsBattleRoomIntroPlaying)
+            yield return null;
+
         if (monsterTurnPlanner != null)
         {
             // 이어하기에서는 전투방에 처음 입장했을 때 확정된 1턴 예약을 그대로 복원합니다.
@@ -1576,6 +1616,8 @@ public class BattleRoomLoader : MonoBehaviour
             OpenSelectedCharacterSkillListWhenInputReady();
         }
 
+        SetCharacterWorldHudVisibilitySuppressed(hudRoot, false);
+
         if (restoringResolvedBattleRoomEntryState)
         {
             SaveSystem.Instance?.ConsumePendingResolvedBattleRoomEntryState();
@@ -1586,7 +1628,7 @@ public class BattleRoomLoader : MonoBehaviour
         initialMonsterPlanRoutine = null;
     }
 
-    private void StartPartyEntryTransition(bool reactivatePlayerRootForEntry = false)
+    private void PreparePartyEntryTransition(bool reactivatePlayerRootForEntry = false)
     {
         if (partyTransitionPresenter == null)
             partyTransitionPresenter = GetComponentInChildren<BattleRoomPartyTransitionPresenter>(true);
@@ -1595,15 +1637,59 @@ public class BattleRoomLoader : MonoBehaviour
         {
             if (reactivatePlayerRootForEntry && unitSpawner?.PlayerRoot != null)
                 unitSpawner.PlayerRoot.gameObject.SetActive(true);
+            partyEntryPrepared = false;
             return;
         }
 
         partyTransitionPresenter.PrepareEntry(unitSpawner != null ? unitSpawner.PlayerRoot : transform);
+        partyEntryPrepared = true;
 
         if (reactivatePlayerRootForEntry && unitSpawner?.PlayerRoot != null)
             unitSpawner.PlayerRoot.gameObject.SetActive(true);
 
+    }
+
+    public void PlayPreparedPartyEntry()
+    {
+        partyEntryPlaybackRequested = true;
+
+        if (!partyEntryPrepared || partyTransitionPresenter == null || partyTransitionPresenter.IsPlaying)
+            return;
+
+        partyEntryPrepared = false;
         _ = partyTransitionPresenter.PlayPreparedEntryAsync();
+    }
+
+    public void CompleteDeferredMonsterSpawn()
+    {
+        if (!monsterSpawnDeferred)
+            return;
+
+        monsterSpawnDeferred = false;
+        SpawnMonstersAndRefreshBattleStartPassives();
+        RefreshBattleHUDs();
+    }
+
+    private void SpawnMonstersAndRefreshBattleStartPassives()
+    {
+        SpawnMonstersAndHUD(false);
+        BattleEffectInfoFeed.BeginPassiveCapture();
+        RefreshBattleStartPassives();
+        BattleEffectInfoFeed.EndPassiveCapture();
+    }
+
+    public static void SetCharacterWorldHudVisibilitySuppressed(Transform root, bool suppressed)
+    {
+        if (root == null)
+            return;
+
+        HUDSlot[] hudSlots = root.GetComponentsInChildren<HUDSlot>(true);
+        for (int i = 0; i < hudSlots.Length; i++)
+        {
+            HUDSlot hud = hudSlots[i];
+            if (hud != null && hud.BoundCharacterRuntime != null)
+                hud.gameObject.SetActive(!suppressed);
+        }
     }
 
     private static bool IsTutorialBattleRun()
@@ -1745,6 +1831,12 @@ public class BattleRoomLoader : MonoBehaviour
 
             yield break;
         }
+
+        // 사령술은 타임라인 행동이 아니라 턴 시작 특성입니다.
+        // 부활한 몬스터가 이번 턴에 행동을 예약할 수 있도록 플래너보다 먼저 실행합니다.
+        GridManager necromancyGrid = FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+        if (necromancyGrid != null)
+            MortNecromancyTracker.RespawnAtTurnStart(spawnedMonsterUnits, necromancyGrid);
 
         yield return monsterTurnPlanner.PlanMonsterTurnsAndWait(spawnedMonsterUnits);
 

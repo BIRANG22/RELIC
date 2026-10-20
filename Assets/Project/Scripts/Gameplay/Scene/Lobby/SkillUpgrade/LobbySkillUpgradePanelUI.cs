@@ -234,8 +234,8 @@ public sealed class LobbySkillUpgradePanelUI : MonoBehaviour
     private static void ShowFailure(LobbySkillUpgradeFailure failure)
     {
         string message = failure == LobbySkillUpgradeFailure.InsufficientBlueDustium
-            ? "BlueDustium이 부족합니다."
-            : "스킬을 강화할 수 없습니다.";
+            ? GameLocalization.Get(LocalizationKeys.Warning.InsufficientBlueDustium)
+            : GameLocalization.Get(LocalizationKeys.Warning.FeatureUnavailable);
         BattleWarningUI.ShowMessage(message);
     }
 

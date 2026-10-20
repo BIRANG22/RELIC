@@ -8,11 +8,12 @@ namespace Relic.Gameplay.Monster
     /// <summary>
     /// 모르트(Mon_11) 전용 AI입니다.
     /// - 이동/혼령폭발/피의 저주의 판단 범위는 Monster 시트의 AttackRangeId를 사용합니다.
-    /// - AttackRange 안에 캐릭터가 있으면 1칸 도망 이동을 우선 예약합니다.
+    /// - 근접, 접근 이동, 플레이어 효과/피해를 감지하면 1칸 도망 이동을 예약합니다.
+    /// - 도망이 필요하지 않아도 망령쇄도를 사용할 가로 라인을 잡기 위해 이동할 수 있습니다.
     /// - 망령쇄도는 공격 예상 위치와 같은 라인에 캐릭터가 있을 때만 예약합니다.
     /// - 혼령폭발은 범위와 관계없이 가장 가까운 생존 캐릭터에게 예약합니다.
-    /// - 피의 저주는 공격 범위 안의 대상에게 매 턴 예약합니다.
-    /// - 사령술은 부활 가능한 병사가 있을 때 예약합니다.
+    /// - 피의 저주는 공격 범위 안에서 가장 먼 생존 캐릭터에게 예약합니다.
+    /// - 사령술은 턴 시작 특성으로 처리되므로 여기서는 예약하지 않습니다.
     /// </summary>
     public class MortAI : MonsterAIBase
     {
@@ -21,6 +22,120 @@ namespace Relic.Gameplay.Monster
         private const string SpiritExplosionSkillId = "S_Monster_31";
         private const string BloodCurseSkillId = "S_Monster_32";
         private const string NecromancySkillId = "S_Monster_41";
+
+        // 이전 예약 시점의 생명력을 기록하여 이번 턴에 받은 피해를 판정합니다.
+        // 체력이 최대치보다 낮다는 이유만으로 매 턴 도망치지 않습니다.
+        private sealed class EscapeDamageSnapshot
+        {
+            public int LastHP;
+            public int TurnCount;
+            public bool WasDamaged;
+        }
+
+        private static readonly Dictionary<string, EscapeDamageSnapshot> EscapeDamageSnapshots = new();
+
+        private static bool WasDamagedSinceLastPlan(MonsterRuntimeData runtime)
+        {
+            if (runtime == null || string.IsNullOrEmpty(runtime.RuntimeId))
+                return false;
+
+            if (!EscapeDamageSnapshots.TryGetValue(runtime.RuntimeId, out EscapeDamageSnapshot snapshot))
+            {
+                EscapeDamageSnapshots[runtime.RuntimeId] = new EscapeDamageSnapshot
+                {
+                    LastHP = runtime.CurrentHP,
+                    TurnCount = runtime.TurnCount,
+                    WasDamaged = false
+                };
+                return false;
+            }
+
+            if (snapshot.TurnCount != runtime.TurnCount)
+            {
+                snapshot.WasDamaged = runtime.CurrentHP < snapshot.LastHP;
+                snapshot.TurnCount = runtime.TurnCount;
+            }
+            else if (runtime.CurrentHP < snapshot.LastHP)
+            {
+                snapshot.WasDamaged = true;
+            }
+
+            snapshot.LastHP = runtime.CurrentHP;
+            return snapshot.WasDamaged;
+        }
+
+        private List<BattleCharacter> FindAdjacentPlayers(int originGridIndex, GridManager gridManager)
+        {
+            List<BattleCharacter> result = new();
+            if (originGridIndex < 0 || gridManager == null)
+                return result;
+
+            Vector2Int origin = gridManager.IndexToCoord(originGridIndex);
+            foreach (BattleCharacter player in FindPlayers())
+            {
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0)
+                    continue;
+
+                Vector2Int target = gridManager.IndexToCoord(player.CurrentGridIndex);
+                if (Mathf.Max(Mathf.Abs(target.x - origin.x), Mathf.Abs(target.y - origin.y)) <= 1)
+                    result.Add(player);
+            }
+            return result;
+        }
+
+        // 직전 예약 당시의 위치를 보관하여 멀리서 접근한 캐릭터도 감지합니다.
+        private sealed class ApproachSnapshot
+        {
+            public int MortGridIndex;
+            public readonly Dictionary<string, int> PlayerPositions = new();
+        }
+
+        private static readonly Dictionary<string, ApproachSnapshot> ApproachSnapshots = new();
+
+        private bool DidAnyPlayerApproach(MonsterUnit monsterUnit, GridManager gridManager)
+        {
+            string runtimeId = monsterUnit.RuntimeData.RuntimeId;
+            if (string.IsNullOrEmpty(runtimeId))
+                return false;
+
+            if (!ApproachSnapshots.TryGetValue(runtimeId, out ApproachSnapshot previous))
+            {
+                previous = new ApproachSnapshot();
+                ApproachSnapshots[runtimeId] = previous;
+            }
+
+            int currentMortIndex = monsterUnit.MainGridIndex;
+            Vector2Int currentMortCoord = gridManager.IndexToCoord(currentMortIndex);
+            bool approached = false;
+            Dictionary<string, int> nextPositions = new();
+            foreach (BattleCharacter player in FindPlayers())
+            {
+                if (!IsAlivePlayer(player) || player.CurrentGridIndex < 0 ||
+                    string.IsNullOrEmpty(player.CharacterId))
+                    continue;
+
+                nextPositions[player.CharacterId] = player.CurrentGridIndex;
+                if (!previous.PlayerPositions.TryGetValue(player.CharacterId, out int oldIndex) ||
+                    oldIndex == player.CurrentGridIndex)
+                    continue;
+
+                Vector2Int oldCoord = gridManager.IndexToCoord(oldIndex);
+                Vector2Int newCoord = gridManager.IndexToCoord(player.CurrentGridIndex);
+                // 이전 위치와 현재 위치를 동일한 모르트 위치를 기준으로 비교합니다.
+                Vector2Int mortCoord = previous.MortGridIndex >= 0
+                    ? gridManager.IndexToCoord(previous.MortGridIndex) : currentMortCoord;
+                int before = Mathf.Max(Mathf.Abs(oldCoord.x - mortCoord.x), Mathf.Abs(oldCoord.y - mortCoord.y));
+                int after = Mathf.Max(Mathf.Abs(newCoord.x - mortCoord.x), Mathf.Abs(newCoord.y - mortCoord.y));
+                if (after < before)
+                    approached = true;
+            }
+
+            previous.MortGridIndex = currentMortIndex;
+            previous.PlayerPositions.Clear();
+            foreach (KeyValuePair<string, int> entry in nextPositions)
+                previous.PlayerPositions[entry.Key] = entry.Value;
+            return approached;
+        }
 
         private static readonly Vector2Int[] EscapeOffsets =
         {
@@ -58,8 +173,14 @@ namespace Relic.Gameplay.Monster
             MonsterRuntimeData runtime = monsterUnit.RuntimeData;
             int priority = 0;
 
-            // 죽은 병사가 있다면 사령술을 조건부 행동으로 예약합니다.
+            // 사령술은 별도 턴 시작 처리에서 실행합니다.
 
+
+            bool receivedDamage = WasDamagedSinceLastPlan(runtime);
+            bool receivedPlayerEffect = runtime.PendingPlayerEffectEscape;
+            bool playerApproached = DidAnyPlayerApproach(monsterUnit, gridManager);
+            List<BattleCharacter> adjacentTargets = FindAdjacentPlayers(
+                monsterUnit.MainGridIndex, gridManager);
 
             List<BattleCharacter> currentRangeTargets = FindPlayersInAttackRange(
                 monsterUnit.MainGridIndex,
@@ -71,17 +192,20 @@ namespace Relic.Gameplay.Monster
             int projectedEscapeGridIndex = monsterUnit.MainGridIndex;
 
             // 모르트의 도망 이동은 한 턴에 최대 1번만 예약합니다.
-            // AttackRange 안에 캐릭터가 있다면, 충분히 멀어질 수 없더라도
-            // 이동 가능한 칸 중 가장 안전한 칸으로 반드시 1칸 이동을 시도합니다.
+            // 접근, 피해/디버프, 주변 8칸 위협 시 앞 슬롯으로 이동합니다.
+            // 안전한 후보 중 망령쇄도(30)를 연계할 수 있는 가로 라인을 우선합니다.
             const int maxEscapeMoveCount = 1;
+            // 모르트는 피격이나 접근 여부와 관계없이 매 턴 안전한 방향으로 이동합니다.
+            // 위협 감지 신호는 유지하여 피해/디버프 추적 상태를 정상적으로 소비합니다.
+            bool mustEscape = FindAlivePlayers().Count > 0;
 
-            for (int escapeMoveIndex = 0; escapeMoveIndex < maxEscapeMoveCount; escapeMoveIndex++)
+            for (int escapeMoveIndex = 0;
+                 escapeMoveIndex < maxEscapeMoveCount &&
+                 mustEscape;
+                 escapeMoveIndex++)
             {
-                List<BattleCharacter> projectedRangeTargets = FindPlayersInAttackRange(
-                    projectedEscapeGridIndex,
-                    runtime.AttackRangeId,
-                    gridManager);
-
+                // 도망 방향은 근접한 대상만이 아니라 살아 있는 모든 캐릭터를 고려합니다.
+                List<BattleCharacter> projectedRangeTargets = FindAlivePlayers();
                 if (projectedRangeTargets.Count <= 0)
                     break;
 
@@ -92,22 +216,27 @@ namespace Relic.Gameplay.Monster
                     gridManager);
 
                 if (escapeOffset == Vector2Int.zero)
+                {
+                    UnityEngine.Debug.LogWarning("[MortAI] 이동 후보 없음: 주변 점유/장애물/맵 경계를 확인하세요.");
                     break;
+                }
 
+                // 실제 이동 행동을 예약한 경우에만 효과 반응 플래그를 소비합니다.
+                runtime.PendingPlayerEffectEscape = false;
                 plan.Add(new MonsterAIAction(
                     MoveSkillId,
                     escapeOffset,
                     MonsterAISlotPreference.Front,
                     110,
                     priority++,
-                    slotOffset: escapeMoveIndex));
+                    slotOffset: 0));
 
                 projectedEscapeGridIndex = GetProjectedGridIndex(
                     projectedEscapeGridIndex,
                     escapeOffset,
                     gridManager);
 
-                // 망령쇄도는 첫 도망 이동과 같은 슬롯에서 이어질 수 있으므로
+                // 망령쇄도는 앞 슬롯의 첫 도망 이동과 같은 슬롯에서 이어질 수 있으므로
                 // 공격 예상 원점은 첫 번째 이동 성공 예상 위치까지만 반영합니다.
                 if (escapeMoveIndex == 0)
                 {
@@ -117,6 +246,9 @@ namespace Relic.Gameplay.Monster
             }
 
             List<BattleCharacter> allAlivePlayers = FindAlivePlayers();
+
+            // 이동 가능한 칸이 없다면 기존 공격 예약을 진행합니다.
+            // 이동은 항상 앞 슬롯에 한 번만 예약합니다.
 
             // 망령쇄도는 모르트의 공격 예상 위치와 같은 가로 라인에
             // 생존 캐릭터가 있을 때만 사용합니다. 같은 라인에 여러 명이 있다면
@@ -161,19 +293,16 @@ namespace Relic.Gameplay.Monster
                     MonsterAISlotPreference.Center,
                     -1,
                     priority++,
-                    explosionTarget.CurrentGridIndex));
+                    explosionTarget.CurrentGridIndex,
+                    true,
+                    ResolveHorizontalDirection(attackOriginGridIndex,
+                        explosionTarget.CurrentGridIndex, runtime.Direction, gridManager)));
             }
 
-            // 조건부 스킬의 사용 여부는 예약 시작 시점의 Monster AttackRange로 판단합니다.
-            // 도망 이동을 먼저 예약했다고 해서 예상 이동 위치 기준으로 Range_19를 다시 계산하면,
-            // 원래 범위 안에 있던 캐릭터가 빠져 혼령폭발/피의 저주가 누락될 수 있습니다.
-            List<BattleCharacter> attackRangeTargets = currentRangeTargets;
-
-            if (attackRangeTargets.Count <= 0)
-                return plan;
-
-            // 피의 저주는 AttackRange 안의 캐릭터 중 현재 체력이 가장 높은 대상에게 사용합니다.
-            BattleCharacter curseTarget = FindHighestHPPlayer(attackRangeTargets);
+            // 피의 저주는 매 턴 사용하며, 공격 범위로 대상을 제한하지 않습니다.
+            // 혼령폭발과 동일한 이동 예상 위치를 기준으로 가장 먼 생존 캐릭터를 선택합니다.
+            BattleCharacter curseTarget = FindFarthestTarget(
+                attackOriginGridIndex, allAlivePlayers, gridManager);
 
             if (curseTarget != null && curseTarget.CurrentGridIndex >= 0)
             {
@@ -184,6 +313,9 @@ namespace Relic.Gameplay.Monster
                     -1,
                     priority,
                     curseTarget.CurrentGridIndex,
+                    true,
+                    ResolveHorizontalDirection(attackOriginGridIndex,
+                        curseTarget.CurrentGridIndex, runtime.Direction, gridManager),
                     explicitRangeGridIndices: new List<int> { curseTarget.CurrentGridIndex }));
             }
 
@@ -270,6 +402,8 @@ namespace Relic.Gameplay.Monster
 
             Vector2Int currentCoord = gridManager.IndexToCoord(originGridIndex);
             Vector2Int bestOffset = Vector2Int.zero;
+            int bestSafetyTier = int.MinValue;
+            int bestRushLine = int.MinValue;
             int bestNearestDistance = int.MinValue;
             int bestTotalDistance = int.MinValue;
 
@@ -290,16 +424,30 @@ namespace Relic.Gameplay.Monster
                 int nearestDistance = GetNearestDistance(movedCoord, threatTargets, gridManager);
                 int totalDistance = GetTotalDistance(movedCoord, threatTargets, gridManager);
 
-                // 거리를 실제로 늘릴 수 없는 상황이어도 이동 가능한 칸 자체를 버리지는 않습니다.
-                // 가장 가까운 위협과의 거리가 가장 큰 칸을 우선하고,
-                // 같다면 모든 위협과의 총 거리가 더 큰 칸을 선택합니다.
+                // 도망은 안전이 우선이지만, 안전한 후보들 사이에서는
+                // 망령쇄도(30)를 바로 연계할 수 있는 가로 라인을 우선합니다.
+                // 주변 8칸에서 벗어날 수 있다면 다시 인접하는 위치는 제외합니다.
+                int safetyTier = nearestDistance > 1 ? 1 : 0;
+                int destination = gridManager.CoordToIndex(movedCoord);
+                bool canRush = FindNearestSameLineTarget(
+                    destination, threatTargets, gridManager) != null;
+                int rushLine = canRush ? 1 : 0;
+
+                // 첫 번째 기준은 가장 가까운 캐릭터와의 거리입니다.
+                // 거리가 같을 때만 주변 8칸 안전도 및 망령쇄도 연계 가능성을 비교합니다.
                 bool better =
                     nearestDistance > bestNearestDistance ||
-                    (nearestDistance == bestNearestDistance && totalDistance > bestTotalDistance);
+                    (nearestDistance == bestNearestDistance && safetyTier > bestSafetyTier) ||
+                    (nearestDistance == bestNearestDistance && safetyTier == bestSafetyTier &&
+                     rushLine > bestRushLine) ||
+                    (nearestDistance == bestNearestDistance && safetyTier == bestSafetyTier &&
+                     rushLine == bestRushLine && totalDistance > bestTotalDistance);
 
                 if (!better)
                     continue;
 
+                bestSafetyTier = safetyTier;
+                bestRushLine = rushLine;
                 bestNearestDistance = nearestDistance;
                 bestTotalDistance = totalDistance;
                 bestOffset = offset;
@@ -308,6 +456,45 @@ namespace Relic.Gameplay.Monster
             return bestOffset;
         }
 
+
+        // 도망 조건이 없을 때는 공격을 위한 재배치를 선택합니다.
+        // 공격할 가로 라인을 만들 수 있는 칸만 선택하고, 인접 위험을 피합니다.
+        private Vector2Int ResolveWraithRushPositionMove(
+            MonsterUnit monsterUnit, int originGridIndex,
+            List<BattleCharacter> targets, GridManager gridManager)
+        {
+            if (monsterUnit == null || originGridIndex < 0 ||
+                gridManager == null || targets == null || targets.Count == 0)
+                return Vector2Int.zero;
+
+            Vector2Int origin = gridManager.IndexToCoord(originGridIndex);
+            Vector2Int bestOffset = Vector2Int.zero;
+            int bestSafety = int.MinValue;
+            int bestDistance = int.MinValue;
+
+            foreach (Vector2Int offset in EscapeOffsets)
+            {
+                if (!CanMonsterMoveFromProjectedOrigin(
+                        monsterUnit, originGridIndex, gridManager, offset))
+                    continue;
+
+                Vector2Int moved = origin + offset;
+                int destination = gridManager.CoordToIndex(moved);
+                if (FindNearestSameLineTarget(destination, targets, gridManager) == null)
+                    continue;
+
+                int distance = GetNearestDistance(moved, targets, gridManager);
+                int safety = distance > 1 ? 1 : 0;
+                if (safety < bestSafety || (safety == bestSafety && distance <= bestDistance))
+                    continue;
+
+                bestSafety = safety;
+                bestDistance = distance;
+                bestOffset = offset;
+            }
+
+            return bestOffset;
+        }
 
         private static int GetProjectedGridIndex(
             int originGridIndex,
@@ -495,27 +682,29 @@ namespace Relic.Gameplay.Monster
             return FindNearestTarget(originGridIndex, targets, gridManager);
         }
 
-        private static BattleCharacter FindHighestHPPlayer(List<BattleCharacter> targets)
+        private BattleCharacter FindFarthestTarget(
+            int originGridIndex,
+            List<BattleCharacter> targets,
+            GridManager gridManager)
         {
-            BattleCharacter best = null;
-            int bestHP = int.MinValue;
-
-            if (targets == null)
+            if (originGridIndex < 0 || targets == null || gridManager == null)
                 return null;
 
-            for (int i = 0; i < targets.Count; i++)
+            Vector2Int origin = gridManager.IndexToCoord(originGridIndex);
+            BattleCharacter best = null;
+            int farthestDistance = int.MinValue;
+
+            foreach (BattleCharacter target in targets)
             {
-                BattleCharacter target = targets[i];
-
-                if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+                if (target == null || target.CurrentGridIndex < 0 ||
+                    !IsAlivePlayer(target))
                     continue;
 
-                int hp = target.RuntimeData.CurrentHP;
-
-                if (hp <= bestHP)
+                int distance = Manhattan(origin, gridManager.IndexToCoord(target.CurrentGridIndex));
+                if (distance <= farthestDistance)
                     continue;
 
-                bestHP = hp;
+                farthestDistance = distance;
                 best = target;
             }
 

@@ -161,7 +161,7 @@ public class BattleDeathService
         if (!TryBeginMonsterDeath(monster, collectReward))
             return;
 
-        RemoveDeadMonster(monster);
+        FinishMonsterDeathAndPlaceBones(monster);
     }
 
     public IEnumerator HandleMonsterDeadRoutine(MonsterUnit monster)
@@ -176,7 +176,7 @@ public class BattleDeathService
 
         yield return new WaitForSeconds(GetMonsterDeathDestroyDelay(monster));
 
-        RemoveDeadMonster(monster);
+        FinishMonsterDeathAndPlaceBones(monster);
     }
 
     private bool TryBeginMonsterDeath(MonsterUnit monster, bool collectReward)
@@ -188,6 +188,9 @@ public class BattleDeathService
             return false;
 
         if (monster.RuntimeData.IsDeathHandled)
+            return false;
+
+        if (TryTransitionArabellaToPhaseTwo(monster))
             return false;
 
         monster.RuntimeData.IsDeathHandled = true;
@@ -218,6 +221,66 @@ public class BattleDeathService
             roomLoader.UnregisterRuntimeMonster(monster);
 
         return true;
+    }
+
+    private static bool TryTransitionArabellaToPhaseTwo(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null)
+            return false;
+
+        MonsterMasterData phaseTwoMaster =
+            DataManager.Instance?.MonsterDatabase?.Get(ArabellaPhaseTransition.PhaseTwoMonsterId);
+
+        if (!ArabellaPhaseTransition.TryCreatePhaseTwo(
+                monster.RuntimeData,
+                phaseTwoMaster,
+                out MonsterRuntimeData phaseTwoRuntime))
+        {
+            return false;
+        }
+
+        monster.Initialize(phaseTwoRuntime);
+
+        BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+        animator?.PlayArabellaPhaseTransition();
+        return true;
+    }
+
+    private const string SkullBoneGridEffectId = "GR_Skull_bone";
+
+    /// <summary>
+    /// 드라우그와 바로우의 사망 연출이 끝나면 사망 위치에 유골을 남깁니다.
+    /// 머크 분열과 다른 몬스터 사망에는 적용하지 않습니다.
+    /// </summary>
+    private void FinishMonsterDeathAndPlaceBones(MonsterUnit monster)
+    {
+        if (monster == null)
+            return;
+
+        string monsterId = monster.RuntimeData != null ? monster.RuntimeData.MonsterId : null;
+        bool leaveBones = monsterId == "Mon_07" || monsterId == "Mon_08";
+        List<int> deathCells = leaveBones
+            ? new List<int>(monster.OccupiedGridIndices)
+            : null;
+
+        RemoveDeadMonster(monster);
+
+        if (!leaveBones || deathCells == null || deathCells.Count == 0)
+            return;
+
+        BattleGridEffectController controller =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+        if (controller == null)
+            return;
+
+        for (int i = 0; i < deathCells.Count; i++)
+        {
+            int cell = deathCells[i];
+            if (cell < 0 || controller.HasEffect(cell))
+                continue;
+
+            controller.TryPlaceEffect(cell, SkullBoneGridEffectId);
+        }
     }
 
     private void RemoveDeadMonster(MonsterUnit monster)

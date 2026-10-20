@@ -4076,7 +4076,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
         ActiveRelicAvailability availability = GetActiveRelicAvailability();
         if (availability == null || !availability.CanUse)
         {
-            ShowBattleWarning(availability != null ? availability.Message : "유물을 사용할 수 없습니다.");
+            ShowBattleWarning(availability != null
+                ? availability.Message
+                : GameLocalization.Get(LocalizationKeys.Warning.RelicUnavailableNow));
             RefreshItemButton();
             return;
         }
