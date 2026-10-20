@@ -5,6 +5,9 @@ using UnityEngine.Serialization;
 [Serializable]
 public class BattleUnitActionPresentation
 {
+    [Tooltip("이 연출에 연결할 몬스터 스킬 ID (예: S_Monster_40). 비어 있으면 기존 ActionIndex 방식에서 사용됩니다.")]
+    public string monsterSkillId;
+
     [Tooltip("Action 전에 잠깐 보여줄 준비 애니메이션 State. 비어 있거나 Animator에 State가 없으면 즉시 Action을 재생합니다.")]
     public string prepareStateName;
 
