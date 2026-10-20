@@ -162786,8 +162786,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d499ccbff0a94fdc8a0705da2ad6cf93, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  entryOffset: {x: -8, y: 0, z: 0}
-  exitOffset: {x: 8, y: 0, z: 0}
+  entryOffset: {x: -2.6666667, y: 0, z: 0}
+  exitOffset: {x: 2.6666667, y: 0, z: 0}
   entryDelay: 1
   entryDuration: 0.55
   exitDuration: 0.6
@@ -162804,8 +162804,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d499ccbff0a94fdc8a0705da2ad6cf93, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  entryOffset: {x: -8, y: 0, z: 0}
-  exitOffset: {x: 8, y: 0, z: 0}
+  entryOffset: {x: -2.6666667, y: 0, z: 0}
+  exitOffset: {x: 2.6666667, y: 0, z: 0}
   entryDelay: 0.05
   entryDuration: 0.55
   exitDuration: 0.6
