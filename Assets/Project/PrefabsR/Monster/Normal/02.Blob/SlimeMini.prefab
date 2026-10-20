@@ -302,10 +302,7 @@ MonoBehaviour:
   objectsToDisable:
   - {fileID: 2423744254409376743}
   duration: 0.5
-  dissolveMaterial: {fileID: 2100000, guid: 5163f1b8bb2f4b1e8b8ec5bd8fa85883, type: 2}
-  edgeColor: {r: 0.10980392, g: 0.10980392, b: 0.10980392, a: 1}
-  edgeWidth: 0.06
-  noiseScale: 5
+  dissolveMaterial: {fileID: 2100000, guid: 8e8fa23dede22854ca5dc0382b2d2fb0, type: 2}
 --- !u!114 &1224083396689721577
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -508,10 +505,10 @@ MonoBehaviour:
     proxySortingWorldYOffset: 0
     proxyYMultiplier: 100
   deathVfx:
-    prefab: {fileID: 0}
+    prefab: {fileID: 8742623472407098105, guid: bd208c2c03122304fb619e4932bf576e, type: 3}
     flipType: 0
-    renderMode: 0
-    proxyBlendMode: 0
+    renderMode: 2
+    proxyBlendMode: 1
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512

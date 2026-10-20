@@ -53,11 +53,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0b46928a18d4c24a5f6bc7d901f7fd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visualMode: 0
   objectsToDisable:
   - {fileID: 8814428745309136565}
   duration: 0.5
-  dissolveMaterial: {fileID: 2100000, guid: 5163f1b8bb2f4b1e8b8ec5bd8fa85883, type: 2}
+  dissolveMaterial: {fileID: 2100000, guid: 8e8fa23dede22854ca5dc0382b2d2fb0, type: 2}
   edgeColor: {r: 0.10943389, g: 0.10943389, b: 0.10943389, a: 1}
   edgeWidth: 0.06
   noiseScale: 16
@@ -263,7 +262,7 @@ MonoBehaviour:
     proxySortingWorldYOffset: 0
     proxyYMultiplier: 100
   deathVfx:
-    prefab: {fileID: 0}
+    prefab: {fileID: 8742623472407098105, guid: bd208c2c03122304fb619e4932bf576e, type: 3}
     flipType: 2
     renderMode: 2
     proxyBlendMode: 0
