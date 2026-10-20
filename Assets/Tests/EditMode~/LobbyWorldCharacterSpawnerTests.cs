@@ -79,7 +79,7 @@ public class LobbyWorldCharacterSpawnerTests
     }
 
     [Test]
-    public void Spawn_RestoresWorldHoverLightAndRendererPresentation()
+    public void Spawn_PreservesPrefabAuthoredHoverLightWithoutCreatingAnother()
     {
         GameObject parentObject = Track(new GameObject("CharacterRoot"));
         GameObject prefab = Track(new GameObject("Char01Prefab"));
@@ -88,19 +88,21 @@ public class LobbyWorldCharacterSpawnerTests
         GameObject backObject = new GameObject("Back");
         backObject.transform.SetParent(prefab.transform, false);
         SpriteRenderer back = backObject.AddComponent<SpriteRenderer>();
+        GameObject lightObject = new GameObject("light");
+        lightObject.transform.SetParent(prefab.transform, false);
+        Light2D authoredLight = lightObject.AddComponent<Light2D>();
+        authoredLight.pointLightOuterRadius = 12.34f;
+        authoredLight.falloffIntensity = 0.42f;
 
         IReadOnlyList<GameObject> spawned = LobbyWorldCharacterSpawner.Spawn(
             parentObject.transform,
             new[] { new LobbyWorldCharacterSpawnDefinition("Char_01", Vector3.zero, Vector3.zero, Vector3.one) },
             _ => prefab);
 
-        Light2D light = spawned[0].GetComponentInChildren<Light2D>(true);
-        Assert.That(light, Is.Not.Null);
-        Assert.That(light.pointLightInnerAngle, Is.Zero);
-        Assert.That(light.pointLightOuterAngle, Is.EqualTo(10.46311f).Within(0.0001f));
-        Assert.That(light.volumetricEnabled, Is.True);
-        Assert.That(light.volumeIntensity, Is.EqualTo(0.1f).Within(0.0001f));
-        Assert.That(light.targetSortingLayers, Does.Contain(front.sortingLayerID));
+        Light2D[] lights = spawned[0].GetComponentsInChildren<Light2D>(true);
+        Assert.That(lights, Has.Length.EqualTo(1));
+        Assert.That(lights[0].pointLightOuterRadius, Is.EqualTo(12.34f).Within(0.0001f));
+        Assert.That(lights[0].falloffIntensity, Is.EqualTo(0.42f).Within(0.0001f));
         Assert.That(spawned[0].GetComponent<UIHoverLight2DFalloff>(), Is.Not.Null);
         SpriteRenderer[] renderers = spawned[0].GetComponentsInChildren<SpriteRenderer>(true);
         Assert.That(renderers[0].flipX, Is.True);
