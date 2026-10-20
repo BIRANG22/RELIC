@@ -390,9 +390,6 @@ MonoBehaviour:
   - {fileID: 1865904996559925277}
   duration: 1
   dissolveMaterial: {fileID: 2100000, guid: 5163f1b8bb2f4b1e8b8ec5bd8fa85883, type: 2}
-  edgeColor: {r: 0.10980392, g: 0.10980392, b: 0.10980392, a: 1}
-  edgeWidth: 0.06
-  noiseScale: 16
 --- !u!114 &7931291089952588097
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -522,6 +519,7 @@ MonoBehaviour:
   animator: {fileID: 3600074925671409079}
   idleStateName: Idle
   moveStateName: Move
+  walkStateName: walk
   guardStateName: Guard
   hitStateName: Hit
   healStateName: 
@@ -595,9 +593,9 @@ MonoBehaviour:
     proxySortingWorldYOffset: 0
     proxyYMultiplier: 100
   deathVfx:
-    prefab: {fileID: 0}
-    flipType: 0
-    renderMode: 0
+    prefab: {fileID: 8742623472407098105, guid: 37a8d4cc0b4f0354d96378a5284052ff, type: 3}
+    flipType: 2
+    renderMode: 2
     proxyBlendMode: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
@@ -1237,6 +1235,7 @@ MonoBehaviour:
   animatorLayer: 0
   crossFadeDuration: 0
   deadAnimationDuration: 0.6
+  arabellaPhaseTransitionDuration: 3.34
   forceAnimatorUpdate: 1
   autoFindAnimatorInChildren: 1
   vfxLayerName: VFX
