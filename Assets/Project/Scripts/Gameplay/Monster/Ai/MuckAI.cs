@@ -83,46 +83,131 @@ namespace Relic.Gameplay.Monster
             if (monsterUnit.MainGridIndex < 0)
                 return Vector2Int.zero;
 
-            Vector2Int current = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
-            Vector2Int target = gridManager.IndexToCoord(targetGridIndex);
-            int currentDistance = Mathf.Max(Mathf.Abs(target.x - current.x), Mathf.Abs(target.y - current.y));
-
-            // Do not approach further once adjacent: Muck is not trying to collide.
-            if (currentDistance <= 1)
-                return Vector2Int.zero;
-
-            Vector2Int best = Vector2Int.zero;
-            int bestRisk = int.MaxValue;
-            int bestDistance = currentDistance;
-            int bestManhattan = int.MaxValue;
-
-            foreach (Vector2Int offset in MoveDirections)
+            Vector2Int origin = gridManager.IndexToCoord(monsterUnit.MainGridIndex);
+            BattleCharacter[] players = FindPlayers();
+            List<Vector2Int> targets = new();
+            foreach (BattleCharacter player in players)
             {
-                if (!CanMonsterMove(monsterUnit, gridManager, offset))
-                    continue;
-
-                int destination = GetProjectedMainGridIndex(monsterUnit, gridManager, offset);
-                if (destination < 0)
-                    continue;
-
-                Vector2Int next = current + offset;
-                int distance = Mathf.Max(Mathf.Abs(target.x - next.x), Mathf.Abs(target.y - next.y));
-                if (distance >= currentDistance)
-                    continue;
-
-                int risk = IsRiskyDestination(destination, gridEffects) ? 1 : 0;
-                int manhattan = Mathf.Abs(target.x - next.x) + Mathf.Abs(target.y - next.y);
-                if (risk > bestRisk || (risk == bestRisk && distance > bestDistance) ||
-                    (risk == bestRisk && distance == bestDistance && manhattan >= bestManhattan))
-                    continue;
-
-                best = offset;
-                bestRisk = risk;
-                bestDistance = distance;
-                bestManhattan = manhattan;
+                if (IsAlivePlayer(player) && player.CurrentGridIndex >= 0)
+                    targets.Add(gridManager.IndexToCoord(player.CurrentGridIndex));
             }
 
-            return best;
+            if (targets.Count == 0)
+                return Vector2Int.zero;
+
+            // 이미 공격 가능한 거리라면 움직이지 않습니다.
+            foreach (Vector2Int target in targets)
+            {
+                if (Mathf.Max(Mathf.Abs(target.x - origin.x), Mathf.Abs(target.y - origin.y)) <= 1)
+                    return Vector2Int.zero;
+            }
+
+            // 점유된 칸을 피하는 최단 경로를 탐색합니다. 즉시 가까워지지 않는
+            // 첫 걸음도 우회 경로의 일부라면 유효하게 취급합니다.
+            Queue<Vector2Int> queue = new();
+            Dictionary<Vector2Int, int> distances = new();
+            Dictionary<Vector2Int, Vector2Int> firstSteps = new();
+            queue.Enqueue(Vector2Int.zero);
+            distances[Vector2Int.zero] = 0;
+            firstSteps[Vector2Int.zero] = Vector2Int.zero;
+
+            int bestPathLength = int.MaxValue;
+            int bestRisk = int.MaxValue;
+            List<Vector2Int> bestSteps = new();
+            int bestReachableDistance = int.MaxValue;
+            int bestReachablePathLength = int.MaxValue;
+            int bestReachableRisk = int.MaxValue;
+            List<Vector2Int> fallbackSteps = new();
+
+            while (queue.Count > 0)
+            {
+                Vector2Int offset = queue.Dequeue();
+                int length = distances[offset];
+                Vector2Int position = origin + offset;
+                int nearest = int.MaxValue;
+                foreach (Vector2Int target in targets)
+                {
+                    int distance = Mathf.Max(Mathf.Abs(target.x - position.x),
+                                             Mathf.Abs(target.y - position.y));
+                    nearest = Mathf.Min(nearest, distance);
+                }
+
+                if (offset != Vector2Int.zero)
+                {
+                    Vector2Int step = firstSteps[offset];
+                    int firstIndex = gridManager.CoordToIndex(origin + step);
+                    int risk = IsRiskyDestination(firstIndex, gridEffects) ? 1 : 0;
+                    if (nearest <= 1)
+                    {
+                        if (length < bestPathLength ||
+                            (length == bestPathLength && risk < bestRisk))
+                        {
+                            bestPathLength = length;
+                            bestRisk = risk;
+                            bestSteps.Clear();
+                        }
+                        if (length == bestPathLength && risk == bestRisk &&
+                            !bestSteps.Contains(step))
+                            bestSteps.Add(step);
+                    }
+                    else if (nearest < bestReachableDistance ||
+                             (nearest == bestReachableDistance && length < bestReachablePathLength) ||
+                             (nearest == bestReachableDistance && length == bestReachablePathLength && risk < bestReachableRisk))
+                    {
+                        bestReachableDistance = nearest;
+                        bestReachablePathLength = length;
+                        bestReachableRisk = risk;
+                        fallbackSteps.Clear();
+                        fallbackSteps.Add(step);
+                    }
+                    else if (nearest == bestReachableDistance &&
+                             length == bestReachablePathLength && risk == bestReachableRisk &&
+                             !fallbackSteps.Contains(step))
+                    {
+                        fallbackSteps.Add(step);
+                    }
+                }
+
+                if (length >= bestPathLength)
+                    continue;
+
+                foreach (Vector2Int direction in MoveDirections)
+                {
+                    Vector2Int next = offset + direction;
+                    if (distances.ContainsKey(next) ||
+                        (offset == Vector2Int.zero && !CanMonsterMove(monsterUnit, gridManager, direction)) ||
+                        !CanOccupyAtOffset(monsterUnit, gridManager, next, gridEffects))
+                        continue;
+
+                    // 매 이동은 한 칸이므로, 지나가는 첫 칸도 이동 가능해야 합니다.
+                    Vector2Int step = offset == Vector2Int.zero ? direction : firstSteps[offset];
+                    distances[next] = length + 1;
+                    firstSteps[next] = step;
+                    queue.Enqueue(next);
+                }
+            }
+
+            List<Vector2Int> choices = bestSteps.Count > 0 ? bestSteps : fallbackSteps;
+            return choices.Count == 0 ? Vector2Int.zero :
+                choices[BattleRandom.Range(0, choices.Count)];
+        }
+
+        private static bool CanOccupyAtOffset(
+            MonsterUnit monsterUnit, GridManager gridManager,
+            Vector2Int offset, BattleGridEffectController gridEffects)
+        {
+            foreach (int occupiedIndex in monsterUnit.OccupiedGridIndices)
+            {
+                Vector2Int coord = gridManager.IndexToCoord(occupiedIndex) + offset;
+                if (!gridManager.IsValidCoord(coord))
+                    return false;
+
+                int index = gridManager.CoordToIndex(coord);
+                if (BattleOccupancyService.IsOccupiedByAnyUnit(index, null, monsterUnit) ||
+                    (gridEffects != null && gridEffects.IsBlocked(index)))
+                    return false;
+            }
+            return true;
         }
 
         private static void SetFacingForReservation(MonsterUnit monsterUnit, BattleDirection direction)

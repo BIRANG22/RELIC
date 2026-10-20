@@ -103,10 +103,9 @@ namespace Relic.Gameplay.Monster
                     arcRange));
             }
 
-            // Escaping is a follow-up action, never an action preceding the shot.
-            // Use the same slot, with the next order, so both fit when possible.
-            if (HasCharacterInAdjacentEightCells(monsterUnit, gridManager) ||
-                FindNearestCharacterTargetInActionRange(monsterUnit, gridManager) >= 0)
+            // 공격 이후에는 첫 턴을 포함해 매 턴 도망 이동을 시도합니다.
+            // 이동 가능한 위치가 있을 때 같은 슬롯의 두 번째 행동으로 예약합니다.
+            if (FindPlayers().Length > 0)
             {
                 Vector2Int moveOffset = GetBestEscapeMove(monsterUnit, gridManager);
                 if (moveOffset != Vector2Int.zero)
