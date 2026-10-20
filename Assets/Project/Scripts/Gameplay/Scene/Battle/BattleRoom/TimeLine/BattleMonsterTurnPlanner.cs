@@ -620,7 +620,20 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             if (plan == null || plan.Actions == null || plan.Actions.Count <= 0)
                 continue;
 
-            plan.Actions.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+            // 녹턴은 하나의 슬롯에서 2개 행동을 순서대로 실행해야 합니다.
+            // Priority만 정렬하면 두 슬롯의 행동이 서로 끼어들 수 있습니다.
+            if (string.Equals(runtime.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase))
+            {
+                plan.Actions.Sort((a, b) =>
+                {
+                    int slotOrder = a.SlotOffset.CompareTo(b.SlotOffset);
+                    return slotOrder != 0 ? slotOrder : a.Priority.CompareTo(b.Priority);
+                });
+            }
+            else
+            {
+                plan.Actions.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+            }
 
             int baseSlotIndex = FindAvailableMonsterSlot(runtime, plans, plan.Actions);
 
@@ -1297,10 +1310,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             return -1;
 
         // 녹턴은 앞 슬롯 중심으로 예약합니다. 다른 몬스터의 확률은 변경하지 않습니다.
-        // 시작 슬롯은 1~3번(60/30/10)이며, 후속 슬롯은 2~4번만 사용합니다.
+        // 시작 슬롯은 1~3번(60/35/5)이며, 후속 슬롯은 2~4번만 사용합니다.
         if (string.Equals(runtime.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase))
         {
-            int[] frontWeights = { 60, 30, 10 };
+            int[] frontWeights = { 60, 35, 5 };
             int totalWeight = 0;
             for (int i = 0; i < candidates.Count; i++)
             {
