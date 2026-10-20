@@ -29,3 +29,5 @@ MonoBehaviour:
     prefab: {fileID: 7400000000000000001, guid: 9aa89ef1f9eb4ef68a9dd5fe303e0f5f, type: 3}
   - gridEffectId: GR_nocturn_portal_preview
     prefab: {fileID: 7383548059930101559, guid: ecd05d8207b1dc7479b902ef4afeb80f, type: 3}
+  - gridEffectId: GR_Skull_bone
+    prefab: {fileID: 6416350362071025190, guid: 856df3037918ae9458bc104242ac020a, type: 3}

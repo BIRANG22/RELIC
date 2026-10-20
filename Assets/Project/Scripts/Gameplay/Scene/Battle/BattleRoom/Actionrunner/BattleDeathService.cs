@@ -9,6 +9,7 @@ public class BattleDeathService
     private const float DefaultMonsterDeathDestroyDelay = 0.6f;
     private const float SplitArcHeight = 0.85f;
     private const string SplitEffectId = "E_Split";
+    private const string SkullBoneGridEffectId = "GR_Skull_bone";
 
     private readonly GridManager gridManager;
     private readonly BattleMonsterSpawner monsterSpawner;
@@ -161,6 +162,7 @@ public class BattleDeathService
         if (!TryBeginMonsterDeath(monster, collectReward))
             return;
 
+        SpawnSkullBones(monster);
         RemoveDeadMonster(monster);
     }
 
@@ -176,6 +178,7 @@ public class BattleDeathService
 
         yield return new WaitForSeconds(GetMonsterDeathDestroyDelay(monster));
 
+        SpawnSkullBones(monster);
         RemoveDeadMonster(monster);
     }
 
@@ -218,6 +221,32 @@ public class BattleDeathService
             roomLoader.UnregisterRuntimeMonster(monster);
 
         return true;
+    }
+
+    /// <summary>
+    /// 드라우그와 바로우가 사망하면 원래 점유하던 칸에 유골을 남깁니다.
+    /// 이미 다른 그리드 효과가 있는 칸은 덮어쓰지 않습니다.
+    /// </summary>
+    private void SpawnSkullBones(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null)
+            return;
+
+        string monsterId = monster.RuntimeData.MonsterId;
+        if (monsterId != "Mon_07" && monsterId != "Mon_08")
+            return;
+
+        BattleGridEffectController controller =
+            Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+        if (controller == null)
+            return;
+
+        for (int i = 0; i < monster.OccupiedGridIndices.Count; i++)
+        {
+            int gridIndex = monster.OccupiedGridIndices[i];
+            if (gridIndex >= 0 && !controller.HasEffect(gridIndex))
+                controller.TryPlaceEffect(gridIndex, SkullBoneGridEffectId);
+        }
     }
 
     private void RemoveDeadMonster(MonsterUnit monster)

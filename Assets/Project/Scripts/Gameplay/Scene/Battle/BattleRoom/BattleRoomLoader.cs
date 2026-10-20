@@ -684,7 +684,6 @@ public class BattleRoomLoader : MonoBehaviour
             playerRoot.gameObject.SetActive(false);
 
         SpawnPlayersAndHUD();
-        SetCharacterWorldHudVisibilitySuppressed(hudRoot, true);
         StartPartyEntryTransition(reactivatePlayerRootForEntry);
         SpawnMonstersAndHUD(false);
         BattleEffectInfoFeed.BeginPassiveCapture();
@@ -1577,8 +1576,6 @@ public class BattleRoomLoader : MonoBehaviour
             OpenSelectedCharacterSkillListWhenInputReady();
         }
 
-        SetCharacterWorldHudVisibilitySuppressed(hudRoot, false);
-
         if (restoringResolvedBattleRoomEntryState)
         {
             SaveSystem.Instance?.ConsumePendingResolvedBattleRoomEntryState();
@@ -1607,20 +1604,6 @@ public class BattleRoomLoader : MonoBehaviour
             unitSpawner.PlayerRoot.gameObject.SetActive(true);
 
         _ = partyTransitionPresenter.PlayPreparedEntryAsync();
-    }
-
-    public static void SetCharacterWorldHudVisibilitySuppressed(Transform root, bool suppressed)
-    {
-        if (root == null)
-            return;
-
-        HUDSlot[] hudSlots = root.GetComponentsInChildren<HUDSlot>(true);
-        for (int i = 0; i < hudSlots.Length; i++)
-        {
-            HUDSlot hud = hudSlots[i];
-            if (hud != null && hud.BoundCharacterRuntime != null)
-                hud.gameObject.SetActive(!suppressed);
-        }
     }
 
     private static bool IsTutorialBattleRun()
@@ -1762,6 +1745,11 @@ public class BattleRoomLoader : MonoBehaviour
 
             yield break;
         }
+
+        // 사령술은 액티브가 아닌 턴 시작 특성입니다.
+        // 부활한 몬스터도 이번 턴의 타임라인에 행동을 예약할 수 있도록 예약보다 먼저 실행합니다.
+        GridManager necromancyGrid = Object.FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+        MortNecromancyTracker.RespawnAtTurnStart(spawnedMonsterUnits, necromancyGrid);
 
         yield return monsterTurnPlanner.PlanMonsterTurnsAndWait(spawnedMonsterUnits);
 

@@ -168,7 +168,7 @@ S_Monster_28,그림자 소용돌이,PlayerParty,1,E_Strike;E_Grab,2;1,1,0,Range_
 S_Monster_29,이동,Self,1,E_Move,0,1,0,Range_18,Move,가장 가까운 캐릭터에게서 1칸 멀어진다.,icon_mon_skill_001,이동,
 S_Monster_30,망령쇄도,PlayerParty,1,E_Pierce,12,1,0,Range_06,Attack,전방에 {E_Pierce}를 {ValueRate1}만큼 준다.,icon_mon_skill_021,공격,
 S_Monster_31,혼령폭발,PlayerParty,1,E_Strike,14,1,0,Range_m_02,Attack,가장 가까운 대상의 위치에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_022,공격,
-S_Monster_32,피의저주,PlayerParty,1,E_Bleed,1,1,0,Range_m_01,Debuff,가장 먼 대상의 위치에 {E_Bleed}를 {ValueRate1} 부여한다.,icon_mon_skill_023,디버프,
+S_Monster_32,피의저주,PlayerParty,1,E_Bleed,3,1,0,Range_m_01,Debuff,가장 먼 대상의 위치에 {E_Bleed}를 {ValueRate1} 부여한다.,icon_mon_skill_023,디버프,
 S_Monster_33,이동,Self,1,E_Move,0,1,0,Range_19,Move,가장 가까운 캐릭터에게서 최대 2칸 멀어진다.,icon_mon_skill_001,이동,
 S_Monster_34,사냥 표식,PlayerParty,1,E_Strike,8,1,0,Range_m_01,Attack,"모든 캐릭터의 위치를 지정하고, 해당 위치에 {E_Strike}를 {ValueRate1}만큼 준다.",icon_mon_skill_024,공격,
 S_Monster_35,사방 찢기,PlayerParty,1,E_Strike,10,1,0,Range_18,Attack,주변에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_025,공격,
@@ -188,15 +188,15 @@ S_Monster_40,Phase 2_2,PlayerParty,1,E_Strike,5,2,0,Range_m_02,Attack,가장 먼
 # GridEffect
 그리드효과ID,이름,통과유무,소모성,효과ID,수치계수,횟수계수,지속턴,생성 방식,체력,타입,툴팁
 GridEffectID,Name,Passed,expendable,EffectIds,ValueRate,CountRate,Duration,SpawnType,HP,TargetType,ToolTip
-GR_debris,잔해,0,0,-1,0,1,0,BattleStart,25,Object,이동을 방해하는 장애물이다.
+GR_debris,잔해,0,0,-1,0,1,0,BattleStart,50,Object,이동을 방해하는 부서진 구조물.
 GR_thorn,가시,1,0,E_Strike,3,1,0,BattleStart,0,None,진입한 대상에게 {E_Strike}를 {ValueRate1}만큼 준다.
 GR_Residue,점액,1,1,E_Strike,2,1,2,Monster,0,None,진입한 대상에게 {E_Strike}를 {ValueRate1}만큼 준다.
-GR_dummy,루어,0,0,-1,0,1,0,Summon,10,Character,캐릭터로 인식되는 소환체이다.
+GR_dummy,루어,0,0,-1,0,1,0,Summon,20,Character,캐릭터로 인식되는 소환체이다.
 GR_explosive_doll,브룸,0,0,E_Strike,8,1,0,Summon,15,Object,턴 종료 시 주변 대상에게 {E_Strike}를 {ValueRate1}만큼 준다.
 GR_spider_egg,고치,0,0,-1,0,1,2,Summon,8,Object,{Duration}턴 후 신더가 부화한다.
 GR_spider_web,거미줄,1,0,E_Spider_Web,2,1,2,Monster,0,None,이동에 필요한 마나 소모량이 {ValueRate1}배가 된다.
-GR_nocturn_portal_preview,그림자,1,0,-1,0,1,1,Monster,0,None,그림자가 드리운 자리에 어둠이 깃든다.
-,,,,,,,,,
+GR_nocturn_portal_preview,그림자,1,0,-1,0,1,1,Monster,0,None,어둠이 깃든 공간.
+GR_Skull_bone,유골,0,0,-1,0,1,0,Monster,30,Object,이동을 방해하는 뼈 무더기.
 ,,,,,,,,,
 ,,,,,,,,,
 ,,,,,,,,,
@@ -249,7 +249,7 @@ E_Counter,반격,Beneficial,Maintain,직접 공격으로 피해를 받을 때마
 E_Targeting,표적,Beneficial,Maintain,같은 라인에 캐릭터가 없으면 곡사를 예약한다.,1
 E_Fortress,철옹성,Neutral,Maintain,턴을 시작할 때 방어도를 10 획득한다.,1
 E_Ambush,암습,Neutral,Maintain,후방에서 공격할 때 피해가 30% 증가한다.,1
-E_Necromancy,사령술,Neutral,Maintain,이번 턴에 사망한 변이체 1마리를 다음 턴을 시작할 때 최대 생명력의 30%로 부활시킨다.,1
+E_Necromancy,사령술,Neutral,Maintain,유골이 된 변이체를 최대 생명력의 30%로 부활시킨다.,1
 E_WebCreation,사냥실,Neutral,Maintain,턴을 시작할 때 거미줄을 생성한다.,1
 E_Entanglement,뒤얽힘,Neutral,Maintain,턴을 시작할 때 무작위 타임라인 슬롯 1개를 거미줄로 막는다.,1
 E_Spider_Web,거미줄,Neutral,Maintain,이동에 필요한 마나 소모량이 2배가 된다.,1
@@ -639,8 +639,8 @@ Battlemap_17,Mon_02,22,-1,-1,-1,튜토리얼(블롭 1마리),0,0,100,0,0,0,0,0,0
 Battlemap_18,Mon_07,22,-1,-1,-1,튜토리얼(드라우그 1마리),0,0,100,0,0,0,0,0,0
 Battlemap_19,Mon_01,21,-1,-1,-1,"튜토리얼(머크, 블라이트)",0,0,0,0,0,0,0,0,0
 Battlemap_19,Mon_04,28,-1,-1,-1,,,,,,,,,,
-Battlemap_20,Mon_08,21,-1,-1,-1,테스트,100,25,25,25,25,25,25,25,25
-Battlemap_20,Mon_09,22,-1,-1,-1,,,,,,,,,,
+Battlemap_20,Mon_11,21,-1,-1,-1,테스트,100,25,25,25,25,25,25,25,25
+Battlemap_20,Mon_08,22,-1,-1,-1,,,,,,,,,,
 ,,,,,,,,,,,,,,,
 
 # Event
