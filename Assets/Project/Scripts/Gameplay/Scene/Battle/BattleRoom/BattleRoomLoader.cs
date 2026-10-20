@@ -1832,6 +1832,12 @@ public class BattleRoomLoader : MonoBehaviour
             yield break;
         }
 
+        // 사령술은 타임라인 행동이 아니라 턴 시작 특성입니다.
+        // 부활한 몬스터가 이번 턴에 행동을 예약할 수 있도록 플래너보다 먼저 실행합니다.
+        GridManager necromancyGrid = FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+        if (necromancyGrid != null)
+            MortNecromancyTracker.RespawnAtTurnStart(spawnedMonsterUnits, necromancyGrid);
+
         yield return monsterTurnPlanner.PlanMonsterTurnsAndWait(spawnedMonsterUnits);
 
         // Each following round: play the trait before opening player reservation.
