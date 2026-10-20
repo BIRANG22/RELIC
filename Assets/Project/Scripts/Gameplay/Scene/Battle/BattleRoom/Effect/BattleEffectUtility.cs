@@ -327,7 +327,11 @@ public static class BattleEffectUtility
         if (animator != null)
         {
             if (target.RuntimeData.IsDead)
-                animator.PlayDead();
+            {
+                // 아라벨라 1페이즈는 사망 대신 현재 행동 종료 후 2페이즈로 전환합니다.
+                if (target.RuntimeData.MonsterId != ArabellaPhaseTransition.PhaseOneMonsterId)
+                    animator.PlayDead();
+            }
             else if (hpDamage > 0)
                 animator.PlayHit();
             else if (shieldDamage > 0)
@@ -441,7 +445,11 @@ public static class BattleEffectUtility
         if (animator != null)
         {
             if (target.RuntimeData.IsDead)
-                animator.PlayDead();
+            {
+                // 아라벨라 1페이즈는 사망 대신 현재 행동 종료 후 2페이즈로 전환합니다.
+                if (target.RuntimeData.MonsterId != ArabellaPhaseTransition.PhaseOneMonsterId)
+                    animator.PlayDead();
+            }
             else
                 animator.PlayHit();
         }
@@ -620,7 +628,8 @@ public static class BattleEffectUtility
 
         BattleUnitAnimator animator = target.GetComponent<BattleUnitAnimator>();
 
-        if (animator != null && target.RuntimeData.IsDead)
+        if (animator != null && target.RuntimeData.IsDead &&
+            target.RuntimeData.MonsterId != ArabellaPhaseTransition.PhaseOneMonsterId)
             animator.PlayDead();
 
         target.ShowTemporaryHUDForEffect();

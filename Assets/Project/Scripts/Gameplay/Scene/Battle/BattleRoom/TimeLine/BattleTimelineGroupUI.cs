@@ -1959,6 +1959,9 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
         if (entry == null)
             return false;
 
+        if (ArabellaPhaseTransition.SkipRemainingReservations)
+            return true;
+
         if (entry.IsPlayer)
             return entry.CharacterRuntime != null && entry.CharacterRuntime.IsDead;
 

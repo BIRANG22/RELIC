@@ -151,6 +151,7 @@ public class BattleActionRunner
         if (batch == null)
             yield break;
 
+        int phaseVersion = ArabellaPhaseTransition.TurnInterruptVersion;
         List<ActionRoutine> actionRoutines = BuildActionRoutines(batch);
 
         if (actionRoutines.Count <= 0)
@@ -195,9 +196,12 @@ public class BattleActionRunner
         }
 
         if (useSafeSequentialExecution)
-            yield return RunSequential(actionRoutines);
+            yield return RunSequential(actionRoutines, phaseVersion);
         else
-            yield return RunParallel(actionRoutines);
+            yield return RunParallel(actionRoutines, phaseVersion);
+
+        if (ArabellaPhaseTransition.TurnInterruptVersion != phaseVersion)
+            yield break;
 
         if (holdCameraDuringBatch && !keepCameraAfterBatch && BattleCameraController.Instance != null)
         {
@@ -801,13 +805,16 @@ public class BattleActionRunner
         yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
     }
 
-    private IEnumerator RunSequential(List<ActionRoutine> routines)
+    private IEnumerator RunSequential(List<ActionRoutine> routines, int phaseVersion)
     {
         if (routines == null || routines.Count == 0)
             yield break;
 
         for (int i = 0; i < routines.Count; i++)
         {
+            if (ArabellaPhaseTransition.TurnInterruptVersion != phaseVersion)
+                yield break;
+
             if (i > 0 &&
                 ShouldReturnCameraBetweenSequentialActions(routines[i - 1], routines[i]) &&
                 BattleCameraController.Instance != null)
@@ -815,7 +822,7 @@ public class BattleActionRunner
                 yield return BattleCameraController.Instance.ReturnDefault();
             }
 
-            yield return RunSingleWithTimeout(routines[i]);
+            yield return RunSingleWithTimeout(routines[i], phaseVersion);
         }
     }
 
@@ -842,7 +849,7 @@ public class BattleActionRunner
                actionRoutine.Label.StartsWith("Monster:", StringComparison.Ordinal);
     }
 
-    private IEnumerator RunSingleWithTimeout(ActionRoutine actionRoutine)
+    private IEnumerator RunSingleWithTimeout(ActionRoutine actionRoutine, int phaseVersion)
     {
         if (actionRoutine == null || actionRoutine.Routine == null)
             yield break;
@@ -868,6 +875,9 @@ public class BattleActionRunner
 
         while (!completed)
         {
+            // Finish every hit of the active skill before stopping later reservations.
+            // The phase transition is checked at the next action boundary.
+
             elapsed += Time.unscaledDeltaTime;
 
             if (elapsed >= actionRoutineTimeout)
@@ -896,7 +906,7 @@ public class BattleActionRunner
         activeActionInfo = BattleConsecutiveActionInfo.Single;
     }
 
-    private IEnumerator RunParallel(List<ActionRoutine> routines)
+    private IEnumerator RunParallel(List<ActionRoutine> routines, int phaseVersion)
     {
         if (routines == null || routines.Count == 0)
             yield break;
@@ -932,6 +942,9 @@ public class BattleActionRunner
 
         while (runningCount > 0)
         {
+            // Already-started skills must finish, including all repeated hits.
+            // The executor will skip later batches after this batch completes.
+
             elapsed += Time.unscaledDeltaTime;
 
             if (elapsed >= actionRoutineTimeout)

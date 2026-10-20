@@ -951,6 +951,24 @@ namespace Relic.Gameplay.Monster
             hud.Refresh();
         }
 
+        public void BeginPhaseTransitionHUDPresentation()
+        {
+            if (hud != null)
+                hud.BeginPhaseTransitionPresentation();
+        }
+
+        public void EndPhaseTransitionHUDPresentation()
+        {
+            if (hud != null)
+                hud.EndPhaseTransitionPresentation();
+        }
+
+        public void ShowPhaseTransitionHPFill(float duration)
+        {
+            if (hud != null)
+                hud.BeginPhaseTransitionHPFill(duration);
+        }
+
         public void ShowAndRefreshHUD()
         {
             if (hud == null)
