@@ -7,12 +7,13 @@ namespace Relic.Gameplay.Monster
 {
     public class EliseAI : MonsterAIBase
     {
-        private const string MoveSkillId = "S_Monster_20";
-        private const string MeleeAttackSkillId = "S_Monster_21";
-        private const string PositionPressureSkillId = "S_Monster_22";
-        private const string SpawnEggSkillId = "S_Monster_23";
-        private const string SpawnWebSkillId = "S_Monster_24";
-        private const string BarrierSkillId = "S_Monster_25";
+        private const string MoveSkillId = "S_Monster_33";
+        private const string PositionPressureSkillId = "S_Monster_34";
+        private const string MeleeAttackSkillId = "S_Monster_35";
+        private const string BarrierSkillId = "S_Monster_36";
+        private const string SpawnEggSkillId = "S_Monster_37";
+        private const string PhaseTwoAttackSkillId01 = "S_Monster_39";
+        private const string PhaseTwoAttackSkillId02 = "S_Monster_40";
 
         private const string BarrierEffectId = "E_Barrier";
         private const string SpiderEggGridEffectId = "GR_spider_egg";
@@ -110,6 +111,24 @@ namespace Relic.Gameplay.Monster
 
             AddSpiderSpawnAction(plan, monsterUnit, players, gridManager, priority++);
             AddPositionPressureActions(plan, players, priority);
+
+            if (runtime.Phase >= 2)
+            {
+                plan.Add(new MonsterAIAction(
+                    PhaseTwoAttackSkillId01,
+                    Vector2Int.zero,
+                    MonsterAISlotPreference.Center,
+                    -1,
+                    priority++));
+                plan.Add(new MonsterAIAction(
+                    PhaseTwoAttackSkillId02,
+                    Vector2Int.zero,
+                    MonsterAISlotPreference.Last,
+                    -1,
+                    priority));
+            }
+
+            RemoveSkillsNotOwnedByRuntime(plan, runtime);
             return plan;
         }
 
@@ -140,18 +159,28 @@ namespace Relic.Gameplay.Monster
                 }
             }
 
-            int webGridIndex = FindBestWebGridOnPlayerApproachPath(monsterUnit, gridManager);
+        }
 
-            if (webGridIndex >= 0)
+        private static void RemoveSkillsNotOwnedByRuntime(
+            MonsterAIPlan plan,
+            MonsterRuntimeData runtime)
+        {
+            if (plan?.Actions == null)
+                return;
+
+            List<string> candidateSkillIds = new(plan.Actions.Count);
+            for (int i = 0; i < plan.Actions.Count; i++)
             {
-                plan.Add(new MonsterAIAction(
-                    SpawnWebSkillId,
-                    Vector2Int.zero,
-                    MonsterAISlotPreference.Earliest,
-                    -1,
-                    priority,
-                    webGridIndex));
+                MonsterAIAction action = plan.Actions[i];
+                if (action != null)
+                    candidateSkillIds.Add(action.SkillId);
             }
+
+            HashSet<string> ownedSkillIds = new(
+                ArabellaPhaseTransition.FilterOwnedSkills(runtime, candidateSkillIds));
+
+            plan.Actions.RemoveAll(action =>
+                action == null || !ownedSkillIds.Contains(action.SkillId));
         }
 
         private void AddPositionPressureActions(

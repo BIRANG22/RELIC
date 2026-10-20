@@ -162786,12 +162786,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d499ccbff0a94fdc8a0705da2ad6cf93, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  entryOffset: {x: -2.6666667, y: 0, z: 0}
-  exitOffset: {x: 2.6666667, y: 0, z: 0}
-  entryDelay: 1
-  entryDuration: 0.55
-  exitDuration: 0.6
-  fadeCharacters: 1
+  entryOffset: {x: -5.3333335, y: 0, z: 0}
+  exitOffset: {x: 5.3333335, y: 0, z: 0}
+  entryDelay: 0
+  entryDuration: 1.1
+  exitDuration: 1.2
+  fadeCharacters: 0
 --- !u!114 &920000000000000006
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -162804,12 +162804,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d499ccbff0a94fdc8a0705da2ad6cf93, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  entryOffset: {x: -2.6666667, y: 0, z: 0}
-  exitOffset: {x: 2.6666667, y: 0, z: 0}
+  entryOffset: {x: -5.3333335, y: 0, z: 0}
+  exitOffset: {x: 5.3333335, y: 0, z: 0}
   entryDelay: 0.05
-  entryDuration: 0.55
-  exitDuration: 0.6
-  fadeCharacters: 1
+  entryDuration: 1.1
+  exitDuration: 1.2
+  fadeCharacters: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

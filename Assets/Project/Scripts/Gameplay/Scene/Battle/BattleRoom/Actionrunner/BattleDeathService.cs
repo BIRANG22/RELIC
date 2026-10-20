@@ -190,6 +190,9 @@ public class BattleDeathService
         if (monster.RuntimeData.IsDeathHandled)
             return false;
 
+        if (TryTransitionArabellaToPhaseTwo(monster))
+            return false;
+
         monster.RuntimeData.IsDeathHandled = true;
 
         // 모르트와 함께 전투 중인 드라우그/바로우의 사망 위치와 사망 턴을 기록합니다.
@@ -217,6 +220,29 @@ public class BattleDeathService
         if (roomLoader != null)
             roomLoader.UnregisterRuntimeMonster(monster);
 
+        return true;
+    }
+
+    private static bool TryTransitionArabellaToPhaseTwo(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null)
+            return false;
+
+        MonsterMasterData phaseTwoMaster =
+            DataManager.Instance?.MonsterDatabase?.Get(ArabellaPhaseTransition.PhaseTwoMonsterId);
+
+        if (!ArabellaPhaseTransition.TryCreatePhaseTwo(
+                monster.RuntimeData,
+                phaseTwoMaster,
+                out MonsterRuntimeData phaseTwoRuntime))
+        {
+            return false;
+        }
+
+        monster.Initialize(phaseTwoRuntime);
+
+        BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+        animator?.PlayArabellaPhaseTransition();
         return true;
     }
 

@@ -70,7 +70,12 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
 
     public async Task PlayMapToRoomAsync(Action onCovered)
     {
-        await PlayAsync(TransitionDirection.MapToRoom, onCovered);
+        await PlayMapToRoomAsync(onCovered, null);
+    }
+
+    public async Task PlayMapToRoomAsync(Action onCovered, Action onUncoverStarted)
+    {
+        await PlayAsync(TransitionDirection.MapToRoom, onCovered, onUncoverStarted);
     }
 
     public async Task PlayRoomToMapAsync(Action onCovered)
@@ -119,6 +124,14 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
 
     public async Task PlayAsync(TransitionDirection direction, Action onCovered)
     {
+        await PlayAsync(direction, onCovered, null);
+    }
+
+    public async Task PlayAsync(
+        TransitionDirection direction,
+        Action onCovered,
+        Action onUncoverStarted)
+    {
         InitializeIfNeeded();
 
         if (isPlaying)
@@ -151,6 +164,8 @@ public class BattleDiagonalSceneTransition : MonoBehaviour
 
         if (coveredHoldDuration > 0f)
             await WaitUnscaledAsync(coveredHoldDuration);
+
+        onUncoverStarted?.Invoke();
 
         await AnimateProgressAsync(
             coveredProgress,

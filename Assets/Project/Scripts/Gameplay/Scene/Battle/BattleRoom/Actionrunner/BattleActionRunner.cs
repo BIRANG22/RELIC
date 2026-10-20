@@ -69,7 +69,6 @@ public class BattleActionRunner
     private const string MortMonsterId = "Mon_11";
     private const string MortMoveSkillId = "S_Monster_29";
     private const string MortWraithRushSkillId = "S_Monster_30";
-    private const string ArabellaMonsterId = "Mon_12_1";
     private const string ArabellaMoveSkillId = "S_Monster_33";
     private static readonly HashSet<string> RangedMonsterAttackSkillIds = new(StringComparer.Ordinal)
     {
@@ -79,7 +78,8 @@ public class BattleActionRunner
         "S_Monster_31",
         "S_Monster_35",
         "S_Monster_38",
-        "S_Monster_39"
+        "S_Monster_39",
+        "S_Monster_40"
     };
     private const string NocturnThrustSkillId = "S_Monster_26";
     private const string NocturnSlashSkillId = "S_Monster_27";
@@ -5518,7 +5518,7 @@ public class BattleActionRunner
 
         // Arabella keeps the escape vector selected at reservation time.
         // If a player occupies that path before execution, ResolveMonsterMove handles the collision.
-        if (string.Equals(command.MonsterId, ArabellaMonsterId, System.StringComparison.Ordinal) &&
+        if (ArabellaPhaseTransition.IsArabellaMonsterId(command.MonsterId) &&
             string.Equals(command.SkillId, ArabellaMoveSkillId, System.StringComparison.Ordinal) &&
             command.MoveOffset != Vector2Int.zero)
         {

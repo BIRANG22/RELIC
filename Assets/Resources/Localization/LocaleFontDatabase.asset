@@ -41,10 +41,10 @@ MonoBehaviour:
     - roleId: number
       font: {fileID: 11400000, guid: 15f0f3445fd0bf947b79b40fad359512, type: 2}
   - localeCode: ja
-    defaultFont: {fileID: 11400000, guid: a6605d9ebc2b0ea4b97bf1645c0e71e4, type: 2}
+    defaultFont: {fileID: 11400000, guid: ced41c4308c66d54a8996d8a29ef1c57, type: 2}
     roleFonts:
     - roleId: body
-      font: {fileID: 11400000, guid: a6605d9ebc2b0ea4b97bf1645c0e71e4, type: 2}
+      font: {fileID: 11400000, guid: ced41c4308c66d54a8996d8a29ef1c57, type: 2}
     - roleId: title
       font: {fileID: 11400000, guid: a6605d9ebc2b0ea4b97bf1645c0e71e4, type: 2}
     - roleId: number
