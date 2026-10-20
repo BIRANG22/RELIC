@@ -43,6 +43,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     private Coroutine battleStartTextRoutine;
     private bool battleStartIntroShown;
     private int plannedBattleTurn;
+    private readonly Dictionary<string, GameObject> arabellaStigmaPreviews = new();
+    private const string ArabellaLeapSkillId = "S_Monster_39";
+    private const string ArabellaStigmaGridEffectId = "GR_Stigma";
 
     public void PlanMonsterTurns(List<MonsterUnit> monsterUnits)
     {
@@ -95,6 +98,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             yield break;
         }
 
+        ClearArabellaStigmaPreviews();
         ClearNocturnPortalDestinationIndicators();
         timelineController.ClearMonsterCommands();
         ApplyElisePlayerSlotLock(monsterUnits);
@@ -159,6 +163,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 }
 
                 timelineController.AddMonsterCommand(saved.SlotIndex, command);
+                ShowArabellaStigmaPreview(command);
                 // 포털은 턴 시작 행동 애니메이션과 동시에 표시합니다.
                 restoredCount++;
 
@@ -279,6 +284,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             yield break;
         }
 
+        ClearArabellaStigmaPreviews();
         ClearNocturnPortalDestinationIndicators();
         timelineController.ClearMonsterCommands();
         ApplyElisePlayerSlotLock(monsterUnits);
@@ -310,6 +316,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
             Stopwatch registerWatch = logReservationPerformance ? Stopwatch.StartNew() : null;
             timelineController.AddMonsterCommand(plans[i].SlotIndex, plans[i].Command);
+            ShowArabellaStigmaPreview(plans[i].Command);
             // 포털은 턴 시작 행동 애니메이션과 동시에 표시합니다.
             if (registerWatch != null)
             {
@@ -359,6 +366,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             return;
         }
 
+        ClearArabellaStigmaPreviews();
         ClearNocturnPortalDestinationIndicators();
         timelineController.ClearMonsterCommands();
         ApplyElisePlayerSlotLock(monsterUnits);
@@ -377,6 +385,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 continue;
 
             timelineController.AddMonsterCommand(plans[i].SlotIndex, plans[i].Command);
+            ShowArabellaStigmaPreview(plans[i].Command);
             // 포털은 턴 시작 행동 애니메이션과 동시에 표시합니다.
         }
 
@@ -396,7 +405,9 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         bool isNocturn = string.Equals(monster.RuntimeData.MonsterId, "Mon_10", System.StringComparison.OrdinalIgnoreCase);
         bool isMort = string.Equals(monster.RuntimeData.MonsterId, "Mon_11", System.StringComparison.OrdinalIgnoreCase);
-        if (!isNocturn && !isMort)
+        bool isArabella = string.Equals(monster.RuntimeData.MonsterId, "Mon_12_1", System.StringComparison.OrdinalIgnoreCase) ||
+                          string.Equals(monster.RuntimeData.MonsterId, "Mon_12_2", System.StringComparison.OrdinalIgnoreCase);
+        if (!isNocturn && !isMort && !isArabella)
             return;
 
         string runtimeId = monster.RuntimeData.RuntimeId;
@@ -420,6 +431,22 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                         return; // 같은 열이면 기존 좌우 방향을 유지합니다.
                     direction = to.x > from.x ? BattleDirection.Right : BattleDirection.Left;
                 }
+                else if (isArabella && command.SkillId == ArabellaLeapSkillId &&
+                         command.RangeOriginGridIndex >= 0 && gridManager != null && monster.MainGridIndex >= 0)
+                {
+                    Vector2Int from = gridManager.IndexToCoord(monster.MainGridIndex);
+                    Vector2Int to = gridManager.IndexToCoord(command.RangeOriginGridIndex);
+                    if (from.x == to.x)
+                        continue;
+                    direction = to.x > from.x ? BattleDirection.Right : BattleDirection.Left;
+                }
+                else if (isArabella && command.SkillId == "S_Monster_35" &&
+                         !command.HasForcedDirection)
+                {
+                    // 좌우 방향이 정해지지 않은 사방 찢기는 현재 방향을 유지합니다.
+                    // 뒤의 이동 예약 방향을 먼저 반영해서는 안 됩니다.
+                    return;
+                }
                 else if (command.HasForcedDirection)
                 {
                     direction = command.ForcedDirection;
@@ -441,7 +468,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 else
                 {
                     // 수직 이동처럼 좌우 방향이 없는 행동은 다음 예약 행동을 확인합니다.
-                    if (!isMort)
+                    if (!isMort && !isArabella)
                         return;
                     continue;
                 }
@@ -559,6 +586,55 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             command.RangeOriginGridIndex);
     }
 
+    private static string GetArabellaStigmaKey(MonsterReservedCommand command)
+    {
+        return command.RuntimeId + ":" + command.RangeOriginGridIndex;
+    }
+
+    private void ShowArabellaStigmaPreview(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillId != ArabellaLeapSkillId ||
+            command.RangeOriginGridIndex < 0)
+            return;
+
+        string key = GetArabellaStigmaKey(command);
+        if (arabellaStigmaPreviews.ContainsKey(key))
+            return;
+
+        BattleGridEffectController controller = Object.FindFirstObjectByType<BattleGridEffectController>(
+            FindObjectsInactive.Include);
+        if (controller == null || !controller.TryCreatePlacementPreview(
+                command.RangeOriginGridIndex, ArabellaStigmaGridEffectId, 1f, out GameObject preview))
+        {
+            UnityEngine.Debug.LogWarning("[Arabella] GR_Stigma preview could not be created.");
+            return;
+        }
+
+        preview.name = "Arabella Stigma " + key;
+        GridEffectHoverTarget.Attach(preview, ArabellaStigmaGridEffectId, new Vector2(1f, 1f));
+        arabellaStigmaPreviews.Add(key, preview);
+    }
+
+    public void HideArabellaStigmaPreview(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillId != ArabellaLeapSkillId)
+            return;
+        string key = GetArabellaStigmaKey(command);
+        if (!arabellaStigmaPreviews.TryGetValue(key, out GameObject preview))
+            return;
+        arabellaStigmaPreviews.Remove(key);
+        if (preview != null)
+            Destroy(preview);
+    }
+
+    private void ClearArabellaStigmaPreviews()
+    {
+        foreach (GameObject preview in arabellaStigmaPreviews.Values)
+            if (preview != null)
+                Destroy(preview);
+        arabellaStigmaPreviews.Clear();
+    }
+
     private void ClearNocturnPortalDestinationIndicators()
     {
         ResolvePlayerSkillReservationController();
@@ -651,7 +727,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 plan.Actions.Sort((a, b) => a.Priority.CompareTo(b.Priority));
             }
 
-            int baseSlotIndex = FindAvailableMonsterSlot(runtime, plans, plan.Actions);
+            // 아라벨라는 턴마다 고정 슬롯 패턴을 사용합니다.
+            int baseSlotIndex = runtime.MonsterId == "Mon_12_1" || runtime.MonsterId == "Mon_12_2"
+                ? 0
+                : FindAvailableMonsterSlot(runtime, plans, plan.Actions);
 
             if (baseSlotIndex < 0)
             {
@@ -1059,6 +1138,31 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     {
         if (action == null)
             return baseSlotIndex;
+
+        // 아라벨라 전용 슬롯: 사냥 표식은 5, 고치 심기는 3,
+        // 사냥 강습은 1, 이동과 사방 찢기는 2, 맹독 세례는 3입니다.
+        if (runtime != null && runtime.MonsterId == "Mon_12_1")
+        {
+            switch (action.SkillId)
+            {
+                case "S_Monster_36": return 0;
+                case "S_Monster_35": return 0;
+                case "S_Monster_33": return 1;
+                case "S_Monster_37": return 2;
+                case "S_Monster_34": return 4;
+            }
+        }
+        if (runtime != null && runtime.MonsterId == "Mon_12_2")
+        {
+            switch (action.SkillId)
+            {
+                case "S_Monster_39": return 0;
+                case "S_Monster_38": return 1;
+                case "S_Monster_35": return 1;
+                case "S_Monster_40": return 2;
+                case "S_Monster_34": return 4;
+            }
+        }
 
         int slotCount = timelineController != null ? timelineController.SlotCount : 0;
 

@@ -10,27 +10,77 @@ public class SpawnSpiderEggEffect : BattleEffectBase
 
     protected override void Apply(BattleEffectContext context)
     {
-        int gridIndex = ResolveTargetGridIndex(context);
-
-        if (gridIndex < 0)
-            return;
-
+        int requestedGridIndex = ResolveTargetGridIndex(context);
         BattleGridEffectController controller =
             Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
 
-        if (controller == null || controller.HasEffect(gridIndex))
+        if (requestedGridIndex < 0 || controller == null || context?.GridManager == null)
             return;
 
-        if (BattleOccupancyService.IsOccupiedByMonster(gridIndex))
-            return;
+        // 예약 이후 위치가 바뀌었다면 장애물이나 유닛을 밀어내지 않고
+        // 아라벨라 주변의 비어 있는 다른 그리드를 찾아 고치를 생성합니다.
+        int placementIndex = FindAvailableEggGrid(context, controller, requestedGridIndex);
+        if (placementIndex >= 0)
+            controller.TryPlaceEffect(placementIndex, SpiderEggGridEffectId);
+    }
 
-        if (BattleOccupancyService.TryGetCharacterAtGrid(gridIndex, out BattleCharacter character) &&
-            !TryPushCharacterFromEggGrid(context, controller, character))
+    private static int FindAvailableEggGrid(
+        BattleEffectContext context,
+        BattleGridEffectController controller,
+        int requestedGridIndex)
+    {
+        GridManager grid = context.GridManager;
+        if (IsFreeEggGrid(requestedGridIndex, grid, controller))
+            return requestedGridIndex;
+
+        if (context.MonsterCaster == null || context.MonsterCaster.OccupiedGridIndices == null)
+            return -1;
+
+        Vector2Int requestedCoord = grid.IndexToCoord(requestedGridIndex);
+        int bestGridIndex = -1;
+        int bestDistance = int.MaxValue;
+        System.Collections.Generic.HashSet<int> visited = new();
+
+        foreach (int occupiedIndex in context.MonsterCaster.OccupiedGridIndices)
         {
-            return;
+            if (occupiedIndex < 0)
+                continue;
+
+            Vector2Int origin = grid.IndexToCoord(occupiedIndex);
+            for (int y = -1; y <= 1; y++)
+            {
+                for (int x = -1; x <= 1; x++)
+                {
+                    if (x == 0 && y == 0)
+                        continue;
+
+                    Vector2Int candidate = origin + new Vector2Int(x, y);
+                    if (!grid.IsValidCoord(candidate))
+                        continue;
+
+                    int index = grid.CoordToIndex(candidate);
+                    if (!visited.Add(index) || !IsFreeEggGrid(index, grid, controller))
+                        continue;
+
+                    int distance = Mathf.Abs(candidate.x - requestedCoord.x) +
+                                   Mathf.Abs(candidate.y - requestedCoord.y);
+                    if (distance < bestDistance)
+                    {
+                        bestDistance = distance;
+                        bestGridIndex = index;
+                    }
+                }
+            }
         }
 
-        controller.TryPlaceEffect(gridIndex, SpiderEggGridEffectId);
+        return bestGridIndex;
+    }
+
+    private static bool IsFreeEggGrid(int gridIndex, GridManager grid, BattleGridEffectController controller)
+    {
+        return gridIndex >= 0 && grid.GetCellByIndex(gridIndex) != null &&
+               !BattleOccupancyService.IsOccupiedByAnyUnit(gridIndex) &&
+               !controller.HasEffect(gridIndex) && !controller.IsBlocked(gridIndex);
     }
 
     private static int ResolveTargetGridIndex(BattleEffectContext context)

@@ -5040,6 +5040,8 @@ MonoBehaviour:
   turnMarkFront: {fileID: 4979701311912786871}
   turnMarkLine: {fileID: 2793501172467233148}
   turnMarkGlowImage: {fileID: 507808836587625279}
+  cancelledOrderMoveDown: 70
+  cancelledOrderFadeDuration: 0.2
   orderValuePulseScale: 1.1
   orderValuePulseDuration: 0.24
   ownerIconHoverScaleMultiplier: 1.1
@@ -5837,7 +5839,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 8, y: 40}
-  m_SizeDelta: {x: 7, y: 30}
+  m_SizeDelta: {x: 70, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &727196132557759269
 CanvasRenderer:

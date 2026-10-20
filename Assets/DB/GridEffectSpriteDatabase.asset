@@ -31,3 +31,5 @@ MonoBehaviour:
     prefab: {fileID: 7383548059930101559, guid: ecd05d8207b1dc7479b902ef4afeb80f, type: 3}
   - gridEffectId: GR_Skull_bone
     prefab: {fileID: 7292564715269318754, guid: 4c2c0e08a07f4cd4f9d61c80e5693dc9, type: 3}
+  - gridEffectId: GR_Stigma
+    prefab: {fileID: 7383548059930101559, guid: ecd05d8207b1dc7479b902ef4afeb80f, type: 3}

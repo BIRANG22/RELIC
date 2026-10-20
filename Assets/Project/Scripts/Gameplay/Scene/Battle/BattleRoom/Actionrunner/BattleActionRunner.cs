@@ -3566,6 +3566,13 @@ public class BattleActionRunner
         if (command == null || command.SkillData == null || IsDeadMonsterCommand(command))
             yield break;
 
+        // 아라벨라의 사냥 강습은 피해와 넉백에 더해 실제 착지 이동을 처리합니다.
+        if (command.MonsterId == "Mon_12_2" && command.SkillId == "S_Monster_39")
+        {
+            yield return ExecuteArabellaLeap(command);
+            yield break;
+        }
+
         // 사슬 이동은 투사 데이터의 타입이나 표기와 관계없이 이동 처리로 보냅니다.
         if (IsNocturnPortalMove(command))
         {
@@ -3579,6 +3586,170 @@ public class BattleActionRunner
         {
             yield return ExecuteMonsterSkill(command);
         }
+    }
+
+    private IEnumerator ExecuteArabellaLeap(MonsterReservedCommand command)
+    {
+        MonsterUnit monster = unitFinder.FindMonsterUnit(command.RuntimeId);
+        BattleMonsterTurnPlanner planner = Object.FindFirstObjectByType<BattleMonsterTurnPlanner>(
+            FindObjectsInactive.Include);
+        // 낙인은 성공 여부와 관계없이 강습 시작 시 제거합니다.
+        if (planner != null)
+            planner.HideArabellaStigmaPreview(command);
+
+        if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead ||
+            gridManager == null || monster.MainGridIndex < 0 || command.RangeOriginGridIndex < 0)
+            yield break;
+
+        int destinationIndex = command.RangeOriginGridIndex;
+        GridCell cell = gridManager.GetCellByIndex(destinationIndex);
+        if (cell == null)
+            yield break;
+
+        Vector2Int from = gridManager.IndexToCoord(monster.MainGridIndex);
+        Vector2Int to = gridManager.IndexToCoord(destinationIndex);
+        Vector2Int delta = to - from;
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+        if (delta.x != 0)
+        {
+            bool right = delta.x > 0;
+            if (facing != null)
+                facing.FaceRight(right);
+            monster.RuntimeData.Direction = right ? BattleDirection.Right : BattleDirection.Left;
+        }
+
+        BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+        if (animator != null)
+            animator.PlayMonsterSkillAction(command);
+
+        // 착지점의 캐릭터는 바라보는 방향 반대로 밀어 이동 공간을 확보합니다.
+        BattleCharacter initiallyOccupiedCharacter = null;
+        if (BattleOccupancyService.TryGetCharacterAtGrid(destinationIndex, out BattleCharacter occupant) &&
+            occupant != null && occupant.RuntimeData != null && !occupant.RuntimeData.IsDead)
+        {
+            initiallyOccupiedCharacter = occupant;
+            BattleUnitFacing targetFacing = occupant.GetComponent<BattleUnitFacing>();
+            BattleDirection reverse = targetFacing != null
+                ? (targetFacing.IsFacingRight ? BattleDirection.Left : BattleDirection.Right)
+                : (occupant.RuntimeData.Direction == BattleDirection.Right
+                    ? BattleDirection.Left : BattleDirection.Right);
+            new KnockbackEffect().Execute(new BattleEffectContext
+            {
+                MonsterCaster = monster,
+                PlayerTarget = occupant,
+                MonsterSkillData = command.SkillData,
+                MonsterCommand = command,
+                GridManager = gridManager,
+                Direction = reverse,
+                EffectId = "E_Knockback",
+                Value = 1,
+                Count = 1
+            });
+            // 반대 방향 넉백이 벽이나 점유로 실패해도 착지가 막히지 않게
+            // 주변의 유효한 빈칸으로 캐릭터를 밀어냅니다.
+            if (occupant.CurrentGridIndex == destinationIndex)
+            {
+                Vector2Int[] offsets =
+                {
+                    reverse == BattleDirection.Right ? Vector2Int.right : Vector2Int.left,
+                    Vector2Int.up, Vector2Int.down,
+                    reverse == BattleDirection.Right ? Vector2Int.left : Vector2Int.right
+                };
+                for (int i = 0; i < offsets.Length; i++)
+                {
+                    Vector2Int candidate = to + offsets[i];
+                    if (!gridManager.IsValidCoord(candidate))
+                        continue;
+                    int candidateIndex = gridManager.CoordToIndex(candidate);
+                    if (BattleOccupancyService.IsOccupiedByAnyUnit(candidateIndex) ||
+                        IsGridEffectBlocked(candidateIndex))
+                        continue;
+                    occupant.SetGridIndex(candidateIndex);
+                    occupant.transform.position = gridManager.GetWorldPositionByIndex(candidateIndex);
+                    UpdatePartyGridIndex(occupant.CharacterId, candidateIndex);
+                    break;
+                }
+            }
+            // 강제 이동 시각 효과가 위치를 따라오도록 짧은 시간을 확보합니다.
+            yield return new WaitForSeconds(BattlePresentationSpeedSettings.ScaleDuration(ForcedMoveVisualCompletionDelay));
+        }
+
+        // 강습은 일반 이동과 달리 중간 경로의 충돌 검사를 거치지 않습니다.
+        // 착지점에 유닛이 남아 있다면 중복 점유를 만들지 않고 현재 위치에서만 공격합니다.
+        if (!BattleOccupancyService.IsOccupiedByAnyUnit(destinationIndex, null, monster) &&
+            !IsGridEffectBlocked(destinationIndex))
+        {
+            Vector3 pos = gridManager.GetWorldPositionByIndex(destinationIndex);
+            yield return MoveTransformSmooth(monster.transform, monster.transform.position, pos,
+                MoveAnimationDuration);
+            monster.MoveOccupiedCells(delta, gridManager);
+        }
+        else
+        {
+            Debug.LogWarning("[Arabella] Leap destination remains occupied; landing was cancelled.");
+        }
+
+        // 착지점을 중심으로 주변 8칸과 중심 칸에 피해/넉백을 1회씩 적용합니다.
+        // 예약 시의 공격 범위가 아니라 실제 착지 목적지를 사용합니다.
+        List<BattleCharacter> hitTargets = new();
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter target = characters[i];
+            if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead ||
+                target.CurrentGridIndex < 0)
+                continue;
+            Vector2Int coord = gridManager.IndexToCoord(target.CurrentGridIndex);
+            if ((Mathf.Abs(coord.x - to.x) <= 1 && Mathf.Abs(coord.y - to.y) <= 1) ||
+                target == initiallyOccupiedCharacter)
+                hitTargets.Add(target);
+        }
+
+        int damageValue = TryGetMonsterSkillEffectValue(command.SkillData, "E_Strike", out int strike)
+            ? strike : 0;
+        int knockbackValue = TryGetMonsterSkillEffectValue(command.SkillData, "E_Knockback", out int knockback)
+            ? knockback : 0;
+        for (int i = 0; i < hitTargets.Count; i++)
+        {
+            BattleCharacter target = hitTargets[i];
+            if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
+                continue;
+            Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex);
+            BattleDirection pushDirection = targetCoord.x > to.x ? BattleDirection.Right :
+                targetCoord.x < to.x ? BattleDirection.Left :
+                (target.RuntimeData.Direction == BattleDirection.Right ? BattleDirection.Left : BattleDirection.Right);
+            if (damageValue > 0)
+                new StrikeEffect().Execute(new BattleEffectContext
+                {
+                    MonsterCaster = monster,
+                    PlayerTarget = target,
+                    MonsterCommand = command,
+                    MonsterSkillData = command.SkillData,
+                    GridManager = gridManager,
+                    Direction = pushDirection,
+                    EffectId = "E_Strike",
+                    Value = damageValue,
+                    Count = 1
+                });
+            if (knockbackValue > 0 && target != initiallyOccupiedCharacter && !target.RuntimeData.IsDead)
+                new KnockbackEffect().Execute(new BattleEffectContext
+                {
+                    MonsterCaster = monster,
+                    PlayerTarget = target,
+                    MonsterCommand = command,
+                    MonsterSkillData = command.SkillData,
+                    GridManager = gridManager,
+                    Direction = pushDirection,
+                    EffectId = "E_Knockback",
+                    Value = knockbackValue,
+                    Count = 1
+                });
+        }
+        hudService.RefreshHUDs();
+        yield return new WaitForSeconds(GetActiveActionBeatDelay());
+        if (animator != null)
+            animator.PlayIdle();
     }
 
     private IEnumerator ExecuteMonsterMove(MonsterReservedCommand command)
