@@ -15390,7 +15390,7 @@ GameObject:
   - component: {fileID: 4177255423628946576}
   - component: {fileID: 5269821309455879912}
   m_Layer: 0
-  m_Name: Vfx_dead
+  m_Name: Vfx_dead_vespa
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16052,7 +16052,7 @@ ParticleSystem:
     donutRadius: 0.2
     m_Position: {x: 0, y: 0, z: 0}
     m_Rotation: {x: 0, y: 0, z: 0}
-    m_Scale: {x: 0.15, y: 0.15, z: 0.15}
+    m_Scale: {x: 0.3, y: 0.3, z: 0.3}
     placementMode: 2
     m_MeshMaterialIndex: 0
     m_MeshNormalOffset: 0
@@ -16928,7 +16928,7 @@ ParticleSystem:
     y:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 2
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -25407,7 +25407,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.15, y: 0.15, z: 0.15}
+  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2774883422726282200}
@@ -25456,7 +25456,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 1030830811, guid: 43b3eb1119e689c448f3a3046ab959fc, type: 3}
+  m_Sprite: {fileID: 1828341190, guid: 2e595fe5a4c6e6e44aa3e3025e9b4696, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
