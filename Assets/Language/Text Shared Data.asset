@@ -6580,7 +6580,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 23949548351365120
-    m_Key: ui.record.undiscovered
+    m_Key: ui.record.name.2a030ed7
     m_Metadata:
       m_Items: []
   - m_Id: 23949548351365121
@@ -7089,6 +7089,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 9164888147097975840
     m_Key: skill.sentence.restore.amount.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25428606029373440
+    m_Key: data.grid_effect.gr_skull_bone.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25428606079705088
+    m_Key: data.grid_effect.gr_skull_bone.tooltip
     m_Metadata:
       m_Items: []
   m_Metadata:

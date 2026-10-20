@@ -5434,7 +5434,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626026
-    m_Localized: It is an obstacle that hinders movement.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626027
@@ -5491,7 +5491,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626042
-    m_Localized: Darkness gathers where the shadow falls.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626043
@@ -7280,8 +7280,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975827
-    m_Localized: At the start of the next turn, revives one mutant that died this
-      turn with 30% of its maximum HP.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975828
