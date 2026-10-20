@@ -103,15 +103,11 @@ public static class LobbyWorldCharacterSpawner
         string characterId,
         Collider2D hoverCollider)
     {
-        GetPresentation(
+        GetRendererPresentation(
             characterId,
             out bool flipX,
             out int frontSortingOrder,
-            out int backSortingOrder,
-            out Vector3 lightPosition,
-            out float lightRadius,
-            out float lightOuterAngle,
-            out float falloffIntensity);
+            out int backSortingOrder);
 
         SpriteRenderer[] renderers = instance.GetComponentsInChildren<SpriteRenderer>(true);
         if (renderers.Length > 0)
@@ -127,41 +123,11 @@ public static class LobbyWorldCharacterSpawner
             renderers[1].sortingOrder = backSortingOrder;
         }
 
-        var lightObject = new GameObject("light");
-        lightObject.SetActive(false);
-        lightObject.transform.SetParent(instance.transform, false);
-        lightObject.transform.localPosition = lightPosition;
-        lightObject.transform.localRotation = Quaternion.Euler(0f, 0f, 180f);
-        lightObject.transform.localScale = Vector3.one * 1.6539199f;
-
-        Light2D light = lightObject.AddComponent<Light2D>();
-        light.lightType = Light2D.LightType.Point;
-        light.color = new Color(0.3f, 0.3f, 0.3f, 1f);
-        light.intensity = 2f;
-        light.falloffIntensity = falloffIntensity;
-        light.pointLightInnerAngle = 0f;
-        light.pointLightOuterRadius = lightRadius;
-        light.pointLightOuterAngle = lightOuterAngle;
-        light.volumeIntensity = 0.1f;
-        light.volumetricEnabled = true;
-        light.targetSortingLayers = characterId == "Char_01" || characterId == "Char_02"
-            ? new[] { unchecked((int)3953243251u), unchecked((int)2187390285u) }
-            : new[]
-            {
-                unchecked((int)3953243251u),
-                unchecked((int)2187390285u),
-                735699439,
-                0,
-                1597553239,
-                unchecked((int)4242771651u)
-            };
-
-        DBAudioSource audioSource = lightObject.AddComponent<DBAudioSource>();
-        audioSource.SetSoundId("ui.statue.hover");
-        audioSource.SetVolume(1f);
-        lightObject.SetActive(true);
-
         if (hoverCollider == null)
+            return;
+
+        Light2D light = instance.GetComponentInChildren<Light2D>(true);
+        if (light == null)
             return;
 
         UIHoverLight2DFalloff hoverLight = hoverCollider.GetComponent<UIHoverLight2DFalloff>();
@@ -171,15 +137,11 @@ public static class LobbyWorldCharacterSpawner
         hoverLight.Configure(light);
     }
 
-    private static void GetPresentation(
+    private static void GetRendererPresentation(
         string characterId,
         out bool flipX,
         out int frontSortingOrder,
-        out int backSortingOrder,
-        out Vector3 lightPosition,
-        out float lightRadius,
-        out float lightOuterAngle,
-        out float falloffIntensity)
+        out int backSortingOrder)
     {
         flipX = characterId != "Char_02";
         backSortingOrder = characterId == "Char_03" ? 2 : 1;
@@ -190,32 +152,6 @@ public static class LobbyWorldCharacterSpawner
             _ => 2
         };
 
-        lightPosition = characterId switch
-        {
-            "Char_01" => new Vector3(0.3f, 22.6f, 0f),
-            "Char_02" => new Vector3(0f, 30.98f, 0f),
-            "Char_03" => new Vector3(0f, 31.4f, 0f),
-            "Char_04" => new Vector3(0.2f, 30.6f, 0f),
-            _ => Vector3.zero
-        };
-
-        lightRadius = characterId switch
-        {
-            "Char_01" => 11.5f,
-            "Char_02" => 15.55f,
-            _ => 15.8f
-        };
-
-        lightOuterAngle = characterId == "Char_01" ? 10.46311f : 7.434711f;
-
-        falloffIntensity = characterId switch
-        {
-            "Char_01" => 0.044f,
-            "Char_02" => 0.058f,
-            "Char_03" => 0.024f,
-            "Char_04" => 0.031f,
-            _ => 1f
-        };
     }
 
     public static void ReplaceSpawned(
