@@ -232,6 +232,7 @@ public static class LocalizationKeys
         public const string UnknownUseCount = "ui.record.unknown_use_count";
         public const string NoConsumption = "ui.record.no_consumption";
         public const string UnknownDescription = "ui.record.unknown_description";
+        public const string Undiscovered = "ui.record.undiscovered";
     }
 
     public static class Resource { public const string Hp = "common.hp"; public const string Mana = "common.mana"; public const string Karma = "resource.karma"; public const string Move = "common.move"; }

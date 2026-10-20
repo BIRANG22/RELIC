@@ -550,7 +550,10 @@ public sealed class RecordPanelUI : MonoBehaviour
     {
         RecordIconSlotUI slot = Instantiate(iconSlotPrefab, recordGridContent, false);
         slot.gameObject.SetActive(true);
-        slot.Initialize(discovered ? icon : null, discovered ? displayName : "미발견", discovered ? HandleSlotClicked : null, discovered, HandleSlotHover);
+        string slotDisplayName = discovered
+            ? displayName
+            : GameLocalization.Get(LocalizationKeys.Record.Undiscovered);
+        slot.Initialize(discovered ? icon : null, slotDisplayName, discovered ? HandleSlotClicked : null, discovered, HandleSlotHover);
         if (discovered) clickableInfoSlots.Add(slot);
         if (!string.IsNullOrWhiteSpace(rarity))
             slot.SetBackColor(GetRarityDisplayColor(rarity));
