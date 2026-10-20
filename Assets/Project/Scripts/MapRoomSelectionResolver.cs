@@ -60,7 +60,10 @@ namespace Relic.Gameplay.Data
                 return;
 
             node.MapId = resolvedMap.MapId;
-            node.Type = resolvedMap.Type;
+            // 수동 지정 맵은 슬롯에 설정한 방 종류를 유지합니다.
+            // 예: 데이터 Type=Test, 슬롯 Type=Common이면 일반 전투방으로 진입합니다.
+            if (!node.IsMapIdOverride)
+                node.Type = resolvedMap.Type;
             node.EventId = EventIdUtility.Normalize(resolvedMap.EventId);
         }
 
@@ -86,6 +89,17 @@ namespace Relic.Gameplay.Data
             if (unvisited.Count == 0)
                 unvisited = allCommon;
 
+            // 레이어 1~3의 난이도는 고정입니다. 해당 그룹을 모두 방문한 경우에도
+            // 다른 난이도로 넘어가지 않고 해당 그룹 안에서만 재선택합니다.
+            if (layerIndex >= 1 && layerIndex <= 3)
+            {
+                string requiredGroup = layerIndex == 1 ? "Weak" : "Normal";
+                List<MapData> required = FilterMaps(unvisited, map => Same(map.BattleGroup, requiredGroup));
+                if (required.Count == 0)
+                    required = FilterMaps(allCommon, map => Same(map.BattleGroup, requiredGroup));
+                return PickByWeight(required);
+            }
+
             string group = PickCommonGroup(layerIndex, unvisited);
             List<MapData> grouped = FilterMaps(unvisited, map => Same(map.BattleGroup, group));
 
@@ -97,7 +111,7 @@ namespace Relic.Gameplay.Data
             }
 
             if (grouped.Count == 0)
-                grouped = unvisited;
+                grouped = FilterMaps(allCommon, map => IsCommonGroupEligible(layerIndex, map.BattleGroup, allCommon));
 
             return PickByWeight(grouped);
         }
@@ -197,21 +211,22 @@ namespace Relic.Gameplay.Data
             bool hasHard = HasGroup(candidates, "Hard");
 
             // 확률은 해당 레이어에서 사용 가능한 미방문 그룹에만 적용합니다.
-            // Normal 맵을 모두 방문했다면 Layer 5~7에서는 Hard만 선택합니다.
+            // Layer 1은 Weak, Layer 2~3은 Normal만 선택합니다.
+            // Layer 5~7에서 Normal을 모두 사용했다면 Hard만 선택합니다.
             switch (layerIndex)
             {
                 case 1:
-                    return PickGroupByChance(("Weak", hasWeak, 0.80f), ("Normal", hasNormal, 0.20f));
+                    return PickGroupByChance(("Weak", hasWeak, 1f));
                 case 2:
-                    return PickGroupByChance(("Weak", hasWeak, 0.50f), ("Normal", hasNormal, 0.50f));
+                    return PickGroupByChance(("Normal", hasNormal, 1f));
                 case 3:
-                    return PickGroupByChance(("Normal", hasNormal, 0.90f), ("Hard", hasHard, 0.10f));
+                    return PickGroupByChance(("Normal", hasNormal, 1f));
                 case 5:
-                    return PickGroupByChance(("Normal", hasNormal, 0.60f), ("Hard", hasHard, 0.40f));
+                    return PickGroupByChance(("Normal", hasNormal, 0.80f), ("Hard", hasHard, 0.20f));
                 case 6:
                     return PickGroupByChance(("Normal", hasNormal, 0.50f), ("Hard", hasHard, 0.50f));
                 case 7:
-                    return PickGroupByChance(("Normal", hasNormal, 0.40f), ("Hard", hasHard, 0.60f));
+                    return PickGroupByChance(("Normal", hasNormal, 0.25f), ("Hard", hasHard, 0.75f));
                 default:
                     // 침식도로 교체된 방 등: 해당 구간에서 가까운 확률을 사용합니다.
                     return layerIndex < 3
@@ -223,8 +238,10 @@ namespace Relic.Gameplay.Data
         private static bool IsCommonGroupEligible(int layerIndex, string battleGroup, List<MapData> candidates)
         {
             string group = NormalizeGroup(battleGroup);
-            if (layerIndex == 1 || layerIndex == 2)
-                return Same(group, "Weak") || Same(group, "Normal");
+            if (layerIndex == 1)
+                return Same(group, "Weak");
+            if (layerIndex == 2 || layerIndex == 3)
+                return Same(group, "Normal");
             return Same(group, "Normal") || Same(group, "Hard");
         }
 
