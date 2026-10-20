@@ -104,6 +104,8 @@ public class BattleSceneController : MonoBehaviour
     private bool forceNextBattleRoomLoad;
     private bool pendingBattleRoomUsesBossIntro;
     private readonly BattleRoomIntroLoadGate battleRoomIntroLoadGate = new();
+    private Coroutine deferredBossIntroRoutine;
+    private bool deferBattlePartyEntryUntilUncover;
 
     private void Awake()
     {
@@ -736,12 +738,20 @@ public class BattleSceneController : MonoBehaviour
         battleMapIntroText = Object.FindFirstObjectByType<BattleMapIntroText>(FindObjectsInactive.Include);
     }
 
-    private void ShowRoomBackground(GameObject room, GeneratedMapNodeData nodeData, bool playBossReveal = false)
+    private void ShowRoomBackground(
+        GameObject room,
+        GeneratedMapNodeData nodeData,
+        bool useBossBackground = false,
+        bool playBossRevealImmediately = true)
     {
         AutoFindSharedRoomPresentationIfNeeded();
         if (sharedBackgroundController != null)
         {
-            sharedBackgroundController.ShowForMap(nodeData.MapId, nodeData.LayerIndex, playBossReveal);
+            sharedBackgroundController.ShowForMap(
+                nodeData.MapId,
+                nodeData.LayerIndex,
+                useBossBackground,
+                playBossRevealImmediately);
             return;
         }
 
@@ -756,7 +766,11 @@ public class BattleSceneController : MonoBehaviour
             return;
         }
 
-        controller.ShowForMap(nodeData.MapId, nodeData.LayerIndex, playBossReveal);
+        controller.ShowForMap(
+            nodeData.MapId,
+            nodeData.LayerIndex,
+            useBossBackground,
+            playBossRevealImmediately);
     }
 
     private void ApplyRoomVisual(GameObject room, GeneratedMapNodeData nodeData)
@@ -1078,6 +1092,7 @@ public class BattleSceneController : MonoBehaviour
         while (sceneTransition != null && sceneTransition.IsPlaying)
             yield return null;
 
+        bool roomEntryStarted = false;
         if (positionPanel != null && positionPanel.activeSelf)
         {
             float holdDuration = Mathf.Max(0f, positionPanelHoldDuration);
@@ -1088,6 +1103,10 @@ public class BattleSceneController : MonoBehaviour
                 holdElapsed += Time.unscaledDeltaTime;
                 yield return null;
             }
+
+            HandleSelectedMap(entryNode);
+            StartSharedPartyEntryTransitionIfNeeded();
+            roomEntryStarted = true;
 
             float fadeDuration = Mathf.Max(0f, positionPanelFadeDuration);
 
@@ -1110,8 +1129,12 @@ public class BattleSceneController : MonoBehaviour
             positionPanel.SetActive(false);
         }
 
-        HandleSelectedMap(entryNode);
-        StartSharedPartyEntryTransitionIfNeeded();
+        if (!roomEntryStarted)
+        {
+            HandleSelectedMap(entryNode);
+            StartSharedPartyEntryTransitionIfNeeded();
+        }
+
         CountPresentedRoomEntry(entryNode);
         PlayPendingRoomIntroText();
         PlayEventRoomEntranceAnimationIfNeeded();
@@ -1344,12 +1367,25 @@ public class BattleSceneController : MonoBehaviour
             $"{nodeData.MapId} / Node:{nodeData.NodeIndex} / {nodeData.Type}"
         );
 
-        await PlayMapToRoomTransitionAsync(() =>
-        {
-            CleanupCompletedBattleRoom();
-            HandleSelectedMap(nodeData);
-            StartSharedPartyEntryTransitionIfNeeded();
-        });
+        bool isBattleNode = IsBattleNodeType(nodeData.Type);
+        await PlayMapToRoomTransitionAsync(
+            () =>
+            {
+                CleanupCompletedBattleRoom();
+                deferBattlePartyEntryUntilUncover = isBattleNode;
+                HandleSelectedMap(nodeData);
+
+                if (!isBattleNode)
+                    StartSharedPartyEntryTransitionIfNeeded();
+            },
+            () =>
+            {
+                if (!isBattleNode)
+                    return;
+
+                PlayPreparedBattleRoomPartyEntry();
+                deferBattlePartyEntryUntilUncover = false;
+            });
 
         CountPresentedRoomEntry(nodeData);
         PlayEventRoomEntranceAnimationIfNeeded();
@@ -1620,7 +1656,9 @@ public class BattleSceneController : MonoBehaviour
         UpdateLastActiveRoomState();
     }
 
-    private async Task PlayMapToRoomTransitionAsync(System.Action onCovered)
+    private async Task PlayMapToRoomTransitionAsync(
+        System.Action onCovered,
+        System.Action onUncoverStarted = null)
     {
         isChangingRoom = true;
 
@@ -1630,6 +1668,7 @@ public class BattleSceneController : MonoBehaviour
         {
             await mapPartyExitTask;
             onCovered?.Invoke();
+            onUncoverStarted?.Invoke();
             PlayPendingRoomIntroText();
             isChangingRoom = false;
             UpdateLastActiveRoomState();
@@ -1637,7 +1676,7 @@ public class BattleSceneController : MonoBehaviour
         }
 
         await Task.WhenAll(
-            battleTransition.PlayMapToRoomAsync(onCovered),
+            battleTransition.PlayMapToRoomAsync(onCovered, onUncoverStarted),
             mapPartyExitTask);
         PlayPendingRoomIntroText();
         isChangingRoom = false;
@@ -1722,6 +1761,14 @@ public class BattleSceneController : MonoBehaviour
 
         sharedPartyEntryPrepared = false;
         _ = sharedPartyTransitionPresenter.PlayPreparedEntryAsync();
+    }
+
+    private void PlayPreparedBattleRoomPartyEntry()
+    {
+        BattleRoomLoader loader = battleRoom != null
+            ? battleRoom.GetComponentInChildren<BattleRoomLoader>(true)
+            : null;
+        loader?.PlayPreparedPartyEntry();
     }
 
     private void PrepareSharedPartyEntryIfNeeded()
@@ -1926,7 +1973,7 @@ public class BattleSceneController : MonoBehaviour
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController
             ? GameLocalization.Get("battle.intro.battle_start")
             : null;
-        ShowRoomBackground(battleRoom, nodeData, true);
+        ShowRoomBackground(battleRoom, nodeData, true, false);
         SetBack2TurnNumber(1);
         OpenRoom(battleRoom, "BattleRoom");
         ApplyRoomVisual(battleRoom, nodeData);
@@ -2128,6 +2175,15 @@ public class BattleSceneController : MonoBehaviour
 
         CancelPendingBattleRoomIntro();
 
+        if (pendingBattleRoomUsesBossIntro)
+        {
+            SetBattleRoomIntroPlaying(true);
+            SuppressBattleRoomExecutionUiUntilPlayerInputReady();
+            LoadBattleRoomNow();
+            deferredBossIntroRoutine = StartCoroutine(PlayDeferredBossIntroRoutine());
+            return;
+        }
+
         IBattleRoomIntroSequence introSequence = ResolveBattleRoomIntroSequence();
 
         if (introSequence == null || introSequence.IsCompleted)
@@ -2189,6 +2245,66 @@ public class BattleSceneController : MonoBehaviour
     private void CancelPendingBattleRoomIntro()
     {
         battleRoomIntroLoadGate.Cancel();
+
+        if (deferredBossIntroRoutine != null)
+        {
+            StopCoroutine(deferredBossIntroRoutine);
+            deferredBossIntroRoutine = null;
+        }
+    }
+
+    private IEnumerator PlayDeferredBossIntroRoutine()
+    {
+        // StartCoroutine must return before an early fallback can clear the handle.
+        yield return null;
+
+        BattleRoomLoader loader = battleRoom != null
+            ? battleRoom.GetComponentInChildren<BattleRoomLoader>(true)
+            : null;
+
+        while (battleRoom != null && battleRoom.activeInHierarchy &&
+               loader != null && !loader.IsLoaded)
+        {
+            yield return null;
+        }
+
+        BattleRoomPartyTransitionPresenter partyPresenter =
+            ResolveActiveBattleRoomPartyTransitionPresenter();
+        while (partyPresenter != null && partyPresenter.IsPlaying)
+            yield return null;
+
+        AutoFindSharedRoomPresentationIfNeeded();
+        if (sharedBackgroundController == null ||
+            !sharedBackgroundController.PlayCurrentBossReveal())
+        {
+            CompleteDeferredBossIntro();
+            yield break;
+        }
+
+        IBattleRoomIntroSequence introSequence = ResolveBattleRoomIntroSequence();
+        if (introSequence == null || introSequence.IsCompleted)
+        {
+            CompleteDeferredBossIntro();
+            yield break;
+        }
+
+        deferredBossIntroRoutine = null;
+        battleRoomIntroLoadGate.Request(introSequence, CompleteDeferredBossIntro);
+    }
+
+    private void CompleteDeferredBossIntro()
+    {
+        deferredBossIntroRoutine = null;
+
+        BattleRoomLoader loader = battleRoom != null
+            ? battleRoom.GetComponentInChildren<BattleRoomLoader>(true)
+            : null;
+        loader?.CompleteDeferredMonsterSpawn();
+
+        if (pendingBattleRoomUsesBossIntro && BattleCameraController.Instance != null)
+            BattleCameraController.Instance.ForceReturnSceneStartPositionImmediate();
+
+        SetBattleRoomIntroPlaying(false);
     }
 
     private void HandleBattleRoomIntroCompletedAndLoad()
@@ -2232,7 +2348,10 @@ public class BattleSceneController : MonoBehaviour
 
         bool forceReload = forceNextBattleRoomLoad;
         forceNextBattleRoomLoad = false;
-        loader.LoadBattleFromSceneController(forceReload);
+        loader.LoadBattleFromSceneController(
+            forceReload,
+            deferBattlePartyEntryUntilUncover,
+            pendingBattleRoomUsesBossIntro);
     }
 
     private static bool IsBattleNodeType(string nodeType)
