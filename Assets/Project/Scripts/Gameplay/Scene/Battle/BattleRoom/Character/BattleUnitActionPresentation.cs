@@ -5,15 +5,18 @@ using UnityEngine.Serialization;
 [Serializable]
 public class BattleUnitActionPresentation
 {
-    [Tooltip("ÀÌ ¿¬Ãâ¿¡ ¿¬°áÇÒ ¸ó½ºÅÍ ½ºÅ³ ID (¿¹: S_Monster_40). ºñ¾î ÀÖÀ¸¸é ±âÁ¸ ActionIndex ¹æ½Ä¿¡¼­ »ç¿ëµË´Ï´Ù.")]
+    [Tooltip("ì´ ì—°ì¶œì— ì—°ê²°í•  ëª¬ìŠ¤í„° ìŠ¤í‚¬ ID (ì˜ˆ: S_Monster_40). ë¹„ì–´ ìˆìœ¼ë©´ ê¸°ì¡´ ActionIndex ë°©ì‹ì—ì„œ ì‚¬ìš©ë©ë‹ˆë‹¤.")]
     public string monsterSkillId;
 
-    [Tooltip("Action Àü¿¡ Àá±ñ º¸¿©ÁÙ ÁØºñ ¾Ö´Ï¸ŞÀÌ¼Ç State. ºñ¾î ÀÖ°Å³ª Animator¿¡ State°¡ ¾øÀ¸¸é Áï½Ã ActionÀ» Àç»ıÇÕ´Ï´Ù.")]
+    [Tooltip("Action ì „ì— ì ê¹ ë³´ì—¬ì¤„ ì¤€ë¹„ ì• ë‹ˆë©”ì´ì…˜ State. ë¹„ì–´ ìˆê±°ë‚˜ Animatorì— Stateê°€ ì—†ìœ¼ë©´ ì¦‰ì‹œ Actionì„ ì¬ìƒí•©ë‹ˆë‹¤.")]
     public string prepareStateName;
 
     [Min(0f)]
-    [Tooltip("Prepare State¸¦ À¯ÁöÇÒ ½Ã°£(ÃÊ). Animator Àç»ı ¼ÓµµÀÇ ¿µÇâÀ» ¹Ş½À´Ï´Ù.")]
+    [Tooltip("Prepare Stateë¥¼ ìœ ì§€í•  ì‹œê°„(ì´ˆ). Animator ì¬ìƒ ì†ë„ì˜ ì˜í–¥ì„ ë°›ìŠµë‹ˆë‹¤.")]
     public float prepareDuration = 0.15f;
+
+    [Tooltip("Prepare ë‹¨ê³„ê°€ ì‹œì‘ë  ë•Œ ì‹œì „ì ìœ„ì¹˜ì— ì¬ìƒí•  VFXì…ë‹ˆë‹¤.")]
+    public BattleVfxEntry prepareVfx;
 
     [FormerlySerializedAs("actionStateName")]
     public string stateName;

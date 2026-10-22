@@ -563,6 +563,41 @@ public class BattleUnitAnimator : MonoBehaviour
         PlayMonsterSkillAction(command.SkillData);
     }
 
+    /// <summary>
+    /// 몬스터 행동의 Prepare 단계만 재생하고 설정된 대기 시간을 반환합니다.
+    /// 이동처럼 Prepare와 Action 사이에 전투 상태 변경이 필요한 실행기가 사용합니다.
+    /// </summary>
+    public float PlayMonsterSkillPrepare(MonsterReservedCommand command)
+    {
+        LastScheduledPrepareWaitDuration = 0f;
+
+        if (!TryGetMonsterActionPresentation(command, out BattleUnitActionPresentation presentation))
+            return 0f;
+
+        bool hasPrepareState = CanPlayOptionalState(presentation.prepareStateName);
+        bool hasPrepareVfx = HasVfx(presentation.prepareVfx);
+        if (!hasPrepareState && !hasPrepareVfx)
+            return 0f;
+
+        ApplyPresentationPlaybackSpeed();
+        if (hasPrepareState)
+            PlayOptionalState(presentation.prepareStateName);
+        if (hasPrepareVfx)
+            SpawnVfx(presentation.prepareVfx);
+
+        LastScheduledPrepareWaitDuration = GetPrepareWaitDuration(presentation.prepareDuration);
+        return LastScheduledPrepareWaitDuration;
+    }
+
+    /// <summary>
+    /// 몬스터 행동의 Action 단계만 재생합니다.
+    /// </summary>
+    public void PlayMonsterSkillActionPhase(MonsterReservedCommand command)
+    {
+        if (TryGetMonsterActionPresentation(command, out BattleUnitActionPresentation presentation))
+            PlayPresentationAction(presentation, command);
+    }
+
 
     private static bool IsActualMonsterMove(MonsterReservedCommand command)
     {
@@ -945,10 +980,13 @@ public class BattleUnitAnimator : MonoBehaviour
 
         ApplyPresentationPlaybackSpeed();
 
+        bool hasPrepareState = CanPlayOptionalState(presentation.prepareStateName);
+        bool hasPrepareVfx = HasVfx(presentation.prepareVfx);
+
         // 같은 행동의 2타 이후처럼 Prepare를 생략해야 하는 경우에는 즉시 Action을 재생합니다.
-        // Prepare가 비어 있거나 Animator에 존재하지 않는 경우에도 기존처럼 즉시 Action으로 넘어갑니다.
+        // Prepare 애니메이션과 VFX가 모두 비어 있으면 기존처럼 즉시 Action으로 넘어갑니다.
         if (!playPrepare ||
-            !CanPlayOptionalState(presentation.prepareStateName) ||
+            (!hasPrepareState && !hasPrepareVfx) ||
             presentation.prepareDuration <= 0f)
         {
             onActionStart?.Invoke();
@@ -977,9 +1015,9 @@ public class BattleUnitAnimator : MonoBehaviour
             yield break;
         }
 
-        // Prepare 단계에서는 애니메이션만 재생합니다.
-        // VFX와 그 VFX에 연결된 사운드는 Action 시작 시점까지 재생하지 않습니다.
+        // Prepare 단계의 애니메이션과 전용 VFX를 함께 재생합니다.
         PlayOptionalState(presentation.prepareStateName);
+        SpawnVfx(presentation.prepareVfx);
 
         if (waitDuration > 0f)
             yield return new WaitForSeconds(waitDuration);

@@ -787,10 +787,25 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - monsterSkillId: 
-    prepareStateName: 
-    prepareDuration: 0.15
-    stateName: 
+  - monsterSkillId: S_Monster_39
+    prepareStateName: AttackAction5_b_1
+    prepareDuration: 0.4
+    prepareVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
+    stateName: AttackAction5_b_2
     vfx:
       prefab: {fileID: 0}
       flipType: 0
