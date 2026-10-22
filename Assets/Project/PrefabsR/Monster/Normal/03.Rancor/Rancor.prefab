@@ -388,7 +388,7 @@ MonoBehaviour:
   objectsToDisable:
   - {fileID: 2414033640970805073}
   duration: 1
-  dissolveMaterial: {fileID: 2100000, guid: 5163f1b8bb2f4b1e8b8ec5bd8fa85883, type: 2}
+  dissolveMaterial: {fileID: 2100000, guid: 8e8fa23dede22854ca5dc0382b2d2fb0, type: 2}
 --- !u!114 &4235353658333153540
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -609,6 +609,7 @@ MonoBehaviour:
   statusVfxDatabase: {fileID: 11400000, guid: bfb06368a30649efa4153673eb02d38c, type: 2}
   playerSkillPresentations:
     power:
+      monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
       stateName: 
@@ -640,6 +641,7 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack1:
+      monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
       stateName: 
@@ -671,6 +673,7 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack2:
+      monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
       stateName: 
@@ -702,6 +705,7 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     attack3:
+      monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
       stateName: 
@@ -733,6 +737,7 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     skill:
+      monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
       stateName: 
@@ -764,6 +769,7 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra1:
+      monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
       stateName: 
@@ -795,6 +801,7 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra2:
+      monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
       stateName: 
@@ -826,6 +833,7 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra3:
+      monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
       stateName: 
@@ -857,6 +865,7 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra4:
+      monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
       stateName: 
@@ -888,6 +897,7 @@ MonoBehaviour:
         launchOffset: {x: 0, y: 0, z: 0}
         impactOffset: {x: 0, y: 0, z: 0}
     extra5:
+      monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
       stateName: 
@@ -922,7 +932,8 @@ MonoBehaviour:
   skillVfxDatabase: {fileID: 0}
   gridManager: {fileID: 0}
   monsterActionPresentations:
-  - prepareStateName: 
+  - monsterSkillId: 
+    prepareStateName: 
     prepareDuration: 0.15
     stateName: AttackAction1
     vfx:
@@ -952,7 +963,8 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - prepareStateName: 
+  - monsterSkillId: 
+    prepareStateName: 
     prepareDuration: 0.15
     stateName: AttackAction1
     vfx:
@@ -982,7 +994,8 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - prepareStateName: 
+  - monsterSkillId: 
+    prepareStateName: 
     prepareDuration: 0.15
     stateName: 
     vfx:
@@ -1012,7 +1025,8 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - prepareStateName: 
+  - monsterSkillId: 
+    prepareStateName: 
     prepareDuration: 0.15
     stateName: 
     vfx:
@@ -1042,7 +1056,8 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - prepareStateName: 
+  - monsterSkillId: 
+    prepareStateName: 
     prepareDuration: 0.15
     stateName: 
     vfx:
@@ -1072,7 +1087,8 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - prepareStateName: 
+  - monsterSkillId: 
+    prepareStateName: 
     prepareDuration: 0.15
     stateName: 
     vfx:
@@ -1102,7 +1118,8 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - prepareStateName: 
+  - monsterSkillId: 
+    prepareStateName: 
     prepareDuration: 0.15
     stateName: 
     vfx:
@@ -1132,7 +1149,8 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - prepareStateName: 
+  - monsterSkillId: 
+    prepareStateName: 
     prepareDuration: 0.15
     stateName: 
     vfx:
@@ -1162,7 +1180,8 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - prepareStateName: 
+  - monsterSkillId: 
+    prepareStateName: 
     prepareDuration: 0.15
     stateName: 
     vfx:
@@ -1192,7 +1211,8 @@ MonoBehaviour:
       impactLifeTime: 2
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
-  - prepareStateName: 
+  - monsterSkillId: 
+    prepareStateName: 
     prepareDuration: 0.15
     stateName: 
     vfx:

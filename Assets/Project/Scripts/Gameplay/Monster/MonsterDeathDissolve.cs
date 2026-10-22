@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -45,11 +45,11 @@ namespace Relic.Gameplay.Monster
             }
 
             float elapsed = 0f;
-            SetDissolveProgress(0f);
+            SetDissolveProgress(0.5f);
             while (elapsed < Duration)
             {
                 elapsed += Time.deltaTime;
-                SetDissolveProgress(Mathf.Clamp01(elapsed / Duration));
+                SetDissolveProgress(Mathf.Lerp(0.5f, 1f, Mathf.Clamp01(elapsed / Duration)));
                 yield return null;
             }
 
@@ -109,7 +109,7 @@ namespace Relic.Gameplay.Monster
                     continue;
 
                 Material runtimeMaterial = new(dissolveMaterial);
-                runtimeMaterial.SetFloat(DissolveProgressId, 0f);
+                runtimeMaterial.SetFloat(DissolveProgressId, 0.5f);
                 renderer.material = runtimeMaterial;
                 runtimeMaterials.Add(runtimeMaterial);
             }

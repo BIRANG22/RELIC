@@ -88,7 +88,7 @@ MonoBehaviour:
   objectsToDisable:
   - {fileID: 8404110253859753422}
   duration: 1
-  dissolveMaterial: {fileID: 2100000, guid: 5163f1b8bb2f4b1e8b8ec5bd8fa85883, type: 2}
+  dissolveMaterial: {fileID: 2100000, guid: 8e8fa23dede22854ca5dc0382b2d2fb0, type: 2}
 --- !u!114 &199486443541846384
 MonoBehaviour:
   m_ObjectHideFlags: 0

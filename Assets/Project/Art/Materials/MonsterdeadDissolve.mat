@@ -58,10 +58,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _DirectionX: 0.58
+    - _DirectionX: 1
     - _DirectionY: 0
-    - _Dissolve: 0
-    - _EdgeIntensity: 1.5
+    - _Dissolve: 0.5
+    - _EdgeIntensity: 0.58
     - _EdgeWidth: 0.08
     - _Softness: 0
     m_Colors:
