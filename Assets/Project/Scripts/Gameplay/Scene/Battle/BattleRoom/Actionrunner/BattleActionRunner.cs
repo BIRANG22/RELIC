@@ -3620,7 +3620,11 @@ public class BattleActionRunner
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
         if (animator != null)
-            animator.PlayMonsterSkillAction(command);
+        {
+            float takeoffDuration = animator.PlayMonsterSkillPrepare(command);
+            if (takeoffDuration > 0f)
+                yield return new WaitForSeconds(takeoffDuration);
+        }
 
         // 착지점의 캐릭터는 바라보는 방향 반대로 밀어 이동 공간을 확보합니다.
         BattleCharacter initiallyOccupiedCharacter = null;
@@ -3688,6 +3692,10 @@ public class BattleActionRunner
         {
             Debug.LogWarning("[Arabella] Leap destination remains occupied; landing was cancelled.");
         }
+
+        // 실제 위치와 점유 상태가 확정된 뒤 착지 애니메이션/VFX를 재생합니다.
+        if (animator != null)
+            animator.PlayMonsterSkillActionPhase(command);
 
         // 착지점을 중심으로 주변 8칸과 중심 칸에 피해/넉백을 1회씩 적용합니다.
         // 예약 시의 공격 범위가 아니라 실제 착지 목적지를 사용합니다.
