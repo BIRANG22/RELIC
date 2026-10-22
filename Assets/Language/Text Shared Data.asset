@@ -5387,14 +5387,6 @@ MonoBehaviour:
     m_Key: data.battle_map.battlemap_08.description
     m_Metadata:
       m_Items: []
-  - m_Id: 17531528627626095
-    m_Key: data.battle_map.battlemap_09.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626096
-    m_Key: data.battle_map.battlemap_10.description
-    m_Metadata:
-      m_Items: []
   - m_Id: 17531528627626097
     m_Key: data.battle_map.battlemap_11.description
     m_Metadata:
@@ -7097,6 +7089,22 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 25428606079705088
     m_Key: data.grid_effect.gr_skull_bone.tooltip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26084960592846848
+    m_Key: data.monster_skill.s_monster_39.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26084960622206976
+    m_Key: data.monster_skill.s_monster_40.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26084960622206977
+    m_Key: data.grid_effect.gr_stigma.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26084960622206978
+    m_Key: data.grid_effect.gr_stigma.tooltip
     m_Metadata:
       m_Items: []
   m_Metadata:

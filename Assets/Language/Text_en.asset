@@ -5421,12 +5421,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626017
-    m_Localized: Deals {E_Strike} {ValueRate1} in the area.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626020
-    m_Localized: Deals {E_Strike} {ValueRate1} at the farthest target's location
-      {CountRate1} times.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626025
@@ -5679,43 +5678,35 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626087
-    m_Localized: 2 Mercs, 1 Blob
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626088
-    m_Localized: 2 Blob, 1 Blight
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626089
-    m_Localized: Cinder, Vespa, Lancer
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626090
-    m_Localized: Cinder, Vespa, Blight
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626091
-    m_Localized: 2 Vespas
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626092
-    m_Localized: 1 Draug, 1 Barrow
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626093
-    m_Localized: 2 Cinder, 1 Lancer
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626094
-    m_Localized: 1 Murk, 2 Draug
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626095
-    m_Localized: 2 Barrow, 1 Lancer
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626096
-    m_Localized: Draug, Barrow, Blight
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626097
@@ -5739,7 +5730,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626102
-    m_Localized: Boss Arabella
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 2479938580071356898
