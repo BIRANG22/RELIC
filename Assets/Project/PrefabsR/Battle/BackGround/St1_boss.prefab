@@ -419,7 +419,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 2.77, y: 1.33, z: 7.47}
-  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
+  m_LocalScale: {x: 0.395, y: 0.395, z: 0.395}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 4528370292298758856}
@@ -659,7 +659,7 @@ MonoBehaviour:
   - name: center
     position: {x: 2.77, y: 2, z: 7.47}
     rotation: {x: 0, y: 0, z: 0}
-    scale: {x: 0.4, y: 0.4, z: 0.4}
+    scale: {x: 0.395, y: 0.395, z: 0.395}
     flipX: 0
     flipY: 0
     flipAtStart: 0
@@ -679,7 +679,7 @@ MonoBehaviour:
   - name: down
     position: {x: 2.77, y: -0.5, z: 7.47}
     rotation: {x: 0, y: 0, z: 0}
-    scale: {x: 0.4, y: 0.4, z: 0.4}
+    scale: {x: 0.395, y: 0.395, z: 0.395}
     flipX: 1
     flipY: 0
     flipAtStart: 1
@@ -719,9 +719,9 @@ MonoBehaviour:
     - vfxObject: {fileID: 9187213389528788618}
       delay: 1.5
   - name: appear
-    position: {x: 3.085, y: -4.345, z: 7.47}
+    position: {x: 3.186, y: -4.326, z: 7.47}
     rotation: {x: 0, y: 0, z: 0}
-    scale: {x: 0.4, y: 0.4, z: 0.4}
+    scale: {x: 0.395, y: 0.395, z: 0.395}
     flipX: 1
     flipY: 0
     flipAtStart: 1
@@ -7922,7 +7922,7 @@ Transform:
   m_GameObject: {fileID: 8368861717085725342}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.5, z: -8.67}
+  m_LocalPosition: {x: -0.1, y: 3.5, z: -8.67}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
