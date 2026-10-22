@@ -307,9 +307,9 @@ MonoBehaviour:
     proxySortingWorldYOffset: 0
     proxyYMultiplier: 100
   phaseTransitionVfx:
-    prefab: {fileID: 0}
+    prefab: {fileID: 2547616679218057379, guid: 1999063fa3efea9489b5462971f5ead7, type: 3}
     flipType: 0
-    renderMode: 0
+    renderMode: 2
     proxyBlendMode: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
@@ -985,7 +985,7 @@ MonoBehaviour:
     prepareStateName: AttackAction5_b_1
     prepareDuration: 0.5
     prepareVfx:
-      prefab: {fileID: 4485589945457588323, guid: 42b98dbbd12552f4c8b4c289ec041b3d, type: 3}
+      prefab: {fileID: 4485589945457588323, guid: 80ae46324bdf31e428a65b75a59bfaf0, type: 3}
       flipType: 0
       renderMode: 2
       proxyBlendMode: 0
@@ -1001,7 +1001,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     stateName: AttackAction5_b_2
     vfx:
-      prefab: {fileID: 4962557178209446011, guid: 456e0c1dafaa1cc41af8938d76cb9871, type: 3}
+      prefab: {fileID: 4962557178209446011, guid: d747533c8b9950244a6a32fed84f6c1e, type: 3}
       flipType: 0
       renderMode: 2
       proxyBlendMode: 0
@@ -1265,7 +1265,7 @@ MonoBehaviour:
   autoFindFacing: 1
   flipVfxLocalPositionX: 1
   flipVfxScaleXWhenFlipTypeNone: 1
-  vfxLifeTime: 2
+  vfxLifeTime: 5
   animatorLayer: 0
   crossFadeDuration: 0
   deadAnimationDuration: 0.6
