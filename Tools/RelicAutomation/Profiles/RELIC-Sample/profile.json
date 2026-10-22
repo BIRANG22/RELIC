@@ -1,0 +1,10 @@
+{
+  "name": "RELIC Sample",
+  "entryNode": "Start",
+  "targetNode": "TargetReached",
+  "repeatCount": 10,
+  "expectedClientWidth": 1920,
+  "expectedClientHeight": 1080,
+  "stopWhenWindowSizeChanges": true,
+  "resourceDirectory": "resource"
+}

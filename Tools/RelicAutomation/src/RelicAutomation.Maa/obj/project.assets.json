@@ -1,0 +1,785 @@
+{
+  "version": 3,
+  "targets": {
+    "net8.0-windows7.0": {
+      "Maa.AgentBinary/1.2.0": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.AgentBinary.targets": {}
+        }
+      },
+      "Maa.Framework/5.13.0-preview.1": {
+        "type": "package",
+        "dependencies": {
+          "Maa.Framework.Native": "5.13.0-preview.1",
+          "Maa.Framework.Runtimes": "5.10.5"
+        },
+        "compile": {
+          "lib/net7.0/_._": {}
+        },
+        "runtime": {
+          "lib/net7.0/_._": {}
+        }
+      },
+      "Maa.Framework.Binding/5.13.0-preview.1": {
+        "type": "package",
+        "compile": {
+          "lib/net7.0/MaaFramework.Binding.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net7.0/MaaFramework.Binding.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Maa.Framework.Binding.Native/5.13.0-preview.1": {
+        "type": "package",
+        "dependencies": {
+          "Maa.Framework.Binding": "5.13.0-preview.1"
+        },
+        "compile": {
+          "lib/net7.0/MaaFramework.Binding.Native.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net7.0/MaaFramework.Binding.Native.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Maa.Framework.Native/5.13.0-preview.1": {
+        "type": "package",
+        "dependencies": {
+          "Maa.AgentBinary": "1.2.0",
+          "Maa.Framework.Binding.Native": "5.13.0-preview.1"
+        },
+        "compile": {
+          "lib/net7.0/_._": {}
+        },
+        "runtime": {
+          "lib/net7.0/_._": {}
+        }
+      },
+      "Maa.Framework.Runtime.linux-arm64/5.10.5": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.Framework.Runtime.linux-arm64.targets": {}
+        }
+      },
+      "Maa.Framework.Runtime.linux-x64/5.10.5": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.Framework.Runtime.linux-x64.targets": {}
+        }
+      },
+      "Maa.Framework.Runtime.osx-arm64/5.10.5": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.Framework.Runtime.osx-arm64.targets": {}
+        }
+      },
+      "Maa.Framework.Runtime.osx-x64/5.10.5": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.Framework.Runtime.osx-x64.targets": {}
+        }
+      },
+      "Maa.Framework.Runtime.win-arm64/5.10.5": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.Framework.Runtime.win-arm64.targets": {}
+        }
+      },
+      "Maa.Framework.Runtime.win-x64/5.10.5": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.Framework.Runtime.win-x64.targets": {}
+        }
+      },
+      "Maa.Framework.Runtimes/5.10.5": {
+        "type": "package",
+        "dependencies": {
+          "Maa.Framework.Runtime.linux-arm64": "5.10.5",
+          "Maa.Framework.Runtime.linux-x64": "5.10.5",
+          "Maa.Framework.Runtime.osx-arm64": "5.10.5",
+          "Maa.Framework.Runtime.osx-x64": "5.10.5",
+          "Maa.Framework.Runtime.win-arm64": "5.10.5",
+          "Maa.Framework.Runtime.win-x64": "5.10.5"
+        }
+      },
+      "RelicAutomation.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "compile": {
+          "bin/placeholder/RelicAutomation.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/RelicAutomation.Core.dll": {}
+        }
+      }
+    },
+    "net8.0-windows7.0/win-x64": {
+      "Maa.AgentBinary/1.2.0": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.AgentBinary.targets": {}
+        }
+      },
+      "Maa.Framework/5.13.0-preview.1": {
+        "type": "package",
+        "dependencies": {
+          "Maa.Framework.Native": "5.13.0-preview.1",
+          "Maa.Framework.Runtimes": "5.10.5"
+        },
+        "compile": {
+          "lib/net7.0/_._": {}
+        },
+        "runtime": {
+          "lib/net7.0/_._": {}
+        }
+      },
+      "Maa.Framework.Binding/5.13.0-preview.1": {
+        "type": "package",
+        "compile": {
+          "lib/net7.0/MaaFramework.Binding.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net7.0/MaaFramework.Binding.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Maa.Framework.Binding.Native/5.13.0-preview.1": {
+        "type": "package",
+        "dependencies": {
+          "Maa.Framework.Binding": "5.13.0-preview.1"
+        },
+        "compile": {
+          "lib/net7.0/MaaFramework.Binding.Native.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net7.0/MaaFramework.Binding.Native.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Maa.Framework.Native/5.13.0-preview.1": {
+        "type": "package",
+        "dependencies": {
+          "Maa.AgentBinary": "1.2.0",
+          "Maa.Framework.Binding.Native": "5.13.0-preview.1"
+        },
+        "compile": {
+          "lib/net7.0/_._": {}
+        },
+        "runtime": {
+          "lib/net7.0/_._": {}
+        }
+      },
+      "Maa.Framework.Runtime.linux-arm64/5.10.5": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.Framework.Runtime.linux-arm64.targets": {}
+        }
+      },
+      "Maa.Framework.Runtime.linux-x64/5.10.5": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.Framework.Runtime.linux-x64.targets": {}
+        }
+      },
+      "Maa.Framework.Runtime.osx-arm64/5.10.5": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.Framework.Runtime.osx-arm64.targets": {}
+        }
+      },
+      "Maa.Framework.Runtime.osx-x64/5.10.5": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.Framework.Runtime.osx-x64.targets": {}
+        }
+      },
+      "Maa.Framework.Runtime.win-arm64/5.10.5": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.Framework.Runtime.win-arm64.targets": {}
+        }
+      },
+      "Maa.Framework.Runtime.win-x64/5.10.5": {
+        "type": "package",
+        "build": {
+          "buildTransitive/Maa.Framework.Runtime.win-x64.targets": {}
+        }
+      },
+      "Maa.Framework.Runtimes/5.10.5": {
+        "type": "package",
+        "dependencies": {
+          "Maa.Framework.Runtime.linux-arm64": "5.10.5",
+          "Maa.Framework.Runtime.linux-x64": "5.10.5",
+          "Maa.Framework.Runtime.osx-arm64": "5.10.5",
+          "Maa.Framework.Runtime.osx-x64": "5.10.5",
+          "Maa.Framework.Runtime.win-arm64": "5.10.5",
+          "Maa.Framework.Runtime.win-x64": "5.10.5"
+        }
+      },
+      "RelicAutomation.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "compile": {
+          "bin/placeholder/RelicAutomation.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/RelicAutomation.Core.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Maa.AgentBinary/1.2.0": {
+      "sha512": "Gdl2wIX/1TmwII9PZQzh5He6/k/zjY0MjY6tDH9ovzCnTSKYNvFVVvPWqVgjQ7hRWZYF4nX9lPqAJyGZfI47TA==",
+      "type": "package",
+      "path": "maa.agentbinary/1.2.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "bin/maatouch/universal/maatouch",
+        "bin/minicap/arm64-v8a/bin/minicap",
+        "bin/minicap/arm64-v8a/bin/minicap-nopie",
+        "bin/minicap/arm64-v8a/lib/android-21/minicap.so",
+        "bin/minicap/arm64-v8a/lib/android-22/minicap.so",
+        "bin/minicap/arm64-v8a/lib/android-23/minicap.so",
+        "bin/minicap/arm64-v8a/lib/android-24/minicap.so",
+        "bin/minicap/arm64-v8a/lib/android-25/minicap.so",
+        "bin/minicap/arm64-v8a/lib/android-26/minicap.so",
+        "bin/minicap/arm64-v8a/lib/android-27/minicap.so",
+        "bin/minicap/arm64-v8a/lib/android-28/minicap.so",
+        "bin/minicap/arm64-v8a/lib/android-29/minicap",
+        "bin/minicap/arm64-v8a/lib/android-29/minicap-nopie",
+        "bin/minicap/arm64-v8a/lib/android-29/minicap.so",
+        "bin/minicap/arm64-v8a/lib/android-30/minicap.so",
+        "bin/minicap/arm64-v8a/lib/android-31/minicap.so",
+        "bin/minicap/armeabi-v7a/bin/minicap",
+        "bin/minicap/armeabi-v7a/bin/minicap-nopie",
+        "bin/minicap/armeabi-v7a/lib/android-10/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-14/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-15/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-16/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-17/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-18/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-19/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-21/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-22/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-23/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-24/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-25/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-26/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-27/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-28/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-29/minicap",
+        "bin/minicap/armeabi-v7a/lib/android-29/minicap-nopie",
+        "bin/minicap/armeabi-v7a/lib/android-29/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-30/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-31/minicap.so",
+        "bin/minicap/armeabi-v7a/lib/android-9/minicap.so",
+        "bin/minicap/x86/bin/minicap",
+        "bin/minicap/x86/bin/minicap-nopie",
+        "bin/minicap/x86/lib/android-14/minicap.so",
+        "bin/minicap/x86/lib/android-15/minicap.so",
+        "bin/minicap/x86/lib/android-16/minicap.so",
+        "bin/minicap/x86/lib/android-17/minicap.so",
+        "bin/minicap/x86/lib/android-18/minicap.so",
+        "bin/minicap/x86/lib/android-19/minicap.so",
+        "bin/minicap/x86/lib/android-21/minicap.so",
+        "bin/minicap/x86/lib/android-22/minicap.so",
+        "bin/minicap/x86/lib/android-23/minicap.so",
+        "bin/minicap/x86/lib/android-24/minicap.so",
+        "bin/minicap/x86/lib/android-25/minicap.so",
+        "bin/minicap/x86/lib/android-26/minicap.so",
+        "bin/minicap/x86/lib/android-27/minicap.so",
+        "bin/minicap/x86/lib/android-28/minicap.so",
+        "bin/minicap/x86/lib/android-29/minicap",
+        "bin/minicap/x86/lib/android-29/minicap-nopie",
+        "bin/minicap/x86/lib/android-29/minicap.so",
+        "bin/minicap/x86/lib/android-31/minicap.so",
+        "bin/minicap/x86_64/bin/minicap",
+        "bin/minicap/x86_64/bin/minicap-nopie",
+        "bin/minicap/x86_64/lib/android-21/minicap.so",
+        "bin/minicap/x86_64/lib/android-22/minicap.so",
+        "bin/minicap/x86_64/lib/android-23/minicap.so",
+        "bin/minicap/x86_64/lib/android-24/minicap.so",
+        "bin/minicap/x86_64/lib/android-25/minicap.so",
+        "bin/minicap/x86_64/lib/android-26/minicap.so",
+        "bin/minicap/x86_64/lib/android-27/minicap.so",
+        "bin/minicap/x86_64/lib/android-28/minicap.so",
+        "bin/minicap/x86_64/lib/android-29/minicap",
+        "bin/minicap/x86_64/lib/android-29/minicap-nopie",
+        "bin/minicap/x86_64/lib/android-29/minicap.so",
+        "bin/minicap/x86_64/lib/android-31/minicap.so",
+        "bin/minitouch/arm64-v8a/minitouch",
+        "bin/minitouch/armeabi-v7a/minitouch",
+        "bin/minitouch/armeabi/minitouch",
+        "bin/minitouch/x86/minitouch",
+        "bin/minitouch/x86_64/minitouch",
+        "buildTransitive/Maa.AgentBinary.targets",
+        "maa-logo_128x128.png",
+        "maa.agentbinary.1.2.0.nupkg.sha512",
+        "maa.agentbinary.nuspec"
+      ]
+    },
+    "Maa.Framework/5.13.0-preview.1": {
+      "sha512": "3e0nzZ6jSXsECwx8aJM7c/olz20pU0W85CT19Kms9s+JJENmeKZHB1gr2Y0jxFd0kQMM4hcMBJNCtijonPWb9w==",
+      "type": "package",
+      "path": "maa.framework/5.13.0-preview.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "5.10.5/docs/en_us/1.1-QuickStarted.md",
+        "5.10.5/docs/en_us/1.2-ExplanationOfTerms.md",
+        "5.10.5/docs/en_us/2.1-Integration.md",
+        "5.10.5/docs/en_us/2.2-IntegratedInterfaceOverview.md",
+        "5.10.5/docs/en_us/2.3-CallbackProtocol.md",
+        "5.10.5/docs/en_us/2.4-ControlMethods.md",
+        "5.10.5/docs/en_us/3.1-PipelineProtocol.md",
+        "5.10.5/docs/en_us/3.2-ProjectInterface.md",
+        "5.10.5/docs/en_us/3.3-ProjectInterfaceV2.md",
+        "5.10.5/docs/en_us/4.1-BuildGuide.md",
+        "5.10.5/docs/en_us/4.2-StandardizedInterfaceDesign.md",
+        "5.10.5/docs/en_us/5.1-Troubleshooting.md",
+        "5.10.5/docs/en_us/NodeJS/J1.1-QuickStarted.md",
+        "5.10.5/docs/en_us/NodeJS/J1.2-Custom Recognition and Action.md",
+        "5.10.5/docs/en_us/NodeJS/J1.3-Packaging.md",
+        "5.10.5/docs/static/architecture.png",
+        "5.10.5/docs/static/maafw.svg",
+        "5.10.5/docs/static/mirrorc-en.svg",
+        "5.10.5/docs/static/mirrorc-zh.svg",
+        "5.10.5/docs/zh_cn/1.1-快速开始.md",
+        "5.10.5/docs/zh_cn/1.2-术语解释.md",
+        "5.10.5/docs/zh_cn/2.1-集成文档.md",
+        "5.10.5/docs/zh_cn/2.2-集成接口一览.md",
+        "5.10.5/docs/zh_cn/2.3-回调协议.md",
+        "5.10.5/docs/zh_cn/2.4-控制方式说明.md",
+        "5.10.5/docs/zh_cn/3.1-任务流水线协议.md",
+        "5.10.5/docs/zh_cn/3.2-ProjectInterface协议.md",
+        "5.10.5/docs/zh_cn/3.3-ProjectInterfaceV2协议.md",
+        "5.10.5/docs/zh_cn/4.1-构建指南.md",
+        "5.10.5/docs/zh_cn/4.2-标准化接口设计.md",
+        "5.10.5/docs/zh_cn/5.1-问题反馈.md",
+        "5.10.5/docs/zh_cn/NodeJS/J1.1-快速开始.md",
+        "5.10.5/docs/zh_cn/NodeJS/J1.2-自定义识别_操作.md",
+        "5.10.5/docs/zh_cn/NodeJS/J1.3-打包.md",
+        "README.md",
+        "lib/net7.0/_._",
+        "lib/net9.0/_._",
+        "maa-logo_128x128.png",
+        "maa.framework.5.13.0-preview.1.nupkg.sha512",
+        "maa.framework.nuspec"
+      ]
+    },
+    "Maa.Framework.Binding/5.13.0-preview.1": {
+      "sha512": "xYaJ7wxJN692w/HfWABugyu06DFyr5LEEkFjBQ0Q1k1/BTOGdbPZt4GeFPNiuO/QAHP9l0oNDiRLh3zoypXxFQ==",
+      "type": "package",
+      "path": "maa.framework.binding/5.13.0-preview.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net7.0/MaaFramework.Binding.dll",
+        "lib/net7.0/MaaFramework.Binding.xml",
+        "lib/net9.0/MaaFramework.Binding.dll",
+        "lib/net9.0/MaaFramework.Binding.xml",
+        "maa-logo_128x128.png",
+        "maa.framework.binding.5.13.0-preview.1.nupkg.sha512",
+        "maa.framework.binding.nuspec"
+      ]
+    },
+    "Maa.Framework.Binding.Native/5.13.0-preview.1": {
+      "sha512": "nHWDgJiB73qC2HtbRoqmhLQJFdZ+zbaci5TvrywDaKw7G3CU5hj+6rrrlO2JlUD2K80M8mf5q5JO9WROEf2Q/g==",
+      "type": "package",
+      "path": "maa.framework.binding.native/5.13.0-preview.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net7.0/MaaFramework.Binding.Native.dll",
+        "lib/net7.0/MaaFramework.Binding.Native.xml",
+        "lib/net9.0/MaaFramework.Binding.Native.dll",
+        "lib/net9.0/MaaFramework.Binding.Native.xml",
+        "maa-logo_128x128.png",
+        "maa.framework.binding.native.5.13.0-preview.1.nupkg.sha512",
+        "maa.framework.binding.native.nuspec"
+      ]
+    },
+    "Maa.Framework.Native/5.13.0-preview.1": {
+      "sha512": "arR+2Gn/aAm95YohgSFAaxQDvI0TWFcxwQfRHcQFqjArckMQbKwTVOBxjp4cRAZVRSQgPWS/PyH7X80ZN7BT+Q==",
+      "type": "package",
+      "path": "maa.framework.native/5.13.0-preview.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "5.10.5/docs/en_us/1.1-QuickStarted.md",
+        "5.10.5/docs/en_us/1.2-ExplanationOfTerms.md",
+        "5.10.5/docs/en_us/2.1-Integration.md",
+        "5.10.5/docs/en_us/2.2-IntegratedInterfaceOverview.md",
+        "5.10.5/docs/en_us/2.3-CallbackProtocol.md",
+        "5.10.5/docs/en_us/2.4-ControlMethods.md",
+        "5.10.5/docs/en_us/3.1-PipelineProtocol.md",
+        "5.10.5/docs/en_us/3.2-ProjectInterface.md",
+        "5.10.5/docs/en_us/3.3-ProjectInterfaceV2.md",
+        "5.10.5/docs/en_us/4.1-BuildGuide.md",
+        "5.10.5/docs/en_us/4.2-StandardizedInterfaceDesign.md",
+        "5.10.5/docs/en_us/5.1-Troubleshooting.md",
+        "5.10.5/docs/en_us/NodeJS/J1.1-QuickStarted.md",
+        "5.10.5/docs/en_us/NodeJS/J1.2-Custom Recognition and Action.md",
+        "5.10.5/docs/en_us/NodeJS/J1.3-Packaging.md",
+        "5.10.5/docs/static/architecture.png",
+        "5.10.5/docs/static/maafw.svg",
+        "5.10.5/docs/static/mirrorc-en.svg",
+        "5.10.5/docs/static/mirrorc-zh.svg",
+        "5.10.5/docs/zh_cn/1.1-快速开始.md",
+        "5.10.5/docs/zh_cn/1.2-术语解释.md",
+        "5.10.5/docs/zh_cn/2.1-集成文档.md",
+        "5.10.5/docs/zh_cn/2.2-集成接口一览.md",
+        "5.10.5/docs/zh_cn/2.3-回调协议.md",
+        "5.10.5/docs/zh_cn/2.4-控制方式说明.md",
+        "5.10.5/docs/zh_cn/3.1-任务流水线协议.md",
+        "5.10.5/docs/zh_cn/3.2-ProjectInterface协议.md",
+        "5.10.5/docs/zh_cn/3.3-ProjectInterfaceV2协议.md",
+        "5.10.5/docs/zh_cn/4.1-构建指南.md",
+        "5.10.5/docs/zh_cn/4.2-标准化接口设计.md",
+        "5.10.5/docs/zh_cn/5.1-问题反馈.md",
+        "5.10.5/docs/zh_cn/NodeJS/J1.1-快速开始.md",
+        "5.10.5/docs/zh_cn/NodeJS/J1.2-自定义识别_操作.md",
+        "5.10.5/docs/zh_cn/NodeJS/J1.3-打包.md",
+        "README.md",
+        "lib/net7.0/_._",
+        "lib/net9.0/_._",
+        "maa-logo_128x128.png",
+        "maa.framework.native.5.13.0-preview.1.nupkg.sha512",
+        "maa.framework.native.nuspec"
+      ]
+    },
+    "Maa.Framework.Runtime.linux-arm64/5.10.5": {
+      "sha512": "XHwz7nNqhnCIDyHQU2NTQZF5d2rqZHjDRUVJxwa2HqlGeWpSji3X2UCDCeQ28kkGiX20f9rfVDiOmPCxo4Shvw==",
+      "type": "package",
+      "path": "maa.framework.runtime.linux-arm64/5.10.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "bin/libMaaAdbControlUnit.so",
+        "bin/libMaaAgentClient.so",
+        "bin/libMaaAgentServer.so",
+        "bin/libMaaCustomControlUnit.so",
+        "bin/libMaaFramework.so",
+        "bin/libMaaRecordControlUnit.so",
+        "bin/libMaaReplayControlUnit.so",
+        "bin/libMaaToolkit.so",
+        "bin/libMaaUtils.so",
+        "bin/libMaaWlRootsControlUnit.so",
+        "bin/libc++.so.1",
+        "bin/libc++abi.so.1",
+        "bin/libfastdeploy_ppocr.so",
+        "bin/libonnxruntime.so.1",
+        "bin/libopencv_world4.so.412",
+        "bin/libunwind.so.1",
+        "bin/plugins/libMaaPluginDemo.so",
+        "buildTransitive/Maa.Framework.Runtime.linux-arm64.targets",
+        "maa-logo_128x128.png",
+        "maa.framework.runtime.linux-arm64.5.10.5.nupkg.sha512",
+        "maa.framework.runtime.linux-arm64.nuspec"
+      ]
+    },
+    "Maa.Framework.Runtime.linux-x64/5.10.5": {
+      "sha512": "VJwivZAAFMfEt5NQPtTS6ti6GyMYcfjnD209NBR9BrxhsAHaqSxu5JiH65+6/LjY2HYeFZJEk+up3pOJKKI57Q==",
+      "type": "package",
+      "path": "maa.framework.runtime.linux-x64/5.10.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "bin/libMaaAdbControlUnit.so",
+        "bin/libMaaAgentClient.so",
+        "bin/libMaaAgentServer.so",
+        "bin/libMaaCustomControlUnit.so",
+        "bin/libMaaFramework.so",
+        "bin/libMaaRecordControlUnit.so",
+        "bin/libMaaReplayControlUnit.so",
+        "bin/libMaaToolkit.so",
+        "bin/libMaaUtils.so",
+        "bin/libMaaWlRootsControlUnit.so",
+        "bin/libc++.so.1",
+        "bin/libc++abi.so.1",
+        "bin/libfastdeploy_ppocr.so",
+        "bin/libonnxruntime.so.1",
+        "bin/libopencv_world4.so.412",
+        "bin/libunwind.so.1",
+        "bin/plugins/libMaaPluginDemo.so",
+        "buildTransitive/Maa.Framework.Runtime.linux-x64.targets",
+        "maa-logo_128x128.png",
+        "maa.framework.runtime.linux-x64.5.10.5.nupkg.sha512",
+        "maa.framework.runtime.linux-x64.nuspec"
+      ]
+    },
+    "Maa.Framework.Runtime.osx-arm64/5.10.5": {
+      "sha512": "/VRz97qM2eJqaUDFEsRdxzUGZGzXpi6c8awcf0qmM8/1wOqNzgLsK3aOH0fv9eD1UWJf5/1anfgq58Jf4jNH/Q==",
+      "type": "package",
+      "path": "maa.framework.runtime.osx-arm64/5.10.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "bin/libMaaAdbControlUnit.dylib",
+        "bin/libMaaAgentClient.dylib",
+        "bin/libMaaAgentServer.dylib",
+        "bin/libMaaCustomControlUnit.dylib",
+        "bin/libMaaFramework.dylib",
+        "bin/libMaaMacOSControlUnit.dylib",
+        "bin/libMaaPlayCoverControlUnit.dylib",
+        "bin/libMaaRecordControlUnit.dylib",
+        "bin/libMaaReplayControlUnit.dylib",
+        "bin/libMaaToolkit.dylib",
+        "bin/libMaaUtils.dylib",
+        "bin/libfastdeploy_ppocr.dylib",
+        "bin/libonnxruntime.1.19.2.dylib",
+        "bin/libopencv_world4.4.12.0.dylib",
+        "bin/plugins/libMaaPluginDemo.dylib",
+        "buildTransitive/Maa.Framework.Runtime.osx-arm64.targets",
+        "maa-logo_128x128.png",
+        "maa.framework.runtime.osx-arm64.5.10.5.nupkg.sha512",
+        "maa.framework.runtime.osx-arm64.nuspec"
+      ]
+    },
+    "Maa.Framework.Runtime.osx-x64/5.10.5": {
+      "sha512": "IO7ff5fH5L2bMmOfNbF6OzyaEdEejbtBcOXXeWUKRvvSm+bLjKVonK8LhOetJ4+eq3ppM2DkR3x4vD8EKd2BAQ==",
+      "type": "package",
+      "path": "maa.framework.runtime.osx-x64/5.10.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "bin/libMaaAdbControlUnit.dylib",
+        "bin/libMaaAgentClient.dylib",
+        "bin/libMaaAgentServer.dylib",
+        "bin/libMaaCustomControlUnit.dylib",
+        "bin/libMaaFramework.dylib",
+        "bin/libMaaMacOSControlUnit.dylib",
+        "bin/libMaaPlayCoverControlUnit.dylib",
+        "bin/libMaaRecordControlUnit.dylib",
+        "bin/libMaaReplayControlUnit.dylib",
+        "bin/libMaaToolkit.dylib",
+        "bin/libMaaUtils.dylib",
+        "bin/libfastdeploy_ppocr.dylib",
+        "bin/libonnxruntime.1.19.2.dylib",
+        "bin/libopencv_world4.4.12.0.dylib",
+        "bin/plugins/libMaaPluginDemo.dylib",
+        "buildTransitive/Maa.Framework.Runtime.osx-x64.targets",
+        "maa-logo_128x128.png",
+        "maa.framework.runtime.osx-x64.5.10.5.nupkg.sha512",
+        "maa.framework.runtime.osx-x64.nuspec"
+      ]
+    },
+    "Maa.Framework.Runtime.win-arm64/5.10.5": {
+      "sha512": "FbHsM9jGO59t1KZJHhFQTRYQMSDo+PK7Zcvs1AzC0V9PlBaWsUl1RH4Z/h63Lh2NZIrSQj88uriBgMi5GCRbdg==",
+      "type": "package",
+      "path": "maa.framework.runtime.win-arm64/5.10.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "bin/DirectML.dll",
+        "bin/MaaAdbControlUnit.dll",
+        "bin/MaaAgentClient.dll",
+        "bin/MaaAgentServer.dll",
+        "bin/MaaCustomControlUnit.dll",
+        "bin/MaaFramework.dll",
+        "bin/MaaGamepadControlUnit.dll",
+        "bin/MaaRecordControlUnit.dll",
+        "bin/MaaReplayControlUnit.dll",
+        "bin/MaaToolkit.dll",
+        "bin/MaaUtils.dll",
+        "bin/MaaWin32ControlUnit.dll",
+        "bin/fastdeploy_ppocr_maa.dll",
+        "bin/onnxruntime_maa.dll",
+        "bin/opencv_world4_maa.dll",
+        "bin/plugins/MaaPluginDemo.dll",
+        "buildTransitive/Maa.Framework.Runtime.win-arm64.targets",
+        "maa-logo_128x128.png",
+        "maa.framework.runtime.win-arm64.5.10.5.nupkg.sha512",
+        "maa.framework.runtime.win-arm64.nuspec"
+      ]
+    },
+    "Maa.Framework.Runtime.win-x64/5.10.5": {
+      "sha512": "3B+m77FjnDq4u8LGA+tI8EokZLv1aVlIhzXRon7xsPlM59Ak5Vy84LlGmM14ajvaLeTKGYWSxC/yXuYnaHQoQg==",
+      "type": "package",
+      "path": "maa.framework.runtime.win-x64/5.10.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "bin/DirectML.dll",
+        "bin/MaaAdbControlUnit.dll",
+        "bin/MaaAgentClient.dll",
+        "bin/MaaAgentServer.dll",
+        "bin/MaaCustomControlUnit.dll",
+        "bin/MaaFramework.dll",
+        "bin/MaaGamepadControlUnit.dll",
+        "bin/MaaRecordControlUnit.dll",
+        "bin/MaaReplayControlUnit.dll",
+        "bin/MaaToolkit.dll",
+        "bin/MaaUtils.dll",
+        "bin/MaaWin32ControlUnit.dll",
+        "bin/ViGEmClient.dll",
+        "bin/fastdeploy_ppocr_maa.dll",
+        "bin/onnxruntime_maa.dll",
+        "bin/opencv_world4_maa.dll",
+        "bin/plugins/MaaPluginDemo.dll",
+        "buildTransitive/Maa.Framework.Runtime.win-x64.targets",
+        "maa-logo_128x128.png",
+        "maa.framework.runtime.win-x64.5.10.5.nupkg.sha512",
+        "maa.framework.runtime.win-x64.nuspec"
+      ]
+    },
+    "Maa.Framework.Runtimes/5.10.5": {
+      "sha512": "BHRMMejjytsRUtkCffwRiM8Rc7CR7xN+H9u0Z0vWXfVAXDQLQyla4fzS6V1AHozdiW0p8RGCG+ahjoWrIh5f1g==",
+      "type": "package",
+      "path": "maa.framework.runtimes/5.10.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "docs/en_us/1.1-QuickStarted.md",
+        "docs/en_us/1.2-ExplanationOfTerms.md",
+        "docs/en_us/2.1-Integration.md",
+        "docs/en_us/2.2-IntegratedInterfaceOverview.md",
+        "docs/en_us/2.3-CallbackProtocol.md",
+        "docs/en_us/2.4-ControlMethods.md",
+        "docs/en_us/3.1-PipelineProtocol.md",
+        "docs/en_us/3.2-ProjectInterface.md",
+        "docs/en_us/3.3-ProjectInterfaceV2.md",
+        "docs/en_us/4.1-BuildGuide.md",
+        "docs/en_us/4.2-StandardizedInterfaceDesign.md",
+        "docs/en_us/5.1-Troubleshooting.md",
+        "docs/en_us/NodeJS/J1.1-QuickStarted.md",
+        "docs/en_us/NodeJS/J1.2-Custom Recognition and Action.md",
+        "docs/en_us/NodeJS/J1.3-Packaging.md",
+        "docs/static/architecture.png",
+        "docs/static/maafw.svg",
+        "docs/static/mirrorc-en.svg",
+        "docs/static/mirrorc-zh.svg",
+        "docs/zh_cn/1.1-快速开始.md",
+        "docs/zh_cn/1.2-术语解释.md",
+        "docs/zh_cn/2.1-集成文档.md",
+        "docs/zh_cn/2.2-集成接口一览.md",
+        "docs/zh_cn/2.3-回调协议.md",
+        "docs/zh_cn/2.4-控制方式说明.md",
+        "docs/zh_cn/3.1-任务流水线协议.md",
+        "docs/zh_cn/3.2-ProjectInterface协议.md",
+        "docs/zh_cn/3.3-ProjectInterfaceV2协议.md",
+        "docs/zh_cn/4.1-构建指南.md",
+        "docs/zh_cn/4.2-标准化接口设计.md",
+        "docs/zh_cn/5.1-问题反馈.md",
+        "docs/zh_cn/NodeJS/J1.1-快速开始.md",
+        "docs/zh_cn/NodeJS/J1.2-自定义识别_操作.md",
+        "docs/zh_cn/NodeJS/J1.3-打包.md",
+        "maa-logo_128x128.png",
+        "maa.framework.runtimes.5.10.5.nupkg.sha512",
+        "maa.framework.runtimes.nuspec"
+      ]
+    },
+    "RelicAutomation.Core/1.0.0": {
+      "type": "project",
+      "path": "../RelicAutomation.Core/RelicAutomation.Core.csproj",
+      "msbuildProject": "../RelicAutomation.Core/RelicAutomation.Core.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net8.0-windows7.0": [
+      "Maa.Framework >= 5.13.0-preview.1",
+      "RelicAutomation.Core >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\user\\Desktop\\RELIC\\Tools\\RelicAutomation\\src\\RelicAutomation.Maa\\RelicAutomation.Maa.csproj",
+      "projectName": "RelicAutomation.Maa",
+      "projectPath": "C:\\Users\\user\\Desktop\\RELIC\\Tools\\RelicAutomation\\src\\RelicAutomation.Maa\\RelicAutomation.Maa.csproj",
+      "packagesPath": "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\user\\Desktop\\RELIC\\Tools\\RelicAutomation\\src\\RelicAutomation.Maa\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\user\\Desktop\\RELIC\\Tools\\RelicAutomation\\NuGet.config"
+      ],
+      "originalTargetFrameworks": [
+        "net8.0-windows"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {},
+        "https://maaxyz.github.io/pkg/nuget/index.json": {}
+      },
+      "frameworks": {
+        "net8.0-windows7.0": {
+          "targetAlias": "net8.0-windows",
+          "projectReferences": {
+            "C:\\Users\\user\\Desktop\\RELIC\\Tools\\RelicAutomation\\src\\RelicAutomation.Core\\RelicAutomation.Core.csproj": {
+              "projectPath": "C:\\Users\\user\\Desktop\\RELIC\\Tools\\RelicAutomation\\src\\RelicAutomation.Core\\RelicAutomation.Core.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      }
+    },
+    "frameworks": {
+      "net8.0-windows7.0": {
+        "targetAlias": "net8.0-windows",
+        "dependencies": {
+          "Maa.Framework": {
+            "target": "Package",
+            "version": "[5.13.0-preview.1, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.426/PortableRuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "win-x64": {
+        "#import": []
+      }
+    }
+  }
+}

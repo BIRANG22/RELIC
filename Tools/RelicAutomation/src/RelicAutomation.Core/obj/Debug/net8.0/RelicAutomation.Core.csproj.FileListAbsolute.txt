@@ -1,0 +1,12 @@
+C:\Users\user\Desktop\RELIC\Tools\RelicAutomation\src\RelicAutomation.Core\bin\Debug\net8.0\RelicAutomation.Core.deps.json
+C:\Users\user\Desktop\RELIC\Tools\RelicAutomation\src\RelicAutomation.Core\bin\Debug\net8.0\RelicAutomation.Core.dll
+C:\Users\user\Desktop\RELIC\Tools\RelicAutomation\src\RelicAutomation.Core\bin\Debug\net8.0\RelicAutomation.Core.pdb
+C:\Users\user\Desktop\RELIC\Tools\RelicAutomation\src\RelicAutomation.Core\obj\Debug\net8.0\RelicAutomation.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\user\Desktop\RELIC\Tools\RelicAutomation\src\RelicAutomation.Core\obj\Debug\net8.0\RelicAutomation.Core.AssemblyInfoInputs.cache
+C:\Users\user\Desktop\RELIC\Tools\RelicAutomation\src\RelicAutomation.Core\obj\Debug\net8.0\RelicAutomation.Core.AssemblyInfo.cs
+C:\Users\user\Desktop\RELIC\Tools\RelicAutomation\src\RelicAutomation.Core\obj\Debug\net8.0\RelicAutomation.Core.csproj.CoreCompileInputs.cache
+C:\Users\user\Desktop\RELIC\Tools\RelicAutomation\src\RelicAutomation.Core\obj\Debug\net8.0\RelicAutomation.Core.sourcelink.json
+C:\Users\user\Desktop\RELIC\Tools\RelicAutomation\src\RelicAutomation.Core\obj\Debug\net8.0\RelicAutomation.Core.dll
+C:\Users\user\Desktop\RELIC\Tools\RelicAutomation\src\RelicAutomation.Core\obj\Debug\net8.0\refint\RelicAutomation.Core.dll
+C:\Users\user\Desktop\RELIC\Tools\RelicAutomation\src\RelicAutomation.Core\obj\Debug\net8.0\RelicAutomation.Core.pdb
+C:\Users\user\Desktop\RELIC\Tools\RelicAutomation\src\RelicAutomation.Core\obj\Debug\net8.0\ref\RelicAutomation.Core.dll

@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "dgSpecHash": "FtRYKpZzEUw=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\user\\Desktop\\RELIC\\Tools\\RelicAutomation\\src\\RelicAutomation.Maa\\RelicAutomation.Maa.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\maa.agentbinary\\1.2.0\\maa.agentbinary.1.2.0.nupkg.sha512",
+    "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\maa.framework\\5.13.0-preview.1\\maa.framework.5.13.0-preview.1.nupkg.sha512",
+    "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\maa.framework.binding\\5.13.0-preview.1\\maa.framework.binding.5.13.0-preview.1.nupkg.sha512",
+    "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\maa.framework.binding.native\\5.13.0-preview.1\\maa.framework.binding.native.5.13.0-preview.1.nupkg.sha512",
+    "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\maa.framework.native\\5.13.0-preview.1\\maa.framework.native.5.13.0-preview.1.nupkg.sha512",
+    "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\maa.framework.runtime.linux-arm64\\5.10.5\\maa.framework.runtime.linux-arm64.5.10.5.nupkg.sha512",
+    "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\maa.framework.runtime.linux-x64\\5.10.5\\maa.framework.runtime.linux-x64.5.10.5.nupkg.sha512",
+    "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\maa.framework.runtime.osx-arm64\\5.10.5\\maa.framework.runtime.osx-arm64.5.10.5.nupkg.sha512",
+    "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\maa.framework.runtime.osx-x64\\5.10.5\\maa.framework.runtime.osx-x64.5.10.5.nupkg.sha512",
+    "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\maa.framework.runtime.win-arm64\\5.10.5\\maa.framework.runtime.win-arm64.5.10.5.nupkg.sha512",
+    "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\maa.framework.runtime.win-x64\\5.10.5\\maa.framework.runtime.win-x64.5.10.5.nupkg.sha512",
+    "C:\\Users\\user\\Desktop\\RELIC\\Temp\\dotnet-cli\\.nuget\\packages\\maa.framework.runtimes\\5.10.5\\maa.framework.runtimes.5.10.5.nupkg.sha512"
+  ],
+  "logs": []
+}

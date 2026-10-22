@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <Import Project="$(NuGetPackageRoot)maa.framework.runtime.win-x64\5.10.5\buildTransitive\Maa.Framework.Runtime.win-x64.targets" Condition="Exists('$(NuGetPackageRoot)maa.framework.runtime.win-x64\5.10.5\buildTransitive\Maa.Framework.Runtime.win-x64.targets')" />
+    <Import Project="$(NuGetPackageRoot)maa.framework.runtime.win-arm64\5.10.5\buildTransitive\Maa.Framework.Runtime.win-arm64.targets" Condition="Exists('$(NuGetPackageRoot)maa.framework.runtime.win-arm64\5.10.5\buildTransitive\Maa.Framework.Runtime.win-arm64.targets')" />
+    <Import Project="$(NuGetPackageRoot)maa.framework.runtime.osx-x64\5.10.5\buildTransitive\Maa.Framework.Runtime.osx-x64.targets" Condition="Exists('$(NuGetPackageRoot)maa.framework.runtime.osx-x64\5.10.5\buildTransitive\Maa.Framework.Runtime.osx-x64.targets')" />
+    <Import Project="$(NuGetPackageRoot)maa.framework.runtime.osx-arm64\5.10.5\buildTransitive\Maa.Framework.Runtime.osx-arm64.targets" Condition="Exists('$(NuGetPackageRoot)maa.framework.runtime.osx-arm64\5.10.5\buildTransitive\Maa.Framework.Runtime.osx-arm64.targets')" />
+    <Import Project="$(NuGetPackageRoot)maa.framework.runtime.linux-x64\5.10.5\buildTransitive\Maa.Framework.Runtime.linux-x64.targets" Condition="Exists('$(NuGetPackageRoot)maa.framework.runtime.linux-x64\5.10.5\buildTransitive\Maa.Framework.Runtime.linux-x64.targets')" />
+    <Import Project="$(NuGetPackageRoot)maa.framework.runtime.linux-arm64\5.10.5\buildTransitive\Maa.Framework.Runtime.linux-arm64.targets" Condition="Exists('$(NuGetPackageRoot)maa.framework.runtime.linux-arm64\5.10.5\buildTransitive\Maa.Framework.Runtime.linux-arm64.targets')" />
+    <Import Project="$(NuGetPackageRoot)maa.agentbinary\1.2.0\buildTransitive\Maa.AgentBinary.targets" Condition="Exists('$(NuGetPackageRoot)maa.agentbinary\1.2.0\buildTransitive\Maa.AgentBinary.targets')" />
+  </ImportGroup>
+</Project>

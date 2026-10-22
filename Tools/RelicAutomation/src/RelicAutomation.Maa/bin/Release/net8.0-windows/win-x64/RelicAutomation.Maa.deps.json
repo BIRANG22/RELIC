@@ -1,0 +1,173 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0/win-x64",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {},
+    ".NETCoreApp,Version=v8.0/win-x64": {
+      "RelicAutomation.Maa/1.0.0": {
+        "dependencies": {
+          "Maa.Framework": "5.13.0-preview.1",
+          "RelicAutomation.Core": "1.0.0"
+        },
+        "runtime": {
+          "RelicAutomation.Maa.dll": {}
+        }
+      },
+      "Maa.AgentBinary/1.2.0": {},
+      "Maa.Framework/5.13.0-preview.1": {
+        "dependencies": {
+          "Maa.Framework.Native": "5.13.0-preview.1",
+          "Maa.Framework.Runtimes": "5.10.5"
+        }
+      },
+      "Maa.Framework.Binding/5.13.0-preview.1": {
+        "runtime": {
+          "lib/net7.0/MaaFramework.Binding.dll": {
+            "assemblyVersion": "5.13.0.0",
+            "fileVersion": "5.13.0.0"
+          }
+        }
+      },
+      "Maa.Framework.Binding.Native/5.13.0-preview.1": {
+        "dependencies": {
+          "Maa.Framework.Binding": "5.13.0-preview.1"
+        },
+        "runtime": {
+          "lib/net7.0/MaaFramework.Binding.Native.dll": {
+            "assemblyVersion": "5.13.0.0",
+            "fileVersion": "5.13.0.0"
+          }
+        }
+      },
+      "Maa.Framework.Native/5.13.0-preview.1": {
+        "dependencies": {
+          "Maa.AgentBinary": "1.2.0",
+          "Maa.Framework.Binding.Native": "5.13.0-preview.1"
+        }
+      },
+      "Maa.Framework.Runtime.linux-arm64/5.10.5": {},
+      "Maa.Framework.Runtime.linux-x64/5.10.5": {},
+      "Maa.Framework.Runtime.osx-arm64/5.10.5": {},
+      "Maa.Framework.Runtime.osx-x64/5.10.5": {},
+      "Maa.Framework.Runtime.win-arm64/5.10.5": {},
+      "Maa.Framework.Runtime.win-x64/5.10.5": {},
+      "Maa.Framework.Runtimes/5.10.5": {
+        "dependencies": {
+          "Maa.Framework.Runtime.linux-arm64": "5.10.5",
+          "Maa.Framework.Runtime.linux-x64": "5.10.5",
+          "Maa.Framework.Runtime.osx-arm64": "5.10.5",
+          "Maa.Framework.Runtime.osx-x64": "5.10.5",
+          "Maa.Framework.Runtime.win-arm64": "5.10.5",
+          "Maa.Framework.Runtime.win-x64": "5.10.5"
+        }
+      },
+      "RelicAutomation.Core/1.0.0": {
+        "runtime": {
+          "RelicAutomation.Core.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "RelicAutomation.Maa/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Maa.AgentBinary/1.2.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Gdl2wIX/1TmwII9PZQzh5He6/k/zjY0MjY6tDH9ovzCnTSKYNvFVVvPWqVgjQ7hRWZYF4nX9lPqAJyGZfI47TA==",
+      "path": "maa.agentbinary/1.2.0",
+      "hashPath": "maa.agentbinary.1.2.0.nupkg.sha512"
+    },
+    "Maa.Framework/5.13.0-preview.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3e0nzZ6jSXsECwx8aJM7c/olz20pU0W85CT19Kms9s+JJENmeKZHB1gr2Y0jxFd0kQMM4hcMBJNCtijonPWb9w==",
+      "path": "maa.framework/5.13.0-preview.1",
+      "hashPath": "maa.framework.5.13.0-preview.1.nupkg.sha512"
+    },
+    "Maa.Framework.Binding/5.13.0-preview.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-xYaJ7wxJN692w/HfWABugyu06DFyr5LEEkFjBQ0Q1k1/BTOGdbPZt4GeFPNiuO/QAHP9l0oNDiRLh3zoypXxFQ==",
+      "path": "maa.framework.binding/5.13.0-preview.1",
+      "hashPath": "maa.framework.binding.5.13.0-preview.1.nupkg.sha512"
+    },
+    "Maa.Framework.Binding.Native/5.13.0-preview.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-nHWDgJiB73qC2HtbRoqmhLQJFdZ+zbaci5TvrywDaKw7G3CU5hj+6rrrlO2JlUD2K80M8mf5q5JO9WROEf2Q/g==",
+      "path": "maa.framework.binding.native/5.13.0-preview.1",
+      "hashPath": "maa.framework.binding.native.5.13.0-preview.1.nupkg.sha512"
+    },
+    "Maa.Framework.Native/5.13.0-preview.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-arR+2Gn/aAm95YohgSFAaxQDvI0TWFcxwQfRHcQFqjArckMQbKwTVOBxjp4cRAZVRSQgPWS/PyH7X80ZN7BT+Q==",
+      "path": "maa.framework.native/5.13.0-preview.1",
+      "hashPath": "maa.framework.native.5.13.0-preview.1.nupkg.sha512"
+    },
+    "Maa.Framework.Runtime.linux-arm64/5.10.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XHwz7nNqhnCIDyHQU2NTQZF5d2rqZHjDRUVJxwa2HqlGeWpSji3X2UCDCeQ28kkGiX20f9rfVDiOmPCxo4Shvw==",
+      "path": "maa.framework.runtime.linux-arm64/5.10.5",
+      "hashPath": "maa.framework.runtime.linux-arm64.5.10.5.nupkg.sha512"
+    },
+    "Maa.Framework.Runtime.linux-x64/5.10.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-VJwivZAAFMfEt5NQPtTS6ti6GyMYcfjnD209NBR9BrxhsAHaqSxu5JiH65+6/LjY2HYeFZJEk+up3pOJKKI57Q==",
+      "path": "maa.framework.runtime.linux-x64/5.10.5",
+      "hashPath": "maa.framework.runtime.linux-x64.5.10.5.nupkg.sha512"
+    },
+    "Maa.Framework.Runtime.osx-arm64/5.10.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/VRz97qM2eJqaUDFEsRdxzUGZGzXpi6c8awcf0qmM8/1wOqNzgLsK3aOH0fv9eD1UWJf5/1anfgq58Jf4jNH/Q==",
+      "path": "maa.framework.runtime.osx-arm64/5.10.5",
+      "hashPath": "maa.framework.runtime.osx-arm64.5.10.5.nupkg.sha512"
+    },
+    "Maa.Framework.Runtime.osx-x64/5.10.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-IO7ff5fH5L2bMmOfNbF6OzyaEdEejbtBcOXXeWUKRvvSm+bLjKVonK8LhOetJ4+eq3ppM2DkR3x4vD8EKd2BAQ==",
+      "path": "maa.framework.runtime.osx-x64/5.10.5",
+      "hashPath": "maa.framework.runtime.osx-x64.5.10.5.nupkg.sha512"
+    },
+    "Maa.Framework.Runtime.win-arm64/5.10.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-FbHsM9jGO59t1KZJHhFQTRYQMSDo+PK7Zcvs1AzC0V9PlBaWsUl1RH4Z/h63Lh2NZIrSQj88uriBgMi5GCRbdg==",
+      "path": "maa.framework.runtime.win-arm64/5.10.5",
+      "hashPath": "maa.framework.runtime.win-arm64.5.10.5.nupkg.sha512"
+    },
+    "Maa.Framework.Runtime.win-x64/5.10.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3B+m77FjnDq4u8LGA+tI8EokZLv1aVlIhzXRon7xsPlM59Ak5Vy84LlGmM14ajvaLeTKGYWSxC/yXuYnaHQoQg==",
+      "path": "maa.framework.runtime.win-x64/5.10.5",
+      "hashPath": "maa.framework.runtime.win-x64.5.10.5.nupkg.sha512"
+    },
+    "Maa.Framework.Runtimes/5.10.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-BHRMMejjytsRUtkCffwRiM8Rc7CR7xN+H9u0Z0vWXfVAXDQLQyla4fzS6V1AHozdiW0p8RGCG+ahjoWrIh5f1g==",
+      "path": "maa.framework.runtimes/5.10.5",
+      "hashPath": "maa.framework.runtimes.5.10.5.nupkg.sha512"
+    },
+    "RelicAutomation.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
