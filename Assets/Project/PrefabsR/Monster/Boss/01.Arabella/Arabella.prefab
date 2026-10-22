@@ -306,6 +306,21 @@ MonoBehaviour:
     proxySortingOrderOffset: 0
     proxySortingWorldYOffset: 0
     proxyYMultiplier: 100
+  phaseTransitionVfx:
+    prefab: {fileID: 0}
+    flipType: 0
+    renderMode: 0
+    proxyBlendMode: 0
+    scaleDirectWorldRendererToProxyHeight: 0
+    renderTextureWidth: 512
+    renderTextureHeight: 512
+    renderCameraOrthographicSize: 5
+    proxyWorldHeight: 10
+    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxySortingLayerName: Unit
+    proxySortingOrderOffset: 0
+    proxySortingWorldYOffset: 0
+    proxyYMultiplier: 100
   statusVfxDatabase: {fileID: 11400000, guid: bfb06368a30649efa4153673eb02d38c, type: 2}
   playerSkillPresentations:
     power:

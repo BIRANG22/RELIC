@@ -84,6 +84,9 @@ public class BattleUnitAnimator : MonoBehaviour
     [Header("Death VFX")]
     [SerializeField] private BattleVfxEntry deathVfx;
 
+    [Header("Phase Transition VFX")]
+    [SerializeField] private BattleVfxEntry phaseTransitionVfx;
+
     [Header("Status VFX")]
     [Tooltip("Buff / Debuff 상태 VFX를 공용 DB에서 ID로 조회합니다.")]
     [SerializeField] private StatusVfxDatabase statusVfxDatabase;
@@ -143,6 +146,7 @@ public class BattleUnitAnimator : MonoBehaviour
     private Coroutine hitFlashCoroutine;
     private Coroutine arabellaPhaseTransitionCoroutine;
     private bool deathPresentationPlayed;
+    private bool phaseTransitionPresentationPlayed;
 
     public float DeadAnimationDuration => Mathf.Max(0f, deadAnimationDuration);
     public float LastScheduledPrepareWaitDuration { get; private set; }
@@ -315,6 +319,12 @@ public class BattleUnitAnimator : MonoBehaviour
     {
         ApplyPresentationPlaybackSpeed();
         PlayOptionalState("2phase");
+
+        if (!phaseTransitionPresentationPlayed)
+        {
+            phaseTransitionPresentationPlayed = true;
+            SpawnVfx(phaseTransitionVfx);
+        }
 
         if (arabellaPhaseTransitionCoroutine != null)
             StopCoroutine(arabellaPhaseTransitionCoroutine);
