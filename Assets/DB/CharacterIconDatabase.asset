@@ -123,9 +123,9 @@ MonoBehaviour:
     HUDPortraitImage: {fileID: 21300000, guid: 98244ed8d37442d4c9279ef6b27396c2, type: 3}
     HUDSelectedPortraitImage: {fileID: 21300000, guid: 98244ed8d37442d4c9279ef6b27396c2, type: 3}
     LobbyIdleFrames:
-    - {fileID: 21300000, guid: 98244ed8d37442d4c9279ef6b27396c2, type: 3}
+    - {fileID: 21300000, guid: 8491c0a141a9e6146a73debe2ca78355, type: 3}
     LobbyBattleIdleFrames:
-    - {fileID: 21300000, guid: 98244ed8d37442d4c9279ef6b27396c2, type: 3}
+    - {fileID: 21300000, guid: 8491c0a141a9e6146a73debe2ca78355, type: 3}
     Mark: {fileID: 21300000, guid: e5b52c8f86f9f0946b7dda0a6b662055, type: 3}
     Mark2: {fileID: 0}
   - CharacterId: Char_06
@@ -138,8 +138,8 @@ MonoBehaviour:
     HUDPortraitImage: {fileID: 21300000, guid: d8b9aac9b781da444871331eeea8b0c3, type: 3}
     HUDSelectedPortraitImage: {fileID: 21300000, guid: d8b9aac9b781da444871331eeea8b0c3, type: 3}
     LobbyIdleFrames:
-    - {fileID: 21300000, guid: d8b9aac9b781da444871331eeea8b0c3, type: 3}
+    - {fileID: 21300000, guid: 8491c0a141a9e6146a73debe2ca78355, type: 3}
     LobbyBattleIdleFrames:
-    - {fileID: 21300000, guid: d8b9aac9b781da444871331eeea8b0c3, type: 3}
+    - {fileID: 21300000, guid: 8491c0a141a9e6146a73debe2ca78355, type: 3}
     Mark: {fileID: 21300000, guid: e5b52c8f86f9f0946b7dda0a6b662055, type: 3}
     Mark2: {fileID: 0}
