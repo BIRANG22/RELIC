@@ -5115,6 +5115,7 @@ GameObject:
   - component: {fileID: 137845050135873876}
   - component: {fileID: 137845050135873875}
   - component: {fileID: 137845050135873874}
+  - component: {fileID: 4405018091465419726}
   m_Layer: 0
   m_Name: HCFX_Hit_06
   m_TagString: Untagged
@@ -10078,6 +10079,28 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &4405018091465419726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 137845050135873873}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: boss_arabella2
+  volume: 1
+  playDelay: 0.3
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &2547616679218057379
 GameObject:
   m_ObjectHideFlags: 0
@@ -30197,7 +30220,7 @@ ParticleSystem:
   startDelay:
     serializedVersion: 2
     minMaxState: 0
-    scalar: 1.5
+    scalar: 2
     minScalar: 0
     maxCurve:
       serializedVersion: 2
@@ -35089,7 +35112,7 @@ ParticleSystem:
   startDelay:
     serializedVersion: 2
     minMaxState: 0
-    scalar: 0.5
+    scalar: 1
     minScalar: 0
     maxCurve:
       serializedVersion: 2
@@ -35150,7 +35173,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 3
       scalar: 5
-      minScalar: 1.2
+      minScalar: 1
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -39964,8 +39987,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7717866279776677237}
+  - component: {fileID: 4815448373775758351}
   m_Layer: 0
-  m_Name: GameObject (1)
+  m_Name: shout
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -39988,6 +40012,28 @@ Transform:
   - {fileID: 453447566532021523}
   m_Father: {fileID: 8027240169811422288}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 26.924}
+--- !u!114 &4815448373775758351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5016660858549780338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: boss_arabella1
+  volume: 1
+  playDelay: 2
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &6206095895814903332
 GameObject:
   m_ObjectHideFlags: 0
@@ -39997,6 +40043,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4943491888796175408}
+  - component: {fileID: 3653210615152215162}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -40021,6 +40068,28 @@ Transform:
   - {fileID: 8987121654545790430}
   m_Father: {fileID: 8027240169811422288}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3653210615152215162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6206095895814903332}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: boss_arabella3
+  volume: 1
+  playDelay: 0.5
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &7037999385187585672
 GameObject:
   m_ObjectHideFlags: 0
@@ -40078,7 +40147,7 @@ ParticleSystem:
   startDelay:
     serializedVersion: 2
     minMaxState: 0
-    scalar: 0.5
+    scalar: 0.75
     minScalar: 0
     maxCurve:
       serializedVersion: 2
@@ -40522,7 +40591,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 3
       scalar: 0
-      minScalar: 6.283185
+      minScalar: 3.1415925
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -41053,7 +41122,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 1
-      repeatInterval: 0.05
+      repeatInterval: 0.01
       probability: 1
   SizeModule:
     enabled: 1
@@ -44991,7 +45060,7 @@ ParticleSystem:
   startDelay:
     serializedVersion: 2
     minMaxState: 0
-    scalar: 1.5
+    scalar: 2
     minScalar: 0
     maxCurve:
       serializedVersion: 2

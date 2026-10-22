@@ -9941,7 +9941,7 @@ GameObject:
   m_Component:
   - component: {fileID: 417174897945110221}
   m_Layer: 0
-  m_Name: Vfx_Mon_B_01_attack_03_prepare
+  m_Name: Vfx_Mon_B_01_attack_03_pre
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
