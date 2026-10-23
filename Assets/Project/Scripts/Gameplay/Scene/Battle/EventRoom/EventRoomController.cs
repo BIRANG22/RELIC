@@ -969,7 +969,21 @@ public class EventRoomController : MonoBehaviour
             ? definition.Detail
             : definition.Title ?? string.Empty;
 
-        return GameDataLocalization.EventTitle(definition, fallback);
+        string localized = GameDataLocalization.EventTitle(definition, fallback);
+        // Some localization tables resolve the event title to a choice description.
+        // Never display a choice's description in the event body field.
+        if (!string.IsNullOrWhiteSpace(localized) && definition.Choices != null)
+        {
+            foreach (EventData choice in definition.Choices)
+            {
+                if (choice == null) continue;
+                string choiceDescription = GameDataLocalization.EventChoiceDescription(choice);
+                if (string.Equals(localized.Trim(), choiceDescription?.Trim(), System.StringComparison.Ordinal) ||
+                    string.Equals(localized.Trim(), choice.ChoiceDesc?.Trim(), System.StringComparison.Ordinal))
+                    return fallback;
+            }
+        }
+        return string.IsNullOrWhiteSpace(localized) ? fallback : localized;
     }
 
     private void BindChoiceSlots(IReadOnlyList<EventData> choices)
@@ -1292,6 +1306,8 @@ public class EventRoomController : MonoBehaviour
         event02ChestTransitionRoutine = null;
     }
 
+    private readonly int[] event03PartyHpBefore = new int[3];
+
     private void ExecuteEventChoice(
         EventData choice,
         EventChoiceEquippedRelicCost selectedEquippedRelicCost = default,
@@ -1301,6 +1317,18 @@ public class EventRoomController : MonoBehaviour
         SetChoiceSlotsInteractable(false);
 
         int accumulatedRemnantBeforeChoice = eventChoiceSessionState.AccumulatedRemnant;
+        if (choice != null && EventIdUtility.Normalize(choice.EventId) == "Event_03" &&
+            SameToken(choice.ResultType, "Heal"))
+        {
+            DataManager dm = DataManager.Instance;
+            for (int slot = 0; slot < event03PartyHpBefore.Length; slot++)
+            {
+                string characterId = dm?.PartyRuntimeStore?.GetCharacterId(slot);
+                CharacterRuntimeData runtime = !string.IsNullOrWhiteSpace(characterId)
+                    ? dm?.CharacterRuntimeStore?.Get(characterId) : null;
+                event03PartyHpBefore[slot] = runtime != null ? runtime.CurrentHP : 0;
+            }
+        }
 
         EventChoiceExecutionResult result;
         activeRewardChoice = choice;
@@ -1329,6 +1357,26 @@ public class EventRoomController : MonoBehaviour
         }
 
         ClearEquippedRelicCostSelection();
+
+        // A GainRandom/Relic choice must queue a real relic before proceeding.
+        // Otherwise a failed reward roll silently advances straight to the result event.
+        bool expectsDirectRelicReward =
+            string.Equals(choice.ResultType?.Trim(), "GainRandom", System.StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(choice.ResultTarget?.Trim(), "Relic", System.StringComparison.OrdinalIgnoreCase);
+        if (expectsDirectRelicReward &&
+            EventIdUtility.Normalize(choice.EventId) == "Event_03" &&
+            !pendingEventRewards.Exists(r =>
+                r != null && r.Type == BattleRewardType.Relic && !string.IsNullOrWhiteSpace(r.RewardId)))
+        {
+            Debug.LogError($"[EventRoomController] Event relic reward was not queued: {choice.EventId}/{choice.ChoiceOrder}. " +
+                $"ResultRarity={choice.ResultRarity}, ResultMessage={result.ResultMessage}. " +
+                "Check RelicDatabase, eligible relic rarities, and already-owned relics.", this);
+            if (eventResultText != null)
+                eventResultText.text = result.ResultMessage;
+            BindChoiceSlots(GetCurrentVisibleChoices());
+            RestoreEventChoiceUiAfterDice();
+            return;
+        }
 
         // Execute가 성공한 시점에는 비용·확률·보상 후보가 Runtime에 확정되어 있다.
         // checkpoint는 아래에서 실제 다음 presentation이 확정된 직후에만 만든다.
@@ -1780,6 +1828,45 @@ public class EventRoomController : MonoBehaviour
         IReadOnlyList<int> resolvedDiceFaces)
     {
         TryShowEvent07StatGainPopup(choice);
+
+        // Data-driven Event_03 recovery uses the same popup as combat healing.
+        // Show the requested value even when the party is already at full HP.
+        if (choice != null && result.Accepted && result.Succeeded &&
+            EventIdUtility.Normalize(choice.EventId) == "Event_03" &&
+            SameToken(choice.ResultType, "Heal") &&
+            SameToken(choice.ResultTarget, "PartyAll") &&
+            TryParseSignedValue(choice.ResultValue, out int eventHealAmount) && eventHealAmount > 0)
+        {
+            Canvas popupCanvas = GetComponentInParent<Canvas>(true);
+            if (popupCanvas == null || !popupCanvas.gameObject.activeInHierarchy)
+                popupCanvas = GetComponentInChildren<Canvas>(true);
+
+            // Only the center party character displays the recovery popup.
+            // Party-wide healing is still applied by EventChoiceExecutionService.
+            Transform point = FindChildRecursive(transform, "EventAllyPoint2");
+            if (point == null || !point.gameObject.activeInHierarchy)
+                point = FindEventAllyPoint1();
+
+            if (point != null)
+            {
+                BattleDamageTextPopupUI.ShowEventHealthRecovery(point, eventHealAmount, popupCanvas, eventStatPopupFontSize);
+                BattleCharacterResourcesUI resourceUi = FindFirstObjectByType<BattleCharacterResourcesUI>(FindObjectsInactive.Include);
+                if (resourceUi != null)
+                {
+                    if (!resourceUi.gameObject.activeSelf)
+                        resourceUi.gameObject.SetActive(true);
+                    if (resourceUi.gameObject.activeInHierarchy)
+                    {
+                        Transform[] anchors = new Transform[3];
+                        for (int i = 0; i < anchors.Length; i++)
+                            anchors[i] = FindChildRecursive(transform, $"EventAllyPoint{i + 1}");
+                        resourceUi.ShowEventRecoveryAll(anchors, event03PartyHpBefore);
+                    }
+                }
+            }
+            else
+                Debug.LogWarning("[EventRoomController] Event_03 center recovery popup point not found.", this);
+        }
 
         if (choice == null || resolvedDiceFaces == null || !IsDiceChoice(choice))
             return;
@@ -4523,6 +4610,35 @@ public class EventRoomController : MonoBehaviour
         return match.Success && int.TryParse(match.Groups[1].Value, out slot);
     }
 
+    // Event memory rewards use the SkillMaster Core catalogue, not the
+    // optional general skill reward pool. Ownership is still respected.
+    private List<SkillMasterData> CollectAvailableEventCoreCandidates()
+    {
+        List<SkillMasterData> candidates = new();
+        if (DataManager.Instance?.SkillDatabase == null)
+            return candidates;
+
+        List<SkillMasterData> allSkills = DataManager.Instance.SkillDatabase.GetAll();
+        if (allSkills == null)
+            return candidates;
+
+        HashSet<string> unavailableIds = CollectUnavailableSkillIds();
+        IReadOnlyList<string> partyIds = SkillOwnershipPolicy.GetPartyCharacterIds(
+            DataManager.Instance.PartyRuntimeStore);
+        foreach (SkillMasterData skill in allSkills)
+        {
+            if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId) ||
+                skill.Category != Category.Core ||
+                !SkillRarityUtility.IsCoreDropRarity(skill.Rarity) ||
+                !SkillRarityUtility.IsBaseSkillVariant(skill.SkillId) ||
+                unavailableIds.Contains(skill.SkillId.Trim()) ||
+                !SkillOwnershipPolicy.CanRewardToParty(skill, partyIds))
+                continue;
+            candidates.Add(skill);
+        }
+        return candidates;
+    }
+
     private bool CanOfferPartyCoreRewards(EventData choice)
     {
         if (choice == null || DataManager.Instance?.PartyRuntimeStore == null) return false;
@@ -4534,10 +4650,12 @@ public class EventRoomController : MonoBehaviour
         if (count < 1 || count > 3) return false;
         Dictionary<SkillRarity, int> weights = ParseCoreRarityWeights(choice.ResultRarity);
         if (weights.Count == 0) return false;
-        List<SkillMasterData> candidates = CollectAvailableSkillRewardCandidates();
-        return candidates.FindAll(skill => skill != null &&
+        List<SkillMasterData> candidates = CollectAvailableEventCoreCandidates();
+        // A character can still receive a memory when fewer than OfferCount
+        // distinct, unowned skills remain. Present only the available offers.
+        return candidates.Exists(skill => skill != null &&
             (slot == 0 || string.Equals(skill.CharacterId?.Trim(), characterId.Trim(), System.StringComparison.OrdinalIgnoreCase)) &&
-            weights.TryGetValue(skill.Rarity, out int value) && value > 0).Count >= count;
+            weights.TryGetValue(skill.Rarity, out int value) && value > 0);
     }
 
     private bool TryQueuePartyCoreRewards(EventData choice, out string resultMessage)
@@ -4550,12 +4668,14 @@ public class EventRoomController : MonoBehaviour
         if (slot > 0 && string.IsNullOrWhiteSpace(characterId)) return false;
         int count = choice.OfferCount > 0 ? choice.OfferCount : 3;
         if (count > 3 || count < 1) return false;
-        List<SkillMasterData> candidates = CollectAvailableSkillRewardCandidates();
+        List<SkillMasterData> candidates = CollectAvailableEventCoreCandidates();
         candidates.RemoveAll(skill => skill == null ||
             (slot > 0 && !string.Equals(skill.CharacterId?.Trim(), characterId.Trim(), System.StringComparison.OrdinalIgnoreCase)));
-        if (candidates.Count < count) return false;
         Dictionary<SkillRarity, int> weights = ParseCoreRarityWeights(choice.ResultRarity);
         if (weights.Count == 0) return false;
+        candidates.RemoveAll(skill => !weights.TryGetValue(skill.Rarity, out int weight) || weight <= 0);
+        if (candidates.Count == 0) return false;
+        count = Mathf.Min(count, candidates.Count);
         List<SkillMasterData> chosen = new();
         for (int i = 0; i < count; i++)
         {
@@ -4586,6 +4706,22 @@ public class EventRoomController : MonoBehaviour
         return true;
     }
 
+    private static Dictionary<RelicRarity, int> ParseRelicRarityWeights(string input)
+    {
+        Dictionary<RelicRarity, int> weights = new();
+        if (string.IsNullOrWhiteSpace(input)) return weights;
+        foreach (string entry in input.Split(','))
+        {
+            string[] pair = entry.Split(':');
+            if (pair.Length != 2 ||
+                !RelicRarityUtility.TryParseChestRarity(pair[0].Trim(), out RelicRarity rarity) ||
+                !int.TryParse(pair[1].Trim(), out int weight) || weight <= 0)
+                continue;
+            weights[rarity] = weight;
+        }
+        return weights;
+    }
+
     private bool TryQueueRandomRelicReward(out string resultMessage)
     {
         resultMessage = string.Empty;
@@ -4595,16 +4731,15 @@ public class EventRoomController : MonoBehaviour
 
         ChestRelicReward reward = default;
         bool chosen = false;
-        Dictionary<SkillRarity, int> configured = ParseCoreRarityWeights(activeRewardChoice?.ResultRarity);
+        Dictionary<RelicRarity, int> configured = ParseRelicRarityWeights(activeRewardChoice?.ResultRarity);
         if (configured.Count > 0)
         {
             // Choose rarity first, then select one available relic from that rarity.
             // Empty rarities are excluded and remaining weights are renormalized.
             List<(RelicRarity rarity, int weight)> choices = new();
-            foreach (KeyValuePair<SkillRarity, int> pair in configured)
+            foreach (KeyValuePair<RelicRarity, int> pair in configured)
             {
-                if (pair.Value <= 0 || !System.Enum.TryParse(pair.Key.ToString(), out RelicRarity rarity)) continue;
-                if (TryPickRandomAvailableRelic(out _, rarity)) choices.Add((rarity, pair.Value));
+                if (TryPickRandomAvailableRelic(out _, pair.Key)) choices.Add((pair.Key, pair.Value));
             }
             int total = 0;
             foreach (var item in choices) total += item.weight;
@@ -4624,6 +4759,43 @@ public class EventRoomController : MonoBehaviour
         }
         if (!chosen)
         {
+            // 실패 원인을 실제 후보 수로 구분합니다. 일반 상자 보상 규칙이나 보유 목록은 변경하지 않습니다.
+            var relicDb = DataManager.Instance?.RelicDatabase;
+            var all = relicDb?.GetAll();
+            var excluded = CollectUnavailableRelicIds();
+            int total = all?.Count ?? 0;
+            int recognized = 0;
+            int matchingRarity = 0;
+            int matchingUnowned = 0;
+            int ownedMatching = 0;
+            if (all != null)
+            {
+                foreach (RelicData relic in all)
+                {
+                    if (relic == null || string.IsNullOrWhiteSpace(relic.FragmentId) ||
+                        !RelicRarityUtility.TryParseChestRarity(relic.Rarity, out RelicRarity rarity))
+                        continue;
+                    recognized++;
+                    bool configuredMatch = configured.Count == 0;
+                    foreach (KeyValuePair<RelicRarity, int> entry in configured)
+                    {
+                        if (entry.Key == rarity)
+                        {
+                            configuredMatch = true;
+                            break;
+                        }
+                    }
+                    if (!configuredMatch) continue;
+                    matchingRarity++;
+                    if (excluded.Contains(relic.FragmentId.Trim())) ownedMatching++;
+                    else matchingUnowned++;
+                }
+            }
+            Debug.LogError($"[EventRoomController] Relic reward candidates unavailable: Event={activeRewardChoice?.EventId}/{activeRewardChoice?.ChoiceOrder}, " +
+                $"DBTotal={total}, RecognizedRarity={recognized}, MatchingRarity={matchingRarity}, " +
+                $"AlreadyOwnedOrReserved={ownedMatching}, EligibleUnowned={matchingUnowned}, " +
+                $"ExcludedIds={excluded.Count}, Requested={activeRewardChoice?.ResultRarity}. " +
+                "DBTotal=0이면 Relic CSV 로딩을, EligibleUnowned=0이면 보유 유물 및 필터를 확인하세요.", this);
             resultMessage = requireEpic ? "획득 가능한 에픽 유물이 없습니다." : GameLocalization.Get("event.relic.none_available");
             return false;
         }
@@ -5202,6 +5374,7 @@ public class EventRoomController : MonoBehaviour
             if (reward.Type == BattleRewardType.Relic || reward.Type == BattleRewardType.Skill)
             {
                 bool resolved = false;
+                Debug.Log($"[EventRoomController] Opening event equipment panel: {reward.Type} / {reward.RewardId}", this);
                 bool opened = reward.Type == BattleRewardType.Relic
                     ? BattleRewardEquipPanelUI.TryOpenRelicReward(reward.RewardId, () => resolved = true)
                     : BattleRewardEquipPanelUI.TryOpenSkillReward(reward, () => resolved = true);
@@ -5271,7 +5444,7 @@ public class EventRoomController : MonoBehaviour
     {
         if (choice == null) return false;
         string id = EventIdUtility.Normalize(choice.EventId);
-        return id == "Event_01" || id == "Event_02" || id == "Event_03" || id == "Event_04";
+        return id == "Event_01" || id == "Event_02" || id == "Event_04";
     }
 
     private void OnEventRewardPanelCompleted()
@@ -5586,13 +5759,12 @@ public class EventRoomController : MonoBehaviour
         if (choice == null)
             return string.Empty;
 
-        string order = choice.ChoiceOrder > 0 ? $"{choice.ChoiceOrder}. " : string.Empty;
         string name = choice.ChoiceName ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(choice.ChoiceDesc))
-            return $"{order}{name}";
+            return name;
 
-        return $"{order}{name}\n{choice.ChoiceDesc}";
+        return $"{name}\n{choice.ChoiceDesc}";
     }
 
     private void EnsureDataEventReferences()

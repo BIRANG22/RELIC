@@ -244,7 +244,9 @@ namespace Relic.Gameplay.Data
             if (IsPartyCoreReward(choice) &&
                 (context.CanOfferPartyCoreRewards == null || !context.CanOfferPartyCoreRewards(choice)))
             {
-                unavailableReason = GameLocalization.Get("event.memory.none_upgradable");
+                unavailableReason = GameLocalization.Get("event.memory.none_available");
+                if (string.IsNullOrWhiteSpace(unavailableReason) || unavailableReason == "event.memory.none_available")
+                    unavailableReason = "획득 가능한 기억이 없습니다.";
                 return false;
             }
 
@@ -763,7 +765,7 @@ namespace Relic.Gameplay.Data
             if (IsPartyCoreReward(choice))
                 return TryInvokeRewardGrant(context,
                     (out string message) => { message = string.Empty; return context.OfferPartyCoreRewards != null && context.OfferPartyCoreRewards(choice, out message); },
-                    GameLocalization.Get("event.memory.none_upgradable"));
+                    "획득 가능한 기억이 없습니다.");
             if (TryResolveSkillRewardOffer(choice, out EventChoiceSkillRewardFilter filter))
             {
                 int count = ResolveOfferChoiceCount(choice.ResultValue, DefaultOfferChoiceSkillCount);

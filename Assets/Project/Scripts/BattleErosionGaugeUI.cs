@@ -38,6 +38,8 @@ public sealed class BattleErosionGaugeUI : MonoBehaviour, IPointerEnterHandler, 
     private Coroutine animationCoroutine;
     private float displayedValue;
     private bool initialized;
+    private Coroutine decreaseValueRoutine;
+    private bool showingDecreaseValue;
 
     private void Awake()
     {
@@ -71,10 +73,20 @@ public sealed class BattleErosionGaugeUI : MonoBehaviour, IPointerEnterHandler, 
 
         StopAddAnimation();
         ResetAddVisual();
+        if (decreaseValueRoutine != null)
+        {
+            StopCoroutine(decreaseValueRoutine);
+            decreaseValueRoutine = null;
+        }
+        showingDecreaseValue = false;
     }
 
     private void LateUpdate()
     {
+        // 감소량 표시 중에는 마우스 위치와 관계없이 Value를 활성화합니다.
+        if (showingDecreaseValue)
+            return;
+
         // Raycast Target 설정과 관계없이 Back의 실제 사각형으로 판정합니다.
         if (!showValueOnlyOnHover)
         {
@@ -204,7 +216,7 @@ public sealed class BattleErosionGaugeUI : MonoBehaviour, IPointerEnterHandler, 
             return;
 
         isHovering = hovered;
-        bool shouldShow = !showValueOnlyOnHover || hovered;
+        bool shouldShow = showingDecreaseValue || !showValueOnlyOnHover || hovered;
         if (valueText.gameObject.activeSelf != shouldShow)
             valueText.gameObject.SetActive(shouldShow);
     }
@@ -219,9 +231,32 @@ public sealed class BattleErosionGaugeUI : MonoBehaviour, IPointerEnterHandler, 
 
         animationCoroutine = StartCoroutine(AnimateTo(after));
 
-        // Only actual increases trigger the floating delta indicator.
         if (after > before)
             PlayAddAnimation(after - before);
+        else if (after < before)
+            ShowDecreaseValue(before - after);
+    }
+
+    private void ShowDecreaseValue(int amount)
+    {
+        if (valueText == null || amount <= 0)
+            return;
+        if (decreaseValueRoutine != null)
+            StopCoroutine(decreaseValueRoutine);
+        showingDecreaseValue = true;
+        RefreshValueVisibility(true);
+        valueText.text = "-" + amount.ToString();
+        decreaseValueRoutine = StartCoroutine(ShowDecreaseValueRoutine());
+    }
+
+    private IEnumerator ShowDecreaseValueRoutine()
+    {
+        yield return new WaitForSecondsRealtime(Mathf.Max(0.1f, addAnimationDuration));
+        decreaseValueRoutine = null;
+        showingDecreaseValue = false;
+        if (valueText != null && !showingDecreaseValue)
+            valueText.text = Mathf.RoundToInt(displayedValue).ToString();
+        RefreshValueVisibility(IsPointerOverBack());
     }
 
     private void PlayAddAnimation(int delta)
@@ -316,7 +351,7 @@ public sealed class BattleErosionGaugeUI : MonoBehaviour, IPointerEnterHandler, 
     {
         displayedValue = Mathf.Clamp(value, BattleErosionRuntimeService.MinValue, BattleErosionRuntimeService.MaxValue);
 
-        if (valueText != null)
+        if (valueText != null && !showingDecreaseValue)
             valueText.text = Mathf.RoundToInt(displayedValue).ToString();
 
         if (fillImage != null)

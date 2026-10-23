@@ -220,8 +220,7 @@ public class EventChoiceSlotUI : MonoBehaviour
 
         if (choiceNameText != null)
         {
-            string order = boundChoice.ChoiceOrder > 0 ? $"{boundChoice.ChoiceOrder}. " : string.Empty;
-            choiceNameText.text = order + ResolvePartyNames(GameDataLocalization.EventChoiceName(boundChoice));
+            choiceNameText.text = ResolvePartyNames(GameDataLocalization.EventChoiceName(boundChoice));
         }
 
         string displayedChoiceDesc = boundSelectable

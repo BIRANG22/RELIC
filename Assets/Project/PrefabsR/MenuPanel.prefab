@@ -2719,8 +2719,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 4048386314798781008}
-  localizationKey: title.archive
-  koreanSource: "\uAE30\uB85D\uC11C"
+  localizationKey: ui.menupanel.menupanel.button.record.record_text.6db3f2f6
+  koreanSource: "\uAE30\uB85D"
   automaticallyRegistered: 1
 --- !u!1 &6922884492292246556
 GameObject:

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -38,6 +39,9 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
     private Transform visibleWorldAnchor;
     private AnchorMode visibleAnchorMode;
     private Canvas parentCanvas;
+    private Coroutine forcedRecoveryRoutine;
+    private bool forcedRecoveryVisible;
+
 
     private sealed class SlotView
     {
@@ -61,6 +65,8 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (forcedRecoveryVisible)
+            return;
         if (visibleSlot < 0)
             return;
 
@@ -114,6 +120,91 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
             return;
 
         HideAll();
+    }
+
+    // Event healing temporarily reveals all three HP panels, independently of mouse hover.
+    public void ShowEventRecoveryAll(Transform[] worldAnchors, int[] beforeHp, float duration = 1.2f)
+    {
+        ResolveReferences();
+        if (forcedRecoveryRoutine != null)
+            StopCoroutine(forcedRecoveryRoutine);
+        forcedRecoveryVisible = true;
+        visibleSlot = -1;
+        visibleWorldAnchor = null;
+        forcedRecoveryRoutine = StartCoroutine(AnimateEventRecoveryAll(worldAnchors, beforeHp, duration));
+    }
+
+    private IEnumerator AnimateEventRecoveryAll(Transform[] anchors, int[] beforeHp, float duration)
+    {
+        CharacterRuntimeData[] runtimes = new CharacterRuntimeData[PartySlotCount];
+        CharacterMasterData[] masters = new CharacterMasterData[PartySlotCount];
+        int[] starting = new int[PartySlotCount];
+        int[] targets = new int[PartySlotCount];
+        int[] maximums = new int[PartySlotCount];
+
+        for (int i = 0; i < PartySlotCount; i++)
+        {
+            SlotView view = slotViews[i];
+            bool available = view?.Root != null && anchors != null && i < anchors.Length && anchors[i] != null &&
+                             TryGetCharacterRuntime(i, out runtimes[i], out masters[i]);
+            if (view?.Root != null)
+                view.Root.SetActive(available);
+            if (!available)
+                continue;
+            maximums[i] = Mathf.Max(1, BattleEquipmentEffectService.GetEffectiveMaxHP(runtimes[i], masters[i]));
+            targets[i] = Mathf.Clamp(runtimes[i].CurrentHP, 0, maximums[i]);
+            starting[i] = Mathf.Clamp(beforeHp != null && i < beforeHp.Length ? beforeHp[i] : targets[i], 0, maximums[i]);
+            UpdateEventRecoveryPosition(i, anchors[i]);
+        }
+
+        float changeDuration = Mathf.Max(0.01f, duration * 0.7f);
+        float elapsed = 0f;
+        while (elapsed < changeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / changeDuration));
+            for (int i = 0; i < PartySlotCount; i++)
+            {
+                SlotView view = slotViews[i];
+                if (view?.Root == null || !view.Root.activeSelf || maximums[i] <= 0)
+                    continue;
+                float hp = Mathf.Lerp(starting[i], targets[i], t);
+                if (view.HpFill != null)
+                    view.HpFill.fillAmount = Mathf.Clamp01(hp / maximums[i]);
+                if (view.HpValue != null)
+                    view.HpValue.text = $"{Mathf.RoundToInt(hp)}/{maximums[i]}";
+                UpdateEventRecoveryPosition(i, anchors[i]);
+            }
+            yield return null;
+        }
+        for (int i = 0; i < PartySlotCount; i++)
+        {
+            if (slotViews[i]?.Root != null && slotViews[i].Root.activeSelf)
+                Bind(slotViews[i], runtimes[i], masters[i]);
+        }
+        yield return new WaitForSecondsRealtime(Mathf.Max(0.25f, duration * 0.3f));
+        forcedRecoveryRoutine = null;
+        forcedRecoveryVisible = false;
+        HideAll();
+    }
+
+    private void UpdateEventRecoveryPosition(int slotIndex, Transform anchor)
+    {
+        SlotView view = slotViews[slotIndex];
+        if (view?.Rect == null || anchor == null)
+            return;
+        RectTransform parent = view.Rect.parent as RectTransform;
+        Camera camera = worldCamera != null ? worldCamera : Camera.main;
+        if (parent == null || camera == null)
+            return;
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(camera, anchor.position);
+        Camera uiCamera = parentCanvas != null && parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? (parentCanvas.worldCamera != null ? parentCanvas.worldCamera : camera) : null;
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, screenPoint, uiCamera, out Vector2 localPoint))
+            return;
+        Vector2 offset = GetOffset(slotIndex, AnchorMode.MapEvent);
+        Vector3 current = view.Rect.localPosition;
+        view.Rect.localPosition = new Vector3(localPoint.x + offset.x, localPoint.y + offset.y, current.z);
     }
 
     public void HideAll()
