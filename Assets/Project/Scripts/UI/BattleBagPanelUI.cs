@@ -34,20 +34,17 @@ public class BattleBagPanelUI : MonoBehaviour
     [Header("Dynamic Content Slots")]
     [SerializeField] private Transform storageContentRoot;
     [SerializeField] private BattleBagItemSlotUI storageSlotPrefab;
-    [SerializeField] private ScrollRect storageScrollRect;
-    [SerializeField] private Scrollbar storageVerticalScrollbar;
+
 
     [Header("Lobby Compound Storage")]
     [Tooltip("StoragePanel/Compound_ScrollView/Viewport/Content를 연결합니다. 비워두면 이름으로 자동 탐색합니다.")]
     [SerializeField] private Transform compoundContentRoot;
-    [SerializeField] private ScrollRect compoundScrollRect;
-    [SerializeField] private Scrollbar compoundVerticalScrollbar;
+
 
     [Header("Lobby Relic Storage")]
     [Tooltip("StoragePanel/Relic_Scroll View/Viewport/Content를 연결합니다. 비워두면 이름으로 자동 탐색합니다.")]
     [SerializeField] private Transform relicContentRoot;
-    [SerializeField] private ScrollRect relicScrollRect;
-    [SerializeField] private Scrollbar relicVerticalScrollbar;
+
 
     [Header("Legacy Category Buttons")]
     [SerializeField] private Button itemButton;
@@ -208,12 +205,6 @@ public class BattleBagPanelUI : MonoBehaviour
                 if (foundContent != null)
                     storageContentRoot = foundContent;
             }
-
-            if (storageScrollRect == null)
-                storageScrollRect = storageScrollView.GetComponent<ScrollRect>();
-
-            if (storageVerticalScrollbar == null)
-                storageVerticalScrollbar = FindDeepChild(storageScrollView, "Scrollbar Vertical")?.GetComponent<Scrollbar>();
         }
 
         Transform compoundScrollView = FindDeepChild(transform, "Compound_Scroll View") ?? FindDeepChild(transform, "Compound_ScrollView");
@@ -227,12 +218,6 @@ public class BattleBagPanelUI : MonoBehaviour
                 if (foundContent != null)
                     compoundContentRoot = foundContent;
             }
-
-            if (compoundScrollRect == null)
-                compoundScrollRect = compoundScrollView.GetComponent<ScrollRect>();
-
-            if (compoundVerticalScrollbar == null)
-                compoundVerticalScrollbar = FindDeepChild(compoundScrollView, "Scrollbar Vertical")?.GetComponent<Scrollbar>();
         }
 
         Transform relicScrollView = FindDeepChild(transform, "Relic_Scroll View") ?? FindDeepChild(transform, "Relic_ScrollView");
@@ -246,12 +231,6 @@ public class BattleBagPanelUI : MonoBehaviour
                 if (foundContent != null)
                     relicContentRoot = foundContent;
             }
-
-            if (relicScrollRect == null)
-                relicScrollRect = relicScrollView.GetComponent<ScrollRect>();
-
-            if (relicVerticalScrollbar == null)
-                relicVerticalScrollbar = FindDeepChild(relicScrollView, "Scrollbar Vertical")?.GetComponent<Scrollbar>();
         }
 
         if (storageContentRoot == null)
@@ -260,10 +239,6 @@ public class BattleBagPanelUI : MonoBehaviour
             if (foundContent != null)
                 storageContentRoot = foundContent;
         }
-
-        BindStorageScrollView(storageScrollRect, storageContentRoot, storageVerticalScrollbar);
-        BindStorageScrollView(compoundScrollRect, compoundContentRoot, compoundVerticalScrollbar);
-        BindStorageScrollView(relicScrollRect, relicContentRoot, relicVerticalScrollbar);
 
         if (itemButton == null)
         {
@@ -327,34 +302,6 @@ public class BattleBagPanelUI : MonoBehaviour
         BuildSlotsIfNeeded();
     }
 
-    private void BindStorageScrollView(
-        ScrollRect scrollRect,
-        Transform contentRoot,
-        Scrollbar verticalScrollbar)
-    {
-        if (scrollRect == null)
-            return;
-
-        if (scrollRect.content == null && contentRoot is RectTransform contentRect)
-            scrollRect.content = contentRect;
-
-        if (scrollRect.viewport == null)
-        {
-            Transform viewportTransform = FindDeepChild(scrollRect.transform, "Viewport");
-            if (viewportTransform != null)
-                scrollRect.viewport = viewportTransform as RectTransform;
-        }
-
-        scrollRect.horizontal = false;
-        scrollRect.vertical = true;
-
-        if (verticalScrollbar != null)
-        {
-            verticalScrollbar.gameObject.SetActive(true);
-            scrollRect.verticalScrollbar = verticalScrollbar;
-            scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
-        }
-    }
 
     private void BuildSlotsIfNeeded()
     {
@@ -1112,7 +1059,6 @@ public class BattleBagPanelUI : MonoBehaviour
     {
         storageCategory = StorageCategory.Item;
         Refresh();
-        ResetStorageScrollToTop();
     }
 
     private void ShowStoredCompounds()
@@ -1122,27 +1068,8 @@ public class BattleBagPanelUI : MonoBehaviour
 
         storageCategory = StorageCategory.Compound;
         Refresh();
-        ResetStorageScrollToTop();
     }
 
-    private void ResetStorageScrollToTop()
-    {
-        if (storageScrollRect == null)
-            return;
-
-        // 씬 전환으로 Content가 다시 생성된 직후 레이아웃을 먼저 확정한 다음
-        // 스크롤을 항상 최상단에서 시작하도록 맞춥니다.
-        Canvas.ForceUpdateCanvases();
-
-        if (storageScrollRect.content != null)
-            LayoutRebuilder.ForceRebuildLayoutImmediate(storageScrollRect.content);
-
-        storageScrollRect.StopMovement();
-        storageScrollRect.verticalNormalizedPosition = 1f;
-
-        if (storageVerticalScrollbar != null)
-            storageVerticalScrollbar.value = 1f;
-    }
 
     private void BindDiscardButton()
     {
