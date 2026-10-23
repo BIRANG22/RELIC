@@ -29,7 +29,8 @@ namespace Relic.Gameplay.Data
                 {
                     EventId = group.Key,
                     EventName = FirstNonEmpty(group.Select(row => row.EventName)),
-                    Title = FirstNonEmpty(group.Select(row => row.Title)),
+                    Title = FirstNonEmpty(group.Select(row => !string.IsNullOrWhiteSpace(row.Detail) ? row.Detail : row.Title)),
+                    Detail = FirstNonEmpty(group.Select(row => !string.IsNullOrWhiteSpace(row.Detail) ? row.Detail : row.Title)),
                     Choices = group
                         .Where(row => !string.IsNullOrWhiteSpace(row.ChoiceName) ||
                                       !string.IsNullOrWhiteSpace(row.ChoiceDesc) ||

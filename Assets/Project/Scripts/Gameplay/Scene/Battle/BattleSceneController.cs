@@ -1997,14 +1997,20 @@ public class BattleSceneController : MonoBehaviour
 
     private void OpenSpecialEvent(GeneratedMapNodeData nodeData)
     {
-        // 시작방 Map_25는 Map 시트의 EventId가 0이지만,
-        // 기존 시작 이벤트는 Event_09 데이터로 진행됩니다.
-        // 일반 이벤트와 수동 지정한 이벤트 ID는 변경하지 않습니다.
+        // Use the EventId supplied by the map database for Start, Shop and Special rooms.
         string eventId = EventIdUtility.Normalize(nodeData.EventId);
-        if (string.Equals(nodeData.Type, "Start", StringComparison.OrdinalIgnoreCase) &&
-            string.IsNullOrWhiteSpace(eventId))
+        // 저장된 지도 노드의 EventId가 구버전이면 현재 Map 데이터의 EventId를 사용합니다.
+        if (DataManager.Instance?.MapDatabase != null &&
+            DataManager.Instance.MapDatabase.TryGet(nodeData.MapId, out MapData currentMap) &&
+            currentMap != null)
         {
-            eventId = "Event_09";
+            string mappedEventId = EventIdUtility.Normalize(currentMap.EventId);
+            if (!string.IsNullOrWhiteSpace(mappedEventId) && mappedEventId != eventId)
+            {
+                Debug.LogWarning($"[BattleSceneController] Updating stale event mapping: {nodeData.MapId} / {eventId} -> {mappedEventId}");
+                eventId = mappedEventId;
+                nodeData.EventId = mappedEventId;
+            }
         }
 
         Debug.Log($"[BattleSceneController] Special event start: {nodeData.MapId} / Event:{eventId}");

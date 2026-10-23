@@ -8,6 +8,7 @@ using UnityEngine;
 namespace Relic.Gameplay.Data
 {
     public delegate bool EventChoiceRewardGrant(out string resultMessage);
+    public delegate bool EventChoiceCoreOfferGrant(EventData choice, out string resultMessage);
     public delegate bool EventChoiceRemnantRewardGrant(int amount, out string resultMessage);
     public delegate void EventChoiceRemnantRewardRevoke(int amount);
     public delegate bool EventChoiceEquippedRelicCostRevoke(
@@ -106,6 +107,7 @@ namespace Relic.Gameplay.Data
     {
         public int AccumulatedRemnant;
         public int LastImmediateRemnant;
+        public int SelectedPartySlot;
         public readonly List<EventChoiceSkillAwakenTarget> AwakenedSkillTargets = new();
     }
 
@@ -117,8 +119,11 @@ namespace Relic.Gameplay.Data
         public Func<int[]> RollDiceFaces;
         public Func<int> RollThreeDice;
         public Func<float> RollChanceValue;
+        public bool? FixedCoinHeads;
         public EventChoiceRewardGrant GrantRandomRelic;
         public EventChoiceRewardGrant GrantRandomSkill;
+        public EventChoiceCoreOfferGrant OfferPartyCoreRewards;
+        public Func<EventData, bool> CanOfferPartyCoreRewards;
         public EventChoiceRewardGrant UpgradeRandomSkill;
         public EventChoiceRemnantRewardGrant GrantRemnant;
         public EventChoiceRemnantRewardRevoke RevokeRemnant;
@@ -229,11 +234,18 @@ namespace Relic.Gameplay.Data
                 IsToken(choice.ResultType, "SelectReward") ||
                 IsToken(choice.ChoiceType, "SelectReward"))
             {
-                if (!IsSupportedTypedSkillRewardOffer(choice))
+                if (!IsPartyCoreReward(choice) && !IsSupportedTypedSkillRewardOffer(choice))
                 {
                     unavailableReason = "보상 선택 UI가 필요합니다.";
                     return false;
                 }
+            }
+
+            if (IsPartyCoreReward(choice) &&
+                (context.CanOfferPartyCoreRewards == null || !context.CanOfferPartyCoreRewards(choice)))
+            {
+                unavailableReason = GameLocalization.Get("event.memory.none_upgradable");
+                return false;
             }
 
             if (IsToken(choice.ResultType, "CommitAccumulated") ||
@@ -273,6 +285,19 @@ namespace Relic.Gameplay.Data
             {
                 unavailableReason = "보유한 기억이 없습니다.";
                 return false;
+            }
+
+            if (IsToken(choice.SelectCondition, "PartyAll:HP>=6") ||
+                Regex.IsMatch(choice.SelectCondition ?? string.Empty, @"^PartyAll:HP>=\d+$", RegexOptions.IgnoreCase))
+            {
+                Match hpMatch = Regex.Match(choice.SelectCondition ?? string.Empty, @"^PartyAll:HP>=(\d+)$", RegexOptions.IgnoreCase);
+                int required = hpMatch.Success ? int.Parse(hpMatch.Groups[1].Value) : 6;
+                if (context.PartyCharacters == null || context.PartyCharacters.Count == 0 ||
+                    System.Linq.Enumerable.Any(context.PartyCharacters, character => character == null || character.CurrentHP < required))
+                {
+                    unavailableReason = GameLocalization.Get("event.relic.none_available");
+                    return false;
+                }
             }
 
             if (IsRedDustiumCost(choice))
@@ -322,6 +347,11 @@ namespace Relic.Gameplay.Data
                 if (!string.IsNullOrWhiteSpace(choice.SuccessCondition))
                     success = IsDiceSuccess(diceRoll, choice.SuccessCondition);
             }
+            else if (IsToken(choice.ChoiceType, "Coin"))
+            {
+                bool heads = context.FixedCoinHeads ?? (BattleRandom.Range(0, 2) == 0);
+                success = heads == IsToken(choice.SuccessCondition, "Heads");
+            }
             else if (IsToken(choice.ChoiceType, "Chance"))
             {
                 success = RollChance(choice.SuccessRate, context);
@@ -332,7 +362,9 @@ namespace Relic.Gameplay.Data
 
             if (!success)
             {
-                string failure = ApplyFailureResult(choice.FailResult, context);
+                string failure = ApplyTypedFailureResult(choice, context);
+                if (string.IsNullOrWhiteSpace(failure))
+                    failure = ApplyFailureResult(choice.FailResult, context);
                 if (!string.IsNullOrWhiteSpace(failure))
                     messages.Add(failure);
 
@@ -448,6 +480,27 @@ namespace Relic.Gameplay.Data
                     messages.Add(resultMessage);
             }
 
+            if (IsToken(choice.CostType, "HP") && IsToken(choice.CostTarget, "PartyAll"))
+            {
+                if (!int.TryParse(choice.CostValue, out int hpCost) || hpCost < 0)
+                {
+                    unavailableReason = GameLocalization.Get("event.relic.none_available");
+                    return false;
+                }
+                if (context.PartyCharacters == null || System.Linq.Enumerable.Any(context.PartyCharacters,
+                    character => character == null || character.CurrentHP <= hpCost))
+                {
+                    unavailableReason = GameLocalization.Get("event.relic.none_available");
+                    return false;
+                }
+                ModifyPartyCurrentHp(context, -hpCost);
+            }
+            if (IsToken(choice.CostType, "ErosionIncrease"))
+            {
+                if (!int.TryParse(choice.CostValue, out int erosion) || erosion < 0)
+                    return false;
+                BattleErosionRuntimeService.Add(erosion, "EventTrade");
+            }
             if (!IsRedDustiumCost(choice))
                 return true;
 
@@ -474,6 +527,22 @@ namespace Relic.Gameplay.Data
             if (string.IsNullOrWhiteSpace(resultType))
                 return BuildResultSummary(choice);
 
+            if (IsToken(resultType, "SelectCharacter"))
+            {
+                Match slotMatch = Regex.Match(choice.ResultTarget ?? string.Empty, @"^PartySlot([123])$", RegexOptions.IgnoreCase);
+                if (slotMatch.Success) context.SessionState.SelectedPartySlot = int.Parse(slotMatch.Groups[1].Value);
+                return string.Empty;
+            }
+            if (IsToken(resultType, "IncreaseMaxHP"))
+            {
+                if (int.TryParse(choice.ResultValue, out int amount)) ModifyPartyMaxHp(context, amount);
+                return string.Empty;
+            }
+            if (IsToken(resultType, "IncreaseMaxMana"))
+            {
+                if (int.TryParse(choice.ResultValue, out int amount)) ModifyPartyMaxCost(context, amount);
+                return string.Empty;
+            }
             if (IsToken(resultType, "RollTable"))
                 return ApplyRollTable(choice, diceRoll, context);
 
@@ -494,6 +563,9 @@ namespace Relic.Gameplay.Data
 
             if (IsToken(resultType, "Heal"))
                 return ApplyHeal(choice, context);
+
+            if (IsToken(resultType, "ReduceErosion"))
+                return ApplyReduceErosion(choice);
 
             if (IsToken(resultType, "Accumulate"))
                 return ApplyAccumulate(choice, context);
@@ -638,7 +710,7 @@ namespace Relic.Gameplay.Data
 
         private static string ApplyGain(EventData choice, EventChoiceExecutionContext context)
         {
-            if (ContainsAny(choice.ResultTarget, "레드 더스티움"))
+            if (ContainsAny(choice.ResultTarget, "레드 더스티움", "RedDustium"))
             {
                 int amount = ResolveRemnantAmount(choice.ResultValue, DefaultImmediateRemnantAmount);
                 context.SessionState.LastImmediateRemnant = amount;
@@ -648,9 +720,16 @@ namespace Relic.Gameplay.Data
             return BuildResultSummary(choice);
         }
 
+        private static bool IsPartyCoreReward(EventData choice)
+        {
+            return choice != null && !string.IsNullOrWhiteSpace(choice.ResultTarget) &&
+                   (Regex.IsMatch(choice.ResultTarget.Trim(), @"^PartySlot[123]:Core$", RegexOptions.IgnoreCase) ||
+                    IsToken(choice.ResultTarget, "SelectedCharacter:Core") || IsToken(choice.ResultTarget, "PartyAll:Core"));
+        }
+
         private static string ApplyGainRandom(EventData choice, EventChoiceExecutionContext context)
         {
-            if (ContainsAny(choice.ResultTarget, "유물"))
+            if (ContainsAny(choice.ResultTarget, "유물", "Relic"))
                 return TryInvokeRewardGrant(context, context.GrantRandomRelic, GameLocalization.Get("event.relic.none_available"));
 
             if (ContainsAny(choice.ResultTarget, "기억"))
@@ -663,7 +742,7 @@ namespace Relic.Gameplay.Data
         {
             List<string> messages = new();
 
-            if (ContainsAny(choice.ResultTarget, "유물"))
+            if (ContainsAny(choice.ResultTarget, "유물", "Relic"))
                 messages.Add(TryInvokeRewardGrant(context, context.GrantRandomRelic, GameLocalization.Get("event.relic.none_available")));
 
             if (ContainsAny(choice.ResultTarget, "레드 더스티움") &&
@@ -681,6 +760,10 @@ namespace Relic.Gameplay.Data
 
         private static string ApplyOfferChoice(EventData choice, EventChoiceExecutionContext context)
         {
+            if (IsPartyCoreReward(choice))
+                return TryInvokeRewardGrant(context,
+                    (out string message) => { message = string.Empty; return context.OfferPartyCoreRewards != null && context.OfferPartyCoreRewards(choice, out message); },
+                    GameLocalization.Get("event.memory.none_upgradable"));
             if (TryResolveSkillRewardOffer(choice, out EventChoiceSkillRewardFilter filter))
             {
                 int count = ResolveOfferChoiceCount(choice.ResultValue, DefaultOfferChoiceSkillCount);
@@ -727,8 +810,27 @@ namespace Relic.Gameplay.Data
                 ? Mathf.Max(0, parsed)
                 : DefaultRestHealAmount;
 
+            if (IsToken(choice.ResultTarget, "SelectedCharacter"))
+            {
+                int slot = context.SessionState.SelectedPartySlot;
+                if (slot >= 1 && context.PartyCharacters != null && slot <= context.PartyCharacters.Count)
+                {
+                    CharacterRuntimeData character = context.PartyCharacters[slot - 1];
+                    if (character != null) character.CurrentHP = Mathf.Clamp(character.CurrentHP + amount, 0, character.MaxHP);
+                }
+                return string.Empty;
+            }
             int count = ModifyPartyCurrentHp(context, amount);
             return $"파티 전원 체력 {amount} 회복 ({count}명)";
+        }
+
+        private static string ApplyReduceErosion(EventData choice)
+        {
+            if (!TryParseEffectAmount(choice.ResultValue, out int amount) || amount < 0)
+                return BuildResultSummary(choice);
+
+            BattleErosionRuntimeService.Add(-amount, "EventPurification");
+            return string.Empty;
         }
 
         private static string ApplyAccumulate(EventData choice, EventChoiceExecutionContext context)
@@ -748,6 +850,18 @@ namespace Relic.Gameplay.Data
             string message = GrantRemnantReward(context, amount);
             context.SessionState.AccumulatedRemnant = 0;
             return message;
+        }
+
+        private static string ApplyTypedFailureResult(EventData choice, EventChoiceExecutionContext context)
+        {
+            if (choice == null || string.IsNullOrWhiteSpace(choice.FailResultType)) return string.Empty;
+            if (IsToken(choice.FailResultType, "Damage") && IsToken(choice.FailResultTarget, "PartyAll") &&
+                int.TryParse(choice.FailResultValue, out int amount))
+            {
+                ModifyPartyCurrentHp(context, -Mathf.Abs(amount));
+                return string.Empty;
+            }
+            return string.Empty;
         }
 
         private static string ApplyFailureResult(
@@ -1372,8 +1486,8 @@ namespace Relic.Gameplay.Data
         private static bool IsRedDustiumCost(EventData choice)
         {
             return choice != null &&
-                   ContainsAny(choice.CostType, "레드 더스티움") &&
-                   ContainsAny(choice.CostTarget, "파티");
+                   ContainsAny(choice.CostType, "레드 더스티움", "RedDustium") &&
+                   ContainsAny(choice.CostTarget, "파티", "Party");
         }
 
         private static string BuildResultSummary(EventData choice)

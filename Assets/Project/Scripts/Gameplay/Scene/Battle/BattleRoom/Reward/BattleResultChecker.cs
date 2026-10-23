@@ -439,7 +439,7 @@ public class BattleResultChecker : MonoBehaviour
         if (battle?.IsTutorialBattle != true || map == null)
             return false;
 
-        // 튜토리얼 전투 1 종료 후에는 지도로 돌아가지 않고 Map_30 이벤트방으로 바로 이동합니다.
+        // 튜토리얼 전투 1 종료 후에는 지도로 돌아가지 않고 Map_31 이벤트방으로 바로 이동합니다.
         if (string.Equals(map.CurrentMapId, "Map_27", System.StringComparison.OrdinalIgnoreCase))
         {
             sceneController.OpenTutorialMapDirect(
@@ -448,7 +448,7 @@ public class BattleResultChecker : MonoBehaviour
             return true;
         }
 
-        // 튜토리얼 전투 2 종료 후에는 지도를 거치지 않고 Map_31 이벤트 2로 바로 이동합니다.
+        // 튜토리얼 전투 2 종료 후에는 지도를 거치지 않고 Map_32 이벤트 2로 바로 이동합니다.
         if (string.Equals(map.CurrentMapId, TutorialBattleEntrySetup.SecondTutorialMapId, System.StringComparison.OrdinalIgnoreCase))
         {
             sceneController.OpenTutorialMapDirect(

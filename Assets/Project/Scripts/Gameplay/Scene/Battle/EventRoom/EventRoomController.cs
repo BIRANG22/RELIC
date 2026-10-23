@@ -72,6 +72,7 @@ public class EventRoomController : MonoBehaviour
     private string event06CloseVisualObjectId;
     private string event06CloseVisualActionId;
     private string event06NextEventId;
+    private string eventShopFailNextEventId;
 
     [Header("Event Relic Selection")]
     [SerializeField] private EventEquippedRelicSelectionPanelUI equippedRelicSelectionPanel;
@@ -137,6 +138,11 @@ public class EventRoomController : MonoBehaviour
     private Vector3 dustiumAcquireOriginalLocalScale;
     private readonly List<BattleRewardData> pendingEventRewards = new();
     private readonly EventChoiceSessionState eventChoiceSessionState = new();
+    private string pendingGenericRewardNextEventId;
+    private string pendingGenericRewardResultMessage;
+    [Header("Coin Flip")]
+    [SerializeField] private EventCoinFlipPresenter coinFlipPresenter;
+    private bool? forcedCoinHeads;
     private readonly List<EventData> persistentEventChoices = new();
     private readonly List<EventChoiceEquippedRelicCost> equippedRelicCostOptions = new();
     private readonly List<EventSkillAwakenSelectionPanelEntry> skillAwakenOptions = new();
@@ -299,6 +305,11 @@ public class EventRoomController : MonoBehaviour
         ClearEquippedRelicCostSelection();
         ClearSkillAwakenSelection();
         eventChoiceSessionState.AwakenedSkillTargets.Clear();
+        eventChoiceSessionState.SelectedPartySlot = 0;
+        pendingGenericRewardNextEventId = null;
+        pendingGenericRewardResultMessage = null;
+        forcedCoinHeads = null;
+        if (coinFlipPresenter != null) coinFlipPresenter.Hide();
         SetNextButtonVisible(false);
         waitForEventEntranceReveal = true;
         ResetEventChoiceScrollViewPosition();
@@ -351,6 +362,11 @@ public class EventRoomController : MonoBehaviour
         ClearEquippedRelicCostSelection();
         ClearSkillAwakenSelection();
         eventChoiceSessionState.AwakenedSkillTargets.Clear();
+        eventChoiceSessionState.SelectedPartySlot = 0;
+        pendingGenericRewardNextEventId = null;
+        pendingGenericRewardResultMessage = null;
+        forcedCoinHeads = null;
+        if (coinFlipPresenter != null) coinFlipPresenter.Hide();
         SetNextButtonVisible(false);
     }
 
@@ -426,7 +442,7 @@ public class EventRoomController : MonoBehaviour
 
             CompleteCurrentNode();
 
-            // 튜토리얼 이벤트 1은 지도로 돌아가지 않고 바로 전투 2(Map_28)로 이어집니다.
+            // 튜토리얼 이벤트 1은 지도로 돌아가지 않고 바로 전투 2(Map_29)로 이어집니다.
             // 이벤트 보상 처리와 이벤트 UI는 기존 기능을 그대로 사용하고, 방 이동만 고정 루트로 전환합니다.
             if (TryContinueTutorialRoute())
                 return;
@@ -460,7 +476,7 @@ public class EventRoomController : MonoBehaviour
 
         string nextMapId;
 
-        if (string.Equals(map.CurrentMapId, "Map_30", System.StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(map.CurrentMapId, TutorialBattleEntrySetup.FirstTutorialEventMapId, System.StringComparison.OrdinalIgnoreCase))
         {
             if (!TutorialBattleEntrySetup.TryPrepareSecondBattleParty(dataManager))
             {
@@ -588,6 +604,15 @@ public class EventRoomController : MonoBehaviour
         relicAcquireRoutine = null;
     }
 
+    private static bool IsSameEventFamily(string mapEventId, string resumeEventId)
+    {
+        string mapId = EventIdUtility.Normalize(mapEventId);
+        string resumeId = EventIdUtility.Normalize(resumeEventId);
+        if (string.IsNullOrEmpty(mapId) || string.IsNullOrEmpty(resumeId)) return false;
+        return string.Equals(mapId, resumeId, System.StringComparison.OrdinalIgnoreCase) ||
+               resumeId.StartsWith(mapId + "_", System.StringComparison.OrdinalIgnoreCase);
+    }
+
     private bool TryStartDataEventMode()
     {
         // 같은 데이터 이벤트를 다시 조우해도 이전 연출 상태가 남지 않도록 먼저 초기화합니다.
@@ -620,6 +645,11 @@ public class EventRoomController : MonoBehaviour
         ClearEquippedRelicCostSelection();
         ClearSkillAwakenSelection();
         eventChoiceSessionState.AwakenedSkillTargets.Clear();
+        eventChoiceSessionState.SelectedPartySlot = 0;
+        pendingGenericRewardNextEventId = null;
+        pendingGenericRewardResultMessage = null;
+        forcedCoinHeads = null;
+        if (coinFlipPresenter != null) coinFlipPresenter.Hide();
 
         // Choice 실행 후 다음 Event의 선택지를 표시하는 checkpoint는 Map node의 최초 EventId가 아니라
         // Resume에 저장된 다음 EventId를 기준으로 definition을 먼저 구성해야 한다.
@@ -631,7 +661,12 @@ public class EventRoomController : MonoBehaviour
               resume.Presentation == ResumePresentation.ChoiceList)) &&
             !string.IsNullOrWhiteSpace(resume.EventId))
         {
-            pendingEventId = EventIdUtility.Normalize(resume.EventId);
+            string resumeId = EventIdUtility.Normalize(resume.EventId);
+            // 다른 방에서 남은 재개 데이터는 현재 Map의 이벤트를 덮어쓰면 안 됩니다.
+            if (IsSameEventFamily(pendingEventId, resumeId))
+                pendingEventId = resumeId;
+            else
+                Debug.LogWarning($"[EventRoomController] Ignored mismatched resume event: map={pendingEventId}, resume={resumeId}", this);
         }
 
         if (string.IsNullOrWhiteSpace(pendingEventId))
@@ -747,6 +782,16 @@ public class EventRoomController : MonoBehaviour
                 shopPanel.Closed += OnEvent06ShopClosed;
                 waitingForEvent06ShopClose = true;
                 event06NextEventId = EventIdUtility.Normalize(resume.NextEventId);
+                eventShopFailNextEventId = string.Empty;
+                if (currentEventDefinition?.Choices != null)
+                {
+                    foreach (EventData savedChoice in currentEventDefinition.Choices)
+                    {
+                        if (!IsShopEventChoice(savedChoice)) continue;
+                        eventShopFailNextEventId = EventIdUtility.Normalize(savedChoice.FailNextEventId);
+                        break;
+                    }
+                }
                 restoredShop.OpenSavedStock(resume.ShopGoods);
                 SaveSystem.Instance.ClearPendingResumeData();
                 SaveSystem.Instance.CompleteCheckpointAutosaveRestore();
@@ -765,12 +810,24 @@ public class EventRoomController : MonoBehaviour
                         {
                             Type = reward.Type,
                             RewardId = reward.RewardId,
+                            SourceKey = reward.SourceKey,
                             Amount = reward.Amount
                         });
                     }
                 }
             }
 
+            string savedNext = EventIdUtility.Normalize(resume.NextEventId);
+            if (IsEvent01TitleOnlyTerminal(savedNext))
+            {
+                pendingEvent01ResultEventId = savedNext;
+                pendingEvent01ResultMessage = resume.ResultMessage ?? string.Empty;
+            }
+            else if (IsEvent02TitleOnlyTerminal(savedNext))
+            {
+                pendingEvent02ResultEventId = savedNext;
+                pendingEvent02ResultMessage = resume.ResultMessage ?? string.Empty;
+            }
             isEventResolved = true;
             SetChoiceSlotsInteractable(false);
             SetNextButtonVisible(false);
@@ -854,9 +911,7 @@ public class EventRoomController : MonoBehaviour
         if (eventResultText != null)
             eventResultText.text = resultMessage ?? string.Empty;
 
-        if (IsEvent01TitleOnlyTerminal(definition.EventId) || IsEvent02TitleOnlyTerminal(definition.EventId) ||
-            IsEvent04TitleOnlyTerminal(definition.EventId) || IsEvent05TitleOnlyTerminal(definition.EventId) ||
-            IsEvent06TitleOnlyTerminal(definition.EventId))
+        if (definition.Choices == null || definition.Choices.Count == 0)
         {
             // 결과 Title만 보여주는 종료 상태입니다.
             BindChoiceSlots(null);
@@ -871,18 +926,14 @@ public class EventRoomController : MonoBehaviour
 
     private static bool IsEvent01TitleOnlyTerminal(string eventId)
     {
-        string normalized = EventIdUtility.Normalize(eventId);
-        return normalized == "Event_01_A" || normalized == "Event_01_B" || normalized == "Event_01_C";
+        return EventIdUtility.Normalize(eventId) == "Event_01_A";
     }
-
 
     private static bool IsEvent02TitleOnlyTerminal(string eventId)
     {
-        string normalized = EventIdUtility.Normalize(eventId);
-        return normalized == "Event_02_B" || normalized == "Event_02_C" ||
-               normalized == "Event_02_D" || normalized == "Event_02_E" ||
-               normalized == "Event_02_G" || normalized == "Event_02_H" ||
-               normalized == "Event_02_I";
+        string id = EventIdUtility.Normalize(eventId);
+        return id == "Event_02_A" || id == "Event_02_B" || id == "Event_02_C" ||
+               id == "Event_03_A" || id == "Event_03_B" || id == "Event_03_C";
     }
 
     private static bool IsEvent04TitleOnlyTerminal(string eventId)
@@ -914,27 +965,9 @@ public class EventRoomController : MonoBehaviour
         if (definition == null)
             return string.Empty;
 
-        string fallback = !string.IsNullOrWhiteSpace(definition.Title)
-            ? definition.Title
-            : EventIdUtility.Normalize(definition.EventId) switch
-            {
-                "Event_01_A" => "“조금이나마 도움이 되기를 바랍니다. 부디 조심해서 사용해 주세요.”",
-                "Event_01_B" => "“상처가 조금은 나아졌군요. 이 힘이 당신들의 여정에 보탬이 되기를 바랍니다.”",
-                "Event_01_C" => "“당신들의 생명에 축복이 머물기를. 앞으로의 길이 조금은 덜 고되기를 바랍니다.”",
-                "Event_02_A" => "한 번 더 손을 뻗을 수 있을 것 같다.",
-                "Event_02_B" => "의식 도구에 남아 있던 힘이 몸 안으로 스며든다.",
-                "Event_02_C" => "흔적을 헤집자 안쪽에서 강한 힘을 머금은 유물이 모습을 드러냈다.",
-                "Event_02_D" => "의식 도구에 손을 대는 순간 불길한 기운이 역류한다.",
-                "Event_02_E" => "흔적을 훼손한 순간 억눌려 있던 힘이 폭발한다.",
-                "Event_02_G" => "더 이상 손대지 않기로 하고, 조용히 자리를 떠난다.",
-                "Event_02_H" => "뜻밖의 수확을 얻었다. 더 이상 손댈 것은 없어 보인다.",
-                "Event_02_I" => "예상치 못한 폭발에 휘말렸다.",
-                "Event_04_A" => "“좋아. 대가는 충분하군. 약속한 물건은 여기 있다.”",
-                "Event_04_B" => "“제법 운이 좋았군. 이 물건은 네 몫이다.”",
-                "Event_04_C" => "“나쁘지 않은 거래였어.”",
-                "Event_04_D" => "“값을 치를 차례다. 모자란 몫은 생명으로 받아가겠다.”",
-                _ => string.Empty
-            };
+        string fallback = !string.IsNullOrWhiteSpace(definition.Detail)
+            ? definition.Detail
+            : definition.Title ?? string.Empty;
 
         return GameDataLocalization.EventTitle(definition, fallback);
     }
@@ -953,6 +986,13 @@ public class EventRoomController : MonoBehaviour
             EventData choice = choices[i];
             if (choice == null)
                 continue;
+
+            if (EventIdUtility.Normalize(choice.EventId) == "Event_03" &&
+                (choice.ChoiceOrder == 2 || choice.ChoiceOrder == 3) &&
+                !string.Equals(choice.ResultType?.Trim(), choice.ChoiceOrder == 2 ? "ReduceErosion" : "Heal", System.StringComparison.OrdinalIgnoreCase))
+            {
+                Debug.LogError($"[EventRoomController] Stale Event CSV data: Event_03 choice {choice.ChoiceOrder} has ResultType={choice.ResultType}, expected {(choice.ChoiceOrder == 2 ? "ReduceErosion" : "Heal")}. Reconvert latest GameData.xlsx into Unity CSV.", this);
+            }
 
             EventChoiceSlotUI slot = choiceSlots[slotIndex];
             if (slot == null)
@@ -992,6 +1032,12 @@ public class EventRoomController : MonoBehaviour
             return;
         }
 
+        if (IsCoinChoice(choice))
+        {
+            TryBeginCoinFlipChoice(choice);
+            return;
+        }
+
         if (IsDiceChoice(choice) && TryBeginDiceRollChoice(choice))
             return;
 
@@ -1018,14 +1064,10 @@ public class EventRoomController : MonoBehaviour
 
     private static bool ShouldFadeEvent01RewardChoiceUi(EventData choice)
     {
-        if (choice == null)
-            return false;
-
-        return EventIdUtility.Normalize(choice.EventId) == "Event_01" &&
-               choice.ChoiceOrder == 1 &&
-               SameToken(choice.ResultType, "GainRandom") &&
-               SameToken(choice.ResultTarget, "유물") &&
-               EventIdUtility.Normalize(choice.NextEventId) == "Event_01_A";
+        if (choice == null) return false;
+        string id = EventIdUtility.Normalize(choice.EventId);
+        return (id == "Event_01" || id == "Event_03") &&
+               string.Equals(choice.ChoiceType?.Trim(), "Immediate", System.StringComparison.OrdinalIgnoreCase);
     }
 
     private void BeginEvent01RewardChoiceWithTransition(EventData choice)
@@ -1311,30 +1353,6 @@ public class EventRoomController : MonoBehaviour
 
         ClearSkillAwakenSelection();
 
-        if (IsEvent05MiningChoice(choice) && result.Accepted)
-        {
-            if (dustiumAcquireRoutine != null)
-                StopCoroutine(dustiumAcquireRoutine);
-
-            dustiumAcquireRoutine = StartCoroutine(
-                PlayEvent05AccumulatedDustiumThenContinue(
-                    choice,
-                    result,
-                    accumulatedRemnantBeforeChoice,
-                    forcedDiceFaces));
-            return;
-        }
-
-        if (IsEvent05DeferredExitChoice(choice) && result.Accepted)
-        {
-            if (dustiumAcquireRoutine != null)
-                StopCoroutine(dustiumAcquireRoutine);
-
-            dustiumAcquireRoutine = StartCoroutine(
-                PlayEvent05ExitVisualThenContinue(choice, result, forcedDiceFaces));
-            return;
-        }
-
         ContinueAfterExecutedChoice(choice, result, forcedDiceFaces);
     }
 
@@ -1345,11 +1363,12 @@ public class EventRoomController : MonoBehaviour
     {
         // 이벤트 결과 오브젝트 연출을 항상 보상 UI보다 먼저 시작합니다.
         bool playedEvent06OpenVisual = false;
-        if (EventIdUtility.Normalize(choice?.EventId) == "Event_06" && result.Accepted)
+        if (IsShopEventChoice(choice) && result.Accepted)
         {
             // OpenPanel은 EventChoiceExecutionService에서 먼저 처리되므로,
             // 상점 종료에 필요한 다음 이벤트/되돌림 연출 정보는 실행 결과가 확정된 여기서 저장합니다.
             event06NextEventId = EventIdUtility.Normalize(result.NextEventId);
+            eventShopFailNextEventId = EventIdUtility.Normalize(choice.FailNextEventId);
             // 상점이 닫힐 때는 별도의 failure 액션을 쓰지 않고,
             // 방금 재생한 success 애니메이션 자체를 역재생합니다.
             event06CloseVisualObjectId = NormalizeVisualId(choice.SuccessVisualObjectId);
@@ -1397,6 +1416,19 @@ public class EventRoomController : MonoBehaviour
             SetNextButtonVisible(false);
             SetChoiceSlotsInteractable(false);
             return;
+        }
+
+        // A queued reward must be claimed before any next event is loaded.
+        // Legacy event-specific continuations above are retained for old scenes;
+        // new data-driven events use this generic continuation.
+        if (pendingEventRewards.Count > 0 && !string.IsNullOrWhiteSpace(result.NextEventId) &&
+            !IsLegacyRewardContinuation(choice))
+        {
+            pendingGenericRewardNextEventId = EventIdUtility.Normalize(result.NextEventId);
+            pendingGenericRewardResultMessage = result.ResultMessage ?? string.Empty;
+            SetNextButtonVisible(false);
+            SetChoiceSlotsInteractable(false);
+            if (TryOpenPendingEventRewardPanel(true)) return;
         }
 
         if (TryQueueEvent01ResultContinuation(choice, result, resolvedDiceFaces))
@@ -1473,7 +1505,7 @@ public class EventRoomController : MonoBehaviour
         IReadOnlyList<int> resolvedDiceFaces)
     {
         string nextEventId = EventIdUtility.Normalize(result.NextEventId);
-        if (!IsEvent01TitleOnlyTerminal(nextEventId))
+        if (nextEventId != "Event_01_A")
             return false;
 
         pendingEvent01ResultEventId = nextEventId;
@@ -1559,7 +1591,7 @@ public class EventRoomController : MonoBehaviour
             return true;
 
         // 스탯 성공/실패는 BattleDamageTextPopupUI 연출 뒤 B/D 또는 C/E Title을 표시합니다.
-        float delay = resolvedDiceFaces != null ? Mathf.Max(0f, event01StatResultDelay) : 0f;
+        float delay = result.HasVisualAction ? Mathf.Max(0f, event01StatResultDelay) : 0f;
         QueueEvent02ResultContinuation(delay);
         return true;
     }
@@ -1857,6 +1889,38 @@ public class EventRoomController : MonoBehaviour
         }
 
         return null;
+    }
+
+    private static bool IsCoinChoice(EventData choice) =>
+        choice != null && SameToken(choice.ChoiceType, "Coin");
+
+    private bool TryBeginCoinFlipChoice(EventData choice)
+    {
+        if (coinFlipPresenter == null)
+        {
+            Debug.LogError("[EventRoomController] Coin Flip Presenter must be assigned in Inspector.", this);
+            return false;
+        }
+        if (!isActiveAndEnabled) return false;
+        SetChoiceSlotsInteractable(false);
+        SetNextButtonVisible(false);
+        StartCoroutine(ShowCoinFlipChoiceAfterFade(choice));
+        return true;
+    }
+
+    private IEnumerator ShowCoinFlipChoiceAfterFade(EventData choice)
+    {
+        yield return FadeOutEventChoiceUiForDice();
+        if (choice == null || coinFlipPresenter == null) yield break;
+        bool heads = BattleRandom.Range(0, 2) == 0;
+        coinFlipPresenter.Show(heads, () =>
+        {
+            coinFlipPresenter.Hide();
+            RestoreEventChoiceUiAfterDice();
+            forcedCoinHeads = heads;
+            try { ExecuteEventChoice(choice); }
+            finally { forcedCoinHeads = null; }
+        });
     }
 
     private bool TryBeginDiceRollChoice(EventData choice)
@@ -3140,78 +3204,10 @@ public class EventRoomController : MonoBehaviour
         if (currentEventDefinition == null)
             return null;
 
-        string currentEventId = EventIdUtility.Normalize(currentEventDefinition.EventId);
-
-        if (currentEventId == "Event_05" || currentEventId == "Event_05_A" || currentEventId == "Event_05_B")
-            return BuildEvent05VisibleChoices(currentEventId);
-
-        IReadOnlyList<EventData> merged = EventChoiceSequenceUtility.MergeChoices(
-            currentEventDefinition.Choices,
-            persistentEventChoices);
-
-        if (currentEventId != "Event_02_A" ||
-            DataManager.Instance == null ||
-            DataManager.Instance.EventDatabase == null ||
-            !DataManager.Instance.EventDatabase.TryGetEvent("Event_02_F", out EventDefinition exitDefinition) ||
-            exitDefinition?.Choices == null)
-        {
-            return merged;
-        }
-
-        // Event_02_A에서는 '한 번 더 연다.'와 Event_02_F의 '자리를 떠난다.'를 함께 표시합니다.
-        List<EventData> visible = merged != null ? new List<EventData>(merged) : new List<EventData>();
-        for (int i = 0; i < exitDefinition.Choices.Count; i++)
-        {
-            EventData exitChoice = exitDefinition.Choices[i];
-            if (exitChoice == null)
-                continue;
-
-            bool alreadyAdded = visible.Exists(x => x != null &&
-                x.ChoiceOrder == exitChoice.ChoiceOrder &&
-                string.Equals(x.ChoiceName?.Trim(), exitChoice.ChoiceName?.Trim(), System.StringComparison.Ordinal));
-            if (!alreadyAdded)
-                visible.Add(exitChoice);
-        }
-
-        visible.Sort((a, b) => (a?.ChoiceOrder ?? int.MaxValue).CompareTo(b?.ChoiceOrder ?? int.MaxValue));
-        return visible;
-    }
-
-    private IReadOnlyList<EventData> BuildEvent05VisibleChoices(string currentEventId)
-    {
-        if (DataManager.Instance?.EventDatabase == null ||
-            !DataManager.Instance.EventDatabase.TryGetEvent("Event_05", out EventDefinition baseDefinition) ||
-            baseDefinition?.Choices == null)
-        {
-            return currentEventDefinition.Choices;
-        }
-
-        List<EventData> visible = new();
-
-        if (currentEventDefinition.Choices != null)
-        {
-            for (int i = 0; i < currentEventDefinition.Choices.Count; i++)
-            {
-                EventData stageChoice = currentEventDefinition.Choices[i];
-                if (stageChoice == null || stageChoice.ChoiceOrder < 1 || stageChoice.ChoiceOrder > 2)
-                    continue;
-
-                // 각 단계(Event_05 / A / B)의 채굴 판정과 보상은 GameData에 작성된 값을 그대로 사용합니다.
-                visible.Add(stageChoice);
-            }
-        }
-
-        // 최초 진입에서는 그만두기를 표시하지 않습니다.
-        // 2/3번째 시도에서는 Event_05의 3번 선택지를 재사용하되 실제 지급은 C의 Next에서 처리합니다.
-        if (currentEventId == "Event_05_A" || currentEventId == "Event_05_B")
-        {
-            EventData exitChoice = FindChoiceByOrder(baseDefinition.Choices, 3);
-            if (exitChoice != null)
-                visible.Add(CreateEvent05DeferredExitChoice(exitChoice, currentEventId));
-        }
-
-        visible.Sort((a, b) => (a?.ChoiceOrder ?? int.MaxValue).CompareTo(b?.ChoiceOrder ?? int.MaxValue));
-        return visible;
+        // Event rows are authoritative. Older Event_02 and Event_05 special-case
+        // choice injection is incompatible with the current GameData event layout.
+        return EventChoiceSequenceUtility.MergeChoices(
+            currentEventDefinition.Choices, persistentEventChoices);
     }
 
     private static EventData FindChoiceByOrder(IReadOnlyList<EventData> choices, int choiceOrder)
@@ -3227,51 +3223,6 @@ public class EventRoomController : MonoBehaviour
         }
 
         return null;
-    }
-
-    private static EventData CreateEvent05DeferredExitChoice(EventData source, string eventId)
-    {
-        EventData choice = CloneEventChoice(source);
-        choice.EventId = eventId;
-        choice.ResultType = string.Empty;
-        choice.ResultTarget = string.Empty;
-        choice.ResultValue = string.Empty;
-        return choice;
-    }
-
-    private static EventData CloneEventChoice(EventData source)
-    {
-        if (source == null)
-            return null;
-
-        return new EventData
-        {
-            EventId = source.EventId,
-            EventName = source.EventName,
-            Title = source.Title,
-            ChoiceOrder = source.ChoiceOrder,
-            ChoiceName = source.ChoiceName,
-            ChoiceDesc = source.ChoiceDesc,
-            UnavailableChoiceDesc = source.UnavailableChoiceDesc,
-            ChoiceType = source.ChoiceType,
-            SelectCondition = source.SelectCondition,
-            CostType = source.CostType,
-            CostTarget = source.CostTarget,
-            CostValue = source.CostValue,
-            SuccessCondition = source.SuccessCondition,
-            ResultType = source.ResultType,
-            ResultTarget = source.ResultTarget,
-            ResultValue = source.ResultValue,
-            SuccessRate = source.SuccessRate,
-            FailResult = source.FailResult,
-            NextEventId = source.NextEventId,
-            FailNextEventId = source.FailNextEventId,
-            PersistAcrossNextEvent = source.PersistAcrossNextEvent,
-            SuccessVisualObjectId = source.SuccessVisualObjectId,
-            SuccessVisualActionId = source.SuccessVisualActionId,
-            FailureVisualObjectId = source.FailureVisualObjectId,
-            FailureVisualActionId = source.FailureVisualActionId
-        };
     }
 
     private string GetCharacterDisplayName(string characterId)
@@ -3563,7 +3514,7 @@ public class EventRoomController : MonoBehaviour
 
         if (SameToken(resultType, "OpenPanel"))
         {
-            if (Contains(choice.ResultTarget, "상점") && TryOpenShopPanel())
+            if ((Contains(choice.ResultTarget, "상점") || SameToken(choice.ResultTarget, "Shop")) && TryOpenShopPanel())
             {
                 CacheEvent06CloseVisualAction(choice);
                 return GameLocalization.Get("event.result.shop_opened");
@@ -3751,7 +3702,8 @@ public class EventRoomController : MonoBehaviour
         if (targetShopPanel == null)
             return false;
 
-        if (EventIdUtility.Normalize(currentEventDefinition?.EventId) == "Event_06")
+        if (EventIdUtility.Normalize(currentEventDefinition?.EventId) == "Event_02" ||
+            EventIdUtility.Normalize(currentEventDefinition?.EventId) == "Event_06")
         {
             UnbindEvent06ShopClose();
             shopPanel = targetShopPanel;
@@ -3844,14 +3796,23 @@ public class EventRoomController : MonoBehaviour
         if (eventTitleText != null) eventTitleText.gameObject.SetActive(false);
     }
 
+    private static bool IsShopEventChoice(EventData choice)
+    {
+        return choice != null &&
+               (EventIdUtility.Normalize(choice.EventId) == "Event_02" ||
+                EventIdUtility.Normalize(choice.EventId) == "Event_06") &&
+               string.Equals(choice.ResultType?.Trim(), "OpenPanel", System.StringComparison.OrdinalIgnoreCase);
+    }
+
     private void CacheEvent06CloseVisualAction(EventData choice)
     {
-        if (choice == null || EventIdUtility.Normalize(choice.EventId) != "Event_06")
+        if (!IsShopEventChoice(choice))
             return;
 
         event06CloseVisualObjectId = NormalizeVisualId(choice.SuccessVisualObjectId);
         event06CloseVisualActionId = NormalizeVisualId(choice.SuccessVisualActionId);
         event06NextEventId = EventIdUtility.Normalize(choice.NextEventId);
+        eventShopFailNextEventId = EventIdUtility.Normalize(choice.FailNextEventId);
     }
 
     private static string NormalizeVisualId(string id)
@@ -3864,7 +3825,9 @@ public class EventRoomController : MonoBehaviour
         if (!waitingForEvent06ShopClose)
             return;
 
-        string nextEventId = event06NextEventId;
+        string nextEventId = shopPanel != null && shopPanel.PurchasesThisVisit == 0 &&
+            !string.IsNullOrWhiteSpace(eventShopFailNextEventId)
+            ? eventShopFailNextEventId : event06NextEventId;
         string closeVisualObjectId = event06CloseVisualObjectId;
         string closeVisualActionId = event06CloseVisualActionId;
         UnbindEvent06ShopClose();
@@ -3965,6 +3928,7 @@ public class EventRoomController : MonoBehaviour
         event06CloseVisualObjectId = string.Empty;
         event06CloseVisualActionId = string.Empty;
         event06NextEventId = string.Empty;
+        eventShopFailNextEventId = string.Empty;
     }
 
     private RestRoomShopPanel ResolveShopPanel()
@@ -4000,8 +3964,11 @@ public class EventRoomController : MonoBehaviour
             PartyCharacters = CollectPartyCharacters(),
             SessionState = eventChoiceSessionState,
             RollDiceFaces = forcedDiceFaces != null ? () => forcedDiceFaces : null,
+            FixedCoinHeads = forcedCoinHeads,
             GrantRandomRelic = TryQueueRandomRelicReward,
             GrantRandomSkill = TryQueueRandomSkillReward,
+            OfferPartyCoreRewards = TryQueuePartyCoreRewards,
+            CanOfferPartyCoreRewards = CanOfferPartyCoreRewards,
             UpgradeRandomSkill = TryUpgradeRandomSkill,
             GrantRemnant = TryQueueRemnantReward,
             RevokeRemnant = RevokeQueuedRemnantReward,
@@ -4054,7 +4021,7 @@ public class EventRoomController : MonoBehaviour
         {
             BattleRewardData reward = pendingEventRewards[i];
             if (reward == null) continue;
-            resume.PendingRewards.Add(new BattleRewardSaveData { Type = reward.Type, RewardId = reward.RewardId, Amount = reward.Amount });
+            resume.PendingRewards.Add(new BattleRewardSaveData { Type = reward.Type, RewardId = reward.RewardId, SourceKey = reward.SourceKey, Amount = reward.Amount });
         }
 
         if (resume.Presentation == ResumePresentation.ChoiceList)
@@ -4178,76 +4145,6 @@ public class EventRoomController : MonoBehaviour
         ApplyDustiumAmount(amount);
         dustiumAcquireRoutine = null;
 
-        if (isActiveAndEnabled)
-            ContinueAfterExecutedChoiceCore(choice, result, resolvedDiceFaces);
-    }
-
-    private static bool IsEvent05MiningChoice(EventData choice)
-    {
-        if (choice == null || choice.ChoiceOrder < 1 || choice.ChoiceOrder > 2)
-            return false;
-
-        string eventId = EventIdUtility.Normalize(choice.EventId);
-        return eventId == "Event_05" || eventId == "Event_05_A" || eventId == "Event_05_B";
-    }
-
-    private static bool IsEvent05DeferredExitChoice(EventData choice)
-    {
-        if (choice == null || choice.ChoiceOrder != 3)
-            return false;
-
-        string eventId = EventIdUtility.Normalize(choice.EventId);
-        return eventId == "Event_05_A" || eventId == "Event_05_B";
-    }
-
-    private IEnumerator PlayEvent05AccumulatedDustiumThenContinue(
-        EventData choice,
-        EventChoiceExecutionResult result,
-        int accumulatedBeforeChoice,
-        int[] resolvedDiceFaces)
-    {
-        // Event_05는 광맥/선택지 연출을 먼저 보여준 뒤 누적 더스티움 UI를 갱신합니다.
-        // 일반 ContinueAfterExecutedChoice를 사용하면 PlayVisualAction이 더스티움 표시 뒤에 실행되므로
-        // 이 이벤트만 여기서 연출 순서를 명시적으로 제어합니다.
-        PersistEventRuntime();
-        PlayVisualAction(result);
-
-        if (result.HasVisualAction && dustiumVisualActionWaitDuration > 0f)
-            yield return new WaitForSecondsRealtime(dustiumVisualActionWaitDuration);
-
-        EnsureDustiumAcquireReferences();
-        CacheDustiumAcquireOriginalState();
-
-        if (result.Succeeded && eventChoiceSessionState.AccumulatedRemnant > accumulatedBeforeChoice)
-        {
-            int total = Mathf.Max(0, eventChoiceSessionState.AccumulatedRemnant);
-            yield return ShowOrUpdateEvent05AccumulatedDustium(total);
-        }
-        else if (!result.Succeeded && accumulatedBeforeChoice > 0)
-        {
-            // 첫 채굴부터 실패한 경우에는 아직 생성된 누적 더스티움이 없으므로
-            // 0 VALUE 오브젝트를 새로 만들지 않습니다. 이전 성공분이 있을 때만 0 -> 소실 연출을 재생합니다.
-            yield return LoseEvent05AccumulatedDustium();
-        }
-
-        dustiumAcquireRoutine = null;
-        if (isActiveAndEnabled)
-            ContinueAfterExecutedChoiceCore(choice, result, resolvedDiceFaces);
-    }
-
-    private IEnumerator PlayEvent05ExitVisualThenContinue(
-        EventData choice,
-        EventChoiceExecutionResult result,
-        int[] resolvedDiceFaces)
-    {
-        // '그만둔다'는 선택 즉시 종료하지 않고 선택 연출 후 Event_05_C 결과 Title을 반드시 표시합니다.
-        PersistEventRuntime();
-        PlayVisualAction(result);
-
-        if (result.HasVisualAction && dustiumVisualActionWaitDuration > 0f)
-            yield return new WaitForSecondsRealtime(dustiumVisualActionWaitDuration);
-
-        dustiumAcquireRoutine = null;
         if (isActiveAndEnabled)
             ContinueAfterExecutedChoiceCore(choice, result, resolvedDiceFaces);
     }
@@ -4599,6 +4496,96 @@ public class EventRoomController : MonoBehaviour
         return false;
     }
 
+    private static Dictionary<SkillRarity, int> ParseCoreRarityWeights(string input)
+    {
+        Dictionary<SkillRarity, int> weights = new();
+        if (string.IsNullOrWhiteSpace(input)) return weights;
+        foreach (string entry in input.Split(','))
+        {
+            string[] pair = entry.Split(':');
+            if (pair.Length != 2 || !System.Enum.TryParse(pair[0].Trim(), true, out SkillRarity rarity) ||
+                !int.TryParse(pair[1].Trim(), out int weight) || weight < 0) continue;
+            weights[rarity] = weight;
+        }
+        return weights;
+    }
+
+    private bool TryGetCoreRewardTargetSlot(string target, out int slot)
+    {
+        slot = 0;
+        if (string.Equals(target, "PartyAll:Core", System.StringComparison.OrdinalIgnoreCase)) return true;
+        if (string.Equals(target, "SelectedCharacter:Core", System.StringComparison.OrdinalIgnoreCase))
+        {
+            slot = eventChoiceSessionState.SelectedPartySlot;
+            return slot >= 1 && slot <= 3;
+        }
+        Match match = Regex.Match(target ?? string.Empty, @"^PartySlot([123]):Core$", RegexOptions.IgnoreCase);
+        return match.Success && int.TryParse(match.Groups[1].Value, out slot);
+    }
+
+    private bool CanOfferPartyCoreRewards(EventData choice)
+    {
+        if (choice == null || DataManager.Instance?.PartyRuntimeStore == null) return false;
+        string target = choice.ResultTarget?.Trim() ?? string.Empty;
+        if (!TryGetCoreRewardTargetSlot(target, out int slot)) return false;
+        string characterId = slot > 0 ? DataManager.Instance.PartyRuntimeStore.GetCharacterId(slot - 1) : string.Empty;
+        if (slot > 0 && string.IsNullOrWhiteSpace(characterId)) return false;
+        int count = choice.OfferCount > 0 ? choice.OfferCount : 3;
+        if (count < 1 || count > 3) return false;
+        Dictionary<SkillRarity, int> weights = ParseCoreRarityWeights(choice.ResultRarity);
+        if (weights.Count == 0) return false;
+        List<SkillMasterData> candidates = CollectAvailableSkillRewardCandidates();
+        return candidates.FindAll(skill => skill != null &&
+            (slot == 0 || string.Equals(skill.CharacterId?.Trim(), characterId.Trim(), System.StringComparison.OrdinalIgnoreCase)) &&
+            weights.TryGetValue(skill.Rarity, out int value) && value > 0).Count >= count;
+    }
+
+    private bool TryQueuePartyCoreRewards(EventData choice, out string resultMessage)
+    {
+        resultMessage = string.Empty;
+        if (choice == null || DataManager.Instance?.PartyRuntimeStore == null) return false;
+        string target = choice.ResultTarget?.Trim() ?? string.Empty;
+        if (!TryGetCoreRewardTargetSlot(target, out int slot)) return false;
+        string characterId = slot > 0 ? DataManager.Instance.PartyRuntimeStore.GetCharacterId(slot - 1) : string.Empty;
+        if (slot > 0 && string.IsNullOrWhiteSpace(characterId)) return false;
+        int count = choice.OfferCount > 0 ? choice.OfferCount : 3;
+        if (count > 3 || count < 1) return false;
+        List<SkillMasterData> candidates = CollectAvailableSkillRewardCandidates();
+        candidates.RemoveAll(skill => skill == null ||
+            (slot > 0 && !string.Equals(skill.CharacterId?.Trim(), characterId.Trim(), System.StringComparison.OrdinalIgnoreCase)));
+        if (candidates.Count < count) return false;
+        Dictionary<SkillRarity, int> weights = ParseCoreRarityWeights(choice.ResultRarity);
+        if (weights.Count == 0) return false;
+        List<SkillMasterData> chosen = new();
+        for (int i = 0; i < count; i++)
+        {
+            List<SkillMasterData> eligible = candidates.FindAll(skill => weights.TryGetValue(skill.Rarity, out int weight) && weight > 0);
+            if (eligible.Count == 0) return false;
+            int total = 0;
+            foreach (KeyValuePair<SkillRarity, int> weight in weights)
+                if (eligible.Exists(skill => skill.Rarity == weight.Key)) total += weight.Value;
+            if (total <= 0) return false;
+            int roll = BattleRandom.Range(0, total);
+            SkillRarity selectedRarity = SkillRarity.None;
+            foreach (KeyValuePair<SkillRarity, int> entry in weights)
+            {
+                if (!eligible.Exists(skill => skill.Rarity == entry.Key)) continue;
+                roll -= entry.Value;
+                if (roll < 0) { selectedRarity = entry.Key; break; }
+            }
+            List<SkillMasterData> rarityCandidates = eligible.FindAll(skill => skill.Rarity == selectedRarity);
+            if (rarityCandidates.Count == 0) return false;
+            SkillMasterData selected = rarityCandidates[BattleRandom.Range(0, rarityCandidates.Count)];
+            chosen.Add(selected);
+            candidates.Remove(selected);
+        }
+        BattleRewardData reward = EventRoomRewardFlowUtility.CreateSkillReward(chosen[0],
+            GetSkillSprite(chosen[0].SkillId, chosen[0]));
+        reward.SourceKey += "|EventOffers=" + string.Join(",", chosen.ConvertAll(skill => skill.SkillId)) + "|";
+        QueueEventReward(reward);
+        return true;
+    }
+
     private bool TryQueueRandomRelicReward(out string resultMessage)
     {
         resultMessage = string.Empty;
@@ -4606,7 +4593,36 @@ public class EventRoomController : MonoBehaviour
         bool requireEpic = activeRewardChoice != null &&
             ContainsAnyToken(activeRewardChoice.ResultTarget, "에픽", "Epic");
 
-        if (!TryPickRandomAvailableRelic(out ChestRelicReward reward, requireEpic ? RelicRarity.Epic : (RelicRarity?)null))
+        ChestRelicReward reward = default;
+        bool chosen = false;
+        Dictionary<SkillRarity, int> configured = ParseCoreRarityWeights(activeRewardChoice?.ResultRarity);
+        if (configured.Count > 0)
+        {
+            // Choose rarity first, then select one available relic from that rarity.
+            // Empty rarities are excluded and remaining weights are renormalized.
+            List<(RelicRarity rarity, int weight)> choices = new();
+            foreach (KeyValuePair<SkillRarity, int> pair in configured)
+            {
+                if (pair.Value <= 0 || !System.Enum.TryParse(pair.Key.ToString(), out RelicRarity rarity)) continue;
+                if (TryPickRandomAvailableRelic(out _, rarity)) choices.Add((rarity, pair.Value));
+            }
+            int total = 0;
+            foreach (var item in choices) total += item.weight;
+            if (total > 0)
+            {
+                int roll = BattleRandom.Range(0, total);
+                foreach (var item in choices)
+                {
+                    roll -= item.weight;
+                    if (roll < 0) { chosen = TryPickRandomAvailableRelic(out reward, item.rarity); break; }
+                }
+            }
+        }
+        else
+        {
+            chosen = TryPickRandomAvailableRelic(out reward, requireEpic ? RelicRarity.Epic : (RelicRarity?)null);
+        }
+        if (!chosen)
         {
             resultMessage = requireEpic ? "획득 가능한 에픽 유물이 없습니다." : GameLocalization.Get("event.relic.none_available");
             return false;
@@ -5137,10 +5153,12 @@ public class EventRoomController : MonoBehaviour
         List<BattleRewardData> rewards = new(pendingEventRewards);
         if (saveCheckpoint)
         {
+            string pendingNext = !string.IsNullOrWhiteSpace(pendingEvent01ResultEventId)
+                ? pendingEvent01ResultEventId : pendingEvent02ResultEventId;
             SaveEventResume(
                 ResumePhase.EventChoice,
                 activeRewardChoice,
-                default,
+                new EventChoiceExecutionResult(true, string.Empty, pendingNext),
                 null,
                 ResumePresentation.RewardPanel);
         }
@@ -5186,7 +5204,7 @@ public class EventRoomController : MonoBehaviour
                 bool resolved = false;
                 bool opened = reward.Type == BattleRewardType.Relic
                     ? BattleRewardEquipPanelUI.TryOpenRelicReward(reward.RewardId, () => resolved = true)
-                    : BattleRewardEquipPanelUI.TryOpenSkillReward(reward.RewardId, () => resolved = true);
+                    : BattleRewardEquipPanelUI.TryOpenSkillReward(reward, () => resolved = true);
 
                 if (!opened)
                 {
@@ -5249,6 +5267,13 @@ public class EventRoomController : MonoBehaviour
         eventRewardPanelDelayRoutine = null;
     }
 
+    private static bool IsLegacyRewardContinuation(EventData choice)
+    {
+        if (choice == null) return false;
+        string id = EventIdUtility.Normalize(choice.EventId);
+        return id == "Event_01" || id == "Event_02" || id == "Event_03" || id == "Event_04";
+    }
+
     private void OnEventRewardPanelCompleted()
     {
         StopEventRewardPanelDelay();
@@ -5256,6 +5281,23 @@ public class EventRoomController : MonoBehaviour
         pendingEventRewards.Clear();
         PersistEventRuntime();
         HideDiceRollPresenterImmediate();
+
+        if (!string.IsNullOrWhiteSpace(pendingGenericRewardNextEventId))
+        {
+            string id = pendingGenericRewardNextEventId;
+            string message = pendingGenericRewardResultMessage;
+            pendingGenericRewardNextEventId = null;
+            pendingGenericRewardResultMessage = null;
+            if (DataManager.Instance?.EventDatabase != null &&
+                DataManager.Instance.EventDatabase.TryGetEvent(id, out EventDefinition next) && next != null)
+            {
+                LoadEventDefinition(next, message);
+                SaveEventResume(ResumePhase.EventChoice, null, default, null,
+                    ResumePresentation.ChoiceList, id, message);
+                return;
+            }
+            Debug.LogError($"[EventRoomController] Reward continuation missing event: {id}", this);
+        }
 
         if (CompletePendingEvent01ResultContinuation())
             return;
@@ -5583,6 +5625,7 @@ public class EventRoomController : MonoBehaviour
         EnsureEquippedRelicSelectionPanel();
         EnsureSkillAwakenSelectionPanel();
         EnsureDiceRollPresenter();
+        if (coinFlipPresenter == null) coinFlipPresenter = searchRoot.GetComponentInChildren<EventCoinFlipPresenter>(true);
         EnsureDustiumAcquireReferences();
     }
 

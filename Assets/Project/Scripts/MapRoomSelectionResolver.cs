@@ -12,7 +12,9 @@ namespace Relic.Gameplay.Data
     {
         private static readonly HashSet<string> TutorialCombatMapIds = new(StringComparer.OrdinalIgnoreCase)
         {
-            "Map_27", "Map_28", "Map_29"
+            TutorialBattleEntrySetup.FirstTutorialMapId,
+            TutorialBattleEntrySetup.SecondTutorialMapId,
+            TutorialBattleEntrySetup.ThirdTutorialMapId
         };
 
         public static bool IsNormalRandomEventMap(MapData map)

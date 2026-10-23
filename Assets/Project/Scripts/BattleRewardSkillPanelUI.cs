@@ -1501,6 +1501,25 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         DataManager dm = DataManager.Instance;
         if (dm?.SkillDatabase == null || dm.PartyRuntimeStore == null) return offers;
 
+        // Event selections explicitly supply the three weighted, character-filtered offers.
+        // Never redraw them using the generic battle reward pool.
+        string sourceKey = rewardData?.SourceKey ?? string.Empty;
+        int offersMarker = sourceKey.IndexOf("|EventOffers=", StringComparison.Ordinal);
+        if (offersMarker >= 0)
+        {
+            int begin = offersMarker + "|EventOffers=".Length;
+            int end = sourceKey.IndexOf('|', begin);
+            string value = end >= 0 ? sourceKey.Substring(begin, end - begin) : sourceKey.Substring(begin);
+            foreach (string id in value.Split(','))
+            {
+                if (offers.Count >= 3) break;
+                if (dm.SkillDatabase.TryGet(id.Trim(), out SkillMasterData offered) && offered != null &&
+                    !offers.Exists(x => string.Equals(x.SkillId, offered.SkillId, StringComparison.OrdinalIgnoreCase)))
+                    offers.Add(offered);
+            }
+            return offers;
+        }
+
         HashSet<string> party = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         for (int i = 0; i < 3; i++)
         {
