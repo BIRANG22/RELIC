@@ -42,6 +42,12 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
     private Coroutine forcedRecoveryRoutine;
     private bool forcedRecoveryVisible;
 
+    [Header("Panel Fade")]
+    [Tooltip("Character Resources가 나타나는 페이드 시간(초)입니다.")]
+    [SerializeField, Min(0f)] private float panelFadeInDuration = 0.2f;
+    [Tooltip("Character Resources가 사라지는 페이드 시간(초)입니다.")]
+    [SerializeField, Min(0f)] private float panelFadeOutDuration = 0.2f;
+
 
     private sealed class SlotView
     {
@@ -49,22 +55,25 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
         public RectTransform Rect;
         public Image HpFill;
         public TMP_Text HpValue;
+        public CanvasGroup CanvasGroup;
+        public float TargetAlpha;
     }
 
     private void Awake()
     {
         ResolveReferences();
-        HideAll();
+        HideAllImmediate();
     }
 
     private void OnEnable()
     {
         ResolveReferences();
-        HideAll();
+        HideAllImmediate();
     }
 
     private void LateUpdate()
     {
+        UpdatePanelFades();
         if (forcedRecoveryVisible)
             return;
         if (visibleSlot < 0)
@@ -102,8 +111,7 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
         for (int i = 0; i < slotViews.Length; i++)
         {
             SlotView view = slotViews[i];
-            if (view?.Root != null)
-                view.Root.SetActive(i == slotIndex);
+            SetPanelVisible(view, i == slotIndex);
         }
 
         visibleSlot = slotIndex;
@@ -145,16 +153,17 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
         for (int i = 0; i < PartySlotCount; i++)
         {
             SlotView view = slotViews[i];
-            bool available = view?.Root != null && anchors != null && i < anchors.Length && anchors[i] != null &&
+            // A missing world anchor must not hide a valid party member's HP panel.
+            bool available = view?.Root != null &&
                              TryGetCharacterRuntime(i, out runtimes[i], out masters[i]);
-            if (view?.Root != null)
-                view.Root.SetActive(available);
+            SetPanelVisible(view, available);
             if (!available)
                 continue;
             maximums[i] = Mathf.Max(1, BattleEquipmentEffectService.GetEffectiveMaxHP(runtimes[i], masters[i]));
             targets[i] = Mathf.Clamp(runtimes[i].CurrentHP, 0, maximums[i]);
             starting[i] = Mathf.Clamp(beforeHp != null && i < beforeHp.Length ? beforeHp[i] : targets[i], 0, maximums[i]);
-            UpdateEventRecoveryPosition(i, anchors[i]);
+            if (anchors != null && i < anchors.Length && anchors[i] != null)
+                UpdateEventRecoveryPosition(i, anchors[i]);
         }
 
         float changeDuration = Mathf.Max(0.01f, duration * 0.7f);
@@ -173,7 +182,8 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
                     view.HpFill.fillAmount = Mathf.Clamp01(hp / maximums[i]);
                 if (view.HpValue != null)
                     view.HpValue.text = $"{Mathf.RoundToInt(hp)}/{maximums[i]}";
-                UpdateEventRecoveryPosition(i, anchors[i]);
+                if (anchors != null && i < anchors.Length && anchors[i] != null)
+                    UpdateEventRecoveryPosition(i, anchors[i]);
             }
             yield return null;
         }
@@ -214,9 +224,48 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
 
         ResolveReferences();
         for (int i = 0; i < slotViews.Length; i++)
+            SetPanelVisible(slotViews[i], false);
+    }
+
+    private void HideAllImmediate()
+    {
+        visibleSlot = -1;
+        visibleWorldAnchor = null;
+        for (int i = 0; i < slotViews.Length; i++)
         {
             SlotView view = slotViews[i];
-            if (view?.Root != null && view.Root.activeSelf)
+            if (view?.Root == null) continue;
+            view.TargetAlpha = 0f;
+            if (view.CanvasGroup != null) view.CanvasGroup.alpha = 0f;
+            view.Root.SetActive(false);
+        }
+    }
+
+    private static void SetPanelVisible(SlotView view, bool visible)
+    {
+        if (view?.Root == null) return;
+        view.TargetAlpha = visible ? 1f : 0f;
+        if (visible && !view.Root.activeSelf)
+        {
+            if (view.CanvasGroup != null) view.CanvasGroup.alpha = 0f;
+            view.Root.SetActive(true);
+        }
+    }
+
+    private void UpdatePanelFades()
+    {
+        for (int i = 0; i < slotViews.Length; i++)
+        {
+            SlotView view = slotViews[i];
+            if (view?.Root == null || !view.Root.activeSelf || view.CanvasGroup == null)
+                continue;
+            float duration = view.TargetAlpha > view.CanvasGroup.alpha ? panelFadeInDuration : panelFadeOutDuration;
+            if (duration <= 0f)
+                view.CanvasGroup.alpha = view.TargetAlpha;
+            else
+                view.CanvasGroup.alpha = Mathf.MoveTowards(view.CanvasGroup.alpha, view.TargetAlpha,
+                    Time.unscaledDeltaTime / duration);
+            if (view.TargetAlpha <= 0f && view.CanvasGroup.alpha <= 0.001f)
                 view.Root.SetActive(false);
         }
     }
@@ -378,6 +427,11 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
             SlotView view = slotViews[i] ??= new SlotView();
             view.Root = root;
             view.Rect = root.GetComponent<RectTransform>();
+            view.CanvasGroup = root.GetComponent<CanvasGroup>();
+            if (view.CanvasGroup == null)
+                view.CanvasGroup = root.AddComponent<CanvasGroup>();
+            view.CanvasGroup.interactable = false;
+            view.CanvasGroup.blocksRaycasts = false;
 
             Transform hp = FindChildRecursive(root.transform, "Hp");
             view.HpFill = GetImage(hp, "Fill");
