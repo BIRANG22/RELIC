@@ -16,22 +16,22 @@ MonoBehaviour:
   bossLayerIndex: 9
   layer0Start:
     Type: Start
-    MapIdOverride: Map_25
+    MapIdOverride: Map_15
     UseCustomPosition: 0
     CustomPosition: {x: 0, y: 0}
     NextNodeIndices: 
   layer1:
     Slot1:
-      Enabled: 0
-      Type: Common
-      MapIdOverride: Map_32
+      Enabled: 1
+      Type: Special
+      MapIdOverride: Map_18
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
       NextNodeIndices: 
     Slot2:
-      Enabled: 0
-      Type: 
-      MapIdOverride: 
+      Enabled: 1
+      Type: Common
+      MapIdOverride: Map_01
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
       NextNodeIndices: 
@@ -111,7 +111,7 @@ MonoBehaviour:
     Slot1:
       Enabled: 1
       Type: Shop
-      MapIdOverride: Map_22
+      MapIdOverride: Map_16
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
       NextNodeIndices: 
@@ -227,7 +227,7 @@ MonoBehaviour:
     Slot1:
       Enabled: 1
       Type: Rest
-      MapIdOverride: Map_26
+      MapIdOverride: Map_17
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
       NextNodeIndices: 
@@ -254,7 +254,7 @@ MonoBehaviour:
       NextNodeIndices: 
   layer9Boss:
     Type: Boss
-    MapIdOverride: Map_16
+    MapIdOverride: Map_14
     UseCustomPosition: 0
     CustomPosition: {x: 0, y: 0}
     NextNodeIndices: 

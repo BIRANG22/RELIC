@@ -10,6 +10,7 @@ namespace Relic.Gameplay.Data
         public string EventId;
         public string EventName;
         public string Title;
+        public string Detail;
 
         public int ChoiceOrder;
         public string ChoiceName;
@@ -25,9 +26,14 @@ namespace Relic.Gameplay.Data
 
         public string ResultType;
         public string ResultTarget;
+        public string ResultRarity;
         public string ResultValue;
+        public int OfferCount;
         public string SuccessRate;
         public string FailResult;
+        public string FailResultType;
+        public string FailResultTarget;
+        public string FailResultValue;
         public string NextEventId;
         public string FailNextEventId;
         public bool PersistAcrossNextEvent;
@@ -43,6 +49,7 @@ namespace Relic.Gameplay.Data
         public string EventId;
         public string EventName;
         public string Title;
+        public string Detail;
         public List<EventData> Choices = new();
     }
 

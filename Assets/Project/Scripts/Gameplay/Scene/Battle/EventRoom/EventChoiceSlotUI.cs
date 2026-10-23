@@ -187,6 +187,32 @@ public class EventChoiceSlotUI : MonoBehaviour
             RefreshDisplayedText();
     }
 
+    private static string ResolvePartyNames(string text)
+    {
+        if (string.IsNullOrEmpty(text) || DataManager.Instance?.PartyRuntimeStore == null)
+            return text ?? string.Empty;
+        for (int i = 1; i <= 3; i++)
+        {
+            string token = "{Party" + i + "Name}";
+            if (!text.Contains(token)) continue;
+            string id = DataManager.Instance.PartyRuntimeStore.GetCharacterId(i - 1);
+            string name = id ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(id) && DataManager.Instance.CharacterDatabase != null &&
+                DataManager.Instance.CharacterDatabase.TryGet(id, out CharacterMasterData master))
+                name = GameDataLocalization.CharacterName(master);
+            bool korean = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code
+                ?.StartsWith("ko", System.StringComparison.OrdinalIgnoreCase) == true;
+            string suffix = string.Empty;
+            if (korean && !string.IsNullOrEmpty(name))
+            {
+                char last = name[name.Length - 1];
+                suffix = last >= 0xAC00 && last <= 0xD7A3 && (last - 0xAC00) % 28 != 0 ? "이" : "가";
+            }
+            text = text.Replace(token + "{이가}", name + suffix).Replace(token, name);
+        }
+        return text;
+    }
+
     private void RefreshDisplayedText()
     {
         if (boundChoice == null)
@@ -195,11 +221,11 @@ public class EventChoiceSlotUI : MonoBehaviour
         if (choiceNameText != null)
         {
             string order = boundChoice.ChoiceOrder > 0 ? $"{boundChoice.ChoiceOrder}. " : string.Empty;
-            choiceNameText.text = order + GameDataLocalization.EventChoiceName(boundChoice);
+            choiceNameText.text = order + ResolvePartyNames(GameDataLocalization.EventChoiceName(boundChoice));
         }
 
         string displayedChoiceDesc = boundSelectable
-            ? GameDataLocalization.EventChoiceDescription(boundChoice)
+            ? ResolvePartyNames(GameDataLocalization.EventChoiceDescription(boundChoice))
             : (!string.IsNullOrWhiteSpace(boundChoice.UnavailableChoiceDesc)
                 ? GameDataLocalization.EventUnavailableChoiceDescription(boundChoice)
                 : boundUnavailableReason);

@@ -9,6 +9,9 @@ public class RestRoomShopPanel : MonoBehaviour
 {
     public event Action Closed;
 
+    // Counts completed purchases during this shop visit.
+    public int PurchasesThisVisit { get; private set; }
+
     [Header("Purchase Confirmation")]
 
     [Header("UI")]
@@ -58,6 +61,7 @@ public class RestRoomShopPanel : MonoBehaviour
 
     public void Open()
     {
+        PurchasesThisVisit = 0;
         EnsureBindings();
         SetPanelRootActive(true);
         Refresh();
@@ -119,6 +123,7 @@ public class RestRoomShopPanel : MonoBehaviour
 
     public void OpenSavedStock(IReadOnlyList<ResumeShopGoodsSaveData> savedStock)
     {
+        PurchasesThisVisit = 0;
         EnsureBindings();
         currentStock.Clear();
         if (savedStock != null)
@@ -228,6 +233,7 @@ public class RestRoomShopPanel : MonoBehaviour
         DataManager.Instance.BattleRuntimeStore.Set(runtime);
         BattleGoldHudUI.RefreshAll();
         item.MarkPurchased();
+        PurchasesThisVisit++;
     }
 
     private bool TryOpenEquipPanel(RestRoomShopGoods goods)

@@ -141,6 +141,16 @@ public sealed class BattleRewardEquipPanelUI : MonoBehaviour
         return TryOpenExternalReward(BattleRewardType.Skill, skillId, resolvedCallback);
     }
 
+    // Preserve event-supplied candidate IDs and rarity weights through the reward UI.
+    public static bool TryOpenSkillReward(BattleRewardData reward, Action resolvedCallback)
+    {
+        if (reward == null || reward.Type != BattleRewardType.Skill) return false;
+        BattleRewardSkillPanelUI skillPanel = BattleRewardSkillPanelUI.FindPanel();
+        if (skillPanel != null)
+            return skillPanel.Open(reward, resolvedCallback);
+        return TryOpenExternalReward(BattleRewardType.Skill, reward.RewardId, resolvedCallback);
+    }
+
     private static bool TryOpenExternalReward(BattleRewardType type, string rewardId, Action resolvedCallback)
     {
         if (string.IsNullOrWhiteSpace(rewardId) || DataManager.Instance == null)

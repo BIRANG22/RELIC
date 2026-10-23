@@ -74,5 +74,6 @@ public class BattleRewardSaveData
 {
     public BattleRewardType Type;
     public string RewardId;
+    public string SourceKey;
     public int Amount;
 }
