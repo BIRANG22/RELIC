@@ -47,6 +47,13 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
     [Tooltip("Optional. PositionPanel/BackgroundPanel is found automatically when left empty.")]
     [SerializeField] private GameObject backgroundPanel;
 
+    [Header("Lobby Icon Visibility")]
+    [Tooltip("Canvas/Lobby_Icon. Hidden when the Ready opening transition starts and shown after the closing slide finishes.")]
+    [SerializeField] private GameObject lobbyIconRoot;
+    [Tooltip("Fade duration for Lobby_Icon when the Ready panel opens or closes.")]
+    [SerializeField, Min(0f)] private float lobbyIconFadeDuration = 0.2f;
+    private CanvasGroup lobbyIconCanvasGroup;
+
     [Header("Ready UI Particle")]
     [Tooltip("Assign Ready/Panel/UIParticle. Activated when opening and deactivated when closing.")]
     [SerializeField] private GameObject readyUiParticle;
@@ -168,6 +175,7 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         ResolveReadyBackButtonCanvasGroup();
         SetReadyBackButtonAlpha(readyBackButtonCanvasGroup != null ? readyBackButtonCanvasGroup.alpha : 0f, false);
         SetReadyParticleActive(true);
+        ResolveLobbyIconRoot();
         panelSequence = StartCoroutine(RunSequence(playTransition, playPanel, onComplete));
     }
 
@@ -184,6 +192,7 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         ResolveReadyBackButtonCanvasGroup();
         SetReadyBackButtonAlpha(readyBackButtonCanvasGroup != null ? readyBackButtonCanvasGroup.alpha : 1f, false);
         SetReadyParticleActive(false);
+        ResolveLobbyIconRoot();
         panelSequence = StartCoroutine(RunSequence(backTransition, backPanel, onComplete));
     }
 
@@ -221,6 +230,57 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
 
         if (backgroundPanel != null && backgroundPanel.activeSelf)
             backgroundPanel.SetActive(false);
+    }
+
+    private void ResolveLobbyIconRoot()
+    {
+        if (lobbyIconRoot != null)
+            return;
+
+        // Lobby_Icon is a sibling of PositionPanel under the outer Canvas.
+        Transform current = transform;
+        while (current != null)
+        {
+            Transform found = current.Find("Lobby_Icon");
+            if (found != null)
+            {
+                lobbyIconRoot = found.gameObject;
+                return;
+            }
+            current = current.parent;
+        }
+    }
+
+    private void EnsureLobbyIconCanvasGroup()
+    {
+        ResolveLobbyIconRoot();
+        if (lobbyIconRoot == null) return;
+        if (lobbyIconCanvasGroup == null)
+        {
+            lobbyIconCanvasGroup = lobbyIconRoot.GetComponent<CanvasGroup>();
+            if (lobbyIconCanvasGroup == null)
+                lobbyIconCanvasGroup = lobbyIconRoot.AddComponent<CanvasGroup>();
+        }
+    }
+
+    private void SetLobbyIconAlpha(float alpha)
+    {
+        EnsureLobbyIconCanvasGroup();
+        if (lobbyIconCanvasGroup == null) return;
+        lobbyIconCanvasGroup.alpha = Mathf.Clamp01(alpha);
+        bool visible = alpha > 0.001f;
+        lobbyIconCanvasGroup.interactable = visible;
+        lobbyIconCanvasGroup.blocksRaycasts = visible;
+    }
+
+    private void FinishLobbyIconFade(bool opening)
+    {
+        if (lobbyIconRoot == null) return;
+        SetLobbyIconAlpha(opening ? 0f : 1f);
+        if (opening)
+            lobbyIconRoot.SetActive(false);
+        else if (!lobbyIconRoot.activeSelf)
+            lobbyIconRoot.SetActive(true);
     }
 
     private void SetReadyParticleActive(bool active)
@@ -262,15 +322,25 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
 
         // Both animations use delays relative to the same button click. This supports
         // overlap and strict sequencing without relying on Button.OnClick order.
-        float totalDuration = Mathf.Max(progress.startDelay + progress.duration,
-                                        movement.startDelay + movement.duration);
+        bool opening = ReferenceEquals(movement, playPanel);
+        float iconFadeStart = opening ? progress.startDelay : movement.startDelay + movement.duration;
+        float totalDuration = Mathf.Max(Mathf.Max(progress.startDelay + progress.duration,
+                                        movement.startDelay + movement.duration),
+                                        iconFadeStart + lobbyIconFadeDuration);
         float progressFrom = progress.useCurrentValueAsStart ? currentProgress : progress.from;
         float panelFrom = panel != null
             ? (movement.useCurrentPositionAsStart ? panel.anchoredPosition.x : movement.fromX)
             : movement.fromX;
         float elapsed = 0f;
         bool backgroundHidden = false;
-        bool opening = ReferenceEquals(movement, playPanel);
+        EnsureLobbyIconCanvasGroup();
+        float iconAlphaFrom = lobbyIconCanvasGroup != null ? lobbyIconCanvasGroup.alpha : (opening ? 1f : 0f);
+        if (opening && lobbyIconRoot != null && !lobbyIconRoot.activeSelf)
+        {
+            lobbyIconRoot.SetActive(true);
+            SetLobbyIconAlpha(1f);
+            iconAlphaFrom = 1f;
+        }
         float backButtonFrom = readyBackButtonCanvasGroup != null ? readyBackButtonCanvasGroup.alpha : (opening ? 0f : 1f);
         float backButtonTo = opening ? 1f : 0f;
         SetReadyBackButtonAlpha(backButtonFrom, false);
@@ -304,6 +374,19 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
                 SetReadyBackButtonAlpha(Mathf.LerpUnclamped(backButtonFrom, backButtonTo, eased), false);
             }
 
+            if (lobbyIconRoot != null && elapsed >= iconFadeStart)
+            {
+                if (!opening && !lobbyIconRoot.activeSelf)
+                {
+                    lobbyIconRoot.SetActive(true);
+                    SetLobbyIconAlpha(0f);
+                }
+                float fadeT = lobbyIconFadeDuration <= 0f ? 1f :
+                    Mathf.Clamp01((elapsed - iconFadeStart) / lobbyIconFadeDuration);
+                fadeT = fadeT * fadeT * (3f - 2f * fadeT);
+                SetLobbyIconAlpha(Mathf.Lerp(iconAlphaFrom, opening ? 0f : 1f, fadeT));
+            }
+
             yield return null;
         }
 
@@ -311,6 +394,7 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         if (!backgroundHidden) HideBackgroundPanel();
         if (panel != null) SetAnchoredX(panel, movement.toX);
         SetReadyBackButtonAlpha(backButtonTo, opening);
+        FinishLobbyIconFade(opening);
         panelSequence = null;
         onComplete?.Invoke();
     }

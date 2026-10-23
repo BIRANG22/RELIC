@@ -66,6 +66,30 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
         RefreshMainDisplayFromCurrentPanel();
     }
 
+    private void Update()
+    {
+        // Lobby_Icon remains active outside BackgroundPanel, so OnDisable no longer
+        // resets its selection when the shared modal closes via BackButton.
+        if (selectedTargetPanel == null)
+            return;
+
+        LobbyPositionSharedModalBackground controller =
+            FindFirstObjectByType<LobbyPositionSharedModalBackground>(FindObjectsInactive.Include);
+
+        if (controller != null && controller.ActivePanel == selectedTargetPanel && controller.IsShowing)
+            return;
+
+        // Restore the original size when the selected modal is closed.
+        selectedTargetPanel = null;
+        hoveredButtons.Clear();
+        if (deferredMainDisplayRoutine != null)
+        {
+            StopCoroutine(deferredMainDisplayRoutine);
+            deferredMainDisplayRoutine = null;
+        }
+        RefreshAllIconScales(true);
+    }
+
     private void OnDisable()
     {
         if (deferredMainDisplayRoutine != null)
@@ -76,6 +100,7 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
 
         StopAllIconScaleRoutines();
         hoveredButtons.Clear();
+        selectedTargetPanel = null;
         ResetAllIconScalesImmediate();
         UnbindHoverRelays();
         UnbindButtons();
