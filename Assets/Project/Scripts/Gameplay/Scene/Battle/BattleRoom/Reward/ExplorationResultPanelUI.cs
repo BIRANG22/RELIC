@@ -17,6 +17,16 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text eliteBattleCountText;
     [SerializeField] private TMP_Text eventCountText;
     [SerializeField] private ExplorationResultCharacterRowUI[] characterRows;
+    [Header("Report Layout")]
+    [SerializeField] private BattleBagItemSlotUI iconSlotPrefab;
+    [SerializeField] private RectTransform hardModeSlotRoot;
+    [SerializeField] private RectTransform acquiredItemSlotRoot;
+    [SerializeField] private GameObject statisticsOverlayRoot;
+    [SerializeField] private RectTransform statisticsOverlayRect;
+    [SerializeField] private TMP_Text statisticsOverlayText;
+    [SerializeField] private RectTransform statisticsOverlayBoundary;
+    [SerializeField, Min(1)] private int maxHardModeSlots = 12;
+    [SerializeField, Min(1)] private int maxAcquiredItemSlots = 8;
     [SerializeField] private Button returnToBaseButton;
     [SerializeField] private Canvas sortingCanvas;
     [SerializeField] private int resultPanelSortingOrder = 25000;
@@ -28,6 +38,10 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     private bool stageClearExperienceApplied;
     private float researchRewardMultiplier = 1f;
     private BattleStageClearExperienceContext experienceContext = BattleStageClearExperienceContext.Empty;
+    private readonly List<BattleBagItemSlotUI> hardModeSlots = new();
+    private readonly List<BattleBagItemSlotUI> acquiredItemSlots = new();
+    private ExplorationResultCharacterRowUI statisticsOverlayOwner;
+    private bool statisticsOverlayPinned;
 
     private void Awake()
     {
@@ -60,6 +74,10 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         researchRewardMultiplier = Mathf.Max(0f, rewardMultiplier);
         isTransitioning = false;
         stageClearExperienceApplied = false;
+        statisticsOverlayOwner = null;
+        statisticsOverlayPinned = false;
+        if (statisticsOverlayRoot != null)
+            statisticsOverlayRoot.SetActive(false);
 
         if (returnToBaseButton != null)
             returnToBaseButton.interactable = true;
@@ -92,10 +110,15 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         StagePresentationEntry stagePresentation =
             ResolveStagePresentation(currentMap);
 
-        SetText(titleText, defeat ? "탐사 실패" : "탐사 보고");
-        SetText(stageNameText, ResolveStageName(currentNode, currentMap, stagePresentation));
-        SetText(stageResultText, defeat ? "철수" : "클리어");
-        SetText(redDustiumText, $"+ {Mathf.FloorToInt(value.Remnant * rewardMultiplier)}");
+        SetText(titleText, GameLocalization.Get("ui.exploration.result.title", "탐사 보고"));
+        BattleRuntimeData runtime = DataManager.Instance?.BattleRuntimeStore?.Get();
+        SetText(stageNameText, FormatElapsedSummary(
+            runtime?.ExplorationElapsedSeconds ?? 0f,
+            GameLocalization.Get("ui.exploration.result.elapsed_time", "소요 시간")));
+        SetText(stageResultText, CalculateSelectedErosionScore(
+            runtime?.SelectedErosionDifficultyIds,
+            DataManager.Instance?.ErosionDatabase).ToString());
+        SetText(redDustiumText, FormatRedDustium(value.Remnant, rewardMultiplier));
 
         BattleNodeSummary summary = CountClearedNodeSummary(clearContext);
         SetText(normalBattleCountText, summary.NormalBattleCount.ToString());
@@ -103,10 +126,17 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         SetText(eventCountText, summary.EventCount.ToString());
 
         ApplyStagePreviewImage(stagePresentation?.PreviewSprite);
+        ApplyHardModeSlots(runtime);
+        ApplyAcquiredItemSlots(value);
 
         ApplyCharacterRows(
             value,
             clearContext);
+    }
+
+    public static string FormatElapsedSummary(float seconds, string label)
+    {
+        return $"{label?.Trim()}  {BattleExplorationElapsedTime.Format(seconds)}";
     }
 
     private void ApplyCharacterRows(
@@ -139,6 +169,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             int gainedExperience = 0;
             bool leveledUp = false;
             float experienceProgress = 0f;
+            int displayLevel = 1;
             IReadOnlyList<string> unlockTexts = null;
 
             if (TryGetExperiencePreview(
@@ -149,16 +180,24 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
                 gainedExperience = preview.ExperienceGained;
                 leveledUp = preview.LeveledUp;
                 experienceProgress = preview.ProgressAfter01;
+                displayLevel = preview.LevelAfter;
                 unlockTexts = ResolveCharacterUnlockTexts(statistics?.CharacterId, preview);
             }
+
+            CharacterRuntimeData character = ResolveCharacterRuntime(statistics?.CharacterId);
+            if (displayLevel <= 1 && character != null)
+                displayLevel = Mathf.Max(1, character.Level);
 
             row.Bind(
                 statistics,
                 ResolveCharacterResultImage(statistics?.CharacterId),
+                character,
+                displayLevel,
                 gainedExperience,
                 leveledUp,
                 experienceProgress,
-                unlockTexts);
+                unlockTexts,
+                this);
         }
     }
 
@@ -183,6 +222,20 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         normalBattleCountText ??= FindText("ExplorationReportNormalBattleCount");
         eliteBattleCountText ??= FindText("ExplorationReportEliteBattleCount");
         eventCountText ??= FindText("ExplorationReportEventCount");
+        hardModeSlotRoot ??= FindChildRecursive(transform, "ExplorationReportSelectedErosionSlots") as RectTransform;
+        statisticsOverlayRoot ??= FindChildRecursive(transform, "ExplorationReportStatisticsOverlay")?.gameObject;
+        statisticsOverlayRect ??= statisticsOverlayRoot != null
+            ? statisticsOverlayRoot.transform as RectTransform
+            : null;
+        statisticsOverlayText ??= statisticsOverlayRoot != null
+            ? statisticsOverlayRoot.GetComponentInChildren<TMP_Text>(true)
+            : null;
+        statisticsOverlayBoundary ??= FindChildRecursive(transform, "ExplorationReportFrame") as RectTransform;
+        if (acquiredItemSlotRoot == null)
+        {
+            Transform itemRoot = FindChildRecursive(transform, "ExplorationReportAcquiredItems");
+            acquiredItemSlotRoot = itemRoot as RectTransform;
+        }
 
         if (characterRows == null || characterRows.Length == 0)
             characterRows = GetComponentsInChildren<ExplorationResultCharacterRowUI>(true);
@@ -293,9 +346,253 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         if (stagePreviewImage == null)
             return;
 
-        stagePreviewImage.sprite = previewSprite;
-        stagePreviewImage.enabled = previewSprite != null;
-        stagePreviewImage.preserveAspect = true;
+        stagePreviewImage.sprite = null;
+        stagePreviewImage.enabled = false;
+    }
+
+    private void ApplyHardModeSlots(BattleRuntimeData runtime)
+    {
+        EnsureSlotCount(hardModeSlots, hardModeSlotRoot, maxHardModeSlots, "HardModeSlot", 0f, 42f, 0.38f);
+        IReadOnlyList<string> ids = runtime?.SelectedErosionDifficultyIds;
+        int visibleCount = Mathf.Min(ids?.Count ?? 0, maxHardModeSlots);
+        for (int i = 0; i < hardModeSlots.Count; i++)
+        {
+            BattleBagItemSlotUI slot = hardModeSlots[i];
+            if (slot.RectTransform != null)
+                slot.RectTransform.anchoredPosition = new Vector2((i % 6) * 42f, -(i / 6) * 42f);
+            bool visible = i < visibleCount && !string.IsNullOrWhiteSpace(ids[i]);
+            slot.gameObject.SetActive(visible);
+            if (!visible)
+                continue;
+
+            string id = ids[i].Trim();
+            ErosionData data = ResolveErosionData(id);
+            slot.SetupDisplayIcon(ResolveErosionIcon(data), FormatErosionTier(data?.Tier ?? 0));
+        }
+    }
+
+    private void ApplyAcquiredItemSlots(ExplorationResultData value)
+    {
+        EnsureSlotCount(acquiredItemSlots, acquiredItemSlotRoot, maxAcquiredItemSlots, "AcquiredItemSlot", 0f, 66f, 0.56f);
+        List<BagItemStack> stacks = BagItemStackUtility.BuildStacks(value?.BagItemIds);
+        for (int i = 0; i < acquiredItemSlots.Count; i++)
+        {
+            BattleBagItemSlotUI slot = acquiredItemSlots[i];
+            bool visible = i < stacks.Count;
+            slot.gameObject.SetActive(visible);
+            if (!visible)
+                continue;
+
+            BagItemStack stack = stacks[i];
+            slot.Setup(stack.ItemId, stack.Count, null, null, null);
+            slot.SetQuantityVisible(true);
+        }
+    }
+
+    private void EnsureSlotCount(
+        List<BattleBagItemSlotUI> slots,
+        RectTransform root,
+        int count,
+        string slotName,
+        float startX,
+        float spacing,
+        float scale)
+    {
+        if (root == null || iconSlotPrefab == null)
+            return;
+
+        while (slots.Count < count)
+        {
+            BattleBagItemSlotUI slot = Instantiate(iconSlotPrefab, root, false);
+            slot.name = $"{slotName}_{slots.Count}";
+            RectTransform rect = slot.RectTransform;
+            if (rect != null)
+            {
+                rect.anchorMin = new Vector2(0f, 0.5f);
+                rect.anchorMax = new Vector2(0f, 0.5f);
+                rect.pivot = new Vector2(0f, 0.5f);
+                rect.anchoredPosition = new Vector2(startX + slots.Count * spacing, 0f);
+                rect.localScale = Vector3.one * scale;
+            }
+            slots.Add(slot);
+        }
+    }
+
+    private static ErosionData ResolveErosionData(string id)
+    {
+        DataManager manager = DataManager.Instance;
+        return manager?.ErosionDatabase != null &&
+               manager.ErosionDatabase.TryGet(id, out ErosionData data)
+            ? data
+            : null;
+    }
+
+    private static Sprite ResolveErosionIcon(ErosionData data)
+    {
+        if (data == null)
+            return null;
+
+        if (ErosionDifficultyCatalogUI.TryGetDisplayedErosionIcon(data.DifficultyId, out Sprite cached) &&
+            cached != null)
+        {
+            return cached;
+        }
+
+        return ErosionDifficultyCatalogUI.TryResolveErosionIcon(data, out Sprite icon)
+            ? icon
+            : null;
+    }
+
+    public static int CalculateSelectedErosionScore(
+        IReadOnlyList<string> selectedDifficultyIds,
+        ErosionDatabase database)
+    {
+        if (selectedDifficultyIds == null || database == null)
+            return 0;
+
+        int score = 0;
+        for (int i = 0; i < selectedDifficultyIds.Count; i++)
+        {
+            string id = selectedDifficultyIds[i];
+            if (!string.IsNullOrWhiteSpace(id) &&
+                database.TryGet(id, out ErosionData data) &&
+                data != null)
+            {
+                score += data.Score;
+            }
+        }
+
+        return score;
+    }
+
+    public static string FormatErosionTier(int tier)
+    {
+        return tier switch
+        {
+            1 => "I",
+            2 => "II",
+            3 => "III",
+            _ => string.Empty
+        };
+    }
+
+    public void ShowStatisticsOverlay(
+        ExplorationResultCharacterRowUI owner,
+        string text,
+        RectTransform source)
+    {
+        if (statisticsOverlayPinned && statisticsOverlayOwner != owner)
+            return;
+
+        ShowStatisticsOverlayInternal(owner, text, source);
+    }
+
+    public void HideStatisticsOverlay(ExplorationResultCharacterRowUI owner)
+    {
+        if (statisticsOverlayPinned || statisticsOverlayOwner != owner)
+            return;
+
+        statisticsOverlayOwner = null;
+        if (statisticsOverlayRoot != null)
+            statisticsOverlayRoot.SetActive(false);
+    }
+
+    public void ToggleStatisticsOverlay(
+        ExplorationResultCharacterRowUI owner,
+        string text,
+        RectTransform source)
+    {
+        if (statisticsOverlayPinned && statisticsOverlayOwner == owner)
+        {
+            statisticsOverlayPinned = false;
+            statisticsOverlayOwner = null;
+            if (statisticsOverlayRoot != null)
+                statisticsOverlayRoot.SetActive(false);
+            return;
+        }
+
+        statisticsOverlayPinned = true;
+        ShowStatisticsOverlayInternal(owner, text, source);
+    }
+
+    private void ShowStatisticsOverlayInternal(
+        ExplorationResultCharacterRowUI owner,
+        string text,
+        RectTransform source)
+    {
+        if (statisticsOverlayRoot == null || statisticsOverlayRect == null || source == null)
+            return;
+
+        statisticsOverlayOwner = owner;
+        SetText(statisticsOverlayText, text);
+        PositionStatisticsOverlay(source);
+        statisticsOverlayRoot.SetActive(true);
+        statisticsOverlayRoot.transform.SetAsLastSibling();
+    }
+
+    private void PositionStatisticsOverlay(RectTransform source)
+    {
+        RectTransform boundary = statisticsOverlayBoundary != null
+            ? statisticsOverlayBoundary
+            : statisticsOverlayRect.parent as RectTransform;
+        if (boundary == null)
+            return;
+
+        Vector3[] corners = new Vector3[4];
+        source.GetWorldCorners(corners);
+        Vector3 worldBottomCenter = (corners[0] + corners[3]) * 0.5f;
+        Vector3 localBottomCenter = boundary.InverseTransformPoint(worldBottomCenter);
+        Vector2 boundaryLocalPosition = CalculateStatisticsOverlayPosition(
+            localBottomCenter,
+            boundary.rect,
+            statisticsOverlayRect.rect.size,
+            statisticsOverlayRect.pivot,
+            12f);
+        Vector2 overlayAnchor = (statisticsOverlayRect.anchorMin + statisticsOverlayRect.anchorMax) * 0.5f;
+        statisticsOverlayRect.anchoredPosition = ConvertBoundaryLocalToAnchoredPosition(
+            boundaryLocalPosition,
+            boundary.rect,
+            overlayAnchor);
+    }
+
+    public static Vector2 CalculateStatisticsOverlayPosition(
+        Vector2 sourceBottomCenter,
+        Rect boundary,
+        Vector2 overlaySize,
+        Vector2 pivot,
+        float verticalGap)
+    {
+        Vector2 desired = sourceBottomCenter + new Vector2(0f, -Mathf.Max(0f, verticalGap));
+        desired.x = Mathf.Clamp(
+            desired.x,
+            boundary.xMin + overlaySize.x * pivot.x,
+            boundary.xMax - overlaySize.x * (1f - pivot.x));
+        desired.y = Mathf.Clamp(
+            desired.y,
+            boundary.yMin + overlaySize.y * pivot.y,
+            boundary.yMax - overlaySize.y * (1f - pivot.y));
+        return desired;
+    }
+
+    public static Vector2 ConvertBoundaryLocalToAnchoredPosition(
+        Vector2 boundaryLocalPosition,
+        Rect boundary,
+        Vector2 normalizedAnchor)
+    {
+        Vector2 anchorReference = new(
+            Mathf.Lerp(boundary.xMin, boundary.xMax, normalizedAnchor.x),
+            Mathf.Lerp(boundary.yMin, boundary.yMax, normalizedAnchor.y));
+        return boundaryLocalPosition - anchorReference;
+    }
+
+    private static CharacterRuntimeData ResolveCharacterRuntime(string characterId)
+    {
+        if (string.IsNullOrWhiteSpace(characterId) || DataManager.Instance?.CharacterRuntimeStore == null)
+            return null;
+
+        return DataManager.Instance.CharacterRuntimeStore.TryGet(characterId.Trim(), out CharacterRuntimeData character)
+            ? character
+            : null;
     }
 
     private static Sprite ResolveCharacterResultImage(string characterId)
@@ -372,6 +669,12 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     {
         if (text != null)
             text.text = value;
+    }
+
+    public static string FormatRedDustium(int amount, float rewardMultiplier)
+    {
+        int rewardedAmount = Mathf.FloorToInt(Mathf.Max(0, amount) * Mathf.Max(0f, rewardMultiplier));
+        return $"+ {rewardedAmount}";
     }
 
     private string BuildText(ExplorationResultData value, bool defeat, float rewardMultiplier)

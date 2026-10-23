@@ -30,6 +30,8 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
     private bool isSelected;
     private bool isHovered;
     private bool showQuantity = true;
+    private bool displayOnly;
+    private string displayLabel = string.Empty;
     private Color normalBorderColor = Color.white;
     private bool hasCachedNormalBorderColor;
 
@@ -74,6 +76,8 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         AutoBind();
 
         itemId = string.IsNullOrWhiteSpace(newItemId) ? "" : newItemId.Trim();
+        displayOnly = false;
+        displayLabel = string.Empty;
         this.quantity = HasItem ? Mathf.Max(1, quantity) : 0;
         onFocus = focusCallback;
         onExit = exitCallback;
@@ -94,6 +98,8 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         AutoBind();
 
         itemId = string.IsNullOrWhiteSpace(newItemId) ? "" : newItemId.Trim();
+        displayOnly = false;
+        displayLabel = string.Empty;
         this.quantity = HasItem ? Mathf.Max(0, quantity) : 0;
         onFocus = focusCallback;
         onExit = exitCallback;
@@ -102,6 +108,46 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         isHovered = false;
 
         Refresh();
+    }
+
+    public void SetupDisplayIcon(Sprite icon, string label = "")
+    {
+        AutoBind();
+
+        itemId = "";
+        quantity = 0;
+        displayOnly = true;
+        displayLabel = label ?? string.Empty;
+        onFocus = null;
+        onExit = null;
+        onClick = null;
+        isSelected = false;
+        isHovered = false;
+        showQuantity = !string.IsNullOrWhiteSpace(displayLabel);
+
+        bool hasIcon = icon != null;
+        if (emptyRoot != null)
+            emptyRoot.SetActive(!hasIcon);
+        if (filledRoot != null)
+            filledRoot.SetActive(hasIcon);
+        if (button != null)
+            button.interactable = false;
+
+        if (iconImage != null)
+        {
+            iconImage.sprite = icon;
+            iconImage.enabled = hasIcon;
+            iconImage.preserveAspect = true;
+            iconImage.color = NormalIconColor;
+        }
+
+        if (nameText != null && nameText != quantityText)
+            nameText.text = "";
+        if (quantityText != null)
+            quantityText.text = displayLabel;
+
+        RefreshQuantityVisual();
+        RefreshHighlight();
     }
 
     public void Clear(
@@ -241,6 +287,19 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
             return;
 
         Transform valueRoot = quantityText.transform.parent;
+
+        if (displayOnly)
+        {
+            bool visible = showQuantity && !string.IsNullOrWhiteSpace(displayLabel);
+            if (valueRoot != null && string.Equals(valueRoot.name, "Value", StringComparison.OrdinalIgnoreCase))
+                valueRoot.gameObject.SetActive(visible);
+            else
+                quantityText.gameObject.SetActive(visible);
+
+            quantityText.text = visible ? displayLabel : string.Empty;
+            quantityText.ForceMeshUpdate();
+            return;
+        }
 
         if (!showQuantity)
         {

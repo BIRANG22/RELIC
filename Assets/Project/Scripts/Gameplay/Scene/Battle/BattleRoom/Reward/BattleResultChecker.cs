@@ -103,6 +103,20 @@ public class BattleResultChecker : MonoBehaviour
         StartCoroutine(ShowDefeatAfterCameraReturn(playPresentation: false));
     }
 
+    public bool EndExplorationForDebug()
+    {
+        if (battleEnded)
+            return false;
+
+        battleEnded = true;
+        PrepareBattleFinishedPresentation();
+        ResetBattleEffectOnFinish();
+        BattleFinished?.Invoke();
+        Debug.Log("[BattleResultChecker] Exploration ended by F8 debug shortcut.");
+        OpenExplorationResultPanel();
+        return true;
+    }
+
     public bool CheckBattleEnd()
     {
         if (battleEnded)

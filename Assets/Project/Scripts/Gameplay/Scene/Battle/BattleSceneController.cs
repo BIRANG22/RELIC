@@ -22,6 +22,7 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private BattleRoomMapSelectionPresenter mapSelectionPresenter;
     [SerializeField] private GameObject erosionSelect;
     [SerializeField] private GameObject erosionPanel;
+    [SerializeField] private GameObject explorationResultPanel;
     [SerializeField] private Transform erosionSlotContent;
     [SerializeField] private GameObject erosionSlotPrefab;
 
@@ -133,6 +134,23 @@ public class BattleSceneController : MonoBehaviour
     {
         if (tutorialSkipButton != null)
             tutorialSkipButton.onClick.RemoveListener(OnTutorialSkipButtonClicked);
+    }
+
+    private void Update()
+    {
+        BattleRuntimeData runtime = DataManager.Instance?.BattleRuntimeStore?.Get();
+        if (runtime == null)
+            return;
+
+        bool paused = Time.timeScale <= 0.0001f;
+        bool settingsOpen = UIManager.Instance != null && UIManager.Instance.IsOptionPanelOpen;
+        bool resultOpen = explorationResultPanel != null && explorationResultPanel.activeInHierarchy;
+        runtime.ExplorationElapsedSeconds = BattleExplorationElapsedTime.Advance(
+            runtime.ExplorationElapsedSeconds,
+            Time.unscaledDeltaTime,
+            paused,
+            settingsOpen,
+            resultOpen);
     }
 
     private void AutoFindTutorialModeUIIfNeeded()
