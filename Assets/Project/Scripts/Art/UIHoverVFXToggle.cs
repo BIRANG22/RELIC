@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class UIHoverVFXToggle : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
@@ -16,8 +17,8 @@ public class UIHoverVFXToggle : MonoBehaviour, IPointerEnterHandler, IPointerExi
     [SerializeField] private Transform vfxSpawnPoint;
 
     [Header("VFX Fade")]
-    [Min(0f)] [SerializeField] private float fadeInDuration = 0.25f;
-    [Min(0f)] [SerializeField] private float fadeOutDuration = 0.25f;
+    [Min(0f)][SerializeField] private float fadeInDuration = 0.25f;
+    [Min(0f)][SerializeField] private float fadeOutDuration = 0.25f;
     [Tooltip("일시정지 상태에서도 페이드 효과를 실행합니다.")]
     [SerializeField] private bool useUnscaledTime = true;
     [Tooltip("Visual Effect Graph 사용 시 그래프 Blackboard에서 노출한 Float 속성 이름입니다. 해당 속성을 출력 알파에 연결해야 합니다.")]
@@ -34,6 +35,21 @@ public class UIHoverVFXToggle : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     [Header("Option")]
     [SerializeField] private bool restoreOnPointerExit = true;
+
+    // The selection effect belongs to the lobby character prefab but that prefab is
+    // also reused by battle/event rooms. Only its SelectPoint VFX is lobby-only.
+    private bool IsLobbySelectionEffect
+    {
+        get
+        {
+            if (vfxSpawnPoint != null && string.Equals(vfxSpawnPoint.name, "SelectPoint", StringComparison.OrdinalIgnoreCase))
+                return true;
+            return targetVFX != null && targetVFX.name.StartsWith("Vfx_Lobby_select", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private bool IsSceneRestricted => IsLobbySelectionEffect &&
+        !string.Equals(SceneManager.GetActiveScene().name, "Lobby", StringComparison.OrdinalIgnoreCase);
 
     private RectTransform rectTransform;
     private Canvas parentCanvas;
@@ -158,6 +174,19 @@ public class UIHoverVFXToggle : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     private void Update()
     {
+        if (IsSceneRestricted)
+        {
+            // Remove any VFX left visible by prefab initialization or a scene change.
+            if (isHovered || fadeAlpha > 0f || fadeTarget > 0f)
+            {
+                isHovered = false;
+                wasRectHovered = false;
+                SetCharacterNameVisible(false);
+                SetNormalValueImmediately();
+            }
+            return;
+        }
+
         if (IsHoverBlocked)
         {
             wasRectHovered = false;
@@ -194,7 +223,7 @@ public class UIHoverVFXToggle : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     private void SetHoverState(bool hovered)
     {
-        if (hovered && IsHoverBlocked) hovered = false;
+        if (hovered && (IsHoverBlocked || IsSceneRestricted)) hovered = false;
         if (isHovered == hovered) return;
         isHovered = hovered;
         SetCharacterNameVisible(hovered);
@@ -300,6 +329,11 @@ public class UIHoverVFXToggle : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     public void SetHoverValueImmediately()
     {
+        if (IsSceneRestricted)
+        {
+            SetNormalValueImmediately();
+            return;
+        }
         SetVFXVisible(true);
         fadeAlpha = 1f;
         fadeTarget = 1f;

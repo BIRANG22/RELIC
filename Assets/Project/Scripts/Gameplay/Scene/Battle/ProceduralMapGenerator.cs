@@ -713,8 +713,8 @@ namespace Relic.Gameplay.Data
                 if (data.Type != type)
                     continue;
 
-                // 일반 Special 노드에는 실제 랜덤 이벤트 풀만 사용합니다.
-                // Map_19(Event_03), Map_22(Event_06 상점), Map_25(Event_09 시작방)는 제외됩니다.
+                // Special 랜덤 후보는 현재 데이터의 Type=Special인 맵만 사용합니다.
+                // Start, Shop, Rest 등 고정 방은 후보에서 제외됩니다.
                 if (type == "Special" && !MapRoomSelectionResolver.IsNormalRandomEventMap(data))
                     continue;
 
@@ -724,7 +724,9 @@ namespace Relic.Gameplay.Data
                 candidates.Add(data);
             }
 
-            if (candidates.Count == 0 && !IsReservedMapType(type))
+            // Special 후보가 없더라도 다른 Type의 방으로 대체하지 않습니다.
+            // Start/Shop/Rest/Boss 역시 전용 타입을 유지해야 합니다.
+            if (candidates.Count == 0 && type != "Special" && !IsReservedMapType(type))
                 return PickAnyNormalMap(mapPool, chapter, stage, randomExclusionSettings);
 
             if (candidates.Count == 0)
@@ -923,7 +925,7 @@ namespace Relic.Gameplay.Data
 
         private bool IsReservedMapType(string type)
         {
-            return type == "Start" || type == "Boss";
+            return type == "Start" || type == "Shop" || type == "Rest" || type == "Boss";
         }
 
         private static bool IsRandomCandidateAllowed(

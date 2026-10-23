@@ -1848,24 +1848,33 @@ public class EventRoomController : MonoBehaviour
                 point = FindEventAllyPoint1();
 
             if (point != null)
-            {
                 BattleDamageTextPopupUI.ShowEventHealthRecovery(point, eventHealAmount, popupCanvas, eventStatPopupFontSize);
-                BattleCharacterResourcesUI resourceUi = FindFirstObjectByType<BattleCharacterResourcesUI>(FindObjectsInactive.Include);
-                if (resourceUi != null)
-                {
-                    if (!resourceUi.gameObject.activeSelf)
-                        resourceUi.gameObject.SetActive(true);
-                    if (resourceUi.gameObject.activeInHierarchy)
-                    {
-                        Transform[] anchors = new Transform[3];
-                        for (int i = 0; i < anchors.Length; i++)
-                            anchors[i] = FindChildRecursive(transform, $"EventAllyPoint{i + 1}");
-                        resourceUi.ShowEventRecoveryAll(anchors, event03PartyHpBefore);
-                    }
-                }
-            }
             else
                 Debug.LogWarning("[EventRoomController] Event_03 center recovery popup point not found.", this);
+
+            // HP UI is independent from the single center popup and must open for the entire party.
+            BattleCharacterResourcesUI resourceUi = FindFirstObjectByType<BattleCharacterResourcesUI>(FindObjectsInactive.Include);
+            if (resourceUi == null)
+            {
+                Debug.LogWarning("[EventRoomController] Character Resources UI component not found.", this);
+            }
+            else
+            {
+                if (!resourceUi.gameObject.activeSelf)
+                    resourceUi.gameObject.SetActive(true);
+                if (resourceUi.gameObject.activeInHierarchy)
+                {
+                    Transform[] anchors = new Transform[3];
+                    for (int i = 0; i < anchors.Length; i++)
+                    {
+                        // The existing character anchors can use 0-based naming in the event scene.
+                        anchors[i] = FindChildRecursive(transform, $"EventAllyPoint{i}");
+                        if (anchors[i] == null)
+                            anchors[i] = FindChildRecursive(transform, $"EventAllyPoint{i + 1}");
+                    }
+                    resourceUi.ShowEventRecoveryAll(anchors, event03PartyHpBefore);
+                }
+            }
         }
 
         if (choice == null || resolvedDiceFaces == null || !IsDiceChoice(choice))
