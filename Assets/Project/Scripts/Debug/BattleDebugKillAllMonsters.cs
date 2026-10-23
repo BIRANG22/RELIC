@@ -7,6 +7,7 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
 
     [SerializeField] private KeyCode killKey = KeyCode.K;
     [SerializeField] private KeyCode killPlayersKey = KeyCode.J;
+    [SerializeField] private KeyCode endExplorationKey = KeyCode.F8;
     [SerializeField] private int debugPlayerDamage = 1;
 
     private void Update()
@@ -19,6 +20,15 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
 
         if (Input.GetKeyDown(killPlayersKey))
             KillAllPlayersForDebug();
+
+        if (Input.GetKeyDown(endExplorationKey))
+            EndExplorationForDebug();
+    }
+
+    public void EndExplorationForDebug()
+    {
+        PrepareBattleStateForDebugWin();
+        BattleResultChecker.Instance?.EndExplorationForDebug();
     }
 
     public void KillAllMonstersForDebug()

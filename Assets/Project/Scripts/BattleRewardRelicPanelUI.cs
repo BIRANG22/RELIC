@@ -6,7 +6,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Localization.Components;
 using UnityEngine.UI;
-using UnityEngine.Events;
 
 // 전투 및 이벤트에서 획득한 유물을 캐릭터에게 직접 장착하는 패널입니다.
 public sealed class BattleRewardRelicPanelUI : MonoBehaviour
@@ -155,8 +154,6 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     [SerializeField, Min(0)] private int rareExtraction = 20;
     [SerializeField, Min(0)] private int epicExtraction = 30;
     [SerializeField, Min(0)] private int uniqueExtraction = 50;
-    [Tooltip("Bind a project currency service method that adds and persists Red Dustium. Extraction is blocked until a handler is connected.")]
-    [SerializeField] private UnityEvent<int> onExtractRedDustium = new UnityEvent<int>();
     private Coroutine rewardActionCloseCoroutine;
 
     private void BindRewardActionButtons()
@@ -185,20 +182,25 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     public void ExtractReward()
     {
         if (current == null || resolving || itemIntroCoroutine != null) return;
-        if (DataManager.Instance?.RelicDatabase == null ||
-            !DataManager.Instance.RelicDatabase.TryGet(current.RewardId, out RelicData relic) || relic == null)
-            return;
-        // Do not consume the reward without a connected currency persistence handler.
-        if (onExtractRedDustium == null || onExtractRedDustium.GetPersistentEventCount() == 0)
+        DataManager dataManager = DataManager.Instance;
+        if (dataManager == null ||
+            !BattleRelicExtractionService.TryExtract(
+                dataManager.BattleRuntimeStore,
+                dataManager.RelicDatabase,
+                current.RewardId,
+                commonExtraction,
+                rareExtraction,
+                epicExtraction,
+                uniqueExtraction,
+                out int amount))
         {
-            Debug.LogError("[BattleRewardRelicPanelUI] ExtractButton requires a persistent Red Dustium add/save handler.", this);
+            Debug.LogError($"[BattleRewardRelicPanelUI] Relic extraction failed. RelicId:{current.RewardId}", this);
             return;
         }
-        int rank = RelicRarityUtility.GetRevealRank(ParseRarity(relic.Rarity));
-        int amount = rank == 4 ? uniqueExtraction : rank == 3 ? epicExtraction :
-            rank == 2 ? rareExtraction : commonExtraction;
+
         resolving = true;
-        onExtractRedDustium.Invoke(amount);
+        BattleGoldHudUI.RefreshAll();
+        Debug.Log($"[BattleRewardRelicPanelUI] Extracted relic. RelicId:{current.RewardId} Remnant:{amount}", this);
         rewardActionCloseCoroutine = StartCoroutine(CloseWithoutEquip());
     }
 

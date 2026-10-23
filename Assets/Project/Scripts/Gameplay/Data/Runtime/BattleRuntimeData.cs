@@ -4,6 +4,35 @@ using UnityEngine;
 
 namespace Relic.Gameplay.Data
 {
+    public static class BattleExplorationElapsedTime
+    {
+        public static float Advance(
+            float currentSeconds,
+            float deltaSeconds,
+            bool isPaused,
+            bool isSettingsOpen,
+            bool isResultOpen)
+        {
+            float current = Mathf.Max(0f, currentSeconds);
+            if (isPaused || isSettingsOpen || isResultOpen)
+                return current;
+
+            return current + Mathf.Max(0f, deltaSeconds);
+        }
+
+        public static string Format(float seconds)
+        {
+            int totalSeconds = Mathf.Max(0, Mathf.FloorToInt(seconds));
+            int hours = totalSeconds / 3600;
+            int minutes = (totalSeconds % 3600) / 60;
+            int remainingSeconds = totalSeconds % 60;
+
+            return hours > 0
+                ? $"{hours}:{minutes:00}:{remainingSeconds:00}"
+                : $"{minutes:00}:{remainingSeconds:00}";
+        }
+    }
+
     [System.Serializable]
     public class BattleRuntimeData
     {
@@ -39,6 +68,9 @@ namespace Relic.Gameplay.Data
 
         // 탐사 중 누적되는 침식도입니다. 0~100 범위로 사용합니다.
         public int ErosionValue;
+
+        // 일시정지/설정 화면을 제외한 탐사 누적 시간(초)입니다.
+        public float ExplorationElapsedSeconds;
 
         // 저장 후 이어하기에서 같은 방 진입 침식도가 중복 증가하지 않도록
         // 마지막으로 침식도를 적용한 지도 노드를 기억합니다.

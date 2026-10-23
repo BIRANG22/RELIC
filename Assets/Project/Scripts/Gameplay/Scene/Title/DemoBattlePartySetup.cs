@@ -159,6 +159,7 @@ public static class DemoBattlePartySetup
         battle.CurrentBattleCount = 0;
         battle.CurrentRewardCount = 0;
         battle.ErosionValue = 0;
+        battle.ExplorationElapsedSeconds = 0f;
         battle.LastErosionRoomKey = string.Empty;
         battle.IsBattleRunInitialized = true;
         battle.IsDemoBattle = true;

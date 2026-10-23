@@ -2,15 +2,13 @@ using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
 {
-    private const string LevelText = "LV";
-    private const string LevelUpText = "LV UP";
-
     [SerializeField] private Image portraitImage;
-    [SerializeField] private TMP_Text killCountText;
+    [SerializeField] private Image informationIcon;
     [SerializeField] private TMP_Text damageDealtText;
     [SerializeField] private TMP_Text damageTakenText;
     [SerializeField] private TMP_Text buffAppliedText;
@@ -19,6 +17,18 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
     [SerializeField] private TMP_Text experienceText;
     [SerializeField] private GameObject levelUpRoot;
     [SerializeField] private GameObject[] unlockRoots;
+    [Header("Report Card")]
+    [SerializeField] private BattleBagItemSlotUI iconSlotPrefab;
+    [SerializeField] private RectTransform relicSlotRoot;
+    [SerializeField] private RectTransform skillSlotRoot;
+    [SerializeField] private RectTransform informationHoverTarget;
+    [SerializeField] private ExplorationResultPanelUI statisticsOverlayController;
+    [SerializeField, Min(1)] private int maxRelicSlots = 6;
+    [SerializeField, Min(1)] private int maxSkillSlots = 4;
+
+    private readonly List<BattleBagItemSlotUI> relicSlots = new();
+    private readonly List<BattleBagItemSlotUI> skillSlots = new();
+    private string statisticsTooltipContent = string.Empty;
 
     private void Awake()
     {
@@ -28,10 +38,13 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
     public void Bind(
         BattleRunCharacterStatisticsData statistics,
         Sprite portrait,
+        CharacterRuntimeData character,
+        int displayLevel,
         int gainedExperience = 0,
         bool leveledUp = false,
         float experienceProgress = 0f,
-        IReadOnlyList<string> unlockTexts = null)
+        IReadOnlyList<string> unlockTexts = null,
+        ExplorationResultPanelUI overlayController = null)
     {
         AutoBindSceneReferences();
 
@@ -48,21 +61,28 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
             portraitImage.preserveAspect = true;
         }
 
-        SetText(killCountText, Mathf.Max(0, statistics.KillCount).ToString());
-        SetText(damageDealtText, Mathf.Max(0, statistics.DamageDealt).ToString());
-        SetText(damageTakenText, Mathf.Max(0, statistics.DamageTaken).ToString());
-        SetText(buffAppliedText, Mathf.Max(0, statistics.BuffApplied).ToString());
-        SetText(defeatCountText, Mathf.Max(0, statistics.DeathCount).ToString());
-        SetExperience(gainedExperience, leveledUp, experienceProgress);
+        if (informationIcon != null)
+            informationIcon.enabled = informationIcon.sprite != null;
+
+        statisticsOverlayController = overlayController != null
+            ? overlayController
+            : statisticsOverlayController;
+        statisticsTooltipContent = BuildStatisticsTooltip(statistics);
+        statisticsOverlayController?.HideStatisticsOverlay(this);
+        SetEquipmentSlots(character);
+        SetExperience(displayLevel, gainedExperience, leveledUp, experienceProgress);
         SetUnlockTexts(unlockTexts);
     }
 
     public void Clear()
     {
+        statisticsOverlayController?.HideStatisticsOverlay(this);
+        statisticsTooltipContent = string.Empty;
         gameObject.SetActive(false);
     }
 
     private void SetExperience(
+        int level,
         int gainedExperience,
         bool leveledUp,
         float experienceProgress)
@@ -75,10 +95,10 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         SetText(experienceText, $"+{safeExperience}");
 
         if (levelUpRoot != null)
-            SetLevelUpText(leveledUp);
+            SetLevelText(level, leveledUp);
     }
 
-    private void SetLevelUpText(bool leveledUp)
+    private void SetLevelText(int level, bool leveledUp)
     {
         levelUpRoot.SetActive(true);
 
@@ -86,7 +106,132 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         if (text == null)
             text = levelUpRoot.GetComponentInChildren<TMP_Text>(true);
 
-        SetText(text, leveledUp ? LevelUpText : LevelText);
+        SetText(text, FormatLevelLabel(level));
+    }
+
+    public static string FormatLevelLabel(int level)
+    {
+        return $"LV.{Mathf.Max(1, level):00}";
+    }
+
+    public static string BuildStatisticsTooltip(BattleRunCharacterStatisticsData statistics)
+    {
+        if (statistics == null)
+            return string.Empty;
+
+        return $"{GameLocalization.Get("ui.exploration.result.monster_kills", "몬스터 처치")}  {Mathf.Max(0, statistics.KillCount)}\n" +
+               $"{GameLocalization.Get("ui.exploration.result.damage_dealt", "입힌 피해량")}  {Mathf.Max(0, statistics.DamageDealt)}\n" +
+               $"{GameLocalization.Get("ui.exploration.result.damage_taken", "받은 피해량")}  {Mathf.Max(0, statistics.DamageTaken)}\n" +
+               $"{GameLocalization.Get("ui.exploration.result.buffs_applied", "버프 부여량")}  {Mathf.Max(0, statistics.BuffApplied)}\n" +
+               $"{GameLocalization.Get("ui.exploration.result.incapacitated", "전투불능 횟수")}  {Mathf.Max(0, statistics.DeathCount)}";
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (informationHoverTarget == null || eventData == null)
+            return;
+
+        statisticsOverlayController?.ShowStatisticsOverlay(
+            this,
+            statisticsTooltipContent,
+            informationHoverTarget);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        statisticsOverlayController?.HideStatisticsOverlay(this);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (informationHoverTarget == null || eventData == null)
+            return;
+
+        statisticsOverlayController?.ToggleStatisticsOverlay(
+            this,
+            statisticsTooltipContent,
+            informationHoverTarget);
+    }
+
+    private void SetEquipmentSlots(CharacterRuntimeData character)
+    {
+        BindIconSlots(relicSlots, relicSlotRoot, character?.EquippedRelicIds, maxRelicSlots, false);
+        BindIconSlots(skillSlots, skillSlotRoot, character?.EquippedSkillIds, maxSkillSlots, true);
+    }
+
+    private void BindIconSlots(
+        List<BattleBagItemSlotUI> slots,
+        RectTransform root,
+        IReadOnlyList<string> ids,
+        int maxCount,
+        bool skill)
+    {
+        if (root == null || iconSlotPrefab == null)
+            return;
+
+        List<string> visibleIds = new();
+        if (ids != null)
+        {
+            for (int i = 0; i < ids.Count && visibleIds.Count < maxCount; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(ids[i]))
+                    visibleIds.Add(ids[i].Trim());
+            }
+        }
+
+        while (slots.Count < maxCount)
+        {
+            BattleBagItemSlotUI slot = Instantiate(iconSlotPrefab, root, false);
+            slot.name = skill ? $"SkillSlot_{slots.Count}" : $"RelicSlot_{slots.Count}";
+            RectTransform rect = slot.RectTransform;
+            if (rect != null)
+            {
+                rect.anchorMin = new Vector2(0f, 0.5f);
+                rect.anchorMax = new Vector2(0f, 0.5f);
+                rect.pivot = new Vector2(0f, 0.5f);
+                int columns = 3;
+                float spacing = skill ? 66f : 52f;
+                rect.anchoredPosition = new Vector2(
+                    (slots.Count % columns) * spacing,
+                    -(slots.Count / columns) * spacing);
+                rect.localScale = Vector3.one * (skill ? 0.62f : 0.46f);
+            }
+            slots.Add(slot);
+        }
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            BattleBagItemSlotUI slot = slots[i];
+            bool filled = i < visibleIds.Count;
+            slot.gameObject.SetActive(filled);
+            if (!filled)
+                continue;
+
+            string id = visibleIds[i];
+            slot.SetupDisplayIcon(skill ? ResolveSkillIcon(id) : ResolveRelicIcon(id));
+        }
+    }
+
+    private static Sprite ResolveRelicIcon(string id)
+    {
+        if (DataManager.Instance?.RelicIconDatabase != null &&
+            DataManager.Instance.RelicIconDatabase.TryGetIcon(id, out Sprite icon))
+        {
+            return icon;
+        }
+
+        return null;
+    }
+
+    private static Sprite ResolveSkillIcon(string id)
+    {
+        if (DataManager.Instance?.SkillIconDatabase != null &&
+            DataManager.Instance.SkillIconDatabase.TryGetIcon(id, out Sprite icon))
+        {
+            return icon;
+        }
+
+        return null;
     }
 
     private void SetUnlockTexts(IReadOnlyList<string> unlockTexts)
@@ -160,7 +305,7 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
     private void AutoBindSceneReferences()
     {
         portraitImage ??= FindImage("Portrait");
-        killCountText ??= FindText("KillCount");
+        informationIcon ??= FindImage("ExplorationReportInformationIcon");
         damageDealtText ??= FindText("DamageDealt");
         damageTakenText ??= FindText("DamageTaken");
         buffAppliedText ??= FindText("BuffApplied");
@@ -169,6 +314,17 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         experienceSlider ??= GetComponentInChildren<Slider>(true);
         experienceText ??= FindText("ExperienceText");
         levelUpRoot ??= FindChild("LevelUp")?.gameObject;
+        informationHoverTarget ??= informationIcon != null ? informationIcon.rectTransform : null;
+        statisticsOverlayController ??= GetComponentInParent<ExplorationResultPanelUI>(true);
+        relicSlotRoot ??= damageTakenText != null ? damageTakenText.rectTransform : null;
+        skillSlotRoot ??= buffAppliedText != null ? buffAppliedText.rectTransform : null;
+
+        if (damageTakenText != null)
+            damageTakenText.enabled = false;
+        if (buffAppliedText != null)
+            buffAppliedText.enabled = false;
+        if (defeatCountText != null)
+            defeatCountText.gameObject.SetActive(false);
 
         if (unlockRoots == null || unlockRoots.Length == 0)
         {
