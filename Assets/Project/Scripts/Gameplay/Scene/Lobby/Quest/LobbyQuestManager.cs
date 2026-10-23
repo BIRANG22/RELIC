@@ -7,18 +7,11 @@ using UnityEngine.SceneManagement;
 public sealed class LobbyQuestManager : MonoBehaviour
 {
     private const string LobbySceneName = "Lobby";
-    private const string DialoguePanelObjectName = "DialoguePanel";
     private const string CharacterSettingPanelObjectName = "CharacterSettingPanel";
-    private const float DefaultPanelOffsetY = 0f;
-    private const float DialoguePanelOffsetY = 100f;
 
     [SerializeField] private LobbyQuestTextConfig textConfig = new();
     [SerializeField] private Canvas questCanvas;
     [SerializeField] private LobbyQuestPanel questPanel;
-
-    [Header("Dialogue Position Animation")]
-    [SerializeField, Min(0f)] private float dialogueMoveDuration = 0.25f;
-    [SerializeField] private AnimationCurve dialogueMoveCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [SerializeField]
     private string[] hideWhenAnyActiveObjectNames =
@@ -34,7 +27,6 @@ public sealed class LobbyQuestManager : MonoBehaviour
         "StoragePanel"
     };
 
-    private RectTransform questPanelRectTransform;
     private LobbyPanelTransition lobbyPanelTransition;
     private Canvas lobbyPanelTransitionCanvas;
     private bool questCanvasSortingCaptured;
@@ -42,11 +34,6 @@ public sealed class LobbyQuestManager : MonoBehaviour
     private bool originalQuestOverrideSorting;
     private int originalQuestSortingLayerId;
     private int originalQuestSortingOrder;
-    private bool hasDialogueMoveTarget;
-    private bool isDialogueMovePlaying;
-    private float dialogueMoveStartY;
-    private float dialogueMoveTargetY;
-    private float dialogueMoveElapsed;
 
     public static LobbyQuestManager Instance { get; private set; }
 
@@ -64,7 +51,6 @@ public sealed class LobbyQuestManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         SceneManager.sceneLoaded += HandleSceneLoaded;
-        CacheQuestPanelRectTransform();
     }
 
     private void OnDestroy()
@@ -102,18 +88,13 @@ public sealed class LobbyQuestManager : MonoBehaviour
             return;
         }
 
-        CacheQuestPanelRectTransform();
 
         LobbyQuestState state = LobbyQuestState.Build(GetLobby(), textConfig);
         bool defaultLobbyStateVisible = IsDefaultLobbyStateVisible();
         bool characterSettingOpen = IsLobbyObjectActive(CharacterSettingPanelObjectName);
-        bool dialogueOpen = IsLobbyObjectActive(DialoguePanelObjectName);
 
         // �ؽ�Ʈ�� ����Ʈ ���� ���´� ���� LobbyQuestPanel ������ �״�� ����մϴ�.
         questPanel.Apply(state);
-
-        // DialoguePanel�� ������ ���� �� 0 <-> 100 ���̸� �ε巴�� �̵��մϴ�.
-        UpdateDialoguePanelPosition(dialogueOpen);
 
         // CharacterSettingPanel�� ������ Ȱ��ȭ�Ǿ� �ִ� ���ȿ��� ����Ʈ �г��� ����ϴ�.
         // �� ��ȯ�� ���� ���۵Ǵ��� CharacterSettingPanel�� ������ ������ �̸� ������ �ʽ��ϴ�.
@@ -141,9 +122,6 @@ public sealed class LobbyQuestManager : MonoBehaviour
         RestoreQuestCanvasSorting();
         lobbyPanelTransition = null;
         lobbyPanelTransitionCanvas = null;
-        hasDialogueMoveTarget = false;
-        isDialogueMovePlaying = false;
-        CacheQuestPanelRectTransform();
         Refresh();
     }
 
@@ -156,89 +134,6 @@ public sealed class LobbyQuestManager : MonoBehaviour
     {
         Scene activeScene = SceneManager.GetActiveScene();
         return activeScene.IsValid() && activeScene.name == LobbySceneName;
-    }
-
-    private void CacheQuestPanelRectTransform()
-    {
-        if (questPanel == null)
-        {
-            questPanelRectTransform = null;
-            return;
-        }
-
-        if (questPanelRectTransform == null || questPanelRectTransform.gameObject != questPanel.gameObject)
-            questPanelRectTransform = questPanel.transform as RectTransform;
-    }
-
-    private void UpdateDialoguePanelPosition(bool dialogueOpen)
-    {
-        if (questPanelRectTransform == null)
-            return;
-
-        float requestedTargetY = dialogueOpen ? DialoguePanelOffsetY : DefaultPanelOffsetY;
-
-        if (!hasDialogueMoveTarget || !Mathf.Approximately(dialogueMoveTargetY, requestedTargetY))
-            BeginDialoguePanelMove(requestedTargetY);
-
-        if (!isDialogueMovePlaying)
-            return;
-
-        if (dialogueMoveDuration <= 0f)
-        {
-            SetQuestPanelY(dialogueMoveTargetY);
-            isDialogueMovePlaying = false;
-            return;
-        }
-
-        dialogueMoveElapsed += Time.unscaledDeltaTime;
-        float normalizedTime = Mathf.Clamp01(dialogueMoveElapsed / dialogueMoveDuration);
-        float curvedTime = dialogueMoveCurve != null
-            ? dialogueMoveCurve.Evaluate(normalizedTime)
-            : normalizedTime;
-
-        float y = Mathf.LerpUnclamped(dialogueMoveStartY, dialogueMoveTargetY, curvedTime);
-        SetQuestPanelY(y);
-
-        if (normalizedTime >= 1f)
-        {
-            SetQuestPanelY(dialogueMoveTargetY);
-            isDialogueMovePlaying = false;
-        }
-    }
-
-    private void BeginDialoguePanelMove(float targetY)
-    {
-        hasDialogueMoveTarget = true;
-        dialogueMoveTargetY = targetY;
-        dialogueMoveElapsed = 0f;
-
-        if (questPanelRectTransform == null)
-        {
-            isDialogueMovePlaying = false;
-            return;
-        }
-
-        dialogueMoveStartY = questPanelRectTransform.anchoredPosition.y;
-
-        if (dialogueMoveDuration <= 0f || Mathf.Approximately(dialogueMoveStartY, dialogueMoveTargetY))
-        {
-            SetQuestPanelY(dialogueMoveTargetY);
-            isDialogueMovePlaying = false;
-            return;
-        }
-
-        isDialogueMovePlaying = true;
-    }
-
-    private void SetQuestPanelY(float y)
-    {
-        if (questPanelRectTransform == null)
-            return;
-
-        Vector2 anchoredPosition = questPanelRectTransform.anchoredPosition;
-        anchoredPosition.y = y;
-        questPanelRectTransform.anchoredPosition = anchoredPosition;
-        UIBlurBackgroundManager.MarkReplicaDirty();
     }
 
     private void UpdateQuestCanvasSortingForLobbyPanelTransition()
