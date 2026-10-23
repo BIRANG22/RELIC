@@ -34187,8 +34187,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 627731518}
-  localizationKey: lobby.prepare_exploration
-  koreanSource: "\uD0D0\uC0AC \uC900\uBE44"
+  localizationKey: ui.lobby.canvas.positionpanel.ready.panel.ready_panel.playbutton.playtext.bde74899
+  koreanSource: "\uD0D0\uC0AC"
   automaticallyRegistered: 1
 --- !u!114 &627731518
 MonoBehaviour:
@@ -50160,6 +50160,7 @@ GameObject:
   - component: {fileID: 882831956}
   - component: {fileID: 882831958}
   - component: {fileID: 882831957}
+  - component: {fileID: 882831959}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -50286,6 +50287,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 882831955}
   m_CullTransparentMesh: 1
+--- !u!114 &882831959
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 882831955}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 882831957}
+  localizationKey: common.back
+  koreanSource: "\uB4A4\uB85C"
+  automaticallyRegistered: 1
 --- !u!43 &885531143
 Mesh:
   m_ObjectHideFlags: 0
@@ -70346,6 +70363,7 @@ GameObject:
   - component: {fileID: 1152676061}
   - component: {fileID: 1152676063}
   - component: {fileID: 1152676062}
+  - component: {fileID: 1152676064}
   m_Layer: 0
   m_Name: Text
   m_TagString: Untagged
@@ -70472,6 +70490,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1152676060}
   m_CullTransparentMesh: 1
+--- !u!114 &1152676064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1152676060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1152676062}
+  localizationKey: ui.lobby.text.eafccb6c
+  koreanSource: "\uC2A4\uD0EF\uC774\uB984"
+  automaticallyRegistered: 1
 --- !u!1 &1156883266
 GameObject:
   m_ObjectHideFlags: 0
@@ -123159,7 +123193,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 251672622}
   m_Direction: 1
   m_Value: 0
-  m_Size: 0.9897959
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

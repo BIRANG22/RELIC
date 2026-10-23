@@ -607,8 +607,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 89322943}
-  localizationKey: title.exit
-  koreanSource: "\uAC8C\uC784\uC885\uB8CC"
+  localizationKey: ui.title.canvas.buttongroup.quitbutton.text.ec48e3e4
+  koreanSource: "\uC885\uB8CC"
   automaticallyRegistered: 1
 --- !u!1 &94210111
 GameObject:
@@ -8059,8 +8059,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1852231631}
-  localizationKey: title.archive
-  koreanSource: "\uAE30\uB85D\uC11C"
+  localizationKey: ui.title.canvas.buttongroup.recodebutton.text.6db3f2f6
+  koreanSource: "\uAE30\uB85D"
   automaticallyRegistered: 1
 --- !u!1 &1853200066
 GameObject:

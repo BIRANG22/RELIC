@@ -158,10 +158,6 @@ MonoBehaviour:
     m_Localized: Explore
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100725
-    m_Localized: Prepare Expedition
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100726
     m_Localized: Rest
     m_Metadata:
@@ -3540,10 +3536,6 @@ MonoBehaviour:
     m_Localized: English
     m_Metadata:
       m_Items: []
-  - m_Id: 10169488443449350
-    m_Localized: Play Intro
-    m_Metadata:
-      m_Items: []
   - m_Id: 10169488443449354
     m_Localized: 'Effect: {0}'
     m_Metadata:
@@ -3792,175 +3784,67 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510725
-    m_Localized: Seraphia's Support
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510726
-    m_Localized: "\u201CThis is not a place to stay long. Please let us know if you
-      need our help before you leave.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510727
-    m_Localized: Seraphia's Support
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510728
-    m_Localized: Seraphia's Support
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510729
-    m_Localized: Seraphia's Support
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510730
-    m_Localized: Forbidden Ritual
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510731
-    m_Localized: Old boxes and unidentifiable ritual tools are lying around.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510732
-    m_Localized: Forbidden Ritual
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510733
-    m_Localized: I think I can reach out one more time.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510736
-    m_Localized: Forbidden Ritual
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510737
-    m_Localized: Forbidden Ritual
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510738
-    m_Localized: Forbidden Ritual
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510739
-    m_Localized: Forbidden Ritual
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510740
-    m_Localized: Forbidden Ritual
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510742
-    m_Localized: Forbidden Ritual
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510743
-    m_Localized: Forbidden Ritual
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510744
-    m_Localized: Forbidden Ritual
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510745
-    m_Localized: Pile of Corpses
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510746
-    m_Localized: There are still usable items visible among the corpses, but faint
-      movement can be felt inside the pile.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510747
-    m_Localized: Mysterious Stranger
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510748
-    m_Localized: "\u201CIt looks like you are looking for something useful. How will
-      you pay for it?\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510750
-    m_Localized: Mysterious Stranger
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510751
-    m_Localized: Mysterious Stranger
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510752
-    m_Localized: Mysterious Stranger
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510753
-    m_Localized: Mysterious Stranger
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510754
-    m_Localized: Dustium Deposit
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510755
-    m_Localized: It seems unstable, but if you mine carefully, you may be able to
-      secure a significant amount.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510757
-    m_Localized: Dustium Deposit
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510758
-    m_Localized: It seems like we can mine a little more, but the risk of collapse
-      is also increasing.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510760
-    m_Localized: Dustium Deposit
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510761
-    m_Localized: I think this will be my last chance to mine.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510763
-    m_Localized: Dustium Deposit
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510764
-    m_Localized: Dustium Deposit
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510765
-    m_Localized: Dustium Deposit
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510766
-    m_Localized: Shadow Merchant
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510767
-    m_Localized: "\u201CI never thought I would meet a customer in a place like this.
-      I happen to have some nice items. Would you like to take a look?\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510768
-    m_Localized: Shadow Merchant
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510769
-    m_Localized: Fountain of Rest
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510770
-    m_Localized: Faint light flows from the fountain along with the quiet sound of
-      water. It seems like the remaining power in the fountain can only be used once.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510782
-    m_Localized: Echo of the Rift
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510783
-    m_Localized: A crack appeared in the air. I can feel faint traces of Memories
-      in the light that seeps through the cracks.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 10185974318899314
@@ -4344,30 +4228,6 @@ MonoBehaviour:
     m_Localized: When you select a fragment, information is displayed.
     m_Metadata:
       m_Items: []
-  - m_Id: 11639695972245591
-    m_Localized: Seraphia's Support
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11639695972245595
-    m_Localized: Forbidden Ritual
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11639695972245605
-    m_Localized: Mysterious Stranger
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11639695972245610
-    m_Localized: Dustium Deposit
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11639695972245613
-    m_Localized: Dustium Deposit
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11639695972245616
-    m_Localized: Dustium Deposit
-    m_Metadata:
-      m_Items: []
   - m_Id: 11639695972245648
     m_Localized: Damage received during this turn is reduced by 50%.
     m_Metadata:
@@ -4390,18 +4250,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11639695972245656
     m_Localized: Creates a broom in the selected empty grid.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839956
-    m_Localized: Pile of Corpses
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839957
-    m_Localized: Fountain of Rest
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11677536462839959
-    m_Localized: Echo of the Rift
     m_Metadata:
       m_Items: []
   - m_Id: 11677536462839960
@@ -4652,85 +4500,8 @@ MonoBehaviour:
     m_Localized: current panel
     m_Metadata:
       m_Items: []
-  - m_Id: 11981180450119764
-    m_Localized: "\u201CI hope this will be of some help. Please use it with caution.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119765
-    m_Localized: "\u201CYour wounds have healed a little. I hope this strength will
-      help you on your journey.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119766
-    m_Localized: "\u201CMay blessings rest on your lives.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180450119771
-    m_Localized: The power remaining in the ritual tool seeps into the body.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896896
-    m_Localized: After digging through the traces, a Relic with strong power was
-      revealed from inside.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896897
-    m_Localized: The moment you touch the ritual tool, an ominous energy flows back.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896898
-    m_Localized: The moment the trace is damaged, the pent-up power explodes.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896899
-    m_Localized: I decided not to touch him any more and quietly left.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896900
-    m_Localized: I got an unexpected harvest. There doesn't seem to be anything more
-      to do.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896901
-    m_Localized: Caught in an unexpected explosion.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896903
-    m_Localized: There are still usable items visible among the corpses, but faint
-      movement can be felt inside the pile.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896908
-    m_Localized: "\u201CGood. This was a good enough price.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896909
-    m_Localized: "\u201CI was pretty lucky.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896910
-    m_Localized: "\u201CIt wasn\u2019t a bad deal..\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896911
-    m_Localized: "\u201CI will accept the shortfall with my life.\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896919
-    m_Localized: I took the Dustium I had mined so far and left.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896920
-    m_Localized: Even the Dustium that had been mined was buried under the rubble.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896921
-    m_Localized: We succeeded in securing all the Dustium before it collapsed.
-    m_Metadata:
-      m_Items: []
   - m_Id: 11981180466896923
-    m_Localized: "\u201CI guess this is enough. I don\u2019t plan on holding on for
-      long.\u201D"
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11988550500753549
@@ -4905,16 +4676,8 @@ MonoBehaviour:
     m_Localized: specialization
     m_Metadata:
       m_Items: []
-  - m_Id: 17041964720988220
-    m_Localized: Common runes
-    m_Metadata:
-      m_Items: []
   - m_Id: 17041964720988222
     m_Localized: liberation
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988226
-    m_Localized: exclusive rune
     m_Metadata:
       m_Items: []
   - m_Id: 17041964720988228
@@ -5710,26 +5473,18 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626097
-    m_Localized: Elite Luke, Lancer
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626098
-    m_Localized: Elite Luke, Blight
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626099
-    m_Localized: Elite Nocturne
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626100
-    m_Localized: Elite Mort, Draugr
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626101
-    m_Localized: Elite Mort, Barlow
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17531528627626102
     m_Localized: 
     m_Metadata:
       m_Items: []
@@ -5942,317 +5697,83 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975624
-    m_Localized: Request support.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975625
-    m_Localized: Obtain 1 random artifact
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975626
-    m_Localized: Request purification.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975627
-    m_Localized: 'dice decision
-
-      Reward: HP recovery
-
-      The higher it is,
-      the higher the amount of HP recovery.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975628
-    m_Localized: Ask for prayers.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975629
-    m_Localized: 'dice decision
-
-      Reward: Increased Max HP
-
-      The higher
-      it is, the higher the Max HP increase.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975630
-    m_Localized: Open the Box.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975631
-    m_Localized: Obtain 35 Red Dustium
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975632
-    m_Localized: Rummage Inside the Box.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975633
-    m_Localized: 'Dice Roll 9
-
-      Success: Obtain 1 random artifact
-
-      Failure:
-      Party members'' current stamina reduced by 3'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975634
-    m_Localized: '3~8: All party members lose 3 current HP'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975635
-    m_Localized: Touch the Ritual Tool.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975636
-    m_Localized: 'Dice Roll 11
-
-      Success: Mana regeneration increases by 1
-
-      Failure:
-      Party members'' current stamina reduced by 3'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975637
-    m_Localized: '3~10: All party members lose 3 current HP'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975638
-    m_Localized: Searching for Traces of Consciousness.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975639
-    m_Localized: 'Dice Roll 13
-
-      Success: Obtain 1 epic artifact
-
-      Failure:
-      Party members'' current stamina reduced by 5'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975640
-    m_Localized: '3~12: Reduces current health of all party members by 5'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975643
-    m_Localized: Burn it.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975644
-    m_Localized: Roll 3 six-sided dice to obtain Red Dustium.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975645
-    m_Localized: Investigate.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975646
-    m_Localized: Obtain 1 random Memory
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975647
-    m_Localized: pay the price
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975648
-    m_Localized: 'Consumes 50 Red Dustium
-
-      Obtain 1 random artifact'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975649
-    m_Localized: Not enough Red Dustium.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975650
-    m_Localized: test fate
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975651
-    m_Localized: 'Dice Roll 11
-
-      Success: Obtain 1 random artifact
-
-      Failure:
-      HP reduced by 5'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975652
-    m_Localized: '3~10: All party members lose 5 current HP'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975653
-    m_Localized: Ask for an exchange.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975654
-    m_Localized: 'Consumes 1 owned artifact
-
-      Obtain 1 random artifact'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975655
-    m_Localized: No artifacts available to exchange.
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975656
-    m_Localized: Mining with Caution.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975657
-    m_Localized: 'Dice Roll 8
-
-      Accumulated Red Dustium 15'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975658
-    m_Localized: '3~7: All accumulated Red Dustium is lost.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975659
-    m_Localized: Mining Boldly.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975660
-    m_Localized: 'Dice Roll 12
-
-      Accumulated 45 Red Dustium'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975661
-    m_Localized: '3~11: All accumulated red Dustium is lost.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975662
-    m_Localized: Mining with Caution.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975663
-    m_Localized: 'Dice Roll 8
-
-      Accumulated Red Dustium 15'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975664
-    m_Localized: '3~7: All accumulated Red Dustium is lost.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975665
-    m_Localized: Mining Boldly.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975666
-    m_Localized: 'Dice Roll 12
-
-      Accumulated 45 Red Dustium'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975667
-    m_Localized: '3~11: All accumulated red Dustium is lost.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975668
-    m_Localized: Mining with Caution.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975669
-    m_Localized: 'Dice Roll 8
-
-      Accumulated Red Dustium 15'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975670
-    m_Localized: '3~7: All accumulated Red Dustium is lost.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975671
-    m_Localized: Mining Boldly.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975672
-    m_Localized: 'Dice Roll 12
-
-      Accumulated 45 Red Dustium'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975673
-    m_Localized: '3~11: All accumulated red Dustium is lost.'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975674
-    m_Localized: Quit.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975675
-    m_Localized: Acquire accumulated red Dustium
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975676
-    m_Localized: Look at the object.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975677
-    m_Localized: Use the store
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975678
-    m_Localized: Embrace the power of life.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975679
-    m_Localized: Increases Max HP of all party members by 12
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975680
-    m_Localized: Accept the power of Mana.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975681
-    m_Localized: Increases maximum Mana of all party members by 2
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975694
-    m_Localized: Gather scattered Memories.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975695
-    m_Localized: Obtain 3 random common to rare Memories
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975696
-    m_Localized: Hold on to the Memories of battle.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975697
-    m_Localized: Acquire 2 attack Memories
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975698
-    m_Localized: Choose a strong Memory.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975699
-    m_Localized: Obtain 1 epic Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975700
-    m_Localized: Go together.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975701
-    m_Localized: 'Hayes joins
-
-      Obtain an Attack Memory'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975702
-    m_Localized: Rest together.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975703
-    m_Localized: 'Kaya joins
-
-      Restore party HP'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 2876383222199361250
@@ -6301,22 +5822,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 19388577758060613
     m_Localized: Tutorial (Merck, Blight)
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060614
-    m_Localized: A New Companion
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060615
-    m_Localized: "\u201CI'm a little scared to go alone. Can I come with you?\u201D"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060616
-    m_Localized: An Unexpected Companion
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060617
-    m_Localized: You found a stranger resting by the roadside.
     m_Metadata:
       m_Items: []
   - m_Id: 19395600956530688
@@ -6757,14 +6262,6 @@ MonoBehaviour:
   - m_Id: 21894353345060872
     m_Localized: When Karma reaches its maximum, apply {ValueRate1} Vulnerable to
       all enemies.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 21894353345060873
-    m_Localized: Leave the Place
-    m_Metadata:
-      m_Items: []
-  - m_Id: 21894353345060874
-    m_Localized: Event ends
     m_Metadata:
       m_Items: []
   - m_Id: 22134627908460544
@@ -7297,10 +6794,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 24322630735110144
     m_Localized: Awakened Arabella
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24322630735110145
-    m_Localized: Test
     m_Metadata:
       m_Items: []
   - m_Id: 24322630735110146
