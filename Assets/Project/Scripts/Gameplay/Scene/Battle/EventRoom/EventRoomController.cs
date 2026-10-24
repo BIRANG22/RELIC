@@ -262,8 +262,20 @@ public class EventRoomController : MonoBehaviour
 
     public void SetEventId(string eventId)
     {
-        pendingEventId = EventIdUtility.Normalize(eventId);
+        string nextId = EventIdUtility.Normalize(eventId);
+        if (!string.Equals(pendingEventId, nextId, System.StringComparison.OrdinalIgnoreCase))
+        {
+            // Clear the previous room's visible data before loading the new map event.
+            SetDataEventRootVisible(false);
+            ClearChoiceSlots();
+            if (eventNameText != null) eventNameText.text = string.Empty;
+            if (eventTitleText != null) eventTitleText.text = string.Empty;
+            if (eventResultText != null) eventResultText.text = string.Empty;
+            currentEventDefinition = null;
+            isDataEventActive = false;
+        }
 
+        pendingEventId = nextId;
         if (isActiveAndEnabled)
             TryStartDataEventMode();
     }
@@ -370,6 +382,12 @@ public class EventRoomController : MonoBehaviour
         HideRelicFlyObjects();
         ClearChoiceSlots();
         SetDataEventRootVisible(false);
+        // The controller is reused by subsequent rooms; do not carry over its event ID.
+        pendingEventId = string.Empty;
+        currentEventDefinition = null;
+        if (eventNameText != null) eventNameText.text = string.Empty;
+        if (eventTitleText != null) eventTitleText.text = string.Empty;
+        if (eventResultText != null) eventResultText.text = string.Empty;
         isDataEventActive = false;
         isEventRewardPanelOpen = false;
         pendingEventRewards.Clear();
@@ -700,6 +718,7 @@ public class EventRoomController : MonoBehaviour
             return false;
         }
 
+        Debug.Log($"[EventRoomController] Bound room event: {definition.EventId} (requested {pendingEventId}, map {DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentMapId})", this);
         SetChestRootVisible(false);
         EnsureDataEventReferences();
         LoadEventDefinition(definition, string.Empty);
@@ -913,7 +932,8 @@ public class EventRoomController : MonoBehaviour
         ClearEquippedRelicCostSelection();
         ClearSkillAwakenSelection();
 
-        SetDataEventRootVisible(true);
+        // Keep previous room content hidden until the current title and choices are bound.
+        SetDataEventRootVisible(false);
         SetNextButtonVisible(EventRoomRewardFlowUtility.CanSkipUnresolvedEvent(definition));
         ResetTerminalChoiceVisuals();
 
@@ -935,10 +955,12 @@ public class EventRoomController : MonoBehaviour
             SetEventTitleVisible(true);
             if (IsEvent10Result(definition.EventId))
                 ShowEvent10ResultPresentation();
+            SetDataEventRootVisible(true);
             return;
         }
 
         BindChoiceSlots(GetCurrentVisibleChoices());
+        SetDataEventRootVisible(true);
     }
 
     private static bool IsEvent10Result(string eventId)
@@ -1010,6 +1032,13 @@ public class EventRoomController : MonoBehaviour
             ? definition.Detail
             : definition.Title ?? string.Empty;
 
+        // Event_09 is a shared fountain event. Its title is the scene description,
+        // never a choice reward description such as a maximum HP/MP increase.
+        // The event Detail in GameData is authoritative for this event.
+        if (EventIdUtility.Normalize(definition.EventId) == "Event_09" &&
+            !string.IsNullOrWhiteSpace(definition.Detail))
+            return definition.Detail;
+
         string localized = GameDataLocalization.EventTitle(definition, fallback);
         // Some localization tables resolve the event title to a choice description.
         // Never display a choice's description in the event body field.
@@ -1062,7 +1091,9 @@ public class EventRoomController : MonoBehaviour
                 choice,
                 selectable,
                 unavailableReason,
-                () => OnEventChoiceClicked(captured));
+                () => OnEventChoiceClicked(captured),
+                EventIdUtility.Normalize(choice.EventId) == "Event_08_A"
+                    ? eventChoiceSessionState.SelectedPartySlot : 0);
             slotIndex++;
         }
     }
@@ -1347,8 +1378,112 @@ public class EventRoomController : MonoBehaviour
         event02ChestTransitionRoutine = null;
     }
 
-    private readonly int[] event03PartyHpBefore = new int[3];
-    private readonly int[] event06PartyHpBefore = new int[3];
+    // One HP snapshot and presentation path for every data-driven event.
+    private readonly int[] eventPartyHpBefore = new int[3];
+    private int eventSelectedSlotBefore = -1;
+    [Header("Event HP Presentation")]
+    [SerializeField, Min(0f)] private float eventHpRewardWaitDuration = 1.9f;
+
+    private void CaptureEventHpBefore()
+    {
+        DataManager dm = DataManager.Instance;
+        eventSelectedSlotBefore = eventChoiceSessionState.SelectedPartySlot - 1;
+        for (int slot = 0; slot < eventPartyHpBefore.Length; slot++)
+        {
+            string characterId = dm?.PartyRuntimeStore?.GetCharacterId(slot);
+            CharacterRuntimeData runtime = !string.IsNullOrWhiteSpace(characterId)
+                ? dm?.CharacterRuntimeStore?.Get(characterId) : null;
+            eventPartyHpBefore[slot] = runtime != null ? runtime.CurrentHP : 0;
+        }
+    }
+
+    private static bool IsPartyTarget(string target) =>
+        SameToken(target, "PartyAll") || SameToken(target, "Party");
+
+    private bool TryGetEventHpChange(EventData choice, EventChoiceExecutionResult result,
+        out int amount, out bool singleTarget)
+    {
+        amount = 0;
+        singleTarget = false;
+        if (choice == null || !result.Accepted)
+            return false;
+
+        // The execution service applies these effects before the presentation starts.
+        if (result.Succeeded)
+        {
+            if (SameToken(choice.ResultType, "Heal") &&
+                TryParseSignedValue(choice.ResultValue, out int heal) && heal > 0)
+            {
+                amount = heal;
+                singleTarget = SameToken(choice.ResultTarget, "SelectedCharacter");
+                return singleTarget || IsPartyTarget(choice.ResultTarget);
+            }
+            if (SameToken(choice.ResultType, "Damage") &&
+                TryParseSignedValue(choice.ResultValue, out int damage) && damage != 0)
+            {
+                amount = -Mathf.Abs(damage);
+                singleTarget = SameToken(choice.ResultTarget, "SelectedCharacter");
+                return singleTarget || IsPartyTarget(choice.ResultTarget);
+            }
+            if (SameToken(choice.CostType, "HP") &&
+                TryParseSignedValue(choice.CostValue, out int hpCost) && hpCost > 0)
+            {
+                amount = -hpCost;
+                singleTarget = SameToken(choice.CostTarget, "SelectedCharacter");
+                return singleTarget || IsPartyTarget(choice.CostTarget);
+            }
+        }
+        else if (SameToken(choice.FailResultType, "Damage") &&
+                 TryParseSignedValue(choice.FailResultValue, out int failureDamage) && failureDamage != 0)
+        {
+            amount = -Mathf.Abs(failureDamage);
+            singleTarget = SameToken(choice.FailResultTarget, "SelectedCharacter");
+            return singleTarget || IsPartyTarget(choice.FailResultTarget);
+        }
+        return false;
+    }
+
+    private bool TryPlayEventHpPresentation(EventData choice, EventChoiceExecutionResult result)
+    {
+        if (!TryGetEventHpChange(choice, result, out int amount, out bool singleTarget))
+            return false;
+
+        int slot = singleTarget ? eventSelectedSlotBefore : 1;
+        if (slot < 0 || slot >= eventPartyHpBefore.Length)
+            return false;
+
+        Transform popupAnchor = FindActiveEventAllyPoint(slot);
+        if (!singleTarget && popupAnchor == null)
+            popupAnchor = FindEventAllyPoint1();
+        Canvas popupCanvas = GetComponentInParent<Canvas>(true);
+        if (popupCanvas == null || !popupCanvas.gameObject.activeInHierarchy)
+            popupCanvas = GetComponentInChildren<Canvas>(true);
+        if (popupAnchor != null)
+        {
+            if (amount > 0)
+                BattleDamageTextPopupUI.ShowEventHealthRecovery(popupAnchor, amount, popupCanvas, eventStatPopupFontSize);
+            else
+                BattleDamageTextPopupUI.ShowEventHealthLoss(popupAnchor, -amount, popupCanvas, eventStatPopupFontSize);
+        }
+
+        BattleCharacterResourcesUI resources = FindFirstObjectByType<BattleCharacterResourcesUI>(FindObjectsInactive.Include);
+        if (resources != null)
+        {
+            if (!resources.gameObject.activeSelf)
+                resources.gameObject.SetActive(true);
+            if (resources.gameObject.activeInHierarchy)
+            {
+                Transform[] anchors = new Transform[eventPartyHpBefore.Length];
+                for (int i = 0; i < anchors.Length; i++)
+                    anchors[i] = FindActiveEventAllyPoint(i);
+                if (singleTarget)
+                    resources.ShowEventRecoveryForSlot(slot, anchors[slot], eventPartyHpBefore[slot]);
+                else
+                    resources.ShowEventHealthChangeAll(anchors, eventPartyHpBefore);
+            }
+        }
+        return true;
+    }
 
     private void ExecuteEventChoice(
         EventData choice,
@@ -1359,32 +1494,7 @@ public class EventRoomController : MonoBehaviour
         SetChoiceSlotsInteractable(false);
 
         int accumulatedRemnantBeforeChoice = eventChoiceSessionState.AccumulatedRemnant;
-        if (choice != null && EventIdUtility.Normalize(choice.EventId) == "Event_03" &&
-            SameToken(choice.ResultType, "Heal"))
-        {
-            DataManager dm = DataManager.Instance;
-            for (int slot = 0; slot < event03PartyHpBefore.Length; slot++)
-            {
-                string characterId = dm?.PartyRuntimeStore?.GetCharacterId(slot);
-                CharacterRuntimeData runtime = !string.IsNullOrWhiteSpace(characterId)
-                    ? dm?.CharacterRuntimeStore?.Get(characterId) : null;
-                event03PartyHpBefore[slot] = runtime != null ? runtime.CurrentHP : 0;
-            }
-        }
-
-        // Capture pre-damage HP before a typed Event_06 failure is executed.
-        if (choice != null && EventIdUtility.Normalize(choice.EventId).StartsWith("Event_06", System.StringComparison.Ordinal) &&
-            SameToken(choice.FailResultType, "Damage") && SameToken(choice.FailResultTarget, "PartyAll"))
-        {
-            DataManager dm = DataManager.Instance;
-            for (int slot = 0; slot < event06PartyHpBefore.Length; slot++)
-            {
-                string characterId = dm?.PartyRuntimeStore?.GetCharacterId(slot);
-                CharacterRuntimeData runtime = !string.IsNullOrWhiteSpace(characterId)
-                    ? dm?.CharacterRuntimeStore?.Get(characterId) : null;
-                event06PartyHpBefore[slot] = runtime != null ? runtime.CurrentHP : 0;
-            }
-        }
+        CaptureEventHpBefore();
 
         EventChoiceExecutionResult result;
         activeRewardChoice = choice;
@@ -1542,6 +1652,12 @@ public class EventRoomController : MonoBehaviour
         ContinueAfterExecutedChoiceCore(choice, result, resolvedDiceFaces);
     }
 
+    private static bool IsEventHpCostRewardChoice(EventData choice)
+    {
+        return choice != null && SameToken(choice.CostType, "HP") &&
+               (IsPartyTarget(choice.CostTarget) || SameToken(choice.CostTarget, "SelectedCharacter"));
+    }
+
     private void ContinueAfterExecutedChoiceCore(
         EventData choice,
         EventChoiceExecutionResult result,
@@ -1568,7 +1684,8 @@ public class EventRoomController : MonoBehaviour
             pendingGenericRewardResultMessage = result.ResultMessage ?? string.Empty;
             SetNextButtonVisible(false);
             SetChoiceSlotsInteractable(false);
-            if (TryOpenPendingEventRewardPanel(true)) return;
+            if (TryOpenPendingEventRewardPanel(true, true,
+                IsEventHpCostRewardChoice(choice) ? eventHpRewardWaitDuration : -1f)) return;
         }
 
         if (TryQueueEvent01ResultContinuation(choice, result, resolvedDiceFaces))
@@ -1926,86 +2043,43 @@ public class EventRoomController : MonoBehaviour
     {
         TryShowEvent07StatGainPopup(choice);
 
-        // Event_06 typed failure damage is applied to all party members.
-        // Show one popup at the center while animating all three HP panels.
-        if (choice != null && result.Accepted && !result.Succeeded &&
-            EventIdUtility.Normalize(choice.EventId).StartsWith("Event_06", System.StringComparison.Ordinal) &&
-            SameToken(choice.FailResultType, "Damage") && SameToken(choice.FailResultTarget, "PartyAll") &&
-            TryParseSignedValue(choice.FailResultValue, out int failureDamage) && failureDamage != 0)
-        {
-            Canvas popupCanvas = GetComponentInParent<Canvas>(true);
-            if (popupCanvas == null || !popupCanvas.gameObject.activeInHierarchy)
-                popupCanvas = GetComponentInChildren<Canvas>(true);
-            // EventAllyPoint0~2 live under SharedRoomRoot/AllyRoot, not under EventRoom.
-            // Slot index 1 is the middle character.
-            Transform center = FindActiveEventAllyPoint(1);
-            if (center == null)
-                center = FindActiveEventAllyPoint(2);
-            if (center == null)
-                center = FindActiveEventAllyPoint(0);
-            if (center != null)
-                BattleDamageTextPopupUI.ShowEventHealthLoss(center, Mathf.Abs(failureDamage), popupCanvas, eventStatPopupFontSize);
-
-            BattleCharacterResourcesUI resourceUi = FindFirstObjectByType<BattleCharacterResourcesUI>(FindObjectsInactive.Include);
-            if (resourceUi != null)
-            {
-                if (!resourceUi.gameObject.activeSelf)
-                    resourceUi.gameObject.SetActive(true);
-                if (resourceUi.gameObject.activeInHierarchy)
-                {
-                    Transform[] anchors = new Transform[3];
-                    for (int i = 0; i < anchors.Length; i++)
-                        anchors[i] = FindActiveEventAllyPoint(i);
-                    resourceUi.ShowEventHealthChangeAll(anchors, event06PartyHpBefore);
-                }
-            }
-        }
-
-        // Data-driven Event_03 recovery uses the same popup as combat healing.
-        // Show the requested value even when the party is already at full HP.
+        // Event_09 grants a party-wide maximum stat increase, but displays
+        // a single world popup over the center character without opening HP HUDs.
         if (choice != null && result.Accepted && result.Succeeded &&
-            EventIdUtility.Normalize(choice.EventId) == "Event_03" &&
-            SameToken(choice.ResultType, "Heal") &&
+            EventIdUtility.Normalize(choice.EventId) == "Event_09" &&
             SameToken(choice.ResultTarget, "PartyAll") &&
-            TryParseSignedValue(choice.ResultValue, out int eventHealAmount) && eventHealAmount > 0)
+            TryParseSignedValue(choice.ResultValue, out int event09Gain) && event09Gain > 0)
         {
-            Canvas popupCanvas = GetComponentInParent<Canvas>(true);
-            if (popupCanvas == null || !popupCanvas.gameObject.activeInHierarchy)
-                popupCanvas = GetComponentInChildren<Canvas>(true);
-
-            // Only the center party character displays the recovery popup.
-            // Party-wide healing is still applied by EventChoiceExecutionService.
-            Transform point = FindActiveEventAllyPoint(1);
-            if (point == null)
-                point = FindEventAllyPoint1();
-
-            if (point != null)
-                BattleDamageTextPopupUI.ShowEventHealthRecovery(point, eventHealAmount, popupCanvas, eventStatPopupFontSize);
-            else
-                Debug.LogWarning("[EventRoomController] Event_03 center recovery popup point not found.", this);
-
-            // HP UI is independent from the single center popup and must open for the entire party.
-            BattleCharacterResourcesUI resourceUi = FindFirstObjectByType<BattleCharacterResourcesUI>(FindObjectsInactive.Include);
-            if (resourceUi == null)
+            bool maxHp = SameToken(choice.ResultType, "IncreaseMaxHP");
+            bool maxMana = SameToken(choice.ResultType, "IncreaseMaxMana");
+            if (maxHp || maxMana)
             {
-                Debug.LogWarning("[EventRoomController] Character Resources UI component not found.", this);
-            }
-            else
-            {
-                if (!resourceUi.gameObject.activeSelf)
-                    resourceUi.gameObject.SetActive(true);
-                if (resourceUi.gameObject.activeInHierarchy)
+                Transform center = FindActiveEventAllyPoint(1);
+                if (center == null)
+                    center = FindEventAllyPoint1();
+
+                Canvas popupCanvas = GetComponentInParent<Canvas>(true);
+                if (popupCanvas == null || !popupCanvas.gameObject.activeInHierarchy)
+                    popupCanvas = GetComponentInChildren<Canvas>(true);
+
+                if (center != null)
                 {
-                    Transform[] anchors = new Transform[3];
-                    for (int i = 0; i < anchors.Length; i++)
-                    {
-                        // The existing character anchors can use 0-based naming in the event scene.
-                        anchors[i] = FindActiveEventAllyPoint(i);
-                    }
-                    resourceUi.ShowEventRecoveryAll(anchors, event03PartyHpBefore);
+                    if (maxHp)
+                        BattleDamageTextPopupUI.ShowEventMaxHealthGain(center, event09Gain, popupCanvas, eventStatPopupFontSize);
+                    else
+                        BattleDamageTextPopupUI.ShowEventMaxManaGain(center, event09Gain, popupCanvas, eventStatPopupFontSize);
+                }
+                else
+                {
+                    Debug.LogWarning("[EventRoomController] Event_09 center popup anchor not found.", this);
                 }
             }
         }
+
+        // Shared HP presentation for party-wide and selected-character effects.
+        // Do not also emit the legacy dice HP popup for the same effect.
+        if (TryPlayEventHpPresentation(choice, result))
+            return;
 
         if (choice == null || resolvedDiceFaces == null || !IsDiceChoice(choice))
             return;
@@ -2319,6 +2393,9 @@ public class EventRoomController : MonoBehaviour
         EnsureEventChoiceGradationCanvasGroup();
         EnsureEventTitleCanvasGroup();
 
+        // Update every choice while the scroll view is still hidden.
+        BindChoiceSlots(GetCurrentVisibleChoices());
+
         if (eventChoiceScrollView != null)
             eventChoiceScrollView.gameObject.SetActive(true);
         if (eventChoiceGradation != null)
@@ -2364,7 +2441,6 @@ public class EventRoomController : MonoBehaviour
             titleGroup.blocksRaycasts = true;
         }
 
-        BindChoiceSlots(GetCurrentVisibleChoices());
         diceTransitionRoutine = null;
     }
 
@@ -5489,7 +5565,7 @@ public class EventRoomController : MonoBehaviour
         pendingEventRewards.Add(reward);
     }
 
-    private bool TryOpenPendingEventRewardPanel(bool delayOpening = false, bool saveCheckpoint = true)
+    private bool TryOpenPendingEventRewardPanel(bool delayOpening = false, bool saveCheckpoint = true, float delayOverride = -1f)
     {
         if (pendingEventRewards.Count <= 0)
             return false;
@@ -5514,11 +5590,12 @@ public class EventRoomController : MonoBehaviour
         }
         pendingEventRewards.Clear();
 
-        if (delayOpening && eventRewardPanelOpenDelay > 0f && isActiveAndEnabled)
+        float openDelay = delayOverride >= 0f ? delayOverride : eventRewardPanelOpenDelay;
+        if (delayOpening && openDelay > 0f && isActiveAndEnabled)
         {
             StopEventRewardPanelDelay();
             eventRewardPanelDelayRoutine =
-                StartCoroutine(OpenPendingEventRewardPanelAfterDelay(rewards));
+                StartCoroutine(OpenPendingEventRewardPanelAfterDelay(rewards, openDelay));
             return true;
         }
 
@@ -5526,9 +5603,9 @@ public class EventRoomController : MonoBehaviour
         return true;
     }
 
-    private IEnumerator OpenPendingEventRewardPanelAfterDelay(List<BattleRewardData> rewards)
+    private IEnumerator OpenPendingEventRewardPanelAfterDelay(List<BattleRewardData> rewards, float delay)
     {
-        yield return new WaitForSecondsRealtime(Mathf.Max(0f, eventRewardPanelOpenDelay));
+        yield return new WaitForSecondsRealtime(Mathf.Max(0f, delay));
 
         eventRewardPanelDelayRoutine = null;
         OpenPendingEventRewardPanelNow(rewards);
@@ -5967,8 +6044,7 @@ public class EventRoomController : MonoBehaviour
         if (eventResultText == null)
             eventResultText = FindText(searchRoot, "EventResultText");
 
-        // EventName / EventTitle / EventResult는 현재 EventId에 따라 매번 바뀌는 동적 텍스트입니다.
-        // 프리팹에 남아 있는 고정 LocalizedTMPText가 이전 이벤트 문구를 다시 덮어쓰지 않도록 끕니다.
+        // Dynamic event labels must not be overwritten by prefab localization writers.
         DisableStaticLocalizedText(eventNameText);
         DisableStaticLocalizedText(eventTitleText);
         DisableStaticLocalizedText(eventResultText);
@@ -5987,9 +6063,10 @@ public class EventRoomController : MonoBehaviour
         if (target == null)
             return;
 
-        LocalizedTMPText localizer = target.GetComponent<LocalizedTMPText>();
-        if (localizer != null && localizer.enabled)
-            localizer.enabled = false;
+        LocalizedTMPText.ProtectDynamicOwnership(target);
+        DynamicLocalizedTMPText dynamicWriter = target.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicWriter != null)
+            dynamicWriter.enabled = false;
     }
 
     private void EnsureEquippedRelicSelectionPanel()
