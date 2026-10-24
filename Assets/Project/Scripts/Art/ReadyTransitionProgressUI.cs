@@ -43,6 +43,20 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
     [Tooltip("CanvasGroup on Ready/Panel/Ready_Panel/BackButton. Automatically found when empty.")]
     [SerializeField] private CanvasGroup readyBackButtonCanvasGroup;
 
+    [Header("Back Button - Transition Lock Colors")]
+    [Tooltip("Optional. BackButton graphics are found under Ready_Panel/BackButton when left empty.")]
+    [SerializeField] private Graphic backButtonLeftGraphic;
+    [SerializeField] private Graphic backButtonRightGraphic;
+    [SerializeField] private Graphic backButtonTextGraphic;
+    [SerializeField] private Color backButtonLockedColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+    [SerializeField, Min(0f)] private float backButtonColorFadeDuration = 0.25f;
+    private Graphic[] backButtonColorTargets;
+    private Color[] backButtonNormalColors;
+    private Color[] backButtonFadeFromColors;
+    private float backButtonColorFadeElapsed;
+    private bool backButtonColorLocked;
+    private bool backButtonColorFading;
+
     [Header("Transition Background")]
     [Tooltip("Optional. PositionPanel/BackgroundPanel is found automatically when left empty.")]
     [SerializeField] private GameObject backgroundPanel;
@@ -138,6 +152,7 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         transitionGraphic.material = instanceMaterial;
         SetProgress(initialProgress);
         ResolveReadyBackButtonCanvasGroup();
+        ResolveBackButtonColorTargets();
         SetReadyBackButtonAlpha(0f, false);
         if (hideParticleOnAwake) SetReadyParticleActive(false);
     }
@@ -149,11 +164,17 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         if (backButton != null) backButton.onClick.AddListener(Back);
     }
 
+    private void Update()
+    {
+        if (panelSequence == null) UpdateBackButtonLockColor();
+    }
+
     private void OnDisable()
     {
         if (playButton != null) playButton.onClick.RemoveListener(Play);
         if (backButton != null) backButton.onClick.RemoveListener(Back);
         StopPanelSequence();
+        SetBackButtonColorLock(false, true);
     }
 
     private void OnDestroy()
@@ -173,6 +194,8 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         CachePanel(panelRect);
         StopPanelSequence();
         ResolveReadyBackButtonCanvasGroup();
+        ResolveBackButtonColorTargets();
+        SetBackButtonColorLock(true);
         SetReadyBackButtonAlpha(readyBackButtonCanvasGroup != null ? readyBackButtonCanvasGroup.alpha : 0f, false);
         SetReadyParticleActive(true);
         ResolveLobbyIconRoot();
@@ -190,6 +213,8 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         CachePanel(panelRect);
         StopPanelSequence();
         ResolveReadyBackButtonCanvasGroup();
+        ResolveBackButtonColorTargets();
+        SetBackButtonColorLock(true);
         SetReadyBackButtonAlpha(readyBackButtonCanvasGroup != null ? readyBackButtonCanvasGroup.alpha : 1f, false);
         SetReadyParticleActive(false);
         ResolveLobbyIconRoot();
@@ -302,6 +327,70 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
             readyBackButtonCanvasGroup = target.GetComponent<CanvasGroup>();
     }
 
+    private void ResolveBackButtonColorTargets()
+    {
+        Transform root = readyBackButtonCanvasGroup != null ? readyBackButtonCanvasGroup.transform : null;
+        if (root == null && backButton != null) root = backButton.transform;
+        if (root == null) return;
+
+        if (backButtonLeftGraphic == null)
+        {
+            Transform child = root.Find("Button_l");
+            if (child != null) backButtonLeftGraphic = child.GetComponent<Graphic>();
+        }
+        if (backButtonRightGraphic == null)
+        {
+            Transform child = root.Find("Button_r");
+            if (child != null) backButtonRightGraphic = child.GetComponent<Graphic>();
+        }
+        if (backButtonTextGraphic == null)
+        {
+            Transform child = root.Find("BackText");
+            if (child == null) child = root.Find("Text");
+            if (child != null) backButtonTextGraphic = child.GetComponent<Graphic>();
+            if (backButtonTextGraphic == null)
+                backButtonTextGraphic = root.GetComponentInChildren<TMPro.TMP_Text>(true);
+        }
+
+        Graphic[] targets = { backButtonLeftGraphic, backButtonRightGraphic, backButtonTextGraphic };
+        if (backButtonColorTargets != null) return;
+        backButtonColorTargets = targets;
+        backButtonNormalColors = new Color[targets.Length];
+        backButtonFadeFromColors = new Color[targets.Length];
+        for (int i = 0; i < targets.Length; i++)
+            if (targets[i] != null) backButtonNormalColors[i] = targets[i].color;
+    }
+
+    private void SetBackButtonColorLock(bool locked, bool immediate = false)
+    {
+        ResolveBackButtonColorTargets();
+        if (backButtonColorTargets == null) return;
+        if (!immediate && backButtonColorLocked == locked && !backButtonColorFading) return;
+        backButtonColorLocked = locked;
+        backButtonColorFadeElapsed = 0f;
+        backButtonColorFading = true;
+        for (int i = 0; i < backButtonColorTargets.Length; i++)
+            if (backButtonColorTargets[i] != null) backButtonFadeFromColors[i] = backButtonColorTargets[i].color;
+        if (immediate || backButtonColorFadeDuration <= 0f)
+            UpdateBackButtonLockColor(true);
+    }
+
+    private void UpdateBackButtonLockColor(bool immediate = false)
+    {
+        if (!backButtonColorFading || backButtonColorTargets == null) return;
+        backButtonColorFadeElapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+        float t = immediate || backButtonColorFadeDuration <= 0f
+            ? 1f : Mathf.Clamp01(backButtonColorFadeElapsed / backButtonColorFadeDuration);
+        t = t * t * (3f - 2f * t);
+        for (int i = 0; i < backButtonColorTargets.Length; i++)
+        {
+            Graphic graphic = backButtonColorTargets[i];
+            if (graphic != null)
+                graphic.color = Color.Lerp(backButtonFadeFromColors[i], backButtonColorLocked ? backButtonLockedColor : backButtonNormalColors[i], t);
+        }
+        if (t >= 1f) backButtonColorFading = false;
+    }
+
     private void SetReadyBackButtonAlpha(float alpha, bool interactable)
     {
         if (readyBackButtonCanvasGroup == null) return;
@@ -350,6 +439,7 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
 
         while (elapsed < totalDuration)
         {
+            UpdateBackButtonLockColor();
             elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
             if (elapsed >= progress.startDelay)
@@ -394,6 +484,9 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         if (!backgroundHidden) HideBackgroundPanel();
         if (panel != null) SetAnchoredX(panel, movement.toX);
         SetReadyBackButtonAlpha(backButtonTo, opening);
+        SetBackButtonColorLock(false);
+        // Restore original colors after the button becomes available again.
+        if (!opening) UpdateBackButtonLockColor(true);
         FinishLobbyIconFade(opening);
         panelSequence = null;
         onComplete?.Invoke();

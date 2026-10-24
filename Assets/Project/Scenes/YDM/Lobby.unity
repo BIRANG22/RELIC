@@ -5692,7 +5692,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -540, y: 240}
+  m_SizeDelta: {x: -545, y: 240}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &126406695
 MonoBehaviour:
@@ -5707,9 +5707,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
-    m_Left: 20
+    m_Left: 15
     m_Right: 20
-    m_Top: 10
+    m_Top: 25
     m_Bottom: 10
   m_ChildAlignment: 0
   m_StartCorner: 0
@@ -16976,7 +16976,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -20, y: -20}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &247081249
 GameObject:
@@ -17317,7 +17317,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 20, y: 20}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &251672623
 MonoBehaviour:
@@ -17912,6 +17912,8 @@ MonoBehaviour:
   erosionSelectPanel: {fileID: 0}
   erosionMirrorButton: {fileID: 0}
   lobbyEquipPanel: {fileID: 0}
+  storagePanel: {fileID: 2300000092}
+  storageToggleButton: {fileID: 1979706829}
   partySlot0: {fileID: 0}
   partySlot1: {fileID: 0}
   partySlot2: {fileID: 0}
@@ -22025,10 +22027,10 @@ RectTransform:
   - {fileID: 632417094}
   m_Father: {fileID: 1182663096}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -132.5}
-  m_SizeDelta: {x: 550, y: -305}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: -145}
+  m_SizeDelta: {x: 550, y: 10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &367470053
 MonoBehaviour:
@@ -22377,7 +22379,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 450, y: -45}
-  m_SizeDelta: {x: 300, y: 90}
+  m_SizeDelta: {x: 300, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &376132701
 MonoBehaviour:
@@ -30672,7 +30674,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 20, y: 20}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &553419295
 MonoBehaviour:
@@ -34453,7 +34455,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -20, y: -20}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &632859198
 GameObject:
@@ -36442,6 +36444,11 @@ MonoBehaviour:
   playButton: {fileID: 999125867}
   backButton: {fileID: 532234613}
   readyBackButtonCanvasGroup: {fileID: 0}
+  backButtonLeftGraphic: {fileID: 0}
+  backButtonRightGraphic: {fileID: 0}
+  backButtonTextGraphic: {fileID: 0}
+  backButtonLockedColor: {r: 0.46666667, g: 0.46666667, b: 0.46666667, a: 1}
+  backButtonColorFadeDuration: 0.25
   backgroundPanel: {fileID: 1832086188}
   lobbyIconRoot: {fileID: 1780125778}
   lobbyIconFadeDuration: 0.2
@@ -69147,7 +69154,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -50, y: -15}
+  m_AnchoredPosition: {x: 50, y: -15}
   m_SizeDelta: {x: 200, y: 2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1116187605
@@ -77665,7 +77672,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -540, y: 240}
+  m_SizeDelta: {x: -545, y: 240}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1372561706
 MonoBehaviour:
@@ -77694,9 +77701,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
-    m_Left: 20
+    m_Left: 15
     m_Right: 20
-    m_Top: 10
+    m_Top: 25
     m_Bottom: 10
   m_ChildAlignment: 0
   m_StartCorner: 0
@@ -80946,7 +80953,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 150, y: -45}
-  m_SizeDelta: {x: 300, y: 90}
+  m_SizeDelta: {x: 300, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1433217078
 MonoBehaviour:
@@ -84078,6 +84085,10 @@ MonoBehaviour:
   tooltipFadeIn: 0.12
   tooltipFadeOut: 0.05
   alwaysShowInLobby: 0
+  autoOpenOnReady: 1
+  noDifficultyIcon: {fileID: 21300000, guid: adc9e615648417147b56f37b39067431, type: 3}
+  noDifficultyIconColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
+  noDifficultySlotPrefab: {fileID: 482289283924367926, guid: 7b089408498166e4897feb78d147513e, type: 3}
   selectHoverLine: {fileID: 0}
   selectLineNormalColor: {r: 0.5137255, g: 0.5294118, b: 0.5568628, a: 1}
   selectLineHoveredColor: {r: 1, g: 1, b: 1, a: 1}
@@ -101256,7 +101267,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.6627451, g: 0.69411767, b: 0.74509805, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -104209,7 +104220,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -450}
+  m_AnchoredPosition: {x: 0, y: -485}
   m_SizeDelta: {x: 600, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &1780125780
@@ -112534,7 +112545,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 550, y: 20}
+  m_SizeDelta: {x: 550, y: 12}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1839668405
 MonoBehaviour:
@@ -114365,7 +114376,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.6627451, g: 0.69411767, b: 0.74509805, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -116720,7 +116731,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 550, y: 20}
+  m_SizeDelta: {x: 550, y: 12}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1938413699
 MonoBehaviour:
@@ -119516,7 +119527,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.6627451, g: 0.69411767, b: 0.74509805, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -123669,10 +123680,10 @@ RectTransform:
   - {fileID: 243684553}
   m_Father: {fileID: 903570510}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -132.5}
-  m_SizeDelta: {x: 550, y: -305}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: -145}
+  m_SizeDelta: {x: 550, y: 10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2106275993
 MonoBehaviour:
@@ -125976,7 +125987,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -35, y: 5}
+  m_AnchoredPosition: {x: 40, y: 5}
   m_SizeDelta: {x: 200, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2300000080
@@ -126033,7 +126044,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 4
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -126223,7 +126234,7 @@ MonoBehaviour:
   detailDescriptionText: {fileID: 2300000017}
   detailValueText: {fileID: 0}
   detailLineImage: {fileID: 0}
-  detailPanelOffset: {x: 1090, y: -560}
+  detailPanelOffset: {x: 35, y: -325}
   detailFadeInDuration: 0.12
   detailFadeOutDuration: 0.05
   detailCanvasGroup: {fileID: 0}

@@ -20,7 +20,7 @@ public class BattleBagPanelUI : MonoBehaviour
 
     private const int MaxBagItemCount = 8;
     private const int StorageMinimumSlotCount = 16;
-    private const int CompoundMinimumSlotCount = 8;
+    private const int CompoundMinimumSlotCount = 16;
     private const int RelicMinimumSlotCount = 3;
 
     [Header("Runtime")]

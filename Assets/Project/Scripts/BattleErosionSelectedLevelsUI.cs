@@ -44,6 +44,15 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
     [Tooltip("Ready 패널에서 선택한 침식도 아이콘을 항상 표시하고 변경 시 자동 갱신합니다. 배틀씬에서는 비활성 상태로 둡니다.")]
     [SerializeField] private bool alwaysShowInLobby;
 
+    [Header("Lobby Ready - Auto Open")]
+    [SerializeField] private bool autoOpenOnReady = true;
+    [Tooltip("Optional sprite shown on the single empty slot when no erosion difficulty is selected.")]
+    [SerializeField] private Sprite noDifficultyIcon;
+    [Tooltip("선택한 침식도 난이도가 없을 때 표시되는 X 아이콘 색상입니다.")]
+    [SerializeField] private Color noDifficultyIconColor = Color.white;
+    [Tooltip("Optional explicit prefab for the no-difficulty slot. If empty, Erosion Level Prefab is reused.")]
+    [SerializeField] private GameObject noDifficultySlotPrefab;
+
     private string displayedSelectionSignature = string.Empty;
     private LobbyEquipPanelUI lobbyReadyPanel;
 
@@ -163,21 +172,31 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
         if (lobbyReadyPanel == null)
             lobbyReadyPanel = FindFirstObjectByType<LobbyEquipPanelUI>();
         if (lobbyReadyPanel != null)
+        {
             lobbyReadyPanel.OpenStateChanged += HandleLobbyReadyOpenStateChanged;
+            lobbyReadyPanel.OpenTransitionCompleted += HandleLobbyReadyOpenCompleted;
+        }
     }
 
     private void UnbindLobbyReadyPanel()
     {
         if (lobbyReadyPanel == null) return;
         lobbyReadyPanel.OpenStateChanged -= HandleLobbyReadyOpenStateChanged;
+        lobbyReadyPanel.OpenTransitionCompleted -= HandleLobbyReadyOpenCompleted;
         lobbyReadyPanel = null;
     }
 
     private void HandleLobbyReadyOpenStateChanged(bool opened)
     {
         // Ready 패널이 닫히기 시작하면 목록과 툴팁을 즉시 닫습니다.
-        // 다음에 Ready 패널을 열어도 Select는 클릭 전까지 닫힌 상태입니다.
+        // Ready 패널이 다시 열리면 전환 완료 시 자동으로 목록을 표시합니다.
         if (!opened) HideImmediate();
+    }
+
+    private void HandleLobbyReadyOpenCompleted()
+    {
+        if (autoOpenOnReady && isActiveAndEnabled && lobbyReadyPanel != null && lobbyReadyPanel.IsOpen && !isOpen)
+            Show();
     }
 
     // Previous external callers may still request a data refresh.
@@ -215,7 +234,8 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
             : manager.BattleRuntimeStore?.Get()?.SelectedErosionDifficultyIds;
         if ((ids == null || ids.Count == 0) && !IsLobbySelect)
             ids = manager.LobbyRuntimeStore?.GetOrCreate()?.SelectedErosionDifficultyIds;
-        if (ids == null) return;
+        if (ids == null && !IsLobbySelect) return;
+        if (ids == null) ids = new List<string>();
 
         // 템플릿은 Grid Layout Group에서 제외하고 복제본만 셀로 계산합니다.
         erosionLevelPrefab.SetActive(false);
@@ -228,6 +248,32 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
             grid.startAxis = GridLayoutGroup.Axis.Vertical;
             grid.constraint = GridLayoutGroup.Constraint.FixedRowCount;
             grid.constraintCount = 5;
+        }
+
+        if (IsLobbySelect && ids.Count == 0)
+        {
+            GameObject prefab = noDifficultySlotPrefab != null ? noDifficultySlotPrefab : erosionLevelPrefab;
+            if (prefab != null && prefab != gameObject)
+            {
+                GameObject emptyItem = Instantiate(prefab, content, false);
+                emptyItem.name = "ErosionLevel_None";
+                emptyItem.SetActive(true);
+                Transform iconTransform = emptyItem.transform.Find("Icon");
+                Image iconImage = iconTransform != null ? iconTransform.GetComponent<Image>() : null;
+                if (iconImage != null && noDifficultyIcon != null)
+                {
+                    iconImage.sprite = noDifficultyIcon;
+                    iconImage.enabled = true;
+                    iconImage.preserveAspect = true;
+                    iconImage.color = noDifficultyIconColor;
+                }
+                CanvasGroup group = emptyItem.GetComponent<CanvasGroup>();
+                if (group == null) group = emptyItem.AddComponent<CanvasGroup>();
+                group.alpha = 0f;
+                group.blocksRaycasts = false;
+                group.interactable = false;
+                entries.Add(new Entry { gameObject = emptyItem, rect = emptyItem.transform as RectTransform, group = group });
+            }
         }
 
         foreach (string id in new List<string>(ids))
@@ -488,7 +534,7 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
         for (int i = 0; i < entries.Count; i++)
         {
             Entry e = entries[i];
-            if (e.rect == null || e.group == null || !e.group.blocksRaycasts || e.group.alpha < 0.99f) continue;
+            if (e.data == null || e.rect == null || e.group == null || !e.group.blocksRaycasts || e.group.alpha < 0.99f) continue;
             if (RectTransformUtility.RectangleContainsScreenPoint(e.rect, Input.mousePosition, cam))
             {
                 target = e;

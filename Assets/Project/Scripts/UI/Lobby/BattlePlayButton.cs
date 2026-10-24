@@ -373,9 +373,8 @@ public class BattlePlayButton : MonoBehaviour
         if (buttonLabel == null)
             return;
 
-        string key = readyPanel != null && readyPanel.IsOpen
-            ? LocalizationKeys.Lobby.PlayDepart
-            : LocalizationKeys.Lobby.PlayReady;
+        // Ready 패널의 열림 상태와 관계없이 항상 '탐사' 라벨을 사용합니다.
+        string key = LocalizationKeys.Lobby.PlayDepart;
         LocalizedTMPText localizer = buttonLabel.GetComponent<LocalizedTMPText>();
         if (localizer != null)
             localizer.Configure(key, string.Empty, false);
