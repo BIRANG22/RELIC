@@ -54,6 +54,12 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
     [Tooltip("열려 있으면 ESC 입력 시 메뉴보다 먼저 닫히는 로비 장비 패널입니다. 비워두면 자동으로 찾습니다.")]
     [SerializeField] private LobbyEquipPanelUI lobbyEquipPanel;
 
+    [Header("StoragePanel ESC / 우클릭 닫기")]
+    [Tooltip("StorageButton이 열고 닫는 StoragePanel을 지정합니다.")]
+    [SerializeField] private GameObject storagePanel;
+    [Tooltip("StorageButton의 UIObjectToggleButton을 지정합니다. 같은 이동 애니메이션으로 닫습니다.")]
+    [SerializeField] private UIObjectToggleButton storageToggleButton;
+
     [Header("Lobby Main Party Slots")]
     [SerializeField] private GameObject partySlot0;
     [SerializeField] private GameObject partySlot1;
@@ -339,6 +345,22 @@ public class LobbyMainPanelKeyboardInputController : MonoBehaviour
         if (lobbyEquipPanel != null && lobbyEquipPanel.IsOpen)
         {
             lobbyEquipPanel.Close();
+            return true;
+        }
+
+        // StorageButton과 동일한 이동/비활성화 경로로 닫습니다.
+        // SharedModal에 등록되지 않은 StoragePanel도 ESC/우클릭으로 닫을 수 있습니다.
+        if (storagePanel != null && storagePanel.activeInHierarchy)
+        {
+            if (storageToggleButton != null && storageToggleButton.isActiveAndEnabled)
+            {
+                storageToggleButton.SetActive(false);
+                return true;
+            }
+            // 컨트롤러가 지정되지 않은 상태에서 바로 비활성화하면
+            // 닫힘 애니메이션이 생략되므로 설정 누락을 알립니다.
+            Debug.LogWarning(
+                "[LobbyMainPanelKeyboardInputController] StorageButton의 UIObjectToggleButton을 Storage Toggle Button에 연결하세요.", this);
             return true;
         }
 
