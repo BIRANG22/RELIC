@@ -142,6 +142,12 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
         forcedRecoveryRoutine = StartCoroutine(AnimateEventRecoveryAll(worldAnchors, beforeHp, duration));
     }
 
+    // Shared display animation for event damage and healing.
+    public void ShowEventHealthChangeAll(Transform[] worldAnchors, int[] beforeHp, float duration = 1.2f)
+    {
+        ShowEventRecoveryAll(worldAnchors, beforeHp, duration);
+    }
+
     private IEnumerator AnimateEventRecoveryAll(Transform[] anchors, int[] beforeHp, float duration)
     {
         CharacterRuntimeData[] runtimes = new CharacterRuntimeData[PartySlotCount];
@@ -166,7 +172,23 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
                 UpdateEventRecoveryPosition(i, anchors[i]);
         }
 
-        float changeDuration = Mathf.Max(0.01f, duration * 0.7f);
+        // 먼저 HUD가 완전히 나타나도록 기다린 뒤 실제 HP Fill을 움직입니다.
+        for (int i = 0; i < PartySlotCount; i++)
+        {
+            SlotView view = slotViews[i];
+            if (view?.Root == null || !view.Root.activeSelf || maximums[i] <= 0)
+                continue;
+            if (view.HpFill != null)
+                view.HpFill.fillAmount = Mathf.Clamp01(starting[i] / (float)maximums[i]);
+            if (view.HpValue != null)
+                view.HpValue.text = $"{starting[i]}/{maximums[i]}";
+        }
+
+        // Fade는 기존 LateUpdate/UpdatePanelFades가 처리합니다.
+        if (panelFadeInDuration > 0f)
+            yield return new WaitForSecondsRealtime(panelFadeInDuration);
+
+        float changeDuration = Mathf.Max(0.01f, duration);
         float elapsed = 0f;
         while (elapsed < changeDuration)
         {
@@ -192,7 +214,7 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
             if (slotViews[i]?.Root != null && slotViews[i].Root.activeSelf)
                 Bind(slotViews[i], runtimes[i], masters[i]);
         }
-        yield return new WaitForSecondsRealtime(Mathf.Max(0.25f, duration * 0.3f));
+        yield return new WaitForSecondsRealtime(0.3f);
         forcedRecoveryRoutine = null;
         forcedRecoveryVisible = false;
         HideAll();
