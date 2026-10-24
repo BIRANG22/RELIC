@@ -1307,6 +1307,7 @@ public class EventRoomController : MonoBehaviour
     }
 
     private readonly int[] event03PartyHpBefore = new int[3];
+    private readonly int[] event06PartyHpBefore = new int[3];
 
     private void ExecuteEventChoice(
         EventData choice,
@@ -1327,6 +1328,20 @@ public class EventRoomController : MonoBehaviour
                 CharacterRuntimeData runtime = !string.IsNullOrWhiteSpace(characterId)
                     ? dm?.CharacterRuntimeStore?.Get(characterId) : null;
                 event03PartyHpBefore[slot] = runtime != null ? runtime.CurrentHP : 0;
+            }
+        }
+
+        // Capture pre-damage HP before a typed Event_06 failure is executed.
+        if (choice != null && EventIdUtility.Normalize(choice.EventId).StartsWith("Event_06", System.StringComparison.Ordinal) &&
+            SameToken(choice.FailResultType, "Damage") && SameToken(choice.FailResultTarget, "PartyAll"))
+        {
+            DataManager dm = DataManager.Instance;
+            for (int slot = 0; slot < event06PartyHpBefore.Length; slot++)
+            {
+                string characterId = dm?.PartyRuntimeStore?.GetCharacterId(slot);
+                CharacterRuntimeData runtime = !string.IsNullOrWhiteSpace(characterId)
+                    ? dm?.CharacterRuntimeStore?.Get(characterId) : null;
+                event06PartyHpBefore[slot] = runtime != null ? runtime.CurrentHP : 0;
             }
         }
 
@@ -1829,6 +1844,41 @@ public class EventRoomController : MonoBehaviour
     {
         TryShowEvent07StatGainPopup(choice);
 
+        // Event_06 typed failure damage is applied to all party members.
+        // Show one popup at the center while animating all three HP panels.
+        if (choice != null && result.Accepted && !result.Succeeded &&
+            EventIdUtility.Normalize(choice.EventId).StartsWith("Event_06", System.StringComparison.Ordinal) &&
+            SameToken(choice.FailResultType, "Damage") && SameToken(choice.FailResultTarget, "PartyAll") &&
+            TryParseSignedValue(choice.FailResultValue, out int failureDamage) && failureDamage != 0)
+        {
+            Canvas popupCanvas = GetComponentInParent<Canvas>(true);
+            if (popupCanvas == null || !popupCanvas.gameObject.activeInHierarchy)
+                popupCanvas = GetComponentInChildren<Canvas>(true);
+            // EventAllyPoint0~2 live under SharedRoomRoot/AllyRoot, not under EventRoom.
+            // Slot index 1 is the middle character.
+            Transform center = FindActiveEventAllyPoint(1);
+            if (center == null)
+                center = FindActiveEventAllyPoint(2);
+            if (center == null)
+                center = FindActiveEventAllyPoint(0);
+            if (center != null)
+                BattleDamageTextPopupUI.ShowEventHealthLoss(center, Mathf.Abs(failureDamage), popupCanvas, eventStatPopupFontSize);
+
+            BattleCharacterResourcesUI resourceUi = FindFirstObjectByType<BattleCharacterResourcesUI>(FindObjectsInactive.Include);
+            if (resourceUi != null)
+            {
+                if (!resourceUi.gameObject.activeSelf)
+                    resourceUi.gameObject.SetActive(true);
+                if (resourceUi.gameObject.activeInHierarchy)
+                {
+                    Transform[] anchors = new Transform[3];
+                    for (int i = 0; i < anchors.Length; i++)
+                        anchors[i] = FindActiveEventAllyPoint(i);
+                    resourceUi.ShowEventHealthChangeAll(anchors, event06PartyHpBefore);
+                }
+            }
+        }
+
         // Data-driven Event_03 recovery uses the same popup as combat healing.
         // Show the requested value even when the party is already at full HP.
         if (choice != null && result.Accepted && result.Succeeded &&
@@ -1843,8 +1893,8 @@ public class EventRoomController : MonoBehaviour
 
             // Only the center party character displays the recovery popup.
             // Party-wide healing is still applied by EventChoiceExecutionService.
-            Transform point = FindChildRecursive(transform, "EventAllyPoint2");
-            if (point == null || !point.gameObject.activeInHierarchy)
+            Transform point = FindActiveEventAllyPoint(1);
+            if (point == null)
                 point = FindEventAllyPoint1();
 
             if (point != null)
@@ -1868,9 +1918,7 @@ public class EventRoomController : MonoBehaviour
                     for (int i = 0; i < anchors.Length; i++)
                     {
                         // The existing character anchors can use 0-based naming in the event scene.
-                        anchors[i] = FindChildRecursive(transform, $"EventAllyPoint{i}");
-                        if (anchors[i] == null)
-                            anchors[i] = FindChildRecursive(transform, $"EventAllyPoint{i + 1}");
+                        anchors[i] = FindActiveEventAllyPoint(i);
                     }
                     resourceUi.ShowEventRecoveryAll(anchors, event03PartyHpBefore);
                 }
@@ -1961,6 +2009,25 @@ public class EventRoomController : MonoBehaviour
 
         if (Contains(choice.ResultTarget, "최대 코스트") || Contains(choice.ResultTarget, "최대 마나"))
             BattleDamageTextPopupUI.ShowEventMaxManaGain(centerPoint, amount, eventCanvas, eventStatPopupFontSize);
+    }
+
+    private Transform FindActiveEventAllyPoint(int index)
+    {
+        string pointName = $"EventAllyPoint{index}";
+        Transform point = FindChildRecursive(transform, pointName);
+        if (point != null && point.gameObject.activeInHierarchy)
+            return point;
+
+        Transform[] scenePoints = FindObjectsByType<Transform>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < scenePoints.Length; i++)
+        {
+            Transform candidate = scenePoints[i];
+            if (candidate != null && candidate.name == pointName &&
+                candidate.gameObject.activeInHierarchy && candidate.gameObject.scene == gameObject.scene)
+                return candidate;
+        }
+        return null;
     }
 
     private Transform FindEventAllyPoint1()
