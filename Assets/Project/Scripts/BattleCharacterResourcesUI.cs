@@ -142,13 +142,31 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
         forcedRecoveryRoutine = StartCoroutine(AnimateEventRecoveryAll(worldAnchors, beforeHp, duration));
     }
 
+    // Reveal and animate only the character selected by Event_08.
+    public void ShowEventRecoveryForSlot(int slotIndex, Transform worldAnchor, int beforeHp, float duration = 1.2f)
+    {
+        if (slotIndex < 0 || slotIndex >= PartySlotCount)
+            return;
+        ResolveReferences();
+        if (forcedRecoveryRoutine != null)
+            StopCoroutine(forcedRecoveryRoutine);
+        forcedRecoveryVisible = true;
+        visibleSlot = -1;
+        visibleWorldAnchor = null;
+        Transform[] anchors = new Transform[PartySlotCount];
+        anchors[slotIndex] = worldAnchor;
+        int[] previousHp = new int[PartySlotCount];
+        previousHp[slotIndex] = beforeHp;
+        forcedRecoveryRoutine = StartCoroutine(AnimateEventRecoveryAll(anchors, previousHp, duration, slotIndex));
+    }
+
     // Shared display animation for event damage and healing.
     public void ShowEventHealthChangeAll(Transform[] worldAnchors, int[] beforeHp, float duration = 1.2f)
     {
         ShowEventRecoveryAll(worldAnchors, beforeHp, duration);
     }
 
-    private IEnumerator AnimateEventRecoveryAll(Transform[] anchors, int[] beforeHp, float duration)
+    private IEnumerator AnimateEventRecoveryAll(Transform[] anchors, int[] beforeHp, float duration, int onlySlot = -1)
     {
         CharacterRuntimeData[] runtimes = new CharacterRuntimeData[PartySlotCount];
         CharacterMasterData[] masters = new CharacterMasterData[PartySlotCount];
@@ -160,7 +178,7 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
         {
             SlotView view = slotViews[i];
             // A missing world anchor must not hide a valid party member's HP panel.
-            bool available = view?.Root != null &&
+            bool available = (onlySlot < 0 || i == onlySlot) && view?.Root != null &&
                              TryGetCharacterRuntime(i, out runtimes[i], out masters[i]);
             SetPanelVisible(view, available);
             if (!available)

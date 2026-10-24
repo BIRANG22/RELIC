@@ -6683,24 +6683,12 @@ MonoBehaviour:
     m_Key: data.event.event_03.description.051ce622
     m_Metadata:
       m_Items: []
-  - m_Id: 26576882132819975
-    m_Key: data.event.event_04.description.cceaa4ca
-    m_Metadata:
-      m_Items: []
   - m_Id: 26576882132819976
     m_Key: data.event.event_04.choice_2_disabled_description
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132819977
     m_Key: data.event.event_04.description.97db0284
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26576882132819978
-    m_Key: data.event.event_05.description.6a125e1c
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26576882132819979
-    m_Key: data.event.event_05.description.251b1503
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132819980
@@ -6791,20 +6779,12 @@ MonoBehaviour:
     m_Key: data.event.event_08_a.choice_2_name
     m_Metadata:
       m_Items: []
-  - m_Id: 26576882132820005
-    m_Key: data.event.event_08_a.description.b220488f
-    m_Metadata:
-      m_Items: []
   - m_Id: 26576882132820006
     m_Key: data.event.event_08_a.choice_2_disabled_description
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132820007
     m_Key: data.event.event_08_a.choice_3_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26576882132820008
-    m_Key: data.event.event_08_a.description.60a173d6
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132820009
@@ -6841,10 +6821,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 26576882132820018
     m_Key: data.event.event_10.choice_3_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26576882132820019
-    m_Key: data.event.event_10.description.82b5c6fa
     m_Metadata:
       m_Items: []
   - m_Id: 26577043273785344
@@ -6947,8 +6923,44 @@ MonoBehaviour:
     m_Key: ui.exploration.result.elapsed_time
     m_Metadata:
       m_Items: []
-  - m_Id: 26856588543500288
-    m_Key: data.event.event_10.description.ba57ea67
+  - m_Id: 26875684450443264
+    m_Key: data.event.event_04.description.69f4aca0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26875684479803392
+    m_Key: data.event.event_05.description.d1d72d3e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26875684479803393
+    m_Key: data.event.event_05.description.1ab191c7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26875684479803394
+    m_Key: data.event.event_08.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26875684479803395
+    m_Key: data.event.event_08.description.f0849093
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26875684479803396
+    m_Key: data.event.event_08.description.71cb48a8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26875684479803397
+    m_Key: data.event.event_08_a.description.84fa59c3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26875684479803398
+    m_Key: data.event.event_08_a.description.f0ad2cb4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26875684479803399
+    m_Key: data.event.event_10.description.ea5b316b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26875684479803400
+    m_Key: data.event.event_10.description.da2e3146
     m_Metadata:
       m_Items: []
   m_Metadata:

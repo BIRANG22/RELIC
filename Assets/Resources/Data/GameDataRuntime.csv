@@ -665,54 +665,73 @@ Event_03,,,3,기도를 요청한다.,모든 파티원의 생명력 10 회복,,Im
 Event_03_A,,"“조금이나마 도움이 되기를 바랍니다.""",,,,,,,,,,,,,,,,,,,,,event3,,event3,
 Event_03_B,,“침식의 기운을 조금이나마 정화해 드렸습니다.”,,,,,,,,,,,,,,,,,,,,,event3,,event3,
 Event_03_C,,“당신들의 생명에 축복이 머물기를.”,,,,,,,,,,,,,,,,,,,,,event3,,event3,
-Event_04,금단의 의식,“오래된 의식의 흔적이 남아 있다. 제물을 바치면 의식이 다시 시작될 것 같다.”,1,제물을 바친다.,"레드 더스티움 15 소모, 무작위 일반~에픽 기억 발현",레드 더스티움 부족,CostExchange,RedDustium>=15,RedDustium,Party,15,,SelectReward,PartyAll:Core,"Common:50,Rare:35,Epic:15",1,3,Event_04_A,,,,,event4,event_choice_01_success,event4,event_choice_01_failure
-Event_04,,,2,더 많은 제물을 바친다.,"레드 더스티움 30 소모, 무작위 레어~유니크 기억 발현",레드 더스티움 부족,CostExchange,RedDustium>=30,RedDustium,Party,30,,SelectReward,PartyAll:Core,"Rare:50,Epic:35,Unique:15",1,3,Event_04_B,,,,,event4,event_choice_02_success,event4,event_choice_02_failure
+Event_04,금단의 의식,“오래된 의식의 흔적이 남아 있다. 제물을 바치면 의식이 다시 시작될 것 같다.”,1,제물을 바친다.,"레드 더스티움 15 소모
+무작위 일반~에픽 기억 발현",레드 더스티움 부족,CostExchange,RedDustium>=15,RedDustium,Party,15,,SelectReward,PartyAll:Core,"Common:50,Rare:35,Epic:15",1,3,Event_04_A,,,,,event4,event_choice_01_success,event4,event_choice_01_failure
+Event_04,,,2,더 많은 제물을 바친다.,"레드 더스티움 30 소모
+무작위 레어~유니크 기억 발현",레드 더스티움 부족,CostExchange,RedDustium>=30,RedDustium,Party,30,,SelectReward,PartyAll:Core,"Rare:50,Epic:35,Unique:15",1,3,Event_04_B,,,,,event4,event_choice_02_success,event4,event_choice_02_failure
 Event_04,,,3,의식을 무시한다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_04_C,,,,,event4,event_choice_03_success,event4,event_choice_03_failure
 Event_04_A,,"""희미하게 빛나던 흔적들이 서서히 사라졌다.""",,,,,,,,,,,,,,,,,,,,,event4,,event4,
 Event_04_B,,"""요동치던 기운이 서서히 잠잠해졌다.""",,,,,,,,,,,,,,,,,,,,,event4,,event4,
 Event_04_C,,"""손대지 않은 채, 자리를 떠났다.""",,,,,,,,,,,,,,,,,,,,,event4,,event4,
-Event_05,버려진 마차,“길가에 버려진 마차 한 대가 놓여 있다. 아직 쓸 만한 물건이 남아 있을지도 모른다.”,1,주변을 훑어본다.,"주사위 6 이상, 무작위 일반~레어 유물 획득",,Dice,,,,,6~18,GainRandom,Relic,"Common:70,Rare:30",1,,Event_05_A,Event_05_D,,,,event5,event_choice_01_success,event5,event_choice_01_failure
-Event_05,,,2,내부를 수색한다.,"주사위 8 이상, 무작위 레어~에픽 유물 획득",,Dice,,,,,8~18,GainRandom,Relic,"Rare:70,Epic:30",1,,Event_05_B,Event_05_D,,,,event5,event_choice_02_success,event5,event_choice_02_failure
-Event_05,,,3,샅샅이 뒤진다.,"주사위 10 이상, 무작위 에픽~유니크 유물 획득",,Dice,,,,,10~18,GainRandom,Relic,"Epic:70,Unique:30",1,,Event_05_C,Event_05_D,,,,event5,event_choice_03_success,event5,event_choice_03_failure
+Event_05,버려진 마차,“길가에 버려진 마차 한 대가 놓여 있다. 아직 쓸 만한 물건이 남아 있을지도 모른다.”,1,주변을 훑어본다.,"주사위 6 이상
+무작위 일반~레어 유물 획득",,Dice,,,,,6~18,GainRandom,Relic,"Common:70,Rare:30",1,,Event_05_A,Event_05_D,,,,event5,event_choice_01_success,event5,event_choice_01_failure
+Event_05,,,2,내부를 수색한다.,"주사위 8 이상
+무작위 레어~에픽 유물 획득",,Dice,,,,,8~18,GainRandom,Relic,"Rare:70,Epic:30",1,,Event_05_B,Event_05_D,,,,event5,event_choice_02_success,event5,event_choice_02_failure
+Event_05,,,3,샅샅이 뒤진다.,"주사위 10 이상
+무작위 에픽~유니크 유물 획득",,Dice,,,,,10~18,GainRandom,Relic,"Epic:70,Unique:30",1,,Event_05_C,Event_05_D,,,,event5,event_choice_03_success,event5,event_choice_03_failure
 Event_05_A,,“더 이상 눈에 띄는 물건은 없어 보인다.”,,,,,,,,,,,,,,,,,,,,,event5,,event5,
 Event_05_B,,“마차 안에는 이제 쓸 만한 물건이 남아 있지 않다.”,,,,,,,,,,,,,,,,,,,,,event5,,event5,
 Event_05_C,,“마차에는 더 이상 가져갈 만한 것이 남아 있지 않다.”,,,,,,,,,,,,,,,,,,,,,event5,,event5,
 Event_05_D,,"""쓸 만한 물건은 발견하지 못했다.”",,,,,,,,,,,,,,,,,,,,,event5,,event5,
-Event_06,상자 무더기,“버려진 상자들이 눈에 띈다. 쓸 만한 물건이 남아 있을지도 모른다.”,1,상자를 열어본다.,"주사위 6 이상, 레드 더스티움 30 획득",,Dice,,,,,6~18,Gain,RedDustium,,30,,Event_06_A,Event_06_D,Damage,PartyAll,5,event6,event_choice_01_success,event6,event_choice_01_failure
+Event_06,상자 무더기,“버려진 상자들이 눈에 띈다. 쓸 만한 물건이 남아 있을지도 모른다.”,1,상자를 열어본다.,"주사위 6 이상
+레드 더스티움 30 획득
+실패 : 생명력 5 감소",,Dice,,,,,6~18,Gain,RedDustium,,30,,Event_06_A,Event_06_D,Damage,PartyAll,5,event6,event_choice_01_success,event6,event_choice_01_failure
 Event_06,,,2,지나친다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_06_E,,,,,event6,event_choice_02_success,event6,event_choice_02_failure
-Event_06_A,,“아직 살펴볼 만한 것이 남아 있다. 조금 더 시도해 볼 수 있을 것 같다.”,1,다른 상자도 열어본다.,"주사위 10 이상, 레드 더스티움 50 획득",,Dice,,,,,10~18,Gain,RedDustium,,50,,Event_06_B,Event_06_D,Damage,PartyAll,5,event6,event_choice_01_success,event6,event_choice_01_failure
+Event_06_A,,“아직 살펴볼 만한 것이 남아 있다. 조금 더 시도해 볼 수 있을 것 같다.”,1,다른 상자도 열어본다.,"주사위 10 이상
+레드 더스티움 50 획득
+실패 : 생명력 5 감소",,Dice,,,,,10~18,Gain,RedDustium,,50,,Event_06_B,Event_06_D,Damage,PartyAll,5,event6,event_choice_01_success,event6,event_choice_01_failure
 Event_06_A,,,2,그만둔다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_06_F,,,,,event6,event_choice_02_success,event6,event_choice_02_failure
-Event_06_B,,"“남은 상자에서도 무언가 얻을 수 있을 것 같다.""",1,하나 더 열어본다.,"주사위 14 이상, 무작위 에픽 유물 획득",,Dice,,,,,14~18,GainRandom,Relic,Epic:100,1,,Event_06_C,Event_06_D,Damage,PartyAll,5,event6,event_choice_01_success,event6,event_choice_01_failure
+Event_06_B,,"“남은 상자에서도 무언가 얻을 수 있을 것 같다.""",1,하나 더 열어본다.,"주사위 14 이상
+무작위 에픽 유물 획득
+실패 : 생명력 5 감소",,Dice,,,,,14~18,GainRandom,Relic,Epic:100,1,,Event_06_C,Event_06_D,Damage,PartyAll,5,event6,event_choice_01_success,event6,event_choice_01_failure
 Event_06_B,,,2,그만둔다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_06_F,,,,,event6,event_choice_02_success,event6,event_choice_02_failure
 Event_06_C,,“더 이상 가져갈 만한 것은 남아 있지 않다.”,,,,,,,,,,,,,,,,,,,,,event6,,event6,
 Event_06_D,,"“갑작스러운 폭발이 일어나고, 주변에는 부서진 잔해만 남았다.”",,,,,,,,,,,,,,,,,,,,,event6,,event6,
 Event_06_E,,“상자에는 손대지 않고 그대로 지나쳤다.”,,,,,,,,,,,,,,,,,,,,,event6,,event6,
 Event_06_F,,“남은 상자는 그대로 두고 자리를 떠났다.”,,,,,,,,,,,,,,,,,,,,,event6,,event6,
-Event_07,더스티움 광맥,"“거대한 광맥이 희미한 빛을 내뿜고 있다.""",1,광맥을 파헤친다.,"예측 성공 시, 레드 더스티움 25 획득",,Coin,,,,,PlayerChoice,Gain,RedDustium,,25,,Event_07_A,Event_07_D,,,,event7,event_choice_01_success,event7,event_choice_01_failure
+Event_07,더스티움 광맥,"“거대한 광맥이 희미한 빛을 내뿜고 있다.""",1,광맥을 파헤친다.,"예측 : 앞면 or 뒷면
+레드 더스티움 25 획득",,Coin,,,,,PlayerChoice,Gain,RedDustium,,25,,Event_07_A,Event_07_D,,,,event7,event_choice_01_success,event7,event_choice_01_failure
 Event_07,,,2,무시한다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_07_E,,,,,event7,,event7,
-Event_07_A,,“광맥 깊숙한 곳에서 빛이 계속해서 새어 나온다.”,1,계속 파헤친다.,"예측 성공 시, 레드 더스티움 30 획득",,Coin,,,,,PlayerChoice,Gain,RedDustium,,30,,Event_07_B,Event_07_D,,,,event7,event_choice_01_success,event7,event_choice_01_failure
+Event_07_A,,“광맥 깊숙한 곳에서 빛이 계속해서 새어 나온다.”,1,계속 파헤친다.,"예측 : 앞면 or 뒷면
+레드 더스티움 30 획득",,Coin,,,,,PlayerChoice,Gain,RedDustium,,30,,Event_07_B,Event_07_D,,,,event7,event_choice_01_success,event7,event_choice_01_failure
 Event_07_A,,,2,그만한다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_07_E,,,,,event7,,event7,
-Event_07_B,,"“광맥 곳곳에 균열이 생겼다.""",1,다시 파헤친다.,"예측 성공 시, 레드 더스티움 35 획득",,Coin,,,,,PlayerChoice,Gain,RedDustium,,35,,Event_07_C,Event_07_D,,,,event7,event_choice_01_success,event7,event_choice_01_failure
+Event_07_B,,"“광맥 곳곳에 균열이 생겼다.""",1,다시 파헤친다.,"예측 : 앞면 or 뒷면
+레드 더스티움 35 획득",,Coin,,,,,PlayerChoice,Gain,RedDustium,,35,,Event_07_C,Event_07_D,,,,event7,event_choice_01_success,event7,event_choice_01_failure
 Event_07_B,,,2,그만한다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_07_E,,,,,event7,,event7,
 Event_07_C,,“광맥은 빛을 잃고 고요해졌다.”,,,,,,,,,,,,,,,,,,,,,event7,,event7,
 Event_07_D,,“광맥이 순식간에 바스라지며 흔적도 없이 사라졌다.”,,,,,,,,,,,,,,,,,,,,,event7,,event7,
 Event_07_E,,“광맥을 건드리지 않고 자리를 떠났다.”,,,,,,,,,,,,,,,,,,,,,event7,,event7,
-Event_08,고대의 각인,"“오래된 비석에 낯선 각인이 새겨져 있다.""",1,{Party1Name}{이가} 만진다.,,,Immediate,,,,,,SelectCharacter,PartySlot1,,,,Event_08_A,,,,,event8,,event8,
-Event_08,,,2,{Party2Name}{이가} 만진다.,,,Immediate,,,,,,SelectCharacter,PartySlot2,,,,Event_08_A,,,,,event8,,event8,
-Event_08,,,3,{Party3Name}{이가} 만진다.,,,Immediate,,,,,,SelectCharacter,PartySlot3,,,,Event_08_A,,,,,event8,,event8,
+Event_08,고대의 각인,"“오래된 비석에 낯선 각인이 새겨져 있다.""",1,{Party1Name}{이가} 다가간다.,{Party1Name}의 생명력 회복 또는 기억 발현,,Immediate,,,,,,SelectCharacter,PartySlot1,,,,Event_08_A,,,,,event8,,event8,
+Event_08,,,2,{Party2Name}{이가} 다가간다.,{Party2Name}의 생명력 회복 또는 기억 발현,,Immediate,,,,,,SelectCharacter,PartySlot2,,,,Event_08_A,,,,,event8,,event8,
+Event_08,,,3,{Party3Name}{이가} 다가간다.,{Party3Name}의 생명력 회복 또는 기억 발현,,Immediate,,,,,,SelectCharacter,PartySlot3,,,,Event_08_A,,,,,event8,,event8,
 Event_08_A,,“각인이 빛을 발하며 알 수 없는 힘이 전해져 온다.”,1,잔향에 귀 기울인다.,{PartyName}의 생명력 5 회복,,Immediate,,,,,,Heal,SelectedCharacter,,5,,Event_08_B,,,,,event8,event_choice_01_success,event8,event_choice_01_failure
-Event_08_A,,,2,희미한 기억을 일깨운다.,"레드 더스티움 20 소모, 레어~에픽 기억 발현",레드 더스티움 부족,CostExchange,RedDustium>=20,RedDustium,Party,20,,SelectReward,SelectedCharacter:Core,"Rare:70,Epic:30",1,3,Event_08_B,,,,,event8,event_choice_02_success,event8,event_choice_02_failure
-Event_08_A,,,3,강렬한 기억을 일깨운다.,"레드 더스티움 45 소모, 에픽~유니크 기억 발현",레드 더스티움 부족,CostExchange,RedDustium>=45,RedDustium,Party,45,,SelectReward,SelectedCharacter:Core,"Epic:70,Unique:30",1,3,Event_08_B,,,,,event8,event_choice_03_success,event8,event_choice_03_failure
+Event_08_A,,,2,희미한 기억을 일깨운다.,"레드 더스티움 20 소모
+레어~에픽 기억 발현",레드 더스티움 부족,CostExchange,RedDustium>=20,RedDustium,Party,20,,SelectReward,SelectedCharacter:Core,"Rare:70,Epic:30",1,3,Event_08_B,,,,,event8,event_choice_02_success,event8,event_choice_02_failure
+Event_08_A,,,3,강렬한 기억을 일깨운다.,"레드 더스티움 45 소모
+에픽~유니크 기억 발현",레드 더스티움 부족,CostExchange,RedDustium>=45,RedDustium,Party,45,,SelectReward,SelectedCharacter:Core,"Epic:70,Unique:30",1,3,Event_08_B,,,,,event8,event_choice_03_success,event8,event_choice_03_failure
 Event_08_B,,"“각인의 빛이 사그라들었다.""",,,,,,,,,,,,,,,,,,,,,event8,,event8,
-Event_09,안식의 샘,"""맑은 물이 고인 작은 분수에서 은은한 빛이 흘러나온다.""",1,생명력을 받아들인다.,모든 파티원 최대 생명력 5 증가,,Immediate,,,,,,IncreaseMaxHP,PartyAll,,5,,Event_09_A,,,,,event9,event_choice_01_success,event9,event_choice_01_failure
+Event_09,안식의 샘,"""맑은 물이 고인 작은 분수에서 은은한 빛이 흘러나온다.""",1,생명력을 받아들인다.,모든 파티원 최대 생명력 10 증가,,Immediate,,,,,,IncreaseMaxHP,PartyAll,,10,,Event_09_A,,,,,event9,event_choice_01_success,event9,event_choice_01_failure
 Event_09,,,2,마력을 받아들인다.,모든 파티원 최대 마나 2 증가,,Immediate,,,,,,IncreaseMaxMana,PartyAll,,2,,Event_09_B,,,,,event9,event_choice_02_success,event9,event_choice_02_failure
 Event_09,,,3,정화를 받아들인다.,침식도 20 감소,,Immediate,,,,,,ReduceErosion,Party,,20,,Event_09_C,,,,,event9,event_choice_03_success,event9,event_choice_03_failure
 Event_09_A,,"""물결이 잔잔하게 가라앉았다.""",,,,,,,,,,,,,,,,,,,,,event9,,event9,
 Event_09_B,,"""감싸던 빛이 서서히 사그라들었다.""",,,,,,,,,,,,,,,,,,,,,event9,,event9,
 Event_09_C,,"""맑은 빛이 퍼져 나간 뒤 고요해졌다.""",,,,,,,,,,,,,,,,,,,,,event9,,event9,
-Event_10,의문의 이방인,"""의문의 존재가 기묘한 거래를 제안한다.""",1,생명을 대가로 바친다.,"전체 생명력 5감소, 무작위 레어~유니크 유물 획득",생명력 부족,CostExchange,PartyAll:HP>=6,HP,PartyAll,5,,GainRandom,Relic,"Rare:50,Epic:35,Unique:15",1,,Event_10_A,,,,,event10,event_choice_01_success,event10,event_choice_01_failure
-Event_10,,,2,운명에 맡긴다.,"예측 성공 시, 무작위 유물 획득",,Coin,,,,,PlayerChoice,GainRandom,Relic,"Common:40,Rare:30,Epic:20,Unique:10",1,,Event_10_B,Event_10_C,,,,event10,event_choice_02_success,event10,event_choice_02_failure
-Event_10,,,3,침식을 받아들인다.,"침식도 20 증가, 무작위 일반~유니크 유물 획득",,CostExchange,,ErosionIncrease,Party,20,,GainRandom,Relic,"Common:40,Rare:30,Epic:20,Unique:10",1,,Event_10_D,,,,,event10,event_choice_03_success,event10,event_choice_03_failure
+Event_10,의문의 이방인,"""의문의 존재가 기묘한 거래를 제안한다.""",1,생명을 대가로 바친다.,"전체 생명력 5 감소
+무작위 레어~유니크 유물 획득",생명력 부족,CostExchange,PartyAll:HP>=6,HP,PartyAll,5,,GainRandom,Relic,"Rare:50,Epic:35,Unique:15",1,,Event_10_A,,,,,event10,event_choice_01_success,event10,event_choice_01_failure
+Event_10,,,2,운명에 맡긴다.,"예측 : 앞면 or 뒷면
+무작위 유물 획득",,Coin,,,,,PlayerChoice,GainRandom,Relic,"Common:40,Rare:30,Epic:20,Unique:10",1,,Event_10_B,Event_10_C,,,,event10,event_choice_02_success,event10,event_choice_02_failure
+Event_10,,,3,침식을 받아들인다.,"침식도 20 증가
+무작위 일반~유니크 유물 획득",,CostExchange,,ErosionIncrease,Party,20,,GainRandom,Relic,"Common:40,Rare:30,Epic:20,Unique:10",1,,Event_10_D,,,,,event10,event_choice_03_success,event10,event_choice_03_failure
 Event_10_A,,"""대가에 만족한 듯 희미한 미소를 지었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
 Event_10_B,,"""제법 운이 좋다는 듯 흥미로운 표정을 지었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
 Event_10_C,,"""예상했다는 듯 가볍게 비웃었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
