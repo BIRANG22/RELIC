@@ -605,8 +605,13 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             skillTooltipPanel.SetActive(true);
             // Enable-time static localizers must not overwrite dynamic skill data.
             EnsureDynamicTextOwnership(skillTooltipTypeText);
+            EnsureDynamicTextOwnership(skillTooltipResourceText);
             EnsureDynamicTextOwnership(skillTooltipNameText);
             EnsureDynamicTextOwnership(skillTooltipDescriptionText);
+            // 패널 활성화 시 로컬라이저가 이전 스킬의 자원 수치를 복원하지 않도록 다시 적용합니다.
+            if (skillTooltipResourceText != null)
+                SetPlainTmpText(skillTooltipResourceText,
+                    isPassiveSkill ? "지속" : Mathf.Max(0, skill.ResourceCostValue).ToString());
             SetPlainTmpText(skillTooltipNameText, GameDataLocalization.SkillName(skill));
             SetPlainTmpText(skillTooltipTypeText, GetSkillTooltipTypeDisplayName(skill));
             SetRichTmpText(skillTooltipDescriptionText, BuildSkillDetailsText(skill));
@@ -1581,6 +1586,10 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             legacyLocalizer.enabled = false;
             Destroy(legacyLocalizer);
         }
+
+        DynamicLocalizedTMPText dynamicLocalizer = text.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicLocalizer != null)
+            dynamicLocalizer.enabled = false;
     }
 
     private void SetSkillRangeImage(SkillMasterData skill)
@@ -1797,7 +1806,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (targetText == null)
             return;
 
-        SkillEffectInlineIconUtility.SetText(targetText, NormalizeSkillInfoText(rawText));
+        SkillEffectInlineIconUtility.SetTooltipTextWithoutIcons(targetText, NormalizeSkillInfoText(rawText));
     }
 
     private string NormalizeSkillInfoText(string text)

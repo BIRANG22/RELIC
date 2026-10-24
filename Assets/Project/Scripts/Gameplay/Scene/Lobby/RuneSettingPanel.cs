@@ -50,7 +50,7 @@ public class RuneSettingPanel : MonoBehaviour
     private Color uniqueRarityColor = Color.white;
     private Color exclusiveRarityColor = new Color(1f, 0.82f, 0.2f, 1f);
 
-    private Color valueHighlightColor = Color.yellow;
+    private Color valueHighlightColor = new Color32(0xFF, 0xC9, 0x78, 0xFF);
 
     [Header("Warning UI")]
     [SerializeField] private SettingWarningUI warningUI;
@@ -2331,10 +2331,25 @@ public class RuneSettingPanel : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(localizedDescription))
         {
             string effectDesc = NormalizeRuneEffectDesc(localizedDescription);
-            return ReplaceRuneEffectTokens(effectDesc, runeData.ValueRate, runeData.CountRate);
+            return ColorizeRuneDescriptionNumbers(ReplaceRuneEffectTokens(effectDesc, runeData.ValueRate, runeData.CountRate));
         }
 
         return GameLocalization.Get(LocalizationKeys.Rune.NoEffectDescription);
+    }
+
+    // 기존 색상 태그와 효과 이름의 서식을 보존하면서 일반 텍스트의 숫자만 강조합니다.
+    private static string ColorizeRuneDescriptionNumbers(string source)
+    {
+        if (string.IsNullOrEmpty(source))
+            return string.Empty;
+
+        // 치환 토큰은 이미 #FFC978 색상 태그로 감싸져 있으므로 중복 적용하지 않습니다.
+        return Regex.Replace(source,
+            @"(<color\s*=\s*[^>]+>.*?</color>)|(<[^>]+>)|(\d+(?:[.,]\d+)*)",
+            match => match.Groups[3].Success
+                ? "<color=#FFC978>" + match.Value + "</color>"
+                : match.Value,
+            RegexOptions.IgnoreCase | RegexOptions.Singleline);
     }
 
     private string ReplaceRuneEffectTokens(string source, string valueRate, string countRate)

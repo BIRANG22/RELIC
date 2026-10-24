@@ -4724,7 +4724,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
                 "(<link=\"effecticon:[^\"]+\">)(.*?)(</link>)",
                 "$1<u>$2</u>$3",
                 System.Text.RegularExpressions.RegexOptions.Singleline);
-            SkillEffectInlineIconUtility.SetText(skillTooltipDetailText, tooltipDetail);
+            SkillEffectInlineIconUtility.SetTooltipTextWithoutIcons(skillTooltipDetailText, tooltipDetail);
             SkillEffectInlineIconRenderer inlineRenderer = skillTooltipDetailText.GetComponent<SkillEffectInlineIconRenderer>();
             if (inlineRenderer != null)
                 inlineRenderer.SetUnderlineIcons(true);

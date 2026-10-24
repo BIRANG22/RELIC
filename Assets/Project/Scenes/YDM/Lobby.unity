@@ -3498,9 +3498,9 @@ RectTransform:
   - {fileID: 161111401}
   m_Father: {fileID: 1943513969}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 347.5, y: -50}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 90, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &86989394
@@ -6097,9 +6097,9 @@ RectTransform:
   - {fileID: 251245534}
   m_Father: {fileID: 1943513969}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 252.5, y: -50}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 90, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &135277107
@@ -12441,9 +12441,9 @@ RectTransform:
   - {fileID: 1732553928}
   m_Father: {fileID: 1943513969}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 62.5, y: -50}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 90, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &179520010
@@ -36922,9 +36922,9 @@ RectTransform:
   - {fileID: 1432818021}
   m_Father: {fileID: 1943513969}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 537.5, y: -50}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 90, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &689335314
@@ -39413,7 +39413,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -125, y: -20}
-  m_SizeDelta: {x: 75, y: 55}
+  m_SizeDelta: {x: 70, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &746733612
 MonoBehaviour:
@@ -47494,7 +47494,7 @@ MonoBehaviour:
   compoundTransferStartSoundVolume: 0.5
   compoundTransferStartDelay: 0.5
   screenSpaceTransferEffectPrefab: {fileID: 0}
-  compoundTransferUiTarget: {fileID: 0}
+  compoundTransferUiTarget: {fileID: 1264039641}
 --- !u!114 &821549310
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -73813,7 +73813,7 @@ MonoBehaviour:
   - {fileID: 1195802682}
   fragmentTransferStartSoundId: effect_get
   fragmentTransferStartSoundVolume: 0.5
-  fragmentTransferWorldTarget: {fileID: 2087226202}
+  fragmentTransferUiTarget: {fileID: 1499436853}
   fragmentTransferEffectPrefab: {fileID: 0}
   fragmentTransferLaunchInterval: 0.12
   introDialogue:
@@ -74641,7 +74641,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1264039640}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -74649,7 +74649,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 2}
   m_SizeDelta: {x: 45.5, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1264039642
@@ -100898,9 +100898,9 @@ RectTransform:
   - {fileID: 1677225816}
   m_Father: {fileID: 1943513969}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 157.5, y: -50}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 90, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1693695437
@@ -112107,7 +112107,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1832086189
 RectTransform:
   m_ObjectHideFlags: 0
@@ -113066,9 +113066,9 @@ RectTransform:
   - {fileID: 629417865}
   m_Father: {fileID: 1943513969}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 442.5, y: -50}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 90, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1855212275
@@ -114121,7 +114121,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1880677615
 RectTransform:
   m_ObjectHideFlags: 0
@@ -125521,7 +125521,7 @@ MonoBehaviour:
   purchaseTransferEndScale: 0.72
   purchaseTransferEffectTexture: {fileID: 2800000, guid: f416ed12a9deb6f40ac52e708154fa95, type: 3}
   purchaseTransferEffectSize: {x: 60, y: 60}
-  equipEffectTarget: {fileID: 0}
+  equipEffectTarget: {fileID: 999125862}
   screenSpaceTransferEffectPrefab: {fileID: 100003, guid: 13aa06f0ee8b40e2898db21ebcf3990e, type: 3}
   purchaseTransferUiTarget: {fileID: 999125862}
   trailSpawnInterval: 0.025
@@ -127454,7 +127454,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 60, y: -20}
-  m_SizeDelta: {x: 270, y: 60}
+  m_SizeDelta: {x: 265, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &9154523007532749226
 GameObject:

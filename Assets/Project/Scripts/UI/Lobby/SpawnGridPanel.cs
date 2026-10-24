@@ -622,7 +622,7 @@ public class SpawnGridPanel : MonoBehaviour
         if (slotIndex < 0 || partyStore.GetSpawnGridIndex(slotIndex) < 0) return false;
 
         LobbyCharacterEquipmentReleaseUtility.ReleaseAll(characterId);
-        if (!partyStore.RemoveCharacterAndCompact(characterId)) return false;
+        partyStore.ClearSlot(slotIndex);
         selectedPartySlotIndex = -1;
         pendingInfoPlacementButton = null;
         infoDragSourceButton = null;

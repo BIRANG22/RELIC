@@ -147,25 +147,22 @@ public sealed class SpawnGridUIWarpController : MonoBehaviour
         CharacterIconDatabase database = DataManager.Instance != null ? DataManager.Instance.CharacterIconDatabase : null;
         if (store == null) return;
 
-        currentPlaced.Clear();
-        for (int i = 0; i < store.MaxPartyCountValue; i++)
+        // 슬롯별 캐릭터를 그대로 표시합니다. 빈 슬롯도 위치를 유지합니다.
+        placementOrder.Clear();
+        for (int i = 0; i < 3; i++)
         {
-            string id = store.GetCharacterId(i);
-            if (string.IsNullOrWhiteSpace(id) || store.GetSpawnGridIndex(i) < 0) continue;
-            if (!currentPlaced.Contains(id)) currentPlaced.Add(id);
+            string id = i < store.MaxPartyCountValue ? store.GetCharacterId(i) : null;
+            if (!string.IsNullOrWhiteSpace(id) && store.GetSpawnGridIndex(i) < 0)
+                id = null;
+            placementOrder.Add(id);
         }
-
-        for (int i = placementOrder.Count - 1; i >= 0; i--)
-            if (!currentPlaced.Contains(placementOrder[i])) placementOrder.RemoveAt(i);
-        foreach (string id in currentPlaced)
-            if (!placementOrder.Contains(id)) placementOrder.Add(id);
 
         for (int i = 0; i < 3; i++)
         {
             Image target = partyPortraitImages[i];
             if (target == null) continue;
             Sprite portrait = null;
-            if (i < placementOrder.Count && database != null)
+            if (i < placementOrder.Count && database != null && !string.IsNullOrWhiteSpace(placementOrder[i]))
                 database.TryGetHUDSelectedPortraitImage(placementOrder[i], out portrait);
             if (target.sprite != portrait) target.sprite = portrait;
             bool visible = portrait != null;
@@ -229,7 +226,7 @@ public sealed class SpawnGridUIWarpController : MonoBehaviour
         for (int i = 0; i < ordered.Count; i++)
         {
             int oldIndex = oldCards.IndexOf(ordered[i]);
-            if (oldIndex >= 0 && oldIndex < oldIds.Count) placementOrder.Add(oldIds[oldIndex]);
+            placementOrder.Add(oldIndex >= 0 && oldIndex < oldIds.Count ? oldIds[oldIndex] : null);
         }
         PartyRuntimeStore store = DataManager.Instance != null ? DataManager.Instance.PartyRuntimeStore : null;
         if (store == null || !store.ReorderPlacedCharacters(placementOrder))
@@ -263,12 +260,8 @@ public sealed class SpawnGridUIWarpController : MonoBehaviour
             gridPanel = FindFirstObjectByType<SpawnGridPanel>(FindObjectsInactive.Include);
         if (gridPanel == null || !gridPanel.UnregisterReadyPartyCharacter(characterId)) return;
 
-        int occupiedBeforeRemoval = placementOrder.Count;
-        placementOrder.RemoveAt(index);
-        // 마지막으로 등록된 캐릭터를 해제하면 다른 카드의 순서가 바뀌지 않습니다.
-        // 뒤에 등록된 캐릭터가 있는 경우에만 빈 자리를 메우도록 카드를 이동합니다.
-        if (index < occupiedBeforeRemoval - 1)
-            MovePartyCard(clickedCard, occupiedBeforeRemoval - 1);
+        // 해제한 슬롯은 비운 채 유지합니다. 다른 카드를 이동하거나 정렬하지 않습니다.
+        placementOrder[index] = null;
         partyCards.Sort((a, b) => a.GetSiblingIndex().CompareTo(b.GetSiblingIndex()));
         for (int i = 0; i < partyCards.Count && i < partyPortraitImages.Length; i++)
         {
@@ -431,7 +424,6 @@ public sealed class ReadyPartyCardDrag : MonoBehaviour, IBeginDragHandler, IDrag
     private readonly List<RectTransform> originalOrder = new List<RectTransform>();
     private Vector3 pointerOffset;
     private bool dragging;
-    private bool suppressNextClick;
 
     public void Initialize(SpawnGridUIWarpController owner, RectTransform target)
     {
@@ -455,8 +447,7 @@ public sealed class ReadyPartyCardDrag : MonoBehaviour, IBeginDragHandler, IDrag
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (suppressNextClick) { suppressNextClick = false; return; }
-        if (eventData.button != PointerEventData.InputButton.Left || dragging || controller == null) return;
+        if (eventData.button != PointerEventData.InputButton.Left || dragging || eventData.dragging || controller == null) return;
         controller.UnregisterPartyCard(card);
     }
 
@@ -494,7 +485,6 @@ public sealed class ReadyPartyCardDrag : MonoBehaviour, IBeginDragHandler, IDrag
         pointerOffset = card.position - ScreenWorldPosition(eventData);
         dragging = true;
         SetHoverLine(false);
-        suppressNextClick = false;
         FollowPointer(eventData);
     }
 
@@ -539,7 +529,6 @@ public sealed class ReadyPartyCardDrag : MonoBehaviour, IBeginDragHandler, IDrag
 
     private void EndDrag(bool commit)
     {
-        suppressNextClick = true;
         dragging = false;
         SetHoverLine(false);
         if (preview != null) Destroy(preview.gameObject);
