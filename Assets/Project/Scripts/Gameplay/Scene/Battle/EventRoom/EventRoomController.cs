@@ -143,6 +143,14 @@ public class EventRoomController : MonoBehaviour
     [Header("Coin Flip")]
     [SerializeField] private EventCoinFlipPresenter coinFlipPresenter;
     private bool? forcedCoinHeads;
+    private bool? predictedCoinHeads;
+
+    [Header("Coin Result Visual Timing")]
+    [Tooltip("코인 성공/실패 판정 후 월드 연출을 보여주면서 코인 패널을 유지할 시간입니다.")]
+    [SerializeField, Min(0f)] private float coinResultVisualWaitDuration = 0.7f;
+    private bool coinResultWaitingForVisual;
+    private Coroutine coinResultVisualRoutine;
+
     private readonly List<EventData> persistentEventChoices = new();
     private readonly List<EventChoiceEquippedRelicCost> equippedRelicCostOptions = new();
     private readonly List<EventSkillAwakenSelectionPanelEntry> skillAwakenOptions = new();
@@ -325,6 +333,13 @@ public class EventRoomController : MonoBehaviour
 
     private void OnDisable()
     {
+        if (coinResultVisualRoutine != null)
+        {
+            StopCoroutine(coinResultVisualRoutine);
+            coinResultVisualRoutine = null;
+        }
+        coinResultWaitingForVisual = false;
+
         UnbindChestEvents();
         UnbindEvent06ShopClose();
 
@@ -918,10 +933,36 @@ public class EventRoomController : MonoBehaviour
             isEventResolved = true;
             SetNextButtonVisible(true);
             SetEventTitleVisible(true);
+            if (IsEvent10Result(definition.EventId))
+                ShowEvent10ResultPresentation();
             return;
         }
 
         BindChoiceSlots(GetCurrentVisibleChoices());
+    }
+
+    private static bool IsEvent10Result(string eventId)
+    {
+        string id = EventIdUtility.Normalize(eventId);
+        return id == "Event_10_A" || id == "Event_10_B" ||
+               id == "Event_10_C" || id == "Event_10_D";
+    }
+
+    // Event_10 result nodes are title-only, never a second coin-choice screen.
+    private void ShowEvent10ResultPresentation()
+    {
+        StopEventChoiceScrollViewAnimation();
+        if (diceTransitionRoutine != null)
+        {
+            StopCoroutine(diceTransitionRoutine);
+            diceTransitionRoutine = null;
+        }
+        if (eventChoiceScrollView != null)
+            eventChoiceScrollView.gameObject.SetActive(false);
+        if (eventChoiceGradation != null)
+            eventChoiceGradation.gameObject.SetActive(false);
+        SetEventTitleVisible(true);
+        SetNextButtonVisible(true);
     }
 
     private static bool IsEvent01TitleOnlyTerminal(string eventId)
@@ -1360,6 +1401,11 @@ public class EventRoomController : MonoBehaviour
 
         if (!result.Accepted)
         {
+            if (coinResultWaitingForVisual)
+            {
+                coinResultWaitingForVisual = false;
+                coinFlipPresenter?.Hide();
+            }
             if (eventResultText != null)
                 eventResultText.text = result.ResultMessage;
 
@@ -1452,6 +1498,37 @@ public class EventRoomController : MonoBehaviour
         if (pendingEvent06ShopOpen)
             StartEvent06ShopOpenAfterVisualAction(playedEvent06OpenVisual || result.HasVisualAction);
 
+        // Keep the coin result visible while the success/failure world action plays.
+        // Continue to rewards and the next event only after the panel closes.
+        if (coinResultWaitingForVisual)
+        {
+            coinResultWaitingForVisual = false;
+            if (coinResultVisualRoutine != null)
+                StopCoroutine(coinResultVisualRoutine);
+            coinResultVisualRoutine = StartCoroutine(FinishCoinResultAfterVisual(choice, result, resolvedDiceFaces));
+            return;
+        }
+
+        ContinueAfterCoinResultVisual(choice, result, resolvedDiceFaces);
+    }
+
+    private IEnumerator FinishCoinResultAfterVisual(
+        EventData choice, EventChoiceExecutionResult result, int[] resolvedDiceFaces)
+    {
+        if (coinResultVisualWaitDuration > 0f)
+            yield return new WaitForSecondsRealtime(coinResultVisualWaitDuration);
+
+        if (coinFlipPresenter != null && coinFlipPresenter.gameObject.activeInHierarchy)
+            yield return coinFlipPresenter.FadeOutAndHide();
+
+        coinResultVisualRoutine = null;
+        if (isActiveAndEnabled)
+            ContinueAfterCoinResultVisual(choice, result, resolvedDiceFaces);
+    }
+
+    private void ContinueAfterCoinResultVisual(
+        EventData choice, EventChoiceExecutionResult result, int[] resolvedDiceFaces)
+    {
         if (pendingDustiumAcquireAmount > 0)
         {
             if (dustiumAcquireRoutine != null)
@@ -1521,11 +1598,16 @@ public class EventRoomController : MonoBehaviour
                 choice,
                 result,
                 resolvedDiceFaces,
-                ResumePresentation.ChoiceList,
+                nextDefinition.Choices == null || nextDefinition.Choices.Count == 0
+                    ? ResumePresentation.ResultOnly : ResumePresentation.ChoiceList,
                 nextDefinition.EventId,
                 result.ResultMessage);
 
-            if (resolvedDiceFaces != null)
+            // Both dice and coin choices hide the choice ScrollView before resolving.
+            // Restore it when the next event is loaded, otherwise Event_07_A/B
+            // has choices bound in data but remains invisible to the player.
+            if ((resolvedDiceFaces != null || IsCoinChoice(choice)) &&
+                nextDefinition.Choices != null && nextDefinition.Choices.Count > 0)
                 RestoreEventChoiceUiAfterDice();
 
             return;
@@ -2076,14 +2158,33 @@ public class EventRoomController : MonoBehaviour
         yield return FadeOutEventChoiceUiForDice();
         if (choice == null || coinFlipPresenter == null) yield break;
         bool heads = BattleRandom.Range(0, 2) == 0;
-        coinFlipPresenter.Show(heads, () =>
+        if (SameToken(choice.SuccessCondition, "PlayerChoice"))
         {
-            coinFlipPresenter.Hide();
-            RestoreEventChoiceUiAfterDice();
-            forcedCoinHeads = heads;
-            try { ExecuteEventChoice(choice); }
-            finally { forcedCoinHeads = null; }
-        });
+            coinFlipPresenter.ShowPrediction(heads, (actualHeads, selectedHeads) =>
+            {
+                coinResultWaitingForVisual = true;
+                forcedCoinHeads = actualHeads;
+                predictedCoinHeads = selectedHeads;
+                try { ExecuteEventChoice(choice); }
+                finally
+                {
+                    forcedCoinHeads = null;
+                    predictedCoinHeads = null;
+                    // Choice presentation resumes after the world result visual and popup close.
+                }
+            });
+        }
+        else
+        {
+            coinFlipPresenter.Show(heads, () =>
+            {
+                coinFlipPresenter.Hide();
+                RestoreEventChoiceUiAfterDice();
+                forcedCoinHeads = heads;
+                try { ExecuteEventChoice(choice); }
+                finally { forcedCoinHeads = null; }
+            });
+        }
     }
 
     private bool TryBeginDiceRollChoice(EventData choice)
@@ -4128,6 +4229,7 @@ public class EventRoomController : MonoBehaviour
             SessionState = eventChoiceSessionState,
             RollDiceFaces = forcedDiceFaces != null ? () => forcedDiceFaces : null,
             FixedCoinHeads = forcedCoinHeads,
+            PredictedCoinHeads = predictedCoinHeads,
             GrantRandomRelic = TryQueueRandomRelicReward,
             GrantRandomSkill = TryQueueRandomSkillReward,
             OfferPartyCoreRewards = TryQueuePartyCoreRewards,
@@ -5542,7 +5644,9 @@ public class EventRoomController : MonoBehaviour
             {
                 LoadEventDefinition(next, message);
                 SaveEventResume(ResumePhase.EventChoice, null, default, null,
-                    ResumePresentation.ChoiceList, id, message);
+                    next.Choices == null || next.Choices.Count == 0
+                        ? ResumePresentation.ResultOnly : ResumePresentation.ChoiceList,
+                    id, message);
                 return;
             }
             Debug.LogError($"[EventRoomController] Reward continuation missing event: {id}", this);

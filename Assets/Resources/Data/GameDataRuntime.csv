@@ -688,14 +688,15 @@ Event_06_C,,“더 이상 가져갈 만한 것은 남아 있지 않다.”,,,,,,
 Event_06_D,,"“갑작스러운 폭발이 일어나고, 주변에는 부서진 잔해만 남았다.”",,,,,,,,,,,,,,,,,,,,,event6,,event6,
 Event_06_E,,“상자에는 손대지 않고 그대로 지나쳤다.”,,,,,,,,,,,,,,,,,,,,,event6,,event6,
 Event_06_F,,“남은 상자는 그대로 두고 자리를 떠났다.”,,,,,,,,,,,,,,,,,,,,,event6,,event6,
-Event_07,더스티움 광맥,"“거대한 광맥이 희미한 빛을 내뿜고 있다.""",1,광맥을 파헤친다.,"예측 : 앞면, 레드 더스티움 25 획득",,Coin,,,,,Heads,Gain,RedDustium,,25,,Event_07_A,Event_07_D,,,,event7,event_choice_01_success,event7,event_choice_01_failure
-Event_07,,,2,광맥을 파헤친다.,"예측 : 뒷면, 레드 더스티움 25 획득",,Coin,,,,,Tails,Gain,RedDustium,,25,,Event_07_A,Event_07_D,,,,event7,event_choice_02_success,event7,event_choice_02_failure
-Event_07_A,,“광맥 깊숙한 곳에서 빛이 계속해서 새어 나온다.”,1,계속 파헤친다.,"예측 : 앞면, 레드 더스티움 30 획득",,Coin,,,,,Heads,Gain,RedDustium,,30,,Event_07_B,Event_07_D,,,,event7,event_choice_01_success,event7,event_choice_01_failure
-Event_07_A,,,2,계속 파헤친다.,"예측 : 뒷면, 레드 더스티움 30 획득",,Coin,,,,,Tails,Gain,RedDustium,,30,,Event_07_B,Event_07_D,,,,event7,event_choice_02_success,event7,event_choice_02_failure
-Event_07_B,,"“광맥 곳곳에 균열이 생겼다.""",1,다시 파헤친다.,"예측 : 앞면, 레드 더스티움 35 획득",,Coin,,,,,Heads,Gain,RedDustium,,35,,Event_07_C,Event_07_D,,,,event7,event_choice_01_success,event7,event_choice_01_failure
-Event_07_B,,,2,다시 파헤친다.,"예측 : 뒷면, 레드 더스티움 35 획득",,Coin,,,,,Tails,Gain,RedDustium,,35,,Event_07_C,Event_07_D,,,,event7,event_choice_02_success,event7,event_choice_02_failure
+Event_07,더스티움 광맥,"“거대한 광맥이 희미한 빛을 내뿜고 있다.""",1,광맥을 파헤친다.,"예측 성공 시, 레드 더스티움 25 획득",,Coin,,,,,PlayerChoice,Gain,RedDustium,,25,,Event_07_A,Event_07_D,,,,event7,event_choice_01_success,event7,event_choice_01_failure
+Event_07,,,2,무시한다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_07_E,,,,,event7,,event7,
+Event_07_A,,“광맥 깊숙한 곳에서 빛이 계속해서 새어 나온다.”,1,계속 파헤친다.,"예측 성공 시, 레드 더스티움 30 획득",,Coin,,,,,PlayerChoice,Gain,RedDustium,,30,,Event_07_B,Event_07_D,,,,event7,event_choice_01_success,event7,event_choice_01_failure
+Event_07_A,,,2,그만한다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_07_E,,,,,event7,,event7,
+Event_07_B,,"“광맥 곳곳에 균열이 생겼다.""",1,다시 파헤친다.,"예측 성공 시, 레드 더스티움 35 획득",,Coin,,,,,PlayerChoice,Gain,RedDustium,,35,,Event_07_C,Event_07_D,,,,event7,event_choice_01_success,event7,event_choice_01_failure
+Event_07_B,,,2,그만한다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_07_E,,,,,event7,,event7,
 Event_07_C,,“광맥은 빛을 잃고 고요해졌다.”,,,,,,,,,,,,,,,,,,,,,event7,,event7,
 Event_07_D,,“광맥이 순식간에 바스라지며 흔적도 없이 사라졌다.”,,,,,,,,,,,,,,,,,,,,,event7,,event7,
+Event_07_E,,“광맥을 건드리지 않고 자리를 떠났다.”,,,,,,,,,,,,,,,,,,,,,event7,,event7,
 Event_08,고대의 각인,"“오래된 비석에 낯선 각인이 새겨져 있다.""",1,{Party1Name}{이가} 만진다.,,,Immediate,,,,,,SelectCharacter,PartySlot1,,,,Event_08_A,,,,,event8,,event8,
 Event_08,,,2,{Party2Name}{이가} 만진다.,,,Immediate,,,,,,SelectCharacter,PartySlot2,,,,Event_08_A,,,,,event8,,event8,
 Event_08,,,3,{Party3Name}{이가} 만진다.,,,Immediate,,,,,,SelectCharacter,PartySlot3,,,,Event_08_A,,,,,event8,,event8,
@@ -709,15 +710,13 @@ Event_09,,,3,정화를 받아들인다.,침식도 20 감소,,Immediate,,,,,,Redu
 Event_09_A,,"""물결이 잔잔하게 가라앉았다.""",,,,,,,,,,,,,,,,,,,,,event9,,event9,
 Event_09_B,,"""감싸던 빛이 서서히 사그라들었다.""",,,,,,,,,,,,,,,,,,,,,event9,,event9,
 Event_09_C,,"""맑은 빛이 퍼져 나간 뒤 고요해졌다.""",,,,,,,,,,,,,,,,,,,,,event9,,event9,
-Event_10,의문의 이방인,"""의문의 존재가 기묘한 거래를 제안한다.""",1,생명을 대가로 바친다.,"전체 생명력 5감소, 무작위 레어~유니크 유물 획득",생명력 부족,CostExchange,PartyAll:HP>=6,HP,PartyAll,5,,GainRandom,Relic,"Rare:50,Epic:35,Unique:15",1,,Event_10_B,,,,,event10,event_choice_01_success,event10,event_choice_01_failure
-Event_10,,,2,운명에 맡긴다.,예측 성공 시 무작위 유물 획득,,Immediate,,,,,,,,,,,Event_10_A,,,,,event10,event_choice_02_success,event10,event_choice_02_failure
-Event_10,,,3,침식을 받아들인다.,"침식도 20 증가, 무작위 일반~유니크 유물 획득",,CostExchange,,ErosionIncrease,Party,20,,GainRandom,Relic,"Common:40,Rare:30,Epic:20,Unique:10",1,,Event_10_E,,,,,event10,event_choice_03_success,event10,event_choice_03_failure
-Event_10_A,,"""낡은 동전 하나를 꺼내 손바닥 위에 올려놓았다.""",1,앞면에 건다.,"예측 : 앞면, 무작위 일반~유니크 유물 획득",,Coin,,,,,Heads,GainRandom,Relic,"Common:40,Rare:30,Epic:20,Unique:10",1,,Event_10_C,Event_10_D,,,,event10,event_choice_01_success,event10,event_choice_01_failure
-Event_10_A,,,2,뒷면에 건다.,"예측 : 뒷면, 무작위 레어~에픽 유물 획득",,Coin,,,,,Tails,GainRandom,Relic,"Rare:70,Epic:30",1,,Event_10_C,Event_10_D,,,,event10,event_choice_02_success,event10,event_choice_02_failure
-Event_10_B,,"""대가에 만족한 듯 희미한 미소를 지었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
-Event_10_C,,"""제법 운이 좋다는 듯 흥미로운 표정을 지었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
-Event_10_D,,"""예상했다는 듯 가볍게 비웃었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
-Event_10_E,,"""침식의 기운을 바라보며 만족스럽게 웃었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
+Event_10,의문의 이방인,"""의문의 존재가 기묘한 거래를 제안한다.""",1,생명을 대가로 바친다.,"전체 생명력 5감소, 무작위 레어~유니크 유물 획득",생명력 부족,CostExchange,PartyAll:HP>=6,HP,PartyAll,5,,GainRandom,Relic,"Rare:50,Epic:35,Unique:15",1,,Event_10_A,,,,,event10,event_choice_01_success,event10,event_choice_01_failure
+Event_10,,,2,운명에 맡긴다.,"예측 성공 시, 무작위 유물 획득",,Coin,,,,,PlayerChoice,GainRandom,Relic,"Common:40,Rare:30,Epic:20,Unique:10",1,,Event_10_B,Event_10_C,,,,event10,event_choice_02_success,event10,event_choice_02_failure
+Event_10,,,3,침식을 받아들인다.,"침식도 20 증가, 무작위 일반~유니크 유물 획득",,CostExchange,,ErosionIncrease,Party,20,,GainRandom,Relic,"Common:40,Rare:30,Epic:20,Unique:10",1,,Event_10_D,,,,,event10,event_choice_03_success,event10,event_choice_03_failure
+Event_10_A,,"""대가에 만족한 듯 희미한 미소를 지었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
+Event_10_B,,"""제법 운이 좋다는 듯 흥미로운 표정을 지었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
+Event_10_C,,"""예상했다는 듯 가볍게 비웃었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
+Event_10_D,,"""침식의 기운을 바라보며 만족스럽게 웃었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
 Event_T_01,Event_T_01,,,,,,,,,,,,,,,,,,,,,,,,,
 Event_T_02,Event_T_02,,,,,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,

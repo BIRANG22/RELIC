@@ -2399,10 +2399,6 @@ MonoBehaviour:
     m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.93f93207
     m_Metadata:
       m_Items: []
-  - m_Id: 10173380891779117
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.reward.explorationresultpanelui.text.7a41828b
-    m_Metadata:
-      m_Items: []
   - m_Id: 10173380895973443
     m_Key: ui.assets.project.scripts.gameplay.scene.battle.battlescenecontroller.text.bb7ae301
     m_Metadata:
@@ -3507,10 +3503,6 @@ MonoBehaviour:
     m_Key: ui.battle.text.3a4b35dd
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458548838461
-    m_Key: ui.battle.text.1698677f
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838462
     m_Key: ui.battle.text.abdd11b1
     m_Metadata:
@@ -3769,10 +3761,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 17041964720988213
     m_Key: ui.debugbattle.text.56473433
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988214
-    m_Key: ui.lobby.text.ab4adb5d
     m_Metadata:
       m_Items: []
   - m_Id: 17041964720988218
@@ -6751,10 +6739,6 @@ MonoBehaviour:
     m_Key: data.event.event_06_b.description.97db0284
     m_Metadata:
       m_Items: []
-  - m_Id: 26576882132819989
-    m_Key: data.event.event_07.description.cb9e7fb0
-    m_Metadata:
-      m_Items: []
   - m_Id: 26576882132819990
     m_Key: data.event.event_07_a.choice_1_name
     m_Metadata:
@@ -6767,10 +6751,6 @@ MonoBehaviour:
     m_Key: data.event.event_07_a.choice_2_name
     m_Metadata:
       m_Items: []
-  - m_Id: 26576882132819993
-    m_Key: data.event.event_07_a.description.dcaf5752
-    m_Metadata:
-      m_Items: []
   - m_Id: 26576882132819994
     m_Key: data.event.event_07_b.choice_1_name
     m_Metadata:
@@ -6781,10 +6761,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 26576882132819996
     m_Key: data.event.event_07_b.choice_2_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26576882132819997
-    m_Key: data.event.event_07_b.description.cd372c53
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132819998
@@ -6863,10 +6839,6 @@ MonoBehaviour:
     m_Key: data.event.event_10.choice_2_name
     m_Metadata:
       m_Items: []
-  - m_Id: 26576882132820017
-    m_Key: data.event.event_10.description.0e285ebb
-    m_Metadata:
-      m_Items: []
   - m_Id: 26576882132820018
     m_Key: data.event.event_10.choice_3_name
     m_Metadata:
@@ -6875,40 +6847,12 @@ MonoBehaviour:
     m_Key: data.event.event_10.description.82b5c6fa
     m_Metadata:
       m_Items: []
-  - m_Id: 26576882132820020
-    m_Key: data.event.event_10_a.choice_1_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26576882132820021
-    m_Key: data.event.event_10_a.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26576882132820022
-    m_Key: data.event.event_10_a.choice_2_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26576882132820023
-    m_Key: data.event.event_10_a.description.feb796c3
-    m_Metadata:
-      m_Items: []
   - m_Id: 26577043273785344
     m_Key: ui.menupanel.menupanel.button.record.record_text.6db3f2f6
     m_Metadata:
       m_Items: []
-  - m_Id: 26577043294756864
-    m_Key: ui.battle.roomroot.eventroom.canvas.dataeventroot.eventcoinflippresenter.button.text_tmp.8fca218f
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26577043294756865
-    m_Key: ui.battle.valuetext.da9f7c01
-    m_Metadata:
-      m_Items: []
   - m_Id: 26577043294756866
     m_Key: ui.battle.roomroot.eventroom.canvas.dataeventroot.eventcoinflippresenter.detailtext.38d9d6cb
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26577043294756867
-    m_Key: ui.battle.canvas.menuroot.menupanel.button.record.record_text.6db3f2f6
     m_Metadata:
       m_Items: []
   - m_Id: 26577043294756868
@@ -6917,10 +6861,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 26577043294756869
     m_Key: ui.lobby.canvas.positionpanel.ready.panel.ready_panel.playbutton.playtext.bde74899
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26577043294756870
-    m_Key: ui.lobby.canvas.menupanel.button.record.record_text.6db3f2f6
     m_Metadata:
       m_Items: []
   - m_Id: 26577043294756871
@@ -6933,6 +6873,82 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 26577043298951169
     m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.4e152716
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848079311511552
+    m_Key: data.event.event_07.description.97db0284
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848079353454592
+    m_Key: data.event.event_07_a.description.97db0284
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848079353454593
+    m_Key: data.event.event_07_b.description.97db0284
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357494530048
+    m_Key: ui.battle.roomroot.eventroom.canvas.dataeventroot.eventcoinflippresenter.headsbutton.text_tmp.da9f7c01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501568
+    m_Key: ui.battle.roomroot.eventroom.canvas.dataeventroot.eventcoinflippresenter.tailsbutton.text_tmp.a05523b3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501569
+    m_Key: ui.battle.explorationreportstagename.33aee447
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501570
+    m_Key: ui.battle.explorationreportstageresult.6fd57db4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501571
+    m_Key: ui.lobby.text_tmp.fc777a3e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501572
+    m_Key: ui.lobby.text_tmp.6c00dd0f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501573
+    m_Key: ui.lobby.text_tmp.bde74899
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501574
+    m_Key: ui.lobby.text_tmp.9873c6b9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501575
+    m_Key: ui.exploration.result.monster_kills
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501576
+    m_Key: ui.exploration.result.damage_dealt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501577
+    m_Key: ui.exploration.result.damage_taken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501578
+    m_Key: ui.exploration.result.buffs_applied
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501579
+    m_Key: ui.exploration.result.incapacitated
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501580
+    m_Key: ui.exploration.result.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501581
+    m_Key: ui.exploration.result.elapsed_time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26856588543500288
+    m_Key: data.event.event_10.description.ba57ea67
     m_Metadata:
       m_Items: []
   m_Metadata:

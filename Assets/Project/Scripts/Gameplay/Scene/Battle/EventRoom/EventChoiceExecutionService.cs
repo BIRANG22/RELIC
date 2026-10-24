@@ -120,6 +120,7 @@ namespace Relic.Gameplay.Data
         public Func<int> RollThreeDice;
         public Func<float> RollChanceValue;
         public bool? FixedCoinHeads;
+        public bool? PredictedCoinHeads;
         public EventChoiceRewardGrant GrantRandomRelic;
         public EventChoiceRewardGrant GrantRandomSkill;
         public EventChoiceCoreOfferGrant OfferPartyCoreRewards;
@@ -352,7 +353,9 @@ namespace Relic.Gameplay.Data
             else if (IsToken(choice.ChoiceType, "Coin"))
             {
                 bool heads = context.FixedCoinHeads ?? (BattleRandom.Range(0, 2) == 0);
-                success = heads == IsToken(choice.SuccessCondition, "Heads");
+                success = IsToken(choice.SuccessCondition, "PlayerChoice")
+                    ? context.PredictedCoinHeads.HasValue && heads == context.PredictedCoinHeads.Value
+                    : heads == IsToken(choice.SuccessCondition, "Heads");
             }
             else if (IsToken(choice.ChoiceType, "Chance"))
             {
