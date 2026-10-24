@@ -14,7 +14,7 @@ public sealed class ExplorationResultCharacterRowLayoutTests
         Assert.That(Count(scene, "statisticsOverlayRoot: {fileID:"), Is.EqualTo(1));
         Assert.That(Count(scene, "statisticsTooltipRoot: {fileID:"), Is.EqualTo(0));
         Assert.That(scene, Does.Contain(
-            "m_Sprite: {fileID: 21300000, guid: fff19d7ee2077474b89067f33ee0ed8e, type: 3}"));
+            "m_Sprite: {fileID: 21300000, guid: b3c1b8145715e654baaaba25ffe89195, type: 3}"));
         Assert.That(Count(scene, "informationOwner: {fileID:"), Is.EqualTo(3));
     }
 
@@ -35,8 +35,10 @@ public sealed class ExplorationResultCharacterRowLayoutTests
         string source = File.ReadAllText(
             "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Reward/ExplorationResultCharacterRowUI.cs");
 
-        Assert.That(source, Does.Contain("skill ? 0.62f : 0.46f"));
-        Assert.That(source, Does.Contain("skill ? 66f : 52f"));
+        Assert.That(source, Does.Contain("skillSlotScale"));
+        Assert.That(source, Does.Contain("relicSlotScale"));
+        Assert.That(source, Does.Contain("skillSlotHorizontalSpacing"));
+        Assert.That(source, Does.Contain("relicSlotHorizontalSpacing"));
         Assert.That(source, Does.Not.Contain("statisticsTooltipRoot"));
         Assert.That(source, Does.Contain("statisticsOverlayController"));
         Assert.That(source, Does.Contain("informationIcon"));
@@ -50,10 +52,10 @@ public sealed class ExplorationResultCharacterRowLayoutTests
 
         Assert.That(Count(scene, "m_Name: ExplorationReportRelicSlots"), Is.EqualTo(3));
         Assert.That(Count(scene, "m_Name: ExplorationReportMemorySlots"), Is.EqualTo(3));
-        Assert.That(Count(scene, "m_AnchoredPosition: {x: 10, y: -190}"), Is.EqualTo(3));
-        Assert.That(Count(scene, "m_AnchoredPosition: {x: 82, y: -190}"), Is.EqualTo(3));
-        Assert.That(Count(scene, "maxRelicSlots: 1"), Is.EqualTo(3));
-        Assert.That(Count(scene, "maxSkillSlots: 2"), Is.EqualTo(3));
+        Assert.That(Count(scene, "maxRelicSlots: 6"), Is.EqualTo(3));
+        Assert.That(Count(scene, "maxSkillSlots: 4"), Is.EqualTo(3));
+        Assert.That(Count(scene, "relicSlotColumns: 6"), Is.EqualTo(3));
+        Assert.That(Count(scene, "skillSlotColumns: 4"), Is.EqualTo(3));
     }
 
     [Test]

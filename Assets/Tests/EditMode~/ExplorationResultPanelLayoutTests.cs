@@ -8,6 +8,57 @@ using UnityEngine;
 public sealed class ExplorationResultPanelLayoutTests
 {
     [Test]
+    public void VisitedNodeSummary_UsesEnteredNodesInsteadOfClearedNodes()
+    {
+        MapRuntimeData runtime = new()
+        {
+            VisitedMapIds = new List<string> { "1", "2", "3", "4" },
+            ClearedMapIds = new List<string> { "1" },
+            GeneratedNodes = new List<GeneratedMapNodeData>
+            {
+                new() { NodeIndex = 1, Type = "Battle" },
+                new() { NodeIndex = 2, Type = "Common" },
+                new() { NodeIndex = 3, Type = "Elite" },
+                new() { NodeIndex = 4, Type = "Event" }
+            }
+        };
+
+        ExplorationNodeVisitSummary summary = ExplorationNodeVisitSummary.Count(runtime);
+
+        Assert.That(summary.NormalBattleCount, Is.EqualTo(2));
+        Assert.That(summary.EliteBattleCount, Is.EqualTo(1));
+        Assert.That(summary.EventCount, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void VisitedNodeSummary_IgnoresDuplicateInvalidAndUnsupportedNodes()
+    {
+        MapRuntimeData runtime = new()
+        {
+            VisitedMapIds = new List<string> { "1", "1", "missing", "99", "2", "3" },
+            GeneratedNodes = new List<GeneratedMapNodeData>
+            {
+                new() { NodeIndex = 1, Type = "Elite" },
+                new() { NodeIndex = 2, Type = "Special" },
+                new() { NodeIndex = 3, Type = "Rest" }
+            }
+        };
+
+        ExplorationNodeVisitSummary summary = ExplorationNodeVisitSummary.Count(runtime);
+
+        Assert.That(summary.NormalBattleCount, Is.Zero);
+        Assert.That(summary.EliteBattleCount, Is.EqualTo(1));
+        Assert.That(summary.EventCount, Is.EqualTo(1));
+    }
+
+    [TestCase(0, "0")]
+    [TestCase(10, "10")]
+    public void ErosionLevel_UsesScoreSumLabel(int score, string expected)
+    {
+        Assert.That(ExplorationResultPanelUI.FormatErosionLevel(score), Is.EqualTo(expected));
+    }
+
+    [Test]
     public void SelectedErosionScore_UsesLobbyDifficultyScores_NotAccumulatedBattleErosion()
     {
         ErosionDatabase database = new();
@@ -44,9 +95,26 @@ public sealed class ExplorationResultPanelLayoutTests
         Assert.That(scene, Does.Contain("m_Name: ExplorationReportAcquiredItemsDivider"));
         Assert.That(scene, Does.Contain("m_Name: ExplorationReportAcquiredItemsLabel"));
         Assert.That(scene, Does.Contain("m_Name: ExplorationReportErosionIcon"));
+        Assert.That(scene, Does.Contain("m_Name: ExplorationReportErosionLevel"));
         Assert.That(scene, Does.Contain("m_Name: ExplorationReportSelectedErosionSlots"));
         Assert.That(scene, Does.Contain(
             "m_Sprite: {fileID: 21300000, guid: 5927fbacdef890243827d3e11cca58fb, type: 3}"));
+    }
+
+    [Test]
+    public void ResultPanel_ExposesRuntimeIconLayoutInInspector()
+    {
+        string panelSource = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Reward/ExplorationResultPanelUI.cs");
+        string rowSource = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Reward/ExplorationResultCharacterRowUI.cs");
+
+        Assert.That(panelSource, Does.Contain("hardModeSlotScale"));
+        Assert.That(panelSource, Does.Contain("acquiredItemSlotScale"));
+        Assert.That(panelSource, Does.Contain("hardModeSlotColumns"));
+        Assert.That(rowSource, Does.Contain("relicSlotScale"));
+        Assert.That(rowSource, Does.Contain("skillSlotScale"));
+        Assert.That(rowSource, Does.Contain("relicSlotColumns"));
     }
 
     [Test]
@@ -55,10 +123,9 @@ public sealed class ExplorationResultPanelLayoutTests
         string scene = File.ReadAllText("Assets/Project/Scenes/YDM/Battle.unity")
             .Replace("\r\n", "\n");
 
-        Assert.That(scene, Does.Not.Contain("--- !u!114 &804964538"));
-        Assert.That(scene, Does.Not.Contain("--- !u!114 &1235243605"));
-        Assert.That(scene, Does.Contain(
-            "koreanSource: \"\\uD68D\\uB4DD \\uC544\\uC774\\uD15C\""));
+        AssertDynamicCountTextIsLocalizationIgnored(scene, "ExplorationReportNormalBattleCount");
+        AssertDynamicCountTextIsLocalizationIgnored(scene, "ExplorationReportEliteBattleCount");
+        AssertDynamicCountTextIsLocalizationIgnored(scene, "ExplorationReportEventCount");
     }
 
     [Test]
@@ -67,8 +134,19 @@ public sealed class ExplorationResultPanelLayoutTests
         string scene = File.ReadAllText("Assets/Project/Scenes/YDM/Battle.unity")
             .Replace("\r\n", "\n");
 
-        string labelObject = ExtractGameObject(scene, "ExplorationReportRedDustiumLabel");
-        Assert.That(labelObject, Does.Contain("m_IsActive: 0"));
+        string iconObject = ExtractGameObject(scene, "ExplorationReportRedDustiumIcon");
+        string valueObject = ExtractGameObject(scene, "ExplorationReportRedDustium");
+        Assert.That(iconObject, Does.Contain("m_IsActive: 1"));
+        Assert.That(valueObject, Does.Contain("m_IsActive: 1"));
+
+        string groupRect = ExtractDocument(scene, "258994648");
+        string iconRect = ExtractDocument(scene, "940000000000000014");
+        string valueRect = ExtractDocument(scene, "940000000000000018");
+        Assert.That(groupRect, Does.Contain("m_SizeDelta: {x: 250, y: 80}"));
+        Assert.That(iconRect, Does.Contain("m_Father: {fileID: 258994648}"));
+        Assert.That(iconRect, Does.Contain("m_AnchoredPosition: {x: -65, y: 0}"));
+        Assert.That(valueRect, Does.Contain("m_Father: {fileID: 258994648}"));
+        Assert.That(valueRect, Does.Contain("m_AnchoredPosition: {x: 50, y: 0}"));
 
         string source = File.ReadAllText(
             "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Reward/ExplorationResultPanelUI.cs");
@@ -155,6 +233,77 @@ public sealed class ExplorationResultPanelLayoutTests
     }
 
     [Test]
+    public void BattleScene_SeparatesElapsedTimeLabelAndRightAlignedValue()
+    {
+        string scene = File.ReadAllText("Assets/Project/Scenes/YDM/Battle.unity")
+            .Replace("\r\n", "\n");
+
+        string label = ExtractGameObjectWithComponents(scene, "ExplorationReportElapsedTimeLabel");
+        string value = ExtractGameObjectWithComponents(scene, "ExplorationReportElapsedTimeCount");
+
+        Assert.That(label, Does.Contain("m_SizeDelta: {x: 207, y: 56}"));
+        Assert.That(label, Does.Contain("m_Father: {fileID: 940000000000000256}"));
+        Assert.That(label, Does.Contain("m_AnchoredPosition: {x: -600, y: 290}"));
+        Assert.That(label, Does.Contain("m_fontSize: 30"));
+        Assert.That(label, Does.Contain("m_HorizontalAlignment: 1"));
+        Assert.That(value, Does.Contain("m_SizeDelta: {x: 170, y: 56}"));
+        Assert.That(value, Does.Contain("m_Father: {fileID: 940000000000000256}"));
+        Assert.That(value, Does.Contain("m_AnchoredPosition: {x: -384, y: 290}"));
+        Assert.That(value, Does.Contain("m_fontSize: 42"));
+        Assert.That(value, Does.Contain("m_HorizontalAlignment: 4"));
+    }
+
+    [Test]
+    public void CharacterReport_KeepsUnfilledRelicAndSkillSlotsVisible()
+    {
+        string source = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Reward/ExplorationResultCharacterRowUI.cs");
+        string method = ExtractMethod(source, "private void BindIconSlots(");
+        string scene = File.ReadAllText("Assets/Project/Scenes/YDM/Battle.unity")
+            .Replace("\r\n", "\n");
+
+        Assert.That(method, Does.Contain("slot.gameObject.SetActive(true);"));
+        Assert.That(method, Does.Contain("slot.SetupDisplayIcon(null);"));
+        Assert.That(method, Does.Not.Contain("slot.gameObject.SetActive(filled);"));
+
+        foreach (string componentId in new[]
+                 {
+                     "940000000000000099",
+                     "940000000000000151",
+                     "940000000000000203"
+                 })
+        {
+            string row = ExtractDocument(scene, componentId);
+            Assert.That(row, Does.Contain("maxRelicSlots: 6"));
+            Assert.That(row, Does.Contain("maxSkillSlots: 4"));
+            Assert.That(row, Does.Contain("relicSlotScale: 0.36"));
+            Assert.That(row, Does.Contain("relicSlotHorizontalSpacing: 40"));
+            Assert.That(row, Does.Contain("relicSlotColumns: 6"));
+            Assert.That(row, Does.Contain("skillSlotScale: 0.52"));
+            Assert.That(row, Does.Contain("skillSlotHorizontalSpacing: 60"));
+            Assert.That(row, Does.Contain("skillSlotColumns: 4"));
+        }
+    }
+
+    [Test]
+    public void BattleScene_UsesShorterAndThickerExperienceGauges()
+    {
+        string scene = File.ReadAllText("Assets/Project/Scenes/YDM/Battle.unity")
+            .Replace("\r\n", "\n");
+
+        foreach (string objectName in new[]
+                 {
+                     "ExplorationReportExpSlider_0",
+                     "ExplorationReportExpSlider_1",
+                     "ExplorationReportExpSlider_2"
+                 })
+        {
+            string slider = ExtractGameObjectWithComponents(scene, objectName);
+            Assert.That(slider, Does.Contain("m_SizeDelta: {x: 220, y: 32}"));
+        }
+    }
+
+    [Test]
     public void StatisticsOverlay_IsPlacedBelowHoveredIconAndClampedInsidePanel()
     {
         Rect boundary = new(-500f, -300f, 1000f, 600f);
@@ -188,11 +337,38 @@ public sealed class ExplorationResultPanelLayoutTests
     [Test]
     public void CharacterInformationSupport_HoverAndClick()
     {
+        string rowSource = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Reward/ExplorationResultCharacterRowUI.cs");
+        string targetSource = File.ReadAllText(
+            "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Reward/ExplorationResultInformationHoverTarget.cs");
+
+        Assert.That(rowSource, Does.Not.Contain("IPointerEnterHandler"));
+        Assert.That(rowSource, Does.Not.Contain("IPointerExitHandler"));
+        Assert.That(rowSource, Does.Not.Contain("IPointerClickHandler"));
+        Assert.That(targetSource, Does.Contain("IPointerEnterHandler"));
+        Assert.That(targetSource, Does.Contain("IPointerExitHandler"));
+        Assert.That(targetSource, Does.Contain("IPointerClickHandler"));
+    }
+
+    [Test]
+    public void CharacterReport_UsesMaskedDoubleScalePortraitAndCornerInformationButton()
+    {
+        string scene = File.ReadAllText("Assets/Project/Scenes/YDM/Battle.unity")
+            .Replace("\r\n", "\n");
         string source = File.ReadAllText(
             "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Reward/ExplorationResultCharacterRowUI.cs");
 
-        Assert.That(source, Does.Contain("IPointerClickHandler"));
-        Assert.That(source, Does.Contain("public void OnPointerClick"));
+        Assert.That(Count(scene, "m_Name: ExplorationReportPortraitViewport"), Is.EqualTo(3));
+        Assert.That(Count(scene, "m_Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}"),
+            Is.GreaterThanOrEqualTo(3));
+        Assert.That(Count(scene, "m_LocalScale: {x: 2, y: 2, z: 1}"), Is.GreaterThanOrEqualTo(3));
+        Assert.That(Count(scene, "m_Name: StatisticsOverlayAnchor"), Is.EqualTo(3));
+        Assert.That(Count(scene, "m_Name: InformationGlyph"), Is.EqualTo(3));
+        Assert.That(Count(scene, "m_SizeDelta: {x: 40, y: 40}"), Is.GreaterThanOrEqualTo(3));
+        Assert.That(Count(scene, "m_Sprite: {fileID: 21300000, guid: b3c1b8145715e654baaaba25ffe89195, type: 3}"),
+            Is.GreaterThanOrEqualTo(3));
+        Assert.That(source, Does.Contain("statisticsOverlayAnchor"));
+        Assert.That(source, Does.Contain("statisticsOverlayAnchor ?? informationHoverTarget"));
     }
 
     [Test]
@@ -237,6 +413,42 @@ public sealed class ExplorationResultPanelLayoutTests
             $@"(?ms)^--- !u!\d+ &{fileId}\n.*?(?=^--- !u!|\z)");
         Assert.That(match.Success, Is.True, $"Missing document: {fileId}");
         return match.Value;
+    }
+
+    private static string ExtractGameObjectWithComponents(string scene, string objectName)
+    {
+        string gameObject = ExtractGameObject(scene, objectName);
+        System.Text.StringBuilder result = new(gameObject);
+        foreach (Match componentMatch in Regex.Matches(
+                     gameObject,
+                     @"component: \{fileID: (?<id>\d+)\}"))
+        {
+            result.Append(ExtractDocument(scene, componentMatch.Groups["id"].Value));
+        }
+
+        return result.ToString();
+    }
+
+    private static void AssertDynamicCountTextIsLocalizationIgnored(string scene, string objectName)
+    {
+        const string staticLocalizerGuid = "700ed754fb422984990c407c26f0065c";
+        const string autoBindingIgnoreGuid = "a6ef87d46a1e4f88b9b4c3f947b86fe2";
+
+        string gameObject = ExtractGameObject(scene, objectName);
+        MatchCollection componentMatches = Regex.Matches(gameObject, @"component: \{fileID: (?<id>\d+)\}");
+        Assert.That(componentMatches.Count, Is.GreaterThan(0));
+
+        bool hasAutoBindingIgnore = false;
+        foreach (Match componentMatch in componentMatches)
+        {
+            string component = ExtractDocument(scene, componentMatch.Groups["id"].Value);
+            Assert.That(component, Does.Not.Contain(staticLocalizerGuid),
+                $"{objectName} must not have a static LocalizedTMPText writer.");
+            hasAutoBindingIgnore |= component.Contains(autoBindingIgnoreGuid);
+        }
+
+        Assert.That(hasAutoBindingIgnore, Is.True,
+            $"{objectName} must opt out of runtime localization auto-binding.");
     }
 
     private static Dictionary<string, RectTransformRecord> ParseRectTransforms(string scene)
