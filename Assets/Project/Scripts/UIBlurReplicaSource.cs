@@ -209,7 +209,12 @@ public sealed class UIBlurReplicaSource
             replica.anchoredPosition = min + Vector2.Scale(size, source.pivot);
             replica.sizeDelta = size;
             replica.localRotation = source.localRotation;
-            replica.localScale = source.localScale;
+            // The root bounds were already converted from the source canvas through
+            // screen space into the replica canvas's local coordinates. Reapplying
+            // the source root scale here would apply the resolution-dependent canvas
+            // scale twice. Child transforms still preserve their authored local scale
+            // through SyncLocalLayout().
+            replica.localScale = Vector3.one;
         }
 
         private void SyncLocalLayout()

@@ -25,6 +25,68 @@ namespace Relic.Gameplay.Data
         public List<BattleRunCharacterStatisticsData> CharacterStatistics = new();
     }
 
+    public readonly struct ExplorationNodeVisitSummary
+    {
+        public int NormalBattleCount { get; }
+        public int EliteBattleCount { get; }
+        public int EventCount { get; }
+
+        private ExplorationNodeVisitSummary(
+            int normalBattleCount,
+            int eliteBattleCount,
+            int eventCount)
+        {
+            NormalBattleCount = normalBattleCount;
+            EliteBattleCount = eliteBattleCount;
+            EventCount = eventCount;
+        }
+
+        public static ExplorationNodeVisitSummary Count(MapRuntimeData runtime)
+        {
+            if (runtime?.VisitedMapIds == null || runtime.GeneratedNodes == null)
+                return default;
+
+            HashSet<string> visitedNodeIds = new(StringComparer.Ordinal);
+            for (int i = 0; i < runtime.VisitedMapIds.Count; i++)
+            {
+                string nodeId = runtime.VisitedMapIds[i]?.Trim();
+                if (!string.IsNullOrWhiteSpace(nodeId))
+                    visitedNodeIds.Add(nodeId);
+            }
+
+            int normalBattleCount = 0;
+            int eliteBattleCount = 0;
+            int eventCount = 0;
+
+            for (int i = 0; i < runtime.GeneratedNodes.Count; i++)
+            {
+                GeneratedMapNodeData node = runtime.GeneratedNodes[i];
+                if (node == null || !visitedNodeIds.Contains(node.NodeIndex.ToString()))
+                    continue;
+
+                switch (node.Type?.Trim())
+                {
+                    case "Common":
+                    case "Battle":
+                        normalBattleCount++;
+                        break;
+                    case "Elite":
+                        eliteBattleCount++;
+                        break;
+                    case "Special":
+                    case "Event":
+                        eventCount++;
+                        break;
+                }
+            }
+
+            return new ExplorationNodeVisitSummary(
+                normalBattleCount,
+                eliteBattleCount,
+                eventCount);
+        }
+    }
+
     [Serializable]
     public sealed class PendingResearchResultData
     {

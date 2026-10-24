@@ -10,7 +10,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text resultText;
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private TMP_Text stageNameText;
-    [SerializeField] private TMP_Text stageResultText;
+    [SerializeField] private TMP_Text elapsedTimeCountText;
+    [SerializeField] private TMP_Text erosionLevelText;
     [SerializeField] private Image stagePreviewImage;
     [SerializeField] private TMP_Text redDustiumText;
     [SerializeField] private TMP_Text normalBattleCountText;
@@ -27,6 +28,16 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     [SerializeField] private RectTransform statisticsOverlayBoundary;
     [SerializeField, Min(1)] private int maxHardModeSlots = 12;
     [SerializeField, Min(1)] private int maxAcquiredItemSlots = 8;
+    [Header("Selected Erosion Icon Layout")]
+    [SerializeField, Min(0.01f)] private float hardModeSlotScale = 0.38f;
+    [SerializeField, Min(0f)] private float hardModeSlotHorizontalSpacing = 42f;
+    [SerializeField, Min(0f)] private float hardModeSlotVerticalSpacing = 42f;
+    [SerializeField, Min(1)] private int hardModeSlotColumns = 6;
+    [Header("Acquired Item Icon Layout")]
+    [SerializeField, Min(0.01f)] private float acquiredItemSlotScale = 0.56f;
+    [SerializeField, Min(0f)] private float acquiredItemSlotHorizontalSpacing = 66f;
+    [SerializeField, Min(0f)] private float acquiredItemSlotVerticalSpacing = 66f;
+    [SerializeField, Min(1)] private int acquiredItemSlotColumns = 8;
     [SerializeField] private Button returnToBaseButton;
     [SerializeField] private Canvas sortingCanvas;
     [SerializeField] private int resultPanelSortingOrder = 25000;
@@ -88,7 +99,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
                 isDefeatResult,
                 researchRewardMultiplier,
                 currentNode,
-                experienceContext);
+                experienceContext,
+                mapRuntime);
         else if (resultText != null)
             resultText.text = BuildText(result, isDefeatResult, researchRewardMultiplier);
 
@@ -101,7 +113,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         bool defeat,
         float rewardMultiplier,
         GeneratedMapNodeData currentNode,
-        BattleStageClearExperienceContext clearContext)
+        BattleStageClearExperienceContext clearContext,
+        MapRuntimeData mapRuntime)
     {
         if (resultText != null)
             resultText.gameObject.SetActive(false);
@@ -112,15 +125,17 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
         SetText(titleText, GameLocalization.Get("ui.exploration.result.title", "탐사 보고"));
         BattleRuntimeData runtime = DataManager.Instance?.BattleRuntimeStore?.Get();
-        SetText(stageNameText, FormatElapsedSummary(
-            runtime?.ExplorationElapsedSeconds ?? 0f,
-            GameLocalization.Get("ui.exploration.result.elapsed_time", "소요 시간")));
-        SetText(stageResultText, CalculateSelectedErosionScore(
+        SetText(stageNameText, GameLocalization.Get(
+            "ui.exploration.result.elapsed_time",
+            "소요 시간"));
+        SetText(elapsedTimeCountText, BattleExplorationElapsedTime.Format(
+            runtime?.ExplorationElapsedSeconds ?? 0f));
+        SetText(erosionLevelText, FormatErosionLevel(CalculateSelectedErosionScore(
             runtime?.SelectedErosionDifficultyIds,
-            DataManager.Instance?.ErosionDatabase).ToString());
+            DataManager.Instance?.ErosionDatabase)));
         SetText(redDustiumText, FormatRedDustium(value.Remnant, rewardMultiplier));
 
-        BattleNodeSummary summary = CountClearedNodeSummary(clearContext);
+        ExplorationNodeVisitSummary summary = ExplorationNodeVisitSummary.Count(mapRuntime);
         SetText(normalBattleCountText, summary.NormalBattleCount.ToString());
         SetText(eliteBattleCountText, summary.EliteBattleCount.ToString());
         SetText(eventCountText, summary.EventCount.ToString());
@@ -137,6 +152,11 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     public static string FormatElapsedSummary(float seconds, string label)
     {
         return $"{label?.Trim()}  {BattleExplorationElapsedTime.Format(seconds)}";
+    }
+
+    public static string FormatErosionLevel(int score)
+    {
+        return Mathf.Max(0, score).ToString();
     }
 
     private void ApplyCharacterRows(
@@ -207,6 +227,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
         return titleText != null &&
                stageNameText != null &&
+               elapsedTimeCountText != null &&
                redDustiumText != null &&
                characterRows != null &&
                characterRows.Length > 0;
@@ -215,8 +236,9 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     private void AutoBindSceneReferences()
     {
         titleText ??= FindText("ExplorationReportTitle");
-        stageNameText ??= FindText("ExplorationReportStageName");
-        stageResultText ??= FindText("ExplorationReportStageResult");
+        stageNameText ??= FindText("ExplorationReportElapsedTimeLabel");
+        elapsedTimeCountText ??= FindText("ExplorationReportElapsedTimeCount");
+        erosionLevelText ??= FindText("ExplorationReportErosionLevel");
         stagePreviewImage ??= FindImage("ExplorationReportStagePreview");
         redDustiumText ??= FindText("ExplorationReportRedDustium");
         normalBattleCountText ??= FindText("ExplorationReportNormalBattleCount");
@@ -352,14 +374,19 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
     private void ApplyHardModeSlots(BattleRuntimeData runtime)
     {
-        EnsureSlotCount(hardModeSlots, hardModeSlotRoot, maxHardModeSlots, "HardModeSlot", 0f, 42f, 0.38f);
+        EnsureSlotCount(hardModeSlots, hardModeSlotRoot, maxHardModeSlots, "HardModeSlot");
         IReadOnlyList<string> ids = runtime?.SelectedErosionDifficultyIds;
         int visibleCount = Mathf.Min(ids?.Count ?? 0, maxHardModeSlots);
         for (int i = 0; i < hardModeSlots.Count; i++)
         {
             BattleBagItemSlotUI slot = hardModeSlots[i];
-            if (slot.RectTransform != null)
-                slot.RectTransform.anchoredPosition = new Vector2((i % 6) * 42f, -(i / 6) * 42f);
+            ApplySlotLayout(
+                slot.RectTransform,
+                i,
+                hardModeSlotColumns,
+                hardModeSlotHorizontalSpacing,
+                hardModeSlotVerticalSpacing,
+                hardModeSlotScale);
             bool visible = i < visibleCount && !string.IsNullOrWhiteSpace(ids[i]);
             slot.gameObject.SetActive(visible);
             if (!visible)
@@ -373,11 +400,18 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
     private void ApplyAcquiredItemSlots(ExplorationResultData value)
     {
-        EnsureSlotCount(acquiredItemSlots, acquiredItemSlotRoot, maxAcquiredItemSlots, "AcquiredItemSlot", 0f, 66f, 0.56f);
+        EnsureSlotCount(acquiredItemSlots, acquiredItemSlotRoot, maxAcquiredItemSlots, "AcquiredItemSlot");
         List<BagItemStack> stacks = BagItemStackUtility.BuildStacks(value?.BagItemIds);
         for (int i = 0; i < acquiredItemSlots.Count; i++)
         {
             BattleBagItemSlotUI slot = acquiredItemSlots[i];
+            ApplySlotLayout(
+                slot.RectTransform,
+                i,
+                acquiredItemSlotColumns,
+                acquiredItemSlotHorizontalSpacing,
+                acquiredItemSlotVerticalSpacing,
+                acquiredItemSlotScale);
             bool visible = i < stacks.Count;
             slot.gameObject.SetActive(visible);
             if (!visible)
@@ -393,10 +427,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         List<BattleBagItemSlotUI> slots,
         RectTransform root,
         int count,
-        string slotName,
-        float startX,
-        float spacing,
-        float scale)
+        string slotName)
     {
         if (root == null || iconSlotPrefab == null)
             return;
@@ -411,11 +442,27 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
                 rect.anchorMin = new Vector2(0f, 0.5f);
                 rect.anchorMax = new Vector2(0f, 0.5f);
                 rect.pivot = new Vector2(0f, 0.5f);
-                rect.anchoredPosition = new Vector2(startX + slots.Count * spacing, 0f);
-                rect.localScale = Vector3.one * scale;
             }
             slots.Add(slot);
         }
+    }
+
+    private static void ApplySlotLayout(
+        RectTransform rect,
+        int index,
+        int columns,
+        float horizontalSpacing,
+        float verticalSpacing,
+        float scale)
+    {
+        if (rect == null)
+            return;
+
+        int safeColumns = Mathf.Max(1, columns);
+        rect.anchoredPosition = new Vector2(
+            (index % safeColumns) * Mathf.Max(0f, horizontalSpacing),
+            -(index / safeColumns) * Mathf.Max(0f, verticalSpacing));
+        rect.localScale = Vector3.one * Mathf.Max(0.01f, scale);
     }
 
     private static ErosionData ResolveErosionData(string id)

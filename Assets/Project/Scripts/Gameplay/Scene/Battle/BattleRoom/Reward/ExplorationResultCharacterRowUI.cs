@@ -22,9 +22,20 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
     [SerializeField] private RectTransform relicSlotRoot;
     [SerializeField] private RectTransform skillSlotRoot;
     [SerializeField] private RectTransform informationHoverTarget;
+    [SerializeField] private RectTransform statisticsOverlayAnchor;
     [SerializeField] private ExplorationResultPanelUI statisticsOverlayController;
     [SerializeField, Min(1)] private int maxRelicSlots = 6;
     [SerializeField, Min(1)] private int maxSkillSlots = 4;
+    [Header("Relic Icon Layout")]
+    [SerializeField, Min(0.01f)] private float relicSlotScale = 0.46f;
+    [SerializeField, Min(0f)] private float relicSlotHorizontalSpacing = 52f;
+    [SerializeField, Min(0f)] private float relicSlotVerticalSpacing = 52f;
+    [SerializeField, Min(1)] private int relicSlotColumns = 3;
+    [Header("Skill Icon Layout")]
+    [SerializeField, Min(0.01f)] private float skillSlotScale = 0.62f;
+    [SerializeField, Min(0f)] private float skillSlotHorizontalSpacing = 66f;
+    [SerializeField, Min(0f)] private float skillSlotVerticalSpacing = 66f;
+    [SerializeField, Min(1)] private int skillSlotColumns = 3;
 
     private readonly List<BattleBagItemSlotUI> relicSlots = new();
     private readonly List<BattleBagItemSlotUI> skillSlots = new();
@@ -131,10 +142,11 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         if (informationHoverTarget == null || eventData == null)
             return;
 
+        RectTransform overlaySource = statisticsOverlayAnchor ?? informationHoverTarget;
         statisticsOverlayController?.ShowStatisticsOverlay(
             this,
             statisticsTooltipContent,
-            informationHoverTarget);
+            overlaySource);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -147,10 +159,11 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         if (informationHoverTarget == null || eventData == null)
             return;
 
+        RectTransform overlaySource = statisticsOverlayAnchor ?? informationHoverTarget;
         statisticsOverlayController?.ToggleStatisticsOverlay(
             this,
             statisticsTooltipContent,
-            informationHoverTarget);
+            overlaySource);
     }
 
     private void SetEquipmentSlots(CharacterRuntimeData character)
@@ -189,12 +202,15 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
                 rect.anchorMin = new Vector2(0f, 0.5f);
                 rect.anchorMax = new Vector2(0f, 0.5f);
                 rect.pivot = new Vector2(0f, 0.5f);
-                int columns = 3;
-                float spacing = skill ? 66f : 52f;
+                int columns = Mathf.Max(1, skill ? skillSlotColumns : relicSlotColumns);
+                float horizontalSpacing = skill ? skillSlotHorizontalSpacing : relicSlotHorizontalSpacing;
+                float verticalSpacing = skill ? skillSlotVerticalSpacing : relicSlotVerticalSpacing;
                 rect.anchoredPosition = new Vector2(
-                    (slots.Count % columns) * spacing,
-                    -(slots.Count / columns) * spacing);
-                rect.localScale = Vector3.one * (skill ? 0.62f : 0.46f);
+                    (slots.Count % columns) * Mathf.Max(0f, horizontalSpacing),
+                    -(slots.Count / columns) * Mathf.Max(0f, verticalSpacing));
+                rect.localScale = Vector3.one * Mathf.Max(
+                    0.01f,
+                    skill ? skillSlotScale : relicSlotScale);
             }
             slots.Add(slot);
         }
@@ -203,9 +219,12 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         {
             BattleBagItemSlotUI slot = slots[i];
             bool filled = i < visibleIds.Count;
-            slot.gameObject.SetActive(filled);
+            slot.gameObject.SetActive(true);
             if (!filled)
+            {
+                slot.SetupDisplayIcon(null);
                 continue;
+            }
 
             string id = visibleIds[i];
             slot.SetupDisplayIcon(skill ? ResolveSkillIcon(id) : ResolveRelicIcon(id));
@@ -315,6 +334,7 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         experienceText ??= FindText("ExperienceText");
         levelUpRoot ??= FindChild("LevelUp")?.gameObject;
         informationHoverTarget ??= informationIcon != null ? informationIcon.rectTransform : null;
+        statisticsOverlayAnchor ??= FindChild("StatisticsOverlayAnchor") as RectTransform;
         statisticsOverlayController ??= GetComponentInParent<ExplorationResultPanelUI>(true);
         relicSlotRoot ??= damageTakenText != null ? damageTakenText.rectTransform : null;
         skillSlotRoot ??= buffAppliedText != null ? buffAppliedText.rectTransform : null;
