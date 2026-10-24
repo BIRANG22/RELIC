@@ -209,7 +209,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
             tooltipNameText.text = emptyTooltipName;
 
         if (tooltipDescriptionText != null)
-            SkillEffectInlineIconUtility.SetText(tooltipDescriptionText, emptyTooltipDescription);
+            SkillEffectInlineIconUtility.SetTooltipTextWithoutIcons(tooltipDescriptionText, emptyTooltipDescription);
     }
 
     private void ClearRows()
@@ -234,7 +234,7 @@ public class EquippedSkillPanelUI : MonoBehaviour
             tooltipNameText.text = title;
 
         if (tooltipDescriptionText != null)
-            SkillEffectInlineIconUtility.SetText(tooltipDescriptionText, description);
+            SkillEffectInlineIconUtility.SetTooltipTextWithoutIcons(tooltipDescriptionText, description);
 
         if (moveTooltipToHoveredSlot)
             MoveTooltipToSlot(hoveredSlotRect);

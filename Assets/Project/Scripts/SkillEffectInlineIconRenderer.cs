@@ -168,7 +168,40 @@ namespace Relic.Gameplay.Data
             if (renderer == null)
                 renderer = target.gameObject.AddComponent<SkillEffectInlineIconRenderer>();
 
+            renderer.enabled = true;
             renderer.Bind(target);
+        }
+
+        // Skill tooltip only: keep effect links underlined without spawning icon Images.
+        public static void SetTooltipTextWithoutIcons(TMP_Text target, string text)
+        {
+            if (target == null)
+                return;
+
+            target.richText = true;
+            string formatted = text ?? string.Empty;
+            formatted = System.Text.RegularExpressions.Regex.Replace(
+                formatted,
+                "(<link=\"effecticon:[^\"]+\">)(.*?)(</link>)(?:<space=[^>]+>)?",
+                match => match.Groups[1].Value + "<u>" + match.Groups[2].Value + "</u>" + match.Groups[3].Value,
+                System.Text.RegularExpressions.RegexOptions.Singleline);
+
+            // Only visible numeric runs are tinted. Preserve TMP tag attributes and link IDs.
+            string[] sections = System.Text.RegularExpressions.Regex.Split(formatted, "(<[^>]*>)");
+            for (int i = 0; i < sections.Length; i++)
+            {
+                if (sections[i].Length == 0 || sections[i][0] == '<')
+                    continue;
+                sections[i] = System.Text.RegularExpressions.Regex.Replace(
+                    sections[i], @"[0-9]+(?:[.,][0-9]+)*",
+                    match => "<color=#FFC978>" + match.Value + "</color>");
+            }
+            formatted = string.Concat(sections);
+
+            SkillEffectInlineIconRenderer renderer = target.GetComponent<SkillEffectInlineIconRenderer>();
+            if (renderer != null)
+                renderer.enabled = false; // OnDisable clears icons previously spawned.
+            target.text = formatted;
         }
     }
 }

@@ -68,8 +68,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float fragmentTransferStartSoundVolume = 0.5f;
 
     [Header("Fragment Transfer Animation")]
-    [Tooltip("튜토리얼에서 획득한 룬이 날아갈 캐릭터 월드 오브젝트입니다. 비워두면 Cha_01_idle_0 오브젝트를 자동으로 찾습니다.")]
-    [SerializeField] private Transform fragmentTransferWorldTarget;
+    [Tooltip("튜토리얼에서 획득한 파편 3개가 이동할 Canvas UI 오브젝트입니다. RectTransform을 직접 지정합니다.")]
+    [SerializeField] private RectTransform fragmentTransferUiTarget;
     [Tooltip("유물/연성제 획득과 동일한 공용 이동 이펙트입니다. 비워두면 LobbyRelicShopPresenter에 연결된 프리팹을 자동으로 사용합니다.")]
     [SerializeField] private ScreenSpaceTransferOrbEffect fragmentTransferEffectPrefab;
     [Tooltip("각 룬 이동 효과가 순서대로 출발하는 간격입니다. 앞 효과가 이동 중이어도 다음 효과가 출발합니다.")]
@@ -652,46 +652,25 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
     private IEnumerator PlayFragmentTransferRoutine(List<FragmentTransferSnapshot> snapshots)
     {
-        ResolveFragmentTransferWorldTarget();
         ResolveFragmentTransferEffectPrefab();
 
-        if (fragmentTransferWorldTarget == null || fragmentTransferEffectPrefab == null)
+        if (fragmentTransferUiTarget == null || fragmentTransferEffectPrefab == null)
         {
-            if (fragmentTransferWorldTarget == null)
-                Debug.LogWarning("[LobbyTutorialController] Fragment 이동 효과의 Cha_01_idle_0 목표를 찾지 못했습니다.", this);
+            if (fragmentTransferUiTarget == null)
+                Debug.LogWarning("[LobbyTutorialController] 파편 이동 목표 UI(RectTransform)가 지정되지 않았습니다.", this);
 
             if (fragmentTransferEffectPrefab == null)
-                Debug.LogWarning("[LobbyTutorialController] Fragment 이동 효과에 사용할 ScreenSpaceTransferOrbEffect 프리팹을 찾지 못했습니다.", this);
+                Debug.LogWarning("[LobbyTutorialController] 파편 이동 이펙트 프리팹이 지정되지 않았습니다.", this);
 
             SetTutorialDisplay(false);
             fragmentTransferCoroutine = null;
             yield break;
         }
 
-        Camera worldCamera = Camera.main;
-        Vector3 targetWorldPosition = fragmentTransferWorldTarget.position;
-
-        // 캐릭터 스프라이트의 중심으로 들어가도록 Renderer bounds를 우선 사용합니다.
-        Renderer targetRenderer = fragmentTransferWorldTarget.GetComponent<Renderer>();
-        if (targetRenderer == null)
-            targetRenderer = fragmentTransferWorldTarget.GetComponentInChildren<Renderer>(true);
-
-        if (targetRenderer != null)
-        {
-            targetWorldPosition = targetRenderer.bounds.center;
-        }
-        else
-        {
-            Collider2D targetCollider = fragmentTransferWorldTarget.GetComponent<Collider2D>();
-            if (targetCollider == null)
-                targetCollider = fragmentTransferWorldTarget.GetComponentInChildren<Collider2D>(true);
-            if (targetCollider != null)
-                targetWorldPosition = targetCollider.bounds.center;
-        }
-
-        Vector2 targetScreenPosition = worldCamera != null
-            ? (Vector2)worldCamera.WorldToScreenPoint(targetWorldPosition)
-            : (Vector2)targetWorldPosition;
+        // 공용 이펙트는 Screen Space 좌표를 사용하므로 Canvas의 실제 화면 중심을 목표로 삼습니다.
+        // Overlay/Camera/World Space Canvas 모두 동일한 좌표 변환을 사용합니다.
+        Vector2 targetScreenPosition = GetRectScreenCenter(
+            fragmentTransferUiTarget, ResolveUiCamera(fragmentTransferUiTarget));
 
         for (int i = 0; i < snapshots.Count; i++)
         {
@@ -727,26 +706,6 @@ public sealed class LobbyTutorialController : MonoBehaviour
             Mathf.Clamp01(fragmentTransferStartSoundVolume));
     }
 
-    private void ResolveFragmentTransferWorldTarget()
-    {
-        if (fragmentTransferWorldTarget != null)
-            return;
-
-        Transform[] allTransforms = FindObjectsByType<Transform>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None);
-
-        for (int i = 0; i < allTransforms.Length; i++)
-        {
-            Transform candidate = allTransforms[i];
-            if (candidate == null || !string.Equals(candidate.name, "Cha_01_idle_0", StringComparison.Ordinal))
-                continue;
-
-            fragmentTransferWorldTarget = candidate;
-            return;
-        }
-    }
-
     private void ResolveFragmentTransferEffectPrefab()
     {
         if (fragmentTransferEffectPrefab != null)
@@ -763,8 +722,8 @@ public sealed class LobbyTutorialController : MonoBehaviour
         if (canvas != null)
             return canvas;
 
-        if (fragmentTransferWorldTarget is RectTransform targetRect)
-            return targetRect.GetComponentInParent<Canvas>();
+        if (fragmentTransferUiTarget != null)
+            return fragmentTransferUiTarget.GetComponentInParent<Canvas>();
 
         return null;
     }
@@ -1169,7 +1128,6 @@ public sealed class LobbyTutorialController : MonoBehaviour
         }
 
         AutoBindFragmentImages();
-        ResolveFragmentTransferWorldTarget();
         ResolveFragmentTransferEffectPrefab();
     }
 

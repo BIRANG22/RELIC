@@ -1291,7 +1291,7 @@ public class SkillListPanel : MonoBehaviour
             detailsBackground.SetActive(true);
 
         if (detailsText != null)
-            SkillEffectInlineIconUtility.SetText(detailsText, text);
+            SkillEffectInlineIconUtility.SetTooltipTextWithoutIcons(detailsText, text);
 
         if (alignDetailsToHoveredSkillLine)
             AlignDetailToHoveredSkillLine(hoveredSkillRect);
@@ -1303,7 +1303,7 @@ public class SkillListPanel : MonoBehaviour
             detailsBackground.SetActive(false);
 
         if (detailsText != null)
-            SkillEffectInlineIconUtility.SetText(detailsText, "");
+            SkillEffectInlineIconUtility.SetTooltipTextWithoutIcons(detailsText, "");
     }
 
     private void AlignDetailToHoveredSkillLine(RectTransform hoveredSkillRect)

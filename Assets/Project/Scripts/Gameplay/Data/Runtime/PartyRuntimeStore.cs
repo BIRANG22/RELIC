@@ -279,6 +279,29 @@ namespace Relic.Gameplay.Data
                 byCharacterId.Add(slot.CharacterId, slot);
             }
 
+            // Ready 슬롯 전체 순서를 전달받는 경우 빈 슬롯도 포함하여 그대로 배치합니다.
+            if (orderedCharacterIds.Count == MaxPartyCount)
+            {
+                var reorderedSlots = new PartySlotRuntimeData[MaxPartyCount];
+                var seenSlots = new HashSet<string>(System.StringComparer.Ordinal);
+                for (int i = 0; i < MaxPartyCount; i++)
+                {
+                    string id = orderedCharacterIds[i];
+                    if (string.IsNullOrWhiteSpace(id))
+                    {
+                        reorderedSlots[i] = new PartySlotRuntimeData();
+                        continue;
+                    }
+                    if (!seenSlots.Add(id) || !byCharacterId.TryGetValue(id, out reorderedSlots[i]))
+                        return false;
+                }
+                if (seenSlots.Count != placedSlots.Count)
+                    return false;
+                for (int i = 0; i < MaxPartyCount; i++)
+                    slots[i] = reorderedSlots[i];
+                return true;
+            }
+
             if (placedSlots.Count != orderedCharacterIds.Count)
                 return false;
 
