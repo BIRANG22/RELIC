@@ -3576,10 +3576,6 @@ MonoBehaviour:
     m_Localized: Exploration Report
     m_Metadata:
       m_Items: []
-  - m_Id: 10173380891779117
-    m_Localized: clear
-    m_Metadata:
-      m_Items: []
   - m_Id: 10173380895973443
     m_Localized: Lothern Ruins
     m_Metadata:
@@ -4400,10 +4396,6 @@ MonoBehaviour:
     m_Localized: kill monsters
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458548838461
-    m_Localized: Damage dealt
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838462
     m_Localized: Damage received
     m_Metadata:
@@ -4666,10 +4658,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 17041964720988213
     m_Localized: pattern 2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988214
-    m_Localized: '[Check again what you have collected]'
     m_Metadata:
       m_Items: []
   - m_Id: 17041964720988218
