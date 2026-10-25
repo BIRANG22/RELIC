@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Text;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -18,8 +19,12 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text eliteBattleCountText;
     [SerializeField] private TMP_Text eventCountText;
     [SerializeField] private ExplorationResultCharacterRowUI[] characterRows;
+    [Header("Result Count-Up")]
+    [SerializeField, Min(0f)] private float countUpDuration = 1f;
     [Header("Report Layout")]
     [SerializeField] private BattleBagItemSlotUI iconSlotPrefab;
+    [SerializeField] private Image hardModeBlurPrefab;
+    [SerializeField] private Image hardModeBackdropBlurPrefab;
     [SerializeField] private RectTransform hardModeSlotRoot;
     [SerializeField] private RectTransform acquiredItemSlotRoot;
     [SerializeField] private GameObject statisticsOverlayRoot;
@@ -50,9 +55,16 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     private float researchRewardMultiplier = 1f;
     private BattleStageClearExperienceContext experienceContext = BattleStageClearExperienceContext.Empty;
     private readonly List<BattleBagItemSlotUI> hardModeSlots = new();
+    private readonly List<Image> hardModeBackdropBlurs = new();
     private readonly List<BattleBagItemSlotUI> acquiredItemSlots = new();
     private ExplorationResultCharacterRowUI statisticsOverlayOwner;
     private bool statisticsOverlayPinned;
+    private Coroutine resultCountUpCoroutine;
+    private float targetElapsedSeconds;
+    private int targetNormalBattleCount;
+    private int targetEliteBattleCount;
+    private int targetEventCount;
+    private bool hasResultCountUpTargets;
 
     private void Awake()
     {
@@ -74,6 +86,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
     private void OpenInternal(bool defeat, float rewardMultiplier)
     {
+        StopResultCountUp(false);
+
         BattleRuntimeData runtime = DataManager.Instance?.BattleRuntimeStore?.Get();
         MapRuntimeData mapRuntime = DataManager.Instance?.MapRuntimeStore?.Get();
         GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
@@ -95,6 +109,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         if (returnToBaseButton != null)
             returnToBaseButton.interactable = true;
 
+        gameObject.SetActive(true);
+
         if (HasStructuredBindings())
             ApplyStructuredResult(
                 result,
@@ -106,7 +122,6 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         else if (resultText != null)
             resultText.text = BuildText(result, isDefeatResult, researchRewardMultiplier);
 
-        gameObject.SetActive(true);
         BringResultPanelToFront();
     }
 
@@ -160,17 +175,13 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         SetText(stageNameText, GameLocalization.Get(
             "ui.exploration.result.elapsed_time",
             "소요 시간"));
-        SetText(elapsedTimeCountText, BattleExplorationElapsedTime.Format(
-            runtime?.ExplorationElapsedSeconds ?? 0f));
         SetText(erosionLevelText, FormatErosionLevel(CalculateSelectedErosionScore(
             runtime?.SelectedErosionDifficultyIds,
             DataManager.Instance?.ErosionDatabase)));
         SetText(redDustiumText, FormatRedDustium(value.Remnant, rewardMultiplier));
 
         ExplorationNodeVisitSummary summary = ExplorationNodeVisitSummary.Count(mapRuntime);
-        SetText(normalBattleCountText, summary.NormalBattleCount.ToString());
-        SetText(eliteBattleCountText, summary.EliteBattleCount.ToString());
-        SetText(eventCountText, summary.EventCount.ToString());
+        StartResultCountUp(runtime?.ExplorationElapsedSeconds ?? 0f, summary);
 
         ApplyStagePreviewImage(stagePresentation?.PreviewSprite);
         ApplyHardModeSlots(runtime);
@@ -184,6 +195,82 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     public static string FormatElapsedSummary(float seconds, string label)
     {
         return $"{label?.Trim()}  {BattleExplorationElapsedTime.Format(seconds)}";
+    }
+
+    public static int CalculateCountUpSeconds(float targetSeconds, float progress)
+    {
+        return Mathf.FloorToInt(Mathf.Max(0f, targetSeconds) * Mathf.Clamp01(progress));
+    }
+
+    public static int CalculateCountUpCount(int targetCount, float progress)
+    {
+        return Mathf.FloorToInt(Mathf.Max(0, targetCount) * Mathf.Clamp01(progress));
+    }
+
+    private void StartResultCountUp(
+        float elapsedSeconds,
+        ExplorationNodeVisitSummary summary)
+    {
+        StopResultCountUp(false);
+
+        targetElapsedSeconds = Mathf.Max(0f, elapsedSeconds);
+        targetNormalBattleCount = Mathf.Max(0, summary.NormalBattleCount);
+        targetEliteBattleCount = Mathf.Max(0, summary.EliteBattleCount);
+        targetEventCount = Mathf.Max(0, summary.EventCount);
+        hasResultCountUpTargets = true;
+
+        if (!Application.isPlaying || countUpDuration <= 0f)
+        {
+            ApplyResultCountUpProgress(1f);
+            return;
+        }
+
+        ApplyResultCountUpProgress(0f);
+        resultCountUpCoroutine = StartCoroutine(AnimateResultCountUp());
+    }
+
+    private IEnumerator AnimateResultCountUp()
+    {
+        float elapsed = 0f;
+        while (elapsed < countUpDuration)
+        {
+            yield return null;
+            elapsed += Time.unscaledDeltaTime;
+            ApplyResultCountUpProgress(elapsed / countUpDuration);
+        }
+
+        ApplyResultCountUpProgress(1f);
+        resultCountUpCoroutine = null;
+    }
+
+    private void ApplyResultCountUpProgress(float progress)
+    {
+        int displayedSeconds = CalculateCountUpSeconds(targetElapsedSeconds, progress);
+        int displayedNormalCount = CalculateCountUpCount(targetNormalBattleCount, progress);
+        int displayedEliteCount = CalculateCountUpCount(targetEliteBattleCount, progress);
+        int displayedEventCount = CalculateCountUpCount(targetEventCount, progress);
+
+        SetText(elapsedTimeCountText, BattleExplorationElapsedTime.Format(displayedSeconds));
+        SetText(normalBattleCountText, displayedNormalCount.ToString());
+        SetText(eliteBattleCountText, displayedEliteCount.ToString());
+        SetText(eventCountText, displayedEventCount.ToString());
+    }
+
+    private void StopResultCountUp(bool applyFinalValues)
+    {
+        if (resultCountUpCoroutine != null)
+        {
+            StopCoroutine(resultCountUpCoroutine);
+            resultCountUpCoroutine = null;
+        }
+
+        if (applyFinalValues && hasResultCountUpTargets)
+            ApplyResultCountUpProgress(1f);
+    }
+
+    private void OnDisable()
+    {
+        StopResultCountUp(true);
     }
 
     public static string FormatErosionLevel(int score)
@@ -407,11 +494,16 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     private void ApplyHardModeSlots(BattleRuntimeData runtime)
     {
         EnsureSlotCount(hardModeSlots, hardModeSlotRoot, maxHardModeSlots, "HardModeSlot");
+        EnsureHardModeBackdropBlurCount(maxHardModeSlots);
         IReadOnlyList<string> ids = runtime?.SelectedErosionDifficultyIds;
         int visibleCount = Mathf.Min(ids?.Count ?? 0, maxHardModeSlots);
         for (int i = 0; i < hardModeSlots.Count; i++)
         {
             BattleBagItemSlotUI slot = hardModeSlots[i];
+            Image backdropBlur = i < hardModeBackdropBlurs.Count
+                ? hardModeBackdropBlurs[i]
+                : null;
+            EnsureHardModeBlur(slot);
             ApplySlotLayout(
                 slot.RectTransform,
                 i,
@@ -420,6 +512,13 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
                 hardModeSlotVerticalSpacing,
                 hardModeSlotScale);
             bool visible = i < visibleCount && !string.IsNullOrWhiteSpace(ids[i]);
+            if (backdropBlur != null)
+            {
+                SyncHardModeBackdropTransform(backdropBlur.rectTransform, slot.RectTransform);
+                backdropBlur.gameObject.SetActive(visible);
+                PlaceBackdropImmediatelyBeforeSlot(backdropBlur.transform, slot.transform);
+            }
+
             slot.gameObject.SetActive(visible);
             if (!visible)
                 continue;
@@ -428,6 +527,62 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             ErosionData data = ResolveErosionData(id);
             slot.SetupDisplayIcon(ResolveErosionIcon(data), FormatErosionTier(data?.Tier ?? 0));
         }
+    }
+
+    private void EnsureHardModeBackdropBlurCount(int count)
+    {
+        if (hardModeSlotRoot == null || hardModeBackdropBlurPrefab == null)
+            return;
+
+        while (hardModeBackdropBlurs.Count < count)
+        {
+            Image backdropBlur = Instantiate(hardModeBackdropBlurPrefab, hardModeSlotRoot, false);
+            backdropBlur.name = $"HardModeSlotBackdropBlur_{hardModeBackdropBlurs.Count}";
+            backdropBlur.raycastTarget = false;
+            hardModeBackdropBlurs.Add(backdropBlur);
+        }
+    }
+
+    private static void SyncHardModeBackdropTransform(RectTransform backdrop, RectTransform slot)
+    {
+        if (backdrop == null || slot == null)
+            return;
+
+        backdrop.anchorMin = slot.anchorMin;
+        backdrop.anchorMax = slot.anchorMax;
+        backdrop.pivot = new Vector2(0.5f, 0.5f);
+        backdrop.localRotation = slot.localRotation;
+        backdrop.localScale = slot.localScale;
+        backdrop.position = slot.TransformPoint(slot.rect.center);
+    }
+
+    private static void PlaceBackdropImmediatelyBeforeSlot(Transform backdrop, Transform slot)
+    {
+        if (backdrop == null || slot == null || backdrop.parent != slot.parent)
+            return;
+
+        int slotIndex = slot.GetSiblingIndex();
+        if (backdrop.GetSiblingIndex() < slotIndex)
+            slotIndex--;
+
+        backdrop.SetSiblingIndex(slotIndex);
+    }
+
+    private void EnsureHardModeBlur(BattleBagItemSlotUI slot)
+    {
+        if (slot == null ||
+            hardModeBlurPrefab == null ||
+            slot.transform.Find("HardModeRedBlur") != null)
+        {
+            return;
+        }
+
+        Image blur = Instantiate(hardModeBlurPrefab, slot.transform, false);
+        blur.name = "HardModeRedBlur";
+        blur.raycastTarget = false;
+        Transform icon = slot.transform.Find("Icon");
+        if (icon != null)
+            blur.transform.SetSiblingIndex(icon.GetSiblingIndex());
     }
 
     private void ApplyAcquiredItemSlots(ExplorationResultData value)

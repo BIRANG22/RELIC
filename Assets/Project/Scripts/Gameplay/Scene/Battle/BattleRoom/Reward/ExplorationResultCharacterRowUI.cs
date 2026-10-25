@@ -205,12 +205,17 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
                 int columns = Mathf.Max(1, skill ? skillSlotColumns : relicSlotColumns);
                 float horizontalSpacing = skill ? skillSlotHorizontalSpacing : relicSlotHorizontalSpacing;
                 float verticalSpacing = skill ? skillSlotVerticalSpacing : relicSlotVerticalSpacing;
+                float slotScale = Mathf.Max(0.01f, skill ? skillSlotScale : relicSlotScale);
+                rect.localScale = Vector3.one * slotScale;
+                float centeredStartX = CalculateCenteredSlotStartX(
+                    root.rect.width,
+                    maxCount,
+                    columns,
+                    horizontalSpacing,
+                    rect.rect.width * slotScale);
                 rect.anchoredPosition = new Vector2(
-                    (slots.Count % columns) * Mathf.Max(0f, horizontalSpacing),
+                    centeredStartX + (slots.Count % columns) * Mathf.Max(0f, horizontalSpacing),
                     -(slots.Count / columns) * Mathf.Max(0f, verticalSpacing));
-                rect.localScale = Vector3.one * Mathf.Max(
-                    0.01f,
-                    skill ? skillSlotScale : relicSlotScale);
             }
             slots.Add(slot);
         }
@@ -229,6 +234,22 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
             string id = visibleIds[i];
             slot.SetupDisplayIcon(skill ? ResolveSkillIcon(id) : ResolveRelicIcon(id));
         }
+    }
+
+    public static float CalculateCenteredSlotStartX(
+        float rootWidth,
+        int maxCount,
+        int columns,
+        float horizontalSpacing,
+        float slotVisualWidth)
+    {
+        if (maxCount <= 0)
+            return 0f;
+
+        int columnCount = Mathf.Min(maxCount, Mathf.Max(1, columns));
+        float contentWidth =
+            (columnCount - 1) * Mathf.Max(0f, horizontalSpacing) + Mathf.Max(0f, slotVisualWidth);
+        return Mathf.Max(0f, (Mathf.Max(0f, rootWidth) - contentWidth) * 0.5f);
     }
 
     private static Sprite ResolveRelicIcon(string id)
