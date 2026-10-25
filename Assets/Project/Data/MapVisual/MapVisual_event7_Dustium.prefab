@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4000000000000000001}
   - component: {fileID: 5000000000000000001}
   m_Layer: 0
-  m_Name: MapVisual_event5_Dustium
+  m_Name: MapVisual_event7_Dustium
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -104,7 +104,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31bba6d4fa734d6c9c88ca8b3b28f3a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visualObjectId: event5
+  visualObjectId: event7
   animator: {fileID: 5000000000000000001}
   vfxRoot: {fileID: 2000000000000000001}
   actions:
