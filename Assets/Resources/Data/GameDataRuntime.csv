@@ -536,16 +536,10 @@ Map_22,Special5,Special,0,Event_07,Stage1,1,0
 Map_23,Special6,Special,0,Event_08,Stage1,1,0
 Map_24,Special7,Special,0,Event_09,Stage1,1,0
 Map_25,Special8,Special,0,Event_10,Stage1,1,0
-,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-Map_28,Tutorial_Battle1,Common,Battlemap_17,0,Stage1,1,0
-Map_29,Tutorial_Battle2,Common,Battlemap_18,0,Stage1,1,0
-Map_30,Tutorial_Battle3,Common,Battlemap_19,0,Stage1,1,0
-Map_31,Tutorial_Event1,Tutorial,0,Event_T_01,Stage1,1,0
-Map_32,Tutorial_Event2,Tutorial,0,Event_T_02,Stage1,1,0
+Map_26,Tutorial1,Tutorial,Battlemap_T_01,0,Stage1,1,0
+Map_27,Tutorial2,Tutorial,Battlemap_T_02,0,Stage1,1,0
+Map_28,Tutorial3,Tutorial,0,Event_T_01,Stage1,1,0
+Map_29,Tutorial4,Tutorial,0,Event_T_02,Stage1,1,0
 
 # BattleMap
 전투맵ID,몬스터ID,점유칸1,점유칸2,점유칸3,점유칸4,설명,기억 획득,유물 노말,유물 레어,유물 에픽,유물 유니크,기억 노말,기억 레어,기억 에픽,기억 유니크
@@ -581,10 +575,9 @@ Battlemap_12,Mon_11,28,-1,-1,-1,,,,,,,,,,,,,,,,,,,,
 Battlemap_13,Mon_08,26,-1,-1,-1,"정예 모르트, 바로우",60,20,25,30,25,25,35,25,15,,,,,,,,,,
 Battlemap_13,Mon_11,32,-1,-1,-1,,,,,,,,,,,,,,,,,,,,
 Battlemap_14,Mon_12_1,27,-1,-1,-1,아라벨라,100,5,15,50,30,25,35,25,15,,,,,,,,,,
-Battlemap_17,Mon_02,22,-1,-1,-1,튜토리얼(블롭 1마리),0,0,100,0,0,0,0,0,0,,,,,,,,,,
-Battlemap_18,Mon_07,22,-1,-1,-1,튜토리얼(드라우그 1마리),0,0,100,0,0,0,0,0,0,,,,,,,,,,
-Battlemap_19,Mon_01,21,-1,-1,-1,"튜토리얼(머크, 블라이트)",0,0,0,0,0,0,0,0,0,,,,,,,,,,
-Battlemap_19,Mon_04,28,-1,-1,-1,,,,,,,,,,,,,,,,,
+Battlemap_T_01,Mon_02,22,-1,-1,-1,튜토리얼(블롭 1마리),0,0,100,0,0,0,0,0,0,,,,,,,,,,
+Battlemap_T_02,Mon_07,21,-1,-1,-1,"튜토리얼(드라우그, 블라이트)",0,0,100,0,0,0,0,0,0,,,,,,,,,,
+Battlemap_T_02,Mon_04,28,-1,-1,-1,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
@@ -592,9 +585,12 @@ Battlemap_19,Mon_04,28,-1,-1,-1,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,
 
 # Event
 이벤트 ID,이벤트 이름,이벤트 본문,선택지 순서,선택지 이름,선택지 설명,선택 불가 설명,선택지 방식,선택 가능 조건,지불 자원 종류,비용 대상,비용 수치,주사위·코인 성공 기준,실행할 효과,효과 적용 대상,유물·기억 등급,효과 수치·수량,제시,연결 이벤트,실패 이벤트,실패 결과 타입,실패 결과 대상,실패 결과값,성공 시각적 객체,성공 시각적 동작,실패 시각적 객체,실패 시각적 동작
@@ -685,8 +681,9 @@ Event_10_A,,"""대가에 만족한 듯 희미한 미소를 지었다.""",,,,,,,,
 Event_10_B,,"""제법 운이 좋다는 듯 흥미로운 표정을 지었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
 Event_10_C,,"""예상했다는 듯 가볍게 비웃었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
 Event_10_D,,"""침식의 기운을 바라보며 만족스럽게 웃었다.""",,,,,,,,,,,,,,,,,,,,,event10,,event10,
-Event_T_01,Event_T_01,,,,,,,,,,,,,,,,,,,,,,,,,
-Event_T_02,Event_T_02,,,,,,,,,,,,,,,,,,,,,,,,,
+Event_T_01,뜻밖의 합류,설명1,1,함께 휴식한다.,"전체 생명력 15 회복
+헤이즈 합류",,Immediate,,,,,,Heal,PartyAll,,15,,Event_T_01_A,,,,,,,,
+Event_T_01_A,,설명2,,,,,,,,,,,EndEvent,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 # SkillRange
@@ -933,4 +930,21 @@ Erosion_03_05,메마른 보급,Level03_5,3,0,Group_05,Exclusive,,,,0,난이도 �
 Erosion_03_06,뒤틀린 운명,Level03_6,3,3,Group_06,Exclusive,주사위 판정 난이도 2 증가,DiceDifficultyAdd,2,1,주사위 판정 난이도가 2 증가한다.
 Erosion_03_07,유물 슬롯 잠금,Level03_7,3,3,Erosion_03_07,Independent,마지막 유물칸 잠금,LockLastRelicSlot,1,1,캐릭터의 마지막 유물 슬롯을 잠근다.
 Erosion_03_08,무거운 발걸음,Level03_8,3,3,Erosion_03_08,Independent,이동 최종 마나 소모 +1,MoveFinalManaCostAdd,1,1,이동에 필요한 최종 마나 소모가 1 증가한다.
+
+# Tutorial
+튜토리얼ID,진행순서,맵ID,시작 파티,시작 침식도,시작 생명력(%),몬스터 생성 지연,단계,대화 캐릭터ID,출력,문구 키,한국어 대사/안내,넘김 방식,강조 UI,완료 안내 키,완료 안내
+TutorialId,Order,MapId,StartParty,InitialErosion,InitialHpPercent,DeferMonsterSpawn,Phase,SpeakerId,Text output,TextKey,TextKO,Advance,HighlightTarget,CompleteTextKey,CompleteTextKO
+Tutorial_01,1,Map_26,"Char_01,Char_02",42,"70,65",1,Arrival,,BattleMapIntroText,tutorial.t01.arrival,거점으로 향하는 길,Auto,,,
+Tutorial_01,2,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.01,후아! 생각보다 먼 길인데? 슬슬 몸이 무거워지는걸.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,3,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.02,"하하, 이러다 거점에 도착하기도 전에 지치겠어!",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,4,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.03,불필요한 체력 소모는 피하시죠. 거점까지 얼마 남지 않았습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,5,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.01,탐사 중에는 침식도가 누적됩니다.,ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,6,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.02,"새로운 방에 진입하면 3, 피해를 받으면 1,
+전투불능이 되면 10의 침식도가 증가합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,7,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.03,"침식도가 최대치인 100에 도달하면
+매 턴 생명력이 10씩 감소합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,8,Map_26,,,,,SpawnMonsters,,,,,Auto,,,
+Tutorial_01,9,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.04,변이체군요. 아무래도 그냥 지나가긴 어렵겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,10,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.05,좋아! 그럼 녀석부터 처리하고 가자!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+,,,,,,,,,,,,,
 

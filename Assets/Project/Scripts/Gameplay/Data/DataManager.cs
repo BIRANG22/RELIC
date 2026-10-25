@@ -61,6 +61,7 @@ public class DataManager : Singleton<DataManager>
     public SkillRewardPoolDatabase SkillRewardPoolDatabase => skillRewardPoolDatabase;
     public MapVisualDatabase MapVisualDatabase => mapVisualDatabase;
     public ErosionDatabase ErosionDatabase => dataBootstrap.ErosionDatabase;
+    public TutorialDatabase TutorialDatabase => dataBootstrap.TutorialDatabase;
     public ErosionIconDatabase ErosionIconDatabase => erosionIconDatabase;
     public CharacterRuntimeStore CharacterRuntimeStore { get; private set; } = new();
     public PartyRuntimeStore PartyRuntimeStore { get; private set; } = new();

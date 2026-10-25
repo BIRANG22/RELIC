@@ -453,6 +453,10 @@ public class BattleResultChecker : MonoBehaviour
         if (battle?.IsTutorialBattle != true || map == null)
             return false;
 
+        // New worksheet-based tutorial has no following stage yet; use the normal reward/exit flow.
+        if ((DataManager.Instance.TutorialDatabase?.GetForMap(map.CurrentMapId).Count ?? 0) > 0)
+            return false;
+
         // 튜토리얼 전투 1 종료 후에는 지도로 돌아가지 않고 Map_31 이벤트방으로 바로 이동합니다.
         if (string.Equals(map.CurrentMapId, "Map_27", System.StringComparison.OrdinalIgnoreCase))
         {

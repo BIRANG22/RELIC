@@ -33,6 +33,7 @@ namespace Relic.Gameplay.Data
         public MonsterPatternInfoDatabase MonsterPatternInfoDatabase { get; } = new();
         public RuneDatabase RuneDatabase { get; } = new();
         public ErosionDatabase ErosionDatabase { get; } = new();
+        public TutorialDatabase TutorialDatabase { get; } = new();
 
         public void SetCharacterPrefabDatabase(CharacterPrefabDatabase db)
         {
@@ -109,6 +110,7 @@ namespace Relic.Gameplay.Data
             var monsterSkills = MonsterSkillCsvLoader.Load(workbook);
             var runes = RuneCsvLoader.Load(workbook);
             var erosions = ErosionCsvLoader.Load(workbook);
+            var tutorials = TutorialCsvLoader.Load(workbook);
 
             InjectCharacterPrefabs(characters);
             InjectCharacterIcons(characters);
@@ -152,6 +154,7 @@ namespace Relic.Gameplay.Data
             GridEffectDatabase.Initialize(gridEffects);
             BattleMapDatabase.Initialize(battleMapDataList);
             ErosionDatabase.Initialize(erosions);
+            TutorialDatabase.Initialize(tutorials);
         }
 
         private void InjectCharacterPrefabs(List<CharacterMasterData> characters)
