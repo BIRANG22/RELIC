@@ -8,7 +8,7 @@ using UnityEngine;
 /// </summary>
 public static class TutorialBattleEntrySetup
 {
-    public const string FirstTutorialMapId = "Map_28";
+    public static string FirstTutorialMapId => DataManager.Instance?.TutorialDatabase?.GetFirstEntry()?.MapId ?? string.Empty;
     public const string SecondTutorialMapId = "Map_29";
     public const string FirstTutorialEventMapId = "Map_31";
     public const string SecondTutorialEventMapId = "Map_32";
@@ -36,13 +36,22 @@ public static class TutorialBattleEntrySetup
 
         dataManager.Initialize();
 
-        if (!TryPrepareHiltParty(dataManager))
+        TutorialData entry = dataManager.TutorialDatabase?.GetFirstEntry();
+        if (entry == null)
+        {
+            Debug.LogError("[TutorialBattleEntrySetup] Tutorial entry is missing from GameData.");
+            return false;
+        }
+
+        if (!TryPrepareStartingParty(dataManager, entry))
             return false;
 
         if (!TryPrepareTutorialMap(dataManager))
             return false;
 
         PrepareTutorialBattleRuntime(dataManager);
+        var battle = dataManager.BattleRuntimeStore?.GetOrCreate();
+        if (battle != null) { battle.ErosionValue = entry.InitialErosion; dataManager.BattleRuntimeStore.Set(battle); }
         PrepareTutorialLobbyRuntime(dataManager);
         return true;
     }
@@ -213,6 +222,32 @@ public static class TutorialBattleEntrySetup
             $"{HazeCharacterId}(Grid {HazeSpawnGridIndex}), " +
             $"{KayaCharacterId}(Grid {KayaSpawnGridIndex}).");
 
+        return true;
+    }
+
+    private static bool TryPrepareStartingParty(DataManager dataManager, TutorialData entry)
+    {
+        var characterDb = dataManager.CharacterDatabase;
+        var characterStore = dataManager.CharacterRuntimeStore;
+        var partyStore = dataManager.PartyRuntimeStore;
+        if (characterDb == null || characterStore == null || partyStore == null) return false;
+        string[] ids = (entry.StartParty ?? string.Empty).Split(',');
+        string[] percentages = (entry.InitialHpPercent ?? string.Empty).Split(',');
+        int[] gridPositions = { HiltSpawnGridIndex, KayaSpawnGridIndex, HazeSpawnGridIndex };
+        if (ids.Length == 0 || ids.Length > gridPositions.Length) return false;
+        characterStore.Clear();
+        partyStore.Clear();
+        for (int i = 0; i < ids.Length; i++)
+        {
+            string id = ids[i].Trim();
+            if (!characterDb.TryGet(id, out CharacterMasterData master) || master == null) return false;
+            var runtime = CreateCharacterRuntime(master, dataManager.RelicDatabase);
+            if (i < percentages.Length && float.TryParse(percentages[i].Trim(),
+                System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float percent))
+                runtime.CurrentHP = Mathf.Clamp(Mathf.RoundToInt(runtime.MaxHP * percent / 100f), 1, runtime.MaxHP);
+            characterStore.AddOrUpdate(runtime);
+            if (!partyStore.SetSlot(i, id, gridPositions[i])) return false;
+        }
         return true;
     }
 

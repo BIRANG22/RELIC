@@ -1377,7 +1377,8 @@ public sealed class BattleFirstTutorialController : MonoBehaviour
         BattleRuntimeData battle = dataManager?.BattleRuntimeStore?.Get();
         MapRuntimeData map = dataManager?.MapRuntimeStore?.Get();
 
-        return battle?.IsTutorialBattle == true &&
+        return (dataManager?.TutorialDatabase?.GetForMap(map?.CurrentMapId).Count ?? 0) == 0 &&
+               battle?.IsTutorialBattle == true &&
                map != null &&
                string.Equals(map.CurrentMapId, TutorialBattleEntrySetup.FirstTutorialMapId, StringComparison.OrdinalIgnoreCase);
     }

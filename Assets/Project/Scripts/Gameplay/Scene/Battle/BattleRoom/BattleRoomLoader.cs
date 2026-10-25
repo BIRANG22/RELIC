@@ -16,6 +16,8 @@ public class BattleRoomLoader : MonoBehaviour
     [SerializeField] private BattleUnitSpawner unitSpawner;
     [SerializeField] private BattleMonsterSpawner monsterSpawner;
     [SerializeField] private BattleRoomPartyTransitionPresenter partyTransitionPresenter;
+    [SerializeField] private TutorialPartyTransitionPresenter tutorialPartyTransitionPresenter;
+    private bool tutorialPartyEntryActive;
 
     [Header("HUD")]
     [SerializeField, FormerlySerializedAs("monsterHudRoot")] private Transform hudRoot;
@@ -712,7 +714,7 @@ public class BattleRoomLoader : MonoBehaviour
         SpawnPlayersAndHUD();
         SetCharacterWorldHudVisibilitySuppressed(hudRoot, true);
         PreparePartyEntryTransition(reactivatePlayerRootForEntry);
-        if (partyEntryPlaybackRequested || !deferPartyEntryPlayback)
+        if (!deferPartyEntryPlayback)
             PlayPreparedPartyEntry();
 
         if (deferMonsterSpawn)
@@ -760,7 +762,20 @@ public class BattleRoomLoader : MonoBehaviour
         isLoaded = true;
         isLoading = false;
 
+        if (!deferPartyEntryPlayback)
+            BeginDeferredTutorialSequence();
         StartInitialMonsterPlanOnce();
+    }
+
+    public void BeginDeferredTutorialSequence()
+    {
+        if (!isLoaded || string.IsNullOrEmpty(loadedMapId)) return;
+        var data = DataManager.Instance;
+        var steps = data?.TutorialDatabase?.GetForMap(loadedMapId);
+        if (steps == null || steps.Count == 0) return;
+        var runner = GetComponent<TutorialBattleSequence>();
+        if (runner == null) runner = gameObject.AddComponent<TutorialBattleSequence>();
+        runner.Begin(this, loadedMapId);
     }
 
     private static void PrepareCameraForBattleEntry()
@@ -789,6 +804,7 @@ public class BattleRoomLoader : MonoBehaviour
         initialPassivesScheduled = false;
         partyEntryPrepared = false;
         partyEntryPlaybackRequested = false;
+        tutorialPartyEntryActive = false;
         deferMonsterSpawn = false;
         monsterSpawnDeferred = false;
         loadedMapId = null;
@@ -1573,8 +1589,9 @@ public class BattleRoomLoader : MonoBehaviour
             yield return null;
 
         // Entry must visually finish before any initial passive status is applied.
-        while (monsterSpawnDeferred || (deferPartyEntryPlayback && !partyEntryPlaybackRequested) ||
-               (partyTransitionPresenter != null && partyTransitionPresenter.IsPlaying))
+        while (monsterSpawnDeferred || TutorialBattleSequence.IsPresentationRunning || (deferPartyEntryPlayback && !partyEntryPlaybackRequested) ||
+               (partyTransitionPresenter != null && partyTransitionPresenter.IsPlaying) ||
+               (tutorialPartyTransitionPresenter != null && tutorialPartyTransitionPresenter.IsPlaying))
             yield return null;
         if (!initialPassivesScheduled)
         {
@@ -1643,6 +1660,30 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void PreparePartyEntryTransition(bool reactivatePlayerRootForEntry = false)
     {
+        tutorialPartyEntryActive = deferPartyEntryPlayback &&
+            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true;
+        if (tutorialPartyEntryActive)
+        {
+            if (tutorialPartyTransitionPresenter == null)
+                tutorialPartyTransitionPresenter = Object.FindFirstObjectByType<TutorialPartyTransitionPresenter>(FindObjectsInactive.Include);
+            if (tutorialPartyTransitionPresenter != null)
+            {
+                if (!tutorialPartyTransitionPresenter.gameObject.activeInHierarchy)
+                    tutorialPartyTransitionPresenter.gameObject.SetActive(true);
+                tutorialPartyTransitionPresenter.PrepareEntry(unitSpawner != null ? unitSpawner.PlayerRoot : transform);
+                partyEntryPrepared = true;
+                if (reactivatePlayerRootForEntry && unitSpawner?.PlayerRoot != null)
+                    unitSpawner.PlayerRoot.gameObject.SetActive(true);
+                return;
+            }
+            // Do not fall back to BattleRoom's normal presenter during the initial
+            // title-to-battle tutorial entry. A missing component is a configuration error.
+            Debug.LogError("[BattleRoomLoader] TutorialMode/TutorialPartyTransitionPresenter missing. Initial tutorial entry will not play; normal presenter was NOT used.", this);
+            partyEntryPrepared = false;
+            if (reactivatePlayerRootForEntry && unitSpawner?.PlayerRoot != null)
+                unitSpawner.PlayerRoot.gameObject.SetActive(true);
+            return;
+        }
         if (partyTransitionPresenter == null)
             partyTransitionPresenter = GetComponentInChildren<BattleRoomPartyTransitionPresenter>(true);
 
@@ -1662,15 +1703,84 @@ public class BattleRoomLoader : MonoBehaviour
 
     }
 
+    // Title-to-battle entry: use only TutorialMode's presenter, once the persistent
+    // scene transition has completely uncovered the battle scene.
+    public System.Threading.Tasks.Task PlayInitialTutorialPartyEntryAsync()
+    {
+        if (!isLoaded || !tutorialPartyEntryActive)
+        {
+            Debug.LogWarning("[TutorialPartyEntry] Entry requested before loader/presenter was ready.", this);
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        if (tutorialPartyTransitionPresenter == null)
+        {
+            Debug.LogError("[TutorialPartyEntry] TutorialMode presenter is missing. Normal presenter will not be substituted.", this);
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        Transform root = unitSpawner != null ? unitSpawner.PlayerRoot : null;
+        if (root == null)
+        {
+            Debug.LogError("[TutorialPartyEntry] PlayerRoot was not created.", this);
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        if (!root.gameObject.activeSelf)
+            root.gameObject.SetActive(true);
+
+        // Prepare and play in the same call. The loader must not play the normal
+        // presenter in parallel or consume a previously prepared animation.
+        tutorialPartyTransitionPresenter.PrepareEntry(root);
+        Debug.Log($"[TutorialEntryTrace] LOADER selected={tutorialPartyTransitionPresenter.name} id={tutorialPartyTransitionPresenter.GetInstanceID()} actors={tutorialPartyTransitionPresenter.PreparedActorCount} root={root.name}", this);
+        partyEntryPrepared = false;
+        partyEntryPlaybackRequested = true;
+        Debug.Log($"[TutorialPartyEntry] Playing on {tutorialPartyTransitionPresenter.gameObject.name} with PlayerRoot={root.name}.", this);
+        return tutorialPartyTransitionPresenter.PlayPreparedEntryAsync();
+    }
+
     public void PlayPreparedPartyEntry()
     {
         partyEntryPlaybackRequested = true;
 
+        if (tutorialPartyEntryActive && tutorialPartyTransitionPresenter != null)
+        {
+            if (!partyEntryPrepared || tutorialPartyTransitionPresenter.IsPlaying)
+                return;
+            partyEntryPrepared = false;
+            _ = tutorialPartyTransitionPresenter.PlayPreparedEntryAsync();
+            return;
+        }
         if (!partyEntryPrepared || partyTransitionPresenter == null || partyTransitionPresenter.IsPlaying)
             return;
 
         partyEntryPrepared = false;
         _ = partyTransitionPresenter.PlayPreparedEntryAsync();
+    }
+
+    public IEnumerator PlayTutorialMonsterEntrance(float rightOffset = 3.5f, float duration = 0.65f)
+    {
+        if (spawnedMonsterUnits.Count == 0) yield break;
+        var units = new List<MonsterUnit>(spawnedMonsterUnits);
+        var positions = new Vector3[units.Count];
+        for (int i = 0; i < units.Count; i++)
+        {
+            if (units[i] == null) continue;
+            positions[i] = units[i].transform.position;
+            units[i].transform.position = positions[i] + Vector3.right * rightOffset;
+        }
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = duration <= 0f ? 1f : Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+            for (int i = 0; i < units.Count; i++)
+                if (units[i] != null)
+                    units[i].transform.position = Vector3.Lerp(positions[i] + Vector3.right * rightOffset, positions[i], t);
+            yield return null;
+        }
+        for (int i = 0; i < units.Count; i++)
+            if (units[i] != null) units[i].transform.position = positions[i];
     }
 
     public void CompleteDeferredMonsterSpawn()

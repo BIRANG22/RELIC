@@ -1219,6 +1219,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         MapRuntimeData mapRuntime = DataManager.Instance?.MapRuntimeStore?.Get();
 
         return mapRuntime != null &&
+               (DataManager.Instance?.TutorialDatabase?.GetForMap(mapRuntime.CurrentMapId).Count ?? 0) == 0 &&
                string.Equals(
                    mapRuntime.CurrentMapId?.Trim(),
                    TutorialBattleEntrySetup.FirstTutorialMapId,
