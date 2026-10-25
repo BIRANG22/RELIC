@@ -20,7 +20,7 @@ public sealed class EventCoinFlipPresenter : MonoBehaviour
     [SerializeField] private TMP_Text detailText;
     [SerializeField, Min(0.01f)] private float flipDuration = 0.8f;
     [SerializeField, Min(1)] private int flipCount = 9;
-    [SerializeField, Min(0f)] private float resultHoldDuration = 0.5f;
+    [SerializeField, Min(0f)] private float resultHoldDuration = 0.15f;
 
     [Header("Panel Fade Out")]
     [SerializeField, Min(0f)] private float panelFadeOutDuration = 0.2f;

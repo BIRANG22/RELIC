@@ -408,8 +408,8 @@ public class BattleCharacter : MonoBehaviour
         CacheTimelineHoverHighlightShadowRenderers();
         SyncTimelineHoverHighlightSorting();
 
-        if (timelineHoverHighlightSourceAnimator == null ||
-            timelineHoverHighlightIdleBackAnimator == null)
+        if (!CanReadTimelineAnimatorState(timelineHoverHighlightSourceAnimator) ||
+            !CanReadTimelineAnimatorState(timelineHoverHighlightIdleBackAnimator))
         {
             ApplyTimelineHoverHighlightAlpha();
             return;
@@ -759,9 +759,18 @@ public class BattleCharacter : MonoBehaviour
                 : System.Array.Empty<SpriteRenderer>();
     }
 
+    private static bool CanReadTimelineAnimatorState(Animator animator)
+    {
+        return animator != null &&
+               animator.isActiveAndEnabled &&
+               animator.runtimeAnimatorController != null &&
+               animator.layerCount > 0 &&
+               animator.isInitialized;
+    }
+
     private int GetTimelineHoverHighlightIdleBackStateHash()
     {
-        if (timelineHoverHighlightIdleBackAnimator == null)
+        if (!CanReadTimelineAnimatorState(timelineHoverHighlightIdleBackAnimator))
             return 0;
 
         AnimatorStateInfo currentState =

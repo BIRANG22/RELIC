@@ -176,7 +176,18 @@ public class BattleResultChecker : MonoBehaviour
             yield break;
 
         battleWinPresentationRoutine = null;
-        if (isBossNode)
+        bool isLastTutorialBattle =
+            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+            TutorialMapRoute.IsFinalBattle(
+                DataManager.Instance,
+                DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentMapId);
+
+        if (isLastTutorialBattle)
+        {
+            if (!OpenRewardPanel(OpenExplorationResultPanel))
+                OpenExplorationResultPanel();
+        }
+        else if (isBossNode)
         {
             if (!OpenRewardPanel(ShowBossClearChoiceButtons))
                 ShowBossClearChoiceButtons();
@@ -359,10 +370,21 @@ public class BattleResultChecker : MonoBehaviour
         return resume;
     }
     // Continue 복원 전용: 보상 수령 완료 뒤 정상 전투 종료와 같은 Next/보스 선택 UI를 재구성한다.
-    public bool IsBossRewardNodeForPresentation() => IsCurrentNodeBoss();
+    public bool IsBossRewardNodeForPresentation() => IsCurrentNodeBoss() ||
+        (DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+         TutorialMapRoute.IsFinalBattle(DataManager.Instance,
+             DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentMapId));
 
     public void RestoreBattleRewardCompletionPresentation()
     {
+        if (DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+            TutorialMapRoute.IsFinalBattle(DataManager.Instance,
+                DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentMapId))
+        {
+            OpenExplorationResultPanel();
+            return;
+        }
+
         if (IsCurrentNodeBoss())
         {
             ShowBossClearChoiceButtons();
@@ -444,46 +466,16 @@ public class BattleResultChecker : MonoBehaviour
 
     private bool TryContinueTutorialRoute(BattleSceneController sceneController)
     {
-        if (sceneController == null || DataManager.Instance == null)
+        DataManager data = DataManager.Instance;
+        if (sceneController == null || data?.BattleRuntimeStore?.Get()?.IsTutorialBattle != true)
             return false;
 
-        BattleRuntimeData battle = DataManager.Instance.BattleRuntimeStore?.Get();
-        MapRuntimeData map = DataManager.Instance.MapRuntimeStore?.Get();
-
-        if (battle?.IsTutorialBattle != true || map == null)
+        string currentMapId = data.MapRuntimeStore?.Get()?.CurrentMapId;
+        if (!TutorialMapRoute.TryGetNext(data, currentMapId, out string nextMapId))
             return false;
 
-        // New worksheet-based tutorial has no following stage yet; use the normal reward/exit flow.
-        if ((DataManager.Instance.TutorialDatabase?.GetForMap(map.CurrentMapId).Count ?? 0) > 0)
-            return false;
-
-        // 튜토리얼 전투 1 종료 후에는 지도로 돌아가지 않고 Map_31 이벤트방으로 바로 이동합니다.
-        if (string.Equals(map.CurrentMapId, "Map_27", System.StringComparison.OrdinalIgnoreCase))
-        {
-            sceneController.OpenTutorialMapDirect(
-                "Map_30",
-                () => SetNextButtonVisible(false));
-            return true;
-        }
-
-        // 튜토리얼 전투 2 종료 후에는 지도를 거치지 않고 Map_32 이벤트 2로 바로 이동합니다.
-        if (string.Equals(map.CurrentMapId, TutorialBattleEntrySetup.SecondTutorialMapId, System.StringComparison.OrdinalIgnoreCase))
-        {
-            sceneController.OpenTutorialMapDirect(
-                TutorialBattleEntrySetup.SecondTutorialEventMapId,
-                () => SetNextButtonVisible(false));
-            return true;
-        }
-
-        // 튜토리얼 전투 3 종료 후에는 더 이상 지도로 돌아가지 않습니다.
-        // 인트로는 새 게임 시작 시 이미 재생되었으므로 튜토리얼 상태를 정리한 뒤 바로 로비로 이동합니다.
-        if (string.Equals(map.CurrentMapId, TutorialBattleEntrySetup.ThirdTutorialMapId, System.StringComparison.OrdinalIgnoreCase))
-        {
-            CompleteTutorialAndEnterLobby();
-            return true;
-        }
-
-        return false;
+        sceneController.OpenTutorialMapDirect(nextMapId, () => SetNextButtonVisible(false));
+        return true;
     }
 
     private async void CompleteTutorialAndEnterLobby()

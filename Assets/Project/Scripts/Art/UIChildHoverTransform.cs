@@ -34,7 +34,8 @@ public sealed class UIChildHoverTransform : MonoBehaviour, IPointerEnterHandler,
     [SerializeField, Min(0f)] private float transitionDuration = 0.15f;
 
     [Tooltip("전환에 사용할 보간 곡선입니다.")]
-    [SerializeField] private AnimationCurve transitionCurve =
+    [SerializeField]
+    private AnimationCurve transitionCurve =
         AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     [Tooltip("Time.timeScale의 영향을 받지 않고 UI 애니메이션을 재생합니다.")]
@@ -116,6 +117,26 @@ public sealed class UIChildHoverTransform : MonoBehaviour, IPointerEnterHandler,
             setting.target.anchoredPosition = setting.hoverAnchoredPosition;
             setting.target.localScale = setting.hoverLocalScale;
         }
+    }
+
+    /// <summary>Remove an effect root from the button hover transform targets.</summary>
+    public void ExcludeTarget(RectTransform excluded)
+    {
+        if (excluded == null || targets == null) return;
+        bool found = false;
+        for (int i = targets.Count - 1; i >= 0; i--)
+        {
+            if (targets[i] != null && targets[i].target == excluded)
+            {
+                found = true;
+                break;
+            }
+        }
+        if (!found) return;
+        StopCurrentTransition();
+        for (int i = targets.Count - 1; i >= 0; i--)
+            if (targets[i] != null && targets[i].target == excluded)
+                targets.RemoveAt(i);
     }
 
     private void EnsureTargets()

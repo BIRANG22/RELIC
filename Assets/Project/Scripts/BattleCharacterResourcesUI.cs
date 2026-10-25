@@ -131,7 +131,7 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
     }
 
     // Event healing temporarily reveals all three HP panels, independently of mouse hover.
-    public void ShowEventRecoveryAll(Transform[] worldAnchors, int[] beforeHp, float duration = 1.2f)
+    public void ShowEventRecoveryAll(Transform[] worldAnchors, int[] beforeHp, float duration = 1.2f, bool useRestPositions = false)
     {
         ResolveReferences();
         if (forcedRecoveryRoutine != null)
@@ -139,7 +139,7 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
         forcedRecoveryVisible = true;
         visibleSlot = -1;
         visibleWorldAnchor = null;
-        forcedRecoveryRoutine = StartCoroutine(AnimateEventRecoveryAll(worldAnchors, beforeHp, duration));
+        forcedRecoveryRoutine = StartCoroutine(AnimateEventRecoveryAll(worldAnchors, beforeHp, duration, -1, useRestPositions));
     }
 
     // Reveal and animate only the character selected by Event_08.
@@ -161,12 +161,12 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
     }
 
     // Shared display animation for event damage and healing.
-    public void ShowEventHealthChangeAll(Transform[] worldAnchors, int[] beforeHp, float duration = 1.2f)
+    public void ShowEventHealthChangeAll(Transform[] worldAnchors, int[] beforeHp, float duration = 1.2f, bool useRestPositions = false)
     {
-        ShowEventRecoveryAll(worldAnchors, beforeHp, duration);
+        ShowEventRecoveryAll(worldAnchors, beforeHp, duration, useRestPositions);
     }
 
-    private IEnumerator AnimateEventRecoveryAll(Transform[] anchors, int[] beforeHp, float duration, int onlySlot = -1)
+    private IEnumerator AnimateEventRecoveryAll(Transform[] anchors, int[] beforeHp, float duration, int onlySlot = -1, bool useRestPositions = false)
     {
         CharacterRuntimeData[] runtimes = new CharacterRuntimeData[PartySlotCount];
         CharacterMasterData[] masters = new CharacterMasterData[PartySlotCount];
@@ -187,7 +187,7 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
             targets[i] = Mathf.Clamp(runtimes[i].CurrentHP, 0, maximums[i]);
             starting[i] = Mathf.Clamp(beforeHp != null && i < beforeHp.Length ? beforeHp[i] : targets[i], 0, maximums[i]);
             if (anchors != null && i < anchors.Length && anchors[i] != null)
-                UpdateEventRecoveryPosition(i, anchors[i]);
+                UpdateEventRecoveryPosition(i, anchors[i], useRestPositions ? AnchorMode.Rest : AnchorMode.MapEvent);
         }
 
         // 먼저 HUD가 완전히 나타나도록 기다린 뒤 실제 HP Fill을 움직입니다.
@@ -223,7 +223,7 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
                 if (view.HpValue != null)
                     view.HpValue.text = $"{Mathf.RoundToInt(hp)}/{maximums[i]}";
                 if (anchors != null && i < anchors.Length && anchors[i] != null)
-                    UpdateEventRecoveryPosition(i, anchors[i]);
+                    UpdateEventRecoveryPosition(i, anchors[i], useRestPositions ? AnchorMode.Rest : AnchorMode.MapEvent);
             }
             yield return null;
         }
@@ -238,7 +238,7 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
         HideAll();
     }
 
-    private void UpdateEventRecoveryPosition(int slotIndex, Transform anchor)
+    private void UpdateEventRecoveryPosition(int slotIndex, Transform anchor, AnchorMode mode)
     {
         SlotView view = slotViews[slotIndex];
         if (view?.Rect == null || anchor == null)
@@ -252,7 +252,7 @@ public sealed class BattleCharacterResourcesUI : MonoBehaviour
             ? (parentCanvas.worldCamera != null ? parentCanvas.worldCamera : camera) : null;
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, screenPoint, uiCamera, out Vector2 localPoint))
             return;
-        Vector2 offset = GetOffset(slotIndex, AnchorMode.MapEvent);
+        Vector2 offset = GetOffset(slotIndex, mode);
         Vector3 current = view.Rect.localPosition;
         view.Rect.localPosition = new Vector3(localPoint.x + offset.x, localPoint.y + offset.y, current.z);
     }

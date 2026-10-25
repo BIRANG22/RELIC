@@ -28,6 +28,8 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
     [SerializeField] private TMP_Text rollButtonText;
     [SerializeField, Min(0.01f)] private float buttonFadeDuration = 0.2f;
 
+    [SerializeField, Min(0f)] private float confirmCloseFadeDuration = 0.06f;
+
     [Header("Presenter Fade")]
     [SerializeField, Min(0.01f)] private float presenterFadeDuration = 0.2f;
 
@@ -285,7 +287,7 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
     {
         interactiveState = InteractiveState.Closing;
         SetRollButtonInteractable(false);
-        yield return FadeRollButton(1f, 0f);
+        yield return FadeRollButton(1f, 0f, confirmCloseFadeDuration);
 
         Action confirmed = pendingConfirmAction;
         pendingConfirmAction = null;
@@ -299,13 +301,18 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         confirmed?.Invoke();
     }
 
-    private IEnumerator FadeRollButton(float from, float to)
+    private IEnumerator FadeRollButton(float from, float to, float durationOverride = -1f)
     {
         EnsureRollButtonCanvasGroup();
         if (rollButtonCanvasGroup == null)
             yield break;
 
-        float duration = Mathf.Max(0.01f, buttonFadeDuration);
+        float duration = durationOverride >= 0f ? durationOverride : Mathf.Max(0.01f, buttonFadeDuration);
+        if (duration <= 0f)
+        {
+            rollButtonCanvasGroup.alpha = to;
+            yield break;
+        }
         float elapsed = 0f;
         rollButtonCanvasGroup.alpha = from;
 
