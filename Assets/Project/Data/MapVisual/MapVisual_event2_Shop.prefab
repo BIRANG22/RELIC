@@ -226,6 +226,43 @@ MonoBehaviour:
       DisableDelay: 0
     DisableTargetsOnPlay: []
     DisableDelayOnPlay: 0
+    FadeOutOnDisable: 0
+    DisableFadeDuration: 0.35
+    FadeVfxColorOnDisable: 1
+    VfxColorPropertyName: Color
+    ActiveTarget: {fileID: 0}
+    ApplyActiveState: 0
+    ActiveState: 1
+  - ActionId: event_choice_02_success
+    Animator: {fileID: 0}
+    AnimatorTrigger: 
+    AnimatorStateName: 
+    VfxPrefab: {fileID: 0}
+    VfxRootOverride: {fileID: 2000000000000000001}
+    VfxLocalPosition: {x: 0, y: 0, z: -0.1}
+    VfxLocalEulerAngles: {x: 0, y: 0, z: 0}
+    VfxLocalScale: {x: 1, y: 1, z: 1}
+    VfxLifetime: 2
+    TintTargets: []
+    ApplyTint: 0
+    TintColor: {r: 0.33773577, g: 0.590343, b: 1, a: 1}
+    TintTarget: {fileID: 0}
+    ScaleTarget: {fileID: 2000000000000000001}
+    ApplyLocalScale: 0
+    LocalScale: {x: 1, y: 1, z: 1}
+    ShakeTarget: {fileID: 0}
+    ApplyShake: 0
+    ShakeDelay: 0
+    ShakeDuration: 0.35
+    ShakeStrength: 0.08
+    ShakeFrequency: 25
+    Activations: []
+    DisableTargetsOnPlay: []
+    DisableDelayOnPlay: 0
+    FadeOutOnDisable: 0
+    DisableFadeDuration: 0.35
+    FadeVfxColorOnDisable: 1
+    VfxColorPropertyName: Color
     ActiveTarget: {fileID: 0}
     ApplyActiveState: 0
     ActiveState: 1
@@ -307,7 +344,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundId: event.06
+  soundId: event.02.shopselect
   volume: 1
   playDelay: 0
   playOnEnable: 1
