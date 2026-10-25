@@ -74,6 +74,25 @@ public static class LobbyBattleEntryService
         return true;
     }
 
+    private static void RestoreStartingPartyHealth(DataManager dataManager)
+    {
+        if (dataManager?.PartyRuntimeStore == null || dataManager.CharacterRuntimeStore == null)
+            return;
+
+        for (int slot = 0; slot < dataManager.PartyRuntimeStore.MaxPartyCountValue; slot++)
+        {
+            string characterId = dataManager.PartyRuntimeStore.GetCharacterId(slot);
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (dataManager.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData character) &&
+                character != null)
+            {
+                character.CurrentHP = Mathf.Max(1, character.MaxHP);
+            }
+        }
+    }
+
     public static async Task<LobbyBattleEntryResult> EnterBattleAsync(
         LobbyBattleStartCommand command = null)
     {
@@ -114,6 +133,11 @@ public static class LobbyBattleEntryService
             return LobbyBattleEntryResult.Fail(transferResult.Error);
 
         DataManager.Instance.BattleRuntimeStore.Set(battleRuntime);
+
+        // 튜토리얼은 Tutorial 시트의 InitialHpPercent로 설정한 생명력을 유지합니다.
+        // 일반 탐사를 새로 시작할 때만 파티의 생명력을 최대치로 초기화합니다.
+        if (!battleRuntime.IsTutorialBattle)
+            RestoreStartingPartyHealth(DataManager.Instance);
         BattleRunAbandonService.CaptureLobbyLoadoutSnapshot(DataManager.Instance);
 
         // 로비 씬이 사라지기 전에 비활성 카탈로그까지 포함해 실제 아이콘을 캐시합니다.

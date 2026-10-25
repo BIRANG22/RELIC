@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 using Relic.Gameplay.Data;
 
@@ -23,10 +24,10 @@ public class RestRoomController : MonoBehaviour
     [Header("Heal")]
     [SerializeField, Range(0f, 1f)] private float healHpRatio = 0.3f;
     [SerializeField] private GameObject healButtonRoot;
+    [Tooltip("회복 버튼을 눌렀을 때만 활성화되는 Heal 연출 오브젝트입니다. RestRoom 내부의 Heal을 연결하세요.")]
+    [SerializeField] private GameObject healEffectRoot;
+    [SerializeField, Min(0.1f)] private float healEffectDuration = 2f;
     [SerializeField] private GameObject healTextRoot;
-    [SerializeField] private CanvasGroup healTextCanvasGroup;
-    [SerializeField, Min(0f)] private float healTextFadeDuration = 0.25f;
-    [SerializeField, Min(0f)] private float healTextHoldDuration = 1f;
     [SerializeField] private Image healButtonBackImage;
     [SerializeField] private TMP_Text healButtonText;
     [SerializeField] private Color disabledHealButtonColor = new Color32(0x7E, 0x7E, 0x7E, 0xFF);
@@ -60,7 +61,11 @@ public class RestRoomController : MonoBehaviour
     private EventChoiceSkillAwakenTarget pendingSkillAwakenResultTarget;
     private bool hasPendingSkillAwakenResult;
     private Coroutine skillAwakenResultRoutine;
-    private Coroutine healTextRoutine;
+    private Coroutine healEffectRoutine;
+    private Transform healEffectTransform;
+    private Vector3 healEffectOriginalLocalPosition;
+    private bool healEffectPositionCaptured;
+    private Button boundHealButton;
 
     private bool IsRestActionLocked => isRestUsed;
 
@@ -71,11 +76,15 @@ public class RestRoomController : MonoBehaviour
         EnsureUpgradeButtonReferences();
         EnsureHealButtonReferences();
         EnsureHealTextReferences();
+        PrepareHealEffectRoot();
         EnsureSkillAwakenSelectionPanel();
     }
 
     private void OnEnable()
     {
+        // A RestRoom instance may be reused after abandoning an exploration.
+        // Restart its scene animators so entry visuals do not stay at their previous end states.
+        ResetRestRoomSceneAnimations();
         isRestUsed = false;
         nextTransitionStarted = false;
         hasPendingSkillAwakenResult = false;
@@ -85,7 +94,9 @@ public class RestRoomController : MonoBehaviour
         EnsureNextButtonRoot();
         EnsureUpgradeButtonReferences();
         EnsureHealButtonReferences();
+        BindHealButton();
         EnsureHealTextReferences();
+        PrepareHealEffectRoot();
         EnsureSkillAwakenSelectionPanel();
         EnsurePlayerHudReferences();
         SetHealTextVisibleImmediate(false);
@@ -97,8 +108,25 @@ public class RestRoomController : MonoBehaviour
         SpawnPlayerHUDs();
     }
 
+    private void ResetRestRoomSceneAnimations()
+    {
+        Animator[] animators = GetComponentsInChildren<Animator>(true);
+        for (int i = 0; i < animators.Length; i++)
+        {
+            Animator actor = animators[i];
+            if (actor == null || actor.runtimeAnimatorController == null)
+                continue;
+
+            // Rebind even inactive children: they can be re-enabled later in the room.
+            actor.Rebind();
+            if (actor.isActiveAndEnabled)
+                actor.Update(0f);
+        }
+    }
+
     private void OnDisable()
     {
+        UnbindHealButton();
         UnbindNextButton();
         SetNextButtonVisible(false);
 
@@ -111,13 +139,8 @@ public class RestRoomController : MonoBehaviour
         if (skillAwakenSelectionPanel != null)
             skillAwakenSelectionPanel.Close();
 
-        if (healTextRoutine != null)
-        {
-            StopCoroutine(healTextRoutine);
-            healTextRoutine = null;
-        }
-
         SetHealTextVisibleImmediate(false);
+        StopHealEffect();
         skillAwakenOptions.Clear();
         hasPendingSkillAwakenResult = false;
         pendingSkillAwakenResultTarget = default;
@@ -139,10 +162,13 @@ public class RestRoomController : MonoBehaviour
         if (skillAwakenSelectionPanel != null)
             skillAwakenSelectionPanel.Close();
 
+        int[] hpBefore = CapturePartyHPBeforeRest();
         RecoverAllPartyHPByRatio(healHpRatio);
+        ShowRestHealPresentation(hpBefore);
         RefreshPlayerHUDs();
         PlayHealVfxOnSpawnedAllies();
-        StartHealTextFeedback();
+        PlayHealEffectRoot();
+        // Heal_Text is a hover-only object; do not play a click-triggered fade.
         SetHealButtonDisabledFeedback(true);
         SetUpgradeButtonDisabledFeedback(true);
         SetRestActionButtonsVisible(false);
@@ -419,12 +445,42 @@ public class RestRoomController : MonoBehaviour
     private void PlayHealVfxOnSpawnedAllies()
     {
         CacheSpawnedAllyAnimatorsIfNeeded();
-
         if (spawnedAllyAnimators == null)
             return;
 
+        // Rest room actors are spawned at their own anchors. The battle prefab's
+        // VFX spawn point can have a battle-only offset, so override it only
+        // while playing the heal effect and restore it immediately afterwards.
+        var spawnField = typeof(BattleUnitAnimator).GetField(
+            "vfxSpawnPoint",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
         for (int i = 0; i < spawnedAllyAnimators.Length; i++)
-            spawnedAllyAnimators[i]?.PlayHeal();
+        {
+            BattleUnitAnimator animator = spawnedAllyAnimators[i];
+            if (animator == null)
+                continue;
+
+            Transform spawn = allySpawnPoints != null && i < allySpawnPoints.Length
+                ? allySpawnPoints[i] : null;
+            Transform ally = spawn != null && spawn.childCount > 0 ? spawn.GetChild(0) : null;
+            Transform restAnchor = ally != null ? ally : spawn;
+            if (spawnField == null || restAnchor == null)
+            {
+                animator.PlayHeal();
+                continue;
+            }
+
+            Transform originalSpawn = spawnField.GetValue(animator) as Transform;
+            try
+            {
+                spawnField.SetValue(animator, restAnchor);
+                animator.PlayHeal();
+            }
+            finally
+            {
+                spawnField.SetValue(animator, originalSpawn);
+            }
+        }
     }
 
     private void SpawnPlayerHUDs()
@@ -832,6 +888,88 @@ public class RestRoomController : MonoBehaviour
         }
     }
 
+    private void BindHealButton()
+    {
+        EnsureHealButtonReferences();
+        Button button = healButtonRoot != null ? healButtonRoot.GetComponent<Button>() : null;
+        if (boundHealButton != null && boundHealButton != button)
+            boundHealButton.onClick.RemoveListener(OnRestButtonClicked);
+        boundHealButton = button;
+        if (boundHealButton != null)
+        {
+            boundHealButton.onClick.RemoveListener(OnRestButtonClicked);
+            boundHealButton.onClick.AddListener(OnRestButtonClicked);
+        }
+        else
+            Debug.LogWarning("[RestRoomController] HealButton requires a Button component.", this);
+    }
+
+    private void UnbindHealButton()
+    {
+        if (boundHealButton != null)
+            boundHealButton.onClick.RemoveListener(OnRestButtonClicked);
+        boundHealButton = null;
+    }
+
+    private int[] CapturePartyHPBeforeRest()
+    {
+        int[] before = new int[3];
+        DataManager manager = DataManager.Instance;
+        if (manager?.PartyRuntimeStore == null || manager.CharacterRuntimeStore == null)
+            return before;
+        for (int i = 0; i < before.Length; i++)
+        {
+            string id = manager.PartyRuntimeStore.GetCharacterId(i);
+            if (!string.IsNullOrWhiteSpace(id) &&
+                manager.CharacterRuntimeStore.TryGet(id, out CharacterRuntimeData character) &&
+                character != null)
+                before[i] = character.CurrentHP;
+        }
+        return before;
+    }
+
+    private void ShowRestHealPresentation(int[] before)
+    {
+        DataManager manager = DataManager.Instance;
+        if (manager?.PartyRuntimeStore == null || manager.CharacterRuntimeStore == null || before == null)
+            return;
+
+        Transform[] anchors = new Transform[3];
+        Canvas canvas = GetComponentInParent<Canvas>(true);
+        bool anyChanged = false;
+        for (int i = 0; i < before.Length; i++)
+        {
+            string id = manager.PartyRuntimeStore.GetCharacterId(i);
+            if (string.IsNullOrWhiteSpace(id) ||
+                !manager.CharacterRuntimeStore.TryGet(id, out CharacterRuntimeData character) ||
+                character == null)
+                continue;
+
+            Transform spawn = allySpawnPoints != null && i < allySpawnPoints.Length
+                ? allySpawnPoints[i] : null;
+            if (spawn == null)
+                continue;
+            Transform ally = spawn.childCount > 0 ? spawn.GetChild(0) : null;
+            anchors[i] = ally != null ? MapRoomController.ResolveMovingCharacterAnchor(ally.gameObject, spawn) : spawn;
+            int restored = Mathf.Max(0, character.CurrentHP - before[i]);
+            if (restored <= 0)
+                continue;
+            anyChanged = true;
+            BattleDamageTextPopupUI.ShowEventHealthRecovery(anchors[i], restored, canvas, 48f);
+        }
+
+        if (!anyChanged)
+            return;
+        ResolveCharacterResourcesUI();
+        if (characterResourcesUI != null)
+        {
+            if (!characterResourcesUI.gameObject.activeSelf)
+                characterResourcesUI.gameObject.SetActive(true);
+            if (characterResourcesUI.gameObject.activeInHierarchy)
+                characterResourcesUI.ShowEventHealthChangeAll(anchors, before, useRestPositions: true);
+        }
+    }
+
     private void EnsureHealButtonReferences()
     {
         if (healButtonRoot == null)
@@ -929,108 +1067,135 @@ public class RestRoomController : MonoBehaviour
     }
 
 
+    private void PrepareHealEffectRoot()
+    {
+        if (healEffectRoot == null)
+        {
+            // Only search within this RestRoom; never select another room's Heal effect.
+            Transform found = FindChildRecursive(transform, "Heal");
+            if (found != null && found != transform &&
+                (healButtonRoot == null || !found.IsChildOf(healButtonRoot.transform)))
+                healEffectRoot = found.gameObject;
+        }
+        if (healEffectRoot == null) return;
+
+        if (!healEffectPositionCaptured)
+        {
+            // Heal is a regular Transform, not a RectTransform.
+            // Its authored rest position is Y = 0, independent of button hover.
+            healEffectTransform = healEffectRoot.transform;
+            Vector3 position = healEffectTransform.localPosition;
+            healEffectOriginalLocalPosition = new Vector3(position.x, 0f, position.z);
+            healEffectPositionCaptured = true;
+        }
+
+        RestoreHealEffectPosition();
+
+        // A button hover transform must never move the Heal animation root.
+        RectTransform effectRect = healEffectRoot.GetComponent<RectTransform>();
+        if (effectRect != null)
+        {
+            UIChildHoverTransform[] hovers = GetComponentsInChildren<UIChildHoverTransform>(true);
+            for (int i = 0; i < hovers.Length; i++)
+                hovers[i]?.ExcludeTarget(effectRect);
+        }
+        if (healEffectRoutine == null)
+            healEffectRoot.SetActive(false);
+    }
+
+    private void RestoreHealEffectPosition()
+    {
+        if (healEffectPositionCaptured && healEffectTransform != null)
+            healEffectTransform.localPosition = healEffectOriginalLocalPosition;
+    }
+
+    private void LateUpdate()
+    {
+        if (healEffectRoot == null || !healEffectPositionCaptured)
+            return;
+
+        // Animations on parent objects can still write Heal.position/CanvasGroup
+        // even when Heal has no Animator of its own. Keep the effect at the
+        // fixed RestRoom position, and show it only during click playback.
+        RestoreHealEffectPosition();
+        if (healEffectRoutine == null)
+        {
+            if (healEffectRoot.activeSelf)
+                healEffectRoot.SetActive(false);
+        }
+        else
+        {
+            if (!healEffectRoot.activeSelf)
+                healEffectRoot.SetActive(true);
+            CanvasGroup group = healEffectRoot.GetComponent<CanvasGroup>();
+            if (group != null && group.alpha != 1f)
+                group.alpha = 1f;
+        }
+    }
+
+    private void PlayHealEffectRoot()
+    {
+        PrepareHealEffectRoot();
+        if (healEffectRoot == null) return;
+        if (healEffectRoutine != null)
+            StopCoroutine(healEffectRoutine);
+        RestoreHealEffectPosition();
+        healEffectRoot.SetActive(true);
+        RestoreHealEffectPosition();
+        CanvasGroup group = healEffectRoot.GetComponent<CanvasGroup>();
+        if (group != null) group.alpha = 1f;
+        Animator[] animators = healEffectRoot.GetComponentsInChildren<Animator>(true);
+        for (int i = 0; i < animators.Length; i++)
+        {
+            Animator animator = animators[i];
+            if (animator == null || animator.runtimeAnimatorController == null) continue;
+            animator.Rebind();
+            if (animator.isActiveAndEnabled) animator.Update(0f);
+        }
+        RestoreHealEffectPosition();
+        healEffectRoutine = StartCoroutine(HideHealEffectAfterDelay());
+    }
+
+    private IEnumerator HideHealEffectAfterDelay()
+    {
+        yield return new WaitForSecondsRealtime(healEffectDuration);
+        healEffectRoutine = null;
+        if (healEffectRoot != null) healEffectRoot.SetActive(false);
+    }
+
+    private void StopHealEffect()
+    {
+        if (healEffectRoutine != null)
+        {
+            StopCoroutine(healEffectRoutine);
+            healEffectRoutine = null;
+        }
+        if (healEffectRoot != null) healEffectRoot.SetActive(false);
+    }
+
     private void EnsureHealTextReferences()
     {
         if (healTextRoot == null)
         {
-            Transform healTextTransform = FindSceneTransformByName("Heal_Text");
-
-            if (healTextTransform != null && healTextTransform.IsChildOf(transform))
-                healTextRoot = healTextTransform.gameObject;
+            Transform found = FindSceneTransformByName("Heal_Text");
+            if (found != null && found.IsChildOf(transform))
+                healTextRoot = found.gameObject;
         }
 
-        if (healTextRoot == null)
+        if (healTextRoot == null || healButtonRoot == null)
             return;
 
-        if (healTextCanvasGroup == null)
-            healTextCanvasGroup = healTextRoot.GetComponent<CanvasGroup>();
-
-        if (healTextCanvasGroup == null)
-            healTextCanvasGroup = healTextRoot.AddComponent<CanvasGroup>();
-
-        healTextCanvasGroup.interactable = false;
-        healTextCanvasGroup.blocksRaycasts = false;
-    }
-
-    private void StartHealTextFeedback()
-    {
-        EnsureHealTextReferences();
-
-        if (healTextRoot == null || healTextCanvasGroup == null)
-            return;
-
-        if (healTextRoutine != null)
-            StopCoroutine(healTextRoutine);
-
-        healTextRoutine = StartCoroutine(PlayHealTextFeedbackRoutine());
-    }
-
-    private IEnumerator PlayHealTextFeedbackRoutine()
-    {
-        EnsureHealTextReferences();
-
-        if (healTextRoot == null || healTextCanvasGroup == null)
-        {
-            healTextRoutine = null;
-            yield break;
-        }
-
-        healTextRoot.SetActive(true);
-        healTextCanvasGroup.alpha = 0f;
-
-        float fadeDuration = Mathf.Max(0f, healTextFadeDuration);
-        if (fadeDuration <= 0f)
-        {
-            healTextCanvasGroup.alpha = 1f;
-        }
-        else
-        {
-            float elapsed = 0f;
-            while (elapsed < fadeDuration)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                healTextCanvasGroup.alpha = Mathf.Clamp01(elapsed / fadeDuration);
-                yield return null;
-            }
-
-            healTextCanvasGroup.alpha = 1f;
-        }
-
-        if (healTextHoldDuration > 0f)
-            yield return new WaitForSecondsRealtime(healTextHoldDuration);
-
-        if (fadeDuration <= 0f)
-        {
-            healTextCanvasGroup.alpha = 0f;
-        }
-        else
-        {
-            float elapsed = 0f;
-            while (elapsed < fadeDuration)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                healTextCanvasGroup.alpha = 1f - Mathf.Clamp01(elapsed / fadeDuration);
-                yield return null;
-            }
-
-            healTextCanvasGroup.alpha = 0f;
-        }
-
-        healTextRoot.SetActive(false);
-        healTextRoutine = null;
+        // Preserve the designer-authored anchored position, and display by
+        // SetActive rather than by CanvasGroup opacity or a Y animation.
+        RestHealTextHoverToggle hover = healButtonRoot.GetComponent<RestHealTextHoverToggle>();
+        if (hover == null)
+            hover = healButtonRoot.AddComponent<RestHealTextHoverToggle>();
+        hover.Configure(healTextRoot);
     }
 
     private void SetHealTextVisibleImmediate(bool visible)
     {
         EnsureHealTextReferences();
-
-        if (healTextCanvasGroup != null)
-        {
-            healTextCanvasGroup.alpha = visible ? 1f : 0f;
-            healTextCanvasGroup.interactable = false;
-            healTextCanvasGroup.blocksRaycasts = false;
-        }
-
         if (healTextRoot != null)
             healTextRoot.SetActive(visible);
     }
@@ -1518,5 +1683,68 @@ public class RestRoomController : MonoBehaviour
         Debug.Log(
             $"[RestRoomController] Complete Node / Node:{runtime.CurrentNodeIndex} / Map:{runtime.CurrentMapId}"
         );
+    }
+}
+
+/// <summary>
+/// Rest Heal label only appears while the mouse is over HealButton.
+/// Its RectTransform position is fixed to the authored placement.
+/// </summary>
+[DisallowMultipleComponent]
+public sealed class RestHealTextHoverToggle : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    private GameObject target;
+    private RectTransform rect;
+    private Vector2 originalAnchoredPosition;
+    private bool captured;
+    private bool hovered;
+
+    public void Configure(GameObject value)
+    {
+        if (value == null) return;
+        if (target != value)
+        {
+            target = value;
+            rect = target.GetComponent<RectTransform>();
+            captured = false;
+        }
+        if (!captured && rect != null)
+        {
+            originalAnchoredPosition = rect.anchoredPosition;
+            captured = true;
+        }
+        SetVisible(hovered && isActiveAndEnabled);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        hovered = true;
+        SetVisible(true);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        hovered = false;
+        SetVisible(false);
+    }
+
+    private void LateUpdate()
+    {
+        // Other hover transform components may still animate the parent/label;
+        // keep only this label at its configured position.
+        if (captured && rect != null && rect.anchoredPosition != originalAnchoredPosition)
+            rect.anchoredPosition = originalAnchoredPosition;
+    }
+
+    private void OnDisable()
+    {
+        hovered = false;
+        SetVisible(false);
+    }
+
+    private void SetVisible(bool visible)
+    {
+        if (target != null && target.activeSelf != visible)
+            target.SetActive(visible);
     }
 }

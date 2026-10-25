@@ -435,6 +435,9 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             introItemRect.anchoredPosition = introItemOriginalAnchoredPosition;
         // Reveal other UI only when the item has reached its final position.
         yield return FadeInOtherIntroObjects();
+        // The content hierarchy has just been re-enabled by the intro.
+        // Refresh names after its localization/OnEnable callbacks have run.
+        RefreshCharacterNames();
         panelCanvasGroup.interactable = true;
         panelCanvasGroup.blocksRaycasts = true;
         RestoreIntroItemCanvasGroup();
@@ -462,6 +465,8 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             child.SetActive(true);
         }
         introHiddenObjects.Clear();
+        // Names must be correct before the content fade makes them visible.
+        RefreshCharacterNames();
 
         float duration = Mathf.Max(0f, otherPanelsFadeInDuration);
         float elapsed = 0f;
@@ -704,6 +709,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             }
             rarityLine.color = color;
         }
+        RefreshCharacterNames();
         for (int i = 0; i < entries.Length; i++)
         {
             CharacterEntry e = entries[i];
@@ -713,15 +719,6 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             e.root.SetActive(present);
             if (!present) continue;
             if (e.select != null) e.select.SetActive(true);
-            CharacterMasterData master = DataManager.Instance.CharacterDatabase?.Get(e.id);
-            // TMP SubMesh가 아니라 Name의 원본 TMP에 직접 이름을 기록합니다.
-            Transform nameRoot = content.Find("Char" + (i + 1) + "/Name");
-            e.name = FindText(nameRoot);
-            string displayName = master != null ? GameDataLocalization.CharacterName(master) : null;
-            if (string.IsNullOrWhiteSpace(displayName)) displayName = master != null ? master.Name : null;
-            if (string.IsNullOrWhiteSpace(displayName)) displayName = e.id;
-            if (e.name != null) { e.name.text = displayName; e.name.SetAllDirty(); }
-            else Debug.LogWarning("[BattleRewardRelicPanelUI] Char" + (i + 1) + "/Name TMP_Text를 찾지 못했습니다.", e.root);
             Sprite portrait = null;
             DataManager.Instance.CharacterIconDatabase?.TryGetIcon(e.id, out portrait);
             SetIcon(e.icon, portrait);
@@ -751,6 +748,57 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
                 visible++;
             }
             RefreshSlotHoverLabels(i);
+        }
+    }
+
+    // Refresh the actual reward-panel character labels independently of relic equip.
+    // The intro temporarily disables and re-enables content, which may retrigger
+    // prefab localization components and overwrite names assigned during Open().
+    private void RefreshCharacterNames()
+    {
+        DataManager data = DataManager.Instance;
+        if (data == null || content == null)
+            return;
+
+        for (int i = 0; i < entries.Length; i++)
+        {
+            Transform nameRoot = content.Find("Char" + (i + 1) + "/Name");
+            TMP_Text label = FindText(nameRoot);
+            if (label == null)
+                continue;
+
+            CharacterEntry entry = entries[i];
+            if (entry != null)
+                entry.name = label;
+
+            // This label is runtime-owned. Disable prefab/static localizers so
+            // OnEnable cannot restore the placeholder text during the intro.
+            if (label.GetComponent<LocalizationAutoBindingIgnore>() == null)
+                label.gameObject.AddComponent<LocalizationAutoBindingIgnore>();
+            LocalizedTMPText staticLocalizer = label.GetComponent<LocalizedTMPText>();
+            if (staticLocalizer != null) staticLocalizer.enabled = false;
+            DynamicLocalizedTMPText dynamicLocalizer = label.GetComponent<DynamicLocalizedTMPText>();
+            if (dynamicLocalizer != null) dynamicLocalizer.enabled = false;
+            LocalizeStringEvent stringEvent = label.GetComponent<LocalizeStringEvent>();
+            if (stringEvent != null) stringEvent.enabled = false;
+
+            string characterId = data.PartyRuntimeStore?.GetCharacterId(i);
+            string displayName = string.Empty;
+            if (!string.IsNullOrWhiteSpace(characterId))
+            {
+                CharacterMasterData master = data.CharacterDatabase?.Get(characterId);
+                displayName = master != null ? GameDataLocalization.CharacterName(master) : null;
+                if (string.IsNullOrWhiteSpace(displayName))
+                    displayName = master != null ? master.Name : null;
+                if (string.IsNullOrWhiteSpace(displayName))
+                    displayName = characterId;
+            }
+
+            if (label.text != displayName)
+            {
+                label.text = displayName;
+                label.SetAllDirty();
+            }
         }
     }
 

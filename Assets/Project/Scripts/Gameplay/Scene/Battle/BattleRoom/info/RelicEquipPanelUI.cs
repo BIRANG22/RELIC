@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+using UnityEngine.Localization.Components;
 
 public class RelicEquipPanelUI : MonoBehaviour
 {
@@ -209,6 +211,7 @@ public class RelicEquipPanelUI : MonoBehaviour
     {
         RefreshInventory();
         RefreshEquippedSlots();
+        RefreshPartyNames();
     }
 
     private void RefreshInventory()
@@ -401,6 +404,67 @@ public class RelicEquipPanelUI : MonoBehaviour
             if (panels[i] != null)
                 panels[i].Refresh();
         }
+    }
+
+    // Keep the three character labels synchronized as soon as the panel opens.
+    private void RefreshPartyNames()
+    {
+        if (DataManager.Instance?.PartyRuntimeStore == null)
+            return;
+
+        Transform content = transform.Find("content");
+        if (content == null)
+            content = FindChildByName(transform, "content");
+        if (content == null)
+            return;
+
+        for (int slotIndex = 0; slotIndex < 3; slotIndex++)
+        {
+            Transform slot = content.Find($"Char{slotIndex + 1}");
+            if (slot == null)
+                continue;
+
+            Transform nameRoot = slot.Find("Name");
+            if (nameRoot == null)
+                continue;
+
+            TMP_Text nameText = nameRoot.GetComponent<TMP_Text>() ??
+                                nameRoot.GetComponentInChildren<TMP_Text>(true);
+            if (nameText == null)
+                continue;
+
+            string characterId = GetCharacterIdByPartySlot(slotIndex);
+            string displayName = string.Empty;
+            if (!string.IsNullOrWhiteSpace(characterId))
+            {
+                displayName = characterId;
+                if (DataManager.Instance.CharacterDatabase != null &&
+                    DataManager.Instance.CharacterDatabase.TryGet(characterId, out CharacterMasterData master) &&
+                    master != null)
+                {
+                    displayName = GameDataLocalization.CharacterName(master);
+                }
+            }
+
+            // This is a dynamic party name; a prefab's static localization must not overwrite it.
+            LocalizedTMPText localizer = nameText.GetComponent<LocalizedTMPText>();
+            if (localizer != null)
+                localizer.enabled = false;
+            nameText.text = displayName;
+        }
+    }
+
+    private static Transform FindChildByName(Transform root, string targetName)
+    {
+        if (root == null) return null;
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child.name == targetName) return child;
+            Transform nested = FindChildByName(child, targetName);
+            if (nested != null) return nested;
+        }
+        return null;
     }
 
     private void RefreshEquippedSlots()

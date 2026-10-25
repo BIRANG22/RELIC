@@ -475,8 +475,7 @@ public class EventRoomController : MonoBehaviour
 
             CompleteCurrentNode();
 
-            // 튜토리얼 이벤트 1은 지도로 돌아가지 않고 바로 전투 2(Map_29)로 이어집니다.
-            // 이벤트 보상 처리와 이벤트 UI는 기존 기능을 그대로 사용하고, 방 이동만 고정 루트로 전환합니다.
+            // 튜토리얼 이벤트 종료 후에는 일반 지도를 건너뛰고 다음 전투방으로 직접 이동합니다.
             if (TryContinueTutorialRoute())
                 return;
 
@@ -498,56 +497,34 @@ public class EventRoomController : MonoBehaviour
 
     private bool TryContinueTutorialRoute()
     {
-        DataManager dataManager = DataManager.Instance;
-        if (dataManager == null)
+        DataManager data = DataManager.Instance;
+        if (data?.BattleRuntimeStore?.Get()?.IsTutorialBattle != true)
             return false;
 
-        BattleRuntimeData battle = dataManager.BattleRuntimeStore?.Get();
-        MapRuntimeData map = dataManager.MapRuntimeStore?.Get();
-        if (battle?.IsTutorialBattle != true || map == null)
-            return false;
-
-        string nextMapId;
-
-        if (string.Equals(map.CurrentMapId, TutorialBattleEntrySetup.FirstTutorialEventMapId, System.StringComparison.OrdinalIgnoreCase))
+        string currentMapId = data.MapRuntimeStore?.Get()?.CurrentMapId;
+        if (!TutorialMapRoute.TryGetNext(data, currentMapId, out string nextMapId))
         {
-            if (!TutorialBattleEntrySetup.TryPrepareSecondBattleParty(dataManager))
-            {
-                Debug.LogError("[EventRoomController] Failed to prepare Haze for tutorial battle 2.", this);
-                return false;
-            }
-
-            nextMapId = TutorialBattleEntrySetup.SecondTutorialMapId;
-        }
-        else if (string.Equals(map.CurrentMapId, TutorialBattleEntrySetup.SecondTutorialEventMapId, System.StringComparison.OrdinalIgnoreCase))
-        {
-            // Event_T_02의 생명력 회복은 기존 Modify 결과가 먼저 적용됩니다.
-            // 여기서는 카야를 3번째 파티 슬롯 / 그리드 13에 추가하고 전투 3으로 이동합니다.
-            if (!TutorialBattleEntrySetup.TryPrepareThirdBattleParty(dataManager))
-            {
-                Debug.LogError("[EventRoomController] Failed to prepare Kaya for tutorial battle 3.", this);
-                return false;
-            }
-
-            nextMapId = TutorialBattleEntrySetup.ThirdTutorialMapId;
-        }
-        else
-        {
-            return false;
+            // 튜토리얼 진행 중에는 일반 탐사 지도로 복귀하지 않습니다.
+            Debug.LogError($"[EventRoomController] Tutorial route not found after {currentMapId}.", this);
+            return true;
         }
 
         BattleSceneController sceneController =
             Object.FindFirstObjectByType<BattleSceneController>(FindObjectsInactive.Include);
-
         if (sceneController == null)
         {
-            Debug.LogError($"[EventRoomController] BattleSceneController is missing for tutorial transition to {nextMapId}.", this);
-            return false;
+            Debug.LogError("[EventRoomController] BattleSceneController is missing for tutorial route.", this);
+            return true;
         }
 
-        sceneController.OpenTutorialMapDirect(
-            nextMapId,
-            () => SetNextButtonVisible(false));
+        // 헤이즈를 기존 힐트/카야 파티에 추가하고 두 번째 전투로 넘어갑니다.
+        if (!TutorialBattleEntrySetup.TryPrepareSecondBattleParty(data))
+        {
+            Debug.LogError("[EventRoomController] Failed to prepare the tutorial companion.", this);
+            return true;
+        }
+
+        sceneController.OpenTutorialMapDirect(nextMapId, () => SetNextButtonVisible(false));
         return true;
     }
 
@@ -1605,11 +1582,14 @@ public class EventRoomController : MonoBehaviour
         if (!playedEvent06OpenVisual)
             PlayVisualAction(result);
 
+        // 효과가 확정된 순간 월드 연출과 체력/능력치 팝업, 자원 HUD를 함께 시작합니다.
+        // 보상 연출 종료를 기다리는 Core 단계에서 실행하면 표시가 뒤늦게 발생합니다.
+        TryShowEventStatResultPopup(choice, result, resolvedDiceFaces);
+
         if (pendingEvent06ShopOpen)
             StartEvent06ShopOpenAfterVisualAction(playedEvent06OpenVisual || result.HasVisualAction);
 
-        // Keep the coin result visible while the success/failure world action plays.
-        // Continue to rewards and the next event only after the panel closes.
+        // Legacy deferred coin flow; current coin choices close before executing.
         if (coinResultWaitingForVisual)
         {
             coinResultWaitingForVisual = false;
@@ -1663,7 +1643,7 @@ public class EventRoomController : MonoBehaviour
         EventChoiceExecutionResult result,
         int[] resolvedDiceFaces = null)
     {
-        TryShowEventStatResultPopup(choice, result, resolvedDiceFaces);
+        // 팝업과 HUD는 ContinueAfterExecutedChoice에서 월드 연출과 동시에 표시했습니다.
 
         // Event_06 상점은 패널이 닫힐 때까지 이벤트 진행을 보류합니다.
         // Close 알림을 받으면 Event_06_A 결과 Title로 전환합니다.
@@ -2236,28 +2216,38 @@ public class EventRoomController : MonoBehaviour
         {
             coinFlipPresenter.ShowPrediction(heads, (actualHeads, selectedHeads) =>
             {
-                coinResultWaitingForVisual = true;
-                forcedCoinHeads = actualHeads;
-                predictedCoinHeads = selectedHeads;
-                try { ExecuteEventChoice(choice); }
-                finally
-                {
-                    forcedCoinHeads = null;
-                    predictedCoinHeads = null;
-                    // Choice presentation resumes after the world result visual and popup close.
-                }
+                // Close the coin UI before starting world VFX, HUD, and status popups.
+                StartCoroutine(CloseCoinPanelThenExecute(choice, actualHeads, selectedHeads));
             });
         }
         else
         {
             coinFlipPresenter.Show(heads, () =>
             {
-                coinFlipPresenter.Hide();
-                RestoreEventChoiceUiAfterDice();
-                forcedCoinHeads = heads;
-                try { ExecuteEventChoice(choice); }
-                finally { forcedCoinHeads = null; }
+                StartCoroutine(CloseCoinPanelThenExecute(choice, heads, null));
             });
+        }
+    }
+
+    private IEnumerator CloseCoinPanelThenExecute(EventData choice, bool actualHeads, bool? selectedHeads)
+    {
+        // Delay is handled by the coin result itself. No extra wait after closing.
+        if (coinFlipPresenter != null && coinFlipPresenter.gameObject.activeInHierarchy)
+            yield return coinFlipPresenter.FadeOutAndHide();
+
+        if (!isActiveAndEnabled || choice == null)
+            yield break;
+
+        forcedCoinHeads = actualHeads;
+        predictedCoinHeads = selectedHeads;
+        try
+        {
+            ExecuteEventChoice(choice);
+        }
+        finally
+        {
+            forcedCoinHeads = null;
+            predictedCoinHeads = null;
         }
     }
 

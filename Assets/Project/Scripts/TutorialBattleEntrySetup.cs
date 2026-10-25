@@ -92,10 +92,23 @@ public static class TutorialBattleEntrySetup
             characterStore.AddOrUpdate(hazeRuntime);
         }
 
-        if (!partyStore.SetSlot(1, HazeCharacterId, HazeSpawnGridIndex))
+        if (!partyStore.SetSlot(2, HazeCharacterId, HazeSpawnGridIndex))
         {
-            Debug.LogError("[TutorialBattleEntrySetup] Failed to register Haze in tutorial party slot 1.");
+            Debug.LogError("[TutorialBattleEntrySetup] Failed to register Haze in tutorial party slot 2.");
             return false;
+        }
+
+        // 합류 직후 전투 기록이 0이어도 탐사 결과에 표시될 수 있도록 통계 행을 생성합니다.
+        BattleRuntimeData battle = dataManager.BattleRuntimeStore?.GetOrCreate();
+        if (battle != null)
+        {
+            battle.CharacterStatistics ??= new List<BattleRunCharacterStatisticsData>();
+            if (!battle.CharacterStatistics.Exists(stats => stats != null &&
+                string.Equals(stats.CharacterId, HazeCharacterId, System.StringComparison.Ordinal)))
+            {
+                battle.CharacterStatistics.Add(new BattleRunCharacterStatisticsData { CharacterId = HazeCharacterId });
+                dataManager.BattleRuntimeStore.Set(battle);
+            }
         }
 
         Debug.Log($"[TutorialBattleEntrySetup] Tutorial battle 2 party prepared: Hilt + Haze(Grid {HazeSpawnGridIndex}).");

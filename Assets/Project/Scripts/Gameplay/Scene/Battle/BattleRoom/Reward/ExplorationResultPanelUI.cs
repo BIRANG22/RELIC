@@ -79,6 +79,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
 
         result = ExplorationResultBuilder.Build(runtime);
+        if (runtime?.IsTutorialBattle == true)
+            IncludeTutorialPartyInResult(result);
         isDefeatResult = defeat;
         experienceContext =
             BattleStageClearExperienceService.BuildContext(mapRuntime, currentNode, defeat);
@@ -106,6 +108,36 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
         gameObject.SetActive(true);
         BringResultPanelToFront();
+    }
+
+    // 전투 행동 기록이 없어도 튜토리얼에 합류한 모든 파티원을 결과에 포함합니다.
+    private static void IncludeTutorialPartyInResult(ExplorationResultData explorationResult)
+    {
+        if (explorationResult == null) return;
+
+        DataManager data = DataManager.Instance;
+        if (data?.PartyRuntimeStore == null) return;
+        explorationResult.CharacterStatistics ??= new List<BattleRunCharacterStatisticsData>();
+
+        for (int slot = 0; slot < 3; slot++)
+        {
+            string characterId = data.PartyRuntimeStore.GetCharacterId(slot);
+            if (string.IsNullOrWhiteSpace(characterId)) continue;
+
+            bool exists = false;
+            for (int i = 0; i < explorationResult.CharacterStatistics.Count; i++)
+            {
+                BattleRunCharacterStatisticsData stats = explorationResult.CharacterStatistics[i];
+                if (stats != null && string.Equals(stats.CharacterId, characterId, System.StringComparison.Ordinal))
+                {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists)
+                explorationResult.CharacterStatistics.Add(new BattleRunCharacterStatisticsData { CharacterId = characterId });
+        }
     }
 
     private void ApplyStructuredResult(
@@ -813,17 +845,57 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
         ApplyStageClearExperienceOnce();
 
+        bool isTutorial = DataManager.Instance.BattleRuntimeStore?.Get()?.IsTutorialBattle == true;
+        if (isTutorial)
+        {
+            if (!TutorialBattleEntrySetup.TryPrepareLobbyPartyAfterTutorial(DataManager.Instance))
+            {
+                Debug.LogError("[ExplorationResultPanelUI] Failed to prepare tutorial lobby party.");
+                isTransitioning = false;
+                if (returnToBaseButton != null) returnToBaseButton.interactable = true;
+                return;
+            }
+            TutorialSettings.MarkTutorialSeen();
+        }
+
         LobbyRuntimeData lobby = DataManager.Instance.LobbyRuntimeStore.GetOrCreate();
-        lobby.PendingResearchResult = ExplorationResearchService.CreatePending(
-            result,
-            DataManager.Instance,
-            researchRewardMultiplier);
-        lobby.HasPendingResearchResult = true;
+        if (isTutorial)
+        {
+            // 튜토리얼은 탐사 보고만 표시하고 로비 연구 정산 UI를 열지 않습니다.
+            PendingResearchSettlementService.Clear(lobby);
+        }
+        else
+        {
+            lobby.PendingResearchResult = ExplorationResearchService.CreatePending(
+                result,
+                DataManager.Instance,
+                researchRewardMultiplier);
+            lobby.HasPendingResearchResult = true;
+        }
         lobby.OwnedRelicIds.Clear();
         ClearLobbyEquippedRelics(lobby);
         DataManager.Instance.LobbyRuntimeStore.Set(lobby);
 
         BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
+
+        // Tutorial HP is only for the introductory battles. The normal lobby run
+        // must begin with the party fully healed, after snapshot restoration.
+        if (isTutorial)
+        {
+            for (int slot = 0; slot < DataManager.Instance.PartyRuntimeStore.MaxPartyCountValue; slot++)
+            {
+                string characterId = DataManager.Instance.PartyRuntimeStore.GetCharacterId(slot);
+                if (string.IsNullOrWhiteSpace(characterId))
+                    continue;
+
+                if (DataManager.Instance.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData character) &&
+                    character != null)
+                {
+                    character.CurrentHP = Mathf.Max(1, character.MaxHP);
+                }
+            }
+        }
+
         SaveSystem.Instance?.SaveCurrentProgress();
 
         BattleRoomCleaner cleaner =

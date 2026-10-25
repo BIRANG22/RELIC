@@ -265,7 +265,8 @@ namespace Relic.Gameplay.Monster
                 Vector2Int target = gridManager.IndexToCoord(targets[i]);
                 int distance = (target.x - origin.x) * sign;
                 if (target.y != origin.y || distance <= 0 ||
-                    distance > DashMaxDistance || distance >= nearest)
+                    distance > DashMaxDistance || distance >= nearest ||
+                    !IsDashPathClear(origin, target, gridManager))
                     continue;
                 nearest = distance;
                 dashedTargetIndex = targets[i];
@@ -407,7 +408,8 @@ namespace Relic.Gameplay.Monster
                     }
                     int dx = target.x - candidate.x;
                     int distance = Mathf.Abs(dx);
-                    if (target.y != candidate.y || distance < 1 || distance > DashMaxDistance)
+                    if (target.y != candidate.y || distance < 1 || distance > DashMaxDistance ||
+                        !IsDashPathClear(candidate, target, gridManager))
                         continue;
                     if (risk > bestRisk || (risk == bestRisk && distance >= bestDistance))
                         continue;
@@ -648,7 +650,8 @@ namespace Relic.Gameplay.Monster
 
                 int distance = Mathf.Abs(target.x - origin.x);
 
-                if (distance <= 0 || distance > DashMaxDistance || distance >= bestDistance)
+                if (distance <= 0 || distance > DashMaxDistance || distance >= bestDistance ||
+                    !IsDashPathClear(origin, target, gridManager))
                     continue;
 
                 bestDistance = distance;
@@ -659,6 +662,32 @@ namespace Relic.Gameplay.Monster
             }
 
             return found;
+        }
+
+        // A dash cannot hit a character through an impassable grid effect.
+        // Check every cell before the target, excluding the target's own cell.
+        private static bool IsDashPathClear(
+            Vector2Int origin, Vector2Int target, GridManager gridManager)
+        {
+            if (gridManager == null || origin.y != target.y)
+                return false;
+
+            int sign = target.x > origin.x ? 1 : -1;
+            BattleGridEffectController effects =
+                Object.FindFirstObjectByType<BattleGridEffectController>(FindObjectsInactive.Include);
+
+            for (int x = origin.x + sign; x != target.x; x += sign)
+            {
+                Vector2Int cell = new Vector2Int(x, origin.y);
+                if (!gridManager.IsValidCoord(cell))
+                    return false;
+
+                int index = gridManager.CoordToIndex(cell);
+                if (effects != null && effects.IsBlocked(index))
+                    return false;
+            }
+
+            return true;
         }
 
         private bool TryBuildBash(

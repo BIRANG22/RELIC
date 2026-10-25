@@ -45,6 +45,9 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private float positionPanelHoldDuration = 1.2f;
     [SerializeField] private float positionPanelFadeDuration = 0.35f;
 
+    [Header("Initial Tutorial Party Entry")]
+    [Min(0f)][SerializeField] private float initialTutorialPartyEntryDelay = 1.0f;
+
     [Header("Back2 Name")]
     [SerializeField] private TMP_Text back2NameText;
 
@@ -139,6 +142,7 @@ public class BattleSceneController : MonoBehaviour
     private void Update()
     {
         BattleRuntimeData runtime = DataManager.Instance?.BattleRuntimeStore?.Get();
+        RefreshTutorialSkipButtonVisibility(runtime?.IsTutorialBattle == true);
         if (runtime == null)
             return;
 
@@ -214,15 +218,22 @@ public class BattleSceneController : MonoBehaviour
         if (tutorialMode != null)
             tutorialMode.SetActive(isTutorialBattle);
 
-        if (tutorialSkipButton != null)
-        {
-            // The prefab's SkipButton may be disabled by default.
-            // Setting interactable alone does not make the object visible.
-            if (tutorialSkipButton.gameObject.activeSelf != isTutorialBattle)
-                tutorialSkipButton.gameObject.SetActive(isTutorialBattle);
+        RefreshTutorialSkipButtonVisibility(isTutorialBattle);
+    }
 
-            tutorialSkipButton.interactable = isTutorialBattle && !isTutorialSkipProcessing;
-        }
+    private void RefreshTutorialSkipButtonVisibility(bool isTutorialBattle)
+    {
+        if (tutorialSkipButton == null)
+            return;
+
+        // 튜토리얼 진행 중에는 방 이동이나 대화창 전환에도 스킵 버튼을 유지합니다.
+        if (isTutorialBattle && tutorialMode != null && !tutorialMode.activeSelf)
+            tutorialMode.SetActive(true);
+
+        if (tutorialSkipButton.gameObject.activeSelf != isTutorialBattle)
+            tutorialSkipButton.gameObject.SetActive(isTutorialBattle);
+
+        tutorialSkipButton.interactable = isTutorialBattle && !isTutorialSkipProcessing;
     }
 
     private void OnTutorialSkipButtonClicked()
@@ -368,7 +379,9 @@ public class BattleSceneController : MonoBehaviour
         if (!TryRestoreBattleRewardOnStart() &&
             !TryOpenUnclearedCurrentNodeOnStart() && !TryOpenLayerZeroNodeOnNewRun())
         {
-            OpenMapPanelImmediate();
+            // A new expedition must not silently skip its first event because
+            // map generation or runtime initialization completed a frame late.
+            StartCoroutine(RetryInitialRoomBeforeOpeningMap());
         }
 
         lastActiveRoomLastFrame = FindActiveRoomObject();
@@ -1030,15 +1043,6 @@ public class BattleSceneController : MonoBehaviour
             }
         }
 
-        // A direct title-to-battle tutorial entry may already have a current node.
-        // Route it through the same scene-transition-aware entry as a new run.
-        if (ShouldDeferInitialTutorialPartyEntry(currentNode))
-        {
-            Debug.Log("[TutorialInitialEntry] Restored-current-node route -> tutorial presenter", this);
-            StartCoroutine(PlayStageEntryThenOpenNodeRoutine(currentNode));
-            return true;
-        }
-
         HandleSelectedMap(currentNode);
         StartSharedPartyEntryTransitionIfNeeded();
         CountPresentedRoomEntry(currentNode);
@@ -1079,6 +1083,39 @@ public class BattleSceneController : MonoBehaviour
         return true;
     }
 
+    private IEnumerator RetryInitialRoomBeforeOpeningMap()
+    {
+        // Keep the map hidden while the fresh-run entry is being recovered.
+        HideMapPanelImmediate();
+        for (int attempt = 0; attempt < 3; attempt++)
+        {
+            yield return null;
+            if (mapRuntimeStore == null)
+                mapRuntimeStore = DataManager.Instance?.MapRuntimeStore;
+            mapRuntime = mapRuntimeStore?.Get();
+
+            if (mapRuntime == null)
+                continue;
+
+            // Another controller may already have opened a room this frame.
+            if (FindActiveRoomObject() != null)
+                yield break;
+
+            if ((mapRuntime.GeneratedNodes == null || mapRuntime.GeneratedNodes.Count == 0) &&
+                battleMapPanel != null)
+                battleMapPanel.Prepare(mapRuntime);
+
+            if (TryOpenUnclearedCurrentNodeOnStart() || TryOpenLayerZeroNodeOnNewRun())
+                yield break;
+        }
+
+        Debug.LogWarning(
+            $"[BattleSceneController] Initial room was not available after retry. " +
+            $"Node:{mapRuntime?.CurrentNodeIndex}, Map:{mapRuntime?.CurrentMapId}, " +
+            $"Generated:{mapRuntime?.GeneratedNodes?.Count ?? 0}. Opening map as fallback.", this);
+        OpenMapPanelImmediate();
+    }
+
     private void PrepareStageEntryPositionPanel()
     {
         AutoFindStageEntryPositionPanelIfNeeded();
@@ -1112,7 +1149,7 @@ public class BattleSceneController : MonoBehaviour
 
     private bool ShouldDeferInitialTutorialPartyEntry(GeneratedMapNodeData node)
     {
-        if (node == null || !IsBattleNodeType(node.Type))
+        if (node == null || !IsBattleNode(node))
             return false;
 
         DataManager data = DataManager.Instance;
@@ -1140,7 +1177,6 @@ public class BattleSceneController : MonoBehaviour
         // SceneFlowManager only clears it AFTER the opening animation finishes.
         if (ShouldDeferInitialTutorialPartyEntry(entryNode))
         {
-            Debug.Log("[TutorialInitialEntry] Starting title-to-battle tutorial path", this);
             deferBattlePartyEntryUntilUncover = true;
             if (positionPanel != null)
                 positionPanel.SetActive(false);
@@ -1161,22 +1197,19 @@ public class BattleSceneController : MonoBehaviour
                 yield break;
             }
 
-            // The persistent CanvasMaterialSceneTransition is responsible for the
-            // title -> Battle scene opening. The internal battle diagonal transition
-            // is not a valid signal for initial tutorial entry.
-            while (sceneFlow != null && sceneFlow.IsLoading)
+            // Use the existing BattleRoom presenter, not another tutorial controller.
+            // The loader has already called PrepareEntry after spawning the party.
+            // Wait for the title transition to begin opening before playback.
+            while (sceneTransition != null && sceneFlow != null &&
+                   sceneFlow.IsLoading && !sceneTransition.IsOpening)
                 yield return null;
-            while (sceneTransition != null && sceneTransition.IsPlaying)
-                yield return null;
-            // Allow at least one uncovered frame before moving world characters.
-            yield return null;
 
-            Debug.Log("[TutorialInitialEntry] Scene uncovered; invoking TutorialMode presenter", this);
-            System.Threading.Tasks.Task entryTask = loader.PlayInitialTutorialPartyEntryAsync();
-            while (entryTask != null && !entryTask.IsCompleted)
+            loader.PlayPreparedPartyEntry();
+            BattleRoomPartyTransitionPresenter presenter =
+                loader.GetComponentInChildren<BattleRoomPartyTransitionPresenter>(true);
+            yield return null;
+            while (presenter != null && presenter.IsPlaying)
                 yield return null;
-            if (entryTask != null && entryTask.IsFaulted)
-                Debug.LogException(entryTask.Exception, this);
 
             // Dialogue must start after the walking animation has finished.
             loader.BeginDeferredTutorialSequence();
@@ -1264,12 +1297,18 @@ public class BattleSceneController : MonoBehaviour
                 // The loader may finish before the first rendered scene frame.
                 // Wait for the entry room to be visible before playing the normal walk-in.
                 yield return null;
+                float entryWait = Mathf.Max(0f, initialTutorialPartyEntryDelay);
+                while (entryWait > 0f && battleRoom != null && battleRoom.activeInHierarchy)
+                {
+                    entryWait -= Time.unscaledDeltaTime;
+                    yield return null;
+                }
                 if (battleRoom == null || !battleRoom.activeInHierarchy)
                     yield break;
 
                 tutorialLoader.PlayPreparedPartyEntry();
-                TutorialPartyTransitionPresenter presenter =
-                    Object.FindFirstObjectByType<TutorialPartyTransitionPresenter>(FindObjectsInactive.Include);
+                BattleRoomPartyTransitionPresenter presenter =
+                    ResolveActiveBattleRoomPartyTransitionPresenter();
                 while (presenter != null && presenter.IsPlaying)
                     yield return null;
             }
@@ -1330,7 +1369,7 @@ public class BattleSceneController : MonoBehaviour
         bool isUnclearedCurrentBattle =
             currentNode.NodeIndex == mapRuntime.CurrentNodeIndex &&
             MapRuntimeProgressUtility.HasUnclearedCurrentNode(mapRuntime) &&
-            IsBattleNodeType(currentNode.Type);
+            IsBattleNode(currentNode);
 
         if (isUnclearedCurrentBattle)
             SetBack2TurnNumber(1);
@@ -1508,7 +1547,7 @@ public class BattleSceneController : MonoBehaviour
             $"{nodeData.MapId} / Node:{nodeData.NodeIndex} / {nodeData.Type}"
         );
 
-        bool isBattleNode = IsBattleNodeType(nodeData.Type);
+        bool isBattleNode = IsBattleNode(nodeData);
         await PlayMapToRoomTransitionAsync(
             () =>
             {
@@ -1620,7 +1659,7 @@ public class BattleSceneController : MonoBehaviour
 
         // Use the same deferred walking entrance as a normal map-to-battle transition.
         // The direct tutorial route otherwise never calls PlayPreparedPartyEntry().
-        bool isBattleNode = IsBattleNodeType(nextNode.Type);
+        bool isBattleNode = IsBattleNode(nextNode);
         GameObject roomToKeepVisible = FindActiveRoomObject();
         await PlayMapToRoomTransitionAsync(
             () =>
@@ -1884,6 +1923,12 @@ public class BattleSceneController : MonoBehaviour
 
     private Task PlaySharedPartyExitAsync()
     {
+        // RestRoom uses stationary character spawn points: no exit walk animation.
+        if (restRoom != null && restRoom.activeInHierarchy)
+        {
+            sharedPartyEntryPrepared = false;
+            return Task.CompletedTask;
+        }
         sharedPartyEntryPrepared = false;
         AutoFindSharedRoomPresentationIfNeeded();
         if (sharedPartyTransitionPresenter == null)
@@ -1905,6 +1950,14 @@ public class BattleSceneController : MonoBehaviour
 
     private void StartSharedPartyEntryTransitionIfNeeded()
     {
+        // RestRoom creates stationary party actors at its own spawn points.
+        // The post-transition entry callback must not animate those actors.
+        if (restRoom != null && restRoom.activeInHierarchy)
+        {
+            sharedPartyEntryPrepared = false;
+            return;
+        }
+
         if (battleRoom != null && battleRoom.activeInHierarchy)
             return;
 
@@ -1932,6 +1985,13 @@ public class BattleSceneController : MonoBehaviour
 
     private void PrepareSharedPartyEntryIfNeeded()
     {
+        // RestRoom owns its character positions; never apply shared entry offsets.
+        if (restRoom != null && restRoom.activeInHierarchy)
+        {
+            sharedPartyEntryPrepared = false;
+            return;
+        }
+
         if (battleRoom != null && battleRoom.activeInHierarchy)
             return;
 
@@ -1996,7 +2056,7 @@ public class BattleSceneController : MonoBehaviour
             GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
             if (currentNode != null)
             {
-                forceNextBattleRoomLoad = IsBattleNodeType(currentNode.Type);
+                forceNextBattleRoomLoad = IsBattleNode(currentNode);
                 CaptureRoomEntrySaveCheckpoint();
                 HideMapPanelImmediate();
                 HandleSelectedMap(currentNode);
@@ -2101,19 +2161,14 @@ public class BattleSceneController : MonoBehaviour
                 OpenSpecialEvent(nodeData);
                 break;
 
-            // Route each tutorial room according to its Map DB content.
-            // A tutorial battle must use BattleRoomLoader for party entry and dialogue.
+            // Tutorial rooms are routed by valid map content, not by the Tutorial type alone.
             case "Tutorial":
-                if (DataManager.Instance?.MapDatabase != null &&
-                    DataManager.Instance.MapDatabase.TryGet(nodeData.MapId, out MapData tutorialMap) &&
-                    tutorialMap != null && !string.IsNullOrWhiteSpace(tutorialMap.BattleMapId))
-                {
+                if (IsBattleNode(nodeData))
                     OpenBattleMap(nodeData);
-                }
-                else
-                {
+                else if (IsTutorialEventNode(nodeData))
                     OpenSpecialEvent(nodeData);
-                }
+                else
+                    Debug.LogError($"[BattleSceneController] Tutorial map has no valid BattleMapId or EventId: {nodeData.MapId}", this);
                 break;
 
             default:
@@ -2308,18 +2363,26 @@ public class BattleSceneController : MonoBehaviour
         }
 
         bool isBattleRoom = roomObject == battleRoom;
+        bool isRestRoom = roomObject == restRoom;
         ResetCameraForNonBattleRoom(roomObject, isBattleRoom);
-        SetSharedPartyPresentationVisible(!isBattleRoom);
+        // RestRoom spawns its own party at its configured allySpawnPoints.
+        // Do not display the shared AllyRoot over the RestRoom characters.
+        SetSharedPartyPresentationVisible(!isBattleRoom && !isRestRoom);
 
         if (isBattleRoom)
         {
             sharedPartyEntryPrepared = false;
             SetBattleRoomIntroPlaying(true);
         }
+        else if (!isRestRoom)
+        {
+            // Prepare the shared entrance only for event rooms using AllyRoot.
+            PrepareSharedPartyEntryIfNeeded();
+        }
         else
         {
-            // 방의 OnEnable 전에 원위치 렌더러를 먼저 숨겨 첫 프레임 노출을 차단합니다.
-            PrepareSharedPartyEntryIfNeeded();
+            // RestRoom has its own character spawn anchors and no shared entrance.
+            sharedPartyEntryPrepared = false;
         }
 
         roomObject.SetActive(true);
@@ -2531,12 +2594,42 @@ public class BattleSceneController : MonoBehaviour
              && DataManager.Instance.TutorialDatabase.GetForMap(DataManager.Instance.MapRuntimeStore.Get().CurrentMapId)[0].DeferMonsterSpawn != 0));
     }
 
+    private static bool HasMappedId(string value)
+    {
+        return !string.IsNullOrWhiteSpace(value) &&
+               !string.Equals(value.Trim(), "0", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsTutorialEventNode(GeneratedMapNodeData node)
+    {
+        if (node == null || !string.Equals(node.Type, "Tutorial", System.StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        DataManager data = DataManager.Instance;
+        return data?.MapDatabase != null &&
+               data.MapDatabase.TryGet(node.MapId, out MapData mapped) &&
+               mapped != null && HasMappedId(mapped.EventId) && !HasMappedId(mapped.BattleMapId);
+    }
+
+    private static bool IsBattleNode(GeneratedMapNodeData node)
+    {
+        if (node == null)
+            return false;
+
+        if (!string.Equals(node.Type, "Tutorial", System.StringComparison.OrdinalIgnoreCase))
+            return IsBattleNodeType(node.Type);
+
+        DataManager data = DataManager.Instance;
+        return data?.MapDatabase != null &&
+               data.MapDatabase.TryGet(node.MapId, out MapData mapped) &&
+               mapped != null && HasMappedId(mapped.BattleMapId);
+    }
+
     private static bool IsBattleNodeType(string nodeType)
     {
         return nodeType == "Common" ||
                nodeType == "Elite" ||
-               nodeType == "Boss" ||
-               nodeType == "Tutorial";
+               nodeType == "Boss";
     }
 
     private void CloseAllRooms()
