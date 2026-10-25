@@ -57,7 +57,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 61094e2ebc5317b4f81aba134ad8ba09, type: 3}
+        m_Texture: {fileID: 2800000, guid: cb4038ea24f210243b5401e75ba7fdb6, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Mask:
@@ -121,6 +121,7 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SoftParticlesDistance: 1
     - _SoftParticlesEnabled: 0
+    - _SoftParticlesFadeDistance: 1
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
@@ -146,3 +147,4 @@ Material:
     - _SpeedMainTexUVNoiseZW: {r: 0, g: 0, b: 0, a: 0}
     - _TintColor: {r: 1, g: 1, b: 1, a: 0.653}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1

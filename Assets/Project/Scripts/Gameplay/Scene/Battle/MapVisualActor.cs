@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MapVisualActor : MonoBehaviour
 {
@@ -27,6 +28,7 @@ public class MapVisualActor : MonoBehaviour
     private string runtimeVisualObjectId;
     private readonly List<BattleWorldVfxHandle> spawnedWorldVfxHandles = new();
     private readonly Dictionary<Transform, Coroutine> shakeRoutines = new();
+    private readonly Dictionary<GameObject, Coroutine> fadeRoutines = new();
     private readonly Dictionary<Transform, Vector3> shakeOriginalLocalPositions = new();
 
     public string VisualObjectId
@@ -186,6 +188,192 @@ public class MapVisualActor : MonoBehaviour
     internal void DisableTarget(GameObject target, float delay)
     {
         SetTargetActive(target, false, delay);
+    }
+
+    internal void DisableTargetWithFade(GameObject target, float delay, float fadeDuration, bool fadeVfxColor, string vfxColorProperty)
+    {
+        if (target == null)
+            return;
+
+        if (fadeRoutines.TryGetValue(target, out Coroutine previous) && previous != null)
+            StopCoroutine(previous);
+
+        fadeRoutines.Remove(target);
+        fadeRoutines[target] = StartCoroutine(DisableTargetFadeRoutine(
+            target, Mathf.Max(0f, delay), Mathf.Max(0f, fadeDuration), fadeVfxColor, vfxColorProperty));
+    }
+
+    private IEnumerator DisableTargetFadeRoutine(GameObject target, float delay, float duration, bool fadeVfxColor, string vfxColorProperty)
+    {
+        if (delay > 0f)
+            yield return new WaitForSeconds(delay);
+
+        if (target == null)
+            yield break;
+
+        if (!target.activeInHierarchy || duration <= 0f)
+        {
+            target.SetActive(false);
+            fadeRoutines.Remove(target);
+            yield break;
+        }
+
+        SpriteRenderer[] sprites = target.GetComponentsInChildren<SpriteRenderer>(true);
+        CanvasGroup[] groups = target.GetComponentsInChildren<CanvasGroup>(true);
+        Graphic[] graphics = target.GetComponentsInChildren<Graphic>(true);
+        Color[] spriteColors = new Color[sprites.Length];
+        float[] groupAlphas = new float[groups.Length];
+        Color[] graphicColors = new Color[graphics.Length];
+        bool[] graphicUsesGroup = new bool[graphics.Length];
+
+        for (int i = 0; i < sprites.Length; i++)
+            if (sprites[i] != null) spriteColors[i] = sprites[i].color;
+
+        for (int i = 0; i < groups.Length; i++)
+            if (groups[i] != null) groupAlphas[i] = groups[i].alpha;
+
+        for (int i = 0; i < graphics.Length; i++)
+        {
+            if (graphics[i] == null) continue;
+            graphicColors[i] = graphics[i].color;
+            Transform t = graphics[i].transform;
+            while (t != null)
+            {
+                if (t.GetComponent<CanvasGroup>() != null)
+                {
+                    graphicUsesGroup[i] = true;
+                    break;
+                }
+                if (t == target.transform) break;
+                t = t.parent;
+            }
+        }
+
+        // VFX Graph의 Exposed Color(Vector4)와 ParticleSystem의 현재 파티클을 처리합니다.
+        // Unity Visual Effect Graph 패키지가 없는 프로젝트에서도 컴파일되도록 리플렉션을 사용합니다.
+        List<VfxColorSnapshot> vfxColors = fadeVfxColor
+            ? CollectVfxColors(target, vfxColorProperty) : new List<VfxColorSnapshot>();
+        ParticleSystem[] particleSystems = fadeVfxColor
+            ? target.GetComponentsInChildren<ParticleSystem>(true) : new ParticleSystem[0];
+        var particleBuffers = new ParticleSystem.Particle[particleSystems.Length][];
+        float previousMultiplier = 1f;
+
+        float elapsed = 0f;
+        while (elapsed < duration && target != null && target.activeInHierarchy)
+        {
+            float multiplier = 1f - Mathf.Clamp01(elapsed / duration);
+            for (int i = 0; i < sprites.Length; i++)
+            {
+                if (sprites[i] == null) continue;
+                Color c = spriteColors[i];
+                c.a *= multiplier;
+                sprites[i].color = c;
+            }
+            for (int i = 0; i < groups.Length; i++)
+                if (groups[i] != null) groups[i].alpha = groupAlphas[i] * multiplier;
+            for (int i = 0; i < graphics.Length; i++)
+            {
+                if (graphics[i] == null || graphicUsesGroup[i]) continue;
+                Color c = graphicColors[i];
+                c.a *= multiplier;
+                graphics[i].color = c;
+            }
+            for (int i = 0; i < vfxColors.Count; i++)
+                vfxColors[i].Apply(multiplier);
+
+            // 기존에 재생 중인 파티클에도 알파 감소를 적용합니다.
+            // 매 프레임 현재 알파를 직전 배율 대비 보정해 중복 감쇠를 방지합니다.
+            for (int i = 0; i < particleSystems.Length; i++)
+            {
+                ParticleSystem ps = particleSystems[i];
+                if (ps == null) continue;
+                int capacity = Mathf.Max(1, ps.main.maxParticles);
+                if (particleBuffers[i] == null || particleBuffers[i].Length < capacity)
+                    particleBuffers[i] = new ParticleSystem.Particle[capacity];
+                int count = ps.GetParticles(particleBuffers[i]);
+                float ratio = multiplier / Mathf.Max(0.0001f, previousMultiplier);
+                for (int j = 0; j < count; j++)
+                {
+                    Color32 c = particleBuffers[i][j].startColor;
+                    c.a = (byte)Mathf.Clamp(Mathf.RoundToInt(c.a * ratio), 0, 255);
+                    particleBuffers[i][j].startColor = c;
+                }
+                if (count > 0) ps.SetParticles(particleBuffers[i], count);
+            }
+            previousMultiplier = multiplier;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        if (target != null)
+        {
+            target.SetActive(false);
+            // 원래 알파값을 복원해 다음 활성화 때 정상적으로 표시합니다.
+            for (int i = 0; i < sprites.Length; i++)
+                if (sprites[i] != null) sprites[i].color = spriteColors[i];
+            for (int i = 0; i < groups.Length; i++)
+                if (groups[i] != null) groups[i].alpha = groupAlphas[i];
+            for (int i = 0; i < graphics.Length; i++)
+                if (graphics[i] != null && !graphicUsesGroup[i]) graphics[i].color = graphicColors[i];
+            for (int i = 0; i < vfxColors.Count; i++)
+                vfxColors[i].Restore();
+        }
+        fadeRoutines.Remove(target);
+    }
+
+    // VFX Graph의 Color Exposed Property에 접근합니다. 이름은 인스펙터에서 지정합니다.
+    private sealed class VfxColorSnapshot
+    {
+        public Component Effect;
+        public System.Reflection.MethodInfo Setter;
+        public string PropertyName;
+        public Vector4 Original;
+
+        public void Apply(float multiplier)
+        {
+            if (Effect == null) return;
+            Vector4 value = Original;
+            value.w *= multiplier;
+            Setter.Invoke(Effect, new object[] { PropertyName, value });
+        }
+
+        public void Restore()
+        {
+            if (Effect != null)
+                Setter.Invoke(Effect, new object[] { PropertyName, Original });
+        }
+    }
+
+    private static List<VfxColorSnapshot> CollectVfxColors(GameObject target, string propertyName)
+    {
+        var result = new List<VfxColorSnapshot>();
+        if (string.IsNullOrWhiteSpace(propertyName)) return result;
+        Component[] components = target.GetComponentsInChildren<Component>(true);
+        for (int i = 0; i < components.Length; i++)
+        {
+            Component component = components[i];
+            if (component == null || component.GetType().FullName != "UnityEngine.VFX.VisualEffect")
+                continue;
+            Type type = component.GetType();
+            var has = type.GetMethod("HasVector4", new[] { typeof(string) });
+            var get = type.GetMethod("GetVector4", new[] { typeof(string) });
+            var set = type.GetMethod("SetVector4", new[] { typeof(string), typeof(Vector4) });
+            if (has == null || get == null || set == null) continue;
+            try
+            {
+                if (!(bool)has.Invoke(component, new object[] { propertyName })) continue;
+                Vector4 color = (Vector4)get.Invoke(component, new object[] { propertyName });
+                result.Add(new VfxColorSnapshot
+                {
+                    Effect = component, Setter = set, PropertyName = propertyName, Original = color
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"MapVisualActor: VFX Color '{propertyName}' 읽기 실패: {ex.Message}");
+            }
+        }
+        return result;
     }
 
     internal void PlayShake(Transform target, float delay, float duration, float strength, float frequency)
@@ -518,6 +706,14 @@ public sealed class MapVisualActionEntry
     public List<GameObject> DisableTargetsOnPlay = new();
     [Tooltip("액션 실행 후 오브젝트를 비활성화하기까지 기다릴 시간(초)입니다. 0이면 즉시 비활성화됩니다.")]
     [Min(0f)] public float DisableDelayOnPlay;
+    [Tooltip("Disable On Play 대상이 사라질 때 알파를 서서히 낮춥니다.")]
+    public bool FadeOutOnDisable;
+    [Tooltip("페이드아웃 진행 시간(초)입니다. 대기 시간이 끝나면 페이드아웃이 시작됩니다.")]
+    [Min(0f)] public float DisableFadeDuration = 0.35f;
+    [Tooltip("VFX Graph의 노출된 Color 및 ParticleSystem 파티클의 알파도 함께 낮춥니다.")]
+    public bool FadeVfxColorOnDisable = true;
+    [Tooltip("VFX Graph에서 Exposed로 설정한 Vector4/Color 프로퍼티 이름입니다.")]
+    public string VfxColorPropertyName = "Color";
 
     // 기존 씬/프리팹에 저장되어 있던 단일 Activation 데이터를 유지하기 위한 레거시 필드입니다.
     // Inspector에는 숨기고 실행 시에는 계속 적용합니다.
@@ -740,7 +936,12 @@ public sealed class MapVisualActionEntry
                 continue;
 
             if (owner != null)
-                owner.DisableTarget(target, delay);
+            {
+                if (FadeOutOnDisable && DisableFadeDuration > 0f)
+                    owner.DisableTargetWithFade(target, delay, DisableFadeDuration, FadeVfxColorOnDisable, VfxColorPropertyName);
+                else
+                    owner.DisableTarget(target, delay);
+            }
             else
                 target.SetActive(false);
         }
