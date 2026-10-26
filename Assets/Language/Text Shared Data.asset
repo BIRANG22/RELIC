@@ -3483,10 +3483,6 @@ MonoBehaviour:
     m_Key: ui.battle.text.29fbeb16
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458548838456
-    m_Key: ui.battle.text.c057cab5
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838457
     m_Key: ui.battle.text.eb472813
     m_Metadata:
@@ -5491,18 +5487,6 @@ MonoBehaviour:
     m_Key: ui.debugbattle.text.38a2227e
     m_Metadata:
       m_Items: []
-  - m_Id: 19388577758060611
-    m_Key: data.battle_map.battlemap_17.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060612
-    m_Key: data.battle_map.battlemap_18.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060613
-    m_Key: data.battle_map.battlemap_19.description
-    m_Metadata:
-      m_Items: []
   - m_Id: 19395600956530688
     m_Key: ui.battle.roomroot.battleroom.battlehudcanvas.battlecharacterpanel.tooltippanel.detail.38a2227e
     m_Metadata:
@@ -6875,10 +6859,6 @@ MonoBehaviour:
     m_Key: ui.battle.explorationreportstagename.33aee447
     m_Metadata:
       m_Items: []
-  - m_Id: 26848357515501570
-    m_Key: ui.battle.explorationreportstageresult.6fd57db4
-    m_Metadata:
-      m_Items: []
   - m_Id: 26848357515501571
     m_Key: ui.lobby.text_tmp.fc777a3e
     m_Metadata:
@@ -6961,6 +6941,46 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 26875684479803400
     m_Key: data.event.event_10.description.da2e3146
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586697501728768
+    m_Key: data.battle_map.battlemap_t_01.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586697539477504
+    m_Key: data.battle_map.battlemap_t_02.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586697539477505
+    m_Key: data.event.event_t_01.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586697539477506
+    m_Key: data.event.event_t_01.choice_1_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586697539477507
+    m_Key: data.event.event_t_01.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586817727258624
+    m_Key: ui.battle.textcomplete.3bfbc462
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586817727258625
+    m_Key: ui.battle.dialog.2a5a09a2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586817727258626
+    m_Key: ui.battle.canvas.explorationresultpanel.explorationreportframe.explorationreporttopgroup.explorationreportacquireditemslabel.f478a6a3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586817727258627
+    m_Key: ui.battle.canvas.explorationresultpanel.explorationreportframe.explorationreportstagegroup.explorationreportelapsedtimelabel.4827292f
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586817727258628
+    m_Key: battle.effect_info.erosion_damage
     m_Metadata:
       m_Items: []
   m_Metadata:

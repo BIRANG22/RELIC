@@ -4376,10 +4376,6 @@ MonoBehaviour:
     m_Localized: End of transaction
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458548838456
-    m_Localized: Obtained Red Dustium
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838457
     m_Localized: normal battle
     m_Metadata:
@@ -5798,18 +5794,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 19388577758060565
     m_Localized: Effect Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060611
-    m_Localized: Tutorial (1 Blob)
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060612
-    m_Localized: Tutorial (1 Draugr)
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19388577758060613
-    m_Localized: Tutorial (Merck, Blight)
     m_Metadata:
       m_Items: []
   - m_Id: 19395600956530688

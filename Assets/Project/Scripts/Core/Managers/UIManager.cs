@@ -584,6 +584,9 @@ public class UIManager : Singleton<UIManager>
         HideOption(true);
         UIPanelButton.CloseCurrentOpenedPanel();
         Time.timeScale = 1f;
+        // The abandon service restores the pre-run HP immediately. Freeze the battle
+        // HUD first so the defeated party does not visibly heal during scene loading.
+        FreezeBattleHudBeforeAbandon();
         AbandonCurrentBattleRunIfPossible();
 
         if (GameManager.Instance != null && GameManager.Instance.StateMachine != null)
@@ -628,6 +631,28 @@ public class UIManager : Singleton<UIManager>
         UnityEngine.SceneManagement.SceneManager.LoadScene(SceneName.Title);
         await TitleManager.RefreshRunButtonsAfterSceneReadyAsync();
         PlayTitleBgmIfPossible();
+    }
+
+    private static void FreezeBattleHudBeforeAbandon()
+    {
+        // Keep the last rendered health values on screen until the lobby loads.
+        // Disabling these presenters stops HP polling and fill interpolation;
+        // it does not change character data or affect the lobby snapshot restore.
+        BattleCharacterPanelUI[] panels = UnityEngine.Object.FindObjectsByType<BattleCharacterPanelUI>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (BattleCharacterPanelUI panel in panels)
+        {
+            if (panel != null)
+                panel.enabled = false;
+        }
+
+        BattleCharacterHUDController[] worldHuds = UnityEngine.Object.FindObjectsByType<BattleCharacterHUDController>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (BattleCharacterHUDController hud in worldHuds)
+        {
+            if (hud != null)
+                hud.enabled = false;
+        }
     }
 
     private void AbandonCurrentBattleRunIfPossible()
