@@ -2464,13 +2464,13 @@ public class EventRoomController : MonoBehaviour
         if (SameToken(tableId, "RT001"))
         {
             int amount = diceRoll <= 8 ? 3 : diceRoll <= 15 ? 5 : 10;
-            return $"생명력 회복량 +{amount}";
+            return GameLocalization.Format("event.result.hp_recovery_amount", amount);
         }
 
         if (SameToken(tableId, "RT002"))
         {
             int amount = diceRoll <= 8 ? 2 : diceRoll <= 15 ? 4 : 8;
-            return $"최대 생명력 증가량 +{amount}";
+            return GameLocalization.Format("event.result.max_hp_increase_amount", amount);
         }
 
         return BuildResultSummary(choice);
@@ -3799,19 +3799,19 @@ public class EventRoomController : MonoBehaviour
                 if (Contains(choice.ResultTarget, "최대 체력") || Contains(choice.ResultTarget, "최대 생명력"))
                 {
                     int count = ModifyPartyMaxHp(amount);
-                    return $"파티 전원 최대 체력 {amount:+#;-#;0} 적용 ({count}명)";
+                    return GameLocalization.Format("event.result.party_max_hp_modified", amount, count);
                 }
 
                 if (Contains(choice.ResultTarget, "코스트 회복") || Contains(choice.ResultTarget, "마나 회복"))
                 {
                     int count = ModifyPartyCostRecovery(amount);
-                    return $"파티 마나 회복량 {amount:+#;-#;0} 적용 ({count}명)";
+                    return GameLocalization.Format("event.result.party_mana_recovery_modified", amount, count);
                 }
 
                 if (Contains(choice.ResultTarget, "최대 코스트") || Contains(choice.ResultTarget, "최대 마나"))
                 {
                     int count = ModifyPartyMaxCost(amount);
-                    return $"파티 최대 마나 {amount:+#;-#;0} 적용 ({count}명)";
+                    return GameLocalization.Format("event.result.party_max_mana_modified", amount, count);
                 }
             }
 
@@ -3823,7 +3823,7 @@ public class EventRoomController : MonoBehaviour
             if (TryParseSignedValue(choice.ResultValue, out int amount))
             {
                 int count = ModifyPartyCurrentHp(Mathf.Max(0, amount));
-                return $"파티 체력 {amount} 회복 ({count}명)";
+                return GameLocalization.Format("event.result.party_hp_restored", amount, count);
             }
 
             return BuildResultSummary(choice);
@@ -3867,14 +3867,14 @@ public class EventRoomController : MonoBehaviour
         {
             int amount = diceRoll <= 8 ? 3 : diceRoll <= 15 ? 5 : 10;
             int count = ModifyPartyCurrentHp(amount);
-            return $"파티 전원 체력 {amount} 회복 ({count}명)";
+            return GameLocalization.Format("event.result.party_hp_restored", amount, count);
         }
 
         if (SameToken(tableId, "RT002"))
         {
             int amount = diceRoll <= 8 ? 2 : diceRoll <= 15 ? 4 : 8;
             int count = ModifyPartyMaxHp(amount);
-            return $"파티 전원 최대 체력 {amount} 증가 ({count}명)";
+            return GameLocalization.Format("event.result.party_max_hp_increased", amount, count);
         }
 
         if (SameToken(tableId, "RT003"))

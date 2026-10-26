@@ -4630,13 +4630,13 @@ public class BattleTimelineController : MonoBehaviour
             return GameLocalization.Get("battle.no_skill_to_reserve");
 
         if (!runtime.CanReserveHP(command.HPCost))
-            return BuildShortageMessage("생명력", command.HPCost, runtime.CurrentHP - runtime.ReservedHPCost);
+            return BuildShortageMessage(GameLocalization.Get("common.hp"), command.HPCost, runtime.CurrentHP - runtime.ReservedHPCost);
 
         if (!runtime.CanReserveCost(command.Cost))
-            return BuildShortageMessage("마나", command.Cost, runtime.CurrentCost - runtime.ReservedCost);
+            return BuildShortageMessage(GameLocalization.Get("common.mana"), command.Cost, runtime.CurrentCost - runtime.ReservedCost);
 
         if (!runtime.CanReserveResource(command.ResourceCost))
-            return BuildShortageMessage("카르마", command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
+            return BuildShortageMessage(GameLocalization.Get("resource.karma"), command.ResourceCost, runtime.CurrentResource - runtime.ReservedResourceCost);
 
         if (!runtime.CanReserveShield(command.ShieldCost))
             return BuildShortageMessage(GameLocalization.Get("common.armor"), command.ShieldCost, runtime.CurrentShield - runtime.ReservedShieldCost);
@@ -4647,8 +4647,7 @@ public class BattleTimelineController : MonoBehaviour
     private string BuildShortageMessage(string label, int required, int available)
     {
         int safeAvailable = Mathf.Max(0, available);
-        string particle = label == "생명력" ? "이" : "가";
-        return $"{label}{particle} 부족합니다. 필요:{required} / 보유:{safeAvailable}";
+        return GameLocalization.Format("battle.resource.shortage", label, required, safeAvailable);
     }
 
     private string GetCostLabel(ReferenceResource resource)

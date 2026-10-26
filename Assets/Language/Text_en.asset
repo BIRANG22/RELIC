@@ -3780,67 +3780,35 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510725
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510726
-    m_Localized: 
+    m_Localized: Echo of the Rift
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510730
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510731
-    m_Localized: 
+    m_Localized: shadow merchant
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510745
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510746
-    m_Localized: 
+    m_Localized: Seraphia's support
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510747
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510748
-    m_Localized: 
+    m_Localized: forbidden ritual
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510754
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510755
-    m_Localized: 
+    m_Localized: abandoned carriage
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510766
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510767
-    m_Localized: 
+    m_Localized: pile of boxes
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510769
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510770
-    m_Localized: 
+    m_Localized: Dustium Deposit
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510782
-    m_Localized: 
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10185974310510783
-    m_Localized: 
+    m_Localized: fountain of rest
     m_Metadata:
       m_Items: []
   - m_Id: 10185974318899314
@@ -4486,10 +4454,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 11981180450119760
     m_Localized: current panel
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11981180466896923
-    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 11988550500753549
@@ -5168,11 +5132,13 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626017
-    m_Localized: 
+    m_Localized: Leap to the mark, deal {ValueRate1} {E_Strike}, and apply {ValueRate2}
+      tiles of {E_Knockback}.
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626020
-    m_Localized: 
+    m_Localized: Deal {ValueRate1} {E_Strike} at the farthest target's position and
+      apply {ValueRate2} {E_Poison}.
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626025
@@ -5180,7 +5146,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626026
-    m_Localized: 
+    m_Localized: Broken structures that impede movement.
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626027
@@ -5237,7 +5203,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626042
-    m_Localized: 
+    m_Localized: A space filled with darkness.
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626043
@@ -5425,51 +5391,51 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626087
-    m_Localized: 
+    m_Localized: Blob, Merck, Merck
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626088
-    m_Localized: 
+    m_Localized: Blob, blob
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626089
-    m_Localized: 
+    m_Localized: Vespa, Vespa
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626090
-    m_Localized: 
+    m_Localized: Draug, Cinder, Lancer
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626091
-    m_Localized: 
+    m_Localized: Barrow, Cinder, Blight
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626092
-    m_Localized: 
+    m_Localized: Draug, Barrow
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626093
-    m_Localized: 
+    m_Localized: Vespa, Draug, Lancer
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626094
-    m_Localized: 
+    m_Localized: Barlow, Barlow, Blight
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626097
-    m_Localized: 
+    m_Localized: Elite Nocturne
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626098
-    m_Localized: 
+    m_Localized: Elite Mort, Draugr
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626099
-    m_Localized: 
+    m_Localized: Elite Mort, Barlow
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626100
-    m_Localized: 
+    m_Localized: Arabella
     m_Metadata:
       m_Items: []
   - m_Id: 2479938580071356898
@@ -5681,83 +5647,83 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975624
-    m_Localized: 
+    m_Localized: "{Party1Name}{\uC774\uAC00} accepts light."
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975626
-    m_Localized: 
+    m_Localized: "{Party2Name}{\uC774\uAC00} accepts light."
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975628
-    m_Localized: 
+    m_Localized: "{Party3Name}{\uC774\uAC00} accepts light."
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975630
-    m_Localized: 
+    m_Localized: Look at the object.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975635
-    m_Localized: 
+    m_Localized: don't deal
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975643
-    m_Localized: 
+    m_Localized: Request support.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975645
-    m_Localized: 
+    m_Localized: Request purification.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975647
-    m_Localized: 
+    m_Localized: offer an offering
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975649
-    m_Localized: 
+    m_Localized: Red Dustium Tribe
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975650
-    m_Localized: 
+    m_Localized: Offer more offerings.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975653
-    m_Localized: 
+    m_Localized: Ignore consciousness.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975656
-    m_Localized: 
+    m_Localized: I look around.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975659
-    m_Localized: 
+    m_Localized: Search inside.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975674
-    m_Localized: 
+    m_Localized: Search thoroughly.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975676
-    m_Localized: 
+    m_Localized: Open the box.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975678
-    m_Localized: 
+    m_Localized: Dig up the mineral vein.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975680
-    m_Localized: 
+    m_Localized: Ignore it.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975694
-    m_Localized: 
+    m_Localized: Accept life force.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975696
-    m_Localized: 
+    m_Localized: Accept magical power.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975698
-    m_Localized: 
+    m_Localized: Accept purification.
     m_Metadata:
       m_Items: []
   - m_Id: 2876383222199361250
@@ -6740,7 +6706,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975827
-    m_Localized: 
+    m_Localized: Resurrects a mutant that has become ashes with 30% of its maximum
+      health.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975828
@@ -6924,6 +6891,501 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 9164888147097975840
     m_Localized: Restore {2} {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25428606029373440
+    m_Localized: Remains
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25428606079705088
+    m_Localized: A pile of bones that prevents movement.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26084960592846848
+    m_Localized: hunting lessons
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26084960622206976
+    m_Localized: baptism of poison
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26084960622206977
+    m_Localized: stigma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26084960622206978
+    m_Localized: A sign of predation on prey.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882090876928
+    m_Localized: Elite Luke, Lancer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819968
+    m_Localized: Elite Luke, Blight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819973
+    m_Localized: Ask for prayers.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819976
+    m_Localized: Red Dustium Tribe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819980
+    m_Localized: It passes by.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819982
+    m_Localized: I open the other box as well.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819983
+    m_Localized: Quit.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819985
+    m_Localized: I open another one.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819987
+    m_Localized: Quit.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819990
+    m_Localized: Keep digging.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819992
+    m_Localized: Stop it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819994
+    m_Localized: Digging again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819996
+    m_Localized: Stop it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819998
+    m_Localized: ancient engraving
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132819999
+    m_Localized: "{Party1Name}{\uC774\uAC00} approaches."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132820000
+    m_Localized: "{Party2Name}{\uC774\uAC00} approaches."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132820001
+    m_Localized: "{Party3Name}{\uC774\uAC00} approaches."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132820002
+    m_Localized: Listen to the reverberation.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132820004
+    m_Localized: It awakens a faint memory.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132820006
+    m_Localized: Red Dustium Tribe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132820007
+    m_Localized: It awakens strong memories.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132820009
+    m_Localized: Red Dustium Tribe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132820012
+    m_Localized: a mysterious stranger
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132820013
+    m_Localized: Offer your life as a price.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132820015
+    m_Localized: lack of vitality
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132820016
+    m_Localized: Leave it to fate.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26576882132820018
+    m_Localized: Accept erosion.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26577043273785344
+    m_Localized: record
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26577043294756866
+    m_Localized: success
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26577043294756868
+    m_Localized: Stat name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26577043294756869
+    m_Localized: exploration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26577043294756871
+    m_Localized: record
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26577043298951168
+    m_Localized: end
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26577043298951169
+    m_Localized: lasting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357494530048
+    m_Localized: front
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501568
+    m_Localized: back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501569
+    m_Localized: 'Time required
+
+      00:00:00'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501571
+    m_Localized: erosion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501572
+    m_Localized: resonance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501573
+    m_Localized: exploration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501574
+    m_Localized: research
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501575
+    m_Localized: kill monsters
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501576
+    m_Localized: Damage dealt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501577
+    m_Localized: Damage received
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501578
+    m_Localized: Buff grant amount
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501579
+    m_Localized: Number of times unable to fight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501580
+    m_Localized: Exploration Report
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26848357515501581
+    m_Localized: Time required
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586697501728768
+    m_Localized: Tutorial (1 blob)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586697539477504
+    m_Localized: Tutorial (Draug, Blight)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586697539477505
+    m_Localized: unexpected joining
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586697539477506
+    m_Localized: Rest together.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586817727258624
+    m_Localized: Click anywhere to continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586817727258625
+    m_Localized: Content of conversation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586817727258626
+    m_Localized: Acquired Items
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586817727258627
+    m_Localized: Time required
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27586817727258628
+    m_Localized: Erosion Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4547655072889828093
+    m_Localized: Manifest {Party1Name}'s memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8613960739773879869
+    m_Localized: Manifest {Party2Name}'s memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4529045526793480635
+    m_Localized: Manifest {Party3Name}'s memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7390702654170837998
+    m_Localized: Use the shop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1110532048176606199
+    m_Localized: End the event
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7871912434787881680
+    m_Localized: "Gain a random Common\u2013Rare relic"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5085024260722569838
+    m_Localized: Reduce Erosion by 15
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1219549357382717807
+    m_Localized: Restore 10 HP to all party members
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3486522174964507701
+    m_Localized: "Spend 15 Red Dustium\nManifest a random Common\u2013Epic memory"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7971315337770440506
+    m_Localized: "Spend 30 Red Dustium\nManifest a random Rare\u2013Unique memory"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5870513392070568761
+    m_Localized: End the event
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1847506937413929984
+    m_Localized: "Roll 6 or higher\nGain a random Common\u2013Rare relic"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3745294383723786182
+    m_Localized: "Roll 8 or higher\nGain a random Rare\u2013Epic relic"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2376006004967798544
+    m_Localized: "Roll 10 or higher\nGain a random Epic\u2013Unique relic"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2931162308643722859
+    m_Localized: 'Roll 6 or higher
+
+      Gain 30 Red Dustium
+
+      Failure: Lose
+      5 HP'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7621201596966329862
+    m_Localized: End the event
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1189355817020927489
+    m_Localized: 'Roll 10 or higher
+
+      Gain 50 Red Dustium
+
+      Failure: Lose
+      5 HP'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1526258976528201190
+    m_Localized: End the event
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1417690215956171328
+    m_Localized: 'Roll 14 or higher
+
+      Gain a random Epic relic
+
+      Failure:
+      Lose 5 HP'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5296381621326956345
+    m_Localized: End the event
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5784428132370024697
+    m_Localized: 'Predict: Heads or Tails
+
+      Gain 25 Red Dustium'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7282873809406718105
+    m_Localized: End the event
+    m_Metadata:
+      m_Items: []
+  - m_Id: 520187140604704921
+    m_Localized: 'Predict: Heads or Tails
+
+      Gain 30 Red Dustium'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8278174541721857739
+    m_Localized: End the event
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1602478198363195788
+    m_Localized: 'Predict: Heads or Tails
+
+      Gain 35 Red Dustium'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3187163654533708606
+    m_Localized: End the event
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7111606870168367520
+    m_Localized: Restore {Party1Name}'s HP or manifest a memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6481105421372000357
+    m_Localized: Restore {Party2Name}'s HP or manifest a memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1518630372648175208
+    m_Localized: Restore {Party3Name}'s HP or manifest a memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 848031742297052074
+    m_Localized: Restore 5 HP to {PartyName}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3797747519358217213
+    m_Localized: "Spend 20 Red Dustium\nManifest a Rare\u2013Epic memory"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 575060033129784125
+    m_Localized: "Spend 45 Red Dustium\nManifest an Epic\u2013Unique memory"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8310103587331486284
+    m_Localized: Increase all party members' Max HP by 10
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1646447312597267605
+    m_Localized: Increase all party members' Max Mana by 2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8299310521018211101
+    m_Localized: Reduce Erosion by 20
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1705394521691525128
+    m_Localized: "Lose 5 HP across the party\nGain a random Rare\u2013Unique relic"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3000764013450334034
+    m_Localized: 'Predict: Heads or Tails
+
+      Gain a random relic'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2335950260633357007
+    m_Localized: "Increase Erosion by 20\nGain a random Common\u2013Unique relic"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6579587282193344706
+    m_Localized: 'Restore 15 HP to the entire party
+
+      Haze joins the party'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4035915082772380139
+    m_Localized: Passive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3444185439531223621
+    m_Localized: HP Recovery +{0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8802548698092418766
+    m_Localized: Max HP Increase +{0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7976493799859799195
+    m_Localized: Applied {0:+#;-#;0} Max HP to all party members ({1})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 233547581394359481
+    m_Localized: Applied {0:+#;-#;0} Mana recovery to the party ({1})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 533658993916296967
+    m_Localized: Applied {0:+#;-#;0} Max Mana to the party ({1})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5528466554244437462
+    m_Localized: Restored {0} HP to all party members ({1})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7305291514702919854
+    m_Localized: Increased all party members' Max HP by {0} ({1})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8323492462400198106
+    m_Localized: Failed to upgrade the selected Memory.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6629449557644834442
+    m_Localized: 'Memory upgraded: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3886573687687508414
+    m_Localized: Removal of Memories acquired during this event is unavailable.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 457451403533020556
+    m_Localized: There are no Memories available to acquire.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2468046161523270805
+    m_Localized: Existing Red Dustium retained
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8528883566776235055
+    m_Localized: 'Accumulated {0} Red Dustium (Current: {1})'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8026747471757970304
+    m_Localized: 'Not enough {0}. Required: {1} / Available: {2}'
     m_Metadata:
       m_Items: []
   references:

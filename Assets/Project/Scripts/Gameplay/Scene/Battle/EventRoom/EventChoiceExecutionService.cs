@@ -587,7 +587,7 @@ namespace Relic.Gameplay.Data
                 return ApplyAwaken(choice, context);
 
             if (IsToken(resultType, "UpgradeRandom"))
-                return TryInvokeGrant(context.UpgradeRandomSkill, "강화 가능한 기억이 없습니다.");
+                return TryInvokeGrant(context.UpgradeRandomSkill, GameLocalization.Get("event.memory.none_upgradable"));
 
             if (IsToken(resultType, "EndEvent"))
                 return GameLocalization.Get("event.result.end");
@@ -609,7 +609,7 @@ namespace Relic.Gameplay.Data
             if (!upgraded)
             {
                 return string.IsNullOrWhiteSpace(resultMessage)
-                    ? "선택한 기억을 강화하지 못했습니다."
+                    ? GameLocalization.Get("event.memory.upgrade_failed")
                     : resultMessage;
             }
 
@@ -621,7 +621,7 @@ namespace Relic.Gameplay.Data
             string upgradeSkillId = context.SelectedSkillAwakenTarget.UpgradeSkillId;
             return string.IsNullOrWhiteSpace(upgradeSkillId)
                 ? BuildResultSummary(choice)
-                : $"기억 강화: {upgradeSkillId}";
+                : GameLocalization.Format("event.memory.upgraded_id", upgradeSkillId);
         }
 
 
@@ -667,7 +667,7 @@ namespace Relic.Gameplay.Data
             }
             else
             {
-                resultMessage = "이번 이벤트로 얻은 기억 제거 처리가 준비되지 않았습니다.";
+                resultMessage = GameLocalization.Get("event.memory.rollback_unavailable");
             }
 
             awakenedTargets.Clear();
@@ -689,14 +689,14 @@ namespace Relic.Gameplay.Data
             {
                 int amount = diceRoll <= 8 ? 3 : diceRoll <= 15 ? 5 : 10;
                 int count = ModifyPartyCurrentHp(context, amount);
-                return $"파티 전원 체력 {amount} 회복 ({count}명)";
+                return GameLocalization.Format("event.result.party_hp_restored", amount, count);
             }
 
             if (IsToken(tableId, "RT002"))
             {
                 int amount = diceRoll <= 8 ? 2 : diceRoll <= 15 ? 4 : 8;
                 int count = ModifyPartyMaxHp(context, amount);
-                return $"파티 전원 최대 체력 {amount} 증가 ({count}명)";
+                return GameLocalization.Format("event.result.party_max_hp_increased", amount, count);
             }
 
             if (IsToken(tableId, "RT003"))
@@ -738,7 +738,7 @@ namespace Relic.Gameplay.Data
                 return TryInvokeRewardGrant(context, context.GrantRandomRelic, GameLocalization.Get("event.relic.none_available"));
 
             if (ContainsAny(choice.ResultTarget, "기억"))
-                return TryInvokeRewardGrant(context, context.GrantRandomSkill, "획득 가능한 기억이 없습니다.");
+                return TryInvokeRewardGrant(context, context.GrantRandomSkill, GameLocalization.Get("event.memory.none_available"));
 
             return BuildResultSummary(choice);
         }
@@ -757,7 +757,7 @@ namespace Relic.Gameplay.Data
             }
             else if (ContainsAny(choice.ResultTarget, "레드 더스티움"))
             {
-                messages.Add("기존 레드 더스티움 유지");
+                messages.Add(GameLocalization.Get("event.result.red_dustium_preserved"));
             }
 
             return JoinMessages(messages);
@@ -768,7 +768,7 @@ namespace Relic.Gameplay.Data
             if (IsPartyCoreReward(choice))
                 return TryInvokeRewardGrant(context,
                     (out string message) => { message = string.Empty; return context.OfferPartyCoreRewards != null && context.OfferPartyCoreRewards(choice, out message); },
-                    "획득 가능한 기억이 없습니다.");
+                    GameLocalization.Get("event.memory.none_available"));
             if (TryResolveSkillRewardOffer(choice, out EventChoiceSkillRewardFilter filter))
             {
                 int count = ResolveOfferChoiceCount(choice.ResultValue, DefaultOfferChoiceSkillCount);
@@ -777,7 +777,7 @@ namespace Relic.Gameplay.Data
                     context.OfferFilteredSkillRewards,
                     filter,
                     count,
-                    "획득 가능한 기억이 없습니다.");
+                    GameLocalization.Get("event.memory.none_available"));
             }
 
             return BuildResultSummary(choice);
@@ -791,19 +791,19 @@ namespace Relic.Gameplay.Data
             if (ContainsAny(choice.ResultTarget, "최대 체력", "최대 생명력"))
             {
                 int count = ModifyPartyMaxHp(context, amount);
-                return $"파티 전원 최대 체력 {amount:+#;-#;0} 적용 ({count}명)";
+                return GameLocalization.Format("event.result.party_max_hp_modified", amount, count);
             }
 
             if (ContainsAny(choice.ResultTarget, "코스트 회복량", "마나 회복량"))
             {
                 int count = ModifyPartyCostRecovery(context, amount);
-                return $"파티 마나 회복량 {amount:+#;-#;0} 적용 ({count}명)";
+                return GameLocalization.Format("event.result.party_mana_recovery_modified", amount, count);
             }
 
             if (ContainsAny(choice.ResultTarget, "최대 코스트", "최대 마나"))
             {
                 int count = ModifyPartyMaxCost(context, amount);
-                return $"파티 최대 마나 {amount:+#;-#;0} 적용 ({count}명)";
+                return GameLocalization.Format("event.result.party_max_mana_modified", amount, count);
             }
 
             return BuildResultSummary(choice);
@@ -826,7 +826,7 @@ namespace Relic.Gameplay.Data
                 return string.Empty;
             }
             int count = ModifyPartyCurrentHp(context, amount);
-            return $"파티 전원 체력 {amount} 회복 ({count}명)";
+            return GameLocalization.Format("event.result.party_hp_restored", amount, count);
         }
 
         private static string ApplyReduceErosion(EventData choice)
@@ -842,7 +842,10 @@ namespace Relic.Gameplay.Data
         {
             int amount = ResolveRemnantAmount(choice.ResultValue, SmallRemnantAmount);
             context.SessionState.AccumulatedRemnant += amount;
-            return $"레드 더스티움 {amount} 누적 (현재 {context.SessionState.AccumulatedRemnant})";
+            return GameLocalization.Format(
+                "event.result.red_dustium_accumulated",
+                amount,
+                context.SessionState.AccumulatedRemnant);
         }
 
         private static string ApplyCommitAccumulated(EventChoiceExecutionContext context)

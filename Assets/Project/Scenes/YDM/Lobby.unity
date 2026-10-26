@@ -5408,6 +5408,7 @@ GameObject:
   - component: {fileID: 124770059}
   - component: {fileID: 124770061}
   - component: {fileID: 124770060}
+  - component: {fileID: 124770062}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -5534,6 +5535,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 124770058}
   m_CullTransparentMesh: 1
+--- !u!114 &124770062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 124770058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 124770060}
+  localizationKey: ui.lobby.panel.erosion
+  koreanSource: "\uCE68\uC2DD\uB3C4"
+  automaticallyRegistered: 0
 --- !u!1 &125063430
 GameObject:
   m_ObjectHideFlags: 0
@@ -30861,13 +30878,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 557578908}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Script: {fileID: 11500000, guid: 426c88f35f804f14a7d43a9f9611e21b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 557578910}
-  localizationKey: data.monster.mon_07.special_action_1
-  koreanSource: 0
-  automaticallyRegistered: 1
 --- !u!1 &560373182
 GameObject:
   m_ObjectHideFlags: 0
@@ -38831,6 +38844,7 @@ GameObject:
   - component: {fileID: 734067627}
   - component: {fileID: 734067629}
   - component: {fileID: 734067628}
+  - component: {fileID: 734067630}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -38957,6 +38971,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 734067626}
   m_CullTransparentMesh: 1
+--- !u!114 &734067630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 734067626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 734067628}
+  localizationKey: ui.lobby.panel.resonance
+  koreanSource: "\uACF5\uBA85"
+  automaticallyRegistered: 0
 --- !u!1 &734269960
 GameObject:
   m_ObjectHideFlags: 0
