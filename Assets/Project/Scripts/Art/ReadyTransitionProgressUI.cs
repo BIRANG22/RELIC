@@ -33,6 +33,23 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         public AnimationCurve easing = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     }
 
+    [Serializable]
+    private sealed class TransitionSfxSettings
+    {
+        [Tooltip("트랜지션 SFX 재생 여부")]
+        public bool enabled = true;
+        [SoundId(SoundCategory.Sfx)] public string sfxId;
+        [Range(0f, 1f)] public float volume = 1f;
+        [Tooltip("트랜지션 시퀀스 시작 기준 SFX 지연 시간(초)")]
+        [Min(0f)] public float delay;
+    }
+
+    [Header("Transition SFX - Open")]
+    [SerializeField] private TransitionSfxSettings openSfx = new TransitionSfxSettings();
+
+    [Header("Transition SFX - Close")]
+    [SerializeField] private TransitionSfxSettings closeSfx = new TransitionSfxSettings();
+
     [Header("References")]
     [SerializeField] private Graphic transitionGraphic;
     [SerializeField] private RectTransform panel;
@@ -404,6 +421,16 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         if (panelRect != null) panel = panelRect;
     }
 
+    private static void PlayTransitionSfx(TransitionSfxSettings settings)
+    {
+        if (settings == null || !settings.enabled || string.IsNullOrWhiteSpace(settings.sfxId))
+            return;
+
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager != null)
+            audioManager.PlaySfx(settings.sfxId, Mathf.Clamp01(settings.volume));
+    }
+
     private IEnumerator RunSequence(ProgressAnimationSettings progress, PanelAnimationSettings movement, Action onComplete)
     {
         if (panel == null)
@@ -412,10 +439,21 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         // Both animations use delays relative to the same button click. This supports
         // overlap and strict sequencing without relying on Button.OnClick order.
         bool opening = ReferenceEquals(movement, playPanel);
+        TransitionSfxSettings sfx = opening ? openSfx : closeSfx;
+        bool sfxPending = sfx != null && sfx.enabled && !string.IsNullOrWhiteSpace(sfx.sfxId);
+        float sfxDelay = sfxPending ? Mathf.Max(0f, sfx.delay) : 0f;
+        if (sfxPending && sfxDelay <= 0f)
+        {
+            PlayTransitionSfx(sfx);
+            sfxPending = false;
+        }
         float iconFadeStart = opening ? progress.startDelay : movement.startDelay + movement.duration;
         float totalDuration = Mathf.Max(Mathf.Max(progress.startDelay + progress.duration,
                                         movement.startDelay + movement.duration),
                                         iconFadeStart + lobbyIconFadeDuration);
+        // 지연 SFX도 시퀀스에서 재생하여 중간 취소 시 사운드 예약이 남지 않도록 합니다.
+        if (sfxPending)
+            totalDuration = Mathf.Max(totalDuration, sfxDelay);
         float progressFrom = progress.useCurrentValueAsStart ? currentProgress : progress.from;
         float panelFrom = panel != null
             ? (movement.useCurrentPositionAsStart ? panel.anchoredPosition.x : movement.fromX)
@@ -441,6 +479,11 @@ public sealed class ReadyTransitionProgressUI : MonoBehaviour
         {
             UpdateBackButtonLockColor();
             elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            if (sfxPending && elapsed >= sfxDelay)
+            {
+                PlayTransitionSfx(sfx);
+                sfxPending = false;
+            }
 
             if (elapsed >= progress.startDelay)
             {
