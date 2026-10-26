@@ -650,34 +650,42 @@ public sealed class ExplorationResultPanelLayoutTests
     }
 
     [Test]
-    public void StatisticsOverlay_IsPlacedBelowHoveredIconAndClampedInsidePanel()
+    public void StatisticsOverlay_IsPlacedRightBelowHoveredIconAndClampedInsidePanel()
     {
         Rect boundary = new(-500f, -300f, 1000f, 600f);
         Vector2 overlaySize = new(300f, 205f);
         Vector2 pivot = new(0.5f, 1f);
 
-        Vector2 centered = ExplorationResultPanelUI.CalculateStatisticsOverlayPosition(
+        Vector2 rightBelow = ExplorationResultPanelUI.CalculateStatisticsOverlayPosition(
             new Vector2(100f, 80f),
             boundary,
             overlaySize,
             pivot,
-            12f);
-        Assert.That(centered, Is.EqualTo(new Vector2(100f, 68f)));
+            new Vector2(12f, 12f));
+        Assert.That(rightBelow, Is.EqualTo(new Vector2(262f, 68f)));
 
         Vector2 rightEdge = ExplorationResultPanelUI.CalculateStatisticsOverlayPosition(
             new Vector2(490f, 80f),
             boundary,
             overlaySize,
             pivot,
-            12f);
+            new Vector2(12f, 12f));
         Assert.That(rightEdge.x, Is.EqualTo(350f));
         Assert.That(rightEdge.y, Is.EqualTo(68f));
 
+        Vector2 bottomEdge = ExplorationResultPanelUI.CalculateStatisticsOverlayPosition(
+            new Vector2(100f, -290f),
+            boundary,
+            overlaySize,
+            pivot,
+            new Vector2(12f, 12f));
+        Assert.That(bottomEdge, Is.EqualTo(new Vector2(262f, -95f)));
+
         Vector2 anchored = ExplorationResultPanelUI.ConvertBoundaryLocalToAnchoredPosition(
-            centered,
+            rightBelow,
             boundary,
             new Vector2(0f, 1f));
-        Assert.That(anchored, Is.EqualTo(new Vector2(600f, -232f)));
+        Assert.That(anchored, Is.EqualTo(new Vector2(762f, -232f)));
     }
 
     [Test]
@@ -718,12 +726,13 @@ public sealed class ExplorationResultPanelLayoutTests
     }
 
     [Test]
-    public void CharacterReport_PlacesInformationIconsInsidePortraitsAndUsesCompactRows()
+    public void CharacterReport_PlacesInformationIconsBesidePortraitMasksInSharedContainers()
     {
         string scene = File.ReadAllText("Assets/Project/Scenes/YDM/Battle.unity")
             .Replace("\r\n", "\n");
 
         string[] rowRectIds = { "940000000000000096", "940000000000000148", "940000000000000200" };
+        string[] containerRectIds = { "940000000000000394", "940000000000000396", "940000000000000398" };
         string[] viewportRectIds = { "940000000000000361", "940000000000000371", "940000000000000381" };
         string[] iconRectIds = { "940000000000000105", "940000000000000157", "940000000000000209" };
         string[] overlayAnchorRectIds = { "940000000000000364", "940000000000000374", "940000000000000384" };
@@ -732,16 +741,24 @@ public sealed class ExplorationResultPanelLayoutTests
         for (int index = 0; index < rowRectIds.Length; index++)
         {
             string row = ExtractDocument(scene, rowRectIds[index]);
+            string container = ExtractDocument(scene, containerRectIds[index]);
             string viewport = ExtractDocument(scene, viewportRectIds[index]);
             string icon = ExtractDocument(scene, iconRectIds[index]);
             string overlayAnchor = ExtractDocument(scene, overlayAnchorRectIds[index]);
             string verticalLayoutGroup = ExtractDocument(scene, verticalLayoutGroupIds[index]);
 
             Assert.That(row, Does.Contain("  m_SizeDelta: {x: 310, y: 310}"));
+            Assert.That(row, Does.Contain($"  - {{fileID: {containerRectIds[index]}}}"));
             Assert.That(row, Does.Not.Contain($"  - {{fileID: {iconRectIds[index]}}}"));
+            Assert.That(row, Does.Not.Contain($"  - {{fileID: {viewportRectIds[index]}}}"));
             Assert.That(row, Does.Not.Contain($"  - {{fileID: {overlayAnchorRectIds[index]}}}"));
-            Assert.That(viewport, Does.Contain($"  - {{fileID: {iconRectIds[index]}}}"));
-            Assert.That(icon, Does.Contain($"  m_Father: {{fileID: {viewportRectIds[index]}}}"));
+            Assert.That(container, Does.Contain($"  - {{fileID: {viewportRectIds[index]}}}"));
+            Assert.That(container, Does.Contain($"  - {{fileID: {iconRectIds[index]}}}"));
+            Assert.That(container, Does.Contain($"  m_Father: {{fileID: {rowRectIds[index]}}}"));
+            Assert.That(container, Does.Contain("  m_SizeDelta: {x: 310, y: 90}"));
+            Assert.That(viewport, Does.Not.Contain($"  - {{fileID: {iconRectIds[index]}}}"));
+            Assert.That(viewport, Does.Contain($"  m_Father: {{fileID: {containerRectIds[index]}}}"));
+            Assert.That(icon, Does.Contain($"  m_Father: {{fileID: {containerRectIds[index]}}}"));
             Assert.That(icon, Does.Contain($"  - {{fileID: {overlayAnchorRectIds[index]}}}"));
             Assert.That(icon, Does.Contain("  m_AnchorMin: {x: 0, y: 0}"));
             Assert.That(icon, Does.Contain("  m_AnchorMax: {x: 0, y: 0}"));

@@ -774,14 +774,13 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
         Vector3[] corners = new Vector3[4];
         source.GetWorldCorners(corners);
-        Vector3 worldBottomCenter = (corners[0] + corners[3]) * 0.5f;
-        Vector3 localBottomCenter = boundary.InverseTransformPoint(worldBottomCenter);
+        Vector3 localBottomRight = boundary.InverseTransformPoint(corners[3]);
         Vector2 boundaryLocalPosition = CalculateStatisticsOverlayPosition(
-            localBottomCenter,
+            localBottomRight,
             boundary.rect,
             statisticsOverlayRect.rect.size,
             statisticsOverlayRect.pivot,
-            12f);
+            new Vector2(12f, 12f));
         Vector2 overlayAnchor = (statisticsOverlayRect.anchorMin + statisticsOverlayRect.anchorMax) * 0.5f;
         statisticsOverlayRect.anchoredPosition = ConvertBoundaryLocalToAnchoredPosition(
             boundaryLocalPosition,
@@ -790,13 +789,16 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     }
 
     public static Vector2 CalculateStatisticsOverlayPosition(
-        Vector2 sourceBottomCenter,
+        Vector2 sourceBottomRight,
         Rect boundary,
         Vector2 overlaySize,
         Vector2 pivot,
-        float verticalGap)
+        Vector2 gap)
     {
-        Vector2 desired = sourceBottomCenter + new Vector2(0f, -Mathf.Max(0f, verticalGap));
+        Vector2 safeGap = new(Mathf.Max(0f, gap.x), Mathf.Max(0f, gap.y));
+        Vector2 desired = sourceBottomRight + new Vector2(
+            safeGap.x + overlaySize.x * pivot.x,
+            -safeGap.y - overlaySize.y * (1f - pivot.y));
         desired.x = Mathf.Clamp(
             desired.x,
             boundary.xMin + overlaySize.x * pivot.x,
