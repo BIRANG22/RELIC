@@ -194,6 +194,9 @@ public class BattleResultChecker : MonoBehaviour
         // 카메라가 전투 기본 위치로 부드럽게 복귀한 다음 종료 텍스트를 표시합니다.
         yield return ReturnBattleEndCamera();
 
+        // 전투 종료 문구가 시작되는 시점에 전용 SFX를 재생합니다.
+        BattleMapIntroText.PlayBattleEndSfx();
+
         // Wait for the battle-end text to finish before opening the rewards.
         yield return BattleMapIntroText.ShowMessageAndWait(
             GameLocalization.Get("battle.intro.battle_end", "전투 종료"));

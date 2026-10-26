@@ -17,6 +17,13 @@ public class BattleRewardPanelUI : MonoBehaviour
     [SerializeField] private BattleRewardSlotUI rewardSlotPrefab;
     [Tooltip("보상 슬롯을 하나씩 생성할 때의 간격(초)입니다.")]
     [Min(0f)][SerializeField] private float rewardSpawnInterval = 0.15f;
+    [Header("Reward Slot Spawn SFX")]
+    [Tooltip("보상 슬롯이 하나씩 생성될 때마다 SFX를 재생합니다.")]
+    [SerializeField] private bool playRewardSlotSpawnSfx = true;
+    [Tooltip("사운드 데이터베이스에 등록된 슬롯 등장 SFX ID입니다.")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string rewardSlotSpawnSfxId;
+    [Range(0f, 1f)][SerializeField] private float rewardSlotSpawnSfxVolume = 1f;
+
     [Header("Reward Reveal Animation")]
     [Tooltip("각 보상 슬롯이 완전히 나타날 때까지 걸리는 시간(초)입니다.")]
     [Min(0f)][SerializeField] private float rewardRevealDuration = 0.35f;
@@ -228,7 +235,6 @@ public class BattleRewardPanelUI : MonoBehaviour
             }
         }
 
-        Debug.Log($"[BattleRewardPanelUI] Open / RewardCount:{currentRewards.Count}");
 
         gameObject.SetActive(true);
 
@@ -304,6 +310,7 @@ public class BattleRewardPanelUI : MonoBehaviour
             BattleRewardSlotUI slot = Instantiate(rewardSlotPrefab, rewardRoot);
             slot.Setup(reward, remnantIcon, remnantIconColor, relicRewardIcon, memoryRewardIcon, OnClickRewardSlot, null, null);
             activeSlots.Add(slot);
+            PlayRewardSlotSpawnSfx();
             // Animate the direct visual children, not the layout-controlled slot root.
             StartCoroutine(RevealRewardSlot(slot));
             UpdateGainButton();
@@ -311,6 +318,31 @@ public class BattleRewardPanelUI : MonoBehaviour
         }
 
         rewardSpawnCoroutine = null;
+    }
+
+    private void PlayRewardSlotSpawnSfx()
+    {
+        if (!playRewardSlotSpawnSfx)
+            return;
+
+        if (string.IsNullOrWhiteSpace(rewardSlotSpawnSfxId))
+        {
+            return;
+        }
+
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager == null)
+        {
+            return;
+        }
+
+        if (!audioManager.TryGetSfxData(rewardSlotSpawnSfxId, out SoundData data))
+        {
+            return;
+        }
+
+        audioManager.PlaySfx(rewardSlotSpawnSfxId, Mathf.Clamp01(rewardSlotSpawnSfxVolume));
+
     }
 
     private IEnumerator RevealRewardSlot(BattleRewardSlotUI slot)
@@ -552,7 +584,6 @@ public class BattleRewardPanelUI : MonoBehaviour
         }
 
         ApplyReward(reward);
-        PlayRewardAcquireSfx(reward);
 
         if (TryStartRewardTransfer(slot, reward))
             return;
@@ -614,7 +645,6 @@ public class BattleRewardPanelUI : MonoBehaviour
                 UpdateGainButton();
                 if (skillPanel.Open(reward, () => OnEquipmentRewardResolved(slot, reward)))
                 {
-                    PlayRewardAcquireSfx(reward);
                     return true;
                 }
                 pendingEquipmentReward = false;
@@ -631,7 +661,6 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         pendingEquipmentReward = true;
         UpdateGainButton();
-        PlayRewardAcquireSfx(reward);
         if (reward.Type == BattleRewardType.Relic)
         {
             BattleRewardRelicPanelUI relicPanel = Object.FindFirstObjectByType<BattleRewardRelicPanelUI>(FindObjectsInactive.Include);

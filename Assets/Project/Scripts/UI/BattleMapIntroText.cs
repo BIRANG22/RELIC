@@ -51,6 +51,13 @@ public class BattleMapIntroText : MonoBehaviour
     [Tooltip("PlayRoomIntroSfx 호출 시점을 기준으로 SFX 재생을 늦추는 시간(초).")]
     [SerializeField, Min(0f)] private float roomIntroSfxDelay;
 
+    [Header("Battle End SFX")]
+    [Tooltip("전투 종료 인트로 텍스트를 표시할 때 별도로 재생하는 SFX입니다.")]
+    [SerializeField] private bool playBattleEndSfx = true;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string battleEndSfxId;
+    [SerializeField, Range(0f, 1f)] private float battleEndSfxVolume = 1f;
+    [SerializeField, Min(0f)] private float battleEndSfxDelay;
+
     [Header("Timing")]
     [SerializeField] private bool playOnStart;
     [SerializeField] private bool ignorePlayOnStart = true;
@@ -97,6 +104,7 @@ public class BattleMapIntroText : MonoBehaviour
     private Vector2 baseAnchoredPosition;
     private Coroutine playRoutine;
     private Coroutine delayedRoomSfxRoutine;
+    private Coroutine delayedBattleEndSfxRoutine;
     private int playVersion;
     private bool isInitialized;
 
@@ -114,6 +122,7 @@ public class BattleMapIntroText : MonoBehaviour
     private void OnDestroy()
     {
         CancelDelayedRoomSfx();
+        CancelDelayedBattleEndSfx();
         if (instance == this)
             instance = null;
     }
@@ -154,6 +163,44 @@ public class BattleMapIntroText : MonoBehaviour
     {
         BattleMapIntroText target = FindTarget();
         target?.ScheduleRoomIntroSfx();
+    }
+
+    public static void PlayBattleEndSfx()
+    {
+        BattleMapIntroText target = FindTarget();
+        target?.ScheduleBattleEndSfx();
+    }
+
+    private void ScheduleBattleEndSfx()
+    {
+        CancelDelayedBattleEndSfx();
+        if (!playBattleEndSfx || string.IsNullOrWhiteSpace(battleEndSfxId)) return;
+        if (battleEndSfxDelay <= 0f)
+            PlayConfiguredBattleEndSfx();
+        else
+            delayedBattleEndSfxRoutine = StartCoroutine(PlayBattleEndSfxAfterDelay());
+    }
+
+    private IEnumerator PlayBattleEndSfxAfterDelay()
+    {
+        yield return WaitDuration(battleEndSfxDelay, useUnscaledTime);
+        delayedBattleEndSfxRoutine = null;
+        PlayConfiguredBattleEndSfx();
+    }
+
+    private void CancelDelayedBattleEndSfx()
+    {
+        if (delayedBattleEndSfxRoutine == null) return;
+        StopCoroutine(delayedBattleEndSfxRoutine);
+        delayedBattleEndSfxRoutine = null;
+    }
+
+    private void PlayConfiguredBattleEndSfx()
+    {
+        if (!playBattleEndSfx || string.IsNullOrWhiteSpace(battleEndSfxId)) return;
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager == null) return;
+        audioManager.PlaySfx(battleEndSfxId, Mathf.Clamp01(battleEndSfxVolume));
     }
 
     private void ScheduleRoomIntroSfx()

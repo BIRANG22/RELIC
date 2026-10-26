@@ -16,10 +16,22 @@ public static class RuntimeLocalizationMissingRegistry
         TMPro_EventManager.TEXT_CHANGED_EVENT.Add(OnTextChanged);
     }
 
+    private static bool IsBlurReplica(Transform transform)
+    {
+        // 블러 복제본은 원본의 번역 결과를 그대로 복사하므로 누락 검사 대상이 아닙니다.
+        for (Transform current = transform; current != null; current = current.parent)
+        {
+            if (current.name.EndsWith("_BlurReplica", StringComparison.Ordinal))
+                return true;
+        }
+        return false;
+    }
+
     private static void OnTextChanged(UnityEngine.Object changedObject)
     {
         if (!RuntimeTMPTextAutoLocalizer.ShouldProcessTextChange(Application.isPlaying) ||
             changedObject is not TMP_Text text ||
+            IsBlurReplica(text.transform) ||
             !LocalizationTextRules.IsKoreanPlayerText(text.text) ||
             !LocalizedTMPText.ShouldManageText(text) ||
             text.GetComponent<LocalizedTMPText>() != null ||

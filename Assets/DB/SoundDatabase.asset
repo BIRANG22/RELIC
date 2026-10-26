@@ -534,7 +534,7 @@ MonoBehaviour:
   - id: Battle End
     aliases: []
     clip: {fileID: 8300000, guid: 06ad001802287446d954ab22df0826dd, type: 3}
-    volume: 0.2
+    volume: 0.5
     pitch: 1
     loop: 0
     useRandomPitch: 0
@@ -644,6 +644,15 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: ef5e3bbe0159046deb35c6f6896e8f83, type: 3}
     volume: 0.5
     pitch: 0
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.7
+    randomPitchMax: 1.3
+  - id: RewardSlot
+    aliases: []
+    clip: {fileID: 8300000, guid: 90156240125514546a31eaebe364e3db, type: 3}
+    volume: 0.2
+    pitch: 1
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 0.7
