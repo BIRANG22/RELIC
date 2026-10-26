@@ -1660,8 +1660,7 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void PreparePartyEntryTransition(bool reactivatePlayerRootForEntry = false)
     {
-        tutorialPartyEntryActive = deferPartyEntryPlayback &&
-            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true;
+        tutorialPartyEntryActive = IsInitialTutorialBattleRoom();
         if (tutorialPartyEntryActive)
         {
             if (tutorialPartyTransitionPresenter == null)
@@ -1729,17 +1728,21 @@ public class BattleRoomLoader : MonoBehaviour
         if (!root.gameObject.activeSelf)
             root.gameObject.SetActive(true);
 
-        // Prepare and play in the same call. The loader must not play the normal
-        // presenter in parallel or consume a previously prepared animation.
-        tutorialPartyTransitionPresenter.PrepareEntry(root);
+        // PrepareEntry already ran after spawning the characters. Do not capture
+        // the offset start position again as the destination.
+        if (!partyEntryPrepared)
+        {
+            Debug.LogError("[TutorialPartyEntry] Prepared tutorial entry was missing.", this);
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
         Debug.Log($"[TutorialEntryTrace] LOADER selected={tutorialPartyTransitionPresenter.name} id={tutorialPartyTransitionPresenter.GetInstanceID()} actors={tutorialPartyTransitionPresenter.PreparedActorCount} root={root.name}", this);
         partyEntryPrepared = false;
         partyEntryPlaybackRequested = true;
         Debug.Log($"[TutorialPartyEntry] Playing on {tutorialPartyTransitionPresenter.gameObject.name} with PlayerRoot={root.name}.", this);
-        return tutorialPartyTransitionPresenter.PlayPreparedEntryAsync();
+        return tutorialPartyTransitionPresenter.PlayPreparedEntryAfterTitleTransitionAsync();
     }
 
-    public void PlayPreparedPartyEntry()
+    public void PlayPreparedPartyEntry(BattleDiagonalSceneTransition battlePanelTransition = null)
     {
         partyEntryPlaybackRequested = true;
 
@@ -1748,7 +1751,9 @@ public class BattleRoomLoader : MonoBehaviour
             if (!partyEntryPrepared || tutorialPartyTransitionPresenter.IsPlaying)
                 return;
             partyEntryPrepared = false;
-            _ = tutorialPartyTransitionPresenter.PlayPreparedEntryAsync();
+            _ = battlePanelTransition != null
+                ? tutorialPartyTransitionPresenter.PlayPreparedEntryAfterBattlePanelAsync(battlePanelTransition)
+                : tutorialPartyTransitionPresenter.PlayPreparedEntryAsync();
             return;
         }
         if (!partyEntryPrepared || partyTransitionPresenter == null || partyTransitionPresenter.IsPlaying)
@@ -1812,6 +1817,18 @@ public class BattleRoomLoader : MonoBehaviour
             if (hud != null && hud.BoundCharacterRuntime != null)
                 hud.gameObject.SetActive(!suppressed);
         }
+    }
+
+    // Only the initial tutorial battle entered from the title uses TutorialMode's
+    // dedicated presenter. Later tutorial battles use BattleRoom's normal presenter.
+    private static bool IsInitialTutorialBattleRoom()
+    {
+        if (!IsTutorialBattleRun()) return false;
+        DataManager data = DataManager.Instance;
+        string firstMapId = data?.TutorialDatabase?.GetFirstEntry()?.MapId;
+        string currentMapId = data?.MapRuntimeStore?.Get()?.CurrentMapId;
+        return !string.IsNullOrWhiteSpace(firstMapId) &&
+               string.Equals(firstMapId, currentMapId, System.StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsTutorialBattleRun()
