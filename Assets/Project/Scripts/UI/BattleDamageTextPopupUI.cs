@@ -14,7 +14,8 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         ArmorGain,
         PoisonDamage,
         UniqueResource,
-        HealthRecovery
+        HealthRecovery,
+        HealthLoss
     }
     private const string AutoInstanceName = "BattleDamageTextPopupUI_Auto";
 
@@ -168,6 +169,11 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         ShowTyped(target, value, PopupType.HealthRecovery);
     }
 
+    public static void ShowHealthLoss(Transform target, int value)
+    {
+        ShowTyped(target, value, PopupType.HealthLoss);
+    }
+
 
     public static void ShowEventHealthRecovery(Transform target, int value, Canvas preferredCanvas, float fontSize)
     {
@@ -281,7 +287,8 @@ public class BattleDamageTextPopupUI : MonoBehaviour
     {
         return popupType == PopupType.UniqueResource ||
                popupType == PopupType.CostRecovery ||
-               popupType == PopupType.HealthRecovery;
+               popupType == PopupType.HealthRecovery ||
+               popupType == PopupType.HealthLoss;
     }
 
     private void ShowAfterDelay(Transform target, int value, PopupType popupType)
@@ -659,7 +666,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             if (CreateRecoveryIcon(rect, popupType, siblingIndex, popupColor))
                 siblingIndex++;
 
-            CreatePlusText(rect, siblingIndex, popupColor);
+            CreateSignText(rect, siblingIndex, popupColor, popupType == PopupType.HealthLoss ? "-" : "+");
             siblingIndex++;
         }
 
@@ -723,6 +730,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             PopupType.CostRecovery => costRecoveryIcon,
             PopupType.UniqueResource => uniqueResourceIcon,
             PopupType.HealthRecovery => healthRecoveryIcon,
+            PopupType.HealthLoss => healthRecoveryIcon,
             _ => null
         };
     }
@@ -755,7 +763,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         return true;
     }
 
-    private void CreatePlusText(RectTransform parent, int order, Color popupColor)
+    private void CreateSignText(RectTransform parent, int order, Color popupColor, string sign)
     {
         Vector2 effectiveDigitSize = GetEffectiveDigitSize();
         float plusWidth = effectiveDigitSize.x * 0.55f;
@@ -769,7 +777,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         plusText.textWrappingMode = TextWrappingModes.NoWrap;
         plusText.color = popupColor;
         plusText.fontSize = GetEffectiveStartFontSize();
-        plusText.text = "+";
+        plusText.text = sign;
 
         if (useBoldText)
             plusText.fontStyle = FontStyles.Bold;
@@ -861,7 +869,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         text.alignment = TextAlignmentOptions.Center;
         text.color = GetPopupColor(popupType);
         text.fontSize = GetEffectiveStartFontSize();
-        text.text = ShouldShowRecoveryPrefix(popupType) ? $"+{damage}" : damage.ToString();
+        text.text = ShouldShowRecoveryPrefix(popupType) ? $"{(popupType == PopupType.HealthLoss ? "-" : "+")}{damage}" : damage.ToString();
 
         if (useBoldText)
             text.fontStyle = FontStyles.Bold;
@@ -1069,6 +1077,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             PopupType.PoisonDamage => poisonDamageColor,
             PopupType.UniqueResource => uniqueResourceColor,
             PopupType.HealthRecovery => healthRecoveryColor,
+            PopupType.HealthLoss => healthRecoveryColor,
             _ => damageColor
         };
     }
@@ -1082,6 +1091,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             PopupType.PoisonDamage => Vector2.down * poisonDownCanvasMove,
             PopupType.UniqueResource => Vector2.up * armorUpCanvasMove,
             PopupType.HealthRecovery => Vector2.up * armorUpCanvasMove,
+            PopupType.HealthLoss => Vector2.up * armorUpCanvasMove,
             _ => GetDisappearEndOffset()
         };
 

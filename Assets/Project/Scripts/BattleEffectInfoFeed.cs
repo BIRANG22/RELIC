@@ -148,7 +148,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
         {
             // Preserve order within a category: rune activations first, then relics,
             // then other turn-start effects. Do not change their actual application order.
-            for (int priority = 0; priority <= 3; priority++)
+            for (int priority = 0; priority <= 4; priority++)
             {
                 for (int i = 0; i < count; i++)
                 {
@@ -275,6 +275,10 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
     [SerializeField] private Sprite karmaRecoveryIcon;
     [SerializeField] private Sprite healthRecoveryIcon;
 
+    [Header("Erosion Damage Icon")]
+    [SerializeField] private Sprite erosionDamageIcon;
+    [SerializeField] private Color erosionDamageIconColor = new Color32(0x9F, 0x2B, 0x2B, 0xFF);
+
     public static void ShowTurnRecovery(bool mana, int amount, bool party)
     {
         if (amount <= 0) return;
@@ -286,6 +290,15 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
                 ? GameLocalization.Get("battle.effect_info.party_karma_recovery", "파티 카르마 회복")
                 : GameLocalization.Get("battle.effect_info.karma_recovery", "카르마 회복");
         feed.Spawn(label, mana ? feed.manaRecoveryIcon : feed.karmaRecoveryIcon);
+    }
+
+    public static void ShowErosionDamage()
+    {
+        BattleEffectInfoFeed feed = FindFeed();
+        if (feed == null) return;
+        feed.Spawn(
+            GameLocalization.Get("battle.effect_info.erosion_damage", "침식도 피해"),
+            feed.erosionDamageIcon, false, true, 4);
     }
 
     // Automatic mana regeneration is intentionally excluded from the feed.
@@ -636,7 +649,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
         if (lineTransform != null)
         {
             Graphic lineGraphic = lineTransform.GetComponent<Graphic>();
-            if (lineGraphic != null && !defaultLineColor)
+            if (lineGraphic != null && !defaultLineColor && category != 4)
                 lineGraphic.color = category == 0 ? runeLineColor
                     : category == 1 ? relicLineColor
                     : category == 3 ? collisionLineColor
@@ -649,6 +662,7 @@ public sealed class BattleEffectInfoFeed : MonoBehaviour
             if (image != null)
             {
                 image.sprite = icon;
+                image.color = category == 4 ? erosionDamageIconColor : Color.white;
                 image.enabled = icon != null;
             }
         }
