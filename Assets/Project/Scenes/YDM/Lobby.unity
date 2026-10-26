@@ -22961,7 +22961,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundId: ui.move.click
+  soundId: ui.party.click
   volume: 1
   playDelay: 0
   playOnEnable: 1
@@ -29637,7 +29637,7 @@ MonoBehaviour:
   playHoverSound: 0
   hoverSoundId: ui.normal.click
   hoverSoundVolume: 1
-  playClickSound: 1
+  playClickSound: 0
   clickSoundId: ui.back.click
   clickSoundVolume: 1
   toggleClickState: 1
@@ -36439,6 +36439,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fa743de588d7664ea050a758cd94a14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  openSfx:
+    enabled: 1
+    sfxId: scene.lobby.transition.open
+    volume: 1
+    delay: 0
+  closeSfx:
+    enabled: 1
+    sfxId: scene.lobby.transition.close
+    volume: 1
+    delay: 0
   transitionGraphic: {fileID: 2061060540}
   panel: {fileID: 1213641074}
   playButton: {fileID: 999125867}
@@ -42205,7 +42215,6 @@ GameObject:
   - component: {fileID: 814087550}
   - component: {fileID: 814087553}
   - component: {fileID: 814087552}
-  - component: {fileID: 814087551}
   m_Layer: 0
   m_Name: VFX_Buff_Loop (5)
   m_TagString: Untagged
@@ -42230,28 +42239,6 @@ Transform:
   - {fileID: 306450342}
   m_Father: {fileID: 1659456229}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &814087551
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 814087549}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  soundId: ui.relicstone.hover
-  volume: 1
-  playDelay: 0
-  playOnEnable: 1
-  playOnHover: 0
-  hoverSoundId: ui.normal.click
-  hoverVolume: 1
-  playOnClick: 0
-  clickSoundId: ui.normal.click
-  clickVolume: 1
 --- !u!199 &814087552
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -50716,7 +50703,6 @@ GameObject:
   - component: {fileID: 894885936}
   - component: {fileID: 894885939}
   - component: {fileID: 894885938}
-  - component: {fileID: 894885937}
   m_Layer: 0
   m_Name: VFX_Buff_Loop (3)
   m_TagString: Untagged
@@ -50741,28 +50727,6 @@ Transform:
   - {fileID: 1636211584}
   m_Father: {fileID: 1659456229}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &894885937
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 894885935}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  soundId: ui.relicstone.hover
-  volume: 1
-  playDelay: 0
-  playOnEnable: 1
-  playOnHover: 0
-  hoverSoundId: ui.normal.click
-  hoverVolume: 1
-  playOnClick: 0
-  clickSoundId: ui.normal.click
-  clickVolume: 1
 --- !u!199 &894885938
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -60578,7 +60542,7 @@ MonoBehaviour:
   hoverSoundId: ui.move.hover
   hoverSoundVolume: 1
   playClickSound: 1
-  clickSoundId: ui.move.click
+  clickSoundId: door
   clickSoundVolume: 1
   toggleClickState: 1
   keepClickedStateWhenPointerExit: 1
@@ -60611,7 +60575,7 @@ MonoBehaviour:
   requireFullParty: 1
   warningUI: {fileID: 1763934034}
   playClickSound: 0
-  clickSfx: ui.normal.click
+  clickSfx: door
   readyTransition: {fileID: 0}
   buttonLeftGraphic: {fileID: 0}
   buttonRightGraphic: {fileID: 0}
@@ -86982,7 +86946,6 @@ GameObject:
   - component: {fileID: 1580376416}
   - component: {fileID: 1580376419}
   - component: {fileID: 1580376418}
-  - component: {fileID: 1580376417}
   m_Layer: 0
   m_Name: VFX_Buff_Loop (4)
   m_TagString: Untagged
@@ -87007,28 +86970,6 @@ Transform:
   - {fileID: 1195696488}
   m_Father: {fileID: 1659456229}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1580376417
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1580376415}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  soundId: ui.relicstone.hover
-  volume: 1
-  playDelay: 0
-  playOnEnable: 1
-  playOnHover: 0
-  hoverSoundId: ui.normal.click
-  hoverVolume: 1
-  playOnClick: 0
-  clickSoundId: ui.normal.click
-  clickVolume: 1
 --- !u!199 &1580376418
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -94653,7 +94594,6 @@ GameObject:
   - component: {fileID: 1663680786}
   - component: {fileID: 1663680789}
   - component: {fileID: 1663680788}
-  - component: {fileID: 1663680787}
   m_Layer: 0
   m_Name: VFX_Buff_Loop (6)
   m_TagString: Untagged
@@ -94678,28 +94618,6 @@ Transform:
   - {fileID: 1426648442}
   m_Father: {fileID: 1659456229}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1663680787
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1663680785}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  soundId: ui.relicstone.hover
-  volume: 1
-  playDelay: 0
-  playOnEnable: 1
-  playOnHover: 0
-  hoverSoundId: ui.normal.click
-  hoverVolume: 1
-  playOnClick: 0
-  clickSoundId: ui.normal.click
-  clickVolume: 1
 --- !u!199 &1663680788
 ParticleSystemRenderer:
   serializedVersion: 6

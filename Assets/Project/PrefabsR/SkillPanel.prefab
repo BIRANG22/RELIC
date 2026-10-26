@@ -242,7 +242,7 @@ MonoBehaviour:
   playDelay: 0
   playOnEnable: 1
   playOnHover: 1
-  hoverSoundId: ui.normal.hover
+  hoverSoundId: ui.flag.hover
   hoverVolume: 1
   playOnClick: 1
   clickSoundId: ui.normal.click
