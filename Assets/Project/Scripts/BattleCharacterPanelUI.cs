@@ -4757,7 +4757,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             {
                 skillTooltipResourceValueText.enableAutoSizing = false;
                 skillTooltipResourceValueText.fontSize = 20f;
-                skillTooltipResourceValueText.text = "지속";
+                skillTooltipResourceValueText.text = GameLocalization.Get("battle.skill.passive_duration");
             }
             else
             {

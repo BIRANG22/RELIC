@@ -289,7 +289,8 @@ public static class LocalizationProjectScanner
         }
         if (compactHeader.Contains("선택지이름", StringComparison.Ordinal))
             return "choice_name";
-        if (compactHeader.Contains("선택지내용", StringComparison.Ordinal))
+        if (compactHeader.Contains("선택지내용", StringComparison.Ordinal) ||
+            compactHeader.Contains("선택지설명", StringComparison.Ordinal))
             return "choice_description";
         if (compactHeader.Contains("선택불가", StringComparison.Ordinal))
             return "disabled_choice_description";

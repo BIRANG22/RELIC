@@ -51,6 +51,7 @@ public sealed class LocalizationDynamicSourceScannerTests
 
     [TestCase("선택지 이름", "data.event.event_02.choice_1_name")]
     [TestCase("선택지 내용", "data.event.event_02.choice_1_description")]
+    [TestCase("선택지 설명", "data.event.event_02.choice_1_description")]
     [TestCase("선택불가 내용", "data.event.event_02.choice_1_disabled_description")]
     [TestCase("실패 결과", "data.event.event_02.choice_1_failure_description")]
     public void BuildEventChoiceKey_KoreanHeadersUseChoiceOrder(
