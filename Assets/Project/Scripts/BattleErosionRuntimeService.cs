@@ -41,8 +41,6 @@ public static class BattleErosionRuntimeService
         if (!string.IsNullOrWhiteSpace(reason))
             Debug.Log($"[BattleErosion] {before} -> {after} ({reason})");
 
-        if (after >= MaxValue)
-            TriggerGameOver();
     }
 
     public static void SetValue(int value, string reason = null)
@@ -64,8 +62,6 @@ public static class BattleErosionRuntimeService
         if (!string.IsNullOrWhiteSpace(reason))
             Debug.Log($"[BattleErosion] {before} -> {after} ({reason})");
 
-        if (after >= MaxValue)
-            TriggerGameOver();
     }
 
     public static void CountRoomEntry(GeneratedMapNodeData nodeData)
@@ -107,15 +103,53 @@ public static class BattleErosionRuntimeService
         return $"{nodeData.LayerIndex}:{nodeData.NodeIndex}:{nodeData.MapId}";
     }
 
-    private static void TriggerGameOver()
+    // 침식도가 100인 상태에서 다음 턴이 시작되면 생존 파티원 각각의 생명력을 10 감소시킵니다.
+    // 방어도 및 피해 차단 효과를 거치지 않는 생명력 감소입니다.
+    public static void ApplyMaxErosionTurnStartHealthLoss()
     {
-        BattleResultChecker checker = BattleResultChecker.Instance;
-        if (checker == null)
+        if (CurrentValue < MaxValue)
+            return;
+
+        BattleCharacter[] characters = UnityEngine.Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        var processed = new System.Collections.Generic.HashSet<CharacterRuntimeData>();
+        bool healthChanged = false;
+
+        foreach (BattleCharacter character in characters)
         {
-            checker = UnityEngine.Object.FindFirstObjectByType<BattleResultChecker>(
-                FindObjectsInactive.Include);
+            if (character == null || !character.gameObject.activeInHierarchy)
+                continue;
+
+            CharacterRuntimeData data = character.RuntimeData;
+            if (data == null || data.IsDead || !processed.Add(data))
+                continue;
+
+            int before = data.CurrentHP;
+            data.CurrentHP = Mathf.Max(0, before - 10);
+            int loss = before - data.CurrentHP;
+            if (loss <= 0)
+                continue;
+
+            BattleDamageTextPopupUI.PrepareTargetHud(character.transform);
+            BattleDamageTextPopupUI.ShowHealthLoss(character.transform, loss);
+            BattleRunStatisticsRecorder.RecordDamageTaken(
+                data.CharacterId, loss, data.CurrentHP <= 0);
+            BattleEquipmentEffectService.MarkPlayerDamagedThisTurn(data);
+            if (data.CurrentHP <= 0)
+            {
+                data.HandleDeath();
+                CountCharacterIncapacitated();
+            }
+
+            BattleEffectUtility.OnPlayerDamaged?.Invoke(character);
+            BattleEffectUtility.OnPlayerHudRefreshRequested?.Invoke(character);
+            healthChanged = true;
         }
 
-        checker?.ForceDefeatFromErosion();
+        if (healthChanged)
+            BattleEffectInfoFeed.ShowErosionDamage();
+
+        if (healthChanged)
+            Debug.Log("[BattleErosion] Max erosion: -10 HP to each living party member at turn start.");
     }
 }

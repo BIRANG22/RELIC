@@ -715,7 +715,10 @@ public class BattleTurnExecutor : MonoBehaviour
             }
 
             playerTurnNumber++;
+            bool erosionAlreadyMax = BattleErosionRuntimeService.CurrentValue >= BattleErosionRuntimeService.MaxValue;
             BattleErosionRuntimeService.CountNextTurnStart();
+            if (erosionAlreadyMax)
+                BattleErosionRuntimeService.ApplyMaxErosionTurnStartHealthLoss();
             BattleErosionEffectService.ApplyPeriodicRandomDebuff(playerTurnNumber);
             ApplyQueuedNextTurnSwift();
             RefreshTurnNumberText();
@@ -1071,7 +1074,10 @@ public class BattleTurnExecutor : MonoBehaviour
         yield return null;
 
         playerTurnNumber++;
+        bool erosionAlreadyMax = BattleErosionRuntimeService.CurrentValue >= BattleErosionRuntimeService.MaxValue;
         BattleErosionRuntimeService.CountNextTurnStart();
+        if (erosionAlreadyMax)
+            BattleErosionRuntimeService.ApplyMaxErosionTurnStartHealthLoss();
         BattleErosionEffectService.ApplyPeriodicRandomDebuff(playerTurnNumber);
         ApplyQueuedNextTurnSwift();
         RefreshTurnNumberText();
