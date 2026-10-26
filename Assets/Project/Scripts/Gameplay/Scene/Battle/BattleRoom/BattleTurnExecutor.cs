@@ -255,6 +255,9 @@ public class BattleTurnExecutor : MonoBehaviour
 
     public void ForceStopBattleExecutionForRoomEnd()
     {
+        // Child action coroutines run on CoroutineHost, not on this executor.
+        // Stop them first so no delayed hit can damage the party after victory.
+        BattleActionRunner.CancelAllActiveActionsForRoomEnd();
         if (executeTurnCoroutine != null)
         {
             StopCoroutine(executeTurnCoroutine);

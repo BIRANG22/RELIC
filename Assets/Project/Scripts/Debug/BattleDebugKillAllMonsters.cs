@@ -34,6 +34,10 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
 
     public void KillAllMonstersForDebug()
     {
+        // Cancel in-flight damage before setting HP to zero. Delaying this
+        // until after death handling lets CoroutineHost attacks keep running.
+        PrepareBattleStateForDebugWin();
+
         BattleDeathService deathService = new(null, null, null);
         MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
             FindObjectsInactive.Exclude,
@@ -62,9 +66,6 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
             StartCoroutine(CompleteDebugArabellaPhaseTransition());
             return;
         }
-
-        if (AreAllMonstersDead())
-            PrepareBattleStateForDebugWin();
 
         if (BattleResultChecker.Instance != null)
             BattleResultChecker.Instance.CheckBattleEnd();

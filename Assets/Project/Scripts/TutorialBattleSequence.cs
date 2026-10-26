@@ -5,6 +5,7 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Localization.Components;
 
 /// <summary>
 /// Executes the pre-battle presentation authored in the Tutorial worksheet.
@@ -175,11 +176,28 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         dialogText = dialog != null ? Find(dialog, "Dialog")?.GetComponent<TMP_Text>() : null;
         guideText = tooltip != null ? Find(tooltip, "Text")?.GetComponent<TMP_Text>() : null;
         if (guideText == null && tooltip != null) guideText = tooltip.GetComponentInChildren<TMP_Text>(true);
+        ProtectTutorialText(dialogText);
+        ProtectTutorialText(guideText);
         dialogTextComplete = dialog != null ? Find(dialog, "TextComplete")?.gameObject : null;
         tooltipTextComplete = tooltip != null ? Find(tooltip, "TextComplete")?.gameObject : null;
         dialogCompleteLabel = dialogTextComplete != null ? dialogTextComplete.GetComponentInChildren<TMP_Text>(true) : null;
         tooltipCompleteLabel = tooltipTextComplete != null ? tooltipTextComplete.GetComponentInChildren<TMP_Text>(true) : null;
         portrait = dialog != null ? Find(dialog, "Icon")?.GetComponent<Image>() : null;
+    }
+
+    // TutorialBattleSequence resolves TextKey itself, so no second component may
+    // bind or overwrite the text while the dialogue typewriter is running.
+    private static void ProtectTutorialText(TMP_Text target)
+    {
+        if (target == null) return;
+        if (target.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            target.gameObject.AddComponent<LocalizationAutoBindingIgnore>();
+        var staticWriter = target.GetComponent<LocalizedTMPText>();
+        if (staticWriter != null) staticWriter.enabled = false;
+        var dynamicWriter = target.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicWriter != null) dynamicWriter.enabled = false;
+        var legacyWriter = target.GetComponent<LocalizeStringEvent>();
+        if (legacyWriter != null) legacyWriter.enabled = false;
     }
 
     private static Transform Find(Transform root, string name)

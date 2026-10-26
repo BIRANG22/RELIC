@@ -9,6 +9,49 @@ using UnityEngine;
 
 public class BattleActionRunner
 {
+    // CoroutineHost runs action routines independently of BattleTurnExecutor.
+    // A forced room end must cancel these routines before resolving victory.
+    private static readonly HashSet<BattleActionRunner> activeRunners = new();
+    private readonly HashSet<Coroutine> activeActionCoroutines = new();
+
+    public static void CancelAllActiveActionsForRoomEnd()
+    {
+        BattleActionRunner[] runners = new BattleActionRunner[activeRunners.Count];
+        activeRunners.CopyTo(runners);
+        foreach (BattleActionRunner runner in runners)
+            runner.CancelActiveActionsForRoomEnd();
+        activeRunners.Clear();
+    }
+
+    private void CancelActiveActionsForRoomEnd()
+    {
+        if (CoroutineHost.Instance != null)
+        {
+            foreach (Coroutine coroutine in activeActionCoroutines)
+            {
+                if (coroutine != null)
+                    CoroutineHost.Instance.StopCoroutine(coroutine);
+            }
+        }
+        activeActionCoroutines.Clear();
+    }
+
+    private void TrackActionCoroutine(Coroutine coroutine)
+    {
+        if (coroutine == null)
+            return;
+        activeActionCoroutines.Add(coroutine);
+        activeRunners.Add(this);
+    }
+
+    private void UntrackActionCoroutine(Coroutine coroutine)
+    {
+        if (coroutine != null)
+            activeActionCoroutines.Remove(coroutine);
+        if (activeActionCoroutines.Count == 0)
+            activeRunners.Remove(this);
+    }
+
     private readonly GridManager gridManager;
 
     private readonly BattleUnitFinder unitFinder;
@@ -871,6 +914,7 @@ public class BattleActionRunner
             )
         );
 
+        TrackActionCoroutine(runningCoroutine);
         float elapsed = 0f;
 
         while (!completed)
@@ -890,6 +934,7 @@ public class BattleActionRunner
                 if (runningCoroutine != null && CoroutineHost.Instance != null)
                     CoroutineHost.Instance.StopCoroutine(runningCoroutine);
 
+                UntrackActionCoroutine(runningCoroutine);
                 BattleConsecutiveActionPresentationContext.CompleteAction(
                     activeActionInfo,
                     completedNormally: false);
@@ -900,6 +945,7 @@ public class BattleActionRunner
             yield return null;
         }
 
+        UntrackActionCoroutine(runningCoroutine);
         BattleConsecutiveActionPresentationContext.CompleteAction(
             activeActionInfo,
             completedNormally: true);
@@ -936,6 +982,7 @@ public class BattleActionRunner
                     }
                 )
             );
+            TrackActionCoroutine(runningCoroutines[i]);
         }
 
         float elapsed = 0f;
@@ -968,6 +1015,9 @@ public class BattleActionRunner
 
             yield return null;
         }
+
+        for (int i = 0; i < runningCoroutines.Length; i++)
+            UntrackActionCoroutine(runningCoroutines[i]);
     }
 
     private string BuildPendingActionLabel(bool[] completed, List<ActionRoutine> routines)
