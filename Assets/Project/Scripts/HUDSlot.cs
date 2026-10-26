@@ -665,6 +665,15 @@ public class HUDSlot : MonoBehaviour
 
     private void StartHPAnimation()
     {
+        // 비활성 HUD에서는 코루틴을 시작할 수 없으므로 최신 값을 즉시 반영합니다.
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            displayedHP = targetHP;
+            ApplyHPDisplay(displayedHP, displayedMaxHP);
+            hpValueRoutine = null;
+            return;
+        }
+
         if (hpValueRoutine != null)
             StopCoroutine(hpValueRoutine);
 
@@ -701,6 +710,15 @@ public class HUDSlot : MonoBehaviour
 
     private void StartShieldAnimation()
     {
+        // 비활성 HUD에서는 코루틴을 시작할 수 없으므로 최신 값을 즉시 반영합니다.
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            displayedShield = targetShield;
+            ApplyShieldDisplay(displayedShield, displayedMaxHP);
+            shieldValueRoutine = null;
+            return;
+        }
+
         if (shieldValueRoutine != null)
             StopCoroutine(shieldValueRoutine);
 
