@@ -117,6 +117,16 @@ public class BattleResultChecker : MonoBehaviour
         return true;
     }
 
+    private bool resolvingStandaloneArabellaTransition;
+
+    private IEnumerator CompleteStandaloneArabellaTransition()
+    {
+        resolvingStandaloneArabellaTransition = true;
+        yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
+        resolvingStandaloneArabellaTransition = false;
+        CheckBattleEnd();
+    }
+
     public bool CheckBattleEnd()
     {
         if (battleEnded)
@@ -131,6 +141,22 @@ public class BattleResultChecker : MonoBehaviour
             Debug.Log("[BattleResultChecker] Battle Lose");
             StartCoroutine(ShowDefeatAfterCameraReturn(playPresentation: true));
             return true;
+        }
+
+        // Direct HP manipulation and damage routes not using the effect utility
+        // must never bypass the phase-one transition.
+        MonsterUnit[] unitsForPhaseCheck = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < unitsForPhaseCheck.Length; i++)
+            ArabellaPhaseTransition.TryQueueIfDefeated(unitsForPhaseCheck[i]);
+
+        // Never award victory while a phase transition is waiting for the action to finish.
+        if (ArabellaPhaseTransition.HasPendingTransition)
+        {
+            BattleTurnExecutor executor = Object.FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+            if ((executor == null || !executor.IsExecuting) && !resolvingStandaloneArabellaTransition)
+                StartCoroutine(CompleteStandaloneArabellaTransition());
+            return false;
         }
 
         if (IsAllMonstersDead())

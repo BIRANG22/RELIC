@@ -32,9 +32,34 @@ public static class ArabellaPhaseTransition
     private static MonsterUnit pendingMonster;
     private static MonsterRuntimeData pendingPhaseTwo;
 
+    public static bool HasPendingTransition => pendingMonster != null && pendingPhaseTwo != null;
+
     public static bool IsTransitionPending(MonsterUnit monster)
     {
         return pendingMonster != null && pendingMonster == monster;
+    }
+
+    // Any damage route that reduces phase one to zero must queue phase two before victory checks.
+    public static bool TryQueueIfDefeated(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null ||
+            !string.Equals(monster.RuntimeData.MonsterId, PhaseOneMonsterId, StringComparison.Ordinal) ||
+            monster.RuntimeData.CurrentHP > 0)
+            return false;
+
+        if (IsTransitionPending(monster))
+            return true;
+
+        MonsterMasterData phaseTwoMaster =
+            DataManager.Instance?.MonsterDatabase?.Get(PhaseTwoMonsterId);
+        if (!TryCreatePhaseTwo(monster.RuntimeData, phaseTwoMaster, out MonsterRuntimeData phaseTwo))
+        {
+            Debug.LogError("[ArabellaPhaseTransition] Failed to create phase two after phase-one HP reached zero.");
+            return false;
+        }
+
+        QueuePhaseTwo(monster, phaseTwo);
+        return true;
     }
 
     public static void QueuePhaseTwo(MonsterUnit monster, MonsterRuntimeData phaseTwo)

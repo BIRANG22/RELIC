@@ -62,6 +62,8 @@ public class CanvasMaterialSceneTransition : Singleton<CanvasMaterialSceneTransi
     private float openRemainingTime;
 
     public bool IsPlaying => isPlaying;
+    // SceneTransitionManager/Resolution Viewport/SceneTransition의 실제 활성 상태입니다.
+    public bool IsTransitionRootActive => transitionRoot != null && transitionRoot.activeSelf;
     public bool IsOpening => isOpening;
     public float OpenRemainingTime => openRemainingTime;
 

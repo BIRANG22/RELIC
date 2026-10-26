@@ -318,6 +318,8 @@ public static class BattleEffectUtility
         if (damage > 0)
             target.RuntimeData.TakeDamage(damage);
 
+        ArabellaPhaseTransition.TryQueueIfDefeated(target);
+
         int hpDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHP);
         int shownDamage = shieldDamage + hpDamage;
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
@@ -436,6 +438,7 @@ public static class BattleEffectUtility
         int hpBefore = target.RuntimeData.CurrentHP;
 
         target.RuntimeData.TakeDamage(damage);
+        ArabellaPhaseTransition.TryQueueIfDefeated(target);
 
         int shownDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHP);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
@@ -619,6 +622,7 @@ public static class BattleEffectUtility
         int hpBefore = target.RuntimeData.CurrentHP;
 
         target.RuntimeData.TakeDamage(damage);
+        ArabellaPhaseTransition.TryQueueIfDefeated(target);
 
         int shownDamage = Mathf.Max(0, hpBefore - target.RuntimeData.CurrentHP);
         if (isPoison)

@@ -49,6 +49,38 @@ public sealed class TutorialPartyTransitionPresenter : MonoBehaviour
         }
     }
 
+    // 타이틀 -> Battle 씬: 공용 SceneTransition 오브젝트가 비활성화된 뒤 입장합니다.
+    // Battle 씬 내부의 BattlePanelTransition은 여기서 확인하지 않습니다.
+    public async Task PlayPreparedEntryAfterTitleTransitionAsync()
+    {
+        CanvasMaterialSceneTransition transition = CanvasMaterialSceneTransition.Instance;
+        SceneFlowManager flow = SceneFlowManager.Instance;
+
+        // SceneFlowManager는 타이틀 씬 전환이 완료된 뒤 IsLoading을 해제합니다.
+        // 전환 루트의 비활성화까지 확인해야 캐릭터 이동이 화면에 보입니다.
+        while (isActiveAndEnabled &&
+               ((flow != null && flow.IsLoading) ||
+                (transition != null && transition.IsTransitionRootActive)))
+            await Task.Yield();
+
+        if (!isActiveAndEnabled) return;
+        await PlayPreparedEntryAsync();
+    }
+
+    // Movement between rooms inside Battle scene uses BattlePanelTransition, not SceneTransitionManager.
+    public async Task PlayPreparedEntryAfterBattlePanelAsync(BattleDiagonalSceneTransition battleTransition)
+    {
+        if (battleTransition != null)
+        {
+            // Called after the panel starts uncovering. Wait for its image to finish moving.
+            while (isActiveAndEnabled && battleTransition.IsPlaying)
+                await Task.Yield();
+        }
+
+        if (!isActiveAndEnabled) return;
+        await PlayPreparedEntryAsync();
+    }
+
     public Task PlayPreparedEntryAsync()
     {
         Debug.Log($"[TutorialEntryTrace] PLAY presenter={GetHierarchyPath(transform)} id={GetInstanceID()} actors={actors.Count} delay={entryDelay:F2} duration={entryDuration:F2} active={isActiveAndEnabled}", this);

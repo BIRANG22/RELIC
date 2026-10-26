@@ -533,6 +533,10 @@ public class BattleGridEffectController : MonoBehaviour
         PresentAppliedEffects(monster, result, monster.RuntimeData.CurrentHP > hpBefore);
         RemoveViewIfConsumed(result);
 
+        // 그리드 효과로 HP가 0이 되어도 일반 사망 경로를 거쳐 보스 페이즈를 전환합니다.
+        if (hpBefore > 0 && monster.RuntimeData.IsDead)
+            new BattleDeathService(null, null, null).HandleMonsterDead(monster);
+
         if (result.Applied)
             monster.ShowAndRefreshHUD();
 

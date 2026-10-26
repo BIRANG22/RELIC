@@ -1,4 +1,5 @@
-﻿using Relic.Gameplay.Monster;
+﻿using System.Collections;
+using Relic.Gameplay.Monster;
 using UnityEngine;
 
 public class BattleDebugKillAllMonsters : MonoBehaviour
@@ -55,11 +56,25 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
             Debug.Log($"[DebugKill] Monster:{monster.RuntimeData.MonsterId}");
         }
 
+        // K 키도 보스의 1페이즈를 일반 사망으로 처리하지 않습니다.
+        if (ArabellaPhaseTransition.HasPendingTransition)
+        {
+            StartCoroutine(CompleteDebugArabellaPhaseTransition());
+            return;
+        }
+
         if (AreAllMonstersDead())
             PrepareBattleStateForDebugWin();
 
         if (BattleResultChecker.Instance != null)
             BattleResultChecker.Instance.CheckBattleEnd();
+    }
+
+    private IEnumerator CompleteDebugArabellaPhaseTransition()
+    {
+        yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
+        new BattleHUDService().RefreshHUDs();
+        BattleResultChecker.Instance?.CheckBattleEnd();
     }
 
     private static bool AreAllMonstersDead()
