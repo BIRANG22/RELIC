@@ -108,6 +108,9 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
         if (enableEscapeInput && WasEscapePressedThisFrame() && !IsTypingInputFieldSelected())
         {
+            // 스테이지 진입 Position_Panel 연출 중에는 ESC로 메뉴를 열 수 없습니다.
+            if (!IsMenuPanelOpen() && IsStageEntryPositionPanelActive())
+                return;
             if (UIManager.WasConfirmDialogClosedByEscapeThisFrame ||
                 UIManager.WasRecordPanelClosedByEscapeThisFrame ||
                 UIManager.WasOptionPanelClosedByEscapeThisFrame)
@@ -209,14 +212,17 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         if (menuPanel == null)
             return;
 
-        menuPanel.transform.SetAsLastSibling();
+        if (menuPanel.transform.GetSiblingIndex() != menuPanel.transform.parent.childCount - 1)
+            menuPanel.transform.SetAsLastSibling();
 
         Canvas canvas = menuPanel.GetComponent<Canvas>();
         if (canvas == null)
             canvas = menuPanel.AddComponent<Canvas>();
 
-        canvas.overrideSorting = true;
-        canvas.sortingOrder = menuPanelSortingOrder;
+        if (!canvas.overrideSorting)
+            canvas.overrideSorting = true;
+        if (canvas.sortingOrder != menuPanelSortingOrder)
+            canvas.sortingOrder = menuPanelSortingOrder;
 
         if (menuPanel.GetComponent<GraphicRaycaster>() == null)
             menuPanel.AddComponent<GraphicRaycaster>();
@@ -321,8 +327,26 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         isPauseApplied = false;
     }
 
+    private static bool IsStageEntryPositionPanelActive()
+    {
+        // 로비의 PositionPanel과 구분하여 배틀 씬의 Position_Panel만 검사합니다.
+        GameObject[] roots = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
+        for (int i = 0; i < roots.Length; i++)
+        {
+            Transform[] children = roots[i].GetComponentsInChildren<Transform>(false);
+            for (int j = 0; j < children.Length; j++)
+            {
+                if (children[j].name == "Position_Panel" && children[j].gameObject.activeInHierarchy)
+                    return true;
+            }
+        }
+        return false;
+    }
+
     private void ClickMenuButton()
     {
+        if (!IsMenuPanelOpen() && IsStageEntryPositionPanelActive())
+            return;
         FindMenuButtonIfNeeded();
 
         if (menuButton == null)
@@ -404,7 +428,9 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         if (menuRootTransform == null)
             return;
 
-        menuRootTransform.SetAsLastSibling();
+        if (menuRootTransform.parent != null &&
+            menuRootTransform.GetSiblingIndex() != menuRootTransform.parent.childCount - 1)
+            menuRootTransform.SetAsLastSibling();
 
         if (menuRootCanvas == null)
             menuRootCanvas = menuRootTransform.GetComponent<Canvas>();
@@ -412,8 +438,10 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         if (menuRootCanvas == null)
             menuRootCanvas = menuRootTransform.gameObject.AddComponent<Canvas>();
 
-        menuRootCanvas.overrideSorting = true;
-        menuRootCanvas.sortingOrder = menuRootSortingOrder;
+        if (!menuRootCanvas.overrideSorting)
+            menuRootCanvas.overrideSorting = true;
+        if (menuRootCanvas.sortingOrder != menuRootSortingOrder)
+            menuRootCanvas.sortingOrder = menuRootSortingOrder;
 
         if (menuRootTransform.GetComponent<GraphicRaycaster>() == null)
             menuRootTransform.gameObject.AddComponent<GraphicRaycaster>();

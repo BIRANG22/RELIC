@@ -13,15 +13,42 @@ public sealed class UIBlurReplicaSource
     private readonly List<TransformPair> transforms = new();
     private readonly List<MaskSync> masks = new();
     private bool originalRenderingHidden;
+    private int hierarchySignature;
 
     public UIBlurReplicaSource(Transform sourceRoot, RectTransform parent, Camera replicaCamera, int layer)
     {
         this.sourceRoot = sourceRoot;
         replicaRoot = CloneTransformTree(sourceRoot, parent, replicaCamera, layer, true);
         SyncNow();
+        hierarchySignature = CalculateHierarchySignature(sourceRoot);
     }
 
     public GameObject GameObject => replicaRoot != null ? replicaRoot.gameObject : null;
+
+    // Dynamic panel content may add/remove graphics after the replica was built.
+    // Transform state and sprite changes are handled by SyncNow; structural changes need a rebuild.
+    public bool NeedsRebuild => sourceRoot != null &&
+        hierarchySignature != CalculateHierarchySignature(sourceRoot);
+
+    private static int CalculateHierarchySignature(Transform root)
+    {
+        unchecked
+        {
+            if (root == null || root.name == SettingUpperName)
+                return 0;
+
+            int hash = 17;
+            hash = hash * 31 + root.GetInstanceID();
+            hash = hash * 31 + root.childCount;
+            Graphic graphic = root.GetComponent<Graphic>();
+            hash = hash * 31 + (graphic != null ? graphic.GetType().GetHashCode() : 0);
+            hash = hash * 31 + (root.GetComponent<Mask>() != null ? 1 : 0);
+            hash = hash * 31 + (root.GetComponent<RectMask2D>() != null ? 1 : 0);
+            for (int i = 0; i < root.childCount; i++)
+                hash = hash * 31 + CalculateHierarchySignature(root.GetChild(i));
+            return hash;
+        }
+    }
 
     public void SetVisible(bool visible)
     {
@@ -136,9 +163,9 @@ public sealed class UIBlurReplicaSource
         for (int i = 0; i < graphics.Count; i++)
             graphics[i].SetOriginalRenderingHidden(hidden);
 
-        for (int i = 0; i < masks.Count; i++)
-            masks[i].SetOriginalRenderingHidden(hidden);
-
+        // Keep original Mask and RectMask2D enabled. Their clipping must remain
+        // active even when the source graphics are hidden for blur rendering.
+        // The replica has its own synchronized mask components.
         originalRenderingHidden = hidden;
     }
 
@@ -472,14 +499,38 @@ public sealed class UIBlurReplicaSource
         {
             public int Count;
             public bool OriginalCull;
+            public float OriginalAlpha;
         }
 
         private static readonly Dictionary<CanvasRenderer, Entry> entries = new();
+        private static bool subscribed;
+
+        private static void EnsureSubscription()
+        {
+            if (subscribed) return;
+            Canvas.willRenderCanvases += EnforceHiddenRenderers;
+            subscribed = true;
+        }
+
+        // RectMask2D and UI rebuilds can reset CanvasRenderer.cull.
+        // Reapply both culling and zero alpha before each canvas render.
+        private static void EnforceHiddenRenderers()
+        {
+            foreach (KeyValuePair<CanvasRenderer, Entry> item in entries)
+            {
+                if (item.Key == null || item.Value.Count <= 0) continue;
+                item.Key.cull = true;
+                item.Key.SetAlpha(0f);
+            }
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void Reset()
         {
             entries.Clear();
+            if (subscribed)
+                Canvas.willRenderCanvases -= EnforceHiddenRenderers;
+            subscribed = false;
         }
 
         public static void Acquire(CanvasRenderer renderer)
@@ -487,18 +538,21 @@ public sealed class UIBlurReplicaSource
             if (renderer == null)
                 return;
 
+            EnsureSubscription();
             if (!entries.TryGetValue(renderer, out Entry entry))
             {
                 entry = new Entry
                 {
                     Count = 0,
-                    OriginalCull = renderer.cull
+                    OriginalCull = renderer.cull,
+                    OriginalAlpha = renderer.GetAlpha()
                 };
                 entries.Add(renderer, entry);
             }
 
             entry.Count++;
             renderer.cull = true;
+            renderer.SetAlpha(0f);
         }
 
         public static void Release(CanvasRenderer renderer)
@@ -510,10 +564,12 @@ public sealed class UIBlurReplicaSource
             if (entry.Count > 0)
             {
                 renderer.cull = true;
+                renderer.SetAlpha(0f);
                 return;
             }
 
             renderer.cull = entry.OriginalCull;
+            renderer.SetAlpha(entry.OriginalAlpha);
             entries.Remove(renderer);
         }
     }

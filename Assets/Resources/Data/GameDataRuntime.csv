@@ -1,10 +1,10 @@
 # Character
 캐릭터ID,이름,최대 HP,최대 Cost,Cost 회복량,자원최대치,자원타입,기본지급여부,해금조건,패시브스킬1,패시브스킬2,고유스킬1,고유스킬2,캐릭터스킬1,캐릭터스킬2,공유스킬1,공유스킬2,룬1,룬2,룬3,룬4,룬5,캐릭터소개
 CharacterId,Name,MaxHP,MaxCost,CostRecovery,MaxResource,ResourceType,IsDefaultProvided,UnlockCondition,PassiveSkill1,PassiveSkill2,UniqueSkill1,UniqueSkill2,CharacterSkill1,CharacterSkill2,CommonSkill1,CommonSkill2,Rune1,Rune2,Rune3,Rune4,Rune5,introduction
-Char_01,힐트,112,10,4,5,Karma,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_02,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,“강한 놈들이 득실거린다며? 그럼 내가 가야지.”
-Char_02,카야,100,12,4,5,Karma,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_03,S_Ability_04,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,“임무라면 완수한다. 그뿐이야.”
-Char_03,헤이즈,95,14,4,5,Karma,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_05,S_Ability_06,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,“정말 제가 가야 하는 건가요?”
-Char_04,이네스,105,11,4,5,Karma,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_07,S_Ability_08,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,“걱정하지 마세요. 모두 무사히 돌아갈 수 있도록 할게요.”
+Char_01,힐트,85,10,4,5,Karma,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_02,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,“강한 놈들이 득실거린다며? 그럼 내가 가야지.”
+Char_02,카야,72,12,4,5,Karma,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_03,S_Ability_04,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,“임무라면 완수한다. 그뿐이야.”
+Char_03,헤이즈,66,14,4,5,Karma,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_05,S_Ability_06,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,“정말 제가 가야 하는 건가요?”
+Char_04,이네스,75,11,4,5,Karma,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_07,S_Ability_08,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,“걱정하지 마세요. 모두 무사히 돌아갈 수 있도록 할게요.”
 Char_05,Char_05,88,12,4,5,Karma,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Unique_10,S_Ability_09,S_Ability_10,S_Public_17,S_Public_19,Rune_71,Rune_72,Rune_73,Rune_74,Rune_75,“그냥 내가 가고 싶어서 가는 거야.”
 Char_06,Char_06,,,,,,,
 ,,,,,,,,
@@ -594,9 +594,9 @@ Battlemap_T_02,Mon_04,28,-1,-1,-1,,,,,,,,,,,,,,,,,,,,
 # Event
 이벤트 ID,이벤트 이름,이벤트 본문,선택지 순서,선택지 이름,선택지 설명,선택 불가 설명,선택지 방식,선택 가능 조건,지불 자원 종류,비용 대상,비용 수치,주사위·코인 성공 기준,실행할 효과,효과 적용 대상,유물·기억 등급,효과 수치·수량,제시,연결 이벤트,실패 이벤트,실패 결과 타입,실패 결과 대상,실패 결과값,성공 시각적 객체,성공 시각적 동작,실패 시각적 객체,실패 시각적 동작
 EventId,EventName,Detail,ChoiceOrder,ChoiceName,ChoiceDesc,UnavailableChoiceDesc,ChoiceType,SelectCondition,CostType,CostTarget,CostValue,SuccessCondition,ResultType,ResultTarget,ResultRarity,ResultValue,OfferCount,NextEventId,FailNextEventId,FailResultType,FailResultTarget,FailResultValue,SuccessVisualObjectId,SuccessVisualActionId,FailureVisualObjectId,FailureVisualActionId
-Event_01,균열의 메아리,"""틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.""",1,{Party1Name}{이가} 빛을 받아들인다.,{Party1Name}의 기억 발현,,Immediate,,,,,,SelectReward,PartySlot1:Core,"Common:40,Rare:30,Epic:20,Unique:10",1,3,Event_01_A,,,,,event1,event_choice_01_success,event1,event_choice_01_success
-Event_01,,,2,{Party2Name}{이가} 빛을 받아들인다.,{Party2Name}의 기억 발현,,Immediate,,,,,,SelectReward,PartySlot2:Core,"Common:40,Rare:30,Epic:20,Unique:10",1,3,Event_01_A,,,,,event1,event_choice_02_success,event1,event_choice_02_success
-Event_01,,,3,{Party3Name}{이가} 빛을 받아들인다.,{Party3Name}의 기억 발현,,Immediate,,,,,,SelectReward,PartySlot3:Core,"Common:40,Rare:30,Epic:20,Unique:10",1,3,Event_01_A,,,,,event1,event_choice_03_success,event1,event_choice_03_success
+Event_01,균열의 메아리,"""틈 사이로 새어 나온 빛 속에서 희미한 기억의 흔적이 느껴진다.""",1,{Party1Name}{이가} 빛을 받아들인다.,{Party1Name}의 기억 발현,,Immediate,,,,,,SelectReward,PartySlot1:Core,"Common:47,Rare:38,Epic:12,Unique:3",1,3,Event_01_A,,,,,event1,event_choice_01_success,event1,event_choice_01_success
+Event_01,,,2,{Party2Name}{이가} 빛을 받아들인다.,{Party2Name}의 기억 발현,,Immediate,,,,,,SelectReward,PartySlot2:Core,"Common:47,Rare:38,Epic:12,Unique:3",1,3,Event_01_A,,,,,event1,event_choice_02_success,event1,event_choice_02_success
+Event_01,,,3,{Party3Name}{이가} 빛을 받아들인다.,{Party3Name}의 기억 발현,,Immediate,,,,,,SelectReward,PartySlot3:Core,"Common:47,Rare:38,Epic:12,Unique:3",1,3,Event_01_A,,,,,event1,event_choice_03_success,event1,event_choice_03_success
 Event_01_A,,"“빛이 서서히 사그라들고, 하늘에 열린 균열은 다시 고요해졌다.”",,,,,,,,,,,,,,,,,,,,,event1,,event1,
 Event_02,그림자 상인,“찾는 물건이라도 있나? 마음에 드는 게 있다면 골라보게.”,1,물건을 살펴본다.,상점 이용,,OpenUI,,,,,,OpenPanel,Shop,,,,Event_02_A,Event_02_B,,,,event2,event_choice_01_success,event2,event_choice_01_failure
 Event_02,,,2,거래하지 않는다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_02_C,,,,,event2,event_choice_02_success,event2,event_choice_02_failure

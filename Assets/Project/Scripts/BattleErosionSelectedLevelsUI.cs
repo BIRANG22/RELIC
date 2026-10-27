@@ -56,22 +56,28 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
     private string displayedSelectionSignature = string.Empty;
     private LobbyEquipPanelUI lobbyReadyPanel;
 
+    [Header("Battle Erosion Score")]
+    [Tooltip("Battle scene ErosionSelect/Erosion_Value. If empty, use the direct child.")]
+    [SerializeField] private TMP_Text battleErosionValueText;
+    private string battleScoreSignature;
+    private int displayedBattleScore = int.MinValue;
+
     private bool IsLobbySelect => gameObject.scene.name.ToLowerInvariant().Contains("lobby");
 
     [Header("Lobby Select Hover (Optional)")]
     [SerializeField] private Image selectHoverLine;
-    [SerializeField] private Color selectLineNormalColor = new Color32(0x83, 0x87, 0x8E, 0xFF);
+    [SerializeField] private Color selectLineNormalColor = new Color32(0x33, 0x33, 0x33, 0xFF);
     [SerializeField] private Color selectLineHoveredColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
     private bool lobbyBackHovered;
 
     internal void HandleLobbyBackPointerEnter()
     {
-        if (IsLobbySelect) SetLobbySelectHover(true);
+        SetLobbySelectHover(true);
     }
 
     internal void HandleLobbyBackPointerExit()
     {
-        if (IsLobbySelect) SetLobbySelectHover(false);
+        SetLobbySelectHover(false);
     }
 
     internal void HandleLobbyBackPointerClick(PointerEventData eventData)
@@ -88,29 +94,53 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
 
     private void RefreshLobbySelectLine()
     {
-        if (!IsLobbySelect) return;
         if (selectHoverLine == null)
         {
             Transform line = transform.Find("Line");
             if (line != null) selectHoverLine = line.GetComponent<Image>();
         }
-        if (selectHoverLine != null)
-            selectHoverLine.color = (isOpen || lobbyBackHovered) ? new Color32(0xA9, 0xB1, 0xBE, 0xFF) : selectLineNormalColor;
+        if (selectHoverLine == null) return;
+
+        // Battle UI uses a fixed palette, independent of previously serialized
+        // Inspector color values. Keep the lobby's existing configurable colors.
+        bool highlighted = isOpen || lobbyBackHovered || (!IsLobbySelect && IsBattlePointerOverSelect());
+        Color normal = IsLobbySelect ? selectLineNormalColor : new Color32(0x33, 0x33, 0x33, 0xFF);
+        Color hovered = IsLobbySelect ? selectLineHoveredColor : new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+        Color target = highlighted ? hovered : normal;
+        if (selectHoverLine.color != target)
+            selectHoverLine.color = target;
+    }
+
+    private bool IsBattlePointerOverSelect()
+    {
+        Transform back = transform.Find("Back");
+        RectTransform rect = (back != null ? back : transform) as RectTransform;
+        if (rect == null || !rect.gameObject.activeInHierarchy) return false;
+        Canvas canvas = rect.GetComponentInParent<Canvas>();
+        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera : null;
+        return RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition, camera);
+    }
+
+    private void LateUpdate()
+    {
+        if (!IsLobbySelect) RefreshLobbySelectLine();
     }
 
     private void EnsureLobbyClickTarget()
     {
-        if (!IsLobbySelect) return;
-
-        // Only the Back image should receive pointer input in the Ready panel.
-        Image selectImage = GetComponent<Image>();
-        if (selectImage != null) selectImage.raycastTarget = false;
+        // The lobby delegates clicks to Back. Battle already has its own click binding.
+        if (IsLobbySelect)
+        {
+            Image selectImage = GetComponent<Image>();
+            if (selectImage != null) selectImage.raycastTarget = false;
+        }
 
         Transform back = transform.Find("Back");
         if (back == null) return;
         Image backImage = back.GetComponent<Image>();
         if (backImage == null) return;
-        backImage.raycastTarget = true;
+        if (IsLobbySelect) backImage.raycastTarget = true;
 
         ErosionLobbyBackPointerRelay relay = back.GetComponent<ErosionLobbyBackPointerRelay>();
         if (relay == null) relay = back.gameObject.AddComponent<ErosionLobbyBackPointerRelay>();
@@ -135,12 +165,13 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
     private Coroutine animationRoutine;
     private bool isOpen;
 
-    private void Awake() { Bind(); EnsureLobbyClickTarget(); if (IsLobbySelect) SetLobbySelectHover(false); }
+    private void Awake() { Bind(); EnsureLobbyClickTarget(); SetLobbySelectHover(false); }
 
     private void Update()
     {
         UpdateTooltipHover();
         UpdateTooltipFade();
+        if (!IsLobbySelect) RefreshBattleErosionScore();
     }
 
     private void HandleLocaleChanged(Locale locale)
@@ -152,17 +183,57 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
     {
         Bind();
         EnsureLobbyClickTarget();
-        if (IsLobbySelect) SetLobbySelectHover(false);
+        SetLobbySelectHover(false);
         ResetList();
         BindLobbyReadyPanel();
+        if (!IsLobbySelect) RefreshBattleErosionScore(true);
     }
 
     private void OnDisable()
     {
-        if (IsLobbySelect) SetLobbySelectHover(false);
+        SetLobbySelectHover(false);
         UnbindLobbyReadyPanel();
         StopAnimation();
         ResetList();
+    }
+
+    // Keep the battle scene's own ErosionSelect/Erosion_Value current. Avoid
+    // scene-wide name searches which can bind a different Erosion_Value object.
+    private void RefreshBattleErosionScore(bool force = false)
+    {
+        if (IsLobbySelect) return;
+        if (battleErosionValueText == null)
+        {
+            Transform value = transform.Find("Erosion_Value");
+            if (value != null) battleErosionValueText = value.GetComponent<TMP_Text>();
+        }
+        if (battleErosionValueText == null) return;
+
+        DataManager manager = DataManager.Instance;
+        if (manager == null || manager.ErosionDatabase == null) return;
+        List<string> ids = manager.BattleRuntimeStore?.Get()?.SelectedErosionDifficultyIds;
+        if (ids == null || ids.Count == 0)
+            ids = manager.LobbyRuntimeStore?.GetOrCreate()?.SelectedErosionDifficultyIds;
+
+        string signature = ids == null ? string.Empty : string.Join("|", ids);
+        if (!force && signature == battleScoreSignature) return;
+        int score = 0;
+        if (ids != null)
+        {
+            foreach (string id in ids)
+            {
+                if (string.IsNullOrWhiteSpace(id)) continue;
+                if (manager.ErosionDatabase.TryGet(id, out ErosionData data) && data != null)
+                    score += data.Score;
+            }
+        }
+        battleScoreSignature = signature;
+        if (force || displayedBattleScore != score)
+        {
+            DisableFixedLocalizer(battleErosionValueText);
+            battleErosionValueText.text = score.ToString();
+            displayedBattleScore = score;
+        }
     }
 
     private void BindLobbyReadyPanel()
@@ -226,6 +297,7 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
         StopAnimation();
         ResetList();
         if (content == null || erosionLevelPrefab == null) return;
+        if (!IsLobbySelect) RefreshBattleErosionScore(true);
 
         DataManager manager = DataManager.Instance;
         if (manager == null || manager.ErosionDatabase == null) return;
@@ -237,17 +309,18 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
         if (ids == null && !IsLobbySelect) return;
         if (ids == null) ids = new List<string>();
 
-        // 템플릿은 Grid Layout Group에서 제외하고 복제본만 셀로 계산합니다.
+        // Preserve the Inspector GridLayoutGroup setup (Start Axis: Vertical,
+        // Constraint: Fixed Row Count, Count: 6 gives six items per column).
+        // Only instances of the template participate in the grid.
         erosionLevelPrefab.SetActive(false);
-        GridLayoutGroup grid = content.GetComponent<GridLayoutGroup>();
-        // In the lobby, respect the GridLayoutGroup configuration authored in the Inspector.
-        // Battle keeps its established five-per-column arrangement.
-        if (grid != null && !IsLobbySelect)
+        // In Battle, a Fixed Row Count grid must fill downward first.
+        // Preserve the Inspector's Constraint Count (e.g. 6) and other layout values.
+        if (!IsLobbySelect)
         {
-            grid.startCorner = GridLayoutGroup.Corner.LowerLeft;
-            grid.startAxis = GridLayoutGroup.Axis.Vertical;
-            grid.constraint = GridLayoutGroup.Constraint.FixedRowCount;
-            grid.constraintCount = 5;
+            GridLayoutGroup grid = content.GetComponent<GridLayoutGroup>();
+            if (grid != null && grid.constraint == GridLayoutGroup.Constraint.FixedRowCount &&
+                grid.startAxis != GridLayoutGroup.Axis.Vertical)
+                grid.startAxis = GridLayoutGroup.Axis.Vertical;
         }
 
         if (IsLobbySelect && ids.Count == 0)
