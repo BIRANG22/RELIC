@@ -289,8 +289,13 @@ public class BattleUnitAnimator : MonoBehaviour
         SpawnVfx(guardVfx);
     }
 
+    // 다단 공격의 두 번째 타격부터는 피격 모션과 VFX만 생략합니다.
+    public bool SuppressRepeatedMultiHitReaction { get; set; }
+
     public void PlayHit()
     {
+        if (SuppressRepeatedMultiHitReaction)
+            return;
         ApplyPresentationPlaybackSpeed();
         PlayState(hitStateName);
         TriggerHitFlash(hitStateFlashValue, hitFlashDuration);

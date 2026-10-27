@@ -1922,19 +1922,19 @@ public class BattleActionRunner
         if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
             yield break;
 
-        if (BattleSkillNamePopupPresentation.ShouldShow(command))
-        {
-            BattleSkillTextPopupUI.Show(
-                attacker.transform,
-                BattleSkillNamePopupPresentation.GetDisplayName(command));
-        }
-
         if (onPlayerSkillStarted != null)
         {
             IEnumerator skillStartPresentation = onPlayerSkillStarted.Invoke(command);
 
             if (skillStartPresentation != null)
                 yield return skillStartPresentation;
+        }
+
+        if (BattleSkillNamePopupPresentation.ShouldShow(command))
+        {
+            BattleSkillTextPopupUI.Show(
+                attacker.transform,
+                BattleSkillNamePopupPresentation.GetDisplayName(command));
         }
 
         // E_Move가 첫 피해 효과보다 먼저인 Direction 스킬은 예약 단계에서 이미
@@ -2505,153 +2505,180 @@ public class BattleActionRunner
         if (isMultiHit && attackerAnimator != null)
             attackerAnimator.SetPlaybackSpeed(multiHitAnimationSpeed);
 
-        for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
+        // 다단 공격의 첫 피격 연출만 허용합니다. 피해 계산과 피해 숫자는 매 타격 유지합니다.
+        List<BattleUnitAnimator> monsterHitAnimators = new();
+        if (isMultiHit && monsterTargets != null)
         {
-
-            if (attackerAnimator != null)
+            foreach (MonsterUnit target in monsterTargets)
             {
-                attackerAnimator.PlaySkillAction(command, hitIndex);
-
-                // 각 행동의 첫 타에 Prepare가 있으면 Runner도 그 시간을 실제 행동 시간으로 보장합니다.
-                // 그래야 연속 행동에서도 a -> b / a -> b처럼 다음 행동의 Prepare가 Action에 덮이지 않습니다.
-                float prepareWaitDuration = attackerAnimator.LastScheduledPrepareWaitDuration;
-                if (prepareWaitDuration > 0f)
-                    yield return new WaitForSeconds(prepareWaitDuration);
-
-                // Target VFX도 Prepare가 끝난 뒤 Action 시점에 재생합니다.
-                yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
-            }
-
-            // 연타 내부 타격 간격은 일반 ActionDelay와 분리합니다.
-            // 연속행동 배율은 이 값에 적용되지 않고, 연타 배율만 적용됩니다.
-            float hitActionDelay = isMultiHit
-                ? multiHitActionInterval / multiHitAnimationSpeed
-                : ActionDelay;
-            yield return new WaitForSeconds(
-                GetActiveActionBeatDelay(hitActionDelay));
-
-            PlayTargetUnitVfxOnMonsterTargets(
-                attackerAnimator,
-                command,
-                monsterTargets,
-                allowPlayOncePerActionCues: hitIndex <= 0);
-
-            List<Transform> feedbackTargets = new();
-            bool appliedAnyHit = false;
-
-            MonsterUnit randomTarget = effectId == "E_RandomStrike"
-                ? PickRandomAliveMonster(monsterTargets)
-                : null;
-
-            for (int i = 0; i < monsterTargets.Count; i++)
-            {
-                MonsterUnit monster = monsterTargets[i];
-
-                if (!IsAliveMonsterTarget(monster))
-                    continue;
-                if (randomTarget != null && monster != randomTarget)
-                    continue;
-                if (effectId == "E_StrikeCountByDebuff" &&
-                    hitIndex >= NewSkillEffectRules.ResolveConditionalHitCount(
-                        count,
-                        CountHarmfulEffectTypes(monster.RuntimeData?.StatusEffects)))
-                {
-                    continue;
-                }
-
-                FaceMonsterToAttacker(monster, caster);
-
-                BattleEffectContext context = CreatePlayerMonsterEffectContext(
-                    caster,
-                    monster,
-                    command,
-                    effectId,
-                    value,
-                    effectParameterCount);
-
-                int hpBeforeHit = monster.RuntimeData != null
-                    ? monster.RuntimeData.CurrentHP
-                    : 0;
-                int shieldBeforeHit = monster.RuntimeData != null
-                    ? monster.RuntimeData.CurrentShield
-                    : 0;
-
-                ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
-                appliedAnyHit = true;
-                AddFeedbackTarget(feedbackTargets, monster.transform);
-
-                bool receivedDamage = monster.RuntimeData != null &&
-                    (monster.RuntimeData.CurrentHP < hpBeforeHit ||
-                     monster.RuntimeData.CurrentShield < shieldBeforeHit);
-
-                // 드라우그는 플레이어의 공격 스킬에 실제로 피격된 경우에만 반격 후보가 됩니다.
-                // 다단 공격은 타격마다 반격하지 않고, 해당 스킬의 모든 타격이 끝난 뒤 한 번만 반격합니다.
-                if (receivedDamage &&
-                    monster.RuntimeData != null &&
-                    !monster.RuntimeData.IsDead &&
-                    HasActiveMonsterCounter(monster.RuntimeData))
-                {
-                    draugrCounterCandidates.Add(monster);
-                }
-
-                bool shouldSplit = receivedDamage &&
-                    statusEffectService.ApplySplitHitAndCheckTrigger(monster);
-
-                if (shouldSplit)
-                {
-                    deathService.HandleMuckSplit(monster);
-                    continue;
-                }
-
-                if (monster.RuntimeData != null && monster.RuntimeData.IsDead)
-                    deathService.HandleMonsterDead(monster);
-            }
-
-            appliedAnyHit |= ApplyPlayerDamageHitToGridEffects(
-                gridEffectTargets,
-                Mathf.Max(0, value));
-
-            hudService.RefreshHUDs();
-
-            if (!appliedAnyHit && hitIndex == 0)
-            {
-                // 빈 공간 공격도 연타 모션은 끝까지 재생하되,
-                // 공격 빗나감 보상은 한 공격 행동에 한 번만 적용합니다.
-                BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
-            }
-
-            bool playCameraImpact = appliedAnyHit && ShouldPlayCameraImpactForHit(hitIndex, hitCount);
-            bool playPushFeedback = ShouldPlayExternalImpactForHit(hitIndex, hitCount);
-
-            if (playCameraImpact)
-            {
-                if (ShouldSkipPlayerSkillCamera(command))
-                {
-                    yield return PlayRangedDamageCameraFeedback();
-                }
-                else if (playPushFeedback)
-                {
-                    yield return PlayDamageHitFeedback(
-                        caster != null ? caster.transform : null,
-                        feedbackTargets,
-                        command.Direction);
-                }
-                else
-                {
-                    yield return PlayDamageCameraFeedback();
-                }
-            }
-
-            if (hitIndex >= hitCount - 1)
-            {
-                float endDelay = playCameraImpact ? HitCameraDelay : ActionDelay;
-                yield return new WaitForSeconds(endDelay / GetActivePresentationSpeed());
+                if (target == null) continue;
+                BattleUnitAnimator targetAnimator = target.GetComponent<BattleUnitAnimator>();
+                if (targetAnimator != null && !monsterHitAnimators.Contains(targetAnimator))
+                    monsterHitAnimators.Add(targetAnimator);
             }
         }
 
-        if (isMultiHit && attackerAnimator != null)
-            attackerAnimator.RestorePlaybackSpeed();
+        try
+        {
+            for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
+            {
+                if (isMultiHit)
+                {
+                    foreach (BattleUnitAnimator targetAnimator in monsterHitAnimators)
+                        if (targetAnimator != null)
+                            targetAnimator.SuppressRepeatedMultiHitReaction = hitIndex > 0;
+                }
 
+                if (attackerAnimator != null)
+                {
+                    attackerAnimator.PlaySkillAction(command, hitIndex);
+
+                    // 각 행동의 첫 타에 Prepare가 있으면 Runner도 그 시간을 실제 행동 시간으로 보장합니다.
+                    // 그래야 연속 행동에서도 a -> b / a -> b처럼 다음 행동의 Prepare가 Action에 덮이지 않습니다.
+                    float prepareWaitDuration = attackerAnimator.LastScheduledPrepareWaitDuration;
+                    if (prepareWaitDuration > 0f)
+                        yield return new WaitForSeconds(prepareWaitDuration);
+
+                    // Target VFX도 Prepare가 끝난 뒤 Action 시점에 재생합니다.
+                    yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
+                }
+
+                // 연타 내부 타격 간격은 일반 ActionDelay와 분리합니다.
+                // 연속행동 배율은 이 값에 적용되지 않고, 연타 배율만 적용됩니다.
+                float hitActionDelay = isMultiHit
+                    ? multiHitActionInterval / multiHitAnimationSpeed
+                    : ActionDelay;
+                yield return new WaitForSeconds(
+                    GetActiveActionBeatDelay(hitActionDelay));
+
+                PlayTargetUnitVfxOnMonsterTargets(
+                    attackerAnimator,
+                    command,
+                    monsterTargets,
+                    allowPlayOncePerActionCues: hitIndex <= 0);
+
+                List<Transform> feedbackTargets = new();
+                bool appliedAnyHit = false;
+
+                MonsterUnit randomTarget = effectId == "E_RandomStrike"
+                    ? PickRandomAliveMonster(monsterTargets)
+                    : null;
+
+                for (int i = 0; i < monsterTargets.Count; i++)
+                {
+                    MonsterUnit monster = monsterTargets[i];
+
+                    if (!IsAliveMonsterTarget(monster))
+                        continue;
+                    if (randomTarget != null && monster != randomTarget)
+                        continue;
+                    if (effectId == "E_StrikeCountByDebuff" &&
+                        hitIndex >= NewSkillEffectRules.ResolveConditionalHitCount(
+                            count,
+                            CountHarmfulEffectTypes(monster.RuntimeData?.StatusEffects)))
+                    {
+                        continue;
+                    }
+
+                    FaceMonsterToAttacker(monster, caster);
+
+                    BattleEffectContext context = CreatePlayerMonsterEffectContext(
+                        caster,
+                        monster,
+                        command,
+                        effectId,
+                        value,
+                        effectParameterCount);
+
+                    int hpBeforeHit = monster.RuntimeData != null
+                        ? monster.RuntimeData.CurrentHP
+                        : 0;
+                    int shieldBeforeHit = monster.RuntimeData != null
+                        ? monster.RuntimeData.CurrentShield
+                        : 0;
+
+                    ExecutePlayerEffectSafely(effectId, context, command.SkillData.SkillId);
+                    appliedAnyHit = true;
+                    AddFeedbackTarget(feedbackTargets, monster.transform);
+
+                    bool receivedDamage = monster.RuntimeData != null &&
+                        (monster.RuntimeData.CurrentHP < hpBeforeHit ||
+                         monster.RuntimeData.CurrentShield < shieldBeforeHit);
+
+                    // 드라우그는 플레이어의 공격 스킬에 실제로 피격된 경우에만 반격 후보가 됩니다.
+                    // 다단 공격은 타격마다 반격하지 않고, 해당 스킬의 모든 타격이 끝난 뒤 한 번만 반격합니다.
+                    if (receivedDamage &&
+                        monster.RuntimeData != null &&
+                        !monster.RuntimeData.IsDead &&
+                        HasActiveMonsterCounter(monster.RuntimeData))
+                    {
+                        draugrCounterCandidates.Add(monster);
+                    }
+
+                    bool shouldSplit = receivedDamage &&
+                        statusEffectService.ApplySplitHitAndCheckTrigger(monster);
+
+                    if (shouldSplit)
+                    {
+                        deathService.HandleMuckSplit(monster);
+                        continue;
+                    }
+
+                    if (monster.RuntimeData != null && monster.RuntimeData.IsDead)
+                        deathService.HandleMonsterDead(monster);
+                }
+
+                appliedAnyHit |= ApplyPlayerDamageHitToGridEffects(
+                    gridEffectTargets,
+                    Mathf.Max(0, value));
+
+                hudService.RefreshHUDs();
+
+                if (!appliedAnyHit && hitIndex == 0)
+                {
+                    // 빈 공간 공격도 연타 모션은 끝까지 재생하되,
+                    // 공격 빗나감 보상은 한 공격 행동에 한 번만 적용합니다.
+                    BattleEquipmentEffectService.TryApplyAttackMissCharge(command.UserRuntime);
+                }
+
+                bool playCameraImpact = appliedAnyHit && ShouldPlayCameraImpactForHit(hitIndex, hitCount);
+                bool playPushFeedback = ShouldPlayExternalImpactForHit(hitIndex, hitCount);
+
+                if (playCameraImpact)
+                {
+                    if (ShouldSkipPlayerSkillCamera(command))
+                    {
+                        yield return PlayRangedDamageCameraFeedback();
+                    }
+                    else if (playPushFeedback)
+                    {
+                        yield return PlayDamageHitFeedback(
+                            caster != null ? caster.transform : null,
+                            feedbackTargets,
+                            command.Direction);
+                    }
+                    else
+                    {
+                        yield return PlayDamageCameraFeedback();
+                    }
+                }
+
+                if (hitIndex >= hitCount - 1)
+                {
+                    float endDelay = playCameraImpact ? HitCameraDelay : ActionDelay;
+                    yield return new WaitForSeconds(endDelay / GetActivePresentationSpeed());
+                }
+            }
+
+        }
+        finally
+        {
+            foreach (BattleUnitAnimator targetAnimator in monsterHitAnimators)
+                if (targetAnimator != null)
+                    targetAnimator.SuppressRepeatedMultiHitReaction = false;
+            if (isMultiHit && attackerAnimator != null)
+                attackerAnimator.RestorePlaybackSpeed();
+        }
     }
 
     // 몬스터가 E_Counter 상태를 보유할 때만 피격 후 반격을 수행합니다.

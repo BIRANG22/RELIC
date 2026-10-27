@@ -923,6 +923,34 @@ public class BattleRoomLoader : MonoBehaviour
         new BattlePassiveSkillService().RefreshAllPlayerPassives();
     }
 
+    // 턴 종료 상태효과(충전 등)가 마나를 먼저 회복하므로,
+    // 상태효과 적용 전의 마나를 저장해 기본 재생량과 합산된 팝업을 표시합니다.
+    private readonly Dictionary<string, int> turnEndCostBeforeEffects = new Dictionary<string, int>();
+
+    public void CaptureTurnEndCostBaseline()
+    {
+        turnEndCostBeforeEffects.Clear();
+        if (DataManager.Instance == null)
+            return;
+
+        PartyRuntimeStore partyStore = DataManager.Instance.PartyRuntimeStore;
+        if (partyStore == null)
+            return;
+
+        for (int i = 0; i < partyStore.MaxPartyCountValue; i++)
+        {
+            string characterId = partyStore.GetCharacterId(i);
+            if (string.IsNullOrWhiteSpace(characterId))
+                continue;
+
+            if (DataManager.Instance.CharacterRuntimeStore.TryGet(characterId, out CharacterRuntimeData runtimeData) &&
+                runtimeData != null && !runtimeData.IsDead)
+            {
+                turnEndCostBeforeEffects[characterId] = runtimeData.CurrentCost;
+            }
+        }
+    }
+
     public void RecoverPlayerCostsToMax()
     {
         if (DataManager.Instance == null)
@@ -972,7 +1000,10 @@ public class BattleRoomLoader : MonoBehaviour
                     runtimeData.CurrentCost + totalRecovery
                 );
 
-            int recoveredCost = Mathf.Max(0, runtimeData.CurrentCost - costBefore);
+            int costBeforeTurnEnd = turnEndCostBeforeEffects.TryGetValue(characterId, out int baseline)
+                ? baseline
+                : costBefore;
+            int recoveredCost = Mathf.Max(0, runtimeData.CurrentCost - costBeforeTurnEnd);
             if (recoveredCost > 0)
             {
                 BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
@@ -992,6 +1023,7 @@ public class BattleRoomLoader : MonoBehaviour
             }
         }
 
+        turnEndCostBeforeEffects.Clear();
         RefreshPlayerHUDs();
 
         if (skillListPanel != null)
