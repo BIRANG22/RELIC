@@ -847,9 +847,13 @@ namespace Relic.Gameplay.Data
                             candidates.Add((i, j));
 
                 // At most 16 candidates (4x4), so exhaustive search is inexpensive.
-                // Prefer layouts with more routes, choosing randomly among equal best ones.
-                int bestEdgeCount = -1;
-                List<int> bestMasks = new();
+                // Explore all non-crossing layouts that cover every node. Choosing only
+                // maximum-edge layouts can force forbidden room sequences.
+                // Keep a modest preference for more connections without excluding
+                // valid sparser layouts.
+                List<int> validMasks = new();
+                List<int> validWeights = new();
+                int totalWeight = 0;
                 for (int mask = 1; mask < (1 << candidates.Count); mask++)
                 {
                     int fromCoverage = 0, toCoverage = 0, edgeCount = 0;
@@ -876,17 +880,25 @@ namespace Relic.Gameplay.Data
                     if (crosses || fromCoverage != (1 << from.Count) - 1 ||
                         toCoverage != (1 << to.Count) - 1)
                         continue;
-                    if (edgeCount > bestEdgeCount)
-                    {
-                        bestEdgeCount = edgeCount;
-                        bestMasks.Clear();
-                    }
-                    if (edgeCount == bestEdgeCount)
-                        bestMasks.Add(mask);
+                    validMasks.Add(mask);
+                    // Prefer richer routes while still permitting sparse valid connections.
+                    int weight = edgeCount * edgeCount;
+                    validWeights.Add(weight);
+                    totalWeight += weight;
                 }
-                if (bestMasks.Count == 0)
+                if (validMasks.Count == 0)
                     return false;
-                int selected = bestMasks[BattleRandom.Range(0, bestMasks.Count)];
+                int roll = BattleRandom.Range(0, totalWeight);
+                int selected = validMasks[validMasks.Count - 1];
+                for (int i = 0; i < validMasks.Count; i++)
+                {
+                    roll -= validWeights[i];
+                    if (roll < 0)
+                    {
+                        selected = validMasks[i];
+                        break;
+                    }
+                }
                 for (int e = 0; e < candidates.Count; e++)
                 {
                     if ((selected & (1 << e)) == 0) continue;
