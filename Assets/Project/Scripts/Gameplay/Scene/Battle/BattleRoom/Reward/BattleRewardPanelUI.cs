@@ -900,9 +900,9 @@ public class BattleRewardPanelUI : MonoBehaviour
             return true;
 
         ShowWarning(string.Format(
-            GameLocalization.Get(
-                "battle.bag_full_unique_item_limit"),
-            MaxBagItemCount));
+            GameLocalization.Get("battle.bag_full_unique_item_limit"), MaxBagItemCount));
+        // The blocked reward remains claimable after the player discards an item.
+        BattleBagPanelUI.OpenBattleBagForFullReward();
         return false;
     }
 

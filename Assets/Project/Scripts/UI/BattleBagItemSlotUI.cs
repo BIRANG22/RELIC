@@ -21,6 +21,8 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
     [SerializeField] private GameObject filledRoot;
     [SerializeField] private Button button;
 
+    private int lastClickHandledFrame = -1;
+
     private string itemId;
     private int quantity;
     private Action<BattleBagItemSlotUI> onFocus;
@@ -471,6 +473,15 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         return null;
     }
 
+    private void InvokeItemClickOnce()
+    {
+        // Button.onClick and IPointerClickHandler may both fire for one press.
+        if (lastClickHandledFrame == Time.frameCount)
+            return;
+        lastClickHandledFrame = Time.frameCount;
+        onClick?.Invoke(this);
+    }
+
     private void HandleButtonClick()
     {
         if (UIPanelButton.IsMenuPanelOpen)
@@ -479,7 +490,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         if (!HasItem)
             return;
 
-        onClick?.Invoke(this);
+        InvokeItemClickOnce();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -514,9 +525,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
-        if (!HasItem)
-            return;
-
-        onClick?.Invoke(this);
+        // Empty slots still report a click so the bag can clear its selection.
+        InvokeItemClickOnce();
     }
 }
