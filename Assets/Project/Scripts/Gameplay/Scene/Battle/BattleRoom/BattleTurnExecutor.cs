@@ -670,6 +670,10 @@ public class BattleTurnExecutor : MonoBehaviour
             // 턴 종료 회복 팝업은 모두 모은 뒤 카르마 -> 마나 -> 체력 순으로 차례대로 표시합니다.
             BattleDamageTextPopupUI.BeginRecoveryPopupSequence();
 
+            // 충전 등의 턴 종료 마나 회복을 다음 기본 재생 팝업에 함께 표시합니다.
+            if (roomLoader != null)
+                roomLoader.CaptureTurnEndCostBaseline();
+
             int phaseVersionBeforeEndEffects = ArabellaPhaseTransition.TurnInterruptVersion;
             yield return runner.ApplyTurnEndEffectsRoutine();
 
