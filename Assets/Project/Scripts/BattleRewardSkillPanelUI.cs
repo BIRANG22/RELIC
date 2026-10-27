@@ -210,6 +210,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private int clickedCardIndex = -1;
     private readonly Button[] buttons = new Button[3];
     private readonly string[] characterIds = new string[3];
+    private string battleOfferCharacterId;
     private readonly SkillMasterData[] offeredSkills = new SkillMasterData[3];
     private readonly GameObject[] activeRarityVfx = new GameObject[3];
     private readonly Coroutine[] pendingRarityVfx = new Coroutine[3];
@@ -342,7 +343,8 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             ClearCard(card);
             SkillMasterData choice = offeredSkills[i];
             if (choice == null) continue;
-            characterIds[i] = ResolveOwner(choice);
+            characterIds[i] = !string.IsNullOrWhiteSpace(battleOfferCharacterId)
+                ? battleOfferCharacterId : ResolveOwner(choice);
             BindCard(card, string.IsNullOrWhiteSpace(choice.CharacterId) || string.Equals(choice.CharacterId, "ALL", StringComparison.OrdinalIgnoreCase) ? characterIds[i] : choice.CharacterId, choice, data);
             // Assign the sprite and initialize the material before the card becomes visible.
             PrepareCardDissolve(i, card, choice.Rarity);
@@ -1775,12 +1777,13 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         BindPartyContent();
     }
 
-    // Collect eligible memories from all registered party members, then draw three unique IDs.
+    // For battle rewards, choose one party character and offer up to three unique memories for that character.
     // The event reward source carries the selection filter; a random memory is not
     // restricted to the rarity of the placeholder skill selected by the event system.
     private List<SkillMasterData> BuildOffers(SkillMasterData rewardSkill, BattleRewardData rewardData)
     {
         List<SkillMasterData> offers = new List<SkillMasterData>();
+        battleOfferCharacterId = null;
         DataManager dm = DataManager.Instance;
         if (dm?.SkillDatabase == null || dm.PartyRuntimeStore == null) return offers;
 
@@ -1813,7 +1816,25 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         }
         if (party.Count == 0) return offers;
 
+        // Favor party members with fewer equipped core memories.
+        // Slot 0 is the default skill and does not count as an acquired memory.
+        // The selected character will own all three offered memories.
+        List<string> eligibleOwners = new List<string>();
+        for (int i = 0; i < 3; i++)
+        {
+            string id = dm.PartyRuntimeStore.GetCharacterId(i)?.Trim();
+            if (!string.IsNullOrWhiteSpace(id) && party.Contains(id) && !eligibleOwners.Contains(id))
+                eligibleOwners.Add(id);
+        }
+        if (eligibleOwners.Count == 0) return offers;
+
+        // Battle drops draw from the character's full memory catalogue.  Inventory
+        // history must not accidentally narrow the pool to a single rarity.
+        // Currently equipped memories are excluded to avoid unusable reward cards.
+        string source = rewardData?.SourceKey ?? string.Empty;
+        bool isBattleDrop = source.StartsWith("Skill|", StringComparison.OrdinalIgnoreCase);
         HashSet<string> acquired = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> equipped = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         BattleRuntimeData runtime = dm.BattleRuntimeStore?.GetOrCreate();
         if (runtime?.AcquiredSkillIds != null)
             foreach (string id in runtime.AcquiredSkillIds) BlockSkillAndVariant(acquired, id);
@@ -1824,25 +1845,33 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             {
                 if (character == null) continue;
                 if (character.EquippedSkillIds != null)
-                    foreach (string id in character.EquippedSkillIds) BlockSkillAndVariant(acquired, id);
+                    foreach (string id in character.EquippedSkillIds)
+                    {
+                        BlockSkillAndVariant(acquired, id);
+                        BlockSkillAndVariant(equipped, id);
+                    }
             }
 
-        string source = rewardData?.SourceKey ?? string.Empty;
-        bool allRarities = source.Contains("|AnyRarity|") || source.Contains("|Attack|") ||
+        // Battle drops roll from all available rarities; the map percentages are
+        // per-memory selection weights rather than a preselected rarity restriction.
+        bool allRarities = isBattleDrop || source.Contains("|AnyRarity|") || source.Contains("|Attack|") ||
             source.Contains("|Buff|") || source.Contains("|Debuff|");
         bool commonRare = source.Contains("|CommonToRare|");
         SkillType? typeFilter = source.Contains("|Attack|") ? SkillType.Attack :
             source.Contains("|Buff|") ? SkillType.Buff :
             source.Contains("|Debuff|") ? SkillType.Debuff : (SkillType?)null;
 
-        List<SkillMasterData> candidates = new List<SkillMasterData>();
-        HashSet<string> seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        // Build a separate pool per character before making the weighted roll.
+        // This avoids selecting a character who cannot receive any memory.
+        Dictionary<string, List<SkillMasterData>> pools = new Dictionary<string, List<SkillMasterData>>(StringComparer.OrdinalIgnoreCase);
+        foreach (string id in eligibleOwners)
+            pools[id] = new List<SkillMasterData>();
         foreach (SkillMasterData skill in dm.SkillDatabase.GetAll())
         {
             if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId) || skill.Category != Category.Core ||
                 !SkillRarityUtility.IsCoreDropRarity(skill.Rarity) ||
                 !SkillRarityUtility.IsBaseSkillVariant(skill.SkillId) ||
-                acquired.Contains(skill.SkillId.Trim()) || !seen.Add(skill.SkillId.Trim())) continue;
+                (isBattleDrop ? equipped.Contains(skill.SkillId.Trim()) : acquired.Contains(skill.SkillId.Trim()))) continue;
             if (typeFilter.HasValue && skill.SkillType != typeFilter.Value) continue;
             if (commonRare)
             {
@@ -1850,20 +1879,93 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             }
             else if (!allRarities && skill.Rarity != rewardSkill.Rarity) continue;
 
-            string owner = skill.CharacterId?.Trim();
-            if (!string.Equals(owner, "ALL", StringComparison.OrdinalIgnoreCase) &&
-                (string.IsNullOrWhiteSpace(owner) || !party.Contains(owner))) continue;
-            if (ResolveOwner(skill) == null) continue;
-            candidates.Add(skill);
+            foreach (string id in eligibleOwners)
+                if (SkillOwnershipPolicy.CanEquip(skill, id))
+                    pools[id].Add(skill);
         }
-        Debug.Log($"[BattleRewardSkillPanelUI] Source={source}, Rarity={rewardSkill.Rarity}, Party={string.Join(",", party)}, Pool={candidates.Count}");
+
+        // Prefer characters with at least three obtainable memories when possible.
+        // A battle drop uses the full memory catalogue, excluding only memories
+        // currently equipped by the selected owner (handled by the equip UI).
+        bool hasFullOfferPool = eligibleOwners.Exists(id => pools[id].Count >= 3);
+        float totalWeight = 0f;
+        foreach (string id in eligibleOwners)
+        {
+            if (pools[id].Count == 0 || (hasFullOfferPool && pools[id].Count < 3)) continue;
+            CharacterRuntimeData character;
+            if (!dm.CharacterRuntimeStore.TryGet(id, out character) || character == null) continue;
+            int equippedMemoryCount = 0;
+            if (character.EquippedSkillIds != null)
+                for (int slot = 1; slot < character.EquippedSkillIds.Length; slot++)
+                    if (!string.IsNullOrWhiteSpace(character.EquippedSkillIds[slot])) equippedMemoryCount++;
+            // 0 / 1 / 2 / 3 equipped memories => weights 1 / 0.5 / 0.333 / 0.25.
+            totalWeight += 1f / (1f + equippedMemoryCount);
+        }
+        if (totalWeight <= 0f) return offers;
+        float roll = UnityEngine.Random.value * totalWeight;
+        foreach (string id in eligibleOwners)
+        {
+            if (pools[id].Count == 0 || (hasFullOfferPool && pools[id].Count < 3)) continue;
+            CharacterRuntimeData character;
+            if (!dm.CharacterRuntimeStore.TryGet(id, out character) || character == null) continue;
+            int count = 0;
+            if (character.EquippedSkillIds != null)
+                for (int slot = 1; slot < character.EquippedSkillIds.Length; slot++)
+                    if (!string.IsNullOrWhiteSpace(character.EquippedSkillIds[slot])) count++;
+            roll -= 1f / (1f + count);
+            battleOfferCharacterId = id;
+            if (roll <= 0f) break;
+        }
+        if (string.IsNullOrWhiteSpace(battleOfferCharacterId)) return offers;
+        List<SkillMasterData> candidates = pools[battleOfferCharacterId];
+        if (isBattleDrop && candidates.Count < 3)
+            Debug.LogWarning($"[BattleRewardSkillPanelUI] Only {candidates.Count} core memories found for {battleOfferCharacterId}. Check SkillMaster core entries and ownership.");
+        BattleMapData dropSettings = null;
+        if (isBattleDrop && dm.BattleMapDatabase != null)
+        {
+            string[] sourceParts = source.Split('|');
+            if (sourceParts.Length > 1 && !string.IsNullOrWhiteSpace(sourceParts[1]))
+                dropSettings = dm.BattleMapDatabase.GetDropSettings(sourceParts[1]);
+        }
         while (offers.Count < 3 && candidates.Count > 0)
         {
-            int index = UnityEngine.Random.Range(0, candidates.Count);
+            int index = isBattleDrop && dropSettings != null
+                ? RollMemoryIndexByRarityWeight(candidates, dropSettings)
+                : UnityEngine.Random.Range(0, candidates.Count);
             offers.Add(candidates[index]);
             candidates.RemoveAt(index);
         }
         return offers;
+    }
+
+    // Draw each available memory independently without replacement. A rarity weight
+    // influences each candidate's chance; it does not filter the pool beforehand.
+    private static int RollMemoryIndexByRarityWeight(List<SkillMasterData> candidates, BattleMapData settings)
+    {
+        float total = 0f;
+        foreach (SkillMasterData candidate in candidates)
+            total += GetMemoryRarityWeight(candidate.Rarity, settings);
+        if (total <= 0f) return UnityEngine.Random.Range(0, candidates.Count);
+
+        float roll = UnityEngine.Random.value * total;
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            roll -= GetMemoryRarityWeight(candidates[i].Rarity, settings);
+            if (roll <= 0f) return i;
+        }
+        return candidates.Count - 1;
+    }
+
+    private static float GetMemoryRarityWeight(SkillRarity rarity, BattleMapData settings)
+    {
+        switch (rarity)
+        {
+            case SkillRarity.Common: return Mathf.Max(0f, settings.MemoryCommonChance);
+            case SkillRarity.Rare: return Mathf.Max(0f, settings.MemoryRareChance);
+            case SkillRarity.Epic: return Mathf.Max(0f, settings.MemoryEpicChance);
+            case SkillRarity.Unique: return Mathf.Max(0f, settings.MemoryUniqueChance);
+            default: return 0f;
+        }
     }
 
     private static void BlockSkillAndVariant(HashSet<string> blocked, string skillId)
