@@ -180,7 +180,26 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
 
         EnsureUiBlurTexture();
 
-        if (replicaDirty)
+        // Refresh runtime sprites, colors, masks and canvas groups every frame.
+        // Rebuild only when child graphics have been added or removed.
+        bool hierarchyChanged = false;
+        foreach (KeyValuePair<GameObject, UIBlurReplicaSource> pair in replicas)
+        {
+            if (!pair.Value.NeedsRebuild)
+                continue;
+
+            hierarchyChanged = true;
+            break;
+        }
+
+        if (hierarchyChanged)
+        {
+            RebuildChangedReplicas();
+            replicaDirty = true;
+        }
+
+        // Keep dynamic UI graphics synchronized every frame, including explicit invalidations.
+        if (replicaDirty || replicas.Count > 0)
             SyncReplicas();
 
         Apply(activeRequester);
@@ -565,6 +584,37 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
     {
         foreach (KeyValuePair<GameObject, UIBlurReplicaSource> pair in replicas)
             pair.Value.SetVisible(visibleSources != null && visibleSources.Contains(pair.Key));
+    }
+
+    private void RebuildChangedReplicas()
+    {
+        if (blurReplicaCanvas == null)
+            return;
+
+        List<GameObject> changedSources = new();
+        foreach (KeyValuePair<GameObject, UIBlurReplicaSource> pair in replicas)
+        {
+            if (pair.Value.NeedsRebuild)
+                changedSources.Add(pair.Key);
+        }
+
+        for (int i = 0; i < changedSources.Count; i++)
+        {
+            GameObject source = changedSources[i];
+            UIBlurReplicaSource oldReplica = replicas[source];
+            oldReplica.Destroy();
+            if (source != null)
+            {
+                UIBlurReplicaSource newReplica = new(source.transform,
+                    blurReplicaCanvas.transform as RectTransform, uiBlurCamera, UIBlurLayer);
+                replicas[source] = newReplica;
+                newReplica.SetVisible(true);
+            }
+            else
+            {
+                replicas.Remove(source);
+            }
+        }
     }
 
     private void SyncReplicas()

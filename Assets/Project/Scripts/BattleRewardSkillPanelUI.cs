@@ -12,6 +12,7 @@ using UnityEngine.EventSystems;
 public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 {
     [SerializeField] private Color commonColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    [SerializeField] private Color exclusiveTooltipLineColor = Color.white;
     [SerializeField] private Color rareColor = new Color32(0x52, 0x86, 0xC7, 0xFF);
     [SerializeField] private Color epicColor = new Color32(0xA0, 0x72, 0xC2, 0xFF);
     [SerializeField] private Color uniqueColor = new Color32(0xCD, 0xA4, 0x52, 0xFF);
@@ -104,9 +105,55 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     [SerializeField] private Transform charContent;
     [SerializeField] private PartyCardReferences[] partyCards = new PartyCardReferences[3];
 
+    [Header("Equipped Skill Tooltip")]
+    [SerializeField] private RectTransform equippedSkillTooltipPanel;
+    [SerializeField] private Vector2 equippedSkillTooltipOffset = new Vector2(0f, 30f);
+    [SerializeField, Min(0f)] private float equippedSkillTooltipFadeIn = 0.12f;
+    [SerializeField, Min(0f)] private float equippedSkillTooltipFadeOut = 0.08f;
+    private CanvasGroup equippedSkillTooltipGroup;
+    private Coroutine equippedSkillTooltipFadeRoutine;
+    private RectTransform equippedSkillTooltipAnchor;
+    private readonly Vector3[] equippedSkillTooltipCorners = new Vector3[4];
+
     [Header("Skip Reward Button")]
     [Tooltip("Assign Skill_panel/SkipButton. If empty, the direct child SkipButton is found automatically.")]
     [SerializeField] private Button skipButton;
+
+    private static readonly Color SkipDisabledColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+    private static readonly Color SkipEnabledColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    private static readonly Color SkipEnabledTextColor = Color.white;
+    private bool skipRevealComplete;
+
+    private void SetSkipRevealState(bool ready)
+    {
+        skipRevealComplete = ready;
+        BindSkipButton();
+        if (skipButton == null) return;
+        skipButton.interactable = ready && reward != null && !processing;
+        string[] names = { "back (1)", "back (2)", "front", "Text (TMP)" };
+        for (int i = 0; i < names.Length; i++)
+        {
+            Transform part = skipButton.transform.Find(names[i]);
+            if (part == null) continue;
+            Graphic graphic = part.GetComponent<Graphic>();
+            if (graphic != null)
+                graphic.color = ready ? (i == 3 ? SkipEnabledTextColor : SkipEnabledColor) : SkipDisabledColor;
+        }
+        foreach (DBAudioSource audio in skipButton.GetComponentsInChildren<DBAudioSource>(true))
+            audio.SetInteractionEnabled(ready && reward != null && !processing);
+    }
+
+    private void RefreshSkipRevealState()
+    {
+        if (reward == null || processing || skipRevealComplete) return;
+        for (int i = 0; i < offeredSkills.Length; i++)
+        {
+            if (offeredSkills[i] == null) continue;
+            if (pendingSkillReveal[i] != null || cardDissolveCoroutines[i] != null || !cardInteractionReady[i])
+                return;
+        }
+        SetSkipRevealState(true);
+    }
 
     private BattleRewardData reward;
     private Action completed;
@@ -179,10 +226,14 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnLocaleTableReady;
         BindSkipButton();
+        if (reward == null) SetSkipRevealState(false);
     }
 
     private void OnDisable()
     {
+        HideEquippedSkillTooltipImmediately();
+        SetSkipRevealState(false);
+        cardAudioSuspendedForPause = false;
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
         if (skipButton != null)
             skipButton.onClick.RemoveListener(DiscardReward);
@@ -223,6 +274,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         if (!DataManager.Instance.SkillDatabase.TryGet(data.RewardId, out SkillMasterData skill) || skill == null)
             return false;
         reward = data;
+        SetSkipRevealState(false);
         completed = onCompleted;
         processing = false;
         ClearSkillSlotPreviewVfx();
@@ -354,6 +406,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
                 cardDissolveCoroutines[i] = StartCoroutine(UnlockAfterConfiguredTime(i));
             }
         }
+        RefreshSkipRevealState();
         return true;
     }
 
@@ -378,11 +431,12 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private IEnumerator RevealSkillAfterDelay(int index, Transform skillRoot, float delay)
     {
-        yield return new WaitForSecondsRealtime(Mathf.Max(0f, delay));
+        yield return new WaitForSeconds(Mathf.Max(0f, delay));
         pendingSkillReveal[index] = null;
         if (reward != null && skillRoot != null && gameObject.activeInHierarchy &&
             skillRoot.parent != null && skillRoot.parent.gameObject.activeInHierarchy)
             skillRoot.gameObject.SetActive(true);
+        RefreshSkipRevealState();
     }
 
     private void StopSkillReveal(int index)
@@ -404,11 +458,24 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             ClearSkillSlotPreviewVfx();
     }
 
+    private bool cardAudioSuspendedForPause;
+
     private void LateUpdate()
     {
+        if (equippedSkillTooltipAnchor != null && equippedSkillTooltipPanel != null &&
+            equippedSkillTooltipPanel.gameObject.activeInHierarchy)
+            PositionEquippedSkillTooltip();
         if (reward == null) return;
+        bool isPaused = Time.timeScale <= 0.0001f;
+        if (isPaused != cardAudioSuspendedForPause)
+        {
+            cardAudioSuspendedForPause = isPaused;
+            for (int i = 0; i < scaleCardRoots.Length; i++)
+                SetCardAudioEnabled(scaleCardRoots[i], !isPaused && cardInteractionReady[i]);
+        }
+        if (isPaused) return;
         float blend = scaleTransitionSpeed <= 0f
-            ? 1f : 1f - Mathf.Exp(-scaleTransitionSpeed * Time.unscaledDeltaTime);
+            ? 1f : 1f - Mathf.Exp(-scaleTransitionSpeed * Time.deltaTime);
         for (int i = 0; i < scaleCardRoots.Length; i++)
         {
             Transform card = scaleCardRoots[i];
@@ -494,6 +561,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
                 RewardSkillEquippedSlotClick click = skillSlot.GetComponent<RewardSkillEquippedSlotClick>();
                 if (click == null) click = skillSlot.gameObject.AddComponent<RewardSkillEquippedSlotClick>();
                 click.Configure(this, characterId, runtimeIndex, !string.IsNullOrWhiteSpace(skillId));
+                click.SetTooltipSkillId(skillId);
                 if (!replacementSlotHandlers.Contains(click)) replacementSlotHandlers.Add(click);
                 // Ensure the slot itself can receive UI raycasts even if the icon has none.
                 Image hitArea = skillSlot.GetComponent<Image>();
@@ -505,6 +573,162 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
                 hitArea.raycastTarget = true;
             }
         }
+    }
+
+    internal void OnEquippedSkillHover(RectTransform anchor, string skillId, bool hovered)
+    {
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            HideEquippedSkillTooltipImmediately();
+            return;
+        }
+        if (!hovered || anchor == null || string.IsNullOrWhiteSpace(skillId))
+        {
+            HideEquippedSkillTooltip();
+            return;
+        }
+        DataManager dm = DataManager.Instance;
+        if (dm == null || dm.SkillDatabase == null ||
+            !dm.SkillDatabase.TryGet(skillId.Trim(), out SkillMasterData skill) || skill == null)
+        {
+            HideEquippedSkillTooltip();
+            return;
+        }
+        if (equippedSkillTooltipPanel == null)
+        {
+            Transform found = FindChild(transform, "TooltipPanel");
+            if (found != null) equippedSkillTooltipPanel = found as RectTransform;
+        }
+        if (equippedSkillTooltipPanel == null) return;
+        equippedSkillTooltipAnchor = anchor;
+        bool wasHidden = !equippedSkillTooltipPanel.gameObject.activeSelf;
+        if (wasHidden)
+            equippedSkillTooltipPanel.gameObject.SetActive(true);
+        SetText(equippedSkillTooltipPanel, "Name", GameDataLocalization.SkillName(skill));
+        SetText(equippedSkillTooltipPanel, "Type/Type_text", GetSkillTypeName(skill));
+        TMP_Text detail = GetText(equippedSkillTooltipPanel, "Detail");
+        if (detail != null)
+        {
+            DisableStaticLocalization(detail);
+            SkillEffectInlineIconUtility.SetTooltipTextWithoutIcons(detail,
+                GameDataLocalization.SkillDetails(skill));
+        }
+        Sprite range = null;
+        if (!string.IsNullOrWhiteSpace(skill.RangeId) && dm.SkillRangeIconDatabase != null)
+            dm.SkillRangeIconDatabase.TryGetIcon(skill.RangeId.Trim(), out range);
+        SetSprite(GetImage(equippedSkillTooltipPanel, "Range"), range);
+        Image resource = GetImage(equippedSkillTooltipPanel, "Resources_Icon");
+        if (resource != null)
+        {
+            Sprite icon = skill.ReferenceResource == ReferenceResource.HP ? hpIcon :
+                skill.ReferenceResource == ReferenceResource.UniqueResource ? karmaIcon : mpIcon;
+            if (icon == null)
+            {
+                BattleCharacterPanelUI hud = UnityEngine.Object.FindFirstObjectByType<BattleCharacterPanelUI>(FindObjectsInactive.Include);
+                if (hud != null) icon = hud.GetResourceIcon(skill.ReferenceResource);
+            }
+            resource.sprite = icon;
+            resource.color = skill.ReferenceResource == ReferenceResource.HP ? hpColor :
+                skill.ReferenceResource == ReferenceResource.UniqueResource ? karmaColor : mpColor;
+            resource.gameObject.SetActive(skill.Category != Category.Passive);
+        }
+        TMP_Text resourceValue = GetText(equippedSkillTooltipPanel, "Resources_Value");
+        if (resourceValue != null)
+            SetDynamicText(resourceValue, skill.Category == Category.Passive ?
+                GameLocalization.Get("battle.skill.passive_duration") : skill.ResourceCostValue.ToString());
+        for (int i = 0; i < 3; i++)
+        {
+            Image back = GetImage(equippedSkillTooltipPanel, "Entry_Slot/Entry0" + (i + 1) + "/Back");
+            if (back != null) back.color = i < Mathf.Clamp(skill.Entry, 0, 3)
+                ? new Color32(0xEE, 0xEE, 0xEE, 0xFF) : new Color32(0x11, 0x11, 0x11, 0xFF);
+        }
+        // Only Background/Line represents the hovered skill rarity.
+        // Background/Line2 keeps its prefab-defined color.
+        Color tooltipRarityColor = skill.Rarity == SkillRarity.Exclusive
+            ? exclusiveTooltipLineColor : RarityColor(skill.Rarity);
+        Image line = GetImage(equippedSkillTooltipPanel, "Background/Line");
+        if (line != null) line.color = tooltipRarityColor;
+        if (equippedSkillTooltipGroup == null)
+        {
+            equippedSkillTooltipGroup = equippedSkillTooltipPanel.GetComponent<CanvasGroup>();
+            if (equippedSkillTooltipGroup == null)
+                equippedSkillTooltipGroup = equippedSkillTooltipPanel.gameObject.AddComponent<CanvasGroup>();
+        }
+        equippedSkillTooltipGroup.interactable = false;
+        equippedSkillTooltipGroup.blocksRaycasts = false;
+        if (wasHidden) equippedSkillTooltipGroup.alpha = 0f;
+        PositionEquippedSkillTooltip();
+        FadeEquippedSkillTooltip(1f, equippedSkillTooltipFadeIn);
+    }
+
+    private void PositionEquippedSkillTooltip()
+    {
+        if (equippedSkillTooltipAnchor == null || equippedSkillTooltipPanel == null) return;
+        RectTransform parent = equippedSkillTooltipPanel.parent as RectTransform;
+        if (parent == null) return;
+        equippedSkillTooltipAnchor.GetWorldCorners(equippedSkillTooltipCorners);
+        Vector3 worldCenter = (equippedSkillTooltipCorners[0] + equippedSkillTooltipCorners[2]) * 0.5f;
+        Canvas canvas = equippedSkillTooltipAnchor.GetComponentInParent<Canvas>();
+        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(camera, worldCenter);
+        Canvas tooltipCanvas = parent.GetComponentInParent<Canvas>();
+        Camera tooltipCamera = tooltipCanvas != null && tooltipCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? tooltipCanvas.worldCamera : null;
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, screenPoint, tooltipCamera, out Vector2 local))
+            return;
+        equippedSkillTooltipPanel.position = parent.TransformPoint((Vector3)(local + equippedSkillTooltipOffset));
+    }
+
+    private void HideEquippedSkillTooltip()
+    {
+        equippedSkillTooltipAnchor = null;
+        FadeEquippedSkillTooltip(0f, equippedSkillTooltipFadeOut);
+    }
+
+    private void HideEquippedSkillTooltipImmediately()
+    {
+        equippedSkillTooltipAnchor = null;
+        if (equippedSkillTooltipFadeRoutine != null)
+        {
+            StopCoroutine(equippedSkillTooltipFadeRoutine);
+            equippedSkillTooltipFadeRoutine = null;
+        }
+        if (equippedSkillTooltipGroup != null)
+            equippedSkillTooltipGroup.alpha = 0f;
+        if (equippedSkillTooltipPanel != null)
+            equippedSkillTooltipPanel.gameObject.SetActive(false);
+    }
+
+    private void FadeEquippedSkillTooltip(float target, float duration)
+    {
+        if (equippedSkillTooltipGroup == null) return;
+        if (!isActiveAndEnabled || !gameObject.activeInHierarchy)
+        {
+            HideEquippedSkillTooltipImmediately();
+            return;
+        }
+        if (equippedSkillTooltipFadeRoutine != null)
+        {
+            StopCoroutine(equippedSkillTooltipFadeRoutine);
+            equippedSkillTooltipFadeRoutine = null;
+        }
+        equippedSkillTooltipFadeRoutine = StartCoroutine(FadeEquippedSkillTooltipRoutine(target, duration));
+    }
+
+    private IEnumerator FadeEquippedSkillTooltipRoutine(float target, float duration)
+    {
+        float start = equippedSkillTooltipGroup.alpha;
+        float elapsed = 0f;
+        while (elapsed < duration && duration > 0f)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            equippedSkillTooltipGroup.alpha = Mathf.Lerp(start, target, Mathf.Clamp01(elapsed / duration));
+            yield return null;
+        }
+        equippedSkillTooltipGroup.alpha = target;
+        if (target <= 0f && equippedSkillTooltipPanel != null)
+            equippedSkillTooltipPanel.gameObject.SetActive(false);
+        equippedSkillTooltipFadeRoutine = null;
     }
 
     // A reward-card hover previews the first free slot of the memory's owner.
@@ -782,7 +1006,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             StartSelectedCardFade(selectedIndex);
         if (selectionDissolveCoroutine != null)
             StopCoroutine(selectionDissolveCoroutine);
-        selectionDissolveCoroutine = StartCoroutine(DissolveUnselectedCards(selectedIndex));
+        selectionDissolveCoroutine = StartCoroutine(FadeUnselectedCards(selectedIndex));
     }
 
     private void RestorePendingReplacementChoice()
@@ -837,7 +1061,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < duration && reward != null && visual != null && centerCard != null)
         {
-            elapsed += Time.unscaledDeltaTime;
+            elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             t = t * t * (3f - 2f * t);
             // Convert both centers into world space; safe with CanvasScaler and
@@ -918,7 +1142,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < totalDuration && reward != null)
         {
-            elapsed += Time.unscaledDeltaTime;
+            elapsed += Time.deltaTime;
             if (maskRect != null)
             {
                 float t = shrinkDuration <= 0f ? 1f : Mathf.Clamp01(elapsed / shrinkDuration);
@@ -989,6 +1213,46 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         return controller;
     }
 
+    // Fade only unselected cards. Keep their root objects active so layout positions do not change.
+    // The original stencil dissolve routine is retained separately for compatibility.
+    private IEnumerator FadeUnselectedCards(int selectedIndex)
+    {
+        CanvasGroup[] targets = new CanvasGroup[selectedCardFadeGroups.Length];
+        for (int i = 0; i < targets.Length; i++)
+        {
+            if (i == selectedIndex || scaleCardRoots[i] == null ||
+                !scaleCardRoots[i].gameObject.activeInHierarchy)
+                continue;
+
+            CardUIStencilDissolveMaskController mask = GetUnselectedDissolveMask(i);
+            if (mask != null) mask.ResetDissolve();
+
+            CanvasGroup group = selectedCardFadeGroups[i];
+            if (group == null) continue;
+            targets[i] = group;
+            group.alpha = 1f;
+            group.interactable = false;
+            group.blocksRaycasts = false;
+            ClearRarityVfx(i);
+        }
+
+        float duration = Mathf.Max(0f, unselectedCardDissolveDuration);
+        float elapsed = 0f;
+        while (elapsed < duration && reward != null)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = 1f - Mathf.Clamp01(elapsed / duration);
+            for (int i = 0; i < targets.Length; i++)
+                if (targets[i] != null) targets[i].alpha = alpha;
+            yield return null;
+        }
+
+        if (reward == null) yield break;
+        for (int i = 0; i < targets.Length; i++)
+            if (targets[i] != null) targets[i].alpha = 0f;
+        selectionDissolveCoroutine = null;
+    }
+
     private IEnumerator DissolveUnselectedCards(int selectedIndex)
     {
         // Only the two unselected Mask controllers dissolve. Never animate their alpha.
@@ -1023,7 +1287,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < duration && reward != null)
         {
-            elapsed += Time.unscaledDeltaTime;
+            elapsed += Time.deltaTime;
             float amount = duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration);
             for (int i = 0; i < targets.Length; i++)
                 if (i != selectedIndex && targets[i] != null)
@@ -1108,7 +1372,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         float orbWait = 0f;
         while (orbTransferPending && orbWait < 10f)
         {
-            orbWait += Time.unscaledDeltaTime;
+            orbWait += Time.deltaTime;
             yield return null;
         }
         if (orbTransferPending)
@@ -1123,7 +1387,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             (selectionUsedCenterMove ? selectedCardMoveDuration : 0f) +
             Mathf.Max(selectedCardFadeDuration, selectedCardEquipShrinkDuration));
         if (previewDelay > 0f)
-            yield return new WaitForSecondsRealtime(previewDelay);
+            yield return new WaitForSeconds(previewDelay);
 
         CanvasGroup group = GetSkillPanelCloseCanvasGroup();
         float duration = Mathf.Max(0f, skillPanelCloseFadeDuration);
@@ -1133,7 +1397,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             float elapsed = 0f;
             while (elapsed < duration)
             {
-                elapsed += Time.unscaledDeltaTime;
+                elapsed += Time.deltaTime;
                 group.alpha = Mathf.Lerp(startAlpha, 0f, Mathf.Clamp01(elapsed / duration));
                 yield return null;
             }
@@ -1163,17 +1427,17 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             group.interactable = true;
             group.blocksRaycasts = true;
         }
-        if (skipButton != null) skipButton.interactable = true;
+        SetSkipRevealState(false);
     }
 
     // Skip the offered memory without equipping or registering it. Finish invokes
     // the reward completion callback so the existing reward flow can continue.
     public void DiscardReward()
     {
-        if (reward == null || processing || !gameObject.activeInHierarchy) return;
+        if (reward == null || processing || !skipRevealComplete || !gameObject.activeInHierarchy) return;
         processing = true;
         ClearSkillSlotPreviewVfx();
-        if (skipButton != null) skipButton.interactable = false;
+        SetSkipRevealState(false);
         StartCoroutine(CloseAfterSkippedReward());
     }
 
@@ -1190,7 +1454,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             float elapsed = 0f;
             while (elapsed < duration)
             {
-                elapsed += Time.unscaledDeltaTime;
+                elapsed += Time.deltaTime;
                 group.alpha = Mathf.Lerp(startAlpha, 0f, Mathf.Clamp01(elapsed / duration));
                 yield return null;
             }
@@ -1266,7 +1530,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private IEnumerator UnlockAfterConfiguredTime(int index)
     {
         float delay = GetCardDissolveStartDelay(index) + Mathf.Max(0f, dissolveDuration);
-        if (delay > 0f) yield return new WaitForSecondsRealtime(delay);
+        if (delay > 0f) yield return new WaitForSeconds(delay);
         cardDissolveCoroutines[index] = null;
         UnlockCardInteraction(index);
     }
@@ -1277,7 +1541,8 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         Transform card = scaleCardRoots[index];
         if (card == null || !card.gameObject.activeInHierarchy) return;
         cardInteractionReady[index] = true;
-        SetCardAudioEnabled(card, true);
+        RefreshSkipRevealState();
+        SetCardAudioEnabled(card, Time.timeScale > 0.0001f);
         if (buttons[index] != null)
             buttons[index].interactable = !string.IsNullOrEmpty(characterIds[index]) &&
                 offeredSkills[index] != null &&
@@ -1342,14 +1607,14 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         if (cardDissolveMaterials[index] == null) yield break;
         SetCardDissolveAmount(index, 0f);
         if (startDelay > 0f)
-            yield return new WaitForSecondsRealtime(startDelay);
+            yield return new WaitForSeconds(startDelay);
         float duration = Mathf.Max(0f, dissolveDuration);
         if (duration > 0f)
         {
             float elapsed = 0f;
             while (elapsed < duration && cardDissolveMaterials[index] != null)
             {
-                elapsed += Time.unscaledDeltaTime;
+                elapsed += Time.deltaTime;
                 SetCardDissolveAmount(index, elapsed / duration);
                 yield return null;
             }
@@ -1405,6 +1670,23 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         SetSprite(GetImage(card, "Range"), null);
         SetSprite(GetImage(card, "Resources/Icon"), null);
         SetSprite(GetImage(card, "Card/Cardimage"), null);
+        UpdateEntrySlotBacks(card, 0);
+    }
+
+    // Toggle only Back objects. Keep Entry and Line objects as configured in the prefab.
+    private static void UpdateEntrySlotBacks(Transform card, int entryCount)
+    {
+        Transform skillRoot = FindChild(card, "Skill");
+        Transform entryRoot = skillRoot != null ? skillRoot.Find("Entry_Slot") : null;
+        if (entryRoot == null) return;
+
+        int used = Mathf.Clamp(entryCount, 0, 3);
+        for (int i = 0; i < 3; i++)
+        {
+            Transform entry = entryRoot.Find("Entry" + (i + 1).ToString("00"));
+            Transform back = entry != null ? entry.Find("Back") : null;
+            if (back != null) back.gameObject.SetActive(i < used);
+        }
     }
 
     private void BindCard(Transform card, string characterId, SkillMasterData skill, BattleRewardData data)
@@ -1432,6 +1714,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         SetSprite(GetImage(card, "Icon/Icon"), icon);
         SetText(card, "Name", GameDataLocalization.SkillName(skill));
         SetDetailText(card, skill);
+        UpdateEntrySlotBacks(card, skill.Entry);
         Image range = GetImage(card, "Range") ?? GetImage(card, "Range/Icon");
         Sprite rangeIcon = null;
         if (!string.IsNullOrWhiteSpace(skill.RangeId) && DataManager.Instance.SkillRangeIconDatabase != null)
@@ -1450,7 +1733,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         }
         SetSprite(cost, resource);
         if (cost != null) cost.color = color;
-        if (value != null) { SetDynamicText(value, skill.ResourceCostValue.ToString()); value.color = color; }
+        if (value != null) SetDynamicText(value, skill.ResourceCostValue.ToString());
     }
 
     private static string GetSkillTypeName(SkillMasterData skill)
@@ -1631,7 +1914,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
     private IEnumerator ShowRarityVfxAfterDissolveDelay(int index, Transform card, SkillRarity rarity, float startDelay)
     {
-        yield return new WaitForSecondsRealtime(Mathf.Max(0f, startDelay));
+        yield return new WaitForSeconds(Mathf.Max(0f, startDelay));
         pendingRarityVfx[index] = null;
         if (reward != null && card != null && card.gameObject.activeInHierarchy && gameObject.activeInHierarchy)
             ShowRarityVfx(index, card, rarity);
@@ -1649,6 +1932,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
 
         GameObject instance = Instantiate(prefab, parent, false);
         instance.name = prefab.name + "_RarityVFX";
+        instance.AddComponent<BattleRewardRarityVfxPauseOnMenu>();
         instance.transform.localPosition = Vector3.zero;
         instance.transform.localRotation = Quaternion.identity;
         instance.transform.localScale = Vector3.one;
@@ -1789,7 +2073,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         TMP_Text target = GetText(card, "Detail");
         if (target == null) return;
         DisableStaticLocalization(target);
-        SkillEffectInlineIconUtility.SetText(target,
+        SkillEffectInlineIconUtility.SetTooltipTextWithoutIcons(target,
             skill != null ? GameDataLocalization.SkillDetails(skill) : string.Empty);
     }
 
@@ -1893,6 +2177,7 @@ public sealed class RewardSkillEquippedSlotClick : MonoBehaviour, IPointerClickH
     private int equippedIndex = -1;
     private bool occupied;
     private bool pointerInside;
+    private string tooltipSkillId;
 
     public void Configure(BattleRewardSkillPanelUI owner, string id, int index, bool hasSkill)
     {
@@ -1906,6 +2191,8 @@ public sealed class RewardSkillEquippedSlotClick : MonoBehaviour, IPointerClickH
         RefreshHover();
     }
 
+    public void SetTooltipSkillId(string id) { tooltipSkillId = id; }
+
     public void RefreshHover()
     {
         if (panel != null)
@@ -1915,12 +2202,14 @@ public sealed class RewardSkillEquippedSlotClick : MonoBehaviour, IPointerClickH
     public void OnPointerEnter(PointerEventData eventData)
     {
         pointerInside = true;
+        panel?.OnEquippedSkillHover(transform as RectTransform, tooltipSkillId, true);
         RefreshHover();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         pointerInside = false;
+        panel?.OnEquippedSkillHover(null, null, false);
         RefreshHover();
     }
 
@@ -1933,6 +2222,72 @@ public sealed class RewardSkillEquippedSlotClick : MonoBehaviour, IPointerClickH
     private void OnDisable()
     {
         pointerInside = false;
+        panel?.OnEquippedSkillHover(null, null, false);
         RefreshHover();
+    }
+}
+
+
+// 보상 카드 레어도 VFX가 Unscaled Time을 사용해도 메뉴 일시정지 중에는 정지시킵니다.
+internal sealed class BattleRewardRarityVfxPauseOnMenu : MonoBehaviour
+{
+    private ParticleSystem[] particles;
+    private Animator[] animators;
+    private readonly List<ParticleSystem> pausedParticles = new List<ParticleSystem>();
+    private readonly Dictionary<Animator, float> animatorSpeeds = new Dictionary<Animator, float>();
+    private bool paused;
+
+    private void Awake()
+    {
+        particles = GetComponentsInChildren<ParticleSystem>(true);
+        animators = GetComponentsInChildren<Animator>(true);
+    }
+
+    private void Update()
+    {
+        bool shouldPause = Time.timeScale <= 0.0001f;
+        if (shouldPause && !paused)
+            PausePlayback();
+        else if (!shouldPause && paused)
+            ResumePlayback();
+    }
+
+    private void PausePlayback()
+    {
+        paused = true;
+        pausedParticles.Clear();
+        animatorSpeeds.Clear();
+        foreach (ParticleSystem particle in particles)
+        {
+            if (particle == null || !particle.isPlaying) continue;
+            particle.Pause(false);
+            pausedParticles.Add(particle);
+        }
+        foreach (Animator animator in animators)
+        {
+            if (animator == null || !animator.enabled) continue;
+            animatorSpeeds[animator] = animator.speed;
+            animator.speed = 0f;
+        }
+    }
+
+    private void ResumePlayback()
+    {
+        foreach (ParticleSystem particle in pausedParticles)
+        {
+            if (particle != null && particle.isPaused) particle.Play(false);
+        }
+        pausedParticles.Clear();
+        foreach (KeyValuePair<Animator, float> entry in animatorSpeeds)
+        {
+            if (entry.Key != null) entry.Key.speed = entry.Value;
+        }
+        animatorSpeeds.Clear();
+        paused = false;
+    }
+
+    private void OnDisable()
+    {
+        if (paused) ResumePlayback();
     }
 }

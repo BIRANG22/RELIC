@@ -74806,7 +74806,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 2, y: 0}
   m_SizeDelta: {x: 40, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1267997973
@@ -84085,7 +84085,7 @@ MonoBehaviour:
   noDifficultySlotPrefab: {fileID: 482289283924367926, guid: 7b089408498166e4897feb78d147513e, type: 3}
   selectHoverLine: {fileID: 0}
   selectLineNormalColor: {r: 0.5137255, g: 0.5294118, b: 0.5568628, a: 1}
-  selectLineHoveredColor: {r: 1, g: 1, b: 1, a: 1}
+  selectLineHoveredColor: {r: 0.6627451, g: 0.69411767, b: 0.74509805, a: 1}
 --- !u!1 &1516504494
 GameObject:
   m_ObjectHideFlags: 0
@@ -127215,8 +127215,12 @@ PrefabInstance:
       value: 10050
       objectReference: {fileID: 0}
     - target: {fileID: 808157334, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
+      propertyPath: saturation
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 808157334, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: blurredUiRoots.Array.size
-      value: 3
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 808157334, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: 'blurredUiRoots.Array.data[0]'
@@ -127230,6 +127234,14 @@ PrefabInstance:
       propertyPath: 'blurredUiRoots.Array.data[2]'
       value: 
       objectReference: {fileID: 2088216233}
+    - target: {fileID: 808157334, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
+      propertyPath: 'blurredUiRoots.Array.data[3]'
+      value: 
+      objectReference: {fileID: 1780125778}
+    - target: {fileID: 808157334, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
+      propertyPath: 'blurredUiRoots.Array.data[4]'
+      value: 
+      objectReference: {fileID: 1373303975}
     - target: {fileID: 808157334, guid: 4fc99a2620954d75a1562594d56bdc13, type: 3}
       propertyPath: presentationCanvases.Array.size
       value: 1
