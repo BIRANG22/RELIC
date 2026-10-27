@@ -16,7 +16,7 @@ MonoBehaviour:
   bossLayerIndex: 9
   layer0Start:
     Type: Start
-    MapIdOverride: Map_15
+    MapIdOverride: Map_21
     UseCustomPosition: 0
     CustomPosition: {x: 0, y: 0}
     NextNodeIndices: 
