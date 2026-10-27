@@ -24,7 +24,7 @@ MonoBehaviour:
     Slot1:
       Enabled: 1
       Type: Special
-      MapIdOverride: 
+      MapIdOverride: Map_20
       UseCustomPosition: 1
       CustomPosition: {x: 100, y: 0}
       NextNodeIndices: 05000000
@@ -82,7 +82,7 @@ MonoBehaviour:
     Slot1:
       Enabled: 1
       Type: Shop
-      MapIdOverride: Map_22
+      MapIdOverride: Map_16
       UseCustomPosition: 1
       CustomPosition: {x: 300, y: 0}
       NextNodeIndices: 0d000000
@@ -252,123 +252,7 @@ MonoBehaviour:
       UseCustomPosition: 0
       CustomPosition: {x: 0, y: 0}
       NextNodeIndices: 24000000
-  layer9:
-    Slot1:
-      Enabled: 0
-      Type: Common
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 
-    Slot2:
-      Enabled: 1
-      Type: Elite
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 2500000026000000
-    Slot3:
-      Enabled: 0
-      Type: Common
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 
-    Slot4:
-      Enabled: 1
-      Type: Special
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 28000000
-  layer10:
-    Slot1:
-      Enabled: 1
-      Type: Special
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 29000000
-    Slot2:
-      Enabled: 1
-      Type: Special
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 29000000
-    Slot3:
-      Enabled: 0
-      Type: Common
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 
-    Slot4:
-      Enabled: 1
-      Type: Common
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 29000000
-  layer11:
-    Slot1:
-      Enabled: 1
-      Type: Elite
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 2d000000
-    Slot2:
-      Enabled: 0
-      Type: Common
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 
-    Slot3:
-      Enabled: 1
-      Type: Common
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 2f000000
-    Slot4:
-      Enabled: 1
-      Type: Elite
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 2f000000
-  layer12:
-    Slot1:
-      Enabled: 1
-      Type: Rest
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 31000000
-    Slot2:
-      Enabled: 0
-      Type: Common
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 
-    Slot3:
-      Enabled: 1
-      Type: Rest
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 31000000
-    Slot4:
-      Enabled: 0
-      Type: Common
-      MapIdOverride: 
-      UseCustomPosition: 0
-      CustomPosition: {x: 0, y: 0}
-      NextNodeIndices: 
-  layer13Boss:
+  layer9Boss:
     Type: Boss
     MapIdOverride: 
     UseCustomPosition: 0
