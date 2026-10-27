@@ -23,6 +23,7 @@ public class BattleSceneController : MonoBehaviour
     [SerializeField] private GameObject erosionSelect;
     [SerializeField] private GameObject erosionPanel;
     [SerializeField] private GameObject explorationResultPanel;
+    [SerializeField] private GameObject demoEndingPanel;
     [SerializeField] private Transform erosionSlotContent;
     [SerializeField] private GameObject erosionSlotPrefab;
 
@@ -1826,6 +1827,24 @@ public class BattleSceneController : MonoBehaviour
         {
             // 전환 화면이 방을 완전히 가린 시점에만 외부 UI 정리를 허용합니다.
             onCovered?.Invoke();
+
+            BattleRuntimeData battleRuntime = DataManager.Instance?.BattleRuntimeStore?.Get();
+            if (DemoBattleEndingPolicy.ShouldShow(battleRuntime, mapRuntime))
+            {
+                HideMapPanelImmediate();
+                if (demoEndingPanel != null)
+                {
+                    demoEndingPanel.SetActive(true);
+                    demoEndingPanel.transform.SetAsLastSibling();
+                }
+                else
+                {
+                    Debug.LogError("[BattleSceneController] Demo ending panel is not assigned.", this);
+                }
+
+                return;
+            }
+
             PrepareRoomForMapSelection(roomToKeepVisible);
             OpenMapPanelImmediate();
         });
