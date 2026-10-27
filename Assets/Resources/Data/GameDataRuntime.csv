@@ -630,15 +630,15 @@ Event_05_D,,"""쓸 만한 물건은 발견하지 못했다.”",,,,,,,,,,,,,,,,,
 Event_06,상자 무더기,“버려진 상자들이 눈에 띈다. 쓸 만한 물건이 남아 있을지도 모른다.”,1,상자를 열어본다.,"주사위 6 이상
 레드 더스티움 30 획득
 실패 : 생명력 5 감소",,Dice,,,,,6~18,Gain,RedDustium,,30,,Event_06_A,Event_06_D,Damage,PartyAll,5,event6,event_choice_01_success,event6,event_choice_01_failure
-Event_06,,,2,지나친다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_06_E,,,,,event6,event_choice_02_success,event6,event_choice_02_failure
+Event_06,,,2,지나친다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_06_E,,,,,event6,event_choice_04_success,event6,event_choice_04_failure
 Event_06_A,,“아직 살펴볼 만한 것이 남아 있다. 조금 더 시도해 볼 수 있을 것 같다.”,1,다른 상자도 열어본다.,"주사위 10 이상
 레드 더스티움 50 획득
-실패 : 생명력 5 감소",,Dice,,,,,10~18,Gain,RedDustium,,50,,Event_06_B,Event_06_D,Damage,PartyAll,5,event6,event_choice_01_success,event6,event_choice_01_failure
-Event_06_A,,,2,그만둔다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_06_F,,,,,event6,event_choice_02_success,event6,event_choice_02_failure
+실패 : 생명력 5 감소",,Dice,,,,,10~18,Gain,RedDustium,,50,,Event_06_B,Event_06_D,Damage,PartyAll,5,event6,event_choice_02_success,event6,event_choice_02_failure
+Event_06_A,,,2,그만둔다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_06_F,,,,,event6,event_choice_04_success,event6,event_choice_04_failure
 Event_06_B,,"“남은 상자에서도 무언가 얻을 수 있을 것 같다.""",1,하나 더 열어본다.,"주사위 14 이상
 무작위 에픽 유물 획득
-실패 : 생명력 5 감소",,Dice,,,,,14~18,GainRandom,Relic,Epic:100,1,,Event_06_C,Event_06_D,Damage,PartyAll,5,event6,event_choice_01_success,event6,event_choice_01_failure
-Event_06_B,,,2,그만둔다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_06_F,,,,,event6,event_choice_02_success,event6,event_choice_02_failure
+실패 : 생명력 5 감소",,Dice,,,,,14~18,GainRandom,Relic,Epic:100,1,,Event_06_C,Event_06_D,Damage,PartyAll,5,event6,event_choice_03_success,event6,event_choice_03_failure
+Event_06_B,,,2,그만둔다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_06_F,,,,,event6,event_choice_04_success,event6,event_choice_04_failure
 Event_06_C,,“더 이상 가져갈 만한 것은 남아 있지 않다.”,,,,,,,,,,,,,,,,,,,,,event6,,event6,
 Event_06_D,,"“갑작스러운 폭발이 일어나고, 주변에는 부서진 잔해만 남았다.”",,,,,,,,,,,,,,,,,,,,,event6,,event6,
 Event_06_E,,“상자에는 손대지 않고 그대로 지나쳤다.”,,,,,,,,,,,,,,,,,,,,,event6,,event6,
@@ -933,7 +933,7 @@ Erosion_03_08,무거운 발걸음,Level03_8,3,3,Erosion_03_08,Independent,이동
 # Tutorial
 튜토리얼ID,진행순서,맵ID,시작 파티,시작 침식도,시작 생명력(%),몬스터 생성 지연,단계,대화 캐릭터ID,출력,문구 키,한국어 대사/안내,넘김 방식,강조 UI,완료 안내 키,완료 안내
 TutorialId,Order,MapId,StartParty,InitialErosion,InitialHpPercent,DeferMonsterSpawn,Phase,SpeakerId,Text output,TextKey,TextKO,Advance,HighlightTarget,CompleteTextKey,CompleteTextKO
-Tutorial_01,1,Map_26,"Char_01,Char_02",42,"70,65",1,Arrival,,BattleMapIntroText,tutorial.t01.arrival,거점으로 향하는 길,Auto,,,
+Tutorial_01,1,Map_26,"Char_01,Char_02",42,"70,65",1,Arrival,,BattleMapIntroText,tutorial.t01.arrival,거점으로 향하는 길,Auto,
 Tutorial_01,2,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.01,후아! 생각보다 먼 길인데? 슬슬 몸이 무거워지는걸.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,3,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.02,"하하, 이러다 거점에 도착하기도 전에 지치겠어!",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,4,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.03,불필요한 체력 소모는 피하시죠. 거점까지 얼마 남지 않았습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
@@ -942,7 +942,7 @@ Tutorial_01,6,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.02,"새로�
 전투불능이 되면 10의 침식도가 증가합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,7,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.03,"침식도가 최대치인 100에 도달하면
 매 턴 생명력이 10씩 감소합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-Tutorial_01,8,Map_26,,,,,SpawnMonsters,,,,,Auto,,,
+Tutorial_01,8,Map_26,,,,,SpawnMonsters,,,,,Auto,
 Tutorial_01,9,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.04,변이체군요. 아무래도 그냥 지나가긴 어렵겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,10,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.05,좋아! 그럼 녀석부터 처리하고 가자!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 ,,,,,,,,,,,,,

@@ -65,7 +65,7 @@ MonoBehaviour:
       AnchorName: 
       LocalPosition: {x: 4, y: 0.26, z: 0}
       LocalEulerAngles: {x: 0, y: 0, z: 0}
-      LocalScale: {x: 0.4, y: 0.4, z: 0.4}
+      LocalScale: {x: 0.23, y: 0.23, z: 0.23}
       Active: 1
   - MapId: Map_22
     Spawns:
