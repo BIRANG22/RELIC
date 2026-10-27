@@ -122,6 +122,17 @@ public class BattleBagPanelUI : MonoBehaviour
         if (IsPointerOverSelectedBagSlotOrDiscardButton())
             return;
 
+        // Only an actual click outside the bag clears the chosen discard target.
+        // Nested UI graphics and tooltip overlays must not consume the selection.
+        if (EventSystem.current != null)
+        {
+            pointerRaycastResults.Clear();
+            PointerEventData pointer = new PointerEventData(EventSystem.current) { position = Input.mousePosition };
+            EventSystem.current.RaycastAll(pointer, pointerRaycastResults);
+            foreach (RaycastResult hit in pointerRaycastResults)
+                if (hit.gameObject != null && hit.gameObject.transform.IsChildOf(transform))
+                    return;
+        }
         ClearSelectedSlot();
     }
 
@@ -294,7 +305,20 @@ public class BattleBagPanelUI : MonoBehaviour
                                 ?? FindDeepChild(transform, "Discard_Button");
 
             if (discard != null)
+            {
                 discardButton = discard.GetComponent<Button>();
+                if (discardButton == null)
+                    discardButton = discard.gameObject.AddComponent<Button>();
+                Image hitArea = discard.GetComponent<Image>();
+                if (hitArea == null)
+                {
+                    hitArea = discard.gameObject.AddComponent<Image>();
+                    hitArea.color = new Color(1f, 1f, 1f, 0f);
+                }
+                hitArea.raycastTarget = true;
+                discardButton.targetGraphic = hitArea;
+                discardButton.transition = Selectable.Transition.None;
+            }
         }
 
         BindDiscardButton();
@@ -654,7 +678,18 @@ public class BattleBagPanelUI : MonoBehaviour
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
-        if (slot == null || !slot.HasItem)
+        if (slot == null)
+            return;
+
+        // Normal bag mode: a second click on the selected slot, or a click on
+        // an empty slot, clears the discard selection.
+        if (!isItemSelectionMode && (!slot.HasItem || selectedSlot == slot))
+        {
+            ClearSelectedSlot();
+            return;
+        }
+
+        if (!slot.HasItem)
             return;
 
         if (isItemSelectionMode)
@@ -1078,13 +1113,25 @@ public class BattleBagPanelUI : MonoBehaviour
 
         discardButton.onClick.RemoveListener(OnClickDiscardButton);
         discardButton.onClick.AddListener(OnClickDiscardButton);
+        BattleBagDiscardButtonVisual visual = discardButton.GetComponent<BattleBagDiscardButtonVisual>();
+        if (visual == null) visual = discardButton.gameObject.AddComponent<BattleBagDiscardButtonVisual>();
+        visual.Configure(discardButton);
         RefreshDiscardButtonState();
     }
 
     private void RefreshDiscardButtonState()
     {
         if (discardButton != null)
+        {
             discardButton.interactable = !isItemSelectionMode && IsDiscardAllowed() && selectedSlot != null && selectedSlot.HasItem;
+            BattleBagDiscardButtonVisual visual = discardButton.GetComponent<BattleBagDiscardButtonVisual>();
+            if (visual != null)
+            {
+                // Keep the discard line highlighted while an item is selected,
+                // even when the pointer is no longer over the button.
+                visual.SetItemSelected(selectedSlot != null && selectedSlot.HasItem);
+            }
+        }
     }
 
     private void EndItemSelectionMode(bool hidePanel, bool notifyClosed)
@@ -1258,6 +1305,30 @@ public class BattleBagPanelUI : MonoBehaviour
         return null;
     }
 
+    // Called by reward acquisition only when the battle bag is full.
+    // Do not open a lobby storage panel or close the reward that could not be claimed.
+    public static bool OpenBattleBagForFullReward()
+    {
+        BattleBagPanelUI[] panels = UnityEngine.Object.FindObjectsByType<BattleBagPanelUI>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < panels.Length; i++)
+        {
+            BattleBagPanelUI panel = panels[i];
+            if (panel == null || panel.gameObject.scene != UnityEngine.SceneManagement.SceneManager.GetActiveScene())
+                continue;
+            if (panel.ResolveRuntimeContext()?.IsLobby != false)
+                continue;
+            panel.isItemSelectionMode = false;
+            panel.storageCategory = StorageCategory.Item;
+            panel.gameObject.SetActive(true);
+            panel.transform.SetAsLastSibling();
+            panel.Refresh();
+            panel.BindDiscardButton();
+            return true;
+        }
+        return false;
+    }
+
     public static void RefreshAll()
     {
         BattleBagPanelUI[] panels = UnityEngine.Object.FindObjectsByType<BattleBagPanelUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -1267,5 +1338,66 @@ public class BattleBagPanelUI : MonoBehaviour
             if (panels[i] != null)
                 panels[i].Refresh();
         }
+    }
+}
+
+
+// Keeps the discard button's own line and hover scale independent from Unity's Button Color Tint.
+// The Button.onClick remains owned by BattleBagPanelUI.
+public sealed class BattleBagDiscardButtonVisual : MonoBehaviour,
+    IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
+{
+    private static readonly Color NormalLine = new Color32(0x77, 0x77, 0x77, 0xFF);
+    private static readonly Color HighlightLine = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    private Button button;
+    private Image line;
+    private Vector3 originalScale;
+    private bool hovered;
+    private bool pressed;
+    private bool itemSelected;
+
+    private void Awake()
+    {
+        originalScale = transform.localScale;
+    }
+
+    public void Configure(Button owner)
+    {
+        button = owner;
+        Transform lineTransform = transform.Find("Line");
+        line = lineTransform != null ? lineTransform.GetComponent<Image>() : null;
+        RefreshState();
+    }
+
+    public void SetItemSelected(bool selected)
+    {
+        itemSelected = selected;
+        RefreshState();
+    }
+
+    public void RefreshState()
+    {
+        if (button == null) return;
+        bool highlighted = button.interactable && (itemSelected || hovered || pressed);
+        if (line != null) line.color = highlighted ? HighlightLine : NormalLine;
+        transform.localScale = originalScale * (button.interactable && hovered ? 1.1f : 1f);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData) { hovered = true; RefreshState(); }
+    public void OnPointerExit(PointerEventData eventData) { hovered = false; pressed = false; RefreshState(); }
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Left || button == null || !button.interactable) return;
+        pressed = true;
+        RefreshState();
+    }
+    public void OnPointerUp(PointerEventData eventData) { pressed = false; RefreshState(); }
+    private void OnDisable()
+    {
+        hovered = false;
+        pressed = false;
+        itemSelected = false;
+        transform.localScale = originalScale;
+        if (line != null) line.color = NormalLine;
     }
 }
