@@ -6763,43 +6763,6 @@ MonoBehaviour:
     m_Localized: Skip
     m_Metadata:
       m_Items: []
-  - m_Id: 24680556586868739
-    m_Localized: 'Not enough {label}{particle}. Required: {required} / Available:
-      {safeAvailable}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868740
-    m_Localized: Restore {amount} HP to the entire party ({count} members)
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868741
-    m_Localized: Increase maximum HP by {amount} for the entire party ({count} members)
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868742
-    m_Localized: Apply {amount:+#;-#;0} maximum HP to the entire party ({count} members)
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868743
-    m_Localized: Apply {amount:+#;-#;0} Mana recovery to the party ({count} members)
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868744
-    m_Localized: Apply {amount:+#;-#;0} maximum Mana to the party ({count} members)
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868745
-    m_Localized: 'Accumulate {amount} Red Dustium (current: {context.SessionState.AccumulatedRemnant})'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868746
-    m_Localized: HP recovery +{amount}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868747
-    m_Localized: Maximum HP +{amount}
-    m_Metadata:
-      m_Items: []
   - m_Id: 24680556586868748
     m_Localized: 'Memory upgraded: {GetSkillDisplayName(upgradeSkillId)}'
     m_Metadata:
@@ -6810,30 +6773,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 24680556586868750
     m_Localized: Lost {removedCount} Memories obtained during this event.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868751
-    m_Localized: Apply {amount:+#;-#;0} maximum HP to the entire party ({count} members)
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868752
-    m_Localized: Apply {amount:+#;-#;0} Mana recovery to the party ({count} members)
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868753
-    m_Localized: Apply {amount:+#;-#;0} maximum Mana to the party ({count} members)
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868754
-    m_Localized: Restore {amount} party HP ({count} members)
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868755
-    m_Localized: Restore {amount} HP to the entire party ({count} members)
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868756
-    m_Localized: Increase maximum HP by {amount} for the entire party ({count} members)
     m_Metadata:
       m_Items: []
   - m_Id: 24680556586868757
@@ -7049,10 +6988,6 @@ MonoBehaviour:
     m_Localized: end
     m_Metadata:
       m_Items: []
-  - m_Id: 26577043298951169
-    m_Localized: lasting
-    m_Metadata:
-      m_Items: []
   - m_Id: 26848357494530048
     m_Localized: front
     m_Metadata:
@@ -7065,14 +7000,6 @@ MonoBehaviour:
     m_Localized: 'Time required
 
       00:00:00'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501571
-    m_Localized: erosion
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501572
-    m_Localized: resonance
     m_Metadata:
       m_Items: []
   - m_Id: 26848357515501573
@@ -7230,12 +7157,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 1417690215956171328
-    m_Localized: 'Roll 14 or higher
-
-      Gain a random Epic relic
-
-      Failure:
-      Lose 5 HP'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 5296381621326956345

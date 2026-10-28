@@ -5548,9 +5548,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 124770060}
-  localizationKey: ui.lobby.panel.erosion
-  koreanSource: "\uCE68\uC2DD\uB3C4"
-  automaticallyRegistered: 0
+  localizationKey: ui.lobby.canvas.lobby_button.lobby_icon.icon_01.text_tmp.fc777a3e
+  koreanSource: "\uCE68\uC2DD"
+  automaticallyRegistered: 1
 --- !u!1 &125063430
 GameObject:
   m_ObjectHideFlags: 0
@@ -38986,7 +38986,7 @@ MonoBehaviour:
   target: {fileID: 734067628}
   localizationKey: ui.lobby.panel.resonance
   koreanSource: "\uACF5\uBA85"
-  automaticallyRegistered: 0
+  automaticallyRegistered: 1
 --- !u!1 &734269960
 GameObject:
   m_ObjectHideFlags: 0
