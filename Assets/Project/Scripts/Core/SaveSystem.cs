@@ -45,6 +45,7 @@ public class SaveSystem : Singleton<SaveSystem>
         ClearBattleRoomEntryCheckpoint();
         ClearPendingResolvedBattleRoomEntryState();
         pendingBattleContinueSaveData = null;
+        pendingResumeData = null;
 
         try
         {
@@ -105,6 +106,17 @@ public class SaveSystem : Singleton<SaveSystem>
         RecordDiscoveryService.BackfillFromCurrentState(DataManager.Instance);
 
         GameSaveData saveData = CreateSaveData();
+        // 결과 보고 중 옵션 등의 수동 저장은 결과 이어하기 단계까지 보존합니다.
+        if (string.Equals(SceneManager.GetActiveScene().name, SceneName.Battle, StringComparison.OrdinalIgnoreCase))
+        {
+            ExplorationResultPanelUI report = UnityEngine.Object.FindFirstObjectByType<ExplorationResultPanelUI>(FindObjectsInactive.Exclude);
+            if (report != null && report.isActiveAndEnabled && CanContinueBattle(saveData))
+            {
+                GameSaveData previous = ReadSaveData();
+                if (previous?.Resume != null && previous.Resume.Phase == ResumePhase.ExplorationResult)
+                    saveData.Resume = CloneSerializable(previous.Resume);
+            }
+        }
         return WriteSaveData(saveData);
     }
 
@@ -132,6 +144,14 @@ public class SaveSystem : Singleton<SaveSystem>
         RecordDiscoveryService.BackfillFromCurrentState(DataManager.Instance);
         GameSaveData saveData = CreateSaveData();
         saveData.Resume = CloneSerializable(resumeData);
+        // Keep the one-time boss introduction flag when a later room checkpoint is written.
+        ResumeData priorBoss = battleRoomEntryCheckpoint?.Resume;
+        if (saveData.Resume != null && priorBoss != null && priorBoss.BossIntroStarted &&
+            priorBoss.NodeIndex == saveData.Resume.NodeIndex &&
+            string.Equals(priorBoss.MapId, saveData.Resume.MapId, StringComparison.Ordinal))
+        {
+            saveData.Resume.BossIntroStarted = true;
+        }
 
         // 전투 시작 상태를 별도로 확정해 둔 경우 일반 체크포인트에도 보존합니다.
         // 그렇지 않으면 이후 이어하기에서 장애물을 다시 무작위 생성할 수 있습니다.
@@ -150,6 +170,19 @@ public class SaveSystem : Singleton<SaveSystem>
         return WriteSaveData(saveData);
     }
 
+    // The boss intro flag must survive resume-data consumption and room-entry recapture.
+    // 이전 탐사의 저장 파일은 새 탐사의 보스 등장 여부를 판단하는 데 사용하지 않습니다.
+    // 실제 이어하기로 불러온 스냅샷만 현재 방의 컷신 생략 근거가 됩니다.
+    public bool WasBossIntroStartedForNode(int nodeIndex, string mapId)
+    {
+        bool Matches(ResumeData value) => value != null && value.BossIntroStarted &&
+            value.NodeIndex == nodeIndex &&
+            string.Equals(value.MapId, mapId, StringComparison.Ordinal);
+
+        return Matches(pendingResumeData) ||
+               Matches(pendingBattleContinueSaveData?.Resume);
+    }
+
     public void CaptureBattleRoomEntryCheckpoint()
     {
         if (DataManager.Instance == null)
@@ -164,13 +197,51 @@ public class SaveSystem : Singleton<SaveSystem>
 
         RecordDiscoveryService.BackfillFromCurrentState(DataManager.Instance);
 
+        bool bossIntroAlreadyStarted = WasBossIntroStartedForNode(map.CurrentNodeIndex, map.CurrentMapId);
         battleRoomEntryCheckpoint = CreateSaveData();
+        if (bossIntroAlreadyStarted)
+        {
+            battleRoomEntryCheckpoint.Resume ??= new ResumeData();
+            battleRoomEntryCheckpoint.Resume.Phase = ResumePhase.BattleEntry;
+            battleRoomEntryCheckpoint.Resume.NodeIndex = map.CurrentNodeIndex;
+            battleRoomEntryCheckpoint.Resume.MapId = map.CurrentMapId;
+            battleRoomEntryCheckpoint.Resume.BossIntroStarted = true;
+        }
         battleRoomEntryCheckpointNodeIndex = map.CurrentNodeIndex;
         battleRoomEntryCheckpointMapId = map.CurrentMapId ?? string.Empty;
 
         // 이어하기로 같은 전투방에 재진입하면 BattleSceneController가 체크포인트를 다시 잡습니다.
         // 이때 저장 파일에 있던 확정 1턴 상태를 잃지 않도록 새 체크포인트에 즉시 병합합니다.
         MergeResolvedBattleRoomEntryStateIntoCheckpoint(map);
+    }
+
+    // Persist the one-time boss introduction immediately upon entering the room.
+    // This also updates the entry snapshot used by SaveCurrentProgress on a force quit.
+    public void MarkCurrentBossIntroStarted()
+    {
+        MapRuntimeData map = DataManager.Instance?.MapRuntimeStore?.Get();
+        if (map == null || !MapRuntimeProgressUtility.HasUnclearedCurrentNode(map))
+            return;
+
+        // A room resumed via a different entry path may not have a checkpoint yet.
+        // Without it, the intro flag never reaches disk and the cutscene repeats.
+        if (battleRoomEntryCheckpoint == null ||
+            map.CurrentNodeIndex != battleRoomEntryCheckpointNodeIndex ||
+            !string.Equals(map.CurrentMapId ?? string.Empty, battleRoomEntryCheckpointMapId, StringComparison.Ordinal))
+            CaptureBattleRoomEntryCheckpoint();
+
+        if (battleRoomEntryCheckpoint == null)
+            return;
+
+        ResumeData resume = battleRoomEntryCheckpoint.Resume ?? new ResumeData();
+        resume.Phase = ResumePhase.BattleEntry;
+        resume.NodeIndex = map.CurrentNodeIndex;
+        resume.MapId = map.CurrentMapId;
+        resume.BossIntroStarted = true;
+        battleRoomEntryCheckpoint.Resume = resume;
+
+        // Explicit checkpoint save is needed for abrupt process termination.
+        SaveCheckpoint(resume);
     }
 
     public void ClearBattleRoomEntryCheckpoint()
@@ -189,6 +260,7 @@ public class SaveSystem : Singleton<SaveSystem>
         ClearBattleRoomEntryCheckpoint();
         ClearPendingResolvedBattleRoomEntryState();
         pendingBattleContinueSaveData = null;
+        pendingResumeData = null;
     }
 
     private bool TryCreateBattleRoomEntryCheckpointSave(out GameSaveData saveData)
@@ -224,6 +296,7 @@ public class SaveSystem : Singleton<SaveSystem>
     {
         ClearPendingResolvedBattleRoomEntryState();
         pendingBattleContinueSaveData = null;
+        pendingResumeData = null;
         if (!HasSaveFile())
             return false;
 
@@ -271,6 +344,8 @@ public class SaveSystem : Singleton<SaveSystem>
             Phase = ResumePhase.BattleEntry,
             NodeIndex = map != null ? map.CurrentNodeIndex : -1,
             MapId = map?.CurrentMapId,
+            BossIntroStarted = battleRoomEntryCheckpoint.Resume != null &&
+                               battleRoomEntryCheckpoint.Resume.BossIntroStarted,
             InitialGridEffects = CloneGridEffectSaves(gridEffects),
             InitialMonsterCommands = CloneMonsterCommandSaves(monsterCommands)
         });

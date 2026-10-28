@@ -10,7 +10,7 @@ namespace Relic.Gameplay.Data
     {
         private const string LegacyValueToken = "\uC218\uCE58";
 
-        public static string Format(string description, MonsterSkillData skillData)
+        public static string Format(string description, MonsterSkillData skillData, bool applyBattleErosionDamage = false)
         {
             if (string.IsNullOrWhiteSpace(description))
                 return string.Empty;
@@ -20,6 +20,8 @@ namespace Relic.Gameplay.Data
 
             string result = description.Trim();
             string[] valueRates = SplitValues(skillData.ValueRate);
+            if (applyBattleErosionDamage)
+                valueRates = ApplyBattleDamageValues(skillData, valueRates);
             string[] countRates = SplitValues(skillData.CountRate);
 
             for (int i = 0; i < valueRates.Length; i++)
@@ -43,7 +45,27 @@ namespace Relic.Gameplay.Data
             if (!string.IsNullOrWhiteSpace(legacyValue))
                 result = ReplaceToken(result, LegacyValueToken, legacyValue);
 
-            return SkillDescriptionFormatter.ReplaceEffectTokens(result, skillData.ValueRate);
+            return SkillDescriptionFormatter.ReplaceEffectTokens(result, string.Join(";", valueRates));
+        }
+
+        // Apply the same erosion modifier as battle damage only to direct-hit effects.
+        // Other skill values (buffs, turns, movement, etc.) remain unchanged.
+        public static string[] ApplyBattleDamageValues(MonsterSkillData skillData, string[] values)
+        {
+            if (skillData == null || values == null || values.Length == 0)
+                return values;
+
+            string[] effects = SplitValues(skillData.EffectIds);
+            for (int i = 0; i < values.Length && i < effects.Length; i++)
+            {
+                string effectId = effects[i].Trim();
+                if (effectId != "E_Strike" && effectId != "E_Pierce")
+                    continue;
+
+                if (int.TryParse(values[i].Trim(), out int baseDamage))
+                    values[i] = global::BattleErosionEffectService.ModifyMonsterDamage(baseDamage).ToString();
+            }
+            return values;
         }
 
         private static string[] SplitValues(string values)

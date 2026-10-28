@@ -64,7 +64,7 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
             string localizedDescription = GameDataLocalization.MonsterSkillDescription(skillData);
             SkillEffectInlineIconUtility.SetText(
                 detailText,
-                MonsterSkillDescriptionFormatter.Format(localizedDescription, skillData));
+                MonsterSkillDescriptionFormatter.Format(localizedDescription, skillData, true));
         }
 
         Sprite rangeSprite = ResolveRangeIcon(skillData.RangeId);

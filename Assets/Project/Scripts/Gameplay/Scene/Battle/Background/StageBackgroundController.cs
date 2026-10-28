@@ -1,3 +1,4 @@
+using Relic.Gameplay.Data;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -169,7 +170,9 @@ public class StageBackgroundController : MonoBehaviour
         // 같은 배경이 이미 생성되어 있다면 다시 생성하지 않음
         if (currentPrefab == targetPrefab && currentInstance != null)
         {
-            if (useBossBackground && playBossRevealImmediately && targetPrefab == st1BossPrefab)
+            SuppressPreviouslyIntroducedBossAppear(useBossBackground, mapId);
+            if (useBossBackground && playBossRevealImmediately && targetPrefab == st1BossPrefab &&
+                !IsPreviouslyIntroducedBossRoom(mapId))
                 PlaySt1BossRevealSequence();
             return;
         }
@@ -180,8 +183,10 @@ public class StageBackgroundController : MonoBehaviour
         currentInstance = Instantiate(targetPrefab, parent, false);
         currentInstance.name = targetPrefab.name;
         currentPrefab = targetPrefab;
+        SuppressPreviouslyIntroducedBossAppear(useBossBackground, mapId);
 
-        if (useBossBackground && playBossRevealImmediately && targetPrefab == st1BossPrefab)
+        if (useBossBackground && playBossRevealImmediately && targetPrefab == st1BossPrefab &&
+            !IsPreviouslyIntroducedBossRoom(mapId))
             PlaySt1BossRevealSequence();
     }
     /// <summary>
@@ -230,6 +235,32 @@ public class StageBackgroundController : MonoBehaviour
         }
 
         return null;
+    }
+
+    private static bool IsPreviouslyIntroducedBossRoom(string mapId)
+    {
+        MapRuntimeData map = DataManager.Instance?.MapRuntimeStore?.Get();
+        return map != null && SaveSystem.Instance != null &&
+               string.Equals(map.CurrentMapId, mapId, StringComparison.Ordinal) &&
+               SaveSystem.Instance.WasBossIntroStartedForNode(map.CurrentNodeIndex, mapId);
+    }
+
+    // 이어하기에서는 프리팹 내부 appear가 스스로 재생되지 않게 비활성화합니다.
+    // 보스 첫 입장과 2페이즈 전환은 변경하지 않습니다.
+    private void SuppressPreviouslyIntroducedBossAppear(bool useBossBackground, string mapId)
+    {
+        if (!useBossBackground || currentPrefab != st1BossPrefab ||
+            currentInstance == null || !IsPreviouslyIntroducedBossRoom(mapId))
+            return;
+
+        SpriteTransformSequence[] sequences =
+            currentInstance.GetComponentsInChildren<SpriteTransformSequence>(true);
+        foreach (SpriteTransformSequence sequence in sequences)
+        {
+            if (sequence != null &&
+                string.Equals(sequence.gameObject.name, "appear", StringComparison.Ordinal))
+                sequence.gameObject.SetActive(false);
+        }
     }
 
     public bool PlayCurrentBossReveal()

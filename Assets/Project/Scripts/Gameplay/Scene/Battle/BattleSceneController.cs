@@ -364,7 +364,11 @@ public class BattleSceneController : MonoBehaviour
             DataManager.Instance.BattleRuntimeStore.Set(battleRuntime);
         InitializeRuntime();
         RefreshTutorialModeUI();
-        TrySpawnTutorialEntryGuide();
+        // 결과 보고 이어하기에서는 튜토리얼 안내 패널을 다시 생성하지 않습니다.
+        if (SaveSystem.Instance == null ||
+            !SaveSystem.Instance.TryGetPendingResumeData(out ResumeData initialResume) ||
+            initialResume.Phase != ResumePhase.ExplorationResult)
+            TrySpawnTutorialEntryGuide();
         SetupBattleErosionGauge();
         PrimeBack2NameBeforePresentation();
         SetErosionSelectVisible(false);
@@ -377,7 +381,9 @@ public class BattleSceneController : MonoBehaviour
         if (battleMapPanel != null)
             battleMapPanel.Prepare(mapRuntime);
 
-        if (!TryRestoreBattleRewardOnStart() &&
+        if (!TryRestoreExplorationResultOnStart() &&
+            !TryRestoreBattleRewardOnStart() &&
+            !TryRestoreClearedMapSelectionOnStart() &&
             !TryOpenUnclearedCurrentNodeOnStart() && !TryOpenLayerZeroNodeOnNewRun())
         {
             // A new expedition must not silently skip its first event because
@@ -578,6 +584,54 @@ public class BattleSceneController : MonoBehaviour
             ErosionDifficultyCatalogUI.TryResolveErosionIcon(erosionData, out icon);
 
         ErosionDifficultyCatalogUI.BindErosionSlotView(slotRoot, erosionData, icon);
+    }
+
+    // 전투/튜토리얼 종료 결과 화면에서 종료했다면 전투를 재시작하지 않습니다.
+    private bool TryRestoreExplorationResultOnStart()
+    {
+        SaveSystem save = SaveSystem.Instance;
+        if (save == null ||
+            !save.TryGetPendingResumeData(out ResumeData resume) ||
+            resume.Phase != ResumePhase.ExplorationResult)
+            return false;
+
+        ExplorationResultPanelUI panel = explorationResultPanel != null
+            ? explorationResultPanel.GetComponent<ExplorationResultPanelUI>()
+            : null;
+        if (panel == null)
+            panel = Object.FindFirstObjectByType<ExplorationResultPanelUI>(FindObjectsInactive.Include);
+        if (panel == null)
+        {
+            Debug.LogError("[BattleSceneController] 탐사 결과 이어하기 패널을 찾지 못했습니다.");
+            return false;
+        }
+
+        CloseAllRooms();
+        battleMapPanel?.Close();
+        SetErosionSelectVisible(false);
+        mapSelectionPresenter?.Hide();
+        CloseInventoryAndBagPanelsImmediate();
+        SetSharedPartyPresentationVisible(false);
+
+        // 보상 화면 이어하기와 동일하게 종료된 전투방을 배경으로 표시합니다.
+        if (battleRoom != null)
+        {
+            GeneratedMapNodeData currentNode = MapRuntimeProgressUtility.FindCurrentNode(mapRuntime);
+            if (currentNode != null)
+            {
+                ShowRoomBackground(battleRoom, currentNode);
+                ApplyRoomVisual(battleRoom, currentNode);
+            }
+            battleRoom.SetActive(true);
+            BattleRoomLoader loader = battleRoom.GetComponentInChildren<BattleRoomLoader>(true);
+            loader?.RestoreCompletedBattleCharacters();
+        }
+
+        panel.OpenSavedResult(resume.ExplorationResultDefeat,
+            resume.ExplorationResultRewardMultiplier);
+        save.ClearPendingResumeData();
+        save.CompleteCheckpointAutosaveRestore();
+        return true;
     }
 
     private bool TryRestoreBattleRewardOnStart()
@@ -1075,7 +1129,9 @@ public class BattleSceneController : MonoBehaviour
         // Start the reveal from the same temporary Y = 1.5 framing as a normal
         // boss entrance. The intro-completion callback later restores map Y = 0
         // BEFORE the regular battle character-focus sequence begins.
-        if (string.Equals(currentNode.Type, "Boss", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(currentNode.Type, "Boss", StringComparison.OrdinalIgnoreCase) &&
+            !(SaveSystem.Instance != null &&
+              SaveSystem.Instance.WasBossIntroStartedForNode(currentNode.NodeIndex, currentNode.MapId)))
         {
             ResetCameraForMap();
             BattleCameraController cameraController = BattleCameraController.Instance;
@@ -1198,6 +1254,24 @@ public class BattleSceneController : MonoBehaviour
         // replace the editor default Back2 name with the actual first location.
         RefreshBack2LocationName(entryNode);
         StartCoroutine(PlayStageEntryThenOpenNodeRoutine(entryNode));
+        return true;
+    }
+
+    // 지도에서 종료한 저장본은 마지막으로 클리어한 방을 다시 열 필요가 없습니다.
+    // 결과/보상 패널 복원은 Start에서 이 메서드보다 먼저 처리합니다.
+    private bool TryRestoreClearedMapSelectionOnStart()
+    {
+        if (mapRuntime == null || mapRuntime.CurrentNodeIndex < 0 ||
+            mapRuntime.GeneratedNodes == null || mapRuntime.GeneratedNodes.Count == 0 ||
+            !MapRuntimeProgressUtility.IsCurrentNodeCleared(mapRuntime))
+            return false;
+
+        // 진행 중인 튜토리얼은 지도 선택 화면으로 우회하지 않습니다.
+        if (DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true)
+            return false;
+
+        CloseAllRooms();
+        OpenMapPanelImmediate();
         return true;
     }
 
@@ -2356,11 +2430,24 @@ public class BattleSceneController : MonoBehaviour
     private void OpenBossBattle(GeneratedMapNodeData nodeData)
     {
         Debug.Log($"[BattleSceneController] Boss battle start: {nodeData.MapId}");
-        pendingBattleRoomUsesBossIntro = true;
+        bool alreadyIntroduced = SaveSystem.Instance != null &&
+            SaveSystem.Instance.WasBossIntroStartedForNode(nodeData.NodeIndex, nodeData.MapId);
+
+        pendingBattleRoomUsesBossIntro = !alreadyIntroduced;
+        if (!alreadyIntroduced)
+            SaveSystem.Instance?.MarkCurrentBossIntroStarted();
+
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController
             ? GameLocalization.Get("battle.intro.battle_start")
             : null;
         ShowRoomBackground(battleRoom, nodeData, true, false);
+        if (alreadyIntroduced)
+        {
+            // Fast-forward the reveal VFX and its camera/shake sequence without replaying it.
+            AutoFindSharedRoomPresentationIfNeeded();
+            if (sharedBackgroundController?.CurrentBattleRoomIntroSequence is TimedObjectRevealSequence reveal)
+                reveal.SkipToCompletedState();
+        }
         SetBack2TurnNumber(1);
         OpenRoom(battleRoom, "BattleRoom");
         ApplyRoomVisual(battleRoom, nodeData);
@@ -2674,6 +2761,13 @@ public class BattleSceneController : MonoBehaviour
         while (partyPresenter != null && partyPresenter.IsPlaying)
             yield return null;
 
+        // A resumed encounter must never reach the explicit reveal Play() call.
+        if (!pendingBattleRoomUsesBossIntro)
+        {
+            CompleteDeferredBossIntro();
+            yield break;
+        }
+
         AutoFindSharedRoomPresentationIfNeeded();
         if (sharedBackgroundController == null ||
             !sharedBackgroundController.PlayCurrentBossReveal())
@@ -2705,6 +2799,8 @@ public class BattleSceneController : MonoBehaviour
         if (pendingBattleRoomUsesBossIntro && BattleCameraController.Instance != null)
             BattleCameraController.Instance.ForceReturnSceneStartPositionImmediate();
 
+        // The intro gate must not stay armed during boss phase transitions.
+        pendingBattleRoomUsesBossIntro = false;
         SetBattleRoomIntroPlaying(false);
     }
 
@@ -2718,6 +2814,7 @@ public class BattleSceneController : MonoBehaviour
             BattleCameraController.Instance.ForceReturnSceneStartPositionImmediate();
 
         LoadBattleRoomNow();
+        pendingBattleRoomUsesBossIntro = false;
         SetBattleRoomIntroPlaying(false);
     }
 

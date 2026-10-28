@@ -163,6 +163,7 @@ public class BattleResultChecker : MonoBehaviour
         {
             battleEnded = true;
             PrepareBattleFinishedPresentation();
+            RestoreIncapacitatedPartyIdleAfterVictory();
             ResetBattleEffectOnFinish();
             BattleFinished?.Invoke();
             Debug.Log("[BattleResultChecker] Battle Win");
@@ -273,6 +274,25 @@ public class BattleResultChecker : MonoBehaviour
         foreach (BattleEffectPlaneSlideController slide in slides)
             if (slide != null)
                 slide.ForceResetToReservePositionInstant();
+    }
+
+    // Only a successful battle returns incapacitated party members to an Idle presentation.
+    // Do not change CurrentHP: combat incapacity and run statistics remain intact.
+    private static void RestoreIncapacitatedPartyIdleAfterVictory()
+    {
+        BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < characters.Length; i++)
+        {
+            BattleCharacter character = characters[i];
+            if (character == null || !character.gameObject.activeInHierarchy ||
+                character.RuntimeData?.IsDead != true)
+                continue;
+
+            BattleUnitAnimator animator = character.GetComponentInChildren<BattleUnitAnimator>(true);
+            if (animator != null)
+                animator.PlayIdle();
+        }
     }
 
     private static void PrepareBattleFinishedPresentation()

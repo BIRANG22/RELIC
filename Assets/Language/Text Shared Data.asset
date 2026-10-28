@@ -6447,42 +6447,6 @@ MonoBehaviour:
     m_Key: ui.battle.canvas.skill_panel.skipbutton.text_tmp.bb0d2d9f
     m_Metadata:
       m_Items: []
-  - m_Id: 24680556586868739
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.battleroom.timeline.battletimelinecontroller.text.9ddc6e95
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868740
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventchoiceexecutionservice.text.58e2d632
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868741
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventchoiceexecutionservice.text.36031b66
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868742
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventchoiceexecutionservice.text.b7cce655
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868743
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventchoiceexecutionservice.text.74be75ca
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868744
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventchoiceexecutionservice.text.fd8a25ea
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868745
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventchoiceexecutionservice.text.d660ecbc
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868746
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.60bb48f9
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868747
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.83484339
-    m_Metadata:
-      m_Items: []
   - m_Id: 24680556586868748
     m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.d443df0e
     m_Metadata:
@@ -6493,30 +6457,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 24680556586868750
     m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.acfcf3e6
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868751
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.b7cce655
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868752
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.74be75ca
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868753
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.fd8a25ea
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868754
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.2ae040b8
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868755
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.58e2d632
-    m_Metadata:
-      m_Items: []
-  - m_Id: 24680556586868756
-    m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventroomcontroller.text.36031b66
     m_Metadata:
       m_Items: []
   - m_Id: 24680556586868757
@@ -6731,10 +6671,6 @@ MonoBehaviour:
     m_Key: ui.title.canvas.buttongroup.quitbutton.text.ec48e3e4
     m_Metadata:
       m_Items: []
-  - m_Id: 26577043298951169
-    m_Key: ui.assets.project.scripts.battlecharacterpanelui.text.4e152716
-    m_Metadata:
-      m_Items: []
   - m_Id: 26848357494530048
     m_Key: ui.battle.roomroot.eventroom.canvas.dataeventroot.eventcoinflippresenter.headsbutton.text_tmp.da9f7c01
     m_Metadata:
@@ -6745,14 +6681,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 26848357515501569
     m_Key: ui.battle.explorationreportstagename.33aee447
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501571
-    m_Key: ui.lobby.text_tmp.fc777a3e
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501572
-    m_Key: ui.lobby.text_tmp.6c00dd0f
     m_Metadata:
       m_Items: []
   - m_Id: 26848357515501573
@@ -7041,6 +6969,22 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 8026747471757970304
     m_Key: battle.resource.shortage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28352201877594112
+    m_Key: ui.battle.erosioniconlabel.6a92f48e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28352201936314368
+    m_Key: ui.battle.canvas.explorationresultpanel.confirmbutton.label.7e9116d8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28352201936314369
+    m_Key: ui.battle.demoendingmessage.b3501f4d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28352201936314370
+    m_Key: ui.lobby.canvas.lobby_button.lobby_icon.icon_01.text_tmp.fc777a3e
     m_Metadata:
       m_Items: []
   m_Metadata:

@@ -5548,9 +5548,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 124770060}
-  localizationKey: ui.lobby.panel.erosion
-  koreanSource: "\uCE68\uC2DD\uB3C4"
-  automaticallyRegistered: 0
+  localizationKey: ui.lobby.canvas.lobby_button.lobby_icon.icon_01.text_tmp.fc777a3e
+  koreanSource: "\uCE68\uC2DD"
+  automaticallyRegistered: 1
 --- !u!1 &125063430
 GameObject:
   m_ObjectHideFlags: 0
@@ -38986,7 +38986,7 @@ MonoBehaviour:
   target: {fileID: 734067628}
   localizationKey: ui.lobby.panel.resonance
   koreanSource: "\uACF5\uBA85"
-  automaticallyRegistered: 0
+  automaticallyRegistered: 1
 --- !u!1 &734269960
 GameObject:
   m_ObjectHideFlags: 0
@@ -76348,7 +76348,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -250, y: 200}
+  m_AnchoredPosition: {x: -250, y: 175}
   m_SizeDelta: {x: 400, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1340867425
@@ -84024,7 +84024,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 100, y: 210}
+  m_AnchoredPosition: {x: 100, y: 185}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1515559802
@@ -84083,6 +84083,7 @@ MonoBehaviour:
   noDifficultyIcon: {fileID: 21300000, guid: adc9e615648417147b56f37b39067431, type: 3}
   noDifficultyIconColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   noDifficultySlotPrefab: {fileID: 482289283924367926, guid: 7b089408498166e4897feb78d147513e, type: 3}
+  battleErosionValueText: {fileID: 0}
   selectHoverLine: {fileID: 0}
   selectLineNormalColor: {r: 0.5137255, g: 0.5294118, b: 0.5568628, a: 1}
   selectLineHoveredColor: {r: 0.6627451, g: 0.69411767, b: 0.74509805, a: 1}
@@ -113827,7 +113828,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -115, y: 50}
+  m_AnchoredPosition: {x: -115, y: 25}
   m_SizeDelta: {x: 650, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1871834538
