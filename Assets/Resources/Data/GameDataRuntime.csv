@@ -1,11 +1,11 @@
 # Character
 캐릭터ID,이름,최대 HP,최대 Cost,Cost 회복량,자원최대치,자원타입,기본지급여부,해금조건,패시브스킬1,패시브스킬2,고유스킬1,고유스킬2,캐릭터스킬1,캐릭터스킬2,공유스킬1,공유스킬2,룬1,룬2,룬3,룬4,룬5,캐릭터소개
 CharacterId,Name,MaxHP,MaxCost,CostRecovery,MaxResource,ResourceType,IsDefaultProvided,UnlockCondition,PassiveSkill1,PassiveSkill2,UniqueSkill1,UniqueSkill2,CharacterSkill1,CharacterSkill2,CommonSkill1,CommonSkill2,Rune1,Rune2,Rune3,Rune4,Rune5,introduction
-Char_01,힐트,85,10,4,5,Karma,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_02,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,“강한 놈들이 득실거린다며? 그럼 내가 가야지.”
-Char_02,카야,70,12,4,5,Karma,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_03,S_Ability_04,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,“임무라면 완수한다. 그뿐이야.”
-Char_03,헤이즈,64,14,4,5,Karma,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_05,S_Ability_06,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,“정말 제가 가야 하는 건가요?”
-Char_04,이네스,75,11,4,5,Karma,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_07,S_Ability_08,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,“걱정하지 마세요. 모두 무사히 돌아갈 수 있도록 할게요.”
-Char_05,Char_05,88,12,4,5,Karma,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Unique_10,S_Ability_09,S_Ability_10,S_Public_17,S_Public_19,Rune_71,Rune_72,Rune_73,Rune_74,Rune_75,“그냥 내가 가고 싶어서 가는 거야.”
+Char_01,힐트,84,10,4,5,Karma,1,1,S_Passive_01,S_Passive_02,S_Unique_01,S_Unique_02,S_Ability_01,S_Ability_02,S_Public_01,S_Public_03,Rune_51,Rune_52,Rune_53,Rune_54,Rune_55,“강한 놈들이 득실거린다며? 그럼 내가 가야지.”
+Char_02,카야,76,12,4,5,Karma,1,1,S_Passive_03,S_Passive_04,S_Unique_03,S_Unique_04,S_Ability_03,S_Ability_04,S_Public_05,S_Public_07,Rune_56,Rune_57,Rune_58,Rune_59,Rune_60,“임무라면 완수한다. 그뿐이야.”
+Char_03,헤이즈,68,14,4,5,Karma,1,1,S_Passive_05,S_Passive_06,S_Unique_05,S_Unique_06,S_Ability_05,S_Ability_06,S_Public_09,S_Public_11,Rune_61,Rune_62,Rune_63,Rune_64,Rune_65,“정말 제가 가야 하는 건가요?”
+Char_04,이네스,78,11,4,5,Karma,1,1,S_Passive_07,S_Passive_08,S_Unique_07,S_Unique_08,S_Ability_07,S_Ability_08,S_Public_13,S_Public_15,Rune_66,Rune_67,Rune_68,Rune_69,Rune_70,“걱정하지 마세요. 모두 무사히 돌아갈 수 있도록 할게요.”
+Char_05,Char_05,77,12,4,5,Karma,2,2,S_Passive_09,S_Passive_10,S_Unique_09,S_Unique_10,S_Ability_09,S_Ability_10,S_Public_17,S_Public_19,Rune_71,Rune_72,Rune_73,Rune_74,Rune_75,“그냥 내가 가고 싶어서 가는 거야.”
 Char_06,Char_06,,,,,,,
 ,,,,,,,,
 ,,,,,,,,
@@ -942,8 +942,9 @@ Tutorial_01,2,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.01,후
 Tutorial_01,3,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.02,"하하, 이러다 거점에 도착하기도 전에 지치겠어!",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,4,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.03,불필요한 체력 소모는 피하시죠. 거점까지 얼마 남지 않았습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,5,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.01,탐사 중에는 침식도가 누적됩니다.,ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-Tutorial_01,6,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.02,"침식도는 새로운 방에 진입하면 3, 턴이 진행되거나
-피해를 받을 때마다 1, 전투불능이 되면 10 증가합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,6,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.02,"침식도는 새로운 방에 진입하면 3,
+턴이 진행되거나 피해를 받을 때마다 1,
+전투불능이 되면 10 증가합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,7,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.03,"침식도가 최대치인 100에 도달하면
 매 턴 생명력이 10씩 감소합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,8,Map_26,,,,,SpawnMonsters,,,,,Auto,

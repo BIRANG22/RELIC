@@ -18,6 +18,15 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text normalBattleCountText;
     [SerializeField] private TMP_Text eliteBattleCountText;
     [SerializeField] private TMP_Text eventCountText;
+    [SerializeField] private ErosionIconDatabase erosionIconDatabase;
+    [Header("Image Count Display")]
+    [SerializeField] private Sprite[] numberSprites = new Sprite[10];
+    [SerializeField] private DigitImageDisplay elapsedTimeImageDisplay = new DigitImageDisplay(6);
+    [SerializeField] private DigitImageDisplay normalBattleCountImageDisplay = new DigitImageDisplay(2);
+    [SerializeField] private DigitImageDisplay eliteBattleCountImageDisplay = new DigitImageDisplay(2);
+    [SerializeField] private DigitImageDisplay eventCountImageDisplay = new DigitImageDisplay(2);
+    [SerializeField] private DigitImageDisplay erosionScoreImageDisplay = new DigitImageDisplay(2);
+    [SerializeField] private DigitImageDisplay redDustiumImageDisplay = new DigitImageDisplay(3);
     [SerializeField] private ExplorationResultCharacterRowUI[] characterRows;
     [Header("Result Count-Up")]
     [SerializeField, Min(0f)] private float countUpDuration = 1f;
@@ -26,19 +35,33 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     [SerializeField] private Image hardModeBlurPrefab;
     [SerializeField] private Image hardModeBackdropBlurPrefab;
     [SerializeField] private RectTransform hardModeSlotRoot;
-    [Header("Erosion Icon Source")]
-    [SerializeField] private ErosionIconDatabase erosionIconDatabase;
     [SerializeField] private RectTransform acquiredItemSlotRoot;
     [SerializeField] private GameObject statisticsOverlayRoot;
     [SerializeField] private RectTransform statisticsOverlayRect;
     [SerializeField] private TMP_Text statisticsOverlayText;
     [SerializeField] private RectTransform statisticsOverlayBoundary;
     [SerializeField, Min(1)] private int maxHardModeSlots = 12;
+    [Header("No Erosion Difficulty")]
+    [Tooltip("침식 난이도를 선택하지 않았을 때 첫 번째 슬롯에 표시할 X 아이콘입니다. 비우면 프리팹의 기본 Icon 이미지를 유지합니다.")]
+    [SerializeField] private Sprite noErosionIcon;
     private const int AcquiredItemSlotCount = 8;
     [SerializeField] private Button returnToBaseButton;
     [SerializeField] private Canvas sortingCanvas;
     [SerializeField] private int resultPanelSortingOrder = 25000;
     [SerializeField] private List<StagePresentationEntry> stagePresentations = new();
+
+    [Header("Slot Name Tooltip")]
+    [SerializeField] private RectTransform slotNameRoot;
+    [SerializeField] private TMP_Text slotNameText;
+    [Tooltip("Offset from the hovered icon center, in the SlotName parent's local UI units.")]
+    [SerializeField] private Vector2 slotNameOffset = new Vector2(0f, 42f);
+    [Tooltip("Extra horizontal and vertical space around the name text.")]
+    [SerializeField] private Vector2 slotNamePadding = new Vector2(24f, 12f);
+    private readonly List<string> erosionSlotNames = new();
+    private readonly List<string> acquiredSlotNames = new();
+    private RectTransform lastSlotNameSource;
+    private string lastSlotName = string.Empty;
+
 
     private ExplorationResultData result;
     private bool isTransitioning;
@@ -59,7 +82,86 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     private int targetNormalBattleCount;
     private int targetEliteBattleCount;
     private int targetEventCount;
+    private int targetRedDustium;
     private bool hasResultCountUpTargets;
+
+    [System.Serializable]
+    private sealed class DigitImageDisplay
+    {
+        [SerializeField] private string rootObjectName;
+        [SerializeField] private Image[] digitImages;
+
+        public DigitImageDisplay(int digitCount)
+        {
+            digitImages = new Image[Mathf.Max(0, digitCount)];
+        }
+
+        public bool IsBound => digitImages != null && digitImages.Length > 0 && digitImages[0] != null;
+
+        public void AutoBind(Transform root, string defaultRootObjectName, int digitCount)
+        {
+            if (!string.IsNullOrWhiteSpace(defaultRootObjectName))
+                rootObjectName = string.IsNullOrWhiteSpace(rootObjectName) ? defaultRootObjectName : rootObjectName;
+
+            if (digitImages == null || digitImages.Length != digitCount)
+                digitImages = new Image[Mathf.Max(0, digitCount)];
+
+            Transform displayRoot = FindChildRecursive(root, rootObjectName);
+            if (displayRoot == null)
+                return;
+
+            for (int i = 0; i < digitImages.Length; i++)
+            {
+                if (digitImages[i] != null)
+                    continue;
+
+                Transform digit = FindChildRecursive(displayRoot, $"Value{i + 1}");
+                if (digit != null)
+                    digitImages[i] = digit.GetComponent<Image>();
+            }
+        }
+
+        public void ApplyValue(int value, Sprite[] sprites)
+        {
+            if (digitImages == null || digitImages.Length == 0 || sprites == null || sprites.Length < 10)
+                return;
+
+            int safeValue = Mathf.Max(0, value);
+            int maxValue = 1;
+            for (int i = 0; i < digitImages.Length; i++)
+                maxValue *= 10;
+            safeValue = Mathf.Clamp(safeValue, 0, maxValue - 1);
+
+            int[] digits = new int[digitImages.Length];
+            int working = safeValue;
+            for (int i = digitImages.Length - 1; i >= 0; i--)
+            {
+                digits[i] = working % 10;
+                working /= 10;
+            }
+
+            bool hasShownNonZero = false;
+            for (int i = 0; i < digitImages.Length; i++)
+            {
+                Image image = digitImages[i];
+                if (image == null)
+                    continue;
+
+                bool shouldShow = i == digitImages.Length - 1 || hasShownNonZero || digits[i] != 0;
+                if (digitImages.Length == 6 || digitImages.Length == 3)
+                    shouldShow = true;
+
+                image.gameObject.SetActive(shouldShow);
+                if (!shouldShow)
+                    continue;
+
+                int digit = Mathf.Clamp(digits[i], 0, 9);
+                image.sprite = sprites[digit];
+                image.enabled = image.sprite != null;
+                hasShownNonZero |= digits[i] != 0;
+            }
+        }
+    }
 
     private void Awake()
     {
@@ -67,6 +169,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
         if (returnToBaseButton != null)
             returnToBaseButton.onClick.AddListener(ReturnToBase);
+        HideSlotName();
     }
 
     public void Open()
@@ -123,6 +226,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         else if (resultText != null)
             resultText.text = BuildText(result, isDefeatResult, researchRewardMultiplier);
 
+        HideSlotName();
         BringResultPanelToFront();
 
         if (saveResultCheckpoint && SaveSystem.Instance != null)
@@ -190,13 +294,15 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         SetText(stageNameText, GameLocalization.Get(
             "ui.exploration.result.elapsed_time",
             "소요 시간"));
-        SetText(erosionLevelText, FormatErosionLevel(CalculateSelectedErosionScore(
+        int erosionScore = CalculateSelectedErosionScore(
             runtime?.SelectedErosionDifficultyIds,
-            DataManager.Instance?.ErosionDatabase)));
-        SetText(redDustiumText, FormatRedDustium(value.Remnant, rewardMultiplier));
+            DataManager.Instance?.ErosionDatabase);
+        SetText(erosionLevelText, FormatErosionLevel(erosionScore));
+        erosionScoreImageDisplay.ApplyValue(erosionScore, numberSprites);
 
         ExplorationNodeVisitSummary summary = ExplorationNodeVisitSummary.Count(mapRuntime);
-        StartResultCountUp(runtime?.ExplorationElapsedSeconds ?? 0f, summary, runtime?.IsTutorialBattle == true);
+        StartResultCountUp(runtime?.ExplorationElapsedSeconds ?? 0f, summary,
+            value.Remnant, rewardMultiplier, runtime?.IsTutorialBattle == true);
 
         ApplyStagePreviewImage(stagePresentation?.PreviewSprite);
         ApplyHardModeSlots(runtime);
@@ -225,6 +331,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     private void StartResultCountUp(
         float elapsedSeconds,
         ExplorationNodeVisitSummary summary,
+        int remnantAmount,
+        float rewardMultiplier,
         bool isTutorialBattle)
     {
         StopResultCountUp(false);
@@ -233,16 +341,13 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         targetNormalBattleCount = Mathf.Max(0, summary.NormalBattleCount);
         targetEliteBattleCount = Mathf.Max(0, summary.EliteBattleCount);
         targetEventCount = Mathf.Max(0, summary.EventCount);
-
-        // 튜토리얼은 생성 지도 노드가 아닌 고정된 전투-사건-전투 흐름을 사용합니다.
-        // 일반 탐사 및 캐릭터별 전투 통계에는 영향을 주지 않습니다.
+        targetRedDustium = Mathf.FloorToInt(Mathf.Max(0, remnantAmount) * Mathf.Max(0f, rewardMultiplier));
         if (isTutorialBattle)
         {
             targetNormalBattleCount = 2;
             targetEliteBattleCount = 0;
             targetEventCount = 1;
         }
-
         hasResultCountUpTargets = true;
 
         if (!Application.isPlaying || countUpDuration <= 0f)
@@ -276,10 +381,38 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         int displayedEliteCount = CalculateCountUpCount(targetEliteBattleCount, progress);
         int displayedEventCount = CalculateCountUpCount(targetEventCount, progress);
 
-        SetText(elapsedTimeCountText, BattleExplorationElapsedTime.Format(displayedSeconds));
-        SetText(normalBattleCountText, displayedNormalCount.ToString());
-        SetText(eliteBattleCountText, displayedEliteCount.ToString());
-        SetText(eventCountText, displayedEventCount.ToString());
+        ApplyElapsedTimeDisplay(displayedSeconds);
+        ApplyBattleCountDisplay(normalBattleCountText, normalBattleCountImageDisplay, displayedNormalCount);
+        ApplyBattleCountDisplay(eliteBattleCountText, eliteBattleCountImageDisplay, displayedEliteCount);
+        ApplyBattleCountDisplay(eventCountText, eventCountImageDisplay, displayedEventCount);
+        int displayedRedDustium = CalculateCountUpCount(targetRedDustium, progress);
+        SetText(redDustiumText, $"+ {displayedRedDustium}");
+        redDustiumImageDisplay.ApplyValue(displayedRedDustium, numberSprites);
+    }
+
+    private void ApplyElapsedTimeDisplay(int displayedSeconds)
+    {
+        int safeSeconds = Mathf.Max(0, displayedSeconds);
+        int hours = Mathf.Clamp(safeSeconds / 3600, 0, 99);
+        int minutes = (safeSeconds % 3600) / 60;
+        int seconds = safeSeconds % 60;
+
+        if (elapsedTimeCountText != null)
+            elapsedTimeCountText.text = $"{hours:00}:{minutes:00}:{seconds:00}";
+
+        if (!elapsedTimeImageDisplay.IsBound)
+            return;
+
+        int packedValue = hours * 10000 + minutes * 100 + seconds;
+        elapsedTimeImageDisplay.ApplyValue(packedValue, numberSprites);
+    }
+
+    private void ApplyBattleCountDisplay(TMP_Text text, DigitImageDisplay imageDisplay, int value)
+    {
+        int safeValue = Mathf.Clamp(value, 0, 99);
+        SetText(text, safeValue.ToString());
+        if (imageDisplay.IsBound)
+            imageDisplay.ApplyValue(safeValue, numberSprites);
     }
 
     private void StopResultCountUp(bool applyFinalValues)
@@ -296,8 +429,140 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        HideSlotName();
         Canvas.willRenderCanvases -= SyncHardModeBackdropBlurs;
         StopResultCountUp(true);
+    }
+
+    private void LateUpdate()
+    {
+        UpdateSlotNameHover();
+    }
+
+    private void UpdateSlotNameHover()
+    {
+        if (slotNameRoot == null || slotNameText == null)
+            return;
+
+        RectTransform source = null;
+        string displayName = null;
+        FindHoveredNamedSlot(hardModeSlots, erosionSlotNames, ref source, ref displayName);
+        if (source == null)
+            FindHoveredNamedSlot(acquiredItemSlots, acquiredSlotNames, ref source, ref displayName);
+
+        if (source == null || string.IsNullOrWhiteSpace(displayName))
+        {
+            HideSlotName();
+            return;
+        }
+
+        if (lastSlotNameSource != source || lastSlotName != displayName || !slotNameRoot.gameObject.activeSelf)
+        {
+            lastSlotNameSource = source;
+            lastSlotName = displayName;
+            slotNameRoot.gameObject.SetActive(true);
+            slotNameText.text = displayName;
+            ResizeSlotNameToText();
+        }
+        PositionSlotName(source);
+    }
+
+    private static void FindHoveredNamedSlot(
+        List<BattleBagItemSlotUI> slots, List<string> names,
+        ref RectTransform source, ref string displayName)
+    {
+        if (slots == null || names == null)
+            return;
+
+        // 슬롯 전체를 판정 영역으로 사용하여 아이콘 이미지의 투명 영역이나 크기 차이에도 안정적으로 반응합니다.
+        // 이전 슬롯의 이름을 계속 표시하지 않도록 매 프레임 현재 포인터에 맞는 슬롯을 다시 선택합니다.
+        for (int i = 0; i < slots.Count && i < names.Count; i++)
+        {
+            BattleBagItemSlotUI slot = slots[i];
+            if (slot == null || !slot.gameObject.activeInHierarchy ||
+                string.IsNullOrWhiteSpace(names[i]))
+                continue;
+
+            RectTransform slotRect = slot.RectTransform;
+            if (slotRect == null)
+                continue;
+
+            Canvas canvas = slotRect.GetComponentInParent<Canvas>();
+            Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? canvas.worldCamera : null;
+            if (!RectTransformUtility.RectangleContainsScreenPoint(slotRect, Input.mousePosition, camera))
+                continue;
+
+            Transform icon = slot.transform.Find("Icon");
+            RectTransform iconRect = icon as RectTransform;
+            source = iconRect != null && iconRect.gameObject.activeInHierarchy ? iconRect : slotRect;
+            displayName = names[i];
+            return;
+        }
+    }
+
+    private void ResizeSlotNameToText()
+    {
+        if (slotNameRoot == null || slotNameText == null)
+            return;
+
+        // 툴팁이 레이캐스트를 가로채지 않도록 하고, 내용이 바뀔 때마다 즉시 크기를 갱신합니다.
+        CanvasGroup group = slotNameRoot.GetComponent<CanvasGroup>();
+        if (group == null)
+            group = slotNameRoot.gameObject.AddComponent<CanvasGroup>();
+        group.blocksRaycasts = false;
+        group.interactable = false;
+
+        slotNameText.textWrappingMode = TextWrappingModes.NoWrap;
+        slotNameText.ForceMeshUpdate();
+        Vector2 preferred = slotNameText.GetPreferredValues(slotNameText.text);
+        Vector2 padding = new Vector2(Mathf.Max(0f, slotNamePadding.x), Mathf.Max(0f, slotNamePadding.y));
+        Vector2 size = preferred + padding;
+        slotNameRoot.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
+        slotNameRoot.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y);
+
+        // Name이 Stretch 앵커면 부모의 크기를 따라가며, 고정 앵커여도 글자가 잘리지 않도록 조정합니다.
+        RectTransform textRect = slotNameText.rectTransform;
+        if (textRect.anchorMin.x == textRect.anchorMax.x)
+            textRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, preferred.x);
+        if (textRect.anchorMin.y == textRect.anchorMax.y)
+            textRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, preferred.y);
+    }
+
+    private void PositionSlotName(RectTransform source)
+    {
+        RectTransform parent = slotNameRoot.parent as RectTransform;
+        if (parent == null)
+            return;
+
+        Canvas sourceCanvas = source.GetComponentInParent<Canvas>();
+        Camera sourceCamera = sourceCanvas != null && sourceCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? sourceCanvas.worldCamera : null;
+        Canvas targetCanvas = slotNameRoot.GetComponentInParent<Canvas>();
+        Camera targetCamera = targetCanvas != null && targetCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? targetCanvas.worldCamera : null;
+
+        Vector3 worldCenter = source.TransformPoint(source.rect.center);
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(sourceCamera, worldCenter);
+        if (!RectTransformUtility.ScreenPointToWorldPointInRectangle(
+            parent, screenPoint, targetCamera, out Vector3 targetWorld))
+            return;
+
+        // Convert through the parent so CanvasScaler and resolution changes are respected.
+        Vector3 localPoint = parent.InverseTransformPoint(targetWorld);
+        Vector2 anchor = (slotNameRoot.anchorMin + slotNameRoot.anchorMax) * 0.5f;
+        Vector2 anchorOffset = new Vector2(
+            Mathf.Lerp(parent.rect.xMin, parent.rect.xMax, anchor.x),
+            Mathf.Lerp(parent.rect.yMin, parent.rect.yMax, anchor.y));
+        slotNameRoot.anchoredPosition = (Vector2)localPoint - anchorOffset + slotNameOffset;
+    }
+
+    private void HideSlotName()
+    {
+        lastSlotNameSource = null;
+        lastSlotName = string.Empty;
+        if (slotNameRoot != null)
+            slotNameRoot.gameObject.SetActive(false);
     }
 
     public static string FormatErosionLevel(int score)
@@ -373,8 +638,9 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
         return titleText != null &&
                stageNameText != null &&
-               elapsedTimeCountText != null &&
-               redDustiumText != null &&
+               HasElapsedTimeDisplayBinding() &&
+               (redDustiumText != null || redDustiumImageDisplay.IsBound) &&
+               HasBattleCountDisplayBindings() &&
                characterRows != null &&
                characterRows.Length > 0;
     }
@@ -390,6 +656,12 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         normalBattleCountText ??= FindText("ExplorationReportNormalBattleCount");
         eliteBattleCountText ??= FindText("ExplorationReportEliteBattleCount");
         eventCountText ??= FindText("ExplorationReportEventCount");
+        elapsedTimeImageDisplay.AutoBind(transform, "ExplorationReportElapsedTimeCount", 6);
+        normalBattleCountImageDisplay.AutoBind(transform, "ExplorationReportNormalBattleCount", 2);
+        eliteBattleCountImageDisplay.AutoBind(transform, "ExplorationReportEliteBattleCount", 2);
+        eventCountImageDisplay.AutoBind(transform, "ExplorationReportEventCount", 2);
+        erosionScoreImageDisplay.AutoBind(transform, "Erosion_Value", 2);
+        redDustiumImageDisplay.AutoBind(transform, "ExplorationReportRedDustium", 3);
         hardModeSlotRoot ??= FindChildRecursive(transform, "ExplorationReportSelectedErosionSlots") as RectTransform;
         statisticsOverlayRoot ??= FindChildRecursive(transform, "ExplorationReportStatisticsOverlay")?.gameObject;
         statisticsOverlayRect ??= statisticsOverlayRoot != null
@@ -408,6 +680,12 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         if (characterRows == null || characterRows.Length == 0)
             characterRows = GetComponentsInChildren<ExplorationResultCharacterRowUI>(true);
 
+        slotNameRoot ??= FindChildRecursive(transform, "SlotName") as RectTransform;
+        if (slotNameText == null && slotNameRoot != null)
+        {
+            Transform name = FindChildRecursive(slotNameRoot, "Name");
+            slotNameText = name != null ? name.GetComponent<TMP_Text>() : null;
+        }
         sortingCanvas ??= GetComponent<Canvas>();
     }
 
@@ -421,6 +699,18 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     {
         Transform target = FindChildRecursive(transform, objectName);
         return target != null ? target.GetComponent<Image>() : null;
+    }
+
+    private bool HasElapsedTimeDisplayBinding()
+    {
+        return elapsedTimeCountText != null || elapsedTimeImageDisplay.IsBound;
+    }
+
+    private bool HasBattleCountDisplayBindings()
+    {
+        return (normalBattleCountText != null || normalBattleCountImageDisplay.IsBound) &&
+               (eliteBattleCountText != null || eliteBattleCountImageDisplay.IsBound) &&
+               (eventCountText != null || eventCountImageDisplay.IsBound);
     }
 
     private static Transform FindChildRecursive(Transform root, string objectName)
@@ -523,9 +813,12 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         // Continue skips the lobby transition, so restore the catalog sprite cache explicitly.
         ErosionDifficultyCatalogUI.PrepareLoadedCatalogIconCacheForBattleStart();
         EnsureSlotCount(hardModeSlots, hardModeSlotRoot, maxHardModeSlots, "HardModeSlot");
+        erosionSlotNames.Clear();
         EnsureHardModeBackdropBlurCount(maxHardModeSlots);
         IReadOnlyList<string> ids = runtime?.SelectedErosionDifficultyIds;
         int visibleCount = Mathf.Min(ids?.Count ?? 0, maxHardModeSlots);
+        // 난이도가 하나도 없으면 첫 번째 슬롯을 X 아이콘용으로 표시합니다.
+        bool showNoErosionSlot = visibleCount == 0;
         for (int i = 0; i < hardModeSlots.Count; i++)
         {
             BattleBagItemSlotUI slot = hardModeSlots[i];
@@ -540,14 +833,19 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
                 : null;
             EnsureHardModeBlur(slot);
             // 선택 침식 슬롯의 위치와 크기는 루트의 Layout Group에서 관리합니다.
-            bool visible = i < visibleCount && !string.IsNullOrWhiteSpace(ids[i]);
+            bool isNoErosionSlot = showNoErosionSlot && i == 0;
+            bool visible = isNoErosionSlot || (i < visibleCount && !string.IsNullOrWhiteSpace(ids[i]));
+            // X 아이콘 슬롯은 프리팹 내부 블러도 숨깁니다. 다음 탐사에서 난이도가 선택되면 다시 활성화합니다.
+            Transform slotBlur = slot.transform.Find("HardModeRedBlur");
+            if (slotBlur != null)
+                slotBlur.gameObject.SetActive(visible && !isNoErosionSlot);
             if (backdropBlur != null)
             {
                 LayoutElement backdropLayout = backdropBlur.GetComponent<LayoutElement>();
                 if (backdropLayout == null)
                     backdropLayout = backdropBlur.gameObject.AddComponent<LayoutElement>();
                 backdropLayout.ignoreLayout = true;
-                backdropBlur.gameObject.SetActive(visible);
+                backdropBlur.gameObject.SetActive(visible && !isNoErosionSlot);
                 PlaceBackdropImmediatelyBeforeSlot(backdropBlur.transform, slot.transform);
             }
 
@@ -555,12 +853,30 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             if (!visible)
                 continue;
 
+            if (isNoErosionSlot)
+            {
+                if (noErosionIcon != null)
+                    slot.SetupDisplayIcon(noErosionIcon);
+
+                // 숫자 등급 대신 X 이미지만 보이도록 텍스트를 숨깁니다.
+                Transform valueText = FindChildRecursive(slot.transform, "ValueText");
+                if (valueText != null)
+                    valueText.gameObject.SetActive(false);
+                Transform valueRoot = slot.transform.Find("Value");
+                if (valueRoot != null)
+                    valueRoot.gameObject.SetActive(false);
+                continue;
+            }
+
+            Transform selectedValueRoot = slot.transform.Find("Value");
+            if (selectedValueRoot != null)
+                selectedValueRoot.gameObject.SetActive(true);
             string id = ids[i].Trim();
             ErosionData data = ResolveErosionData(id);
-            Sprite icon = ResolveErosionIcon(data);
-            slot.SetupDisplayIcon(icon, FormatErosionTier(data?.Tier ?? 0));
-            if (icon == null)
-                Debug.LogWarning($"[ExplorationResultPanelUI] Missing erosion icon: {id} (database: {erosionIconDatabase?.name ?? DataManager.Instance?.ErosionIconDatabase?.name ?? "null"}). Assign Erosion Icon Database in the result panel Inspector.", this);
+            slot.SetupDisplayIcon(ResolveErosionIcon(data), FormatErosionTier(data?.Tier ?? 0));
+            while (erosionSlotNames.Count <= i)
+                erosionSlotNames.Add(string.Empty);
+            erosionSlotNames[i] = data != null ? GameDataLocalization.ErosionName(data) : string.Empty;
         }
     }
 
@@ -650,6 +966,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         // Always show exactly eight bag slots. Their layout is controlled by the parent Layout Group.
         EnsureSlotCount(acquiredItemSlots, acquiredItemSlotRoot, AcquiredItemSlotCount, "AcquiredItemSlot");
         List<BagItemStack> stacks = BagItemStackUtility.BuildStacks(value?.BagItemIds);
+        acquiredSlotNames.Clear();
         for (int i = 0; i < acquiredItemSlots.Count; i++)
         {
             BattleBagItemSlotUI slot = acquiredItemSlots[i];
@@ -673,6 +990,10 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             }
 
             BagItemStack stack = stacks[i];
+            while (acquiredSlotNames.Count <= i)
+                acquiredSlotNames.Add(string.Empty);
+            ItemData itemData = DataManager.Instance?.ItemDatabase?.Get(stack.ItemId);
+            acquiredSlotNames[i] = itemData != null ? GameDataLocalization.ItemName(itemData) : stack.ItemId;
             slot.Setup(stack.ItemId, stack.Count, null, null, null);
             slot.SetQuantityVisible(true);
             ApplyAcquiredSlotEmptyColors(slot, false);
@@ -846,9 +1167,9 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     {
         return tier switch
         {
-            1 => "I",
-            2 => "II",
-            3 => "III",
+            1 => "Ⅰ",
+            2 => "Ⅱ",
+            3 => "Ⅲ",
             _ => string.Empty
         };
     }

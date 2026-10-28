@@ -35,6 +35,21 @@ public class EventRoomController : MonoBehaviour
     [SerializeField] private float eventChoiceGradationStartY = -600f;
     [SerializeField] private float eventChoiceGradationEndY = -250f;
     [SerializeField, Min(0.01f)] private float eventChoiceScrollMoveDuration = 0.4f;
+    [Header("Event Entrance Title Typing")]
+    [Tooltip("방 입장 인트로와 동시에 이벤트 제목을 한 글자씩 표시하는 간격(초)입니다.")]
+    [SerializeField, Min(0.001f)] private float eventTitleCharacterInterval = 0.035f;
+
+    [Header("Choice Click Feedback")]
+    [SerializeField, Range(0f, 0.5f)] private float selectedChoiceExtraScale = 0.1f;
+    [SerializeField, Min(0.01f)] private float selectedChoiceExpandDuration = 0.2f;
+    [SerializeField, Min(0.01f)] private float selectedChoiceReturnDuration = 0.24f;
+    [SerializeField, Min(0f)] private float selectedChoiceHoldDuration = 0.1f;
+    [SerializeField, Min(0.01f)] private float selectedChoiceFadeDuration = 0.2f;
+    [SerializeField, Min(0.01f)] private float otherChoiceFadeDuration = 0.2f;
+    private Coroutine choiceClickFeedbackRoutine;
+    private Coroutine chainedEventRevealRoutine;
+    [Header("Chained Event Reveal")]
+    [SerializeField, Min(0f)] private float chainedTitlePause = 0.08f;
 
     [Header("Terminal Choice Exit")]
     [SerializeField, Min(0.01f)] private float terminalChoiceFadeDuration = 0.25f;
@@ -178,6 +193,7 @@ public class EventRoomController : MonoBehaviour
     private EventData activeRewardChoice;
     private CanvasGroup eventTitleCanvasGroup;
     private Coroutine eventChoiceScrollMoveRoutine;
+    private Coroutine eventEntranceTitleRoutine;
     private Coroutine skillAwakenTransitionRoutine;
     private Coroutine skillAwakenResultRoutine;
     private bool hasPendingSkillAwakenResult;
@@ -375,6 +391,7 @@ public class EventRoomController : MonoBehaviour
         ClearPendingEvent01ResultContinuation();
         ClearPendingEvent02ResultContinuation();
         ClearPendingEvent04ResultContinuation();
+        StopEventEntranceTitleRoutine();
         StopEventChoiceScrollViewAnimation();
         StopSkillAwakenResultRoutine();
         StopTerminalChoiceFade();
@@ -643,6 +660,7 @@ public class EventRoomController : MonoBehaviour
         isEventRewardPanelOpen = false;
         pendingEventRewards.Clear();
 
+        StopEventEntranceTitleRoutine();
         waitForEventEntranceReveal = true;
         ResetEventChoiceScrollViewPosition();
         ResetEventChoiceScrollViewVisualState();
@@ -900,6 +918,14 @@ public class EventRoomController : MonoBehaviour
             return;
 
         EnsureDataEventReferences();
+        bool isChainedEvent = currentEventDefinition != null &&
+                              !waitForEventEntranceReveal && isDataEventActive;
+        StopEventEntranceTitleRoutine();
+        if (chainedEventRevealRoutine != null)
+        {
+            StopCoroutine(chainedEventRevealRoutine);
+            chainedEventRevealRoutine = null;
+        }
         HideDiceRollPresenterImmediate();
 
         currentEventDefinition = definition;
@@ -933,11 +959,15 @@ public class EventRoomController : MonoBehaviour
             if (IsEvent10Result(definition.EventId))
                 ShowEvent10ResultPresentation();
             SetDataEventRootVisible(true);
+            if (isChainedEvent)
+                StartChainedEventReveal(false);
             return;
         }
 
         BindChoiceSlots(GetCurrentVisibleChoices());
         SetDataEventRootVisible(true);
+        if (isChainedEvent)
+            StartChainedEventReveal(true);
     }
 
     private static bool IsEvent10Result(string eventId)
@@ -1068,20 +1098,128 @@ public class EventRoomController : MonoBehaviour
                 choice,
                 selectable,
                 unavailableReason,
-                () => OnEventChoiceClicked(captured),
+                () => OnEventChoiceClicked(captured, slot),
                 EventIdUtility.Normalize(choice.EventId) == "Event_08_A"
                     ? eventChoiceSessionState.SelectedPartySlot : 0);
+            CanvasGroup resetGroup = slot.GetComponent<CanvasGroup>();
+            if (resetGroup != null) resetGroup.alpha = 1f;
             slotIndex++;
         }
     }
 
-    private void OnEventChoiceClicked(EventData choice)
+    private void OnEventChoiceClicked(EventData choice, EventChoiceSlotUI selectedSlot)
     {
-        if (choice == null)
+        if (choice == null || choiceClickFeedbackRoutine != null)
             return;
 
         if (SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit())
             return;
+
+        choiceClickFeedbackRoutine = StartCoroutine(AnimateChoiceClickThenExecute(choice, selectedSlot));
+    }
+
+    private IEnumerator AnimateChoiceClickThenExecute(EventData choice, EventChoiceSlotUI selectedSlot)
+    {
+        EnsureChoiceSlots();
+        SetChoiceSlotsInteractable(false);
+        var otherGroups = new List<CanvasGroup>();
+        var otherStartAlphas = new List<float>();
+        CanvasGroup selectedGroup = null;
+        if (choiceSlots != null)
+        {
+            foreach (EventChoiceSlotUI slot in choiceSlots)
+            {
+                if (slot == null || !slot.gameObject.activeInHierarchy)
+                    continue;
+                CanvasGroup group = slot.GetComponent<CanvasGroup>();
+                if (group == null)
+                    group = slot.gameObject.AddComponent<CanvasGroup>();
+                group.interactable = false;
+                group.blocksRaycasts = false;
+                if (slot == selectedSlot)
+                    selectedGroup = group;
+                else
+                {
+                    otherGroups.Add(group);
+                    otherStartAlphas.Add(group.alpha);
+                }
+            }
+        }
+
+        // Keep the hovered size as the baseline, rather than replacing its scale.
+        Transform selectedTransform = selectedSlot != null ? selectedSlot.transform : null;
+        Vector3 baselineScale = selectedTransform != null ? selectedTransform.localScale : Vector3.one;
+        Vector3 peakScale = baselineScale * (1f + selectedChoiceExtraScale);
+        float otherFadeElapsed = 0f;
+        float fadeDuration = Mathf.Max(0.01f, otherChoiceFadeDuration);
+
+        float expandDuration = Mathf.Max(0.01f, selectedChoiceExpandDuration);
+        float returnDuration = Mathf.Max(0.01f, selectedChoiceReturnDuration);
+        float totalBounceDuration = expandDuration + returnDuration;
+        float elapsed = 0f;
+        while (elapsed < totalBounceDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            otherFadeElapsed += Time.unscaledDeltaTime;
+            UpdateOtherChoiceAlphas(otherGroups, otherStartAlphas, otherFadeElapsed / fadeDuration);
+            if (selectedTransform != null)
+            {
+                if (elapsed <= expandDuration)
+                    selectedTransform.localScale = Vector3.Lerp(baselineScale, peakScale, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / expandDuration)));
+                else
+                    selectedTransform.localScale = Vector3.Lerp(peakScale, baselineScale, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((elapsed - expandDuration) / returnDuration)));
+            }
+            yield return null;
+        }
+        if (selectedTransform != null)
+            selectedTransform.localScale = baselineScale;
+
+        float hold = 0f;
+        while (hold < selectedChoiceHoldDuration)
+        {
+            float delta = Time.unscaledDeltaTime;
+            hold += delta;
+            otherFadeElapsed += delta;
+            UpdateOtherChoiceAlphas(otherGroups, otherStartAlphas, otherFadeElapsed / fadeDuration);
+            yield return null;
+        }
+
+        EnsureEventTitleCanvasGroup();
+        float oldTitleAlpha = eventTitleCanvasGroup != null ? eventTitleCanvasGroup.alpha : 1f;
+        float selectedStartAlpha = selectedGroup != null ? selectedGroup.alpha : 1f;
+        float fadeElapsed = 0f;
+        while (fadeElapsed < selectedChoiceFadeDuration)
+        {
+            float delta = Time.unscaledDeltaTime;
+            fadeElapsed += delta;
+            otherFadeElapsed += delta;
+            UpdateOtherChoiceAlphas(otherGroups, otherStartAlphas, otherFadeElapsed / fadeDuration);
+            float fadeProgress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(fadeElapsed / selectedChoiceFadeDuration));
+            if (selectedGroup != null)
+                selectedGroup.alpha = Mathf.Lerp(selectedStartAlpha, 0f, fadeProgress);
+            if (eventTitleCanvasGroup != null)
+                eventTitleCanvasGroup.alpha = Mathf.Lerp(oldTitleAlpha, 0f, fadeProgress);
+            yield return null;
+        }
+        UpdateOtherChoiceAlphas(otherGroups, otherStartAlphas, 1f);
+        if (selectedGroup != null)
+            selectedGroup.alpha = 0f;
+
+        choiceClickFeedbackRoutine = null;
+        if (choice != null && isActiveAndEnabled)
+            ExecuteClickedChoice(choice);
+    }
+
+    private static void UpdateOtherChoiceAlphas(List<CanvasGroup> groups, List<float> starts, float progress)
+    {
+        float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(progress));
+        for (int i = 0; i < groups.Count; i++)
+            if (groups[i] != null)
+                groups[i].alpha = Mathf.Lerp(starts[i], 0f, t);
+    }
+
+    private void ExecuteClickedChoice(EventData choice)
+    {
 
         if (EventChoiceExecutionService.RequiresEquippedRelicCostSelection(choice))
         {
@@ -1703,9 +1841,8 @@ public class EventRoomController : MonoBehaviour
             // Both dice and coin choices hide the choice ScrollView before resolving.
             // Restore it when the next event is loaded, otherwise Event_07_A/B
             // has choices bound in data but remains invisible to the player.
-            if ((resolvedDiceFaces != null || IsCoinChoice(choice)) &&
-                nextDefinition.Choices != null && nextDefinition.Choices.Count > 0)
-                RestoreEventChoiceUiAfterDice();
+            // LoadEventDefinition starts the new title typing and choice entrance.
+            // Do not also start the old dice fade-in on top of that animation.
 
             return;
         }
@@ -6405,15 +6542,102 @@ public class EventRoomController : MonoBehaviour
 
     public void PlayEventChoiceEntranceAnimation()
     {
-        if (!isActiveAndEnabled || !isDataEventActive)
+        if (!isActiveAndEnabled || !isDataEventActive || !waitForEventEntranceReveal)
             return;
 
         waitForEventEntranceReveal = false;
+        StopEventEntranceTitleRoutine();
+        EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventChoiceGradationCanvasGroup();
+        if (eventChoiceScrollCanvasGroup != null)
+        {
+            eventChoiceScrollCanvasGroup.alpha = 0f;
+            eventChoiceScrollCanvasGroup.blocksRaycasts = false;
+            eventChoiceScrollCanvasGroup.interactable = false;
+        }
+        if (eventChoiceGradationCanvasGroup != null)
+            eventChoiceGradationCanvasGroup.alpha = 0f;
+        SetChoiceSlotsInteractable(false);
+        eventEntranceTitleRoutine = StartCoroutine(PlayEventEntranceTitleRoutine());
+    }
 
+    private void StartChainedEventReveal(bool hasChoices)
+    {
+        if (!isActiveAndEnabled) return;
+        chainedEventRevealRoutine = StartCoroutine(RevealChainedEventRoutine(hasChoices));
+    }
+
+    private IEnumerator RevealChainedEventRoutine(bool hasChoices)
+    {
+        EnsureEventTitleCanvasGroup();
+        EnsureEventChoiceScrollCanvasGroup();
+        EnsureEventChoiceGradationCanvasGroup();
+        if (eventChoiceScrollCanvasGroup != null)
+        {
+            eventChoiceScrollCanvasGroup.alpha = 0f;
+            eventChoiceScrollCanvasGroup.blocksRaycasts = false;
+            eventChoiceScrollCanvasGroup.interactable = false;
+        }
+        if (eventChoiceGradationCanvasGroup != null)
+            eventChoiceGradationCanvasGroup.alpha = 0f;
+        SetChoiceSlotsInteractable(false);
+        if (eventChoiceScrollView != null) eventChoiceScrollView.gameObject.SetActive(false);
+        if (eventChoiceGradation != null) eventChoiceGradation.gameObject.SetActive(false);
         if (eventTitleText != null)
+        {
             eventTitleText.gameObject.SetActive(true);
+            if (eventTitleCanvasGroup != null) eventTitleCanvasGroup.alpha = 1f;
+            eventTitleText.ForceMeshUpdate();
+            int characterCount = eventTitleText.textInfo.characterCount;
+            eventTitleText.maxVisibleCharacters = 0;
+            if (chainedTitlePause > 0f) yield return new WaitForSecondsRealtime(chainedTitlePause);
+            for (int i = 1; i <= characterCount; i++)
+            {
+                eventTitleText.maxVisibleCharacters = i;
+                yield return new WaitForSecondsRealtime(Mathf.Max(0.001f, eventTitleCharacterInterval));
+            }
+            eventTitleText.maxVisibleCharacters = int.MaxValue;
+        }
+        chainedEventRevealRoutine = null;
+        if (hasChoices && isActiveAndEnabled && isDataEventActive && !isEventResolved)
+            StartEventChoiceScrollViewAnimation();
+    }
 
-        StartEventChoiceScrollViewAnimation();
+    private IEnumerator PlayEventEntranceTitleRoutine()
+    {
+        if (eventTitleText != null)
+        {
+            eventTitleText.gameObject.SetActive(true);
+            eventTitleText.ForceMeshUpdate();
+            int characterCount = eventTitleText.textInfo.characterCount;
+            eventTitleText.maxVisibleCharacters = 0;
+            float interval = Mathf.Max(0.001f, eventTitleCharacterInterval);
+            for (int i = 1; i <= characterCount; i++)
+            {
+                eventTitleText.maxVisibleCharacters = i;
+                yield return new WaitForSecondsRealtime(interval);
+            }
+            eventTitleText.maxVisibleCharacters = int.MaxValue;
+        }
+
+        // 선택지는 방 입장 인트로와 제목 출력이 모두 끝난 뒤 표시합니다.
+        while (BattleMapIntroText.IsAnyPlayingOrVisible())
+            yield return null;
+
+        eventEntranceTitleRoutine = null;
+        if (isActiveAndEnabled && isDataEventActive && !isEventResolved)
+            StartEventChoiceScrollViewAnimation();
+    }
+
+    private void StopEventEntranceTitleRoutine()
+    {
+        if (eventEntranceTitleRoutine != null)
+        {
+            StopCoroutine(eventEntranceTitleRoutine);
+            eventEntranceTitleRoutine = null;
+        }
+        if (eventTitleText != null)
+            eventTitleText.maxVisibleCharacters = int.MaxValue;
     }
 
     private void StartEventChoiceScrollViewAnimation()
@@ -6523,6 +6747,7 @@ public class EventRoomController : MonoBehaviour
         if (eventChoiceGradationCanvasGroup != null)
             eventChoiceGradationCanvasGroup.alpha = 1f;
 
+        SetChoiceSlotsInteractable(true);
         eventChoiceScrollMoveRoutine = null;
     }
 
