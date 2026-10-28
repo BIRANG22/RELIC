@@ -31,6 +31,18 @@ public class BattleRewardPanelUI : MonoBehaviour
     [Min(0f)][SerializeField] private float rewardStartOffsetY = 40f;
     [Tooltip("아래에서 위로 등장할 때 사용할 이동 곡선입니다.")]
     [SerializeField] private AnimationCurve rewardRevealCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [Header("Reward Dismiss Animation")]
+    [Tooltip("획득한 보상 슬롯이 위로 이동하며 사라지는 시간(초)입니다.")]
+    [SerializeField, Min(0f)] private float rewardDismissDuration = 0.25f;
+    [Tooltip("획득한 보상 슬롯이 사라질 때 위로 이동하는 거리(UI 단위)입니다.")]
+    [SerializeField, Min(0f)] private float rewardDismissOffsetY = 40f;
+    [Tooltip("보상 슬롯 퇴장 시 사용할 이동 곡선입니다.")]
+    [SerializeField] private AnimationCurve rewardDismissCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [Header("Reward Slot Reflow Animation")]
+    [Tooltip("보상 슬롯이 사라진 후 남은 슬롯들이 빈자리로 이동하는 시간(초)입니다.")]
+    [SerializeField, Min(0f)] private float rewardReflowDuration = 0.25f;
+    [Tooltip("남은 보상 슬롯의 위치 이동 곡선입니다.")]
+    [SerializeField] private AnimationCurve rewardReflowCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     [SerializeField] private Sprite remnantIcon;
     [SerializeField] private Color remnantIconColor = Color.white;
     [Tooltip("유물 보상에 공통으로 표시할 아이콘입니다.")]
@@ -79,6 +91,7 @@ public class BattleRewardPanelUI : MonoBehaviour
     private bool pointerPressedOnNextButton;
     private bool validNextButtonClick;
     private int validNextButtonClickFrame = -1;
+    private int dismissingSlotCount;
 
     public Button SharedNextButton => gainButton;
 
@@ -215,6 +228,7 @@ public class BattleRewardPanelUI : MonoBehaviour
         currentRewards.Clear();
         claimedRewards.Clear();
         activeSlots.Clear();
+        dismissingSlotCount = 0;
         onRewardFlowCompleted = completedCallback;
         pendingEquipmentReward = false;
         ResolveEquipPanelIfNeeded();
@@ -490,6 +504,10 @@ public class BattleRewardPanelUI : MonoBehaviour
             if (!claimedRewards.Contains(reward))
                 break; // The acquisition was blocked; do not retry indefinitely.
 
+            // 연속 획득에서도 앞 슬롯의 퇴장 애니메이션이 보인 뒤 다음 슬롯을 처리합니다.
+            while (dismissingSlotCount > 0)
+                yield return null;
+
             if (claimedRewards.Count < currentRewards.Count && gainInterval > 0f)
                 yield return new WaitForSecondsRealtime(gainInterval);
         }
@@ -622,7 +640,8 @@ public class BattleRewardPanelUI : MonoBehaviour
             targetCamera);
         Color iconColor = slot.CurrentIconColor;
 
-        slot.SetClaimed();
+        // 슬롯을 즉시 비활성화하면 퇴장 페이드아웃이 보이지 않습니다.
+        // 클릭 차단 및 실제 제거는 CompleteRewardSlot/ DismissRewardSlot에서 처리합니다.
 
         // 획득 연출은 보상 처리와 완전히 분리합니다.
         // 연출이 재생되는 동안에도 다른 보상을 즉시 선택하거나 다음 행동을 진행할 수 있습니다.
@@ -694,19 +713,145 @@ public class BattleRewardPanelUI : MonoBehaviour
         if (slot != null)
         {
             activeSlots.Remove(slot);
-            Destroy(slot.gameObject);
+            CanvasGroup group = slot.GetComponent<CanvasGroup>();
+            if (group == null)
+                group = slot.gameObject.AddComponent<CanvasGroup>();
+            group.interactable = false;
+            group.blocksRaycasts = false;
+            dismissingSlotCount++;
+            StartCoroutine(DismissRewardSlot(slot));
         }
 
         UpdateGainButton();
 
-        if (claimedRewards.Count >= currentRewards.Count)
+        // 마지막 슬롯의 페이드아웃이 완료되기 전에는 패널을 닫지 않습니다.
+        if (claimedRewards.Count >= currentRewards.Count && dismissingSlotCount == 0)
         {
             FinishRewardFlow();
             return;
         }
 
-        if (rewardRoot is RectTransform rectTransform)
+        if (dismissingSlotCount == 0 && rewardRoot is RectTransform rectTransform)
             LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
+    }
+
+    private IEnumerator DismissRewardSlot(BattleRewardSlotUI slot)
+    {
+        if (slot == null)
+        {
+            CompleteSlotDismiss();
+            yield break;
+        }
+
+        CanvasGroup group = slot.GetComponent<CanvasGroup>();
+        float initialAlpha = group != null ? group.alpha : 1f;
+        List<RectTransform> visuals = new();
+        List<Vector2> startPositions = new();
+        for (int i = 0; i < slot.transform.childCount; i++)
+        {
+            if (slot.transform.GetChild(i) is RectTransform child)
+            {
+                visuals.Add(child);
+                startPositions.Add(child.anchoredPosition);
+            }
+        }
+
+        float duration = Mathf.Max(0f, rewardDismissDuration);
+        float elapsed = 0f;
+        while (slot != null && elapsed < duration)
+        {
+            float t = Mathf.Clamp01(elapsed / duration);
+            float eased = rewardDismissCurve != null && rewardDismissCurve.length > 0
+                ? rewardDismissCurve.Evaluate(t) : t;
+            if (group != null)
+                group.alpha = initialAlpha * (1f - t);
+            for (int i = 0; i < visuals.Count; i++)
+                if (visuals[i] != null)
+                    visuals[i].anchoredPosition = startPositions[i] + Vector2.up * (rewardDismissOffsetY * eased);
+
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (slot != null)
+        {
+            // Layout Group은 슬롯이 제거되는 즉시 남은 슬롯을 재배치합니다.
+            // 이전 화면 좌표를 보존하고 새 위치와의 차이를 시각 자식에 적용해
+            // 빈자리로 순간이동하는 대신 자연스럽게 이동하도록 합니다.
+            List<BattleRewardSlotUI> remainingSlots = new();
+            List<Vector3> previousWorldPositions = new();
+            for (int i = 0; i < activeSlots.Count; i++)
+            {
+                BattleRewardSlotUI remaining = activeSlots[i];
+                if (remaining == null || !remaining.gameObject.activeInHierarchy)
+                    continue;
+
+                remainingSlots.Add(remaining);
+                previousWorldPositions.Add(remaining.transform.position);
+            }
+
+            slot.gameObject.SetActive(false);
+            if (rewardRoot is RectTransform rootRect)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(rootRect);
+
+            List<RectTransform> movingVisuals = new();
+            List<Vector2> originalPositions = new();
+            List<Vector2> initialOffsets = new();
+            for (int i = 0; i < remainingSlots.Count; i++)
+            {
+                BattleRewardSlotUI remaining = remainingSlots[i];
+                if (remaining == null)
+                    continue;
+
+                Vector3 worldOffset = previousWorldPositions[i] - remaining.transform.position;
+                for (int childIndex = 0; childIndex < remaining.transform.childCount; childIndex++)
+                {
+                    if (remaining.transform.GetChild(childIndex) is not RectTransform visual)
+                        continue;
+
+                    Vector3 localOffset = visual.parent.InverseTransformVector(worldOffset);
+                    movingVisuals.Add(visual);
+                    originalPositions.Add(visual.anchoredPosition);
+                    initialOffsets.Add(new Vector2(localOffset.x, localOffset.y));
+                    visual.anchoredPosition += new Vector2(localOffset.x, localOffset.y);
+                }
+            }
+
+            float reflowElapsed = 0f;
+            float reflowDuration = Mathf.Max(0f, rewardReflowDuration);
+            while (reflowElapsed < reflowDuration)
+            {
+                float t = Mathf.Clamp01(reflowElapsed / Mathf.Max(0.0001f, reflowDuration));
+                float eased = rewardReflowCurve != null && rewardReflowCurve.length > 0
+                    ? rewardReflowCurve.Evaluate(t) : t;
+                for (int i = 0; i < movingVisuals.Count; i++)
+                    if (movingVisuals[i] != null)
+                        movingVisuals[i].anchoredPosition = originalPositions[i] + initialOffsets[i] * (1f - eased);
+
+                reflowElapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            for (int i = 0; i < movingVisuals.Count; i++)
+                if (movingVisuals[i] != null)
+                    movingVisuals[i].anchoredPosition = originalPositions[i];
+
+            Destroy(slot.gameObject);
+        }
+
+        CompleteSlotDismiss();
+    }
+
+    private void CompleteSlotDismiss()
+    {
+        dismissingSlotCount = Mathf.Max(0, dismissingSlotCount - 1);
+        if (dismissingSlotCount == 0)
+        {
+            if (claimedRewards.Count >= currentRewards.Count)
+                FinishRewardFlow();
+            else if (rewardRoot is RectTransform rectTransform)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(rectTransform);
+        }
     }
 
     private List<BattleRewardData> ToRuntimeRewards(IReadOnlyList<BattleRewardSaveData> saved)
