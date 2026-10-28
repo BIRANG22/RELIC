@@ -263,6 +263,10 @@ public class EventChoiceSlotUI : MonoBehaviour
                 ? GameDataLocalization.EventUnavailableChoiceDescription(boundChoice)
                 : boundUnavailableReason);
 
+        if (boundSelectable && string.Equals(boundChoice.ChoiceType?.Trim(), "Dice", System.StringComparison.OrdinalIgnoreCase))
+            displayedChoiceDesc = EventChoiceExecutionService.FormatDiceChoiceDescription(
+                displayedChoiceDesc, boundChoice.SuccessCondition);
+
         if (choiceDescText != null)
         {
             // Preserve actual line breaks from the Event sheet and support literal \n from CSV.

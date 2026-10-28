@@ -2453,7 +2453,7 @@ public class EventRoomController : MonoBehaviour
             return string.Empty;
 
         if (!string.IsNullOrWhiteSpace(choice.SuccessCondition))
-            return IsDiceSuccess(diceRoll, choice.SuccessCondition)
+            return EventChoiceExecutionService.IsDiceSuccessWithDifficulty(diceRoll, choice.SuccessCondition)
                 ? GameLocalization.Get("event.dice.success")
                 : GameLocalization.Get("event.dice.failure");
 
@@ -3739,7 +3739,7 @@ public class EventRoomController : MonoBehaviour
             messages.Add($"주사위 결과: {diceRoll}");
 
             if (!string.IsNullOrWhiteSpace(choice.SuccessCondition))
-                success = IsDiceSuccess(diceRoll, choice.SuccessCondition);
+                success = EventChoiceExecutionService.IsDiceSuccessWithDifficulty(diceRoll, choice.SuccessCondition);
         }
         else if (SameToken(choice.ChoiceType, "Chance"))
         {

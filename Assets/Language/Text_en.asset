@@ -7119,24 +7119,19 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 1847506937413929984
-    m_Localized: "Roll 6 or higher\nGain a random Common\u2013Rare relic"
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 3745294383723786182
-    m_Localized: "Roll 8 or higher\nGain a random Rare\u2013Epic relic"
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 2376006004967798544
-    m_Localized: "Roll 10 or higher\nGain a random Epic\u2013Unique relic"
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 2931162308643722859
-    m_Localized: 'Roll 6 or higher
-
-      Gain 30 Red Dustium
-
-      Failure: Lose
-      5 HP'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 7621201596966329862
@@ -7144,12 +7139,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 1189355817020927489
-    m_Localized: 'Roll 10 or higher
-
-      Gain 50 Red Dustium
-
-      Failure: Lose
-      5 HP'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 1526258976528201190
@@ -7165,9 +7155,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5784428132370024697
-    m_Localized: 'Predict: Heads or Tails
-
-      Gain 25 Red Dustium'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 7282873809406718105
@@ -7175,9 +7163,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 520187140604704921
-    m_Localized: 'Predict: Heads or Tails
-
-      Gain 30 Red Dustium'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 8278174541721857739
@@ -7185,9 +7171,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 1602478198363195788
-    m_Localized: 'Predict: Heads or Tails
-
-      Gain 35 Red Dustium'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 3187163654533708606
@@ -7235,9 +7219,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 3000764013450334034
-    m_Localized: 'Predict: Heads or Tails
-
-      Gain a random relic'
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 2335950260633357007

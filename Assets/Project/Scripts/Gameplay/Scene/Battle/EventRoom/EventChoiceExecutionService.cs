@@ -343,12 +343,11 @@ namespace Relic.Gameplay.Data
             if (IsToken(choice.ChoiceType, "Dice"))
             {
                 diceFaces = RollDiceFaces(context);
-                diceRoll = Mathf.Max(0, SumDiceFaces(diceFaces) - BattleErosionEffectService.GetValue(
-                    BattleErosionEffectService.DiceDifficultyAdd));
+                diceRoll = SumDiceFaces(diceFaces);
                 messages.Add($"주사위 결과: {diceRoll}");
 
                 if (!string.IsNullOrWhiteSpace(choice.SuccessCondition))
-                    success = IsDiceSuccess(diceRoll, choice.SuccessCondition);
+                    success = IsDiceSuccessWithDifficulty(diceRoll, choice.SuccessCondition);
             }
             else if (IsToken(choice.ChoiceType, "Coin"))
             {
@@ -1364,6 +1363,51 @@ namespace Relic.Gameplay.Data
                 : BattleRandom.Value();
 
             return value <= rate;
+        }
+
+        // Dice difficulty increases the required minimum, never changes the rolled faces.
+        public static int GetDiceDifficultyBonus()
+        {
+            return Mathf.Max(0, BattleErosionEffectService.GetValue(
+                BattleErosionEffectService.DiceDifficultyAdd));
+        }
+
+        public static bool IsDiceSuccessWithDifficulty(int diceRoll, string condition)
+        {
+            if (string.IsNullOrWhiteSpace(condition))
+                return true;
+
+            int bonus = GetDiceDifficultyBonus();
+            string[] ranges = condition.Split(new[] { ',', '/' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string range in ranges)
+            {
+                if (TryParseRange(range, out int minimum, out int maximum) &&
+                    diceRoll >= minimum + bonus && diceRoll <= maximum)
+                    return true;
+            }
+            return false;
+        }
+
+        // Only change the displayed threshold. Preserve reward quantities and localization.
+        public static string FormatDiceChoiceDescription(string description, string condition)
+        {
+            if (string.IsNullOrEmpty(description) || string.IsNullOrWhiteSpace(condition))
+                return description;
+
+            int bonus = GetDiceDifficultyBonus();
+            if (bonus <= 0)
+                return description;
+
+            string firstRange = condition.Split(new[] { ',', '/' }, StringSplitOptions.RemoveEmptyEntries)[0];
+            if (!TryParseRange(firstRange, out int minimum, out int maximum))
+                return description;
+
+            // Replace only the standalone threshold value, not e.g. reward amount 25.
+            string pattern = @"(?<![0-9])" + minimum.ToString() + @"(?![0-9])";
+            return System.Text.RegularExpressions.Regex.Replace(
+                description, pattern, (minimum + bonus).ToString(),
+                System.Text.RegularExpressions.RegexOptions.None,
+                TimeSpan.FromMilliseconds(100));
         }
 
         private static bool IsDiceSuccess(int diceRoll, string condition)
