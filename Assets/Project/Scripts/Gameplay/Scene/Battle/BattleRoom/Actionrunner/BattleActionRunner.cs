@@ -1962,17 +1962,18 @@ public class BattleActionRunner
 
             BattleUnitAnimator attackerAnimator = attacker.GetComponent<BattleUnitAnimator>();
 
-            BeginAttackPlaneFeedbackIfNeeded(
-                shouldControlAttackPlane,
-                playerPlaneAttackType,
-                HasPlayerAttackPlaneRecipient(attacker, command));
-
             if (ShouldPlayerSkillTargetPlayerParty(command))
             {
                 if (ShouldEnterCameraForActiveAction() &&
                     ShouldSkipPlayerSkillCamera(command) &&
                     BattleCameraController.Instance != null)
                     yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
+
+                // 카메라 포커스가 끝난 뒤 공격 모션과 함께 Plane 연출을 시작합니다.
+                BeginAttackPlaneFeedbackIfNeeded(
+                    shouldControlAttackPlane,
+                    playerPlaneAttackType,
+                    HasPlayerAttackPlaneRecipient(attacker, command));
 
                 if (attackerAnimator != null)
                 {
@@ -2038,6 +2039,12 @@ public class BattleActionRunner
                     ShouldSkipPlayerSkillCamera(command) &&
                     BattleCameraController.Instance != null)
                     yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
+
+                // 카메라 포커스가 끝난 뒤 공격 모션과 함께 Plane 연출을 시작합니다.
+                BeginAttackPlaneFeedbackIfNeeded(
+                    shouldControlAttackPlane,
+                    playerPlaneAttackType,
+                    HasPlayerAttackPlaneRecipient(attacker, command));
 
                 if (attackerAnimator != null)
                 {
@@ -2118,6 +2125,12 @@ public class BattleActionRunner
 
                 yield break;
             }
+
+            // 포커스 이동 중 미리 기울어지는 현상을 방지합니다.
+            BeginAttackPlaneFeedbackIfNeeded(
+                shouldControlAttackPlane,
+                playerPlaneAttackType,
+                HasPlayerAttackPlaneRecipient(attacker, command));
 
             // 대상이 없는 공격도 효과 처리 루틴을 실행해야 Count만큼의
             // 공격 모션을 모두 재생할 수 있습니다.
@@ -4597,11 +4610,6 @@ public class BattleActionRunner
             }
 
             ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
-            BeginAttackPlaneFeedbackIfNeeded(
-                shouldControlAttackPlane,
-                monsterPlaneAttackType,
-                HasAliveMonsterSkillTarget(monster, command));
-
             try
             {
                 yield return ExecuteMonsterDashAttack(command);
@@ -4695,11 +4703,6 @@ public class BattleActionRunner
         }
 
         ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
-        BeginAttackPlaneFeedbackIfNeeded(
-            shouldControlAttackPlane,
-            monsterPlaneAttackType,
-            HasAliveMonsterSkillTarget(monster, command));
-
         try
         {
             if (ShouldEnterCameraForActiveAction() &&
@@ -4715,6 +4718,12 @@ public class BattleActionRunner
                 yield return BattleCameraController.Instance.ZoomToAttacker(monster.transform);
             }
 
+
+            // 카메라의 공격자 포커스 후 기울기와 공격 애니메이션을 함께 시작합니다.
+            BeginAttackPlaneFeedbackIfNeeded(
+                shouldControlAttackPlane,
+                monsterPlaneAttackType,
+                HasAliveMonsterSkillTarget(monster, command));
 
             bool hasDamageHitEffect = monsterSkillEffectService.HasDamageHitEffect(command);
 
@@ -5924,6 +5933,12 @@ public class BattleActionRunner
             hitPlayer != null &&
             BattleCameraController.Instance != null)
             yield return BattleCameraController.Instance.ZoomToAttacker(monster.transform);
+
+        // 돌진 공격도 카메라 포커스가 끝난 뒤 모션과 기울기를 동시에 시작합니다.
+        BeginAttackPlaneFeedbackIfNeeded(
+            ShouldControlAttackPlaneForMonsterSkill(command),
+            ShouldSkipMonsterSkillCamera(command) ? PlaneAttackType.Ranged : PlaneAttackType.Melee,
+            hitPlayer != null || hitBlockingMonster != null || hitCharacterGridEffectIndex >= 0);
 
         if (animator != null)
             animator.PlayMonsterSkillAction(command);
