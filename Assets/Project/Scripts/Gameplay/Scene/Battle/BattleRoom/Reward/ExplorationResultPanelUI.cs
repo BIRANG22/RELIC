@@ -196,7 +196,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         SetText(redDustiumText, FormatRedDustium(value.Remnant, rewardMultiplier));
 
         ExplorationNodeVisitSummary summary = ExplorationNodeVisitSummary.Count(mapRuntime);
-        StartResultCountUp(runtime?.ExplorationElapsedSeconds ?? 0f, summary);
+        StartResultCountUp(runtime?.ExplorationElapsedSeconds ?? 0f, summary, runtime?.IsTutorialBattle == true);
 
         ApplyStagePreviewImage(stagePresentation?.PreviewSprite);
         ApplyHardModeSlots(runtime);
@@ -224,7 +224,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
     private void StartResultCountUp(
         float elapsedSeconds,
-        ExplorationNodeVisitSummary summary)
+        ExplorationNodeVisitSummary summary,
+        bool isTutorialBattle)
     {
         StopResultCountUp(false);
 
@@ -232,6 +233,16 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         targetNormalBattleCount = Mathf.Max(0, summary.NormalBattleCount);
         targetEliteBattleCount = Mathf.Max(0, summary.EliteBattleCount);
         targetEventCount = Mathf.Max(0, summary.EventCount);
+
+        // 튜토리얼은 생성 지도 노드가 아닌 고정된 전투-사건-전투 흐름을 사용합니다.
+        // 일반 탐사 및 캐릭터별 전투 통계에는 영향을 주지 않습니다.
+        if (isTutorialBattle)
+        {
+            targetNormalBattleCount = 2;
+            targetEliteBattleCount = 0;
+            targetEventCount = 1;
+        }
+
         hasResultCountUpTargets = true;
 
         if (!Application.isPlaying || countUpDuration <= 0f)
