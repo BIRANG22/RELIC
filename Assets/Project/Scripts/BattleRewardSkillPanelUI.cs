@@ -67,6 +67,14 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     [SerializeField] private GameObject uniqueVfxPrefab;
 
 
+    [Header("Rarity Indicator VFX (Skill / after Background)")]
+    [Tooltip("Shared indicator VFX prefab for all three cards.")]
+    [SerializeField] private GameObject rarityIndicatorVfxPrefab;
+    [Tooltip("Local position under each SkillPanel/Mask/Skill, immediately after Background.")]
+    [SerializeField] private Vector3 rarityIndicatorVfxOffset = Vector3.zero;
+    [SerializeField] private Vector3 rarityIndicatorVfxScale = Vector3.one;
+    private readonly GameObject[] activeRarityIndicators = new GameObject[3];
+
     [Serializable]
     private sealed class SkillCardReferences
     {
@@ -966,6 +974,10 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private void PlaySelectionCardEffects(int selectedIndex, bool fadeSelectedCard)
     {
         clickedCardIndex = selectedIndex;
+        // Remove all rarity indicators on the selection frame, including the selected card.
+        // Keep the separate rarity-effect prefabs and their original behavior unchanged.
+        for (int i = 0; i < activeRarityIndicators.Length; i++)
+            ClearRarityIndicator(i);
         if (scaleCardRoots[selectedIndex] != null)
             scaleCardRoots[selectedIndex].localScale = baseCardScales[selectedIndex] * clickedScale;
 
@@ -2026,6 +2038,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     {
         ClearRarityVfx(index);
         GameObject prefab = GetRarityVfxPrefab(rarity);
+        ShowRarityIndicator(index, card, rarity);
         if (prefab == null || card == null) return;
 
         Transform parent = SkillRef(index)?.rarityVfxRoot;
@@ -2045,6 +2058,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private void ClearRarityVfx(int index)
     {
         if (index < 0 || index >= activeRarityVfx.Length) return;
+        ClearRarityIndicator(index);
         if (pendingRarityVfx[index] != null)
         {
             StopCoroutine(pendingRarityVfx[index]);
@@ -2054,6 +2068,73 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         activeRarityVfx[index].SetActive(false);
         Destroy(activeRarityVfx[index]);
         activeRarityVfx[index] = null;
+    }
+
+    private void ShowRarityIndicator(int index, Transform card, SkillRarity rarity)
+    {
+        ClearRarityIndicator(index);
+        if (clickedCardIndex >= 0 || processing) return;
+        GameObject prefab = rarityIndicatorVfxPrefab;
+        if (prefab == null || card == null) return;
+
+        // Place the shared indicator immediately after Background within Mask/Skill.
+        Transform skillRoot = card.Find("Mask/Skill");
+        if (skillRoot == null) return;
+        GameObject instance = Instantiate(prefab, skillRoot, false);
+        instance.name = prefab.name + "_RarityIndicatorVFX";
+        Transform background = skillRoot.Find("Background");
+        if (background != null)
+            instance.transform.SetSiblingIndex(background.GetSiblingIndex() + 1);
+        else
+            instance.transform.SetAsFirstSibling();
+        instance.transform.localPosition = rarityIndicatorVfxOffset;
+        instance.transform.localRotation = Quaternion.identity;
+        instance.transform.localScale = rarityIndicatorVfxScale;
+        ApplyRarityIndicatorColor(instance, RarityColor(rarity));
+        if (instance.GetComponent<BattleRewardRarityVfxPauseOnMenu>() == null)
+            instance.AddComponent<BattleRewardRarityVfxPauseOnMenu>();
+        // Indicator must not prevent card clicks or hover interactions.
+        CanvasGroup group = instance.GetComponent<CanvasGroup>();
+        if (group == null) group = instance.AddComponent<CanvasGroup>();
+        group.interactable = false;
+        group.blocksRaycasts = false;
+        foreach (Graphic graphic in instance.GetComponentsInChildren<Graphic>(true))
+            graphic.raycastTarget = false;
+        activeRarityIndicators[index] = instance;
+        instance.SetActive(true);
+    }
+
+    private static void ApplyRarityIndicatorColor(GameObject instance, Color color)
+    {
+        foreach (ParticleSystem particle in instance.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            ParticleSystem.MainModule main = particle.main;
+            ParticleSystem.MinMaxGradient original = main.startColor;
+            Color tinted = color;
+            if (original.mode == ParticleSystemGradientMode.Color)
+                tinted.a *= original.color.a;
+            main.startColor = tinted;
+        }
+        foreach (Graphic graphic in instance.GetComponentsInChildren<Graphic>(true))
+        {
+            Color original = graphic.color;
+            graphic.color = new Color(color.r, color.g, color.b, original.a);
+        }
+        foreach (SpriteRenderer sprite in instance.GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            Color original = sprite.color;
+            sprite.color = new Color(color.r, color.g, color.b, original.a);
+        }
+    }
+
+    private void ClearRarityIndicator(int index)
+    {
+        if (index < 0 || index >= activeRarityIndicators.Length) return;
+        GameObject instance = activeRarityIndicators[index];
+        activeRarityIndicators[index] = null;
+        if (instance == null) return;
+        instance.SetActive(false);
+        Destroy(instance);
     }
 
     private Color RarityColor(SkillRarity rarity)

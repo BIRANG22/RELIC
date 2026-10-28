@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -40,11 +40,13 @@ public class EventRoomController : MonoBehaviour
     [SerializeField, Min(0.001f)] private float eventTitleCharacterInterval = 0.035f;
 
     [Header("Choice Click Feedback")]
-    [SerializeField, Range(0f, 0.5f)] private float selectedChoiceExtraScale = 0.1f;
-    [SerializeField, Min(0.01f)] private float selectedChoiceExpandDuration = 0.2f;
-    [SerializeField, Min(0.01f)] private float selectedChoiceReturnDuration = 0.24f;
-    [SerializeField, Min(0f)] private float selectedChoiceHoldDuration = 0.1f;
-    [SerializeField, Min(0.01f)] private float selectedChoiceFadeDuration = 0.2f;
+    [Tooltip("선택한 슬롯이 위로 움직이는 거리(UI 단위).")]
+    [SerializeField, Min(0f)] private float selectedChoiceMoveUpDistance = 12f;
+    [Tooltip("선택한 슬롯이 시작 위치보다 아래로 내려가는 거리(UI 단위).")]
+    [SerializeField, Min(0f)] private float selectedChoiceMoveDownDistance = 28f;
+    [SerializeField, Min(0.01f)] private float selectedChoiceMoveUpDuration = 0.16f;
+    [SerializeField, Min(0.01f)] private float selectedChoiceMoveDownDuration = 0.32f;
+    [SerializeField, Min(0.01f)] private float selectedChoiceFadeDuration = 0.32f;
     [SerializeField, Min(0.01f)] private float otherChoiceFadeDuration = 0.2f;
     private Coroutine choiceClickFeedbackRoutine;
     private Coroutine chainedEventRevealRoutine;
@@ -1121,7 +1123,12 @@ public class EventRoomController : MonoBehaviour
     private IEnumerator AnimateChoiceClickThenExecute(EventData choice, EventChoiceSlotUI selectedSlot)
     {
         EnsureChoiceSlots();
+        // Capture the hover scale before disabling interaction (which may fire PointerExit).
+        Transform selectedScaleRoot = selectedSlot != null ? selectedSlot.transform : null;
+        Vector3 clickedHoverScale = selectedScaleRoot != null ? selectedScaleRoot.localScale : Vector3.one;
         SetChoiceSlotsInteractable(false);
+        if (selectedScaleRoot != null)
+            selectedScaleRoot.localScale = clickedHoverScale;
         var otherGroups = new List<CanvasGroup>();
         var otherStartAlphas = new List<float>();
         CanvasGroup selectedGroup = null;
@@ -1146,64 +1153,83 @@ public class EventRoomController : MonoBehaviour
             }
         }
 
-        // Keep the hovered size as the baseline, rather than replacing its scale.
+        // 선택한 슬롯을 먼저 살짝 올린 뒤, 아래로 이동하는 동안 페이드아웃합니다.
+        // 슬롯 자체의 위치는 마지막에 복원하여 다음 이벤트 선택지에 영향을 주지 않습니다.
+        RectTransform selectedRect = selectedSlot != null ? selectedSlot.transform as RectTransform : null;
         Transform selectedTransform = selectedSlot != null ? selectedSlot.transform : null;
-        Vector3 baselineScale = selectedTransform != null ? selectedTransform.localScale : Vector3.one;
-        Vector3 peakScale = baselineScale * (1f + selectedChoiceExtraScale);
+        Vector2 originalAnchoredPosition = selectedRect != null ? selectedRect.anchoredPosition : Vector2.zero;
+        Vector3 originalLocalPosition = selectedTransform != null ? selectedTransform.localPosition : Vector3.zero;
         float otherFadeElapsed = 0f;
-        float fadeDuration = Mathf.Max(0.01f, otherChoiceFadeDuration);
+        float otherFadeDuration = Mathf.Max(0.01f, otherChoiceFadeDuration);
+        float upDuration = Mathf.Max(0.01f, selectedChoiceMoveUpDuration);
+        float downDuration = Mathf.Max(0.01f, selectedChoiceMoveDownDuration);
+        float selectedFadeDuration = Mathf.Max(0.01f, selectedChoiceFadeDuration);
+        float selectedStartAlpha = selectedGroup != null ? selectedGroup.alpha : 1f;
 
-        float expandDuration = Mathf.Max(0.01f, selectedChoiceExpandDuration);
-        float returnDuration = Mathf.Max(0.01f, selectedChoiceReturnDuration);
-        float totalBounceDuration = expandDuration + returnDuration;
         float elapsed = 0f;
-        while (elapsed < totalBounceDuration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            otherFadeElapsed += Time.unscaledDeltaTime;
-            UpdateOtherChoiceAlphas(otherGroups, otherStartAlphas, otherFadeElapsed / fadeDuration);
-            if (selectedTransform != null)
-            {
-                if (elapsed <= expandDuration)
-                    selectedTransform.localScale = Vector3.Lerp(baselineScale, peakScale, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / expandDuration)));
-                else
-                    selectedTransform.localScale = Vector3.Lerp(peakScale, baselineScale, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((elapsed - expandDuration) / returnDuration)));
-            }
-            yield return null;
-        }
-        if (selectedTransform != null)
-            selectedTransform.localScale = baselineScale;
-
-        float hold = 0f;
-        while (hold < selectedChoiceHoldDuration)
+        while (elapsed < upDuration)
         {
             float delta = Time.unscaledDeltaTime;
-            hold += delta;
+            elapsed += delta;
             otherFadeElapsed += delta;
-            UpdateOtherChoiceAlphas(otherGroups, otherStartAlphas, otherFadeElapsed / fadeDuration);
+            UpdateOtherChoiceAlphas(otherGroups, otherStartAlphas, otherFadeElapsed / otherFadeDuration);
+            if (selectedScaleRoot != null) selectedScaleRoot.localScale = clickedHoverScale;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / upDuration));
+            if (selectedRect != null)
+                selectedRect.anchoredPosition = originalAnchoredPosition + Vector2.up * (selectedChoiceMoveUpDistance * t);
+            else if (selectedTransform != null)
+                selectedTransform.localPosition = originalLocalPosition + Vector3.up * (selectedChoiceMoveUpDistance * t);
             yield return null;
         }
 
         EnsureEventTitleCanvasGroup();
-        float oldTitleAlpha = eventTitleCanvasGroup != null ? eventTitleCanvasGroup.alpha : 1f;
-        float selectedStartAlpha = selectedGroup != null ? selectedGroup.alpha : 1f;
-        float fadeElapsed = 0f;
-        while (fadeElapsed < selectedChoiceFadeDuration)
+        float titleStartAlpha = eventTitleCanvasGroup != null ? eventTitleCanvasGroup.alpha : 1f;
+        elapsed = 0f;
+        while (elapsed < downDuration)
         {
             float delta = Time.unscaledDeltaTime;
-            fadeElapsed += delta;
+            elapsed += delta;
             otherFadeElapsed += delta;
-            UpdateOtherChoiceAlphas(otherGroups, otherStartAlphas, otherFadeElapsed / fadeDuration);
-            float fadeProgress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(fadeElapsed / selectedChoiceFadeDuration));
+            UpdateOtherChoiceAlphas(otherGroups, otherStartAlphas, otherFadeElapsed / otherFadeDuration);
+            if (selectedScaleRoot != null) selectedScaleRoot.localScale = clickedHoverScale;
+            float moveT = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / downDuration));
+            float y = Mathf.Lerp(selectedChoiceMoveUpDistance, -selectedChoiceMoveDownDistance, moveT);
+            if (selectedRect != null)
+                selectedRect.anchoredPosition = originalAnchoredPosition + Vector2.up * y;
+            else if (selectedTransform != null)
+                selectedTransform.localPosition = originalLocalPosition + Vector3.up * y;
+
+            float fadeT = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / selectedFadeDuration));
             if (selectedGroup != null)
-                selectedGroup.alpha = Mathf.Lerp(selectedStartAlpha, 0f, fadeProgress);
+                selectedGroup.alpha = Mathf.Lerp(selectedStartAlpha, 0f, fadeT);
             if (eventTitleCanvasGroup != null)
-                eventTitleCanvasGroup.alpha = Mathf.Lerp(oldTitleAlpha, 0f, fadeProgress);
+                eventTitleCanvasGroup.alpha = Mathf.Lerp(titleStartAlpha, 0f, fadeT);
             yield return null;
         }
+        // 페이드 시간이 이동 시간보다 길어도 완전히 투명해진 다음 다음 이벤트로 넘어갑니다.
+        while (elapsed < selectedFadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            otherFadeElapsed += Time.unscaledDeltaTime;
+            UpdateOtherChoiceAlphas(otherGroups, otherStartAlphas, otherFadeElapsed / otherFadeDuration);
+            if (selectedScaleRoot != null) selectedScaleRoot.localScale = clickedHoverScale;
+            float fadeT = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / selectedFadeDuration));
+            if (selectedGroup != null)
+                selectedGroup.alpha = Mathf.Lerp(selectedStartAlpha, 0f, fadeT);
+            if (eventTitleCanvasGroup != null)
+                eventTitleCanvasGroup.alpha = Mathf.Lerp(titleStartAlpha, 0f, fadeT);
+            yield return null;
+        }
+
+        if (selectedRect != null)
+            selectedRect.anchoredPosition = originalAnchoredPosition;
+        else if (selectedTransform != null)
+            selectedTransform.localPosition = originalLocalPosition;
         UpdateOtherChoiceAlphas(otherGroups, otherStartAlphas, 1f);
         if (selectedGroup != null)
             selectedGroup.alpha = 0f;
+        if (eventTitleCanvasGroup != null)
+            eventTitleCanvasGroup.alpha = 0f;
 
         choiceClickFeedbackRoutine = null;
         if (choice != null && isActiveAndEnabled)

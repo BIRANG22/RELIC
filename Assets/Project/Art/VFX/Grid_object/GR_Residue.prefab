@@ -75,7 +75,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: e2355ff4a9ad91749822e691bb98ea20, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5048,16 +5048,8 @@ MonoBehaviour:
   vfxEntries:
   - prefab: {fileID: 0}
     flipType: 2
-    sfx:
-      playSfx: 0
-      sfxId: 
-      delay: 0
-      volumeMultiplier: 1
-      routeEmbeddedAudioSourcesThroughAudioManager: 1
-      removeEmbeddedAudioSources: 1
     renderMode: 0
     proxyBlendMode: 0
-    spawnAnchor: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
     renderTextureHeight: 512

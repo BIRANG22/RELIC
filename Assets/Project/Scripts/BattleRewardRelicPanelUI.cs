@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections;
 using Relic.Gameplay.Data;
 using TMPro;
@@ -20,6 +20,13 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     [SerializeField] private Color rareColor = new Color32(81, 157, 228, 255);
     [SerializeField] private Color epicColor = new Color32(165, 107, 221, 255);
     [SerializeField] private Color uniqueColor = new Color32(233, 177, 69, 255);
+
+    [Header("Rarity Indicator VFX (item/Background)")]
+    [Tooltip("One shared VFX prefab spawned beneath item/Background and tinted by the reward relic rarity.")]
+    [SerializeField] private GameObject rarityIndicatorVfxPrefab;
+    [SerializeField] private Vector3 rarityIndicatorVfxOffset = Vector3.zero;
+    [SerializeField] private Vector3 rarityIndicatorVfxScale = Vector3.one;
+    private GameObject activeRarityIndicatorVfx;
 
     [Header("Equipped Relic Tooltip")]
     [SerializeField] private RectTransform tooltipUI;
@@ -176,6 +183,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     {
         if (current == null || resolving || itemIntroCoroutine != null) return;
         resolving = true;
+        ClearRarityIndicatorVfx();
         rewardActionCloseCoroutine = StartCoroutine(CloseWithoutEquip());
     }
 
@@ -199,6 +207,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         }
 
         resolving = true;
+        ClearRarityIndicatorVfx();
         BattleGoldHudUI.RefreshAll();
         Debug.Log($"[BattleRewardRelicPanelUI] Extracted relic. RelicId:{current.RewardId} Remnant:{amount}", this);
         rewardActionCloseCoroutine = StartCoroutine(CloseWithoutEquip());
@@ -279,6 +288,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private void OnDisable()
     {
         ResetItemIntro();
+        ClearRarityIndicatorVfx();
         if (rewardActionCloseCoroutine != null)
         {
             StopCoroutine(rewardActionCloseCoroutine);
@@ -327,6 +337,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             equipCloseCoroutine = null;
         }
         ResetItemIntro();
+        ClearRarityIndicatorVfx();
         ClearEquipVfx();
         ClearSlotPreviewVfx();
         EnsurePanelCanvasGroup();
@@ -339,6 +350,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         Bind();
         BindRewardActionButtons();
         Refresh();
+        SpawnRarityIndicatorVfx();
         transform.SetAsLastSibling();
         BeginItemIntro();
     }
@@ -505,6 +517,67 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         foreach (GameObject child in introHiddenObjects)
             if (child != null) child.SetActive(true);
         introHiddenObjects.Clear();
+    }
+
+    private void SpawnRarityIndicatorVfx()
+    {
+        ClearRarityIndicatorVfx();
+        if (rarityIndicatorVfxPrefab == null || current == null) return;
+
+        Transform background = transform.Find("item/Background");
+        if (background == null)
+        {
+            Debug.LogWarning("[BattleRewardRelicPanelUI] item/Background not found for rarity indicator VFX.", this);
+            return;
+        }
+
+        activeRarityIndicatorVfx = Instantiate(rarityIndicatorVfxPrefab, background, false);
+        activeRarityIndicatorVfx.name = rarityIndicatorVfxPrefab.name + "_RarityIndicatorVFX";
+        activeRarityIndicatorVfx.transform.localPosition = rarityIndicatorVfxOffset;
+        activeRarityIndicatorVfx.transform.localRotation = Quaternion.identity;
+        activeRarityIndicatorVfx.transform.localScale = rarityIndicatorVfxScale;
+        activeRarityIndicatorVfx.transform.SetAsLastSibling();
+
+        Color color = GetCurrentRelicRarityColor();
+        foreach (ParticleSystem particle in activeRarityIndicatorVfx.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            var main = particle.main;
+            main.startColor = new ParticleSystem.MinMaxGradient(color);
+        }
+        foreach (Graphic graphic in activeRarityIndicatorVfx.GetComponentsInChildren<Graphic>(true))
+        {
+            graphic.color = color;
+            graphic.raycastTarget = false;
+        }
+        foreach (SpriteRenderer renderer in activeRarityIndicatorVfx.GetComponentsInChildren<SpriteRenderer>(true))
+            renderer.color = color;
+        CanvasGroup group = activeRarityIndicatorVfx.GetComponent<CanvasGroup>();
+        if (group == null) group = activeRarityIndicatorVfx.AddComponent<CanvasGroup>();
+        group.interactable = false;
+        group.blocksRaycasts = false;
+        activeRarityIndicatorVfx.SetActive(true);
+    }
+
+    private Color GetCurrentRelicRarityColor()
+    {
+        if (current == null || DataManager.Instance?.RelicDatabase == null ||
+            !DataManager.Instance.RelicDatabase.TryGet(current.RewardId, out RelicData relic) || relic == null)
+            return commonColor;
+        switch (RelicRarityUtility.GetRevealRank(ParseRarity(relic.Rarity)))
+        {
+            case 2: return rareColor;
+            case 3: return epicColor;
+            case 4: return uniqueColor;
+            default: return commonColor;
+        }
+    }
+
+    private void ClearRarityIndicatorVfx()
+    {
+        if (activeRarityIndicatorVfx == null) return;
+        activeRarityIndicatorVfx.SetActive(false);
+        Destroy(activeRarityIndicatorVfx);
+        activeRarityIndicatorVfx = null;
     }
 
     private void SpawnItemImageIntroVfx()
@@ -1156,6 +1229,8 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         }
         if (destination < 0) return;
         resolving = true;
+        // Keep the rarity indicator visible throughout relic equip/replace feedback.
+        // It is cleaned up when the reward panel closes (OnDisable).
         LockEquippingCharacter(index);
         equipCloseCoroutine = StartCoroutine(PlayEquipVfxAndCommit(runtime, relic, destination, index, active));
     }
