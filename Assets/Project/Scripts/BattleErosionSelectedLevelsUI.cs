@@ -417,6 +417,12 @@ public sealed class BattleErosionSelectedLevelsUI : MonoBehaviour
         return ids == null ? string.Empty : string.Join("|", ids.ToArray());
     }
 
+    // 배틀 씬에서 실제 표시 중인 침식도 아이콘 조회 경로를 결과 패널과 공유합니다.
+    public Sprite GetSelectedIconForResult(ErosionData data)
+    {
+        return ResolveSelectedIcon(data);
+    }
+
     private Sprite ResolveSelectedIcon(ErosionData data)
     {
         if (data == null) return null;

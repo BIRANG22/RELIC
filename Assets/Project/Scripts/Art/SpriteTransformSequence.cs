@@ -105,7 +105,7 @@ public sealed class SpriteTransformSequence : MonoBehaviour
     private readonly List<Coroutine> activeVfxCoroutines = new List<Coroutine>();
     private int pendingVfxCount;
 
-private Transform Target => target != null ? target : transform;
+    private Transform Target => target != null ? target : transform;
 
     private SpriteRenderer SpriteTarget => spriteRenderer != null
         ? spriteRenderer
@@ -113,8 +113,43 @@ private Transform Target => target != null ? target : transform;
 
     private void OnEnable()
     {
+        // 이미 등장한 보스방으로 이어하기한 경우 appear의 자동 연출을 막습니다.
+        // 최초 입장과 보스의 페이즈 전환 연출에는 영향을 주지 않습니다.
+        if (ShouldSkipResumedBossAppear())
+            return;
+
         if (playOnEnable)
             Play();
+    }
+
+    private bool ShouldSkipResumedBossAppear()
+    {
+        if (!string.Equals(gameObject.name, "appear", StringComparison.Ordinal))
+            return false;
+
+        Transform parent = transform.parent;
+        bool inBossBackground = false;
+        while (parent != null)
+        {
+            if (parent.name.StartsWith("St1_boss", StringComparison.Ordinal))
+            {
+                inBossBackground = true;
+                break;
+            }
+            parent = parent.parent;
+        }
+
+        if (!inBossBackground)
+            return false;
+
+        SaveSystem save = SaveSystem.Instance;
+        if (save != null && save.TryGetPendingResumeData(out ResumeData resume) &&
+            resume != null && resume.Phase == ResumePhase.ExplorationResult)
+            return true;
+
+        var map = DataManager.Instance?.MapRuntimeStore?.Get();
+        return map != null && save != null &&
+               save.WasBossIntroStartedForNode(map.CurrentNodeIndex, map.CurrentMapId);
     }
 
     private void OnDisable()

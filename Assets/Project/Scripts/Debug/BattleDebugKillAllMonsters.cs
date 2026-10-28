@@ -36,7 +36,23 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
     {
         // Cancel in-flight damage before setting HP to zero. Delaying this
         // until after death handling lets CoroutineHost attacks keep running.
-        PrepareBattleStateForDebugWin();
+        // A phase-one defeat is not a room clear. Do not stop the turn executor:
+        // ForceStopBattleExecutionForRoomEnd() clears next-turn input readiness.
+        bool isArabellaPhaseOnePresent = false;
+        MonsterUnit[] phaseCandidates = Object.FindObjectsByType<MonsterUnit>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (MonsterUnit candidate in phaseCandidates)
+        {
+            if (candidate?.RuntimeData != null &&
+                candidate.RuntimeData.MonsterId == ArabellaPhaseTransition.PhaseOneMonsterId &&
+                !candidate.RuntimeData.IsDead)
+            {
+                isArabellaPhaseOnePresent = true;
+                break;
+            }
+        }
+        if (!isArabellaPhaseOnePresent)
+            PrepareBattleStateForDebugWin();
 
         BattleDeathService deathService = new(null, null, null);
         MonsterUnit[] monsters = Object.FindObjectsByType<MonsterUnit>(
@@ -63,6 +79,11 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
         // K 키도 보스의 1페이즈를 일반 사망으로 처리하지 않습니다.
         if (ArabellaPhaseTransition.HasPendingTransition)
         {
+            BattleTurnExecutor executor = Object.FindFirstObjectByType<BattleTurnExecutor>(
+                FindObjectsInactive.Include);
+            // An executing turn will perform the phase transition and turn rollover itself.
+            if (executor != null && executor.IsExecuting)
+                return;
             StartCoroutine(CompleteDebugArabellaPhaseTransition());
             return;
         }
@@ -75,7 +96,15 @@ public class BattleDebugKillAllMonsters : MonoBehaviour
     {
         yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
         new BattleHUDService().RefreshHUDs();
-        BattleResultChecker.Instance?.CheckBattleEnd();
+        if (BattleResultChecker.Instance?.CheckBattleEnd() == true)
+            yield break;
+
+        // The phase change finishes the current reservation turn; run an empty
+        // execution to enter the following player input turn normally.
+        BattleTurnExecutor executor = Object.FindFirstObjectByType<BattleTurnExecutor>(
+            FindObjectsInactive.Include);
+        if (executor != null && executor.CanAcceptPlayerInput)
+            executor.ExecuteTurn();
     }
 
     private static bool AreAllMonstersDead()

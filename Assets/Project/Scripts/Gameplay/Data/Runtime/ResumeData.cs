@@ -7,6 +7,7 @@ public enum ResumePhase
     None,
     BattleEntry,
     BattleReward,
+    ExplorationResult,
     EventEntry,
     EventChoice,
     EventDice,
@@ -27,6 +28,9 @@ public enum ResumePresentation
 public class ResumeData
 {
     public ResumePhase Phase;
+    public bool ExplorationResultDefeat;
+    public float ExplorationResultRewardMultiplier = 1f;
+    public bool BossIntroStarted;
     public int NodeIndex = -1;
     public string MapId;
     public string EventId;

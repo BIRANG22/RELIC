@@ -1,3 +1,4 @@
+using Relic.Gameplay.Data;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -107,6 +108,7 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
     [SerializeField]
     private bool useUnscaledTime = false;
 
+    private bool suppressAutoplayOnResume;
     private Coroutine sequenceCoroutine;
     private readonly List<Coroutine> activeMovementCoroutines = new();
     private int activeMovementCount;
@@ -130,14 +132,20 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
 
     private void OnEnable()
     {
-        if (playOnEnable)
+        if (playOnEnable && !suppressAutoplayOnResume)
         {
-            Play();
+            MapRuntimeData map = DataManager.Instance?.MapRuntimeStore?.Get();
+            bool resumedBoss = map != null &&
+                SaveSystem.Instance != null &&
+                SaveSystem.Instance.WasBossIntroStartedForNode(map.CurrentNodeIndex, map.CurrentMapId);
+            if (!resumedBoss)
+                Play();
         }
     }
 
     public void Play()
     {
+        suppressAutoplayOnResume = false;
         StopSequence();
         IsCompleted = false;
 
@@ -417,6 +425,16 @@ public class TimedObjectRevealSequence : MonoBehaviour, IBattleRoomIntroSequence
                 target.SetActive(isActive);
             }
         }
+    }
+
+    // Resume the finished encounter without reveal VFX, movement, SFX or camera shake.
+    public void SkipToCompletedState()
+    {
+        suppressAutoplayOnResume = true;
+        StopSequence();
+        SetRevealTargetsActive(false);
+        SetFinishObjectsActive(true);
+        IsCompleted = true;
     }
 
     public void StopSequence()

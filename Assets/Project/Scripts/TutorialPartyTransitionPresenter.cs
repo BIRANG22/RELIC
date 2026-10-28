@@ -32,7 +32,7 @@ public sealed class TutorialPartyTransitionPresenter : MonoBehaviour
     public void PrepareEntry(params Transform[] actorRoots)
     {
         CancelAndRestore(true);
-        CaptureActors(actorRoots);
+        CaptureActors(actorRoots, false);
         Debug.Log($"[TutorialEntryTrace] PREPARE presenter={GetHierarchyPath(transform)} id={GetInstanceID()} actors={actors.Count} delay={entryDelay:F2} duration={entryDuration:F2} active={isActiveAndEnabled}", this);
 
         for (int i = 0; i < actors.Count; i++)
@@ -95,7 +95,7 @@ public sealed class TutorialPartyTransitionPresenter : MonoBehaviour
     public Task PlayExitAsync(params Transform[] actorRoots)
     {
         CancelAndRestore(false);
-        CaptureActors(actorRoots);
+        CaptureActors(actorRoots, true);
 
         // Face the exit direction before starting the walk animation.
         for (int i = 0; i < actors.Count; i++)
@@ -243,7 +243,7 @@ public sealed class TutorialPartyTransitionPresenter : MonoBehaviour
         CompletePendingTask();
     }
 
-    private void CaptureActors(Transform[] actorRoots)
+    private void CaptureActors(Transform[] actorRoots, bool includeIncapacitated)
     {
         actors.Clear();
         if (actorRoots == null || actorRoots.Length == 0)
@@ -251,10 +251,10 @@ public sealed class TutorialPartyTransitionPresenter : MonoBehaviour
 
         var capturedTransforms = new HashSet<Transform>();
         for (int rootIndex = 0; rootIndex < actorRoots.Length; rootIndex++)
-            CaptureActors(actorRoots[rootIndex], capturedTransforms);
+            CaptureActors(actorRoots[rootIndex], capturedTransforms, includeIncapacitated);
     }
 
-    private void CaptureActors(Transform actorRoot, HashSet<Transform> capturedTransforms)
+    private void CaptureActors(Transform actorRoot, HashSet<Transform> capturedTransforms, bool includeIncapacitated)
     {
         if (actorRoot == null)
             return;
@@ -265,7 +265,7 @@ public sealed class TutorialPartyTransitionPresenter : MonoBehaviour
         {
             BattleCharacter character = characters[i];
             if (character == null || !character.gameObject.activeSelf ||
-                character.RuntimeData?.IsDead == true)
+                (!includeIncapacitated && character.RuntimeData?.IsDead == true))
             {
                 continue;
             }

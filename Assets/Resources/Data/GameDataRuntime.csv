@@ -635,9 +635,9 @@ Event_06_A,,“아직 살펴볼 만한 것이 남아 있다. 조금 더 시도�
 레드 더스티움 50 획득
 실패 : 생명력 5 감소",,Dice,,,,,10~18,Gain,RedDustium,,50,,Event_06_B,Event_06_D,Damage,PartyAll,5,event6,event_choice_02_success,event6,event_choice_01_failure
 Event_06_A,,,2,그만둔다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_06_F,,,,,event6,event_choice_04_success,event6,event_choice_04_failure
-Event_06_B,,"“남은 상자에서도 무언가 얻을 수 있을 것 같다.""",1,하나 더 열어본다.,"주사위 14 이상
+Event_06_B,,"“남은 상자에서도 무언가 얻을 수 있을 것 같다.""",1,하나 더 열어본다.,"주사위 12 이상
 무작위 에픽 유물 획득
-실패 : 생명력 5 감소",,Dice,,,,,14~18,GainRandom,Relic,Epic:100,1,,Event_06_C,Event_06_D,Damage,PartyAll,5,event6,event_choice_03_success,event6,event_choice_01_failure
+실패 : 생명력 5 감소",,Dice,,,,,12~18,GainRandom,Relic,Epic:100,1,,Event_06_C,Event_06_D,Damage,PartyAll,5,event6,event_choice_03_success,event6,event_choice_01_failure
 Event_06_B,,,2,그만둔다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_06_F,,,,,event6,event_choice_04_success,event6,event_choice_04_failure
 Event_06_C,,“더 이상 가져갈 만한 것은 남아 있지 않다.”,,,,,,,,,,,,,,,,,,,,,event6,,event6,
 Event_06_D,,"“갑작스러운 폭발이 일어나고, 주변에는 부서진 잔해만 남았다.”",,,,,,,,,,,,,,,,,,,,,event6,,event6,

@@ -26,23 +26,15 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     [SerializeField] private Image hardModeBlurPrefab;
     [SerializeField] private Image hardModeBackdropBlurPrefab;
     [SerializeField] private RectTransform hardModeSlotRoot;
+    [Header("Erosion Icon Source")]
+    [SerializeField] private ErosionIconDatabase erosionIconDatabase;
     [SerializeField] private RectTransform acquiredItemSlotRoot;
     [SerializeField] private GameObject statisticsOverlayRoot;
     [SerializeField] private RectTransform statisticsOverlayRect;
     [SerializeField] private TMP_Text statisticsOverlayText;
     [SerializeField] private RectTransform statisticsOverlayBoundary;
     [SerializeField, Min(1)] private int maxHardModeSlots = 12;
-    [SerializeField, Min(1)] private int maxAcquiredItemSlots = 8;
-    [Header("Selected Erosion Icon Layout")]
-    [SerializeField, Min(0.01f)] private float hardModeSlotScale = 0.38f;
-    [SerializeField, Min(0f)] private float hardModeSlotHorizontalSpacing = 42f;
-    [SerializeField, Min(0f)] private float hardModeSlotVerticalSpacing = 42f;
-    [SerializeField, Min(1)] private int hardModeSlotColumns = 6;
-    [Header("Acquired Item Icon Layout")]
-    [SerializeField, Min(0.01f)] private float acquiredItemSlotScale = 0.56f;
-    [SerializeField, Min(0f)] private float acquiredItemSlotHorizontalSpacing = 66f;
-    [SerializeField, Min(0f)] private float acquiredItemSlotVerticalSpacing = 66f;
-    [SerializeField, Min(1)] private int acquiredItemSlotColumns = 8;
+    private const int AcquiredItemSlotCount = 8;
     [SerializeField] private Button returnToBaseButton;
     [SerializeField] private Canvas sortingCanvas;
     [SerializeField] private int resultPanelSortingOrder = 25000;
@@ -57,6 +49,9 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     private readonly List<BattleBagItemSlotUI> hardModeSlots = new();
     private readonly List<Image> hardModeBackdropBlurs = new();
     private readonly List<BattleBagItemSlotUI> acquiredItemSlots = new();
+    private readonly Dictionary<Image, Color> acquiredSlotOriginalColors = new();
+    private static readonly Color EmptyAcquiredSlotBackColor = new Color32(0x11, 0x11, 0x11, 0xFF);
+    private static readonly Color EmptyAcquiredSlotLineColor = new Color32(0x77, 0x77, 0x77, 0xFF);
     private ExplorationResultCharacterRowUI statisticsOverlayOwner;
     private bool statisticsOverlayPinned;
     private Coroutine resultCountUpCoroutine;
@@ -84,7 +79,13 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         OpenInternal(true, rewardMultiplier);
     }
 
-    private void OpenInternal(bool defeat, float rewardMultiplier)
+    // 이어하기에서는 저장된 결과 화면만 복원하고 새로운 체크포인트를 생성하지 않습니다.
+    public void OpenSavedResult(bool defeat, float rewardMultiplier)
+    {
+        OpenInternal(defeat, rewardMultiplier, false);
+    }
+
+    private void OpenInternal(bool defeat, float rewardMultiplier, bool saveResultCheckpoint = true)
     {
         StopResultCountUp(false);
 
@@ -123,6 +124,20 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             resultText.text = BuildText(result, isDefeatResult, researchRewardMultiplier);
 
         BringResultPanelToFront();
+
+        if (saveResultCheckpoint && SaveSystem.Instance != null)
+        {
+            // 전투방 입장 스냅샷보다 결과 보고 상태를 우선 저장합니다.
+            SaveSystem.Instance.ClearBattleRoomEntryCheckpoint();
+            SaveSystem.Instance.SaveCheckpoint(new ResumeData
+            {
+                Phase = ResumePhase.ExplorationResult,
+                NodeIndex = mapRuntime != null ? mapRuntime.CurrentNodeIndex : -1,
+                MapId = mapRuntime?.CurrentMapId,
+                ExplorationResultDefeat = defeat,
+                ExplorationResultRewardMultiplier = rewardMultiplier
+            });
+        }
     }
 
     // 전투 행동 기록이 없어도 튜토리얼에 합류한 모든 파티원을 결과에 포함합니다.
@@ -270,6 +285,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        Canvas.willRenderCanvases -= SyncHardModeBackdropBlurs;
         StopResultCountUp(true);
     }
 
@@ -493,6 +509,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
     private void ApplyHardModeSlots(BattleRuntimeData runtime)
     {
+        // Continue skips the lobby transition, so restore the catalog sprite cache explicitly.
+        ErosionDifficultyCatalogUI.PrepareLoadedCatalogIconCacheForBattleStart();
         EnsureSlotCount(hardModeSlots, hardModeSlotRoot, maxHardModeSlots, "HardModeSlot");
         EnsureHardModeBackdropBlurCount(maxHardModeSlots);
         IReadOnlyList<string> ids = runtime?.SelectedErosionDifficultyIds;
@@ -500,21 +518,24 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         for (int i = 0; i < hardModeSlots.Count; i++)
         {
             BattleBagItemSlotUI slot = hardModeSlots[i];
+            // 결과 화면의 침식 슬롯은 표시 전용입니다. 프리팹의 호버 연출과 SFX가 실행되지 않도록 레이캐스트를 차단합니다.
+            CanvasGroup displayOnlyCanvasGroup = slot.GetComponent<CanvasGroup>();
+            if (displayOnlyCanvasGroup == null)
+                displayOnlyCanvasGroup = slot.gameObject.AddComponent<CanvasGroup>();
+            displayOnlyCanvasGroup.interactable = false;
+            displayOnlyCanvasGroup.blocksRaycasts = false;
             Image backdropBlur = i < hardModeBackdropBlurs.Count
                 ? hardModeBackdropBlurs[i]
                 : null;
             EnsureHardModeBlur(slot);
-            ApplySlotLayout(
-                slot.RectTransform,
-                i,
-                hardModeSlotColumns,
-                hardModeSlotHorizontalSpacing,
-                hardModeSlotVerticalSpacing,
-                hardModeSlotScale);
+            // 선택 침식 슬롯의 위치와 크기는 루트의 Layout Group에서 관리합니다.
             bool visible = i < visibleCount && !string.IsNullOrWhiteSpace(ids[i]);
             if (backdropBlur != null)
             {
-                SyncHardModeBackdropTransform(backdropBlur.rectTransform, slot.RectTransform);
+                LayoutElement backdropLayout = backdropBlur.GetComponent<LayoutElement>();
+                if (backdropLayout == null)
+                    backdropLayout = backdropBlur.gameObject.AddComponent<LayoutElement>();
+                backdropLayout.ignoreLayout = true;
                 backdropBlur.gameObject.SetActive(visible);
                 PlaceBackdropImmediatelyBeforeSlot(backdropBlur.transform, slot.transform);
             }
@@ -525,7 +546,10 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
             string id = ids[i].Trim();
             ErosionData data = ResolveErosionData(id);
-            slot.SetupDisplayIcon(ResolveErosionIcon(data), FormatErosionTier(data?.Tier ?? 0));
+            Sprite icon = ResolveErosionIcon(data);
+            slot.SetupDisplayIcon(icon, FormatErosionTier(data?.Tier ?? 0));
+            if (icon == null)
+                Debug.LogWarning($"[ExplorationResultPanelUI] Missing erosion icon: {id} (database: {erosionIconDatabase?.name ?? DataManager.Instance?.ErosionIconDatabase?.name ?? "null"}). Assign Erosion Icon Database in the result panel Inspector.", this);
         }
     }
 
@@ -539,7 +563,32 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             Image backdropBlur = Instantiate(hardModeBackdropBlurPrefab, hardModeSlotRoot, false);
             backdropBlur.name = $"HardModeSlotBackdropBlur_{hardModeBackdropBlurs.Count}";
             backdropBlur.raycastTarget = false;
+            // 배경 블러는 별도 형제 오브젝트이므로 Layout Group의 셀 계산에서 제외합니다.
+            LayoutElement layoutElement = backdropBlur.GetComponent<LayoutElement>();
+            if (layoutElement == null)
+                layoutElement = backdropBlur.gameObject.AddComponent<LayoutElement>();
+            layoutElement.ignoreLayout = true;
             hardModeBackdropBlurs.Add(backdropBlur);
+        }
+    }
+
+    private void OnEnable()
+    {
+        Canvas.willRenderCanvases += SyncHardModeBackdropBlurs;
+    }
+
+    private void SyncHardModeBackdropBlurs()
+    {
+        // Layout Group이 슬롯을 배치한 뒤 블러를 슬롯 위치에 맞춥니다.
+        int count = Mathf.Min(hardModeSlots.Count, hardModeBackdropBlurs.Count);
+        for (int i = 0; i < count; i++)
+        {
+            BattleBagItemSlotUI slot = hardModeSlots[i];
+            Image backdrop = hardModeBackdropBlurs[i];
+            if (slot == null || backdrop == null || !slot.gameObject.activeInHierarchy || !backdrop.gameObject.activeInHierarchy)
+                continue;
+
+            SyncHardModeBackdropTransform(backdrop.rectTransform, slot.RectTransform);
         }
     }
 
@@ -587,27 +636,64 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
     private void ApplyAcquiredItemSlots(ExplorationResultData value)
     {
-        EnsureSlotCount(acquiredItemSlots, acquiredItemSlotRoot, maxAcquiredItemSlots, "AcquiredItemSlot");
+        // Always show exactly eight bag slots. Their layout is controlled by the parent Layout Group.
+        EnsureSlotCount(acquiredItemSlots, acquiredItemSlotRoot, AcquiredItemSlotCount, "AcquiredItemSlot");
         List<BagItemStack> stacks = BagItemStackUtility.BuildStacks(value?.BagItemIds);
         for (int i = 0; i < acquiredItemSlots.Count; i++)
         {
             BattleBagItemSlotUI slot = acquiredItemSlots[i];
-            ApplySlotLayout(
-                slot.RectTransform,
-                i,
-                acquiredItemSlotColumns,
-                acquiredItemSlotHorizontalSpacing,
-                acquiredItemSlotVerticalSpacing,
-                acquiredItemSlotScale);
-            bool visible = i < stacks.Count;
-            slot.gameObject.SetActive(visible);
-            if (!visible)
+            if (slot == null)
                 continue;
+
+            // Result slots are display-only; block hover/click and their SFX without changing the prefab.
+            CanvasGroup canvasGroup = slot.GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+                canvasGroup = slot.gameObject.AddComponent<CanvasGroup>();
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
+
+            slot.gameObject.SetActive(true);
+            if (i >= stacks.Count)
+            {
+                slot.SetupDisplayIcon(null);
+                slot.SetQuantityVisible(false);
+                ApplyAcquiredSlotEmptyColors(slot, true);
+                continue;
+            }
 
             BagItemStack stack = stacks[i];
             slot.Setup(stack.ItemId, stack.Count, null, null, null);
             slot.SetQuantityVisible(true);
+            ApplyAcquiredSlotEmptyColors(slot, false);
         }
+    }
+
+    // 결과 패널에 생성한 슬롯의 Back/Line만 변경하며 프리팹 원래 색은 보존합니다.
+    private void ApplyAcquiredSlotEmptyColors(BattleBagItemSlotUI slot, bool empty)
+    {
+        if (slot == null)
+            return;
+
+        ApplyAcquiredSlotImageColor(slot.transform, "Back", empty, EmptyAcquiredSlotBackColor);
+        ApplyAcquiredSlotImageColor(slot.transform, "Line", empty, EmptyAcquiredSlotLineColor);
+    }
+
+    private void ApplyAcquiredSlotImageColor(Transform root, string childName, bool empty, Color emptyColor)
+    {
+        Transform child = FindChildRecursive(root, childName);
+        Image image = child != null ? child.GetComponent<Image>() : null;
+        if (image == null)
+            return;
+
+        if (!acquiredSlotOriginalColors.TryGetValue(image, out Color original))
+        {
+            // 슬롯의 기본 Back 색을 Setup()이 변경할 수 있으므로 최초 생성된
+            // 프리팹의 색을 가져올 수 있도록 아래의 캐시 메서드도 사용합니다.
+            original = image.color;
+            acquiredSlotOriginalColors[image] = original;
+        }
+
+        image.color = empty ? emptyColor : original;
     }
 
     private void EnsureSlotCount(
@@ -631,7 +717,20 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
                 rect.pivot = new Vector2(0f, 0.5f);
             }
             slots.Add(slot);
+            if (ReferenceEquals(slots, acquiredItemSlots))
+            {
+                CacheAcquiredSlotImageColor(slot.transform, "Back");
+                CacheAcquiredSlotImageColor(slot.transform, "Line");
+            }
         }
+    }
+
+    private void CacheAcquiredSlotImageColor(Transform root, string childName)
+    {
+        Transform child = FindChildRecursive(root, childName);
+        Image image = child != null ? child.GetComponent<Image>() : null;
+        if (image != null && !acquiredSlotOriginalColors.ContainsKey(image))
+            acquiredSlotOriginalColors.Add(image, image.color);
     }
 
     private static void ApplySlotLayout(
@@ -661,7 +760,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             : null;
     }
 
-    private static Sprite ResolveErosionIcon(ErosionData data)
+    private Sprite ResolveErosionIcon(ErosionData data)
     {
         if (data == null)
             return null;
@@ -672,9 +771,42 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             return cached;
         }
 
-        return ErosionDifficultyCatalogUI.TryResolveErosionIcon(data, out Sprite icon)
-            ? icon
-            : null;
+        // 배틀 씬의 ErosionSelect는 자체 아이콘 DB를 가지고 있으므로
+        // 결과 패널에 별도 DB가 연결되지 않았을 때 해당 조회 경로를 재사용합니다.
+        BattleErosionSelectedLevelsUI[] selectors =
+            Object.FindObjectsByType<BattleErosionSelectedLevelsUI>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (BattleErosionSelectedLevelsUI selector in selectors)
+        {
+            if (selector == null || selector.gameObject.scene != gameObject.scene)
+                continue;
+            Sprite sceneIcon = selector.GetSelectedIconForResult(data);
+            if (sceneIcon != null)
+                return sceneIcon;
+        }
+
+        // 결과 패널은 로비 씬을 거치지 않고 복원될 수도 있으므로
+        // 인스펙터의 DB 참조를 우선 사용합니다.
+        ErosionIconDatabase database = erosionIconDatabase;
+        if (database == null)
+            database = DataManager.Instance?.ErosionIconDatabase;
+
+        if (database == null)
+        {
+            // Resources에 DB가 하나만 있다면 자동으로 복구합니다.
+            ErosionIconDatabase[] available = Resources.LoadAll<ErosionIconDatabase>(string.Empty);
+            if (available != null && available.Length == 1)
+                database = available[0];
+        }
+
+        if (database == null)
+            return null;
+
+        erosionIconDatabase = database;
+        if (database.TryGetIcon(data, out Sprite icon) && icon != null)
+            return icon;
+
+        return database.UnavailableIcon;
     }
 
     public static int CalculateSelectedErosionScore(

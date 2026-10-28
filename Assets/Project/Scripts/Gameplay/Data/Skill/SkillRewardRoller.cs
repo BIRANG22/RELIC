@@ -53,19 +53,47 @@ namespace Relic.Gameplay.Data
             if (!IsChanceSuccess(mapData.MemoryDropChance, random))
                 return false;
 
-            if (!TryRollRarity(mapData, random, out SkillRarity rarity))
+            // Draw from individual obtainable memories, rather than rolling a rarity first.
+            // This also avoids losing a successful memory drop when a rolled rarity
+            // has no remaining eligible skills.
+            List<SkillMasterData> candidates = new();
+            List<float> weights = new();
+            float totalWeight = 0f;
+
+            for (int i = 0; i < allSkills.Count; i++)
+            {
+                SkillMasterData skill = allSkills[i];
+                if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId) ||
+                    skill.Category != Category.Core ||
+                    !SkillRarityUtility.IsCoreDropRarity(skill.Rarity) ||
+                    !SkillOwnershipPolicy.CanRewardToParty(skill, partyCharacterIds))
+                    continue;
+
+                float weight = GetRarityWeight(mapData, skill.Rarity);
+                if (weight <= 0f)
+                    continue;
+
+                candidates.Add(skill);
+                weights.Add(weight);
+                totalWeight += weight;
+            }
+
+            if (totalWeight <= 0f)
                 return false;
 
-            List<SkillMasterData> candidates = GetCandidates(
-                allSkills,
-                rarity,
-                partyCharacterIds);
+            float roll = random.Value() * totalWeight;
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                roll -= weights[i];
+                if (roll <= 0f)
+                {
+                    reward = candidates[i];
+                    return true;
+                }
+            }
 
-            if (candidates.Count == 0)
-                return false;
-
-            reward = candidates[random.Range(0, candidates.Count)];
-            return reward != null;
+            reward = candidates[candidates.Count - 1];
+            return true;
         }
 
         private static bool IsChanceSuccess(float chance, ISkillRewardRandom random)
@@ -78,48 +106,16 @@ namespace Relic.Gameplay.Data
             return random.Value() <= chance;
         }
 
-        private static bool TryRollRarity(
-            BattleMapData mapData,
-            ISkillRewardRandom random,
-            out SkillRarity rarity)
+        private static float GetRarityWeight(BattleMapData mapData, SkillRarity rarity)
         {
-            rarity = SkillRarity.None;
-
-            float common = Mathf.Max(0f, mapData.MemoryCommonChance);
-            float rare = Mathf.Max(0f, mapData.MemoryRareChance);
-            float epic = Mathf.Max(0f, mapData.MemoryEpicChance);
-            float unique = Mathf.Max(0f, mapData.MemoryUniqueChance);
-            float total = common + rare + epic + unique;
-
-            if (total <= 0f)
-                return false;
-
-            float roll = random.Value() * total;
-
-            if (roll < common)
+            switch (rarity)
             {
-                rarity = SkillRarity.Common;
-                return true;
+                case SkillRarity.Common: return Mathf.Max(0f, mapData.MemoryCommonChance);
+                case SkillRarity.Rare: return Mathf.Max(0f, mapData.MemoryRareChance);
+                case SkillRarity.Epic: return Mathf.Max(0f, mapData.MemoryEpicChance);
+                case SkillRarity.Unique: return Mathf.Max(0f, mapData.MemoryUniqueChance);
+                default: return 0f;
             }
-
-            roll -= common;
-
-            if (roll < rare)
-            {
-                rarity = SkillRarity.Rare;
-                return true;
-            }
-
-            roll -= rare;
-
-            if (roll < epic)
-            {
-                rarity = SkillRarity.Epic;
-                return true;
-            }
-
-            rarity = SkillRarity.Unique;
-            return true;
         }
 
         public static List<SkillMasterData> GetCandidates(
@@ -129,7 +125,7 @@ namespace Relic.Gameplay.Data
         {
             List<SkillMasterData> candidates = new();
 
-            if (!SkillRarityUtility.IsCoreDropRarity(rarity))
+            if (allSkills == null || !SkillRarityUtility.IsCoreDropRarity(rarity))
                 return candidates;
 
             for (int i = 0; i < allSkills.Count; i++)
@@ -139,10 +135,7 @@ namespace Relic.Gameplay.Data
                 if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId))
                     continue;
 
-                if (skill.Category != Category.Core)
-                    continue;
-
-                if (skill.Rarity != rarity)
+                if (skill.Category != Category.Core || skill.Rarity != rarity)
                     continue;
 
                 if (!SkillOwnershipPolicy.CanRewardToParty(skill, partyCharacterIds))

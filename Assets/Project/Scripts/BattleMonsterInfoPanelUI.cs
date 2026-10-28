@@ -441,7 +441,7 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
 
     private static string FormatMonsterEffectDescription(string description, MonsterSkillData skillData)
     {
-        return MonsterSkillDescriptionFormatter.Format(description, skillData);
+        return MonsterSkillDescriptionFormatter.Format(description, skillData, true);
     }
 
     private void RefreshMonsterSkillEffects(MonsterSkillData skillData)
@@ -451,6 +451,7 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
 
         string[] effectIds = SplitSemicolonValues(skillData != null ? skillData.EffectIds : null);
         string[] values = SplitSemicolonValues(skillData != null ? skillData.ValueRate : null);
+        values = MonsterSkillDescriptionFormatter.ApplyBattleDamageValues(skillData, values);
 
         for (int i = 0; i < MonsterSkillEffectSlotCount; i++)
         {

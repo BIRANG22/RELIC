@@ -43,6 +43,8 @@ public class BattleRewardPanelUI : MonoBehaviour
     [SerializeField] private ScreenSpaceTransferOrbEffect screenSpaceTransferEffectPrefab;
     [Tooltip("보상 이동 효과가 도착할 MenuRoot/BagButton입니다.")]
     [SerializeField] private RectTransform rewardTransferTarget;
+    [Tooltip("레드 더스티움 보상 이동 효과가 도착할 별도 타겟입니다. 미설정 시 기존 Reward Transfer Target을 사용합니다.")]
+    [SerializeField] private RectTransform remnantTransferTarget;
 
     [Header("Gain Button")]
     [Tooltip("자동 획득 시 보상 사이의 간격(초)입니다.")]
@@ -593,10 +595,14 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private bool TryStartRewardTransfer(BattleRewardSlotUI slot, BattleRewardData reward)
     {
+        RectTransform transferTarget = reward != null && reward.Type == BattleRewardType.Remnant && remnantTransferTarget != null
+            ? remnantTransferTarget
+            : rewardTransferTarget;
+
         if (!ShouldPlayTransferEffect(reward) ||
             slot == null ||
             slot.IconRectTransform == null ||
-            rewardTransferTarget == null ||
+            transferTarget == null ||
             screenSpaceTransferEffectPrefab == null)
         {
             return false;
@@ -606,13 +612,13 @@ public class BattleRewardPanelUI : MonoBehaviour
             slot.IconRectTransform,
             Camera.main);
         Camera targetCamera = ScreenSpaceTransferOrbEffect.ResolveUiCamera(
-            rewardTransferTarget,
+            transferTarget,
             Camera.main);
         Vector2 startScreenPosition = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(
             slot.IconRectTransform,
             sourceCamera);
         Vector2 endScreenPosition = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(
-            rewardTransferTarget,
+            transferTarget,
             targetCamera);
         Color iconColor = slot.CurrentIconColor;
 
