@@ -219,7 +219,8 @@ public class GridEffectTooltipUI : MonoBehaviour
         result = result.Replace("{ValueRate}", valueRate);
         result = result.Replace("{ValueRate1}", valueRate);
         result = result.Replace("{Duration}", Mathf.Max(0, duration).ToString());
-        return result;
+        // GridEffect 설명의 {E_...} 토큰도 게임데이터 효과 이름으로 치환합니다.
+        return SkillDescriptionFormatter.ReplaceEffectTokens(result);
     }
 
     public void Hide(Object owner)
