@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 
@@ -32,17 +33,6 @@ public static class BattleEffectUtility
         return target == null ||
                target.RuntimeData == null ||
                target.RuntimeData.IsDead;
-    }
-
-    private static void HandlePlayerDeathIfNeeded(BattleCharacter target)
-    {
-        if (target == null || target.RuntimeData == null || target.RuntimeData.IsDead)
-            return;
-
-        if (!target.RuntimeData.IsDead)
-            return;
-
-        target.RuntimeData.HandleDeath();
     }
 
     public static bool AddOrStackStatus(
@@ -272,10 +262,7 @@ public static class BattleEffectUtility
                 BattleErosionRuntimeService.CountDirectMonsterHit();
         }
 
-        if (hpBefore > 0 && target.RuntimeData.CurrentHP <= 0)
-            BattleErosionRuntimeService.CountCharacterIncapacitated();
-
-        HandlePlayerDeathIfNeeded(target);
+        BattlePlayerIncapacitationService.Resolve(target.RuntimeData, hpBefore);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
         OnPlayerDamaged?.Invoke(target);
@@ -401,10 +388,7 @@ public static class BattleEffectUtility
                 BattleErosionRuntimeService.CountDirectMonsterHit();
         }
 
-        if (hpBefore > 0 && target.RuntimeData.CurrentHP <= 0)
-            BattleErosionRuntimeService.CountCharacterIncapacitated();
-
-        HandlePlayerDeathIfNeeded(target);
+        BattlePlayerIncapacitationService.Resolve(target.RuntimeData, hpBefore);
         BattleDamageTextPopupUI.Show(target.transform, shownDamage);
 
         OnPlayerDamaged?.Invoke(target);
@@ -580,10 +564,7 @@ public static class BattleEffectUtility
         if (shownDamage > 0)
             BattleEquipmentEffectService.MarkPlayerDamagedThisTurn(target.RuntimeData);
 
-        if (hpBefore > 0 && target.RuntimeData.CurrentHP <= 0)
-            BattleErosionRuntimeService.CountCharacterIncapacitated();
-
-        HandlePlayerDeathIfNeeded(target);
+        BattlePlayerIncapacitationService.Resolve(target.RuntimeData, hpBefore);
         if (isPoison)
             BattleDamageTextPopupUI.ShowPoisonDamage(target.transform, shownDamage);
         else

@@ -139,10 +139,49 @@ public sealed class MonsterInfoNameAndPassiveActivationTests
         {
             CharacterId = "C_01",
             PassiveSkillId = "S_Passive_01",
+            MaxHP = 10,
+            CurrentHP = 10,
             CurrentResource = 0
         };
 
         Assert.That(BattlePassiveSkillService.ShouldApplyPassive(passiveSkill, runtime), Is.True);
+    }
+
+    [Test]
+    public void ShouldApplyPassive_ReturnsFalseWhenCharacterIsDead()
+    {
+        SkillMasterData passiveSkill = new SkillMasterData { SkillId = "S_Passive_01" };
+        CharacterRuntimeData runtime = new CharacterRuntimeData
+        {
+            CharacterId = "C_01",
+            PassiveSkillId = "S_Passive_01",
+            MaxHP = 10,
+            CurrentHP = 0
+        };
+
+        Assert.That(BattlePassiveSkillService.ShouldApplyPassive(passiveSkill, runtime), Is.False);
+    }
+
+    [Test]
+    public void RefreshRuntimePassiveEffects_DeadCharacter_ClearsOnlyPassiveStatuses()
+    {
+        CharacterRuntimeData runtime = new CharacterRuntimeData
+        {
+            CharacterId = "C_01",
+            MaxHP = 10,
+            CurrentHP = 0,
+            StatusEffects = new System.Collections.Generic.List<StatusEffectRuntimeData>
+            {
+                new StatusEffectRuntimeData("E_Boost", 2) { IsPassive = true },
+                new StatusEffectRuntimeData("E_Poison", 3) { IsPassive = false }
+            }
+        };
+
+        BattlePassiveSkillService.RefreshRuntimePassiveEffects(runtime);
+
+        Assert.That(runtime.StatusEffects, Has.Count.EqualTo(1));
+        Assert.That(runtime.StatusEffects[0].EffectId, Is.EqualTo("E_Poison"));
+        Assert.That(runtime.StatusEffects[0].IsPassive, Is.False);
     }
 
     [Test]

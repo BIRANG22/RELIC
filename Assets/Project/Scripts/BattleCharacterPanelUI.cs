@@ -1234,7 +1234,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (slot == null || runtime == null)
             return;
 
-        int maxHp = Mathf.Max(0, runtime.MaxHP + runtime.RunMaxHPBonus);
+        int maxHp = ResolvePartyMaxHP(runtime);
         int currentHp = maxHp > 0 ? Mathf.Clamp(runtime.PreviewHP, 0, maxHp) : 0;
         int shield = Mathf.Max(0, runtime.PreviewShield);
         Color targetBackColor = shield > 0
@@ -1341,8 +1341,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
         ApplyPartySprite(slot.PassiveIcon, passiveIcon);
         ConfigurePartyPassiveSkillTooltip(slot);
 
-        int maxHp = Mathf.Max(0, runtime.MaxHP + runtime.RunMaxHPBonus);
-        int maxCost = Mathf.Max(0, runtime.MaxCost + runtime.RunMaxCostBonus);
+        int maxHp = ResolvePartyMaxHP(runtime);
+        int maxCost = ResolvePartyMaxCost(runtime);
         int currentHp = maxHp > 0 ? Mathf.Clamp(runtime.PreviewHP, 0, maxHp) : 0;
         int currentCost = maxCost > 0 ? Mathf.Clamp(runtime.PreviewCost, 0, maxCost) : 0;
 
@@ -2099,8 +2099,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
             hash = hash * 31 + runtime.PreviewCost;
             hash = hash * 31 + runtime.CurrentCost;
             hash = hash * 31 + runtime.PreviewResource;
-            hash = hash * 31 + runtime.MaxHP + runtime.RunMaxHPBonus;
-            hash = hash * 31 + runtime.MaxCost + runtime.RunMaxCostBonus;
+            hash = hash * 31 + ResolvePartyMaxHP(runtime);
+            hash = hash * 31 + ResolvePartyMaxCost(runtime);
             hash = hash * 31 + (runtime.PassiveSkillId ?? string.Empty).GetHashCode();
             hash = hash * 31 + (BattleErosionEffectService.IsLastRelicSlotLocked ? 1 : 0);
 
@@ -6114,6 +6114,16 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return boundMaster.MaxHP;
 
         return Mathf.Max(1, boundRuntime.CurrentHP);
+    }
+
+    public static int ResolvePartyMaxHP(CharacterRuntimeData runtime)
+    {
+        return runtime != null ? Mathf.Max(0, runtime.MaxHP) : 0;
+    }
+
+    public static int ResolvePartyMaxCost(CharacterRuntimeData runtime)
+    {
+        return runtime != null ? Mathf.Max(0, runtime.MaxCost) : 0;
     }
 
     private int ResolveMaxCost()

@@ -493,7 +493,22 @@ public class BattleGridEffectController : MonoBehaviour
 
         // 그리드 효과 피해는 스킬 피해와 합산하지 않고 별도의 피해 숫자로 표시합니다.
         if (shownDamage > 0)
+        {
+            BattleDamageTextPopupUI.PrepareTargetHud(character.transform);
+            BattleRunStatisticsRecorder.RecordDamageTaken(
+                character.RuntimeData.CharacterId,
+                shownDamage,
+                hpBefore > 0 && character.RuntimeData.CurrentHP <= 0);
+        }
+
+        BattlePlayerIncapacitationService.Resolve(character.RuntimeData, hpBefore);
+
+        if (shownDamage > 0)
+        {
             BattleDamageTextPopupUI.Show(character.transform, shownDamage);
+            BattleEffectUtility.OnPlayerDamaged?.Invoke(character);
+            BattleEffectUtility.OnPlayerHudRefreshRequested?.Invoke(character);
+        }
 
         PresentAppliedEffects(character, result, character.RuntimeData.CurrentHP > hpBefore);
         RemoveViewIfConsumed(result);
@@ -532,10 +547,6 @@ public class BattleGridEffectController : MonoBehaviour
 
         PresentAppliedEffects(monster, result, monster.RuntimeData.CurrentHP > hpBefore);
         RemoveViewIfConsumed(result);
-
-        // 그리드 효과로 HP가 0이 되어도 일반 사망 경로를 거쳐 보스 페이즈를 전환합니다.
-        if (hpBefore > 0 && monster.RuntimeData.IsDead)
-            new BattleDeathService(null, null, null).HandleMonsterDead(monster);
 
         if (result.Applied)
             monster.ShowAndRefreshHUD();
@@ -908,9 +919,9 @@ public class BattleGridEffectController : MonoBehaviour
 
         if (HasDamageEffect(result.AppliedEffectIds))
         {
-            if (IsDeadTarget(target))
+            if (ShouldPlayDeadPresentation(target))
                 animator.PlayDead();
-            else
+            else if (!IsDeadTarget(target))
                 animator.PlayHit();
         }
 
@@ -955,6 +966,24 @@ public class BattleGridEffectController : MonoBehaviour
             return monster.RuntimeData != null && monster.RuntimeData.IsDead;
 
         return false;
+    }
+
+    private static bool ShouldPlayDeadPresentation(Component target)
+    {
+        if (target is MonsterUnit monster)
+            return ShouldPlayDeadPresentation(monster.RuntimeData);
+
+        return IsDeadTarget(target);
+    }
+
+    public static bool ShouldPlayDeadPresentation(MonsterRuntimeData runtimeData)
+    {
+        return runtimeData != null &&
+               runtimeData.IsDead &&
+               !string.Equals(
+                   runtimeData.MonsterId,
+                   ArabellaPhaseTransition.PhaseOneMonsterId,
+                   System.StringComparison.Ordinal);
     }
 
     private static bool HasDamageEffect(IReadOnlyList<string> effectIds)

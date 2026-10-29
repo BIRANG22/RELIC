@@ -56,6 +56,9 @@ public class BattlePassiveSkillService
 
         ClearPassiveStatusEffects(runtime);
 
+        if (runtime.IsDead)
+            return;
+
         SkillMasterData passiveSkill = GetPassiveSkill(runtime);
 
         if (!ShouldApplyPassive(passiveSkill, runtime))
@@ -90,7 +93,7 @@ public class BattlePassiveSkillService
         SkillMasterData passiveSkill,
         CharacterRuntimeData runtime)
     {
-        return passiveSkill != null && runtime != null;
+        return passiveSkill != null && runtime != null && !runtime.IsDead;
     }
 
     private static void ApplyPassiveEffect(
