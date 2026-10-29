@@ -250,18 +250,18 @@ namespace Relic.Gameplay.Monster
             // 이동 가능한 칸이 없다면 기존 공격 예약을 진행합니다.
             // 이동은 항상 앞 슬롯에 한 번만 예약합니다.
 
-            // 망령쇄도는 모르트의 공격 예상 위치와 같은 가로 라인에
+            // 망령쇄도는 모르트의 이동 전 위치와 같은 가로 라인에
             // 생존 캐릭터가 있을 때만 사용합니다. 같은 라인에 여러 명이 있다면
             // 가장 가까운 대상을 향하도록 예약합니다.
             BattleCharacter wraithRushTarget = FindNearestSameLineTarget(
-                attackOriginGridIndex,
+                monsterUnit.MainGridIndex,
                 allAlivePlayers,
                 gridManager);
 
             if (wraithRushTarget != null && wraithRushTarget.CurrentGridIndex >= 0)
             {
                 BattleDirection wraithRushDirection = ResolveHorizontalDirection(
-                    attackOriginGridIndex,
+                    monsterUnit.MainGridIndex,
                     wraithRushTarget.CurrentGridIndex,
                     runtime.Direction,
                     gridManager);
@@ -274,7 +274,7 @@ namespace Relic.Gameplay.Monster
                         : MonsterAISlotPreference.Front,
                     moveOffset != Vector2Int.zero ? 110 : -1,
                     priority++,
-                    attackOriginGridIndex,
+                    monsterUnit.MainGridIndex,
                     true,
                     wraithRushDirection));
             }
@@ -317,6 +317,18 @@ namespace Relic.Gameplay.Monster
                     ResolveHorizontalDirection(attackOriginGridIndex,
                         curseTarget.CurrentGridIndex, runtime.Direction, gridManager),
                     explicitRangeGridIndices: new List<int> { curseTarget.CurrentGridIndex }));
+            }
+
+            // 망령쇄도와 이동을 같은 슬롯에 예약했다면 공격을 먼저 실행합니다.
+            // 실행 순서는 MonsterAIPlan.Actions의 순서를 따르므로 이동 명령을 뒤로 옮깁니다.
+            int rushIndex = plan.Actions.FindIndex(action => action.SkillId == WraithRushSkillId);
+            int moveIndex = plan.Actions.FindIndex(action => action.SkillId == MoveSkillId);
+            if (rushIndex >= 0 && moveIndex >= 0 && moveIndex < rushIndex)
+            {
+                MonsterAIAction moveAction = plan.Actions[moveIndex];
+                plan.Actions.RemoveAt(moveIndex);
+                rushIndex = plan.Actions.FindIndex(action => action.SkillId == WraithRushSkillId);
+                plan.Actions.Insert(rushIndex + 1, moveAction);
             }
 
             return plan;

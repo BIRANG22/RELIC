@@ -296,7 +296,8 @@ public class BattleTimelineController : MonoBehaviour
 
             if (playerSkillReservationController.IsSkillSelectionActive())
             {
-                playerSkillReservationController.ClearPreview();
+                // 업데이트 실행 순서와 관계없이 선택 상태를 함께 초기화합니다.
+                CancelPendingActionSelection();
                 return;
             }
         }

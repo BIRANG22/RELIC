@@ -335,14 +335,27 @@ public class GridEffectTooltipUI : MonoBehaviour
         if (screen.z < 0f)
             return;
 
-        SetPositionFromScreen(new Vector2(screen.x, screen.y), true);
+        SetPositionFromWorldCenter(new Vector2(screen.x, screen.y));
     }
 
     private void SetPositionFromWorldSideAnchors()
     {
-        InitializeReferences();
+        if (worldAnchorCamera == null)
+            return;
 
-        if (tooltipRect == null || worldAnchorCamera == null)
+        // 좌/우 경계가 아닌 그리드 이펙트의 정중앙을 기준으로 위치를 계산합니다.
+        Vector3 center = (lastWorldLeftAnchor + lastWorldRightAnchor) * 0.5f;
+        Vector3 screen = worldAnchorCamera.WorldToScreenPoint(center);
+        if (screen.z < 0f)
+            return;
+
+        SetPositionFromWorldCenter(new Vector2(screen.x, screen.y));
+    }
+
+    private void SetPositionFromWorldCenter(Vector2 centerScreen)
+    {
+        InitializeReferences();
+        if (tooltipRect == null)
             return;
 
         RectTransform parentRect = tooltipRect.parent as RectTransform;
@@ -354,48 +367,55 @@ public class GridEffectTooltipUI : MonoBehaviour
             ? canvas.worldCamera
             : null;
 
-        Vector3 rightScreen3 = worldAnchorCamera.WorldToScreenPoint(lastWorldRightAnchor);
-        Vector3 leftScreen3 = worldAnchorCamera.WorldToScreenPoint(lastWorldLeftAnchor);
-        if (rightScreen3.z < 0f || leftScreen3.z < 0f)
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                parentRect, centerScreen, uiCamera, out Vector2 centerLocal))
             return;
-
-        Vector2 rightScreen = new(rightScreen3.x, rightScreen3.y);
-        Vector2 leftScreen = new(leftScreen3.x, leftScreen3.y);
-
-        // screenOffset.x는 좌우 간격, screenOffset.y는 세로 오프셋으로 사용합니다.
-        float horizontalGap = Mathf.Abs(screenOffset.x);
-        float verticalOffset = screenOffset.y;
-
-        // 1) 기본적으로 오른쪽에 배치합니다. 툴팁의 실제 왼쪽 외곽을
-        //    GridEffect 오른쪽 기준점 + 간격에 맞춥니다.
-        PlaceTooltipEdgeAtScreenPoint(
-            parentRect,
-            uiCamera,
-            rightScreen,
-            horizontalGap,
-            verticalOffset,
-            placeOnRight: true);
 
         Canvas.ForceUpdateCanvases();
         UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
 
-        GetTooltipScreenBounds(uiCamera, out float minX, out _, out float maxX, out _);
-        float paddingX = Mathf.Max(0f, screenPadding.x);
-
-        // 2) 오른쪽 외곽이 화면을 넘으려 할 때만 왼쪽으로 전환합니다.
-        if (maxX > Screen.width - paddingX)
+        // 인스펙터 오프셋은 캔버스 로컬 단위로 적용합니다.
+        // 화면 경계를 벗어나는 축만 오프셋 방향을 뒤집습니다.
+        Vector2 offset = screenOffset;
+        Vector2 bestOffset = offset;
+        float bestOverflow = float.PositiveInfinity;
+        for (int candidate = 0; candidate < 4; candidate++)
         {
-            PlaceTooltipEdgeAtScreenPoint(
-                parentRect,
-                uiCamera,
-                leftScreen,
-                horizontalGap,
-                verticalOffset,
-                placeOnRight: false);
+            Vector2 candidateOffset = new Vector2(
+                candidate == 1 || candidate == 3 ? -offset.x : offset.x,
+                candidate == 2 || candidate == 3 ? -offset.y : offset.y);
+
+            PlaceTooltipCenter(parentRect, uiCamera, centerLocal + candidateOffset);
+            GetTooltipScreenBounds(uiCamera, out float minX, out float minY, out float maxX, out float maxY);
+            float paddingX = Mathf.Max(0f, screenPadding.x);
+            float paddingY = Mathf.Max(0f, screenPadding.y);
+            float overflow = Mathf.Max(0f, paddingX - minX)
+                           + Mathf.Max(0f, maxX - (Screen.width - paddingX))
+                           + Mathf.Max(0f, paddingY - minY)
+                           + Mathf.Max(0f, maxY - (Screen.height - paddingY));
+            if (overflow < bestOverflow)
+            {
+                bestOverflow = overflow;
+                bestOffset = candidateOffset;
+            }
+            if (overflow <= 0.01f)
+                break;
         }
 
-        // 3) 좌/우 전환 후에도 매우 좁은 화면에서 남는 초과분만 마지막으로 보정합니다.
-        ClampRenderedRectToScreen(parentRect, uiCamera);
+        PlaceTooltipCenter(parentRect, uiCamera, centerLocal + bestOffset);
+        // 두 방향 모두 공간이 부족한 작은 화면에서만 마지막 경계 보정이 발생합니다.
+        if (bestOverflow > 0.01f)
+            ClampRenderedRectToScreen(parentRect, uiCamera);
+    }
+
+    private void PlaceTooltipCenter(RectTransform parentRect, Camera uiCamera, Vector2 targetLocalCenter)
+    {
+        // RectTransform의 Pivot 설정과 무관하게 보이는 사각형의 중앙을 맞춥니다.
+        Vector3[] corners = new Vector3[4];
+        tooltipRect.GetWorldCorners(corners);
+        Vector3 worldCenter = (corners[0] + corners[2]) * 0.5f;
+        Vector3 targetWorld = parentRect.TransformPoint(new Vector3(targetLocalCenter.x, targetLocalCenter.y, 0f));
+        tooltipRect.position += targetWorld - worldCenter;
     }
 
     private void PlaceTooltipEdgeAtScreenPoint(

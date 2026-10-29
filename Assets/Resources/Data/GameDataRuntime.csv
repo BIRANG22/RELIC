@@ -191,9 +191,9 @@ GridEffectID,Name,Passed,expendable,EffectIds,ValueRate,CountRate,Duration,Spawn
 GR_debris,잔해,0,0,-1,0,1,0,BattleStart,50,Object,이동을 방해하는 부서진 구조물.
 GR_thorn,가시,1,0,E_Strike,3,1,0,BattleStart,0,None,진입한 대상에게 {E_Strike}를 {ValueRate1}만큼 준다.
 GR_Residue,점액,1,1,E_Strike,2,1,2,Monster,0,None,진입한 대상에게 {E_Strike}를 {ValueRate1}만큼 준다.
-GR_dummy,루어,0,0,-1,0,1,0,Summon,20,Character,캐릭터로 인식되는 소환체이다.
+GR_dummy,루어,0,0,-1,0,1,0,Summon,25,Character,캐릭터로 인식되는 소환체이다.
 GR_explosive_doll,브룸,0,0,E_Strike,8,1,0,Summon,15,Object,턴 종료 시 주변 대상에게 {E_Strike}를 {ValueRate1}만큼 준다.
-GR_spider_egg,고치,0,0,-1,0,1,2,Summon,8,Object,{Duration}턴 후 신더가 부화한다.
+GR_spider_egg,고치,0,0,-1,0,1,2,Summon,20,Object,{Duration}턴 후 신더가 부화한다.
 GR_spider_web,거미줄,1,0,E_Spider_Web,2,1,2,Monster,0,None,이동에 필요한 마나 소모량이 {ValueRate1}배가 된다.
 GR_nocturn_portal_preview,그림자,1,0,-1,0,1,1,Monster,0,None,어둠이 깃든 공간.
 GR_Skull_bone,유골,0,0,-1,0,1,0,Monster,30,Object,이동을 방해하는 뼈 무더기.
