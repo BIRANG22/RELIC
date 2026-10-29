@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -6,7 +6,6 @@ using Relic.Gameplay.Monster;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
 
 public class PlayerSkillReservationController : MonoBehaviour
 {
@@ -34,35 +33,15 @@ public class PlayerSkillReservationController : MonoBehaviour
     [SerializeField] private Material moveHighlightMaterial;
 
     [Header("Move Hover Ping")]
-    [Tooltip("이동 가능한 그리드에 표시되는 기본/보조 핑에 공통으로 사용할 머테리얼입니다. 비워두면 SpriteRenderer 기본 머테리얼을 사용합니다.")]
-    [SerializeField] private Material moveHoverPingMaterial;
-    [Tooltip("이동 가능한 그리드에 표시되는 기본/보조 핑에 공통으로 적용할 색상입니다.")]
-    [SerializeField] private Color moveHoverPingColor = Color.white;
-    [Tooltip("이동 가능한 그리드에 마우스를 올렸을 때 고정해서 표시할 기본 핑 이미지입니다.")]
-    [FormerlySerializedAs("moveHoverPingSprite")]
-    [SerializeField] private Sprite moveHoverPingBaseSprite;
-    [FormerlySerializedAs("moveHoverPingOffset")]
-    [SerializeField] private Vector3 moveHoverPingBaseOffset = Vector3.zero;
-    [Tooltip("기본 핑 이미지의 크기입니다. 1은 원본 크기입니다.")]
-    [FormerlySerializedAs("moveHoverPingScale")]
+    [Tooltip("이동 가능한 그리드에 마우스를 올렸을 때 표시할 월드 VFX 프리팹입니다.")]
+    [SerializeField] private GameObject moveHoverPingVfxPrefab;
+    [Tooltip("그리드 중심을 기준으로 VFX에 적용할 위치 오프셋입니다.")]
+    [SerializeField] private Vector3 moveHoverPingVfxOffset = Vector3.zero;
+    [Tooltip("VFX 프리팹에 적용할 크기 배율입니다.")]
     [Min(0f)]
-    [SerializeField] private float moveHoverPingBaseScale = 0.5f;
-    [FormerlySerializedAs("moveHoverPingSortingOrder")]
-    [SerializeField] private int moveHoverPingBaseSortingOrder = 10;
-
-    [Tooltip("기본 핑과 함께 표시되며 위아래로 둥둥 움직이는 보조 핑 이미지입니다.")]
-    [SerializeField] private Sprite moveHoverPingFloatingSprite;
-    [SerializeField] private Vector3 moveHoverPingFloatingOffset = Vector3.zero;
-    [Tooltip("보조 핑 이미지의 크기입니다. 1은 원본 크기입니다.")]
-    [Min(0f)]
-    [SerializeField] private float moveHoverPingFloatingScale = 0.5f;
-    [SerializeField] private int moveHoverPingFloatingSortingOrder = 11;
-    [Tooltip("보조 핑이 기준 위치에서 위아래로 움직이는 거리입니다.")]
-    [Min(0f)]
-    [SerializeField] private float moveHoverPingFloatHeight = 0.15f;
-    [Tooltip("보조 핑이 위아래로 움직이는 속도입니다.")]
-    [Min(0f)]
-    [SerializeField] private float moveHoverPingFloatSpeed = 2f;
+    [SerializeField] private float moveHoverPingVfxScale = 1f;
+    [Tooltip("VFX 렌더러의 Y 정렬 기준 오프셋입니다.")]
+    [SerializeField] private int moveHoverPingVfxSortingOrder = 10;
 
     [Header("Move Hover Cost Text")]
     [Tooltip("이동 코스트 텍스트에 사용할 TMP 폰트입니다. 비워두면 TMP 기본 폰트를 사용합니다.")]
@@ -98,12 +77,9 @@ public class PlayerSkillReservationController : MonoBehaviour
     private readonly Dictionary<int, List<List<Vector2Int>>> currentMovePathCandidatesByTargetIndex = new();
     private bool isGridTargetMonsterVisualActive;
     private bool isForcedDirectionalSkillHoverPathVisible;
-    private SpriteRenderer moveHoverPingBaseInstance;
-    private SpriteRenderer moveHoverPingFloatingInstance;
+    private GameObject moveHoverPingVfxInstance;
     private TextMeshPro moveHoverCostTextInstance;
     private int moveHoverPingGridIndex = -1;
-    private Vector3 moveHoverPingFloatingBasePosition;
-    private float moveHoverPingFloatStartTime;
 
 
     private sealed class NocturnPortalIndicatorEntry
@@ -175,7 +151,6 @@ public class PlayerSkillReservationController : MonoBehaviour
         }
 
         HandleGridSelectionCancelInput();
-        UpdateMoveHoverPingFloatingAnimation();
     }
 
     private void UpdateBattleSlotRaycasts()
@@ -260,22 +235,6 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         lastRightClickSkillCancelFrame = Time.frameCount;
         ClearPreview();
-    }
-
-    private void UpdateMoveHoverPingFloatingAnimation()
-    {
-        if (moveHoverPingFloatingInstance == null ||
-            !moveHoverPingFloatingInstance.gameObject.activeSelf)
-        {
-            return;
-        }
-
-        float elapsedTime = Time.unscaledTime - moveHoverPingFloatStartTime;
-        float floatingOffsetY = Mathf.Sin(elapsedTime * Mathf.Max(0f, moveHoverPingFloatSpeed)) *
-                                Mathf.Max(0f, moveHoverPingFloatHeight);
-
-        moveHoverPingFloatingInstance.transform.position =
-            moveHoverPingFloatingBasePosition + Vector3.up * floatingOffsetY;
     }
 
     private void EnsureSkillListPanel()
@@ -1034,70 +993,44 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void ShowMoveHoverPing(int gridIndex)
     {
-        if (gridManager == null ||
-            (moveHoverPingBaseSprite == null && moveHoverPingFloatingSprite == null))
+        if (gridManager == null || !currentMoveSelectableIndices.Contains(gridIndex))
         {
             HideMoveHoverPing();
             return;
         }
 
-        if (!currentMoveSelectableIndices.Contains(gridIndex))
-        {
-            HideMoveHoverPing();
+        // 같은 그리드에 머무는 동안 VFX를 반복 생성하거나 재생하지 않습니다.
+        if (moveHoverPingGridIndex == gridIndex)
             return;
-        }
 
+        HideMoveHoverPing();
         Vector3 gridWorldPosition = gridManager.GetWorldPositionByIndex(gridIndex);
 
-        if (moveHoverPingBaseSprite != null)
+        if (moveHoverPingVfxPrefab != null)
         {
-            moveHoverPingBaseInstance = EnsureMoveHoverPingRenderer(
-                moveHoverPingBaseInstance,
-                "Move Hover Ping Base");
+            moveHoverPingVfxInstance = Instantiate(
+                moveHoverPingVfxPrefab,
+                gridWorldPosition + moveHoverPingVfxOffset,
+                moveHoverPingVfxPrefab.transform.rotation,
+                transform);
+            moveHoverPingVfxInstance.name = "Move Hover Ping VFX";
+            moveHoverPingVfxInstance.transform.localScale =
+                moveHoverPingVfxPrefab.transform.localScale * Mathf.Max(0f, moveHoverPingVfxScale);
 
-            moveHoverPingBaseInstance.sprite = moveHoverPingBaseSprite;
-            moveHoverPingBaseInstance.color = moveHoverPingColor;
-            ApplyMoveHoverYSort(
-                moveHoverPingBaseInstance,
-                gridWorldPosition.y,
-                moveHoverPingBaseSortingOrder,
-                0);
-            moveHoverPingBaseInstance.transform.position = gridWorldPosition + moveHoverPingBaseOffset;
-            moveHoverPingBaseInstance.transform.localScale =
-                Vector3.one * Mathf.Max(0f, moveHoverPingBaseScale);
-            moveHoverPingBaseInstance.gameObject.SetActive(true);
-        }
-        else if (moveHoverPingBaseInstance != null)
-        {
-            moveHoverPingBaseInstance.gameObject.SetActive(false);
-        }
+            // 프리팹 내부 렌더러 사이의 정렬 순서는 유지합니다.
+            Renderer[] renderers = moveHoverPingVfxInstance.GetComponentsInChildren<Renderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                Renderer renderer = renderers[i];
+                int relativeOrder = renderer.sortingOrder;
+                ApplyMoveHoverYSort(renderer, gridWorldPosition.y,
+                    moveHoverPingVfxSortingOrder + relativeOrder, 0);
+            }
 
-        if (moveHoverPingFloatingSprite != null)
-        {
-            moveHoverPingFloatingInstance = EnsureMoveHoverPingRenderer(
-                moveHoverPingFloatingInstance,
-                "Move Hover Ping Floating");
-
-            moveHoverPingFloatingInstance.sprite = moveHoverPingFloatingSprite;
-            moveHoverPingFloatingInstance.color = moveHoverPingColor;
-            ApplyMoveHoverYSort(
-                moveHoverPingFloatingInstance,
-                gridWorldPosition.y,
-                moveHoverPingFloatingSortingOrder,
-                1);
-            moveHoverPingFloatingInstance.transform.localScale =
-                Vector3.one * Mathf.Max(0f, moveHoverPingFloatingScale);
-
-            moveHoverPingFloatingBasePosition = gridWorldPosition + moveHoverPingFloatingOffset;
-            moveHoverPingFloatingInstance.transform.position = moveHoverPingFloatingBasePosition;
-            moveHoverPingFloatStartTime = Time.unscaledTime;
-            moveHoverPingFloatingInstance.gameObject.SetActive(true);
-        }
-        else if (moveHoverPingFloatingInstance != null)
-        {
-            moveHoverPingFloatingInstance.gameObject.SetActive(false);
+            moveHoverPingVfxInstance.SetActive(true);
         }
 
+        // VFX 설정 여부와 관계없이 기존 이동 코스트 텍스트는 유지합니다.
         ShowMoveHoverCostText(gridIndex, gridWorldPosition);
         moveHoverPingGridIndex = gridIndex;
     }
@@ -1157,23 +1090,6 @@ public class PlayerSkillReservationController : MonoBehaviour
         return moveHoverCostTextInstance;
     }
 
-    private SpriteRenderer EnsureMoveHoverPingRenderer(
-        SpriteRenderer currentRenderer,
-        string objectName)
-    {
-        if (currentRenderer != null)
-            return currentRenderer;
-
-        GameObject pingObject = new GameObject(objectName);
-        pingObject.transform.SetParent(transform, false);
-        SpriteRenderer renderer = pingObject.AddComponent<SpriteRenderer>();
-
-        if (moveHoverPingMaterial != null)
-            renderer.sharedMaterial = moveHoverPingMaterial;
-
-        return renderer;
-    }
-
     private static void ApplyMoveHoverYSort(
         Renderer renderer,
         float sortingWorldY,
@@ -1204,11 +1120,11 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         moveHoverPingGridIndex = -1;
 
-        if (moveHoverPingBaseInstance != null)
-            moveHoverPingBaseInstance.gameObject.SetActive(false);
-
-        if (moveHoverPingFloatingInstance != null)
-            moveHoverPingFloatingInstance.gameObject.SetActive(false);
+        if (moveHoverPingVfxInstance != null)
+        {
+            Destroy(moveHoverPingVfxInstance);
+            moveHoverPingVfxInstance = null;
+        }
 
         if (moveHoverCostTextInstance != null)
             moveHoverCostTextInstance.gameObject.SetActive(false);

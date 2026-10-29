@@ -20,6 +20,46 @@ public class SpawnGridPanel : MonoBehaviour
     [SerializeField] private GameObject[] partySlotOrderIconObjects;
 
 
+    [Header("Character Drag SFX")]
+    [Tooltip("캐릭터 드래그를 시작할 때 재생할 사운드 데이터베이스 SFX ID입니다.")]
+    [SerializeField] private string characterDragStartSfxId = string.Empty;
+    [SerializeField, Range(0f, 1f)] private float characterDragStartSfxVolume = 1f;
+    [Tooltip("캐릭터 드래그를 마치고 마우스를 놓을 때 재생할 사운드 데이터베이스 SFX ID입니다.")]
+    [SerializeField] private string characterDragEndSfxId = string.Empty;
+    [SerializeField, Range(0f, 1f)] private float characterDragEndSfxVolume = 1f;
+
+    private bool characterDragSfxActive;
+
+    private void PlayCharacterDragSfx(bool started)
+    {
+        string sfxId = started ? characterDragStartSfxId : characterDragEndSfxId;
+        float volume = started ? characterDragStartSfxVolume : characterDragEndSfxVolume;
+        if (string.IsNullOrWhiteSpace(sfxId) || AudioManager.Instance == null)
+            return;
+        AudioManager.Instance.PlaySfx(sfxId, volume);
+    }
+
+    private void BeginCharacterDragSfx()
+    {
+        if (characterDragSfxActive)
+            return;
+        characterDragSfxActive = true;
+        PlayCharacterDragSfx(true);
+    }
+
+    private void EndCharacterDragSfx()
+    {
+        if (!characterDragSfxActive)
+            return;
+        characterDragSfxActive = false;
+        PlayCharacterDragSfx(false);
+    }
+
+    private void OnDisable()
+    {
+        characterDragSfxActive = false;
+    }
+
     private int selectedPartySlotIndex = -1;
     private CharBtn pendingInfoPlacementButton;
     private CharBtn infoDragSourceButton;
@@ -308,6 +348,7 @@ public class SpawnGridPanel : MonoBehaviour
 
         infoDragSourceButton = sourceButton;
         selectedPartySlotIndex = -1;
+        BeginCharacterDragSfx();
 
         if (sourceButton.TryGetReadyDragPreview(out Sprite previewSprite, out Vector2 previewSize))
             ShowDragPreview(previewSprite, previewSize, eventData);
@@ -332,6 +373,7 @@ public class SpawnGridPanel : MonoBehaviour
         if (targetIndex >= 0 && TryDropInfoCharacter(sourceButton, targetIndex))
             return;
 
+        EndCharacterDragSfx();
         infoDragSourceButton = null;
         HideDragPreview();
         Refresh();
@@ -347,6 +389,7 @@ public class SpawnGridPanel : MonoBehaviour
         infoDragSourceButton = null;
         activeGridDragSourceIndex = sourceGridIndex;
         selectedPartySlotIndex = partySlotIndex;
+        BeginCharacterDragSfx();
 
         string characterId = DataManager.Instance?.PartyRuntimeStore?.GetCharacterId(partySlotIndex);
         Vector2 previewSize = IsValidGridIndex(sourceGridIndex)
@@ -376,6 +419,7 @@ public class SpawnGridPanel : MonoBehaviour
         if (!pointerOverReadyGrid && partySlotIndex >= 0)
             UnregisterPartySlot(partySlotIndex);
 
+        EndCharacterDragSfx();
         activeGridDragSourceIndex = -1;
         selectedPartySlotIndex = -1;
         HideDragPreview();
@@ -417,6 +461,8 @@ public class SpawnGridPanel : MonoBehaviour
         if (pendingInfoPlacementButton == sourceButton)
             pendingInfoPlacementButton = null;
 
+        if (infoDragSourceButton == sourceButton)
+            EndCharacterDragSfx();
         infoDragSourceButton = null;
         selectedPartySlotIndex = -1;
         HideDragPreview();
@@ -441,6 +487,8 @@ public class SpawnGridPanel : MonoBehaviour
         if (!success)
             return false;
 
+        if (activeGridDragSourceIndex == sourceGridIndex)
+            EndCharacterDragSfx();
         activeGridDragSourceIndex = -1;
         selectedPartySlotIndex = -1;
         HideDragPreview();

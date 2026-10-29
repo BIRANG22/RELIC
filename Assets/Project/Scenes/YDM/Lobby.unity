@@ -3056,10 +3056,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -81.86627, y: -22.4105}
-  bottomRight: {x: 69.79816, y: -22.4105}
-  topLeft: {x: -65.61493, y: 22.4105}
-  topRight: {x: 77.683044, y: 22.4105}
+  bottomLeft: {x: -81.86627, y: -22.410492}
+  bottomRight: {x: 69.798035, y: -22.410492}
+  topLeft: {x: -65.61505, y: 22.410492}
+  topRight: {x: 77.683044, y: 22.410492}
   filterRaycasts: 1
 --- !u!1 &59951732
 GameObject:
@@ -3453,10 +3453,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -94.41573, y: -22.41053}
-  bottomRight: {x: 65.61491, y: -22.41053}
-  topLeft: {x: -61.431725, y: 22.410507}
-  topRight: {x: 90.23246, y: 22.410507}
+  bottomLeft: {x: -94.41573, y: -22.410515}
+  bottomRight: {x: 65.61503, y: -22.410515}
+  topLeft: {x: -61.431847, y: 22.4105}
+  topRight: {x: 90.232704, y: 22.4105}
   filterRaycasts: 1
 --- !u!1 &86989392
 GameObject:
@@ -11861,81 +11861,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 164053417}
   m_CullTransparentMesh: 1
---- !u!1 &168593691
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 168593692}
-  - component: {fileID: 168593694}
-  - component: {fileID: 168593693}
-  m_Layer: 5
-  m_Name: back
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!224 &168593692
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 168593691}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 669369269}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -161, y: -197}
-  m_SizeDelta: {x: 800, y: 400}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &168593693
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 168593691}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 0.05, g: 0.05, b: 0.05, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &168593694
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 168593691}
-  m_CullTransparentMesh: 1
 --- !u!1 &170339011
 GameObject:
   m_ObjectHideFlags: 0
@@ -12715,10 +12640,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -98.59894, y: -22.410477}
+  bottomLeft: {x: -98.59906, y: -22.410477}
   bottomRight: {x: 69.79816, y: -22.410477}
-  topLeft: {x: -65.61493, y: 22.410522}
-  topRight: {x: 94.41571, y: 22.410522}
+  topLeft: {x: -65.61493, y: 22.410507}
+  topRight: {x: 94.41559, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &182731238
 GameObject:
@@ -17647,10 +17572,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -102.78227, y: -22.410507}
-  bottomRight: {x: 73.981155, y: -22.410507}
-  topLeft: {x: -69.7979, y: 22.410477}
-  topRight: {x: 98.59895, y: 22.410477}
+  bottomLeft: {x: -102.78215, y: -22.410507}
+  bottomRight: {x: 73.98128, y: -22.410507}
+  topLeft: {x: -69.79802, y: 22.410507}
+  topRight: {x: 98.59895, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &271196197
 GameObject:
@@ -18938,10 +18863,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -90.232765, y: -22.4105}
-  bottomRight: {x: 61.431664, y: -22.4105}
-  topLeft: {x: -57.248634, y: 22.4105}
-  topRight: {x: 86.04934, y: 22.4105}
+  bottomLeft: {x: -90.23264, y: -22.410492}
+  bottomRight: {x: 61.431664, y: -22.410492}
+  topLeft: {x: -57.248512, y: 22.410492}
+  topRight: {x: 86.04934, y: 22.410492}
   filterRaycasts: 1
 --- !u!1 &300992145
 GameObject:
@@ -21036,10 +20961,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -98.59892, y: -22.410507}
+  bottomLeft: {x: -98.599045, y: -22.410507}
   bottomRight: {x: 78.16438, y: -22.410507}
-  topLeft: {x: -73.98137, y: 22.410477}
-  topRight: {x: 94.415726, y: 22.410477}
+  topLeft: {x: -73.98137, y: 22.410507}
+  topRight: {x: 94.4156, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &345635225
 GameObject:
@@ -21641,6 +21566,10 @@ MonoBehaviour:
   - {fileID: 411751190}
   autoBindCharButtons: 1
   charButtonRoot: {fileID: 355389639}
+  characterPointerDownSfxId: 
+  characterPointerUpSfxId: 
+  characterPointerDownSfxVolume: 1
+  characterPointerUpSfxVolume: 1
   previewRoot: {fileID: 0}
   setting: {fileID: 1880677616}
   previewBackground: {fileID: 0}
@@ -25735,9 +25664,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bottomLeft: {x: -94.41569, y: -22.410477}
-  bottomRight: {x: 73.98116, y: -22.410477}
-  topLeft: {x: -69.798134, y: 22.410522}
-  topRight: {x: 90.232506, y: 22.410522}
+  bottomRight: {x: 73.981285, y: -22.410477}
+  topLeft: {x: -69.79801, y: 22.410507}
+  topRight: {x: 90.232506, y: 22.410507}
   filterRaycasts: 1
 --- !u!43 &453350457
 Mesh:
@@ -26219,10 +26148,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -90.2327, y: -22.41053}
-  bottomRight: {x: 69.798065, y: -22.41053}
-  topLeft: {x: -65.6149, y: 22.410507}
-  topRight: {x: 86.04941, y: 22.410507}
+  bottomLeft: {x: -90.232574, y: -22.410515}
+  bottomRight: {x: 69.79794, y: -22.410515}
+  topLeft: {x: -65.6149, y: 22.4105}
+  topRight: {x: 86.04941, y: 22.4105}
   filterRaycasts: 1
 --- !u!1 &462661375
 GameObject:
@@ -26463,9 +26392,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bottomLeft: {x: -94.41568, y: -22.410507}
-  bottomRight: {x: 82.34738, y: -22.410507}
-  topLeft: {x: -78.16458, y: 22.410477}
-  topRight: {x: 90.23251, y: 22.410477}
+  bottomRight: {x: 82.3475, y: -22.410507}
+  topLeft: {x: -78.16446, y: 22.410507}
+  topRight: {x: 90.23251, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &467927555
 GameObject:
@@ -27894,10 +27823,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -102.78227, y: -22.410507}
-  bottomRight: {x: 73.981155, y: -22.410507}
-  topLeft: {x: -69.7979, y: 22.410477}
-  topRight: {x: 98.59895, y: 22.410477}
+  bottomLeft: {x: -102.78215, y: -22.410507}
+  bottomRight: {x: 73.98128, y: -22.410507}
+  topLeft: {x: -69.79802, y: 22.410507}
+  topRight: {x: 98.59895, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &500193647
 GameObject:
@@ -31508,10 +31437,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -98.59894, y: -22.410477}
+  bottomLeft: {x: -98.59906, y: -22.410477}
   bottomRight: {x: 69.79816, y: -22.410477}
-  topLeft: {x: -65.61493, y: 22.410522}
-  topRight: {x: 94.41571, y: 22.410522}
+  topLeft: {x: -65.61493, y: 22.410507}
+  topRight: {x: 94.41559, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &569670630
 GameObject:
@@ -32191,10 +32120,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -90.2327, y: -22.41053}
-  bottomRight: {x: 69.798065, y: -22.41053}
-  topLeft: {x: -65.6149, y: 22.410507}
-  topRight: {x: 86.04941, y: 22.410507}
+  bottomLeft: {x: -90.232574, y: -22.410515}
+  bottomRight: {x: 69.79794, y: -22.410515}
+  topLeft: {x: -65.6149, y: 22.4105}
+  topRight: {x: 86.04941, y: 22.4105}
   filterRaycasts: 1
 --- !u!1 &585048670
 GameObject:
@@ -33448,9 +33377,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bottomLeft: {x: -94.41569, y: -22.410477}
-  bottomRight: {x: 73.98116, y: -22.410477}
-  topLeft: {x: -69.798134, y: 22.410522}
-  topRight: {x: 90.232506, y: 22.410522}
+  bottomRight: {x: 73.981285, y: -22.410477}
+  topLeft: {x: -69.79801, y: 22.410507}
+  topRight: {x: 90.232506, y: 22.410507}
   filterRaycasts: 1
 --- !u!43 &608134161
 Mesh:
@@ -34354,10 +34283,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -86.04947, y: -22.4105}
-  bottomRight: {x: 65.61484, y: -22.4105}
-  topLeft: {x: -61.431793, y: 22.4105}
-  topRight: {x: 81.86618, y: 22.4105}
+  bottomLeft: {x: -86.04947, y: -22.410492}
+  bottomRight: {x: 65.61484, y: -22.410492}
+  topLeft: {x: -61.431793, y: 22.410492}
+  topRight: {x: 81.8663, y: 22.410492}
   filterRaycasts: 1
 --- !u!1 &629417864
 GameObject:
@@ -34708,10 +34637,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -86.04941, y: -22.41053}
-  bottomRight: {x: 73.98111, y: -22.41053}
-  topLeft: {x: -69.79819, y: 22.410507}
-  topRight: {x: 81.86624, y: 22.410507}
+  bottomLeft: {x: -86.04941, y: -22.410515}
+  bottomRight: {x: 73.98135, y: -22.410515}
+  topLeft: {x: -69.79794, y: 22.4105}
+  topRight: {x: 81.86612, y: 22.4105}
   filterRaycasts: 1
 --- !u!1 &636707286
 GameObject:
@@ -35561,10 +35490,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -77.683136, y: -22.41051}
-  bottomRight: {x: 65.61484, y: -22.41051}
-  topLeft: {x: -61.431915, y: 22.41049}
-  topRight: {x: 73.49997, y: 22.41049}
+  bottomLeft: {x: -77.683136, y: -22.410501}
+  bottomRight: {x: 65.61496, y: -22.410501}
+  topLeft: {x: -61.43167, y: 22.410482}
+  topRight: {x: 73.49997, y: 22.410482}
   filterRaycasts: 1
 --- !u!1 &656357418
 GameObject:
@@ -36153,14 +36082,11 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 168593692}
-  - {fileID: 1014413789}
   - {fileID: 1408734956}
   - {fileID: 1340867424}
   - {fileID: 1871834537}
   - {fileID: 1515559801}
   - {fileID: 235280668}
-  - {fileID: 1463072982}
   m_Father: {fileID: 1213641074}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -36763,10 +36689,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -94.41573, y: -22.41053}
-  bottomRight: {x: 65.61491, y: -22.41053}
-  topLeft: {x: -61.431725, y: 22.410507}
-  topRight: {x: 90.23246, y: 22.410507}
+  bottomLeft: {x: -94.41573, y: -22.410515}
+  bottomRight: {x: 65.61503, y: -22.410515}
+  topLeft: {x: -61.431847, y: 22.4105}
+  topRight: {x: 90.232704, y: 22.4105}
   filterRaycasts: 1
 --- !u!1 &686796171
 GameObject:
@@ -37202,10 +37128,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -77.683136, y: -22.41051}
-  bottomRight: {x: 65.61484, y: -22.41051}
-  topLeft: {x: -61.431915, y: 22.41049}
-  topRight: {x: 73.49997, y: 22.41049}
+  bottomLeft: {x: -77.683136, y: -22.410501}
+  bottomRight: {x: 65.61496, y: -22.410501}
+  topLeft: {x: -61.43167, y: 22.410482}
+  topRight: {x: 73.49997, y: 22.410482}
   filterRaycasts: 1
 --- !u!1 &695294351
 GameObject:
@@ -37493,10 +37419,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -86.04942, y: -22.41051}
-  bottomRight: {x: 57.248425, y: -22.41051}
-  topLeft: {x: -53.06542, y: 22.41049}
-  topRight: {x: 81.86623, y: 22.41049}
+  bottomLeft: {x: -86.049545, y: -22.410501}
+  bottomRight: {x: 57.248547, y: -22.410501}
+  topLeft: {x: -53.06542, y: 22.410482}
+  topRight: {x: 81.86623, y: 22.410482}
   filterRaycasts: 1
 --- !u!1 &700347039
 GameObject:
@@ -38674,10 +38600,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -90.232666, y: -22.410477}
+  bottomLeft: {x: -90.232544, y: -22.410477}
   bottomRight: {x: 78.16443, y: -22.410477}
-  topLeft: {x: -73.98132, y: 22.410522}
-  topRight: {x: 86.049194, y: 22.410522}
+  topLeft: {x: -73.98132, y: 22.410507}
+  topRight: {x: 86.04944, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &727276908
 GameObject:
@@ -41901,10 +41827,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -90.232666, y: -22.410477}
+  bottomLeft: {x: -90.232544, y: -22.410477}
   bottomRight: {x: 78.16443, y: -22.410477}
-  topLeft: {x: -73.98132, y: 22.410522}
-  topRight: {x: 86.049194, y: 22.410522}
+  topLeft: {x: -73.98132, y: 22.410507}
+  topRight: {x: 86.04944, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &804959810
 GameObject:
@@ -41994,10 +41920,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -102.78227, y: -22.410507}
-  bottomRight: {x: 73.981155, y: -22.410507}
-  topLeft: {x: -69.7979, y: 22.410477}
-  topRight: {x: 98.59895, y: 22.410477}
+  bottomLeft: {x: -102.78215, y: -22.410507}
+  bottomRight: {x: 73.98128, y: -22.410507}
+  topLeft: {x: -69.79802, y: 22.410507}
+  topRight: {x: 98.59895, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &806173064
 GameObject:
@@ -50136,10 +50062,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -81.86621, y: -22.41051}
-  bottomRight: {x: 61.43164, y: -22.41051}
-  topLeft: {x: -57.248657, y: 22.41049}
-  topRight: {x: 77.683105, y: 22.41049}
+  bottomLeft: {x: -81.86609, y: -22.410501}
+  bottomRight: {x: 61.431763, y: -22.410501}
+  topLeft: {x: -57.248413, y: 22.410482}
+  topRight: {x: 77.68323, y: 22.410482}
   filterRaycasts: 1
 --- !u!1 &881067265
 GameObject:
@@ -50642,10 +50568,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -98.59892, y: -22.410507}
+  bottomLeft: {x: -98.599045, y: -22.410507}
   bottomRight: {x: 78.16438, y: -22.410507}
-  topLeft: {x: -73.98137, y: 22.410477}
-  topRight: {x: 94.415726, y: 22.410477}
+  topLeft: {x: -73.98137, y: 22.410507}
+  topRight: {x: 94.4156, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &893678182
 GameObject:
@@ -60140,10 +60066,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -81.86627, y: -22.4105}
-  bottomRight: {x: 69.79816, y: -22.4105}
-  topLeft: {x: -65.61493, y: 22.4105}
-  topRight: {x: 77.683044, y: 22.4105}
+  bottomLeft: {x: -81.86627, y: -22.410492}
+  bottomRight: {x: 69.798035, y: -22.410492}
+  topLeft: {x: -65.61505, y: 22.410492}
+  topRight: {x: 77.683044, y: 22.410492}
   filterRaycasts: 1
 --- !u!1 &996075175
 GameObject:
@@ -60363,10 +60289,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -90.232666, y: -22.410477}
+  bottomLeft: {x: -90.232544, y: -22.410477}
   bottomRight: {x: 78.16443, y: -22.410477}
-  topLeft: {x: -73.98132, y: 22.410522}
-  topRight: {x: 86.049194, y: 22.410522}
+  topLeft: {x: -73.98132, y: 22.410507}
+  topRight: {x: 86.04944, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &999125677
 GameObject:
@@ -61567,81 +61493,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1010941008}
   m_CullTransparentMesh: 1
---- !u!1 &1014413788
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1014413789}
-  - component: {fileID: 1014413791}
-  - component: {fileID: 1014413790}
-  m_Layer: 5
-  m_Name: Line
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!224 &1014413789
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1014413788}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 669369269}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -161, y: -197}
-  m_SizeDelta: {x: 800, y: 400}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1014413790
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1014413788}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 0.6627451, g: 0.69411767, b: 0.74509805, a: 1}
-  m_RaycastTarget: 0
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 90691224864eca94583fb85e699b03ba, type: 3}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &1014413791
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1014413788}
-  m_CullTransparentMesh: 1
 --- !u!1 &1016536266
 GameObject:
   m_ObjectHideFlags: 0
@@ -62610,10 +62461,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -86.04942, y: -22.41051}
-  bottomRight: {x: 57.248425, y: -22.41051}
-  topLeft: {x: -53.06542, y: 22.41049}
-  topRight: {x: 81.86623, y: 22.41049}
+  bottomLeft: {x: -86.049545, y: -22.410501}
+  bottomRight: {x: 57.248547, y: -22.410501}
+  topLeft: {x: -53.06542, y: 22.410482}
+  topRight: {x: 81.86623, y: 22.410482}
   filterRaycasts: 1
 --- !u!1 &1061132647
 GameObject:
@@ -70351,10 +70202,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -98.59894, y: -22.410477}
+  bottomLeft: {x: -98.59906, y: -22.410477}
   bottomRight: {x: 69.79816, y: -22.410477}
-  topLeft: {x: -65.61493, y: 22.410522}
-  topRight: {x: 94.41571, y: 22.410522}
+  topLeft: {x: -65.61493, y: 22.410507}
+  topRight: {x: 94.41559, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &1140414202
 GameObject:
@@ -70519,10 +70370,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -86.04941, y: -22.41053}
-  bottomRight: {x: 73.98111, y: -22.41053}
-  topLeft: {x: -69.79819, y: 22.410507}
-  topRight: {x: 81.86624, y: 22.410507}
+  bottomLeft: {x: -86.04941, y: -22.410515}
+  bottomRight: {x: 73.98135, y: -22.410515}
+  topLeft: {x: -69.79794, y: 22.4105}
+  topRight: {x: 81.86612, y: 22.4105}
   filterRaycasts: 1
 --- !u!1 &1146042783
 GameObject:
@@ -71210,6 +71061,7 @@ GameObject:
   - component: {fileID: 1175251470}
   - component: {fileID: 1175251469}
   - component: {fileID: 1175251474}
+  - component: {fileID: 1175251475}
   - component: {fileID: 1175251473}
   m_Layer: 5
   m_Name: Ready_Panel
@@ -71338,6 +71190,29 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 10000
   m_TargetDisplay: 0
+--- !u!114 &1175251475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175251467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfe62ae0c3ea9ba4d9ef4ca8965516ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cells: []
+  autoBindReadyPanelGrid: 1
+  clearSelectionWhenPointerPressedOutside: 0
+  partySlotOrderIconObjects: []
+  characterDragStartSfxId: char.pick
+  characterDragStartSfxVolume: 1
+  characterDragEndSfxId: char.drop
+  characterDragEndSfxVolume: 1
+  dragPreviewScale: 4
+  dragPreviewAlpha: 0.6
+  dragPreviewPositionOffset: {x: 0, y: 120}
 --- !u!1 &1176615038
 GameObject:
   m_ObjectHideFlags: 0
@@ -71960,10 +71835,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -94.41573, y: -22.41053}
-  bottomRight: {x: 65.61491, y: -22.41053}
-  topLeft: {x: -61.431725, y: 22.410507}
-  topRight: {x: 90.23246, y: 22.410507}
+  bottomLeft: {x: -94.41573, y: -22.410515}
+  bottomRight: {x: 65.61503, y: -22.410515}
+  topLeft: {x: -61.431847, y: 22.4105}
+  topRight: {x: 90.232704, y: 22.4105}
   filterRaycasts: 1
 --- !u!1 &1183660880
 GameObject:
@@ -73290,7 +73165,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1978836621}
   m_HandleRect: {fileID: 601108481}
   m_Direction: 0
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -73913,9 +73788,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bottomLeft: {x: -94.41568, y: -22.410507}
-  bottomRight: {x: 82.34738, y: -22.410507}
-  topLeft: {x: -78.16458, y: 22.410477}
-  topRight: {x: 90.23251, y: 22.410477}
+  bottomRight: {x: 82.3475, y: -22.410507}
+  topLeft: {x: -78.16446, y: 22.410507}
+  topRight: {x: 90.23251, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &1238097438
 GameObject:
@@ -75096,10 +74971,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -86.04941, y: -22.41053}
-  bottomRight: {x: 73.98111, y: -22.41053}
-  topLeft: {x: -69.79819, y: 22.410507}
-  topRight: {x: 81.86624, y: 22.410507}
+  bottomLeft: {x: -86.04941, y: -22.410515}
+  bottomRight: {x: 73.98135, y: -22.410515}
+  topLeft: {x: -69.79794, y: 22.4105}
+  topRight: {x: 81.86612, y: 22.4105}
   filterRaycasts: 1
 --- !u!1 &1287925226
 GameObject:
@@ -76348,7 +76223,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -250, y: 175}
+  m_AnchoredPosition: {x: -250, y: 199}
   m_SizeDelta: {x: 400, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1340867425
@@ -79317,10 +79192,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -77.683136, y: -22.41051}
-  bottomRight: {x: 65.61484, y: -22.41051}
-  topLeft: {x: -61.431915, y: 22.41049}
-  topRight: {x: 73.49997, y: 22.41049}
+  bottomLeft: {x: -77.683136, y: -22.410501}
+  bottomRight: {x: 65.61496, y: -22.410501}
+  topLeft: {x: -61.43167, y: 22.410482}
+  topRight: {x: 73.49997, y: 22.410482}
   filterRaycasts: 1
 --- !u!1 &1401808476
 GameObject:
@@ -79856,6 +79731,10 @@ MonoBehaviour:
   - {fileID: 0}
   autoBindCharButtons: 1
   charButtonRoot: {fileID: 1408734956}
+  characterPointerDownSfxId: char.pick
+  characterPointerUpSfxId: char.drop
+  characterPointerDownSfxVolume: 1
+  characterPointerUpSfxVolume: 1
   previewRoot: {fileID: 0}
   setting: {fileID: 1880677616}
   previewBackground: {fileID: 0}
@@ -80832,10 +80711,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -81.86621, y: -22.41051}
-  bottomRight: {x: 61.43164, y: -22.41051}
-  topLeft: {x: -57.248657, y: 22.41049}
-  topRight: {x: 77.683105, y: 22.41049}
+  bottomLeft: {x: -81.86609, y: -22.410501}
+  bottomRight: {x: 61.431763, y: -22.410501}
+  topLeft: {x: -57.248413, y: 22.410482}
+  topRight: {x: 77.68323, y: 22.410482}
   filterRaycasts: 1
 --- !u!1 &1432818020
 GameObject:
@@ -82122,41 +82001,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 150}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &1463072981
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1463072982}
-  m_Layer: 5
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1463072982
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1463072981}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 669369269}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1473009920
 GameObject:
   m_ObjectHideFlags: 0
@@ -82769,9 +82613,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bottomLeft: {x: -94.41568, y: -22.410507}
-  bottomRight: {x: 82.34738, y: -22.410507}
-  topLeft: {x: -78.16458, y: 22.410477}
-  topRight: {x: 90.23251, y: 22.410477}
+  bottomRight: {x: 82.3475, y: -22.410507}
+  topLeft: {x: -78.16446, y: 22.410507}
+  topRight: {x: 90.23251, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &1491629166
 GameObject:
@@ -84024,7 +83868,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 100, y: 185}
+  m_AnchoredPosition: {x: 100, y: 209}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1515559802
@@ -85343,10 +85187,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -90.232765, y: -22.4105}
-  bottomRight: {x: 61.431664, y: -22.4105}
-  topLeft: {x: -57.248634, y: 22.4105}
-  topRight: {x: 86.04934, y: 22.4105}
+  bottomLeft: {x: -90.23264, y: -22.410492}
+  bottomRight: {x: 61.431664, y: -22.410492}
+  topLeft: {x: -57.248512, y: 22.410492}
+  topRight: {x: 86.04934, y: 22.410492}
   filterRaycasts: 1
 --- !u!1 &1558799853
 GameObject:
@@ -85732,10 +85576,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -90.2327, y: -22.41053}
-  bottomRight: {x: 69.798065, y: -22.41053}
-  topLeft: {x: -65.6149, y: 22.410507}
-  topRight: {x: 86.04941, y: 22.410507}
+  bottomLeft: {x: -90.232574, y: -22.410515}
+  bottomRight: {x: 69.79794, y: -22.410515}
+  topLeft: {x: -65.6149, y: 22.4105}
+  topRight: {x: 86.04941, y: 22.4105}
   filterRaycasts: 1
 --- !u!1 &1563479816
 GameObject:
@@ -93201,10 +93045,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -86.04942, y: -22.41051}
-  bottomRight: {x: 57.248425, y: -22.41051}
-  topLeft: {x: -53.06542, y: 22.41049}
-  topRight: {x: 81.86623, y: 22.41049}
+  bottomLeft: {x: -86.049545, y: -22.410501}
+  bottomRight: {x: 57.248547, y: -22.410501}
+  topLeft: {x: -53.06542, y: 22.410482}
+  topRight: {x: 81.86623, y: 22.410482}
   filterRaycasts: 1
 --- !u!1 &1629133831
 GameObject:
@@ -102949,9 +102793,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bottomLeft: {x: -94.41569, y: -22.410477}
-  bottomRight: {x: 73.98116, y: -22.410477}
-  topLeft: {x: -69.798134, y: 22.410522}
-  topRight: {x: 90.232506, y: 22.410522}
+  bottomRight: {x: 73.981285, y: -22.410477}
+  topLeft: {x: -69.79801, y: 22.410507}
+  topRight: {x: 90.232506, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &1740643822
 GameObject:
@@ -103949,10 +103793,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -90.232765, y: -22.4105}
-  bottomRight: {x: 61.431664, y: -22.4105}
-  topLeft: {x: -57.248634, y: 22.4105}
-  topRight: {x: 86.04934, y: 22.4105}
+  bottomLeft: {x: -90.23264, y: -22.410492}
+  bottomRight: {x: 61.431664, y: -22.410492}
+  topLeft: {x: -57.248512, y: 22.410492}
+  topRight: {x: 86.04934, y: 22.410492}
   filterRaycasts: 1
 --- !u!1 &1776544754
 GameObject:
@@ -104042,10 +103886,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -81.86621, y: -22.41051}
-  bottomRight: {x: 61.43164, y: -22.41051}
-  topLeft: {x: -57.248657, y: 22.41049}
-  topRight: {x: 77.683105, y: 22.41049}
+  bottomLeft: {x: -81.86609, y: -22.410501}
+  bottomRight: {x: 61.431763, y: -22.410501}
+  topLeft: {x: -57.248413, y: 22.410482}
+  topRight: {x: 77.68323, y: 22.410482}
   filterRaycasts: 1
 --- !u!1 &1776826868
 GameObject:
@@ -113828,7 +113672,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -115, y: 25}
+  m_AnchoredPosition: {x: -115, y: 49}
   m_SizeDelta: {x: 650, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1871834538
@@ -119740,10 +119584,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -81.86627, y: -22.4105}
-  bottomRight: {x: 69.79816, y: -22.4105}
-  topLeft: {x: -65.61493, y: 22.4105}
-  topRight: {x: 77.683044, y: 22.4105}
+  bottomLeft: {x: -81.86627, y: -22.410492}
+  bottomRight: {x: 69.798035, y: -22.410492}
+  topLeft: {x: -65.61505, y: 22.410492}
+  topRight: {x: 77.683044, y: 22.410492}
   filterRaycasts: 1
 --- !u!1 &2020136502
 GameObject:
@@ -119833,10 +119677,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -86.04947, y: -22.4105}
-  bottomRight: {x: 65.61484, y: -22.4105}
-  topLeft: {x: -61.431793, y: 22.4105}
-  topRight: {x: 81.86618, y: 22.4105}
+  bottomLeft: {x: -86.04947, y: -22.410492}
+  bottomRight: {x: 65.61484, y: -22.410492}
+  topLeft: {x: -61.431793, y: 22.410492}
+  topRight: {x: 81.8663, y: 22.410492}
   filterRaycasts: 1
 --- !u!1 &2020686570
 GameObject:
@@ -121208,10 +121052,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -86.04947, y: -22.4105}
-  bottomRight: {x: 65.61484, y: -22.4105}
-  topLeft: {x: -61.431793, y: 22.4105}
-  topRight: {x: 81.86618, y: 22.4105}
+  bottomLeft: {x: -86.04947, y: -22.410492}
+  bottomRight: {x: 65.61484, y: -22.410492}
+  topLeft: {x: -61.431793, y: 22.410492}
+  topRight: {x: 81.8663, y: 22.410492}
   filterRaycasts: 1
 --- !u!1 &2052596029
 GameObject:
@@ -125378,10 +125222,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa370ec8318f9a4294480aa7149a4a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bottomLeft: {x: -98.59892, y: -22.410507}
+  bottomLeft: {x: -98.599045, y: -22.410507}
   bottomRight: {x: 78.16438, y: -22.410507}
-  topLeft: {x: -73.98137, y: 22.410477}
-  topRight: {x: 94.415726, y: 22.410477}
+  topLeft: {x: -73.98137, y: 22.410507}
+  topRight: {x: 94.4156, y: 22.410507}
   filterRaycasts: 1
 --- !u!1 &2147206407
 GameObject:
