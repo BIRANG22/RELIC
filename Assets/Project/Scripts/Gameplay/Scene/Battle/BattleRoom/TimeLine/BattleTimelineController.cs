@@ -276,6 +276,10 @@ public class BattleTimelineController : MonoBehaviour
         if (!Input.GetMouseButtonDown(1) || UIPanelButton.IsMenuPanelOpen)
             return;
 
+        // 전투 행동 실행 및 입력 잠금 중에는 우클릭으로 선택 상태를 변경하지 않습니다.
+        if (!IsPlayerReservationInputActive)
+            return;
+
         // MonsterInfo close takes priority over undoing a timeline reservation.
         if (BattleMonsterInfoCanvasUI.TryHandleRightClickIfOpen())
             return;
@@ -327,6 +331,11 @@ public class BattleTimelineController : MonoBehaviour
             return;
 
         if (!Input.GetMouseButtonDown(0))
+            return;
+
+        // 공격/이동/카메라 연출 중에는 클릭으로 캐릭터 및 몬스터 선택을 해제하지 않습니다.
+        // ClearCharacterSelection은 카메라 복귀와 선택 이벤트까지 발생시키므로 반드시 차단합니다.
+        if (!IsPlayerReservationInputActive)
             return;
 
         if (UIPanelButton.IsMenuPanelOpen)

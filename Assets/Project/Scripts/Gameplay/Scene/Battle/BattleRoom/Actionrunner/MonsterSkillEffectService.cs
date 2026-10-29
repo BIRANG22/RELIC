@@ -1,4 +1,5 @@
-﻿using Relic.Gameplay.Battle;
+﻿using System.Collections.Generic;
+using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
 using UnityEngine;
@@ -152,8 +153,8 @@ public class MonsterSkillEffectService
     {
         if (command == null || command.SkillData == null ||
             mode == EffectExecutionMode.NonDamage ||
-            command.TargetGridIndices == null ||
-            command.TargetGridIndices.Count <= 0 ||
+            ((command.RangeGridIndices == null || command.RangeGridIndices.Count == 0) &&
+             (command.TargetGridIndices == null || command.TargetGridIndices.Count == 0)) ||
             string.IsNullOrWhiteSpace(command.SkillData.EffectIds))
         {
             return;
@@ -188,11 +189,18 @@ public class MonsterSkillEffectService
                 if (damage <= 0)
                     continue;
 
-                for (int targetIndex = 0; targetIndex < command.TargetGridIndices.Count; targetIndex++)
+                // 실제 공격 범위에 있는 체력형 장애물을 타격합니다.
+                // TargetGridIndices는 플레이어/Character 타입만 포함할 수 있으므로
+                // Object 타입 잔해 등이 누락되지 않도록 RangeGridIndices를 우선 사용합니다.
+                IReadOnlyList<int> hitGrids = command.RangeGridIndices != null &&
+                                               command.RangeGridIndices.Count > 0
+                    ? command.RangeGridIndices
+                    : command.TargetGridIndices;
+                HashSet<int> damagedGrids = new HashSet<int>();
+                for (int targetIndex = 0; targetIndex < hitGrids.Count; targetIndex++)
                 {
-                    int gridIndex = command.TargetGridIndices[targetIndex];
-
-                    if (!controller.IsCharacterTargetEffect(gridIndex))
+                    int gridIndex = hitGrids[targetIndex];
+                    if (!damagedGrids.Add(gridIndex) || !controller.HasDamageableEffect(gridIndex))
                         continue;
 
                     controller.TryDamageEffect(gridIndex, damage, out _);

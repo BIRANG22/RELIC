@@ -43,15 +43,30 @@ public class PlayerSkillReservationController : MonoBehaviour
     [Tooltip("VFX 렌더러의 Y 정렬 기준 오프셋입니다.")]
     [SerializeField] private int moveHoverPingVfxSortingOrder = 10;
 
-    [Header("Move Hover Cost Text")]
-    [Tooltip("이동 코스트 텍스트에 사용할 TMP 폰트입니다. 비워두면 TMP 기본 폰트를 사용합니다.")]
-    [SerializeField] private TMP_FontAsset moveHoverCostFont;
+    [Header("Move Hover Cost")]
+    [Tooltip("이동 코스트 앞에 표시할 아이콘입니다.")]
+    [SerializeField] private Sprite moveHoverCostIcon;
+    [Tooltip("코스트 아이콘 뒤에 표시할 배경 이미지입니다.")]
+    [SerializeField] private Sprite moveHoverCostIconBackground;
+    [Tooltip("숫자 0~9를 순서대로 지정합니다. 여러 자리 숫자도 지원합니다.")]
+    [SerializeField] private Sprite[] moveHoverCostDigits = new Sprite[10];
+    [Tooltip("그리드 중앙 기준 코스트 표시 전체 위치입니다.")]
     [SerializeField] private Vector3 moveHoverCostTextOffset = new Vector3(0f, 0.35f, 0f);
-    [Min(0f)]
-    [SerializeField] private float moveHoverCostFontSize = 4f;
-    [SerializeField] private Color moveHoverCostTextColor = Color.white;
+    [Tooltip("코스트 아이콘의 개별 X/Y 위치입니다.")]
+    [SerializeField] private Vector2 moveHoverCostIconOffset = Vector2.zero;
+    [Tooltip("숫자 이미지 묶음의 개별 X/Y 위치입니다.")]
+    [SerializeField] private Vector2 moveHoverCostNumberOffset = Vector2.zero;
+    [Tooltip("코스트 아이콘 배경의 개별 X/Y 위치입니다.")]
+    [SerializeField] private Vector2 moveHoverCostBackgroundOffset = Vector2.zero;
+    [SerializeField] private Vector2 moveHoverCostIconSize = new Vector2(0.28f, 0.28f);
+    [SerializeField] private Vector2 moveHoverCostBackgroundSize = new Vector2(0.34f, 0.34f);
+    [SerializeField] private Vector2 moveHoverCostDigitSize = new Vector2(0.2f, 0.28f);
+    [SerializeField, Min(0f)] private float moveHoverCostIconGap = 0.06f;
+    [SerializeField, Min(0f)] private float moveHoverCostDigitGap = 0.01f;
+    [SerializeField] private Color moveHoverCostIconColor = new Color32(0x3F, 0x6F, 0xBB, 0xFF);
+    [SerializeField] private Color moveHoverCostBackgroundColor = Color.white;
+    [SerializeField] private Color moveHoverCostDigitColor = new Color32(0x3F, 0x6F, 0xBB, 0xFF);
     [SerializeField] private int moveHoverCostSortingOrder = 12;
-
 
     [Header("Nocturn Portal Preview")]
     [Tooltip("그리드 중심에서 포털 예고 프리팹에 추가할 위치 오프셋입니다.")]
@@ -78,7 +93,10 @@ public class PlayerSkillReservationController : MonoBehaviour
     private bool isGridTargetMonsterVisualActive;
     private bool isForcedDirectionalSkillHoverPathVisible;
     private GameObject moveHoverPingVfxInstance;
-    private TextMeshPro moveHoverCostTextInstance;
+    private GameObject moveHoverCostImagesRoot;
+    private SpriteRenderer moveHoverCostIconRenderer;
+    private SpriteRenderer moveHoverCostBackgroundRenderer;
+    private readonly List<SpriteRenderer> moveHoverCostDigitRenderers = new();
     private int moveHoverPingGridIndex = -1;
 
 
@@ -1036,34 +1054,115 @@ public class PlayerSkillReservationController : MonoBehaviour
             moveHoverPingVfxInstance.SetActive(true);
         }
 
-        // VFX 설정 여부와 관계없이 기존 이동 코스트 텍스트는 유지합니다.
-        ShowMoveHoverCostText(gridIndex, gridWorldPosition);
+        // VFX와 독립적으로 아이콘 및 숫자 이미지를 표시합니다.
+        ShowMoveHoverCostDisplay(gridIndex, gridWorldPosition);
         moveHoverPingGridIndex = gridIndex;
     }
 
-    private void ShowMoveHoverCostText(int gridIndex, Vector3 gridWorldPosition)
+    private void ShowMoveHoverCostDisplay(int gridIndex, Vector3 gridWorldPosition)
     {
         int moveCost = GetMoveHoverCost(gridIndex);
-
         if (moveCost < 0)
         {
-            if (moveHoverCostTextInstance != null)
-                moveHoverCostTextInstance.gameObject.SetActive(false);
-
+            if (moveHoverCostImagesRoot != null)
+                moveHoverCostImagesRoot.SetActive(false);
             return;
         }
 
-        moveHoverCostTextInstance = EnsureMoveHoverCostText();
-        moveHoverCostTextInstance.text = moveCost.ToString();
-        moveHoverCostTextInstance.fontSize = Mathf.Max(0f, moveHoverCostFontSize);
-        moveHoverCostTextInstance.color = moveHoverCostTextColor;
-        moveHoverCostTextInstance.transform.position = gridWorldPosition + moveHoverCostTextOffset;
-        ApplyMoveHoverYSort(
-            moveHoverCostTextInstance.renderer,
-            gridWorldPosition.y,
-            moveHoverCostSortingOrder,
-            2);
-        moveHoverCostTextInstance.gameObject.SetActive(true);
+        EnsureMoveHoverCostDisplay();
+        moveHoverCostImagesRoot.transform.position = gridWorldPosition + moveHoverCostTextOffset;
+        moveHoverCostImagesRoot.SetActive(true);
+
+        string digits = moveCost.ToString();
+        float digitWidth = Mathf.Max(0f, moveHoverCostDigitSize.x);
+        float digitGap = Mathf.Max(0f, moveHoverCostDigitGap);
+        float numberWidth = digits.Length * digitWidth + Mathf.Max(0, digits.Length - 1) * digitGap;
+        bool hasIcon = moveHoverCostIcon != null;
+        float iconWidth = hasIcon ? Mathf.Max(0f, moveHoverCostIconSize.x) : 0f;
+        float gap = hasIcon ? Mathf.Max(0f, moveHoverCostIconGap) : 0f;
+        float left = -(iconWidth + gap + numberWidth) * 0.5f;
+        float iconX = left + iconWidth * 0.5f;
+
+        moveHoverCostIconRenderer.gameObject.SetActive(hasIcon);
+        if (hasIcon)
+            ConfigureMoveHoverCostSprite(moveHoverCostIconRenderer, moveHoverCostIcon,
+                moveHoverCostIconColor, moveHoverCostIconSize,
+                iconX + moveHoverCostIconOffset.x, moveHoverCostIconOffset.y,
+                gridWorldPosition.y);
+
+        bool showBackground = hasIcon && moveHoverCostIconBackground != null;
+        moveHoverCostBackgroundRenderer.gameObject.SetActive(showBackground);
+        if (showBackground)
+            ConfigureMoveHoverCostSprite(moveHoverCostBackgroundRenderer, moveHoverCostIconBackground,
+                moveHoverCostBackgroundColor, moveHoverCostBackgroundSize,
+                iconX + moveHoverCostIconOffset.x + moveHoverCostBackgroundOffset.x,
+                moveHoverCostIconOffset.y + moveHoverCostBackgroundOffset.y,
+                gridWorldPosition.y, -1);
+
+        EnsureMoveHoverCostDigitCount(digits.Length);
+        for (int i = 0; i < moveHoverCostDigitRenderers.Count; i++)
+        {
+            SpriteRenderer digitRenderer = moveHoverCostDigitRenderers[i];
+            if (i >= digits.Length)
+            {
+                digitRenderer.gameObject.SetActive(false);
+                continue;
+            }
+
+            int digit = digits[i] - '0';
+            Sprite digitSprite = moveHoverCostDigits != null && digit >= 0 &&
+                                 digit < moveHoverCostDigits.Length ? moveHoverCostDigits[digit] : null;
+            digitRenderer.gameObject.SetActive(digitSprite != null);
+            if (digitSprite == null)
+                continue;
+
+            float x = left + iconWidth + gap + digitWidth * (i + 0.5f) + digitGap * i;
+            ConfigureMoveHoverCostSprite(digitRenderer, digitSprite,
+                moveHoverCostDigitColor, moveHoverCostDigitSize,
+                x + moveHoverCostNumberOffset.x, moveHoverCostNumberOffset.y,
+                gridWorldPosition.y);
+        }
+    }
+
+    private void EnsureMoveHoverCostDisplay()
+    {
+        if (moveHoverCostImagesRoot != null)
+            return;
+
+        moveHoverCostImagesRoot = new GameObject("Move Hover Cost Display");
+        moveHoverCostImagesRoot.transform.SetParent(transform, false);
+
+        GameObject backgroundObject = new GameObject("Cost Icon Background");
+        backgroundObject.transform.SetParent(moveHoverCostImagesRoot.transform, false);
+        moveHoverCostBackgroundRenderer = backgroundObject.AddComponent<SpriteRenderer>();
+
+        GameObject iconObject = new GameObject("Cost Icon");
+        iconObject.transform.SetParent(moveHoverCostImagesRoot.transform, false);
+        moveHoverCostIconRenderer = iconObject.AddComponent<SpriteRenderer>();
+    }
+
+    private void EnsureMoveHoverCostDigitCount(int count)
+    {
+        while (moveHoverCostDigitRenderers.Count < count)
+        {
+            GameObject digitObject = new GameObject("Cost Digit " + moveHoverCostDigitRenderers.Count);
+            digitObject.transform.SetParent(moveHoverCostImagesRoot.transform, false);
+            moveHoverCostDigitRenderers.Add(digitObject.AddComponent<SpriteRenderer>());
+        }
+    }
+
+    private void ConfigureMoveHoverCostSprite(SpriteRenderer renderer, Sprite sprite,
+        Color color, Vector2 size, float localX, float localY, float gridWorldY, int sortingOffset = 0)
+    {
+        renderer.sprite = sprite;
+        renderer.color = color;
+        renderer.transform.localPosition = new Vector3(localX, localY, 0f);
+        if (sprite != null && sprite.bounds.size.x > 0f && sprite.bounds.size.y > 0f)
+            renderer.transform.localScale = new Vector3(
+                Mathf.Max(0f, size.x) / sprite.bounds.size.x,
+                Mathf.Max(0f, size.y) / sprite.bounds.size.y, 1f);
+        ApplyMoveHoverYSort(renderer, gridWorldY, moveHoverCostSortingOrder + sortingOffset, 2);
+        renderer.gameObject.SetActive(true);
     }
 
     private int GetMoveHoverCost(int gridIndex)
@@ -1076,24 +1175,6 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         List<Vector2Int> movePath = GetFirstReservableMovePath(pathCandidates);
         return movePath == null ? -1 : GetEffectiveMoveReservationCost(movePath);
-    }
-
-    private TextMeshPro EnsureMoveHoverCostText()
-    {
-        if (moveHoverCostTextInstance != null)
-            return moveHoverCostTextInstance;
-
-        GameObject textObject = new GameObject("Move Hover Cost Text");
-        textObject.transform.SetParent(transform, false);
-
-        moveHoverCostTextInstance = textObject.AddComponent<TextMeshPro>();
-        moveHoverCostTextInstance.alignment = TextAlignmentOptions.Center;
-        moveHoverCostTextInstance.textWrappingMode = TextWrappingModes.NoWrap;
-
-        if (moveHoverCostFont != null)
-            moveHoverCostTextInstance.font = moveHoverCostFont;
-
-        return moveHoverCostTextInstance;
     }
 
     private static void ApplyMoveHoverYSort(
@@ -1132,8 +1213,8 @@ public class PlayerSkillReservationController : MonoBehaviour
             moveHoverPingVfxInstance = null;
         }
 
-        if (moveHoverCostTextInstance != null)
-            moveHoverCostTextInstance.gameObject.SetActive(false);
+        if (moveHoverCostImagesRoot != null)
+            moveHoverCostImagesRoot.SetActive(false);
     }
 
     private void ShowMovePathPreview(int gridIndex)

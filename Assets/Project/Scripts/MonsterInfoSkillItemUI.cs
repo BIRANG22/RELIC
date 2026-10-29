@@ -1,5 +1,6 @@
 using Relic.Gameplay.Data;
 using TMPro;
+using System.Text.RegularExpressions;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine;
@@ -62,9 +63,14 @@ public sealed class MonsterInfoSkillItemUI : MonoBehaviour
         if (detailText != null)
         {
             string localizedDescription = GameDataLocalization.MonsterSkillDescription(skillData);
-            SkillEffectInlineIconUtility.SetText(
-                detailText,
-                MonsterSkillDescriptionFormatter.Format(localizedDescription, skillData, true));
+            string formattedDescription = MonsterSkillDescriptionFormatter.Format(localizedDescription, skillData, true);
+            // 효과명은 밑줄로 표시하고 인라인 효과 아이콘은 사용하지 않습니다.
+            // 기존 공통 포매터가 생성하는 effecticon 링크만 변환합니다.
+            formattedDescription = Regex.Replace(
+                formattedDescription,
+                @"<link=""effecticon:[^""]+"">(.*?)</link>\s*<space=1em>",
+                "<u>$1</u>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            detailText.text = formattedDescription;
         }
 
         Sprite rangeSprite = ResolveRangeIcon(skillData.RangeId);
