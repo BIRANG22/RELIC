@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -16,24 +17,25 @@ public class BattleCharacter : MonoBehaviour
     private static bool IsMoveGridClickFrame => lastMoveGridClickFrame == Time.frameCount;
     public static bool WasMoveGridClickedThisFrame => IsMoveGridClickFrame;
 
-    private static bool IsMoveGridSelectionActive()
+    private bool IsMoveGridSelectionActive()
     {
-        PlayerSkillReservationController controller =
-            FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
-        return controller != null && controller.IsMoveSkillSelectionActive();
+        ResolveBattlePresentationReferences();
+        return cachedReservationController != null &&
+               cachedReservationController.IsMoveSkillSelectionActive();
     }
 
     // 튜토리얼 입장 이동 연출 중에는 캐릭터 하이라이트만 숨깁니다.
     // HUD 마우스 오버와 일반 전투의 호버 기능은 유지합니다.
-    private static bool IsTutorialEntryMovementPlaying()
+    private bool IsTutorialEntryMovementPlaying()
     {
-        TutorialPartyTransitionPresenter presenter =
-            FindFirstObjectByType<TutorialPartyTransitionPresenter>(FindObjectsInactive.Include);
-        return presenter != null && presenter.isActiveAndEnabled && presenter.IsPlaying;
+        ResolveBattlePresentationReferences();
+        return cachedTutorialTransitionPresenter != null &&
+               cachedTutorialTransitionPresenter.isActiveAndEnabled &&
+               cachedTutorialTransitionPresenter.IsPlaying;
     }
 
     // 튜토리얼 조작 안내 중에는 하이라이트만 숨깁니다.
-    private static bool IsTutorialHighlightBlocked()
+    private bool IsTutorialHighlightBlocked()
     {
         return TutorialBattleSequence.IsPresentationRunning ||
                IsTutorialEntryMovementPlaying() ||
@@ -65,6 +67,12 @@ public class BattleCharacter : MonoBehaviour
     private bool selectionHighlightVisible;
     private float idleBackHoverAlpha;
     private HUDSlot worldHud;
+    private BattleTurnExecutor cachedTurnExecutor;
+    private PlayerSkillReservationController cachedReservationController;
+    private TutorialPartyTransitionPresenter cachedTutorialTransitionPresenter;
+    private bool battlePresentationReferencesResolved;
+    private int nextBattlePresentationReferenceRetryFrame;
+    private const int BattlePresentationReferenceRetryFrames = 300;
 
     public CharacterRuntimeData RuntimeData { get; private set; }
 
@@ -78,7 +86,39 @@ public class BattleCharacter : MonoBehaviour
 
     private void Awake()
     {
+        ResolveBattlePresentationReferences();
         SetTimelineHoverHighlight(false);
+    }
+
+    private void ResolveBattlePresentationReferences()
+    {
+        if (battlePresentationReferencesResolved &&
+            !BattlePresentationReferenceRetryPolicy.ShouldRetry(
+                Time.frameCount,
+                nextBattlePresentationReferenceRetryFrame,
+                cachedTurnExecutor != null,
+                cachedReservationController != null,
+                cachedTutorialTransitionPresenter != null))
+        {
+            return;
+        }
+
+        battlePresentationReferencesResolved = true;
+        nextBattlePresentationReferenceRetryFrame =
+            Time.frameCount + BattlePresentationReferenceRetryFrames;
+
+        if (cachedTurnExecutor == null)
+            cachedTurnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+        if (cachedReservationController == null)
+        {
+            cachedReservationController =
+                FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+        }
+        if (cachedTutorialTransitionPresenter == null)
+        {
+            cachedTutorialTransitionPresenter =
+                FindFirstObjectByType<TutorialPartyTransitionPresenter>(FindObjectsInactive.Include);
+        }
     }
 
     public void Initialize(CharacterRuntimeData runtimeData)
@@ -161,9 +201,14 @@ public class BattleCharacter : MonoBehaviour
 
     private void LateUpdate()
     {
+        ResolveBattlePresentationReferences();
+        bool executionActive = cachedTurnExecutor != null && cachedTurnExecutor.IsExecuting;
+        bool tutorialBlocked = IsTutorialHighlightBlocked();
+        bool battleEnded = IsBattleEnded();
+
         // 전투 행동 실행 및 튜토리얼 제한 중에는 즉시 투명하게 고정합니다.
         // 평상시에는 마우스 오버 여부에 따라 서서히 밝아지거나 사라집니다.
-        bool idleBackBlocked = IsBattleExecutionActive() || IsTutorialHighlightBlocked() || IsBattleEnded();
+        bool idleBackBlocked = executionActive || tutorialBlocked || battleEnded;
         // 선택 상태는 실행 중에도 우선하며, Idle_Back의 알파를 200으로 유지합니다.
         float idleBackTarget = !idleBackBlocked && timelineHoverHighlightVisible && !selectionHighlightVisible
             ? 100f / 255f
@@ -172,11 +217,10 @@ public class BattleCharacter : MonoBehaviour
             ? 0f
             : Mathf.MoveTowards(idleBackHoverAlpha, idleBackTarget,
                 (100f / 255f) * Time.unscaledDeltaTime / Mathf.Max(0.01f, idleBackHoverFadeDuration));
-        ApplyTimelineHoverHighlightAlpha();
+        ApplyTimelineHoverHighlightAlpha(tutorialBlocked, battleEnded, executionActive);
 
-        if (IsTutorialHighlightBlocked())
+        if (tutorialBlocked)
         {
-            ApplyTimelineHoverHighlightAlpha();
             if (timelineHoverHighlightVisible)
             {
                 SetTimelineHoverHighlight(false);
@@ -186,7 +230,7 @@ public class BattleCharacter : MonoBehaviour
             return;
         }
 
-        if (IsBattleEnded())
+        if (battleEnded)
         {
             if (timelineHoverHighlightVisible || selectionHighlightVisible)
             {
@@ -209,7 +253,18 @@ public class BattleCharacter : MonoBehaviour
             return;
         }
 
-        SyncTimelineHoverHighlightAnimation();
+        BattleCharacterHighlightFrameState frameState = new(
+            selectionHighlightVisible,
+            timelineHoverHighlightVisible,
+            tutorialBlocked || battleEnded,
+            executionActive);
+        if (frameState.ShouldSynchronizeAnimator)
+        {
+            SyncTimelineHoverHighlightAnimation(
+                tutorialBlocked,
+                battleEnded,
+                executionActive);
+        }
     }
 
     private void OnDisable()
@@ -350,17 +405,17 @@ public class BattleCharacter : MonoBehaviour
         return BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded;
     }
 
-    private static bool IsBattleExecutionActive()
+    private bool IsBattleExecutionActive()
     {
-        BattleTurnExecutor executor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
-        return executor != null && executor.IsExecuting;
+        ResolveBattlePresentationReferences();
+        return cachedTurnExecutor != null && cachedTurnExecutor.IsExecuting;
     }
 
     // 행동 실행 및 턴 전환 시 클릭으로 선택 상태나 카메라 연출이 변경되지 않도록 합니다.
-    private static bool CanAcceptCharacterSelectionInput()
+    private bool CanAcceptCharacterSelectionInput()
     {
-        BattleTurnExecutor executor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
-        return executor != null && executor.CanAcceptPlayerInput;
+        ResolveBattlePresentationReferences();
+        return cachedTurnExecutor != null && cachedTurnExecutor.CanAcceptPlayerInput;
     }
 
     private bool IsPointerOverUI()
@@ -449,7 +504,10 @@ public class BattleCharacter : MonoBehaviour
         ApplyTimelineHoverHighlightAlpha();
     }
 
-    private void SyncTimelineHoverHighlightAnimation()
+    private void SyncTimelineHoverHighlightAnimation(
+        bool? tutorialBlockedOverride = null,
+        bool? battleEndedOverride = null,
+        bool? executionActiveOverride = null)
     {
         if (IsTimelineHoverHighlightBlockedByDeath())
         {
@@ -475,7 +533,10 @@ public class BattleCharacter : MonoBehaviour
         if (!CanReadTimelineAnimatorState(timelineHoverHighlightSourceAnimator) ||
             !CanReadTimelineAnimatorState(timelineHoverHighlightIdleBackAnimator))
         {
-            ApplyTimelineHoverHighlightAlpha();
+            ApplyTimelineHoverHighlightAlpha(
+                tutorialBlockedOverride,
+                battleEndedOverride,
+                executionActiveOverride);
             return;
         }
 
@@ -484,7 +545,10 @@ public class BattleCharacter : MonoBehaviour
 
         if (sourceState.shortNameHash == 0 || idleBackStateHash == 0)
         {
-            ApplyTimelineHoverHighlightAlpha();
+            ApplyTimelineHoverHighlightAlpha(
+                tutorialBlockedOverride,
+                battleEndedOverride,
+                executionActiveOverride);
             return;
         }
 
@@ -495,13 +559,23 @@ public class BattleCharacter : MonoBehaviour
         PauseTimelineHoverHighlightIdleBackAnimator();
         timelineHoverHighlightIdleBackAnimator.Play(idleBackStateHash, 0, normalizedTime);
         timelineHoverHighlightIdleBackAnimator.Update(0f);
-        ApplyTimelineHoverHighlightAlpha();
+        ApplyTimelineHoverHighlightAlpha(
+            tutorialBlockedOverride,
+            battleEndedOverride,
+            executionActiveOverride);
     }
 
-    private void ApplyTimelineHoverHighlightAlpha()
+    private void ApplyTimelineHoverHighlightAlpha(
+        bool? tutorialBlockedOverride = null,
+        bool? battleEndedOverride = null,
+        bool? executionActiveOverride = null)
     {
         if (timelineHoverHighlightRenderers == null)
             return;
+
+        bool tutorialBlocked = tutorialBlockedOverride ?? IsTutorialHighlightBlocked();
+        bool battleEnded = battleEndedOverride ?? IsBattleEnded();
+        bool executionActive = executionActiveOverride ?? IsBattleExecutionActive();
 
         for (int i = 0; i < timelineHoverHighlightRenderers.Length; i++)
         {
@@ -511,7 +585,7 @@ public class BattleCharacter : MonoBehaviour
                 continue;
 
             bool shouldShow = (selectionHighlightVisible || timelineHoverHighlightVisible) &&
-                              !IsTutorialHighlightBlocked();
+                              !tutorialBlocked;
             Color color = selectionHighlightVisible
                 ? CharacterSelectedHighlightColor
                 : CharacterHoverHighlightColor;
@@ -522,16 +596,17 @@ public class BattleCharacter : MonoBehaviour
             {
                 // 선택 상태의 파란색 Idle_Back은 실행 여부와 상관없이 알파 200을 유지합니다.
                 // 튜토리얼 제한 및 전투 종료 시에는 숨깁니다.
-                if (IsTutorialHighlightBlocked() || IsBattleEnded())
+                if (tutorialBlocked || battleEnded)
                     color.a = 0f;
                 else if (selectionHighlightVisible)
                     color.a = 200f / 255f;
-                else if (IsBattleExecutionActive())
+                else if (executionActive)
                     color.a = 0f;
                 else
                     color.a = Mathf.Min(timelineHoverHighlightOriginalAlphas[i], idleBackHoverAlpha);
             }
-            spriteRenderer.color = color;
+            if (spriteRenderer.color != color)
+                spriteRenderer.color = color;
         }
     }
 
