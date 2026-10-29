@@ -1,4 +1,5 @@
 ﻿using Relic.Gameplay.Monster;
+using Relic.Gameplay.Battle;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -76,6 +77,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     private bool isActive;
     private bool emptyUseSkillSlotsVisible = false;
     private bool endOrdersCleared;
+    private BattleTimelineTransformCache transformCache;
 
     private bool hasCachedTurnMarkVisual;
     private Sprite[] useSkillRootNormalSprites;
@@ -126,6 +128,7 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     private void Awake()
     {
+        EnsureTransformCache();
         AutoFindReferences();
         CacheTurnMarkNormalVisual();
         CacheTrailingVisualDefaults();
@@ -154,6 +157,9 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     {
         this.owner = owner;
         this.slotIndex = slotIndex;
+
+        EnsureTransformCache();
+        transformCache.Clear();
 
         AutoFindReferences();
         SetOrderContainersActive(true);
@@ -1674,8 +1680,8 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
     // Only the starting order hosts the action; subsequent orders are occupied.
     private Transform FindSizeRoot(int orderIndex, int size)
     {
-        Transform order = FindChildRecursive(transform, "Order" + (orderIndex + 1).ToString("00"));
-        return order != null ? order.Find("Use_skill" + size) : null;
+        EnsureTransformCache();
+        return transformCache.GetSizeRoot(orderIndex, size);
     }
 
     // Store the authored frame sprite for each size separately. The skill icon
@@ -1840,21 +1846,13 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     private TMP_Text FindUseSkillText(Transform root)
     {
-        if (root == null)
-            return null;
+        EnsureTransformCache();
+        return transformCache.GetValueText(root);
+    }
 
-        Transform textTransform = FindChildRecursive(root, "Value");
-
-        if (textTransform == null)
-            textTransform = FindChildRecursive(root, "Text (TMP)");
-
-        if (textTransform == null)
-            textTransform = FindChildRecursive(root, "Text");
-
-        if (textTransform == null)
-            return null;
-
-        return textTransform.GetComponent<TMP_Text>();
+    private void EnsureTransformCache()
+    {
+        transformCache ??= new BattleTimelineTransformCache(transform);
     }
 
     private Image FindRootImage(string rootName)
