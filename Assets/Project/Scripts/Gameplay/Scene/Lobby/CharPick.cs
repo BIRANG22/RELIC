@@ -23,6 +23,16 @@ public class CharPick : MonoBehaviour
     [SerializeField] private bool autoBindCharButtons = true;
     [SerializeField] private Transform charButtonRoot;
 
+    [Header("Character Pointer SFX")]
+    [Tooltip("캐릭터 버튼을 마우스 왼쪽 버튼으로 누르는 순간 재생할 SoundDatabase SFX ID입니다.")]
+    [SerializeField] private string characterPointerDownSfxId = string.Empty;
+    [Tooltip("캐릭터 버튼에서 시작한 마우스 왼쪽 버튼을 놓는 순간 재생할 SoundDatabase SFX ID입니다.")]
+    [SerializeField] private string characterPointerUpSfxId = string.Empty;
+    [Range(0f, 1f)]
+    [SerializeField] private float characterPointerDownSfxVolume = 1f;
+    [Range(0f, 1f)]
+    [SerializeField] private float characterPointerUpSfxVolume = 1f;
+
     [Header("Preview")]
     [SerializeField] private Transform previewRoot;
 
@@ -55,6 +65,8 @@ public class CharPick : MonoBehaviour
     private Vector3 previewBackgroundOriginalScale;
     private bool hasPreviewBackgroundOriginalScale;
     private bool isStarted;
+    private bool characterPointerHeld;
+    private readonly List<RaycastResult> characterPointerRaycastResults = new();
     private SteamLobbyPartySynchronizer subscribedPartySynchronizer;
 
     public CharBtn CurrentButton
@@ -136,6 +148,7 @@ public class CharPick : MonoBehaviour
 
     private void OnDisable()
     {
+        characterPointerHeld = false;
         ReleaseEditorSelectionFromAllPreviews();
         ClearNetworkViewedCharacterOnDisable();
         UnsubscribeNetworkPartyEvents();
@@ -146,8 +159,63 @@ public class CharPick : MonoBehaviour
 
     private void Update()
     {
-        // 캐릭터 버튼은 배치된 위치를 그대로 사용한다.
-        // 이전의 좌우 이동, 중앙 정렬, 중앙 확대 갱신은 더 이상 실행하지 않는다.
+        // 기존 고정형 캐릭터 버튼의 위치 및 크기는 변경하지 않습니다.
+        UpdateCharacterPointerSfx();
+    }
+
+    private void UpdateCharacterPointerSfx()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            characterPointerHeld = IsPointerOverOwnCharacterButton();
+            if (characterPointerHeld)
+                PlayCharacterPointerSfx(characterPointerDownSfxId, characterPointerDownSfxVolume);
+        }
+
+        // 버튼 밖으로 드래그한 뒤 놓는 경우도 정상적으로 마우스 해제음을 재생합니다.
+        if (Input.GetMouseButtonUp(0) && characterPointerHeld)
+        {
+            characterPointerHeld = false;
+            PlayCharacterPointerSfx(characterPointerUpSfxId, characterPointerUpSfxVolume);
+        }
+    }
+
+    private bool IsPointerOverOwnCharacterButton()
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = Input.mousePosition
+        };
+
+        characterPointerRaycastResults.Clear();
+        EventSystem.current.RaycastAll(pointerData, characterPointerRaycastResults);
+
+        // UI의 가장 앞에 있는 요소를 기준으로 판단하여 뒤쪽 버튼의 오작동을 방지합니다.
+        for (int i = 0; i < characterPointerRaycastResults.Count; i++)
+        {
+            GameObject hit = characterPointerRaycastResults[i].gameObject;
+            if (hit == null)
+                continue;
+
+            CharBtn btn = hit.GetComponentInParent<CharBtn>();
+            if (btn == null)
+                return false;
+
+            return btn.isActiveAndEnabled && !btn.IsLocked && charBtns.Contains(btn);
+        }
+
+        return false;
+    }
+
+    private static void PlayCharacterPointerSfx(string sfxId, float volume)
+    {
+        if (string.IsNullOrWhiteSpace(sfxId) || AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlaySfx(sfxId, Mathf.Clamp01(volume));
     }
 
     public void PointerEnterButton(CharBtn btn)

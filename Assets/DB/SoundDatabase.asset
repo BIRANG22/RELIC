@@ -83,7 +83,7 @@ MonoBehaviour:
   sfxList:
   - id: ui.normal.hover
     aliases: []
-    clip: {fileID: 8300000, guid: 0ce8dd481d865cb47afde2e711e20bd3, type: 3}
+    clip: {fileID: 8300000, guid: dcadae76e7c9eab4ba5c5d57acec1a0e, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -92,7 +92,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.normal.click
     aliases: []
-    clip: {fileID: 8300000, guid: ba9b33c5a3af041c2843642be5e7fc4c, type: 3}
+    clip: {fileID: 8300000, guid: 034139a4a8d240540ba03997bf854b03, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -101,7 +101,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.title.hover
     aliases: []
-    clip: {fileID: 8300000, guid: 0ce8dd481d865cb47afde2e711e20bd3, type: 3}
+    clip: {fileID: 8300000, guid: dcadae76e7c9eab4ba5c5d57acec1a0e, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -110,9 +110,9 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.title.click
     aliases: []
-    clip: {fileID: 8300000, guid: ba9b33c5a3af041c2843642be5e7fc4c, type: 3}
+    clip: {fileID: 8300000, guid: 034139a4a8d240540ba03997bf854b03, type: 3}
     volume: 0.5
-    pitch: 1
+    pitch: 1.5
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 1
@@ -657,11 +657,29 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 0.7
     randomPitchMax: 1.3
+  - id: char.pick
+    aliases: []
+    clip: {fileID: 8300000, guid: 2a21604ad3105e040b48d1f20599d67b, type: 3}
+    volume: 0.2
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.7
+    randomPitchMax: 1.3
+  - id: char.drop
+    aliases: []
+    clip: {fileID: 8300000, guid: 9637bf91821b7ab4da27fcce5f2e5a7f, type: 3}
+    volume: 0.2
+    pitch: 1.2
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.7
+    randomPitchMax: 1.3
   eventSfxList:
   - id: event.01.Skylight
     aliases: []
     clip: {fileID: 8300000, guid: 590b4cdcbd61d224db03cd08199f7fba, type: 3}
-    volume: 0.1
+    volume: 0.05
     pitch: 0.5
     loop: 1
     useRandomPitch: 0
