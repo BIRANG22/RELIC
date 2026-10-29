@@ -132,11 +132,7 @@ namespace Relic.Gameplay.Battle
                 state,
                 gridIndex,
                 data => ApplyPlayerEffect(runtimeData, data),
-                () =>
-                {
-                    if (runtimeData.IsDead)
-                        runtimeData.HandleDeath();
-                }
+                null
             );
         }
 
@@ -270,9 +266,6 @@ namespace Relic.Gameplay.Battle
 
             if (appliedDamage > 0)
                 BattleEquipmentEffectService.MarkPlayerDamagedThisTurn(runtimeData);
-
-            if (hpBefore > 0 && runtimeData.CurrentHP <= 0)
-                BattleErosionRuntimeService.CountCharacterIncapacitated();
 
             return true;
         }

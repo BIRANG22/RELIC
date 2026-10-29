@@ -6,8 +6,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// BattleCharacterPanelÀÇ Char01~03 »ó½Ã Ä³¸¯ÅÍ Á¤º¸¿Í Char_Select ¼±ÅÃÀ» °ü¸®ÇÕ´Ï´Ù.
-/// ¼±ÅÃµÈ Ä³¸¯ÅÍÀÇ ¾×Æ¼ºê ½ºÅ³ UI °»½ÅÀº ±âÁ¸ BattleCharacterPanelUI.Bind°¡ ´ã´çÇÕ´Ï´Ù.
+/// BattleCharacterPanelì˜ Char01~03 ìƒì‹œ ìºë¦­í„° ì •ë³´ì™€ Char_Select ì„ íƒì„ ê´€ë¦¬í•©ë‹ˆë‹¤.
+/// ì„ íƒëœ ìºë¦­í„°ì˜ ì•¡í‹°ë¸Œ ìŠ¤í‚¬ UI ê°±ì‹ ì€ ê¸°ì¡´ BattleCharacterPanelUI.Bindë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
@@ -145,7 +145,7 @@ public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
 
         if (!SteamBattleStateSynchronizer.CanLocalPlayerControlCharacter(runtime.CharacterId))
         {
-            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.other_player_character", "´Ù¸¥ ÇÃ·¹ÀÌ¾îÀÇ Ä³¸¯ÅÍÀÔ´Ï´Ù."));
+            BattleWarningUI.ShowMessage(GameLocalization.Get("battle.other_player_character", "ë‹¤ë¥¸ í”Œë ˆì´ì–´ì˜ ìºë¦­í„°ì…ë‹ˆë‹¤."));
             return false;
         }
 
@@ -301,8 +301,8 @@ public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
             DataManager.Instance.SkillIconDatabase.TryGetIcon(runtime.PassiveSkillId, out passiveIcon);
         ApplySprite(slot.PassiveIcon, passiveIcon);
 
-        int maxHp = Mathf.Max(0, runtime.MaxHP + runtime.RunMaxHPBonus);
-        int maxCost = Mathf.Max(0, runtime.MaxCost + runtime.RunMaxCostBonus);
+        int maxHp = BattleCharacterPanelUI.ResolvePartyMaxHP(runtime);
+        int maxCost = BattleCharacterPanelUI.ResolvePartyMaxCost(runtime);
         if (slot.HpFill != null)
             slot.HpFill.fillAmount = maxHp > 0 ? Mathf.Clamp01((float)runtime.PreviewHP / maxHp) : 0f;
         if (slot.CostFill != null)
@@ -326,7 +326,7 @@ public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
             ApplySprite(slot.Runes[i], icon);
         }
 
-        // EquippedRelicIds[0]Àº ¾×Æ¼ºê À¯¹° ½½·ÔÀÌ°í, ÀÌ ¿µ¿ªÀº ÀåÂø ¾ÆÆ¼ÆÑÆ® 6Ä­ÀÌ¹Ç·Î 1~6À» Ç¥½ÃÇÕ´Ï´Ù.
+        // EquippedRelicIds[0]ì€ ì•¡í‹°ë¸Œ ìœ ë¬¼ ìŠ¬ë¡¯ì´ê³ , ì´ íŒ¨ë„ì€ ìƒì‹œ ì•„í‹°íŒ©íŠ¸ 6ì¹¸ì´ë¯€ë¡œ 1~6ë²ˆì„ í‘œì‹œí•©ë‹ˆë‹¤.
         for (int i = 0; i < slot.Artifacts.Length; i++)
         {
             int relicIndex = i + 1;
@@ -401,8 +401,8 @@ public sealed class BattlePartyCharacterPanelUI : MonoBehaviour
             hash = hash * 31 + runtime.PreviewHP;
             hash = hash * 31 + runtime.PreviewCost;
             hash = hash * 31 + runtime.PreviewResource;
-            hash = hash * 31 + runtime.MaxHP + runtime.RunMaxHPBonus;
-            hash = hash * 31 + runtime.MaxCost + runtime.RunMaxCostBonus;
+            hash = hash * 31 + BattleCharacterPanelUI.ResolvePartyMaxHP(runtime);
+            hash = hash * 31 + BattleCharacterPanelUI.ResolvePartyMaxCost(runtime);
             hash = hash * 31 + (runtime.PassiveSkillId ?? string.Empty).GetHashCode();
 
             if (runtime.EquippedRuneIds != null)

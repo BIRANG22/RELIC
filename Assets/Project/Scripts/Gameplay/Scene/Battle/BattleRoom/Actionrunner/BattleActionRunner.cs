@@ -1341,6 +1341,9 @@ public class BattleActionRunner
             if (monster.RuntimeData.IsDead)
                 break;
         }
+
+        if (monster.RuntimeData.IsDead)
+            deathService.HandleMonsterDead(monster);
     }
 
     private BattleGridEffectController ResolveGridEffectController()

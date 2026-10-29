@@ -1,4 +1,5 @@
 using System;
+using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
 using UnityEngine;
 
@@ -103,8 +104,8 @@ public static class BattleErosionRuntimeService
         return $"{nodeData.LayerIndex}:{nodeData.NodeIndex}:{nodeData.MapId}";
     }
 
-    // Ä§½Äµµ°¡ 100ÀÎ »óÅÂ¿¡¼­ ´ÙÀ½ ÅÏÀÌ ½ÃÀÛµÇ¸é »ıÁ¸ ÆÄÆ¼¿ø °¢°¢ÀÇ »ı¸í·ÂÀ» 10 °¨¼Ò½ÃÅµ´Ï´Ù.
-    // ¹æ¾îµµ ¹× ÇÇÇØ Â÷´Ü È¿°ú¸¦ °ÅÄ¡Áö ¾Ê´Â »ı¸í·Â °¨¼ÒÀÔ´Ï´Ù.
+    // ì¹¨ì‹ë„ê°€ 100ì¸ ìƒíƒœì—ì„œ ë‹¤ìŒ í„´ì´ ì‹œì‘ë˜ë©´ ìƒì¡´ íŒŒí‹°ì›ì˜ ì²´ë ¥ì„ 10 ê°ì†Œì‹œí‚µë‹ˆë‹¤.
+    // ë°©ì–´ë„ì— ì˜í–¥ì„ ì£¼ì§€ ì•ŠëŠ” ìˆœìˆ˜ ì²´ë ¥ ê°ì†Œì…ë‹ˆë‹¤.
     public static void ApplyMaxErosionTurnStartHealthLoss()
     {
         if (CurrentValue < MaxValue)
@@ -135,10 +136,11 @@ public static class BattleErosionRuntimeService
             BattleRunStatisticsRecorder.RecordDamageTaken(
                 data.CharacterId, loss, data.CurrentHP <= 0);
             BattleEquipmentEffectService.MarkPlayerDamagedThisTurn(data);
-            if (data.CurrentHP <= 0)
+            if (BattlePlayerIncapacitationService.Resolve(data, before))
             {
-                data.HandleDeath();
-                CountCharacterIncapacitated();
+                BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
+                if (animator != null)
+                    animator.PlayDead();
             }
 
             BattleEffectUtility.OnPlayerDamaged?.Invoke(character);
