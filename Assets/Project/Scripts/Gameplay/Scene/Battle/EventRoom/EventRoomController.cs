@@ -1785,12 +1785,11 @@ public class EventRoomController : MonoBehaviour
     {
         if (pendingDustiumAcquireAmount > 0)
         {
-            if (dustiumAcquireRoutine != null)
-                StopCoroutine(dustiumAcquireRoutine);
-
-            dustiumAcquireRoutine = StartCoroutine(
-                PlayPendingDustiumAcquireThenContinue(choice, result, resolvedDiceFaces));
-            return;
+            int amount = pendingDustiumAcquireAmount;
+            pendingDustiumAcquireAmount = 0;
+            // Dustium 이동 연출 없이 GoldHud의 재화 증가 연출을 즉시 시작합니다.
+            ApplyDustiumAmount(amount);
+            ResetDustiumAcquireVisual();
         }
 
         ContinueAfterExecutedChoiceCore(choice, result, resolvedDiceFaces);
@@ -4724,54 +4723,16 @@ public class EventRoomController : MonoBehaviour
         int amount = Mathf.Max(0, eventChoiceSessionState.AccumulatedRemnant);
         SetNextButtonVisible(false);
 
+        eventChoiceSessionState.AccumulatedRemnant = 0;
+        ResetDustiumAcquireVisual();
         if (amount > 0)
         {
-            EnsureDustiumAcquireReferences();
-            CacheDustiumAcquireOriginalState();
-
-            if (dustiumAcquireRoot != null && goldHudTarget != null)
-            {
-                ResetDustiumAcquireTransform();
-                dustiumAcquireRoot.localScale = dustiumAcquireOriginalLocalScale;
-                dustiumAcquireRoot.gameObject.SetActive(true);
-
-                if (dustiumAcquireValueText != null)
-                {
-                    dustiumAcquireValueText.gameObject.SetActive(true);
-                    dustiumAcquireValueText.text = amount.ToString(CultureInfo.InvariantCulture);
-                }
-
-                if (dustiumValueHoldDuration > 0f)
-                    yield return new WaitForSecondsRealtime(dustiumValueHoldDuration);
-
-                Vector3 startPosition = dustiumAcquireRoot.position;
-                Vector3 endPosition = goldHudTarget.position;
-                Vector3 startScale = dustiumAcquireRoot.localScale;
-                Vector3 endScale = startScale * Mathf.Max(0f, dustiumFlyEndScale);
-                float duration = Mathf.Max(0.01f, dustiumFlyDuration);
-                float elapsed = 0f;
-
-                while (elapsed < duration)
-                {
-                    elapsed += Time.unscaledDeltaTime;
-                    float t = Mathf.Clamp01(elapsed / duration);
-                    float eased = Mathf.SmoothStep(0f, 1f, t);
-                    Vector3 position = Vector3.Lerp(startPosition, endPosition, eased);
-                    position += Vector3.up * (4f * dustiumFlyCurveHeight * t * (1f - t));
-                    dustiumAcquireRoot.position = position;
-                    dustiumAcquireRoot.localScale = Vector3.Lerp(startScale, endScale, eased);
-                    yield return null;
-                }
-            }
-
-            eventChoiceSessionState.AccumulatedRemnant = 0;
+            // 광맥의 누적 재화도 이동 연출 없이 GoldHud에 바로 반영합니다.
             ApplyDustiumAmount(amount);
             PersistEventRuntime();
         }
 
-        ResetDustiumAcquireVisual();
         dustiumAcquireRoutine = null;
-
         if (!isActiveAndEnabled)
             yield break;
 

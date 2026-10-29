@@ -504,9 +504,7 @@ public class BattleRewardPanelUI : MonoBehaviour
             if (!claimedRewards.Contains(reward))
                 break; // The acquisition was blocked; do not retry indefinitely.
 
-            // 연속 획득에서도 앞 슬롯의 퇴장 애니메이션이 보인 뒤 다음 슬롯을 처리합니다.
-            while (dismissingSlotCount > 0)
-                yield return null;
+            // 이전 슬롯의 퇴장을 기다리지 않고 설정된 획득 간격으로 다음 보상을 처리합니다.
 
             if (claimedRewards.Count < currentRewards.Count && gainInterval > 0f)
                 yield return new WaitForSecondsRealtime(gainInterval);

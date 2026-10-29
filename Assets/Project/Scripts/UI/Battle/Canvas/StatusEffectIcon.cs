@@ -67,8 +67,9 @@ public class StatusEffectIcon : MonoBehaviour,
                 : Color.white;
         }
 
-        if (typeIconImage != null)
-            ApplyImage(typeIconImage, data.IsMonsterInnateTrait ? null : GetTypeIcon(data.EffectId));
+        // Buff/debuff is indicated by icon color; disable the legacy Arrow.
+        if (typeIconImage != null && typeIconImage.gameObject.activeSelf)
+            typeIconImage.gameObject.SetActive(false);
 
         if (valueText != null)
             valueText.text = (data.IsMonsterInnateTrait && data.IsPassive) ? "¡Ä" : (data.Stack > 0 ? data.Stack.ToString() : string.Empty);
