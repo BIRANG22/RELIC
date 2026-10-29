@@ -28,7 +28,8 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
     [SerializeField] private TMP_Text rollButtonText;
     [SerializeField, Min(0.01f)] private float buttonFadeDuration = 0.2f;
 
-    [SerializeField, Min(0f)] private float confirmCloseFadeDuration = 0.06f;
+    [Header("Auto Close After Result")]
+    [SerializeField, Min(0f)] private float resultAutoCloseDelay = 0.5f;
 
     [Header("Presenter Fade")]
     [SerializeField, Min(0.01f)] private float presenterFadeDuration = 0.2f;
@@ -170,10 +171,12 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         if (detailText != null)
             detailText.text = pendingDetailText;
 
-        interactiveState = InteractiveState.ReadyToConfirm;
-        RefreshRollButtonLabel();
-        SetRollButtonVisibleImmediate(true);
-        SetRollButtonInteractable(true);
+        // 이어하기 복원 시에도 확인 버튼 없이 결과를 잠시 보여준 뒤 자동으로 종료합니다.
+        interactiveState = InteractiveState.Closing;
+        SetRollButtonVisibleImmediate(false);
+        SetRollButtonInteractable(false);
+        rollButton.gameObject.SetActive(false);
+        rollRoutine = StartCoroutine(AutoCloseAfterResultRoutine());
     }
     public void Play(IReadOnlyList<int> diceFaces, Action completed)
     {
@@ -244,8 +247,6 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
             return;
         }
 
-        if (interactiveState == InteractiveState.ReadyToConfirm)
-            rollRoutine = StartCoroutine(ConfirmInteractiveRoutine());
     }
 
     private IEnumerator RollInteractiveRoutine()
@@ -273,21 +274,15 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
         if (detailText != null)
             detailText.text = pendingDetailText;
 
-        interactiveState = InteractiveState.ReadyToConfirm;
-        RefreshRollButtonLabel();
-        SetRollButtonVisibleImmediate(false);
-        rollButton.gameObject.SetActive(true);
-        yield return FadeRollButton(0f, 1f);
-
-        SetRollButtonInteractable(true);
-        rollRoutine = null;
+        // 결과 표시 직후부터 0.5초 대기하고 확인 클릭 없이 패널을 닫습니다.
+        interactiveState = InteractiveState.Closing;
+        yield return AutoCloseAfterResultRoutine();
     }
 
-    private IEnumerator ConfirmInteractiveRoutine()
+    private IEnumerator AutoCloseAfterResultRoutine()
     {
-        interactiveState = InteractiveState.Closing;
-        SetRollButtonInteractable(false);
-        yield return FadeRollButton(1f, 0f, confirmCloseFadeDuration);
+        if (resultAutoCloseDelay > 0f)
+            yield return new WaitForSecondsRealtime(resultAutoCloseDelay);
 
         Action confirmed = pendingConfirmAction;
         pendingConfirmAction = null;

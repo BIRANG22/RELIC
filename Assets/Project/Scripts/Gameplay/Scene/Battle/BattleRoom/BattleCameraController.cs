@@ -725,7 +725,7 @@ public class BattleCameraController : MonoBehaviour
         // 다른 포커스 동작이 해당 코루틴을 중단해도 보상 흐름은 계속되어야 합니다.
         Vector3 startPosition = targetCamera.transform.position;
         float startSize = targetCamera.orthographicSize;
-        Vector3 destination = mapPosition;
+        Vector3 destination = GetNeutralBattlePosition();
         if (!usePositionZZoom)
             destination.z = startPosition.z;
 
@@ -741,7 +741,7 @@ public class BattleCameraController : MonoBehaviour
             yield return null;
         }
 
-        targetCamera.transform.position = mapPosition;
+        targetCamera.transform.position = destination;
         targetCamera.transform.rotation = Quaternion.identity;
         targetCamera.orthographicSize = defaultSize;
         hasActiveCombatZoom = false;

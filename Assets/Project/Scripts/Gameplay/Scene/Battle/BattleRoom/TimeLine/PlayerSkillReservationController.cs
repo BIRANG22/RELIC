@@ -34,6 +34,8 @@ public class PlayerSkillReservationController : MonoBehaviour
     [SerializeField] private Material moveHighlightMaterial;
 
     [Header("Move Hover Ping")]
+    [Tooltip("이동 가능한 그리드에 표시되는 기본/보조 핑에 공통으로 사용할 머테리얼입니다. 비워두면 SpriteRenderer 기본 머테리얼을 사용합니다.")]
+    [SerializeField] private Material moveHoverPingMaterial;
     [Tooltip("이동 가능한 그리드에 마우스를 올렸을 때 고정해서 표시할 기본 핑 이미지입니다.")]
     [FormerlySerializedAs("moveHoverPingSprite")]
     [SerializeField] private Sprite moveHoverPingBaseSprite;
@@ -1160,7 +1162,12 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         GameObject pingObject = new GameObject(objectName);
         pingObject.transform.SetParent(transform, false);
-        return pingObject.AddComponent<SpriteRenderer>();
+        SpriteRenderer renderer = pingObject.AddComponent<SpriteRenderer>();
+
+        if (moveHoverPingMaterial != null)
+            renderer.sharedMaterial = moveHoverPingMaterial;
+
+        return renderer;
     }
 
     private static void ApplyMoveHoverYSort(

@@ -115,6 +115,12 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
         if (!hasFocus || !resyncOnApplicationFocus || !isActiveAndEnabled)
             return;
 
+        if (IsBattleFinished())
+        {
+            ForceResetToReservePositionInstant();
+            return;
+        }
+
         ResyncToCurrentBattleState();
     }
 
@@ -122,6 +128,12 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
     {
         if (pauseStatus || !resyncOnApplicationFocus || !isActiveAndEnabled)
             return;
+
+        if (IsBattleFinished())
+        {
+            ForceResetToReservePositionInstant();
+            return;
+        }
 
         ResyncToCurrentBattleState();
     }
@@ -194,6 +206,9 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
     public void MoveToBattleCenter()
     {
+        if (IsBattleFinished())
+            return;
+
         if (!isActiveAndEnabled)
             return;
 
@@ -294,8 +309,19 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
         moveRoutine = StartCoroutine(MoveRoutine(targetSlide01));
     }
 
+    private static bool IsBattleFinished()
+    {
+        return BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded;
+    }
+
     private void ResyncToCurrentBattleState()
     {
+        if (IsBattleFinished())
+        {
+            ForceResetToReservePositionInstant();
+            return;
+        }
+
         if (turnExecutor == null)
             turnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Exclude);
 
