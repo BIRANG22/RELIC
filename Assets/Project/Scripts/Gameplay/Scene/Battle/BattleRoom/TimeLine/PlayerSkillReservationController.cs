@@ -234,7 +234,13 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
 
         lastRightClickSkillCancelFrame = Time.frameCount;
-        ClearPreview();
+        // 그리드뿐 아니라 타임라인의 selectedSkill도 함께 해제합니다.
+        // 그렇지 않으면 다음 이동 버튼 클릭이 재선택 대신 토글 해제로 처리됩니다.
+        if (timelineController == null)
+            EnsureTimelineController();
+
+        if (timelineController == null || !timelineController.CancelPendingActionSelection())
+            ClearPreview();
     }
 
     private void EnsureSkillListPanel()

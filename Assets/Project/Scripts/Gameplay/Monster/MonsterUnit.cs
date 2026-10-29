@@ -255,6 +255,10 @@ namespace Relic.Gameplay.Monster
             if (selectedMonster != this)
                 return;
 
+            // 행동 실행 및 턴 전환 중에는 클릭으로 몬스터 정보 선택을 해제하지 않습니다.
+            if (!CanAcceptMonsterInfoClick())
+                return;
+
             if (!Input.GetMouseButtonDown(0))
                 return;
 
@@ -371,12 +375,18 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseDown()
         {
+            // 튜토리얼 전투 시작 전에는 정보 패널 클릭을 허용하지 않습니다.
+            if (TutorialBattleSequence.IsPresentationRunning ||
+                BattleSceneController.IsBattleRoomIntroPlaying ||
+                BattleMapIntroText.IsAnyPlayingOrVisible())
+                return;
+
             if (!BattleFirstTutorialController.CanClickMonster(this))
                 return;
 
             // 턴 실행 중에는 몬스터 클릭 선택과 카메라 포커스를 막습니다.
             // 호버 HUD/범위/상태 정보는 OnMouseEnter에서 계속 표시합니다.
-            if (IsBattleExecutionActive())
+            if (!CanAcceptMonsterInfoClick())
                 return;
 
             if (UIPanelButton.IsMenuPanelOpen)
@@ -419,6 +429,9 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseEnter()
         {
+            if (TutorialBattleSequence.IsPresentationRunning)
+                return;
+
             if (UIPanelButton.IsMenuPanelOpen)
                 return;
 
@@ -570,6 +583,13 @@ namespace Relic.Gameplay.Monster
             }
         }
 
+        private static bool CanAcceptMonsterInfoClick()
+        {
+            BattleTurnExecutor executor = UnityEngine.Object.FindFirstObjectByType<BattleTurnExecutor>(
+                FindObjectsInactive.Include);
+            return executor != null && executor.CanAcceptPlayerInput;
+        }
+
         private static bool IsBattleExecutionActive()
         {
             BattleTurnExecutor executor = UnityEngine.Object.FindFirstObjectByType<BattleTurnExecutor>(
@@ -648,6 +668,16 @@ namespace Relic.Gameplay.Monster
 
         public void SelectForInfoFromTimeline()
         {
+            // 몬스터 정보 선택으로 캐릭터 예약과 실행 카메라를 변경하지 않도록 보호합니다.
+            if (!CanAcceptMonsterInfoClick())
+                return;
+
+            if (TutorialBattleSequence.IsPresentationRunning ||
+                BattleSceneController.IsBattleRoomIntroPlaying ||
+                BattleMapIntroText.IsAnyPlayingOrVisible() ||
+                !BattleFirstTutorialController.CanClickMonster(this))
+                return;
+
             if (UIPanelButton.IsMenuPanelOpen)
                 return;
 

@@ -1058,6 +1058,11 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     public bool SelectPartyIndex(int index)
     {
+        // 행동 실행 중 초상화 클릭으로 캐릭터 선택이 바뀌지 않게 합니다.
+        BattleTurnExecutor activeExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+        if (activeExecutor == null || !activeExecutor.CanAcceptPlayerInput)
+            return false;
+
         if (index < 0 || index >= partyRuntimes.Length)
             return false;
 

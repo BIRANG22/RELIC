@@ -1296,13 +1296,28 @@ public class BattleRoomLoader : MonoBehaviour
         hudTransform.SetAsLastSibling();
     }
 
+    // 선택 입력은 실제 플레이어 예약 단계에서만 허용합니다.
+    // 내부 자동 선택(입장/턴 복원)은 이 검사를 거치지 않습니다.
+    private bool CanAcceptCharacterSelectionClick()
+    {
+        EnsureTurnExecutor();
+        return turnExecutor != null && turnExecutor.CanAcceptPlayerInput;
+    }
+
     private void OnPlayerHudClicked(CharacterRuntimeData runtimeData, RectTransform hudRect)
     {
+        if (!CanAcceptCharacterSelectionClick())
+            return;
+
         SelectPlayerHUD(runtimeData);
     }
 
     public void OnPlayerCharacterClicked(CharacterRuntimeData runtimeData)
     {
+        // 행동 실행 중 선택 변경은 스킬 실행 흐름을 방해할 수 있습니다.
+        if (!CanAcceptCharacterSelectionClick())
+            return;
+
         // 마우스로 캐릭터를 변경해도 슬롯 유지 여부는 BattleTimelineController가 판단합니다.
         // 현재 슬롯에 등록 가능하면 유지하고, 불가능하면 가장 앞의 등록 가능 슬롯으로 이동합니다.
         SelectPlayerHUD(runtimeData);
@@ -1315,6 +1330,9 @@ public class BattleRoomLoader : MonoBehaviour
     /// </summary>
     public void OnPlayerWorldCharacterClicked(CharacterRuntimeData runtimeData)
     {
+        if (!CanAcceptCharacterSelectionClick())
+            return;
+
         if (BattleCharacter.WasMoveGridClickedThisFrame)
             return;
 

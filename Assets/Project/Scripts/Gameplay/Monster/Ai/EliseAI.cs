@@ -266,7 +266,7 @@ namespace Relic.Gameplay.Monster
         {
             // 홀수 턴마다 유효한 설치 칸이 있으면 고치를 심습니다.
             // 이전 턴에 설치한 고치가 남아 있더라도 이번 턴의 설치를 막지 않습니다.
-            int eggGridIndex = FindSafestEggGridAroundArabella(monsterUnit, players, gridManager);
+            int eggGridIndex = FindClosestEggGridTowardPlayer(monsterUnit, players, gridManager);
             if (eggGridIndex >= 0)
             {
                 plan.Add(new MonsterAIAction(
@@ -532,7 +532,7 @@ namespace Relic.Gameplay.Monster
             return controller == null || !controller.IsBlocked(gridIndex);
         }
 
-        private int FindSafestEggGridAroundArabella(
+        private int FindClosestEggGridTowardPlayer(
             MonsterUnit monsterUnit,
             BattleCharacter[] players,
             GridManager gridManager)
@@ -540,45 +540,42 @@ namespace Relic.Gameplay.Monster
             if (monsterUnit == null || gridManager == null)
                 return -1;
 
+            // Place the egg on the side facing the closest living character.
+            BattleCharacter target = FindNearestPlayer(monsterUnit, gridManager);
+            if (!IsAlivePlayer(target) || target.CurrentGridIndex < 0)
+                return -1;
+
+            Vector2Int targetCoord = gridManager.IndexToCoord(target.CurrentGridIndex);
             int bestGridIndex = -1;
-            int bestNearestPlayerDistance = int.MinValue;
-            int bestTotalPlayerDistance = int.MinValue;
+            int bestTargetDistance = int.MaxValue;
+            int bestTotalPlayerDistance = int.MaxValue;
             HashSet<int> checkedGridIndices = new();
 
             for (int cellIndex = 0; cellIndex < monsterUnit.OccupiedGridIndices.Count; cellIndex++)
             {
                 int originIndex = monsterUnit.OccupiedGridIndices[cellIndex];
-
                 if (originIndex < 0)
                     continue;
 
                 Vector2Int originCoord = gridManager.IndexToCoord(originIndex);
-
                 for (int i = 0; i < SurroundingOffsets.Length; i++)
                 {
                     Vector2Int candidateCoord = originCoord + SurroundingOffsets[i];
-
                     if (!gridManager.IsValidCoord(candidateCoord))
                         continue;
 
                     int candidateGridIndex = gridManager.CoordToIndex(candidateCoord);
-
                     if (!checkedGridIndices.Add(candidateGridIndex) ||
                         !IsSpawnGridAvailable(candidateGridIndex, gridManager))
-                    {
                         continue;
-                    }
 
-                    int nearestDistance = GetNearestPlayerDistance(candidateCoord, players, gridManager);
+                    int targetDistance = ManhattanDistance(candidateCoord, targetCoord);
                     int totalDistance = GetTotalPlayerDistance(candidateCoord, players, gridManager);
-
-                    if (nearestDistance < bestNearestPlayerDistance)
+                    if (targetDistance > bestTargetDistance ||
+                        (targetDistance == bestTargetDistance && totalDistance >= bestTotalPlayerDistance))
                         continue;
 
-                    if (nearestDistance == bestNearestPlayerDistance && totalDistance <= bestTotalPlayerDistance)
-                        continue;
-
-                    bestNearestPlayerDistance = nearestDistance;
+                    bestTargetDistance = targetDistance;
                     bestTotalPlayerDistance = totalDistance;
                     bestGridIndex = candidateGridIndex;
                 }

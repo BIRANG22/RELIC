@@ -23,6 +23,23 @@ public class BattleCharacter : MonoBehaviour
         return controller != null && controller.IsMoveSkillSelectionActive();
     }
 
+    // 튜토리얼 입장 이동 연출 중에는 캐릭터 하이라이트만 숨깁니다.
+    // HUD 마우스 오버와 일반 전투의 호버 기능은 유지합니다.
+    private static bool IsTutorialEntryMovementPlaying()
+    {
+        TutorialPartyTransitionPresenter presenter =
+            FindFirstObjectByType<TutorialPartyTransitionPresenter>(FindObjectsInactive.Include);
+        return presenter != null && presenter.isActiveAndEnabled && presenter.IsPlaying;
+    }
+
+    // 튜토리얼 조작 안내 중에는 하이라이트만 숨깁니다.
+    private static bool IsTutorialHighlightBlocked()
+    {
+        return TutorialBattleSequence.IsPresentationRunning ||
+               IsTutorialEntryMovementPlaying() ||
+               BattleFirstTutorialController.IsInputRestricted;
+    }
+
     private static readonly Color CharacterSelectedHighlightColor = new Color32(0x0C, 0x58, 0xC5, 0xFF);
     private static readonly Color CharacterHoverHighlightColor = new Color32(0xEE, 0xEE, 0xEE, 0xFF);
     public const string SelectionReadyAnimationStateName = "battle_ready";
@@ -33,6 +50,7 @@ public class BattleCharacter : MonoBehaviour
     [Header("Timeline Hover Highlight")]
     [SerializeField] private GameObject timelineHoverHighlightObject;
     [SerializeField] private bool playBattleReadyAnimationOnSelect = true;
+    [SerializeField, Min(0.01f)] private float idleBackHoverFadeDuration = 0.18f;
 
     private SpriteRenderer[] timelineHoverHighlightRenderers;
     private float[] timelineHoverHighlightOriginalAlphas;
@@ -45,6 +63,7 @@ public class BattleCharacter : MonoBehaviour
     private Animator selectionReadyAnimator;
     private bool timelineHoverHighlightVisible;
     private bool selectionHighlightVisible;
+    private float idleBackHoverAlpha;
     private HUDSlot worldHud;
 
     public CharacterRuntimeData RuntimeData { get; private set; }
@@ -106,6 +125,9 @@ public class BattleCharacter : MonoBehaviour
 
     public void SetTimelineHoverHighlight(bool active)
     {
+        if (IsTutorialHighlightBlocked())
+            active = false;
+
         if (IsBattleEnded())
             active = false;
 
@@ -139,6 +161,31 @@ public class BattleCharacter : MonoBehaviour
 
     private void LateUpdate()
     {
+        // 전투 행동 실행 및 튜토리얼 제한 중에는 즉시 투명하게 고정합니다.
+        // 평상시에는 마우스 오버 여부에 따라 서서히 밝아지거나 사라집니다.
+        bool idleBackBlocked = IsBattleExecutionActive() || IsTutorialHighlightBlocked() || IsBattleEnded();
+        // 선택 상태는 실행 중에도 우선하며, Idle_Back의 알파를 200으로 유지합니다.
+        float idleBackTarget = !idleBackBlocked && timelineHoverHighlightVisible && !selectionHighlightVisible
+            ? 100f / 255f
+            : 0f;
+        idleBackHoverAlpha = idleBackBlocked
+            ? 0f
+            : Mathf.MoveTowards(idleBackHoverAlpha, idleBackTarget,
+                (100f / 255f) * Time.unscaledDeltaTime / Mathf.Max(0.01f, idleBackHoverFadeDuration));
+        ApplyTimelineHoverHighlightAlpha();
+
+        if (IsTutorialHighlightBlocked())
+        {
+            ApplyTimelineHoverHighlightAlpha();
+            if (timelineHoverHighlightVisible)
+            {
+                SetTimelineHoverHighlight(false);
+                SetLinkedHudHover(false);
+                worldHud?.SetCharacterHover(false);
+            }
+            return;
+        }
+
         if (IsBattleEnded())
         {
             if (timelineHoverHighlightVisible || selectionHighlightVisible)
@@ -179,6 +226,9 @@ public class BattleCharacter : MonoBehaviour
 
     private void OnMouseEnter()
     {
+        if (IsTutorialHighlightBlocked())
+            return;
+
         if (IsMoveGridSelectionActive() || IsMoveGridClickFrame)
             return;
 
@@ -243,12 +293,19 @@ public class BattleCharacter : MonoBehaviour
 
     private void OnMouseDown()
     {
+        // 튜토리얼 안내 및 전투방 진입 연출 중에는 캐릭터 선택만 차단합니다.
+        if (TutorialBattleSequence.IsPresentationRunning ||
+            BattleSceneController.IsBattleRoomIntroPlaying ||
+            BattleFirstTutorialController.IsInputRestricted ||
+            IsTutorialEntryMovementPlaying())
+            return;
+
         if (IsBattleEnded())
             return;
 
         // �� ���� �߿��� ĳ���͸� ȣ���ؼ� HUD/������ Ȯ���� �� �ְ�,
         // Ŭ�� �������� ī�޶� ��Ŀ���� �߻����� �ʵ��� �����ϴ�.
-        if (IsBattleExecutionActive())
+        if (IsBattleExecutionActive() || !CanAcceptCharacterSelectionInput())
             return;
 
         if (UIPanelButton.IsMenuPanelOpen)
@@ -297,6 +354,13 @@ public class BattleCharacter : MonoBehaviour
     {
         BattleTurnExecutor executor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
         return executor != null && executor.IsExecuting;
+    }
+
+    // 행동 실행 및 턴 전환 시 클릭으로 선택 상태나 카메라 연출이 변경되지 않도록 합니다.
+    private static bool CanAcceptCharacterSelectionInput()
+    {
+        BattleTurnExecutor executor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+        return executor != null && executor.CanAcceptPlayerInput;
     }
 
     private bool IsPointerOverUI()
@@ -446,11 +510,27 @@ public class BattleCharacter : MonoBehaviour
             if (spriteRenderer == null)
                 continue;
 
-            bool shouldShow = selectionHighlightVisible || timelineHoverHighlightVisible;
+            bool shouldShow = (selectionHighlightVisible || timelineHoverHighlightVisible) &&
+                              !IsTutorialHighlightBlocked();
             Color color = selectionHighlightVisible
                 ? CharacterSelectedHighlightColor
                 : CharacterHoverHighlightColor;
             color.a = shouldShow ? timelineHoverHighlightOriginalAlphas[i] : 0f;
+            // Hover: HighlightSprite는 원래 알파(255)를 유지하고,
+            // Idle_Back만 최대 100/255로 표시합니다.
+            if (spriteRenderer.gameObject.name == TimelineHoverHighlightIdleBackName)
+            {
+                // 선택 상태의 파란색 Idle_Back은 실행 여부와 상관없이 알파 200을 유지합니다.
+                // 튜토리얼 제한 및 전투 종료 시에는 숨깁니다.
+                if (IsTutorialHighlightBlocked() || IsBattleEnded())
+                    color.a = 0f;
+                else if (selectionHighlightVisible)
+                    color.a = 200f / 255f;
+                else if (IsBattleExecutionActive())
+                    color.a = 0f;
+                else
+                    color.a = Mathf.Min(timelineHoverHighlightOriginalAlphas[i], idleBackHoverAlpha);
+            }
             spriteRenderer.color = color;
         }
     }
