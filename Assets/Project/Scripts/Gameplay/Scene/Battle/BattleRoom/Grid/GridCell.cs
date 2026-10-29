@@ -94,9 +94,18 @@ public class GridCell : MonoBehaviour
             BattleCharacter.MarkMoveGridClicked();
 
         if (owner != null)
+        {
+            owner.NotifyCellPointerDown(this);
             owner.NotifyCellClicked(this);
+        }
 
         BattleFirstTutorialController.NotifyGridClicked(Index);
+    }
+
+    private void OnMouseUp()
+    {
+        if (owner != null)
+            owner.NotifyCellPointerUp(this);
     }
 
     private void OnMouseEnter()

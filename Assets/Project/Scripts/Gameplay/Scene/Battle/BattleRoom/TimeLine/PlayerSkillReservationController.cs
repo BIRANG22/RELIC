@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
+using Relic.Gameplay.Battle;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -98,6 +99,8 @@ public class PlayerSkillReservationController : MonoBehaviour
     private SpriteRenderer moveHoverCostBackgroundRenderer;
     private readonly List<SpriteRenderer> moveHoverCostDigitRenderers = new();
     private int moveHoverPingGridIndex = -1;
+    private MoveDragPathState moveDragPathState;
+    private bool moveDragActive;
 
 
     private sealed class NocturnPortalIndicatorEntry
@@ -138,6 +141,8 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (gridManager != null)
         {
             gridManager.OnCellClicked += HandleCellClicked;
+            gridManager.OnCellPointerDown += HandleCellPointerDown;
+            gridManager.OnCellPointerUp += HandleCellPointerUp;
             gridManager.OnCellHovered += HandleCellHovered;
             gridManager.OnCellHoverExited += HandleCellHoverExited;
         }
@@ -145,6 +150,8 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     private void OnDisable()
     {
+        moveDragPathState = null;
+        moveDragActive = false;
         RestoreBattleSlotRaycasts();
         ClearNocturnPortalDestinationIndicators();
         HideMoveHoverPing();
@@ -154,6 +161,8 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (gridManager != null)
         {
             gridManager.OnCellClicked -= HandleCellClicked;
+            gridManager.OnCellPointerDown -= HandleCellPointerDown;
+            gridManager.OnCellPointerUp -= HandleCellPointerUp;
             gridManager.OnCellHovered -= HandleCellHovered;
             gridManager.OnCellHoverExited -= HandleCellHoverExited;
         }
@@ -162,6 +171,16 @@ public class PlayerSkillReservationController : MonoBehaviour
     private void Update()
     {
         UpdateBattleSlotRaycasts();
+
+        // OnMouseUp은 포인터가 다른 오브젝트 위에서 놓이면 호출되지 않을 수 있습니다.
+        if (moveDragActive && Input.GetMouseButtonUp(0))
+        {
+            if (IsGridPointerInteractionBlocked())
+                CancelMoveDragReservation();
+            else
+                FinalizeMoveDragReservation();
+        }
+
         if (IsGridPointerInteractionBlocked())
         {
             HideBlockedGridPointerVisuals();
@@ -972,6 +991,12 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         if (IsMoveSkillSelectionActive())
         {
+            if (moveDragActive)
+            {
+                ExtendMoveDragPath(cell);
+                return;
+            }
+
             if (currentMoveSelectableIndices.Contains(cell.Index))
             {
                 ShowMoveHoverPing(cell.Index);
@@ -999,6 +1024,9 @@ public class PlayerSkillReservationController : MonoBehaviour
     {
         if (IsMoveSkillSelectionActive())
         {
+            if (moveDragActive)
+                return;
+
             if (cell == null || cell.Index == moveHoverPingGridIndex)
             {
                 HideMoveHoverPing();
@@ -1015,7 +1043,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             rangePreview.ClearRangeOnly();
     }
 
-    private void ShowMoveHoverPing(int gridIndex)
+    private void ShowMoveHoverPing(int gridIndex, int explicitMoveCost = -1)
     {
         if (gridManager == null || !currentMoveSelectableIndices.Contains(gridIndex))
         {
@@ -1024,7 +1052,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         }
 
         // 같은 그리드에 머무는 동안 VFX를 반복 생성하거나 재생하지 않습니다.
-        if (moveHoverPingGridIndex == gridIndex)
+        if (moveHoverPingGridIndex == gridIndex && explicitMoveCost < 0)
             return;
 
         HideMoveHoverPing();
@@ -1055,13 +1083,16 @@ public class PlayerSkillReservationController : MonoBehaviour
         }
 
         // VFX와 독립적으로 아이콘 및 숫자 이미지를 표시합니다.
-        ShowMoveHoverCostDisplay(gridIndex, gridWorldPosition);
+        ShowMoveHoverCostDisplay(gridIndex, gridWorldPosition, explicitMoveCost);
         moveHoverPingGridIndex = gridIndex;
     }
 
-    private void ShowMoveHoverCostDisplay(int gridIndex, Vector3 gridWorldPosition)
+    private void ShowMoveHoverCostDisplay(
+        int gridIndex,
+        Vector3 gridWorldPosition,
+        int explicitMoveCost = -1)
     {
-        int moveCost = GetMoveHoverCost(gridIndex);
+        int moveCost = explicitMoveCost >= 0 ? explicitMoveCost : GetMoveHoverCost(gridIndex);
         if (moveCost < 0)
         {
             if (moveHoverCostImagesRoot != null)
@@ -1235,6 +1266,23 @@ public class PlayerSkillReservationController : MonoBehaviour
             pathCandidates = BuildPreferredMovePathCandidates(gridIndex);
 
         List<Vector2Int> movePath = GetFirstReservableMovePath(pathCandidates);
+
+        if (movePath == null || movePath.Count <= 0)
+        {
+            movePathPreview.Clear();
+            return;
+        }
+
+        movePathPreview.ShowPath(currentCasterGridIndex, movePath);
+    }
+
+    private void ShowMovePathPreview(IReadOnlyList<Vector2Int> movePath)
+    {
+        isForcedDirectionalSkillHoverPathVisible = false;
+        EnsureMovePathPreview();
+
+        if (movePathPreview == null)
+            return;
 
         if (movePath == null || movePath.Count <= 0)
         {
@@ -1489,6 +1537,9 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
+        if (moveDragActive)
+            return;
+
         if (!currentMoveSelectableIndices.Contains(cell.Index))
         {
             ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.GridNotSelectable));
@@ -1498,6 +1549,219 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         HideMovePathPreview();
         ConfirmMoveReservation(cell.Index);
+    }
+
+    private void HandleCellPointerDown(GridCell cell)
+    {
+        if (cell == null || IsGridPointerInteractionBlocked() || !IsMoveSkillSelectionActive())
+            return;
+
+        if (!currentMoveSelectableIndices.Contains(cell.Index))
+            return;
+
+        List<Vector2Int> moveOffsets;
+        if (cell.Index == currentCasterGridIndex)
+        {
+            moveOffsets = new List<Vector2Int> { Vector2Int.zero };
+        }
+        else
+        {
+            if (!currentMovePathCandidatesByTargetIndex.TryGetValue(
+                    cell.Index,
+                    out List<List<Vector2Int>> pathCandidates))
+            {
+                pathCandidates = BuildPreferredMovePathCandidates(cell.Index);
+            }
+
+            moveOffsets = GetFirstReservableMovePath(pathCandidates);
+        }
+
+        if (moveOffsets == null || moveOffsets.Count <= 0 || gridManager == null)
+            return;
+
+        Vector2Int casterCoord = gridManager.IndexToCoord(currentCasterGridIndex);
+        List<Vector2Int> coordinates = BuildMoveDragCoordinates(casterCoord, moveOffsets);
+        moveDragPathState = new MoveDragPathState(coordinates);
+        moveDragActive = true;
+        RefreshMoveDragPreview();
+    }
+
+    private void HandleCellPointerUp(GridCell cell)
+    {
+        if (!moveDragActive)
+            return;
+
+        if (IsGridPointerInteractionBlocked())
+            CancelMoveDragReservation();
+        else
+            FinalizeMoveDragReservation();
+    }
+
+    private void ExtendMoveDragPath(GridCell cell)
+    {
+        if (cell == null || gridManager == null || moveDragPathState == null)
+            return;
+
+        Vector2Int coordinate = gridManager.IndexToCoord(cell.Index);
+        bool isVisited = MoveDragPathContainsCoordinate(coordinate);
+        bool canAppend = isVisited || CanAppendMoveDragCoordinate(cell.Index, coordinate);
+
+        if (moveDragPathState.TryVisit(coordinate, canAppend))
+            RefreshMoveDragPreview();
+    }
+
+    private bool CanAppendMoveDragCoordinate(int gridIndex, Vector2Int coordinate)
+    {
+        if (gridManager == null || !gridManager.IsValidCoord(coordinate))
+            return false;
+
+        if (BuildKnownOtherPlayerDestinationGridIndices().Contains(gridIndex))
+            return false;
+
+        List<Vector2Int> coordinates = new List<Vector2Int>(moveDragPathState.Coordinates)
+        {
+            coordinate
+        };
+        List<Vector2Int> moveOffsets = BuildMoveDragOffsets(coordinates);
+        return GetRequiredMoveReservationCount(moveOffsets, currentMoveDistancePerCommand) <=
+               currentMoveReservationCapacity &&
+               CanReserveMovePathWithEffectiveCost(moveOffsets) &&
+               IsMovePathReservableAgainstCurrentOrProjectedState(gridIndex, moveOffsets);
+    }
+
+    private bool MoveDragPathContainsCoordinate(Vector2Int coordinate)
+    {
+        if (moveDragPathState == null)
+            return false;
+
+        for (int i = 0; i < moveDragPathState.Coordinates.Count; i++)
+        {
+            if (moveDragPathState.Coordinates[i] == coordinate)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void RefreshMoveDragPreview()
+    {
+        if (moveDragPathState == null || gridManager == null)
+            return;
+
+        List<Vector2Int> moveOffsets = BuildMoveDragOffsets(moveDragPathState.Coordinates);
+        ShowMovePathPreview(moveOffsets);
+
+        Vector2Int endpoint = moveDragPathState.Coordinates[moveDragPathState.Coordinates.Count - 1];
+        int endpointIndex = gridManager.CoordToIndex(endpoint);
+        ShowMoveHoverPing(endpointIndex, GetEffectiveMoveReservationCost(moveOffsets));
+    }
+
+    private void FinalizeMoveDragReservation()
+    {
+        MoveDragPathState finalizedState = moveDragPathState;
+        moveDragPathState = null;
+        moveDragActive = false;
+
+        if (finalizedState == null || finalizedState.Coordinates.Count <= 0 || gridManager == null)
+            return;
+
+        List<Vector2Int> moveOffsets = BuildMoveDragOffsets(finalizedState.Coordinates);
+        if (moveOffsets.Count <= 0)
+            moveOffsets.Add(Vector2Int.zero);
+
+        Vector2Int endpoint = finalizedState.Coordinates[finalizedState.Coordinates.Count - 1];
+        int endpointIndex = gridManager.CoordToIndex(endpoint);
+        if (!IsSelfFlipMovePath(moveOffsets) && !IsMoveDragPathStillReservable(endpointIndex, moveOffsets))
+        {
+            HideMoveHoverPing();
+            HideMovePathPreview();
+            ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.MoveDestinationInvalid));
+            return;
+        }
+
+        ConfirmMoveReservation(endpointIndex, moveOffsets);
+    }
+
+    private void CancelMoveDragReservation()
+    {
+        moveDragPathState = null;
+        moveDragActive = false;
+        HideMoveHoverPing();
+        HideMovePathPreview();
+    }
+
+    private bool IsMoveDragPathStillReservable(
+        int targetGridIndex,
+        IReadOnlyList<Vector2Int> moveOffsets)
+    {
+        if (gridManager == null || moveOffsets == null || moveOffsets.Count <= 0)
+            return false;
+
+        List<Vector2Int> path = new(moveOffsets);
+        if (BuildKnownOtherPlayerDestinationGridIndices().Contains(targetGridIndex))
+            return false;
+
+        return IsMovePathReservableAgainstCurrentOrProjectedState(targetGridIndex, path);
+    }
+
+    private bool IsMovePathReservableAgainstCurrentOrProjectedState(
+        int targetGridIndex,
+        IReadOnlyList<Vector2Int> moveOffsets)
+    {
+        List<Vector2Int> path = moveOffsets != null
+            ? new List<Vector2Int>(moveOffsets)
+            : null;
+
+        return IsMovePathReservable(
+                   currentCasterGridIndex,
+                   path,
+                   gridManager,
+                   BuildCurrentMoveBlockedGridIndices(),
+                   targetGridIndex,
+                   true) ||
+               IsMovePathReservable(
+                   currentCasterGridIndex,
+                   path,
+                   gridManager,
+                   BuildProjectedMoveBlockedGridIndices(),
+                   targetGridIndex,
+                   true);
+    }
+
+    private static List<Vector2Int> BuildMoveDragCoordinates(
+        Vector2Int start,
+        IReadOnlyList<Vector2Int> moveOffsets)
+    {
+        List<Vector2Int> coordinates = new() { start };
+        Vector2Int current = start;
+
+        for (int i = 0; i < moveOffsets.Count; i++)
+        {
+            Vector2Int offset = moveOffsets[i];
+            while (offset.x != 0)
+            {
+                current += new Vector2Int(Math.Sign(offset.x), 0);
+                coordinates.Add(current);
+                offset.x -= Math.Sign(offset.x);
+            }
+
+            while (offset.y != 0)
+            {
+                current += new Vector2Int(0, Math.Sign(offset.y));
+                coordinates.Add(current);
+                offset.y -= Math.Sign(offset.y);
+            }
+        }
+
+        return coordinates;
+    }
+
+    private static List<Vector2Int> BuildMoveDragOffsets(IReadOnlyList<Vector2Int> coordinates)
+    {
+        List<Vector2Int> offsets = new();
+        for (int i = 1; i < coordinates.Count; i++)
+            offsets.Add(coordinates[i] - coordinates[i - 1]);
+        return offsets;
     }
 
     private void ConfirmSelectionReservation(int selectedGridIndex)
@@ -1745,7 +2009,9 @@ public class PlayerSkillReservationController : MonoBehaviour
                string.Equals(effectId, "E_StrikeByTargetPoison", StringComparison.Ordinal);
     }
 
-    private void ConfirmMoveReservation(int selectedGridIndex)
+    private void ConfirmMoveReservation(
+        int selectedGridIndex,
+        IReadOnlyList<Vector2Int> explicitMoveOffsets = null)
     {
         if (!CanConfirmReservation())
             return;
@@ -1760,7 +2026,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
-        List<List<Vector2Int>> pathCandidates;
+        List<List<Vector2Int>> pathCandidates = null;
 
         if (isCurrentCasterGridIndex)
         {
@@ -1792,7 +2058,9 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
-        List<Vector2Int> moveOffsets = GetFirstReservableMovePath(pathCandidates);
+        List<Vector2Int> moveOffsets = explicitMoveOffsets != null
+            ? new List<Vector2Int>(explicitMoveOffsets)
+            : GetFirstReservableMovePath(pathCandidates);
 
         if (moveOffsets == null || moveOffsets.Count <= 0)
         {
@@ -3406,6 +3674,8 @@ public class PlayerSkillReservationController : MonoBehaviour
 
     public void ClearPreview()
     {
+        moveDragPathState = null;
+        moveDragActive = false;
         HideMoveHoverPing();
         HideMovePathPreview();
         SetGridTargetMonsterVisualActive(false);

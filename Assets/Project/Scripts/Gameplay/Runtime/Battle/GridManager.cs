@@ -16,6 +16,8 @@ public class GridManager : MonoBehaviour
     private readonly List<GridCell> executionRangeCells = new();
 
     public event Action<GridCell> OnCellClicked;
+    public event Action<GridCell> OnCellPointerDown;
+    public event Action<GridCell> OnCellPointerUp;
     public event Action<GridCell> OnCellHovered;
     public event Action<GridCell> OnCellHoverExited;
 
@@ -137,6 +139,16 @@ public class GridManager : MonoBehaviour
     public void NotifyCellClicked(GridCell cell)
     {
         OnCellClicked?.Invoke(cell);
+    }
+
+    public void NotifyCellPointerDown(GridCell cell)
+    {
+        OnCellPointerDown?.Invoke(cell);
+    }
+
+    public void NotifyCellPointerUp(GridCell cell)
+    {
+        OnCellPointerUp?.Invoke(cell);
     }
 
     public void NotifyCellHovered(GridCell cell)
