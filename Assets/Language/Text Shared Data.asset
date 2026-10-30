@@ -6987,6 +6987,38 @@ MonoBehaviour:
     m_Key: ui.lobby.canvas.lobby_button.lobby_icon.icon_01.text_tmp.fc777a3e
     m_Metadata:
       m_Items: []
+  - m_Id: 29134803035201536
+    m_Key: ui.battle.heal_text.fa6ad4a6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29134803098116096
+    m_Key: ui.battle.meditation_text.b83e0a88
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29134803098116097
+    m_Key: ui.battle.heal.1fac8b81
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29134803098116098
+    m_Key: ui.battle.meditation.bafe8da3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29134803098116099
+    m_Key: ui.battle.roomroot.restroom.choicecanvas.healbutton.text_tmp.26090c1a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29134803098116100
+    m_Key: ui.battle.text_tmp.6d912c93
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29134803098116101
+    m_Key: ui.battle.name.1a7fa664
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29134803098116102
+    m_Key: ui.assets.project.scripts.gameplay.scene.battle.restroom.restroomcontroller.text.45e08243
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
