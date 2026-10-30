@@ -491,6 +491,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private void HandleKeyboardSlotSelectInput()
     {
+        if (TutorialBattleSequence.IsPresentationRunning) return;
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
@@ -527,6 +528,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private void HandleKeyboardSlotMoveInput()
     {
+        if (TutorialBattleSequence.IsPresentationRunning) return;
         if (!enableKeyboardSlotMoveInput)
             return;
 
@@ -554,6 +556,7 @@ public class BattleTimelineController : MonoBehaviour
 
     private void HandleKeyboardUndoReservationInput()
     {
+        if (TutorialBattleSequence.IsPresentationRunning) return;
         if (!isActiveAndEnabled)
             return;
 
@@ -669,6 +672,9 @@ public class BattleTimelineController : MonoBehaviour
 
     public void SelectCharacter(CharacterRuntimeData runtimeData)
     {
+        if (runtimeData != null &&
+            !TutorialBattleSequence.CanSelectTutorialCharacter(runtimeData.CharacterId))
+            return;
         if (runtimeData != null)
             Relic.Gameplay.Monster.MonsterUnit.ClearMonsterInfoSelection();
 
@@ -3409,6 +3415,9 @@ public class BattleTimelineController : MonoBehaviour
             ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.SkillReservationMissing));
             return false;
         }
+
+        if (!TutorialBattleSequence.CanAcceptTutorialCommand(command, this))
+            return false;
 
         if (reserveSlots == null || reserveSlots.Length <= 0)
         {
