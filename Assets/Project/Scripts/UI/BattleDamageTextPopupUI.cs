@@ -188,6 +188,40 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         popup.ShowCustomTextInternal(target, "생명력 +" + value, PopupType.HealthRecovery, fontSize);
     }
 
+    // Rest room: use the character prefab origin rather than collider/renderer bounds.
+    // The offset is expressed in world units and can be adjusted in RestRoomController.
+    public static void ShowRestHealthRecovery(Transform character, int value, Canvas preferredCanvas,
+        float fontSize, Vector3 worldOffsetFromCharacter)
+    {
+        if (character == null || value <= 0)
+            return;
+
+        BattleDamageTextPopupUI popup = GetOrCreateInstance();
+        if (popup == null)
+            return;
+
+        popup.UsePreferredCanvas(preferredCanvas);
+        popup.EnsureReferences();
+        if (popup.canvasRect == null)
+            return;
+
+        if (popup.worldCamera == null)
+            popup.worldCamera = Camera.main;
+        if (popup.worldCamera == null)
+            return;
+
+        Vector3 worldPosition = character.position + worldOffsetFromCharacter;
+        Vector2 screenPosition = RectTransformUtility.WorldToScreenPoint(popup.worldCamera, worldPosition);
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                popup.canvasRect, screenPosition, popup.uiCamera, out Vector2 canvasPosition))
+            return;
+
+        // Do not follow collider bounds while animating; the position is fixed
+        // at the character prefab's authored origin plus the configured offset.
+        popup.ShowCustomTextPopup(null, Vector2.zero, canvasPosition,
+            "생명력 +" + value, PopupType.HealthRecovery, fontSize);
+    }
+
     public static void ShowEventHealthLoss(Transform target, int value, Canvas preferredCanvas, float fontSize)
     {
         if (target == null || value <= 0)

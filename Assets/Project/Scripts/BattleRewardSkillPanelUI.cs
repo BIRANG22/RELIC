@@ -138,6 +138,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         BindSkipButton();
         if (skipButton == null) return;
         skipButton.interactable = ready && reward != null && !processing;
+        skipButton.gameObject.SetActive(true);
         string[] names = { "back (1)", "back (2)", "front", "Text (TMP)" };
         for (int i = 0; i < names.Length; i++)
         {
@@ -163,6 +164,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         SetSkipRevealState(true);
     }
 
+    private bool isRestMeditationReward;
     private BattleRewardData reward;
     private Action completed;
     private bool processing;
@@ -283,6 +285,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         if (!DataManager.Instance.SkillDatabase.TryGet(data.RewardId, out SkillMasterData skill) || skill == null)
             return false;
         reward = data;
+        isRestMeditationReward = data.SourceKey != null && data.SourceKey.Contains("|RestOffers=");
         SetSkipRevealState(false);
         completed = onCompleted;
         processing = false;
@@ -351,8 +354,9 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             ClearCard(card);
             SkillMasterData choice = offeredSkills[i];
             if (choice == null) continue;
-            characterIds[i] = !string.IsNullOrWhiteSpace(battleOfferCharacterId)
-                ? battleOfferCharacterId : ResolveOwner(choice);
+            characterIds[i] = data.SourceKey != null && data.SourceKey.Contains("|RestOffers=")
+                ? DataManager.Instance.PartyRuntimeStore.GetCharacterId(i)
+                : !string.IsNullOrWhiteSpace(battleOfferCharacterId) ? battleOfferCharacterId : ResolveOwner(choice);
             BindCard(card, string.IsNullOrWhiteSpace(choice.CharacterId) || string.Equals(choice.CharacterId, "ALL", StringComparison.OrdinalIgnoreCase) ? characterIds[i] : choice.CharacterId, choice, data);
             // Assign the sprite and initialize the material before the card becomes visible.
             PrepareCardDissolve(i, card, choice.Rarity);
@@ -1521,6 +1525,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             StopSkillReveal(i);
         }
         Action callback = completed;
+        isRestMeditationReward = false;
         reward = null;
         completed = null;
         gameObject.SetActive(false);
@@ -1803,9 +1808,11 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         // Never redraw them using the generic battle reward pool.
         string sourceKey = rewardData?.SourceKey ?? string.Empty;
         int offersMarker = sourceKey.IndexOf("|EventOffers=", StringComparison.Ordinal);
+        bool isRestMeditation = sourceKey.Contains("|RestOffers=");
+        if (isRestMeditation) offersMarker = sourceKey.IndexOf("|RestOffers=", StringComparison.Ordinal);
         if (offersMarker >= 0)
         {
-            int begin = offersMarker + "|EventOffers=".Length;
+            int begin = offersMarker + (isRestMeditation ? "|RestOffers=".Length : "|EventOffers=".Length);
             int end = sourceKey.IndexOf('|', begin);
             string value = end >= 0 ? sourceKey.Substring(begin, end - begin) : sourceKey.Substring(begin);
             foreach (string id in value.Split(','))

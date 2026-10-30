@@ -32,6 +32,21 @@ public class RestRoomController : MonoBehaviour
     [SerializeField] private TMP_Text healButtonText;
     [SerializeField] private Color disabledHealButtonColor = new Color32(0x7E, 0x7E, 0x7E, 0xFF);
 
+    [Header("Meditation")]
+    [SerializeField] private BattleRewardSkillPanelUI meditationSkillPanel;
+    [SerializeField] private GameObject meditationButtonRoot;
+    [SerializeField] private GameObject meditationTextRoot;
+    [SerializeField, Min(0f)] private float hoverFadeDuration = 0.2f;
+    [SerializeField, Min(0)] private int restErosionReduction = 10;
+    [Header("Selected Text")]
+    [SerializeField] private GameObject selectedTextRoot;
+    [SerializeField] private GameObject selectedHealRoot;
+    [SerializeField] private GameObject selectedMeditationRoot;
+    [SerializeField, Min(0f)] private float actionButtonFadeDuration = 0.25f;
+    private Coroutine actionButtonFadeRoutine;
+    private bool restChoicePending;
+    private Button boundMeditationButton;
+
     [Header("Shop")]
     [SerializeField] private RestRoomShopPanel shopPanel;
 
@@ -76,6 +91,7 @@ public class RestRoomController : MonoBehaviour
         EnsureUpgradeButtonReferences();
         EnsureHealButtonReferences();
         EnsureHealTextReferences();
+        EnsureMeditationReferences();
         PrepareHealEffectRoot();
         EnsureSkillAwakenSelectionPanel();
     }
@@ -86,6 +102,8 @@ public class RestRoomController : MonoBehaviour
         // Restart its scene animators so entry visuals do not stay at their previous end states.
         ResetRestRoomSceneAnimations();
         isRestUsed = false;
+        restChoicePending = false;
+        if (actionButtonFadeRoutine != null) { StopCoroutine(actionButtonFadeRoutine); actionButtonFadeRoutine = null; }
         nextTransitionStarted = false;
         hasPendingSkillAwakenResult = false;
         pendingSkillAwakenResultTarget = default;
@@ -95,12 +113,22 @@ public class RestRoomController : MonoBehaviour
         EnsureUpgradeButtonReferences();
         EnsureHealButtonReferences();
         BindHealButton();
+        EnsureMeditationReferences();
+        BindMeditationButton();
         EnsureHealTextReferences();
         PrepareHealEffectRoot();
         EnsureSkillAwakenSelectionPanel();
         EnsurePlayerHudReferences();
+        // Previous visit may have hidden or reparented the shared resource UI.
+        ResolveCharacterResourcesUI();
+        if (characterResourcesUI != null && characterResourcesUI.gameObject.activeInHierarchy)
+            characterResourcesUI.HideAll();
         SetHealTextVisibleImmediate(false);
+        SetMeditationTextVisible(false);
+        UpdateRestDescription();
         SetNextButtonVisible(false);
+        ResetSelectedText();
+        RestoreRestButtonTransitions();
         SetRestActionButtonsVisible(true);
         SetUpgradeButtonDisabledFeedback(false);
         SetHealButtonDisabledFeedback(false);
@@ -126,7 +154,10 @@ public class RestRoomController : MonoBehaviour
 
     private void OnDisable()
     {
+        if (actionButtonFadeRoutine != null) { StopCoroutine(actionButtonFadeRoutine); actionButtonFadeRoutine = null; }
+        restChoicePending = false;
         UnbindHealButton();
+        UnbindMeditationButton();
         UnbindNextButton();
         SetNextButtonVisible(false);
 
@@ -140,15 +171,18 @@ public class RestRoomController : MonoBehaviour
             skillAwakenSelectionPanel.Close();
 
         SetHealTextVisibleImmediate(false);
+        SetMeditationTextVisible(false);
         StopHealEffect();
         skillAwakenOptions.Clear();
         hasPendingSkillAwakenResult = false;
         pendingSkillAwakenResultTarget = default;
         ClearPlayerHUDs();
+        RestoreRestResourceCanvasParent();
     }
 
     public void OnRestButtonClicked()
     {
+        if (restChoicePending) return;
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
@@ -164,19 +198,27 @@ public class RestRoomController : MonoBehaviour
 
         int[] hpBefore = CapturePartyHPBeforeRest();
         RecoverAllPartyHPByRatio(healHpRatio);
+        BattleErosionRuntimeService.Add(-restErosionReduction, "RestRoomHeal");
         ShowRestHealPresentation(hpBefore);
         RefreshPlayerHUDs();
         PlayHealVfxOnSpawnedAllies();
         PlayHealEffectRoot();
         // Heal_Text is a hover-only object; do not play a click-triggered fade.
-        SetHealButtonDisabledFeedback(true);
-        SetUpgradeButtonDisabledFeedback(true);
-        SetRestActionButtonsVisible(false);
+        FadeOutRestActionButtons(false);
         SetNextButtonVisible(true);
     }
 
     public void OnUpgradeButtonClicked()
     {
+        // 기존 Unity Button OnClick에 기억 강화 이벤트가 남아 있어도
+        // 새 휴식방에서는 명상(기억 발현)으로 처리합니다.
+        // Unity의 Persistent OnClick은 런타임 AddListener보다 먼저 실행될 수 있습니다.
+        if (meditationButtonRoot != null ||
+            (FindChildRecursive(transform, "MeditationButton") != null))
+        {
+            OnMeditationButtonClicked();
+            return;
+        }
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 
@@ -780,16 +822,113 @@ public class RestRoomController : MonoBehaviour
         nextButtonRoot.SetActive(visible);
     }
 
+    private void EnsureSelectedTextReferences()
+    {
+        if (selectedTextRoot == null)
+        {
+            Transform found = FindSceneTransformByName("Selected_Text");
+            if (found != null && found.IsChildOf(transform)) selectedTextRoot = found.gameObject;
+        }
+        if (selectedTextRoot == null) return;
+        if (selectedHealRoot == null)
+        {
+            Transform child = selectedTextRoot.transform.Find("Heal");
+            if (child != null) selectedHealRoot = child.gameObject;
+        }
+        if (selectedMeditationRoot == null)
+        {
+            Transform child = selectedTextRoot.transform.Find("Meditation");
+            if (child != null) selectedMeditationRoot = child.gameObject;
+        }
+    }
+
+    private void ResetSelectedText()
+    {
+        EnsureSelectedTextReferences();
+        if (selectedHealRoot != null) selectedHealRoot.SetActive(false);
+        if (selectedMeditationRoot != null) selectedMeditationRoot.SetActive(false);
+        if (selectedTextRoot != null) selectedTextRoot.SetActive(false);
+    }
+
+    private void ShowSelectedText(bool meditation)
+    {
+        EnsureSelectedTextReferences();
+        if (selectedTextRoot != null) selectedTextRoot.SetActive(true);
+        if (selectedHealRoot != null) selectedHealRoot.SetActive(!meditation);
+        if (selectedMeditationRoot != null) selectedMeditationRoot.SetActive(meditation);
+    }
+
+    private void FadeOutRestActionButtons(bool meditation)
+    {
+        if (actionButtonFadeRoutine != null) StopCoroutine(actionButtonFadeRoutine);
+        actionButtonFadeRoutine = StartCoroutine(FadeOutRestActionButtonsRoutine(meditation));
+    }
+
+    private readonly Dictionary<Button, Selectable.Transition> restButtonTransitions = new Dictionary<Button, Selectable.Transition>();
+
+    private void RestoreRestButtonTransitions()
+    {
+        foreach (var pair in restButtonTransitions)
+            if (pair.Key != null) pair.Key.transition = pair.Value;
+        restButtonTransitions.Clear();
+    }
+
+    private IEnumerator FadeOutRestActionButtonsRoutine(bool meditation)
+    {
+        GameObject[] roots = { healButtonRoot, meditationButtonRoot };
+        CanvasGroup[] groups = new CanvasGroup[roots.Length];
+        for (int i = 0; i < roots.Length; i++)
+        {
+            if (roots[i] == null) continue;
+            groups[i] = roots[i].GetComponent<CanvasGroup>();
+            if (groups[i] == null) groups[i] = roots[i].AddComponent<CanvasGroup>();
+            groups[i].interactable = false;
+            groups[i].blocksRaycasts = false;
+            // Keep the authored colors intact while fading; do not apply Button.disabledColor.
+            Button uiButton = roots[i].GetComponent<Button>();
+            if (uiButton != null)
+            {
+                if (!restButtonTransitions.ContainsKey(uiButton)) restButtonTransitions.Add(uiButton, uiButton.transition);
+                uiButton.transition = Selectable.Transition.None;
+            }
+        }
+        float elapsed = 0f;
+        float duration = Mathf.Max(0f, actionButtonFadeDuration);
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float alpha = 1f - Mathf.Clamp01(elapsed / duration);
+            foreach (CanvasGroup group in groups) if (group != null) group.alpha = alpha;
+            yield return null;
+        }
+        SetRestActionButtonsVisible(false);
+        SetHealTextVisibleImmediate(false);
+        SetMeditationTextVisible(false);
+        actionButtonFadeRoutine = null;
+        // Meditation is completed only when Skill_panel's close callback fires.
+        if (!meditation) ShowSelectedText(false);
+    }
+
     private void SetRestActionButtonsVisible(bool visible)
     {
         EnsureUpgradeButtonReferences();
         EnsureHealButtonReferences();
 
-        if (upgradeButtonRoot != null)
-            upgradeButtonRoot.SetActive(visible);
+        if (upgradeButtonRoot != null && upgradeButtonRoot != meditationButtonRoot)
+            upgradeButtonRoot.SetActive(false);
 
         if (healButtonRoot != null)
+        {
+            CanvasGroup group = healButtonRoot.GetComponent<CanvasGroup>();
+            if (group != null) { group.alpha = visible ? 1f : 0f; group.interactable = visible; group.blocksRaycasts = visible; }
             healButtonRoot.SetActive(visible);
+        }
+        if (meditationButtonRoot != null)
+        {
+            CanvasGroup group = meditationButtonRoot.GetComponent<CanvasGroup>();
+            if (group != null) { group.alpha = visible ? 1f : 0f; group.interactable = visible; group.blocksRaycasts = visible; }
+            meditationButtonRoot.SetActive(visible);
+        }
     }
 
     private void EnsureUpgradeButtonReferences()
@@ -935,8 +1074,11 @@ public class RestRoomController : MonoBehaviour
             return;
 
         Transform[] anchors = new Transform[3];
-        Canvas canvas = GetComponentInParent<Canvas>(true);
-        bool anyChanged = false;
+        ResolveCharacterResourcesUI();
+        EnsureRestResourceCanvasActive();
+        Canvas canvas = characterResourcesUI != null
+            ? characterResourcesUI.GetComponentInParent<Canvas>(true)
+            : GetComponentInParent<Canvas>(true);
         for (int i = 0; i < before.Length; i++)
         {
             string id = manager.PartyRuntimeStore.GetCharacterId(i);
@@ -951,23 +1093,81 @@ public class RestRoomController : MonoBehaviour
                 continue;
             Transform ally = spawn.childCount > 0 ? spawn.GetChild(0) : null;
             anchors[i] = ally != null ? MapRoomController.ResolveMovingCharacterAnchor(ally.gameObject, spawn) : spawn;
-            int restored = Mathf.Max(0, character.CurrentHP - before[i]);
-            if (restored <= 0)
-                continue;
-            anyChanged = true;
-            BattleDamageTextPopupUI.ShowEventHealthRecovery(anchors[i], restored, canvas, 48f);
+            // Show the calculated healing amount, not the capped HP delta.
+            // This feedback remains visible even when the character is at full HP.
+            int maxHp = Mathf.Max(0, character.MaxHP);
+            if (maxHp <= 0 && manager.CharacterDatabase != null &&
+                manager.CharacterDatabase.TryGet(id, out CharacterMasterData masterData))
+                maxHp = Mathf.Max(0, masterData.MaxHP);
+            if (maxHp > 0)
+            {
+                int healAmount = Mathf.CeilToInt(maxHp * Mathf.Clamp01(healHpRatio));
+                healAmount = BattleEquipmentEffectService.ModifyRestHealAmountForParty(healAmount);
+                if (healAmount > 0)
+                    BattleDamageTextPopupUI.ShowEventHealthRecovery(anchors[i], healAmount, canvas, 48f);
+            }
         }
 
-        if (!anyChanged)
+        // Display party HUD even if every member is at full health.
+        // Zero-value popup text remains suppressed by the earlier restored check.
+        if (characterResourcesUI != null && characterResourcesUI.gameObject.activeInHierarchy)
+            characterResourcesUI.ShowEventHealthChangeAll(anchors, before, useRestPositions: true);
+    }
+
+    // Character Resources may live under an inactive MenuRoot. Activating only
+    // the child is not sufficient; place it directly beneath the active UI viewport
+    // so rest-room recovery can display without opening the menu itself.
+    // Keep the scene hierarchy stable across repeated RestRoom entries.
+    private Transform restResourceOriginalParent;
+    private int restResourceOriginalSiblingIndex = -1;
+    private bool restResourceMovedByRest;
+
+    private void RestoreRestResourceCanvasParent()
+    {
+        if (!restResourceMovedByRest)
             return;
-        ResolveCharacterResourcesUI();
-        if (characterResourcesUI != null)
+        restResourceMovedByRest = false;
+        if (characterResourcesUI == null || restResourceOriginalParent == null)
+            return;
+        Transform resource = characterResourcesUI.transform;
+        resource.SetParent(restResourceOriginalParent, false);
+        if (restResourceOriginalSiblingIndex >= 0)
+            resource.SetSiblingIndex(Mathf.Min(restResourceOriginalSiblingIndex, resource.parent.childCount - 1));
+        restResourceOriginalParent = null;
+        restResourceOriginalSiblingIndex = -1;
+        // The UI controller hides its own child panels after each recovery.
+        characterResourcesUI.HideAll();
+    }
+
+    private void EnsureRestResourceCanvasActive()
+    {
+        if (characterResourcesUI == null)
+            return;
+
+        Transform resource = characterResourcesUI.transform;
+        if (!characterResourcesUI.gameObject.activeInHierarchy)
         {
-            if (!characterResourcesUI.gameObject.activeSelf)
-                characterResourcesUI.gameObject.SetActive(true);
-            if (characterResourcesUI.gameObject.activeInHierarchy)
-                characterResourcesUI.ShowEventHealthChangeAll(anchors, before, useRestPositions: true);
+            Canvas canvas = resource.GetComponentInParent<Canvas>(true);
+            Transform activeParent = canvas != null ? canvas.transform : null;
+            if (canvas != null)
+            {
+                Transform viewport = canvas.transform.Find("Resolution Viewport");
+                if (viewport != null && viewport.gameObject.activeInHierarchy)
+                    activeParent = viewport;
+            }
+            if (activeParent != null && activeParent.gameObject.activeInHierarchy && resource.parent != activeParent)
+            {
+                if (!restResourceMovedByRest)
+                {
+                    restResourceOriginalParent = resource.parent;
+                    restResourceOriginalSiblingIndex = resource.GetSiblingIndex();
+                }
+                restResourceMovedByRest = true;
+                resource.SetParent(activeParent, false);
+            }
         }
+        if (!characterResourcesUI.gameObject.activeSelf)
+            characterResourcesUI.gameObject.SetActive(true);
     }
 
     private void EnsureHealButtonReferences()
@@ -1111,6 +1311,17 @@ public class RestRoomController : MonoBehaviour
 
     private void LateUpdate()
     {
+        // The reward panel shares NextButton and may overwrite its label.
+        // Keep the rest-room action localized to the proceed caption.
+        if (isActiveAndEnabled && nextButtonRoot != null && nextButtonRoot.activeInHierarchy)
+        {
+            TMP_Text nextLabel = nextButton != null ? nextButton.GetComponentInChildren<TMP_Text>(true) : null;
+            if (nextLabel != null)
+            {
+                string proceed = GameLocalization.Get("common.proceed", "진행");
+                if (nextLabel.text != proceed) nextLabel.text = proceed;
+            }
+        }
         if (healEffectRoot == null || !healEffectPositionCaptured)
             return;
 
@@ -1190,14 +1401,151 @@ public class RestRoomController : MonoBehaviour
         RestHealTextHoverToggle hover = healButtonRoot.GetComponent<RestHealTextHoverToggle>();
         if (hover == null)
             hover = healButtonRoot.AddComponent<RestHealTextHoverToggle>();
-        hover.Configure(healTextRoot);
+        hover.Configure(healTextRoot, hoverFadeDuration);
     }
 
     private void SetHealTextVisibleImmediate(bool visible)
     {
         EnsureHealTextReferences();
         if (healTextRoot != null)
-            healTextRoot.SetActive(visible);
+        {
+            if (!healTextRoot.activeSelf) healTextRoot.SetActive(true);
+            CanvasGroup group = healTextRoot.GetComponent<CanvasGroup>();
+            if (group == null) group = healTextRoot.AddComponent<CanvasGroup>();
+            group.alpha = visible ? 1f : 0f;
+            group.blocksRaycasts = false;
+        }
+    }
+
+    private void EnsureMeditationReferences()
+    {
+        if (meditationButtonRoot == null)
+        {
+            Transform found = FindSceneTransformByName("MeditationButton");
+            if (found != null && found.IsChildOf(transform)) meditationButtonRoot = found.gameObject;
+        }
+        if (meditationTextRoot == null)
+        {
+            Transform found = FindSceneTransformByName("Meditation_Text");
+            if (found != null && found.IsChildOf(transform)) meditationTextRoot = found.gameObject;
+        }
+        if (meditationButtonRoot != null && meditationTextRoot != null)
+        {
+            RestHealTextHoverToggle hover = meditationButtonRoot.GetComponent<RestHealTextHoverToggle>();
+            if (hover == null) hover = meditationButtonRoot.AddComponent<RestHealTextHoverToggle>();
+            hover.Configure(meditationTextRoot, hoverFadeDuration);
+        }
+        if (meditationSkillPanel == null) meditationSkillPanel = BattleRewardSkillPanelUI.FindPanel();
+    }
+
+    private void SetMeditationTextVisible(bool visible)
+    {
+        if (meditationTextRoot == null) return;
+        if (!meditationTextRoot.activeSelf) meditationTextRoot.SetActive(true);
+        CanvasGroup group = meditationTextRoot.GetComponent<CanvasGroup>();
+        if (group == null) group = meditationTextRoot.AddComponent<CanvasGroup>();
+        group.alpha = visible ? 1f : 0f;
+        group.blocksRaycasts = false;
+    }
+
+    private void BindMeditationButton()
+    {
+        Button button = meditationButtonRoot != null ? meditationButtonRoot.GetComponent<Button>() : null;
+        if (boundMeditationButton != null) boundMeditationButton.onClick.RemoveListener(OnMeditationButtonClicked);
+        boundMeditationButton = button;
+        if (button != null) button.onClick.AddListener(OnMeditationButtonClicked);
+    }
+
+    private void UnbindMeditationButton()
+    {
+        if (boundMeditationButton != null) boundMeditationButton.onClick.RemoveListener(OnMeditationButtonClicked);
+        boundMeditationButton = null;
+    }
+
+    private string GetRestEffectiveHealPercentText()
+    {
+        // Same equipment modifier as the actual HP restoration calculation.
+        const int sampleMaxHp = 10000;
+        int baseHeal = Mathf.CeilToInt(sampleMaxHp * Mathf.Clamp01(healHpRatio));
+        int effectiveHeal = BattleEquipmentEffectService.ModifyRestHealAmountForParty(baseHeal);
+        float percent = effectiveHeal * 100f / sampleMaxHp;
+        return Mathf.Approximately(percent, Mathf.Round(percent))
+            ? Mathf.RoundToInt(percent).ToString()
+            : percent.ToString("0.#");
+    }
+
+    private void UpdateRestDescription()
+    {
+        if (healTextRoot == null) return;
+        // 회복량 증가 유물의 실제 계산 규칙과 동일하게 기준 생명력에 대한 증가율을 계산합니다.
+        string fallback = $"생명력을 {GetRestEffectiveHealPercentText()}% 회복하고 침식도가 {restErosionReduction} 감소합니다.";
+        TMP_Text text = healTextRoot.GetComponentInChildren<TMP_Text>(true);
+        if (text != null) text.text = fallback;
+    }
+
+    public void OnMeditationButtonClicked()
+    {
+        if (UIPanelButton.IsMenuPanelOpen || SteamBattleStateSynchronizer.TryBlockSharedBattleStateEdit() || IsRestActionLocked || restChoicePending)
+            return;
+        EnsureMeditationReferences();
+        if (meditationSkillPanel == null) return;
+        DataManager dm = DataManager.Instance;
+        if (dm?.PartyRuntimeStore == null || dm.SkillDatabase == null || dm.CharacterRuntimeStore == null) return;
+
+        List<SkillMasterData> offers = new List<SkillMasterData>();
+        for (int slot = 0; slot < 3; slot++)
+        {
+            string id = dm.PartyRuntimeStore.GetCharacterId(slot);
+            if (string.IsNullOrWhiteSpace(id) || !dm.CharacterRuntimeStore.TryGet(id, out CharacterRuntimeData character))
+                return;
+            HashSet<string> equipped = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+            if (character.EquippedSkillIds != null)
+                foreach (string skillId in character.EquippedSkillIds)
+                    if (!string.IsNullOrWhiteSpace(skillId)) equipped.Add(skillId.Trim());
+            List<SkillMasterData> candidates = new List<SkillMasterData>();
+            foreach (SkillMasterData skill in dm.SkillDatabase.GetAll())
+                if (skill != null && skill.Category == Category.Core &&
+                    SkillRarityUtility.IsCoreDropRarity(skill.Rarity) &&
+                    SkillRarityUtility.IsBaseSkillVariant(skill.SkillId) &&
+                    !equipped.Contains(skill.SkillId) && SkillOwnershipPolicy.CanEquip(skill, id))
+                    candidates.Add(skill);
+            if (candidates.Count == 0) { BattleWarningUI.ShowMessage("발현할 기억이 없습니다."); return; }
+            // 각 레어도의 기본 확률은 30/30/30/10. 후보가 없는 레어도의 가중치는
+            // 남아 있는 레어도에 비례해 재분배되며, 같은 레어도 내에서 균등 추첨합니다.
+            float totalWeight = 0f;
+            foreach (SkillRarity rarity in new[] { SkillRarity.Common, SkillRarity.Rare, SkillRarity.Epic, SkillRarity.Unique })
+                if (candidates.Exists(x => x.Rarity == rarity)) totalWeight += rarity == SkillRarity.Unique ? 10f : 30f;
+            float roll = UnityEngine.Random.value * totalWeight;
+            SkillRarity selectedRarity = candidates[0].Rarity;
+            foreach (SkillRarity rarity in new[] { SkillRarity.Common, SkillRarity.Rare, SkillRarity.Epic, SkillRarity.Unique })
+            {
+                if (!candidates.Exists(x => x.Rarity == rarity)) continue;
+                selectedRarity = rarity;
+                roll -= rarity == SkillRarity.Unique ? 10f : 30f;
+                if (roll <= 0f) break;
+            }
+            List<SkillMasterData> sameRarity = candidates.FindAll(x => x.Rarity == selectedRarity);
+            offers.Add(sameRarity[UnityEngine.Random.Range(0, sameRarity.Count)]);
+        }
+        BattleRewardData reward = new BattleRewardData
+        {
+            Type = BattleRewardType.Skill,
+            RewardId = offers[0].SkillId,
+            SourceKey = "RestMeditation|RestOffers=" + string.Join(",", offers.ConvertAll(x => x.SkillId)) + "|"
+        };
+        if (!meditationSkillPanel.Open(reward, () =>
+        {
+            isRestUsed = true;
+            restChoicePending = false;
+            ShowSelectedText(true);
+            SetNextButtonVisible(true);
+        })) BattleWarningUI.ShowMessage("기억 선택 패널을 열 수 없습니다.");
+        else
+        {
+            restChoicePending = true;
+            FadeOutRestActionButtons(true);
+            SetNextButtonVisible(false);
+        }
     }
 
     private void EnsureSkillAwakenSelectionPanel()
@@ -1693,58 +2041,47 @@ public class RestRoomController : MonoBehaviour
 [DisallowMultipleComponent]
 public sealed class RestHealTextHoverToggle : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    private GameObject target;
-    private RectTransform rect;
-    private Vector2 originalAnchoredPosition;
-    private bool captured;
-    private bool hovered;
+    private CanvasGroup group;
+    private Coroutine fadeRoutine;
+    private float duration = 0.2f;
 
-    public void Configure(GameObject value)
+    public void Configure(GameObject target, float fadeSeconds = 0.2f)
     {
-        if (value == null) return;
-        if (target != value)
-        {
-            target = value;
-            rect = target.GetComponent<RectTransform>();
-            captured = false;
-        }
-        if (!captured && rect != null)
-        {
-            originalAnchoredPosition = rect.anchoredPosition;
-            captured = true;
-        }
-        SetVisible(hovered && isActiveAndEnabled);
+        if (target == null) return;
+        if (!target.activeSelf) target.SetActive(true);
+        group = target.GetComponent<CanvasGroup>();
+        if (group == null) group = target.AddComponent<CanvasGroup>();
+        group.blocksRaycasts = false;
+        duration = Mathf.Max(0f, fadeSeconds);
+        group.alpha = 0f;
     }
 
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        hovered = true;
-        SetVisible(true);
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        hovered = false;
-        SetVisible(false);
-    }
-
-    private void LateUpdate()
-    {
-        // Other hover transform components may still animate the parent/label;
-        // keep only this label at its configured position.
-        if (captured && rect != null && rect.anchoredPosition != originalAnchoredPosition)
-            rect.anchoredPosition = originalAnchoredPosition;
-    }
-
+    public void OnPointerEnter(PointerEventData eventData) => FadeTo(1f);
+    public void OnPointerExit(PointerEventData eventData) => FadeTo(0f);
     private void OnDisable()
     {
-        hovered = false;
-        SetVisible(false);
+        if (fadeRoutine != null) StopCoroutine(fadeRoutine);
+        fadeRoutine = null;
+        if (group != null) group.alpha = 0f;
     }
-
-    private void SetVisible(bool visible)
+    private void FadeTo(float alpha)
     {
-        if (target != null && target.activeSelf != visible)
-            target.SetActive(visible);
+        if (group == null) return;
+        if (fadeRoutine != null) StopCoroutine(fadeRoutine);
+        fadeRoutine = StartCoroutine(Fade(alpha));
+    }
+    private IEnumerator Fade(float target)
+    {
+        float start = group.alpha;
+        float elapsed = 0f;
+        if (duration <= 0f) { group.alpha = target; yield break; }
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            group.alpha = Mathf.Lerp(start, target, Mathf.Clamp01(elapsed / duration));
+            yield return null;
+        }
+        group.alpha = target;
+        fadeRoutine = null;
     }
 }
