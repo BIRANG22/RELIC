@@ -84,7 +84,8 @@ public class GridCell : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (!BattleFirstTutorialController.CanClickGrid(Index))
+        if (!TutorialBattleSequence.CanClickTutorialGrid(Index) ||
+            !BattleFirstTutorialController.CanClickGrid(Index))
             return;
 
         // Record the click before reservation is confirmed and move-selection is cleared.

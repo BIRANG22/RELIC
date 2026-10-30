@@ -13,7 +13,8 @@ public class BattleTurnExecutor : MonoBehaviour
     public static event Action BattleExecutionStarted;
     public static event Action PlayerTurnReturned;
 
-    public bool CanAcceptPlayerInput => !networkExecutionLocked && !isExecuting && isMonsterPlanReady && isPlayerInputReady;
+    public bool CanAcceptPlayerInput => !networkExecutionLocked && !isExecuting && isMonsterPlanReady && isPlayerInputReady &&
+        (BattleResultChecker.Instance == null || !BattleResultChecker.Instance.BattleEnded);
     public bool IsExecuting => isExecuting;
     public Button EndTurnButton => endTurnButton;
 
@@ -351,6 +352,10 @@ public class BattleTurnExecutor : MonoBehaviour
             return;
 
         if (!Input.GetKeyDown(KeyCode.Space))
+            return;
+
+        // 튜토리얼 진행 중에는 턴 종료 단계(29번)에서만 Space 입력을 허용합니다.
+        if (!TutorialBattleSequence.IsShortcutAllowed(KeyCode.Space))
             return;
 
         if (IsTypingInputFieldSelected())
@@ -1554,6 +1559,22 @@ public class BattleTurnExecutor : MonoBehaviour
                 timelineController.GetPlayerEmptySlotMask(characterId),
                 timelineController.CountPlayerAttackSkillCommands(characterId));
         }
+    }
+
+    // 튜토리얼 첫 턴: 입력 잠금 상태에서 턴 인트로를 끝까지 재생합니다.
+    // 표시 처리한 턴은 입력 해제 시 재생되지 않습니다.
+    public IEnumerator PlayInitialReservationIntroForTutorial()
+    {
+        int turn = playerTurnNumber;
+        if (turn <= lastAnnouncedReservationTurn)
+            yield break;
+
+        while (BattleMapIntroText.IsAnyPlayingOrVisible())
+            yield return null;
+
+        lastAnnouncedReservationTurn = turn;
+        PlaySfx(playBattleProgressSfx, battleProgressSfxId, battleProgressSfxVolume);
+        yield return BattleTurnIntroText.ShowTurnStartAndWait(turn);
     }
 
     private void RequestReservationTurnIntro()

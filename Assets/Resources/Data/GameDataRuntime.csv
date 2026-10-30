@@ -935,20 +935,39 @@ Erosion_03_07,유물 슬롯 잠금,Level03_7,3,3,Erosion_03_07,Independent,마�
 Erosion_03_08,무거운 발걸음,Level03_8,3,3,Erosion_03_08,Independent,이동 최종 마나 소모 +1,MoveFinalManaCostAdd,1,1,이동에 필요한 최종 마나 소모가 1 증가한다.
 
 # Tutorial
-튜토리얼ID,진행순서,맵ID,시작 파티,시작 침식도,시작 생명력(%),몬스터 생성 지연,단계,대화 캐릭터ID,출력,문구 키,한국어 대사/안내,넘김 방식,강조 UI,완료 안내 키,완료 안내
-TutorialId,Order,MapId,StartParty,InitialErosion,InitialHpPercent,DeferMonsterSpawn,Phase,SpeakerId,Text output,TextKey,TextKO,Advance,HighlightTarget,CompleteTextKey,CompleteTextKO
-Tutorial_01,1,Map_26,"Char_01,Char_02",42,"70,65",1,Arrival,,BattleMapIntroText,tutorial.t01.arrival,거점으로 향하는 길,Auto,
+튜토리얼ID,진행순서,맵ID,시작 파티,시작 침식도,시작 생명력(%),몬스터 생성 지연,단계,대화 캐릭터ID,출력,문구 키,한국어 대사/안내,넘김 방식,강조 UI,완료 안내 키,완료 안내,툴팁 위치
+TutorialId,Order,MapId,StartParty,InitialErosion,InitialHpPercent,DeferMonsterSpawn,Phase,SpeakerId,Text output,TextKey,TextKO,Advance,HighlightTarget,CompleteTextKey,CompleteTextKO,TooltipPosition
+Tutorial_01,1,Map_26,"Char_01,Char_02",42,"70,65",1,Arrival,,BattleMapIntroText,tutorial.t01.arrival,거점 인근,Auto,
 Tutorial_01,2,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.01,후아! 생각보다 먼 길인데? 슬슬 몸이 무거워지는걸.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-Tutorial_01,3,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.02,"하하, 이러다 거점에 도착하기도 전에 지치겠어!",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,3,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.02,이러다 거점에 도착하기도 전에 지치겠어!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,4,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.03,불필요한 체력 소모는 피하시죠. 거점까지 얼마 남지 않았습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-Tutorial_01,5,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.01,탐사 중에는 침식도가 누적됩니다.,ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,5,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.01,탐사 중에는 침식도가 누적됩니다.,ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
 Tutorial_01,6,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.02,"침식도는 새로운 방에 진입하면 3,
 턴이 진행되거나 피해를 받을 때마다 1,
-전투불능이 되면 10 증가합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+전투불능이 되면 10 증가합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
 Tutorial_01,7,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.03,"침식도가 최대치인 100에 도달하면
-매 턴 생명력이 10씩 감소합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+매 턴 생명력이 10씩 감소합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
 Tutorial_01,8,Map_26,,,,,SpawnMonsters,,,,,Auto,
 Tutorial_01,9,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.04,변이체군요. 아무래도 그냥 지나가긴 어렵겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-Tutorial_01,10,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.05,좋아! 그럼 녀석부터 처리하고 가자!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
-,,,,,,,,,,,,,
+Tutorial_01,10,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.05,그럼 녀석부터 처리하고 가자!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,11,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.01,"캐릭터 상태창에서는 생명력과 마나, 카르마를 비롯한 다양한 전투 정보를 확인할 수 있습니다.",ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,12,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.02,"마나와 카르마는 행동에 필요한 자원입니다.
+마나는 재생량에 따라, 카르마는 매 턴 1씩 회복됩니다.",ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,13,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.03,캐릭터가 장착한 유물과 룬의 정보도 각 슬롯에서 살펴볼 수 있습니다.,ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,14,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.04,현재 캐릭터에게 적용된 버프와 디버프도 상태창에 표시됩니다.,ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,15,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.06,좋아! 녀석이 움직이기 전에 먼저 처리해 버릴까?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,16,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.07,무작정 달려들기보다는 신중하게 움직이는 편이 좋겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,17,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.08,일단 녀석에게 접근해서 제대로 한 방 먹여주겠어!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,18,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.09,하아… 어쩔 수 없군요. 뒤는 제가 마무리하겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,19,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.battleslot.01,"타임라인은 총 5개의 슬롯으로 구성되며, 각 슬롯은 5칸으로 이루어져 있습니다.",ClickAny,BattleSlot/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
+Tutorial_01,20,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.battleslot.02,"변이체가 먼저 행동을 예약하며, 하나의 슬롯에는 서로 다른 캐릭터의 행동을 등록할 수 없습니다.",ClickAny,BattleSlot/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
+Tutorial_01,21,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.01,"행동에 따라 1칸에서 3칸을 사용하며, 턴을 종료하면 첫 번째 슬롯부터 순서대로 실행됩니다.",ClickAny,BattleSlot/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
+Tutorial_01,22,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.01,캐릭터는 이동과 방향 전환 등의 기본 행동을 사용할 수 있습니다.,ClickAny,BattleCharacterPanel/Active,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,23,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.02,"이외에도 피해를 주거나 버프, 디버프 등의 효과를 가진 행동인 '기억'을 사용할 수 있습니다.",ClickAny,BattleCharacterPanel/Active,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,24,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.03,"이동은 1칸을 사용하는 행동으로, 예약한 거리에 따라 마나를 소모합니다.",ClickTarget,BattleCharacterPanel/Active/Move,tutorial.prompt.click_move,A 또는 버튼을 클릭하여 계속,Above
+Tutorial_01,25,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.04,이동할 위치를 선택하면 해당 행동이 타임라인에 예약됩니다.,ReserveMove,Grid_16,tutorial.prompt.click_grid,이동할 위치를 클릭하여 계속,Above
+Tutorial_01,26,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.05,기억의 범위는 캐릭터가 바라보는 방향을 기준으로 자동 설정됩니다.,ReserveAction,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory,Q 또는 버튼을 클릭하여 게속,Above
+Tutorial_01,27,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.06,캐릭터를 변경하면 예약할 슬롯도 자동으로 변경됩니다.,ClickTarget,BattleCharacterPanel/Char_Select/Char02,tutorial.prompt.select_char02,Tab 또는 버튼을 클릭하여 게속,Above
+Tutorial_01,28,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.07,"같은 기억을 여러 번 등록할 수도 있으며, 각각의 행동이 타임라인에 예약됩니다.",ReserveActionTwice,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory_twice,Q 또는 버튼을 두 번 클릭하여 계속,Above
+Tutorial_01,29,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.08,행동 예약을 마쳤다면 턴을 종료합니다. 그러면 등록한 행동이 순서대로 실행되며 전투가 진행됩니다.,ClickTarget,BattleCharacterPanel/EndButton,tutorial.prompt.end_turn,Space 또는 버튼을 클릭하여 계속,Above
 

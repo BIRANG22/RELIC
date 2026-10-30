@@ -693,7 +693,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
         {
-            MovePanelAndBattleSlotToDefault();
+            SetPanelAndBattleSlotDefaultImmediate();
             return;
         }
 
@@ -711,7 +711,9 @@ public class BattleCharacterPanelUI : MonoBehaviour
     private void HandleBattleFinished()
     {
         isBattleExecutionInProgress = false;
-        MovePanelAndBattleSlotToDefault();
+        // 승리 후 보상 처리 중에는 다음 턴 예약 연출을 재생하지 않습니다.
+        // 진행 중인 패널 이동을 중단하고 기본 위치로 즉시 고정합니다.
+        SetPanelAndBattleSlotDefaultImmediate();
     }
 
     private void HandleCharacterSelectionChanged(CharacterRuntimeData runtimeData)
@@ -792,7 +794,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
         {
-            MovePanelAndBattleSlotToDefault();
+            SetPanelAndBattleSlotDefaultImmediate();
             return;
         }
 
@@ -2424,6 +2426,17 @@ public class BattleCharacterPanelUI : MonoBehaviour
         SetPanelPositionYImmediate(targetY);
     }
 
+    /// <summary>
+    /// 튜토리얼 최초 예약 진입 시 입력 잠금 상태에서도 패널을 예약 위치로 이동합니다.
+    /// </summary>
+    public void BeginTutorialReservationPanelMove()
+    {
+        if (!isActiveAndEnabled || isBattleExecutionInProgress || IsIntroBlockingPanel())
+            return;
+
+        MovePanelToY(reservationPositionY);
+    }
+
     private void MovePanelToY(float targetY)
     {
         if (panelRectTransform == null)
@@ -2684,6 +2697,22 @@ public class BattleCharacterPanelUI : MonoBehaviour
         EnsureTurnExecutor();
         if (turnExecutor != null && !turnExecutor.CanAcceptPlayerInput)
             return;
+
+        // 첫 전투 데이터 기반 튜토리얼은 안내 단계에서 허용한 단축키만 실행합니다.
+        if (TutorialBattleSequence.IsPresentationRunning)
+        {
+            if (TutorialBattleSequence.IsShortcutAllowed(KeyCode.A) && Input.GetKeyDown(KeyCode.A))
+            {
+                OnMoveButtonClicked();
+                return;
+            }
+            if (TutorialBattleSequence.IsShortcutAllowed(KeyCode.Q) && Input.GetKeyDown(KeyCode.Q))
+            {
+                StartKeyboardSkillWithRangePreview(0, skill01Button);
+                return;
+            }
+            return;
+        }
 
         if (BattleFirstTutorialController.IsInputRestricted)
         {

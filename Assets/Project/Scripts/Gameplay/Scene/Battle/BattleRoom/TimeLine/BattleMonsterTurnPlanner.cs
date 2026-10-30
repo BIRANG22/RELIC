@@ -1166,7 +1166,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
         int slotCount = timelineController != null ? timelineController.SlotCount : 0;
 
-        // 튜토리얼 1 전투(Map_27 / Battlemap_17)는 블롭의 AI 패턴과 스킬 선택은
+        // 튜토리얼 1 전투(Map_26)는 몬스터의 AI 패턴과 행동 선택은
         // 그대로 사용하되, 예약되는 타임라인 위치만 항상 3번 슬롯으로 고정합니다.
         // 슬롯 인덱스는 0부터 시작하므로 3번 슬롯은 index 2입니다.
         if (IsTutorialBattle1Map() && slotCount > 2)
@@ -1216,13 +1216,16 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
 
     private static bool IsTutorialBattle1Map()
     {
-        MapRuntimeData mapRuntime = DataManager.Instance?.MapRuntimeStore?.Get();
+        DataManager data = DataManager.Instance;
+        MapRuntimeData mapRuntime = data?.MapRuntimeStore?.Get();
+        BattleRuntimeData battleRuntime = data?.BattleRuntimeStore?.Get();
+        string mapId = mapRuntime?.CurrentMapId?.Trim();
 
-        return mapRuntime != null &&
-               (DataManager.Instance?.TutorialDatabase?.GetForMap(mapRuntime.CurrentMapId).Count ?? 0) == 0 &&
-               string.Equals(
-                   mapRuntime.CurrentMapId?.Trim(),
-                   TutorialBattleEntrySetup.FirstTutorialMapId,
+        // 첫 튜토리얼 전투에서만 AI가 선택한 행동을 타임라인 3번 슬롯에 배치합니다.
+        // 기존에는 튜토리얼 데이터가 없을 때만 true가 되어 실제 Map_26에서 적용되지 않았습니다.
+        return battleRuntime?.IsTutorialBattle == true &&
+               string.Equals(mapId, "Map_26", System.StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(mapId, TutorialBattleEntrySetup.FirstTutorialMapId,
                    System.StringComparison.OrdinalIgnoreCase);
     }
 

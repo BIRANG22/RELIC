@@ -70,6 +70,12 @@ public class BattleRoomLoader : MonoBehaviour
     [SerializeField] private BattleGridEffectController gridEffectController;
 
     [Header("Tutorial")]
+    [Tooltip("배틀 슬롯이 멈춘 뒤 HUD 튜토리얼을 시작하기 위한 안정화 시간(초).")]
+    [SerializeField, Min(0.05f)] private float tutorialTimelineStableDuration = 0.3f;
+    [Tooltip("슬롯 등장 애니메이션이 시작될 기회를 주는 최소 대기 시간(초).")]
+    [SerializeField, Min(0f)] private float tutorialTimelineMinimumWait = 0.35f;
+    [Tooltip("예상치 못한 UI 애니메이션 때문에 튜토리얼이 무한 대기하지 않도록 제한합니다.")]
+    [SerializeField, Min(1f)] private float tutorialTimelineMaximumWait = 6f;
 
     private readonly List<MonsterUnit> spawnedMonsterUnits = new();
     private readonly List<PlayerHUDSlot> playerHudSlots = new();
@@ -160,6 +166,8 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void HandleCharacterCycleInput()
     {
+        if (!TutorialBattleSequence.IsShortcutAllowed(KeyCode.Tab))
+            return;
         if (!Input.GetKeyDown(KeyCode.Tab))
             return;
 
@@ -202,6 +210,8 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void HandleSkillPanelToggleInput()
     {
+        if (TutorialBattleSequence.IsPresentationRunning)
+            return;
         if (!enableSkillPanelToggleInput)
             return;
 
@@ -1384,6 +1394,9 @@ public class BattleRoomLoader : MonoBehaviour
 
     private void SelectPlayerHUD(CharacterRuntimeData runtimeData)
     {
+        if (runtimeData != null &&
+            !TutorialBattleSequence.CanSelectTutorialCharacter(runtimeData.CharacterId))
+            return;
         EnsureBattleCharacterPanel();
         EnsureTimelineController();
         EnsurePlayerSkillReservationController();
@@ -1619,6 +1632,48 @@ public class BattleRoomLoader : MonoBehaviour
         }
     }
 
+    private IEnumerator WaitForInitialTutorialTimelineToSettle()
+    {
+        // 실제 UI 움직임을 감시하므로 애니메이션 시간 설정에 의존하지 않습니다.
+        // 비활성 UI까지 포함하면 이후에 켜질 슬롯의 이동도 놓칠 수 있어 활성 UI만 감시합니다.
+        Transform root = timelineController != null ? timelineController.transform : null;
+        if (root == null)
+            yield break;
+
+        float elapsed = 0f;
+        float stableTime = 0f;
+        float requiredStable = Mathf.Max(0.05f, tutorialTimelineStableDuration);
+        float minimumWait = Mathf.Max(0f, tutorialTimelineMinimumWait);
+        float timeout = Mathf.Max(minimumWait + requiredStable, tutorialTimelineMaximumWait);
+        var previousPositions = new Dictionary<RectTransform, Vector3>();
+
+        while (elapsed < timeout)
+        {
+            yield return null;
+            float delta = Mathf.Min(Time.unscaledDeltaTime, 0.1f);
+            elapsed += delta;
+            bool moved = false;
+            var visibleRects = root.GetComponentsInChildren<RectTransform>(false);
+            var current = new Dictionary<RectTransform, Vector3>(visibleRects.Length);
+            foreach (RectTransform rect in visibleRects)
+            {
+                if (rect == null) continue;
+                Vector3 position = rect.position;
+                current[rect] = position;
+                if (!previousPositions.TryGetValue(rect, out Vector3 previous) ||
+                    (position - previous).sqrMagnitude > 0.01f)
+                    moved = true;
+            }
+            if (current.Count != previousPositions.Count)
+                moved = true;
+            previousPositions = current;
+            stableTime = moved ? 0f : stableTime + delta;
+            if (elapsed >= minimumWait && stableTime >= requiredStable)
+                yield break;
+        }
+        Debug.LogWarning("[BattleRoomLoader] 배틀 슬롯 안정화 대기 시간이 초과되어 HUD 튜토리얼을 계속합니다.", this);
+    }
+
     private void StartInitialMonsterPlanOnce()
     {
         if (initialMonsterPlanStarted || initialMonsterPlanRoutine != null)
@@ -1639,7 +1694,7 @@ public class BattleRoomLoader : MonoBehaviour
             yield return null;
 
         // Entry must visually finish before any initial passive status is applied.
-        while (monsterSpawnDeferred || TutorialBattleSequence.IsPresentationRunning || (deferPartyEntryPlayback && !partyEntryPlaybackRequested) ||
+        while (monsterSpawnDeferred || TutorialBattleSequence.IsBlockingBattleStart || (deferPartyEntryPlayback && !partyEntryPlaybackRequested) ||
                (partyTransitionPresenter != null && partyTransitionPresenter.IsPlaying) ||
                (tutorialPartyTransitionPresenter != null && tutorialPartyTransitionPresenter.IsPlaying))
             yield return null;
@@ -1681,22 +1736,71 @@ public class BattleRoomLoader : MonoBehaviour
         while (partyTransitionPresenter != null && partyTransitionPresenter.IsPlaying)
             yield return null;
 
-        if (turnExecutor != null)
-        {
-            turnExecutor.SetBattleInputReady(true);
-            Debug.Log("[BattleRoomLoader] Battle input ready true after initial monster plan");
-        }
-
         // 초기 몬스터 예약이 끝나고 플레이어 예약 단계가 실제로 시작된 시점에
         // 첫 번째 캐릭터를 기본 선택하여 패널, HUD, 하이라이트를 함께 갱신합니다.
         CharacterRuntimeData initialSelectedRuntime = GetSelectedOrFirstPlayerRuntime();
         if (initialSelectedRuntime != null)
         {
             SelectPlayerHUD(initialSelectedRuntime);
-            OpenSelectedCharacterSkillListWhenInputReady();
         }
 
         SetCharacterWorldHudVisibilitySuppressed(hudRoot, false);
+
+        // 전투 입력 잠금 중 기본 캐릭터를 선택하면 타임라인의 카메라 포커스가 생략됩니다.
+        // 패널 이동 튜토리얼에서도 실제 선택 캐릭터에 카메라를 먼저 맞춥니다.
+        if (TutorialBattleSequence.IsPresentationRunning && initialSelectedRuntime != null)
+        {
+            EnsureTimelineController();
+            timelineController?.RefocusCurrentSelectedCharacterForPanelRaise();
+        }
+
+        // 캐릭터 패널의 실제 예약 위치 이동을 실행하고 완료까지 기다립니다.
+        // 전투 입력은 이 시점에도 잠겨 있으므로 튜토리얼 도중 행동할 수 없습니다.
+        if (TutorialBattleSequence.IsPresentationRunning)
+        {
+            EnsureBattleCharacterPanel();
+            if (battleCharacterPanel != null)
+            {
+                // 전투 시작 인트로가 닫힌 다음 프레임에서 이동을 시작합니다.
+                while (BattleSceneController.IsBattleRoomIntroPlaying || BattleMapIntroText.IsAnyPlayingOrVisible())
+                    yield return null;
+
+                battleCharacterPanel.BeginTutorialReservationPanelMove();
+                while (battleCharacterPanel != null && !battleCharacterPanel.IsAtReservationPosition)
+                    yield return null;
+            }
+            else
+            {
+                Debug.LogWarning("[BattleRoomLoader] BattleCharacterPanel을 찾지 못해 패널 이동 완료를 기다릴 수 없습니다.", this);
+            }
+        }
+
+        // 캐릭터 패널 이동 후 1턴 인트로가 완전히 종료되어야 HUD 가이드를 시작합니다.
+        // 입력을 먼저 열면 가이드가 실행되는 동안 예약 조작이 가능하므로
+        // BattleTurnExecutor가 잠금 상태에서 인트로를 직접 재생하도록 요청합니다.
+        if (TutorialBattleSequence.IsPresentationRunning && turnExecutor != null)
+            yield return turnExecutor.PlayInitialReservationIntroForTutorial();
+
+        // Battle-start timeline and HUD are now visible; resume post-intro tutorial guides.
+        TutorialBattleSequence tutorialSequence = GetComponent<TutorialBattleSequence>();
+        if (tutorialSequence != null && TutorialBattleSequence.IsPresentationRunning)
+        {
+            tutorialSequence.NotifyInitialBattleHudReady();
+            while (TutorialBattleSequence.IsPresentationRunning)
+                yield return null;
+        }
+
+        if (turnExecutor != null)
+        {
+            turnExecutor.SetBattleInputReady(true);
+            // 입력 잠금 중 먼저 선택된 캐릭터는 카메라 포커스가 누락될 수 있습니다.
+            // 일반 전투와 튜토리얼 종료 후 모두 같은 선택 캐릭터로 카메라를 복원합니다.
+            EnsureTimelineController();
+            timelineController?.RefocusCurrentSelectedCharacterWhenInputReady();
+            Debug.Log("[BattleRoomLoader] Battle input ready true after initial monster plan");
+        }
+
+        OpenSelectedCharacterSkillListWhenInputReady();
 
         if (restoringResolvedBattleRoomEntryState)
         {
