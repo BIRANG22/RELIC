@@ -83,7 +83,7 @@ MonoBehaviour:
   sfxList:
   - id: ui.normal.hover
     aliases: []
-    clip: {fileID: 8300000, guid: dcadae76e7c9eab4ba5c5d57acec1a0e, type: 3}
+    clip: {fileID: 8300000, guid: 0ce8dd481d865cb47afde2e711e20bd3, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
@@ -101,7 +101,7 @@ MonoBehaviour:
     randomPitchMax: 1
   - id: ui.title.hover
     aliases: []
-    clip: {fileID: 8300000, guid: dcadae76e7c9eab4ba5c5d57acec1a0e, type: 3}
+    clip: {fileID: 8300000, guid: 0ce8dd481d865cb47afde2e711e20bd3, type: 3}
     volume: 0.5
     pitch: 1
     loop: 0
