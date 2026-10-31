@@ -698,7 +698,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 341829974112702823}
-  localizationKey: ui.battle.name.f50b42ad
+  localizationKey: ui.skillpanel.name.566e71f6
   koreanSource: "\uC2A4\uD0AC\uC774\uB984"
   automaticallyRegistered: 1
 --- !u!1 &3861507626671964081
@@ -941,7 +941,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 2087159735721891661}
-  localizationKey: ui.battle.text_tmp.7929f1e0
+  localizationKey: ui.skillpanel.text_tmp.22dcb44e
   koreanSource: "- \uC120\uD0DD -"
   automaticallyRegistered: 1
 --- !u!1 &4486031893094951944
@@ -1721,7 +1721,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 653330409689886531}
-  localizationKey: ui.monsterskill.typetext.d76003b9
+  localizationKey: ui.skillpanel.detail.1915cfaa
   koreanSource: "\uC2A4\uD0AC\uD6A8\uACFC\n"
   automaticallyRegistered: 1
 --- !u!1 &7276242936680714527
@@ -2025,7 +2025,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 8430355780510288649}
-  localizationKey: ui.battle.text.457f88ae
+  localizationKey: ui.skillpanel.type_text.ba31e2ef
   koreanSource: "\uD0C0\uC785"
   automaticallyRegistered: 1
 --- !u!1 &8576127015387574939

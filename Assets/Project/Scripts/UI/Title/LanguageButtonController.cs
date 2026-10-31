@@ -19,6 +19,11 @@ public class LanguageButtonController : MonoBehaviour
         StartCoroutine(SetLocale("zh-Hans"));
     }
 
+    public void SetChineseTraditional()
+    {
+        StartCoroutine(SetLocale("zh-Hant"));
+    }
+
     public void SetJapanese()
     {
         StartCoroutine(SetLocale("ja"));

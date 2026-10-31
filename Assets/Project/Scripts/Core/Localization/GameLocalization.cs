@@ -20,6 +20,14 @@ public static class GameLocalization
         string field,
         string fallback)
     {
+        // 동일한 게임 내 이동 행동 이름은 공통 번역을 사용합니다.
+        if (string.Equals(field, "name", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(fallback?.Trim(), "이동", StringComparison.Ordinal) &&
+            (string.Equals(category, "MonsterSkill", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(category, "SkillMaster", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(category, "Effect", StringComparison.OrdinalIgnoreCase)))
+            return Get("common.move", fallback);
+
         return Get(BuildDataKey(category, stableId, field), fallback);
     }
 
@@ -74,6 +82,12 @@ public static class GameLocalization
     {
         if (string.IsNullOrWhiteSpace(key))
             return fallback ?? string.Empty;
+
+        // 이전 행동 이름 키를 사용하는 호출도 공통 번역과 동일하게 표시합니다.
+        if (string.Equals(key, "battle.action.move.name", StringComparison.Ordinal) ||
+            string.Equals(key, "battle.action.move", StringComparison.Ordinal) ||
+            string.Equals(key, "battle.move", StringComparison.Ordinal))
+            key = "common.move";
 
         if (locale == null)
             return fallback ?? ResolveMissingTranslation(null);

@@ -198,6 +198,8 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
         if (namedSlogan != null)
         {
             tmpMessageText = namedSlogan;
+            // 동적 확인 문구를 정적 번역 컴포넌트가 덮어쓰지 않도록 보호합니다.
+            LocalizedTMPText.ProtectDynamicOwnership(namedSlogan);
         }
         else if (tmpMessageText == null)
         {
@@ -215,6 +217,9 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
                 break;
             }
         }
+
+        if (tmpMessageText != null)
+            LocalizedTMPText.ProtectDynamicOwnership(tmpMessageText);
 
         Text namedLegacySlogan = FindLegacyTextByObjectName("Slogan");
         if (namedLegacySlogan != null)

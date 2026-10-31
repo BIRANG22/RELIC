@@ -252,7 +252,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 7002000000000034}
-  localizationKey: ui.option.borderlesslabel.d52fad65
+  localizationKey: ui.option.borderlesslabel.a870cd1b
   koreanSource: "\uD14C\uB450\uB9AC\uC5C6\uB294\uD654\uBA74"
   automaticallyRegistered: 1
 --- !u!1 &7002000000000014
@@ -2477,7 +2477,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 772155231540972999}
-  localizationKey: ui.option.fullscreenlabel.bbf100b5
+  localizationKey: ui.option.fullscreen
   koreanSource: "\uC804\uCCB4\uD654\uBA74"
   automaticallyRegistered: 1
 --- !u!1 &2469447237435191150
@@ -4146,6 +4146,7 @@ MonoBehaviour:
   krObject: {fileID: 0}
   enObject: {fileID: 0}
   scObject: {fileID: 0}
+  tcObject: {fileID: 0}
   jpObject: {fileID: 0}
   spObject: {fileID: 0}
   dropdownSortingOrderOffset: 50
@@ -4367,7 +4368,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 3339814765033232218}
-  localizationKey: ui.option.bright.e15a2328
+  localizationKey: ui.option.brightness
   koreanSource: "\uBC1D\uAE30"
   automaticallyRegistered: 1
 --- !u!1 &4480662608780922192
@@ -5277,7 +5278,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 8835761973463104415}
-  localizationKey: ui.option.windowedlabel.6bf30300
+  localizationKey: ui.option.windowedlabel.970c6ae8
   koreanSource: "\uCC3D\uD654\uBA74"
   automaticallyRegistered: 1
 --- !u!1 &5983532984275811007
@@ -5522,7 +5523,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 3121025707234344906}
-  localizationKey: ui.option.master.a6c4e689
+  localizationKey: ui.option.master_volume
   koreanSource: "\uC804\uCCB4\uBCFC\uB968"
   automaticallyRegistered: 1
 --- !u!1 &6115930277039624576
@@ -7155,7 +7156,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 7001000000000000016}
-  localizationKey: ui.option.battlespeedtext.1c466818
+  localizationKey: ui.option.battle_speed
   koreanSource: "\uC804\uD22C \uBC30\uC18D"
   automaticallyRegistered: 1
 --- !u!1 &7005189477797310113

@@ -5,6 +5,7 @@ using Relic.Gameplay.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using UnityEngine.Localization.Components;
 
 /// <summary>
@@ -1078,10 +1079,69 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         return count;
     }
 
+    // 확인창을 여닫는 클릭은 튜토리얼의 다음 단계 입력으로 재사용하지 않습니다.
+    // 마우스 버튼이 실제로 해제된 다음 프레임까지 보호합니다.
+    private static bool suppressAdvanceUntilRelease;
+    private static int suppressAdvanceThroughFrame = -1;
+    private static readonly List<RaycastResult> advancePointerHits = new List<RaycastResult>();
+
+    public static void NotifyModalInteraction()
+    {
+        suppressAdvanceUntilRelease = true;
+        suppressAdvanceThroughFrame = Mathf.Max(suppressAdvanceThroughFrame, Time.frameCount + 1);
+    }
+
     private static bool IsAdvancePressed()
     {
-        return Input.GetMouseButtonDown(0) ||
+        bool pointerHeld = Input.GetMouseButton(0) || Input.touchCount > 0;
+        if (suppressAdvanceUntilRelease)
+        {
+            if (!pointerHeld)
+            {
+                suppressAdvanceUntilRelease = false;
+                suppressAdvanceThroughFrame = Mathf.Max(suppressAdvanceThroughFrame, Time.frameCount + 1);
+            }
+            return false;
+        }
+
+        if (Time.frameCount <= suppressAdvanceThroughFrame)
+            return false;
+
+        // 포커스 오버레이 유무와 무관하게 모달 확인창이 열려 있으면 대사를 진행하지 않습니다.
+        if (UIManager.Instance != null && UIManager.Instance.IsConfirmDialogOpen)
+            return false;
+
+        bool pressed = Input.GetMouseButtonDown(0) ||
             (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began);
+        if (!pressed)
+            return false;
+
+        // Button.onClick은 Update 이후 실행될 수 있습니다. 미리 포인터 아래의 스킵 버튼을
+        // 식별해 같은 클릭으로 튜토리얼 문장이 넘어가는 것을 방지합니다.
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem != null)
+        {
+            Vector2 position = Input.touchCount > 0 ? Input.GetTouch(0).position : (Vector2)Input.mousePosition;
+            var pointerData = new PointerEventData(eventSystem) { position = position };
+            advancePointerHits.Clear();
+            eventSystem.RaycastAll(pointerData, advancePointerHits);
+            foreach (RaycastResult hit in advancePointerHits)
+            {
+                Transform target = hit.gameObject != null ? hit.gameObject.transform : null;
+                while (target != null)
+                {
+                    string targetName = target.name;
+                    if (targetName == "SkipButton" || targetName == "Check(Clone)" ||
+                        targetName == "TutorialSkipButton")
+                    {
+                        NotifyModalInteraction();
+                        return false;
+                    }
+                    target = target.parent;
+                }
+            }
+        }
+        return true;
     }
 
     private static IEnumerator WaitForClick()

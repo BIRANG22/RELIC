@@ -28,19 +28,19 @@ public static class LocalizationEditingLockTool
 
     private const string PrefabRoot = "Assets/Project/PrefabsR";
 
-    [MenuItem("Tools/Localization/Disable Text Localization Editing Lock")]
+    [MenuItem("Tools/Localization/고급 기능/편집 잠금 해제 (텍스트 편집 허용)")]
     public static void DisableFromMenu()
     {
         SetTargetsFromMenu(false);
     }
 
-    [MenuItem("Tools/Localization/Enable Text Localization Editing Lock")]
+    [MenuItem("Tools/Localization/고급 기능/편집 잠금 활성화 (번역 텍스트 보호)")]
     public static void EnableFromMenu()
     {
         SetTargetsFromMenu(true);
     }
 
-    [MenuItem("Tools/Localization/Report Text Localization Editing Lock State")]
+    [MenuItem("Tools/Localization/고급 기능/편집 잠금 상태 확인 (잠금 상태 진단)")]
     public static void ReportStateFromMenu()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())

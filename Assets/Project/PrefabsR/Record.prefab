@@ -2452,7 +2452,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 6039391930876565870}
-  localizationKey: ui.record.text_tmp.41cd5512
+  localizationKey: ui.record.alchemy_agent
   koreanSource: "\uC5F0\uC131\uC81C"
   automaticallyRegistered: 1
 --- !u!1 &3619755650986867603
@@ -2643,7 +2643,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 8435492433293815305}
-  localizationKey: ui.record.text_tmp.0857d871
+  localizationKey: ui.record.effect_textlabel
   koreanSource: "\uD6A8\uACFC"
   automaticallyRegistered: 1
 --- !u!1 &3715668032234124421
@@ -3913,7 +3913,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 6429153325560765274}
-  localizationKey: ui.record.name.2a030ed7
+  localizationKey: ui.record.undiscovered_2a030ed7
   koreanSource: "\uBBF8\uBC1C\uACAC"
   automaticallyRegistered: 1
 --- !u!1 &5676587274551887251

@@ -185,7 +185,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             return;
 
         popup.UsePreferredCanvas(preferredCanvas);
-        popup.ShowCustomTextInternal(target, "생명력 +" + value, PopupType.HealthRecovery, fontSize);
+        popup.ShowCustomTextInternal(target, GameLocalization.Get("common.hp", "생명력") + " +" + value, PopupType.HealthRecovery, fontSize);
     }
 
     // Rest room: use the character prefab origin rather than collider/renderer bounds.
@@ -219,7 +219,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         // Do not follow collider bounds while animating; the position is fixed
         // at the character prefab's authored origin plus the configured offset.
         popup.ShowCustomTextPopup(null, Vector2.zero, canvasPosition,
-            "생명력 +" + value, PopupType.HealthRecovery, fontSize);
+            GameLocalization.Get("common.hp", "생명력") + " +" + value, PopupType.HealthRecovery, fontSize);
     }
 
     public static void ShowEventHealthLoss(Transform target, int value, Canvas preferredCanvas, float fontSize)
@@ -232,7 +232,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             return;
 
         popup.UsePreferredCanvas(preferredCanvas);
-        popup.ShowCustomTextInternal(target, "생명력 -" + value, PopupType.Damage, fontSize);
+        popup.ShowCustomTextInternal(target, GameLocalization.Get("common.hp", "생명력") + " -" + value, PopupType.Damage, fontSize);
     }
 
     public static void ShowEventManaRegenGain(Transform target, int value, Canvas preferredCanvas, float fontSize)
@@ -245,7 +245,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             return;
 
         popup.UsePreferredCanvas(preferredCanvas);
-        popup.ShowCustomTextInternal(target, "마나 재생량 +" + value, PopupType.CostRecovery, fontSize);
+        popup.ShowCustomTextInternal(target, GameLocalization.Get("common.recovery", "마나재생량") + " +" + value, PopupType.CostRecovery, fontSize);
     }
 
     public static void ShowEventMaxHealthGain(Transform target, int value, Canvas preferredCanvas, float fontSize)
@@ -258,7 +258,15 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             return;
 
         popup.UsePreferredCanvas(preferredCanvas);
-        popup.ShowCustomTextInternal(target, "\uCD5C\uB300 \uC0DD\uBA85\uB825 +" + value, PopupType.HealthRecovery, fontSize);
+        popup.ShowCustomTextInternal(target, GameLocalization.Get("data.effect.e_max_hp.name", "최대 HP") + " +" + value, PopupType.HealthRecovery, fontSize);
+    }
+
+    private static string GetLocalizedMaxManaLabel()
+    {
+        string mana = GameLocalization.Get("common.mana", "마나");
+        string localeCode = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code;
+        return string.Equals(localeCode, "ko", System.StringComparison.OrdinalIgnoreCase)
+            ? "최대 " + mana : "Max " + mana;
     }
 
     public static void ShowEventMaxManaGain(Transform target, int value, Canvas preferredCanvas, float fontSize)
@@ -271,7 +279,7 @@ public class BattleDamageTextPopupUI : MonoBehaviour
             return;
 
         popup.UsePreferredCanvas(preferredCanvas);
-        popup.ShowCustomTextInternal(target, "\uCD5C\uB300 \uB9C8\uB098 +" + value, PopupType.CostRecovery, fontSize);
+        popup.ShowCustomTextInternal(target, GetLocalizedMaxManaLabel() + " +" + value, PopupType.CostRecovery, fontSize);
     }
 
     public static void ShowUniqueResource(Transform target, string resourceName, int value)

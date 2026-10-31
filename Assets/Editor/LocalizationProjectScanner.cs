@@ -15,27 +15,46 @@ public static class LocalizationProjectScanner
         return BuildSuggestedKey(assetPath, objectName, string.Empty);
     }
 
+    /// <summary>
+    /// 신규 정적 UI 키만 짧게 생성합니다. 기존에 저장된 키는 Manager/Repair에서 우선 재사용합니다.
+    /// 같은 이름의 여러 UI가 겹치지 않도록 전체 위치를 이용한 짧은 식별자를 덧붙입니다.
+    /// 기존 String Table의 Key/Id는 여기서 변경하지 않습니다.
+    /// </summary>
     public static string BuildSuggestedKey(string assetPath, string objectName, string koreanSource)
     {
         string path = (assetPath ?? string.Empty).Replace('\\', '/');
-        const string prefix = "Assets/Project/PrefabsR/";
-        if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-            path = path.Substring(prefix.Length);
-        else if (path.StartsWith("Assets/Project/Scenes/", StringComparison.OrdinalIgnoreCase))
-            path = path.Substring("Assets/Project/Scenes/".Length);
+        string hierarchy = (objectName ?? string.Empty).Replace('\\', '/');
+        string[] pathParts = path.Split('/');
+        string[] hierarchyParts = hierarchy.Split('/');
 
-        path = Path.ChangeExtension(path, null) ?? string.Empty;
-        string[] parts = (path + "/" + (objectName ?? string.Empty)).Split('/');
-        var normalized = new List<string>();
-        foreach (string part in parts)
+        string screen = string.Empty;
+        foreach (string part in hierarchyParts)
         {
-            string value = NonKeyCharacters.Replace(part.ToLowerInvariant(), "_").Trim('_');
-            if (!string.IsNullOrWhiteSpace(value) && value != "ydm")
-                normalized.Add(value);
+            string normalized = NormalizeKeyPart(part);
+            if (normalized.EndsWith("panel", StringComparison.Ordinal) ||
+                normalized.EndsWith("canvas", StringComparison.Ordinal) ||
+                normalized.EndsWith("window", StringComparison.Ordinal))
+                screen = normalized;
         }
+        if (string.IsNullOrEmpty(screen))
+        {
+            string assetName = Path.GetFileNameWithoutExtension(path);
+            screen = NormalizeKeyPart(assetName);
+        }
+        if (string.IsNullOrEmpty(screen))
+            screen = "general";
 
-        string keyPrefix = normalized.Count == 0 ? "ui.unknown.text" : "ui." + string.Join(".", normalized);
-        return string.IsNullOrEmpty(koreanSource) ? keyPrefix : keyPrefix + "." + BuildStableSuffix(koreanSource);
+        string element = hierarchyParts.Length == 0 ? "text" : NormalizeKeyPart(hierarchyParts[hierarchyParts.Length - 1]);
+        if (string.IsNullOrEmpty(element))
+            element = "text";
+        // Path + hierarchy + source로 만들어 동일 이름 UI의 키 충돌을 방지합니다.
+        string identity = path + "|" + hierarchy + "|" + (koreanSource ?? string.Empty);
+        return "ui." + screen + "." + element + "." + BuildStableSuffix(identity);
+    }
+
+    private static string NormalizeKeyPart(string value)
+    {
+        return NonKeyCharacters.Replace((value ?? string.Empty).ToLowerInvariant(), "_").Trim('_');
     }
 
     public static bool IsLocalizableKoreanText(string value)
@@ -102,6 +121,23 @@ public static class LocalizationProjectScanner
             .Where(IsLocalizableKoreanText)
             .Distinct(StringComparer.Ordinal)
             .ToArray();
+    }
+
+    /// <summary>
+    /// UI 표시 함수의 첫 인자로 전달되는 한글 리터럴을 별도로 수집합니다.
+    /// 출력 경로가 확인된 문자열이지만, 런타임 번역 호출로 교체하기 전에는 검토 대상입니다.
+    /// </summary>
+    public static IReadOnlyList<string> FindWarningUiLiterals(string source)
+    {
+        string code = RemoveComments(source ?? string.Empty);
+        const string literal = "\"(?<value>(?:\\\\.|[^\"\\\\])*)\"";
+        var calls = new Regex(
+            @"\b(?:BattleWarningUI|SettingWarningUI|WarningUI|WarningPanel|NotificationUI|NotificationPanel|ToastUI|ToastPanel)\s*\.\s*(?:ShowMessage|ShowWarning|ShowNotification|ShowToast|Show)\s*\(\s*\$?" + literal +
+            @"|\b(?:ShowBattleWarning|ShowWarning|ShowWarningMessage|ShowNotification|ShowToast|ShowErrorMessage)\s*\(\s*\$?" + literal,
+            RegexOptions.Multiline);
+        return calls.Matches(code).Cast<Match>()
+            .Select(match => match.Groups["value"].Success ? DecodeCSharpLiteral(match.Groups["value"].Value) : string.Empty)
+            .Where(IsLocalizableKoreanText).Distinct(StringComparer.Ordinal).ToArray();
     }
 
     /// <summary>인스펙터에 직렬화되어 플레이어에게 표시되는 한국어 기본값을 찾습니다.</summary>
@@ -192,8 +228,6 @@ public static class LocalizationProjectScanner
             return false;
 
         string compactHeader = header.Replace(" ", string.Empty).Replace("\t", string.Empty);
-        // Event 시트의 표시용 첫 번째 헤더는 "이벤트 본문", 스키마 필드는 Detail입니다.
-        // 정적 UI 바인딩이 아닌 게임데이터 로컬라이징으로 수집합니다.
         if (string.Equals(sheetName, "Event", StringComparison.OrdinalIgnoreCase) &&
             (string.Equals(compactHeader, "이벤트본문", StringComparison.Ordinal) ||
              string.Equals(compactHeader, "Detail", StringComparison.OrdinalIgnoreCase)))
@@ -245,6 +279,28 @@ public static class LocalizationProjectScanner
             GetDataFieldName(sheetName, header));
     }
 
+    /// <summary>게임데이터에서 실제로 사용하는 공통 번역 키를 반환합니다.</summary>
+    public static string GetSharedGameDataKey(string sheetName, string stableId, string header, string koreanSource)
+    {
+        if (string.Equals(sheetName, "MonsterSkill", StringComparison.OrdinalIgnoreCase))
+        {
+            string fieldKey = BuildGameDataKey(sheetName, stableId, header);
+            if (fieldKey.EndsWith(".name", StringComparison.Ordinal))
+                return MonsterSkillSharedLocalizationKeys.NameKey(stableId, koreanSource);
+            if (fieldKey.EndsWith(".type", StringComparison.Ordinal))
+                return MonsterSkillSharedLocalizationKeys.TypeKey(koreanSource);
+            if (fieldKey.EndsWith(".effect_description", StringComparison.Ordinal))
+                return MonsterSkillSharedLocalizationKeys.DescriptionKey(stableId, koreanSource);
+        }
+        // 실제 의미가 동일한 '이동' 스킬/효과 이름만 공통화합니다.
+        if ((string.Equals(sheetName, "Effect", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(sheetName, "SkillMaster", StringComparison.OrdinalIgnoreCase)) &&
+            string.Equals(koreanSource?.Trim(), "이동", StringComparison.Ordinal) &&
+            BuildGameDataKey(sheetName, stableId, header).EndsWith(".name", StringComparison.Ordinal))
+            return "common.move";
+        return null;
+    }
+
     public static string BuildUniqueGameDataKey(string sheetName, string stableId, string header, string koreanSource)
     {
         return BuildGameDataKey(sheetName, stableId, header) + "." + BuildStableSuffix(koreanSource);
@@ -292,7 +348,6 @@ public static class LocalizationProjectScanner
             (string.Equals(compactHeader, "이벤트본문", StringComparison.Ordinal) ||
              string.Equals(compactHeader, "Detail", StringComparison.OrdinalIgnoreCase)))
             return "detail";
-
         if (string.Equals(sheetName, "SkillMaster", StringComparison.OrdinalIgnoreCase) &&
             (string.Equals(compactHeader, "효과", StringComparison.Ordinal) ||
              string.Equals(compactHeader, "Details", StringComparison.OrdinalIgnoreCase)))

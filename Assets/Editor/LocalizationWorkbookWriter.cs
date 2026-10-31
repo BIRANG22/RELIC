@@ -9,6 +9,7 @@ using System.Xml.Linq;
 
 public static class LocalizationWorkbookWriter
 {
+    public const string KoreanSourceHeader = "Korean Source";
     private static readonly XNamespace Spreadsheet = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
     private static readonly XNamespace OfficeRelationship = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
     private static readonly XNamespace PackageRelationship = "http://schemas.openxmlformats.org/package/2006/relationships";
@@ -19,6 +20,7 @@ public static class LocalizationWorkbookWriter
         IEnumerable<LocalizationWorkbookEntry> additions,
         IEnumerable<string> removals)
     {
+        EnsureKoreanSourceColumn(workbookPath);
         string transactionPath = workbookPath + $".sync-{Guid.NewGuid():N}.tmp";
         string transactionBackupPath = transactionPath + ".localization-manager.backup";
         string backupPath = workbookPath + ".localization-manager.backup";
@@ -47,16 +49,130 @@ public static class LocalizationWorkbookWriter
         }
     }
 
+    /// <summary>
+    /// Keep the workbook columns in the editor-friendly order:
+    /// Key, Id, Korean Source, Korean(ko), English(en), zh-Hans, zh-Hant, Japanese(ja), Spanish(es).
+    /// Existing cell values, translations and SharedTable IDs are preserved.
+    /// </summary>
+    public static void EnsureKoreanSourceColumn(string workbookPath)
+    {
+        if (!File.Exists(workbookPath))
+            return;
+
+        var rows = LocalizationXlsxReader.ReadSheet(workbookPath, LocalizationExcelImporter.WorksheetName);
+        LocalizationXlsxReader.ValidateHeaders(rows);
+        var originalHeaders = rows[0];
+        int keyIndex = FindHeader(originalHeaders, "Key");
+        int idIndex = FindHeader(originalHeaders, "Id");
+        int koreanIndex = FindHeader(originalHeaders, "Korean(ko)");
+        int sourceIndex = FindHeader(originalHeaders, KoreanSourceHeader);
+        if (keyIndex < 0 || idIndex < 0 || koreanIndex < 0)
+            throw new InvalidDataException("Localization.xlsx must contain Key, Id and Korean(ko).");
+
+        // No rewrite when the workbook already follows the desired schema.
+        if (keyIndex == 0 && idIndex == 1 && sourceIndex == 2 && koreanIndex == 3)
+            return;
+
+        string backupPath = workbookPath + ".before-korean-source.backup.xlsx";
+        if (!File.Exists(backupPath))
+            File.Copy(workbookPath, backupPath);
+
+        string tempPath = workbookPath + ".korean-source-" + Guid.NewGuid().ToString("N") + ".tmp";
+        File.Copy(workbookPath, tempPath, true);
+        try
+        {
+            using (var archive = ZipFile.Open(tempPath, ZipArchiveMode.Update))
+            {
+                ZipArchiveEntry entry = FindTextSheet(archive);
+                string entryName = entry.FullName;
+                XDocument document;
+                using (Stream input = entry.Open())
+                    document = XDocument.Load(input);
+
+                // Preserve the existing order of translation languages; move only metadata.
+                var targetOrder = new List<int> { keyIndex, idIndex, sourceIndex };
+                for (int i = 0; i < originalHeaders.Count; i++)
+                    if (i != keyIndex && i != idIndex && i != sourceIndex)
+                        targetOrder.Add(i);
+
+                int rowOffset = 0;
+                foreach (XElement row in document.Descendants(Spreadsheet + "row"))
+                {
+                    int excelRow = (int?)row.Attribute("r") ?? (rowOffset + 1);
+                    var existing = row.Elements(Spreadsheet + "c").ToDictionary(
+                        cell => ParseColumnIndex((string)cell.Attribute("r")), cell => cell);
+                    // When upgrading old files, initialize Source from the edited Korean column.
+                    if (sourceIndex < 0)
+                    {
+                        string value = rowOffset == 0 ? KoreanSourceHeader :
+                            rowOffset < rows.Count ? Value(rows[rowOffset], koreanIndex) : string.Empty;
+                        if (!string.IsNullOrEmpty(value))
+                            existing[originalHeaders.Count] = InlineCell(originalHeaders.Count, excelRow, value);
+                    }
+
+                    // Source must be the third column, regardless of its previous position.
+                    var actualOrder = targetOrder.Select(i => i < 0 ? originalHeaders.Count : i).ToArray();
+                    foreach (XElement cell in row.Elements(Spreadsheet + "c").ToArray())
+                        cell.Remove();
+                    for (int newIndex = 0; newIndex < actualOrder.Length; newIndex++)
+                    {
+                        if (!existing.TryGetValue(actualOrder[newIndex], out XElement cell))
+                            continue;
+                        cell.SetAttributeValue("r", ColumnName(newIndex) + excelRow);
+                        row.Add(cell);
+                    }
+                    rowOffset++;
+                }
+
+                XElement dimension = document.Root?.Element(Spreadsheet + "dimension");
+                if (dimension != null)
+                {
+                    int lastRow = document.Descendants(Spreadsheet + "row")
+                        .Select(row => (int?)row.Attribute("r") ?? 0).DefaultIfEmpty(1).Max();
+                    dimension.SetAttributeValue("ref", "A1:" + ColumnName(targetOrder.Count - 1) + lastRow);
+                }
+
+                entry.Delete();
+                ZipArchiveEntry replacement = archive.CreateEntry(entryName, CompressionLevel.Optimal);
+                using (Stream output = replacement.Open())
+                    document.Save(output);
+            }
+
+            var verified = LocalizationXlsxReader.ReadSheet(tempPath, LocalizationExcelImporter.WorksheetName);
+            if (verified.Count != rows.Count || FindHeader(verified[0], KoreanSourceHeader) != 2 ||
+                FindHeader(verified[0], "Korean(ko)") != 3)
+                throw new InvalidDataException("Localization worksheet column order verification failed.");
+            File.Copy(tempPath, workbookPath, true);
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
+
+    private static int ParseColumnIndex(string cellReference)
+    {
+        int result = 0;
+        foreach (char character in cellReference ?? string.Empty)
+        {
+            if (character < 'A' || character > 'Z') break;
+            result = result * 26 + (character - 'A' + 1);
+        }
+        return result - 1;
+    }
+
     public static int MergeNewEntries(string workbookPath, IEnumerable<LocalizationWorkbookEntry> entries)
     {
         if (entries == null)
             return 0;
 
+        EnsureKoreanSourceColumn(workbookPath);
         var rows = LocalizationXlsxReader.ReadSheet(workbookPath, LocalizationExcelImporter.WorksheetName);
         LocalizationXlsxReader.ValidateHeaders(rows);
         IReadOnlyList<string> headers = rows[0];
         int keyIndex = FindHeader(headers, "Key");
         int koreanIndex = FindHeader(headers, "Korean(ko)");
+        int sourceIndex = FindHeader(headers, KoreanSourceHeader);
         var existingKeys = new HashSet<string>(rows.Skip(1).Select(row => Value(row, keyIndex)), StringComparer.Ordinal);
         List<LocalizationWorkbookEntry> additions = entries
             .Where(entry => entry != null && !string.IsNullOrWhiteSpace(entry.Key) && !existingKeys.Contains(entry.Key))
@@ -91,7 +207,8 @@ public static class LocalizationWorkbookWriter
             for (int column = 0; column < headers.Count; column++)
             {
                 string header = headers[column] ?? string.Empty;
-                string value = column == keyIndex ? addition.Key : column == koreanIndex ? addition.Korean : string.Empty;
+                string value = column == keyIndex ? addition.Key :
+                    (column == koreanIndex || column == sourceIndex) ? addition.Korean : string.Empty;
                 if (!string.IsNullOrEmpty(value))
                     row.Add(InlineCell(column, rowNumber, value));
             }
@@ -113,6 +230,7 @@ public static class LocalizationWorkbookWriter
         if (entries == null)
             return 0;
 
+        EnsureKoreanSourceColumn(workbookPath);
         LocalizationWorkbookEntry[] sourceEntries = entries.Where(entry => entry != null).ToArray();
         foreach (LocalizationWorkbookEntry entry in sourceEntries)
         {
@@ -173,8 +291,8 @@ public static class LocalizationWorkbookWriter
         IReadOnlyList<string> headers = rows[0];
         int keyIndex = FindHeader(headers, "Key");
         int koreanIndex = FindHeader(headers, "Korean(ko)");
-        int idIndex = FindHeader(headers, "Id");
-        if (keyIndex < 0 || koreanIndex < 0)
+        int sourceIndex = FindHeader(headers, KoreanSourceHeader);
+        if (keyIndex < 0 || sourceIndex < 0)
             return rows;
 
         var sourcesByKey = (entries ?? Array.Empty<LocalizationWorkbookEntry>())
@@ -186,19 +304,14 @@ public static class LocalizationWorkbookWriter
         {
             var row = sourceRow.ToList();
             if (sourcesByKey.TryGetValue(Value(row, keyIndex), out string korean) &&
-                !string.Equals(Value(row, koreanIndex), korean, StringComparison.Ordinal))
+                !string.Equals(Value(row, sourceIndex), korean, StringComparison.Ordinal))
             {
                 while (row.Count < headers.Count)
                     row.Add(string.Empty);
-
-                row[koreanIndex] = korean;
-                for (int column = 0; column < headers.Count; column++)
-                {
-                    if (column != keyIndex && column != idIndex && column != koreanIndex)
-                        row[column] = string.Empty;
-                }
+                // The collected source is updated, but the player's Korean localization
+                // and all translated languages are kept exactly as edited.
+                row[sourceIndex] = korean;
             }
-
             result.Add(row);
         }
 
