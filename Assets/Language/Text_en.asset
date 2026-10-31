@@ -7292,6 +7292,194 @@ MonoBehaviour:
     m_Localized: 'Not enough {0}. Required: {1} / Available: {2}'
     m_Metadata:
       m_Items: []
+  - m_Id: 29391140226834432
+    m_Localized: Faint traces of memories linger in the light spilling through the
+      rift.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777472
+    m_Localized: The light slowly fades, and the rift in the sky falls silent again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777473
+    m_Localized: Looking for something? Pick anything that catches your eye.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777474
+    m_Localized: Come back if you need anything else.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777475
+    m_Localized: Stop by again sometime.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777476
+    m_Localized: Well, I will not force you to buy anything.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777477
+    m_Localized: This is no place to linger. Let us know if you need our help before
+      you leave.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777478
+    m_Localized: I hope this helps, even a little.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777479
+    m_Localized: We have cleansed a little of the corruption from you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777480
+    m_Localized: May blessings rest upon your lives.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777481
+    m_Localized: Traces of an ancient ritual remain. Offering a sacrifice might restart
+      it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777482
+    m_Localized: The faintly glowing traces gradually disappear.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777483
+    m_Localized: The surging energy slowly settles.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777484
+    m_Localized: You leave without touching anything.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777485
+    m_Localized: An abandoned wagon sits by the road. There may still be something
+      useful inside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777486
+    m_Localized: Nothing else of value seems to remain.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777487
+    m_Localized: There is nothing useful left inside the wagon.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777488
+    m_Localized: There is nothing left worth taking from the wagon.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777489
+    m_Localized: You find nothing useful.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777490
+    m_Localized: You notice some abandoned crates. Something useful may remain inside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777491
+    m_Localized: There is still more to search. You could try again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777492
+    m_Localized: You might find something in the remaining crates.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777493
+    m_Localized: There is nothing left worth taking.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777494
+    m_Localized: A sudden explosion leaves only shattered debris behind.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777495
+    m_Localized: You pass by without touching the crates.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777496
+    m_Localized: You leave the remaining crates untouched and move on.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777497
+    m_Localized: A massive mineral vein emits a faint glow.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777498
+    m_Localized: Light continues to seep from deep within the vein.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777499
+    m_Localized: Cracks spread across the mineral vein.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777500
+    m_Localized: The mineral vein loses its glow and falls silent.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140268777501
+    m_Localized: The mineral vein crumbles in an instant and vanishes without a trace.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971776
+    m_Localized: You leave without disturbing the mineral vein.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971777
+    m_Localized: Strange engravings mark an ancient stone monument.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971778
+    m_Localized: The engravings shine, sending an unknown power through you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971779
+    m_Localized: The glow of the engravings fades.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971780
+    m_Localized: A gentle light flows from a small fountain filled with clear water.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971781
+    m_Localized: The ripples gently subside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971782
+    m_Localized: The surrounding light slowly fades away.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971783
+    m_Localized: A clear light spreads outward, then everything becomes still.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971784
+    m_Localized: A mysterious being proposes a strange bargain.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971785
+    m_Localized: The being gives a faint smile, seemingly pleased with the payment.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971786
+    m_Localized: The being looks intrigued, as if impressed by your luck.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971787
+    m_Localized: The being lets out a soft, mocking laugh, as though this was expected.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971788
+    m_Localized: The being gazes at the corruption and smiles with satisfaction.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971789
+    m_Localized: An explorer is resting along the road to the outpost.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29391140272971790
+    m_Localized: After a brief rest, the party regains its strength.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

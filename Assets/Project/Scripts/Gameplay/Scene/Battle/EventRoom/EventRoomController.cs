@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
@@ -300,6 +302,10 @@ public class EventRoomController : MonoBehaviour
 
     private void OnEnable()
     {
+        LocalizationSettings.SelectedLocaleChanged -= OnEventLocaleChanged;
+        LocalizationSettings.SelectedLocaleChanged += OnEventLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnEventLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady += OnEventLocaleChanged;
         EnsureReferences();
         ApplyBackgroundSorting();
         BindNextButton();
@@ -363,6 +369,8 @@ public class EventRoomController : MonoBehaviour
 
     private void OnDisable()
     {
+        LocalizationSettings.SelectedLocaleChanged -= OnEventLocaleChanged;
+        LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnEventLocaleChanged;
         if (coinResultVisualRoutine != null)
         {
             StopCoroutine(coinResultVisualRoutine);
@@ -1032,37 +1040,41 @@ public class EventRoomController : MonoBehaviour
         return normalized == "Event_05_C" || normalized == "Event_05_E";
     }
 
+    private int eventTitleLocaleVersion;
+
+    private void OnEventLocaleChanged(Locale locale)
+    {
+        if (!isActiveAndEnabled || !isDataEventActive || currentEventDefinition == null)
+            return;
+
+        // 이벤트 문장은 정적 UI 키가 아니라 현재 EventId의 Detail 데이터로 갱신합니다.
+        // 타이핑 중에는 현재 표시된 글자 수를 유지해 연출을 중단하지 않습니다.
+        if (eventNameText != null)
+            eventNameText.text = GameDataLocalization.EventName(currentEventDefinition);
+        if (eventTitleText != null)
+        {
+            // 언어마다 글자 수와 TMP 문자 구성이 다르므로 메시를 갱신한 뒤 표시 범위를 보정합니다.
+            int visibleCharacters = eventTitleText.maxVisibleCharacters;
+            eventTitleLocaleVersion++;
+            eventTitleText.text = ResolveEventTitle(currentEventDefinition);
+            eventTitleText.ForceMeshUpdate(true, true);
+            eventTitleText.maxVisibleCharacters = visibleCharacters == int.MaxValue
+                ? int.MaxValue
+                : Mathf.Clamp(visibleCharacters, 0, eventTitleText.textInfo.characterCount);
+        }
+    }
+
     private static string ResolveEventTitle(EventDefinition definition)
     {
         if (definition == null)
             return string.Empty;
 
-        string fallback = !string.IsNullOrWhiteSpace(definition.Detail)
+        // ChoiceName/ChoiceDesc와 동일하게 EventId + 데이터 필드명으로 조회합니다.
+        // Detail은 모든 이벤트 및 후속 이벤트에서 동일한 규칙을 적용합니다.
+        string sourceDetail = !string.IsNullOrWhiteSpace(definition.Detail)
             ? definition.Detail
             : definition.Title ?? string.Empty;
-
-        // Event_09 is a shared fountain event. Its title is the scene description,
-        // never a choice reward description such as a maximum HP/MP increase.
-        // The event Detail in GameData is authoritative for this event.
-        if (EventIdUtility.Normalize(definition.EventId) == "Event_09" &&
-            !string.IsNullOrWhiteSpace(definition.Detail))
-            return definition.Detail;
-
-        string localized = GameDataLocalization.EventTitle(definition, fallback);
-        // Some localization tables resolve the event title to a choice description.
-        // Never display a choice's description in the event body field.
-        if (!string.IsNullOrWhiteSpace(localized) && definition.Choices != null)
-        {
-            foreach (EventData choice in definition.Choices)
-            {
-                if (choice == null) continue;
-                string choiceDescription = GameDataLocalization.EventChoiceDescription(choice);
-                if (string.Equals(localized.Trim(), choiceDescription?.Trim(), System.StringComparison.Ordinal) ||
-                    string.Equals(localized.Trim(), choice.ChoiceDesc?.Trim(), System.StringComparison.Ordinal))
-                    return fallback;
-            }
-        }
-        return string.IsNullOrWhiteSpace(localized) ? fallback : localized;
+        return GameLocalization.GetData("event", definition.EventId, "detail", sourceDetail);
     }
 
     private void BindChoiceSlots(IReadOnlyList<EventData> choices)
@@ -6177,6 +6189,13 @@ public class EventRoomController : MonoBehaviour
         if (target == null)
             return;
 
+        // Presenter-owned, data-driven text must not be rebound by the runtime
+        // TMP auto-localizer when its visible string changes (including during typing).
+        // LocalizationIgnore blocks static binding; this marker also blocks
+        // automatic DynamicLocalizedTMPText attachment.
+        if (target.GetComponent<LocalizationAutoBindingIgnore>() == null)
+            target.gameObject.AddComponent<LocalizationAutoBindingIgnore>();
+
         LocalizedTMPText.ProtectDynamicOwnership(target);
         DynamicLocalizedTMPText dynamicWriter = target.GetComponent<DynamicLocalizedTMPText>();
         if (dynamicWriter != null)
@@ -6575,11 +6594,13 @@ public class EventRoomController : MonoBehaviour
             eventTitleText.gameObject.SetActive(true);
             if (eventTitleCanvasGroup != null) eventTitleCanvasGroup.alpha = 1f;
             eventTitleText.ForceMeshUpdate();
-            int characterCount = eventTitleText.textInfo.characterCount;
             eventTitleText.maxVisibleCharacters = 0;
             if (chainedTitlePause > 0f) yield return new WaitForSecondsRealtime(chainedTitlePause);
-            for (int i = 1; i <= characterCount; i++)
+            // 언어가 변경되더라도 현재 문장 길이를 기준으로 타이핑을 계속합니다.
+            for (int i = 1; ; i++)
             {
+                eventTitleText.ForceMeshUpdate(true, true);
+                if (i > eventTitleText.textInfo.characterCount) break;
                 eventTitleText.maxVisibleCharacters = i;
                 yield return new WaitForSecondsRealtime(Mathf.Max(0.001f, eventTitleCharacterInterval));
             }
@@ -6596,11 +6617,13 @@ public class EventRoomController : MonoBehaviour
         {
             eventTitleText.gameObject.SetActive(true);
             eventTitleText.ForceMeshUpdate();
-            int characterCount = eventTitleText.textInfo.characterCount;
             eventTitleText.maxVisibleCharacters = 0;
             float interval = Mathf.Max(0.001f, eventTitleCharacterInterval);
-            for (int i = 1; i <= characterCount; i++)
+            // 타이핑 중 언어 전환 시에도 변경된 텍스트의 글자 수를 사용합니다.
+            for (int i = 1; ; i++)
             {
+                eventTitleText.ForceMeshUpdate(true, true);
+                if (i > eventTitleText.textInfo.characterCount) break;
                 eventTitleText.maxVisibleCharacters = i;
                 yield return new WaitForSecondsRealtime(interval);
             }

@@ -192,6 +192,13 @@ public static class LocalizationProjectScanner
             return false;
 
         string compactHeader = header.Replace(" ", string.Empty).Replace("\t", string.Empty);
+        // Event 시트의 표시용 첫 번째 헤더는 "이벤트 본문", 스키마 필드는 Detail입니다.
+        // 정적 UI 바인딩이 아닌 게임데이터 로컬라이징으로 수집합니다.
+        if (string.Equals(sheetName, "Event", StringComparison.OrdinalIgnoreCase) &&
+            (string.Equals(compactHeader, "이벤트본문", StringComparison.Ordinal) ||
+             string.Equals(compactHeader, "Detail", StringComparison.OrdinalIgnoreCase)))
+            return true;
+
         if (string.Equals(sheetName, "SkillMaster", StringComparison.OrdinalIgnoreCase) &&
             (string.Equals(compactHeader, "효과", StringComparison.Ordinal) ||
              string.Equals(compactHeader, "Details", StringComparison.OrdinalIgnoreCase)))
@@ -281,6 +288,11 @@ public static class LocalizationProjectScanner
             return "text";
 
         string compactHeader = header.Replace(" ", string.Empty).Replace("\t", string.Empty);
+        if (string.Equals(sheetName, "Event", StringComparison.OrdinalIgnoreCase) &&
+            (string.Equals(compactHeader, "이벤트본문", StringComparison.Ordinal) ||
+             string.Equals(compactHeader, "Detail", StringComparison.OrdinalIgnoreCase)))
+            return "detail";
+
         if (string.Equals(sheetName, "SkillMaster", StringComparison.OrdinalIgnoreCase) &&
             (string.Equals(compactHeader, "효과", StringComparison.Ordinal) ||
              string.Equals(compactHeader, "Details", StringComparison.OrdinalIgnoreCase)))
