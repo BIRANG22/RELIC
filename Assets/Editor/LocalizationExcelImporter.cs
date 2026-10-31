@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Localization;
 using UnityEditor.Localization.Plugins.CSV;
@@ -53,9 +55,15 @@ public static class LocalizationExcelImporter
         if (collection == null)
             throw new InvalidOperationException($"String Table Collection '{TableCollectionName}' was not found.");
 
+        LocalizationWorkbookWriter.EnsureKoreanSourceColumn(WorkbookPath);
         var rows = LocalizationXlsxReader.ReadSheet(WorkbookPath, WorksheetName);
         LocalizationXlsxReader.ValidateHeaders(rows);
-        string csv = LocalizationXlsxReader.ToCsv(rows);
+        // Korean Source is source-control metadata, not a Unity localization locale.
+        int sourceIndex = rows[0].ToList().FindIndex(header =>
+            string.Equals(header, LocalizationWorkbookWriter.KoreanSourceHeader, StringComparison.Ordinal));
+        IReadOnlyList<IReadOnlyList<string>> importRows = sourceIndex < 0 ? rows :
+            rows.Select(row => (IReadOnlyList<string>)row.Where((_, index) => index != sourceIndex).ToArray()).ToArray();
+        string csv = LocalizationXlsxReader.ToCsv(importRows);
 
         AssetDatabase.StartAssetEditing();
         try

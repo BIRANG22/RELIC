@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 
 public static class CharacterInfoLocalizationDiagnostics
 {
-    [MenuItem("Tools/Localization/Diagnose Character InfoArea")]
+    [MenuItem("Tools/Localization/고급 기능/캐릭터 정보 영역 진단 (누락된 바인딩 확인)")]
     public static void Diagnose()
     {
         SceneSetup[] original = EditorSceneManager.GetSceneManagerSetup();
@@ -35,9 +35,9 @@ public static class CharacterInfoLocalizationDiagnostics
     private static System.Collections.Generic.IEnumerable<string> ReferenceFields(MonoBehaviour component, TMP_Text text)
     {
         for (System.Type type = component.GetType(); type != null; type = type.BaseType)
-        foreach (FieldInfo field in type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly))
-            if (ReferenceEquals(field.GetValue(component), text))
-                yield return field.Name;
+            foreach (FieldInfo field in type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly))
+                if (ReferenceEquals(field.GetValue(component), text))
+                    yield return field.Name;
     }
     private static string Path(Transform value) => value.parent == null ? value.name : Path(value.parent) + "/" + value.name;
 }

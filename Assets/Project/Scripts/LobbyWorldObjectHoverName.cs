@@ -446,10 +446,10 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
             HoverNameType.Resonance => "lobby.world_object.stela",
             HoverNameType.Npc => "lobby.world_object.researcher_elric",
             HoverNameType.Storage => "lobby.world_object.storage",
-            HoverNameType.Hilt => "lobby.character.hilt",
-            HoverNameType.Kaya => "lobby.character.kaya",
-            HoverNameType.Haze => "lobby.character.haze",
-            HoverNameType.Ines => "lobby.character.ines",
+            HoverNameType.Hilt => "data.character.char_01.name",
+            HoverNameType.Kaya => "data.character.char_02.name",
+            HoverNameType.Haze => "data.character.char_03.name",
+            HoverNameType.Ines => "data.character.char_04.name",
             _ => string.Empty
         };
     }

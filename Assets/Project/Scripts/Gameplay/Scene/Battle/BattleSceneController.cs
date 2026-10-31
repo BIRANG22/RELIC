@@ -193,7 +193,7 @@ public class BattleSceneController : MonoBehaviour
             localizer = tutorialSkipButtonText.gameObject.AddComponent<LocalizedTMPText>();
 
         localizer.Configure(
-            LocalizationKeys.Tutorial.SkipButton,
+            "ui.tutorial.skip_e0dc5150",
             "튜토리얼 스킵",
             false);
     }
@@ -258,7 +258,7 @@ public class BattleSceneController : MonoBehaviour
 
         UIManager.Instance.ShowConfirmDialog(
             GameLocalization.Get(
-                LocalizationKeys.Tutorial.SkipConfirm,
+                "tutorial.skip.confirm",
                 "튜토리얼을 건너뛰시겠습니까?"),
             ConfirmSkipTutorial,
             CancelSkipTutorial);

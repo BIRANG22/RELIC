@@ -65,8 +65,8 @@ public static class LocalizationGameDataSourceSynchronizer
             LocalizationExcelImporter.WorkbookPath,
             updates,
             additions,
-            removals);
-        return new SyncResult(updates.Length, additions.Length, removals.Length);
+            Array.Empty<string>()); // 구형 키의 참조/ID가 남아 있을 수 있어 자동 삭제하지 않습니다.
+        return new SyncResult(updates.Length, additions.Length, 0);
     }
 
     public static string[] FindRemovedManagedKeys(
@@ -110,6 +110,13 @@ public static class LocalizationGameDataSourceSynchronizer
                         (isMonsterSkillType && !LocalizationProjectScanner.IsLocalizableKoreanText(korean)))
                         continue;
 
+                    string sharedKey = LocalizationProjectScanner.GetSharedGameDataKey(sheet, stableId, header, korean);
+                    if (!string.IsNullOrEmpty(sharedKey))
+                    {
+                        if (scannedKeys.Add(sharedKey))
+                            result.Add(new LocalizationWorkbookEntry(sharedKey, korean.Trim()));
+                        continue;
+                    }
                     string stableKey = BuildGameDataKey(sheet, stableId, row, choiceOrderColumn, header);
                     string key = scannedKeys.Add(stableKey)
                         ? stableKey
@@ -137,7 +144,10 @@ public static class LocalizationGameDataSourceSynchronizer
     private static Dictionary<string, string> ReadKoreanByKey(IReadOnlyList<IReadOnlyList<string>> rows)
     {
         int keyIndex = rows[0].ToList().FindIndex(value => value == "Key");
-        int koreanIndex = rows[0].ToList().FindIndex(value => value == "Korean(ko)");
+        int koreanIndex = rows[0].ToList().FindIndex(value =>
+            value == LocalizationWorkbookWriter.KoreanSourceHeader);
+        if (koreanIndex < 0)
+            koreanIndex = rows[0].ToList().FindIndex(value => value == "Korean(ko)");
         return rows.Skip(1)
             .Where(row => keyIndex >= 0 && keyIndex < row.Count && !string.IsNullOrWhiteSpace(row[keyIndex]))
             .ToDictionary(row => row[keyIndex], row => koreanIndex >= 0 && koreanIndex < row.Count ? row[koreanIndex] : "",

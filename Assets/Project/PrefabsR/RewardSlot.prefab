@@ -624,7 +624,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 4515248750984091046}
-  localizationKey: ui.rewardslot.text.82ec02da
+  localizationKey: ui.rewardslot.text.9db470bc
   koreanSource: "\uC544\uC774\uD15C\uBA85"
   automaticallyRegistered: 1
 --- !u!1 &8863473797993757207

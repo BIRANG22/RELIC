@@ -14,7 +14,7 @@ public static class LocalizationTextBindingRepairTool
 {
     private const string KoreanHeader = "Korean(ko)";
 
-    [MenuItem("Tools/Localization/Audit And Repair Text Bindings")]
+    [MenuItem("Tools/Localization/고급 기능/텍스트 바인딩 검사 및 복구 (연결 오류 수정)")]
     public static void AuditAndRepairFromMenu()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())

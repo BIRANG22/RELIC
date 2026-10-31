@@ -10,9 +10,9 @@ using UnityEngine.Localization.Tables;
 
 public static class LocalizationSyncCommand
 {
-    private static readonly string[] LocaleCodes = { "ko", "en", "zh-Hans", "ja", "es" };
+    private static readonly string[] LocaleCodes = { "ko", "en", "zh-Hans", "zh-Hant", "ja", "es" };
 
-    [MenuItem("Tools/Localization/Sync Record Localization")]
+    [MenuItem("Tools/Localization/고급 기능/도감 번역 동기화 (도감 전용 키 생성)")]
     public static void SyncRecordLocalizationFromMenu()
     {
         LocalizationSyncResult result = SyncRecordLocalization();
@@ -29,7 +29,7 @@ public static class LocalizationSyncCommand
         });
     }
 
-    [MenuItem("Tools/Localization/Sync Tutorial Localization")]
+    [MenuItem("Tools/Localization/고급 기능/튜토리얼 번역 동기화 (대사·안내 키 생성)")]
     public static void SyncTutorialLocalizationFromMenu()
     {
         LocalizationSyncResult result = SyncTutorialLocalization();
@@ -39,7 +39,7 @@ public static class LocalizationSyncCommand
     public static LocalizationSyncResult SyncTutorialLocalization() =>
         Sync("Tutorial Localization", TutorialEntries(), Array.Empty<string>());
 
-    [MenuItem("Tools/Localization/Sync Skill Setting Localization")]
+    [MenuItem("Tools/Localization/고급 기능/스킬 설정 번역 동기화 (스킬 설정 키 생성)")]
     public static void SyncSkillSettingLocalizationFromMenu()
     {
         LocalizationSyncResult result = SyncSkillSettingLocalization();
@@ -49,7 +49,7 @@ public static class LocalizationSyncCommand
     public static LocalizationSyncResult SyncSkillSettingLocalization() =>
         Sync("Skill Setting Localization", SkillSettingEntries(), Array.Empty<string>());
 
-    [MenuItem("Tools/Localization/Sync Character Setting Localization")]
+    [MenuItem("Tools/Localization/고급 기능/캐릭터 설정 번역 동기화 (캐릭터 정보 키 생성)")]
     public static void SyncCharacterSettingLocalizationFromMenu()
     {
         LocalizationSyncResult result = SyncCharacterSettingLocalization();
@@ -64,14 +64,14 @@ public static class LocalizationSyncCommand
     public static LocalizationSyncResult SyncCharacterSettingLocalization() =>
         Sync("Character Setting Localization", CharacterSettingEntries(), Array.Empty<string>());
 
-    [MenuItem("Tools/Localization/Validate RelicShop Rarity Localization")]
+    [MenuItem("Tools/Localization/고급 기능/유물 상점 레어도 검사 (번역 키 검사·동기화)")]
     public static void ValidateRelicShopRarityLocalizationFromMenu()
     {
         LocalizationSyncResult result = Sync("RelicShop Rarity Localization", RelicRarityEntries(), Array.Empty<string>());
         Debug.Log(result.ToLog());
     }
 
-    [MenuItem("Tools/Localization/Sync Rune Installation Localization")]
+    [MenuItem("Tools/Localization/고급 기능/룬 장착 번역 동기화 (관련 UI 키 생성)")]
     public static void SyncRuneInstallationLocalizationFromMenu()
     {
         LocalizationSyncResult result = Sync("Rune Installation Localization", RuneInstallationEntries(), Array.Empty<string>());
@@ -141,9 +141,9 @@ public static class LocalizationSyncCommand
             throw new InvalidOperationException($"String Table Collection '{LocalizationExcelImporter.TableCollectionName}' was not found.");
 
         foreach (StringTable table in collection.StringTables)
-        foreach (string key in keys)
-            if (table.GetEntry(key) == null)
-                table.AddEntry(key, string.Empty);
+            foreach (string key in keys)
+                if (table.GetEntry(key) == null)
+                    table.AddEntry(key, string.Empty);
     }
 
     private static void ApplyCharacterSettingEnglishTranslations()
@@ -249,6 +249,6 @@ public static class LocalizationSyncCommand
 
 public sealed class LocalizationSyncResult
 {
-    public string Label; public string Stage; public IReadOnlyList<string> ReferencedKeys = Array.Empty<string>(); public int ExistingWorkbookKeys; public int AddedWorkbookKeys; public List<string> WorkbookMissing = new(); public Dictionary<string,List<string>> LocaleMissingKeys = new(); public Dictionary<string,List<string>> LocaleMissingTranslations = new(); public List<string> FormatErrors = new(); public string Error; public bool Success;
+    public string Label; public string Stage; public IReadOnlyList<string> ReferencedKeys = Array.Empty<string>(); public int ExistingWorkbookKeys; public int AddedWorkbookKeys; public List<string> WorkbookMissing = new(); public Dictionary<string, List<string>> LocaleMissingKeys = new(); public Dictionary<string, List<string>> LocaleMissingTranslations = new(); public List<string> FormatErrors = new(); public string Error; public bool Success;
     public string ToLog() => string.IsNullOrWhiteSpace(Error) ? $"[{Label} Sync]\nStage: {Stage}\nReferenced Keys: {ReferencedKeys.Count}\nExisting Workbook Keys: {ExistingWorkbookKeys}\nAdded Workbook Keys: {AddedWorkbookKeys}\nWorkbook Missing: {WorkbookMissing.Count}\n" + string.Join("\n", LocaleMissingKeys.Select(pair => $"{pair.Key} MissingKey: {pair.Value.Count}, MissingTranslation: {LocaleMissingTranslations[pair.Key].Count}")) + $"\nFormat Errors: {FormatErrors.Count}\nResult: {(Success ? "SUCCESS" : "FAILED")}" : $"[{Label} Sync] FAILED\nStage: {Stage}\nException:\n{Error}";
 }

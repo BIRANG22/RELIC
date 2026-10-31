@@ -98,15 +98,17 @@ namespace Relic.Gameplay.Data
             if (data == null)
                 return string.Empty;
             return ResolveLocalizedOrSource(
-                GameLocalization.GetData("MonsterSkill", data.SkillId, "name", data.Name), data.Name);
+                GameLocalization.Get(MonsterSkillSharedLocalizationKeys.NameKey(data.SkillId, data.Name), data.Name), data.Name);
         }
 
         public static string MonsterSkillDescription(MonsterSkillData data) =>
             data == null ? string.Empty : ResolveLocalizedOrSource(
-                GameLocalization.GetData("MonsterSkill", data.SkillId, "effect_description", data.EffectDesc), data.EffectDesc);
+                GameLocalization.Get(MonsterSkillSharedLocalizationKeys.DescriptionKey(data.SkillId, data.EffectDesc), data.EffectDesc), data.EffectDesc);
 
         public static string MonsterSkillType(MonsterSkillData data) =>
-            data == null ? string.Empty : GameLocalization.GetData("MonsterSkill", data.SkillId, "type", data.SkillType);
+            data == null ? string.Empty : GameLocalization.Get(
+                MonsterSkillSharedLocalizationKeys.TypeKey(data.SkillType) ??
+                GameLocalization.BuildDataKey("MonsterSkill", data.SkillId, "type"), data.SkillType);
 
         public static string MonsterPatternDescription(MonsterPatternInfoData data) =>
             data == null ? string.Empty : GameLocalization.GetData("MonsterPatternInfo", data.PatternId, "pattern_description", data.Description);

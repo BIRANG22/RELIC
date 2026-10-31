@@ -1487,7 +1487,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         switch (action)
         {
             case 0:
-                name = GameLocalization.Get("battle.action.move.name", "이동");
+                name = GameLocalization.Get("common.move", "이동");
                 detail = GameLocalization.Get("battle.action.move.detail", "캐릭터의 이동 행동을 예약합니다.");
                 break;
             case 1:

@@ -3501,7 +3501,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 900001024}
-  localizationKey: ui.title.text.85326698
+  localizationKey: ui.title.start_demo
   koreanSource: "\uB370\uBAA8 \uC2DC\uC791"
   automaticallyRegistered: 1
 --- !u!1 &949028743

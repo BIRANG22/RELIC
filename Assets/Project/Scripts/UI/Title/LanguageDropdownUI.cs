@@ -12,6 +12,7 @@ public class LanguageDropdownUI : MonoBehaviour
     [SerializeField] private GameObject krObject;
     [SerializeField] private GameObject enObject;
     [SerializeField] private GameObject scObject;
+    [SerializeField] private GameObject tcObject;
     [SerializeField] private GameObject jpObject;
     [SerializeField] private GameObject spObject;
 
@@ -25,6 +26,7 @@ public class LanguageDropdownUI : MonoBehaviour
         "ko",
         "en",
         "zh-Hans",
+        "zh-Hant",
         "ja",
         "es"
     };
@@ -43,6 +45,9 @@ public class LanguageDropdownUI : MonoBehaviour
 
         SetupDropdownOptions();
         SyncDropdownFromCurrentLocale();
+        if (languageDropdown == null)
+            return;
+
         RefreshLanguagePreview(languageDropdown.value);
         languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
 
@@ -71,7 +76,8 @@ public class LanguageDropdownUI : MonoBehaviour
         {
             new("한국어"),
             new("English"),
-            new("中文"),
+            new("简体中文"),
+            new("繁體中文"),
             new("日本語"),
             new("Español")
         };
@@ -81,7 +87,9 @@ public class LanguageDropdownUI : MonoBehaviour
 
     private void SyncDropdownFromCurrentLocale()
     {
-        string currentCode = LocalizationSettings.SelectedLocale.Identifier.Code;
+        string currentCode = LocalizationSettings.SelectedLocale != null
+            ? LocalizationSettings.SelectedLocale.Identifier.Code
+            : "ko";
         int index = localeCodes.IndexOf(currentCode);
 
         if (index < 0)
@@ -125,7 +133,9 @@ public class LanguageDropdownUI : MonoBehaviour
             }
         }
 
-        Debug.LogWarning($"[LanguageDropdownUI] Locale not found: {localeCode}");
+        Debug.LogWarning($"[LanguageDropdownUI] Locale not found: {localeCode}. Add it to Localization Settings > Available Locales.");
+        SyncDropdownFromCurrentLocale();
+        RefreshLanguagePreview(languageDropdown.value);
     }
 
     private void RefreshLanguagePreview(int index)
@@ -133,8 +143,9 @@ public class LanguageDropdownUI : MonoBehaviour
         if (krObject != null) krObject.SetActive(index == 0);
         if (enObject != null) enObject.SetActive(index == 1);
         if (scObject != null) scObject.SetActive(index == 2);
-        if (jpObject != null) jpObject.SetActive(index == 3);
-        if (spObject != null) spObject.SetActive(index == 4);
+        if (tcObject != null) tcObject.SetActive(index == 3);
+        if (jpObject != null) jpObject.SetActive(index == 4);
+        if (spObject != null) spObject.SetActive(index == 5);
     }
 
 }

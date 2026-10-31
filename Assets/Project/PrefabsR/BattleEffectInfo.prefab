@@ -226,7 +226,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1922495201005023623}
-  localizationKey: ui.battleeffectinfo.name.81668bb5
+  localizationKey: ui.battle.effect_name_placeholder
   koreanSource: "\uD6A8\uACFC\uC774\uB984 11"
   automaticallyRegistered: 1
 --- !u!1 &5231764963992516706

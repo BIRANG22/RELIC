@@ -13,122 +13,184 @@ public sealed class LocalizationManagerWindow : EditorWindow
 {
     private const string KoreanGuiFontPath = "Assets/TextMesh Pro/Fonts/DungGeunMo.otf";
     private readonly List<LocalizationCandidate> candidates = new();
-    private Vector2 scroll;
+    private Vector2 windowScroll;
+    private bool showScan = true;
+    private bool showExcel = true;
+    private bool showKeys = true;
+    private bool showTools;
+    private bool scanCompleted;
+    private bool scanApplied;
+    private string lastScanError;
     private bool scanScenes = true;
     private bool scanPrefabs = true;
     private bool scanScripts = true;
     private bool scanGameData = true;
-    private string filter = string.Empty;
-    private int currentPage;
     private bool actionQueued;
-    private GUIStyle candidateLabelStyle;
+    private bool cleanupAuditReady;
 
-    [MenuItem("Tools/Localization/Localization Manager")]
-    public static void Open() => GetWindow<LocalizationManagerWindow>("Localization Manager");
+    [MenuItem("Tools/Localization/로컬라이징 관리자 (전체 스캔 및 번역 적용)")]
+    public static void Open() => GetWindow<LocalizationManagerWindow>("로컬라이징 관리자");
 
     private void OnEnable()
     {
-        Font koreanGuiFont = AssetDatabase.LoadAssetAtPath<Font>(KoreanGuiFontPath);
-        candidateLabelStyle = new GUIStyle(EditorStyles.wordWrappedLabel)
-        {
-            font = koreanGuiFont != null ? koreanGuiFont : EditorStyles.wordWrappedLabel.font
-        };
+        // 스캔 결과는 간단한 상태 표시만 사용합니다.
     }
 
     private void OnGUI()
     {
-        EditorGUILayout.LabelField("Localization Manager", EditorStyles.boldLabel);
-        bool scanRequested;
-        bool scanAndApplyRequested;
-        bool applyRequested;
+        windowScroll = EditorGUILayout.BeginScrollView(windowScroll);
+        EditorGUILayout.Space(8);
+        EditorGUILayout.LabelField("로컬라이징 통합 관리자", EditorStyles.largeLabel);
+        EditorGUILayout.HelpBox("권장 순서: 전체 스캔 → 신규 키 적용 → 전용 데이터 동기화 → 엑셀 번역 → 엑셀 가져오기 → 게임 언어 전환 테스트. 기존 키 삭제는 마지막에 진행하세요.", MessageType.Info);
+
         using (new EditorGUI.DisabledScope(actionQueued))
         {
-            EditorGUILayout.BeginHorizontal();
-            scanScenes = EditorGUILayout.ToggleLeft("Scenes", scanScenes, GUILayout.Width(90));
-            scanPrefabs = EditorGUILayout.ToggleLeft("Prefabs", scanPrefabs, GUILayout.Width(90));
-            scanScripts = EditorGUILayout.ToggleLeft("Scripts", scanScripts, GUILayout.Width(90));
-            scanGameData = EditorGUILayout.ToggleLeft("Game Data", scanGameData, GUILayout.Width(100));
-            scanRequested = GUILayout.Button("Full Scan");
-            scanAndApplyRequested = GUILayout.Button("Full Scan and Apply");
-            EditorGUILayout.EndHorizontal();
-            applyRequested = GUILayout.Button("Apply Safe Items");
-        }
-        EditorGUILayout.HelpBox(
-            actionQueued
-                ? "Localization operation is queued or running."
-                : "Dynamic text sources are collected automatically. Translation columns and unkeyed English strings are not auto-filled.",
-            MessageType.Info);
+            showScan = EditorGUILayout.Foldout(showScan, "1. 번역 대상 수집 및 등록", true, EditorStyles.foldoutHeader);
+            if (showScan)
+            {
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                {
+                    EditorGUILayout.LabelField("스캔 대상", EditorStyles.boldLabel);
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        scanScenes = EditorGUILayout.ToggleLeft("씬", scanScenes, GUILayout.Width(70));
+                        scanPrefabs = EditorGUILayout.ToggleLeft("프리팹", scanPrefabs, GUILayout.Width(85));
+                        scanScripts = EditorGUILayout.ToggleLeft("스크립트", scanScripts, GUILayout.Width(95));
+                        scanGameData = EditorGUILayout.ToggleLeft("게임 데이터", scanGameData, GUILayout.Width(115));
+                    }
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        if (GUILayout.Button("전체 스캔 (번역 대상 검색)", GUILayout.Height(28)))
+                            RunEditorAction("전체 스캔", Scan, scanScenes);
+                        if (GUILayout.Button("전체 스캔 및 적용 (키 등록·UI 바인딩)", GUILayout.Height(28)))
+                            RunEditorAction("전체 스캔 및 적용", () => { Scan(); ApplySafe(); }, true);
+                    }
+                    if (GUILayout.Button("안전한 항목 적용 (검토가 필요 없는 항목만)", GUILayout.Height(24)))
+                        RunEditorAction("안전 항목 적용", ApplySafe, true);
+                    if (GUILayout.Button("전용 데이터 일괄 동기화 (도감·튜토리얼·스킬·캐릭터·유물·룬)", GUILayout.Height(24)))
+                        RunEditorAction("전용 데이터 일괄 동기화", SynchronizeSpecializedData, true);
+                    EditorGUILayout.HelpBox("전체 스캔과 전용 데이터 동기화는 서로 다른 작업입니다. 데이터 원본을 다시 가져와야 할 때는 두 작업을 순서대로 실행하세요.", MessageType.None);
+                }
+            }
 
-        if (scanRequested)
-            RunEditorAction("전체 검사", Scan, scanScenes);
-        if (scanAndApplyRequested)
-            RunEditorAction("전체 검사 및 적용", () => { Scan(); ApplySafe(); }, true);
-        if (applyRequested)
-            RunEditorAction("전체 안전 항목 적용", ApplySafe, true);
-        EditorGUI.BeginChangeCheck();
-        filter = EditorGUILayout.TextField("Search", filter);
-        if (EditorGUI.EndChangeCheck())
-            currentPage = 0;
-        LocalizationScanSummary summary = LocalizationScanSummary.Create(candidates);
-        EditorGUILayout.LabelField($"New: {summary.NewCount}  Existing: {summary.ExistingCount}  Missing Component: {summary.MissingComponentCount}  Review: {summary.ReviewCount}  Occurrences: {summary.OccurrenceCount}");
-        List<LocalizationCandidate> filteredCandidates = candidates
-            .Where(candidate => string.IsNullOrEmpty(filter) ||
-                                candidate.Key.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                candidate.Korean.Contains(filter))
-            .ToList();
-        DrawPagination(filteredCandidates.Count);
-        LocalizationManagerPresentationPolicy.GetPageBounds(
-            filteredCandidates.Count,
-            currentPage,
-            out int pageStart,
-            out int pageEnd);
-        scroll = EditorGUILayout.BeginScrollView(scroll);
-        for (int index = pageStart; index < pageEnd; index++)
+            EditorGUILayout.Space(5);
+            showExcel = EditorGUILayout.Foldout(showExcel, "2. 번역 엑셀 및 String Table", true, EditorStyles.foldoutHeader);
+            if (showExcel)
+            {
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                {
+                    if (GUILayout.Button("번역 엑셀 가져오기 (작성한 번역을 String Table에 반영)", GUILayout.Height(28)))
+                        RunEditorAction("번역 엑셀 가져오기", LocalizationExcelImporter.ImportFromMenu, true);
+                    EditorGUILayout.HelpBox("엑셀 번역을 작성한 뒤 가져오기를 실행하세요. Import는 자동 번역 기능이 아닙니다.", MessageType.None);
+                }
+            }
+
+            EditorGUILayout.Space(5);
+            showKeys = EditorGUILayout.Foldout(showKeys, "3. 기존 키 정리 및 이름 변경", true, EditorStyles.foldoutHeader);
+            if (showKeys)
+            {
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                {
+                    if (GUILayout.Button("기존 UI 키 검사 (미사용 후보 CSV 출력)", GUILayout.Height(25)))
+                        RunEditorAction("기존 UI 키 검사", AuditLegacyUiKeys, false);
+                    using (new EditorGUI.DisabledScope(!cleanupAuditReady || !scanScenes || !scanPrefabs || !scanScripts || !scanGameData))
+                    {
+                        if (GUILayout.Button("미사용 UI 키 제거 (검사된 후보 검토 후 삭제)", GUILayout.Height(25)))
+                            RunEditorAction("미사용 UI 키 제거", RemoveAuditedUnusedUiKeys, true);
+                    }
+                    EditorGUILayout.Space(4);
+                    if (GUILayout.Button("긴 키 변경 제안 내보내기 (TSV 생성)", GUILayout.Height(25)))
+                        RunEditorAction("키 변경 제안 내보내기", LocalizationLegacyKeyMigration.ExportProposals, false);
+                    if (GUILayout.Button("승인된 키 이름 변경 (ID·참조 유지하며 이전)", GUILayout.Height(25)))
+                        RunEditorAction("승인된 키 변경 적용", LocalizationLegacyKeyMigration.ApplyApproved, true);
+                    EditorGUILayout.HelpBox("미사용 키 삭제 및 키 이름 변경은 백업 후 실행하세요. TSV의 승인 표시 없이 임의 이전하지 마세요.", MessageType.Warning);
+                }
+            }
+
+            EditorGUILayout.Space(5);
+            showTools = EditorGUILayout.Foldout(showTools, "4. 진단·복구 및 고급 기능", true, EditorStyles.foldoutHeader);
+            if (showTools)
+            {
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                {
+                    if (GUILayout.Button("텍스트 바인딩 검사·복구 (잘못 연결된 TMP 점검)"))
+                        RunEditorAction("텍스트 바인딩 검사 및 복구", LocalizationTextBindingRepairTool.AuditAndRepairFromMenu, true);
+                    if (GUILayout.Button("플레이어 UI 번역 적용 (정적 UI 바인딩 반영)"))
+                        RunEditorAction("플레이어 UI 번역 적용", StaticLocalizationMigration.ApplyFromMenu, true);
+                    if (GUILayout.Button("캐릭터 정보 영역 진단 (InfoArea 문제 확인)"))
+                        RunEditorAction("캐릭터 정보 영역 진단", CharacterInfoLocalizationDiagnostics.Diagnose, false);
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        if (GUILayout.Button("편집 잠금 활성화"))
+                            RunEditorAction("편집 잠금 활성화", LocalizationEditingLockTool.EnableFromMenu, true);
+                        if (GUILayout.Button("편집 잠금 해제"))
+                            RunEditorAction("편집 잠금 해제", LocalizationEditingLockTool.DisableFromMenu, true);
+                        if (GUILayout.Button("잠금 상태 확인"))
+                            RunEditorAction("잠금 상태 확인", LocalizationEditingLockTool.ReportStateFromMenu, false);
+                    }
+                }
+            }
+        }
+
+        if (actionQueued)
+            EditorGUILayout.HelpBox("작업이 예약되었거나 실행 중입니다. Unity Console에서 결과를 확인하세요.", MessageType.Info);
+
+        EditorGUILayout.Space(6);
+        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
         {
-            LocalizationCandidate candidate = filteredCandidates[index];
-            EditorGUILayout.LabelField(
-                $"[{(candidate.RequiresReview ? "Review" : candidate.IsNew ? "New" : "Reuse")}] {candidate.Key} = {candidate.Korean}\n{candidate.AssetPath}",
-                candidateLabelStyle ?? EditorStyles.wordWrappedLabel);
+            EditorGUILayout.LabelField("5. 스캔 상태", EditorStyles.boldLabel);
+            if (actionQueued)
+                EditorGUILayout.HelpBox("작업 진행 중", MessageType.Info);
+            else if (!string.IsNullOrEmpty(lastScanError))
+                EditorGUILayout.HelpBox("작업 실패: " + lastScanError + " (자세한 내용은 Console 확인)", MessageType.Error);
+            else if (!scanCompleted)
+                EditorGUILayout.HelpBox("아직 스캔하지 않았습니다.", MessageType.None);
+            else
+            {
+                LocalizationScanSummary summary = LocalizationScanSummary.Create(candidates);
+                EditorGUILayout.HelpBox(
+                    (scanApplied ? "스캔 및 적용 완료" : "스캔 완료 (적용 전)") +
+                    $" | 신규 {summary.NewCount}건 | 기존 {summary.ExistingCount}건 | 검토 {summary.ReviewCount}건 | 바인딩 누락 {summary.MissingComponentCount}건",
+                    summary.ReviewCount > 0 || summary.MissingComponentCount > 0 ? MessageType.Warning : MessageType.Info);
+            }
         }
         EditorGUILayout.EndScrollView();
     }
 
-    private void DrawPagination(int totalCount)
+    // 전용 번역 키 생성기를 한곳에서 실행합니다. 전체 스캔은 이 전용 동기화와 별개의 단계입니다.
+    private static void SynchronizeSpecializedData()
     {
-        int pageCount = Mathf.Max(
-            1,
-            Mathf.CeilToInt(totalCount / (float)LocalizationManagerPresentationPolicy.PageSize));
-        currentPage = Mathf.Clamp(currentPage, 0, pageCount - 1);
+        int succeeded = 0;
+        int failed = 0;
+        RunSpecializedSync("도감", LocalizationSyncCommand.SyncRecordLocalizationFromMenu, ref succeeded, ref failed);
+        RunSpecializedSync("튜토리얼", LocalizationSyncCommand.SyncTutorialLocalizationFromMenu, ref succeeded, ref failed);
+        RunSpecializedSync("스킬 설정", LocalizationSyncCommand.SyncSkillSettingLocalizationFromMenu, ref succeeded, ref failed);
+        RunSpecializedSync("캐릭터 설정", LocalizationSyncCommand.SyncCharacterSettingLocalizationFromMenu, ref succeeded, ref failed);
+        RunSpecializedSync("유물 상점", LocalizationSyncCommand.ValidateRelicShopRarityLocalizationFromMenu, ref succeeded, ref failed);
+        RunSpecializedSync("룬 장착", LocalizationSyncCommand.SyncRuneInstallationLocalizationFromMenu, ref succeeded, ref failed);
+        Debug.Log($"[Localization Manager] 전용 데이터 일괄 동기화 종료: 실행 완료 {succeeded}개, 예외 발생 {failed}개. 각 단계의 상세 결과를 Console에서 확인하세요.");
+    }
 
-        EditorGUILayout.BeginHorizontal();
-        using (new EditorGUI.DisabledScope(currentPage <= 0))
+    private static void RunSpecializedSync(string name, Action sync, ref int succeeded, ref int failed)
+    {
+        try
         {
-            if (GUILayout.Button("Previous", GUILayout.Width(80)))
-            {
-                currentPage--;
-                scroll = Vector2.zero;
-            }
+            sync();
+            succeeded++;
         }
-
-        GUILayout.FlexibleSpace();
-        EditorGUILayout.LabelField(
-            $"Page {currentPage + 1} / {pageCount} ({totalCount})",
-            GUILayout.Width(150));
-        GUILayout.FlexibleSpace();
-
-        using (new EditorGUI.DisabledScope(currentPage >= pageCount - 1))
+        catch (Exception ex)
         {
-            if (GUILayout.Button("Next", GUILayout.Width(80)))
-            {
-                currentPage++;
-                scroll = Vector2.zero;
-            }
+            failed++;
+            Debug.LogError($"[Localization Manager] '{name}' 동기화 중 예외 발생. 나머지 동기화는 계속 진행합니다.\n{ex}");
         }
-        EditorGUILayout.EndHorizontal();
     }
 
     private void Scan()
     {
+        cleanupAuditReady = false;
+        scanCompleted = false;
+        scanApplied = false;
+        lastScanError = null;
         candidates.Clear();
         Dictionary<string, string> known = ReadKoreanToUniqueKey();
         Dictionary<string, string> knownKoreanByKey = ReadKoreanByKey();
@@ -165,6 +227,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
         if (scanScripts) ScanScripts(known, knownKoreanByKey, knownKeys);
         if (scanGameData) ScanGameData(knownKoreanByKey);
         AddRuntimeUiCandidates(knownKoreanByKey, knownKeys);
+        scanCompleted = true;
         Repaint();
     }
 
@@ -205,11 +268,16 @@ public sealed class LocalizationManagerWindow : EditorWindow
                         (isMonsterSkillType && !LocalizationProjectScanner.IsLocalizableKoreanText(korean)))
                         continue;
 
-                    string stableKey = BuildGameDataKey(sheet, stableId, row, choiceOrderColumn, header);
-                    // 같은 검사에서 동일 ID/필드가 실제로 반복되는 구조(Event 선택지 등)에만 hash를 붙입니다.
-                    string key = scannedGameDataKeys.Add(stableKey)
-                        ? stableKey
-                        : LocalizationProjectScanner.BuildUniqueGameDataKey(sheet, stableId, header, korean);
+                    string sharedKey = LocalizationProjectScanner.GetSharedGameDataKey(sheet, stableId, header, korean);
+                    string stableKey = string.IsNullOrEmpty(sharedKey)
+                        ? BuildGameDataKey(sheet, stableId, row, choiceOrderColumn, header)
+                        : sharedKey;
+                    // 공통 용어/동일 효과 설명은 한 번만 수집합니다.
+                    bool firstOccurrence = scannedGameDataKeys.Add(stableKey);
+                    if (!firstOccurrence && !string.IsNullOrEmpty(sharedKey))
+                        continue;
+                    string key = firstOccurrence ? stableKey :
+                        LocalizationProjectScanner.BuildUniqueGameDataKey(sheet, stableId, header, korean);
                     bool exists = knownKoreanByKey.TryGetValue(key, out string currentKorean);
                     bool sourceChanged = exists && !string.Equals(
                         LocalizationBindingResolver.Normalize(currentKorean),
@@ -243,7 +311,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
         AddRuntimeUiCandidate("battle.skill_rarity.unique_memory", "발현기억", knownKoreanByKey, knownKeys);
         AddRuntimeUiCandidate("battle.skill_rarity.ability_memory", "구현기억", knownKoreanByKey, knownKeys);
         AddRuntimeUiCandidate("battle.skill_rarity.passive_memory", "본능기억", knownKoreanByKey, knownKeys);
-        AddRuntimeUiCandidate("battle.skill_rarity.move", "이동", knownKoreanByKey, knownKeys);
+        AddRuntimeUiCandidate("common.move", "이동", knownKoreanByKey, knownKeys);
         AddRuntimeUiCandidate("battle.skill_rarity.common_memory", "일반기억", knownKoreanByKey, knownKeys);
         AddRuntimeUiCandidate("battle.skill_rarity.rare_memory", "레어기억", knownKoreanByKey, knownKeys);
         AddRuntimeUiCandidate("battle.skill_rarity.epic_memory", "에픽기억", knownKoreanByKey, knownKeys);
@@ -288,6 +356,15 @@ public sealed class LocalizationManagerWindow : EditorWindow
             HashSet<string> dynamicDisplayLiterals = LocalizationProjectScanner
                 .FindDynamicDisplayLiterals(source)
                 .ToHashSet(StringComparer.Ordinal);
+            // Warning/Notification UI text is surfaced even if it is not a serialized TMP.
+            // Keep unbound script literals as Review: writing an Excel row alone does not
+            // replace the hardcoded string at runtime.
+            HashSet<string> warningUiLiterals = LocalizationProjectScanner
+                .FindWarningUiLiterals(source)
+                .ToHashSet(StringComparer.Ordinal);
+            HashSet<string> serializedTextLiterals = LocalizationProjectScanner
+                .FindSerializedPlayerTextLiterals(source)
+                .ToHashSet(StringComparer.Ordinal);
             foreach (LocalizationSourceEntry entry in LocalizationProjectScanner.FindExplicitLocalizationSources(source))
             {
                 knownKoreanByKey.TryGetValue(entry.Key, out string currentKorean);
@@ -309,10 +386,13 @@ public sealed class LocalizationManagerWindow : EditorWindow
                 if (!LocalizationProjectScanner.IsLocalizableKoreanText(korean)) continue;
                 known.TryGetValue(korean, out string key);
                 key ??= LocalizationProjectScanner.BuildSuggestedKey(path, "text", korean);
-                bool automatic = dynamicDisplayLiterals.Contains(korean) ||
-                    LocalizationProjectScanner.IsAutomaticScriptLiteralCandidate(korean);
+                bool explicitUiOutput = dynamicDisplayLiterals.Contains(korean) ||
+                    warningUiLiterals.Contains(korean) || serializedTextLiterals.Contains(korean);
+                // Source literals must be wired to a localization API manually.
+                // Prevent Full Scan and Apply from silently claiming a live translation.
+                bool automatic = LocalizationProjectScanner.IsAutomaticScriptLiteralCandidate(korean);
                 candidates.Add(new LocalizationCandidate(
-                    path,
+                    explicitUiOutput ? path + " [UI output: bind localization key]" : path + " [source literal: review]",
                     korean,
                     key,
                     false,
@@ -448,9 +528,12 @@ public sealed class LocalizationManagerWindow : EditorWindow
                 },
                 out _))
             optionalMigrationFailures++;
-        int removed = RemoveUnusedEntries(retainedCandidateKeys);
+        // Never delete localization entries as a side effect of Full Scan and Apply.
+        // Old keys may still be referenced by ID or by dynamically composed keys.
+        int removed = 0;
         int compacted = LocalizationWorkbookWriter.CompactBlankRows(LocalizationExcelImporter.WorkbookPath);
         LocalizationExcelImporter.Import(); // Final authoritative workbook-to-table sync.
+        scanApplied = true;
         Debug.Log($"[Localization Manager] Synced GameData runtime CSV, applied {rows} new Excel rows, updated {updated} GameData sources, restored {templateChanges} Record templates, applied {explicitStaticBindings} required static bindings, changed {dynamicOwnershipChanges} dynamic TMP ownerships, skipped {optionalMigrationFailures} failed optional migrations, removed {removed} unused keys, compacted {compacted} blank rows, and completed TMP binding repair stage.");
     }
 
@@ -486,11 +569,13 @@ public sealed class LocalizationManagerWindow : EditorWindow
                 if (requiresSceneSave && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                     return;
 
+                lastScanError = null;
                 using (LocalizationEditorFontMutationGuard.ProtectAllProjectFonts())
                     action?.Invoke();
             }
             catch (Exception exception)
             {
+                lastScanError = label + " 실행 중 오류";
                 string message = exception is InvalidOperationException
                     ? exception.Message
                     : $"{label} 중 오류가 발생했습니다. Console의 첫 예외를 확인하세요.";
@@ -502,11 +587,65 @@ public sealed class LocalizationManagerWindow : EditorWindow
                 if (this != null)
                 {
                     actionQueued = false;
-                    currentPage = 0;
                     Repaint();
                 }
             }
         };
+    }
+
+    // Only legacy, automatically generated UI keys can be considered for deletion.
+    // Data keys and explicit semantic UI keys require manual migration.
+    private static readonly Regex LegacyUiKeyPattern = new Regex(
+        @"^ui\.[a-z0-9_.]+\.[0-9a-f]{8}$", RegexOptions.Compiled);
+
+    private string[] FindUnusedLegacyUiKeys()
+    {
+        var workbookKeys = ReadKoreanByKey().Keys.ToHashSet(StringComparer.Ordinal);
+        var usedKeys = CollectExplicitKeyReferences(workbookKeys);
+        usedKeys.UnionWith(CollectCurrentGameDataKeys());
+        usedKeys.UnionWith(LocalizationRuntimeSourceCatalog.AllEntries.Select(entry => entry.Key));
+        usedKeys.UnionWith(LocalizationEditorSafetyPolicy.CollectRetainedCandidateKeys(candidates));
+        return workbookKeys.Where(key => LegacyUiKeyPattern.IsMatch(key) && !usedKeys.Contains(key))
+            .OrderBy(key => key, StringComparer.Ordinal).ToArray();
+    }
+
+    private void AuditLegacyUiKeys()
+    {
+        // Audit performs a fresh complete scan before evaluating orphan candidates.
+        if (!scanScenes || !scanPrefabs || !scanScripts || !scanGameData)
+        {
+            EditorUtility.DisplayDialog("Localization Audit", "Enable all scan categories first.", "OK");
+            return;
+        }
+        Scan();
+        string[] keys = FindUnusedLegacyUiKeys();
+        const string reportPath = "Assets/ExcelSource/LocalizationUnusedUiKeyCandidates.csv";
+        var rows = new List<string> { "Key,Status" };
+        foreach (string key in keys)
+            rows.Add("\"" + key.Replace("\"", "\"\"") + "\",Review before removal");
+        System.IO.File.WriteAllLines(reportPath, rows, new System.Text.UTF8Encoding(true));
+        AssetDatabase.Refresh();
+        cleanupAuditReady = true;
+        Debug.Log($"[Localization Manager] {keys.Length} legacy UI keys are not found in scanned references. Review '{reportPath}' before deletion. Dynamically composed keys may not be detected.");
+        EditorUtility.DisplayDialog("Localization Audit", $"Found {keys.Length} candidate keys. Review {reportPath}. They have NOT been deleted.", "OK");
+    }
+
+    private void RemoveAuditedUnusedUiKeys()
+    {
+        if (!cleanupAuditReady || !scanScenes || !scanPrefabs || !scanScripts || !scanGameData)
+            return;
+        string[] keys = FindUnusedLegacyUiKeys();
+        if (keys.Length == 0) return;
+        if (!EditorUtility.DisplayDialog("Remove unused UI keys?",
+                $"Delete {keys.Length} legacy UI key entries from the workbook? This may break dynamically generated references. A backup will be created.",
+                "Delete", "Cancel"))
+            return;
+        string path = LocalizationExcelImporter.WorkbookPath;
+        System.IO.File.Copy(path, path + ".pre-unused-ui-cleanup.backup", true);
+        int removed = LocalizationWorkbookWriter.RemoveEntries(path, keys);
+        LocalizationExcelImporter.Import();
+        cleanupAuditReady = false;
+        Debug.Log($"[Localization Manager] Removed {removed} audited legacy UI keys. Backup: {path}.pre-unused-ui-cleanup.backup");
     }
 
     private static int RemoveUnusedEntries(IEnumerable<string> retainedCandidateKeys)
@@ -577,6 +716,12 @@ public sealed class LocalizationManagerWindow : EditorWindow
                     string korean = column < row.Count ? row[column] : string.Empty;
                     if (LocalizationProjectScanner.ShouldCollectGameDataLocalizationValue(sheet, headers[column], korean))
                     {
+                        string sharedKey = LocalizationProjectScanner.GetSharedGameDataKey(sheet, stableId, headers[column], korean);
+                        if (!string.IsNullOrEmpty(sharedKey))
+                        {
+                            keys.Add(sharedKey);
+                            continue;
+                        }
                         string stableKey = BuildGameDataKey(sheet, stableId, row, choiceOrderColumn, headers[column]);
                         keys.Add(scannedKeys.Add(stableKey)
                             ? stableKey
@@ -629,7 +774,8 @@ public sealed class LocalizationManagerWindow : EditorWindow
     {
         var rows = LocalizationXlsxReader.ReadSheet(LocalizationExcelImporter.WorkbookPath, LocalizationExcelImporter.WorksheetName);
         int key = rows[0].ToList().FindIndex(value => value == "Key");
-        int korean = rows[0].ToList().FindIndex(value => value == "Korean(ko)");
+        int korean = rows[0].ToList().FindIndex(value => value == LocalizationWorkbookWriter.KoreanSourceHeader);
+        if (korean < 0) korean = rows[0].ToList().FindIndex(value => value == "Korean(ko)");
         return rows.Skip(1)
             .Where(row => key >= 0 && korean >= 0 && key < row.Count && korean < row.Count &&
                           !string.IsNullOrWhiteSpace(row[key]) && !string.IsNullOrWhiteSpace(row[korean]))
@@ -642,7 +788,8 @@ public sealed class LocalizationManagerWindow : EditorWindow
     {
         var rows = LocalizationXlsxReader.ReadSheet(LocalizationExcelImporter.WorkbookPath, LocalizationExcelImporter.WorksheetName);
         int key = rows[0].ToList().FindIndex(value => value == "Key");
-        int korean = rows[0].ToList().FindIndex(value => value == "Korean(ko)");
+        int korean = rows[0].ToList().FindIndex(value => value == LocalizationWorkbookWriter.KoreanSourceHeader);
+        if (korean < 0) korean = rows[0].ToList().FindIndex(value => value == "Korean(ko)");
         return rows.Skip(1)
             .Where(row => key >= 0 && korean >= 0 && key < row.Count && korean < row.Count && !string.IsNullOrWhiteSpace(row[key]))
             .GroupBy(row => row[key], StringComparer.Ordinal)

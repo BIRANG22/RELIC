@@ -607,7 +607,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 89322943}
-  localizationKey: ui.title.canvas.buttongroup.quitbutton.text.ec48e3e4
+  localizationKey: ui.canvas.text.82912c6e
   koreanSource: "\uC885\uB8CC"
   automaticallyRegistered: 1
 --- !u!1 &94210111
@@ -4060,7 +4060,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 900001024}
-  localizationKey: ui.title.text.85326698
+  localizationKey: ui.title.start_demo
   koreanSource: "\uB370\uBAA8 \uC2DC\uC791"
   automaticallyRegistered: 1
 --- !u!1 &922741447
@@ -8060,7 +8060,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1852231631}
-  localizationKey: ui.title.canvas.buttongroup.recodebutton.text.6db3f2f6
+  localizationKey: ui.canvas.text.158c6ff3
   koreanSource: "\uAE30\uB85D"
   automaticallyRegistered: 1
 --- !u!1 &1853200066

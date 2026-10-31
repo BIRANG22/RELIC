@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5be51871efa6c3e4eae1703925c8f5ac, type: 3}
   m_Name: Text
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   m_SharedTableData: {fileID: 11400000, guid: 3c628c627e41ed84fb431bc1e97cdb9f, type: 2}
   m_Tables:
   - {fileID: 11400000, guid: 2a85ac20b471ffb42ad313d6db910c51, type: 2}
@@ -19,6 +19,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9c34cbf62e2717246bb78b70f99ad65c, type: 2}
   - {fileID: 11400000, guid: 0ab11eecabf1b8942801f0ca76fa51dc, type: 2}
   - {fileID: 11400000, guid: c631224b5219bae43a58f5a96e64c308, type: 2}
+  - {fileID: 11400000, guid: 3175c2acef8a22e4b9f2bb79b0eb7690, type: 2}
   m_Extensions: []
   m_Group: String Table
   references:

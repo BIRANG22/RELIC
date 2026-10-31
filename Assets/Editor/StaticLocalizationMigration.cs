@@ -25,7 +25,7 @@ public static class StaticLocalizationMigration
     private const string PrefabRoot = "Assets/Project/PrefabsR";
     private const string KoreanHeader = "Korean(ko)";
 
-    [MenuItem("Tools/Localization/Apply Excel Localization To Player UI")]
+    [MenuItem("Tools/Localization/고급 기능/엑셀 번역을 UI에 적용 (씬·프리팹 연결)")]
     public static void ApplyFromMenu()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -92,7 +92,7 @@ public static class StaticLocalizationMigration
         finally { EditorSceneManager.RestoreSceneManagerSetup(originalSetup); }
     }
 
-    [MenuItem("Tools/Localization/Migrate Character InfoArea Dynamic Ownership")]
+    [MenuItem("Tools/Localization/고급 기능/캐릭터 정보 동적 관리 전환 (텍스트 소유권 변경)")]
     public static void MigrateCharacterInfoAreaDynamicOwnership()
     {
         const string lobbyPath = "Assets/Project/Scenes/YDM/Lobby.unity";
@@ -134,7 +134,7 @@ public static class StaticLocalizationMigration
         finally { EditorSceneManager.RestoreSceneManagerSetup(originalSetup); }
     }
 
-    [MenuItem("Tools/Localization/Repair CharacterSetting InfoText Bindings")]
+    [MenuItem("Tools/Localization/고급 기능/캐릭터 설정 바인딩 복구 (텍스트 연결 수정)")]
     public static void MigrateCharacterSettingInfoText()
     {
         const string lobbyPath = "Assets/Project/Scenes/YDM/Lobby.unity";
@@ -149,14 +149,20 @@ public static class StaticLocalizationMigration
                 .FirstOrDefault(candidate => PathEquals(candidate, infoTextPath));
             TMP_Text text = target?.GetComponent<TMP_Text>();
             if (text == null)
-                throw new InvalidOperationException($"CharacterSetting InfoText was not found at '{infoTextPath}'.");
+            {
+                Debug.LogWarning($"[CharacterSetting InfoText Repair] UI 구조가 달라 복구 작업을 건너뜁니다: '{infoTextPath}'. 번역 데이터 동기화는 유지됩니다.");
+                return;
+            }
 
             Transform dynamicTarget = scene.GetRootGameObjects()
                 .SelectMany(root => root.GetComponentsInChildren<Transform>(true))
                 .FirstOrDefault(candidate => PathEquals(candidate, characterInfoTextPath));
             TMP_Text dynamicText = dynamicTarget?.GetComponent<TMP_Text>();
             if (dynamicText == null)
-                throw new InvalidOperationException($"Dynamic CharacterInfoText was not found at '{characterInfoTextPath}'.");
+            {
+                Debug.LogWarning($"[CharacterSetting InfoText Repair] UI 구조가 달라 복구 작업을 건너뜁니다: '{characterInfoTextPath}'. 번역 데이터 동기화는 유지됩니다.");
+                return;
+            }
 
             bool infoTextChanged = ConfigureDynamicText(text);
             bool characterInfoTextChanged = ConfigureDynamicText(dynamicText);

@@ -3228,7 +3228,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 2102000033}
-  localizationKey: ui.bootstrap.text.35e62c42
+  localizationKey: ui.help.shortcut_title
   koreanSource: "\uB2E8\uCD95\uD0A4 \uB3C4\uC6C0\uB9D0"
   automaticallyRegistered: 1
 --- !u!1 &2102000040
@@ -3382,7 +3382,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 2102000043}
-  localizationKey: ui.bootstrap.text.90dd1e6d
+  localizationKey: ui.bootstrap.open_close_this_panel
   koreanSource: "` : \uC774 \uD328\uB110 \uC5F4\uAE30/\uB2EB\uAE30"
   automaticallyRegistered: 1
 --- !u!1 &2102000050

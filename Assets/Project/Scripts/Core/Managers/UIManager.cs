@@ -461,10 +461,44 @@ public class UIManager : Singleton<UIManager>
 
         confirmCanvas.overrideSorting = true;
         int desiredOrder = GetHighestCanvasSortingOrder(confirmCanvas) + Mathf.Max(1, confirmDialogSortingOrderOffset);
-        confirmCanvas.sortingOrder = Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling);
 
-        if (confirmDialogInstance.GetComponent<GraphicRaycaster>() == null)
-            confirmDialogInstance.AddComponent<GraphicRaycaster>();
+        // 튜토리얼 전투 중에는 FocusOverlay가 사라진 단계에서도 확인창이 클릭 가능해야 합니다.
+        // IsInputRestricted만 검사하면 대화/연출 전환 구간에서 정렬이 되돌아갈 수 있습니다.
+        bool tutorialBattle = IsTutorialBattleRun() || BattleFirstTutorialController.IsInputRestricted;
+        if (tutorialBattle)
+        {
+            // 별도 Screen Space Overlay Canvas를 사용하여 TutorialMode보다 항상 위에 표시합니다.
+            // 기존 MainCanvas의 정렬이나 다른 확인창의 표시 방식은 변경하지 않습니다.
+            confirmCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            confirmCanvas.sortingLayerID = SortingLayer.NameToID("Default");
+            confirmCanvas.sortingOrder = 32760;
+        }
+        else
+        {
+            confirmCanvas.sortingOrder = Mathf.Min(desiredOrder, ModalPanelSortingOrderCeiling);
+        }
+
+        GraphicRaycaster confirmRaycaster = confirmDialogInstance.GetComponent<GraphicRaycaster>();
+        if (confirmRaycaster == null)
+            confirmRaycaster = confirmDialogInstance.AddComponent<GraphicRaycaster>();
+        confirmRaycaster.enabled = true;
+        confirmRaycaster.blockingObjects = GraphicRaycaster.BlockingObjects.None;
+
+        if (tutorialBattle)
+        {
+            CanvasGroup dialogGroup = confirmDialogInstance.GetComponent<CanvasGroup>();
+            if (dialogGroup == null)
+                dialogGroup = confirmDialogInstance.AddComponent<CanvasGroup>();
+            dialogGroup.alpha = 1f;
+            dialogGroup.interactable = true;
+            dialogGroup.blocksRaycasts = true;
+            dialogGroup.ignoreParentGroups = true;
+
+            // 선택 버튼이 포커스 차단 레이어보다 우선 Raycast 대상이 되도록 보장합니다.
+            foreach (Button button in confirmDialogInstance.GetComponentsInChildren<Button>(true))
+                button.interactable = true;
+        }
+
     }
 
     private int GetHighestCanvasSortingOrder(Canvas optionCanvas)
@@ -501,11 +535,23 @@ public class UIManager : Singleton<UIManager>
             return;
 
         ShowConfirmDialog(
-            GameLocalization.Get("ui.check.slogan"),
+            GetGiveUpConfirmationMessage(),
             GameLocalization.Get(LocalizationKeys.Dialog.Yes),
             GameLocalization.Get(LocalizationKeys.Dialog.No),
             OnConfirmGiveUpToLobby,
             HideConfirmDialog);
+    }
+
+    // 확인창 Slogan은 동적 문구입니다. 영어 테이블 항목이 아직 반영되지 않은 경우에도
+    // 실제 확인 문구가 Untranslated로 표시되지 않도록 언어별 원문을 사용합니다.
+    private static string GetGiveUpConfirmationMessage()
+    {
+        string localeCode = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code;
+        if (!string.IsNullOrEmpty(localeCode) && localeCode.StartsWith("en", System.StringComparison.OrdinalIgnoreCase))
+            return GameLocalization.Get("ui.check.slogan", "Are you sure you want to give up?");
+        if (!string.IsNullOrEmpty(localeCode) && localeCode.StartsWith("ko", System.StringComparison.OrdinalIgnoreCase))
+            return GameLocalization.Get("ui.check.slogan", "정말로 포기하시겠습니까?");
+        return GameLocalization.Get("ui.check.slogan");
     }
 
     public void ShowQuitConfirm()
@@ -542,6 +588,9 @@ public class UIManager : Singleton<UIManager>
             return;
         }
 
+        if (TutorialBattleSequence.IsPresentationRunning)
+            TutorialBattleSequence.NotifyModalInteraction();
+
         confirmDialogUI.Configure(
             message,
             string.IsNullOrWhiteSpace(yesText) ? GameLocalization.Get(LocalizationKeys.Dialog.Yes) : yesText,
@@ -556,6 +605,9 @@ public class UIManager : Singleton<UIManager>
     {
         if (confirmDialogInstance == null)
             return;
+
+        if (TutorialBattleSequence.IsPresentationRunning)
+            TutorialBattleSequence.NotifyModalInteraction();
 
         if (confirmDialogUI != null)
             confirmDialogUI.ClearButtonAnimationState();
