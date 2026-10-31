@@ -40,6 +40,7 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
     private readonly List<BattleBagItemSlotUI> relicSlots = new();
     private readonly List<BattleBagItemSlotUI> skillSlots = new();
     private string statisticsTooltipContent = string.Empty;
+    public BattleRunCharacterStatisticsData CurrentStatistics { get; private set; }
 
     private void Awake()
     {
@@ -78,6 +79,7 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         statisticsOverlayController = overlayController != null
             ? overlayController
             : statisticsOverlayController;
+        CurrentStatistics = statistics;
         statisticsTooltipContent = BuildStatisticsTooltip(statistics);
         statisticsOverlayController?.HideStatisticsOverlay(this);
         SetEquipmentSlots(character);
@@ -89,6 +91,7 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
     {
         statisticsOverlayController?.HideStatisticsOverlay(this);
         statisticsTooltipContent = string.Empty;
+        CurrentStatistics = null;
         gameObject.SetActive(false);
     }
 

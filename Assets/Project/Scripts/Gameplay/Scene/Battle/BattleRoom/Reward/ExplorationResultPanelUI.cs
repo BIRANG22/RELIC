@@ -1222,10 +1222,63 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             return;
 
         statisticsOverlayOwner = owner;
-        SetText(statisticsOverlayText, text);
+        bool structured = BindStatisticsOverlayValues(owner != null ? owner.CurrentStatistics : null);
+        if (!structured)
+            SetText(statisticsOverlayText, text);
         PositionStatisticsOverlay(source);
         statisticsOverlayRoot.SetActive(true);
         statisticsOverlayRoot.transform.SetAsLastSibling();
+    }
+
+    // 새 통계 오버레이의 항목별 Value 및 타이틀을 캐릭터 데이터와 연결합니다.
+    private bool BindStatisticsOverlayValues(BattleRunCharacterStatisticsData data)
+    {
+        if (statisticsOverlayRoot == null || data == null)
+            return false;
+
+        Transform root = statisticsOverlayRoot.transform;
+        // 기존 단일 텍스트 툴팁 프리팹과 호환됩니다.
+        if (FindChildRecursive(root, "Kill_count") == null ||
+            FindChildRecursive(root, "Damage_dealt") == null ||
+            FindChildRecursive(root, "Damage_taken") == null ||
+            FindChildRecursive(root, "Buff_amount") == null ||
+            FindChildRecursive(root, "Deaths") == null)
+            return false;
+
+        SetStatisticsOverlayEntry(root, "Kill_count", "ui.exploration.result.monster_kills", "몬스터 처치", data.KillCount);
+        SetStatisticsOverlayEntry(root, "Damage_dealt", "ui.exploration.result.damage_dealt", "입힌 피해량", data.DamageDealt);
+        SetStatisticsOverlayEntry(root, "Damage_taken", "ui.exploration.result.damage_taken", "받은 피해량", data.DamageTaken);
+        SetStatisticsOverlayEntry(root, "Buff_amount", "ui.exploration.result.buffs_applied", "버프 부여량", data.BuffApplied);
+        SetStatisticsOverlayEntry(root, "Deaths", "ui.exploration.result.incapacitated", "전투불능 횟수", data.DeathCount);
+        return true;
+    }
+
+    private static void SetStatisticsOverlayEntry(Transform root, string objectName, string key, string fallback, int count)
+    {
+        Transform entry = FindChildRecursive(root, objectName);
+        if (entry == null)
+            return;
+
+        // Value는 직계 자식만 사용하여 다른 통계의 Value와 충돌하지 않습니다.
+        Transform value = entry.Find("Value");
+        TMP_Text valueText = value != null ? value.GetComponent<TMP_Text>() : null;
+        if (valueText == null && value != null)
+            valueText = value.GetComponentInChildren<TMP_Text>(true);
+        SetText(valueText, Mathf.Max(0, count).ToString());
+
+        // 항목 루트의 TMP를 우선 사용하고, 없으면 Value 이외의 텍스트를 사용합니다.
+        TMP_Text label = entry.GetComponent<TMP_Text>();
+        if (label == null)
+        {
+            foreach (TMP_Text candidate in entry.GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (value != null && candidate.transform.IsChildOf(value))
+                    continue;
+                label = candidate;
+                break;
+            }
+        }
+        SetText(label, GameLocalization.Get(key, fallback));
     }
 
     private void PositionStatisticsOverlay(RectTransform source)

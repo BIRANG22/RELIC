@@ -138,45 +138,45 @@ S_Core_40,단죄의 쐐기,Core,Unique,Ulti,EnemyParty,1,3,Char_04,Attack,E_Remo
 스킬ID,이름,대상,점유칸,효과ID,수치계수,횟수계수,그리드이동,범위ID,타임라인표기,효과설명,아이콘,타입
 SkillId,Name,Target,TimelineEntryCost,EffectIds,ValueRate,CountRate,GridMove,RangeId,TimelineNotation,EffectDesc,SkillIcon,SkillType,
 S_Monster_01,이동,Self,1,E_Move,0,1,0,Range_18,Move,가까운 캐릭터 주변으로 1칸 접근한다.,icon_mon_skill_001,이동,
-S_Monster_02,점액투척,PlayerParty,1,E_Strike,8,1,0,Range_m_01,Attack,가장 가까운 대상의 위치에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_002,공격,
+S_Monster_02,점액투척,PlayerParty,1,E_Strike,6,1,0,Range_m_01,Attack,가장 가까운 대상의 위치에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_002,공격,
 S_Monster_03,이동,Self,1,E_Move,0,1,0,Range_17,Move,가까운 캐릭터 주변으로 1칸 접근한다.,icon_mon_skill_001,이동,
-S_Monster_04,덮치기,PlayerParty,1,E_Strike,5,1,0,Range_01,Attack,전방에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_003,공격,
+S_Monster_04,덮치기,PlayerParty,1,E_Strike,4,1,0,Range_01,Attack,전방에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_003,공격,
 S_Monster_05,이동,Self,1,E_Move,0,1,0,Range_19,Move,가장 가까운 캐릭터에게서 최대 2칸 멀어진다.,icon_mon_skill_001,이동,
-S_Monster_06,화염폭발,PlayerParty,1,E_Strike,10,1,0,Range_20,Attack,주변에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_004,공격,
+S_Monster_06,화염폭발,PlayerParty,1,E_Strike,8,1,0,Range_20,Attack,주변에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_004,공격,
 S_Monster_07,원한의 불꽃,EnemyParty,1,E_Grudge,1,1,0,Range_All,Buff,모든 변이체에게 {E_Grudge}를 {ValueRate1} 부여한다.,icon_mon_skill_005,버프,
 S_Monster_08,이동,Self,1,E_Move,0,1,0,Range_19,Move,가장 가까운 캐릭터에게서 최대 2칸 멀어진다.,icon_mon_skill_001,이동,
-S_Monster_09,침식폭발,PlayerParty,1,E_Strike,10,1,0,Range_20,Attack,주변에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_006,공격,
+S_Monster_09,침식폭발,PlayerParty,1,E_Strike,8,1,0,Range_20,Attack,주변에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_006,공격,
 S_Monster_10,침식확산,PlayerParty,1,E_Corrosion,1,1,0,Range_All,Debuff,모든 캐릭터에게 {E_Corrosion}을 {ValueRate1} 부여한다.,icon_mon_skill_007,디버프,
 S_Monster_11,이동,Self,1,E_Move,0,1,0,Range_19,Move,캐릭터와 같은 라인을 맞추기 위해 1칸 또는 2칸 이동한다.,icon_mon_skill_001,이동,
-S_Monster_12,들이받기,PlayerParty,1,E_Strike;E_Knockback,12;1,1,6,Range_06,Attack,"돌진하여 대상에게 {E_Strike}를 {ValueRate1}만큼 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",icon_mon_skill_008,돌진,
+S_Monster_12,들이받기,PlayerParty,1,E_Strike;E_Knockback,10;1,1,6,Range_06,Attack,"돌진하여 대상에게 {E_Strike}를 {ValueRate1}만큼 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",icon_mon_skill_008,돌진,
 S_Monster_13,이동,Self,1,E_Move,0,1,0,Range_18,Move,가까운 캐릭터 주변으로 1칸 이동한다.,icon_mon_skill_001,이동,
-S_Monster_14,대폭발,PlayerParty,2,E_Strike,25,1,0,Range_21,Attack,범위 내 대상에게 {E_Strike}를 {ValueRate1}만큼 주고 사망한다.,icon_mon_skill_009,공격,
+S_Monster_14,대폭발,PlayerParty,2,E_Strike,18,1,0,Range_21,Attack,범위 내 대상에게 {E_Strike}를 {ValueRate1}만큼 주고 사망한다.,icon_mon_skill_009,공격,
 S_Monster_15,이동,Self,1,E_Move,0,1,0,Range_18,Move,가장 가까운 캐릭터의 전방으로 1칸 이동한다.,icon_mon_skill_001,이동,
-S_Monster_16,횡베기,PlayerParty,1,E_Strike,9,1,0,Range_10,Attack,범위에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_010,공격,
-S_Monster_17,내려찍기,PlayerParty,1,E_Strike,6,1,0,Range_02,Attack,전방에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_011,공격,
+S_Monster_16,횡베기,PlayerParty,1,E_Strike,8,1,0,Range_10,Attack,범위에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_010,공격,
+S_Monster_17,내려찍기,PlayerParty,1,E_Strike,4,1,0,Range_02,Attack,전방에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_011,공격,
 S_Monster_18,이동,Self,1,E_Move,0,1,0,Range_19,Move,가장 가까운 캐릭터에게서 최대 2칸 멀어진다.,icon_mon_skill_001,이동,
-S_Monster_19,직사,PlayerParty,1,E_Strike,8,1,0,Range_06,Attack,전방의 첫 대상에게 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_012,공격,
-S_Monster_20,곡사,PlayerParty,1,E_Strike,5,2,0,Range_m_02,Attack,가장 먼 대상의 위치에 {E_Strike}를 {ValueRate1}만큼 {CountRate1}회 준다.,icon_mon_skill_013,공격,
+S_Monster_19,직사,PlayerParty,1,E_Strike,7,1,0,Range_06,Attack,전방의 첫 대상에게 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_012,공격,
+S_Monster_20,곡사,PlayerParty,1,E_Strike,4,2,0,Range_m_02,Attack,가장 먼 대상의 위치에 {E_Strike}를 {ValueRate1}만큼 {CountRate1}회 준다.,icon_mon_skill_013,공격,
 S_Monster_21,이동,Self,1,E_Move,0,1,0,Range_18,Move,가까운 캐릭터를 향해 1칸 이동한다.,icon_mon_skill_001,이동,
-S_Monster_22,방패돌진,PlayerParty,1,E_Strike;E_Knockback,15;6,1,6,Range_06,Attack,"돌진하여 대상에게 {E_Strike}를 {ValueRate1}만큼 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",icon_mon_skill_014,공격,
-S_Monster_23,방패강타,PlayerParty,1,E_Strike;E_Knockback,12;1,1,0,Range_16,Attack,"범위에 {E_Strike}를 {ValueRate1}만큼 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",icon_mon_skill_015,공격,
+S_Monster_22,방패돌진,PlayerParty,1,E_Strike;E_Knockback,12;6,1,6,Range_06,Attack,"돌진하여 대상에게 {E_Strike}를 {ValueRate1}만큼 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",icon_mon_skill_014,공격,
+S_Monster_23,방패강타,PlayerParty,1,E_Strike;E_Knockback,9;1,1,0,Range_16,Attack,"범위에 {E_Strike}를 {ValueRate1}만큼 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",icon_mon_skill_015,공격,
 S_Monster_24,대지진,PlayerParty,1,E_Strike,4,1,0,Range_All,Attack,모든 범위에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_016,공격,
 S_Monster_25,그림자걸음,Self,1,E_Move,0,1,0,Range_All,Move,그림자의 위치로 순간이동한다.,icon_mon_skill_017,이동,
-S_Monster_26,심연 찌르기,PlayerParty,1,E_Pierce,10,1,0,Range_03,Attack,전방에 {E_Pierce}를 {ValueRate1}만큼 준다.,icon_mon_skill_018,공격,
-S_Monster_27,어둠 가르기,PlayerParty,1,E_Strike,12,1,0,Range_15,Attack,범위에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_019,공격,
+S_Monster_26,심연 찌르기,PlayerParty,1,E_Pierce,9,1,0,Range_03,Attack,전방에 {E_Pierce}를 {ValueRate1}만큼 준다.,icon_mon_skill_018,공격,
+S_Monster_27,어둠 가르기,PlayerParty,1,E_Strike,10,1,0,Range_15,Attack,범위에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_019,공격,
 S_Monster_28,그림자 소용돌이,PlayerParty,1,E_Strike;E_Grab,2;1,1,0,Range_13,Attack,"범위에 {E_Strike}를 {ValueRate1}만큼 주고, {E_Grab}을 {ValueRate2}칸 적용한다.",icon_mon_skill_020,공격,
 S_Monster_29,이동,Self,1,E_Move,0,1,0,Range_18,Move,가장 가까운 캐릭터에게서 1칸 멀어진다.,icon_mon_skill_001,이동,
-S_Monster_30,망령쇄도,PlayerParty,1,E_Pierce,12,1,0,Range_06,Attack,전방에 {E_Pierce}를 {ValueRate1}만큼 준다.,icon_mon_skill_021,공격,
-S_Monster_31,혼령폭발,PlayerParty,1,E_Strike,14,1,0,Range_m_02,Attack,가장 가까운 대상의 위치에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_022,공격,
-S_Monster_32,피의저주,PlayerParty,1,E_Bleed,3,1,0,Range_m_01,Debuff,가장 먼 대상의 위치에 {E_Bleed}를 {ValueRate1} 부여한다.,icon_mon_skill_023,디버프,
+S_Monster_30,망령쇄도,PlayerParty,1,E_Pierce,10,1,0,Range_06,Attack,전방에 {E_Pierce}를 {ValueRate1}만큼 준다.,icon_mon_skill_021,공격,
+S_Monster_31,혼령폭발,PlayerParty,1,E_Strike,8,1,0,Range_m_02,Attack,가장 가까운 대상의 위치에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_022,공격,
+S_Monster_32,피의저주,PlayerParty,1,E_Bleed,2,1,0,Range_m_01,Debuff,가장 먼 대상의 위치에 {E_Bleed}를 {ValueRate1} 부여한다.,icon_mon_skill_023,디버프,
 S_Monster_33,이동,Self,1,E_Move,0,1,0,Range_19,Move,가장 가까운 캐릭터에게서 최대 2칸 멀어진다.,icon_mon_skill_001,이동,
-S_Monster_34,사냥 표식,PlayerParty,1,E_Strike,8,1,0,Range_m_01,Attack,"모든 캐릭터의 위치를 지정하고, 해당 위치에 {E_Strike}를 {ValueRate1}만큼 준다.",icon_mon_skill_024,공격,
-S_Monster_35,사방 찢기,PlayerParty,1,E_Strike,10,1,0,Range_18,Attack,주변에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_025,공격,
+S_Monster_34,사냥 표식,PlayerParty,1,E_Strike,6,1,0,Range_m_01,Attack,"모든 캐릭터의 위치를 지정하고, 해당 위치에 {E_Strike}를 {ValueRate1}만큼 준다.",icon_mon_skill_024,공격,
+S_Monster_35,사방 찢기,PlayerParty,1,E_Strike,8,1,0,Range_18,Attack,주변에 {E_Strike}를 {ValueRate1}만큼 준다.,icon_mon_skill_025,공격,
 S_Monster_36,거미줄 갑주,Self,1,E_Barrier,1,1,0,Range_Self,Buff,자신에게 {E_Barrier}를 {ValueRate1} 부여한다.,icon_mon_skill_026,버프,
 S_Monster_37,고치 심기,Self,2,E_Spawn_Spider_Egg,1,1,0,Range_m_01,Debuff,주변에 {E_Spawn_Spider_Egg}을 {ValueRate1}개 설치한다.,icon_mon_skill_027,설치,
 S_Monster_38,이동,Self,1,E_Move,0,1,0,Range_18,Move,가까운 캐릭터를 향해 1칸 이동한다.,icon_mon_skill_001,이동,
-S_Monster_39,사냥 강습,PlayerParty,1,E_Strike;E_Knockback,15;1,1;1,0,Range_18,Attack,"낙인에 도약하여 {E_Strike}를 {ValueRate1}만큼 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",icon_mon_skill_028,공격,
-S_Monster_40,맹독 세례,PlayerParty,1,E_Strike;E_Poison,3;3,1;1,0,Range_m_02,Attack,"가장 먼 대상의 위치에 {E_Strike}를 {ValueRate1}만큼 주고, {E_Poison}을 {ValueRate2} 부여한다.",icon_mon_skill_029,공격,
+S_Monster_39,사냥 강습,PlayerParty,1,E_Strike;E_Knockback,14;1,1;1,0,Range_18,Attack,"낙인에 도약하여 {E_Strike}를 {ValueRate1}만큼 주고, {E_Knockback}을 {ValueRate2}칸 적용한다.",icon_mon_skill_028,공격,
+S_Monster_40,맹독 세례,PlayerParty,1,E_Strike;E_Poison,4;2,1;1,0,Range_m_02,Attack,"가장 먼 대상의 위치에 {E_Strike}를 {ValueRate1}만큼 주고, {E_Poison}을 {ValueRate2} 부여한다.",icon_mon_skill_029,공격,
 ,,,,,,,,,,,,,
 ,,,,,,,,,,,,,
 ,,,,,,,,,,,,,
@@ -772,9 +772,9 @@ Rune_69,은총·심판,Char_04,0,E_Rune_Vulnerable_Bonus_Percent,75,1,0,15,자�
 Rune_70,은총·헌신,Char_04,0,E_Rune_Max_Unique_Resource_All_Enemy_Vulnerable,1,1,0,3,카르마가 최대치에 도달하면 모든 적에게 취약을 {ValueRate1} 부여한다.,Exclusive
 Rune_71,해방·갈증,Char_05,0,E_Exploration_Start_Unique_Resource,3,1,0,9,탐사 시작 시 카르마를 {ValueRate1} 회복한다.,Exclusive
 Rune_72,해방·격정,Char_05,0,E_Unique_Resource_Max_Reached_Armor,5,1,0,12,카르마가 최대에 도달하면 다음 턴에 방어도를 {ValueRate1} 얻는다.,Exclusive
-Rune_73,해방·사신,Char_05,S_Unique_09,E_Rune_Target_Damage_Value_Delta,3,1,0,6,데스사이드의 피해량이 {ValueRate1} 증가한다.,Exclusive
-Rune_74,해방·혈화,Char_05,S_Unique_10,E_Rune_Target_Damage_Value_Delta,2,1,0,15,스칼렛노바의 피해량이 {ValueRate1} 증가한다.,Exclusive
-Rune_75,해방·참월,Char_05,S_Ability_09;S_Ability_10,E_Rune_Target_Damage_Value_Delta,1,1,0,3,크림슨체인과 크레센트스윙의 피해량이 {ValueRate1} 증가한다.,Exclusive
+Rune_73,해방·사신,Char_05,0,E_Rune_Target_Damage_Value_Delta,3,1,0,6,데스사이드의 피해량이 {ValueRate1} 증가한다.,Exclusive
+Rune_74,해방·혈화,Char_05,0,E_Rune_Target_Damage_Value_Delta,2,1,0,15,스칼렛노바의 피해량이 {ValueRate1} 증가한다.,Exclusive
+Rune_75,해방·참월,Char_05,0,E_Rune_Target_Damage_Value_Delta,1,1,0,3,크림슨체인과 크레센트스윙의 피해량이 {ValueRate1} 증가한다.,Exclusive
 Rune_01,각인·불안정한 원천,All,0,E_Max_HP;E_Max_Cost,-3;1,1;1,60,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 최대 마나가 {ValueRate2} 증가한다.",Common
 Rune_02,각인·메마른 고동,All,0,E_Max_HP;E_Cost_Recovery_Delta,-5;1,1;1,80,0,"최대 생명력이 {ValueRate1} 감소하는 대신, 마나 재생량이 {ValueRate2} 증가한다.",Common
 Rune_03,각인·굳어진 육신,All,0,E_Max_Cost;E_Max_HP,-1;4,1;1,65,0,"최대 마나가 {ValueRate1} 감소하는 대신, 최대 생명력이 {ValueRate2} 증가한다.",Common
@@ -937,7 +937,7 @@ Erosion_03_08,무거운 발걸음,Level03_8,3,3,Erosion_03_08,Independent,이동
 # Tutorial
 튜토리얼ID,진행순서,맵ID,시작 파티,시작 침식도,시작 생명력(%),몬스터 생성 지연,단계,대화 캐릭터ID,출력,문구 키,한국어 대사/안내,넘김 방식,강조 UI,완료 안내 키,완료 안내,툴팁 위치
 TutorialId,Order,MapId,StartParty,InitialErosion,InitialHpPercent,DeferMonsterSpawn,Phase,SpeakerId,Text output,TextKey,TextKO,Advance,HighlightTarget,CompleteTextKey,CompleteTextKO,TooltipPosition
-Tutorial_01,1,Map_26,"Char_01,Char_02",42,"70,65",1,Arrival,,BattleMapIntroText,tutorial.t01.arrival,거점 인근,Auto,
+Tutorial_01,1,Map_26,"Char_01,Char_02",42,"70,70",1,Arrival,,BattleMapIntroText,tutorial.t01.arrival,거점 인근,Auto,
 Tutorial_01,2,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.01,후아! 생각보다 먼 길인데? 슬슬 몸이 무거워지는걸.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,3,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.02,이러다 거점에 도착하기도 전에 지치겠어!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,4,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.03,불필요한 체력 소모는 피하시죠. 거점까지 얼마 남지 않았습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
