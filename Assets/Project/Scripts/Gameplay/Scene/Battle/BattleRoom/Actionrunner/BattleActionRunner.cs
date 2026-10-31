@@ -1925,6 +1925,14 @@ public class BattleActionRunner
         if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
             yield break;
 
+        // 예약 중 제자리 Flip 미리보기로 본체가 마지막 방향을 보고 있더라도,
+        // 각 공격의 실제 실행 시에는 해당 공격을 예약한 방향으로 다시 맞춥니다.
+        // 공격 범위 계산과 캐릭터 시각 방향이 서로 달라지지 않도록 동기화합니다.
+        BattleUnitFacing attackFacing = attacker.GetComponent<BattleUnitFacing>();
+        if (attackFacing != null)
+            attackFacing.FaceRight(command.Direction == BattleDirection.Right);
+        attacker.RuntimeData.Direction = command.Direction;
+
         if (onPlayerSkillStarted != null)
         {
             IEnumerator skillStartPresentation = onPlayerSkillStarted.Invoke(command);

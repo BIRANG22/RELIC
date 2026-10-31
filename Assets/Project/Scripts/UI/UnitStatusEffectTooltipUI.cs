@@ -776,18 +776,39 @@ public class UnitStatusEffectTooltipUI : MonoBehaviour
         if (tooltipCanvas == null)
             return;
 
-        int highest = 0;
-        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        // Sorting Layer takes precedence over sortingOrder. Follow the highest
+        // active UI layer, then put this tooltip ahead of its canvases.
+        int highestLayer = tooltipCanvas.sortingLayerID;
+        int highestLayerValue = SortingLayer.GetLayerValueFromID(highestLayer);
+        int highestOrder = 0;
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         for (int i = 0; i < canvases.Length; i++)
         {
             Canvas canvas = canvases[i];
-            if (canvas == null || canvas == tooltipCanvas)
+            if (canvas == null || canvas == tooltipCanvas ||
+                canvas.transform.IsChildOf(transform))
                 continue;
 
-            highest = Mathf.Max(highest, canvas.sortingOrder);
+            int layerValue = SortingLayer.GetLayerValueFromID(canvas.sortingLayerID);
+            if (layerValue > highestLayerValue)
+            {
+                highestLayerValue = layerValue;
+                highestLayer = canvas.sortingLayerID;
+                highestOrder = canvas.sortingOrder;
+            }
+            else if (layerValue == highestLayerValue)
+            {
+                highestOrder = Mathf.Max(highestOrder, canvas.sortingOrder);
+            }
         }
 
-        tooltipCanvas.sortingOrder = highest + Mathf.Max(1, sortingOrderOffset);
+        tooltipCanvas.overrideSorting = true;
+        tooltipCanvas.sortingLayerID = highestLayer;
+        // Avoid a sorting-order feedback loop by updating only when needed.
+        int targetOrder = Mathf.Min(32767, highestOrder + Mathf.Max(1, sortingOrderOffset));
+        if (tooltipCanvas.sortingOrder < targetOrder ||
+            tooltipCanvas.sortingLayerID != highestLayer)
+            tooltipCanvas.sortingOrder = targetOrder;
     }
 
     private void ShowWithFade()

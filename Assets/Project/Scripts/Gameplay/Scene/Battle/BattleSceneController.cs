@@ -2212,10 +2212,30 @@ public class BattleSceneController : MonoBehaviour
 
     private void PlayPreparedBattleRoomPartyEntry()
     {
+        // The transition uncover callback can run before the room intro/load gate
+        // completes. PlayPreparedPartyEntry would otherwise consume the request
+        // before BattleRoomLoader has created/prepared its party actors.
+        StartCoroutine(PlayPreparedBattleRoomPartyEntryWhenReady());
+    }
+
+    private IEnumerator PlayPreparedBattleRoomPartyEntryWhenReady()
+    {
         BattleRoomLoader loader = battleRoom != null
             ? battleRoom.GetComponentInChildren<BattleRoomLoader>(true)
             : null;
-        loader?.PlayPreparedPartyEntry(
+        if (loader == null)
+        {
+            Debug.LogWarning("[BattleSceneController] BattleRoomLoader is missing; cannot play party entry.", this);
+            yield break;
+        }
+
+        while (battleRoom != null && battleRoom.activeInHierarchy && !loader.IsLoaded)
+            yield return null;
+
+        if (battleRoom == null || !battleRoom.activeInHierarchy || !loader.IsLoaded)
+            yield break;
+
+        loader.PlayPreparedPartyEntry(
             DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true
                 ? battleTransition : null);
     }
