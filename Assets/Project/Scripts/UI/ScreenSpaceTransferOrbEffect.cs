@@ -89,6 +89,13 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
             StartCoroutine(Play(startScreen, endScreen, color));
     }
 
+    /// <summary>Always tint the moving particles using the explicitly supplied reward color.</summary>
+    public void PlayDetachedForcedColor(Vector2 startScreen, Vector2 endScreen, Color color)
+    {
+        if (!started && isActiveAndEnabled)
+            StartCoroutine(PlayInternal(startScreen, endScreen, color, true));
+    }
+
     /// <summary>Play using the VFX prefab's own colors, ignoring rarity and tint settings.</summary>
     public void PlayDetachedOriginalColors(Vector2 startScreen, Vector2 endScreen)
     {

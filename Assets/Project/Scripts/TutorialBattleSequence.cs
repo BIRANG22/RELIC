@@ -1249,6 +1249,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             tutorialEndTurnButton = null;
         }
         IsPresentationRunning = false;
+        IsBlockingBattleStart = false;
         RestoreGridVisuals();
         HideUi();
         SetBattleUiPointerBlocked(false);
