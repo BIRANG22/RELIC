@@ -56050,6 +56050,7 @@ GameObject:
   - component: {fileID: 903570513}
   - component: {fileID: 903570512}
   - component: {fileID: 903570511}
+  - component: {fileID: 903570514}
   m_Layer: 5
   m_Name: Storage_Scroll View
   m_TagString: Untagged
@@ -56148,6 +56149,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 903570509}
   m_CullTransparentMesh: 1
+--- !u!114 &903570514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 903570509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c92df5cf896ba42a8d3a8dd5bd2ae2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wheelStep: 0.12
+  invertDirection: 0
+  edgeSnapThreshold: 0.02
 --- !u!1 &906308850
 GameObject:
   m_ObjectHideFlags: 0
@@ -71512,6 +71528,7 @@ GameObject:
   - component: {fileID: 1182663099}
   - component: {fileID: 1182663098}
   - component: {fileID: 1182663097}
+  - component: {fileID: 1182663100}
   m_Layer: 5
   m_Name: Compound_Scroll View
   m_TagString: Untagged
@@ -71610,6 +71627,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1182663095}
   m_CullTransparentMesh: 1
+--- !u!114 &1182663100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1182663095}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c92df5cf896ba42a8d3a8dd5bd2ae2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wheelStep: 0.12
+  invertDirection: 0
+  edgeSnapThreshold: 0.02
 --- !u!1 &1182823340
 GameObject:
   m_ObjectHideFlags: 0

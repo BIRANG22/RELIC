@@ -332,6 +332,52 @@ namespace Relic.Gameplay.Data
                     IsPassive = infinite,
                     IsMonsterInnateTrait = true
                 });
+
+            EnsureArabellaInnateTraits();
+        }
+
+        // Keep phase-specific innate traits correct for fresh and restored runtime data.
+        public void EnsureArabellaInnateTraits()
+        {
+            bool phaseOne = string.Equals(MonsterId, "Mon_12_1", StringComparison.OrdinalIgnoreCase);
+            bool phaseTwo = string.Equals(MonsterId, "Mon_12_2", StringComparison.OrdinalIgnoreCase);
+            if (!phaseOne && !phaseTwo)
+                return;
+
+            StatusEffects ??= new List<StatusEffectRuntimeData>();
+            bool hasWeb = false;
+            bool hasEntanglement = false;
+            for (int i = StatusEffects.Count - 1; i >= 0; i--)
+            {
+                StatusEffectRuntimeData status = StatusEffects[i];
+                if (status == null || !status.IsMonsterInnateTrait)
+                    continue;
+
+                bool web = string.Equals(status.EffectId, "E_WebCreation", StringComparison.OrdinalIgnoreCase);
+                bool entanglement = string.Equals(status.EffectId, "E_Entanglement", StringComparison.OrdinalIgnoreCase);
+                if (entanglement && (!phaseTwo || hasEntanglement) || web && hasWeb)
+                {
+                    StatusEffects.RemoveAt(i);
+                    continue;
+                }
+
+                if (web) hasWeb = true;
+                if (entanglement) hasEntanglement = true;
+            }
+
+            if (!hasWeb)
+                StatusEffects.Add(new StatusEffectRuntimeData("E_WebCreation", 1)
+                {
+                    IsPassive = true,
+                    IsMonsterInnateTrait = true
+                });
+
+            if (phaseTwo && !hasEntanglement)
+                StatusEffects.Add(new StatusEffectRuntimeData("E_Entanglement", 1)
+                {
+                    IsPassive = true,
+                    IsMonsterInnateTrait = true
+                });
         }
 
         private void InitializePossibleSkills(MonsterMasterData masterData)

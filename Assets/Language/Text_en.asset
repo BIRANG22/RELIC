@@ -2159,8 +2159,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186362
-    m_Localized: A highly viscous gel that formed the body of Merck. Traces of eroded
-      tissue remain.
+    m_Localized: Sticky gel obtained from the eroded body of Murk.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186363
@@ -2168,8 +2167,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186365
-    m_Localized: Soft slime collected from a blob. It changes shape easily but maintains
-      sticky properties.
+    m_Localized: Blob mucus that changes shape easily.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186366
@@ -2177,8 +2175,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186368
-    m_Localized: A hot core taken out from inside the Lancer. Even after it is turned
-      off, a slight amount of heat and energy remains.
+    m_Localized: A Lancer core that still holds a faint warmth.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186369
@@ -2186,26 +2183,23 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186371
-    m_Localized: A cloudy, discolored core obtained from Blight. There is an energy
-      that slowly erodes the surrounding materials.
+    m_Localized: A Blight core imbued with an eroding aura.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186372
-    m_Localized: Hard Spit
+    m_Localized: Hard Stinger
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186374
-    m_Localized: Hard needles that fell from the body of a Vespa. Mutated toxic ingredients
-      remain at the sharp end.
+    m_Localized: A sharp Vespa stinger that still carries venom.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186375
-    m_Localized: Spider Legs
+    m_Localized: Spider Leg
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186377
-    m_Localized: A solid leg cut from Cinder. The outer shell is light but does not
-      break easily on impact.
+    m_Localized: A Cinder leg covered in a tough shell.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186378
@@ -2213,8 +2207,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186380
-    m_Localized: An ax used by Draug. The old metal surface shows layer upon layer
-      of traces of Erosion and decay.
+    m_Localized: A Draugr axe marked by erosion and decay.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186381
@@ -2222,8 +2215,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186383
-    m_Localized: The tip of the arrow used by Barlow. Although it is heavily rusted,
-      the tip still retains the characteristic aura of the mutant.
+    m_Localized: A Barrow arrowhead that retains traces of mutation.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186384
@@ -2231,8 +2223,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186386
-    m_Localized: A fragment that fell from Luke's shield. Even though it is a small
-      piece, it is strong enough to withstand significant impact.
+    m_Localized: "A fragment of Rook\u2019s shield that withstands heavy impacts."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186387
@@ -2240,8 +2231,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186389
-    m_Localized: A black piece that fell off from Nocturne's armor. When exposed
-      to light, the shadow on the surface shakes slightly.
+    m_Localized: "A piece of Nocturne\u2019s armor with shifting shadows."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186390
@@ -2249,8 +2239,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186392
-    m_Localized: A crystal that condenses the power associated with Mort's necromancy.
-      If you hold it close, you can feel a faint sound.
+    m_Localized: A Mort crystal infused with necromantic power.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186393
@@ -2258,8 +2247,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380608
-    m_Localized: A fragment of the crown that Arabella carried. It contains signs
-      of strong Erosion.
+    m_Localized: "Arabella\u2019s crown marked by severe erosion."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380634
@@ -5490,11 +5478,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5456895886818223323
-    m_Localized: First Expedition {Current}/{Target}
+    m_Localized: First Expedition - Retrieve the Awakening Core {Current}/{Target}
     m_Metadata:
       m_Items: []
   - m_Id: 469011341431732811
-    m_Localized: Prepare for the expedition
+    m_Localized: Expedition Preparation
     m_Metadata:
       m_Items: []
   - m_Id: 5126323777902196562
@@ -7770,6 +7758,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 29743157478662144
     m_Localized: Arrive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29830859909734400
+    m_Localized: Awakening Core
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29830859968454656
+    m_Localized: A crimson core containing Arabela's awakened power.
     m_Metadata:
       m_Items: []
   references:

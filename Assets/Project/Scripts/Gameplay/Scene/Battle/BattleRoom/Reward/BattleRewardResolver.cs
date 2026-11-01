@@ -51,8 +51,71 @@ public class BattleRewardResolver : MonoBehaviour
         AddBattleMapRelicReward(rewards, dropSettings);
         AddMemoryReward(rewards, dropSettings);
         MergeDuplicateItemRewards(rewards);
+        AddQuestClearRewards(rewards);
+        NormalizeQuestItemRewards(rewards);
 
         return rewards;
+    }
+
+    private static void NormalizeQuestItemRewards(List<BattleRewardData> rewards)
+    {
+        if (rewards == null || DataManager.Instance == null)
+            return;
+
+        HashSet<string> seen = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+        for (int i = 0; i < rewards.Count; i++)
+        {
+            BattleRewardData reward = rewards[i];
+            if (reward == null || reward.Type != BattleRewardType.Item || string.IsNullOrWhiteSpace(reward.RewardId))
+                continue;
+
+            string id = reward.RewardId.Trim();
+            ItemData item = DataManager.Instance.ItemDatabase?.Get(id);
+            if ((item == null || item.RewardStage <= 0) && !string.Equals(id, "Item_013", System.StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (!seen.Add(id))
+            {
+                rewards.RemoveAt(i--);
+                continue;
+            }
+
+            reward.Amount = 1;
+            // Quest rewards must precede currency and ordinary drops.
+            if (i > 0)
+            {
+                rewards.RemoveAt(i);
+                rewards.Insert(0, reward);
+            }
+        }
+    }
+
+    private static void AddQuestClearRewards(List<BattleRewardData> rewards)
+    {
+        BattleRuntimeData battle = DataManager.Instance?.BattleRuntimeStore?.Get();
+        MapRuntimeData map = DataManager.Instance?.MapRuntimeStore?.Get();
+        if (battle?.QuestRewardItemIds == null || map == null ||
+            !string.Equals(map.CurrentStage, "Stage1", System.StringComparison.OrdinalIgnoreCase))
+            return;
+
+        foreach (string itemId in battle.QuestRewardItemIds)
+        {
+            if (string.IsNullOrWhiteSpace(itemId) || rewards.Exists(r => r.Type == BattleRewardType.Item && r.RewardId == itemId))
+                continue;
+            ItemData item = DataManager.Instance.ItemDatabase?.Get(itemId);
+            Sprite icon = null;
+            DataManager.Instance.ItemIconDatabase?.TryGetIcon(itemId, out icon);
+            rewards.Insert(0, new BattleRewardData
+            {
+                Type = BattleRewardType.Item,
+                RewardId = itemId,
+                SourceKey = "QuestFirstClear|" + itemId,
+                Amount = 1,
+                Icon = icon,
+                Name = item != null ? GameDataLocalization.ItemName(item) : itemId,
+                Description = item != null ? GameDataLocalization.ItemDescription(item) : string.Empty
+            });
+        }
     }
 
     private void MergeDuplicateItemRewards(List<BattleRewardData> rewards)

@@ -43,6 +43,10 @@ namespace Relic.Gameplay.Data
         {
             icon = null;
 
+            // Stepping on spider webs always applies a harmful status effect.
+            if (string.Equals(effectId, "E_Spider_Web", StringComparison.OrdinalIgnoreCase))
+                return TryGetTypeIcon(EffectType.Harmful, out icon);
+
             if (!string.IsNullOrWhiteSpace(effectId) &&
                 effectDatabase != null &&
                 effectDatabase.TryGet(effectId, out EffectMasterData effect) &&
@@ -62,6 +66,10 @@ namespace Relic.Gameplay.Data
         {
             if (isMonsterInnateTrait)
                 return innateTraitColor;
+
+            // Web snare is a debuff even if its EffectType entry is missing or neutral.
+            if (string.Equals(effectId, "E_Spider_Web", StringComparison.OrdinalIgnoreCase))
+                return harmfulColor;
 
             if (!string.IsNullOrWhiteSpace(effectId) &&
                 effectDatabase != null &&

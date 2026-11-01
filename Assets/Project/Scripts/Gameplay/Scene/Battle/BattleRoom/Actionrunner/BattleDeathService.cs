@@ -1,5 +1,7 @@
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
+using System;
+using Object = UnityEngine.Object;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,6 +11,13 @@ public class BattleDeathService
     private const float DefaultMonsterDeathDestroyDelay = 0.6f;
     private const float SplitArcHeight = 0.85f;
     private const string SplitEffectId = "E_Split";
+    private const string FirstStageId = "Stage1";
+    private const string AwakeningCoreItemId = "Item_013";
+    private const float AwakeningCoreRiseHeight = 0.85f;
+    private const float AwakeningCoreRiseDuration = 0.3f;
+    private const float AwakeningCoreDropDuration = 0.42f;
+    private const float AwakeningCoreDropBounceHeight = 0.18f;
+    private const float AwakeningCoreLandingRotationZ = -18f;
 
     private readonly GridManager gridManager;
     private readonly BattleMonsterSpawner monsterSpawner;
@@ -174,7 +183,27 @@ public class BattleDeathService
         if (!TryBeginMonsterDeath(monster, collectReward))
             yield break;
 
-        yield return new WaitForSeconds(GetMonsterDeathDestroyDelay(monster));
+        bool showAwakeningCoreDrop = ShouldShowAwakeningCoreDrop(monster);
+
+        float fullDeathDuration = GetMonsterDeathDestroyDelay(monster);
+        BattleUnitAnimator deathAnimator = monster.GetComponent<BattleUnitAnimator>();
+        float dissolveStartDelay = deathAnimator != null ? Mathf.Max(0f, deathAnimator.DeadAnimationDuration) : 0f;
+
+        if (showAwakeningCoreDrop)
+        {
+            // Spawn the core when the final-phase death dissolve starts, not after it finishes.
+            if (dissolveStartDelay > 0f)
+                yield return new WaitForSeconds(dissolveStartDelay);
+            if (monster != null && CoroutineHost.Instance != null)
+                CoroutineHost.Instance.StartCoroutine(PlayAwakeningCoreDropPresentation(monster));
+            float remaining = fullDeathDuration - dissolveStartDelay;
+            if (remaining > 0f)
+                yield return new WaitForSeconds(remaining);
+        }
+        else
+        {
+            yield return new WaitForSeconds(fullDeathDuration);
+        }
 
         FinishMonsterDeathAndPlaceBones(monster);
     }
@@ -321,6 +350,128 @@ public class BattleDeathService
             return;
 
         BattleRewardCollector.Instance.CollectMonsterReward(monster.RuntimeData);
+    }
+
+    private static bool ShouldShowAwakeningCoreDrop(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null)
+            return false;
+
+        if (!string.Equals(
+                monster.RuntimeData.MonsterId,
+                ArabellaPhaseTransition.PhaseTwoMonsterId,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (TrialUnlockProgress.Stage3ClearCount > 0)
+            return false;
+
+        MapRuntimeData runtime = DataManager.Instance?.MapRuntimeStore?.Get();
+        if (runtime == null)
+            return false;
+
+        return string.Equals(runtime.CurrentStage, FirstStageId, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private IEnumerator PlayAwakeningCoreDropPresentation(MonsterUnit monster)
+    {
+        if (monster == null)
+            yield break;
+
+        GameObject visualRoot = CreateAwakeningCoreDropVisual(monster);
+        if (visualRoot == null)
+            yield break;
+
+        Transform visualTransform = visualRoot.transform;
+        Vector3 groundPosition = monster.transform.position;
+        groundPosition.z -= 0.02f;
+        Vector3 topPosition = groundPosition + Vector3.up * AwakeningCoreRiseHeight;
+        visualTransform.position = groundPosition;
+        visualTransform.localRotation = Quaternion.identity;
+
+        float elapsed = 0f;
+        while (elapsed < AwakeningCoreRiseDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / AwakeningCoreRiseDuration);
+            float eased = 1f - (1f - t) * (1f - t);
+            visualTransform.position = Vector3.LerpUnclamped(groundPosition, topPosition, eased);
+            yield return null;
+        }
+
+        elapsed = 0f;
+        while (elapsed < AwakeningCoreDropDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / AwakeningCoreDropDuration);
+            float eased = t * t * t;
+            Vector3 position = Vector3.LerpUnclamped(topPosition, groundPosition, eased);
+            position.y += 4f * AwakeningCoreDropBounceHeight * t * (1f - t);
+            visualTransform.position = position;
+            yield return null;
+        }
+
+        // A brief, uneven tumble after impact; no smooth rotation during the fall.
+        visualTransform.position = groundPosition;
+        visualTransform.localRotation = Quaternion.identity;
+        Vector3 landedPosition = groundPosition;
+        float tumbleTime = 0f;
+        const float tumbleDuration = 0.22f;
+        while (tumbleTime < tumbleDuration)
+        {
+            tumbleTime += Time.deltaTime;
+            float t = Mathf.Clamp01(tumbleTime / tumbleDuration);
+            // Two abrupt contacts: tilt, recoil slightly, then settle on one side.
+            float rotation = t < 0.38f
+                ? Mathf.Lerp(0f, AwakeningCoreLandingRotationZ * 1.45f, t / 0.38f)
+                : t < 0.65f
+                    ? Mathf.Lerp(AwakeningCoreLandingRotationZ * 1.45f,
+                        AwakeningCoreLandingRotationZ * 0.7f, (t - 0.38f) / 0.27f)
+                    : Mathf.Lerp(AwakeningCoreLandingRotationZ * 0.7f,
+                        AwakeningCoreLandingRotationZ, (t - 0.65f) / 0.35f);
+            visualTransform.localRotation = Quaternion.Euler(0f, 0f, rotation);
+            landedPosition.x = groundPosition.x + 0.12f * Mathf.Clamp01(t / 0.55f);
+            landedPosition.y = groundPosition.y + (t < 0.6f ? 0.07f * Mathf.Sin(t / 0.6f * Mathf.PI) : 0f);
+            visualTransform.position = landedPosition;
+            yield return null;
+        }
+        visualTransform.position = new Vector3(groundPosition.x + 0.12f, groundPosition.y, groundPosition.z);
+        visualTransform.localRotation = Quaternion.Euler(0f, 0f, AwakeningCoreLandingRotationZ);
+        // Keep the item visible until the battle scene is unloaded.
+    }
+
+    private static GameObject CreateAwakeningCoreDropVisual(MonsterUnit monster)
+    {
+        if (monster == null)
+            return null;
+
+        if (DataManager.Instance?.ItemIconDatabase == null ||
+            !DataManager.Instance.ItemIconDatabase.TryGetIcon(AwakeningCoreItemId, out Sprite iconSprite) ||
+            iconSprite == null)
+        {
+            return null;
+        }
+
+        GameObject root = new GameObject("AwakeningCoreDropPresentation");
+        SpriteRenderer referenceRenderer = monster.GetComponentInChildren<SpriteRenderer>();
+        // Do not parent to the monster: the monster is destroyed after death.
+        SpriteRenderer iconRenderer = root.AddComponent<SpriteRenderer>();
+        iconRenderer.sprite = iconSprite;
+        iconRenderer.drawMode = SpriteDrawMode.Simple;
+        iconRenderer.maskInteraction = SpriteMaskInteraction.None;
+        iconRenderer.sortingLayerID = referenceRenderer != null
+            ? referenceRenderer.sortingLayerID
+            : 0;
+        iconRenderer.sortingOrder = referenceRenderer != null
+            ? referenceRenderer.sortingOrder + 32
+            : 32760;
+        iconRenderer.color = Color.white;
+
+        Vector3 baseScale = Vector3.one * 0.05f;
+        root.transform.localScale = baseScale;
+        return root;
     }
 
     private List<MonsterUnit> SpawnBlobsFromMuck(MonsterUnit muck)

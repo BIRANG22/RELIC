@@ -56,7 +56,7 @@ public class BattleRewardPanelUI : MonoBehaviour
     [Tooltip("레드 더스티움 획득 이동 연출 색상입니다.")]
     [SerializeField] private Color remnantTransferEffectColor = new Color32(0x9F, 0x2B, 0x2B, 0xFF);
     [Tooltip("아이템 획득 이동 연출 색상입니다.")]
-    [SerializeField] private Color itemTransferEffectColor = new Color32(0xFB, 0xFD, 0x80, 0xFF);
+    [SerializeField] private Color itemTransferEffectColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
     [Tooltip("보상 이동 효과가 도착할 MenuRoot/BagButton입니다.")]
     [SerializeField] private RectTransform rewardTransferTarget;
     [Tooltip("레드 더스티움 보상 이동 효과가 도착할 별도 타겟입니다. 미설정 시 기존 Reward Transfer Target을 사용합니다.")]
@@ -171,8 +171,9 @@ public class BattleRewardPanelUI : MonoBehaviour
         // Upgrade previously serialized default colors while preserving custom Inspector colors.
         if (IsSameRgb(remnantTransferEffectColor, new Color32(0x6B, 0x00, 0x00, 0xFF)))
             remnantTransferEffectColor = new Color32(0x9F, 0x2B, 0x2B, 0xFF);
-        if (IsSameRgb(itemTransferEffectColor, new Color32(0xFF, 0xBC, 0x5D, 0xFF)))
-            itemTransferEffectColor = new Color32(0xFB, 0xFD, 0x80, 0xFF);
+        if (IsSameRgb(itemTransferEffectColor, new Color32(0xFF, 0xBC, 0x5D, 0xFF)) ||
+            IsSameRgb(itemTransferEffectColor, new Color32(0xFB, 0xFD, 0x80, 0xFF)))
+            itemTransferEffectColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
         ResolveEquipPanelIfNeeded();
         if (gainButton == null)
         {
@@ -734,8 +735,37 @@ public class BattleRewardPanelUI : MonoBehaviour
         CompleteRewardSlot(slot, reward);
     }
 
+    private static IEnumerator FadeAwakeningCoreDrop()
+    {
+        GameObject drop = GameObject.Find("AwakeningCoreDropPresentation");
+        if (drop == null)
+            yield break;
+
+        SpriteRenderer renderer = drop.GetComponent<SpriteRenderer>();
+        if (renderer == null)
+            yield break;
+
+        const float duration = 0.35f;
+        float elapsed = 0f;
+        Color original = renderer.color;
+        while (elapsed < duration && drop != null && renderer != null)
+        {
+            elapsed += Time.deltaTime;
+            Color color = original;
+            color.a = original.a * (1f - Mathf.Clamp01(elapsed / duration));
+            renderer.color = color;
+            yield return null;
+        }
+        if (drop != null)
+            UnityEngine.Object.Destroy(drop);
+    }
+
     private void CompleteRewardSlot(BattleRewardSlotUI slot, BattleRewardData reward)
     {
+        if (reward != null && reward.Type == BattleRewardType.Item &&
+            string.Equals(reward.RewardId, "Item_013", System.StringComparison.OrdinalIgnoreCase))
+            StartCoroutine(FadeAwakeningCoreDrop());
+
         if (reward != null && !claimedRewards.Contains(reward))
             claimedRewards.Add(reward);
 
@@ -1009,7 +1039,16 @@ public class BattleRewardPanelUI : MonoBehaviour
                 {
                     string itemId = reward.RewardId.Trim();
 
-                    if (BagItemStackUtility.CanAddItem(runtime.BagItemIds, itemId, MaxBagItemCount))
+                    ItemData itemData = DataManager.Instance.ItemDatabase?.Get(itemId);
+                    if (itemData != null && itemData.RewardStage > 0)
+                    {
+                        runtime.QuestRewardItemIds ??= new List<string>();
+                        if (!runtime.QuestRewardItemIds.Exists(existing =>
+                                string.Equals(existing, itemId, StringComparison.OrdinalIgnoreCase)))
+                            runtime.QuestRewardItemIds.Add(itemId);
+                        RecordDiscoveryService.RegisterItem(DataManager.Instance, itemId);
+                    }
+                    else if (BagItemStackUtility.CanAddItem(runtime.BagItemIds, itemId, MaxBagItemCount))
                     {
                         int amount = Mathf.Max(1, reward.Amount);
 
@@ -1075,6 +1114,10 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
         runtime.BagItemIds ??= new List<string>();
+
+        ItemData itemData = DataManager.Instance.ItemDatabase?.Get(reward.RewardId);
+        if (itemData != null && itemData.RewardStage > 0)
+            return true;
 
         if (BagItemStackUtility.CanAddItem(runtime.BagItemIds, reward.RewardId, MaxBagItemCount))
             return true;

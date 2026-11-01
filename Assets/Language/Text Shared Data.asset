@@ -7399,6 +7399,14 @@ MonoBehaviour:
     m_Key: common.arrive
     m_Metadata:
       m_Items: []
+  - m_Id: 29830859909734400
+    m_Key: data.item.item_013.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29830859968454656
+    m_Key: data.item.item_013.description
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

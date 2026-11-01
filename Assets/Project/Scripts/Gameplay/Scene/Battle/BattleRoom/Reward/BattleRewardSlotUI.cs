@@ -11,6 +11,9 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private Button button;
+    [Header("Character Memory Mark")]
+    [SerializeField] private GameObject markRoot;
+    [SerializeField] private Image markIconImage;
 
 
     private BattleRewardData reward;
@@ -41,6 +44,21 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
             Transform text = transform.Find("Text");
             if (text != null) nameText = text.GetComponent<TMP_Text>();
         }
+        if (markRoot == null)
+        {
+            Transform foundMark = transform.Find("Mark");
+            if (foundMark != null)
+                markRoot = foundMark.gameObject;
+        }
+        if (markIconImage == null && markRoot != null)
+        {
+            Transform foundIcon = markRoot.transform.Find("Icon");
+            if (foundIcon != null)
+                markIconImage = foundIcon.GetComponent<Image>();
+        }
+        if (markRoot != null)
+            markRoot.SetActive(false);
+
         if (button == null)
             button = GetComponent<Button>();
 
@@ -74,6 +92,7 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
 
         if (reward == null)
         {
+            if (markRoot != null) markRoot.SetActive(false);
             gameObject.SetActive(false);
             return;
         }
@@ -152,6 +171,38 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
 
         if (nameText != null)
             nameText.text = displayText;
+
+        RefreshMemoryMark();
+    }
+
+    private void RefreshMemoryMark()
+    {
+        if (markRoot == null)
+            return;
+
+        markRoot.SetActive(false);
+        if (markIconImage != null)
+            markIconImage.sprite = null;
+
+        if (reward == null || reward.Type != BattleRewardType.Skill ||
+            string.IsNullOrWhiteSpace(reward.RewardId))
+            return;
+
+        DataManager data = DataManager.Instance;
+        SkillMasterData skill = data?.SkillDatabase?.Get(reward.RewardId.Trim());
+        string characterId = skill?.CharacterId?.Trim();
+        if (string.IsNullOrWhiteSpace(characterId) ||
+            string.Equals(characterId, "ALL", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        if (markIconImage == null || data?.CharacterIconDatabase == null ||
+            !data.CharacterIconDatabase.TryGetMark(characterId, out Sprite markSprite) ||
+            markSprite == null)
+            return;
+
+        markIconImage.sprite = markSprite;
+        markIconImage.enabled = true;
+        markRoot.SetActive(true);
     }
 
     public void OnPointerDown(PointerEventData eventData)
