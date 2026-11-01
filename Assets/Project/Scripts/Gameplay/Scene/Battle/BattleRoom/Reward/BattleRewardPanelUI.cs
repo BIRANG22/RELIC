@@ -86,6 +86,7 @@ public class BattleRewardPanelUI : MonoBehaviour
     private bool autoGaining;
     private bool gainButtonUsed;
     private bool continueWithGainButton = true;
+    private bool useTutorialArrivalLabel;
     private bool awaitingContinue;
     private bool continueTransitionStarted;
     private bool pointerPressedOnNextButton;
@@ -149,6 +150,13 @@ public class BattleRewardPanelUI : MonoBehaviour
         trigger.triggers.Add(entry);
     }
 
+    public void SetTutorialArrivalLabel(bool enabled)
+    {
+        useTutorialArrivalLabel = enabled;
+        if (awaitingContinue)
+            UpdateGainButton();
+    }
+
     public void SetContinueWithGainButton(bool enabled)
     {
         continueWithGainButton = enabled;
@@ -208,6 +216,8 @@ public class BattleRewardPanelUI : MonoBehaviour
 
         for (int i = 0; i < activeSlots.Count; i++)
             activeSlots[i]?.RefreshLocalization();
+
+        UpdateGainButton();
     }
 
     public void Open(List<BattleRewardData> rewards, Action completedCallback = null)
@@ -535,7 +545,9 @@ public class BattleRewardPanelUI : MonoBehaviour
         {
             gainButton.gameObject.SetActive(true);
             if (gainButtonText != null)
-                gainButtonText.text = GameLocalization.Get("common.proceed", "진행");
+                gainButtonText.text = useTutorialArrivalLabel
+                    ? GameLocalization.Get("common.arrive", "도착")
+                    : GameLocalization.Get("common.proceed", "진행");
             gainButton.interactable = true;
             return;
         }

@@ -7395,6 +7395,10 @@ MonoBehaviour:
     m_Key: ui.bossdemopanel.text_tmp.0763bdef
     m_Metadata:
       m_Items: []
+  - m_Id: 29743157478662144
+    m_Key: common.arrive
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
