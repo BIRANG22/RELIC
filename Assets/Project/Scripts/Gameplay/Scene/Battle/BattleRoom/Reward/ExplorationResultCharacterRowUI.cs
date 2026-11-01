@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using TMPro;
@@ -14,6 +15,7 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
     [SerializeField] private TMP_Text buffAppliedText;
     [SerializeField] private TMP_Text defeatCountText;
     [SerializeField] private Slider experienceSlider;
+    [SerializeField] private Image experienceFillImage;
     [SerializeField] private TMP_Text experienceText;
     [SerializeField] private GameObject levelUpRoot;
     [SerializeField] private GameObject[] unlockRoots;
@@ -24,8 +26,6 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
     [SerializeField] private RectTransform informationHoverTarget;
     [SerializeField] private RectTransform statisticsOverlayAnchor;
     [SerializeField] private ExplorationResultPanelUI statisticsOverlayController;
-    [SerializeField, Min(1)] private int maxRelicSlots = 6;
-    [SerializeField, Min(1)] private int maxSkillSlots = 4;
     [Header("Relic Icon Layout")]
     [SerializeField, Min(0.01f)] private float relicSlotScale = 0.46f;
     [SerializeField, Min(0f)] private float relicSlotHorizontalSpacing = 52f;
@@ -37,8 +37,16 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
     [SerializeField, Min(0f)] private float skillSlotVerticalSpacing = 66f;
     [SerializeField, Min(1)] private int skillSlotColumns = 3;
 
+    [Header("Experience Fill Animation")]
+    [SerializeField, Min(0f)] private float experienceFillDuration = 0.65f;
+    private Coroutine experienceFillRoutine;
+
     private readonly List<BattleBagItemSlotUI> relicSlots = new();
     private readonly List<BattleBagItemSlotUI> skillSlots = new();
+    private readonly Dictionary<Image, Color> originalSlotLineColors = new();
+    private static readonly Color EmptySlotLineColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+    private readonly string[] equippedSkillNames = new string[4];
+    private readonly string[] equippedRelicNames = new string[6];
     private string statisticsTooltipContent = string.Empty;
     public BattleRunCharacterStatisticsData CurrentStatistics { get; private set; }
 
@@ -56,7 +64,9 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         bool leveledUp = false,
         float experienceProgress = 0f,
         IReadOnlyList<string> unlockTexts = null,
-        ExplorationResultPanelUI overlayController = null)
+        ExplorationResultPanelUI overlayController = null,
+        int experienceBefore = 0,
+        int levelBefore = 1)
     {
         AutoBindSceneReferences();
 
@@ -83,7 +93,7 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         statisticsTooltipContent = BuildStatisticsTooltip(statistics);
         statisticsOverlayController?.HideStatisticsOverlay(this);
         SetEquipmentSlots(character);
-        SetExperience(displayLevel, gainedExperience, leveledUp, experienceProgress);
+        SetExperience(displayLevel, gainedExperience, leveledUp, experienceProgress, experienceBefore, levelBefore);
         SetUnlockTexts(unlockTexts);
     }
 
@@ -92,6 +102,8 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         statisticsOverlayController?.HideStatisticsOverlay(this);
         statisticsTooltipContent = string.Empty;
         CurrentStatistics = null;
+        System.Array.Clear(equippedSkillNames, 0, equippedSkillNames.Length);
+        System.Array.Clear(equippedRelicNames, 0, equippedRelicNames.Length);
         gameObject.SetActive(false);
     }
 
@@ -99,17 +111,121 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         int level,
         int gainedExperience,
         bool leveledUp,
-        float experienceProgress)
+        float experienceProgress,
+        int experienceBefore,
+        int levelBefore)
     {
         int safeExperience = Mathf.Max(0, gainedExperience);
+        int safeBefore = Mathf.Max(0, experienceBefore);
+        int safeLevelBefore = Mathf.Max(1, levelBefore);
 
+        if (experienceFillRoutine != null)
+        {
+            StopCoroutine(experienceFillRoutine);
+            experienceFillRoutine = null;
+        }
+
+        if (experienceFillImage != null)
+        {
+            experienceFillImage.type = Image.Type.Filled;
+            experienceFillImage.fillMethod = Image.FillMethod.Horizontal;
+            experienceFillImage.fillOrigin = (int)Image.OriginHorizontal.Left;
+            experienceFillImage.fillClockwise = true;
+        }
         if (experienceSlider != null)
-            experienceSlider.value = Mathf.Clamp01(experienceProgress);
+        {
+            experienceSlider.wholeNumbers = false;
+            experienceSlider.minValue = 0f;
+            experienceSlider.maxValue = 1f;
+        }
+
+        int requiredBefore = BattleStageClearExperienceService.GetRequiredExperienceForNextLevel(safeLevelBefore);
+        int baseBefore = BattleStageClearExperienceService.GetCumulativeExperienceForLevel(safeLevelBefore);
+        float initialFill = requiredBefore > 0
+            ? Mathf.Clamp01((float)(safeBefore - baseBefore) / requiredBefore)
+            : 1f;
+        ApplyExperienceFill(initialFill);
+
+        if (isActiveAndEnabled && experienceFillDuration > 0f && safeExperience > 0)
+            experienceFillRoutine = StartCoroutine(AnimateExperienceFill(safeBefore, safeExperience, safeLevelBefore));
+        else
+        {
+            int requiredAfter = BattleStageClearExperienceService.GetRequiredExperienceForNextLevel(Mathf.Max(1, level));
+            ApplyExperienceFill(requiredAfter > 0 ? experienceProgress : 1f);
+        }
 
         SetText(experienceText, $"+{safeExperience}");
-
         if (levelUpRoot != null)
             SetLevelText(level, leveledUp);
+    }
+
+    private void ApplyExperienceFill(float amount01)
+    {
+        amount01 = Mathf.Clamp01(amount01);
+        if (experienceSlider != null)
+            experienceSlider.SetValueWithoutNotify(amount01);
+        if (experienceFillImage != null)
+            experienceFillImage.fillAmount = amount01;
+    }
+
+    private IEnumerator AnimateExperienceFill(int experienceBefore, int gainedExperience, int levelBefore)
+    {
+        long remaining = gainedExperience;
+        long totalExperience = experienceBefore;
+        int currentLevel = levelBefore;
+
+        while (remaining > 0)
+        {
+            int required = BattleStageClearExperienceService.GetRequiredExperienceForNextLevel(currentLevel);
+            if (required <= 0)
+            {
+                ApplyExperienceFill(1f);
+                break;
+            }
+
+            long levelStart = BattleStageClearExperienceService.GetCumulativeExperienceForLevel(currentLevel);
+            float from = Mathf.Clamp01((float)(totalExperience - levelStart) / required);
+            long toBoundary = System.Math.Max(0L, (long)required - (totalExperience - levelStart));
+            long step = System.Math.Min(remaining, toBoundary);
+            if (step <= 0)
+            {
+                currentLevel++;
+                ApplyExperienceFill(0f);
+                yield return null;
+                continue;
+            }
+
+            float to = Mathf.Clamp01(from + (float)step / required);
+            float duration = experienceFillDuration * Mathf.Max(0.01f, to - from);
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                ApplyExperienceFill(Mathf.Lerp(from, to, Mathf.Clamp01(elapsed / duration)));
+                yield return null;
+            }
+            ApplyExperienceFill(to);
+            remaining -= step;
+            totalExperience += step;
+            if (remaining > 0 && to >= 1f)
+            {
+                // 100%가 표시된 다음 프레임에 새 레벨의 0%에서 다시 시작합니다.
+                yield return null;
+                currentLevel++;
+                ApplyExperienceFill(0f);
+                yield return null;
+            }
+        }
+        experienceFillRoutine = null;
+    }
+
+    private void OnDisable()
+    {
+        if (experienceFillRoutine != null)
+        {
+            StopCoroutine(experienceFillRoutine);
+            experienceFillRoutine = null;
+        }
     }
 
     private void SetLevelText(int level, bool leveledUp)
@@ -171,8 +287,119 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
 
     private void SetEquipmentSlots(CharacterRuntimeData character)
     {
-        BindIconSlots(relicSlots, relicSlotRoot, character?.EquippedRelicIds, maxRelicSlots, false);
-        BindIconSlots(skillSlots, skillSlotRoot, character?.EquippedSkillIds, maxSkillSlots, true);
+        if (relicSlotRoot != null)
+        {
+            for (int i = 0; i < 6; i++)
+                SetExistingSlotIcon(relicSlotRoot, i, GetId(character?.EquippedRelicIds, i + 1), false);
+        }
+        if (skillSlotRoot != null)
+        {
+            SetExistingSlotIcon(skillSlotRoot, 0, character?.PassiveSkillId, true);
+            for (int i = 0; i < 3; i++)
+                SetExistingSlotIcon(skillSlotRoot, i + 1, GetId(character?.EquippedSkillIds, i + 1), true);
+        }
+    }
+
+    private static string GetId(IReadOnlyList<string> ids, int index)
+    {
+        return ids != null && index >= 0 && index < ids.Count ? ids[index] : null;
+    }
+
+    private void SetExistingSlotIcon(RectTransform root, int index, string id, bool skill)
+    {
+        if (root == null || index < 0 || index >= root.childCount)
+            return;
+
+        Transform slot = root.GetChild(index);
+        string displayName = ResolveEquipmentName(id, skill);
+        if (skill && index < equippedSkillNames.Length)
+            equippedSkillNames[index] = displayName;
+        else if (!skill && index < equippedRelicNames.Length)
+            equippedRelicNames[index] = displayName;
+        bool equipped = !string.IsNullOrWhiteSpace(id);
+        Image lineImage = slot.Find("Line")?.GetComponent<Image>();
+        if (lineImage != null)
+        {
+            if (!originalSlotLineColors.TryGetValue(lineImage, out Color originalColor))
+            {
+                originalColor = lineImage.color;
+                originalSlotLineColors.Add(lineImage, originalColor);
+            }
+            lineImage.color = equipped ? originalColor : EmptySlotLineColor;
+        }
+
+        Transform iconTransform = slot.Find("Icon");
+        if (iconTransform == null)
+            return;
+
+        Image iconImage = iconTransform.GetComponent<Image>();
+        if (iconImage == null)
+            return;
+
+        Sprite sprite = string.IsNullOrWhiteSpace(id) ? null :
+            skill ? ResolveSkillIcon(id.Trim()) : ResolveRelicIcon(id.Trim());
+        iconImage.sprite = sprite;
+        iconImage.enabled = sprite != null;
+        iconImage.preserveAspect = true;
+    }
+
+    // ExplorationResultPanelUI의 공용 SlotName 툴팁이 현재 행의 슬롯을 조회합니다.
+    public bool TryGetHoveredEquipmentSlot(Vector2 screenPosition, out RectTransform source, out string displayName)
+    {
+        source = null;
+        displayName = null;
+        if (!gameObject.activeInHierarchy)
+            return false;
+
+        return TryGetHoveredEquipmentSlot(skillSlotRoot, equippedSkillNames, screenPosition, out source, out displayName)
+            || TryGetHoveredEquipmentSlot(relicSlotRoot, equippedRelicNames, screenPosition, out source, out displayName);
+    }
+
+    private static bool TryGetHoveredEquipmentSlot(RectTransform root, string[] names, Vector2 screenPosition,
+        out RectTransform source, out string displayName)
+    {
+        source = null;
+        displayName = null;
+        if (root == null || names == null)
+            return false;
+
+        Canvas canvas = root.GetComponentInParent<Canvas>();
+        Camera camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+        for (int i = 0; i < names.Length && i < root.childCount; i++)
+        {
+            if (string.IsNullOrWhiteSpace(names[i]))
+                continue;
+            RectTransform slot = root.GetChild(i) as RectTransform;
+            if (slot == null || !slot.gameObject.activeInHierarchy ||
+                !RectTransformUtility.RectangleContainsScreenPoint(slot, screenPosition, camera))
+                continue;
+
+            RectTransform icon = slot.Find("Icon") as RectTransform;
+            source = icon != null && icon.gameObject.activeInHierarchy ? icon : slot;
+            displayName = names[i];
+            return true;
+        }
+        return false;
+    }
+
+    private static string ResolveEquipmentName(string id, bool skill)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return null;
+        id = id.Trim();
+        if (skill)
+        {
+            if (DataManager.Instance?.SkillDatabase != null &&
+                DataManager.Instance.SkillDatabase.TryGet(id, out SkillMasterData data) && data != null)
+                return GameDataLocalization.SkillName(data);
+        }
+        else
+        {
+            if (DataManager.Instance?.RelicDatabase != null &&
+                DataManager.Instance.RelicDatabase.TryGet(id, out RelicData data) && data != null)
+                return GameDataLocalization.RelicName(data);
+        }
+        return id;
     }
 
     private void BindIconSlots(
@@ -353,15 +580,22 @@ public sealed class ExplorationResultCharacterRowUI : MonoBehaviour
         damageTakenText ??= FindText("DamageTaken");
         buffAppliedText ??= FindText("BuffApplied");
         defeatCountText ??= FindText("DefeatCount");
+        experienceSlider = FindComponent<Slider>("ExpSlider") ?? experienceSlider;
         experienceSlider ??= FindComponent<Slider>("ExperienceSlider");
         experienceSlider ??= GetComponentInChildren<Slider>(true);
+        Transform expRoot = FindChild("ExpSlider") ?? FindChild("ExperienceSlider");
+        Transform fillTransform = expRoot != null ? FindChildRecursive(expRoot, "Fill") : null;
+        if (fillTransform != null)
+            experienceFillImage = fillTransform.GetComponent<Image>() ?? experienceFillImage;
+        if (experienceSlider != null && fillTransform is RectTransform fillRect)
+            experienceSlider.fillRect = fillRect;
         experienceText ??= FindText("ExperienceText");
         levelUpRoot ??= FindChild("LevelUp")?.gameObject;
         informationHoverTarget ??= informationIcon != null ? informationIcon.rectTransform : null;
         statisticsOverlayAnchor ??= FindChild("StatisticsOverlayAnchor") as RectTransform;
         statisticsOverlayController ??= GetComponentInParent<ExplorationResultPanelUI>(true);
-        relicSlotRoot ??= damageTakenText != null ? damageTakenText.rectTransform : null;
-        skillSlotRoot ??= buffAppliedText != null ? buffAppliedText.rectTransform : null;
+        relicSlotRoot = (FindChild("RelicSlots") as RectTransform) ?? relicSlotRoot;
+        skillSlotRoot = (FindChild("MemorySlots") as RectTransform) ?? skillSlotRoot;
 
         if (damageTakenText != null)
             damageTakenText.enabled = false;

@@ -24,6 +24,29 @@ public class SaveSystem : Singleton<SaveSystem>
     // 런타임 데이터 Apply 후에도 전투방 1턴의 확정 결과(장애물/몬스터 예약)는 이 스냅샷에서 복구합니다.
     private GameSaveData pendingBattleContinueSaveData;
     private ResumeData pendingResumeData;
+    // A result checkpoint remains authoritative until the player confirms it.
+    private bool explorationResultConfirmedForSave;
+
+    public void MarkExplorationResultConfirmedForSave()
+    {
+        explorationResultConfirmedForSave = true;
+    }
+
+    private bool ProtectUnconfirmedExplorationResult(ResumeData replacement)
+    {
+        if (explorationResultConfirmedForSave ||
+            (replacement != null && replacement.Phase == ResumePhase.ExplorationResult))
+            return false;
+
+        GameSaveData existing = ReadSaveData();
+        if (existing?.Resume?.Phase != ResumePhase.ExplorationResult ||
+            !CanContinueBattle(existing))
+            return false;
+
+        Debug.Log("[SaveSystem] Preserved unconfirmed exploration result checkpoint.");
+        return true;
+    }
+
 
     public string SaveFilePath => Path.Combine(Application.persistentDataPath, SaveFileName);
 
@@ -42,6 +65,7 @@ public class SaveSystem : Singleton<SaveSystem>
     /// </summary>
     public bool DeleteSaveFile()
     {
+        explorationResultConfirmedForSave = false;
         ClearBattleRoomEntryCheckpoint();
         ClearPendingResolvedBattleRoomEntryState();
         pendingBattleContinueSaveData = null;
@@ -93,6 +117,9 @@ public class SaveSystem : Singleton<SaveSystem>
             return false;
         }
 
+        if (ProtectUnconfirmedExplorationResult(null))
+            return true;
+
         if (TryCreateBattleRoomEntryCheckpointSave(out GameSaveData checkpointSave))
         {
             if (CanContinueBattle(checkpointSave))
@@ -127,6 +154,9 @@ public class SaveSystem : Singleton<SaveSystem>
 
     public bool SaveCheckpoint(ResumeData resumeData)
     {
+        if (ProtectUnconfirmedExplorationResult(resumeData))
+            return true;
+
         if (suppressCheckpointAutosave)
         {
             Debug.Log("[SaveSystem] Checkpoint autosave suppressed while Continue is restoring.");

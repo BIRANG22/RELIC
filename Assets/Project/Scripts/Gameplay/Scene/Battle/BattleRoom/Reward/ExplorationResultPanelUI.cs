@@ -40,6 +40,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     [SerializeField] private RectTransform statisticsOverlayRect;
     [SerializeField] private TMP_Text statisticsOverlayText;
     [SerializeField] private RectTransform statisticsOverlayBoundary;
+    [Tooltip("InformationIcon 기준 통계 오버레이 위치 보정값입니다. X 양수는 오른쪽, Y 양수는 위쪽입니다. 화면 경계 보정은 유지됩니다.")]
+    [SerializeField] private Vector2 statisticsOverlayOffset = Vector2.zero;
     [SerializeField, Min(1)] private int maxHardModeSlots = 12;
     [Header("No Erosion Difficulty")]
     [Tooltip("침식 난이도를 선택하지 않았을 때 첫 번째 슬롯에 표시할 X 아이콘입니다. 비우면 프리팹의 기본 Icon 이미지를 유지합니다.")]
@@ -449,6 +451,15 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         FindHoveredNamedSlot(hardModeSlots, erosionSlotNames, ref source, ref displayName);
         if (source == null)
             FindHoveredNamedSlot(acquiredItemSlots, acquiredSlotNames, ref source, ref displayName);
+        if (source == null && characterRows != null)
+        {
+            for (int i = 0; i < characterRows.Length; i++)
+            {
+                ExplorationResultCharacterRowUI row = characterRows[i];
+                if (row != null && row.TryGetHoveredEquipmentSlot(Input.mousePosition, out source, out displayName))
+                    break;
+            }
+        }
 
         if (source == null || string.IsNullOrWhiteSpace(displayName))
         {
@@ -601,6 +612,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             bool leveledUp = false;
             float experienceProgress = 0f;
             int displayLevel = 1;
+            int experienceBefore = 0;
+            int levelBefore = 1;
             IReadOnlyList<string> unlockTexts = null;
 
             if (TryGetExperiencePreview(
@@ -612,6 +625,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
                 leveledUp = preview.LeveledUp;
                 experienceProgress = preview.ProgressAfter01;
                 displayLevel = preview.LevelAfter;
+                levelBefore = preview.LevelBefore;
+                experienceBefore = Mathf.Max(0, preview.ExperienceAfter - preview.ExperienceGained);
                 unlockTexts = ResolveCharacterUnlockTexts(statistics?.CharacterId, preview);
             }
 
@@ -628,7 +643,9 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
                 leveledUp,
                 experienceProgress,
                 unlockTexts,
-                this);
+                this,
+                experienceBefore,
+                levelBefore);
         }
     }
 
@@ -1298,6 +1315,16 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             statisticsOverlayRect.rect.size,
             statisticsOverlayRect.pivot,
             new Vector2(12f, 12f));
+        // Inspector 오프셋을 적용한 뒤 화면 경계 안에 유지합니다.
+        boundaryLocalPosition += statisticsOverlayOffset;
+        Vector2 overlaySize = statisticsOverlayRect.rect.size;
+        Vector2 overlayPivot = statisticsOverlayRect.pivot;
+        boundaryLocalPosition.x = Mathf.Clamp(boundaryLocalPosition.x,
+            boundary.rect.xMin + overlaySize.x * overlayPivot.x,
+            boundary.rect.xMax - overlaySize.x * (1f - overlayPivot.x));
+        boundaryLocalPosition.y = Mathf.Clamp(boundaryLocalPosition.y,
+            boundary.rect.yMin + overlaySize.y * overlayPivot.y,
+            boundary.rect.yMax - overlaySize.y * (1f - overlayPivot.y));
         Vector2 overlayAnchor = (statisticsOverlayRect.anchorMin + statisticsOverlayRect.anchorMax) * 0.5f;
         statisticsOverlayRect.anchoredPosition = ConvertBoundaryLocalToAnchoredPosition(
             boundaryLocalPosition,
@@ -1570,6 +1597,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             }
         }
 
+        // Only confirmation releases the persisted result checkpoint.
+        SaveSystem.Instance?.MarkExplorationResultConfirmedForSave();
         SaveSystem.Instance?.SaveCurrentProgress();
 
         BattleRoomCleaner cleaner =
