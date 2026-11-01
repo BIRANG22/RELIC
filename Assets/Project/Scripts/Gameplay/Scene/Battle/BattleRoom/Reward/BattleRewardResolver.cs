@@ -280,7 +280,23 @@ public class BattleRewardResolver : MonoBehaviour
         List<BattleRewardData> rewards,
         BattleMapData dropSettings)
     {
-        if (dropSettings == null || DataManager.Instance == null)
+        if (DataManager.Instance == null)
+            return;
+
+        // Tutorial battles award their designated relic instead of rolling a random one.
+        if (TryResolveTutorialFixedRelicId(out string fixedRelicId))
+        {
+            if (!DataManager.Instance.RelicDatabase.TryGet(fixedRelicId, out RelicData fixedRelic) || fixedRelic == null)
+            {
+                Debug.LogError($"[BattleRewardResolver] Tutorial relic not found: {fixedRelicId}");
+                return;
+            }
+
+            AddRelicReward(rewards, fixedRelic, dropSettings != null ? dropSettings.BattleMapId : "Tutorial");
+            return;
+        }
+
+        if (dropSettings == null)
             return;
 
         if (!TryRollRelicRarity(dropSettings, out RelicRarity rarity))
@@ -314,16 +330,39 @@ public class BattleRewardResolver : MonoBehaviour
             return;
         }
 
-        Sprite icon = null;
+        AddRelicReward(rewards, relic, dropSettings.BattleMapId);
+    }
 
-        if (DataManager.Instance.RelicIconDatabase != null)
-            DataManager.Instance.RelicIconDatabase.TryGetIcon(relic.FragmentId, out icon);
+    private static bool TryResolveTutorialFixedRelicId(out string relicId)
+    {
+        relicId = null;
+        DataManager data = DataManager.Instance;
+        if (data?.BattleRuntimeStore?.Get()?.IsTutorialBattle != true)
+            return false;
+
+        string currentMapId = data.MapRuntimeStore?.Get()?.CurrentMapId;
+        if (string.IsNullOrWhiteSpace(currentMapId))
+            return false;
+
+        string firstMapId = data.TutorialDatabase?.GetFirstEntry()?.MapId;
+        if (string.Equals(currentMapId, firstMapId, System.StringComparison.OrdinalIgnoreCase))
+            relicId = "Relic_P_06";
+        else if (TutorialMapRoute.IsFinalBattle(data, currentMapId))
+            relicId = "Relic_P_68";
+
+        return relicId != null;
+    }
+
+    private static void AddRelicReward(List<BattleRewardData> rewards, RelicData relic, string battleMapId)
+    {
+        Sprite icon = null;
+        DataManager.Instance.RelicIconDatabase?.TryGetIcon(relic.FragmentId, out icon);
 
         rewards.Add(new BattleRewardData
         {
             Type = BattleRewardType.Relic,
             RewardId = relic.FragmentId,
-            SourceKey = $"Relic|{dropSettings.BattleMapId}|{relic.FragmentId}",
+            SourceKey = $"Relic|{battleMapId}|{relic.FragmentId}",
             Amount = 1,
             Icon = icon,
             Name = GameDataLocalization.RelicName(relic),
@@ -499,8 +538,8 @@ public class BattleRewardResolver : MonoBehaviour
 
                 for (int i = 0; i < character.EquippedSkillIds.Length; i++)
                     AddSkillId(ids, character.EquippedSkillIds[i]);
+            }
         }
-    }
 
         if (pendingRewards != null)
         {

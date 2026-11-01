@@ -779,6 +779,7 @@ public class BattleRoomLoader : MonoBehaviour
 
     public void BeginDeferredTutorialSequence()
     {
+        if (!IsTutorialBattleRun()) return;
         if (!isLoaded || string.IsNullOrEmpty(loadedMapId)) return;
         var data = DataManager.Instance;
         var steps = data?.TutorialDatabase?.GetForMap(loadedMapId);
@@ -1694,7 +1695,7 @@ public class BattleRoomLoader : MonoBehaviour
             yield return null;
 
         // Entry must visually finish before any initial passive status is applied.
-        while (monsterSpawnDeferred || TutorialBattleSequence.IsBlockingBattleStart || (deferPartyEntryPlayback && !partyEntryPlaybackRequested) ||
+        while (monsterSpawnDeferred || (IsTutorialBattleRun() && TutorialBattleSequence.IsBlockingBattleStart) || (deferPartyEntryPlayback && !partyEntryPlaybackRequested) ||
                (partyTransitionPresenter != null && partyTransitionPresenter.IsPlaying) ||
                (tutorialPartyTransitionPresenter != null && tutorialPartyTransitionPresenter.IsPlaying))
             yield return null;

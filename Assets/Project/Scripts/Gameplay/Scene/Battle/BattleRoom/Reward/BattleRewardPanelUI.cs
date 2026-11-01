@@ -53,6 +53,10 @@ public class BattleRewardPanelUI : MonoBehaviour
     [Header("Reward Transfer Effect")]
     [Tooltip("재료 아이템과 레드 더스티움 획득 시 재생할 화면 공간 이동 효과입니다.")]
     [SerializeField] private ScreenSpaceTransferOrbEffect screenSpaceTransferEffectPrefab;
+    [Tooltip("레드 더스티움 획득 이동 연출 색상입니다.")]
+    [SerializeField] private Color remnantTransferEffectColor = new Color32(0x9F, 0x2B, 0x2B, 0xFF);
+    [Tooltip("아이템 획득 이동 연출 색상입니다.")]
+    [SerializeField] private Color itemTransferEffectColor = new Color32(0xFB, 0xFD, 0x80, 0xFF);
     [Tooltip("보상 이동 효과가 도착할 MenuRoot/BagButton입니다.")]
     [SerializeField] private RectTransform rewardTransferTarget;
     [Tooltip("레드 더스티움 보상 이동 효과가 도착할 별도 타겟입니다. 미설정 시 기존 Reward Transfer Target을 사용합니다.")]
@@ -164,6 +168,11 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private void Awake()
     {
+        // Upgrade previously serialized default colors while preserving custom Inspector colors.
+        if (IsSameRgb(remnantTransferEffectColor, new Color32(0x6B, 0x00, 0x00, 0xFF)))
+            remnantTransferEffectColor = new Color32(0x9F, 0x2B, 0x2B, 0xFF);
+        if (IsSameRgb(itemTransferEffectColor, new Color32(0xFF, 0xBC, 0x5D, 0xFF)))
+            itemTransferEffectColor = new Color32(0xFB, 0xFD, 0x80, 0xFF);
         ResolveEquipPanelIfNeeded();
         if (gainButton == null)
         {
@@ -183,6 +192,14 @@ public class BattleRewardPanelUI : MonoBehaviour
             confirmButton.gameObject.SetActive(false);
 
         gameObject.SetActive(false);
+    }
+
+    private static bool IsSameRgb(Color a, Color b)
+    {
+        const float epsilon = 0.002f;
+        return Mathf.Abs(a.r - b.r) < epsilon
+            && Mathf.Abs(a.g - b.g) < epsilon
+            && Mathf.Abs(a.b - b.b) < epsilon;
     }
 
     private void OnEnable()
@@ -648,7 +665,9 @@ public class BattleRewardPanelUI : MonoBehaviour
         Vector2 endScreenPosition = ScreenSpaceTransferOrbEffect.GetRectScreenCenter(
             transferTarget,
             targetCamera);
-        Color iconColor = slot.CurrentIconColor;
+        Color transferEffectColor = reward.Type == BattleRewardType.Remnant
+            ? remnantTransferEffectColor
+            : itemTransferEffectColor;
 
         // 슬롯을 즉시 비활성화하면 퇴장 페이드아웃이 보이지 않습니다.
         // 클릭 차단 및 실제 제거는 CompleteRewardSlot/ DismissRewardSlot에서 처리합니다.
@@ -656,7 +675,7 @@ public class BattleRewardPanelUI : MonoBehaviour
         // 획득 연출은 보상 처리와 완전히 분리합니다.
         // 연출이 재생되는 동안에도 다른 보상을 즉시 선택하거나 다음 행동을 진행할 수 있습니다.
         ScreenSpaceTransferOrbEffect effect = Instantiate(screenSpaceTransferEffectPrefab);
-        effect.PlayDetached(startScreenPosition, endScreenPosition, iconColor);
+        effect.PlayDetachedForcedColor(startScreenPosition, endScreenPosition, transferEffectColor);
 
         CompleteRewardSlot(slot, reward);
         return true;
