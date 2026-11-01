@@ -6089,7 +6089,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452474
-    m_Localized: '. '
+    m_Localized: .
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452475
@@ -7766,6 +7766,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 9164888147097980000
     m_Localized: Artifact Obtained
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29743157478662144
+    m_Localized: Arrive
     m_Metadata:
       m_Items: []
   references:

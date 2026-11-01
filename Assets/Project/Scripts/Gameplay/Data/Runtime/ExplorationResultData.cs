@@ -385,17 +385,19 @@ namespace Relic.Gameplay.Data
         public static IReadOnlyDictionary<string, BattleStageClearExperiencePreview> Preview(
             CharacterRuntimeStore characterStore,
             IEnumerable<BattleRunCharacterStatisticsData> characterStatistics,
-            BattleStageClearExperienceContext context)
+            BattleStageClearExperienceContext context,
+            int? fixedExperiencePerCharacter = null)
         {
-            return Build(characterStore, characterStatistics, context, false);
+            return Build(characterStore, characterStatistics, context, false, fixedExperiencePerCharacter);
         }
 
         public static IReadOnlyDictionary<string, BattleStageClearExperiencePreview> Apply(
             CharacterRuntimeStore characterStore,
             IEnumerable<BattleRunCharacterStatisticsData> characterStatistics,
-            BattleStageClearExperienceContext context)
+            BattleStageClearExperienceContext context,
+            int? fixedExperiencePerCharacter = null)
         {
-            return Build(characterStore, characterStatistics, context, true);
+            return Build(characterStore, characterStatistics, context, true, fixedExperiencePerCharacter);
         }
 
         public static int GetRequiredExperienceForNextLevel(int level)
@@ -499,7 +501,8 @@ namespace Relic.Gameplay.Data
             CharacterRuntimeStore characterStore,
             IEnumerable<BattleRunCharacterStatisticsData> characterStatistics,
             BattleStageClearExperienceContext context,
-            bool apply)
+            bool apply,
+            int? fixedExperiencePerCharacter)
         {
             Dictionary<string, BattleStageClearExperiencePreview> result =
                 new(StringComparer.Ordinal);
@@ -514,7 +517,9 @@ namespace Relic.Gameplay.Data
                     continue;
 
                 CharacterRuntimeData character = ResolveCharacter(characterStore, characterId);
-                int rewardExperience = CalculateRewardExperience(statistics, context);
+                int rewardExperience = fixedExperiencePerCharacter.HasValue
+                    ? Mathf.Max(0, fixedExperiencePerCharacter.Value)
+                    : CalculateRewardExperience(statistics, context);
                 BattleStageClearExperiencePreview preview =
                     Calculate(characterId, character, rewardExperience);
 

@@ -214,7 +214,7 @@ public class BattleResultChecker : MonoBehaviour
 
         if (isLastTutorialBattle)
         {
-            if (!OpenRewardPanel(OpenExplorationResultPanel))
+            if (!OpenRewardPanel(OpenExplorationResultPanel, requireContinueButton: true))
                 OpenExplorationResultPanel();
         }
         else if (isBossNode)
@@ -361,7 +361,7 @@ public class BattleResultChecker : MonoBehaviour
         return node != null && string.Equals(node.Type, "Boss", System.StringComparison.OrdinalIgnoreCase);
     }
 
-    private bool OpenRewardPanel(System.Action onRewardFlowCompleted = null)
+    private bool OpenRewardPanel(System.Action onRewardFlowCompleted = null, bool requireContinueButton = false)
     {
         if (rewardResolver == null || rewardPanel == null)
         {
@@ -382,7 +382,13 @@ public class BattleResultChecker : MonoBehaviour
 
         ResumeData resume = CreateBattleRewardResume(rewards);
         SaveSystem.Instance?.SaveCheckpoint(resume);
-        rewardPanel.SetContinueWithGainButton(onRewardFlowCompleted == null);
+        bool isFinalTutorialBattle =
+            DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+            TutorialMapRoute.IsFinalBattle(
+                DataManager.Instance,
+                DataManager.Instance?.MapRuntimeStore?.Get()?.CurrentMapId);
+        rewardPanel.SetTutorialArrivalLabel(isFinalTutorialBattle);
+        rewardPanel.SetContinueWithGainButton(onRewardFlowCompleted == null || requireContinueButton);
         SetNextButtonVisible(false);
         rewardPanel.Open(rewards, () => OnBattleRewardPanelCompleted(onRewardFlowCompleted), resume);
         return true;

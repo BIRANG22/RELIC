@@ -3689,6 +3689,84 @@ public class BattleActionRunner
         }
     }
 
+    // Keep the prefab root/VFX in place. Only the SpriteRoot rises and descends.
+    private IEnumerator AnimateArabellaHuntingLeap(MonsterUnit monster, Vector3 landingPosition)
+    {
+        if (monster == null)
+            yield break;
+
+        Transform root = monster.transform;
+        Transform visual = root.Find("SpriteRoot");
+        if (visual == null)
+        {
+            Debug.LogWarning("[Arabella] SpriteRoot missing; leap visual skipped to avoid moving VFX.");
+            yield break;
+        }
+
+        Vector3 savedLocalPosition = visual.localPosition;
+        Vector3 departure = visual.position;
+        Vector3 visualOffset = departure - root.position;
+        const float riseHeight = 4.5f;
+        const float fadeOutSeconds = 0.52f;
+        const float fadeInSeconds = 0.48f;
+        SpriteRenderer[] sprites = visual.GetComponentsInChildren<SpriteRenderer>(true);
+        Color[] colors = new Color[sprites.Length];
+        for (int i = 0; i < sprites.Length; i++)
+            colors[i] = sprites[i].color;
+
+        float elapsed = 0f;
+        float duration = BattlePresentationSpeedSettings.ScaleDuration(fadeOutSeconds);
+        while (elapsed < duration && monster != null)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.001f, duration));
+            float eased = t * t * (3f - 2f * t);
+            visual.position = Vector3.LerpUnclamped(departure, departure + Vector3.up * riseHeight, eased);
+            // Remain visible during most of the ascent instead of vanishing halfway up.
+            float opacity = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.55f, 1f, t));
+            for (int i = 0; i < sprites.Length; i++)
+                if (sprites[i] != null)
+                {
+                    Color c = colors[i];
+                    c.a *= opacity;
+                    sprites[i].color = c;
+                }
+            yield return null;
+        }
+        if (monster == null)
+            yield break;
+
+        Vector3 landingVisual = landingPosition + visualOffset;
+        Vector3 arrivalStart = landingVisual + Vector3.up * riseHeight;
+        visual.position = arrivalStart;
+        elapsed = 0f;
+        duration = BattlePresentationSpeedSettings.ScaleDuration(fadeInSeconds);
+        while (elapsed < duration && monster != null)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.001f, duration));
+            float eased = t * t * (3f - 2f * t);
+            visual.position = Vector3.LerpUnclamped(arrivalStart, landingVisual, eased);
+            float opacity = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, 0.65f, t));
+            for (int i = 0; i < sprites.Length; i++)
+                if (sprites[i] != null)
+                {
+                    Color c = colors[i];
+                    c.a *= opacity;
+                    sprites[i].color = c;
+                }
+            yield return null;
+        }
+
+        if (monster == null)
+            yield break;
+        // The caller updates the logical cell and root immediately after this routine.
+        visual.position = landingVisual;
+        for (int i = 0; i < sprites.Length; i++)
+            if (sprites[i] != null)
+                sprites[i].color = colors[i];
+    }
+
     private IEnumerator ExecuteArabellaLeap(MonsterReservedCommand command)
     {
         MonsterUnit monster = unitFinder.FindMonsterUnit(command.RuntimeId);
@@ -3720,78 +3798,89 @@ public class BattleActionRunner
         }
 
         BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
-        if (animator != null)
-        {
-            float takeoffDuration = animator.PlayMonsterSkillPrepare(command);
-            if (takeoffDuration > 0f)
-                yield return new WaitForSeconds(takeoffDuration);
-        }
 
-        // 착지점의 캐릭터는 바라보는 방향 반대로 밀어 이동 공간을 확보합니다.
+        // Prepare VFX and ascent begin together; the prefab root (and its VFX) stay still.
         BattleCharacter initiallyOccupiedCharacter = null;
-        if (BattleOccupancyService.TryGetCharacterAtGrid(destinationIndex, out BattleCharacter occupant) &&
-            occupant != null && occupant.RuntimeData != null && !occupant.RuntimeData.IsDead)
-        {
-            initiallyOccupiedCharacter = occupant;
-            BattleUnitFacing targetFacing = occupant.GetComponent<BattleUnitFacing>();
-            BattleDirection reverse = targetFacing != null
-                ? (targetFacing.IsFacingRight ? BattleDirection.Left : BattleDirection.Right)
-                : (occupant.RuntimeData.Direction == BattleDirection.Right
-                    ? BattleDirection.Left : BattleDirection.Right);
-            new KnockbackEffect().Execute(new BattleEffectContext
-            {
-                MonsterCaster = monster,
-                PlayerTarget = occupant,
-                MonsterSkillData = command.SkillData,
-                MonsterCommand = command,
-                GridManager = gridManager,
-                Direction = reverse,
-                EffectId = "E_Knockback",
-                Value = 1,
-                Count = 1
-            });
-            // 반대 방향 넉백이 벽이나 점유로 실패해도 착지가 막히지 않게
-            // 주변의 유효한 빈칸으로 캐릭터를 밀어냅니다.
-            if (occupant.CurrentGridIndex == destinationIndex)
-            {
-                Vector2Int[] offsets =
-                {
-                    reverse == BattleDirection.Right ? Vector2Int.right : Vector2Int.left,
-                    Vector2Int.up, Vector2Int.down,
-                    reverse == BattleDirection.Right ? Vector2Int.left : Vector2Int.right
-                };
-                for (int i = 0; i < offsets.Length; i++)
-                {
-                    Vector2Int candidate = to + offsets[i];
-                    if (!gridManager.IsValidCoord(candidate))
-                        continue;
-                    int candidateIndex = gridManager.CoordToIndex(candidate);
-                    if (BattleOccupancyService.IsOccupiedByAnyUnit(candidateIndex) ||
-                        IsGridEffectBlocked(candidateIndex))
-                        continue;
-                    occupant.SetGridIndex(candidateIndex);
-                    occupant.transform.position = gridManager.GetWorldPositionByIndex(candidateIndex);
-                    UpdatePartyGridIndex(occupant.CharacterId, candidateIndex);
-                    break;
-                }
-            }
-            // 강제 이동 시각 효과가 위치를 따라오도록 짧은 시간을 확보합니다.
-            yield return new WaitForSeconds(BattlePresentationSpeedSettings.ScaleDuration(ForcedMoveVisualCompletionDelay));
-        }
-
-        // 강습은 일반 이동과 달리 중간 경로의 충돌 검사를 거치지 않습니다.
-        // 착지점에 유닛이 남아 있다면 중복 점유를 만들지 않고 현재 위치에서만 공격합니다.
-        if (!BattleOccupancyService.IsOccupiedByAnyUnit(destinationIndex, null, monster) &&
-            !IsGridEffectBlocked(destinationIndex))
+        if (!IsGridEffectBlocked(destinationIndex) &&
+            !BattleOccupancyService.TryGetMonsterAtGrid(destinationIndex, out MonsterUnit blockingMonster, monster))
         {
             Vector3 pos = gridManager.GetWorldPositionByIndex(destinationIndex);
-            yield return MoveTransformSmooth(monster.transform, monster.transform.position, pos,
-                MoveAnimationDuration);
-            monster.MoveOccupiedCells(delta, gridManager);
+            if (animator != null)
+                animator.PlayMonsterSkillPrepare(command);
+            Transform leapSpriteRoot = monster.transform.Find("SpriteRoot");
+            Vector3 spriteRootDefaultLocalPosition = leapSpriteRoot != null ? leapSpriteRoot.localPosition : Vector3.zero;
+            yield return AnimateArabellaHuntingLeap(monster, pos);
+            if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
+                yield break;
+
+            // Displace the character ONLY when Arabella has finished descending.
+            if (BattleOccupancyService.TryGetCharacterAtGrid(destinationIndex, out BattleCharacter occupant) &&
+                occupant != null && occupant.RuntimeData != null && !occupant.RuntimeData.IsDead)
+            {
+                initiallyOccupiedCharacter = occupant;
+                BattleUnitFacing targetFacing = occupant.GetComponent<BattleUnitFacing>();
+                BattleDirection reverse = targetFacing != null
+                    ? (targetFacing.IsFacingRight ? BattleDirection.Left : BattleDirection.Right)
+                    : (occupant.RuntimeData.Direction == BattleDirection.Right
+                        ? BattleDirection.Left : BattleDirection.Right);
+                new KnockbackEffect().Execute(new BattleEffectContext
+                {
+                    MonsterCaster = monster,
+                    PlayerTarget = occupant,
+                    MonsterSkillData = command.SkillData,
+                    MonsterCommand = command,
+                    GridManager = gridManager,
+                    Direction = reverse,
+                    EffectId = "E_Knockback",
+                    Value = 1,
+                    Count = 1
+                });
+                // 반대 방향 넉백이 벽이나 점유로 실패해도 착지가 막히지 않게
+                // 주변의 유효한 빈칸으로 캐릭터를 밀어냅니다.
+                if (occupant.CurrentGridIndex == destinationIndex)
+                {
+                    Vector2Int[] offsets =
+                    {
+                        reverse == BattleDirection.Right ? Vector2Int.right : Vector2Int.left,
+                        Vector2Int.up, Vector2Int.down,
+                        reverse == BattleDirection.Right ? Vector2Int.left : Vector2Int.right
+                    };
+                    for (int i = 0; i < offsets.Length; i++)
+                    {
+                        Vector2Int candidate = to + offsets[i];
+                        if (!gridManager.IsValidCoord(candidate))
+                            continue;
+                        int candidateIndex = gridManager.CoordToIndex(candidate);
+                        if (BattleOccupancyService.IsOccupiedByAnyUnit(candidateIndex) ||
+                            IsGridEffectBlocked(candidateIndex))
+                            continue;
+                        occupant.SetGridIndex(candidateIndex);
+                        occupant.transform.position = gridManager.GetWorldPositionByIndex(candidateIndex);
+                        UpdatePartyGridIndex(occupant.CharacterId, candidateIndex);
+                        break;
+                    }
+                }
+            }
+
+            if (!BattleOccupancyService.IsOccupiedByAnyUnit(destinationIndex, null, monster))
+            {
+                monster.MoveOccupiedCells(delta, gridManager);
+                monster.transform.position = pos;
+                Transform spriteRoot = monster.transform.Find("SpriteRoot");
+                if (spriteRoot != null)
+                    spriteRoot.localPosition = spriteRootDefaultLocalPosition;
+            }
+            else
+            {
+                Debug.LogWarning("[Arabella] Leap landing still occupied after impact displacement.");
+                Transform spriteRoot = monster.transform.Find("SpriteRoot");
+                if (spriteRoot != null)
+                    spriteRoot.localPosition = spriteRootDefaultLocalPosition;
+            }
         }
         else
         {
-            Debug.LogWarning("[Arabella] Leap destination remains occupied; landing was cancelled.");
+            Debug.LogWarning("[Arabella] Leap destination blocked; landing was cancelled.");
         }
 
         // 실제 위치와 점유 상태가 확정된 뒤 착지 애니메이션/VFX를 재생합니다.

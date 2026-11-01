@@ -56,6 +56,18 @@ public static class TutorialSettings
 {
     public const string TutorialSeenPrefsKey = "Dustium.TutorialSeen";
 
+    // This is independent from the replayable tutorial setting.
+    private const string FirstCompletionExperienceClaimedKey = "Dustium.TutorialFirstCompletionExperienceClaimed";
+    public static bool HasClaimedFirstCompletionExperience =>
+        PlayerPrefs.GetInt(FirstCompletionExperienceClaimedKey, 0) == 1;
+
+    public static void MarkFirstCompletionExperienceClaimed()
+    {
+        PlayerPrefs.SetInt(FirstCompletionExperienceClaimedKey, 1);
+        PlayerPrefs.Save();
+    }
+
+
     private const int SeenValue = 1;
     private const int NotSeenValue = 0;
 

@@ -6485,7 +6485,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452474
-    m_Localized: '. '
+    m_Localized: .
     m_Metadata:
       m_Items: []
   - m_Id: 23980218251452475
@@ -8152,6 +8152,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 9164888147097980000
     m_Localized: "\uC720\uBB3C \uD68D\uB4DD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29743157478662144
+    m_Localized: "\uB3C4\uCC29"
     m_Metadata:
       m_Items: []
   references:
