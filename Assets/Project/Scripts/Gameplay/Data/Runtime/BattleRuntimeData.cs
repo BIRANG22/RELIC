@@ -45,6 +45,9 @@ namespace Relic.Gameplay.Data
         // 가방 내부 아이템
         public List<string> BagItemIds = new();
 
+        // 탐사에서 획득한 퀘스트 전용 아이템(가방으로 정산하지 않음)
+        public List<string> QuestRewardItemIds = new();
+
         // 스킬 인벤토리 내부 스킬
         public List<string> SkillInventoryIds = new();
 

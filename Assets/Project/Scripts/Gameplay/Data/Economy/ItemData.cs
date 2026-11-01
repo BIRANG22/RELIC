@@ -9,5 +9,6 @@ namespace Relic.Gameplay.Data
         public string Name;
         public string Desc;
         public string Rarity;
+        public int RewardStage;
     }
 }

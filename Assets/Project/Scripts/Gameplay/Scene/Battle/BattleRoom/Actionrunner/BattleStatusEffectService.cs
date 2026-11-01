@@ -1,5 +1,6 @@
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
+using Relic.Gameplay.Battle;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -75,7 +76,141 @@ public class BattleStatusEffectService
             monster.ShowAndRefreshHUD();
         }
 
+        yield return PlayArabellaWebCreationRoutine(monsters);
         yield return PlayNocturnPortalPresentationsRoutine(monsters);
+    }
+
+    private const string ArabellaWebTraitId = "E_WebCreation";
+    private const string ArabellaWebGridEffectId = "GR_spider_web";
+    private const float ArabellaWebPresentationDelay = 0.65f;
+    private const int ArabellaWebActionIndex = 4;
+
+    private static IEnumerator PlayArabellaWebCreationRoutine(MonsterUnit[] monsters)
+    {
+        if (monsters == null)
+            yield break;
+
+        BattleGridEffectController gridEffects = Object.FindFirstObjectByType<BattleGridEffectController>(
+            FindObjectsInactive.Include);
+        if (gridEffects == null)
+            yield break;
+
+        foreach (MonsterUnit monster in monsters)
+        {
+            if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
+                continue;
+
+            string id = monster.RuntimeData.MonsterId;
+            if (id != ArabellaPhaseTransition.PhaseOneMonsterId &&
+                id != ArabellaPhaseTransition.PhaseTwoMonsterId)
+                continue;
+
+            // 사냥실은 대상 캐릭터에서 아라벨라 쪽으로 접근하는 경로의 인접 칸을 우선합니다.
+            GridManager grid = Object.FindFirstObjectByType<GridManager>(FindObjectsInactive.Include);
+            if (grid == null)
+                continue;
+
+            BattleCharacter[] characters = Object.FindObjectsByType<BattleCharacter>(
+                FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            List<BattleCharacter> candidates = new List<BattleCharacter>();
+            List<List<int>> availableCells = new List<List<int>>();
+            int bossGridIndex = monster.MainGridIndex;
+            if (bossGridIndex < 0)
+                continue;
+            Vector2Int bossCoord = grid.IndexToCoord(bossGridIndex);
+            foreach (BattleCharacter character in characters)
+            {
+                if (character == null || character.RuntimeData == null || character.RuntimeData.IsDead)
+                    continue;
+
+                int centerIndex = character.CurrentGridIndex;
+                if (centerIndex < 0)
+                    continue;
+
+                Vector2Int center = grid.IndexToCoord(centerIndex);
+                List<int> neighboringCells = new List<int>();
+                int bestDistance = int.MaxValue;
+                for (int x = -1; x <= 1; x++)
+                {
+                    for (int y = -1; y <= 1; y++)
+                    {
+                        if (x == 0 && y == 0)
+                            continue;
+
+                        Vector2Int coord = center + new Vector2Int(x, y);
+                        if (!grid.IsValidCoord(coord))
+                            continue;
+
+                        int cell = grid.CoordToIndex(coord);
+                        if (gridEffects.HasEffect(cell) ||
+                            BattleOccupancyService.IsOccupiedByMonster(cell) ||
+                            BattleOccupancyService.TryGetCharacterAtGrid(cell, out _))
+                            continue;
+
+                        // 접근 방향에 있는 한 칸을 우선하고, 같은 거리인 칸만 후보로 둡니다.
+                        // 안전한 앞쪽 칸이 없다면 주변 빈 칸 중 가장 가까운 칸을 선택합니다.
+                        int distance = Mathf.Abs(coord.x - bossCoord.x) +
+                                       Mathf.Abs(coord.y - bossCoord.y);
+                        if (distance < bestDistance)
+                        {
+                            bestDistance = distance;
+                            neighboringCells.Clear();
+                        }
+                        if (distance == bestDistance)
+                            neighboringCells.Add(cell);
+                    }
+                }
+
+                if (neighboringCells.Count == 0)
+                    continue;
+
+                candidates.Add(character);
+                availableCells.Add(neighboringCells);
+            }
+
+            if (candidates.Count == 0)
+            {
+                Debug.LogWarning("[ArabellaWeb] No available neighboring grid for GR_spider_web.");
+                continue;
+            }
+
+            int targetIndex = UnityEngine.Random.Range(0, candidates.Count);
+            BattleCharacter targetCharacter = candidates[targetIndex];
+            List<int> targetCells = availableCells[targetIndex];
+            int chosen = targetCells[UnityEngine.Random.Range(0, targetCells.Count)];
+            BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+            if (facing == null)
+                facing = monster.GetComponentInChildren<BattleUnitFacing>();
+            if (facing != null)
+                facing.FaceByWorldTarget(targetCharacter.transform.position);
+
+            BattleUnitAnimator animator = monster.GetComponent<BattleUnitAnimator>();
+            if (animator != null)
+            {
+                animator.PlayMonsterActionPresentation(ArabellaWebActionIndex);
+                yield return new WaitForSeconds(ArabellaWebPresentationDelay);
+                if (monster != null && monster.RuntimeData != null && !monster.RuntimeData.IsDead)
+                    animator.PlayIdle();
+            }
+
+            if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
+                continue;
+
+            // 애니메이션 중 위치가 바뀌어도 선정한 접근 경로의 인접 칸에 배치합니다.
+            if (gridEffects.HasEffect(chosen) ||
+                BattleOccupancyService.IsOccupiedByMonster(chosen) ||
+                BattleOccupancyService.TryGetCharacterAtGrid(chosen, out _))
+                continue;
+
+            if (!gridEffects.TryPlaceEffect(chosen, ArabellaWebGridEffectId))
+            {
+                Debug.LogWarning($"[ArabellaWeb] Failed to place {ArabellaWebGridEffectId} at grid {chosen}. Check GridEffectDatabase / GridEffectPrefabDatabase and existing grid effects.");
+                continue;
+            }
+
+            if (BattleOccupancyService.TryGetCharacterAtGrid(chosen, out BattleCharacter affected))
+                gridEffects.ApplyToPlayer(chosen, affected);
+        }
     }
 
     private const string NocturnPortalPresentationSkillId = "S_Monster_28";

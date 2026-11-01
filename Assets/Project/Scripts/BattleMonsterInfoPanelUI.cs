@@ -201,6 +201,9 @@ public class BattleMonsterInfoPanelUI : MonoBehaviour
         if (boundRuntime == null)
             return;
 
+        // Restore the correct innate trait icons after phase transitions or save loading.
+        boundRuntime.EnsureArabellaInnateTraits();
+
         if (force)
         {
             if (nameText != null)

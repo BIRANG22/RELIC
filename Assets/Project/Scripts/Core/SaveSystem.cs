@@ -32,6 +32,11 @@ public class SaveSystem : Singleton<SaveSystem>
         explorationResultConfirmedForSave = true;
     }
 
+    public void MarkExplorationResultAwaitingConfirmation()
+    {
+        explorationResultConfirmedForSave = false;
+    }
+
     private bool ProtectUnconfirmedExplorationResult(ResumeData replacement)
     {
         if (explorationResultConfirmedForSave ||
@@ -137,7 +142,7 @@ public class SaveSystem : Singleton<SaveSystem>
         if (string.Equals(SceneManager.GetActiveScene().name, SceneName.Battle, StringComparison.OrdinalIgnoreCase))
         {
             ExplorationResultPanelUI report = UnityEngine.Object.FindFirstObjectByType<ExplorationResultPanelUI>(FindObjectsInactive.Exclude);
-            if (report != null && report.isActiveAndEnabled && CanContinueBattle(saveData))
+            if (!explorationResultConfirmedForSave && report != null && report.isActiveAndEnabled && CanContinueBattle(saveData))
             {
                 GameSaveData previous = ReadSaveData();
                 if (previous?.Resume != null && previous.Resume.Phase == ResumePhase.ExplorationResult)
@@ -570,12 +575,26 @@ public class SaveSystem : Singleton<SaveSystem>
 
     public GameSaveData ReadSaveData()
     {
+        // A missing save is normal on first launch or after resetting progress.
+        // Do not report this as an error; callers already handle a null save.
+        if (!File.Exists(SaveFilePath))
+            return null;
+
         try
         {
             string json = File.ReadAllText(SaveFilePath);
             GameSaveData saveData = JsonUtility.FromJson<GameSaveData>(json);
             NormalizeSaveData(saveData, saveData?.ActiveSceneName);
             return saveData;
+        }
+        catch (FileNotFoundException)
+        {
+            // The file may have been removed after File.Exists returned true.
+            return null;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return null;
         }
         catch (Exception ex)
         {

@@ -2203,8 +2203,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186362
-    m_Localized: "Gel muy viscoso que formaba el cuerpo de Murk. A\xFAn conserva
-      rastros de tejido erosionado."
+    m_Localized: Gel pegajoso obtenido del cuerpo erosionado de Murk.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186363
@@ -2212,8 +2211,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186365
-    m_Localized: "Mucosidad suave extra\xEDda de un Blob. Cambia de forma f\xE1cilmente,
-      pero conserva su viscosidad."
+    m_Localized: "Mucosidad de Blob que cambia de forma f\xE1cilmente."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186366
@@ -2221,8 +2219,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186368
-    m_Localized: "N\xFAcleo caliente extra\xEDdo del interior de Lancer. Incluso
-      apagado, conserva algo de calor y energ\xEDa."
+    m_Localized: "N\xFAcleo de Lancer que a\xFAn conserva un leve calor."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186369
@@ -2230,8 +2227,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186371
-    m_Localized: "N\xFAcleo turbio y descolorido obtenido de Blight. Desprende una
-      energ\xEDa que erosiona lentamente los materiales cercanos."
+    m_Localized: "N\xFAcleo de Blight impregnado de una energ\xEDa erosiva."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186372
@@ -2239,8 +2235,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186374
-    m_Localized: "Aguij\xF3n r\xEDgido desprendido del cuerpo de Vespa. Su punta
-      afilada conserva sustancias t\xF3xicas mutadas."
+    m_Localized: "Aguij\xF3n afilado de Vespa que a\xFAn conserva veneno."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186375
@@ -2248,8 +2243,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186377
-    m_Localized: "Pata resistente cortada de Cinder. Su caparaz\xF3n es ligero, pero
-      dif\xEDcil de romper con un golpe."
+    m_Localized: "Pata de Cinder cubierta por un caparaz\xF3n resistente."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186378
@@ -2257,8 +2251,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186380
-    m_Localized: "Hacha que utilizaba Draugr. Su vieja superficie met\xE1lica muestra
-      capas de erosi\xF3n y putrefacci\xF3n."
+    m_Localized: "Hacha de Draugr marcada por la erosi\xF3n y la putrefacci\xF3n."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186381
@@ -2266,8 +2259,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186383
-    m_Localized: "Punta de una flecha utilizada por Barrow. A pesar del \xF3xido,
-      a\xFAn conserva rastros de la energ\xEDa caracter\xEDstica de los mutantes."
+    m_Localized: "Punta de flecha de Barrow con rastros de mutaci\xF3n."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186384
@@ -2275,8 +2267,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186386
-    m_Localized: "Fragmento desprendido del escudo de Rook. Pese a su tama\xF1o,
-      es lo bastante resistente para soportar grandes impactos."
+    m_Localized: Fragmento del escudo de Rook capaz de resistir fuertes impactos.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186387
@@ -2284,8 +2275,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186389
-    m_Localized: Fragmento negro desprendido de la armadura de Nocturne. Al recibir
-      luz, las sombras de su superficie tiemblan ligeramente.
+    m_Localized: Fragmento de la armadura de Nocturne cuyas sombras ondulan.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186390
@@ -2293,8 +2283,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186392
-    m_Localized: Cristal que concentra el poder de la nigromancia de Mort. Al acercarlo,
-      se percibe una tenue resonancia.
+    m_Localized: "Cristal de Mort que concentra poder nigrom\xE1ntico."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915737186393
@@ -2302,8 +2291,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380608
-    m_Localized: "Fragmento de la corona que llevaba Arabella. Alberga se\xF1ales
-      de una intensa Erosi\xF3n."
+    m_Localized: "Corona de Arabella marcada por una intensa erosi\xF3n."
     m_Metadata:
       m_Items: []
   - m_Id: 41385915741380634
@@ -3620,11 +3608,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5456895886818223323
-    m_Localized: "Primera expedici\xF3n {Current}/{Target}"
+    m_Localized: "Primera expedici\xF3n - Recuperar el N\xFAcleo del Despertar {Current}/{Target}"
     m_Metadata:
       m_Items: []
   - m_Id: 469011341431732811
-    m_Localized: "Prepararse para la expedici\xF3n"
+    m_Localized: "Preparativos de expedici\xF3n"
     m_Metadata:
       m_Items: []
   - m_Id: 5126323777902196562
@@ -7770,6 +7758,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 29743157478662144
     m_Localized: Llegar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29830859909734400
+    m_Localized: "N\xFAcleo del Despertar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29830859968454656
+    m_Localized: "Un n\xFAcleo carmes\xED que concentra el poder despertado de Arabela."
     m_Metadata:
       m_Items: []
   references:

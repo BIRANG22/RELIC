@@ -93,6 +93,16 @@ public class BattleDamageTextPopupUI : MonoBehaviour
         public int Sequence;
     }
 
+    private sealed class PendingArmorPopup
+    {
+        public Transform Target;
+        public int Value;
+    }
+
+    // Merge armor gains applied to the same unit during one turn-start effect batch.
+    private const float ArmorPopupMergeWindow = 0.08f;
+    private readonly List<PendingArmorPopup> pendingArmorPopups = new();
+
     private static BattleDamageTextPopupUI instance;
     private readonly List<RecoveryPopupRequest> recoveryPopupQueue = new();
     private Coroutine recoveryPopupRoutine;
@@ -300,10 +310,46 @@ public class BattleDamageTextPopupUI : MonoBehaviour
 
         popup.UseBattleCanvas();
 
-        if (IsRecoveryPopup(popupType))
+        if (popupType == PopupType.ArmorGain)
+            popup.QueueArmorGainPopup(target, value);
+        else if (IsRecoveryPopup(popupType))
             popup.QueueRecoveryPopup(target, value, popupType);
         else
             popup.ShowAfterDelay(target, value, popupType);
+    }
+
+    private void QueueArmorGainPopup(Transform target, int value)
+    {
+        ShowTargetHudImmediately(target);
+
+        for (int i = 0; i < pendingArmorPopups.Count; i++)
+        {
+            PendingArmorPopup pending = pendingArmorPopups[i];
+            if (pending.Target != target)
+                continue;
+
+            pending.Value += value;
+            return;
+        }
+
+        PendingArmorPopup request = new PendingArmorPopup { Target = target, Value = value };
+        pendingArmorPopups.Add(request);
+        StartCoroutine(ShowMergedArmorPopupRoutine(request));
+    }
+
+    private IEnumerator ShowMergedArmorPopupRoutine(PendingArmorPopup request)
+    {
+        yield return new WaitForSecondsRealtime(ArmorPopupMergeWindow);
+        pendingArmorPopups.Remove(request);
+
+        if (request.Target == null || request.Value <= 0)
+            yield break;
+
+        if (popupStartDelay > 0f)
+            yield return new WaitForSecondsRealtime(popupStartDelay);
+
+        if (request.Target != null)
+            ShowInternal(request.Target, request.Value, PopupType.ArmorGain);
     }
 
     public static void BeginRecoveryPopupSequence()

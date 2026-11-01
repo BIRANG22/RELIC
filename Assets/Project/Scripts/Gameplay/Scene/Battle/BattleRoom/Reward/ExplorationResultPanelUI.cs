@@ -1,10 +1,12 @@
-using System.Collections;
-using System.Text;
-using System.Collections.Generic;
 using Relic.Gameplay.Data;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 public sealed class ExplorationResultPanelUI : MonoBehaviour
 {
@@ -231,6 +233,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
         if (saveResultCheckpoint && SaveSystem.Instance != null)
         {
+            SaveSystem.Instance.MarkExplorationResultAwaitingConfirmation();
             // 전투방 입장 스냅샷보다 결과 보고 상태를 우선 저장합니다.
             SaveSystem.Instance.ClearBattleRoomEntryCheckpoint();
             SaveSystem.Instance.SaveCheckpoint(new ResumeData
@@ -449,6 +452,17 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         FindHoveredNamedSlot(hardModeSlots, erosionSlotNames, ref source, ref displayName);
         if (source == null)
             FindHoveredNamedSlot(acquiredItemSlots, acquiredSlotNames, ref source, ref displayName);
+
+        // 캐릭터 행의 스킬 및 유물 슬롯도 동일한 SlotName 툴팁을 사용합니다.
+        if (source == null && characterRows != null)
+        {
+            for (int i = 0; i < characterRows.Length; i++)
+            {
+                ExplorationResultCharacterRowUI row = characterRows[i];
+                if (row != null && row.TryGetHoveredEquipmentSlot(Input.mousePosition, out source, out displayName))
+                    break;
+            }
+        }
 
         if (source == null || string.IsNullOrWhiteSpace(displayName))
         {
@@ -975,7 +989,45 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     {
         // Always show exactly eight bag slots. Their layout is controlled by the parent Layout Group.
         EnsureSlotCount(acquiredItemSlots, acquiredItemSlotRoot, AcquiredItemSlotCount, "AcquiredItemSlot");
-        List<BagItemStack> stacks = BagItemStackUtility.BuildStacks(value?.BagItemIds);
+        // 결과 화면에서는 퀘스트 아이템도 함께 표시하되 가방 정산 데이터는 변경하지 않습니다.
+        List<string> displayIds = new List<string>();
+        if (value?.QuestRewardItemIds != null)
+        {
+            foreach (string id in value.QuestRewardItemIds)
+                if (!string.IsNullOrWhiteSpace(id) && !displayIds.Exists(existing =>
+                        string.Equals(existing, id, StringComparison.OrdinalIgnoreCase)))
+                    displayIds.Add(id);
+        }
+        if (value?.BagItemIds != null)
+        {
+            foreach (string id in value.BagItemIds)
+            {
+                ItemData item = DataManager.Instance?.ItemDatabase?.Get(id);
+                // Prevent old saves that also stored a quest item in the normal bag
+                // from showing a second copy in the exploration result.
+                if (item != null && item.RewardStage > 0)
+                {
+                    if (!displayIds.Exists(existing =>
+                            string.Equals(existing, id, StringComparison.OrdinalIgnoreCase)))
+                        displayIds.Add(id);
+                    continue;
+                }
+                displayIds.Add(id);
+            }
+        }
+        List<BagItemStack> stacks = BagItemStackUtility.BuildStacks(displayIds);
+        // A quest item represents a completed objective, never a stack of two.
+        for (int i = 0; i < stacks.Count; i++)
+        {
+            BagItemStack stack = stacks[i];
+            if (!string.Equals(stack.ItemId, "Item_013", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            displayIds.RemoveAll(id => string.Equals(id, "Item_013", StringComparison.OrdinalIgnoreCase));
+            displayIds.Insert(0, "Item_013");
+            stacks = BagItemStackUtility.BuildStacks(displayIds);
+            break;
+        }
         acquiredSlotNames.Clear();
         for (int i = 0; i < acquiredItemSlots.Count; i++)
         {
@@ -1584,7 +1636,14 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             }
         }
 
-        SaveSystem.Instance?.SaveCurrentProgress();
+        // ConfirmButton을 누른 뒤에는 결과 화면 체크포인트 보호를 해제합니다.
+        // 전투 상태를 이미 정리했으므로 이번 저장은 로비 진행 상태를 확정합니다.
+        SaveSystem.Instance?.MarkExplorationResultConfirmedForSave();
+        bool lobbyProgressSaved = SaveSystem.Instance == null || SaveSystem.Instance.SaveCurrentProgress();
+        if (!lobbyProgressSaved)
+        {
+            Debug.LogError("[ExplorationResultPanelUI] Failed to save confirmed exploration result.");
+        }
         if (claimFirstTutorialExperience)
             TutorialSettings.MarkFirstCompletionExperienceClaimed();
 

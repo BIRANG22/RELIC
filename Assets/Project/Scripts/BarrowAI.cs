@@ -105,7 +105,8 @@ namespace Relic.Gameplay.Monster
 
             // 공격 이후에는 첫 턴을 포함해 매 턴 도망 이동을 시도합니다.
             // 이동 가능한 위치가 있을 때 같은 슬롯의 두 번째 행동으로 예약합니다.
-            if (FindPlayers().Length > 0)
+            if (monsterUnit.RuntimeData.PendingPlayerEffectEscape ||
+                HasCharacterInAdjacentEightCells(monsterUnit, gridManager))
             {
                 Vector2Int moveOffset = GetBestEscapeMove(monsterUnit, gridManager);
                 if (moveOffset != Vector2Int.zero)
@@ -293,6 +294,10 @@ namespace Relic.Gameplay.Monster
                 if (alivePlayerCount <= 0)
                     continue;
 
+                // 어느 캐릭터에게도 가까워지지 않는 경로만 도망 후보로 사용합니다.
+                if (candidateGetsCloserToAnyPlayer)
+                    continue;
+
                 // 두 번째 칸에 유닛이 있는 2칸 도망은 첫 칸까지 이동한 뒤 충돌하는
                 // 비상 탈출 후보로 남깁니다. 완전히 비어 있는 안전한 도망이 있으면
                 // 그것을 우선하고, 없을 때만 이 후보를 사용합니다.
@@ -322,8 +327,6 @@ namespace Relic.Gameplay.Monster
                 // 이동 가능한 도주 후보는 캐릭터에게 가까워지더라도 제외하지 않습니다.
                 // 충돌하는 이동보다 정상적으로 빠져나갈 수 있는 방향을 우선하고,
                 // 가까워지는 정도는 후보 사이의 점수 비교에만 반영합니다.
-                if (candidateGetsCloserToAnyPlayer)
-                    safetyScore -= 80;
 
                 // 막다른 길을 피하는 것이 공격 방향 유지보다 우선입니다.
                 // 탈출 공간이 같을 때만 좌/우 방향, 캐릭터와의 거리를 비교합니다.

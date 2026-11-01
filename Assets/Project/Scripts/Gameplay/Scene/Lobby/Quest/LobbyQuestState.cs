@@ -1,11 +1,12 @@
 using System;
 using Relic.Gameplay.Data;
+using UnityEngine.Localization.Settings;
 
 [Serializable]
 public sealed class LobbyQuestTextConfig
 {
-    public string SetupQuestText = "파티편성 및 캐릭터 세팅이 완료 되었다면, 엘릭과 대화하세요";
-    public string FirstExpeditionQuestText = "로데른 폐허에서 아라벨라를 처치하고 아라벨라의 각성핵을 획득하세요. ({Current}/{Target})";
+    public string SetupQuestText = "탐사 준비";
+    public string FirstExpeditionQuestText = "첫 탐사 - 각성핵 회수 {Current}/{Target}";
     public int FirstExpeditionTargetCount = 1;
     public string FirstExpeditionRequiredItemId;
 
@@ -42,16 +43,20 @@ public readonly struct LobbyQuestState
                 return new LobbyQuestState(
                     progress,
                     true,
-                    GameLocalization.Get("lobby.quest.setup", config.SetupQuestText));
+                    IsKoreanLocale()
+                        ? "탐사 준비"
+                        : GameLocalization.Get("lobby.quest.setup", config.SetupQuestText));
 
             case LobbyTutorialProgress.FirstExpeditionAssigned:
                 int targetCount = Math.Max(1, config.FirstExpeditionTargetCount);
-                int currentCount = HasRequiredItem(lobby, config.FirstExpeditionRequiredItemId)
+                int currentCount = TrialUnlockProgress.HasFirstStageAwakeningCore
                     ? targetCount
                     : 0;
-                string text = GameLocalization.Get(
-                        "lobby.quest.first_expedition",
-                        config.FirstExpeditionQuestText)
+                string text = (IsKoreanLocale()
+                        ? "첫 탐사 - 각성핵 회수 {Current}/{Target}"
+                        : GameLocalization.Get(
+                            "lobby.quest.first_expedition",
+                            config.FirstExpeditionQuestText))
                     .Replace("{Current}", currentCount.ToString())
                     .Replace("{Target}", targetCount.ToString());
                 return new LobbyQuestState(progress, true, text);
@@ -61,6 +66,15 @@ public readonly struct LobbyQuestState
         }
     }
 
+    // Existing localization entries or serialized Inspector fields may still contain the old wording.
+    // Use the revised Korean quest copy without affecting translations in other languages.
+    private static bool IsKoreanLocale()
+    {
+        string localeCode = LocalizationSettings.SelectedLocale?.Identifier.Code;
+        return string.IsNullOrEmpty(localeCode) ||
+               localeCode.StartsWith("ko", StringComparison.OrdinalIgnoreCase);
+    }
+
     public static bool CanUseFeature(
         LobbyTutorialProgress current,
         LobbyTutorialProgress required)
@@ -68,25 +82,4 @@ public readonly struct LobbyQuestState
         return current >= required;
     }
 
-    private static bool HasRequiredItem(LobbyRuntimeData lobby, string itemId)
-    {
-        if (lobby?.BagItemIds == null || string.IsNullOrWhiteSpace(itemId))
-            return false;
-
-        string normalizedItemId = itemId.Trim();
-        for (int i = 0; i < lobby.BagItemIds.Count; i++)
-        {
-            string candidate = lobby.BagItemIds[i];
-            if (!string.IsNullOrWhiteSpace(candidate) &&
-                string.Equals(
-                    candidate.Trim(),
-                    normalizedItemId,
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }

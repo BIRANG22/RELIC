@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Battle;
 using Relic.Gameplay.Data;
@@ -33,6 +34,11 @@ public class BattleGridEffectController : MonoBehaviour
     [SerializeField] private string sortingLayerName = "Default";
     [SerializeField] private int sortingOrder = 1;
 
+    [Header("Damage Feedback")]
+    [SerializeField] private bool shakeDamageableEffects = true;
+    [SerializeField, Min(0f)] private float damageShakeDistance = 0.32f;
+    [SerializeField, Min(0.01f)] private float damageShakeDuration = 0.26f;
+
     [Header("World VFX Proxy")]
     [SerializeField] private bool playWorldVfxProxies = true;
     [SerializeField] private string worldVfxLayerName = "VFX";
@@ -44,6 +50,7 @@ public class BattleGridEffectController : MonoBehaviour
     private readonly BattleGridEffectState state = new();
     private readonly Dictionary<int, GameObject> viewsByGridIndex = new();
     private readonly Dictionary<int, GridEffectHpUI> hpUiByGridIndex = new();
+    private readonly Dictionary<int, Coroutine> hitShakeRoutines = new();
     private BattleGridEffectService service;
     private GridEffectSpriteDatabase prefabDatabase;
 
@@ -353,10 +360,58 @@ public class BattleGridEffectController : MonoBehaviour
         if (!state.DamageHitPoints(gridIndex, damage, out destroyed))
             return false;
 
-        if (destroyed)
+        if (shakeDamageableEffects && viewsByGridIndex.TryGetValue(gridIndex, out GameObject damagedView) && damagedView != null && isActiveAndEnabled && Application.isPlaying)
+        {
+            if (hitShakeRoutines.TryGetValue(gridIndex, out Coroutine oldRoutine) && oldRoutine != null)
+                StopCoroutine(oldRoutine);
+
+            // Destroyed objects stay visible only for the short hit feedback.
+            if (destroyed)
+            {
+                foreach (Collider2D collider in damagedView.GetComponentsInChildren<Collider2D>(true))
+                    collider.enabled = false;
+            }
+
+            hitShakeRoutines[gridIndex] = StartCoroutine(ShakeDamagedView(gridIndex, damagedView, destroyed));
+        }
+        else if (destroyed)
+        {
             RemoveView(gridIndex);
+        }
 
         return true;
+    }
+
+    private IEnumerator ShakeDamagedView(int gridIndex, GameObject view, bool removeAfterShake)
+    {
+        if (view == null)
+            yield break;
+
+        Transform visual = view.transform;
+        Vector3 originalPosition = visual.localPosition;
+        float elapsed = 0f;
+        // Upgrade the previous serialized defaults so existing scene settings are visible too.
+        float distance = Mathf.Approximately(damageShakeDistance, 0.09f)
+            ? 0.32f
+            : damageShakeDistance;
+        float duration = Mathf.Approximately(damageShakeDuration, 0.16f)
+            ? 0.26f
+            : Mathf.Max(0.01f, damageShakeDuration);
+        while (elapsed < duration && view != null)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float damping = Mathf.Pow(1f - t, 0.65f);
+            float offset = Mathf.Sin(t * Mathf.PI * 8f) * distance * damping;
+            visual.localPosition = originalPosition + Vector3.right * offset;
+            yield return null;
+        }
+
+        if (view != null)
+            visual.localPosition = originalPosition;
+        hitShakeRoutines.Remove(gridIndex);
+        if (removeAfterShake && viewsByGridIndex.TryGetValue(gridIndex, out GameObject currentView) && currentView == view)
+            RemoveView(gridIndex);
     }
 
     public void ResolveTurnEndGridEffects()
@@ -1050,6 +1105,13 @@ public class BattleGridEffectController : MonoBehaviour
 
     private void RemoveView(int gridIndex)
     {
+        if (hitShakeRoutines.TryGetValue(gridIndex, out Coroutine shakeRoutine))
+        {
+            hitShakeRoutines.Remove(gridIndex);
+            if (shakeRoutine != null)
+                StopCoroutine(shakeRoutine);
+        }
+
         RemoveHpUi(gridIndex);
 
         if (!viewsByGridIndex.TryGetValue(gridIndex, out GameObject view))

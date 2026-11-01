@@ -22,6 +22,7 @@ namespace Relic.Gameplay.Data
         public List<string> RelicIds = new();
         public List<string> NewSkillIds = new();
         public List<string> BagItemIds = new();
+        public List<string> QuestRewardItemIds = new();
         public List<BattleRunCharacterStatisticsData> CharacterStatistics = new();
     }
 
@@ -178,6 +179,7 @@ namespace Relic.Gameplay.Data
             CopyUnique(runtime.SkillInventoryIds, result.NewSkillIds, startingSkills);
             CopyUnique(runtime.AcquiredSkillIds, result.NewSkillIds, startingSkills);
             CopyAll(runtime.BagItemIds, result.BagItemIds);
+            CopyUnique(runtime.QuestRewardItemIds, result.QuestRewardItemIds, null);
 
             Dictionary<string, BattleRunCharacterStatisticsData> statisticsByCharacterId =
                 new(StringComparer.Ordinal);

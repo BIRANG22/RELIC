@@ -13,6 +13,7 @@ public static class TrialUnlockProgress
     private const string TwoTrialStage3ClearKey = "TrialUnlock.TwoTrialStage3ClearCount";
 
     private const string FirstAreaStageId = "Stage1";
+    private const string FirstClearAwakeningCoreItemId = "Item_013";
     private const int RequiredNocturnKills = 3;
 
     private static readonly string[] UnlockRequirementKeys =
@@ -32,6 +33,7 @@ public static class TrialUnlockProgress
     public static event Action ProgressChanged;
 
     public static int Stage3ClearCount => PlayerPrefs.GetInt(Stage3ClearKey, 0);
+    public static bool HasFirstStageAwakeningCore => Stage3ClearCount > 0;
     public static int NocturnKillCount => PlayerPrefs.GetInt(NocturnKillKey, 0);
     public static int TwoTrialStage3ClearCount => PlayerPrefs.GetInt(TwoTrialStage3ClearKey, 0);
 
@@ -113,6 +115,18 @@ public static class TrialUnlockProgress
         if (!IsFirstArea(runtime))
             return;
 
+        // 첫 클리어 보상은 전투/로비 가방이 아닌 탐사 전용 기록에 보관합니다.
+        if (Stage3ClearCount == 0)
+        {
+            BattleRuntimeData battle = DataManager.Instance?.BattleRuntimeStore?.Get();
+            if (battle != null)
+            {
+                battle.QuestRewardItemIds ??= new List<string>();
+                if (!battle.QuestRewardItemIds.Contains(FirstClearAwakeningCoreItemId))
+                    battle.QuestRewardItemIds.Add(FirstClearAwakeningCoreItemId);
+                DataManager.Instance.BattleRuntimeStore.Set(battle);
+            }
+        }
         PlayerPrefs.SetInt(Stage3ClearKey, Stage3ClearCount + 1);
 
         if (CountSelectedTrials(selectedTrialMask) >= 2)

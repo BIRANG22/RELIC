@@ -1853,7 +1853,6 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         string source = rewardData?.SourceKey ?? string.Empty;
         bool isBattleDrop = source.StartsWith("Skill|", StringComparison.OrdinalIgnoreCase);
         HashSet<string> acquired = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        HashSet<string> equipped = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         BattleRuntimeData runtime = dm.BattleRuntimeStore?.GetOrCreate();
         if (runtime?.AcquiredSkillIds != null)
             foreach (string id in runtime.AcquiredSkillIds) BlockSkillAndVariant(acquired, id);
@@ -1862,13 +1861,9 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         if (dm.CharacterRuntimeStore != null)
             foreach (CharacterRuntimeData character in dm.CharacterRuntimeStore.GetAll().Values)
             {
-                if (character == null) continue;
-                if (character.EquippedSkillIds != null)
-                    foreach (string id in character.EquippedSkillIds)
-                    {
-                        BlockSkillAndVariant(acquired, id);
-                        BlockSkillAndVariant(equipped, id);
-                    }
+                if (character?.EquippedSkillIds == null) continue;
+                foreach (string id in character.EquippedSkillIds)
+                    BlockSkillAndVariant(acquired, id);
             }
 
         // Battle drops roll from all available rarities; the map percentages are
@@ -1889,8 +1884,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         {
             if (skill == null || string.IsNullOrWhiteSpace(skill.SkillId) || skill.Category != Category.Core ||
                 !SkillRarityUtility.IsCoreDropRarity(skill.Rarity) ||
-                !SkillRarityUtility.IsBaseSkillVariant(skill.SkillId) ||
-                (isBattleDrop ? equipped.Contains(skill.SkillId.Trim()) : acquired.Contains(skill.SkillId.Trim()))) continue;
+                !SkillRarityUtility.IsBaseSkillVariant(skill.SkillId)) continue;
             if (typeFilter.HasValue && skill.SkillType != typeFilter.Value) continue;
             if (commonRare)
             {
@@ -1899,8 +1893,35 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             else if (!allRarities && skill.Rarity != rewardSkill.Rarity) continue;
 
             foreach (string id in eligibleOwners)
-                if (SkillOwnershipPolicy.CanEquip(skill, id))
-                    pools[id].Add(skill);
+            {
+                if (!SkillOwnershipPolicy.CanEquip(skill, id)) continue;
+                if (isBattleDrop)
+                {
+                    // Only memories equipped by this owner are ineligible.
+                    // Other party members must not narrow this owner's reward pool.
+                    if (dm.CharacterRuntimeStore.TryGet(id, out CharacterRuntimeData owner) &&
+                        owner?.EquippedSkillIds != null)
+                    {
+                        bool isEquipped = false;
+                        foreach (string equippedId in owner.EquippedSkillIds)
+                        {
+                            if (string.IsNullOrWhiteSpace(equippedId)) continue;
+                            string normalizedId = equippedId.Trim();
+                            if (string.Equals(normalizedId, skill.SkillId.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                                (SkillRarityUtility.TryGetPairedVariantId(normalizedId, out string paired) &&
+                                 string.Equals(paired, skill.SkillId.Trim(), StringComparison.OrdinalIgnoreCase)))
+                            {
+                                isEquipped = true;
+                                break;
+                            }
+                        }
+                        if (isEquipped) continue;
+                    }
+                }
+                else if (acquired.Contains(skill.SkillId.Trim())) continue;
+
+                pools[id].Add(skill);
+            }
         }
 
         // Prefer characters with at least three obtainable memories when possible.
