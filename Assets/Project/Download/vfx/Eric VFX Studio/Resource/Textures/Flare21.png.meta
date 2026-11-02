@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 512
+    maxTextureSize: 1024
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -153,8 +153,8 @@ TextureImporter:
   assetBundleVariant: 
 AssetOrigin:
   serializedVersion: 1
-  productId: 375712
-  packageName: Game VFX - UI & Interaction Effects Bundle
-  packageVersion: 1.03
-  assetPath: Assets/Eric VFX Studio/Resource/Textures/Flare21.png
-  uploadId: 992282
+  productId: 173450
+  packageName: Sword slashes PRO
+  packageVersion: 3.0
+  assetPath: Assets/Project/Download/vfx/Eric VFX Studio/Resource/Textures/Flare21.png
+  uploadId: 865410
