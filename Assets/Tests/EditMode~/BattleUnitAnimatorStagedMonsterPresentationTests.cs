@@ -47,6 +47,28 @@ public class BattleUnitAnimatorStagedMonsterPresentationTests
         Assert.That(owner.transform.Find("ActionVfx(Clone)"), Is.Not.Null);
     }
 
+    [Test]
+    public void PlayMonsterSkillActionStatePhase_DoesNotSpawnActionVfx()
+    {
+        BattleUnitAnimator animator = CreateAnimatorWithStagedPresentation();
+        MonsterReservedCommand command = CreateCommand();
+
+        animator.PlayMonsterSkillActionStatePhase(command);
+
+        Assert.That(owner.transform.Find("ActionVfx(Clone)"), Is.Null);
+    }
+
+    [Test]
+    public void PlayMonsterSkillActionVfxPhase_SpawnsActionVfx()
+    {
+        BattleUnitAnimator animator = CreateAnimatorWithStagedPresentation();
+        MonsterReservedCommand command = CreateCommand();
+
+        animator.PlayMonsterSkillActionVfxPhase(command);
+
+        Assert.That(owner.transform.Find("ActionVfx(Clone)"), Is.Not.Null);
+    }
+
     private BattleUnitAnimator CreateAnimatorWithStagedPresentation()
     {
         owner = new GameObject("Monster");

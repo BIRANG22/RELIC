@@ -613,6 +613,24 @@ public class BattleUnitAnimator : MonoBehaviour
             PlayPresentationAction(presentation, command);
     }
 
+    public void PlayMonsterSkillActionStatePhase(MonsterReservedCommand command)
+    {
+        if (!TryGetMonsterActionPresentation(command, out BattleUnitActionPresentation presentation) ||
+            presentation == null)
+        {
+            return;
+        }
+
+        ApplyPresentationPlaybackSpeed();
+        PlayState(presentation.stateName);
+    }
+
+    public void PlayMonsterSkillActionVfxPhase(MonsterReservedCommand command)
+    {
+        if (TryGetMonsterActionPresentation(command, out BattleUnitActionPresentation presentation))
+            PlayPresentationActionVfx(presentation, command);
+    }
+
 
     private static bool IsActualMonsterMove(MonsterReservedCommand command)
     {
@@ -1063,6 +1081,16 @@ public class BattleUnitAnimator : MonoBehaviour
 
         ApplyPresentationPlaybackSpeed();
         PlayState(presentation.stateName);
+
+        PlayPresentationActionVfx(presentation, command);
+    }
+
+    private void PlayPresentationActionVfx(
+        BattleUnitActionPresentation presentation,
+        MonsterReservedCommand command)
+    {
+        if (presentation == null)
+            return;
 
         if (presentation.spawnVfxOnEachTargetGrid &&
             TrySpawnVfxOnMonsterTargetGrids(presentation.vfx, command))

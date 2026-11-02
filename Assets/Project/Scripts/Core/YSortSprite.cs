@@ -22,6 +22,9 @@ public class YSortSprite : MonoBehaviour
     private int lastCalculatedSortingOrder;
     private bool lastUseVirtualYOffset;
     private bool hasAppliedSortingOrder;
+    private bool hasSortingReferenceY;
+    private float sortingReferenceY;
+    private SpriteRenderer[] shadowRenderers;
 
     public int sortingOrderOffset = 0;
     public float yMultiplier = 100f;
@@ -30,6 +33,7 @@ public class YSortSprite : MonoBehaviour
     {
         targetRenderer = GetComponent<Renderer>();
         CacheSpriteRootReferenceForIdleBack();
+        CacheShadowRenderers();
     }
 
     void LateUpdate()
@@ -41,11 +45,12 @@ public class YSortSprite : MonoBehaviour
             return;
 
         ApplySortingIfChanged();
+        ApplyShadowSorting();
     }
 
     private int CalculateSortingOrder()
     {
-        float y = transform.position.y;
+        float y = hasSortingReferenceY ? sortingReferenceY : transform.position.y;
 
         if (useVirtualYOffset)
             y += virtualYOffset;
@@ -53,9 +58,74 @@ public class YSortSprite : MonoBehaviour
         return (int)(-y * yMultiplier) + sortingOrderOffset;
     }
 
+    public void SetSortingReferenceY(float worldY)
+    {
+        hasSortingReferenceY = true;
+        sortingReferenceY = worldY;
+        hasAppliedSortingOrder = false;
+    }
+
+    public void ClearSortingReferenceY()
+    {
+        hasSortingReferenceY = false;
+        hasAppliedSortingOrder = false;
+    }
+
+    public int CalculateCurrentSortingOrder()
+    {
+        return CalculateSortingOrder();
+    }
+
+    public void ApplySortingNow()
+    {
+        if (targetRenderer == null)
+            targetRenderer = GetComponent<Renderer>();
+        if (shadowRenderers == null)
+            CacheShadowRenderers();
+
+        ApplySortingIfChanged();
+        ApplyShadowSorting();
+    }
+
+    private void CacheShadowRenderers()
+    {
+        if (!string.Equals(name, SpriteRootName, System.StringComparison.OrdinalIgnoreCase) || transform.parent == null)
+        {
+            shadowRenderers = System.Array.Empty<SpriteRenderer>();
+            return;
+        }
+
+        SpriteRenderer[] renderers = transform.parent.GetComponentsInChildren<SpriteRenderer>(true);
+        var shadows = new System.Collections.Generic.List<SpriteRenderer>();
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            SpriteRenderer renderer = renderers[i];
+            if (renderer != null && renderer.name.StartsWith("Shadow", System.StringComparison.OrdinalIgnoreCase))
+                shadows.Add(renderer);
+        }
+        shadowRenderers = shadows.ToArray();
+    }
+
+    private void ApplyShadowSorting()
+    {
+        if (targetRenderer == null || shadowRenderers == null)
+            return;
+
+        int shadowOrder = targetRenderer.sortingOrder - 1;
+        for (int i = 0; i < shadowRenderers.Length; i++)
+        {
+            SpriteRenderer shadow = shadowRenderers[i];
+            if (shadow == null)
+                continue;
+
+            shadow.sortingLayerID = targetRenderer.sortingLayerID;
+            shadow.sortingOrder = shadowOrder;
+        }
+    }
+
     private void ApplySortingIfChanged()
     {
-        float positionY = transform.position.y;
+        float positionY = hasSortingReferenceY ? sortingReferenceY : transform.position.y;
         if (hasAppliedSortingOrder &&
             Mathf.Approximately(lastPositionY, positionY) &&
             Mathf.Approximately(lastVirtualYOffset, virtualYOffset) &&
