@@ -206,6 +206,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 509281109941204593}
   - {fileID: 3966051723061505985}
   - {fileID: 7919920265060400015}
   - {fileID: 8288648694845053190}
@@ -279,7 +280,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31bba6d4fa734d6c9c88ca8b3b28f3a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visualObjectId: event_t_01
+  visualObjectId: event_tutorial
   animator: {fileID: 5000000000000000001}
   vfxRoot: {fileID: 2000000000000000001}
   actions:
@@ -306,7 +307,13 @@ MonoBehaviour:
     ShakeDuration: 0.35
     ShakeStrength: 0.08
     ShakeFrequency: 25
-    Activations: []
+    Activations:
+    - ActiveTarget: {fileID: 992001795820107622}
+      ApplyActiveState: 1
+      ActiveState: 1
+      ActivationDelay: 0
+      DisableAfterDelay: 0
+      DisableDelay: 0
     DisableTargetsOnPlay: []
     DisableDelayOnPlay: 0
     FadeOutOnDisable: 0
@@ -437,6 +444,77 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1001 &3399045035931428652
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 2000000000000000001}
+    m_Modifications:
+    - target: {fileID: 2517399024250081354, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+      propertyPath: m_Name
+      value: VFX_Fire_heal
+      objectReference: {fileID: 0}
+    - target: {fileID: 2517399024250081354, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898771195063423325, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -3.26
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898771195063423325, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.85
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898771195063423325, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -2.14
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898771195063423325, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9928458
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898771195063423325, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.119403966
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898771195063423325, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898771195063423325, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898771195063423325, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -13.715
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898771195063423325, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2898771195063423325, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+--- !u!4 &509281109941204593 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2898771195063423325, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+  m_PrefabInstance: {fileID: 3399045035931428652}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &992001795820107622 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2517399024250081354, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+  m_PrefabInstance: {fileID: 3399045035931428652}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6624792470378548918
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -488,6 +566,14 @@ PrefabInstance:
     - target: {fileID: 2947834329585555381, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
       propertyPath: m_Name
       value: vfxgraph_StylizedSmoke_v1_Fire
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555381, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2947834329585555382, guid: 0ed39461d3156d642a0cf9deb1c1c26c, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

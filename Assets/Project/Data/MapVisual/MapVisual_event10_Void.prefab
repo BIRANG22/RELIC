@@ -14960,7 +14960,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4795211833923207401, guid: 15adca1093800cf48abcee0b7cd10e98, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4795211833923207406, guid: 15adca1093800cf48abcee0b7cd10e98, type: 3}
       propertyPath: m_LocalScale.x
@@ -14976,11 +14976,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4795211833923207406, guid: 15adca1093800cf48abcee0b7cd10e98, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.43
+      value: 1.99
       objectReference: {fileID: 0}
     - target: {fileID: 4795211833923207406, guid: 15adca1093800cf48abcee0b7cd10e98, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.18
+      value: 1.14
       objectReference: {fileID: 0}
     - target: {fileID: 4795211833923207406, guid: 15adca1093800cf48abcee0b7cd10e98, type: 3}
       propertyPath: m_LocalPosition.z
@@ -15048,7 +15048,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6543715427486565776, guid: 15adca1093800cf48abcee0b7cd10e98, type: 3}
       propertyPath: soundId
-      value: event.06.box
+      value: ui.relicstone.click
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
