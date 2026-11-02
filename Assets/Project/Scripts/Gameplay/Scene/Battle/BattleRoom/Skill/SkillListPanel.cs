@@ -728,6 +728,14 @@ public class SkillListPanel : MonoBehaviour
         ignoreOutsideCloseFrame = Mathf.Max(ignoreOutsideCloseFrame, Time.frameCount + safeFrameCount);
     }
 
+    public bool CanUseTutorialSkill(string skillId)
+    {
+        return TutorialBattleSequence.CanUseBattleSkill(
+            skillId,
+            currentRuntime != null ? currentRuntime.MoveSkillId : null,
+            currentRuntime != null ? currentRuntime.AbilitySkillId : null);
+    }
+
     public void Refresh()
     {
         UpdateRenderedTimelinePreviewState();

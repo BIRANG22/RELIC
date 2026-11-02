@@ -16,6 +16,28 @@ public sealed class TutorialBattleSequence : MonoBehaviour
 {
     public static bool IsPresentationRunning { get; private set; }
 
+    // 현재 진행 중인 전투 튜토리얼의 단계입니다. 튜토리얼이 아니면 -1을 반환합니다.
+    public static int ActiveBattleGuideStep
+    {
+        get
+        {
+            if (!IsPresentationRunning) return -1;
+            TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+            return sequence != null ? sequence.tutorialStageIndex : -1;
+        }
+    }
+
+    // 기존 스킬 선택 경로를 유지하면서 현재 안내 단계에서 허용한 스킬만 선택합니다.
+    public static bool CanUseBattleSkill(string skillId, string moveId, string firstSkillId)
+    {
+        int step = ActiveBattleGuideStep;
+        if (step < 0) return true;
+        if (step == 24) return !string.IsNullOrEmpty(moveId) && skillId == moveId;
+        if (step == 26 || step == 28)
+            return !string.IsNullOrEmpty(firstSkillId) && skillId == firstSkillId;
+        return false;
+    }
+
     // 튜토리얼 안내 중에는 해당 단계에서 허용한 단축키만 입력할 수 있습니다.
     public static bool IsShortcutAllowed(KeyCode key)
     {
@@ -173,6 +195,72 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     private bool tutorialControlInputOpened;
     private bool tutorialEndTurnClicked;
     private UnityEngine.UI.Button tutorialEndTurnButton;
+    // Block pointer feedback on unrelated battle buttons without disabling their normal handlers.
+    private readonly Dictionary<CanvasGroup, bool> tutorialButtonRaycastStates = new();
+    private readonly HashSet<CanvasGroup> tutorialCreatedButtonGroups = new();
+    private int lastTutorialPointerStage = int.MinValue;
+
+    public static bool CanClickTutorialEndTurn()
+    {
+        if (!IsPresentationRunning) return true;
+        TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+        return sequence != null && sequence.tutorialStageIndex == 29;
+    }
+
+    private void Update()
+    {
+        if (!IsPresentationRunning || continuationMode) return;
+        // Buttons can be instantiated after the room intro; recheck their pointer gate.
+        lastTutorialPointerStage = tutorialStageIndex;
+        ApplyTutorialButtonRaycasts();
+    }
+
+    private void ApplyTutorialButtonRaycasts()
+    {
+        BattleCharacterPanelUI panel = FindFirstObjectByType<BattleCharacterPanelUI>(FindObjectsInactive.Include);
+        if (panel != null)
+        {
+            foreach (Button button in panel.GetComponentsInChildren<Button>(true))
+                ConfigureTutorialButton(button);
+        }
+        BattleTurnExecutor executor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+        if (executor != null) ConfigureTutorialButton(executor.EndTurnButton);
+    }
+
+    private void ConfigureTutorialButton(Button button)
+    {
+        if (button == null) return;
+        CanvasGroup group = button.GetComponent<CanvasGroup>();
+        if (group == null)
+        {
+            group = button.gameObject.AddComponent<CanvasGroup>();
+            tutorialCreatedButtonGroups.Add(group);
+        }
+        if (!tutorialButtonRaycastStates.ContainsKey(group))
+            tutorialButtonRaycastStates[group] = group.blocksRaycasts;
+        string name = button.gameObject.name;
+        bool allowed = tutorialStageIndex switch
+        {
+            24 => name.Equals("Move", StringComparison.OrdinalIgnoreCase) || name.Equals("MoveButton", StringComparison.OrdinalIgnoreCase),
+            26 or 28 => name.Equals("Skill01", StringComparison.OrdinalIgnoreCase) || name.Equals("Skill01Button", StringComparison.OrdinalIgnoreCase),
+            27 => name.IndexOf("Tab", StringComparison.OrdinalIgnoreCase) >= 0,
+            29 => button == FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include)?.EndTurnButton,
+            _ => false
+        };
+        group.blocksRaycasts = allowed && tutorialButtonRaycastStates[group];
+    }
+
+    private void RestoreTutorialButtonRaycasts()
+    {
+        foreach (var pair in tutorialButtonRaycastStates)
+            if (pair.Key != null) pair.Key.blocksRaycasts = pair.Value;
+        tutorialButtonRaycastStates.Clear();
+        foreach (CanvasGroup group in tutorialCreatedButtonGroups)
+            if (group != null) Destroy(group);
+        tutorialCreatedButtonGroups.Clear();
+        lastTutorialPointerStage = int.MinValue;
+    }
+
     private int tutorialStageIndex;
     private int skill26ReservationBaseline = -1;
     private int skill28ReservationBaseline = -1;
@@ -346,6 +434,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         routine = null;
         SetBattleUiPointerBlocked(false);
         ReleaseDialogueInputBlocker();
+        RestoreTutorialButtonRaycasts();
         IsPresentationRunning = false;
         IsBlockingBattleStart = false;
         if (continuationMode)
@@ -1380,11 +1469,13 @@ public sealed class TutorialBattleSequence : MonoBehaviour
 
     private void OnDisable()
     {
+        RestoreTutorialButtonRaycasts();
         if (tutorialEndTurnButton != null)
         {
             tutorialEndTurnButton.onClick.RemoveListener(OnTutorialEndTurnClicked);
             tutorialEndTurnButton = null;
         }
+        RestoreTutorialButtonRaycasts();
         IsPresentationRunning = false;
         IsBlockingBattleStart = false;
         if (continuationMode)
