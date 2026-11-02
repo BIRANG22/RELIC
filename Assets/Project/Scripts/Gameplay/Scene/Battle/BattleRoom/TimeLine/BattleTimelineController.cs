@@ -273,7 +273,8 @@ public class BattleTimelineController : MonoBehaviour
 
     private void HandleSelectionCancelRightClick()
     {
-        if (!Input.GetMouseButtonDown(1) || UIPanelButton.IsMenuPanelOpen)
+        if (!Input.GetMouseButtonDown(1) || UIPanelButton.IsMenuPanelOpen ||
+            TutorialBattleSequence.IsPresentationRunning)
             return;
 
         // 전투 행동 실행 및 입력 잠금 중에는 우클릭으로 선택 상태를 변경하지 않습니다.

@@ -241,6 +241,10 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (UIPanelButton.IsMenuPanelOpen)
             return true;
 
+        // Grid_16 is a world collider. The tutorial focus canvas must not
+        // make its native hover / drag / release look like a UI interaction.
+        if (TutorialBattleSequence.ActiveBattleGuideStep == 25)
+            return false;
         return EventSystem.current != null &&
                EventSystem.current.IsPointerOverGameObject();
     }
@@ -267,7 +271,7 @@ public class PlayerSkillReservationController : MonoBehaviour
             return;
         }
 
-        if (!Input.GetMouseButtonDown(1))
+        if (!Input.GetMouseButtonDown(1) || TutorialBattleSequence.IsPresentationRunning)
             return;
 
         lastRightClickSkillCancelFrame = Time.frameCount;

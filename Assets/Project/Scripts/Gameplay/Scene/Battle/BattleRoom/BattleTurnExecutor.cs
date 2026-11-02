@@ -398,6 +398,7 @@ public class BattleTurnExecutor : MonoBehaviour
 
     public void ExecuteTurn()
     {
+        if (!TutorialBattleSequence.CanClickTutorialEndTurn()) return;
         if (!BattleFirstTutorialController.CanExecuteEndTurn)
             return;
 

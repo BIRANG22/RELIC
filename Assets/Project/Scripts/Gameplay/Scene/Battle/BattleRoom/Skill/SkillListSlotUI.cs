@@ -301,7 +301,7 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (skillData == null)
+        if (skillData == null || (owner != null && !owner.CanUseTutorialSkill(skillId)))
             return;
 
         isPointerOver = true;
@@ -355,6 +355,9 @@ public class SkillListSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         lastSelectFrame = Time.frameCount;
 
         if (!canClick)
+            return;
+
+        if (owner != null && !owner.CanUseTutorialSkill(skillId))
             return;
 
         if (skillData == null || owner == null)
