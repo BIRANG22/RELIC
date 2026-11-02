@@ -288,6 +288,12 @@ public class BattleRewardPanelUI : MonoBehaviour
         Refresh();
         UpdateGainButton();
 
+        var tutorialData = DataManager.Instance;
+        if (tutorialData?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+            string.Equals(tutorialData.MapRuntimeStore?.Get()?.CurrentMapId,
+                "Map_26", StringComparison.OrdinalIgnoreCase) && currentRewards.Count > 0)
+            TutorialBattleSequence.StartContinuation("Map_26", 30, 33);
+
         if (currentRewards.Count <= 0)
         {
             FinishRewardFlow();
@@ -611,6 +617,8 @@ public class BattleRewardPanelUI : MonoBehaviour
     {
         if (autoGaining && !fromAutoGain)
             return;
+        if (TutorialBattleSequence.IsContinuationActive &&
+            TutorialBattleSequence.CurrentContinuationOrder != 33) return;
         if (slot == null || slot.Reward == null)
             return;
 
@@ -618,12 +626,13 @@ public class BattleRewardPanelUI : MonoBehaviour
             return;
 
         BattleRewardData reward = slot.Reward;
-
         if (!CanClaimReward(reward))
             return;
 
         if (pendingEquipmentReward)
             return;
+        if (TutorialBattleSequence.IsContinuationActive)
+            TutorialBattleSequence.NotifyTargetSelected("reward");
 
         if (reward.Type == BattleRewardType.Relic || reward.Type == BattleRewardType.Skill)
         {

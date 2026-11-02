@@ -80,6 +80,52 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     private int previousSortingOrder;
     private BattleRoomLoader loader;
     private Coroutine routine;
+    private bool continuationMode;
+    private int continuationStart;
+    private int continuationEnd;
+
+    public static bool IsContinuationActive { get; private set; }
+    public static int CurrentContinuationOrder { get; private set; }
+
+    public static void StartContinuation(string mapId, int firstOrder, int lastOrder)
+    {
+        if (IsPresentationRunning || IsContinuationActive) return;
+        var steps = DataManager.Instance?.TutorialDatabase?.GetForMap(mapId);
+        if (steps == null || !System.Linq.Enumerable.Any(steps, x => x.Order == firstOrder)) return;
+        // Prefer an active runner. An inactive BattleRoom may still exist in the scene
+        // while the event room is active, and cannot start coroutines.
+        TutorialBattleSequence runner = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Exclude);
+        if (runner == null || !runner.gameObject.activeInHierarchy || !runner.isActiveAndEnabled)
+        {
+            EventRoomController eventRoom = FindFirstObjectByType<EventRoomController>(FindObjectsInactive.Exclude);
+            if (eventRoom != null && eventRoom.gameObject.activeInHierarchy)
+            {
+                runner = eventRoom.GetComponent<TutorialBattleSequence>();
+                if (runner == null)
+                    runner = eventRoom.gameObject.AddComponent<TutorialBattleSequence>();
+                runner.enabled = true;
+            }
+        }
+        if (runner == null || !runner.gameObject.activeInHierarchy || !runner.isActiveAndEnabled)
+        {
+            Debug.LogWarning($"[Tutorial] No active runner for {mapId}, steps {firstOrder}-{lastOrder}.");
+            return;
+        }
+
+        runner.continuationMode = true;
+        runner.continuationStart = firstOrder;
+        runner.continuationEnd = lastOrder;
+        runner.routine = runner.StartCoroutine(runner.Run(steps));
+        IsContinuationActive = true;
+        IsPresentationRunning = true;
+    }
+
+    private static readonly HashSet<string> completedTargets = new HashSet<string>();
+    public static void NotifyTargetSelected(string target)
+    {
+        if (!string.IsNullOrEmpty(target)) completedTargets.Add(target);
+    }
+
     private GameObject dialogRoot;
     private GameObject tooltipRoot;
     private GameObject focusRoot;
@@ -132,6 +178,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     public void Begin(BattleRoomLoader battleLoader, string mapId)
     {
         if (routine != null) StopCoroutine(routine);
+        continuationMode = false;
         loader = battleLoader;
         IsPresentationRunning = true;
         IsBlockingBattleStart = true;
@@ -149,7 +196,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     private IEnumerator Run(IReadOnlyList<TutorialData> steps)
     {
         // Wait for the standard room entry and its character movement to finish.
-        while (BattleSceneController.IsBattleRoomIntroPlaying)
+        while (!continuationMode && BattleSceneController.IsBattleRoomIntroPlaying)
             yield return null;
         yield return null;
         ResolveUi();
@@ -160,6 +207,9 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         foreach (TutorialData step in steps)
         {
             if (step == null) continue;
+            if (!continuationMode && step.Order >= 30) break;
+            if (continuationMode && (step.Order < continuationStart || step.Order > continuationEnd)) continue;
+            if (continuationMode) CurrentContinuationOrder = step.Order;
             string phase = step.Phase ?? string.Empty;
             string output = step.TextOutput ?? string.Empty;
             bool sameGuideTarget = output.Equals("TutorialTooltip", StringComparison.OrdinalIgnoreCase)
@@ -206,7 +256,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             {
                 tutorialStageIndex = step.Order;
                 grid25InputArmed = false;
-                if (step.Order == 25)
+                if (!continuationMode && step.Order == 25)
                 {
                     // 24번 이동 버튼 클릭/키 누름의 같은 입력을 25번 그리드 입력으로 처리하지 않습니다.
                     while (Input.GetMouseButton(0) || Input.touchCount > 0)
@@ -226,7 +276,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                     }
                 }
                 // 타임라인/행동 소개(19~22번)는 설명만 넘길 수 있고 전투 UI에는 입력할 수 없습니다.
-                bool blockGuideInput = IsBattleUiExplanationGuide(step);
+                bool blockGuideInput = !continuationMode && IsBattleUiExplanationGuide(step);
                 ShowGuide(step, sameGuideTarget);
                 if (blockGuideInput)
                 {
@@ -239,7 +289,15 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                     advance.Equals("ReserveMove", StringComparison.OrdinalIgnoreCase) ||
                     advance.Equals("ReserveAction", StringComparison.OrdinalIgnoreCase) ||
                     advance.Equals("ReserveActionTwice", StringComparison.OrdinalIgnoreCase))
-                    yield return WaitForRequiredBattleAction(step);
+                {
+                    if (continuationMode)
+                    {
+                        string targetKey = step.Order == 33 ? "reward" : step.Order == 36 ? "equip" : "event";
+                        completedTargets.Remove(targetKey);
+                        while (!completedTargets.Contains(targetKey)) yield return null;
+                    }
+                    else yield return WaitForRequiredBattleAction(step);
+                }
                 else
                     yield return WaitForClick();
                 yield return FadeOutComplete(tooltipTextComplete);
@@ -266,6 +324,12 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         ReleaseDialogueInputBlocker();
         IsPresentationRunning = false;
         IsBlockingBattleStart = false;
+        if (continuationMode)
+        {
+            IsContinuationActive = false;
+            CurrentContinuationOrder = 0;
+            continuationMode = false;
+        }
         enabled = false;
     }
 
@@ -568,9 +632,35 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                 break;
             }
         }
+        // RewardSlot is instantiated as RewardSlot(Clone) under Contant at runtime.
+        // Resolve the active slot instead of falling back to an unrelated button.
+        if (continuationMode && step.Order == 33)
+        {
+            BattleRewardPanelUI rewardPanel = FindFirstObjectByType<BattleRewardPanelUI>(FindObjectsInactive.Exclude);
+            BattleRewardSlotUI rewardSlot = rewardPanel != null
+                ? rewardPanel.GetComponentInChildren<BattleRewardSlotUI>(false) : null;
+            if (rewardSlot != null) target = rewardSlot.transform;
+        }
+        if (target == null && continuationMode && step.Order == 36)
+        {
+            BattleRewardRelicPanelUI relicPanel = FindFirstObjectByType<BattleRewardRelicPanelUI>(FindObjectsInactive.Exclude);
+            if (relicPanel != null)
+            {
+                Transform relicContent = relicPanel.transform.Find("content") ?? relicPanel.transform.Find("Contant") ?? relicPanel.transform.Find("Content");
+                if (relicContent != null)
+                    target = relicContent.Find("Char1") ?? relicContent.Find("Char01");
+                if (target == null)
+                {
+                    foreach (Transform child in relicPanel.GetComponentsInChildren<Transform>(true))
+                        if (child.name == "Char1" || child.name == "Char01") { target = child; break; }
+                }
+            }
+        }
         RectTransform source = target as RectTransform;
         if (source == null && target != null)
             source = CreateWorldGridFocusProxy(target);
+        if (source == null && continuationMode)
+            Debug.LogWarning($"[TutorialBattleSequence] Focus target not found: {step.HighlightTarget} (Order {step.Order})", this);
         if (source != null && focusRoot.transform is RectTransform frame)
         {
             RectTransform parent = frame.parent as RectTransform;
@@ -657,7 +747,11 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         Transform current = item;
         for (int i = segments.Length - 1; i >= 0; --i)
         {
-            if (current == null || !current.name.Equals(segments[i], StringComparison.OrdinalIgnoreCase)) return false;
+            if (current == null) return false;
+            string currentName = current.name;
+            if (currentName.EndsWith("(Clone)", StringComparison.OrdinalIgnoreCase))
+                currentName = currentName.Substring(0, currentName.Length - "(Clone)".Length);
+            if (!currentName.Equals(segments[i], StringComparison.OrdinalIgnoreCase)) return false;
             current = current.parent;
         }
         return true;
@@ -1250,6 +1344,12 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         }
         IsPresentationRunning = false;
         IsBlockingBattleStart = false;
+        if (continuationMode)
+        {
+            IsContinuationActive = false;
+            CurrentContinuationOrder = 0;
+            continuationMode = false;
+        }
         RestoreGridVisuals();
         HideUi();
         SetBattleUiPointerBlocked(false);

@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections;
 using Relic.Gameplay.Data;
 using TMPro;
@@ -182,6 +182,8 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     public void SkipReward()
     {
         if (current == null || resolving || itemIntroCoroutine != null) return;
+        if (DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+            string.Equals(DataManager.Instance.MapRuntimeStore?.Get()?.CurrentMapId, "Map_26", StringComparison.OrdinalIgnoreCase)) return;
         resolving = true;
         ClearRarityIndicatorVfx();
         rewardActionCloseCoroutine = StartCoroutine(CloseWithoutEquip());
@@ -190,6 +192,8 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     public void ExtractReward()
     {
         if (current == null || resolving || itemIntroCoroutine != null) return;
+        if (DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+            string.Equals(DataManager.Instance.MapRuntimeStore?.Get()?.CurrentMapId, "Map_26", StringComparison.OrdinalIgnoreCase)) return;
         DataManager dataManager = DataManager.Instance;
         if (dataManager == null ||
             !BattleRelicExtractionService.TryExtract(
@@ -346,6 +350,10 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         panelCanvasGroup.blocksRaycasts = true;
         BattleUIBlurRootCollector.ConfigureForPanel(gameObject);
         gameObject.SetActive(true);
+        if (DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+            string.Equals(DataManager.Instance.MapRuntimeStore?.Get()?.CurrentMapId,
+                "Map_26", StringComparison.OrdinalIgnoreCase))
+            StartCoroutine(StartTutorialRelicGuide());
         // 활성화 후에도 새 하이어라키의 텍스트를 다시 연결하여 갱신합니다.
         Bind();
         BindRewardActionButtons();
@@ -1205,9 +1213,20 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         return null;
     }
 
+    private IEnumerator StartTutorialRelicGuide()
+    {
+        while (TutorialBattleSequence.IsContinuationActive) yield return null;
+        TutorialBattleSequence.StartContinuation("Map_26", 34, 36);
+    }
+
     private void EquipTo(int index, int selectedSlot = -1)
     {
         if (resolving || current == null || index < 0 || index >= entries.Length) return;
+        if (TutorialBattleSequence.IsContinuationActive &&
+            TutorialBattleSequence.CurrentContinuationOrder != 36) return;
+        if (DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true && index != 0)
+            return;
+        TutorialBattleSequence.NotifyTargetSelected("equip");
         CharacterEntry e = entries[index];
         if (e == null || string.IsNullOrWhiteSpace(e.id) || DataManager.Instance == null) return;
         if (!DataManager.Instance.CharacterRuntimeStore.TryGet(e.id, out CharacterRuntimeData runtime) || runtime == null) return;
