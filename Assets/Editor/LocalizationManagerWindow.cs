@@ -226,6 +226,7 @@ public sealed class LocalizationManagerWindow : EditorWindow
         }
         if (scanScripts) ScanScripts(known, knownKoreanByKey, knownKeys);
         if (scanGameData) ScanGameData(knownKoreanByKey);
+        if (scanGameData) ScanTutorialData(knownKoreanByKey);
         AddRuntimeUiCandidates(knownKoreanByKey, knownKeys);
         scanCompleted = true;
         Repaint();
@@ -293,6 +294,25 @@ public sealed class LocalizationManagerWindow : EditorWindow
                         sourceChanged));
                 }
             }
+        }
+    }
+
+    private void ScanTutorialData(IReadOnlyDictionary<string, string> knownKoreanByKey)
+    {
+        foreach (LocalizationWorkbookEntry entry in LocalizationSyncCommand.CollectTutorialEntries())
+        {
+            bool exists = knownKoreanByKey.TryGetValue(entry.Key, out string currentKorean);
+            bool sourceChanged = exists && !string.Equals(
+                LocalizationBindingResolver.Normalize(currentKorean),
+                LocalizationBindingResolver.Normalize(entry.Korean), StringComparison.Ordinal);
+            candidates.Add(new LocalizationCandidate(
+                "Assets/ExcelSource/GameData.xlsx/Tutorial:" + entry.Key,
+                entry.Korean,
+                entry.Key,
+                false,
+                !exists,
+                false,
+                sourceChanged));
         }
     }
 
@@ -528,9 +548,9 @@ public sealed class LocalizationManagerWindow : EditorWindow
                 },
                 out _))
             optionalMigrationFailures++;
-        // Never delete localization entries as a side effect of Full Scan and Apply.
-        // Old keys may still be referenced by ID or by dynamically composed keys.
-        int removed = 0;
+        // Only clean up the three tutorial prompt keys replaced by the shared key.
+        // All other localization entries are preserved, including dynamic references.
+        int removed = LocalizationSyncCommand.RemoveRetiredTutorialPromptKeys();
         int compacted = LocalizationWorkbookWriter.CompactBlankRows(LocalizationExcelImporter.WorkbookPath);
         LocalizationExcelImporter.Import(); // Final authoritative workbook-to-table sync.
         scanApplied = true;
@@ -730,6 +750,9 @@ public sealed class LocalizationManagerWindow : EditorWindow
                 }
             }
         }
+
+        foreach (LocalizationWorkbookEntry entry in LocalizationSyncCommand.CollectTutorialEntries())
+            keys.Add(entry.Key);
 
         return keys;
     }

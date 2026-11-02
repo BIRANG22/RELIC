@@ -16,7 +16,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
 {
     public static bool IsPresentationRunning { get; private set; }
 
-    // 튜토리얼 안내 중에는 해당 단계가 요구하는 단축키만 허용합니다.
+    // 튜토리얼 안내 중에는 해당 단계에서 허용한 단축키만 입력할 수 있습니다.
     public static bool IsShortcutAllowed(KeyCode key)
     {
         if (!IsPresentationRunning) return true;
@@ -33,8 +33,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         }
     }
 
-    // 27번에서 카야를 선택한 뒤 28번 기억 예약 완료까지 다른 캐릭터로 전환하지 않습니다.
-    // 마우스/HUD/Tab/타임라인 내부 선택 모두 동일한 규칙을 사용합니다.
+    // 27번 단계에서 카야를 선택했다면 28번 예약이 끝나기 전까지 다른 캐릭터로 전환하지 않습니다.
+    // 마우스, HUD, Tab, 타임라인 선택에도 동일한 캐릭터 제한을 적용합니다.
     public static bool CanSelectTutorialCharacter(string characterId)
     {
         if (!IsPresentationRunning) return true;
@@ -46,8 +46,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         return characterId == "Char_01";
     }
 
-    // 튜토리얼 이동 목적지는 25번의 Grid_16만 허용합니다.
-    // 버튼을 누른 마우스 입력이 바로 다음 단계의 그리드 클릭으로 전달되지 않도록 보호합니다.
+    // 튜토리얼 이동 안내 중 25번 단계에서는 Grid_16만 선택할 수 있습니다.
+    // 버튼 클릭에 사용한 마우스 입력이 다음 단계의 그리드 클릭으로 전달되지 않도록 방지합니다.
     private bool grid25InputArmed;
     public static bool CanClickTutorialGrid(int gridIndex)
     {
@@ -70,7 +70,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     public bool IsInitialBattleHudReady { get; private set; }
 
     public void NotifyInitialBattleHudReady() => IsInitialBattleHudReady = true;
-    // 대화 중 전투 UI의 클릭 및 호버 이벤트를 차단합니다.
+    // 대화 및 안내 UI에서 클릭 시 호출할 이벤트를 관리합니다.
     private readonly Dictionary<GraphicRaycaster, bool> blockedBattleRaycasters = new();
     private readonly Dictionary<Collider, bool> blockedGridColliders = new();
     private readonly Dictionary<Collider2D, bool> blockedGridColliders2D = new();
@@ -94,8 +94,31 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         if (steps == null || !System.Linq.Enumerable.Any(steps, x => x.Order == firstOrder)) return;
         // Prefer an active runner. An inactive BattleRoom may still exist in the scene
         // while the event room is active, and cannot start coroutines.
-        TutorialBattleSequence runner = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Exclude);
-        if (runner == null || !runner.gameObject.activeInHierarchy || !runner.isActiveAndEnabled)
+        // Include disabled components: completing the initial tutorial disables
+        // its runner. Saved reward checkpoints restore the room without Begin().
+        TutorialBattleSequence runner = null;
+        foreach (TutorialBattleSequence candidate in FindObjectsByType<TutorialBattleSequence>(
+                     FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (candidate != null && candidate.gameObject.activeInHierarchy)
+            {
+                runner = candidate;
+                break;
+            }
+        }
+        if (runner == null)
+        {
+            // The active room can be reconstructed from a saved checkpoint.
+            // Never start a coroutine on the inactive BattleRoom template.
+            BattleRoomLoader activeBattle = FindFirstObjectByType<BattleRoomLoader>(FindObjectsInactive.Exclude);
+            if (activeBattle != null && activeBattle.gameObject.activeInHierarchy)
+            {
+                runner = activeBattle.GetComponent<TutorialBattleSequence>();
+                if (runner == null)
+                    runner = activeBattle.gameObject.AddComponent<TutorialBattleSequence>();
+            }
+        }
+        if (runner == null)
         {
             EventRoomController eventRoom = FindFirstObjectByType<EventRoomController>(FindObjectsInactive.Exclude);
             if (eventRoom != null && eventRoom.gameObject.activeInHierarchy)
@@ -103,9 +126,10 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                 runner = eventRoom.GetComponent<TutorialBattleSequence>();
                 if (runner == null)
                     runner = eventRoom.gameObject.AddComponent<TutorialBattleSequence>();
-                runner.enabled = true;
             }
         }
+        if (runner != null && runner.gameObject.activeInHierarchy)
+            runner.enabled = true;
         if (runner == null || !runner.gameObject.activeInHierarchy || !runner.isActiveAndEnabled)
         {
             Debug.LogWarning($"[Tutorial] No active runner for {mapId}, steps {firstOrder}-{lastOrder}.");
@@ -153,13 +177,13 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     private int skill26ReservationBaseline = -1;
     private int skill28ReservationBaseline = -1;
 
-    // 실제 타임라인 등록 시점에 튜토리얼이 허용하는 횟수만 받습니다.
+    // 예약 명령이 현재 튜토리얼 단계에서 허용되는지 검사합니다.
     public static bool CanAcceptTutorialCommand(PlayerReservedCommand command, BattleTimelineController timeline)
     {
         if (!IsPresentationRunning || command == null || timeline == null) return true;
         TutorialBattleSequence sequence = FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
         if (sequence == null) return true;
-        // 다른 그리드/다른 캐릭터의 이동 예약은 단계 진행 여부와 무관하게 차단합니다.
+        // 다른 그리드나 다른 캐릭터의 이동 예약은 현재 단계에서 차단합니다.
         if (command.ReservedMoveGridIndex >= 0)
             return CanAcceptTutorialMove(command);
         if (sequence.tutorialStageIndex == 25)
@@ -223,7 +247,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                 HideUi();
                 IsBlockingBattleStart = false;
                 while (!IsInitialBattleHudReady) yield return null;
-                // 이전 단계에서 숨겨둔 그리드를 먼저 복원해야 표시 완료를 기다릴 수 있습니다.
+                // 이전 단계에서 차단한 그리드 표시를 복구하고 준비 완료를 기다립니다.
                 RestoreGridVisuals();
                 GridManager preparedGrid = FindFirstObjectByType<GridManager>(FindObjectsInactive.Exclude);
                 if (preparedGrid != null)
@@ -258,7 +282,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                 grid25InputArmed = false;
                 if (!continuationMode && step.Order == 25)
                 {
-                    // 24번 이동 버튼 클릭/키 누름의 같은 입력을 25번 그리드 입력으로 처리하지 않습니다.
+                    // 24번 이동 버튼 클릭이나 키 입력이 25번 그리드 입력으로 처리되지 않게 합니다.
                     while (Input.GetMouseButton(0) || Input.touchCount > 0)
                         yield return null;
                     yield return null;
@@ -275,7 +299,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                         tutorialControlInputOpened = true;
                     }
                 }
-                // 타임라인/행동 소개(19~22번)는 설명만 넘길 수 있고 전투 UI에는 입력할 수 없습니다.
+                // 타임라인 및 행동 소개 단계에서는 안내를 넘길 수 있지만 실제 UI 조작은 차단합니다.
                 bool blockGuideInput = !continuationMode && IsBattleUiExplanationGuide(step);
                 ShowGuide(step, sameGuideTarget);
                 if (blockGuideInput)
@@ -283,7 +307,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                     SetBattleUiPointerBlocked(true);
                     if (dialogueInputBlocker != null) dialogueInputBlocker.SetActive(true);
                 }
-                // ClickAny만 화면 클릭으로 진행합니다. 조작 단계는 실제 선택/예약 상태로 판정합니다.
+                // ClickAny 단계는 화면 클릭으로 진행하며 그 외 단계는 지정된 조건을 따릅니다.
                 string advance = step.Advance ?? string.Empty;
                 if (advance.Equals("ClickTarget", StringComparison.OrdinalIgnoreCase) ||
                     advance.Equals("ReserveMove", StringComparison.OrdinalIgnoreCase) ||
@@ -434,7 +458,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         tooltipTextComplete = tooltip != null ? Find(tooltip, "TextComplete")?.gameObject : null;
         dialogCompleteLabel = dialogTextComplete != null ? dialogTextComplete.GetComponentInChildren<TMP_Text>(true) : null;
         tooltipCompleteLabel = tooltipTextComplete != null ? tooltipTextComplete.GetComponentInChildren<TMP_Text>(true) : null;
-        // TextComplete 또한 다른 로컬라이징 컴포넌트가 값을 덮어쓰지 못하게 합니다.
+        // TextComplete 문구가 다른 로컬라이징 컴포넌트에 의해 덮어쓰이지 않게 보호합니다.
         ProtectTutorialText(dialogCompleteLabel);
         ProtectTutorialText(tooltipCompleteLabel);
         portrait = dialog != null ? Find(dialog, "Icon")?.GetComponent<Image>() : null;
@@ -656,6 +680,25 @@ public sealed class TutorialBattleSequence : MonoBehaviour
                 }
             }
         }
+        // Map_28 / step 5 focuses the first selectable event slot, not the
+        // scroll view container. Accept the existing Excel target as an alias.
+        if (continuationMode && step.Order == 5 &&
+            string.Equals(step.MapId, "Map_28", StringComparison.OrdinalIgnoreCase))
+        {
+            EventRoomController eventRoom = FindFirstObjectByType<EventRoomController>(FindObjectsInactive.Exclude);
+            if (eventRoom != null)
+            {
+                foreach (EventChoiceSlotUI slot in eventRoom.GetComponentsInChildren<EventChoiceSlotUI>(true))
+                {
+                    if (slot != null && slot.gameObject.activeInHierarchy &&
+                        slot.name.Equals("EventChoiceSlot_1", StringComparison.OrdinalIgnoreCase))
+                    {
+                        target = slot.transform;
+                        break;
+                    }
+                }
+            }
+        }
         RectTransform source = target as RectTransform;
         if (source == null && target != null)
             source = CreateWorldGridFocusProxy(target);
@@ -693,7 +736,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         }
     }
 
-    // MeshRenderer 기반 월드 그리드의 화면 영역을 UI RectTransform으로 변환합니다.
+    // MeshRenderer 기반 월드 그리드 좌표를 화면 안내용 UI RectTransform으로 변환합니다.
     private RectTransform CreateWorldGridFocusProxy(Transform worldTarget)
     {
         RectTransform frame = focusRoot != null ? focusRoot.transform as RectTransform : null;
@@ -782,12 +825,12 @@ public sealed class TutorialBattleSequence : MonoBehaviour
 
     private void LateUpdate()
     {
-        // 텍스트 레이아웃이 다음 프레임에 갱신되는 경우에도 툴팁 화면 이탈을 방지합니다.
+        // 텍스트 레이아웃 갱신 시 안내 UI가 화면 밖으로 벗어나지 않게 보정합니다.
         if (IsPresentationRunning && tooltipRoot != null && tooltipRoot.activeInHierarchy)
             KeepTooltipInsideScreen();
     }
 
-    // 실제 화면 좌표로 크기와 모서리를 계산하여 Canvas Scaler/피벗에 관계없이 클램프합니다.
+    // 현재 화면 좌표를 캔버스 크기에 맞게 변환하여 위치를 계산합니다.
     private void KeepTooltipInsideScreen()
     {
         RectTransform tooltip = tooltipRoot != null ? tooltipRoot.transform as RectTransform : null;
@@ -1173,8 +1216,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         return count;
     }
 
-    // 확인창을 여닫는 클릭은 튜토리얼의 다음 단계 입력으로 재사용하지 않습니다.
-    // 마우스 버튼이 실제로 해제된 다음 프레임까지 보호합니다.
+    // 확인창을 닫는 클릭을 튜토리얼 다음 단계 입력으로 처리하지 않습니다.
+    // 마우스 버튼이 해제될 때까지 입력을 차단합니다.
     private static bool suppressAdvanceUntilRelease;
     private static int suppressAdvanceThroughFrame = -1;
     private static readonly List<RaycastResult> advancePointerHits = new List<RaycastResult>();
@@ -1201,7 +1244,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         if (Time.frameCount <= suppressAdvanceThroughFrame)
             return false;
 
-        // 포커스 오버레이 유무와 무관하게 모달 확인창이 열려 있으면 대사를 진행하지 않습니다.
+        // 포커스 안내가 끝나기 전에는 확인창 클릭이 다음 단계 대화를 진행하지 않게 합니다.
         if (UIManager.Instance != null && UIManager.Instance.IsConfirmDialogOpen)
             return false;
 
@@ -1210,8 +1253,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         if (!pressed)
             return false;
 
-        // Button.onClick은 Update 이후 실행될 수 있습니다. 미리 포인터 아래의 스킵 버튼을
-        // 식별해 같은 클릭으로 튜토리얼 문장이 넘어가는 것을 방지합니다.
+        // Button.onClick이 Update보다 먼저 실행될 수 있으므로 입력 순서를 고려합니다.
+        // 클릭 입력이 튜토리얼의 다음 단계로 중복 전달되지 않도록 방지합니다.
         EventSystem eventSystem = EventSystem.current;
         if (eventSystem != null)
         {
@@ -1246,8 +1289,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             yield return null;
     }
 
-    // HUD 준비 신호만으로는 실제 전투 그리드 표시가 보장되지 않습니다.
-    // GridManager 상태와 GridCell의 렌더러를 모두 확인합니다.
+    // HUD 준비 신호만으로는 그리드 표시가 완료됐다고 판단하지 않습니다.
+    // GridManager 및 GridCell의 준비 상태를 함께 확인합니다.
     private IEnumerator WaitUntilGridRendered()
     {
         while (true)
@@ -1276,7 +1319,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             }
             if (ready)
             {
-                // 실제 렌더 프레임을 한 번 보낸 후 설명을 시작합니다.
+                // 필요한 그리드와 UI가 준비될 때까지 한 프레임씩 대기합니다.
                 yield return new WaitForEndOfFrame();
                 yield break;
             }
@@ -1284,8 +1327,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         }
     }
 
-    // 전투 HUD의 입력을 직접 차단하므로 캔버스 정렬 순서와 관계없이 동작합니다.
-    // 해당 구성요소의 기존 활성 상태는 대화 종료 시 그대로 복구합니다.
+    // HUD가 입력을 차단할 수 있으므로 캔버스의 기존 상태를 확인합니다.
+    // 해당 컴포넌트의 원래 활성 상태는 대화가 끝난 뒤 복원합니다.
     private void SetBattleUiPointerBlocked(bool blocked)
     {
         if (!blocked)
@@ -1362,8 +1405,8 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         // The transparent screen sits over the battle UI but below the tutorial dialogue.
         dialogueInputBlocker = new GameObject("TutorialDialogueInputBlocker", typeof(RectTransform),
             typeof(Canvas), typeof(GraphicRaycaster), typeof(Image));
-        // 루트 Canvas를 유지하여 화면 전체를 정확하게 덮습니다.
-        // BattleRoom의 Transform 아래에 두면 RectTransform 크기가 틀어질 수 있습니다.
+        // 루트 Canvas를 기준으로 화면 전체의 입력을 정확히 차단합니다.
+        // BattleRoom 하위 부모 RectTransform의 크기는 화면과 다를 수 있습니다.
         dialogueInputBlocker.transform.SetParent(null, false);
         Canvas blockerCanvas = dialogueInputBlocker.GetComponent<Canvas>();
         blockerCanvas.renderMode = RenderMode.ScreenSpaceOverlay;

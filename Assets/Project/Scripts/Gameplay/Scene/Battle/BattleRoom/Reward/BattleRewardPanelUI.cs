@@ -90,6 +90,7 @@ public class BattleRewardPanelUI : MonoBehaviour
     private bool autoGaining;
     private bool gainButtonUsed;
     private bool continueWithGainButton = true;
+    private System.Action resultArrivalCallback;
     private bool useTutorialArrivalLabel;
     private bool awaitingContinue;
     private bool continueTransitionStarted;
@@ -152,6 +153,21 @@ public class BattleRewardPanelUI : MonoBehaviour
         var entry = new EventTrigger.Entry { eventID = type };
         entry.callback.AddListener(callback);
         trigger.triggers.Add(entry);
+    }
+
+    // Show the shared NextButton only after the exploration report has closed.
+    // This button belongs to the reward panel, not BattleResultChecker.nextButtonRoot.
+    public bool ShowArrivalAfterResult(System.Action onArrival)
+    {
+        if (gainButton == null || onArrival == null) return false;
+        resultArrivalCallback = onArrival;
+        gameObject.SetActive(true);
+        if (rewardRoot != null) rewardRoot.gameObject.SetActive(false);
+        if (gainButtonText != null)
+            gainButtonText.text = GameLocalization.Get("common.arrive", "도착");
+        gainButton.gameObject.SetActive(true);
+        gainButton.interactable = true;
+        return true;
     }
 
     public void SetTutorialArrivalLabel(bool enabled)
@@ -464,6 +480,15 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private void OnClickGainButton()
     {
+        if (resultArrivalCallback != null)
+        {
+            System.Action callback = resultArrivalCallback;
+            resultArrivalCallback = null;
+            if (gainButton != null) gainButton.interactable = false;
+            callback.Invoke();
+            return;
+        }
+
         // Event rooms share this button; do not consume their click when this panel is closed.
         if (!isActiveAndEnabled)
             return;

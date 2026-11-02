@@ -7249,8 +7249,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29397909976096768
-    m_Localized: Whew! This is farther than I thought! I'm starting to feel it in
-      my legs.
+    m_Localized: Phew... This is farther than I thought. I'm starting to feel worn
+      out.
     m_Metadata:
       m_Items: []
   - m_Id: 29397909976096769
@@ -7345,13 +7345,13 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291089
-    m_Localized: 'You can also use Memories: actions that deal damage, grant buffs,
-      inflict debuffs, and more.'
+    m_Localized: Characters can perform basic actions such as moving and changing
+      direction.
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291090
-    m_Localized: Moving occupies 1 space and consumes Mana based on the distance
-      you reserve.
+    m_Localized: Characters can also use "Memories", actions that deal damage or
+      apply effects such as buffs and debuffs.
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291091
@@ -7359,7 +7359,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291092
-    m_Localized: Select a destination to reserve the movement action on the timeline.
+    m_Localized: Movement is an action that occupies one timeline slot and consumes
+      mana based on the reserved distance.
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291093
@@ -7367,8 +7368,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291094
-    m_Localized: A Memory's area of effect is set automatically based on the direction
-      the character is facing.
+    m_Localized: Selecting a destination reserves the movement action on the timeline.
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291095
@@ -7376,8 +7376,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291096
-    m_Localized: Switching characters also changes the slot used for reservations
-      automatically.
+    m_Localized: A Memory's area of effect is automatically determined by the direction
+      the character is facing.
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291097
@@ -7385,7 +7385,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291098
-    m_Localized: You can register the same Memory multiple times. Each use is reserved
+    m_Localized: You can reserve the same Memory multiple times. Each use is registered
       as a separate action on the timeline.
     m_Metadata:
       m_Items: []
@@ -7766,6 +7766,67 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 29830859968454656
     m_Localized: A crimson core containing Arabela's awakened power.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422303641600
+    m_Localized: Once you've finished planning your actions, end your turn. Your
+      queued actions will then execute in order as the battle unfolds.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361861
+    m_Localized: Oh, this looks pretty useful! I'll take this one!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361862
+    m_Localized: Go ahead. I think it suits you quite well.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361863
+    m_Localized: Relics can be equipped in a character's equipment slots. Combine
+      relics within the limited slots to create a variety of combat strategies.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361856
+    m_Localized: I could take on a whole bunch of these guys!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361857
+    m_Localized: That went more smoothly than expected. Let's take the relic with
+      us.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361858
+    m_Localized: Nice! Wonder if we got something useful this time?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361859
+    m_Localized: You can earn various rewards after battle. Equip relics to characters
+      to gain special effects.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361869
+    m_Localized: During expeditions, you'll encounter various events. Your choices
+      may earn you rewards or cause you to suffer losses.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361865
+    m_Localized: Um... may I ask where you're headed?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361866
+    m_Localized: We're heading back to base!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361867
+    m_Localized: If you're heading the same way, you're welcome to join us.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361868
+    m_Localized: R-really? Then... would it be okay if we rested for a bit first?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30184713507545088
+    m_Localized: Click to continue
     m_Metadata:
       m_Items: []
   references:

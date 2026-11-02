@@ -519,9 +519,11 @@ namespace Relic.Gameplay.Data
                     continue;
 
                 CharacterRuntimeData character = ResolveCharacter(characterStore, characterId);
-                int rewardExperience = fixedExperiencePerCharacter.HasValue
-                    ? Mathf.Max(0, fixedExperiencePerCharacter.Value)
-                    : CalculateRewardExperience(statistics, context);
+                // Tutorial first-completion EXP is a bonus, not a replacement for
+                // each character's expedition and combat performance EXP.
+                int rewardExperience = CalculateRewardExperience(statistics, context);
+                if (fixedExperiencePerCharacter.HasValue)
+                    rewardExperience += Mathf.Max(0, fixedExperiencePerCharacter.Value);
                 BattleStageClearExperiencePreview preview =
                     Calculate(characterId, character, rewardExperience);
 
