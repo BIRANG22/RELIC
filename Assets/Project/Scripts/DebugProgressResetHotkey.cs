@@ -586,6 +586,8 @@ public sealed class DebugProgressResetHotkey : MonoBehaviour
             SaveSystem.Instance.DeleteSaveFile();
 
         // PlayerPrefs에 별도로 저장되는 시련 해금 진행도를 삭제합니다.
+        // A full progress reset also restores eligibility for the first tutorial EXP bonus.
+        TutorialSettings.ResetFirstCompletionExperienceClaimed();
         TrialUnlockProgress.ResetProgress();
         TrialSelectionState.Clear();
         TutorialSettings.SetShouldShowTutorial(true);

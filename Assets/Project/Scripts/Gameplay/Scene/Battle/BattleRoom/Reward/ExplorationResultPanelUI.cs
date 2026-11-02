@@ -69,7 +69,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     private bool isTransitioning;
     private bool isDefeatResult;
     private bool stageClearExperienceApplied;
-    private bool tutorialArrivalConfirmed;
+    private int tutorialFirstClearBonus;
+    private bool tutorialFirstClearBonusApplied;
     private float researchRewardMultiplier = 1f;
     private BattleStageClearExperienceContext experienceContext = BattleStageClearExperienceContext.Empty;
     private readonly List<BattleBagItemSlotUI> hardModeSlots = new();
@@ -208,7 +209,9 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         researchRewardMultiplier = Mathf.Max(0f, rewardMultiplier);
         isTransitioning = false;
         stageClearExperienceApplied = false;
-        tutorialArrivalConfirmed = false;
+        tutorialFirstClearBonus = runtime?.IsTutorialBattle == true &&
+            !TutorialSettings.HasClaimedFirstCompletionExperience ? 300 : 0;
+        tutorialFirstClearBonusApplied = false;
         statisticsOverlayOwner = null;
         statisticsOverlayPinned = false;
         if (statisticsOverlayRoot != null)
@@ -588,11 +591,9 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
 
     private int? GetTutorialExperienceOverride()
     {
-        if (DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle != true)
-            return null;
-
-        // 300 EXP to each participating character on the first completed run only.
-        return TutorialSettings.HasClaimedFirstCompletionExperience ? 0 : 300;
+        // Fix the first-clear reward when the result opens. Preview and actual
+        // settlement must use the same value even if tutorial state changes.
+        return tutorialFirstClearBonus;
     }
 
     private void ApplyCharacterRows(
@@ -1577,32 +1578,37 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         if (isTransitioning || result == null || DataManager.Instance == null || GameManager.Instance == null)
             return;
 
-        // The tutorial report must close first and leave an explicit arrival step.
-        // The actual run settlement and lobby transition occur only after Arrival.
-        bool isTutorialResult = DataManager.Instance.BattleRuntimeStore?.Get()?.IsTutorialBattle == true;
-        if (isTutorialResult && !tutorialArrivalConfirmed)
-        {
-            BattleResultChecker checker = Object.FindFirstObjectByType<BattleResultChecker>(FindObjectsInactive.Include);
-            if (checker != null && checker.ShowTutorialArrivalButton(() =>
-            {
-                tutorialArrivalConfirmed = true;
-                ReturnToBase();
-            }))
-            {
-                gameObject.SetActive(false);
-                return;
-            }
-            Debug.LogError("[ExplorationResultPanelUI] Tutorial arrival button not found in BattleRewardPanelUI. Lobby transition blocked until the shared NextButton is connected.");
-            return;
-        }
-
         isTransitioning = true;
         if (returnToBaseButton != null)
             returnToBaseButton.interactable = false;
 
-        bool claimFirstTutorialExperience =
-            DataManager.Instance.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
-            !TutorialSettings.HasClaimedFirstCompletionExperience;
+        // The reward panel already handled the tutorial Arrival button.
+        // Confirm closes the result with the shared scene transition before loading Lobby.
+        bool isTutorialResult = DataManager.Instance.BattleRuntimeStore?.Get()?.IsTutorialBattle == true;
+        CanvasMaterialSceneTransition lobbyTransition = null;
+        bool transitionClosed = false;
+        if (isTutorialResult)
+        {
+            lobbyTransition = CanvasMaterialSceneTransition.Instance;
+            if (lobbyTransition == null)
+                lobbyTransition = Object.FindFirstObjectByType<CanvasMaterialSceneTransition>(FindObjectsInactive.Include);
+
+            if (lobbyTransition != null)
+            {
+                while (lobbyTransition.IsPlaying)
+                    await System.Threading.Tasks.Task.Yield();
+
+                await lobbyTransition.PlayCloseAsync();
+                SceneFlowManager.Instance?.UseAlreadyClosedTransitionForNextLoad();
+                transitionClosed = true;
+            }
+            else
+            {
+                Debug.LogWarning("[ExplorationResultPanelUI] Scene transition component not found; falling back to normal scene flow transition.");
+            }
+        }
+
+        bool claimFirstTutorialExperience = tutorialFirstClearBonus > 0;
 
         if (DataManager.Instance.BattleRuntimeStore?.Get()?.IsTutorialBattle == true)
             Debug.Log($"[TutorialExperience] FirstCompletionAlreadyClaimed={TutorialSettings.HasClaimedFirstCompletionExperience}, BonusRequested={GetTutorialExperienceOverride() ?? 0}, Participants={result.CharacterStatistics?.Count ?? 0}");
@@ -1616,6 +1622,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
                 Debug.LogError("[ExplorationResultPanelUI] Failed to prepare tutorial lobby party.");
                 isTransitioning = false;
                 if (returnToBaseButton != null) returnToBaseButton.interactable = true;
+                if (transitionClosed && lobbyTransition != null)
+                    await lobbyTransition.PlayOpenAsync();
                 return;
             }
             TutorialSettings.MarkTutorialSeen();
@@ -1667,7 +1675,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         {
             Debug.LogError("[ExplorationResultPanelUI] Failed to save confirmed exploration result.");
         }
-        if (claimFirstTutorialExperience && lobbyProgressSaved)
+        if (claimFirstTutorialExperience && tutorialFirstClearBonusApplied && lobbyProgressSaved)
             TutorialSettings.MarkFirstCompletionExperienceClaimed();
 
         BattleRoomCleaner cleaner =
@@ -1686,12 +1694,21 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             return;
         }
 
-        stageClearExperienceApplied = true;
-        BattleStageClearExperienceService.Apply(
+        var applied = BattleStageClearExperienceService.Apply(
             DataManager.Instance.CharacterRuntimeStore,
             result.CharacterStatistics,
             experienceContext,
             GetTutorialExperienceOverride());
+        if (applied == null || applied.Count == 0)
+        {
+            Debug.LogWarning("[TutorialExperience] No eligible character experience rows. First-clear reward has not been claimed.");
+            return;
+        }
+
+        stageClearExperienceApplied = true;
+        tutorialFirstClearBonusApplied = tutorialFirstClearBonus > 0;
+        if (tutorialFirstClearBonusApplied)
+            Debug.Log($"[TutorialExperience] First completion: +{tutorialFirstClearBonus} EXP per participating character, in addition to play EXP. Characters={applied.Count}");
     }
 
     private void BringResultPanelToFront()
