@@ -16243,7 +16243,7 @@ MonoBehaviour:
   panelFadeDuration: 0.2
   playHoverSound: 0
   hoverSfx: ui.normal.hover
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
@@ -16264,7 +16264,7 @@ MonoBehaviour:
   characterType: 2
   characterId: Char_02
   isLocked: 0
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   showSelectedPartyMarker: 1
   selectedPartyMarkerRoot: {fileID: 0}
@@ -39532,7 +39532,7 @@ MonoBehaviour:
   panelFadeDuration: 0.2
   playHoverSound: 0
   hoverSfx: ui.normal.hover
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
@@ -39553,7 +39553,7 @@ MonoBehaviour:
   characterType: 1
   characterId: Char_01
   isLocked: 0
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   showSelectedPartyMarker: 1
   selectedPartyMarkerRoot: {fileID: 0}
@@ -59822,7 +59822,7 @@ MonoBehaviour:
   panelFadeImage: {fileID: 0}
   openedPanelAlpha: 0.9019608
   panelFadeDuration: 0.2
-  playHoverSound: 1
+  playHoverSound: 0
   hoverSfx: ui.normal.hover
   playClickSound: 1
   clickSfx: ui.normal.click
@@ -61972,7 +61972,7 @@ MonoBehaviour:
   panelFadeDuration: 0.2
   playHoverSound: 0
   hoverSfx: ui.normal.hover
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
@@ -61993,7 +61993,7 @@ MonoBehaviour:
   characterType: 3
   characterId: Char_04
   isLocked: 0
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   showSelectedPartyMarker: 1
   selectedPartyMarkerRoot: {fileID: 0}
@@ -73702,7 +73702,7 @@ MonoBehaviour:
   tutorialInputBlocker: {fileID: 0}
   tutorialInputBlockerFallbackSortingOrder: 9049
   charactersPerSecond: 30
-  lineAdvanceSoundId: ui.normal.click
+  lineAdvanceSoundId: ui.move.click
   lineAdvanceSoundVolume: 0.5
   indicatorMoveDistance: 6
   indicatorMoveSpeed: 0.5
@@ -116087,7 +116087,7 @@ MonoBehaviour:
   panelFadeDuration: 0.2
   playHoverSound: 0
   hoverSfx: ui.normal.hover
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
@@ -116108,7 +116108,7 @@ MonoBehaviour:
   characterType: 5
   characterId: Char_03
   isLocked: 0
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   showSelectedPartyMarker: 1
   selectedPartyMarkerRoot: {fileID: 0}
@@ -118736,7 +118736,7 @@ MonoBehaviour:
   panelFadeDuration: 0.2
   playHoverSound: 0
   hoverSfx: ui.normal.hover
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
@@ -118757,7 +118757,7 @@ MonoBehaviour:
   characterType: 1
   characterId: Char_06
   isLocked: 1
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   showSelectedPartyMarker: 1
   selectedPartyMarkerRoot: {fileID: 0}
@@ -122997,7 +122997,7 @@ MonoBehaviour:
   panelFadeDuration: 0.2
   playHoverSound: 0
   hoverSfx: ui.normal.hover
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   playPanelOpenCloseSound: 0
   panelOpenSfx: ui.bag.open
@@ -123018,7 +123018,7 @@ MonoBehaviour:
   characterType: 1
   characterId: Char_05
   isLocked: 1
-  playClickSound: 1
+  playClickSound: 0
   clickSfx: ui.normal.click
   showSelectedPartyMarker: 1
   selectedPartyMarkerRoot: {fileID: 0}

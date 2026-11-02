@@ -227,7 +227,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1, g: 0.79113305, b: 0.24056602, a: 0.09411765}
+      maxColor: {r: 0.6226415, g: 0.032094933, b: 0, a: 0.09411765}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -5118,7 +5118,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1, g: 0.8439232, b: 0, a: 0.23529412}
+      maxColor: {r: 0.62352943, g: 0.03529412, b: 0, a: 0.23529412}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -11094,8 +11094,8 @@ ParticleSystem:
       maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
-        key0: {r: 0.25002074, g: 0.71108043, b: 1, a: 0}
-        key1: {r: 0.2235294, g: 0.700875, b: 1, a: 1}
+        key0: {r: 1, g: 0.8586911, b: 0, a: 1}
+        key1: {r: 1, g: 0.1035731, b: 0, a: 1}
         key2: {r: 0.2235294, g: 0.700875, b: 1, a: 1}
         key3: {r: 0, g: 0, b: 0, a: 1}
         key4: {r: 0, g: 0, b: 0, a: 0}
@@ -11111,7 +11111,7 @@ ParticleSystem:
         ctime6: 0
         ctime7: 0
         atime0: 0
-        atime1: 15035
+        atime1: 65535
         atime2: 65535
         atime3: 65535
         atime4: 0
@@ -11121,7 +11121,7 @@ ParticleSystem:
         m_Mode: 0
         m_ColorSpace: 0
         m_NumColorKeys: 2
-        m_NumAlphaKeys: 3
+        m_NumAlphaKeys: 2
       minGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -14842,7 +14842,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1, g: 0.92024434, b: 0, a: 0.12941177}
+      maxColor: {r: 0.62352943, g: 0.03529412, b: 0, a: 0.12941177}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -19733,7 +19733,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1, g: 0.9297683, b: 0.41960788, a: 1}
+      maxColor: {r: 0.62352943, g: 0.03529412, b: 0, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
