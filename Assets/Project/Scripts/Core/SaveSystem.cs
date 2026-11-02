@@ -9,6 +9,8 @@ public class SaveSystem : Singleton<SaveSystem>
 {
     private const int CurrentSaveVersion = 1;
     private const string SaveFileName = "relic-save.json";
+    private const string SaveBackupExtension = ".bak";
+    private const string SaveTemporaryExtension = ".tmp";
     private const int EquippedSkillSlotCount = 4;
     private const int EquippedRuneSlotCount = 6;
     private const int EquippedRelicSlotCount = 7;
@@ -62,7 +64,7 @@ public class SaveSystem : Singleton<SaveSystem>
 
     public bool HasSaveFile()
     {
-        return File.Exists(SaveFilePath);
+        return File.Exists(SaveFilePath) || File.Exists(SaveFilePath + SaveBackupExtension);
     }
 
     /// <summary>
@@ -80,6 +82,10 @@ public class SaveSystem : Singleton<SaveSystem>
         {
             if (File.Exists(SaveFilePath))
                 File.Delete(SaveFilePath);
+            if (File.Exists(SaveFilePath + SaveBackupExtension))
+                File.Delete(SaveFilePath + SaveBackupExtension);
+            if (File.Exists(SaveFilePath + SaveTemporaryExtension))
+                File.Delete(SaveFilePath + SaveTemporaryExtension);
 
             Debug.Log($"[SaveSystem] Save file deleted: {SaveFilePath}");
             return true;
@@ -340,7 +346,59 @@ public class SaveSystem : Singleton<SaveSystem>
             return false;
 
         ApplySaveData(saveData);
+        if (ShouldDiscardInvalidBattleState(saveData))
+        {
+            BattleRunAbandonService.AbandonCurrentRun(DataManager.Instance);
+            SaveCurrentProgress();
+        }
         return true;
+    }
+
+    public static bool ShouldDiscardInvalidBattleState(GameSaveData saveData)
+    {
+        if (saveData == null || CanContinueBattle(saveData))
+            return false;
+
+        if (string.Equals(saveData.ActiveSceneName, SceneName.Battle, StringComparison.OrdinalIgnoreCase) ||
+            saveData.Resume != null ||
+               (saveData.Map != null && saveData.Map.IsRunInitialized) ||
+               (saveData.Battle != null &&
+                (saveData.Battle.IsBattleRunInitialized ||
+                 saveData.Battle.OwnedRelicIds?.Count > 0 ||
+                 saveData.Battle.BagItemIds?.Count > 0 ||
+                 saveData.Battle.SkillInventoryIds?.Count > 0 ||
+                 saveData.Battle.AcquiredSkillIds?.Count > 0 ||
+                 saveData.Battle.LobbyLoadoutSnapshots?.Count > 0)))
+            return true;
+
+        if (saveData.Characters == null)
+            return false;
+
+        for (int i = 0; i < saveData.Characters.Count; i++)
+        {
+            CharacterRuntimeData character = saveData.Characters[i];
+            if (character == null)
+                continue;
+
+            if (character.CurrentShield != 0 ||
+                character.StatusEffects?.Count > 0 ||
+                character.AppliedBattleEquipmentEffectIds?.Count > 0 ||
+                HasAnyId(character.EquippedRelicIds))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool HasAnyId(string[] ids)
+    {
+        if (ids == null)
+            return false;
+
+        for (int i = 0; i < ids.Length; i++)
+            if (!string.IsNullOrWhiteSpace(ids[i]))
+                return true;
+        return false;
     }
 
     public bool TryLoadBattleContinueProgress()
@@ -575,31 +633,40 @@ public class SaveSystem : Singleton<SaveSystem>
 
     public GameSaveData ReadSaveData()
     {
-        // A missing save is normal on first launch or after resetting progress.
-        // Do not report this as an error; callers already handle a null save.
-        if (!File.Exists(SaveFilePath))
+        if (!TryReadJsonWithBackup(
+                SaveFilePath,
+                value => TryDeserializeSaveData(value, out _),
+                out string json,
+                out bool usedBackup))
             return null;
+
+        if (!TryDeserializeSaveData(json, out GameSaveData saveData))
+            return null;
+
+        if (usedBackup)
+        {
+            Debug.LogWarning($"[SaveSystem] Primary save was invalid. Loaded backup: {SaveFilePath}{SaveBackupExtension}");
+            TryRestorePrimaryFromBackup(SaveFilePath, json, out _);
+        }
+
+        NormalizeSaveData(saveData, saveData.ActiveSceneName);
+        return saveData;
+    }
+
+    private static bool TryDeserializeSaveData(string json, out GameSaveData saveData)
+    {
+        saveData = null;
+        if (string.IsNullOrWhiteSpace(json))
+            return false;
 
         try
         {
-            string json = File.ReadAllText(SaveFilePath);
-            GameSaveData saveData = JsonUtility.FromJson<GameSaveData>(json);
-            NormalizeSaveData(saveData, saveData?.ActiveSceneName);
-            return saveData;
+            saveData = JsonUtility.FromJson<GameSaveData>(json);
+            return saveData != null && saveData.Version > 0;
         }
-        catch (FileNotFoundException)
+        catch (Exception)
         {
-            // The file may have been removed after File.Exists returned true.
-            return null;
-        }
-        catch (DirectoryNotFoundException)
-        {
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"[SaveSystem] Failed to read save file. {ex}");
-            return null;
+            return false;
         }
     }
 
@@ -688,7 +755,8 @@ public class SaveSystem : Singleton<SaveSystem>
 
             NormalizeSaveData(saveData, saveData?.ActiveSceneName);
             string json = JsonUtility.ToJson(saveData, true);
-            File.WriteAllText(SaveFilePath, json);
+            if (!TryWriteJsonAtomically(SaveFilePath, json, out Exception writeError))
+                throw writeError ?? new IOException("Atomic save failed.");
 
             Debug.Log($"[SaveSystem] Progress saved: {SaveFilePath}");
             return true;
@@ -697,6 +765,147 @@ public class SaveSystem : Singleton<SaveSystem>
         {
             Debug.LogError($"[SaveSystem] Failed to save progress. {ex}");
             return false;
+        }
+    }
+
+    public static bool TryReadJsonWithBackup(
+        string targetPath,
+        Func<string, bool> validator,
+        out string json,
+        out bool usedBackup)
+    {
+        json = null;
+        usedBackup = false;
+        if (string.IsNullOrWhiteSpace(targetPath) || validator == null)
+            return false;
+
+        if (TryReadValidJson(targetPath, validator, out json))
+            return true;
+
+        if (!TryReadValidJson(targetPath + SaveBackupExtension, validator, out json))
+            return false;
+
+        usedBackup = true;
+        return true;
+    }
+
+    private static bool TryReadValidJson(string path, Func<string, bool> validator, out string json)
+    {
+        json = null;
+        try
+        {
+            if (!File.Exists(path))
+                return false;
+
+            string candidate = File.ReadAllText(path);
+            if (!validator(candidate))
+                return false;
+
+            json = candidate;
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
+    public static bool TryWriteJsonAtomically(string targetPath, string json, out Exception error)
+    {
+        error = null;
+        if (string.IsNullOrWhiteSpace(targetPath))
+        {
+            error = new ArgumentException("Target path is required.", nameof(targetPath));
+            return false;
+        }
+
+        string temporaryPath = targetPath + SaveTemporaryExtension;
+        string backupPath = targetPath + SaveBackupExtension;
+        try
+        {
+            string directory = Path.GetDirectoryName(targetPath);
+            if (!string.IsNullOrWhiteSpace(directory))
+                Directory.CreateDirectory(directory);
+
+            using (var stream = new FileStream(temporaryPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.Write(json ?? string.Empty);
+                writer.Flush();
+                stream.Flush(true);
+            }
+
+            if (File.Exists(targetPath))
+                File.Replace(temporaryPath, targetPath, backupPath, true);
+            else
+                File.Move(temporaryPath, targetPath);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            error = ex;
+            return false;
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(temporaryPath))
+                    File.Delete(temporaryPath);
+            }
+            catch (Exception)
+            {
+                // Temp files are never read as saves and are overwritten on the next attempt.
+            }
+        }
+    }
+
+    public static bool TryRestorePrimaryFromBackup(string targetPath, string json, out Exception error)
+    {
+        error = null;
+        if (string.IsNullOrWhiteSpace(targetPath))
+        {
+            error = new ArgumentException("Target path is required.", nameof(targetPath));
+            return false;
+        }
+
+        string temporaryPath = targetPath + SaveTemporaryExtension;
+        try
+        {
+            string directory = Path.GetDirectoryName(targetPath);
+            if (!string.IsNullOrWhiteSpace(directory))
+                Directory.CreateDirectory(directory);
+
+            using (var stream = new FileStream(temporaryPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.Write(json ?? string.Empty);
+                writer.Flush();
+                stream.Flush(true);
+            }
+
+            if (File.Exists(targetPath))
+                File.Replace(temporaryPath, targetPath, null, true);
+            else
+                File.Move(temporaryPath, targetPath);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            error = ex;
+            return false;
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(temporaryPath))
+                    File.Delete(temporaryPath);
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 

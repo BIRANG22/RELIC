@@ -2998,7 +2998,8 @@ public class BattleActionRunner
 
         BattleUnitAnimator animator = caster.GetComponent<BattleUnitAnimator>();
 
-        if (animator != null)
+        if (animator != null &&
+            BattleActionPresentationPolicy.ShouldPlayGenericMoveForSkillEffect(command.SkillData))
             animator.PlayMove();
 
         yield return MovePlayerThroughEnteredGrids(caster, command.CharacterId, enteredGridIndices);
@@ -3690,7 +3691,10 @@ public class BattleActionRunner
     }
 
     // Keep the prefab root/VFX in place. Only the SpriteRoot rises and descends.
-    private IEnumerator AnimateArabellaHuntingLeap(MonsterUnit monster, Vector3 landingPosition)
+    private IEnumerator AnimateArabellaHuntingLeap(
+        MonsterUnit monster,
+        Vector3 landingPosition,
+        System.Action onDescentStarted)
     {
         if (monster == null)
             yield break;
@@ -3739,6 +3743,7 @@ public class BattleActionRunner
         Vector3 landingVisual = landingPosition + visualOffset;
         Vector3 arrivalStart = landingVisual + Vector3.up * riseHeight;
         visual.position = arrivalStart;
+        onDescentStarted?.Invoke();
         elapsed = 0f;
         duration = BattlePresentationSpeedSettings.ScaleDuration(fadeInSeconds);
         while (elapsed < duration && monster != null)
@@ -3809,7 +3814,10 @@ public class BattleActionRunner
                 animator.PlayMonsterSkillPrepare(command);
             Transform leapSpriteRoot = monster.transform.Find("SpriteRoot");
             Vector3 spriteRootDefaultLocalPosition = leapSpriteRoot != null ? leapSpriteRoot.localPosition : Vector3.zero;
-            yield return AnimateArabellaHuntingLeap(monster, pos);
+            yield return AnimateArabellaHuntingLeap(
+                monster,
+                pos,
+                () => animator?.PlayMonsterSkillActionStatePhase(command));
             if (monster == null || monster.RuntimeData == null || monster.RuntimeData.IsDead)
                 yield break;
 
@@ -3883,9 +3891,9 @@ public class BattleActionRunner
             Debug.LogWarning("[Arabella] Leap destination blocked; landing was cancelled.");
         }
 
-        // 실제 위치와 점유 상태가 확정된 뒤 착지 애니메이션/VFX를 재생합니다.
+        // 착지 위치가 확정된 뒤 Action VFX만 생성합니다. 하강 상태는 상공에서 이미 시작했습니다.
         if (animator != null)
-            animator.PlayMonsterSkillActionPhase(command);
+            animator.PlayMonsterSkillActionVfxPhase(command);
 
         // 착지점을 중심으로 주변 8칸과 중심 칸에 피해/넉백을 1회씩 적용합니다.
         // 예약 시의 공격 범위가 아니라 실제 착지 목적지를 사용합니다.
@@ -6356,5 +6364,17 @@ public class BattleActionRunner
             $"Skill:{command?.SkillData?.SkillId} / " +
             $"Target:{target?.CharacterId} / Damage:{damage}"
         );
+    }
+}
+
+public static class BattleActionPresentationPolicy
+{
+    public static bool ShouldPlayGenericMoveForSkillEffect(SkillMasterData skillData)
+    {
+        if (skillData == null)
+            return false;
+
+        return skillData.Category == Category.Move ||
+               skillData.TimelineNotation == TimelineActionType.Move;
     }
 }

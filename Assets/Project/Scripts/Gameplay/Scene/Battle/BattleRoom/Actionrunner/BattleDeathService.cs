@@ -106,6 +106,7 @@ public class BattleDeathService
             destinations[i] = spawned[i].transform.position;
             origins[i] = muck.transform.position;
             origins[i].z = destinations[i].z;
+            SetSortingReferenceY(spawned[i], destinations[i].y);
             spawned[i].transform.position = origins[i];
         }
 
@@ -129,7 +130,10 @@ public class BattleDeathService
         }
         for (int i = 0; i < spawned.Count; i++)
             if (spawned[i] != null)
+            {
                 spawned[i].transform.position = destinations[i];
+                ClearSortingReferenceY(spawned[i]);
+            }
 
         // 분열한 블롭의 최종 위치를 확정한 뒤 해당 칸의 그리드 효과를 적용합니다.
         ApplySpawnGridEffects(spawned);
@@ -138,6 +142,26 @@ public class BattleDeathService
         if (remaining > 0f)
             yield return new WaitForSeconds(remaining);
         RemoveDeadMonster(muck);
+    }
+
+    private static void SetSortingReferenceY(MonsterUnit monster, float worldY)
+    {
+        if (monster == null)
+            return;
+
+        YSortSprite[] sorters = monster.GetComponentsInChildren<YSortSprite>(true);
+        for (int i = 0; i < sorters.Length; i++)
+            sorters[i].SetSortingReferenceY(worldY);
+    }
+
+    private static void ClearSortingReferenceY(MonsterUnit monster)
+    {
+        if (monster == null)
+            return;
+
+        YSortSprite[] sorters = monster.GetComponentsInChildren<YSortSprite>(true);
+        for (int i = 0; i < sorters.Length; i++)
+            sorters[i].ClearSortingReferenceY();
     }
 
     private static void ShowSplitEffectName(MonsterUnit muck)
