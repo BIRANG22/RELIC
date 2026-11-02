@@ -503,7 +503,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2517399024250081354, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4961066013578039263}
   m_SourcePrefab: {fileID: 100100000, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
 --- !u!4 &509281109941204593 stripped
 Transform:
@@ -515,6 +518,28 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 2517399024250081354, guid: d185e8bcdf6f8dc4b82bdf6e908d2861, type: 3}
   m_PrefabInstance: {fileID: 3399045035931428652}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4961066013578039263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 992001795820107622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: fire.heal
+  volume: 1
+  playDelay: 0
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1001 &6624792470378548918
 PrefabInstance:
   m_ObjectHideFlags: 0
