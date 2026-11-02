@@ -1230,9 +1230,24 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             TutorialBattleSequence.StartContinuation("Map_26", 34, 36);
     }
 
+    // First battle relic equip is available only during the actual equip guide.
+    // The intro and dialogue must not allow early clicks to commit a relic.
+    private bool CanEquipAtCurrentTutorialStep()
+    {
+        if (DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle != true ||
+            !string.Equals(DataManager.Instance.MapRuntimeStore?.Get()?.CurrentMapId,
+                "Map_26", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return itemIntroCoroutine == null &&
+               TutorialBattleSequence.IsContinuationActive &&
+               TutorialBattleSequence.CurrentContinuationOrder == 36;
+    }
+
     private void EquipTo(int index, int selectedSlot = -1)
     {
         if (resolving || current == null || index < 0 || index >= entries.Length) return;
+        if (!CanEquipAtCurrentTutorialStep()) return;
         if (TutorialBattleSequence.IsContinuationActive &&
             TutorialBattleSequence.CurrentContinuationOrder != 36) return;
         // Only the first tutorial battle requires equipping the relic to Hilt.

@@ -68,6 +68,13 @@ public static class TutorialSettings
     }
 
 
+    // Reset only when all progress is explicitly cleared by the debug shortcut.
+    public static void ResetFirstCompletionExperienceClaimed()
+    {
+        PlayerPrefs.DeleteKey(FirstCompletionExperienceClaimedKey);
+        PlayerPrefs.Save();
+    }
+
     private const int SeenValue = 1;
     private const int NotSeenValue = 0;
 

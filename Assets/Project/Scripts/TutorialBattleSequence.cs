@@ -32,8 +32,33 @@ public sealed class TutorialBattleSequence : MonoBehaviour
     {
         int step = ActiveBattleGuideStep;
         if (step < 0) return true;
-        if (step == 24) return !string.IsNullOrEmpty(moveId) && skillId == moveId;
-        if (step == 26 || step == 28)
+        if (step == 24)
+        {
+            if (string.IsNullOrEmpty(moveId) || skillId != moveId)
+                return false;
+
+            // 이동 버튼을 연타해 선택 상태가 해제되는 것을 방지합니다.
+            PlayerSkillReservationController reservation =
+                FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
+            return reservation == null || !reservation.IsMoveSkillSelectionActive();
+        }
+        if (step == 26)
+        {
+            if (string.IsNullOrEmpty(firstSkillId) || skillId != firstSkillId)
+                return false;
+
+            TutorialBattleSequence sequence =
+                FindFirstObjectByType<TutorialBattleSequence>(FindObjectsInactive.Include);
+            BattleTimelineController timeline =
+                FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+            if (sequence == null || timeline == null || sequence.skill26ReservationBaseline < 0)
+                return false;
+
+            // 힐트의 첫 기억은 단 한 번만 예약할 수 있습니다.
+            return CountCharacterCommands(timeline, "Char_01") <
+                   sequence.skill26ReservationBaseline + 1;
+        }
+        if (step == 28)
             return !string.IsNullOrEmpty(firstSkillId) && skillId == firstSkillId;
         return false;
     }
