@@ -83,7 +83,7 @@ MonoBehaviour:
       AnchorName: 
       LocalPosition: {x: 4.53, y: 1.77, z: 0}
       LocalEulerAngles: {x: 0, y: 0, z: 0}
-      LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+      LocalScale: {x: 0.4, y: 0.4, z: 0.4}
       Active: 1
   - MapId: Map_24
     Spawns:
@@ -106,7 +106,7 @@ MonoBehaviour:
   - MapId: Map_28
     Spawns:
     - Prefab: {fileID: 1000000000000000001, guid: 7190544e815c09e4f8afc1da72feba2a, type: 3}
-      VisualObjectId: event_t_01
+      VisualObjectId: event_tutorial
       AnchorName: 
       LocalPosition: {x: 4.83, y: -0.21, z: 0}
       LocalEulerAngles: {x: 0, y: 0, z: 0}
