@@ -315,14 +315,15 @@ public class EventRoomController : MonoBehaviour
         TutorialBattleSequence.StartContinuation("Map_28", 1, 4);
         while (TutorialBattleSequence.IsContinuationActive) yield return null;
         tutorialEventDialoguePending = false;
-        PlayEventChoiceEntranceAnimation();
     }
 
     private IEnumerator RunTutorialEventChoiceGuide()
     {
         TutorialBattleSequence.StartContinuation("Map_28", 5, 5);
-        while (TutorialBattleSequence.IsContinuationActive) yield return null;
+        // ClickTarget must be clickable while the guide is showing.
+        // Keeping slots disabled until completion deadlocks the tutorial.
         SetChoiceSlotsInteractable(true);
+        while (TutorialBattleSequence.IsContinuationActive) yield return null;
     }
 
     private void OnEnable()
@@ -387,7 +388,7 @@ public class EventRoomController : MonoBehaviour
         if (TryStartDataEventMode())
         {
             tutorialEventDialoguePending = IsTutorialEventMap();
-            if (tutorialEventDialoguePending) StartCoroutine(RunTutorialEventDialogue());
+            // The tutorial dialogue is triggered after the room intro and title typing.
             return;
         }
 
@@ -6585,7 +6586,6 @@ public class EventRoomController : MonoBehaviour
         if (!isActiveAndEnabled || !isDataEventActive || !waitForEventEntranceReveal)
             return;
 
-        if (tutorialEventDialoguePending) return;
         waitForEventEntranceReveal = false;
         StopEventEntranceTitleRoutine();
         EnsureEventChoiceScrollCanvasGroup();
@@ -6668,6 +6668,18 @@ public class EventRoomController : MonoBehaviour
         // 선택지는 방 입장 인트로와 제목 출력이 모두 끝난 뒤 표시합니다.
         while (BattleMapIntroText.IsAnyPlayingOrVisible())
             yield return null;
+
+        // Map_28: do not reveal choices before the tutorial conversation.
+        // The room intro and EventTitleText typing must both finish first.
+        if (tutorialEventDialoguePending && IsTutorialEventMap())
+        {
+            yield return RunTutorialEventDialogue();
+            if (!isActiveAndEnabled || !isDataEventActive || isEventResolved)
+            {
+                eventEntranceTitleRoutine = null;
+                yield break;
+            }
+        }
 
         eventEntranceTitleRoutine = null;
         if (isActiveAndEnabled && isDataEventActive && !isEventResolved)
@@ -6792,9 +6804,12 @@ public class EventRoomController : MonoBehaviour
         if (eventChoiceGradationCanvasGroup != null)
             eventChoiceGradationCanvasGroup.alpha = 1f;
 
+        // Tutorial step 5 waits for a click on the first choice.
+        // The choice must remain interactable while that step is displayed.
+        bool tutorialChoiceGuide = IsTutorialEventMap();
         SetChoiceSlotsInteractable(true);
         eventChoiceScrollMoveRoutine = null;
-        if (IsTutorialEventMap()) StartCoroutine(RunTutorialEventChoiceGuide());
+        if (tutorialChoiceGuide) StartCoroutine(RunTutorialEventChoiceGuide());
     }
 
     private void EnsureNextButtonRoot()

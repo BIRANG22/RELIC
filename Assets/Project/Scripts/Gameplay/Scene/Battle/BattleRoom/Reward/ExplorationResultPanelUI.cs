@@ -69,6 +69,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
     private bool isTransitioning;
     private bool isDefeatResult;
     private bool stageClearExperienceApplied;
+    private bool tutorialArrivalConfirmed;
     private float researchRewardMultiplier = 1f;
     private BattleStageClearExperienceContext experienceContext = BattleStageClearExperienceContext.Empty;
     private readonly List<BattleBagItemSlotUI> hardModeSlots = new();
@@ -207,6 +208,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         researchRewardMultiplier = Mathf.Max(0f, rewardMultiplier);
         isTransitioning = false;
         stageClearExperienceApplied = false;
+        tutorialArrivalConfirmed = false;
         statisticsOverlayOwner = null;
         statisticsOverlayPinned = false;
         if (statisticsOverlayRoot != null)
@@ -1575,6 +1577,25 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         if (isTransitioning || result == null || DataManager.Instance == null || GameManager.Instance == null)
             return;
 
+        // The tutorial report must close first and leave an explicit arrival step.
+        // The actual run settlement and lobby transition occur only after Arrival.
+        bool isTutorialResult = DataManager.Instance.BattleRuntimeStore?.Get()?.IsTutorialBattle == true;
+        if (isTutorialResult && !tutorialArrivalConfirmed)
+        {
+            BattleResultChecker checker = Object.FindFirstObjectByType<BattleResultChecker>(FindObjectsInactive.Include);
+            if (checker != null && checker.ShowTutorialArrivalButton(() =>
+            {
+                tutorialArrivalConfirmed = true;
+                ReturnToBase();
+            }))
+            {
+                gameObject.SetActive(false);
+                return;
+            }
+            Debug.LogError("[ExplorationResultPanelUI] Tutorial arrival button not found in BattleRewardPanelUI. Lobby transition blocked until the shared NextButton is connected.");
+            return;
+        }
+
         isTransitioning = true;
         if (returnToBaseButton != null)
             returnToBaseButton.interactable = false;
@@ -1583,6 +1604,8 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
             DataManager.Instance.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
             !TutorialSettings.HasClaimedFirstCompletionExperience;
 
+        if (DataManager.Instance.BattleRuntimeStore?.Get()?.IsTutorialBattle == true)
+            Debug.Log($"[TutorialExperience] FirstCompletionAlreadyClaimed={TutorialSettings.HasClaimedFirstCompletionExperience}, BonusRequested={GetTutorialExperienceOverride() ?? 0}, Participants={result.CharacterStatistics?.Count ?? 0}");
         ApplyStageClearExperienceOnce();
 
         bool isTutorial = DataManager.Instance.BattleRuntimeStore?.Get()?.IsTutorialBattle == true;
@@ -1644,7 +1667,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         {
             Debug.LogError("[ExplorationResultPanelUI] Failed to save confirmed exploration result.");
         }
-        if (claimFirstTutorialExperience)
+        if (claimFirstTutorialExperience && lobbyProgressSaved)
             TutorialSettings.MarkFirstCompletionExperienceClaimed();
 
         BattleRoomCleaner cleaner =

@@ -7487,8 +7487,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29397909976096768
-    m_Localized: "\xA1Uf! \xA1Este camino es m\xE1s largo de lo que pensaba! Ya empiezo
-      a notar el cansancio."
+    m_Localized: "Uf... El camino es m\xE1s largo de lo que pensaba. Ya empiezo a
+      sentir el cansancio."
     m_Metadata:
       m_Items: []
   - m_Id: 29397909976096769
@@ -7581,13 +7581,13 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291089
-    m_Localized: "Tambi\xE9n puedes usar Recuerdos: acciones que infligen da\xF1o,
-      otorgan mejoras, aplican penalizaciones y mucho m\xE1s."
+    m_Localized: "Los personajes pueden realizar acciones b\xE1sicas como moverse
+      y cambiar de direcci\xF3n."
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291090
-    m_Localized: "Moverse ocupa 1 casilla y consume Man\xE1 seg\xFAn la distancia
-      reservada."
+    m_Localized: "Tambi\xE9n pueden usar \xABRecuerdos\xBB, acciones que infligen
+      da\xF1o o aplican efectos como mejoras y debilitaciones."
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291091
@@ -7595,8 +7595,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291092
-    m_Localized: "Selecciona un destino para reservar el movimiento en la l\xEDnea
-      de tiempo."
+    m_Localized: "Moverse es una acci\xF3n que ocupa una ranura de la l\xEDnea de
+      tiempo y consume man\xE1 seg\xFAn la distancia reservada."
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291093
@@ -7604,8 +7604,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291094
-    m_Localized: "El \xE1rea de efecto de un Recuerdo se determina autom\xE1ticamente
-      seg\xFAn la direcci\xF3n en la que mira el personaje."
+    m_Localized: "Al seleccionar un destino, la acci\xF3n de movimiento se reserva
+      en la l\xEDnea de tiempo."
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291095
@@ -7613,8 +7613,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291096
-    m_Localized: "Al cambiar de personaje, tambi\xE9n cambia autom\xE1ticamente el
-      espacio en el que puedes reservar acciones."
+    m_Localized: "El \xE1rea de efecto de un Recuerdo se determina autom\xE1ticamente
+      seg\xFAn la direcci\xF3n en la que mira el personaje."
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291097
@@ -7631,8 +7631,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291100
-    m_Localized: "Cuando termines de reservar acciones, finaliza el turno. Se ejecutar\xE1n
-      en orden y el combate continuar\xE1."
+    m_Localized: "Cuando termines de reservar acciones, finaliza el turno. Las acciones
+      se ejecutar\xE1n en orden y el combate avanzar\xE1."
     m_Metadata:
       m_Items: []
   - m_Id: 29397909980291101
@@ -7766,6 +7766,69 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 29830859968454656
     m_Localized: "Un n\xFAcleo carmes\xED que concentra el poder despertado de Arabela."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422303641600
+    m_Localized: "Cuando termines de planificar las acciones, finaliza el turno.
+      Las acciones programadas se ejecutar\xE1n en orden y el combate avanzar\xE1."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361861
+    m_Localized: "\xA1Oh, esto parece bastante \xFAtil! \xA1Me lo quedo yo esta vez!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361862
+    m_Localized: "Adelante. Creo que te quedar\xE1 bastante bien."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361863
+    m_Localized: "Puedes equipar reliquias en las ranuras de equipo de cada personaje.
+      Comb\xEDnalas dentro del n\xFAmero limitado de ranuras para crear distintas
+      estrategias de combate."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361856
+    m_Localized: "\xA1Podr\xEDa con un mont\xF3n de estos bichos sin problema!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361857
+    m_Localized: "Ha sido m\xE1s f\xE1cil de lo esperado. Llev\xE9monos tambi\xE9n
+      la reliquia."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361858
+    m_Localized: "\xA1Genial! \xBFHabremos conseguido algo \xFAtil esta vez?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361859
+    m_Localized: "Al terminar el combate, podr\xE1s obtener diversas recompensas.
+      Equipa reliquias a los personajes para conseguir efectos especiales."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361869
+    m_Localized: "Durante las expediciones encontrar\xE1s diversos eventos. Seg\xFAn
+      tus decisiones, podr\xE1s obtener recompensas o sufrir p\xE9rdidas."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361865
+    m_Localized: "Eh... \xBFpuedo preguntar ad\xF3nde se dirigen?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361866
+    m_Localized: "\xA1Vamos de camino a la base!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361867
+    m_Localized: "Si vas en la misma direcci\xF3n, ven con nosotros."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361868
+    m_Localized: "\xBFD-de verdad? Entonces... \xBFpodr\xEDamos descansar un poco
+      antes de seguir?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30184713507545088
+    m_Localized: Haz clic para continuar
     m_Metadata:
       m_Items: []
   references:

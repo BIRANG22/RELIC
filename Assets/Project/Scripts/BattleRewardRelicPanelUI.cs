@@ -1215,8 +1215,19 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 
     private IEnumerator StartTutorialRelicGuide()
     {
-        while (TutorialBattleSequence.IsContinuationActive) yield return null;
-        TutorialBattleSequence.StartContinuation("Map_26", 34, 36);
+        // Wait for both the previous reward guidance AND the relic panel's
+        // complete intro (center hold, return movement, and remaining UI fade-in).
+        while (isActiveAndEnabled && current != null &&
+               (TutorialBattleSequence.IsContinuationActive || itemIntroCoroutine != null))
+            yield return null;
+
+        if (!isActiveAndEnabled || current == null)
+            yield break;
+
+        // Let the final layout/Canvas update complete before opening dialogue.
+        yield return null;
+        if (isActiveAndEnabled && current != null)
+            TutorialBattleSequence.StartContinuation("Map_26", 34, 36);
     }
 
     private void EquipTo(int index, int selectedSlot = -1)
@@ -1224,7 +1235,11 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         if (resolving || current == null || index < 0 || index >= entries.Length) return;
         if (TutorialBattleSequence.IsContinuationActive &&
             TutorialBattleSequence.CurrentContinuationOrder != 36) return;
-        if (DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true && index != 0)
+        // Only the first tutorial battle requires equipping the relic to Hilt.
+        // Later tutorial battles allow every eligible party character.
+        if (DataManager.Instance?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+            string.Equals(DataManager.Instance.MapRuntimeStore?.Get()?.CurrentMapId,
+                "Map_26", StringComparison.OrdinalIgnoreCase) && index != 0)
             return;
         TutorialBattleSequence.NotifyTargetSelected("equip");
         CharacterEntry e = entries[index];

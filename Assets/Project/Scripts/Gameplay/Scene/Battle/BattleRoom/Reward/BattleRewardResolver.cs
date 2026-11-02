@@ -13,8 +13,12 @@ public class BattleRewardResolver : MonoBehaviour
 
         Debug.Log($"[BattleRewardResolver] Resolve Start / MonsterCount:{monsters?.Count ?? 0}");
 
-        if (monsters == null || DataManager.Instance == null)
+        // A tutorial reward belongs to the cleared battle map, even when the
+        // monster collector has no surviving entries at the moment of resolution.
+        if (DataManager.Instance == null)
             return rewards;
+        if (monsters == null)
+            monsters = System.Array.Empty<MonsterRuntimeData>();
 
         bool suppressMonsterLoot = IsTutorialBattle();
 
