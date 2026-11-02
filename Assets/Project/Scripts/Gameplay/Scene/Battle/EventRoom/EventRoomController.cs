@@ -300,6 +300,31 @@ public class EventRoomController : MonoBehaviour
             TryStartDataEventMode();
     }
 
+    private bool tutorialEventDialoguePending;
+    private bool IsTutorialEventMap()
+    {
+        var data = DataManager.Instance;
+        return data?.BattleRuntimeStore?.Get()?.IsTutorialBattle == true &&
+               string.Equals(data.MapRuntimeStore?.Get()?.CurrentMapId,
+                   "Map_28", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private IEnumerator RunTutorialEventDialogue()
+    {
+        yield return null;
+        TutorialBattleSequence.StartContinuation("Map_28", 1, 4);
+        while (TutorialBattleSequence.IsContinuationActive) yield return null;
+        tutorialEventDialoguePending = false;
+        PlayEventChoiceEntranceAnimation();
+    }
+
+    private IEnumerator RunTutorialEventChoiceGuide()
+    {
+        TutorialBattleSequence.StartContinuation("Map_28", 5, 5);
+        while (TutorialBattleSequence.IsContinuationActive) yield return null;
+        SetChoiceSlotsInteractable(true);
+    }
+
     private void OnEnable()
     {
         LocalizationSettings.SelectedLocaleChanged -= OnEventLocaleChanged;
@@ -360,7 +385,11 @@ public class EventRoomController : MonoBehaviour
         ResetTerminalChoiceVisuals();
 
         if (TryStartDataEventMode())
+        {
+            tutorialEventDialoguePending = IsTutorialEventMap();
+            if (tutorialEventDialoguePending) StartCoroutine(RunTutorialEventDialogue());
             return;
+        }
 
         SetDataEventRootVisible(false);
         SetChestRootVisible(true);
@@ -1644,6 +1673,11 @@ public class EventRoomController : MonoBehaviour
         EventChoiceSkillAwakenTarget selectedSkillAwakenTarget = default,
         int[] forcedDiceFaces = null)
     {
+        if (TutorialBattleSequence.IsContinuationActive && IsTutorialEventMap())
+        {
+            if (TutorialBattleSequence.CurrentContinuationOrder != 5) return;
+            TutorialBattleSequence.NotifyTargetSelected("event");
+        }
         SetChoiceSlotsInteractable(false);
 
         int accumulatedRemnantBeforeChoice = eventChoiceSessionState.AccumulatedRemnant;
@@ -6551,6 +6585,7 @@ public class EventRoomController : MonoBehaviour
         if (!isActiveAndEnabled || !isDataEventActive || !waitForEventEntranceReveal)
             return;
 
+        if (tutorialEventDialoguePending) return;
         waitForEventEntranceReveal = false;
         StopEventEntranceTitleRoutine();
         EnsureEventChoiceScrollCanvasGroup();
@@ -6759,6 +6794,7 @@ public class EventRoomController : MonoBehaviour
 
         SetChoiceSlotsInteractable(true);
         eventChoiceScrollMoveRoutine = null;
+        if (IsTutorialEventMap()) StartCoroutine(RunTutorialEventChoiceGuide());
     }
 
     private void EnsureNextButtonRoot()

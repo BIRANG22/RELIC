@@ -888,21 +888,21 @@ Compound_14,호문쿨루스 루어,Rare,AR_SpawnDummyGridEffect,1,1,Grid,3,선�
 Compound_15,호문쿨루스 브룸,Rare,AR_SpawnExplosiveDollGridEffect,4,1,Grid,3,선택한 빈 그리드에 브룸을 생성한다.,Item_001,Item_003,Item_006
 
 # Item
-아이템ID,레어도,이름,설명
-ItemId,Rarity,Name,Desc
-Item_001,Common,끈적한 젤,침식된 머크의 몸에서 얻은 끈적한 젤.
-Item_002,Common,말랑한 점액,형태가 쉽게 변하는 블롭의 점액.
-Item_003,Common,타오르는 코어,미약한 열기가 남아 있는 랜서의 코어.
-Item_004,Common,오염된 코어,침식의 기운이 감도는 블라이트의 코어.
-Item_005,Common,단단한 침,독성이 남아 있는 베스파의 날카로운 침.
-Item_006,Common,거미 다리,단단한 외피를 지닌 신더의 다리.
-Item_007,Common,부러진 도끼,침식과 부패의 흔적이 남은 드라우그의 도끼.
-Item_008,Common,녹슨 화살촉,변이의 기운이 남아 있는 바로우의 화살촉.
-Item_009,Rare,방패 조각,강한 충격에도 견디는 루크의 방패 파편.
-Item_010,Rare,그림자 갑주,그림자가 일렁이는 녹턴의 갑주 조각.
-Item_011,Rare,혼령석,사령술의 힘이 응축된 모르트의 결정.
-Item_012,Epic,부서진 왕관,강한 침식의 흔적이 남은 아라벨라의 왕관.
-Item_013,Unique,각성핵,강렬한 붉은 빛과 불안정한 힘이 응축된 핵.
+아이템ID,레어도,이름,설명,조건
+ItemId,Rarity,Name,Desc,RewardStage
+Item_001,Common,끈적한 젤,침식된 머크의 몸에서 얻은 끈적한 젤.,0
+Item_002,Common,말랑한 점액,형태가 쉽게 변하는 블롭의 점액.,0
+Item_003,Common,타오르는 코어,미약한 열기가 남아 있는 랜서의 코어.,0
+Item_004,Common,오염된 코어,침식의 기운이 감도는 블라이트의 코어.,0
+Item_005,Common,단단한 침,독성이 남아 있는 베스파의 날카로운 침.,0
+Item_006,Common,거미 다리,단단한 외피를 지닌 신더의 다리.,0
+Item_007,Common,부러진 도끼,침식과 부패의 흔적이 남은 드라우그의 도끼.,0
+Item_008,Common,녹슨 화살촉,변이의 기운이 남아 있는 바로우의 화살촉.,0
+Item_009,Rare,방패 조각,강한 충격에도 견디는 루크의 방패 파편.,0
+Item_010,Rare,그림자 갑주,그림자가 일렁이는 녹턴의 갑주 조각.,0
+Item_011,Rare,혼령석,사령술의 힘이 응축된 모르트의 결정.,0
+Item_012,Epic,부서진 왕관,강한 침식의 흔적이 남은 아라벨라의 왕관.,0
+Item_013,Unique,각성핵,강렬한 붉은 빛과 불안정한 힘이 응축된 핵.,1
 ,,,,
 ,,,,
 ,,,,
@@ -938,7 +938,7 @@ Erosion_03_08,무거운 발걸음,Level03_8,3,3,Erosion_03_08,Independent,이동
 # Tutorial
 튜토리얼ID,진행순서,맵ID,시작 파티,시작 침식도,시작 생명력(%),몬스터 생성 지연,단계,대화 캐릭터ID,출력,문구 키,한국어 대사/안내,넘김 방식,강조 UI,완료 안내 키,완료 안내,툴팁 위치
 TutorialId,Order,MapId,StartParty,InitialErosion,InitialHpPercent,DeferMonsterSpawn,Phase,SpeakerId,Text output,TextKey,TextKO,Advance,HighlightTarget,CompleteTextKey,CompleteTextKO,TooltipPosition
-Tutorial_01,1,Map_26,"Char_01,Char_02",42,"70,70",1,Arrival,,BattleMapIntroText,tutorial.t01.arrival,거점 인근,Auto,
+Tutorial_01,1,Map_26,"Char_01,Char_02",42,"70,70",1,Arrival,,BattleMapIntroText,tutorial.t01.arrival,거점 인근,Auto
 Tutorial_01,2,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.01,후아! 생각보다 먼 길인데? 슬슬 몸이 무거워지는걸.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,3,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.02,이러다 거점에 도착하기도 전에 지치겠어!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,4,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.03,불필요한 체력 소모는 피하시죠. 거점까지 얼마 남지 않았습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
@@ -948,12 +948,11 @@ Tutorial_01,6,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.02,"침식�
 전투불능이 되면 10 증가합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
 Tutorial_01,7,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.erosion.03,"침식도가 최대치인 100에 도달하면
 매 턴 생명력이 10씩 감소합니다.",ClickAny,Erosion,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Below
-Tutorial_01,8,Map_26,,,,,SpawnMonsters,,,,,Auto,
+Tutorial_01,8,Map_26,,,,,SpawnMonsters,,,,,Auto
 Tutorial_01,9,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.dialogue.04,변이체군요. 아무래도 그냥 지나가긴 어렵겠습니다.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,10,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.05,그럼 녀석부터 처리하고 가자!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
 Tutorial_01,11,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.01,"캐릭터 상태창에서는 생명력과 마나, 카르마를 비롯한 다양한 전투 정보를 확인할 수 있습니다.",ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
-Tutorial_01,12,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.02,"마나와 카르마는 행동에 필요한 자원입니다.
-마나는 재생량에 따라, 카르마는 매 턴 1씩 회복됩니다.",ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
+Tutorial_01,12,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.02,"마나와 카르마는 행동에 필요한 자원입니다. 마나는 재생량에 따라, 카르마는 매 턴 1씩 회복됩니다.",ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
 Tutorial_01,13,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.03,캐릭터가 장착한 유물과 룬의 정보도 각 슬롯에서 살펴볼 수 있습니다.,ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
 Tutorial_01,14,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.hud.04,현재 캐릭터에게 적용된 버프와 디버프도 상태창에 표시됩니다.,ClickAny,Char01/Back,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속,Above
 Tutorial_01,15,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.dialogue.06,좋아! 녀석이 움직이기 전에 먼저 처리해 버릴까?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
@@ -971,4 +970,20 @@ Tutorial_01,26,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.05,기억�
 Tutorial_01,27,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.06,캐릭터를 변경하면 예약할 슬롯도 자동으로 변경됩니다.,ClickTarget,BattleCharacterPanel/Char_Select/Char02,tutorial.prompt.select_char02,Tab 또는 버튼을 클릭하여 게속,Above
 Tutorial_01,28,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.07,"같은 기억을 여러 번 등록할 수도 있으며, 각각의 행동이 타임라인에 예약됩니다.",ReserveActionTwice,BattleCharacterPanel/Active/Skill01,tutorial.prompt.click_memory_twice,Q 또는 버튼을 두 번 클릭하여 계속,Above
 Tutorial_01,29,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.action.08,행동 예약을 마쳤다면 턴을 종료합니다. 그러면 등록한 행동이 순서대로 실행되며 전투가 진행됩니다.,ClickTarget,BattleCharacterPanel/EndButton,tutorial.prompt.end_turn,Space 또는 버튼을 클릭하여 계속,Above
+Tutorial_01,30,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.reward.dialogue.01,이 정도 녀석이라면 몇 마리가 덤벼도 문제없지!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,31,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.reward.dialogue.02,생각보다 수월하게 끝났군요. 유물도 챙겨 가시죠.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,32,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.reward.dialogue.03,좋았어! 이번엔 쓸 만한 게 나왔으려나?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,33,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.reward.guide.01,"전투 종료 시 다양한 보상을 획득할 수 있으며, 유물은 캐릭터에게 장착하여 특별한 효과를 얻을 수 있습니다.",ClickTarget,BattleRewardCanvas/BattleRewardPanelUI/Contant/RewardSlot,tutorial.prompt.select_reward,버튼을 클릭하여 계속,Below
+Tutorial_01,34,Map_26,,,,,Dialogue,Char_01,Dialogbox,tutorial.t01.relic.dialogue.01,"오, 이거 꽤 쓸만하겠는데? 이번엔 내가 챙길게!",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,35,Map_26,,,,,Dialogue,Char_02,Dialogbox,tutorial.t01.relic.dialogue.02,그러시죠. 제법 어울릴 것 같군요.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_01,36,Map_26,,,,,Guide,,TutorialTooltip,tutorial.t01.relic.guide.01,"캐릭터의 장착 슬롯에 유물을 장착할 수 있으며, 제한된 슬롯 안에서 유물을 조합하여 다양한 전투 전략을 구성할 수 있습니다.",ClickTarget,BattleRewardEquipPanel/Char01,tutorial.prompt.equip_relic_char01,버튼을 클릭하여 계속,Below
+Tutorial_02,1,Map_28,,,,,Dialogue,Char_03,Dialogbox,tutorial.t02.dialogue.01,저기… 혹시 어디로 가시는 길인가요?,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_02,2,Map_28,,,,,Dialogue,Char_01,Dialogbox,tutorial.t02.dialogue.02,우린 거점으로 가는 길이야!,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_02,3,Map_28,,,,,Dialogue,Char_02,Dialogbox,tutorial.t02.dialogue.03,같은 방향이라면 함께 가시죠.,ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_02,4,Map_28,,,,,Dialogue,Char_03,Dialogbox,tutorial.t02.dialogue.04,"저, 정말요? 그럼 잠깐 쉬었다 가면 안 될까요?",ClickAny,,tutorial.prompt.click_any,아무 곳이나 클릭하여 계속
+Tutorial_02,5,Map_28,,,,,Guide,,TutorialTooltip,tutorial.t02.choice.01,"탐사 중 다양한 이벤트를 마주하게 되며, 선택에 따라 보상을 얻거나 손해를 볼 수도 있습니다.",ClickTarget,EventChoiceScrollView,tutorial.prompt.select_event_choice,버튼을 클릭하여 계속,Above
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,
 
