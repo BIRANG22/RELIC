@@ -188,14 +188,65 @@ public class BattleRewardSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerE
             string.IsNullOrWhiteSpace(reward.RewardId))
             return;
 
-        DataManager data = DataManager.Instance;
-        SkillMasterData skill = data?.SkillDatabase?.Get(reward.RewardId.Trim());
-        string characterId = skill?.CharacterId?.Trim();
-        if (string.IsNullOrWhiteSpace(characterId) ||
-            string.Equals(characterId, "ALL", StringComparison.OrdinalIgnoreCase))
+        string sourceKey = reward.SourceKey ?? string.Empty;
+        int ownerMarker = sourceKey.IndexOf("|BattleOwner=", StringComparison.OrdinalIgnoreCase);
+        if (ownerMarker >= 0)
+        {
+            int start = ownerMarker + "|BattleOwner=".Length;
+            int end = sourceKey.IndexOf('|', start);
+            string assignedOwner = (end < 0 ? sourceKey.Substring(start) :
+                sourceKey.Substring(start, end - start)).Trim();
+            DataManager manager = DataManager.Instance;
+            if (markIconImage != null && manager?.CharacterIconDatabase != null &&
+                !string.IsNullOrEmpty(assignedOwner) &&
+                !string.Equals(assignedOwner, "ALL", StringComparison.OrdinalIgnoreCase) &&
+                manager.CharacterIconDatabase.TryGetMark(assignedOwner, out Sprite assignedSprite) && assignedSprite != null)
+            {
+                markIconImage.sprite = assignedSprite;
+                markIconImage.enabled = true;
+                markRoot.SetActive(true);
+            }
+            return;
+        }
+
+        // Battle memory rewards use a placeholder SkillId. The actual character
+        // is chosen later by BattleRewardSkillPanelUI.BuildOffers(). Never show
+        // the placeholder owner's mark for a random-character reward.
+        if (sourceKey.StartsWith("Skill|", StringComparison.OrdinalIgnoreCase) ||
+            sourceKey.IndexOf("|RestOffers=", StringComparison.OrdinalIgnoreCase) >= 0)
             return;
 
-        if (markIconImage == null || data?.CharacterIconDatabase == null ||
+        DataManager data = DataManager.Instance;
+        if (data?.SkillDatabase == null || data.CharacterIconDatabase == null ||
+            markIconImage == null)
+            return;
+
+        string characterId = null;
+        int offersIndex = sourceKey.IndexOf("|EventOffers=", StringComparison.OrdinalIgnoreCase);
+        if (offersIndex >= 0)
+        {
+            int start = offersIndex + "|EventOffers=".Length;
+            int end = sourceKey.IndexOf('|', start);
+            string ids = end >= 0 ? sourceKey.Substring(start, end - start) : sourceKey.Substring(start);
+            foreach (string offeredId in ids.Split(','))
+            {
+                SkillMasterData offered = data.SkillDatabase.Get(offeredId.Trim());
+                string owner = offered?.CharacterId?.Trim();
+                if (string.IsNullOrWhiteSpace(owner) ||
+                    string.Equals(owner, "ALL", StringComparison.OrdinalIgnoreCase) ||
+                    (characterId != null && !string.Equals(characterId, owner, StringComparison.OrdinalIgnoreCase)))
+                    return;
+                characterId = owner;
+            }
+        }
+        else
+        {
+            SkillMasterData skill = data.SkillDatabase.Get(reward.RewardId.Trim());
+            characterId = skill?.CharacterId?.Trim();
+        }
+
+        if (string.IsNullOrWhiteSpace(characterId) ||
+            string.Equals(characterId, "ALL", StringComparison.OrdinalIgnoreCase) ||
             !data.CharacterIconDatabase.TryGetMark(characterId, out Sprite markSprite) ||
             markSprite == null)
             return;
