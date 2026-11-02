@@ -725,6 +725,12 @@ public class BattleResultChecker : MonoBehaviour
             returnButtonRoot.SetActive(visible);
     }
 
+    // The tutorial result report closes before showing the final arrival button.
+    public bool ShowTutorialArrivalButton(System.Action onArrival)
+    {
+        return rewardPanel != null && rewardPanel.ShowArrivalAfterResult(onArrival);
+    }
+
     // NextButton is now owned exclusively by BattleRewardPanelUI.
     // It replaces the old GainButton and must not receive the legacy continue listener.
     private void BindNextButton()

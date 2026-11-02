@@ -10,6 +10,59 @@ using UnityEngine.Localization.Tables;
 
 public static class LocalizationSyncCommand
 {
+    private const string WorkbookPath = "Assets/ExcelSource/GameData.xlsx";
+    private const string SheetName = "Tutorial";
+
+    public static IReadOnlyList<LocalizationWorkbookEntry> CollectTutorialEntries()
+    {
+        IReadOnlyList<IReadOnlyList<string>> rows = LocalizationXlsxReader.ReadSheet(WorkbookPath, SheetName);
+        if (rows.Count < 2)
+            throw new InvalidOperationException("GameData Tutorial 시트의 헤더 또는 스키마 행이 없습니다.");
+
+        IReadOnlyList<string> schema = rows[1];
+        int textKey = FindColumn(schema, "TextKey");
+        int textKo = FindColumn(schema, "TextKO");
+        int completeKey = FindColumn(schema, "CompleteTextKey");
+        int completeKo = FindColumn(schema, "CompleteTextKO");
+        if (textKey < 0 || textKo < 0 || completeKey < 0 || completeKo < 0)
+            throw new InvalidOperationException("Tutorial 시트에서 TextKey/TextKO/CompleteTextKey/CompleteTextKO 열을 찾을 수 없습니다.");
+
+        var entries = new List<LocalizationWorkbookEntry>();
+        var known = new Dictionary<string, string>(StringComparer.Ordinal);
+        for (int rowIndex = 2; rowIndex < rows.Count; rowIndex++)
+        {
+            IReadOnlyList<string> row = rows[rowIndex];
+            AddEntry(row, textKey, textKo, known, entries, rowIndex + 1);
+            AddEntry(row, completeKey, completeKo, known, entries, rowIndex + 1);
+        }
+        return entries;
+    }
+
+    private static int FindColumn(IReadOnlyList<string> schema, string name)
+    {
+        for (int index = 0; index < schema.Count; index++)
+            if (string.Equals(schema[index]?.Trim(), name, StringComparison.OrdinalIgnoreCase))
+                return index;
+        return -1;
+    }
+
+    private static void AddEntry(IReadOnlyList<string> row, int keyIndex, int koIndex,
+        IDictionary<string, string> known, ICollection<LocalizationWorkbookEntry> entries, int excelRow)
+    {
+        string key = keyIndex < row.Count ? row[keyIndex]?.Trim() : null;
+        string korean = koIndex < row.Count ? row[koIndex]?.Trim() : null;
+        if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(korean))
+            return;
+        if (known.TryGetValue(key, out string previous))
+        {
+            if (!string.Equals(previous, korean, StringComparison.Ordinal))
+                UnityEngine.Debug.LogWarning($"[Localization Tutorial] {excelRow}행에서 키 '{key}'의 한국어 문구가 이전 행과 다릅니다. 최초 원문을 유지합니다.");
+            return;
+        }
+        known.Add(key, korean);
+        entries.Add(new LocalizationWorkbookEntry(key, korean));
+    }
+
     private static readonly string[] LocaleCodes = { "ko", "en", "zh-Hans", "zh-Hant", "ja", "es" };
 
     [MenuItem("Tools/Localization/고급 기능/도감 번역 동기화 (도감 전용 키 생성)")]
@@ -36,8 +89,47 @@ public static class LocalizationSyncCommand
         Debug.Log(result.ToLog());
     }
 
-    public static LocalizationSyncResult SyncTutorialLocalization() =>
-        Sync("Tutorial Localization", TutorialEntries(), Array.Empty<string>());
+    public static LocalizationSyncResult SyncTutorialLocalization()
+    {
+        LocalizationSyncResult result = Sync("Tutorial Localization", CollectTutorialEntries()
+            .Concat(TutorialEntries())
+            .GroupBy(entry => entry.Key, StringComparer.Ordinal)
+            .Select(group => group.First())
+            .ToArray(), Array.Empty<string>());
+        if (result.Success)
+        {
+            int removed = RemoveRetiredTutorialPromptKeys();
+            if (removed > 0)
+                LocalizationExcelImporter.Import();
+        }
+        return result;
+    }
+
+    // Only migrate the three prompt keys explicitly replaced by the shared prompt.
+    // Other unused localization keys are intentionally left untouched.
+    public static int RemoveRetiredTutorialPromptKeys()
+    {
+        var retiredKeys = new[]
+        {
+            "tutorial.prompt.select_reward",
+            "tutorial.prompt.equip_relic_char01",
+            "tutorial.prompt.select_event_choice"
+        };
+        var activeKeys = CollectTutorialEntries()
+            .Select(entry => entry.Key)
+            .ToHashSet(StringComparer.Ordinal);
+
+        // Do not remove an old key if the current Tutorial sheet still uses it.
+        if (!activeKeys.Contains("tutorial.prompt.continue"))
+            return 0;
+        string[] obsolete = retiredKeys.Where(key => !activeKeys.Contains(key)).ToArray();
+        if (obsolete.Length == 0)
+            return 0;
+        int removed = LocalizationWorkbookWriter.RemoveEntries(LocalizationExcelImporter.WorkbookPath, obsolete);
+        if (removed > 0)
+            Debug.Log($"[Localization Tutorial] Removed {removed} retired prompt keys after checking the current Tutorial sheet.");
+        return removed;
+    }
 
     [MenuItem("Tools/Localization/고급 기능/스킬 설정 번역 동기화 (스킬 설정 키 생성)")]
     public static void SyncSkillSettingLocalizationFromMenu()

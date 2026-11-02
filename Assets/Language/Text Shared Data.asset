@@ -7391,10 +7391,6 @@ MonoBehaviour:
     m_Key: tutorial.skip.confirm
     m_Metadata:
       m_Items: []
-  - m_Id: 29511573945163776
-    m_Key: ui.bossdemopanel.text_tmp.0763bdef
-    m_Metadata:
-      m_Items: []
   - m_Id: 29743157478662144
     m_Key: common.arrive
     m_Metadata:
@@ -7405,6 +7401,66 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 29830859968454656
     m_Key: data.item.item_013.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422303641600
+    m_Key: tutorial.t01.action.09
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361856
+    m_Key: tutorial.t01.reward.dialogue.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361857
+    m_Key: tutorial.t01.reward.dialogue.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361858
+    m_Key: tutorial.t01.reward.dialogue.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361859
+    m_Key: tutorial.t01.reward.guide.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361861
+    m_Key: tutorial.t01.relic.dialogue.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361862
+    m_Key: tutorial.t01.relic.dialogue.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361863
+    m_Key: tutorial.t01.relic.guide.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361865
+    m_Key: tutorial.t02.dialogue.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361866
+    m_Key: tutorial.t02.dialogue.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361867
+    m_Key: tutorial.t02.dialogue.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361868
+    m_Key: tutorial.t02.dialogue.04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30183422362361869
+    m_Key: tutorial.t02.choice.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30184713507545088
+    m_Key: tutorial.prompt.continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30187726976557056
+    m_Key: ui.bossdemopanel.text_tmp.0763bdef
     m_Metadata:
       m_Items: []
   m_Metadata:
