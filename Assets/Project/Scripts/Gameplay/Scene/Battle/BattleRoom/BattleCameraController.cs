@@ -59,6 +59,27 @@ public class BattleCameraController : MonoBehaviour
     [Tooltip("원거리 스킬 실행 시작 시 Z 줌에 걸리는 시간입니다.")]
     [SerializeField] private float rangedExecutionZoomDuration = 0.25f;
 
+    [Header("Combat Target Focus")]
+    [Tooltip("시전자에서 피격 대상으로 이동할 때의 부드러운 전환 시간입니다.")]
+    [SerializeField, Min(0.05f)] private float combatTargetFocusDuration = 0.38f;
+    [Tooltip("한 번의 대상 포커스 이동에서 허용할 최대 XY 거리입니다. 0이면 제한하지 않습니다.")]
+    [SerializeField, Min(0f)] private float combatTargetFocusMaxDistance = 0f;
+    [Tooltip("버프/디버프 시전자 포커스 이동에 걸리는 시간입니다. 줌 거리에는 원거리 설정을 사용합니다.")]
+    [SerializeField, Min(0.05f)] private float statusCasterFocusDuration = 0.30f;
+
+    [Header("Status Effect Zoom Pulse")]
+    [Tooltip("버프/디버프 적용 순간 화면을 살짝 확대했다가 복귀하는 연출을 사용합니다. 화면 흔들림과 히트스톱은 사용하지 않습니다.")]
+    [SerializeField] private bool enableStatusEffectZoomPulse = true;
+    [Tooltip("상태 효과 적용 시 카메라가 추가로 가까워지는 Z 거리입니다. 원근 카메라에서 사용합니다.")]
+    [SerializeField, Min(0f)] private float statusEffectPulseZOffset = 0.45f;
+    [Tooltip("직교 카메라에서 상태 효과 적용 시 줄어드는 Orthographic Size입니다.")]
+    [SerializeField, Min(0f)] private float statusEffectPulseSizeOffset = 0.20f;
+    [SerializeField, Min(0f)] private float statusEffectPulseZoomInDuration = 0.10f;
+    [SerializeField, Min(0f)] private float statusEffectPulseHoldDuration = 0.09f;
+    [SerializeField, Min(0f)] private float statusEffectPulseZoomOutDuration = 0.17f;
+    [Tooltip("실제 버프/디버프 대상이 있을 때 공격 적중 연출에 가까운 템포를 유지하는 최소 줌 펄스 시간(초)입니다. 부족한 시간은 확대 유지 구간에 추가됩니다.")]
+    [SerializeField, Min(0f)] private float statusEffectPulseMinimumDuration = 0.60f;
+
     [Header("Ranged Damage Impact")]
     [Tooltip("원거리 공격 명중 시 적용할 약한 Z 줌 거리입니다. 근거리 impactZoomZOffset과 별도로 사용합니다.")]
     [SerializeField] private float rangedImpactZoomZOffset = 0.5f;
@@ -462,6 +483,178 @@ public class BattleCameraController : MonoBehaviour
             rangedExecutionZoomDuration,
             false,
             false));
+        yield return routine;
+    }
+
+    /// <summary>
+    /// 버프/디버프는 원거리 Z 줌을 사용하지만 XY는 시전자를 향해 부드럽게 이동합니다.
+    /// </summary>
+    public IEnumerator ZoomForStatusSkill(Transform caster)
+    {
+        if (targetCamera == null || caster == null)
+            yield break;
+
+        hasActiveCombatZoom = true;
+        activeCombatFocusOwner = caster;
+        activeCombatFocusMode = CombatCameraFocusMode.Ranged;
+        ResetDamageImpactRotationSequence();
+        RemoveMouseParallax();
+        hasActiveMonsterInfoFocus = false;
+        EndZoomFollowTarget();
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        ClearImpactOffset();
+        Vector3 destination = caster.position;
+        destination.x += zoomOffset.x;
+        destination.y += zoomOffset.y;
+        destination.z = rangedExecutionZoomZPosition;
+
+        routine = StartCoroutine(MoveCamera(
+            destination,
+            targetCamera.orthographicSize,
+            Mathf.Max(0.05f, statusCasterFocusDuration),
+            false,
+            false));
+        yield return routine;
+    }
+
+    /// <summary>
+    /// 대상들의 중심으로 전투 카메라를 천천히 이동합니다. 현재 줌 깊이는 유지합니다.
+    /// 시전자 포커스와의 급격한 XY 전환을 방지합니다.
+    /// </summary>
+    public IEnumerator FocusCombatTargets(System.Collections.Generic.IReadOnlyList<Transform> targets)
+    {
+        if (targetCamera == null || targets == null || targets.Count == 0)
+            yield break;
+
+        Vector3 center = Vector3.zero;
+        int validCount = 0;
+        for (int i = 0; i < targets.Count; i++)
+        {
+            if (targets[i] == null)
+                continue;
+            center += targets[i].position;
+            validCount++;
+        }
+
+        if (validCount == 0)
+            yield break;
+
+        center /= validCount;
+        Vector3 start = targetCamera.transform.position;
+        Vector2 destinationXY = new Vector2(center.x + zoomOffset.x, center.y + zoomOffset.y);
+        Vector2 offset = destinationXY - new Vector2(start.x, start.y);
+        if (combatTargetFocusMaxDistance > 0f)
+            offset = Vector2.ClampMagnitude(offset, combatTargetFocusMaxDistance);
+
+        if (offset.sqrMagnitude < 0.0001f)
+            yield break;
+
+        RemoveMouseParallax();
+        EndZoomFollowTarget();
+        if (routine != null)
+            StopCoroutine(routine);
+        ClearImpactOffset();
+
+        Vector3 destination = new Vector3(start.x + offset.x, start.y + offset.y, start.z);
+        routine = StartCoroutine(MoveCamera(
+            destination,
+            targetCamera.orthographicSize,
+            Mathf.Max(0.05f, combatTargetFocusDuration),
+            false,
+            false));
+        yield return routine;
+    }
+
+    [Header("행동 범위 카메라 구도")]
+    [Tooltip("시전자와 모든 대상이 화면 가장자리에 닿지 않도록 확보하는 여백 비율입니다.")]
+    [SerializeField, Range(0f, 0.5f)] private float actionFramePadding = 0.20f;
+    [Tooltip("단일 대상일 때도 지나치게 확대되지 않도록 보장하는 반쪽 화면 높이(월드 단위)입니다.")]
+    [SerializeField, Min(0.1f)] private float actionFrameMinHalfHeight = 1.1f;
+
+    /// <summary>
+    /// 시전자와 실제 효과 대상 전체를 한 구도로 잡습니다.
+    /// 시전자 -> 피격자 이동 단계를 없애고, 시작 위치에서 최종 구도로 한 번만 이동합니다.
+    /// 버프/디버프는 원거리 줌을 기준으로 하며 시전자 자신이 대상에 포함되어도 추가 이동하지 않습니다.
+    /// </summary>
+    public IEnumerator ZoomForActionTargets(
+        Transform caster, System.Collections.Generic.IReadOnlyList<Transform> targets,
+        bool isStatusSkill, bool isRangedSkill)
+    {
+        if (targetCamera == null || caster == null)
+            yield break;
+
+        bool useRangedFrame = isStatusSkill || isRangedSkill;
+        hasActiveCombatZoom = true;
+        activeCombatFocusOwner = caster;
+        activeCombatFocusMode = useRangedFrame
+            ? CombatCameraFocusMode.Ranged : CombatCameraFocusMode.Melee;
+        ResetDamageImpactRotationSequence();
+        RemoveMouseParallax();
+        hasActiveMonsterInfoFocus = false;
+        EndZoomFollowTarget();
+        if (routine != null)
+            StopCoroutine(routine);
+        ClearImpactOffset();
+
+        // 시전자를 항상 포함하므로 자기 자신 버프, 대상이 없는 공격도 같은 흐름입니다.
+        float minX = caster.position.x;
+        float maxX = minX;
+        float minY = caster.position.y;
+        float maxY = minY;
+        if (targets != null)
+        {
+            for (int i = 0; i < targets.Count; i++)
+            {
+                Transform target = targets[i];
+                if (target == null)
+                    continue;
+                Vector3 p = target.position;
+                minX = Mathf.Min(minX, p.x);
+                maxX = Mathf.Max(maxX, p.x);
+                minY = Mathf.Min(minY, p.y);
+                maxY = Mathf.Max(maxY, p.y);
+            }
+        }
+
+        Vector3 destination = targetCamera.transform.position;
+        destination.x = (minX + maxX) * 0.5f + zoomOffset.x;
+        destination.y = (minY + maxY) * 0.5f + zoomOffset.y;
+
+        float desiredZ = useRangedFrame ? rangedExecutionZoomZPosition :
+            usePositionZZoom ? GetZoomZPosition() : destination.z;
+        float desiredSize = !useRangedFrame && useOrthographicSizeZoom
+            ? zoomSize : targetCamera.orthographicSize;
+
+        // 카메라 비율에 맞춰 시전자와 대상 전부를 보여줄 최소 화면 크기를 계산합니다.
+        // 원거리/상태 효과는 기존 원거리 Z를 최대 확대 한도로 사용합니다.
+        float aspect = Mathf.Max(0.1f, targetCamera.aspect);
+        float paddingFactor = 1f + Mathf.Max(0f, actionFramePadding);
+        float halfWidth = Mathf.Max(0f, (maxX - minX) * 0.5f) * paddingFactor;
+        float halfHeight = Mathf.Max(actionFrameMinHalfHeight,
+            Mathf.Max(0f, (maxY - minY) * 0.5f) * paddingFactor);
+        float requiredHalfHeight = Mathf.Max(halfHeight, halfWidth / aspect);
+        if (targetCamera.orthographic)
+        {
+            desiredSize = Mathf.Max(desiredSize, requiredHalfHeight);
+        }
+        else if (usePositionZZoom)
+        {
+            float verticalHalfFov = targetCamera.fieldOfView * Mathf.Deg2Rad * 0.5f;
+            float tanHalfFov = Mathf.Max(0.01f, Mathf.Tan(verticalHalfFov));
+            float requiredDistance = requiredHalfHeight / tanHalfFov;
+            // 더 가까이 가지 않으며, 범위가 넓으면 필요한 만큼 뒤에서 촬영합니다.
+            destination.z = Mathf.Min(desiredZ, caster.position.z - requiredDistance);
+        }
+        if (targetCamera.orthographic || !usePositionZZoom)
+            destination.z = usePositionZZoom ? desiredZ : targetCamera.transform.position.z;
+
+        float duration = useRangedFrame ? rangedExecutionZoomDuration : zoomDuration;
+        routine = StartCoroutine(MoveCamera(
+            destination, desiredSize, duration, false,
+            targetCamera.orthographic || (!useRangedFrame && useOrthographicSizeZoom)));
         yield return routine;
     }
 
@@ -1026,6 +1219,81 @@ public class BattleCameraController : MonoBehaviour
     {
         activeCombatFocusOwner = null;
         activeCombatFocusMode = CombatCameraFocusMode.None;
+    }
+
+    /// <summary>
+    /// 버프/디버프가 실제로 적용된 직후 현재 구도에서 짧게 확대했다가 복귀합니다.
+    /// 시전자/대상 간 재이동, 화면 흔들림, 히트스톱 없이 X/Y 및 회전을 유지합니다.
+    /// </summary>
+    public IEnumerator PlayStatusEffectZoomPulse()
+    {
+        if (!enableStatusEffectZoomPulse || targetCamera == null)
+            yield break;
+
+        // 다른 카메라 이동과 중첩하지 않도록 현재 구도 진입이 끝날 때까지 기다립니다.
+        if (routine != null)
+            yield return routine;
+
+        float baseSize = targetCamera.orthographicSize;
+        float baseZ = targetCamera.transform.position.z;
+        bool orthographic = targetCamera.orthographic;
+        float targetSize = orthographic
+            ? Mathf.Max(0.1f, baseSize - statusEffectPulseSizeOffset)
+            : baseSize;
+        float targetZ = orthographic
+            ? baseZ : baseZ + statusEffectPulseZOffset;
+
+        // 버프/디버프는 공격처럼 피해 히트스톱/충격 연출이 없기 때문에
+        // 기존 짧은 줌 펄스(기본 0.36초)만 재생하면 대상이 있어도 지나치게 빨리 끝납니다.
+        // 전체 구도를 유지한 채 확대 유지 시간을 보충하여 공격 적중과 유사한 템포로 맞춥니다.
+        // 이 메서드는 유효 대상이 있을 때만 호출되므로 빈 범위의 30% 빠른 종료는 유지됩니다.
+        float zoomInDuration = Mathf.Max(0f, statusEffectPulseZoomInDuration);
+        float zoomOutDuration = Mathf.Max(0f, statusEffectPulseZoomOutDuration);
+        float holdDuration = Mathf.Max(0f, statusEffectPulseHoldDuration);
+        holdDuration += Mathf.Max(0f,
+            statusEffectPulseMinimumDuration - (zoomInDuration + holdDuration + zoomOutDuration));
+        float[] durations = { zoomInDuration, holdDuration, zoomOutDuration };
+        float elapsed = 0f;
+        while (elapsed < durations[0])
+        {
+            elapsed += GetImpactDeltaTime();
+            float t = EvaluateZoomCurve(Mathf.Clamp01(elapsed / Mathf.Max(0.0001f, durations[0])));
+            ApplyStatusPulseZoom(Mathf.Lerp(baseSize, targetSize, t), Mathf.Lerp(baseZ, targetZ, t), orthographic);
+            yield return null;
+        }
+        ApplyStatusPulseZoom(targetSize, targetZ, orthographic);
+
+        elapsed = 0f;
+        while (elapsed < durations[1])
+        {
+            elapsed += GetImpactDeltaTime();
+            yield return null;
+        }
+
+        elapsed = 0f;
+        while (elapsed < durations[2])
+        {
+            elapsed += GetImpactDeltaTime();
+            float t = EvaluateZoomCurve(Mathf.Clamp01(elapsed / Mathf.Max(0.0001f, durations[2])));
+            ApplyStatusPulseZoom(Mathf.Lerp(targetSize, baseSize, t), Mathf.Lerp(targetZ, baseZ, t), orthographic);
+            yield return null;
+        }
+        ApplyStatusPulseZoom(baseSize, baseZ, orthographic);
+    }
+
+    private void ApplyStatusPulseZoom(float size, float z, bool orthographic)
+    {
+        if (targetCamera == null)
+            return;
+
+        if (orthographic)
+            targetCamera.orthographicSize = size;
+        else
+        {
+            Vector3 position = targetCamera.transform.position;
+            position.z = z;
+            targetCamera.transform.position = position;
+        }
     }
 
     public IEnumerator PlayDamageImpact()

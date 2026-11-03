@@ -76,7 +76,8 @@ public class BattleActionRunner
     private const float ActionDelay = 0.03f;
     private const float GroupedActionBeatDelay = 0.12f;
     private const float BatchEndDelay = 0.03f;
-    private const float NoInteractionPostDelay = 0.12f;
+    // 유효 대상이 없는 행동의 후속 대기는 일반 행동(0.45 + 0.03초)보다 30% 짧게 유지합니다.
+    private const float NoInteractionPostDelay = 0.336f;
 
     private const float HitCameraDelay = 0.08f;
     private const float MonsterHUDVisibleDelay = 0.45f;
@@ -248,7 +249,11 @@ public class BattleActionRunner
         if (ArabellaPhaseTransition.TurnInterruptVersion != phaseVersion)
             yield break;
 
-        if (holdCameraDuringBatch && !keepCameraAfterBatch && BattleCameraController.Instance != null)
+        // 다음 행동과 이어지지 않는 슬롯은 타임라인이 이동하기 전에 카메라와
+        // BattleEffect 회전을 함께 복귀시킵니다. 빈 슬롯 이동 중 기울어진 화면이 남지 않게 합니다.
+        if (!keepCameraAfterBatch && BattleCameraController.Instance != null &&
+            (BattleCameraController.Instance.IsCombatZoomActive ||
+             BattleEffectPlaneRotation.HasActiveAttackRotationFeedback()))
         {
             BattleCameraController.Instance.SetHoldDefaultReturn(false);
             yield return BattleCameraController.Instance.ReturnDefault();
@@ -1984,10 +1989,23 @@ public class BattleActionRunner
 
             if (ShouldPlayerSkillTargetPlayerParty(command))
             {
-                if (ShouldEnterCameraForActiveAction() &&
-                    ShouldSkipPlayerSkillCamera(command) &&
-                    BattleCameraController.Instance != null)
-                    yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
+                if (ShouldEnterCameraForActiveAction() && BattleCameraController.Instance != null)
+                {
+                    List<Transform> recipients = new();
+                    BattleCharacter[] focusCharacters = Object.FindObjectsByType<BattleCharacter>(
+                        FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+                    foreach (BattleCharacter candidate in focusCharacters)
+                    {
+                        if (candidate != null && candidate.RuntimeData != null &&
+                            !candidate.RuntimeData.IsDead &&
+                            command.RangeGridIndices != null &&
+                            command.RangeGridIndices.Contains(candidate.CurrentGridIndex))
+                            recipients.Add(candidate.transform);
+                    }
+                    yield return BattleCameraController.Instance.ZoomForActionTargets(
+                        attacker.transform, recipients, IsPlayerStatusSkill(command),
+                        ShouldSkipPlayerSkillCamera(command));
+                }
 
                 if (attackerAnimator != null)
                 {
@@ -2043,7 +2061,11 @@ public class BattleActionRunner
                 }
 
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(GetActiveActionBeatDelay());
+                // 범위에 아군이 없으면 줌 펄스를 생략하고 미적중 속도로 진행합니다.
+                if (IsPlayerStatusSkill(command) && HasPlayerPartyTarget(command))
+                    yield return PlayStatusEffectCameraFeedback();
+                else
+                    yield return new WaitForSeconds(GetActiveActionBeatDelay());
 
                 yield return ReturnCameraAfterActiveActionIfNeeded();
 
@@ -2052,10 +2074,13 @@ public class BattleActionRunner
 
             if (ShouldPlayerSkillTargetSelf(command))
             {
-                if (ShouldEnterCameraForActiveAction() &&
-                    ShouldSkipPlayerSkillCamera(command) &&
-                    BattleCameraController.Instance != null)
-                    yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
+                if (ShouldEnterCameraForActiveAction() && BattleCameraController.Instance != null)
+                {
+                    if (IsPlayerStatusSkill(command))
+                        yield return BattleCameraController.Instance.ZoomForStatusSkill(attacker.transform);
+                    else if (ShouldSkipPlayerSkillCamera(command))
+                        yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
+                }
 
                 if (attackerAnimator != null)
                 {
@@ -2087,7 +2112,10 @@ public class BattleActionRunner
                 ExecutePlayerSkillEffectsToPlayer(attacker, attacker, command);
 
                 hudService.RefreshHUDs();
-                yield return new WaitForSeconds(GetActiveActionBeatDelay());
+                if (IsPlayerStatusSkill(command))
+                    yield return PlayStatusEffectCameraFeedback();
+                else
+                    yield return new WaitForSeconds(GetActiveActionBeatDelay());
 
                 yield return ReturnCameraAfterActiveActionIfNeeded();
 
@@ -2117,19 +2145,17 @@ public class BattleActionRunner
 
             List<int> gridEffectTargets = BuildDamageableGridEffectTargets(command);
 
-            if (ShouldEnterCameraForActiveAction() &&
-                ShouldSkipPlayerSkillCamera(command) &&
-                BattleCameraController.Instance != null)
+            if (ShouldEnterCameraForActiveAction() && BattleCameraController.Instance != null)
             {
-                yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
-            }
-            else if (ShouldEnterCameraForActiveAction() &&
-                     hitTargets.Count > 0 &&
-                     BattleCameraController.Instance != null)
-            {
-                yield return BattleCameraController.Instance.ZoomToAttacker(attacker.transform);
-            }
+                List<Transform> focusTargets = new();
+                foreach (MonsterUnit target in hitTargets)
+                    if (target != null && target.RuntimeData != null && !target.RuntimeData.IsDead)
+                        focusTargets.Add(target.transform);
 
+                yield return BattleCameraController.Instance.ZoomForActionTargets(
+                    attacker.transform, focusTargets, IsPlayerStatusSkill(command),
+                    ShouldSkipPlayerSkillCamera(command));
+            }
 
             if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
             {
@@ -2148,6 +2174,11 @@ public class BattleActionRunner
                 gridEffectTargets,
                 command,
                 attackerAnimator);
+
+            // 범위에 실제 대상이 없는 버프/디버프는 공격 미적중과 동일하게
+            // 짧게 종료합니다. 대상이 있다면 기존 줌 펄스와 연출 속도를 유지합니다.
+            if (IsPlayerStatusSkill(command) && hitTargets.Count > 0)
+                yield return PlayStatusEffectCameraFeedback();
 
             hudService.RefreshHUDs();
 
@@ -4831,19 +4862,39 @@ public class BattleActionRunner
         ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
         try
         {
-            if (ShouldEnterCameraForActiveAction() &&
-                ShouldSkipMonsterSkillCamera(command) &&
-                BattleCameraController.Instance != null)
+            if (ShouldEnterCameraForActiveAction() && BattleCameraController.Instance != null)
             {
-                yield return BattleCameraController.Instance.ZoomForRangedSkill(monster.transform);
+                List<Transform> focusTargets = new();
+                BattleCharacter[] potentialTargets = Object.FindObjectsByType<BattleCharacter>(
+                    FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+                foreach (BattleCharacter target in potentialTargets)
+                {
+                    if (target != null && target.RuntimeData != null && !target.RuntimeData.IsDead &&
+                        command.RangeGridIndices != null &&
+                        command.RangeGridIndices.Contains(target.CurrentGridIndex))
+                        focusTargets.Add(target.transform);
+                }
+                // 아군 몬스터를 대상으로 하는 버프도 실제 범위의 몬스터를 추적합니다.
+                if (IsMonsterStatusSkill(command) &&
+                    command.SkillData.Target == TargetType.EnemyParty)
+                {
+                    MonsterUnit[] monsterRecipients = Object.FindObjectsByType<MonsterUnit>(
+                        FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+                    foreach (MonsterUnit recipient in monsterRecipients)
+                    {
+                        if (recipient != null && recipient.RuntimeData != null &&
+                            !recipient.RuntimeData.IsDead &&
+                            command.RangeGridIndices != null &&
+                            command.RangeGridIndices.Contains(recipient.MainGridIndex))
+                            focusTargets.Add(recipient.transform);
+                    }
+                }
+                if (focusTargets.Count == 0 && firstPlayerTarget != null)
+                    focusTargets.Add(firstPlayerTarget.transform);
+                yield return BattleCameraController.Instance.ZoomForActionTargets(
+                    monster.transform, focusTargets, IsMonsterStatusSkill(command),
+                    ShouldSkipMonsterSkillCamera(command));
             }
-            else if (ShouldEnterCameraForActiveAction() &&
-                     firstPlayerTarget != null &&
-                     BattleCameraController.Instance != null)
-            {
-                yield return BattleCameraController.Instance.ZoomToAttacker(monster.transform);
-            }
-
 
             // 카메라의 공격자 포커스 후 기울기와 공격 애니메이션을 함께 시작합니다.
             BeginAttackPlaneFeedbackIfNeeded(
@@ -4873,6 +4924,11 @@ public class BattleActionRunner
                 else
                     yield return new WaitForSeconds(GetActiveActionBeatDelay());
             }
+
+            // 상태 효과를 실제로 받는 유닛이 있을 때만 줌 펄스를 사용합니다.
+            // 빈 범위는 공격 미적중처럼 빠르게 다음 행동으로 넘어갑니다.
+            if (IsMonsterStatusSkill(command) && MonsterCommandHasInteraction(command))
+                yield return PlayStatusEffectCameraFeedback();
 
             // 신더의 자폭은 공격 효과 적용이 끝난 후 자신을 제거합니다.
             // 일반 처치가 아니므로 분열 등 고유 사망 시 효과와 처치 보상은 발생하지 않습니다.
@@ -5455,6 +5511,27 @@ public class BattleActionRunner
             return;
 
         BattleEffectPlaneRotation.EndAttackRotationFeedback();
+    }
+
+    private static IEnumerator PlayStatusEffectCameraFeedback()
+    {
+        if (BattleCameraController.Instance != null)
+            yield return BattleCameraController.Instance.PlayStatusEffectZoomPulse();
+    }
+
+    private static bool IsPlayerStatusSkill(PlayerReservedCommand command)
+    {
+        return command != null && command.SkillData != null &&
+            (command.SkillData.SkillType == SkillType.Buff ||
+             command.SkillData.SkillType == SkillType.Debuff);
+    }
+
+    private static bool IsMonsterStatusSkill(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return false;
+        return command.SkillData.TimelineNotation == TimelineActionType.Buff ||
+               command.SkillData.TimelineNotation == TimelineActionType.Debuff;
     }
 
     private static bool ShouldSkipPlayerSkillCamera(PlayerReservedCommand command)
