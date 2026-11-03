@@ -451,7 +451,7 @@ public class OptionPanelUI : MonoBehaviour
         }
 
         if (battlePresentationSpeedLabel != null)
-            battlePresentationSpeedLabel.text = $"{BattlePresentationSpeedSettings.CurrentMultiplier:0.0}x";
+            battlePresentationSpeedLabel.text = $"{BattlePresentationSpeedSettings.CurrentDisplayMultiplier:0.0}X";
         else
             Debug.LogWarning("[BattlePresentationSpeed] Speed label reference is missing.", this);
     }

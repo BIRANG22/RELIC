@@ -610,6 +610,16 @@ public class BattleTurnExecutor : MonoBehaviour
                 if (!skipRemainingPhaseActions)
                     yield return runner.RunBatch(batch, keepCameraAfterBatch);
 
+                // 슬롯 경계에서는 연속 행동 그룹의 카메라 유지보다 복귀를 우선합니다.
+                // 다단히트와 같은 슬롯 내 즉시 반격에는 적용하지 않습니다.
+                if (!skipRemainingPhaseActions && !keepCameraAfterBatch &&
+                    BattleCameraController.Instance != null &&
+                    BattleCameraController.Instance.IsCombatZoomActive)
+                {
+                    BattleCameraController.Instance.SetHoldDefaultReturn(false);
+                    yield return BattleCameraController.Instance.ReturnDefault();
+                }
+
                 if (!skipRemainingPhaseActions && ArabellaPhaseTransition.TurnInterruptVersion != phaseVersion)
                 {
                     // 현재 스킬을 끝까지 처리한 후 전환하고, 이후 예약은 회색으로 지나갑니다.
@@ -916,6 +926,16 @@ public class BattleTurnExecutor : MonoBehaviour
 
                 if (!skipRemainingPhaseActions)
                     yield return runner.RunBatch(batch, keepCameraAfterBatch);
+
+                // 슬롯 경계에서는 연속 행동 그룹의 카메라 유지보다 복귀를 우선합니다.
+                // 다단히트와 같은 슬롯 내 즉시 반격에는 적용하지 않습니다.
+                if (!skipRemainingPhaseActions && !keepCameraAfterBatch &&
+                    BattleCameraController.Instance != null &&
+                    BattleCameraController.Instance.IsCombatZoomActive)
+                {
+                    BattleCameraController.Instance.SetHoldDefaultReturn(false);
+                    yield return BattleCameraController.Instance.ReturnDefault();
+                }
 
                 if (!skipRemainingPhaseActions && ArabellaPhaseTransition.TurnInterruptVersion != phaseVersion)
                 {
@@ -1869,13 +1889,25 @@ public class BattleTurnExecutor : MonoBehaviour
 
         BattleActionBatch nextBatch = batches[nextExecutableBatchIndex];
 
-        // 빈 타임라인 슬롯을 건너뛰는 행동은 연속 공격이 아닙니다.
-        // 그 사이에 BattleEffect 기울기나 전투 줌을 유지하지 않습니다.
+        // 슬롯이 바뀌면 같은 캐릭터라도 별도의 행동 연출입니다.
+        // 4번 슬롯에서 5번 슬롯으로 넘어갈 때도 줌과 회전을 복귀시킵니다.
         int currentBatchIndex = Mathf.Max(0, nextStartIndex - 1);
         int currentSlotIndex = GetBatchTimelineSlotIndex(currentBatch, currentBatchIndex);
         int nextSlotIndex = GetBatchTimelineSlotIndex(nextBatch, nextExecutableBatchIndex);
-        if (nextSlotIndex > currentSlotIndex + 1)
+        if (nextSlotIndex != currentSlotIndex)
             return false;
+
+        // 서로 다른 플레이어 캐릭터의 행동은 연속 줌/회전 상태를 공유하지 않는다.
+        // 현재 캐릭터의 연출을 복귀시킨 다음 다음 캐릭터의 연출을 시작한다.
+        // 한 캐릭터의 다단히트나 동일 캐릭터 연속 행동에는 영향을 주지 않는다.
+        string currentPlayerCharacterId = GetSinglePlayerCharacterId(currentBatch);
+        string nextPlayerCharacterId = GetSinglePlayerCharacterId(nextBatch);
+        if (!string.IsNullOrEmpty(currentPlayerCharacterId) &&
+            !string.IsNullOrEmpty(nextPlayerCharacterId) &&
+            !string.Equals(currentPlayerCharacterId, nextPlayerCharacterId, StringComparison.Ordinal))
+        {
+            return false;
+        }
 
         if (consecutiveActionPlan != null &&
             consecutiveActionPlan.ContinuesAcrossBoundary(currentBatch, nextBatch))
@@ -1903,6 +1935,30 @@ public class BattleTurnExecutor : MonoBehaviour
         }
 
         return true;
+    }
+
+    private string GetSinglePlayerCharacterId(BattleActionBatch batch)
+    {
+        if (batch == null || batch.PlayerCommands == null)
+            return string.Empty;
+
+        string characterId = string.Empty;
+        for (int i = 0; i < batch.PlayerCommands.Count; i++)
+        {
+            PlayerReservedCommand command = batch.PlayerCommands[i];
+            if (!IsExecutablePlayerCommand(command))
+                continue;
+
+            if (string.IsNullOrEmpty(command.CharacterId))
+                return string.Empty;
+
+            if (string.IsNullOrEmpty(characterId))
+                characterId = command.CharacterId;
+            else if (!string.Equals(characterId, command.CharacterId, StringComparison.Ordinal))
+                return string.Empty;
+        }
+
+        return characterId;
     }
 
     private string GetSingleMonsterRuntimeId(BattleActionBatch batch)
