@@ -12,6 +12,13 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private float zoomSize = 3.7f;
     [SerializeField] private float zoomDuration = 0.3f;
     [SerializeField] private float returnDuration = 0.3f;
+
+    [Header("BattleEffect 복귀 선행")]
+    [Tooltip("공격 연출 종료 시 BattleEffect 회전이 카메라 줌아웃보다 먼저 복귀하기 시작하는 시간(초)입니다. 0이면 동시 시작합니다.")]
+    [SerializeField, Min(0f)] private float battleEffectReturnLeadTime = 0.05f;
+
+    private float activeBattleEffectReturnLeadProgress;
+
     [SerializeField] private Vector2 zoomOffset = new Vector2(0f, 0.35f);
     [SerializeField] private bool usePositionZZoom = true;
     [SerializeField] private bool useFixedZoomZPosition = true;
@@ -701,6 +708,7 @@ public class BattleCameraController : MonoBehaviour
         targetCamera.transform.position = mapPosition;
         targetCamera.transform.rotation = Quaternion.identity;
         targetCamera.orthographicSize = defaultSize;
+        BattleEffectPlaneRotation.UpdateCameraReturnFeedback(1f);
         hasActiveCombatZoom = false;
         ResetCombatFocusTracking();
         ResetDamageImpactRotationSequence();
@@ -802,6 +810,7 @@ public class BattleCameraController : MonoBehaviour
         targetCamera.transform.position = GetNeutralBattlePosition();
         targetCamera.transform.rotation = Quaternion.identity;
         targetCamera.orthographicSize = defaultSize;
+        BattleEffectPlaneRotation.UpdateCameraReturnFeedback(1f);
         hasActiveCombatZoom = false;
         ResetCombatFocusTracking();
         ResetDamageImpactRotationSequence();
@@ -905,6 +914,33 @@ public class BattleCameraController : MonoBehaviour
     /// 전투 종료 시 씬 기본 카메라 위치로 부드럽게 돌아갑니다.
     /// 인트로 텍스트와 결과 패널은 이 코루틴 종료 후 표시합니다.
     /// </summary>
+    private IEnumerator BeginBattleEffectReturnWithLead(float cameraDuration)
+    {
+        activeBattleEffectReturnLeadProgress = 0f;
+        bool hasEffect = BattleEffectPlaneRotation.HasActiveAttackRotationFeedback();
+        BattleEffectPlaneRotation.BeginCameraReturnFeedback(cameraDuration, zoomCurve);
+        if (!hasEffect || cameraDuration <= 0f || battleEffectReturnLeadTime <= 0f)
+            yield break;
+
+        float lead = Mathf.Min(battleEffectReturnLeadTime, cameraDuration * 0.5f);
+        float elapsed = 0f;
+        while (elapsed < lead)
+        {
+            elapsed += GetCameraDeltaTime();
+            float t = Mathf.Clamp01(elapsed / lead);
+            float leadFraction = lead / (cameraDuration + lead);
+            activeBattleEffectReturnLeadProgress = leadFraction;
+            BattleEffectPlaneRotation.UpdateCameraReturnFeedback(EvaluateZoomCurve(t * leadFraction));
+            yield return null;
+        }
+    }
+
+    private void UpdateBattleEffectReturnAlongCamera(float cameraProgress)
+    {
+        float t = Mathf.Lerp(activeBattleEffectReturnLeadProgress, 1f, Mathf.Clamp01(cameraProgress));
+        BattleEffectPlaneRotation.UpdateCameraReturnFeedback(EvaluateZoomCurve(t));
+    }
+
     public IEnumerator ReturnSceneStartSmooth()
     {
         if (targetCamera == null)
@@ -938,6 +974,7 @@ public class BattleCameraController : MonoBehaviour
             destination.z = startPosition.z;
 
         float duration = Mathf.Max(0f, returnDuration);
+        yield return BeginBattleEffectReturnWithLead(duration);
         float elapsed = 0f;
         while (elapsed < duration)
         {
@@ -946,6 +983,7 @@ public class BattleCameraController : MonoBehaviour
             float eased = EvaluateZoomCurve(t);
             targetCamera.transform.position = Vector3.Lerp(startPosition, destination, eased);
             targetCamera.orthographicSize = Mathf.Lerp(startSize, defaultSize, eased);
+            UpdateBattleEffectReturnAlongCamera(t);
             yield return null;
         }
 
@@ -973,7 +1011,9 @@ public class BattleCameraController : MonoBehaviour
         ApplyCameraRotationZ(0f);
         ResetDamageImpactRotationSequence();
 
-        routine = StartCoroutine(MoveCamera(GetNeutralBattlePosition(), defaultSize, returnDuration, false, true));
+        // BattleEffect의 복귀 시작과 줌아웃의 길이/곡선을 일치시킵니다.
+        yield return BeginBattleEffectReturnWithLead(returnDuration);
+        routine = StartCoroutine(MoveCamera(GetNeutralBattlePosition(), defaultSize, returnDuration, false, true, true));
         yield return routine;
 
         ApplyCameraRotationZ(0f);
@@ -1154,7 +1194,8 @@ public class BattleCameraController : MonoBehaviour
         float targetSize,
         float duration,
         bool clampPosition = true,
-        bool applyOrthographicSize = false)
+        bool applyOrthographicSize = false,
+        bool synchronizePlaneReturn = false)
     {
         Vector3 startPos = targetCamera.transform.position;
         float startSize = targetCamera.orthographicSize;
@@ -1168,6 +1209,8 @@ public class BattleCameraController : MonoBehaviour
 
             if (applyOrthographicSize)
                 targetCamera.orthographicSize = targetSize;
+            if (synchronizePlaneReturn)
+                BattleEffectPlaneRotation.UpdateCameraReturnFeedback(1f);
             routine = null;
             yield break;
         }
@@ -1189,6 +1232,8 @@ public class BattleCameraController : MonoBehaviour
                     Mathf.Lerp(startSize, targetSize, curvedT);
             }
 
+            if (synchronizePlaneReturn)
+                UpdateBattleEffectReturnAlongCamera(t);
             yield return null;
         }
 
@@ -1196,6 +1241,8 @@ public class BattleCameraController : MonoBehaviour
 
         if (applyOrthographicSize)
             targetCamera.orthographicSize = targetSize;
+        if (synchronizePlaneReturn)
+            BattleEffectPlaneRotation.UpdateCameraReturnFeedback(1f);
         routine = null;
     }
 
@@ -1791,6 +1838,7 @@ public class BattleCameraController : MonoBehaviour
         zoomSize = Mathf.Max(0.1f, zoomSize);
         zoomDuration = Mathf.Max(0f, zoomDuration);
         returnDuration = Mathf.Max(0f, returnDuration);
+        battleEffectReturnLeadTime = Mathf.Max(0f, battleEffectReturnLeadTime);
         zoomZOffset = Mathf.Max(0f, zoomZOffset);
         impactZoomAmount = Mathf.Max(0f, impactZoomAmount);
         impactZoomZOffset = Mathf.Max(0f, impactZoomZOffset);

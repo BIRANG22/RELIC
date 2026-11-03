@@ -36,8 +36,8 @@ public class BattleGridEffectController : MonoBehaviour
 
     [Header("Damage Feedback")]
     [SerializeField] private bool shakeDamageableEffects = true;
-    [SerializeField, Min(0f)] private float damageShakeDistance = 0.32f;
-    [SerializeField, Min(0.01f)] private float damageShakeDuration = 0.26f;
+    [SerializeField, Min(0f)] private float damageShakeDistance = 0.12f;
+    [SerializeField, Min(0.01f)] private float damageShakeDuration = 0.20f;
 
     [Header("World VFX Proxy")]
     [SerializeField] private bool playWorldVfxProxies = true;
@@ -51,6 +51,7 @@ public class BattleGridEffectController : MonoBehaviour
     private readonly Dictionary<int, GameObject> viewsByGridIndex = new();
     private readonly Dictionary<int, GridEffectHpUI> hpUiByGridIndex = new();
     private readonly Dictionary<int, Coroutine> hitShakeRoutines = new();
+    private readonly Dictionary<int, Vector3> hitShakeIdlePositions = new();
     private BattleGridEffectService service;
     private GridEffectSpriteDatabase prefabDatabase;
 
@@ -362,8 +363,19 @@ public class BattleGridEffectController : MonoBehaviour
 
         if (shakeDamageableEffects && viewsByGridIndex.TryGetValue(gridIndex, out GameObject damagedView) && damagedView != null && isActiveAndEnabled && Application.isPlaying)
         {
+            // 연속 피격 중에는 이전 코루틴의 중간 위치를 기준점으로 삼지 않습니다.
             if (hitShakeRoutines.TryGetValue(gridIndex, out Coroutine oldRoutine) && oldRoutine != null)
+            {
                 StopCoroutine(oldRoutine);
+                hitShakeRoutines.Remove(gridIndex);
+            }
+
+            if (!hitShakeIdlePositions.TryGetValue(gridIndex, out Vector3 idlePosition))
+            {
+                idlePosition = damagedView.transform.localPosition;
+                hitShakeIdlePositions[gridIndex] = idlePosition;
+            }
+            damagedView.transform.localPosition = idlePosition;
 
             // Destroyed objects stay visible only for the short hit feedback.
             if (destroyed)
@@ -388,21 +400,21 @@ public class BattleGridEffectController : MonoBehaviour
             yield break;
 
         Transform visual = view.transform;
-        Vector3 originalPosition = visual.localPosition;
+        if (!hitShakeIdlePositions.TryGetValue(gridIndex, out Vector3 originalPosition))
+        {
+            originalPosition = visual.localPosition;
+            hitShakeIdlePositions[gridIndex] = originalPosition;
+        }
+
         float elapsed = 0f;
-        // Upgrade the previous serialized defaults so existing scene settings are visible too.
-        float distance = Mathf.Approximately(damageShakeDistance, 0.09f)
-            ? 0.32f
-            : damageShakeDistance;
-        float duration = Mathf.Approximately(damageShakeDuration, 0.16f)
-            ? 0.26f
-            : Mathf.Max(0.01f, damageShakeDuration);
+        float distance = Mathf.Max(0f, damageShakeDistance);
+        float duration = Mathf.Max(0.01f, damageShakeDuration);
         while (elapsed < duration && view != null)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
-            float damping = Mathf.Pow(1f - t, 0.65f);
-            float offset = Mathf.Sin(t * Mathf.PI * 8f) * distance * damping;
+            float damping = (1f - t) * (1f - t);
+            float offset = Mathf.Sin(t * Mathf.PI * 6f) * distance * damping;
             visual.localPosition = originalPosition + Vector3.right * offset;
             yield return null;
         }
@@ -835,6 +847,7 @@ public class BattleGridEffectController : MonoBehaviour
         PlayWorldVfxProxies(view, view.transform.position);
 
         viewsByGridIndex[placement.GridIndex] = view;
+        hitShakeIdlePositions[placement.GridIndex] = view.transform.localPosition;
         SpawnHpUi(placement.GridIndex, placement.GridEffectId, view);
     }
 
@@ -1112,6 +1125,12 @@ public class BattleGridEffectController : MonoBehaviour
                 StopCoroutine(shakeRoutine);
         }
 
+        if (viewsByGridIndex.TryGetValue(gridIndex, out GameObject shakingView) && shakingView != null &&
+            hitShakeIdlePositions.TryGetValue(gridIndex, out Vector3 savedIdlePosition))
+        {
+            shakingView.transform.localPosition = savedIdlePosition;
+        }
+        hitShakeIdlePositions.Remove(gridIndex);
         RemoveHpUi(gridIndex);
 
         if (!viewsByGridIndex.TryGetValue(gridIndex, out GameObject view))
@@ -1152,5 +1171,7 @@ public class BattleGridEffectController : MonoBehaviour
 
         viewsByGridIndex.Clear();
         hpUiByGridIndex.Clear();
+        hitShakeIdlePositions.Clear();
+        hitShakeRoutines.Clear();
     }
 }
