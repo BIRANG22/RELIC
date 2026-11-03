@@ -238,51 +238,52 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         boundMonster = monster;
         boundRuntime = monster.RuntimeData;
 
-        // 몬스터를 클릭한 순간부터 BattleCharacterPanel/BattleSlot이 내려가는 동작과
-        // 카메라 포커스를 동시에 진행합니다. MonsterInfoPanel 자체는 아직 표시하지 않고,
-        // 두 전투 UI가 내려간 뒤에만 활성화/페이드인합니다.
+        // 캐릭터 정보 패널처럼 선택과 동시에 카메라 이동 및 패널 표시를 시작합니다.
         FocusCameraOnMonster(monster);
-
-        // 몬스터를 클릭한 순간에는 MonsterInfoPanel을 화면에 띄우지 않습니다.
-        // 먼저 기존 BattleCharacterPanel/BattleSlot의 선택 전환 이동을 끝낸 뒤
-        // RevealAfterBattleUiMovementRoutine에서 활성화하고 페이드인합니다.
-        if (monsterInfoPanel != null)
-            monsterInfoPanel.SetActive(false);
-
-        EnsureCanvasGroup();
-        SetCanvasGroupHiddenImmediate();
+        StopRevealCoroutine();
 
         RefreshMonsterName();
-
         ConfigurePreview(boundRuntime.MonsterId);
-
         RebuildSkills();
         RebuildStatusEffects();
         lastStatusSignature = CalculateStatusSignature(boundRuntime.StatusEffects, boundRuntime.CurrentShield);
 
-        StopRevealCoroutine();
-        if (isActiveAndEnabled)
-        {
-            revealCoroutine = StartCoroutine(RevealAfterBattleUiMovementRoutine());
-        }
-        else
-        {
-            if (monsterInfoPanel != null)
-                monsterInfoPanel.SetActive(true);
-            Canvas.ForceUpdateCanvases();
-            RefreshBlurReplica();
-            StartPreviewAnimation();
-            SetCanvasGroupVisibleImmediate();
-        }
+        RestoreErosionVisual();
+        if (monsterInfoPanel != null)
+            monsterInfoPanel.SetActive(true);
+        Canvas.ForceUpdateCanvases();
+        RefreshBlurReplica();
+        StartPreviewAnimation();
+        EnsureCanvasGroup();
+        SetCanvasGroupVisibleImmediate();
     }
 
     public void Close()
     {
-        // 몬스터 선택 상태까지 함께 해제해 기존 공격 범위/선택 표시도 정상적으로 정리합니다.
+        // 먼저 몬스터 선택과 패널을 닫은 뒤 이전 캐릭터 선택을 복원합니다.
+        // 이벤트 처리 도중 즉시 캐릭터를 고르면 UI 갱신 순서에 따라 다시 해제될 수 있습니다.
+        bool hadMonsterInfo = HasPanelContextActive();
         if (MonsterUnit.CurrentInfoSelectedMonster != null)
             MonsterUnit.ClearMonsterInfoSelection();
         else
             HidePanelOnly();
+
+        if (hadMonsterInfo && isActiveAndEnabled)
+            StartCoroutine(RestoreCharacterSelectionNextFrame());
+    }
+
+    private IEnumerator RestoreCharacterSelectionNextFrame()
+    {
+        yield return null;
+
+        // 이미 다른 몬스터를 열었다면 이전 캐릭터로 되돌리지 않습니다.
+        if (MonsterUnit.CurrentInfoSelectedMonster != null)
+            yield break;
+
+        BattleTimelineController timeline = FindFirstObjectByType<BattleTimelineController>(
+            FindObjectsInactive.Exclude);
+        if (timeline != null && timeline.IsPlayerReservationInputActive)
+            timeline.RestoreLastSelectedCharacterAfterMonsterInfo();
     }
 
     private void HandleMonsterInfoSelectionChanged(MonsterUnit monster)

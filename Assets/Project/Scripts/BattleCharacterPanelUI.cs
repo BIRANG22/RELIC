@@ -800,7 +800,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (!HasAnyInfoSelection())
         {
-            MovePanelAndBattleSlotToDefault();
+            // 캐릭터 선택 해제만으로 BattleCharacterPanel/BattleSlot을 내리지 않습니다.
+            // 실제 전투 실행 또는 턴 전환에서만 패널 위치를 변경합니다.
             return;
         }
 

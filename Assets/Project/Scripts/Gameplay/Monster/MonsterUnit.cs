@@ -303,6 +303,13 @@ namespace Relic.Gameplay.Monster
 
         private void ShowStatusHoverTooltip()
         {
+            // Monster information takes priority over world-space status hover tooltips.
+            if (infoSelectedMonster != null)
+            {
+                HideStatusHoverTooltip();
+                return;
+            }
+
             if (!showStatusTooltipOnHover)
                 return;
 
@@ -414,6 +421,8 @@ namespace Relic.Gameplay.Monster
             }
 
             infoSelectedMonster = this;
+            // Hide the currently hovered status item immediately, even if the pointer stays on this monster.
+            HideStatusHoverTooltip();
             BattleTimelineController.ClearCurrentCharacterSelection();
 
             // 몬스터 정보 선택 시 기존 캐릭터 선택용 카메라 포커스를 실행하지 않습니다.
@@ -429,6 +438,10 @@ namespace Relic.Gameplay.Monster
 
         private void OnMouseEnter()
         {
+            // Do not show status tooltips for any monster while a monster info panel is open.
+            if (infoSelectedMonster != null)
+                return;
+
             if (TutorialBattleSequence.IsPresentationRunning)
                 return;
 
