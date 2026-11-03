@@ -173,7 +173,7 @@ MonoBehaviour:
       proxySortingOrderOffset: 0
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
-  - EffectId: E_Barrier
+  - EffectId: E_Ambush
     Vfx:
       prefab: {fileID: 886670325575884253, guid: ac0b147ebdfd0424a936698571c462bf, type: 3}
       flipType: 0
