@@ -1161,7 +1161,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Ability_03
-    vfxPrefab: {fileID: 6814607968632299061, guid: cd098c4abf4c0094b9c18e2d5c90dfe0, type: 3}
+    vfxPrefab: {fileID: 6814607968632299061, guid: d9e677191abd37b4ea44b0c2a095d363, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: cf61ffb1f8ecb496886da1d7eaeb3082, type: 3}
       delay: 0
@@ -1221,7 +1221,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Ability_05
-    vfxPrefab: {fileID: 5464498477634507533, guid: d9e677191abd37b4ea44b0c2a095d363, type: 3}
+    vfxPrefab: {fileID: 5464498477634507533, guid: 7d62d8b59c052e74f841fe794b1df8a6, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
       delay: 0
@@ -1374,7 +1374,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_03
-    vfxPrefab: {fileID: 8776789016844861869, guid: 1396847cc4c493340a193e57c9610278, type: 3}
+    vfxPrefab: {fileID: 8776789016844861869, guid: b9ce7c7e10f3c9846ab377c3b72c10d8, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
       delay: 0
@@ -1434,7 +1434,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_05
-    vfxPrefab: {fileID: 1116342728058327303, guid: b9ce7c7e10f3c9846ab377c3b72c10d8, type: 3}
+    vfxPrefab: {fileID: 1116342728058327303, guid: 9f7a13bd0e5ea184c885f64f2da268b3, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: e479676bcd06347d8b91890b86fa5028, type: 3}
       delay: 0

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using Relic.Gameplay.Monster;
@@ -145,6 +145,7 @@ public class BattleUnitAnimator : MonoBehaviour
     private int hitFlashPropertyId;
     private Coroutine hitFlashCoroutine;
     private Coroutine arabellaPhaseTransitionCoroutine;
+    private Coroutine deathVfxCoroutine;
     private bool deathPresentationPlayed;
     private bool phaseTransitionPresentationPlayed;
 
@@ -166,6 +167,12 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void OnDisable()
     {
+        if (deathVfxCoroutine != null)
+        {
+            StopCoroutine(deathVfxCoroutine);
+            deathVfxCoroutine = null;
+        }
+
         if (hitFlashCoroutine != null)
         {
             StopCoroutine(hitFlashCoroutine);
@@ -317,6 +324,23 @@ public class BattleUnitAnimator : MonoBehaviour
         deathPresentationPlayed = true;
         ApplyPresentationPlaybackSpeed();
         PlayState(deadStateName);
+
+        // Dead 애니메이션이 끝난 뒤 Death VFX를 한 번만 재생합니다.
+        if (isActiveAndEnabled && HasVfx(deathVfx))
+            deathVfxCoroutine = StartCoroutine(SpawnDeathVfxAfterAnimation());
+    }
+
+    private IEnumerator SpawnDeathVfxAfterAnimation()
+    {
+        // 설정된 사망 애니메이션 길이를 Animator 재생 속도에 맞춰 기다립니다.
+        // 스킬 연속 실행 배속에도 동일한 종료 순서를 유지합니다.
+        float animationSpeed = animator != null ? Mathf.Abs(animator.speed) : 1f;
+        float waitDuration = DeadAnimationDuration / Mathf.Max(0.01f, animationSpeed);
+
+        if (waitDuration > 0f)
+            yield return new WaitForSeconds(waitDuration);
+
+        deathVfxCoroutine = null;
         SpawnVfx(deathVfx);
     }
 
