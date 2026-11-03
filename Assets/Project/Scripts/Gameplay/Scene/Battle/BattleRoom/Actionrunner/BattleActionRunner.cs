@@ -2584,6 +2584,23 @@ public class BattleActionRunner
                 List<Transform> feedbackTargets = new();
                 bool appliedAnyHit = false;
 
+                bool prepareCameraImpact = ShouldPlayCameraImpactForHit(hitIndex, hitCount);
+                if (prepareCameraImpact && BattleCameraController.Instance != null)
+                {
+                    if (ShouldSkipPlayerSkillCamera(command))
+                    {
+                        yield return BattleCameraController.Instance.PrepareRangedDamageImpact();
+                    }
+                    else
+                    {
+                        int impactDirection = ResolveCameraImpactDirection(
+                            caster != null ? caster.transform : null,
+                            monsterTargets,
+                            BattleDirectionToHorizontal(command.Direction));
+                        yield return BattleCameraController.Instance.PrepareDamageImpact(impactDirection);
+                    }
+                }
+
                 MonsterUnit randomTarget = effectId == "E_RandomStrike"
                     ? PickRandomAliveMonster(monsterTargets)
                     : null;
@@ -2657,6 +2674,9 @@ public class BattleActionRunner
                     Mathf.Max(0, value));
 
                 hudService.RefreshHUDs();
+
+                if (!appliedAnyHit && BattleCameraController.Instance != null)
+                    BattleCameraController.Instance.CancelPreparedDamageImpact();
 
                 if (!appliedAnyHit && hitIndex == 0)
                 {
@@ -4918,6 +4938,23 @@ public class BattleActionRunner
             bool isRangedPresentation = ShouldSkipMonsterSkillCamera(command);
             List<Transform> feedbackTargets = BuildMonsterSkillFeedbackTargets(monster, command);
 
+            bool prepareCameraImpact = ShouldPlayCameraImpactForHit(hitIndex, hitCount);
+            if (feedbackTargets.Count > 0 && prepareCameraImpact && BattleCameraController.Instance != null)
+            {
+                if (isRangedPresentation)
+                {
+                    yield return BattleCameraController.Instance.PrepareRangedDamageImpact();
+                }
+                else
+                {
+                    int impactDirection = ResolveCameraImpactDirection(
+                        monster.transform,
+                        feedbackTargets,
+                        GetMonsterImpactFallbackDirection(monster));
+                    yield return BattleCameraController.Instance.PrepareDamageImpact(impactDirection);
+                }
+            }
+
             monsterSkillEffectService.ApplyMonsterSkillDamageHit(monster, command, hitIndex);
 
             bool playCameraImpact = ShouldPlayCameraImpactForHit(hitIndex, hitCount);
@@ -5467,6 +5504,10 @@ public class BattleActionRunner
         int fallbackHorizontalDirection,
         bool includeTargetPush)
     {
+        if (BattleCameraController.Instance != null)
+            BattleCameraController.Instance.SetNextImpactDirection(
+                ResolveCameraImpactDirection(attacker, targets, fallbackHorizontalDirection));
+
         yield return BattleHitImpactFeedback.PlayDamageHitFeedback(
             attacker,
             targets,
@@ -5479,6 +5520,10 @@ public class BattleActionRunner
         IReadOnlyList<Transform> targets,
         int fallbackHorizontalDirection)
     {
+        if (BattleCameraController.Instance != null)
+            BattleCameraController.Instance.SetNextImpactDirection(
+                ResolveCameraImpactDirection(attacker, targets, fallbackHorizontalDirection));
+
         yield return BattleHitImpactFeedback.PlayDamageHitFeedback(
             attacker,
             targets,
@@ -5488,6 +5533,31 @@ public class BattleActionRunner
     private static int BattleDirectionToHorizontal(BattleDirection direction)
     {
         return direction == BattleDirection.Left ? -1 : 1;
+    }
+
+    private static int ResolveCameraImpactDirection<TTarget>(
+        Transform attacker,
+        IReadOnlyList<TTarget> targets,
+        int fallbackHorizontalDirection)
+        where TTarget : Component
+    {
+        Transform firstTarget = null;
+        if (targets != null)
+        {
+            for (int i = 0; i < targets.Count; i++)
+            {
+                if (targets[i] == null)
+                    continue;
+
+                firstTarget = targets[i].transform;
+                break;
+            }
+        }
+
+        return BattleHitImpactFeedback.ResolveHorizontalDirection(
+            attacker,
+            firstTarget,
+            fallbackHorizontalDirection);
     }
 
     private static void AddFeedbackTarget(List<Transform> targets, Transform target)

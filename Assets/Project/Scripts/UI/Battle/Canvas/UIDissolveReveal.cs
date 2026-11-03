@@ -211,10 +211,8 @@ public class UIDissolveReveal : MonoBehaviour
         if (monster == null)
             return;
 
-        bool panelOnLeft = ShouldRevealFromLeft(monster.MainGridIndex);
         BindMonsterInfoPanel(monster);
         ShowForGridIndex(monster.MainGridIndex);
-        FocusMonsterInfoCamera(monster.transform, panelOnLeft);
     }
 
     public void ShowForGridIndex(int gridIndex)
@@ -309,11 +307,7 @@ public class UIDissolveReveal : MonoBehaviour
     public void Hide()
     {
         InitializeIfNeeded();
-        bool wasVisible = isVisible;
         isVisible = false;
-
-        if (wasVisible)
-            ReturnMonsterInfoCameraFocus();
 
         if (!gameObject.activeInHierarchy)
         {
@@ -344,8 +338,6 @@ public class UIDissolveReveal : MonoBehaviour
     public void HideImmediate()
     {
         InitializeIfNeeded();
-        bool wasVisible = isVisible;
-
         if (routine != null)
         {
             StopCoroutine(routine);
@@ -353,9 +345,6 @@ public class UIDissolveReveal : MonoBehaviour
         }
 
         isVisible = false;
-
-        if (wasVisible)
-            ReturnMonsterInfoCameraFocus();
 
         if (runtimeMaterial != null)
             runtimeMaterial.SetFloat(revealProperty, hiddenReveal);
@@ -424,20 +413,6 @@ public class UIDissolveReveal : MonoBehaviour
             HideToLeft();
         else
             HideToRight();
-    }
-
-    private void FocusMonsterInfoCamera(Transform target, bool panelOnLeft)
-    {
-        BattleCameraController cameraController = BattleCameraController.Instance;
-        if (cameraController != null)
-            cameraController.FocusMonsterInfoWithPanelSide(target, panelOnLeft);
-    }
-
-    private void ReturnMonsterInfoCameraFocus()
-    {
-        BattleCameraController cameraController = BattleCameraController.Instance;
-        if (cameraController != null)
-            cameraController.ReturnDefaultFromMonsterInfoFocus();
     }
 
     private void SetControlledObjectsActive(bool active)

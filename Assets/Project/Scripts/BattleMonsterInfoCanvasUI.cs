@@ -72,22 +72,6 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
     [Header("Monster Preview")]
     [SerializeField] private Image previewImage;
 
-    [Header("Monster Camera Focus")]
-    [Tooltip("몬스터 정보 확인 시 이동할 메인 카메라입니다. 비워두면 Camera.main을 사용합니다.")]
-    [SerializeField] private Camera mainCamera;
-    [Tooltip("캐릭터를 선택하지 않은 기본 전투 카메라 위치입니다. MonsterInfoPanel을 닫으면 이 위치로 돌아갑니다.")]
-    [SerializeField] private Vector3 defaultCameraPosition = new Vector3(0f, 0f, -17.5f);
-    [Tooltip("몬스터 정보 확인 중 사용할 카메라 Z 위치입니다.")]
-    [SerializeField] private float focusCameraZ = -15f;
-    [Tooltip("기존 카메라 X 위치에서 몬스터 X 위치 쪽으로 이동하는 비율입니다. 1이면 몬스터 X에 완전히 맞춥니다.")]
-    [SerializeField, Range(0f, 1f)] private float focusAmountX = 0.45f;
-    [Tooltip("기존 카메라 Y 위치에서 몬스터 Y 위치 쪽으로 이동하는 비율입니다. 1이면 몬스터 Y에 완전히 맞춥니다.")]
-    [SerializeField, Range(0f, 1f)] private float focusAmountY = 0.45f;
-    [Tooltip("몬스터 쪽으로 카메라가 이동할 때 추가할 X/Y 오프셋입니다.")]
-    [SerializeField] private Vector2 focusOffset = Vector2.zero;
-    [Tooltip("몬스터 쪽으로 이동하거나 원래 위치로 돌아오는 시간입니다.")]
-    [SerializeField, Min(0f)] private float cameraMoveDuration = 0.25f;
-
     [Header("Battle Overlay UI")]
     [Tooltip("전투 화면의 Erosion 오브젝트입니다. 비워두면 이름이 Erosion인 오브젝트를 자동으로 찾습니다.")]
     [SerializeField] private GameObject erosionRoot;
@@ -124,8 +108,6 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
     private int lastStatusSignature = int.MinValue;
     private Coroutine revealCoroutine;
     private Coroutine previewAnimationCoroutine;
-    private Coroutine cameraMoveCoroutine;
-    private bool hasMonsterCameraFocus;
     private Sprite[] currentPreviewFrames;
     private float currentPreviewFramesPerSecond = 6f;
     private BattleCharacterPanelUI battleCharacterPanel;
@@ -442,117 +424,28 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         erosionCanvasGroup = null;
     }
 
-    private void FocusCameraOnMonster(MonsterUnit monster)
+    private static void FocusCameraOnMonster(MonsterUnit monster)
     {
         if (monster == null)
             return;
 
-        EnsureMainCamera();
-        if (mainCamera == null)
-            return;
-
-        // 몬스터 정보 카메라는 직전에 선택했던 캐릭터의 카메라 위치를 기준으로 하지 않습니다.
-        // 캐릭터 미선택 상태의 기본 카메라 위치를 기준으로 몬스터 쪽으로 이동합니다.
-        hasMonsterCameraFocus = true;
-
-        Vector3 monsterPosition = monster.transform.position;
-        Vector3 targetPosition = new Vector3(
-            Mathf.Lerp(defaultCameraPosition.x, monsterPosition.x, focusAmountX) + focusOffset.x,
-            Mathf.Lerp(defaultCameraPosition.y, monsterPosition.y, focusAmountY) + focusOffset.y,
-            focusCameraZ);
-
-        StartCameraMove(targetPosition, false);
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController != null)
+            cameraController.FocusMonsterInfoForGridIndex(monster.transform, monster.MainGridIndex);
     }
 
-    private void RestoreCameraSmooth()
+    private static void RestoreCameraSmooth()
     {
-        if (!hasMonsterCameraFocus)
-            return;
-
-        EnsureMainCamera();
-        if (mainCamera == null)
-        {
-            hasMonsterCameraFocus = false;
-            return;
-        }
-
-        // MonsterInfoPanel을 닫은 뒤에는 이전 캐릭터 포커스 위치가 아니라
-        // 캐릭터 미선택 상태의 기본 카메라 위치로 돌아갑니다.
-        StartCameraMove(defaultCameraPosition, true);
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController != null)
+            cameraController.ReturnDefaultFromMonsterInfoFocus();
     }
 
-    private void RestoreCameraImmediate()
+    private static void RestoreCameraImmediate()
     {
-        if (cameraMoveCoroutine != null)
-        {
-            StopCoroutine(cameraMoveCoroutine);
-            cameraMoveCoroutine = null;
-        }
-
-        if (!hasMonsterCameraFocus)
-            return;
-
-        EnsureMainCamera();
-        if (mainCamera != null)
-            mainCamera.transform.position = defaultCameraPosition;
-
-        hasMonsterCameraFocus = false;
-    }
-
-    private void StartCameraMove(Vector3 targetPosition, bool clearFocusWhenComplete)
-    {
-        if (cameraMoveCoroutine != null)
-        {
-            StopCoroutine(cameraMoveCoroutine);
-            cameraMoveCoroutine = null;
-        }
-
-        if (!isActiveAndEnabled || cameraMoveDuration <= 0f)
-        {
-            if (mainCamera != null)
-                mainCamera.transform.position = targetPosition;
-
-            if (clearFocusWhenComplete)
-                hasMonsterCameraFocus = false;
-            return;
-        }
-
-        cameraMoveCoroutine = StartCoroutine(CameraMoveRoutine(targetPosition, clearFocusWhenComplete));
-    }
-
-    private IEnumerator CameraMoveRoutine(Vector3 targetPosition, bool clearFocusWhenComplete)
-    {
-        if (mainCamera == null)
-        {
-            cameraMoveCoroutine = null;
-            yield break;
-        }
-
-        Vector3 startPosition = mainCamera.transform.position;
-        float elapsed = 0f;
-
-        while (elapsed < cameraMoveDuration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / cameraMoveDuration);
-            t = t * t * (3f - 2f * t);
-            mainCamera.transform.position = Vector3.LerpUnclamped(startPosition, targetPosition, t);
-            yield return null;
-        }
-
-        if (mainCamera != null)
-            mainCamera.transform.position = targetPosition;
-
-        if (clearFocusWhenComplete)
-            hasMonsterCameraFocus = false;
-
-        cameraMoveCoroutine = null;
-    }
-
-    private void EnsureMainCamera()
-    {
-        if (mainCamera == null)
-            mainCamera = Camera.main;
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController != null)
+            cameraController.ReturnDefaultFromMonsterInfoFocus();
     }
 
     private void EnsureBattleCharacterPanel()

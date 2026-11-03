@@ -43,6 +43,19 @@ public class CameraShakeController : MonoBehaviour
 
     public void Shake(float requestedDuration, float requestedStrength, float requestedFrequency)
     {
+        BattleCameraController battleCamera = BattleCameraController.Instance;
+        if (battleCamera != null && battleCamera.UsesCameraTransform(transform))
+        {
+            isShaking = false;
+            RemoveAppliedOffset();
+            battleCamera.PlayExternalShake(
+                requestedDuration,
+                requestedStrength,
+                requestedFrequency,
+                useUnscaledTime);
+            return;
+        }
+
         // 흔들림 중에 새 요청이 와도 현재 위치를 저장하거나 원위치로 강제 이동하지 않습니다.
         RemoveAppliedOffset();
 
@@ -100,6 +113,10 @@ public class CameraShakeController : MonoBehaviour
     {
         isShaking = false;
         RemoveAppliedOffset();
+
+        BattleCameraController battleCamera = BattleCameraController.Instance;
+        if (battleCamera != null && battleCamera.UsesCameraTransform(transform))
+            battleCamera.StopExternalShake();
     }
 
     private void OnDisable()
