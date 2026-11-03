@@ -307,6 +307,16 @@ public class BattleTimelineController : MonoBehaviour
             }
         }
 
+        if (ShouldReturnCameraForSelectedCharacter(false, selectedCharacter != null))
+        {
+            BattleCameraController cameraController = BattleCameraController.Instance;
+
+            if (cameraController != null)
+                cameraController.StartReturnDefaultKeepingCharacterSelection();
+
+            return;
+        }
+
         // Nothing is being selected: undo one most recently registered player action.
         // UndoLastPlayerReservation already repairs the timeline and predicted state.
         if (isSlotSelectionLocked)
@@ -321,6 +331,13 @@ public class BattleTimelineController : MonoBehaviour
         PruneInvalidPlayerReservationHistory();
         if (playerReservationHistory.Count > 0)
             UndoLastPlayerReservation();
+    }
+
+    private static bool ShouldReturnCameraForSelectedCharacter(
+        bool isSkillSelectionActive,
+        bool hasSelectedCharacter)
+    {
+        return !isSkillSelectionActive && hasSelectedCharacter;
     }
 
     private void HandleCharacterSelectionOutsideGridClick()

@@ -1831,7 +1831,16 @@ public class BattleActionRunner
         BattleDirection direction,
         Vector2Int moveOffset)
     {
-        if (character == null)
+        ApplyPlayerMoveFacing(character, direction, moveOffset, false);
+    }
+
+    private void ApplyPlayerMoveFacing(
+        BattleCharacter character,
+        BattleDirection direction,
+        Vector2Int moveOffset,
+        bool preserveFacing)
+    {
+        if (character == null || preserveFacing)
             return;
 
         BattleUnitFacing facing = character.GetComponent<BattleUnitFacing>();
@@ -3007,14 +3016,7 @@ public class BattleActionRunner
         Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
         Vector2Int actualMoveOffset = targetCoord - startCoord;
 
-        BattleUnitFacing facing = caster.GetComponent<BattleUnitFacing>();
-        bool originalFacingRight = command.Direction == BattleDirection.Right;
-
-        if (facing != null)
-        {
-            facing.FaceByMoveOffset(moveOffset);
-            caster.RuntimeData.Direction = facing.GetBattleDirection();
-        }
+        ApplyPlayerMoveFacing(caster, command.Direction, moveOffset, true);
 
         BattleUnitAnimator animator = caster.GetComponent<BattleUnitAnimator>();
 
@@ -3028,16 +3030,6 @@ public class BattleActionRunner
 
         if (NewSkillEffectRules.ShouldApplyMoveCollisionEffect(effectId))
             ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
-
-        if (facing != null)
-        {
-            facing.FaceRight(originalFacingRight);
-            caster.RuntimeData.Direction = facing.GetBattleDirection();
-        }
-        else
-        {
-            caster.RuntimeData.Direction = command.Direction;
-        }
 
         hudService.RefreshHUDs();
     }

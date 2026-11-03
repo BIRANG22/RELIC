@@ -137,7 +137,8 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         skipRevealComplete = ready;
         BindSkipButton();
         if (skipButton == null) return;
-        skipButton.interactable = ready && reward != null && !processing;
+        bool interactionEnabled = ready && reward != null && !IsSkipInteractionLocked();
+        skipButton.interactable = interactionEnabled;
         skipButton.gameObject.SetActive(true);
         string[] names = { "back (1)", "back (2)", "front", "Text (TMP)" };
         for (int i = 0; i < names.Length; i++)
@@ -146,15 +147,24 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             if (part == null) continue;
             Graphic graphic = part.GetComponent<Graphic>();
             if (graphic != null)
-                graphic.color = ready ? (i == 3 ? SkipEnabledTextColor : SkipEnabledColor) : SkipDisabledColor;
+                graphic.color = interactionEnabled
+                    ? (i == 3 ? SkipEnabledTextColor : SkipEnabledColor)
+                    : SkipDisabledColor;
         }
         foreach (DBAudioSource audio in skipButton.GetComponentsInChildren<DBAudioSource>(true))
-            audio.SetInteractionEnabled(ready && reward != null && !processing);
+            audio.SetInteractionEnabled(interactionEnabled);
+        foreach (UIChildHoverTransform hover in skipButton.GetComponentsInChildren<UIChildHoverTransform>(true))
+        {
+            if (!interactionEnabled)
+                hover.ApplyDefaultImmediately();
+
+            hover.enabled = interactionEnabled;
+        }
     }
 
     private void RefreshSkipRevealState()
     {
-        if (reward == null || processing || skipRevealComplete) return;
+        if (reward == null || IsSkipInteractionLocked() || skipRevealComplete) return;
         for (int i = 0; i < offeredSkills.Length; i++)
         {
             if (offeredSkills[i] == null) continue;
@@ -162,6 +172,16 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
                 return;
         }
         SetSkipRevealState(true);
+    }
+
+    private bool IsSkipInteractionLocked()
+    {
+        return processing || clickedCardIndex >= 0 || pendingReplacementCard >= 0;
+    }
+
+    private void LockSkipButtonForSelection()
+    {
+        SetSkipRevealState(false);
     }
 
     private bool isRestMeditationReward;
@@ -853,6 +873,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         {
             // All active slots are occupied. Wait for the player to click an
             // equipped slot belonging to the selected skill's character.
+            LockSkipButtonForSelection();
             pendingReplacementCard = index;
             pendingReplacementCharacterId = id;
             clickedCardIndex = index;
@@ -899,6 +920,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private void ConfirmSkillSelection(int index, string id, string skillId, CharacterRuntimeData character, int target)
     {
         ClearSkillSlotPreviewVfx();
+        LockSkipButtonForSelection();
         // Replacement mode already started the unselected-card dissolve.
         // Fade the selected card only after the player confirms the replacement slot.
         bool isReplacement = pendingReplacementCard == index;
