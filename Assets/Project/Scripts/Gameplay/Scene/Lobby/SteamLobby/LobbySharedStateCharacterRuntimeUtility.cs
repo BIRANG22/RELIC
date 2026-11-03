@@ -114,6 +114,9 @@ public static class LobbySharedStateCharacterRuntimeUtility
             CharacterId = master.CharacterId,
             Level = 1,
             Exp = 0,
+            MaxHP = master.MaxHP,
+            MaxCost = master.MaxCost,
+            CostRecovery = master.CostRecovery,
             CurrentHP = master.MaxHP,
             CurrentCost = master.MaxCost,
             CurrentResource = 0,
@@ -139,6 +142,18 @@ public static class LobbySharedStateCharacterRuntimeUtility
 
         if (string.IsNullOrWhiteSpace(runtime.CharacterId))
             runtime.CharacterId = master.CharacterId;
+
+        // 이전 버전에서 최대 능력치 없이 생성된 캐릭터를 복구합니다.
+        if (runtime.MaxHP <= 0)
+        {
+            runtime.MaxHP = Math.Max(1, master.MaxHP);
+            if (runtime.CurrentHP <= 1)
+                runtime.CurrentHP = runtime.MaxHP;
+        }
+        if (runtime.MaxCost <= 0)
+            runtime.MaxCost = Math.Max(0, master.MaxCost);
+        if (runtime.CostRecovery <= 0)
+            runtime.CostRecovery = Math.Max(0, master.CostRecovery);
 
         if (string.IsNullOrWhiteSpace(runtime.MoveSkillId))
             runtime.MoveSkillId = "S_Move_1";

@@ -130,6 +130,10 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField, Min(0f)] private float monsterInfoExtraZoomOrthographicSize = 0.35f;
     [Tooltip("몬스터 정보 포커스 추가 줌 강도 배율입니다. 기존 추가 줌 설정에 곱해지며, 1이면 이전과 동일합니다.")]
     [SerializeField, Min(0f)] private float monsterInfoExtraZoomStrength = 3.5f;
+    [Tooltip("몬스터 정보창 줌인 시 실제 몬스터 위치를 얼마나 따라갈지 설정합니다. 1이면 몬스터 위치 기준, 0이면 이전 그리드 기준입니다.")]
+    [SerializeField, Range(0f, 1f)] private float monsterInfoWorldPositionWeight = 1f;
+    [Tooltip("정보 패널이 몬스터를 가리지 않도록 카메라 중심을 좌우로 옮기는 거리입니다. 몬스터는 패널 반대편에 표시됩니다.")]
+    [SerializeField, Min(0f)] private float monsterInfoScreenSideMargin = 0.9f;
 
     [Header("Camera Position Clamp")]
     [SerializeField] private Vector2 minCameraPosition = new Vector2(-0.5f, -1f);
@@ -261,19 +265,32 @@ public class BattleCameraController : MonoBehaviour
         ClearImpactOffset();
 
         Vector2 gridOffset = GetCharacterSelectionGridFocusOffset(gridIndex);
-        Vector3 targetPos = defaultPosition;
+        Vector3 gridTargetPos = defaultPosition;
         if (useGridBasedCharacterSelectionFocusOffset && gridIndex >= 0)
         {
-            targetPos.x += gridOffset.x;
-            targetPos.y += gridOffset.y;
+            gridTargetPos.x += gridOffset.x;
+            gridTargetPos.y += gridOffset.y;
         }
         else
         {
-            targetPos.x += characterSelectionFocusOffset.x;
-            targetPos.y += characterSelectionFocusOffset.y;
+            gridTargetPos.x += characterSelectionFocusOffset.x;
+            gridTargetPos.y += characterSelectionFocusOffset.y;
         }
 
-        // 캐릭터 선택과 동일한 그리드 중심을 사용하되 몬스터 정보는 조금 더 가까이 보여줍니다.
+        // 단순히 현재 화면을 확대하지 않고 실제 클릭한 몬스터 쪽으로 줌인합니다.
+        // 패널이 왼쪽에 열리면 몬스터를 오른쪽에, 반대라면 왼쪽에 배치합니다.
+        int rowCount = Mathf.Max(1, characterSelectionFocusGridRowCount);
+        int columnCount = Mathf.Max(1, characterSelectionFocusGridColumnCount);
+        bool panelOnLeft = gridIndex < 0 || gridIndex >= rowCount * (columnCount / 2);
+        float sideMargin = panelOnLeft ? -monsterInfoScreenSideMargin : monsterInfoScreenSideMargin;
+        Vector3 monsterTargetPos = defaultPosition;
+        monsterTargetPos.x = target.position.x + monsterInfoFocusOffset.x + sideMargin;
+        monsterTargetPos.y = target.position.y + monsterInfoFocusOffset.y;
+
+        Vector3 targetPos = Vector3.Lerp(
+            gridTargetPos, monsterTargetPos, Mathf.Clamp01(monsterInfoWorldPositionWeight));
+
+        // 기존 추가 줌 강도를 유지하면서 위치와 확대를 하나의 이동으로 진행합니다.
         targetPos.z = useCharacterSelectionFocusZ
             ? GetCharacterSelectionFocusZPosition() + monsterInfoExtraZoomZ * monsterInfoExtraZoomStrength
             : targetCamera.transform.position.z + monsterInfoExtraZoomZ * monsterInfoExtraZoomStrength;
@@ -1236,6 +1253,10 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             yield break;
 
+        // 카메라/Plane의 기존 복귀 속도를 유지하고 마지막 행동 유닛의 Idle 전환만 맞춥니다.
+        if (hasActiveCombatZoom)
+            BattleUnitAnimator.SyncLastActionIdleWithCameraReturn(returnDuration);
+
         RemoveMouseParallax();
         EndZoomFollowTarget();
 
@@ -1637,7 +1658,7 @@ public class BattleCameraController : MonoBehaviour
         {
             Vector3 instantPosition = targetCamera.transform.position;
             instantPosition.x = targetX;
-            targetCamera.transform.position = ClampCameraPosition(instantPosition);
+            targetCamera.transform.position = ClampCombatImpactPosition(instantPosition);
             yield break;
         }
 
@@ -1648,13 +1669,13 @@ public class BattleCameraController : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / duration);
             Vector3 position = targetCamera.transform.position;
             position.x = Mathf.Lerp(startX, targetX, EvaluateZoomCurve(t));
-            targetCamera.transform.position = ClampCameraPosition(position);
+            targetCamera.transform.position = ClampCombatImpactPosition(position);
             yield return null;
         }
 
         Vector3 finalPosition = targetCamera.transform.position;
         finalPosition.x = targetX;
-        targetCamera.transform.position = ClampCameraPosition(finalPosition);
+        targetCamera.transform.position = ClampCombatImpactPosition(finalPosition);
     }
 
     public void SetNextImpactDirection(int horizontalDirection)
@@ -1708,7 +1729,7 @@ public class BattleCameraController : MonoBehaviour
         {
             Vector3 position = targetCamera.transform.position;
             position.x = preparedImpactBaseX;
-            targetCamera.transform.position = ClampCameraPosition(position);
+            targetCamera.transform.position = ClampCombatImpactPosition(position);
         }
 
         if (hasPreparedRangedImpact)
@@ -1818,7 +1839,7 @@ public class BattleCameraController : MonoBehaviour
                 float y = (Mathf.PerlinNoise(seedY, noiseTime) - 0.5f) * 2f;
 
                 activeImpactOffset = new Vector3(x, y, 0f) * shakeStrength * fade;
-                targetCamera.transform.position = ClampCameraPosition(basePosition + activeImpactOffset);
+                targetCamera.transform.position = ClampCombatImpactPosition(basePosition + activeImpactOffset);
                 lastImpactAppliedPosition = targetCamera.transform.position;
             }
 
@@ -2129,11 +2150,19 @@ public class BattleCameraController : MonoBehaviour
             Vector3 currentPosition = targetCamera.transform.position;
 
             if ((currentPosition - lastImpactAppliedPosition).sqrMagnitude < 0.0001f)
-                targetCamera.transform.position = ClampCameraPosition(currentPosition - activeImpactOffset);
+                targetCamera.transform.position = ClampCombatImpactPosition(currentPosition - activeImpactOffset);
         }
 
         activeImpactOffset = Vector3.zero;
         lastImpactAppliedPosition = targetCamera.transform.position;
+    }
+
+    // 그리드 외곽에서 이미 잡힌 전투 줌 구도가 위치 제한으로 밀리거나
+    // 타격 후 반대 방향으로 튀지 않도록, 전투 줌 중에는 위치 보정을 하지 않습니다.
+    // 일반 카메라 이동 및 정보 패널의 ClampCameraPosition 설정은 유지합니다.
+    private Vector3 ClampCombatImpactPosition(Vector3 position)
+    {
+        return hasActiveCombatZoom ? position : ClampCameraPosition(position);
     }
 
     private Vector3 ClampCameraPosition(Vector3 position)

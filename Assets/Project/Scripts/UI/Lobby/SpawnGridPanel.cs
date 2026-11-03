@@ -44,6 +44,7 @@ public class SpawnGridPanel : MonoBehaviour
         if (characterDragSfxActive)
             return;
         characterDragSfxActive = true;
+        LobbyReadyDragHoverGate.Begin(this, LobbyReadyDragHoverGate.DragKind.Character);
         PlayCharacterDragSfx(true);
     }
 
@@ -52,11 +53,13 @@ public class SpawnGridPanel : MonoBehaviour
         if (!characterDragSfxActive)
             return;
         characterDragSfxActive = false;
+        LobbyReadyDragHoverGate.End(this);
         PlayCharacterDragSfx(false);
     }
 
     private void OnDisable()
     {
+        LobbyReadyDragHoverGate.End(this);
         characterDragSfxActive = false;
     }
 

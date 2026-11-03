@@ -137,6 +137,8 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private string vfxLayerName = "VFX";
     private int vfxLayer = -1;
 
+    private static BattleUnitAnimator lastCombatActionAnimator;
+
     private int currentAttackIndex;
     private SkillAttackSlot previousSkillAttackOverrideSlot = SkillAttackSlot.None;
     private Transform vfxSortingReference;
@@ -145,7 +147,6 @@ public class BattleUnitAnimator : MonoBehaviour
     private int hitFlashPropertyId;
     private Coroutine hitFlashCoroutine;
     private Coroutine arabellaPhaseTransitionCoroutine;
-    private Coroutine deathVfxCoroutine;
     private bool deathPresentationPlayed;
     private bool phaseTransitionPresentationPlayed;
 
@@ -167,11 +168,8 @@ public class BattleUnitAnimator : MonoBehaviour
 
     private void OnDisable()
     {
-        if (deathVfxCoroutine != null)
-        {
-            StopCoroutine(deathVfxCoroutine);
-            deathVfxCoroutine = null;
-        }
+        if (lastCombatActionAnimator == this)
+            lastCombatActionAnimator = null;
 
         if (hitFlashCoroutine != null)
         {
@@ -198,8 +196,40 @@ public class BattleUnitAnimator : MonoBehaviour
 
     public void PlayIdle()
     {
+        if (lastCombatActionAnimator == this)
+            lastCombatActionAnimator = null;
+
         RestoreIdlePlaybackSpeed();
         PlayState(idleStateName);
+    }
+
+    /// <summary>
+    /// 전투 카메라 줌아웃 시작 시 마지막 행동 유닛의 Action -> Idle 전환을 동기화합니다.
+    /// 공격 모션 자체의 속도와 카메라 Return Duration은 변경하지 않습니다.
+    /// </summary>
+    public static void SyncLastActionIdleWithCameraReturn(float cameraReturnDuration)
+    {
+        BattleUnitAnimator unit = lastCombatActionAnimator;
+        lastCombatActionAnimator = null;
+        if (unit == null || !unit.isActiveAndEnabled || !unit.EnsureAnimator() ||
+            unit.animator == null || !unit.animator.isActiveAndEnabled)
+            return;
+
+        if (!unit.TryResolveAnimatorStateName(unit.idleStateName, out string idleState))
+            return;
+
+        AnimatorStateInfo current = unit.animator.GetCurrentAnimatorStateInfo(unit.animatorLayer);
+        if (current.IsName(unit.idleStateName) || current.IsName(idleState))
+            return;
+
+        // CrossFadeInFixedTime은 Animator.speed의 영향을 받으므로 Idle 기본 속도로 복원합니다.
+        // 카메라 복귀와 동일한 시간에 걸쳐 공격 자세에서 Idle 자세로 블렌딩됩니다.
+        unit.RestoreIdlePlaybackSpeed();
+        float blendDuration = Mathf.Max(0f, cameraReturnDuration);
+        if (blendDuration > 0f)
+            unit.animator.CrossFadeInFixedTime(idleState, blendDuration, unit.animatorLayer, 0f);
+        else
+            unit.animator.Play(idleState, unit.animatorLayer, 0f);
     }
 
     /// <summary>
@@ -324,23 +354,6 @@ public class BattleUnitAnimator : MonoBehaviour
         deathPresentationPlayed = true;
         ApplyPresentationPlaybackSpeed();
         PlayState(deadStateName);
-
-        // Dead 애니메이션이 끝난 뒤 Death VFX를 한 번만 재생합니다.
-        if (isActiveAndEnabled && HasVfx(deathVfx))
-            deathVfxCoroutine = StartCoroutine(SpawnDeathVfxAfterAnimation());
-    }
-
-    private IEnumerator SpawnDeathVfxAfterAnimation()
-    {
-        // 설정된 사망 애니메이션 길이를 Animator 재생 속도에 맞춰 기다립니다.
-        // 스킬 연속 실행 배속에도 동일한 종료 순서를 유지합니다.
-        float animationSpeed = animator != null ? Mathf.Abs(animator.speed) : 1f;
-        float waitDuration = DeadAnimationDuration / Mathf.Max(0.01f, animationSpeed);
-
-        if (waitDuration > 0f)
-            yield return new WaitForSeconds(waitDuration);
-
-        deathVfxCoroutine = null;
         SpawnVfx(deathVfx);
     }
 
@@ -646,6 +659,7 @@ public class BattleUnitAnimator : MonoBehaviour
         }
 
         ApplyPresentationPlaybackSpeed();
+        lastCombatActionAnimator = this;
         PlayState(presentation.stateName);
     }
 
@@ -1104,6 +1118,7 @@ public class BattleUnitAnimator : MonoBehaviour
             return;
 
         ApplyPresentationPlaybackSpeed();
+        lastCombatActionAnimator = this;
         PlayState(presentation.stateName);
 
         PlayPresentationActionVfx(presentation, command);

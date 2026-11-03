@@ -172,6 +172,8 @@ public class SpawnGridCell : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (LobbyReadyDragHoverGate.BlockHover(eventData) &&
+            !LobbyReadyDragHoverGate.AllowsGridTargetHover) return;
         isPointerHovering = true;
         RefreshBackVisualOnly();
         RefreshOccupiedHoverLine(GetPartySlotIndexOnThisGrid() >= 0);

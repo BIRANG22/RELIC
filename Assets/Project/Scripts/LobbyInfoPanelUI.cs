@@ -340,6 +340,12 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         if (!TryGetCharacterRuntime(charButton, out CharacterRuntimeData runtime))
             return false;
 
+        // 장착 슬롯에서 다른 캐릭터의 빈 슬롯으로 옮길 때도
+        // 드롭 대상의 호버 색상을 보여줍니다. 클릭/해제의 기존 판정은
+        // 드래그가 끝난 뒤 그대로 사용합니다.
+        if (LobbyReadyDragHoverGate.IsDragging)
+            return LobbyReadyDragHoverGate.AllowsEquipmentTargetHover(isCompound);
+
         // 인벤토리 아이템이 선택되어 있으면 같은 종류의 장착 대상만 활성화합니다.
         if (!string.IsNullOrWhiteSpace(selectedItemId))
         {
@@ -541,6 +547,11 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
             return;
 
         StartTooltipFade(0f, tooltipFadeOutDuration, true);
+    }
+
+    public void HideTooltipForReadyDrag()
+    {
+        HideTooltipImmediate();
     }
 
     private void HideTooltipImmediate()
@@ -1074,6 +1085,7 @@ public sealed class LobbyInfoInventorySelectionRelay : MonoBehaviour, IPointerEn
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (LobbyReadyDragHoverGate.BlockHover(eventData)) return;
         owner?.ShowInventoryTooltip(slot, isCompound);
     }
 
@@ -1129,7 +1141,12 @@ public sealed class LobbyInfoEquipmentTargetRelay : MonoBehaviour,
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        owner?.ShowEquipmentTooltip(charButton, isCompound, tooltipAnchorRect);
+        // 장착 대상인 경우에만 드래그 중 색상 호버를 허용합니다.
+        // 드래그 중에는 툴팁을 표시하지 않습니다.
+        if (LobbyReadyDragHoverGate.BlockHover(eventData) &&
+            !LobbyReadyDragHoverGate.AllowsEquipmentTargetHover(isCompound)) return;
+        if (!LobbyReadyDragHoverGate.IsDragging)
+            owner?.ShowEquipmentTooltip(charButton, isCompound, tooltipAnchorRect);
 
         if (backImage == null || owner == null || !owner.CanUseEquipmentTarget(charButton, isCompound))
             return;

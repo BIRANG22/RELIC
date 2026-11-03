@@ -446,6 +446,7 @@ public class CharBtn : MonoBehaviour,
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (LobbyReadyDragHoverGate.BlockHover(eventData)) return;
         UpdateCharacterHoverLine(true);
         if (isLocked)
             return;

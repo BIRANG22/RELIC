@@ -1183,6 +1183,18 @@ public class CharPick : MonoBehaviour
 
         if (runtimeStore.TryGet(characterId, out var runtime))
         {
+            // 이전 버전에서 MaxHP 없이 생성된 캐릭터 런타임을 복구합니다.
+            if (runtime.MaxHP <= 0)
+            {
+                runtime.MaxHP = Mathf.Max(1, master.MaxHP);
+                if (runtime.CurrentHP <= 1)
+                    runtime.CurrentHP = runtime.MaxHP;
+            }
+            if (runtime.MaxCost <= 0)
+                runtime.MaxCost = Mathf.Max(0, master.MaxCost);
+            if (runtime.CostRecovery <= 0)
+                runtime.CostRecovery = Mathf.Max(0, master.CostRecovery);
+
             CharacterStartingRelicUtility.EnsureStartingRelicEquippedIfEmpty(
                 runtime,
                 master,
@@ -1196,6 +1208,9 @@ public class CharPick : MonoBehaviour
             Level = 1,
             Exp = 0,
 
+            MaxHP = master.MaxHP,
+            MaxCost = master.MaxCost,
+            CostRecovery = master.CostRecovery,
             CurrentHP = master.MaxHP,
             CurrentCost = master.MaxCost,
             CurrentResource = 0,
