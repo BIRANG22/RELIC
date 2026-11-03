@@ -1869,6 +1869,14 @@ public class BattleTurnExecutor : MonoBehaviour
 
         BattleActionBatch nextBatch = batches[nextExecutableBatchIndex];
 
+        // 빈 타임라인 슬롯을 건너뛰는 행동은 연속 공격이 아닙니다.
+        // 그 사이에 BattleEffect 기울기나 전투 줌을 유지하지 않습니다.
+        int currentBatchIndex = Mathf.Max(0, nextStartIndex - 1);
+        int currentSlotIndex = GetBatchTimelineSlotIndex(currentBatch, currentBatchIndex);
+        int nextSlotIndex = GetBatchTimelineSlotIndex(nextBatch, nextExecutableBatchIndex);
+        if (nextSlotIndex > currentSlotIndex + 1)
+            return false;
+
         if (consecutiveActionPlan != null &&
             consecutiveActionPlan.ContinuesAcrossBoundary(currentBatch, nextBatch))
         {
