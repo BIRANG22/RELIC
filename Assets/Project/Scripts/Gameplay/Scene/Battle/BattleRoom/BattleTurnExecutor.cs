@@ -552,9 +552,7 @@ public class BattleTurnExecutor : MonoBehaviour
             // TimelineBar/TurnMark 이동과 행동/피격/VFX 연출은 모두 이 구간에 포함됩니다.
             BattleConsecutiveActionPresentationContext.BeginBattleExecution();
 
-            ArabellaPhaseTransition.ResetSkippedReservations();
             int phaseVersion = ArabellaPhaseTransition.TurnInterruptVersion;
-            bool skipRemainingPhaseActions = false;
             int slidThroughSlotIndex = -1;
             for (int i = 0; i < batches.Count; i++)
             {
@@ -607,12 +605,10 @@ public class BattleTurnExecutor : MonoBehaviour
                         currentSlotIndex, executableOrderIndices))
                     : null;
 
-                if (!skipRemainingPhaseActions)
-                    yield return runner.RunBatch(batch, keepCameraAfterBatch);
+                yield return runner.RunBatch(batch, keepCameraAfterBatch);
 
-                // 슬롯 경계에서는 연속 행동 그룹의 카메라 유지보다 복귀를 우선합니다.
-                // 다단히트와 같은 슬롯 내 즉시 반격에는 적용하지 않습니다.
-                if (!skipRemainingPhaseActions && !keepCameraAfterBatch &&
+                // 연속 행동 그룹이 끝나는 슬롯 경계에서만 카메라를 복귀합니다.
+                if (!keepCameraAfterBatch &&
                     BattleCameraController.Instance != null &&
                     BattleCameraController.Instance.IsCombatZoomActive)
                 {
@@ -620,15 +616,23 @@ public class BattleTurnExecutor : MonoBehaviour
                     yield return BattleCameraController.Instance.ReturnDefault();
                 }
 
-                if (!skipRemainingPhaseActions && ArabellaPhaseTransition.TurnInterruptVersion != phaseVersion)
+                if (ArabellaPhaseTransition.TurnInterruptVersion != phaseVersion)
                 {
-                    // 현재 스킬을 끝까지 처리한 후 전환하고, 이후 예약은 회색으로 지나갑니다.
-                    RestoreIdleAnimationsBeforeArabellaTransition();
                     if (orderAnimation != null)
                         yield return orderAnimation;
-                    yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
-                    skipRemainingPhaseActions = true;
-                    ArabellaPhaseTransition.MarkRemainingReservationsSkipped();
+
+                    string arabellaRuntimeId = ArabellaPhaseTransition.PendingMonsterRuntimeId;
+                    ArabellaPhaseTransition.PlayPendingPhaseOneDefeatedPresentation();
+                    ArabellaPhaseTransition.RemoveCommandsAfterTimelineSlot(
+                        batches,
+                        currentSlotIndex,
+                        arabellaRuntimeId);
+                    timelineController?.RemoveMonsterCommandsByRuntimeIdAfterSlot(
+                        arabellaRuntimeId,
+                        currentSlotIndex);
+                    hasNextBatchInSameTimelineSlot =
+                        HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
+                    phaseVersion = ArabellaPhaseTransition.TurnInterruptVersion;
                     orderAnimation = null;
                 }
 
@@ -682,6 +686,12 @@ public class BattleTurnExecutor : MonoBehaviour
                 yield return timelineController.MoveTimelineBarsToCompletedTurnPositionRoutine();
 
             yield return runner.ReturnCameraDefaultIfNeeded();
+
+            if (ArabellaPhaseTransition.HasPendingTransition)
+            {
+                RestoreIdleAnimationsBeforeArabellaTransition();
+                yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
+            }
 
             // 턴 종료 회복 팝업은 모두 모은 뒤 카르마 -> 마나 -> 체력 순으로 차례대로 표시합니다.
             BattleDamageTextPopupUI.BeginRecoveryPopupSequence();
@@ -870,9 +880,7 @@ public class BattleTurnExecutor : MonoBehaviour
             // TimelineBar/TurnMark 이동과 행동/피격/VFX 연출은 모두 이 구간에 포함됩니다.
             BattleConsecutiveActionPresentationContext.BeginBattleExecution();
 
-            ArabellaPhaseTransition.ResetSkippedReservations();
             int phaseVersion = ArabellaPhaseTransition.TurnInterruptVersion;
-            bool skipRemainingPhaseActions = false;
             int slidThroughSlotIndex = -1;
             for (int i = 0; i < batches.Count; i++)
             {
@@ -924,12 +932,10 @@ public class BattleTurnExecutor : MonoBehaviour
                         currentSlotIndex, executableOrderIndices))
                     : null;
 
-                if (!skipRemainingPhaseActions)
-                    yield return runner.RunBatch(batch, keepCameraAfterBatch);
+                yield return runner.RunBatch(batch, keepCameraAfterBatch);
 
-                // 슬롯 경계에서는 연속 행동 그룹의 카메라 유지보다 복귀를 우선합니다.
-                // 다단히트와 같은 슬롯 내 즉시 반격에는 적용하지 않습니다.
-                if (!skipRemainingPhaseActions && !keepCameraAfterBatch &&
+                // 연속 행동 그룹이 끝나는 슬롯 경계에서만 카메라를 복귀합니다.
+                if (!keepCameraAfterBatch &&
                     BattleCameraController.Instance != null &&
                     BattleCameraController.Instance.IsCombatZoomActive)
                 {
@@ -937,15 +943,23 @@ public class BattleTurnExecutor : MonoBehaviour
                     yield return BattleCameraController.Instance.ReturnDefault();
                 }
 
-                if (!skipRemainingPhaseActions && ArabellaPhaseTransition.TurnInterruptVersion != phaseVersion)
+                if (ArabellaPhaseTransition.TurnInterruptVersion != phaseVersion)
                 {
-                    // 현재 스킬을 끝까지 처리한 후 전환하고, 이후 예약은 회색으로 지나갑니다.
-                    RestoreIdleAnimationsBeforeArabellaTransition();
                     if (orderAnimation != null)
                         yield return orderAnimation;
-                    yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
-                    skipRemainingPhaseActions = true;
-                    ArabellaPhaseTransition.MarkRemainingReservationsSkipped();
+
+                    string arabellaRuntimeId = ArabellaPhaseTransition.PendingMonsterRuntimeId;
+                    ArabellaPhaseTransition.PlayPendingPhaseOneDefeatedPresentation();
+                    ArabellaPhaseTransition.RemoveCommandsAfterTimelineSlot(
+                        batches,
+                        currentSlotIndex,
+                        arabellaRuntimeId);
+                    timelineController?.RemoveMonsterCommandsByRuntimeIdAfterSlot(
+                        arabellaRuntimeId,
+                        currentSlotIndex);
+                    hasNextBatchInSameTimelineSlot =
+                        HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
+                    phaseVersion = ArabellaPhaseTransition.TurnInterruptVersion;
                     orderAnimation = null;
                 }
 
@@ -984,6 +998,12 @@ public class BattleTurnExecutor : MonoBehaviour
                 yield return timelineController.MoveTimelineBarsToCompletedTurnPositionRoutine();
 
             yield return runner.ReturnCameraDefaultIfNeeded();
+
+            if (ArabellaPhaseTransition.HasPendingTransition)
+            {
+                RestoreIdleAnimationsBeforeArabellaTransition();
+                yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
+            }
 
             yield return RestoreNetworkReservationStateAfterExecutionRoutine();
 
@@ -1873,7 +1893,7 @@ public class BattleTurnExecutor : MonoBehaviour
         return false;
     }
 
-    private bool ShouldKeepCameraAcrossBatchBoundary(
+    public bool ShouldKeepCameraAcrossBatchBoundary(
         BattleActionBatch currentBatch,
         List<BattleActionBatch> batches,
         int nextStartIndex,
@@ -1889,12 +1909,16 @@ public class BattleTurnExecutor : MonoBehaviour
 
         BattleActionBatch nextBatch = batches[nextExecutableBatchIndex];
 
-        // 슬롯이 바뀌면 같은 캐릭터라도 별도의 행동 연출입니다.
-        // 4번 슬롯에서 5번 슬롯으로 넘어갈 때도 줌과 회전을 복귀시킵니다.
+        bool continuesConsecutiveActionGroup =
+            consecutiveActionPlan != null &&
+            consecutiveActionPlan.ContinuesAcrossBoundary(currentBatch, nextBatch);
+
+        // 일반 행동은 슬롯 경계에서 줌과 회전을 복귀시키되,
+        // 같은 연속 행동 그룹은 슬롯을 넘어도 하나의 연출처럼 유지합니다.
         int currentBatchIndex = Mathf.Max(0, nextStartIndex - 1);
         int currentSlotIndex = GetBatchTimelineSlotIndex(currentBatch, currentBatchIndex);
         int nextSlotIndex = GetBatchTimelineSlotIndex(nextBatch, nextExecutableBatchIndex);
-        if (nextSlotIndex != currentSlotIndex)
+        if (nextSlotIndex != currentSlotIndex && !continuesConsecutiveActionGroup)
             return false;
 
         // 서로 다른 플레이어 캐릭터의 행동은 연속 줌/회전 상태를 공유하지 않는다.
@@ -1909,8 +1933,7 @@ public class BattleTurnExecutor : MonoBehaviour
             return false;
         }
 
-        if (consecutiveActionPlan != null &&
-            consecutiveActionPlan.ContinuesAcrossBoundary(currentBatch, nextBatch))
+        if (continuesConsecutiveActionGroup)
         {
             return true;
         }
@@ -2005,7 +2028,6 @@ public class BattleTurnExecutor : MonoBehaviour
 
     private void ClearTimeline()
     {
-        ArabellaPhaseTransition.ResetSkippedReservations();
         if (timelineController != null)
             timelineController.ClearAllReservations();
     }

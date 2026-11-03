@@ -1006,6 +1006,36 @@ public class BattleTimelineController : MonoBehaviour
         RefreshTimeline();
     }
 
+    public int RemoveMonsterCommandsByRuntimeIdAfterSlot(
+        string monsterRuntimeId,
+        int completedTimelineSlotIndex)
+    {
+        InitializeMonsterCommandSlots();
+
+        if (string.IsNullOrWhiteSpace(monsterRuntimeId))
+            return 0;
+
+        int removed = 0;
+        int firstSlotIndex = Mathf.Max(0, completedTimelineSlotIndex + 1);
+        for (int i = firstSlotIndex; i < monsterCommandsBySlot.Length; i++)
+        {
+            List<MonsterReservedCommand> commands = monsterCommandsBySlot[i];
+            if (commands == null)
+                continue;
+
+            removed += commands.RemoveAll(command =>
+                command != null && command.RuntimeId == monsterRuntimeId);
+        }
+
+        if (removed > 0)
+        {
+            reservationVersion++;
+            RefreshTimeline();
+        }
+
+        return removed;
+    }
+
     public void OnTimelineSlotClicked(int slotIndex)
     {
         if (isSlotSelectionLocked)

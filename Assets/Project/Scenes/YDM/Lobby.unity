@@ -12085,8 +12085,8 @@ GameObject:
   - component: {fileID: 178290840}
   - component: {fileID: 178290839}
   - component: {fileID: 178290838}
-  m_Layer: 0
-  m_Name: ConfirmButton
+  m_Layer: 5
+  m_Name: FixedRedDustiumIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12107,10 +12107,10 @@ RectTransform:
   - {fileID: 1131502596}
   m_Father: {fileID: 1684958231}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.32, y: 0.035}
-  m_AnchorMax: {x: 0.68, y: 0.13}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 72, y: 72}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &178290838
 MonoBehaviour:
@@ -12119,7 +12119,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 178290836}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
@@ -12169,16 +12169,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.45, g: 0.15, b: 0.12, a: 1}
-  m_RaycastTarget: 1
+  m_Color: {r: 1, g: 0.16, b: 0.12, a: 1}
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: c4d914016a1fd404bb5f81cb9d6b147e, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -12193,6 +12193,78 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 178290836}
+  m_CullTransparentMesh: 1
+--- !u!1 &910100001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 910100002}
+  - component: {fileID: 910100004}
+  - component: {fileID: 910100003}
+  m_Layer: 5
+  m_Name: DustiumTransferBlur
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &910100002
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910100001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 1684958231}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -90, y: 0}
+  m_SizeDelta: {x: 120, y: 120}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &910100003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910100001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 0.16, b: 0.12, a: 0.8}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 2800000, guid: 40307c7169d6da940aa38b86ea8e1d4a, type: 3}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &910100004
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910100001}
   m_CullTransparentMesh: 1
 --- !u!1 &178997045
 GameObject:
@@ -69695,7 +69767,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1131502596
 RectTransform:
   m_ObjectHideFlags: 0
@@ -74190,8 +74262,8 @@ GameObject:
   - component: {fileID: 1256107353}
   - component: {fileID: 1256107355}
   - component: {fileID: 1256107354}
-  m_Layer: 0
-  m_Name: ResultText
+  m_Layer: 5
+  m_Name: RedDustiumValue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -74211,10 +74283,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1684958231}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.08, y: 0.16}
-  m_AnchorMax: {x: 0.92, y: 0.95}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 220, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1256107354
 MonoBehaviour:
@@ -74230,7 +74302,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -74263,12 +74335,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 30
+  m_fontSize: 48
+  m_fontSizeBase: 48
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 16
-  m_fontSizeMax: 30
+  m_fontSizeMax: 48
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
@@ -100240,8 +100312,8 @@ GameObject:
   - component: {fileID: 1684958233}
   - component: {fileID: 1684958232}
   - component: {fileID: 1684958235}
-  m_Layer: 0
-  m_Name: ResearchResultPanel
+  m_Layer: 5
+  m_Name: DustiumConversionPresentation
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -100261,10 +100333,11 @@ RectTransform:
   m_Children:
   - {fileID: 1256107353}
   - {fileID: 178290837}
+  - {fileID: 910100002}
   m_Father: {fileID: 29908008}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.2, y: 0.08}
-  m_AnchorMax: {x: 0.8, y: 0.92}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -100280,10 +100353,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce56b5e549d07264eadf5ad56e4a699d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resultText: {fileID: 1256107354}
-  confirmButton: {fileID: 178290838}
-  blueDustiumVfxRoot: {fileID: 0}
   presentationCanvasGroup: {fileID: 1684958235}
+  redDustiumValueText: {fileID: 1256107354}
+  fixedRedDustiumIcon: {fileID: 178290837}
+  transferBlur: {fileID: 910100002}
+  transferBlurGraphic: {fileID: 910100003}
+  blueDustiumHud: {fileID: 2200000512}
+  introDuration: 0.25
+  transferDuration: 1.1
+  transferCurveHeight: 180
+  colorTransitionStart: 0.3
+  arrivalPulseScale: 1.25
+  arrivalPulseDuration: 0.18
+  transferStartOffset: {x: -90, y: 0}
+  redDustiumColor: {r: 1, g: 0.16, b: 0.12, a: 1}
+  blueDustiumColor: {r: 0.27, g: 0.49, b: 0.9, a: 1}
 --- !u!114 &1684958233
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -100291,14 +100375,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1684958230}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0.035, g: 0.04, b: 0.055, a: 0.97}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -100330,9 +100414,9 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1684958230}
   m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
+  m_Alpha: 0
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
 --- !u!1 &1688221329
 GameObject:

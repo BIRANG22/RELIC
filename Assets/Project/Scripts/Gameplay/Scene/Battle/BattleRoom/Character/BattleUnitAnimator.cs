@@ -39,6 +39,8 @@ public class BattleUnitAnimator : MonoBehaviour
     [SerializeField] private string hitStateName = "Hit";
     [SerializeField] private string healStateName = "";
     [SerializeField] private string deadStateName = "Dead";
+    [SerializeField] private string arabellaPhaseOneDefeatedStateName =
+        ArabellaPhaseTransition.PhaseOneDefeatedAnimationState;
 
     [Header("Hit Flash")]
     [Tooltip("Hit/Guard 상태에서 Hit Flash 값을 적용할 SpriteRenderer입니다. 비어 있으면 자식 SpriteRenderer를 자동으로 찾습니다.")]
@@ -355,6 +357,12 @@ public class BattleUnitAnimator : MonoBehaviour
         ApplyPresentationPlaybackSpeed();
         PlayState(deadStateName);
         SpawnVfx(deathVfx);
+    }
+
+    public void PlayArabellaPhaseOneDefeated()
+    {
+        ApplyPresentationPlaybackSpeed();
+        PlayOptionalState(arabellaPhaseOneDefeatedStateName);
     }
 
     public void PlayArabellaPhaseTransition()

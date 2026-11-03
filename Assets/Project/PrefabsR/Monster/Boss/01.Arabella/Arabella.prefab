@@ -223,6 +223,7 @@ MonoBehaviour:
   hitStateName: Hit
   healStateName: 
   deadStateName: Dead
+  arabellaPhaseOneDefeatedStateName: PhaseOneDefeated
   hitFlashRenderers: []
   hitFlashPropertyName: _HitFlash
   hitStateFlashValue: 1

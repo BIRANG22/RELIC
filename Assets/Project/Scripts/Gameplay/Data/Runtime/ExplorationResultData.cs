@@ -99,21 +99,6 @@ namespace Relic.Gameplay.Data
         public bool IsApplied;
     }
 
-    public readonly struct ResearchConversionBreakdown
-    {
-        public int RemnantBlue { get; }
-        public int RelicBlue { get; }
-        public int SkillBlue { get; }
-        public int TotalBlue => RemnantBlue + RelicBlue + SkillBlue;
-
-        public ResearchConversionBreakdown(int remnantBlue, int relicBlue, int skillBlue)
-        {
-            RemnantBlue = remnantBlue;
-            RelicBlue = relicBlue;
-            SkillBlue = skillBlue;
-        }
-    }
-
     public static class BattleRunStatisticsService
     {
         public static void RecordDamageDealt(BattleRuntimeData runtime, string characterId, int value)
@@ -626,49 +611,6 @@ namespace Relic.Gameplay.Data
         }
     }
 
-    public static class ResearchConversionPolicy
-    {
-        public static ResearchConversionBreakdown Calculate(
-            int remnant,
-            IEnumerable<RelicRarity> relicRarities,
-            IEnumerable<SkillRarity> skillRarities)
-        {
-            int relicBlue = 0;
-            if (relicRarities != null)
-            {
-                foreach (RelicRarity rarity in relicRarities)
-                    relicBlue += GetRelicBlue(rarity);
-            }
-
-            int skillBlue = 0;
-            if (skillRarities != null)
-            {
-                foreach (SkillRarity rarity in skillRarities)
-                    skillBlue += GetSkillBlue(rarity);
-            }
-
-            return new ResearchConversionBreakdown(Mathf.Max(0, remnant) / 2, relicBlue, skillBlue);
-        }
-
-        public static int GetRelicBlue(RelicRarity rarity) => rarity switch
-        {
-            RelicRarity.Common => 10,
-            RelicRarity.Rare => 25,
-            RelicRarity.Epic => 50,
-            RelicRarity.Unique => 100,
-            _ => 0
-        };
-
-        public static int GetSkillBlue(SkillRarity rarity) => rarity switch
-        {
-            SkillRarity.Common => 10,
-            SkillRarity.Rare => 25,
-            SkillRarity.Epic => 50,
-            SkillRarity.Unique => 100,
-            _ => 0
-        };
-    }
-
     public static class PendingResearchSettlementService
     {
         public static bool HasPending(LobbyRuntimeData lobby)
@@ -678,20 +620,34 @@ namespace Relic.Gameplay.Data
                    lobby.PendingResearchResult != null;
         }
 
-        public static bool ApplyOnce(LobbyRuntimeData lobby)
+        public static PendingResearchSettlementResult ApplyOnceWithResult(
+            LobbyRuntimeData lobby)
         {
+            int blueBefore = Mathf.Max(0, lobby?.BlueDustium ?? 0);
             if (!HasPending(lobby))
-                return false;
+                return PendingResearchSettlementResult.NotApplied(blueBefore);
 
             PendingResearchResultData pending = lobby.PendingResearchResult;
             if (pending.IsApplied)
-                return false;
+                return PendingResearchSettlementResult.NotApplied(blueBefore);
 
-            lobby.BlueDustium += Mathf.Max(0, pending.TotalBlue);
+            int convertedRedDustium = Mathf.Max(
+                0,
+                pending.ExplorationResult?.Remnant ?? 0);
+            lobby.BlueDustium = blueBefore + convertedRedDustium;
             lobby.BagItemIds ??= new List<string>();
             CopyAll(pending.ExplorationResult?.BagItemIds, lobby.BagItemIds);
             pending.IsApplied = true;
-            return true;
+            return new PendingResearchSettlementResult(
+                true,
+                blueBefore,
+                lobby.BlueDustium,
+                convertedRedDustium);
+        }
+
+        public static bool ApplyOnce(LobbyRuntimeData lobby)
+        {
+            return ApplyOnceWithResult(lobby).Applied;
         }
 
         public static void Clear(LobbyRuntimeData lobby)
@@ -713,6 +669,32 @@ namespace Relic.Gameplay.Data
                 if (!string.IsNullOrWhiteSpace(source[i]))
                     destination.Add(source[i].Trim());
             }
+        }
+    }
+
+    public readonly struct PendingResearchSettlementResult
+    {
+        public bool Applied { get; }
+        public int BlueBefore { get; }
+        public int BlueAfter { get; }
+        public int ConvertedRedDustium { get; }
+
+        public PendingResearchSettlementResult(
+            bool applied,
+            int blueBefore,
+            int blueAfter,
+            int convertedRedDustium)
+        {
+            Applied = applied;
+            BlueBefore = Mathf.Max(0, blueBefore);
+            BlueAfter = Mathf.Max(0, blueAfter);
+            ConvertedRedDustium = Mathf.Max(0, convertedRedDustium);
+        }
+
+        public static PendingResearchSettlementResult NotApplied(int blueDustium)
+        {
+            int value = Mathf.Max(0, blueDustium);
+            return new PendingResearchSettlementResult(false, value, value, 0);
         }
     }
 }
