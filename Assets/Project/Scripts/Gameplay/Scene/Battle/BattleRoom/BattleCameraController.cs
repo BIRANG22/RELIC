@@ -816,6 +816,22 @@ public class BattleCameraController : MonoBehaviour
         if (HasActiveInfoSelection())
             return;
 
+        StartReturnDefaultCore();
+    }
+
+    public void StartReturnDefaultKeepingCharacterSelection()
+    {
+        // 우클릭으로 캐릭터 선택은 유지하면서 카메라만 복귀할 때 사용합니다.
+        // 몬스터 정보 포커스가 활성 상태라면 기존 닫기 흐름이 소유권을 유지합니다.
+        if (MonsterUnit.CurrentInfoSelectedMonster != null)
+            return;
+
+        StartReturnDefaultCore();
+    }
+
+    private void StartReturnDefaultCore()
+    {
+
         if (targetCamera == null)
             return;
 
