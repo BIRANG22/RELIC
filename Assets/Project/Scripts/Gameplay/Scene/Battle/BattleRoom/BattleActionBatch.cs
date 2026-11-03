@@ -21,4 +21,13 @@ public class BattleActionBatch
         if (TimelineSlotIndex < 0)
             TimelineSlotIndex = slotIndex;
     }
+
+    public int RemoveMonsterCommandsByRuntimeId(string monsterRuntimeId)
+    {
+        if (string.IsNullOrWhiteSpace(monsterRuntimeId))
+            return 0;
+
+        return MonsterCommands.RemoveAll(command =>
+            command != null && command.RuntimeId == monsterRuntimeId);
+    }
 }

@@ -197,7 +197,6 @@ public class BattleActionRunner
         if (batch == null)
             yield break;
 
-        int phaseVersion = ArabellaPhaseTransition.TurnInterruptVersion;
         List<ActionRoutine> actionRoutines = BuildActionRoutines(batch);
 
         if (actionRoutines.Count <= 0)
@@ -242,12 +241,9 @@ public class BattleActionRunner
         }
 
         if (useSafeSequentialExecution)
-            yield return RunSequential(actionRoutines, phaseVersion);
+            yield return RunSequential(actionRoutines);
         else
-            yield return RunParallel(actionRoutines, phaseVersion);
-
-        if (ArabellaPhaseTransition.TurnInterruptVersion != phaseVersion)
-            yield break;
+            yield return RunParallel(actionRoutines);
 
         // 다음 행동과 이어지지 않는 슬롯은 타임라인이 이동하기 전에 카메라와
         // BattleEffect 회전을 함께 복귀시킵니다. 빈 슬롯 이동 중 기울어진 화면이 남지 않게 합니다.
@@ -855,16 +851,13 @@ public class BattleActionRunner
         yield return BattleCameraController.Instance.ReturnDefaultIfNotHeld();
     }
 
-    private IEnumerator RunSequential(List<ActionRoutine> routines, int phaseVersion)
+    private IEnumerator RunSequential(List<ActionRoutine> routines)
     {
         if (routines == null || routines.Count == 0)
             yield break;
 
         for (int i = 0; i < routines.Count; i++)
         {
-            if (ArabellaPhaseTransition.TurnInterruptVersion != phaseVersion)
-                yield break;
-
             if (i > 0 &&
                 ShouldReturnCameraBetweenSequentialActions(routines[i - 1], routines[i]) &&
                 BattleCameraController.Instance != null)
@@ -872,7 +865,7 @@ public class BattleActionRunner
                 yield return BattleCameraController.Instance.ReturnDefault();
             }
 
-            yield return RunSingleWithTimeout(routines[i], phaseVersion);
+            yield return RunSingleWithTimeout(routines[i]);
         }
     }
 
@@ -899,7 +892,7 @@ public class BattleActionRunner
                actionRoutine.Label.StartsWith("Monster:", StringComparison.Ordinal);
     }
 
-    private IEnumerator RunSingleWithTimeout(ActionRoutine actionRoutine, int phaseVersion)
+    private IEnumerator RunSingleWithTimeout(ActionRoutine actionRoutine)
     {
         if (actionRoutine == null || actionRoutine.Routine == null)
             yield break;
@@ -959,7 +952,7 @@ public class BattleActionRunner
         activeActionInfo = BattleConsecutiveActionInfo.Single;
     }
 
-    private IEnumerator RunParallel(List<ActionRoutine> routines, int phaseVersion)
+    private IEnumerator RunParallel(List<ActionRoutine> routines)
     {
         if (routines == null || routines.Count == 0)
             yield break;

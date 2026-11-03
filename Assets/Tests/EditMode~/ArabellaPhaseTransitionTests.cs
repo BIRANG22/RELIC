@@ -131,6 +131,60 @@ public class ArabellaPhaseTransitionTests
         }));
     }
 
+    [Test]
+    public void RemoveCommandsAfterTimelineSlot_PreservesCurrentSlotAndRemovesOnlyTargetLater()
+    {
+        MonsterRuntimeData arabella = new MonsterRuntimeData(
+            "runtime-arabella",
+            CreateMaster("Mon_12_1", 1, 80, 0));
+        MonsterRuntimeData otherMonster = new MonsterRuntimeData(
+            "runtime-other",
+            CreateMaster("Mon_01", 1, 20, 0));
+
+        BattleActionBatch currentBatch = new BattleActionBatch();
+        currentBatch.SetTimelineSlotIndexIfNeeded(1);
+        MonsterReservedCommand currentArabellaCommand = new MonsterReservedCommand(arabella, null);
+        currentBatch.MonsterCommands.Add(currentArabellaCommand);
+
+        BattleActionBatch sameSlotLaterBatch = new BattleActionBatch();
+        sameSlotLaterBatch.SetTimelineSlotIndexIfNeeded(1);
+        MonsterReservedCommand sameSlotArabellaCommand = new MonsterReservedCommand(arabella, null);
+        sameSlotLaterBatch.MonsterCommands.Add(sameSlotArabellaCommand);
+
+        BattleActionBatch laterBatch = new BattleActionBatch();
+        laterBatch.SetTimelineSlotIndexIfNeeded(2);
+        MonsterReservedCommand laterArabellaCommand = new MonsterReservedCommand(arabella, null);
+        MonsterReservedCommand laterOtherCommand = new MonsterReservedCommand(otherMonster, null);
+        laterBatch.MonsterCommands.Add(laterArabellaCommand);
+        laterBatch.MonsterCommands.Add(laterOtherCommand);
+
+        List<BattleActionBatch> batches = new List<BattleActionBatch>
+        {
+            currentBatch,
+            sameSlotLaterBatch,
+            laterBatch
+        };
+
+        int removed = ArabellaPhaseTransition.RemoveCommandsAfterTimelineSlot(
+            batches,
+            1,
+            arabella.RuntimeId);
+
+        Assert.That(removed, Is.EqualTo(1));
+        CollectionAssert.Contains(currentBatch.MonsterCommands, currentArabellaCommand);
+        CollectionAssert.Contains(sameSlotLaterBatch.MonsterCommands, sameSlotArabellaCommand);
+        CollectionAssert.DoesNotContain(laterBatch.MonsterCommands, laterArabellaCommand);
+        CollectionAssert.Contains(laterBatch.MonsterCommands, laterOtherCommand);
+    }
+
+    [Test]
+    public void PhaseOneDefeatedAnimationState_IsDedicatedArtistReplaceableState()
+    {
+        Assert.That(
+            ArabellaPhaseTransition.PhaseOneDefeatedAnimationState,
+            Is.EqualTo("PhaseOneDefeated"));
+    }
+
     private static MonsterMasterData CreateMaster(
         string monsterId,
         int phase,

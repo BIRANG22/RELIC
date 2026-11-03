@@ -9,6 +9,7 @@ public static class ArabellaPhaseTransition
 {
     public const string PhaseOneMonsterId = "Mon_12_1";
     public const string PhaseTwoMonsterId = "Mon_12_2";
+    public const string PhaseOneDefeatedAnimationState = "PhaseOneDefeated";
 
     // 2페이즈 HP 표시가 차오르는 최대 시간(기본 전투 속도 기준, 초).
     private const float PhaseTwoHPFillDuration = 1f;
@@ -16,23 +17,35 @@ public static class ArabellaPhaseTransition
     // Incremented only when phase one successfully changes to phase two.
     public static int TurnInterruptVersion { get; private set; }
 
-    // 현재 페이즈 전환으로 인해 아직 시작하지 않은 예약은 실행하지 않습니다.
-    public static bool SkipRemainingReservations { get; private set; }
-
-    public static void ResetSkippedReservations()
-    {
-        SkipRemainingReservations = false;
-    }
-
-    public static void MarkRemainingReservationsSkipped()
-    {
-        SkipRemainingReservations = true;
-    }
-
     private static MonsterUnit pendingMonster;
     private static MonsterRuntimeData pendingPhaseTwo;
 
     public static bool HasPendingTransition => pendingMonster != null && pendingPhaseTwo != null;
+    public static string PendingMonsterRuntimeId =>
+        pendingMonster != null && pendingMonster.RuntimeData != null
+            ? pendingMonster.RuntimeData.RuntimeId
+            : "";
+
+    public static int RemoveCommandsAfterTimelineSlot(
+        IList<BattleActionBatch> batches,
+        int completedTimelineSlotIndex,
+        string monsterRuntimeId)
+    {
+        if (batches == null || string.IsNullOrWhiteSpace(monsterRuntimeId))
+            return 0;
+
+        int removed = 0;
+        for (int i = 0; i < batches.Count; i++)
+        {
+            BattleActionBatch batch = batches[i];
+            if (batch == null || batch.TimelineSlotIndex <= completedTimelineSlotIndex)
+                continue;
+
+            removed += batch.RemoveMonsterCommandsByRuntimeId(monsterRuntimeId);
+        }
+
+        return removed;
+    }
 
     public static bool IsTransitionPending(MonsterUnit monster)
     {
@@ -70,6 +83,15 @@ public static class ArabellaPhaseTransition
         pendingMonster = monster;
         pendingPhaseTwo = phaseTwo;
         NotifyPhaseTwoStarted();
+    }
+
+    public static void PlayPendingPhaseOneDefeatedPresentation()
+    {
+        if (pendingMonster == null)
+            return;
+
+        BattleUnitAnimator animator = pendingMonster.GetComponent<BattleUnitAnimator>();
+        animator?.PlayArabellaPhaseOneDefeated();
     }
 
     // 현재 실행 중인 스킬이 끝난 후에만 2페이즈 데이터와 연출을 적용합니다.

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
 
@@ -10,50 +9,20 @@ public static class ExplorationResearchService
         float rewardMultiplier = 1f)
     {
         result ??= new ExplorationResultData();
-        rewardMultiplier = Mathf.Max(0f, rewardMultiplier);
-        List<RelicRarity> relicRarities = new();
-        List<SkillRarity> skillRarities = new();
-
-        for (int i = 0; i < result.RelicIds.Count; i++)
-        {
-            if (dataManager?.RelicDatabase != null &&
-                dataManager.RelicDatabase.TryGet(result.RelicIds[i], out RelicData relic) &&
-                RelicRarityUtility.TryParseChestRarity(relic.Rarity, out RelicRarity rarity))
-            {
-                relicRarities.Add(rarity);
-            }
-        }
-
-        for (int i = 0; i < result.NewSkillIds.Count; i++)
-        {
-            if (dataManager?.SkillDatabase != null &&
-                dataManager.SkillDatabase.TryGet(result.NewSkillIds[i], out SkillMasterData skill))
-            {
-                skillRarities.Add(skill.Rarity);
-            }
-        }
-
-        ResearchConversionBreakdown conversion = ResearchConversionPolicy.Calculate(
-            result.Remnant,
-            relicRarities,
-            skillRarities);
-
-        int remnantBlue = ScaleReward(conversion.RemnantBlue, rewardMultiplier);
-        int relicBlue = ScaleReward(conversion.RelicBlue, rewardMultiplier);
-        int skillBlue = ScaleReward(conversion.SkillBlue, rewardMultiplier);
+        int remnantBlue = CalculateOneToOneBlueDustium(result.Remnant);
 
         return new PendingResearchResultData
         {
             ExplorationResult = result,
             RemnantBlue = remnantBlue,
-            RelicBlue = relicBlue,
-            SkillBlue = skillBlue,
-            TotalBlue = remnantBlue + relicBlue + skillBlue
+            RelicBlue = 0,
+            SkillBlue = 0,
+            TotalBlue = remnantBlue
         };
     }
 
-    private static int ScaleReward(int value, float multiplier)
+    public static int CalculateOneToOneBlueDustium(int redDustium)
     {
-        return Mathf.FloorToInt(Mathf.Max(0, value) * multiplier);
+        return Mathf.Max(0, redDustium);
     }
 }
