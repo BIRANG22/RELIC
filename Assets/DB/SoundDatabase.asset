@@ -1374,7 +1374,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: S_Core_03
-    vfxPrefab: {fileID: 8776789016844861869, guid: 1396847cc4c493340a193e57c9610278, type: 3}
+    vfxPrefab: {fileID: 8776789016844861869, guid: b9ce7c7e10f3c9846ab377c3b72c10d8, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: 5b7e4af5e540e4d2f9f4b527012fe9dc, type: 3}
       delay: 0
