@@ -108,7 +108,15 @@ public class BattleEffectPlaneRotation : MonoBehaviour
 
     private bool persistentAttackActive;
     private bool releasePersistentAttackRequested;
+    private float syncedReturnDuration = -1f;
+    private AnimationCurve syncedReturnCurve;
     private int lastCollisionFeedbackFrame = -1;
+    private float lastAttackDirection;
+    private bool cameraReturnDriven;
+    private Vector3 cameraReturnPlane1FromPosition;
+    private Vector3 cameraReturnPlane2FromPosition;
+    private Quaternion cameraReturnPlane1FromRotation;
+    private Quaternion cameraReturnPlane2FromRotation;
 
     private Vector3 activePlane1Position;
     private Vector3 activePlane2Position;
@@ -224,6 +232,73 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// 카메라 줌아웃이 시작될 때 호출합니다. 공격 연출의 복귀를 같은 길이와 곡선으로 맞춥니다.
+    /// </summary>
+    public static bool HasActiveAttackRotationFeedback()
+    {
+        return TryResolveController(out BattleEffectPlaneRotation controller) &&
+               controller.persistentAttackActive;
+    }
+
+    public static void BeginCameraReturnFeedback(float duration, AnimationCurve curve)
+    {
+        if (!TryResolveController(out BattleEffectPlaneRotation controller))
+            return;
+
+        controller.SynchronizeCameraReturn(duration, curve);
+    }
+
+    /// <summary>
+    /// 카메라가 실제로 이동한 보간값을 전달받아 같은 프레임에 Plane도 복귀시킵니다.
+    /// </summary>
+    public static void UpdateCameraReturnFeedback(float curvedProgress)
+    {
+        if (!TryResolveController(out BattleEffectPlaneRotation controller))
+            return;
+
+        controller.ApplyCameraReturnProgress(curvedProgress);
+    }
+
+    private void SynchronizeCameraReturn(float duration, AnimationCurve curve)
+    {
+        if (!persistentAttackActive)
+            return;
+
+        // 각자 코루틴을 진행하면 실행 순서에 따라 한 프레임 늦을 수 있으므로
+        // 카메라 이동 루프에서 직접 동일한 보간값을 전달받습니다.
+        StopCurrentRoutineWithoutReset();
+        cameraReturnPlane1FromPosition = plane1 != null ? plane1.localPosition : activePlane1Position;
+        cameraReturnPlane2FromPosition = plane2 != null ? plane2.localPosition : activePlane2Position;
+        cameraReturnPlane1FromRotation = plane1 != null ? plane1.localRotation : activePlane1Rotation;
+        cameraReturnPlane2FromRotation = plane2 != null ? plane2.localRotation : activePlane2Rotation;
+        cameraReturnDriven = true;
+        releasePersistentAttackRequested = false;
+    }
+
+    private void ApplyCameraReturnProgress(float progress)
+    {
+        if (!cameraReturnDriven)
+            return;
+
+        float t = Mathf.Clamp01(progress);
+        ApplyValues(
+            Vector3.LerpUnclamped(cameraReturnPlane1FromPosition, plane1IdlePosition, t),
+            Quaternion.SlerpUnclamped(cameraReturnPlane1FromRotation, plane1IdleQuaternion, t),
+            Vector3.LerpUnclamped(cameraReturnPlane2FromPosition, plane2IdlePosition, t),
+            Quaternion.SlerpUnclamped(cameraReturnPlane2FromRotation, plane2IdleQuaternion, t));
+
+        if (t >= 1f)
+        {
+            cameraReturnDriven = false;
+            persistentAttackActive = false;
+            releasePersistentAttackRequested = false;
+            ApplyIdleValues();
+            if (restoreNoiseFlowAfterHit)
+                RestoreNoiseFlow();
+        }
+    }
+
     private void BeginPersistentAttackEffect(PlaneAttackType attackType)
     {
         FindPlanesAutomatically();
@@ -231,31 +306,41 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         if (plane1 == null && plane2 == null)
             return;
 
-        if (persistentAttackActive && !releasePersistentAttackRequested)
-            return;
-
-        // 직전 공격의 복귀가 시작된 직후 다음 공격이 실행되면
-        // 복귀 연출을 중단하고 새 공격 연출을 즉시 시작합니다.
+        // 같은 줌 상태에서 공격/반격이 이어져도 새 행동마다 회전을 갱신합니다.
+        // 기본 각도로 되돌리지 않고 현재 각도에서 반대 방향으로 전환합니다.
+        Vector3 from1Position = plane1 != null ? plane1.localPosition : plane1IdlePosition;
+        Vector3 from2Position = plane2 != null ? plane2.localPosition : plane2IdlePosition;
+        Quaternion from1Rotation = plane1 != null ? plane1.localRotation : plane1IdleQuaternion;
+        Quaternion from2Rotation = plane2 != null ? plane2.localRotation : plane2IdleQuaternion;
         StopCurrentRoutineWithoutReset();
-        persistentAttackActive = false;
-        releasePersistentAttackRequested = false;
-        ApplyIdleValues();
-
+        cameraReturnDriven = false;
         persistentAttackActive = true;
         releasePersistentAttackRequested = false;
+        syncedReturnDuration = -1f;
+        syncedReturnCurve = null;
 
-        float rotationAmount = attackType == PlaneAttackType.Ranged
+        float amount = attackType == PlaneAttackType.Ranged
             ? rangedRotationAmount
             : meleeRotationAmount;
-
-        PrepareActiveValues(rotationAmount, attackType.ToString());
-        hitRoutine = StartCoroutine(PlayPersistentAttackRoutine());
+        lastAttackDirection = lastAttackDirection == 0f
+            ? (Random.value < 0.5f ? -1f : 1f)
+            : -lastAttackDirection;
+        PrepareActiveValues(amount, attackType.ToString(), lastAttackDirection);
+        hitRoutine = StartCoroutine(PlayPersistentAttackRoutine(
+            from1Position, from1Rotation, from2Position, from2Rotation));
     }
 
     private void EndPersistentAttackEffect()
     {
-        if (!persistentAttackActive)
+        if (!persistentAttackActive || cameraReturnDriven)
             return;
+
+        // 카메라가 확대 중이면, 공격 종료 직후가 아니라 줌아웃 시작에 맞춰 복귀합니다.
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController != null && cameraController.IsCombatZoomActive)
+        {
+            return;
+        }
 
         releasePersistentAttackRequested = true;
     }
@@ -294,9 +379,11 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         hitRoutine = StartCoroutine(PlayOneShotRoutine());
     }
 
-    private void PrepareActiveValues(float rotationAmount, string presentationName)
+    private void PrepareActiveValues(float rotationAmount, string presentationName, float forcedDirection = 0f)
     {
-        float direction = Random.value < 0.5f ? -1f : 1f;
+        float direction = forcedDirection == 0f
+            ? (Random.value < 0.5f ? -1f : 1f)
+            : forcedDirection;
         float signedAmount = Mathf.Abs(rotationAmount) * direction;
 
         activePlane1Position = plane1IdlePosition;
@@ -325,18 +412,20 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         }
     }
 
-    private IEnumerator PlayPersistentAttackRoutine()
+    private IEnumerator PlayPersistentAttackRoutine(
+        Vector3 from1Position, Quaternion from1Rotation,
+        Vector3 from2Position, Quaternion from2Rotation)
     {
         SetNoiseFlowX(activeNoiseFlowX);
 
         yield return AnimateValues(
-            plane1IdlePosition,
+            from1Position,
             activePlane1Position,
-            plane1IdleQuaternion,
+            from1Rotation,
             activePlane1Rotation,
-            plane2IdlePosition,
+            from2Position,
             activePlane2Position,
-            plane2IdleQuaternion,
+            from2Rotation,
             activePlane2Rotation,
             moveOutDuration,
             moveOutCurve);
@@ -347,10 +436,12 @@ public class BattleEffectPlaneRotation : MonoBehaviour
             yield return null;
         }
 
-        yield return ReturnToIdleRoutine();
+        yield return ReturnToIdleRoutine(syncedReturnDuration, syncedReturnCurve);
 
         persistentAttackActive = false;
         releasePersistentAttackRequested = false;
+        syncedReturnDuration = -1f;
+        syncedReturnCurve = null;
         hitRoutine = null;
     }
 
@@ -382,7 +473,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         hitRoutine = null;
     }
 
-    private IEnumerator ReturnToIdleRoutine()
+    private IEnumerator ReturnToIdleRoutine(float durationOverride = -1f, AnimationCurve curveOverride = null)
     {
         Vector3 plane1FromPosition = plane1 != null
             ? plane1.localPosition
@@ -407,8 +498,8 @@ public class BattleEffectPlaneRotation : MonoBehaviour
             plane2IdlePosition,
             plane2FromRotation,
             plane2IdleQuaternion,
-            returnDuration,
-            returnCurve);
+            durationOverride >= 0f ? durationOverride : returnDuration,
+            curveOverride ?? returnCurve);
 
         ApplyIdleValues();
 
@@ -431,6 +522,10 @@ public class BattleEffectPlaneRotation : MonoBehaviour
     {
         persistentAttackActive = false;
         releasePersistentAttackRequested = false;
+        cameraReturnDriven = false;
+        lastAttackDirection = 0f;
+        syncedReturnDuration = -1f;
+        syncedReturnCurve = null;
         StopCurrentRoutineWithoutReset();
         ApplyIdleValues();
 

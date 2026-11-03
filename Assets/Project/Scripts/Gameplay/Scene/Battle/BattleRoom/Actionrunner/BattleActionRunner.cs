@@ -68,6 +68,8 @@ public class BattleActionRunner
     private readonly BattleConsecutiveActionPlan consecutiveActionPlan;
     private readonly float multiHitActionInterval;
     private BattleConsecutiveActionInfo activeActionInfo = BattleConsecutiveActionInfo.Single;
+    // 같은 스킬의 다단히트는 한 번만 기울이고, 다음 스킬/반격에서 다시 방향을 전환합니다.
+    private bool playerAttackPlaneStartedForCurrentSkill;
     private BattleGridEffectController gridEffectController;
     private readonly HashSet<string> nocturnPortalFailedRuntimeIds = new();
 
@@ -1926,6 +1928,7 @@ public class BattleActionRunner
 
     private IEnumerator ExecutePlayerSkill(PlayerReservedCommand command)
     {
+        playerAttackPlaneStartedForCurrentSkill = false;
         BattleCharacter attacker = unitFinder.FindBattleCharacter(command.CharacterId);
 
         if (attacker == null)
@@ -1966,9 +1969,6 @@ public class BattleActionRunner
         ShowExecutionRange(BuildPlayerExecutionRange(command));
 
         bool shouldControlAttackPlane = ShouldControlAttackPlaneForPlayerSkill(command);
-        PlaneAttackType playerPlaneAttackType = ShouldSkipPlayerSkillCamera(command)
-            ? PlaneAttackType.Ranged
-            : PlaneAttackType.Melee;
 
         try
         {
@@ -1989,12 +1989,6 @@ public class BattleActionRunner
                     BattleCameraController.Instance != null)
                     yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
 
-                // 카메라 포커스가 끝난 뒤 공격 모션과 함께 Plane 연출을 시작합니다.
-                BeginAttackPlaneFeedbackIfNeeded(
-                    shouldControlAttackPlane,
-                    playerPlaneAttackType,
-                    HasPlayerAttackPlaneRecipient(attacker, command));
-
                 if (attackerAnimator != null)
                 {
                     attackerAnimator.PlaySkillAction(command);
@@ -2003,6 +1997,9 @@ public class BattleActionRunner
                     if (prepareWaitDuration > 0f)
                         yield return new WaitForSeconds(prepareWaitDuration);
                 }
+
+                // Prepare가 아니라 실제 Action 애니메이션이 시작되는 시점에 기울입니다.
+                BeginPlayerAttackPlaneAtActionStart(attacker, command);
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
                 {
@@ -2060,12 +2057,6 @@ public class BattleActionRunner
                     BattleCameraController.Instance != null)
                     yield return BattleCameraController.Instance.ZoomForRangedSkill(attacker.transform);
 
-                // 카메라 포커스가 끝난 뒤 공격 모션과 함께 Plane 연출을 시작합니다.
-                BeginAttackPlaneFeedbackIfNeeded(
-                    shouldControlAttackPlane,
-                    playerPlaneAttackType,
-                    HasPlayerAttackPlaneRecipient(attacker, command));
-
                 if (attackerAnimator != null)
                 {
                     attackerAnimator.PlaySkillAction(command);
@@ -2074,6 +2065,9 @@ public class BattleActionRunner
                     if (prepareWaitDuration > 0f)
                         yield return new WaitForSeconds(prepareWaitDuration);
                 }
+
+                // Prepare가 아니라 실제 Action 애니메이션이 시작되는 시점에 기울입니다.
+                BeginPlayerAttackPlaneAtActionStart(attacker, command);
 
                 if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
                 {
@@ -2146,12 +2140,6 @@ public class BattleActionRunner
                 yield break;
             }
 
-            // 포커스 이동 중 미리 기울어지는 현상을 방지합니다.
-            BeginAttackPlaneFeedbackIfNeeded(
-                shouldControlAttackPlane,
-                playerPlaneAttackType,
-                HasPlayerAttackPlaneRecipient(attacker, command));
-
             // 대상이 없는 공격도 효과 처리 루틴을 실행해야 Count만큼의
             // 공격 모션을 모두 재생할 수 있습니다.
             yield return ExecutePlayerSkillEffectsToMonsters(
@@ -2168,6 +2156,7 @@ public class BattleActionRunner
         finally
         {
             EndAttackPlaneFeedbackIfNeeded(shouldControlAttackPlane);
+            playerAttackPlaneStartedForCurrentSkill = false;
             BattleEquipmentEffectService.ClearMoveFirstAttackPowerIfAttack(
                 attacker != null ? attacker.RuntimeData : command.UserRuntime,
                 command.SkillData);
@@ -2300,6 +2289,10 @@ public class BattleActionRunner
             if (attackerAnimator != null)
             {
                 attackerAnimator.PlaySkillAction(command);
+                float prepareWaitDuration = attackerAnimator.LastScheduledPrepareWaitDuration;
+                if (prepareWaitDuration > 0f)
+                    yield return new WaitForSeconds(prepareWaitDuration);
+                BeginPlayerAttackPlaneAtActionStart(caster, command);
                 yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
             }
 
@@ -2373,6 +2366,10 @@ public class BattleActionRunner
                 if (attackerAnimator != null)
                 {
                     attackerAnimator.PlaySkillAction(command);
+                    float prepareWaitDuration = attackerAnimator.LastScheduledPrepareWaitDuration;
+                    if (prepareWaitDuration > 0f)
+                        yield return new WaitForSeconds(prepareWaitDuration);
+                    BeginPlayerAttackPlaneAtActionStart(caster, command);
                     yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
                 }
 
@@ -2419,6 +2416,10 @@ public class BattleActionRunner
             if (attackerAnimator != null)
             {
                 attackerAnimator.PlaySkillAction(command);
+                float prepareWaitDuration = attackerAnimator.LastScheduledPrepareWaitDuration;
+                if (prepareWaitDuration > 0f)
+                    yield return new WaitForSeconds(prepareWaitDuration);
+                BeginPlayerAttackPlaneAtActionStart(caster, command);
                 yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
             }
 
@@ -2562,6 +2563,9 @@ public class BattleActionRunner
                             targetAnimator.SuppressRepeatedMultiHitReaction = hitIndex > 0;
                 }
 
+                if (attackerAnimator == null)
+                    BeginPlayerAttackPlaneAtActionStart(caster, command);
+
                 if (attackerAnimator != null)
                 {
                     attackerAnimator.PlaySkillAction(command, hitIndex);
@@ -2571,6 +2575,8 @@ public class BattleActionRunner
                     float prepareWaitDuration = attackerAnimator.LastScheduledPrepareWaitDuration;
                     if (prepareWaitDuration > 0f)
                         yield return new WaitForSeconds(prepareWaitDuration);
+
+                    BeginPlayerAttackPlaneAtActionStart(caster, command);
 
                     // Target VFX도 Prepare가 끝난 뒤 Action 시점에 재생합니다.
                     yield return PlayPlayerSkillTargetVfxIfNeeded(attackerAnimator, command);
@@ -2825,7 +2831,7 @@ public class BattleActionRunner
 
             // Display reactive monster actions that are not on the timeline.
             BattleEffectInfoFeed.ShowMonster(counterCommand);
-            yield return ExecuteMonsterSkill(counterCommand);
+            yield return ExecuteMonsterSkill(counterCommand, isCounterAttack: true);
 
             if (caster.RuntimeData.IsDead)
                 yield break;
@@ -4688,7 +4694,7 @@ public class BattleActionRunner
         return killedByCrash;
     }
 
-    private IEnumerator ExecuteMonsterSkill(MonsterReservedCommand command)
+    private IEnumerator ExecuteMonsterSkill(MonsterReservedCommand command, bool isCounterAttack = false)
     {
         if (command == null || command.SkillData == null)
             yield break;
@@ -4705,8 +4711,8 @@ public class BattleActionRunner
                 BattleSkillNamePopupPresentation.GetDisplayName(command));
         }
 
-        bool shouldControlAttackPlane = ShouldControlAttackPlaneForMonsterSkill(command);
-        PlaneAttackType monsterPlaneAttackType = ShouldSkipMonsterSkillCamera(command)
+        bool shouldControlAttackPlane = isCounterAttack || ShouldControlAttackPlaneForMonsterSkill(command);
+        PlaneAttackType monsterPlaneAttackType = isCounterAttack ? PlaneAttackType.Melee : ShouldSkipMonsterSkillCamera(command)
             ? PlaneAttackType.Ranged
             : PlaneAttackType.Melee;
 
@@ -4843,7 +4849,8 @@ public class BattleActionRunner
             BeginAttackPlaneFeedbackIfNeeded(
                 shouldControlAttackPlane,
                 monsterPlaneAttackType,
-                HasAliveMonsterSkillTarget(monster, command));
+                // 드라우그 반격은 실제 사정거리 밖이어도 공격 행동을 재생하므로 회전도 실행합니다.
+                isCounterAttack || HasAliveMonsterSkillTarget(monster, command));
 
             bool hasDamageHitEffect = monsterSkillEffectService.HasDamageHitEffect(command);
 
@@ -5365,6 +5372,27 @@ public class BattleActionRunner
         return command != null &&
                command.SkillData != null &&
                command.SkillData.TimelineNotation == TimelineActionType.Attack;
+    }
+
+    private void BeginPlayerAttackPlaneAtActionStart(
+        BattleCharacter attacker,
+        PlayerReservedCommand command)
+    {
+        if (!ShouldControlAttackPlaneForPlayerSkill(command) ||
+            playerAttackPlaneStartedForCurrentSkill)
+            return;
+
+        bool hasRecipient = HasPlayerAttackPlaneRecipient(attacker, command);
+        if (!hasRecipient)
+            return;
+
+        // Effect Count가 2~5인 다단히트도 스킬 단위로 최초 Action에서만 회전합니다.
+        // 반격은 별도 몬스터 행동이므로 이 플래그와 관계없이 독립적으로 회전합니다.
+        playerAttackPlaneStartedForCurrentSkill = true;
+        BeginAttackPlaneFeedbackIfNeeded(
+            true,
+            ShouldSkipPlayerSkillCamera(command) ? PlaneAttackType.Ranged : PlaneAttackType.Melee,
+            true);
     }
 
     private void BeginAttackPlaneFeedbackIfNeeded(
