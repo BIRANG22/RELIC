@@ -98,6 +98,7 @@ public sealed class SpriteTransformSequence : MonoBehaviour
     private Coroutine runningCoroutine;
     private PlayableGraph clipGraph;
     private Camera sceneCamera;
+    private BattleCameraController battleCameraController;
     private Vector3 originalCameraPosition;
     private Quaternion originalCameraRotation;
     private float originalCameraSize;
@@ -181,7 +182,11 @@ public sealed class SpriteTransformSequence : MonoBehaviour
         if (restoreCameraOnFinish)
             RestoreCameraImmediately();
         else
+        {
+            battleCameraController?.EndCinematicCameraKeepingCurrentPose();
+            battleCameraController = null;
             cameraSnapshotTaken = false;
+        }
     }
 
     [ContextMenu("Apply First Step")]
@@ -283,7 +288,11 @@ public sealed class SpriteTransformSequence : MonoBehaviour
         if (restoreCameraOnFinish && cameraSnapshotTaken)
             yield return RestoreCameraSmoothly();
         else
+        {
+            battleCameraController?.EndCinematicCameraKeepingCurrentPose();
+            battleCameraController = null;
             cameraSnapshotTaken = false;
+        }
 
         // 마지막 스프라이트 상태를 유지한 채 비활성화 전 대기합니다.
         if (deactivateOnFinish && !loop)
@@ -373,6 +382,10 @@ public sealed class SpriteTransformSequence : MonoBehaviour
             originalCameraSize = sceneCamera.orthographicSize;
             cameraSnapshotTaken = true;
         }
+
+        battleCameraController = BattleCameraController.Instance;
+        if (battleCameraController != null)
+            battleCameraController.BeginCinematicCamera();
         return true;
     }
 
@@ -399,10 +412,13 @@ public sealed class SpriteTransformSequence : MonoBehaviour
             float duration = Mathf.Max(0f, motion.duration);
             if (duration <= 0f)
             {
-                if (motion.animatePosition) cam.position = endPosition;
-                if (motion.animateRotation) cam.rotation = endRotation;
-                if (motion.animateOrthographicSize && sceneCamera.orthographic)
-                    sceneCamera.orthographicSize = Mathf.Max(0.01f, motion.orthographicSize);
+                ApplyCameraPose(
+                    endPosition,
+                    endRotation,
+                    motion.orthographicSize,
+                    motion.animatePosition,
+                    motion.animateRotation,
+                    motion.animateOrthographicSize);
                 continue;
             }
 
@@ -424,19 +440,30 @@ public sealed class SpriteTransformSequence : MonoBehaviour
                         Mathf.PerlinNoise(seed, sample) * 2f - 1f,
                         Mathf.PerlinNoise(seed + 47f, sample) * 2f - 1f,
                         0f) * (motion.shakeStrength * attenuation);
-                    cam.position = basePosition + offset;
+                    basePosition += offset;
                 }
-                else cam.position = basePosition;
-                if (motion.animateRotation)
-                    cam.rotation = Quaternion.SlerpUnclamped(startRotation, endRotation, eased);
-                if (motion.animateOrthographicSize && sceneCamera.orthographic)
-                    sceneCamera.orthographicSize = Mathf.Max(0.01f, Mathf.LerpUnclamped(startSize, motion.orthographicSize, eased));
+                Quaternion nextRotation = motion.animateRotation
+                    ? Quaternion.SlerpUnclamped(startRotation, endRotation, eased)
+                    : startRotation;
+                float nextSize = motion.animateOrthographicSize
+                    ? Mathf.LerpUnclamped(startSize, motion.orthographicSize, eased)
+                    : startSize;
+                ApplyCameraPose(
+                    basePosition,
+                    nextRotation,
+                    nextSize,
+                    motion.animatePosition || motion.shake,
+                    motion.animateRotation,
+                    motion.animateOrthographicSize);
                 yield return null;
             }
-            cam.position = motion.animatePosition ? endPosition : startPosition;
-            if (motion.animateRotation) cam.rotation = endRotation;
-            if (motion.animateOrthographicSize && sceneCamera.orthographic)
-                sceneCamera.orthographicSize = Mathf.Max(0.01f, motion.orthographicSize);
+            ApplyCameraPose(
+                motion.animatePosition ? endPosition : startPosition,
+                endRotation,
+                motion.orthographicSize,
+                motion.animatePosition,
+                motion.animateRotation,
+                motion.animateOrthographicSize);
         }
     }
 
@@ -456,10 +483,13 @@ public sealed class SpriteTransformSequence : MonoBehaviour
             float progress = Mathf.Clamp01(elapsed / duration);
             float eased = cameraRestoreEasing != null && cameraRestoreEasing.length > 0
                 ? cameraRestoreEasing.Evaluate(progress) : progress;
-            cam.position = Vector3.LerpUnclamped(startPosition, originalCameraPosition, eased);
-            cam.rotation = Quaternion.SlerpUnclamped(startRotation, originalCameraRotation, eased);
-            if (sceneCamera.orthographic)
-                sceneCamera.orthographicSize = Mathf.Max(0.01f, Mathf.LerpUnclamped(startSize, originalCameraSize, eased));
+            ApplyCameraPose(
+                Vector3.LerpUnclamped(startPosition, originalCameraPosition, eased),
+                Quaternion.SlerpUnclamped(startRotation, originalCameraRotation, eased),
+                Mathf.LerpUnclamped(startSize, originalCameraSize, eased),
+                true,
+                true,
+                true);
             yield return null;
         }
         RestoreCameraImmediately();
@@ -470,11 +500,50 @@ public sealed class SpriteTransformSequence : MonoBehaviour
         if (!cameraSnapshotTaken) return;
         if (sceneCamera != null)
         {
-            sceneCamera.transform.position = originalCameraPosition;
-            sceneCamera.transform.rotation = originalCameraRotation;
-            if (sceneCamera.orthographic) sceneCamera.orthographicSize = originalCameraSize;
+            if (battleCameraController != null)
+            {
+                battleCameraController.RestoreCinematicCameraImmediate();
+            }
+            else
+            {
+                sceneCamera.transform.position = originalCameraPosition;
+                sceneCamera.transform.rotation = originalCameraRotation;
+                if (sceneCamera.orthographic) sceneCamera.orthographicSize = originalCameraSize;
+            }
         }
+        battleCameraController = null;
         cameraSnapshotTaken = false;
+    }
+
+    private void ApplyCameraPose(
+        Vector3 position,
+        Quaternion rotation,
+        float orthographicSize,
+        bool applyPosition,
+        bool applyRotation,
+        bool applyOrthographicSize)
+    {
+        if (battleCameraController != null)
+        {
+            battleCameraController.ApplyCinematicCameraPose(
+                position,
+                rotation,
+                orthographicSize,
+                applyPosition,
+                applyRotation,
+                applyOrthographicSize);
+            return;
+        }
+
+        if (sceneCamera == null)
+            return;
+
+        if (applyPosition)
+            sceneCamera.transform.position = position;
+        if (applyRotation)
+            sceneCamera.transform.rotation = rotation;
+        if (applyOrthographicSize && sceneCamera.orthographic)
+            sceneCamera.orthographicSize = Mathf.Max(0.01f, orthographicSize);
     }
 
     /// <summary>

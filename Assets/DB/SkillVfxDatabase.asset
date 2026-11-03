@@ -199,7 +199,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 6146242646196516242, guid: 6c8b4d4c8fdfc694ab00df6bbfb3a377, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -324,8 +324,8 @@ MonoBehaviour:
       proxySortingWorldYOffset: 0
       proxyYMultiplier: 100
     ProjectileVfx:
-      missilePrefab: {fileID: 3089161840895046484, guid: bdfd9b09d03c1df439fdfe5388fe3af1, type: 3}
-      impactPrefab: {fileID: 7652191520742678840, guid: b426a754fe9221547acc8c8c8be1c02d, type: 3}
+      missilePrefab: {fileID: 0}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -535,7 +535,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 5464498477634507533, guid: efde17f5b63599d408797dde95378f89, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -577,7 +577,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 2841605795099109794, guid: c6af3d6fbc60e0c48a4e68a3718f2d73, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -661,7 +661,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -703,7 +703,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -745,7 +745,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -787,7 +787,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -829,7 +829,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -871,7 +871,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -913,7 +913,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -955,7 +955,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -997,7 +997,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1039,7 +1039,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1081,7 +1081,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1123,7 +1123,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1165,7 +1165,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1207,7 +1207,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1249,7 +1249,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1291,7 +1291,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1333,7 +1333,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1375,7 +1375,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1417,7 +1417,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1459,7 +1459,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1501,7 +1501,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1543,7 +1543,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1585,7 +1585,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1627,7 +1627,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1669,7 +1669,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1711,7 +1711,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1753,7 +1753,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1795,7 +1795,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1837,7 +1837,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1879,7 +1879,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1921,7 +1921,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -1963,7 +1963,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -2005,7 +2005,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -2047,7 +2047,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -2089,7 +2089,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -2131,7 +2131,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -2173,7 +2173,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -2215,7 +2215,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -2257,7 +2257,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -2299,7 +2299,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0
@@ -2341,7 +2341,7 @@ MonoBehaviour:
       proxyYMultiplier: 100
     ProjectileVfx:
       missilePrefab: {fileID: 0}
-      impactPrefab: {fileID: 3827938958505209325, guid: 810441603173ea849ae4c8ebc6d1a31d, type: 3}
+      impactPrefab: {fileID: 0}
       missileFlipType: 2
       impactFlipType: 2
       launchDelay: 0

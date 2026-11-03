@@ -38,6 +38,14 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField, Min(0f)] private float impactRecoverySpeedDuration = 0.18f;
     [SerializeField] private bool useUnscaledTimeForImpact = true;
 
+    [Header("Directional Impact Beats")]
+    [SerializeField, Min(0f)] private float impactCompressionDistance = 0.08f;
+    [SerializeField, Min(0f)] private float impactRecoilDistance = 0.16f;
+    [SerializeField, Min(0f)] private float impactOvershootDistance = 0.035f;
+    [SerializeField, Min(0f)] private float impactCompressionDuration = 0.035f;
+    [SerializeField, Min(0f)] private float impactRecoilDuration = 0.045f;
+    [SerializeField, Min(0f)] private float impactSettleDuration = 0.09f;
+
     [Header("Ranged Skill Zoom")]
     [Tooltip("원거리 스킬 실행 시작 시 카메라가 이동할 Z 위치입니다. X/Y는 이동하지 않습니다.")]
     [SerializeField] private float rangedExecutionZoomZPosition = -18f;
@@ -134,11 +142,24 @@ public class BattleCameraController : MonoBehaviour
     private bool isImpactRecoverySpeedActive;
     private float impactRecoveryBaseTimeScale = 1f;
     private int damageImpactRotationIndex;
+    private int nextImpactHorizontalDirection = 1;
+    private bool hasPreparedDamageImpact;
+    private bool hasPreparedRangedImpact;
+    private float preparedImpactBaseX;
+    private float preparedImpactBaseZ;
 
     private Vector2 currentMouseParallax;
     private Vector3 lastMouseParallaxPositionOffset;
     private Quaternion lastMouseParallaxRotationOffset = Quaternion.identity;
     private bool hasAppliedMouseParallax;
+    private Coroutine externalShakeRoutine;
+    private Vector3 externalShakeOffset;
+    private Vector3 appliedExternalShakeOffset;
+    private bool hasAppliedExternalShake;
+    private bool hasCinematicCameraState;
+    private Vector3 cinematicRestorePosition;
+    private Quaternion cinematicRestoreRotation;
+    private float cinematicRestoreSize;
 
     public bool IsCombatZoomActive => hasActiveCombatZoom;
     public bool IsMonsterInfoFocusActive => hasActiveMonsterInfoFocus;
@@ -160,6 +181,8 @@ public class BattleCameraController : MonoBehaviour
 
     private void OnDisable()
     {
+        RestoreCinematicCameraImmediate();
+        StopExternalShake();
         RemoveMouseParallax();
         RestoreTimeScaleIfNeeded();
         CancelImpactRecoverySpeedBoost();
@@ -169,6 +192,7 @@ public class BattleCameraController : MonoBehaviour
 
     private void Update()
     {
+        RemoveExternalShakeOffset();
         RemoveMouseParallax();
         HandleZoomFollowTarget();
     }
@@ -176,6 +200,174 @@ public class BattleCameraController : MonoBehaviour
     private void LateUpdate()
     {
         ApplyMouseParallax();
+        ApplyExternalShakeOffset();
+    }
+
+    public bool UsesCameraTransform(Transform candidate)
+    {
+        if (targetCamera == null)
+            targetCamera = GetComponent<Camera>();
+        if (targetCamera == null)
+            targetCamera = Camera.main;
+
+        return targetCamera != null && candidate == targetCamera.transform;
+    }
+
+    public void FocusMonsterInfoForGridIndex(Transform target, int gridIndex)
+    {
+        int rowCount = Mathf.Max(1, characterSelectionFocusGridRowCount);
+        int columnCount = Mathf.Max(1, characterSelectionFocusGridColumnCount);
+        int centerColumnStartGridIndex = rowCount * (columnCount / 2);
+        bool panelOnLeft = gridIndex < 0 || gridIndex >= centerColumnStartGridIndex;
+        FocusMonsterInfoWithPanelSide(target, panelOnLeft);
+    }
+
+    public bool BeginCinematicCamera()
+    {
+        if (targetCamera == null)
+            targetCamera = Camera.main;
+        if (targetCamera == null)
+            return false;
+
+        RemoveExternalShakeOffset();
+        RemoveMouseParallax();
+        EndZoomFollowTarget();
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+        ClearImpactOffset();
+
+        if (!hasCinematicCameraState)
+        {
+            cinematicRestorePosition = targetCamera.transform.position;
+            cinematicRestoreRotation = targetCamera.transform.rotation;
+            cinematicRestoreSize = targetCamera.orthographicSize;
+            hasCinematicCameraState = true;
+        }
+
+        return true;
+    }
+
+    public void ApplyCinematicCameraPose(
+        Vector3 position,
+        Quaternion rotation,
+        float orthographicSize,
+        bool applyPosition,
+        bool applyRotation,
+        bool applyOrthographicSize)
+    {
+        if (targetCamera == null || !hasCinematicCameraState)
+            return;
+
+        RemoveExternalShakeOffset();
+        RemoveMouseParallax();
+
+        Transform cameraTransform = targetCamera.transform;
+        if (applyPosition)
+            cameraTransform.position = position;
+        if (applyRotation)
+            cameraTransform.rotation = rotation;
+        if (applyOrthographicSize && targetCamera.orthographic)
+            targetCamera.orthographicSize = Mathf.Max(0.01f, orthographicSize);
+    }
+
+    public void RestoreCinematicCameraImmediate()
+    {
+        if (!hasCinematicCameraState)
+            return;
+
+        if (targetCamera != null)
+        {
+            RemoveExternalShakeOffset();
+            RemoveMouseParallax();
+            targetCamera.transform.SetPositionAndRotation(
+                cinematicRestorePosition,
+                cinematicRestoreRotation);
+            if (targetCamera.orthographic)
+                targetCamera.orthographicSize = cinematicRestoreSize;
+        }
+
+        hasCinematicCameraState = false;
+    }
+
+    public void EndCinematicCameraKeepingCurrentPose()
+    {
+        hasCinematicCameraState = false;
+    }
+
+    public void PlayExternalShake(float duration, float strength, float frequency, bool useUnscaledTime)
+    {
+        StopExternalShake();
+
+        if (!isActiveAndEnabled || targetCamera == null || duration <= 0f || strength <= 0f)
+            return;
+
+        externalShakeRoutine = StartCoroutine(
+            ExternalShakeRoutine(duration, strength, frequency, useUnscaledTime));
+    }
+
+    public void StopExternalShake()
+    {
+        if (externalShakeRoutine != null)
+        {
+            StopCoroutine(externalShakeRoutine);
+            externalShakeRoutine = null;
+        }
+
+        RemoveExternalShakeOffset();
+        externalShakeOffset = Vector3.zero;
+    }
+
+    private IEnumerator ExternalShakeRoutine(
+        float duration,
+        float strength,
+        float frequency,
+        bool useUnscaledTime)
+    {
+        float safeDuration = Mathf.Max(0f, duration);
+        float safeStrength = Mathf.Max(0f, strength);
+        float safeFrequency = Mathf.Max(0f, frequency);
+        float seedX = Random.Range(0f, 1000f);
+        float seedY = Random.Range(0f, 1000f);
+        float elapsed = 0f;
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            float progress = safeDuration > 0f ? Mathf.Clamp01(elapsed / safeDuration) : 1f;
+            float amount = safeStrength * (1f - progress);
+            float sample = elapsed * safeFrequency;
+            externalShakeOffset = new Vector3(
+                (Mathf.PerlinNoise(seedX, sample) * 2f - 1f) * amount,
+                (Mathf.PerlinNoise(seedY, sample) * 2f - 1f) * amount,
+                0f);
+            yield return null;
+        }
+
+        externalShakeOffset = Vector3.zero;
+        externalShakeRoutine = null;
+    }
+
+    private void ApplyExternalShakeOffset()
+    {
+        if (targetCamera == null || externalShakeOffset == Vector3.zero)
+            return;
+
+        appliedExternalShakeOffset = externalShakeOffset;
+        targetCamera.transform.localPosition += appliedExternalShakeOffset;
+        hasAppliedExternalShake = true;
+    }
+
+    private void RemoveExternalShakeOffset()
+    {
+        if (targetCamera == null || !hasAppliedExternalShake)
+            return;
+
+        targetCamera.transform.localPosition -= appliedExternalShakeOffset;
+        appliedExternalShakeOffset = Vector3.zero;
+        hasAppliedExternalShake = false;
     }
 
     public IEnumerator ZoomTo(Transform target)
@@ -795,12 +987,38 @@ public class BattleCameraController : MonoBehaviour
 
         float baseSize = targetCamera.orthographicSize;
         float targetSize = Mathf.Max(0.1f, baseSize - Mathf.Max(0f, impactZoomAmount));
-        float baseZ = targetCamera.transform.position.z;
+        float baseZ = hasPreparedDamageImpact
+            ? preparedImpactBaseZ
+            : targetCamera.transform.position.z;
         float targetZ = usePositionZZoom ? baseZ + Mathf.Max(0f, impactZoomZOffset) : baseZ;
 
+        float baseX = hasPreparedDamageImpact
+            ? preparedImpactBaseX
+            : targetCamera.transform.position.x;
+        int impactDirection = ConsumeNextImpactDirection();
+        float compressionX = CalculateImpactBeatOffset(impactDirection, impactCompressionDistance).x;
+        float recoilX = CalculateImpactBeatOffset(impactDirection, impactRecoilDistance, true).x;
+        float overshootX = CalculateImpactBeatOffset(impactDirection, impactOvershootDistance).x;
+
+        if (!hasPreparedDamageImpact)
+            yield return LerpImpactHorizontalPosition(baseX, baseX + compressionX, impactCompressionDuration);
+
+        hasPreparedDamageImpact = false;
         yield return LerpImpactZoom(baseSize, targetSize, baseZ, targetZ, impactZoomInDuration);
         yield return ShakeAndHitStop();
+        yield return LerpImpactHorizontalPosition(
+            targetCamera.transform.position.x,
+            baseX + recoilX,
+            impactRecoilDuration);
         yield return LerpImpactZoom(targetCamera.orthographicSize, baseSize, targetCamera.transform.position.z, baseZ, impactZoomOutDuration);
+        yield return LerpImpactHorizontalPosition(
+            targetCamera.transform.position.x,
+            baseX + overshootX,
+            impactSettleDuration * 0.45f);
+        yield return LerpImpactHorizontalPosition(
+            targetCamera.transform.position.x,
+            baseX,
+            impactSettleDuration * 0.55f);
 
         if (useOrthographicSizeZoom)
             targetCamera.orthographicSize = baseSize;
@@ -828,26 +1046,47 @@ public class BattleCameraController : MonoBehaviour
         ClearImpactOffset();
 
         float baseSize = targetCamera.orthographicSize;
-        float baseZ = targetCamera.transform.position.z;
+        float baseZ = hasPreparedRangedImpact
+            ? preparedImpactBaseZ
+            : targetCamera.transform.position.z;
         float targetZ = usePositionZZoom
             ? baseZ + Mathf.Max(0f, rangedImpactZoomZOffset)
             : baseZ;
 
-        yield return LerpImpactZoom(
-            baseSize,
-            baseSize,
-            baseZ,
-            targetZ,
-            rangedImpactZoomInDuration);
+        if (!hasPreparedRangedImpact)
+        {
+            yield return LerpImpactZoom(
+                baseSize,
+                baseSize,
+                baseZ,
+                targetZ,
+                rangedImpactZoomInDuration);
+        }
+
+        hasPreparedRangedImpact = false;
 
         yield return ShakeAndHitStop();
+
+        float recoilZ = CalculateImpactDepthBeat(baseZ, rangedImpactZoomZOffset * 0.35f, true);
+        yield return LerpImpactZoom(
+            targetCamera.orthographicSize,
+            baseSize,
+            targetCamera.transform.position.z,
+            recoilZ,
+            impactRecoilDuration);
 
         yield return LerpImpactZoom(
             targetCamera.orthographicSize,
             baseSize,
             targetCamera.transform.position.z,
+            CalculateImpactDepthBeat(baseZ, rangedImpactZoomZOffset * 0.12f, false),
+            rangedImpactZoomOutDuration * 0.45f);
+        yield return LerpImpactZoom(
+            targetCamera.orthographicSize,
+            baseSize,
+            targetCamera.transform.position.z,
             baseZ,
-            rangedImpactZoomOutDuration);
+            rangedImpactZoomOutDuration * 0.55f);
 
         Vector3 restoredPosition = targetCamera.transform.position;
         restoredPosition.z = baseZ;
@@ -1013,6 +1252,131 @@ public class BattleCameraController : MonoBehaviour
         Vector3 finalPosition = targetCamera.transform.position;
         finalPosition.z = targetZ;
         targetCamera.transform.position = finalPosition;
+    }
+
+    private IEnumerator LerpImpactHorizontalPosition(float startX, float targetX, float duration)
+    {
+        if (targetCamera == null)
+            yield break;
+
+        if (duration <= 0f)
+        {
+            Vector3 instantPosition = targetCamera.transform.position;
+            instantPosition.x = targetX;
+            targetCamera.transform.position = ClampCameraPosition(instantPosition);
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += GetImpactDeltaTime();
+            float t = Mathf.Clamp01(elapsed / duration);
+            Vector3 position = targetCamera.transform.position;
+            position.x = Mathf.Lerp(startX, targetX, EvaluateZoomCurve(t));
+            targetCamera.transform.position = ClampCameraPosition(position);
+            yield return null;
+        }
+
+        Vector3 finalPosition = targetCamera.transform.position;
+        finalPosition.x = targetX;
+        targetCamera.transform.position = ClampCameraPosition(finalPosition);
+    }
+
+    public void SetNextImpactDirection(int horizontalDirection)
+    {
+        nextImpactHorizontalDirection = NormalizeImpactDirection(horizontalDirection);
+    }
+
+    public IEnumerator PrepareDamageImpact(int horizontalDirection)
+    {
+        if (targetCamera == null || !enableDamageImpact)
+            yield break;
+
+        SetNextImpactDirection(horizontalDirection);
+        preparedImpactBaseX = targetCamera.transform.position.x;
+        preparedImpactBaseZ = targetCamera.transform.position.z;
+        hasPreparedDamageImpact = true;
+        float compressionX = CalculateImpactBeatOffset(
+            horizontalDirection,
+            impactCompressionDistance).x;
+        yield return LerpImpactHorizontalPosition(
+            preparedImpactBaseX,
+            preparedImpactBaseX + compressionX,
+            impactCompressionDuration);
+    }
+
+    public IEnumerator PrepareRangedDamageImpact()
+    {
+        if (targetCamera == null || !enableDamageImpact)
+            yield break;
+
+        preparedImpactBaseZ = targetCamera.transform.position.z;
+        hasPreparedRangedImpact = true;
+        float compressedZ = CalculateImpactDepthBeat(
+            preparedImpactBaseZ,
+            rangedImpactZoomZOffset,
+            false);
+        yield return LerpImpactZoom(
+            targetCamera.orthographicSize,
+            targetCamera.orthographicSize,
+            preparedImpactBaseZ,
+            compressedZ,
+            rangedImpactZoomInDuration);
+    }
+
+    public void CancelPreparedDamageImpact()
+    {
+        if (targetCamera == null)
+            return;
+
+        if (hasPreparedDamageImpact)
+        {
+            Vector3 position = targetCamera.transform.position;
+            position.x = preparedImpactBaseX;
+            targetCamera.transform.position = ClampCameraPosition(position);
+        }
+
+        if (hasPreparedRangedImpact)
+        {
+            Vector3 position = targetCamera.transform.position;
+            position.z = preparedImpactBaseZ;
+            targetCamera.transform.position = position;
+        }
+
+        hasPreparedDamageImpact = false;
+        hasPreparedRangedImpact = false;
+    }
+
+    private int ConsumeNextImpactDirection()
+    {
+        int direction = nextImpactHorizontalDirection;
+        nextImpactHorizontalDirection = 1;
+        return direction;
+    }
+
+    public static int NormalizeImpactDirection(int horizontalDirection)
+    {
+        return horizontalDirection < 0 ? -1 : 1;
+    }
+
+    public static Vector3 CalculateImpactBeatOffset(
+        int horizontalDirection,
+        float distance,
+        bool invertDirection = false)
+    {
+        float safeDistance = Mathf.Max(0f, distance);
+        int direction = NormalizeImpactDirection(horizontalDirection);
+        if (invertDirection)
+            direction *= -1;
+
+        return new Vector3(direction * safeDistance, 0f, 0f);
+    }
+
+    public static float CalculateImpactDepthBeat(float baseZ, float distance, bool recoil)
+    {
+        float safeDistance = Mathf.Max(0f, distance);
+        return baseZ + (recoil ? -safeDistance : safeDistance);
     }
 
     private IEnumerator ShakeAndHitStop()
@@ -1426,6 +1790,12 @@ public class BattleCameraController : MonoBehaviour
         rangedImpactZoomOutDuration = Mathf.Max(0f, rangedImpactZoomOutDuration);
         impactRecoverySpeedMultiplier = Mathf.Max(1f, impactRecoverySpeedMultiplier);
         impactRecoverySpeedDuration = Mathf.Max(0f, impactRecoverySpeedDuration);
+        impactCompressionDistance = Mathf.Max(0f, impactCompressionDistance);
+        impactRecoilDistance = Mathf.Max(0f, impactRecoilDistance);
+        impactOvershootDistance = Mathf.Max(0f, impactOvershootDistance);
+        impactCompressionDuration = Mathf.Max(0f, impactCompressionDuration);
+        impactRecoilDuration = Mathf.Max(0f, impactRecoilDuration);
+        impactSettleDuration = Mathf.Max(0f, impactSettleDuration);
         monsterInfoFocusDuration = Mathf.Max(0f, monsterInfoFocusDuration);
         monsterInfoReturnDuration = Mathf.Max(0f, monsterInfoReturnDuration);
         monsterInfoFocusSideOffset = Mathf.Max(0f, monsterInfoFocusSideOffset);
