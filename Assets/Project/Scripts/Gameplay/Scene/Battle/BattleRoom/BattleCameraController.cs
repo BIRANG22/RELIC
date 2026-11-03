@@ -1236,6 +1236,10 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             yield break;
 
+        // 카메라/Plane의 기존 복귀 속도를 유지하고 마지막 행동 유닛의 Idle 전환만 맞춥니다.
+        if (hasActiveCombatZoom)
+            BattleUnitAnimator.SyncLastActionIdleWithCameraReturn(returnDuration);
+
         RemoveMouseParallax();
         EndZoomFollowTarget();
 
@@ -1637,7 +1641,7 @@ public class BattleCameraController : MonoBehaviour
         {
             Vector3 instantPosition = targetCamera.transform.position;
             instantPosition.x = targetX;
-            targetCamera.transform.position = ClampCameraPosition(instantPosition);
+            targetCamera.transform.position = ClampCombatImpactPosition(instantPosition);
             yield break;
         }
 
@@ -1648,13 +1652,13 @@ public class BattleCameraController : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / duration);
             Vector3 position = targetCamera.transform.position;
             position.x = Mathf.Lerp(startX, targetX, EvaluateZoomCurve(t));
-            targetCamera.transform.position = ClampCameraPosition(position);
+            targetCamera.transform.position = ClampCombatImpactPosition(position);
             yield return null;
         }
 
         Vector3 finalPosition = targetCamera.transform.position;
         finalPosition.x = targetX;
-        targetCamera.transform.position = ClampCameraPosition(finalPosition);
+        targetCamera.transform.position = ClampCombatImpactPosition(finalPosition);
     }
 
     public void SetNextImpactDirection(int horizontalDirection)
@@ -1708,7 +1712,7 @@ public class BattleCameraController : MonoBehaviour
         {
             Vector3 position = targetCamera.transform.position;
             position.x = preparedImpactBaseX;
-            targetCamera.transform.position = ClampCameraPosition(position);
+            targetCamera.transform.position = ClampCombatImpactPosition(position);
         }
 
         if (hasPreparedRangedImpact)
@@ -1818,7 +1822,7 @@ public class BattleCameraController : MonoBehaviour
                 float y = (Mathf.PerlinNoise(seedY, noiseTime) - 0.5f) * 2f;
 
                 activeImpactOffset = new Vector3(x, y, 0f) * shakeStrength * fade;
-                targetCamera.transform.position = ClampCameraPosition(basePosition + activeImpactOffset);
+                targetCamera.transform.position = ClampCombatImpactPosition(basePosition + activeImpactOffset);
                 lastImpactAppliedPosition = targetCamera.transform.position;
             }
 
@@ -2129,11 +2133,19 @@ public class BattleCameraController : MonoBehaviour
             Vector3 currentPosition = targetCamera.transform.position;
 
             if ((currentPosition - lastImpactAppliedPosition).sqrMagnitude < 0.0001f)
-                targetCamera.transform.position = ClampCameraPosition(currentPosition - activeImpactOffset);
+                targetCamera.transform.position = ClampCombatImpactPosition(currentPosition - activeImpactOffset);
         }
 
         activeImpactOffset = Vector3.zero;
         lastImpactAppliedPosition = targetCamera.transform.position;
+    }
+
+    // 그리드 외곽에서 이미 잡힌 전투 줌 구도가 위치 제한으로 밀리거나
+    // 타격 후 반대 방향으로 튀지 않도록, 전투 줌 중에는 위치 보정을 하지 않습니다.
+    // 일반 카메라 이동 및 정보 패널의 ClampCameraPosition 설정은 유지합니다.
+    private Vector3 ClampCombatImpactPosition(Vector3 position)
+    {
+        return hasActiveCombatZoom ? position : ClampCameraPosition(position);
     }
 
     private Vector3 ClampCameraPosition(Vector3 position)

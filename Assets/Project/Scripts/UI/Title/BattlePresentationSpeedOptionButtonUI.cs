@@ -50,6 +50,6 @@ public sealed class BattlePresentationSpeedOptionButtonUI : MonoBehaviour
     private void RefreshLabel()
     {
         if (speedLabel != null)
-            speedLabel.text = $"{BattlePresentationSpeedSettings.CurrentMultiplier:0.0}x";
+            speedLabel.text = $"{BattlePresentationSpeedSettings.CurrentDisplayMultiplier:0.0}X";
     }
 }
