@@ -30,6 +30,10 @@ public class UISoundTrigger : MonoBehaviour, IPointerEnterHandler, IPointerDownH
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        // Ready 패널 드래그 중에는 버튼의 호버 사운드를 재생하지 않습니다.
+        if (LobbyReadyDragHoverGate.BlockHover(eventData))
+            return;
+
         if (IsLockedCharacterButton())
             return;
 

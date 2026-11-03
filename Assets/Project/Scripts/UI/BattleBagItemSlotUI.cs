@@ -495,6 +495,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (LobbyReadyDragHoverGate.BlockHover(eventData)) return;
         if (UIPanelButton.IsMenuPanelOpen)
             return;
 

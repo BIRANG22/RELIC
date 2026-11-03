@@ -1895,6 +1895,8 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void SetInfoEquipmentSlotHover(int partyIndex, int visibleSlotIndex, bool isCompound, bool hovered)
     {
+        if (hovered && LobbyReadyDragHoverGate.IsDragging &&
+            !LobbyReadyDragHoverGate.AllowsEquipmentTargetHover(isCompound)) return;
         if (partyIndex < 0 || partyIndex >= CharacterCount)
             return;
 
@@ -1928,6 +1930,12 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
     {
         if (!HasInfoPanelCharacter(partyIndex))
             return false;
+
+        // 이미 장착된 장비를 다른 캐릭터로 드래그할 때도 빈 장착 슬롯은
+        // 유효한 드롭 대상입니다. 드래그 종류를 최우선으로 판정해야
+        // 현재 장착물이 없다는 이유로 호버가 사라지지 않습니다.
+        if (LobbyReadyDragHoverGate.IsDragging)
+            return LobbyReadyDragHoverGate.AllowsEquipmentTargetHover(isCompound);
 
         // Ready_Panel에서 아이템을 선택한 동안에는 실제로 장착 가능한 종류의 슬롯만 반응합니다.
         if (readyDetailPinnedSlot != null &&
@@ -2203,6 +2211,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         equipmentDragSourcePartyIndex = -1;
         equipmentDragSourceRuntimeSlotIndex = -1;
         equipmentDragHandled = false;
+        LobbyReadyDragHoverGate.Begin(this, isCompound ? LobbyReadyDragHoverGate.DragKind.Compound : LobbyReadyDragHoverGate.DragKind.Relic);
         CreateEquipmentDragGhost(equipmentDragItemId, eventData);
     }
 
@@ -2224,6 +2233,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
         equipmentDragSourcePartyIndex = partyIndex;
         equipmentDragSourceRuntimeSlotIndex = runtimeSlotIndex;
         equipmentDragHandled = false;
+        LobbyReadyDragHoverGate.Begin(this, isCompound ? LobbyReadyDragHoverGate.DragKind.Compound : LobbyReadyDragHoverGate.DragKind.Relic);
         CreateEquipmentDragGhost(itemId, eventData);
     }
 
@@ -2484,6 +2494,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void ClearEquipmentDragState()
     {
+        LobbyReadyDragHoverGate.End(this);
         DestroyEquipmentDragGhost();
         equipmentDragItemId = null;
         equipmentDragIsCompound = false;
@@ -2849,6 +2860,7 @@ public sealed class LobbyEquipPanelUI : MonoBehaviour
 
     private void OnCharacterBackPointerEnter(int partySlotIndex)
     {
+        if (LobbyReadyDragHoverGate.IsDragging) return;
         if (partySlotIndex < 0 || partySlotIndex >= CharacterCount)
             return;
 
@@ -3510,7 +3522,11 @@ public sealed class LobbyReadyEquipmentPointerRelay : MonoBehaviour,
     }
 
     public void OnPointerClick(PointerEventData eventData) => onClick?.Invoke(eventData);
-    public void OnPointerEnter(PointerEventData eventData) => onPointerEnter?.Invoke(eventData);
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (LobbyReadyDragHoverGate.BlockHover(eventData) && !LobbyReadyDragHoverGate.IsEquipmentDrag) return;
+        onPointerEnter?.Invoke(eventData);
+    }
     public void OnPointerExit(PointerEventData eventData) => onPointerExit?.Invoke(eventData);
     public void OnBeginDrag(PointerEventData eventData) => onBeginDrag?.Invoke(eventData);
     public void OnDrag(PointerEventData eventData) => onDrag?.Invoke(eventData);

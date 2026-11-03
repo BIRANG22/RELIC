@@ -402,6 +402,7 @@ internal sealed class CompoundRecipeMaterialInteraction : MonoBehaviour,
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (LobbyReadyDragHoverGate.BlockHover(eventData)) return;
         if (!interactionEnabled)
             return;
 
@@ -485,6 +486,7 @@ internal sealed class CompoundReferenceAreaHover : MonoBehaviour, IPointerEnterH
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (LobbyReadyDragHoverGate.BlockHover(eventData)) return;
         if (hoverEnabled && tooltip != null && targetRect != null && displayNameProvider != null)
             tooltip.Show(targetRect, displayNameProvider);
     }

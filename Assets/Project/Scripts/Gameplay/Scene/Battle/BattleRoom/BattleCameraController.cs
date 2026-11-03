@@ -130,6 +130,10 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField, Min(0f)] private float monsterInfoExtraZoomOrthographicSize = 0.35f;
     [Tooltip("몬스터 정보 포커스 추가 줌 강도 배율입니다. 기존 추가 줌 설정에 곱해지며, 1이면 이전과 동일합니다.")]
     [SerializeField, Min(0f)] private float monsterInfoExtraZoomStrength = 3.5f;
+    [Tooltip("몬스터 정보창 줌인 시 실제 몬스터 위치를 얼마나 따라갈지 설정합니다. 1이면 몬스터 위치 기준, 0이면 이전 그리드 기준입니다.")]
+    [SerializeField, Range(0f, 1f)] private float monsterInfoWorldPositionWeight = 1f;
+    [Tooltip("정보 패널이 몬스터를 가리지 않도록 카메라 중심을 좌우로 옮기는 거리입니다. 몬스터는 패널 반대편에 표시됩니다.")]
+    [SerializeField, Min(0f)] private float monsterInfoScreenSideMargin = 0.9f;
 
     [Header("Camera Position Clamp")]
     [SerializeField] private Vector2 minCameraPosition = new Vector2(-0.5f, -1f);
@@ -261,19 +265,32 @@ public class BattleCameraController : MonoBehaviour
         ClearImpactOffset();
 
         Vector2 gridOffset = GetCharacterSelectionGridFocusOffset(gridIndex);
-        Vector3 targetPos = defaultPosition;
+        Vector3 gridTargetPos = defaultPosition;
         if (useGridBasedCharacterSelectionFocusOffset && gridIndex >= 0)
         {
-            targetPos.x += gridOffset.x;
-            targetPos.y += gridOffset.y;
+            gridTargetPos.x += gridOffset.x;
+            gridTargetPos.y += gridOffset.y;
         }
         else
         {
-            targetPos.x += characterSelectionFocusOffset.x;
-            targetPos.y += characterSelectionFocusOffset.y;
+            gridTargetPos.x += characterSelectionFocusOffset.x;
+            gridTargetPos.y += characterSelectionFocusOffset.y;
         }
 
-        // 캐릭터 선택과 동일한 그리드 중심을 사용하되 몬스터 정보는 조금 더 가까이 보여줍니다.
+        // 단순히 현재 화면을 확대하지 않고 실제 클릭한 몬스터 쪽으로 줌인합니다.
+        // 패널이 왼쪽에 열리면 몬스터를 오른쪽에, 반대라면 왼쪽에 배치합니다.
+        int rowCount = Mathf.Max(1, characterSelectionFocusGridRowCount);
+        int columnCount = Mathf.Max(1, characterSelectionFocusGridColumnCount);
+        bool panelOnLeft = gridIndex < 0 || gridIndex >= rowCount * (columnCount / 2);
+        float sideMargin = panelOnLeft ? -monsterInfoScreenSideMargin : monsterInfoScreenSideMargin;
+        Vector3 monsterTargetPos = defaultPosition;
+        monsterTargetPos.x = target.position.x + monsterInfoFocusOffset.x + sideMargin;
+        monsterTargetPos.y = target.position.y + monsterInfoFocusOffset.y;
+
+        Vector3 targetPos = Vector3.Lerp(
+            gridTargetPos, monsterTargetPos, Mathf.Clamp01(monsterInfoWorldPositionWeight));
+
+        // 기존 추가 줌 강도를 유지하면서 위치와 확대를 하나의 이동으로 진행합니다.
         targetPos.z = useCharacterSelectionFocusZ
             ? GetCharacterSelectionFocusZPosition() + monsterInfoExtraZoomZ * monsterInfoExtraZoomStrength
             : targetCamera.transform.position.z + monsterInfoExtraZoomZ * monsterInfoExtraZoomStrength;
