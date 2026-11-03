@@ -309,11 +309,9 @@ public class BattleTimelineController : MonoBehaviour
 
         if (ShouldReturnCameraForSelectedCharacter(false, selectedCharacter != null))
         {
-            BattleCameraController cameraController = BattleCameraController.Instance;
-
-            if (cameraController != null)
-                cameraController.StartReturnDefaultKeepingCharacterSelection();
-
+            // 우클릭 시 카메라만 돌리지 않고 캐릭터 선택도 함께 해제합니다.
+            // 마지막 선택 캐릭터 기록은 유지하여 몬스터 정보창 종료 시 복원할 수 있습니다.
+            ClearCharacterSelection();
             return;
         }
 

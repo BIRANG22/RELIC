@@ -124,6 +124,12 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private bool useMonsterInfoFocusOrthographicSize = false;
     [SerializeField] private float monsterInfoFocusOrthographicSize = 4.4f;
     [SerializeField] private bool clampMonsterInfoFocusPosition = false;
+    [Tooltip("몬스터 정보 선택 시 캐릭터 선택 포커스보다 카메라를 더 가까이 이동할 Z 거리입니다. 0이면 동일한 줌입니다.")]
+    [SerializeField, Min(0f)] private float monsterInfoExtraZoomZ = 0.8f;
+    [Tooltip("직교 카메라에서 몬스터 정보 선택 시 추가로 줄일 Orthographic Size입니다.")]
+    [SerializeField, Min(0f)] private float monsterInfoExtraZoomOrthographicSize = 0.35f;
+    [Tooltip("몬스터 정보 포커스 추가 줌 강도 배율입니다. 기존 추가 줌 설정에 곱해지며, 1이면 이전과 동일합니다.")]
+    [SerializeField, Min(0f)] private float monsterInfoExtraZoomStrength = 3.5f;
 
     [Header("Camera Position Clamp")]
     [SerializeField] private Vector2 minCameraPosition = new Vector2(-0.5f, -1f);
@@ -243,11 +249,48 @@ public class BattleCameraController : MonoBehaviour
 
     public void FocusMonsterInfoForGridIndex(Transform target, int gridIndex)
     {
-        int rowCount = Mathf.Max(1, characterSelectionFocusGridRowCount);
-        int columnCount = Mathf.Max(1, characterSelectionFocusGridColumnCount);
-        int centerColumnStartGridIndex = rowCount * (columnCount / 2);
-        bool panelOnLeft = gridIndex < 0 || gridIndex >= centerColumnStartGridIndex;
-        FocusMonsterInfoWithPanelSide(target, panelOnLeft);
+        // 몬스터 정보 선택도 캐릭터 선택과 동일한 그리드 기준 카메라 포커스를 사용합니다.
+        // 정보 패널의 표시를 기다리지 않고 선택 순간부터 한 번만 이동합니다.
+        if (!enableMonsterInfoFocus || targetCamera == null || target == null || hasActiveCombatZoom)
+            return;
+
+        RemoveMouseParallax();
+        EndZoomFollowTarget();
+        if (routine != null)
+            StopCoroutine(routine);
+        ClearImpactOffset();
+
+        Vector2 gridOffset = GetCharacterSelectionGridFocusOffset(gridIndex);
+        Vector3 targetPos = defaultPosition;
+        if (useGridBasedCharacterSelectionFocusOffset && gridIndex >= 0)
+        {
+            targetPos.x += gridOffset.x;
+            targetPos.y += gridOffset.y;
+        }
+        else
+        {
+            targetPos.x += characterSelectionFocusOffset.x;
+            targetPos.y += characterSelectionFocusOffset.y;
+        }
+
+        // 캐릭터 선택과 동일한 그리드 중심을 사용하되 몬스터 정보는 조금 더 가까이 보여줍니다.
+        targetPos.z = useCharacterSelectionFocusZ
+            ? GetCharacterSelectionFocusZPosition() + monsterInfoExtraZoomZ * monsterInfoExtraZoomStrength
+            : targetCamera.transform.position.z + monsterInfoExtraZoomZ * monsterInfoExtraZoomStrength;
+        float targetSize = useCharacterSelectionFocusOrthographicSize
+            ? characterSelectionFocusOrthographicSize
+            : targetCamera.orthographicSize;
+        bool zoomOrthographic = useCharacterSelectionFocusOrthographicSize || targetCamera.orthographic;
+        if (zoomOrthographic)
+            targetSize = Mathf.Max(0.1f, targetSize - monsterInfoExtraZoomOrthographicSize * monsterInfoExtraZoomStrength);
+
+        hasActiveMonsterInfoFocus = true;
+        MoveCameraWithOptionalImmediate(
+            targetPos,
+            targetSize,
+            Mathf.Max(characterSelectionFocusDuration, minimumCharacterSelectionFocusDuration),
+            clampCharacterSelectionFocusPosition,
+            zoomOrthographic);
     }
 
     public bool BeginCinematicCamera()
