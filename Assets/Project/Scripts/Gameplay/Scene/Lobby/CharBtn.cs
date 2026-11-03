@@ -625,6 +625,18 @@ public class CharBtn : MonoBehaviour,
 
         if (runtimeStore.TryGet(characterId, out var runtime))
         {
+            // Restore incomplete runtime data, keeping valid saved HP unchanged.
+            if (runtime.MaxHP <= 0)
+            {
+                runtime.MaxHP = Mathf.Max(1, master.MaxHP);
+                if (runtime.CurrentHP <= 1)
+                    runtime.CurrentHP = runtime.MaxHP;
+            }
+            if (runtime.MaxCost <= 0)
+                runtime.MaxCost = Mathf.Max(0, master.MaxCost);
+            if (runtime.CostRecovery <= 0)
+                runtime.CostRecovery = Mathf.Max(0, master.CostRecovery);
+
             CharacterStartingRelicUtility.EnsureStartingRelicEquippedIfEmpty(
                 runtime,
                 master,
@@ -638,6 +650,9 @@ public class CharBtn : MonoBehaviour,
             Level = 1,
             Exp = 0,
 
+            MaxHP = master.MaxHP,
+            MaxCost = master.MaxCost,
+            CostRecovery = master.CostRecovery,
             CurrentHP = master.MaxHP,
             CurrentCost = master.MaxCost,
             CurrentResource = 0,
