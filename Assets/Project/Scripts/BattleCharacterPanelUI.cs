@@ -1943,12 +1943,31 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
+        // Keep Rune behind Icon throughout both slide-in and slide-out.
+        SetRuneSiblingOrder(slot, false);
         slot.RuneRoot.gameObject.SetActive(true);
         runeSlideCoroutines[index] = StartCoroutine(AnimateSelectedRune(index, slot, selected));
     }
 
+    // Only change Rune's order relative to its sibling Icon; preserve other HUD children.
+    private static void SetRuneSiblingOrder(PartySlotView slot, bool inFrontOfIcon)
+    {
+        if (slot == null || slot.RuneRoot == null || slot.Root == null)
+            return;
+
+        Transform icon = FindDirectChild(slot.Root, "Icon");
+        if (icon == null || icon.parent != slot.RuneRoot.parent)
+            return;
+
+        // Moving Rune to the Icon index puts it directly before Icon (behind).
+        // Moving it to Icon index + 1 puts it directly after Icon (in front).
+        int iconIndex = icon.GetSiblingIndex();
+        slot.RuneRoot.SetSiblingIndex(iconIndex + (inFrontOfIcon ? 1 : 0));
+    }
+
     private void SetRuneVisualImmediate(PartySlotView slot, bool selected)
     {
+        SetRuneSiblingOrder(slot, selected);
         slot.RuneRoot.anchoredPosition = slot.RuneVisiblePosition +
             (selected ? Vector2.zero : Vector2.right * selectedRuneSlideDistance);
         slot.RuneCanvasGroup.alpha = selected ? 1f : 0f;
@@ -1985,6 +2004,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         rect.anchoredPosition = to;
         group.alpha = toAlpha;
+        // After arrival Rune comes in front of Icon; on exit it stays behind.
+        SetRuneSiblingOrder(slot, selected);
         group.blocksRaycasts = selected;
         group.interactable = selected;
         if (!selected)

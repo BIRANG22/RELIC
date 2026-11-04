@@ -40,6 +40,9 @@ public class TimelineOrderClickTarget : MonoBehaviour, IPointerClickHandler, IPo
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+            return;
+
         if (owner != null)
             owner.OnOrderClicked(orderIndex);
     }

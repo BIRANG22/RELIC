@@ -1308,6 +1308,9 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+            return;
+
         if (IsBattleEnded())
             return;
 
@@ -1348,6 +1351,11 @@ public class BattleTimelineGroupUI : MonoBehaviour, IPointerClickHandler
 
     public void OnOrderClicked(int orderIndex)
     {
+        if (cachedTurnExecutor == null)
+            cachedTurnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+        if (cachedTurnExecutor != null && !cachedTurnExecutor.CanAcceptPlayerInput)
+            return;
+
         if (IsBattleEnded())
             return;
 
