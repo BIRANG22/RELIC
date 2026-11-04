@@ -298,6 +298,29 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         return UnityEngine.Object.FindFirstObjectByType<BattleRewardSkillPanelUI>(FindObjectsInactive.Include);
     }
 
+    public static bool TryOpenSkillReward(string skillId, Action onCompleted = null)
+    {
+        if (string.IsNullOrWhiteSpace(skillId))
+            return false;
+
+        return TryOpenSkillReward(
+            new BattleRewardData
+            {
+                Type = BattleRewardType.Skill,
+                RewardId = skillId.Trim()
+            },
+            onCompleted);
+    }
+
+    public static bool TryOpenSkillReward(BattleRewardData rewardData, Action onCompleted = null)
+    {
+        if (rewardData == null || rewardData.Type != BattleRewardType.Skill)
+            return false;
+
+        BattleRewardSkillPanelUI panel = FindPanel();
+        return panel != null && panel.Open(rewardData, onCompleted);
+    }
+
     public bool Open(BattleRewardData data, Action onCompleted)
     {
         if (data == null || data.Type != BattleRewardType.Skill || processing || reward != null || DataManager.Instance == null)

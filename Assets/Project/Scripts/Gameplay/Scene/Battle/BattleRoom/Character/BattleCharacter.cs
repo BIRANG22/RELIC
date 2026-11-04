@@ -258,6 +258,9 @@ public class BattleCharacter : MonoBehaviour
             timelineHoverHighlightVisible,
             tutorialBlocked || battleEnded,
             executionActive);
+        if (frameState.ShouldSynchronizeSorting)
+            SynchronizeTimelineHoverHighlightSorting();
+
         if (frameState.ShouldSynchronizeAnimator)
         {
             SyncTimelineHoverHighlightAnimation(
@@ -666,21 +669,35 @@ public class BattleCharacter : MonoBehaviour
 
         int sortingLayerId = timelineHoverHighlightSourceRenderer.sortingLayerID;
         int sourceSortingOrder = GetTimelineHoverHighlightSourceSortingOrder();
+        BattleUnitHighlightSortingOrders orders =
+            BattleUnitHighlightSortingPolicy.Resolve(sourceSortingOrder);
 
         ApplyTimelineHoverHighlightSorting(
             timelineHoverHighlightForegroundRenderers,
             sortingLayerId,
-            sourceSortingOrder - 1);
+            orders.Highlight);
 
         ApplyTimelineHoverHighlightSorting(
             timelineHoverHighlightIdleBackRenderers,
             sortingLayerId,
-            sourceSortingOrder - 1);
+            orders.Highlight);
 
         ApplyTimelineHoverHighlightSorting(
             timelineHoverHighlightShadowRenderers,
             sortingLayerId,
-            sourceSortingOrder - 2);
+            orders.Shadow);
+    }
+
+    private void SynchronizeTimelineHoverHighlightSorting()
+    {
+        if (timelineHoverHighlightObject == null)
+            return;
+
+        CacheTimelineHoverHighlightSourceRenderer();
+        CacheTimelineHoverHighlightForegroundRenderers();
+        CacheTimelineHoverHighlightIdleBackRenderers();
+        CacheTimelineHoverHighlightShadowRenderers();
+        SyncTimelineHoverHighlightSorting();
     }
 
     private static void ApplyTimelineHoverHighlightSorting(

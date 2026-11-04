@@ -5792,8 +5792,8 @@ public class EventRoomController : MonoBehaviour
                 bool resolved = false;
                 Debug.Log($"[EventRoomController] Opening event equipment panel: {reward.Type} / {reward.RewardId}", this);
                 bool opened = reward.Type == BattleRewardType.Relic
-                    ? BattleRewardEquipPanelUI.TryOpenRelicReward(reward.RewardId, () => resolved = true)
-                    : BattleRewardEquipPanelUI.TryOpenSkillReward(reward, () => resolved = true);
+                    ? BattleRewardRelicPanelUI.TryOpenRelicReward(reward.RewardId, () => resolved = true)
+                    : BattleRewardSkillPanelUI.TryOpenSkillReward(reward, () => resolved = true);
 
                 if (!opened)
                 {

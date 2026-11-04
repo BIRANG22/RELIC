@@ -13,17 +13,27 @@ public class PierceEffect : BattleEffectBase
 
         if (context.PlayerTarget != null)
         {
+            int previousHp = context.PlayerTarget.RuntimeData.CurrentHP;
+            int wardDamage = BattleWardReactionService.ResolveReactionDamage(
+                context.PlayerTarget.RuntimeData.StatusEffects,
+                1);
             int finalDamage = BattleDamageModifierUtility.CalculateFinalDamageToPlayer(context, damage);
 
             BattleEffectUtility.PierceDamagePlayer(context.PlayerTarget, finalDamage, context.MonsterCaster != null || context.MonsterCommand != null);
+            int dealtDamage = Mathf.Max(0, previousHp - context.PlayerTarget.RuntimeData.CurrentHP);
+            BattleWardReactionService.Apply(context, dealtDamage, wardDamage);
         }
 
         if (context.MonsterTarget != null)
         {
             bool wasAlive = !context.MonsterTarget.RuntimeData.IsDead;
+            int wardDamage = BattleWardReactionService.ResolveReactionDamage(
+                context.MonsterTarget.RuntimeData.StatusEffects,
+                1);
             int finalDamage = BattleDamageModifierUtility.CalculateFinalDamageToMonster(context, damage);
 
             int dealtDamage = BattleEffectUtility.PierceDamageMonster(context.MonsterTarget, finalDamage);
+            BattleWardReactionService.Apply(context, dealtDamage, wardDamage);
             bool killedByPierce = wasAlive && context.MonsterTarget.RuntimeData.IsDead;
             if (context.ExecutionResult != null)
             {

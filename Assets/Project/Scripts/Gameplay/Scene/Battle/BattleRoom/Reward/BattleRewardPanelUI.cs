@@ -74,7 +74,6 @@ public class BattleRewardPanelUI : MonoBehaviour
     [SerializeField] private Button confirmButton;
 
     [Header("Reward Equip Panel")]
-    [SerializeField] private BattleRewardEquipPanelUI equipPanel;
 
     [Header("After Reward")]
     [SerializeField] private GameObject battlePanel;
@@ -189,7 +188,6 @@ public class BattleRewardPanelUI : MonoBehaviour
             remnantTransferEffectColor = new Color32(0x9F, 0x2B, 0x2B, 0xFF);
         if (IsSameRgb(itemTransferEffectColor, new Color32(0xFF, 0xBC, 0x5D, 0xFF)))
             itemTransferEffectColor = new Color32(0xFB, 0xFD, 0x80, 0xFF);
-        ResolveEquipPanelIfNeeded();
         if (gainButton == null)
         {
             Transform found = transform.Find("GainButton");
@@ -274,8 +272,6 @@ public class BattleRewardPanelUI : MonoBehaviour
         dismissingSlotCount = 0;
         onRewardFlowCompleted = completedCallback;
         pendingEquipmentReward = false;
-        ResolveEquipPanelIfNeeded();
-
         if (rewards != null)
         {
             for (int i = 0; i < rewards.Count; i++)
@@ -329,10 +325,7 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     public void PrepareForResumePresentation()
     {
-        ResolveEquipPanelIfNeeded();
         pendingEquipmentReward = false;
-        if (equipPanel != null)
-            equipPanel.gameObject.SetActive(false);
     }
 
     private void Refresh()
@@ -742,12 +735,7 @@ public class BattleRewardPanelUI : MonoBehaviour
                 UpdateGainButton();
             }
         }
-        ResolveEquipPanelIfNeeded();
-
         if (slot == null || reward == null)
-            return false;
-        if (equipPanel == null && (reward.Type != BattleRewardType.Relic ||
-            Object.FindFirstObjectByType<BattleRewardRelicPanelUI>(FindObjectsInactive.Include) == null))
             return false;
 
         pendingEquipmentReward = true;
@@ -761,8 +749,10 @@ public class BattleRewardPanelUI : MonoBehaviour
                 return true;
             }
         }
-        equipPanel.Open(reward, () => OnEquipmentRewardResolved(slot, reward));
-        return true;
+
+        pendingEquipmentReward = false;
+        UpdateGainButton();
+        return false;
     }
 
     private void OnEquipmentRewardResolved(BattleRewardSlotUI slot, BattleRewardData reward)
@@ -1009,14 +999,6 @@ public class BattleRewardPanelUI : MonoBehaviour
         return reward.Type == BattleRewardType.Item ||
                reward.Type == BattleRewardType.Relic ||
                reward.Type == BattleRewardType.Skill;
-    }
-
-    private void ResolveEquipPanelIfNeeded()
-    {
-        if (equipPanel != null)
-            return;
-
-        equipPanel = Object.FindFirstObjectByType<BattleRewardEquipPanelUI>(FindObjectsInactive.Include);
     }
 
     private void ApplyReward(BattleRewardData reward)

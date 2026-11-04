@@ -363,7 +363,7 @@ public class RelicChoiceAreaUI : MonoBehaviour
         // Close()를 사용하면 선택 슬롯이 초기화되므로 Canvas 활성 상태만 임시로 변경합니다.
         SetRelicChoiceCanvasVisible(false);
 
-        if (BattleRewardEquipPanelUI.TryOpenRelicReward(
+        if (BattleRewardRelicPanelUI.TryOpenRelicReward(
                 relicId,
                 () =>
                 {
