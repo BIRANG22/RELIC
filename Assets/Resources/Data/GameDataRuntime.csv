@@ -130,7 +130,7 @@ S_Core_34,메디테이션,Core,Rare,Cost,Self,1,3,Char_04,Buff,E_Karma,1,1,4,Dir
 S_Core_35,제네시스,Core,Rare,Ulti,EnemyParty,1,2,Char_04,Attack,E_RandomStrike,10,X,X,Direction,Range_21,범위 내 무작위 적의 위치에 {E_Strike} {ValueRate1}
 S_Core_36,파멸의 낙인,Core,Rare,Cost,EnemyParty,1,3,Char_04,Debuff,E_Vulnerable,3,1,4,Direction,Range_22,{E_Vulnerable} {ValueRate1}
 S_Core_37,결속,Core,Epic,Cost,PlayerParty,1,3,Char_04,Buff,E_Bond,1,1,5,Direction,Range_Party,{E_Bond} {ValueRate1}
-S_Core_38,심판 집행,Core,Epic,Cost,EnemyParty,1,2,Char_04,Attack,E_Strike;E_StrikeByVulnerable,5;1,1;1,4,Direction,Range_13,{E_Strike} {ValueRate1} 대상이 보유한 {E_Vulnerable} 수치만큼 피해량 증가
+S_Core_38,심판 집행,Core,Epic,Cost,EnemyParty,1,2,Char_04,Attack,E_StrikeByVulnerable,5,1,4,Direction,Range_13,{E_Strike} {ValueRate1} 대상이 보유한 {E_Vulnerable} 수치만큼 피해량 증가
 S_Core_39,고해성사,Core,Unique,Cost,EnemyParty,1,3,Char_04,Debuff,E_DebuffDouble,2,1,8,Direction,Range_12,대상이 보유한 가장 높은 수치의 디버프 1종의 수치 {ValueRate1}배
 S_Core_40,단죄의 쐐기,Core,Unique,Ulti,EnemyParty,1,3,Char_04,Attack,E_RemoveArmor,1,1,2,Direction,Range_11,대상의 {E_Armor} 제거
 

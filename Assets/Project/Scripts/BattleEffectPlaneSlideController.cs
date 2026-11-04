@@ -231,6 +231,16 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
         PlayMove(0f);
     }
 
+    // Wait until both battle effect planes have returned to their reserve positions.
+    // This must complete before the next-turn recovery and monster planning effects.
+    public IEnumerator MoveToReserveAndWaitRoutine()
+    {
+        MoveToReservePosition();
+
+        while (moveRoutine != null && isActiveAndEnabled)
+            yield return null;
+    }
+
     public void SetReservePositionInstant()
     {
         if (!cachedPositions)

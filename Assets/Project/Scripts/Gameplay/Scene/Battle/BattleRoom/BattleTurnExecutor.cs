@@ -312,6 +312,19 @@ public class BattleTurnExecutor : MonoBehaviour
         HideBattleExecutionUiUntilPlayerTurn();
     }
 
+    private IEnumerator ReturnBattleEffectPlanesToReserveRoutine()
+    {
+        BattleEffectPlaneSlideController[] controllers = UnityEngine.Object.FindObjectsByType<BattleEffectPlaneSlideController>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < controllers.Length; i++)
+        {
+            if (controllers[i] != null && controllers[i].isActiveAndEnabled)
+                yield return controllers[i].MoveToReserveAndWaitRoutine();
+        }
+    }
+
     private void ResetBattleEffectPlanesForRoomEnd()
     {
         // 전투 종료 시 공격 연출로 변경된 Plane 회전/위치를 먼저 기본 상태로 복구합니다.
@@ -686,6 +699,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 yield return timelineController.MoveTimelineBarsToCompletedTurnPositionRoutine();
 
             yield return runner.ReturnCameraDefaultIfNeeded();
+            yield return ReturnBattleEffectPlanesToReserveRoutine();
 
             if (ArabellaPhaseTransition.HasPendingTransition)
             {
@@ -998,6 +1012,7 @@ public class BattleTurnExecutor : MonoBehaviour
                 yield return timelineController.MoveTimelineBarsToCompletedTurnPositionRoutine();
 
             yield return runner.ReturnCameraDefaultIfNeeded();
+            yield return ReturnBattleEffectPlanesToReserveRoutine();
 
             if (ArabellaPhaseTransition.HasPendingTransition)
             {
