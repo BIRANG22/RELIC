@@ -17,12 +17,37 @@ public class GoodsIconItem : MonoBehaviour
 
     [Header("Event Shop Goods Prefab")]
     [SerializeField] private Image line2;
+    [Header("Rarity Color Image")]
+    [Tooltip("Optional UI Image tinted with the same rarity color as the VFX. Its original alpha is preserved.")]
+    [SerializeField] private Image rarityColorImage;
     [SerializeField] private Image goodsIcon;
     [SerializeField] private TMP_Text goodsName;
     [SerializeField] private TMP_Text goodsDetail;
     [SerializeField] private GameObject discountIcon;
     [SerializeField] private TMP_Text discountText;
     [SerializeField] private Color discountedOriginalPriceColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+
+    [Header("Rarity VFX")]
+    [Tooltip("Shared VFX. Its particles and graphics are tinted according to the goods rarity.")]
+    [SerializeField] private GameObject rarityVfxPrefab;
+    [Tooltip("Optional parent for the VFX. Defaults to this GoodsIconItem transform.")]
+    [SerializeField] private Transform rarityVfxRoot;
+    [SerializeField] private Vector3 rarityVfxOffset = Vector3.zero;
+    [SerializeField] private Vector3 rarityVfxScale = Vector3.one;
+    [SerializeField] private Color commonVfxColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
+    [SerializeField] private Color rareVfxColor = new Color32(0x52, 0x86, 0xC7, 0xFF);
+    [SerializeField] private Color epicVfxColor = new Color32(0xA0, 0x72, 0xC2, 0xFF);
+    [SerializeField] private Color uniqueVfxColor = new Color32(0xCD, 0xA4, 0x52, 0xFF);
+    [Header("Rarity VFX - After Back")]
+    [Tooltip("Second rarity VFX spawned immediately after Back in the Goods hierarchy.")]
+    [SerializeField] private GameObject backRarityVfxPrefab;
+    [Tooltip("Optional Back reference. Defaults to the direct child named Back.")]
+    [SerializeField] private Transform backRarityVfxAnchor;
+    [SerializeField] private Vector3 backRarityVfxOffset = Vector3.zero;
+    [SerializeField] private Vector3 backRarityVfxScale = Vector3.one;
+    private GameObject activeRarityVfx;
+    private GameObject activeBackRarityVfx;
+    private string activeRarityVfxKey;
 
     [Header("Hover - Price Exclusion")]
     [Tooltip("Goods가 호버로 확대되어도 Price 영역의 크기와 상대 위치를 유지합니다.")]
@@ -84,6 +109,7 @@ public class GoodsIconItem : MonoBehaviour
     private void OnDisable()
     {
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+        ClearRarityVfx();
     }
 
     private void LateUpdate()
@@ -154,6 +180,7 @@ public class GoodsIconItem : MonoBehaviour
         goods = sourceGoods;
         onClicked = clicked;
         isPurchased = false;
+        ClearRarityVfx();
         RestoreOriginalVisualColors();
         SetActive(soldoutRoot, false);
 
@@ -186,6 +213,7 @@ public class GoodsIconItem : MonoBehaviour
             SetImage(goodsIcon, null);
             SetText(goodsName, string.Empty);
             SetText(goodsDetail, string.Empty);
+            ClearRarityVfx();
         }
 
         if (button != null)
@@ -205,6 +233,7 @@ public class GoodsIconItem : MonoBehaviour
         goods = null;
         onClicked = null;
         isPurchased = false;
+        ClearRarityVfx();
         RestoreOriginalVisualColors();
         SetActive(soldoutRoot, false);
 
@@ -317,6 +346,8 @@ public class GoodsIconItem : MonoBehaviour
         SetText(skillRarity, rarityText);
         ApplyRecordRarityColor(canonicalRarity, skillRarity);
         ApplyLineRarityColor(canonicalRarity);
+        ApplyRarityImageColor(canonicalRarity);
+        ShowRarityVfx(canonicalRarity);
     }
 
     private void ApplyRelicRarityPresentation(RelicData relic)
@@ -333,6 +364,8 @@ public class GoodsIconItem : MonoBehaviour
         SetText(relicRarity, rarityTypeText);
         ApplyRecordRarityColor(canonicalRarity, relicRarity);
         ApplyLineRarityColor(canonicalRarity);
+        ApplyRarityImageColor(canonicalRarity);
+        ShowRarityVfx(canonicalRarity);
     }
 
     private void ApplyRecordRarityColor(string rarity, params TMP_Text[] targets)
@@ -374,6 +407,132 @@ public class GoodsIconItem : MonoBehaviour
         RecordPanelUI recordPanel = UnityEngine.Object.FindFirstObjectByType<RecordPanelUI>(FindObjectsInactive.Include);
         if (recordPanel != null)
             line2.color = recordPanel.GetRarityDisplayColor(rarity);
+    }
+
+    private void ApplyRarityImageColor(string rarity)
+    {
+        if (rarityColorImage == null || string.IsNullOrWhiteSpace(rarity))
+            return;
+
+        CacheOriginalVisualColors();
+        Color tint = GetRarityVfxColor(rarity.Trim());
+        Color original = originalImageColors.TryGetValue(rarityColorImage, out Color cached)
+            ? cached : rarityColorImage.color;
+        rarityColorImage.color = new Color(tint.r, tint.g, tint.b, original.a);
+    }
+
+    private void ShowRarityVfx(string rarity)
+    {
+        string key = string.IsNullOrWhiteSpace(rarity) ? string.Empty : rarity.Trim();
+        if (string.Equals(activeRarityVfxKey, key, StringComparison.OrdinalIgnoreCase) &&
+            (rarityVfxPrefab == null || activeRarityVfx != null) &&
+            (backRarityVfxPrefab == null || activeBackRarityVfx != null))
+            return;
+
+        ClearRarityVfx();
+        if (key.Length == 0)
+            return;
+
+        Color tint = GetRarityVfxColor(key);
+        if (rarityVfxPrefab != null)
+        {
+            Transform parent = rarityVfxRoot != null &&
+                (rarityVfxRoot == transform || rarityVfxRoot.IsChildOf(transform))
+                ? rarityVfxRoot : transform;
+            activeRarityVfx = CreateRarityVfx(
+                rarityVfxPrefab, parent, rarityVfxOffset, rarityVfxScale,
+                "_GoodsRarityVFX", tint);
+            // Preserve the original VFX at the final sibling position.
+            activeRarityVfx.transform.SetAsLastSibling();
+        }
+
+        if (backRarityVfxPrefab != null)
+        {
+            // Back's sibling is the intended render layer; do not parent under Back.
+            Transform back = backRarityVfxAnchor != null &&
+                backRarityVfxAnchor.parent == transform
+                ? backRarityVfxAnchor : transform.Find("Back");
+            if (back != null && back.parent == transform)
+            {
+                activeBackRarityVfx = CreateRarityVfx(
+                    backRarityVfxPrefab, transform, backRarityVfxOffset,
+                    backRarityVfxScale, "_BackRarityVFX", tint);
+                activeBackRarityVfx.transform.SetSiblingIndex(back.GetSiblingIndex() + 1);
+            }
+            else
+                Debug.LogWarning("[GoodsIconItem] Back child was not found; Back rarity VFX was not spawned.", this);
+        }
+
+        activeRarityVfxKey = key;
+    }
+
+    private GameObject CreateRarityVfx(GameObject prefab, Transform parent, Vector3 offset,
+        Vector3 scale, string nameSuffix, Color tint)
+    {
+        GameObject instance = Instantiate(prefab, parent, false);
+        instance.name = prefab.name + nameSuffix;
+        instance.transform.localPosition = offset;
+        instance.transform.localRotation = Quaternion.identity;
+        instance.transform.localScale = scale;
+
+        foreach (ParticleSystem particle in instance.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            ParticleSystem.MainModule main = particle.main;
+            ParticleSystem.MinMaxGradient original = main.startColor;
+            Color result = tint;
+            if (original.mode == ParticleSystemGradientMode.Color)
+                result.a *= original.color.a;
+            main.startColor = result;
+        }
+        foreach (Graphic graphic in instance.GetComponentsInChildren<Graphic>(true))
+        {
+            Color original = graphic.color;
+            graphic.color = new Color(tint.r, tint.g, tint.b, original.a);
+            graphic.raycastTarget = false;
+        }
+        foreach (SpriteRenderer sprite in instance.GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            Color original = sprite.color;
+            sprite.color = new Color(tint.r, tint.g, tint.b, original.a);
+        }
+
+        CanvasGroup canvasGroup = instance.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = instance.AddComponent<CanvasGroup>();
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
+        instance.SetActive(true);
+        return instance;
+    }
+
+    private Color GetRarityVfxColor(string rarity)
+    {
+        switch (rarity.ToUpperInvariant())
+        {
+            case "RARE": return rareVfxColor;
+            case "EPIC": return epicVfxColor;
+            case "UNIQUE": return uniqueVfxColor;
+            default: return commonVfxColor;
+        }
+    }
+
+    private void ClearRarityVfx()
+    {
+        activeRarityVfxKey = null;
+        DestroyRarityVfx(ref activeRarityVfx);
+        DestroyRarityVfx(ref activeBackRarityVfx);
+    }
+
+    private void DestroyRarityVfx(ref GameObject instance)
+    {
+        if (instance == null)
+            return;
+        instance.SetActive(false);
+        if (Application.isPlaying)
+            Destroy(instance);
+        else
+            DestroyImmediate(instance);
+        instance = null;
     }
 
     private void OnLocaleTableReady(UnityEngine.Localization.Locale _)

@@ -213,7 +213,7 @@ MonoBehaviour:
     ShakeStrength: 0.08
     ShakeFrequency: 25
     Activations:
-    - ActiveTarget: {fileID: 0}
+    - ActiveTarget: {fileID: 6324359408526275993}
       ApplyActiveState: 1
       ActiveState: 1
       ActivationDelay: 0.5
@@ -5858,6 +5858,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b08d4aa76bc909047800ac88ee4bfeeb, type: 3}
+--- !u!1 &6324359408526275993 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6937126117152627203, guid: b08d4aa76bc909047800ac88ee4bfeeb, type: 3}
+  m_PrefabInstance: {fileID: 3999544109125349274}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &6621776709606632012 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7810502860711577046, guid: b08d4aa76bc909047800ac88ee4bfeeb, type: 3}

@@ -3135,6 +3135,18 @@ MonoBehaviour:
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
+  - displayName: dead.drautr,barrow
+    vfxPrefab: {fileID: 8742623472407098105, guid: 37a8d4cc0b4f0354d96378a5284052ff, type: 3}
+    cues:
+    - clip: {fileID: 8300000, guid: a8827e1a3a933e34ab4d407e980df1c5, type: 3}
+      delay: 0
+      volume: 0.3
+      pitch: 1
+      loop: 0
+      playOncePerAction: 1
+      useRandomPitch: 0
+      randomPitchMin: 1
+      randomPitchMax: 1
   - displayName: draugr.attack.01
     vfxPrefab: {fileID: 7849381218892773088, guid: 175104cf9b3817347a0db75fa72f3291, type: 3}
     cues:

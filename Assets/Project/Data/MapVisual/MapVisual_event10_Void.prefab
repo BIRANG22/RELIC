@@ -223,7 +223,7 @@ MonoBehaviour:
   - ActionId: event_choice_03_success
     Animator: {fileID: 0}
     AnimatorTrigger: 
-    AnimatorStateName: 
+    AnimatorStateName: toselect_r
     VfxPrefab: {fileID: 0}
     VfxRootOverride: {fileID: 0}
     VfxLocalPosition: {x: 0, y: 0, z: 0}
