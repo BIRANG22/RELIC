@@ -17,7 +17,10 @@ public class RestRoomShopPanel : MonoBehaviour
     [Header("UI")]
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private Transform contentRoot;
-    [SerializeField] private GoodsIconItem[] goodsSlots = new GoodsIconItem[RestRoomShopService.DefaultTotalGoodsCount];
+    [SerializeField] private GoodsIconItem goodsPrefab;
+
+    // Runtime instances are created under Content when stock is bound.
+    private readonly List<GoodsIconItem> goodsSlots = new();
 
     [Header("Skill Resource Icons")]
     [SerializeField] private Sprite costResourceIcon;
@@ -55,8 +58,6 @@ public class RestRoomShopPanel : MonoBehaviour
 
     private void Update()
     {
-        // Recalculate remaining goods from their original database prices. Do not
-        // recreate stock, which would reset purchased items or reroll the shop.
         if (panelRoot != null && panelRoot.activeInHierarchy && currentStock.Count > 0)
             RefreshRemainingPrices();
     }
@@ -82,7 +83,7 @@ public class RestRoomShopPanel : MonoBehaviour
                 continue;
 
             goods.SetPrice(updatedPrice);
-            if (goodsSlots != null && i < goodsSlots.Length && goodsSlots[i] != null)
+            if (i < goodsSlots.Count && goodsSlots[i] != null)
                 goodsSlots[i].RefreshPrice();
         }
     }
@@ -117,8 +118,6 @@ public class RestRoomShopPanel : MonoBehaviour
     {
         EnsureBindings();
         ClearGoodsSlots();
-        ResolveGoodsSlots();
-
 
         if (DataManager.Instance == null ||
             DataManager.Instance.RelicDatabase == null)
@@ -141,6 +140,7 @@ public class RestRoomShopPanel : MonoBehaviour
         currentStock.Clear();
         currentStock.AddRange(stock);
         BindStock(currentStock);
+        RefreshRemainingPrices();
     }
 
     public List<ResumeShopGoodsSaveData> CaptureResumeStock()
@@ -172,6 +172,7 @@ public class RestRoomShopPanel : MonoBehaviour
             }
         }
         SetPanelRootActive(true);
+        ClearGoodsSlots();
         BindStock(currentStock);
         RefreshRemainingPrices();
         StopPanelFade();
@@ -180,9 +181,39 @@ public class RestRoomShopPanel : MonoBehaviour
 
     private void BindStock(IReadOnlyList<RestRoomShopGoods> stock)
     {
-        int bindCount = Mathf.Min(stock.Count, goodsSlots.Length);
+        if (!CreateGoodsSlots())
+            return;
+
+        int bindCount = Mathf.Min(stock?.Count ?? 0, goodsSlots.Count);
         for (int i = 0; i < bindCount; i++)
             BindGoodsSlot(goodsSlots[i], stock[i]);
+
+        // Keep exactly four instances; empty offers remain hidden.
+        for (int i = bindCount; i < goodsSlots.Count; i++)
+            goodsSlots[i].gameObject.SetActive(false);
+    }
+
+    private bool CreateGoodsSlots()
+    {
+        if (goodsSlots.Count == RestRoomShopService.DefaultTotalGoodsCount)
+            return true;
+
+        if (goodsPrefab == null || contentRoot == null)
+        {
+            Debug.LogError("[RestRoomShopPanel] Assign Goods Prefab and Content Root in the Inspector.", this);
+            return false;
+        }
+
+        ClearGoodsSlots();
+        for (int i = 0; i < RestRoomShopService.DefaultTotalGoodsCount; i++)
+        {
+            GoodsIconItem item = Instantiate(goodsPrefab, contentRoot, false);
+            item.name = $"Goods{i + 1:00}";
+            item.gameObject.SetActive(false);
+            goodsSlots.Add(item);
+        }
+
+        return true;
     }
 
     private void BindGoodsSlot(GoodsIconItem item, RestRoomShopGoods goods)
@@ -525,9 +556,7 @@ public class RestRoomShopPanel : MonoBehaviour
 
     private void ClearGoodsSlots()
     {
-        ResolveGoodsSlots();
-
-        for (int i = 0; i < goodsSlots.Length; i++)
+        for (int i = 0; i < goodsSlots.Count; i++)
         {
             GoodsIconItem slot = goodsSlots[i];
             if (slot == null)
@@ -535,7 +564,10 @@ public class RestRoomShopPanel : MonoBehaviour
 
             slot.Clear();
             slot.gameObject.SetActive(false);
+            Destroy(slot.gameObject);
         }
+
+        goodsSlots.Clear();
     }
 
     private void EnsureBindings()
@@ -550,34 +582,6 @@ public class RestRoomShopPanel : MonoBehaviour
         {
             Transform foundContent = FindChildRecursive(transform, "Content");
             contentRoot = foundContent != null ? foundContent : transform;
-        }
-
-        ResolveGoodsSlots();
-    }
-
-    private void ResolveGoodsSlots()
-    {
-        if (goodsSlots == null || goodsSlots.Length != RestRoomShopService.DefaultTotalGoodsCount)
-            goodsSlots = new GoodsIconItem[RestRoomShopService.DefaultTotalGoodsCount];
-
-        if (contentRoot == null)
-            return;
-
-        for (int i = 0; i < goodsSlots.Length; i++)
-        {
-            if (goodsSlots[i] != null)
-                continue;
-
-            string objectName = $"Goods{i + 1:00}";
-            Transform child = FindChildRecursive(contentRoot, objectName);
-            if (child == null)
-                continue;
-
-            GoodsIconItem item = child.GetComponent<GoodsIconItem>();
-            if (item == null)
-                item = child.gameObject.AddComponent<GoodsIconItem>();
-
-            goodsSlots[i] = item;
         }
     }
 
