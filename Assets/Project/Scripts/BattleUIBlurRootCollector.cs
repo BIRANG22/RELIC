@@ -49,7 +49,6 @@ public static class BattleUIBlurRootCollector
 
         AddExplicitBlurRoots(roots, ownerTransform);
         AddActivePanelRoots<BattleRewardPanelUI>(roots, ownerTransform);
-        AddActivePanelRoots<BattleRewardEquipPanelUI>(roots, ownerTransform);
 
         return roots;
     }

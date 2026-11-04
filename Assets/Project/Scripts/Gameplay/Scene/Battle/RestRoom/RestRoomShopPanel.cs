@@ -311,8 +311,8 @@ public class RestRoomShopPanel : MonoBehaviour
 
         return goods.Kind switch
         {
-            RestRoomShopGoodsKind.Skill => BattleRewardEquipPanelUI.TryOpenSkillReward(goods.Id),
-            RestRoomShopGoodsKind.Relic => BattleRewardEquipPanelUI.TryOpenRelicReward(goods.Id),
+            RestRoomShopGoodsKind.Skill => BattleRewardSkillPanelUI.TryOpenSkillReward(goods.Id),
+            RestRoomShopGoodsKind.Relic => BattleRewardRelicPanelUI.TryOpenRelicReward(goods.Id),
             _ => false
         };
     }

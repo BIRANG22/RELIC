@@ -21887,7 +21887,6 @@ MonoBehaviour:
   gainButton: {fileID: 578888630}
   gainButtonText: {fileID: 687032424}
   confirmButton: {fileID: 0}
-  equipPanel: {fileID: 0}
   battlePanel: {fileID: 1242706629}
   mapPanel: {fileID: 1138866861}
 --- !u!222 &297680669

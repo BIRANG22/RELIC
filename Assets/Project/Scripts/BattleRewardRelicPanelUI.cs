@@ -937,11 +937,12 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
                 int highlighted = -1;
                 if (entry.characterHovered || entry.hoveredSlot >= 0)
                 {
-                    if (entry.hoveredSlot >= 0 && entry.hoveredSlot < 6 &&
+                    bool hoveringOccupiedSlot = entry.hoveredSlot >= 0 &&
+                        entry.hoveredSlot < entry.tooltipHovers.Length &&
                         entry.tooltipHovers[entry.hoveredSlot] != null &&
-                        entry.tooltipHovers[entry.hoveredSlot].HasRelic)
-                        highlighted = entry.hoveredSlot;
-                    else
+                        entry.tooltipHovers[entry.hoveredSlot].HasRelic;
+
+                    if (!hoveringOccupiedSlot)
                         highlighted = firstEmpty;
                 }
                 if (highlighted < 0) continue;
@@ -988,7 +989,15 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 
     internal void EquipRelicSlot(int characterIndex, int slotIndex)
     {
-        EquipTo(characterIndex, slotIndex);
+        if (characterIndex < 0 || characterIndex >= entries.Length ||
+            slotIndex < 0 || slotIndex >= 6)
+            return;
+
+        CharacterEntry entry = entries[characterIndex];
+        if (entry?.tooltipHovers[slotIndex] != null && entry.tooltipHovers[slotIndex].HasRelic)
+            return;
+
+        EquipTo(characterIndex);
     }
 
     private void SetRelicLine(CharacterEntry entry, int slotIndex, bool occupied)
@@ -1244,7 +1253,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
                TutorialBattleSequence.CurrentContinuationOrder == 36;
     }
 
-    private void EquipTo(int index, int selectedSlot = -1)
+    private void EquipTo(int index)
     {
         if (resolving || current == null || index < 0 || index >= entries.Length) return;
         if (!CanEquipAtCurrentTutorialStep()) return;
@@ -1263,19 +1272,9 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         if (!DataManager.Instance.RelicDatabase.TryGet(current.RewardId, out RelicData relic) || relic == null) return;
         ActiveRelicRuntimeUtility.EnsureRelicSlots(runtime);
         bool active = ActiveRelicEffectResolver.IsActiveRelic(relic);
-        int start = active ? 0 : 1;
-        int end = active ? 1 : Math.Min(7, runtime.EquippedRelicIds.Length);
-        int empty = -1;
-        for (int i = start; i < end; i++)
-            if (string.IsNullOrWhiteSpace(runtime.EquippedRelicIds[i])) { empty = i; break; }
-        int destination = empty;
-        if (!active && selectedSlot >= 0 && selectedSlot < 6 && selectedSlot + 1 < end)
-        {
-            int requested = selectedSlot + 1;
-            // Empty slots always fill from the front. Occupied slots can be replaced directly.
-            if (!string.IsNullOrWhiteSpace(runtime.EquippedRelicIds[requested]))
-                destination = requested;
-        }
+        int destination = BattleRewardRelicEquipPolicy.FindFirstEmptySlot(
+            runtime.EquippedRelicIds,
+            active);
         if (destination < 0) return;
         resolving = true;
         // Keep the rarity indicator visible throughout relic equip/replace feedback.
