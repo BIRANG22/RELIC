@@ -15,6 +15,25 @@ public class GoodsIconItem : MonoBehaviour
     [SerializeField] private TMP_Text priceText;
     [SerializeField] private GameObject soldoutRoot;
 
+    [Header("Event Shop Goods Prefab")]
+    [SerializeField] private Image line2;
+    [SerializeField] private Image goodsIcon;
+    [SerializeField] private TMP_Text goodsName;
+    [SerializeField] private TMP_Text goodsDetail;
+    [SerializeField] private GameObject discountIcon;
+    [SerializeField] private TMP_Text discountText;
+    [SerializeField] private Color discountedOriginalPriceColor = new Color32(0x77, 0x77, 0x77, 0xFF);
+
+    [Header("Hover - Price Exclusion")]
+    [Tooltip("Goods가 호버로 확대되어도 Price 영역의 크기와 상대 위치를 유지합니다.")]
+    [SerializeField] private bool excludePriceFromHoverScale = true;
+
+    private RectTransform priceRootTransform;
+    private Vector3 baseGoodsScale;
+    private Vector3 basePriceScale;
+    private Vector2 basePriceAnchoredPosition;
+    private bool priceHoverOriginCached;
+
     [Header("Skill")]
     [SerializeField] private Image skillIcon;
     [SerializeField] private TMP_Text skillName;
@@ -53,6 +72,7 @@ public class GoodsIconItem : MonoBehaviour
         AutoBind();
         ProtectDynamicLocalizedTexts();
         CacheOriginalVisualColors();
+        CachePriceHoverOrigin();
     }
 
     private void OnEnable()
@@ -64,6 +84,54 @@ public class GoodsIconItem : MonoBehaviour
     private void OnDisable()
     {
         LocalizationRuntimeRefreshCoordinator.LocaleTableReady -= OnLocaleTableReady;
+    }
+
+    private void LateUpdate()
+    {
+        if (!excludePriceFromHoverScale)
+            return;
+
+        if (!priceHoverOriginCached)
+            CachePriceHoverOrigin();
+
+        if (!priceHoverOriginCached || priceRootTransform == null)
+            return;
+
+        // Goods 전체의 호버 확대를 Price에 대해서만 역보정합니다.
+        // 확대/축소 중 매 프레임 적용해 Price의 크기와 기준 위치를 유지합니다.
+        Vector3 currentScale = transform.localScale;
+        float ratioX = Mathf.Abs(baseGoodsScale.x) > 0.0001f ? currentScale.x / baseGoodsScale.x : 1f;
+        float ratioY = Mathf.Abs(baseGoodsScale.y) > 0.0001f ? currentScale.y / baseGoodsScale.y : 1f;
+        float ratioZ = Mathf.Abs(baseGoodsScale.z) > 0.0001f ? currentScale.z / baseGoodsScale.z : 1f;
+        if (Mathf.Abs(ratioX) < 0.0001f || Mathf.Abs(ratioY) < 0.0001f || Mathf.Abs(ratioZ) < 0.0001f)
+            return;
+
+        priceRootTransform.localScale = new Vector3(
+            basePriceScale.x / ratioX,
+            basePriceScale.y / ratioY,
+            basePriceScale.z / ratioZ);
+        priceRootTransform.anchoredPosition = new Vector2(
+            basePriceAnchoredPosition.x / ratioX,
+            basePriceAnchoredPosition.y / ratioY);
+    }
+
+    private void CachePriceHoverOrigin()
+    {
+        if (priceHoverOriginCached)
+            return;
+
+        Transform price = FindTransform("Price");
+        if (price == null || price.parent != transform)
+            return; // 기존 스킬/유물 프리팹에는 적용하지 않습니다.
+
+        priceRootTransform = price as RectTransform;
+        if (priceRootTransform == null)
+            return;
+
+        baseGoodsScale = transform.localScale;
+        basePriceScale = priceRootTransform.localScale;
+        basePriceAnchoredPosition = priceRootTransform.anchoredPosition;
+        priceHoverOriginCached = true;
     }
 
     private void OnValidate()
@@ -96,7 +164,7 @@ public class GoodsIconItem : MonoBehaviour
         }
 
         gameObject.SetActive(true);
-        SetText(priceText, goods.Price.ToString());
+        RefreshPrice();
 
         bool isSkill = goods.Kind == RestRoomShopGoodsKind.Skill && goods.Skill != null;
         bool isRelic = goods.Kind == RestRoomShopGoodsKind.Relic && goods.Relic != null;
@@ -115,6 +183,9 @@ public class GoodsIconItem : MonoBehaviour
         else
         {
             SetText(plateText, string.Empty);
+            SetImage(goodsIcon, null);
+            SetText(goodsName, string.Empty);
+            SetText(goodsDetail, string.Empty);
         }
 
         if (button != null)
@@ -147,14 +218,42 @@ public class GoodsIconItem : MonoBehaviour
 
         SetText(plateText, string.Empty);
         SetText(priceText, string.Empty);
+        SetActive(discountIcon, false);
+        SetText(discountText, string.Empty);
+        SetImage(goodsIcon, null);
+        SetText(goodsName, string.Empty);
+        SetText(goodsDetail, string.Empty);
         SetActive(skillRoot, false);
         SetActive(relicRoot, false);
     }
 
     public void RefreshPrice()
     {
-        if (goods != null && !isPurchased)
-            SetText(priceText, goods.Price.ToString());
+        if (goods == null || isPurchased)
+            return;
+
+        int originalPrice = GetOriginalPrice(goods);
+        bool hasDiscount = originalPrice > goods.Price;
+        SetText(priceText, (hasDiscount ? originalPrice : goods.Price).ToString());
+        SetActive(discountIcon, hasDiscount);
+        SetText(discountText, hasDiscount ? goods.Price.ToString() : string.Empty);
+
+        if (priceText != null)
+        {
+            CacheOriginalVisualColors();
+            priceText.color = hasDiscount
+                ? discountedOriginalPriceColor
+                : originalTextColors.TryGetValue(priceText, out Color original) ? original : Color.white;
+        }
+    }
+
+    private static int GetOriginalPrice(RestRoomShopGoods item)
+    {
+        if (item.Kind == RestRoomShopGoodsKind.Relic && item.Relic != null)
+            return Mathf.Max(0, item.Relic.RedDustiumCost);
+        if (item.Kind == RestRoomShopGoodsKind.Skill && item.Skill != null)
+            return Mathf.Max(0, item.Skill.RedDustiumCost);
+        return Mathf.Max(0, item.Price);
     }
 
     public void MarkPurchased()
@@ -179,6 +278,9 @@ public class GoodsIconItem : MonoBehaviour
         SkillUpgradeMarkStyle.ApplyShared(skillIcon, skill.SkillId);
 
         SetText(skillName, GameDataLocalization.SkillName(skill));
+        SetImage(goodsIcon, icon);
+        SetText(goodsName, GameDataLocalization.SkillName(skill));
+        SkillEffectInlineIconUtility.SetText(goodsDetail, GameDataLocalization.SkillDetails(skill));
         ApplySkillRarityPresentation(skill.Rarity);
         SetText(skillCostValue, Mathf.Max(0, skill.ResourceCostValue).ToString());
         SkillEffectInlineIconUtility.SetText(skillDetail, GameDataLocalization.SkillDetails(skill));
@@ -198,6 +300,9 @@ public class GoodsIconItem : MonoBehaviour
         Sprite icon = resolvedIcon != null ? resolvedIcon : ResolveRelicIcon(relic.FragmentId);
         SetImage(relicIcon, icon);
         SetText(relicName, GameDataLocalization.RelicName(relic));
+        SetImage(goodsIcon, icon);
+        SetText(goodsName, GameDataLocalization.RelicName(relic));
+        SetText(goodsDetail, GameDataLocalization.RelicEffectDescription(relic));
         ApplyRelicRarityPresentation(relic);
         SetText(relicDetail, GameDataLocalization.RelicEffectDescription(relic));
     }
@@ -211,6 +316,7 @@ public class GoodsIconItem : MonoBehaviour
         SetText(plateText, GameLocalization.Get("common.memory"));
         SetText(skillRarity, rarityText);
         ApplyRecordRarityColor(canonicalRarity, skillRarity);
+        ApplyLineRarityColor(canonicalRarity);
     }
 
     private void ApplyRelicRarityPresentation(RelicData relic)
@@ -226,6 +332,7 @@ public class GoodsIconItem : MonoBehaviour
         SetText(plateText, GameLocalization.Get("common.relic"));
         SetText(relicRarity, rarityTypeText);
         ApplyRecordRarityColor(canonicalRarity, relicRarity);
+        ApplyLineRarityColor(canonicalRarity);
     }
 
     private void ApplyRecordRarityColor(string rarity, params TMP_Text[] targets)
@@ -251,6 +358,22 @@ public class GoodsIconItem : MonoBehaviour
             if (target != null)
                 target.color = rarityColor;
         }
+    }
+
+    private void ApplyLineRarityColor(string rarity)
+    {
+        if (line2 == null || string.IsNullOrWhiteSpace(rarity))
+            return;
+
+        if (RecordPanelUI.TryGetCachedRarityDisplayColor(rarity, out Color color))
+        {
+            line2.color = color;
+            return;
+        }
+
+        RecordPanelUI recordPanel = UnityEngine.Object.FindFirstObjectByType<RecordPanelUI>(FindObjectsInactive.Include);
+        if (recordPanel != null)
+            line2.color = recordPanel.GetRarityDisplayColor(rarity);
     }
 
     private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
@@ -387,6 +510,14 @@ public class GoodsIconItem : MonoBehaviour
         if (plateText == null)
             plateText = FindComponent<TMP_Text>("Plate_Text");
 
+        // The event shop prefab uses direct children rather than Skill/Relic roots.
+        if (line2 == null) line2 = FindComponent<Image>("Line2");
+        if (goodsIcon == null) goodsIcon = FindComponent<Image>("Icon");
+        if (goodsName == null) goodsName = FindTextInBranch("Name");
+        if (goodsDetail == null) goodsDetail = FindTextInBranch("Detail");
+        if (discountIcon == null) discountIcon = FindTransform("DiscountIcon")?.gameObject;
+        if (discountText == null) discountText = FindComponent<TMP_Text>("DiscountText");
+
         if (skillRoot == null)
             skillRoot = FindTransform("Skill")?.gameObject;
 
@@ -417,6 +548,12 @@ public class GoodsIconItem : MonoBehaviour
             if (relicRarity == null) relicRarity = FindComponentUnder<TMP_Text>(relicRoot.transform, "Rarity");
             if (relicDetail == null) relicDetail = FindComponentUnder<TMP_Text>(relicRoot.transform, "Detail");
         }
+    }
+
+    private TMP_Text FindTextInBranch(string branchName)
+    {
+        Transform branch = FindTransform(branchName);
+        return branch != null ? branch.GetComponent<TMP_Text>() ?? branch.GetComponentInChildren<TMP_Text>(true) : null;
     }
 
     private Transform FindTransform(string childName)
