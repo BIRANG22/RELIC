@@ -202,12 +202,25 @@ MonoBehaviour:
   priceText: {fileID: 8370817174359098067}
   soldoutRoot: {fileID: 1560876434330658600}
   line2: {fileID: 0}
+  rarityColorImage: {fileID: 9132947840506738245}
   goodsIcon: {fileID: 1771153073370539777}
   goodsName: {fileID: 7685480686193179914}
   goodsDetail: {fileID: 1608633355866187450}
   discountIcon: {fileID: 8326115765172083517}
   discountText: {fileID: 4333205835953892632}
   discountedOriginalPriceColor: {r: 0.46666667, g: 0.46666667, b: 0.46666667, a: 1}
+  rarityVfxPrefab: {fileID: 6377420212652280444, guid: f9a9b73f2f2e3604ca62e2cbce5c6898, type: 3}
+  rarityVfxRoot: {fileID: 0}
+  rarityVfxOffset: {x: 0, y: 0, z: 0}
+  rarityVfxScale: {x: 1, y: 1, z: 1}
+  commonVfxColor: {r: 0.6627451, g: 0.69411767, b: 0.74509805, a: 1}
+  rareVfxColor: {r: 0.32156864, g: 0.5254902, b: 0.78039217, a: 1}
+  epicVfxColor: {r: 0.627451, g: 0.44705883, b: 0.7607843, a: 1}
+  uniqueVfxColor: {r: 0.8039216, g: 0.6431373, b: 0.32156864, a: 1}
+  backRarityVfxPrefab: {fileID: 7932807873706430129, guid: 77a7b3475a232df44ae4b56ca1a0d34e, type: 3}
+  backRarityVfxAnchor: {fileID: 0}
+  backRarityVfxOffset: {x: 0, y: 130, z: 0}
+  backRarityVfxScale: {x: 1, y: 1, z: 1}
   excludePriceFromHoverScale: 1
   skillIcon: {fileID: 0}
   skillName: {fileID: 0}
@@ -282,7 +295,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.05882353, g: 0.078431375, b: 0.101960786, a: 1}
+  m_Color: {r: 0.08235294, g: 0.09411765, b: 0.10980392, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
