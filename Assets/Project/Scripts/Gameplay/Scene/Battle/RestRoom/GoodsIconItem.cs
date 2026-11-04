@@ -151,6 +151,12 @@ public class GoodsIconItem : MonoBehaviour
         SetActive(relicRoot, false);
     }
 
+    public void RefreshPrice()
+    {
+        if (goods != null && !isPurchased)
+            SetText(priceText, goods.Price.ToString());
+    }
+
     public void MarkPurchased()
     {
         isPurchased = true;

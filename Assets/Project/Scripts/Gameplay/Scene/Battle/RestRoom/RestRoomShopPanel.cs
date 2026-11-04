@@ -53,6 +53,40 @@ public class RestRoomShopPanel : MonoBehaviour
         ClearGoodsSlots();
     }
 
+    private void Update()
+    {
+        // Recalculate remaining goods from their original database prices. Do not
+        // recreate stock, which would reset purchased items or reroll the shop.
+        if (panelRoot != null && panelRoot.activeInHierarchy && currentStock.Count > 0)
+            RefreshRemainingPrices();
+    }
+
+    private void RefreshRemainingPrices()
+    {
+        for (int i = 0; i < currentStock.Count; i++)
+        {
+            RestRoomShopGoods goods = currentStock[i];
+            if (goods == null)
+                continue;
+
+            int basePrice;
+            if (goods.Kind == RestRoomShopGoodsKind.Relic && goods.Relic != null)
+                basePrice = goods.Relic.RedDustiumCost;
+            else if (goods.Kind == RestRoomShopGoodsKind.Skill && goods.Skill != null)
+                basePrice = goods.Skill.RedDustiumCost;
+            else
+                continue;
+
+            int updatedPrice = BattleEquipmentEffectService.ModifyShopPrice(basePrice);
+            if (goods.Price == updatedPrice)
+                continue;
+
+            goods.SetPrice(updatedPrice);
+            if (goodsSlots != null && i < goodsSlots.Length && goodsSlots[i] != null)
+                goodsSlots[i].RefreshPrice();
+        }
+    }
+
     private void OnDisable()
     {
         StopPanelFade();
@@ -139,6 +173,7 @@ public class RestRoomShopPanel : MonoBehaviour
         }
         SetPanelRootActive(true);
         BindStock(currentStock);
+        RefreshRemainingPrices();
         StopPanelFade();
         SetPanelCanvasState(1f, true);
     }
@@ -171,6 +206,7 @@ public class RestRoomShopPanel : MonoBehaviour
         if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null)
             return;
 
+        RefreshRemainingPrices();
         BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
         if (runtime.Remnant < goods.Price)
         {
@@ -211,6 +247,7 @@ public class RestRoomShopPanel : MonoBehaviour
         if (DataManager.Instance == null || DataManager.Instance.BattleRuntimeStore == null)
             return;
 
+        RefreshRemainingPrices();
         BattleRuntimeData runtime = DataManager.Instance.BattleRuntimeStore.GetOrCreate();
 
         // 확인창이 열린 사이에 재화/보유 상태가 바뀔 수 있으므로 구매 직전에 다시 검사합니다.

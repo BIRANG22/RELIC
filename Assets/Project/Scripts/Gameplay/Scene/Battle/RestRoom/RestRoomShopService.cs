@@ -37,7 +37,12 @@ public sealed class RestRoomShopGoods
     public string Id { get; }
     public string DisplayName { get; }
     public string Description { get; }
-    public int Price { get; }
+    public int Price { get; private set; }
+
+    public void SetPrice(int price)
+    {
+        Price = Mathf.Max(0, price);
+    }
     public SkillRarity SkillRarity { get; }
     public SkillMasterData Skill { get; }
     public RelicData Relic { get; }

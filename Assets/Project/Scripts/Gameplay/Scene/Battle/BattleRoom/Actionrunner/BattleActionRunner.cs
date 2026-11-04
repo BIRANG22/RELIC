@@ -3616,7 +3616,7 @@ public class BattleActionRunner
         for (int i = 0; i < skill.EffectEntries.Count; i++)
         {
             string id = skill.EffectEntries[i]?.EffectId;
-            if (id == "E_Strike" || id == "E_ArmorStrike" ||
+            if (id == "E_Strike" || id == "E_Pierce" || id == "E_ArmorStrike" ||
                 id == "E_RandomStrike" || id == "E_StrikeByVulnerable" ||
                 id == "E_StrikeByTargetPoison" ||
                 id == "E_DamageUpIfBleeding" || id == "E_StrikeCountByBuff" ||
