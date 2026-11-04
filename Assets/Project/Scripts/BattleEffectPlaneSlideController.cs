@@ -1,10 +1,10 @@
-using System.Collections;
+ï»¿ï»¿using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// ÀüÅõ ÁøÇà Áß ¿ùµå ¹è°æ È¿°ú Plane 2°³¸¦ È­¸é Áß¾ÓÀ¸·Î ¸ğ¾Ò´Ù°¡,
-/// ´Ù½Ã Çàµ¿ ¿¹¾à ÅÏÀÌ µ¹¾Æ¿À¸é ¿ø·¡ À§Ä¡·Î µÇµ¹¸³´Ï´Ù.
-/// BattleEffect ¿ÀºêÁ§Æ®¿¡ ºÙÀÌ°í leftPlane/rightPlane¿¡ Plane, Plane (1)À» ¿¬°áÇØ¼­ »ç¿ëÇÕ´Ï´Ù.
+/// ì „íˆ¬ ì§„í–‰ ì¤‘ ì›”ë“œ ë°°ê²½ íš¨ê³¼ Plane 2ê°œë¥¼ í™”ë©´ ì¤‘ì•™ìœ¼ë¡œ ëª¨ì•˜ë‹¤ê°€,
+/// ì „íˆ¬ê°€ ì™„ì „íˆ ì¢…ë£Œë˜ë©´ ì›ë˜ ëŒ€ê¸° ìœ„ì¹˜ë¡œ ë˜ëŒë¦½ë‹ˆë‹¤.
+/// BattleEffect ì˜¤ë¸Œì íŠ¸ì— ë¶™ì´ê³  leftPlane/rightPlaneì— Plane, Plane (1)ì„ ì—°ê²°í•´ì„œ ì‚¬ìš©í•©ë‹ˆë‹¤.
 /// </summary>
 public class BattleEffectPlaneSlideController : MonoBehaviour
 {
@@ -16,17 +16,25 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
     [Header("Battle Position")]
     [SerializeField] private float battleCenterX = 0f;
-    [SerializeField] private bool cacheStartPositionOnAwake = true;
-    [SerializeField] private Vector3 leftReservePosition = new Vector3(-50f, 0f, 0f);
-    [SerializeField] private Vector3 rightReservePosition = new Vector3(50f, 0f, 0f);
+    [Tooltip("ì¼œë©´ ì•„ë˜ ê° Planeì˜ ì „íˆ¬ ì¤‘ ëª©í‘œ ë¡œì»¬ ì¢Œí‘œë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤. ë„ë©´ ê¸°ì¡´ Battle Center Xë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.")]
+    [SerializeField] private bool useSpecifiedBattleLocalPositions = true;
+    [Tooltip("ì „íˆ¬ ì¤‘ ì™¼ìª½ Planeì˜ ëª©í‘œ ë¡œì»¬ ì¢Œí‘œì…ë‹ˆë‹¤. ì¹´ë©”ë¼ ì¶”ì ê³¼ Z ì¤Œì— ë”°ë¥¸ Y ë³´ì •ì€ ë³„ë„ë¡œ ì ìš©ë©ë‹ˆë‹¤.")]
+    [SerializeField] private Vector3 leftBattleLocalPosition = new Vector3(0f, -4.5f, 0f);
+    [Tooltip("ì „íˆ¬ ì¤‘ ì˜¤ë¥¸ìª½ Planeì˜ ëª©í‘œ ë¡œì»¬ ì¢Œí‘œì…ë‹ˆë‹¤. ì¹´ë©”ë¼ ì¶”ì ê³¼ Z ì¤Œì— ë”°ë¥¸ Y ë³´ì •ì€ ë³„ë„ë¡œ ì ìš©ë©ë‹ˆë‹¤.")]
+    [SerializeField] private Vector3 rightBattleLocalPosition = new Vector3(0f, 5f, 0f);
+
+    // These are captured from the actual objects' authored Transform.localPosition.
+    // They are never populated from inspector reserve fields or re-captured during battle.
+    private Vector3 leftOriginalLocalPosition;
+    private Vector3 rightOriginalLocalPosition;
 
     [Header("Camera Follow")]
     [SerializeField] private bool followCameraPosition = true;
     [SerializeField] private Camera followCamera;
     [SerializeField] private bool autoFindFollowCamera = true;
     [SerializeField] private bool followCameraX = true;
-    // ¸ŞÀÎ Ä«¸Ş¶ó°¡ ±×¸®µå À§Ä¡·Î ÁÜÀÎÇÒ ¶§ X/Y°¡ °°ÀÌ ¿òÁ÷ÀÌ¹Ç·Î,
-    // Planeµµ Ä«¸Ş¶óÀÇ X/Y ÀÌµ¿·®À» °°ÀÌ µû¶ó°¡°Ô ÇÕ´Ï´Ù.
+    // ë©”ì¸ ì¹´ë©”ë¼ê°€ ê·¸ë¦¬ë“œ ìœ„ì¹˜ë¡œ ì¤Œì¸í•  ë•Œ X/Yê°€ ê°™ì´ ì›€ì§ì´ë¯€ë¡œ,
+    // Planeë„ ì¹´ë©”ë¼ì˜ X/Y ì´ë™ëŸ‰ì„ ê°™ì´ ë”°ë¼ê°€ê²Œ í•©ë‹ˆë‹¤.
     [SerializeField] private bool followCameraY = true;
     [SerializeField] private bool followCameraZ = false;
     [SerializeField] private bool updateFollowInLateUpdate = true;
@@ -67,15 +75,46 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
     private bool hasReferenceCameraPosition;
     private BattleTurnExecutor turnExecutor;
 
+    [Header("Battle End Recovery")]
+    [Tooltip("ì „íˆ¬ ì™„ì „ ì¢…ë£Œ ì‹œ ë‘ Planeì„ ì¹´ë©”ë¼ ì¶”ì  ë³´ì • ì—†ì´ ì›ë˜ ëŒ€ê¸° ì¢Œí‘œë¡œ ë³µê·€ì‹œí‚µë‹ˆë‹¤.")]
+    [SerializeField] private bool resetPlanesOnBattleEnd = true;
+
+    private bool battleEndResetApplied;
+    private Coroutine battleEndReturnRoutine;
+    // Cache the exact local rotations of the planes controlled by this slide component.
+    private Quaternion leftReserveRotation = Quaternion.identity;
+    private Quaternion rightReserveRotation = Quaternion.identity;
+    private bool reserveRotationsCaptured;
+    private bool battleEndRotationRestored;
+
+    [Header("Turn End Original Rotations")]
+    [Tooltip("On: use the explicit local Euler angles below as each plane's exit rotation. Off: use each Plane's original local rotation captured at scene initialization.")]
+    [SerializeField] private bool useSpecifiedBattleEndRotations = false;
+    [Tooltip("Original LOCAL rotation for the left Plane before battle-end exit (degrees).")]
+    [SerializeField] private Vector3 leftBattleEndOriginalRotation = Vector3.zero;
+    [Tooltip("Original LOCAL rotation for the right Plane before battle-end exit (degrees).")]
+    [SerializeField] private Vector3 rightBattleEndOriginalRotation = Vector3.zero;
+
+    [Tooltip("í•œ í„´ ì‹¤í–‰ì´ ëë‚˜ íšŒì „ ë³µê·€ê°€ ì™„ë£Œëœ ë’¤, ì›ë˜ Transform ë¡œì»¬ ì¢Œí‘œê¹Œì§€ ì´ë™í•˜ëŠ” ì‹œê°„(ì´ˆ)ì…ë‹ˆë‹¤.")]
+    [SerializeField, Min(0f)] private float battleEndReturnDuration = 0.35f;
+    [Tooltip("í„´/ì „íˆ¬ ì¢…ë£Œ ë³µê·€ì— ë³„ë„ ê³¡ì„ ì„ ì‚¬ìš©í• ì§€ ì—¬ë¶€ì…ë‹ˆë‹¤. êº¼ì ¸ ìˆìœ¼ë©´ ê¸°ì¡´ Move Curveë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.")]
+    [SerializeField] private bool useSeparateBattleEndReturnCurve = false;
+    [SerializeField] private AnimationCurve battleEndReturnCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    [Tooltip("í„´ ì‹¤í–‰ ì¢…ë£Œ ì‹œ Planeì´ ìœ„ì¹˜ ë³µê·€í•˜ê¸° ì „ì— ì›ë˜ íšŒì „ê°’ìœ¼ë¡œ ëŒì•„ì˜¤ëŠ” ì‹œê°„(ì´ˆ). 0ì´ë©´ ì¦‰ì‹œ ë³µê·€í•©ë‹ˆë‹¤.")]
+    [SerializeField, Min(0f)] private float battleEndRotationReturnDuration = 0.12f;
+
+
+
     private void Awake()
     {
         Instance = this;
 
         ResolveFollowCamera();
         CaptureReferenceCameraPosition();
+        CaptureReserveRotations();
 
-        if (cacheStartPositionOnAwake)
-            CacheCurrentReservePositions();
+        // Record the scene/prefab-authored local positions before any animation.
+        CacheCurrentReservePositions();
     }
 
     private void Start()
@@ -87,6 +126,7 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
         if (!cachedPositions)
             CacheCurrentReservePositions();
+        CaptureReserveRotations();
 
         if (snapToReservePositionOnStart)
             SetReservePositionInstant();
@@ -94,12 +134,33 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
     private void LateUpdate()
     {
+        CheckBattleEndRecovery();
+
+        // Maintain the exact saved local rotations once restoration completes.
+        // Other camera-return callbacks cannot re-tilt a plane during its exit.
+        if (battleEndReturnRoutine != null || (IsBattleFinished() && resetPlanesOnBattleEnd))
+        {
+            if (battleEndRotationRestored)
+                ApplyReserveRotations();
+            return;
+        }
+
         if (!updateFollowInLateUpdate)
             return;
 
-        // Ä«¸Ş¶ó À§Ä¡ ÃßÀûÀ» ²ö »óÅÂ¶óµµ, Ä«¸Ş¶ó Z È®´ë¿¡ µû¸¥ Y º¸°£Àº °è¼Ó °»½ÅµÇ¾î¾ß ÇÕ´Ï´Ù.
+        // ì¹´ë©”ë¼ ìœ„ì¹˜ ì¶”ì ì„ ëˆ ìƒíƒœë¼ë„, ì¹´ë©”ë¼ Z í™•ëŒ€ì— ë”°ë¥¸ Y ë³´ê°„ì€ ê³„ì† ê°±ì‹ ë˜ì–´ì•¼ í•©ë‹ˆë‹¤.
         if (!followCameraPosition && !adjustYByCameraZ)
             return;
+
+        // At idle, keep the original Transform coordinates, even if the camera moves.
+        if (slide01 <= 0.0001f && moveRoutine == null)
+        {
+            if (leftPlane != null)
+                leftPlane.localPosition = leftOriginalLocalPosition;
+            if (rightPlane != null)
+                rightPlane.localPosition = rightOriginalLocalPosition;
+            return;
+        }
 
         ApplyPlanePositions(slide01);
     }
@@ -117,7 +178,7 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
         if (IsBattleFinished())
         {
-            ForceResetToReservePositionInstant();
+            CheckBattleEndRecovery();
             return;
         }
 
@@ -131,7 +192,7 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
         if (IsBattleFinished())
         {
-            ForceResetToReservePositionInstant();
+            CheckBattleEndRecovery();
             return;
         }
 
@@ -192,16 +253,43 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
     {
         BattleTurnExecutor.BattleExecutionStarted -= MoveToBattleCenter;
         BattleTurnExecutor.BattleExecutionStarted += MoveToBattleCenter;
-
-        BattleTurnExecutor.PlayerTurnReturned -= MoveToReservePosition;
-        BattleTurnExecutor.PlayerTurnReturned += MoveToReservePosition;
+        BattleTurnExecutor.PlayerTurnReturned -= HandlePlayerTurnReturned;
+        BattleTurnExecutor.PlayerTurnReturned += HandlePlayerTurnReturned;
     }
 
     private void OnDisable()
     {
         BattleTurnExecutor.BattleExecutionStarted -= MoveToBattleCenter;
-        BattleTurnExecutor.PlayerTurnReturned -= MoveToReservePosition;
+        BattleTurnExecutor.PlayerTurnReturned -= HandlePlayerTurnReturned;
+        if (moveRoutine != null)
+        {
+            StopCoroutine(moveRoutine);
+            moveRoutine = null;
+        }
+        if (battleEndReturnRoutine != null)
+        {
+            StopCoroutine(battleEndReturnRoutine);
+            battleEndReturnRoutine = null;
+        }
         BattleActionForegroundRenderer.ClearAll();
+    }
+
+    private void HandlePlayerTurnReturned()
+    {
+        // The event fires after one complete reserved-action turn, not only on victory.
+        // Victory has its own one-time path and must not restart the same animation.
+        if (!isActiveAndEnabled || IsBattleFinished())
+            return;
+
+        BeginTurnEndReturn();
+    }
+
+    public void BeginTurnEndReturn()
+    {
+        if (!isActiveAndEnabled || IsBattleFinished())
+            return;
+
+        StartRotationThenPositionReturn();
     }
 
     public void MoveToBattleCenter()
@@ -215,30 +303,41 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
         if (!cachedPositions)
             CacheCurrentReservePositions();
 
+        if (battleEndReturnRoutine != null)
+        {
+            StopCoroutine(battleEndReturnRoutine);
+            battleEndReturnRoutine = null;
+        }
+        battleEndResetApplied = false;
+        battleEndRotationRestored = false;
+        BattleEffectPlaneRotation rotationController = BattleEffectPlaneRotation.Instance;
+        if (rotationController != null)
+            rotationController.UnlockRotationForNextTurn();
         PlayMove(1f);
     }
 
+    // This API is also used by older turn-execution callers.
     public void MoveToReservePosition()
     {
-        BattleActionForegroundRenderer.ClearAll();
-
-        if (!isActiveAndEnabled)
-            return;
-
-        if (!cachedPositions)
-            CacheCurrentReservePositions();
-
-        PlayMove(0f);
+        if (IsBattleFinished())
+            BeginBattleEndReturn();
+        else
+            BeginTurnEndReturn();
     }
 
-    // Wait until both battle effect planes have returned to their reserve positions.
-    // This must complete before the next-turn recovery and monster planning effects.
     public IEnumerator MoveToReserveAndWaitRoutine()
     {
         MoveToReservePosition();
-
-        while (moveRoutine != null && isActiveAndEnabled)
+        while (battleEndReturnRoutine != null && isActiveAndEnabled)
             yield return null;
+    }
+
+    // Called by BattleTurnExecutor on room end. Never bypass rotation restoration.
+    public void BeginBattleEndReturn()
+    {
+        if (!isActiveAndEnabled || !resetPlanesOnBattleEnd || !IsBattleFinished())
+            return;
+        CheckBattleEndRecovery();
     }
 
     public void SetReservePositionInstant()
@@ -246,34 +345,88 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
         if (!cachedPositions)
             CacheCurrentReservePositions();
 
-        slide01 = 0f;
-        ApplyPlanePositions(slide01);
-    }
-
-    public void ForceResetToReservePositionInstant()
-    {
-        BattleActionForegroundRenderer.ClearAll();
-
         if (moveRoutine != null)
         {
             StopCoroutine(moveRoutine);
             moveRoutine = null;
         }
 
+        slide01 = 0f;
+        // Do not apply camera-follow / zoom correction to the authored idle pose.
+        if (leftPlane != null)
+            leftPlane.localPosition = leftOriginalLocalPosition;
+        if (rightPlane != null)
+            rightPlane.localPosition = rightOriginalLocalPosition;
+    }
+
+    public void ForceResetToReservePositionInstant()
+    {
+        // During a completed battle, never interrupt rotation -> exit animation.
+        // Keep this instant reset for scene initialization / emergency non-battle use.
+        if (resetPlanesOnBattleEnd && IsBattleFinished())
+        {
+            BeginBattleEndReturn();
+            return;
+        }
+
+        BattleActionForegroundRenderer.ClearAll();
+        if (moveRoutine != null)
+        {
+            StopCoroutine(moveRoutine);
+            moveRoutine = null;
+        }
+        if (battleEndReturnRoutine != null)
+        {
+            StopCoroutine(battleEndReturnRoutine);
+            battleEndReturnRoutine = null;
+        }
         if (!cachedPositions)
             CacheCurrentReservePositions();
 
         slide01 = 0f;
-        ApplyPlanePositions(slide01);
+        if (leftPlane != null)
+            leftPlane.localPosition = leftOriginalLocalPosition;
+        if (rightPlane != null)
+            rightPlane.localPosition = rightOriginalLocalPosition;
+        battleEndRotationRestored = false;
+        battleEndResetApplied = false;
+    }
+
+    private void CaptureReserveRotations()
+    {
+        if (reserveRotationsCaptured)
+            return;
+
+        if (leftPlane != null)
+            leftReserveRotation = leftPlane.localRotation;
+        if (rightPlane != null)
+            rightReserveRotation = rightPlane.localRotation;
+        reserveRotationsCaptured = true;
+    }
+
+    private void ApplyReserveRotations()
+    {
+        if (!reserveRotationsCaptured)
+            CaptureReserveRotations();
+        if (leftPlane != null)
+            leftPlane.localRotation = leftReserveRotation;
+        if (rightPlane != null)
+            rightPlane.localRotation = rightReserveRotation;
     }
 
     private void CacheCurrentReservePositions()
     {
-        if (leftPlane != null)
-            leftReservePosition = leftPlane.localPosition;
+        // A battle action must never replace the return positions with an animated pose.
+        if (cachedPositions)
+            return;
 
+        if (leftPlane == null && rightPlane == null)
+            return;
+
+        if (leftPlane != null)
+            leftOriginalLocalPosition = leftPlane.localPosition;
         if (rightPlane != null)
-            rightReservePosition = rightPlane.localPosition;
+            rightOriginalLocalPosition = rightPlane.localPosition;
 
         cachedPositions = true;
     }
@@ -324,11 +477,120 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
         return BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded;
     }
 
+    private void CheckBattleEndRecovery()
+    {
+        if (!resetPlanesOnBattleEnd || !isActiveAndEnabled || !IsBattleFinished())
+            return;
+        if (battleEndResetApplied)
+            return;
+
+        // If the turn-end return was already initiated before victory, keep it.
+        battleEndResetApplied = true;
+        if (battleEndReturnRoutine == null)
+            StartRotationThenPositionReturn();
+    }
+
+    // Single animation owner for a completed action turn and for battle victory:
+    // restore rotation first, then return to scene-authored local positions.
+    private void StartRotationThenPositionReturn()
+    {
+        if (!isActiveAndEnabled || battleEndReturnRoutine != null)
+            return;
+        if (!cachedPositions)
+            CacheCurrentReservePositions();
+        if (moveRoutine != null)
+        {
+            StopCoroutine(moveRoutine);
+            moveRoutine = null;
+        }
+        BattleActionForegroundRenderer.ClearAll();
+        battleEndRotationRestored = false;
+        battleEndReturnRoutine = StartCoroutine(ReturnPlanesAfterBattleRoutine());
+    }
+
+    private IEnumerator ReturnPlanesAfterBattleRoutine()
+    {
+        // Phase 1: restore both planes' configured original rotations BEFORE moving.
+        // Rotation owns localRotation and offsets; Slide owns localPosition.
+        CaptureReserveRotations();
+        BattleEffectPlaneRotation rotationController = BattleEffectPlaneRotation.Instance;
+        if (rotationController != null)
+        {
+            // Stop all attack/camera-return rotation writers. The slide component
+            // alone owns the configured ORIGINAL exit rotations from here onward.
+            rotationController.LockRotationForBattleEnd();
+        }
+
+        // Do not overwrite the original authored/inspector rotations with the
+        // Rotation component's idle values: they can intentionally be different.
+        if (useSpecifiedBattleEndRotations)
+        {
+            leftReserveRotation = Quaternion.Euler(leftBattleEndOriginalRotation);
+            rightReserveRotation = Quaternion.Euler(rightBattleEndOriginalRotation);
+        }
+
+        Quaternion leftFrom = leftPlane != null ? leftPlane.localRotation : leftReserveRotation;
+        Quaternion rightFrom = rightPlane != null ? rightPlane.localRotation : rightReserveRotation;
+        float rotationDuration = Mathf.Max(0f, battleEndRotationReturnDuration);
+        AnimationCurve rotationCurve = useSeparateBattleEndReturnCurve ? battleEndReturnCurve : moveCurve;
+        float rotationElapsed = 0f;
+        while (rotationElapsed < rotationDuration)
+        {
+            rotationElapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            float t = Mathf.Clamp01(rotationElapsed / Mathf.Max(0.0001f, rotationDuration));
+            float eased = rotationCurve != null ? Mathf.Clamp01(rotationCurve.Evaluate(t)) : t;
+            if (leftPlane != null)
+                leftPlane.localRotation = Quaternion.SlerpUnclamped(leftFrom, leftReserveRotation, eased);
+            if (rightPlane != null)
+                rightPlane.localRotation = Quaternion.SlerpUnclamped(rightFrom, rightReserveRotation, eased);
+            // Keep both positions unchanged until rotation restoration finishes.
+            yield return null;
+        }
+
+        // A different LateUpdate may have written after the last interpolation
+        // frame. Explicitly apply the targets, then verify on the next frame.
+        ApplyReserveRotations();
+        yield return null;
+        ApplyReserveRotations();
+        battleEndRotationRestored = true;
+
+        // Phase 2: move straight from the current local positions to the authored
+        // original Transform.localPosition. No X-axis exit, hidden second stage,
+        // screen-space conversion, or camera-follow offsets are used here.
+        Vector3 leftStart = leftPlane != null ? leftPlane.localPosition : leftOriginalLocalPosition;
+        Vector3 rightStart = rightPlane != null ? rightPlane.localPosition : rightOriginalLocalPosition;
+        float duration = Mathf.Max(0f, battleEndReturnDuration);
+        AnimationCurve curve = useSeparateBattleEndReturnCurve ? battleEndReturnCurve : moveCurve;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.0001f, duration));
+            float eased = curve != null ? Mathf.Clamp01(curve.Evaluate(t)) : t;
+            if (leftPlane != null)
+                leftPlane.localPosition = Vector3.LerpUnclamped(leftStart, leftOriginalLocalPosition, eased);
+            if (rightPlane != null)
+                rightPlane.localPosition = Vector3.LerpUnclamped(rightStart, rightOriginalLocalPosition, eased);
+            ApplyReserveRotations();
+            yield return null;
+        }
+
+        // Assign exact authored positions at completion to avoid interpolation drift.
+        slide01 = 0f;
+        if (leftPlane != null)
+            leftPlane.localPosition = leftOriginalLocalPosition;
+        if (rightPlane != null)
+            rightPlane.localPosition = rightOriginalLocalPosition;
+        ApplyReserveRotations();
+        battleEndReturnRoutine = null;
+    }
+
     private void ResyncToCurrentBattleState()
     {
         if (IsBattleFinished())
         {
-            ForceResetToReservePositionInstant();
+            CheckBattleEndRecovery();
             return;
         }
 
@@ -338,9 +600,11 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
         if (turnExecutor == null)
             return;
 
-        // °ÔÀÓ Ã¢ÀÇ Æ÷Ä¿½º¸¦ ÀÒ´Â µ¿¾È ÄÚ·çÆ¾ÀÌ³ª ÀÌº¥Æ® Å¸ÀÌ¹ÖÀÌ ²÷°Üµµ,
-        // ÇöÀç ÀüÅõ »óÅÂ¸¦ ±âÁØÀ¸·Î ¸ñÇ¥ À§Ä¡¸¦ ´Ù½Ã Àâ¾Æ °íÁ¤µÇ´Â Çö»óÀ» º¹±¸ÇÕ´Ï´Ù.
-        PlayMove(turnExecutor.IsExecuting ? 1f : 0f);
+        // ê²Œì„ ì°½ì˜ í¬ì»¤ìŠ¤ë¥¼ ìƒëŠ” ë™ì•ˆ ì½”ë£¨í‹´ì´ë‚˜ ì´ë²¤íŠ¸ íƒ€ì´ë°ì´ ëŠê²¨ë„,
+        // í˜„ì¬ ì „íˆ¬ ìƒíƒœë¥¼ ê¸°ì¤€ìœ¼ë¡œ ëª©í‘œ ìœ„ì¹˜ë¥¼ ë‹¤ì‹œ ì¡ì•„ ê³ ì •ë˜ëŠ” í˜„ìƒì„ ë³µêµ¬í•©ë‹ˆë‹¤.
+        if (turnExecutor.IsExecuting)
+            MoveToBattleCenter();
+        // í”Œë ˆì´ì–´ í„´ ë³µê·€ ì‹œì—ëŠ” ì¤‘ì•™ ìƒíƒœë¥¼ ìœ ì§€í•©ë‹ˆë‹¤.
     }
 
     private IEnumerator MoveRoutine(float targetSlide01)
@@ -360,6 +624,11 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
         while (elapsed < duration)
         {
+            if (resetPlanesOnBattleEnd && IsBattleFinished())
+            {
+                moveRoutine = null;
+                yield break;
+            }
             elapsed += useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             float curveT = moveCurve != null ? moveCurve.Evaluate(t) : t;
@@ -370,6 +639,11 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
             yield return null;
         }
 
+        if (resetPlanesOnBattleEnd && IsBattleFinished())
+        {
+            moveRoutine = null;
+            yield break;
+        }
         slide01 = Mathf.Clamp01(targetSlide01);
         ApplyPlanePositions(slide01);
         moveRoutine = null;
@@ -382,22 +656,38 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
         ResolveFollowCamera();
 
+        // The rotation-first return owns positions through the entire animation.
+        if (battleEndReturnRoutine != null || (resetPlanesOnBattleEnd && IsBattleFinished()))
+            return;
+
         if (followCameraPosition && !hasReferenceCameraPosition)
             CaptureReferenceCameraPosition();
 
         if (leftPlane != null)
         {
-            Vector3 leftBattlePosition = GetBattlePosition(leftReservePosition);
-            Vector3 leftBasePosition = Vector3.LerpUnclamped(leftReservePosition, leftBattlePosition, t);
-            leftBasePosition.y = GetCameraZoomAdjustedY(leftBasePosition.y, true);
+            Vector3 leftBattlePosition = useSpecifiedBattleLocalPositions
+                ? leftBattleLocalPosition : GetBattlePosition(leftOriginalLocalPosition);
+            Vector3 leftBasePosition = Vector3.LerpUnclamped(leftOriginalLocalPosition, leftBattlePosition, t);
+            // Only correct the Y of the battle pose; the start pose must remain authored.
+            if (adjustYByCameraZ)
+                leftBasePosition.y = Mathf.LerpUnclamped(leftOriginalLocalPosition.y,
+                    GetCameraZoomAdjustedY(leftBattlePosition.y, true), t);
+            // ê³µê²© ì—°ì¶œì€ ìœ„ì¹˜ë¥¼ ì§ì ‘ ë³€ê²½í•˜ì§€ ì•Šê³  ì˜¤í”„ì…‹ë§Œ ì „ë‹¬í•©ë‹ˆë‹¤.
+            if (BattleEffectPlaneRotation.Instance != null)
+                leftBasePosition += BattleEffectPlaneRotation.Instance.Plane1PositionOffset;
             leftPlane.localPosition = ApplyCameraDeltaToLocalPosition(leftPlane, leftBasePosition);
         }
 
         if (rightPlane != null)
         {
-            Vector3 rightBattlePosition = GetBattlePosition(rightReservePosition);
-            Vector3 rightBasePosition = Vector3.LerpUnclamped(rightReservePosition, rightBattlePosition, t);
-            rightBasePosition.y = GetCameraZoomAdjustedY(rightBasePosition.y, false);
+            Vector3 rightBattlePosition = useSpecifiedBattleLocalPositions
+                ? rightBattleLocalPosition : GetBattlePosition(rightOriginalLocalPosition);
+            Vector3 rightBasePosition = Vector3.LerpUnclamped(rightOriginalLocalPosition, rightBattlePosition, t);
+            if (adjustYByCameraZ)
+                rightBasePosition.y = Mathf.LerpUnclamped(rightOriginalLocalPosition.y,
+                    GetCameraZoomAdjustedY(rightBattlePosition.y, false), t);
+            if (BattleEffectPlaneRotation.Instance != null)
+                rightBasePosition += BattleEffectPlaneRotation.Instance.Plane2PositionOffset;
             rightPlane.localPosition = ApplyCameraDeltaToLocalPosition(rightPlane, rightBasePosition);
         }
     }
@@ -417,8 +707,8 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
         if (followCamera == null)
             return fallbackY;
 
-        // Ä«¸Ş¶ó°¡ ±×¸®µå À§Ä¡¿¡ µû¶ó -20¿¡¼­ -13±îÁö ÀüºÎ °¡Áö ¾Ê°í Áß°£ °ª¿¡¼­ ¸ØÃçµµ,
-        // ÇöÀç Ä«¸Ş¶ó Z°ªÀ» ±×´ë·Î »ç¿ëÇØ Plane Y°ªÀ» °°Àº ºñÀ²·Î º¸°£ÇÕ´Ï´Ù.
+        // ì¹´ë©”ë¼ê°€ ê·¸ë¦¬ë“œ ìœ„ì¹˜ì— ë”°ë¼ -20ì—ì„œ -13ê¹Œì§€ ì „ë¶€ ê°€ì§€ ì•Šê³  ì¤‘ê°„ ê°’ì—ì„œ ë©ˆì¶°ë„,
+        // í˜„ì¬ ì¹´ë©”ë¼ Zê°’ì„ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•´ Plane Yê°’ì„ ê°™ì€ ë¹„ìœ¨ë¡œ ë³´ê°„í•©ë‹ˆë‹¤.
         float zoomT = GetCameraZoomLerp01();
 
         if (isLeftPlane)
@@ -434,8 +724,8 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
         float cameraDeltaY = GetCameraDeltaY();
 
-        // Ä«¸Ş¶ó°¡ ¾Æ·¡ÂÊÀ¸·Î ÀÌµ¿ÇÏ´Â ±×¸®µå À§Ä¡¿¡¼­´Â ¾Æ·¡ PlaneÀÌ ¿Ã¶ó¿ÀÁö ¾Êµµ·Ï
-        // -3.5 ´ë½Å -4.5¿¡ ¸Ó¹°°Ô ÇÕ´Ï´Ù.
+        // ì¹´ë©”ë¼ê°€ ì•„ë˜ìª½ìœ¼ë¡œ ì´ë™í•˜ëŠ” ê·¸ë¦¬ë“œ ìœ„ì¹˜ì—ì„œëŠ” ì•„ë˜ Planeì´ ì˜¬ë¼ì˜¤ì§€ ì•Šë„ë¡
+        // -3.5 ëŒ€ì‹  -4.5ì— ë¨¸ë¬¼ê²Œ í•©ë‹ˆë‹¤.
         if (cameraDeltaY < -cameraYDirectionDeadZone)
             return leftYAtZoomZWhenCameraYMinus;
 
@@ -449,13 +739,13 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
         float cameraDeltaY = GetCameraDeltaY();
 
-        // Ä«¸Ş¶ó°¡ ¾Æ·¡ÂÊÀ¸·Î ÀÌµ¿ÇÏ´Â ±×¸®µå À§Ä¡¿¡¼­´Â À§ PlaneÀ» ´õ ³»·Á¼­
-        // 4 ´ë½Å 3±îÁö º¸°£ÇÕ´Ï´Ù.
+        // ì¹´ë©”ë¼ê°€ ì•„ë˜ìª½ìœ¼ë¡œ ì´ë™í•˜ëŠ” ê·¸ë¦¬ë“œ ìœ„ì¹˜ì—ì„œëŠ” ìœ„ Planeì„ ë” ë‚´ë ¤ì„œ
+        // 4 ëŒ€ì‹  3ê¹Œì§€ ë³´ê°„í•©ë‹ˆë‹¤.
         if (cameraDeltaY < -cameraYDirectionDeadZone)
             return rightYAtZoomZWhenCameraYMinus;
 
-        // Ä«¸Ş¶ó°¡ À§ÂÊÀ¸·Î ÀÌµ¿ÇÏ´Â ±×¸®µå À§Ä¡¿¡¼­´Â À§ PlaneÀÌ ³Ê¹« ¸¹ÀÌ ³»·Á¿ÀÁö ¾Êµµ·Ï
-        // 4 ´ë½Å 4.5±îÁö¸¸ º¸°£ÇÕ´Ï´Ù.
+        // ì¹´ë©”ë¼ê°€ ìœ„ìª½ìœ¼ë¡œ ì´ë™í•˜ëŠ” ê·¸ë¦¬ë“œ ìœ„ì¹˜ì—ì„œëŠ” ìœ„ Planeì´ ë„ˆë¬´ ë§ì´ ë‚´ë ¤ì˜¤ì§€ ì•Šë„ë¡
+        // 4 ëŒ€ì‹  4.5ê¹Œì§€ë§Œ ë³´ê°„í•©ë‹ˆë‹¤.
         if (cameraDeltaY > cameraYDirectionDeadZone)
             return rightYAtZoomZWhenCameraYPlus;
 

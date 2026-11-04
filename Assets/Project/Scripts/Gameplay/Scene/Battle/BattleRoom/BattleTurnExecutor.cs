@@ -291,7 +291,7 @@ public class BattleTurnExecutor : MonoBehaviour
             timelineController.ResetTimelineBarsForNewBattleRoom();
         }
 
-        ResetBattleEffectPlanesForRoomEnd();
+        StartBattleEffectPlaneExitForRoomEnd();
 
         RefreshEndTurnButton();
         RefreshBattlePresentationState();
@@ -312,8 +312,10 @@ public class BattleTurnExecutor : MonoBehaviour
         HideBattleExecutionUiUntilPlayerTurn();
     }
 
-    private IEnumerator ReturnBattleEffectPlanesToReserveRoutine()
+    private void StartBattleEffectPlaneExitForRoomEnd()
     {
+        // Do not cancel the rotation-first exit with an immediate transform reset.
+        // The SlideController owns the entire completed-battle sequence.
         BattleEffectPlaneSlideController[] controllers = UnityEngine.Object.FindObjectsByType<BattleEffectPlaneSlideController>(
             FindObjectsInactive.Exclude,
             FindObjectsSortMode.None);
@@ -321,38 +323,7 @@ public class BattleTurnExecutor : MonoBehaviour
         for (int i = 0; i < controllers.Length; i++)
         {
             if (controllers[i] != null && controllers[i].isActiveAndEnabled)
-                yield return controllers[i].MoveToReserveAndWaitRoutine();
-        }
-    }
-
-    private void ResetBattleEffectPlanesForRoomEnd()
-    {
-        // 전투 종료 시 공격 연출로 변경된 Plane 회전/위치를 먼저 기본 상태로 복구합니다.
-        BattleEffectPlaneRotation[] rotationControllers = UnityEngine.Object.FindObjectsByType<BattleEffectPlaneRotation>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None
-        );
-
-        for (int i = 0; i < rotationControllers.Length; i++)
-        {
-            if (rotationControllers[i] == null)
-                continue;
-
-            rotationControllers[i].StopHitEffect();
-        }
-
-        // 이후 기존 슬라이드 컨트롤러의 전투 대기 위치를 다시 적용합니다.
-        BattleEffectPlaneSlideController[] planeControllers = UnityEngine.Object.FindObjectsByType<BattleEffectPlaneSlideController>(
-            FindObjectsInactive.Include,
-            FindObjectsSortMode.None
-        );
-
-        for (int i = 0; i < planeControllers.Length; i++)
-        {
-            if (planeControllers[i] == null)
-                continue;
-
-            planeControllers[i].ForceResetToReservePositionInstant();
+                controllers[i].BeginBattleEndReturn();
         }
     }
 
@@ -699,7 +670,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 yield return timelineController.MoveTimelineBarsToCompletedTurnPositionRoutine();
 
             yield return runner.ReturnCameraDefaultIfNeeded();
-            yield return ReturnBattleEffectPlanesToReserveRoutine();
+            // BattleEffect planes remain in battle positions between turns.
+            // Only the completed-battle sequence may restore them.
 
             if (ArabellaPhaseTransition.HasPendingTransition)
             {
@@ -1012,7 +984,8 @@ public class BattleTurnExecutor : MonoBehaviour
                 yield return timelineController.MoveTimelineBarsToCompletedTurnPositionRoutine();
 
             yield return runner.ReturnCameraDefaultIfNeeded();
-            yield return ReturnBattleEffectPlanesToReserveRoutine();
+            // BattleEffect planes remain in battle positions between turns.
+            // Only the completed-battle sequence may restore them.
 
             if (ArabellaPhaseTransition.HasPendingTransition)
             {

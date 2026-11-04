@@ -239,7 +239,10 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
         boundRuntime = monster.RuntimeData;
 
         // 캐릭터 정보 패널처럼 선택과 동시에 카메라 이동 및 패널 표시를 시작합니다.
-        FocusCameraOnMonster(monster);
+        // Camera movement is managed by the shared Character Selection Focus settings.
+        BattleCameraController cameraController = BattleCameraController.Instance;
+        if (cameraController != null)
+            cameraController.FocusMonsterInfoForGridIndex(monster.transform, monster.MainGridIndex);
         StopRevealCoroutine();
 
         RefreshMonsterName();
@@ -423,16 +426,6 @@ public sealed class BattleMonsterInfoCanvasUI : MonoBehaviour
 
         erosionVisualOverridden = false;
         erosionCanvasGroup = null;
-    }
-
-    private static void FocusCameraOnMonster(MonsterUnit monster)
-    {
-        if (monster == null)
-            return;
-
-        BattleCameraController cameraController = BattleCameraController.Instance;
-        if (cameraController != null)
-            cameraController.FocusMonsterInfoForGridIndex(monster.transform, monster.MainGridIndex);
     }
 
     private static void RestoreCameraSmooth()

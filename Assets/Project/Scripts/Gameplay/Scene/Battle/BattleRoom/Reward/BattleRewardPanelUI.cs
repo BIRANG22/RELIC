@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Relic.Gameplay.Data;
@@ -56,7 +56,7 @@ public class BattleRewardPanelUI : MonoBehaviour
     [Tooltip("레드 더스티움 획득 이동 연출 색상입니다.")]
     [SerializeField] private Color remnantTransferEffectColor = new Color32(0x9F, 0x2B, 0x2B, 0xFF);
     [Tooltip("아이템 획득 이동 연출 색상입니다.")]
-    [SerializeField] private Color itemTransferEffectColor = new Color32(0xFB, 0xFD, 0x80, 0xFF);
+    [SerializeField] private Color itemTransferEffectColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
     [Tooltip("보상 이동 효과가 도착할 MenuRoot/BagButton입니다.")]
     [SerializeField] private RectTransform rewardTransferTarget;
     [Tooltip("레드 더스티움 보상 이동 효과가 도착할 별도 타겟입니다. 미설정 시 기존 Reward Transfer Target을 사용합니다.")]
@@ -187,8 +187,9 @@ public class BattleRewardPanelUI : MonoBehaviour
         // Upgrade previously serialized default colors while preserving custom Inspector colors.
         if (IsSameRgb(remnantTransferEffectColor, new Color32(0x6B, 0x00, 0x00, 0xFF)))
             remnantTransferEffectColor = new Color32(0x9F, 0x2B, 0x2B, 0xFF);
-        if (IsSameRgb(itemTransferEffectColor, new Color32(0xFF, 0xBC, 0x5D, 0xFF)))
-            itemTransferEffectColor = new Color32(0xFB, 0xFD, 0x80, 0xFF);
+        if (IsSameRgb(itemTransferEffectColor, new Color32(0xFF, 0xBC, 0x5D, 0xFF)) ||
+            IsSameRgb(itemTransferEffectColor, new Color32(0xFB, 0xFD, 0x80, 0xFF)))
+            itemTransferEffectColor = new Color32(0xA9, 0xB1, 0xBE, 0xFF);
         ResolveEquipPanelIfNeeded();
         if (gainButton == null)
         {

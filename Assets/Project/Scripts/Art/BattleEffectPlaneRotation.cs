@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
 public enum PlaneAttackType
@@ -8,88 +8,92 @@ public enum PlaneAttackType
 }
 
 /// <summary>
-/// ÀüÅõ Áß °ø°İ/Ãæµ¹ ÇÇÇØ ¿¬Ãâ¿¡ ¸ÂÃç Plane°ú Plane (1)ÀÇ À§Ä¡¿Í X È¸ÀüÀ» º¯°æÇÕ´Ï´Ù.
-/// °ø°İÀÌ ¿¬¼Ó µî·ÏµÈ °æ¿ì Ã¹ °ø°İ¿¡¼­ º¯°æµÈ »óÅÂ¸¦ À¯ÁöÇÏ°í ¸¶Áö¸· °ø°İÀÌ ³¡³ª¸é º¹±¸ÇÕ´Ï´Ù.
+/// ì „íˆ¬ ì¤‘ ê³µê²©/ì¶©ëŒ ì‹œ Planeì˜ íšŒì „ê³¼ Noise Flowë¥¼ ì œì–´í•˜ê³  ìœ„ì¹˜ ì˜¤í”„ì…‹ë§Œ ì „ë‹¬í•©ë‹ˆë‹¤.
+/// ê³µê²©ì´ ì—°ì† ë“±ë¡ëœ ê²½ìš° ì²« ê³µê²©ì—ì„œ ë³€ê²½ëœ ìƒíƒœë¥¼ ìœ ì§€í•˜ê³  ë§ˆì§€ë§‰ ê³µê²©ì´ ëë‚˜ë©´ ë³µêµ¬í•©ë‹ˆë‹¤.
 /// </summary>
 public class BattleEffectPlaneRotation : MonoBehaviour
 {
     public static BattleEffectPlaneRotation Instance { get; private set; }
 
-    [Header("´ë»ó Plane")]
-    [Tooltip("Ã¹ ¹øÂ° PlaneÀÔ´Ï´Ù.")]
+    [Header("ëŒ€ìƒ Plane")]
+    [Tooltip("ì²« ë²ˆì§¸ Planeì…ë‹ˆë‹¤.")]
     [SerializeField] private Transform plane1;
 
-    [Tooltip("µÎ ¹øÂ° PlaneÀÔ´Ï´Ù.")]
+    [Tooltip("ë‘ ë²ˆì§¸ Planeì…ë‹ˆë‹¤.")]
     [SerializeField] private Transform plane2;
 
-    [Header("±âº»°ª ÀÚµ¿ ÀúÀå")]
-    [Tooltip("°ÔÀÓ ½ÃÀÛ ½Ã PlaneÀÇ ÇöÀç ·ÎÄÃ À§Ä¡¸¦ ±âº» À§Ä¡·Î ÀúÀåÇÕ´Ï´Ù.")]
+    [Header("ê¸°ë³¸ê°’ ìë™ ì €ì¥")]
+    [Tooltip("íƒ€ê²© ìœ„ì¹˜ ì˜¤í”„ì…‹ ê³„ì‚° ê¸°ì¤€ìœ¼ë¡œ ì‹œì‘ ë¡œì»¬ ìœ„ì¹˜ë¥¼ ì €ì¥í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool useCurrentPositionAsIdle = true;
 
-    [Tooltip("°ÔÀÓ ½ÃÀÛ ½Ã PlaneÀÇ ÇöÀç ·ÎÄÃ È¸ÀüÀ» ±âº» È¸ÀüÀ¸·Î ÀúÀåÇÕ´Ï´Ù.")]
+    [Tooltip("ê²Œì„ ì‹œì‘ ì‹œ Planeì˜ í˜„ì¬ ë¡œì»¬ íšŒì „ì„ ê¸°ë³¸ íšŒì „ìœ¼ë¡œ ì €ì¥í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool useCurrentRotationAsIdle = true;
 
-    [Header("±âº» À§Ä¡")]
+    [Header("ê¸°ë³¸ ìœ„ì¹˜")]
     [SerializeField] private Vector3 plane1IdlePosition;
     [SerializeField] private Vector3 plane2IdlePosition;
 
-    [Header("±âº» È¸Àü")]
+    [Header("ê¸°ë³¸ íšŒì „")]
     [SerializeField] private Vector3 plane1IdleRotation;
     [SerializeField] private Vector3 plane2IdleRotation;
 
-    [Header("°ø°İ Å¸ÀÔº° X È¸Àü º¯È­·®")]
-    [Tooltip("±Ù°Å¸® °ø°İ ½Ã ±âº» X È¸Àü¿¡¼­ ´õÇÏ°Å³ª »¬ °ªÀÔ´Ï´Ù. -10 ¶Ç´Â +10 Áß ÇÏ³ª°¡ Àû¿ëµË´Ï´Ù.")]
+    [Header("ê³µê²© íƒ€ì…ë³„ X íšŒì „ ë³€í™”ëŸ‰")]
+    [Tooltip("ê·¼ê±°ë¦¬ ê³µê²© ì‹œ ê¸°ë³¸ X íšŒì „ì—ì„œ ë”í•˜ê±°ë‚˜ ëº„ ê°’ì…ë‹ˆë‹¤. -10 ë˜ëŠ” +10 ì¤‘ í•˜ë‚˜ê°€ ì ìš©ë©ë‹ˆë‹¤.")]
     [SerializeField] private float meleeRotationAmount = 10f;
 
-    [Tooltip("¿ø°Å¸® °ø°İ ½Ã ±âº» X È¸Àü¿¡¼­ ´õÇÏ°Å³ª »¬ °ªÀÔ´Ï´Ù. -4 ¶Ç´Â +4 Áß ÇÏ³ª°¡ Àû¿ëµË´Ï´Ù.")]
+    [Tooltip("ì›ê±°ë¦¬ ê³µê²© ì‹œ ê¸°ë³¸ X íšŒì „ì—ì„œ ë”í•˜ê±°ë‚˜ ëº„ ê°’ì…ë‹ˆë‹¤. -4 ë˜ëŠ” +4 ì¤‘ í•˜ë‚˜ê°€ ì ìš©ë©ë‹ˆë‹¤.")]
     [SerializeField] private float rangedRotationAmount = 4f;
 
-    [Tooltip("Ãæµ¹ ÇÇÇØ ½Ã ±âº» X È¸Àü¿¡¼­ ´õÇÏ°Å³ª »¬ °ªÀÔ´Ï´Ù. -2 ¶Ç´Â +2 Áß ÇÏ³ª°¡ Àû¿ëµË´Ï´Ù.")]
+    [Tooltip("ì¶©ëŒ í”¼í•´ ì‹œ ê¸°ë³¸ X íšŒì „ì—ì„œ ë”í•˜ê±°ë‚˜ ëº„ ê°’ì…ë‹ˆë‹¤. -2 ë˜ëŠ” +2 ì¤‘ í•˜ë‚˜ê°€ ì ìš©ë©ë‹ˆë‹¤.")]
     [SerializeField] private float collisionRotationAmount = 2f;
 
-    [Header("°ø°İ ½Ã À§Ä¡ º¯È­")]
-    [Tooltip("°ø°İ/Ãæµ¹ ¿¬Ãâ ½Ã PlaneÀÇ ±âº» Y À§Ä¡¿¡ ´õÇÒ °ªÀÔ´Ï´Ù. -2.8 ±âÁØ -3.2°¡ µË´Ï´Ù.")]
+    [Header("ê³µê²© ì‹œ ìœ„ì¹˜ ë³€í™”")]
+    [Tooltip("ê³µê²©/ì¶©ëŒ ì—°ì¶œ ì‹œ Planeì˜ ê¸°ë³¸ Y ìœ„ì¹˜ì— ë”í•  ê°’ì…ë‹ˆë‹¤. -2.8 ê¸°ì¤€ -3.2ê°€ ë©ë‹ˆë‹¤.")]
     [SerializeField] private float plane1HitYOffset = -0.4f;
 
-    [Tooltip("°ø°İ/Ãæµ¹ ¿¬Ãâ ½Ã Plane (1)ÀÇ ±âº» Y À§Ä¡¿¡ ´õÇÒ °ªÀÔ´Ï´Ù. 3.2 ±âÁØ 3.4°¡ µË´Ï´Ù.")]
+    [Tooltip("ê³µê²©/ì¶©ëŒ ì—°ì¶œ ì‹œ Plane (1)ì˜ ê¸°ë³¸ Y ìœ„ì¹˜ì— ë”í•  ê°’ì…ë‹ˆë‹¤. 3.2 ê¸°ì¤€ 3.4ê°€ ë©ë‹ˆë‹¤.")]
     [SerializeField] private float plane2HitYOffset = 0.2f;
 
-    [Header("Noise Flow ¸ÓÆ¼¸®¾ó")]
-    [Tooltip("Noise Flow °ªÀ» º¯°æÇÒ ¸ÓÆ¼¸®¾óÀÔ´Ï´Ù.")]
+    [Header("Noise Flow ë¨¸í‹°ë¦¬ì–¼")]
+    [Tooltip("Noise Flow ê°’ì„ ë³€ê²½í•  ë¨¸í‹°ë¦¬ì–¼ì…ë‹ˆë‹¤.")]
     [SerializeField] private Material noiseFlowMaterial;
 
-    [Tooltip("Shader Graph¿¡ ¼³Á¤µÈ Noise FlowÀÇ Reference ÀÌ¸§ÀÔ´Ï´Ù.")]
+    [Tooltip("Shader Graphì— ì„¤ì •ëœ Noise Flowì˜ Reference ì´ë¦„ì…ë‹ˆë‹¤.")]
     [SerializeField] private string noiseFlowPropertyName = "_noiseflow";
 
-    [Tooltip("°ÔÀÓ ½ÃÀÛ ½Ã ¸ÓÆ¼¸®¾óÀÇ ÇöÀç Noise Flow X°ªÀ» ±âº»°ªÀ¸·Î ÀúÀåÇÕ´Ï´Ù.")]
+    [Tooltip("ê²Œì„ ì‹œì‘ ì‹œ ë¨¸í‹°ë¦¬ì–¼ì˜ í˜„ì¬ Noise Flow Xê°’ì„ ê¸°ë³¸ê°’ìœ¼ë¡œ ì €ì¥í•©ë‹ˆë‹¤.")]
     [SerializeField] private bool useCurrentNoiseFlowXAsIdle = true;
 
-    [Tooltip("Æò¼Ò Noise Flow X°ªÀÔ´Ï´Ù.")]
+    [Tooltip("í‰ì†Œ Noise Flow Xê°’ì…ë‹ˆë‹¤.")]
     [SerializeField] private float idleNoiseFlowX = 0.01f;
 
-    [Tooltip("°ø°İ/Ãæµ¹ ¿¬Ãâ ½Ã »ç¿ëÇÒ ±âº» Noise Flow X°ªÀÔ´Ï´Ù.")]
+    [Tooltip("ê³µê²©/ì¶©ëŒ ì—°ì¶œ ì‹œ ì‚¬ìš©í•  ê¸°ë³¸ Noise Flow Xê°’ì…ë‹ˆë‹¤.")]
     [SerializeField] private float hitNoiseFlowX = 1f;
 
-    [Tooltip("°ø°İ/Ãæµ¹¸¶´Ù Noise Flow X¿¡ ´õÇÒ ÃÖ¼Ò ·£´ı°ªÀÔ´Ï´Ù.")]
+    [Tooltip("ê³µê²©/ì¶©ëŒë§ˆë‹¤ Noise Flow Xì— ë”í•  ìµœì†Œ ëœë¤ê°’ì…ë‹ˆë‹¤.")]
     [SerializeField] private float randomNoiseFlowXMin = -0.2f;
 
-    [Tooltip("°ø°İ/Ãæµ¹¸¶´Ù Noise Flow X¿¡ ´õÇÒ ÃÖ´ë ·£´ı°ªÀÔ´Ï´Ù.")]
+    [Tooltip("ê³µê²©/ì¶©ëŒë§ˆë‹¤ Noise Flow Xì— ë”í•  ìµœëŒ€ ëœë¤ê°’ì…ë‹ˆë‹¤.")]
     [SerializeField] private float randomNoiseFlowXMax = 0.2f;
 
-    [Tooltip("¿¬Ãâ Á¾·á ÈÄ Noise Flow °ªÀ» ±âº»°ªÀ¸·Î µÇµ¹¸³´Ï´Ù.")]
+    [Tooltip("ì—°ì¶œ ì¢…ë£Œ í›„ Noise Flow ê°’ì„ ê¸°ë³¸ê°’ìœ¼ë¡œ ë˜ëŒë¦½ë‹ˆë‹¤.")]
     [SerializeField] private bool restoreNoiseFlowAfterHit = true;
 
-    [Header("¿¬Ãâ ½Ã°£")]
-    [Tooltip("°ø°İ À§Ä¡¿Í È¸ÀüÀ¸·Î ¿òÁ÷ÀÌ´Â ½Ã°£ÀÔ´Ï´Ù.")]
+    [Header("Hit Noise Flow Pulse")]
+    [Tooltip("ì‹¤ì œ íƒ€ê²© ìˆœê°„ Hit Noise Flow Xë¥¼ ìœ ì§€í•˜ëŠ” ì‹œê°„(ì´ˆ)ì…ë‹ˆë‹¤. ì‹œê°„ì´ ì§€ë‚˜ë©´ Idle ê°’ìœ¼ë¡œ ëŒì•„ì˜µë‹ˆë‹¤.")]
+    [SerializeField, Min(0f)] private float hitNoiseFlowPulseDuration = 0.10f;
+
+    [Header("ì—°ì¶œ ì‹œê°„")]
+    [Tooltip("ê³µê²© ìœ„ì¹˜ì™€ íšŒì „ìœ¼ë¡œ ì›€ì§ì´ëŠ” ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField] private float moveOutDuration = 0.08f;
 
-    [Tooltip("Ãæµ¹ ÇÇÇØ ¿¬Ãâ¿¡¼­ º¯°æµÈ »óÅÂ¸¦ À¯ÁöÇÏ´Â ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("ì¶©ëŒ í”¼í•´ ì—°ì¶œì—ì„œ ë³€ê²½ëœ ìƒíƒœë¥¼ ìœ ì§€í•˜ëŠ” ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField] private float holdDuration = 0.3f;
 
-    [Tooltip("±âº» À§Ä¡¿Í È¸ÀüÀ¸·Î µ¹¾Æ¿À´Â ½Ã°£ÀÔ´Ï´Ù.")]
+    [Tooltip("ê¸°ë³¸ ìœ„ì¹˜ì™€ íšŒì „ìœ¼ë¡œ ëŒì•„ì˜¤ëŠ” ì‹œê°„ì…ë‹ˆë‹¤.")]
     [SerializeField] private float returnDuration = 0.18f;
 
-    [Header("¿¬Ãâ °î¼±")]
+    [Header("ì—°ì¶œ ê³¡ì„ ")]
     [SerializeField]
     private AnimationCurve moveOutCurve =
         AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
@@ -98,8 +102,8 @@ public class BattleEffectPlaneRotation : MonoBehaviour
     private AnimationCurve returnCurve =
         AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-    [Header("µğ¹ö±×")]
-    [Tooltip("¿¬Ãâ Å¸ÀÔ°ú ÃÖÁ¾ È¸Àü°ªÀ» Console¿¡ Ç¥½ÃÇÕ´Ï´Ù.")]
+    [Header("ë””ë²„ê·¸")]
+    [Tooltip("ì—°ì¶œ íƒ€ì…ê³¼ ìµœì¢… íšŒì „ê°’ì„ Consoleì— í‘œì‹œí•©ë‹ˆë‹¤.")]
     [SerializeField] private bool showDebugLog;
 
     private Quaternion plane1IdleQuaternion;
@@ -113,16 +117,68 @@ public class BattleEffectPlaneRotation : MonoBehaviour
     private int lastCollisionFeedbackFrame = -1;
     private float lastAttackDirection;
     private bool cameraReturnDriven;
+    private bool battleEndRotationInProgress;
+    private bool battleEndRotationLocked;
     private Vector3 cameraReturnPlane1FromPosition;
     private Vector3 cameraReturnPlane2FromPosition;
     private Quaternion cameraReturnPlane1FromRotation;
     private Quaternion cameraReturnPlane2FromRotation;
 
+    // ìœ„ì¹˜ì˜ ìµœì¢… ì†Œìœ ìëŠ” BattleEffectPlaneSlideControllerì…ë‹ˆë‹¤.
+    // ê¸°ì¡´ íƒ€ê²© Y ì´ë™ì€ ì—¬ê¸°ì„œ ì˜¤í”„ì…‹ë§Œ ê³„ì‚°í•´ SlideControllerê°€ ë°˜ì˜í•©ë‹ˆë‹¤.
+    public Vector3 Plane1PositionOffset { get; private set; }
+    public Vector3 Plane2PositionOffset { get; private set; }
+
+    // Expose the actual idle rotation of the planes used by the attack rotation system.
+    public bool TryGetIdleRotation(Transform target, out Quaternion idleRotation)
+    {
+        if (target != null && target == plane1)
+        {
+            idleRotation = plane1IdleQuaternion;
+            return true;
+        }
+        if (target != null && target == plane2)
+        {
+            idleRotation = plane2IdleQuaternion;
+            return true;
+        }
+        idleRotation = Quaternion.identity;
+        return false;
+    }
+
+    // Stop all attack/camera-return writers before the slide controller starts
+    // the battle-end rotation phase. The slide controller owns the final poses.
+    public void LockRotationForBattleEnd()
+    {
+        battleEndRotationInProgress = true;
+        battleEndRotationLocked = true;
+        StopCurrentRoutineWithoutReset();
+        persistentAttackActive = false;
+        releasePersistentAttackRequested = false;
+        cameraReturnDriven = false;
+        lastAttackDirection = 0f;
+        syncedReturnDuration = -1f;
+        syncedReturnCurve = null;
+        Plane1PositionOffset = Vector3.zero;
+        Plane2PositionOffset = Vector3.zero;
+        StopHitNoiseFlowPulse();
+    }
+
+    // The slide controller locks rotation writers while returning to the idle pose.
+    // Re-enable attack/collision rotation effects only when a new execution begins.
+    public void UnlockRotationForNextTurn()
+    {
+        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+            return;
+        battleEndRotationInProgress = false;
+        battleEndRotationLocked = false;
+    }
+
     private Vector3 activePlane1Position;
     private Vector3 activePlane2Position;
     private Quaternion activePlane1Rotation;
     private Quaternion activePlane2Rotation;
-    private float activeNoiseFlowX;
+    private Coroutine noiseFlowPulseRoutine;
 
     private int noiseFlowPropertyId;
     private bool hasNoiseFlowProperty;
@@ -140,6 +196,11 @@ public class BattleEffectPlaneRotation : MonoBehaviour
     private void OnEnable()
     {
         RegisterInstance();
+        if (BattleResultChecker.Instance == null || !BattleResultChecker.Instance.BattleEnded)
+        {
+            battleEndRotationInProgress = false;
+            battleEndRotationLocked = false;
+        }
     }
 
     private void OnDisable()
@@ -158,7 +219,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         if (Instance != null && Instance != this)
         {
             Debug.LogWarning(
-                "[BattleEffectPlaneRotation] ÄÄÆ÷³ÍÆ®°¡ µÎ °³ ÀÌ»ó Á¸ÀçÇÕ´Ï´Ù.",
+                "[BattleEffectPlaneRotation] ì»´í¬ë„ŒíŠ¸ê°€ ë‘ ê°œ ì´ìƒ ì¡´ì¬í•©ë‹ˆë‹¤.",
                 this);
         }
 
@@ -166,7 +227,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
     }
 
     /// <summary>
-    /// ÀÌÀü È£ÃâºÎ È£È¯¿ëÀÔ´Ï´Ù. ´Üµ¶ ±Ù°Å¸® Å¸°İ ¿¬ÃâÀ» Àç»ıÇÕ´Ï´Ù.
+    /// ì´ì „ í˜¸ì¶œë¶€ í˜¸í™˜ìš©ì…ë‹ˆë‹¤. ë‹¨ë… ê·¼ê±°ë¦¬ íƒ€ê²© ì—°ì¶œì„ ì¬ìƒí•©ë‹ˆë‹¤.
     /// </summary>
     public static void PlayHitRotationFeedback()
     {
@@ -177,7 +238,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
     }
 
     /// <summary>
-    /// °ø°İ ½ÇÇà ½ÃÀÛ ½Ã È£ÃâÇÕ´Ï´Ù. °°Àº °ø°İÀÌ ¿¬¼Ó µî·ÏµÈ °æ¿ì Ã¹ ½ÇÇà¿¡¼­¸¸ È£ÃâÇÕ´Ï´Ù.
+    /// ê³µê²© ì‹¤í–‰ ì‹œì‘ ì‹œ í˜¸ì¶œí•©ë‹ˆë‹¤. ê°™ì€ ê³µê²©ì´ ì—°ì† ë“±ë¡ëœ ê²½ìš° ì²« ì‹¤í–‰ì—ì„œë§Œ í˜¸ì¶œí•©ë‹ˆë‹¤.
     /// </summary>
     public static void BeginAttackRotationFeedback(PlaneAttackType attackType)
     {
@@ -188,7 +249,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
     }
 
     /// <summary>
-    /// °ø°İ ½ÇÇà Á¾·á ½Ã È£ÃâÇÕ´Ï´Ù. ¿¬¼Ó µî·ÏµÈ °æ¿ì ¸¶Áö¸· °ø°İÀÌ ³¡³¯ ¶§ È£ÃâÇÕ´Ï´Ù.
+    /// ê³µê²© ì‹¤í–‰ ì¢…ë£Œ ì‹œ í˜¸ì¶œí•©ë‹ˆë‹¤. ì—°ì† ë“±ë¡ëœ ê²½ìš° ë§ˆì§€ë§‰ ê³µê²©ì´ ëë‚  ë•Œ í˜¸ì¶œí•©ë‹ˆë‹¤.
     /// </summary>
     public static void EndAttackRotationFeedback()
     {
@@ -199,7 +260,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
     }
 
     /// <summary>
-    /// Ãæµ¹ ÇÇÇØ ¹ß»ı ½Ã ¡¾2µµ ¿¬ÃâÀ» ÇÑ ¹ø Àç»ıÇÕ´Ï´Ù.
+    /// ì¶©ëŒ í”¼í•´ ë°œìƒ ì‹œ Â±2ë„ ì—°ì¶œì„ í•œ ë²ˆ ì¬ìƒí•©ë‹ˆë‹¤.
     /// </summary>
     public static void PlayCollisionRotationFeedback()
     {
@@ -207,6 +268,14 @@ public class BattleEffectPlaneRotation : MonoBehaviour
             return;
 
         controller.PlayCollisionEffect();
+    }
+
+    /// <summary>í”¼ê²© ì„íŒ©íŠ¸ê°€ ë°œìƒí•œ ìˆœê°„ Noise Flowë¥¼ ì ê¹ ë¹ ë¥´ê²Œ í•œ í›„ ìë™ ë³µê·€í•©ë‹ˆë‹¤.</summary>
+    public static void PlayHitNoiseFlowPulse()
+    {
+        if (!TryResolveController(out BattleEffectPlaneRotation controller))
+            return;
+        controller.StartHitNoiseFlowPulse();
     }
 
     private static bool TryResolveController(out BattleEffectPlaneRotation controller)
@@ -233,7 +302,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
     }
 
     /// <summary>
-    /// Ä«¸Ş¶ó ÁÜ¾Æ¿ôÀÌ ½ÃÀÛµÉ ¶§ È£ÃâÇÕ´Ï´Ù. °ø°İ ¿¬ÃâÀÇ º¹±Í¸¦ °°Àº ±æÀÌ¿Í °î¼±À¸·Î ¸ÂÃä´Ï´Ù.
+    /// ì¹´ë©”ë¼ ì¤Œì•„ì›ƒì´ ì‹œì‘ë  ë•Œ í˜¸ì¶œí•©ë‹ˆë‹¤. ê³µê²© ì—°ì¶œì˜ ë³µê·€ë¥¼ ê°™ì€ ê¸¸ì´ì™€ ê³¡ì„ ìœ¼ë¡œ ë§ì¶¥ë‹ˆë‹¤.
     /// </summary>
     public static bool HasActiveAttackRotationFeedback()
     {
@@ -250,7 +319,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
     }
 
     /// <summary>
-    /// Ä«¸Ş¶ó°¡ ½ÇÁ¦·Î ÀÌµ¿ÇÑ º¸°£°ªÀ» Àü´Ş¹Ş¾Æ °°Àº ÇÁ·¹ÀÓ¿¡ Planeµµ º¹±Í½ÃÅµ´Ï´Ù.
+    /// ì¹´ë©”ë¼ê°€ ì‹¤ì œë¡œ ì´ë™í•œ ë³´ê°„ê°’ì„ ì „ë‹¬ë°›ì•„ ê°™ì€ í”„ë ˆì„ì— Planeë„ ë³µê·€ì‹œí‚µë‹ˆë‹¤.
     /// </summary>
     public static void UpdateCameraReturnFeedback(float curvedProgress)
     {
@@ -265,11 +334,11 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         if (!persistentAttackActive)
             return;
 
-        // °¢ÀÚ ÄÚ·çÆ¾À» ÁøÇàÇÏ¸é ½ÇÇà ¼ø¼­¿¡ µû¶ó ÇÑ ÇÁ·¹ÀÓ ´ÊÀ» ¼ö ÀÖÀ¸¹Ç·Î
-        // Ä«¸Ş¶ó ÀÌµ¿ ·çÇÁ¿¡¼­ Á÷Á¢ µ¿ÀÏÇÑ º¸°£°ªÀ» Àü´Ş¹Ş½À´Ï´Ù.
+        // ê°ì ì½”ë£¨í‹´ì„ ì§„í–‰í•˜ë©´ ì‹¤í–‰ ìˆœì„œì— ë”°ë¼ í•œ í”„ë ˆì„ ëŠ¦ì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ
+        // ì¹´ë©”ë¼ ì´ë™ ë£¨í”„ì—ì„œ ì§ì ‘ ë™ì¼í•œ ë³´ê°„ê°’ì„ ì „ë‹¬ë°›ìŠµë‹ˆë‹¤.
         StopCurrentRoutineWithoutReset();
-        cameraReturnPlane1FromPosition = plane1 != null ? plane1.localPosition : activePlane1Position;
-        cameraReturnPlane2FromPosition = plane2 != null ? plane2.localPosition : activePlane2Position;
+        cameraReturnPlane1FromPosition = plane1IdlePosition + Plane1PositionOffset;
+        cameraReturnPlane2FromPosition = plane2IdlePosition + Plane2PositionOffset;
         cameraReturnPlane1FromRotation = plane1 != null ? plane1.localRotation : activePlane1Rotation;
         cameraReturnPlane2FromRotation = plane2 != null ? plane2.localRotation : activePlane2Rotation;
         cameraReturnDriven = true;
@@ -278,6 +347,8 @@ public class BattleEffectPlaneRotation : MonoBehaviour
 
     private void ApplyCameraReturnProgress(float progress)
     {
+        if (battleEndRotationInProgress || battleEndRotationLocked)
+            return;
         if (!cameraReturnDriven)
             return;
 
@@ -294,22 +365,26 @@ public class BattleEffectPlaneRotation : MonoBehaviour
             persistentAttackActive = false;
             releasePersistentAttackRequested = false;
             ApplyIdleValues();
-            if (restoreNoiseFlowAfterHit)
-                RestoreNoiseFlow();
+
         }
     }
 
     private void BeginPersistentAttackEffect(PlaneAttackType attackType)
     {
+        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+            return;
+        battleEndRotationLocked = false;
+        battleEndRotationInProgress = false;
+
         FindPlanesAutomatically();
 
         if (plane1 == null && plane2 == null)
             return;
 
-        // °°Àº ÁÜ »óÅÂ¿¡¼­ °ø°İ/¹İ°İÀÌ ÀÌ¾îÁ®µµ »õ Çàµ¿¸¶´Ù È¸ÀüÀ» °»½ÅÇÕ´Ï´Ù.
-        // ±âº» °¢µµ·Î µÇµ¹¸®Áö ¾Ê°í ÇöÀç °¢µµ¿¡¼­ ¹İ´ë ¹æÇâÀ¸·Î ÀüÈ¯ÇÕ´Ï´Ù.
-        Vector3 from1Position = plane1 != null ? plane1.localPosition : plane1IdlePosition;
-        Vector3 from2Position = plane2 != null ? plane2.localPosition : plane2IdlePosition;
+        // ê°™ì€ ì¤Œ ìƒíƒœì—ì„œ ê³µê²©/ë°˜ê²©ì´ ì´ì–´ì ¸ë„ ìƒˆ í–‰ë™ë§ˆë‹¤ íšŒì „ì„ ê°±ì‹ í•©ë‹ˆë‹¤.
+        // ê¸°ë³¸ ê°ë„ë¡œ ë˜ëŒë¦¬ì§€ ì•Šê³  í˜„ì¬ ê°ë„ì—ì„œ ë°˜ëŒ€ ë°©í–¥ìœ¼ë¡œ ì „í™˜í•©ë‹ˆë‹¤.
+        Vector3 from1Position = plane1IdlePosition + Plane1PositionOffset;
+        Vector3 from2Position = plane2IdlePosition + Plane2PositionOffset;
         Quaternion from1Rotation = plane1 != null ? plane1.localRotation : plane1IdleQuaternion;
         Quaternion from2Rotation = plane2 != null ? plane2.localRotation : plane2IdleQuaternion;
         StopCurrentRoutineWithoutReset();
@@ -335,7 +410,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         if (!persistentAttackActive || cameraReturnDriven)
             return;
 
-        // Ä«¸Ş¶ó°¡ È®´ë ÁßÀÌ¸é, °ø°İ Á¾·á Á÷ÈÄ°¡ ¾Æ´Ï¶ó ÁÜ¾Æ¿ô ½ÃÀÛ¿¡ ¸ÂÃç º¹±ÍÇÕ´Ï´Ù.
+        // ì¹´ë©”ë¼ê°€ í™•ëŒ€ ì¤‘ì´ë©´, ê³µê²© ì¢…ë£Œ ì§í›„ê°€ ì•„ë‹ˆë¼ ì¤Œì•„ì›ƒ ì‹œì‘ì— ë§ì¶° ë³µê·€í•©ë‹ˆë‹¤.
         BattleCameraController cameraController = BattleCameraController.Instance;
         if (cameraController != null && cameraController.IsCombatZoomActive)
         {
@@ -347,6 +422,9 @@ public class BattleEffectPlaneRotation : MonoBehaviour
 
     private void PlaySingleAttackEffect(PlaneAttackType attackType)
     {
+        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+            return;
+
         if (persistentAttackActive)
             return;
 
@@ -363,12 +441,17 @@ public class BattleEffectPlaneRotation : MonoBehaviour
 
     private void PlayCollisionEffect()
     {
-        // °ø°İ ¿¬Ãâ À¯Áö Áß¿¡´Â °ø°İÀÇ Plane »óÅÂ¸¦ ¿ì¼±ÇÕ´Ï´Ù.
+        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+            return;
+
+        StartHitNoiseFlowPulse();
+
+        // ê³µê²© ì—°ì¶œ ìœ ì§€ ì¤‘ì—ëŠ” ê³µê²©ì˜ Plane ìƒíƒœë¥¼ ìš°ì„ í•©ë‹ˆë‹¤.
         if (persistentAttackActive)
             return;
 
-        // ÇÑ ¹øÀÇ Ãæµ¹¿¡¼­ ¾çÂÊ À¯´ÖÀÌ °°Àº ÇÁ·¹ÀÓ¿¡ ÇÇÇØ¸¦ ¹Ş¾Æµµ
-        // Plane ¿¬ÃâÀº ÇÑ ¹ø¸¸ ½ÇÇàÇÕ´Ï´Ù.
+        // í•œ ë²ˆì˜ ì¶©ëŒì—ì„œ ì–‘ìª½ ìœ ë‹›ì´ ê°™ì€ í”„ë ˆì„ì— í”¼í•´ë¥¼ ë°›ì•„ë„
+        // Plane ì—°ì¶œì€ í•œ ë²ˆë§Œ ì‹¤í–‰í•©ë‹ˆë‹¤.
         if (lastCollisionFeedbackFrame == Time.frameCount)
             return;
 
@@ -400,13 +483,12 @@ public class BattleEffectPlaneRotation : MonoBehaviour
 
         activePlane1Rotation = Quaternion.Euler(plane1Rotation);
         activePlane2Rotation = Quaternion.Euler(plane2Rotation);
-        activeNoiseFlowX = CreateHitNoiseFlowX();
 
         if (showDebugLog)
         {
             Debug.Log(
                 $"[BattleEffectPlaneRotation] {presentationName} / " +
-                $"º¯È­·®:{signedAmount} / " +
+                $"ë³€í™”ëŸ‰:{signedAmount} / " +
                 $"Plane X:{plane1Rotation.x} / Plane (1) X:{plane2Rotation.x}",
                 this);
         }
@@ -416,8 +498,6 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         Vector3 from1Position, Quaternion from1Rotation,
         Vector3 from2Position, Quaternion from2Rotation)
     {
-        SetNoiseFlowX(activeNoiseFlowX);
-
         yield return AnimateValues(
             from1Position,
             activePlane1Position,
@@ -447,8 +527,6 @@ public class BattleEffectPlaneRotation : MonoBehaviour
 
     private IEnumerator PlayOneShotRoutine()
     {
-        SetNoiseFlowX(activeNoiseFlowX);
-
         yield return AnimateValues(
             plane1IdlePosition,
             activePlane1Position,
@@ -466,7 +544,6 @@ public class BattleEffectPlaneRotation : MonoBehaviour
             activePlane1Rotation,
             activePlane2Position,
             activePlane2Rotation,
-            activeNoiseFlowX,
             holdDuration);
 
         yield return ReturnToIdleRoutine();
@@ -475,16 +552,12 @@ public class BattleEffectPlaneRotation : MonoBehaviour
 
     private IEnumerator ReturnToIdleRoutine(float durationOverride = -1f, AnimationCurve curveOverride = null)
     {
-        Vector3 plane1FromPosition = plane1 != null
-            ? plane1.localPosition
-            : activePlane1Position;
+        Vector3 plane1FromPosition = plane1IdlePosition + Plane1PositionOffset;
         Quaternion plane1FromRotation = plane1 != null
             ? plane1.localRotation
             : activePlane1Rotation;
 
-        Vector3 plane2FromPosition = plane2 != null
-            ? plane2.localPosition
-            : activePlane2Position;
+        Vector3 plane2FromPosition = plane2IdlePosition + Plane2PositionOffset;
         Quaternion plane2FromRotation = plane2 != null
             ? plane2.localRotation
             : activePlane2Rotation;
@@ -502,9 +575,6 @@ public class BattleEffectPlaneRotation : MonoBehaviour
             curveOverride ?? returnCurve);
 
         ApplyIdleValues();
-
-        if (restoreNoiseFlowAfterHit)
-            RestoreNoiseFlow();
     }
 
     private void ApplyActiveValues()
@@ -515,7 +585,58 @@ public class BattleEffectPlaneRotation : MonoBehaviour
             activePlane2Position,
             activePlane2Rotation);
 
-        SetNoiseFlowX(activeNoiseFlowX);
+    }
+
+    /// <summary>
+    /// At battle end, return both planes to their stored idle rotations before
+    /// SlideController moves either plane off screen. Does not write positions.
+    /// </summary>
+    public IEnumerator RestoreForBattleEnd(
+        float duration, AnimationCurve curve,
+        Transform exitPlane1 = null, Quaternion? exitPlane1Idle = null,
+        Transform exitPlane2 = null, Quaternion? exitPlane2Idle = null)
+    {
+        // This controller must not re-tilt either plane after battle end.
+        battleEndRotationInProgress = true;
+        battleEndRotationLocked = false;
+        StopCurrentRoutineWithoutReset();
+        persistentAttackActive = false;
+        releasePersistentAttackRequested = false;
+        cameraReturnDriven = false;
+        lastAttackDirection = 0f;
+        syncedReturnDuration = -1f;
+        syncedReturnCurve = null;
+        Plane1PositionOffset = Vector3.zero;
+        Plane2PositionOffset = Vector3.zero;
+        StopHitNoiseFlowPulse();
+
+        Transform actual1 = exitPlane1 != null ? exitPlane1 : plane1;
+        Transform actual2 = exitPlane2 != null ? exitPlane2 : plane2;
+        Quaternion idle1 = exitPlane1Idle ?? plane1IdleQuaternion;
+        Quaternion idle2 = exitPlane2Idle ?? plane2IdleQuaternion;
+        Quaternion from1 = actual1 != null ? actual1.localRotation : idle1;
+        Quaternion from2 = actual2 != null ? actual2.localRotation : idle2;
+        float safeDuration = Mathf.Max(0f, duration);
+        float elapsed = 0f;
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.0001f, safeDuration));
+            float eased = curve != null ? Mathf.Clamp01(curve.Evaluate(t)) : t;
+            if (actual1 != null)
+                actual1.localRotation = Quaternion.SlerpUnclamped(from1, idle1, eased);
+            if (actual2 != null)
+                actual2.localRotation = Quaternion.SlerpUnclamped(from2, idle2, eased);
+            yield return null;
+        }
+
+        if (actual1 != null)
+            actual1.localRotation = idle1;
+        if (actual2 != null)
+            actual2.localRotation = idle2;
+        battleEndRotationInProgress = false;
+        battleEndRotationLocked = true;
     }
 
     public void StopHitEffect()
@@ -527,10 +648,15 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         syncedReturnDuration = -1f;
         syncedReturnCurve = null;
         StopCurrentRoutineWithoutReset();
-        ApplyIdleValues();
+        if (!battleEndRotationInProgress && !battleEndRotationLocked)
+            ApplyIdleValues();
+        else
+        {
+            Plane1PositionOffset = Vector3.zero;
+            Plane2PositionOffset = Vector3.zero;
+        }
 
-        if (restoreNoiseFlowAfterHit)
-            RestoreNoiseFlow();
+        StopHitNoiseFlowPulse();
     }
 
     private void StopCurrentRoutineWithoutReset()
@@ -540,6 +666,51 @@ public class BattleEffectPlaneRotation : MonoBehaviour
 
         StopCoroutine(hitRoutine);
         hitRoutine = null;
+    }
+
+    private void StartHitNoiseFlowPulse()
+    {
+        if (!hasNoiseFlowProperty || noiseFlowMaterial == null ||
+            (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded))
+            return;
+
+        if (noiseFlowPulseRoutine != null)
+        {
+            StopCoroutine(noiseFlowPulseRoutine);
+            noiseFlowPulseRoutine = null;
+        }
+
+        // ì—°ì† íƒ€ê²©ì€ íƒ€ê²©í•  ë•Œë§ˆë‹¤ ìœ ì§€ ì‹œê°„ì„ ìƒˆë¡œ ì‹œì‘í•©ë‹ˆë‹¤.
+        SetNoiseFlowX(CreateHitNoiseFlowX());
+        if (hitNoiseFlowPulseDuration <= 0f)
+        {
+            RestoreNoiseFlow();
+            return;
+        }
+        noiseFlowPulseRoutine = StartCoroutine(HitNoiseFlowPulseRoutine());
+    }
+
+    private IEnumerator HitNoiseFlowPulseRoutine()
+    {
+        float elapsed = 0f;
+        while (elapsed < hitNoiseFlowPulseDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        RestoreNoiseFlow();
+        noiseFlowPulseRoutine = null;
+    }
+
+    private void StopHitNoiseFlowPulse()
+    {
+        if (noiseFlowPulseRoutine != null)
+        {
+            StopCoroutine(noiseFlowPulseRoutine);
+            noiseFlowPulseRoutine = null;
+        }
+        if (restoreNoiseFlowAfterHit)
+            RestoreNoiseFlow();
     }
 
     private float CreateHitNoiseFlowX()
@@ -602,7 +773,6 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         Quaternion plane1Rotation,
         Vector3 plane2Position,
         Quaternion plane2Rotation,
-        float noiseFlowX,
         float duration)
     {
         if (duration <= 0f)
@@ -617,7 +787,6 @@ public class BattleEffectPlaneRotation : MonoBehaviour
                 plane1Rotation,
                 plane2Position,
                 plane2Rotation);
-            SetNoiseFlowX(noiseFlowX);
 
             elapsed += Time.unscaledDeltaTime;
             yield return null;
@@ -630,32 +799,29 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         Vector3 plane2Position,
         Quaternion plane2Rotation)
     {
+        if (battleEndRotationInProgress || battleEndRotationLocked)
+            return;
+        // ë³€ê²½ëœ ìœ„ì¹˜ë¥¼ ì§ì ‘ ê¸°ë¡í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. SlideControllerê°€ ë‹¤ìŒ LateUpdateì—ì„œ í•©ì„±í•©ë‹ˆë‹¤.
+        Plane1PositionOffset = plane1Position - plane1IdlePosition;
+        Plane2PositionOffset = plane2Position - plane2IdlePosition;
+
         if (plane1 != null)
-        {
-            plane1.localPosition = plane1Position;
             plane1.localRotation = plane1Rotation;
-        }
 
         if (plane2 != null)
-        {
-            plane2.localPosition = plane2Position;
             plane2.localRotation = plane2Rotation;
-        }
     }
 
     private void ApplyIdleValues()
     {
+        Plane1PositionOffset = Vector3.zero;
+        Plane2PositionOffset = Vector3.zero;
+
         if (plane1 != null)
-        {
-            plane1.localPosition = plane1IdlePosition;
             plane1.localRotation = plane1IdleQuaternion;
-        }
 
         if (plane2 != null)
-        {
-            plane2.localPosition = plane2IdlePosition;
             plane2.localRotation = plane2IdleQuaternion;
-        }
     }
 
     private void SaveIdleValues()
@@ -694,8 +860,8 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         if (!noiseFlowMaterial.HasProperty(noiseFlowPropertyId))
         {
             Debug.LogWarning(
-                "[BattleEffectPlaneRotation] ¸ÓÆ¼¸®¾ó¿¡¼­ Noise Flow ÇÁ·ÎÆÛÆ¼¸¦ Ã£Áö ¸øÇß½À´Ï´Ù.\n" +
-                $"ÇÁ·ÎÆÛÆ¼ ÀÌ¸§: {noiseFlowPropertyName}",
+                "[BattleEffectPlaneRotation] ë¨¸í‹°ë¦¬ì–¼ì—ì„œ Noise Flow í”„ë¡œí¼í‹°ë¥¼ ì°¾ì§€ ëª»í–ˆìŠµë‹ˆë‹¤.\n" +
+                $"í”„ë¡œí¼í‹° ì´ë¦„: {noiseFlowPropertyName}",
                 noiseFlowMaterial);
             return;
         }
@@ -766,6 +932,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         moveOutDuration = Mathf.Max(0f, moveOutDuration);
         holdDuration = Mathf.Max(0f, holdDuration);
         returnDuration = Mathf.Max(0f, returnDuration);
+        hitNoiseFlowPulseDuration = Mathf.Max(0f, hitNoiseFlowPulseDuration);
     }
 #endif
 }

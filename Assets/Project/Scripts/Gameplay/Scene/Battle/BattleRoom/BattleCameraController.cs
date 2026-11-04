@@ -1,5 +1,6 @@
 ﻿using Relic.Gameplay.Monster;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BattleCameraController : MonoBehaviour
@@ -28,6 +29,84 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private bool clampZoomPosition = false;
     [SerializeField] private AnimationCurve zoomCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Header("Action Cinematic Camera")]
+    [Tooltip("전투 행동 중 시전자와 대상 방향에 따라 Y축 카메라 회전을 적용합니다.")]
+    [SerializeField] private bool enableActionDirectionYaw = true;
+    [Tooltip("오른쪽 공격은 음수, 왼쪽 공격은 양수로 적용되는 회전 크기입니다.")]
+    [SerializeField, Range(0f, 15f)] private float actionDirectionYaw = 5f;
+    [Tooltip("대상과 시전자의 X 거리 차이가 이 값 미만이면 카메라를 정면으로 유지합니다.")]
+    [SerializeField, Min(0f)] private float actionYawDeadZone = 0.15f;
+    [Tooltip("회전 중 주변 배경이 지나치게 잘리지 않도록 원근 카메라의 거리를 보정합니다.")]
+    [SerializeField] private bool compensateActionYawFrame = true;
+
+    [Header("Continuous Turn Camera")]
+    [Tooltip("연속 행동이 실행되는 동안 기본 위치 복귀를 보류하고 다음 행동 구도로 바로 이동합니다.")]
+    [SerializeField] private bool preserveCameraBetweenActions = true;
+
+    private bool turnExecutionEventActive;
+    private bool pendingTurnCameraReturn;
+    private BattleTurnExecutor cachedTurnExecutor;
+    private Coroutine deferredReturnRoutine;
+
+    private void OnEnable()
+    {
+        BattleTurnExecutor.BattleExecutionStarted -= HandleTurnExecutionStarted;
+        BattleTurnExecutor.BattleExecutionStarted += HandleTurnExecutionStarted;
+        BattleTurnExecutor.PlayerTurnReturned -= HandlePlayerTurnReturned;
+        BattleTurnExecutor.PlayerTurnReturned += HandlePlayerTurnReturned;
+    }
+
+    private void HandleTurnExecutionStarted()
+    {
+        turnExecutionEventActive = true;
+        ClearGridMovementDetection();
+        gridMovementNextRefreshTime = 0f;
+        gridMovementFocusedUnit = null;
+        pendingTurnCameraReturn = false;
+        if (deferredReturnRoutine != null)
+        {
+            StopCoroutine(deferredReturnRoutine);
+            deferredReturnRoutine = null;
+        }
+    }
+
+    private void HandlePlayerTurnReturned()
+    {
+        turnExecutionEventActive = false;
+        if (!pendingTurnCameraReturn || !isActiveAndEnabled)
+            return;
+
+        pendingTurnCameraReturn = false;
+        if (deferredReturnRoutine != null)
+            StopCoroutine(deferredReturnRoutine);
+        deferredReturnRoutine = StartCoroutine(FinishDeferredTurnCameraReturn());
+    }
+
+    private IEnumerator FinishDeferredTurnCameraReturn()
+    {
+        // 이전 행동/타격 효과가 종료되는 프레임에서 카메라가 튀지 않도록 다음 프레임에 복귀합니다.
+        yield return null;
+        // PlayerTurnReturned can be emitted before IsExecuting is cleared.
+        // Wait for that flag to settle rather than abandoning the zoom-out.
+        while (!turnExecutionEventActive && IsTurnCameraExecutionActive())
+            yield return null;
+        deferredReturnRoutine = null;
+        if (!turnExecutionEventActive)
+            yield return ReturnDefault();
+    }
+
+    private bool IsTurnCameraExecutionActive()
+    {
+        if (!preserveCameraBetweenActions)
+            return false;
+
+        if (cachedTurnExecutor == null)
+            cachedTurnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Exclude);
+
+        return turnExecutionEventActive ||
+               (cachedTurnExecutor != null && cachedTurnExecutor.IsExecuting);
+    }
+
     [Header("Damage Impact")]
     [SerializeField] private bool enableDamageImpact = true;
     [SerializeField] private bool enableDamageImpactRotation = true;
@@ -44,6 +123,30 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField, Min(1f)] private float impactRecoverySpeedMultiplier = 1.5f;
     [SerializeField, Min(0f)] private float impactRecoverySpeedDuration = 0.18f;
     [SerializeField] private bool useUnscaledTimeForImpact = true;
+
+    [Header("Grid Movement Combat Zoom")]
+    [Tooltip("전투 턴 실행 중 캐릭터/몬스터의 월드 위치 변화를 감지해 이동 유닛 중심으로 카메라 줌합니다. 강제 이동도 감지될 수 있습니다.")]
+    [SerializeField] private bool enableGridMovementImpactZoom = true;
+    [Tooltip("유닛의 누적 XY 이동을 감지할 최소 거리입니다.")]
+    [SerializeField, Min(0.05f)] private float gridMovementDetectionDistance = 0.65f;
+    [Tooltip("캐릭터와 몬스터 Transform 목록을 새로 확인하는 주기입니다.")]
+    [SerializeField, Min(0.1f)] private float gridMovementUnitRefreshInterval = 0.5f;
+    private readonly Dictionary<Transform, Vector3> gridMovementUnitPositions = new Dictionary<Transform, Vector3>();
+    private readonly List<Transform> gridMovementUnitCleanup = new List<Transform>();
+    private readonly List<Transform> gridMovementUnitReset = new List<Transform>();
+    // An entire movement animation is only allowed to announce its start once.
+    // This prevents early movers from stealing focus back while another unit starts later.
+    private readonly HashSet<Transform> gridMovementAlreadyDetected = new HashSet<Transform>();
+    private readonly Dictionary<Transform, Vector3> gridMovementLastFramePositions = new Dictionary<Transform, Vector3>();
+    private readonly Dictionary<Transform, float> gridMovementLastMotionTimes = new Dictionary<Transform, float>();
+    private Transform pendingGridMovementFocusUnit;
+    private Coroutine pendingGridMovementFocusRoutine;
+    [Tooltip("여러 캐릭터/몬스터가 동시에 이동할 때 마지막 이동을 선택하기 위해 기다릴 시간(초)입니다.")]
+    [SerializeField, Min(0f)] private float simultaneousMovementFocusDelay = 0.08f;
+    [Tooltip("이동이 멈춘 뒤 새로운 이동으로 판정하기까지의 시간(초)입니다.")]
+    [SerializeField, Min(0.05f)] private float gridMovementStopGraceTime = 0.18f;
+    private float gridMovementNextRefreshTime;
+    private Transform gridMovementFocusedUnit;
 
     [Header("Directional Impact Beats")]
     [SerializeField, Min(0f)] private float impactCompressionDistance = 0.08f;
@@ -111,30 +214,6 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private float characterSelectionFocusOrthographicSize = 4.4f;
     [SerializeField] private bool clampCharacterSelectionFocusPosition = false;
 
-    [Header("Monster Info Focus")]
-    [SerializeField] private bool enableMonsterInfoFocus = true;
-    [SerializeField] private float monsterInfoFocusDuration = 0.22f;
-    [SerializeField] private float monsterInfoReturnDuration = 0.22f;
-    [SerializeField] private Vector2 monsterInfoFocusOffset = new Vector2(0f, 0.25f);
-    [SerializeField, Min(0f)] private float monsterInfoFocusSideOffset = 4.0f;
-    [SerializeField] private bool useMonsterInfoFocusZ = true;
-    [SerializeField] private bool useFixedMonsterInfoFocusZ = false;
-    [SerializeField] private float monsterInfoFocusZPosition = -18f;
-    [SerializeField] private float monsterInfoFocusZOffset = 2f;
-    [SerializeField] private bool useMonsterInfoFocusOrthographicSize = false;
-    [SerializeField] private float monsterInfoFocusOrthographicSize = 4.4f;
-    [SerializeField] private bool clampMonsterInfoFocusPosition = false;
-    [Tooltip("몬스터 정보 선택 시 캐릭터 선택 포커스보다 카메라를 더 가까이 이동할 Z 거리입니다. 0이면 동일한 줌입니다.")]
-    [SerializeField, Min(0f)] private float monsterInfoExtraZoomZ = 0.8f;
-    [Tooltip("직교 카메라에서 몬스터 정보 선택 시 추가로 줄일 Orthographic Size입니다.")]
-    [SerializeField, Min(0f)] private float monsterInfoExtraZoomOrthographicSize = 0.35f;
-    [Tooltip("몬스터 정보 포커스 추가 줌 강도 배율입니다. 기존 추가 줌 설정에 곱해지며, 1이면 이전과 동일합니다.")]
-    [SerializeField, Min(0f)] private float monsterInfoExtraZoomStrength = 3.5f;
-    [Tooltip("몬스터 정보창 줌인 시 실제 몬스터 위치를 얼마나 따라갈지 설정합니다. 1이면 몬스터 위치 기준, 0이면 이전 그리드 기준입니다.")]
-    [SerializeField, Range(0f, 1f)] private float monsterInfoWorldPositionWeight = 1f;
-    [Tooltip("정보 패널이 몬스터를 가리지 않도록 카메라 중심을 좌우로 옮기는 거리입니다. 몬스터는 패널 반대편에 표시됩니다.")]
-    [SerializeField, Min(0f)] private float monsterInfoScreenSideMargin = 0.9f;
-
     [Header("Camera Position Clamp")]
     [SerializeField] private Vector2 minCameraPosition = new Vector2(-0.5f, -1f);
     [SerializeField] private Vector2 maxCameraPosition = new Vector2(0.5f, 1f);
@@ -146,7 +225,12 @@ public class BattleCameraController : MonoBehaviour
     [Header("Mouse Parallax")]
     [SerializeField] private bool enableMouseParallax = true;
     [SerializeField] private Vector2 mouseParallaxPositionAmount = new Vector2(0.08f, 0.05f);
+    [Tooltip("마우스 상하 이동에 따른 카메라 X 회전, 좌우 이동에 따른 Y 회전의 기본 각도입니다.")]
     [SerializeField] private Vector2 mouseParallaxRotationAmount = new Vector2(1f, 1f);
+    [Tooltip("Mouse Parallax Y 회전 추가 배율입니다. 0이면 Y 회전 없음, 1이면 기존 설정 유지입니다.")]
+    [SerializeField, Min(0f)] private float mouseParallaxYRotationMultiplier = 1f;
+    [Tooltip("캐릭터/몬스터 그리드 선택 포커스 중에도 줌 상태의 Parallax 강도를 사용합니다.")]
+    [SerializeField] private bool treatGridSelectionAsZoomForParallax = true;
     [SerializeField, Min(0f)] private float mouseParallaxSmoothSpeed = 8f;
     [SerializeField, Range(0f, 1f)] private float mouseParallaxCameraMotionMultiplier = 0.35f;
 
@@ -157,6 +241,7 @@ public class BattleCameraController : MonoBehaviour
     private bool holdDefaultReturn;
     private bool hasActiveCombatZoom;
     private bool hasActiveMonsterInfoFocus;
+    private bool hasActiveGridSelectionFocus;
 
     private enum CombatCameraFocusMode
     {
@@ -219,6 +304,17 @@ public class BattleCameraController : MonoBehaviour
 
     private void OnDisable()
     {
+        BattleTurnExecutor.BattleExecutionStarted -= HandleTurnExecutionStarted;
+        BattleTurnExecutor.PlayerTurnReturned -= HandlePlayerTurnReturned;
+        turnExecutionEventActive = false;
+        pendingTurnCameraReturn = false;
+        if (deferredReturnRoutine != null)
+        {
+            StopCoroutine(deferredReturnRoutine);
+            deferredReturnRoutine = null;
+        }
+        ClearGridMovementDetection();
+        gridMovementFocusedUnit = null;
         RestoreCinematicCameraImmediate();
         StopExternalShake();
         RemoveMouseParallax();
@@ -233,6 +329,7 @@ public class BattleCameraController : MonoBehaviour
         RemoveExternalShakeOffset();
         RemoveMouseParallax();
         HandleZoomFollowTarget();
+        CheckGridMovementImpactZoom();
     }
 
     private void LateUpdate()
@@ -251,63 +348,15 @@ public class BattleCameraController : MonoBehaviour
         return targetCamera != null && candidate == targetCamera.transform;
     }
 
+    // Monster and character selections share the same Inspector settings and grid framing.
+    // Preserve this public entry point for existing monster-info callers.
     public void FocusMonsterInfoForGridIndex(Transform target, int gridIndex)
     {
-        // 몬스터 정보 선택도 캐릭터 선택과 동일한 그리드 기준 카메라 포커스를 사용합니다.
-        // 정보 패널의 표시를 기다리지 않고 선택 순간부터 한 번만 이동합니다.
-        if (!enableMonsterInfoFocus || targetCamera == null || target == null || hasActiveCombatZoom)
+        if (!enableCharacterSelectionFocus || targetCamera == null || target == null || hasActiveCombatZoom)
             return;
 
-        RemoveMouseParallax();
-        EndZoomFollowTarget();
-        if (routine != null)
-            StopCoroutine(routine);
-        ClearImpactOffset();
-
-        Vector2 gridOffset = GetCharacterSelectionGridFocusOffset(gridIndex);
-        Vector3 gridTargetPos = defaultPosition;
-        if (useGridBasedCharacterSelectionFocusOffset && gridIndex >= 0)
-        {
-            gridTargetPos.x += gridOffset.x;
-            gridTargetPos.y += gridOffset.y;
-        }
-        else
-        {
-            gridTargetPos.x += characterSelectionFocusOffset.x;
-            gridTargetPos.y += characterSelectionFocusOffset.y;
-        }
-
-        // 단순히 현재 화면을 확대하지 않고 실제 클릭한 몬스터 쪽으로 줌인합니다.
-        // 패널이 왼쪽에 열리면 몬스터를 오른쪽에, 반대라면 왼쪽에 배치합니다.
-        int rowCount = Mathf.Max(1, characterSelectionFocusGridRowCount);
-        int columnCount = Mathf.Max(1, characterSelectionFocusGridColumnCount);
-        bool panelOnLeft = gridIndex < 0 || gridIndex >= rowCount * (columnCount / 2);
-        float sideMargin = panelOnLeft ? -monsterInfoScreenSideMargin : monsterInfoScreenSideMargin;
-        Vector3 monsterTargetPos = defaultPosition;
-        monsterTargetPos.x = target.position.x + monsterInfoFocusOffset.x + sideMargin;
-        monsterTargetPos.y = target.position.y + monsterInfoFocusOffset.y;
-
-        Vector3 targetPos = Vector3.Lerp(
-            gridTargetPos, monsterTargetPos, Mathf.Clamp01(monsterInfoWorldPositionWeight));
-
-        // 기존 추가 줌 강도를 유지하면서 위치와 확대를 하나의 이동으로 진행합니다.
-        targetPos.z = useCharacterSelectionFocusZ
-            ? GetCharacterSelectionFocusZPosition() + monsterInfoExtraZoomZ * monsterInfoExtraZoomStrength
-            : targetCamera.transform.position.z + monsterInfoExtraZoomZ * monsterInfoExtraZoomStrength;
-        float targetSize = useCharacterSelectionFocusOrthographicSize
-            ? characterSelectionFocusOrthographicSize
-            : targetCamera.orthographicSize;
-        bool zoomOrthographic = useCharacterSelectionFocusOrthographicSize || targetCamera.orthographic;
-        if (zoomOrthographic)
-            targetSize = Mathf.Max(0.1f, targetSize - monsterInfoExtraZoomOrthographicSize * monsterInfoExtraZoomStrength);
-
+        FocusOnCharacterSelection(target, gridIndex);
         hasActiveMonsterInfoFocus = true;
-        MoveCameraWithOptionalImmediate(
-            targetPos,
-            targetSize,
-            Mathf.Max(characterSelectionFocusDuration, minimumCharacterSelectionFocusDuration),
-            clampCharacterSelectionFocusPosition,
-            zoomOrthographic);
     }
 
     public bool BeginCinematicCamera()
@@ -489,6 +538,7 @@ public class BattleCameraController : MonoBehaviour
             yield break;
         }
 
+        hasActiveGridSelectionFocus = false;
         hasActiveCombatZoom = true;
         activeCombatFocusOwner = attacker;
         activeCombatFocusMode = CombatCameraFocusMode.Melee;
@@ -521,6 +571,7 @@ public class BattleCameraController : MonoBehaviour
             yield break;
         }
 
+        hasActiveGridSelectionFocus = false;
         hasActiveCombatZoom = true;
         activeCombatFocusOwner = attacker;
         activeCombatFocusMode = CombatCameraFocusMode.Ranged;
@@ -554,6 +605,7 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null || caster == null)
             yield break;
 
+        hasActiveGridSelectionFocus = false;
         hasActiveCombatZoom = true;
         activeCombatFocusOwner = caster;
         activeCombatFocusMode = CombatCameraFocusMode.Ranged;
@@ -633,6 +685,8 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField, Range(0f, 0.5f)] private float actionFramePadding = 0.20f;
     [Tooltip("단일 대상일 때도 지나치게 확대되지 않도록 보장하는 반쪽 화면 높이(월드 단위)입니다.")]
     [SerializeField, Min(0.1f)] private float actionFrameMinHalfHeight = 1.1f;
+    [Tooltip("원거리 공격 시 시전자가 배치될 화면 좌우 가장자리 여백 비율입니다. 0.15는 왼쪽/오른쪽에서 15% 지점입니다.")]
+    [SerializeField, Range(0.05f, 0.4f)] private float rangedCasterScreenEdgePadding = 0.15f;
 
     /// <summary>
     /// 시전자와 실제 효과 대상 전체를 한 구도로 잡습니다.
@@ -647,6 +701,7 @@ public class BattleCameraController : MonoBehaviour
             yield break;
 
         bool useRangedFrame = isStatusSkill || isRangedSkill;
+        hasActiveGridSelectionFocus = false;
         hasActiveCombatZoom = true;
         activeCombatFocusOwner = caster;
         activeCombatFocusMode = useRangedFrame
@@ -679,23 +734,81 @@ public class BattleCameraController : MonoBehaviour
             }
         }
 
+        // 근거리 공격은 시전자와 실제 피격 대상(들)을 포함한 구도의 중심을 사용합니다.
+        // 직접 그리드 이동은 별도의 FocusMovingGridUnit에서 이동 유닛을 중심으로 유지합니다.
+        // 원거리 공격은 대상 방향에 따라 시전자를 화면 좌/우 가장자리 근처에 배치합니다.
+        // 상태 효과는 기존처럼 시전자와 효과 대상 전체의 중앙 구도를 유지합니다.
         Vector3 destination = targetCamera.transform.position;
-        destination.x = (minX + maxX) * 0.5f + zoomOffset.x;
-        destination.y = (minY + maxY) * 0.5f + zoomOffset.y;
+        float targetAverageX = caster.position.x;
+        int targetCountForFraming = 0;
+        if (targets != null)
+        {
+            for (int i = 0; i < targets.Count; i++)
+            {
+                Transform target = targets[i];
+                if (target == null || target == caster)
+                    continue;
+                targetAverageX += target.position.x;
+                targetCountForFraming++;
+            }
+        }
+        if (targetCountForFraming > 0)
+            targetAverageX = (targetAverageX - caster.position.x) / targetCountForFraming;
+        else
+            targetAverageX = caster.position.x;
+
+        bool rangedEdgeFrame = isRangedSkill && !isStatusSkill && targetCountForFraming > 0;
+        float attackDirection = targetAverageX >= caster.position.x ? 1f : -1f;
+        if (Mathf.Abs(targetAverageX - caster.position.x) < 0.001f)
+            rangedEdgeFrame = false;
+
+        // Melee: center the frame on both caster and hit target(s), not caster alone.
+        // Status skills retain their shared bounds framing; ranged attacks retain
+        // the dedicated edge framing below.
+        destination.x = isStatusSkill || !isRangedSkill
+            ? (minX + maxX) * 0.5f + zoomOffset.x
+            : caster.position.x + zoomOffset.x;
+        destination.y = isStatusSkill || !isRangedSkill || rangedEdgeFrame
+            ? (minY + maxY) * 0.5f + zoomOffset.y
+            : caster.position.y + zoomOffset.y;
 
         float desiredZ = useRangedFrame ? rangedExecutionZoomZPosition :
             usePositionZZoom ? GetZoomZPosition() : destination.z;
         float desiredSize = !useRangedFrame && useOrthographicSizeZoom
             ? zoomSize : targetCamera.orthographicSize;
 
-        // 카메라 비율에 맞춰 시전자와 대상 전부를 보여줄 최소 화면 크기를 계산합니다.
-        // 원거리/상태 효과는 기존 원거리 Z를 최대 확대 한도로 사용합니다.
         float aspect = Mathf.Max(0.1f, targetCamera.aspect);
         float paddingFactor = 1f + Mathf.Max(0f, actionFramePadding);
         float halfWidth = Mathf.Max(0f, (maxX - minX) * 0.5f) * paddingFactor;
         float halfHeight = Mathf.Max(actionFrameMinHalfHeight,
             Mathf.Max(0f, (maxY - minY) * 0.5f) * paddingFactor);
         float requiredHalfHeight = Mathf.Max(halfHeight, halfWidth / aspect);
+
+        if (rangedEdgeFrame)
+        {
+            // Keep the caster near an edge while giving the targets the rest of
+            // the screen. The farthest target determines the minimum view width.
+            float farthestForward = 0f;
+            float farthestBackward = 0f;
+            if (targets != null)
+            {
+                for (int i = 0; i < targets.Count; i++)
+                {
+                    Transform target = targets[i];
+                    if (target == null)
+                        continue;
+                    float forward = (target.position.x - caster.position.x) * attackDirection;
+                    farthestForward = Mathf.Max(farthestForward, forward);
+                    farthestBackward = Mathf.Max(farthestBackward, -forward);
+                }
+            }
+            float edgeFraction = Mathf.Clamp(rangedCasterScreenEdgePadding, 0.05f, 0.4f);
+            float forwardWidth = farthestForward * paddingFactor / (2f * (1f - edgeFraction));
+            float backwardWidth = farthestBackward * paddingFactor / (2f * edgeFraction);
+            requiredHalfHeight = Mathf.Max(requiredHalfHeight,
+                Mathf.Max(forwardWidth, backwardWidth) / aspect);
+        }
+
         if (targetCamera.orthographic)
         {
             desiredSize = Mathf.Max(desiredSize, requiredHalfHeight);
@@ -705,17 +818,123 @@ public class BattleCameraController : MonoBehaviour
             float verticalHalfFov = targetCamera.fieldOfView * Mathf.Deg2Rad * 0.5f;
             float tanHalfFov = Mathf.Max(0.01f, Mathf.Tan(verticalHalfFov));
             float requiredDistance = requiredHalfHeight / tanHalfFov;
-            // 더 가까이 가지 않으며, 범위가 넓으면 필요한 만큼 뒤에서 촬영합니다.
             destination.z = Mathf.Min(desiredZ, caster.position.z - requiredDistance);
         }
         if (targetCamera.orthographic || !usePositionZZoom)
             destination.z = usePositionZZoom ? desiredZ : targetCamera.transform.position.z;
 
+        if (rangedEdgeFrame)
+        {
+            float edgeFraction = Mathf.Clamp(rangedCasterScreenEdgePadding, 0.05f, 0.4f);
+            float viewHalfWidth = targetCamera.orthographic
+                ? desiredSize * aspect
+                : Mathf.Max(0.01f, caster.position.z - destination.z)
+                    * Mathf.Tan(targetCamera.fieldOfView * Mathf.Deg2Rad * 0.5f) * aspect;
+            destination.x = caster.position.x + zoomOffset.x
+                + attackDirection * viewHalfWidth * (1f - 2f * edgeFraction);
+        }
+
+        float actionYaw = 0f;
+        if (enableActionDirectionYaw && !isStatusSkill && targets != null)
+        {
+            float targetXSum = 0f;
+            int targetCount = 0;
+            for (int i = 0; i < targets.Count; i++)
+            {
+                if (targets[i] == null || targets[i] == caster)
+                    continue;
+                targetXSum += targets[i].position.x;
+                targetCount++;
+            }
+            if (targetCount > 0)
+            {
+                float differenceX = targetXSum / targetCount - caster.position.x;
+                if (Mathf.Abs(differenceX) >= actionYawDeadZone)
+                    actionYaw = differenceX < 0f ? actionDirectionYaw : -actionDirectionYaw;
+            }
+        }
+
+        // 카메라 회전으로 화면 가장자리가 잘리는 것을 줄이기 위해 원근 거리만 보수적으로 보정합니다.
+        if (compensateActionYawFrame && !targetCamera.orthographic && usePositionZZoom && Mathf.Abs(actionYaw) > 0.001f)
+        {
+            float yawRadians = Mathf.Abs(actionYaw) * Mathf.Deg2Rad;
+            float extraDistance = requiredHalfHeight * Mathf.Tan(yawRadians);
+            destination.z = Mathf.Min(destination.z, caster.position.z - requiredHalfHeight /
+                Mathf.Max(0.01f, Mathf.Tan(targetCamera.fieldOfView * Mathf.Deg2Rad * 0.5f)) - extraDistance);
+        }
+
+        // The camera's yaw changes the projected screen X of every target.
+        // Solve for the camera X that puts the desired anchor at its requested
+        // viewport position AFTER yaw and Z framing have been decided.
+        // Melee: caster + all hit targets at screen center.
+        // Ranged: caster near the screen edge facing the targets.
+        // Status: preserve the existing shared center framing.
+        Vector3 screenAnchor = new Vector3(
+            (minX + maxX) * 0.5f,
+            (minY + maxY) * 0.5f,
+            caster.position.z);
+        float anchorViewportX = 0.5f;
+        if (rangedEdgeFrame)
+        {
+            screenAnchor = caster.position;
+            float edgeFraction = Mathf.Clamp(rangedCasterScreenEdgePadding, 0.05f, 0.4f);
+            anchorViewportX = attackDirection > 0f ? edgeFraction : 1f - edgeFraction;
+        }
+        Quaternion framingRotation = Quaternion.Euler(0f, actionYaw, 0f);
+        destination.x = CalculateCameraXForScreenAnchor(
+            screenAnchor, destination.z, framingRotation, anchorViewportX, desiredSize)
+            + zoomOffset.x;
+
+        // Attack camera's highest priority is the Inspector Camera Position Clamp.
+        // The caster/target viewport anchor and yaw correction are best-effort:
+        // they must never move the camera beyond the configured X/Y bounds.
+        // Apply it to the calculated destination AND each animation frame.
+        destination = ClampCameraPosition(destination);
+
         float duration = useRangedFrame ? rangedExecutionZoomDuration : zoomDuration;
         routine = StartCoroutine(MoveCamera(
-            destination, desiredSize, duration, false,
-            targetCamera.orthographic || (!useRangedFrame && useOrthographicSizeZoom)));
+            destination, desiredSize, duration, true,
+            targetCamera.orthographic || (!useRangedFrame && useOrthographicSizeZoom),
+            false, actionYaw));
         yield return routine;
+    }
+
+    // Place a world-space anchor at a specific horizontal screen fraction,
+    // while preserving the requested camera Z and yaw.  The perspective case
+    // also accounts for the change in camera-relative depth caused by yaw.
+    private float CalculateCameraXForScreenAnchor(
+        Vector3 anchor, float cameraZ, Quaternion cameraRotation,
+        float viewportX, float orthographicSize)
+    {
+        if (targetCamera == null)
+            return anchor.x;
+
+        Vector3 right = cameraRotation * Vector3.right;
+        Vector3 forward = cameraRotation * Vector3.forward;
+        float depthDelta = anchor.z - cameraZ;
+        float centeredX = Mathf.Clamp01(viewportX) * 2f - 1f;
+        float localX;
+        float localZ;
+
+        if (targetCamera.orthographic)
+        {
+            localX = centeredX * Mathf.Max(0.01f, orthographicSize) * targetCamera.aspect;
+            if (Mathf.Abs(forward.z) < 0.0001f)
+                return anchor.x;
+            localZ = (depthDelta - right.z * localX) / forward.z;
+        }
+        else
+        {
+            float tangent = Mathf.Tan(targetCamera.fieldOfView * Mathf.Deg2Rad * 0.5f);
+            float screenSlope = centeredX * tangent * targetCamera.aspect;
+            float denominator = forward.z + right.z * screenSlope;
+            if (Mathf.Abs(denominator) < 0.0001f)
+                return anchor.x;
+            localZ = depthDelta / denominator;
+            localX = screenSlope * localZ;
+        }
+
+        return anchor.x - (right.x * localX + forward.x * localZ);
     }
 
     public void SetHoldDefaultReturn(bool hold)
@@ -731,6 +950,7 @@ public class BattleCameraController : MonoBehaviour
 
     public void EndZoomFollowTarget()
     {
+        gridMovementFocusedUnit = null;
         zoomFollowTarget = null;
         zoomFollowVelocity = Vector3.zero;
     }
@@ -792,6 +1012,7 @@ public class BattleCameraController : MonoBehaviour
 
         RemoveMouseParallax();
         hasActiveMonsterInfoFocus = false;
+        hasActiveGridSelectionFocus = true;
         EndZoomFollowTarget();
 
         if (routine != null)
@@ -836,58 +1057,15 @@ public class BattleCameraController : MonoBehaviour
             useCharacterSelectionFocusOrthographicSize));
     }
 
+    // Compatibility with other monster selection callers; the shared focus settings apply.
     public void FocusMonsterInfo(Transform target)
     {
-        FocusMonsterInfo(target, 0f);
+        FocusMonsterInfoForGridIndex(target, -1);
     }
 
     public void FocusMonsterInfoWithPanelSide(Transform target, bool panelOnLeft)
     {
-        float sideOffset = Mathf.Abs(monsterInfoFocusSideOffset);
-        float horizontalOffset = panelOnLeft
-            ? -sideOffset
-            : sideOffset;
-
-        FocusMonsterInfo(target, horizontalOffset);
-    }
-
-    private void FocusMonsterInfo(Transform target, float horizontalOffset)
-    {
-        if (!enableMonsterInfoFocus)
-            return;
-
-        if (targetCamera == null || target == null)
-            return;
-
-        if (hasActiveCombatZoom)
-            return;
-
-        RemoveMouseParallax();
-        EndZoomFollowTarget();
-
-        if (routine != null)
-            StopCoroutine(routine);
-
-        ClearImpactOffset();
-
-        Vector3 targetPos = target.position;
-        targetPos.x += monsterInfoFocusOffset.x + horizontalOffset;
-        targetPos.y += monsterInfoFocusOffset.y;
-        targetPos.z = useMonsterInfoFocusZ
-            ? GetMonsterInfoFocusZPosition()
-            : targetCamera.transform.position.z;
-
-        float targetSize = useMonsterInfoFocusOrthographicSize
-            ? monsterInfoFocusOrthographicSize
-            : targetCamera.orthographicSize;
-
-        hasActiveMonsterInfoFocus = true;
-        MoveCameraWithOptionalImmediate(
-            targetPos,
-            targetSize,
-            monsterInfoFocusDuration,
-            clampMonsterInfoFocusPosition,
-            useMonsterInfoFocusOrthographicSize);
+        FocusMonsterInfoForGridIndex(target, -1);
     }
 
     public void ReturnDefaultFromMonsterInfoFocus()
@@ -918,10 +1096,11 @@ public class BattleCameraController : MonoBehaviour
         ClearImpactOffset();
 
         hasActiveMonsterInfoFocus = false;
+        hasActiveGridSelectionFocus = false;
         MoveCameraWithOptionalImmediate(
             GetNeutralBattlePosition(),
             defaultSize,
-            monsterInfoReturnDuration,
+            Mathf.Max(characterSelectionFocusDuration, minimumCharacterSelectionFocusDuration),
             false,
             true);
     }
@@ -935,6 +1114,7 @@ public class BattleCameraController : MonoBehaviour
 
     public void ForceReturnMapImmediate()
     {
+        pendingTurnCameraReturn = false;
         if (targetCamera == null)
             targetCamera = Camera.main;
 
@@ -966,6 +1146,7 @@ public class BattleCameraController : MonoBehaviour
         ResetCombatFocusTracking();
         ResetDamageImpactRotationSequence();
         hasActiveMonsterInfoFocus = false;
+        hasActiveGridSelectionFocus = false;
     }
 
     public void StartReturnPanelDown()
@@ -1029,17 +1210,19 @@ public class BattleCameraController : MonoBehaviour
         ApplyCameraRotationZ(0f);
         ResetDamageImpactRotationSequence();
 
-        routine = StartCoroutine(MoveCamera(GetNeutralBattlePosition(), defaultSize, moveDuration, false, true));
+        routine = StartCoroutine(MoveCamera(GetNeutralBattlePosition(), defaultSize, moveDuration, false, true, false, 0f));
         yield return routine;
 
         ApplyCameraRotationZ(0f);
         hasActiveCombatZoom = false;
         ResetCombatFocusTracking();
         hasActiveMonsterInfoFocus = false;
+        hasActiveGridSelectionFocus = false;
     }
 
     public void ForceReturnPanelDownImmediate()
     {
+        pendingTurnCameraReturn = false;
         if (targetCamera == null)
             return;
 
@@ -1068,6 +1251,7 @@ public class BattleCameraController : MonoBehaviour
         ResetCombatFocusTracking();
         ResetDamageImpactRotationSequence();
         hasActiveMonsterInfoFocus = false;
+        hasActiveGridSelectionFocus = false;
     }
 
     public void StartReturnDefault()
@@ -1134,6 +1318,7 @@ public class BattleCameraController : MonoBehaviour
 
     public void ForceReturnDefaultImmediate()
     {
+        pendingTurnCameraReturn = false;
         if (targetCamera == null)
             return;
 
@@ -1161,6 +1346,7 @@ public class BattleCameraController : MonoBehaviour
         ResetCombatFocusTracking();
         ResetDamageImpactRotationSequence();
         hasActiveMonsterInfoFocus = false;
+        hasActiveGridSelectionFocus = false;
     }
 
     /// <summary>
@@ -1222,6 +1408,7 @@ public class BattleCameraController : MonoBehaviour
         // 다른 포커스 동작이 해당 코루틴을 중단해도 보상 흐름은 계속되어야 합니다.
         Vector3 startPosition = targetCamera.transform.position;
         float startSize = targetCamera.orthographicSize;
+        Quaternion startRotation = targetCamera.transform.rotation;
         Vector3 destination = GetNeutralBattlePosition();
         if (!usePositionZZoom)
             destination.z = startPosition.z;
@@ -1235,6 +1422,7 @@ public class BattleCameraController : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / duration);
             float eased = EvaluateZoomCurve(t);
             targetCamera.transform.position = Vector3.Lerp(startPosition, destination, eased);
+            targetCamera.transform.rotation = Quaternion.Slerp(startRotation, Quaternion.identity, eased);
             targetCamera.orthographicSize = Mathf.Lerp(startSize, defaultSize, eased);
             UpdateBattleEffectReturnAlongCamera(t);
             yield return null;
@@ -1246,12 +1434,21 @@ public class BattleCameraController : MonoBehaviour
         hasActiveCombatZoom = false;
         ResetCombatFocusTracking();
         hasActiveMonsterInfoFocus = false;
+        hasActiveGridSelectionFocus = false;
     }
 
     public IEnumerator ReturnDefault()
     {
         if (targetCamera == null)
             yield break;
+
+        // 턴 중간 복귀 요청을 실제 이동으로 처리하면 매 슬롯마다 기본 위치를 경유하게 됩니다.
+        if (IsTurnCameraExecutionActive())
+        {
+            pendingTurnCameraReturn = true;
+            yield break;
+        }
+        pendingTurnCameraReturn = false;
 
         // 카메라/Plane의 기존 복귀 속도를 유지하고 마지막 행동 유닛의 Idle 전환만 맞춥니다.
         if (hasActiveCombatZoom)
@@ -1265,22 +1462,23 @@ public class BattleCameraController : MonoBehaviour
 
         ClearImpactOffset();
 
-        ApplyCameraRotationZ(0f);
         ResetDamageImpactRotationSequence();
 
         // BattleEffect의 복귀 시작과 줌아웃의 길이/곡선을 일치시킵니다.
         yield return BeginBattleEffectReturnWithLead(returnDuration);
-        routine = StartCoroutine(MoveCamera(GetNeutralBattlePosition(), defaultSize, returnDuration, false, true, true));
+        routine = StartCoroutine(MoveCamera(GetNeutralBattlePosition(), defaultSize, returnDuration, false, true, true, 0f));
         yield return routine;
 
         ApplyCameraRotationZ(0f);
         hasActiveCombatZoom = false;
         ResetCombatFocusTracking();
         hasActiveMonsterInfoFocus = false;
+        hasActiveGridSelectionFocus = false;
     }
 
     private void ResetCombatFocusTracking()
     {
+        gridMovementFocusedUnit = null;
         activeCombatFocusOwner = null;
         activeCombatFocusMode = CombatCameraFocusMode.None;
     }
@@ -1513,7 +1711,8 @@ public class BattleCameraController : MonoBehaviour
             return;
 
         RemoveMouseParallax();
-        targetCamera.transform.rotation = Quaternion.Euler(0f, 0f, rotationZ);
+        Vector3 current = targetCamera.transform.eulerAngles;
+        targetCamera.transform.rotation = Quaternion.Euler(0f, Mathf.DeltaAngle(0f, current.y), rotationZ);
     }
 
     private void ResetDamageImpactRotationSequence()
@@ -1527,8 +1726,12 @@ public class BattleCameraController : MonoBehaviour
         float duration,
         bool clampPosition = true,
         bool applyOrthographicSize = false,
-        bool synchronizePlaneReturn = false)
+        bool synchronizePlaneReturn = false,
+        float targetYaw = float.NaN)
     {
+        bool animateYaw = !float.IsNaN(targetYaw);
+        Quaternion startRotation = targetCamera.transform.rotation;
+        Quaternion destinationRotation = animateYaw ? Quaternion.Euler(0f, targetYaw, 0f) : startRotation;
         Vector3 startPos = targetCamera.transform.position;
         float startSize = targetCamera.orthographicSize;
 
@@ -1541,6 +1744,8 @@ public class BattleCameraController : MonoBehaviour
 
             if (applyOrthographicSize)
                 targetCamera.orthographicSize = targetSize;
+            if (animateYaw)
+                targetCamera.transform.rotation = destinationRotation;
             if (synchronizePlaneReturn)
                 BattleEffectPlaneRotation.UpdateCameraReturnFeedback(1f);
             routine = null;
@@ -1564,6 +1769,8 @@ public class BattleCameraController : MonoBehaviour
                     Mathf.Lerp(startSize, targetSize, curvedT);
             }
 
+            if (animateYaw)
+                targetCamera.transform.rotation = Quaternion.Slerp(startRotation, destinationRotation, curvedT);
             if (synchronizePlaneReturn)
                 UpdateBattleEffectReturnAlongCamera(t);
             yield return null;
@@ -1573,6 +1780,8 @@ public class BattleCameraController : MonoBehaviour
 
         if (applyOrthographicSize)
             targetCamera.orthographicSize = targetSize;
+        if (animateYaw)
+            targetCamera.transform.rotation = destinationRotation;
         if (synchronizePlaneReturn)
             BattleEffectPlaneRotation.UpdateCameraReturnFeedback(1f);
         routine = null;
@@ -1779,6 +1988,9 @@ public class BattleCameraController : MonoBehaviour
         if (targetCamera == null)
             yield break;
 
+        // 타격 순간에만 Noise Flow를 잠깐 가속합니다 (공격 시작이나 줌 유지와 무관).
+        BattleEffectPlaneRotation.PlayHitNoiseFlowPulse();
+
         float shakeDuration = Mathf.Max(0f, impactShakeDuration);
         float shakeStrength = Mathf.Max(0f, impactShakeStrength);
         float shakeFrequency = Mathf.Max(1f, impactShakeFrequency);
@@ -1859,6 +2071,9 @@ public class BattleCameraController : MonoBehaviour
         targetPosition.x += zoomOffset.x;
         targetPosition.y += zoomOffset.y;
         targetPosition.z = targetCamera.transform.position.z;
+        targetPosition.x = CalculateCameraXForScreenAnchor(
+            zoomFollowTarget.position, targetPosition.z, targetCamera.transform.rotation,
+            0.5f, targetCamera.orthographicSize) + zoomOffset.x;
 
         targetCamera.transform.position = Vector3.SmoothDamp(
             targetCamera.transform.position,
@@ -1867,6 +2082,294 @@ public class BattleCameraController : MonoBehaviour
             ZoomFollowSmoothTime,
             Mathf.Infinity,
             Time.deltaTime);
+    }
+
+    // Track the root transforms of BOTH BattleCharacter and MonsterUnit while executing.
+    // Detect each movement animation once; batch starts from the same time window and
+    // focus only the last newly moving unit. Never select the unit with the largest
+    // displacement: that may be an earlier mover still travelling across the grid.
+    private void CheckGridMovementImpactZoom()
+    {
+        if (!enableGridMovementImpactZoom || targetCamera == null || hasCinematicCameraState)
+        {
+            ClearGridMovementDetection();
+            return;
+        }
+
+        if (cachedTurnExecutor == null)
+            cachedTurnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Exclude);
+        bool executing = turnExecutionEventActive ||
+                         (cachedTurnExecutor != null && cachedTurnExecutor.IsExecuting);
+        if (!executing)
+        {
+            ClearGridMovementDetection();
+            return;
+        }
+
+        if (Time.unscaledTime >= gridMovementNextRefreshTime)
+        {
+            gridMovementNextRefreshTime = Time.unscaledTime + Mathf.Max(0.1f, gridMovementUnitRefreshInterval);
+            RefreshGridMovementUnits();
+        }
+
+        float now = Time.unscaledTime;
+        float minimumSquaredDistance = gridMovementDetectionDistance * gridMovementDetectionDistance;
+        gridMovementUnitCleanup.Clear();
+        gridMovementUnitReset.Clear();
+        Transform lastNewMover = null;
+
+        foreach (KeyValuePair<Transform, Vector3> entry in gridMovementUnitPositions)
+        {
+            Transform unit = entry.Key;
+            if (unit == null || !unit.gameObject.activeInHierarchy)
+            {
+                gridMovementUnitCleanup.Add(unit);
+                continue;
+            }
+
+            Vector3 position = unit.position;
+            Vector3 previousPosition;
+            if (!gridMovementLastFramePositions.TryGetValue(unit, out previousPosition))
+                previousPosition = position;
+            Vector3 frameDelta = position - previousPosition;
+            frameDelta.z = 0f;
+            gridMovementLastFramePositions[unit] = position;
+
+            if (frameDelta.sqrMagnitude > 0.000001f)
+                gridMovementLastMotionTimes[unit] = now;
+
+            // A completed movement may be detected again only after an actual pause.
+            if (gridMovementAlreadyDetected.Contains(unit))
+            {
+                float lastMotion;
+                if (gridMovementLastMotionTimes.TryGetValue(unit, out lastMotion) &&
+                    now - lastMotion >= gridMovementStopGraceTime)
+                {
+                    gridMovementAlreadyDetected.Remove(unit);
+                    gridMovementUnitReset.Add(unit);
+                }
+                continue;
+            }
+
+            Vector3 displacement = position - entry.Value;
+            displacement.z = 0f;
+            if (displacement.sqrMagnitude < minimumSquaredDistance)
+                continue;
+
+            gridMovementAlreadyDetected.Add(unit);
+            // In a single Update, starts are simultaneous as far as polling knows.
+            // Stable ID tie-break avoids dictionary-enumeration-dependent focus changes.
+            if (lastNewMover == null || unit.GetInstanceID() > lastNewMover.GetInstanceID())
+                lastNewMover = unit;
+        }
+
+        for (int i = 0; i < gridMovementUnitReset.Count; i++)
+        {
+            Transform unit = gridMovementUnitReset[i];
+            if (unit != null && gridMovementUnitPositions.ContainsKey(unit))
+                gridMovementUnitPositions[unit] = unit.position;
+        }
+
+        for (int i = 0; i < gridMovementUnitCleanup.Count; i++)
+        {
+            Transform unit = gridMovementUnitCleanup[i];
+            gridMovementUnitPositions.Remove(unit);
+            gridMovementLastFramePositions.Remove(unit);
+            gridMovementLastMotionTimes.Remove(unit);
+            gridMovementAlreadyDetected.Remove(unit);
+        }
+
+        if (lastNewMover != null)
+            QueueLastGridMovementFocus(lastNewMover);
+    }
+
+    private void RefreshGridMovementUnits()
+    {
+        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(FindObjectsSortMode.None);
+        for (int i = 0; i < characters.Length; i++)
+        {
+            if (characters[i] != null && !gridMovementUnitPositions.ContainsKey(characters[i].transform))
+            {
+                Transform unit = characters[i].transform;
+                gridMovementUnitPositions.Add(unit, unit.position);
+                gridMovementLastFramePositions[unit] = unit.position;
+            }
+        }
+
+        MonsterUnit[] monsters = FindObjectsByType<MonsterUnit>(FindObjectsSortMode.None);
+        for (int i = 0; i < monsters.Length; i++)
+        {
+            if (monsters[i] != null && !gridMovementUnitPositions.ContainsKey(monsters[i].transform))
+            {
+                Transform unit = monsters[i].transform;
+                gridMovementUnitPositions.Add(unit, unit.position);
+                gridMovementLastFramePositions[unit] = unit.position;
+            }
+        }
+    }
+
+    private void QueueLastGridMovementFocus(Transform unit)
+    {
+        if (unit == null || !isActiveAndEnabled)
+            return;
+
+        // If starts happen in the same short window, the latest one wins.
+        pendingGridMovementFocusUnit = unit;
+        if (pendingGridMovementFocusRoutine == null)
+            pendingGridMovementFocusRoutine = StartCoroutine(ApplyLastGridMovementFocus());
+    }
+
+    private IEnumerator ApplyLastGridMovementFocus()
+    {
+        float endTime = Time.unscaledTime + Mathf.Max(0f, simultaneousMovementFocusDelay);
+        while (Time.unscaledTime < endTime)
+            yield return null;
+
+        Transform selected = pendingGridMovementFocusUnit;
+        pendingGridMovementFocusUnit = null;
+        pendingGridMovementFocusRoutine = null;
+        if (selected != null && (turnExecutionEventActive ||
+            (cachedTurnExecutor != null && cachedTurnExecutor.IsExecuting)))
+            NotifyGridMovementImpactZoom(selected);
+    }
+
+    private void ClearGridMovementDetection()
+    {
+        if (pendingGridMovementFocusRoutine != null)
+        {
+            StopCoroutine(pendingGridMovementFocusRoutine);
+            pendingGridMovementFocusRoutine = null;
+        }
+        pendingGridMovementFocusUnit = null;
+        gridMovementUnitPositions.Clear();
+        gridMovementLastFramePositions.Clear();
+        gridMovementLastMotionTimes.Clear();
+        gridMovementAlreadyDetected.Clear();
+    }
+
+    // Position deltas cannot distinguish a voluntary Move command from knockback,
+    // pull, teleport, or skill-driven movement. Only an explicit direct-grid-move
+    // action may request the zoom. Both BattleCharacter and MonsterUnit are supported.
+    // Call this when a DIRECT Move action starts, before its movement animation.
+    public void BeginDirectGridMovement(Transform movingUnit)
+    {
+        NotifyGridMovementImpactZoom(movingUnit);
+    }
+
+    // Call after the direct Move action ends. Keep the combat zoom until turn end,
+    // but do not follow this unit when other actions later displace it.
+    public void EndDirectGridMovement(Transform movingUnit)
+    {
+        if (movingUnit == null || gridMovementFocusedUnit != movingUnit)
+            return;
+
+        gridMovementFocusedUnit = null;
+        if (zoomFollowTarget == movingUnit)
+        {
+            zoomFollowTarget = null;
+            zoomFollowVelocity = Vector3.zero;
+        }
+    }
+
+    // Compatibility for older explicit Move-action callers without a unit.
+    // No reliable unit can be inferred from position deltas, so do nothing.
+    public void NotifyGridMovementImpactZoom()
+    {
+    }
+
+    // The moving character/monster, rather than the previous camera position,
+    // becomes the framing center. Zoom is held until execution returns to the player.
+    public void NotifyGridMovementImpactZoom(Transform movingUnit)
+    {
+        if (!enableGridMovementImpactZoom || !isActiveAndEnabled || targetCamera == null ||
+            hasCinematicCameraState || movingUnit == null || !movingUnit.gameObject.activeInHierarchy)
+            return;
+
+        if (cachedTurnExecutor == null)
+            cachedTurnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Exclude);
+
+        bool executing = turnExecutionEventActive ||
+                         (cachedTurnExecutor != null && cachedTurnExecutor.IsExecuting);
+        if (!executing)
+            return;
+
+        // A repeated grid step by the same unit should extend its live camera
+        // tracking, not restart the same zoom tween at every cell boundary.
+        if (gridMovementFocusedUnit == movingUnit && hasActiveCombatZoom)
+            return;
+
+        RemoveMouseParallax();
+        EndZoomFollowTarget();
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+        ClearImpactOffset();
+
+        gridMovementFocusedUnit = movingUnit;
+        hasActiveGridSelectionFocus = false;
+        hasActiveMonsterInfoFocus = false;
+        hasActiveCombatZoom = true;
+        activeCombatFocusOwner = null;
+        activeCombatFocusMode = CombatCameraFocusMode.None;
+        pendingTurnCameraReturn = true;
+
+        routine = StartCoroutine(FocusMovingGridUnit(movingUnit));
+    }
+
+    private IEnumerator FocusMovingGridUnit(Transform unit)
+    {
+        if (targetCamera == null || unit == null)
+        {
+            routine = null;
+            yield break;
+        }
+
+        Vector3 startPosition = targetCamera.transform.position;
+        float startSize = targetCamera.orthographicSize;
+        float targetSize = useOrthographicSizeZoom ? zoomSize : startSize;
+        float duration = Mathf.Max(0f, zoomDuration);
+        float elapsed = 0f;
+
+        // Sample unit.position each frame so the XY focus follows a unit that
+        // is travelling between grid cells during the zoom-in itself.
+        while (elapsed < duration && unit != null && gridMovementFocusedUnit == unit)
+        {
+            elapsed += GetCameraDeltaTime();
+            float t = Mathf.Clamp01(elapsed / duration);
+            float eased = EvaluateZoomCurve(t);
+            Vector3 desiredPosition = unit.position;
+            desiredPosition.x += zoomOffset.x;
+            desiredPosition.y += zoomOffset.y;
+            desiredPosition.z = usePositionZZoom ? GetZoomZPosition() : startPosition.z;
+            desiredPosition.x = CalculateCameraXForScreenAnchor(
+                unit.position, desiredPosition.z, targetCamera.transform.rotation,
+                0.5f, useOrthographicSizeZoom ? Mathf.Lerp(startSize, targetSize, eased) : startSize)
+                + zoomOffset.x;
+            targetCamera.transform.position = Vector3.Lerp(startPosition, desiredPosition, eased);
+            if (useOrthographicSizeZoom)
+                targetCamera.orthographicSize = Mathf.Lerp(startSize, targetSize, eased);
+            yield return null;
+        }
+
+        if (unit != null && gridMovementFocusedUnit == unit)
+        {
+            Vector3 finalPosition = unit.position;
+            finalPosition.x += zoomOffset.x;
+            finalPosition.y += zoomOffset.y;
+            finalPosition.z = usePositionZZoom ? GetZoomZPosition() : targetCamera.transform.position.z;
+            finalPosition.x = CalculateCameraXForScreenAnchor(
+                unit.position, finalPosition.z, targetCamera.transform.rotation,
+                0.5f, targetSize) + zoomOffset.x;
+            targetCamera.transform.position = finalPosition;
+            if (useOrthographicSizeZoom)
+                targetCamera.orthographicSize = targetSize;
+            // Keep tracking the unit after zoom-in, without zooming out at the
+            // end of movement. A later attack focus naturally takes ownership.
+            BeginZoomFollowTarget(unit);
+        }
+        routine = null;
     }
 
     private void ApplyMouseParallax()
@@ -1898,6 +2401,8 @@ public class BattleCameraController : MonoBehaviour
             mouseParallaxRotationAmount,
             intensityMultiplier);
 
+        // 기존 Vector2.y 설정을 보존하면서 Y 회전만 추가로 독립 조절합니다.
+        eulerOffset.y *= mouseParallaxYRotationMultiplier;
         lastMouseParallaxRotationOffset = Quaternion.Euler(eulerOffset);
 
         Transform cameraTransform = targetCamera.transform;
@@ -1945,6 +2450,7 @@ public class BattleCameraController : MonoBehaviour
             routine != null ||
             hasActiveCombatZoom ||
             hasActiveMonsterInfoFocus ||
+            (treatGridSelectionAsZoomForParallax && hasActiveGridSelectionFocus) ||
             isImpactHitStopActive ||
             activeImpactOffset.sqrMagnitude > 0.000001f;
 
@@ -2044,14 +2550,6 @@ public class BattleCameraController : MonoBehaviour
             horizontalT);
 
         return Vector2.Lerp(topOffset, bottomOffset, verticalT);
-    }
-
-    private float GetMonsterInfoFocusZPosition()
-    {
-        if (useFixedMonsterInfoFocusZ)
-            return monsterInfoFocusZPosition;
-
-        return defaultPosition.z + monsterInfoFocusZOffset;
     }
 
     private float EvaluateZoomCurve(float t)
@@ -2176,6 +2674,11 @@ public class BattleCameraController : MonoBehaviour
     private void OnValidate()
     {
         zoomSize = Mathf.Max(0.1f, zoomSize);
+        gridMovementDetectionDistance = Mathf.Max(0.05f, gridMovementDetectionDistance);
+        gridMovementUnitRefreshInterval = Mathf.Max(0.1f, gridMovementUnitRefreshInterval);
+        simultaneousMovementFocusDelay = Mathf.Max(0f, simultaneousMovementFocusDelay);
+        gridMovementStopGraceTime = Mathf.Max(0.05f, gridMovementStopGraceTime);
+        rangedCasterScreenEdgePadding = Mathf.Clamp(rangedCasterScreenEdgePadding, 0.05f, 0.4f);
         zoomDuration = Mathf.Max(0f, zoomDuration);
         returnDuration = Mathf.Max(0f, returnDuration);
         battleEffectReturnLeadTime = Mathf.Max(0f, battleEffectReturnLeadTime);
@@ -2200,17 +2703,13 @@ public class BattleCameraController : MonoBehaviour
         impactCompressionDuration = Mathf.Max(0f, impactCompressionDuration);
         impactRecoilDuration = Mathf.Max(0f, impactRecoilDuration);
         impactSettleDuration = Mathf.Max(0f, impactSettleDuration);
-        monsterInfoFocusDuration = Mathf.Max(0f, monsterInfoFocusDuration);
-        monsterInfoReturnDuration = Mathf.Max(0f, monsterInfoReturnDuration);
-        monsterInfoFocusSideOffset = Mathf.Max(0f, monsterInfoFocusSideOffset);
-        monsterInfoFocusZOffset = Mathf.Max(0f, monsterInfoFocusZOffset);
-        monsterInfoFocusOrthographicSize = Mathf.Max(0.1f, monsterInfoFocusOrthographicSize);
         characterSelectionFocusGridColumnCount = Mathf.Max(1, characterSelectionFocusGridColumnCount);
         characterSelectionFocusGridRowCount = Mathf.Max(1, characterSelectionFocusGridRowCount);
         mouseParallaxPositionAmount.x = Mathf.Max(0f, mouseParallaxPositionAmount.x);
         mouseParallaxPositionAmount.y = Mathf.Max(0f, mouseParallaxPositionAmount.y);
         mouseParallaxRotationAmount.x = Mathf.Max(0f, mouseParallaxRotationAmount.x);
         mouseParallaxRotationAmount.y = Mathf.Max(0f, mouseParallaxRotationAmount.y);
+        mouseParallaxYRotationMultiplier = Mathf.Max(0f, mouseParallaxYRotationMultiplier);
         mouseParallaxSmoothSpeed = Mathf.Max(0f, mouseParallaxSmoothSpeed);
         mouseParallaxCameraMotionMultiplier = Mathf.Clamp01(mouseParallaxCameraMotionMultiplier);
     }
