@@ -622,8 +622,22 @@ public class BattleTimelineBarUI : MonoBehaviour
     }
 
 
+    // Reserved actions are inspectable while a turn is playing, but cannot be cancelled.
+    private BattleTurnExecutor clickGuardTurnExecutor;
+
+    private bool IsTimelineActionClickBlocked()
+    {
+        if (clickGuardTurnExecutor == null)
+            clickGuardTurnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Include);
+
+        return clickGuardTurnExecutor != null && !clickGuardTurnExecutor.CanAcceptPlayerInput;
+    }
+
     public void OnOrderClicked(int slotIndex, int orderIndex)
     {
+        if (IsTimelineActionClickBlocked())
+            return;
+
         // ù ���� Ʃ�丮�󿡼� ��� ��ġ�� 2�ʰ� �����ִ� ���ȿ���
         // ����ڰ� Ÿ�Ӷ����� Ŭ���� ��� ����� �ൿ�� �������� ���ϰ� �մϴ�.
         // �ȳ��� ���� �ڿ��� ���� Ŭ�� ���� ������ �״�� ����մϴ�.
@@ -636,6 +650,9 @@ public class BattleTimelineBarUI : MonoBehaviour
 
     public void OnEntryClicked(BattleTimelinePreviewEntry entry)
     {
+        if (IsTimelineActionClickBlocked())
+            return;
+
         if (entry == null)
             return;
 

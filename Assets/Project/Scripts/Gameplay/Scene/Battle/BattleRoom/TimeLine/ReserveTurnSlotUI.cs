@@ -249,6 +249,9 @@ public class ReserveTurnSlotUI : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+            return;
+
         OnClickSlot();
     }
 }
