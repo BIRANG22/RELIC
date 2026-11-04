@@ -315,7 +315,7 @@ public sealed class LocalizationComprehensiveCoverageTests
 
         foreach (string path in new[]
         {
-            "Assets/Project/Scripts/BattleRewardEquipPanelUI.cs",
+            "Assets/Project/Scripts/BattleRewardSkillPanelUI.cs",
             "Assets/Project/Scripts/Gameplay/Scene/Battle/BattleRoom/Reward/BattleRewardPanelUI.cs",
             "Assets/Project/Scripts/Gameplay/Scene/Battle/EventRoom/EventChoiceSlotUI.cs",
             "Assets/Project/Scripts/Gameplay/Scene/Battle/EventRoom/EventDiceRollPresenter.cs",

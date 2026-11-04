@@ -3,6 +3,23 @@ using Relic.Gameplay.Battle;
 
 public sealed class BattleCharacterHighlightFrameStateTests
 {
+    [TestCase(true, false, true)]
+    [TestCase(false, true, true)]
+    [TestCase(false, false, false)]
+    public void ShouldSynchronizeSorting_FollowsVisibleHighlightState(
+        bool selected,
+        bool hovered,
+        bool expected)
+    {
+        BattleCharacterHighlightFrameState state = new(
+            selected,
+            hovered,
+            presentationBlocked: false,
+            executionActive: false);
+
+        Assert.That(state.ShouldSynchronizeSorting, Is.EqualTo(expected));
+    }
+
     [TestCase(false, false, false, false, false)]
     [TestCase(true, false, false, false, true)]
     [TestCase(false, true, false, false, true)]

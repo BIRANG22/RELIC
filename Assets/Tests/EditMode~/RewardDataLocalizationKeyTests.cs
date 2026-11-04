@@ -11,34 +11,6 @@ using UnityEngine;
 
 public sealed class RewardDataLocalizationKeyTests
 {
-    private const string EquipPanelPrefabPath = "Assets/Project/PrefabsR/Equip_panel.prefab";
-
-    [Test]
-    public void EquipPanelPrefab_RuntimeItemTextsHaveNoStaticLocalizationWriter()
-    {
-        GameObject root = PrefabUtility.LoadPrefabContents(EquipPanelPrefabPath);
-        try
-        {
-            BattleRewardEquipPanelUI panel = root.GetComponentInChildren<BattleRewardEquipPanelUI>(true);
-            Assert.That(panel, Is.Not.Null);
-
-            foreach (string fieldName in new[] { "itemNameText", "itemRarityText", "itemEffectText" })
-            {
-                TMP_Text text = typeof(BattleRewardEquipPanelUI)
-                    .GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic)
-                    ?.GetValue(panel) as TMP_Text;
-
-                Assert.That(text, Is.Not.Null, fieldName);
-                Assert.That(text.GetComponent<LocalizationIgnore>(), Is.Not.Null, fieldName);
-                Assert.That(text.GetComponent<LocalizedTMPText>(), Is.Null, fieldName);
-            }
-        }
-        finally
-        {
-            PrefabUtility.UnloadPrefabContents(root);
-        }
-    }
-
     [Test]
     public void SkillMasterLocalizationWorkbook_CoversEveryRuntimeNameAndDetailsKey()
     {
@@ -94,58 +66,6 @@ public sealed class RewardDataLocalizationKeyTests
             Assert.That(localeIds.Distinct().Count(), Is.EqualTo(localeIds.Length), locale);
             foreach (string requiredId in requiredIds)
                 Assert.That(localeIds.Count(id => id == requiredId), Is.EqualTo(1), $"{locale}:{requiredId}");
-        }
-    }
-
-    [Test]
-    public void EquipPanel_DynamicItemTextsDisableStaticLocalizationWriters()
-    {
-        GameObject panelObject = new GameObject("EquipPanel");
-        panelObject.SetActive(false);
-
-        try
-        {
-            BattleRewardEquipPanelUI panel = panelObject.AddComponent<BattleRewardEquipPanelUI>();
-            string[] fieldNames =
-            {
-                "itemNameText",
-                "itemRarityText",
-                "itemEffectText",
-                "itemCostValueText",
-            };
-
-            foreach (string fieldName in fieldNames)
-            {
-                GameObject textObject = new GameObject(fieldName);
-                textObject.transform.SetParent(panelObject.transform);
-                TMP_Text text = textObject.AddComponent<TextMeshProUGUI>();
-                LocalizedTMPText staticWriter = textObject.AddComponent<LocalizedTMPText>();
-                DynamicLocalizedTMPText dynamicWriter = textObject.AddComponent<DynamicLocalizedTMPText>();
-
-                typeof(BattleRewardEquipPanelUI)
-                    .GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic)
-                    ?.SetValue(panel, text);
-
-                Assert.That(staticWriter.enabled, Is.True, $"{fieldName}의 사전 조건이 잘못되었습니다.");
-                Assert.That(dynamicWriter.enabled, Is.True, $"{fieldName}의 동적 작성자 사전 조건이 잘못되었습니다.");
-            }
-
-            typeof(BattleRewardEquipPanelUI)
-                .GetMethod("ProtectDynamicItemTexts", BindingFlags.Instance | BindingFlags.NonPublic)
-                ?.Invoke(panel, null);
-
-            foreach (string fieldName in fieldNames)
-            {
-                Transform textTransform = panelObject.transform.Find(fieldName);
-                Assert.That(textTransform.GetComponent<LocalizationIgnore>(), Is.Not.Null, fieldName);
-                Assert.That(textTransform.GetComponent<LocalizationAutoBindingIgnore>(), Is.Not.Null, fieldName);
-                Assert.That(textTransform.GetComponent<LocalizedTMPText>().enabled, Is.False, fieldName);
-                Assert.That(textTransform.GetComponent<DynamicLocalizedTMPText>().enabled, Is.False, fieldName);
-            }
-        }
-        finally
-        {
-            Object.DestroyImmediate(panelObject);
         }
     }
 
@@ -282,47 +202,6 @@ public sealed class RewardDataLocalizationKeyTests
         var skill = new SkillMasterData { Category = category, Rarity = rarity };
 
         Assert.That(SkillRarityUtility.GetKoreanFallbackName(skill), Is.EqualTo(expected));
-    }
-
-    [Test]
-    public void EquipPanel_ResolvesSkillIconFromDatabaseWhenRewardCacheIsEmpty()
-    {
-        Texture2D texture = new Texture2D(2, 2);
-        Sprite databaseIcon = Sprite.Create(texture, new Rect(0, 0, 2, 2), Vector2.zero);
-        SkillIconDatabase database = ScriptableObject.CreateInstance<SkillIconDatabase>();
-
-        try
-        {
-            typeof(SkillIconDatabase)
-                .GetField("entries", BindingFlags.Instance | BindingFlags.NonPublic)
-                ?.SetValue(database, new List<SkillIconEntry>
-                {
-                    new SkillIconEntry { SkillId = "S_Core_01", Icon = databaseIcon },
-                });
-            database.Initialize();
-
-            MethodInfo resolver = typeof(BattleRewardEquipPanelUI).GetMethod(
-                "ResolveSkillRewardIcon",
-                BindingFlags.Static | BindingFlags.NonPublic);
-            Assert.That(resolver, Is.Not.Null);
-
-            Sprite result = resolver.Invoke(
-                null,
-                new object[]
-                {
-                    new BattleRewardData { RewardId = "S_Core_01", Icon = null },
-                    new SkillMasterData { SkillId = "S_Core_01", Icon = null },
-                    database,
-                }) as Sprite;
-
-            Assert.That(result, Is.SameAs(databaseIcon));
-        }
-        finally
-        {
-            Object.DestroyImmediate(databaseIcon);
-            Object.DestroyImmediate(texture);
-            Object.DestroyImmediate(database);
-        }
     }
 
     [TestCase(BattleRewardType.Item, "I_001")]

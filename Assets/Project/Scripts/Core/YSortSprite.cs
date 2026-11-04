@@ -1,4 +1,5 @@
 using UnityEngine;
+using Relic.Gameplay.Battle;
 
 public class YSortSprite : MonoBehaviour
 {
@@ -111,7 +112,8 @@ public class YSortSprite : MonoBehaviour
         if (targetRenderer == null || shadowRenderers == null)
             return;
 
-        int shadowOrder = targetRenderer.sortingOrder - 1;
+        int shadowOrder =
+            BattleUnitHighlightSortingPolicy.Resolve(targetRenderer.sortingOrder).Shadow;
         for (int i = 0; i < shadowRenderers.Length; i++)
         {
             SpriteRenderer shadow = shadowRenderers[i];

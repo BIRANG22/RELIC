@@ -23,9 +23,16 @@ public class StrikeEffect : BattleEffectBase
         {
             bool wasAlive = !context.PlayerTarget.RuntimeData.IsDead;
             int previousHp = context.PlayerTarget.RuntimeData.CurrentHP;
+            int previousShield = context.PlayerTarget.RuntimeData.CurrentShield;
+            int wardDamage = BattleWardReactionService.ResolveReactionDamage(
+                context.PlayerTarget.RuntimeData.StatusEffects,
+                1);
             int finalDamage = CalculateFinalDamageToPlayer(context, damage);
             BattleEffectUtility.DamagePlayer(context.PlayerTarget, finalDamage, context.MonsterCaster != null || context.MonsterCommand != null);
-            int dealtDamage = Mathf.Max(0, previousHp - context.PlayerTarget.RuntimeData.CurrentHP);
+            int dealtDamage =
+                Mathf.Max(0, previousHp - context.PlayerTarget.RuntimeData.CurrentHP) +
+                Mathf.Max(0, previousShield - context.PlayerTarget.RuntimeData.CurrentShield);
+            BattleWardReactionService.Apply(context, dealtDamage, wardDamage);
             RecordImpact(
                 context,
                 context.PlayerTarget.RuntimeData.CharacterId,
@@ -38,9 +45,13 @@ public class StrikeEffect : BattleEffectBase
         if (context.MonsterTarget != null)
         {
             bool wasAlive = !context.MonsterTarget.RuntimeData.IsDead;
+            int wardDamage = BattleWardReactionService.ResolveReactionDamage(
+                context.MonsterTarget.RuntimeData.StatusEffects,
+                1);
             int finalDamage = CalculateFinalDamageToMonster(context, damage);
 
             int dealtDamage = BattleEffectUtility.DamageMonster(context.MonsterTarget, finalDamage);
+            BattleWardReactionService.Apply(context, dealtDamage, wardDamage);
 
             RecordImpact(
                 context,

@@ -293,6 +293,9 @@ public class MonsterSkillEffectService
 
         for (int i = 0; i < effectIds.Length; i++)
         {
+            if (caster.RuntimeData == null || caster.RuntimeData.IsDead)
+                break;
+
             if (playerTarget != null &&
                 (playerTarget.RuntimeData == null || playerTarget.RuntimeData.IsDead))
             {
@@ -349,6 +352,9 @@ public class MonsterSkillEffectService
                 {
                     for (int hit = 0; hit < hitCount; hit++)
                     {
+                        if (caster.RuntimeData == null || caster.RuntimeData.IsDead)
+                            break;
+
                         if (playerTarget != null &&
                             (playerTarget.RuntimeData == null || playerTarget.RuntimeData.IsDead))
                         {
@@ -358,11 +364,17 @@ public class MonsterSkillEffectService
                         context.Value = ResolveEffectValue(command, effectId, i);
                         context.Count = 1;
                         effectExecutor.Execute(effectId, context);
+
+                        if (caster.RuntimeData != null && caster.RuntimeData.IsDead)
+                            deathService.HandleMonsterDead(caster);
                     }
                 }
                 else
                 {
                     effectExecutor.Execute(effectId, context);
+
+                    if (caster.RuntimeData != null && caster.RuntimeData.IsDead)
+                        deathService.HandleMonsterDead(caster);
                 }
             }
             catch (System.Exception e)

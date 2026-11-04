@@ -16,6 +16,9 @@ namespace Relic.Gameplay.Monster
         [SerializeField] private Vector2 fallbackColliderSize = new Vector2(1f, 1f);
         [Header("Timeline Hover Highlight")]
         [SerializeField] private GameObject timelineHoverHighlightObject;
+        private SpriteRenderer timelineHoverHighlightSourceRenderer;
+        private SpriteRenderer[] timelineHoverHighlightRenderers;
+        private YSortSprite timelineHoverHighlightSourceSorter;
 
         [Header("Mouse Hover Attack Range")]
         [SerializeField] private bool showAttackRangeOnHover = true;
@@ -157,7 +160,95 @@ namespace Relic.Gameplay.Monster
         public void SetTimelineHoverHighlight(bool active)
         {
             if (timelineHoverHighlightObject != null)
+            {
                 timelineHoverHighlightObject.SetActive(active);
+                if (active)
+                    SynchronizeTimelineHoverHighlightSorting();
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (timelineHoverHighlightObject != null &&
+                timelineHoverHighlightObject.activeSelf)
+            {
+                SynchronizeTimelineHoverHighlightSorting();
+            }
+        }
+
+        private void SynchronizeTimelineHoverHighlightSorting()
+        {
+            CacheTimelineHoverHighlightSortingReferences();
+            if (timelineHoverHighlightSourceRenderer == null ||
+                timelineHoverHighlightRenderers == null)
+            {
+                return;
+            }
+
+            int unitOrder = timelineHoverHighlightSourceSorter != null
+                ? timelineHoverHighlightSourceSorter.CalculateCurrentSortingOrder()
+                : timelineHoverHighlightSourceRenderer.sortingOrder;
+            BattleUnitHighlightSortingOrders orders =
+                BattleUnitHighlightSortingPolicy.Resolve(unitOrder);
+
+            for (int i = 0; i < timelineHoverHighlightRenderers.Length; i++)
+            {
+                SpriteRenderer renderer = timelineHoverHighlightRenderers[i];
+                if (renderer == null)
+                    continue;
+
+                renderer.sortingLayerID = timelineHoverHighlightSourceRenderer.sortingLayerID;
+                renderer.sortingOrder = orders.Highlight;
+            }
+        }
+
+        private void CacheTimelineHoverHighlightSortingReferences()
+        {
+            if (timelineHoverHighlightSourceRenderer == null)
+            {
+                Transform spriteRoot = transform.Find("SpriteRoot");
+                if (spriteRoot != null)
+                {
+                    timelineHoverHighlightSourceRenderer =
+                        spriteRoot.GetComponentInChildren<SpriteRenderer>(true);
+                }
+
+                if (timelineHoverHighlightSourceRenderer == null)
+                {
+                    YSortSprite[] sorters = GetComponentsInChildren<YSortSprite>(true);
+                    for (int i = 0; i < sorters.Length; i++)
+                    {
+                        YSortSprite sorter = sorters[i];
+                        if (sorter == null ||
+                            sorter.transform.IsChildOf(timelineHoverHighlightObject.transform))
+                        {
+                            continue;
+                        }
+
+                        SpriteRenderer renderer = sorter.GetComponent<SpriteRenderer>();
+                        if (renderer == null)
+                            continue;
+
+                        timelineHoverHighlightSourceRenderer = renderer;
+                        timelineHoverHighlightSourceSorter = sorter;
+                        break;
+                    }
+                }
+            }
+
+            if (timelineHoverHighlightSourceRenderer != null &&
+                timelineHoverHighlightSourceSorter == null)
+            {
+                timelineHoverHighlightSourceSorter =
+                    timelineHoverHighlightSourceRenderer.GetComponent<YSortSprite>();
+            }
+
+            if (timelineHoverHighlightRenderers == null &&
+                timelineHoverHighlightObject != null)
+            {
+                timelineHoverHighlightRenderers =
+                    timelineHoverHighlightObject.GetComponentsInChildren<SpriteRenderer>(true);
+            }
         }
 
         public void SetOccupiedCells(List<int> cells)

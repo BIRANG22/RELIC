@@ -10,6 +10,8 @@ namespace Relic.Gameplay.Battle
         public bool ShouldSynchronizeAnimator =>
             !PresentationBlocked && (Selected || (Hovered && !ExecutionActive));
 
+        public bool ShouldSynchronizeSorting => Selected || Hovered;
+
         public BattleCharacterHighlightFrameState(
             bool selected,
             bool hovered,

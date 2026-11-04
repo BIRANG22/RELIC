@@ -528,7 +528,7 @@ public class ChestOpenButton : MonoBehaviour
             rewardItemObject.SetActive(false);
 
         string relicId = selectedReward.RelicId;
-        if (BattleRewardEquipPanelUI.TryOpenRelicReward(relicId, () => CompleteSelectedRewardClaim(relicId)))
+        if (BattleRewardRelicPanelUI.TryOpenRelicReward(relicId, () => CompleteSelectedRewardClaim(relicId)))
             return;
 
         isRewardGranted = false;

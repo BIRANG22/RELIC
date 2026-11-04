@@ -2580,6 +2580,9 @@ public class BattleActionRunner
         {
             for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
             {
+                if (caster == null || caster.RuntimeData == null || caster.RuntimeData.IsDead)
+                    break;
+
                 if (isMultiHit)
                 {
                     foreach (BattleUnitAnimator targetAnimator in monsterHitAnimators)
@@ -2646,6 +2649,9 @@ public class BattleActionRunner
 
                 for (int i = 0; i < monsterTargets.Count; i++)
                 {
+                    if (caster == null || caster.RuntimeData == null || caster.RuntimeData.IsDead)
+                        break;
+
                     MonsterUnit monster = monsterTargets[i];
 
                     if (!IsAliveMonsterTarget(monster))
@@ -2706,6 +2712,9 @@ public class BattleActionRunner
 
                     if (monster.RuntimeData != null && monster.RuntimeData.IsDead)
                         deathService.HandleMonsterDead(monster);
+
+                    if (caster.RuntimeData == null || caster.RuntimeData.IsDead)
+                        break;
                 }
 
                 appliedAnyHit |= ApplyPlayerDamageHitToGridEffects(
@@ -4964,6 +4973,9 @@ public class BattleActionRunner
 
         for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
         {
+            if (monster.RuntimeData == null || monster.RuntimeData.IsDead)
+                yield break;
+
             bool hasAliveTarget = HasAliveMonsterSkillTarget(monster, command);
             bool canPlayProjectileVfx = ShouldPlayMonsterProjectileVfx(monster, command, monsterAnimator);
 
@@ -5004,6 +5016,9 @@ public class BattleActionRunner
             }
 
             monsterSkillEffectService.ApplyMonsterSkillDamageHit(monster, command, hitIndex);
+
+            if (monster.RuntimeData == null || monster.RuntimeData.IsDead)
+                yield break;
 
             bool playCameraImpact = ShouldPlayCameraImpactForHit(hitIndex, hitCount);
             bool playPushFeedback = ShouldPlayExternalImpactForHit(hitIndex, hitCount);
