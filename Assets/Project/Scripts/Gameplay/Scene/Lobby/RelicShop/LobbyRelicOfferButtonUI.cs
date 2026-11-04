@@ -14,6 +14,12 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
     [SerializeField, Min(1f)] private float hoverScale = 1.05f;
     [SerializeField, Min(0.01f)] private float hoverLerpSpeed = 14f;
 
+    [Header("Rarity Color Image")]
+    [Tooltip("Optional UI Image tinted to match the displayed relic rarity. Original alpha is preserved.")]
+    [SerializeField] private Image rarityColorImage;
+    private Image cachedRarityColorImage;
+    private Color originalRarityImageColor;
+
     [Header("Rarity VFX - Direct UI Child")]
     [Tooltip("Prefab instantiated directly under the offer UI, like GoodsIconItem.")]
     [SerializeField] private GameObject rarityVfxPrefab;
@@ -111,6 +117,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
         purchaseRequested = callback;
         hoverChanged = hoverCallback;
         currentRarity = rarity;
+        ApplyRarityImageColor(rarity);
 
         iconImage.sprite = icon;
         iconImage.enabled = icon != null;
@@ -141,6 +148,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
         ResetHoverState();
         SetTemporaryHidden(false);
         HideRarityRingImmediately();
+        RestoreRarityImageColor();
 
         if (!EnsureView())
             return;
@@ -479,6 +487,31 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
         activeRarityVfx.SetActive(true);
     }
 
+    private void ApplyRarityImageColor(RelicRarity rarity)
+    {
+        if (cachedRarityColorImage != rarityColorImage)
+        {
+            RestoreRarityImageColor();
+            cachedRarityColorImage = rarityColorImage;
+            if (cachedRarityColorImage != null)
+                originalRarityImageColor = cachedRarityColorImage.color;
+        }
+
+        if (rarityColorImage == null)
+            return;
+
+        Color rarityColor = GetParticleColor(rarity);
+        rarityColorImage.color = new Color(
+            rarityColor.r, rarityColor.g, rarityColor.b, originalRarityImageColor.a);
+    }
+
+    private void RestoreRarityImageColor()
+    {
+        if (cachedRarityColorImage != null)
+            cachedRarityColorImage.color = originalRarityImageColor;
+        cachedRarityColorImage = null;
+    }
+
     private Color GetParticleColor(RelicRarity rarity)
     {
         switch (rarity)
@@ -512,6 +545,7 @@ public sealed class LobbyRelicOfferButtonUI : MonoBehaviour, IPointerEnterHandle
         }
 
         HideRarityRingImmediately();
+        RestoreRarityImageColor();
     }
 
     private void OnDisable()

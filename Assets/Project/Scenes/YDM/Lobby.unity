@@ -14448,6 +14448,7 @@ MonoBehaviour:
   priceText: {fileID: 230020023}
   hoverScale: 1.05
   hoverLerpSpeed: 14
+  rarityColorImage: {fileID: 0}
   rarityVfxPrefab: {fileID: 7932807873706430129, guid: 77a7b3475a232df44ae4b56ca1a0d34e, type: 3}
   rarityRingRoot: {fileID: 0}
   rarityVfxRoot: {fileID: 0}
@@ -14601,6 +14602,7 @@ MonoBehaviour:
   priceText: {fileID: 230020123}
   hoverScale: 1.05
   hoverLerpSpeed: 14
+  rarityColorImage: {fileID: 0}
   rarityVfxPrefab: {fileID: 7932807873706430129, guid: 77a7b3475a232df44ae4b56ca1a0d34e, type: 3}
   rarityRingRoot: {fileID: 0}
   rarityVfxRoot: {fileID: 0}
@@ -14732,6 +14734,7 @@ MonoBehaviour:
   priceText: {fileID: 230020223}
   hoverScale: 1.05
   hoverLerpSpeed: 14
+  rarityColorImage: {fileID: 0}
   rarityVfxPrefab: {fileID: 7932807873706430129, guid: 77a7b3475a232df44ae4b56ca1a0d34e, type: 3}
   rarityRingRoot: {fileID: 0}
   rarityVfxRoot: {fileID: 0}

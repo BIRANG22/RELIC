@@ -21,12 +21,25 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     [SerializeField] private Color epicColor = new Color32(165, 107, 221, 255);
     [SerializeField] private Color uniqueColor = new Color32(233, 177, 69, 255);
 
+    [Header("Rarity Color Image")]
+    [Tooltip("Optional UI Image whose RGB follows the displayed relic rarity. Its original alpha is preserved.")]
+    [SerializeField] private Image rarityColorImage;
+    private Image cachedRarityColorImage;
+    private Color originalRarityImageColor;
+
     [Header("Rarity Indicator VFX (item/Background)")]
     [Tooltip("One shared VFX prefab spawned beneath item/Background and tinted by the reward relic rarity.")]
     [SerializeField] private GameObject rarityIndicatorVfxPrefab;
     [SerializeField] private Vector3 rarityIndicatorVfxOffset = Vector3.zero;
     [SerializeField] private Vector3 rarityIndicatorVfxScale = Vector3.one;
     private GameObject activeRarityIndicatorVfx;
+
+    [Header("Rarity Indicator VFX (item/Itemimage - above Icon)")]
+    [Tooltip("Additional rarity VFX spawned in item/Itemimage immediately after Icon, rendered above the icon.")]
+    [SerializeField] private GameObject itemIconRarityVfxPrefab;
+    [SerializeField] private Vector3 itemIconRarityVfxOffset = Vector3.zero;
+    [SerializeField] private Vector3 itemIconRarityVfxScale = Vector3.one;
+    private GameObject activeItemIconRarityVfx;
 
     [Header("Equipped Relic Tooltip")]
     [SerializeField] private RectTransform tooltipUI;
@@ -292,6 +305,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
     private void OnDisable()
     {
         ResetItemIntro();
+        RestoreRarityColorImage();
         ClearRarityIndicatorVfx();
         if (rewardActionCloseCoroutine != null)
         {
@@ -527,43 +541,96 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
         introHiddenObjects.Clear();
     }
 
+    private void ApplyRarityColorImage(RelicData relic)
+    {
+        if (rarityColorImage == null || relic == null)
+            return;
+
+        if (cachedRarityColorImage != rarityColorImage)
+        {
+            cachedRarityColorImage = rarityColorImage;
+            originalRarityImageColor = rarityColorImage.color;
+        }
+
+        Color rarityColor = GetCurrentRelicRarityColor();
+        rarityColorImage.color = new Color(
+            rarityColor.r, rarityColor.g, rarityColor.b, originalRarityImageColor.a);
+    }
+
+    private void RestoreRarityColorImage()
+    {
+        if (cachedRarityColorImage != null)
+            cachedRarityColorImage.color = originalRarityImageColor;
+    }
+
     private void SpawnRarityIndicatorVfx()
     {
         ClearRarityIndicatorVfx();
-        if (rarityIndicatorVfxPrefab == null || current == null) return;
-
-        Transform background = transform.Find("item/Background");
-        if (background == null)
-        {
-            Debug.LogWarning("[BattleRewardRelicPanelUI] item/Background not found for rarity indicator VFX.", this);
-            return;
-        }
-
-        activeRarityIndicatorVfx = Instantiate(rarityIndicatorVfxPrefab, background, false);
-        activeRarityIndicatorVfx.name = rarityIndicatorVfxPrefab.name + "_RarityIndicatorVFX";
-        activeRarityIndicatorVfx.transform.localPosition = rarityIndicatorVfxOffset;
-        activeRarityIndicatorVfx.transform.localRotation = Quaternion.identity;
-        activeRarityIndicatorVfx.transform.localScale = rarityIndicatorVfxScale;
-        activeRarityIndicatorVfx.transform.SetAsLastSibling();
+        if (current == null) return;
 
         Color color = GetCurrentRelicRarityColor();
-        foreach (ParticleSystem particle in activeRarityIndicatorVfx.GetComponentsInChildren<ParticleSystem>(true))
+        if (rarityIndicatorVfxPrefab != null)
         {
-            var main = particle.main;
+            Transform background = transform.Find("item/Background");
+            if (background != null)
+            {
+                activeRarityIndicatorVfx = CreateRarityIndicatorVfx(
+                    rarityIndicatorVfxPrefab, background, rarityIndicatorVfxOffset,
+                    rarityIndicatorVfxScale, "_RarityIndicatorVFX", color);
+                activeRarityIndicatorVfx.transform.SetAsLastSibling();
+            }
+            else
+                Debug.LogWarning("[BattleRewardRelicPanelUI] item/Background not found for rarity indicator VFX.", this);
+        }
+
+        if (itemIconRarityVfxPrefab != null)
+        {
+            Transform itemImage = transform.Find("item/Itemimage");
+            Transform icon = itemImage != null ? itemImage.Find("Icon") : null;
+            if (itemImage != null && icon != null)
+            {
+                activeItemIconRarityVfx = CreateRarityIndicatorVfx(
+                    itemIconRarityVfxPrefab, itemImage, itemIconRarityVfxOffset,
+                    itemIconRarityVfxScale, "_ItemIconRarityVFX", color);
+                // Direct sibling of Icon, drawn immediately above it within Itemimage.
+                activeItemIconRarityVfx.transform.SetSiblingIndex(icon.GetSiblingIndex() + 1);
+            }
+            else
+                Debug.LogWarning("[BattleRewardRelicPanelUI] item/Itemimage/Icon not found for icon rarity VFX.", this);
+        }
+    }
+
+    private static GameObject CreateRarityIndicatorVfx(GameObject prefab, Transform parent,
+        Vector3 offset, Vector3 scale, string suffix, Color color)
+    {
+        GameObject instance = Instantiate(prefab, parent, false);
+        instance.name = prefab.name + suffix;
+        instance.transform.localPosition = offset;
+        instance.transform.localRotation = Quaternion.identity;
+        instance.transform.localScale = scale;
+
+        foreach (ParticleSystem particle in instance.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            ParticleSystem.MainModule main = particle.main;
             main.startColor = new ParticleSystem.MinMaxGradient(color);
         }
-        foreach (Graphic graphic in activeRarityIndicatorVfx.GetComponentsInChildren<Graphic>(true))
+        foreach (Graphic graphic in instance.GetComponentsInChildren<Graphic>(true))
         {
-            graphic.color = color;
+            Color original = graphic.color;
+            graphic.color = new Color(color.r, color.g, color.b, original.a);
             graphic.raycastTarget = false;
         }
-        foreach (SpriteRenderer renderer in activeRarityIndicatorVfx.GetComponentsInChildren<SpriteRenderer>(true))
-            renderer.color = color;
-        CanvasGroup group = activeRarityIndicatorVfx.GetComponent<CanvasGroup>();
-        if (group == null) group = activeRarityIndicatorVfx.AddComponent<CanvasGroup>();
+        foreach (SpriteRenderer renderer in instance.GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            Color original = renderer.color;
+            renderer.color = new Color(color.r, color.g, color.b, original.a);
+        }
+        CanvasGroup group = instance.GetComponent<CanvasGroup>();
+        if (group == null) group = instance.AddComponent<CanvasGroup>();
         group.interactable = false;
         group.blocksRaycasts = false;
-        activeRarityIndicatorVfx.SetActive(true);
+        instance.SetActive(true);
+        return instance;
     }
 
     private Color GetCurrentRelicRarityColor()
@@ -582,10 +649,18 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
 
     private void ClearRarityIndicatorVfx()
     {
-        if (activeRarityIndicatorVfx == null) return;
-        activeRarityIndicatorVfx.SetActive(false);
-        Destroy(activeRarityIndicatorVfx);
-        activeRarityIndicatorVfx = null;
+        if (activeRarityIndicatorVfx != null)
+        {
+            activeRarityIndicatorVfx.SetActive(false);
+            Destroy(activeRarityIndicatorVfx);
+            activeRarityIndicatorVfx = null;
+        }
+        if (activeItemIconRarityVfx != null)
+        {
+            activeItemIconRarityVfx.SetActive(false);
+            Destroy(activeItemIconRarityVfx);
+            activeItemIconRarityVfx = null;
+        }
     }
 
     private void SpawnItemImageIntroVfx()
@@ -790,6 +865,7 @@ public sealed class BattleRewardRelicPanelUI : MonoBehaviour
             }
             rarityLine.color = color;
         }
+        ApplyRarityColorImage(relic);
         RefreshCharacterNames();
         for (int i = 0; i < entries.Length; i++)
         {

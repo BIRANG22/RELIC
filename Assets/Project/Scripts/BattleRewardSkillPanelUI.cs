@@ -74,12 +74,15 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     [SerializeField] private Vector3 rarityIndicatorVfxOffset = Vector3.zero;
     [SerializeField] private Vector3 rarityIndicatorVfxScale = Vector3.one;
     private readonly GameObject[] activeRarityIndicators = new GameObject[3];
+    private readonly Dictionary<Image, Color> originalRarityImageColors = new Dictionary<Image, Color>();
 
     [Serializable]
     private sealed class SkillCardReferences
     {
         public Transform root;
         public Image rarityLine;
+        [Tooltip("Optional image tinted to this card's memory rarity. Original alpha is preserved.")]
+        public Image rarityColorImage;
         public TMP_Text typeText;
         public Image skillIcon;
         public TMP_Text skillName;
@@ -362,6 +365,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             offeredSkills[i] = i < offers.Count ? offers[i] : null;
             characterIds[i] = null;
             ClearRarityVfx(i);
+            RestoreCardRarityImageColor(i);
             ReleaseCardDissolve(i);
             StopSkillReveal(i);
             if (card == null) continue;
@@ -395,12 +399,13 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
             if (skillRoot != null) skillRoot.gameObject.SetActive(false);
             card.gameObject.SetActive(false);
             ClearCard(card);
+            RestoreCardRarityImageColor(i);
             SkillMasterData choice = offeredSkills[i];
             if (choice == null) continue;
             characterIds[i] = data.SourceKey != null && data.SourceKey.Contains("|RestOffers=")
                 ? DataManager.Instance.PartyRuntimeStore.GetCharacterId(i)
                 : !string.IsNullOrWhiteSpace(battleOfferCharacterId) ? battleOfferCharacterId : ResolveOwner(choice);
-            BindCard(card, string.IsNullOrWhiteSpace(choice.CharacterId) || string.Equals(choice.CharacterId, "ALL", StringComparison.OrdinalIgnoreCase) ? characterIds[i] : choice.CharacterId, choice, data);
+            BindCard(i, card, string.IsNullOrWhiteSpace(choice.CharacterId) || string.Equals(choice.CharacterId, "ALL", StringComparison.OrdinalIgnoreCase) ? characterIds[i] : choice.CharacterId, choice, data);
             // Assign the sprite and initialize the material before the card becomes visible.
             PrepareCardDissolve(i, card, choice.Rarity);
             card.gameObject.SetActive(true);
@@ -1566,6 +1571,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         for (int i = 0; i < activeRarityVfx.Length; i++)
         {
             ClearRarityVfx(i);
+            RestoreCardRarityImageColor(i);
             ReleaseCardDissolve(i);
             StopSkillReveal(i);
         }
@@ -1718,6 +1724,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         for (int i = 0; i < cardDissolveMaterials.Length; i++)
         {
             ClearRarityVfx(i);
+            RestoreCardRarityImageColor(i);
             ReleaseCardDissolve(i);
             StopSkillReveal(i);
         }
@@ -1726,6 +1733,7 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
     private void ClearCard(Transform card)
     {
         if (card == null) return;
+        RestoreCardRarityImageColor(card);
         SetText(card, "Type/Type_text", string.Empty);
         SetText(card, "Name", string.Empty);
         SetText(card, "Detail", string.Empty);
@@ -1753,8 +1761,48 @@ public sealed class BattleRewardSkillPanelUI : MonoBehaviour
         }
     }
 
-    private void BindCard(Transform card, string characterId, SkillMasterData skill, BattleRewardData data)
+    // Each SkillPanel has an independently assigned Image and uses its own memory rarity.
+    private void ApplyCardRarityImageColor(int index, SkillRarity rarity)
     {
+        SkillCardReferences reference = SkillRef(index);
+        Image image = reference != null ? reference.rarityColorImage : null;
+        if (image == null) return;
+
+        if (!originalRarityImageColors.TryGetValue(image, out Color original))
+        {
+            original = image.color;
+            originalRarityImageColors[image] = original;
+        }
+
+        Color tint = RarityColor(rarity);
+        image.color = new Color(tint.r, tint.g, tint.b, original.a);
+    }
+
+    private void RestoreCardRarityImageColor(int index)
+    {
+        SkillCardReferences reference = SkillRef(index);
+        Image image = reference != null ? reference.rarityColorImage : null;
+        if (image != null && originalRarityImageColors.TryGetValue(image, out Color original))
+            image.color = original;
+    }
+
+    private void RestoreCardRarityImageColor(Transform card)
+    {
+        if (card == null) return;
+        for (int i = 0; i < 3; i++)
+        {
+            SkillCardReferences reference = SkillRef(i);
+            if (reference == null || reference.root != card || reference.rarityColorImage == null)
+                continue;
+            Image image = reference.rarityColorImage;
+            if (originalRarityImageColors.TryGetValue(image, out Color original))
+                image.color = original;
+        }
+    }
+
+    private void BindCard(int index, Transform card, string characterId, SkillMasterData skill, BattleRewardData data)
+    {
+        ApplyCardRarityImageColor(index, skill.Rarity);
         Image line = GetImage(card, "Background/Line2");
         if (line != null) line.color = RarityColor(skill.Rarity);
         Image portrait = GetImage(card, "Card/Cardimage");
