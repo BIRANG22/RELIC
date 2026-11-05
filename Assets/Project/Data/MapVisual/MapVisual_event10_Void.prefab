@@ -151,7 +151,7 @@ MonoBehaviour:
   - ActionId: event_choice_02_success
     Animator: {fileID: 0}
     AnimatorTrigger: 
-    AnimatorStateName: toselect_r
+    AnimatorStateName: toselect_l
     VfxPrefab: {fileID: 0}
     VfxRootOverride: {fileID: 2000000000000000001}
     VfxLocalPosition: {x: 0, y: 0, z: -0.1}
@@ -223,7 +223,7 @@ MonoBehaviour:
   - ActionId: event_choice_03_success
     Animator: {fileID: 0}
     AnimatorTrigger: 
-    AnimatorStateName: toselect_r
+    AnimatorStateName: toselect_l
     VfxPrefab: {fileID: 0}
     VfxRootOverride: {fileID: 0}
     VfxLocalPosition: {x: 0, y: 0, z: 0}
