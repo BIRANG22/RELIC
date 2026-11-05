@@ -2732,7 +2732,7 @@ MonoBehaviour:
     cues:
     - clip: {fileID: 8300000, guid: a8827e1a3a933e34ab4d407e980df1c5, type: 3}
       delay: 0
-      volume: 0.3
+      volume: 0.1
       pitch: 1
       loop: 0
       playOncePerAction: 0
@@ -3763,11 +3763,11 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: ruke.attack.03
-    vfxPrefab: {fileID: 3602943759074218325, guid: 25872a24560375c49a2441cb58273416, type: 3}
+    vfxPrefab: {fileID: 5048194300403814765, guid: f3f99cfb5e2b7ed46acf00d0eee8d861, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: ad70aa54bc5c0014da0dd61091f3807c, type: 3}
       delay: 0
-      volume: 0.5
+      volume: 0.3
       pitch: 1
       loop: 0
       playOncePerAction: 0
