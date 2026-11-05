@@ -76,11 +76,59 @@ public sealed class UIBlurReplicaSource
             if (text == null)
                 continue;
 
+            // Only localized TMPs receive the normal locale-wide font change.
             GlobalLocalizedTMPFontApplicator.ApplyToText(text, fontDatabase, locale);
+            // Some presenter-controlled texts (e.g. localized character names)
+            // have no static localization key. Switch their font only if the
+            // existing font cannot render a character actually being displayed.
+            EnsureDisplayFontSupportsText(text, fontDatabase, locale);
             text.SetAllDirty();
-            if (text.gameObject.activeInHierarchy)
-                text.ForceMeshUpdate();
+            // Rebuilding every TMP mesh here used to report missing Japanese
+            // glyphs from unrelated, fixed-font UI elements. Unity will rebuild
+            // the dirty source when it next renders.
         }
+    }
+
+    private static void EnsureDisplayFontSupportsText(
+        TMP_Text text, LocaleFontDatabase database,
+        UnityEngine.Localization.Locale locale)
+    {
+        if (text == null || text.font == null || locale == null || database == null)
+            return;
+
+        string content = text.text;
+        if (string.IsNullOrEmpty(content) || FontCoversDisplayedCharacters(text.font, content))
+            return;
+
+        string role = LocaleFontDatabase.BodyRoleId;
+        if (database.TryGetRoleIdForSourceFont(text.font, out string detectedRole,
+                out bool preserveSourceFont) && !string.IsNullOrEmpty(detectedRole))
+            role = detectedRole;
+
+        if (!database.TryResolve(locale.Identifier.Code, role, out TMP_FontAsset replacement) ||
+            replacement == null || replacement == text.font ||
+            !FontCoversDisplayedCharacters(replacement, content))
+            return;
+
+        text.font = replacement;
+        text.SetAllDirty();
+    }
+
+    private static bool FontCoversDisplayedCharacters(TMP_FontAsset font, string content)
+    {
+        bool insideTag = false;
+        for (int i = 0; i < content.Length; i++)
+        {
+            char c = content[i];
+            if (c == '<') { insideTag = true; continue; }
+            if (c == '>' && insideTag) { insideTag = false; continue; }
+            if (insideTag || c <= 127 || char.IsWhiteSpace(c) ||
+                char.IsHighSurrogate(c) || char.IsLowSurrogate(c))
+                continue;
+            if (!font.HasCharacter(c, true, false))
+                return false;
+        }
+        return true;
     }
 
     public void SyncNow()
@@ -431,8 +479,16 @@ public sealed class UIBlurReplicaSource
             if (source == null || replica == null)
                 return;
 
+            var currentLocale = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale;
+            var currentDatabase = LocaleFontDatabaseProvider.LoadDefault();
+            // World-object names can be assigned by presenters without a
+            // LocalizedTMPText component. Resolve their font before cloning it.
+            GlobalLocalizedTMPFontApplicator.ApplyToText(source, currentDatabase, currentLocale);
+            EnsureDisplayFontSupportsText(source, currentDatabase, currentLocale);
             replica.text = source.text;
             replica.font = source.font;
+            // Materials belong to a specific font atlas. Copy the source
+            // material only after synchronizing the replica font.
             replica.fontSharedMaterial = source.fontSharedMaterial;
             replica.fontSize = source.fontSize;
             replica.fontStyle = source.fontStyle;
@@ -454,7 +510,11 @@ public sealed class UIBlurReplicaSource
             replica.horizontalMapping = source.horizontalMapping;
             replica.verticalMapping = source.verticalMapping;
             replica.geometrySortingOrder = source.geometrySortingOrder;
-            replica.ForceMeshUpdate(true, true);
+            // The source text may change locale in the same frame that the
+            // blur replica syncs. Do not force the replica to rasterize using
+            // an outdated or unsupported font (which logs missing glyphs).
+            // Normal TMP canvas rebuild will refresh it after sync.
+            replica.SetAllDirty();
         }
 
         public override void SetOriginalRenderingHidden(bool hidden)

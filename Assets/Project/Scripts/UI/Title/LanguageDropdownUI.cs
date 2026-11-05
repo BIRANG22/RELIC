@@ -8,6 +8,11 @@ public class LanguageDropdownUI : MonoBehaviour
     [Header("Dropdown")]
     [SerializeField] private TMP_Dropdown languageDropdown;
 
+    [Header("Locale-specific dropdown item fonts")]
+    [SerializeField] private LocaleFontDatabase localeFontDatabase;
+
+    private DirectTemplateDropdown directDropdown;
+
     [Header("Language Preview Objects")]
     [SerializeField] private GameObject krObject;
     [SerializeField] private GameObject enObject;
@@ -35,8 +40,9 @@ public class LanguageDropdownUI : MonoBehaviour
 
     private void Awake()
     {
-        DirectTemplateDropdown.Attach(languageDropdown)
-            ?.Configure(dropdownSortingOrderOffset);
+        directDropdown = DirectTemplateDropdown.Attach(languageDropdown);
+        directDropdown?.Configure(dropdownSortingOrderOffset);
+        directDropdown?.ConfigureOptionFonts(localeFontDatabase, localeCodes);
     }
 
     private async void Start()
@@ -45,6 +51,7 @@ public class LanguageDropdownUI : MonoBehaviour
 
         SetupDropdownOptions();
         SyncDropdownFromCurrentLocale();
+        directDropdown?.ApplyCaptionFont();
         if (languageDropdown == null)
             return;
 
@@ -98,6 +105,7 @@ public class LanguageDropdownUI : MonoBehaviour
         }
 
         languageDropdown.SetValueWithoutNotify(index);
+        directDropdown?.ApplyCaptionFont();
     }
 
     private void OnLanguageChanged(int index)
@@ -114,6 +122,7 @@ public class LanguageDropdownUI : MonoBehaviour
         string localeCode = localeCodes[index];
         ApplyLanguage(localeCode);
         RefreshLanguagePreview(index);
+        directDropdown?.ApplyCaptionFont();
     }
 
     private async void ApplyLanguage(string localeCode)

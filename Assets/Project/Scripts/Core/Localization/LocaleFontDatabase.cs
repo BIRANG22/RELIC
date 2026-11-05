@@ -11,9 +11,11 @@ public sealed class LocaleFontDatabase : ScriptableObject
     public const string NumberRoleId = "number";
 
     [SerializeField] private LocaleFontProfile[] profiles = Array.Empty<LocaleFontProfile>();
+    [SerializeField] private TMP_FontAsset commonNumberFont;
     [SerializeField] private SourceFontRoleEntry[] sourceFontRoles = Array.Empty<SourceFontRoleEntry>();
 
     public IReadOnlyList<LocaleFontProfile> Profiles => profiles;
+    public TMP_FontAsset CommonNumberFont => commonNumberFont;
 
     public bool TryGetRoleIdForSourceFont(
         TMP_FontAsset sourceFont,
@@ -61,19 +63,21 @@ public sealed class LocaleFontDatabase : ScriptableObject
     {
         font = null;
         string normalizedLocale = Normalize(localeCode);
-        string normalizedRole = Normalize(roleId);
         if (string.IsNullOrEmpty(normalizedLocale))
             return false;
+
+        // All localizable roles share one font per locale.
+        // The number role uses one font shared by all locales.
+        if (string.Equals(Normalize(roleId), NumberRoleId, StringComparison.OrdinalIgnoreCase) &&
+            commonNumberFont != null)
+        {
+            font = commonNumberFont;
+            return true;
+        }
 
         LocaleFontProfile exact = FindProfile(normalizedLocale);
         string parentCode = GetParentLocaleCode(normalizedLocale);
         LocaleFontProfile parent = string.IsNullOrEmpty(parentCode) ? null : FindProfile(parentCode);
-
-        if (TryResolveRole(exact, normalizedRole, out font) ||
-            TryResolveRole(parent, normalizedRole, out font))
-        {
-            return true;
-        }
 
         if (exact != null && exact.DefaultFont != null)
         {
@@ -117,6 +121,9 @@ public sealed class LocaleFontDatabase : ScriptableObject
         var issues = new List<ValidationIssue>();
         var locales = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        if (commonNumberFont == null)
+            issues.Add(new ValidationIssue("missing-number-font", "Common Number Font is not assigned."));
+
         for (int i = 0; i < profiles.Length; i++)
         {
             LocaleFontProfile profile = profiles[i];
@@ -132,30 +139,8 @@ public sealed class LocaleFontDatabase : ScriptableObject
             else if (!locales.Add(locale))
                 issues.Add(new ValidationIssue("duplicate-locale", $"Locale code '{locale}' is duplicated."));
 
-            var roles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            IReadOnlyList<RoleFontEntry> entries = profile.RoleFonts;
-            for (int roleIndex = 0; roleIndex < entries.Count; roleIndex++)
-            {
-                RoleFontEntry entry = entries[roleIndex];
-                if (entry == null)
-                {
-                    issues.Add(new ValidationIssue("null-role", $"Locale '{locale}' role {roleIndex} is null."));
-                    continue;
-                }
-
-                string role = Normalize(entry.RoleId);
-                if (string.IsNullOrEmpty(role))
-                    issues.Add(new ValidationIssue("empty-role", $"Locale '{locale}' has an empty role ID."));
-                else if (!roles.Add(role))
-                    issues.Add(new ValidationIssue("duplicate-role", $"Locale '{locale}' role '{role}' is duplicated."));
-
-                if (entry.Font == null)
-                    issues.Add(new ValidationIssue("missing-font", $"Locale '{locale}' role '{role}' has no font."));
-            }
-
-            AddMissingInitialRoleIssue(locale, BodyRoleId, roles, issues);
-            AddMissingInitialRoleIssue(locale, TitleRoleId, roles, issues);
-            AddMissingInitialRoleIssue(locale, NumberRoleId, roles, issues);
+            if (profile.DefaultFont == null)
+                issues.Add(new ValidationIssue("missing-font", $"Locale '{locale}' has no font."));
         }
 
         return issues.ToArray();
@@ -174,27 +159,6 @@ public sealed class LocaleFontDatabase : ScriptableObject
         }
 
         return null;
-    }
-
-    private static bool TryResolveRole(LocaleFontProfile profile, string roleId, out TMP_FontAsset font)
-    {
-        font = null;
-        if (profile == null || string.IsNullOrEmpty(roleId))
-            return false;
-
-        IReadOnlyList<RoleFontEntry> entries = profile.RoleFonts;
-        for (int i = 0; i < entries.Count; i++)
-        {
-            RoleFontEntry entry = entries[i];
-            if (entry != null && entry.Font != null &&
-                string.Equals(Normalize(entry.RoleId), roleId, StringComparison.OrdinalIgnoreCase))
-            {
-                font = entry.Font;
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private static string GetParentLocaleCode(string localeCode)
@@ -222,16 +186,6 @@ public sealed class LocaleFontDatabase : ScriptableObject
             result.Add(normalized);
     }
 
-    private static void AddMissingInitialRoleIssue(
-        string locale,
-        string roleId,
-        HashSet<string> roles,
-        List<ValidationIssue> issues)
-    {
-        if (!roles.Contains(roleId))
-            issues.Add(new ValidationIssue("missing-role", $"Locale '{locale}' has no '{roleId}' mapping; defaultFont will be used."));
-    }
-
     private static string Normalize(string value) =>
         string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
 
@@ -239,8 +193,10 @@ public sealed class LocaleFontDatabase : ScriptableObject
     public sealed class LocaleFontProfile
     {
         [SerializeField] private string localeCode;
-        [SerializeField] private TMP_FontAsset defaultFont;
-        [SerializeField] private RoleFontEntry[] roleFonts = Array.Empty<RoleFontEntry>();
+        [SerializeField, InspectorName("Font")] private TMP_FontAsset defaultFont;
+        // Retained for existing serialized assets and source font role inference only.
+        // This list is no longer used when resolving a locale's display font.
+        [SerializeField, HideInInspector] private RoleFontEntry[] roleFonts = Array.Empty<RoleFontEntry>();
 
         public string LocaleCode => localeCode;
         public TMP_FontAsset DefaultFont => defaultFont;

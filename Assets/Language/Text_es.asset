@@ -6333,6 +6333,30 @@ MonoBehaviour:
     m_Localized: "Volver al t\xEDtulo"
     m_Metadata:
       m_Items: []
+  - m_Id: 31333428003840000
+    m_Localized: Fallo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333428003840002
+    m_Localized: Prueba fallida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333428003840001
+    m_Localized: Prueba superada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333427957702656
+    m_Localized: "\xC9xito"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333428003840003
+    m_Localized: Recupera {0} PV
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333428003840004
+    m_Localized: "Aumenta los PV m\xE1ximos en {0}"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -9,6 +9,8 @@ using UnityEngine.UI;
 public class BattleResultChecker : MonoBehaviour
 {
     private const float DefeatRewardMultiplier = 0.5f;
+    private const string NextStageLabelKey = "ui.battlerewardcanvas.text_tmp.20a196e6";
+    private const string ReturnLabelKey = "ui.battlerewardcanvas.text_tmp.3c165545";
     private static readonly Color NextStageUnavailableColor = new Color32(0x77, 0x77, 0x77, 0xFF);
 
     public static BattleResultChecker Instance { get; private set; }
@@ -616,14 +618,14 @@ public class BattleResultChecker : MonoBehaviour
     {
         ConfigureButtonTextLocalization(
             nextStageButtonRoot,
-            LocalizationKeys.Battle.NextStage);
+            NextStageLabelKey, "다음 구역");
 
         ConfigureButtonTextLocalization(
             returnButtonRoot,
-            LocalizationKeys.Battle.Return);
+            ReturnLabelKey, "복귀");
     }
 
-    private static void ConfigureButtonTextLocalization(GameObject buttonRoot, string localizationKey)
+    private static void ConfigureButtonTextLocalization(GameObject buttonRoot, string localizationKey, string koreanFallback)
     {
         if (buttonRoot == null || string.IsNullOrWhiteSpace(localizationKey))
             return;
@@ -653,7 +655,6 @@ public class BattleResultChecker : MonoBehaviour
         if (localizer == null)
             localizer = target.gameObject.AddComponent<LocalizedTMPText>();
 
-        string koreanFallback = target.text ?? string.Empty;
         localizer.Configure(localizationKey, koreanFallback, false);
     }
 

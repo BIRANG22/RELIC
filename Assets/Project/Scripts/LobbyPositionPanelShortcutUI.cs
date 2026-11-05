@@ -6,6 +6,7 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
+using UnityEngine.Localization.Settings;
 using UnityEngine.Serialization;
 
 /// <summary>
@@ -268,6 +269,13 @@ public sealed class LobbyPositionPanelShortcutUI : MonoBehaviour
                     localizer.Configure(entry.localizationKey, string.Empty, false);
                 else
                     mainText.text = GameLocalization.Get(entry.localizationKey);
+
+                // Runtime-generated translated labels need their locale font before
+                // TextMeshPro generates the mesh for the newly assigned CJK text.
+                GlobalLocalizedTMPFontApplicator.ApplyToText(
+                    mainText,
+                    LocaleFontDatabaseProvider.LoadDefault(),
+                    LocalizationSettings.SelectedLocale);
             }
 
             selectedTargetPanel = targetPanel;

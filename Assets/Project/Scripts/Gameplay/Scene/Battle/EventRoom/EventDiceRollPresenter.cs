@@ -760,8 +760,8 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
     private void RefreshRollButtonLabel()
     {
         string key = interactiveState == InteractiveState.ReadyToConfirm
-            ? "event.dice.confirm"
-            : "event.dice.roll";
+            ? "common.confirm"
+            : "ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventdicerollpresenter.text";
         SetRollButtonLabel(GameLocalization.Get(key));
     }
 
@@ -769,6 +769,15 @@ public sealed class EventDiceRollPresenter : MonoBehaviour
     {
         ProtectDynamicText(rollButtonText);
         ProtectDynamicText(detailText);
+        // Dice totals are numeric output, not localized text. Keep the
+        // Inspector font and prevent automatic static bindings from taking over.
+        ProtectDynamicText(valueText);
+        if (valueText != null)
+        {
+            LocalizedTMPFont fontOwner = valueText.GetComponent<LocalizedTMPFont>();
+            if (fontOwner != null)
+                fontOwner.RefreshForLocale(UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale);
+        }
     }
 
     private static void ProtectDynamicText(TMP_Text text)

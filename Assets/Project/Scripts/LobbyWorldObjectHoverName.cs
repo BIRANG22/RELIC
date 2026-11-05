@@ -441,10 +441,10 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
     {
         return type switch
         {
-            HoverNameType.Research => "lobby.world_object.workbench",
-            HoverNameType.Exploration => "lobby.world_object.statue",
-            HoverNameType.Resonance => "lobby.world_object.stela",
-            HoverNameType.Npc => "lobby.world_object.researcher_elric",
+            HoverNameType.Research => "ui.lobby.panel.crafting",
+            HoverNameType.Exploration => "ui.lobby.panel.erosion",
+            HoverNameType.Resonance => "ui.lobby.panel.resonance",
+            HoverNameType.Npc => "tutorial.speaker.elric",
             HoverNameType.Storage => "lobby.world_object.storage",
             HoverNameType.Hilt => "data.character.char_01.name",
             HoverNameType.Kaya => "data.character.char_02.name",
