@@ -90,10 +90,14 @@ public class KnockbackEffect : BattleEffectBase
             Vector3 finalWorldPosition =
                 startWorldPosition + (finalCellWorldPosition - startCellWorldPosition);
 
+            context.ForcedMoveVisualStarted?.Invoke();
+
             if (playerTarget != null)
-                playerTarget.StartCoroutine(MoveTransformSmooth(visualTarget, startWorldPosition, finalWorldPosition));
+                playerTarget.StartCoroutine(MoveTransformSmooth(
+                    visualTarget, startWorldPosition, finalWorldPosition, context.ForcedMoveVisualCompleted));
             else if (monsterTarget != null)
-                monsterTarget.StartCoroutine(MoveTransformSmooth(visualTarget, startWorldPosition, finalWorldPosition));
+                monsterTarget.StartCoroutine(MoveTransformSmooth(
+                    visualTarget, startWorldPosition, finalWorldPosition, context.ForcedMoveVisualCompleted));
         }
     }
 
@@ -449,21 +453,32 @@ public class KnockbackEffect : BattleEffectBase
     private static IEnumerator MoveTransformSmooth(
         Transform target,
         Vector3 startPosition,
-        Vector3 targetPosition)
+        Vector3 targetPosition,
+        System.Action onCompleted)
     {
         if (target == null)
-            yield break;
-
-        float elapsed = 0f;
-
-        while (elapsed < ForcedMoveAnimationDuration)
         {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / ForcedMoveAnimationDuration);
-            target.position = Vector3.Lerp(startPosition, targetPosition, t);
-            yield return null;
+            onCompleted?.Invoke();
+            yield break;
         }
 
-        target.position = targetPosition;
+        try
+        {
+            float elapsed = 0f;
+
+            while (elapsed < ForcedMoveAnimationDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / ForcedMoveAnimationDuration);
+                target.position = Vector3.Lerp(startPosition, targetPosition, t);
+                yield return null;
+            }
+
+            target.position = targetPosition;
+        }
+        finally
+        {
+            onCompleted?.Invoke();
+        }
     }
 }

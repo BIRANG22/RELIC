@@ -59,8 +59,6 @@ public class BattleCameraController : MonoBehaviour
     private void HandleTurnExecutionStarted()
     {
         turnExecutionEventActive = true;
-        ClearGridMovementDetection();
-        gridMovementNextRefreshTime = 0f;
         gridMovementFocusedUnit = null;
         pendingTurnCameraReturn = false;
         if (deferredReturnRoutine != null)
@@ -125,27 +123,8 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private bool useUnscaledTimeForImpact = true;
 
     [Header("Grid Movement Combat Zoom")]
-    [Tooltip("전투 턴 실행 중 캐릭터/몬스터의 월드 위치 변화를 감지해 이동 유닛 중심으로 카메라 줌합니다. 강제 이동도 감지될 수 있습니다.")]
+    [Tooltip("전투 행동이 명시적으로 요청한 이동 유닛 중심으로 카메라 줌을 적용합니다.")]
     [SerializeField] private bool enableGridMovementImpactZoom = true;
-    [Tooltip("유닛의 누적 XY 이동을 감지할 최소 거리입니다.")]
-    [SerializeField, Min(0.05f)] private float gridMovementDetectionDistance = 0.65f;
-    [Tooltip("캐릭터와 몬스터 Transform 목록을 새로 확인하는 주기입니다.")]
-    [SerializeField, Min(0.1f)] private float gridMovementUnitRefreshInterval = 0.5f;
-    private readonly Dictionary<Transform, Vector3> gridMovementUnitPositions = new Dictionary<Transform, Vector3>();
-    private readonly List<Transform> gridMovementUnitCleanup = new List<Transform>();
-    private readonly List<Transform> gridMovementUnitReset = new List<Transform>();
-    // An entire movement animation is only allowed to announce its start once.
-    // This prevents early movers from stealing focus back while another unit starts later.
-    private readonly HashSet<Transform> gridMovementAlreadyDetected = new HashSet<Transform>();
-    private readonly Dictionary<Transform, Vector3> gridMovementLastFramePositions = new Dictionary<Transform, Vector3>();
-    private readonly Dictionary<Transform, float> gridMovementLastMotionTimes = new Dictionary<Transform, float>();
-    private Transform pendingGridMovementFocusUnit;
-    private Coroutine pendingGridMovementFocusRoutine;
-    [Tooltip("여러 캐릭터/몬스터가 동시에 이동할 때 마지막 이동을 선택하기 위해 기다릴 시간(초)입니다.")]
-    [SerializeField, Min(0f)] private float simultaneousMovementFocusDelay = 0.08f;
-    [Tooltip("이동이 멈춘 뒤 새로운 이동으로 판정하기까지의 시간(초)입니다.")]
-    [SerializeField, Min(0.05f)] private float gridMovementStopGraceTime = 0.18f;
-    private float gridMovementNextRefreshTime;
     private Transform gridMovementFocusedUnit;
 
     [Header("Directional Impact Beats")]
@@ -313,7 +292,6 @@ public class BattleCameraController : MonoBehaviour
             StopCoroutine(deferredReturnRoutine);
             deferredReturnRoutine = null;
         }
-        ClearGridMovementDetection();
         gridMovementFocusedUnit = null;
         RestoreCinematicCameraImmediate();
         StopExternalShake();
@@ -329,7 +307,6 @@ public class BattleCameraController : MonoBehaviour
         RemoveExternalShakeOffset();
         RemoveMouseParallax();
         HandleZoomFollowTarget();
-        CheckGridMovementImpactZoom();
     }
 
     private void LateUpdate()
@@ -2084,176 +2061,26 @@ public class BattleCameraController : MonoBehaviour
             Time.deltaTime);
     }
 
-    // Track the root transforms of BOTH BattleCharacter and MonsterUnit while executing.
-    // Detect each movement animation once; batch starts from the same time window and
-    // focus only the last newly moving unit. Never select the unit with the largest
-    // displacement: that may be an earlier mover still travelling across the grid.
-    private void CheckGridMovementImpactZoom()
-    {
-        if (!enableGridMovementImpactZoom || targetCamera == null || hasCinematicCameraState)
-        {
-            ClearGridMovementDetection();
-            return;
-        }
-
-        if (cachedTurnExecutor == null)
-            cachedTurnExecutor = FindFirstObjectByType<BattleTurnExecutor>(FindObjectsInactive.Exclude);
-        bool executing = turnExecutionEventActive ||
-                         (cachedTurnExecutor != null && cachedTurnExecutor.IsExecuting);
-        if (!executing)
-        {
-            ClearGridMovementDetection();
-            return;
-        }
-
-        if (Time.unscaledTime >= gridMovementNextRefreshTime)
-        {
-            gridMovementNextRefreshTime = Time.unscaledTime + Mathf.Max(0.1f, gridMovementUnitRefreshInterval);
-            RefreshGridMovementUnits();
-        }
-
-        float now = Time.unscaledTime;
-        float minimumSquaredDistance = gridMovementDetectionDistance * gridMovementDetectionDistance;
-        gridMovementUnitCleanup.Clear();
-        gridMovementUnitReset.Clear();
-        Transform lastNewMover = null;
-
-        foreach (KeyValuePair<Transform, Vector3> entry in gridMovementUnitPositions)
-        {
-            Transform unit = entry.Key;
-            if (unit == null || !unit.gameObject.activeInHierarchy)
-            {
-                gridMovementUnitCleanup.Add(unit);
-                continue;
-            }
-
-            Vector3 position = unit.position;
-            Vector3 previousPosition;
-            if (!gridMovementLastFramePositions.TryGetValue(unit, out previousPosition))
-                previousPosition = position;
-            Vector3 frameDelta = position - previousPosition;
-            frameDelta.z = 0f;
-            gridMovementLastFramePositions[unit] = position;
-
-            if (frameDelta.sqrMagnitude > 0.000001f)
-                gridMovementLastMotionTimes[unit] = now;
-
-            // A completed movement may be detected again only after an actual pause.
-            if (gridMovementAlreadyDetected.Contains(unit))
-            {
-                float lastMotion;
-                if (gridMovementLastMotionTimes.TryGetValue(unit, out lastMotion) &&
-                    now - lastMotion >= gridMovementStopGraceTime)
-                {
-                    gridMovementAlreadyDetected.Remove(unit);
-                    gridMovementUnitReset.Add(unit);
-                }
-                continue;
-            }
-
-            Vector3 displacement = position - entry.Value;
-            displacement.z = 0f;
-            if (displacement.sqrMagnitude < minimumSquaredDistance)
-                continue;
-
-            gridMovementAlreadyDetected.Add(unit);
-            // In a single Update, starts are simultaneous as far as polling knows.
-            // Stable ID tie-break avoids dictionary-enumeration-dependent focus changes.
-            if (lastNewMover == null || unit.GetInstanceID() > lastNewMover.GetInstanceID())
-                lastNewMover = unit;
-        }
-
-        for (int i = 0; i < gridMovementUnitReset.Count; i++)
-        {
-            Transform unit = gridMovementUnitReset[i];
-            if (unit != null && gridMovementUnitPositions.ContainsKey(unit))
-                gridMovementUnitPositions[unit] = unit.position;
-        }
-
-        for (int i = 0; i < gridMovementUnitCleanup.Count; i++)
-        {
-            Transform unit = gridMovementUnitCleanup[i];
-            gridMovementUnitPositions.Remove(unit);
-            gridMovementLastFramePositions.Remove(unit);
-            gridMovementLastMotionTimes.Remove(unit);
-            gridMovementAlreadyDetected.Remove(unit);
-        }
-
-        if (lastNewMover != null)
-            QueueLastGridMovementFocus(lastNewMover);
-    }
-
-    private void RefreshGridMovementUnits()
-    {
-        BattleCharacter[] characters = FindObjectsByType<BattleCharacter>(FindObjectsSortMode.None);
-        for (int i = 0; i < characters.Length; i++)
-        {
-            if (characters[i] != null && !gridMovementUnitPositions.ContainsKey(characters[i].transform))
-            {
-                Transform unit = characters[i].transform;
-                gridMovementUnitPositions.Add(unit, unit.position);
-                gridMovementLastFramePositions[unit] = unit.position;
-            }
-        }
-
-        MonsterUnit[] monsters = FindObjectsByType<MonsterUnit>(FindObjectsSortMode.None);
-        for (int i = 0; i < monsters.Length; i++)
-        {
-            if (monsters[i] != null && !gridMovementUnitPositions.ContainsKey(monsters[i].transform))
-            {
-                Transform unit = monsters[i].transform;
-                gridMovementUnitPositions.Add(unit, unit.position);
-                gridMovementLastFramePositions[unit] = unit.position;
-            }
-        }
-    }
-
-    private void QueueLastGridMovementFocus(Transform unit)
-    {
-        if (unit == null || !isActiveAndEnabled)
-            return;
-
-        // If starts happen in the same short window, the latest one wins.
-        pendingGridMovementFocusUnit = unit;
-        if (pendingGridMovementFocusRoutine == null)
-            pendingGridMovementFocusRoutine = StartCoroutine(ApplyLastGridMovementFocus());
-    }
-
-    private IEnumerator ApplyLastGridMovementFocus()
-    {
-        float endTime = Time.unscaledTime + Mathf.Max(0f, simultaneousMovementFocusDelay);
-        while (Time.unscaledTime < endTime)
-            yield return null;
-
-        Transform selected = pendingGridMovementFocusUnit;
-        pendingGridMovementFocusUnit = null;
-        pendingGridMovementFocusRoutine = null;
-        if (selected != null && (turnExecutionEventActive ||
-            (cachedTurnExecutor != null && cachedTurnExecutor.IsExecuting)))
-            NotifyGridMovementImpactZoom(selected);
-    }
-
-    private void ClearGridMovementDetection()
-    {
-        if (pendingGridMovementFocusRoutine != null)
-        {
-            StopCoroutine(pendingGridMovementFocusRoutine);
-            pendingGridMovementFocusRoutine = null;
-        }
-        pendingGridMovementFocusUnit = null;
-        gridMovementUnitPositions.Clear();
-        gridMovementLastFramePositions.Clear();
-        gridMovementLastMotionTimes.Clear();
-        gridMovementAlreadyDetected.Clear();
-    }
-
-    // Position deltas cannot distinguish a voluntary Move command from knockback,
-    // pull, teleport, or skill-driven movement. Only an explicit direct-grid-move
-    // action may request the zoom. Both BattleCharacter and MonsterUnit are supported.
-    // Call this when a DIRECT Move action starts, before its movement animation.
+    // 직접 Move 행동과 명시적으로 연출 소유권을 받은 강제 이동만 이 API를 사용합니다.
     public void BeginDirectGridMovement(Transform movingUnit)
     {
         NotifyGridMovementImpactZoom(movingUnit);
+    }
+
+    // 현재 소유자가 예상한 유닛일 때만 다음 유닛으로 원자적으로 포커스를 넘깁니다.
+    // 지연된 이전 행동 콜백이 새 카메라 소유권을 빼앗는 것을 방지합니다.
+    public bool TransferDirectGridMovementFocus(Transform expectedCurrentUnit, Transform nextUnit)
+    {
+        if (expectedCurrentUnit == null || nextUnit == null)
+            return false;
+
+        bool ownsDirectFocus = gridMovementFocusedUnit == expectedCurrentUnit;
+        bool ownsFollowFocus = zoomFollowTarget == expectedCurrentUnit;
+        if (!ownsDirectFocus && !ownsFollowFocus)
+            return false;
+
+        NotifyGridMovementImpactZoom(nextUnit);
+        return gridMovementFocusedUnit == nextUnit;
     }
 
     // Call after the direct Move action ends. Keep the combat zoom until turn end,
@@ -2674,10 +2501,6 @@ public class BattleCameraController : MonoBehaviour
     private void OnValidate()
     {
         zoomSize = Mathf.Max(0.1f, zoomSize);
-        gridMovementDetectionDistance = Mathf.Max(0.05f, gridMovementDetectionDistance);
-        gridMovementUnitRefreshInterval = Mathf.Max(0.1f, gridMovementUnitRefreshInterval);
-        simultaneousMovementFocusDelay = Mathf.Max(0f, simultaneousMovementFocusDelay);
-        gridMovementStopGraceTime = Mathf.Max(0.05f, gridMovementStopGraceTime);
         rangedCasterScreenEdgePadding = Mathf.Clamp(rangedCasterScreenEdgePadding, 0.05f, 0.4f);
         zoomDuration = Mathf.Max(0f, zoomDuration);
         returnDuration = Mathf.Max(0f, returnDuration);
