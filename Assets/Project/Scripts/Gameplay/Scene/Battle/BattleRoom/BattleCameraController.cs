@@ -89,8 +89,70 @@ public class BattleCameraController : MonoBehaviour
         while (!turnExecutionEventActive && IsTurnCameraExecutionActive())
             yield return null;
         deferredReturnRoutine = null;
-        if (!turnExecutionEventActive)
-            yield return ReturnDefault();
+        if (turnExecutionEventActive)
+            yield break;
+
+        // 턴 종료는 전투 종료가 아닙니다. 예약 입력으로 돌아갈 때는
+        // 기본 카메라(Y=1)를 경유하지 않고 현재 선택 캐릭터 구도로 복귀합니다.
+        if (TryRestoreSelectedCharacterFocusAfterTurn())
+            yield break;
+
+        // 선택된 캐릭터가 없거나 전투가 끝난 경우에만 기본 구도로 돌아갑니다.
+        yield return ReturnDefault();
+    }
+
+    private bool TryRestoreSelectedCharacterFocusAfterTurn()
+    {
+        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+            return false;
+
+        BattleTimelineController timeline =
+            FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+        if (!enableCharacterSelectionFocus || timeline == null || timeline.SelectedCharacter == null)
+            return false;
+
+        if (targetCamera == null)
+            targetCamera = Camera.main;
+        if (targetCamera == null)
+            return false;
+
+        // 마지막 전투 행동의 카메라 소유권만 해제합니다.
+        // ReturnDefault()로 중간에 기본 위치까지 줌아웃하지 않습니다.
+        RemoveMouseParallax();
+        EndZoomFollowTarget();
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+        if (panelDownReturnRoutine != null)
+        {
+            StopCoroutine(panelDownReturnRoutine);
+            panelDownReturnRoutine = null;
+        }
+        ClearImpactOffset();
+        BattleEffectPlaneRotation.BeginCameraReturnFeedback(returnDuration, zoomCurve);
+        ApplyCameraRotationZ(0f);
+        ResetDamageImpactRotationSequence();
+        hasActiveCombatZoom = false;
+        ResetCombatFocusTracking();
+        hasActiveMonsterInfoFocus = false;
+        hasActiveGridSelectionFocus = false;
+
+        timeline.RefocusCurrentSelectedCharacterWhenInputReady();
+        return true;
+    }
+
+    private bool ShouldPreserveTurnSelectionFocus()
+    {
+        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+            return false;
+        if (!turnExecutionEventActive && !pendingTurnCameraReturn && deferredReturnRoutine == null)
+            return false;
+
+        BattleTimelineController timeline =
+            FindFirstObjectByType<BattleTimelineController>(FindObjectsInactive.Include);
+        return timeline != null && timeline.SelectedCharacter != null;
     }
 
     private bool IsTurnCameraExecutionActive()
@@ -198,8 +260,16 @@ public class BattleCameraController : MonoBehaviour
     [SerializeField] private Vector2 maxCameraPosition = new Vector2(0.5f, 1f);
 
     [Header("Panel Down Position")]
-    [Tooltip("BattleCharacterPanel과 BattleSlot이 내려가 있을 때 사용할 Main Camera Y 위치입니다.")]
-    [SerializeField] private float panelDownPositionY = 1.5f;
+    // BattleCharacterPanel과 BattleSlot이 내려간 상태에서는 카메라 Y를 항상 1로 유지합니다.
+    // 기존 씬/프리팹에 저장된 1.5 값의 영향을 받지 않도록 상수로 정의합니다.
+    [Header("Monster Info Focus (Panel Down)")]
+    [SerializeField] private bool enableMonsterInfoFocus = true;
+    [SerializeField] private Vector2 monsterInfoFocusOffset = Vector2.zero;
+    [SerializeField, Min(0f)] private float monsterInfoFocusXMultiplier = 1.75f;
+    [SerializeField] private float monsterInfoFocusZOffset = 2f;
+    [SerializeField, Min(0f)] private float monsterInfoFocusDuration = 0.3f;
+
+    private const float PanelDownPositionY = 1f;
 
     [Header("Mouse Parallax")]
     [SerializeField] private bool enableMouseParallax = true;
@@ -325,15 +395,49 @@ public class BattleCameraController : MonoBehaviour
         return targetCamera != null && candidate == targetCamera.transform;
     }
 
-    // Monster and character selections share the same Inspector settings and grid framing.
-    // Preserve this public entry point for existing monster-info callers.
+    // The monster information panel uses the panel-down camera height as its origin,
+    // then offsets the focus toward the monster's grid cell.
     public void FocusMonsterInfoForGridIndex(Transform target, int gridIndex)
     {
-        if (!enableCharacterSelectionFocus || targetCamera == null || target == null || hasActiveCombatZoom)
+        if (!enableMonsterInfoFocus || target == null || hasActiveCombatZoom)
             return;
 
-        FocusOnCharacterSelection(target, gridIndex);
+        if (targetCamera == null)
+            targetCamera = Camera.main;
+        if (targetCamera == null)
+            return;
+
+        if (panelDownReturnRoutine != null)
+        {
+            StopCoroutine(panelDownReturnRoutine);
+            panelDownReturnRoutine = null;
+        }
+
+        RemoveMouseParallax();
+        EndZoomFollowTarget();
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+        ClearImpactOffset();
+        ApplyCameraRotationZ(0f);
+
+        Vector2 gridOffset = GetCharacterSelectionGridFocusOffset(gridIndex);
+        Vector3 destination = GetNeutralBattlePosition();
+        destination.x += gridOffset.x * monsterInfoFocusXMultiplier + monsterInfoFocusOffset.x;
+        destination.y += gridOffset.y + monsterInfoFocusOffset.y;
+        destination.z = defaultPosition.z + monsterInfoFocusZOffset;
+
         hasActiveMonsterInfoFocus = true;
+        hasActiveGridSelectionFocus = false;
+        MoveCameraWithOptionalImmediate(
+            destination,
+            defaultSize,
+            Mathf.Approximately(monsterInfoFocusDuration, 0.55f) || Mathf.Approximately(monsterInfoFocusDuration, 0.2f)
+                ? 0.3f : monsterInfoFocusDuration,
+            clampCharacterSelectionFocusPosition,
+            true);
     }
 
     public bool BeginCinematicCamera()
@@ -1085,7 +1189,7 @@ public class BattleCameraController : MonoBehaviour
     private Vector3 GetNeutralBattlePosition()
     {
         Vector3 neutralPosition = defaultPosition;
-        neutralPosition.y = panelDownPositionY;
+        neutralPosition.y = PanelDownPositionY;
         return neutralPosition;
     }
 
@@ -1145,8 +1249,13 @@ public class BattleCameraController : MonoBehaviour
         StartReturnPanelDownInternal(moveDuration);
     }
 
-    private void StartReturnPanelDownInternal(float moveDuration)
+    private void StartReturnPanelDownInternal(float moveDuration, bool forceMonsterInfo = false)
     {
+        // 실행 중 또는 턴 종료 후 캐릭터 포커스 복귀가 예정되어 있다면
+        // 패널 이동 이벤트가 카메라를 Y=1로 덮어쓰지 않게 합니다.
+        if (!forceMonsterInfo && (hasActiveMonsterInfoFocus || ShouldPreserveTurnSelectionFocus()))
+            return;
+
         if (targetCamera == null)
             return;
 
@@ -2500,6 +2609,8 @@ public class BattleCameraController : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
+        monsterInfoFocusXMultiplier = Mathf.Max(0f, monsterInfoFocusXMultiplier);
+        monsterInfoFocusDuration = Mathf.Max(0f, monsterInfoFocusDuration);
         zoomSize = Mathf.Max(0.1f, zoomSize);
         rangedCasterScreenEdgePadding = Mathf.Clamp(rangedCasterScreenEdgePadding, 0.05f, 0.4f);
         zoomDuration = Mathf.Max(0f, zoomDuration);

@@ -9,6 +9,19 @@ using UnityEngine.Serialization;
 public class GridEffectTooltipUI : MonoBehaviour
 {
     private static GridEffectTooltipUI instance;
+    private static BattleTurnExecutor turnExecutor;
+
+    // Only block tooltips while the turn's commands are being executed.
+    public static bool IsBattleTurnExecuting
+    {
+        get
+        {
+            if (turnExecutor == null)
+                turnExecutor = FindFirstObjectByType<BattleTurnExecutor>();
+
+            return turnExecutor != null && turnExecutor.IsExecuting;
+        }
+    }
 
     [Header("References")]
     [SerializeField] private RectTransform tooltipRect;
@@ -96,7 +109,8 @@ public class GridEffectTooltipUI : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+        if (IsBattleTurnExecuting ||
+            (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded))
         {
             if (currentOwner != null || (canvasGroup != null && canvasGroup.alpha > 0f))
             {
@@ -154,7 +168,8 @@ public class GridEffectTooltipUI : MonoBehaviour
 
     public void Show(Object owner, GridEffectData data, Vector2 screenPosition, int? remainingDuration)
     {
-        if (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded)
+        if (IsBattleTurnExecuting ||
+            (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded))
         {
             currentOwner = null;
             SetVisibleImmediate(false);

@@ -2326,7 +2326,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         StopPanelMoveCoroutine();
 
         // 이 메서드가 호출되는 시점에는 BattleTurnExecutor가 이미
-        // 카메라를 Panel Down Y(1.5)까지 복귀시킨 뒤 살아있는 캐릭터를
+        // 카메라를 Panel Down Y(1)까지 복귀시킨 뒤 살아있는 캐릭터를
         // 실제로 선택한 상태입니다. 선택 이벤트가 시작한 기존 캐릭터 카메라 연출은
         // 건드리지 않고 패널/BattleSlot만 예약 위치로 올립니다.
         if (!isActiveAndEnabled || panelMoveDuration <= 0f)
@@ -2340,8 +2340,8 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
     private IEnumerator MoveBattleSlotToDefaultThenReservationRoutine()
     {
-        // Y 1.5 복귀 완료 후 발생한 캐릭터 선택 카메라 연출과 동시에
-        // 패널/BattleSlot을 예약 위치로 올립니다. 카메라를 다시 1.5로 되돌리거나
+        // Y 1 복귀 완료 후 발생한 캐릭터 선택 카메라 연출과 동시에
+        // 패널/BattleSlot을 예약 위치로 올립니다. 카메라를 다시 1로 되돌리거나
         // 별도의 강제 리포커스를 호출하지 않습니다.
         yield return AnimatePanelAndBattleSlotRoutine(
             reservationPositionY,
