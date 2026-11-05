@@ -611,7 +611,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 382394379}
-  localizationKey: battle.pause
+  localizationKey: ui.menupanel.stop_text.05313dff
   koreanSource: "\uC77C\uC2DC\uC815\uC9C0"
   automaticallyRegistered: 1
 --- !u!1 &779332223
@@ -1527,7 +1527,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1942304247}
-  localizationKey: battle.give_up
+  localizationKey: ui.menupanel.giveup_text.aff71724
   koreanSource: "\uD3EC\uAE30"
   automaticallyRegistered: 1
 --- !u!1 &2046715209
@@ -1681,7 +1681,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 2046715211}
-  localizationKey: common.continue
+  localizationKey: ui.menupanel.continue_text.e5aa8c81
   koreanSource: "\uACC4\uC18D"
   automaticallyRegistered: 1
 --- !u!1 &2079656777

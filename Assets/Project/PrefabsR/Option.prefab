@@ -2477,7 +2477,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 772155231540972999}
-  localizationKey: ui.option.fullscreen
+  localizationKey: ui.option.fullscreenlabel.31920105
   koreanSource: "\uC804\uCCB4\uD654\uBA74"
   automaticallyRegistered: 1
 --- !u!1 &2469447237435191150
@@ -4368,7 +4368,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 3339814765033232218}
-  localizationKey: ui.option.brightness
+  localizationKey: ui.option.bright.6114350a
   koreanSource: "\uBC1D\uAE30"
   automaticallyRegistered: 1
 --- !u!1 &4480662608780922192
@@ -5523,7 +5523,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 3121025707234344906}
-  localizationKey: ui.option.master_volume
+  localizationKey: ui.option.master.552df9fd
   koreanSource: "\uC804\uCCB4\uBCFC\uB968"
   automaticallyRegistered: 1
 --- !u!1 &6115930277039624576
@@ -6401,7 +6401,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 8860885958236526875}
-  localizationKey: common.background_music
+  localizationKey: ui.option.bgm.f90b1578
   koreanSource: "\uBC30\uACBD\uC74C"
   automaticallyRegistered: 1
 --- !u!1 &6412049705962723440
@@ -7156,7 +7156,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 7001000000000000016}
-  localizationKey: ui.option.battle_speed
+  localizationKey: ui.option.battlespeedtext.b6e288fa
   koreanSource: "\uC804\uD22C \uBC30\uC18D"
   automaticallyRegistered: 1
 --- !u!1 &7005189477797310113
@@ -9976,7 +9976,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 2983033750429540116}
-  localizationKey: common.sound_effects
+  localizationKey: ui.option.sfx.269099a4
   koreanSource: "\uD6A8\uACFC\uC74C"
   automaticallyRegistered: 1
 --- !u!1 &9188092128689818746

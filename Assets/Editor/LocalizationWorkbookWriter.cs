@@ -22,8 +22,6 @@ public static class LocalizationWorkbookWriter
     {
         EnsureKoreanSourceColumn(workbookPath);
         string transactionPath = workbookPath + $".sync-{Guid.NewGuid():N}.tmp";
-        string transactionBackupPath = transactionPath + ".localization-manager.backup";
-        string backupPath = workbookPath + ".localization-manager.backup";
 
         File.Copy(workbookPath, transactionPath, true);
         try
@@ -36,16 +34,14 @@ public static class LocalizationWorkbookWriter
                 transactionPath,
                 LocalizationExcelImporter.WorksheetName);
             LocalizationXlsxReader.ValidateHeaders(rows);
+            ValidateWorkbookStructure(transactionPath);
 
-            File.Copy(workbookPath, backupPath, true);
             File.Replace(transactionPath, workbookPath, null, true);
         }
         finally
         {
             if (File.Exists(transactionPath))
                 File.Delete(transactionPath);
-            if (File.Exists(transactionBackupPath))
-                File.Delete(transactionBackupPath);
         }
     }
 
@@ -135,13 +131,17 @@ public static class LocalizationWorkbookWriter
                 entry.Delete();
                 ZipArchiveEntry replacement = archive.CreateEntry(entryName, CompressionLevel.Optimal);
                 using (Stream output = replacement.Open())
+                {
+                    NormalizeWorksheet(document);
                     document.Save(output);
+                }
             }
 
             var verified = LocalizationXlsxReader.ReadSheet(tempPath, LocalizationExcelImporter.WorksheetName);
             if (verified.Count != rows.Count || FindHeader(verified[0], KoreanSourceHeader) != 2 ||
                 FindHeader(verified[0], "Korean(ko)") != 3)
                 throw new InvalidDataException("Localization worksheet column order verification failed.");
+            ValidateWorkbookStructure(tempPath);
             File.Copy(tempPath, workbookPath, true);
         }
         finally
@@ -188,8 +188,6 @@ public static class LocalizationWorkbookWriter
             ValidateXmlText(addition.Korean, addition.Key, "Korean(ko)");
         }
 
-        string backupPath = workbookPath + ".localization-manager.backup";
-        File.Copy(workbookPath, backupPath, true);
         using var archive = ZipFile.Open(workbookPath, ZipArchiveMode.Update);
         ZipArchiveEntry sheetEntry = FindTextSheet(archive);
         XDocument document;
@@ -217,6 +215,7 @@ public static class LocalizationWorkbookWriter
 
         ZipArchiveEntry replacement = archive.CreateEntry(sheetEntry.FullName, CompressionLevel.Optimal);
         using Stream output = replacement.Open();
+        NormalizeWorksheet(document);
         document.Save(output);
         return additions.Count;
     }
@@ -250,8 +249,6 @@ public static class LocalizationWorkbookWriter
         if (changedKeys.Count == 0)
             return 0;
 
-        string backupPath = workbookPath + ".localization-manager.backup";
-        File.Copy(workbookPath, backupPath, true);
         using var archive = ZipFile.Open(workbookPath, ZipArchiveMode.Update);
         ZipArchiveEntry sheetEntry = FindTextSheet(archive);
         IReadOnlyList<string> sharedStrings = ReadSharedStrings(archive);
@@ -277,6 +274,7 @@ public static class LocalizationWorkbookWriter
 
         ZipArchiveEntry replacement = archive.CreateEntry(sheetEntry.FullName, CompressionLevel.Optimal);
         using Stream output = replacement.Open();
+        NormalizeWorksheet(document);
         document.Save(output);
         return changedKeys.Count;
     }
@@ -333,8 +331,6 @@ public static class LocalizationWorkbookWriter
             return 0;
 
         int keyIndex = FindHeader(rows[0], "Key");
-        string backupPath = workbookPath + ".localization-manager.backup";
-        File.Copy(workbookPath, backupPath, true);
         using var archive = ZipFile.Open(workbookPath, ZipArchiveMode.Update);
         ZipArchiveEntry sheetEntry = FindTextSheet(archive);
         IReadOnlyList<string> sharedStrings = ReadSharedStrings(archive);
@@ -351,6 +347,7 @@ public static class LocalizationWorkbookWriter
 
         ZipArchiveEntry replacement = archive.CreateEntry(sheetEntry.FullName, CompressionLevel.Optimal);
         using Stream output = replacement.Open();
+        NormalizeWorksheet(document);
         document.Save(output);
         return removed;
     }
@@ -379,8 +376,6 @@ public static class LocalizationWorkbookWriter
         int removed = rows.Count - compacted.Count;
 
         int keyIndex = FindHeader(rows[0], "Key");
-        string backupPath = workbookPath + ".localization-manager.backup";
-        File.Copy(workbookPath, backupPath, true);
         using var archive = ZipFile.Open(workbookPath, ZipArchiveMode.Update);
         ZipArchiveEntry sheetEntry = FindTextSheet(archive);
         IReadOnlyList<string> sharedStrings = ReadSharedStrings(archive);
@@ -420,6 +415,7 @@ public static class LocalizationWorkbookWriter
 
         ZipArchiveEntry replacement = archive.CreateEntry(sheetEntry.FullName, CompressionLevel.Optimal);
         using Stream output = replacement.Open();
+        NormalizeWorksheet(document);
         document.Save(output);
         return removed;
     }
@@ -438,6 +434,108 @@ public static class LocalizationWorkbookWriter
     public static bool RequiresCompaction(int dataRowCount, int declaredLastRow)
     {
         return declaredLastRow > dataRowCount;
+    }
+
+    /// <summary>
+    /// Keep worksheet metadata and cell ordering valid after inserting, editing or removing entries.
+    /// The method does not change row numbers, cell contents, styles, IDs or translation strings.
+    /// </summary>
+    private static void NormalizeWorksheet(XDocument document)
+    {
+        XElement root = document.Root ?? throw new InvalidDataException("Missing worksheet root.");
+        XElement sheetData = root.Element(Spreadsheet + "sheetData")
+            ?? throw new InvalidDataException("Missing sheetData.");
+        var rows = sheetData.Elements(Spreadsheet + "row").ToList();
+        var observedRows = new HashSet<int>();
+        int maxRow = 1;
+        int maxColumn = 1;
+        foreach (XElement row in rows)
+        {
+            if (!int.TryParse((string)row.Attribute("r"), NumberStyles.None,
+                    CultureInfo.InvariantCulture, out int rowNumber) || rowNumber < 1 || rowNumber > 1048576)
+                throw new InvalidDataException("Invalid worksheet row number.");
+            if (!observedRows.Add(rowNumber))
+                throw new InvalidDataException($"Duplicate worksheet row {rowNumber}.");
+            maxRow = Math.Max(maxRow, rowNumber);
+
+            var cells = row.Elements(Spreadsheet + "c").ToList();
+            var cellColumns = new HashSet<int>();
+            var ordered = new List<(int Column, XElement Cell)>();
+            foreach (XElement cell in cells)
+            {
+                string address = (string)cell.Attribute("r") ?? string.Empty;
+                int column = ParseColumnIndex(address);
+                if (column < 0 || column >= 16384 ||
+                    !string.Equals(address, ColumnName(column) + rowNumber, StringComparison.Ordinal))
+                    throw new InvalidDataException($"Invalid cell address '{address}' on row {rowNumber}.");
+                if (!cellColumns.Add(column))
+                    throw new InvalidDataException($"Duplicate cell address '{address}'.");
+                maxColumn = Math.Max(maxColumn, column + 1);
+                ordered.Add((column, cell));
+            }
+            if (!ordered.Select(x => x.Column).SequenceEqual(ordered.Select(x => x.Column).OrderBy(x => x)))
+            {
+                foreach (XElement cell in cells) cell.Remove();
+                foreach (var item in ordered.OrderBy(x => x.Column)) row.Add(item.Cell);
+            }
+        }
+        // SpreadsheetML requires rows in ascending numerical order.
+        if (!rows.Select(row => (int)row.Attribute("r"))
+                 .SequenceEqual(rows.Select(row => (int)row.Attribute("r")).OrderBy(x => x)))
+        {
+            foreach (XElement row in rows) row.Remove();
+            foreach (XElement row in rows.OrderBy(row => (int)row.Attribute("r"))) sheetData.Add(row);
+        }
+        XElement dimension = root.Element(Spreadsheet + "dimension");
+        if (dimension == null)
+        {
+            dimension = new XElement(Spreadsheet + "dimension");
+            XElement sheetProperties = root.Element(Spreadsheet + "sheetPr");
+            if (sheetProperties != null) sheetProperties.AddAfterSelf(dimension);
+            else root.AddFirst(dimension);
+        }
+        dimension.SetAttributeValue("ref", "A1:" + ColumnName(maxColumn - 1) + maxRow);
+    }
+
+    /// <summary>
+    /// Validate the actual worksheet cells and make sure its declared dimension covers them.
+    /// Excel may legitimately declare a larger dimension because of formatting or older data.
+    /// </summary>
+    private static void ValidateWorkbookStructure(string workbookPath)
+    {
+        using var archive = ZipFile.OpenRead(workbookPath);
+        ZipArchiveEntry sheet = FindTextSheet(archive);
+        XDocument document;
+        using (Stream stream = sheet.Open()) document = XDocument.Load(stream);
+
+        string declared = (string)document.Root?.Element(Spreadsheet + "dimension")?.Attribute("ref");
+        // This checks row uniqueness, valid cell addresses, duplicate cells, and cell ordering.
+        // It normalizes only the in-memory copy; validation never rewrites the workbook.
+        NormalizeWorksheet(document);
+        string required = (string)document.Root?.Element(Spreadsheet + "dimension")?.Attribute("ref");
+
+        if (string.IsNullOrWhiteSpace(declared))
+            return; // The dimension element is optional in SpreadsheetML.
+
+        // Expected normalized shape: A1:J1475. Declared A1:M1475 is valid because it
+        // encloses all cells. Declared A1:F1475 when data extends to J is NOT valid.
+        string declaredEnd = declared.Contains(":") ? declared.Substring(declared.LastIndexOf(':') + 1) : declared;
+        string requiredEnd = required.Contains(":") ? required.Substring(required.LastIndexOf(':') + 1) : required;
+        int declaredColumn = ParseColumnIndex(declaredEnd);
+        int requiredColumn = ParseColumnIndex(requiredEnd);
+        int declaredRow = ReadDeclaredLastRowFromReference(declaredEnd);
+        int requiredRow = ReadDeclaredLastRowFromReference(requiredEnd);
+        if (declaredColumn < requiredColumn || declaredRow < requiredRow)
+            throw new InvalidDataException($"Worksheet dimension excludes data cells: {declared} != {required}.");
+    }
+
+    private static int ReadDeclaredLastRowFromReference(string reference)
+    {
+        int index = reference.Length;
+        while (index > 0 && char.IsDigit(reference[index - 1]))
+            index--;
+        return int.TryParse(reference.Substring(index), NumberStyles.None,
+            CultureInfo.InvariantCulture, out int row) ? row : 0;
     }
 
     private static XElement InlineCell(int column, int row, string value)

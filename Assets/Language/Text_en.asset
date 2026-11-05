@@ -18,32 +18,12 @@ MonoBehaviour:
   m_Metadata:
     m_Items: []
   m_TableData:
-  - m_Id: 329720012800
-    m_Localized: Start
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100672
-    m_Localized: Close
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100673
     m_Localized: Back
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100674
     m_Localized: Confirm
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100675
-    m_Localized: Yes
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100676
-    m_Localized: No
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100679
-    m_Localized: Quit
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100680
@@ -54,48 +34,8 @@ MonoBehaviour:
     m_Localized: Name
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100683
-    m_Localized: Continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100685
-    m_Localized: Proceed
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100686
     m_Localized: Discard
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100687
-    m_Localized: Extract
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41367126123487249
-    m_Localized: Mana
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100690
-    m_Localized: Rarity
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41367126123487251
-    m_Localized: Armor
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100691
-    m_Localized: Bleed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100692
-    m_Localized: Knockback
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100693
-    m_Localized: Mana Regen
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100695
-    m_Localized: Passive
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100701
@@ -114,38 +54,6 @@ MonoBehaviour:
     m_Localized: Rune
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100706
-    m_Localized: BGM
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100707
-    m_Localized: SFX
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100709
-    m_Localized: Tutorial
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100710
-    m_Localized: Language
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100711
-    m_Localized: Resolution
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100713
-    m_Localized: Press any key
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100715
-    m_Localized: Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100716
-    m_Localized: Memory & Artifact
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100720
     m_Localized: Combine
     m_Metadata:
@@ -162,36 +70,8 @@ MonoBehaviour:
     m_Localized: Rest
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100727
-    m_Localized: Return to Base
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100728
-    m_Localized: Character Profile
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100729
     m_Localized: Battle
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100730
-    m_Localized: End Turn
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100731
-    m_Localized: Give Up
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100732
-    m_Localized: Paused
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100733
-    m_Localized: Move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100734
-    m_Localized: Select Tile
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100738
@@ -204,58 +84,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100740
     m_Localized: Event
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100742
-    m_Localized: Fragment
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100750
-    m_Localized: Action Range
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100751
-    m_Localized: Action Trait
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100752
-    m_Localized: Upgradeable Skills
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100753
-    m_Localized: Upgrade
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100756
-    m_Localized: Passive Skill
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100757
-    m_Localized: Quit the game?
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100760
-    m_Localized: Incubator {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100761
-    m_Localized: Materials Added
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100762
-    m_Localized: Empty
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100763
-    m_Localized: Unable to combine.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100775
-    m_Localized: No Skill
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100776
-    m_Localized: Your bag is full. You can carry up to {0} different types of items.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915657494528
@@ -1140,8 +968,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603445
-    m_Localized: Instead of being able to give yourself a buff, it increases the
-      effect value of the buff type Memory by the number.
+    m_Localized: Cannot apply buffs to self, but increases the effect value of Buff-type
+      Memories by the specified amount.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603446
@@ -1174,15 +1002,17 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603453
-    m_Localized: 
+    m_Localized: Changes damage dealt by Attack-type Memories in slot 5 to piercing
+      damage.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603454
-    m_Localized: Focus on killing attacks in slot 1
+    m_Localized: Gain Focus on Kills with Slot 1 Attacks
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603455
-    m_Localized: 
+    m_Localized: Gain Focus equal to the specified amount when defeating an enemy
+      with an Attack-type Memory in slot 1.
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603456
@@ -1530,10 +1360,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41385915728797759
     m_Localized: Restore HP by the specified amount after battle.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915728797790
-    m_Localized: Move
     m_Metadata:
       m_Items: []
   - m_Id: 41385915728797791
@@ -2249,221 +2075,8 @@ MonoBehaviour:
     m_Localized: "Arabella\u2019s crown marked by severe erosion."
     m_Metadata:
       m_Items: []
-  - m_Id: 41385915741380634
-    m_Localized: Acquired item.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380635
-    m_Localized: This Memory can be acquired.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380637
-    m_Localized: Node Info
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380638
-    m_Localized: Hover over a node to view its information.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380639
-    m_Localized: The starting point of a new expedition.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380640
-    m_Localized: Recover from wounds and regroup.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380641
-    m_Localized: Encounter an unpredictable event.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380642
-    m_Localized: Defeat enemies and move forward.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380643
-    m_Localized: Overcome powerful enemies for valuable rewards.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380644
-    m_Localized: Face the boss guarding the end of the expedition.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380657
-    m_Localized: No Cost
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380658
-    m_Localized: HP
-    m_Metadata:
-      m_Items: []
   - m_Id: 41385915741380660
     m_Localized: Move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380661
-    m_Localized: Damage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380662
-    m_Localized: Resource
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380663
-    m_Localized: No effect description is available.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380664
-    m_Localized: Rage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380665
-    m_Localized: Momentum
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380666
-    m_Localized: Aether
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380667
-    m_Localized: Faith
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380668
-    m_Localized: Bloodlust
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380669
-    m_Localized: Unique Resource
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380682
-    m_Localized: No Move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380690
-    m_Localized: Only the host can change the bag in a multiplayer battle.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380691
-    m_Localized: Please first select the unique item you want to discard.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380692
-    m_Localized: The unique item you selected cannot be found.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380693
-    m_Localized: A skill cannot be assigned to this slot.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380694
-    m_Localized: Skills can be assigned to up to {0} slots.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380695
-    m_Localized: There is no skill to reserve.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380696
-    m_Localized: No character is selected.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380698
-    m_Localized: Cannot reserve in the current state.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380699
-    m_Localized: Not enough HP.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380700
-    m_Localized: Not enough Mana.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380701
-    m_Localized: Gain {0} Dustium.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380702
-    m_Localized: Upgraded to {0}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380703
-    m_Localized: This character belongs to another player.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380704
-    m_Localized: This slot is reserved by another player.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380705
-    m_Localized: Failed to send the network command.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380707
-    m_Localized: No Effect
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380708
-    m_Localized: Culture Tank
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380709
-    m_Localized: Main Menu
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380710
-    m_Localized: Lobby
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380711
-    m_Localized: Exploring
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380712
-    m_Localized: Playing Dustium
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380713
-    m_Localized: Preparing for Adventure
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380714
-    m_Localized: Forming a Party
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100783
-    m_Localized: When HP reaches 0, the character becomes incapacitated.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100784
-    m_Localized: Actions cannot be queued without enough Mana.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100785
-    m_Localized: The amount of Mana automatically recovered at the start of each
-      turn.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100787
-    m_Localized: Base value {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100788
-    m_Localized: Rune bonus {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100849
-    m_Localized: 'Unlock: Clear Area 3 once.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100850
-    m_Localized: 'Unlock: Defeat Nocturne 3 times.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100851
-    m_Localized: 'Unlock: Clear with 2 Trials applied.'
     m_Metadata:
       m_Items: []
   - m_Id: 10999245267542023
@@ -2475,10 +2088,6 @@ MonoBehaviour:
 
       We''re
       counting on you.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999245267542025
-    m_Localized: Please obtain the materials needed for research there.
     m_Metadata:
       m_Items: []
   - m_Id: 10999245267542016
@@ -2502,260 +2111,16 @@ MonoBehaviour:
     m_Localized: First, complete the necessary preparations for exploration.
     m_Metadata:
       m_Items: []
-  - m_Id: 10999245267542021
-    m_Localized: You are ready.\nPlease head to Lothern Ruins first.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999245267542022
-    m_Localized: 'The objective of this expedition is to secure the Awakening Core.
-
-      We''re
-      counting on you.'
-    m_Metadata:
-      m_Items: []
   - m_Id: 10999245246570496
     m_Localized: Elric
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565568
-    m_Localized: 'Consumption: {0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565570
-    m_Localized: 'Effect: {0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565580
-    m_Localized: Caster Location
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565582
-    m_Localized: '{0} persists at max'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565583
-    m_Localized: '{0} {1} persists when maintained'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565581
-    m_Localized: Select Grid
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565573
-    m_Localized: General Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565575
-    m_Localized: Epic Memories
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565579
-    m_Localized: Implementation Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565577
-    m_Localized: Instinctive Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565578
-    m_Localized: Manifestation Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565572
-    m_Localized: Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565571
-    m_Localized: Move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565574
-    m_Localized: Rare Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565576
-    m_Localized: Unique Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565569
-    m_Localized: 'Method: {0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059361
-    m_Localized: Common Artifact
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059363
-    m_Localized: Epic Artifact
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059362
-    m_Localized: Rare Artifact
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059364
-    m_Localized: Unique Artifact
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11012039819927552
-    m_Localized: Information about the fragment/skill is displayed.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11012039836704771
-    m_Localized: Information about the fragment is displayed.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11012039836704770
-    m_Localized: Fragment information
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11012039836704769
-    m_Localized: Skill information is displayed.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11012039836704768
-    m_Localized: Skill information
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13427954283307008
-    m_Localized: How to Gain Karma
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13427954308472832
-    m_Localized: Karma accumulates through each character's combat style and powers
-      Manifested Memories.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13427954308472833
-    m_Localized: Maximum {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243945
-    m_Localized: Turn {0:D2}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243946
-    m_Localized: Ruins Outskirts
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243947
-    m_Localized: Citadel Passage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243948
-    m_Localized: Inner Plaza
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243949
-    m_Localized: Battle Start
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243950
-    m_Localized: Rest Area
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243951
-    m_Localized: 'Ruins: Area 1'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243952
-    m_Localized: I have no Memories of any possible enhancements.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243953
-    m_Localized: The Memory Enhancement selection panel cannot be opened.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243954
-    m_Localized: Only the host can upgrade Memories in a multiplayer lobby.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243955
-    m_Localized: Entering Battle Area
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17105354709540953
-    m_Localized: Common
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17105354709540954
-    m_Localized: Rare
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17105354709540955
-    m_Localized: Epic
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17105354709540956
-    m_Localized: Unique
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986922
-    m_Localized: Currency Gain +{0}% / EXP Gain +{0}%
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100852
-    m_Localized: Cancel
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100853
     m_Localized: Untranslated
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100854
-    m_Localized: Abandon the current expedition?
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100855
-    m_Localized: Purchase this item?
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100856
-    m_Localized: Purchase this Artifact?
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100857
-    m_Localized: Activate this fragment?
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100858
-    m_Localized: Expedition abandoned.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100859
-    m_Localized: No expedition data is available.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100860
-    m_Localized: Failed to save.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100861
-    m_Localized: Saved successfully.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100862
-    m_Localized: Reserve Action
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100863
-    m_Localized: Start Turn
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100864
-    m_Localized: Battle Start
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100865
-    m_Localized: Locked
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100866
     m_Localized: Materials
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100867
-    m_Localized: Recipes
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100868
@@ -2772,302 +2137,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100871
     m_Localized: Resonance
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100872
-    m_Localized: Storage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100873
-    m_Localized: Depart
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100874
-    m_Localized: Ready
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100875
-    m_Localized: Action preparation is incomplete.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100876
-    m_Localized: Artifacts cannot be changed during battle.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100877
-    m_Localized: Skills cannot be changed during battle.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100878
-    m_Localized: Timeline slots cannot be selected while the turn is in progress.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100879
-    m_Localized: Character data could not be found.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100880
-    m_Localized: 'Character data could not be found: {0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100881
-    m_Localized: Maximum level reached.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100882
-    m_Localized: No characters are available.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100883
-    m_Localized: No character is selected.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100884
-    m_Localized: Character position data is missing.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100885
-    m_Localized: Select a character first.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100886
-    m_Localized: Not enough Blue Dustium.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100887
-    m_Localized: Data is unavailable.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100888
-    m_Localized: The equipment panel is unavailable.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100889
-    m_Localized: This feature is currently unavailable.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100890
-    m_Localized: The battle grid could not be found.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100891
-    m_Localized: No grid can be selected.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100892
-    m_Localized: This grid cannot be selected.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100893
-    m_Localized: Selectable grid range data is missing.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100894
-    m_Localized: Select a map first.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100895
-    m_Localized: The move destination is invalid.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100896
-    m_Localized: The destination is occupied.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100897
-    m_Localized: Not enough movement resource.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100898
-    m_Localized: Failed to reserve the move.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100899
-    m_Localized: Failed to synchronize battle start.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100900
-    m_Localized: Only the host can start the battle.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100901
-    m_Localized: The party has no characters.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100902
-    m_Localized: The party is not full.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100903
-    m_Localized: Select a character for the party.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100904
-    m_Localized: Select a character to deploy.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100905
-    m_Localized: Complete the current quest first.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100906
-    m_Localized: Artifact data could not be found.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100907
-    m_Localized: This Artifact is currently unavailable.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100908
-    m_Localized: This exclusive fragment unlocks at character Lv.{0}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100909
-    m_Localized: This fragment is equipped by another character.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100910
-    m_Localized: No empty fragment slot is available.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100911
-    m_Localized: No fragment can be unequipped.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100912
-    m_Localized: The current character cannot use this fragment.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100913
-    m_Localized: This fragment is not equipped.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100914
-    m_Localized: No fragment is selected.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100915
-    m_Localized: This shared fragment requires a player or account level.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100916
-    m_Localized: This shared fragment is still locked.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100917
-    m_Localized: This fragment slot is still locked.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100918
-    m_Localized: The fragment slot is not connected.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100919
-    m_Localized: This fragment slot unlocks at character Lv.{0}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100920
-    m_Localized: Skill data could not be found.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100921
-    m_Localized: 'This skill is still locked. Required level: LV. {0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100922
-    m_Localized: Unlocks at character Lv.{0}.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100923
-    m_Localized: No skill is registered.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100924
-    m_Localized: This skill cannot be equipped in this slot.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100925
-    m_Localized: No skill is selected.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100926
-    m_Localized: Skill range data is missing.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100927
-    m_Localized: The skill reservation controller could not be found.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100928
-    m_Localized: Failed to reserve the skill.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100929
-    m_Localized: Skill reservation data is missing.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100930
-    m_Localized: Select a slot for the skill first.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100931
-    m_Localized: The skill slot is not connected.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100932
-    m_Localized: This stage is still locked.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100933
-    m_Localized: GameManager could not be found.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100934
-    m_Localized: Target selection is unavailable.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100935
-    m_Localized: The timeline controller could not be found.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100936
-    m_Localized: There is no reservation to undo.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100937
-    m_Localized: Select a timeline slot first.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100938
-    m_Localized: No more actions can be registered in this slot.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100939
-    m_Localized: Timeline slot data is missing.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100940
-    m_Localized: This slot is occupied by another character.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100941
-    m_Localized: This timeline slot is currently unavailable.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100942
-    m_Localized: The timeline UI could not be found.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100943
-    m_Localized: Complete Elric's dialogue first.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988223
-    m_Localized: Exploration base
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11639695972245520
-    m_Localized: Move
     m_Metadata:
       m_Items: []
   - m_Id: 11677536446062592
@@ -3509,30 +2578,6 @@ MonoBehaviour:
     m_Localized: Remove the target's {E_Armor}
     m_Metadata:
       m_Items: []
-  - m_Id: 10169488443449346
-    m_Localized: Difficulty name III
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449347
-    m_Localized: Difficulty effect
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449349
-    m_Localized: English
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449354
-    m_Localized: 'Effect: {0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449359
-    m_Localized: 'Method: {0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449360
-    m_Localized: 'Consumption: {0}'
-    m_Metadata:
-      m_Items: []
   - m_Id: 10169488443449362
     m_Localized: Skill name length
     m_Metadata:
@@ -3541,20 +2586,8 @@ MonoBehaviour:
     m_Localized: Let's go
     m_Metadata:
       m_Items: []
-  - m_Id: 10169488443449369
-    m_Localized: Return to Title
-    m_Metadata:
-      m_Items: []
   - m_Id: 10169488443449383
     m_Localized: Roll
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449415
-    m_Localized: Unlock
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10173380891779096
-    m_Localized: Save and Quit
     m_Metadata:
       m_Items: []
   - m_Id: 10173380891779115
@@ -3565,32 +2598,12 @@ MonoBehaviour:
     m_Localized: Lothern Ruins
     m_Metadata:
       m_Items: []
-  - m_Id: 10173380895973489
-    m_Localized: I have no Memories of any possible enhancements.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10173380895973531
-    m_Localized: Current HP
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10173380908556403
-    m_Localized: Unique Memory
-    m_Metadata:
-      m_Items: []
   - m_Id: 10175616531308544
     m_Localized: Exploration progress
     m_Metadata:
       m_Items: []
   - m_Id: 10175616548085760
     m_Localized: Abandon exploration
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10175616548085761
-    m_Localized: Record Book
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10175616548085762
-    m_Localized: Game over
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510643
@@ -4029,154 +3042,6 @@ MonoBehaviour:
     m_Localized: Final Mana consumption required for movement increases by 1.
     m_Metadata:
       m_Items: []
-  - m_Id: 10986483455893504
-    m_Localized: None
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059328
-    m_Localized: Mana
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059329
-    m_Localized: Karma
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059330
-    m_Localized: Oneself
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059331
-    m_Localized: Grid
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059332
-    m_Localized: Caster Location
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059333
-    m_Localized: Select Grid
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059334
-    m_Localized: Lasts at maximum Karma
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059335
-    m_Localized: 'Acquisition condition: Reach character Lv.{0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059336
-    m_Localized: 'Acquisition conditions: Blue Dustium {0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059337
-    m_Localized: 'Used for: {0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059338
-    m_Localized: 'Number of uses: {0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059339
-    m_Localized: No Cost
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059340
-    m_Localized: Not recorded yet
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059341
-    m_Localized: Method:???
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059342
-    m_Localized: Consumption:???
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059343
-    m_Localized: Effect:???
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059344
-    m_Localized: Used for:???
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059345
-    m_Localized: Number of uses:???
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059346
-    m_Localized: Intrinsic Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059347
-    m_Localized: General Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059348
-    m_Localized: Rare Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059349
-    m_Localized: Epic Memories
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059350
-    m_Localized: Unique Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059351
-    m_Localized: Unique Fragment
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059352
-    m_Localized: Imprint Fragment
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059353
-    m_Localized: Normal Fragment
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059354
-    m_Localized: Blessing Fragment
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059355
-    m_Localized: Common Ingredients
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059356
-    m_Localized: Rare Ingredients
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059357
-    m_Localized: Epic Material
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059358
-    m_Localized: General Softener
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059359
-    m_Localized: Rare Softener
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059360
-    m_Localized: Epic Softener
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999272912199680
-    m_Localized: Equipped
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11008757965791232
-    m_Localized: Fragment Information
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11008757982568448
-    m_Localized: When you select a fragment, information is displayed.
-    m_Metadata:
-      m_Items: []
   - m_Id: 11639695972245648
     m_Localized: Damage received during this turn is reduced by 50%.
     m_Metadata:
@@ -4267,62 +3132,12 @@ MonoBehaviour:
     m_Localized: Softener
     m_Metadata:
       m_Items: []
-  - m_Id: 11699293018136576
-    m_Localized: Master Volume
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11699293039108096
-    m_Localized: Brightness
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838412
-    m_Localized: 3. Hold on to the Memories of battle.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838413
-    m_Localized: Training
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838420
-    m_Localized: Memory name length
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838421
-    m_Localized: All characters' HP has been restored by 30%.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838423
-    m_Localized: 'Weaken 2
-
-      Vulnerable 2'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838432
-    m_Localized: Artifact Exchange
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838435
     m_Localized: Increases Max HP by 5
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458548838439
-    m_Localized: Memory awakening
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838442
     m_Localized: Zone 1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838450
-    m_Localized: 1. Mining carefully.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838452
-    m_Localized: 2. Embrace the power of life.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838454
-    m_Localized: There are no equipped artifacts to delete.
     m_Metadata:
       m_Items: []
   - m_Id: 11938458548838455
@@ -4353,28 +3168,12 @@ MonoBehaviour:
     m_Localized: Buff grant amount
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458548838464
-    m_Localized: Incapable of fighting
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838465
-    m_Localized: Experience
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838477
     m_Localized: Shortcut key help
     m_Metadata:
       m_Items: []
   - m_Id: 11938458548838478
     m_Localized: '`: Open/close this panel'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838489
-    m_Localized: Compensation
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458553032710
-    m_Localized: Detail
     m_Metadata:
       m_Items: []
   - m_Id: 11938458553032733
@@ -4439,90 +3238,6 @@ MonoBehaviour:
     m_Localized: Current panel
     m_Metadata:
       m_Items: []
-  - m_Id: 11988550500753549
-    m_Localized: Move Distance
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753550
-    m_Localized: All
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753551
-    m_Localized: Self
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753552
-    m_Localized: Ranged
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753553
-    m_Localized: Melee
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753554
-    m_Localized: Manifested Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753555
-    m_Localized: Realized Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753556
-    m_Localized: Instinct Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753557
-    m_Localized: Move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550504947712
-    m_Localized: Common Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550504947713
-    m_Localized: Rare Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550504947714
-    m_Localized: Epic Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550504947715
-    m_Localized: Unique Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550504947716
-    m_Localized: Exclusive Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11991769356443711
-    m_Localized: Select the character you want to equip.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11991769356443712
-    m_Localized: Are you really willing to give up?
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11993599759097874
-    m_Localized: Dustium
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13436147038191621
-    m_Localized: Full screen
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13436147038191622
-    m_Localized: Combat assignment
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13436147038191655
-    m_Localized: Effects of Artifacts
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13436147038191671
-    m_Localized: Artifact name length
-    m_Metadata:
-      m_Items: []
   - m_Id: 13436147038191717
     m_Localized: Only faint traces remain.
     m_Metadata:
@@ -4563,46 +3278,6 @@ MonoBehaviour:
     m_Localized: Store
     m_Metadata:
       m_Items: []
-  - m_Id: 17041964720988183
-    m_Localized: Maximum length of name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988186
-    m_Localized: Pattern 5
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988189
-    m_Localized: Pattern 1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988193
-    m_Localized: Pattern 8
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988195
-    m_Localized: Pattern 4
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988200
-    m_Localized: Pattern 3
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988201
-    m_Localized: Pattern 6
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988205
-    m_Localized: Pattern 7
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988207
-    m_Localized: Name place
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988213
-    m_Localized: Pattern 2
-    m_Metadata:
-      m_Items: []
   - m_Id: 17041964720988218
     m_Localized: Specialization
     m_Metadata:
@@ -4615,123 +3290,9 @@ MonoBehaviour:
     m_Localized: Start demo
     m_Metadata:
       m_Items: []
-  - m_Id: 17053275701911575
-    m_Localized: Armor you have
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911576
-    m_Localized: How the battle progresses
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911577
-    m_Localized: Enforce
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911578
-    m_Localized: Behavioral patterns
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911579
-    m_Localized: Holding behavior
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911580
-    m_Localized: Turn
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911581
-    m_Localized: Status effect
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911587
-    m_Localized: Skill 1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911588
-    m_Localized: Cost used
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911590
-    m_Localized: Skill 4
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911591
-    m_Localized: Skill 2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911592
-    m_Localized: Skill 3
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986885
-    m_Localized: If Karma is at maximum at the start of the turn, 1 HP is restored
-      to allies whose HP is lower than maximum HP.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986888
-    m_Localized: '30% chance of success
-
-      Success: Awakening 1 selected Memory
-
-      Fail:
-      Destroy the selected Memory.'
-    m_Metadata:
-      m_Items: []
   - m_Id: 17117632292986895
     m_Localized: Old boxes and unidentifiable ritual tools are lying around. There
       are still clear traces of consciousness.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986896
-    m_Localized: 'Dice decision
-
-      The higher it is, the higher the Max HP increase.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986897
-    m_Localized: '90% chance of success
-
-      Success: Awakening 1 selected Memory
-
-      Fail:
-      Destroy the selected Memory.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986906
-    m_Localized: 'Deliver a powerful slash to the target
-
-      Deals 7 damage and
-      pushes you back 1 space.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986914
-    m_Localized: '1. Select one of five slots.
-
-      2. Click on a character or
-      HUD to open the character''s skill list.
-
-      3. After selecting the movement
-      skill, additionally select the grid to move to.
-
-      4. Attack and buff skills
-      are automatically registered in the direction of progress.
-
-      3. Use your
-      resources to register skills and end the turn.
-
-
-
-      - By hovering the mouse
-      over the timeline, you can see information about the action target and progress.
-
-      -
-      You can cancel registration by clicking on the registered skill on the timeline.
-
-      -
-      You can click on the monster to check its HUD and buffs/debuffs.
-
-      - You
-      can check buffs/debuffs by hovering over the icon on the character HUD.'
     m_Metadata:
       m_Items: []
   - m_Id: 17117632292986919
@@ -4744,14 +3305,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 17117632292986921
     m_Localized: '[The power that flows out resonates with the Artifact]'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17507550995423252
-    m_Localized: '{0}% of lost health'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17507550995423253
-    m_Localized: '{0}% of lost health'
     m_Metadata:
       m_Items: []
   - m_Id: 17507550995423297
@@ -5246,8 +3799,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626080
-    m_Localized: After assigning a ValueRate to addiction, the addiction effect is
-      immediately activated once.
+    m_Localized: Apply ValueRate Poison, then immediately trigger Poison once.
     m_Metadata:
       m_Items: []
   - m_Id: 17531528627626081
@@ -5324,214 +3876,6 @@ MonoBehaviour:
     m_Localized: Arabella
     m_Metadata:
       m_Items: []
-  - m_Id: 2479938580071356898
-    m_Localized: Damage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2926797293511239601
-    m_Localized: Erosion
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2109279170591050581
-    m_Localized: Grudge
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1198327168969597041
-    m_Localized: Move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 6011308666597819215
-    m_Localized: Pull
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1815245148604973943
-    m_Localized: Push
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9072331715277446018
-    m_Localized: Spawn Spider Egg
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1372802364651645927
-    m_Localized: Spawn Web
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8502374025300533235
-    m_Localized: Veil
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3515777830533653991
-    m_Localized: Character
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8988175409473606672
-    m_Localized: Info
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2876383222199361241
-    m_Localized: Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7345543633474189966
-    m_Localized: Confirm
-    m_Metadata:
-      m_Items: []
-  - m_Id: 859814055732616816
-    m_Localized: Failure
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2174010986223499435
-    m_Localized: Check Failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 401128678064692629
-    m_Localized: Check Succeeded
-    m_Metadata:
-      m_Items: []
-  - m_Id: 693281930632089369
-    m_Localized: Roll
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975623
-    m_Localized: Success
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7944646927863960014
-    m_Localized: There are no Memories available to upgrade.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7842845681397039739
-    m_Localized: Failed to remove the acquired Memory.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7621334280704964936
-    m_Localized: Failed to remove the Memory.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 6330937352032063273
-    m_Localized: Memory removal is unavailable.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3062261105313232713
-    m_Localized: Select a Memory to awaken.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3389965653777387108
-    m_Localized: Select a Memory to upgrade.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 4517982166064026212
-    m_Localized: Select a Memory to upgrade first.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 6771787548900199738
-    m_Localized: The Memory selection panel could not be opened.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 4493357146796418975
-    m_Localized: The Memory selection panel is unavailable.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7496364623015142240
-    m_Localized: Memory upgrading is unavailable.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 746283308175497894
-    m_Localized: No Artifacts are available to obtain.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7211515257215341654
-    m_Localized: No Artifacts are equipped.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7619199145596990078
-    m_Localized: Select an Artifact to exchange.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8469015330641913822
-    m_Localized: Select an Artifact to remove.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 6129305146811147704
-    m_Localized: The Artifact selection panel could not be opened.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2500228719056938362
-    m_Localized: The Artifact selection panel could not be found.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8007704390767653971
-    m_Localized: The event has ended.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 6205752055948751534
-    m_Localized: Failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1009727815439550862
-    m_Localized: The shop is now open.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 619241625050597982
-    m_Localized: There are no rewards to confirm.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 5456895886818223323
-    m_Localized: First Expedition - Retrieve the Awakening Core {Current}/{Target}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 469011341431732811
-    m_Localized: Expedition Preparation
-    m_Metadata:
-      m_Items: []
-  - m_Id: 5126323777902196562
-    m_Localized: No save data is available to continue.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 751297280620710114
-    m_Localized: Exploration Record
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8567494127911121857
-    m_Localized: The combined action limit for this timeline has been reached.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1631955850967427755
-    m_Localized: Alchemy
-    m_Metadata:
-      m_Items: []
-  - m_Id: 4391589186152940879
-    m_Localized: Erosion
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2243768493947962817
-    m_Localized: Resonance
-    m_Metadata:
-      m_Items: []
-  - m_Id: 5900419522700747322
-    m_Localized: Elric
-    m_Metadata:
-      m_Items: []
-  - m_Id: 587329290491091082
-    m_Localized: Storage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7463777631022220572
-    m_Localized: Hilt
-    m_Metadata:
-      m_Items: []
-  - m_Id: 367250356182644820
-    m_Localized: Kaya
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8615078507091817039
-    m_Localized: Haze
-    m_Metadata:
-      m_Items: []
-  - m_Id: 4794883933976256088
-    m_Localized: Ines
-    m_Metadata:
-      m_Items: []
   - m_Id: 9164888147097975624
     m_Localized: '{Party1Name} accepts the light.'
     m_Metadata:
@@ -5561,19 +3905,15 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975647
-    m_Localized: Offer an offering
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975649
-    m_Localized: Red Dustium Tribe
+    m_Localized: Interfere with the ritual.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975650
-    m_Localized: Offer more offerings.
+    m_Localized: Offer a sacrifice.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975653
-    m_Localized: Ignore consciousness.
+    m_Localized: Ignore the ritual.
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975656
@@ -5610,43 +3950,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 9164888147097975698
     m_Localized: Accept purification.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2876383222199361250
-    m_Localized: Attack
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2876383222199361251
-    m_Localized: Buff
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2876383222199361252
-    m_Localized: Debuff
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19697779441410051
-    m_Localized: "In this demo, you\u2019ll follow a single path with a preset party.\\nOvercome
-      battles and events to complete your journey."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19697779441410052
-    m_Localized: "Register your party\u2019s actions to execute them in timeline
-      order.\\nDefeat all enemies to win the battle."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19697779441410053
-    m_Localized: Select a character and skill to register an action.\nActions are
-      executed from left to right on the timeline.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19697779441410054
-    m_Localized: Select a monster or one of its actions on the timeline.\nYou can
-      preview its next skill and attack range.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19697779441410055
-    m_Localized: Win battles to earn rewards for the journey ahead.\nStrengthen your
-      party, then proceed to the next area.
     m_Metadata:
       m_Items: []
   - m_Id: 20540429581164544
@@ -5771,26 +4074,6 @@ MonoBehaviour:
       the target.
     m_Metadata:
       m_Items: []
-  - m_Id: 21435721902694406
-    m_Localized: Move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 21435721902694407
-    m_Localized: Queue the character's movement action.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 21435721902694408
-    m_Localized: Flip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 21435721902694409
-    m_Localized: Flip the direction the character is facing.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 21435721902694410
-    m_Localized: Battle End
-    m_Metadata:
-      m_Items: []
   - m_Id: 21894353340866561
     m_Localized: Poison-Scaling Damage
     m_Metadata:
@@ -5818,7 +4101,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 21894353340866567
-    m_Localized: 
+    m_Localized: Lose 3 HP at the start of each turn and gain the specified amount
+      of Amplification.
     m_Metadata:
       m_Items: []
   - m_Id: 21894353340866568
@@ -5962,42 +4246,6 @@ MonoBehaviour:
       all enemies.
     m_Metadata:
       m_Items: []
-  - m_Id: 22145802691944468
-    m_Localized: Click the mutant to view its information.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944469
-    m_Localized: Click or press A to select Move.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944470
-    m_Localized: Click a grid cell to move.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944471
-    m_Localized: Click or press Q to queue an attack.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944472
-    m_Localized: Queued actions appear on the timeline.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944473
-    m_Localized: Press End Turn or Space to finish queuing actions.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944474
-    m_Localized: You can queue the same attack consecutively. Queue the attack twice.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944475
-    m_Localized: Queue the same attack one more time.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944476
-    m_Localized: Press End Turn or Space to finish queuing actions.
-    m_Metadata:
-      m_Items: []
   - m_Id: 23980218222092288
     m_Localized: '{E_Strike} {E_MissingHPStrike} {ValueRate1}'
     m_Metadata:
@@ -6066,168 +4314,12 @@ MonoBehaviour:
     m_Localized: '{E_Strike} {ValueRate1} {E_Vulnerable} {ValueRate2}'
     m_Metadata:
       m_Items: []
-  - m_Id: 23980218251452472
-    m_Localized: ', '
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452473
-    m_Localized: '. '
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452474
-    m_Localized: .
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452475
-    m_Localized: Deal {0} equal to {2}% of missing HP
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452476
-    m_Localized: Deal {0} based on current Armor
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452477
-    m_Localized: "On kill, permanently increase this skill\u2019s damage by {0}."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452478
-    m_Localized: On miss, lose {0} HP.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000001
-    m_Localized: '{0} times'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975800
-    m_Localized: HP Recovery
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975801
-    m_Localized: Mana Recovery
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975802
-    m_Localized: Karma Recovery
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975803
-    m_Localized: Party Karma Recovery
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975804
-    m_Localized: Collision
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975805
-    m_Localized: Turn {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975806
-    m_Localized: Obtain {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975807
-    m_Localized: Acquired {0} Red Dustium
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975808
-    m_Localized: 'Artifact Obtained: {0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22221673343754240
-    m_Localized: Effect
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22221673364725761
-    m_Localized: 'Thank you for playing the demo.
-
-
-      Features available in this
-      version
-
-
-      - Map generation
-
-      - Party formation
-
-      - Combat system
-
-      -
-      Monster AI
-
-      - Skills and status effects
-
-      - Turn reservation system
-
-
-      Boss
-      battles and later content
-
-      are still in development.'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548317810688
-    m_Localized: Effect Name 11
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365120
-    m_Localized: Undiscovered
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365122
-    m_Localized: Crescent Swing+
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365123
-    m_Localized: Crescent Swing+
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365124
-    m_Localized: Crescent Swing+
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365125
-    m_Localized: Crescent Swing+
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365126
-    m_Localized: Crescent Swing+
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365127
-    m_Localized: Crescent Swing+
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365128
-    m_Localized: Crescent Swing+
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365129
-    m_Localized: Crescent Swing+
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365130
-    m_Localized: Exploration Failed
-    m_Metadata:
-      m_Items: []
   - m_Id: 23949548351365131
     m_Localized: Inflict Poison Equal to Target's Poison
     m_Metadata:
       m_Items: []
   - m_Id: 23949548351365132
     m_Localized: Inflict additional Poison equal to the target's current Poison.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975811
-    m_Localized: Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975812
-    m_Localized: Memory Acquired
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975813
-    m_Localized: 'Memory Acquired: {0}'
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975814
@@ -6328,42 +4420,6 @@ MonoBehaviour:
     m_Localized: Extract
     m_Metadata:
       m_Items: []
-  - m_Id: 9164888147097975832
-    m_Localized: Apply {0} for {2} tiles
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975833
-    m_Localized: Deal {2} {0} {3} times
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975834
-    m_Localized: Deal {2} {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975835
-    m_Localized: Deal {2} {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975836
-    m_Localized: Gain {2} {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975837
-    m_Localized: Gain {2} {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975838
-    m_Localized: Grant {2} {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975839
-    m_Localized: Grant {2} {0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975840
-    m_Localized: Restore {2} {0}
-    m_Metadata:
-      m_Items: []
   - m_Id: 25428606029373440
     m_Localized: Remains
     m_Metadata:
@@ -6401,7 +4457,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132819976
-    m_Localized: Red Dustium Tribe
+    m_Localized: Not enough Red Dustium
     m_Metadata:
       m_Items: []
   - m_Id: 26576882132819980
@@ -6496,36 +4552,8 @@ MonoBehaviour:
     m_Localized: Accept erosion.
     m_Metadata:
       m_Items: []
-  - m_Id: 29406660426702848
-    m_Localized: Undiscovered
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501575
-    m_Localized: Kill monsters
-    m_Metadata:
-      m_Items: []
   - m_Id: 26848357515501576
     m_Localized: Damage dealt
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501577
-    m_Localized: Damage received
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501578
-    m_Localized: Buff grant amount
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501579
-    m_Localized: Number of times unable to fight
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501580
-    m_Localized: Exploration Report
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501581
-    m_Localized: Time required
     m_Metadata:
       m_Items: []
   - m_Id: 27586697501728768
@@ -6542,10 +4570,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 27586697539477506
     m_Localized: Rest together.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 27586817727258628
-    m_Localized: Erosion Damage
     m_Metadata:
       m_Items: []
   - m_Id: 4547655072889828093
@@ -6581,11 +4605,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 3486522174964507701
-    m_Localized: "Spend 15 Red Dustium\nManifest a random Common\u2013Epic memory"
+    m_Localized: "Manifest a random Common\u2013Rare Memory."
     m_Metadata:
       m_Items: []
   - m_Id: 7971315337770440506
-    m_Localized: "Spend 30 Red Dustium\nManifest a random Rare\u2013Unique memory"
+    m_Localized: "Spend 30 Red Dustium\nManifest a random Epic\u2013Unique Memory"
     m_Metadata:
       m_Items: []
   - m_Id: 5870513392070568761
@@ -6733,325 +4757,6 @@ MonoBehaviour:
     m_Localized: 'Restore 15 HP to the entire party
 
       Haze joins the party'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 4035915082772380139
-    m_Localized: Passive
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3444185439531223621
-    m_Localized: HP Recovery +{0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8802548698092418766
-    m_Localized: Max HP Increase +{0}
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7976493799859799195
-    m_Localized: Applied {0:+#;-#;0} Max HP to all party members ({1})
-    m_Metadata:
-      m_Items: []
-  - m_Id: 233547581394359481
-    m_Localized: Applied {0:+#;-#;0} Mana recovery to the party ({1})
-    m_Metadata:
-      m_Items: []
-  - m_Id: 533658993916296967
-    m_Localized: Applied {0:+#;-#;0} Max Mana to the party ({1})
-    m_Metadata:
-      m_Items: []
-  - m_Id: 5528466554244437462
-    m_Localized: Restored {0} HP to all party members ({1})
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7305291514702919854
-    m_Localized: Increased all party members' Max HP by {0} ({1})
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8323492462400198106
-    m_Localized: Failed to upgrade the selected Memory.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 6629449557644834442
-    m_Localized: 'Memory upgraded: {0}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3886573687687508414
-    m_Localized: Removal of Memories acquired during this event is unavailable.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 457451403533020556
-    m_Localized: There are no Memories available to acquire.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2468046161523270805
-    m_Localized: Existing Red Dustium retained
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8528883566776235055
-    m_Localized: 'Accumulated {0} Red Dustium (Current: {1})'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8026747471757970304
-    m_Localized: 'Not enough {0}. Required: {1} / Available: {2}'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361455374336
-    m_Localized: Type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361501511680
-    m_Localized: Effect Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361501511681
-    m_Localized: Effect Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361501511682
-    m_Localized: Effect Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705984
-    m_Localized: Area 1 - Threshold of Debris
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705985
-    m_Localized: Effect Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705986
-    m_Localized: Effect Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705987
-    m_Localized: Effect Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705988
-    m_Localized: Heal
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705989
-    m_Localized: Cost
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705990
-    m_Localized: Heal
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705991
-    m_Localized: Skip Tutorial
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705992
-    m_Localized: Next Area
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705993
-    m_Localized: Return
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705994
-    m_Localized: Windowed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705995
-    m_Localized: Borderless
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705996
-    m_Localized: 'Moves 1 or 2 tiles up to twice to align with the character.
-
-'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705997
-    m_Localized: Skill Effect
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705998
-    m_Localized: 'At the start of the next turn, revives one Mutant that died this
-      turn with 30% HP.
-
-'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705999
-    m_Localized: Monster Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706000
-    m_Localized: Action
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706001
-    m_Localized: Status
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706002
-    m_Localized: Tutorial Text
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706003
-    m_Localized: Item Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706004
-    m_Localized: Obtain
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706005
-    m_Localized: Select a mercenary to equip.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706006
-    m_Localized: '- Select -'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361509900288
-    m_Localized: Select one Memory to manifest.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361509900289
-    m_Localized: Skill Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361509900290
-    m_Localized: A dense fog has engulfed the area, making it impossible to see ahead.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361514094592
-    m_Localized: Arabella
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361514094593
-    m_Localized: Skip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361514094594
-    m_Localized: Skip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288896
-    m_Localized: Record
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288897
-    m_Localized: Success
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288898
-    m_Localized: Stat name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288899
-    m_Localized: Exploration
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288900
-    m_Localized: Record
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288901
-    m_Localized: Quit Game
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288902
-    m_Localized: Front
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288903
-    m_Localized: Back
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288904
-    m_Localized: 'Time required
-
-      00:00:00'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288905
-    m_Localized: Research
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288906
-    m_Localized: Click anywhere to continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288907
-    m_Localized: Content of conversation
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288908
-    m_Localized: Acquired Items
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288909
-    m_Localized: Time required
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483201
-    m_Localized: 'This is where your journey in the demo comes to an end.
-
-
-      But
-      your story is far from over.
-
-      Your journey continues in the full game.
-      We hope to see you there!'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483202
-    m_Localized: Erosion
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483203
-    m_Localized: Restore 30% HP and reduce Erosion by 10.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483204
-    m_Localized: Choose one Memory to manifest from a random selection.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483205
-    m_Localized: You take a moment to catch your breath and regain your composure.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483206
-    m_Localized: In the stillness of meditation, a memory suddenly flashes through
-      your mind.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483207
-    m_Localized: Rest
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483208
-    m_Localized: Meditate
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483209
-    m_Localized: Slot Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483210
-    m_Localized: Times Downed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483211
-    m_Localized: Expedition Failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483212
-    m_Localized: Memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483213
-    m_Localized: Erosion
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483214
-    m_Localized: Expedition
     m_Metadata:
       m_Items: []
   - m_Id: 29397909925765120
@@ -7212,51 +4917,6 @@ MonoBehaviour:
     m_Localized: Press Space or click the button to continue
     m_Metadata:
       m_Items: []
-  - m_Id: 29434412236251136
-    m_Localized: Records
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554304
-    m_Localized: Moves 1 or 2 spaces, up to twice, to line up with a character.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554305
-    m_Localized: Skill Effect
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554306
-    m_Localized: Revives one mutant that died this turn with 30% HP at the start
-      of the next turn.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554307
-    m_Localized: Windowed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554308
-    m_Localized: Borderless Windowed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554309
-    m_Localized: Item Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554310
-    m_Localized: Skill Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554311
-    m_Localized: Type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554312
-    m_Localized: Skill Effect
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554313
-    m_Localized: '- Select -'
-    m_Metadata:
-      m_Items: []
   - m_Id: 29434412307554314
     m_Localized: Tutorial Text
     m_Metadata:
@@ -7307,10 +4967,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 29434412307554326
     m_Localized: Status
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554327
-    m_Localized: Expedition Failed
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554328
@@ -7373,10 +5029,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 29434412307554343
     m_Localized: Skip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554344
-    m_Localized: Memory
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554345
@@ -7443,20 +5095,12 @@ MonoBehaviour:
     m_Localized: Effect Description
     m_Metadata:
       m_Items: []
-  - m_Id: 29434412307554361
-    m_Localized: Erosion
-    m_Metadata:
-      m_Items: []
   - m_Id: 29434412307554362
     m_Localized: Items Obtained
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554363
     m_Localized: Time Elapsed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554364
-    m_Localized: Times Downed
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554365
@@ -7478,32 +5122,8 @@ MonoBehaviour:
       We hope to see you there!'
     m_Metadata:
       m_Items: []
-  - m_Id: 29434412307554368
-    m_Localized: Cost
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554369
-    m_Localized: Effect Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554370
-    m_Localized: Effect Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554371
-    m_Localized: Restore
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554372
-    m_Localized: Point 1 - Threshold of Ruins
-    m_Metadata:
-      m_Items: []
   - m_Id: 29434412307554373
     m_Localized: Corrosion
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554374
-    m_Localized: Expedition
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554375
@@ -7538,36 +5158,8 @@ MonoBehaviour:
     m_Localized: Quit Game
     m_Metadata:
       m_Items: []
-  - m_Id: 29434528472997888
-    m_Localized: Charge
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434528506552320
-    m_Localized: Deploy
-    m_Metadata:
-      m_Items: []
   - m_Id: 29445185436098560
     m_Localized: Start
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29445185503207424
-    m_Localized: Start
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483200
-    m_Localized: Confirm
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29471773640859648
-    m_Localized: Skip the tutorial?
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097980000
-    m_Localized: Artifact Obtained
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29743157478662144
-    m_Localized: Arrive
     m_Metadata:
       m_Items: []
   - m_Id: 29830859909734400
@@ -7592,8 +5184,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30183422362361863
-    m_Localized: Relics can be equipped in a character's equipment slots. Combine
-      relics within the limited slots to create a variety of combat strategies.
+    m_Localized: Artifacts can be equipped in a character's equipment slots. Combine
+      artifacts within the limited slots to create a variety of combat strategies.
     m_Metadata:
       m_Items: []
   - m_Id: 30183422362361856
@@ -7601,7 +5193,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30183422362361857
-    m_Localized: That went more smoothly than expected. Let's take the relic with
+    m_Localized: That went more smoothly than expected. Let's take the artifact with
       us.
     m_Metadata:
       m_Items: []
@@ -7610,7 +5202,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 30183422362361859
-    m_Localized: You can earn various rewards after battle. Equip relics to characters
+    m_Localized: You can earn various rewards after battle. Equip artifacts to characters
       to gain special effects.
     m_Metadata:
       m_Items: []
@@ -7639,500 +5231,971 @@ MonoBehaviour:
     m_Localized: Click to continue
     m_Metadata:
       m_Items: []
-  - m_Id: 31145982655496192
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439232
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439233
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439234
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439235
-    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130 \uC8FC\uBCC0\uC73C\uB85C
-      1\uCE78 \uC811\uADFC\uD55C\uB2E4."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439236
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439237
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439238
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439239
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439240
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439241
-    m_Localized: "\uBC84\uD504"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439242
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439243
-    m_Localized: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C\uC11C
-      \uCD5C\uB300 2\uCE78 \uBA40\uC5B4\uC9C4\uB2E4."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439244
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439245
-    m_Localized: "\uC8FC\uBCC0\uC5D0 {E_Strike}\uB97C {ValueRate1}\uB9CC\uD07C \uC900\uB2E4."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439246
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439247
-    m_Localized: "\uB514\uBC84\uD504"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633536
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633537
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633538
-    m_Localized: "\uB3CC\uC9C4"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633539
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633540
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633541
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633542
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633543
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633544
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633545
-    m_Localized: "\uC804\uBC29\uC5D0 {E_Strike}\uB97C {ValueRate1}\uB9CC\uD07C \uC900\uB2E4."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633546
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633547
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633548
-    m_Localized: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C\uC11C
-      \uCD5C\uB300 2\uCE78 \uBA40\uC5B4\uC9C4\uB2E4."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633549
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633550
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633551
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633552
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633553
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633554
-    m_Localized: "\uB3CC\uC9C4\uD558\uC5EC \uB300\uC0C1\uC5D0\uAC8C {E_Strike}\uB97C
-      {ValueRate1}\uB9CC\uD07C \uC8FC\uACE0, {E_Knockback}\uC744 {ValueRate2}\uCE78
-      \uC801\uC6A9\uD55C\uB2E4."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633555
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633556
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633557
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633558
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633559
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633560
-    m_Localized: "\uBC94\uC704\uC5D0 {E_Strike}\uB97C {ValueRate1}\uB9CC\uD07C \uC900\uB2E4."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633561
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633562
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633563
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633564
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633565
-    m_Localized: "\uC804\uBC29\uC5D0 {E_Pierce}\uB97C {ValueRate1}\uB9CC\uD07C \uC900\uB2E4."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633566
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633567
-    m_Localized: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uB300\uC0C1\uC758 \uC704\uCE58\uC5D0
-      {E_Strike}\uB97C {ValueRate1}\uB9CC\uD07C \uC900\uB2E4."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633568
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633569
-    m_Localized: "\uB514\uBC84\uD504"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633570
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633571
-    m_Localized: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uC5D0\uAC8C\uC11C
-      \uCD5C\uB300 2\uCE78 \uBA40\uC5B4\uC9C4\uB2E4."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633572
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633573
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633574
-    m_Localized: "\uC8FC\uBCC0\uC5D0 {E_Strike}\uB97C {ValueRate1}\uB9CC\uD07C \uC900\uB2E4."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633575
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633576
-    m_Localized: "\uBC84\uD504"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633577
-    m_Localized: "\uC124\uCE58"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633578
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633579
-    m_Localized: "\uAC00\uAE4C\uC6B4 \uCE90\uB9AD\uD130\uB97C \uD5A5\uD574 1\uCE78
-      \uC774\uB3D9\uD55C\uB2E4."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633580
-    m_Localized: "\uC774\uB3D9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633581
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633582
-    m_Localized: "\uACF5\uACA9"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31210397618790400
-    m_Localized: "\uC720\uBB3C\uC774\uB984"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31210397643956224
-    m_Localized: "\uC720\uBB3C\uC124\uBA85"
-    m_Metadata:
-      m_Items: []
   - m_Id: 31210397643956225
-    m_Localized: "\"\uD2C8 \uC0AC\uC774\uB85C \uC0C8\uC5B4 \uB098\uC628 \uBE5B \uC18D\uC5D0\uC11C
-      \uD76C\uBBF8\uD55C \uAE30\uC5B5\uC758 \uD754\uC801\uC774 \uB290\uAEF4\uC9C4\uB2E4.\""
+    m_Localized: Through the light seeping from the rift, a faint trace of memory
+      can be felt.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956226
-    m_Localized: "\u201C\uBE5B\uC774 \uC11C\uC11C\uD788 \uC0AC\uADF8\uB77C\uB4E4\uACE0,
-      \uD558\uB298\uC5D0 \uC5F4\uB9B0 \uADE0\uC5F4\uC740 \uB2E4\uC2DC \uACE0\uC694\uD574\uC84C\uB2E4.\u201D"
+    m_Localized: The light slowly faded, and the rift in the sky fell silent once
+      more.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956227
-    m_Localized: "\u201C\uCC3E\uB294 \uBB3C\uAC74\uC774\uB77C\uB3C4 \uC788\uB098?
-      \uB9C8\uC74C\uC5D0 \uB4DC\uB294 \uAC8C \uC788\uB2E4\uBA74 \uACE8\uB77C\uBCF4\uAC8C.\u201D"
+    m_Localized: Looking for something? Take anything that catches your eye.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956228
-    m_Localized: "\"\uB2E4\uC74C\uC5D0\uB3C4 \uD544\uC694\uD55C \uBB3C\uAC74\uC774
-      \uC788\uB2E4\uBA74 \uCC3E\uC544\uC624\uC2DC\uAC8C.\u201D"
+    m_Localized: Come back if you need anything else.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956229
-    m_Localized: "\"\uB2E4\uC74C\uC5D0 \uB610 \uB4E4\uB974\uC2DC\uAC8C.\u201D"
+    m_Localized: Do stop by again.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956230
-    m_Localized: "\"\uBB50, \uC5B5\uC9C0\uB85C \uAD8C\uD560 \uC0DD\uAC01\uC740 \uC5C6\uB124.\u201D"
+    m_Localized: Well, I am not going to force you.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956231
-    m_Localized: "\u201C\uC774\uACF3\uC740 \uC624\uB798 \uBA38\uBB3C \uACF3\uC774
-      \uC544\uB2D9\uB2C8\uB2E4. \uB5A0\uB098\uAE30 \uC804\uC5D0 \uC800\uD76C\uC758
-      \uB3C4\uC6C0\uC774 \uD544\uC694\uD558\uB2E4\uBA74 \uB9D0\uC500\uD574 \uC8FC\uC138\uC694.\u201D"
+    m_Localized: This is no place to linger. Let us know if you need our help before
+      you leave.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956232
-    m_Localized: "\u201C\uC870\uAE08\uC774\uB098\uB9C8 \uB3C4\uC6C0\uC774 \uB418\uAE30\uB97C
-      \uBC14\uB78D\uB2C8\uB2E4.\""
+    m_Localized: I hope this helps, even a little.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956233
-    m_Localized: "\u201C\uCE68\uC2DD\uC758 \uAE30\uC6B4\uC744 \uC870\uAE08\uC774\uB098\uB9C8
-      \uC815\uD654\uD574 \uB4DC\uB838\uC2B5\uB2C8\uB2E4.\u201D"
+    m_Localized: We have purified some of the corruption.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956234
-    m_Localized: "\u201C\uB2F9\uC2E0\uB4E4\uC758 \uC0DD\uBA85\uC5D0 \uCD95\uBCF5\uC774
-      \uBA38\uBB3C\uAE30\uB97C.\u201D"
+    m_Localized: May your lives be blessed.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956235
-    m_Localized: "\uC624\uB798\uB41C \uC758\uC2DD\uC758 \uD754\uC801\uC774 \uB0A8\uC544
-      \uC788\uB2E4. \uAE30\uBB18\uD55C \uAE30\uC6B4\uC774 \uC8FC\uBCC0\uC744 \uB9F4\uB3C8\uB2E4."
+    m_Localized: Traces of an ancient ritual remain. An eerie energy hangs in the
+      air.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956236
-    m_Localized: "\"\uD76C\uBBF8\uD558\uAC8C \uBE5B\uB098\uB358 \uD754\uC801\uB4E4\uC774
-      \uC11C\uC11C\uD788 \uC0AC\uB77C\uC84C\uB2E4.\""
+    m_Localized: The faintly glowing traces slowly vanished.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956237
-    m_Localized: "\"\uC694\uB3D9\uCE58\uB358 \uAE30\uC6B4\uC774 \uC11C\uC11C\uD788
-      \uC7A0\uC7A0\uD574\uC84C\uB2E4.\""
+    m_Localized: The turbulent energy gradually subsided.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956238
-    m_Localized: "\"\uC190\uB300\uC9C0 \uC54A\uC740 \uCC44, \uC790\uB9AC\uB97C \uB5A0\uB0AC\uB2E4.\""
+    m_Localized: You leave without touching anything.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956239
-    m_Localized: "\u201C\uAE38\uAC00\uC5D0 \uBC84\uB824\uC9C4 \uB9C8\uCC28 \uD55C
-      \uB300\uAC00 \uB193\uC5EC \uC788\uB2E4. \uC544\uC9C1 \uC4F8 \uB9CC\uD55C \uBB3C\uAC74\uC774
-      \uB0A8\uC544 \uC788\uC744\uC9C0\uB3C4 \uBAA8\uB978\uB2E4.\u201D"
+    m_Localized: An abandoned wagon sits by the roadside. There may still be something
+      useful inside.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956240
-    m_Localized: "\u201C\uB354 \uC774\uC0C1 \uB208\uC5D0 \uB744\uB294 \uBB3C\uAC74\uC740
-      \uC5C6\uC5B4 \uBCF4\uC778\uB2E4.\u201D"
+    m_Localized: There seems to be nothing else worth taking.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956241
-    m_Localized: "\u201C\uB9C8\uCC28 \uC548\uC5D0\uB294 \uC774\uC81C \uC4F8 \uB9CC\uD55C
-      \uBB3C\uAC74\uC774 \uB0A8\uC544 \uC788\uC9C0 \uC54A\uB2E4.\u201D"
+    m_Localized: There is nothing useful left inside the wagon.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956242
-    m_Localized: "\u201C\uB9C8\uCC28\uC5D0\uB294 \uB354 \uC774\uC0C1 \uAC00\uC838\uAC08
-      \uB9CC\uD55C \uAC83\uC774 \uB0A8\uC544 \uC788\uC9C0 \uC54A\uB2E4.\u201D"
+    m_Localized: There is nothing left in the wagon worth taking.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956243
-    m_Localized: "\"\uC4F8 \uB9CC\uD55C \uBB3C\uAC74\uC740 \uBC1C\uACAC\uD558\uC9C0
-      \uBABB\uD588\uB2E4.\u201D"
+    m_Localized: You find nothing useful.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956244
-    m_Localized: "\u201C\uBC84\uB824\uC9C4 \uC0C1\uC790\uB4E4\uC774 \uB208\uC5D0
-      \uB748\uB2E4. \uC4F8 \uB9CC\uD55C \uBB3C\uAC74\uC774 \uB0A8\uC544 \uC788\uC744\uC9C0\uB3C4
-      \uBAA8\uB978\uB2E4.\u201D"
+    m_Localized: You spot some abandoned crates. Something useful may remain inside.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956245
-    m_Localized: "\u201C\uC544\uC9C1 \uC0B4\uD3B4\uBCFC \uB9CC\uD55C \uAC83\uC774
-      \uB0A8\uC544 \uC788\uB2E4. \uC870\uAE08 \uB354 \uC2DC\uB3C4\uD574 \uBCFC \uC218
-      \uC788\uC744 \uAC83 \uAC19\uB2E4.\u201D"
+    m_Localized: There is still something worth checking. You could try again.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956246
-    m_Localized: "\u201C\uB0A8\uC740 \uC0C1\uC790\uC5D0\uC11C\uB3C4 \uBB34\uC5B8\uAC00
-      \uC5BB\uC744 \uC218 \uC788\uC744 \uAC83 \uAC19\uB2E4.\""
+    m_Localized: You may still find something in the remaining crates.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956247
-    m_Localized: "\u201C\uB354 \uC774\uC0C1 \uAC00\uC838\uAC08 \uB9CC\uD55C \uAC83\uC740
-      \uB0A8\uC544 \uC788\uC9C0 \uC54A\uB2E4.\u201D"
+    m_Localized: There is nothing else worth taking.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956248
-    m_Localized: "\u201C\uAC11\uC791\uC2A4\uB7EC\uC6B4 \uD3ED\uBC1C\uC774 \uC77C\uC5B4\uB098\uACE0,
-      \uC8FC\uBCC0\uC5D0\uB294 \uBD80\uC11C\uC9C4 \uC794\uD574\uB9CC \uB0A8\uC558\uB2E4.\u201D"
+    m_Localized: A sudden explosion leaves only shattered debris behind.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956249
-    m_Localized: "\u201C\uC0C1\uC790\uC5D0\uB294 \uC190\uB300\uC9C0 \uC54A\uACE0
-      \uADF8\uB300\uB85C \uC9C0\uB098\uCCE4\uB2E4.\u201D"
+    m_Localized: You pass by without touching the crates.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956250
-    m_Localized: "\u201C\uB0A8\uC740 \uC0C1\uC790\uB294 \uADF8\uB300\uB85C \uB450\uACE0
-      \uC790\uB9AC\uB97C \uB5A0\uB0AC\uB2E4.\u201D"
+    m_Localized: You leave the remaining crates untouched and depart.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956251
-    m_Localized: "\u201C\uAC70\uB300\uD55C \uAD11\uB9E5\uC774 \uD76C\uBBF8\uD55C
-      \uBE5B\uC744 \uB0B4\uBFDC\uACE0 \uC788\uB2E4.\""
+    m_Localized: A massive ore vein emits a faint glow.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956252
-    m_Localized: "\u201C\uAD11\uB9E5 \uAE4A\uC219\uD55C \uACF3\uC5D0\uC11C \uBE5B\uC774
-      \uACC4\uC18D\uD574\uC11C \uC0C8\uC5B4 \uB098\uC628\uB2E4.\u201D"
+    m_Localized: Light continues to seep from deep within the vein.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956253
-    m_Localized: "\u201C\uAD11\uB9E5 \uACF3\uACF3\uC5D0 \uADE0\uC5F4\uC774 \uC0DD\uACBC\uB2E4.\""
+    m_Localized: Cracks spread throughout the vein.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956254
-    m_Localized: "\u201C\uAD11\uB9E5\uC740 \uBE5B\uC744 \uC783\uACE0 \uACE0\uC694\uD574\uC84C\uB2E4.\u201D"
+    m_Localized: The vein loses its light and falls silent.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956255
-    m_Localized: "\u201C\uAD11\uB9E5\uC774 \uC21C\uC2DD\uAC04\uC5D0 \uBC14\uC2A4\uB77C\uC9C0\uBA70
-      \uD754\uC801\uB3C4 \uC5C6\uC774 \uC0AC\uB77C\uC84C\uB2E4.\u201D"
+    m_Localized: The vein crumbles in an instant, vanishing without a trace.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956256
-    m_Localized: "\u201C\uAD11\uB9E5\uC744 \uAC74\uB4DC\uB9AC\uC9C0 \uC54A\uACE0
-      \uC790\uB9AC\uB97C \uB5A0\uB0AC\uB2E4.\u201D"
+    m_Localized: You leave without disturbing the vein.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956257
-    m_Localized: "\u201C\uC624\uB798\uB41C \uBE44\uC11D\uC5D0 \uB0AF\uC120 \uAC01\uC778\uC774
-      \uC0C8\uACA8\uC838 \uC788\uB2E4.\""
+    m_Localized: An unfamiliar inscription is carved into an ancient stone monument.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956258
-    m_Localized: "\u201C\uAC01\uC778\uC774 \uBE5B\uC744 \uBC1C\uD558\uBA70 \uC54C
-      \uC218 \uC5C6\uB294 \uD798\uC774 \uC804\uD574\uC838 \uC628\uB2E4.\u201D"
+    m_Localized: The inscription glows, and an unknown power flows through you.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956259
-    m_Localized: "\u201C\uAC01\uC778\uC758 \uBE5B\uC774 \uC0AC\uADF8\uB77C\uB4E4\uC5C8\uB2E4.\""
+    m_Localized: The glow of the inscription fades.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150528
-    m_Localized: "\"\uB9D1\uC740 \uBB3C\uC774 \uACE0\uC778 \uC791\uC740 \uBD84\uC218\uC5D0\uC11C
-      \uC740\uC740\uD55C \uBE5B\uC774 \uD758\uB7EC\uB098\uC628\uB2E4.\""
+    m_Localized: A soft light flows from a small fountain filled with clear water.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150529
-    m_Localized: "\"\uBB3C\uACB0\uC774 \uC794\uC794\uD558\uAC8C \uAC00\uB77C\uC549\uC558\uB2E4.\""
+    m_Localized: The ripples gently settle.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150530
-    m_Localized: "\"\uAC10\uC2F8\uB358 \uBE5B\uC774 \uC11C\uC11C\uD788 \uC0AC\uADF8\uB77C\uB4E4\uC5C8\uB2E4.\""
+    m_Localized: The surrounding light slowly fades.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150531
-    m_Localized: "\"\uB9D1\uC740 \uBE5B\uC774 \uD37C\uC838 \uB098\uAC04 \uB4A4 \uACE0\uC694\uD574\uC84C\uB2E4.\""
+    m_Localized: A clear light spreads out, then everything falls still.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150532
-    m_Localized: "\"\uC758\uBB38\uC758 \uC874\uC7AC\uAC00 \uAE30\uBB18\uD55C \uAC70\uB798\uB97C
-      \uC81C\uC548\uD55C\uB2E4.\""
+    m_Localized: A mysterious being offers a strange bargain.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150533
-    m_Localized: "\"\uB300\uAC00\uC5D0 \uB9CC\uC871\uD55C \uB4EF \uD76C\uBBF8\uD55C
-      \uBBF8\uC18C\uB97C \uC9C0\uC5C8\uB2E4.\""
+    m_Localized: It gives a faint smile, seemingly pleased with the price.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150534
-    m_Localized: "\"\uC81C\uBC95 \uC6B4\uC774 \uC88B\uB2E4\uB294 \uB4EF \uD765\uBBF8\uB85C\uC6B4
-      \uD45C\uC815\uC744 \uC9C0\uC5C8\uB2E4.\""
+    m_Localized: It looks intrigued, as if impressed by your luck.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150535
-    m_Localized: "\"\uC608\uC0C1\uD588\uB2E4\uB294 \uB4EF \uAC00\uBCCD\uAC8C \uBE44\uC6C3\uC5C8\uB2E4.\""
+    m_Localized: It lets out a quiet, mocking laugh, as though it expected this.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150536
-    m_Localized: "\"\uCE68\uC2DD\uC758 \uAE30\uC6B4\uC744 \uBC14\uB77C\uBCF4\uBA70
-      \uB9CC\uC871\uC2A4\uB7FD\uAC8C \uC6C3\uC5C8\uB2E4.\""
+    m_Localized: It smiles with satisfaction at the aura of corruption.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150537
-    m_Localized: "\"\uAC70\uC810\uC73C\uB85C \uD5A5\uD558\uB294 \uAE38\uBAA9, \uD55C
-      \uD0D0\uC0AC\uC790\uAC00 \uD734\uC2DD\uD558\uACE0 \uC788\uB2E4.\""
+    m_Localized: On the road to the outpost, an explorer is taking a break.
     m_Metadata:
       m_Items: []
   - m_Id: 31210397648150538
-    m_Localized: "\"\uC7A0\uC2DC \uD734\uC2DD\uC744 \uCDE8\uD55C \uC77C\uD589\uC740
-      \uAE30\uC6B4\uC744 \uB418\uCC3E\uC558\uB2E4.\""
+    m_Localized: After a short rest, the party regains its strength.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373547
+    m_Localized: HP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373549
+    m_Localized: Mana
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475368386560
+    m_Localized: None
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940992
+    m_Localized: Karma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135313
+    m_Localized: Common Compound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135315
+    m_Localized: Epic Compound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135314
+    m_Localized: Rare Compound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179200
+    m_Localized: 'Cost: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179201
+    m_Localized: 'Effect: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135307
+    m_Localized: Engraved Fragment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135306
+    m_Localized: Exclusive Fragment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135308
+    m_Localized: Common Fragment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135309
+    m_Localized: Blessed Fragment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135310
+    m_Localized: Common Material
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135312
+    m_Localized: Epic Material
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135311
+    m_Localized: Rare Material
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135302
+    m_Localized: Common Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135304
+    m_Localized: Epic Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135301
+    m_Localized: Exclusive Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135303
+    m_Localized: Rare Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135305
+    m_Localized: Unique Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309794041856
+    m_Localized: 'Method: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401941002
+    m_Localized: No Cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940995
+    m_Localized: Caster Position
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940997
+    m_Localized: Active while Karma is at maximum
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940996
+    m_Localized: Select Grid Tile
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135316
+    m_Localized: Common Artifact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135318
+    m_Localized: Epic Artifact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135317
+    m_Localized: Rare Artifact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135319
+    m_Localized: Unique Artifact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940994
+    m_Localized: Grid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940993
+    m_Localized: Self
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135300
+    m_Localized: Undiscovered
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135296
+    m_Localized: 'Cost: ???'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401941003
+    m_Localized: Not yet recorded.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135297
+    m_Localized: 'Effect: ???'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401941004
+    m_Localized: 'Method: ???'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135299
+    m_Localized: 'Uses Available: ???'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135298
+    m_Localized: 'Target: ???'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940999
+    m_Localized: 'Unlock Requirement: {0} Blue Dustium'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940998
+    m_Localized: 'Unlock Requirement: Reach Character Lv. {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401941001
+    m_Localized: 'Uses Available: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401941000
+    m_Localized: 'Target: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373574
+    m_Localized: '{0}{1} Apply to {2} tiles'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373575
+    m_Localized: '{0}{1} Deal {2} damage {3} times'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373576
+    m_Localized: '{0}{1} Deal {2} damage'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373577
+    m_Localized: '{0}{1} Deal {2} damage and'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373578
+    m_Localized: '{0}{1} Gain {2}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373579
+    m_Localized: '{0}{1} Gain {2} and'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373580
+    m_Localized: '{0}{1} Grant {2}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373581
+    m_Localized: '{0}{1} Grant {2} and'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373582
+    m_Localized: '{0}{1} Restore {2}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021699
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021700
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021701
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021702
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021703
+    m_Localized: 
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373570
+    m_Localized: Press End Turn or Space to finish queuing actions.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373565
+    m_Localized: Click a mutant to inspect its information.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373566
+    m_Localized: Click Move or press A to select movement.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373567
+    m_Localized: Click a grid tile to move.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373568
+    m_Localized: Click Attack or press Q to queue an attack.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373569
+    m_Localized: Queued actions appear on the timeline.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373573
+    m_Localized: Press End Turn or Space to finish queuing actions.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373571
+    m_Localized: You can queue the same attack multiple times. Queue it twice.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373572
+    m_Localized: Queue the same attack once more.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021698
+    m_Localized: Please gather the materials we need for our research there.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021696
+    m_Localized: Used well, this will be a great help on your future expeditions.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021697
+    m_Localized: Once you're ready, come speak to me again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169472
+    m_Localized: 'Cost: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169474
+    m_Localized: 'Effect: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169484
+    m_Localized: Caster Position
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169486
+    m_Localized: Active while {0} is at maximum
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169487
+    m_Localized: Active while maintaining {0} at {1}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169485
+    m_Localized: Select Grid Tile
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169477
+    m_Localized: Common Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169479
+    m_Localized: Epic Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169483
+    m_Localized: Implementation Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169481
+    m_Localized: Instinct Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169482
+    m_Localized: Manifestation Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169476
+    m_Localized: Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169475
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169478
+    m_Localized: Rare Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169480
+    m_Localized: Unique Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169473
+    m_Localized: 'Method: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494251143170
+    m_Localized: How to Gain Karma & Stat Details
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494251143171
+    m_Localized: Karma Gain Conditions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494251143172
+    m_Localized: Built up through each character's combat style and used to manifest
+      Memories.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494251143173
+    m_Localized: 'Maximum Capacity: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494246948864
+    m_Localized: Fragment/Skill information is displayed here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494251143169
+    m_Localized: Fragment information is displayed here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494251143168
+    m_Localized: Fragment Information
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494246948866
+    m_Localized: Skill information is displayed here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494246948865
+    m_Localized: Skill Information
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31261828134969345
+    m_Localized: Times Incapacitated
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31271136499310592
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31271136541253632
+    m_Localized: Buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31271136541253633
+    m_Localized: Debuff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31271136545447936
+    m_Localized: Charge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31271136545447937
+    m_Localized: Install
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179202
+    m_Localized: Effect Name 11
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179203
+    m_Localized: Yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179204
+    m_Localized: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179205
+    m_Localized: Difficulty III
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179206
+    m_Localized: Difficulty Effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179207
+    m_Localized: Artifact Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179208
+    m_Localized: Artifact Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179209
+    m_Localized: Paused
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179210
+    m_Localized: Continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179211
+    m_Localized: Records
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179212
+    m_Localized: Give Up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179213
+    m_Localized: Move 1 or 2 tiles up to twice to align with the character's row.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179214
+    m_Localized: Skill Effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179215
+    m_Localized: At the start of the next turn, revive one mutant that died this
+      turn with 30% of its maximum HP.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179216
+    m_Localized: Master Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179217
+    m_Localized: Background Music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179218
+    m_Localized: Sound Effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179219
+    m_Localized: Brightness
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179220
+    m_Localized: Windowed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179221
+    m_Localized: Borderless Window
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179222
+    m_Localized: Fullscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179223
+    m_Localized: Battle Speed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179224
+    m_Localized: Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179225
+    m_Localized: Fragment
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179226
+    m_Localized: Effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179227
+    m_Localized: Undiscovered
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179228
+    m_Localized: Item Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179229
+    m_Localized: Equipped
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179230
+    m_Localized: Skill Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179231
+    m_Localized: Type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179232
+    m_Localized: Skill Effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179233
+    m_Localized: '- Select -'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179234
+    m_Localized: Tutorial
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179241
+    m_Localized: Records
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179242
+    m_Localized: Quit Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373509
+    m_Localized: This character belongs to another player.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373510
+    m_Localized: Queue a movement action for the character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373511
+    m_Localized: Turn Around
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373512
+    m_Localized: Change the direction the character is facing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373513
+    m_Localized: HP Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373514
+    m_Localized: Mana Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373515
+    m_Localized: Party Karma Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373516
+    m_Localized: Karma Recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373517
+    m_Localized: Erosion Damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373518
+    m_Localized: Collision
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373519
+    m_Localized: Turn {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373520
+    m_Localized: Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373521
+    m_Localized: Are you sure you want to give up?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373522
+    m_Localized: Currency Gain +{0}% / EXP Gain +{0}%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373523
+    m_Localized: Expedition Failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373524
+    m_Localized: Battle Complete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373525
+    m_Localized: Arrive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373526
+    m_Localized: Proceed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373527
+    m_Localized: 'Acquired: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373528
+    m_Localized: Red Dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373529
+    m_Localized: Artifact Acquired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373530
+    m_Localized: Memory Acquired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373531
+    m_Localized: Monsters Defeated
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373532
+    m_Localized: Damage Taken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373533
+    m_Localized: Buffs Applied
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373534
+    m_Localized: Times Incapacitated
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373535
+    m_Localized: Expedition Report
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373536
+    m_Localized: Time Elapsed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373537
+    m_Localized: Would you like to skip the tutorial?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373538
+    m_Localized: '{0}{1} Deal damage equal to {2}% of missing HP'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373539
+    m_Localized: '{0}{1} Deal damage based on current Armor'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373540
+    m_Localized: ','
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373541
+    m_Localized: .
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373542
+    m_Localized: Permanently increase damage by {0} on a kill.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373543
+    m_Localized: Lose {0} HP if the attack misses.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373544
+    m_Localized: .
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373545
+    m_Localized: '{0}% of missing HP'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373546
+    m_Localized: '{0}% of missing HP'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373548
+    m_Localized: Mana Regeneration
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373550
+    m_Localized: Select a character to equip this item.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373551
+    m_Localized: Dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373552
+    m_Localized: Movement Range
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373553
+    m_Localized: All
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373554
+    m_Localized: Self
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373555
+    m_Localized: Ranged
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373556
+    m_Localized: Melee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373557
+    m_Localized: Manifestation Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373558
+    m_Localized: Implementation Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373559
+    m_Localized: Instinct Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373560
+    m_Localized: Common Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373561
+    m_Localized: Rare Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373562
+    m_Localized: Epic Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373563
+    m_Localized: Unique Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373564
+    m_Localized: Exclusive Memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275506288795648
+    m_Localized: Equipped
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275506288795649
+    m_Localized: Fragment Information
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275506288795650
+    m_Localized: Select a fragment to view its information.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275506288795651
+    m_Localized: No effect description is registered.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31277661963919360
+    m_Localized: Expedition
     m_Metadata:
       m_Items: []
   references:

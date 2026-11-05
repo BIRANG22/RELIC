@@ -28,6 +28,14 @@ public static class LocalizationTextBindingRepairTool
         try
         {
             LocalizationBindingResolver maps = ReadBindingMaps();
+            // Register previously unregistered Korean static UI text before repairing bindings.
+            // Runtime placeholders and intentionally excluded UI are never registered.
+            int added = RegisterMissingStaticSources(maps);
+            if (added > 0)
+            {
+                LocalizationExcelImporter.Import();
+                maps = ReadBindingMaps();
+            }
             SceneSetup[] originalSetup = EditorSceneManager.GetSceneManagerSetup();
             try
             {
@@ -38,7 +46,8 @@ public static class LocalizationTextBindingRepairTool
                 Debug.Log(
                     $"[LocalizationTextBindingRepairTool] 검사 완료: 검사 {summary.Checked}, " +
                     $"정상 {summary.Matched}, 복구 {summary.Repaired}, " +
-                    $"런타임/미등록 원문 스킵 {summary.Unresolved}.");
+                    $"신규 원문 등록 {added}, 비한국어/런타임 스킵 {summary.RuntimeSkipped}, " +
+                    $"미등록/충돌 보류 {summary.Unresolved}.");
             }
             finally
             {
@@ -48,6 +57,77 @@ public static class LocalizationTextBindingRepairTool
         catch (Exception exception)
         {
             Debug.LogException(exception);
+        }
+    }
+
+    private static int RegisterMissingStaticSources(LocalizationBindingResolver maps)
+    {
+        var additions = new List<LocalizationWorkbookEntry>();
+        var chosenBySource = new Dictionary<string, string>(StringComparer.Ordinal);
+        var claimedKeys = new HashSet<string>(StringComparer.Ordinal);
+        SceneSetup[] setup = EditorSceneManager.GetSceneManagerSetup();
+        try
+        {
+            foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Project" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (!LocalizationEditorSafetyPolicy.ShouldScanProjectAsset(path)) continue;
+                if (!LocalizationEditorSafetyPolicy.ShouldProcessLocalizationPrefab(File.ReadAllText(path))) continue;
+                GameObject root = PrefabUtility.LoadPrefabContents(path);
+                try { CollectMissingInHierarchy(root, path, maps, chosenBySource, claimedKeys, additions); }
+                finally { PrefabUtility.UnloadPrefabContents(root); }
+            }
+            HashSet<string> configured = EditorBuildSettings.scenes
+                .Select(scene => (scene.path ?? string.Empty).Replace('\\', '/'))
+                .Where(path => !string.IsNullOrWhiteSpace(path))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach (string guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets/Project" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (!LocalizationEditorSafetyPolicy.ShouldScanSceneAsset(path, configured)) continue;
+                Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+                foreach (GameObject root in scene.GetRootGameObjects())
+                    CollectMissingInHierarchy(root, path, maps, chosenBySource, claimedKeys, additions);
+            }
+        }
+        finally { EditorSceneManager.RestoreSceneManagerSetup(setup); }
+        if (additions.Count == 0) return 0;
+        int created = LocalizationWorkbookWriter.MergeNewEntries(LocalizationExcelImporter.WorkbookPath, additions);
+        Debug.Log($"[LocalizationTextBindingRepairTool] 미등록 한국어 UI 원문 {created}개를 백업 후 Excel에 등록했습니다. 다른 언어 번역은 기존 값만 재사용하며 신규 번역은 별도 입력이 필요합니다.");
+        return created;
+    }
+
+    private static void CollectMissingInHierarchy(GameObject root, string assetPath,
+        LocalizationBindingResolver maps, IDictionary<string, string> chosenBySource,
+        ISet<string> claimedKeys, ICollection<LocalizationWorkbookEntry> additions)
+    {
+        foreach (TMP_Text text in root.GetComponentsInChildren<TMP_Text>(true))
+        {
+            if (!LocalizedTMPText.ShouldManageText(text)) continue;
+            string source = ReadKoreanSource(text);
+            if (!LocalizationProjectScanner.IsLocalizableKoreanText(source)) continue;
+            string normalized = LocalizationBindingResolver.Normalize(source);
+            LocalizedTMPText local = text.GetComponent<LocalizedTMPText>();
+            LocalizeStringEvent legacy = text.GetComponent<LocalizeStringEvent>();
+            string boundKey = local != null ? local.LocalizationKey : legacy != null
+                ? legacy.StringReference.TableEntryReference.Key : string.Empty;
+            if (LocalizationEditorSafetyPolicy.IsRetiredShopGoodsNameKey(boundKey))
+                continue; // Dynamic shop item name; do not re-register a placeholder.
+
+            if (maps.Validate(source, boundKey) == LocalizationBindingStatus.Valid) continue;
+            LocalizationKeyResolution existing = maps.ResolveSource(normalized);
+            // A source with multiple existing keys may intentionally have different meanings.
+            // Do not create another key or bind it to a random translation.
+            if (existing.Status == LocalizationBindingStatus.AmbiguousKey) continue;
+            if (existing.IsUnique || chosenBySource.ContainsKey(normalized)) continue;
+            string generated = LocalizationProjectScanner.BuildSuggestedKey(assetPath, GetHierarchyPath(text.transform), source);
+            // Avoid reusing a key already registered for a different source.
+            if (maps.TryGetKorean(generated, out string registered) &&
+                !string.Equals(registered, normalized, StringComparison.Ordinal))
+                generated = LocalizationProjectScanner.BuildSuggestedKey(assetPath, "text", source);
+            if (maps.TryGetKorean(generated, out _) || !claimedKeys.Add(generated)) continue;
+            chosenBySource[normalized] = generated;
+            additions.Add(new LocalizationWorkbookEntry(generated, source));
         }
     }
 
@@ -126,12 +206,23 @@ public static class LocalizationTextBindingRepairTool
                 continue;
 
             string normalizedSource = LocalizationBindingResolver.Normalize(source);
+            if (!LocalizationProjectScanner.IsLocalizableKoreanText(source))
+            {
+                summary.RuntimeSkipped++;
+                continue;
+            }
 
             summary.Checked++;
             LocalizedTMPText existing = text.GetComponent<LocalizedTMPText>();
             LocalizeStringEvent localizer = text.GetComponent<LocalizeStringEvent>();
             string currentKey = existing != null ? existing.LocalizationKey : localizer != null
                 ? localizer.StringReference.TableEntryReference.Key : string.Empty;
+            if (LocalizationEditorSafetyPolicy.IsRetiredShopGoodsNameKey(currentKey))
+            {
+                summary.RuntimeSkipped++;
+                continue; // Never bind a stale shop template text to a new static key.
+            }
+
             if (resolver.Validate(source, currentKey) == LocalizationBindingStatus.Valid)
             {
                 summary.Matched++;
@@ -153,10 +244,8 @@ public static class LocalizationTextBindingRepairTool
                 replacementKey = generatedKey;
             else if (resolver.Validate(source, serializedSceneKey) == LocalizationBindingStatus.Valid)
                 replacementKey = serializedSceneKey;
-            else if (string.IsNullOrWhiteSpace(currentKey))
-                replacementKey = resolver.ResolveSource(normalizedSource).Key;
             else
-                replacementKey = string.Empty;
+                replacementKey = resolver.ResolveSource(normalizedSource).Key;
             if (!string.IsNullOrWhiteSpace(replacementKey))
             {
                 if (StaticLocalizationMigration.RepairTextBinding(text, replacementKey))
@@ -226,6 +315,7 @@ public static class LocalizationTextBindingRepairTool
         public int Matched;
         public int Repaired;
         public int Unresolved;
+        public int RuntimeSkipped;
 
         public static RepairSummary operator +(RepairSummary left, RepairSummary right) => new RepairSummary
         {
@@ -233,6 +323,7 @@ public static class LocalizationTextBindingRepairTool
             Matched = left.Matched + right.Matched,
             Repaired = left.Repaired + right.Repaired,
             Unresolved = left.Unresolved + right.Unresolved,
+            RuntimeSkipped = left.RuntimeSkipped + right.RuntimeSkipped,
         };
     }
 }

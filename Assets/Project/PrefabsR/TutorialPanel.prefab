@@ -1498,7 +1498,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 7711759034381419172}
-  localizationKey: common.tutorial
+  localizationKey: ui.tutorialpanel.titletext.74198686
   koreanSource: "\uD29C\uD1A0\uB9AC\uC5BC"
   automaticallyRegistered: 1
 --- !u!1 &5505887031033990201
