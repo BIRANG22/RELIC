@@ -609,10 +609,9 @@ Event_03,,,3,기도를 요청한다.,모든 파티원의 생명력 10 회복,,Im
 Event_03_A,,"“조금이나마 도움이 되기를 바랍니다.""",,,,,,,,,,,,,,,,,,,,,event3,,event3,
 Event_03_B,,“침식의 기운을 조금이나마 정화해 드렸습니다.”,,,,,,,,,,,,,,,,,,,,,event3,,event3,
 Event_03_C,,“당신들의 생명에 축복이 머물기를.”,,,,,,,,,,,,,,,,,,,,,event3,,event3,
-Event_04,금단의 의식,“오래된 의식의 흔적이 남아 있다. 제물을 바치면 의식이 다시 시작될 것 같다.”,1,제물을 바친다.,"레드 더스티움 15 소모
-무작위 일반~에픽 기억 발현",레드 더스티움 부족,CostExchange,RedDustium>=15,RedDustium,Party,15,,SelectReward,PartyAll:Core,"Common:50,Rare:35,Epic:15",1,3,Event_04_A,,,,,event4,event_choice_01_success,event4,event_choice_01_failure
-Event_04,,,2,더 많은 제물을 바친다.,"레드 더스티움 30 소모
-무작위 레어~유니크 기억 발현",레드 더스티움 부족,CostExchange,RedDustium>=30,RedDustium,Party,30,,SelectReward,PartyAll:Core,"Rare:50,Epic:35,Unique:15",1,3,Event_04_B,,,,,event4,event_choice_02_success,event4,event_choice_02_failure
+Event_04,금단의 의식,오래된 의식의 흔적이 남아 있다. 기묘한 기운이 주변을 맴돈다.,1,의식에 손을 댄다.,무작위 일반~레어 기억 발현,,Immediate,,,,,,SelectReward,PartyAll:Core,"Common:60,Rare:40",1,3,Event_04_A,,,,,event4,event_choice_01_success,event4,event_choice_01_failure
+Event_04,,,2,제물을 바친다.,"레드 더스티움 30 소모
+무작위 에픽~유니크 기억 발현",레드 더스티움 부족,CostExchange,RedDustium>=30,RedDustium,Party,30,,SelectReward,PartyAll:Core,"Epic:70,Unique:30",1,3,Event_04_B,,,,,event4,event_choice_02_success,event4,event_choice_02_failure
 Event_04,,,3,의식을 무시한다.,이벤트 종료,,Immediate,,,,,,EndEvent,,,,,Event_04_C,,,,,event4,event_choice_03_success,event4,event_choice_03_failure
 Event_04_A,,"""희미하게 빛나던 흔적들이 서서히 사라졌다.""",,,,,,,,,,,,,,,,,,,,,event4,,event4,
 Event_04_B,,"""요동치던 기운이 서서히 잠잠해졌다.""",,,,,,,,,,,,,,,,,,,,,event4,,event4,

@@ -7535,6 +7535,198 @@ MonoBehaviour:
     m_Key: data.monster_skill.s_monster_40.type
     m_Metadata:
       m_Items: []
+  - m_Id: 31210397618790400
+    m_Key: ui.goods.name.b9083bf2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956224
+    m_Key: ui.goods.detail.17c449d6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956225
+    m_Key: data.event.event_01.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956226
+    m_Key: data.event.event_01_a.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956227
+    m_Key: data.event.event_02.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956228
+    m_Key: data.event.event_02_a.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956229
+    m_Key: data.event.event_02_b.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956230
+    m_Key: data.event.event_02_c.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956231
+    m_Key: data.event.event_03.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956232
+    m_Key: data.event.event_03_a.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956233
+    m_Key: data.event.event_03_b.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956234
+    m_Key: data.event.event_03_c.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956235
+    m_Key: data.event.event_04.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956236
+    m_Key: data.event.event_04_a.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956237
+    m_Key: data.event.event_04_b.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956238
+    m_Key: data.event.event_04_c.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956239
+    m_Key: data.event.event_05.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956240
+    m_Key: data.event.event_05_a.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956241
+    m_Key: data.event.event_05_b.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956242
+    m_Key: data.event.event_05_c.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956243
+    m_Key: data.event.event_05_d.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956244
+    m_Key: data.event.event_06.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956245
+    m_Key: data.event.event_06_a.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956246
+    m_Key: data.event.event_06_b.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956247
+    m_Key: data.event.event_06_c.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956248
+    m_Key: data.event.event_06_d.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956249
+    m_Key: data.event.event_06_e.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956250
+    m_Key: data.event.event_06_f.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956251
+    m_Key: data.event.event_07.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956252
+    m_Key: data.event.event_07_a.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956253
+    m_Key: data.event.event_07_b.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956254
+    m_Key: data.event.event_07_c.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956255
+    m_Key: data.event.event_07_d.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956256
+    m_Key: data.event.event_07_e.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956257
+    m_Key: data.event.event_08.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956258
+    m_Key: data.event.event_08_a.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956259
+    m_Key: data.event.event_08_b.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150528
+    m_Key: data.event.event_09.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150529
+    m_Key: data.event.event_09_a.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150530
+    m_Key: data.event.event_09_b.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150531
+    m_Key: data.event.event_09_c.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150532
+    m_Key: data.event.event_10.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150533
+    m_Key: data.event.event_10_a.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150534
+    m_Key: data.event.event_10_b.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150535
+    m_Key: data.event.event_10_c.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150536
+    m_Key: data.event.event_10_d.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150537
+    m_Key: data.event.event_t_01.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150538
+    m_Key: data.event.event_t_01_a.detail
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

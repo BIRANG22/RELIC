@@ -493,11 +493,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   panelRoot: {fileID: 1273546924}
   contentRoot: {fileID: 693261992}
-  goodsSlots:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  goodsPrefab: {fileID: 0}
   costResourceIcon: {fileID: 0}
   hpResourceIcon: {fileID: 0}
   uniqueResourceIcon: {fileID: 0}

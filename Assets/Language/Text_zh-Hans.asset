@@ -7460,6 +7460,460 @@ MonoBehaviour:
     m_Localized: "\u70B9\u51FB\u7EE7\u7EED"
     m_Metadata:
       m_Items: []
+  - m_Id: 31145982655496192
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439232
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439233
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439234
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439235
+    m_Localized: Moves 1 tile closer to the nearest character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439236
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439237
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439238
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439239
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439240
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439241
+    m_Localized: Buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439242
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439243
+    m_Localized: Moves up to 2 tiles away from the nearest character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439244
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439245
+    m_Localized: Deals {ValueRate1} {E_Strike} to nearby targets.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439246
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982697439247
+    m_Localized: Debuff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633536
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633537
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633538
+    m_Localized: Charge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633539
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633540
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633541
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633542
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633543
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633544
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633545
+    m_Localized: Deals {ValueRate1} {E_Strike} to targets in front.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633546
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633547
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633548
+    m_Localized: Moves up to 2 tiles away from the nearest character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633549
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633550
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633551
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633552
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633553
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633554
+    m_Localized: Charges, dealing {ValueRate1} {E_Strike} to the target and applying
+      {E_Knockback} for {ValueRate2} tiles.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633555
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633556
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633557
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633558
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633559
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633560
+    m_Localized: Deals {ValueRate1} {E_Strike} in an area.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633561
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633562
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633563
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633564
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633565
+    m_Localized: Deals {ValueRate1} {E_Pierce} to targets in front.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633566
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633567
+    m_Localized: "Deals {ValueRate1} {E_Strike} at the nearest target\u2019s position."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633568
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633569
+    m_Localized: Debuff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633570
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633571
+    m_Localized: Moves up to 2 tiles away from the nearest character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633572
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633573
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633574
+    m_Localized: Deals {ValueRate1} {E_Strike} to nearby targets.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633575
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633576
+    m_Localized: Buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633577
+    m_Localized: Deploy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633578
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633579
+    m_Localized: Moves 1 tile toward the nearest character.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633580
+    m_Localized: Move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633581
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31145982701633582
+    m_Localized: Attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397618790400
+    m_Localized: Relic Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956224
+    m_Localized: Relic Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956225
+    m_Localized: Through the light seeping from the rift, a faint trace of memory
+      can be felt.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956226
+    m_Localized: The light slowly faded, and the rift in the sky fell silent once
+      more.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956227
+    m_Localized: Looking for something? Take anything that catches your eye.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956228
+    m_Localized: Come back if you need anything else.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956229
+    m_Localized: Do stop by again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956230
+    m_Localized: Well, I am not going to force you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956231
+    m_Localized: This is no place to linger. Let us know if you need our help before
+      you leave.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956232
+    m_Localized: I hope this helps, even a little.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956233
+    m_Localized: We have purified some of the corruption.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956234
+    m_Localized: May your lives be blessed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956235
+    m_Localized: Traces of an ancient ritual remain. An eerie energy hangs in the
+      air.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956236
+    m_Localized: The faintly glowing traces slowly vanished.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956237
+    m_Localized: The turbulent energy gradually subsided.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956238
+    m_Localized: You leave without touching anything.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956239
+    m_Localized: An abandoned wagon sits by the roadside. There may still be something
+      useful inside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956240
+    m_Localized: There seems to be nothing else worth taking.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956241
+    m_Localized: There is nothing useful left inside the wagon.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956242
+    m_Localized: There is nothing left in the wagon worth taking.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956243
+    m_Localized: You find nothing useful.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956244
+    m_Localized: You spot some abandoned crates. Something useful may remain inside.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956245
+    m_Localized: There is still something worth checking. You could try again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956246
+    m_Localized: You may still find something in the remaining crates.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956247
+    m_Localized: There is nothing else worth taking.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956248
+    m_Localized: A sudden explosion leaves only shattered debris behind.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956249
+    m_Localized: You pass by without touching the crates.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956250
+    m_Localized: You leave the remaining crates untouched and depart.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956251
+    m_Localized: A massive ore vein emits a faint glow.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956252
+    m_Localized: Light continues to seep from deep within the vein.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956253
+    m_Localized: Cracks spread throughout the vein.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956254
+    m_Localized: The vein loses its light and falls silent.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956255
+    m_Localized: The vein crumbles in an instant, vanishing without a trace.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956256
+    m_Localized: You leave without disturbing the vein.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956257
+    m_Localized: An unfamiliar inscription is carved into an ancient stone monument.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956258
+    m_Localized: The inscription glows, and an unknown power flows through you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397643956259
+    m_Localized: The glow of the inscription fades.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150528
+    m_Localized: A soft light flows from a small fountain filled with clear water.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150529
+    m_Localized: The ripples gently settle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150530
+    m_Localized: The surrounding light slowly fades.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150531
+    m_Localized: A clear light spreads out, then everything falls still.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150532
+    m_Localized: A mysterious being offers a strange bargain.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150533
+    m_Localized: It gives a faint smile, seemingly pleased with the price.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150534
+    m_Localized: It looks intrigued, as if impressed by your luck.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150535
+    m_Localized: It lets out a quiet, mocking laugh, as though it expected this.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150536
+    m_Localized: It smiles with satisfaction at the aura of corruption.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150537
+    m_Localized: On the road to the outpost, an explorer is taking a break.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31210397648150538
+    m_Localized: After a short rest, the party regains its strength.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

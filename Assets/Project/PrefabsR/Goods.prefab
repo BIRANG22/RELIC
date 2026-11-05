@@ -822,6 +822,7 @@ GameObject:
   - component: {fileID: 6470108733548395019}
   - component: {fileID: 4216358658690553063}
   - component: {fileID: 7685480686193179914}
+  - component: {fileID: 2028823854139488926}
   m_Layer: 5
   m_Name: Name
   m_TagString: Untagged
@@ -948,6 +949,22 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2028823854139488926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5121017861629222214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 700ed754fb422984990c407c26f0065c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 7685480686193179914}
+  localizationKey: ui.goods.name.b9083bf2
+  koreanSource: "\uC720\uBB3C\uC774\uB984"
+  automaticallyRegistered: 1
 --- !u!1 &5913399074020091945
 GameObject:
   m_ObjectHideFlags: 0
@@ -1099,10 +1116,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1608633355866187450}
-  localizationKey: ui.battle.if_karma_at_maximum_the_start_the_turn_1_h
-  koreanSource: "\uD134 \uC2DC\uC791 \uC2DC \uCE74\uB974\uB9C8\uAC00 \uCD5C\uB300\uB77C\uBA74
-    \uCD5C\uB300 \uC0DD\uBA85\uB825 \uB300\uBE44 \uC0DD\uBA85\uB825\uC774 \uB0AE\uC740
-    \uC544\uAD70\uC758 \uC0DD\uBA85\uB825\uC744 1 \uD68C\uBCF5\uD55C\uB2E4."
+  localizationKey: ui.goods.detail.17c449d6
+  koreanSource: "\uC720\uBB3C\uC124\uBA85"
   automaticallyRegistered: 1
 --- !u!1 &6035280722833437690
 GameObject:
