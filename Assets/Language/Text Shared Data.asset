@@ -5983,6 +5983,30 @@ MonoBehaviour:
     m_Key: ui.menu.battle.save_and_quit
     m_Metadata:
       m_Items: []
+  - m_Id: 31333427957702656
+    m_Key: event.dice.success
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333428003840000
+    m_Key: event.dice.failure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333428003840001
+    m_Key: event.dice.judgement_success
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333428003840002
+    m_Key: event.dice.judgement_failure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333428003840003
+    m_Key: event.result.hp_recovery_amount
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333428003840004
+    m_Key: event.result.max_hp_increase_amount
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

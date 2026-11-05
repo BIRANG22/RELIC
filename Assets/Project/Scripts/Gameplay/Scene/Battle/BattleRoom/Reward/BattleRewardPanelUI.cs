@@ -97,11 +97,14 @@ public class BattleRewardPanelUI : MonoBehaviour
     private bool validNextButtonClick;
     private int validNextButtonClickFrame = -1;
     private int dismissingSlotCount;
+    // Only the reward flow may control the shared NextButton visibility.
+    private bool rewardFlowActive;
 
     public Button SharedNextButton => gainButton;
 
     public void HideNextButtonAfterCover()
     {
+        rewardFlowActive = false;
         if (gainButton == null) return;
         gainButton.interactable = false;
         gainButton.gameObject.SetActive(false);
@@ -160,6 +163,7 @@ public class BattleRewardPanelUI : MonoBehaviour
     {
         if (gainButton == null || onArrival == null) return false;
         resultArrivalCallback = onArrival;
+        rewardFlowActive = true;
         gameObject.SetActive(true);
         if (rewardRoot != null) rewardRoot.gameObject.SetActive(false);
         if (gainButtonText != null)
@@ -225,6 +229,7 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
+        rewardFlowActive = false;
         StopRewardSpawn();
         StopAutoGain();
         pointerPressedOnNextButton = false;
@@ -239,6 +244,9 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
     {
+        if (!rewardFlowActive || !isActiveAndEnabled)
+            return;
+
         for (int i = 0; i < currentRewards.Count; i++)
         {
             BattleRewardData reward = currentRewards[i];
@@ -249,7 +257,22 @@ public class BattleRewardPanelUI : MonoBehaviour
         for (int i = 0; i < activeSlots.Count; i++)
             activeSlots[i]?.RefreshLocalization();
 
-        UpdateGainButton();
+        // Locale refresh must never reveal a previously hidden NextButton.
+        if (gainButton != null && gainButton.gameObject.activeSelf)
+            RefreshGainButtonTextOnly();
+    }
+
+    private void RefreshGainButtonTextOnly()
+    {
+        if (gainButtonText == null) return;
+        if (resultArrivalCallback != null || (awaitingContinue && useTutorialArrivalLabel))
+            gainButtonText.text = GameLocalization.Get("common.arrive", "도착");
+        else if (awaitingContinue)
+            gainButtonText.text = GameLocalization.Get("common.proceed", "진행");
+        else
+            gainButtonText.text = GameLocalization.FormatWithFallback(
+                "battle.reward.acquire_count_format", "획득 {0}",
+                Mathf.Max(0, currentRewards.Count - claimedRewards.Count));
     }
 
     public void Open(List<BattleRewardData> rewards, Action completedCallback = null)
@@ -259,6 +282,8 @@ public class BattleRewardPanelUI : MonoBehaviour
 
     public void Open(List<BattleRewardData> rewards, Action completedCallback, ResumeData resumeData)
     {
+        rewardFlowActive = true;
+        resultArrivalCallback = null;
         StopAutoGain();
         StopRewardSpawn();
         gainButtonUsed = false;
@@ -478,6 +503,7 @@ public class BattleRewardPanelUI : MonoBehaviour
         {
             System.Action callback = resultArrivalCallback;
             resultArrivalCallback = null;
+            rewardFlowActive = false;
             if (gainButton != null) gainButton.interactable = false;
             callback.Invoke();
             return;
@@ -584,6 +610,12 @@ public class BattleRewardPanelUI : MonoBehaviour
     {
         if (gainButton == null)
             return;
+        if (!rewardFlowActive)
+        {
+            gainButton.interactable = false;
+            gainButton.gameObject.SetActive(false);
+            return;
+        }
 
         int remaining = Mathf.Max(0, currentRewards.Count - claimedRewards.Count);
         if (awaitingContinue)
@@ -1247,6 +1279,7 @@ public class BattleRewardPanelUI : MonoBehaviour
         }
 
         StopAutoGain();
+        rewardFlowActive = false;
         // Keep the visible "진행" button on screen until the destination transition
         // handles panel teardown. Lock further clicks without hiding its visuals.
         if (gainButton != null)

@@ -6270,6 +6270,30 @@ MonoBehaviour:
     m_Localized: Return to Title
     m_Metadata:
       m_Items: []
+  - m_Id: 31333428003840000
+    m_Localized: Failure
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333428003840002
+    m_Localized: Check Failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333428003840001
+    m_Localized: Check Succeeded
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333427957702656
+    m_Localized: Success
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333428003840003
+    m_Localized: Restore {0} HP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31333428003840004
+    m_Localized: Increase Max HP by {0}
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

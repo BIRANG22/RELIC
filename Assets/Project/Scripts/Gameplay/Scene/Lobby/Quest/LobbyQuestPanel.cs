@@ -1,4 +1,5 @@
 using TMPro;
+using UnityEngine.Localization.Settings;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -50,6 +51,29 @@ public sealed class LobbyQuestPanel : MonoBehaviour
         initialized = true;
     }
 
+    // Quest text is localized at runtime, so its font must be resolved before
+    // TextMeshPro measures glyph widths in GetPreferredValues(). The global
+    // font applicator may otherwise run later in the same frame.
+    private void ApplyQuestLocaleFont()
+    {
+        if (questText == null)
+            return;
+
+        var locale = LocalizationSettings.SelectedLocale;
+        if (locale == null)
+            return;
+
+        LocaleFontDatabase database = LocaleFontDatabaseProvider.LoadDefault();
+        if (database == null ||
+            !database.TryResolve(locale.Identifier.Code, LocaleFontDatabase.BodyRoleId, out TMP_FontAsset localeFont) ||
+            localeFont == null || questText.font == localeFont)
+        {
+            return;
+        }
+
+        questText.font = localeFont;
+    }
+
     private void ResizeToText()
     {
         InitializeSizing();
@@ -90,6 +114,9 @@ public sealed class LobbyQuestPanel : MonoBehaviour
 
         if (questText != null && state.IsVisible)
         {
+            // Apply the language font before assigning localized characters or
+            // measuring them; this also handles locale changes while visible.
+            ApplyQuestLocaleFont();
             if (questText.text != state.Text)
                 questText.text = state.Text;
             ResizeToText();

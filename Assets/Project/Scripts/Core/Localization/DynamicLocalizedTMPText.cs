@@ -16,6 +16,8 @@ public sealed class DynamicLocalizedTMPText : MonoBehaviour
     private readonly LocalizationRefreshGate refreshGate = new();
 
     public bool IsApplyingLocalization { get; private set; }
+    public bool HasLocalizationKey => sourceState != null &&
+                                      !string.IsNullOrWhiteSpace(sourceState.LocalizationKey);
 
     public void Configure(LocalizationBindingResolver sourceResolver, string koreanSource)
     {

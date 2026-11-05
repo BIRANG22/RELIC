@@ -39,6 +39,12 @@ public sealed class LocalizedTMPFont : MonoBehaviour
         if (target == null)
             return;
 
+        // Language dropdown options each represent a DIFFERENT locale.
+        // DirectTemplateDropdown owns their fonts, not this global locale binder.
+        DirectTemplateDropdown dropdownOwner = target.GetComponentInParent<DirectTemplateDropdown>(true);
+        if (dropdownOwner != null && dropdownOwner.OwnsFont(target))
+            return;
+
         CaptureOriginalIfNeeded();
         LocaleFontDatabase selectedDatabase = database != null
             ? database

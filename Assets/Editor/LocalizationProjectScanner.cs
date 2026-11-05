@@ -505,9 +505,16 @@ public static class LocalizationRuntimeSourceCatalog
         Entry("lobby.quest.first_expedition", "첫 탐사 - 각성핵 회수 {Current}/{Target}"),
         Entry("battle.intro.enter_battle_area", "전투 구역 진입"),
         Entry("battle.intro.battle_start", "전투 시작"),
-        Entry("ui.menu.lobby.return_to_title", "타이틀로"),
-        Entry("ui.menu.battle.save_and_quit", "저장 후 종료"),
         Entry("battle.intro.rest_area", "휴식 구역 진입"),
+        // Passive skill type uses this key in battle, reward, and lobby skill tooltips.
+        Entry("common.passive", "패시브"),
+        // Event dice result texts are produced at runtime, not by prefab TMP labels.
+        Entry("event.dice.success", "성공"),
+        Entry("event.dice.failure", "실패"),
+        Entry("event.dice.judgement_success", "판정 성공"),
+        Entry("event.dice.judgement_failure", "판정 실패"),
+        Entry("event.result.hp_recovery_amount", "생명력 {0} 회복"),
+        Entry("event.result.max_hp_increase_amount", "최대 생명력 {0} 증가"),
         Entry(LocalizationKeys.Lobby.PlayReady, "준비"),
         // These dynamic confirmation messages are supplied by UIManager and other
         // controllers. They do not exist as literal TMP text in prefab assets.

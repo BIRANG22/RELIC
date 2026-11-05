@@ -220,7 +220,12 @@ public class OptionPanelUI : MonoBehaviour
         resolutionDropdown.AddOptions(options);
         resolutionDropdown.SetValueWithoutNotify(ResolutionManager.CurrentResolutionIndex);
         resolutionDropdown.onValueChanged.AddListener(OnResolutionChanged);
-        DirectTemplateDropdown.Attach(resolutionDropdown)?.Configure(resolutionDropdownSortingOrderOffset);
+        DirectTemplateDropdown resolutionController = DirectTemplateDropdown.Attach(resolutionDropdown);
+        if (resolutionController != null)
+        {
+            resolutionController.Configure(resolutionDropdownSortingOrderOffset);
+            resolutionController.ConfigureCommonNumberFont(LocaleFontDatabaseProvider.LoadDefault());
+        }
 
         isResolutionDropdownReady = true;
     }
@@ -327,8 +332,34 @@ public class OptionPanelUI : MonoBehaviour
         SetOptionHeading("SoundText", "ui.option.header.sound", "사운드");
         SetOptionHeading("Control_text", "ui.option.header.control", "조작");
         SetOptionHeading("ControlText", "ui.option.header.control", "조작");
-        // The tutorial option label is static, but its prefab may carry an obsolete binding.
-        SetOptionHeading("TutorialLabel", "ui.tutorialpanel.titletext.74198686", "튜토리얼");
+        SetOptionHeading("Tutorial_text", "ui.tutorialpanel.titletext.74198686", "튜토리얼");
+        SetOptionHeading("TutorialText", "ui.tutorialpanel.titletext.74198686", "튜토리얼");
+        SetTutorialToggleHeading();
+    }
+
+    private void SetTutorialToggleHeading()
+    {
+        Transform toggleRoot = FindChildByName(transform, TutorialToggle1Name);
+        if (toggleRoot == null)
+            return;
+
+        TMP_Text[] texts = toggleRoot.GetComponentsInChildren<TMP_Text>(true);
+        foreach (TMP_Text label in texts)
+        {
+            if (label == null)
+                continue;
+            string current = label.text != null ? label.text.Trim() : string.Empty;
+            if (current != "튜토리얼" && current != "Untranslated" &&
+                current != "미번역" && current != "未翻訳" &&
+                current != "未翻译" && current != "Sin traducir")
+                continue;
+            LocalizedTMPText.ProtectDynamicOwnership(label);
+            string value = GameLocalization.Get("ui.tutorialpanel.titletext.74198686", "튜토리얼");
+            label.text = string.IsNullOrWhiteSpace(value) ||
+                value == "Untranslated" || value == "未翻訳" ||
+                value == "未翻译" || value == "Sin traducir" || value == "미번역"
+                ? "튜토리얼" : value;
+        }
     }
 
     private void SetOptionHeading(string objectName, string key, string koreanSource)
@@ -371,6 +402,8 @@ public class OptionPanelUI : MonoBehaviour
         if (this && isActiveAndEnabled)
             RefreshOptionHeadingLabels();
     }
+
+
 
     private void ConfigureDisplayModeToggleGroup()
     {

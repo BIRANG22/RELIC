@@ -21,7 +21,7 @@ MonoBehaviour:
     - roleId: title
       font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
     - roleId: number
-      font: {fileID: 11400000, guid: 15f0f3445fd0bf947b79b40fad359512, type: 2}
+      font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   - localeCode: en
     defaultFont: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
     roleFonts:
@@ -30,7 +30,7 @@ MonoBehaviour:
     - roleId: title
       font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
     - roleId: number
-      font: {fileID: 11400000, guid: 15f0f3445fd0bf947b79b40fad359512, type: 2}
+      font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   - localeCode: es
     defaultFont: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
     roleFonts:
@@ -39,26 +39,36 @@ MonoBehaviour:
     - roleId: title
       font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
     - roleId: number
-      font: {fileID: 11400000, guid: 15f0f3445fd0bf947b79b40fad359512, type: 2}
+      font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   - localeCode: ja
-    defaultFont: {fileID: 11400000, guid: ced41c4308c66d54a8996d8a29ef1c57, type: 2}
+    defaultFont: {fileID: 11400000, guid: 9ae2925e85fcb5741a6fdafdf599bab3, type: 2}
     roleFonts:
     - roleId: body
-      font: {fileID: 11400000, guid: ced41c4308c66d54a8996d8a29ef1c57, type: 2}
+      font: {fileID: 11400000, guid: e487dc9f71ea47c48ad02e209882f0f8, type: 2}
     - roleId: title
-      font: {fileID: 11400000, guid: a6605d9ebc2b0ea4b97bf1645c0e71e4, type: 2}
+      font: {fileID: 11400000, guid: e487dc9f71ea47c48ad02e209882f0f8, type: 2}
     - roleId: number
-      font: {fileID: 11400000, guid: 15f0f3445fd0bf947b79b40fad359512, type: 2}
+      font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   - localeCode: zh-Hans
-    defaultFont: {fileID: 11400000, guid: 9f6b6789430707045bb3e91deb0f5425, type: 2}
+    defaultFont: {fileID: 11400000, guid: 9ae2925e85fcb5741a6fdafdf599bab3, type: 2}
     roleFonts:
     - roleId: body
-      font: {fileID: 11400000, guid: 9f6b6789430707045bb3e91deb0f5425, type: 2}
+      font: {fileID: 11400000, guid: e487dc9f71ea47c48ad02e209882f0f8, type: 2}
     - roleId: title
-      font: {fileID: 11400000, guid: 9f6b6789430707045bb3e91deb0f5425, type: 2}
+      font: {fileID: 11400000, guid: e487dc9f71ea47c48ad02e209882f0f8, type: 2}
     - roleId: number
-      font: {fileID: 11400000, guid: 15f0f3445fd0bf947b79b40fad359512, type: 2}
+      font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  - localeCode: zh-Hant
+    defaultFont: {fileID: 11400000, guid: 9ae2925e85fcb5741a6fdafdf599bab3, type: 2}
+    roleFonts:
+    - roleId: body
+      font: {fileID: 11400000, guid: e487dc9f71ea47c48ad02e209882f0f8, type: 2}
+    - roleId: title
+      font: {fileID: 11400000, guid: e487dc9f71ea47c48ad02e209882f0f8, type: 2}
+    - roleId: number
+      font: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  commonNumberFont: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   sourceFontRoles:
-  - sourceFont: {fileID: 11400000, guid: 0dfbb791c129dae409ba8e066f40eee0, type: 2}
+  - sourceFont: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
     roleId: number
     preserveSourceFont: 1

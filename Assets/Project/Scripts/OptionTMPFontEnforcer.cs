@@ -11,7 +11,7 @@ public sealed class OptionTMPFontEnforcer : MonoBehaviour
     {
         LocalizedTMPFont[] localizers = GetComponentsInChildren<LocalizedTMPFont>(true);
         for (int i = 0; i < localizers.Length; i++)
-            localizers[i]?.RefreshForLocale(LocalizationSettings.SelectedLocale);
+            RefreshUnlessMultilingualDropdown(localizers[i]);
 
         TMP_Dropdown[] dropdowns = GetComponentsInChildren<TMP_Dropdown>(true);
         for (int i = 0; i < dropdowns.Length; i++)
@@ -25,6 +25,23 @@ public sealed class OptionTMPFontEnforcer : MonoBehaviour
 
         LocalizedTMPFont[] localizers = dropdown.template.GetComponentsInChildren<LocalizedTMPFont>(true);
         for (int i = 0; i < localizers.Length; i++)
-            localizers[i]?.RefreshForLocale(LocalizationSettings.SelectedLocale);
+            RefreshUnlessMultilingualDropdown(localizers[i]);
     }
+    private static void RefreshUnlessMultilingualDropdown(LocalizedTMPFont localizer)
+    {
+        if (localizer == null)
+            return;
+
+        TMP_Text target = localizer.Target != null
+            ? localizer.Target : localizer.GetComponent<TMP_Text>();
+        if (target != null)
+        {
+            DirectTemplateDropdown owner = target.GetComponentInParent<DirectTemplateDropdown>(true);
+            if (owner != null && owner.OwnsFont(target))
+                return;
+        }
+
+        localizer.RefreshForLocale(LocalizationSettings.SelectedLocale);
+    }
+
 }

@@ -25,6 +25,78 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
     private int openedFrame = -1;
     private bool isOpen;
 
+    // Language selectors display several scripts simultaneously. Each option
+    // must use its own locale font rather than the currently selected locale.
+    private LocaleFontDatabase optionFontDatabase;
+    private string[] optionLocaleCodes;
+    private bool useCommonNumberFont;
+
+    public bool ManagesMultilingualFonts => optionLocaleCodes != null && optionLocaleCodes.Length > 0;
+    public bool ManagesOptionFonts => ManagesMultilingualFonts || useCommonNumberFont;
+
+    // Resolution dropdown: every caption and option uses the shared number font.
+    public void ConfigureCommonNumberFont(LocaleFontDatabase database)
+    {
+        optionFontDatabase = database;
+        optionLocaleCodes = null;
+        useCommonNumberFont = true;
+        ApplyCaptionFont();
+    }
+
+    public void ConfigureOptionFonts(LocaleFontDatabase database, IList<string> localeCodes)
+    {
+        optionFontDatabase = database;
+        useCommonNumberFont = false;
+        optionLocaleCodes = localeCodes != null ? new List<string>(localeCodes).ToArray() : null;
+        ApplyCaptionFont();
+    }
+
+    public bool OwnsFont(TMP_Text text)
+    {
+        if (!ManagesOptionFonts || dropdown == null || text == null)
+            return false;
+        if (text == dropdown.captionText)
+            return true;
+        return dropdown.template != null && text.transform.IsChildOf(dropdown.template);
+    }
+
+    private LocaleFontDatabase ResolveFontDatabase() => optionFontDatabase != null
+        ? optionFontDatabase
+        : LocaleFontDatabaseProvider.LoadDefault();
+
+    private void ApplyOptionFont(TMP_Text text, int index)
+    {
+        if (text == null)
+            return;
+
+        LocaleFontDatabase db = ResolveFontDatabase();
+        if (db == null)
+            return;
+
+        TMP_FontAsset font = null;
+        if (useCommonNumberFont)
+        {
+            font = db.CommonNumberFont;
+        }
+        else if (optionLocaleCodes != null && index >= 0 && index < optionLocaleCodes.Length)
+        {
+            db.TryResolve(optionLocaleCodes[index], LocaleFontDatabase.BodyRoleId, out font);
+        }
+
+        if (font != null && text.font != font)
+        {
+            text.font = font;
+            text.SetAllDirty();
+        }
+    }
+
+    public void ApplyCaptionFont()
+    {
+        if (dropdown != null)
+            ApplyOptionFont(dropdown.captionText, dropdown.value);
+    }
+
+
     public static DirectTemplateDropdown Attach(TMP_Dropdown target)
     {
         if (target == null)
@@ -86,9 +158,44 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
         clickCatcher.transform.SetAsLastSibling();
     }
 
+    private void OnEnable()
+    {
+        Canvas.preWillRenderCanvases -= RefreshManagedFonts;
+        Canvas.preWillRenderCanvases += RefreshManagedFonts;
+    }
+
     private void OnDisable()
     {
+        Canvas.preWillRenderCanvases -= RefreshManagedFonts;
         Close();
+    }
+
+    private void OnDestroy()
+    {
+        Canvas.preWillRenderCanvases -= RefreshManagedFonts;
+    }
+
+    // The dropdown displays six languages simultaneously. A global locale-font
+    // refresh, including a LocalizedTMPFont on the template, must not change
+    // the individual option fonts to the currently selected language.
+    private void RefreshManagedFonts()
+    {
+        if (!ManagesOptionFonts || dropdown == null)
+            return;
+
+        ApplyCaptionFont();
+        if (!isOpen)
+            return;
+
+        int count = useCommonNumberFont ? optionItems.Count : Mathf.Min(optionItems.Count, optionLocaleCodes.Length);
+        for (int i = 0; i < count; i++)
+        {
+            Toggle item = optionItems[i];
+            if (item == null || !item.gameObject.activeInHierarchy)
+                continue;
+            TMP_Text label = item.GetComponentInChildren<TMP_Text>(true);
+            ApplyOptionFont(label, i);
+        }
     }
 
     private void Update()
@@ -267,7 +374,10 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
             int optionIndex = i;
             TMP_Text optionText = optionToggle.GetComponentInChildren<TMP_Text>(true);
             if (optionText != null)
+            {
                 optionText.text = dropdown.options[i].text;
+                ApplyOptionFont(optionText, i);
+            }
 
             optionToggle.onValueChanged.RemoveAllListeners();
             optionToggle.SetIsOnWithoutNotify(i == dropdown.value);
@@ -287,6 +397,7 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
 
         dropdown.SetValueWithoutNotify(index);
         dropdown.RefreshShownValue();
+        ApplyCaptionFont();
         dropdown.onValueChanged.Invoke(index);
         Close();
     }
