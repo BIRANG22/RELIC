@@ -75,12 +75,8 @@ public class BattleActionRunner
 
     private const float ActionDelay = 0.03f;
     private const float GroupedActionBeatDelay = 0.12f;
-    private const float BatchEndDelay = 0.03f;
-    // 유효 대상이 없는 행동의 후속 대기는 일반 행동(0.45 + 0.03초)보다 30% 짧게 유지합니다.
-    private const float NoInteractionPostDelay = 0.336f;
 
     private const float HitCameraDelay = 0.08f;
-    private const float MonsterHUDVisibleDelay = 0.45f;
     private const float ForcedMoveVisualCompletionDelay = 0.18f;
     private const float DefaultActionRoutineTimeout = 8f;
     private const string MuckMonsterId = "Mon_01";
@@ -131,7 +127,6 @@ public class BattleActionRunner
     private const string NocturnSlashSkillId = "S_Monster_27";
     private const string NocturnPullSkillId = "S_Monster_28";
     private const string ResidueGridEffectId = "GR_Residue";
-    private static readonly Color ExecutionRangeColor = Color.red;
     public const float MoveAnimationDuration = 0.15f;
     private const float GridEffectResumeDelay = 0.65f;
 
@@ -425,28 +420,11 @@ public class BattleActionRunner
         bool hasInteraction = true,
         float speedMultiplier = 1f)
     {
-        float safeSpeed = Mathf.Max(1f, speedMultiplier);
-
-        if (hasInteraction)
-        {
-            yield return new WaitForSeconds(
-                BattleConsecutiveActionPresentationContext.ScaleDuration(MonsterHUDVisibleDelay / safeSpeed));
-
-            hudService.HideUnselectedMonsterHUDs();
-
-            yield return new WaitForSeconds(
-                BattleConsecutiveActionPresentationContext.ScaleDuration(BatchEndDelay / safeSpeed));
-
-            hudService.PlayAllAliveIdle();
-            yield break;
-        }
-
+        // 행동 종료 후 별도의 대기 없이 다음 타임라인 오더로 진행합니다.
+        // HUD 정리 및 대기 애니메이션은 그대로 유지합니다.
         hudService.HideUnselectedMonsterHUDs();
-
-        yield return new WaitForSeconds(
-            BattleConsecutiveActionPresentationContext.ScaleDuration(NoInteractionPostDelay / safeSpeed));
-
         hudService.PlayAllAliveIdle();
+        yield break;
     }
 
     public bool ApplyTurnEndEffects()
@@ -1072,12 +1050,45 @@ public class BattleActionRunner
         onComplete?.Invoke();
     }
 
-    private void ShowExecutionRange(IReadOnlyCollection<int> rangeGridIndices)
+    private void ShowExecutionRange(IReadOnlyCollection<int> rangeGridIndices, BattleExecutionRangeType rangeType)
     {
         if (gridManager == null)
             return;
 
-        gridManager.ShowExecutionRange(rangeGridIndices, ExecutionRangeColor);
+        gridManager.ShowExecutionRange(rangeGridIndices, rangeType);
+    }
+
+    private static BattleExecutionRangeType GetPlayerExecutionRangeType(PlayerReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return BattleExecutionRangeType.AttackOrDebuff;
+
+        if (BattleEquipmentEffectService.IsMoveCommand(command) || IsMoveSkill(command.SkillData))
+            return BattleExecutionRangeType.Move;
+
+        if (command.SkillData.SkillType == SkillType.Buff ||
+            command.SkillData.TimelineNotation == TimelineActionType.Buff ||
+            command.SkillData.TimelineNotation == TimelineActionType.Heal)
+            return BattleExecutionRangeType.Buff;
+
+        return BattleExecutionRangeType.AttackOrDebuff;
+    }
+
+    private static BattleExecutionRangeType GetMonsterExecutionRangeType(MonsterReservedCommand command)
+    {
+        if (command == null || command.SkillData == null)
+            return BattleExecutionRangeType.AttackOrDebuff;
+
+        switch (command.SkillData.TimelineNotation)
+        {
+            case TimelineActionType.Move:
+                return BattleExecutionRangeType.Move;
+            case TimelineActionType.Buff:
+            case TimelineActionType.Heal:
+                return BattleExecutionRangeType.Buff;
+            default:
+                return BattleExecutionRangeType.AttackOrDebuff;
+        }
     }
 
     private void ClearExecutionRange()
@@ -1380,7 +1391,7 @@ public class BattleActionRunner
             yield break;
         }
 
-        ShowExecutionRange(BuildPlayerMoveExecutionRange(command, currentGridIndex));
+        ShowExecutionRange(BuildPlayerMoveExecutionRange(command, currentGridIndex), BattleExecutionRangeType.Move);
         Transform directCameraUnit = null;
 
         try
@@ -1988,7 +1999,7 @@ public class BattleActionRunner
         if (!HasDirectionalMoveBeforeFirstDamage(command))
             RecalculatePlayerSkillRangeAtExecution(attacker, command);
 
-        ShowExecutionRange(BuildPlayerExecutionRange(command));
+        ShowExecutionRange(BuildPlayerExecutionRange(command), GetPlayerExecutionRangeType(command));
 
         bool shouldControlAttackPlane = ShouldControlAttackPlaneForPlayerSkill(command);
 
@@ -2945,7 +2956,7 @@ public class BattleActionRunner
 
         // 이동 성공 시에는 예약 프리뷰와 같은 도착 위치 기준 범위가 유지되고,
         // 이동 실패/충돌 시에는 실제 남아 있는 위치 기준 범위로 즉시 갱신합니다.
-        ShowExecutionRange(BuildPlayerExecutionRange(command));
+        ShowExecutionRange(BuildPlayerExecutionRange(command), GetPlayerExecutionRangeType(command));
 
         if (monsterTargets != null)
         {
@@ -4059,7 +4070,7 @@ public class BattleActionRunner
         // 사슬 이동은 예약된 절대 목적지를 사용할 수 있으므로 일반 이동의 0 오프셋 검사보다 먼저 처리합니다.
         if (IsNocturnPortalMove(command))
         {
-            ShowExecutionRange(BuildMonsterMoveExecutionRange(monster, command));
+            ShowExecutionRange(BuildMonsterMoveExecutionRange(monster, command), BattleExecutionRangeType.Move);
 
             try
             {
@@ -4076,7 +4087,7 @@ public class BattleActionRunner
         if (moveOffset == Vector2Int.zero)
             yield break;
 
-        ShowExecutionRange(BuildMonsterMoveExecutionRange(monster, command));
+        ShowExecutionRange(BuildMonsterMoveExecutionRange(monster, command), BattleExecutionRangeType.Move);
         Transform directCameraUnit = null;
 
         try
@@ -4801,7 +4812,7 @@ public class BattleActionRunner
                 RecalculateMonsterSkillRangeAtExecution(monster, command);
             }
 
-            ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
+            ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex), GetMonsterExecutionRangeType(command));
             try
             {
                 yield return ExecuteMonsterDashAttack(command);
@@ -4894,7 +4905,7 @@ public class BattleActionRunner
             yield return BattleCameraController.Instance.ReturnDefault();
         }
 
-        ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex));
+        ShowExecutionRange(BuildMonsterSkillExecutionRange(command, monster.MainGridIndex), GetMonsterExecutionRangeType(command));
         try
         {
             if (ShouldEnterCameraForActiveAction() && BattleCameraController.Instance != null)
