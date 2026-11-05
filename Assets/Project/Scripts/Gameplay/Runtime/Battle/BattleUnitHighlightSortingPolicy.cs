@@ -24,4 +24,18 @@ namespace Relic.Gameplay.Battle
                 unitSortingOrder - 2);
         }
     }
+
+    public static class BattleGridEffectSortingPolicy
+    {
+        public static int ResolveOrder(
+            float cellWorldY,
+            float yMultiplier,
+            int sortingOrderOffset,
+            int prefabSortingOrder)
+        {
+            float safeMultiplier = UnityEngine.Mathf.Max(0.01f, yMultiplier);
+            int cellSortingOrder = (int)(-cellWorldY * safeMultiplier);
+            return cellSortingOrder + sortingOrderOffset + prefabSortingOrder;
+        }
+    }
 }

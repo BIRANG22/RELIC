@@ -72666,9 +72666,10 @@ MonoBehaviour:
   gridEffectHpUiWorldYOffset: 0.12
   worldOffset: {x: 0, y: 0.05, z: 0}
   viewScale: 1
-  overrideSortingLayer: 0
-  sortingLayerName: Default
-  sortingOrder: 1
+  overrideSortingLayer: 1
+  sortingLayerName: Unit
+  sortingOrderOffset: -1
+  sortingYMultiplier: 100
   shakeDamageableEffects: 1
   damageShakeDistance: 0.32
   damageShakeDuration: 0.26
