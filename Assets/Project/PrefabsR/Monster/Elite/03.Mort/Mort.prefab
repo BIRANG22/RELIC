@@ -563,7 +563,7 @@ MonoBehaviour:
     proxySortingWorldYOffset: 0
     proxyYMultiplier: 100
   hitVfx:
-    prefab: {fileID: 1117934107437797500, guid: 88f1a976e51edc6498fbd356d3e3f7f1, type: 3}
+    prefab: {fileID: 1117934107437797500, guid: 29122f0224421124db943cf3bc5e1d59, type: 3}
     flipType: 2
     renderMode: 2
     proxyBlendMode: 0

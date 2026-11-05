@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 9157567519242615554}
   - component: {fileID: 4363756786740669121}
   - component: {fileID: 2990713621684264040}
+  - component: {fileID: 7715197559811074126}
   m_Layer: 0
   m_Name: SandBits_01
   m_TagString: Untagged
@@ -870,7 +871,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 6
+      scalar: 0
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -980,7 +981,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 0
+        scalar: 10
         minScalar: 30
         maxCurve:
           serializedVersion: 2
@@ -4954,6 +4955,28 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &7715197559811074126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1035748626192854233}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5c716a6a45da84bbd6877bc5176356, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundId: web
+  volume: 1
+  playDelay: 0
+  playOnEnable: 1
+  playOnHover: 0
+  hoverSoundId: ui.normal.click
+  hoverVolume: 1
+  playOnClick: 0
+  clickSoundId: ui.normal.click
+  clickVolume: 1
 --- !u!1 &7042334462189142359
 GameObject:
   m_ObjectHideFlags: 0
