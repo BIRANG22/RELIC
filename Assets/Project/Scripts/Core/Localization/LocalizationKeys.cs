@@ -102,8 +102,8 @@ public static class LocalizationKeys
 
     public static class Dialog
     {
-        public const string Yes = "common.yes";
-        public const string No = "common.no";
+        public const string Yes = "ui.check.text_tmp.0d532a5c";
+        public const string No = "ui.check.text_tmp.22fa1548";
         public const string QuitConfirm = "common.confirm_quit_game";
         public const string AbandonConfirm = "dialog.expedition.abandon_confirm";
         public const string PurchaseConfirm = "dialog.purchase.confirm";

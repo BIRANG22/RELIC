@@ -61,6 +61,8 @@ public class OptionPanelUI : MonoBehaviour
         SetupResolutionDropdown();
         SetupDisplayModeToggles();
         RefreshDisplayModeLabels();
+        RefreshOptionHeadingLabels();
+        RefreshOptionHeadingLabelsWhenReady();
         SetupTutorialToggle();
         ShowAllContents();
         RefreshBattlePresentationSpeedLabel();
@@ -310,6 +312,64 @@ public class OptionPanelUI : MonoBehaviour
     private void OnLocaleTableReady(UnityEngine.Localization.Locale _)
     {
         RefreshDisplayModeLabels();
+        RefreshOptionHeadingLabels();
+    }
+
+    // Option prefab header labels may retain an old missing key (and display "Untranslated").
+    // The panel owns these four headings; dropdown captions and other dynamic values stay untouched.
+    private void RefreshOptionHeadingLabels()
+    {
+        SetOptionHeading("Language_text", "ui.option.header.language", "언어");
+        SetOptionHeading("LanguageText", "ui.option.header.language", "언어");
+        SetOptionHeading("Resolution_text", "ui.option.header.resolution", "해상도");
+        SetOptionHeading("ResolutionText", "ui.option.header.resolution", "해상도");
+        SetOptionHeading("Sound_text", "ui.option.header.sound", "사운드");
+        SetOptionHeading("SoundText", "ui.option.header.sound", "사운드");
+        SetOptionHeading("Control_text", "ui.option.header.control", "조작");
+        SetOptionHeading("ControlText", "ui.option.header.control", "조작");
+        // The tutorial option label is static, but its prefab may carry an obsolete binding.
+        SetOptionHeading("TutorialLabel", "ui.tutorialpanel.titletext.74198686", "튜토리얼");
+    }
+
+    private void SetOptionHeading(string objectName, string key, string koreanSource)
+    {
+        Transform child = FindChildByName(transform, objectName);
+        if (child == null)
+            return;
+
+        TMP_Text label = child.GetComponent<TMP_Text>();
+        if (label == null)
+            return;
+
+        LocalizedTMPText.ProtectDynamicOwnership(label);
+        // Never leave the visible placeholder on an otherwise functional option panel.
+        string translation = GameLocalization.Get(key, koreanSource);
+        if (string.IsNullOrWhiteSpace(translation) ||
+            translation == "Untranslated" || translation == "미번역" ||
+            translation == "未翻译" || translation == "未翻訳" || translation == "Sin traducir")
+            translation = koreanSource;
+        label.text = translation;
+    }
+
+    private async void RefreshOptionHeadingLabelsWhenReady()
+    {
+        try
+        {
+            await UnityEngine.Localization.Settings.LocalizationSettings.InitializationOperation.Task;
+            if (!this || !isActiveAndEnabled)
+                return;
+            UnityEngine.Localization.Locale locale = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale;
+            if (locale != null)
+                await UnityEngine.Localization.Settings.LocalizationSettings.StringDatabase
+                    .GetTableAsync(GameLocalization.TableName, locale).Task;
+        }
+        catch (System.Exception)
+        {
+            // Preserve the Korean source until the requested locale table becomes available.
+        }
+
+        if (this && isActiveAndEnabled)
+            RefreshOptionHeadingLabels();
     }
 
     private void ConfigureDisplayModeToggleGroup()

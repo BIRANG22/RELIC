@@ -239,6 +239,18 @@ public class BattlePlayButton : MonoBehaviour
 
     private void ResolveButtonLabel()
     {
+        // The play button can contain other TMP labels. Bind specifically to PlayText.
+        Transform playText = transform.Find("PlayText");
+        if (playText != null)
+        {
+            TMP_Text exactLabel = playText.GetComponent<TMP_Text>();
+            if (exactLabel != null)
+            {
+                buttonLabel = exactLabel;
+                return;
+            }
+        }
+
         if (buttonLabel == null)
             buttonLabel = GetComponentInChildren<TMP_Text>(true);
     }
@@ -374,12 +386,13 @@ public class BattlePlayButton : MonoBehaviour
             return;
 
         // Ready 패널의 열림 상태와 관계없이 항상 '탐사' 라벨을 사용합니다.
-        string key = LocalizationKeys.Lobby.PlayDepart;
+        // The workbook stores the playable label under this existing key.
+        const string key = "ui.ready_panel.playtext.fbc84ad2";
+        const string koreanFallback = "탐사";
         LocalizedTMPText localizer = buttonLabel.GetComponent<LocalizedTMPText>();
-        if (localizer != null)
-            localizer.Configure(key, string.Empty, false);
-        else
-            buttonLabel.text = GameLocalization.Get(key);
+        if (localizer == null)
+            localizer = buttonLabel.gameObject.AddComponent<LocalizedTMPText>();
+        localizer.Configure(key, koreanFallback, false);
     }
 
     private void PlayClickSound()
@@ -584,5 +597,62 @@ public class BattlePlayButton : MonoBehaviour
             SteamLobbySharedStateSynchronizer.Instance;
         return sharedStateSynchronizer == null ||
                sharedStateSynchronizer.CanLocalPlayerMutateHostOnlyState();
+    }
+}
+
+/// <summary>
+/// The Lobby_button/ReadyButton label is a static label even when its scene TMP
+/// has an obsolete binding. Restore it using the workbook's stable UI key.
+/// </summary>
+internal static class LobbyReadyButtonLocalizationRepair
+{
+    private const string ReadyLabelKey = "ui.lobby.play.ready";
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Subscribe()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void RepairInitialScene()
+    {
+        Repair(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+    }
+
+    private static void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene,
+        UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        Repair(scene);
+    }
+
+    private static void Repair(UnityEngine.SceneManagement.Scene scene)
+    {
+        if (!scene.IsValid() || scene.name != "Lobby")
+            return;
+
+        foreach (GameObject root in scene.GetRootGameObjects())
+        {
+            foreach (Button candidate in root.GetComponentsInChildren<Button>(true))
+            {
+                if (candidate.name != "ReadyButton" ||
+                    candidate.transform.parent == null ||
+                    candidate.transform.parent.name != "Lobby_button")
+                    continue;
+
+                Transform textChild = candidate.transform.Find("Text (TMP)");
+                TMP_Text label = textChild != null
+                    ? textChild.GetComponent<TMP_Text>()
+                    : candidate.GetComponentInChildren<TMP_Text>(true);
+                if (label == null || !LocalizedTMPText.ShouldManageText(label))
+                    continue;
+
+                LocalizedTMPText localizer = label.GetComponent<LocalizedTMPText>();
+                if (localizer == null)
+                    localizer = label.gameObject.AddComponent<LocalizedTMPText>();
+                localizer.Configure(ReadyLabelKey, "준비", false);
+            }
+        }
     }
 }

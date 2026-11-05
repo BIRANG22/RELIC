@@ -15,8 +15,8 @@ using UnityEditor;
 public class UIManager : Singleton<UIManager>
 {
     private const int ModalPanelSortingOrderCeiling = 30000;
-    private const string LobbyQuitButtonLocalizationKey = "ui.assets.project.scripts.core.managers.uimanager.text";
-    private const string BattleQuitButtonLocalizationKey = "ui.assets.project.scripts.core.managers.uimanager.text.acf962d7";
+    private const string LobbyQuitButtonLocalizationKey = "ui.canvas.text.82912c6e";
+    private const string BattleQuitButtonLocalizationKey = "ui.canvas.text.0f87cf8b";
     [Header("References")]
     [SerializeField] private Canvas mainCanvas;
 
@@ -878,6 +878,8 @@ public class UIManager : Singleton<UIManager>
 
         if (cachedQuitText != null)
         {
+            // This label is updated from the active scene. A static localizer must not overwrite it.
+            LocalizedTMPText.ProtectDynamicOwnership(cachedQuitText);
             cachedQuitText.text = isLobbyScene
                 ? GameLocalization.Get(LobbyQuitButtonLocalizationKey)
                 : GameLocalization.Get(BattleQuitButtonLocalizationKey);

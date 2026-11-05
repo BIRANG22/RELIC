@@ -220,6 +220,14 @@ namespace Relic.Gameplay.Data
 
         private static string GetEffectParticle(string id)
         {
+            // Korean object particles are not part of other languages' grammar.
+            // Keep {1} as an empty argument so translated templates retain
+            // their existing placeholder indexes ({0}, {2}, {3}).
+            var localeCode = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale?.Identifier.Code;
+            if (string.IsNullOrWhiteSpace(localeCode) ||
+                !localeCode.StartsWith("ko", StringComparison.OrdinalIgnoreCase))
+                return string.Empty;
+
             // Resolve the Korean particle from the localized effect name, not from
             // a numeric value. A final Hangul syllable with jongseong takes 'À»'.
             string name = null;

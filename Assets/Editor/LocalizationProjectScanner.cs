@@ -496,8 +496,36 @@ public static class LocalizationRuntimeSourceCatalog
         Entry("skill.sentence.restore.amount.single.final", "{0}{1} {2}만큼 회복한다"),
     };
 
+    // Keys read by runtime UI controllers must be explicit sources: script scans cannot
+    // infer the Korean fallback from a separate GameLocalization.Get(key, fallback) call.
+    // Adding entries here makes Full Scan & Apply register them before synchronization.
+    public static IReadOnlyList<LocalizationWorkbookEntry> RuntimeUiEntries { get; } = new[]
+    {
+        // Option prefab headings are runtime-owned, not static placeholder bindings.
+        Entry("ui.option.header.language", "언어"),
+        Entry("ui.option.header.resolution", "해상도"),
+        Entry("ui.option.header.sound", "사운드"),
+        Entry("ui.option.header.control", "조작"),
+        Entry("lobby.quest.setup", "탐사 준비"),
+        Entry("lobby.quest.first_expedition", "첫 탐사 - 각성핵 회수 {Current}/{Target}"),
+        Entry("battle.intro.enter_battle_area", "전투 구역 진입"),
+        Entry("battle.intro.battle_start", "전투 시작"),
+        Entry("battle.intro.rest_area", "휴식 구역 진입"),
+        // Passive skill type uses this key in battle, reward, and lobby skill tooltips.
+        Entry("common.passive", "패시브"),
+        Entry(LocalizationKeys.Lobby.PlayReady, "준비"),
+        // These dynamic confirmation messages are supplied by UIManager and other
+        // controllers. They do not exist as literal TMP text in prefab assets.
+        // Register them explicitly so Full Scan & Apply can create their workbook keys.
+        Entry(LocalizationKeys.Dialog.QuitConfirm, "게임을 종료하시겠습니까?"),
+        Entry(LocalizationKeys.Dialog.AbandonConfirm, "탐사를 포기하시겠습니까?"),
+        Entry(LocalizationKeys.Dialog.PurchaseConfirm, "구매하시겠습니까?"),
+        Entry(LocalizationKeys.Dialog.RelicPurchaseConfirm, "유물을 구매하시겠습니까?"),
+        Entry(LocalizationKeys.Dialog.RuneActivateConfirm, "파편을 활성화하시겠습니까?"),
+    };
+
     public static IReadOnlyList<LocalizationWorkbookEntry> AllEntries { get; } =
-        BattleFirstTutorialEntries.Concat(SkillSentenceEntries).ToArray();
+        BattleFirstTutorialEntries.Concat(SkillSentenceEntries).Concat(RuntimeUiEntries).ToArray();
 
     private static LocalizationWorkbookEntry Entry(string key, string korean) => new(key, korean);
 }
