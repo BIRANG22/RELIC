@@ -15,8 +15,8 @@ using UnityEditor;
 public class UIManager : Singleton<UIManager>
 {
     private const int ModalPanelSortingOrderCeiling = 30000;
-    private const string LobbyQuitButtonLocalizationKey = "ui.canvas.text.82912c6e";
-    private const string BattleQuitButtonLocalizationKey = "ui.canvas.text.0f87cf8b";
+    private const string LobbyQuitButtonLocalizationKey = "ui.menu.lobby.return_to_title";
+    private const string BattleQuitButtonLocalizationKey = "ui.menu.battle.save_and_quit";
     [Header("References")]
     [SerializeField] private Canvas mainCanvas;
 
@@ -880,9 +880,11 @@ public class UIManager : Singleton<UIManager>
         {
             // This label is updated from the active scene. A static localizer must not overwrite it.
             LocalizedTMPText.ProtectDynamicOwnership(cachedQuitText);
-            cachedQuitText.text = isLobbyScene
-                ? GameLocalization.Get(LobbyQuitButtonLocalizationKey)
-                : GameLocalization.Get(BattleQuitButtonLocalizationKey);
+            cachedQuitText.text = IsTitleScene()
+                ? GameLocalization.Get("ui.canvas.text.0f87cf8b")
+                : isLobbyScene
+                    ? GameLocalization.Get(LobbyQuitButtonLocalizationKey, "타이틀로")
+                    : GameLocalization.Get(BattleQuitButtonLocalizationKey, "저장 후 종료");
             RefreshTmpText(cachedQuitText);
         }
     }

@@ -44,6 +44,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     private bool battleStartIntroShown;
     private int plannedBattleTurn;
     private readonly Dictionary<string, GameObject> arabellaStigmaPreviews = new();
+    private const string BattleStartIntroKey = "battle.intro.battle_start";
     private const string ArabellaLeapSkillId = "S_Monster_39";
     private const string ArabellaStigmaGridEffectId = "GR_Stigma";
 
@@ -107,7 +108,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (showBattleStart)
         {
             BattleMapIntroText.PlayRoomIntroSfx();
-            battleStartTextRoutine = StartCoroutine(ShowIntroTextAndWaitRoutine(GameLocalization.Get(LocalizationKeys.Battle.Start)));
+            battleStartTextRoutine = StartCoroutine(ShowIntroTextAndWaitRoutine(GameLocalization.Get(BattleStartIntroKey)));
         }
 
         if (firstMonsterCommandDelay > 0f)
@@ -292,7 +293,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (showBattleStart)
         {
             BattleMapIntroText.PlayRoomIntroSfx();
-            battleStartTextRoutine = StartCoroutine(ShowIntroTextAndWaitRoutine(GameLocalization.Get(LocalizationKeys.Battle.Start)));
+            battleStartTextRoutine = StartCoroutine(ShowIntroTextAndWaitRoutine(GameLocalization.Get(BattleStartIntroKey)));
         }
 
         if (firstMonsterCommandDelay > 0f)
@@ -374,7 +375,7 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
         if (showBattleStart)
         {
             BattleMapIntroText.PlayRoomIntroSfx();
-            ShowIntroText(GameLocalization.Get(LocalizationKeys.Battle.Start));
+            ShowIntroText(GameLocalization.Get(BattleStartIntroKey));
         }
 
         List<MonsterReservedCommandPlan> plans = BuildMonsterCommandPlans(monsterUnits);

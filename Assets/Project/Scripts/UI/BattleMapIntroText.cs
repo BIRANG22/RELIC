@@ -327,6 +327,13 @@ public class BattleMapIntroText : MonoBehaviour
             yield break;
         }
 
+        if (IsMissingIntroTranslation(text))
+        {
+            Debug.LogError("[BattleMapIntroText] PlayAndWait received an untranslated message.\n" +
+                Environment.StackTrace, this);
+            yield break;
+        }
+
         StopCurrentRoutine();
 
         CurrentPlayCounter++;
@@ -392,9 +399,14 @@ public class BattleMapIntroText : MonoBehaviour
 
     private IEnumerator PlayRoutine(string text, int version)
     {
-        string message = string.IsNullOrEmpty(text)
-            ? GameLocalization.Get(DefaultMessageKey)
-            : text;
+        // The caller must supply already localized text. Never fall back to a synchronous
+        // lookup during the transition: it can return the literal missing-text marker.
+        string message = text;
+        if (IsMissingIntroTranslation(message))
+        {
+            Debug.LogError("[BattleMapIntroText] PlayRoutine received missing localized text.", this);
+            yield break;
+        }
 
         // IntroText를 활성화할 때 같은 오브젝트의 로컬라이징 컴포넌트가
         // OnEnable에서 인스펙터 기본 문구를 다시 넣을 수 있습니다.
@@ -508,9 +520,16 @@ public class BattleMapIntroText : MonoBehaviour
         if (introText == null)
             introText = GetComponentInChildren<TMP_Text>(true);
 
-        // Runtime-generated intro messages must not be overwritten by static bindings.
+        // This presenter is the sole runtime writer for IntroText. A DynamicLocalizedTMPText
+        // component has no source configured here and may overwrite the message on locale
+        // refresh or enable. Disable it as well as any static localization writer.
         if (introText != null)
+        {
             LocalizedTMPText.ProtectDynamicOwnership(introText);
+            DynamicLocalizedTMPText dynamicWriter = introText.GetComponent<DynamicLocalizedTMPText>();
+            if (dynamicWriter != null && dynamicWriter.enabled)
+                dynamicWriter.enabled = false;
+        }
 
         BindIntroImageIfNeeded();
 

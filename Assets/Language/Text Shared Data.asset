@@ -5975,6 +5975,14 @@ MonoBehaviour:
     m_Key: ui.option.header.control
     m_Metadata:
       m_Items: []
+  - m_Id: 31323240102338560
+    m_Key: ui.menu.lobby.return_to_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31323240152670208
+    m_Key: ui.menu.battle.save_and_quit
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
