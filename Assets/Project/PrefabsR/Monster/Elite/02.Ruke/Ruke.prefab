@@ -523,6 +523,7 @@ MonoBehaviour:
   hitStateName: Hit
   healStateName: 
   deadStateName: Dead
+  arabellaPhaseOneDefeatedStateName: PhaseOneDefeated
   hitFlashRenderers: []
   hitFlashPropertyName: _HitFlash
   hitStateFlashValue: 1
@@ -606,12 +607,42 @@ MonoBehaviour:
     proxySortingOrderOffset: 0
     proxySortingWorldYOffset: 0
     proxyYMultiplier: 100
+  phaseTransitionVfx:
+    prefab: {fileID: 0}
+    flipType: 0
+    renderMode: 0
+    proxyBlendMode: 0
+    scaleDirectWorldRendererToProxyHeight: 0
+    renderTextureWidth: 512
+    renderTextureHeight: 512
+    renderCameraOrthographicSize: 5
+    proxyWorldHeight: 10
+    proxyWorldOffset: {x: 0, y: 0, z: 0}
+    proxySortingLayerName: Unit
+    proxySortingOrderOffset: 0
+    proxySortingWorldYOffset: 0
+    proxyYMultiplier: 100
   statusVfxDatabase: {fileID: 11400000, guid: bfb06368a30649efa4153673eb02d38c, type: 2}
   playerSkillPresentations:
     power:
       monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
+      prepareVfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       stateName: 
       vfx:
         prefab: {fileID: 0}
@@ -644,6 +675,21 @@ MonoBehaviour:
       monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
+      prepareVfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       stateName: 
       vfx:
         prefab: {fileID: 0}
@@ -676,6 +722,21 @@ MonoBehaviour:
       monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
+      prepareVfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       stateName: 
       vfx:
         prefab: {fileID: 0}
@@ -708,6 +769,21 @@ MonoBehaviour:
       monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
+      prepareVfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       stateName: 
       vfx:
         prefab: {fileID: 0}
@@ -740,6 +816,21 @@ MonoBehaviour:
       monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
+      prepareVfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       stateName: 
       vfx:
         prefab: {fileID: 0}
@@ -772,6 +863,21 @@ MonoBehaviour:
       monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
+      prepareVfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       stateName: 
       vfx:
         prefab: {fileID: 0}
@@ -804,6 +910,21 @@ MonoBehaviour:
       monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
+      prepareVfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       stateName: 
       vfx:
         prefab: {fileID: 0}
@@ -836,6 +957,21 @@ MonoBehaviour:
       monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
+      prepareVfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       stateName: 
       vfx:
         prefab: {fileID: 0}
@@ -868,6 +1004,21 @@ MonoBehaviour:
       monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
+      prepareVfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       stateName: 
       vfx:
         prefab: {fileID: 0}
@@ -900,6 +1051,21 @@ MonoBehaviour:
       monsterSkillId: 
       prepareStateName: 
       prepareDuration: 0.15
+      prepareVfx:
+        prefab: {fileID: 0}
+        flipType: 0
+        renderMode: 0
+        proxyBlendMode: 0
+        scaleDirectWorldRendererToProxyHeight: 0
+        renderTextureWidth: 512
+        renderTextureHeight: 512
+        renderCameraOrthographicSize: 5
+        proxyWorldHeight: 10
+        proxyWorldOffset: {x: 0, y: 0, z: 0}
+        proxySortingLayerName: Unit
+        proxySortingOrderOffset: 0
+        proxySortingWorldYOffset: 0
+        proxyYMultiplier: 100
       stateName: 
       vfx:
         prefab: {fileID: 0}
@@ -935,6 +1101,21 @@ MonoBehaviour:
   - monsterSkillId: 
     prepareStateName: 
     prepareDuration: 0.15
+    prepareVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     stateName: AttackAction1
     vfx:
       prefab: {fileID: 3632081370858408973, guid: fc3bffa3b289e5c4ca4df00da1eba747, type: 3}
@@ -966,6 +1147,21 @@ MonoBehaviour:
   - monsterSkillId: 
     prepareStateName: 
     prepareDuration: 0.15
+    prepareVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     stateName: AttackAction2
     vfx:
       prefab: {fileID: 8945540552819743209, guid: b012a0a4d7fa0d745bb777a8278cab78, type: 3}
@@ -995,8 +1191,23 @@ MonoBehaviour:
       launchOffset: {x: 0, y: 0, z: 0}
       impactOffset: {x: 0, y: 0, z: 0}
   - monsterSkillId: 
-    prepareStateName: 
+    prepareStateName: AttackAction3
     prepareDuration: 0.15
+    prepareVfx:
+      prefab: {fileID: 5048194300403814765, guid: f3f99cfb5e2b7ed46acf00d0eee8d861, type: 3}
+      flipType: 0
+      renderMode: 2
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     stateName: AttackAction3
     vfx:
       prefab: {fileID: 3602943759074218325, guid: 25872a24560375c49a2441cb58273416, type: 3}
@@ -1028,6 +1239,21 @@ MonoBehaviour:
   - monsterSkillId: 
     prepareStateName: 
     prepareDuration: 0.15
+    prepareVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     stateName: Guard
     vfx:
       prefab: {fileID: 7528646786082519194, guid: 38e0999ffd8f187408059414ae758c8b, type: 3}
@@ -1059,6 +1285,21 @@ MonoBehaviour:
   - monsterSkillId: 
     prepareStateName: 
     prepareDuration: 0.15
+    prepareVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     stateName: 
     vfx:
       prefab: {fileID: 0}
@@ -1090,6 +1331,21 @@ MonoBehaviour:
   - monsterSkillId: 
     prepareStateName: 
     prepareDuration: 0.15
+    prepareVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     stateName: 
     vfx:
       prefab: {fileID: 0}
@@ -1121,6 +1377,21 @@ MonoBehaviour:
   - monsterSkillId: 
     prepareStateName: 
     prepareDuration: 0.15
+    prepareVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     stateName: 
     vfx:
       prefab: {fileID: 0}
@@ -1152,6 +1423,21 @@ MonoBehaviour:
   - monsterSkillId: 
     prepareStateName: 
     prepareDuration: 0.15
+    prepareVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     stateName: 
     vfx:
       prefab: {fileID: 0}
@@ -1183,6 +1469,21 @@ MonoBehaviour:
   - monsterSkillId: 
     prepareStateName: 
     prepareDuration: 0.15
+    prepareVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     stateName: 
     vfx:
       prefab: {fileID: 0}
@@ -1214,6 +1515,21 @@ MonoBehaviour:
   - monsterSkillId: 
     prepareStateName: 
     prepareDuration: 0.15
+    prepareVfx:
+      prefab: {fileID: 0}
+      flipType: 0
+      renderMode: 0
+      proxyBlendMode: 0
+      scaleDirectWorldRendererToProxyHeight: 0
+      renderTextureWidth: 512
+      renderTextureHeight: 512
+      renderCameraOrthographicSize: 5
+      proxyWorldHeight: 10
+      proxyWorldOffset: {x: 0, y: 0, z: 0}
+      proxySortingLayerName: Unit
+      proxySortingOrderOffset: 0
+      proxySortingWorldYOffset: 0
+      proxyYMultiplier: 100
     stateName: 
     vfx:
       prefab: {fileID: 0}
