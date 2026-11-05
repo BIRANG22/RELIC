@@ -94641,10 +94641,6 @@ MonoBehaviour:
   impactRecoverySpeedDuration: 0.18
   useUnscaledTimeForImpact: 1
   enableGridMovementImpactZoom: 1
-  gridMovementDetectionDistance: 0.65
-  gridMovementUnitRefreshInterval: 0.5
-  simultaneousMovementFocusDelay: 0.08
-  gridMovementStopGraceTime: 0.18
   impactCompressionDistance: 0.08
   impactRecoilDistance: 0.16
   impactOvershootDistance: 0.035

@@ -1199,8 +1199,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603453
-    m_Localized: "Convierte el da\xF1o de los Recuerdos de ataque de la ranura 5
-      en da\xF1o perforante."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603454
@@ -1208,8 +1207,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603455
-    m_Localized: "Al derrotar a un enemigo con un Recuerdo de ataque de la ranura
-      1, obtienes Concentraci\xF3n en la cantidad indicada."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 41385915724603456
@@ -6504,8 +6502,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 21894353340866567
-    m_Localized: "Al comenzar cada turno, pierdes 3 PV y obtienes Potenciaci\xF3n
-      seg\xFAn el valor indicado."
+    m_Localized: 
     m_Metadata:
       m_Items: []
   - m_Id: 21894353340866568
@@ -7290,196 +7287,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 29429361522483210
     m_Localized: Veces incapacitado
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140226834432
-    m_Localized: "En la luz que se filtra por la grieta se perciben d\xE9biles vestigios
-      de Recuerdos."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777472
-    m_Localized: La luz se desvanece lentamente y la grieta abierta en el cielo vuelve
-      a quedar en silencio.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777473
-    m_Localized: "\xBFBuscas algo? Escoge lo que te llame la atenci\xF3n."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777474
-    m_Localized: "Vuelve si necesitas algo m\xE1s."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777475
-    m_Localized: "P\xE1sate por aqu\xED otra vez."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777476
-    m_Localized: Bueno, no pienso obligarte a comprar nada.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777477
-    m_Localized: "No conviene quedarse aqu\xED mucho tiempo. Av\xEDsanos si necesitas
-      nuestra ayuda antes de marcharte."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777478
-    m_Localized: Espero que esto te sirva, aunque sea un poco.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777479
-    m_Localized: "Hemos purificado parte de la corrupci\xF3n que te aflig\xEDa."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777480
-    m_Localized: Que las bendiciones protejan vuestras vidas.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777481
-    m_Localized: Quedan vestigios de un antiguo ritual. Tal vez pueda reanudarse
-      si se ofrece un sacrificio.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777482
-    m_Localized: Los rastros que brillaban tenuemente desaparecen poco a poco.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777483
-    m_Localized: "La energ\xEDa que se agitaba comienza a apaciguarse."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777484
-    m_Localized: Te marchas sin tocar nada.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777485
-    m_Localized: "Hay un carro abandonado junto al camino. Quiz\xE1 todav\xEDa guarde
-      algo \xFAtil."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777486
-    m_Localized: Parece que ya no queda nada de valor.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777487
-    m_Localized: "Ya no queda nada \xFAtil dentro del carro."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777488
-    m_Localized: No queda nada en el carro que merezca la pena llevarse.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777489
-    m_Localized: "No encuentras nada \xFAtil."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777490
-    m_Localized: "Ves unas cajas abandonadas. Quiz\xE1 a\xFAn haya algo aprovechable
-      dentro."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777491
-    m_Localized: "Todav\xEDa queda algo por registrar. Podr\xEDas intentarlo de nuevo."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777492
-    m_Localized: "Quiz\xE1 encuentres algo en las cajas restantes."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777493
-    m_Localized: Ya no queda nada que merezca la pena llevarse.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777494
-    m_Localized: "Una explosi\xF3n repentina deja a su alrededor solo restos destrozados."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777495
-    m_Localized: Pasas de largo sin tocar las cajas.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777496
-    m_Localized: Dejas intactas las cajas restantes y sigues tu camino.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777497
-    m_Localized: Una enorme veta mineral emite un tenue resplandor.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777498
-    m_Localized: "La luz sigue filtr\xE1ndose desde lo m\xE1s profundo de la veta."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777499
-    m_Localized: Aparecen grietas por toda la veta mineral.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777500
-    m_Localized: La veta pierde su brillo y queda en silencio.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140268777501
-    m_Localized: La veta se desmorona en un instante y desaparece sin dejar rastro.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971776
-    m_Localized: Te marchas sin alterar la veta mineral.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971777
-    m_Localized: "Unas extra\xF1as inscripciones cubren un antiguo monumento de piedra."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971778
-    m_Localized: Las inscripciones resplandecen y transmiten un poder desconocido.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971779
-    m_Localized: El brillo de las inscripciones se desvanece.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971780
-    m_Localized: "Una luz tenue emana de una peque\xF1a fuente de agua cristalina."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971781
-    m_Localized: Las ondas del agua se calman suavemente.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971782
-    m_Localized: "La luz que te envolv\xEDa se desvanece poco a poco."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971783
-    m_Localized: "Una luz cristalina se expande y, despu\xE9s, todo queda en calma."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971784
-    m_Localized: "Un ser misterioso propone un extra\xF1o trato."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971785
-    m_Localized: El ser esboza una leve sonrisa, satisfecho con el pago.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971786
-    m_Localized: El ser parece intrigado, como si le sorprendiera tu buena suerte.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971787
-    m_Localized: El ser suelta una risita burlona, como si ya lo esperara.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971788
-    m_Localized: "El ser contempla la corrupci\xF3n y sonr\xEDe satisfecho."
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971789
-    m_Localized: Un explorador descansa junto al camino que lleva al puesto avanzado.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29391140272971790
-    m_Localized: Tras un breve descanso, el grupo recupera sus fuerzas.
     m_Metadata:
       m_Items: []
   - m_Id: 29397909925765120

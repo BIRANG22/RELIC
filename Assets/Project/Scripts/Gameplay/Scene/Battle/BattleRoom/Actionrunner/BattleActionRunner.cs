@@ -1381,6 +1381,7 @@ public class BattleActionRunner
         }
 
         ShowExecutionRange(BuildPlayerMoveExecutionRange(command, currentGridIndex));
+        Transform directCameraUnit = null;
 
         try
         {
@@ -1461,6 +1462,12 @@ public class BattleActionRunner
             if (animator != null)
                 animator.PlayMove();
 
+            if (BattleCameraController.Instance != null)
+            {
+                directCameraUnit = character.transform;
+                BattleCameraController.Instance.BeginDirectGridMovement(directCameraUnit);
+            }
+
             // Apply each grid effect only after the character visibly reaches that tile.
             yield return MovePlayerThroughEnteredGrids(character, command.CharacterId, enteredGridIndices);
             if (character.RuntimeData != null && !character.RuntimeData.IsDead)
@@ -1474,6 +1481,8 @@ public class BattleActionRunner
         }
         finally
         {
+            if (directCameraUnit != null && BattleCameraController.Instance != null)
+                BattleCameraController.Instance.EndDirectGridMovement(directCameraUnit);
             ClearExecutionRange();
         }
     }
@@ -1488,58 +1497,73 @@ public class BattleActionRunner
         BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
         List<List<Vector2Int>> executionStepGroups =
             BuildPlayerMoveExecutionStepGroups(command.VisualMoveSteps);
+        bool cameraTrackingStarted = false;
 
-        for (int i = 0; i < executionStepGroups.Count; i++)
+        try
         {
-            IReadOnlyList<Vector2Int> stepGroup = executionStepGroups[i];
-            Vector2Int stepOffset = GetTotalMoveOffset(stepGroup);
-
-            if (stepOffset == Vector2Int.zero)
+            for (int i = 0; i < executionStepGroups.Count; i++)
             {
-                ApplyPlayerMoveFacing(character, command.Direction, stepOffset);
-                continue;
-            }
+                IReadOnlyList<Vector2Int> stepGroup = executionStepGroups[i];
+                Vector2Int stepOffset = GetTotalMoveOffset(stepGroup);
 
-            List<int> enteredGridIndices = new();
-            List<int> blockingUnitGridIndices = new();
+                if (stepOffset == Vector2Int.zero)
+                {
+                    ApplyPlayerMoveFacing(character, command.Direction, stepOffset);
+                    continue;
+                }
 
-            if (!TryGetPlayerMoveTargetGridIndex(
-                currentGridIndex,
-                stepGroup,
-                command.CharacterId,
-                out int targetGridIndex,
-                enteredGridIndices,
-                blockingUnitGridIndices))
-            {
-                break;
-            }
+                List<int> enteredGridIndices = new();
+                List<int> blockingUnitGridIndices = new();
 
-            Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
-            Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
-            Vector2Int actualOffset = targetCoord - currentCoord;
-            bool wasBlockedDuringStep = actualOffset != stepOffset;
+                if (!TryGetPlayerMoveTargetGridIndex(
+                    currentGridIndex,
+                    stepGroup,
+                    command.CharacterId,
+                    out int targetGridIndex,
+                    enteredGridIndices,
+                    blockingUnitGridIndices))
+                {
+                    break;
+                }
 
-            if (targetGridIndex == currentGridIndex)
-            {
+                Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
+                Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
+                Vector2Int actualOffset = targetCoord - currentCoord;
+                bool wasBlockedDuringStep = actualOffset != stepOffset;
+
+                if (targetGridIndex == currentGridIndex)
+                {
+                    ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
+                    break;
+                }
+
+                ApplyPlayerMoveFacing(character, command.Direction, actualOffset);
+
+                if (animator != null)
+                    animator.PlayMove();
+
+                if (!cameraTrackingStarted && BattleCameraController.Instance != null)
+                {
+                    BattleCameraController.Instance.BeginDirectGridMovement(character.transform);
+                    cameraTrackingStarted = true;
+                }
+
+                yield return MovePlayerThroughEnteredGrids(character, command.CharacterId, enteredGridIndices);
+                int reachedGridIndex = character.CurrentGridIndex;
+                executedDistance += GetMoveDistance(
+                    gridManager.IndexToCoord(reachedGridIndex) - currentCoord);
+                currentGridIndex = reachedGridIndex;
+
                 ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
-                break;
+
+                if (character.RuntimeData == null || character.RuntimeData.IsDead || wasBlockedDuringStep)
+                    break;
             }
-
-            ApplyPlayerMoveFacing(character, command.Direction, actualOffset);
-
-            if (animator != null)
-                animator.PlayMove();
-
-            yield return MovePlayerThroughEnteredGrids(character, command.CharacterId, enteredGridIndices);
-            int reachedGridIndex = character.CurrentGridIndex;
-            executedDistance += GetMoveDistance(
-                gridManager.IndexToCoord(reachedGridIndex) - currentCoord);
-            currentGridIndex = reachedGridIndex;
-
-            ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
-
-            if (character.RuntimeData == null || character.RuntimeData.IsDead || wasBlockedDuringStep)
-                break;
+        }
+        finally
+        {
+            if (cameraTrackingStarted && BattleCameraController.Instance != null)
+                BattleCameraController.Instance.EndDirectGridMovement(character.transform);
         }
 
         command.SetExecutedMoveDistance(executedDistance);
@@ -4053,6 +4077,7 @@ public class BattleActionRunner
             yield break;
 
         ShowExecutionRange(BuildMonsterMoveExecutionRange(monster, command));
+        Transform directCameraUnit = null;
 
         try
         {
@@ -4113,6 +4138,12 @@ public class BattleActionRunner
             if (animator != null)
                 animator.PlayMove();
 
+            if (BattleCameraController.Instance != null)
+            {
+                directCameraUnit = monster.transform;
+                BattleCameraController.Instance.BeginDirectGridMovement(directCameraUnit);
+            }
+
             yield return MoveTransformSmooth(
                 monster.transform,
                 monster.transform.position,
@@ -4143,6 +4174,8 @@ public class BattleActionRunner
         }
         finally
         {
+            if (directCameraUnit != null && BattleCameraController.Instance != null)
+                BattleCameraController.Instance.EndDirectGridMovement(directCameraUnit);
             ClearExecutionRange();
         }
     }
@@ -6245,9 +6278,6 @@ public class BattleActionRunner
                 MoveAnimationDuration
             );
 
-            if (hitPlayer != null && BattleCameraController.Instance != null)
-                BattleCameraController.Instance.EndZoomFollowTarget();
-
             monster.MoveOccupiedCells(finalOffset, gridManager);
             ApplyGridEffectsToMonster(enteredGridIndices, monster);
         }
@@ -6437,7 +6467,23 @@ public class BattleActionRunner
             GridManager = gridManager,
             EffectId = "E_Knockback",
             Value = Mathf.Max(1, knockbackValue),
-            Count = 1
+            Count = 1,
+            ForcedMoveVisualStarted = () =>
+            {
+                BattleCameraController cameraController = BattleCameraController.Instance;
+                if (cameraController != null && monster != null && target != null)
+                {
+                    cameraController.TransferDirectGridMovementFocus(
+                        monster.transform,
+                        target.transform);
+                }
+            },
+            ForcedMoveVisualCompleted = () =>
+            {
+                BattleCameraController cameraController = BattleCameraController.Instance;
+                if (cameraController != null && target != null)
+                    cameraController.EndDirectGridMovement(target.transform);
+            }
         });
     }
 
