@@ -293,9 +293,9 @@ MonoBehaviour:
     proxySortingWorldYOffset: 0
     proxyYMultiplier: 100
   deathVfx:
-    prefab: {fileID: 0}
+    prefab: {fileID: 8742623472407098105, guid: 9fa15bf69b99b5f42b201ca5bbe156cc, type: 3}
     flipType: 0
-    renderMode: 0
+    renderMode: 2
     proxyBlendMode: 0
     scaleDirectWorldRendererToProxyHeight: 0
     renderTextureWidth: 512
@@ -799,12 +799,12 @@ MonoBehaviour:
   gridManager: {fileID: 0}
   monsterActionPresentations:
   - monsterSkillId: S_Monster_34
-    prepareStateName: 
+    prepareStateName: AttackAction2
     prepareDuration: 0.15
     prepareVfx:
-      prefab: {fileID: 0}
+      prefab: {fileID: 6287963228254279517, guid: 148ec99a4ab2ab64cae37540118ff5ca, type: 3}
       flipType: 0
-      renderMode: 0
+      renderMode: 2
       proxyBlendMode: 0
       scaleDirectWorldRendererToProxyHeight: 0
       renderTextureWidth: 512

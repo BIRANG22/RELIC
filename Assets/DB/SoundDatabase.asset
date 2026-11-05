@@ -74,7 +74,7 @@ MonoBehaviour:
   - id: Rest fire
     aliases: []
     clip: {fileID: 8300000, guid: 6fe15267ba9c244e8b1595745b0d39ac, type: 3}
-    volume: 0.5
+    volume: 0.1
     pitch: 1
     loop: 1
     useRandomPitch: 0
@@ -671,6 +671,24 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 9637bf91821b7ab4da27fcce5f2e5a7f, type: 3}
     volume: 0.2
     pitch: 1.2
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.7
+    randomPitchMax: 1.3
+  - id: web
+    aliases: []
+    clip: {fileID: 8300000, guid: fa78e85cff35cfe44847a4559dcca7ff, type: 3}
+    volume: 0.5
+    pitch: 1.2
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 0.7
+    randomPitchMax: 1.3
+  - id: E_01_shadow
+    aliases: []
+    clip: {fileID: 8300000, guid: ffed50ebe13e94753a7b51500f0a909f, type: 3}
+    volume: 0.3
+    pitch: 1.5
     loop: 0
     useRandomPitch: 0
     randomPitchMin: 0.7
@@ -2993,7 +3011,7 @@ MonoBehaviour:
       volume: 0.3
       pitch: 1
       loop: 0
-      playOncePerAction: 0
+      playOncePerAction: 1
       useRandomPitch: 0
       randomPitchMin: 1
       randomPitchMax: 1
@@ -3559,7 +3577,7 @@ MonoBehaviour:
       randomPitchMin: 1
       randomPitchMax: 1
   - displayName: mort.attack.03
-    vfxPrefab: {fileID: 7504876253414955642, guid: 6c96fe66d3d5321458160c40faa279bb, type: 3}
+    vfxPrefab: {fileID: 2722526190595881914, guid: 6d53261516369fd4bada4d255d96e421, type: 3}
     cues:
     - clip: {fileID: 8300000, guid: c5cdf771f199a49abbddf0867ac8ce99, type: 3}
       delay: 0

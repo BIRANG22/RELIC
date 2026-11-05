@@ -216,7 +216,7 @@ MonoBehaviour:
   commonVfxColor: {r: 0.6627451, g: 0.69411767, b: 0.74509805, a: 1}
   rareVfxColor: {r: 0.32156864, g: 0.5254902, b: 0.78039217, a: 1}
   epicVfxColor: {r: 0.627451, g: 0.44705883, b: 0.7607843, a: 1}
-  uniqueVfxColor: {r: 0.8039216, g: 0.6431373, b: 0.32156864, a: 1}
+  uniqueVfxColor: {r: 0.9254902, g: 0.41568628, b: 0.42352942, a: 1}
   backRarityVfxPrefab: {fileID: 7932807873706430129, guid: 77a7b3475a232df44ae4b56ca1a0d34e, type: 3}
   backRarityVfxAnchor: {fileID: 0}
   backRarityVfxOffset: {x: 0, y: 130, z: 0}
