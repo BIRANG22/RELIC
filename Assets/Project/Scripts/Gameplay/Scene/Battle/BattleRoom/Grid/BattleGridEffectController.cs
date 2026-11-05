@@ -32,7 +32,8 @@ public class BattleGridEffectController : MonoBehaviour
     [SerializeField] private float viewScale = 1.0f;
     [SerializeField] private bool overrideSortingLayer;
     [SerializeField] private string sortingLayerName = "Default";
-    [SerializeField] private int sortingOrder = 1;
+    [SerializeField] private int sortingOrderOffset = -1;
+    [SerializeField] private float sortingYMultiplier = 100f;
 
     [Header("Damage Feedback")]
     [SerializeField] private bool shakeDamageableEffects = true;
@@ -195,7 +196,9 @@ public class BattleGridEffectController : MonoBehaviour
         preview.transform.localScale = prefab.transform.localScale * Mathf.Max(0.01f, viewScale);
 
         DisablePreviewInteraction(preview);
-        ApplyRendererSorting(preview);
+        ApplyRendererSorting(
+            preview,
+            gridManager.GetWorldPositionByIndex(gridIndex).y);
         ApplyPreviewAlpha(preview, Mathf.Clamp01(alpha));
         preview.SetActive(true);
         return true;
@@ -832,7 +835,9 @@ public class BattleGridEffectController : MonoBehaviour
         view.transform.localRotation = prefab.transform.localRotation;
         view.transform.localScale = prefab.transform.localScale * Mathf.Max(0.01f, viewScale);
 
-        ApplyRendererSorting(view);
+        ApplyRendererSorting(
+            view,
+            gridManager.GetWorldPositionByIndex(placement.GridIndex).y);
         view.SetActive(true);
 
         // 그리드 효과의 실제 오브젝트 또는 VFX 위에 마우스를 올리면
@@ -909,7 +914,7 @@ public class BattleGridEffectController : MonoBehaviour
             DestroyImmediate(hpUi.gameObject);
     }
 
-    private void ApplyRendererSorting(GameObject view)
+    private void ApplyRendererSorting(GameObject view, float cellWorldY)
     {
         if (view == null)
             return;
@@ -928,7 +933,11 @@ public class BattleGridEffectController : MonoBehaviour
             if (overrideSortingLayer && !string.IsNullOrWhiteSpace(sortingLayerName))
                 renderer.sortingLayerName = sortingLayerName;
 
-            renderer.sortingOrder = sortingOrder + prefabSortingOrder;
+            renderer.sortingOrder = BattleGridEffectSortingPolicy.ResolveOrder(
+                cellWorldY,
+                sortingYMultiplier,
+                sortingOrderOffset,
+                prefabSortingOrder);
         }
     }
 
