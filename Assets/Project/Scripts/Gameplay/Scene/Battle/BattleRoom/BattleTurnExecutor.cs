@@ -577,10 +577,21 @@ public class BattleTurnExecutor : MonoBehaviour
                 bool hasNextBatchInSameTimelineSlot = HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
 
 
+                // Different units must restore the plane tilt before the next action.
+                // The same unit keeps its tilt for a fast follow-up action.
+                BattleEffectPlaneRotation planeRotation = BattleEffectPlaneRotation.Instance;
+                if (planeRotation != null)
+                {
+                    string ownerKey = GetBatchActionOwnerKey(batch);
+                    if (!string.IsNullOrEmpty(ownerKey))
+                        yield return planeRotation.PrepareForActionOwner(ownerKey);
+                }
+
                 // Stop at the starting order before the action begins.
                 if (timelineController != null)
                     yield return timelineController.MoveTimelineToOrderBeforeActionRoutine(
-                        currentSlotIndex, executableOrderIndices[0]);
+                        currentSlotIndex, executableOrderIndices[0],
+                        IsSameCharacterFollowUpOrder(batches, i, currentSlotIndex));
 
                 // Start the order animation on the same frame as the action.
                 // The animation runs independently while the gameplay action resolves.
@@ -732,6 +743,12 @@ public class BattleTurnExecutor : MonoBehaviour
                 yield return ReturnCameraDefaultRoutine();
                 yield break;
             }
+
+            // 몬스터 행동을 다시 예약하기 전에 두 BattleEffect Plane의
+            // 회전 복구 -> 원래 로컬 위치 복구가 모두 완료될 때까지 기다립니다.
+            BattleEffectPlaneSlideController effectPlanes = BattleEffectPlaneSlideController.Instance;
+            if (effectPlanes != null && effectPlanes.isActiveAndEnabled)
+                yield return effectPlanes.MoveToReserveAndWaitRoutine();
 
             playerTurnNumber++;
             bool erosionAlreadyMax = BattleErosionRuntimeService.CurrentValue >= BattleErosionRuntimeService.MaxValue;
@@ -906,10 +923,21 @@ public class BattleTurnExecutor : MonoBehaviour
                     HasNextExecutableBatchInSameTimelineSlot(batches, i + 1, currentSlotIndex);
 
 
+                // Different units must restore the plane tilt before the next action.
+                // The same unit keeps its tilt for a fast follow-up action.
+                BattleEffectPlaneRotation planeRotation = BattleEffectPlaneRotation.Instance;
+                if (planeRotation != null)
+                {
+                    string ownerKey = GetBatchActionOwnerKey(batch);
+                    if (!string.IsNullOrEmpty(ownerKey))
+                        yield return planeRotation.PrepareForActionOwner(ownerKey);
+                }
+
                 // Stop at the starting order before the action begins.
                 if (timelineController != null)
                     yield return timelineController.MoveTimelineToOrderBeforeActionRoutine(
-                        currentSlotIndex, executableOrderIndices[0]);
+                        currentSlotIndex, executableOrderIndices[0],
+                        IsSameCharacterFollowUpOrder(batches, i, currentSlotIndex));
 
                 // Start the order animation on the same frame as the action.
                 // The animation runs independently while the gameplay action resolves.
@@ -992,6 +1020,11 @@ public class BattleTurnExecutor : MonoBehaviour
                 RestoreIdleAnimationsBeforeArabellaTransition();
                 yield return ArabellaPhaseTransition.CompletePendingTransitionRoutine();
             }
+
+            // 네트워크 전투도 다음 턴 상태 복원 전에 Plane 복귀를 완료합니다.
+            BattleEffectPlaneSlideController networkEffectPlanes = BattleEffectPlaneSlideController.Instance;
+            if (networkEffectPlanes != null && networkEffectPlanes.isActiveAndEnabled)
+                yield return networkEffectPlanes.MoveToReserveAndWaitRoutine();
 
             yield return RestoreNetworkReservationStateAfterExecutionRoutine();
 
@@ -1672,6 +1705,34 @@ public class BattleTurnExecutor : MonoBehaviour
             : fallbackIndex;
     }
 
+    // Only compress movement between executed orders of the same player character
+    // in the same timeline slot. Other actors and slot boundaries use normal timing.
+    private bool IsSameCharacterFollowUpOrder(
+        List<BattleActionBatch> batches, int currentBatchIndex, int slotIndex)
+    {
+        if (batches == null || currentBatchIndex <= 0 || currentBatchIndex >= batches.Count)
+            return false;
+
+        string currentCharacterId = GetSinglePlayerCharacterId(batches[currentBatchIndex]);
+        if (string.IsNullOrEmpty(currentCharacterId))
+            return false;
+
+        for (int previousIndex = currentBatchIndex - 1; previousIndex >= 0; previousIndex--)
+        {
+            if (!BatchHasExecutableCommands(batches[previousIndex]))
+                continue;
+
+            if (GetBatchTimelineSlotIndex(batches[previousIndex], previousIndex) != slotIndex)
+                return false;
+
+            string previousCharacterId = GetSinglePlayerCharacterId(batches[previousIndex]);
+            return !string.IsNullOrEmpty(previousCharacterId) &&
+                   string.Equals(previousCharacterId, currentCharacterId, StringComparison.Ordinal);
+        }
+
+        return false;
+    }
+
     private bool HasNextExecutableBatchInSameTimelineSlot(
         List<BattleActionBatch> batches,
         int startIndex,
@@ -1946,6 +2007,19 @@ public class BattleTurnExecutor : MonoBehaviour
         }
 
         return true;
+    }
+
+    private string GetBatchActionOwnerKey(BattleActionBatch batch)
+    {
+        // Keep player and monster IDs in separate namespaces to avoid collisions.
+        string characterId = GetSinglePlayerCharacterId(batch);
+        string monsterId = GetSingleMonsterRuntimeId(batch);
+        if (!string.IsNullOrEmpty(characterId) && string.IsNullOrEmpty(monsterId))
+            return "Player:" + characterId;
+        if (!string.IsNullOrEmpty(monsterId) && string.IsNullOrEmpty(characterId))
+            return "Monster:" + monsterId;
+        // A mixed or multi-owner batch has no single owner: reset continuity.
+        return "Batch:" + (batch != null ? batch.GetHashCode().ToString() : "None");
     }
 
     private string GetSinglePlayerCharacterId(BattleActionBatch batch)

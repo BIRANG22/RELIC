@@ -1,4 +1,4 @@
-﻿﻿using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -81,6 +81,7 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
     private bool battleEndResetApplied;
     private Coroutine battleEndReturnRoutine;
+    private bool turnEndReturnCompleted;
     // Cache the exact local rotations of the planes controlled by this slide component.
     private Quaternion leftReserveRotation = Quaternion.identity;
     private Quaternion rightReserveRotation = Quaternion.identity;
@@ -286,7 +287,7 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
 
     public void BeginTurnEndReturn()
     {
-        if (!isActiveAndEnabled || IsBattleFinished())
+        if (!isActiveAndEnabled || IsBattleFinished() || turnEndReturnCompleted)
             return;
 
         StartRotationThenPositionReturn();
@@ -310,6 +311,7 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
         }
         battleEndResetApplied = false;
         battleEndRotationRestored = false;
+        turnEndReturnCompleted = false;
         BattleEffectPlaneRotation rotationController = BattleEffectPlaneRotation.Instance;
         if (rotationController != null)
             rotationController.UnlockRotationForNextTurn();
@@ -583,6 +585,7 @@ public class BattleEffectPlaneSlideController : MonoBehaviour
         if (rightPlane != null)
             rightPlane.localPosition = rightOriginalLocalPosition;
         ApplyReserveRotations();
+        turnEndReturnCompleted = !IsBattleFinished();
         battleEndReturnRoutine = null;
     }
 

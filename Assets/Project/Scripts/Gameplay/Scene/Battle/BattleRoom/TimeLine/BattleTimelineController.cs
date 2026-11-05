@@ -307,8 +307,8 @@ public class BattleTimelineController : MonoBehaviour
             }
         }
 
-        // Keep the selected character and its camera focus on right-click.
-        // Still allow undoing the most recently reserved action, even while a character is selected.
+        // 우클릭으로 캐릭터 선택을 해제하지 않습니다.
+        // 스킬 선택 취소 및 마지막 예약 행동 취소는 선택 캐릭터가 있어도 허용합니다.
         // UndoLastPlayerReservation already repairs the timeline and predicted state.
         if (isSlotSelectionLocked)
             return;
@@ -1632,7 +1632,11 @@ public class BattleTimelineController : MonoBehaviour
 
     // Stop at the original fixed X coordinate of the command's starting order.
     // Entry only determines the next occupied order; it never changes this position.
-    public IEnumerator MoveTimelineToOrderBeforeActionRoutine(int slotIndex, int orderIndex)
+    [Header("Same Character Follow-up Order")]
+    [SerializeField, Min(0.01f)] private float sameCharacterFollowUpSlideDuration = 0.10f;
+
+    // Fast follow-up moves shorten only the timeline travel, not the skill animation.
+    public IEnumerator MoveTimelineToOrderBeforeActionRoutine(int slotIndex, int orderIndex, bool fastFollowUp = false)
     {
         if (slotIndex < 0 || slotIndex >= OrderGrindPositions.Length ||
             orderIndex < 0 || orderIndex >= OrderGrindPositions[slotIndex].Length)
@@ -1645,7 +1649,9 @@ public class BattleTimelineController : MonoBehaviour
         if (orderIndex == 0 && timelineSpriteAnimationController != null)
             timelineSpriteAnimationController.BeginPassedTurnMarkFade(slotIndex);
         yield return MoveTimelineSlotToGrindPositionRoutine(
-            slotIndex, stopX, GetUseSkillGrindDuration());
+            slotIndex, stopX, fastFollowUp
+                ? Mathf.Max(0.01f, sameCharacterFollowUpSlideDuration)
+                : GetUseSkillGrindDuration());
         if (orderIndex == 0 && timelineSpriteAnimationController != null)
             timelineSpriteAnimationController.CompletePassedTurnMarkFade(slotIndex);
     }

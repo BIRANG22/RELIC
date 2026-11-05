@@ -116,6 +116,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
     private AnimationCurve syncedReturnCurve;
     private int lastCollisionFeedbackFrame = -1;
     private float lastAttackDirection;
+    private string currentActionOwnerKey = string.Empty;
     private bool cameraReturnDriven;
     private bool battleEndRotationInProgress;
     private bool battleEndRotationLocked;
@@ -157,6 +158,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         releasePersistentAttackRequested = false;
         cameraReturnDriven = false;
         lastAttackDirection = 0f;
+        currentActionOwnerKey = string.Empty;
         syncedReturnDuration = -1f;
         syncedReturnCurve = null;
         Plane1PositionOffset = Vector3.zero;
@@ -367,6 +369,60 @@ public class BattleEffectPlaneRotation : MonoBehaviour
             ApplyIdleValues();
 
         }
+    }
+
+    /// <summary>
+    /// 같은 유닛의 후속 행동은 기울어진 상태를 유지합니다.
+    /// 다른 유닛으로 행동 주체가 바뀌면 기본 회전으로 돌아간 뒤 행동을 시작합니다.
+    /// </summary>
+    public IEnumerator PrepareForActionOwner(string ownerKey)
+    {
+        if (string.IsNullOrEmpty(ownerKey) ||
+            (BattleResultChecker.Instance != null && BattleResultChecker.Instance.BattleEnded))
+            yield break;
+
+        if (string.Equals(currentActionOwnerKey, ownerKey, System.StringComparison.Ordinal))
+            yield break;
+
+        bool hadPreviousOwner = !string.IsNullOrEmpty(currentActionOwnerKey);
+        currentActionOwnerKey = ownerKey;
+        if (!hadPreviousOwner)
+        {
+            lastAttackDirection = 0f;
+            yield break;
+        }
+
+        FindPlanesAutomatically();
+        StopCurrentRoutineWithoutReset();
+        cameraReturnDriven = false;
+        persistentAttackActive = false;
+        releasePersistentAttackRequested = false;
+        syncedReturnDuration = -1f;
+        syncedReturnCurve = null;
+
+        Quaternion from1 = plane1 != null ? plane1.localRotation : plane1IdleQuaternion;
+        Quaternion from2 = plane2 != null ? plane2.localRotation : plane2IdleQuaternion;
+        float duration = Mathf.Max(0f, returnDuration);
+        float elapsed = 0f;
+        while (elapsed < duration && !battleEndRotationLocked && !battleEndRotationInProgress)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.0001f, duration));
+            t = returnCurve != null ? Mathf.Clamp01(returnCurve.Evaluate(t)) : t;
+            if (plane1 != null)
+                plane1.localRotation = Quaternion.SlerpUnclamped(from1, plane1IdleQuaternion, t);
+            if (plane2 != null)
+                plane2.localRotation = Quaternion.SlerpUnclamped(from2, plane2IdleQuaternion, t);
+            yield return null;
+        }
+        if (!battleEndRotationLocked && !battleEndRotationInProgress)
+        {
+            if (plane1 != null) plane1.localRotation = plane1IdleQuaternion;
+            if (plane2 != null) plane2.localRotation = plane2IdleQuaternion;
+        }
+        lastAttackDirection = 0f;
+        Plane1PositionOffset = Vector3.zero;
+        Plane2PositionOffset = Vector3.zero;
     }
 
     private void BeginPersistentAttackEffect(PlaneAttackType attackType)
@@ -604,6 +660,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         releasePersistentAttackRequested = false;
         cameraReturnDriven = false;
         lastAttackDirection = 0f;
+        currentActionOwnerKey = string.Empty;
         syncedReturnDuration = -1f;
         syncedReturnCurve = null;
         Plane1PositionOffset = Vector3.zero;
@@ -645,6 +702,7 @@ public class BattleEffectPlaneRotation : MonoBehaviour
         releasePersistentAttackRequested = false;
         cameraReturnDriven = false;
         lastAttackDirection = 0f;
+        currentActionOwnerKey = string.Empty;
         syncedReturnDuration = -1f;
         syncedReturnCurve = null;
         StopCurrentRoutineWithoutReset();

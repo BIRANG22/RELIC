@@ -2,6 +2,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum BattleExecutionRangeType
+{
+    AttackOrDebuff,
+    Buff,
+    Move
+}
+
 public class GridManager : MonoBehaviour
 {
     [Header("Grid Size")]
@@ -10,6 +17,11 @@ public class GridManager : MonoBehaviour
 
     [Header("Cells")]
     [SerializeField] private GridCell[] cells;
+
+    [Header("Battle Execution Range Colors")]
+    [SerializeField] private Color executionAttackDebuffColor = Color.red;
+    [SerializeField] private Color executionBuffColor = Color.blue;
+    // Move actions do not alter the grid tint.
 
     private GridCell[,] cellMap;
     private bool isGridVisible = true;
@@ -61,6 +73,20 @@ public class GridManager : MonoBehaviour
     {
         isGridVisible = visible;
         ApplyGridVisibilityToCells();
+    }
+
+    public void ShowExecutionRange(IReadOnlyCollection<int> gridIndices, BattleExecutionRangeType rangeType)
+    {
+        if (rangeType == BattleExecutionRangeType.Move)
+        {
+            ClearExecutionRange();
+            return;
+        }
+
+        Color tint = rangeType == BattleExecutionRangeType.Buff
+            ? executionBuffColor
+            : executionAttackDebuffColor;
+        ShowExecutionRange(gridIndices, tint);
     }
 
     public void ShowExecutionRange(IReadOnlyCollection<int> gridIndices, Color color)
