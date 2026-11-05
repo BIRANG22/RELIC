@@ -962,7 +962,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 7685480686193179914}
-  localizationKey: ui.goods.name.b9083bf2
+  localizationKey: ui.goods.name.9040d45b
   koreanSource: "\uC720\uBB3C\uC774\uB984"
   automaticallyRegistered: 1
 --- !u!1 &5913399074020091945

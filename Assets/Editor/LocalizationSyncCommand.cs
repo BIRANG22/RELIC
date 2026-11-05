@@ -148,7 +148,7 @@ public static class LocalizationSyncCommand
         if (result.Success)
         {
             ApplyCharacterSettingEnglishTranslations();
-            StaticLocalizationMigration.MigrateCharacterSettingInfoText();
+            // UI hierarchy repair is independent of workbook synchronization.
         }
         Debug.Log(result.ToLog());
     }

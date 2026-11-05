@@ -680,7 +680,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 8606375045801222231}
-  localizationKey: ui.rune.installation
+  localizationKey: ui.runeiconbuttonslot.installation.67e6bab3
   koreanSource: "\uC7A5\uCC29 \uC911"
   automaticallyRegistered: 1
 --- !u!1 &8558256315270710001

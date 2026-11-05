@@ -151,7 +151,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1978413952118337371}
-  localizationKey: ui.erosionslot.effect_text
+  localizationKey: ui.erosionslot.effect_text.e2798d4b
   koreanSource: "\uB09C\uC774\uB3C4 \uD6A8\uACFC"
   automaticallyRegistered: 1
 --- !u!1 &3296938323315150739
@@ -524,7 +524,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 4019811053515290504}
-  localizationKey: ui.erosionslot.catalog_text
+  localizationKey: ui.erosionslot.catalog_text.b6613bfb
   koreanSource: "\uB09C\uC774\uB3C4\uBA85III"
   automaticallyRegistered: 1
 --- !u!1 &5128989347793201125

@@ -15,32 +15,12 @@ MonoBehaviour:
   m_TableCollectionName: Text
   m_TableCollectionNameGuidString: 3c628c627e41ed84fb431bc1e97cdb9f
   m_Entries:
-  - m_Id: 329720012800
-    m_Key: ui_start
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100672
-    m_Key: common.close
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100673
     m_Key: common.back
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100674
     m_Key: common.confirm
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100675
-    m_Key: common.yes
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100676
-    m_Key: common.no
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100679
-    m_Key: common.exit
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100680
@@ -51,48 +31,8 @@ MonoBehaviour:
     m_Key: common.name
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100683
-    m_Key: common.continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100685
-    m_Key: common.proceed
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100686
     m_Key: common.discard
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100687
-    m_Key: common.extract
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41367126123487249
-    m_Key: common.cost
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100690
-    m_Key: common.rarity
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41367126123487251
-    m_Key: common.armor
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100691
-    m_Key: common.bleed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100692
-    m_Key: common.knockback
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100693
-    m_Key: common.recovery
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100695
-    m_Key: common.passive
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100701
@@ -111,38 +51,6 @@ MonoBehaviour:
     m_Key: common.rune
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100706
-    m_Key: common.background_music
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100707
-    m_Key: common.sound_effects
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100709
-    m_Key: common.tutorial
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100710
-    m_Key: common.language
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100711
-    m_Key: common.resolution
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100713
-    m_Key: title.press_any_key
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100715
-    m_Key: lobby.memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100716
-    m_Key: lobby.memory_and_relic
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100720
     m_Key: lobby.combine
     m_Metadata:
@@ -159,36 +67,8 @@ MonoBehaviour:
     m_Key: lobby.rest
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100727
-    m_Key: lobby.move_to_base
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100728
-    m_Key: lobby.character_intro
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100729
     m_Key: battle.battle
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100730
-    m_Key: battle.turn_end
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100731
-    m_Key: battle.give_up
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100732
-    m_Key: battle.pause
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100733
-    m_Key: battle.move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100734
-    m_Key: battle.select_grid
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100738
@@ -201,58 +81,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100740
     m_Key: battle.event
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100742
-    m_Key: battle.shard
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100750
-    m_Key: battle.action_range
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100751
-    m_Key: battle.action_trait
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100752
-    m_Key: battle.skill_upgrade_available
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100753
-    m_Key: battle.upgrade
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100756
-    m_Key: battle.relic_skill
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100757
-    m_Key: common.confirm_quit_game
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100760
-    m_Key: lobby.culture_tank_number
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100761
-    m_Key: lobby.material_inserted
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100762
-    m_Key: lobby.empty
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100763
-    m_Key: lobby.cannot_combine
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100775
-    m_Key: battle.no_skill
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100776
-    m_Key: battle.bag_full_unique_item_limit
     m_Metadata:
       m_Items: []
   - m_Id: 41385915657494528
@@ -1459,10 +1287,6 @@ MonoBehaviour:
     m_Key: data.effect.e_battle_end_heal.tooltip
     m_Metadata:
       m_Items: []
-  - m_Id: 41385915728797790
-    m_Key: data.effect.e_move.name
-    m_Metadata:
-      m_Items: []
   - m_Id: 41385915728797791
     m_Key: data.effect.e_move.tooltip
     m_Metadata:
@@ -2131,244 +1955,8 @@ MonoBehaviour:
     m_Key: data.item.item_012.description
     m_Metadata:
       m_Items: []
-  - m_Id: 41385915741380634
-    m_Key: battle.acquired_item
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380635
-    m_Key: battle.available_skill
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380637
-    m_Key: battle.node_info
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380638
-    m_Key: battle.node_hover_hint
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380639
-    m_Key: battle.node_start_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380640
-    m_Key: battle.node_rest_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380641
-    m_Key: battle.node_event_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380642
-    m_Key: battle.node_common_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380643
-    m_Key: battle.node_elite_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380644
-    m_Key: battle.node_boss_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380657
-    m_Key: common.no_cost
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380658
-    m_Key: common.hp
-    m_Metadata:
-      m_Items: []
   - m_Id: 41385915741380660
     m_Key: common.move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380661
-    m_Key: common.damage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380662
-    m_Key: common.resource
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380663
-    m_Key: common.no_effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380664
-    m_Key: resource.rage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380665
-    m_Key: resource.momentum
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380666
-    m_Key: resource.aether
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380667
-    m_Key: resource.faith
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380668
-    m_Key: resource.blood
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380669
-    m_Key: resource.unique
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380682
-    m_Key: battle.no_move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380690
-    m_Key: battle.host_only_bag_change
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380691
-    m_Key: battle.select_item_to_discard
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380692
-    m_Key: battle.selected_item_not_found
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380693
-    m_Key: battle.skill_slot_blocked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380694
-    m_Key: battle.skill_slot_limit
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380695
-    m_Key: battle.no_skill_to_reserve
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380696
-    m_Key: battle.no_character_selected
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380698
-    m_Key: battle.cannot_reserve_now
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380699
-    m_Key: battle.hp_shortage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380700
-    m_Key: battle.cost_shortage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380701
-    m_Key: battle.obtain_dustium
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380702
-    m_Key: battle.skill_upgraded
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380703
-    m_Key: battle.other_player_character
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380704
-    m_Key: battle.slot_reserved_by_other
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380705
-    m_Key: battle.network_command_failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380707
-    m_Key: common.no_effect
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380708
-    m_Key: lobby.culture_tank
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380709
-    m_Key: presence.main_menu
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380710
-    m_Key: presence.lobby
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380711
-    m_Key: presence.exploring
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380712
-    m_Key: presence.playing_relic
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380713
-    m_Key: presence.preparing_adventure
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41385915741380714
-    m_Key: presence.forming_party
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100783
-    m_Key: lobby.stat.hp.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100784
-    m_Key: lobby.stat.cost.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100785
-    m_Key: lobby.stat.recovery.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100787
-    m_Key: lobby.stat.base_value
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100788
-    m_Key: lobby.stat.rune_bonus
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100849
-    m_Key: lobby.trial.unlock.stage3_clear
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100850
-    m_Key: lobby.trial.unlock.nocturne_kill
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100851
-    m_Key: lobby.trial.unlock.two_trials_clear
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449346
-    m_Key: ui.erosionslot.catalog_text
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449347
-    m_Key: ui.erosionslot.effect_text
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449349
-    m_Key: ui.option.label
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449354
-    m_Key: ui.record.effect
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449359
-    m_Key: ui.record.method
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449360
-    m_Key: ui.record.consumption
     m_Metadata:
       m_Items: []
   - m_Id: 10169488443449362
@@ -2379,20 +1967,8 @@ MonoBehaviour:
     m_Key: ui.unitstatuseffecttooltipitemui.nametext
     m_Metadata:
       m_Items: []
-  - m_Id: 10169488443449369
-    m_Key: ui.assets.project.scripts.core.managers.uimanager.text
-    m_Metadata:
-      m_Items: []
   - m_Id: 10169488443449383
     m_Key: ui.assets.project.scripts.gameplay.scene.battle.eventroom.eventdicerollpresenter.text
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10169488443449415
-    m_Key: ui.assets.project.scripts.ui.lobby.playerrewardslotui.text
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10173380891779096
-    m_Key: ui.assets.project.scripts.core.managers.uimanager.text.acf962d7
     m_Metadata:
       m_Items: []
   - m_Id: 10173380891779115
@@ -2403,32 +1979,12 @@ MonoBehaviour:
     m_Key: ui.battle.location_lothern_ruins
     m_Metadata:
       m_Items: []
-  - m_Id: 10173380895973489
-    m_Key: ui.event.no_upgradable_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10173380895973531
-    m_Key: ui.event.current_hp
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10173380908556403
-    m_Key: ui.record.unique_memory
-    m_Metadata:
-      m_Items: []
   - m_Id: 10175616531308544
     m_Key: title.explore_continue
     m_Metadata:
       m_Items: []
   - m_Id: 10175616548085760
     m_Key: title.explore_abandon
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10175616548085761
-    m_Key: title.archive
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10175616548085762
-    m_Key: title.exit
     m_Metadata:
       m_Items: []
   - m_Id: 10185974310510643
@@ -2855,158 +2411,6 @@ MonoBehaviour:
     m_Key: data.erosion.erosion_03_08.description
     m_Metadata:
       m_Items: []
-  - m_Id: 10986483455893504
-    m_Key: common.none
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059328
-    m_Key: common.mana
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059329
-    m_Key: resource.karma
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059330
-    m_Key: ui.record.target.self
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059331
-    m_Key: ui.record.target.grid
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059332
-    m_Key: ui.record.range.direction
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059333
-    m_Key: ui.record.range.selection
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059334
-    m_Key: ui.record.range.passive
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059335
-    m_Key: ui.record.unlock_character_level
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059336
-    m_Key: ui.record.unlock_blue_dustium
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059337
-    m_Key: ui.record.use_target
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059338
-    m_Key: ui.record.use_count
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059339
-    m_Key: ui.record.no_consumption
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059340
-    m_Key: ui.record.unknown_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059341
-    m_Key: ui.record.unknown_method
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059342
-    m_Key: ui.record.unknown_consumption
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059343
-    m_Key: ui.record.unknown_effect
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059344
-    m_Key: ui.record.unknown_use_target
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059345
-    m_Key: ui.record.unknown_use_count
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059346
-    m_Key: ui.record.memory_rarity.exclusive
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059347
-    m_Key: ui.record.memory_rarity.common
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059348
-    m_Key: ui.record.memory_rarity.rare
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059349
-    m_Key: ui.record.memory_rarity.epic
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059350
-    m_Key: ui.record.memory_rarity.unique
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059351
-    m_Key: ui.record.fragment_rarity.exclusive
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059352
-    m_Key: ui.record.fragment_rarity.common
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059353
-    m_Key: ui.record.fragment_rarity.rare
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059354
-    m_Key: ui.record.fragment_rarity.unique
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059355
-    m_Key: ui.record.item_rarity.common
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059356
-    m_Key: ui.record.item_rarity.rare
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059357
-    m_Key: ui.record.item_rarity.epic
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059358
-    m_Key: ui.record.compound_rarity.common
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059359
-    m_Key: ui.record.compound_rarity.rare
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059360
-    m_Key: ui.record.compound_rarity.epic
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059361
-    m_Key: ui.record.relic_rarity.common
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059362
-    m_Key: ui.record.relic_rarity.rare
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059363
-    m_Key: ui.record.relic_rarity.epic
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10986483481059364
-    m_Key: ui.record.relic_rarity.unique
-    m_Metadata:
-      m_Items: []
   - m_Id: 10999245246570496
     m_Key: tutorial.speaker.elric
     m_Metadata:
@@ -3031,124 +2435,12 @@ MonoBehaviour:
     m_Key: tutorial.intro.05
     m_Metadata:
       m_Items: []
-  - m_Id: 10999245267542021
-    m_Key: tutorial.intro.06
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999245267542022
-    m_Key: tutorial.intro.07
-    m_Metadata:
-      m_Items: []
   - m_Id: 10999245267542023
     m_Key: tutorial.first_expedition.01
     m_Metadata:
       m_Items: []
   - m_Id: 10999245267542024
     m_Key: tutorial.first_expedition.02
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999245267542025
-    m_Key: tutorial.first_expedition.03
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565568
-    m_Key: ui.skill.cost
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565569
-    m_Key: ui.skill.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565570
-    m_Key: ui.skill.effect
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565571
-    m_Key: ui.skill.rarity.move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565572
-    m_Key: ui.skill.rarity.memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565573
-    m_Key: ui.skill.rarity.common_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565574
-    m_Key: ui.skill.rarity.rare_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565575
-    m_Key: ui.skill.rarity.epic_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565576
-    m_Key: ui.skill.rarity.unique_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565577
-    m_Key: ui.skill.rarity.instinct_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565578
-    m_Key: ui.skill.rarity.manifestation_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565579
-    m_Key: ui.skill.rarity.implementation_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565580
-    m_Key: ui.skill.range.direction
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565581
-    m_Key: ui.skill.range.selection
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565582
-    m_Key: ui.skill.range.passive
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999261155565583
-    m_Key: ui.skill.range.passive_activation
-    m_Metadata:
-      m_Items: []
-  - m_Id: 10999272912199680
-    m_Key: ui.rune.installation
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11008757965791232
-    m_Key: ui.rune.info.title
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11008757982568448
-    m_Key: ui.rune.info.empty_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11012039819927552
-    m_Key: ui.character_setting.preview_info
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11012039836704768
-    m_Key: ui.character_setting.skill_info_title
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11012039836704769
-    m_Key: ui.character_setting.skill_info_empty
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11012039836704770
-    m_Key: ui.character_setting.rune_info_title
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11012039836704771
-    m_Key: ui.character_setting.rune_info_empty
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11639695972245520
-    m_Key: data.skill_master.s_move_1.name
     m_Metadata:
       m_Items: []
   - m_Id: 11639695972245648
@@ -3391,60 +2683,12 @@ MonoBehaviour:
     m_Key: ui.record.alchemy_agent
     m_Metadata:
       m_Items: []
-  - m_Id: 11699293018136576
-    m_Key: ui.option.master_volume
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11699293039108096
-    m_Key: ui.option.brightness
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838412
-    m_Key: ui.battle.3_hold_to_memories_battle
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838413
-    m_Key: ui.battle.training
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838420
-    m_Key: ui.battle.memory_name_length_placeholder
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838421
-    m_Key: ui.battle.all_characters_hp_has_been_restored_30
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838423
-    m_Key: ui.battle.weaken_2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838432
-    m_Key: ui.event.relic_exchange
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838435
     m_Key: ui.battle.increases_max_hp_5
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458548838439
-    m_Key: ui.event.memory_awakening
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838442
     m_Key: ui.battle.zone_1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838450
-    m_Key: ui.battle.1_mining_carefully
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838452
-    m_Key: ui.battle.2_embrace_power_life
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838454
-    m_Key: ui.battle.there_are_no_equipped_artifacts_delete
     m_Metadata:
       m_Items: []
   - m_Id: 11938458548838455
@@ -3475,28 +2719,12 @@ MonoBehaviour:
     m_Key: ui.exploration_result.buffs_applied
     m_Metadata:
       m_Items: []
-  - m_Id: 11938458548838464
-    m_Key: ui.exploration_result.deaths
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838465
-    m_Key: ui.exploration_result.experience
-    m_Metadata:
-      m_Items: []
   - m_Id: 11938458548838477
     m_Key: ui.help.shortcut_title
     m_Metadata:
       m_Items: []
   - m_Id: 11938458548838478
     m_Key: ui.bootstrap.open_close_this_panel
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458548838489
-    m_Key: ui.debug_battle.compensation
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11938458553032710
-    m_Key: ui.debug_battle.skill_detail_placeholder
     m_Metadata:
       m_Items: []
   - m_Id: 11938458553032733
@@ -3547,102 +2775,6 @@ MonoBehaviour:
     m_Key: ui.lobby.current_panel_placeholder
     m_Metadata:
       m_Items: []
-  - m_Id: 11988550500753549
-    m_Key: battle.skill.move_distance
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753550
-    m_Key: battle.skill_type.all
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753551
-    m_Key: battle.skill_type.self
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753552
-    m_Key: battle.skill_type.ranged
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753553
-    m_Key: battle.skill_type.melee
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753554
-    m_Key: battle.skill_rarity.unique_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753555
-    m_Key: battle.skill_rarity.ability_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753556
-    m_Key: battle.skill_rarity.passive_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550500753557
-    m_Key: battle.skill_rarity.move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550504947712
-    m_Key: battle.skill_rarity.common_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550504947713
-    m_Key: battle.skill_rarity.rare_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550504947714
-    m_Key: battle.skill_rarity.epic_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550504947715
-    m_Key: battle.skill_rarity.unique
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11988550504947716
-    m_Key: battle.skill_rarity.exclusive
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11991769356443711
-    m_Key: ui.battle.equip_panel.character_text
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11991769356443712
-    m_Key: ui.check.slogan
-    m_Metadata:
-      m_Items: []
-  - m_Id: 11993599759097874
-    m_Key: battle.dustium
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13427954283307008
-    m_Key: lobby.karma.acquisition_title
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13427954308472832
-    m_Key: lobby.karma.description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13427954308472833
-    m_Key: lobby.stat.maximum_value
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13436147038191621
-    m_Key: ui.option.fullscreen
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13436147038191622
-    m_Key: ui.option.battle_speed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13436147038191655
-    m_Key: ui.battle.relic_effects
-    m_Metadata:
-      m_Items: []
-  - m_Id: 13436147038191671
-    m_Key: ui.battle.relic_name_length_placeholder
-    m_Metadata:
-      m_Items: []
   - m_Id: 13436147038191717
     m_Key: ui.lobby.only_faint_traces_remain
     m_Metadata:
@@ -3683,46 +2815,6 @@ MonoBehaviour:
     m_Key: ui.battle.shop
     m_Metadata:
       m_Items: []
-  - m_Id: 17041964720988183
-    m_Key: ui.debug_battle.name_length_placeholder
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988186
-    m_Key: ui.debug_battle.pattern_5
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988189
-    m_Key: ui.debug_battle.pattern_1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988193
-    m_Key: ui.debug_battle.pattern_8
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988195
-    m_Key: ui.debug_battle.pattern_4
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988200
-    m_Key: ui.debug_battle.pattern_3
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988201
-    m_Key: ui.debug_battle.pattern_6
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988205
-    m_Key: ui.debug_battle.pattern_7
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988207
-    m_Key: ui.debug_battle.name_place
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17041964720988213
-    m_Key: ui.debug_battle.pattern_2
-    m_Metadata:
-      m_Items: []
   - m_Id: 17041964720988218
     m_Key: ui.lobby.specialization
     m_Metadata:
@@ -3731,132 +2823,12 @@ MonoBehaviour:
     m_Key: ui.lobby.liberation
     m_Metadata:
       m_Items: []
-  - m_Id: 17041964720988223
-    m_Key: ui.lobby.exploration_base
-    m_Metadata:
-      m_Items: []
   - m_Id: 17041964720988228
     m_Key: ui.title.start_demo
     m_Metadata:
       m_Items: []
-  - m_Id: 17053275701911575
-    m_Key: ui.battle.current_armor
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911576
-    m_Key: ui.help.battle_guide
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911577
-    m_Key: ui.debug_battle.enforce
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911578
-    m_Key: ui.battle.action_pattern
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911579
-    m_Key: ui.battle.available_actions
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911580
-    m_Key: ui.debug_battle.turn
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911581
-    m_Key: ui.battle.status_effects
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911587
-    m_Key: ui.debug_battle.skill_1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911588
-    m_Key: ui.battle.skill_cost
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911590
-    m_Key: ui.debug_battle.skill_4
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911591
-    m_Key: ui.debug_battle.skill_2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17053275701911592
-    m_Key: ui.debug_battle.skill_3
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243945
-    m_Key: battle.back2.turn_format
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243946
-    m_Key: battle.location.ruins_outskirts
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243947
-    m_Key: battle.location.citadel_passage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243948
-    m_Key: battle.location.inner_plaza
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243949
-    m_Key: battle.intro.battle_start
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243950
-    m_Key: battle.intro.rest_area
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243951
-    m_Key: battle.map_intro
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243952
-    m_Key: battle.rest.no_upgradable_equipped_memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243953
-    m_Key: battle.rest.cannot_open_memory_upgrade
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243954
-    m_Key: lobby.skill_upgrade.host_only
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17062766837243955
-    m_Key: battle.intro.enter_battle_area
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986885
-    m_Key: ui.battle.if_karma_at_maximum_the_start_the_turn_1_h
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986888
-    m_Key: ui.battle.30_chance_success
-    m_Metadata:
-      m_Items: []
   - m_Id: 17117632292986895
     m_Key: ui.event.detail_placeholder
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986896
-    m_Key: ui.battle.dice_decision
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986897
-    m_Key: ui.battle.90_chance_success
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986906
-    m_Key: ui.debug_battle.deliver_powerful_slash_the_target
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986914
-    m_Key: ui.debug_battle.1_select_one_five_slots
     m_Metadata:
       m_Items: []
   - m_Id: 17117632292986919
@@ -3871,88 +2843,12 @@ MonoBehaviour:
     m_Key: ui.lobby.the_power_that_flows_out_resonates_with_relic
     m_Metadata:
       m_Items: []
-  - m_Id: 17105354709540953
-    m_Key: common.rarity.common
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17105354709540954
-    m_Key: common.rarity.rare
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17105354709540955
-    m_Key: common.rarity.epic
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17105354709540956
-    m_Key: common.rarity.unique
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17117632292986922
-    m_Key: lobby.erosion.reward_bonus_format
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100852
-    m_Key: common.cancel
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100853
     m_Key: common.untranslated
     m_Metadata:
       m_Items: []
-  - m_Id: 41387432259100854
-    m_Key: dialog.expedition.abandon_confirm
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100855
-    m_Key: dialog.purchase.confirm
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100856
-    m_Key: dialog.relic.purchase_confirm
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100857
-    m_Key: dialog.rune.activate_confirm
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100858
-    m_Key: system.expedition.abandoned
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100859
-    m_Key: system.expedition.missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100860
-    m_Key: system.save.failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100861
-    m_Key: system.save.success
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100862
-    m_Key: ui.battle.action_reserve
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100863
-    m_Key: ui.battle.progress
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100864
-    m_Key: ui.battle.start
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100865
-    m_Key: ui.character.locked
-    m_Metadata:
-      m_Items: []
   - m_Id: 41387432259100866
     m_Key: ui.lobby.culture.material
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100867
-    m_Key: ui.lobby.culture.recipe
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259100868
@@ -3969,302 +2865,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 41387432259100871
     m_Key: ui.lobby.panel.resonance
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100872
-    m_Key: ui.lobby.panel.storage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100873
-    m_Key: ui.lobby.play.depart
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100874
-    m_Key: ui.lobby.play.ready
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100875
-    m_Key: warning.battle.action_preparation_incomplete
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100876
-    m_Key: warning.battle.relic_change_locked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100877
-    m_Key: warning.battle.skill_change_locked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100878
-    m_Key: warning.battle.timeline_selection_locked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100879
-    m_Key: warning.character.data_not_found
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100880
-    m_Key: warning.character.data_not_found_with_id
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100881
-    m_Key: warning.character.max_level
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100882
-    m_Key: warning.character.none_available
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100883
-    m_Key: warning.character.not_selected
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100884
-    m_Key: warning.character.position_missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100885
-    m_Key: warning.character.select_first
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100886
-    m_Key: warning.currency.insufficient_blue_dustium
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100887
-    m_Key: warning.data.unavailable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100888
-    m_Key: warning.equip.panel_unavailable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100889
-    m_Key: warning.feature.unavailable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100890
-    m_Key: warning.grid.battle_grid_missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100891
-    m_Key: warning.grid.none_selectable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100892
-    m_Key: warning.grid.not_selectable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100893
-    m_Key: warning.grid.selectable_range_missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100894
-    m_Key: warning.map.not_selected
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100895
-    m_Key: warning.move.destination_invalid
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100896
-    m_Key: warning.move.destination_occupied
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100897
-    m_Key: warning.move.insufficient_cost
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100898
-    m_Key: warning.move.reservation_failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100899
-    m_Key: warning.network.battle_start_sync_failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100900
-    m_Key: warning.network.host_only_start
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100901
-    m_Key: warning.party.empty
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100902
-    m_Key: warning.party.not_full
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100903
-    m_Key: warning.party.select_character
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100904
-    m_Key: warning.party.select_deployed_character
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100905
-    m_Key: warning.quest.must_complete
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100906
-    m_Key: warning.relic.data_not_found
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100907
-    m_Key: warning.relic.unavailable_now
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100908
-    m_Key: warning.rune.character_unlock_level
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100909
-    m_Key: warning.rune.equipped_by_other_character
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100910
-    m_Key: warning.rune.no_empty_slot
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100911
-    m_Key: warning.rune.none_to_unequip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100912
-    m_Key: warning.rune.not_available
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100913
-    m_Key: warning.rune.not_equipped
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100914
-    m_Key: warning.rune.not_selected
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100915
-    m_Key: warning.rune.shared_level_required
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100916
-    m_Key: warning.rune.shared_locked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100917
-    m_Key: warning.rune.slot_locked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100918
-    m_Key: warning.rune.slot_not_connected
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100919
-    m_Key: warning.rune.slot_unlock_level
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100920
-    m_Key: warning.skill.data_not_found
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100921
-    m_Key: warning.skill.locked_level
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100922
-    m_Key: warning.skill.memory_unlock_level
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100923
-    m_Key: warning.skill.none_registered
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100924
-    m_Key: warning.skill.not_available_for_slot
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100925
-    m_Key: warning.skill.not_selected
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100926
-    m_Key: warning.skill.range_missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100927
-    m_Key: warning.skill.reservation_controller_missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100928
-    m_Key: warning.skill.reservation_failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100929
-    m_Key: warning.skill.reservation_missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100930
-    m_Key: warning.skill.select_slot_first
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100931
-    m_Key: warning.skill.slot_not_connected
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100932
-    m_Key: warning.stage.locked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100933
-    m_Key: warning.system.game_manager_missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100934
-    m_Key: warning.target_selection.unavailable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100935
-    m_Key: warning.timeline.controller_missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100936
-    m_Key: warning.timeline.no_reservation_to_undo
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100937
-    m_Key: warning.timeline.select_slot_first
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100938
-    m_Key: warning.timeline.slot_action_limit
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100939
-    m_Key: warning.timeline.slot_missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100940
-    m_Key: warning.timeline.slot_occupied_by_other_character
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100941
-    m_Key: warning.timeline.slot_unavailable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100942
-    m_Key: warning.timeline.ui_missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 41387432259100943
-    m_Key: warning.tutorial.elric_dialogue_required
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17507550995423252
-    m_Key: skill.effect.missing_hp_strike.value_format
-    m_Metadata:
-      m_Items: []
-  - m_Id: 17507550995423253
-    m_Key: skill.scaling.missing_hp
     m_Metadata:
       m_Items: []
   - m_Id: 17507550995423297
@@ -5031,214 +3631,6 @@ MonoBehaviour:
     m_Key: data.battle_map.battlemap_14.description
     m_Metadata:
       m_Items: []
-  - m_Id: 1198327168969597041
-    m_Key: battle.action.move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2479938580071356898
-    m_Key: battle.action.damage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1815245148604973943
-    m_Key: battle.action.push
-    m_Metadata:
-      m_Items: []
-  - m_Id: 6011308666597819215
-    m_Key: battle.action.pull
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2109279170591050581
-    m_Key: battle.action.grudge
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2926797293511239601
-    m_Key: battle.action.erosion
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9072331715277446018
-    m_Key: battle.action.spawn_spider_egg
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1372802364651645927
-    m_Key: battle.action.spawn_web
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8502374025300533235
-    m_Key: battle.action.veil
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3515777830533653991
-    m_Key: common.character
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8988175409473606672
-    m_Key: common.info
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2876383222199361241
-    m_Key: common.memory
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7944646927863960014
-    m_Key: event.memory.none_upgradable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7842845681397039739
-    m_Key: event.memory.remove_acquired_failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7621334280704964936
-    m_Key: event.memory.remove_failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 6330937352032063273
-    m_Key: event.memory.remove_failed_unavailable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3062261105313232713
-    m_Key: event.memory.select_awaken
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3389965653777387108
-    m_Key: event.memory.select_upgrade
-    m_Metadata:
-      m_Items: []
-  - m_Id: 4517982166064026212
-    m_Key: event.memory.select_upgrade_required
-    m_Metadata:
-      m_Items: []
-  - m_Id: 6771787548900199738
-    m_Key: event.memory.selection_panel_invalid
-    m_Metadata:
-      m_Items: []
-  - m_Id: 4493357146796418975
-    m_Key: event.memory.selection_panel_missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7496364623015142240
-    m_Key: event.memory.upgrade_unavailable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 746283308175497894
-    m_Key: event.relic.none_available
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7211515257215341654
-    m_Key: event.relic.none_equipped
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7619199145596990078
-    m_Key: event.relic.select_exchange
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8469015330641913822
-    m_Key: event.relic.select_remove
-    m_Metadata:
-      m_Items: []
-  - m_Id: 6129305146811147704
-    m_Key: event.relic.selection_panel_invalid
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2500228719056938362
-    m_Key: event.relic.selection_panel_unavailable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8007704390767653971
-    m_Key: event.result.end
-    m_Metadata:
-      m_Items: []
-  - m_Id: 6205752055948751534
-    m_Key: event.result.failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1009727815439550862
-    m_Key: event.result.shop_opened
-    m_Metadata:
-      m_Items: []
-  - m_Id: 619241625050597982
-    m_Key: event.reward.none_to_confirm
-    m_Metadata:
-      m_Items: []
-  - m_Id: 469011341431732811
-    m_Key: lobby.quest.setup
-    m_Metadata:
-      m_Items: []
-  - m_Id: 5456895886818223323
-    m_Key: lobby.quest.first_expedition
-    m_Metadata:
-      m_Items: []
-  - m_Id: 5126323777902196562
-    m_Key: system.continue.missing
-    m_Metadata:
-      m_Items: []
-  - m_Id: 751297280620710114
-    m_Key: ui.exploration.record
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8567494127911121857
-    m_Key: warning.timeline.combined_action_limit
-    m_Metadata:
-      m_Items: []
-  - m_Id: 693281930632089369
-    m_Key: event.dice.roll
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7345543633474189966
-    m_Key: event.dice.confirm
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975623
-    m_Key: event.dice.success
-    m_Metadata:
-      m_Items: []
-  - m_Id: 859814055732616816
-    m_Key: event.dice.failure
-    m_Metadata:
-      m_Items: []
-  - m_Id: 401128678064692629
-    m_Key: event.dice.judgement_success
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2174010986223499435
-    m_Key: event.dice.judgement_failure
-    m_Metadata:
-      m_Items: []
-  - m_Id: 1631955850967427755
-    m_Key: lobby.world_object.workbench
-    m_Metadata:
-      m_Items: []
-  - m_Id: 4391589186152940879
-    m_Key: lobby.world_object.statue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2243768493947962817
-    m_Key: lobby.world_object.stela
-    m_Metadata:
-      m_Items: []
-  - m_Id: 5900419522700747322
-    m_Key: lobby.world_object.researcher_elric
-    m_Metadata:
-      m_Items: []
-  - m_Id: 587329290491091082
-    m_Key: lobby.world_object.storage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7463777631022220572
-    m_Key: lobby.character.hilt
-    m_Metadata:
-      m_Items: []
-  - m_Id: 367250356182644820
-    m_Key: lobby.character.kaya
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8615078507091817039
-    m_Key: lobby.character.haze
-    m_Metadata:
-      m_Items: []
-  - m_Id: 4794883933976256088
-    m_Key: lobby.character.ines
-    m_Metadata:
-      m_Items: []
   - m_Id: 9164888147097975624
     m_Key: data.event.event_01.choice_1_name
     m_Metadata:
@@ -5269,10 +3661,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 9164888147097975647
     m_Key: data.event.event_04.choice_1_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975649
-    m_Key: data.event.event_04.choice_1_disabled_description
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975650
@@ -5317,130 +3705,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 9164888147097975698
     m_Key: data.event.event_09.choice_3_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2876383222199361250
-    m_Key: common.attack
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2876383222199361251
-    m_Key: common.buff
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2876383222199361252
-    m_Key: common.debuff
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361455374336
-    m_Key: ui.battle.effect_type_457f88ae
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361501511680
-    m_Key: ui.battle.effect_name_67eb2641
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361501511681
-    m_Key: ui.battle.effect_description_38a2227e_2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361501511682
-    m_Key: ui.battle.effect_name_text_67eb2641
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705984
-    m_Key: ui.debug_battle.area_1_threshold_debris_be0baf42
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705985
-    m_Key: ui.battle.effect_description_text_38a2227e
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705986
-    m_Key: ui.battle.effect_description_detail_38a2227e
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705987
-    m_Key: ui.battle.effect_description_38a2227e_38a2227e
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705988
-    m_Key: ui.rest.heal_0fa15c3a
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705989
-    m_Key: ui.skill.cost_name_dd9e80a7
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705990
-    m_Key: ui.rest.heal_textlabel_0fa15c3a
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705991
-    m_Key: ui.tutorial.skip_e0dc5150
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705992
-    m_Key: ui.reward.next_area_7c56ad84
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705993
-    m_Key: ui.reward.return_7f3fe6f0
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19697779441410051
-    m_Key: tutorial.battle_guide.01
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19697779441410052
-    m_Key: tutorial.battle_guide.02
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19697779441410053
-    m_Key: tutorial.battle_guide.03
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19697779441410054
-    m_Key: tutorial.battle_guide.04
-    m_Metadata:
-      m_Items: []
-  - m_Id: 19697779441410055
-    m_Key: tutorial.battle_guide.05
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705994
-    m_Key: ui.option.windowed_6bf30300
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705995
-    m_Key: ui.option.borderless_d52fad65
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705996
-    m_Key: ui.monsterskill.moves_1_or_2_tiles_up_twice_align_with_cha_75591ba6
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705997
-    m_Key: ui.monster_skill.effect_type_d76003b9
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705998
-    m_Key: ui.monsterstatus.at_start_the_next_turn_revives_one_mutant__54afa935
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505705999
-    m_Key: ui.battle.monster_name_9454ddb5
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706000
-    m_Key: ui.battle.action_2022f8c7
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706001
-    m_Key: ui.battle.status_0f7c69b0
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706002
-    m_Key: ui.battle.tutorial_text_8bb824d4
     m_Metadata:
       m_Items: []
   - m_Id: 20540429581164544
@@ -5553,54 +3817,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 20540429581164571
     m_Key: data.effect.e_strike_count_by_debuff.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706003
-    m_Key: ui.reward.item_name_82ec02da
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706004
-    m_Key: ui.reward.claim_e393d35f
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706005
-    m_Key: ui.battle.select_mercenary_cf6589bc
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361505706006
-    m_Key: ui.battle.select_7929f1e0
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361509900288
-    m_Key: ui.battle.choose_memory_98b7d37a
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361509900289
-    m_Key: ui.battle.skill_name_f50b42ad
-    m_Metadata:
-      m_Items: []
-  - m_Id: 21435721902694406
-    m_Key: battle.action.move.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 21435721902694407
-    m_Key: battle.action.move.detail
-    m_Metadata:
-      m_Items: []
-  - m_Id: 21435721902694408
-    m_Key: battle.action.flip.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 21435721902694409
-    m_Key: battle.action.flip.detail
-    m_Metadata:
-      m_Items: []
-  - m_Id: 21435721902694410
-    m_Key: battle.intro.battle_end
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361509900290
-    m_Key: ui.battle.a_dense_fog_has_engulfed_area_making_it_im_5f26e4c5
     m_Metadata:
       m_Items: []
   - m_Id: 41387432259101029
@@ -5759,192 +3975,12 @@ MonoBehaviour:
     m_Key: data.effect.e_rune_max_unique_resource_all_enemy_vulnerable.tooltip
     m_Metadata:
       m_Items: []
-  - m_Id: 22145802691944468
-    m_Key: tutorial.battle1.turn1.monster_info
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944469
-    m_Key: tutorial.battle1.turn1.move
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944470
-    m_Key: tutorial.battle1.turn1.move_grid
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944471
-    m_Key: tutorial.battle1.turn1.skill01
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944472
-    m_Key: tutorial.battle1.turn1.timeline
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944473
-    m_Key: tutorial.battle1.turn1.end_turn
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944474
-    m_Key: tutorial.battle1.turn2.skill01_repeat
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944475
-    m_Key: tutorial.battle1.turn2.skill01_repeat_again
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22145802691944476
-    m_Key: tutorial.battle1.turn2.end_turn
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22221673343754240
-    m_Key: ui.record.effect_textlabel
-    m_Metadata:
-      m_Items: []
-  - m_Id: 22221673364725761
-    m_Key: ui.debug_battle.boss_demo_message
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548317810688
-    m_Key: ui.battle.effect_name_placeholder
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365120
-    m_Key: ui.record.undiscovered_2a030ed7
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365122
-    m_Key: ui.shop.goods_1_skill_name_placeholder
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365123
-    m_Key: ui.shop.goods_1_relic_name_placeholder
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365124
-    m_Key: ui.shop.goods_2_skill_name_placeholder
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365125
-    m_Key: ui.shop.goods_2_relic_name_placeholder
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365126
-    m_Key: ui.shop.goods_3_skill_name_placeholder
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365127
-    m_Key: ui.shop.goods_3_relic_name_placeholder
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365128
-    m_Key: ui.shop.goods_4_skill_name_placeholder
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365129
-    m_Key: ui.shop.goods_4_relic_name_placeholder
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23949548351365130
-    m_Key: battle.result.exploration_failed
-    m_Metadata:
-      m_Items: []
   - m_Id: 23949548351365131
     m_Key: data.effect.e_poison_equal_target_poison.name
     m_Metadata:
       m_Items: []
   - m_Id: 23949548351365132
     m_Key: data.effect.e_poison_equal_target_poison.tooltip
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452472
-    m_Key: skill.sentence.join
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452473
-    m_Key: skill.sentence.break
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452474
-    m_Key: skill.sentence.end
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452475
-    m_Key: skill.sentence.special.missing_hp
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452476
-    m_Key: skill.sentence.special.armor
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452477
-    m_Key: skill.sentence.special.kill_bonus
-    m_Metadata:
-      m_Items: []
-  - m_Id: 23980218251452478
-    m_Key: skill.sentence.special.miss_penalty
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000000
-    m_Key: skill.sentence.count.single
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8700601600000000001
-    m_Key: skill.sentence.count.multiple
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975800
-    m_Key: battle.effect_info.health_recovery
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975801
-    m_Key: battle.effect_info.mana_recovery
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975802
-    m_Key: battle.effect_info.karma_recovery
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975803
-    m_Key: battle.effect_info.party_karma_recovery
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975804
-    m_Key: battle.effect_info.collision
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975805
-    m_Key: battle.effect_info.turn_start_format
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975806
-    m_Key: battle.reward.acquire_count_format
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975807
-    m_Key: event.result.red_dustium_acquired_format
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975808
-    m_Key: event.result.relic_acquired_format
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097980000
-    m_Key: battle.reward.relic_acquired
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097980000
-    m_Key: battle.reward.relic_acquired
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975811
-    m_Key: battle.reward.skill_panel_title
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975812
-    m_Key: battle.reward.skill_acquired
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975813
-    m_Key: event.result.memory_acquired_format
     m_Metadata:
       m_Items: []
   - m_Id: 9164888147097975814
@@ -6167,56 +4203,8 @@ MonoBehaviour:
     m_Key: data.skill_master.s_core_37.details
     m_Metadata:
       m_Items: []
-  - m_Id: 29429361514094592
-    m_Key: ui.battle.arabella_ab20c109
-    m_Metadata:
-      m_Items: []
   - m_Id: 24680556586868736
     m_Key: ui.battle.canvas.relic_panel.extractbutton.text_tmp.b5d536cd
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361514094593
-    m_Key: ui.relic.skip_bb0d2d9f
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361514094594
-    m_Key: ui.relic.skip_textlabel_bb0d2d9f
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975832
-    m_Key: skill.sentence.apply.tile.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975833
-    m_Key: skill.sentence.deal.amount.multiple.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975834
-    m_Key: skill.sentence.deal.amount.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975835
-    m_Key: skill.sentence.deal.amount.single.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975836
-    m_Key: skill.sentence.gain.amount.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975837
-    m_Key: skill.sentence.gain.amount.single.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975838
-    m_Key: skill.sentence.grant.amount.single.final
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975839
-    m_Key: skill.sentence.grant.amount.single.linked
-    m_Metadata:
-      m_Items: []
-  - m_Id: 9164888147097975840
-    m_Key: skill.sentence.restore.amount.single.final
     m_Metadata:
       m_Items: []
   - m_Id: 25428606029373440
@@ -6351,72 +4339,8 @@ MonoBehaviour:
     m_Key: data.event.event_10.choice_3_name
     m_Metadata:
       m_Items: []
-  - m_Id: 29429361518288896
-    m_Key: ui.menu.record_6db3f2f6
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288897
-    m_Key: ui.event.coin_result_placeholder_38d9d6cb
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288898
-    m_Key: ui.lobby.stat_name_eafccb6c
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288899
-    m_Key: ui.lobby.explore_bde74899
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288900
-    m_Key: ui.menu.record_text_6db3f2f6
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288901
-    m_Key: ui.title.quit_ec48e3e4
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288902
-    m_Key: ui.event.coin_heads_legacy_da9f7c01
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288903
-    m_Key: ui.event.coin_tails_legacy_a05523b3
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288904
-    m_Key: ui.exploration_result.elapsed_time_with_value_33aee447
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288905
-    m_Key: ui.lobby.research_9873c6b9
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501575
-    m_Key: ui.exploration.result.monster_kills
-    m_Metadata:
-      m_Items: []
   - m_Id: 26848357515501576
     m_Key: ui.exploration.result.damage_dealt
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501577
-    m_Key: ui.exploration.result.damage_taken
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501578
-    m_Key: ui.exploration.result.buffs_applied
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501579
-    m_Key: ui.exploration.result.incapacitated
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501580
-    m_Key: ui.exploration.result.title
-    m_Metadata:
-      m_Items: []
-  - m_Id: 26848357515501581
-    m_Key: ui.exploration.result.elapsed_time
     m_Metadata:
       m_Items: []
   - m_Id: 27586697501728768
@@ -6433,26 +4357,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 27586697539477506
     m_Key: data.event.event_t_01.choice_1_name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288906
-    m_Key: ui.tutorial.continue_prompt_3bfbc462
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288907
-    m_Key: ui.tutorial.dialogue_placeholder_2a5a09a2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288908
-    m_Key: ui.exploration_result.acquired_items_f478a6a3
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361518288909
-    m_Key: ui.exploration_result.elapsed_time_4827292f
-    m_Metadata:
-      m_Items: []
-  - m_Id: 27586817727258628
-    m_Key: battle.effect_info.erosion_damage
     m_Metadata:
       m_Items: []
   - m_Id: 4547655072889828093
@@ -6611,126 +4515,6 @@ MonoBehaviour:
     m_Key: data.event.event_t_01.choice_1_description
     m_Metadata:
       m_Items: []
-  - m_Id: 4035915082772380139
-    m_Key: battle.skill.passive_duration
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3444185439531223621
-    m_Key: event.result.hp_recovery_amount
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8802548698092418766
-    m_Key: event.result.max_hp_increase_amount
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7976493799859799195
-    m_Key: event.result.party_max_hp_modified
-    m_Metadata:
-      m_Items: []
-  - m_Id: 233547581394359481
-    m_Key: event.result.party_mana_recovery_modified
-    m_Metadata:
-      m_Items: []
-  - m_Id: 533658993916296967
-    m_Key: event.result.party_max_mana_modified
-    m_Metadata:
-      m_Items: []
-  - m_Id: 5528466554244437462
-    m_Key: event.result.party_hp_restored
-    m_Metadata:
-      m_Items: []
-  - m_Id: 7305291514702919854
-    m_Key: event.result.party_max_hp_increased
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8323492462400198106
-    m_Key: event.memory.upgrade_failed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 6629449557644834442
-    m_Key: event.memory.upgraded_id
-    m_Metadata:
-      m_Items: []
-  - m_Id: 3886573687687508414
-    m_Key: event.memory.rollback_unavailable
-    m_Metadata:
-      m_Items: []
-  - m_Id: 457451403533020556
-    m_Key: event.memory.none_available
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2468046161523270805
-    m_Key: event.result.red_dustium_preserved
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8528883566776235055
-    m_Key: event.result.red_dustium_accumulated
-    m_Metadata:
-      m_Items: []
-  - m_Id: 8026747471757970304
-    m_Key: battle.resource.shortage
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483200
-    m_Key: ui.exploration_result.confirm_7e9116d8
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483201
-    m_Key: ui.battle.demo_ending_message_b3501f4d
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483202
-    m_Key: ui.lobby.textlabel_fc777a3e
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483203
-    m_Key: ui.battle.heal_text_fa6ad4a6
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483204
-    m_Key: ui.battle.meditation_text_b83e0a88
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483205
-    m_Key: ui.battle.heal_1fac8b81
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483206
-    m_Key: ui.battle.meditation_bafe8da3
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483207
-    m_Key: ui.rest.rest_26090c1a
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483208
-    m_Key: ui.rest.meditate_6d912c93
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483209
-    m_Key: ui.battle.name_placeholder_1a7fa664
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483210
-    m_Key: ui.exploration_result.death_count_8e88d4e1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483211
-    m_Key: ui.exploration_result.failed_message_391870ec
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483212
-    m_Key: ui.battle.name_display_placeholder_5e064751
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483213
-    m_Key: ui.battle.erosion_label_159fc76a
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29429361522483214
-    m_Key: ui.lobby.text_placeholder_36ad8928
-    m_Metadata:
-      m_Items: []
   - m_Id: 29397909925765120
     m_Key: tutorial.t01.arrival
     m_Metadata:
@@ -6867,54 +4651,6 @@ MonoBehaviour:
     m_Key: tutorial.prompt.end_turn
     m_Metadata:
       m_Items: []
-  - m_Id: 29406660426702848
-    m_Key: ui.record.undiscovered
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412236251136
-    m_Key: ui.menupanel.record_text.217ec4b5
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554304
-    m_Key: ui.monsterskill.detail.a1254f92
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554305
-    m_Key: ui.monsterskill.typetext.93c680ec
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554306
-    m_Key: ui.monsterstatus.detail.0b91b57d
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554307
-    m_Key: ui.option.windowedlabel.970c6ae8
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554308
-    m_Key: ui.option.borderlesslabel.a870cd1b
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554309
-    m_Key: ui.rewardslot.text.9db470bc
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554310
-    m_Key: ui.skillpanel.name.566e71f6
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554311
-    m_Key: ui.skillpanel.type_text.ba31e2ef
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554312
-    m_Key: ui.skillpanel.detail.1915cfaa
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554313
-    m_Key: ui.skillpanel.text_tmp.22dcb44e
-    m_Metadata:
-      m_Items: []
   - m_Id: 29434412307554314
     m_Key: ui.battle.text.d50f2f0f
     m_Metadata:
@@ -6965,10 +4701,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 29434412307554326
     m_Key: ui.monsterinfopanel.name.5a09af45
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554327
-    m_Key: ui.battle.explorationfailedtext.391870ec
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554328
@@ -7029,10 +4761,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 29434412307554343
     m_Key: ui.relic_panel.text_tmp.caf525d8
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554344
-    m_Key: ui.battle.name.5e064751
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554345
@@ -7099,20 +4827,12 @@ MonoBehaviour:
     m_Key: ui.tooltippanel.detail.2e409def
     m_Metadata:
       m_Items: []
-  - m_Id: 29434412307554361
-    m_Key: ui.battle.erosioniconlabel.159fc76a
-    m_Metadata:
-      m_Items: []
   - m_Id: 29434412307554362
     m_Key: ui.explorationresultpanel.explorationreportacquireditemslabel.47711251
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554363
     m_Key: ui.explorationresultpanel.explorationreportelapsedtimelabel.feca50e1
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554364
-    m_Key: ui.explorationresultpanel.deaths.3cb00e8a
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554365
@@ -7127,32 +4847,8 @@ MonoBehaviour:
     m_Key: ui.demoendingpanel.demoendingmessage.77085158
     m_Metadata:
       m_Items: []
-  - m_Id: 29434412307554368
-    m_Key: ui.battlecharacterpanel.cost_name.a5f035a7
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554369
-    m_Key: ui.battlehudcanvas.nametext.5461e39f
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554370
-    m_Key: ui.battlehudcanvas.tooltiptext.e9a6e362
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554371
-    m_Key: ui.choicecanvas.text_tmp.b5305505
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554372
-    m_Key: ui.canvas.introtext.bc5a6e79
-    m_Metadata:
-      m_Items: []
   - m_Id: 29434412307554373
     m_Key: ui.canvas.text_tmp.7fa80515
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434412307554374
-    m_Key: ui.lobby.text_tmp.36ad8928
     m_Metadata:
       m_Items: []
   - m_Id: 29434412307554375
@@ -7187,28 +4883,8 @@ MonoBehaviour:
     m_Key: ui.canvas.text.82912c6e
     m_Metadata:
       m_Items: []
-  - m_Id: 29434528472997888
-    m_Key: common.charge
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29434528506552320
-    m_Key: common.install
-    m_Metadata:
-      m_Items: []
   - m_Id: 29445185436098560
     m_Key: ui.mappanel.text.f54dec12
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29445185503207424
-    m_Key: ui.mappanel.test.b180596d
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29471773640859648
-    m_Key: tutorial.skip.confirm
-    m_Metadata:
-      m_Items: []
-  - m_Id: 29743157478662144
-    m_Key: common.arrive
     m_Metadata:
       m_Items: []
   - m_Id: 29830859909734400
@@ -7273,274 +4949,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 30184713507545088
     m_Key: tutorial.prompt.continue
-    m_Metadata:
-      m_Items: []
-  - m_Id: 30187726976557056
-    m_Key: ui.bossdemopanel.text_tmp.0763bdef
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982655496192
-    m_Key: data.monster_skill.s_monster_01.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439232
-    m_Key: data.monster_skill.s_monster_01.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439233
-    m_Key: data.monster_skill.s_monster_02.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439234
-    m_Key: data.monster_skill.s_monster_03.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439235
-    m_Key: data.monster_skill.s_monster_03.effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439236
-    m_Key: data.monster_skill.s_monster_03.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439237
-    m_Key: data.monster_skill.s_monster_04.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439238
-    m_Key: data.monster_skill.s_monster_05.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439239
-    m_Key: data.monster_skill.s_monster_05.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439240
-    m_Key: data.monster_skill.s_monster_06.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439241
-    m_Key: data.monster_skill.s_monster_07.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439242
-    m_Key: data.monster_skill.s_monster_08.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439243
-    m_Key: data.monster_skill.s_monster_08.effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439244
-    m_Key: data.monster_skill.s_monster_08.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439245
-    m_Key: data.monster_skill.s_monster_09.effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439246
-    m_Key: data.monster_skill.s_monster_09.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982697439247
-    m_Key: data.monster_skill.s_monster_10.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633536
-    m_Key: data.monster_skill.s_monster_11.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633537
-    m_Key: data.monster_skill.s_monster_11.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633538
-    m_Key: data.monster_skill.s_monster_12.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633539
-    m_Key: data.monster_skill.s_monster_13.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633540
-    m_Key: data.monster_skill.s_monster_13.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633541
-    m_Key: data.monster_skill.s_monster_14.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633542
-    m_Key: data.monster_skill.s_monster_15.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633543
-    m_Key: data.monster_skill.s_monster_15.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633544
-    m_Key: data.monster_skill.s_monster_16.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633545
-    m_Key: data.monster_skill.s_monster_17.effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633546
-    m_Key: data.monster_skill.s_monster_17.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633547
-    m_Key: data.monster_skill.s_monster_18.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633548
-    m_Key: data.monster_skill.s_monster_18.effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633549
-    m_Key: data.monster_skill.s_monster_18.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633550
-    m_Key: data.monster_skill.s_monster_19.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633551
-    m_Key: data.monster_skill.s_monster_20.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633552
-    m_Key: data.monster_skill.s_monster_21.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633553
-    m_Key: data.monster_skill.s_monster_21.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633554
-    m_Key: data.monster_skill.s_monster_22.effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633555
-    m_Key: data.monster_skill.s_monster_22.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633556
-    m_Key: data.monster_skill.s_monster_23.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633557
-    m_Key: data.monster_skill.s_monster_24.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633558
-    m_Key: data.monster_skill.s_monster_25.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633559
-    m_Key: data.monster_skill.s_monster_26.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633560
-    m_Key: data.monster_skill.s_monster_27.effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633561
-    m_Key: data.monster_skill.s_monster_27.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633562
-    m_Key: data.monster_skill.s_monster_28.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633563
-    m_Key: data.monster_skill.s_monster_29.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633564
-    m_Key: data.monster_skill.s_monster_29.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633565
-    m_Key: data.monster_skill.s_monster_30.effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633566
-    m_Key: data.monster_skill.s_monster_30.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633567
-    m_Key: data.monster_skill.s_monster_31.effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633568
-    m_Key: data.monster_skill.s_monster_31.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633569
-    m_Key: data.monster_skill.s_monster_32.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633570
-    m_Key: data.monster_skill.s_monster_33.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633571
-    m_Key: data.monster_skill.s_monster_33.effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633572
-    m_Key: data.monster_skill.s_monster_33.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633573
-    m_Key: data.monster_skill.s_monster_34.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633574
-    m_Key: data.monster_skill.s_monster_35.effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633575
-    m_Key: data.monster_skill.s_monster_35.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633576
-    m_Key: data.monster_skill.s_monster_36.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633577
-    m_Key: data.monster_skill.s_monster_37.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633578
-    m_Key: data.monster_skill.s_monster_38.name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633579
-    m_Key: data.monster_skill.s_monster_38.effect_description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633580
-    m_Key: data.monster_skill.s_monster_38.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633581
-    m_Key: data.monster_skill.s_monster_39.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31145982701633582
-    m_Key: data.monster_skill.s_monster_40.type
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31210397618790400
-    m_Key: ui.goods.name.b9083bf2
-    m_Metadata:
-      m_Items: []
-  - m_Id: 31210397643956224
-    m_Key: ui.goods.detail.17c449d6
     m_Metadata:
       m_Items: []
   - m_Id: 31210397643956225
@@ -7725,6 +5133,782 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 31210397648150538
     m_Key: data.event.event_t_01_a.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31261828134969345
+    m_Key: ui.battle.text.a182bab0
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31271136499310592
+    m_Key: common.attack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31271136541253632
+    m_Key: common.buff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31271136541253633
+    m_Key: common.debuff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31271136545447936
+    m_Key: common.charge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31271136545447937
+    m_Key: common.install
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309794041856
+    m_Key: ui.record.method
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179200
+    m_Key: ui.record.consumption
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179201
+    m_Key: ui.record.effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179202
+    m_Key: ui.battleeffectinfo.name.d98b42f7
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179203
+    m_Key: ui.check.text_tmp.0d532a5c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179204
+    m_Key: ui.check.text_tmp.22fa1548
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179205
+    m_Key: ui.erosionslot.catalog_text.b6613bfb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179206
+    m_Key: ui.erosionslot.effect_text.e2798d4b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179207
+    m_Key: ui.goods.name.9040d45b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179208
+    m_Key: ui.goods.detail.17c449d6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179209
+    m_Key: ui.menupanel.stop_text.05313dff
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179210
+    m_Key: ui.menupanel.continue_text.e5aa8c81
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179211
+    m_Key: ui.menupanel.record_text.217ec4b5
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179212
+    m_Key: ui.menupanel.giveup_text.aff71724
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179213
+    m_Key: ui.monsterskill.detail.a1254f92
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179214
+    m_Key: ui.monsterskill.typetext.93c680ec
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179215
+    m_Key: ui.monsterstatus.detail.0b91b57d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179216
+    m_Key: ui.option.master.552df9fd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179217
+    m_Key: ui.option.bgm.f90b1578
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179218
+    m_Key: ui.option.sfx.269099a4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179219
+    m_Key: ui.option.bright.6114350a
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179220
+    m_Key: ui.option.windowedlabel.970c6ae8
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179221
+    m_Key: ui.option.borderlesslabel.a870cd1b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179222
+    m_Key: ui.option.fullscreenlabel.31920105
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179223
+    m_Key: ui.option.battlespeedtext.b6e288fa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179224
+    m_Key: ui.record.text_tmp.bbac414c
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179225
+    m_Key: ui.record.text_tmp.d9c0e5aa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179226
+    m_Key: ui.record.text_tmp.91b291c3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179227
+    m_Key: ui.record.name.f03eba96
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179228
+    m_Key: ui.rewardslot.text.9db470bc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179229
+    m_Key: ui.runeiconbuttonslot.installation.67e6bab3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179230
+    m_Key: ui.skillpanel.name.566e71f6
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179231
+    m_Key: ui.skillpanel.type_text.ba31e2ef
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179232
+    m_Key: ui.skillpanel.detail.1915cfaa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179233
+    m_Key: ui.skillpanel.text_tmp.22dcb44e
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179234
+    m_Key: ui.tutorialpanel.titletext.74198686
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179241
+    m_Key: ui.canvas.text.120fcfce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309840179242
+    m_Key: ui.canvas.text.0f87cf8b
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373509
+    m_Key: battle.other_player_character
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373510
+    m_Key: battle.action.move.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373511
+    m_Key: battle.action.flip.name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373512
+    m_Key: battle.action.flip.detail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373513
+    m_Key: battle.effect_info.health_recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373514
+    m_Key: battle.effect_info.mana_recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373515
+    m_Key: battle.effect_info.party_karma_recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373516
+    m_Key: battle.effect_info.karma_recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373517
+    m_Key: battle.effect_info.erosion_damage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373518
+    m_Key: battle.effect_info.collision
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373519
+    m_Key: battle.effect_info.turn_start_format
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373520
+    m_Key: battle.reward.skill_panel_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373521
+    m_Key: ui.check.slogan
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373522
+    m_Key: lobby.erosion.reward_bonus_format
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373523
+    m_Key: battle.result.exploration_failed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373524
+    m_Key: battle.intro.battle_end
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373525
+    m_Key: common.arrive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373526
+    m_Key: common.proceed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373527
+    m_Key: battle.reward.acquire_count_format
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373528
+    m_Key: battle.reward.red_dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373529
+    m_Key: battle.reward.relic_acquired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373530
+    m_Key: battle.reward.skill_acquired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373531
+    m_Key: ui.exploration.result.monster_kills
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373532
+    m_Key: ui.exploration.result.damage_taken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373533
+    m_Key: ui.exploration.result.buffs_applied
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373534
+    m_Key: ui.exploration.result.incapacitated
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373535
+    m_Key: ui.exploration.result.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373536
+    m_Key: ui.exploration.result.elapsed_time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373537
+    m_Key: tutorial.skip.confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373538
+    m_Key: skill.sentence.special.missing_hp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373539
+    m_Key: skill.sentence.special.armor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373540
+    m_Key: skill.sentence.join
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373541
+    m_Key: skill.sentence.break
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373542
+    m_Key: skill.sentence.special.kill_bonus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373543
+    m_Key: skill.sentence.special.miss_penalty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373544
+    m_Key: skill.sentence.end
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373545
+    m_Key: skill.effect.missing_hp_strike.value_format
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373546
+    m_Key: skill.scaling.missing_hp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373547
+    m_Key: common.hp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373548
+    m_Key: common.recovery
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373549
+    m_Key: common.mana
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373550
+    m_Key: ui.battle.equip_panel.character_text
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373551
+    m_Key: battle.dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373552
+    m_Key: battle.skill.move_distance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373553
+    m_Key: battle.skill_type.all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373554
+    m_Key: battle.skill_type.self
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373555
+    m_Key: battle.skill_type.ranged
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373556
+    m_Key: battle.skill_type.melee
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373557
+    m_Key: battle.skill_rarity.unique_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373558
+    m_Key: battle.skill_rarity.ability_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373559
+    m_Key: battle.skill_rarity.passive_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373560
+    m_Key: battle.skill_rarity.common_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373561
+    m_Key: battle.skill_rarity.rare_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373562
+    m_Key: battle.skill_rarity.epic_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373563
+    m_Key: battle.skill_rarity.unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373564
+    m_Key: battle.skill_rarity.exclusive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373565
+    m_Key: tutorial.battle1.turn1.monster_info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373566
+    m_Key: tutorial.battle1.turn1.move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373567
+    m_Key: tutorial.battle1.turn1.move_grid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373568
+    m_Key: tutorial.battle1.turn1.skill01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373569
+    m_Key: tutorial.battle1.turn1.timeline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373570
+    m_Key: tutorial.battle1.turn1.end_turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373571
+    m_Key: tutorial.battle1.turn2.skill01_repeat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373572
+    m_Key: tutorial.battle1.turn2.skill01_repeat_again
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373573
+    m_Key: tutorial.battle1.turn2.end_turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373574
+    m_Key: skill.sentence.apply.tile.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373575
+    m_Key: skill.sentence.deal.amount.multiple.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373576
+    m_Key: skill.sentence.deal.amount.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373577
+    m_Key: skill.sentence.deal.amount.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373578
+    m_Key: skill.sentence.gain.amount.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373579
+    m_Key: skill.sentence.gain.amount.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373580
+    m_Key: skill.sentence.grant.amount.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373581
+    m_Key: skill.sentence.grant.amount.single.linked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275309844373582
+    m_Key: skill.sentence.restore.amount.single.final
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475368386560
+    m_Key: common.none
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940992
+    m_Key: resource.karma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940993
+    m_Key: ui.record.target.self
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940994
+    m_Key: ui.record.target.grid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940995
+    m_Key: ui.record.range.direction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940996
+    m_Key: ui.record.range.selection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940997
+    m_Key: ui.record.range.passive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940998
+    m_Key: ui.record.unlock_character_level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401940999
+    m_Key: ui.record.unlock_blue_dustium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401941000
+    m_Key: ui.record.use_target
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401941001
+    m_Key: ui.record.use_count
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401941002
+    m_Key: ui.record.no_consumption
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401941003
+    m_Key: ui.record.unknown_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475401941004
+    m_Key: ui.record.unknown_method
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135296
+    m_Key: ui.record.unknown_consumption
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135297
+    m_Key: ui.record.unknown_effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135298
+    m_Key: ui.record.unknown_use_target
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135299
+    m_Key: ui.record.unknown_use_count
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135300
+    m_Key: ui.record.undiscovered
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135301
+    m_Key: ui.record.memory_rarity.exclusive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135302
+    m_Key: ui.record.memory_rarity.common
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135303
+    m_Key: ui.record.memory_rarity.rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135304
+    m_Key: ui.record.memory_rarity.epic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135305
+    m_Key: ui.record.memory_rarity.unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135306
+    m_Key: ui.record.fragment_rarity.exclusive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135307
+    m_Key: ui.record.fragment_rarity.common
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135308
+    m_Key: ui.record.fragment_rarity.rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135309
+    m_Key: ui.record.fragment_rarity.unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135310
+    m_Key: ui.record.item_rarity.common
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135311
+    m_Key: ui.record.item_rarity.rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135312
+    m_Key: ui.record.item_rarity.epic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135313
+    m_Key: ui.record.compound_rarity.common
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135314
+    m_Key: ui.record.compound_rarity.rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135315
+    m_Key: ui.record.compound_rarity.epic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135316
+    m_Key: ui.record.relic_rarity.common
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135317
+    m_Key: ui.record.relic_rarity.rare
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135318
+    m_Key: ui.record.relic_rarity.epic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275475406135319
+    m_Key: ui.record.relic_rarity.unique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021696
+    m_Key: tutorial.intro.06
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021697
+    m_Key: tutorial.intro.07
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021698
+    m_Key: tutorial.first_expedition.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021699
+    m_Key: tutorial.battle_guide.01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021700
+    m_Key: tutorial.battle_guide.02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021701
+    m_Key: tutorial.battle_guide.03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021702
+    m_Key: tutorial.battle_guide.04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275482117021703
+    m_Key: tutorial.battle_guide.05
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169472
+    m_Key: ui.skill.cost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169473
+    m_Key: ui.skill.type
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169474
+    m_Key: ui.skill.effect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169475
+    m_Key: ui.skill.rarity.move
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169476
+    m_Key: ui.skill.rarity.memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169477
+    m_Key: ui.skill.rarity.common_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169478
+    m_Key: ui.skill.rarity.rare_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169479
+    m_Key: ui.skill.rarity.epic_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169480
+    m_Key: ui.skill.rarity.unique_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169481
+    m_Key: ui.skill.rarity.instinct_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169482
+    m_Key: ui.skill.rarity.manifestation_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169483
+    m_Key: ui.skill.rarity.implementation_memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169484
+    m_Key: ui.skill.range.direction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169485
+    m_Key: ui.skill.range.selection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169486
+    m_Key: ui.skill.range.passive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275488488169487
+    m_Key: ui.skill.range.passive_activation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494246948864
+    m_Key: ui.character_setting.preview_info
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494246948865
+    m_Key: ui.character_setting.skill_info_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494246948866
+    m_Key: ui.character_setting.skill_info_empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494251143168
+    m_Key: ui.character_setting.rune_info_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494251143169
+    m_Key: ui.character_setting.rune_info_empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494251143170
+    m_Key: lobby.character_intro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494251143171
+    m_Key: lobby.karma.acquisition_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494251143172
+    m_Key: lobby.karma.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275494251143173
+    m_Key: lobby.stat.maximum_value
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275506288795648
+    m_Key: ui.rune.installation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275506288795649
+    m_Key: ui.rune.info.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275506288795650
+    m_Key: ui.rune.info.empty_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31275506288795651
+    m_Key: common.no_effect_description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31277661963919360
+    m_Key: ui.lobby.text_tmp.36ad8928
     m_Metadata:
       m_Items: []
   m_Metadata:

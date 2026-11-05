@@ -764,7 +764,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 6575022272058749278}
-  localizationKey: battle.shard
+  localizationKey: ui.record.text_tmp.d9c0e5aa
   koreanSource: "\uD30C\uD3B8"
   automaticallyRegistered: 1
 --- !u!1 &779207218156648947
@@ -2643,7 +2643,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 8435492433293815305}
-  localizationKey: ui.record.effect_textlabel
+  localizationKey: ui.record.text_tmp.91b291c3
   koreanSource: "\uD6A8\uACFC"
   automaticallyRegistered: 1
 --- !u!1 &3715668032234124421
@@ -3913,7 +3913,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 6429153325560765274}
-  localizationKey: ui.record.undiscovered_2a030ed7
+  localizationKey: ui.record.name.f03eba96
   koreanSource: "\uBBF8\uBC1C\uACAC"
   automaticallyRegistered: 1
 --- !u!1 &5676587274551887251
@@ -4667,7 +4667,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1501520792544258361}
-  localizationKey: lobby.memory
+  localizationKey: ui.record.text_tmp.bbac414c
   koreanSource: "\uAE30\uC5B5"
   automaticallyRegistered: 1
 --- !u!1 &7802280573141916749

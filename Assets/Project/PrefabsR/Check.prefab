@@ -1152,7 +1152,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 20415964709543319}
-  localizationKey: common.no
+  localizationKey: ui.check.text_tmp.22fa1548
   koreanSource: "\uC544\uB2C8\uC624"
   automaticallyRegistered: 1
 --- !u!1 &5944418756103535323
@@ -1575,7 +1575,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 9019999157706006818}
-  localizationKey: common.yes
+  localizationKey: ui.check.text_tmp.0d532a5c
   koreanSource: "\uC608"
   automaticallyRegistered: 1
 --- !u!1 &6832482531256616197
