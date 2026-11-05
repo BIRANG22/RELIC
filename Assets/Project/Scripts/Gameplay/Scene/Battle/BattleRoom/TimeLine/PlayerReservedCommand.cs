@@ -238,6 +238,11 @@ public class PlayerReservedCommand
         Direction = direction;
     }
 
+    public void SetExecutionDirection(BattleDirection direction)
+    {
+        Direction = direction;
+    }
+
     public void SetFacingFlipCommand(bool isFacingFlip = true)
     {
         IsFacingFlipCommand = isFacingFlip;
@@ -397,16 +402,7 @@ public class PlayerReservedCommand
 
     public int GetBlockedMoveCostRefund()
     {
-        if (PlannedMoveDistance <= 0 || ExecutedMoveDistance < 0)
-            return 0;
-
-        int actualCost = CalculateMoveCost(
-            ExecutedMoveDistance,
-            MoveDistancePerCost
-        );
-
-        int blockedCost = Mathf.Max(0, Cost - actualCost);
-        return blockedCost / 2;
+        return 0;
     }
 
     public static int CalculateMoveCost(
@@ -420,6 +416,63 @@ public class PlayerReservedCommand
 
         int safeDistancePerCost = Mathf.Max(1, moveDistancePerCost);
         return Mathf.CeilToInt(safeDistance / (float)safeDistancePerCost);
+    }
+
+    public static List<List<Vector2Int>> BuildMoveExecutionSegments(
+        IReadOnlyList<Vector2Int> moveSteps)
+    {
+        List<List<Vector2Int>> segments = new();
+
+        if (moveSteps == null || moveSteps.Count <= 0)
+            return segments;
+
+        List<Vector2Int> currentSegment = new();
+        Vector2Int currentDirection = Vector2Int.zero;
+
+        for (int i = 0; i < moveSteps.Count; i++)
+        {
+            Vector2Int step = moveSteps[i];
+            Vector2Int stepDirection = GetMoveStepDirection(step);
+
+            if (stepDirection == Vector2Int.zero)
+            {
+                FlushMoveExecutionSegment(segments, currentSegment);
+                segments.Add(new List<Vector2Int> { Vector2Int.zero });
+                currentDirection = Vector2Int.zero;
+                continue;
+            }
+
+            if (currentSegment.Count > 0 && stepDirection != currentDirection)
+                FlushMoveExecutionSegment(segments, currentSegment);
+
+            currentDirection = stepDirection;
+            currentSegment.Add(step);
+        }
+
+        FlushMoveExecutionSegment(segments, currentSegment);
+        return segments;
+    }
+
+    private static Vector2Int GetMoveStepDirection(Vector2Int step)
+    {
+        if (step.x != 0 && step.y == 0)
+            return new Vector2Int(step.x > 0 ? 1 : -1, 0);
+
+        if (step.y != 0 && step.x == 0)
+            return new Vector2Int(0, step.y > 0 ? 1 : -1);
+
+        return step;
+    }
+
+    private static void FlushMoveExecutionSegment(
+        List<List<Vector2Int>> segments,
+        List<Vector2Int> currentSegment)
+    {
+        if (currentSegment == null || currentSegment.Count <= 0)
+            return;
+
+        segments.Add(new List<Vector2Int>(currentSegment));
+        currentSegment.Clear();
     }
 
     private static void AppendMoveSteps(

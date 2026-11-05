@@ -3,6 +3,27 @@ using UnityEngine;
 
 namespace Relic.Gameplay.Battle
 {
+    public static class MoveDragReservationPolicy
+    {
+        public static HashSet<int> BuildBlockedGridIndices(
+            IEnumerable<int> occupiedUnitIndices,
+            IEnumerable<int> blockedGridEffectIndices)
+        {
+            // Explicit drag paths preserve the player's route. Unit occupancy and
+            // blocked grid effects are resolved during execution, not reservation.
+            _ = occupiedUnitIndices;
+            _ = blockedGridEffectIndices;
+            return new HashSet<int>();
+        }
+
+        public static bool ShouldRejectOccupiedDestination(
+            bool hasExplicitDragPath,
+            bool isOccupied)
+        {
+            return !hasExplicitDragPath && isOccupied;
+        }
+    }
+
     public sealed class MoveDragPathState
     {
         private readonly List<Vector2Int> coordinates = new();

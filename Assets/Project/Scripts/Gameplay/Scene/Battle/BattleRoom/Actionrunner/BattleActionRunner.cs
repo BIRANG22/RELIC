@@ -1411,19 +1411,18 @@ public class BattleActionRunner
             List<int> enteredGridIndices = new();
             List<int> blockingUnitGridIndices = new();
 
-            if (moveOffset == Vector2Int.zero)
-            {
-                command.SetExecutedMoveDistance(0);
-                ApplyBlockedPlayerMoveCostRefund(command);
-                ApplyPlayerMoveFacing(character, command.Direction, moveOffset);
-                hudService.RefreshHUDs();
-                yield return new WaitForSeconds(GetActiveActionBeatDelay());
-                yield break;
-            }
-
             if (command.VisualMoveSteps != null && command.VisualMoveSteps.Count > 1)
             {
                 yield return ExecutePlayerVisualMoveSteps(command, character, currentGridIndex);
+                yield break;
+            }
+
+            if (moveOffset == Vector2Int.zero)
+            {
+                command.SetExecutedMoveDistance(0);
+                ApplyPlayerMoveFacing(character, command.Direction, moveOffset);
+                hudService.RefreshHUDs();
+                yield return new WaitForSeconds(GetActiveActionBeatDelay());
                 yield break;
             }
 
@@ -1448,7 +1447,6 @@ public class BattleActionRunner
             if (!foundMoveTarget)
             {
                 command.SetExecutedMoveDistance(0);
-                ApplyBlockedPlayerMoveCostRefund(command);
                 hudService.RefreshHUDs();
                 Debug.LogWarning($"[BattleActionRunner] Player Move Blocked / {command.CharacterId} / Offset:{moveOffset}");
                 yield break;
@@ -1507,7 +1505,7 @@ public class BattleActionRunner
         int executedDistance = 0;
         BattleUnitAnimator animator = character.GetComponent<BattleUnitAnimator>();
         List<List<Vector2Int>> executionStepGroups =
-            BuildPlayerMoveExecutionStepGroups(command.VisualMoveSteps);
+            PlayerReservedCommand.BuildMoveExecutionSegments(command.VisualMoveSteps);
         bool cameraTrackingStarted = false;
 
         try
@@ -1534,18 +1532,17 @@ public class BattleActionRunner
                     enteredGridIndices,
                     blockingUnitGridIndices))
                 {
-                    break;
+                    continue;
                 }
 
                 Vector2Int currentCoord = gridManager.IndexToCoord(currentGridIndex);
                 Vector2Int targetCoord = gridManager.IndexToCoord(targetGridIndex);
                 Vector2Int actualOffset = targetCoord - currentCoord;
-                bool wasBlockedDuringStep = actualOffset != stepOffset;
 
                 if (targetGridIndex == currentGridIndex)
                 {
                     ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
-                    break;
+                    continue;
                 }
 
                 ApplyPlayerMoveFacing(character, command.Direction, actualOffset);
@@ -1567,7 +1564,7 @@ public class BattleActionRunner
 
                 ApplyPlayerMoveCollisionOnce(blockingUnitGridIndices, command.CharacterId);
 
-                if (character.RuntimeData == null || character.RuntimeData.IsDead || wasBlockedDuringStep)
+                if (character.RuntimeData == null || character.RuntimeData.IsDead)
                     break;
             }
         }
@@ -1578,101 +1575,12 @@ public class BattleActionRunner
         }
 
         command.SetExecutedMoveDistance(executedDistance);
-        ApplyBlockedPlayerMoveCostRefund(command);
 
         if (currentGridIndex != startGridIndex)
             statusEffectService.ApplyBleedDamageToPlayerOnMove(character);
 
         hudService.RefreshHUDs();
         yield return new WaitForSeconds(GetActiveActionBeatDelay());
-    }
-
-    private static List<List<Vector2Int>> BuildPlayerMoveExecutionStepGroups(
-        IReadOnlyList<Vector2Int> moveSteps)
-    {
-        List<List<Vector2Int>> groups = new();
-
-        if (moveSteps == null || moveSteps.Count <= 0)
-            return groups;
-
-        List<Vector2Int> currentGroup = new();
-        int currentXSign = 0;
-        int currentYSign = 0;
-
-        for (int i = 0; i < moveSteps.Count; i++)
-        {
-            Vector2Int step = moveSteps[i];
-
-            if (step == Vector2Int.zero)
-            {
-                FlushMoveExecutionGroup(groups, currentGroup, ref currentXSign, ref currentYSign);
-                groups.Add(new List<Vector2Int> { Vector2Int.zero });
-                continue;
-            }
-
-            if (WouldReverseMoveExecutionAxis(step, currentXSign, currentYSign))
-                FlushMoveExecutionGroup(groups, currentGroup, ref currentXSign, ref currentYSign);
-
-            currentGroup.Add(step);
-            UpdateMoveExecutionAxisSigns(step, ref currentXSign, ref currentYSign);
-        }
-
-        FlushMoveExecutionGroup(groups, currentGroup, ref currentXSign, ref currentYSign);
-        return groups;
-    }
-
-    private static void FlushMoveExecutionGroup(
-        List<List<Vector2Int>> groups,
-        List<Vector2Int> currentGroup,
-        ref int currentXSign,
-        ref int currentYSign)
-    {
-        if (currentGroup != null && currentGroup.Count > 0)
-        {
-            groups.Add(new List<Vector2Int>(currentGroup));
-            currentGroup.Clear();
-        }
-
-        currentXSign = 0;
-        currentYSign = 0;
-    }
-
-    private static bool WouldReverseMoveExecutionAxis(
-        Vector2Int step,
-        int currentXSign,
-        int currentYSign)
-    {
-        int stepXSign = GetSign(step.x);
-        int stepYSign = GetSign(step.y);
-
-        return (stepXSign != 0 && currentXSign != 0 && stepXSign != currentXSign) ||
-               (stepYSign != 0 && currentYSign != 0 && stepYSign != currentYSign);
-    }
-
-    private static void UpdateMoveExecutionAxisSigns(
-        Vector2Int step,
-        ref int currentXSign,
-        ref int currentYSign)
-    {
-        int stepXSign = GetSign(step.x);
-        int stepYSign = GetSign(step.y);
-
-        if (stepXSign != 0)
-            currentXSign = stepXSign;
-
-        if (stepYSign != 0)
-            currentYSign = stepYSign;
-    }
-
-    private static int GetSign(int value)
-    {
-        if (value > 0)
-            return 1;
-
-        if (value < 0)
-            return -1;
-
-        return 0;
     }
 
     private static Vector2Int GetTotalMoveOffset(IReadOnlyList<Vector2Int> moveSteps)
@@ -1940,23 +1848,6 @@ public class BattleActionRunner
         command.SetExecutedMoveDistance(
             Mathf.Abs(actualOffset.x) + Mathf.Abs(actualOffset.y)
         );
-        ApplyBlockedPlayerMoveCostRefund(command);
-    }
-
-    private void ApplyBlockedPlayerMoveCostRefund(PlayerReservedCommand command)
-    {
-        if (command == null || !command.MoveCostConsumed)
-            return;
-
-        int refund = command.ApplyBlockedMoveCostRefund();
-
-        if (refund <= 0)
-            return;
-
-        Debug.Log(
-            $"[BattleActionRunner] Move Cost refund / " +
-            $"Character:{command.CharacterId} / Refund:{refund}"
-        );
     }
 
     private IEnumerator ExecutePlayerSkill(PlayerReservedCommand command)
@@ -1970,13 +1861,17 @@ public class BattleActionRunner
         if (attacker.RuntimeData == null || attacker.RuntimeData.IsDead)
             yield break;
 
-        // 예약 중 제자리 Flip 미리보기로 본체가 마지막 방향을 보고 있더라도,
-        // 각 공격의 실제 실행 시에는 해당 공격을 예약한 방향으로 다시 맞춥니다.
-        // 공격 범위 계산과 캐릭터 시각 방향이 서로 달라지지 않도록 동기화합니다.
+        BattleDirection executionDirection =
+            BattleAttackExecutionDirectionPolicy.ResolveExecutionDirection(
+                command.Direction,
+                attacker.RuntimeData.Direction);
+        command.SetExecutionDirection(executionDirection);
+
+        // 공격 범위, 이동 효과와 연출이 모두 실행 직전 전투 상태 방향을 공유합니다.
         BattleUnitFacing attackFacing = attacker.GetComponent<BattleUnitFacing>();
         if (attackFacing != null)
-            attackFacing.FaceRight(command.Direction == BattleDirection.Right);
-        attacker.RuntimeData.Direction = command.Direction;
+            attackFacing.FaceRight(executionDirection == BattleDirection.Right);
+        attacker.RuntimeData.Direction = executionDirection;
 
         if (onPlayerSkillStarted != null)
         {
@@ -4781,6 +4676,24 @@ public class BattleActionRunner
         if (monster == null)
             yield break;
 
+        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+        BattleDirection liveMonsterDirection = monster.RuntimeData != null
+            ? monster.RuntimeData.Direction
+            : facing != null && !facing.IsFacingRight
+                ? BattleDirection.Left
+                : BattleDirection.Right;
+        BattleDirection monsterExecutionDirection =
+            BattleAttackExecutionDirectionPolicy.ResolveExecutionDirection(
+                command.HasForcedDirection
+                    ? command.ForcedDirection
+                    : liveMonsterDirection,
+                liveMonsterDirection);
+
+        if (facing != null)
+            facing.FaceRight(monsterExecutionDirection == BattleDirection.Right);
+        if (monster.RuntimeData != null)
+            monster.RuntimeData.Direction = monsterExecutionDirection;
+
         if (BattleSkillNamePopupPresentation.ShouldShow(command))
         {
             BattleSkillTextPopupUI.Show(
@@ -4826,24 +4739,6 @@ public class BattleActionRunner
             yield break;
         }
 
-        BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
-
-        bool isNocturnDirectionalAttack = IsNocturnDirectionalAttack(command);
-
-        // 녹턴의 연계 공격은 예약된 방향을 유지하지만, 공격만 예약된 행동은 현재 Facing을 사용합니다.
-        // 그림자걸음이 실패한 경우에는 위에서 ForcedDirection을 해제했으므로 실제 현재 방향으로 공격합니다.
-        bool barrowDirectUsesLiveFacing =
-            string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, BarrowDirectShotSkillId, System.StringComparison.Ordinal);
-        if (command.HasForcedDirection && !barrowDirectUsesLiveFacing)
-        {
-            if (facing != null)
-                facing.FaceRight(command.ForcedDirection == BattleDirection.Right);
-
-            if (monster.RuntimeData != null)
-                monster.RuntimeData.Direction = command.ForcedDirection;
-        }
-
         // 확정된 방향을 기준으로 공격 범위를 계산합니다.
         // 머크는 예약된 공격 오프셋을 유지하고, 블롭은 실제 현재 위치 자체를 공격 원점으로 사용합니다.
         AlignRelativeRangeOriginToActualPosition(monster, command);
@@ -4854,46 +4749,6 @@ public class BattleActionRunner
 
         BattleUnitAnimator monsterAnimator = monster.GetComponent<BattleUnitAnimator>();
 
-        // 바로우 직사는 피격 후 바뀐 현재 방향으로 발사합니다.
-        // 곡사는 예약한 목표 방향을 유지합니다.
-        bool isBarrowDirectFacing =
-            string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, BarrowDirectShotSkillId, System.StringComparison.Ordinal);
-        // 강제 방향이 없는 일반 AI 행동만 실제 명중 대상 쪽으로 회전합니다.
-        // 사슬 후속 공격처럼 방향이 예약된 행동은 앞에서 지정한 방향을 유지합니다.
-        // Draugr stationary sweep follows the actual facing after any hit-induced flip.
-        // A move-then-sweep retains its reserved direction through HasForcedDirection.
-        bool isDraugrSweep =
-            string.Equals(command.MonsterId, DraugrMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, DraugrAttackSkillId, System.StringComparison.Ordinal);
-        // 랜서와 블라이트의 공격/광역 효과는 좌우 대칭입니다.
-        // 피격으로 변경된 현재 방향을 공격 전에 다시 타깃 쪽으로 돌리지 않습니다.
-        // 도주 이동은 이동 실행 시 MoveOffset 방향으로 별도 플립합니다.
-        bool keepsCurrentFacing =
-            string.Equals(command.MonsterId, RancorMonsterId, System.StringComparison.Ordinal) ||
-            string.Equals(command.MonsterId, BlightMonsterId, System.StringComparison.Ordinal);
-        // 신더의 대폭발은 전방 지정 공격이 아닙니다.
-        // 피격이나 직전 이동으로 변경된 방향을 공격 시 그대로 사용합니다.
-        bool isCinderOmnidirectionalExplosion =
-            string.Equals(command.MonsterId, CinderMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, CinderExplodeSkillId, System.StringComparison.Ordinal);
-        if (!command.HasForcedDirection &&
-            !isNocturnDirectionalAttack &&
-            !isDraugrSweep &&
-            !isBarrowDirectFacing &&
-            !keepsCurrentFacing &&
-            !isCinderOmnidirectionalExplosion &&
-            firstPlayerTarget != null &&
-            facing != null)
-        {
-            facing.FaceByWorldTarget(firstPlayerTarget.transform.position);
-
-            if (monster.RuntimeData != null)
-                monster.RuntimeData.Direction = facing.GetBattleDirection();
-
-            RecalculateMonsterSkillRangeAtExecution(monster, command);
-            firstPlayerTarget = FindFirstPlayerTarget(command);
-        }
 
         bool isRookEarthquake =
             string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
@@ -5190,78 +5045,23 @@ public class BattleActionRunner
         if (monster == null || command == null || command.SkillData == null)
             return;
 
-        bool isBlobAttack =
-            string.Equals(command.MonsterId, BlobMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, BlobAttackSkillId, System.StringComparison.Ordinal);
-
-        bool isVespaAttack =
-            string.Equals(command.MonsterId, VespaMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, VespaAttackSkillId, System.StringComparison.Ordinal);
-
-        bool isCinderExplosion =
-            string.Equals(command.MonsterId, CinderMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, CinderExplodeSkillId, System.StringComparison.Ordinal);
-
-        bool isDraugrAttack =
-            string.Equals(command.MonsterId, DraugrMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, DraugrAttackSkillId, System.StringComparison.Ordinal);
-
         bool isBarrowDirectShot =
             string.Equals(command.MonsterId, BarrowMonsterId, System.StringComparison.Ordinal) &&
             string.Equals(command.SkillId, BarrowDirectShotSkillId, System.StringComparison.Ordinal);
 
-        bool isRookBash =
-            string.Equals(command.MonsterId, RookMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, RookBashSkillId, System.StringComparison.Ordinal);
-
-        bool isMortWraithRush =
-            string.Equals(command.MonsterId, MortMonsterId, System.StringComparison.Ordinal) &&
-            string.Equals(command.SkillId, MortWraithRushSkillId, System.StringComparison.Ordinal);
-
-        bool isNocturnDirectionalAttack = IsNocturnDirectionalAttack(command);
-
-        // 블롭, 베스파, 신더 대폭발, 드라우그 가로베기, 바로우 직사, 녹턴 방향 공격과 모르트 망령쇄도는 예약 시 계산된 범위를 재사용하지 않습니다.
-        // 이동 성공/실패 결과가 정해진 뒤 실제 위치를 원점으로 범위를 다시 계산합니다.
-        // 드라우그는 이때 예약 방향이 아니라 실행 직전의 실제 Facing을 사용합니다.
-        if (command.HasExplicitRangeResult &&
-            !isBlobAttack &&
-            !isVespaAttack &&
-            !isCinderExplosion &&
-            !isDraugrAttack &&
-            !isBarrowDirectShot &&
-            !isRookBash &&
-            !isMortWraithRush &&
-            !isNocturnDirectionalAttack)
+        // 명시적 지정 그리드 공격만 예약 결과를 유지합니다.
+        // 그 외 방향 공격은 실제 위치와 실행 직전 방향으로 다시 계산합니다.
+        if (BattleAttackExecutionDirectionPolicy.ShouldPreserveMonsterTargetGrid(
+                command.HasExplicitRangeResult))
         {
             return;
         }
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
-        bool facingRight;
-
-        // 드라우그의 가로베기는 예약 방향이 아니라 실행 직전의 실제 Facing을 사용합니다.
-        // 이동 + 공격이면 이동이 만든 Facing으로, 공격만 예약된 경우에는
-        // 그 사이 피격 등으로 변경된 현재 Facing으로 공격합니다.
-        if ((isDraugrAttack || isBarrowDirectShot || isNocturnDirectionalAttack) && facing != null)
-        {
-            // 이동 연계처럼 방향이 예약된 공격은 예약 방향을 유지합니다.
-            // 녹턴의 제자리 공격 또는 실패한 그림자걸음의 후속 공격은 ForcedDirection이 없으므로
-            // 피격 등으로 바뀐 실행 직전의 실제 Facing을 그대로 사용합니다.
-            facingRight = isBarrowDirectShot
-                ? facing.IsFacingRight
-                : command.HasForcedDirection
-                    ? command.ForcedDirection == BattleDirection.Right
-                    : facing.IsFacingRight;
-        }
-        else
-        {
-            facingRight = command.HasForcedDirection
-                ? command.ForcedDirection == BattleDirection.Right
-                : command.RangeOriginGridIndex >= 0
-                    ? IsNearestPlayerToRight(command.RangeOriginGridIndex)
-                    : facing == null || facing.IsFacingRight;
-        }
+        bool facingRight = monster.RuntimeData != null
+            ? monster.RuntimeData.Direction == BattleDirection.Right
+            : facing == null || facing.IsFacingRight;
 
         List<int> rangeGridIndices =
             MonsterSkillRangeService.BuildRangeGridIndices(
@@ -6190,14 +5990,11 @@ public class BattleActionRunner
 
         BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
 
-        if (facing != null && command.HasForcedDirection)
-            facing.FaceRight(command.ForcedDirection == BattleDirection.Right);
-
         if (facing != null && monster.RuntimeData != null)
-            monster.RuntimeData.Direction = facing.GetBattleDirection();
+            facing.FaceRight(monster.RuntimeData.Direction == BattleDirection.Right);
 
-        bool facingRight = command.HasForcedDirection
-            ? command.ForcedDirection == BattleDirection.Right
+        bool facingRight = monster.RuntimeData != null
+            ? monster.RuntimeData.Direction == BattleDirection.Right
             : facing == null || facing.IsFacingRight;
 
         int dirX = facingRight ? 1 : -1;
