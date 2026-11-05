@@ -45,6 +45,11 @@ public static class GlobalLocalizedTMPFontApplicator
         if (text == null || locale == null)
             return false;
 
+        // Blur replicas mirror their source TMP each frame. Never assign an
+        // independently resolved locale font to these render-only copies.
+        if (IsBlurReplica(text.transform))
+            return false;
+
         LocalizedTMPFont explicitOwner = text.GetComponent<LocalizedTMPFont>();
         if (explicitOwner != null)
         {
@@ -169,6 +174,17 @@ public static class GlobalLocalizedTMPFontApplicator
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         TMPro_EventManager.TEXT_CHANGED_EVENT.Remove(OnTextChanged);
         Application.onBeforeRender -= OnBeforeRender;
+    }
+
+    private static bool IsBlurReplica(Transform transform)
+    {
+        for (Transform current = transform; current != null; current = current.parent)
+        {
+            if (current.name == "BlurReplicaRoot")
+                return true;
+        }
+
+        return false;
     }
 
     private static void ApplySafely(TMP_Text text, LocaleFontDatabase database, Locale locale)

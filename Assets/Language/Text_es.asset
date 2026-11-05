@@ -6325,6 +6325,14 @@ MonoBehaviour:
     m_Localized: Sonido
     m_Metadata:
       m_Items: []
+  - m_Id: 31323240152670208
+    m_Localized: Guardar y salir
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31323240102338560
+    m_Localized: "Volver al t\xEDtulo"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

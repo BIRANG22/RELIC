@@ -501,18 +501,13 @@ public static class LocalizationRuntimeSourceCatalog
     // Adding entries here makes Full Scan & Apply register them before synchronization.
     public static IReadOnlyList<LocalizationWorkbookEntry> RuntimeUiEntries { get; } = new[]
     {
-        // Option prefab headings are runtime-owned, not static placeholder bindings.
-        Entry("ui.option.header.language", "언어"),
-        Entry("ui.option.header.resolution", "해상도"),
-        Entry("ui.option.header.sound", "사운드"),
-        Entry("ui.option.header.control", "조작"),
         Entry("lobby.quest.setup", "탐사 준비"),
         Entry("lobby.quest.first_expedition", "첫 탐사 - 각성핵 회수 {Current}/{Target}"),
         Entry("battle.intro.enter_battle_area", "전투 구역 진입"),
         Entry("battle.intro.battle_start", "전투 시작"),
+        Entry("ui.menu.lobby.return_to_title", "타이틀로"),
+        Entry("ui.menu.battle.save_and_quit", "저장 후 종료"),
         Entry("battle.intro.rest_area", "휴식 구역 진입"),
-        // Passive skill type uses this key in battle, reward, and lobby skill tooltips.
-        Entry("common.passive", "패시브"),
         Entry(LocalizationKeys.Lobby.PlayReady, "준비"),
         // These dynamic confirmation messages are supplied by UIManager and other
         // controllers. They do not exist as literal TMP text in prefab assets.

@@ -52,10 +52,35 @@ public sealed class UIBlurReplicaSource
 
     public void SetVisible(bool visible)
     {
+        bool wasHidden = originalRenderingHidden;
         if (replicaRoot != null && replicaRoot.gameObject.activeSelf != visible)
             replicaRoot.gameObject.SetActive(visible);
 
         SetOriginalRenderingHidden(visible);
+        if (wasHidden && !visible)
+            RefreshSourceTextsAfterUnblur();
+    }
+
+    // Restores the current locale font and TMP glyph geometry after the
+    // original CanvasRenderers have been hidden for the blur capture.
+    private void RefreshSourceTextsAfterUnblur()
+    {
+        if (sourceRoot == null)
+            return;
+
+        var locale = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale;
+        var fontDatabase = LocaleFontDatabaseProvider.LoadDefault();
+        TMP_Text[] texts = sourceRoot.GetComponentsInChildren<TMP_Text>(true);
+        foreach (TMP_Text text in texts)
+        {
+            if (text == null)
+                continue;
+
+            GlobalLocalizedTMPFontApplicator.ApplyToText(text, fontDatabase, locale);
+            text.SetAllDirty();
+            if (text.gameObject.activeInHierarchy)
+                text.ForceMeshUpdate();
+        }
     }
 
     public void SyncNow()
@@ -171,7 +196,10 @@ public sealed class UIBlurReplicaSource
 
     private void RestoreOriginalRendering()
     {
+        bool wasHidden = originalRenderingHidden;
         SetOriginalRenderingHidden(false);
+        if (wasHidden)
+            RefreshSourceTextsAfterUnblur();
     }
 
     private readonly struct TransformPair
