@@ -6,6 +6,48 @@ using UnityEngine;
 public sealed class MoveDragPathStateTests
 {
     [Test]
+    public void ReservationPolicy_ExplicitDragIgnoresOccupiedUnitIndices()
+    {
+        HashSet<int> occupiedUnitIndices = new() { 4, 5 };
+        HashSet<int> blockedGridEffectIndices = new();
+
+        HashSet<int> blockedIndices = MoveDragReservationPolicy.BuildBlockedGridIndices(
+            occupiedUnitIndices,
+            blockedGridEffectIndices);
+
+        Assert.That(blockedIndices, Does.Not.Contain(4));
+        Assert.That(blockedIndices, Does.Not.Contain(5));
+    }
+
+    [Test]
+    public void ReservationPolicy_ExplicitDragIgnoresBlockedGridEffectIndices()
+    {
+        HashSet<int> occupiedUnitIndices = new() { 4 };
+        HashSet<int> blockedGridEffectIndices = new() { 7 };
+
+        HashSet<int> blockedIndices = MoveDragReservationPolicy.BuildBlockedGridIndices(
+            occupiedUnitIndices,
+            blockedGridEffectIndices);
+
+        Assert.That(blockedIndices, Is.Empty);
+    }
+
+    [TestCase(false, true, true)]
+    [TestCase(true, true, false)]
+    [TestCase(false, false, false)]
+    public void ReservationPolicy_OccupiedDestinationOnlyBlocksAutomaticPath(
+        bool hasExplicitDragPath,
+        bool isOccupied,
+        bool expected)
+    {
+        Assert.That(
+            MoveDragReservationPolicy.ShouldRejectOccupiedDestination(
+                hasExplicitDragPath,
+                isOccupied),
+            Is.EqualTo(expected));
+    }
+
+    [Test]
     public void TryVisit_AdjacentValidCoordinate_AppendsToPath()
     {
         MoveDragPathState state = new(new List<Vector2Int>

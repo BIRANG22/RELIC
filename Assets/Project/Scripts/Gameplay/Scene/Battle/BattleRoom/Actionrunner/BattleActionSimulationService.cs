@@ -160,8 +160,6 @@ public class BattleActionSimulationService
             return;
         }
 
-        ReplanPlayerMovePath(command, currentGrid);
-
         BattleDirection direction = GetDirectionAfterMoveSteps(
             GetPlayerDirection(command),
             command.VisualMoveSteps != null && command.VisualMoveSteps.Count > 0
@@ -422,12 +420,26 @@ public class BattleActionSimulationService
 
         if (command.VisualMoveSteps != null && command.VisualMoveSteps.Count > 0)
         {
-            return TryGetPlayerMoveTargetGridIndex(
-                currentGrid,
-                command.VisualMoveSteps,
-                selfKey,
-                out targetGrid
-            );
+            bool reachedAllSegments = true;
+            List<List<Vector2Int>> segments =
+                PlayerReservedCommand.BuildMoveExecutionSegments(command.VisualMoveSteps);
+
+            for (int i = 0; i < segments.Count; i++)
+            {
+                if (!TryGetPlayerMoveTargetGridIndex(
+                    targetGrid,
+                    segments[i],
+                    selfKey,
+                    out int segmentTargetGrid,
+                    true))
+                {
+                    reachedAllSegments = false;
+                }
+
+                targetGrid = segmentTargetGrid;
+            }
+
+            return reachedAllSegments;
         }
 
         return TryGetPlayerMoveTargetGridIndex(
@@ -486,7 +498,8 @@ public class BattleActionSimulationService
         int currentGrid,
         IReadOnlyList<Vector2Int> moveSteps,
         string selfKey,
-        out int targetGrid)
+        out int targetGrid,
+        bool blockUnitOccupancy = false)
     {
         targetGrid = currentGrid;
 
@@ -504,13 +517,23 @@ public class BattleActionSimulationService
         {
             Vector2Int moveOffset = moveSteps[i];
 
-            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.x, true, selfKey))
+            if (!TryApplyPlayerMoveAxisStep(
+                ref currentCoord,
+                moveOffset.x,
+                true,
+                selfKey,
+                blockUnitOccupancy))
             {
                 reachedTarget = false;
                 break;
             }
 
-            if (!TryApplyPlayerMoveAxisStep(ref currentCoord, moveOffset.y, false, selfKey))
+            if (!TryApplyPlayerMoveAxisStep(
+                ref currentCoord,
+                moveOffset.y,
+                false,
+                selfKey,
+                blockUnitOccupancy))
             {
                 reachedTarget = false;
                 break;

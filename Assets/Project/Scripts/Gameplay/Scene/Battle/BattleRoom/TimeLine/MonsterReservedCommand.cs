@@ -2,6 +2,22 @@ using System.Collections.Generic;
 using Relic.Gameplay.Data;
 using UnityEngine;
 
+public static class BattleAttackExecutionDirectionPolicy
+{
+    public static BattleDirection ResolveExecutionDirection(
+        BattleDirection reservedDirection,
+        BattleDirection liveDirection)
+    {
+        _ = reservedDirection;
+        return liveDirection;
+    }
+
+    public static bool ShouldPreserveMonsterTargetGrid(bool hasExplicitRangeResult)
+    {
+        return hasExplicitRangeResult;
+    }
+}
+
 public class MonsterReservedCommand
 {
     public MonsterRuntimeData UserRuntime { get; private set; }

@@ -1619,9 +1619,6 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (gridManager == null || !gridManager.IsValidCoord(coordinate))
             return false;
 
-        if (BuildKnownOtherPlayerDestinationGridIndices().Contains(gridIndex))
-            return false;
-
         List<Vector2Int> coordinates = new List<Vector2Int>(moveDragPathState.Coordinates)
         {
             coordinate
@@ -1630,7 +1627,7 @@ public class PlayerSkillReservationController : MonoBehaviour
         return GetRequiredMoveReservationCount(moveOffsets, currentMoveDistancePerCommand) <=
                currentMoveReservationCapacity &&
                CanReserveMovePathWithEffectiveCost(moveOffsets) &&
-               IsMovePathReservableAgainstCurrentOrProjectedState(gridIndex, moveOffsets);
+               IsMoveDragPathReservable(gridIndex, moveOffsets);
     }
 
     private bool MoveDragPathContainsCoordinate(Vector2Int coordinate)
@@ -1701,14 +1698,10 @@ public class PlayerSkillReservationController : MonoBehaviour
         if (gridManager == null || moveOffsets == null || moveOffsets.Count <= 0)
             return false;
 
-        List<Vector2Int> path = new(moveOffsets);
-        if (BuildKnownOtherPlayerDestinationGridIndices().Contains(targetGridIndex))
-            return false;
-
-        return IsMovePathReservableAgainstCurrentOrProjectedState(targetGridIndex, path);
+        return IsMoveDragPathReservable(targetGridIndex, moveOffsets);
     }
 
-    private bool IsMovePathReservableAgainstCurrentOrProjectedState(
+    private bool IsMoveDragPathReservable(
         int targetGridIndex,
         IReadOnlyList<Vector2Int> moveOffsets)
     {
@@ -1717,19 +1710,19 @@ public class PlayerSkillReservationController : MonoBehaviour
             : null;
 
         return IsMovePathReservable(
-                   currentCasterGridIndex,
-                   path,
-                   gridManager,
-                   BuildCurrentMoveBlockedGridIndices(),
-                   targetGridIndex,
-                   true) ||
-               IsMovePathReservable(
-                   currentCasterGridIndex,
-                   path,
-                   gridManager,
-                   BuildProjectedMoveBlockedGridIndices(),
-                   targetGridIndex,
-                   true);
+            currentCasterGridIndex,
+            path,
+            gridManager,
+            BuildMoveDragBlockedGridIndices(),
+            targetGridIndex,
+            false);
+    }
+
+    private HashSet<int> BuildMoveDragBlockedGridIndices()
+    {
+        return MoveDragReservationPolicy.BuildBlockedGridIndices(
+            null,
+            null);
     }
 
     private static List<Vector2Int> BuildMoveDragCoordinates(
@@ -2022,9 +2015,12 @@ public class PlayerSkillReservationController : MonoBehaviour
 
         bool isCurrentCasterGridIndex = IsCurrentCasterGridIndex(selectedGridIndex);
         HashSet<int> blockedDestinationGridIndices = BuildKnownOtherPlayerDestinationGridIndices();
+        bool hasExplicitDragPath = explicitMoveOffsets != null;
 
         if (!isCurrentCasterGridIndex &&
-            blockedDestinationGridIndices.Contains(selectedGridIndex))
+            MoveDragReservationPolicy.ShouldRejectOccupiedDestination(
+                hasExplicitDragPath,
+                blockedDestinationGridIndices.Contains(selectedGridIndex)))
         {
             ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Warning.MoveDestinationOccupied));
             return;
