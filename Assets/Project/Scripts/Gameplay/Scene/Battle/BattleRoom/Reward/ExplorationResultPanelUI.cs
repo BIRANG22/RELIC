@@ -533,6 +533,7 @@ public sealed class ExplorationResultPanelUI : MonoBehaviour
         group.interactable = false;
 
         slotNameText.textWrappingMode = TextWrappingModes.NoWrap;
+        LocaleTMPFontGuard.Prepare(slotNameText);
         slotNameText.ForceMeshUpdate();
         Vector2 preferred = slotNameText.GetPreferredValues(slotNameText.text);
         Vector2 padding = new Vector2(Mathf.Max(0f, slotNamePadding.x), Mathf.Max(0f, slotNamePadding.y));

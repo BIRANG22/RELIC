@@ -258,6 +258,14 @@ public sealed class DirectTemplateDropdown : MonoBehaviour, IPointerClickHandler
         BringTemplateToFront();
 
         dropdown.template.gameObject.SetActive(true);
+        ApplyCaptionFont();
+        for (int i = 0; i < optionItems.Count; i++)
+        {
+            if (optionItems[i] == null || !optionItems[i].gameObject.activeSelf)
+                continue;
+            TMP_Text itemText = optionItems[i].GetComponentInChildren<TMP_Text>(true);
+            ApplyOptionFont(itemText, i);
+        }
         Canvas.ForceUpdateCanvases();
 
         isOpen = true;

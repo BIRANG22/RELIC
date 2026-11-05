@@ -427,6 +427,7 @@ public class BattleMapIntroText : MonoBehaviour
         introText.alpha = 0f;
         introText.gameObject.SetActive(true);
         introText.text = message;
+        LocaleTMPFontGuard.Prepare(introText);
         introText.ForceMeshUpdate();
 
         if (introImage != null && (!maskMode || introImage != maskImage.gameObject))

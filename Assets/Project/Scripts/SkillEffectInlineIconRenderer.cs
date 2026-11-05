@@ -80,6 +80,7 @@ namespace Relic.Gameplay.Data
             if (dataManager?.StatusEffectIconDatabase == null)
                 return;
 
+            LocaleTMPFontGuard.Prepare(targetText);
             targetText.ForceMeshUpdate();
             TMP_TextInfo textInfo = targetText.textInfo;
             if (textInfo == null || textInfo.linkCount <= 0)

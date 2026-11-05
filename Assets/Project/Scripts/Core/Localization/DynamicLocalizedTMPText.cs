@@ -100,6 +100,7 @@ public sealed class DynamicLocalizedTMPText : MonoBehaviour
         IsApplyingLocalization = true;
         try
         {
+            LocaleTMPFontGuard.PrepareLocalized(target, locale);
             target.text = GameLocalization.GetForLocale(
                 sourceState.LocalizationKey,
                 sourceState.KoreanSource,

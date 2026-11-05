@@ -217,6 +217,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
             if (quantityText != null)
             {
                 quantityText.text = "";
+                LocaleTMPFontGuard.Prepare(quantityText);
                 quantityText.ForceMeshUpdate();
             }
 
@@ -299,6 +300,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
                 quantityText.gameObject.SetActive(visible);
 
             quantityText.text = visible ? displayLabel : string.Empty;
+            LocaleTMPFontGuard.Prepare(quantityText);
             quantityText.ForceMeshUpdate();
             return;
         }
@@ -316,6 +318,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         if (!HasItem)
         {
             quantityText.text = "";
+            LocaleTMPFontGuard.Prepare(quantityText);
             quantityText.ForceMeshUpdate();
             return;
         }
@@ -326,6 +329,7 @@ public class BattleBagItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointer
         quantityText.gameObject.SetActive(true);
         quantityText.enabled = true;
         quantityText.text = quantity.ToString();
+        LocaleTMPFontGuard.Prepare(quantityText);
         quantityText.ForceMeshUpdate();
     }
 
