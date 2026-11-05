@@ -193,7 +193,7 @@ public class BattleSceneController : MonoBehaviour
             localizer = tutorialSkipButtonText.gameObject.AddComponent<LocalizedTMPText>();
 
         localizer.Configure(
-            "ui.tutorial.skip_e0dc5150",
+            "ui.battle.text_tmp.baa7e6d7",
             "튜토리얼 스킵",
             false);
     }
@@ -2439,7 +2439,7 @@ public class BattleSceneController : MonoBehaviour
         Debug.Log($"[BattleSceneController] Battle room start: {nodeData.MapId}");
         pendingBattleRoomUsesBossIntro = false;
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController
-            ? GameLocalization.Get("battle.intro.battle_start")
+            ? "battle.intro.battle_start"
             : null;
         ShowRoomBackground(battleRoom, nodeData);
         SetBack2TurnNumber(1);
@@ -2458,7 +2458,7 @@ public class BattleSceneController : MonoBehaviour
             SaveSystem.Instance?.MarkCurrentBossIntroStarted();
 
         pendingRoomIntroMessage = playBattleRoomIntroFromSceneController
-            ? GameLocalization.Get("battle.intro.battle_start")
+            ? "battle.intro.battle_start"
             : null;
         ShowRoomBackground(battleRoom, nodeData, true, false);
         if (alreadyIntroduced)
@@ -2583,7 +2583,7 @@ public class BattleSceneController : MonoBehaviour
             AutoFindBattleMapIntroTextIfNeeded();
 
         if (battleMapIntroText != null)
-            battleMapIntroText.Play(GameLocalization.Get("battle.map_intro"));
+            battleMapIntroText.Play(GameLocalization.Get("battle.intro.enter_battle_area"));
     }
 
     private void PlayPendingRoomIntroText()
@@ -2594,15 +2594,74 @@ public class BattleSceneController : MonoBehaviour
         if (battleMapIntroText == null)
             AutoFindBattleMapIntroTextIfNeeded();
 
-        if (battleMapIntroText != null)
-        {
-            if (eventRoom != null && eventRoom.activeInHierarchy)
-                BattleMapIntroText.PlayRoomIntroSfx();
+        string message = pendingRoomIntroMessage;
+        pendingRoomIntroMessage = null;
 
-            battleMapIntroText.Play(pendingRoomIntroMessage);
+        if (battleMapIntroText == null)
+            return;
+
+        if (eventRoom != null && eventRoom.activeInHierarchy)
+            BattleMapIntroText.PlayRoomIntroSfx();
+
+        // Resolve the battle-start entry only when showing the intro. At room-opening time
+        // the locale table can still be loading, which otherwise caches "Untranslated".
+        if (string.Equals(message, "battle.intro.battle_start", StringComparison.Ordinal))
+        {
+            StartCoroutine(PlayBattleStartIntroWhenReady());
+            return;
         }
 
-        pendingRoomIntroMessage = null;
+        battleMapIntroText.Play(message);
+    }
+
+
+    private IEnumerator PlayBattleStartIntroWhenReady()
+    {
+        var initialization = UnityEngine.Localization.Settings.LocalizationSettings.InitializationOperation;
+        if (!initialization.IsDone)
+            yield return initialization;
+
+        var locale = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale;
+        if (locale != null)
+        {
+            var tableOperation = UnityEngine.Localization.Settings.LocalizationSettings.StringDatabase
+                .GetTableAsync(GameLocalization.TableName, locale);
+            if (!tableOperation.IsDone)
+                yield return tableOperation;
+        }
+
+        if (battleMapIntroText == null)
+            AutoFindBattleMapIntroTextIfNeeded();
+        if (battleMapIntroText == null)
+            yield break;
+
+        if (locale == null)
+        {
+            Debug.LogError("[BattleSceneController] Cannot show battle start intro: selected locale is null.", this);
+            yield break;
+        }
+
+        // Read the actual locale entry asynchronously. A synchronous GameLocalization.Get
+        // can return the placeholder even when the String Table is present.
+        var messageOperation = UnityEngine.Localization.Settings.LocalizationSettings.StringDatabase
+            .GetLocalizedStringAsync(GameLocalization.TableName, "battle.intro.battle_start", locale,
+                UnityEngine.Localization.Settings.FallbackBehavior.DontUseFallback);
+        if (!messageOperation.IsDone)
+            yield return messageOperation;
+
+        string translated = messageOperation.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded
+            ? messageOperation.Result : null;
+        if (string.IsNullOrWhiteSpace(translated) || translated == "Untranslated" ||
+            translated == "미번역" || translated == "未翻译" ||
+            translated == "未翻訳" || translated == "Sin traducir" ||
+            translated.StartsWith("No translation found for", StringComparison.OrdinalIgnoreCase))
+        {
+            Debug.LogError($"[BattleSceneController] Could not load 'battle.intro.battle_start' " +
+                $"from Text ({locale.Identifier.Code}). Status: {messageOperation.Status}.", this);
+            yield break;
+        }
+
+        battleMapIntroText.Play(translated);
     }
 
     private void PlayEventRoomEntranceAnimationIfNeeded()

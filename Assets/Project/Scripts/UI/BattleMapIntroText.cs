@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class BattleMapIntroText : MonoBehaviour
 {
-    private const string DefaultMessageKey = "battle.intro.enter_battle_area";
+    private const string DefaultMessageKey = "battle.intro.battle_start";
     private static BattleMapIntroText instance;
 
     public static int CurrentPlayCounter { get; private set; }
@@ -241,7 +241,52 @@ public class BattleMapIntroText : MonoBehaviour
 
     public void Play()
     {
-        Play(GameLocalization.Get(DefaultMessageKey));
+        // Do not resolve the default message before the locale table is loaded.
+        // During scene entry, a synchronous lookup may return "Untranslated".
+        EnsureRootActiveForPlay();
+        StartCoroutine(PlayDefaultMessageWhenReady());
+    }
+
+    private IEnumerator PlayDefaultMessageWhenReady()
+    {
+        var initialization = UnityEngine.Localization.Settings.LocalizationSettings.InitializationOperation;
+        if (!initialization.IsDone)
+            yield return initialization;
+
+        var locale = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale;
+        if (locale == null)
+        {
+            Debug.LogWarning("[BattleMapIntroText] No selected locale for battle start intro.", this);
+            yield break;
+        }
+
+        var operation = UnityEngine.Localization.Settings.LocalizationSettings.StringDatabase
+            .GetLocalizedStringAsync(GameLocalization.TableName, DefaultMessageKey, locale,
+                UnityEngine.Localization.Settings.FallbackBehavior.DontUseFallback);
+        if (!operation.IsDone)
+            yield return operation;
+
+        string translated = operation.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded
+            ? operation.Result
+            : null;
+        if (IsMissingIntroTranslation(translated))
+        {
+            Debug.LogError($"[BattleMapIntroText] Failed to resolve '{DefaultMessageKey}' in locale " +
+                $"'{locale.Identifier.Code}' (operation status: {operation.Status}).", this);
+            yield break;
+        }
+
+        Play(translated);
+    }
+
+    private static bool IsMissingIntroTranslation(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return true;
+        string normalized = value.Trim();
+        return normalized == "Untranslated" || normalized == "미번역" ||
+               normalized == "未翻译" || normalized == "未翻譯" || normalized == "未翻訳" ||
+               normalized == "Sin traducir" ||
+               normalized.StartsWith("No translation found for", StringComparison.OrdinalIgnoreCase);
     }
 
     public void Play(string text)
@@ -252,6 +297,14 @@ public class BattleMapIntroText : MonoBehaviour
         if (introText == null)
         {
             Debug.LogWarning("[BattleMapIntroText] Intro Text가 연결되어 있지 않습니다.", this);
+            return;
+        }
+
+        if (IsMissingIntroTranslation(text))
+        {
+            Debug.LogError("[BattleMapIntroText] A caller supplied an untranslated string to Play(string). " +
+                "Pass a localization key to the caller and resolve it after the String Table is ready.\n" +
+                Environment.StackTrace, this);
             return;
         }
 
@@ -454,6 +507,10 @@ public class BattleMapIntroText : MonoBehaviour
 
         if (introText == null)
             introText = GetComponentInChildren<TMP_Text>(true);
+
+        // Runtime-generated intro messages must not be overwritten by static bindings.
+        if (introText != null)
+            LocalizedTMPText.ProtectDynamicOwnership(introText);
 
         BindIntroImageIfNeeded();
 

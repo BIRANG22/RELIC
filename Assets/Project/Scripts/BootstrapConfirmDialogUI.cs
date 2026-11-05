@@ -343,6 +343,13 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
             if (legacyNoButtonText == null)
                 legacyNoButtonText = noButton.GetComponentInChildren<Text>(true);
         }
+
+        // The dialog writes both labels at runtime, including when the dialog is reused.
+        // Disable stale prefab-level static bindings so they cannot replace labels with Untranslated.
+        if (tmpYesButtonText != null)
+            LocalizedTMPText.ProtectDynamicOwnership(tmpYesButtonText);
+        if (tmpNoButtonText != null)
+            LocalizedTMPText.ProtectDynamicOwnership(tmpNoButtonText);
     }
 
     private bool IsButtonText(Transform textTransform)

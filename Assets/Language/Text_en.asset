@@ -6198,6 +6198,70 @@ MonoBehaviour:
     m_Localized: Expedition
     m_Metadata:
       m_Items: []
+  - m_Id: 31304009331744769
+    m_Localized: Entering Combat Area
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31304009331744768
+    m_Localized: First Expedition - Recover the Awakening Core {Current}/{Target}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31304009285607424
+    m_Localized: Expedition Preparation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31304009331744770
+    m_Localized: Ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31308790607618048
+    m_Localized: Battle Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31308790653755392
+    m_Localized: Entering Rest Area
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686208
+    m_Localized: Are you sure you want to quit the game?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692484743168
+    m_Localized: Passive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686209
+    m_Localized: Are you sure you want to abandon the expedition?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686210
+    m_Localized: Do you want to make this purchase?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686211
+    m_Localized: Do you want to purchase this Artifact?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686212
+    m_Localized: Do you want to activate this Fragment?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31314991017861122
+    m_Localized: Controls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31314990975918080
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31314991017861120
+    m_Localized: Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31314991017861121
+    m_Localized: Sound
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

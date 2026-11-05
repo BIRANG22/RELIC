@@ -5911,6 +5911,70 @@ MonoBehaviour:
     m_Key: ui.lobby.text_tmp.36ad8928
     m_Metadata:
       m_Items: []
+  - m_Id: 31304009285607424
+    m_Key: lobby.quest.setup
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31304009331744768
+    m_Key: lobby.quest.first_expedition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31304009331744769
+    m_Key: battle.intro.enter_battle_area
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31304009331744770
+    m_Key: ui.lobby.play.ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31308790607618048
+    m_Key: battle.intro.battle_start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31308790653755392
+    m_Key: battle.intro.rest_area
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692484743168
+    m_Key: common.passive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686208
+    m_Key: common.confirm_quit_game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686209
+    m_Key: dialog.expedition.abandon_confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686210
+    m_Key: dialog.purchase.confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686211
+    m_Key: dialog.relic.purchase_confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686212
+    m_Key: dialog.rune.activate_confirm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31314990975918080
+    m_Key: ui.option.header.language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31314991017861120
+    m_Key: ui.option.header.resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31314991017861121
+    m_Key: ui.option.header.sound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31314991017861122
+    m_Key: ui.option.header.control
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

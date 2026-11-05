@@ -6261,6 +6261,70 @@ MonoBehaviour:
     m_Localized: "Expedici\xF3n"
     m_Metadata:
       m_Items: []
+  - m_Id: 31304009331744769
+    m_Localized: Entrando en la zona de combate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31304009331744768
+    m_Localized: "Primera expedici\xF3n - Recuperar el N\xFAcleo del Despertar {Current}/{Target}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31304009285607424
+    m_Localized: "Preparativos para la expedici\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31304009331744770
+    m_Localized: Listo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31308790607618048
+    m_Localized: Inicio del combate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31308790653755392
+    m_Localized: Entrando en la zona de descanso
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686208
+    m_Localized: "\xBFSeguro que quieres salir del juego?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692484743168
+    m_Localized: Pasiva
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686209
+    m_Localized: "\xBFSeguro que quieres abandonar la expedici\xF3n?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686210
+    m_Localized: "\xBFQuieres realizar esta compra?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686211
+    m_Localized: "\xBFQuieres comprar este artefacto?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31312692526686212
+    m_Localized: "\xBFQuieres activar este fragmento?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31314991017861122
+    m_Localized: Controles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31314990975918080
+    m_Localized: Idioma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31314991017861120
+    m_Localized: "Resoluci\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31314991017861121
+    m_Localized: Sonido
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
