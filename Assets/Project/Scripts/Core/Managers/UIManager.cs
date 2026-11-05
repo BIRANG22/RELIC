@@ -915,6 +915,7 @@ public class UIManager : Singleton<UIManager>
 
         text.UpdateMeshPadding();
         text.SetAllDirty();
+        LocaleTMPFontGuard.Prepare(text);
         text.ForceMeshUpdate(true, true);
     }
 

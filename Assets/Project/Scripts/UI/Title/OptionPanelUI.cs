@@ -311,6 +311,7 @@ public class OptionPanelUI : MonoBehaviour
             localizeStringEvent.enabled = false;
 
         label.text = GameLocalization.Get(localizationKey, koreanFallback);
+        LocaleTMPFontGuard.Prepare(label);
         label.ForceMeshUpdate();
     }
 

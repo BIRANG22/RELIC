@@ -724,6 +724,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
         {
             dialogText.maxVisibleCharacters = int.MaxValue;
             dialogText.text = Localize(step);
+            LocaleTMPFontGuard.Prepare(dialogText);
             dialogText.ForceMeshUpdate();
             dialogText.maxVisibleCharacters = 0;
         }
@@ -1192,6 +1193,7 @@ public sealed class TutorialBattleSequence : MonoBehaviour
             yield break;
         }
 
+        LocaleTMPFontGuard.Prepare(dialogText);
         dialogText.ForceMeshUpdate();
         int totalCharacters = dialogText.textInfo.characterCount;
         int shown = 0;

@@ -150,6 +150,7 @@ public sealed class LocalizedTMPText : MonoBehaviour
         if (!ShouldManageText(target))
             return;
 
+        LocaleTMPFontGuard.PrepareLocalized(target, locale);
         target.text = string.IsNullOrWhiteSpace(localizationKey)
             ? koreanSource ?? string.Empty
             : GameLocalization.GetForLocale(localizationKey, koreanSource, locale);

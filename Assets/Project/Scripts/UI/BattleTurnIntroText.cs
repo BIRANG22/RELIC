@@ -246,6 +246,7 @@ public class BattleTurnIntroText : MonoBehaviour
         // Localize components may assign their own text on enable.
         introText.text = string.IsNullOrEmpty(message) ? BuildTurnMessage(1) : message;
         introText.alpha = 1f;
+        LocaleTMPFontGuard.Prepare(introText);
         introText.ForceMeshUpdate();
 
         canvasGroup.interactable = false;

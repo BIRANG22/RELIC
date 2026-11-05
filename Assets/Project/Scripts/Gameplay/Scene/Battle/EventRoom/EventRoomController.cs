@@ -1087,6 +1087,7 @@ public class EventRoomController : MonoBehaviour
             int visibleCharacters = eventTitleText.maxVisibleCharacters;
             eventTitleLocaleVersion++;
             eventTitleText.text = ResolveEventTitle(currentEventDefinition);
+            LocaleTMPFontGuard.Prepare(eventTitleText);
             eventTitleText.ForceMeshUpdate(true, true);
             eventTitleText.maxVisibleCharacters = visibleCharacters == int.MaxValue
                 ? int.MaxValue
@@ -6628,12 +6629,14 @@ public class EventRoomController : MonoBehaviour
         {
             eventTitleText.gameObject.SetActive(true);
             if (eventTitleCanvasGroup != null) eventTitleCanvasGroup.alpha = 1f;
+            LocaleTMPFontGuard.Prepare(eventTitleText);
             eventTitleText.ForceMeshUpdate();
             eventTitleText.maxVisibleCharacters = 0;
             if (chainedTitlePause > 0f) yield return new WaitForSecondsRealtime(chainedTitlePause);
             // 언어가 변경되더라도 현재 문장 길이를 기준으로 타이핑을 계속합니다.
             for (int i = 1; ; i++)
             {
+                LocaleTMPFontGuard.Prepare(eventTitleText);
                 eventTitleText.ForceMeshUpdate(true, true);
                 if (i > eventTitleText.textInfo.characterCount) break;
                 eventTitleText.maxVisibleCharacters = i;
@@ -6651,12 +6654,14 @@ public class EventRoomController : MonoBehaviour
         if (eventTitleText != null)
         {
             eventTitleText.gameObject.SetActive(true);
+            LocaleTMPFontGuard.Prepare(eventTitleText);
             eventTitleText.ForceMeshUpdate();
             eventTitleText.maxVisibleCharacters = 0;
             float interval = Mathf.Max(0.001f, eventTitleCharacterInterval);
             // 타이핑 중 언어 전환 시에도 변경된 텍스트의 글자 수를 사용합니다.
             for (int i = 1; ; i++)
             {
+                LocaleTMPFontGuard.Prepare(eventTitleText);
                 eventTitleText.ForceMeshUpdate(true, true);
                 if (i > eventTitleText.textInfo.characterCount) break;
                 eventTitleText.maxVisibleCharacters = i;

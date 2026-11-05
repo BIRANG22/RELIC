@@ -4963,6 +4963,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         if (text == null)
             return Input.mousePosition;
 
+        LocaleTMPFontGuard.Prepare(text);
         text.ForceMeshUpdate();
         TMP_TextInfo info = text.textInfo;
         if (linkIndex < 0 || linkIndex >= info.linkCount)
@@ -5037,6 +5038,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             return;
         }
 
+        LocaleTMPFontGuard.Prepare(skillTooltipDetailText);
         skillTooltipDetailText.ForceMeshUpdate();
         TMP_TextInfo info = skillTooltipDetailText.textInfo;
         List<string> ids = new List<string>();

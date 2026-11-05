@@ -77,6 +77,7 @@ public class TimelineSkillHoverPopupView : MonoBehaviour
         if (popupRect == null)
             return;
 
+        LocaleTMPFontGuard.Prepare(nameText);
         nameText.ForceMeshUpdate();
 
         string displayText = nameText.text ?? string.Empty;

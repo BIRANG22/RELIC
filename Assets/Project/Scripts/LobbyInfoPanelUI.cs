@@ -526,12 +526,14 @@ public sealed class LobbyInfoPanelUI : MonoBehaviour
         if (tooltipNameText != null)
         {
             tooltipNameText.text = displayName ?? string.Empty;
+            LocaleTMPFontGuard.Prepare(tooltipNameText);
             tooltipNameText.ForceMeshUpdate();
         }
 
         if (tooltipDescriptionText != null)
         {
             tooltipDescriptionText.text = description ?? string.Empty;
+            LocaleTMPFontGuard.Prepare(tooltipDescriptionText);
             tooltipDescriptionText.ForceMeshUpdate();
         }
 

@@ -152,6 +152,7 @@ public class BootstrapConfirmDialogUI : MonoBehaviour
             return;
 
         target.SetAllDirty();
+        LocaleTMPFontGuard.Prepare(target);
         target.ForceMeshUpdate(true, true);
     }
 

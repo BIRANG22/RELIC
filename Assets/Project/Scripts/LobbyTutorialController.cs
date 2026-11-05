@@ -441,6 +441,7 @@ public sealed class LobbyTutorialController : MonoBehaviour
 
         dialogueText.text = line ?? string.Empty;
         dialogueText.maxVisibleCharacters = 0;
+        LocaleTMPFontGuard.Prepare(dialogueText);
         dialogueText.ForceMeshUpdate();
         currentDialogueCharacterCount = dialogueText.textInfo.characterCount;
 

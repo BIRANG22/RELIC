@@ -263,6 +263,7 @@ public sealed class LobbyWorldObjectHoverName : MonoBehaviour
         if (backgroundRect == null || objectNameText == null)
             return;
 
+        LocaleTMPFontGuard.Prepare(objectNameText);
         objectNameText.ForceMeshUpdate();
         float preferredWidth = objectNameText.GetPreferredValues(objectNameText.text).x;
         float targetWidth = Mathf.Max(backgroundMinWidth, preferredWidth + backgroundSidePadding * 2f);
