@@ -486,10 +486,20 @@ public sealed class UIBlurReplicaSource
             GlobalLocalizedTMPFontApplicator.ApplyToText(source, currentDatabase, currentLocale);
             EnsureDisplayFontSupportsText(source, currentDatabase, currentLocale);
             replica.text = source.text;
-            replica.font = source.font;
-            // Materials belong to a specific font atlas. Copy the source
-            // material only after synchronizing the replica font.
-            replica.fontSharedMaterial = source.fontSharedMaterial;
+            if (replica.font != source.font)
+                replica.font = source.font;
+            // TMP font materials are tied to their atlas. A font switch can
+            // leave a source material referencing the previous locale atlas.
+            // In that case prefer the selected font's own default material.
+            Material sourceMaterial = source.fontSharedMaterial;
+            Material fontMaterial = source.font != null ? source.font.material : null;
+            Material targetMaterial = sourceMaterial;
+            if (fontMaterial != null &&
+                (sourceMaterial == null ||
+                 sourceMaterial.mainTexture != fontMaterial.mainTexture))
+                targetMaterial = fontMaterial;
+            if (targetMaterial != null && replica.fontSharedMaterial != targetMaterial)
+                replica.fontSharedMaterial = targetMaterial;
             replica.fontSize = source.fontSize;
             replica.fontStyle = source.fontStyle;
             replica.alignment = source.alignment;

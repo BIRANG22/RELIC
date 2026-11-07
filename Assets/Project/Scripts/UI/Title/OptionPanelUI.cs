@@ -335,6 +335,8 @@ public class OptionPanelUI : MonoBehaviour
         SetOptionHeading("ControlText", "ui.option.header.control", "조작");
         SetOptionHeading("Tutorial_text", "ui.tutorialpanel.titletext.74198686", "튜토리얼");
         SetOptionHeading("TutorialText", "ui.tutorialpanel.titletext.74198686", "튜토리얼");
+        // The instantiated Option prefab uses Back/Name/TutorialLabel.
+        SetOptionHeading("TutorialLabel", "ui.tutorialpanel.titletext.74198686", "튜토리얼");
         SetTutorialToggleHeading();
     }
 
@@ -381,6 +383,8 @@ public class OptionPanelUI : MonoBehaviour
             translation == "未翻译" || translation == "未翻訳" || translation == "Sin traducir")
             translation = koreanSource;
         label.text = translation;
+        LocaleTMPFontGuard.Prepare(label);
+        label.ForceMeshUpdate();
     }
 
     private async void RefreshOptionHeadingLabelsWhenReady()

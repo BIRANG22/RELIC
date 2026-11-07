@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 [DefaultExecutionOrder(-500)]
 public sealed class UIBlurBackgroundManager : MonoBehaviour
@@ -37,6 +39,7 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
     private bool cameraPauseActive;
     private bool isRefreshing;
     private bool replicaDirty;
+    private int localeRefreshFrames;
     private bool materialDiagnosticsLogged;
     private bool textureDiagnosticsLogged;
 
@@ -76,6 +79,7 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         EnsureSharedUI();
         SceneManager.sceneLoaded += OnSceneLoaded;
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
     }
 
     private void OnDestroy()
@@ -84,6 +88,7 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         ReleaseCameraPause();
         if (instance == this) instance = null;
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
         if (material != null) Destroy(material);
         ReleaseUiBlurTexture();
     }
@@ -168,8 +173,22 @@ public sealed class UIBlurBackgroundManager : MonoBehaviour
         replicaDirty = true;
     }
 
+    // Locale changes can finish updating controller-owned TMP texts after the
+    // locale callback. Keep the replica dirty for several frames so fonts,
+    // localized strings and their atlas materials settle together.
+    private void OnLocaleChanged(Locale locale)
+    {
+        localeRefreshFrames = 3;
+        replicaDirty = true;
+    }
+
     private void LateUpdate()
     {
+        if (localeRefreshFrames > 0)
+        {
+            localeRefreshFrames--;
+            replicaDirty = true;
+        }
         if (RemoveInvalidRequesters())
             RefreshPresentation();
 

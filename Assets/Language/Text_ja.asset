@@ -6111,6 +6111,10 @@ MonoBehaviour:
     m_Localized: "\u6700\u5927HP\u304C{0}\u5897\u52A0"
     m_Metadata:
       m_Items: []
+  - m_Id: 31924965792260096
+    m_Localized: "\u6301\u7D9A"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -561,7 +561,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             {
                 skillTooltipResourceText.enableAutoSizing = false;
                 skillTooltipResourceText.fontSize = 20f;
-                SetPlainTmpText(skillTooltipResourceText, "지속");
+                SetPlainTmpText(skillTooltipResourceText, GameLocalization.Get("battle.skill.passive_duration"));
             }
             else
             {
@@ -611,7 +611,7 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             // 패널 활성화 시 로컬라이저가 이전 스킬의 자원 수치를 복원하지 않도록 다시 적용합니다.
             if (skillTooltipResourceText != null)
                 SetPlainTmpText(skillTooltipResourceText,
-                    isPassiveSkill ? "지속" : Mathf.Max(0, skill.ResourceCostValue).ToString());
+                    isPassiveSkill ? GameLocalization.Get("battle.skill.passive_duration") : Mathf.Max(0, skill.ResourceCostValue).ToString());
             SetPlainTmpText(skillTooltipNameText, GameDataLocalization.SkillName(skill));
             SetPlainTmpText(skillTooltipTypeText, GetSkillTooltipTypeDisplayName(skill));
             SetRichTmpText(skillTooltipDescriptionText, BuildSkillDetailsText(skill));

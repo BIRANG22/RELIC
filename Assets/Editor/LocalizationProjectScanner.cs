@@ -508,6 +508,9 @@ public static class LocalizationRuntimeSourceCatalog
         Entry("battle.intro.rest_area", "휴식 구역 진입"),
         // Passive skill type uses this key in battle, reward, and lobby skill tooltips.
         Entry("common.passive", "패시브"),
+        // Passive skill resource labels are written directly at runtime, not serialized in prefabs.
+        // Full Scan & Apply registers the shared key in the workbook without a manual CSV edit.
+        Entry("battle.skill.passive_duration", "지속"),
         // Event dice result texts are produced at runtime, not by prefab TMP labels.
         Entry("event.dice.success", "성공"),
         Entry("event.dice.failure", "실패"),

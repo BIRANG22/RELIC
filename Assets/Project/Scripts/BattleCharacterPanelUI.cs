@@ -4805,6 +4805,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         if (skillTooltipResourceValueText != null)
         {
+            LocalizedTMPText.ProtectDynamicOwnership(skillTooltipResourceValueText);
             BattlePlayerSkillPreview preview = GetSkillPreview(skillData);
             int resourceValue = preview != null
                 ? Mathf.Max(0, preview.PayAmount)
