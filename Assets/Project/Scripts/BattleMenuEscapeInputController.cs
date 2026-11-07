@@ -25,6 +25,9 @@ public class BattleMenuEscapeInputController : MonoBehaviour
     [SerializeField] private string menuPanelObjectName = "MenuPanel";
     [SerializeField] private bool autoFindMenuPanel = true;
     [SerializeField] private int menuPanelSortingOrder = 10000;
+    [Header("Tutorial Menu Access")]
+    [SerializeField] private int tutorialMenuRootSortingOrder = 30002;
+    [SerializeField] private int tutorialMenuPanelSortingOrder = 30003;
     [SerializeField] private bool blockOtherButtonsWhenMenuPanelOpen = true;
 
     [Header("Menu Root Input Blocker")]
@@ -37,6 +40,15 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
     private Transform menuRootTransform;
     private Canvas menuRootCanvas;
+    // Keep only MenuButton above the tutorial blocker while the menu is closed.
+    // Raising the entire MenuRoot covers otherwise active tutorial artwork.
+    private Canvas tutorialMenuButtonCanvas;
+    private GraphicRaycaster tutorialMenuButtonRaycaster;
+    private bool addedTutorialMenuButtonCanvas;
+    private bool addedTutorialMenuButtonRaycaster;
+    private bool originalButtonOverrideSorting;
+    private int originalButtonSortingOrder;
+
 
     [Header("Pause")]
     [SerializeField] private bool pauseGameWhenMenuPanelOpen = true;
@@ -76,12 +88,14 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         SetMenuRootBlockerRaycast(false);
         ReleaseOtherButtonBlockIfNeeded();
         ReleasePauseIfNeeded();
+        RestoreTutorialMenuButtonCanvas();
     }
 
     private void OnDestroy()
     {
         ReleaseOtherButtonBlockIfNeeded();
         ReleasePauseIfNeeded();
+        RestoreTutorialMenuButtonCanvas();
     }
 
     private void Update()
@@ -199,6 +213,8 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         ReleasePauseIfNeeded();
     }
 
+    public bool IsMenuPanelVisible => IsMenuPanelOpen();
+
     private bool IsMenuPanelOpen()
     {
         FindMenuPanelIfNeeded();
@@ -221,8 +237,11 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
         if (!canvas.overrideSorting)
             canvas.overrideSorting = true;
-        if (canvas.sortingOrder != menuPanelSortingOrder)
-            canvas.sortingOrder = menuPanelSortingOrder;
+        int effectivePanelOrder = TutorialBattleSequence.IsPresentationRunning
+            ? Mathf.Max(menuPanelSortingOrder, tutorialMenuPanelSortingOrder)
+            : menuPanelSortingOrder;
+        if (canvas.sortingOrder != effectivePanelOrder)
+            canvas.sortingOrder = effectivePanelOrder;
 
         if (menuPanel.GetComponent<GraphicRaycaster>() == null)
             menuPanel.AddComponent<GraphicRaycaster>();
@@ -428,7 +447,7 @@ public class BattleMenuEscapeInputController : MonoBehaviour
         if (menuRootTransform == null)
             return;
 
-        if (menuRootTransform.parent != null &&
+        if (IsMenuPanelOpen() && menuRootTransform.parent != null &&
             menuRootTransform.GetSiblingIndex() != menuRootTransform.parent.childCount - 1)
             menuRootTransform.SetAsLastSibling();
 
@@ -440,11 +459,91 @@ public class BattleMenuEscapeInputController : MonoBehaviour
 
         if (!menuRootCanvas.overrideSorting)
             menuRootCanvas.overrideSorting = true;
-        if (menuRootCanvas.sortingOrder != menuRootSortingOrder)
-            menuRootCanvas.sortingOrder = menuRootSortingOrder;
+        // Only raise the entire menu when it is OPEN. The root may have
+        // full-screen images which would otherwise hide tutorial images.
+        bool tutorialRunning = TutorialBattleSequence.IsPresentationRunning;
+        bool menuOpen = IsMenuPanelOpen();
+        int effectiveRootOrder = tutorialRunning && menuOpen
+            ? Mathf.Max(menuRootSortingOrder, tutorialMenuRootSortingOrder)
+            : menuRootSortingOrder;
+        RefreshTutorialMenuButtonCanvas(tutorialRunning && !menuOpen);
+        if (menuRootCanvas.sortingOrder != effectiveRootOrder)
+            menuRootCanvas.sortingOrder = effectiveRootOrder;
 
         if (menuRootTransform.GetComponent<GraphicRaycaster>() == null)
             menuRootTransform.gameObject.AddComponent<GraphicRaycaster>();
+    }
+
+    private void RefreshTutorialMenuButtonCanvas(bool required)
+    {
+        if (!required)
+        {
+            // Keep the temporary components cached across repeated open/close.
+            // Destroy-and-add in the same frame can leave stale Canvas references.
+            if (tutorialMenuButtonCanvas != null)
+            {
+                tutorialMenuButtonCanvas.overrideSorting = addedTutorialMenuButtonCanvas
+                    ? false : originalButtonOverrideSorting;
+                if (!addedTutorialMenuButtonCanvas)
+                    tutorialMenuButtonCanvas.sortingOrder = originalButtonSortingOrder;
+            }
+            if (tutorialMenuButtonRaycaster != null && addedTutorialMenuButtonRaycaster)
+                tutorialMenuButtonRaycaster.enabled = false;
+            return;
+        }
+
+        FindMenuButtonIfNeeded();
+        if (menuButton == null)
+            return;
+
+        if (tutorialMenuButtonCanvas == null)
+        {
+            tutorialMenuButtonCanvas = menuButton.GetComponent<Canvas>();
+            if (tutorialMenuButtonCanvas == null)
+            {
+                tutorialMenuButtonCanvas = menuButton.gameObject.AddComponent<Canvas>();
+                addedTutorialMenuButtonCanvas = true;
+            }
+            else
+            {
+                originalButtonOverrideSorting = tutorialMenuButtonCanvas.overrideSorting;
+                originalButtonSortingOrder = tutorialMenuButtonCanvas.sortingOrder;
+            }
+        }
+
+        tutorialMenuButtonCanvas.overrideSorting = true;
+        tutorialMenuButtonCanvas.sortingOrder = tutorialMenuRootSortingOrder;
+        if (tutorialMenuButtonRaycaster == null)
+        {
+            tutorialMenuButtonRaycaster = menuButton.GetComponent<GraphicRaycaster>();
+            if (tutorialMenuButtonRaycaster == null)
+            {
+                tutorialMenuButtonRaycaster = menuButton.gameObject.AddComponent<GraphicRaycaster>();
+                addedTutorialMenuButtonRaycaster = true;
+            }
+        }
+        if (addedTutorialMenuButtonRaycaster)
+            tutorialMenuButtonRaycaster.enabled = true;
+    }
+
+    private void RestoreTutorialMenuButtonCanvas()
+    {
+        if (tutorialMenuButtonRaycaster != null && addedTutorialMenuButtonRaycaster)
+            Destroy(tutorialMenuButtonRaycaster);
+        if (tutorialMenuButtonCanvas != null)
+        {
+            if (addedTutorialMenuButtonCanvas)
+                Destroy(tutorialMenuButtonCanvas);
+            else
+            {
+                tutorialMenuButtonCanvas.overrideSorting = originalButtonOverrideSorting;
+                tutorialMenuButtonCanvas.sortingOrder = originalButtonSortingOrder;
+            }
+        }
+        tutorialMenuButtonCanvas = null;
+        tutorialMenuButtonRaycaster = null;
+        addedTutorialMenuButtonCanvas = false;
+        addedTutorialMenuButtonRaycaster = false;
     }
 
     private void FindMenuRootIfNeeded()
