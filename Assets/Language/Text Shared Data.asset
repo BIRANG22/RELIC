@@ -6007,6 +6007,10 @@ MonoBehaviour:
     m_Key: event.result.max_hp_increase_amount
     m_Metadata:
       m_Items: []
+  - m_Id: 31924965792260096
+    m_Key: battle.skill.passive_duration
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

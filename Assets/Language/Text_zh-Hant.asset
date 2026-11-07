@@ -6190,6 +6190,10 @@ MonoBehaviour:
     m_Localized: "\u6700\u5927\u751F\u547D\u503C\u589E\u52A0{0}"
     m_Metadata:
       m_Items: []
+  - m_Id: 31924965792260096
+    m_Localized: "\u7E7C\u7E8C"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

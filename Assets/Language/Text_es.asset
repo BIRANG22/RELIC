@@ -6357,6 +6357,10 @@ MonoBehaviour:
     m_Localized: "Aumenta los PV m\xE1ximos en {0}"
     m_Metadata:
       m_Items: []
+  - m_Id: 31924965792260096
+    m_Localized: Continuo
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

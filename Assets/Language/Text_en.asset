@@ -6294,6 +6294,10 @@ MonoBehaviour:
     m_Localized: Increase Max HP by {0}
     m_Metadata:
       m_Items: []
+  - m_Id: 31924965792260096
+    m_Localized: Continuous
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
