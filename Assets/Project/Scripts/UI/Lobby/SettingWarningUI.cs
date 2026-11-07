@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 public class SettingWarningUI : MonoBehaviour
@@ -46,6 +47,8 @@ public class SettingWarningUI : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+
+        EnsureRuntimeOwnedMessageText();
 
         if (canvasGroup == null)
             canvasGroup = GetComponent<CanvasGroup>();
@@ -160,6 +163,8 @@ public class SettingWarningUI : MonoBehaviour
         if (string.IsNullOrEmpty(message))
             return;
 
+        EnsureRuntimeOwnedMessageText();
+
         if (moveTarget != null)
             baseAnchoredPosition = moveTarget.anchoredPosition - endOffset;
 
@@ -188,6 +193,27 @@ public class SettingWarningUI : MonoBehaviour
             if (useScalePop)
                 moveTarget.localScale = startScale;
         }
+    }
+
+    private void EnsureRuntimeOwnedMessageText()
+    {
+        if (GetComponent<LocalizationAutoBindingIgnore>() == null)
+            gameObject.AddComponent<LocalizationAutoBindingIgnore>();
+
+        if (messageText == null)
+            return;
+
+        LocalizedTMPText staticLocalizer = messageText.GetComponent<LocalizedTMPText>();
+        if (staticLocalizer != null)
+            staticLocalizer.enabled = false;
+
+        DynamicLocalizedTMPText dynamicLocalizer = messageText.GetComponent<DynamicLocalizedTMPText>();
+        if (dynamicLocalizer != null)
+            dynamicLocalizer.enabled = false;
+
+        LocalizeStringEvent stringEvent = messageText.GetComponent<LocalizeStringEvent>();
+        if (stringEvent != null)
+            stringEvent.enabled = false;
     }
 
     public void HideImmediate()

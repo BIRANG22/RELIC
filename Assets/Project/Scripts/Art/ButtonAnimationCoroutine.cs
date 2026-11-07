@@ -101,6 +101,11 @@ public class ButtonAnimationCoroutine :
 
     private Coroutine visualCoroutine;
 
+    public void SetClickSoundEnabled(bool enabled)
+    {
+        playClickSound = enabled;
+    }
+
     private Rect cachedHoverScreenRect;
     private bool hasCachedHoverScreenRect;
     private float pointerOutsideTime;

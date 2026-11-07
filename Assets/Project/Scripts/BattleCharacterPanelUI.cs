@@ -16,6 +16,10 @@ using UnityEngine.Serialization;
 public class BattleCharacterPanelUI : MonoBehaviour
 {
 
+    [Header("Placeholder Interaction SFX")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string moveFlipClickSfxId = AudioIds.Sfx.BattleMoveFlipClick;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string resetCancelSfxId = AudioIds.Sfx.BattleSkillResetCancel;
+
     private const int PartySlotCount = 3;
     private static readonly Color32 PartyKarmaOnColor = new Color32(0xFF, 0xFF, 0xFF, 0xFF);
     private static readonly Color32 PartyKarmaOffColor = new Color32(0x77, 0x77, 0x77, 0xFF);
@@ -3979,6 +3983,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
             boundRuntime != null ? boundRuntime.MoveSkillId : string.Empty,
             moveButton,
             true);
+        AudioManager.Instance?.PlaySfx(moveFlipClickSfxId);
     }
 
     private void OnFlipButtonClicked()
@@ -4012,6 +4017,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
         battleTimelineController.CancelSkillReservationPreviewFromSkillList(boundRuntime);
         battleTimelineController.TryReserveFacingFlip(boundRuntime, moveSkillData);
         battleTimelineController.RefocusCurrentSelectedCharacterWhenInputReady();
+        AudioManager.Instance?.PlaySfx(moveFlipClickSfxId);
     }
 
     private void OnResetButtonClicked()
@@ -4029,6 +4035,7 @@ public class BattleCharacterPanelUI : MonoBehaviour
 
         resetButton?.GetComponent<BattleCharacterSkillHoverUI>()?.ShowClickSelectionFeedback();
         battleTimelineController.ClearAllPlayerReservations();
+        AudioManager.Instance?.PlaySfx(resetCancelSfxId);
     }
 
     private void OnItemButtonClicked()

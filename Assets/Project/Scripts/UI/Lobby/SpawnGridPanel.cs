@@ -10,6 +10,10 @@ public class SpawnGridPanel : MonoBehaviour
 {
     [SerializeField] private SpawnGridCell[] cells;
 
+    [Header("Placement Result SFX")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string gridSelectionSfxId = AudioIds.Sfx.BattleGridSelectionDrop;
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string characterRemoveSfxId = AudioIds.Sfx.LobbyCharacterRemove;
+
     [Header("Ready Panel Grid")]
     [Tooltip("Ready_Panel/Grid/Grid01~Grid15를 이름으로 자동 연결합니다.")]
     [SerializeField] private bool autoBindReadyPanelGrid = true;
@@ -470,6 +474,7 @@ public class SpawnGridPanel : MonoBehaviour
         selectedPartySlotIndex = -1;
         HideDragPreview();
         RefreshAllInfoAndReadyViews();
+        AudioManager.Instance?.PlaySfx(gridSelectionSfxId);
         return true;
     }
 
@@ -496,6 +501,7 @@ public class SpawnGridPanel : MonoBehaviour
         selectedPartySlotIndex = -1;
         HideDragPreview();
         Refresh();
+        AudioManager.Instance?.PlaySfx(gridSelectionSfxId);
         return true;
     }
 
@@ -678,6 +684,7 @@ public class SpawnGridPanel : MonoBehaviour
         pendingInfoPlacementButton = null;
         infoDragSourceButton = null;
         RefreshAllInfoAndReadyViews();
+        AudioManager.Instance?.PlaySfx(characterRemoveSfxId);
         return true;
     }
 
@@ -700,6 +707,7 @@ public class SpawnGridPanel : MonoBehaviour
             pendingInfoPlacementButton = null;
             selectedPartySlotIndex = -1;
             RefreshAllInfoAndReadyViews();
+            AudioManager.Instance?.PlaySfx(gridSelectionSfxId);
             return;
         }
 
@@ -714,6 +722,7 @@ public class SpawnGridPanel : MonoBehaviour
 
             selectedPartySlotIndex = -1;
             RefreshAllInfoAndReadyViews();
+            AudioManager.Instance?.PlaySfx(gridSelectionSfxId);
             return;
         }
 
@@ -728,6 +737,7 @@ public class SpawnGridPanel : MonoBehaviour
             partyStore.ClearSlot(clickedPartySlotIndex);
             selectedPartySlotIndex = -1;
             RefreshAllInfoAndReadyViews();
+            AudioManager.Instance?.PlaySfx(characterRemoveSfxId);
             return;
         }
 

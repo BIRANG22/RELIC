@@ -28,6 +28,11 @@ public class UISoundTrigger : MonoBehaviour, IPointerEnterHandler, IPointerDownH
     [SerializeField, Range(0f, 1f)]
     private float clickSoundVolume = 1f;
 
+    public void SetClickSoundEnabled(bool enabled)
+    {
+        playClickSound = enabled;
+    }
+
     public void OnPointerEnter(PointerEventData eventData)
     {
         // Ready 패널 드래그 중에는 버튼의 호버 사운드를 재생하지 않습니다.

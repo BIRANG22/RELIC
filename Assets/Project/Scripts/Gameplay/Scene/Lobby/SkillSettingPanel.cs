@@ -14,6 +14,8 @@ using UnityEngine.Localization.Settings;
 
 public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
 {
+    [Header("Skill Change Sound")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string skillChangeSfxId = AudioIds.Sfx.LobbySkillChange;
     private const int SetupSkillSlotCount = 3;
 
     [Header("Skill Slots")]
@@ -1289,9 +1291,20 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
         if (!IsSkillValidForCurrentCharacterSlot(skill, slotIndex))
             return;
 
+        string previousSkillId = GetRuntimeSkillId(slotIndex);
+        if (!ShouldPlaySkillChange(previousSkillId, skill.SkillId))
+            return;
+
         SetRuntimeSkillId(slotIndex, skill.SkillId);
         DataManager.Instance.CharacterRuntimeStore.AddOrUpdate(currentRuntimeData);
         RefreshDirectSkillSelection(slotIndex);
+        AudioManager.Instance?.PlaySfx(skillChangeSfxId);
+    }
+
+    public static bool ShouldPlaySkillChange(string previousSkillId, string nextSkillId)
+    {
+        return !string.IsNullOrWhiteSpace(nextSkillId) &&
+               !string.Equals(previousSkillId, nextSkillId, StringComparison.OrdinalIgnoreCase);
     }
 
     private void RefreshDirectSkillSelection(int slotIndex)
@@ -2072,9 +2085,16 @@ public class SkillSettingPanel : MonoBehaviour, IRuntimeSaveStateContributor
             return;
         }
 
+        if (IsSameSkill(currentSelectedSlot.EquippedSkill, skill))
+        {
+            SetSkillSelectPanelVisible(false);
+            return;
+        }
+
         currentSelectedSlot.SetSkill(skill);
         ShowSkillInfo(skill);
         SaveCurrentSkillSetting();
+        AudioManager.Instance?.PlaySfx(skillChangeSfxId);
 
         // 패널 안의 스킬 버튼을 선택하면 선택 패널을 다시 숨김 위치로 돌린다.
         SetSkillSelectPanelVisible(false);

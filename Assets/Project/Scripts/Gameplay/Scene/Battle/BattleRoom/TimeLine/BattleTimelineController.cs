@@ -9,6 +9,8 @@ using UnityEngine.UI;
 
 public class BattleTimelineController : MonoBehaviour
 {
+    [Header("Selection Cancel Sound")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string selectionCancelSfxId = AudioIds.Sfx.BattleSkillResetCancel;
     private const int MaxMonsterCommandsPerSlot = 2;
     public static event System.Action<CharacterRuntimeData> CharacterSelectionChanged;
 
@@ -1029,29 +1031,34 @@ public class BattleTimelineController : MonoBehaviour
         return removed;
     }
 
-    public void OnTimelineSlotClicked(int slotIndex)
+    public bool OnTimelineSlotClicked(int slotIndex)
     {
         if (isSlotSelectionLocked)
         {
             if (showWarningWhenSlotSelectionLocked)
                 ShowBattleWarning(GameLocalization.Get(LocalizationKeys.Battle.TimelineSelectionLocked));
 
-            return;
+            return false;
         }
 
         if (IsPlayerSlotLocked(slotIndex))
         {
             ShowPlayerLockedSlotWarning();
-            return;
+            return false;
         }
 
         // 사용자가 직접 고른 슬롯은 바로 다음 캐릭터 선택에서 자동 슬롯 선택보다 우선합니다.
 
         if (SteamBattleStateSynchronizer.TryHandleTimelineSlotClicked(this, slotIndex))
-            return;
+            return true;
 
         if (SetActiveTimelineSlot(slotIndex, true))
+        {
             TryRestoreLastSelectedCharacterForTimelineSlot();
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -1125,7 +1132,7 @@ public class BattleTimelineController : MonoBehaviour
         // 슬롯을 실제로 변경할 때만 현재 진행 중인 타겟 선택을 취소합니다.
         // 이미 등록된 행동에는 영향을 주지 않습니다.
         if (previousSlotIndex != slotIndex)
-            CancelPendingActionSelection();
+            CancelPendingActionSelection(false);
 
         activeSlotIndex = slotIndex;
 
@@ -3285,7 +3292,7 @@ public class BattleTimelineController : MonoBehaviour
     /// 현재 선택 중인 이동/스킬 예약만 취소합니다. 타임라인에 확정된 행동은 유지합니다.
     /// 우클릭과 ESC, 슬롯 변경에서 공통으로 사용합니다.
     /// </summary>
-    public bool CancelPendingActionSelection()
+    public bool CancelPendingActionSelection(bool playSound = true)
     {
         if (playerSkillReservationController == null)
             playerSkillReservationController = FindFirstObjectByType<PlayerSkillReservationController>(FindObjectsInactive.Include);
@@ -3298,6 +3305,8 @@ public class BattleTimelineController : MonoBehaviour
 
         playerSkillReservationController?.ClearPreview();
         selectedSkill = null;
+        if (playSound)
+            AudioManager.Instance?.PlaySfx(selectionCancelSfxId);
         return true;
     }
 

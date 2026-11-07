@@ -73373,7 +73373,7 @@ MonoBehaviour:
   tutorialInputBlocker: {fileID: 0}
   tutorialInputBlockerFallbackSortingOrder: 9049
   charactersPerSecond: 30
-  lineAdvanceSoundId: ui.move.click
+  lineAdvanceSoundId: ui.tutorial.text.advance
   lineAdvanceSoundVolume: 0.5
   indicatorMoveDistance: 6
   indicatorMoveSpeed: 0.5

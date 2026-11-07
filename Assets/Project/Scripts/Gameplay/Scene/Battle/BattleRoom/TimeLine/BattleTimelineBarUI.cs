@@ -42,10 +42,9 @@ public class BattleTimelineBarUI : MonoBehaviour
         InitGroups();
     }
 
-    public void OnTimelineSlotClicked(int slotIndex)
+    public bool OnTimelineSlotClicked(int slotIndex)
     {
-        if (owner != null)
-            owner.OnTimelineSlotClicked(slotIndex);
+        return owner != null && owner.OnTimelineSlotClicked(slotIndex);
     }
 
     public bool TryGetOwner(out BattleTimelineController result)

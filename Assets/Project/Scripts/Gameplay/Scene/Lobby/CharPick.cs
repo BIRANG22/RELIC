@@ -7,6 +7,8 @@ using Relic.Gameplay.Data;
 
 public class CharPick : MonoBehaviour
 {
+    [Header("Character Change Sound")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string characterChangeSfxId = AudioIds.Sfx.LobbyCharacterSelectionChange;
     private enum CharacterSelectUsage
     {
         Auto = 0,
@@ -204,6 +206,9 @@ public class CharPick : MonoBehaviour
             if (btn == null)
                 return false;
 
+            if (btn.IsInfoEquipmentAreaTransform(hit.transform))
+                return false;
+
             return btn.isActiveAndEnabled && !btn.IsLocked && charBtns.Contains(btn);
         }
 
@@ -252,7 +257,7 @@ public class CharPick : MonoBehaviour
         if (usage == CharacterSelectUsage.CharacterSettingInfoOnly)
         {
             centerIndex = index;
-            RefreshCenterInfo();
+            RefreshCenterInfo(playCharacterChangeSound: true);
             return;
         }
 
@@ -278,7 +283,7 @@ public class CharPick : MonoBehaviour
         bool wasCurrentInfoCharacter = centerIndex == index;
 
         centerIndex = index;
-        RefreshCenterInfo();
+        RefreshCenterInfo(playCharacterChangeSound: true);
 
         if (btn.IsLocked || !HasUsableCharacterData(btn))
             return;
@@ -765,7 +770,7 @@ public class CharPick : MonoBehaviour
         RefreshViewedCharacterButtons(true);
 
         CreateOrUpdateRuntimeData(button);
-        SelectCenterCharacterState(button, characterId);
+        SelectCenterCharacterState(button, characterId, false);
         ShowPreview(characterId);
 
         return true;
@@ -1465,7 +1470,7 @@ public class CharPick : MonoBehaviour
         }
     }
 
-    private void RefreshCenterInfo()
+    private void RefreshCenterInfo(bool playCharacterChangeSound = false)
     {
         if (charBtns.Count <= 0)
             return;
@@ -1493,7 +1498,7 @@ public class CharPick : MonoBehaviour
         }
 
         CreateOrUpdateRuntimeData(centerBtn);
-        SelectCenterCharacterState(centerBtn, characterId);
+        SelectCenterCharacterState(centerBtn, characterId, playCharacterChangeSound);
         ShowPreview(characterId);
 
         if (setting != null)
@@ -1567,7 +1572,7 @@ public class CharPick : MonoBehaviour
             setting.Clear();
     }
 
-    private void SelectCenterCharacterState(CharBtn btn, string characterId)
+    private void SelectCenterCharacterState(CharBtn btn, string characterId, bool userInitiated = false)
     {
         if (btn == null)
             return;
@@ -1575,7 +1580,20 @@ public class CharPick : MonoBehaviour
         if (CharacterSelectionState.Instance == null)
             return;
 
+        string previousCharacterId = CharacterSelectionState.Instance.CurrentCharacterId;
         CharacterSelectionState.Instance.SelectCharacter(btn.CharacterType, characterId);
+        if (ShouldPlayCharacterChangeSound(userInitiated, previousCharacterId, characterId))
+            AudioManager.Instance?.PlaySfx(characterChangeSfxId);
+    }
+
+    public static bool ShouldPlayCharacterChangeSound(
+        bool userInitiated,
+        string previousCharacterId,
+        string nextCharacterId)
+    {
+        return userInitiated &&
+               !string.IsNullOrWhiteSpace(nextCharacterId) &&
+               !string.Equals(previousCharacterId, nextCharacterId, System.StringComparison.Ordinal);
     }
 
 

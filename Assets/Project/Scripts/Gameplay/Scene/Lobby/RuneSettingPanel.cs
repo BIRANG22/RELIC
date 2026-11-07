@@ -14,6 +14,8 @@ using UnityEngine.Localization.Settings;
 
 public class RuneSettingPanel : MonoBehaviour
 {
+    [Header("Rune Equip Sound")]
+    [SerializeField, SoundId(SoundCategory.Sfx)] private string runeEquipSfxId = AudioIds.Sfx.LobbyRuneEquip;
     [Header("Rune Slots")]
     [SerializeField] private RuneSlotButton[] runeSlotButtons;
 
@@ -879,6 +881,7 @@ public class RuneSettingPanel : MonoBehaviour
         SaveCurrentRuneSetting();
         RefreshRuneIconEquippedStates();
         OnRuneChanged?.Invoke();
+        AudioManager.Instance?.PlaySfx(runeEquipSfxId);
     }
 
     public void EndRuneDrag(PointerEventData eventData)

@@ -693,6 +693,123 @@ MonoBehaviour:
     useRandomPitch: 0
     randomPitchMin: 0.7
     randomPitchMax: 1.3
+  - id: ui.tutorial.text.advance
+    aliases: []
+    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.move-flip.click
+    aliases: []
+    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.skill.reset-cancel
+    aliases: []
+    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: lobby.character.selection.change
+    aliases: []
+    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.timeline.marker.click
+    aliases: []
+    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: lobby.rune.equip
+    aliases: []
+    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: lobby.skill.change
+    aliases: []
+    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: lobby.skill-material.combine
+    aliases: []
+    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: lobby.skill-material.remove
+    aliases: []
+    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: lobby.character.remove
+    aliases: []
+    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: battle.grid-selection.drop
+    aliases: []
+    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: lobby.equipment.equip
+    aliases: []
+    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
+  - id: ui.exploration-report.count-up
+    aliases: []
+    clip: {fileID: 8300000, guid: 86d93ca9c7914d478f905a4276c5c35a, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    useRandomPitch: 0
+    randomPitchMin: 1
+    randomPitchMax: 1
   eventSfxList:
   - id: event.01.Skylight
     aliases: []
