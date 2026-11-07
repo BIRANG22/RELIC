@@ -49,6 +49,12 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
     [SerializeField, Range(0.12f, 0.55f)] private float kickDurationRatio = 0.32f;
     [SerializeField, Min(0f)] private float suckCurveLift = 75f;
 
+    [Header("Conversion Stream Spread")]
+    [Tooltip("Maximum horizontal deviation from the straight start-to-HUD path (screen pixels). Each orb chooses left or right randomly.")]
+    [SerializeField] private Vector2 conversionSideSpreadRange = new(240f, 460f);
+    [Tooltip("Additional vertical deviation from the straight start-to-HUD path at the middle of the arc (screen pixels). ")]
+    [SerializeField] private Vector2 conversionVerticalSpreadRange = new(-170f, 210f);
+
     [Header("UI Rendering")]
     [SerializeField, Min(10002)] private int sortingOrder = 20000;
 
@@ -59,9 +65,23 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
     private Canvas effectCanvas;
     private RectTransform effectRect;
     private RectTransform movingRoot;
+    private CanvasGroup conversionStartupCanvasGroup;
     private GameObject vfxInstance;
     private ParticleSystem[] particles;
     private bool started;
+    // Only the conversion-specific API enables in-flight particle color interpolation.
+    private bool conversionGradientActive;
+    private Color conversionStartColor;
+    private Color conversionEndColor;
+    private float conversionColorStart;
+    private float conversionColorEnd;
+    private ParticleSystem.Particle[][] conversionParticleBuffers;
+    // Each spawned transfer owns these visuals. No shared prefab/material tint is changed.
+    private TrailRenderer[] conversionTrails;
+    private SpriteRenderer[] conversionSprites;
+    private UnityEngine.UI.Graphic[] conversionUiGraphics;
+    private Color[] conversionSpriteBaseColors;
+    private Color[] conversionUiBaseColors;
     public bool HasMovingVfxPrefab => vfxPrefab != null;
     /// <summary>Invoked the instant the moving VFX reaches its destination, before trail cleanup.</summary>
     public event System.Action ReachedDestination;
@@ -96,6 +116,41 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
             StartCoroutine(PlayInternal(startScreen, endScreen, color, true));
     }
 
+    /// <summary>
+    /// Conversion-only transfer: randomly launches left or right and follows one
+    /// continuous cubic Bezier curve into the destination. Other acquisition
+    /// transfer animations retain their existing motion.
+    /// </summary>
+    public void PlayDetachedForcedColorSmoothRandom(Vector2 startScreen, Vector2 endScreen, Color color)
+    {
+        if (!started && isActiveAndEnabled)
+            StartCoroutine(PlayInternal(startScreen, endScreen, color, true, true));
+    }
+
+    /// <summary>
+    /// Conversion-only stream with a continuous red-to-blue color transition.
+    /// Transition positions are normalized travel progress (0=start, 1=arrival).
+    /// Other orb APIs retain their original colors and motion.
+    /// </summary>
+    public void PlayDetachedConversionGradient(Vector2 startScreen, Vector2 endScreen,
+        Color startColor, Color endColor, float colorChangeStart, float colorChangeEnd)
+    {
+        if (started || !isActiveAndEnabled) return;
+        StartCoroutine(PlayConversionGradientRoutine(startScreen, endScreen,
+            startColor, endColor, colorChangeStart, colorChangeEnd));
+    }
+
+    private IEnumerator PlayConversionGradientRoutine(Vector2 startScreen, Vector2 endScreen,
+        Color startColor, Color endColor, float colorChangeStart, float colorChangeEnd)
+    {
+        conversionGradientActive = true;
+        conversionStartColor = startColor;
+        conversionEndColor = endColor;
+        conversionColorStart = Mathf.Clamp(colorChangeStart, 0f, 0.999f);
+        conversionColorEnd = Mathf.Clamp(colorChangeEnd, conversionColorStart + 0.001f, 1f);
+        yield return PlayInternal(startScreen, endScreen, startColor, true, true);
+    }
+
     /// <summary>Play using the VFX prefab's own colors, ignoring rarity and tint settings.</summary>
     public void PlayDetachedOriginalColors(Vector2 startScreen, Vector2 endScreen)
     {
@@ -121,7 +176,7 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
         return PlayInternal(startScreen, endScreen, color, tintParticleStartColor);
     }
 
-    private IEnumerator PlayInternal(Vector2 startScreen, Vector2 endScreen, Color color, bool applyColor)
+    private IEnumerator PlayInternal(Vector2 startScreen, Vector2 endScreen, Color color, bool applyColor, bool smoothRandomLaunch = false)
     {
         if (started) yield break;
         started = true;
@@ -133,8 +188,22 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
             yield break;
         }
 
+        // Keep the entire hierarchy inactive until every renderer and particle has
+        // its conversion launch color. Instantiating an active prefab directly
+        // can run OnEnable/PlayOnAwake with the prefab's blue tint first.
         GameObject holder = new GameObject("MovingVFX", typeof(RectTransform));
+        holder.SetActive(false);
         movingRoot = holder.GetComponent<RectTransform>();
+        // UIParticle builds its Canvas mesh after ParticleSystem.Play(). Prevent an
+        // uninitialized mesh from becoming visible while its tint is still blue.
+        // This temporary CanvasGroup belongs only to conversion instances.
+        if (conversionGradientActive)
+        {
+            conversionStartupCanvasGroup = holder.AddComponent<CanvasGroup>();
+            conversionStartupCanvasGroup.alpha = 0f;
+            conversionStartupCanvasGroup.interactable = false;
+            conversionStartupCanvasGroup.blocksRaycasts = false;
+        }
         movingRoot.SetParent(effectRect, false);
         movingRoot.anchorMin = movingRoot.anchorMax = new Vector2(0.5f, 0.5f);
         movingRoot.pivot = new Vector2(0.5f, 0.5f);
@@ -146,8 +215,50 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
         vfxInstance.transform.localPosition = vfxLocalOffset;
         vfxInstance.transform.localRotation = Quaternion.identity;
         vfxInstance.transform.localScale = vfxLocalScale;
-        vfxInstance.SetActive(true);
+        // The parent is still inactive: none of the prefab's visuals can render yet.
+        // Preserve the prefab's own active state for the non-conversion API.
         particles = vfxInstance.GetComponentsInChildren<ParticleSystem>(true);
+        if (conversionGradientActive)
+        {
+            conversionParticleBuffers = new ParticleSystem.Particle[particles.Length][];
+            conversionTrails = vfxInstance.GetComponentsInChildren<TrailRenderer>(true);
+            conversionSprites = vfxInstance.GetComponentsInChildren<SpriteRenderer>(true);
+            conversionUiGraphics = vfxInstance.GetComponentsInChildren<UnityEngine.UI.Graphic>(true);
+            conversionSpriteBaseColors = new Color[conversionSprites.Length];
+            conversionUiBaseColors = new Color[conversionUiGraphics.Length];
+            for (int i = 0; i < conversionSprites.Length; i++)
+                conversionSpriteBaseColors[i] = conversionSprites[i].color;
+            for (int i = 0; i < conversionUiGraphics.Length; i++)
+                conversionUiBaseColors[i] = conversionUiGraphics[i].color;
+            foreach (TrailRenderer trail in conversionTrails)
+                if (trail != null) trail.Clear();
+            foreach (ParticleSystem particle in particles)
+            {
+                if (particle == null) continue;
+                particle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                particle.Clear(true);
+                // These prefab modules otherwise recolor particles independently of
+                // the moving orb's red-to-blue progress.
+                var lifetimeColor = particle.colorOverLifetime;
+                lifetimeColor.enabled = false;
+                var speedColor = particle.colorBySpeed;
+                speedColor.enabled = false;
+                var particleTrails = particle.trails;
+                if (particleTrails.enabled)
+                {
+                    particleTrails.inheritParticleColor = true;
+                    particleTrails.colorOverLifetime = new ParticleSystem.MinMaxGradient(Color.white);
+                    particleTrails.colorOverTrail = new ParticleSystem.MinMaxGradient(Color.white);
+                }
+                ParticleSystem.MainModule launchMain = particle.main;
+                launchMain.playOnAwake = false;
+                launchMain.prewarm = false;
+                launchMain.startColor = new ParticleSystem.MinMaxGradient(conversionStartColor);
+            }
+            UpdateConversionParticleColors(0f);
+        }
+        // Show the fully initialized effect only after its red launch tint is set.
+        holder.SetActive(true);
         foreach (ParticleSystem particle in particles)
         {
             if (particle == null || !particle.gameObject.activeInHierarchy) continue;
@@ -158,8 +269,141 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
             }
             particle.Play(true);
         }
+        // Reapply launch tint after Play: sub-emitters and prefab initialization may
+        // have just created particles using their original color settings.
+        if (conversionGradientActive)
+        {
+            UpdateConversionParticleColors(0f);
+            // Allow the UIParticle mesh to rebuild once while hidden. Unity's
+            // UI Particle component can otherwise display a cached prefab-tinted
+            // mesh before the first particle-color synchronization.
+            yield return null;
+            UpdateConversionParticleColors(0f);
+            if (conversionStartupCanvasGroup != null)
+                conversionStartupCanvasGroup.alpha = 1f;
+        }
 
-        yield return PlayRoutine(startScreen, endScreen);
+        yield return smoothRandomLaunch
+            ? PlaySmoothRandomRoutine(startScreen, endScreen)
+            : PlayRoutine(startScreen, endScreen);
+    }
+
+    // Conversion-only trajectory: one quadratic Bezier from the source to the HUD.
+    // There is no intermediate fan-out point and no second "suck" phase, so
+    // the particles follow a smooth arc without bouncing or changing curves.
+    private IEnumerator PlaySmoothRandomRoutine(Vector2 startScreen, Vector2 endScreen)
+    {
+        float durationMultiplier = Random.Range(
+            Mathf.Min(durationMultiplierRange.x, durationMultiplierRange.y),
+            Mathf.Max(durationMultiplierRange.x, durationMultiplierRange.y));
+        float safeDuration = Mathf.Max(0.01f, duration * durationMultiplier);
+
+        // The control point determines the curvature of the complete path.
+        // A quadratic Bezier reaches half of the control-point deviation at t=0.5,
+        // so doubling the desired deviation gives the requested midpoint spread.
+        float side = Random.value < 0.5f ? -1f : 1f;
+        float horizontalDeviation = Random.Range(
+            Mathf.Max(0f, Mathf.Min(conversionSideSpreadRange.x, conversionSideSpreadRange.y)),
+            Mathf.Max(0f, Mathf.Max(conversionSideSpreadRange.x, conversionSideSpreadRange.y)));
+        float verticalDeviation = Random.Range(
+            Mathf.Min(conversionVerticalSpreadRange.x, conversionVerticalSpreadRange.y),
+            Mathf.Max(conversionVerticalSpreadRange.x, conversionVerticalSpreadRange.y));
+        Vector2 middle = (startScreen + endScreen) * 0.5f;
+        Vector2 control = middle + 2f * new Vector2(side * horizontalDeviation, verticalDeviation);
+
+        float elapsed = 0f;
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+            // Gradual acceleration/deceleration without introducing a new segment.
+            t = t * t * (3f - 2f * t);
+            MoveToScreenPosition(EvaluateQuadraticBezier(startScreen, control, endScreen, t));
+            if (conversionGradientActive) UpdateConversionParticleColors(t);
+            yield return null;
+        }
+
+        MoveToScreenPosition(endScreen);
+        if (conversionGradientActive) UpdateConversionParticleColors(1f);
+        ReachedDestination?.Invoke();
+        // Each conversion orb is independent. Destroy it as soon as it reaches
+        // the Blue Dustium HUD instead of waiting for every particle/trail to die.
+        // Other acquisition orb paths retain their existing trail fade behavior.
+        if (conversionGradientActive)
+        {
+            Destroy(gameObject);
+            yield break;
+        }
+        yield return FinishParticlesAndDestroy();
+    }
+
+    // Changing only main.startColor would affect newly emitted particles but not
+    // particles already in flight. Update both for a visible transition across
+    // the complete moving VFX, including existing emitted particles.
+    private void UpdateConversionParticleColors(float progress)
+    {
+        if (particles == null || conversionParticleBuffers == null) return;
+        float blend = Mathf.InverseLerp(conversionColorStart, conversionColorEnd, progress);
+        blend = blend * blend * (3f - 2f * blend);
+        Color color = Color.Lerp(conversionStartColor, conversionEndColor, blend);
+        // The visual tint belongs to THIS transfer instance and is evaluated using
+        // its own travel progress, not the global stream launch/arrival count.
+        if (conversionSprites != null)
+        {
+            for (int i = 0; i < conversionSprites.Length; i++)
+            {
+                if (conversionSprites[i] == null) continue;
+                Color baseColor = conversionSpriteBaseColors[i];
+                conversionSprites[i].color = new Color(
+                    color.r, color.g, color.b, baseColor.a * color.a);
+            }
+        }
+        if (conversionUiGraphics != null)
+        {
+            for (int i = 0; i < conversionUiGraphics.Length; i++)
+            {
+                if (conversionUiGraphics[i] == null) continue;
+                Color baseColor = conversionUiBaseColors[i];
+                conversionUiGraphics[i].color = new Color(
+                    color.r, color.g, color.b, baseColor.a * color.a);
+            }
+        }
+        if (conversionTrails != null)
+        {
+            for (int i = 0; i < conversionTrails.Length; i++)
+            {
+                TrailRenderer trail = conversionTrails[i];
+                if (trail == null) continue;
+                // A single uniform tint for the whole existing trail: prevents
+                // a red tail remaining behind a blue moving orb.
+                Gradient originalGradient = trail.colorGradient;
+                GradientAlphaKey[] alphas = originalGradient.alphaKeys;
+                trail.colorGradient = new Gradient
+                {
+                    colorKeys = new[] {
+                        new GradientColorKey(color, 0f),
+                        new GradientColorKey(color, 1f)
+                    },
+                    alphaKeys = alphas
+                };
+            }
+        }
+        for (int i = 0; i < particles.Length; i++)
+        {
+            ParticleSystem system = particles[i];
+            if (system == null) continue;
+            var main = system.main;
+            main.startColor = new ParticleSystem.MinMaxGradient(color);
+            int count = system.particleCount;
+            if (count == 0) continue;
+            var buffer = conversionParticleBuffers[i];
+            if (buffer == null || buffer.Length < count)
+                conversionParticleBuffers[i] = buffer = new ParticleSystem.Particle[Mathf.NextPowerOfTwo(count)];
+            int activeCount = system.GetParticles(buffer);
+            for (int j = 0; j < activeCount; j++)
+                buffer[j].startColor = color;
+            system.SetParticles(buffer, activeCount);
+        }
     }
 
     private IEnumerator PlayRoutine(Vector2 startScreen, Vector2 endScreen)
@@ -201,6 +445,11 @@ public sealed class ScreenSpaceTransferOrbEffect : MonoBehaviour
         MoveToScreenPosition(endScreen);
         ReachedDestination?.Invoke();
 
+        yield return FinishParticlesAndDestroy();
+    }
+
+    private IEnumerator FinishParticlesAndDestroy()
+    {
         // No generated ghost trail: let the particle prefab's own Trails/particles fade naturally.
         if (particles != null)
         {
