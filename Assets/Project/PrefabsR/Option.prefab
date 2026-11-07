@@ -2226,7 +2226,7 @@ MonoBehaviour:
   m_text: Option A
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
-  m_sharedMaterial: {fileID: -7555710420834941891, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2307,8 +2307,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1d4d9911a264e71a4ac5543ba688005, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  database: {fileID: 0}
-  roleId: body
+  database: {fileID: 11400000, guid: f1d4d9911a264e71a4ac5543ba688002, type: 2}
+  roleId: number
   target: {fileID: 9029287131393467446}
 --- !u!1 &2446411732429923652
 GameObject:
@@ -4108,6 +4108,7 @@ MonoBehaviour:
   resolutionContent: {fileID: 8931567298776906515}
   controlContent: {fileID: 0}
   resolutionDropdown: {fileID: 4945722684164142549}
+  resolutionFontDatabase: {fileID: 11400000, guid: f1d4d9911a264e71a4ac5543ba688002, type: 2}
   windowedToggle: {fileID: 1141341647238901989}
   borderlessToggle: {fileID: 1122261909256586076}
   fullscreenToggle: {fileID: 7002000000000003}
@@ -7548,8 +7549,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "1920 \xD7 1080"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
-  m_sharedMaterial: {fileID: 2164040, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
+  m_sharedMaterial: {fileID: 4522203511505876769, guid: 561f3002d19400a47bae19552e5b0ed5, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

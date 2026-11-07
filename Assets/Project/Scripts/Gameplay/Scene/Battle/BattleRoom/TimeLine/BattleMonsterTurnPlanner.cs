@@ -43,6 +43,24 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
     private Coroutine battleStartTextRoutine;
     private bool battleStartIntroShown;
     private int plannedBattleTurn;
+    // A plan is a commitment. Only reject invalid phase-one escape BEFORE
+    // it reaches the timeline, never re-route or silently cancel during execution.
+    private bool IsValidArabellaPhaseOneMoveReservation(
+        MonsterUnit monster, Vector2Int moveOffset)
+    {
+        if (monster == null || gridManager == null ||
+            monster.MainGridIndex < 0 || moveOffset == Vector2Int.zero)
+            return false;
+
+        Vector2Int origin = gridManager.IndexToCoord(monster.MainGridIndex);
+        if (!gridManager.IsValidCoord(origin + moveOffset))
+            return false;
+
+        BattleCharacter[] players = Object.FindObjectsByType<BattleCharacter>(
+            FindObjectsSortMode.None);
+        return EliseAI.IsStrictEscapePath(origin, moveOffset, players, gridManager);
+    }
+
     private readonly Dictionary<string, GameObject> arabellaStigmaPreviews = new();
     private const string BattleStartIntroKey = "battle.intro.battle_start";
     private const string ArabellaLeapSkillId = "S_Monster_39";
@@ -334,6 +352,10 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 yield return new WaitForSeconds(monsterCommandInterval);
         }
 
+        // The first reserved command, not the last hit reaction or turn-start
+        // presentation, determines what direction each monster shows in planning.
+        ApplyAllFirstReservedActionFacings(monsterUnits);
+
         if (logReservationPerformance)
             UnityEngine.Debug.Log($"[MonsterReservationPerf] RegisterAll:{registerTotalMs:F2}ms MaxSingle:{registerMaxMs:F2}ms Count:{registeredCount} Interval:{monsterCommandInterval:F2}s (intentional)", this);
 
@@ -390,10 +412,129 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
             // 포털은 턴 시작 행동 애니메이션과 동시에 표시합니다.
         }
 
+        ApplyAllFirstReservedActionFacings(monsterUnits);
+
         if (showActionReserve)
             ShowActionReserveIntroText();
     }
 
+
+    // Apply to ALL monsters, not only bosses. Hit feedback can rotate the
+    // sprite independently of the command that is about to be executed.
+    private void ApplyAllFirstReservedActionFacings(List<MonsterUnit> monsters)
+    {
+        if (monsters == null)
+            return;
+        foreach (MonsterUnit monster in monsters)
+            ApplyFirstReservedActionFacing(monster);
+    }
+
+    public bool ApplyFirstReservedActionFacing(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null ||
+            monster.RuntimeData.IsDead || timelineController == null)
+            return false;
+
+        string runtimeId = monster.RuntimeData.RuntimeId;
+        for (int slot = 0; slot < timelineController.SlotCount; slot++)
+        {
+            var commands = timelineController.GetMonsterCommands(slot);
+            if (commands == null)
+                continue;
+            foreach (MonsterReservedCommand command in commands)
+            {
+                if (command == null || command.RuntimeId != runtimeId)
+                    continue;
+
+                BattleDirection direction = monster.RuntimeData.Direction;
+                bool resolved = false;
+                // 예약된 실제 이동은 스킬 표시 분류나 이전 강제 방향보다 우선합니다.
+                // 특히 아라벨라 S_Monster_33/38은 첫 슬롯이 비어 있어도
+                // 이동 Offset의 좌우 방향으로 준비 단계에서 플립해야 합니다.
+                bool isMove = command.IsPortalMove ||
+                    command.MoveOffset != Vector2Int.zero ||
+                    command.SkillId == "S_Monster_33" ||
+                    command.SkillId == "S_Monster_38" ||
+                    (command.SkillData != null &&
+                     command.SkillData.TimelineNotation == TimelineActionType.Move);
+
+                // An explicit destination is necessary for portal / leap actions.
+                if ((command.IsPortalMove || command.SkillId == "S_Monster_39") &&
+                    command.RangeOriginGridIndex >= 0 && gridManager != null &&
+                    monster.MainGridIndex >= 0)
+                {
+                    int dx = gridManager.IndexToCoord(command.RangeOriginGridIndex).x -
+                             gridManager.IndexToCoord(monster.MainGridIndex).x;
+                    if (dx != 0)
+                    {
+                        direction = dx > 0 ? BattleDirection.Right : BattleDirection.Left;
+                        resolved = true;
+                    }
+                }
+                if (!resolved && isMove)
+                {
+                    int moveX = command.MoveOffset.x;
+                    if (moveX != 0)
+                    {
+                        direction = moveX > 0 ? BattleDirection.Right : BattleDirection.Left;
+                        resolved = true;
+                    }
+                }
+                if (!resolved && !isMove && command.HasForcedDirection)
+                {
+                    direction = command.ForcedDirection;
+                    resolved = true;
+                }
+                // An attack may have a fixed range instead of a forced direction.
+                // Use that reserved range, never the last character who hit us.
+                if (!resolved && !isMove && command.SkillData != null &&
+                    command.SkillData.TimelineNotation == TimelineActionType.Attack &&
+                    gridManager != null && monster.MainGridIndex >= 0)
+                {
+                    var cells = command.TargetGridIndices != null && command.TargetGridIndices.Count > 0
+                        ? command.TargetGridIndices : command.RangeGridIndices;
+                    if (cells != null)
+                    {
+                        int left = 0, right = 0;
+                        int originX = gridManager.IndexToCoord(monster.MainGridIndex).x;
+                        foreach (int index in cells)
+                        {
+                            if (index < 0) continue;
+                            int dx = gridManager.IndexToCoord(index).x - originX;
+                            if (dx < 0) left++;
+                            else if (dx > 0) right++;
+                        }
+                        if (left != right)
+                        {
+                            direction = right > left ? BattleDirection.Right : BattleDirection.Left;
+                            resolved = true;
+                        }
+                    }
+                }
+
+                // Vertical-only movement has no left/right flip; do not look
+                // ahead to a later command (the first command remains authoritative).
+                if (!resolved)
+                {
+                    // A non-directional setup action (shield, passive etc.) must
+                    // not retain the previous turn's facing. Inspect the next
+                    // reserved command, but do not skip a vertical movement:
+                    // it is itself a movement with no horizontal flip.
+                    if (isMove)
+                        return false;
+                    continue;
+                }
+                BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+                if (facing == null)
+                    facing = monster.GetComponentInChildren<BattleUnitFacing>(true);
+                if (facing != null)
+                    facing.FaceRight(direction == BattleDirection.Right);
+                monster.RuntimeData.Direction = direction;
+                return true;
+            }
+        }
+        return false;
+    }
 
     /// <summary>
     /// 녹턴과 모르트의 첫 예약 행동을 기준으로 턴 시작 시 바라보는 방향을 설정합니다.
@@ -481,6 +622,86 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 return;
             }
         }
+    }
+
+    /// <summary>
+    /// 아라벨라의 거미줄 설치 이후 실제 예약된 이동 명령의 좌우 방향을 적용합니다.
+    /// AI 계획 중 임시로 설정한 방향이 아닌, 타임라인에 확정된 명령을 읽습니다.
+    /// </summary>
+    // 아라벨라: 예약된 실제 첫 행동의 좌우 방향을 적용합니다.
+    // 빈 슬롯은 건너뛰며, 거미줄 설치는 타임라인 명령이 아니므로 제외됩니다.
+    public bool ApplyArabellaReservedMoveFacing(MonsterUnit monster)
+    {
+        if (monster == null || monster.RuntimeData == null ||
+            monster.RuntimeData.IsDead || timelineController == null)
+            return false;
+
+        string monsterId = monster.RuntimeData.MonsterId;
+        if (!string.Equals(monsterId, "Mon_12_1", System.StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(monsterId, "Mon_12_2", System.StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        string runtimeId = monster.RuntimeData.RuntimeId;
+        for (int slot = 0; slot < timelineController.SlotCount; slot++)
+        {
+            var commands = timelineController.GetMonsterCommands(slot);
+            if (commands == null)
+                continue;
+
+            foreach (MonsterReservedCommand command in commands)
+            {
+                if (command == null || command.RuntimeId != runtimeId)
+                    continue;
+
+                bool isMove = command.IsPortalMove ||
+                    (command.SkillData != null &&
+                     command.SkillData.TimelineNotation == TimelineActionType.Move);
+                BattleDirection direction = monster.RuntimeData.Direction;
+                bool resolved = false;
+
+                // 첫 행동이 이동이라면 공격 예약 방향보다 실제 이동 X 오프셋이 우선입니다.
+                if (isMove && command.MoveOffset.x != 0)
+                {
+                    direction = command.MoveOffset.x > 0 ? BattleDirection.Right : BattleDirection.Left;
+                    resolved = true;
+                }
+                else if (isMove && command.RangeOriginGridIndex >= 0 &&
+                         monster.MainGridIndex >= 0 && gridManager != null)
+                {
+                    int deltaX = gridManager.IndexToCoord(command.RangeOriginGridIndex).x -
+                                 gridManager.IndexToCoord(monster.MainGridIndex).x;
+                    if (deltaX != 0)
+                    {
+                        direction = deltaX > 0 ? BattleDirection.Right : BattleDirection.Left;
+                        resolved = true;
+                    }
+                }
+                else if (!isMove && command.HasForcedDirection)
+                {
+                    direction = command.ForcedDirection;
+                    resolved = true;
+                }
+
+                // 보호막 등 방향 없는 선행 행동은 건너뛰고 첫 좌우 행동을 확인합니다.
+                // 수직 이동 자체에는 좌우 플립이 없으므로 뒤의 공격 방향을
+                // 미리 적용하지 않습니다.
+                if (!resolved)
+                {
+                    if (isMove)
+                        return false;
+                    continue;
+                }
+
+                BattleUnitFacing facing = monster.GetComponent<BattleUnitFacing>();
+                if (facing == null)
+                    facing = monster.GetComponentInChildren<BattleUnitFacing>(true);
+                if (facing != null)
+                    facing.FaceRight(direction == BattleDirection.Right);
+                monster.RuntimeData.Direction = direction;
+                return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>
@@ -757,6 +978,23 @@ public class BattleMonsterTurnPlanner : MonoBehaviour
                 if (skillData == null)
                 {
                     Debug.LogWarning($"[BattleMonsterTurnPlanner] SkillData 없음: {action.SkillId}");
+                    continue;
+                }
+
+                // Phase 1 is evasive, never an approach. Validate the ACTUAL
+                // reserved offset against the current player coordinates before
+                // committing the timeline command. Do not alter it at execution.
+                if (string.Equals(runtime.MonsterId,
+                        ArabellaPhaseTransition.PhaseOneMonsterId,
+                        System.StringComparison.Ordinal) &&
+                    string.Equals(action.SkillId, "S_Monster_33",
+                        System.StringComparison.Ordinal) &&
+                    !IsValidArabellaPhaseOneMoveReservation(monsterUnit, action.MoveOffset))
+                {
+                    Debug.LogWarning(
+                        $"[ArabellaEscape] Rejected approach/invalid reservation: " +
+                        $"Origin={monsterUnit.MainGridIndex}, Offset={action.MoveOffset}. " +
+                        "No replacement movement will be reserved.", monsterUnit);
                     continue;
                 }
 

@@ -64,7 +64,8 @@ public class BattleHitImpactFeedback : MonoBehaviour
         Transform attacker,
         IReadOnlyList<Transform> targets,
         int fallbackHorizontalDirection,
-        bool includeTargetPush = true)
+        bool includeTargetPush = true,
+        bool useAttackDirectionForPush = false)
     {
         BattleHitImpactFeedback feedback = GetOrCreateInstance();
 
@@ -80,7 +81,8 @@ public class BattleHitImpactFeedback : MonoBehaviour
             attacker,
             targets,
             fallbackHorizontalDirection,
-            includeTargetPush);
+            includeTargetPush,
+            useAttackDirectionForPush);
     }
 
     // Mon_03 / Mon_04 use a non-directional scale pulse instead of hit movement.
@@ -160,7 +162,8 @@ public class BattleHitImpactFeedback : MonoBehaviour
     Transform attacker,
     IReadOnlyList<Transform> targets,
     int fallbackHorizontalDirection,
-    bool includeTargetPush)
+    bool includeTargetPush,
+    bool useAttackDirectionForPush)
     {
         IEnumerator cameraRoutine =
             playDamageCameraImpact && BattleCameraController.Instance != null
@@ -172,7 +175,8 @@ public class BattleHitImpactFeedback : MonoBehaviour
                 attacker,
                 targets,
                 fallbackHorizontalDirection,
-                includeTargetPush
+                includeTargetPush,
+                useAttackDirectionForPush
             )
             : null;
 
@@ -221,13 +225,15 @@ public class BattleHitImpactFeedback : MonoBehaviour
         Transform attacker,
         IReadOnlyList<Transform> targets,
         int fallbackHorizontalDirection,
-        bool includeTargetPush)
+        bool includeTargetPush,
+        bool useAttackDirectionForPush)
     {
         List<MoveEntry> entries = BuildDamageMoveEntries(
             attacker,
             targets,
             fallbackHorizontalDirection,
-            includeTargetPush);
+            includeTargetPush,
+            useAttackDirectionForPush);
 
         if (entries.Count <= 0)
             yield break;
@@ -246,13 +252,16 @@ public class BattleHitImpactFeedback : MonoBehaviour
         Transform attacker,
         IReadOnlyList<Transform> targets,
         int fallbackHorizontalDirection,
-        bool includeTargetPush = true)
+        bool includeTargetPush = true,
+        bool useAttackDirectionForPush = false)
     {
         List<MoveEntry> entries = new();
         HashSet<Transform> added = new();
 
         Transform firstTarget = GetFirstValidTarget(targets);
-        int horizontalDirection = ResolveHorizontalDirection(attacker, firstTarget, fallbackHorizontalDirection);
+        int horizontalDirection = useAttackDirectionForPush
+            ? NormalizeHorizontalDirection(fallbackHorizontalDirection)
+            : ResolveHorizontalDirection(attacker, firstTarget, fallbackHorizontalDirection);
         Vector3 baseOffset = Vector3.right * horizontalDirection * Mathf.Max(0f, damageHitPushDistance);
 
         AddMoveEntry(entries, added, attacker, baseOffset * Mathf.Max(0f, attackerPushMultiplier));
